@@ -1,0 +1,907 @@
+<title>Wake Array</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+
+<style>
+:root{
+  --ground:#EDF1F3; --surface:#FAFCFD; --surface-2:#E2E9ED; --sunk:#DFE7EB;
+  --ink:#0F1A20; --ink-2:#4A5C64; --ink-3:#6E828C;
+  --line:#C4D0D7; --hair:#DBE3E8;
+  --accent:#B96F0F; --learned:#B96F0F; --classical:#1B6B69;
+  --warn:#A23A22; --ok:#2A7355;
+  --shadow:0 1px 2px rgba(15,26,32,.05), 0 8px 24px -12px rgba(15,26,32,.18);
+  --sans:"Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --measure:70ch;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0B1216; --surface:#111A20; --surface-2:#182429; --sunk:#0A1014;
+    --ink:#E6EEF2; --ink-2:#94A8B2; --ink-3:#72878F;
+    --line:#25333B; --hair:#1A262C;
+    --accent:#EBAB4A; --learned:#EBAB4A; --classical:#54BAB4;
+    --warn:#E4795F; --ok:#5EC79B;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0B1216; --surface:#111A20; --surface-2:#182429; --sunk:#0A1014;
+  --ink:#E6EEF2; --ink-2:#94A8B2; --ink-3:#72878F;
+  --line:#25333B; --hair:#1A262C;
+  --accent:#EBAB4A; --learned:#EBAB4A; --classical:#54BAB4;
+  --warn:#E4795F; --ok:#5EC79B;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--serif); font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 clamp(18px,4vw,44px) 96px}
+.col{max-width:var(--measure)}
+h1,h2,h3,h4{font-family:var(--sans); text-wrap:balance; margin:0; line-height:1.16}
+h1{font-size:clamp(34px,5.4vw,58px); font-weight:700; letter-spacing:-.022em}
+h2{font-size:clamp(23px,2.9vw,31px); font-weight:600; letter-spacing:-.014em}
+h3{font-size:19px; font-weight:600; letter-spacing:-.006em}
+p{margin:0}
+a{color:var(--accent)}
+strong{font-weight:600}
+.mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:var(--mono); font-size:11.5px; font-weight:500; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.lede{font-size:clamp(18px,2.1vw,21px); line-height:1.55; color:var(--ink-2)}
+.small{font-size:14.5px; line-height:1.55; color:var(--ink-2)}
+.tiny{font-family:var(--mono); font-size:12px; line-height:1.5; color:var(--ink-3)}
+
+/* ---- rhythm: every section is a flex column, so spacing never doubles ---- */
+section{padding-block:clamp(46px,6vw,80px); border-top:1px solid var(--hair)}
+section:first-of-type{border-top:0}
+.stack{display:flex; flex-direction:column; gap:20px}
+.stack-sm{display:flex; flex-direction:column; gap:12px}
+.stack-lg{display:flex; flex-direction:column; gap:34px}
+
+/* ---- masthead ---- */
+header.mast{padding-block:clamp(44px,7vw,86px) clamp(30px,4vw,44px)}
+.rule{height:1px; background:var(--line); margin-block:26px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.04em; padding:5px 10px;
+  border:1px solid var(--line); border-radius:2px; color:var(--ink-2); background:var(--surface);
+  white-space:nowrap;
+}
+.chip b{color:var(--ink); font-weight:600}
+
+/* ---- panels ---- */
+.panel{
+  background:var(--surface); border:1px solid var(--line); border-radius:3px;
+  box-shadow:var(--shadow);
+}
+.panel-pad{padding:clamp(16px,2.4vw,26px)}
+.bleed{margin-inline:calc((100% - min(100%, 1180px)) / 2)}
+
+/* ---- tables ---- */
+.tbl-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch}
+table{border-collapse:collapse; width:100%; font-family:var(--mono); font-size:13.5px;
+  font-variant-numeric:tabular-nums; min-width:520px}
+th,td{padding:9px 14px; text-align:right; border-bottom:1px solid var(--hair); white-space:nowrap}
+th:first-child,td:first-child{text-align:left; white-space:normal; font-family:var(--sans);
+  font-size:14px; letter-spacing:-.005em}
+thead th{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:500; border-bottom:1px solid var(--line);
+}
+tbody tr:last-child td{border-bottom:0}
+td.hi{color:var(--ink); font-weight:600}
+td.learned{color:var(--learned)}
+td.classical{color:var(--classical)}
+.zero{color:var(--ok)}
+
+/* ---- the viewer ---- */
+.viewer{display:grid; gap:14px}
+.views{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+@media (max-width:900px){ .views{grid-template-columns:1fr} }
+.view{display:flex; flex-direction:column; gap:8px}
+.view-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+.view-title{font-family:var(--sans); font-weight:600; font-size:15px; display:flex; align-items:center; gap:8px}
+.swatch{width:9px; height:9px; border-radius:1px; display:inline-block}
+.stage{
+  position:relative; width:100%; aspect-ratio:352/240; background:var(--sunk);
+  border:1px solid var(--line); border-radius:2px; overflow:hidden;
+}
+.stage canvas, .stage svg{position:absolute; inset:0; width:100%; height:100%; display:block}
+.stage canvas{image-rendering:auto}
+
+.controls{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+button{
+  font-family:var(--sans); font-size:14px; font-weight:500; color:var(--ink);
+  background:var(--surface-2); border:1px solid var(--line); border-radius:2px;
+  padding:7px 14px; cursor:pointer; min-width:82px;
+}
+button:hover{border-color:var(--ink-3)}
+button:focus-visible, input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+input[type=range]{flex:1; min-width:140px; accent-color:var(--accent)}
+.toggles{display:flex; gap:16px; flex-wrap:wrap}
+label.tog{display:flex; align-items:center; gap:7px; font-family:var(--sans); font-size:13.5px;
+  color:var(--ink-2); cursor:pointer}
+input[type=checkbox]{accent-color:var(--accent); width:15px; height:15px}
+
+.readout{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.cell{border:1px solid var(--hair); border-radius:2px; padding:9px 11px; background:var(--surface)}
+.cell .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+.cell .v{font-family:var(--mono); font-size:17px; font-variant-numeric:tabular-nums; color:var(--ink); margin-top:2px}
+.cell .v small{font-size:11px; color:var(--ink-3); margin-left:3px}
+
+.ramp{display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:11px; color:var(--ink-3)}
+.ramp .bar{height:9px; flex:1; border-radius:1px; border:1px solid var(--line)}
+
+/* ---- findings ---- */
+.findings{display:grid; gap:0; border-top:1px solid var(--line)}
+.finding{
+  display:grid; grid-template-columns:104px 1fr; gap:clamp(12px,3vw,28px);
+  padding-block:22px; border-bottom:1px solid var(--hair); align-items:start;
+}
+@media (max-width:640px){ .finding{grid-template-columns:1fr; gap:8px} }
+.tag{display:flex; flex-direction:column; gap:6px; align-items:flex-start}
+.wid{font-family:var(--mono); font-size:13px; font-weight:600; color:var(--ink)}
+.status{
+  font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  padding:2px 7px; border-radius:2px; border:1px solid currentColor;
+}
+.status.closed{color:var(--ok)}
+.status.open{color:var(--warn)}
+
+pre{
+  font-family:var(--mono); font-size:13px; line-height:1.7; margin:0; overflow-x:auto;
+  background:var(--sunk); border:1px solid var(--line); border-radius:3px;
+  padding:14px 16px; color:var(--ink-2);
+}
+pre b{color:var(--ink); font-weight:500}
+.note{
+  border-left:2px solid var(--accent); padding:2px 0 2px 16px; color:var(--ink-2); font-size:15.5px;
+}
+
+/* ---- plan view: styled through tokens so it follows the theme ---- */
+#geom .g-overlap{fill:var(--classical); opacity:.15}
+#geom .g-win{fill:none; stroke:var(--line); stroke-width:.02; stroke-dasharray:.16 .1}
+#geom .g-dom{fill:none; stroke:var(--ink); stroke-width:.035}
+#geom .g-arrow{fill:none; stroke:var(--ink-3); stroke-width:.03}
+#geom .g-rotor{fill:var(--accent)}
+#geom .g-dim{stroke:var(--accent); stroke-width:.018; stroke-dasharray:.1 .07}
+#geom .g-scale{stroke:var(--ink); stroke-width:.03}
+#geom text{font-family:var(--mono)}
+#geom .t-win{fill:var(--ink-3); font-size:.3px}
+#geom .t-rot{fill:var(--ink); font-size:.36px; font-family:var(--sans); font-weight:600}
+#geom .t-coord{fill:var(--ink-3); font-size:.24px}
+#geom .t-dim{fill:var(--accent); font-size:.26px; text-anchor:middle}
+#geom .t-meta{fill:var(--ink-2); font-size:.28px}
+.foot{padding-top:26px; border-top:1px solid var(--hair); color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="stack">
+    <div class="eyebrow">Atlas 0.1 &middot; case study six &middot; 2026-08-30</div>
+    <h1>Three turbines, one<br>frozen neural operator</h1>
+    <p class="lede col">A 20.8&nbsp;M-parameter pretrained flow model and a zero-parameter
+      actuator disk, composed into a real wind-farm wake &mdash; to find out whether the
+      framework's certification machinery catches the pretrained model when it is wrong,
+      and by how much.</p>
+    <div class="rule"></div>
+    <div class="chips">
+      <span class="chip"><b>Poseidon-T</b> frozen, 20.8M params</span>
+      <span class="chip"><b>3</b> turbines, 3.5&thinsp;D apart, in an L</span>
+      <span class="chip"><b>6</b> fluid windows &middot; <b>13</b> seams</span>
+      <span class="chip"><b>0</b> lines of coupling code</span>
+      <span class="chip">Re<sub>eff</sub> <b>255</b></span>
+      <span class="chip">verdict <b>admit-uncertified</b></span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="stack col">
+    <div class="eyebrow">The question</div>
+    <h2>A certificate you cannot fail is not a certificate</h2>
+    <p>Wake steering and micro-siting move a wind farm's annual energy yield by several
+      percent, so the accuracy of the wake model is worth real money. That makes it a good
+      place to ask a harder question than &ldquo;is the model accurate?&rdquo; &mdash;
+      namely, whether a composed simulation built on a pretrained expert can
+      <em>detect and attribute</em> that expert's error without anyone having to know the
+      answer in advance.</p>
+    <p>This is the sixth case study in the vault whose experts are real rather than
+      hand-written, and the first whose <strong>geometry</strong> is real. Its predecessor
+      has the wind farm's topology with real experts and says of itself that its geometry
+      is schematic &mdash; six windows of one field standing in for a farm. This is the
+      other half.</p>
+    <p>It also answered a question nobody asked. The animation below was built to
+      <em>show</em> the physics; what it showed instead was a wake standing 3.5&thinsp;D
+      upstream of the only turbine in its row &mdash; a defect in the framework's own
+      coupling rather than in the pretrained model, and worth roughly twice the
+      checkpoint's own disagreement in array loss. Every number here is measured after that
+      repair, and the superseded record is kept beside the new one so the size of the
+      correction stays checkable.</p>
+  </div>
+</section>
+
+<section>
+  <div class="stack-lg">
+    <div class="stack col">
+      <div class="eyebrow">The array</div>
+      <h2>The checkpoint chose the geometry</h2>
+      <p>Poseidon-T is fixed at 128&times;128 and everything else follows from it. One
+        macro-step must be one <em>native</em> lead of the trained model, and the freestream
+        must land inside its trained velocity distribution &mdash; so a window spanning
+        <span class="mono">S</span> rotor diameters forces both the macro-step
+        (<span class="mono">&Delta;t = S/20</span>) and the effective Reynolds number
+        (<span class="mono">Re = 1020/S</span>). Choosing the window chooses the timestep
+        <em>and</em> the physics <em>and</em> how much lateral room a wake has to recover
+        in. Here the Reynolds band is spent to buy the geometry, and
+        <strong>the turbine spacing is a whole number of window strides by
+        construction.</strong></p>
+    </div>
+
+    <div class="panel panel-pad stack-sm">
+      <div class="eyebrow">Plan view, to scale &mdash; 11.0 &times; 7.5 rotor diameters</div>
+      <div id="geom" style="width:100%"></div>
+      <p class="tiny" id="geomlegend"></p>
+    </div>
+
+    <div class="stack col">
+      <h3>Nine agents, thirteen seams, and no coupling code</h3>
+      <p class="small">Every connection is a typed port pairing derived from the layout. The
+        scheme is compiled from the declarations; there is no hook anywhere for
+        case-specific coupling logic, which is the claim the package exists to make true.</p>
+    </div>
+
+    <div class="panel tbl-wrap">
+      <table>
+        <thead><tr><th>Agent</th><th>What it is</th><th>Fitted params</th><th>Ports</th></tr></thead>
+        <tbody>
+          <tr><td>6 &times; fluid window</td><td style="text-align:left;white-space:normal">Poseidon-T, frozen scOT neural operator, 2-D incompressible flow</td><td class="hi learned">20,774,444 &mdash; none trained here</td><td>MECH, per face segment</td></tr>
+          <tr><td>3 &times; rotor</td><td style="text-align:left;white-space:normal">Actuator disk, local-induction momentum theory</td><td class="hi">0</td><td>MECH up, MECH down, ROT open</td></tr>
+          <tr><td>referent</td><td style="text-align:left;white-space:normal">Classical Navier&ndash;Stokes solver on the same windows</td><td class="hi classical">0</td><td>identical port list &mdash; a legal substitution</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col stack-sm">
+      <p class="note">In an overlapping decomposition each window's artificial boundary lies
+        <em>inside</em> its neighbour &mdash; so a disk sitting in the overlap meets the
+        <strong>downstream</strong> window's inflow ring on its <strong>upstream</strong>
+        side. It reads backwards and it is right.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stack-lg">
+    <div class="stack col">
+      <div class="eyebrow">The flow</div>
+      <h2>Same array, same disks, two fluid experts</h2>
+      <p>Streamwise velocity over 60 macro-steps, from a uniform freestream. Both runs use
+        identical geometry, identical rotors, identical controls and the same macro-step;
+        the only difference is which expert advances the fluid.</p>
+      <p class="small"><strong>Where to look: the left third, upstream of R1.</strong> The
+        classical solver holds it at freestream until the flow feels R1's blockage, which is
+        the only thing that may slow it. An earlier version of this page showed the
+        checkpoint's panel with a full wake profile there instead, running the length of the
+        domain and appearing in a row whose only turbine is far downstream &mdash; a wake
+        with no cause. That was the coupling, not the checkpoint, and it is
+        <a href="#" onclick="document.querySelectorAll('.wid')[0].scrollIntoView({behavior:'smooth',block:'center'});return false;">W98</a>.
+        About 5% of upstream deficit remains and that part is the checkpoint's, whose
+        receptive field is the whole window.</p>
+    </div>
+
+    <div class="panel panel-pad viewer">
+      <div class="views">
+        <div class="view">
+          <div class="view-head">
+            <span class="view-title"><span class="swatch" style="background:var(--learned)"></span>Poseidon-T <span class="tiny">frozen checkpoint</span></span>
+          </div>
+          <div class="stage"><canvas id="cvA"></canvas><svg id="ovA" viewBox="0 0 11 7.5" preserveAspectRatio="none"></svg></div>
+        </div>
+        <div class="view">
+          <div class="view-head">
+            <span class="view-title"><span class="swatch" style="background:var(--classical)"></span>Classical solver <span class="tiny">the referent</span></span>
+          </div>
+          <div class="stage"><canvas id="cvB"></canvas><svg id="ovB" viewBox="0 0 11 7.5" preserveAspectRatio="none"></svg></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="play" aria-label="Play or pause the simulation">Pause</button>
+        <input id="scrub" type="range" min="0" max="29" value="0" step="1" aria-label="Timeline">
+        <span class="mono tiny" id="clock" style="min-width:15ch"></span>
+      </div>
+
+      <div class="toggles">
+        <label class="tog"><input type="checkbox" id="tWin" checked> Window tiling &amp; overlap</label>
+        <label class="tog"><input type="checkbox" id="tSeam"> Seams</label>
+        <label class="tog"><input type="checkbox" id="tRot" checked> Rotors</label>
+      </div>
+
+      <div class="ramp">
+        <span>wake &minus;</span><span class="bar" id="rampbar"></span><span>+ bypass</span>
+        <span id="ramplab" style="min-width:16ch;text-align:right"></span>
+      </div>
+
+      <div class="readout" id="readout"></div>
+    </div>
+
+    <div class="panel panel-pad stack-sm">
+      <div class="eyebrow">Disk-averaged inflow at each rotor, per macro-step</div>
+      <div style="position:relative;width:100%;aspect-ratio:16/6"><canvas id="chart" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+      <p class="tiny" id="chartlegend"></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stack-lg">
+    <div class="stack col">
+      <div class="eyebrow">Results</div>
+      <h2>Ten and a half points</h2>
+      <p>Four runs per expert &mdash; all three turbines, one turbine alone, the upstream
+        turbine off, and a turbine-free control that measures the array's own numerical
+        noise floor. Each turbine's loss is quoted against the run that isolates it.</p>
+    </div>
+
+    <div class="panel tbl-wrap">
+      <table>
+        <thead><tr><th>Quantity</th><th>Poseidon-T</th><th>Classical</th><th>Difference</th></tr></thead>
+        <tbody>
+          <tr><td>R1 &mdash; blockage, against R1 alone</td><td class="learned">+3.60%</td><td class="classical">+1.60%</td><td>+2.00 pp</td></tr>
+          <tr><td>R2 &mdash; wake loss, against R1 off</td><td class="hi learned">+74.98%</td><td class="hi classical">+79.54%</td><td class="hi">&minus;4.56 pp</td></tr>
+          <tr><td>R3 &mdash; offset row, against R1 off</td><td class="learned">&minus;8.48%</td><td class="classical">+4.29%</td><td>&minus;12.77 pp</td></tr>
+          <tr><td>Array loss, 1 &minus; &Sigma;P / 3P<sub>iso</sub></td><td class="hi learned">14.62%</td><td class="hi classical">25.27%</td><td class="hi">&minus;10.65 pp</td></tr>
+          <tr><td>Turbine-free control, drift in &lang;U<sub>d</sub>&rang;</td><td>+0.345% to +0.481%</td><td>0 exactly</td><td>&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stack col">
+      <p class="note">At farm scale, 10.65 percentage points <em>is</em> the quantity wake
+        steering is bought to move. A certificate that cannot see the difference between
+        these two columns is not worth having.</p>
+      <p class="small"><strong>Three honesties, without which this table should not be
+        quoted.</strong> Neither column is validated against data &mdash; the classical
+        solver is the <em>declared referent</em>, not ground truth. The one independent
+        check does not rank them: inflow is sampled 0.25&thinsp;D upstream, where momentum
+        theory's 0.667 is a lower bound, so +16.4% against +24.3% bounds how much upstream
+        induction each produces rather than which is right. And the two now agree closely
+        where the physics is strongest and disagree where it is weakest: R2 sits in a
+        developed wake and they are 4.6&thinsp;pp apart, while R3 sits in the bypass flow
+        beside one and there they differ in <em>sign</em> &mdash; the checkpoint says R3
+        gains 8.5% from its neighbour's blockage, the referent says it loses 4.3%.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stack-lg">
+    <div class="stack col">
+      <div class="eyebrow">Accuracy</div>
+      <h2>The error, attributed rather than assumed</h2>
+      <p>Measured at the fluid-to-fluid seam beside the second turbine, 3.5&thinsp;D
+        downstream of the first, in <strong>interface power</strong> &mdash; the one unit
+        both sides of any seam share. &tau; is an agent's infidelity given the true
+        interface state; the instrument is calibrated before it is trusted.</p>
+    </div>
+
+    <div class="panel tbl-wrap">
+      <table>
+        <caption class="eyebrow" style="text-align:left;padding:14px 14px 4px">Calibration &mdash; a known error injected into the referent</caption>
+        <thead><tr><th>Injected</th><th>&tau; recovered</th><th>&tau; on the untouched side</th></tr></thead>
+        <tbody>
+          <tr><td>&times;1.05</td><td class="hi">0.050000</td><td class="zero">0</td></tr>
+          <tr><td>&times;1.25</td><td class="hi">0.250000</td><td class="zero">0</td></tr>
+          <tr><td>&times;2.00</td><td class="hi">1.000000</td><td class="zero">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel tbl-wrap">
+      <table>
+        <caption class="eyebrow" style="text-align:left;padding:14px 14px 4px">Measurement &mdash; Poseidon-T substituted for the referent</caption>
+        <thead><tr><th>What was swapped</th><th>&tau; on the swapped agent</th><th>&tau; on the other</th></tr></thead>
+        <tbody>
+          <tr><td>the upstream window</td><td class="hi learned">11.58</td><td class="zero">0 exactly</td></tr>
+          <tr><td>the downstream window</td><td class="hi learned">1.12</td><td class="zero">0 exactly</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stack col">
+      <p><strong>The framework catches it, and it names the agent.</strong> At the interface
+        state the reference pair converges to, the checkpoint's interface power is ten times
+        the referent's on the upstream side &mdash; and swapping one side leaves the other's
+        &tau; identically zero, so the number indicts an agent rather than a graph.</p>
+    </div>
+
+    <div class="panel tbl-wrap">
+      <table>
+        <thead><tr><th>Corroborating, from the same seam</th><th>Poseidon-T</th><th>Classical</th></tr></thead>
+        <tbody>
+          <tr><td>&Xi; &mdash; share of the referent's boundary response reproduced</td><td class="hi learned">1.82%</td><td class="classical">100%</td></tr>
+          <tr><td>&beta; &mdash; conditioning of the assembled seam</td><td class="learned">4.25e&minus;5</td><td class="classical">4.24e&minus;3</td></tr>
+          <tr><td>&pi; &mdash; passivity defect</td><td class="learned">3.4e&minus;4</td><td class="classical">0 exactly</td></tr>
+          <tr><td>substitution certificate</td><td class="hi" style="color:var(--warn)">refuse</td><td>&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stack col">
+      <p class="note">And the number is robust where it needs to be. The referent's own
+        viscosity is under-determined by <strong>27&times;</strong> &mdash; the checkpoint
+        behaves like a large-eddy model with a spectral cutoff, so its viscosity is not a
+        number at all &mdash; and &tau; moves only <strong>1.05&times;</strong> across that
+        whole band, 11.58 to 11.03. That is what licenses quoting the 11.58.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stack-lg">
+    <div class="stack col">
+      <div class="eyebrow">Where it does not work</div>
+      <h2>Six things this case study broke</h2>
+      <p class="small">Each carries its worklist number and its status. Real geometry is what
+        made them visible: a schematic rotor hangs off any ring, so it never forces the
+        bond question; a synthetic seam sits at zero, so it never forces the linearization
+        question; a solver you can run at any resolution has a monolith, so it never forces
+        the referent question. And a domain with no distinguished upstream never forces
+        W98 &mdash; a wake has to have somewhere it is not allowed to be.</p>
+    </div>
+
+    <div class="findings">
+      <div class="finding">
+        <div class="tag"><span class="wid">W98</span><span class="status closed">Closed</span></div>
+        <div class="stack-sm">
+          <h3>The composition ran two global operators one window at a time</h3>
+          <p class="small">Transport and pressure both belong to the whole domain, and the
+            march bought both from the per-window API. Each is <em>periodic on its window</em>:
+            a wake reaching a window's outflow edge re-entered that same window's inflow edge,
+            one full circulation every 20 macro-steps, and a disk's elliptic response was
+            smeared across its own 4&thinsp;D box. It manufactured a <strong>25% velocity
+            deficit 3.5&thinsp;D upstream of a lone turbine</strong>, where nothing causes one,
+            and it was worth roughly twice the checkpoint's own disagreement in array loss.
+            A wider halo does not touch it: giving the wrapped strip exactly zero weight in
+            the partition of unity moves the deficit by 0.012. <strong>Nothing asserted its
+            way to this &mdash; it was found by watching the animation above beside the
+            referent's.</strong> The manufactured wake is smooth, bounded, physically shaped
+            and in the right units, and a wake upstream of the only turbine is obvious in one
+            second and invisible in a table.</p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="tag"><span class="wid">W99</span><span class="status open">Open</span></div>
+        <div class="stack-sm">
+          <h3>The body force is dropped silently</h3>
+          <p class="small">The expert wrapper applies <code>force</code> only inside its
+            Galilean branch, so a caller that moves the translation up to the whole domain
+            &mdash; which W98's repair must &mdash; gets a forward pass with no body force,
+            no error and no warning. The same branch pins each window's output to zero mean,
+            which deletes the momentum deficit a disk has just deposited. Both are one line;
+            neither announces itself.</p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="tag"><span class="wid">W93</span><span class="status closed">Closed</span></div>
+        <div class="stack-sm">
+          <h3>The halo declaration was 32&times; short</h3>
+          <p class="small">The record declares a two-cell domain of dependence. Poking a
+            single delta at the seam measures <strong>64</strong> &mdash; the response is
+            nonzero in all 128 seam cells at every amplitude tested, and a 16-cell overlap
+            had been passing on the strength of the 2. A neural operator's receptive field
+            is global <em>by construction</em>, which is a fact about the architecture and
+            not about the physics, so the repair is not a bigger integer: the rule now
+            declines to answer from the record and points at the measurement. <strong>This
+            is the residual W98 could not remove</strong>: after the repair, about 5% of
+            spurious upstream deficit survives, and that part belongs to the checkpoint
+            rather than to the coupling.</p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="tag"><span class="wid">W95</span><span class="status open">Open</span></div>
+        <div class="stack-sm">
+          <h3>A learned expert cannot be its own referent</h3>
+          <p class="small">&tau; is defined against a tightly coupled reference pair. That
+            pair <strong>cannot be built from the checkpoint</strong>: 65 of 96 Jacobian
+            directions sit below the probe's own reproducibility, and Newton diverges from
+            the first iteration under truncation <em>and</em> under damping. Three candidate
+            mechanisms eliminated by measurement, the fourth unnamed. The classical solver
+            is therefore not a convenience here &mdash; it is load-bearing.</p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="tag"><span class="wid">W97</span><span class="status open">Open</span></div>
+        <div class="stack-sm">
+          <h3>Rotor seams are blind by the cell Reynolds number</h3>
+          <p class="small">The normative mechanical effort carries the viscosity and an
+            actuator disk's traction does not, so a field-to-lumped seam is one-sided by a
+            factor of the cell Reynolds number before any expert is chosen. Its substitution
+            certificate is <strong>blind by construction</strong> &mdash; it certifies any
+            replacement of the fluid expert, including one that ignores its boundary data
+            entirely, over a margin 81&times; that agent's own block.</p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="tag"><span class="wid">W94</span><span class="status open">Open</span></div>
+        <div class="stack-sm">
+          <h3>The actuator disk has no expressible bond</h3>
+          <p class="small">A disk is a surface across which the traction jumps, and a surface
+            bond needs the two fluid subdomains to abut &mdash; a cut the framework refuses
+            for a learned one-shot map. Under the overlapping decomposition the checkpoint
+            does support, the disk sits inside the overlap and the coupling is
+            <strong>two-way volumetric</strong>, which the port algebra has no bond for. The
+            simplest, oldest, zero-parameter rotor model there is turns out to be
+            inexpressible against a frozen operator, by two independent routes.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack col" style="padding-top:26px">
+      <p class="note">And one result that is hard rather than incidental: declare the elliptic
+        content at the value the probe measures, and the compiler <strong>refuses the whole
+        graph</strong>. That is the rule behaving correctly &mdash; it refuses to decompose
+        any expert whose response is global, and a globally-receptive pretrained operator is
+        nearly all of them.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stack col">
+    <div class="eyebrow">Reproducing it</div>
+    <h2>Every number traces to one command</h2>
+    <pre><b>python scripts/w93_wake_array.py --steps 60</b>   <span style="opacity:.6"># every number on this page</span>
+<b>python scripts/w93_frames.py --steps 60</b>       <span style="opacity:.6"># the field snapshots above</span>
+<b>python -m pytest tests/test_tier18_wake_array.py -q</b></pre>
+    <p class="small">Artifacts land in <span class="mono">out/w93/</span>. The driver was run
+      from cold and again from a cached state: <strong>1322 numbers compared, 0
+      drifted</strong>. Poseidon-T is bit-deterministic &mdash; two identical calls differ by
+      exactly zero &mdash; so every figure here reproduces from either path.</p>
+    <div class="foot stack-sm">
+      <p class="tiny">Atlas 0.1 &middot; case study <span class="mono">atlas/cases/wake_array.py</span>
+        &middot; full measurement record in <span class="mono">tier0-measurements &sect;18</span>,
+        worklist rows in <span class="mono">gap-worklist Tier 18</span>.</p>
+      <p class="tiny">Expert: <span class="mono">camlab-ethz/Poseidon-T</span>, loaded frozen,
+        never trained. Rotor: classical actuator-disk momentum theory, zero fitted parameters.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+const DATA = /*__FRAMES__*/null;
+
+/* ---------- colour ramp: wake dark & cool, freestream neutral, bypass warm ---- */
+const STOPS = [
+  [0.00, [ 10, 22, 38]],
+  [0.19, [ 16, 60, 92]],
+  [0.38, [ 26,112,120]],
+  [0.52, [125,166,168]],
+  [0.615,[206,214,214]],   /* u = 1.0, the freestream: quiet */
+  [0.79, [214,150, 62]],
+  [1.00, [246,222,168]],
+];
+function ramp(t){
+  t = Math.max(0, Math.min(1, t));
+  for(let i=1;i<STOPS.length;i++){
+    if(t <= STOPS[i][0]){
+      const [a,ca] = STOPS[i-1], [b,cb] = STOPS[i];
+      const f = (t-a)/(b-a);
+      return [0,1,2].map(k => Math.round(ca[k] + f*(cb[k]-ca[k])));
+    }
+  }
+  return STOPS[STOPS.length-1][1];
+}
+const LUT = new Uint8ClampedArray(256*4);
+for(let i=0;i<256;i++){ const c = ramp(i/255); LUT[i*4]=c[0]; LUT[i*4+1]=c[1]; LUT[i*4+2]=c[2]; LUT[i*4+3]=255; }
+
+(function paintRampBar(){
+  const stops = [];
+  for(let i=0;i<=10;i++){ const c = ramp(i/10); stops.push(`rgb(${c[0]},${c[1]},${c[2]}) ${i*10}%`); }
+  document.getElementById('rampbar').style.background = `linear-gradient(90deg, ${stops.join(',')})`;
+  const [lo,hi] = DATA.u_range;
+  document.getElementById('ramplab').textContent = `u = ${lo.toFixed(2)} … ${hi.toFixed(2)}`;
+})();
+
+/* ---------- decode frames ------------------------------------------------- */
+function decode(b64, n){
+  const bin = atob(b64);
+  const out = new Uint8Array(n);
+  for(let i=0;i<n;i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+const G = DATA.geometry;
+const DOM_W = G.NX * G.dx, DOM_H = G.NY * G.dx;
+const RUNS = {};
+for(const k of ['poseidon','reference']){
+  const r = DATA.runs[k];
+  RUNS[k] = {...r, decoded: r.frames.map(f => decode(f, r.nx*r.ny))};
+}
+const NFRAMES = RUNS.poseidon.decoded.length;
+
+function setupCanvas(id, run){
+  const cv = document.getElementById(id);
+  cv.width = run.nx; cv.height = run.ny;
+  const ctx = cv.getContext('2d');
+  const img = ctx.createImageData(run.nx, run.ny);
+  return {ctx, img};
+}
+const A = setupCanvas('cvA', RUNS.poseidon);
+const B = setupCanvas('cvB', RUNS.reference);
+
+function draw(target, run, i){
+  const src = run.decoded[Math.min(i, run.decoded.length-1)];
+  const d = target.img.data;
+  for(let p=0;p<src.length;p++){
+    const q = src[p]*4;
+    d[p*4] = LUT[q]; d[p*4+1] = LUT[q+1]; d[p*4+2] = LUT[q+2]; d[p*4+3] = 255;
+  }
+  target.ctx.putImageData(target.img, 0, 0);
+}
+
+/* ---------- overlays: geometry in domain units (D) ------------------------ */
+const SVGNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs){
+  const n = document.createElementNS(SVGNS, tag);
+  for(const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+}
+function buildOverlay(svg, opts){
+  svg.setAttribute('viewBox', `0 0 ${DOM_W} ${DOM_H}`);
+  svg.innerHTML = '';
+  const gWin = el('g', {}), gSeam = el('g', {}), gRot = el('g', {});
+  G.windows.forEach(w => {
+    const x = w.ox*G.dx, y = w.oy*G.dx, s = G.N*G.dx;
+    gWin.appendChild(el('rect', {x, y, width:s, height:s, fill:'none',
+      stroke:'rgba(255,255,255,.42)', 'stroke-width':0.022, 'stroke-dasharray':'0.13 0.09'}));
+  });
+  /* the overlaps, where two windows both cover the domain */
+  for(let i=0;i<2;i++){
+    const x = (i+1)*G.stride*G.dx;
+    gWin.appendChild(el('rect', {x, y:0, width:G.halo*G.dx, height:DOM_H,
+      fill:'rgba(255,255,255,.10)'}));
+  }
+  gWin.appendChild(el('rect', {x:0, y:G.stride*G.dx, width:DOM_W, height:G.halo*G.dx,
+    fill:'rgba(255,255,255,.10)'}));
+
+  G.rotors.forEach(r => {
+    const y0 = r.y - G.rotor_D/2;
+    gRot.appendChild(el('line', {x1:r.x, y1:y0, x2:r.x, y2:y0+G.rotor_D,
+      stroke:'#F6DEA8', 'stroke-width':0.09, 'stroke-linecap':'butt'}));
+    gRot.appendChild(el('line', {x1:r.x, y1:y0, x2:r.x, y2:y0+G.rotor_D,
+      stroke:'#12202A', 'stroke-width':0.035}));
+    const t = el('text', {x:r.x+0.16, y:y0-0.14, fill:'#F6DEA8',
+      'font-size':0.34, 'font-family':'IBM Plex Mono, monospace', 'font-weight':600});
+    t.textContent = r.id;
+    gRot.appendChild(t);
+  });
+
+  /* seams: the artificial rings the ports actually live on */
+  for(let i=0;i<2;i++){
+    const xa = (i*G.stride + G.N)*G.dx, xb = (i+1)*G.stride*G.dx;
+    [xa, xb].forEach(x => gSeam.appendChild(el('line', {x1:x, y1:0, x2:x, y2:DOM_H,
+      stroke:'rgba(120,220,214,.75)', 'stroke-width':0.018})));
+  }
+  [G.stride*G.dx, (G.stride+G.N)*G.dx].forEach(y =>
+    gSeam.appendChild(el('line', {x1:0, y1:y, x2:DOM_W, y2:y,
+      stroke:'rgba(120,220,214,.75)', 'stroke-width':0.018})));
+
+  if(opts.win) svg.appendChild(gWin);
+  if(opts.seam) svg.appendChild(gSeam);
+  if(opts.rot) svg.appendChild(gRot);
+}
+
+/* ---------- the standalone plan-view diagram ------------------------------ */
+(function planView(){
+  const host = document.getElementById('geom');
+  const svg = el('svg', {viewBox:`-0.55 -0.55 ${DOM_W+1.4} ${DOM_H+1.5}`,
+    width:'100%', style:'display:block'});
+  const text = (cls, x, y, s) => {
+    const t = el('text', {x, y, class:cls});
+    t.textContent = s;
+    return t;
+  };
+
+  /* overlap bands: where two windows both cover the domain */
+  for(let i=0;i<2;i++)
+    svg.appendChild(el('rect', {class:'g-overlap', x:(i+1)*G.stride*G.dx, y:0,
+      width:G.halo*G.dx, height:DOM_H}));
+  svg.appendChild(el('rect', {class:'g-overlap', x:0, y:G.stride*G.dx,
+    width:DOM_W, height:G.halo*G.dx}));
+
+  /* windows */
+  G.windows.forEach(w => {
+    const x = w.ox*G.dx, y = w.oy*G.dx, s = G.N*G.dx;
+    svg.appendChild(el('rect', {class:'g-win', x, y, width:s, height:s}));
+    svg.appendChild(text('t-win', x+0.14, y+0.42, w.name));
+  });
+
+  /* domain */
+  svg.appendChild(el('rect', {class:'g-dom', x:0, y:0, width:DOM_W, height:DOM_H}));
+
+  /* inflow arrows */
+  for(let k=1;k<=6;k++){
+    const y = k*DOM_H/7;
+    svg.appendChild(el('path', {class:'g-arrow', d:`M -0.45 ${y} L -0.08 ${y}`}));
+    svg.appendChild(el('path', {class:'g-arrow',
+      d:`M -0.2 ${y-0.09} L -0.06 ${y} L -0.2 ${y+0.09}`}));
+  }
+  svg.appendChild(text('t-meta', -0.5, -0.18, 'U∞ = 1'));
+
+  /* rotors */
+  G.rotors.forEach(r => {
+    const y0 = r.y - G.rotor_D/2;
+    svg.appendChild(el('rect', {class:'g-rotor', x:r.x-0.05, y:y0,
+      width:0.1, height:G.rotor_D, rx:0.02}));
+    svg.appendChild(text('t-rot', r.x+0.18, y0-0.16, r.id));
+    svg.appendChild(text('t-coord', r.x+0.18, y0+0.16,
+      `(${r.x.toFixed(2)}, ${r.y.toFixed(2)})`));
+  });
+
+  /* the L: the two legs, dimensioned */
+  const [r1, r2, r3] = G.rotors;
+  const dim = (a, b, label) => {
+    svg.appendChild(el('line', {class:'g-dim', x1:a.x, y1:a.y, x2:b.x, y2:b.y}));
+    svg.appendChild(text('t-dim', (a.x+b.x)/2, (a.y+b.y)/2 - 0.12, label));
+  };
+  dim(r1, r2, '3.5 D');
+  dim(r2, r3, '3.5 D');
+
+  /* scale bar */
+  const sy = DOM_H + 0.55;
+  svg.appendChild(el('line', {class:'g-scale', x1:0, y1:sy, x2:1, y2:sy}));
+  svg.appendChild(el('line', {class:'g-scale', x1:0, y1:sy-0.09, x2:0, y2:sy+0.09}));
+  svg.appendChild(el('line', {class:'g-scale', x1:1, y1:sy-0.09, x2:1, y2:sy+0.09}));
+  svg.appendChild(text('t-meta', 1.16, sy+0.11, '1 rotor diameter D'));
+
+  host.appendChild(svg);
+  document.getElementById('geomlegend').textContent =
+    `${G.windows.length} Poseidon-T windows of ${G.N}×${G.N} cells, each spanning ` +
+    `${G.S_LEN} D · overlap ${(G.halo*G.dx).toFixed(2)} D (shaded) · ` +
+    `stride ${(G.stride*G.dx).toFixed(2)} D · rotor D = ${G.rotor_D}, ` +
+    `${G.rotor_cells} cells · macro-step ${G.dt}`;
+})();
+
+/* ---------- readout cells ------------------------------------------------- */
+const readout = document.getElementById('readout');
+G.rotors.forEach(r => {
+  const d = document.createElement('div');
+  d.className = 'cell';
+  d.innerHTML = `<div class="k">${r.id} inflow &lang;U<sub>d</sub>&rang;</div>
+    <div class="v"><span data-a="${r.id}">–</span> <small>P-T</small> /
+    <span data-b="${r.id}">–</span> <small>cls</small></div>`;
+  readout.appendChild(d);
+});
+
+/* ---------- the per-turbine chart ---------------------------------------- */
+function drawChart(){
+  const cv = document.getElementById('chart');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w*dpr; cv.height = h*dpr;
+  const g = cv.getContext('2d');
+  g.setTransform(dpr,0,0,dpr,0,0);
+  g.clearRect(0,0,w,h);
+  const cs = getComputedStyle(document.body);
+  const line = cs.getPropertyValue('--hair').trim();
+  const ink3 = cs.getPropertyValue('--ink-3').trim();
+  const learned = cs.getPropertyValue('--learned').trim();
+  const classical = cs.getPropertyValue('--classical').trim();
+  const L = 44, R = 12, T = 12, Bm = 26;
+  const n = RUNS.poseidon.Ud.R1.length;
+  const x = i => L + (w-L-R) * i/(n-1);
+  const y = v => T + (h-T-Bm) * (1 - (v-0.3)/(1.05-0.3));
+
+  g.strokeStyle = line; g.lineWidth = 1; g.font = '11px "IBM Plex Mono", monospace';
+  g.fillStyle = ink3; g.textAlign = 'right'; g.textBaseline = 'middle';
+  [0.4,0.6,0.8,1.0].forEach(v => {
+    g.beginPath(); g.moveTo(L, y(v)); g.lineTo(w-R, y(v)); g.stroke();
+    g.fillText(v.toFixed(1), L-8, y(v));
+  });
+  g.textAlign = 'center'; g.textBaseline = 'top';
+  [0, 20, 40, 59].forEach(i => g.fillText(String(i), x(i), h-Bm+7));
+  g.fillText('macro-step', (L+w-R)/2, h-10);
+
+  const dash = {R1:[], R2:[5,3], R3:[1.5,3]};
+  [['poseidon', learned, 1], ['reference', classical, 2]].forEach(([k, col, wd]) => {
+    ['R1','R2','R3'].forEach(rid => {
+      const s = RUNS[k].Ud[rid];
+      g.beginPath(); g.setLineDash(dash[rid]); g.strokeStyle = col; g.lineWidth = wd===1?1.9:1.5;
+      g.globalAlpha = wd===1 ? 1 : 0.85;
+      s.forEach((v,i) => i ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v)));
+      g.stroke();
+    });
+  });
+  g.setLineDash([]); g.globalAlpha = 1;
+  document.getElementById('chartlegend').innerHTML =
+    'solid line weight = Poseidon-T · lighter = classical &nbsp;·&nbsp; ' +
+    'R1 solid, R2 dashed, R3 dotted &nbsp;·&nbsp; ' +
+    'R1 and R3 settle near the isolated-turbine value; R2 falls away as the first wake reaches it';
+}
+
+/* ---------- transport ----------------------------------------------------- */
+let frame = 0, playing = true, timer = null;
+const scrub = document.getElementById('scrub');
+const clock = document.getElementById('clock');
+const playBtn = document.getElementById('play');
+scrub.max = String(NFRAMES-1);
+
+function overlayOpts(){
+  return {win: document.getElementById('tWin').checked,
+          seam: document.getElementById('tSeam').checked,
+          rot: document.getElementById('tRot').checked};
+}
+function refreshOverlays(){
+  const o = overlayOpts();
+  buildOverlay(document.getElementById('ovA'), o);
+  buildOverlay(document.getElementById('ovB'), o);
+}
+['tWin','tSeam','tRot'].forEach(id =>
+  document.getElementById(id).addEventListener('change', refreshOverlays));
+
+function show(i){
+  frame = ((i % NFRAMES) + NFRAMES) % NFRAMES;
+  draw(A, RUNS.poseidon, frame);
+  draw(B, RUNS.reference, frame);
+  scrub.value = String(frame);
+  const step = frame * RUNS.poseidon.snap_every;
+  clock.textContent = `step ${String(step).padStart(2,'0')}/${RUNS.poseidon.n_steps} · t = ${(step*G.dt).toFixed(1)}`;
+  G.rotors.forEach(r => {
+    const a = RUNS.poseidon.Ud[r.id][Math.min(step, RUNS.poseidon.Ud[r.id].length-1)];
+    const b = RUNS.reference.Ud[r.id][Math.min(step, RUNS.reference.Ud[r.id].length-1)];
+    document.querySelector(`[data-a="${r.id}"]`).textContent = a.toFixed(3);
+    document.querySelector(`[data-b="${r.id}"]`).textContent = b.toFixed(3);
+  });
+}
+function tick(){ show(frame + 1); }
+function setPlaying(p){
+  playing = p;
+  playBtn.textContent = p ? 'Pause' : 'Play';
+  playBtn.setAttribute('aria-pressed', String(p));
+  if(timer) clearInterval(timer);
+  if(p) timer = setInterval(tick, 180);
+}
+playBtn.addEventListener('click', () => setPlaying(!playing));
+scrub.addEventListener('input', () => { setPlaying(false); show(Number(scrub.value)); });
+
+refreshOverlays();
+show(0);
+drawChart();
+if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches) setPlaying(true);
+else setPlaying(false);
+
+let rt = null;
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawChart, 150); });
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+if(mq.addEventListener) mq.addEventListener('change', () => setTimeout(drawChart, 60));
+/* The chart is a canvas, so its colours are RESOLVED from the tokens rather
+   than referenced -- which means it has to be repainted whenever they change.
+   The media query above catches a change of OS theme; an explicit choice in the
+   viewer stamps data-theme on the root element instead and fires no media
+   event, so watch for that too or the chart keeps the other theme's ink. */
+if(window.MutationObserver){
+  new MutationObserver(() => setTimeout(drawChart, 60)).observe(
+    document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+}
+</script>

@@ -1,0 +1,677 @@
+"""Tier 0 of `gap-worklist`, measured against `reference.WindowNS`.
+
+W1 (fit L), W2 (assemble one real Lambda-tilde) and W3 (the three-way defect
+split) have never been run against a real expert: every graph `atlas/` has
+compiled so far uses a hand-declared ``boundary_response``.  This script runs
+them, on `atlas/cases/window_ns.py`.
+
+Stages, each of which writes its own JSON before the next begins, so a partial
+run is a result rather than a loss:
+
+    s0   develop a base state on the monolith (n = 255) and persist it
+    w2   assemble Lambda-tilde on the 16-mode Fourier basis; kappa, beta,
+         null dim against n_0(Gamma), mu = lambda_min of the symmetric part
+         beside the floored passivity defect pi
+    w1   paired rollout from the base state; fit ||e^n|| against L^n
+    w3   one macro-step split into tau + sigma + gamma against the monolith
+
+Run:  python scripts/tier0_window_ns.py [--stages s0,w2,w1,w3] [--out out/tier0]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import time
+
+import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from atlas import ProbeBudget, compile_scheme                      # noqa: E402
+from atlas.cases import window_ns as W                             # noqa: E402
+from atlas.probe import assemble_seam, operator_drift              # noqa: E402
+
+
+# ---------------------------------------------------------------------------
+# persistence
+# ---------------------------------------------------------------------------
+
+
+class Out:
+    def __init__(self, root: str) -> None:
+        self.root = root
+        os.makedirs(root, exist_ok=True)
+        self.log_path = os.path.join(root, "run.log")
+
+    def say(self, msg: str) -> None:
+        line = f"[{time.strftime('%H:%M:%S')}] {msg}"
+        print(line, flush=True)
+        with open(self.log_path, "a", encoding="utf-8") as fh:
+            fh.write(line + "\n")
+
+    def json(self, name: str, obj) -> None:
+        path = os.path.join(self.root, name + ".json")
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, indent=2, default=_jsonable)
+        self.say(f"wrote {path}")
+
+    def npz(self, name: str, **arrays) -> None:
+        path = os.path.join(self.root, name + ".npz")
+        np.savez_compressed(path, **arrays)
+        self.say(f"wrote {path}")
+
+
+def _jsonable(o):
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    if isinstance(o, (np.floating, np.integer)):
+        return o.item()
+    return str(o)
+
+
+# ---------------------------------------------------------------------------
+# the physics harness -- the system under measurement, not part of `atlas/`
+# ---------------------------------------------------------------------------
+
+
+def body_force(n: int = W.MONO_N, length: float = W.MONO_L,
+               x_d: float = 1.0, y_d: float = 1.0,
+               halfspan: float = 0.5, thickness: float = 0.25,
+               thrust: float = 0.4444) -> np.ndarray:
+    """An actuator strip in the lower-left window, at the wind farm's thrust.
+
+    Frozen rather than read from the local inflow.  A thrust that responds to
+    its own wake is a second feedback loop inside every quantity below, and W3's
+    split would then be measuring two couplings at once.
+    """
+    h = length / n
+    x = (np.arange(n) + 0.5) * h
+    y = (np.arange(n) + 0.5) * h
+    X, Y = np.meshgrid(x, y)
+    g = np.exp(-(((X - x_d) / (0.5 * thickness)) ** 2))
+    g = g / (g.sum(axis=1, keepdims=True) * h + 1e-300)     # unit integral in x
+    fx = -(thrust / (2.0 * halfspan)) * g * (np.abs(Y - y_d) <= halfspan)
+    return fx
+
+
+def tile_force(fx_full: np.ndarray) -> np.ndarray:
+    """[4, n, n] restriction of the global force, tile order = W.TILES order."""
+    return np.stack([W.restrict(fx_full, ix, iy) for (ix, iy, _f) in W.TILES.values()])
+
+
+def tiles_from(u_full, v_full):
+    us = np.stack([W.restrict(u_full, ix, iy) for (ix, iy, _f) in W.TILES.values()])
+    vs = np.stack([W.restrict(v_full, ix, iy) for (ix, iy, _f) in W.TILES.values()])
+    return us, vs
+
+
+def assemble_batch(us, vs):
+    return W.assemble({name: (us[k], vs[k]) for k, name in enumerate(W.TILES)})
+
+
+def make_solvers(nu: float, dt: float):
+    ref = W.load_reference()
+    mono = ref.WindowNS(nu=nu, length=W.MONO_L, n=W.MONO_N, cfl=0.4,
+                        transmission="dirichlet")
+    tile = ref.WindowNS(nu=nu, length=W.WINDOW_L, n=W.WINDOW_N, cfl=0.4,
+                        transmission="dirichlet")
+    return mono, tile
+
+
+def mono_step(mono, u, v, dt, fx, ring=None):
+    """One monolith macro-step. ``ring`` None holds the field's own ring."""
+    bc = None if ring is None else (ring[0][None], ring[1][None])
+    u1, v1 = mono.step_batch(u[None], v[None], dt, bc0=bc, bc1=None,
+                             force=(fx[None], np.zeros_like(fx)[None]))
+    return u1[0], v1[0]
+
+
+def composed_step(tile, us, vs, dt, fxs, rings=None):
+    """One composed macro-step: four windows, then additive assembly.
+
+    ``rings`` is the ``(ring_u, ring_v)`` pair per tile; None takes each tile's
+    own ring, which is the lagged one-pass exchange -- and on a shared-layer
+    tiling under a pinned Dirichlet ring that FREEZES the seam layer, which is
+    why the probed-DtN trace update below is not decoration.
+    """
+    bc = None if rings is None else (rings[0], rings[1])
+    u1, v1 = tile.step_batch(us, vs, dt, bc0=bc, bc1=None,
+                             force=(fxs, np.zeros_like(fxs)))
+    return u1, v1
+
+
+# ---------------------------------------------------------------------------
+# the interface problem, driven by the probed operator
+# ---------------------------------------------------------------------------
+
+TILE_ORDER = list(W.TILES)
+
+
+def seam_cells(seam_id: str):
+    """Monolith (row, col) index arrays for the 128 cells of a seam layer."""
+    n, s = W.WINDOW_N, W.TILE_STRIDE
+    if seam_id == "sx0":
+        return (np.arange(0, n), np.full(n, s))
+    if seam_id == "sx1":
+        return (np.arange(s, s + n), np.full(n, s))
+    if seam_id == "sy0":
+        return (np.full(n, s), np.arange(0, n))
+    if seam_id == "sy1":
+        return (np.full(n, s), np.arange(s, s + n))
+    raise KeyError(seam_id)
+
+
+def seam_component(seam_id: str) -> str:
+    return "u" if seam_id.startswith("sx") else "v"
+
+
+def probe_all_seams(graph, experts, budget, probe_state):
+    """Assemble every seam operator, returning {seam_id: SeamOperator}."""
+    from atlas.compiler import _derive_transfer, _Context          # noqa: PLC2701
+    from atlas.envelope import EnvelopeStamp
+    from atlas.holes import HoleLedger
+    from atlas.verdict import DecisionRecord
+
+    ctx = _Context(graph=graph, budget=None, probe_budget=budget, references={},
+                   record=DecisionRecord(), stamp=EnvelopeStamp(), holes=HoleLedger(),
+                   probe_state=probe_state, depth=0)
+    ops = {}
+    for conn in graph.connections:
+        transfer = _derive_transfer(ctx, conn)
+        ops[conn.seam_id] = (assemble_seam(graph, conn, transfer, budget, {},
+                                           expected_null_dim=conn.expected_null_dim,
+                                           probe_state=probe_state), transfer)
+    return ops
+
+
+def interface_correction(ops, experts, rcond: float = 1e-10):
+    """delta = -S^+ (sum_i flux_i(0)) per seam, in V, plus the residual norms.
+
+    The zero-probe flux is the affine part chi, so the Newton correction to the
+    current trace solves ``S delta = -sum_i Lambda_i(lambda_0)`` exactly as
+    `probed-dtn-coupling` 2.1 writes it, with the pseudo-inverse standing in for
+    the constrained solve where S is singular.
+    """
+    out = {}
+    for seam_id, (op, transfer) in ops.items():
+        r_M = np.zeros(transfer.space.dim)
+        zero_flux_V = {}
+        for agent_id in op.blocks:
+            port = f"{_face_of(seam_id, agent_id)}:MECH"
+            f0 = np.asarray(experts[agent_id].respond(port, np.zeros(W.WINDOW_N)), float)
+            zero_flux_V[agent_id] = f0
+            r_M += transfer.prolongations[agent_id].adjoint(transfer.space) @ f0
+        delta_M = -np.linalg.pinv(op.S, rcond=rcond) @ r_M
+        first = next(iter(op.blocks))
+        delta_V = transfer.prolongations[first].prolong(delta_M, transfer.space)
+        out[seam_id] = {
+            "delta_M": delta_M,
+            "delta_V": delta_V,
+            "residual_M": float(np.linalg.norm(r_M)),
+            "residual_after": float(np.linalg.norm(op.S @ delta_M + r_M)),
+            "jump_V": float(np.linalg.norm(sum(zero_flux_V.values()))),
+        }
+    return out
+
+
+def _face_of(seam_id: str, agent_id: str) -> str:
+    for (a_id, a_face), (b_id, b_face) in [W.SEAMS[seam_id]]:
+        if a_id == agent_id:
+            return a_face
+        if b_id == agent_id:
+            return b_face
+    raise KeyError((seam_id, agent_id))
+
+
+def apply_trace(u_full, v_full, corrections):
+    """Write the corrected trace onto the shared seam layers of the global field."""
+    u_full, v_full = u_full.copy(), v_full.copy()
+    for seam_id, c in corrections.items():
+        rows, cols = seam_cells(seam_id)
+        target = u_full if seam_component(seam_id) == "u" else v_full
+        target[rows, cols] += c["delta_V"]
+    return u_full, v_full
+
+
+# ---------------------------------------------------------------------------
+# the scheme: one composed macro-step with a probed-DtN trace update
+# ---------------------------------------------------------------------------
+
+
+def scheme_step(tile, u_full, v_full, dt, fx_full, budget, probe_state,
+                ops=None, flux_mode="diffusive", nu=W.NU, correct=True):
+    """One macro-step of the composed system under the probed-DtN scheme.
+
+    ``ops`` caches the assembled seam operators.  Passing them back in is §6's
+    refresh-every-K economics, and the drift between two assemblies is W30's
+    number.  ``correct=False`` is the one-pass baseline: no interface solve at
+    all, which on a pinned Dirichlet ring leaves the seam layer frozen.
+    """
+    corrections = {}
+    if correct:
+        graph, experts = W.build(u_full, v_full, dt=dt, flux_mode=flux_mode, nu=nu)
+        if ops is None:
+            ops = probe_all_seams(graph, experts, budget, probe_state)
+        else:
+            # re-bind the cached operators to the current experts: S is cached,
+            # the affine part chi is not, because chi is the state.
+            ops = {k: (op, tr) for k, (op, tr) in ops.items()}
+        corrections = interface_correction(ops, experts)
+        u_full, v_full = apply_trace(u_full, v_full, corrections)
+    us, vs = tiles_from(u_full, v_full)
+    fxs = tile_force(fx_full)
+    us1, vs1 = composed_step(tile, us, vs, dt, fxs)
+    ua, va = assemble_batch(us1, vs1)
+    return ua, va, ops, corrections
+
+
+def rel_l2(a, b, a2=None, b2=None) -> float:
+    num = np.sum((a - b) ** 2)
+    den = np.sum(b ** 2)
+    if a2 is not None:
+        num += np.sum((a2 - b2) ** 2)
+        den += np.sum(b2 ** 2)
+    return float(np.sqrt(num / den))
+
+
+def streamfunction_blob(amp: float, x0: float = 0.5, y0: float = 1.0, r: float = 0.15):
+    """A divergence-free perturbation: u = d(psi)/dy, v = -d(psi)/dx.
+
+    Divergence-free by construction, so the perturbation does not inject a
+    pressure transient that the projection would remove in the first sub-step
+    and that would then be mistaken for decay.
+    """
+    h, n = W.H, W.MONO_N
+    g = (np.arange(n) + 0.5) * h
+    X, Y = np.meshgrid(g, g)
+    psi = amp * np.exp(-(((X - x0) ** 2 + (Y - y0) ** 2) / r ** 2))
+    du = np.gradient(psi, h, axis=0)
+    dv = -np.gradient(psi, h, axis=1)
+    return du, dv
+
+
+# ---------------------------------------------------------------------------
+# S0 -- the base state
+# ---------------------------------------------------------------------------
+
+
+def stage_s0(out: Out, t_dev: float = 5.0, dt: float = W.MACRO_DT, nu: float = W.NU):
+    mono, _tile = make_solvers(nu, dt)
+    fx = body_force()
+    u = np.full((W.MONO_N, W.MONO_N), W.U_INF)
+    v = np.zeros_like(u)
+    n_steps = int(round(t_dev / dt))
+    hist = []
+    t0 = time.perf_counter()
+    for k in range(n_steps):
+        u_prev, v_prev = u, v
+        u, v = mono_step(mono, u, v, dt, fx)
+        d = rel_l2(u, u_prev, v, v_prev) / dt
+        hist.append(d)
+        if k % 20 == 0 or k == n_steps - 1:
+            out.say(f"  s0 step {k + 1}/{n_steps}  |dU/dt|/|U| = {d:.3e}")
+    j = int(1.0 / W.H)
+    out.npz("s0_state", u=u, v=v, fx=fx)
+    out.json("s0", {
+        "t_dev": t_dev, "dt": dt, "nu": nu, "n": W.MONO_N, "h": W.H,
+        "seconds": time.perf_counter() - t0,
+        "steady_residual_final": hist[-1],
+        "steady_residual_history": hist,
+        "centreline_u": {str(x): float(u[j, int(x / W.H)])
+                         for x in (0.5, 0.9, 1.2, 1.5, 2.0, 2.5, 3.0)},
+        "seam_x": (W.TILE_STRIDE + 0.5) * W.H,
+        "substeps_per_macro_step": mono.last_substeps,
+        "note": "monolith n=255 with a frozen actuator strip at x=1, y=1; "
+                "pinned Dirichlet ring on all four domain faces",
+    })
+    return u, v, fx
+
+
+# ---------------------------------------------------------------------------
+# W2 -- assemble one real Lambda-tilde
+# ---------------------------------------------------------------------------
+
+
+def stage_w2(out: Out, u, v, dt=W.MACRO_DT, nu=W.NU, fd_steps=(1e-2, 1e-4, 1e-6, 1e-8)):
+    result = {"probe_state": "developed wake, t = t_dev", "dim_M": W.M_EFF, "dt": dt}
+
+    # (a) the finite-difference step is CHOSEN, from a sweep, not defaulted.
+    sweep = []
+    for s in fd_steps:
+        ops = probe_all_seams(*W.build(u, v, dt=dt, nu=nu),
+                              ProbeBudget(fd_step=s), "fd sweep")
+        op = ops["sx0"][0]
+        sweep.append({"fd_step": s, "beta": op.beta, "kappa": op.kappa,
+                      "null_dim": op.null_dim, "mu": op.passivity_lambda_min})
+        out.say(f"  w2 fd sweep step={s:.0e} beta={op.beta:.6e} kappa={op.kappa:.4f}")
+    result["fd_step_sweep"] = sweep
+    fd = 1e-6
+    result["fd_step_used"] = fd
+    out.json("w2", result)
+
+    # (b) the assembly proper, in both flux conventions.
+    for mode in ("diffusive", "momentum"):
+        graph, experts = W.build(u, v, dt=dt, nu=nu, flux_mode=mode)
+        ops = probe_all_seams(graph, experts, ProbeBudget(fd_step=fd), result["probe_state"])
+        per_seam = {}
+        for seam_id, (op, tr) in ops.items():
+            sv = np.linalg.svd(op.S, compute_uv=False)
+            per_seam[seam_id] = {
+                **op.as_dict(),
+                "singular_values": sv,
+                "asymmetry": float(np.linalg.norm(op.S - op.S.T) / np.linalg.norm(op.S)),
+                "S_times_constant_mode_norm": float(np.linalg.norm(op.S[:, 0])),
+                "alpha_star_diagonal": np.diag(op.S),
+                "S": op.S,
+            }
+        result[f"seams_{mode}"] = per_seam
+        out.json("w2", result)
+
+    # (c) do the two flux conventions give the same assembled operator?
+    a = result["seams_diffusive"]["sx0"]["S"]
+    b = result["seams_momentum"]["sx0"]["S"]
+    result["flux_convention_agreement"] = {
+        "rel_diff_assembled": float(np.linalg.norm(np.array(a) - np.array(b))
+                                    / np.linalg.norm(np.array(a))),
+        "note": "sections 2.2 and 4.1 of probed-dtn-coupling propose different fluxes; "
+                "this is how far apart they land on the assembled seam operator",
+    }
+
+    # (d) the two controls that pin the sign convention and localize the defect.
+    controls = {}
+    z = np.zeros((W.MONO_N, W.MONO_N))
+    for label, (bu, bv) in (("zero-state (Stokes limit)", (z, z)),
+                            ("uniform flow", (np.full_like(z, W.U_INF), z))):
+        ops = probe_all_seams(*W.build(bu, bv, dt=dt, nu=nu),
+                              ProbeBudget(fd_step=fd), label)
+        op = ops["sx0"][0]
+        controls[label] = {
+            "beta": op.beta, "kappa": op.kappa, "null_dim": op.null_dim,
+            "mu": op.passivity_lambda_min, "pi": op.passivity_defect,
+            "asymmetry": float(np.linalg.norm(op.S - op.S.T) / np.linalg.norm(op.S)),
+            "blocks": {k: {"beta": b.beta, "kappa": b.kappa,
+                           "mu": b.passivity_lambda_min, "pi": b.passivity_defect}
+                       for k, b in op.blocks.items()},
+        }
+        out.say(f"  w2 control {label}: mu={op.passivity_lambda_min:+.4e} "
+                f"beta={op.beta:.4e} kappa={op.kappa:.3f} null={op.null_dim}")
+    result["controls"] = controls
+
+    # (e) W30: operator drift over K macro-steps, one extra assembly.
+    mono, tile = make_solvers(nu, dt)
+    fx = body_force()
+    graph, experts = W.build(u, v, dt=dt, nu=nu)
+    ops0 = probe_all_seams(graph, experts, ProbeBudget(fd_step=fd), "t")
+    uk, vk = u.copy(), v.copy()
+    K = 10
+    for _ in range(K):
+        uk, vk, ops0_cached, _c = scheme_step(tile, uk, vk, dt, fx,
+                                              ProbeBudget(fd_step=fd), "t", ops=ops0, nu=nu)
+    opsK = probe_all_seams(*W.build(uk, vk, dt=dt, nu=nu),
+                           ProbeBudget(fd_step=fd), "t + K dt")
+    result["operator_drift_W30"] = {
+        "K": K, "dt": dt,
+        "per_seam": {s: {"drift": operator_drift(ops0[s][0].S, opsK[s][0].S),
+                         "relative": operator_drift(ops0[s][0].S, opsK[s][0].S)
+                                     / float(np.linalg.norm(ops0[s][0].S, 2))}
+                     for s in ops0},
+    }
+    out.json("w2", result)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# W1 -- fit L from a paired rollout
+# ---------------------------------------------------------------------------
+
+
+def _roll(tile, mono, u, v, fx, dt, n_steps, budget, nu, refresh, composed=True, label="",
+          correct=False):
+    """Roll one trajectory, returning the global field at every macro-step."""
+    us, vs = [u.copy()], [v.copy()]
+    ops = None
+    for k in range(n_steps):
+        if composed:
+            if refresh and k % refresh == 0:
+                ops = None                      # re-probe: S is a property of the state
+            u, v, ops, _c = scheme_step(tile, u, v, dt, fx, budget, f"{label} step {k}",
+                                        ops=ops, nu=nu, correct=correct)
+        else:
+            u, v = mono_step(mono, u, v, dt, fx)
+        us.append(u.copy())
+        vs.append(v.copy())
+    return us, vs
+
+
+def _fit_L(errors, dt):
+    """Least squares on log ||e^n|| against n, with the slope's standard error."""
+    e = np.asarray(errors, dtype=float)
+    good = np.isfinite(e) & (e > 0)
+    n = np.arange(e.size)[good]
+    y = np.log(e[good])
+    if n.size < 3:
+        return None
+    A = np.column_stack([n.astype(float), np.ones(n.size)])
+    coef, *_ = np.linalg.lstsq(A, y, rcond=None)
+    resid = y - A @ coef
+    dof = max(1, n.size - 2)
+    s2 = float(resid @ resid) / dof
+    cov = s2 * np.linalg.inv(A.T @ A)
+    slope, se = float(coef[0]), float(np.sqrt(cov[0, 0]))
+    L = float(np.exp(slope))
+    return {
+        "L": L,
+        "L_stderr": float(L * se),
+        "L_ci95": [float(np.exp(slope - 1.96 * se)), float(np.exp(slope + 1.96 * se))],
+        "eta": L - 1.0,
+        "growth_rate_per_time": float(slope / dt),
+        "n_points": int(n.size),
+        "log_residual_rms": float(np.sqrt(s2)),
+    }
+
+
+def stage_w1(out, u, v, fx, dt=W.MACRO_DT, nu=W.NU, n_steps=40, refresh=10,
+             amplitudes=(1e-3, 1e-4)):
+    """Fit L for three maps, because L is a property of a SCHEME, not a problem.
+
+    ``monolith``     the reference map, so the graph's own amplification is known
+    ``one-pass``     the lagged Dirichlet exchange the vault actually runs
+    ``probed-DtN``   the construction under test, kept even though W3 shows its
+                     interface condition is mis-specified -- a number for a
+                     scheme that is wrong is still the number that says so
+    """
+    mono, tile = make_solvers(nu, dt)
+    budget = ProbeBudget(fd_step=1e-6)
+    result = {"dt": dt, "n_steps": n_steps, "refresh_every": refresh,
+              "perturbation": "divergence-free streamfunction blob at x=0.5, y=1.0, r=0.15",
+              "note": "L is fitted per SCHEME; e^n is the relative L2 gap between a "
+                      "perturbed and an unperturbed trajectory of the SAME scheme"}
+
+    variants = (("monolith", dict(composed=False)),
+                ("one-pass", dict(composed=True, correct=False)),
+                ("probed-DtN", dict(composed=True, correct=True)))
+
+    for key, kw in variants:
+        steps = n_steps if key != "probed-DtN" else min(n_steps, 20)
+        ref_traj = _roll(tile, mono, u, v, fx, dt, steps, budget, nu, refresh,
+                         label=f"w1 {key} base", **kw)
+        per_amp = {}
+        for amp in amplitudes:
+            du, dv = streamfunction_blob(amp)
+            traj = _roll(tile, mono, u + du, v + dv, fx, dt, steps, budget, nu, refresh,
+                         label=f"w1 {key} pert", **kw)
+            errs = [rel_l2(traj[0][k], ref_traj[0][k], traj[1][k], ref_traj[1][k])
+                    for k in range(steps + 1)]
+            fit = _fit_L(errs, dt)
+            per_amp["%.0e" % amp] = {"errors": errs, "fit": fit}
+            out.say("  w1 %-11s amp=%.0e n=%d: e0=%.3e e_end=%.3e L=%.6f +/- %.2g"
+                    % (key, amp, steps, errs[0], errs[-1], fit["L"], fit["L_stderr"]))
+        result[key] = per_amp
+        out.json("w1", result)
+
+    op2 = {"deficit_t2": 0.093, "deficit_t20": 0.259, "dt_macro": 0.25,
+           "n_macro_steps": int(round((20.0 - 2.0) / 0.25))}
+    op2["L_implied"] = float((op2["deficit_t20"] / op2["deficit_t2"])
+                             ** (1.0 / op2["n_macro_steps"]))
+    op2["eta_implied"] = op2["L_implied"] - 1.0
+    op2["growth_rate_per_time"] = float(np.log(op2["L_implied"]) / op2["dt_macro"])
+    op2["note"] = ("OP-2's recorded centreline-deficit drift, 9.3% at t=2 rising to "
+                   "25.9% at t=20 on the PERIODIC-window configuration at dt=0.25. "
+                   "Converted to a per-macro-step amplification for comparison; the "
+                   "configuration differs from this one and the comparison is stated "
+                   "as such rather than as a match")
+    result["op2_recorded_drift"] = op2
+    out.json("w1", result)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# W3 -- the three-way split of one macro-step's defect
+# ---------------------------------------------------------------------------
+
+
+def stage_w3(out, u, v, fx, dt=W.MACRO_DT, nu=W.NU):
+    mono, tile = make_solvers(nu, dt)
+    budget = ProbeBudget(fd_step=1e-6)
+    fxs = tile_force(fx)
+
+    u_ref, v_ref = mono_step(mono, u, v, dt, fx)
+
+    # (1) tau -- every window given the EXACT ring, ramped t^n -> t^{n+1}
+    us, vs = tiles_from(u, v)
+    r0u, r0v = tiles_from(u, v)
+    r1u, r1v = tiles_from(u_ref, v_ref)
+    ut, vt = tile.step_batch(us, vs, dt, bc0=(r0u, r0v), bc1=(r1u, r1v),
+                             force=(fxs, np.zeros_like(fxs)))
+    u_tau, v_tau = assemble_batch(ut, vt)
+    tau = rel_l2(u_tau, u_ref, v_tau, v_ref)
+
+    # (2) the scheme as it actually runs: probed-DtN trace, direct solve
+    u_c, v_c, ops, corr = scheme_step(tile, u, v, dt, fx, budget, "w3", nu=nu)
+    total = rel_l2(u_c, u_ref, v_c, v_ref)
+    sigma = rel_l2(u_c, u_tau, v_c, v_tau)
+
+    # (3) gamma -- the interface SOLVE's own defect.
+    u_1p, v_1p, _o, _c = scheme_step(tile, u, v, dt, fx, budget, "w3 one-pass",
+                                     nu=nu, correct=False)
+    gamma_direct = max(c["residual_after"] / max(c["residual_M"], 1e-300)
+                       for c in corr.values())
+    one_pass_total = rel_l2(u_1p, u_ref, v_1p, v_ref)
+    gamma_one_pass = rel_l2(u_1p, u_c, v_1p, v_c)
+
+    # (4) W28: the partition-of-unity identity residual
+    ones = {name: (np.ones((W.WINDOW_N, W.WINDOW_N)), np.ones((W.WINDOW_N, W.WINDOW_N)))
+            for name in W.TILES}
+    pou_u, _pou_v = W.assemble(ones)
+    pou_residual = float(np.abs(pou_u - 1.0).max())
+
+    sigma_one_pass = rel_l2(u_1p, u_tau, v_1p, v_tau)
+
+    # (3b) THE DECISIVE DIAGNOSTIC. Does the TRUE trace satisfy the interface
+    # condition the construction solves?  If it does not, solving that condition
+    # exactly moves the trace away from the truth, however well S is assembled.
+    graph_d, experts_d = W.build(u, v, dt=dt, nu=nu)
+    diag = {}
+    for seam_id, (op, tr) in ops.items():
+        rows, cols = seam_cells(seam_id)
+        comp = seam_component(seam_id)
+        lam_true = (u_ref if comp == "u" else v_ref)[rows, cols]
+        lam_lag = (u if comp == "u" else v)[rows, cols]
+
+        def resid(offset, seam_id=seam_id, op=op, tr=tr):
+            r = np.zeros(tr.space.dim)
+            for aid in op.blocks:
+                f = np.asarray(experts_d[aid].respond(
+                    f"{_face_of(seam_id, aid)}:MECH", offset), float)
+                r += tr.prolongations[aid].adjoint(tr.space) @ f
+            return float(np.linalg.norm(r))
+
+        first = next(iter(op.blocks))
+        d_probed = tr.prolongations[first].prolong(
+            corr[seam_id]["delta_M"], tr.space)
+        diag[seam_id] = {
+            "residual_at_lagged_trace": resid(np.zeros(W.WINDOW_N)),
+            "residual_at_TRUE_trace": resid(lam_true - lam_lag),
+            "residual_at_probed_trace": resid(d_probed),
+            "true_trace_move_inf": float(np.abs(lam_true - lam_lag).max()),
+            "probed_trace_move_inf": float(np.abs(d_probed).max()),
+            "overshoot_ratio": float(np.abs(d_probed).max()
+                                     / max(np.abs(lam_true - lam_lag).max(), 1e-300)),
+        }
+
+    result = {
+        "depth": 0,
+        "dt": dt,
+        "reference": "reference.WindowNS n=255 monolith, identical discretization",
+        "primary_scheme": "one-pass lagged Dirichlet exchange",
+        "defect_total_relative_L2": one_pass_total,
+        "tau_agent": tau,
+        "sigma_transmission": sigma_one_pass,
+        "interface_condition_diagnostic": diag,
+        "probed_dtn_variant": {
+            "defect_total_relative_L2": total,
+            "sigma_transmission": sigma,
+            "note": "solving the flux-balance condition exactly makes the composed "
+                    "step WORSE than not solving it; see interface_condition_diagnostic",
+        },
+        "gamma_solve_relative_residual": gamma_direct,
+        "gamma_one_pass_field": gamma_one_pass,
+        "one_pass_total_defect": one_pass_total,
+        "sum_tau_sigma_one_pass": tau + sigma_one_pass,
+        "interface_residual_per_seam": {k: {"before": c["residual_M"],
+                                            "after": c["residual_after"],
+                                            "flux_jump_V": c["jump_V"]}
+                                        for k, c in corr.items()},
+        "assembly_certificate_W28": {
+            "pou_identity_residual": pou_residual,
+            "norm_A": None,
+            "note": "the identity residual is machine zero by construction on a "
+                    "shared-layer tiling with chi = 1/(owner count); ||A|| is NOT "
+                    "computed here and W2's second half stays open",
+        },
+    }
+    out.say("  w3 one-pass: total=%.4e tau=%.4e sigma=%.4e | probed-DtN total=%.4e "
+            "| gamma(direct residual)=%.2e" % (one_pass_total, tau, sigma_one_pass,
+                                               total, gamma_direct))
+    out.json("w3", result)
+    return result
+
+
+# ---------------------------------------------------------------------------
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--stages", default="s0,w2,w1,w3")
+    ap.add_argument("--out", default=os.path.join("out", "tier0"))
+    ap.add_argument("--t-dev", type=float, default=5.0)
+    ap.add_argument("--dt", type=float, default=W.MACRO_DT)
+    ap.add_argument("--w1-steps", type=int, default=40)
+    a = ap.parse_args(argv)
+
+    out = Out(a.out)
+    stages = [s.strip() for s in a.stages.split(",") if s.strip()]
+    out.say("stages: %s   expert: %s" % (stages, W.build_repo()))
+
+    state = os.path.join(a.out, "s0_state.npz")
+    if "s0" in stages:
+        u, v, fx = stage_s0(out, t_dev=a.t_dev, dt=a.dt)
+    else:
+        d = np.load(state)
+        u, v, fx = d["u"], d["v"], d["fx"]
+        out.say("loaded base state from %s" % state)
+
+    if "w2" in stages:
+        stage_w2(out, u, v, dt=a.dt)
+    if "w1" in stages:
+        stage_w1(out, u, v, fx, dt=a.dt, n_steps=a.w1_steps)
+    if "w3" in stages:
+        stage_w3(out, u, v, fx, dt=a.dt)
+    out.say("done")
+
+
+if __name__ == "__main__":
+    main()
