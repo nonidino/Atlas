@@ -49,6 +49,9 @@ __all__ = [
     "PartitionOfUnity", "GridPartitionOfUnity", "AssemblyCertificate",
     "AssemblyCondition", "certify", "blend_defect", "blend_variance",
     "sigma_halo_bound", "POU_TOL", "CONVEX_TOL", "C_MU_HALO",
+    # W100 -- L6/C2, the conservative-assembly condition and its operator.
+    "ConstraintProjection", "ProjectedAssembly", "L6_C1", "L6_C2",
+    "PROJECTION_SCOPES", "PROJECTION_STAGES",
 ]
 
 #: The partition-of-unity identity is exact arithmetic, not an approximation.
@@ -82,6 +85,33 @@ CONVEX_TOL = 1e-12
 C_MU_HALO = 1.2
 
 
+def _multiplicity_report(acc: np.ndarray) -> dict[str, Any]:
+    """W58's verdict, from a per-cell count of how many subdomains claim it.
+
+    Split out so the dense and the grid partition cannot answer the same
+    geometric question two different ways -- the failure mode `cut_defect_bound`
+    itself is an instance of.
+    """
+    cont = acc > 0.0
+    shared = int(np.count_nonzero(acc > 1.0))
+    top = int(acc.max()) if acc.size else 0
+    return {
+        "max_multiplicity": top,
+        "shared_cells": shared,
+        "contaminated_cells": int(np.count_nonzero(cont)),
+        "shared_fraction": (shared / int(np.count_nonzero(cont))
+                            if np.any(cont) else 0.0),
+        "disjoint": bool(top <= 1),
+        "note": ("the contaminated sets are pairwise disjoint, so the reference-free "
+                 "neighbour disagreement EQUALS the max form of L2/C2's bound (W58)"
+                 if top <= 1 else
+                 f"{shared} cells are contaminated for more than one subdomain (up to "
+                 f"{top} at once), so the reference-free surrogate is NOT provably "
+                 "equal to the max form of L2/C2's bound. Any agreement between them "
+                 "here is measured, not derived (W58)"),
+    }
+
+
 @dataclass
 class PartitionOfUnity:
     """Restrictions and weights, in the form the identity is checkable from.
@@ -104,6 +134,14 @@ class PartitionOfUnity:
     #: nothing here can derive it.  Absent, ``contaminated_weight`` returns None
     #: and the sigma bound decertifies rather than assuming the assembly is clean.
     contaminated: dict[str, np.ndarray] | None = None
+    #: **W54.**  How wide chi's ramp is, in cells, and what shape it has.  Not a
+    #: check and not used by any rule: it is the harness parameter the emitted
+    #: defect has to carry, because a convex partition at full weight right up to
+    #: the artificial edge is perfectly admissible and costs a factor of 200 in
+    #: tau against a ramped one (section 9.1's box).  R11 will not tell you that
+    #: and neither will the identity residual.
+    ramp_cells: int | None = None
+    profile: str = ""
 
     def identity_residual(self) -> float:
         """|| sum_i R_i^T chi_i R_i - I ||, the one-line test."""
@@ -194,6 +232,39 @@ class PartitionOfUnity:
             acc += R.T @ (chi * bad)
         return float(acc.max())
 
+    def contaminated_multiplicity(self) -> dict[str, Any] | None:
+        """**W58's decidable check.** How many subdomains' contaminated sets a cell is in.
+
+        `probe.neighbour_disagreement` -- the reference-free surrogate for
+        L2/C2's cut criterion -- equals the MAX form of `restriction_defect_bound`
+        exactly when the agents' contaminated sets are pairwise disjoint, because
+        then at most one ``D_i`` is nonzero at each cell and the max over
+        neighbours is the max over agents.  That is a statement about *geometry*
+        and nothing else, so it is decidable here, from the ``contaminated``
+        declaration W49's ``Pi`` already needs, with no solve of any kind.
+
+        Returns ``max_multiplicity`` (the largest number of subdomains claiming
+        one cell as contaminated), ``shared_cells`` (how many cells more than one
+        claims), ``contaminated_cells`` and ``disjoint``.  ``None`` when the
+        partition declares no contaminated sets, which is the same discipline
+        ``contaminated_weight`` keeps: the condition is undecidable rather than
+        assumed.
+
+        Measured on the four-window tiling the surrogate was calibrated on:
+        1120 shared cells, so the two forms are NOT provably equal there -- and
+        they agreed to 1.00007 anyway, which is the reason this check exists.
+        Agreement without the hypothesis is luck, and luck does not transfer to
+        a bigger tiling, where the shared count grows with the interface count.
+        """
+        if self.contaminated is None:
+            return None
+        acc = np.zeros(self.n_global)
+        for key, R in self.restrictions.items():
+            R = np.asarray(R, dtype=float)
+            bad = np.asarray(self.contaminated[key], dtype=bool).reshape(-1)
+            acc += R.T @ bad.astype(float)
+        return _multiplicity_report(acc)
+
     def chi_min(self) -> float:
         """min_ij chi_ij: the whole of L6/C1's hypothesis, in one number.
 
@@ -281,6 +352,9 @@ class GridPartitionOfUnity:
     weights: dict[str, np.ndarray]
     kind: str = "partition-of-unity"
     contaminated: dict[str, np.ndarray] | None = None
+    #: W54 -- see PartitionOfUnity.ramp_cells.
+    ramp_cells: int | None = None
+    profile: str = ""
 
     def _accumulate(self, power: int = 1) -> np.ndarray:
         acc = np.zeros(self.n_global)
@@ -309,6 +383,16 @@ class GridPartitionOfUnity:
             bad = np.asarray(self.contaminated[key], dtype=bool).reshape(-1)
             np.add.at(acc, np.asarray(idx).reshape(-1), chi * bad)
         return float(acc.max())
+
+    def contaminated_multiplicity(self) -> dict[str, Any] | None:
+        """W58 -- see PartitionOfUnity.contaminated_multiplicity."""
+        if self.contaminated is None:
+            return None
+        acc = np.zeros(self.n_global)
+        for key, idx in self.indices.items():
+            bad = np.asarray(self.contaminated[key], dtype=bool).reshape(-1)
+            np.add.at(acc, np.asarray(idx).reshape(-1), bad.astype(float))
+        return _multiplicity_report(acc)
 
     def chi_min(self) -> float:
         return float(min(np.asarray(w, dtype=float).min() for w in self.weights.values()))
@@ -373,6 +457,278 @@ L6_C1 = (
 )
 
 
+
+#: L6/C2, the CONSERVATIVE-assembly condition, stated once for the same reason
+#: `L6_C1` is: the compiler, the certificate and the case studies quote these
+#: words rather than three paraphrases of them.
+#:
+#: L6/C1 and L6/C2 are about different things and neither implies the other.  C1
+#: is about ACCURACY -- the blend is no worse than what it blends -- and it is
+#: satisfied by every convex partition in this vault.  C2 is about a CONSTRAINT,
+#: and it is violated by every one of them.
+L6_C2 = (
+    "L6/C2 -- the conservative-assembly condition. Let C be a LINEAR constraint "
+    "each agent enforces on its own subdomain, so C u_i = 0 for every i. A "
+    "partition-of-unity blend does NOT inherit it. Cellwise, with sum_i chi_i = 1, "
+    "C(sum_i chi_i u_i) = sum_i [C, chi_i] u_i -- the sum of the COMMUTATORS of the "
+    "constraint with the weights -- and for C = div this is sum_i grad(chi_i) . u_i "
+    "= sum_i grad(chi_i) . (u_i - w) for ANY field w, because sum_i grad(chi_i) = "
+    "grad(1) = 0. On two windows that is grad(chi_1) . (u_1 - u_2). So the assembly "
+    "injects constraint residual exactly where the local solves DISAGREE, in "
+    "proportion to how fast chi turns over, at cells where every local field "
+    "satisfies the constraint EXACTLY. Convexity does not help and no overlap "
+    "width removes it: L6/C1 bounds the blend's error by the local errors and says "
+    "nothing about a constraint, and the residual is created inside the overlap "
+    "rather than transported into it. The condition is therefore not a condition "
+    "on chi at all -- it is that the composition layer APPLY the projection onto "
+    "ker C to the ASSEMBLED field, globally and ONCE per exchange, AFTER the "
+    "blend. ONCE is load-bearing: if the agents also enforce the constraint "
+    "internally, a projection added on top is the constraint operator applied "
+    "twice, and measured 2026-08-31 over 120 macro-steps at six windows that is "
+    "worse than either endpoint -- the band is left at 74 with no projection, 51 "
+    "with a global spectral one, 33 with a global Neumann one, and never with the "
+    "agents elliptic parts EXPOSED and one global projection. So L6/C2 is "
+    "satisfied by MOVING the projection (R10) rather than by adding one. And the "
+    "residual is not by itself what ends a rollout: the Neumann variant holds "
+    "||div u||_rms at 0.0089 against the bare column 0.69 and leaves the band "
+    "soonest of the three."
+)
+
+#: Where the projection may be applied.  ``global`` is the whole assembled
+#: domain, which is the only scope that can restore a constraint the blend broke
+#: across a seam; ``per-subdomain`` is W98's measured failure, kept as a legal
+#: STRING so a graph can declare what it actually does and be refused for it
+#: rather than being unable to say it.
+PROJECTION_SCOPES = ("global", "per-subdomain")
+
+#: When, relative to the blend.  ``after-assembly`` is the only one that
+#: satisfies L6/C2: projecting each local field and then blending is what the
+#: unrepaired classical column already does -- every `WindowNS` window returns a
+#: divergence-free field -- and it is the arrangement that goes unstable.
+PROJECTION_STAGES = ("after-assembly", "before-assembly")
+
+
+@dataclass
+class ConstraintProjection:
+    """The projection onto ker C, declared as a composition-layer operator.
+
+    This is the object L6/C2 asks for.  It is deliberately a DECLARATION with an
+    optional callable rather than a callable with some metadata: the compile has
+    to be able to decide R12 on a graph that has not run, exactly as R11 decides
+    convexity from ``chi`` alone, and ``scope``, ``stage`` and ``cadence`` are
+    the three fields that decision needs.
+
+    ``operator`` maps the assembled components to their projection and
+    ``residual`` measures ``||C u||`` on them; both take and return one array per
+    component, so a scalar constraint takes one and a solenoidal one takes two.
+    They are what a run uses and what the certificate's data-side witnesses come
+    from; neither is needed for the compile-time half.
+    """
+
+    constraint: str
+    scope: str = "global"
+    stage: str = "after-assembly"
+    #: Applications per exchange interval.  R10b fixes the exchange interval
+    #: itself; this says how many times the projection runs inside one, and it is
+    #: 1 for every scheme in this vault.  Zero is a projection that is declared
+    #: and not applied, which is the shipped classical column exactly.
+    cadence: int = 1
+    operator: Any | None = None
+    residual: Any | None = None
+    #: The grid the callables want, when it is not the flat vector a partition
+    #: of unity assembles into.  `PartitionOfUnity.assemble` returns an
+    #: ``n_global`` vector because the identity it certifies is a statement about
+    #: vectors; a divergence operator is a statement about a GRID.  Declaring the
+    #: shape here is what lets one object serve both without either side
+    #: guessing -- flat in, flat out; grid in, grid out.
+    shape: tuple[int, ...] | None = None
+    note: str = ""
+
+    def _to_operator(self, a: np.ndarray) -> np.ndarray:
+        a = np.asarray(a, dtype=float)
+        if self.shape is not None and a.ndim == 1 and a.size == int(
+                np.prod(self.shape)):
+            return a.reshape(self.shape)
+        return a
+
+    # -- the compile-time half, decidable with no run ----------------------
+
+    @property
+    def global_scope(self) -> bool:
+        return self.scope == "global"
+
+    @property
+    def after_assembly(self) -> bool:
+        return self.stage == "after-assembly"
+
+    @property
+    def declared_legally(self) -> bool:
+        """The declaration is one this framework can read at all."""
+        return (self.scope in PROJECTION_SCOPES
+                and self.stage in PROJECTION_STAGES
+                and isinstance(self.cadence, int))
+
+    @property
+    def satisfies_C2(self) -> bool:
+        return bool(self.declared_legally and self.global_scope
+                    and self.after_assembly and self.cadence >= 1)
+
+    def why(self) -> str:
+        if not self.declared_legally:
+            return (f"the projection declares scope={self.scope!r}, "
+                    f"stage={self.stage!r} and cadence={self.cadence!r}; the legal "
+                    f"scopes are {PROJECTION_SCOPES} and the legal stages are "
+                    f"{PROJECTION_STAGES}")
+        if not self.global_scope:
+            return ("the projection is declared per subdomain. A constraint the "
+                    "blend broke ACROSS a seam cannot be restored by an operator "
+                    "that cannot see across it, and running the elliptic part per "
+                    "window is W98")
+        if not self.after_assembly:
+            return ("the projection is declared before the assembly, which is what "
+                    "the unrepaired classical column already does -- every window "
+                    "returns a field satisfying the constraint and the blend then "
+                    "breaks it. L6/C2 is about the ORDER")
+        if self.cadence < 1:
+            return (f"the projection is declared at cadence {self.cadence}, so it "
+                    "is declared and not applied")
+        return (f"a {self.constraint} projection, global, applied to the assembled "
+                f"field {self.cadence}x per exchange: L6/C2 holds")
+
+    # -- the run-time half, when the callables are supplied ----------------
+
+    def apply(self, *components):
+        """P applied to the assembled components. Identity when none is supplied.
+
+        Flat in, flat out: a caller that assembled through a partition of unity
+        holds ``n_global`` vectors and gets them back, whatever grid the
+        operator itself wants.
+        """
+        if self.operator is None:
+            return tuple(components)
+        flat = [np.asarray(c).ndim == 1 for c in components]
+        out = self.operator(*(self._to_operator(c) for c in components))
+        out = tuple(out) if isinstance(out, (tuple, list)) else (out,)
+        return tuple(np.asarray(o).reshape(-1) if (i < len(flat) and flat[i]) else o
+                     for i, o in enumerate(out))
+
+    def residual_of(self, *components) -> float | None:
+        """``||C u||`` on the components, or None when no measure is declared."""
+        if self.residual is None:
+            return None
+        return float(self.residual(*(self._to_operator(c) for c in components)))
+
+    def idempotence_defect(self, *components) -> float | None:
+        """``||P(Pu) - Pu|| / ||Pu||``: a projection is idempotent.
+
+        Cheap, needs no reference, and it is the one property of the operator the
+        declaration cannot assert and a run can check.  A "projection" that is not
+        idempotent is a smoother, and a smoother applied once per macro-step is a
+        scheme change nobody declared.
+        """
+        if self.operator is None:
+            return None
+        once = self.apply(*components)
+        twice = self.apply(*once)
+        num = float(np.sqrt(sum(float(np.sum((b - a) ** 2))
+                                for a, b in zip(once, twice))))
+        den = float(np.sqrt(sum(float(np.sum(a ** 2)) for a in once)))
+        return num / den if den > 0.0 else num
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "constraint": self.constraint,
+            "scope": self.scope,
+            "stage": self.stage,
+            "cadence": self.cadence,
+            "has_operator": self.operator is not None,
+            "has_residual": self.residual is not None,
+            "satisfies_C2": self.satisfies_C2,
+            "why": self.why(),
+            "note": self.note,
+        }
+
+
+@dataclass
+class ProjectedAssembly:
+    """Blend, then project: the composition layer's assembly as ONE declared step.
+
+    **W100, 2026-08-31.**  Until this existed the assembly was the blend and
+    nothing else, and the projection that makes the blend conservative was
+    something a case study's march did or did not do in its own driver.  The
+    checkpoint's column did it; the classical column did not; neither said so;
+    and the difference was the difference between a rollout and a blow-up.
+
+    This object is the pair, declared together, so that
+
+      * the compile can decide L6/C2 from the declaration (R12);
+      * the emitted defect carries which assembly produced it (W54); and
+      * a case study cannot apply the projection in its driver without the
+        record saying so, or declare it without the driver doing it -- because
+        ``assemble_conservative`` is the one call that does both.
+
+    Every partition-of-unity query delegates, so a `ProjectedAssembly` is usable
+    anywhere a `PartitionOfUnity` or a `GridPartitionOfUnity` is.  ``assemble``
+    delegates too, and it is the BLEND ALONE on purpose: L6/C1's variance margin,
+    hull escape and blend defect are properties of the blend, and measuring them
+    through the projection would be measuring a different operator from the one
+    that condition is about.  The projected step has its own name.
+    """
+
+    partition: Any
+    projection: ConstraintProjection
+
+    # -- the step ----------------------------------------------------------
+
+    def assemble_conservative(self, *components):
+        """The composition-layer step: blend every component, then project ONCE.
+
+        One ``locals_`` dict per component of the constrained field -- ``(u, v)``
+        for a solenoidal velocity, one dict for a scalar.  Returns one array per
+        component, in the same order.
+        """
+        blended = tuple(self.partition.assemble(c) for c in components)
+        return self.projection.apply(*blended)
+
+    def constraint_report(self, *components) -> dict[str, Any]:
+        """What the blend injected and what the projection took back out.
+
+        ``residual_blend`` is the quantity L6/C2 says is nonzero even when every
+        local field satisfies the constraint exactly; ``residual_projected`` is
+        what survives the repair.  Both are None when the projection declares no
+        residual measure, which is the honest answer rather than zero.
+        """
+        blended = tuple(self.partition.assemble(c) for c in components)
+        projected = self.projection.apply(*blended)
+        return {
+            "constraint": self.projection.constraint,
+            "residual_blend": self.projection.residual_of(*blended),
+            "residual_projected": self.projection.residual_of(*projected),
+            "idempotence_defect": self.projection.idempotence_defect(*blended),
+        }
+
+    # -- delegation --------------------------------------------------------
+
+    def assemble(self, locals_: dict[str, np.ndarray]) -> np.ndarray:
+        """The BLEND alone -- see the class docstring. L6/C1's object."""
+        return self.partition.assemble(locals_)
+
+    @property
+    def kind(self) -> str:
+        return getattr(self.partition, "kind", "partition-of-unity")
+
+    def __getattr__(self, name: str):
+        # The dataclass fields live in __dict__, so this only ever sees the
+        # partition's own interface; the field names themselves are guarded
+        # against recursion during construction and unpickling.
+        if name.startswith("__") or name in ("partition", "projection"):
+            raise AttributeError(name)
+        try:
+            partition = object.__getattribute__(self, "partition")
+        except AttributeError:
+            raise AttributeError(name) from None
+        return getattr(partition, name)
+
 @dataclass
 class AssemblyCondition:
     """L6/C1 evaluated: the hypothesis, its witnesses, and whether it holds.
@@ -395,6 +751,23 @@ class AssemblyCondition:
     #: is measured here and consumed by the master bound's overlapping branch.
     contaminated_weight: float | None = None
     statement: str = L6_C1
+
+    #: L6/C2, added 2026-08-31 (W100).  ``constraint`` is what the agents each
+    #: enforce on their own subdomain and the blend does not inherit; the three
+    #: ``projection_*`` fields are the composition layer's answer, read off the
+    #: declaration exactly as ``chi_min`` is.  All four are None on a graph whose
+    #: assembly is a bare partition of unity, and that is the state R12 names.
+    constraint: str | None = None
+    projection_scope: str | None = None
+    projection_stage: str | None = None
+    projection_cadence: int | None = None
+    #: The data-side witnesses: ``||C A(u)||`` before the projection and after
+    #: it, plus ``||P(Pu)-Pu||/||Pu||``.  Present only when the projection
+    #: supplies its callables and a run supplied local solves.
+    constraint_residual_blend: float | None = None
+    constraint_residual_projected: float | None = None
+    projection_idempotence: float | None = None
+    statement_C2: str = L6_C2
 
     @property
     def convex(self) -> bool | None:
@@ -428,6 +801,46 @@ class AssemblyCondition:
                 f"({self.identity_residual:.3e}), so the blend is at least as accurate "
                 "as the local solves it blends at every cell")
 
+    # -- L6/C2, the conservative half ---------------------------------------
+
+    @property
+    def conservative(self) -> bool | None:
+        """True when a global, after-assembly projection is declared.
+
+        None -- not False -- when no constraint is named: a graph whose agents
+        enforce nothing pointwise has no C2 to satisfy, and reporting False
+        there would be reporting a failure of a condition that does not apply.
+        """
+        if self.constraint is None:
+            return None
+        return bool(self.projection_scope == "global"
+                    and self.projection_stage == "after-assembly"
+                    and (self.projection_cadence or 0) >= 1)
+
+    def why_C2(self) -> str:
+        if self.constraint is None:
+            return ("no constraint is declared for the assembly to preserve, so "
+                    "L6/C2 has nothing to check")
+        if self.projection_scope is None:
+            return (f"the agents each enforce {self.constraint} on their own "
+                    "subdomain and the assembly declares no projection, so the "
+                    "blend's commutator residual sum_i grad(chi_i).u_i is created "
+                    "and nothing removes it")
+        if not self.conservative:
+            return (f"a {self.constraint} projection is declared at scope "
+                    f"{self.projection_scope!r}, stage {self.projection_stage!r} "
+                    f"and cadence {self.projection_cadence!r}, which is not the "
+                    "global, after-assembly, once-per-exchange application L6/C2 "
+                    "requires")
+        witness = ""
+        if (self.constraint_residual_blend is not None
+                and self.constraint_residual_projected is not None):
+            witness = (f", and measured it takes ||C u|| from "
+                       f"{self.constraint_residual_blend:.4g} to "
+                       f"{self.constraint_residual_projected:.4g}")
+        return (f"the assembled field is projected onto ker({self.constraint}) "
+                f"globally, once per exchange, after the blend{witness}")
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "name": "L6/C1",
@@ -442,6 +855,19 @@ class AssemblyCondition:
             "contaminated_weight_W49": self.contaminated_weight,
             "why": self.why(),
             "statement": self.statement,
+            "C2": {
+                "name": "L6/C2",
+                "conservative": self.conservative,
+                "constraint": self.constraint,
+                "projection_scope": self.projection_scope,
+                "projection_stage": self.projection_stage,
+                "projection_cadence": self.projection_cadence,
+                "constraint_residual_blend": self.constraint_residual_blend,
+                "constraint_residual_projected": self.constraint_residual_projected,
+                "projection_idempotence": self.projection_idempotence,
+                "why": self.why_C2(),
+                "statement": self.statement_C2,
+            },
         }
 
 
@@ -463,6 +889,11 @@ class AssemblyCertificate:
     #: discriminated.
     blend_defect_max_of_norms: float | None = None
     variance_margin: float | None = None
+    #: W100: the composition-layer projection the assembly declares, as its own
+    #: dict, or None for a bare partition of unity.  It is a fifth field on a
+    #: four-field slot on purpose -- L6/C2 is a second condition and not a
+    #: refinement of the first.
+    projection: dict[str, Any] | None = None
     kind: str = "partition-of-unity"
     note: str = field(
         default=(
@@ -485,6 +916,16 @@ class AssemblyCertificate:
     def condition_holds(self) -> bool | None:
         return None if self.condition is None else self.condition.holds
 
+    @property
+    def conservative_holds(self) -> bool | None:
+        """L6/C2, which is a SEPARATE verdict from ``condition_holds``.
+
+        Every convex partition in this vault satisfies C1 and violates C2, so
+        collapsing the two into one field would report the assembly as sound on
+        exactly the graph whose rollout does not survive 82 macro-steps.
+        """
+        return None if self.condition is None else self.condition.conservative
+
     def as_dict(self) -> dict[str, Any]:
         from .verdict import _jsonable
 
@@ -498,6 +939,8 @@ class AssemblyCertificate:
             "variance_margin": self.variance_margin,
             "condition": None if self.condition is None else self.condition.as_dict(),
             "condition_holds": self.condition_holds,
+            "projection": self.projection,
+            "conservative_holds": self.conservative_holds,
             "hole": ASSEMBLY_CERTIFICATE.name,
             "note": self.note,
         }
@@ -508,6 +951,8 @@ def certify(
     locals_: dict[str, np.ndarray] | None = None,
     reference: np.ndarray | None = None,
     overlap_mask: np.ndarray | None = None,
+    constraint: str | None = None,
+    components: Sequence[dict[str, np.ndarray]] | None = None,
 ) -> AssemblyCertificate:
     """Emit the certificate, ``condition`` included.
 
@@ -522,9 +967,18 @@ def certify(
     under its own name because it is what the first measurement reported, and
     because the reason it was replaced is that it never discriminated: measured,
     it is negative for a deliberately non-convex partition as well.
+
+    **L6/C2 is decided the same way and from the same place (W100).**
+    ``constraint`` names what the agents each enforce on their own subdomain --
+    the caller derives it, because the compiler reads it off the agents' declared
+    governing family and a bare `certify` call has no agents.  If ``pou`` is a
+    `ProjectedAssembly` the projection's scope, stage and cadence come off it, and
+    that is the whole compile-time half.  ``components`` -- one ``locals_`` dict
+    per component of the constrained field -- adds the run-side witnesses:
+    ``||C A(u)||`` before and after the projection, and its idempotence defect.
     """
     if pou is None:
-        return AssemblyCertificate(condition=AssemblyCondition())
+        return AssemblyCertificate(condition=AssemblyCondition(constraint=constraint))
     cert = AssemblyCertificate(
         pou_residual=pou.identity_residual(),
         norm_A=pou.norm_A(),
@@ -535,7 +989,22 @@ def certify(
         identity_residual=cert.pou_residual,
         norm_A=float(cert.norm_A),
         contaminated_weight=pou.contaminated_weight(),
+        constraint=constraint,
     )
+    proj = getattr(pou, "projection", None)
+    if proj is not None:
+        cond.projection_scope = proj.scope
+        cond.projection_stage = proj.stage
+        cond.projection_cadence = proj.cadence
+        # a projection that names its own constraint outranks the caller's guess:
+        # the declaration is the thing the compile is deciding on.
+        cond.constraint = proj.constraint or constraint
+        cert.projection = proj.as_dict()
+        if components:
+            report = pou.constraint_report(*components)
+            cond.constraint_residual_blend = report["residual_blend"]
+            cond.constraint_residual_projected = report["residual_projected"]
+            cond.projection_idempotence = report["idempotence_defect"]
     if locals_ is not None:
         v = pou.blend_variance(locals_)
         esc = pou.hull_escape(locals_)

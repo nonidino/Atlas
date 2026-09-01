@@ -111,7 +111,7 @@ from typing import Any
 
 import numpy as np
 
-from ..assembly import GridPartitionOfUnity
+from ..assembly import ConstraintProjection, GridPartitionOfUnity, ProjectedAssembly
 from ..capability import (
     BCChannel,
     ClaimType,
@@ -127,7 +127,7 @@ from ..graph import Agent, CaseGraph, Connection, Decomposition, GlobalField, Me
 from ..ports import PortType, ResponseHalf
 from ..transfer import Prolongation
 from .poseidon import EXPERT_RES, load_expert
-from .window_ns import load_reference
+from .window_ns import _no_projection_class, load_reference
 
 # ---------------------------------------------------------------------------
 # the geometry, which the checkpoint's fixed resolution chooses
@@ -271,52 +271,86 @@ ROTORS = (
 
 @dataclass(frozen=True)
 class ArrayTiling:
-    """The 3x2 tiling of the farm domain by windows of exactly `N` cells."""
+    """The tiling of the farm domain by windows of exactly `N` cells, and where
+    the rotors sit on it.
+
+    **Generalized 2026-08-30 for CS-7.**  It used to read `N_COL`, `N_ROW`, `NX`,
+    `NY` and `ROTORS` off this module, which made the 3x2 array with three
+    turbines the only layout expressible.  `scaling_ladder.py` needs the same
+    geometry at five sizes with the ramp, the overlap, the cell and the macro-step
+    held fixed, and copying a tiling in order to change two integers is how two
+    tilings drift apart.  So the layout is fields on this object and the
+    module-level names are its default instance: `ArrayTiling()` reproduces what
+    was here before to the bit, which `tests/test_tier18_wake_array.py` pins.
+    """
 
     ramp: int = RAMP
+    n_col: int = N_COL
+    n_row: int = N_ROW
+    rotors: tuple[Rotor, ...] = ROTORS
+
+    # -- the domain the tiling covers -------------------------------------
+
+    @property
+    def nx(self) -> int:
+        return (self.n_col - 1) * STRIDE + N
+
+    @property
+    def ny(self) -> int:
+        return (self.n_row - 1) * STRIDE + N
+
+    @property
+    def n_windows(self) -> int:
+        return self.n_col * self.n_row
 
     @property
     def offsets(self) -> list[tuple[int, int]]:
-        return [(i * STRIDE, j * STRIDE) for j in range(N_ROW) for i in range(N_COL)]
+        return [(i * STRIDE, j * STRIDE)
+                for j in range(self.n_row) for i in range(self.n_col)]
 
     @property
     def names(self) -> list[str]:
-        return [f"F{i}{j}" for j in range(N_ROW) for i in range(N_COL)]
+        return [f"F{i}{j}" for j in range(self.n_row) for i in range(self.n_col)]
 
     def index_of(self, name: str) -> int:
         return self.names.index(name)
+
+    def coords(self, name: str) -> tuple[int, int]:
+        """F<i><j> -> (i, j).  Single digits, so at most ten windows either way."""
+        return int(name[1]), int(name[2])
 
     def artificial_faces(self, ox: int, oy: int) -> tuple[str, ...]:
         out = []
         if ox > 0:
             out.append("xlo")
-        if ox + N < NX:
+        if ox + N < self.nx:
             out.append("xhi")
         if oy > 0:
             out.append("ylo")
-        if oy + N < NY:
+        if oy + N < self.ny:
             out.append("yhi")
         return tuple(out)
 
     def cut(self, f: np.ndarray) -> np.ndarray:
         return np.stack([f[oy:oy + N, ox:ox + N] for ox, oy in self.offsets])
 
-    @lru_cache(maxsize=4)
+    @lru_cache(maxsize=16)
     def weights(self) -> list[np.ndarray]:
         raw = []
         r = max(self.ramp, 1)
         idx = np.arange(N) + 0.5
+        nx, ny = self.nx, self.ny
         for ox, oy in self.offsets:
             wx, wy = np.ones(N), np.ones(N)
             if ox > 0:
                 wx = np.minimum(wx, np.clip(idx / r, 0.0, 1.0))
-            if ox + N < NX:
+            if ox + N < nx:
                 wx = np.minimum(wx, np.clip((N - idx) / r, 0.0, 1.0))
             if oy > 0:
                 wy = np.minimum(wy, np.clip(idx / r, 0.0, 1.0))
-            if oy + N < NY:
+            if oy + N < ny:
                 wy = np.minimum(wy, np.clip((N - idx) / r, 0.0, 1.0))
-            w = np.zeros((NY, NX))
+            w = np.zeros((ny, nx))
             w[oy:oy + N, ox:ox + N] = np.minimum(wy[:, None], wx[None, :]) ** 2
             raw.append(w)
         tot = np.sum(raw, axis=0)
@@ -324,7 +358,7 @@ class ArrayTiling:
         return [w / tot for w in raw]
 
     def assemble(self, us: np.ndarray, vs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        au, av = np.zeros((NY, NX)), np.zeros((NY, NX))
+        au, av = np.zeros((self.ny, self.nx)), np.zeros((self.ny, self.nx))
         for k, (ox, oy) in enumerate(self.offsets):
             chi = self.weights()[k][oy:oy + N, ox:ox + N]
             au[oy:oy + N, ox:ox + N] += chi * us[k]
@@ -352,13 +386,55 @@ class ArrayTiling:
     def partition_of_unity(self, d_cells: int = RAMP) -> GridPartitionOfUnity:
         idx, wts, bad = {}, {}, {}
         ws, cont = self.weights(), self.contaminated(d_cells)
+        nx = self.nx
         for k, (ox, oy) in enumerate(self.offsets):
             rows, cols = np.meshgrid(np.arange(oy, oy + N),
                                      np.arange(ox, ox + N), indexing="ij")
-            idx[self.names[k]] = (rows * NX + cols).reshape(-1)
+            idx[self.names[k]] = (rows * nx + cols).reshape(-1)
             wts[self.names[k]] = ws[k][oy:oy + N, ox:ox + N].reshape(-1)
             bad[self.names[k]] = cont[k].reshape(-1)
-        return GridPartitionOfUnity(NX * NY, idx, wts, contaminated=bad)
+        return GridPartitionOfUnity(
+            nx * self.ny, idx, wts, contaminated=bad,
+            # W54: the harness parameters the emitted defect has to carry. Convex
+            # is admissibility; the RAMP is accuracy, and it is a factor of 200.
+            ramp_cells=self.ramp,
+            profile=f"min(wy, wx)^2 over a {self.ramp}-cell linear ramp, normalized")
+
+    # -- the rotors, and the ports they split a face into ------------------
+
+    def rotor_at(self, col: int, row: int):
+        for r in self.rotors:
+            if r.col == col and r.row == row:
+                return r
+        return None
+
+    def port_segments(self, window: str) -> dict[str, list[str]]:
+        """face -> [segment, ...] for one window, from `rotors` and the tiling."""
+        i, j = self.coords(window)
+        ox, oy = i * STRIDE, j * STRIDE
+        out: dict[str, list[str]] = {}
+        for face in self.artificial_faces(ox, oy):
+            split = any(
+                (r.row == j)
+                and ((face == "xlo" and r.col + 1 == i)
+                     or (face == "xhi" and r.col == i))
+                for r in self.rotors
+            )
+            out[face] = ["bypass", "rotor"] if split else ["full"]
+        return out
+
+    def segment_index(self, window: str, face: str, segment: str) -> np.ndarray:
+        """The face cells this port owns, as a LOCAL index array into the ring."""
+        if segment == "full":
+            return np.arange(N)
+        i, j = self.coords(window)
+        rot = next(r for r in self.rotors
+                   if r.row == j and ((face == "xlo" and r.col + 1 == i)
+                                      or (face == "xhi" and r.col == i)))
+        sl = rot.cells
+        if segment == "rotor":
+            return np.arange(sl.start, sl.stop)
+        return np.concatenate([np.arange(0, sl.start), np.arange(sl.stop, N)])
 
 
 DEFAULT_TILING = ArrayTiling()
@@ -448,13 +524,137 @@ def transport_and_project(uf: np.ndarray, vf: np.ndarray, dt: float = MACRO_DT,
     return big_u[:, :nx], big_v[:, :nx]
 
 
+
+# ---------------------------------------------------------------------------
+# L6/C2 -- the projected assembly, which is a composition-layer STEP (W100)
+# ---------------------------------------------------------------------------
+
+
+def divergence_rms(u: np.ndarray, v: np.ndarray) -> float:
+    """``||div u||_rms`` on the interior, with the WIDE centred operator.
+
+    The same difference the reference solver's own projection inverts, so a
+    field that solver calls divergence-free reads zero here and a field it does
+    not calls nonzero.  Measuring with a narrow stencil instead would report a
+    residual the scheme never had.
+
+    **This is the quantity L6/C2 is about.**  Each `WindowNS` window returns a
+    field that is divergence-free ON ITS OWN WINDOW, and a partition-of-unity
+    blend of divergence-free fields is not divergence-free: with
+    ``sum_i chi_i = 1``,
+
+        div( sum_i chi_i u_i ) = sum_i grad(chi_i) . u_i
+                               = grad(chi_1) . (u_1 - u_2)   [two windows]
+
+    so the assembly manufactures divergence exactly where the local solves
+    disagree, in proportion to how fast chi is turning over.
+    """
+    du = np.zeros_like(u)
+    dv = np.zeros_like(v)
+    du[:, 1:-1] = (u[:, 2:] - u[:, :-2]) / (2.0 * DX)
+    dv[1:-1, :] = (v[2:, :] - v[:-2, :]) / (2.0 * DX)
+    d = du + dv
+    return float(np.sqrt(np.mean(d[2:-2, 2:-2] ** 2)))
+
+
+def project_assembled(u: np.ndarray, v: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """One global Leray projection on the ASSEMBLED field, and nothing else.
+
+    `transport_and_project` at zero translation: the same operator, on the same
+    padded domain, with ``dt = 0`` so the translation is the identity and what
+    is left is the projection alone.  ``u`` and ``v`` are the FULL field rather
+    than the fluctuation -- the freestream is removed and restored here, because
+    a caller that had to remember to do it is a caller that will one day not.
+
+    The padding is `PAD_CELLS` and it is load-bearing, not cosmetic: on the raw
+    domain the FFT's periodic image puts the outlet next to the inlet, and a
+    projection is elliptic, so a disk's momentum sink would reach round the box.
+    """
+    uf, vf = transport_and_project(u - U_INF, v, dt=0.0, u_inf=0.0, project=True)
+    return U_INF + uf, vf
+
+
+def leray_projection(tiling: ArrayTiling = DEFAULT_TILING) -> ConstraintProjection:
+    """The composition layer's own operator, declared (L6/C2, R12).
+
+    Global, after the blend, once per exchange -- the three fields the compile
+    decides R12 on.  The Poseidon column has applied exactly this since W98 and
+    nothing on the graph said so; the classical column did not apply it at all
+    and nothing on the graph said that either, which is how a reference column
+    shipped on a trajectory that is not finite past macro-step 82 at six windows.
+
+    **ONCE is the word that carries the measurement.**  Declared beside agents
+    that still project internally, this operator is the SECOND application of the
+    same pressure and the column is worse for it -- band left at 51 against the
+    unprojected 74.  See `exposed_reference_solver`, which is the agent side of
+    the same repair and the one the 120-step march selects.
+    """
+    return ConstraintProjection(
+        constraint="divergence-free",
+        scope="global",
+        stage="after-assembly",
+        cadence=1,
+        operator=project_assembled,
+        residual=divergence_rms,
+        # both callables want the (ny, nx) grid; a partition of unity assembles
+        # into a flat n_global vector, and this is what reconciles them
+        shape=(tiling.ny, tiling.nx),
+        note=("wake_array.project_assembled: an exact spectral Leray projection on "
+              "the assembled domain extended downstream by PAD_CELLS of tapered "
+              "fluctuation. It is the SAME operator the composition layer already "
+              "applies for transport (W98) with the translation set to zero, so "
+              "the two cannot drift apart. **Its hypothesis is the freestream "
+              "band**: the projection is periodic in y and periodic-compatible in "
+              "x only because `_extend` tapers the outflow and because the march "
+              "holds the inlet and both laterals at (U_INF, 0). On a field that "
+              "is not freestream at the laterals it is a projection onto a "
+              "different kernel from the agents' own -- measured on a random "
+              "perturbation field at N=1 it moves the state by 6% -- so it is "
+              "the composition layer's operator for THIS geometry and does not "
+              "travel to a case study with a different outer boundary. And the "
+              "residual it is measured by is not its own: `divergence_rms` is a "
+              "wide centred difference on the unpadded interior while the "
+              "projection is spectral on the padded periodic domain, so the two "
+              "disagree at the domain edge. At N=2, where the blend's commutator "
+              "is one overlap wide, that disagreement is the LARGER of the two "
+              "and the projected column reads a higher divergence than the bare "
+              "one (0.0259 against 0.0132, both flat); from N=6 up the commutator "
+              "dominates and it reads 4.7x lower"),
+    )
+
+
+def projected_assembly(tiling: ArrayTiling = DEFAULT_TILING,
+                       d_cells: int = RAMP) -> ProjectedAssembly:
+    """The assembly this case study declares: the blend AND the projection.
+
+    Passed to `CaseGraph.partition_of_unity`, where every existing L6/C1 query
+    delegates to the partition and R12 reads the projection off the same object.
+    """
+    return ProjectedAssembly(tiling.partition_of_unity(d_cells),
+                             leray_projection(tiling))
+
+
+def assemble_conservative(tiling: ArrayTiling, us: np.ndarray, vs: np.ndarray,
+                          assembly: ProjectedAssembly | None = None):
+    """One composition-layer assembly step on stacked per-window solutions.
+
+    ``us``/``vs`` are ``(n_windows, N, N)`` as `ArrayTiling.cut` returns them, so
+    a march can call this exactly where it called ``tiling.assemble`` and get the
+    step the graph declares rather than the blend the graph does not.
+    """
+    assembly = assembly or projected_assembly(tiling)
+    au, av = tiling.assemble(us, vs)
+    return assembly.projection.apply(au, av)
+
+
 # ---------------------------------------------------------------------------
 # which ports each window carries, derived from the layout
 # ---------------------------------------------------------------------------
 
 
-def port_segments(window: str) -> dict[str, list[str]]:
-    """``face -> [segment, ...]`` for one window, from `ROTORS` and the tiling.
+def port_segments(window: str,
+                  tiling: ArrayTiling = DEFAULT_TILING) -> dict[str, list[str]]:
+    """``face -> [segment, ...]`` for one window, from the tiling's rotors.
 
     A face that a rotor plane meets splits into a ``rotor`` segment carrying the
     disk and a ``bypass`` segment carrying the open flow beside it; every other
@@ -462,32 +662,17 @@ def port_segments(window: str) -> dict[str, list[str]]:
     passenger list is per FACE, not per agent" one step further on: **a port is
     per face SEGMENT**, because a real rotor spans 1 D of a 4 D face and nothing
     in the port algebra says a port's V has to be a whole face.
+
+    The body moved onto `ArrayTiling` when CS-7 needed the same rule at five
+    sizes; this is the module-level name the Tier 18 tests and scripts call.
     """
-    i, j = int(window[1]), int(window[2])
-    ox, oy = i * STRIDE, j * STRIDE
-    out: dict[str, list[str]] = {}
-    for face in DEFAULT_TILING.artificial_faces(ox, oy):
-        split = any(
-            (r.row == j)
-            and ((face == "xlo" and r.col + 1 == i) or (face == "xhi" and r.col == i))
-            for r in ROTORS
-        )
-        out[face] = ["bypass", "rotor"] if split else ["full"]
-    return out
+    return tiling.port_segments(window)
 
 
-def segment_index(window: str, face: str, segment: str) -> np.ndarray:
+def segment_index(window: str, face: str, segment: str,
+                  tiling: ArrayTiling = DEFAULT_TILING) -> np.ndarray:
     """The face cells this port owns, as a LOCAL index array into the ring."""
-    if segment == "full":
-        return np.arange(N)
-    i, j = int(window[1]), int(window[2])
-    rot = next(r for r in ROTORS
-               if r.row == j and ((face == "xlo" and r.col + 1 == i)
-                                  or (face == "xhi" and r.col == i)))
-    sl = rot.cells
-    if segment == "rotor":
-        return np.arange(sl.start, sl.stop)
-    return np.concatenate([np.arange(0, sl.start), np.arange(sl.stop, N)])
+    return tiling.segment_index(window, face, segment)
 
 
 def port_name(face: str, segment: str) -> str:
@@ -525,6 +710,10 @@ class FluidWindow:
     v0: np.ndarray
     kind: str = "poseidon"
     dt: float = MACRO_DT
+    #: Which tiling this window belongs to, and therefore which faces are
+    #: artificial and which of them a rotor plane splits.  Defaults to the 3x2
+    #: array, so every pre-CS-7 caller is unchanged.
+    tiling: "ArrayTiling" = DEFAULT_TILING
     #: The viscosity in the PORT's flux convention, ``nu dw/dn``. It is a
     #: declaration about the port and it cancels exactly in any relative defect
     #: taken on a fluid-fluid seam, where both sides carry the same factor.
@@ -546,11 +735,18 @@ class FluidWindow:
                 "constraint the array geometry is built around, not a configuration "
                 "error"
             )
-        self.segments = port_segments(self.agent_id)
+        self.segments = self.tiling.port_segments(self.agent_id)
         if self.kind == "poseidon":
             self.expert = self.expert or scaled_expert()
         elif self.kind == "reference":
             self.expert = self.expert or reference_solver(
+                self.nu if self.nu_solver is None else self.nu_solver)
+        elif self.kind == "reference_exposed":
+            # W100: the same solver with its elliptic part handed to the
+            # composition layer. A separate kind rather than a flag, because the
+            # capability record it produces declares a DIFFERENT
+            # `elliptic_subsolve` and R10 turns on that word.
+            self.expert = self.expert or exposed_reference_solver(
                 self.nu if self.nu_solver is None else self.nu_solver)
         else:
             raise ValueError(f"unknown fluid expert kind {self.kind!r}")
@@ -579,13 +775,14 @@ class FluidWindow:
         face, segment, _ = parse_port(name)
         ring, _ = _RING[face]
         w = self.u0 if _FACE_GEOM[face][1] == "x" else self.v0
-        return np.asarray(w[ring], dtype=float)[segment_index(self.agent_id, face, segment)]
+        idx = self.tiling.segment_index(self.agent_id, face, segment)
+        return np.asarray(w[ring], dtype=float)[idx]
 
     def respond(self, name: str, trace: np.ndarray) -> np.ndarray:
         face, segment, kind = parse_port(name)
         if kind != "MECH":
             raise ValueError(f"{self.agent_id} has no port kind {kind!r}")
-        idx = segment_index(self.agent_id, face, segment)
+        idx = self.tiling.segment_index(self.agent_id, face, segment)
         trace = np.asarray(trace, dtype=float).reshape(-1)
         if trace.shape[0] != idx.size:
             raise ValueError(
@@ -656,6 +853,37 @@ def reference_solver(nu: float = NU_REF):
     """`reference.WindowNS` on one `N`-cell window of side `S_LEN`."""
     ref = load_reference()
     return ref.WindowNS(nu=nu, length=S_LEN, n=N, cfl=0.4, transmission="dirichlet")
+
+
+@lru_cache(maxsize=4)
+def exposed_reference_solver(nu: float = NU_REF):
+    """The same window with its elliptic part REMOVED -- R10's own prescription.
+
+    **W100, 2026-08-31, and it is the arrangement the measurement selects.**
+    `window_ns._no_projection_class` overrides `_project` with the identity, so
+    the window returns a field that is NOT divergence-free and the composition
+    layer supplies the projection once, globally, after the blend. That is what
+    ``elliptic_subsolve=EXPOSED`` declares, what R10 has demanded of this column
+    since Tier 0, and what the Poseidon column has done since W98.
+
+    It matters because the obvious repair does not work. Leaving the projection
+    inside the agent and adding a global one after the assembly applies the
+    pressure TWICE -- each window has already answered the disk's momentum sink
+    on its own subdomain -- and measured over 120 macro-steps from the freestream
+    that is worse than doing nothing:
+
+        N = 6, macro-step at which |u| leaves the band 3
+          embedded, bare blend                       74
+          embedded + global spectral projection      51
+          embedded + global Neumann projection       33
+          **EXPOSED + global spectral projection     stable to 120**
+
+    and the Neumann variant holds the divergence at 0.0089 against the bare
+    column's 0.69 while blowing up soonest, so **the divergence is not what ends
+    the rollout** -- which is the part of section 19.6's account this corrects.
+    """
+    return _no_projection_class()(nu=nu, length=S_LEN, n=N, cfl=0.4,
+                                 transmission="dirichlet")
 
 
 def scaling_report(dt: float = MACRO_DT, nu_p: float = NU_P_GRID_SCALE) -> dict:
@@ -775,12 +1003,12 @@ def _prolongation(agent_id: str, name: str, n_cells: int) -> Prolongation:
     )
 
 
-def fluid_ports(window: str) -> list:
+def fluid_ports(window: str, tiling: ArrayTiling = DEFAULT_TILING) -> list:
     """The port list, identical for the checkpoint and the reference solver."""
     ports = []
-    for face, segments in sorted(port_segments(window).items()):
+    for face, segments in sorted(tiling.port_segments(window).items()):
         for segment in segments:
-            n_cells = int(segment_index(window, face, segment).size)
+            n_cells = int(tiling.segment_index(window, face, segment).size)
             name = port_name(face, segment)
             ports.append(port_decl(
                 name=name, port_type=PortType.MECH,
@@ -812,19 +1040,21 @@ def fluid_capabilities(expert: FluidWindow,
     declares 2.  W93 is that nothing checks it and `support_reach` measures it:
     on this checkpoint the measured reach is the whole window.
     """
-    is_ref = expert.kind == "reference"
+    is_ref = expert.kind in ("reference", "reference_exposed")
     if reproducibility_floor is None:
         reproducibility_floor = np.finfo(float).eps if is_ref else 1e-5
     return ExpertCapabilities(
         expert_id=expert.agent_id,
-        ports=fluid_ports(expert.agent_id),
+        ports=fluid_ports(expert.agent_id, expert.tiling),
         # W59 for the checkpoint: the ring of the INITIAL CONDITION is settable
         # and there is no boundary condition held through the step, because there
         # is no "through". WindowNS holds a real Dirichlet ring through its own
         # sub-steps, and BCChannel cannot tell the two apart.
         bc_channel=BCChannel.DIRICHLET,
         bc_time_varying=bool(is_ref),
-        elliptic_subsolve=(EllipticSubsolve.EMBEDDED if is_ref else elliptic),
+        elliptic_subsolve=(
+            EllipticSubsolve.EXPOSED if expert.kind == "reference_exposed"
+            else EllipticSubsolve.EMBEDDED if is_ref else elliptic),
         stencil_radius=stencil_radius,
         substeps_per_macro_step=1,
         # A learned one-shot map is neither explicit nor implicit; R2b reads this
@@ -926,15 +1156,16 @@ def make_experts(u_full: np.ndarray, v_full: np.ndarray, kind: str = "poseidon",
     """Cut the farm state into six windows and read each rotor's own inflow."""
     u_full = np.asarray(u_full, dtype=float)
     v_full = np.asarray(v_full, dtype=float)
-    if u_full.shape != (NY, NX):
-        raise ValueError(f"farm state is {u_full.shape}, expected {(NY, NX)}")
+    if u_full.shape != (tiling.ny, tiling.nx):
+        raise ValueError(f"farm state is {u_full.shape}, expected "
+                         f"{(tiling.ny, tiling.nx)}")
     us, vs = tiling.cut(u_full), tiling.cut(v_full)
     out: dict[str, Any] = {
         name: FluidWindow(agent_id=name, u0=us[k], v0=vs[k], kind=kind, dt=dt,
-                          nu=nu, nu_solver=nu_solver)
+                          nu=nu, nu_solver=nu_solver, tiling=tiling)
         for k, name in enumerate(tiling.names)
     }
-    for rot in ROTORS:
+    for rot in tiling.rotors:
         # the disk's own inflow, read from the ring that lies UPSTREAM of its
         # plane -- which belongs to the downstream window, see Rotor.upstream_window
         w = out[rot.upstream_window]
@@ -945,9 +1176,10 @@ def make_experts(u_full: np.ndarray, v_full: np.ndarray, kind: str = "poseidon",
 
 
 def connections(tiling: ArrayTiling = DEFAULT_TILING) -> list[Connection]:
-    """Thirteen seams, derived from the layout rather than listed."""
+    """The seams, derived from the layout rather than listed -- thirteen on the
+    3x2 array, and whatever the tiling implies at any other size."""
     conns: list[Connection] = []
-    rotor_at = {(r.col, r.row): r for r in ROTORS}
+    rotor_at = {(r.col, r.row): r for r in tiling.rotors}
 
     def conn(seam_id, a, b, expected_null_dim, note):
         return Connection(
@@ -960,8 +1192,8 @@ def connections(tiling: ArrayTiling = DEFAULT_TILING) -> list[Connection]:
             geometrically_coincident=False,
             expected_null_dim=expected_null_dim, note=note)
 
-    for j in range(N_ROW):
-        for i in range(N_COL - 1):
+    for j in range(tiling.n_row):
+        for i in range(tiling.n_col - 1):
             up, dn = f"F{i}{j}", f"F{i+1}{j}"
             rot = rotor_at.get((i, j))
             if rot is None:
@@ -986,11 +1218,13 @@ def connections(tiling: ArrayTiling = DEFAULT_TILING) -> list[Connection]:
                 (rot.downstream_window, port_name("xhi", "rotor")),
                 0, "field-to-lumped: the disk's wake, imposed on the ring "
                    f"{HALO / 2 * DX:.3g} D downstream of its plane"))
-    for i in range(N_COL):
-        conns.append(conn(
-            f"y0c{i}",
-            (f"F{i}0", port_name("yhi", "full")), (f"F{i}1", port_name("ylo", "full")),
-            0, "fluid-fluid artificial boundary between the two turbine rows"))
+    for j in range(tiling.n_row - 1):
+        for i in range(tiling.n_col):
+            conns.append(conn(
+                f"y{j}c{i}",
+                (f"F{i}{j}", port_name("yhi", "full")),
+                (f"F{i}{j + 1}", port_name("ylo", "full")),
+                0, "fluid-fluid artificial boundary between two turbine rows"))
     return conns
 
 
@@ -999,7 +1233,8 @@ def build(u_full: np.ndarray, v_full: np.ndarray, kind: str = "poseidon",
           tiling: ArrayTiling = DEFAULT_TILING,
           elliptic: EllipticSubsolve = EllipticSubsolve.UNKNOWN,
           measured: MeasuredConstants | None = None,
-          experts: dict[str, Any] | None = None) -> tuple[CaseGraph, dict[str, Any]]:
+          experts: dict[str, Any] | None = None,
+          assembly_projection: bool = True) -> tuple[CaseGraph, dict[str, Any]]:
     """The nine-agent turbine array: six fluid windows and three rotors.
 
     ``measured`` defaults to None and the reason is stronger than `channel_ns`'s.
@@ -1008,6 +1243,15 @@ def build(u_full: np.ndarray, v_full: np.ndarray, kind: str = "poseidon",
     available at all, because a checkpoint fixed at 128x128 has no monolith at
     any resolution.  What replaces it is a reference PAIR; see `lambda_ref` on
     the record and `scripts/w93_wake_array.py` for the measurement.
+
+    ``assembly_projection`` defaults to **True** since 2026-08-31 (W100): the
+    assembly is a `ProjectedAssembly` -- the blend AND the global Leray
+    projection that makes it conservative -- because without that projection the
+    classical composed rollout is not finite past macro-step 82 at six windows.
+    Passing False declares the assembly this case study shipped before that
+    measurement, which is a bare partition of unity; it exists so the negative
+    control is a DECLARATION the compile refuses to certify (L6/R12) rather than
+    a line a driver quietly omits, which is what it was.
     """
     experts = experts or make_experts(u_full, v_full, kind, dt, nu, tiling)
     agents = [Agent(name, fluid_capabilities(experts[name], elliptic),
@@ -1016,16 +1260,17 @@ def build(u_full: np.ndarray, v_full: np.ndarray, kind: str = "poseidon",
     agents += [Agent(r.rotor_id, rotor_capabilities(experts[r.rotor_id]),
                      domain=f"rotor at ({r.x_plane:.2f}, {r.y_centre:.2f}) D",
                      role="rotor")
-               for r in ROTORS]
+               for r in tiling.rotors]
     return (
         CaseGraph(
-            name=f"wake-array-3x2-{kind}",
+            name=f"wake-array-{tiling.n_col}x{tiling.n_row}-{kind}",
             agents=agents,
             connections=connections(tiling),
             decomposition=Decomposition.OVERLAPPING,
             overlap=HALO * DX,
             overlap_cells=HALO,
-            partition_of_unity=tiling.partition_of_unity(),
+            partition_of_unity=(projected_assembly(tiling) if assembly_projection
+                                else tiling.partition_of_unity()),
             global_fields=[GlobalField(
                 "pressure",
                 note="the composition layer's, and it has to be: the checkpoint's "
@@ -1036,12 +1281,21 @@ def build(u_full: np.ndarray, v_full: np.ndarray, kind: str = "poseidon",
                      "projection and -0.7395 without it -- a reversed flow through "
                      "the disk plane, which no momentum sink may produce. The "
                      "projection is GLOBAL, on this domain and not on a window: "
-                     "doing it per window is W98")],
-            cross_points=tuple(f"x{i}y0" for i in range(N_COL - 1)),
+                     "doing it per window is W98. **And it is applied AFTER the "
+                     "assembly, which is W100**: a partition-of-unity blend of "
+                     "divergence-free fields is not divergence-free, so the "
+                     "operator has to see the assembled field or it repairs "
+                     "nothing. That ordering is declared on the assembly rather "
+                     "than here -- see `projected_assembly` and L6/C2")],
+            cross_points=tuple(f"x{i}y{j}"
+                               for j in range(tiling.n_row - 1)
+                               for i in range(tiling.n_col - 1)),
             macro_dt=dt,
             measured=measured,
-            note=(f"three turbines at 3.5 D spacing in an L, on a {NX}x{NY}-cell "
-                  f"({NX * DX:.1f} x {NY * DX:.1f} D) domain tiled by six "
+            note=(f"{len(tiling.rotors)} turbines at 3.5 D spacing in an L, on a "
+                  f"{tiling.nx}x{tiling.ny}-cell "
+                  f"({tiling.nx * DX:.1f} x {tiling.ny * DX:.1f} D) domain tiled by "
+                  f"{tiling.n_windows} "
                   f"{N}-cell Poseidon-T windows of {S_LEN} D each. Real geometry, "
                   "real wake, real power loss -- and the rotor seam is a two-way "
                   "VOLUMETRIC coupling wearing a surface bond (W94)"),

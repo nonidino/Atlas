@@ -46,9 +46,15 @@ from .capability import (
     Transmission,
 )
 from .claims import QuantityClaim, TypedClaim, type_claim
-from .emit import BoundTerms, RunArtifact
+from .emit import BoundTerms, HarnessParameters, RunArtifact
 from .envelope import EnvelopeStamp, Hypothesis, Status
-from .graph import CaseGraph, Connection, Decomposition, FluxMatching
+from .graph import (
+    CUT_DEFECT_FORMS,
+    CaseGraph,
+    Connection,
+    Decomposition,
+    FluxMatching,
+)
 from .holes import (
     ASSEMBLY_CERTIFICATE,
     INTERFACE_MOTION,
@@ -792,6 +798,21 @@ def _cut_policy(ctx: _Context) -> None:
                 "shape imported onto the overlapping branch",
                 subject="<graph>", quantity="cut placement",
             )
+        elif (getattr(graph.measured, "cut_defect_bound_form", None)
+              not in (None, "substructuring-residual")):
+            # **W58 on this branch.** L2/C2's three forms are quantities of the
+            # overlapping branch and none of them is L2/C3's residual; a value
+            # carried across is a number for a criterion it does not belong to.
+            rec.decertify(
+                "L2", "C3/W58",
+                f"cut_defect_bound is declared at {float(value):.6g} with form "
+                f"{graph.measured.cut_defect_bound_form!r}, which is one of L2/C2's "
+                "OVERLAPPING-branch quantities, and this graph is non-overlapping. "
+                "L2/C3 is ||S_M a* - chi_M|| / beta -- a different criterion on "
+                "different hypotheses -- so declare cut_defect_bound_form as "
+                "'substructuring-residual' or measure the right quantity",
+                subject="<graph>", quantity="cut_defect_bound_form",
+            )
         else:
             rec.admit(
                 "L2", "C3",
@@ -835,6 +856,28 @@ def _cut_policy(ctx: _Context) -> None:
         )
         return
 
+    # **W58, closed 2026-08-30.** The disjointness condition that makes the
+    # reference-free surrogate equal to the max form is a statement about the
+    # `contaminated` geometry and nothing else, so it is decided here, from the
+    # declaration W49's Pi already needs, with no solve of any kind. It is
+    # DISCLOSED on every graph that declares the geometry and only ESCALATES to a
+    # decertification where it changes what a declared number means -- which is
+    # exactly when the reference-free form is the one that was measured.
+    mult = None
+    try:
+        mult = pou.contaminated_multiplicity()
+    except Exception:                                              # noqa: BLE001
+        mult = None
+    if mult is not None:
+        rec.admit(
+            "L2", "C2/W58",
+            ("disclosure: " + mult["note"] + ". The chi-weighted and max forms of "
+             "cut_defect_bound both need a monolithic reference and are unaffected by "
+             "this; what it decides is whether the REFERENCE-FREE neighbour "
+             "disagreement may be quoted as the bound"),
+            subject="<graph>", quantity="cut_defect_bound_form", **mult,
+        )
+
     if declared is None:
         rec.decertify(
             "L2", "C2",
@@ -847,14 +890,118 @@ def _cut_policy(ctx: _Context) -> None:
         )
         return
 
+    # **W58's other half: the number without its form is unreadable.** The two
+    # definitions differ by whether a monolith was run, and on the branch where
+    # they are not provably equal that difference is the whole content of the
+    # number. A value with no form is refused the admission rather than given it.
+    form = getattr(graph.measured, "cut_defect_bound_form", None)
+    if form is None:
+        rec.decertify(
+            "L2", "C2/W58",
+            f"cut_defect_bound is declared at {declared:.4e} and the record does not "
+            "say which of two inequivalent quantities it is: the chi-weighted "
+            "restriction defect ||sum_i chi_i |D_i|||, which needs a monolithic "
+            "reference exactly as tau does, or the reference-free neighbour "
+            "disagreement, which does not. They are provably equal only when the "
+            "agents' contaminated sets are pairwise disjoint. Declare "
+            "cut_defect_bound_form as one of "
+            + ", ".join(sorted(CUT_DEFECT_FORMS)),
+            subject="<graph>", quantity="cut_defect_bound_form",
+            cut_defect_bound=declared,
+        )
+        return
+    if form not in CUT_DEFECT_FORMS:
+        rec.decertify(
+            "L2", "C2/W58",
+            f"cut_defect_bound_form is {form!r}, which names no quantity this "
+            "framework defines. The legal values are "
+            + ", ".join(sorted(CUT_DEFECT_FORMS)),
+            subject="<graph>", quantity="cut_defect_bound_form",
+        )
+        return
+    if form == "substructuring-residual":
+        rec.decertify(
+            "L2", "C2/W58",
+            "cut_defect_bound_form is the substructuring residual L2/C3, and this "
+            "graph is OVERLAPPING, where L2/C2 applies. The two criteria are on "
+            "different branches with different hypotheses -- L2/C2 needs a partition "
+            "of unity and an assembly, which substructuring has neither of -- and a "
+            "number from one is not a number for the other",
+            subject="<graph>", quantity="cut_defect_bound_form",
+        )
+        return
+
+    # The reference-free form is the bound only under the disjointness hypothesis,
+    # so here and only here the geometry above changes the verdict.
+    if form.startswith("neighbour-disagreement"):
+        # **W58's second hypothesis, and it is the one that scales.** The
+        # pairwise form is a MAX OVER PAIRS of a norm; L2/C2's bound is a norm
+        # over the whole grid of a cellwise max. Those coincide when there is at
+        # most one overlapping pair -- which is decidable here, from the
+        # subdomain count -- and diverge on any larger tiling whatever the
+        # contaminated sets do, because a max over pairs saturates as the tiling
+        # grows while the bound accumulates.
+        n_sub = len(pou.subdomains())
+        if form == "neighbour-disagreement" and n_sub > 2:
+            rec.decertify(
+                "L2", "C2/W58",
+                f"cut_defect_bound is declared at {declared:.4e} in the PAIRWISE "
+                f"reference-free form on a {n_sub}-subdomain partition. That form "
+                "is a max over neighbour pairs of a norm and L2/C2's bound is a "
+                "norm over the whole grid of a cellwise max: they coincide when "
+                "there is at most one overlapping pair and diverge above it, "
+                "because a max over pairs saturates as the tiling grows while the "
+                "bound accumulates. Declare "
+                "'neighbour-disagreement-aggregated' instead "
+                "(probe.aggregated_neighbour_disagreement) -- the same "
+                "measurement aggregated the bound's way, at no extra cost",
+                subject="<graph>", quantity="cut_defect_bound_form",
+                cut_defect_bound=declared, n_subdomains=n_sub,
+            )
+            return
+        if mult is None:
+            rec.decertify(
+                "L2", "C2/W58",
+                f"cut_defect_bound is declared at {declared:.4e} in the "
+                "REFERENCE-FREE form, which equals the bound only where the agents' "
+                "contaminated sets are pairwise disjoint -- and the partition of unity "
+                "declares no contaminated cells, so that hypothesis is undecidable "
+                "here. It is decidable from geometry alone; declare `contaminated`, "
+                "which W49's Pi needs anyway",
+                subject="<graph>", quantity="cut_defect_bound_form",
+            )
+            return
+        if not mult["disjoint"]:
+            rec.decertify(
+                "L2", "C2/W58",
+                f"cut_defect_bound is declared at {declared:.4e} in the "
+                f"REFERENCE-FREE form, and {mult['shared_cells']} of "
+                f"{mult['contaminated_cells']} contaminated cells belong to more than "
+                f"one subdomain (up to {mult['max_multiplicity']} at once). More than "
+                "one D_i is nonzero there, so the neighbour disagreement is a "
+                "SURROGATE for L2/C2's bound and not the bound. Measured on the "
+                "four-window tiling, whose contaminated sets share 1120 cells, the two "
+                "agreed to 1.00007 anyway -- which is a measurement, not a theorem, and "
+                "does not transfer to a tiling with more interfaces. Either measure the "
+                "chi-weighted form against a monolith or quote this as a surrogate",
+                subject="<graph>", quantity="cut_defect_bound_form",
+                cut_defect_bound=declared, **mult,
+            )
+            return
+
     rec.admit(
         "L2", "C2",
-        f"cut criterion applies and is measured: the chi-weighted restriction defect "
-        f"over one exchange interval is {declared:.4e}, bounding the composed defect "
-        f"cellwise by the identity A({{E_i R_i u}}) - E u = sum_i R_i^T chi_i D_i "
-        f"together with chi >= 0 (L6/C1). Derived, not adopted",
+        f"cut criterion applies and is measured: the restriction defect over one "
+        f"exchange interval is {declared:.4e}, in the {form} form -- "
+        f"{CUT_DEFECT_FORMS[form]} -- bounding the composed defect cellwise by the "
+        f"identity A({{E_i R_i u}}) - E u = sum_i R_i^T chi_i D_i together with "
+        f"chi >= 0 (L6/C1). Derived, not adopted"
+        + (". The reference-free form is quoted, and the contaminated sets are "
+           "disjoint, so it IS the max form of the bound rather than a surrogate "
+           "for it (W58)" if form.startswith("neighbour-disagreement") else ""),
         subject="<graph>",
         cut_defect_bound=declared,
+        cut_defect_bound_form=form,
         provenance=(graph.measured.probe_state, graph.measured.scheme,
                     graph.measured.depth),
     )
@@ -1443,9 +1590,13 @@ def _l4_verdicts(
                   "one that ignores its boundary data entirely, which is exactly the "
                   "bc_channel failure conformance calls the foundational hole -- moves "
                   "the seam by at most its own block norm, so that class of failure "
-                  "cannot be caught. Nothing in this framework derives beta_min: "
-                  "`certify_substitution` takes it from the caller with no default and "
-                  "the one sibling default is 1e-12, at which every seam here is blind. "
+                  "cannot be caught. Since W81 the threshold above is the certificate's "
+                  "own `visible_above`, `certify_substitution` takes beta_min with NO "
+                  "default and reports `visible_above`/`fails_above` when none is given, "
+                  "and the 1e-12 sibling default has been renamed `beta_int_floor` "
+                  "because it guards a different quantity. The one derived candidate is "
+                  "eps_tol = min(tau, sigma), which this graph must measure before it can "
+                  "be used here. "
                   "This compile makes no substitution claim, so it is recorded and not "
                   "charged against the verdict; `composition.SubstitutionCertificate."
                   "blind` is where it has teeth, and it downgrades the pass there."
@@ -2031,7 +2182,10 @@ def _l6_assembly(ctx: _Context) -> AssemblyCertificate:
     """
     rec, graph, stamp = ctx.record, ctx.graph, ctx.stamp
     pou: PartitionOfUnity | None = graph.partition_of_unity
-    cert = certify(pou)
+    # W100: the constraint the agents each enforce is derived from their declared
+    # governing family here, so L6/C2 and R12 read the same string and the
+    # certificate carries it whether or not a projection is declared.
+    cert = certify(pou, constraint=_declared_constraint(graph))
     ctx.holes.activate(ASSEMBLY_CERTIFICATE, "<assembly>")
 
     if pou is None:
@@ -2047,6 +2201,7 @@ def _l6_assembly(ctx: _Context) -> AssemblyCertificate:
         ctx.holes.measure(ASSEMBLY_CERTIFICATE, "norm_A", None)
         ctx.holes.measure(ASSEMBLY_CERTIFICATE, "blend_defect", None)
         ctx.holes.measure(ASSEMBLY_CERTIFICATE, "condition", None)
+        ctx.holes.measure(ASSEMBLY_CERTIFICATE, "conservative", None)
         return cert
 
     cond = cert.condition
@@ -2093,6 +2248,7 @@ def _l6_assembly(ctx: _Context) -> AssemblyCertificate:
             f"identity {cert.pou_residual:.3e} and L6/C1 convexity (min chi = "
             f"{cond.chi_min:.4g}): the blend is at least as accurate as what it blends",
         )
+    _r12_conservative_assembly(ctx, cert)
     _w49_sigma_branch(ctx, cond)
     ctx.holes.measure(ASSEMBLY_CERTIFICATE, "pou_residual", cert.pou_residual)
     ctx.holes.measure(ASSEMBLY_CERTIFICATE, "norm_A", cert.norm_A)
@@ -2107,7 +2263,283 @@ def _l6_assembly(ctx: _Context) -> AssemblyCertificate:
         note="the reference-side diagnostic. The condition itself is checked without it, "
              "which is what the slot required",
     )
+    ctx.holes.measure(
+        ASSEMBLY_CERTIFICATE, "conservative", cond.conservative,
+        constrained_by="L6/C2",
+        note=cond.why_C2(),
+    )
     return cert
+
+
+
+#: Governing families whose agents enforce a pointwise linear constraint on the
+#: state they return.  The map is a string test rather than an analysis, exactly
+#: as E3's cross-family check is, and it is short on purpose: a family only
+#: belongs here if an agent that solves it returns a field satisfying the
+#: constraint to solver tolerance, because that is the hypothesis L6/C2 needs.
+CONSTRAINED_FAMILIES: tuple[tuple[str, str], ...] = (
+    ("incompressible", "divergence-free"),
+)
+
+
+def _declared_constraint(graph) -> str | None:
+    """What the agents each enforce on their own subdomain, from the families."""
+    for a in graph.agents:
+        fam = a.capabilities.governing_family or ""
+        for needle, constraint in CONSTRAINED_FAMILIES:
+            if needle in fam:
+                return constraint
+    return None
+
+
+def _enforcing_agents(graph) -> list[str]:
+    """Agents whose OWN step enforces the constraint, so the blend can break it.
+
+    ``embedded`` says the elliptic solve is inside the agent, so the field it
+    returns satisfies the constraint on its own subdomain -- which is the
+    hypothesis of L6/C2 and the arrangement that goes unstable.  ``unknown``
+    cannot be cleared and is counted with it, on the same discipline R10 already
+    applies to it.  ``exposed`` is the opposite: the agent hands the elliptic
+    part out, so its local field is NOT individually constrained, there is
+    nothing for the blend to destroy, and the composition layer's single global
+    application is downstream of the blend by construction.
+    """
+    return [a.agent_id for a in graph.agents
+            if a.capabilities.elliptic_subsolve in (EllipticSubsolve.EMBEDDED,
+                                                    EllipticSubsolve.UNKNOWN)]
+
+
+def _r12_conservative_assembly(ctx: _Context, cert) -> None:
+    """R12: an assembly must preserve the constraint its agents enforce.
+
+    **Added 2026-08-31 from the measurement that ended a rollout.**  `assembly.L6_C2`
+    carries the statement; the short version is that for a linear constraint C
+    with ``C u_i = 0`` on every subdomain,
+
+        C( sum_i chi_i u_i ) = sum_i [C, chi_i] u_i = sum_i grad(chi_i) . u_i
+
+    which is ``grad(chi_1) . (u_1 - u_2)`` on two windows, and is nonzero at cells
+    where every local field satisfies the constraint EXACTLY.  So the blend
+    manufactures constraint residual out of the local solves' disagreement, in
+    proportion to how fast chi turns over, and no overlap width and no convexity
+    removes it -- L6/C1 bounds the blend's ERROR and is silent about a constraint.
+
+    **The repair is to MOVE the projection, not to add one, and that distinction
+    is the whole rule.**  120 macro-steps from the freestream at N = 6, disks
+    live, reporting the macro-step at which |u| leaves the band 3:
+
+        agents        composition layer        leaves the band at
+        embedded      nothing                  74   (not finite by 82)
+        embedded      global spectral Leray    51
+        embedded      global Neumann Leray     33
+        EXPOSED       nothing                  never -- and ||div u|| = 1.25
+        EXPOSED       global spectral Leray    never, to 120, ||div u|| = 0.066
+
+    Adding a projection to agents that already project **applies the pressure
+    twice** -- each window has already answered the disk's momentum sink on its
+    own subdomain -- and measured, that is worse than doing nothing.  The
+    arrangement that survives is the one R10 has prescribed since Tier 0: take
+    the elliptic part out of the agent, and let the composition layer apply it
+    once, to the assembled field.
+
+    **And the divergence is not the proximate cause**, which corrects the account
+    section 19.6 first gave.  The Neumann variant above holds ``||div u||_rms`` at
+    **0.0089** against the bare column's **0.69** and leaves the band **soonest**
+    of the three.  L6/C2's residual is real, it is what the assembly injects, and
+    it is not by itself what ends the rollout.
+
+    The verdict ladder, and why it is not one verdict:
+
+      * **no projection, and some agent enforces the constraint internally** --
+        decertify.  The blend breaks the constraint and nothing restores it.
+      * **a projection declared, and some agent STILL enforces it internally** --
+        decertify.  That is the arrangement above: the constraint operator runs
+        twice per macro-step, measured worse than either endpoint.  The message
+        names R10 as the actual repair.
+      * **declared per subdomain** -- refuse.  W98's measured failure: an operator
+        that cannot see across a seam cannot repair what the blend broke across
+        it.
+      * **declared before the assembly** -- refuse.  That IS the unrepaired
+        column: every window returns a constrained field and the blend breaks it
+        again.  L6/C2 is about the order.
+      * **declared, global, after the assembly, with the agents elliptic parts
+        exposed** -- admit.  The measured-stable arrangement.
+
+    **R12 does not clear R10, and R10 without R12 is not enough either.**  R10
+    moves the elliptic part out of the agent; R12 says where the composition
+    layer must then put it.  Neither alone is the scheme: exposed agents with no
+    global projection run 120 macro-steps without leaving the band and with
+    ``||div u||_rms`` at 1.25, which is stable and not incompressible.
+    """
+    rec, graph = ctx.record, ctx.graph
+    cond = cert.condition
+    if graph.partition_of_unity is None or len(graph.agents) < 2:
+        return
+    if ctx.decomposition is not Decomposition.OVERLAPPING:
+        # A single-valued-flux or substructuring assembly is not a blend, so the
+        # commutator identity has no chi to be taken with. It has its own
+        # conservation question and this is not it.
+        return
+    constraint = _declared_constraint(graph)
+    if constraint is None:
+        return
+    enforcing = _enforcing_agents(graph)
+    proj = graph.assembly_projection
+    if cond is not None and cond.constraint is None:
+        cond.constraint = constraint
+
+    if proj is None:
+        if not enforcing:
+            # Every agent exposes its elliptic part, so no local field is
+            # individually constrained and there is nothing for the blend to
+            # break. R10b has already fixed the cadence the composition layer
+            # applies it at; L6/C2 is satisfied by the arrangement itself.
+            rec.admit(
+                "L6", "R12",
+                f"the constraint is {constraint} and every agent declares "
+                "elliptic_subsolve=exposed, so no local field is individually "
+                "constrained and the composition layer's single global "
+                "application is downstream of the blend by construction. L6/C2's "
+                "hypothesis -- C u_i = 0 on every subdomain -- does not hold "
+                "here, so its conclusion is not needed. **What this does NOT "
+                "check is that the composition layer applies that elliptic part "
+                "at all**: R10b fixes the cadence it must be applied at and "
+                "assumes it happens, and nothing on the graph says it does. "
+                "Measured 2026-08-31 on the CS-7 ladder, the same exposed agents "
+                "with no global projection run 120 macro-steps without leaving "
+                "the band and with ||div u||_rms at 1.25 at six windows -- "
+                "stable, and not "
+                "incompressible. Declaring an assembly.ProjectedAssembly is what "
+                "makes it checkable, and W105 is the row",
+                subject="<assembly>", quantity="assembled state",
+                constraint=constraint,
+            )
+            return
+        rec.decertify(
+            "L6", "R12",
+            f"{len(enforcing)} agents enforce {constraint} on their own subdomain "
+            "and the assembly declares no projection, so the blend's commutator "
+            "residual sum_i grad(chi_i).u_i is created on every overlap and "
+            "nothing removes it. It is manufactured where the local solves "
+            "DISAGREE, at cells where each of them satisfies the constraint "
+            "exactly, so no overlap width and no convexity touches it -- L6/C1 "
+            "bounds the blend's error against the local errors and is silent "
+            "about a constraint. Measured on the CS-7 ladder 2026-08-31: the "
+            "assembled ||div u||_rms grows with the graph, 0.0132 -> 0.0957 -> "
+            "0.1507 -> 0.2502 from 1 to 68 overlapping pairs, and the composed "
+            "rollout is not finite by macro-step 82 at N=6 while the monolith "
+            "from the same state under the same forcing holds u_max at 1.33. "
+            "Declare an assembly.ProjectedAssembly with a global, after-assembly "
+            "constraint projection",
+            subject="<assembly>", quantity="assembled state",
+            constraint=constraint, enforcing=list(enforcing),
+        )
+        return
+
+    if not proj.declared_legally:
+        rec.decertify(
+            "L6", "R12",
+            f"the assembly declares a constraint projection this framework cannot "
+            f"read: {proj.why()}",
+            subject="<assembly>", quantity="assembled state",
+            scope=proj.scope, stage=proj.stage, cadence=proj.cadence,
+        )
+        return
+
+    if not proj.global_scope:
+        rec.refuse(
+            "L6", "R12",
+            f"the assembly declares its {proj.constraint} projection at scope "
+            f"{proj.scope!r}. {proj.why()}. The residual the blend creates lives "
+            "on the overlap BETWEEN two subdomains, so an operator restricted to "
+            "one of them cannot see the quantity it is meant to remove; and an "
+            "elliptic operator run per window on a periodic window is W98, "
+            "measured at a manufactured 25% velocity deficit 3.5 D upstream of a "
+            "lone turbine",
+            subject="<assembly>", quantity="assembled state",
+            scope=proj.scope, constraint=proj.constraint,
+        )
+        return
+
+    if not proj.after_assembly:
+        rec.refuse(
+            "L6", "R12",
+            f"the assembly declares its {proj.constraint} projection at stage "
+            f"{proj.stage!r}. {proj.why()}. Projecting each local field and then "
+            "blending is exactly the arrangement the measurement ends: every "
+            "window returns a constrained field, the blend breaks the constraint "
+            "on every overlap, and the rollout is not finite by macro-step 82 at "
+            "six windows. L6/C2 is a statement about the ORDER of two operators "
+            "the graph already has",
+            subject="<assembly>", quantity="assembled state",
+            stage=proj.stage, constraint=proj.constraint,
+        )
+        return
+
+    if proj.cadence < 1:
+        rec.refuse(
+            "L6", "R12",
+            f"the assembly declares its {proj.constraint} projection at cadence "
+            f"{proj.cadence}, so it is declared and not applied. A declaration "
+            "that does not run is worse than none: the compile would issue L6/C2 "
+            "on it",
+            subject="<assembly>", quantity="assembled state",
+            cadence=proj.cadence,
+        )
+        return
+
+    if proj.constraint != constraint:
+        rec.decertify(
+            "L6", "R12",
+            f"the agents enforce {constraint} and the assembly projects onto "
+            f"ker({proj.constraint}). The projection is global and after the "
+            "blend, which is the arrangement L6/C2 asks for, but it is a "
+            "projection onto a different kernel and nothing here establishes "
+            "that it removes the residual the blend creates",
+            subject="<assembly>", quantity="assembled state",
+            constraint=constraint, projected=proj.constraint,
+        )
+        return
+
+    if enforcing:
+        rec.decertify(
+            "L6", "R12",
+            f"the assembly projects onto ker({constraint}) globally and after the "
+            f"blend, which is the arrangement L6/C2 asks for -- and {len(enforcing)} "
+            "agents ALSO enforce the constraint inside their own step, so the "
+            "constraint operator runs twice per macro-step. Measured 2026-08-31 "
+            "over 120 macro-steps at six windows, that is worse than either "
+            "endpoint: the same agents with no global projection leave the band at "
+            "74, with a global spectral projection at 51 and with a global Neumann "
+            "one at 33, while the same graph with the agents elliptic parts EXPOSED "
+            "and one global projection holds all 120. Each window has already "
+            "answered the momentum sink on its own subdomain and the global solve "
+            "answers it again. **The repair is R10, not this**: declare "
+            "elliptic_subsolve=exposed and let this projection be the only one",
+            subject="<assembly>", quantity="assembled state",
+            constraint=constraint, enforcing=list(enforcing),
+            scope=proj.scope, stage=proj.stage, cadence=proj.cadence,
+        )
+        return
+
+    ell = "with every agent's elliptic part exposed"
+    rec.admit(
+        "L6", "R12",
+        f"{cond.why_C2()}. The blend does not inherit {constraint} -- "
+        "C(sum_i chi_i u_i) = sum_i grad(chi_i).u_i, nonzero wherever the local "
+        "solves disagree -- and the composition layer supplies the projection "
+        f"that restores it, {ell} -- so it runs ONCE per macro-step, which is what "
+        "makes this the arrangement that survives. Measured on the CS-7 ladder "
+        "2026-08-31 over 120 macro-steps from the freestream: this column holds at "
+        "every rung, while the same agents with the elliptic part left inside them "
+        "are not finite by macro-step 82 at six windows and are WORSE, not better, "
+        "if a global projection is added on top of their own",
+        subject="<assembly>", quantity="assembled state",
+        constraint=constraint, scope=proj.scope, stage=proj.stage,
+        cadence=proj.cadence,
+        residual_blend=cond.constraint_residual_blend,
+        residual_projected=cond.constraint_residual_projected,
+    )
 
 
 def _w49_sigma_branch(ctx: _Context, cond) -> None:
@@ -2249,9 +2681,15 @@ def _l8_emit(
             sigma=UNMEASURED_CONSTANTS["sigma"],
             gamma=None,
             L=UNMEASURED_CONSTANTS["L"],
-            note="every defect carries the depth it was measured at: a subassembly's "
+            # **W54.** Derived from the graph rather than declared, so it cannot
+            # be forgotten and cannot disagree with what the compile actually ran.
+            harness=HarnessParameters.from_graph(ctx.graph),
+            note="every defect carries the depth it was measured at -- a subassembly's "
                  "transmission and solve infidelity become its AGENT infidelity one level "
-                 "up, so the three-way split is not invariant under regrouping",
+                 "up, so the three-way split is not invariant under regrouping -- and "
+                 "since W54 the harness parameters it is a function of, because four "
+                 "composition-layer defects have worn an agent's label and the depth "
+                 "caught none of them",
         ),
         interface=interface,
         assembly=certificate,

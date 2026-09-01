@@ -161,6 +161,45 @@ class DeclaredTopologyEvent:
     e0_reset: float | None = None
 
 
+#: **W58.**  The three legal values of `MeasuredConstants.cut_defect_bound_form`,
+#: with what each one is and what it costs.  There is no default: the whole row
+#: is that a number carrying neither form is unreadable.
+CUT_DEFECT_FORMS: dict[str, str] = {
+    "chi-weighted": (
+        "|| sum_i chi_i |D_i| ||, D_i = E_i R_i - R_i E. L2/C2's own quantity, and "
+        "the one the derivation bounds the composed defect by. Needs a MONOLITHIC "
+        "reference, exactly as tau does, so it is a diagnostic and not a condition"
+    ),
+    "max": (
+        "|| max_i |D_i| ||, the same bound with the partition of unity dropped. "
+        "Also needs the monolith; 220x looser on the four-window tiling, and its one "
+        "advantage is that it does not need the weights to be right"
+    ),
+    "neighbour-disagreement": (
+        "MAX OVER PAIRS of ||E_i R_i u - E_j R_j u|| on the overlap. "
+        "REFERENCE-FREE -- the common mode cancels there, so what survives is the "
+        "part of the restriction defect the cut itself creates, and both local "
+        "solves are already computed by the composed step. Equal to the max form "
+        "on ONE overlapping pair with disjoint contaminated sets, and on nothing "
+        "else: a max over pairs saturates as the tiling grows while the bound "
+        "accumulates, so on a many-window tiling it under-estimates the bound "
+        "for a reason unrelated to disjointness"
+    ),
+    "neighbour-disagreement-aggregated": (
+        "|| max over pairs |E_i R_i u - E_j R_j u| ||, the same reference-free "
+        "measurement aggregated the way the bound is: a cellwise max over pairs, "
+        "then one norm over the whole grid. This is the form that is comparable "
+        "with the max form at any size, and it equals it exactly when the "
+        "contaminated sets are pairwise disjoint -- which IS decidable from the "
+        "declaration, and is usually false"
+    ),
+    "substructuring-residual": (
+        "L2/C3's ||S_M a* - chi_M|| / beta, which is a different criterion on a "
+        "different branch and is not comparable with the three above"
+    ),
+}
+
+
 @dataclass
 class MeasuredConstants:
     """Bound constants a measurement has supplied, with the provenance that makes
@@ -195,6 +234,18 @@ class MeasuredConstants:
     #: ``scheme`` / ``depth`` triple as the rest: a bound measured at one state
     #: and one exchange cadence is not the same bound at another.
     cut_defect_bound: float | None = None
+    #: **W58, closed 2026-08-30.**  WHICH of the two definitions the number above
+    #: was measured by, as a value from `CUT_DEFECT_FORMS`.  The quantity has two
+    #: inequivalent readings -- ``|| sum_i chi_i |D_i| ||``, which needs a
+    #: monolithic reference exactly as ``tau`` does, and the reference-free
+    #: neighbour disagreement, which does not -- and they are **provably equal
+    #: only when the agents' contaminated sets are pairwise disjoint**.  On the
+    #: four-window tiling they are not, and the surrogate agreed to 1.00007
+    #: anyway; agreement without the hypothesis is luck, and luck does not
+    #: transfer to a bigger tiling.  Declaring the value without the form is what
+    #: L2/C2 now decertifies: it is a number whose reader cannot tell what was
+    #: measured, which is the silent-wrongness class.
+    cut_defect_bound_form: str | None = None
     #: **W86, measured 2026-08-29.**  The lag distance ``sigma`` was measured at,
     #: as a NUMBER rather than a phrase inside ``probe_state``.  §16.5 states the
     #: reason in its own words -- *"a sigma quoted without its lag is not a
@@ -240,7 +291,8 @@ class MeasuredConstants:
         d = {k: getattr(self, k) for k in
              ("L", "L_stderr", "tau", "sigma", "sigma_lag", "gamma", "C_mu",
               "norm_A", "p_decline", "cut_defect_bound")}
-        d.update(probe_state=self.probe_state, scheme=self.scheme,
+        d.update(cut_defect_bound_form=self.cut_defect_bound_form,
+                 probe_state=self.probe_state, scheme=self.scheme,
                  depth=self.depth, source=self.source)
         return d
 
@@ -271,6 +323,13 @@ class CaseGraph:
     #: R9. Which flux the seams match; see `FluxMatching`. Only consulted when
     #: the graph is multirate, because across one clock the two agree exactly.
     flux_matching: FluxMatching = FluxMatching.POINTWISE
+    #: The assembly.  A bare `assembly.PartitionOfUnity` or
+    #: `assembly.GridPartitionOfUnity` is the blend alone; an
+    #: `assembly.ProjectedAssembly` is the blend PLUS the composition layer's
+    #: constraint projection, which is what L6/C2 requires and R12 checks (W100).
+    #: One field rather than two, because the two halves are one step and a graph
+    #: that could declare them apart could declare a projection its assembly does
+    #: not apply.
     partition_of_unity: Any | None = None         # see assembly.PartitionOfUnity
     #: W45: measured bound constants, with provenance. Unset fields stay unmeasured.
     measured: MeasuredConstants | None = None
@@ -308,6 +367,16 @@ class CaseGraph:
     def K(self) -> int:
         """The number of agents. T_abs degrades linearly in this."""
         return len(self.agents)
+
+    @property
+    def assembly_projection(self):
+        """The constraint projection the assembly declares, or None (W100).
+
+        Duck-typed off `partition_of_unity` rather than a second field, so a
+        graph cannot declare a projection its assembly does not apply.  L6/C2
+        and R12 ask this one question and this is where they ask it.
+        """
+        return getattr(self.partition_of_unity, "projection", None)
 
     def connections_of(self, agent_id: str) -> list[Connection]:
         return [c for c in self.connections if agent_id in c.agents]

@@ -281,6 +281,11 @@ ASSEMBLY_CERTIFICATE = NamedHole(
                         "the overlap. A DIAGNOSTIC, not the condition: measured, it reads "
                         "as passing for a deliberately non-convex partition",
         "condition": "L6/C1 -- chi_ij >= 0 and sum_i chi_ij = 1. FILLED",
+        "conservative": "L6/C2 -- the blend does NOT inherit a constraint its agents "
+                        "each enforce: C(sum_i chi_i u_i) = sum_i grad(chi_i).u_i, "
+                        "nonzero wherever the local solves disagree. The composition "
+                        "layer must project the ASSEMBLED field onto ker C, globally, "
+                        "after the blend. R12. FILLED 2026-08-31 (W100)",
     },
     default_verdict=ADMIT,
     failure_class=FailureClass.UNVERIFIED_HYPOTHESIS,
@@ -290,7 +295,8 @@ ASSEMBLY_CERTIFICATE = NamedHole(
         "declaration, and V_chi and the hull escape are computable from a run with no "
         "reference",
     ),
-    measurements_required=("pou_residual", "norm_A", "blend_defect", "condition"),
+    measurements_required=("pou_residual", "norm_A", "blend_defect", "condition",
+                           "conservative"),
     inference_note=(
         "The [AI Inference] this slot carried until 2026-08-28 guessed alpha <= "
         "C(delta, chi) * max_i ||grad u_i|| with C growing as the overlap shrinks. It was "

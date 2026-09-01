@@ -37,12 +37,123 @@ class EmitRefused(RuntimeError):
     """A run artifact that cannot carry a stamp is not an artifact."""
 
 
+@dataclass(frozen=True)
+class HarnessParameters:
+    """**W54, closed 2026-08-30.** What the composition layer did, beside the depth.
+
+    A defect has always carried the depth it was measured at, because a
+    subassembly's transmission infidelity becomes its agent infidelity one level
+    up.  That tag is necessary and it is not sufficient, and the evidence is a
+    tally rather than an argument: **four composition-layer defects have now worn
+    an agent's label**, and the depth caught none of them --
+
+      1. the decomposed pressure solve, 99.8% of the first composed step's error,
+         reading as agent infidelity (Tier 0);
+      2. a partition of unity at full weight right up to the artificial edge,
+         a factor of 200 in ``tau`` against a ramped one (section 9.1);
+      3. the exchange cadence, two orders in ``tau`` with every probe diagnostic
+         unchanged, from hard-coding ``substeps_per_macro_step`` (mistake 5);
+      4. **W98** -- transport and pressure run per window and periodically, which
+         manufactured a 25% velocity deficit 3.5 D UPSTREAM of a lone turbine.
+
+    Every one of the four is a *function of a harness parameter* and none of them
+    is a property of any agent.  So the emitted defect carries them: change one,
+    and the attribution is a different measurement wearing the same name.
+
+    ``elliptic_placement`` is where the elliptic part is applied -- ``agent``
+    when the expert keeps it (an EMBEDDED subsolve), ``composition`` when the
+    composition layer supplies it (an EXPOSED one, R10b), ``mixed`` when the
+    graph does both.  ``chi_shape`` names the partition of unity's profile,
+    because "convex" is admissibility and the *ramp* is accuracy (L6/C1's box).
+    """
+
+    overlap_cells: int | None = None
+    chi_shape: str | None = None
+    exchange_dt: float | None = None
+    exchange_cadence: int | None = None
+    elliptic_placement: str | None = None
+    #: **W100, the fifth instance and the first to end a rollout.** Whether the
+    #: assembly applies a constraint projection to the ASSEMBLED field, as
+    #: ``"<constraint> projection, <scope>, <stage>, <cadence>x per exchange"``,
+    #: or ``"none"``.  It is a harness parameter of exactly the W54 class: it
+    #: belongs to no agent and it is invisible in every diagnostic the framework
+    #: had.  Measured over 120 macro-steps at six windows, moving it decides
+    #: whether the column exists: with the agents elliptic parts EXPOSED it is
+    #: stable to 120, and with them embedded the same declaration makes the column
+    #: WORSE than no projection at all (band left at 51 against 74), because the
+    #: constraint operator is then applied twice.
+    assembly_projection: str | None = None
+    extra: tuple[tuple[str, Any], ...] = ()
+
+    @classmethod
+    def from_graph(cls, graph: Any) -> "HarnessParameters":
+        """Read the harness off a `CaseGraph`, so it is derived and not declared.
+
+        Duck-typed rather than imported, to keep `emit` below `graph` in the
+        dependency order -- the same reason `_jsonable` lives in `verdict`.
+        """
+        pou = getattr(graph, "partition_of_unity", None)
+        chi = None
+        if pou is not None:
+            chi = getattr(pou, "kind", "partition-of-unity")
+            ramp = getattr(pou, "ramp_cells", None)
+            if ramp is not None:
+                chi = f"{chi}, ramp {ramp} cells"
+        placements = set()
+        for agent in getattr(graph, "agents", ()) or ():
+            caps = getattr(agent, "capabilities", None)
+            ell = getattr(caps, "elliptic_subsolve", None)
+            val = getattr(ell, "value", ell)
+            if val in ("embedded", "unknown"):
+                placements.add("agent")
+            elif val == "exposed":
+                placements.add("composition")
+        cadences = {getattr(a.capabilities, "substeps_per_macro_step", None)
+                    for a in (getattr(graph, "agents", ()) or ())}
+        cadences.discard(None)
+        proj = getattr(pou, "projection", None)
+        return cls(
+            overlap_cells=getattr(graph, "overlap_cells", None),
+            chi_shape=chi,
+            exchange_dt=getattr(graph, "macro_dt", None),
+            exchange_cadence=(int(max(cadences)) if cadences else None),
+            elliptic_placement=(
+                "mixed" if len(placements) > 1
+                else (next(iter(placements)) if placements else None)),
+            # W100: derived from the assembly the graph declares, so a run that
+            # applied the projection cannot emit a defect that says it did not,
+            # and a run that did not cannot emit one that says it did.
+            assembly_projection=(
+                "none" if proj is None else
+                f"{proj.constraint} projection, {proj.scope}, {proj.stage}, "
+                f"{proj.cadence}x per exchange"),
+        )
+
+    def key(self) -> tuple:
+        """The tuple two runs must share before their attributions are comparable."""
+        return (self.overlap_cells, self.chi_shape, self.exchange_dt,
+                self.exchange_cadence, self.elliptic_placement,
+                self.assembly_projection, self.extra)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "overlap_cells": self.overlap_cells,
+            "chi_shape": self.chi_shape,
+            "exchange_dt": self.exchange_dt,
+            "exchange_cadence": self.exchange_cadence,
+            "elliptic_placement": self.elliptic_placement,
+            "assembly_projection": self.assembly_projection,
+            **{str(k): _jsonable(v) for k, v in self.extra},
+        }
+
+
 @dataclass
 class BoundTerms:
     """The four constants of the master bound, each tagged with its depth.
 
     Unmeasured is a legitimate value here and is the honest one for most of them
-    today.  What is not legitimate is a number with no depth.
+    today.  What is not legitimate is a number with no depth -- **or, since W54,
+    a measured number with no harness.**
     """
 
     depth: int = 0
@@ -52,6 +163,12 @@ class BoundTerms:
     L: float | Unmeasured | None = None
     sigma_nc: float | None = None          # the non-conforming interface-space component
     sigma_time: float | None = None        # the temporal-representation component
+    #: **W54.**  The composition layer's own settings, which every one of the four
+    #: mislabelled defects was a function of.  Required whenever any of tau,
+    #: sigma or gamma is a measured number; `RunArtifact.validate` refuses
+    #: otherwise, because the whole content of the row is that a defect quoted
+    #: without its harness is not attributable.
+    harness: HarnessParameters | None = None
     note: str = ""
 
     @property
@@ -60,6 +177,12 @@ class BoundTerms:
         if not all(is_measured(p) for p in parts):
             return None
         return float(sum(float(p) for p in parts))  # type: ignore[arg-type]
+
+    @property
+    def measured_terms(self) -> list[str]:
+        """Which of the three defect terms carry an actual number."""
+        return [k for k in ("tau", "sigma", "gamma")
+                if is_measured(getattr(self, k))]
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -70,6 +193,7 @@ class BoundTerms:
             "L": _jsonable(self.L),
             "sigma_nc": self.sigma_nc,
             "sigma_time": self.sigma_time,
+            "harness": None if self.harness is None else self.harness.as_dict(),
             "per_step_defect": self.per_step_defect,
             "note": self.note,
         }
@@ -134,6 +258,19 @@ class RunArtifact:
                 f"{self.case}: no envelope stamp. A result whose reader cannot tell "
                 "whether the bound applies to it is the artifact this specification "
                 "exists to stop being produced"
+            )
+        # **W54.** A measured defect with no harness is not attributable, and
+        # this is the point at which it would leave the process.
+        if self.bound_terms.measured_terms and self.bound_terms.harness is None:
+            raise EmitRefused(
+                f"{self.case}: {', '.join(self.bound_terms.measured_terms)} carries a "
+                "measured value and no harness parameters. Every composition-layer "
+                "defect this project has mislabelled -- the decomposed pressure solve, "
+                "the partition of unity at full weight, the exchange cadence, and W98's "
+                "per-window transport -- was a function of the overlap, chi's shape, the "
+                "exchange cadence or the elliptic placement, and the depth tag caught "
+                "none of them. Set BoundTerms.harness (HarnessParameters.from_graph "
+                "derives it)"
             )
         illegal = self.envelope.illegally_unchecked()
         if illegal:
@@ -215,7 +352,10 @@ class RunArtifact:
 #: The emit contract, as a checklist. Used by the tests to assert that the
 #: artifact carries every group -- the contract is the point, not the numbers.
 EMIT_GROUPS: dict[str, str] = {
-    "bound_terms": "tau, sigma, gamma, L -- with a depth tag on every one",
+    "bound_terms": "tau, sigma, gamma, L -- with a depth tag on every one, and "
+                   "since W54 the harness parameters every measured one is a "
+                   "function of: overlap, chi's shape, exchange cadence, elliptic "
+                   "placement",
     "interface": "beta, kappa, null-space dimension, passivity defect and its "
                  "eigenvector, Xi, the per-mode optimal Robin coefficient",
     "conservation": "per-port residual and the global power residual",

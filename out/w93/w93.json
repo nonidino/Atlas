@@ -586,7 +586,7 @@
      }
     },
     "notes": [],
-    "wall_s": 9.815172910690308
+    "wall_s": 6.023104667663574
    },
    "reference": {
     "seam": "x1r0_bypass",
@@ -735,7 +735,7 @@
      }
     },
     "notes": [],
-    "wall_s": 2.8506433963775635
+    "wall_s": 1.6348989009857178
    },
    "seam_base_M_spread": 0.06504556790704297
   },
@@ -839,7 +839,7 @@
      }
     },
     "notes": [],
-    "wall_s": 2.070364236831665
+    "wall_s": 1.1751956939697266
    },
    "seam_base_M_spread": 0.0
   },
@@ -991,7 +991,7 @@
      }
     },
     "notes": [],
-    "wall_s": 9.380354404449463
+    "wall_s": 6.113349199295044
    },
    "reference": {
     "seam": "x0r0_bypass",
@@ -1140,7 +1140,7 @@
      }
     },
     "notes": [],
-    "wall_s": 2.838643789291382
+    "wall_s": 1.6180176734924316
    },
    "seam_base_M_spread": 0.1251289084353675
   },
@@ -1316,7 +1316,7 @@
      }
     },
     "notes": [],
-    "wall_s": 12.36500096321106
+    "wall_s": 7.826918601989746
    },
    "reference": {
     "seam": "y0c1",
@@ -1489,7 +1489,7 @@
      }
     },
     "notes": [],
-    "wall_s": 3.886308193206787
+    "wall_s": 1.9109539985656738
    },
    "seam_base_M_spread": 0.04104969385251361
   },
@@ -1900,7 +1900,14 @@
      "new": "F10",
      "delta_norm": 0.08465991422847714,
      "beta": 0.004542659636335062,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": 0.004542659636335062,
+     "visible_above": -0.0803219282426893,
+     "fails_above": -0.08011725459214208,
+     "informative_window": [
+      -0.0803219282426893,
+      -0.08011725459214208
+     ],
      "passes": false,
      "verdict": "refuse",
      "passivity_preserved": false,
@@ -1915,7 +1922,14 @@
      "new": "F10",
      "delta_norm": 0.08465991422847714,
      "beta": 0.004542659636335062,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": 0.004542659635335062,
+     "visible_above": -0.0803219282426893,
+     "fails_above": -0.08011725459214208,
+     "informative_window": [
+      -0.0803219282426893,
+      -0.08011725459214208
+     ],
      "passes": false,
      "verdict": "refuse",
      "passivity_preserved": false,
@@ -1930,7 +1944,14 @@
      "new": "F10",
      "delta_norm": 0.08465991422847714,
      "beta": 0.004542659636335062,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": -0.005457340363664938,
+     "visible_above": -0.0803219282426893,
+     "fails_above": -0.08011725459214208,
+     "informative_window": [
+      -0.0803219282426893,
+      -0.08011725459214208
+     ],
      "passes": false,
      "verdict": "refuse",
      "passivity_preserved": false,
@@ -1945,7 +1966,14 @@
      "new": "F10",
      "delta_norm": 0.08465991422847714,
      "beta": 0.004542659636335062,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": -0.09545734036366495,
+     "visible_above": -0.0803219282426893,
+     "fails_above": -0.08011725459214208,
+     "informative_window": [
+      -0.0803219282426893,
+      -0.08011725459214208
+     ],
      "passes": false,
      "verdict": "refuse",
      "passivity_preserved": false,
@@ -1960,7 +1988,14 @@
      "new": "F10",
      "delta_norm": 0.08465991422847714,
      "beta": 0.004542659636335062,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": -0.24545734036366493,
+     "visible_above": -0.0803219282426893,
+     "fails_above": -0.08011725459214208,
+     "informative_window": [
+      -0.0803219282426893,
+      -0.08011725459214208
+     ],
      "passes": false,
      "verdict": "refuse",
      "passivity_preserved": false,
@@ -1975,7 +2010,14 @@
      "new": "F10",
      "delta_norm": 0.08465991422847714,
      "beta": 0.004542659636335062,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": -0.49545734036366496,
+     "visible_above": -0.0803219282426893,
+     "fails_above": -0.08011725459214208,
+     "informative_window": [
+      -0.0803219282426893,
+      -0.08011725459214208
+     ],
      "passes": false,
      "verdict": "refuse",
      "passivity_preserved": false,
@@ -1997,7 +2039,14 @@
      "new": "F20",
      "delta_norm": 0.006768980016461731,
      "beta": 0.7233461481336926,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": 0.7233461481336926,
+     "visible_above": 0.7165981872219304,
+     "fails_above": 0.7165771681172308,
+     "informative_window": [
+      0.7165981872219304,
+      0.7165771681172308
+     ],
      "passes": true,
      "verdict": "admit-uncertified",
      "passivity_preserved": true,
@@ -2012,7 +2061,14 @@
      "new": "F20",
      "delta_norm": 0.006768980016461731,
      "beta": 0.7233461481336926,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": 0.7233461481326926,
+     "visible_above": 0.7165981872219304,
+     "fails_above": 0.7165771681172308,
+     "informative_window": [
+      0.7165981872219304,
+      0.7165771681172308
+     ],
      "passes": true,
      "verdict": "admit-uncertified",
      "passivity_preserved": true,
@@ -2027,7 +2083,14 @@
      "new": "F20",
      "delta_norm": 0.006768980016461731,
      "beta": 0.7233461481336926,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": 0.7133461481336926,
+     "visible_above": 0.7165981872219304,
+     "fails_above": 0.7165771681172308,
+     "informative_window": [
+      0.7165981872219304,
+      0.7165771681172308
+     ],
      "passes": true,
      "verdict": "admit-uncertified",
      "passivity_preserved": true,
@@ -2042,7 +2105,14 @@
      "new": "F20",
      "delta_norm": 0.006768980016461731,
      "beta": 0.7233461481336926,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": 0.6233461481336926,
+     "visible_above": 0.7165981872219304,
+     "fails_above": 0.7165771681172308,
+     "informative_window": [
+      0.7165981872219304,
+      0.7165771681172308
+     ],
      "passes": true,
      "verdict": "admit-uncertified",
      "passivity_preserved": true,
@@ -2057,7 +2127,14 @@
      "new": "F20",
      "delta_norm": 0.006768980016461731,
      "beta": 0.7233461481336926,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": 0.4733461481336926,
+     "visible_above": 0.7165981872219304,
+     "fails_above": 0.7165771681172308,
+     "informative_window": [
+      0.7165981872219304,
+      0.7165771681172308
+     ],
      "passes": true,
      "verdict": "admit-uncertified",
      "passivity_preserved": true,
@@ -2072,7 +2149,14 @@
      "new": "F20",
      "delta_norm": 0.006768980016461731,
      "beta": 0.7233461481336926,
+     "beta_min_source": "supplied by the caller, underived",
      "margin": 0.22334614813369258,
+     "visible_above": 0.7165981872219304,
+     "fails_above": 0.7165771681172308,
+     "informative_window": [
+      0.7165981872219304,
+      0.7165771681172308
+     ],
      "passes": true,
      "verdict": "admit-uncertified",
      "passivity_preserved": true,

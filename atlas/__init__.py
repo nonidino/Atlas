@@ -66,17 +66,20 @@ from .claims import (
 )
 from .compiler import CompileResult, compile_scheme
 from .composition import (
+    BETA_MIN_UNDERIVED,
     CompositeExpert,
     CompositionRefused,
     SubstitutionCertificate,
+    beta_min_from_tolerance,
     certify_substitution,
     compose,
     schur_complement,
 )
 from .conformance import ConformanceCertificate, run_conformance
-from .emit import EMIT_GROUPS, BoundTerms, RunArtifact
+from .emit import EMIT_GROUPS, BoundTerms, HarnessParameters, RunArtifact
 from .envelope import ENVELOPE, EnvelopeStamp, Hypothesis, Status
 from .graph import (
+    CUT_DEFECT_FORMS,
     Agent,
     CaseGraph,
     Connection,
@@ -148,9 +151,11 @@ __all__ = [
     "PartitionOfUnity", "AssemblyCertificate", "certify",
     "TypedClaim", "ClaimTypeTag", "HorizonBranch", "QuantityClaim", "type_claim",
     "abstention_horizon", "refuse_statistical_claim",
-    "RunArtifact", "BoundTerms", "EMIT_GROUPS",
+    "RunArtifact", "BoundTerms", "HarnessParameters", "EMIT_GROUPS",
+    "CUT_DEFECT_FORMS",
     "compose", "CompositeExpert", "CompositionRefused", "schur_complement",
     "certify_substitution", "SubstitutionCertificate",
+    "beta_min_from_tolerance", "BETA_MIN_UNDERIVED",
     "tight_couple",
     "seam_defect_split",
     "interface_power",

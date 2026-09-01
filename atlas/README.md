@@ -31,7 +31,7 @@ if result.runnable:                 # a refused scheme is not runnable, full sto
 
 Code home is `src/atlas/` on the `atlas-0.1` branch of
 `github.com/nonidino/physics-foundation-model`; this tree is drop-in for that path.
-Dependencies: `numpy` (`torch` only for the two Poseidon-T case studies). Tests: `python -m pytest tests/ -q` (397 tests).
+Dependencies: `numpy` (`torch` only for the two Poseidon-T case studies). Tests: `python -m pytest tests/ -q` (503 tests).
 
 ---
 
@@ -45,7 +45,7 @@ Dependencies: `numpy` (`torch` only for the two Poseidon-T case studies). Tests:
 | **L3** | port algebra | `ports.py`, `transfer.py`, `admissibility.py` | no declared interface space and prolongation; scale set incomplete or not power-preserving; **the two sides of a seam return different halves of the conjugate pair (C9)** |
 | **L4** | transmission operator | `probe.py` | probed null space of the wrong dimension |
 | **L5** | interface solve | `scheme.py`, `compiler.py`, `solve.py` | R6 on an empty operator; a degenerate axis |
-| **L6** | assembly | `assembly.py` | the identity fails; **a partition of unity that is not convex (R11)** |
+| **L6** | assembly | `assembly.py` | the identity fails; **a partition of unity that is not convex (R11)**; **an assembly that does not preserve a constraint its agents each enforce (R12)** |
 | **L7** | time integration | `compiler.py`, `solve.py` | R9 a POINTWISE flux match under multirate, clocks that do not nest, or a declared time-integrated match no agent can compute; R3; **two exposed agents at different sub-step cadences (R10b)** |
 | **L8** | emit | `emit.py` | a run that cannot produce the envelope stamp |
 | **L9** | typing of claims | `claims.py` | a trajectory metric quoted past its own horizon |
@@ -78,7 +78,7 @@ guess.
 | `SeamReference` | decertify, tau `UNDEFINED` | the tau-undefined seam list; the one-sided operator surrogate |
 | `InterfaceMotion` | refuse | re-probe count; operator drift; unaccounted power |
 | `TopologyEvent` | refuse without a state map **and** a ledger | the ledger; the injected initial error |
-| `AssemblyCertificate` | **CLOSED 2026-08-28** — `condition` is **L6/C1** and `R11` enforces it | — |
+| `AssemblyCertificate` | **CLOSED 2026-08-28** — `condition` is **L6/C1** and `R11` enforces it. **A second condition 2026-08-31**: `conservative` is **L6/C2** and `R12` enforces it | — |
 | `PortAmendment` | refuse a sixth port type | the ADVEC passenger-pressure count. **W70, 2026-08-29**: the first physics the five types cannot express is not a sixth port -- a thermoelastic body coupling is *volumetric* and every port is a surface bond |
 
 Unmeasured constants are the same discipline applied to numbers. `holes.Unmeasured`
@@ -88,9 +88,9 @@ constant nobody measured. `p` and the OOD graph-size threshold are still unmeasu
 compile reports which ones each run lacks. **`cases/window_ns.py` in `split-step`
 mode now compiles with an empty `unmeasured` list.**
 
-## Six real case studies, and what each is for
+## Eight real case studies, and what each is for
 
-`boundary_response` calls a solver rather than returning a matrix in six graphs
+`boundary_response` calls a solver rather than returning a matrix in eight graphs
 now, and they answer different questions.
 
 | case | expert | what only it can say |
@@ -101,6 +101,9 @@ now, and they answer different questions.
 | `cases/wind_farm_real.py` | six `WindowNS` + two `ActuatorDisk` | the **port algebra**: `ADVEC` passengers per face, open `ROT` ports, a field-to-lumped seam |
 | `cases/thermal_seam.py` | `Compressible2D` + `ThermoStruct2D` | whether a rule survives **different equations on the two sides** -- the only exercise E3 and the `bc_channel` ladder have had against a genuine disagreement |
 | `cases/wake_array.py` | six **Poseidon-T** windows + three `ActuatorDisk` | whether the attribution machinery works on a **real pretrained expert in a real wake** -- the only graph with turbine geometry, and the only one that produces a number an operator is paid in |
+| `cases/scaling_ladder.py` | the same, parameterized 1 to 24 windows | how composition error grows with **interface count** -- the first case study whose *variable* is the size of the graph, and the criterion (F1) the whole programme is scheduled on |
+| `cases/reuse_probe.py` | the same swap at seven seams and five states | whether a substitution certificate is a property of the **expert** or of the **state it was probed at** -- the first case study whose *variable* is the probe state, and the only one that tests the foundation-model claim rather than the coupling claim |
+| `cases/wind_farm_design.py` | the same column in torch, plus yawed disks placed continuously | whether the adjoint the framework has claimed since Tier 0 can be **spent** -- the only graph that is differentiated end to end w.r.t. a DESIGN vector, and the only one whose output is an optimised layout rather than a defect. Not a rung of the ladder: a capability demonstration (PoC 1a) |
 
 **Every one of them found something the others could not.** `ChannelNS` showed
 that **R10 survives the absence of the compatibility violation it was measured
@@ -426,6 +429,48 @@ count; at `dt = 0.025` and `dt = 0.10` the improvement collapsed to 1.8x and 2.1
 the cadence matched it is **138x to 361x across a 4x range of dt** -- the claim survives,
 the constant did not. Use `window_ns.substeps_at(dt)`, never `SUBSTEPS`, anywhere `dt`
 varies.
+
+**A fourth rule came out of the scaling ladder (2026-08-31), and it is the one
+that ends a rollout rather than degrading one.**
+
+**R12 -- an assembly must preserve the constraint its agents enforce.** L6/C1 says a
+convex blend is at least as accurate as what it blends. It says nothing about a
+CONSTRAINT, and a partition-of-unity blend does not inherit one: for a linear `C` with
+`C u_i = 0` on every subdomain,
+
+    C( sum_i chi_i u_i ) = sum_i [C, chi_i] u_i = sum_i grad(chi_i) . u_i
+
+which for two windows is `grad(chi_1) . (u_1 - u_2)`. The blend manufactures constraint
+residual out of the local solves' DISAGREEMENT, at cells where each of them satisfies
+the constraint exactly, so no overlap width and no convexity removes it. Measured on the
+CS-7 ladder: the assembled `||div u||_rms` grows with the graph, and the classical
+composed rollout is not finite by macro-step 82 at six windows while the monolith from
+the same state under the same forcing holds `u_max` at 1.33.
+
+The repair is a **declared composition-layer step**, not a line in a driver:
+`assembly.ProjectedAssembly` is a partition of unity plus an
+`assembly.ConstraintProjection`, and R12 decides it from the declaration -- global scope,
+after-assembly stage, cadence at least one per exchange. Per-subdomain refuses (it is
+W98), before-assembly refuses (it is the unrepaired column), absent decertifies.
+
+**And the repair is to MOVE the projection, not to add one.** 120 macro-steps from the
+freestream at six windows, reporting the macro-step where `|u|` leaves the band 3:
+
+    agents      composition layer       leaves the band at
+    embedded    nothing                 74   (not finite by 82)
+    embedded    global spectral Leray   51
+    embedded    global Neumann Leray    33
+    EXPOSED     nothing                 never -- and ||div u|| = 1.25
+    EXPOSED     global spectral Leray   never, to 120, ||div u|| = 0.066
+
+Adding a projection to agents that already project applies the pressure twice, and it is
+measured worse than doing nothing. So R12 **decertifies** that arrangement and names R10
+as the actual repair. The divergence is not the proximate cause either -- the Neumann
+variant holds `||div u||` at 0.0089 against 0.69 and dies soonest. **R12 does not clear
+R10, and R10 without R12 is not enough**: exposed agents with no global projection run 120
+macro-steps without leaving the band and with `||div u||` at 1.25, which is stable and not
+incompressible. `wake_array.exposed_reference_solver` is the agent half of the repair and
+`wake_array.projected_assembly` is the composition half.
 
 **The sigma bound now has an overlapping branch.** `master-error-bound` 4.1:
 `sigma <= C_mu * Pi * ||d_lambda||`, with `Pi` the weight the assembly gives to cells a

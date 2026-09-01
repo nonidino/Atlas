@@ -274,6 +274,7 @@ def test_declaring_another_experts_constants_is_expressible_and_visible():
     """
     m = MeasuredConstants(L=0.98, tau=1e-6, sigma=1e-8, gamma=0.0, norm_A=1.0,
                           C_mu=1.2, cut_defect_bound=2.6e-7,
+                          cut_defect_bound_form="chi-weighted",
                           probe_state="BORROWED from WindowNS",
                           scheme="split-step", depth=0)
     g = _graph(TimeDiscretization.EXPLICIT)

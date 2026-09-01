@@ -489,7 +489,8 @@ def test_declaring_the_cut_defect_bound_reaches_admit():
     r = compile_scheme(_graph(
         _convex_pou_with_contamination(),
         measured=_measured(L=0.98, gamma=0.0, norm_A=1.0, C_mu=1.2,
-                           cut_defect_bound=2.6268e-07)))
+                           cut_defect_bound=2.6268e-07,
+                           cut_defect_bound_form="chi-weighted")))
     assert r.verdict is ADMIT
     assert list(r.decisions.decertifications) == []
     assert r.unmeasured == []

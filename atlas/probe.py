@@ -959,6 +959,7 @@ def restriction_defect_bound(
     reference_step: dict[str, np.ndarray],
     weights: dict[str, np.ndarray],
     weighted: bool = True,
+    n_global: int | None = None,
 ) -> dict[str, float]:
     """**L2/C2** -- the derived decomposition criterion.
 
@@ -994,6 +995,17 @@ def restriction_defect_bound(
 
     ``weighted=False`` returns the max form, whose one advantage is that it does
     not need the weights to be right, only non-negative.
+
+    **Every array is on the GLOBAL grid, and this is not a convenience.**  The
+    identity is ``A - Eu = sum_i R_i^T chi_i D_i``, and the ``R_i^T`` is what
+    places subdomain ``i``'s contribution at its own cells; the accumulation
+    below is a plain sum, so the lift has to have happened already.  Passing
+    subdomain-local arrays -- which on a uniform tiling all have the SAME length
+    and so raise nothing -- silently stacks every window at cell 0 and inflates
+    the bound by the cross terms it invents.  Pass ``n_global`` to have that
+    asserted rather than assumed; it is optional only because the first caller
+    predates the check.  ``chi_i`` is zero outside subdomain ``i``, so the sum is
+    over the whole grid and every term is supported where it belongs.
     """
     ids = list(local_steps)
     if set(ids) != set(weights) or not ids:
@@ -1001,6 +1013,17 @@ def restriction_defect_bound(
             "restriction_defect_bound needs one weight array per local solve; got "
             f"{sorted(local_steps)} against {sorted(weights)}"
         )
+    if n_global is not None:
+        bad = {a: int(np.asarray(local_steps[a]).reshape(-1).size) for a in ids
+               if np.asarray(local_steps[a]).reshape(-1).size != n_global}
+        if bad:
+            raise ProbeError(
+                f"restriction_defect_bound takes arrays on the GLOBAL grid of "
+                f"{n_global} cells and got {bad}. Lift each local solve with "
+                "R_i^T first -- the identity it evaluates has an R_i^T in it, and "
+                "on a uniform tiling the un-lifted arrays are all the same length "
+                "and raise nothing while stacking every subdomain at cell 0"
+            )
     per_agent: dict[str, float] = {}
     acc = None
     best = None
@@ -1048,14 +1071,26 @@ def neighbour_disagreement(
     already computed by the composed step.
 
     **It equals the max form of the bound exactly when the agents' contaminated
-    sets are pairwise disjoint**, because then at most one ``D_i`` is nonzero at
-    each cell -- and that is decidable at compile time from the ``contaminated``
-    geometry the partition of unity already declares for W49's ``Pi``.  Measured
-    on the strip model: the gap is **0.000e+00** at every halo satisfying
-    ``halo >= 2 * stencil_radius * substeps_per_exchange`` and 6.6e-3 / 1.0e-3
-    below it.  Where the condition fails it is not a licence to ignore the
-    surrogate, only to stop calling it exact: on the four-window tiling, whose
-    contaminated sets share 1120 cells, it still agrees to **1.00007**.
+    sets are pairwise disjoint AND the aggregation matches** -- disjointness
+    makes at most one ``D_i`` nonzero at each cell, and that much is decidable at
+    compile time from the ``contaminated`` geometry the partition of unity already
+    declares for W49's ``Pi``.  Measured on the strip model: the gap is
+    **0.000e+00** at every halo satisfying ``halo >= 2 * stencil_radius *
+    substeps_per_exchange`` and 6.6e-3 / 1.0e-3 below it.  Where the condition
+    fails it is not a licence to ignore the surrogate, only to stop calling it
+    exact: on the four-window tiling, whose contaminated sets share 1120 cells,
+    it still agrees to **1.00007**.
+
+    **The second hypothesis was implicit until CS-7 and it is the one that scales
+    (W58, 2026-08-30).**  This function is a MAX OVER PAIRS of a norm; the max
+    form of the bound is a norm over the WHOLE grid of a cellwise max.  With one
+    overlapping pair those are the same object.  With many they are not, whatever
+    the contaminated sets do: a max over pairs saturates as the tiling grows
+    while the bound keeps accumulating, so the ratio falls with interface count
+    by construction and the surrogate silently becomes an under-estimate.
+    `aggregated_neighbour_disagreement` is the form that can be compared with the
+    bound at any size, and `graph.CUT_DEFECT_FORMS` now names the two separately
+    because they are different quantities.
 
     ``overlaps[(a, b)]`` is the boolean mask, on the two agents' shared index
     space, of the cells both own with positive weight.
@@ -1069,6 +1104,60 @@ def neighbour_disagreement(
         ub = np.asarray(local_steps[b], dtype=float).reshape(-1)[m]
         worst = max(worst, float(np.linalg.norm(ua - ub)))
     return worst
+
+
+def aggregated_neighbour_disagreement(
+    local_steps: dict[str, np.ndarray],
+    overlaps: dict[tuple[str, str], np.ndarray],
+    n_global: int | None = None,
+) -> dict[str, float]:
+    """**W58, 2026-08-30.** The reference-free surrogate, aggregated like the bound.
+
+    `neighbour_disagreement` takes a max over neighbour PAIRS of a norm.  L2/C2's
+    max form takes a norm over the whole grid of a cellwise max.  Those coincide
+    for one overlapping pair and diverge for many -- a max over pairs saturates
+    while a norm over a growing grid does not -- so on any tiling with more than
+    one overlap the pairwise form is an under-estimate of the bound for a reason
+    that has nothing to do with the disjointness hypothesis the docstring above
+    is about.
+
+    This is the same measurement aggregated the bound's way:
+
+        q_hat_j = max over pairs (a, b) containing cell j of |u_a - u_b|_j
+        q_hat   = || q_hat ||_2   over the whole grid
+
+    Under pairwise-disjoint contaminated sets, ``u_a - u_b = D_a - D_b`` with one
+    term zero, so ``q_hat_j = max_i |D_i|_j`` cellwise and this equals the max
+    form exactly.  It costs nothing that `neighbour_disagreement` does not: both
+    local solves are already computed by the composed step.
+
+    ``local_steps[a]`` and each mask are on the GLOBAL index space, so a cell's
+    two values are comparable without a per-pair reindexing.  Returns both forms
+    plus their ratio, because the ratio is the thing worth reporting.
+    """
+    n = n_global
+    if n is None:
+        n = max(int(np.asarray(v).reshape(-1).size) for v in local_steps.values())
+    agg = np.zeros(n)
+    pairwise = 0.0
+    for (a, b), mask in overlaps.items():
+        m = np.asarray(mask, dtype=bool).reshape(-1)
+        if not m.any():
+            continue
+        ua = np.asarray(local_steps[a], dtype=float).reshape(-1)
+        ub = np.asarray(local_steps[b], dtype=float).reshape(-1)
+        d = np.abs(ua - ub)
+        agg[m] = np.maximum(agg[m], d[m])
+        pairwise = max(pairwise, float(np.linalg.norm(d[m])))
+    aggregated = float(np.linalg.norm(agg))
+    return {
+        "aggregated": aggregated,
+        "pairwise_max": pairwise,
+        "pairwise_over_aggregated": (pairwise / aggregated if aggregated > 0
+                                     else None),
+        "n_pairs": int(sum(1 for m in overlaps.values()
+                           if np.asarray(m, dtype=bool).any())),
+    }
 
 
 def operator_drift(S_then: np.ndarray, S_now: np.ndarray) -> float:

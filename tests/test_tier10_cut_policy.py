@@ -463,7 +463,8 @@ def _graph(pou, decomposition=Decomposition.OVERLAPPING, **measured):
 
 
 def test_l2_c2_admits_an_overlapping_convex_graph_that_declares_the_bound():
-    r = compile_scheme(_graph(_pou(), cut_defect_bound=2.6268e-07))
+    r = compile_scheme(_graph(_pou(), cut_defect_bound=2.6268e-07,
+                              cut_defect_bound_form="chi-weighted"))
     hit = [d for d in r.decisions.of_verdict(ADMIT) if d.rule == "C2"]
     assert hit
     assert hit[0].evidence["cut_defect_bound"] == pytest.approx(2.6268e-07)
@@ -541,6 +542,7 @@ def test_a_grid_partition_also_carries_the_criterion():
            "b": np.array([0.4, 0.7, 1.0, 1.0, 1.0])}
     bad = {"a": np.array([0, 0, 0, 1, 1], bool), "b": np.array([1, 1, 0, 0, 0], bool)}
     r = compile_scheme(_graph(GridPartitionOfUnity(8, idx, wts, contaminated=bad),
-                              cut_defect_bound=2.6268e-07))
+                              cut_defect_bound=2.6268e-07,
+                              cut_defect_bound_form="chi-weighted"))
     assert [d for d in r.decisions.of_verdict(ADMIT) if d.rule == "C2"]
     assert r.verdict is ADMIT

@@ -622,6 +622,13 @@ MEASURED_SPLIT_STEP = MeasuredConstants(
     # 5.7525e-05, i.e. 220x loose, and the difference is entirely what the ramped
     # partition of unity buys. See `tier0-measurements` section 10.
     cut_defect_bound=2.6268e-07,
+    # **W58, 2026-08-30.** WHICH of the two definitions the number above is. It
+    # is the chi-weighted one, which is why it needed a monolith and why the
+    # 0.2% tightness above could be quoted at all: the reference-free surrogate
+    # has nothing to be tight against. This graph's contaminated sets share 1120
+    # cells, so the two are NOT provably equal here -- they agreed to 1.00007
+    # anyway, and L2/C2/W58 now says which fact is which.
+    cut_defect_bound_form="chi-weighted",
     probe_state="developed wake, t = 5, dt = 0.05, nu = 1/255",
     scheme="split-step, halo 21, ramp 8, exchange every sub-step (overlapping branch)",
     depth=0,

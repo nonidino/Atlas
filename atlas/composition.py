@@ -121,7 +121,7 @@ def schur_complement(
     S: np.ndarray,
     exposed_idx: Sequence[int],
     internal_idx: Sequence[int],
-    beta_min: float = 1e-12,
+    beta_int_floor: float = 1e-12,
 ) -> tuple[np.ndarray, float]:
     """The composite's transmission operator, and the internal conditioning.
 
@@ -130,6 +130,16 @@ def schur_complement(
     Schur complementation is transitive, so a hierarchy of nested composites and
     the flat graph produce the same composed interface operator: grouping is free
     to choose, and can be chosen for cost.
+
+    **``beta_int_floor`` was called ``beta_min`` until 2026-08-30 and it is NOT
+    the substitution certificate's ``beta_min`` (W81).**  It is a singularity
+    guard on the internal block -- the point below which the subgraph does not
+    present a legal expert at all -- and 1e-12 is the right default for that,
+    because it is asking whether a matrix is invertible.  The certificate's
+    ``beta_min`` is a *risk tolerance* on a different quantity, and the sibling
+    default was the whole reason the row said "every seam in the vault is blind":
+    two numbers with one name, one of which has a machine-epsilon default that
+    means something entirely reasonable where it lives.
     """
     S = np.asarray(S, dtype=float)
     E = np.asarray(exposed_idx, dtype=int)
@@ -140,7 +150,7 @@ def schur_complement(
     S_II = S[np.ix_(I, I)]
     svals = np.linalg.svd(S_II, compute_uv=False)
     beta_int = float(svals[-1]) if svals.size else 0.0
-    if beta_int <= beta_min:
+    if beta_int <= beta_int_floor:
         raise CompositionRefused(
             f"the subgraph's internal interface problem is singular (beta_int = "
             f"{beta_int:.3e}). A subassembly is a legal expert exactly when its own "
@@ -269,6 +279,80 @@ def composite_tau_bound(
     return float(sum(p for p in parts if p is not None))
 
 
+#: **W81, closed 2026-08-30.**  What ``beta_min`` is, stated once, because the
+#: framework never said and the row is that the omission is load-bearing.
+#:
+#: It is the smallest seam conditioning the composition is willing to operate at:
+#: a *risk tolerance*, not a property of the seam.  Two things follow and both are
+#: on `SubstitutionCertificate` below.
+#:
+#: **1. It has a derived candidate, and only one.**  ``eps_tol = min(tau, sigma)``
+#: over the terms that carry a scale is already the interface tolerance the
+#: compiler uses, and it is the only quantity in the framework with the right
+#: units and the right meaning: the size of defect this composition already
+#: accepts.  A swap that moves the seam by less than what the composition already
+#: tolerates is not a change the certificate should be asked about.  W84's caveat
+#: applies -- a composition of exact solvers has ``tau = 0`` and ``min`` degenerates
+#: -- so the minimum is taken over the POSITIVE terms and is UNDEFINED when none
+#: is positive, rather than collapsing to zero.
+#:
+#: **2. Where no tolerance is supplied, the certificate reports the two thresholds
+#: instead of a verdict.**  ``blind`` and ``passes`` are both monotone in
+#: ``beta_min``, so the whole verdict function is two numbers:
+#:
+#:     beta_min <  beta - ||S_i||       -> blind: no replacement of this agent
+#:                                        could have failed, and a pass is empty
+#:     beta_min >  beta - ||Delta||     -> refuse: this swap fails
+#:     in between                       -> an informative pass
+#:
+#: The window is non-empty for every swap, since ``||Delta|| <= ||S_old|| +
+#: ||S_new||`` and in particular a total failure of the agent has
+#: ``||Delta|| = ||S_i||``.  So a certificate can always say *at what risk
+#: tolerance this swap would be visible*, which is strictly more than a verdict at
+#: a number nobody derived -- and it is what the row asks for on the branch where
+#: beta_min stays a user parameter.
+BETA_MIN_UNDERIVED = (
+    "beta_min is a risk tolerance supplied by the caller: the smallest seam "
+    "conditioning this composition is willing to operate at. Nothing in this "
+    "framework derives it from the graph, and the certificate therefore reports "
+    "the two thresholds that make it a verdict rather than assuming one. Pass "
+    "eps_tol = min(tau, sigma) to use the interface tolerance the compile already "
+    "carries (W81)"
+)
+
+
+def beta_min_from_tolerance(tau: float | None = None,
+                            sigma: float | None = None,
+                            terms: Sequence[float | None] = ()) -> tuple[float | None, str]:
+    """**W81's derived candidate**: ``eps_tol = min(tau, sigma)`` over positive terms.
+
+    Returns ``(value, source)``; ``value`` is ``None`` when no supplied term is a
+    positive number, which is a legitimate outcome and not a zero.  **W84 is why
+    the positivity filter is there**: ``tau = 0`` is a real measurement -- a
+    composition of exact solvers has no agent infidelity -- and a plain ``min``
+    over it sets the tolerance to zero, at which every certificate passes and
+    every one of them is blind.  That is the 1e-12 sibling default reappearing
+    from the other direction.
+    """
+    supplied = [("tau", tau), ("sigma", sigma)]
+    supplied += [(f"term{i}", t) for i, t in enumerate(terms)]
+    usable = [(k, float(v)) for k, v in supplied
+              if v is not None and np.isfinite(v) and float(v) > 0.0]
+    if not usable:
+        zeroed = [k for k, v in supplied if v is not None and float(v) <= 0.0]
+        return None, (
+            "no defect term carries a positive scale"
+            + (f" ({', '.join(zeroed)} measured at zero, which is W84's case)"
+               if zeroed else "")
+            + ", so eps_tol is UNDEFINED rather than zero: a tolerance of zero "
+              "passes every swap and sees none of them"
+        )
+    key, val = min(usable, key=lambda kv: kv[1])
+    return val, (f"derived: eps_tol = min over positive defect terms = {key} = "
+                 f"{val:.6g}, the interface tolerance this composition already "
+                 f"accepts (W81)")
+
+
 @dataclass
 class SubstitutionCertificate:
     """Two probes, no rollout. The plug-in guarantee stated as an inequality."""
@@ -278,17 +362,59 @@ class SubstitutionCertificate:
     new_expert: str
     delta_norm: float
     beta: float
-    beta_min: float
+    #: **W81.**  Optional since 2026-08-30, and ``None`` is the honest value when
+    #: no risk tolerance was supplied.  It does NOT default -- see
+    #: `BETA_MIN_UNDERIVED` and `visible_above` / `fails_above`.
+    beta_min: float | None
     same_port_list: bool
     passivity_preserved: bool | None = None
     #: ||S_i||_2, the swapped agent's own block on the seam. **W76, 2026-08-29.**
     #: Supplying it is what lets this certificate report its own blind spot; it
     #: is optional only so that pre-2026-08-29 callers keep working.
     block_norm: float | None = None
+    #: **W81.**  Where `beta_min` came from: a caller's declaration, a derivation
+    #: from the interface tolerance, or nowhere.
+    beta_min_source: str = "supplied by the caller, underived"
 
     @property
-    def margin(self) -> float:
-        return self.beta - self.beta_min
+    def margin(self) -> float | None:
+        return None if self.beta_min is None else self.beta - self.beta_min
+
+    @property
+    def visible_above(self) -> float | None:
+        """**W81.** The beta_min above which this certificate stops being blind.
+
+        ``blind`` is ``||S_i|| < beta - beta_min``, so the test starts being
+        informative at ``beta_min = beta - ||S_i||``.  Below that no replacement
+        of this agent could fail, including one that ignores its boundary data
+        entirely.  `None` when the block norm was not supplied, which is the same
+        discipline `blind` keeps.
+        """
+        return None if self.block_norm is None else self.beta - self.block_norm
+
+    @property
+    def fails_above(self) -> float:
+        """**W81.** The beta_min above which THIS swap is refused.
+
+        ``passes`` is ``||Delta|| < beta - beta_min``, so it holds exactly below
+        ``beta - ||Delta||``.  Together with `visible_above` this is the whole
+        verdict function, and reporting the pair is what the certificate does
+        when no tolerance is supplied.
+        """
+        return self.beta - self.delta_norm
+
+    @property
+    def informative_window(self) -> tuple[float, float] | None:
+        """The beta_min interval on which this swap both passes and could have failed.
+
+        Non-empty for any swap, because ``||Delta|| <= ||S_i||`` whenever the
+        replacement's own block is no larger than the original's, and exactly
+        degenerate for a total failure of the agent, where the two coincide.
+        """
+        lo = self.visible_above
+        if lo is None:
+            return None
+        return (lo, self.fails_above)
 
     @property
     def blind(self) -> bool | None:
@@ -306,23 +432,34 @@ class SubstitutionCertificate:
         dependence at all is certified ADMIT at every ``beta_min`` up to 0.20.
         The same swap at the balanced seam ``sy0`` is REFUSED from 0.10.
 
-        And the framework never derives ``beta_min``: it is a caller's argument
-        with no default here, beside a sibling default of 1e-12 at which every
-        seam in the vault is blind.  A certificate that cannot fail is worse
-        than no certificate, because it is reported as a pass.
+        **W81, 2026-08-30.** The framework used to derive no ``beta_min`` at all
+        -- a caller's argument with no default here, beside a sibling default of
+        1e-12 (the internal-block singularity guard, now renamed
+        ``beta_int_floor``) at which every seam in the vault is blind.  It now
+        derives one candidate, ``eps_tol = min(tau, sigma)``, and where none is
+        supplied it reports `visible_above` and `fails_above` instead of a
+        verdict.  A certificate that cannot fail is worse than no certificate,
+        because it is reported as a pass.
         """
-        if self.block_norm is None:
+        if self.block_norm is None or self.margin is None:
             return None
         return bool(self.block_norm < self.margin)
 
     @property
-    def passes(self) -> bool:
+    def passes(self) -> bool | None:
+        """`None` when no tolerance was supplied: there is no verdict to give."""
+        if self.margin is None:
+            return None
         return self.same_port_list and self.delta_norm < self.margin
 
     @property
     def verdict(self) -> Verdict:
         if not self.same_port_list:
             return REFUSE
+        if self.passes is None:
+            # **W81.** No risk tolerance, so no verdict -- and reporting the
+            # thresholds is a result rather than a failure to produce one.
+            return ADMIT_UNCERTIFIED
         if self.passes:
             # A pass that could not have been a failure is not an admission.
             return ADMIT_UNCERTIFIED if self.blind else ADMIT
@@ -336,6 +473,25 @@ class SubstitutionCertificate:
             return (
                 "the replacement does not declare the same port list. That is a graph "
                 "edit, not a substitution, and it re-opens the whole certification"
+            )
+        if self.passes is None:
+            window = ""
+            if self.visible_above is not None:
+                window = (
+                    f" This swap is INVISIBLE below beta_min = {self.visible_above:.4g} "
+                    f"(= beta - ||S_i||, where no replacement of this agent could fail) "
+                    f"and REFUSED above beta_min = {self.fails_above:.4g} "
+                    f"(= beta - ||Delta||). Between them the pass is informative."
+                )
+            else:
+                window = (
+                    f" This swap is REFUSED above beta_min = {self.fails_above:.4g} "
+                    f"(= beta - ||Delta|| = {self.beta:.4g} - {self.delta_norm:.4g}); "
+                    "supply block_norm to learn the threshold below which it is blind."
+                )
+            return (
+                "no beta_min was supplied, so this certificate reports the thresholds "
+                "rather than a verdict." + window + " " + BETA_MIN_UNDERIVED
             )
         if self.passes and self.blind:
             return (
@@ -375,7 +531,12 @@ class SubstitutionCertificate:
             "delta_norm": self.delta_norm,
             "beta": self.beta,
             "beta_min": self.beta_min,
+            "beta_min_source": self.beta_min_source,
             "margin": self.margin,
+            "visible_above": self.visible_above,
+            "fails_above": self.fails_above,
+            "informative_window": (None if self.informative_window is None
+                                   else list(self.informative_window)),
             "passes": self.passes,
             "verdict": self.verdict.value,
             "passivity_preserved": self.passivity_preserved,
@@ -392,27 +553,61 @@ def certify_substitution(
     S_old: np.ndarray,
     S_new: np.ndarray,
     beta: float,
-    beta_min: float,
+    beta_min: float | None = None,
     passivity_old: float | None = None,
     passivity_new: float | None = None,
     block_norm: float | None = None,
+    eps_tol: float | None = None,
+    tau: float | None = None,
+    sigma: float | None = None,
 ) -> SubstitutionCertificate:
-    """Whether a swap preserves admissibility, from two probes of one agent."""
+    """Whether a swap preserves admissibility, from two probes of one agent.
+
+    **W81.** ``beta_min`` is optional as of 2026-08-30 and has no default.  Three
+    ways to supply it, in precedence order:
+
+      * pass ``beta_min`` directly -- a declared risk tolerance;
+      * pass ``eps_tol``, or ``tau`` and ``sigma``, and it is derived as the
+        interface tolerance ``min(tau, sigma)`` over the terms that carry a
+        positive scale (`beta_min_from_tolerance`);
+      * pass none of them, and the certificate reports `visible_above` and
+        `fails_above` -- the thresholds that make it a verdict -- rather than
+        inventing one.
+
+    The third is not a degraded mode.  It is the row's own second branch: where
+    the number is a user's risk parameter, the honest output is the threshold
+    above which the substitution becomes visible.
+    """
     old_ports = sorted((p.port_type.value, p.name) for p in old_caps.ports)
     new_ports = sorted((p.port_type.value, p.name) for p in new_caps.ports)
     passivity_preserved = None
     if passivity_old is not None and passivity_new is not None:
         passivity_preserved = passivity_old <= 0.0 and passivity_new <= 0.0
+
+    source = "supplied by the caller, underived"
+    if beta_min is None:
+        if eps_tol is not None and float(eps_tol) > 0.0:
+            beta_min, source = float(eps_tol), (
+                f"derived: eps_tol = {float(eps_tol):.6g}, the interface tolerance "
+                "supplied by the compile (W81)")
+        elif tau is not None or sigma is not None:
+            beta_min, source = beta_min_from_tolerance(tau, sigma)
+            if beta_min is None:
+                source = "UNDEFINED -- " + source
+        else:
+            source = "not supplied: " + BETA_MIN_UNDERIVED
+
     return SubstitutionCertificate(
         agent_id=agent_id,
         old_expert=old_caps.expert_id,
         new_expert=new_caps.expert_id,
         delta_norm=float(np.linalg.norm(np.asarray(S_new) - np.asarray(S_old), 2)),
         beta=float(beta),
-        beta_min=float(beta_min),
+        beta_min=None if beta_min is None else float(beta_min),
         same_port_list=old_ports == new_ports,
         passivity_preserved=passivity_preserved,
         block_norm=None if block_norm is None else float(block_norm),
+        beta_min_source=source,
     )
 
 
