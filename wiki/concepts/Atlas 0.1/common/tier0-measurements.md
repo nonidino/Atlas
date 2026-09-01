@@ -3036,6 +3036,1383 @@ fixture could reach.
 > were each honest about being a fixture in one dimension, and each of those
 > dimensions was hiding a rule.**
 
+# 19. How composition error grows with interface count — 2026-08-31
+
+Full record here; worklist rows on [[gap-worklist]] Tier 19. Reproduce with
+`python scripts/w100_scaling_ladder.py --steps 60 --acc-steps 20`, then
+`python scripts/w100_timing.py --steps 8 --repeats 6`; artifacts
+`out/w100/w100.json`, `out/w100/state_<rung>.npz`, `out/w100/solo_<rung>.npz`.
+New case study `atlas/cases/scaling_ladder.py`, the **seventh** real one, and the
+first whose *variable* is the size of the graph.
+
+> **Dating.** The marches ran 2026-08-30 and the run finished and was written up
+> 2026-08-31, verified against the environment clock before stamping, per Tier
+> 15's rule.
+
+[[f1-pathmap-and-end-goal]] §5's **F1** is the criterion that fails if
+composition error grows *super-linearly in interface count*, §3.2 names rung 9 as
+*the rung that decides everything*, and §5 schedules this sweep as rung 9's early
+warning — *"a cheap look at the expensive question, and a bad result there is a
+reason to stop and rethink, not to press on."* **It had never been run at any
+size.** [[case-study-ladder-to-f1]] §4 then schedules nine further case studies
+on the answer and says outright that CS-16 is not built if it comes back
+super-linear.
+
+So this tier grows one geometry from $1$ to $24$ coupled windows with everything
+else nailed down, in two columns, and reports an exponent with an error bar.
+
+## 19.1 The ladder, and what is held fixed
+
+The parent's geometry, parameterized. `wake_array.ArrayTiling` now carries
+`n_col`, `n_row` and `rotors`; `ArrayTiling()` reproduces the $3\times2$ array to
+the bit, which `tests/test_tier19_scaling_ladder.py` pins and which the artifact
+diff confirms — **1314 of 1321 numeric values in `out/w93/w93.json` are identical
+after the refactor, and the seven that differ are wall-clock timings.**
+
+| held fixed | value | why |
+|---|---|---|
+| $\mathrm{d}x$ | $S_{\text{LEN}}/128 = 1/32\,D$ | the checkpoint's resolution is not a dial |
+| $\Delta t_{\text{macro}}$ | $0.2$ | exactly one native expert lead |
+| overlap | $16$ cells | changing it changes $\Pi$, which is a measured output |
+| ramp | $8$ cells | W53 keeps ramp 8, so every prior constant stays comparable |
+| $\nu_{\text{ref}}$ | $3.92\times10^{-3}$ | the referent's own viscosity, W0 4.2's grid-scale fit |
+| disk model, induction $a$ | `ActuatorDisk`, $1/3$ | zero fitted parameters |
+
+| $N$ | tiling | domain (cells) | domain ($D$) | rotors | seams | overlapping pairs |
+|---|---|---|---|---|---|---|
+| $1$ | $1\times1$ | $128\times128$ | $4.0\times4.0$ | $0$ | $0$ | $0$ |
+| $2$ | $2\times1$ | $240\times128$ | $7.5\times4.0$ | $1$ | $3$ | $1$ |
+| $6$ | $3\times2$ | $352\times240$ | $11.0\times7.5$ | $3$ | $13$ | $11$ |
+| $12$ | $4\times3$ | $464\times352$ | $14.5\times11.0$ | $5$ | $27$ | $29$ |
+| $24$ | $6\times4$ | $688\times464$ | $21.5\times14.5$ | $12$ | $62$ | $68$ |
+
+**Two counts, reported side by side rather than one being called *the* interface
+count.** `n_seams` is what the compile sees. `n_overlaps` is what the composition
+defect is created at, and they are not the same thing: two windows meeting
+diagonally share a $16\times16$ corner and have no `Connection` at all, while
+their local solves still disagree there. Every exponent below is against
+`n_overlaps`.
+
+The rotor layout is a **rule**, not a list: `rotor_motif` tiles the parent's L —
+two turbines in line and one abreast, $3.5\,D$ both ways — with period ($3$
+columns, $2$ rows) and truncates. At $3\times2$ that returns
+`wake_array.ROTORS` exactly. At $4\times3$ truncation gives **five** rotors where
+the plan sketched six; the rule is kept and the count reported, because a motif
+bent to hit a predicted number is not a rule.
+
+### The two controls, and both pass
+
+**$N=1$ returns exactly zero, twice over.** With one window the partition of
+unity is identically $1$, `cut` and `assemble` are the identity, and the composed
+step *is* the monolith: the composed field and the monolith agree **bit for bit**
+(`np.array_equal`, not a tolerance), and the reference-free blend spread is
+identically $0$ because there is nothing to spread. This is [[tier0-measurements]]
+§8's own lesson — *the control that would have redirected the search immediately
+was the one not run* — and it costs one line.
+
+There is a declaration-side half as well: one window has no artificial face, so
+it has no port, and `ExpertCapabilities` raises before the compiler is reached.
+**The framework will not express a one-agent composition**, and it refuses one
+layer *earlier* than L3's "no connections declared: this is not a composition",
+which is the message a reader would expect.
+
+**$N=6$ reproduces the parent to the digit.** Array loss $25.27\%$ (WindowNS) and
+$14.62\%$ (Poseidon-T) against [[case-study-wake-array-atlas-0.1]]'s $25.273\%$
+and $14.625\%$, on a driver that is a transcription of `w93_wake_array.march`
+rather than a re-derivation — which is the point: a control against a
+re-implementation controls nothing.
+
+| $N$ | array loss, WindowNS | array loss, Poseidon-T |
+|---|---|---|
+| $2$ | $0.00\%$ | $0.00\%$ |
+| $6$ | $\mathbf{25.27\%}$ | $\mathbf{14.62\%}$ |
+| $12$ | $31.38\%$ | $21.76\%$ |
+| $24$ | $30.37\%$ | $38.97\%$ |
+
+$N=2$ is $0.00\%$ by construction — one turbine is its own control. And the
+turbine-free noise floor is **exactly $0.000\%$** for the reference solver at
+every rung (a uniform stream is a fixed point of the unforced monolith and of the
+unforced composed step alike) against $0.42$–$0.49\%$ for the checkpoint.
+
+## 19.2 The gate — F1 is not falsified
+
+The composed defect over **one exchange interval**, measured at each rung's own
+developed state with the disks off, in three forms. The reference-free one is the
+chi-weighted variance $\sqrt{V_\chi}$ of the local one-macro-step solutions —
+which is exactly the term L6/C1's identity removes, needs no monolith, and is
+therefore the only currency the checkpoint's column can carry (**W95**).
+
+| $N$ | interfaces | $\Pi$ | spread, WindowNS | spread, Poseidon-T | composed vs monolith | $\lVert\sum_i\chi_i\lvert D_i\rvert\rVert$ | tightness |
+|---|---|---|---|---|---|---|---|
+| $1$ | $0$ | $0$ | $0$ | $0$ | $\mathbf{0}$ | $0$ | — |
+| $2$ | $1$ | $0.4678$ | $8.121\times10^{-1}$ | $1.364$ | $2.194$ | $2.318$ | $1.057$ |
+| $6$ | $11$ | $0.7250$ | $4.780$ | $3.723$ | $15.57$ | $16.19$ | $1.040$ |
+| $12$ | $29$ | $0.7250$ | $10.80$ | $6.545$ | $35.29$ | $36.71$ | $1.040$ |
+| $24$ | $68$ | $0.7250$ | $25.43$ | $10.34$ | $82.67$ | $85.96$ | $1.040$ |
+
+**The gate.** Ordinary least squares of $\log(\text{defect})$ on
+$\log(\text{interfaces})$ over the four rungs that have an interface, $n-2=2$
+degrees of freedom, $t_{0.975,2}=4.303$:
+
+| series | exponent $p$ | 95% CI | $r^2$ | reading |
+|---|---|---|---|---|
+| classical, reference-free | $\mathbf{+0.804}$ | $[+0.641,\ +0.967]$ | $0.996$ | sub-linear |
+| checkpoint, reference-free | $\mathbf{+0.477}$ | $[+0.362,\ +0.593]$ | $0.994$ | sub-linear |
+| classical, against the monolith | $\mathbf{+0.851}$ | $[+0.748,\ +0.954]$ | $0.998$ | sub-linear |
+
+> **F1 is not falsified.** No column's interval lies above $1$ over the full
+> $24\times$ range.
+
+**The test is one-sided and that is not a detail.** F1 fails on *super-linear*
+growth, so what would falsify it is an interval lying strictly **above** $1$.
+Gating instead on *"upper bound at or below 1"* would report a linear result as a
+failure, which is the criterion tightened after the fact; the pickup's own three
+readings — sub-linear confirms Claim B, linear is survivable, super-linear stops
+the program — are the three the code implements.
+
+The pairwise local slopes are reported beside the fit because a fitted exponent
+averages over curvature and curvature is what a super-linear onset would look
+like:
+
+| series | $1\to11$ | $11\to29$ | $29\to68$ |
+|---|---|---|---|
+| classical, reference-free | $+0.739$ | $+0.841$ | $+1.005$ |
+| checkpoint, reference-free | $+0.419$ | $+0.582$ | $+0.537$ |
+| classical, against the monolith | $+0.817$ | $+0.844$ | $+0.999$ |
+
+**The classical column's local slope reaches $1.00$ at the top of the ladder and
+the checkpoint's does not.** That is the one thing in this section a reader
+should carry forward with suspicion: the fitted interval clears $1$, and the last
+segment does not.
+
+Two supporting series, both sub-linear:
+
+| series | exponent | 95% CI |
+|---|---|---|
+| per cell (RMS), classical | $+0.534$ | $[+0.49,\ +0.58]$ |
+| per cell (RMS), checkpoint | $+0.207$ | $[+0.17,\ +0.24]$ |
+| worst cell (sup norm), classical | $+0.553$ | $[+0.42,\ +0.69]$ |
+| worst cell (sup norm), checkpoint | $+0.138$ | $[+0.02,\ +0.26]$ |
+| per interface, classical | $+0.304$ | $[+0.14,\ +0.47]$ |
+| per interface, checkpoint | $\mathbf{-0.023}$ | $[-0.14,\ +0.09]$ |
+
+**Per interface, the checkpoint's composition defect is flat to within its own
+error bar.** Errors adding in quadrature over independent interfaces would give
+$+0.5$ on the total and $0$ per interface, which is what the checkpoint's column
+does; the classical column adds $+0.3$ on top, which is correlation between
+interfaces along the streamwise direction a wake actually crosses.
+
+## 19.3 The control that decomposes the exponent, and it is most of the answer
+
+**A bigger array is not only more interfaces.** At $N=24$ the developed field
+reaches $u_{\min}=0.183$ against $N=2$'s $0.509$: deeper wakes, stronger
+gradients, harder physics. A defect that grows with $N$ could be growing because
+the flow got harder rather than because the cut got longer, and §19.2 cannot
+separate them.
+
+So the same three numbers are measured again at a **one-turbine state**, where
+only the first rotor runs. The flow near it is identical at every rung — same
+inflow, same disk, same wake, same position relative to the inlet — and every
+window added beyond it sits in near-freestream. A defect that still grows there
+is growing on interface count alone.
+
+| $N$ | interfaces | spread, WindowNS | spread, Poseidon-T | composed vs monolith |
+|---|---|---|---|---|
+| $1$ | $0$ | $0$ | $0$ | $0$ |
+| $2$ | $1$ | $0.8121$ | $1.364$ | $2.194$ |
+| $6$ | $11$ | $0.8566$ | $2.513$ | $2.217$ |
+| $12$ | $29$ | $1.035$ | $2.839$ | $2.817$ |
+| $24$ | $68$ | $1.600$ | $3.124$ | $4.878$ |
+
+| series | exponent | 95% CI |
+|---|---|---|
+| one turbine, classical, reference-free | $+0.138$ | $[-0.16,\ +0.43]$ |
+| one turbine, checkpoint, reference-free | $+0.201$ | $[+0.09,\ +0.31]$ |
+| one turbine, classical, against the monolith | $+0.160$ | $[-0.23,\ +0.55]$ |
+
+> **With the physics held fixed, composition error is nearly flat in interface
+> count: $p \approx 0.14$–$0.20$ against the headline's $0.48$–$0.85$.** A
+> $68\times$ increase in interfaces buys a $2.2\times$ increase in composed
+> defect. Most of §19.2's growth is the flow, not the cut.
+
+Both are real and only the second is what F1 asks about. Stated as a warning
+rather than a comfort: **a sub-linear headline on a ladder whose physics grows
+with its size is a weaker result than it looks**, and this control is what makes
+the number interpretable. It was not in the brief and should have been.
+
+## 19.4 The bound's tightness does not degrade, and $\Pi$ saturates
+
+$\lVert\sum_i\chi_i\lvert D_i\rvert\rVert$ against the measured one-interval
+defect:
+
+| $N$ | $1$ | $2$ | $6$ | $12$ | $24$ |
+|---|---|---|---|---|---|
+| bound / actual | — | $1.057$ | $1.040$ | $1.040$ | $1.040$ |
+
+**L2/C2's bound is tight to $4\%$ and flat over the whole $24\times$ range.**
+§10's $0.2\%$ at four windows of the *other* tiling is not reproduced here and
+was never claimed to transfer; what does transfer is that the bound does not
+loosen as the graph grows, which is the property a bound needs to be worth
+carrying.
+
+$\Pi$ — W49's contaminated weight, the constant the overlapping branch's $\sigma$
+bound needs — is $0$ at $N=1$, $0.4678$ at $N=2$ and **$0.7250$ at every rung from
+$N=6$ on, to every digit**. It saturates because past $3\times2$ every added
+window is an interior one and the worst cell is already as contaminated as it
+gets. So $\Pi$ is a property of the *tiling's local pattern* and not of its size,
+and $C_\mu = 1.2$ carries across the ladder with no re-measurement.
+
+## 19.5 W58 — which bound was measured, and the hypothesis nobody had stated
+
+W58 asked for two things: a provenance field naming which of `cut_defect_bound`'s
+two definitions was measured, and a compile-time check of the disjointness
+condition that makes them equal. Both are built —
+`MeasuredConstants.cut_defect_bound_form`, `graph.CUT_DEFECT_FORMS`,
+`assembly.contaminated_multiplicity`, and `L2/C2/W58` on the compile — and then
+the measurement found a **second hypothesis the framework had never stated**, and
+it is the one that scales.
+
+`probe.neighbour_disagreement` is a **max over neighbour pairs of a norm**.
+L2/C2's max form is a **norm over the whole grid of a cellwise max**. Those
+coincide when there is at most one overlapping pair and diverge above it —
+whatever the contaminated sets are doing — because a max over pairs saturates as
+the tiling grows while the bound keeps accumulating.
+
+| $N$ | contaminated cells | shared by $>1$ | max multiplicity | disjoint? | **aggregated** / max form | **pairwise** / max form |
+|---|---|---|---|---|---|---|
+| $1$ | $0$ | $0$ | $0$ | yes | — | — |
+| $2$ | $2048$ | $0$ | $1$ | **yes** | $0.7653$ | $0.7653$ |
+| $6$ | $12800$ | $512$ | $3$ | no | $0.7993$ | $0.4170$ |
+| $12$ | $30208$ | $1536$ | $3$ | no | $0.7969$ | $0.3902$ |
+| $24$ | $66304$ | $3840$ | $3$ | no | $0.8020$ | $\mathbf{0.2339}$ |
+
+> **The disjointness hypothesis the framework named moves the ratio by four
+> percent. The aggregation nobody had named moves it by a factor of three.**
+
+Disjointness holds at $N=2$ and fails from $N=6$ on, with the shared count growing
+$512 \to 1536 \to 3840$ — and across that failure the *aggregated* surrogate holds
+at $0.765 \to 0.802$, while the *pairwise* one falls $0.765 \to 0.234$. The
+framework's stated hypothesis is real and is second-order here; the unstated one
+is first-order and grows without bound.
+
+A third gap is visible in the same table and is smaller than either: even at
+$N=2$, with disjointness holding exactly, the aggregated surrogate is $0.765$ of
+the max form rather than $1$. The theorem's argument assumes $D_i$ is *supported
+inside* the declared contaminated set, and it is not — `contaminated` is a
+declaration about reach within one exchange interval, and the actual restriction
+defect has a tail beyond it. So **disjointness of the declared sets is necessary
+and not sufficient**, and the residual $23\%$ is the tail.
+
+`atlas/graph.py` now names four forms rather than two, `atlas/probe.py` gains
+`aggregated_neighbour_disagreement`, and the compile decertifies the pairwise form
+on any partition with more than two subdomains — decidable from the subdomain
+count, with no run.
+
+**And the row has teeth on this run's own compiles.** The classical column can
+declare the chi-weighted form because it has a monolith; the checkpoint's column
+cannot, at any resolution ever (W95), so the only form it can supply is the
+reference-free one. At $N=2$ the contaminated sets are disjoint and `L2/C2`
+**admits** it as the bound. **From $N=6$ on the same declaration is decertified**,
+purely on geometry:
+
+> `L2/C2/W58` fires on the Poseidon column at $N=6$, $12$ and $24$ and not at
+> $N=2$. The checkpoint's column loses the cut criterion at a graph size, without
+> anything about the checkpoint changing.
+
+### One thing this row cost, and it is the reason the row exists
+
+`probe.restriction_defect_bound` takes arrays **on the global grid** — the
+identity it evaluates is $A - Eu = \sum_i R_i^\top \chi_i D_i$ and the $R_i^\top$
+has to have happened already. On a uniform tiling every subdomain-local array is
+the same length, so passing the un-lifted ones raises nothing and silently stacks
+every window at cell $0$, inflating the bound by cross terms it invents. It was
+caught by a tightness ratio that came out at $1.80$ where the same measurement one
+rung down gave $1.03$. The function now takes an optional `n_global` that makes it
+an error, and the convention is in the docstring rather than in a caller's head.
+
+## 19.6 The classical composed rollout is unstable — and the compiler was already refusing it
+
+**This is the finding the run was not looking for, and it is the largest one.**
+
+Continue the wake array's own march past the $60$ macro-steps Tier 18 published.
+The composed WindowNS column leaves the band between step $70$ and $80$ at $N=6$
+and is not finite by $82$. The monolith, from the same state under the same
+forcing, holds $u_{\max}$ at $1.33$ throughout. The checkpoint's column is stable
+to $110$.
+
+Measured from each rung's developed state, $20$ macro-steps, band $\lvert u\rvert = 3$:
+
+| $N$ | monolith $u_{\max}$ | **classical**: diverged at | its $\lVert\nabla\cdot u\rVert_{\text{rms}}$ | **classical + projection** | its divergence | **checkpoint** | its divergence |
+|---|---|---|---|---|---|---|---|
+| $1$ | $1.000$ | — | $0 \to 0$ | — | $0 \to 0$ | — | $0.0109 \to 0.0129$ |
+| $2$ | $1.297$ | — | $0.0132 \to 0.0132$ | — | $0.0259 \to 0.0249$ | — | $0.0680 \to 0.0900$ |
+| $6$ | $1.413$ | **step 14** | $0.0957 \to \mathbf{2.269}$ | — | $0.0232 \to 0.0222$ | — | $0.0543 \to 0.0815$ |
+| $12$ | $1.424$ | **step 9** | $0.1507 \to \mathbf{2.343}$ | — | $0.0300 \to 0.0163$ | — | $0.0568 \to 0.0641$ |
+| $24$ | $1.557$ | **step 8** | $0.2502 \to \mathbf{4.583}$ | — | $0.0336 \to 0.0175$ | — | $0.0555 \to 0.0646$ |
+
+**The mechanism, and it is one line of vector calculus.** Each `WindowNS` window
+returns a field that is divergence-free *on its own window*. A
+partition-of-unity blend of two divergence-free fields is not divergence-free:
+on the overlap, where $\chi_1+\chi_2=1$,
+
+$$\nabla\cdot(\chi_1 u_1 + \chi_2 u_2) \;=\; \nabla\chi_1\cdot(u_1-u_2)$$
+
+so **the assembly creates divergence exactly where the two local solves disagree,
+in proportion to how fast $\chi$ is turning over** — and in the classical column
+nothing removes it. The divergence at the developed state grows monotonically
+with the graph, $0.0132 \to 0.0957 \to 0.1507 \to 0.2502$, and the onset comes
+earlier as it does: step $14$, then $9$, then $8$.
+
+**The positive control closes it.** Adding *one global Leray projection to the
+assembled field* each macro-step — R10b's own prescription, and exactly what the
+checkpoint's column already does — makes every rung stable and holds the
+divergence flat or falling ($0.0336 \to 0.0175$ at $N=24$). Nothing else changes.
+
+> **So `L2/R10` is vindicated by measurement for the first time.** The rule
+> refuses to decompose an agent whose `elliptic_subsolve` is `embedded`, and it
+> has refused the reference column of every graph in this vault since Tier 0 —
+> **`refuse`, one refusal, `L2/R10`, at all four rungs here.** What was missing
+> was a demonstration that the refusal was about anything. It is: the graph it
+> refuses goes unstable, the graph that exposes its elliptic part to the
+> composition layer does not, and the difference is a single operator.
+
+Three things follow.
+
+**1. Tier 18's published state is on a diverging trajectory.** The wake array
+marched $60$ steps and its reference column blows up between $70$ and $80$. Every
+Tier 18 number measured *at* that state stands — the state exists, the numbers
+are what the instruments read there — but the trajectory it sits on does not
+continue, and nothing in Tier 18 said so because nothing marched past $60$.
+
+**2. The rollout defect had to be re-scoped.** A defect quoted past the onset is a
+number about a blow-up. At a short horizon of $10$ macro-steps, where every column
+is still inside the band:
+
+| $N$ | classical | classical + projection | checkpoint |
+|---|---|---|---|
+| $1$ | $0$ | $0$ | $0.7181$ |
+| $2$ | $2.644$ | $1.934$ | $13.39$ |
+| $6$ | $57.34$ | $9.013$ | $24.67$ |
+| $12$ | $147.6$ | $17.91$ | $30.35$ |
+| $24$ | $420.5$ | $42.05$ | $53.56$ |
+
+The classical column's series is **void** — it diverged inside the window at three
+of five rungs, and the exponential growth is present well before the band is
+crossed, which is why the filter drops a rung that diverged *at all* rather than
+one that crossed early. The two stable columns:
+
+| series | exponent | 95% CI |
+|---|---|---|
+| rollout defect, classical + projection | $+0.712$ | $[+0.51,\ +0.92]$ |
+| rollout defect, checkpoint | $+0.305$ | $[+0.08,\ +0.53]$ |
+
+Both sub-linear, which is the same answer §19.2 gives on a single step.
+
+**3. The $N=1$ rung gives the checkpoint a zero-composition baseline.** One
+window, no interface, no assembly: the Poseidon column's defect against the
+monolith over $10$ steps is $0.7181$, which is **pure model infidelity with the
+composition removed by construction**. Every larger number in the checkpoint's
+column is that plus composition.
+
+### Two rejected constructions, on the record because each is the obvious thing to try
+
+* **Freestream, disks off.** Exactly $0.0000$ at every rung. A uniform field is a
+  fixed point of the composed step *and* of the monolith, so this is a correct
+  answer to a useless question.
+* **Developed state, disks frozen at the force that state implies.** Diverges —
+  relative defect $1.285$ at $N=6$, NaN at $N=12$. An actuator disk's thrust must
+  track its own inflow; freezing it removes the closure's negative feedback and
+  the deceleration runs away. **That instability is the disk model's and would
+  have been charged to the composition**, which is W54's shape exactly.
+
+### 2026-08-31 — the positive control does not survive its own length either
+
+**Everything above this line stands as measured, and its repair does not.** The
+paragraph above calls one global Leray projection on the assembled field *the
+positive control*, on the strength of $20$ macro-steps from each rung's developed
+state. Marched to $120$, the same arrangement fails — and it fails **worse than
+doing nothing**.
+
+That is Tier 18's own mistake happening again one level down, and it is worth
+naming in those words: *Tier 18 published a state on a trajectory nobody had
+marched far enough, and §19.6 published a repair on a trajectory nobody had
+marched far enough.* The horizon that exposed the first was $80$ steps; the
+horizon that exposes the second is $40$.
+
+$N=6$, $120$ macro-steps, disks live, reporting the macro-step at which
+$\lvert u\rvert$ leaves the band $3$:
+
+| agents | composition layer | from freestream | from the developed state |
+|---|---|---|---|
+| embedded | nothing | $74$ (not finite by $82$) | $\mathbf{14}$ — §19.6's own number |
+| embedded | global **spectral** Leray | $\mathbf{51}$ | $\mathbf{38}$ |
+| embedded | global **Neumann** Leray | $\mathbf{33}$ | $\mathbf{14}$ |
+| **exposed** | nothing | never — and $\lVert\nabla\cdot u\rVert = 1.25$ | — |
+| **exposed** | global spectral Leray | **never, to $120$** | — |
+
+The $38$ in the second row is the whole story of the retraction: the positive
+control **is** stable over the $20$ steps §19.6 measured, and dies at $38$.
+
+**And the divergence is not the proximate cause.** The Neumann variant holds
+$\lVert\nabla\cdot u\rVert_{\text{rms}}$ at $\mathbf{0.0089}$ against the bare
+column's $\mathbf{0.69}$ — a factor of $78$ cleaner — and leaves the band
+**soonest of the three**. L6/C2's residual is real, the assembly does inject it,
+and it is not by itself what ends the rollout. §19.6's causal sentence — *"the
+assembly creates divergence and nothing removes it"* — describes a true mechanism
+and attributes an effect to it that a control now separates.
+
+#### What the measurement selects, and it is the rule that was already there
+
+**Adding a projection to agents that already project applies the pressure twice.**
+Each `WindowNS` window has already answered the disk's momentum sink on its own
+subdomain, with its own Neumann solve, inside its own sub-steps; a global solve
+after assembly answers it again. The arrangement that survives is the one
+`L2/R10` has prescribed since Tier 0 and that no classical column in this vault
+had ever been built to satisfy: **take the elliptic part out of the agent** and
+let the composition layer apply it once, to the assembled field.
+
+`wake_array.exposed_reference_solver` is that agent — `window_ns._no_projection_class`
+with `_project` replaced by the identity and the velocity update untouched, which
+is the composition layer declining to use *a part of* an expert rather than
+editing one. Its record declares `elliptic_subsolve=exposed`, and the consequence
+at the compile is the one the rule has been promising for nineteen tiers:
+
+| classical column | `R10` | `R10b` | `R12` | graph verdict |
+|---|---|---|---|---|
+| embedded, bare blend | **refuse** | — | decertify | `refuse` |
+| embedded + projected assembly | **refuse** | — | decertify | `refuse` |
+| **exposed + projected assembly** | *clears* | **admit** | **admit** | `admit-uncertified` |
+
+**It is the first classical column in this vault that `R10` does not refuse**, and
+it is the one that survives $120$ macro-steps. The residual `admit-uncertified` is
+`G5/W16` and the disk agent's own `elliptic_subsolve=none`, neither of which is
+about the assembly.
+
+#### The march, at every rung
+
+Entries are the macro-step at which $\lvert u\rvert$ left the band $3$, or **the number of macro-steps survived** where the column never left it.
+
+| $N$ | overlaps | monolith | embedded, bare | embedded **+ projected** | **exposed + projected** | exposed, no projection | checkpoint |
+|---|---|---|---|---|---|---|---|
+| $1$ | $0$ | **120** | **120** | **120** | **120** | **120** | **120** |
+| $2$ | $1$ | **120** | **120** | band $52$ | **120** | **120** | **120** |
+| $6$ | $11$ | **120** | band $74$, NaN $82$ | band $51$ | **120** | **120** | **120** |
+| $12$ | $29$ | **120** | band $69$, NaN $77$ | band $54$ | **120** | not run | **120** |
+
+The assembled $\lVert\nabla\cdot u\rVert_{\text{rms}}$, first finite macro-step to last:
+
+| $N$ | embedded, bare | embedded + projected | **exposed + projected** | exposed, no projection | checkpoint |
+|---|---|---|---|---|---|
+| $1$ | $0 \to 0$ | $0 \to 0$ | $0 \to 0$ | $0 \to 0$ | $0.01088 \to 0.01291$ |
+| $2$ | $0.01277 \to 0.01322$ | $0.01261 \to 19.1$ | $0.01936 \to 0.05042$ | $0.524 \to 1.328$ | $0.06098 \to 0.09084$ |
+| $6$ | $0.01314 \to 2.57$ | $0.01298 \to 13.47$ | $0.02022 \to 0.06556$ | $0.5417 \to 1.25$ | $0.06283 \to 0.07846$ |
+| $12$ | $0.01213 \to 2.343$ | $0.01197 \to 10.14$ | $0.01723 \to 0.04011$ | -- | $0.05763 \to 0.06648$ |
+
+**Read the fourth column against the third.** The classical column with its elliptic part left inside the agents is stable at $N=2$ and not at $N=6$; **adding L6/C2's step to it kills it at both**, at macro-step $52$ and $51$ against a bare column that survives all $120$ at $N=2$ and reaches $74$ at $N=6$. There is no rung at which the projection added on top helps, and that is the retraction stated as a measurement.
+
+**And the fifth column is the deliverable.** With the elliptic part moved out of the agents, one global projection after the blend holds every rung run here — $1, 2, 6, 12$ windows — for all $120$ macro-steps, with $u_{\max}$ inside the monolith's own range:
+
+| $N$ | $u_{\max}$, monolith | $u_{\max}$, exposed + projected | divergence tail trend | defect vs monolith at $120$ | checkpoint's, for scale |
+|---|---|---|---|---|---|
+| $1$ | $1$ | $1$ | $--$ | $0$ | $0.7714$ |
+| $2$ | $1.299$ | $1.309$ | $1.0006$ | $15.62$ | $14.4$ |
+| $6$ | $1.423$ | $1.336$ | $0.9893$ | $27.22$ | $27.88$ |
+| $12$ | $1.478$ | $1.355$ | $1.0441$ | $33.54$ | $49.04$ |
+
+**The trend column is where the claim is weaker than it reads, so read it exactly.** It is the last quarter's mean over the third quarter's, both taken after the flow has developed, because a march from the freestream is a transient and every column's divergence rises while the wake forms. Against the two columns that are known to be well behaved:
+
+| $N$ | monolith | **exposed + projected** | checkpoint |
+|---|---|---|---|
+| $2$ | $1.0000$ | $1.0006$ | $1.0003$ |
+| $6$ | $1.0016$ | $0.9893$ | $0.9998$ |
+| $12$ | $0.9678$ | $1.0441$ | $1.0063$ |
+
+**Flat or falling at $N \le 6$ and not yet at $N=12$.** At six windows the repaired column's trend is $0.9893$ — falling, and the only column of the three that is — against $22.39$ for the bare column and $62.65$ for the projected-on-top one. At twelve it is $1.0441$: **still rising**, by $4\%$ over the last thirty macro-steps, on a column whose divergence is nonetheless $0.04011$ against the checkpoint's $0.06648$. So the honest form of the claim is *stable at every rung marched, with the divergence settling by $120$ steps at $N \le 6$ and still settling at $N=12$* — and the $120$-step horizon is now known to be the wrong thing to trust without checking, which is the whole lesson of this subsection.
+
+**The last column of that table is the one to be uncomfortable about.** The exposed classical column's defect against the monolith at $N=6$ is $27.22$ and the frozen checkpoint's is $27.88$ — the classical column and the learned one are, after $120$ macro-steps, the same distance from the right answer. Nothing here says the composed classical column is *accurate*; it says it exists, which is what it did not before.
+
+**The control that says the projection is doing the work.** The same exposed agents with no global projection also survive all $120$ macro-steps — at $\lVert\nabla\cdot u\rVert = 1.25$ against the projected column's $0.06556$, and a defect of $66.85$ against $27.22$. **Stable, and not incompressible**, and $2.46\times$ further from the referent. That is W105.
+
+> **N24 was not marched at this horizon**, and the reason is wall time rather than a result: the top rung is $6.1$ s per macro-step per classical column (W104), so six columns of $120$ steps is about an hour for that rung alone. The claim above is made for the rungs listed and for no others.
+
+#### What `R12` says now, and the row it opens
+
+`R12`'s verdict ladder is the measurement, not a design:
+
+| what the graph declares | `R12` |
+|---|---|
+| a global, after-assembly projection, **and every agent exposed** | **`admit`** — the measured-stable arrangement |
+| a global, after-assembly projection, **and some agent still projecting** | **`decertify`** — the operator runs twice; the message names `R10` as the actual repair |
+| no projection, and some agent enforces the constraint internally | `decertify` — the blend breaks it and nothing restores it |
+| the projection **per subdomain** | `refuse` — W98's measured failure |
+| the projection **before the blend** | `refuse` — that *is* the unrepaired column; L6/C2 is about the order |
+| cadence $0$ | `refuse` — declared and not applied |
+
+> **`R12` does not clear `R10`, and `R10` without `R12` is not enough either.**
+> `R10` moves the elliptic part out of the agent; `R12` says where the
+> composition layer must then put it. Neither alone is the scheme — and the
+> control that proves it is the fourth row of the table above: exposed agents
+> with **no** global projection run all $120$ macro-steps without leaving the
+> band, at $\lVert\nabla\cdot u\rVert = 1.25$. **Stable, and not
+> incompressible.** A rollout that never blows up is not the same thing as a
+> rollout that solves the equations, and this is the first place in this vault
+> where the two come apart.
+
+**W105 is that gap and it is open.** `R10b` fixes the *cadence* at which the
+composition layer must apply an exposed agent's elliptic part and assumes it
+happens; `R12` is silent on an all-exposed graph because L6/C2's hypothesis
+$\mathcal C u_i = 0$ genuinely does not hold there. So a graph can clear both
+rules and never apply the operator, which is exactly the $1.25$ above. Declaring
+an `assembly.ProjectedAssembly` is what makes it checkable; making that
+*required* would move two synthetic fixtures at Tier 9 and Tier 10 from `admit`
+and is left as its own row rather than done in passing.
+
+#### The declaration, which is what survives of the original brief
+
+The step is now first-class regardless of which arrangement it sits in, and that
+part of the work is unaffected by the retraction above. `assembly.ProjectedAssembly`
+carries a partition of unity **and** an `assembly.ConstraintProjection`, declared
+together so a case study cannot apply the projection without the record saying so
+or declare it without the driver doing it. `L6/C2` states the condition,
+`assembly.AssemblyCertificate.conservative` reports it beside `condition`, and
+`emit.HarnessParameters.assembly_projection` puts it on every emitted defect —
+**W54's fifth instance**, and the one whose consequence is a trajectory that
+stops existing rather than a factor in $\tau$.
+
+The statement generalizes past two windows, and written that way it says what the
+two-window version only implies. For a linear $\mathcal C$ with
+$\mathcal C u_i = 0$ on every subdomain,
+
+$$\mathcal C\Big(\sum_i \chi_i u_i\Big) = \sum_i [\mathcal C, \chi_i]\,u_i
+= \sum_i \nabla\chi_i\cdot u_i = \sum_i \nabla\chi_i\cdot(u_i - w)$$
+
+for **any** field $w$, because $\sum_i \nabla\chi_i = \nabla(1) = 0$. **The
+residual is a functional of the disagreement**, manufactured inside the overlap
+rather than transported into it, which is why no halo width touches it and why it
+is nobody's agent defect. Measured on two windows whose fields are *exactly*
+discretely divergence-free by construction, the blend's divergence is
+$\mathbf{0.42}$ against $10^{-16}$ for each of them, and it returns to $10^{-16}$
+when the two are given the same field with the same $\chi$, the same ramp and the
+same overlap.
+
+**And $N=1$ is why a ladder was needed.** With one window $\nabla\chi\equiv 0$,
+there is no commutator, and the projected assembly and the bare one are *the same
+operator* — measured, all four columns at $N=1$ return identical fields. No case
+study run at a single size could have found any of this.
+
+#### Two caveats on the operator, both measured
+
+**The instrument and the operator do not share a kernel.**
+$\lVert\nabla\cdot u\rVert_{\text{rms}}$ is a wide centred difference on the
+unpadded interior; the spectral projection acts on a domain extended downstream
+by `PAD_CELLS`. They disagree at the domain edge, and at $N=2$ — where the blend's
+commutator is one overlap wide — **that disagreement is the larger of the two**,
+so the projected column reads a *higher* divergence than the bare one ($0.0216$
+against $0.0132$, both flat). From $N=6$ up the commutator dominates and the
+ordering reverses. §19.6's published table already showed this and nothing had
+said why.
+
+**The operator has a hypothesis and it is now written down.**
+`wake_array.leray_projection`'s note states it: periodic in $y$ and
+periodic-compatible in $x$ *only because* the march holds the inlet and both
+laterals at $(U_\infty, 0)$ and `_extend` tapers the outflow. On a field that is
+large at the boundary it projects onto a different kernel — measured on a random
+perturbation field at $N=1$, it moves the state by $6\%$. And because a
+declaration cannot assert that an operator is a projection,
+`ConstraintProjection.idempotence_defect` measures
+$\lVert P(Pu)-Pu\rVert/\lVert Pu\rVert$: $\mathbf{10^{-3}}$ on this case study's
+own states, two orders worse outside the hypothesis, with every compile-time
+check on the assembly still passing. *A "projection" that is not idempotent is a
+smoother, and a smoother applied once per macro-step is a scheme change nobody
+declared.* The Neumann alternative — the classical solver's **own** projection,
+`RectangularNS._project`, which drives the measured divergence to $10^{-14}$ — is
+on the record as tried and worse: band left at $33$ against the spectral one's
+$51$.
+
+## 19.7 W54 — the harness on the emitted defect
+
+Four composition-layer defects have now worn an agent's label, and the depth tag
+caught none of them: the decomposed pressure solve ($99.8\%$ of the first composed
+step's error), the partition of unity at full weight at the artificial edge (a
+factor of $200$ in $\tau$), the exchange cadence (two orders in $\tau$), and
+**W98** (transport and pressure per window). §19.6's frozen-force blow-up is a
+fifth candidate of the same shape.
+
+`emit.HarnessParameters` now carries overlap, $\chi$'s shape, the exchange
+interval and cadence, and the elliptic placement; `BoundTerms.harness` holds it;
+`RunArtifact.validate` **refuses** an artifact whose $\tau$, $\sigma$ or $\gamma$
+is a measured number and whose harness is absent; and `HarnessParameters.from_graph`
+derives it from the `CaseGraph` so it cannot disagree with what the compile ran.
+`PartitionOfUnity` and `GridPartitionOfUnity` gained `ramp_cells` and `profile`,
+because *convex* is admissibility and the **ramp** is accuracy.
+
+The row's own definition of done is *"a test that changing a harness parameter
+changes the attribution"*. It is
+`test_changing_a_harness_parameter_changes_the_attribution`: one fixed set of
+restriction defects, shaped the way a real one is, attributed under two partitions
+of unity differing only in $\chi$'s ramp. The chi-weighted constant moves and the
+**depth tag is identical on both** — the row in one line.
+
+The harness this run emits, at every rung:
+
+| field | value |
+|---|---|
+| `overlap_cells` | $16$ |
+| `chi_shape` | partition-of-unity, ramp $8$ cells |
+| `exchange_dt` | $0.2$ |
+| `exchange_cadence` | $1$ |
+| `elliptic_placement` | `agent` |
+
+That last row is the one §19.6 is about. The ladder varies exactly one harness
+parameter by design — the tiling — so anything else moving in the tag is a bug
+the schema now shows.
+
+## 19.8 W81 — $\beta_{\min}$, derived where it can be and reported where it cannot
+
+The row: $\beta_{\min}$ is *the whole discriminating power* of the plug-in
+guarantee, `certify_substitution` took it from the caller with no default, and the
+one sibling default is $10^{-12}$ at which every seam in the vault is blind. Both
+branches the row allows are now built.
+
+**Derived.** `composition.beta_min_from_tolerance` returns
+$\varepsilon_{\text{tol}} = \min(\tau,\sigma)$ over the terms that carry a
+**positive** scale — W84's caveat is why the positivity filter is there, because a
+composition of exact solvers has $\tau=0$ and a plain minimum sets the tolerance
+to zero, at which every certificate passes and none of them sees anything. That is
+the $10^{-12}$ default arriving from the other direction.
+
+**Reported.** Both `blind` and `passes` are monotone in $\beta_{\min}$, so the
+whole verdict function is two numbers, and `SubstitutionCertificate` now exposes
+them:
+
+$$\beta_{\min} < \beta - \lVert S_i\rVert \;\Rightarrow\; \textbf{blind};\qquad
+\beta_{\min} > \beta - \lVert\Delta\rVert \;\Rightarrow\; \textbf{refuse}$$
+
+With no tolerance supplied the certificate returns `admit-uncertified` and a
+message naming both thresholds, which is strictly more than a verdict at a number
+nobody derived. And the sibling default is gone: `schur_complement`'s parameter is
+renamed `beta_int_floor`, because it guards a **singularity on the internal
+block** — where $10^{-12}$ is exactly right, since the question there is whether a
+matrix is invertible. Two numbers had one name and only one of them should ever
+have had a default.
+
+Measured on one wake seam per rung, WindowNS $\to$ Poseidon-T:
+
+| $N$ | seam | $\beta$ | $\lVert S_i\rVert$ | $\lVert\Delta\rVert$ | visible above | refused above | $\varepsilon_{\text{tol}}$ | derived verdict |
+|---|---|---|---|---|---|---|---|---|
+| $2$ | `x0r0_bypass` | $4.708\times10^{-3}$ | $0.08108$ | $0.08074$ | $-0.0764$ | $-0.0760$ | $0.8825$ | `refuse` |
+| $6$ | `x1r0_bypass` | $4.543\times10^{-3}$ | $0.08487$ | $0.08466$ | $-0.0803$ | $-0.0801$ | $0.8486$ | `refuse` |
+| $12$ | `x1r0_bypass` | $4.577\times10^{-3}$ | $0.08507$ | $0.08486$ | $-0.0805$ | $-0.0803$ | $0.6706$ | `refuse` |
+| $24$ | `x4r0_bypass` | $4.431\times10^{-3}$ | $0.08480$ | $0.08459$ | $-0.0804$ | $-0.0802$ | $0.7833$ | `refuse` |
+
+**Both thresholds are negative at every rung, and that is the informative case.**
+$\lVert\Delta\rVert$ exceeds $\beta$ by a factor of $19$, so the swap is refused at
+*every* admissible $\beta_{\min}$ and is **never blind** — the whole non-negative
+axis is inside the informative window. The derived $\varepsilon_{\text{tol}}$ and
+the swept values $\{0,\ 10^{-12},\ 0.01,\ 0.1,\ 0.25,\ 0.5\}$ agree on `refuse` at
+every rung, which is the cross-check that the derivation is not doing something
+the sweep would not.
+
+Set against **W97**, where a rotor seam is blind at every $\beta_{\min}$ up to
+$81\times$ the fluid block's norm, the two thresholds now separate the two seam
+types cleanly: a fluid–fluid seam is maximally informative and a field-to-lumped
+one is blind, and both statements are two numbers rather than a verdict.
+
+$\tau$ and $\sigma$ at the same seams, harness-tagged (§19.7) and depth-tagged:
+
+| $N$ | $\tau$ | $\sigma$ | $\Xi$ |
+|---|---|---|---|
+| $2$ | $4.544$ | $0.8825$ | $0.03128$ |
+| $6$ | $12.70$ | $0.8486$ | $0.02101$ |
+| $12$ | $12.85$ | $0.6706$ | $0.02190$ |
+| $24$ | $8.432$ | $0.7833$ | $0.02230$ |
+
+$\tau$ is **not monotone in $N$** and should not be read as a scaling quantity: it
+is the checkpoint's infidelity at one seam in one local flow, and which flow that
+seam sits in changes with the layout. $\gamma$ is **not measured** here and is
+recorded as absent rather than as zero — a halo scheme poses no interface solve,
+so there is no solve infidelity localized at a seam, and what plays $\gamma$'s
+part is the assembly, measured globally in §19.2 as the gap between the composed
+defect and the bound.
+
+## 19.9 Where the compiles land, and how the cost of reporting grows
+
+| $N$ | seams | agents | WindowNS | Poseidon-T | probed WindowNS | probed Poseidon-T |
+|---|---|---|---|---|---|---|
+| $1$ | $0$ | $1$ | `RecordError` | `RecordError` | — | — |
+| $2$ | $3$ | $2$ | `refuse`, 1 / 4 | `admit-uncertified`, 0 / 13 | 1 / 6 | 0 / 16 |
+| $6$ | $13$ | $6$ | `refuse`, 1 / 4 | `admit-uncertified`, 0 / 28 | 1 / 17 | 0 / 50 |
+| $12$ | $27$ | $12$ | `refuse`, 1 / 4 | `admit-uncertified`, 0 / 48 | 1 / 36 | 0 / 95 |
+| $24$ | $62$ | $24$ | `refuse`, 1 / 4 | `admit-uncertified`, 0 / 95 | not run | not run |
+
+*(refusals / decertifications; the probed compile is skipped above $30$ seams,
+and the unprobed one runs at every rung so the counts are comparable.)*
+
+**The classical column refuses at every rung, always on `L2/R10`, always exactly
+one refusal** — and §19.6 is what that refusal is about.
+
+**The decertification count is exactly linear in the graph, with slope one per
+seam and one per agent.** `L3/C8` fires once per seam ($3, 13, 27, 62$), `L1/C8`
+once per agent ($2, 6, 12, 24$), and everything else is a constant $8$ — nine from
+$N=6$ on, where `L2/C2/W58` joins. So
+
+$$\#\text{decertifications} \;=\; \#\text{seams} + \#\text{agents} + 9$$
+
+with no cross terms. **The compiler's own reporting is $O(N)$ and not $O(N^2)$**,
+which is a small result and worth having: an audit trail that grew quadratically
+would be unreadable at rung 9 whatever the physics did.
+
+The envelope stamp is unchanged across the ladder — E1–E4 and E6 `holds`, E5 and
+E7 `unchecked` — and `unmeasured` is the same three rows at every rung
+(`L (W1)`, `beta (W2)`, `p_decline (W36)`).
+
+## 19.10 Wall time — Claim B's other half, and it does not come out the same way
+
+Claim B has two halves. The error is §19.2; the other is **$O(1)$ integration
+work per added agent**, and a per-agent cost that climbs with the graph falsifies
+it exactly as a super-linear error would.
+
+**The instrument had to be built twice, and the first version's failure is the
+reason to trust the second.** Timing the driver's own marches is provenance and
+not measurement: its rungs are marched at different times and some are resumed
+from a cache. Running every rung back to back in one process is not enough
+either — this is a shared desktop and the load moves *inside* a pass. Two passes
+of that version, same code, same inputs, minutes apart, returned $27.0$ and
+$103.1\ \mathrm{ms}$ per agent for the same rung, and per-agent ratios of
+$4.49\times$ and $3.03\times$. A ratio that moves by half its own value between
+two runs is not a measurement of anything.
+
+`scripts/w100_timing.py` therefore **interleaves** — one repeat visits every
+(rung, expert) row in turn, so a transient is spread across all rows rather than
+charged to whichever was unlucky — takes the minimum over repeats, and **reports
+its own reproducibility**. Over six interleaved repeats the worst best-to-second
+spread is **$6.0\%$**, against a stated limit of $25\%$, and the two ratios below
+are $1.34$ and $1.14$ in log units against a log-noise of $0.058$: **separable by
+more than twenty times the noise.** The same script at two repeats reported
+$34\%$ and refused to quote a ratio, which is the behaviour that makes the $6\%$
+worth believing.
+
+| $N$ | agents | cells | WindowNS | Poseidon-T | sub-steps | WindowNS per sub-step |
+|---|---|---|---|---|---|---|
+| $1$ | $1$ | $16384$ | $81.5$ | $399.7$ | $17$ | $4.79$ |
+| $2$ | $2$ | $30720$ | $88.8$ | $270.1$ | $21$ | $4.23$ |
+| $6$ | $6$ | $84480$ | $125.5$ | $154.4$ | $21$ | $5.98$ |
+| $12$ | $12$ | $163328$ | $329.1$ | $109.8$ | $21$ | $15.67$ |
+| $24$ | $24$ | $319232$ | $340.8$ | $86.1$ | $21$ | $16.23$ |
+
+*(milliseconds per macro-step per agent; minimum of six interleaved repeats.)*
+
+**The two columns answer oppositely.**
+
+$$\text{per-agent cost},\ N{=}24 \text{ against } N{=}2:\qquad
+\textbf{WindowNS } 3.84\times,\qquad \textbf{Poseidon-T } 0.32\times$$
+
+- **The frozen checkpoint beats $O(1)$.** Its per-agent cost *falls* by
+  $3.1\times$ across the ladder, because one batched forward pass amortizes its
+  fixed overhead over more windows. Composition gets **cheaper** per agent as the
+  graph grows, which is more than Claim B asks for.
+- **The classical column does not.** Its per-agent cost *rises* by $3.84\times$,
+  with the jump between $84$k and $163$k cells.
+
+**And it is not the CFL, which is the one confound worth eliminating.**
+`WindowNS` chooses its sub-step count from the advective CFL, so a bigger farm
+with deeper wakes would sub-step more — and that would be the *flow* getting
+faster, not the composition costing more. The instrument records it: **$21$
+sub-steps at every rung from $N=2$ up, at an identical $u_{\max} = 1.302$.** So
+the per-sub-step ratio is the same $3.84\times$, and the arithmetic per agent is
+constant by construction — same operator, same window size, same sub-step count,
+and a composed step that is per-window and embarrassingly parallel.
+
+> **So the classical column's $3.84\times$ is the memory hierarchy and not the
+> composition.** The work per added agent is $O(1)$; the *time* is not, because
+> $12$ windows of $128^2$ in double precision with the solver's temporaries stop
+> fitting where $6$ did. That is a real cost of scale on this hardware and it is
+> not what F3 is about.
+
+**F3 — integration hours per added expert — is therefore measured for the first
+time and the answer is split**: favourable and better than $O(1)$ for the frozen
+checkpoint, $O(1)$ in work but not in wall time for the classical solver, and
+neither statement transfers off this host. What the earlier failure bought is the
+knowledge of how far it does not: a factor of four, between two runs of one
+script.
+
+## 19.11 Closed this tier / opened by it
+
+| # | verdict |
+|---|---|
+| **W58** | **`done`, and larger than the row.** The provenance field, the four named forms and the compile-time disjointness check are built; and the measurement found a **second hypothesis nobody had stated** — the surrogate's *aggregation* — which moves the ratio by $3\times$ where the stated one moves it by $4\%$. A third gap is named and left: disjointness of the *declared* contaminated sets is necessary and not sufficient, because $D_i$ has a tail outside them |
+| **W54** | **`done`.** `HarnessParameters` on `BoundTerms`, derived from the graph, refused at emit when a measured defect lacks it, and a test that a changed harness moves the attribution while the depth tag does not |
+| **W81** | **`done`, both branches.** $\varepsilon_{\text{tol}} = \min(\tau,\sigma)$ over positive terms is the derived candidate; absent one, the certificate reports `visible_above` and `fails_above` instead of a verdict; and the $10^{-12}$ sibling is renamed `beta_int_floor` because it guards a different quantity |
+| **W100** | **`done` 2026-08-31, and the repair is not the one the row proposed.** The mechanism stands; the positive control **does not survive its own length**. At $120$ macro-steps a global projection *added* to agents that already project is worse than none — band left at $51$ against $74$ — because the pressure is applied twice, and the Neumann variant is cleaner by $78\times$ in $\lVert\nabla\cdot u\rVert$ and dies soonest, so the divergence is not the proximate cause. What holds $120$ steps is **R10's own prescription**: the elliptic part *moved* out of the agent, applied once to the assembled field. Built: `L6/C2`, `ProjectedAssembly`, **`R12`**, the certificate's fifth field and the harness's sixth. Opens **W105** |
+| **W105** | `open` — **a graph can clear `R10` and `R10b` and never apply the elliptic part at all.** Measured: the exposed classical column with no global projection runs all $120$ macro-steps without leaving the band, at $\lVert\nabla\cdot u\rVert_{\text{rms}} = 1.25$ against the projected column's $0.066$ — **stable, and not incompressible**. `R12` is silent there because L6/C2's hypothesis genuinely fails on an all-exposed graph. The fix is known and not free: requiring a `ProjectedAssembly` moves two synthetic fixtures at Tier 9 and Tier 10 off `admit` |
+| **W102** | `open` — a sub-linear exponent measured on a ladder whose **physics grows with its size** is weaker than it looks. §19.3's control puts the interface-only exponent at $0.14$–$0.20$; no other case study in this vault separates the two, and every scaling claim made before this one conflated them |
+| **W103** | `open`, small — `restriction_defect_bound` took subdomain-local arrays without complaint because on a uniform tiling they are all the same length. Guarded by an optional `n_global`, which is opt-in, so the silent path still exists for a caller who does not pass it |
+
+## 19.12 What this tier says about the ones before it
+
+| Claim | Where | Now |
+|---|---|---|
+| `L2/R10` refuses to decompose an `embedded` elliptic subsolve | Tier 0 §8.2 | **vindicated, and more sharply than §19.6 first claimed.** The refused graph goes unstable at $N\ge6$ — and *patching around it with a global projection makes it worse*. The repair is to obey the rule: with the elliptic part actually EXPOSED and one projection after the blend, the column holds $120$ macro-steps and is the first classical column here R10 does not refuse |
+| *"assembly is the least examined layer and carries a measured 19% of total error"* | `assembly.py` | it now carries a second **condition**. L6/C1 and L6/C2 are independent — every convex partition here satisfies the first and violates the second — and the residual L6/C2 names is real without being what ends the rollout |
+| W98, *"transport and pressure are global operations"* | §18.5.1 | the **pressure** half generalizes past the checkpoint: any composed classical column needs it too, and W98's repair is why the Poseidon column is the stable one here |
+| §10's *"the chi-weighted bound is tight to 0.2%"* | §10 | $4\%$ on this geometry, and **flat over $24\times$** — the transferable property is the flatness, not the $0.2\%$ |
+| W49's $\Pi$ | §9.2 | **saturates at $0.7250$ from $N=6$ on**, so it is a property of the tiling's local pattern rather than of its size, and $C_\mu$ transfers along the ladder unchanged |
+| W58, *"they agreed to 1.00007 anyway, which is luck"* | Tier 10 | right that it was luck, and **wrong about which hypothesis the luck was in**: the agreement survives the disjointness failure and does not survive the aggregation |
+| W76 / W97, the blind certificate | §15.3, §18.7 | the two thresholds now separate the seam types: a fluid–fluid seam is informative on the whole admissible axis, a rotor seam is blind on all of it |
+| Tier 18's published state | §18.5 | measured at a state on a **diverging trajectory**; the numbers stand, the trajectory does not continue, and $60$ steps is $10$–$20$ short of where it would have shown |
+| §19.6's own positive control | §19.6 | **the same mistake, one level down and the same day.** It was measured over $20$ macro-steps and dies at $38$. A repair marched no further than the failure it repairs is not a repair, and this is now twice |
+
+## 19.13 What the picture says, and it is not what the numbers say
+
+[[case-study-wake-array-atlas-0.1]]'s most transferable finding is that **a
+rendering of the state is a measurement instrument** — W98 was smooth, bounded,
+physically shaped, in the right units, passed every control, and was found by
+watching an animation. So `scripts/w100_frames.py` renders each rung's final
+state three ways, plus the two difference fields, at full resolution
+(`out/w100/look_<rung>.png`), and this was done before any exponent above was
+believed.
+
+**Nothing of W98's class is present.** No wake stands upstream of a turbine, no
+wake wraps onto its own window, and the freestream band holds. All three fields
+at $N=24$ read as a wind farm: twelve turbines in four rows, the L motif visible,
+wakes propagating and recovering downstream.
+
+**The difference fields are where the run's own story is written, and the two
+columns are not merely different in size — they are different in *shape*.**
+
+| | what the difference against the monolith looks like |
+|---|---|
+| **WindowNS composed** | a **checkerboard of $\pm0.25$ blobs organized on the window grid** — vertical banding at the $3.5\,D$ stride and horizontal banding at the row seams, saturating the colour range over a large fraction of the domain |
+| **Poseidon-T composed** | **smooth wake-shaped lobes hugging each shear layer**, with no window-grid structure anywhere |
+
+That is the two error sources telling each other apart without being asked. The
+classical column's error is organized on **the cut**, which is what an
+assembly-injected divergence looks like and is §19.6's mechanism seen rather than
+inferred. The checkpoint's error is organized on **the physics**, which is model
+infidelity and has nothing to do with the partition.
+
+Two consequences worth having.
+
+**The picture corroborates the attribution the numbers make.** §19.2 says the
+classical column's defect grows with exponent $0.85$ and the checkpoint's with
+$0.48$, and §19.6 says the classical column's error is the assembly's. Neither
+statement contains the word *cut*, and the difference panel does: it puts the
+classical error on the window lattice at every rung.
+
+**And it shows what an RMS hides.** At $N=24$ the classical composed field
+differs from the monolith by up to **$25\%$** in large coherent regions, against a
+per-cell RMS of $0.146$. The composed field is visibly blotchier than the
+monolith and carries over-speed regions ($u > 1.4$) the monolith does not have —
+at macro-step $60$, which §19.6 places about eight steps from the divergence
+onset. **The field was already visibly wrong at the step Tier 18 published**, and
+looking would have said so.
+
+> The rule the parent case study wrote for itself held again: **look at the
+> largest one before believing any number from it.** Here the picture did not
+> overturn a number — it named which of two mechanisms each column's number
+> belongs to, which nothing in the tables could do.
+
+## The mechanism tally
+
+Tier 18 concluded that *what made all four findings visible is the same thing:
+real geometry*. This tier's shape is different and it is worth naming, because
+three of its findings arrived the same way.
+
+**The measurement that decides is the one that removes a variable, and in each
+case the removed variable was one nobody had noticed was moving.** §19.3 removes
+the physics and the exponent falls by a factor of five. §19.6's positive control
+removes the elliptic placement and an instability disappears. §19.5 removes the
+aggregation and W58's stated hypothesis turns out to be the second-order one. In
+all three the *headline* measurement was correct and uninterpretable on its own.
+
+**A fourth arrived after the tier was written up, and it is the one to keep.**
+§19.6's repair was a *positive control*, and a positive control is a measurement
+of a scheme nobody has to run. Marched to the length of the failure it repairs,
+it fails — worse than the thing it repairs. **The horizon a control is measured
+over is a parameter of the control**, it was $20$ steps here against a failure at
+$38$, and nothing in the framework asks for it. That is the second time this tier
+has caught a number that was true exactly as far as it was marched.
+
+> **A ladder measures a derivative, and a derivative taken while two things move
+> measures neither.** The brief said to hold $\mathrm{d}x$, $\Delta t$, the
+> overlap, the ramp, the viscosity and the disk model fixed, and this run did. It
+> did not say to hold the *flow* fixed, because nobody had noticed that growing
+> the farm grows the physics — and that control is worth more than the headline
+> it qualifies.
+
+---
+
+# 20. Does a certificate travel with the expert? — 2026-08-31
+
+Full record here; worklist rows on [[gap-worklist]] Tier 20. Reproduce with
+`python scripts/w106_reuse_probe.py --steps 110`; artifacts
+`out/w106/w106.json`, `out/w106/state_N6.npz`, `out/w106/state_N12.npz`.
+New case study `atlas/cases/reuse_probe.py`, the **eighth** real one, and the
+first whose *variable* is the state a measurement is taken at rather than
+anything about the graph.
+
+> **Dating.** Marches, probes and write-up all 2026-08-31, verified against the
+> environment clock before stamping, per Tier 15's rule.
+
+[[case-study-ladder-to-f1]] §4 names **CS-8** as the only rung that tests the
+*foundation-model* claim rather than the coupling claim, and
+[[f1-pathmap-and-end-goal]] §3.1 flags rung 4 as *the one most likely to be
+skipped by accident*. Sharpened by Tiers 14–19 the question is not *"does the
+expert work in a new scenario"* but:
+
+> **Is a substitution certificate a property of the expert, or of the state it
+> was probed at?**
+
+It is not a philosophical question. `probe.probe_block` linearizes about
+`probe_base`, so for a nonlinear expert the block it returns is the **tangent
+map at that point** — [[atlas-and-standard-dd-theory]]'s nonlinear-substructuring
+section says so outright, and adds that *every* quantity read off $S$ is local to
+that linearization. Nothing in the record has ever said how far the reading
+travels. A twenty-agent car carries roughly twenty conformance certificates and
+forty seam certificates; if each is state-specific the plug-in claim is
+**per-design rather than per-expert**, and the economic argument for a reusable
+expert library collapses back into re-certifying every design.
+
+**The answer, in one line: the verdict travels, the norms nearly travel, and the
+two numbers that give the certificate its discriminating power do not — they move
+by more than their own size.**
+
+## 20.1 The design, and the two controls
+
+One swap, everywhere: `reference.WindowNS` $\to$ Poseidon-T at one fluid agent of
+one seam, $55$ cells in all. Four factors and two controls; nothing else moves.
+
+| factor | what varies | what is held |
+|---|---|---|
+| **state** | macro-step $\in \{0, 10, 30, 60, 110\}$ of one trajectory | the seam, the graph, both experts |
+| **seam** | the flow regime the seam sits in | the state, the graph, both experts, the port declaration |
+| **geometry** | $6$ windows against $12$ | the seam ID, the state, both experts |
+| **replicate** | two seams the *rule* calls the same regime | everything else |
+
+**The probe states come off the R10-compliant classical column and no other.**
+`wake_array.exposed_reference_solver` — elliptic part *out* of the agent — with
+one `assembly.ProjectedAssembly` after the blend. §19.6 is the reason: the
+embedded classical column is not finite past macro-step $82$ at six windows, and
+a probe taken on a diverging trajectory measures the divergence. **Tier 18's
+published wake-array state is excluded for exactly that reason**, and
+`reuse_probe.probe_state_health` refuses a state rather than a write-up.
+
+Both marches reproduce §19.6's column on an independently written driver:
+
+| $N$ | $u_{\max}$ at step $110$ | $\lVert\nabla\cdot u\rVert_{\text{rms}}$ at $110$ | §19.6's own, at $120$ |
+|---|---|---|---|
+| $6$ | $1.314$ | $0.06560$ | $0.06556$ |
+| $12$ | $1.332$ | $0.04043$ | $0.04011$ |
+
+Every probe state is inside the band, and the divergence sanity-check §19's
+$N=12$ caveat asks for is satisfied at the **value** — $0.0312$ to $0.0671$
+across all ten snapshots — rather than at the ratio. See **W110** for why the
+ratio form was inert.
+
+**The seam taxonomy is a rule over the layout, not a list.** `reuse_probe
+.regime_of` counts the rotors of a seam's own window-row lying upstream of it,
+which is well defined before the march runs, because `rotor_motif` puts every
+rotor of a row at the same $y$ and a row's rotors are therefore in line. Five
+regimes fall out, and $N=12$ is the smallest rung carrying all of them:
+
+| seam | regime | upstream rotors | modes |
+|---|---|---|---|
+| `x0r1_full` | near-freestream | $0$ | $33$ |
+| `x2r1_full` | shallow-wake | $1$ | $33$ |
+| `x2r0_full` | deep-wake | $2$ | $33$ |
+| `x2r2_full` | deep-wake — **the replicate**, another row | $2$ | $33$ |
+| `x0r0_bypass` | bypass-clean | $0$ | $25$ |
+| `x1r0_bypass` | bypass-wake — CS-7's own headline seam | $1$ | $25$ |
+| `x1r2_bypass` | bypass-wake — its replicate | $1$ | $25$ |
+
+**Comparisons are made within a port group and never across one.** A `full` face
+is $128$ cells and $33$ interface modes and a `bypass` face is $96$ and $25$; a
+spread across the two would be a spread across different spaces.
+`SeamChoice.comparable_key` is what keeps them apart, and it is checked rather
+than remembered.
+
+### Control ZERO — and it passes exactly
+
+At the freestream every window holds the same uniform field, every port of a
+group is the same face with the same modes, and the solver is deterministic. So
+seams the taxonomy calls **different regimes** must return the **same operator**.
+
+| group | seams | regimes spanned | worst range over all eight quantities |
+|---|---|---|---|
+| $N{=}12$, `full` | $4$ | near-freestream, shallow-wake, deep-wake | $\mathbf{0.0}$ |
+| $N{=}12$, `bypass` | $3$ | bypass-clean, bypass-wake | $\mathbf{0.0}$ |
+| $N{=}6$, `bypass` | $3$ | bypass-clean, bypass-wake | $\mathbf{0.0}$ |
+
+Exactly zero, by `==`, not to a tolerance. Had it not been, the regime labels
+would be reading the **port** rather than the **flow** and every number in §20.4
+would be uninterpretable. This is [[tier0-measurements]] §8's lesson applied
+before the fact rather than after it, and it costs one rung of the grid.
+
+It also has a consequence for the arithmetic below: **the freestream is control
+ZERO, not a level of the seam, replicate or geometry factors.** Those cells are
+identically zero by construction, and a median that includes them halves itself
+— which would make the taxonomy look better than the measurement says it is. The
+three cross-sectional factors exclude step $0$; the **state** factor keeps it,
+because there the freestream is a genuine level and most of what the factor
+measures.
+
+### Control FLOOR — exactly zero too, which costs the framework a test
+
+The identical `(seam, state)` cell probed twice: state reloaded from the `.npz`,
+experts constructed fresh, graphs rebuilt, operators re-probed. Four cells, two
+rungs, both port groups:
+
+| rung | seam | step | worst disagreement over the eight quantities |
+|---|---|---|---|
+| $N{=}6$ | `x0r1_full` | $110$ | $0.0$ |
+| $N{=}12$ | `x2r0_full` | $110$ | $0.0$ |
+| $N{=}12$ | `x1r0_bypass` | $110$ | $0.0$ |
+| $N{=}12$ | `x0r1_full` | $0$ | $0.0$ |
+
+**The whole pipeline is bit-reproducible**, which is the good news and also the
+problem. `reuse_probe.travel_verdict` asks *is the movement larger than the
+floor*, and against a floor of exactly zero **every** quantity that moved at all
+answers `state-dependent` — including one that moved by $0.037\%$. The test the
+framework brought to this question does not discriminate, and saying so is
+**W106**. What replaces it below is the quantity's **own level** — its range over
+the mean of its magnitude — and the **replicate**, which prices what the regime
+label buys. Both are reported at every cell and neither is a floor.
+
+## 20.2 The answer — the norms travel and the thresholds do not
+
+Median over the factor of each quantity's range, as a percentage of the level the
+quantity sits at. Read the columns against each other, not the rows.
+
+| quantity | **state** | **seam** | **replicate** | **geometry** |
+|---|---|---|---|---|
+| $\beta$ | $6.46\%$ | $3.99\%$ | $0.769\%$ | $0.340\%$ |
+| $\lVert S_i\rVert$ | $2.49\%$ | $1.99\%$ | $0.037\%$ | $0.199\%$ |
+| $\lVert\Lambda^{\text{expert}} - \Lambda^{\text{ref}}\rVert$ | $3.63\%$ | $2.97\%$ | $0.228\%$ | $0.156\%$ |
+| $\Xi$ (block) | $\mathbf{55.9\%}$ | $\mathbf{53.9\%}$ | $\mathbf{20.5\%}$ | $1.61\%$ |
+| $\Xi$ (seam) | $69.1\%$ | $95.2\%$ | $36.4\%$ | $11.2\%$ |
+| `visible_above` | $\mathbf{155\%}$ | $79.2\%$ | $3.56\%$ | $2.70\%$ |
+| `fails_above` | $\mathbf{155\%}$ | $96.0\%$ | $5.32\%$ | $3.66\%$ |
+| $\lVert\Delta\rVert/\beta$ | $10.2\%$ | $7.03\%$ | $0.631\%$ | $0.205\%$ |
+
+**Three orders of magnitude separate the most portable quantity from the least,
+and they are all fields of one certificate.** $\lVert S_i\rVert$ moves $2.5\%$
+with the state; `fails_above` moves $155\%$ — *more than its own size*. A record
+that reports "the certificate" as one object, portable or not, is averaging over
+that spread. **W107.**
+
+**The mechanism is arithmetic, and it says the result is not an accident of this
+expert.** Both thresholds are a *difference of two nearly equal large numbers*:
+
+$$\texttt{visible\_above} = \beta - \lVert S_i\rVert, \qquad
+\texttt{fails\_above} = \beta - \lVert\Delta\rVert$$
+
+On this seam $\beta \approx 0.21$ and both norms are $\approx 0.22$, so the
+thresholds are $\sim 10^{-3}$ — two orders below the terms they are built from. A
+$3\%$ movement in $\lVert\Delta\rVert$ against a $6\%$ movement in $\beta$
+therefore lands as a $155\%$ movement in their difference. **Any certificate
+whose verdict is decided near $\lVert\Delta\rVert \approx \beta$ inherits that
+amplification** — and that is the regime a *good* substitution is in. The closer
+a swap is to admissible, the less its certificate travels.
+
+**[AI Inference]:** if that reading is right, portability and admissibility are in
+tension by construction, and the quantity a record should carry is not the
+threshold but the *pair of norms it is a difference of*, each of which travels to
+a few percent. This is derived from the definitions and the measured magnitudes
+above rather than measured separately, and it should be checked at a seam where
+$\lVert\Delta\rVert \ll \beta$ — which this vault does not yet have.
+
+## 20.3 The state factor, seam by seam
+
+The full group at $N=12$, down one trajectory. $\Delta$ is
+$\lVert\Lambda^{\text{expert}} - \Lambda^{\text{ref}}\rVert$ at the target block.
+
+| seam / regime | step | $\beta$ | $\lVert\Delta\rVert$ | $\Xi$ | `visible_above` | `fails_above` | $\lVert\Delta\rVert/\beta$ |
+|---|---|---|---|---|---|---|---|
+| `x0r1_full` near-freestream | $0$ | $0.2147$ | $0.2154$ | $0.006945$ | $-7.23\times10^{-4}$ | $-7.35\times10^{-4}$ | $1.00342$ |
+| | $30$ | $0.2160$ | $0.2165$ | $0.007285$ | $-8.33\times10^{-4}$ | $-5.48\times10^{-4}$ | $1.00254$ |
+| | $110$ | $0.2150$ | $0.2164$ | $0.006997$ | $-1.71\times10^{-3}$ | $-1.41\times10^{-3}$ | $1.00654$ |
+| `x2r1_full` shallow-wake | $0$ | $0.2147$ | $0.2154$ | $0.006945$ | $-7.23\times10^{-4}$ | $-7.35\times10^{-4}$ | $1.00342$ |
+| | $30$ | $0.1739$ | $0.2230$ | $0.01258$ | $-0.04697$ | $-0.04912$ | $1.28245$ |
+| | $110$ | $0.1776$ | $0.2239$ | $0.01176$ | $-0.04456$ | $-0.04622$ | $1.26020$ |
+| `x2r0_full` deep-wake | $0$ | $0.2147$ | $0.2154$ | $0.006945$ | $-7.23\times10^{-4}$ | $-7.35\times10^{-4}$ | $1.00342$ |
+| | $30$ | $0.1889$ | $0.2218$ | $0.01076$ | $-0.03194$ | $-0.03295$ | $1.17443$ |
+| | $60$ | $0.1649$ | $0.2249$ | $0.01303$ | $-0.05760$ | $-0.06007$ | $1.36438$ |
+| | $110$ | $0.1716$ | $0.2248$ | $0.01225$ | $-0.05076$ | $-0.05322$ | $1.31019$ |
+
+Per-seam totals over the whole trajectory, as a fraction of each quantity's own
+level ($N=12$):
+
+| seam | regime | $\beta$ | $\lVert\Delta\rVert$ | $\Xi$ | `fails_above` | $\lVert\Delta\rVert/\beta$ |
+|---|---|---|---|---|---|---|
+| `x0r1_full` | near-freestream | $0.594\%$ | $0.505\%$ | $4.77\%$ | $107\%$ | $0.398\%$ |
+| `x0r0_bypass` | bypass-clean | $2.48\%$ | $0.893\%$ | $6.65\%$ | $117\%$ | $3.30\%$ |
+| `x1r0_bypass` | bypass-wake | $6.54\%$ | $3.79\%$ | $72.3\%$ | $157\%$ | $10.2\%$ |
+| `x2r1_full` | shallow-wake | $21.3\%$ | $4.01\%$ | $55.9\%$ | $167\%$ | $24.0\%$ |
+| `x2r0_full` | deep-wake | $26.1\%$ | $4.31\%$ | $59.4\%$ | $199\%$ | $30.8\%$ |
+| `x2r2_full` | deep-wake | $27.6\%$ | $4.55\%$ | $95.0\%$ | $201\%$ | $32.7\%$ |
+
+**Two readings, and the second is the one to keep.**
+
+**The trajectory does most of its damage in the first thirty macro-steps and then
+stops.** At `x2r0_full` the thresholds move by a factor of $44.8$ between the
+freestream and step $30$, and by $1.6$ between step $30$ and step $110$. So the
+state-dependence measured here is overwhelmingly *freestream versus developed*,
+not *developed versus developed* — the more hopeful of the two possible shapes,
+and the one a library could actually exploit.
+
+**And the seam whose flow does not develop does not move.** `x0r1_full` is
+near-freestream by construction: no rotor upstream in its row. Over $110$
+macro-steps its $\beta$ moves $0.594\%$ and its $\Xi$ moves $4.77\%$ — against
+$26.1\%$ and $59.4\%$ at the deep-wake seam sitting in the same graph, on the
+same trajectory, at the same steps. **The certificate is state-dependent exactly
+to the extent that its own seam's flow is.** That sounds circular and is not: it
+says the dependence is *local*, and a seam in undisturbed flow inherits a
+portable certificate even inside a graph whose other seams do not. The ordering
+of that table is the rotor count of §20.1's rule, unchanged.
+
+## 20.4 The seam factor, and the replicate that prices the label
+
+At a fixed developed state, seams of one port group in different regimes. Every
+row is macro-step $110$, $N=12$:
+
+| seam | regime | $\beta$ | $\Xi$ | `fails_above` | $\lVert\Delta\rVert/\beta$ | $\tau$ | $\sigma$ |
+|---|---|---|---|---|---|---|---|
+| `x0r1_full` | near-freestream | $0.2150$ | $0.006997$ | $-1.41\times10^{-3}$ | $1.00654$ | $115.0$ | $3.957$ |
+| `x2r1_full` | shallow-wake | $0.1776$ | $0.01176$ | $-0.04622$ | $1.26020$ | $27.92$ | $0.3593$ |
+| `x2r0_full` | deep-wake | $0.1716$ | $0.01225$ | $-0.05322$ | $1.31019$ | $40.58$ | $0.9776$ |
+| `x2r2_full` | deep-wake *(replicate)* | $0.1703$ | $0.01989$ | $-0.05489$ | $1.32236$ | $60.72$ | $1.552$ |
+| `x0r0_bypass` | bypass-clean | $0.2095$ | $0.007392$ | $-7.72\times10^{-3}$ | $1.03686$ | $17.85$ | $0.2322$ |
+| `x1r0_bypass` | bypass-wake | $0.2012$ | $0.01299$ | $-0.02250$ | $1.11184$ | $8135$ | $63.61$ |
+| `x1r2_bypass` | bypass-wake *(replicate)* | $0.2013$ | $0.01349$ | $-0.02288$ | $1.11366$ | $3535$ | $30.91$ |
+
+**The regime label does most of the work, and the replicate is how we know.**
+Two seams the rule calls the same regime, in different rows of the same graph at
+the same station, against the spread across regimes:
+
+| quantity | seam factor | replicate | what the label buys |
+|---|---|---|---|
+| $\lVert S_i\rVert$ | $1.99\%$ | $0.037\%$ | $\mathbf{53\times}$ |
+| $\lVert\Delta\rVert$ | $2.97\%$ | $0.228\%$ | $13\times$ |
+| `visible_above` | $79.2\%$ | $3.56\%$ | $22\times$ |
+| `fails_above` | $96.0\%$ | $5.32\%$ | $18\times$ |
+| $\lVert\Delta\rVert/\beta$ | $7.03\%$ | $0.631\%$ | $11\times$ |
+| $\beta$ | $3.99\%$ | $0.769\%$ | $5.2\times$ |
+| $\Xi$ (block) | $53.9\%$ | $20.5\%$ | $\mathbf{2.6\times}$ |
+
+So **a label computable from the layout with no run at all captures between five
+and fifty times the seam-to-seam variation** — for every quantity except one.
+
+**The exception is $\Xi$, and it is the interesting one.** The two deep-wake
+replicates at step $110$ read $\Xi = 0.01225$ and $0.01989$, which is $47.5\%$ of
+their own level; the $N=6$ bypass-clean pair reads $0.007271$ and $0.01199$, or
+$49\%$. The composability index is a ratio of two norms that each moved a couple
+of percent in *opposite* directions, so it inherits the sum of both — and it is
+the quantity [[expert-library-atlas-0.1]] and [[probed-dtn-coupling]] §4.5
+propose to **rank a library by**. A ranking axis whose same-label reproducibility
+is $20$–$49\%$ can reorder two experts that are genuinely a fifth apart. **W107**
+carries this.
+
+## 20.5 The geometry factor — the cheapest axis, by an order of magnitude
+
+The same seam IDs in a $6$-window graph and a $12$-window one, at matched
+macro-steps. Same declared port, same face, same station; what differs is how
+much graph is around it.
+
+| quantity | median range across the two rungs | as a fraction of its level |
+|---|---|---|
+| $\beta$ | $7.11\times10^{-4}$ | $0.340\%$ |
+| $\lVert S_i\rVert$ | $4.36\times10^{-4}$ | $0.199\%$ |
+| $\lVert\Delta\rVert$ | $3.37\times10^{-4}$ | $0.156\%$ |
+| $\Xi$ (block) | $1.34\times10^{-4}$ | $1.61\%$ |
+| `fails_above` | $4.35\times10^{-4}$ | $3.66\%$ |
+| $\lVert\Delta\rVert/\beta$ | $2.18\times10^{-3}$ | $0.205\%$ |
+
+**Doubling the graph costs a twentieth to a fortieth of what developing the flow
+costs**, on every quantity. And it is not that graph size is invisible:
+`x1r0_bypass` at step $110$ reads $\lVert\Delta\rVert/\beta = 1.11479$ at $N=6$
+and $1.11184$ at $N=12$, a difference the pipeline resolves exactly. It is small.
+
+That is the result CS-7 could not have produced, and it is worth naming plainly:
+**a certificate is far more portable across designs of different size than across
+operating points of one design.** For a library that is the wrong way round from
+the convenient answer — reuse across scenarios is what the economic argument
+needs, and reuse across sizes is what it gets.
+
+## 20.6 The verdict is invariant, and it is invariant because it is saturated
+
+The certificate as this driver calls it is given no tolerance, so by W81's own
+design it returns `admit-uncertified` and the two thresholds instead of a
+verdict. **That is a constant by construction and is not a stability result**, so
+the artifact labels it as such and answers the real question by sweeping the whole
+admissible axis. `blind` and `passes` are each monotone in $\beta_{\min}$, so the
+verdict at any tolerance is a function of the two stored thresholds alone
+(`reuse_probe.verdict_at`) and needs no re-probe:
+
+$$\beta_{\min} \le \texttt{visible\_above} \Rightarrow \textbf{blind};\qquad
+\beta_{\min} > \texttt{fails\_above} \Rightarrow \textbf{refuse};\qquad
+\text{otherwise } \textbf{admit}$$
+
+Swept over the admissible axis
+$\beta_{\min} \in \{0, 10^{-12}, 10^{-6}, 10^{-3}, 0.01, 0.1, 0.25, 0.5\}$
+at all $55$ cells: **`refuse`, everywhere, at every tolerance.** The
+verdict travels perfectly.
+
+**It travels because it is saturated, and the margin says how far from failing
+that is.** Both thresholds are negative exactly when $\lVert\Delta\rVert > \beta$,
+so on the non-negative admissible axis the verdict is `refuse` if and only if that
+ratio exceeds $1$. Measured over all $55$ cells:
+
+$$\frac{\lVert\Delta\rVert}{\beta} \in [\,\mathbf{1.00254},\ \mathbf{1.38952}\,],
+\qquad \text{never below } 1, \qquad \text{mean } 1.0743,\ \text{sd } 0.1032$$
+
+The minimum is `x0r1_full` at $N=12$, macro-step $30$ — **a quarter of one percent
+above the value at which the verdict changes**, and at the seam whose own
+state-dependence is the smallest in the study. The maximum is `x2r2_full` at
+macro-step $60$, $39\%$ above. **So the invariance of the verdict is the
+invariance of a sign, and the distance from that sign change varies by a factor
+of $153$ across the grid.** Reporting *"the verdict is a property of the expert"*
+on this evidence would be true, and the least informative true thing available.
+**W109.**
+
+## 20.7 $\tau$, $\sigma$ and the derived $\beta_{\min}$ — the least portable quantity here
+
+W81's first branch derives the tolerance from the run's own defect terms,
+$\varepsilon_{\text{tol}} = \min(\tau,\sigma)$ over the terms carrying a positive
+scale. CS-8 asks that number the same question, at `x1r0_bypass`, $N=12$, down
+one trajectory:
+
+| step | $\tau$ | $\sigma$ | $\varepsilon_{\text{tol}}$ |
+|---|---|---|---|
+| $0$ | **UNDEFINED** | **UNDEFINED** | **UNDEFINED** |
+| $10$ | $17.49$ | $1.987$ | $1.987$ |
+| $30$ | $193.6$ | $28.16$ | $28.16$ |
+| $60$ | $4430$ | $69.81$ | $69.81$ |
+| $110$ | $8135$ | $63.61$ | $63.61$ |
+
+**$\tau$ moves by a factor of $465$ and the derived tolerance by a factor of
+$35$, at one seam, with nothing changing but how long the flow has been
+running.** And at the freestream the tolerance does not exist:
+`seam_defect_split` refuses a *relative* defect where no power crosses the
+reference interface — L4's empty-seam case — which for a uniform stream is the
+correct answer, and is recorded as a reason rather than as a zero.
+
+So the two branches of W81 have opposite portability. The **reported** branch —
+the thresholds — is a function of two norms that each travel to a few percent,
+even though their difference does not. The **derived** branch is a function of
+$\tau$, the checkpoint's infidelity in one local flow, which is the single most
+state-dependent quantity anywhere in this study. **W81 closed the question *where
+does $\beta_{\min}$ come from*; it opened *which state is it the $\beta_{\min}$
+for*, and this tier is the answer.** **W108.**
+
+This also re-reads §19.8. That table quotes
+$\tau = 4.544, 12.70, 12.85, 8.432$ across four rungs and says $\tau$
+*"is not monotone in $N$ and should not
+be read as a scaling quantity: it is the checkpoint's infidelity at one seam in
+one local flow."* CS-8 measures how much of that is the local flow: a $465\times$
+swing at one seam of one graph. **The non-monotonicity in $N$ was not weak
+evidence of a scaling law — it was the state, sampled once per rung.**
+
+## 20.8 Where the compiles land, and W105 asserted on every graph
+
+**W105 is that a graph can clear `R10` and `R10b` and never apply the elliptic
+part at all.** The rules cannot check it; a case study can, and
+`reuse_probe.assert_projected` runs on **every graph this tier builds** — the
+$110$ in the grid, the sixteen in the floor control, and the four compiled ones.
+All report a `ProjectedAssembly` carrying a `ConstraintProjection` with scope
+`global`, stage `after-assembly`, cadence $1$.
+
+| rung | column | verdict | refusals | decertifications | `elliptic_subsolve` |
+|---|---|---|---|---|---|
+| $N{=}6$ | exposed classical | `admit-uncertified` | $\mathbf{0}$ | $7$ | `exposed` |
+| $N{=}6$ | Poseidon-T | `admit-uncertified` | $\mathbf{0}$ | $31$ | `unknown` |
+| $N{=}12$ | exposed classical | `admit-uncertified` | $\mathbf{0}$ | $7$ | `exposed` |
+| $N{=}12$ | Poseidon-T | `admit-uncertified` | $\mathbf{0}$ | $51$ | `unknown` |
+
+**Zero refusals in either column at either size.** §19.9's table has the
+classical column refusing at every rung, always on `L2/R10`, always exactly once;
+with the elliptic part actually out of the agent the refusal is gone, and the
+seven remaining classical decertifications — `L2/R10` (the *disk* agent's own
+`elliptic_subsolve=none`), `L2/C2`, `L4/budget`, `L5/eps_tol`, `L6/W49`,
+`L9/E5`, `L8/W56` — are **identical at both sizes**. The checkpoint's count grows
+the way §19.9's $\#\text{seams} + \#\text{agents} + 9$ says: $31$ at six agents
+against $51$ at twelve, the difference being six more `L1/C8` and fourteen more
+`L3/C8`, one per added agent and one per added seam.
+
+## 20.9 What this means for the expert library
+
+Stated against the claim CS-8 exists to test, and no further.
+
+| claim | verdict from this tier |
+|---|---|
+| *a certificate is a property of the expert* | **false as stated.** Two of its eight quantities move by more than their own size with the probe state |
+| *a certificate is a property of the design* | **also false as stated**, and this is the more surprising half: doubling the graph moves everything by under $4\%$, twenty to forty times less than developing the flow |
+| *the plug-in claim is per-design* | **not shown.** The verdict is invariant across every cell and every admissible tolerance — but only because it is saturated, at a margin whose distance from the sign change varies $153\times$ |
+| *a certificate can be indexed by something cheaper than a re-probe* | **supported, and this is the practical result.** A regime label computed from the layout with no run captures $5$–$53\times$ of the seam-to-seam variation on every quantity but $\Xi$, and the state-dependence is concentrated in the first $30$ macro-steps rather than spread along the trajectory |
+
+**The honest form of the answer is that neither noun in the question is right.**
+A certificate is a property of the *expert at a probe state*; the state half
+dominates; and the part of it a library can amortize is the part a cheap label
+predicts. What a library would have to carry is not one certificate per expert
+and not one per design, but **one per expert per regime**, with the regime
+derivable from the layout — a cost that grows with the vocabulary of flow
+situations rather than with the number of designs searched. That is a weaker
+claim than the pathmap's and a very much cheaper one than re-certification.
+
+**[AI Inference]:** the shape of §20.3 — almost all of the movement between the
+freestream and step $30$, very little after — suggests the right index is not
+*time* but *whether the seam's own flow has developed*, which is a property of the
+state a probe already measures. If that holds, a certificate could carry an
+admissibility envelope in the probe-base coordinates rather than a scalar, and
+`SeamOperator.probe_state_agrees` (**W77**, already derived rather than declared)
+is the field it would live on. This is a design proposal fitted to one geometry
+at one Reynolds number; nothing here tests it.
+
+## 20.10 Closed this tier / opened by it
+
+| # | verdict |
+|---|---|
+| **W106** | `open` — **the framework's own "did it move" test does not discriminate on a deterministic pipeline.** The reproducibility floor over four re-probe cells is exactly $0.0$ on all eight quantities, so a movement of $0.037\%$ and a movement of $155\%$ both return `state-dependent`. The yardsticks that do work are the quantity's own level and a same-label replicate, and both are now reported at every cell |
+| **W107** | `open` — **the eight quantities of one certificate differ in portability by three orders of magnitude**, and the record reports them as one object. $\lVert S_i\rVert$ moves $2.49\%$ with the state and `fails_above` moves $155\%$. Worse for the library argument: $\Xi$, the axis [[expert-library-atlas-0.1]] proposes to *rank* by, disagrees by $20.5\%$ in the median and up to $49\%$ between two seams the taxonomy calls the same regime |
+| **W108** | `open` — **W81's derived $\beta_{\min}$ is the least portable quantity in the study.** $\varepsilon_{\text{tol}} = \min(\tau,\sigma)$ moves by $35\times$ at one seam down one trajectory, $\tau$ by $465\times$, and at the freestream it is *undefined* — `seam_defect_split` correctly refuses a relative defect where no power crosses the reference interface. W81 closed *where does the number come from*; this is *which state is it the number for* |
+| **W109** | `open` — **the verdict's invariance is the invariance of a sign.** `refuse` at all $55$ cells and all eight tolerances, because $\lVert\Delta\rVert/\beta > 1$ everywhere — but that ratio ranges $[1.00254, 1.38952]$ and its minimum is a quarter of one percent from flipping. A stability claim read off a saturated verdict is not a stability claim |
+| **W110** | `open`, small — **the divergence guard's ratio form is inert where it is armed.** `probe_state_health` compares a state's $\lVert\nabla\cdot u\rVert$ against the first snapshot's, and the first snapshot is the freestream, where the divergence is identically zero — so `div_ratio` is `None` at every cell and only the absolute value was ever checked. The reference should be the first *developed* snapshot. The values themselves are recorded and healthy, so nothing above is affected |
+
+## 20.11 What this tier says about the ones before it
+
+| Claim | Where | Now |
+|---|---|---|
+| $\tau$ *"is not monotone in $N$ and should not be read as a scaling quantity"* | §19.8 | **right, and the reason is bigger than the sentence.** $\tau$ moves $465\times$ at ONE seam of ONE graph with nothing varying but the macro-step. The four rung values were four states, sampled once each |
+| $\Xi$ as the expert library's ranking axis | [[expert-library-atlas-0.1]], [[probed-dtn-coupling]] §4.5 | it moves $55.9\%$ with the probe state and disagrees by up to $49\%$ between same-regime replicates. **The axis is real and its reproducibility had never been quoted**; ranking a library on it needs the state named |
+| W81, *"the certificate reports the threshold above which the substitution becomes visible"* | §19.8 | the thresholds are the *right* output and the least portable form of it, because each is a difference of two nearly equal norms. The **norms** travel to a few percent; their difference does not |
+| `L2/R10` refuses the classical column at every rung | §19.9 | **not any more.** With the elliptic part exposed and one projection after the blend, both rungs compile with **zero refusals in both columns** — the first real graph in this vault to do so, and the residual seven decertifications are size-independent |
+| W93, *"the framework cannot certify a decomposition whose agents are globally-receptive pretrained operators"* | [[case-study-ladder-to-f1]] §1.1 | unchanged, and now priced differently. The halo decertification is size-independent; what a substitution campaign re-pays per design is the **probe**, not the rule |
+| Tier 18's published state | §18.5, §19.6 | excluded here by construction, and the exclusion cost something worth recording: every probe state in this tier had to be re-marched, because the only classical trajectory this vault trusts past macro-step $82$ is one day old |
+| W77, `probe_state` derived rather than declared | §17 | vindicated as the right design and now load-bearing. Every reading here is indexed by a probe-state string the operator derives, and §20.9's proposal has nowhere else to live |
+
+## The mechanism tally
+
+Tier 19: *the measurement that decides is the one that removes a variable*. This
+tier's shape is the mirror image, and it is worth naming as such.
+
+**The measurement that decides here is the one that holds everything still and
+varies the thing nobody had called a variable.** Nine tiers have quoted $\beta$,
+$\Xi$, $\tau$ and a certificate verdict, each at *one* probe state, and no page
+had ever asked what the second reading would be. It is not that the earlier
+numbers are wrong — control FLOOR says they reproduce exactly, bit for bit. It is
+that **seven of them were a sample of size one from a distribution nobody had
+drawn.**
+
+> **A quantity measured once is a quantity whose variability is being asserted to
+> be zero.** The floor being exactly $0.0$ is what makes the assertion visible as
+> an assertion: this pipeline can tell a $0.037\%$ movement from a $155\%$ one,
+> and until this tier it had never been asked to.
+
+And a second one, smaller and cheaper to state. **The control that could have
+invalidated the whole design cost one rung of the grid and returned exactly
+zero.** Had the four regime seams disagreed at the freestream, §20.4 would have
+been measuring the port rather than the flow. Running it took five minutes; not
+running it would have been §8's mistake in a new place.
+
 ---
 
 ## See Also

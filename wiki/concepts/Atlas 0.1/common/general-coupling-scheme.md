@@ -175,6 +175,7 @@ The rocket row is the one that exercises the framework rather than the case: **f
 ## See Also
 
 - [[master-error-bound]] — each axis of §1 maps to one term; choosing $\Sigma$ is choosing an error budget
+- [[atlas-and-standard-dd-theory]] — reads $\Sigma$'s axes as coordinates in classical domain-decomposition space (overlapping Schwarz on the `overlapping` axis, substructuring on `non-overlapping`, mortar via the declared interface space, optimization-based DD nowhere yet), and notes the accelerator axis $\mathcal K$ has no virtual-control entry
 - [[probed-dtn-coupling]] — the `probed-DtN` rung and rule **R2**, the exception that keeps the ladder open to black boxes; §5 adds the cross-point caveat it omits
 - [[schwarz-iteration-atlas-0.1]] — the case-specific ancestor of this page; its additive-only argument becomes R5, its S3 blocker is discharged by R8
 - [[temporal-error-accumulation]] — sets $W$; R4's asymmetry (a frozen expert can coarsen but never refine)

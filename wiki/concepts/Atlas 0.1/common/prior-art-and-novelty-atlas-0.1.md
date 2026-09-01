@@ -203,6 +203,7 @@ Stated in advance, so the project cannot quietly move the goalposts:
 ## See Also
 
 - [[composition-error-theory]] — §2's named gap developed into a bound, and the place where this page's end-to-end differentiability claim would finally be spent (adjoint error localization)
+- [[atlas-and-standard-dd-theory]] — maps §0's "who did it first" verdict table onto the four classical domain-decomposition families in detail, and turns §2.1's four missing properties of a frozen surrogate into a table of which convergence and optimality theorems each one breaks
 - [[pfm-purpose-and-direction]] — the vision this page stress-tests
 - [[conservation-as-constraint-atlas-0.1]] — needs the cPINN citation and positioning from §3
 - [[edge-generation-atlas-0.1]] — where the effort–flow relabelling of §4.2 would land

@@ -1,0 +1,358 @@
+# The Case-Study Ladder to the F1 Car — a revised build plan
+
+**Type:** Core Concept — Program Plan (folder: `Atlas 0.1/common/`)
+**Status:** opened 2026-08-30, after the sixth real case study; **CS-7 run 2026-08-31 and section 7 updated with its measured values**; **CS-8 run 2026-08-31, Phase A complete, section 7's rung-4 row and section 8 updated** ([[tier0-measurements]] section 19, [[case-study-scaling-ladder-atlas-0.1]]). Phase A is one case study in and the schedule below is confirmed rather than stopped. Opened after the sixth real case study ([[case-study-wake-array-atlas-0.1]]). This page **revises** [[f1-pathmap-and-end-goal]] rather than replacing it: the end goal, the two claims and the falsification criteria are unchanged, and the *order and the currency* of the work are what move. Where the two disagree, the pathmap owns the goal and this page owns the schedule.
+**Related:** [[f1-pathmap-and-end-goal]] · [[gap-worklist]] · [[case-study-wake-array-atlas-0.1]] · [[expert-library-atlas-0.1]] · [[port-algebra-atlas-0.1]] · [[atlas-implementation]] · [[end-to-end-architecture-spec]] · [[tier0-measurements]] · [[master-error-bound]] · [[incremental-transfer-roadmap]]
+
+> **Read §2 first if you read nothing else.** It is one strategic change, it is worth more than the rest of the page, and everything in §4 is scheduled by it.
+
+---
+
+# 1. Where the program actually stands
+
+Eighteen tiers of measurement, six real case studies, one compiler with nine layers, and — measured against [[f1-pathmap-and-end-goal]]'s own ladder — **rung 1 to 2 of 12**.
+
+That is not a slow result; the last five days built the *certification machinery*, which is the part nobody else has. But it is worth stating plainly what the machinery has and has not been pointed at:
+
+| | |
+|---|---|
+| real case studies | **six**, and **all six are 2-D incompressible Navier–Stokes**, plus one thermoelastic seam |
+| governing families ever coupled | **two**, at exactly one seam ([[gap-worklist]] Tier 13) |
+| agents in the largest real graph | **nine** ([[case-study-wake-array-atlas-0.1]]), against rung 9's $15$–$20$ |
+| composition error vs. interface count | **never measured**, at any $N$ |
+| gradients through a composed stack | **never measured** |
+| a learned expert reused in a second scenario | **never done** |
+
+The last three rows are [[f1-pathmap-and-end-goal]] §5's criteria **F1**, **F5** and rung **4** — its own three most-likely-to-fail items — and each is *cheaper* than the case study just finished. That inversion is the schedule error this page corrects.
+
+## 1.1 The one result that reframes everything
+
+**W93.** `probe.support_reach` measures Poseidon-T's domain of dependence as the **whole $128$-cell window** where the record declares $2$ cells; `required_halo()` now returns `None`; `L2/R10` decertifies, and **refuses** outright once `elliptic_subsolve` is declared at the value the same probe measures.
+
+A neural operator's receptive field is global by construction. So, stated as sharply as it deserves:
+
+> **The framework cannot today certify a decomposition whose agents are globally-receptive pretrained operators — and that is nearly all of them.**
+
+Every learned expert added to an F1 graph inherits that. §2 is the answer, and it is not "fix R10."
+
+---
+
+# 2. The revision: climb the ladder classically, substitute learned experts afterwards
+
+## 2.1 The observation
+
+`atlas/` does not know what an expert *is*. An `ExpertCapabilities` record needs a `boundary_response` callable, a `dt_native`, a `governing_family` and a port list. A finite-volume solver satisfies that. So does a $20.8$ M-parameter checkpoint. Four of the six real case studies are **classical solvers wearing the expert interface**, and the compiler treats them identically to the checkpoint.
+
+And `composition.certify_substitution` exists for exactly one purpose: **swapping one expert for another at a seam, and saying whether the swap is admissible.** It has been exercised on a real swap once — WindowNS $\to$ Poseidon-T at the wake seam, where it correctly returned `refuse`.
+
+## 2.2 The consequence
+
+The pathmap's ladder tacitly assumes learned experts throughout, and therefore inherits their costs at every rung: training data, a receptive field nobody declared, a referent that cannot be built. **None of that is required to establish Claims A and B.** Splitting the program in two:
+
+$$\underbrace{\textbf{Does composition preserve validity and scale?}}_{\text{Claims A and B — classical experts suffice}} \quad\perp\quad \underbrace{\textbf{Is it fast?}}_{\text{learned experts, one certified substitution at a time}}$$
+
+Four things fall out, and each one removes a blocker from the critical path:
+
+| blocker | under "learned throughout" | under "classical first" |
+|---|---|---|
+| **W93 / R10** — global receptive field refuses the graph | blocks every rung | a property of the **substitution step**, priced per seam |
+| **W95** — a learned expert cannot be its own referent | blocks attribution everywhere | *the reason* the classical expert had to exist anyway; it **is** the referent |
+| **rung 5's data cost** — no public corpus pairs transient conduction with thermoelastic stress ([[f1-pathmap-and-end-goal]] §7) | *"where the project stops being free"* | **deferred**, not incurred — see §2.3 |
+| **F3** — integration hours per added expert | measured on the hardest possible expert | measured on the cheap one first, so the trend is visible before it is expensive |
+
+## 2.3 And the structural expert already exists
+
+The pathmap names rung 5 as the first genuinely new expert and the point at which the program stops being free. Checked against the build repo, that is **true of a learned structural expert and false of a classical one**:
+
+`src/atlas/solvers/thermostruct2d.py` — Q1 bilinear finite elements, **backward-Euler conduction** and **quasi-static plane-stress elasticity**, with `solve_mechanical(T, p_in, p_out, ...)` taking **pressure loads from both sides** and a temperature field for thermal strain. It is graded against closed-form oracles by the build repo's own M1 suite, and [[gap-worklist]] Tier 13 already imports it **unmodified** into `cases/thermal_seam.py`.
+
+Its own docstring says what it was built for: *"exactly the b-c and c-d coupling Atlas will later have to reproduce through its typed edges."*
+
+So rung 5's gate — *aeroelastic response vs. reference; $\mathcal R$ closes* — is reachable with **zero new training data**. What is deferred to the substitution campaign is only the *speed*, which nothing gates on until rung 10.
+
+**[AI Inference]:** the same argument probably holds for rungs 6 and 7. Conduction is in `thermostruct2d`, a compressible gas is in `compressible2d`, and a motor map, a battery and a coolant circuit are **lumped algebraic experts with zero fitted parameters** — the class `disk.ActuatorDisk` already belongs to, which cost an afternoon. On this reading the first rung that genuinely requires a new *learned* expert is not rung 5 but the substitution campaign, and the first that requires new *physics code* is rung 8's contact model. This is a claim about the build repo's contents and it should be checked against each solver before a rung is scheduled on it.
+
+## 2.4 What this costs, stated honestly
+
+Three things, and the third is the real one:
+
+1. **The end goal needs the learned experts.** A classical F1 graph is a coupled simulation, which exists already and is slow. The composed-model speedup — [[f1-pathmap-and-end-goal]] §1.2's four-to-six orders in the unit economics of search — arrives only with substitution. Climbing classically proves Claims A and B and proves **nothing about the vision**.
+2. **Claim B might be expert-dependent.** Sub-linear composition error for a family of classical solvers does not imply it for checkpoints. CS-7 (§4) therefore runs **both columns at every $N$**, which is the whole reason it is scheduled first.
+3. **It defers the hardest question rather than answering it.** R10 does not go away. It becomes a scheduled, priced experiment (§5's substitution campaign) instead of a wall standing in front of every rung — but if the answer there is *no admissible substitution exists at any seam*, the program's floor is a coupling framework, exactly as §7 of the pathmap says.
+
+---
+
+# 3. Reordering by coupling kind, not by subsystem
+
+An F1 car is not twenty physics problems; it is four **coupling kinds** repeated. The port algebra has surface bonds for one of them.
+
+| coupling kind | example in the car | does a bond exist? | row |
+|---|---|---|---|
+| field ↔ field, surface | wing wake into the floor's boundary layer | **yes** — `MECH`, and it is the only one exercised | — |
+| field ↔ lumped, surface | aero load into a suspension spring; a motor's torque into a shaft | **yes, and the certificate is blind** by the cell Reynolds number | **W97** |
+| **two-way volumetric** | thermal strain in a brake disc; tyre temperature into grip; Joule heating in a battery | **no port and no bond** | **W70**, **W94** |
+| **moving / deforming interface** | ride height under aero load; a deflecting wing; a rotating wheel | **no** — `motion_class` is `static` and anything else is refused | **W22 / W30** |
+
+Add the timescale axis — control at kHz, aero at kHz, brake thermal at Hz, a lap at $10^{-2}$ Hz — and the multirate defect has **no bounding rule at all** (**W90**: R9 is aimed at a term $62\times$ smaller than the one that matters).
+
+**Every F1 subsystem is a combination of these four.** Building a subsystem before its bond exists means each subsystem case study rediscovers the same missing bond — which is the per-pair integration burden [[port-algebra-atlas-0.1]] was written to avoid, reappearing one level up. So the ladder below builds **bonds before subsystems**, which is §4 of the pathmap applied to the schedule rather than to the vocabulary.
+
+---
+
+# 4. The ladder
+
+Six real case studies exist, so these are numbered from seven. Each row states the thing `atlas/CASE-STUDY-GUIDE.md` demands of a seventh: **the question none of the existing ones can answer.**
+
+Three phases. **Phase A needs no new experts, no new physics code, and no data.** Phase B needs no data. Phase C is where the subsystems are, and it stays cheap only if §2.3 holds.
+
+| # | case study | the question only it can answer | new experts | rung | cost |
+|---|---|---|---|---|---|
+| **CS-7** | `scaling_ladder.py` | does composition error grow **sub-linearly in interface count** — for a classical expert *and* for a frozen checkpoint? | none | **9, early** | days |
+| **CS-8** | `reuse_probe.py` | does an expert's **certificate travel with the expert**, or is it a property of the state it was probed at? | none | **4** | days |
+| **CS-9** | `thermal_strain.py` | what is the **bond** for a two-way volumetric coupling? | none (splits an existing one) | — | ~1 week |
+| **CS-10** | `ground_effect.py` | can a **moving interface** carry a design parameter, and are the gradients through it usable? | one lumped (spring) | 5-adj. | ~1 week |
+| **CS-11** | `brake_thermal.py` | what **bounds** the multirate lag defect at a real clock ratio? | none | 6-adj. | ~1 week |
+| **CS-12** | `wing_fsi.py` | two-way FSI: does $\mathcal R$ close across a **genuinely new governing family**? | none (classical) | **5** | ~1–2 weeks |
+| **CS-13** | `cooling_loop.py` | does a **cyclic** port graph close its own thermal balance? | 1–2 lumped | **6** | ~2 weeks |
+| **CS-14** | `powertrain.py` | `ELEC` and `ROT`: does energy balance across **domains** rather than across a seam? | 2–3 lumped | **7** | ~2 weeks |
+| **CS-15** | `tyre_contact.py` | thermal → grip → load path, on CS-9's bond | 1 | **8** | ~3 weeks |
+| **CS-16** | `vehicle.py` | **Claim B under real load** — $\sim18$ agents, all four coupling kinds | integration only | **9** | ~1 month |
+
+Running alongside from Phase B onward: **the substitution campaign** (§5), which is where the learned experts, R10, and every data cost live.
+
+## Phase A — decide the forks before spending anything
+
+### CS-7 · `scaling_ladder.py` — Claim B, cheaply, now
+
+**The question.** [[f1-pathmap-and-end-goal]] §3.2 names rung 9 as *the rung that decides everything* and §5's **F1** as the criterion that fails if composition error grows super-linearly in interface count. It has never been measured at any $N$, and the sweep the pathmap itself calls the *early warning* has never been run.
+
+**The construction.** The wake array's tiling is already parameterized by `N_COL`, `N_ROW`, `STRIDE` and `HALO`; what is not parameterized is the rotor layout, the controls and the referent, which is why this is a new file rather than a flag. Grow a $1\times1$ tiling to $6\times4$ — $N \in \{1, 2, 6, 12, 24\}$ windows, $\{0,1,3,6,12\}$ rotors — holding $\Delta t$, $\mathrm{d}x$, the ramp and the disk model fixed, and measure at every $N$:
+
+- the composed defect against the **same expert's monolith**, which exists for `WindowNS` at any resolution and **does not exist for Poseidon-T at any resolution** — so the checkpoint's column is measured against a `WindowNS` pair, per `lambda_ref`
+- $\lVert\sum_i \chi_i\lvert D_i\rvert\rVert$, the L2/C2 cut-defect bound, whose tightness is known at $N=4$ ($0.2\%$) and unknown at $N=24$
+- $\Pi$ and $C_\mu$, which have transferred as a **bound** and never as a calibration across experts (**W55**)
+- $\tau$, $\sigma$, $\gamma$ per seam, depth-tagged (**W34**) and harness-tagged (**W54**)
+- wall time per macro-step, which is Claim B's *other* half — $O(1)$ integration work per added agent
+
+**The gate.** Composed defect grows **no faster than linearly** in interface count, in both columns, over $24\times$ in $N$. Wall time per agent flat.
+
+**Why it is first.** It is measurement on machinery that already exists, it needs no physics that does not, and a bad result is the pathmap's own stated reason to stop and rethink rather than press on. Everything below it is conditioned on it.
+
+**W-rows it must close or price:** **W58** (which of two definitions `cut_defect_bound` was measured by — a provenance field and a decidable geometric check), **W54** (an emitted defect must carry the harness parameters it is a function of, not only its depth), **W81** ($\beta_{\min}$ is undefined framework-wide and is *the whole discriminating power* of the plug-in guarantee).
+
+### CS-8 · `reuse_probe.py` — the foundation-model claim itself
+
+**The question.** [[f1-pathmap-and-end-goal]] §3.1 flags rung 4 as *the one most likely to be skipped by accident*, and it is the only rung that tests the foundation-model claim rather than the coupling claim. Sharpened by everything Tiers 14–18 measured, it is not *"does the expert work in a new scenario"* but:
+
+> **Is a certificate a property of the expert, or of the state it was probed at?**
+
+This matters more for the F1 goal than it looks. A $20$-agent car carries $\sim20$ conformance certificates and $\sim40$ seam certificates. If each is state-specific, **the plug-in claim is per-design rather than per-expert** and the whole economic argument — search wide and cheap — collapses back to re-certifying every design.
+
+**The construction.** One frozen Poseidon-T window, three unrelated flows on identical geometry: the turbine wake it was measured in, a bluff-body wake, and a decaying shear layer with no body force at all. Per flow, re-run the *existing* instruments — `support_reach`, `operator_content`, `elliptic_signature`, `assemble_seam`, `conformance.certify`, $\Xi$, and $\tau$ against a `WindowNS` pair — and compare against the wake array's own recorded values.
+
+**The gate.** Either the certified fields reproduce within their measured reproducibility floor ($\sim10^{-4}$ for this checkpoint, [[gap-worklist]] Tier 11), or the run **names which fields are state-dependent and by how much**. The second outcome is as useful as the first and is the more likely one: `probe_state` is already derived from the base rather than declared (**W77**), so the machinery to say so exists.
+
+**Also here, and not a case study:** the **F5 gradient probe** on CS-7's smallest graph — $\mathrm{d}P/\mathrm{d}a$ by finite difference against the same derivative taken through the composition — and **W13**, a `validity` predicate on a learned expert with a measured declination rate $p$, which is what $T_{\text{abs}}$ and every abstention claim wait on.
+
+## Phase B — build the bonds an F1 car needs
+
+### CS-9 · `thermal_strain.py` — a bond for two-way volumetric coupling
+
+**The question.** **W70** closed by *reframing*: the shell's conduction–elasticity coupling is one expert's internals and one-way, so nothing needed a bond. **W94** then found the case that does not have that escape: an actuator disk against a frozen operator is two-way volumetric, and the port algebra has five surface bonds and nothing else. The ledger row has stood open since Tier 16.
+
+Three of the four F1 subsystems in Phase C need it — brake (thermal $\to$ strain $\to$ contact), tyre (thermal $\to$ grip), battery (Joule $\to$ thermal $\to$ ageing). **It is the single highest-leverage missing piece of vocabulary.**
+
+**The construction.** Split `ThermoStruct2D` into two agents — a conduction agent and an elasticity agent — coupled through thermal strain, which is a **volume** term, and demand a declared bond. Exercise `PortAmendment`'s six-field procedure for the first time (**W32**), which is the defined operation for extending a closed port set. The control is that the unsplit solver is right there to grade against.
+
+**The gate.** The split graph reproduces the monolithic solver's stress field, and $\mathcal R$ closes with the volumetric term in it. The amendment is refused if the object turns out not to be a bond, which is a legitimate outcome and the one W70 already argued for once.
+
+### CS-10 · `ground_effect.py` — a moving interface, and the first design parameter
+
+**The question.** Aero load changes ride height, ride height changes aero. [[f1-pathmap-and-end-goal]] §1.1 names this as the coupling that *is* the physics, and every interface in the vault is `motion_class=STATIC` with anything else refused.
+
+**The construction.** A 2-D wing section over a **moving floor** at ride height $h$, with the integrated aero load fed to a lumped spring — $k(h_0 - h) = L(h)$ — whose solution moves the interface. Flow expert: `WindowNS` first, Poseidon-T under substitution. The suspension is a two-line algebraic expert with zero fitted parameters, the `disk.ActuatorDisk` pattern exactly.
+
+**Three things only this case study gets:**
+
+1. **`InterfaceMotion`** stops being a named hole with a declared interface and becomes a measured one; the operator drift $\lVert S(t + K\Delta t) - S(t)\rVert$ already exists as a number on *static* runs (**W30**) and now has something to be compared against.
+2. **W97's blind certificate** has to be closed here or admitted permanently — a spring against a flow field is a field-to-lumped `MECH` seam, and if its substitution certificate is blind then **no lumped subsystem in the car can be certified**. The candidate repair is §4.1's conservative co-normal, which **W47 scoped out** at fluid–fluid seams because the advective term cancels there; at this seam it does not.
+3. **The first real design parameter.** $h_0$ is a *knob*, not a state, so this is where F5 gets its honest test: is $\mathrm{d}(\text{downforce})/\mathrm{d}h_0$ through the composed stack physics, or is it the high-frequency artefact of a learned representation? [[f1-pathmap-and-end-goal]] §6.2 says the differentiable path from *design parameters* has to be designed in and that rung 5 is the natural time. This is that moment.
+
+### CS-11 · `brake_thermal.py` — a bound for the multirate defect
+
+**The question.** **W90**: R9 covers the flux transient and is $62.4\times$ smaller than the stale-trace term, which has no rule at all. R4 forbids shrinking the exchange interval below $\max_i \Delta t_i$, and a frozen checkpoint's `dt_native` is not a dial — so the one obvious remedy is the one axis a learned expert cannot move. The candidate is **W17**'s $W>1$ waveform relaxation: a trace carried as a waveform is exactly a trace that is not stale.
+
+**The construction.** `ThermoStruct2D` conduction in a disc (slow, backward Euler, `EMBEDDED`) against a convective duct flow (fast), at the ratio the physics actually gives. `thermal_seam` already carries a $500{:}1$ mismatch and compiles; what it does not have is a **bound**.
+
+**The gate.** A $\sigma$ term that is a function of the exchange interval and holds over a swept clock ratio — or an explicit statement that multirate composition is uncertified and by how much, which is the honest fallback and is what `L7/R9/lag` currently decertifies with.
+
+## Phase C — the subsystems
+
+Each is a pathmap rung, each is scheduled only after the bond it needs exists, and each is built **classically first**.
+
+- **CS-12 `wing_fsi.py`** — rung 5. `ThermoStruct2D.solve_mechanical` against the flow, two-way. The first genuinely new governing family in a *two-way* coupling rather than at one seam. Builds on CS-10's moving interface, since a deflecting wing is one.
+- **CS-13 `cooling_loop.py`** — rung 6. Conjugate heat transfer plus a **closed** lumped coolant circuit: the first *cyclic* port graph, where path-dependence of message passing is real ([[spec-wind-farm-wake-atlas-0.1]] §5.1 raised it and no built graph has tested it). Gate: thermal balance closes around the loop.
+- **CS-14 `powertrain.py`** — rung 7. **This is the rung that connects the wake array's own open `ROT` port**, which is what [[f1-pathmap-and-end-goal]] §4 means by the incomplete model stating its own incompleteness. Adds `ELEC`; a motor map and a battery are lumped algebraic experts.
+- **CS-15 `tyre_contact.py`** — rung 8. Needs CS-9's volumetric bond and CS-11's multirate bound. The first genuinely new *physics code* rather than a new composition.
+- **CS-16 `vehicle.py`** — rung 9. $\sim18$ agents, all four coupling kinds, Claim B under real load, graded against CS-7's prediction. **If CS-7 said super-linear, this is not built.**
+
+---
+
+# 5. The substitution campaign — where the learned experts and the data cost live
+
+Runs in parallel from Phase B. For each classical expert in a compiled graph:
+
+1. Obtain a learned expert for that family — pretrained where one exists ([[incremental-transfer-roadmap]] confirms only Poseidon and Walrus as available), fine-tuned or trained where none does.
+2. Probe it: `support_reach`, `operator_content`, `conformance.certify`, and a `lambda_ref` naming the classical expert it replaces — which by **W95** it cannot supply for itself.
+3. `certify_substitution` at every seam it touches, at a declared $\beta_{\min}$ (**W81**).
+4. Record `refuse` / `admit` / `blind` per seam, and the wall-time ratio bought.
+
+**This is where R10 is decided, and it is decided per seam rather than per program.** Three outcomes and all three are results:
+
+| outcome | what it means | what the program becomes |
+|---|---|---|
+| some architectures pass the halo rule | bounded-receptive-field operators exist and are usable | the vision, on a constrained expert class |
+| none pass, but a **tolerance-halo** rule is derivable | a global response with a decaying tail is bounded, not unbounded | the vision, with a new theory branch |
+| none pass and no rule is derivable | learned experts are composable and **not certifiable** | a fast uncertified searcher plus classical verification — [[f1-pathmap-and-end-goal]] §1.2's deployment story, unchanged |
+
+**[AI Inference]:** the middle row is the one worth attacking first and no page in this vault has proposed it. `support_reach` currently asks whether the response is *nonzero* past the declared radius; the physically meaningful question is whether it is *larger than the defect the composition already tolerates*. An $\varepsilon$-halo — the radius beyond which the response falls below $\varepsilon_{\text{tol}}$, with the truncated tail carried as an explicit term in $\sigma$ — would be a bounded halo for an operator whose support is formally global, and $\varepsilon_{\text{tol}} = \min(\tau,\sigma)$ already exists in the compiler. Whether the tail is summable is an empirical question about the architecture and is measurable with the probe that exists. **This is a hypothesis, it is not derived, and it should be attacked at CS-7 where the machinery is already in hand.**
+
+---
+
+# 6. The W-rows on the critical path
+
+Everything else on [[gap-worklist]] is real and none of it blocks this schedule. These eleven do:
+
+| row | what it blocks | scheduled at |
+|---|---|---|
+| **W81** — $\beta_{\min}$ undefined | every substitution verdict in the program | **CS-7** |
+| **W58** — which `cut_defect_bound` was measured | Claim B's own number is ambiguous | **CS-7** |
+| **W54** — defects carry depth but not harness parameters | three composition defects have worn an agent's label; a fourth is a matter of time | **CS-7** |
+| **W13** — abstention | $T_{\text{usable}}$, W36, and the *load-bearing safety property* of the agent layer | **CS-8** |
+| **W93 / R10** — global receptive field | every learned substitution | **substitution campaign** |
+| **W95** — no referent from a checkpoint alone | attribution at any learned seam | closed *by* classical-first |
+| **W94 / W70** — no volumetric bond | brake, tyre, battery | **CS-9** |
+| **W32** — `PortAmendment` never exercised | any new bond at all | **CS-9** |
+| **W97** — field-to-lumped certificate blind | every lumped subsystem in the car | **CS-10** |
+| **W30 / W22** — interface motion | ride height, deflection, rotation | **CS-10** |
+| **W90** — no bound on the multirate lag | every pair of subsystems on different clocks | **CS-11** |
+
+Two more that are not blockers and are getting worse with every added expert: **W69**'s *three unverifiable declarations* (`validity`, `response_half`, `governing_family`) scale linearly in expert count, and **W99** is a live silent bug in the build repo's own adapter.
+
+---
+
+# 7. Gates, and what would stop the program
+
+[[f1-pathmap-and-end-goal]] §5's five criteria, restated against this schedule so they cannot be quietly moved:
+
+| criterion | fails if | now measured at | previously |
+|---|---|---|---|
+| **F1** | composition error super-linear in interface count | **MEASURED 2026-08-31, not falsified.** Over $1 \to 24$ coupled windows: $+0.804\ [+0.641, +0.967]$ classical and $+0.477\ [+0.362, +0.593]$ on the frozen checkpoint, sub-linear in both. **With the physics held fixed the interface-only exponent is $+0.14$ to $+0.20$** — most of the headline is the flow getting harder, not the cut getting longer (**W102**). Read it as F1 asks and no further: five rungs, one geometry, one Reynolds number, $24$ agents against rung 9's $15$–$20$ | rung 9, last |
+| **F2** | frozen experts cannot couple stably without joint fine-tuning | **MEASURED 2026-08-31, and the answer inverts the expectation.** The *frozen checkpoint* couples stably at every rung to $110$ macro-steps with its assembled divergence flat; the *classical solver* is the one whose composed rollout goes unstable, at $N \ge 6$, earlier as the graph grows (**W100**). Not fine-tuning — the difference is where the elliptic part lives, and one global projection in the composition layer fixes every rung | rungs 1–2 |
+| **F3** | integration hours per added expert trend upward | **MEASURED 2026-08-31, and the columns answer oppositely.** Per agent, $N=24$ against $N=2$: **Poseidon-T $0.32\times$** — it gets *cheaper* per agent as the graph grows, which is better than $O(1)$ — and **WindowNS $3.84\times$**, whose CFL sub-step count is held at $21$ throughout so its *work* per agent is constant and the rise is the memory hierarchy. Neither transfers off this host (**W104**) | *"do not reconstruct it"* — and it had not been logged |
+| **F5** | gradients too noisy to optimize with | **CS-10** (real knob). *Not* measured by CS-8 as run: that case study spent its budget on the reuse question and the gradient probe was not carried out — see §8's note | rung 10 |
+| **rung 4** — *is a certificate the expert's or the state's?* | the plug-in claim is per-design rather than per-expert | **MEASURED 2026-08-31, and neither noun is right.** Over $55$ probes of one swap: the norms move $2$–$6\%$ with the probe state, $\Xi$ moves $55.9\%$, and **both $\beta_{\min}$ thresholds move $155\%$ — more than their own size** — while *doubling the graph* moves everything under $4\%$. The verdict is `refuse` at every cell and every admissible tolerance, but only because $\lVert\Delta\rVert/\beta > 1$ everywhere and its minimum is $0.25\%$ from flipping. **A regime label computable from the layout with no run captures $5$–$53\times$ of the seam-to-seam variation**, so a library carries one certificate *per expert per regime* ([[tier0-measurements]] §20, [[case-study-reuse-probe-atlas-0.1]]) | rung 4, *"most likely to be skipped by accident"* |
+| **F4** | a monolithic FM reaches the coverage first | continuous | continuous |
+
+**One new stopping rule, which the pathmap does not have.** If the substitution campaign returns `refuse` or `blind` at **every** seam of **every** case study, the composed model cannot be certified with learned experts at all, and the honest outcome is the framework rather than the foundation model. That is [[f1-pathmap-and-end-goal]] §7's floor, and it is worth naming a checkpoint at which it is declared rather than approached asymptotically: **after CS-12**, by which point three expert families and all four coupling kinds have been tried.
+
+**And one thing that is not a stopping rule.** `admit-uncertified` is not failure. Six real case studies have landed there and the certificates they could not issue were named, not assumed. A car that composes, runs fast, and reports honestly which of its seams are uncertified is worth building; a car that reports `admit` because nobody measured the constant is the silent-wrongness class this whole framework exists to refuse.
+
+---
+
+# 8. Where the schedule stands after CS-7
+
+**CS-7 is run** ([[tier0-measurements]] §19, [[case-study-scaling-ladder-atlas-0.1]]),
+with W58, W54 and W81 closed along the way. §4's schedule is **confirmed rather
+than stopped**: F1 was not falsified, so CS-16 is still on the board and Phase C
+is still worth building toward.
+
+Three things it changed on this page rather than merely filling in.
+
+**§4's gate for CS-16 should be stated against the fixed-physics exponent, not
+the headline.** §19.3's control shows that growing the farm grows the physics as
+well as the interface count, and the two contribute $+0.14$ and $+0.7$
+respectively to a headline of $+0.85$. A gate written against the headline would
+pass a graph whose per-interface error was climbing, as long as its physics
+happened to get easier. **W102.**
+
+**§2.2's table gets a fourth row, and it is the one nobody had priced.** The
+classical-first strategy assumed the classical column is the safe one — it is the
+referent, it has a monolith, its rules are known. Measured, **it is the column
+whose composed rollout goes unstable**, and the frozen checkpoint is the stable
+one, because W98's repair had already moved the checkpoint's elliptic part into
+the composition layer and the classical column's is still inside the agent.
+Climbing classically is still right; it is not *free*, and the first thing every
+classical case study below needs is the global projection of §19.6. **W100.**
+
+**F3 has numbers and they point in opposite directions**, so the *"integration
+hours per added expert"* row cannot be read as one trend. On this problem the
+learned expert amortizes and the classical one does not, which is the reverse of
+the assumption in §2.4's cost argument.
+
+## Where the schedule stands after CS-8
+
+**CS-8 is run** ([[tier0-measurements]] §20, [[case-study-reuse-probe-atlas-0.1]]).
+W81's `visible_above` / `fails_above` pair was exactly the instrument the row
+predicted it would be, and it answered: **a certificate is a property of the
+expert *at a probe state*, and the state half dominates by twenty to forty
+times.** Phase A is complete and §4's schedule stands.
+
+Three things it changes on this page rather than merely filling in.
+
+**§2's economic argument needs a third noun.** The classical-first split assumes
+certification is a per-expert cost paid once. Measured, it is neither per-expert
+nor per-design: **a regime label computed from the layout with no run at all
+captures $5$ to $53$ times the seam-to-seam variation**, so the unit that
+amortizes is *expert × regime*. That cost grows with the vocabulary of flow
+situations rather than with the number of designs searched — weaker than the
+pathmap's claim, and very much cheaper than re-certification.
+
+**§5's substitution campaign should record a probe state beside every verdict.**
+It currently specifies `refuse` / `admit` / `blind` per seam at a declared
+$\beta_{\min}$. On this evidence that row is incomplete: the verdict is stable
+only because it is saturated, and the margin deciding it ranges $153\times$
+across probe states. **W107** and **W109**.
+
+**And $\Xi$ cannot rank a library until its reproducibility is quoted.**
+[[expert-library-atlas-0.1]]'s composability axis disagrees by up to $49\%$
+between two seams the taxonomy calls the same regime. The axis is real; the
+ranking built on it is not yet safe.
+
+## The next step
+
+**CS-9, `thermal_strain.py`** — §4's Phase B first row, and the single
+highest-leverage missing piece of vocabulary: **a bond for two-way volumetric
+coupling**, which three of the four Phase C subsystems need and which **W94** has
+had open since Tier 16. It splits `ThermoStruct2D` into a conduction agent and an
+elasticity agent coupled through thermal strain, exercises `PortAmendment`'s
+six-field procedure for the first time (**W32**), and has the unsplit solver
+right there to grade against.
+
+**One thing CS-8 hands it, and one warning.** The **exposed-agent plus
+`ProjectedAssembly` column now compiles with zero refusals at both sizes**, so
+the classical column CS-9 will build on is the first in this vault `R10` does not
+refuse — start there and not from `wake_array.reference_solver`. The warning is
+**W106**: CS-9 will want to say a split reproduces the monolith *within
+reproducibility*, and this pipeline's measured floor is **exactly zero**, so that
+phrase does not bound anything. Quote a movement against the quantity's own level
+or against a replicate, not against a floor.
+
+**Also still outstanding from Phase A, and now explicitly unscheduled:** the
+**F5 gradient probe** on CS-7's smallest graph, and **W13**'s abstention
+predicate. CS-8 was budgeted to the reuse question and did neither; §7's F5 row
+records that rather than letting the plan imply it was covered.
+
+---
+
+## See Also
+
+- [[f1-pathmap-and-end-goal]] — the end goal, the two claims, and the 12-rung ladder this page reschedules
+- [[gap-worklist]] — the W-rows §6 draws from, with the reasoning and the definitions of done
+- [[case-study-wake-array-atlas-0.1]] — the sixth real case study, and the measurements §1 counts
+- `atlas/CASE-STUDY-GUIDE.md` — what a case study is, the five things you declare, and the bar a seventh has to clear
+- [[expert-library-atlas-0.1]] — the cut rule, and where a classical expert and a learned one sit relative to it
+- [[port-algebra-atlas-0.1]] — the five surface bonds, and the amendment procedure CS-9 exercises
+- [[incremental-transfer-roadmap]] — the bootstrap strategy the substitution campaign follows
+- [[tier0-measurements]] — the measurement record every number in §1 comes from
+- [[cs7-scaling-ladder-pickup]] — the self-contained brief for the next build

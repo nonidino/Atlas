@@ -1,7 +1,7 @@
 # Atlas 0.1: Expert Library
 
 **Type:** Core Concept — Model Portion (central design decision)
-**Related Concepts:** [[00-atlas-0.1-overview]], [[port-algebra-atlas-0.1]], [[regime-moe-architecture]], [[mixture-of-experts]], [[edge-generation-atlas-0.1]], [[training-and-bootstrap-atlas-0.1]], [[case-study-rocket-ascent-2d-atlas-0.1]]
+**Related Concepts:** [[00-atlas-0.1-overview]], [[port-algebra-atlas-0.1]], [[regime-moe-architecture]], [[mixture-of-experts]], [[edge-generation-atlas-0.1]], [[training-and-bootstrap-atlas-0.1]], [[expert-donor-survey]], [[case-study-rocket-ascent-2d-atlas-0.1]]
 
 ---
 
@@ -31,6 +31,14 @@ The rule that falls out: **experts are cut along governing-equation boundaries, 
 
 **Conservation is not a fifth expert.** The $e\!-\!f$ and $d\!-\!g$ edges are flux-continuity constraints, not new physics to compute — see [[conservation-as-constraint-atlas-0.1]] for the dedicated treatment.
 
+## What the donor market says about this cut
+
+[[expert-donor-survey]] (2026-08-31) went looking for public pretrained weights across seven governing families, and its results bear on this table directly:
+
+- **The thermal-structural row is confirmed by absence.** This page argues on physics grounds that conduction and quasi-static elasticity are different governing systems that should be two experts exchanging the thermal-expansion term. The survey found **no pretrained coupled thermoelastic model of any kind** — there is a conduction donor (Therm-FM, itself a Poseidon fine-tune, which is direct evidence the parabolic transfer path works) and at best an elasticity *architecture*, and nothing in between. The market cannot supply the merged expert even if you wanted it.
+- **The reacting/internal-flow row splits.** [[training-and-bootstrap-atlas-0.1]] calls this expert from-scratch because no donor covers confined reacting duct flow. That holds for the *transport* half. The *chemistry* half has a downloadable donor — DeepFlame's DNN chemistry integrators, a pointwise map from a thermochemical state to its state one chemistry substep later. Since the operator is zero-dimensional it has no receptive field to be global, which makes it the one entry in the entire survey that passes the halo rule trivially.
+- **Nothing else does.** Every continuum-fluid donor with weights — Poseidon, Walrus, DPOT, GPhyT, MPP, Bubbleformer — is globally receptive, which is the W93 result generalized: the field has converged unanimously on architectures this framework cannot certify as a local decomposition. The bounded-receptive-field counterexamples the survey found (MACE's finite cutoff, NeuberNet's boundary-driven patch) come from outside continuum fluids.
+
 ## Physics-encoding-spectrum placement
 
 Per the encoding spectrum in this vault's top-level conventions (data-driven → soft loss → test-time guidance → architectural soft bias → hard architectural constraint), the four experts above sit at different points, deliberately:
@@ -40,7 +48,7 @@ Per the encoding spectrum in this vault's top-level conventions (data-driven →
 
 ## Open question: is internal duct flow the same expert family as external aero, differently conditioned?
 
-Physically, both are compressible NS/Euler — the argument for merging them into one expert with a confined-vs-free boundary-condition flag (the same pattern as the existing Re/Ma conditioning contract) is strong. But donor-model reality cuts the other way: per [[incremental-transfer-roadmap]], Poseidon and Walrus were both pretrained on external/free-boundary-style data, with nothing resembling confined internal duct flow. Bootstrapping ([[training-and-bootstrap-atlas-0.1]]) will likely start these as two separately-initialized experts regardless of which is architecturally "correct," and the merge question can be revisited once both have real trained weights to compare.
+Physically, both are compressible NS/Euler — the argument for merging them into one expert with a confined-vs-free boundary-condition flag (the same pattern as the existing Re/Ma conditioning contract) is strong. But donor-model reality cuts the other way: per [[incremental-transfer-roadmap]], Poseidon and Walrus were both pretrained on external/free-boundary-style data, with nothing resembling confined internal duct flow. **[[expert-donor-survey]] widens that check to six confirmed compressible donors and the answer does not change** — the compressible coverage that ships as weights is periodic-box Euler and PDEBench compressible NS, i.e. shocks in a box; no public checkpoint covers confined duct flow, and none covers transonic flow over a body either. Bootstrapping ([[training-and-bootstrap-atlas-0.1]]) will likely start these as two separately-initialized experts regardless of which is architecturally "correct," and the merge question can be revisited once both have real trained weights to compare.
 
 ## Interaction with the MoE gate in the general (non-Stage-1) architecture
 
@@ -57,6 +65,7 @@ In the full [[regime-moe-architecture]] vision, expert selection is driven by a 
 - [[edge-generation-atlas-0.1]]
 - [[unet-hierarchy-atlas-0.1]]
 - [[training-and-bootstrap-atlas-0.1]]
+- [[expert-donor-survey]] — **what is actually downloadable per governing family**, with the license, boundary-condition-input, gradient, timestep and locality fields a library entry needs; two of the seven families have no donor at all
 - [[case-study-rocket-ascent-2d-atlas-0.1]]
 - [[conservation-as-constraint-atlas-0.1]]
 - [[plug-in-composition-theorems]] — **what a library entry must carry beyond a checkpoint**: a conformance certificate bound to the weight hash and the probe state, since nothing currently checks that a capability record is true. It also gives the library its **routing criterion** — rank by composability $\Xi$, not by benchmark accuracy — and shows that a composed cluster is itself a legal library entry
