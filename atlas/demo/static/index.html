@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atlas — live wind-farm design</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --line:#263041; --ink:#e6edf3;
+    --dim:#8b98a8; --accent:#4da3ff; --good:#3fb950; --warn:#d29922; --bad:#f85149;
+    --classic:#e8a33d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;
+         align-items:baseline;gap:16px;flex-wrap:wrap}
+  header h1{margin:0;font-size:17px;font-weight:650;letter-spacing:.2px}
+  header .sub{color:var(--dim);font-size:12.5px}
+  .wrap{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:18px;padding:18px 20px;
+        align-items:start}
+  @media(max-width:1080px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .card h2{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.09em;
+           color:var(--dim);font-weight:600}
+  #stage{position:relative;background:#0b0e13;border:1px solid var(--line);
+         border-radius:10px;overflow:hidden}
+  #field{display:block;width:100%;height:auto;cursor:crosshair;image-rendering:auto}
+  #hint{position:absolute;left:10px;bottom:8px;color:#cfd8e3;font-size:12px;
+        background:rgba(6,9,14,.72);padding:5px 9px;border-radius:6px;pointer-events:none}
+  .bigrow{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap}
+  .big{font-size:44px;font-weight:660;line-height:1;letter-spacing:-.5px;
+       font-variant-numeric:tabular-nums}
+  .unit{color:var(--dim);font-size:13px;padding-bottom:5px}
+  .sub2{color:var(--dim);font-size:12.5px;margin-top:6px}
+  #spark{width:100%;height:66px;display:block;margin-top:10px}
+  .row{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+  label.lb{color:var(--dim);font-size:12.5px;min-width:112px}
+  input[type=range]{flex:1;min-width:96px;accent-color:var(--accent)}
+  .val{font-variant-numeric:tabular-nums;min-width:56px;text-align:right;font-size:12.5px}
+  button{background:#1e2733;color:var(--ink);border:1px solid var(--line);
+         border-radius:7px;padding:8px 13px;font-size:13px;cursor:pointer;font-weight:550}
+  button:hover:not(:disabled){border-color:#3a4a63;background:#243044}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.pri{background:var(--accent);border-color:var(--accent);color:#06121f}
+  button.pri:hover:not(:disabled){background:#6fb6ff}
+  button.stop{background:#3a2226;border-color:#5b2f36;color:#ffc9cd}
+  select{background:#1e2733;color:var(--ink);border:1px solid var(--line);
+         border-radius:7px;padding:7px 9px;font-size:13px}
+  .pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;
+        font-weight:650;letter-spacing:.02em}
+  .pill.ok{background:rgba(63,185,80,.15);color:var(--good);border:1px solid rgba(63,185,80,.35)}
+  .pill.bad{background:rgba(248,81,73,.14);color:var(--bad);border:1px solid rgba(248,81,73,.4)}
+  table.v{width:100%;border-collapse:collapse;font-size:12px;margin-top:9px}
+  table.v td{padding:4px 3px;border-bottom:1px solid #1d2531;vertical-align:top}
+  table.v td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .why{color:var(--dim);font-size:11px;display:none}
+  tr.showwhy .why{display:block}
+  #ramp{height:11px;border-radius:3px;margin-top:4px}
+  .ramplab{display:flex;justify-content:space-between;color:var(--dim);font-size:11px;margin-top:3px}
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0}
+  .kv span:last-child{font-variant-numeric:tabular-nums}
+  .muted{color:var(--dim)}
+  .warnbox{background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.35);
+           border-radius:7px;padding:9px 11px;font-size:12.5px;margin-top:9px}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid #3a4a63;
+        border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Wind-farm layout, optimised through a coupled physics graph</h1>
+  <div class="sub">Drag the turbines. Press <b>Optimise</b>. Watch the wakes re-steer and the power climb.</div>
+  <div class="sub" style="flex-basis:100%;max-width:130ch">
+    <b>Two things are being shown here.</b>
+    <b style="color:var(--accent)">①&nbsp;Optimise</b> — the layout is improved by differentiating the whole
+    coupled simulation, which only the coupled graph can do.
+    <b style="color:var(--classic)">②&nbsp;Check</b> — any single layout can be solved by an
+    undivided classical solver too, and the two answers and their costs put side by side
+    <a href="/compare" target="atlas-headtohead" id="lnkCompare">in a second window</a>.
+  </div>
+</header>
+
+<div class="wrap">
+  <div>
+    <div id="stage">
+      <canvas id="field" width="900" height="600"></canvas>
+      <div id="hint">drag a turbine to move it · drag its white tip to angle it into the wind</div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>② Solve this one layout — classical vs coupled</h2>
+      <div class="row">
+        <button id="btnVerify" class="pri">Check this layout</button>
+        <button id="btnCompare">Open the head-to-head window ↗</button>
+        <span id="vstate" class="muted">Runs the same layout twice: once through the coupled
+          graph, once through a single undivided classical solver, and times both.</span>
+      </div>
+      <div id="vout"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Total farm power</h2>
+      <div class="bigrow">
+        <div class="big" id="power">—</div>
+        <div class="unit" id="powerpct"></div>
+      </div>
+      <div class="sub2" id="powersub">as measured by the composed model</div>
+      <canvas id="spark" width="700" height="132"></canvas>
+      <div class="ramplab"><span>farm power over time →</span><span id="sparkinfo"></span></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>① Optimise — coupled graph only</h2>
+      <div class="row">
+        <button id="btnOpt" class="pri">Optimise</button>
+        <button id="btnStop" class="stop" disabled>Stop</button>
+        <button id="btnStep">Step once</button>
+      </div>
+      <div class="muted" style="font-size:11.5px;margin:-2px 0 8px">
+        The classical solver cannot do this. It returns a number; this returns the
+        derivative of farm power with respect to every position and angle at once.
+      </div>
+      <div class="row">
+        <label class="lb">Replay</label>
+        <button id="btnPlay" style="min-width:38px;padding:6px 10px" disabled>▶</button>
+        <input type="range" id="scrub" min="0" max="0" value="0" disabled>
+        <span class="val" id="scrubv">—</span>
+      </div>
+      <div class="muted" style="font-size:11.5px;margin:-4px 0 6px" id="replaynote"></div>
+      <div class="kv"><span class="muted">optimiser steps</span><span id="iters">0</span></div>
+      <div class="kv"><span class="muted">seconds / optimiser step</span><span id="etas">—</span></div>
+      <div class="kv"><span class="muted">coupled windows</span><span id="nwin">—</span></div>
+      <div class="kv"><span class="muted">running on</span><span id="dev">—</span></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>Is this still in a regime the model was checked in?</h2>
+      <div id="vpill" class="pill ok">checking…</div>
+      <table class="v" id="vtab"></table>
+      <div class="muted" style="font-size:11px;margin-top:7px">click a row for why that limit exists</div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>Set up the farm</h2>
+      <div class="row">
+        <label class="lb">Layout</label>
+        <select id="layout">
+          <option value="grid">regular grid</option>
+          <option value="staggered">staggered</option>
+        </select>
+        <button id="btnReset">Reset</button>
+      </div>
+      <div class="row"><label class="lb">Turbines</label>
+        <input type="range" id="k" min="4" max="25" step="1"><span class="val" id="kv"></span></div>
+      <div class="row"><label class="lb">Farm size</label>
+        <select id="domain"></select></div>
+      <div class="row"><label class="lb">Wind speed</label>
+        <input type="range" id="uinf" min="0.5" max="1.4" step="0.02"><span class="val" id="uinfv"></span></div>
+      <div class="row"><label class="lb">Wind direction</label>
+        <input type="range" id="ang" min="-15" max="15" step="0.5"><span class="val" id="angv"></span></div>
+      <div class="row"><label class="lb">Min spacing</label>
+        <input type="range" id="smin" min="1.5" max="6" step="0.1"><span class="val" id="sminv"></span></div>
+      <details style="margin-top:8px">
+        <summary class="muted" style="cursor:pointer;font-size:12.5px">optimiser settings</summary>
+        <div class="row"><label class="lb">Look-ahead</label>
+          <input type="range" id="horizon" min="3" max="15" step="1"><span class="val" id="horizonv"></span></div>
+        <div class="row"><label class="lb">Move rate</label>
+          <input type="range" id="lrpos" min="0.02" max="0.4" step="0.01"><span class="val" id="lrposv"></span></div>
+        <div class="row"><label class="lb">Turn rate</label>
+          <input type="range" id="lryaw" min="0.005" max="0.12" step="0.005"><span class="val" id="lryawv"></span></div>
+        <div class="row"><label class="lb">Check length</label>
+          <input type="range" id="vsteps" min="10" max="60" step="5"><span class="val" id="vstepsv"></span></div>
+      </details>
+      <div id="notice"></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>Colour = wind speed</h2>
+      <div id="ramp"></div>
+      <div class="ramplab"><span id="rlo"></span><span>freestream</span><span id="rhi"></span></div>
+      <div class="muted" style="font-size:11.5px;margin-top:7px">
+        Cool and dark is slow air — a wake. Neutral grey is undisturbed wind. Warm is
+        air speeding up around the array. The scale never changes, so the same colour
+        always means the same speed.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let S = null, img = new Image(), ready = false, ws = null;
+let drag = null, lastSend = 0, scrubbing = false;
+/* `synced` is false from the moment a socket opens until the first state
+   arrives from THAT socket. Without it, a reconnect (the server restarted, the
+   laptop slept) leaves the page holding the previous session's turbine list,
+   and the next drag pushes those stale positions back -- which silently moved a
+   turbine during testing. Nothing may be sent upstream before the client has
+   adopted the server's truth. */
+let synced = false;
+
+/* ---------- websocket ---------- */
+function connect(){
+  ws = new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
+  ws.binaryType = 'blob';
+  ws.onopen = () => { synced = false; drag = null; };
+  ws.onmessage = ev => {
+    if (typeof ev.data === 'string'){ S = JSON.parse(ev.data); synced = true; paintPanel(); }
+    else {
+      const url = URL.createObjectURL(ev.data);
+      const nx = new Image();
+      nx.onload = () => { img = nx; ready = true; draw(); URL.revokeObjectURL(url); };
+      nx.src = url;
+    }
+  };
+  ws.onclose = () => { synced = false; drag = null; setTimeout(connect, 1200); };
+}
+const send = m => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(m)); };
+
+/* ---------- geometry ---------- */
+const cv = $('field'), cx = cv.getContext('2d');
+function dims(){
+  const lx = S ? S.domain_D[0] : 1, ly = S ? S.domain_D[1] : 1;
+  const W = cv.width, H = W * ly / lx;
+  if (Math.abs(cv.height - H) > 1) cv.height = H;
+  return {lx, ly, W, H: cv.height};
+}
+const toPx = (x, y, d) => [x / d.lx * d.W, (1 - y / d.ly) * d.H];
+const toWorld = (px, py, d) => [px / d.W * d.lx, (1 - py / d.H) * d.ly];
+
+function draw(){
+  const d = dims();
+  cx.clearRect(0, 0, d.W, d.H);
+  if (ready) cx.drawImage(img, 0, 0, d.W, d.H);
+  if (!S) return;
+  const R = 0.5 / d.lx * d.W;                 // rotor half-span in px
+  S.turbines.forEach((t, i) => {
+    const g = t.yaw_deg * Math.PI / 180;
+    const [px, py] = toPx(t.x, t.y, d);
+    const dx = -Math.sin(g) * R, dy = -Math.cos(g) * R * (d.W/d.lx)/(d.H/d.ly);
+    const ex =  Math.cos(g) * R * 0.85, ey = Math.sin(g) * R * 0.85 * (d.W/d.lx)/(d.H/d.ly);
+    cx.lineCap = 'round';
+    cx.strokeStyle = 'rgba(0,0,0,.55)'; cx.lineWidth = 7;
+    cx.beginPath(); cx.moveTo(px-dx, py-dy); cx.lineTo(px+dx, py+dy); cx.stroke();
+    cx.strokeStyle = (drag && drag.i === i) ? '#4da3ff' : '#f2f6fb'; cx.lineWidth = 4;
+    cx.beginPath(); cx.moveTo(px-dx, py-dy); cx.lineTo(px+dx, py+dy); cx.stroke();
+    cx.strokeStyle = 'rgba(255,255,255,.85)'; cx.lineWidth = 1.6;
+    cx.beginPath(); cx.moveTo(px, py); cx.lineTo(px+ex, py-ey); cx.stroke();
+    cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(px+ex, py-ey, 3.6, 0, 7); cx.fill();
+  });
+}
+
+function pick(px, py){
+  const d = dims(); let best = null, bd = 1e9;
+  S.turbines.forEach((t, i) => {
+    const g = t.yaw_deg * Math.PI/180, R = 0.5/d.lx*d.W;
+    const [tx, ty] = toPx(t.x, t.y, d);
+    const hx = tx + Math.cos(g)*R*0.85, hy = ty - Math.sin(g)*R*0.85*(d.W/d.lx)/(d.H/d.ly);
+    const dh = Math.hypot(px-hx, py-hy), dc = Math.hypot(px-tx, py-ty);
+    if (dh < 13 && dh < bd){ bd = dh; best = {i, kind:'yaw'}; }
+    else if (dc < 20 && dc < bd){ bd = dc; best = {i, kind:'move'}; }
+  });
+  return best;
+}
+function evPos(e){
+  const r = cv.getBoundingClientRect();
+  const s = cv.width / r.width;
+  return [(e.clientX - r.left) * s, (e.clientY - r.top) * s];
+}
+cv.addEventListener('pointerdown', e => {
+  if (!S || !synced) return;
+  const [px, py] = evPos(e); const hit = pick(px, py);
+  if (hit){ drag = hit; cv.setPointerCapture(e.pointerId); }
+});
+cv.addEventListener('pointermove', e => {
+  if (!drag || !S) return;
+  const d = dims(); const [px, py] = evPos(e);
+  const t = S.turbines[drag.i];
+  if (drag.kind === 'move'){
+    const [wx, wy] = toWorld(px, py, d); t.x = wx; t.y = wy;
+  } else {
+    const [tx, ty] = toPx(t.x, t.y, d);
+    let a = Math.atan2(-(py - ty) * (d.H/d.ly)/(d.W/d.lx), px - tx) * 180/Math.PI;
+    t.yaw_deg = Math.max(-30, Math.min(30, a));
+  }
+  draw();
+  const now = performance.now();
+  if (now - lastSend > 45){ lastSend = now; pushTheta(); }
+});
+const endDrag = e => { if (drag){ drag = null; pushTheta(); draw(); } };
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
+function pushTheta(){
+  if (!synced || !S) return;
+  send({type:'theta', theta: S.turbines.flatMap(t => [t.x, t.y, t.yaw_deg*Math.PI/180])});
+}
+
+/* ---------- panel ---------- */
+function paintPanel(){
+  if (!S) return;
+  $('power').textContent = S.power.toFixed(2);
+  const pct = S.power_ideal > 0 ? 100*S.power/S.power_ideal : 0;
+  $('powerpct').textContent = pct.toFixed(0) + '% of the wind available to it';
+  $('iters').textContent = S.opt_iter;
+  $('etas').innerHTML = S.eta_s.toFixed(1) + ' s' +
+    (S.eta_measured ? '' : ' <span class="muted" style="font-size:11px">(estimate)</span>');
+  $('nwin').textContent = S.n_windows;
+  $('sparkinfo').textContent = S.step_ms ? (S.step_ms|0) + ' ms / frame' : '';
+  $('dev').textContent = (S.device || 'cpu').toUpperCase();
+  const opt = S.mode === 'optimize';
+  const replaying = S.mode === 'replay';
+  $('btnOpt').disabled = opt; $('btnStop').disabled = !(opt || replaying);
+
+  // replay: the cursor and the play/pause state both live on the server, so a
+  // second browser tab shows the same thing rather than its own idea of it
+  const rp = S.replay || {index:0, playing:false, n:0, iter:0};
+  $('btnPlay').textContent = rp.playing ? '⏸' : '▶';
+  $('btnPlay').disabled = rp.n < 2;
+  $('replaynote').textContent = rp.n < 2
+    ? 'press Optimise first — the replay walks back through the layouts it tried'
+    : (rp.playing ? `playing back ${rp.n} optimiser steps, ${rp.hold} frames of flow each`
+                  : (replaying ? 'paused — the wakes keep settling around this layout' : ''));
+  if (!scrubbing){
+    $('scrub').max = Math.max(0, rp.n-1);
+    $('scrub').disabled = rp.n < 2;
+    $('scrub').value = rp.index;
+    $('scrubv').textContent = rp.n ? `${rp.iter || rp.index+1} / ${rp.n}` : '—';
+  }
+  // sliders (only when not focused, so dragging one is not fought)
+  const set = (id, v, fmt) => { const el = $(id);
+    if (document.activeElement !== el) el.value = v;
+    $(id+'v').textContent = fmt(v); };
+  const c = S.config;
+  // the box, not the slider, decides how many turbines can legally stand in it
+  if (S.capacity) $('k').max = Math.min(25, S.capacity);
+  set('k', c.k, v => v + (S.capacity ? ' / ' + Math.min(25, S.capacity) : ''));
+  set('uinf', c.u_inf, v => (+v).toFixed(2));
+  set('ang', c.inflow_deg, v => (+v).toFixed(1) + '°');
+  set('smin', c.s_min, v => (+v).toFixed(1) + ' D');
+  set('horizon', c.horizon, v => v + ' steps');
+  set('lrpos', c.lr_pos, v => (+v).toFixed(2));
+  set('lryaw', c.lr_yaw, v => (+v).toFixed(3));
+  set('vsteps', c.verify_steps, v => v + ' steps');
+  if ($('domain').value !== c.domain) $('domain').value = c.domain;
+
+  // validity
+  const V = S.validity;
+  const p = $('vpill');
+  p.className = 'pill ' + (V.ok ? 'ok' : 'bad');
+  p.textContent = V.ok ? 'inside the validated range' : 'OUTSIDE validated range';
+  $('vtab').innerHTML = V.rows.map((r,i) => {
+    const failed = r.gate && !r.ok;
+    const mark = !r.gate ? 'ℹ' : (r.ok ? '✓' : '⚠');
+    const col = failed ? 'var(--bad)' : 'var(--dim)';
+    return `<tr data-i="${i}"><td style="${r.gate?'':'color:var(--dim)'}">${mark} ${r.label}
+     ${r.gate?'':'<span class="muted" style="font-size:10.5px"> (diagnostic)</span>'}
+     <div class="why">${r.why}</div></td>
+     <td class="n" style="color:${col}">${fmtn(r.value)}${r.unit}
+     <span class="muted">/ ${fmtn(r.limit)}${r.unit}</span></td></tr>`;}).join('');
+  [...$('vtab').rows].forEach(tr => tr.onclick = () => tr.classList.toggle('showwhy'));
+
+  $('notice').innerHTML = S.notice ? `<div class="warnbox">${S.notice}</div>` : '';
+  paintRamp(); paintSpark(); paintVerify();
+}
+const fmtn = v => Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toFixed(3);
+
+let rampDone = false;
+function paintRamp(){
+  if (rampDone || !S.ramp) return; rampDone = true;
+  const st = S.ramp.stops.map(([t,c]) => `rgb(${c[0]},${c[1]},${c[2]}) ${(t*100).toFixed(1)}%`);
+  $('ramp').style.background = `linear-gradient(90deg,${st.join(',')})`;
+  $('rlo').textContent = S.ramp.lo.toFixed(2) + '×';
+  $('rhi').textContent = S.ramp.hi.toFixed(2) + '×';
+}
+
+function paintSpark(){
+  const c = $('spark'), g = c.getContext('2d');
+  const w = c.width, h = c.height;
+  g.clearRect(0,0,w,h);
+  const tr = S.power_trace || [];
+  if (tr.length < 2) return;
+  const lo = 0, hi = Math.max(S.power_ideal*0.55, Math.max(...tr)*1.12, 1e-6);
+  const X = i => i/(tr.length-1)*(w-4)+2, Y = v => h-4 - (v-lo)/(hi-lo)*(h-10);
+  g.strokeStyle = '#233043'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(2, Y(0)); g.lineTo(w-2, Y(0)); g.stroke();
+  g.beginPath(); tr.forEach((v,i) => i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v)));
+  g.strokeStyle = '#4da3ff'; g.lineWidth = 2.2; g.stroke();
+  g.lineTo(X(tr.length-1), Y(0)); g.lineTo(X(0), Y(0)); g.closePath();
+  g.fillStyle = 'rgba(77,163,255,.14)'; g.fill();
+  g.fillStyle = '#4da3ff';
+  g.beginPath(); g.arc(X(tr.length-1), Y(tr[tr.length-1]), 3.2, 0, 7); g.fill();
+}
+
+const msf = v => (v == null || !isFinite(v)) ? '—'
+  : (v >= 1000 ? (v/1000).toFixed(2) + ' s' : Math.round(v) + ' ms');
+
+function paintVerify(){
+  const V = S.verify || {}; const out = $('vout'), st = $('vstate');
+  const C = S.compare;
+  $('btnVerify').disabled = V.state === 'running';
+  if (V.state === 'running'){
+    const p = (C && C.state === 'running') ? ` step ${C.i} of ${C.steps}` : '';
+    st.innerHTML = `<span class="spin"></span> solving it both ways${p}` +
+      ((C && C.paused_live) ? ' · the live march is held still so the timings are clean' : '');
+    return;
+  }
+  const r = V.state === 'done' ? V : V.last;
+  if (!r){ out.innerHTML = '';
+    st.textContent = 'Runs the same layout twice: once through the coupled graph, once through a single undivided classical solver.';
+    return; }
+  st.textContent = '';
+  if (r.error){ out.innerHTML = `<div class="warnbox">${r.error}</div>`; return; }
+  const d = r.delta_pct;
+  out.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:6px">
+      <div><div class="muted" style="font-size:11.5px">coupled graph</div>
+           <div style="font-size:26px;font-weight:640;color:var(--accent)">${r.composed_power.toFixed(2)}</div>
+           <div class="muted" style="font-size:11.5px">${msf(r.composed_ms_step)} / step
+             · ${r.composed_wall_s.toFixed(1)} s total</div></div>
+      <div><div class="muted" style="font-size:11.5px">classical solver</div>
+           <div style="font-size:26px;font-weight:640;color:var(--classic)">${r.classical_power.toFixed(2)}</div>
+           <div class="muted" style="font-size:11.5px">${msf(r.classical_ms_step)} / step
+             · ${r.classical_wall_s.toFixed(1)} s total</div></div>
+      <div><div class="muted" style="font-size:11.5px">difference</div>
+           <div style="font-size:26px;font-weight:640;color:${Math.abs(d)<10?'var(--good)':'var(--warn)'}">
+             ${d>=0?'+':''}${d.toFixed(1)}%</div>
+           <div class="muted" style="font-size:11.5px">${r.linf_final != null
+             ? 'largest field difference ' + r.linf_final.toFixed(3) : 'composed vs classical'}</div></div>
+    </div>
+    <div class="muted" style="font-size:11.5px;margin-top:8px">
+      Per-step cost is the median with the first step held out, measured with the two
+      solvers alternating${r.timed_alone === false ? '' : ' and the live march held still'},
+      so neither was competing with the other.
+      <b>At this farm size the undivided classical solver is not slower than the coupled
+      graph</b> — splitting the domain into windows and re-assembling them costs more than
+      solving it in one piece. What the coupled graph buys is the <b>gradient</b>: it can be
+      differentiated end to end, so the optimiser needs tens of runs where a search without
+      derivatives needs hundreds.
+      <a href="/compare" target="atlas-headtohead" id="lnkCompare2">Open the head-to-head window</a>
+      to watch both fields as they are solved.</div>
+    <div class="muted" style="font-size:11.5px;margin-top:9px">${r.note}
+      Both marched ${r.steps} steps from still air.</div>
+    ${(V.state !== 'done') ? `<div class="warnbox">This check is for the layout at
+      optimiser step ${r.at_iter}. The farm has moved since — press Verify again
+      for the layout on screen now.</div>` : ''}`;
+}
+
+/* ---------- controls ---------- */
+$('btnOpt').onclick = () => send({type:'mode', mode:'optimize'});
+$('btnStop').onclick = () => send({type:'mode', mode:'paused'});
+$('btnStep').onclick = () => send({type:'mode', mode:'step'});
+$('btnReset').onclick = () => send({type:'reset'});
+$('btnVerify').onclick = () => { send({type:'verify'}); $('btnVerify').disabled = true; };
+$('layout').onchange = e => send({type:'layout', name:e.target.value});
+$('domain').onchange = e => send({type:'config', config:{domain:e.target.value}});
+const cfgSlider = (id, key, num) => {
+  $(id).addEventListener('input', () => $(id+'v').textContent =
+    num === 0 ? $(id).value : (+$(id).value).toFixed(num));
+  $(id).addEventListener('change', () => send({type:'config',
+    config:{[key]: num === 0 ? +$(id).value : +$(id).value}}));
+};
+cfgSlider('k','k',0); cfgSlider('uinf','u_inf',2); cfgSlider('ang','inflow_deg',1);
+cfgSlider('smin','s_min',1); cfgSlider('horizon','horizon',0);
+cfgSlider('lrpos','lr_pos',2); cfgSlider('lryaw','lr_yaw',3);
+cfgSlider('vsteps','verify_steps',0);
+$('scrub').addEventListener('pointerdown', () => scrubbing = true);
+$('scrub').addEventListener('change', () => {
+  send({type:'replay', index:+$('scrub').value, play:false}); scrubbing = false; });
+$('scrub').addEventListener('input', () => $('scrubv').textContent = (+$('scrub').value+1) + ' / ' + (+$('scrub').max+1));
+$('btnPlay').onclick = () => send({type:'replay',
+  play: !(S && S.replay && S.replay.playing)});
+
+/* the head-to-head lives in its own window: it holds the live march still while
+   it times, and that is easier to understand as a separate thing on screen than
+   as the main view freezing for no visible reason */
+function openCompare(){
+  const w = window.open('/compare', 'atlas-headtohead', 'width=1240,height=900');
+  if (w) w.focus();
+}
+$('btnCompare').onclick = e => { e.preventDefault(); openCompare(); };
+/* delegated, because the second of these links is written by paintVerify and so
+   does not exist when this file finishes running */
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[target="atlas-headtohead"]');
+  if (a){ e.preventDefault(); openCompare(); }
+});
+
+fetch('/api/meta').then(r => r.json()).then(m => {
+  $('domain').innerHTML = Object.entries(m.domains).map(([k,v]) =>
+    `<option value="${k}">${k} — ${v.cells[0]}×${v.cells[1]} cells, ${v.windows[0]*v.windows[1]} windows</option>`
+  ).join('');
+  connect();
+});
+window.addEventListener('resize', draw);
+</script>
+</body>
+</html>
