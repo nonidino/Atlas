@@ -4415,6 +4415,254 @@ running it would have been §8's mistake in a new place.
 
 ---
 
+# 21. Where to cut, decided by an algorithm — 2026-09-02
+
+**Status of §1–§20 after this session:** nothing in them is touched by this tier except §10, whose *reading* is corrected rather than its numbers. §10.2's twelve-placement falsification of $\mathcal Q$ stands exactly as measured; what this tier corrects is the claim, made in [[gap-worklist]] W112 and [[poc1-retrospective-and-hybrid-roadmap]] §4 on 2026-09-01, that **no such falsification exists**. It does, it is four days younger than $\mathcal Q$ itself, and `probe.cut_score` has said `RETIRED` in its own docstring since the day it was run.
+
+> **The one-paragraph version.** CS-9★, the tenth real case study and the first exercise of [[f1-pathmap-and-end-goal]]'s fourth end-goal capability. A search over **decompositions** — not one cut of a fixed one — scored by eight criteria under an equality budget on CS-7's own geometry and state, graded against CS-7's own hand-chosen tilings. **The gate passes at one exchange interval and it passes by a wide margin**: the search finds a six-window decomposition at $\mathbf{0.2685\times}$ the hand-chosen tiling's composed defect, and the hand-chosen tiling ranks **138th of 178**. The mechanism is structural and nobody had seen it, because no case study had ever moved a cut: `wake_array.Rotor` lives on an x-*adjacency*, so **every x-seam of CS-6 and CS-7 passes exactly through a rotor disc**. And **marched, the answer reverses**: the chosen cut crosses $1.0$ at interval $10$, peaks at $\mathbf{1.59\times}$ *worse* than the hand-chosen tiling at interval $90$, and comes back to $0.90$ at $240$. Two sign changes. **The gate as W112 poses it is passed, and the gate as posed is the wrong gate** — the one-exchange-interval defect that L2/C2 bounds as a theorem, and that every criterion here predicts well, is not monotone in what a rollout accumulates.
+
+---
+
+## 21.1 What was searched, and the budget that had to be fixed first
+
+A **candidate decomposition** of a fixed $n_y\times n_x$ domain is interior cut positions per axis plus a halo $h$: window $(i,j)$ spans $[x_{i-1}-h,\,x_i+h)\times[y_{j-1}-h,\,y_j+h)$, clipped. Overlap is $2h$; the partition of unity is `ArrayTiling`'s rule on windows that need not be the same size.
+
+**The baseline is inside the space and is the same object.** `from_array_tiling(ArrayTiling(3,2))` gives boxes identical to `wake_array`'s, weights differing by **exactly $0.0$**, and CS-7's published $11$ overlapping pairs. It is *not* what an even spacing produces — $128$-cell windows at a $112$ stride do not divide $352$ — so it is added to every pool explicitly.
+
+**The first run's budget was wrong and the run said so.** Under `n_windows <= 6` every one of the eight criteria returned the same **two-window** decomposition, at $0.0847\times$ the hand-chosen defect. Fewer seams is less defect, always; an upper bound on agent count is a question about *how many*, not *where*. It is kept as the `COUNT` pool and reported, because the shape of a budget is part of the criterion and this is the cheapest possible demonstration of it.
+
+| pool | budget | what it asks |
+|---|---|---|
+| **PLACE** | $n_{\text{windows}}=6$ exactly, $h=8$ exactly | **the gate.** Same cost, different cuts |
+| **SHAPE** | additionally $n_{\text{col}}=3,\ n_{\text{row}}=2$ | separates *a better shape existed* from *the cuts were misplaced* |
+| **COUNT** | $n_{\text{windows}}\le6$, evenly spaced | the degeneracy, shown rather than described |
+| **HALO** | the hand-chosen placement, $h\in\{4,8,16,24\}$ | the axis CS-7 froze, swept alone |
+| **WAKE** | two windows, one $y$-cut, swept across the domain | the KNOWN control |
+
+Eight criteria on every candidate: $\mathcal Q$ (`__max`, `__sum`), the un-normalized off-diagonal mass (`__max`, `__sum`), L2/C2's $\chi$-weighted $\mathcal Q^\star$, the reference-free surrogate $\hat{\mathcal Q}$, and — new here — `cut_shear` (`__mean`, `__max`), the normal shear of the **state** along the cut lines. $367$ distinct candidates across three geometries; $4524$ s of wall time.
+
+**$\mathcal Q$ here is the framework's $\mathcal Q$.** `probe.cut_score` is called, not paraphrased, on an $S$ assembled by $\sum_iP_i^\ast\Lambda_iP_i$ with `wake_array`'s own Fourier prolongation — and `tests/test_tier25_seam_placement.py` asserts the block against `probe.probe_block`'s at $<10^{-12}$ relative on the one geometry where both are expressible.
+
+### The four controls, and all four pass
+
+| | what it asserts | measured |
+|---|---|---|
+| **ZERO** | one window has no interface, so the composed step **is** the monolith | composed defect $=$ **`0.0`**, exactly, not to a tolerance; $0$ seams, $0$ overlap pairs |
+| **REPRODUCE** | the search space contains the baseline as the same object | boxes identical; weights differ by **exactly $0.0$**; PoU residual $1.11\times10^{-16}$; $11$ pairs, $7$ seams |
+| **NOISE** | the floor below which a ranking difference is not a difference | repeat is bitwise; halving the finite-difference step — an equally admissible reading of the same operator — moves $\mathcal Q$ by $\mathbf{1.404\times10^{-4}}$ (max), $5.07\times10^{-5}$ (mean) |
+| **KNOWN** | do not cut along the wake | one rotor, wake on row $53$: $5.397\times10^{-7}$ cutting nearest it against $1.674\times10^{-8}$ farthest, $\mathbf{32.25\times}$ — and **every criterion, $\mathcal Q$ included, picks row $216$** |
+
+And the instrument checks the derivation this vault already owns. §10.1's identity $\mathcal A-\mathcal Eu=\sum_iR_i^\top\chi_iD_i$ closes at $4.084\times10^{-12}$ relative on the hand-chosen tiling; the cellwise bound is violated by $2.220\times10^{-16}$; the $\chi$-weighted form is tight at $0.989$ and the max form is $179\times$ loose. §10.1 measured $0.998$ and $0.0046$ on a different expert at a different size, and the orders reproduce.
+
+---
+
+## 21.2 The gate at one exchange interval — passed, and the hand-chosen tiling ranks near the bottom
+
+| geometry | hand-chosen | best in pool | ratio | hand-chosen's rank | pool spread |
+|---|---|---|---|---|---|
+| **N=6**, $352\times240$ | $2.126\times10^{-6}$ | $\mathbf{5.707\times10^{-7}}$ | $\mathbf{0.2685}$ | **$138$ of $178$** | $6.04\times$ |
+| **N=12**, $464\times352$ | $2.727\times10^{-6}$ | $\mathbf{8.316\times10^{-7}}$ | $\mathbf{0.3050}$ | **$48$ of $51$** | $3.58\times$ |
+| **SOLO**, one rotor | $7.861\times10^{-7}$ | $\mathbf{2.319\times10^{-7}}$ | $\mathbf{0.2949}$ | $30$ of $54$ | $4.94\times$ |
+
+Which criteria actually find it, on N=6's PLACE pool:
+
+| criterion | chose | defect | $\times$ hand | $\times$ best | rank corr. |
+|---|---|---|---|---|---|
+| $\hat{\mathcal Q}$ reference-free | `3x2 x53-171 y168` | $5.707\times10^{-7}$ | $\mathbf{0.2685}$ | $\mathbf{1.000}$ | $+0.985$ |
+| $\mathcal Q^\star$ $\chi$-weighted (L2/C2) | `3x2 x53-171 y168` | $5.707\times10^{-7}$ | $\mathbf{0.2685}$ | $\mathbf{1.000}$ | $+0.9998$ |
+| `cut_shear__mean` | `3x2 x53-171 y168` | $5.707\times10^{-7}$ | $\mathbf{0.2685}$ | $\mathbf{1.000}$ | $+0.291$ |
+| off-diagonal mass `__max` | `3x2 x181-299 y184` | $7.432\times10^{-7}$ | $0.3496$ | $1.302$ | $+0.428$ |
+| **$\mathcal Q$ `__max`** | `3x2 x53-171 y72` | $7.624\times10^{-7}$ | $0.3587$ | $1.336$ | $+0.404$ |
+| off-diagonal mass `__sum` | `3x2 x165-283 y184` | $7.968\times10^{-7}$ | $0.3749$ | $1.396$ | $+0.762$ |
+| `cut_shear__max` | `2x3 x176 y128-208` | $1.017\times10^{-6}$ | $0.4785$ | $1.782$ | $+0.226$ |
+| **$\mathcal Q$ `__sum`** | `6x1 x11-69-128-187-245` | $2.115\times10^{-6}$ | $\mathbf{0.9949}$ | $3.706$ | $+0.726$ |
+
+Two things to read off it. **Three criteria find the exact optimum**, and one of them — `cut_shear__mean` — costs two array gradients and a slice. And **$\mathcal Q$'s aggregation is not a presentational choice**: `__max` and `__sum` pick different candidates whose penalties differ by $2.8\times$, and the `__sum` form does not beat the person at all. That is **W58 again**, one tier later and on a criterion rather than a bound: a max over seams and a sum over seams diverge as the tiling grows, and a criterion that has not said which it is has not stated itself.
+
+### The mechanism, and it is structural
+
+`wake_array.Rotor` lives on an x-**adjacency** — the plane between window columns $i$ and $i+1$ — so a disk sits at the midpoint of an overlap **by construction**.
+
+| | $x$-cuts | rotor $x$-planes | $y$-cut | `cut_shear__mean` | defect |
+|---|---|---|---|---|---|
+| hand-chosen | $120,\ 232$ | $\mathbf{120,\ 232}$ | $120$ | $0.3333$ | $2.126\times10^{-6}$ |
+| the search's answer | $53,\ 171$ | — | $168$ | $\mathbf{0.0611}$ | $\mathbf{5.707\times10^{-7}}$ |
+
+> **Every x-seam of CS-6 and CS-7 passes exactly through a rotor disc.** It is forced by the tiling rule rather than chosen carelessly, it is worth $3.7\times$ in one-interval composed defect, and no page had noticed because no case study had ever moved a cut. It is also [[generalization-requirements]] G5's slogan — *never along a shear layer, wake centreline or reaction front* — measured for the first time, and the vault's own tilings violate it.
+
+`tests/test_tier25_seam_placement.py` asserts the coincidence directly, from the declaration, so it cannot drift.
+
+---
+
+## 21.3 The horizon, and it reverses the answer
+
+`scripts/w112_horizon.py` marches three decompositions against the monolith for $240$ exchange intervals ($10.17$ macro-steps), reporting the ratio at **every** step.
+
+| interval | hand-chosen | one-interval winner | ratio | eight-interval winner | ratio |
+|---|---|---|---|---|---|
+| $1$ | $2.126\times10^{-6}$ | $5.707\times10^{-7}$ | $\mathbf{0.2685}$ | $7.503\times10^{-7}$ | $0.3529$ |
+| $2$ | $4.122\times10^{-6}$ | $2.419\times10^{-6}$ | $0.5868$ | $1.694\times10^{-6}$ | $0.4110$ |
+| $8$ | $1.299\times10^{-5}$ | $1.228\times10^{-5}$ | $0.9455$ | $6.625\times10^{-6}$ | $0.5099$ |
+| $10$ | | | **crosses $1.0$** | | |
+| $32$ | $2.606\times10^{-5}$ | $3.479\times10^{-5}$ | $1.3352$ | $1.813\times10^{-5}$ | $0.6959$ |
+| $90$ | | | $\mathbf{1.5909}$ | | |
+| $95$ | | | | | **crosses $1.0$** |
+| $180$ | | | | | $\mathbf{1.4514}$ |
+| $240$ | $8.909\times10^{-5}$ | $8.053\times10^{-5}$ | $0.9039$ | $9.278\times10^{-5}$ | $1.0414$ |
+
+**The cut every good criterion picked is worse than the hand-chosen tiling for intervals $10$ through $230$ of $240$, by up to $59\%$, and the ratio crosses $1.0$ twice.** Selecting on the eight-interval defect instead buys a longer advantage and crosses once, at interval $95$, peaking at $1.45\times$.
+
+**It is not a stability artifact and the controls say so.** All three columns hold $u_{\max}$ at $1.6577$ against the monolith's $1.6576$, and carry an **identical** divergence — $0.2133$ at interval $240$, agreeing to four digits across all three — so the divergence is the state's and not the cut's. The hand-chosen column's own defect grows $41.9\times$ over the march, monotonically.
+
+And stage E says the same thing in the ranking rather than in one trajectory. Over N=6's $193$ candidates:
+
+| criterion | vs the 1-interval defect | vs the 8-interval defect |
+|---|---|---|
+| $\mathcal Q^\star$ $\chi$-weighted | $+0.9998$ | $+0.718$ |
+| $\hat{\mathcal Q}$ reference-free | $+0.984$ | $+0.681$ |
+| off-diagonal mass `__sum` | $+0.738$ | $+0.471$ |
+| $\mathcal Q$ `__sum` | $+0.675$ | $+0.487$ |
+| off-diagonal mass `__max` | $+0.432$ | $+0.204$ |
+| $\mathcal Q$ `__max` | $+0.419$ | $+0.321$ |
+| `cut_shear__mean` | $+0.315$ | $+0.128$ |
+| `cut_shear__max` | $+0.261$ | $+0.154$ |
+
+and the one-interval defect itself ranks the eight-interval defect at only $+0.719$. **Every criterion degrades, the derived one included**, and the eight-interval optimum — $0.5099\times$ the hand-chosen, a real $2\times$ available — **was found by none of them**: the one-interval argmin sits $1.854\times$ above it.
+
+> **This is the third time this vault has published a number that was true exactly as far as it was marched** — §18.5's state on a diverging trajectory, §19.6's repair that died at $38$ from the developed state, and now a cut placement that reverses at interval $10$. Twice is an accident. The rule this makes standing is in §21.9.
+
+---
+
+## 21.4 What $\mathcal Q$ does, and the axis where §10.2 reproduces
+
+**Three findings, and the first is not what §10.2 would predict.**
+
+**(1) $\mathcal Q$ does not rank backwards on placement.** N=6 PLACE $+0.404$ / $+0.726$; N=12 $+0.810$ / $+0.873$; SOLO $+0.759$ / $+0.681$. §10.2's $-0.853$ was measured on a strip model whose viscosity varied *across the cut direction*, and it does not carry to where a seam goes in a real wake field. **$\mathcal Q$ is a weak positive predictor of placement, not an inverted one** — and that is a correction to the natural reading of §10.2, in $\mathcal Q$'s favour, arrived at by a measurement designed to look for the opposite.
+
+**(2) It ranks exactly backwards on the overlap, which §10.2 never varied.** Placement fixed, only $h$ moving:
+
+| halo (overlap, cells) | one-interval defect | $\mathcal Q_{\max}$ | $\beta_{\min}$ | $\hat{\mathcal Q}$ | halo cells |
+|---|---|---|---|---|---|
+| $4$ ($8$) | $5.434\times10^{-6}$ | $0.04066$ | $0.2371$ | $5.875\times10^{-4}$ | $6784$ |
+| $8$ ($16$) | $2.126\times10^{-6}$ | $0.07015$ | $0.2342$ | $3.802\times10^{-4}$ | $13824$ |
+| $16$ ($32$) | $1.267\times10^{-6}$ | $0.09600$ | $0.2323$ | $2.702\times10^{-4}$ | $28672$ |
+| $24$ ($48$) | $\mathbf{1.088\times10^{-6}}$ | $0.10685$ | $0.2311$ | $\mathbf{2.489\times10^{-4}}$ | $44544$ |
+
+$\mathcal Q$ **and both of its factors separately** rank $\mathbf{-1.000}$ and choose the narrowest overlap, which is the worst available by $4.993\times$. $\hat{\mathcal Q}$ and $\mathcal Q^\star$ rank $+1.000$ and choose the widest. The mechanism is one line: **a wider overlap makes the operator less diagonal and the scheme more accurate**, so a criterion built on off-diagonal mass must invert here, and $1/\beta$ cannot save it because $\beta$ barely moves ($0.2371\to0.2311$).
+
+**(3) The basis dependence is worse on real seams than the docstring's own worry suggested.** Over $120$ seams of real decompositions of a developed wake field, under $S\mapsto U^\top SU$ for orthogonal $U$ — a re-declaration of the *same* interface space, leaving the scheme bit-identical:
+
+| | value |
+|---|---|
+| orbit ratio: min / p25 / median / p75 / max | $1.237$ / $2.047$ / $\mathbf{5.652}$ / $24.31$ / $\mathbf{85.40}$ |
+| seams with an orbit $>10\times$ | $\mathbf{42.5\%}$ |
+| seams with an orbit $>2\times$ | $75.8\%$ |
+| $\mathcal Q$ in the symmetric part's eigenbasis, as a fraction of $\mathcal Q$ declared | median $0.1771$, min $\mathbf{0.01181}$ |
+| $\beta$ invariance, worst of $120$ | $2.859\times10^{-15}$ |
+
+§10.2 measured $361\times$ on one seam of a linear model problem, and it was fair to wonder whether the orbit was a property of the model. It is not. **On two-fifths of real seams $\mathcal Q$ can be moved by more than an order of magnitude without changing the scheme at all**, and the worst seam measured here ($\mathcal Q=0.02028$ declared, $0.0002395$ in the eigenbasis) is an $85\times$ orbit on a decomposition a search actually visited.
+
+### Every disagreement, in full
+
+| geometry | pools $\times$ criteria | **sign** disagreements | **argmin** disagreements |
+|---|---|---|---|
+| N=6 | $32$ | $\mathbf{4}$ — $\mathcal Q$ `__max`, $\mathcal Q$ `__sum`, off-diag `__max`, off-diag `__sum`, **all in HALO, all at exactly $-1.000$** | $15$ |
+| N=12 | $32$ | $0$ | $14$ |
+| SOLO | $40$ | $0$ | $9$ |
+
+Every row is in `out/w112/w112.json` under `disagreements`. **No criterion disagrees in sign about placement; none gets the argmin right everywhere; and the four that invert do so on the one axis that is not placement.**
+
+---
+
+## 21.5 `cut_shear` — the criterion that reads the state instead of the operator
+
+§10.2's uniform-viscosity control found that the decision a wind farm actually faces — cut through the wake or beside it — *"is not expressible in the operator alone"*, because every placement there had a provably identical $S$ while the measured defect spread $2.29\times$. That is an argument for a criterion computed from the **field**, and G5's slogan already names one. It had never been written down as a number.
+
+$$\text{cut\_shear}(\Gamma)\;=\;\underset{\Gamma}{\text{mean}}\ \frac{\lvert\partial_n(u,v)\rvert}{\Delta x}$$
+
+**What it buys.** It picks the *exact* optimum on N=6 PLACE, N=6 SHAPE and SOLO PLACE/SHAPE — three of five pools where it can be evaluated — at a cost of two array gradients and a slice, against $m+1$ solves per block per seam for $\mathcal Q$ and a monolith for $\mathcal Q^\star$.
+
+**What it does not buy, and both are on the record.** Its rank correlation is only $+0.291$ (N=6) and $+0.183$ (N=12): **a good argmin and a poor ordering**, which is a distinction no criterion in this vault had needed before and which matters because a search acts on the argmin while a bound needs the ordering. And it is **blind to the overlap by construction** — the cut lines do not move when $h$ does, so it is constant on that axis and `spearman` correctly reports *no ordering* rather than a number, which is `w16_cut_policy`'s own rule reused.
+
+> **[AI Inference], and flagged as the weakest new claim here.** That the right cut criterion reads the state rather than the seam operator is one geometry's worth of evidence at one Reynolds number, on a criterion invented for this run. What is *not* an inference is the negative half: on the halo axis the two operator criteria rank $-1.000$ and the two field criteria are either $+1.000$ or blind, and no arrangement of $\lVert S-\operatorname{diag}S\rVert$ and $\beta$ fixes that.
+
+---
+
+## 21.6 CS-9's shared domain — the two families want opposite cuts
+
+[[case-study-thermal-strain-atlas-0.1]] finds thermal strain is a **bond and not a port** because the conduction/elasticity interface has **co-dimension zero**. So the family axis offers no $\Gamma$ to place — *and that is CS-9's own result restated, not a limitation of this tier*. What is placeable is a **spatial** cut of the shell, which, because the domain is shared, cuts both families at once.
+
+$785$ segmentations at one, two and three segments, scored exhaustively. Conduction takes its ring at $t^n$; **elasticity takes a lagged displacement field**, because quasi-statics has no time derivative of its own and pinning the ring to the *current* monolith solution makes every segment solve exact — the first version of this measurement did exactly that and returned $10^{-11}$ for every cut, which is not a small number, it is no measurement at all.
+
+| | value |
+|---|---|
+| **ZERO** — one segment, conduction | $2.917\times10^{-11}$ |
+| **ZERO** — one segment, elasticity | **exactly $0$** |
+| **KNOWN** — distance from the streak vs the conduction defect | $\mathbf{-0.9988}$ |
+| conduction cutting through the streak / farthest from it | $4.642\times10^{-6}$ / $5.935\times10^{-9}$ $=\ \mathbf{782.1\times}$ |
+| **and the same distance vs the *elasticity* defect** | $\mathbf{+0.9991}$ |
+| elasticity through the streak / farthest | $0.04597$ / $0.07121$ |
+| elasticity's lag-only floor, no cut at all | $0.03093$ |
+| **rank correlation between the two families, all $785$ candidates** | $\mathbf{-0.0259}$ |
+
+| ranked by | argmin | the *other* family's argmin | cost to the other |
+|---|---|---|---|
+| conduction | $z=3$, far from the streak | $z=19,29$ | $3.60\times$ |
+| elasticity | $z=19,29$, straddling it | $z=3$ | $\mathbf{795.4\times}$ |
+
+> **One $\Gamma$, two physics, opposite preferences, and a factor of $795$ between following one and following the other.** The conduction defect ranks $-0.999$ against distance from the feature and the elasticity defect ranks $+0.999$ against the same distance. **No scalarization of one seam operator can express that decision in any basis**, because the disagreement is not in the operator — it is between two operators that share a domain. This is the sharpest result of the tier and the one that generalizes past wind farms: every Phase C subsystem with two families on one body inherits it.
+
+---
+
+## 21.7 Where the compiles land
+
+**Nowhere, and deliberately.** No graph was compiled in this tier and no verdict changed. L2/C2 remains the rule `_cut_policy` issues; `cut_score` remains retired and scoped to substructuring; nothing here is wired into the compiler. This is a measurement about *criteria*, and promoting one of them into a rule on one geometry at one Reynolds number would be the thing §10.2 is a monument against.
+
+What the tier does change is what a future rule would have to satisfy, and §21.9 states it.
+
+---
+
+## 21.8 Closed this tier / opened by it
+
+| # | verdict |
+|---|---|
+| **W112** | **`done`.** $\mathcal Q$ has now chosen a cut — many of them, under three budgets on three geometries — and been graded against two hand-chosen tilings this vault measured. It comes fifth of eight criteria on placement, it is beaten by a free one, its two aggregations differ by $2.8\times$ in penalty, and it ranks exactly $-1.000$ on the overlap. The row's own *"done when"* is met in full: a search was run, a cut was compared against a hand-chosen rung, and the comparison is in `out/w112/w112.json` |
+| **W123** | `open` — **the one-exchange-interval defect is not what a rollout accumulates, and every cut criterion in this vault predicts the former.** §21.3: the search's answer crosses $1.0$ at interval $10$ and peaks at $1.59\times$ worse; the eight-interval optimum, a real $2\times$, is found by no criterion; and $\mathcal Q^\star$ — a **theorem** on hypotheses the compiler checks — degrades from $+0.9998$ to $+0.718$ over eight intervals. L2/C2 is not wrong; it bounds exactly what it says it bounds. What is missing is any criterion for the quantity a decomposition is actually chosen for. Done when a cut criterion is stated *with a horizon* and measured over it |
+| **W124** | `open` — **every x-seam of CS-6 and CS-7 passes through a rotor disc, and it is forced by the tiling rule.** `wake_array.Rotor` lives on an x-adjacency, so a disk sits at the midpoint of an overlap by construction and `ArrayTiling` cannot express a rotor that is not on a seam. Worth $3.7\times$ in one-interval composed defect. Every number those case studies published stands — the seam was where it was and the instruments read what they read — but *"the tiling was chosen by hand"* understates it: the tiling could not have been chosen otherwise. Done when `ArrayTiling` can place a rotor off a window boundary, which is a change to the offset rule and not to any expert |
+| **W125** | `open`, small — **a criterion can have a good argmin and a bad ordering, and nothing in the framework distinguishes them.** `cut_shear__mean` picks the exact optimum on three pools and ranks at $+0.291$; $\mathcal Q$ `__sum` ranks at $+0.726$ and picks a candidate $3.7\times$ off. A search consumes the argmin; a bound consumes the ordering; `_cut_policy` ingests one declared number and asks for neither. Done when the record distinguishes *"this criterion selects well"* from *"this criterion bounds well"* |
+| **W126** | `open` — **a placement criterion for a co-located pair does not exist and cannot be a scalarization of one operator.** §21.6: two families on one domain rank at $-0.0259$ against each other and one family's optimum costs the other $795\times$. Done when the framework can either state a joint criterion over both families' defects, or refuse to place a shared cut and say why |
+
+**Reframed rather than closed.**
+
+| # | now |
+|---|---|
+| **W16 / G5** | §10.2's falsification stands and its **scope was wider than the measurement supported in one direction and narrower in another**. $\mathcal Q$ does *not* rank backwards on placement in a real wake field ($+0.40$ to $+0.87$ over three geometries), and it *does* rank backwards, exactly, on the overlap — an axis §10.2 never varied. And G5's slogan gets its first number: `cut_shear` finds the optimum on three of five pools |
+| **W58** | recurs one level up. A max over seams and a sum over seams pick different candidates whose penalties differ by $2.8\times$. W58 closed the aggregation question for a *bound*; it is open again for a *criterion*, and the two aggregations are reported side by side throughout |
+| **W105** | the arrangement §21.3 marches in. Both columns are exposed agents with no projection anywhere — stable to $240$ intervals with $u_{\max}$ tracking the monolith to four digits, and **not incompressible** ($\lVert\nabla\cdot u\rVert=0.2133$). Whether the placement advantage survives a projected assembly is unmeasured and is the obvious next run |
+
+## 21.9 What this tier says about the ones before it
+
+| Claim | Where | Now |
+|---|---|---|
+| *"$\mathcal Q$ ranks cuts backwards"* | §10.2 | **true where it was measured and not general.** On placement in a real wake field it ranks positively at every geometry. The sign inversion is real, reproduces exactly, and lives on the **overlap** axis |
+| *"the basis is doing unjustified work"* | §9's own docstring, §10.2 | **understated.** $42.5\%$ of real seams admit an orbit above $10\times$; the median is $5.65\times$ and the max $85.4\times$, with $\beta$ invariant to $2.9\times10^{-15}$ throughout |
+| L2/C2, *"the decomposition criterion is: minimize the $\chi$-weighted restriction defect"* | §10.1 | **a theorem about one exchange interval, and that is now a limitation rather than a scope note.** It ranks the one-interval defect at $+0.9998$ and the eight-interval defect at $+0.718$, and the cut it selects is worse than the hand-chosen one over most of a ten-macro-step march |
+| CS-6 and CS-7's tilings, *"hand-chosen"* | [[case-study-wake-array-atlas-0.1]], [[case-study-scaling-ladder-atlas-0.1]] | **not merely hand-chosen — unable to be otherwise.** The rotor rule puts every x-seam on a disc. Their numbers stand; the framing does not |
+| *"a positive control is stable exactly as far as it was marched"* | §19.6 | **third instance, and it is now a standing rule.** §18.5's state was on a diverging trajectory; §19.6's repair died at $38$; §21.3's placement reverses at $10$. **A comparison between two configurations is not a result until it has been marched past the point where the two curves could cross, and the crossing must be looked for rather than assumed absent** |
+| CS-9's *"the interface has co-dimension zero, so there is no $\Gamma$"* | [[case-study-thermal-strain-atlas-0.1]] | confirmed and given a consequence. There is no family cut to place, there **is** a spatial one, and the two families disagree about it at $-0.0259$ with a $795\times$ price on choosing wrong |
+
+## The mechanism tally
+
+Tier 19: *the measurement that decides is the one that removes a variable*. Tier 20: *the one that holds everything still and varies what nobody called a variable*. This tier's is a third and it is about the **question** rather than the instrument.
+
+**The measurement that decides here is the one that asks whether the quantity being optimized is the quantity that matters.** Eight criteria were built, four controls passed, a search ran over $367$ candidates, the gate was met by a factor of $3.7$ — and every one of those numbers is about the composed defect over *one exchange interval*, which is what L2/C2 bounds because that is the interval over which the identity is exact. Marching the winner revealed that the ordering it was selected on reverses twice.
+
+> **A criterion is not validated by predicting its own objective well.** $\mathcal Q^\star$ predicts the one-interval defect at $+0.9998$ — it is a theorem, it *cannot* do otherwise — and that number says nothing whatever about whether a decomposition chosen with it is a good decomposition. The thing to have measured first was the correlation between the objective and the outcome, and it is $+0.719$.
+
+And a second, cheaper one. **The control that found the largest thing in the tier was a geometry check that needed no run at all.** Comparing the hand-chosen x-cuts against the rotor planes is two lines and integer arithmetic, it is now a test, and it says that six case studies have been cutting through their own turbines since Tier 18.
+
+---
+
 ## See Also
 
 - [[gap-worklist]] — the rows this page moves, and the ones it deliberately does not
@@ -4429,3 +4677,5 @@ running it would have been §8's mistake in a new place.
 - [[composition-error-theory]] — §9.1's convexity is the condition its "agreement is not correctness" argument needed on the assembly side
 - [[generalization-requirements]] --- **G5**, whose W16 row this page's section 10 closes: the locality half derived as L2/C2, the scalarization falsified
 - [[end-to-end-architecture-spec]] --- L2's cut rule, and the three-verdict split that makes an `admit` mean something
+- [[case-study-seam-placement-atlas-0.1]] --- the readable companion to §21: CS-9★, the search, and the horizon that reverses it
+- [[poc1-retrospective-and-hybrid-roadmap]] --- §4 proposes CS-9★; §21.1 corrects its premise, and W112's, about what had and had not been measured

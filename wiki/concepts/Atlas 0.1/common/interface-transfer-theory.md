@@ -271,6 +271,15 @@ $$\mathcal Q(\Gamma) \;=\; \frac{1}{\beta}\cdot\frac{\bigl\lVert \tilde\Lambda^M
 the off-diagonal mass — how far the operator is from local — amplified by the conditioning that multiplies it in the bound. **Lower is better; both factors are printed by the probe already.**
 
 **[AI Inference], and flagged as the weakest claim on this page.** That $\mathcal Q$ is the right scalarization is a guess. The off-diagonal mass in the *Fourier* basis is a locality measure; in an arbitrary basis it is not, and the choice of basis is doing work that is not justified here. The defensible part is narrower and worth separating: **cut quality is measurable before any rollout, from quantities the probe already returns, and it should be reported per seam whether or not $\mathcal Q$ is the right combination of them.**
+> **Measured twice since, and the status is now a result rather than a hedge.** [[tier0-measurements]] §10.2 (2026-08-28, four days after this section was written) falsified $\mathcal Q$ as a ranking function on twelve cut placements of one fixed two-strip decomposition: rank correlation $-0.853$, a $361\times$ orbit under an admissible re-declaration of the same interface space, and constant to $8\times10^{-11}$ where the truth spread $2.29\times$. `probe.cut_score` has read `RETIRED` since that day and **L2/C2** replaced it. Then [[tier0-measurements]] §21 (2026-09-02, CS-9★) used it to *drive a search over decompositions* for the first time, and the verdict goes both ways:
+>
+> - **it does not rank backwards on placement.** Over three real geometries $\mathcal Q$ ranks $+0.40$ to $+0.87$ against the measured composed defect. §10.2's headline, read as a general claim about cut placement, was too harsh;
+> - **it ranks backwards exactly on the overlap** — an axis §10.2 never varied. $\mathcal Q$ and both its factors rank $-1.000$ over a halo sweep and choose the narrowest overlap when the narrowest is worse by $4.993\times$, because a wider overlap makes the operator less diagonal while making the scheme more accurate;
+> - **the basis worry below was understated.** Over $120$ seams of real decompositions the orbit runs $1.24\times$ to $85.4\times$ with a median of $5.65\times$; $42.5\%$ of seams admit more than $10\times$; and $\beta$ is invariant to $2.9\times10^{-15}$ throughout. The choice of basis is not merely *doing work that is not justified here* — on two-fifths of real seams it can move $\mathcal Q$ by an order of magnitude with the scheme bit-identical;
+> - **and the defensible part below is the part that survived.** The narrower claim — *cut quality is measurable before any rollout, from quantities the probe already returns, and it should be reported per seam whether or not $\mathcal Q$ is the right combination of them* — is what CS-9★ built on, and the two criteria that beat $\mathcal Q$ there are exactly of that shape: the reference-free neighbour disagreement, and the normal shear of the state along the cut.
+>
+> **One thing CS-9★ found that this section could not have anticipated**, and it bounds every cut criterion in the framework rather than this one: the quantity all of them predict is the composed defect over **one exchange interval**, and it is not monotone in what a rollout accumulates. See [[case-study-seam-placement-atlas-0.1]] and **W123**.
+
 
 ---
 
@@ -285,7 +294,7 @@ Recorded so the page is not read as closing more than it does.
 | 3 | **The multirate stability limit is conjectured to follow $\kappa(\tilde\Lambda)$** | §5.2 consequence 3, untested |
 | 4 | **The cross-point null-count identity is stated as an inequality, not an equality** | §7 |
 | 5 | **DWR's interior half is blocked by O2** | §8 — and no construction here changes that |
-| 6 | **The cut score $\mathcal Q$ is a guess at a scalarization** | §9, explicitly |
+| 6 | **The cut score $\mathcal Q$ is a guess at a scalarization** — **measured 2026-09-02 and it is a poor one**: fifth of eight criteria on placement, beaten by a criterion costing two array gradients, and exactly $-1.000$ on the overlap axis | §9, explicitly; [[tier0-measurements]] §21 and [[case-study-seam-placement-atlas-0.1]] |
 | 7 | **Nothing here touches $\tau$** | The transfer theory governs $\sigma$ and the passivity route to $L$. Agent infidelity is untouched, as it is by every coupling choice ([[general-coupling-scheme]] §1.1) |
 
 **And the honest framing of the whole page:** this is transcription plus one unification. The unification (§2) is the part that is this vault's, and it is the part most worth checking, because if $R_i=P_i^\ast$ is *not* the right condition at some port type then six mechanisms come apart again rather than one.
@@ -318,4 +327,5 @@ Recorded so the page is not read as closing more than it does.
 - [[generalization-requirements]] — G11, G3, G14, G4, G13, G18, G1, G7, G5 are the nine gaps addressed
 - [[conservation-as-constraint-atlas-0.1]] — the conservative half of the space rule is its per-edge enforcement, generalized
 - [[schwarz-iteration-atlas-0.1]] — §5.2's silent-residual warning is the same signature as its bitwise-zero result
+- [[case-study-seam-placement-atlas-0.1]] — CS-9★, which drove a search with §9's $\mathcal Q$ for the first time; §9's box records what it found in both directions
 - [[gap-worklist]] — where the measurements this page implies are tracked
