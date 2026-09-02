@@ -1,0 +1,422 @@
+{
+  "generated": "2026-09-01 22:31:55",
+  "case": "thermal-strain (CS-9)",
+  "build_repo": "C:\\Users\\Nauni\\physics-foundation-model",
+  "operators": {
+    "checks": {
+      "uniform-100K": {
+        "G_vs_solve_mechanical": 5.287276551707549e-15,
+        "rigid_projection": 8.723495407072508e-17,
+        "G_surf_plus_G_body": 1.0249271039548784e-15,
+        "body_load_fraction": 6.832420332813785e-17,
+        "surf_load_fraction": 1.0
+      },
+      "streak-transient": {
+        "G_vs_solve_mechanical": 1.3478754091321653e-14,
+        "rigid_projection": 3.00022551158767e-17,
+        "G_surf_plus_G_body": 1.0267687473183558e-15,
+        "body_load_fraction": 0.09583990455821317,
+        "surf_load_fraction": 1.015222564202481
+      },
+      "random-50K": {
+        "G_vs_solve_mechanical": 1.1157049140029983e-14,
+        "rigid_projection": 3.30474858333452e-18,
+        "G_surf_plus_G_body": 8.010136834931978e-16,
+        "body_load_fraction": 0.9839699984028754,
+        "surf_load_fraction": 0.6662730890958692
+      }
+    },
+    "beta_Pa_per_K": 2402985.074626866,
+    "delta_biot": 0.009074976967016767,
+    "n_nodes": 343,
+    "n_elements": 288,
+    "n_dofs": 686,
+    "uniform_control_body_load": 6.832420332813785e-17
+  },
+  "referent": {
+    "T_range": [
+      300.0256740339753,
+      418.8931443226613
+    ],
+    "sigma_norm_Pa": 25186394.55589584,
+    "sigma_max_Pa": 5629615.480794496,
+    "D_eps_norm_Pa": 3044163946.794966,
+    "D_eps0_norm_Pa": 3044484770.621489,
+    "cancellation_ratio": 120.86541168244993,
+    "two_way_iterations_median": 7,
+    "two_way_dT_max_K": 1.10433867268938,
+    "two_way_dsigma_rel": 0.003781681789431229
+  },
+  "split": {
+    "lag_sweep": [
+      {
+        "lag": 0,
+        "rel_stress_error": 0.0,
+        "bitwise_identical": true,
+        "rel_u_error": 0.0
+      },
+      {
+        "lag": 1,
+        "rel_stress_error": 0.007116243927004633,
+        "bitwise_identical": false,
+        "rel_u_error": 0.013758544292452001
+      },
+      {
+        "lag": 2,
+        "rel_stress_error": 0.014300989872360108,
+        "bitwise_identical": false,
+        "rel_u_error": 0.027596110942039464
+      }
+    ],
+    "dt_order": [
+      {
+        "dt": 0.2,
+        "n_steps": 10,
+        "rel_stress_error": 0.028568584870691704
+      },
+      {
+        "dt": 0.1,
+        "n_steps": 20,
+        "rel_stress_error": 0.014250756401168905
+      },
+      {
+        "dt": 0.05,
+        "n_steps": 40,
+        "rel_stress_error": 0.007116243927004633
+      },
+      {
+        "dt": 0.025,
+        "n_steps": 80,
+        "rel_stress_error": 0.0035557882284684207
+      }
+    ],
+    "log2_ratios": [
+      1.0033910783017101,
+      1.001850628093438,
+      1.000946559062477
+    ],
+    "two_way_staggered": {
+      "vs_converged_two_way": 6.204803062713555e-05,
+      "vs_one_way": 0.003722247029029931,
+      "dT_max_vs_converged_K": 0.018031899248171612
+    }
+  },
+  "routes": {
+    "surface_mech": {
+      "rel_stress_error": 1278.9632244954062,
+      "body_load_fraction": 0.09583990455821317,
+      "displacement_amplification": 233.33120125876877,
+      "body_only_displacement_amplification": 232.69506287116945
+    },
+    "uniform_control": {
+      "G_body_load_fraction": 6.832420332813785e-17,
+      "rel_displacement_error": 1.0317230408146324e-13
+    },
+    "global_field": {
+      "rel_stress_error": 0.0
+    }
+  },
+  "power": {
+    "rows": [
+      {
+        "E_th": 156070.96519483993,
+        "E_el": 0.18211184047532925,
+        "E_cross": -486.13480715482797,
+        "E_shared": 242.88529173693408,
+        "dE_th_dt": 50138.28155115596,
+        "dE_el_dt": 0.04851640875401131,
+        "P_gamma": 50137.910430744414,
+        "P_omega_A": -0.05162428165925803,
+        "P_omega_B": 175.61775822038607,
+        "conjugate_gap": 175.5661339387268,
+        "d_E_shared_dt": 169.02935427640458,
+        "R_elas": -0.0031078729052467224,
+        "R_elas_rel": 0.060201765629592494,
+        "R_global": 0.4196368202974554,
+        "R_global_with_volume": 0.3680125386381974,
+        "R_global_rel": 8.369651162010442e-06,
+        "R_global_with_volume_rel": 7.340005506343025e-06,
+        "P_omega_over_P_gamma": -1.0296456556674164e-06,
+        "E_el_over_E_th": 1.1668527855131782e-06,
+        "dt": 0.2
+      },
+      {
+        "E_th": 156560.63343993126,
+        "E_el": 0.18335797504875018,
+        "E_cross": -490.73240903886057,
+        "E_shared": 245.18284654437855,
+        "dE_th_dt": 50089.13755697373,
+        "dE_el_dt": 0.05028619245479149,
+        "P_gamma": 50088.94967189572,
+        "P_omega_A": -0.05182479226462533,
+        "P_omega_B": 176.12688218486068,
+        "conjugate_gap": 176.07505739259605,
+        "d_E_shared_dt": 172.82053815647885,
+        "R_elas": -0.0015385998098338405,
+        "R_elas_rel": 0.02968848967068723,
+        "R_global": 0.23817127045913367,
+        "R_global_with_volume": 0.18634647819450834,
+        "R_global_rel": 4.754966355239199e-06,
+        "R_global_with_volume_rel": 3.7203111547588507e-06,
+        "P_omega_over_P_gamma": -1.034655200480348e-06,
+        "E_el_over_E_th": 1.1711627055922743e-06,
+        "dt": 0.1
+      },
+      {
+        "E_th": 156807.70932430305,
+        "E_el": 0.18399673028767438,
+        "E_cross": -493.07166626847027,
+        "E_shared": 246.35183640394416,
+        "dE_th_dt": 50064.3809899193,
+        "dE_el_dt": 0.0511840833127053,
+        "P_gamma": 50064.28655779834,
+        "P_omega_A": -0.05194938501179536,
+        "P_omega_B": 176.3832523752861,
+        "conjugate_gap": 176.3313029902743,
+        "d_E_shared_dt": 174.70755268767277,
+        "R_elas": -0.0007653016990900596,
+        "R_elas_rel": 0.01473167967082371,
+        "R_global": 0.1456162042741198,
+        "R_global_with_volume": 0.09366681926232445,
+        "R_global_rel": 2.908584427863732e-06,
+        "R_global_with_volume_rel": 1.870930871134811e-06,
+        "P_omega_over_P_gamma": -1.037653556728921e-06,
+        "E_el_over_E_th": 1.1733908433490356e-06,
+        "dt": 0.05
+      },
+      {
+        "E_th": 156931.8144602596,
+        "E_el": 0.18432072515298614,
+        "E_cross": -494.2516889857922,
+        "E_shared": 246.9415237677402,
+        "dE_th_dt": 50051.94852990098,
+        "dE_el_dt": 0.051631853699518615,
+        "P_gamma": 50051.902003227704,
+        "P_omega_A": -0.052013493274785105,
+        "P_omega_B": 176.51175385110537,
+        "conjugate_gap": 176.45974035783058,
+        "d_E_shared_dt": 175.6487478496831,
+        "R_elas": -0.0003816395752664903,
+        "R_elas_rel": 0.007337318669413423,
+        "R_global": 0.09815852697647642,
+        "R_global_with_volume": 0.04614503370169132,
+        "R_global_rel": 1.9611348030319898e-06,
+        "R_global_with_volume_rel": 9.219436595779228e-07,
+        "P_omega_over_P_gamma": -1.039191143454067e-06,
+        "E_el_over_E_th": 1.1745274582271675e-06,
+        "dt": 0.025
+      },
+      {
+        "E_th": 156994.01129648567,
+        "E_el": 0.1844839377576477,
+        "E_cross": -494.84433524568226,
+        "E_shared": 247.23768368508132,
+        "dE_th_dt": 50045.7176638511,
+        "dE_el_dt": 0.0518551203822426,
+        "P_gamma": 50045.69571960971,
+        "P_omega_A": -0.05204568621374506,
+        "P_omega_B": 176.57607304798927,
+        "conjugate_gap": 176.52402736177552,
+        "d_E_shared_dt": 176.1187524385855,
+        "R_elas": -0.00019056583150245388,
+        "R_elas_rel": 0.0036615105951302877,
+        "R_global": 0.07379936178040225,
+        "R_global_with_volume": 0.021753675566657193,
+        "R_global_rel": 1.4746395413079452e-06,
+        "R_global_with_volume_rel": 4.3467625444825856e-07,
+        "P_omega_over_P_gamma": -1.0399632868596866e-06,
+        "E_el_over_E_th": 1.1751017521887945e-06,
+        "dt": 0.0125
+      }
+    ],
+    "R_elas_log2_ratios": [
+      1.019902098128442,
+      1.0109817692247443,
+      1.0055970826054712,
+      1.002813974165395
+    ],
+    "conjugate_ratio": 3395.2904800554893,
+    "cross_over_elastic": 2679.78493692559
+  },
+  "compile": {
+    "volumetric": {
+      "verdict": "refuse",
+      "raised": "NamedHoleError",
+      "hole": "PortAmendment",
+      "gap": "O6 / G16",
+      "detail": "PortAmendment is a named hole, not a rule (port type 'THERMEL' is not one of ['MECH', 'ROT', 'THERM', 'ELEC', 'ADVEC']; a sixth type enters only through the six-field amendment procedure, which has never been exercised)"
+    },
+    "surface-mech": {
+      "verdict": "refuse",
+      "envelope": {
+        "E1": "holds",
+        "E2": "holds",
+        "E3": "fails",
+        "E4": "holds",
+        "E5": "unchecked",
+        "E6": "unchecked",
+        "E7": "fails"
+      },
+      "refusals": [
+        "L2/R10"
+      ],
+      "n_decertifications": 9,
+      "unmeasured": [
+        "C_mu (W3)",
+        "L (W1)",
+        "norm_A (W28)",
+        "sigma (W3)",
+        "tau (W3)"
+      ],
+      "decertified_rules": [
+        "L1/E3",
+        "L2/C3/W57",
+        "L4/E7/passivity",
+        "L4/block-share",
+        "L4/operator-content",
+        "L5/eps_tol",
+        "L6/E6",
+        "L8/W56",
+        "L9/E5"
+      ],
+      "seams": 1,
+      "seam": {
+        "seam_id": "thermal-pressure",
+        "dim_M": 16,
+        "null_dim": 1,
+        "expected_null_dim": 1,
+        "one_sided": 0.0,
+        "beta": 475426422.6463477,
+        "operator_content": 0.727450989289643,
+        "block_norms": {
+          "cond": 0.0,
+          "elas": 561928972898.0804
+        }
+      }
+    },
+    "global-field": {
+      "verdict": "refuse",
+      "envelope": {
+        "E1": "holds",
+        "E2": "holds",
+        "E3": "holds",
+        "E4": "holds",
+        "E5": "unchecked",
+        "E6": "unchecked",
+        "E7": "unchecked"
+      },
+      "refusals": [
+        "L2/R10"
+      ],
+      "n_decertifications": 6,
+      "unmeasured": [
+        "C_mu (W3)",
+        "L (W1)",
+        "beta (W2)",
+        "norm_A (W28)",
+        "sigma (W3)",
+        "tau (W3)"
+      ],
+      "decertified_rules": [
+        "L2/C3/W57",
+        "L3/graph",
+        "L5/eps_tol",
+        "L6/E6",
+        "L8/W56",
+        "L9/E5"
+      ],
+      "seams": 0
+    },
+    "stamp_trade": {
+      "only_surface_mech": [
+        "L1/E3",
+        "L4/E7/passivity",
+        "L4/block-share",
+        "L4/operator-content"
+      ],
+      "only_global_field": [
+        "L3/graph"
+      ],
+      "unmeasured_only_global_field": [
+        "beta (W2)"
+      ]
+    },
+    "stamp_paradox": {
+      "E3_surface_mech": "fails",
+      "E3_global_field": "holds",
+      "E7_surface_mech": "fails",
+      "E7_global_field": "unchecked",
+      "decertifications_surface_mech": 9,
+      "decertifications_global_field": 6
+    }
+  },
+  "amendment": {
+    "evidence": {
+      "conjugate_ratio": 3395.2904800554893,
+      "cross_over_elastic": 2679.78493692559,
+      "dim_M_over_dim_V": 1.0,
+      "probe_solves": 344.0,
+      "surface_route_stress_error": 1278.9632244954062,
+      "uniform_control": 6.832420332813785e-17
+    },
+    "verdict": {
+      "candidate": "THERMEL",
+      "fields": {
+        "bond": {
+          "verdict": "fails",
+          "why": "the conjugate pair exists and its product is a power density, but the pairing is defined only up to the rate of a shared energy: the two readings differ by 3395.3x, and the free energy's bilinear cross term is 2679.8x the elastic energy. \u00a76's residual adds dE_i/dt over agents and there is no additive split to add"
+        },
+        "mapping": {
+          "verdict": "holds",
+          "why": "the consistent/conservative pair is the adjoint of the declared prolongation and the derivation never mentions the carrier's dimension"
+        },
+        "transfer": {
+          "verdict": "holds-vacuously",
+          "why": "P = R = I on a shared mesh, adjoint by construction -- and vacuous: dim M / dim V = 1.0, so there is no reduction because there is no cut"
+        },
+        "dtn_reading": {
+          "verdict": "fails",
+          "why": "which side is imposed and which returned is well defined, and under the two-way mode the interface problem is non-empty. It is not affordable: dim M = dim V, so a probe is 344 full solves for an operator that IS the coupled solve. Decidable from the declaration -- co-dimension zero -- and not from any measurement"
+        },
+        "distinctness": {
+          "verdict": "holds",
+          "why": "G = G_surf + G_body is exact to 1e-15; dropping G_body -- 9.6% of the load -- costs 1279.0x in stress, and the positive control passes: at a uniform dT, G_body is exactly zero (6.832420332813785e-17) and the surface reduction is exact. Not a special case of MECH"
+        },
+        "exercise": {
+          "verdict": "holds",
+          "why": "this case study; W94's actuator disk is a second instance"
+        }
+      },
+      "failed": [
+        "bond",
+        "dtn_reading"
+      ],
+      "verdict": "refuse",
+      "seventh_field": {
+        "name": "support",
+        "declared_interface": "co-dimension of the bond's carrier, and -- if it is zero -- the argument that the two agents' free energies are ADDITIVE",
+        "why": "fields 1-6 are ALL satisfiable by a co-located pair, and not one of them notices that \u00a76's residual has lost its premise.  R(t) sums dE_i/dt over agents, which presumes Psi = sum_i Psi_i(u_i).  Linear thermoelasticity's free energy carries a bilinear cross term -beta dT tr(eps) that belongs to neither half, measured here at 2680x the elastic energy, so no such decomposition exists.  A procedure that cannot refuse that is not gating the thing that matters",
+        "would_have_refused": "thermal strain, at field 7, before any measurement"
+      },
+      "scope": "thermal strain is a BOND and is not a PORT. A port is a bond on an interface of co-dimension >= 1 between agents whose free energies add; this bond has co-dimension 0 between agents whose free energies do not add, and the cross term is 2680x the elastic energy. The framework's instrument for it is therefore an OPERATOR SPLITTING with a splitting-error bound -- measured here at 7.1e-3 relative stress per macro-step of lag, first order in dt -- and not a transmission condition. No sixth port type is proposed"
+    }
+  },
+  "stages_requested": [
+    "operators",
+    "referent",
+    "split",
+    "routes",
+    "power",
+    "compile",
+    "amendment"
+  ],
+  "stages_present": [
+    "amendment",
+    "compile",
+    "operators",
+    "power",
+    "referent",
+    "routes",
+    "split"
+  ]
+}

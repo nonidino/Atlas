@@ -101,9 +101,17 @@ def test_r10_decertifies_an_undeclared_incompressible_agent():
 def test_r10_is_silent_when_nothing_is_decomposed():
     """Nothing is cut, so there is nothing to cut wrongly.
 
-    Called directly: a one-agent graph has no connections and `emit` refuses it
-    for an unrelated reason (E2 undecidable with no seams), so the public path
-    cannot express "a single agent". The guard is what is under test.
+    Called directly, so the guard itself is what is under test rather than the
+    verdict a whole compile produces.
+
+    **The note this docstring used to carry was a symptom (W113, 2026-09-01).**
+    It said the public path *"cannot express a single agent"*, because a graph
+    with no connections stamped E2 `unchecked` and `emit` refused it -- which
+    `emit.validate`'s own message calls a defect in the compiler rather than a
+    property of the case. E2 now holds vacuously over an empty interface set, so
+    the public path does express it; `tests/test_tier23_thermal_strain.py` pins
+    that. This test still calls the guard directly, deliberately: a compile would
+    reach it through five other layers and could pass for the wrong reason.
     """
     from atlas.compiler import _Context, _r10_elliptic              # noqa: PLC2701
     from atlas.envelope import EnvelopeStamp

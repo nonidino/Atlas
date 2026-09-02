@@ -485,6 +485,11 @@ def build(
             global_fields=[
                 GlobalField(
                     "pressure",
+                    # W117: as window_ns -- every agent is a fluid window and the
+                    # projection is one global solve over all of them. NAMES, not
+                    # `tiling.names`: this case reuses window_ns's Tiling, whose
+                    # names are W-prefixed, while these agents are C-prefixed.
+                    produced_by=tuple(NAMES),
                     note=("the elliptic part. Global under mode='split-step'; "
                           "per-window `project_outflow` under mode='as-built', "
                           "which R10 refuses -- and note that this projection is "

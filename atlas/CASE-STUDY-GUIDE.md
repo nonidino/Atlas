@@ -30,14 +30,28 @@ different things:**
 - **A real case study.** `boundary_response` calls an actual solver or trained
   checkpoint. This is the only kind of case study that can produce a real
   $\tilde\Lambda$ (W2), feed the conformance suite for real (W33), or supply a
-  paired rollout to fit $L$ (W1). **There are six**: `window_ns.py`,
+  paired rollout to fit $L$ (W1). **There are nine**: `window_ns.py`,
   `channel_ns.py` (a second discretization), `poseidon.py` (a frozen neural
   operator), `wind_farm_real.py` (the port algebra), `thermal_seam.py` (a
-  compressible gas against a thermoelastic shell) and `wake_array.py` (real
+  compressible gas against a thermoelastic shell), `wake_array.py` (real
   turbine geometry, and the attribution machinery pointed at a frozen checkpoint
-  inside a real wake). **A seventh is worth writing when it can answer a question
-  none of those six can** — that is the test each of them passed, and it is a
-  higher bar than "another expert".
+  inside a real wake), `scaling_ladder.py` (one geometry at five sizes — the
+  variable is the *size of the graph*), `reuse_probe.py` (the variable is the
+  *state a certificate is measured at*) and `thermal_strain.py` (the variable is
+  the *carrier of the bond*). **A tenth is worth writing when it can answer a
+  question none of those nine can** — that is the test each of them passed, and
+  it is a higher bar than "another expert".
+  `thermal_strain.py` passed it by being the first **co-located** split: two
+  agents on the same mesh over the same region, cut along the physics rather than
+  the domain, with `ThermoStruct2D` unsplit as the free referent. What only it
+  could say is that thermal strain **is a bond and is not a port** — the
+  conjugate pair exists and its product is a power density, and the free energy
+  carries a bilinear cross term measured at $2680\times$ the elastic energy, so
+  $\mathcal R$'s premise that agent energies *add* fails before any of its
+  arithmetic does. It exercised `PortAmendment` for the first time (**W32**),
+  refused it on two of six fields, and found the procedure needs a **seventh**;
+  it closed **W94** and reached **W70**'s conclusion from the other side. See
+  the box on co-located splits below.
   `wake_array.py` passed it by being the first graph whose **geometry** is real:
   three turbines at $3.5\,D$ in an L, a wake that propagates through six
   Poseidon-T windows, and a power loss in the units an operator is paid in. What
@@ -331,6 +345,7 @@ port type**, and there is no default:
 | fluid–fluid, incompressible `MECH` | `1` |
 | field ↔ lumped (e.g. rotor face) | `0` |
 | conjugate heat transfer, `THERM` | `0` — a uniform temperature shift produces a uniform flux change, so no direction of the trace space is invisible to the response. Nothing constrains the trace the way incompressibility constrains a `MECH` one |
+| solid–solid `MECH` on a **free** body | `1` per unconstrained rigid direction the trace can excite — and for a *different reason* than the fluid–fluid row's. A uniform normal velocity on the only constrained face of a free elastic body **is a rigid translation**: no strain, no reaction, so the probed operator cannot see it. Measured on `thermal_strain.py`'s seam: the null direction is the constant mode to $5.7\times10^{-13}$, at $\sigma_{\min}/\sigma_{\max}=2.4\times10^{-15}$. Not incompressibility, not lumpedness — kinematics |
 | anything you haven't reasoned through | `None` — disables the check rather than guessing |
 
 Get this wrong in the direction of *too large* and it silently masks a real
@@ -475,6 +490,43 @@ against — expect to hit at least one:
    *empty*, not *hard* — the run is a legitimate ensemble of independent
    local solves, but the compiler refuses the word "coupled" on the output
    (spec §6.4(a)). That's not a bug to work around; it's the finding.
+
+> **If your two agents share a REGION rather than a surface (new 2026-09-01).**
+> `cases/thermal_strain.py` is the first graph in this package whose two agents
+> occupy the same cells, and four things behave differently there. **Read this
+> before declaring one, because three of the four are refusals you would
+> otherwise read as being about your physics.**
+>
+> 1. **There is no port, and there is not going to be one.** The five types are
+>    surface bonds; a co-located coupling has co-dimension 0. `ports.spec_for`
+>    refuses a sixth name, `PortAmendment` was exercised on exactly this object
+>    and **declined it**, and the reason is structural rather than a missing
+>    entry in a table — see [[port-algebra-atlas-0.1]] §10. What you have is an
+>    **operator splitting**; measure its splitting error and quote it with the
+>    lag, exactly as `sigma` is quoted.
+> 2. **`Decomposition` has no member for it.** `OVERLAPPING` and
+>    `NON_OVERLAPPING` are both wrong; overlapping-with-`overlap`-equal-to-the-
+>    domain is the closer of the two and `thermal_strain.build` declares it and
+>    says so in a comment. Do the same rather than picking one silently.
+> 3. **`L2/R10` will refuse you, and its own derivation does not reach you.**
+>    R10's sentence is *"the graph decomposes the domain, so the decomposition
+>    changes the operator rather than restricting it"* — and a co-located split
+>    cuts no domain. It fires anyway, because the rule reads `elliptic_subsolve`
+>    and never asks whether the decomposition cuts the agent (**W114**). There is
+>    also no `split-step` escape on a *quasi-static* agent: no time derivative,
+>    nothing to sub-step, so a structural agent is `EMBEDDED` or it is not an
+>    agent.
+> 4. **`GlobalField` is the trap, and since W117 it is a trap with a rule on it.**
+>    Declare `produced_by`: `()` asserts the field is external, a full agent list
+>    says it is a global operation the composition layer owns, and a proper subset
+>    applied outside itself is refused at `L3/global-field`. Leaving it undeclared
+>    is decertified rather than admitted -- silence is not a pass. It bypasses L3 entirely, so routing the
+>    coupling through it gives the *exactly correct* answer with no scale set, no
+>    prolongation, no adjoint, no null space, no response half, and no `tau`,
+>    `sigma` or `beta` — measured, it turns E3 from `fails` to `holds` and drops
+>    two constants from the unmeasured list. **Declaring a coupling out of the
+>    port algebra improves its stamp.** If you reach for it, say in the
+>    declaration that you are doing so and why.
 
 ## Where this fits in the project
 

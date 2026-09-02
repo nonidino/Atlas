@@ -320,12 +320,23 @@ PORT_AMENDMENT = NamedHole(
         "reframing is itself an open design question."
     ),
     declared_interface={
-        "bond": "the conjugate pair (e, f) with e*f a power, in W or W/m^2",
+        "bond": "the conjugate pair (e, f) with e*f a power, and the measure it is "
+                "integrated against. The pairing must be UNIQUE: two readings of one "
+                "coupling that differ do so by a stored energy, and section 6's "
+                "residual has nowhere to put it",
         "mapping": "the default mapping class for the flow and for the effort",
-        "transfer": "the reduction/prolongation pair, with an adjointness proof",
-        "dtn_reading": "which side is imposed and which is returned, so the probe is defined",
+        "transfer": "the reduction/prolongation pair, with an adjointness proof. A "
+                    "reduction has to reduce: dim M < dim V_i, or it is the identity "
+                    "and there is nothing to transfer",
+        "dtn_reading": "which side is imposed and which is returned, so the probe is "
+                       "defined -- and AFFORDABLE, since a probe is dim M + 1 solves",
         "distinctness": "an argument that the type is NOT a special case of an existing one",
         "exercise": "at least one interface in one case study the existing five cannot type",
+        # **Field 7, added 2026-09-01 by the first exercise.** See inference_note.
+        "support": "the co-dimension of the bond's carrier, and -- if it is 0 -- the "
+                   "argument that the two agents' free energies are ADDITIVE. R(t) "
+                   "sums dE_i/dt over agents, so it presumes Psi = sum_i Psi_i(u_i); "
+                   "a co-dimension-0 carrier has no reason to admit such a split",
     },
     default_verdict=REFUSE,
     failure_class=FailureClass.STRUCTURAL,
@@ -335,9 +346,23 @@ PORT_AMENDMENT = NamedHole(
     ),
     measurements_required=("advec_passenger_pressure_count",),
     inference_note=(
-        "[AI Inference] the six-field checklist is a proposed procedure with no evidence "
+        "EXERCISED ONCE, 2026-09-01, and the inference it carried was CORRECT. It read: "
+        "'[AI Inference] the six-field checklist is a proposed procedure with no evidence "
         "it is sufficient. It has never been exercised, and the first exercise (ADVEC "
-        "passengers) may well show a seventh field is needed."
+        "passengers) may well show a seventh field is needed.' The first exercise was not "
+        "ADVEC passengers -- it was THERMAL STRAIN, cases/thermal_strain.py, a candidate "
+        "type for the volumetric coupling between a conduction agent and an elasticity "
+        "agent split out of one thermoelastic solver -- and it showed a seventh field is "
+        "needed. Verdict REFUSE, failing field 1 (two readings of the coupling differ by "
+        "3395x and their sum is a total derivative of an energy neither agent owns) and "
+        "field 4 (dim M = dim V, so a probe is 344 full solves for an operator that IS "
+        "the coupled solve). Fields 2, 3, 5 and 6 hold -- 3 vacuously -- and NONE of the "
+        "six notices that the free energy has no additive split, which is why field 7 "
+        "SUPPORT exists. The constructive result: thermal strain is a BOND and is not a "
+        "PORT, so the instrument is an operator splitting with a splitting-error bound "
+        "rather than a transmission condition. The list is still five. See "
+        "port-algebra-atlas-0.1 section 10 (binding) and "
+        "case-study-thermal-strain-atlas-0.1."
     ),
 )
 

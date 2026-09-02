@@ -34,3 +34,8 @@ out/w93/*
 !out/w93/state.npz
 !out/w93/wake-array.html
 !out/w93/wake-array-template.html
+# CS-9 (thermal strain): 14 KB, cited line by line by
+# case-study-thermal-strain-atlas-0.1.md and read back by tests/test_tier23.
+!out/w94/
+out/w94/*
+!out/w94/w94.json

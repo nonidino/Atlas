@@ -361,6 +361,32 @@ Full argument: [[poc1-retrospective-and-hybrid-roadmap]]. Summary of what it cha
 
 ---
 
+# 10. CS-9 is run (2026-09-01)
+
+Full record: [[case-study-thermal-strain-atlas-0.1]]; measurements in [[gap-worklist]] Tier 22; artifact `out/w94/w94.json`.
+
+**The row's gate is met and its amendment refuses, and the refusal is the more useful half.** `ThermoStruct2D` split into a conduction agent and an elasticity agent, both owning *the same cells* — the first co-located graph in this vault. Carried in full the volume term reproduces the monolith's stress **bit for bit**; lagged one macro-step it costs $7.116\times10^{-3}$, first order in $\Delta t$. `PortAmendment`, exercised for the first time (**W32**), **refused** on fields 1 and 4 and turned out to need a seventh.
+
+**What §4's Phase B row asked for, answered.** *"What is the bond for a two-way volumetric coupling?"* — it is $(\Delta T,\ \beta\,\mathrm{tr}\,\dot{\boldsymbol\varepsilon})$, with $G$ forward and $G^{\!\top}$ back, and **it is a bond and not a port**. A port is a bond on an interface of co-dimension $\ge1$ between agents whose free energies *add*; this one has co-dimension $0$ between agents whose free energies do not, with a bilinear cross term measured at $2680\times$ the elastic energy. **W94 closes, W70 is confirmed from the other side, and the port list stays at five.**
+
+## What this changes for Phase C
+
+**The three subsystems that were waiting for a sixth port type are not getting one, and they do not need one.** The instrument the measurement points at is an **operator splitting with a splitting-error bound**, not a transmission condition, and CS-9 supplies the first such number: $7.116\times10^{-3}$ per macro-step of lag, first order, quoted with its lag exactly as $\sigma$ is (**W86**'s discipline). Three consequences, each concrete:
+
+- **CS-15 `tyre_contact.py`** — §4 schedules it *"on CS-9's bond"*. Re-read: on CS-9's *splitting*, with the thermal-to-grip path inside one agent's own step or across a declared co-located split whose splitting error is measured, and **not** through a port. That removes a blocker rather than adding one.
+- **CS-11 `brake_thermal.py`** — unchanged in scope, and it now has a sibling number. R9's flux transient was measured at $62.4\times$ smaller than the stale-trace term (**W90**); CS-9's splitting error is the same *shape* of defect on the volumetric axis, and both are first order in the exchange interval.
+- **CS-12 `wing_fsi.py`** — hits **W114** first. A quasi-static structural agent is `EMBEDDED` and has **no `split-step` variant** (no time derivative, nothing to sub-step), so `L2/R10` refuses every graph containing one — including a co-located split, where R10's own derivation does not reach. CS-8's advice to start from the exposed-agent plus `ProjectedAssembly` column **does not transfer to a structural agent**, and that should be settled before CS-12 rather than during it.
+
+## And one warning for every remaining case study
+
+`GlobalField` bypasses L3 entirely. Measured on CS-9's identical physics, routing a genuine two-agent coupling through it is **numerically exact** and **improves the envelope stamp** — E3 from `fails` to `holds`, E7 from `fails` to `unchecked`, and four seam-level decertifications (`L1/E3`, `L4/E7/passivity`, `L4/block-share`, `L4/operator-content`) traded for one line saying it is not a composition, against a surface-`MECH` route that gets the answer wrong by $1279\times$. Nothing in a compile says so. Any graph from here that reaches for it must say in the declaration that it is doing so and why; [[port-algebra-atlas-0.1]] §10.4 is the standing statement.
+
+## The next step
+
+**CS-9★, `seam_placement.py`** — §9's insertion, unchanged and now unblocked, since CS-9 supplies the two-family domain it searches over. Then **CS-10 `ground_effect.py`**, §4's Phase B second row, whose scope and gate are untouched by any of the above.
+
+---
+
 ## See Also
 
 - [[f1-pathmap-and-end-goal]] — the end goal, the two claims, and the 12-rung ladder this page reschedules

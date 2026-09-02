@@ -337,7 +337,9 @@ def build(boundary_capable: bool = False, declare_transfer: bool = False) -> Cas
         connections=connections,
         decomposition=Decomposition.OVERLAPPING,
         overlap=0.5,
-        global_fields=[GlobalField("none", note="isothermal, incompressible, no gravity term")],
+        global_fields=[GlobalField("none", produced_by=(),
+                                   note="isothermal, incompressible, no gravity term. "
+                                        "W117: external by vacuity -- a declared absence")],
         macro_dt=1.0e-2,
         note="hub-height horizontal plane; two turbines at 7D spacing",
     )

@@ -728,6 +728,10 @@ def build(
             global_fields=[
                 GlobalField(
                     "pressure",
+                    # W117: produced by EVERY agent in this graph -- all four are
+                    # fluid windows and the split-step projection is one global
+                    # solve over the whole state, owned by the composition layer.
+                    produced_by=tuple(tiling.names),
                     note=("the elliptic part. Global under mode='split-step', which is "
                           "what probed-dtn-coupling 2.1 assumes; per-window under "
                           "mode='as-built', which is what R10 refuses"),

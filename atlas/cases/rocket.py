@@ -253,6 +253,9 @@ def build(with_staging: bool = False) -> CaseGraph:
         global_fields=[
             GlobalField(
                 "gravity",
+                # W117: external. Gravity is not produced by any agent in this
+                # graph, so there is no seam being routed around it.
+                produced_by=(),
                 note="a global field bypasses the port mechanism entirely: it enters each "
                      "agent's update directly and contributes to the external power term "
                      "of the residual and to nothing else",

@@ -582,6 +582,14 @@ def build(u_full: np.ndarray, v_full: np.ndarray, mode: str = "split-step",
         overlap=21 * H, overlap_cells=21,
         global_fields=[GlobalField(
             "pressure",
+            # **W117.** Produced by the six fluid regions and applied to exactly
+            # those six. It is NOT applied to the rotors: a rotor expert has no
+            # pressure input and no pressure state -- it reads a velocity and
+            # returns a traction -- so the rotor coupling runs through the declared
+            # MECH seams and not through this field. Leaving applies_to empty
+            # (= every agent) would have declared the opposite.
+            produced_by=FLUID_IDS,
+            applies_to=FLUID_IDS,
             note="global under mode='split-step'; per-region under 'as-built', "
                  "which R10 refuses. The point of this graph is the port algebra "
                  "and the elliptic question is window_ns's, so both are offered")],

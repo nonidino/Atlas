@@ -9,7 +9,7 @@ exactly like these.
 
 ``wind_farm`` and ``rocket`` are **fixtures**: their ``boundary_response`` is a
 matrix somebody wrote down.  The **real case studies** call an actual solver or
-checkpoint, and only they can move a Tier 0 row.  There are six:
+checkpoint, and only they can move a Tier 0 row.  There are nine:
 
     window_ns       four reference.WindowNS windows; the whole Tier 0 stack, and
                     the only graph that reaches `admit`
@@ -27,6 +27,16 @@ checkpoint, and only they can move a Tier 0 row.  There are six:
                     seams carry an ABSOLUTE trace, and the only place the Tier
                     14-16 attribution machinery has met a pretrained checkpoint
                     inside a composed wake
+    scaling_ladder  one geometry at five sizes -- the variable is the SIZE of the
+                    graph, and the answer is the F1 criterion the whole programme
+                    is scheduled on
+    reuse_probe     the variable is the STATE a certificate is measured at, which
+                    is the foundation-model claim rather than the coupling one
+    thermal_strain  ThermoStruct2D split into a conduction agent and an elasticity
+                    agent -- the first CO-LOCATED split, two agents on the same
+                    mesh over the same region, and the first exercise of
+                    PortAmendment's six-field procedure. It refuses: thermal
+                    strain is a BOND and is not a PORT
 
 None of them is imported here, because importing one would make the package
 depend on a checkout of another repository; import them explicitly.

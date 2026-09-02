@@ -46,6 +46,8 @@ Three consequences, and together they are the entire scaling argument:
 
 **Five port types. This list is closed** — a new case study may not add to it without an explicit amendment to this page, and the burden of proof is on the addition.
 
+> **How a sixth type would enter, and what happened the first time anyone tried.** §10 is the binding amendment procedure — seven fields, all of which must hold. It has been exercised once, on thermal strain ([[case-study-thermal-strain-atlas-0.1]], **W32**), and it **refused**. The list is still five.
+
 ## 3.1 True power bonds
 
 | Port | Effort $e$ | Flow $f$ | $e\cdot f$ | Where it appears |
@@ -213,8 +215,87 @@ Recorded so the port algebra is not oversold:
 
 ---
 
+---
+
+# 10. `PortAmendment` — the binding procedure for a sixth type
+
+**Added 2026-09-01, discharging [[gap-worklist]] W32.** §3 says the list is closed and *"the burden of proof is on the addition"*, and until now it did not say what discharging that burden consists of. This section is that specification. It is **binding**: `atlas/ports.py`'s `spec_for` refuses any type name outside the five and raises `NamedHoleError` naming `holes.PORT_AMENDMENT`, so a case study cannot introduce one inline — it has to come here first.
+
+## 10.1 The seven fields
+
+An amendment is a **conjunction**. Every field must hold; one failure refuses the addition.
+
+| # | Field | What must be supplied | How it is decided |
+|---|---|---|---|
+| 1 | **bond** | the conjugate pair $(e,f)$ with $e\cdot f$ a power, and the measure it is integrated against | the pairing must be *unique*: if two readings of the same coupling differ, the difference is a stored energy and §6's residual has no place to put it |
+| 2 | **mapping** | the default mapping class for the flow and for the effort | derived from the declared prolongation, never declared — [[interface-transfer-theory]] §2.2 |
+| 3 | **transfer** | the reduction/prolongation pair, with an adjointness proof | a *reduction* has to reduce: $\dim M < \dim V_i$, or the pair is the identity and there is nothing to transfer |
+| 4 | **dtn_reading** | which side is imposed and which returned, so the probe is defined | defined **and affordable**: a probe is $\dim M + 1$ solves, so an interface as large as the state costs a coupled solve to describe a coupled solve |
+| 5 | **distinctness** | an argument that the type is not a special case of an existing one | preferably an *exact decomposition* separating what an existing type carries from what it cannot, with a positive control on which the existing type is exact |
+| 6 | **exercise** | at least one interface in one case study the existing five cannot type | one built graph, not a hypothetical |
+| 7 | **support** | the **co-dimension of the bond's carrier**, and — if it is $0$ — the argument that the two agents' free energies are **additive** | $\mathcal R(t)$ sums $\mathrm{d}E_i/\mathrm{d}t$ over agents, so it presumes $\Psi=\sum_i\Psi_i(u_i)$. A carrier of co-dimension $0$ has no reason to admit such a split, and if it does not, §6 has lost its premise before any of its arithmetic runs |
+
+Field 7 is new, and **it was found by the first exercise** rather than reasoned out in advance. `holes.PORT_AMENDMENT`'s own `inference_note` predicted exactly this: *"the six-field checklist is a proposed procedure with no evidence it is sufficient ... the first exercise may well show a seventh field is needed."* Fields 1–6 are all satisfiable by a co-located pair and not one of them notices that the residual's premise has failed.
+
+**And the amendment must keep the $O(K)$ scaling intact.** An addition requiring a bespoke adapter per expert pair is refused on that ground alone — it defeats §2's entire argument. This clause is unchanged from `holes.py` and has never been the binding one.
+
+## 10.2 The first exercise, and its verdict: `refuse`
+
+Full record: [[case-study-thermal-strain-atlas-0.1]]. Candidate type `THERMEL`, for the **thermal-strain** coupling between a conduction agent and an elasticity agent split out of one thermoelastic solver.
+
+| field | verdict | the measurement |
+|---|---|---|
+| 1 bond | **fails** | the pair $\big(\Delta T,\;\beta\,\mathrm{tr}\,\dot{\boldsymbol\varepsilon}\big)$ exists and its product is $\mathrm{W\,m^{-3}}$ — but two readings of the same coupling differ by $3395\times$, and their sum is exactly the rate of a shared energy. The free energy's cross term $-\boldsymbol u^{\!\top}\!G\,\Delta T$ is $2680\times$ the elastic energy |
+| 2 mapping | holds | the adjoint pair's derivation never mentions the carrier's dimension |
+| 3 transfer | holds **vacuously** | $P=R=I$ on a shared mesh; $\dim M/\dim V = 1$, so there is no reduction because there is no cut |
+| 4 dtn_reading | **fails** | defined, and not affordable: $344$ full solves to build an operator that *is* the coupled solve. Decidable from the declaration, not from a measurement |
+| 5 distinctness | holds | $G = G_{\text{surf}} + G_{\text{body}}$ exact to $10^{-15}$; dropping $G_{\text{body}}$ — $9.6\%$ of the load — costs $1279\times$ in stress, and the uniform-$\Delta T$ control passes at $6.8\times10^{-17}$ |
+| 6 exercise | holds | that case study, plus W94's actuator disk |
+| 7 support | **fails** | co-dimension $0$, and no additive split of the free energy exists |
+
+**The list stays at five.** The constructive result is a distinction the vocabulary did not have:
+
+> **A port is a bond on an interface of co-dimension $\ge 1$ between agents whose free energies add. Thermal strain is a bond of co-dimension $0$ between agents whose free energies do not add.** It is therefore a **bond and not a port**, and the framework's instrument for it is an *operator splitting with a splitting-error bound* — measured at $7.1\times10^{-3}$ relative stress per macro-step of lag, first order in $\Delta t$ — rather than a transmission condition.
+
+This is [[gap-worklist]] W70's conclusion reached from the other side and sharpened. W70 said *"a sixth port type is not the fix, because the object is not a bond"*; measured, the object **is** a bond, and what it is not is a port. The difference matters, because it says what to build instead.
+
+## 10.3 What §6 has to say about a co-located coupling
+
+$\mathcal R(t)$ is written in §6 as
+
+$$\mathcal R(t)=\sum_{i\in\mathcal A}\frac{\mathrm dE_i}{\mathrm dt}+\sum_{\Gamma\in\mathcal P}\int_\Gamma (e\,f)_\Gamma\,\mathrm ds-\sum_i\mathcal D_i-P_{\text{ext}},$$
+
+and the first sum is the premise field 7 exists to protect. Two facts from the first exercise, both measured:
+
+- **A co-located pair breaks it.** The elastic energy is $\tfrac12\!\int\!\boldsymbol\sigma:\mathsf D^{-1}\!:\boldsymbol\sigma\,\mathrm dV$, which expands to $\tfrac12\boldsymbol u^{\!\top}\!K\boldsymbol u-\boldsymbol u^{\!\top}\!G\Delta T+\tfrac12\Delta T^{\!\top}\!H\Delta T$. The middle term is bilinear in the two agents' states and belongs to neither, so $\Psi\neq\Psi_{\text{cond}}(T)+\Psi_{\text{elas}}(\boldsymbol u)$ and there is no per-agent breakdown to localize with.
+- **And $\mathcal R$ would not have seen it anyway.** On that graph the volumetric coupling power is $1.04\times10^{-6}$ of the conducted power and the elastic energy $1.17\times10^{-6}$ of the thermal. §6 calls $\mathcal R$ *"the cheapest possible physical-plausibility monitor"* and asks for it every macro-step; here it is blind to the coupling under test by six orders of magnitude. **The right residual for a co-located split is the receiving subsystem's own balance**, which the volumetric term closes to first order in $\Delta t$.
+
+Neither point retracts §6. Both bound where it applies, and §6 should be read with that bound from now on.
+
+## 10.4 The route the closed vocabulary *does* permit, and why it is the dangerous one
+
+`GlobalField` ([[end-to-end-architecture-spec]], `graph.GlobalField`) bypasses the port mechanism entirely — §5.1's *"gravity, a uniform external field"*. Declaring another agent's state as a global field is **numerically exact** on the first exercise, and it is the worst available option, because there is then no seam: no scale set, no prolongation, no adjoint, no null space, no `response_half`, and no $\tau$, $\sigma$ or $\beta$. Measured on identical physics, the `GlobalField` route turns $\mathrm{E3}$ from `fails` to `holds` and $\mathrm{E7}$ from `fails` to `unchecked`, and carries three fewer decertifications than the surface-`MECH` route that gets the wrong answer: `L1/E3`, `L4/E7/passivity`, `L4/block-share` and `L4/operator-content` — **four seam properties** — traded for `L3/graph`, one line saying it is not a composition. (The trade is not free in one direction: $\beta$ is a property of a probed seam and becomes unmeasurable, so that list gets one longer.)
+
+> **Declaring a coupling *out* of the port algebra improves its envelope stamp.** That is the silent-wrongness class in its purest form, and until 2026-09-02 it was declarable by anyone with nothing in a compile to say so. A graph that routes a genuine two-agent coupling through `GlobalField` must say in the declaration that it is doing so and why — `atlas/cases/thermal_strain.py`'s does.
+
+**W117, 2026-09-02: the compile says so now, and the hazard above is closed as a rule rather than left as a warning.** The gap had two halves and the second is the one that had gone unnoticed. `global_fields` was referenced **nowhere** in `compiler.py`, `emit.py`, `composition.py` or `scheme.py` — the class had no reader at all — *and* `GlobalField` recorded only `name`, `applies_to` and `note`, none of which says **where the field's value comes from**, which is precisely the fact a rule would have to test. A warning was the only instrument available because the declaration did not hold the discriminator.
+
+`GlobalField` now carries `produced_by`, and `L3/global-field` decides four cases from the declaration alone — no probe, no solve:
+
+| `produced_by` | Reading | Verdict |
+|---|---|---|
+| `None` (the default) | undeclared | **decertify** — and the default is deliberately *not* `()`, so that silence is not read as a pass |
+| `()` | external — no agent here produces it | admit |
+| every agent | a global operation over the whole state, owned by the composition layer | admit |
+| a proper subset, applied outside itself | one agent's state entering another's update with no seam | **refuse** |
+
+**The rule was run against every live declaration in the vault before it was adopted** (**W117a**, [[gap-worklist]] Tier 22). It fires on **exactly one of seven** — CS-9's own `global-field` route, `produced_by=("cond",)` against `applies_to=("elas",)` — and clears the other six: gravity in `rocket`, a declared absence in `wind_farm`, and the split-step pressure projection in `window_ns`, `channel_ns`, `wind_farm_real` and `wake_array`. The four `pressure` declarations are the ones that had to be checked rather than assumed, because pressure is the quantity that mediates coupling between the very windows those graphs decompose. They clear for a reason established by reading the experts and not by tuning the declaration: **a rotor expert has no pressure input and no pressure state** — it reads a velocity and returns a traction — so the field applies to no agent that does not also produce it, and the rotor coupling runs through the declared `MECH` seams. The firing pattern is pinned in `tests/test_tier24_global_field_provenance.py` so that a later change cannot quietly move it.
+
+---
+
 ## See Also
 
+- [[case-study-thermal-strain-atlas-0.1]] — **§10's first and only exercise**, and the measurements every number in it comes from
 - [[composition-error-theory]] — why $\mathcal R(t)$ is a falsifier and not a bound, and the storage-function/dissipation-inequality upgrade that turns §2's one-line passivity claim into one
 - [[prior-art-and-novelty-atlas-0.1]] — §4, which motivated this page; recommendation 1 is now discharged
 - [[f1-pathmap-and-end-goal]] — the roadmap this vocabulary exists to make survivable

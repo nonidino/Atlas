@@ -155,6 +155,7 @@ def compile_scheme(
     _l1_5_routing(ctx)
     _l2_decomposition(ctx)
     _l3_connections(ctx)
+    _l3_global_fields(ctx)
     _l4_transmission(ctx)
     scheme = _l5_l7_scheme(ctx)
     certificate = _l6_assembly(ctx)
@@ -1015,7 +1016,23 @@ def _l3_connections(ctx: _Context) -> None:
     if not graph.connections:
         rec.decertify("L3", "graph", "no connections declared: this is not a composition",
                       subject="<graph>")
-        stamp.unchecked(Hypothesis.E2, "no seams to check")
+        # **W113, 2026-09-01.** This branch used to stamp E2 `unchecked`, and
+        # `emit.validate` refuses that outright: E2 is one of the four static
+        # hypotheses `envelope.illegally_unchecked` says are always decidable
+        # from a declaration, so an unchecked E2 is *"a defect in the compiler,
+        # not a property of the case"*.  The two rules contradicted each other
+        # and a graph with no connections could not emit an artifact at all --
+        # latent until `cases/thermal_strain.py`'s `global-field` route, the
+        # first graph in this vault with zero seams.
+        #
+        # `holds`, and it is vacuous rather than generous.  E2 reads *"interfaces
+        # are static, and transfer between the two sides is declared"*: over an
+        # empty set of interfaces both clauses are true, and the L3
+        # decertification above already says the thing that matters, which is
+        # that nothing here is coupled.  E7 keeps `unchecked` because passivity
+        # is a property of a probed block and `can_be_unchecked` is True for it.
+        stamp.holds(Hypothesis.E2, "no seams: E2 holds vacuously over an empty "
+                                   "interface set, and L3/graph carries the finding")
         stamp.unchecked(Hypothesis.E7, "no seams to check")
         return
 
@@ -1111,6 +1128,100 @@ def _l3_connections(ctx: _Context) -> None:
             note="the leading indicator of vocabulary pressure, countable today",
         )
 
+
+
+def _l3_global_fields(ctx: _Context) -> None:
+    """W117: a global field whose value is another agent's state is a seam.
+
+    `GlobalField` bypasses L3 by design -- gravity enters each agent's update
+    directly and there is nothing to certify.  What the class could not express
+    until 2026-09-02 is the difference between that and *routing a genuine
+    two-agent coupling through it*, which is numerically exact, turns off every
+    check a seam defines, and improves the envelope stamp by removing the
+    quantities that would have failed.  `port-algebra-atlas-0.1` section 10.4
+    states the hazard; this rule is the reader it did not have.
+
+    The discriminator is `GlobalField.produced_by` and it is decidable from the
+    declaration alone -- no probe, no solve, no measurement:
+
+    * undeclared       -> DECERTIFY.  Nothing can be checked, and the default is
+                          not "external" precisely so that silence is not a pass.
+    * external, ``()`` -> ADMIT.  Section 5.1's case.
+    * every agent      -> ADMIT.  A global operation over the whole state, owned
+                          by the composition layer.  A split-step pressure solve
+                          is this, and it is why the rule tests a PROPER subset
+                          rather than merely "some agent produces it".
+    * proper subset,
+      applied outside  -> REFUSE.  One agent's state enters another agent's
+                          update with no seam: a connection declared out of the
+                          port algebra.  This is the silent-wrongness class, and
+                          it is the one case the rule exists for.
+    """
+    rec, graph = ctx.record, ctx.graph
+    if not graph.global_fields:
+        return
+    ids = {a.agent_id for a in graph.agents}
+    for gf in graph.global_fields:
+        subject = f"global-field:{gf.name}"
+        applies = set(gf.applies_to) if gf.applies_to else set(ids)
+        if gf.produced_by is None:
+            rec.decertify(
+                "L3", "global-field",
+                f"global field {gf.name!r} does not declare its provenance, so whether "
+                "it is an external field or another agent's state routed around the "
+                "port algebra cannot be decided. Declare produced_by: () asserts "
+                "external",
+                subject=subject,
+            )
+            continue
+        produced = set(gf.produced_by)
+        stray = sorted(produced - ids)
+        if stray:
+            rec.refuse(
+                "L3", "global-field",
+                f"global field {gf.name!r} declares produced_by {stray}, which "
+                "names no agent in this graph",
+                subject=subject,
+            )
+            continue
+        if not produced:
+            rec.admit(
+                "L3", "global-field",
+                f"global field {gf.name!r} is external: no agent in this graph "
+                "produces it, so there is no seam being bypassed",
+                subject=subject,
+            )
+            continue
+        if produced >= ids:
+            rec.admit(
+                "L3", "global-field",
+                f"global field {gf.name!r} is produced by every agent -- a global "
+                "operation over the whole state, owned by the composition layer "
+                "rather than by any seam between two agents",
+                subject=subject,
+            )
+            continue
+        crossing = sorted(applies - produced)
+        if crossing:
+            rec.refuse(
+                "L3", "global-field",
+                f"global field {gf.name!r} is produced by {sorted(produced)} and "
+                f"applies to {crossing}, so it carries one agent's state into "
+                "another agent's update with no seam. That is a connection declared "
+                "out of the port algebra: it is numerically whatever the physics is, "
+                "and it is certified by nothing -- no scale set, no prolongation, no "
+                "adjoint, no null space, no tau, sigma or beta. Declare it as a "
+                "Connection with a port type, or state why the coupling is not one "
+                "(port-algebra-atlas-0.1 section 10.4)",
+                subject=subject,
+            )
+        else:
+            rec.admit(
+                "L3", "global-field",
+                f"global field {gf.name!r} is produced by {sorted(produced)} and "
+                "applies to no agent outside that set, so it crosses nothing",
+                subject=subject,
+            )
 
 
 def _r10_elliptic(ctx: _Context) -> None:

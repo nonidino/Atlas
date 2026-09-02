@@ -136,11 +136,40 @@ class GlobalField:
 
     Gravity and its kin enter each agent's update directly rather than through an
     edge, and contribute to P_ext in the power residual and to nothing else.
+
+    **W117, 2026-09-02: that bypass is the one route that improves an envelope
+    stamp by deleting the seam.**  Declaring another agent's state a global field
+    is numerically exact and turns off every check a seam defines -- no scale set,
+    no prolongation, no adjoint, no null space, no tau, sigma or beta -- which
+    `port-algebra-atlas-0.1` section 10.4 calls the silent-wrongness class in its
+    purest form.  Until W117 the class had **no reader at all**: `global_fields`
+    was referenced nowhere in the compiler, and this dataclass recorded `name`,
+    `applies_to` and `note`, none of which says *where the value comes from* --
+    the one fact a rule would have to test.
+
+    ``produced_by`` is that fact, and its three cases are the whole rule:
+
+    * ``None``  -- UNDECLARED.  The default is deliberately not ``()``: a silent
+      default would read every legacy declaration as external and certify the
+      thing the field exists to catch.  `L3/global-field` decertifies it.
+    * ``()``    -- EXTERNAL.  No agent in this graph produces it: gravity, an
+      ambient field, or a declared absence.  This is what section 5.1 wrote the
+      class for.
+    * agent ids -- PRODUCED.  If they are *all* of the graph's agents the field is
+      a global operation over the whole state, owned by the composition layer --
+      a split-step pressure solve is the vault's four instances of this.  If they
+      are a **proper subset** and the field ``applies_to`` an agent outside it,
+      the field carries one agent's state into another's update with no seam,
+      and that is a connection declared out of the port algebra.
     """
 
     name: str
     applies_to: tuple[str, ...] = ()   # empty means every agent
     note: str = ""
+    #: **W117.** Which agents in this graph produce the field's value. `None` is
+    #: undeclared and is decertified; `()` asserts the field is external. See the
+    #: class docstring -- this is the discriminator `L3/global-field` reads.
+    produced_by: tuple[str, ...] | None = None
 
 
 @dataclass

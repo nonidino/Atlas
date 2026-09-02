@@ -1273,6 +1273,14 @@ def build(u_full: np.ndarray, v_full: np.ndarray, kind: str = "poseidon",
                                 else tiling.partition_of_unity()),
             global_fields=[GlobalField(
                 "pressure",
+                # **W117.** Produced by the fluid windows and applied to exactly
+                # them. `RotorDisk` has no pressure input or state -- traction(u),
+                # respond(name, trace), storage(u, v) -- so the disk's momentum
+                # sink enters the fluid through the declared MECH seams, and the
+                # projection then acts on the assembled fluid field. The rotors
+                # neither produce this field nor read it.
+                produced_by=tuple(tiling.names),
+                applies_to=tuple(tiling.names),
                 note="the composition layer's, and it has to be: the checkpoint's "
                      "pressure channel is a PLACEHOLDER its loader pins to 0 "
                      "(adapters fact 1), so the field that mediates an actuator "
