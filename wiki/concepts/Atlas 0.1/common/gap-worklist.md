@@ -728,6 +728,27 @@ And a second, cheaper to state. **The control that could have invalidated the wh
 
 ---
 
+# Tier 21 — a second machine, and two rows the PoC's own timing opened (2026-09-01)
+
+Full record: [[poc1-retrospective-and-hybrid-roadmap]]. Not a case study — a re-read of [[poc1-results-differentiable-design]]'s demo, timed independently on a Mac, plus the two gaps that comparison exposed once it was checked against [[tier0-measurements]] §19.10 and [[interface-transfer-theory]] §9.
+
+> **Dating.** Write-up 2026-09-01, verified against the environment clock before stamping, per Tier 15's rule.
+
+The Mac's numbers ($10$–$25\%$ slower on the decomposed all-classical column, against $-16.5\%$ on the dev box) reproduce §19's own finding in *sign* across two independent memory hierarchies, which §19.10 had explicitly declined to claim (**W104**, "neither statement transfers off this host"). Checking that finding against [[tier0-measurements]]'s classical-vs-Poseidon-T table surfaced a crossover between $N=6$ and $N=12$ windows that nothing had previously stated as a crossover, and checking the customizability question against [[interface-transfer-theory]] §9 found that the one construction that would let the framework choose its own seams — $\mathcal Q(\Gamma)$ — has sat unused since the day it was proposed.
+
+## Opened by this tier
+
+| # | Where | What | Status |
+|---|---|---|---|
+| **W111** | `atlas/scheme.py`'s accelerator ($\mathcal K$) and window ($W$) fields | **Iterations to convergence at a seam, as a function of which expert sits there, has never been measured.** [[schwarz-iteration-atlas-0.1]] measured that a *periodic* window's Schwarz sweep is the identity bitwise — zero effective iterations, because there is nothing to converge — and that a *Dirichlet* sweep costs $14\times$ more **per iteration**, but no page has held a seam and a tolerance fixed and counted **sweep count** while swapping only the expert. The hypothesis worth testing: a classical expert's boundary response is well-approximated by a few Fourier modes (the same property that makes [[probed-dtn-coupling]]'s probe cheap for it), so it may converge in *fewer* sweeps than a globally-receptive learned expert independent of either one's per-sweep cost — which would make a classical expert doubly favoured at a genuinely iterative interface, not just per-call | `open`, proposed 2026-09-01. Done when one seam is instrumented for sweep count under a fixed $\varepsilon_{\text{tol}}$, classical vs. a frozen checkpoint, everything else held constant |
+| **W112** | [[interface-transfer-theory]] §9, `compiler.py`'s L2 layer | **$\mathcal Q(\Gamma)$ has never chosen a cut.** Proposed 2026-08-27 as the form [[generalization-requirements]] G5's speculative *"cut where coupling is weakest"* criterion could be measured in, immediately flagged as **"the weakest claim on the page,"** and every case study since — six of them — has placed its windows by a person choosing `N_COL`/`N_ROW`, never by evaluating $\mathcal Q$ over candidates. This is the single missing piece of [[f1-pathmap-and-end-goal]]'s fourth end-goal capability (automatic, adaptive seam placement) and the one item [[prior-art-and-novelty-atlas-0.1]]'s verdict table finds no prior art for | `open`, proposed 2026-09-01, blocks adaptive seam placement entirely. Done when a search over candidate decompositions, scored by $\mathcal Q$ under a cost budget, is run once and its cut compared against a hand-chosen rung already in this vault — [[case-study-ladder-to-f1]] §9 proposes CS-9★ as the vehicle |
+
+## The mechanism tally
+
+**Both rows have the same shape and it is not the shape of the last twenty.** Every prior tier's opened rows came from running something and finding a number that did not behave as declared. These two came from **reading two existing pages side by side against a number from a different machine** — no new march, no new probe, no new case study. [[tier0-measurements]] §19.10's table and [[interface-transfer-theory]] §9's flagged weak claim had both sat, unconnected, for a week; what closed the distance was a user's independent timing run landing inside the exact $N$ range where the two already-recorded facts (the crossover, and the unused score) mattered. **The cheapest measurement this tier makes is that a vault's own cross-references are themselves an instrument, if someone reads them together.**
+
+---
+
 ## See Also
 
 - [[generalization-requirements]] — the G-numbered gap list these items close, with the reasoning

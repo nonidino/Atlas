@@ -1,8 +1,8 @@
 # The Case-Study Ladder to the F1 Car — a revised build plan
 
 **Type:** Core Concept — Program Plan (folder: `Atlas 0.1/common/`)
-**Status:** opened 2026-08-30, after the sixth real case study; **CS-7 run 2026-08-31 and section 7 updated with its measured values**; **CS-8 run 2026-08-31, Phase A complete, section 7's rung-4 row and section 8 updated** ([[tier0-measurements]] section 19, [[case-study-scaling-ladder-atlas-0.1]]). Phase A is one case study in and the schedule below is confirmed rather than stopped. Opened after the sixth real case study ([[case-study-wake-array-atlas-0.1]]). This page **revises** [[f1-pathmap-and-end-goal]] rather than replacing it: the end goal, the two claims and the falsification criteria are unchanged, and the *order and the currency* of the work are what move. Where the two disagree, the pathmap owns the goal and this page owns the schedule.
-**Related:** [[f1-pathmap-and-end-goal]] · [[gap-worklist]] · [[case-study-wake-array-atlas-0.1]] · [[expert-library-atlas-0.1]] · [[port-algebra-atlas-0.1]] · [[atlas-implementation]] · [[end-to-end-architecture-spec]] · [[tier0-measurements]] · [[master-error-bound]] · [[incremental-transfer-roadmap]]
+**Status:** opened 2026-08-30, after the sixth real case study; **CS-7 run 2026-08-31 and section 7 updated with its measured values**; **CS-8 run 2026-08-31, Phase A complete, section 7's rung-4 row and section 8 updated** ([[tier0-measurements]] section 19, [[case-study-scaling-ladder-atlas-0.1]]). **2026-09-01: section 9 added** — a cross-machine re-read of the PoC 1a demo, the hybrid-library framing made standing rather than transitional, and one insertion (**CS-9★**, adaptive seam placement) — see [[poc1-retrospective-and-hybrid-roadmap]] for the full argument; this page carries only the resulting change to the schedule. Phase A is one case study in and the schedule below is confirmed rather than stopped. Opened after the sixth real case study ([[case-study-wake-array-atlas-0.1]]). This page **revises** [[f1-pathmap-and-end-goal]] rather than replacing it: the end goal, the two claims and the falsification criteria are unchanged, and the *order and the currency* of the work are what move. Where the two disagree, the pathmap owns the goal and this page owns the schedule.
+**Related:** [[f1-pathmap-and-end-goal]] · [[gap-worklist]] · [[case-study-wake-array-atlas-0.1]] · [[expert-library-atlas-0.1]] · [[port-algebra-atlas-0.1]] · [[atlas-implementation]] · [[end-to-end-architecture-spec]] · [[tier0-measurements]] · [[master-error-bound]] · [[incremental-transfer-roadmap]] · [[poc1-retrospective-and-hybrid-roadmap]]
 
 > **Read §2 first if you read nothing else.** It is one strategic change, it is worth more than the rest of the page, and everything in §4 is scheduled by it.
 
@@ -345,6 +345,22 @@ records that rather than letting the plan imply it was covered.
 
 ---
 
+# 9. Revision after PoC 1a, on a second machine (2026-09-01)
+
+Full argument: [[poc1-retrospective-and-hybrid-roadmap]]. Summary of what it changes here.
+
+**A second machine confirms §8's F3 finding, and sharpens it.** PoC 1a's demo — an all-classical comparison, `wake_array` windows vs. `scaling_ladder.reference_monolith`, no learned expert anywhere in it — measured $10$–$25\%$ **slower** on the decomposed column on a Mac, against $-16.5\%$ on the original dev box. Same sign, same order of magnitude, two different memory hierarchies. §8 already found that the classical column's per-agent cost *rises* with $N$ while a frozen checkpoint's *falls*, and flagged that neither number transfers off its host (**W104**); this is the first evidence that the *qualitative* direction does transfer, even though the ratio does not. PoC 1a's own demo runs at $N=6$, inside the range on both machines where decomposition has not yet been paid for — so the result is exactly what §2.4's cost table already predicted, not a new finding about the demo.
+
+**§2's split gets a corrected destination, not a new mechanism.** §2 already separates *"does composition work"* (classical suffices) from *"is it fast"* (learned experts, substituted per seam) and already runs the substitution campaign (§5) in parallel rather than at the end. What was missing is naming where that campaign is *supposed* to arrive: not "as learned as certification allows," but **a per-seam library where the expert running at each seam is the fastest admissible one — which today, given W93's certification asymmetry and the boundary-condition-input gap in [[expert-donor-survey]], means many seams stay classical permanently.** This changes no case study's scope; it changes how a `admit`-but-slow-to-certify substitution should be read against a classical alternative that is already fast and free to certify.
+
+**One insertion: CS-9★ · `seam_placement.py`, between CS-9 and CS-10.** [[interface-transfer-theory]] §9's cut-quality score $\mathcal Q(\Gamma)$ has existed since 2026-08-27, is built from quantities the probe already returns, and has never been used to choose a decomposition — every case study through CS-16 places its windows by hand. CS-9★ needs no new experts and no new physics: search over candidate tilings of CS-9's two-family domain, scored by $\mathcal Q$ under a cost budget, and gate on whether the search matches or beats the ladder's own hand-chosen $N=6$/$N=12$ rungs. This is the one item in [[f1-pathmap-and-end-goal]]'s four end-goal capabilities — multiple experts, multiphysics, multi-formulation decomposition, **automatic adaptive seam placement** — that is not reachable by continuing to build Phase B/C by hand, and it is also the one capability [[prior-art-and-novelty-atlas-0.1]]'s own verdict table cannot find prior art for.
+
+**Two rows opened: W111** (iterations-to-converge at a seam as a function of which expert sits there — untested, and distinct from either expert's per-call cost) **and W112** (elevate $\mathcal Q(\Gamma)$ from a flagged-weak [AI Inference] to a scheduled measurement, which CS-9★ is the vehicle for).
+
+**Nothing else moves.** CS-9 remains next, exactly as §8 already concluded. CS-10 through CS-16 keep their numbers, scope, and gates.
+
+---
+
 ## See Also
 
 - [[f1-pathmap-and-end-goal]] — the end goal, the two claims, and the 12-rung ladder this page reschedules
@@ -356,3 +372,4 @@ records that rather than letting the plan imply it was covered.
 - [[incremental-transfer-roadmap]] — the bootstrap strategy the substitution campaign follows
 - [[tier0-measurements]] — the measurement record every number in §1 comes from
 - [[cs7-scaling-ladder-pickup]] — the self-contained brief for the next build
+- [[poc1-retrospective-and-hybrid-roadmap]] — section 9's full argument: the cross-machine timing read, the hybrid-library reframing, and CS-9★
