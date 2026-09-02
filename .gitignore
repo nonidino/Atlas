@@ -39,3 +39,9 @@ out/w93/*
 !out/w94/
 out/w94/*
 !out/w94/w94.json
+# PoC 1a, frozen-expert column: 3 MB, cited line by line by
+# poc1a-frozen-expert-results.md and merged from the per-stage artifacts under
+# the same directory (those stay ignored -- only the merged record is kept).
+!out/w118/
+out/w118/*
+!out/w118/w118.json

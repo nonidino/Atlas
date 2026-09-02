@@ -1,18 +1,39 @@
 """W111 -- PoC 1a: differentiable wind-farm design through the composed graph.
 
     python scripts/w111_wind_farm_design.py --stage timing
+    python scripts/w111_wind_farm_design.py --expert poseidon --stage grad --case K12
     python scripts/w111_wind_farm_design.py --stage confirm --case K25 --steps 60
     python scripts/w111_wind_farm_design.py --stage grad --case K12 --opt-steps 30
     python scripts/w111_wind_farm_design.py --stage cma  --case K12 --budget 900
     python scripts/w111_wind_farm_design.py --stage fd   --case K12
     python scripts/w111_wind_farm_design.py --stage sensitivity --case K12
+    python scripts/w111_wind_farm_design.py --stage verify --case K12
+    python scripts/w111_wind_farm_design.py --expert poseidon --stage crosseval --case K12
     python scripts/w111_wind_farm_design.py --stage figures
     python scripts/w111_wind_farm_design.py --stage merge
 
-Every stage is its own process and writes its own artefact under `out/w111/`
-the moment it has one, and the two optimiser stages append to theirs after
-**every** step.  That is not tidiness: an Adam step at K = 25 is ten minutes and
-a CMA-ES budget is hours, and a run that only writes at the end is a run whose
+`--expert` chooses the fluid agent in every window, and it is the whole of the
+substitution: `reference_exposed` (the default) is `reference.WindowNS` with its
+elliptic part handed to the composition layer, i.e. the 2026-09-01 column of
+[[poc1-results-differentiable-design]]; `poseidon` is the frozen 20.8M-parameter
+checkpoint, i.e. the half of the novelty claim that column does not exercise
+([[poc1a-frozen-expert-results]]).  Artefacts land in `out/w111/` and `out/w118/`
+respectively -- separate directories rather than a filename suffix, so the merge
+scan needs no filtering and the two columns cannot contaminate each other's
+record.
+
+Two stages exist to compare columns rather than to measure one.  `verify` is the
+classical verification panel -- the composed column against
+`scaling_ladder.reference_monolith`, the undivided classical solver, alternating
+one macro-step each so neither is timed against the other's load.  `crosseval`
+scores three layouts (the grid, each column's own optimum) by all three, which is
+the deployment story of [[prior-art-and-novelty-atlas-0.1]] section 5 measured
+end to end.
+
+Every stage is its own process and writes its own artefact the moment it has one,
+and the two optimiser stages append to theirs after **every** step.  That is not
+tidiness: an Adam step at K = 25 is ten minutes on a GPU-less desktop and a
+CMA-ES budget is hours, and a run that only writes at the end is a run whose
 failure costs everything it had already measured.
 
 The stages are separable on purpose, so the long ones can be launched
@@ -42,8 +63,26 @@ import numpy as np                                                  # noqa: E402
 from atlas.cases import wake_array as wa                            # noqa: E402
 from atlas.cases import wind_farm_design as wd                      # noqa: E402
 
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                   "out", "w111")
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, "out", "w111")
+
+#: Which fluid expert every stage marches, and where its artefacts land.  Both
+#: are set from ``--expert`` in `main` and are module globals rather than
+#: arguments threaded through nine stages, because every stage needs them and
+#: none of them chooses them.  ``reference_exposed`` is the 2026-09-01 run and
+#: its artefact paths are unchanged to the character, so this file still
+#: reproduces `poc1-results-differentiable-design` exactly as it did.
+EXPERT = "reference_exposed"
+
+#: What the merged record is called, per expert.  W118 is the `gap-worklist`
+#: row this column closes; W113-W117 are Tier 23/24's and are taken.
+MERGED = {"reference_exposed": "w111.json", "poseidon": "w118.json"}
+
+#: Where each expert's artefacts live.  A separate directory rather than a file
+#: suffix, so `stage_merge`'s directory scan and `stage_figures`' lookups need no
+#: filtering and the two columns cannot contaminate each other's record.
+OUT_FOR = {"reference_exposed": os.path.join(ROOT, "out", "w111"),
+           "poseidon": os.path.join(ROOT, "out", "w118")}
 
 #: The band `|u|` must stay inside for the column to count as stable.  Exactly
 #: `w100_scaling_ladder.stage_long_march`'s 3.0, so the confirmation march at
@@ -91,14 +130,23 @@ def machine() -> dict:
             "cores": os.cpu_count(), "torch": torch.__version__,
             "cuda": bool(torch.cuda.is_available()),
             "torch_threads": torch.get_num_threads(),
-            "numpy": np.__version__, "dtype": "float64"}
+            "numpy": np.__version__, "dtype": "float64",
+            "fluid_expert": EXPERT}
 
 
-def build(case_name: str, steps: int | None, threads: int, device: str = "cpu"):
+def build(case_name: str, steps: int | None, threads: int, device: str = "cpu",
+          expert: str | None = None):
+    """The case and its rollout, for whichever fluid expert is selected.
+
+    `wd.rollout_for` is the whole swap -- `atlas-proof-of-concept-1` section 9
+    says the frozen-checkpoint run "is a ``kind=`` argument", and this is the
+    line where that is true.
+    """
     import torch
     torch.set_num_threads(threads)
     case = wd.case_for(case_name, steps)
-    return case, wd.Rollout(case, device=device)
+    return case, wd.rollout_for(case, expert or EXPERT, device=device,
+                                threads=threads)
 
 
 # ---------------------------------------------------------------------------
@@ -109,12 +157,18 @@ _POOL_STATE: dict = {}
 
 
 def _pool_init(case_name: str, steps: int | None, threads: int,
-               device: str = "cpu") -> None:
+               device: str = "cpu", expert: str = "reference_exposed") -> None:
+    # `expert` is passed rather than read off the module global: the pool spawns
+    # rather than forks (see `Pool`), so a child re-imports this module fresh and
+    # would get the DEFAULT expert while the parent marched the other one.  A
+    # baseline that silently optimised a different objective than the gradient
+    # method is the one failure this comparison could not survive.
     os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
     import torch
     torch.set_num_threads(threads)
     case = wd.case_for(case_name, steps)
-    _POOL_STATE["rollout"] = wd.Rollout(case, device=device)
+    _POOL_STATE["rollout"] = wd.rollout_for(case, expert, device=device,
+                                            threads=threads)
     _POOL_STATE["case"] = case
 
 
@@ -135,9 +189,11 @@ class Pool:
     """
 
     def __init__(self, case_name: str, steps: int | None, workers: int,
-                 threads: int, device: str = "cpu") -> None:
+                 threads: int, device: str = "cpu",
+                 expert: str | None = None) -> None:
         self.workers = workers
         self.threads = threads
+        self.expert = expert or EXPERT
         # **spawn, not fork.**  A CUDA context does not survive `fork`, and on
         # Linux `ProcessPoolExecutor` forks by default, so a pool that worked on
         # CPU would produce workers that cannot see the GPU -- or, worse, one
@@ -145,7 +201,7 @@ class Pool:
         # why everything below the stage functions is import-safe.
         self.ex = ProcessPoolExecutor(
             max_workers=workers, initializer=_pool_init,
-            initargs=(case_name, steps, threads, device),
+            initargs=(case_name, steps, threads, device, self.expert),
             mp_context=multiprocessing.get_context("spawn"))
         self.n = 0
 
@@ -191,21 +247,34 @@ def stage_timing(args) -> dict:
         t0 = time.perf_counter()
         wd.value_and_grad(th, ro, steps=probe)
         t_grad = (time.perf_counter() - t0) / probe
-        # the numpy column CS-7 and CS-8 actually ran, for the same step
-        ex = wa.exposed_reference_solver(wa.NU_REF)
+        # the numpy column the case studies actually ran, for the same step:
+        # `exposed_reference_solver.step_batch` for the classical expert and
+        # `FrozenFluidExpert.step_many` for the checkpoint.  Same batch, same
+        # window count, so the two rows are the agent's own cost with the
+        # composition layer taken out of both.
         us = np.ones((ro.n_win, wa.N, wa.N))
         vs = np.zeros_like(us)
         fs = np.zeros_like(us)
-        ex.step_batch(us, vs, wa.MACRO_DT, bc0=None, force=(fs, fs))
+        if EXPERT == "poseidon":
+            ex = wa.scaled_expert()
+            call = lambda: ex.step_many(us - wa.U_INF, vs, wa.MACRO_DT,
+                                        galilean=False, project=False)
+        else:
+            ex = wa.exposed_reference_solver(wa.NU_REF)
+            call = lambda: ex.step_batch(us, vs, wa.MACRO_DT, bc0=None,
+                                         force=(fs, fs))
+        call()
         t0 = time.perf_counter()
-        ex.step_batch(us, vs, wa.MACRO_DT, bc0=None, force=(fs, fs))
+        call()
         t_numpy = time.perf_counter() - t0
         row = {
             "case": case.as_dict(), "threads": args.threads,
             "s_per_macro_step_forward": t_fwd,
             "s_per_macro_step_gradient": t_grad,
             "gradient_over_forward": t_grad / t_fwd,
-            "s_per_macro_step_numpy_solver_only": t_numpy,
+            "s_per_macro_step_numpy_agent_only": t_numpy,
+            "s_per_macro_step_numpy_solver_only": t_numpy,   # legacy key
+            "fluid_expert": EXPERT,
             "s_per_rollout_forward": t_fwd * case.steps,
             "s_per_rollout_gradient": t_grad * case.steps,
             "n_windows": ro.n_win,
@@ -384,7 +453,8 @@ def stage_cma(args) -> dict:
             "theta0": wd.design_to_dict(th0),
             "started": time.strftime("%Y-%m-%dT%H:%M:%S")}
     write(name, meta)
-    pool = Pool(args.case, args.steps, args.workers, args.threads, args.device)
+    pool = Pool(args.case, args.steps, args.workers, args.threads, args.device,
+                expert=EXPERT)
     last = [time.time()]
 
     def on_eval(n, j, best):
@@ -555,6 +625,279 @@ def stage_sensitivity(args) -> dict:
     return out
 
 
+
+
+# ---------------------------------------------------------------------------
+# 6b. verify -- the classical verification panel, as a stage rather than a demo
+# ---------------------------------------------------------------------------
+
+
+def stage_verify(args) -> dict:
+    """The composed column against the UNDIVIDED classical solver, same layout.
+
+    This is `atlas-proof-of-concept-1` section 10's head-to-head, lifted out of
+    the demo so it can be run headless on either expert and quoted from an
+    artefact rather than from a screenshot.  `composition-error-theory`'s
+    standing position is the reason it exists at all: **the composed model is a
+    search instrument, not a verifier**, so the deployment story
+    (`prior-art-and-novelty-atlas-0.1` section 5) is search wide and cheap with
+    the composed model and verify the shortlist with the classical stack.  This
+    stage IS that verification step, and it is what converts a power figure
+    "as measured by the composed model" into a number with a referent.
+
+    The referent is `scaling_ladder.reference_monolith` -- `RectangularNS` on the
+    whole domain at the same cell size, same viscosity, same transmission, no
+    cut.  Against the classical composed column it isolates the cost of the cut,
+    holding the expert fixed.  Against the Poseidon column it measures **the
+    expert and the cut together**, and no arrangement of this stage can separate
+    them, because there is no monolithic Poseidon: the checkpoint is fixed at
+    128x128 and cannot be asked to solve the whole domain at any resolution
+    (`poseidon.py`'s module docstring).  That asymmetry is reported rather than
+    papered over.
+
+    **The two solvers alternate, one macro-step each**, so every timed region has
+    the machine to itself; running them concurrently would make a better
+    animation and a worthless measurement.  Because both sides sit at step *i* at
+    the same moment, the fields are directly comparable and the worst single-cell
+    velocity difference is reported beside the difference in farm power.
+    """
+    import torch
+    from atlas.cases import scaling_ladder as sl
+
+    banner(f"6b. classical verification panel -- {args.case}, {EXPERT} composed "
+           f"column vs the undivided monolith")
+    case, ro = build(args.case, args.steps, args.threads, args.device)
+    th_np = wd.initial_design(case)
+    label = "grid"
+    if args.theta_from and os.path.isfile(args.theta_from):
+        with open(args.theta_from, encoding="utf-8") as fh:
+            th_np = wd.dict_to_design(json.load(fh)["theta_best"])
+        label = os.path.basename(args.theta_from)
+        print(f"  at the optimised layout from {args.theta_from}", flush=True)
+    th = torch.as_tensor(th_np, dtype=wd.TORCH_DTYPE, device=args.device)
+    th_cpu = th if args.device == "cpu" else torch.as_tensor(th_np,
+                                                             dtype=wd.TORCH_DTYPE)
+    ro_cpu = ro if args.device == "cpu" else build(args.case, args.steps,
+                                                   args.threads, "cpu")[1]
+
+    n = case.steps
+    u = torch.full(case.shape, wa.U_INF, dtype=wd.TORCH_DTYPE, device=args.device)
+    v = torch.zeros_like(u)
+    mono = sl.reference_monolith(case.tiling.nx, case.tiling.ny, wa.NU_REF)
+    uu = np.full(case.shape, wa.U_INF)
+    vv = np.zeros(case.shape)
+    band = ro_cpu._band.cpu().numpy()
+
+    row = {"case": case.as_dict(), "expert": EXPERT, "at": wd.design_to_dict(th_np),
+           "layout": label, "steps": n, "composed_power": [], "classical_power": [],
+           "composed_ms": [], "classical_ms": [], "linf": [],
+           "composed_u_max": [], "classical_u_max": []}
+    composed_s = classical_s = 0.0
+    with torch.no_grad():
+        for i in range(n):
+            t0 = time.perf_counter()
+            u, v, power, _ = ro.macro_step(u, v, th)
+            if args.device != "cpu":
+                torch.cuda.synchronize()
+            dt_c = time.perf_counter() - t0
+            composed_s += dt_c
+
+            t0 = time.perf_counter()
+            tu = torch.as_tensor(uu, dtype=wd.TORCH_DTYPE)
+            tv = torch.as_tensor(vv, dtype=wd.TORCH_DTYPE)
+            fx, fy, _un, _T, p = ro_cpu.disks.forcing(tu, tv, th_cpu)
+            u1, v1 = mono.step_batch(uu[None], vv[None], wa.MACRO_DT, bc0=None,
+                                     force=(fx.numpy()[None], fy.numpy()[None]))
+            uu, vv = u1[0], v1[0]
+            uu = np.where(band, wa.U_INF, uu)
+            vv = np.where(band, 0.0, vv)
+            dt_k = time.perf_counter() - t0
+            classical_s += dt_k
+
+            un = u.detach().cpu().numpy()
+            row["composed_power"].append(float(power.sum()))
+            row["classical_power"].append(float(p.sum()))
+            row["composed_ms"].append(dt_c * 1000.0)
+            row["classical_ms"].append(dt_k * 1000.0)
+            row["linf"].append(float(np.abs(un - uu).max()))
+            row["composed_u_max"].append(float(np.abs(un).max()))
+            row["classical_u_max"].append(float(np.abs(uu).max()))
+            if not np.all(np.isfinite(uu)):
+                row["classical_not_finite_at"] = i + 1
+                break
+            if (i + 1) % 5 == 0 or i == 0:
+                print(f"    step {i+1:3d}/{n}  composed P={row['composed_power'][-1]:.4f}"
+                      f"  classical P={row['classical_power'][-1]:.4f}"
+                      f"  Linf={row['linf'][-1]:.4f}"
+                      f"  ({dt_c*1000:.0f} / {dt_k*1000:.0f} ms)", flush=True)
+                write(f"verify_{args.case}.json", row)
+
+    avg = min(case.avg_window, len(row["composed_power"]))
+    comp = float(np.mean(row["composed_power"][-avg:]))
+    clas = float(np.mean(row["classical_power"][-avg:]))
+    # the first step is held out of both medians: it pays for FFT plans and for
+    # every allocation neither solver has made yet, on both sides.
+    cm = float(np.median(row["composed_ms"][1:])) if len(row["composed_ms"]) > 1 else None
+    km = float(np.median(row["classical_ms"][1:])) if len(row["classical_ms"]) > 1 else None
+    row.update({
+        "composed_power_final": comp, "classical_power_final": clas,
+        "delta": comp - clas,
+        "delta_pct": 100.0 * (comp - clas) / clas if abs(clas) > 1e-12 else None,
+        "composed_ms_step": cm, "classical_ms_step": km,
+        "ms_ratio": (cm / km) if km else None,
+        "composed_wall_s": composed_s, "classical_wall_s": classical_s,
+        "linf_final": row["linf"][-1] if row["linf"] else None,
+        "note": ("Both marched from the freestream for the same number of "
+                 "macro-steps, alternating so neither competed with the other "
+                 "for cores. The classical side is "
+                 "scaling_ladder.reference_monolith: the same discretization "
+                 "with no cut. Against the classical composed column the "
+                 "difference is the cost of the cut alone; against the Poseidon "
+                 "column it is the expert AND the cut together, and there is no "
+                 "monolithic Poseidon that could separate them."),
+    })
+    print(f"  -> composed {comp:.4f} vs classical {clas:.4f} "
+          f"({row['delta_pct']:+.1f}%), worst cell {row['linf_final']:.4f}, "
+          f"{cm:.0f} vs {km:.0f} ms/step", flush=True)
+    write(f"verify_{args.case}.json", row)
+    return row
+
+
+
+
+# ---------------------------------------------------------------------------
+# 6c. crosseval -- each column's optimum, scored by the other and by the monolith
+# ---------------------------------------------------------------------------
+
+
+def _march_monolith(case, theta_np, ro_cpu, steps: int | None = None) -> dict:
+    """`scaling_ladder.reference_monolith` on one layout, from the freestream.
+
+    The undivided classical solver: same discretization, same cell, same
+    viscosity, no cut.  It is the referent the deployment story
+    (`prior-art-and-novelty-atlas-0.1` section 5) names -- *search wide and cheap
+    with the composed model, verify the shortlist with the classical stack* --
+    and this is the verifier half of that sentence.
+    """
+    import torch
+    from atlas.cases import scaling_ladder as sl
+
+    n = steps or case.steps
+    th = torch.as_tensor(theta_np, dtype=wd.TORCH_DTYPE)
+    mono = sl.reference_monolith(case.tiling.nx, case.tiling.ny, wa.NU_REF)
+    uu = np.full(case.shape, wa.U_INF)
+    vv = np.zeros(case.shape)
+    band = ro_cpu._band.cpu().numpy()
+    trace = []
+    t0 = time.perf_counter()
+    with torch.no_grad():
+        for _ in range(n):
+            fx, fy, _un, _T, p = ro_cpu.disks.forcing(
+                torch.as_tensor(uu, dtype=wd.TORCH_DTYPE),
+                torch.as_tensor(vv, dtype=wd.TORCH_DTYPE), th)
+            u1, v1 = mono.step_batch(uu[None], vv[None], wa.MACRO_DT, bc0=None,
+                                     force=(fx.numpy()[None], fy.numpy()[None]))
+            uu, vv = u1[0], v1[0]
+            uu = np.where(band, wa.U_INF, uu)
+            vv = np.where(band, 0.0, vv)
+            trace.append(float(p.sum()))
+            if not np.all(np.isfinite(uu)):
+                return {"farm_power": None, "not_finite_at": len(trace),
+                        "trace": trace}
+    avg = min(case.avg_window, len(trace))
+    return {"farm_power": float(np.mean(trace[-avg:])), "trace": trace,
+            "wall_s": time.perf_counter() - t0, "steps": n}
+
+
+def stage_crosseval(args) -> dict:
+    """**The deployment story, measured.**
+
+    Three layouts -- the unoptimised grid, the layout the CLASSICAL column's
+    optimiser converged to, and the layout the POSEIDON column's optimiser
+    converged to -- each scored three ways: by the Poseidon composed column, by
+    the classical composed column, and by the undivided classical monolith.
+
+    This is the only measurement here that can answer the question the swap
+    actually raises.  OP-3 says the checkpoint destroys roughly three quarters
+    of a wake before the second turbine, so the two columns are optimising
+    genuinely different objectives and will not agree on a layout.  Whether that
+    matters depends on a question no norm on the gradient can answer:
+    **does the layout the cheap column found still beat the starting grid when
+    the expensive one scores it?**  If it does, the checkpoint is a usable
+    pre-screen and `composition-error-theory`'s "search instrument, not a
+    verifier" is a description of a working pipeline.  If it does not, the
+    checkpoint's over-dissipation has moved the optimum somewhere that only
+    exists inside the checkpoint, and the pre-screen is worthless at this
+    fidelity.  Either answer is a result; neither is available from one column.
+
+    The classical column's layout is read from `out/w111/grad_<case>.json`, the
+    2026-09-01 artefact, so the comparison is against the run
+    [[poc1-results-differentiable-design]] reports rather than a re-run of it.
+    """
+    banner(f"6c. crosseval -- three layouts, three scorers, {args.case}")
+    case, ro_pos = build(args.case, args.steps, args.threads, args.device,
+                         expert="poseidon")
+    _c, ro_ref = build(args.case, args.steps, args.threads, args.device,
+                       expert="reference_exposed")
+    ro_cpu = ro_ref if args.device == "cpu" else build(
+        args.case, args.steps, args.threads, "cpu", expert="reference_exposed")[1]
+
+    layouts = {"grid": wd.initial_design(case)}
+    for tag, path in (("classical_optimum",
+                       os.path.join(ROOT, "out", "w111", f"grad_{args.case}.json")),
+                      ("poseidon_optimum",
+                       os.path.join(ROOT, "out", "w118", f"grad_{args.case}.json"))):
+        if os.path.isfile(path):
+            with open(path, encoding="utf-8") as fh:
+                d = json.load(fh)
+            if "theta_best" in d:
+                layouts[tag] = wd.dict_to_design(d["theta_best"])
+        else:
+            print(f"  {tag}: {path} is not here, skipping that row", flush=True)
+
+    out = {"case": case.as_dict(), "layouts": {}, "scorers":
+           ["poseidon_composed", "classical_composed", "classical_monolith"]}
+    for tag, th in layouts.items():
+        row = {"theta": wd.design_to_dict(th), "min_spacing": wd.min_spacing(th)}
+        jp, rp = wd.value_only(th, ro_pos)
+        row["poseidon_composed"] = rp.farm_power
+        jc, rc = wd.value_only(th, ro_ref)
+        row["classical_composed"] = rc.farm_power
+        m = _march_monolith(case, th, ro_cpu)
+        row["classical_monolith"] = m["farm_power"]
+        row["monolith_wall_s"] = m.get("wall_s")
+        out["layouts"][tag] = row
+        print(f"  {tag:20s}  poseidon {row['poseidon_composed']:8.4f}   "
+              f"classical-composed {row['classical_composed']:8.4f}   "
+              f"monolith {row['classical_monolith'] if row['classical_monolith'] is None else format(row['classical_monolith'], '8.4f')}",
+              flush=True)
+        write(f"crosseval_{args.case}.json", out)
+
+    base = out["layouts"].get("grid", {})
+    for tag, row in out["layouts"].items():
+        if tag == "grid":
+            continue
+        row["gain_vs_grid"] = {}
+        for sc in out["scorers"]:
+            b, a = base.get(sc), row.get(sc)
+            row["gain_vs_grid"][sc] = (100.0 * (a - b) / b
+                                       if (a is not None and b) else None)
+        print(f"  {tag:20s}  gain vs grid: "
+              + "   ".join(f"{sc.split('_')[0]}/{sc.split('_')[1]} "
+                           f"{row['gain_vs_grid'][sc]:+.1f}%"
+                           for sc in out["scorers"]
+                           if row["gain_vs_grid"][sc] is not None), flush=True)
+    out["note"] = ("The row that matters is `poseidon_optimum` scored by "
+                   "`classical_monolith`: it is what the deployment story "
+                   "claims -- a layout found cheaply by the composed "
+                   "checkpoint column and then verified by the classical "
+                   "stack. Every column here is a farm power in the same "
+                   "units, marched from the same freestream for the same "
+                   "number of macro-steps with the same disks.")
+    write(f"crosseval_{args.case}.json", out)
+    return out
+
+
 # ---------------------------------------------------------------------------
 # 7. figures
 # ---------------------------------------------------------------------------
@@ -692,14 +1035,17 @@ def stage_figures(args) -> dict:
 def stage_merge(args) -> dict:
     banner("8. merge")
     out = {"case": "PoC 1a -- differentiable wind-farm design",
+           "expert": EXPERT,
            "date": time.strftime("%Y-%m-%d"), "machine": machine(), "parts": {}}
+    merged = MERGED[EXPERT]
+    out["fluid_expert"] = EXPERT
     for fn in sorted(os.listdir(OUT)):
-        if not fn.endswith(".json") or fn == "w111.json":
+        if not fn.endswith(".json") or fn in MERGED.values():
             continue
         with open(os.path.join(OUT, fn), encoding="utf-8") as fh:
             out["parts"][fn[:-5]] = json.load(fh)
     out["headline"] = headline(out["parts"])
-    p = write("w111.json", out)
+    p = write(merged, out)
     print(json.dumps(_f(out["headline"]), indent=1))
     print(f"  merged into {p}", flush=True)
     return out
@@ -773,8 +1119,9 @@ def headline(parts: dict) -> dict:
 
 STAGES = {"timing": stage_timing, "confirm": stage_confirm, "grad": stage_grad,
           "cma": stage_cma, "fd": stage_fd, "ablation": stage_ablation,
-          "sensitivity": stage_sensitivity, "figures": stage_figures,
-          "merge": stage_merge}
+          "sensitivity": stage_sensitivity, "verify": stage_verify,
+          "crosseval": stage_crosseval,
+          "figures": stage_figures, "merge": stage_merge}
 
 
 def main(argv=None) -> int:
@@ -804,8 +1151,21 @@ def main(argv=None) -> int:
     ap.add_argument("--theta-from", default=None)
     ap.add_argument("--lengths", type=int, nargs="+", default=[40, 50, 60])
     ap.add_argument("--figure-cases", nargs="+", default=["K12", "K25"])
+    ap.add_argument("--expert", default="reference_exposed",
+                    choices=("reference_exposed", "poseidon"),
+                    help="which fluid expert every window runs. "
+                         "`reference_exposed` is `reference.WindowNS` with its "
+                         "elliptic part handed to the composition layer, i.e. "
+                         "the 2026-09-01 column; `poseidon` is the frozen "
+                         "20.8M-parameter checkpoint, i.e. the half of the "
+                         "novelty claim that column does not exercise. "
+                         "Artefacts go to out/w111 and out/w118 respectively.")
     args = ap.parse_args(argv)
+    global EXPERT, OUT
+    EXPERT = args.expert
+    OUT = OUT_FOR[EXPERT]
     os.makedirs(OUT, exist_ok=True)
+    print(f"fluid expert: {EXPERT}   artefacts: {OUT}", flush=True)
     t0 = time.time()
     try:
         STAGES[args.stage](args)

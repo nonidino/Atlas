@@ -110,6 +110,8 @@ from .window_ns import _no_projection_class
 __all__ = [
     "TORCH_DTYPE", "BAND", "YAW_MAX", "S_MIN", "A_INDUCTION",
     "tape_solver", "torch_solver_class",
+    "TapedPoseidon", "taped_poseidon", "PoseidonRollout",
+    "EXPERT_KINDS", "rollout_for",
     "FarmCase", "case_k12", "case_k25", "case_for",
     "DiskBank", "Rollout", "RolloutResult",
     "objective", "value_and_grad", "value_and_grad_local",
@@ -277,6 +279,147 @@ def tape_solver(nu: float = wa.NU_REF, device: str = "cpu"):
                              device=device)
     s.b = _TapeBackend(s.b)
     return s
+
+
+# ---------------------------------------------------------------------------
+# the OTHER agent: the frozen checkpoint, with the tape left attached
+# ---------------------------------------------------------------------------
+
+
+class TapedPoseidon:
+    """`FrozenFluidExpert` made differentiable, without editing the build repo.
+
+    The wrapper in the build repo cuts the tape in three separate places and
+    every one of them is deliberate -- its own docstring says "so that a gradient
+    cannot be taken by accident":
+
+      1. it takes numpy in and converts,
+      2. it runs the forward inside ``with torch.no_grad()``,
+      3. it calls ``.detach().cpu().numpy()`` on the output.
+
+    Taking one on PURPOSE is what this class is for, and the repair is made here
+    for the same reason `_TapeBackend` and `window_ns._no_projection_class` are
+    made here: **the agent is not ours to change, and what the composition layer
+    may do is decline to use one part of it and supply that part itself.**
+
+    The arithmetic is `FrozenFluidExpert.step_many(galilean=False, project=False)`
+    re-expressed in torch, in the same order, with the same normalization
+    constants read off the adapter rather than re-typed --
+    `tests/test_tier26_poseidon_design.py` asserts the two agree **bitwise** on a
+    real batched call.  ``galilean=False`` is not a choice made here: it is the
+    W98 repair, which moved transport and pressure out of the per-window call and
+    into the composition layer, where the graph's own declaration already put
+    them (`wake_array.transport_and_project`).
+
+    **The parameters stay frozen.**  `FrozenFluidExpert.__init__` applied
+    ``requires_grad_(False)`` to all 20.8 M of them and nothing here undoes it,
+    so the backward pass reaches ``theta`` through the activations and
+    accumulates **no** parameter gradient.  ``n_grad_params`` is asserted zero in
+    the tests, because "frozen" is the load-bearing word in the claim this run
+    exists to support.
+
+    **float32 is the checkpoint's, not a choice.**  The weights are float32, so
+    the model boundary is where this column's float64 stops.  Everything outside
+    the boundary -- the encode, the decode, the mean restore, the blend, the
+    projection, the disks -- stays float64.  The consequence is OP-6's, and it is
+    the reason `fd_check` has to sweep ``h`` rather than trust the classical
+    column's optimum: a function computed through a float32 forward pass has a
+    relative noise floor around 1e-7, so a central difference below
+    ``h ~ 1e-3`` is measuring cancellation rather than a derivative.
+    """
+
+    #: Whether the reduced-precision matmul paths have been turned OFF.  See
+    #: `_pin_precision`.
+    tf32_pinned = False
+
+    @staticmethod
+    def _pin_precision() -> dict:
+        """Turn OFF TF32, and say so in the record.
+
+        On an Ampere or later card torch runs float32 matmuls in **TF32** by
+        default: 10 mantissa bits, so a relative error around 1e-3.  The
+        classical column is float64 and never met this; the checkpoint is
+        float32 and its every matmul is on that path.  Left on, it would move J
+        in its fourth significant figure between CPU and GPU, and a
+        finite-difference check of a function that moves in its fourth digit is
+        measuring the arithmetic, not the derivative -- the same failure mode as
+        `scatter_add`'s nondeterminism, one order of magnitude worse.
+
+        So it is turned off here, once, where the float32 expert is built, and
+        the state is recorded rather than assumed.
+        """
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
+        try:
+            torch.backends.cudnn.benchmark = False
+        except Exception:                                   # pragma: no cover
+            pass
+        TapedPoseidon.tf32_pinned = True
+        return {"cuda_matmul_tf32": bool(torch.backends.cuda.matmul.allow_tf32),
+                "cudnn_tf32": bool(torch.backends.cudnn.allow_tf32),
+                "float32_matmul_precision": torch.get_float32_matmul_precision()}
+
+    def __init__(self, expert: Any, device: str = "cpu") -> None:
+        self.precision = self._pin_precision()
+        self.expert = expert
+        self.device = device
+        self.model = expert.model
+        self.scaling = expert.scaling
+        ad = _adapters()
+        opt = dict(dtype=TORCH_DTYPE, device=device)
+        self._mean = torch.as_tensor(ad.EXPERT_MEAN, **opt)[None, :, None, None]
+        self._std = torch.as_tensor(ad.EXPERT_STD, **opt)[None, :, None, None]
+        self._rho = float(ad.EXPERT_RHO)
+        self._p = float(ad.EXPERT_P)
+        self.n_params = int(sum(p.numel() for p in self.model.parameters()))
+        self.n_grad_params = int(sum(p.numel() for p in self.model.parameters()
+                                     if p.requires_grad))
+        self.n_calls = 0
+
+    def lead(self, dt: float) -> float:
+        return float(self.scaling.lead(dt))
+
+    def step_batch(self, uf, vf, dt: float):
+        """``[B,128,128]`` fluctuation in, the advanced fluctuation out.
+
+        No Galilean translation and no projection -- both are global and both
+        belong to the composition layer (W98).  No ``force`` either, and that is
+        deliberate rather than an omission: `step_many` **drops** ``force``
+        silently when ``galilean`` is off (**W99**), so a caller that passed one
+        here would get a forward pass with no body force and no error.  The disks
+        are applied by `PoseidonRollout.macro_step`, after the assembly, where
+        the partition of unity summing to one makes it identical to applying
+        them per window.
+        """
+        b = uf.shape[0]
+        s = self.scaling.velocity
+        rho = torch.full_like(uf, self._rho)
+        pr = torch.full_like(uf, self._p)
+        fields = torch.stack([rho, uf / s, vf / s, pr], dim=1)
+        x = ((fields - self._mean) / self._std).to(torch.float32)
+        t = torch.full((b,), self.lead(dt), dtype=torch.float32,
+                       device=x.device)
+        out = self.model(pixel_values=x, time=t).output
+        self.n_calls += b
+        arr = out.to(TORCH_DTYPE) * self._std + self._mean
+        return arr[:, 1] * s, arr[:, 2] * s
+
+
+@lru_cache(maxsize=1)
+def _adapters():
+    import importlib
+    wa.load_reference()
+    return importlib.import_module("atlas_windfarm_reference.adapters")
+
+
+@lru_cache(maxsize=4)
+def taped_poseidon(device: str = "cpu", threads: int = 8) -> "TapedPoseidon":
+    """The differentiable twin of `wake_array.scaled_expert`.
+
+    Same checkpoint, same `Scaling(length=S_LEN, velocity=2.0)`, same native lead
+    of 0.1 -- the only difference is that the tape survives the call.
+    """
+    return TapedPoseidon(wa.scaled_expert(device=device, threads=threads), device)
 
 
 # ---------------------------------------------------------------------------
@@ -811,6 +954,151 @@ class Rollout:
             power=j_power, power_trace=np.array(p_trace),
             inflow_trace=np.array(un_trace), fields=fields,
             u=u, v=v, wall_s=time.perf_counter() - t0, steps=steps)
+
+
+
+
+class PoseidonRollout(Rollout):
+    """The same composed march with the FROZEN CHECKPOINT as the fluid agent.
+
+    This is the half of [[prior-art-and-novelty-atlas-0.1]] section 2.1 that
+    `Rollout` does not exercise.  Everything outside the fluid agent is
+    unchanged and inherited rather than re-written: the tiling, the disks, the
+    partition-of-unity blend, the freestream band, the objective, the optimiser,
+    the constraint projection and `_place`'s fixed accumulation order are the
+    same objects the classical column used.
+
+    **Three things differ, and all three are the checkpoint's, not choices made
+    here.**
+
+    1. **The agent advances the FLUCTUATION, not the field.**  W0 experiment E1
+       measured that this checkpoint does not preserve a uniform flow -- fed
+       ``u = 1`` it returns a mean of 0.969 after one call and 0.281 after forty,
+       because its pretraining distribution has zero mean flow by construction.
+       So the mean is carried by the composition layer and the checkpoint is
+       given ``u - U_INF``.
+
+    2. **Transport and pressure are global, and are applied once, after the
+       blend (W98).**  `step_many(galilean=True)` translates each window with a
+       spectral shift that is periodic ON THE WINDOW, so a wake leaving a
+       window's outflow edge re-enters its own inflow edge -- measured as a 25%
+       velocity deficit 3.5 D UPSTREAM of a lone turbine, where nothing causes
+       one.  `wake_array.transport_and_project` is the repair and
+       `transport_project` below is its torch twin, pinned against it in the
+       tests.  Note what this means for the comparison: the classical column's
+       agent does its own advection (it is a Navier-Stokes solver) and needs
+       only the Leray projection from the composition layer; the checkpoint
+       needs the ADVECTION as well.  That is a property of the expert, and it is
+       the reason this class overrides `project` rather than reusing it.
+
+    3. **The disks are applied after the assembly (W99).**  `step_many` drops
+       ``force`` silently when ``galilean`` is off, so passing one into the
+       agent would produce a forward pass with no body force and no error.  The
+       partition of unity sums to one on every cell, so ``+ f dt`` after the
+       blend is arithmetically ``+ f dt`` before it, and this is what
+       `scripts/w93_wake_array.py` already does for the same reason.
+
+    **What is NOT changed, and is the point:** `assembly.ProjectedAssembly`'s
+    internals, `wake_array.exposed_reference_solver`, and every declaration in
+    `wake_array.build`.  The expert is swapped; nothing the expert is composed
+    BY is touched.
+    """
+
+    kind = "poseidon"
+
+    def __init__(self, case: FarmCase, device: str = "cpu",
+                 checkpoint: bool = True, threads: int = 8) -> None:
+        super().__init__(case, device=device, checkpoint=checkpoint)
+        self.expert = taped_poseidon(device, threads)
+        # `solver` is the CLASSICAL agent and this column does not use it.  It is
+        # dropped rather than left in place so that a code path that reaches for
+        # it raises instead of silently marching the wrong expert.
+        self.solver = None
+        # The transport phase.  `transport_and_project` keeps the Nyquist mode
+        # for the TRANSLATION (an interpolation) and zeroes it for the
+        # PROJECTION (a derivative) -- `adapters._wavenumbers`' own distinction,
+        # at domain scale.  `Rollout.__init__` already built the zeroed pair, so
+        # only the un-zeroed pair is new.
+        nxp = self.nx + wa.PAD_CELLS
+        self._kx_shift = 2.0 * np.pi * np.fft.fftfreq(nxp, d=wa.DX)[None, :]
+        self._ky_shift = 2.0 * np.pi * np.fft.fftfreq(self.ny, d=wa.DX)[:, None]
+        self.free_u, self.free_v = wa.U_INF, 0.0
+        self._rebuild_phase()
+
+    def _rebuild_phase(self) -> None:
+        """The translation the composition layer owes a non-advecting expert.
+
+        Split out rather than inlined because the freestream is settable: the
+        demo points and scales it, and a phase built once at construction would
+        keep translating the field by the freestream the rollout was BUILT with
+        while the band imposed a different one -- a mismatch that looks like a
+        physical result and is not.
+        """
+        ph = np.exp(-1j * wa.MACRO_DT
+                    * (self._kx_shift * self.free_u + self._ky_shift * self.free_v))
+        self._phase = torch.as_tensor(ph, dtype=torch.complex128,
+                                      device=self.device)
+
+    # -- the composition layer's two GLOBAL operators, in one transform ------
+
+    def transport_project(self, uf, vf):
+        """`wake_array.transport_and_project`, in torch, on the FLUCTUATION.
+
+        One padded transform: project (Nyquist-zeroed wavenumbers), then
+        translate by ``U_INF dt`` (Nyquist kept), then come back.  Same order and
+        same conventions as the numpy original, which the tests pin it against.
+        """
+        bu = torch.cat((uf, uf[:, -1:] * self._taper), dim=1)
+        bv = torch.cat((vf, vf[:, -1:] * self._taper), dim=1)
+        uh, vh = torch.fft.fft2(bu), torch.fft.fft2(bv)
+        div = self._kx * uh + self._ky * vh
+        uh = uh - self._kx * div / self._k2
+        vh = vh - self._ky * div / self._k2
+        bu = torch.fft.ifft2(uh * self._phase).real
+        bv = torch.fft.ifft2(vh * self._phase).real
+        return bu[:, :self.nx], bv[:, :self.nx]
+
+    # -- one macro-step -----------------------------------------------------
+
+    def macro_step(self, u, v, theta):
+        fx, fy, u_n, thrust, power = self.disks.forcing(u, v, theta)
+        ufs, vfs = self.cut(u - self.free_u), self.cut(v - self.free_v)
+        u1, v1 = self.expert.step_batch(ufs, vfs, wa.MACRO_DT)
+        # The checkpoint's own mean drift, removed -- but the INCOMING window
+        # mean is KEPT.  A periodic box with no force conserves it, and the
+        # deficit a disk puts there has to survive long enough to be carried out
+        # of the domain instead of being deleted every macro-step.
+        u1 = u1 + (ufs.mean(dim=(1, 2)) - u1.mean(dim=(1, 2)))[:, None, None]
+        v1 = v1 + (vfs.mean(dim=(1, 2)) - v1.mean(dim=(1, 2)))[:, None, None]
+        au, av = self.blend(u1, v1)
+        au = au + fx * wa.MACRO_DT
+        av = av + fy * wa.MACRO_DT
+        au, av = self.transport_project(au, av)
+        u2, v2 = self.band(self.free_u + au, self.free_v + av)
+        return u2, v2, power, u_n
+
+
+#: The fluid experts this PoC can march, by the `kind=` name `wake_array` uses.
+EXPERT_KINDS = ("reference_exposed", "poseidon")
+
+
+def rollout_for(case: FarmCase, kind: str = "reference_exposed",
+                device: str = "cpu", checkpoint: bool = True,
+                threads: int = 8) -> Rollout:
+    """Build the rollout for one fluid expert.  **This is the whole swap.**
+
+    `atlas-proof-of-concept-1` section 9 says of the frozen-checkpoint run that
+    "the swap is a ``kind=`` argument"; this function is that sentence, and the
+    fact that it is four lines is the claim `expert-library-atlas-0.1` makes
+    about a capability record being all the composition layer needs to know.
+    """
+    if kind in ("reference_exposed", "reference", "classical"):
+        return Rollout(case, device=device, checkpoint=checkpoint)
+    if kind == "poseidon":
+        return PoseidonRollout(case, device=device, checkpoint=checkpoint,
+                               threads=threads)
+    raise ValueError(f"unknown fluid expert kind {kind!r}; "
+                     f"this PoC marches {EXPERT_KINDS}")
 
 
 @dataclass

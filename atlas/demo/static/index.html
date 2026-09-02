@@ -135,6 +135,7 @@
       <div class="kv"><span class="muted">seconds / optimiser step</span><span id="etas">—</span></div>
       <div class="kv"><span class="muted">coupled windows</span><span id="nwin">—</span></div>
       <div class="kv"><span class="muted">running on</span><span id="dev">—</span></div>
+      <div class="kv"><span class="muted">fluid expert</span><span id="expert">—</span></div>
     </div>
 
     <div class="card" style="margin-top:14px">
@@ -311,6 +312,11 @@ function paintPanel(){
   $('nwin').textContent = S.n_windows;
   $('sparkinfo').textContent = S.step_ms ? (S.step_ms|0) + ' ms / frame' : '';
   $('dev').textContent = (S.device || 'cpu').toUpperCase();
+  // Which expert is in every window. Named rather than left implicit: the two
+  // columns are the same graph with a different thing inside each window, and
+  // a viewer who cannot tell which one is running cannot read the power number.
+  $('expert').textContent = S.expert === 'poseidon'
+    ? 'Poseidon-T (frozen, 20.8M)' : 'WindowNS (classical)';
   const opt = S.mode === 'optimize';
   const replaying = S.mode === 'replay';
   $('btnOpt').disabled = opt; $('btnStop').disabled = !(opt || replaying);

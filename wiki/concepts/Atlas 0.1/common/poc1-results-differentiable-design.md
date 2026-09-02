@@ -9,6 +9,8 @@
 
 ## 0. Read this first: what was and was not exercised
 
+> **Superseded in one respect, 2026-09-02: the frozen-checkpoint run this section says has not happened has now happened.** [[poc1a-frozen-expert-results]] is the record: the same optimiser, the same tiling, the same disks and the same declared assembly, with Poseidon-T in every window, at both sizes. Everything §0 says about *this* run remains exactly true -- it is a record of the classical column and should keep being read as one -- but the sentence "it has not been run" no longer is. Read the two pages together; the frozen column reproduces every measurement here and disagrees with several of them, which is the reason it was worth running.
+
 The spec's headline sentence is about *frozen, independently-pretrained* experts. **This run does not exercise that half.** Every rollout used `wake_array.exposed_reference_solver` — `reference.WindowNS` with its elliptic part removed — as the fluid agent in every window, because that is the only arrangement of the classical column that survives a long march ([[case-study-scaling-ladder-atlas-0.1]] §5, W100) and because it is what the build brief specified.
 
 So what is measured here is:
@@ -209,7 +211,7 @@ What it does claim, and this is the whole of it: **reverse-mode differentiation 
 
 Candidates for [[gap-worklist]] rather than rows added here, since the tier structure belongs to the case-study ladder and this is not on it:
 
-1. **The frozen-checkpoint run.** `kind="poseidon"` through the same optimiser. It is a swap, and until it is run §0 stands. It also puts OP-3's over-dissipation and OP-6's float32 probe floor back in play, both of which this column does not have.
+1. ~~**The frozen-checkpoint run.**~~ **Done 2026-09-02 -- [[poc1a-frozen-expert-results]].** `kind="poseidon"` through the same optimiser, at both sizes. It was a swap, as predicted, and both of the things predicted to come back with it did. **OP-3's over-dissipation:** the frozen column's optimum, scored by the undivided classical solver, is worth $+266\,\%$ (K12) and $+170\,\%$ (K25) over the starting grid against this column's $+374\,\%$ and $+240\,\%$ -- so the pre-screen works and captures $71\,\%$ of the verified gain, the same fraction at both sizes. **OP-6's float32 floor:** the finite-difference minimum moves from $5.85\times10^{-9}$ at $h=10^{-5}$ here to $1.4\times10^{-3}$ at $h=10^{-2}$ there, and the lesson is that pinning the batch layout buys reproducibility rather than precision. Two things that were *not* predicted: the projected assembly holds a globally-receptive expert to 70 macro-steps unchanged, and at $K=12$ CMA-ES **beats** the gradient method on the frozen objective, cutting the ratio from $>26.9\times$ to $8.0\times$.
 2. **The constraint set is doing visible work.** Both optima sit on the spacing bound and the box. A result whose optimiser stops at its constraints is partly a result about the constraints.
 3. **Yaw alone, positions fixed** — the experiment that would actually test the deflection closure, which this run's re-siting freedom made unnecessary.
 4. **The ablation's $\cos = -0.115$ deserves its own measurement.** That a static-field gradient is *anti*-correlated with the true one in the streamwise direction is the sharpest single argument in this vault for differentiating through the coupling, and it rests on one design point at one rung.
@@ -226,3 +228,4 @@ Candidates for [[gap-worklist]] rather than rows added here, since the tier stru
 - [[port-algebra-atlas-0.1]] — §5.1's open `ROT` port, which is the objective read here
 - [[composition-error-theory]] — why a composed model is a search instrument and not a verifier
 - [[open-problems-atlas-0.1]] — OP-3, OP-6
+- [[poc1a-frozen-expert-results]] — the same measurements with the frozen checkpoint as the fluid agent; §0's missing half

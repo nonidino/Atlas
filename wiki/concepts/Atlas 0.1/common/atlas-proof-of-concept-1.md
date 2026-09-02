@@ -80,6 +80,8 @@ Full record: [[poc1-results-differentiable-design]]. Artefact `out/w111/w111.jso
 
 **The asterisk first, because §1's sentence overstates what was run.** Every rollout used `wake_array.exposed_reference_solver` — the *classical* reference solver — as the fluid agent, per the build brief and because it is the only classical arrangement that survives a long march. So the **partitioning** half of the novelty claim and the **field + lumped peers** half (§2.3 of [[prior-art-and-novelty-atlas-0.1]]) are exercised; the **frozen-pretrained** half (§2.1) is not. Poseidon-T is differentiable and the swap is a `kind=` argument, but it has not been run, and §1's sentence should not be quoted as if it had.
 
+> **The asterisk is retired as of 2026-09-02 — §11 below, [[poc1a-frozen-expert-results]].** The swap was a `kind=` argument, as this paragraph predicted, and it has now been run at both sizes. §1's sentence may be quoted; §11 is the list of the things it still may not be quoted *for*.
+
 **The number.** Same start, same objective, same box-and-spacing projection for both methods; tolerance = within 2% of the gradient method's own gain.
 
 | | K = 12 (36 design vars) | K = 25 (75 design vars) |
@@ -126,8 +128,27 @@ Full record: [[poc1-results-differentiable-design]]. Artefact `out/w111/w111.jso
 **Nothing in the optimiser was modified.** `engine.DemoRollout` overrides `band` and `project` so the freestream can be pointed and scaled, and at the default inflow it is asserted **bitwise identical** to `wind_farm_design.Rollout` on a real macro-step. That assertion is what says the animation is the column §9 measured.
 ---
 
+## 11. The frozen-expert column (run 2026-09-02) — §9's asterisk, retired
+
+Full record: [[poc1a-frozen-expert-results]]. Artefact `out/w118/w118.json`; code `atlas/cases/wind_farm_design.py` (`TapedPoseidon`, `PoseidonRollout`, `rollout_for`), `scripts/w111_wind_farm_design.py --expert poseidon`, `tests/test_tier26_poseidon_design.py` (17 assertions, passing on CPU and CUDA).
+
+**Every window is now Poseidon-T** — a frozen $20.8$M-parameter checkpoint this project did not train — and the adjoint runs through all of it. The tiling, the disks, the blend, the declared `ProjectedAssembly`, the objective, the optimiser and the constraint projection are the same objects §9's column used, unchanged. So all three of [[prior-art-and-novelty-atlas-0.1]] §2's halves are exercised at once for the first time, and §1's sentence is now a description of something that exists.
+
+**The five things worth knowing before quoting it.**
+
+1. **It is stable.** The projected assembly holds a **globally receptive** expert — W93 measured this checkpoint's domain of dependence as the whole window — for 70 macro-steps at both rungs, $u_{\max} = 1.45$ against a band of $3.0$, divergence tail flat. §6's hard dependency did not need re-opening.
+2. **The gradient is right, to the precision the checkpoint allows.** Median relative error $1.4\times10^{-3}$ against central differences at $h = 10^{-2}$, textbook curve either side. §5's OP-6 caveat lands exactly where it was aimed: the float32 forward pass puts the finite-difference floor six orders above the classical column's, and *pinning the batch layout buys reproducibility, not precision*.
+3. **The headline ratio is real but three times smaller, and at $K=12$ the baseline wins.** $8.0\times$ at 36 design variables (CMA-ES reached the tolerance in 144 evaluations and finished $15.6\,\%$ **above** the gradient optimum) and $>30.9\times$ at 75 (CMA-ES never reached it). §4's "two to three orders of magnitude" is further away on this column than on the classical one, and the dimensional trend that would close the gap is still there.
+4. **§5's honest framing was right about OP-3 and can now be priced.** A layout found entirely inside the frozen column, scored by the undivided classical solver, is worth $+266\,\%$ (K12) and $+170\,\%$ (K25) over the starting grid — against $+374\,\%$ and $+240\,\%$ for the classical column's layout under the same verifier. **The pre-screen works and captures $71\,\%$ of the verified gain, the same fraction at both sizes.** That is §5's *"search wide and cheap with the composed model, verify the shortlist with the classical stack"* turned into a measurement.
+5. **And the composed graph is finally the fast one.** §10 measured the classical composed column at $1.54\times$ **slower** than the undivided monolith. With the checkpoint in the windows, on the same box, the composed column is **$3.15\times$ (K12) and $3.64\times$ (K25) faster** than the monolith. The cut still costs what it costs; what changed is what is inside each window.
+
+**The demo carries the toggle:** `python scripts/w112_farm_demo.py --expert poseidon`, and the panel names the expert on screen rather than leaving a viewer to infer which column produced the power number.
+
+---
+
 ## See Also
 
+- [[poc1a-frozen-expert-results]] — §11's record; the frozen-expert column, measurement for measurement against §9's
 - [[prior-art-and-novelty-atlas-0.1]] — §1 (speed/differentiability as the value proposition), §2.3 (field + lumped peers), the adjoint claim this spends
 - [[case-study-wake-array-atlas-0.1]] — the graph this optimises over
 - [[case-study-scaling-ladder-atlas-0.1]] — §5's instability and the projected-assembly fix this depends on; §6's timing numbers behind the interactive claim

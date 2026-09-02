@@ -64,6 +64,7 @@ import math
 import threading
 import time
 from dataclasses import dataclass, field, asdict
+from functools import lru_cache
 from typing import Any, Callable
 
 import numpy as np
@@ -129,6 +130,12 @@ LIMITS = {
 #: rather than quietly reporting the ratio as if they were.
 DEVICES = ("cpu", "cuda")
 
+#: The fluid experts the demo can put in every window.  `reference_exposed` is
+#: always available; `poseidon` needs the checkpoint, so `_expert_ok` asks
+#: rather than assumes -- a toggle that silently fell back would be a demo that
+#: claims a frozen expert and shows a classical one.
+EXPERTS = ("reference_exposed", "poseidon")
+
 #: Macro-steps of flow marched per replay frame when the replay is playing.
 #: One would run the trajectory back faster than the wake can follow it: the
 #: layout would be three optimiser steps ahead of the field it is supposed to
@@ -139,6 +146,26 @@ REPLAY_HOLD = 2
 def _cuda_ok() -> bool:
     try:
         return bool(torch.cuda.is_available())
+    except Exception:                                          # pragma: no cover
+        return False
+
+
+@lru_cache(maxsize=4)
+def _expert_ok(name: str) -> bool:
+    """Can this expert actually be built here?
+
+    `poseidon` needs the build repo, the scOT loader and an 85 MB checkpoint,
+    none of which is guaranteed on a machine someone was handed the packaged
+    demo on.  Asked once, cached, and reported to the client -- the toggle is
+    disabled rather than offered and then failing, and the alternative (falling
+    back silently to the classical column) would put a demo on screen that
+    claims a frozen expert and shows a solver.
+    """
+    if name != "poseidon":
+        return True
+    try:
+        wd.taped_poseidon()
+        return True
     except Exception:                                          # pragma: no cover
         return False
 
@@ -224,6 +251,12 @@ class DemoConfig:
     lr_yaw: float = 0.035
     verify_steps: int = 30
     device: str = "cpu"
+    #: Which fluid expert every window runs.  `reference_exposed` is the
+    #: classical column PoC 1a measured; `poseidon` is the frozen 20.8M-parameter
+    #: checkpoint.  Switching it re-seeds the march, because the two columns do
+    #: not produce the same field and pretending otherwise would show a state no
+    #: expert had computed.
+    expert: str = "reference_exposed"
 
     def clamped(self) -> "DemoConfig":
         d = asdict(self)
@@ -235,6 +268,8 @@ class DemoConfig:
             d[key] = int(_clamp(int(d[key]), *LIMITS[key]))
         dev = str(d.get("device") or "cpu")
         d["device"] = dev if dev in DEVICES and (dev == "cpu" or _cuda_ok()) else "cpu"
+        ex = str(d.get("expert") or "reference_exposed")
+        d["expert"] = ex if ex in EXPERTS and _expert_ok(ex) else "reference_exposed"
         return DemoConfig(**d)
 
     # -- the FarmCase this maps onto ---------------------------------------
@@ -421,6 +456,65 @@ class DemoRollout(wd.Rollout):
                        device=self.device)
         v = torch.full_like(u, self.free_v)
         return u, v
+
+
+class DemoPoseidonRollout(wd.PoseidonRollout):
+    """`DemoRollout`'s three overrides, on the FROZEN CHECKPOINT column.
+
+    Written out rather than mixed in from `DemoRollout`: the two columns share
+    the boundary condition and the freestream and share nothing else.  The
+    classical column needs `project` generalised (its agent advects, so the
+    composition layer owes it only the Leray step); this one needs
+    `_rebuild_phase`, because its agent does NOT advect and the composition
+    layer owes it the transport as well -- so a pointed freestream has to move
+    the translation kernel, not just the band.  Sharing an override between the
+    two would have to pretend that difference away.
+
+    At ``u_inf = 1, alpha = 0`` this is `wind_farm_design.PoseidonRollout`,
+    bitwise, and `tests/test_tier22_demo.py` asserts it on a real macro-step for
+    the same reason it asserts the classical one: the animation has to be the
+    column the results page measured.
+    """
+
+    def __init__(self, case, u_inf: float = 1.0, inflow_deg: float = 0.0,
+                 **kw) -> None:
+        super().__init__(case, **kw)
+        self.set_inflow(u_inf, inflow_deg)
+
+    def set_inflow(self, u_inf: float, inflow_deg: float) -> None:
+        self.u_inf = float(u_inf)
+        self.inflow_deg = float(inflow_deg)
+        a = math.radians(self.inflow_deg)
+        self.free_u = self.u_inf * math.cos(a)
+        self.free_v = self.u_inf * math.sin(a)
+        self._rebuild_phase()
+
+    def band(self, u, v):
+        zu = torch.full((), self.free_u, dtype=u.dtype, device=u.device)
+        zv = torch.full((), self.free_v, dtype=u.dtype, device=u.device)
+        return torch.where(self._band, zu, u), torch.where(self._band, zv, v)
+
+    def freestream(self):
+        u = torch.full((self.ny, self.nx), self.free_u, dtype=wd.TORCH_DTYPE,
+                       device=self.device)
+        v = torch.full_like(u, self.free_v)
+        return u, v
+
+
+#: The demo's rollout classes, by the same `kind=` name the driver uses.  The
+#: toggle is one dictionary lookup, which is the point: `expert-library-atlas-0.1`
+#: says the composition layer needs nothing from an expert but its capability
+#: record, and a demo that had to be rewritten per expert would be evidence
+#: against that.
+DEMO_ROLLOUTS = {"reference_exposed": lambda case, **kw: DemoRollout(case, **kw),
+                 "poseidon": lambda case, **kw: DemoPoseidonRollout(case, **kw)}
+
+
+def demo_rollout(case, expert: str = "reference_exposed", **kw):
+    if expert not in DEMO_ROLLOUTS:
+        raise ValueError(f"unknown fluid expert {expert!r}; "
+                         f"the demo offers {tuple(DEMO_ROLLOUTS)}")
+    return DEMO_ROLLOUTS[expert](case, **kw)
 
 
 # ---------------------------------------------------------------------------
@@ -664,7 +758,7 @@ class Engine:
                            f"clamped from {self.cfg.k} to {cap}")
             self.cfg = DemoConfig(**{**asdict(self.cfg), "k": cap}).clamped()
             self.case = self.cfg.case()
-        self.ro = DemoRollout(self.case, u_inf=self.cfg.u_inf,
+        self.ro = demo_rollout(self.case, self.cfg.expert, u_inf=self.cfg.u_inf,
                               inflow_deg=self.cfg.inflow_deg,
                               device=self.cfg.device)
         self.stride = 2 if self.case.shape[1] > 500 else 1
@@ -986,6 +1080,7 @@ class Engine:
                                 if self.history and
                                 self.replay_i < len(self.history) else 0)},
             "device": self.cfg.device,
+            "expert": self.cfg.expert,
             "compare": self.compare.brief() if self.compare else None,
             "validity": validity(self.cfg, self.case, self.theta, umax),
             "notice": self.notice,
@@ -1106,10 +1201,11 @@ class Engine:
             #: fed to the CLASSICAL side must be built on the CPU whatever that
             #: is, because the monolith is numpy: shuttling its field to a GPU
             #: and back every step would be timing the transfer, not the solver.
-            ro = DemoRollout(case, u_inf=cfg.u_inf, inflow_deg=cfg.inflow_deg,
-                             device=cfg.device)
-            ro_cpu = ro if cfg.device == "cpu" else DemoRollout(
-                case, u_inf=cfg.u_inf, inflow_deg=cfg.inflow_deg, device="cpu")
+            ro = demo_rollout(case, cfg.expert, u_inf=cfg.u_inf,
+                              inflow_deg=cfg.inflow_deg, device=cfg.device)
+            ro_cpu = ro if cfg.device == "cpu" else demo_rollout(
+                case, cfg.expert, u_inf=cfg.u_inf, inflow_deg=cfg.inflow_deg,
+                device="cpu")
             th = torch.as_tensor(theta, dtype=wd.TORCH_DTYPE, device=ro.device)
             th_cpu = th if ro_cpu is ro else torch.as_tensor(
                 theta, dtype=wd.TORCH_DTYPE)
@@ -1179,7 +1275,8 @@ class Engine:
                              if ks["median_ms"] else None),
                 "composed_ms": cmp_.composed_ms, "classical_ms": cmp_.classical_ms,
                 "linf": cmp_.linf, "linf_final": cmp_.linf[-1] if cmp_.linf else None,
-                "device": cfg.device, "timed_alone": bool(cmp_.paused_live),
+                "device": cfg.device, "expert": cfg.expert,
+                "timed_alone": bool(cmp_.paused_live),
                 "steps": n, "k": cfg.k, "n_windows": case.n_windows,
                 "composed_trace": list(trace), "classical_trace": list(mtrace),
                 "note": ("Both marched from still air for the same number of "

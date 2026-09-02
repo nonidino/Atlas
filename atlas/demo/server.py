@@ -23,8 +23,8 @@ from typing import Any
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, Response
 
-from .engine import (DEVICES, DOMAINS, LAYOUTS, LIMITS, RAMP_STOPS, REPLAY_HOLD,
-                     U_HI, U_LO, DemoConfig, Engine)
+from .engine import (DEVICES, DOMAINS, EXPERTS, LAYOUTS, LIMITS, RAMP_STOPS,
+                     REPLAY_HOLD, U_HI, U_LO, DemoConfig, Engine, _expert_ok)
 
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
@@ -57,6 +57,11 @@ def create_app(engine: Engine | None = None) -> FastAPI:
             "limits": {k: list(v) for k, v in LIMITS.items()},
             "layouts": sorted(LAYOUTS),
             "devices": list(DEVICES),
+            # Only the experts this machine can actually build. `poseidon`
+            # needs the build repo, the scOT loader and an 85 MB checkpoint,
+            # and a client offered a toggle that cannot work is worse than one
+            # that is not offered.
+            "experts": [e for e in EXPERTS if _expert_ok(e)],
             "replay_hold": REPLAY_HOLD,
             # the second window draws its own legend and must draw THIS ramp
             "ramp": {"lo": U_LO, "hi": U_HI, "stops": RAMP_STOPS},
