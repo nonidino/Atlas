@@ -23,8 +23,10 @@ from typing import Any
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, Response
 
-from .engine import (DEVICES, DOMAINS, EXPERTS, LAYOUTS, LIMITS, RAMP_STOPS,
-                     REPLAY_HOLD, U_HI, U_LO, DemoConfig, Engine, _expert_ok)
+from .engine import (COLUMN_LABEL, DEVICES, DOMAINS, EXPERT_LABEL,
+                     EXPERT_NOTE, EXPERTS, LAYOUTS, LIMITS, PUBLISHED,
+                     RAMP_STOPS, REPLAY_HOLD, U_HI, U_LO, DemoConfig,
+                     Engine, _expert_ok)
 
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
@@ -38,14 +40,19 @@ def create_app(engine: Engine | None = None) -> FastAPI:
     app.state.engine = engine or Engine()
     app.state.engine.start()
 
+    #: The pages are edited while the server is running more often than they are
+    #: read from a cache, and a stale page against a new payload is a demo that
+    #: looks broken for a reason nobody can see.
+    NO_STORE = {"Cache-Control": "no-store"}
+
     @app.get("/")
     async def index():
-        return FileResponse(os.path.join(STATIC, "index.html"))
+        return FileResponse(os.path.join(STATIC, "index.html"), headers=NO_STORE)
 
     @app.get("/compare")
     async def compare_page():
-        """The second window: one layout, solved both ways, timed."""
-        return FileResponse(os.path.join(STATIC, "compare.html"))
+        """The second window: one layout, every column, timed."""
+        return FileResponse(os.path.join(STATIC, "compare.html"), headers=NO_STORE)
 
     @app.get("/api/meta")
     async def meta():
@@ -62,6 +69,12 @@ def create_app(engine: Engine | None = None) -> FastAPI:
             # and a client offered a toggle that cannot work is worse than one
             # that is not offered.
             "experts": [e for e in EXPERTS if _expert_ok(e)],
+            "expert_label": dict(EXPERT_LABEL),
+            "expert_note": dict(EXPERT_NOTE),
+            "column_label": dict(COLUMN_LABEL),
+            # Measured elsewhere, quoted with its source, and kept in a field of
+            # its own so no client can accidentally render it as a live reading.
+            "published": dict(PUBLISHED),
             "replay_hold": REPLAY_HOLD,
             # the second window draws its own legend and must draw THIS ramp
             "ramp": {"lo": U_LO, "hi": U_HI, "stops": RAMP_STOPS},
@@ -119,7 +132,13 @@ def create_app(engine: Engine | None = None) -> FastAPI:
 
     @app.get("/api/compare/field")
     async def compare_field(side: str = "composed", seq: int = 0):
-        """One side's latest field, as a PNG. `seq` is a cache-buster."""
+        """One column's latest field, as a PNG. `seq` is a cache-buster.
+
+        `side` is a column key -- `composed`, `monolith` (`classical` is kept as
+        its old name) or `composed_classical`. The main window draws two of them
+        side by side while a measurement runs; the second window draws the same
+        two on its own poll.
+        """
         eng: Engine = app.state.engine
         c = eng.compare
         png = (c.png.get(side) if c else None) or b""

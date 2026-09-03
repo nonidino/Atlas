@@ -52,7 +52,8 @@ def _needs_expert():
 def small():
     _needs_expert()
     torch.set_num_threads(4)
-    cfg = de.DemoConfig(domain="small", k=4, horizon=3).clamped()
+    cfg = de.DemoConfig(domain="small", k=4, horizon=3,
+                        expert="reference_exposed").clamped()
     return cfg, cfg.case()
 
 
@@ -264,7 +265,8 @@ def test_server_boots_optimises_and_verifies():
 
     torch.set_num_threads(4)
     eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
-                                  verify_steps=10))
+                                  verify_steps=10,
+                                  expert="reference_exposed"))
     app = create_app(eng)
     with TestClient(app) as client:
         meta = client.get("/api/meta").json()
@@ -320,7 +322,8 @@ def test_scrub_restores_a_recorded_layout():
     """The replay slider must put back a layout the optimiser actually visited."""
     _needs_expert()
     torch.set_num_threads(4)
-    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3))
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  expert="reference_exposed"))
     eng.history = [
         {"iter": 1, "J": 1.0, "power": 1.0, "grad_norm": 0.1, "wall_s": 0.1,
          "theta": [float(x) for x in de.layout_staggered(eng.case)]},
@@ -362,7 +365,8 @@ def test_replay_play_pause_advances_and_holds():
     """
     _needs_expert()
     torch.set_num_threads(4)
-    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3))
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  expert="reference_exposed"))
     hist = _fake_history(eng, 4)
 
     eng._apply("replay", {"index": 0, "play": True})
@@ -391,7 +395,8 @@ def test_replay_play_pause_advances_and_holds():
 
 def test_replay_needs_a_trajectory_and_says_so():
     _needs_expert()
-    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3))
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  expert="reference_exposed"))
     eng.history = []
     eng._apply("replay", {"play": True})
     assert eng.replay_play is False
@@ -432,7 +437,8 @@ def test_head_to_head_times_both_solvers_and_serves_a_second_window():
     from atlas.demo.server import create_app
 
     torch.set_num_threads(4)
-    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3, verify_steps=10))
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3, verify_steps=10,
+                                  expert="reference_exposed"))
     app = create_app(eng)
     with TestClient(app) as client:
         assert b"<html" in client.get("/compare").content.lower()
@@ -475,6 +481,10 @@ def test_head_to_head_times_both_solvers_and_serves_a_second_window():
             assert len(v[side]["trace"]) == 10, side
         assert v["composed"]["where"] == eng.cfg.device
         assert v["classical"]["where"] == "cpu", "the monolith is numpy: CPU only"
+        # with the classical solver in the windows there is no third column to
+        # run: it would be the first one again
+        assert v["has_third"] is False and v["third"] is None
+        assert v["expert"] == "reference_exposed"
         assert v["ms_ratio"] == pytest.approx(
             v["composed"]["ms"]["median_ms"] / v["classical"]["ms"]["median_ms"])
         assert v["paused_live"] is True
@@ -491,3 +501,295 @@ def test_head_to_head_times_both_solvers_and_serves_a_second_window():
         assert not eng._timing_now()
 
     eng.stop()
+
+
+# ---------------------------------------------------------------------------
+# 8. the measurement region, and the three panels read off it
+# ---------------------------------------------------------------------------
+
+
+def _needs_poseidon():
+    if not de._expert_ok("poseidon"):                       # pragma: no cover
+        pytest.skip("the Poseidon-T checkpoint is not available here")
+
+
+def test_nothing_is_quoted_before_it_is_measured():
+    """The demo may not put a wall-clock number on screen that it did not produce.
+
+    Section 10 of `atlas-proof-of-concept-1` exists because a per-step cost was
+    written into this repository as a constant and was wrong by 4x the next time
+    anyone measured it -- same box, same code, a different clock state. So the
+    rule is structural rather than a promise: a fresh engine reports `None` for
+    every timing, and there is no table left in the module for anything to fall
+    back to.
+    """
+    _needs_expert()
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  expert="reference_exposed"))
+    sp = eng.speed_view()
+    assert sp["measured"] is False and sp["ratio"] is None
+    assert all(c["ms"] is None for c in sp["columns"].values())
+    assert sp["regions"] == 0 and sp["steps"] == 0
+    assert eng.eta_s() is None, "an unmeasured machine must not get a number"
+    assert eng.accuracy_view()["measured"] is False
+    assert eng.scoring_view()["baseline"] is None
+    assert not hasattr(de.DemoConfig, "horizon_eta_s"), \
+        "the cold-start table is back; it is exactly the thing that was wrong"
+    # the published numbers travel, but only in their own field, with a source
+    pub = sp["published"]
+    assert "poc1a-frozen-expert-results" in pub["source"]
+    assert pub["speedup_k12"] == 3.15 and pub["capture_k12"] == 71.2
+    eng.stop()
+
+
+def test_a_measurement_times_every_column_alone_and_fills_all_three_panels():
+    """The one march the whole screen is read off.
+
+    Three columns -- the frozen-expert composed graph, the same cut with the
+    classical solver in the windows, and the undivided classical monolith --
+    marched from still air, one macro-step each in turn. The assertions are
+    about the things that would make the screen a lie: that each column was
+    timed for every step with the others idle, that the accuracy figures are
+    against the undivided solver, and that the scoring row is the same march
+    rather than a second one taken under other conditions.
+    """
+    _needs_expert()
+    _needs_poseidon()
+    torch.set_num_threads(4)
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  verify_steps=10, expert="poseidon",
+                                  three_way=True))
+    eng.start()
+    try:
+        assert eng.cfg.columns == ("composed", "composed_classical", "monolith")
+        eng.request_verify(force=True, pause_live=True)
+        deadline = time.time() + 900
+        while time.time() < deadline:
+            if eng.compare.state in ("done", "error"):
+                break
+            time.sleep(0.5)
+        c = eng.compare
+        assert c.state == "done", c.error
+        assert c.i == 10
+
+        # every column, every step, timed
+        for ms in (c.composed_ms, c.classical_ms, c.third_ms):
+            assert len(ms) == 10
+            assert all(x > 0 for x in ms)
+        assert len(c.linf) == 10 and len(c.third_linf) == 10
+        assert set(c.png) >= {"composed", "monolith", "composed_classical"}
+
+        v = c.view()
+        assert v["has_third"] is True and v["third"] is not None
+        assert v["ms_ratio"] == pytest.approx(
+            v["composed"]["ms"]["median_ms"] / v["classical"]["ms"]["median_ms"])
+        assert v["speedup"] == pytest.approx(1.0 / v["ms_ratio"])
+
+        # panel 1: speed, measured here, over one region
+        sp = eng.speed_view()
+        assert sp["measured"] is True
+        assert sp["regions"] == 1 and sp["steps"] == 10
+        for key in ("composed", "composed_classical", "monolith"):
+            assert sp["columns"][key]["ms"] > 0, key
+        assert sp["ratio"] == pytest.approx(
+            sp["columns"]["monolith"]["ms"] / sp["columns"]["composed"]["ms"])
+        assert sp["ratio_cut"] == pytest.approx(
+            sp["columns"]["monolith"]["ms"]
+            / sp["columns"]["composed_classical"]["ms"])
+
+        # panel 2: accuracy, against the undivided solver and nothing else
+        acc = eng.accuracy_view()
+        assert acc["measured"] is True and acc["stale"] is False
+        assert acc["linf"] > 0 and acc["third_linf"] > 0
+        assert acc["composed_power"] > 0 and acc["monolith_power"] > 0
+        assert acc["delta_pct"] == pytest.approx(
+            100.0 * (acc["composed_power"] - acc["monolith_power"])
+            / acc["monolith_power"])
+
+        # panel 3: the score book, from the SAME march
+        sc = eng.scoring_view()
+        base = sc["baseline"]
+        assert base is not None and base["at_iter"] == 0
+        assert base["from_expert"] is None, "nobody optimised the starting layout"
+        assert base["powers"]["composed"] == pytest.approx(acc["composed_power"])
+        assert base["powers"]["monolith"] == pytest.approx(acc["monolith_power"])
+        assert base["powers"]["composed_classical"] != base["powers"]["composed"]
+        # one layout only: there is no gain to report yet and none is invented
+        assert sc["gain"] is None and sc["capture"] is None
+    finally:
+        eng.stop()
+
+
+def test_a_two_column_measurement_skips_the_row_that_would_repeat_itself():
+    """With the classical solver in the windows the third column IS the first."""
+    _needs_expert()
+    cfg = de.DemoConfig(domain="small", k=4, expert="reference_exposed",
+                        three_way=True).clamped()
+    assert cfg.columns == ("composed", "monolith")
+    cmp_ = de.Comparison(columns=cfg.columns)
+    assert cmp_.has_third is False
+    assert cmp_.view()["third"] is None
+
+
+def test_the_score_book_survives_a_reset_and_not_a_change_of_conditions():
+    """A gain is a difference between two numbers measured the same way.
+
+    Reset puts the same layout back under the same wind, so the reference score
+    is still a statement about this farm and is kept. Moving the wind, the box,
+    the turbine count or the expert makes every stored number a statement about
+    something else, so the book goes.
+    """
+    _needs_expert()
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  expert="reference_exposed"))
+    fake = {"hash": "h0", "at_iter": 0, "theta": [0.0] * 12, "steps": 10, "k": 4,
+            "expert": "reference_exposed", "composed_power": 2.0,
+            "classical_power": 2.5, "third_power": 2.1,
+            "composed_ms_stats": {"median_ms": 100.0},
+            "classical_ms_stats": {"median_ms": 300.0}}
+    eng._file_measurement(fake)
+    assert eng.baseline == "h0" and eng.speed_regions == 1
+
+    eng._apply("reset", None)
+    assert eng.baseline == "h0", "a plain reset threw away a valid reference"
+
+    eng._apply("config", {"u_inf": 1.2})
+    assert eng.baseline is None and eng.scores == {}
+    assert "conditions changed" in eng.notice
+    eng.stop()
+
+
+def test_the_gain_is_the_verifier_s_and_the_capture_fraction_is_withheld():
+    """`poc1a-frozen-expert-results` section 7.2, in the form the demo can reach.
+
+    The headline gain is the MONOLITH's, because it is the only column with no
+    composition error in it. The 71 % capture fraction compares an optimum found
+    on the frozen column against one found on the classical column, under that
+    same verifier -- so it is reported as measured HERE only when this session
+    holds both, and is a citation with a source attached otherwise.
+    """
+    _needs_expert()
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  expert="reference_exposed"))
+
+    def file(h, at_iter, expert, composed, monolith):
+        eng._file_measurement({
+            "hash": h, "at_iter": at_iter, "theta": [0.0] * 12, "steps": 10,
+            "k": 4, "expert": expert, "composed_power": composed,
+            "classical_power": monolith, "third_power": composed,
+            "composed_ms_stats": {"median_ms": 100.0},
+            "classical_ms_stats": {"median_ms": 300.0}})
+
+    file("start", 0, "poseidon", 2.0, 2.5)
+    file("opt_p", 18, "poseidon", 6.0, 7.5)
+    eng.theta = eng.theta                      # the layout on screen is neither
+    sc = eng.scoring_view()
+    assert sc["gain"]["monolith"] == pytest.approx(200.0)
+    assert sc["capture"]["measured_here"] is False
+    assert sc["capture"]["have"] == ["poseidon"]
+    assert sc["published"]["capture_k12"] == 71.2
+
+    # ... and once a layout optimised on the classical column has been scored
+    # too, the fraction is this session's own number
+    file("opt_c", 18, "reference_exposed", 6.0, 10.0)
+    cap = eng.scoring_view()["capture"]
+    assert cap["measured_here"] is True
+    assert cap["poseidon_gain"] == pytest.approx(200.0)
+    assert cap["classical_gain"] == pytest.approx(300.0)
+    assert cap["pct"] == pytest.approx(200.0 / 300.0 * 100.0)
+    eng.stop()
+
+
+def test_swapping_the_expert_rebuilds_every_solver_and_reseeds():
+    """A demo that changed the label and not the solver would be the worst bug here."""
+    _needs_expert()
+    _needs_poseidon()
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  expert="reference_exposed"))
+    assert isinstance(eng.ro, de.DemoRollout)
+    eng._apply("config", {"expert": "poseidon"})
+    assert eng.cfg.expert == "poseidon"
+    assert isinstance(eng.ro, de.DemoPoseidonRollout)
+    assert "fluid expert changed" in eng.notice
+    assert eng.opt_iter == 0 and eng.history == []
+    eng.stop()
+
+
+def test_the_expert_is_named_on_screen_with_its_licence():
+    """Poseidon-T is CC-BY-NC-4.0 and a demo that does not say so is a trap.
+
+    The label and the licence travel in the state payload, so the page cannot
+    render a power number without the name of the thing that produced it being
+    available beside it -- and the page is asserted to have somewhere to put it.
+    """
+    _needs_expert()
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, horizon=3,
+                                  expert="reference_exposed"))
+    eng._publish()
+    p = eng.frame.payload
+    assert p["expert_label"] == de.EXPERT_LABEL["reference_exposed"]
+    assert p["expert_licence"] == ""
+    assert "CC-BY-NC-4.0" in de.EXPERT_NOTE["poseidon"]
+    assert "CC-BY-NC-4.0" in de.EXPERT_LICENCE["poseidon"]
+    page = os.path.join(os.path.dirname(de.__file__), "static", "index.html")
+    html = open(page, encoding="utf-8").read()
+    assert 'id="explic"' in html and 'id="expname"' in html
+    readme = os.path.join(os.path.dirname(de.__file__), "README.md")
+    assert "CC-BY-NC-4.0" in open(readme, encoding="utf-8").read()
+    eng.stop()
+
+
+def test_measure_on_start_is_off_unless_asked_for():
+    """Constructing an Engine in a test must not start a two-minute timing run."""
+    _needs_expert()
+    assert de.DemoConfig().measure_on_start is False
+    eng = de.Engine(de.DemoConfig(domain="small", k=4, measure_on_start=True,
+                                  expert="reference_exposed"))
+    assert eng._measure_pending is True
+    quiet = de.Engine(de.DemoConfig(domain="small", k=4,
+                                    expert="reference_exposed"))
+    assert quiet._measure_pending is False
+    eng.stop()
+    quiet.stop()
+
+
+def test_the_bundle_pins_every_dependency_and_carries_the_checkpoint():
+    """The packaging promise, checked as text rather than trusted.
+
+    A bundle that resolves `torch` to whatever is newest is a bundle whose
+    numbers cannot be compared between two machines, and one that downloads the
+    checkpoint on first use does not run on a machine with no network. Both were
+    true of the previous version.
+    """
+    # Upstream the launchers live in `atlas/demo/bundle/`; in the assembled
+    # bundle they ARE the checkout root, which is the copy a user actually runs.
+    # Checking whichever is present means this file asserts the same property in
+    # both places -- which is the point of it being the same file in both.
+    b = os.path.join(os.path.dirname(de.__file__), "bundle")
+    if not os.path.isdir(b):                                # pragma: no cover
+        b = os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(de.__file__))))
+    req = open(os.path.join(b, "requirements.txt"), encoding="utf-8").read()
+    pins = [ln.strip() for ln in req.splitlines()
+            if ln.strip() and not ln.startswith("#")]
+    assert pins, "no requirements at all"
+    for ln in pins:
+        assert "==" in ln, f"{ln!r} is not pinned"
+    for pkg in ("numpy", "scipy", "pillow", "fastapi", "uvicorn",
+                "transformers", "safetensors", "huggingface-hub"):
+        assert any(ln.startswith(pkg) for ln in pins), pkg
+
+    for name in ("run.sh", "run.cmd"):
+        sh = open(os.path.join(b, name), encoding="utf-8").read()
+        assert "torch==" in sh, f"{name} does not pin torch"
+        assert "nvidia-smi" in sh, f"{name} does not look for a GPU"
+        assert "whl/cpu" in sh, f"{name} has no CPU-only path"
+        assert "poseidon/archive/" in sh, f"{name} does not install scOT"
+        assert "--check" in sh, f"{name} does not self-test before serving"
+
+    run = open(os.path.join(b, "run.py"), encoding="utf-8").read()
+    assert "HF_HOME" in run and "HF_HUB_OFFLINE" in run, \
+        "the bundled checkpoint is not wired up, so it would be downloaded"
+    assert "ATLAS_BUILD_REPO" in run
+    for pkg in ("torch", "scOT", "transformers", "fastapi"):
+        assert f'("{pkg}"' in run, f"run.py --check does not verify {pkg}"

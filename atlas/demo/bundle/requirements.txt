@@ -1,0 +1,33 @@
+# Every dependency, pinned to an exact version. Nothing here is resolved by
+# "latest": a demo that installs a different set of packages on every machine is
+# a demo whose numbers cannot be compared between machines.
+#
+# torch is NOT here. It is installed separately by run.sh / run.cmd, because
+# which wheel is right depends on the machine: a CPU-only wheel is a tenth of
+# the size and is the default, and a CUDA one is installed instead when an
+# NVIDIA driver is actually present. See PIN_TORCH in the launchers.
+
+numpy==1.26.4
+scipy==1.13.1
+pillow==11.0.0
+fastapi==0.115.5
+uvicorn==0.32.1
+
+# The checkpoint's backbone. Poseidon-T is a Swin-v2 variant and `scOT` reads
+# its blocks straight out of transformers, so this pin and the scOT commit below
+# have to move together.
+transformers==4.44.2
+safetensors==0.4.5
+huggingface-hub==0.26.2
+
+# only needed for `pytest tests/`
+pytest==8.3.3
+httpx==0.27.2
+
+# `scOT` -- the Poseidon model class -- is installed by the launchers from a
+# pinned source archive rather than listed here, and NOT vendored into this
+# branch, because github.com/camlab-ethz/poseidon publishes no licence file and
+# is therefore not ours to redistribute. The launchers install it with
+# --no-deps: its own pins (torch 2.0.1, transformers 4.29.2, wandb) are years
+# old and would tear down everything above.
+#   https://github.com/camlab-ethz/poseidon/archive/b8fa28f59bd7f7673323f28d11a12c6f3a215c61.zip
