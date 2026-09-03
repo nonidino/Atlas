@@ -162,6 +162,7 @@
         <div class="big" id="ratio">—</div>
         <div class="unit" id="ratiosub">not measured yet</div>
         <div id="bars" style="margin-top:10px"></div>
+        <div id="devnote"></div>
         <div class="note" id="speednote"></div>
       </div>
 
@@ -534,6 +535,15 @@ function paintSpeed(){
       <div class="track"><i style="width:${(100*vals[i]/hi).toFixed(1)}%;background:${col}"></i></div>
     </div>`;
   }).join('');
+  /* on a GPU run the composed columns are on the card and the monolith is
+     numpy on the CPU, so the ratio is not like-for-like and the panel says so
+     rather than letting the number stand on its own */
+  $('devnote').innerHTML = (sp.device && sp.device !== 'cpu')
+    ? `<div class="warnbox">The composed columns are on the
+       <b>${sp.device.toUpperCase()}</b> and the undivided classical solver is numpy on
+       the CPU. These two timings are not on the same hardware and the ratio between
+       them is not a like-for-like comparison. The power numbers are unaffected.</div>`
+    : '';
   const pub = sp.published || {};
   let extra = '';
   if (sp.ratio_cut) extra = ` The same cut with the <b class="x">classical solver</b> in the
