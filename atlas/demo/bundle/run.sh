@@ -71,10 +71,14 @@ if [ ! -f "$VENV/.deps-ok" ] || [ requirements.txt -nt "$VENV/.deps-ok" ]; then
     echo "    torch: macOS, CPU wheel from PyPI"
     "$VPY" -m pip install "$TORCH"
   elif command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi >/dev/null 2>&1; then
-    # An NVIDIA driver is present and answering, so install the CUDA build --
-    # which on Linux is what plain PyPI already ships.
-    echo "    torch: NVIDIA driver detected, CUDA wheel"
-    "$VPY" -m pip install "$TORCH"
+    # An NVIDIA driver is present and answering, so install the CUDA build. It
+    # comes from pytorch's own index rather than PyPI, for two reasons: the CUDA
+    # version is then pinned and stated instead of being whatever PyPI's default
+    # build happens to be, and it is the same line the Windows launcher uses.
+    # On the box this was verified on, PyPI ran at 0.6 MB/s and this index at
+    # 2.1 MB/s for the same wheel, which on a 3 GB install is an hour.
+    echo "    torch: NVIDIA driver detected, CUDA 12.6 wheel"
+    "$VPY" -m pip install "$TORCH" --index-url https://download.pytorch.org/whl/cu126
   else
     echo "    torch: no NVIDIA driver, CPU-only wheel (a tenth of the size)"
     "$VPY" -m pip install "$TORCH" --index-url https://download.pytorch.org/whl/cpu
