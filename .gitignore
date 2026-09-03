@@ -52,3 +52,6 @@ out/w118/*
 out/w112/*
 !out/w112/w112.json
 !out/w112/horizon.json
+
+# a local clone of the poc1-windfarm-demo branch, for trying the bundle out
+atlas-demo/

@@ -3,10 +3,13 @@ REM One command on Windows: build a virtual environment beside this file,
 REM install everything the demo needs into it at pinned versions, self-test,
 REM and start the server.
 REM
-REM   run.cmd                         then open http://127.0.0.1:8011/
-REM   run.cmd --domain large --turbines 25
-REM   run.cmd --check                 self-test only, no server
-REM   run.cmd --reinstall             throw the venv away and build it again
+REM   .\run.cmd                       then open http://127.0.0.1:8011/
+REM   .\run.cmd --domain large --turbines 25
+REM   .\run.cmd --check               self-test only, no server
+REM   .\run.cmd --reinstall           throw the venv away and build it again
+REM
+REM The leading .\ is for PowerShell, which will not run a program from the
+REM current directory without a path; in cmd.exe either form works.
 REM
 REM Nothing is installed outside .venv. Delete that folder to undo everything.
 REM The Poseidon-T checkpoint is IN this checkout (vendor\hf-cache, 83 MB), so
@@ -82,7 +85,7 @@ if not exist ".venv\.deps-ok" (
     echo That archive is the ONLY thing this bundle fetches at install time;
     echo the checkpoint itself is already in vendor\hf-cache. With no network
     echo you can still run the classical column:
-    echo     run.cmd --expert reference_exposed
+    echo     .\run.cmd --expert reference_exposed
     exit /b 1
   )
   echo ok> ".venv\.deps-ok"

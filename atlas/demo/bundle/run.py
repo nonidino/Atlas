@@ -78,7 +78,7 @@ def _packages() -> int:
             missing.append((name, why, exc))
             print(f"    MISSING  {name:<16} -- {why}")
     if missing:
-        print("\n  This bundle is not installed. Run ./run.sh (or run.cmd), which "
+        print("\n  This bundle is not installed. Run ./run.sh (Windows: .\\run.cmd), which "
               "builds .venv\n  and installs requirements.txt into it. If you are "
               "running python directly,\n  use the interpreter inside .venv.")
         for name, _why, exc in missing:

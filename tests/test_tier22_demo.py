@@ -793,3 +793,30 @@ def test_the_bundle_pins_every_dependency_and_carries_the_checkpoint():
     assert "ATLAS_BUILD_REPO" in run
     for pkg in ("torch", "scOT", "transformers", "fastapi"):
         assert f'("{pkg}"' in run, f"run.py --check does not verify {pkg}"
+
+
+def test_the_windows_command_is_written_the_way_powershell_needs_it():
+    """The first command, in the shell Windows 11 actually opens.
+
+    PowerShell does not run a program from the current directory, so a bare
+    `run.cmd` fails with "The term 'run.cmd' is not recognized" while the file
+    sits in plain sight. The launcher was verified from a real clone and this
+    was still missed, because the verification never typed the documented
+    command into the documented shell -- so the promise of one command from a
+    bare checkout was false in the default case. Every place a reader is told
+    what to type must carry the `.\\`.
+    """
+    b = os.path.join(os.path.dirname(de.__file__), "bundle")
+    if not os.path.isdir(b):                                # pragma: no cover
+        b = os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(de.__file__))))
+
+    for name in ("README.md", "run.cmd"):
+        text = open(os.path.join(b, name), encoding="utf-8").read()
+        for i, line in enumerate(text.splitlines(), 1):
+            stripped = line.lstrip(" \t#>REM").lstrip()
+            if stripped.startswith("run.cmd"):
+                raise AssertionError(
+                    f"{name}:{i} tells the reader to type a bare `run.cmd`, "
+                    f"which PowerShell refuses: {line.strip()!r}")
+        assert ".\\run.cmd" in text, f"{name} never shows the working form"

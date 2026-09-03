@@ -42,13 +42,18 @@ cd poc1
 ./run.sh
 ```
 
-**Windows**
+**Windows** — in PowerShell, which is what Windows 11 opens by default:
 
-```bat
+```powershell
 git clone --branch poc1-windfarm-demo --single-branch https://github.com/nonidino/Atlas.git poc1
 cd poc1
-run.cmd
+.\run.cmd
 ```
+
+The `.\` is not decoration. PowerShell does not run programs from the current
+directory, so a bare `run.cmd` fails with *"The term 'run.cmd' is not
+recognized"* even though the file is right there. In `cmd.exe` either form
+works.
 
 Then open **<http://127.0.0.1:8011/>**.
 

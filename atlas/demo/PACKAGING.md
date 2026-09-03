@@ -13,7 +13,7 @@ all three**, laid out so that one command runs it.
 ```bash
 git clone --branch poc1-windfarm-demo --single-branch https://github.com/nonidino/Atlas.git poc1
 cd poc1
-./run.sh                # Windows: run.cmd
+./run.sh                # Windows PowerShell: .\run.cmd  (the .\ is required)
 ```
 
 macOS, Linux and Windows. Python 3.10-3.12. No GPU required, CUDA used if it is
