@@ -984,8 +984,20 @@ class Engine:
         if not self.worker.is_alive():
             self.worker.start()
 
-    def stop(self) -> None:
+    def stop(self, join_s: float = 15.0) -> None:
+        """Ask the worker to stop, and wait for it to actually be out of torch.
+
+        The wait is not tidiness.  A daemon thread is killed where it stands at
+        interpreter exit, and if that is inside a torch call the process can go
+        down with `terminate called without an active exception` -- which is
+        what `pytest tests/test_tier22_demo.py` did on Linux after reporting
+        `38 passed`, turning a clean run into exit 134.  One macro-step is the
+        longest this waits in practice.
+        """
         self._stop.set()
+        if (join_s and self.worker.is_alive()
+                and threading.current_thread() is not self.worker):
+            self.worker.join(join_s)
 
     # -- the message queue -------------------------------------------------
 

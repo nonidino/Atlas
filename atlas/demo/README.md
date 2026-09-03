@@ -9,7 +9,7 @@ is running on.**
 
 | | what it shows | which columns |
 |---|---|---|
-| **① Faster** | the domain cut into overlapping windows, each marched by its own copy of a **frozen** fluid expert and re-assembled every step, costs *less* per macro-step than one **undivided** classical solver over the same grid: 2.1x to 3.4x less on the development box, 1.1x on a rented Linux one. The margin is a property of the machine; the direction has held on every machine measured | all of them, taking turns |
+| **① Timed** | the domain cut into overlapping windows, each marched by its own copy of a **frozen** fluid expert and re-assembled every step, against one **undivided** classical solver over the same grid. Measured 2.1x to 3.4x *faster* per macro-step on the development box, 1.07x on one rented Linux box and 0.43x — *slower* — on another. The margin, and on a weak enough CPU the sign, is a property of the machine, which is why the panel measures rather than claims | all of them, taking turns |
 | **② Differentiable** | one backward pass through the whole coupled simulation returns the derivative of farm power with respect to every position and every yaw angle at once, so an optimiser moves them all together | the composed graph **only** — the classical solver returns a number and no derivative |
 
 and then it prices the result honestly: the layout the optimiser found, scored
@@ -85,9 +85,11 @@ laptop.
    in one piece by a classical solver. Grey is undisturbed wind, blue is a wake,
    orange is air squeezing past."* The speed panel fills in as it goes.
 2. **Read the ratio.** *"Same machine, same problem, one after the other so
-   neither is competing with the other for cores. The cut-up one is about three
-   times faster per step — and that number was produced here, in the last
-   minute, not read off a slide."*
+   neither is competing with the other for cores. That number was produced here,
+   in the last minute, not read off a slide."* On a laptop-class desktop it is
+   two to three times in the composed column's favour; on a shared server CPU it
+   has come out the other way, and the panel says so rather than the demo
+   pretending otherwise.
 3. **Read the accuracy panel.** *"And it is not free: the worst cell in the field
    is off by this much, and the farm power by this much. The undivided solver is
    the referent — we are not claiming to be more accurate than it, we are

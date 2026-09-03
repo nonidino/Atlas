@@ -5,13 +5,16 @@ experts** coupled at typed interfaces — and, beside it, the same problem solve
 by **one undivided classical solver**. The demo makes two claims on one screen
 and measures both of them on your machine:
 
-1. **The composed graph is faster.** The domain is cut into overlapping windows,
-   each marched by its own copy of a frozen neural operator, re-assembled every
-   step. Against the undivided classical solver over the same grid that was
-   **2.1x to 3.4x** per macro-step on the machine this was built on, and
-   **1.1x** on a rented Linux box with a different CPU — same direction, very
-   different margin. **The page measures it on yours**, with the columns taking
-   turns so each has the machine to itself, and reports whatever it finds.
+1. **The composed graph is usually faster, and the page measures whether it is
+   here.** The domain is cut into overlapping windows, each marched by its own
+   copy of a frozen neural operator, re-assembled every step. Against the
+   undivided classical solver over the same grid that was **2.1x to 3.4x**
+   faster per macro-step on the machine this was built on, **1.07x** on one
+   rented Linux box, and **0.43x** — slower — on another whose CPU shares 192
+   cores with other tenants. On that same box the composed column on the GPU was
+   **6.4x** the CPU monolith. So the margin is a property of the machine and the
+   page reports what it finds here, with the columns taking turns so each has
+   the machine to itself.
 2. **The composed graph can be optimised, and the classical one cannot.** One
    backward pass through the entire coupled simulation returns the derivative of
    farm power with respect to every turbine position and every yaw angle at
