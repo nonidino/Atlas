@@ -207,6 +207,12 @@ def commit(out: str, message: str) -> None:
         ["git", "-C", ROOT, "config", "user.name"], capture_output=True,
         text=True).stdout.strip() or "atlas")
     git("add", "-A")
+    # `os.chmod` above does nothing on Windows -- NTFS has no execute bit and git
+    # records 100644 -- so the mode is set in the INDEX instead. Without this
+    # `./run.sh` on the branch is not executable and a Linux or macOS user's
+    # first command fails with "Permission denied" (exit 126), which is exactly
+    # what a fresh-clone check on a rented Linux box caught on 2026-09-02.
+    git("update-index", "--chmod=+x", "run.sh")
     git("commit", "-q", "-m", message)
     head = subprocess.run(["git", "-C", out, "rev-parse", "HEAD"],
                           capture_output=True, text=True).stdout.strip()
