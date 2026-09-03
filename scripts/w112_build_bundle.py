@@ -194,6 +194,12 @@ def commit(out: str, message: str) -> None:
         return subprocess.run(["git", "-C", out, *a], check=True, **kw)
 
     git("init", "-q", "-b", BRANCH)
+    # The checkpoint sits at vendor/hf-cache/hub/models--.../snapshots/<sha>/,
+    # which is 116 characters before the checkout root is prepended -- past
+    # Windows MAX_PATH from any deep build directory. Git handles it with this
+    # set; a user cloning into a deep path needs the same, which the bundle
+    # README says in the words of the error they would see.
+    git("config", "core.longpaths", "true")
     git("config", "user.email", subprocess.run(
         ["git", "-C", ROOT, "config", "user.email"], capture_output=True,
         text=True).stdout.strip() or "noreply@example.com")

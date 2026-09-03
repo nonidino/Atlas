@@ -62,6 +62,10 @@ No `git`? Download the branch as a zip from the repository's **Code → Download
 ZIP** with the `poc1-windfarm-demo` branch selected, unpack it, and run the same
 script.
 
+On Windows, if `git clone` reports **"Filename too long"**, the checkout path is
+too deep for the bundled checkpoint's own directory name: clone somewhere
+shorter (`C:\poc1`), or run `git config --global core.longpaths true` first.
+
 ### Requirements
 
 - **Python 3.10, 3.11 or 3.12.** The pins have no wheels outside that range and
