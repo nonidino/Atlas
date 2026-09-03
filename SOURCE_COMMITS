@@ -1,0 +1,6 @@
+assembled          2026-09-03
+
+nonidino/Atlas                       d959691d27de4317b7be0bef01519cd40d6d59a6
+nonidino/physics-foundation-model    0a407b7fca92e5c7fb9c38ef6fc0131c6b7ecdb2
+camlab-ethz/Poseidon-T (weights)     ec976ed5d25883ec9db4e486ebbeeefa9e08303b   (83.2 MB, CC-BY-NC-4.0)
+camlab-ethz/poseidon   (scOT code)    b8fa28f59bd7f7673323f28d11a12c6f3a215c61   (installed by run.sh, not vendored: no licence upstream)
