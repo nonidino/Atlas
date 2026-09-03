@@ -7,9 +7,11 @@ and measures both of them on your machine:
 
 1. **The composed graph is faster.** The domain is cut into overlapping windows,
    each marched by its own copy of a frozen neural operator, re-assembled every
-   step. Against the undivided classical solver over the same grid, that is
-   about **3x** per macro-step at the default farm size. The page measures it
-   live, with the columns taking turns so each has the machine to itself.
+   step. Against the undivided classical solver over the same grid that was
+   **2.1x to 3.4x** per macro-step on the machine this was built on, and
+   **1.1x** on a rented Linux box with a different CPU — same direction, very
+   different margin. **The page measures it on yours**, with the columns taking
+   turns so each has the machine to itself, and reports whatever it finds.
 2. **The composed graph can be optimised, and the classical one cannot.** One
    backward pass through the entire coupled simulation returns the derivative of
    farm power with respect to every turbine position and every yaw angle at

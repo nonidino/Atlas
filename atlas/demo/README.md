@@ -9,7 +9,7 @@ is running on.**
 
 | | what it shows | which columns |
 |---|---|---|
-| **① Faster** | the domain cut into overlapping windows, each marched by its own copy of a **frozen** fluid expert and re-assembled every step, costs about a third of what one **undivided** classical solver over the same grid costs per macro-step | all of them, taking turns |
+| **① Faster** | the domain cut into overlapping windows, each marched by its own copy of a **frozen** fluid expert and re-assembled every step, costs *less* per macro-step than one **undivided** classical solver over the same grid: 2.1x to 3.4x less on the development box, 1.1x on a rented Linux one. The margin is a property of the machine; the direction has held on every machine measured | all of them, taking turns |
 | **② Differentiable** | one backward pass through the whole coupled simulation returns the derivative of farm power with respect to every position and every yaw angle at once, so an optimiser moves them all together | the composed graph **only** — the classical solver returns a number and no derivative |
 
 and then it prices the result honestly: the layout the optimiser found, scored
