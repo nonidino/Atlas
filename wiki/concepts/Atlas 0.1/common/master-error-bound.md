@@ -153,6 +153,83 @@ $$\textbf{16 configurations in all:}\qquad C_\mu^{\text{halo}} \in [0.228,\,1.17
 
 ---
 
+# 4.2 Bounding $\sigma$ on the MULTIRATE branch — where the exchange interval enters
+
+Written 2026-09-03 from CS-11 ([[case-study-brake-thermal-atlas-0.1]]), and it closes **W90**, which has stood open since Tier 17 with the sharpest statement on the worklist: *"R9 covers the flux transient and is $62\times$ too small; the lag over a long exchange interval is $\sigma$, and nothing bounds it as a function of that interval."*
+
+§4 bounds $\sigma$ where an interface **operator** is wrong. §4.1 bounds it where a **stale halo datum** reaches into a blend. This section bounds it where the two agents run at **different clocks**, and the mechanism is neither of those: the trace is not wrong and the halo is not contaminated — the trace is *old*, for the whole of an interval the slow agent's step fixes and R4 forbids shrinking.
+
+## The form
+
+Over one exchange interval $[t,\,t+\Delta t_{\text{ex}}]$ the composition hands every agent $\lambda(t)$ and the tightly coupled trace moves to $\lambda^\star(t+s)$. Write the lag
+
+$$\delta\lambda(\Delta t_{\text{ex}}) \;:=\; \lambda^\star(t+\Delta t_{\text{ex}}) - \lambda^\star(t), \qquad \lVert\delta\lambda\rVert \;\le\; \dot\lambda_{\max}\,\Delta t_{\text{ex}}$$
+
+and the bound is
+
+$$\boxed{\;\sigma(\Delta t_{\text{ex}}) \;\le\; s_\Gamma\,\lVert\delta\lambda\rVert \;+\; C_2\,\lVert\delta\lambda\rVert^2 \;\le\; s_\Gamma\,\dot\lambda_{\max}\,\Delta t_{\text{ex}} \;+\; C_2\bigl(\dot\lambda_{\max}\,\Delta t_{\text{ex}}\bigr)^2\;}$$
+
+**Two measured constants and one run-derived rate**, which is the same division of labour `sigma_lag` already carries and is why this belongs beside that field rather than instead of it:
+
+| symbol | what it is | who owns it |
+|---|---|---|
+| $s_\Gamma = \mathrm d\sigma/\mathrm d(\text{uniform lag})$ | the seam's own slope. **W86** established that this is the part of $\sigma$ that transfers — constant to five digits over five consecutive macro-steps of `thermal_seam` | the **seam**. One probe, no run |
+| $C_2$ | the curvature interface power's **bilinearity** forces. $\int_\Gamma e\,f$ with $f$ affine in $e$ is quadratic in the trace, so a first-order law is an approximation and the second term says by how much | the **seam**. The same probe |
+| $\dot\lambda_{\max}$ | the trace's own rate of change | the **run**, and nothing at compile time can know it, because nothing has stepped yet |
+
+## Measured
+
+CS-11's brake seam — `ThermoStruct2D` conduction against a convecting cooling duct, $500{:}1$ at native clocks — with $s_\Gamma = 9.4966\times10^{-3}\,\mathrm K^{-1}$ and $C_2 = 1.4288\times10^{-5}\,\mathrm K^{-2}$ from the probe alone, and each interval's own measured lag. **Nothing below is fitted to this table.**
+
+| $\Delta t_{\text{ex}}$ [s] | ratio | lag [K] | measured $\sigma$ | bound | bound / measured | order |
+|---|---|---|---|---|---|---|
+| $1\times10^{-4}$ | $1$ | $0$ | $\mathbf{0}$ | $0$ | — (control) | — |
+| $5\times10^{-4}$ | $5$ | $5.304\times10^{-3}$ | $3.533\times10^{-5}$ | $5.037\times10^{-5}$ | $1.426$ | — |
+| $2\times10^{-3}$ | $20$ | $2.485\times10^{-2}$ | $1.435\times10^{-4}$ | $2.360\times10^{-4}$ | $1.645$ | $1.011$ |
+| $1\times10^{-2}$ | $100$ | $1.252\times10^{-1}$ | $6.186\times10^{-4}$ | $1.189\times10^{-3}$ | $1.922$ | $0.908$ |
+| $5\times10^{-2}$ | $500$ | $7.524\times10^{-1}$ | $3.285\times10^{-3}$ | $7.154\times10^{-3}$ | $2.178$ | $1.037$ |
+| $2\times10^{-1}$ | $2000$ | $4.211$ | $1.853\times10^{-2}$ | $4.024\times10^{-2}$ | $2.172$ | $1.248$ |
+
+> **The bound holds at every graded interval and is loose by between $1.43\times$ and $2.18\times$ over $400\times$ of exchange interval and $2000\times$ of clock ratio.** The defect is first order in the interval — the order column sits at $1.0$ until the last row, where the quadratic term starts to matter and the bound's own second term is what keeps it above.
+
+**Ratio $1$ is the control and its defect is exactly zero, not small.** One duct step *is* the interval, so there is nothing to be stale about; anything else would mean the instrument was measuring itself. It carries no tightness ratio and quoting $0/0$ as one would be **W106**'s mistake.
+
+## 4.2.1 The clock ratio is not the variable, and that is what makes the bound usable
+
+The interval sweep above moves two things at once, so on its own it cannot say which one $\sigma$ is a function of. Pinning the interval at the native $5\times10^{-2}\,\mathrm s$ and **refining the fast agent** moves the ratio $8\times$ with the staleness untouched:
+
+| Courant number | $\Delta t_{\text{stable}}$ | ratio | $\sigma$ | relative |
+|---|---|---|---|---|
+| $0.40$ | $2.048\times10^{-5}$ | $2442$ | $3.285085\times10^{-3}$ | $1.000000$ |
+| $0.20$ | $1.024\times10^{-5}$ | $4883$ | $3.285386\times10^{-3}$ | $1.000092$ |
+| $0.10$ | $5.120\times10^{-6}$ | $9767$ | $3.285536\times10^{-3}$ | $1.000137$ |
+| $0.05$ | $2.560\times10^{-6}$ | $19533$ | $3.285611\times10^{-3}$ | $1.000160$ |
+
+$$\textbf{8}\times \textbf{ of clock ratio at a fixed interval moves } \sigma \textbf{ by } 1.00016\times.$$
+
+**This is what makes the bound worth having.** A real conduction-against-convection seam runs at $10^4$–$10^5$, which no single-rate referent can be built at; a bound written in the *ratio* would be uncheckable there. A bound written in the *interval* is checked here at ratio $5$ and applies at ratio $10^5$, because the ratio is not in it.
+
+**Scoped, and the scope is the interesting part.** This holds for a fast agent that **sub-steps internally at its own stability limit** — what a classical explicit solver does, and what makes its declared `dt_native` a bookkeeping choice rather than a physical constraint. A **frozen learned expert cannot refine its own march**: its `dt_native` is fixed by its weights, so at a fixed interval a coarser ratio means genuinely fewer, genuinely larger steps, and the ratio re-enters through the fast side's own discretization error. That case is **unmeasured**, it is exactly the case R4's asymmetry is about, and it is the one the substitution campaign will meet.
+
+## 4.2.2 The remedy R4 leaves open, and what it is worth
+
+R4 forbids $\Delta t_{\text{ex}} < \max_i \Delta t_i$, so the first term of the bound cannot be reduced by shortening the interval. **W17's $W>1$ is the one axis that remains**, and it does not shorten the interval — it stops the trace inside it being constant. R3 admits it wherever every agent at the seam declares `bc_time_varying`, which both of CS-11's do.
+
+Carrying $\lambda$ as a linear waveform built from the **previous** interval's rise replaces the first difference with the second, and measured over one interval it is worth $3.6\times$ to $56.6\times$; over a $200$-interval rollout it is worth $1.84\times$ on the accumulated defect. **The reduction is not monotone in the interval and should not be**: the ratio between a first difference and a second is the trace's *curvature*, which is a property of where on the transient the interval sits. That is W86's shape again — the transferable quantity is a slope and the thing that moves is the profile — and the practical reading is that **a waveform buys an order, not a factor.**
+
+## 4.2.3 Where this sits against R9
+
+R9 matches the **time-integrated** flux and is the rule that has refused every multirate graph since this compiler existed. Measured on `thermal_seam`, R9's own term is $62.4\times$ smaller than the lag term. Nothing here retracts R9 — a pointwise match across two clocks is still not conservative and CS-11's graph is still refused when it declares one — but the two terms now have different statuses:
+
+| term | rule | status |
+|---|---|---|
+| flux transient (pointwise vs integrated) | **R9**, a refusal | covered, and it is the smaller term by $62\times$ |
+| stale trace over the interval | **this section** | **bounded**, first order in $\Delta t_{\text{ex}}$, with two seam constants and one run rate |
+| interpolation order caps the scheme order; coupling stiffness sets stability | `L7/R9/order` | still a decertification. Neither is touched here |
+
+**And the clock ratio turns out to be where R9's term lives and this one does not** — which is the cleanest statement of why the two were confused. The ratio moves the fast side's flux transient and leaves the staleness alone; the interval moves the staleness and drags the ratio with it only because R4 ties them together.
+
+---
 # 5. Bounding $\gamma$ — and why the accelerator choice is a bound, not a preference
 
 $\gamma\le C_\mu\lVert\lambda^{(k)}-\lambda^\dagger\rVert$, and the second factor is whatever the solver guarantees:

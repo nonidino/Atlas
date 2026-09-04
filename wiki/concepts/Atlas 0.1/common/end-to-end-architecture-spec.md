@@ -51,6 +51,55 @@ There are five things this architecture cannot do and does not know how to do. E
 
 ---
 
+## 0.4 Convention three — a reported quantity carries the temporal parameters that move it
+
+**Added 2026-09-03 (CS-11). Binding on L7, L8 and L9.** Like §0.2's three verdicts, this is a convention rather than a construction: it does not compute anything new, it says what a number is not allowed to be reported without.
+
+Three temporal parameters silently move a reported quantity in this architecture. They are not the same parameter, they are owned by different layers, and each has been discovered separately by a case study measuring something else:
+
+| parameter | what it moves | how far it moved it, measured | the declaration it requires | found by |
+|---|---|---|---|---|
+| **exchange interval** $\Delta t_{\text{ex}}$ | $\sigma$, the transmission defect | $\sigma$ ranged $7.70\times$ over five consecutive macro-steps of one seam, and $1.48\times$ between two steps whose scalar lags agreed to $8\%$ | **`sigma_lag`** — the lag, as a number on `MeasuredConstants`, not a phrase inside `probe_state` | **W86**, CS-5 |
+| **clock ratio** $r=\Delta t_{\text{ex}}/\Delta t_i$ | nothing, at a seam whose fast agent sub-steps internally — and this is the finding, not the absence of one | $1.00016\times$ over $8\times$ of ratio at a fixed interval; against $525\times$ in $\sigma$ over the same span of ratio when the *interval* moves with it | **the interval, not the ratio.** A multirate $\sigma$ is declared against $\Delta t_{\text{ex}}$; the ratio is quoted as **scope**, because the independence is measured for an agent that can refine its own march and is untested for one that cannot | **W131**, CS-11 |
+| **rollout horizon** $N$ | any quantity read off a rollout — a design sensitivity, a cut criterion, a composed defect | $\mathrm dJ/\mathrm d\theta$ **changed sign** between horizons in two independent case studies, on different physics, with every value confirmed by its own finite difference | **`horizon`** — the $N$ the quantity was taken at, and the **validity limit** past which it is not determined | **W128**, CS-10; **W123**, CS-9★ |
+
+### 0.4.1 The rule
+
+> **A quantity read off a rollout is reported with the horizon it was read at, and a quantity read off an exchange is reported with the interval it was read at. A report without them is refused, not decertified** — it is the silent-wrongness class of §0.2 exactly: it produces a number, no error, no failed gate, and the number means something other than what it is read as.
+
+The asymmetry with §0.2's other refusals is worth naming: **these are refusals of a *report*, not of a *run***. The computation is fine. Every finite difference in CS-10 §6 confirms its adjoint to three or four digits, at every horizon, *including the horizon whose sign is wrong*. What is refused is quoting the number without the parameter that determines it.
+
+### 0.4.2 What "a validity limit" means, and why it is $T_{\text{pred}}$ one level down
+
+§11.3 already types a *trajectory* claim by the horizon past which the master bound goes vacuous. A rollout-derived scalar needs the mirror image of that statement — a horizon **before** which it is not yet the number it converges to:
+
+$$N_{\text{valid}}(\varepsilon) \;=\; \min\Bigl\{\,N \;:\; \bigl\lvert q(N') - q(\infty)\bigr\rvert \le \varepsilon\,\lvert q(\infty)\rvert \quad\text{for all } N' \ge N \,\Bigr\}$$
+
+and the two bracket the usable range: **a rollout quantity is meaningful on $N_{\text{valid}}(\varepsilon) \le N \le T_{\text{pred}}/\Delta t$, and that window can be empty**. When it is empty the honest report is that no horizon exists at which the quantity is both converged and inside the bound, which is a statement the architecture can make and currently cannot.
+
+The **sign** is the coarsest case of the same thing and is reported separately, because it is what an optimiser consumes and because it is decidable where a tolerance is not:
+
+$$N_{\text{sign}} \;=\; \min\Bigl\{\,N \;:\; \operatorname{sign} q(N') \text{ is constant for all } N' \ge N \,\Bigr\}$$
+
+**A design search run below $N_{\text{sign}}$ moves the knob the wrong way**, and both CS-10 and CS-11 measured a graph where it does.
+
+### 0.4.3 The declarations, stated as record fields
+
+Three fields, and each is a number rather than prose. This is W86's discipline generalized: that row existed because $\sigma$'s lag *was* quoted, in a sentence nothing could read.
+
+| field | on | meaning | absent |
+|---|---|---|---|
+| `sigma_lag` | `MeasuredConstants` | the lag $\sigma$ was measured at | **exists since W86.** `solve.rollout` derives the run's own lag and `multiphysics.check_sigma_lag` compares; the comparison can falsify and can never confirm |
+| `sigma_interval` | `MeasuredConstants` | the **exchange interval** $\sigma$ was measured at, with the clock ratio beside it as scope | **decertify** — a multirate $\sigma$ without its interval names no scale. CS-11 supplies the law that makes the field evaluable at another interval rather than only comparable |
+| `horizon` | every rollout-derived quantity | $N$, plus $N_{\text{valid}}(\varepsilon)$ at a declared $\varepsilon$ and $N_{\text{sign}}$ | **refuse.** This is the one §0.4.1 promotes, and it is promoted rather than decertified because a gradient quoted at an undetermined sign is not a weaker claim than one quoted at a determined sign — it is a differently-signed one |
+
+**The third is the one this convention adds and it is deliberately the strictest.** $\sigma$ without its lag is a bound with unknown tightness, which is a decertification; a sensitivity without its horizon can point the other way, which is not. **[AI Inference]:** the same argument makes $N_{\text{sign}}$ the field an optimiser should be handed rather than $N_{\text{valid}}$ — a search tolerates a $2\times$ error in a gradient's magnitude and does not tolerate its sign — but no optimiser has been run in this loop yet and that ordering is argued rather than measured.
+
+### 0.4.4 Where the emit contract picks it up
+
+§10.2's table gains one row under **claim** — *the per-quantity horizon table*, keyed by quantity, carrying $N$, $N_{\text{valid}}$ and $N_{\text{sign}}$ — which is the same shape §11.3's box already argued $T_{\text{pred}}$ needs and for the same reason: **tolerance is a property of the quantity being claimed, so a run has one $L$ and as many horizons as it has quoted quantities.** The two tables are the two ends of the same window and should be emitted together.
+
+---
 # 1. The spine — the envelope as a machine-checkable stamp
 
 [[theory-closure-audit]] §3 states the seven hypotheses under which [[master-error-bound]] is a theorem. This page makes them a **stamp emitted by every run**, with three possible values per hypothesis: `holds` (checked), `fails` (checked), `unchecked`.
@@ -367,6 +416,8 @@ Two clocks are the problem. One agent wants a step the other cannot take, and th
 | **W** | $W^\star\approx\min\bigl(1/\ln \hat L,\ W_{\text{SWR}}\bigr)$, clamped by R3 | choose the window so one block is conditioned at $L^W\le e$ |
 
 $L$ is unmeasured, so $W^\star$ is uncomputable, so **$W=1$ is the honest default and the compiler must say that it is defaulting rather than choosing.**
+
+> **The multirate defect is bounded since 2026-09-03 (CS-11, W90), and the bound is in the exchange interval rather than the clock ratio.** R9 covers the flux transient; the *stale trace* over the interval is $\sigma$ and [[master-error-bound]] §4.2 now gives it as $\sigma \le s_\Gamma\,\dot\lambda_{\max}\Delta t_{\text{ex}} + C_2(\dot\lambda_{\max}\Delta t_{\text{ex}})^2$ — first order, two seam constants from one probe, one rate from the run, holding at $1.43\times$ to $2.18\times$ over $2000\times$ of clock ratio. **Eight times of clock ratio at a fixed interval moves it by $1.00016\times$**, which is what lets a bound checked at ratio $5$ apply at the $10^4$–$10^5$ a real conjugate seam runs at and no referent can be built at. The ratio is quoted as **scope** and not as an argument, and the scope has a live edge: a frozen expert cannot refine its own march, so the independence is measured only for an agent that can. `L7/R9/lag` decertifies with this bound's constants rather than with a comparison to another graph's numbers, and the interval it was measured at is a declared field under §0.4.
 
 ## 9.3 Envelope, failures, refusals
 

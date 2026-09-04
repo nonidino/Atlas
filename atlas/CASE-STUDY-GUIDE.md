@@ -224,12 +224,26 @@ Declare when you have them, decertify (never fabricate) when you don't:
   is free once you know the matrix is SPD.
 - `validity` — a callable `(state, cond) -> bool`. Its absence decertifies at
   every graph size $K$ (spec §3.4) rather than refusing — see the box below.
-- `differentiable` — `NONE`, `JVP`, or `FD`. **If you declare `JVP` you must
-  also supply `boundary_response_jvp`.** A record claiming a derivative with
+- `differentiable` — `NONE`, `JVP`, `VJP` or `BOTH`. **If you declare `JVP` you
+  must also supply `boundary_response_jvp`.** A record claiming a derivative with
   no way to compute one is a contradiction *inside the declaration*, and
   `missing_fields()` catches it before L4 ever tries to call it — that was one
   of the seven things this implementation found wrong the first time it was
   tried.
+
+  **This line said `NONE`, `JVP`, or `FD` until 2026-09-03 and there has never
+  been an `FD` member** — found by CS-11 declaring what the guide said and
+  getting an `AttributeError`. That is the harmless end of the class; the useful
+  end is what it was hiding, which is that `VJP` and `BOTH` exist, were
+  documented nowhere, and a reverse-mode expert had no documented way to learn it
+  could say so. **A finite-difference probe is not a value of this field** — it
+  is what **R7** *derives* from `NONE` plus `deterministic=True` plus a
+  `reproducibility_floor`: *"`none` but deterministic and smooth → finite
+  differences with epsilon set by the reproducibility floor"*. Declare the triple
+  and let the rule choose. `brake_thermal` is the first case study to take that
+  branch deliberately, and CS-10 is what makes it trustworthy — a central
+  difference against an exact adjoint on a composed stack agreed to `1.3e-6` over
+  five decades of step.
 - `bc_channel` — `NONE` through `VENTCELL`. `NONE` means the expert has
   nowhere to put a boundary condition at all (a periodic-window checkpoint,
   say); its zero-probe response then doesn't depend on the imposed trace, so

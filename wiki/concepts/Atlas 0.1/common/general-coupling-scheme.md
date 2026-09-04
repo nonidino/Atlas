@@ -138,6 +138,34 @@ CoupledStep(u^n, graph, Σ):
 
 ---
 
+## 4.2 The default at a field↔lumped `MECH` seam — solve the port's condition in the port's own variable
+
+**Added 2026-09-03, lifted out of CS-10 so it is a rule rather than a thing one case study learned.** [[case-study-ground-effect-atlas-0.1]] §2.3 measured it; this section states it as the scheme's default so Phase C does not meet it four more times.
+
+A lumped agent publishes a constitutive law — a spring's $k(h_0-h)=L$, a motor map's $\tau(\omega)$, a battery's $V(I)$. There are two ways to read that law inside a coupled step, they are not equivalent, and **the natural-looking one diverges**:
+
+| reading | what it is | what happens |
+|---|---|---|
+| **update** — $h^{n+1} \leftarrow h_0 - L^n/k$ | move the lumped state straight to the value its own law wants, given the field's last force | **the partitioned-FSI added-mass instability.** Measured at CS-10's wing: an implied plate velocity of $-5.77\,U_\infty$ in one macro-step, a load of order $17$ against the $0.25$ the spring was balancing, and divergence at macro-step $1$ |
+| **interface condition** — solve $\mathcal R(f)=0$ for the port's own **flow** half | the two agents' `boundary_response`s summed to zero, in the variable the port declares | converges in $\sim3$ Newton steps to a residual of $1.1\times10^{-16}$ |
+
+> **The rule.** At a field↔lumped seam the lumped agent's law is **one half of an interface equation, never an update**. Write the residual in the port's own conjugate variables and solve it there.
+
+**Under-relaxation is not the fix and cannot be.** Where the fixed-point map's derivative is positive and above one the fixed point is *repelling*, and $(1-\omega) + \omega g' > 1$ for **every** $\omega > 0$ — so no relaxation parameter exists. This is worth stating because damping is the first thing anyone reaches for and it costs a day to establish that it cannot work.
+
+**What makes the interface form well posed is a term the update form throws away.** The field expert's response to the lumped side's *velocity* — the aerodynamic damping $C_d = \partial L/\partial v$, measured at $\approx 3$ on CS-10's plate — is what makes $\partial\mathcal R/\partial f$ bounded away from zero. An update reads only $L(h)$ and never asks the field what it does when the body *moves*, which is precisely the term that stabilizes the coupling. Restated in this page's own vocabulary: the update form is a $\tilde\Lambda \equiv 0$ scheme in disguise — it solves no interface problem — and **R6** already refuses an accelerator on an empty one.
+
+**The derivative is analytic and costs no second field evaluation**, which is what makes this affordable enough to be a default rather than a trade. The external flow at the body's stations does not depend on the body's own velocity, so differentiating the residual differentiates only the closed-form lumped law and the body's own kinematic term:
+
+$$\frac{\partial\mathcal R}{\partial v} \;=\; -k\,\Delta t \;-\; C_N\sum_k \lvert w_k\rvert\cos^2\!\alpha\,\mathrm ds$$
+
+at CS-10's seam. **Use a fixed Newton count, not a tolerance**, if anything downstream differentiates the solve: a reverse-mode tape has to have the same shape at every value of the design parameter, and a convergence-dependent iteration count gives it a different one. Three steps, and report the residual so the count is defended rather than assumed.
+
+**And the same reading applies at a field↔field seam, where it is cheaper still.** CS-11's conjugate-heat seam ([[case-study-brake-thermal-atlas-0.1]] §2.3) has two responses that are *affine* in the trace on the states at hand, so the interface condition has a **closed form** and needs no iteration at all — the residual is zero to floating point rather than to a tolerance. That is the same rule one step further: the question is never "what does my subsystem's law say the answer is", it is "where do the two responses balance", and how expensive that is to answer is a property of the responses rather than of the coupling.
+
+**Where this sits in $\Sigma$.** It is not a new axis. It is a statement about $\mathcal K$ at a particular kind of seam: `richardson` on the update form is the divergent scheme above, and `newton-krylov` on the interface residual is the convergent one — so the entry in §6's instantiation table for a field-plus-lumped case is `newton-krylov`, and **R6 is what makes it legal**, because the interface problem has to be non-empty for an accelerator to mean anything. §5's degenerate-axis trap is the general form of the same mistake.
+
+---
 # 5. The two structural traps
 
 **Cross-points.** `non-overlapping` decomposition creates points where three or more subdomains meet, and there the transmission conditions are **not independent** — naive Robin conditions at a cross-point are ill-posed, and this is the specific difficulty FETI-DP and BDDC exist to handle (by making corner degrees of freedom primal, i.e. continuous by construction). **Overlapping-with-partition-of-unity does not have this problem**, which is why the current tiling has never hit it despite 124 tiles meeting four-at-a-corner.

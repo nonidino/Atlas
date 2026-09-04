@@ -235,7 +235,7 @@ Everything else on [[gap-worklist]] is real and none of it blocks this schedule.
 | **W32** — `PortAmendment` never exercised | any new bond at all | **CS-9** |
 | **W97** — field-to-lumped certificate blind | every lumped subsystem in the car | **CS-10** |
 | **W30 / W22** — interface motion | ride height, deflection, rotation | **CS-10** |
-| **W90** — no bound on the multirate lag | every pair of subsystems on different clocks | **CS-11** |
+| **W90** — no bound on the multirate lag | every pair of subsystems on different clocks | **CS-11 — CLOSED 2026-09-04.** [[master-error-bound]] §4.2: first order in the exchange interval, two probe constants and one run rate, $1.43\times$–$2.18\times$ loose over $2000\times$ of clock ratio, and the clock ratio turns out not to be the variable |
 
 Two more that are not blockers and are getting worse with every added expert: **W69**'s *three unverifiable declarations* (`validity`, `response_half`, `governing_family`) scale linearly in expert count, and **W99** is a live silent bug in the build repo's own adapter.
 
@@ -415,6 +415,42 @@ Full record: [[case-study-ground-effect-atlas-0.1]]; measurements in [[gap-workl
 
 ---
 
+
+# 12. CS-11 is run (2026-09-04)
+
+Full record: [[case-study-brake-thermal-atlas-0.1]]; measurements in [[gap-worklist]] Tier 25; artifact `out/w131/w131.json`. Measured 2026-09-03, written 2026-09-04.
+
+**§4's CS-11 row is met on the first branch of its own gate, and Phase B is complete.** A brake disc against its cooling duct — `ThermoStruct2D` conducting through a $2.5\,\mathrm{mm}$ cast-iron wall, backward Euler, `EMBEDDED`, against a low-Mach convecting duct at the **$500{:}1$ the physics gives** — with the **single-rate** solve as the referent, which is the same code path with the exchange interval set to the duct's own clock.
+
+**1. W90 closes with a function, not a value.** $\sigma$ is first order in the exchange interval and bounded by
+
+$$\sigma(\Delta t_{\text{ex}}) \;\le\; s_\Gamma\,\dot\lambda_{\max}\,\Delta t_{\text{ex}} \;+\; C_2\bigl(\dot\lambda_{\max}\,\Delta t_{\text{ex}}\bigr)^2$$
+
+with $s_\Gamma$ and $C_2$ from **one probe** and $\dot\lambda_{\max}$ from the run. It holds at every graded interval and is loose by $1.43\times$ to $2.18\times$ over $400\times$ of interval and $2000\times$ of clock ratio, with nothing fitted to the table it is checked against, and ratio $1$ — the single-rate control — carries a defect of **exactly zero**.
+
+**2. And the clock ratio is not the variable, which is what makes the bound usable.** Pinning the interval and refining the fast agent moves the ratio $8\times$ and $\sigma$ by $\mathbf{1.00016\times}$. A real conjugate seam runs at $10^4$–$10^5$ and no single-rate referent can be built there — that is why W90 had no number for three tiers — so a bound written in the ratio would be uncheckable where it is needed and a bound written in the interval is not. **Scoped**: it holds for a fast agent that sub-steps internally at its own stability limit, and a frozen checkpoint cannot, which is R4's asymmetry restated as an experiment the substitution campaign owns.
+
+**3. W17's $W>1$ is exercised, and R3 admits it here.** A trace carried as a linear waveform built causally from the previous interval is worth $3.6\times$ to $56.6\times$ per interval and $1.84\times$ over a $200$-interval rollout — non-monotonically, because the ratio between a first difference and a second is the trace's *curvature*. **A waveform buys an order, not a factor.**
+
+**4. W128 closes as a definition, and the second measurement is on different physics.** [[end-to-end-architecture-spec]] §0.4 is a third numbered convention, binding on L7, L8 and L9, covering all three temporal parameters that silently move a reported quantity — exchange interval, clock ratio, rollout horizon — and it makes the gradient case a **refusal** rather than a decertification. Measured here on a duct's inlet velocity, $\mathrm dJ/\mathrm dU$ peaks at $+0.186$ and reaches $-2.402$, **changing sign between $N=150$ and $N=200$**, with a closed-form lumped prediction written before the run that its long-horizon limit matches within $10\%$ and whose sign condition — *the disc released colder than the air cooling it* — is a declared property of the release state. $N_{\text{sign}} = 200$ (one thermal time constant); $N_{\text{valid}}(10\%)$ is **not determined** over $1000$ macro-steps. **The sign settles after one time constant and the magnitude does not settle after five.**
+
+## What this changes for the rest of the schedule
+
+**§3's four coupling kinds now all have a number.** Volumetric has CS-9's splitting error, moving-interface has CS-10's price and refusal, field-to-lumped has W97's closure, and multirate has a bound. **Phase B set out to build the bonds an F1 car needs and the honest summary is that it built three prices and one bound** — which is what the phase was for, and it means every Phase C subsystem now knows what its couplings cost rather than only that some of them are refused.
+
+**Three case studies, three coupling kinds, one order.** CS-9's volumetric splitting error, CS-10's field-to-lumped lag and CS-11's multirate lag are all **first order in the exchange lag** ($\log_2$ ratios $1.003$; $1.258$, $1.165$; order column $1.011$–$1.037$). That is now enough instances to plan against: a Phase C subsystem that halves an exchange interval should expect to halve its coupling defect, and one that cannot halve it — R4 — has a waveform and nothing else.
+
+**And what a rollout accumulates is still nobody's constant.** W123 recurs here on its third quantity: the per-interval defect is first order in the lag and the $200$-interval accumulation is order $0.55$–$0.71$. Every constant in this vault is measured on the one-interval quantity, and CS-16's Claim B is a rollout claim.
+
+## The next step
+
+**Phase C, and CS-12 `wing_fsi.py` is the row.** Two things it inherits and one it should settle first:
+
+- **W114 is still the blocker §10 named.** A quasi-static structural agent is `EMBEDDED` with no `split-step` variant, so `L2/R10` refuses every graph containing one. CS-11 met R10's refusal on the *conduction* side and had the escape — a `split-step` mode where the composition layer supplies the implicit part — precisely because conduction has a time derivative to sub-step. **Elasticity does not, and that is the whole of W114.** It should be settled before CS-12 rather than during it.
+- **A deflecting wing is a moving interface**, so CS-10's re-probe economics apply unchanged: at a solution-dependent seam a cached $S$ does not survive one exchange.
+- **And it is a multirate seam**, so it is the first graph that gets to *use* §4.2's bound rather than produce it — which is the test of whether $s_\Gamma$ and $C_2$ are seam properties in any sense broader than one seam.
+
+---
 ## See Also
 
 - [[f1-pathmap-and-end-goal]] — the end goal, the two claims, and the 12-rung ladder this page reschedules
