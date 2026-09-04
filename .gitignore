@@ -52,6 +52,14 @@ out/w118/*
 out/w112/*
 !out/w112/w112.json
 !out/w112/horizon.json
+# CS-10 (ground effect): the moving-interface record -- the L(h) curve, the six
+# marches, the operator drift, W97's three efforts, the gradient's horizon sweep
+# and the four compiles -- cited line by line by
+# case-study-ground-effect-atlas-0.1.md and re-derived by
+# tests/test_tier27_ground_effect.py.  130 KB.
+!out/w127/
+out/w127/*
+!out/w127/w127.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

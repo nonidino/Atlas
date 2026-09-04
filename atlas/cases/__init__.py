@@ -9,7 +9,7 @@ exactly like these.
 
 ``wind_farm`` and ``rocket`` are **fixtures**: their ``boundary_response`` is a
 matrix somebody wrote down.  The **real case studies** call an actual solver or
-checkpoint, and only they can move a Tier 0 row.  There are nine:
+checkpoint, and only they can move a Tier 0 row.  There are eleven:
 
     window_ns       four reference.WindowNS windows; the whole Tier 0 stack, and
                     the only graph that reaches `admit`
@@ -37,6 +37,15 @@ checkpoint, and only they can move a Tier 0 row.  There are nine:
                     mesh over the same region, and the first exercise of
                     PortAmendment's six-field procedure. It refuses: thermal
                     strain is a BOND and is not a PORT
+    seam_placement  the variable is WHERE THE CUT GOES -- a search over
+                    decompositions under a cost budget, graded against the
+                    hand-chosen tilings every other case study here typed in
+    ground_effect   a wing over a moving floor against a two-line algebraic
+                    suspension -- the first graph whose interface GEOMETRY is a
+                    function of the solution, so `motion_class` is
+                    SOLUTION_DEPENDENT, L2 refuses, and InterfaceMotion's three
+                    measurements exist for the first time. Also the first design
+                    PARAMETER, differentiated through the composed stack
 
 None of them is imported here, because importing one would make the package
 depend on a checkout of another repository; import them explicitly.
