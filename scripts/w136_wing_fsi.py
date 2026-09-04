@@ -81,6 +81,15 @@ LAGS = (1, 2, 4)
 E_SWEEP = (5.0e4, 4.0e4, 3.0e4)
 LAG_SWEEP = (1, 2, 4, 8, 16, 32)
 
+#: **Every cell is marched to at least this many exchanges of its OWN interface
+#: equation.** Added at the CS-12 verification pass, 2026-09-04. The first
+#: version of the map marched every cell the same 80 macro-steps, which gave the
+#: lag-32 cell two and a half exchanges: `undiverged` there is a statement about
+#: arithmetic, not about stability. A loose Gauss-Seidel coupling's amplification
+#: acts once per exchange, so the horizon that makes two cells comparable is
+#: counted in exchanges and not in macro-steps.
+MIN_LAG_INTERVALS = 10
+
 #: The horizon sweep for section 0.4.  `N_sign` and `N_valid` are read off it.
 HORIZONS = (20, 40, 60, 80, 120, 160, 240, 320, 480)
 FD_STEPS = (1.0e-2, 3.0e-2, 1.0e-1)          # relative, on E*
@@ -592,8 +601,48 @@ def stage_zerocut(out: dict, out_dir: str) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _crossing_search(lo, hi, lo_tag: str, hi_tag: str) -> dict:
+    """Tier 23's standing rule applied to an ORDERING of two curves.
+
+    `R closes with the deformation term and does not close without it` is a
+    comparison of two configurations, so it is not a result until it has been
+    marched past the point where the two curves could cross -- and the crossing
+    has to be LOOKED FOR.  A maximum over a march cannot see one: two curves can
+    swap at every step and still have their maxima in the published order.
+    """
+    ratio = lo / np.maximum(hi, 1e-300)
+    bad = np.nonzero(lo >= hi)[0]
+    return dict(lo=lo_tag, hi=hi_tag, n_steps=int(lo.size),
+                n_crossed=int(bad.size),
+                first=int(bad[0]) if bad.size else None,
+                steps=[int(x) for x in bad[:32]],
+                worst_ratio=float(ratio.max()),
+                worst_at=int(np.argmax(ratio)))
+
+
+def _quartiles(a) -> list:
+    q = max(1, a.size // 4)
+    return [float(a[i * q:(i + 1) * q].max()) for i in range(4)]
+
+
+def _keep_horizon(out: dict, key: str, rec: dict) -> None:
+    """Record this horizon BESIDE the ones already measured, never over them.
+
+    A quantity read off a rollout belongs to its horizon (spec section 0.4), so a
+    longer march does not replace a shorter one's number -- it stands beside it,
+    and the pair is the evidence about whether the number was horizon-dependent.
+    """
+    prev = out.get(key) or {}
+    by = dict(prev.get("by_horizon") or {})
+    if prev.get("steps") is not None:
+        by.setdefault(str(prev["steps"]), {k: v for k, v in prev.items()
+                                           if k != "by_horizon"})
+    by[str(rec["steps"])] = rec
+    out[key] = dict(rec, by_horizon=by)
+
+
 def stage_residual(out: dict, out_dir: str, steps: int = 120) -> None:
-    print("== residual: R across the FSI seam ==")
+    print(f"== residual: R across the FSI seam, {steps} macro-steps ==")
     u, v = _settled(out, out_dir)
     res = _march(W.SINGLE_TILING, "tight", u, v, steps)
     E = np.concatenate(([res.energy_0], res.strain_energy))
@@ -635,14 +684,39 @@ def stage_residual(out: dict, out_dir: str, steps: int = 120) -> None:
     print("  CS-9 section 6's rule: the right residual is the RECEIVING")
     print("  subsystem's own balance, because a global R is blind to the coupling")
     print("  under test by six orders")
-    out["residual"] = dict(steps=steps, level=lvl, with_motion=with_motion,
-                           without_motion=without, settled=settled,
-                           corrected=corrected,
-                           corrected_settled=corrected_settled,
-                           factor=without / with_motion,
-                           half_step=[float(x) for x in H],
-                           energy=[float(x) for x in E],
-                           power=[float(x) for x in P])
+
+    # ------------------------------------------------------------------
+    # THE CROSSING SEARCH.  Added at the CS-12 verification pass, 2026-09-04.
+    # The three lines above are MAXIMA, and a maximum cannot see a crossing:
+    # the published ordering can hold on the maxima while the two curves swap
+    # at most of the steps under them.  So the per-step curves are compared.
+    # ------------------------------------------------------------------
+    a_without = np.abs(dE) / lvl
+    a_with = np.abs(dE - P) / lvl
+    a_corr = np.abs(dE - (P - H)) / lvl
+    cross = [_crossing_search(a_with, a_without, "with_motion", "without_motion"),
+             _crossing_search(a_corr, a_with, "corrected", "with_motion")]
+    print()
+    for c in cross:
+        print(f"  {c['lo']} >= {c['hi']} at {c['n_crossed']} of {c['n_steps']} "
+              f"steps; worst instantaneous ratio {c['worst_ratio']:.4e} at step "
+              f"{c['worst_at']}")
+    qw, qc = _quartiles(a_with), _quartiles(a_corr)
+    print(f"  |dE/dt - P| quartile maxima      " + "  ".join(f"{x:.4e}" for x in qw))
+    print(f"  with the half-step term          " + "  ".join(f"{x:.4e}" for x in qc))
+    print("  the quartiles are what say whether a `settled half` was settled")
+
+    _keep_horizon(out, "residual", dict(
+        steps=steps, level=lvl, with_motion=with_motion,
+        without_motion=without, settled=settled,
+        corrected=corrected, corrected_settled=corrected_settled,
+        factor=without / with_motion,
+        crossings=cross,
+        quartiles_with=qw, quartiles_corrected=qc,
+        last_quarter_with=qw[-1], last_quarter_corrected=qc[-1],
+        half_step=[float(x) for x in H],
+        energy=[float(x) for x in E],
+        power=[float(x) for x in P]))
 
 
 # ---------------------------------------------------------------------------
@@ -681,17 +755,39 @@ def _try_march(tiling, coupling, u, v, steps, lag=1, e_star=W.E_STAR):
     They look identical from outside a try block and they mean opposite things:
     reading the first as the second is how a partitioned-coupling stability
     boundary gets invented out of a constitutive one.
+
+    **And `undiverged` is not `stable`, which is why it returns a growth
+    record.** A cell that finishes the march is evidence about the horizon it was
+    marched to and nothing more; a slowly growing oscillation reads as `ok` at
+    every horizon before the one where it reaches the bound. So each cell reports
+    the amplitude of its own tip oscillation over successive quarters, the
+    headroom it has left to the constitutive envelope, and the ratio between the
+    two -- which is a quantity that can falsify `stable` where a survival flag
+    cannot.
     """
     try:
         r = _march(tiling, coupling, u, v, steps, lag=lag, e_star=e_star)
-        return True, "ok", float(r.tip[-1]), None
+        tip = np.asarray(r.tip)
+        q = max(1, tip.size // 4)
+        amp = [float(tip[i * q:(i + 1) * q].max() - tip[i * q:(i + 1) * q].min())
+               for i in range(4)]
+        mean = [float(tip[i * q:(i + 1) * q].mean()) for i in range(4)]
+        peak = float(np.abs(r.delta).max())
+        diag = dict(
+            steps=int(tip.size), amp=amp, mean=mean,
+            growth=float(amp[3] / amp[2]) if amp[2] > 0 else None,
+            max_abs_delta=peak, envelope=float(W.DELTA_MAX),
+            headroom=float(W.DELTA_MAX / peak) if peak > 0 else None,
+            tip_min=float(tip.min()), tip_max=float(tip.max()),
+            u_max=float(np.asarray(r.u_max).max()))
+        return True, "ok", float(tip[-1]), None, diag
     except RuntimeError as exc:
         msg = str(exc)
         if "envelope" in msg:
-            return False, "envelope", None, exc
+            return False, "envelope", None, exc, {}
         if "not finite" in msg:
-            return False, "blowup", None, exc
-        return False, "other", None, exc
+            return False, "blowup", None, exc, {}
+        return False, "other", None, exc, {}
 
 
 def stage_addedmass(out: dict, out_dir: str, steps: int = 80) -> None:
@@ -729,11 +825,15 @@ def stage_addedmass(out: dict, out_dir: str, steps: int = 80) -> None:
     print("  the three couplings, at E* = %.4g (mu = %.4f):" % (W.E_STAR, mu_ref))
     three = {}
     for coupling in ("tight", "lagged", "staggered"):
-        ok, why, tip, exc = _try_march(W.SINGLE_TILING, coupling, u, v, steps)
+        ok, why, tip, exc, diag = _try_march(W.SINGLE_TILING, coupling, u, v,
+                                             steps)
         three[coupling] = dict(ok=ok, why=why, tip=tip,
-                               error=(str(exc)[:400] if exc else None))
+                               error=(str(exc)[:400] if exc else None), **diag)
         if ok:
-            print(f"      {coupling:10s} OK, tip {tip:+.6f}")
+            print(f"      {coupling:10s} OK, tip {tip:+.6f}   amplitude q3->q4 "
+                  f"{diag['amp'][2]:.3e} -> {diag['amp'][3]:.3e}  "
+                  f"(x{diag['growth']:.3f})   envelope headroom "
+                  f"{diag['headroom']:.3g}x")
         else:
             print(f"      {coupling:10s} {why.upper()}: {str(exc)[:110]}")
 
@@ -754,33 +854,56 @@ def stage_addedmass(out: dict, out_dir: str, steps: int = 80) -> None:
     # -- the stability map -------------------------------------------------
     print()
     print("  the stability map: loose Gauss-Seidel at (E*, lag)")
+    #: **The map's own horizon, and it is per cell.** A cell at lag `L` holds its
+    #: interface answer for `L` macro-steps, so a march of `N` steps gives it
+    #: `N/L` exchanges of the interface equation -- at the published `N = 80` the
+    #: lag-32 cell got TWO AND A HALF, which is a statement about arithmetic and
+    #: not about stability.  `MIN_LAG_INTERVALS` is the floor every cell is
+    #: marched to in its OWN clock, so the map is comparable across the row.
     grid = {}
+    worst_growth = (None, 0.0)
     for e in E_SWEEP:
         row = {}
         for lag in LAG_SWEEP:
-            ok, why, tip, _exc = _try_march(W.SINGLE_TILING, "lagged", u, v,
-                                            max(steps, 4 * lag), lag=lag,
-                                            e_star=e)
-            row[str(lag)] = dict(ok=ok, why=why, tip=tip)
+            n = max(steps, MIN_LAG_INTERVALS * lag)
+            ok, why, tip, _exc, diag = _try_march(W.SINGLE_TILING, "lagged", u,
+                                                  v, n, lag=lag, e_star=e)
+            row[str(lag)] = dict(ok=ok, why=why, tip=tip,
+                                 lag_intervals=n // lag, **diag)
             mark = {"ok": ".", "envelope": "e", "blowup": "X",
                     "other": "?"}[why]
-            print(f"      E* = {e:8.3g}  lag {lag:3d}  {mark}"
-                  + (f"  tip {tip:+.6f}" if ok else ""))
+            extra = ""
+            if ok:
+                extra = (f"  tip {tip:+.6f}  {n} steps = {n // lag:3d} lag "
+                         f"intervals  amp x{diag['growth']:.3f}  headroom "
+                         f"{diag['headroom']:.3g}x")
+                if diag["growth"] and diag["growth"] > worst_growth[1]:
+                    worst_growth = (f"E*={e:.6g} lag={lag}", diag["growth"])
+            print(f"      E* = {e:8.3g}  lag {lag:3d}  {mark}{extra}")
         grid[f"{e:.6g}"] = row
     print("      legend: . stable   e left the small-strain envelope   "
           "X not finite")
+    print(f"      worst amplitude growth over the map: {worst_growth[1]:.4f}x "
+          f"at {worst_growth[0]}")
+    print("  **`undiverged` is not `stable`.** Every cell is marched to at least")
+    print(f"  {MIN_LAG_INTERVALS} exchanges of its OWN interface equation, and the")
+    print("  discriminator is the amplitude of the tip oscillation over the last")
+    print("  two quarters: a growth ratio above 1 that RISES with the lag is a")
+    print("  scheme on its way to the bound, which a survival flag cannot see")
     print("  **the two failures are different and are recorded separately.** A")
     print("  run that leaves the constitutive envelope is the EXPERT declining;")
     print("  a run that goes non-finite is the SCHEME diverging, and reading the")
     print("  first as the second is how an added-mass boundary gets invented")
 
-    out["addedmass"] = dict(
+    _keep_horizon(out, "addedmass", dict(
         K_norm=float(np.linalg.norm(K, 2)),
         K_offdiag=float(np.abs(K - np.diag(np.diag(K))).max()
                         / np.abs(K).max()),
         ratios=ratios, mu_at_reference=mu_ref, e_divergence=float(e_div),
         three=three, implied_velocity=w_implied, load_ratio=load_ratio,
-        stability=grid, steps=steps)
+        stability=grid, steps=steps,
+        min_lag_intervals=MIN_LAG_INTERVALS,
+        worst_growth=worst_growth[1], worst_growth_cell=worst_growth[0]))
 
 
 # ---------------------------------------------------------------------------
@@ -889,6 +1012,7 @@ def main(argv=None):
     ap.add_argument("--stages", nargs="*", default=list(STAGES), choices=STAGES)
     ap.add_argument("--gate-steps", type=int, default=N_GATE)
     ap.add_argument("--addedmass-steps", type=int, default=80)
+    ap.add_argument("--residual-steps", type=int, default=120)
     a = ap.parse_args(argv)
     os.makedirs(a.out, exist_ok=True)
     path = os.path.join(a.out, "w136.json")
@@ -918,6 +1042,8 @@ def main(argv=None):
                 stage_zerocut(out, a.out)
             elif s == "addedmass":
                 stage_addedmass(out, a.out, steps=a.addedmass_steps)
+            elif s == "residual":
+                stage_residual(out, a.out, steps=a.residual_steps)
             else:
                 globals()[f"stage_{s}"](out, a.out)
         finally:

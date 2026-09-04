@@ -474,12 +474,26 @@ def test_the_transient_residual_is_the_half_step_accounting_and_not_the_bond():
     """At a converged interface solve the fluid's effort is the structure's
     reaction at the END of the exchange while the energy gain is taken at its
     MIDDLE, and the difference is exactly ``1/2 dd^T S_e dd``.  Subtracting the
-    term the march accumulates for it removes most of the transient residual and
-    nearly all of the settled one -- which turns the identification from an
-    argument into a measurement."""
+    term the march accumulates for it removes most of the TRANSIENT residual --
+    which turns the identification from an argument into a measurement.
+
+    **The settled half of this assertion was removed at the 2026-09-04
+    verification pass and its replacement is below (W140).**  It read
+    ``corrected_settled < 0.1 * settled``, which held at the 120-step horizon
+    the stage was first run at and fails at 480 -- not because the term is
+    misidentified but because the term is second order in the interface's
+    motion, so by step ~240 the raw residual has fallen to the term's own order
+    and there is nothing left for it to remove.  The window the old assertion
+    called `settled` was transient by a factor of 49.  What replaces it is
+    `test_the_half_step_correction_is_a_transient_repair_and_says_so`, which
+    asserts BOTH halves: that it works on the transient and that it does not
+    work on the tail.
+    """
     r = _stage("residual")
     assert r["corrected"] < 0.5 * r["with_motion"]
-    assert r["corrected_settled"] < 0.1 * r["settled"]
+    # the transient, where the term is what is left -- quoted with its horizon
+    q = r["quartiles_corrected"]
+    assert q[0] < 0.2 * r["quartiles_with"][0]
 
 
 # ---------------------------------------------------------------------------
@@ -521,3 +535,112 @@ def test_the_horizon_is_reported_with_the_gradient():
     assert h["rows"] and "N" in h["rows"][-1]
     assert "n_sign" in h and "validity_limit" in h
     assert h["fd_agreement"] < 1e-2
+
+
+# ---------------------------------------------------------------------------
+# 7. the verification pass, 2026-09-04 -- horizons, and what moved on them
+# ---------------------------------------------------------------------------
+
+
+def test_the_residual_ordering_was_checked_step_by_step_and_not_on_maxima():
+    """Tier 23's rule applied to an ORDERING rather than to a trajectory.
+
+    "R closes with the deformation term and does not close without it" is a
+    comparison of two configurations, so a maximum over the march does not
+    settle it: two curves can swap at most of the steps underneath and still
+    have their maxima in the published order.  The crossing is LOOKED FOR.
+    """
+    r = _stage("residual")
+    cross = {c["lo"]: c for c in r["crossings"]}
+    c = cross["with_motion"]
+    assert c["hi"] == "without_motion"
+    assert c["n_crossed"] == 0, c["steps"][:8]
+    assert c["worst_ratio"] < 1.0
+
+
+def test_the_residual_gate_was_marched_past_the_gates_own_horizon():
+    """The residual was the SHORTEST-marched of this case study's three
+    rollouts -- 120 macro-steps against the gate's 240 -- and it is the gate
+    quantity.  Both horizons are kept, and the longer one is the headline."""
+    r = _stage("residual")
+    assert r["steps"] >= 480
+    by = r["by_horizon"]
+    assert "120" in by and "480" in by, sorted(by)
+    # the closure STRENGTHENS with the horizon rather than reversing
+    assert by["480"]["settled"] < by["120"]["settled"]
+
+
+def test_the_half_step_correction_is_a_transient_repair_and_says_so():
+    """W140.  Section 6's "removes 99% of the settled residual" was measured
+    over a window a longer march shows was still transient by 49x.  Over a
+    genuinely settled window the correction is worth nothing and is slightly
+    the wrong way -- which dates the identification rather than retracting it."""
+    r = _stage("residual")
+    qw, qc = r["quartiles_with"], r["quartiles_corrected"]
+    # the transient: the correction removes most of it
+    assert qc[0] < 0.2 * qw[0]
+    # the settled tail: it does not
+    assert qc[-1] > 0.5 * qw[-1]
+    # and the window section 6 called settled was not
+    assert r["by_horizon"]["120"]["settled"] > 10.0 * qw[-1]
+
+
+def test_every_stability_cell_is_marched_in_its_OWN_clock():
+    """`undiverged` is not `stable`.  A cell at lag L gets N/L exchanges of its
+    own interface equation out of an N-step march, so a map that marches every
+    cell the same N compares 320 exchanges against 2.5."""
+    a = _stage("addedmass")
+    assert a["steps"] >= 320
+    floor = a["min_lag_intervals"]
+    assert floor >= 10
+    for e, row in a["stability"].items():
+        for lag, cell in row.items():
+            assert cell["ok"] is True, (e, lag, cell["why"])
+            assert cell["lag_intervals"] >= floor, (e, lag, cell["lag_intervals"])
+
+
+def test_the_amplitude_growth_belongs_to_the_flow_and_not_to_the_coupling():
+    """The discriminator a survival flag cannot supply.
+
+    The tip oscillation's amplitude grows over the last two quarters -- and it
+    grows by the SAME factor in the tightly coupled column, where the interface
+    equation is solved at every exchange and there is no lag to be unstable in,
+    and it FALLS as the coupling loosens.  A partitioned-coupling instability
+    does the other thing.
+    """
+    a = _stage("addedmass")
+    tight = a["three"]["tight"]["growth"]
+    row = a["stability"]["50000"]
+    assert tight > 1.0
+    # the tight column is not quieter than the loosest lagged one
+    assert row["32"]["growth"] < tight
+    assert abs(row["1"]["growth"] - tight) / tight < 0.05
+    # and it is still below the plate's own settled unsteadiness
+    amp = a["three"]["tight"]["amp"]
+    tip = abs(a["three"]["tight"]["tip"])
+    assert amp[-1] / tip < _stage("setup")["unsteadiness"]
+
+
+def test_the_published_drift_was_conservative_rather_than_wrong():
+    """Section 7.2 quoted 5.0% at 80 macro-steps.  At 320 the same row spans
+    0.37%: the release transient was still running, so the number on the page
+    was an over-statement of the drift and not an under-statement."""
+    a = _stage("addedmass")
+    row = a["stability"]["50000"]
+    tips = [row[l]["tip"] for l in row]
+    spread = (max(tips) - min(tips)) / abs(max(tips, key=abs))
+    assert spread < 0.01
+    old = a["by_horizon"]["80"]["stability"]["50000"]
+    old_tips = [old[l]["tip"] for l in old]
+    old_spread = (max(old_tips) - min(old_tips)) / abs(max(old_tips, key=abs))
+    assert old_spread > 3.0 * spread
+
+
+def test_one_cell_touches_the_structural_experts_envelope():
+    """And it is the cell the PoC 2 design box is drawn around: at E* = 3e4 the
+    peak deflection reaches 0.0498 against a bound of 0.05, on the RELEASE
+    transient rather than at the end."""
+    a = _stage("addedmass")
+    head = min(c["headroom"] for row in a["stability"].values()
+               for c in row.values())
+    assert 1.0 <= head < 1.05
