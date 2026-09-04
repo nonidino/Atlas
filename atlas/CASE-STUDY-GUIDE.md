@@ -112,6 +112,23 @@ record before any solve:
   it looks — measured, that defect was 99.8% of a composed step's error and was
   reading as agent infidelity.
 
+  **Since 2026-09-04 R10 checks the premise its own sentence names (W114).** It
+  refuses an `embedded` agent only when the graph contains **another agent of the
+  same `governing_family`** -- the compile-time signature of *"a larger region of
+  the same physics, of which this agent has been given a piece"*. A window tiling
+  is refused exactly as before; a **multiphysics** graph, where each agent owns
+  its own region and its own equation, is not, because nothing has been
+  decomposed. That is what lets an FSI graph carry a quasi-static structural
+  agent, which is `embedded` or it is not an agent -- there is no time derivative
+  to sub-step, so the `split-step` escape has no analogue on that side. The
+  predicate is a **proxy** and it is **conservative**: two agents of one family on
+  genuinely disjoint regions are still refused, which is a false refusal that
+  inspection resolves. **What it does not clear is the agent's reach** -- an
+  embedded elliptic solve has an infinite domain of dependence inside its own
+  region whether or not that region was cut, so `support_reach` and the halo rule
+  still apply, and on `wing_fsi`'s structure the response is nonzero in every one
+  of the 32 seam cells against a declared radius of 1.
+
   **`unknown` exists for a black box, and it decertifies** (`L2/R10/W60`). Do not
   reach for it to avoid thinking: it is for a checkpoint whose internals nobody
   can see, where `none` would assert something unmeasured *and switch R10 off*
@@ -359,6 +376,7 @@ port type**, and there is no default:
 | fluid–fluid, incompressible `MECH` | `1` |
 | field ↔ lumped (e.g. rotor face) | `0` |
 | conjugate heat transfer, `THERM` | `0` — a uniform temperature shift produces a uniform flux change, so no direction of the trace space is invisible to the response. Nothing constrains the trace the way incompressibility constrains a `MECH` one |
+| fluid–solid or solid–solid `MECH` on a **clamped** body | `0` -- the same uniform normal velocity that is invisible on a free body **bends** a clamped one, so the reaction is nonzero in every direction of the trace space. Measured on `wing_fsi.py`'s cantilever: `null_dim = 0` at $\sigma_{\min}/\sigma_{\max} = 4.5\times10^{-6}$. **It is the boundary condition and not the physics**, which is what the row below already said and had nothing to check it against |
 | solid–solid `MECH` on a **free** body | `1` per unconstrained rigid direction the trace can excite — and for a *different reason* than the fluid–fluid row's. A uniform normal velocity on the only constrained face of a free elastic body **is a rigid translation**: no strain, no reaction, so the probed operator cannot see it. Measured on `thermal_strain.py`'s seam: the null direction is the constant mode to $5.7\times10^{-13}$, at $\sigma_{\min}/\sigma_{\max}=2.4\times10^{-15}$. Not incompressibility, not lumpedness — kinematics |
 | anything you haven't reasoned through | `None` — disables the check rather than guessing |
 

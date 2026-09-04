@@ -244,12 +244,18 @@ Measured against it: $h_{\text{eff}} = 608.9$, $H = 858.9\,\mathrm{W/(m^2K)}$, $
 
 | graph | verdict | refusals | what decertifies |
 |---|---|---|---|
-| `as-built`, native clocks | **`refuse`** | `L2/R10` | the disc's `EMBEDDED` backward-Euler solve, correctly |
+| `as-built`, native clocks | **`refuse`** at the time of writing; **`admit-uncertified` since 2026-09-04** | `L2/R10` | the disc's `EMBEDDED` backward-Euler solve — and the refusal turned out to be **false**, see the box below |
 | `split-step`, native clocks | `admit-uncertified` | **0** | `L2/C3/W57`, `L5/eps_tol`, **`L7/R9/lag`**, `L7/R9/order`, `L6/E6`, `L9/E5`, `L8/W56` |
 | `split-step`, matched clocks | `admit-uncertified` | 0 | the same, less the two R9 rows |
 | `split-step`, pointwise matching | **`refuse`** | `L7/R9` | R9's own refusal, unchanged and untouched by any of this |
 
-**The `as-built` refusal is correct and this study does not repair it.** The ladder's CS-11 row asks for a slow `EMBEDDED` conduction agent, backward Euler over a cross-section *is* one, and declaring otherwise to dodge R10 would be the rule working and the declaration lying. `split-step` is the same expert with the composition layer supplying the implicit part — `window_ns`'s and `thermal_seam`'s own move.
+**The `as-built` refusal was NOT correct, and CS-12 found out one day later.** This page said it was, on the reasoning that the ladder's CS-11 row asks for a slow `EMBEDDED` conduction agent, backward Euler over a cross-section *is* one, and declaring otherwise to dodge R10 would be the rule working and the declaration lying. All of that still holds — **and R10 should not have fired.**
+
+> **W114, closed 2026-09-04 at CS-12** ([[case-study-wing-fsi-atlas-0.1]] §2). R10's own sentence names a premise — *"the graph decomposes the domain"* — that the rule never checked; it read `elliptic_subsolve` alone. This graph's two agents are a conduction **disc** (`thermoelastic-shell-2d`) and a convecting **duct** (`convection-diffusion-2d`), each the only agent of its family: the disc's cross-section is not a piece of a tiled conduction domain, so nothing was cut and the elliptic error R10 exists to refuse cannot arise. R10 now asks whether another agent shares the family before refusing, and `as-built` compiles at `admit-uncertified`.
+>
+> **Nothing this page measured moves.** Every number in it comes from the marches, not from a compile, and the $\sigma$ law, the ratio control, the waveform and the horizon are all measured on `split-step` for reasons that have nothing to do with R10. What changes is one cell of §8's table and one sentence of this one.
+>
+> **And `split-step` is not made pointless by it.** Exposing the elliptic part is still exactly what R10 *prescribes* for an agent that **is** cut, which is every fluid tiling in this vault; what CS-11 did not need was to build it *in order to compile*.
 
 **What changes is what `L7/R9/lag` decertifies *with*.** It has said, since it was written, that R9 is the smaller term and quoted `thermal_seam`'s $62.4\times$. It can now name the larger one: a bound, first order in the interval, with two constants from a probe and one rate from the run. **That is the difference between a decertification that says *this is uncertified* and one that says *this is uncertified by this much*,** and it is what §4's gate asked for.
 

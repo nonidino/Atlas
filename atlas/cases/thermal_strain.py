@@ -910,9 +910,17 @@ VOLUMETRIC_BOND_SCOPE = (
     "a transmission condition. No sixth port type is proposed"
 )
 
-#: R10 refuses this graph and its own derivation does not apply to it.  Recorded
-#: here because the refusal is real, is not about the bond, and would otherwise
-#: be read as one.
+#: R10 refused this graph and its own derivation does not apply to it.  Recorded
+#: here because the refusal was real, was not about the bond, and would otherwise
+#: have been read as one.
+#:
+#: **W114 closed 2026-09-04 at CS-12** (`cases/wing_fsi.py`, `R10_HANDLE`), which
+#: met the same defect at a co-dimension-1 FSI seam and supplied the premise
+#: check the rule was missing: an EMBEDDED agent is refused only when the graph
+#: contains another agent of the same ``governing_family``.  This graph's two
+#: agents are conduction and elasticity, so it is no longer refused.  The text
+#: below stays as the record of what the refusal was, which is the thing a reader
+#: of the published numbers needs.
 R10_SCOPE = (
     "L2/R10 refuses any graph with two agents one of which declares "
     "elliptic_subsolve=embedded, and its sentence is 'the graph decomposes the "

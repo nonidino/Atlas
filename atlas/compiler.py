@@ -1236,12 +1236,48 @@ def _r10_elliptic(ctx: _Context) -> None:
 
     This is the silent-wrongness class exactly: no exception, no failed gate, and
     a number that looks like a bad expert. So it refuses.
+
+    **W114, closed 2026-09-04 at CS-12.** The rule's own sentence names a premise
+    -- *"the graph decomposes the domain"* -- that it never checked. It read
+    ``elliptic_subsolve`` alone and refused every graph containing an EMBEDDED
+    agent, including two where the decomposition does not cut that agent at all:
+    `thermal_strain`'s co-located split, where both agents own all of Omega, and
+    `wing_fsi`'s FSI seam, where the fluid is tiled and Omega_solid is one
+    agent's whole domain. In both the elliptic solve runs over exactly the region
+    a monolith would run it over, so nothing has been decomposed and the elliptic
+    error the rule is about cannot arise. It fired anyway, and on a quasi-static
+    structural agent there is no `split-step` escape to take -- no time
+    derivative, nothing to sub-step -- so the refusal was terminal.
+
+    The premise is now checked, from the declarations alone: an EMBEDDED agent is
+    refused only when the graph contains **another agent of the same
+    `governing_family`**, which is the compile-time signature of *"a larger region
+    of the same physics, of which this agent has been given a piece"*. Every graph
+    the rule was derived on is a tiling of one family and keeps its refusal
+    unchanged.
+
+    It is a **proxy for "is this agent's domain cut", not a decision procedure**,
+    and it is deliberately conservative in the safe direction: two agents of one
+    family on genuinely disjoint regions are still refused, which is a false
+    refusal that inspection resolves, where the other direction would be a silent
+    admission. What would replace it is a structured domain declaration on
+    `Agent`, which does not exist -- ``Agent.domain`` is free text.
     """
     rec, graph = ctx.record, ctx.graph
     if len(graph.agents) < 2:
         return
-    embedded = [a.agent_id for a in graph.agents
-                if a.capabilities.elliptic_subsolve is EllipticSubsolve.EMBEDDED]
+    families: dict[str, int] = {}
+    for a in graph.agents:
+        fam = a.capabilities.governing_family or ""
+        families[fam] = families.get(fam, 0) + 1
+    embedded, sole = [], []
+    for a in graph.agents:
+        if a.capabilities.elliptic_subsolve is not EllipticSubsolve.EMBEDDED:
+            continue
+        if families.get(a.capabilities.governing_family or "", 0) > 1:
+            embedded.append(a.agent_id)
+        else:
+            sole.append(a.agent_id)
     undeclared = [a.agent_id for a in graph.agents
                   if a.capabilities.elliptic_subsolve is EllipticSubsolve.NONE
                   and a.capabilities.governing_family
@@ -1250,14 +1286,34 @@ def _r10_elliptic(ctx: _Context) -> None:
         rec.refuse(
             "L2", "R10",
             f"{len(embedded)} agents declare elliptic_subsolve=embedded and the graph "
-            "decomposes the domain. The agent solves a global problem on its own "
-            "subdomain, so the decomposition changes the operator rather than "
-            "restricting it. The resulting error does not decay with distance from the "
-            "cut and no coupling scheme removes it -- measured at 99.8% of the total "
-            "defect, mislabelled as agent infidelity. Declare elliptic_subsolve=exposed "
-            "and run that solve in the composition layer, which is what "
-            "probed-dtn-coupling 2.1 assumes when it says the elliptic part stays global",
+            "decomposes the domain: each shares its governing_family with at least one "
+            "other agent, so the family's region has been cut and each agent solves a "
+            "global problem on its own piece of it. The decomposition changes the "
+            "operator rather than restricting it. The resulting error does not decay "
+            "with distance from the cut and no coupling scheme removes it -- measured "
+            "at 99.8% of the total defect, mislabelled as agent infidelity. Declare "
+            "elliptic_subsolve=exposed and run that solve in the composition layer, "
+            "which is what probed-dtn-coupling 2.1 assumes when it says the elliptic "
+            "part stays global",
             subject=", ".join(embedded), quantity="tau",
+        )
+    if sole:
+        rec.admit(
+            "L2", "R10/sole-family",
+            f"{len(sole)} agents declare elliptic_subsolve=embedded and are the ONLY "
+            "agent of their governing_family in this graph, so the decomposition does "
+            "not cut them: the elliptic solve runs over exactly the region a monolith "
+            "would run it over, and R10's premise -- that the decomposition changes "
+            "the operator rather than restricting it -- does not hold. R10 is right "
+            "about the class it was derived on (a tiling of one family) and refused "
+            "outside it until W114 closed 2026-09-04. The predicate is a PROXY for "
+            "whether this agent's own domain is cut, and it is conservative: two "
+            "agents of one family on disjoint regions would still be refused. What it "
+            "does NOT clear is the agent's reach -- an embedded elliptic solve has an "
+            "infinite domain of dependence inside its own region whether or not that "
+            "region was cut, so the halo rule and support_reach still apply",
+            subject=", ".join(sole), quantity="tau",
+            r10_premise="uncut: sole agent of its governing_family",
         )
     unknown = [a.agent_id for a in graph.agents
                if a.capabilities.elliptic_subsolve is EllipticSubsolve.UNKNOWN]

@@ -239,6 +239,8 @@ $\log_2$ ratios $1.020,\ 1.011,\ 1.006,\ 1.003$ — the residual is the time dif
 
 R10 is right about the class it was derived on and this is a scope defect, not a contradiction. Recorded as `thermal_strain.R10_SCOPE` so the refusal is never read as being about the coupling.
 
+> **Closed 2026-09-04 at CS-12, and this graph's verdict moves with it.** [[case-study-wing-fsi-atlas-0.1]] §2 met the same refusal from the other direction — an FSI graph tiles the fluid and does not cut the structure — and R10 now checks its own premise: an `EMBEDDED` agent is refused only when the graph contains **another agent of the same `governing_family`**, the compile-time signature of a decomposition that cut this agent's physics. This case study's two agents are conduction and elasticity, one of each, so **the `surface-mech` route now compiles with zero refusals** where it was refused at `L2/R10`. Nothing measured here changes: every number on this page comes from the marches, and §4.4's comparison of the three routes was already symmetric. The predicate is a proxy and it is conservative — two agents of one family on disjoint regions are still refused. `R10_SCOPE` stays in the module as the record of what the refusal used to be.
+
 ### 7.3 W116 — the splitting error has no slot to be declared in
 
 The gate's second number, $7.116\times10^{-3}$, is exactly the kind of quantity `MeasuredConstants` exists to carry: measured, reproduced over an $8\times$ sweep, first order in the exchange interval. **There is no field for it.** The nearest is $\sigma$, the *transmission* infidelity, which the master bound consumes as an interface-power quantity measured between two assemblies; this is a *lagged-operator-splitting* defect measured in relative stress, because there is no interface to take a power over.
@@ -250,6 +252,8 @@ Declaring it as $\sigma$ would be **W56 with the sign reversed** — not a bound
 ### 7.4 A structural agent has no `split-step` escape
 
 The move `window_ns` and `thermal_seam` both make — expose the elliptic part, let the composition layer own it, take stable explicit sub-steps beside it — **has no analogue for quasi-static elasticity**. There is no time derivative to sub-step. An elasticity agent is `EMBEDDED` or it is not an agent, so CS-8's advice to *"start from the exposed-agent plus `ProjectedAssembly` column"* does not transfer to a structural agent, and CS-12's wing FSI will meet this first.
+
+**It did, and the half that changed is not this one.** [[case-study-wing-fsi-atlas-0.1]] confirms there is no `split-step` variant and builds the FSI graph with the structural agent `EMBEDDED`; what W114's closure changed is what being `EMBEDDED` *costs*, not what it *is*. The escape does not exist and is no longer needed.
 
 ---
 
@@ -270,7 +274,7 @@ The move `window_ns` and `thermal_seam` both make — expose the elliptic part, 
 | **W32** | **closed.** The six-field procedure is written into [[port-algebra-atlas-0.1]] §10 as a binding section, exercised once, and it **refused** — and the exercise found a seventh field, which is exactly the outcome `holes.py`'s `inference_note` predicted |
 | **W70** | **confirmed from the other side.** Reframed once as *"one expert's internals and one-way"*; measured here as *"a bond and not a port"*. §4.2 explains why the one-way shell could never have shown it: at a Biot number of $3\times10^{-4}$ the body force is nearly zero |
 | **W113** | **opened and closed in this tier** — §7.1 |
-| **W114** | **opened.** R10's scope, §7.2 |
+| **W114** | **opened.** R10's scope, §7.2 — **closed 2026-09-04 at CS-12**, which met it at a co-dimension-1 seam and supplied the decidable premise check. The `surface-mech` route's verdict moves from `refuse` to `admit-uncertified` and no measurement on this page moves with it |
 | **W115** | **opened.** `Decomposition` has no member for a co-located split, and `OVERLAPPING` with the overlap equal to the domain is a declaration nothing checks |
 | **W116** | **opened.** A co-located split's own measured defect is not declarable: `MeasuredConstants` has a slot for a *transmission* infidelity and none for a *splitting* one — §7.3 |
 

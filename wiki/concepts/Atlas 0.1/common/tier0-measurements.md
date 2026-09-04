@@ -1578,6 +1578,8 @@ What *did* arrive is the exact trigger, measured from the compiler's own rung ta
 | `thermal_seam` split-step, native | `refuse` | 1 — L7/R9 | 7 | 5 | **E3 and E4 `fail`** |
 | `thermal_seam` as-built, native | `refuse` | 2 — L2/R10, L7/R9 | 7 | 5 | E3 and E4 `fail` |
 
+> **One cell of this table moves, 2026-09-04, and it is W114's closure rather than a re-measurement.** `thermal_seam` as-built now refuses on **`L7/R9` alone**: `L2/R10` checks the premise its own sentence names — *"the graph decomposes the domain"* — by asking whether another agent shares this one's `governing_family`, and a gas against a shell is one agent of each, so nothing was cut. **`window_ns` as-built keeps its refusal**, and that is the row that says the narrowing is right: four windows of one family tiling one domain is exactly the class R10 was derived on. See [[case-study-wing-fsi-atlas-0.1]] §2. Every other number in this table is unaffected; the refusal was never in a measurement's path.
+
 **`window_ns` still reaches `admit` with the new L3/C9 check in place**, which is the point: C9 was added, every shipped record declares the field, and the flagship graph's verdict is unchanged. **256 tests pass**, from 234 at the start of the session. `scripts/tier0_window_ns.py` reproduces **bit-exact** from a cold start — 545 numbers across `w1`, `w2` and `w3`, zero drift.
 
 ---

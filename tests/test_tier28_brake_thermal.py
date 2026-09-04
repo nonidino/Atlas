@@ -200,20 +200,34 @@ def test_the_duct_declines_outside_its_closure_s_own_reynolds_range():
 
 
 def test_the_disc_declares_the_embedded_solve_it_actually_runs():
-    """Backward Euler over the cross-section is EMBEDDED, and L2/R10 refuses it.
+    """Backward Euler over the cross-section is EMBEDDED, and the declaration
+    stands whatever R10 does with it.
 
     The ladder's CS-11 row asks for a slow EMBEDDED conduction agent; declaring
-    anything else to dodge the refusal would be the refusal working correctly and
-    the declaration lying.
+    anything else to dodge a refusal would be the rule working correctly and the
+    declaration lying.
+
+    **Changed 2026-09-04, W114 closed at CS-12.** This test asserted
+    ``verdict == "refuse"`` and an ``R10`` refusal from 2026-09-03 to
+    2026-09-04. R10 now checks the premise its own sentence names -- *"the graph
+    decomposes the domain"* -- by asking whether another agent shares this one's
+    ``governing_family``. This graph's two agents are a conduction disc
+    (``thermoelastic-shell-2d``) and a convecting duct
+    (``convection-diffusion-2d``): the disc's cross-section is **not** a piece of
+    a tiled conduction domain, nothing was cut, and the refusal was false.
+    **Nothing CS-11 measured moves** -- every number in it comes from the
+    marches -- and the `split-step` mode stays exactly as useful as it was, since
+    exposing the elliptic part is still what R10 PRESCRIBES for an agent that is
+    cut.
     """
     g, _ = B.build(mode="as-built", clocks="native")
     disc = [a for a in g.agents if a.agent_id == "disc"][0]
     assert disc.capabilities.elliptic_subsolve is EllipticSubsolve.EMBEDDED
     assert disc.capabilities.time_discretization is TimeDiscretization.IMPLICIT
     r = compile_scheme(g, probe_state="test")
-    assert r.verdict.value == "refuse"
-    assert any(d.rule == "R10" for d in r.decisions._decisions
-               if d.verdict.value == "refuse")
+    assert not any(d.rule == "R10" for d in r.decisions._decisions
+                   if d.verdict.value == "refuse")
+    assert any(d.rule == "R10/sole-family" for d in r.decisions._decisions)
 
 
 def test_the_split_step_graph_compiles_and_R9_lag_is_what_decertifies_it():

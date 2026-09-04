@@ -235,6 +235,7 @@ Everything else on [[gap-worklist]] is real and none of it blocks this schedule.
 | **W32** — `PortAmendment` never exercised | any new bond at all | **CS-9** |
 | **W97** — field-to-lumped certificate blind | every lumped subsystem in the car | **CS-10** |
 | **W30 / W22** — interface motion | ride height, deflection, rotation | **CS-10** |
+| **W114** — `L2/R10` refuses a graph its own derivation does not reach | every graph with a quasi-static structural agent, which is every FSI seam in the car | **CS-12 — CLOSED 2026-09-04.** R10 now checks the premise its own sentence names, by asking whether another agent shares the `EMBEDDED` agent's `governing_family`. Four graphs' verdicts move; no measurement moves with them; `window_ns` `as-built` keeps its refusal |
 | **W90** — no bound on the multirate lag | every pair of subsystems on different clocks | **CS-11 — CLOSED 2026-09-04.** [[master-error-bound]] §4.2: first order in the exchange interval, two probe constants and one run rate, $1.43\times$–$2.18\times$ loose over $2000\times$ of clock ratio, and the clock ratio turns out not to be the variable |
 
 Two more that are not blockers and are getting worse with every added expert: **W69**'s *three unverifiable declarations* (`validity`, `response_half`, `governing_family`) scale linearly in expert count, and **W99** is a live silent bug in the build repo's own adapter.
@@ -446,6 +447,8 @@ with $s_\Gamma$ and $C_2$ from **one probe** and $\dot\lambda_{\max}$ from the r
 
 **Phase C, and CS-12 `wing_fsi.py` is the row.** Two things it inherits and one it should settle first:
 
+> **All three are settled, and §13 below is the record.** W114 closed rather than being worked around; the moving-interface refusal is inherited and priced; and the multirate bound is not what this seam needed, because both agents run at one clock.
+
 - **W114 is still the blocker §10 named.** A quasi-static structural agent is `EMBEDDED` with no `split-step` variant, so `L2/R10` refuses every graph containing one. CS-11 met R10's refusal on the *conduction* side and had the escape — a `split-step` mode where the composition layer supplies the implicit part — precisely because conduction has a time derivative to sub-step. **Elasticity does not, and that is the whole of W114.** It should be settled before CS-12 rather than during it.
 - **A deflecting wing is a moving interface**, so CS-10's re-probe economics apply unchanged: at a solution-dependent seam a cached $S$ does not survive one exchange.
 - **And it is a multirate seam**, so it is the first graph that gets to *use* §4.2's bound rather than produce it — which is the test of whether $s_\Gamma$ and $C_2$ are seam properties in any sense broader than one seam.
@@ -463,3 +466,30 @@ with $s_\Gamma$ and $C_2$ from **one probe** and $\dot\lambda_{\max}$ from the r
 - [[tier0-measurements]] — the measurement record every number in §1 comes from
 - [[cs7-scaling-ladder-pickup]] — the self-contained brief for the next build
 - [[poc1-retrospective-and-hybrid-roadmap]] — section 9's full argument: the cross-machine timing read, the hybrid-library reframing, and CS-9★
+
+
+# 13. CS-12 is run (2026-09-04)
+
+Full record: [[case-study-wing-fsi-atlas-0.1]]; measurements in [[gap-worklist]] Tier 26; artifact `out/w136/w136.json`.
+
+**§4's CS-12 row is met, Phase C has its first row, and the blocker §10 and §12 both named is closed rather than worked around.** A 2-D wing section: CS-10's fluid column **unchanged** — six exposed `WindowNS` windows and a `ProjectedAssembly` at the same $\mathrm dx$, the same domain, the same plate — against **quasi-static plane-stress elasticity** from `ThermoStruct2D.solve_mechanical`, meeting at the wetted surface as a co-dimension-1 `MECH` seam, two-way. The referent is the same code path at a one-window tiling with the same structural solve, so the zero-cut control is bitwise.
+
+**1. W114 closes, and the fix is a premise check rather than an exception.** `L2/R10`'s own sentence names a hypothesis — *"the graph decomposes the domain"* — that the rule never tested. It now refuses an `EMBEDDED` agent only when the graph contains **another agent of the same `governing_family`**. A proxy, and conservative. **Four graphs' verdicts move and no measurement in the vault moves with them** — `thermal_strain` `surface-mech`, `brake_thermal` `as-built`, `thermal_seam` `as-built`, `wing_fsi` — while `window_ns` `as-built` keeps its refusal, which is the row that says the narrowing is right. **This is the first classical graph in the vault with an `EMBEDDED` agent that compiles with zero refusals.**
+
+**2. The gate is met, and the seam beats the cut for a third time.** Over $240$ macro-steps against a fixed scale: the seam's lag alone $2.700\times10^{-2}$, the six-window cut alone $1.139\times10^{-4}$ — a factor of $\mathbf{237}$, against CS-10's $97\times$ at a field-to-lumped seam. The lag defect is first order at its peak and on the settled half and *third* order at the last macro-step, because the columns re-converge; the lagged columns cross the referent six times and the pure-cut column not at all, and the crossing was looked for rather than assumed.
+
+**3. The added-mass answer is not the one the row's question presumes.** A quasi-static structure has no mass, so the fluid/structure mass ratio is infinite and is not the variable. **Loose Gauss–Seidel does not diverge anywhere the structural model admits** — eighteen of eighteen $(E^*,\text{lag})$ cells, out to a lag of $32$ macro-steps — and the boundary it would have to cross ($\mu = \rho(S_e^{-1}K_{\text{aero}}) = 1$ at $E^* = 3861$) is one a linear small-strain law cannot reach, because at divergence the equilibrium deflection is unbounded by definition. **What diverges is the update form**, at $\mu = 0.077$, and it is priced: an implied surface velocity of $2.43\,U_\infty$ and a load $120.9\times$ the one being balanced.
+
+## What this changes for the rest of the schedule
+
+**[[general-coupling-scheme]] §4.2's scope widens from field↔lumped to any massless partner.** It was written from CS-10 as a rule about lumped agents; the mechanism is the *partner having no mass*, and a quasi-static field has none. Every Phase C subsystem with a quasi-static or algebraic partner — which is all of them — inherits it, and the repair is the same: write the residual in the port's conjugate variables and solve it there. At a field↔field seam that is an $N$-square SPD Newton system rather than a scalar division, and it costs three fixed steps.
+
+**And the substitution campaign gets its sharpest obstacle yet, at the seam class the car is made of.** **W137**: the fluid's block is $1.44\times10^{-5}$ of the assembled operator at this seam, so **every** replacement of the flow expert passes its certificate whatever it is. W97's repair — the conservative co-normal, which took a field-to-lumped seam from $19.4$ to $0.381$ — buys $190\times$ here and leaves $6.9\times10^{4}$, because the one-sidedness is the **structure's stiffness** rather than an effort convention, uniformly across every mode of the declared interface space. §5's stopping rule says the campaign is declared after CS-12; the honest reading is that it is not yet decided, and that the first thing it has to answer is whether a certificate can be *scaled* to a seam whose two sides differ by four orders.
+
+## The next step
+
+**CS-13, `cooling_loop.py`** — §4's Phase C second row, rung 6: conjugate heat transfer plus a **closed** lumped coolant circuit, the first *cyclic* port graph. Three things it inherits:
+
+- **§4.2 in its widened form.** Every lumped agent in the loop is massless and its constitutive law is one half of an interface equation.
+- **W137's question at a THERM seam.** CS-12 measured the disparity at a `MECH` seam between a stiff solid and a soft fluid; a coolant circuit against a wall is the same shape one port type along, and whether the certificate is blind there is a measurement the loop can make cheaply.
+- **And the tier's own mechanism.** Two of the three defects CS-12 found are rules reading a field that is not the one their sentence names. A cyclic graph is where path-dependence of message passing becomes real, and it is worth asking *before* the build which rule states a premise about acyclicity that nothing checks.

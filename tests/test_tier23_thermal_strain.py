@@ -259,9 +259,19 @@ def test_the_surface_mech_route_compiles_and_is_three_orders_wrong():
     assert len(g.connections) == 1
     assert g.connections[0].port_type is PortType.MECH
     r = compile_scheme(g)
-    # it compiles: the refusal it does get is R10's, which is about the elliptic
-    # solve and not about the bond -- see TS.R10_SCOPE
-    assert [f"{d.layer}/{d.rule}" for d in r.decisions.refusals] == ["L2/R10"]
+    # **Changed 2026-09-04, W114 closed at CS-12.** This assertion read
+    # ``== ["L2/R10"]`` from 2026-09-01 to 2026-09-04, and `TS.R10_SCOPE` said in
+    # prose what the assertion could not: the refusal was real, was not about the
+    # bond, and fired where R10's own derivation does not reach, because a
+    # co-located split cuts no domain. R10 now checks that premise -- an EMBEDDED
+    # agent is refused only when another agent shares its governing_family -- and
+    # this graph's two agents are conduction and elasticity, one of each. So the
+    # refusal is gone and the route compiles with none, which does not change a
+    # single measurement this case study published: every number in it was taken
+    # from the marches, not from the compile, and §4.4's comparison of the three
+    # routes was already symmetric.
+    assert [f"{d.layer}/{d.rule}" for d in r.decisions.refusals] == []
+    assert [d for d in r.decisions if d.rule == "R10/sole-family"]
 
     m = TS.monolith(n_steps=12)
     s = TS.split("surface-mech", n_steps=12)
@@ -531,9 +541,10 @@ def test_the_exposed_conduction_branch_marches_the_way_it_declares():
 @needs_expert
 def test_the_elasticity_agent_is_irreducibly_embedded():
     """There is no ``split-step`` variant on this side and that is structural: a
-    quasi-static solve has no time derivative to sub-step, so R10 refuses every
-    graph containing a structural agent. Recorded in `TS.R10_SCOPE` so the
-    refusal is not read as being about the bond."""
+    quasi-static solve has no time derivative to sub-step, so the agent is
+    EMBEDDED or it is not an agent. That much is unchanged by W114; what changed
+    on 2026-09-04 is that being EMBEDDED is no longer sufficient for R10 to
+    refuse. `TS.R10_SCOPE` is the record of why it used to."""
     _g, experts = TS.build(route="global-field", expose_elliptic=True)
     caps = TS.elasticity_capabilities(experts["elas"], "global-field")
     assert caps.elliptic_subsolve is EllipticSubsolve.EMBEDDED

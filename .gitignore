@@ -68,6 +68,16 @@ out/w127/*
 !out/w131/
 out/w131/*
 !out/w131/w131.json
+# CS-12 (wing FSI): the FSI record -- the structural surface operator, the four
+# compiles and W114's control, the seam's three efforts and its blindness, the
+# gate's tip histories, R across the seam, the added-mass map and the gradient's
+# horizon table -- cited line by line by case-study-wing-fsi-atlas-0.1.md and
+# re-derived by tests/test_tier29_wing_fsi.py.  The settled-field cache beside it
+# (settled.npz, 470 KB of float64 velocity) stays ignored: it is regenerated in
+# 25 s by `--stages setup` and nothing cites it.
+!out/w136/
+out/w136/*
+!out/w136/w136.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/
