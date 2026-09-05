@@ -79,5 +79,23 @@ out/w131/*
 out/w136/*
 !out/w136/w136.json
 
+# PoC 2 (the front-wing assembly): the assembly's two limit controls, the
+# per-seam verdict maps, the thickness scaling the design box is drawn from,
+# both degrees of freedom's gate histories, R across both seams, the four-knob
+# horizon table, the cost measurement, the finite-difference step sweep, the
+# penalty sweep, the ablation at BOTH the reference design and the optimum, and
+# FOUR design runs -- `design` (the answer), `design_tight` (the ceiling placed
+# where it binds inside the envelope), `design_unenforced` (W145's evidence: the
+# same search with no envelope check on the objective's path) and `design_loose`
+# (the first, loose-ceiling box search).  All four are kept because a ceiling
+# moved until the answer is agreeable is not a constraint, and the only defence
+# is to keep every placement with its outcome.  Cited line by line by
+# poc2-frontwing-results.md and re-derived by tests/test_tier30_front_wing.py.
+# The settled-field cache beside it (settled.npz) stays ignored: it is
+# regenerated in 4 s by `--stages setup`, bit-identically, and nothing cites it.
+!out/w141/
+out/w141/*
+!out/w141/w141.json
+
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

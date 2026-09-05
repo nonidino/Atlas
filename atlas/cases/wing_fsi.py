@@ -373,26 +373,36 @@ class FlexWing:
 
     # -- geometry ---------------------------------------------------------
 
-    def stations(self, delta):
+    def stations(self, delta, h=None):
         """(x, y) of every station at the NORMAL deflection ``delta`` [S].
 
         The plate deflects along its own normal, which is the direction the
         structural response is defined in and the direction a bending plate
         actually moves.  CS-10's plate heaved vertically because a ride height
         is vertical; a deflection is not.
+
+        **``h`` is the MOUNT height and it defaults to the declared one, which is
+        what CS-12 runs at.**  Added 2026-09-04 for PoC 2, where the same wing
+        rides on CS-10's suspension *and* bends on CS-12's structure, so the
+        clamp's own height is a state rather than a constant.  It is strictly
+        additive: every CS-12 call omits it and gets ``self.y_mount``, and the
+        two degrees of freedom are genuinely different directions -- a ride
+        height moves the stations along ``y`` and a deflection along ``n``, so
+        neither can stand in for the other.
         """
+        y0 = self.y_mount if h is None else h
         cx = self.x_le + self.s * self.t_hat[0] + delta * self.n_hat[0]
-        cy = self.y_mount + self.s * self.t_hat[1] + delta * self.n_hat[1]
+        cy = y0 + self.s * self.t_hat[1] + delta * self.n_hat[1]
         return cx, cy
 
-    def sample(self, u, v, delta, ny: int, nx: int):
+    def sample(self, u, v, delta, ny: int, nx: int, h=None):
         """The external flow at each station: the MEAN of the two sides.
 
         `ground_effect.Wing.sample`'s argument verbatim -- a station read inside
         its own smearing reads its own induction, and the self-induced velocity
         of a sheet is antisymmetric across it.
         """
-        cx, cy = self.stations(delta)
+        cx, cy = self.stations(delta, h)
         off = D_OFFSET * DX
         px = torch.stack((cx + off * self.n_hat[0], cx - off * self.n_hat[0]))
         py = torch.stack((cy + off * self.n_hat[1], cy - off * self.n_hat[1]))
@@ -404,24 +414,24 @@ class FlexWing:
             fld, grid, mode="bilinear", padding_mode="border", align_corners=False)
         return s[0, 0], s[0, 1]
 
-    def external_normal(self, u, v, delta, ny: int, nx: int):
+    def external_normal(self, u, v, delta, ny: int, nx: int, h=None):
         """``w_ext``: the external flow's plate-normal component, per station.
 
         It does not depend on the plate's velocity, which is what lets the seam's
         Newton system be assembled with one field evaluation per macro-step
         however many stations there are.
         """
-        us, vs = self.sample(u, v, delta, ny, nx)
+        us, vs = self.sample(u, v, delta, ny, nx, h)
         um, vm = 0.5 * (us[0] + us[1]), 0.5 * (vs[0] + vs[1])
         return um * self.n_hat[0] + vm * self.n_hat[1]
 
-    def station_normal(self, u, v, delta, w_plate, ny: int, nx: int):
+    def station_normal(self, u, v, delta, w_plate, ny: int, nx: int, h=None):
         """``w_k``: the flow's plate-normal velocity RELATIVE to the plate.
 
         ``w_plate`` is the wetted surface's own NORMAL velocity -- the port's FLOW
         half -- so the subtraction is direct and carries no geometric factor.
         """
-        us, vs = self.sample(u, v, delta, ny, nx)
+        us, vs = self.sample(u, v, delta, ny, nx, h)
         um, vm = 0.5 * (us[0] + us[1]), 0.5 * (vs[0] + vs[1])
         w_ext = um * self.n_hat[0] + vm * self.n_hat[1]
         return w_ext - w_plate, um, vm, us, vs
@@ -448,7 +458,7 @@ class FlexWing:
 
     # -- the body force ---------------------------------------------------
 
-    def forcing(self, u, v, delta, w_plate, ny: int, nx: int):
+    def forcing(self, u, v, delta, w_plate, ny: int, nx: int, h=None):
         """``(fx, fy, w, load)`` -- the force on the FLUID and the plate's load.
 
         `ground_effect.Wing.forcing`'s discrete normalization, unchanged: the
@@ -459,14 +469,16 @@ class FlexWing:
         height -- it is a window on the lattice and not a parameter, so a detached
         mean is the right thing to build it from.
         """
-        w, um, vm, _, _ = self.station_normal(u, v, delta, w_plate, ny, nx)
+        w, um, vm, _, _ = self.station_normal(u, v, delta, w_plate, ny, nx, h)
         fn = self.normal_traction(w)
-        cx, cy = self.stations(delta)
+        cx, cy = self.stations(delta, h)
 
         b_x, b_y = self.box_x, self.box_y
         dm = (float(delta.detach().mean()) if torch.is_tensor(delta)
               else float(np.mean(delta)))
-        hd = self.y_mount + dm * float(self.n_hat[1]) + self.y_mid_offset
+        y0 = self.y_mount if h is None else (
+            float(h.detach()) if torch.is_tensor(h) else float(h))
+        hd = y0 + dm * float(self.n_hat[1]) + self.y_mid_offset
         xm = self.x_mid + dm * float(self.n_hat[0])
         ix0 = int(np.clip(round(xm / DX - 0.5) - b_x, 0, nx - (2 * b_x + 1)))
         iy0 = int(np.clip(round(hd / DX - 0.5) - b_y, 0, ny - (2 * b_y + 1)))
@@ -519,9 +531,10 @@ def _plate_mesh(ni: int = NI_STRUCT, nj: int = NJ_STRUCT,
     return TS.ShellMesh(nodes=nodes)
 
 
-@lru_cache(maxsize=4)
+@lru_cache(maxsize=32)
 def _surface_operator(e_ref: float = E_REF, ni: int = NI_STRUCT,
-                      nj: int = NJ_STRUCT) -> dict[str, Any]:
+                      nj: int = NJ_STRUCT,
+                      thick: float = THICK) -> dict[str, Any]:
     """The wetted face's compliance and stiffness, from the expert's own solves.
 
     ``C[s, s'] = `` the generalized NORMAL deflection at station ``s`` produced
@@ -550,23 +563,38 @@ def _surface_operator(e_ref: float = E_REF, ni: int = NI_STRUCT,
     this is rank `N_STATION`.
     """
     TS = load_solvers()
-    mesh = _plate_mesh(ni=ni, nj=nj)
+    mesh = _plate_mesh(ni=ni, nj=nj, thick=thick)
     mat = TS.SolidMaterial(E=e_ref, nu=POISSON, alpha=0.0)
     ts = TS.ThermoStruct2D(mesh, mat)
     T = np.full(mesh.n_nodes, T_REF)
     clamp = np.array([mesh.nid(0, j) for j in range(nj + 1)])
     ds = CHORD / ni
     nx_hat, ny_hat = -math.sin(ALPHA), math.cos(ALPHA)
+    sig_cols: list[np.ndarray] = []
 
     def solve(p_unit: np.ndarray) -> np.ndarray:
         # split evenly between the two faces so the resultant acts on the
         # mid-surface rather than putting a spurious couple through the thickness
         p = 0.5 * np.asarray(p_unit, dtype=float)
-        u, _ = ts.solve_mechanical(T, p, -p, T_ref=T_REF, clamp_nodes=clamp)
+        u, sig = ts.solve_mechanical(T, p, -p, T_ref=T_REF, clamp_nodes=clamp)
+        sig_cols.append(np.asarray(sig, dtype=float))
         return u.reshape(-1)
 
     eye = np.eye(ni)
     U = np.column_stack([solve(eye[k]) for k in range(ni)])
+    #: **The stress map, and it is a MAP rather than a solve.**  Added 2026-09-04
+    #: for PoC 2's stress ceiling.  ``sigma_map[k]`` is the element stress
+    #: ``(s_xx, s_yy, s_xy)`` the expert returns under a UNIT normal traction at
+    #: station ``k``, so for any station traction ``q`` the stress field is
+    #: ``sum_k q_k sigma_map[k]`` -- linear elasticity, exactly, and therefore
+    #: differentiable in the traction without re-entering the FE solver.
+    #:
+    #: **It does not carry ``E``, and that is physics rather than an omission.**
+    #: A stress is set by the load and the geometry: raising ``E`` at a fixed
+    #: traction shrinks the displacement and the strain in the same proportion
+    #: and leaves ``D eps`` where it was.  What ``E`` moves is the DEFLECTION,
+    #: which is the other ceiling.
+    sigma_map = np.stack(sig_cols, axis=0)          # [ni, n_elem, 3]
     C = (U.T @ (ts.K_me @ U)) / ds
     C = 0.5 * (C + C.T)                      # the residual is round-off, not model
     S_e = np.linalg.inv(C)
@@ -578,7 +606,8 @@ def _surface_operator(e_ref: float = E_REF, ni: int = NI_STRUCT,
                           for k in range(ni)])
     geo = gx * nx_hat + gy * ny_hat
     return dict(
-        mesh=mesh, ts=ts, clamp=clamp, ds=ds, e_ref=e_ref,
+        mesh=mesh, ts=ts, clamp=clamp, ds=ds, e_ref=e_ref, thick=thick,
+        sigma_map=sigma_map,
         C=C, S_e=0.5 * (S_e + S_e.T), U=U, geometric=geo,
         geometric_gap=float(np.abs(geo - C).max() / np.abs(C).max()),
         symmetry=float(np.abs(U.T @ (ts.K_me @ U) / ds - (U.T @ (ts.K_me @ U) / ds).T).max()
@@ -617,12 +646,17 @@ class WingStructure:
     e_star: float = E_STAR
     dt: float = MACRO_DT / EXCHANGES
     n_station: int = N_STATION
+    #: The plate's thickness.  CS-12 runs at the declared `THICK` and never moves
+    #: it; PoC 2 makes it the second structural design knob, so it is a field
+    #: rather than a module constant.  Strictly additive -- the default is the
+    #: value CS-12 was measured at.
+    thick: float = THICK
     delta: np.ndarray = field(default=None, repr=False)
     delta_dot: np.ndarray = field(default=None, repr=False)
     n_calls: int = field(default=0, init=False)
 
     def __post_init__(self) -> None:
-        self._op = _surface_operator()
+        self._op = _surface_operator(thick=self.thick)
         if self.delta is None:
             self.delta = np.zeros(self.n_station)
         if self.delta_dot is None:
@@ -1606,6 +1640,20 @@ class FSIRollout:
             else:
                 (u, v, delta, w_plate, load, _t, _r, _r0, _p, _h
                  ) = self.macro_step(u, v, delta, w_plate, e_star, s)
+            #: **W145.**  `run` checked the structural expert's declared envelope
+            #: at every macro-step and this method, which is the one a gradient
+            #: or a design search is taken through, checked nothing.  PoC 2's
+            #: search walked its own graph out of a declared envelope on exactly
+            #: this asymmetry and nothing fired.  Detached, so it cannot enter
+            #: the tape or move a number; every column CS-12 published is inside
+            #: the bound and is bitwise unchanged.
+            dv = delta.detach()
+            if self.motion and float(torch.max(torch.abs(dv))) > DELTA_MAX:
+                raise RuntimeError(
+                    f"the wing left the structural expert's declared envelope at "
+                    f"macro-step {s}: max|delta| = "
+                    f"{float(torch.max(torch.abs(dv))):.6g} against a small-strain "
+                    f"bound of {DELTA_MAX:.6g}")
             if s >= first:
                 j = load if j is None else j + load
         return j / n_avg

@@ -1672,6 +1672,18 @@ class GroundRollout:
             else:
                 u, v, h, v_plate, load, _ = self.macro_step(
                     u, v, h, v_plate, h0, s)
+            #: **W145.**  `run` checked the suspension's declared envelope at
+            #: every macro-step and this method, which is what a gradient or a
+            #: design search marches through, checked nothing.  PoC 2's search
+            #: walked a graph built on this one out of that same envelope and
+            #: nothing fired.  Detached, so it cannot enter the tape; every
+            #: column CS-10 published sits above `H_FLOOR` and is unchanged.
+            hv = float(h.detach())
+            if self.motion and not (H_FLOOR < hv < H_CEILING):
+                raise RuntimeError(
+                    f"the ride height left the suspension's declared envelope at "
+                    f"macro-step {s}: h = {hv:.6g}, admissible "
+                    f"({H_FLOOR:.4g}, {H_CEILING:.4g})")
             if s >= first:
                 j = load if j is None else j + load
         return j / n_avg
