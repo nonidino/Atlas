@@ -1,0 +1,32 @@
+# Every dependency, pinned to an exact version. Nothing here is resolved by
+# "latest": a demo that installs a different set of packages on every machine is
+# a demo whose numbers cannot be compared between machines.
+#
+# torch is NOT here. It is installed separately by run.sh / run.cmd, because
+# which wheel is right depends on the machine: the CPU-only wheel is a tenth of
+# the size and is the default, and a CUDA one is installed instead when an
+# NVIDIA driver is actually present. See TORCH in the launchers.
+#
+# There is no `transformers`, no `safetensors`, no `huggingface-hub` and no
+# `scOT` here, and that is not an oversight -- it is the difference between this
+# bundle and the PoC 1a one. Every expert in this demo is a classical solver,
+# and the beat that offers a frozen neural operator hands the compiler its
+# DECLARATION rather than its weights, because the declaration is where the
+# verdict comes from. So nothing is downloaded at install time or at run time
+# past what pip fetches, and the whole bundle is about five megabytes.
+
+numpy==1.26.4
+scipy==1.13.1
+pillow==11.0.0
+fastapi==0.115.5
+uvicorn==0.32.1
+
+# Beat 4's population baseline. Pinned rather than optional because the
+# alternative -- the plain isotropic evolution strategy `race.py` falls back to
+# -- is a WEAKER baseline, and a comparison is only worth reporting against the
+# strongest one available. The screen names which one actually ran.
+cma==4.4.4
+
+# only needed for `pytest tests/`
+pytest==8.3.3
+httpx==0.27.2

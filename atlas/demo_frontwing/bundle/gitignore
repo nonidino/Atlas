@@ -1,0 +1,15 @@
+# Everything run.sh / run.cmd creates. Deleting .venv undoes the whole install.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# demo output. `out/w141/` is FORCE-ADDED by the build script: the settled field
+# and the recorded artifact are part of the bundle, and everything else under
+# out/ is not.
+out/*
+!out/w141/
+out/w141/*
+!out/w141/settled.npz
+!out/w141/w141.json
+*.log

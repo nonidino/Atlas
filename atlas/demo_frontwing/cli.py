@@ -38,6 +38,22 @@ def main(argv=None) -> int:
                          "screen says so")
     ap.add_argument("--penalty", type=float, default=40.0)
     ap.add_argument("--stride", type=int, default=1)
+    ap.add_argument("--ablation-steps", type=int, default=60,
+                    help="macro-steps per column in beat 3. The recorded "
+                         "ablation is at 120 and is shown beside the live one")
+    ap.add_argument("--race-steps", type=int, default=16,
+                    help="macro-steps per objective evaluation in beat 4")
+    ap.add_argument("--race-grad", type=int, default=14,
+                    help="Adam steps in beat 4's gradient column. The two "
+                         "budgets are SCALED from the recorded 30:200 rather "
+                         "than chosen -- see DemoConfig")
+    ap.add_argument("--race-pop", type=int, default=93,
+                    help="objective evaluations in beat 4's CMA-ES column")
+    ap.add_argument("--no-enforce", action="store_true",
+                    help="start with beat 2's envelope check OFF. Everything "
+                         "the demo then produces is stamped OUTSIDE THE MODEL; "
+                         "this exists so the pre-W145 behaviour can be shown, "
+                         "and it is not a mode anything should be measured in")
     ap.add_argument("--open", action="store_true", dest="open_browser")
     a = ap.parse_args(argv)
 
@@ -48,6 +64,9 @@ def main(argv=None) -> int:
     from .server import run
     cfg = DemoConfig(tiling=a.tiling, coupling=a.coupling, lag=a.lag,
                      horizon=a.horizon, penalty=a.penalty,
-                     stride=a.stride).clamped()
+                     stride=a.stride, enforce=not a.no_enforce,
+                     ablation_steps=a.ablation_steps,
+                     race_steps=a.race_steps, race_grad=a.race_grad,
+                     race_pop=a.race_pop).clamped()
     run(host=a.host, port=a.port, cfg=cfg, open_browser=a.open_browser)
     return 0

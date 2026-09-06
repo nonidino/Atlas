@@ -999,11 +999,27 @@ class FrontWingRollout(W.FSIRollout):
                 f"the wing left the structural expert's declared envelope at "
                 f"macro-step {s}: max|delta| = {d_max:.6g} against a "
                 f"small-strain bound of {DELTA_MAX:.6g}")
-        if not (h_v > G.H_FLOOR and 0.0 < h0_v - h_v):
+        #: **Two bounds, two sentences.**  The condition below is unchanged --
+        #: the same set of states raises, in the same order -- but it used to
+        #: report both violations with one message naming both numbers, and the
+        #: two are physically different: below `H_FLOOR` the lumped suspension
+        #: has run out of travel, and above `h0` the spring is in TENSION, which
+        #: it is not declared to model either.  A demo that shows a decline has
+        #: to be able to say which one, and reading "against a floor of 0.07"
+        #: under a height of 0.35 is a sentence that makes the framework look
+        #: wrong when it is right.
+        if not h_v > G.H_FLOOR:
             raise RuntimeError(
                 f"the wing left the suspension expert's declared envelope at "
-                f"macro-step {s}: h = {h_v:.6g} against a floor of "
-                f"{G.H_FLOOR:.6g} and a free height of {h0_v:.6g}")
+                f"macro-step {s}: the ride height {h_v:.6g} is at or below the "
+                f"declared floor of {G.H_FLOOR:.6g}, where the lumped "
+                f"suspension has run out of travel")
+        if not 0.0 < h0_v - h_v:
+            raise RuntimeError(
+                f"the wing left the suspension expert's declared envelope at "
+                f"macro-step {s}: the ride height {h_v:.6g} is at or above the "
+                f"free height {h0_v:.6g}, so the spring is in tension, which it "
+                f"is not declared to model")
 
     def objective(self, design, steps: int, u0=None, v0=None, delta0=None,
                   h_state=None, frac: float = 0.25, grad: bool = True):

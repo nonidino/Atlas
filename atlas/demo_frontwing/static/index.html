@@ -3,28 +3,47 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas PoC 2 — live front-wing design</title>
+<title>Atlas PoC 2 — a simulation that tells you when it doesn't know</title>
 <style>
   :root{
     --bg:#0d1117; --panel:#151b23; --panel2:#1b232d; --line:#2a3441;
     --ink:#e6edf3; --dim:#8b98a5; --dim2:#5f6b78;
     --green:#3fb950; --amber:#d29922; --red:#f85149; --blue:#58a6ff;
+    --violet:#a371f7;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
-       font:13px/1.5 ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif}
+       font:13px/1.55 ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif}
   a{color:var(--blue)}
   header{padding:10px 16px;border-bottom:1px solid var(--line);
-         display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+         display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
   header h1{font-size:15px;margin:0;font-weight:650}
-  header .sub{color:var(--dim);font-size:12px}
-  main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;
+  header .sub{color:var(--dim);font-size:12px;flex:1 1 320px}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:2px 10px;
+        font-size:11px;color:var(--dim);white-space:nowrap}
+  .chip.red{border-color:var(--red);color:var(--red)}
+  .chip.amber{border-color:var(--amber);color:var(--amber)}
+  .chip.green{border-color:var(--green);color:var(--green)}
+
+  /* ---- the outside-the-model state: it has to be impossible to miss ---- */
+  body.unsafe{--panel:#241419;--panel2:#2b171c}
+  body.unsafe header{background:#2b1116;border-bottom-color:var(--red)}
+  #unsafeBar{display:none;background:var(--red);color:#fff;padding:7px 16px;
+             font-weight:650;font-size:12.5px;letter-spacing:.02em}
+  body.unsafe #unsafeBar{display:block}
+  #quietBar{display:none;background:#1d2433;color:var(--dim);padding:6px 16px;
+            font-size:12px;border-bottom:1px solid var(--line)}
+  body.quiet #quietBar{display:block}
+
+  main{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:14px;
        padding:14px;align-items:start}
-  @media (max-width:1100px){main{grid-template-columns:minmax(0,1fr)}}
+  @media (max-width:1180px){main{grid-template-columns:minmax(0,1fr)}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;
-        padding:12px}
+        padding:12px;margin-bottom:14px}
+  .card:last-child{margin-bottom:0}
   .card h2{font-size:12px;margin:0 0 8px;color:var(--dim);font-weight:600;
            text-transform:uppercase;letter-spacing:.06em}
+  .card h2 .n{color:var(--violet);font-weight:700;margin-right:5px}
   #stage{position:relative;width:100%;background:#05070a;border-radius:6px;
          overflow:hidden}
   #stage canvas{display:block;width:100%;height:auto}
@@ -36,6 +55,7 @@
   .stat .v{font-size:17px;font-variant-numeric:tabular-nums;margin-top:2px}
   .stat .u{color:var(--dim2);font-size:11px}
   .stat.warn{border-color:var(--amber)} .stat.bad{border-color:var(--red)}
+  .stat.big .v{font-size:24px}
   .bar{height:4px;background:#0b0f14;border-radius:2px;margin-top:6px;
        overflow:hidden}
   .bar i{display:block;height:100%;background:var(--green)}
@@ -55,34 +75,120 @@
   .seam .rules{color:var(--dim);font-size:11px;margin-top:2px;
                font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   .seam .rules b{color:var(--red);font-weight:600}
+  .seam .rules i{color:var(--amber);font-style:normal}
   .qty{color:var(--dim);font-size:11px;font-variant-numeric:tabular-nums}
   .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);
        border-radius:6px;padding:6px 11px;cursor:pointer;font-size:12px}
   .btn:hover{border-color:var(--blue)}
   .btn.on{background:#1f6feb;border-color:#1f6feb}
+  .btn.danger.on{background:var(--red);border-color:var(--red)}
+  .btn:disabled{opacity:.45;cursor:default}
   .row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
   .note{color:var(--dim);font-size:11.5px;margin-top:8px}
   .note b{color:var(--ink)}
   .caveat{border-left:2px solid var(--amber);padding-left:9px;margin-top:9px;
           color:var(--dim);font-size:11.5px}
+  .caveat.red{border-left-color:var(--red)}
   code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
        color:var(--dim)}
-  #notice{color:var(--amber);font-size:12px;min-height:17px}
+  #notice{color:var(--amber);font-size:12px;min-height:17px;margin-top:6px}
   .legend{display:flex;gap:3px;align-items:center;margin-top:6px;font-size:11px;
           color:var(--dim)}
   .legend .sw{width:74px;height:8px;border-radius:2px}
   table{width:100%;border-collapse:collapse;font-size:11.5px}
-  td{padding:2px 0;color:var(--dim)} td.v{text-align:right;color:var(--ink);
-     font-variant-numeric:tabular-nums}
+  th{text-align:left;color:var(--dim2);font-weight:600;padding:3px 6px 3px 0;
+     border-bottom:1px solid var(--line)}
+  td{padding:3px 6px 3px 0;color:var(--dim);vertical-align:top}
+  td.v{text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
   details summary{cursor:pointer;color:var(--dim);font-size:11.5px}
+
+  /* ---- the explainer ---- */
+  #why{margin:14px 14px 0;background:linear-gradient(180deg,#161d27,#141a22);
+       border:1px solid var(--line);border-left:3px solid var(--violet);
+       border-radius:8px;padding:13px 15px}
+  #why h3{margin:0 0 4px;font-size:15px}
+  #why .lede{color:var(--dim);font-size:12.5px;max-width:74ch}
+  #why ol{margin:11px 0 0;padding-left:0;list-style:none;
+          display:grid;gap:9px;align-items:start;
+          grid-template-columns:repeat(auto-fit,minmax(212px,1fr))}
+  #why li{background:var(--panel2);border:1px solid var(--line);
+          border-radius:6px;padding:9px 11px}
+  #why li .t{font-weight:650;font-size:12.5px;margin-bottom:3px}
+  #why li .t em{color:var(--violet);font-style:normal;margin-right:5px}
+  #why li p{margin:0;color:var(--dim);font-size:11.8px}
+  #why li.key{border-color:var(--violet);background:#1d1a2b}
+  #why li details{margin-top:6px}
+  #why li details summary{font-size:11px}
+  #why li .techbox{margin-top:5px;font-size:11px}
+
+  /* ---- tabs ---- */
+  nav.tabs{display:flex;gap:5px;flex-wrap:wrap;padding:12px 14px 0}
+  nav.tabs button{background:transparent;border:1px solid var(--line);
+    border-radius:6px 6px 0 0;color:var(--dim);padding:7px 12px;cursor:pointer;
+    font-size:12px;border-bottom-color:transparent}
+  nav.tabs button.on{background:var(--panel);color:var(--ink);
+    border-color:var(--line);border-bottom-color:var(--panel);
+    box-shadow:0 2px 0 0 var(--violet) inset}
+  .panel{display:none} .panel.on{display:block}
+
+  .plainbox{border-left:2px solid var(--violet);padding-left:10px;
+            font-size:12.5px;max-width:80ch}
+  .techbox{border-left:2px solid var(--line);padding-left:10px;
+           color:var(--dim);font-size:11.5px;margin-top:9px;max-width:80ch;
+           font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+           line-height:1.5}
+  body.plainonly .techbox{display:none}
+  .watch{margin-top:9px;color:var(--blue);font-size:12px}
+  .watch::before{content:"▸ try it: ";color:var(--dim2)}
+  .matters{margin-top:9px;color:var(--dim);font-size:12px;
+           border-left:2px solid var(--amber);padding-left:10px}
+
+  .cands{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+         margin-top:10px}
+  .cand{background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+        padding:9px 10px;cursor:pointer}
+  .cand.on{border-color:var(--violet)}
+  .cand .nm{font-weight:600;font-size:12px}
+  .cand .lights{display:flex;gap:3px;margin:6px 0}
+  .cand .lights span{width:12px;height:12px;border-radius:3px}
+  .cand .sm{color:var(--dim);font-size:11px}
+  .prog{height:5px;background:#0b0f14;border-radius:3px;overflow:hidden;
+        margin-top:7px}
+  .prog i{display:block;height:100%;background:var(--violet);transition:width .3s}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:11.5px}
+  .kv b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;
+        text-align:right}
+  .kv span{color:var(--dim)}
+  .needle{position:relative;height:18px;background:#0b0f14;border-radius:3px;
+          overflow:hidden;margin:4px 0 2px}
+  .needle i{position:absolute;top:0;bottom:0;width:3px;background:var(--green)}
+  .needle .tick{position:absolute;top:0;bottom:0;width:1px;background:#33404e}
+  .split{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+  @media (max-width:760px){.split{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
   <h1>Atlas PoC 2 — front wing</h1>
-  <span class="sub">CS-10's ground effect and CS-12's FSI, one graph, both seams
-    live · <span id="hdr"></span></span>
+  <span class="sub">Ground effect and structural bending on one wing, both
+    couplings live, differentiated end to end · <span id="hdr"></span></span>
+  <span class="chip" id="verdictChip">compiling…</span>
+  <button class="btn" id="bPlain">plain language only</button>
 </header>
+<div id="quietBar">the live march is held while this beat measures its own
+  clock — a 12-frames-per-second simulation in the background would be measured
+  instead of the thing under test</div>
+<div id="unsafeBar">OUTSIDE THE MODEL — the declared validity envelopes are not
+  being enforced. Every number below is one the model refuses to stand behind.</div>
+
+<section id="why">
+  <h3 id="whyWhat"></h3>
+  <div class="lede" id="whyLede"></div>
+  <ol id="whyList"></ol>
+  <div class="note"><a href="#" id="whyToggle">show the five points in full</a></div>
+</section>
+
+<nav class="tabs" id="tabs"></nav>
 
 <main>
   <div>
@@ -100,13 +206,111 @@
       <div id="notice"></div>
     </div>
 
-    <div class="card" style="margin-top:14px">
-      <h2>history</h2>
-      <canvas id="hist" height="150" style="width:100%"></canvas>
-      <div class="note" id="histNote"></div>
+    <!-- ============================ the beats ============================ -->
+    <div class="panel on" id="p_live">
+      <div class="card">
+        <h2>history</h2>
+        <canvas id="hist" height="150" style="width:100%"></canvas>
+        <div class="note" id="histNote"></div>
+      </div>
+      <div class="card">
+        <h2>what you are looking at</h2>
+        <div id="liveExplain"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p_substitution">
+      <div class="card">
+        <h2><span class="n">①</span> offer it a real AI model and watch it refuse</h2>
+        <div id="subExplain"></div>
+        <div class="row" style="margin-top:11px">
+          <button class="btn" id="bSub">compile all three descriptions</button>
+          <span class="qty" id="subState"></span>
+        </div>
+        <div class="prog" id="subProg" style="display:none"><i style="width:0"></i></div>
+        <div class="cands" id="subCands"></div>
+        <div id="subDetail"></div>
+        <div class="caveat" id="subPremise"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p_envelope">
+      <div class="card">
+        <h2><span class="n">②</span> turn off one check and watch the optimiser lie</h2>
+        <div id="envExplain"></div>
+        <div class="row" style="margin-top:11px">
+          <button class="btn danger" id="bEnforce"></button>
+          <button class="btn" id="bFloor">put it on the floor</button>
+          <button class="btn" id="bRef">back to the reference design</button>
+        </div>
+        <div class="qty" id="envState" style="margin-top:7px"></div>
+        <div id="envDecline"></div>
+        <div class="split" style="margin-top:12px">
+          <div>
+            <h2>recorded, enforced</h2>
+            <div class="kv" id="envEnforced"></div>
+          </div>
+          <div>
+            <h2>recorded, NOT enforced</h2>
+            <div class="kv" id="envUnenforced"></div>
+          </div>
+        </div>
+        <div class="caveat red" id="envCaveat"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p_ablation">
+      <div class="card">
+        <h2><span class="n">③</span> freeze one joint and see what it was worth</h2>
+        <div id="ablExplain"></div>
+        <div class="row" style="margin-top:11px">
+          <button class="btn" id="bAbl">freeze each seam in turn</button>
+          <span class="qty" id="ablState"></span>
+        </div>
+        <div class="prog" id="ablProg" style="display:none"><i style="width:0"></i></div>
+        <div id="ablOut"></div>
+        <div class="caveat" id="ablCaveat"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p_race">
+      <div class="card">
+        <h2><span class="n">④</span> race the gradient against the population</h2>
+        <div id="raceExplain"></div>
+        <div class="row" style="margin-top:11px">
+          <button class="btn" id="bRace">race them, on one clock</button>
+          <span class="qty" id="raceState"></span>
+        </div>
+        <div class="prog" id="raceProg" style="display:none"><i style="width:0"></i></div>
+        <canvas id="raceCv" height="170" style="width:100%;margin-top:10px"></canvas>
+        <div id="raceOut"></div>
+        <div class="caveat" id="raceCaveat"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p_balance">
+      <div class="card">
+        <h2><span class="n">⑤</span> one needle for energy at the seams</h2>
+        <div id="balExplain"></div>
+        <div id="balOut" style="margin-top:11px"></div>
+        <canvas id="balCv" height="140" style="width:100%;margin-top:10px"></canvas>
+        <div class="caveat" id="balCaveat"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p_limits">
+      <div class="card">
+        <h2>what this does not claim</h2>
+        <div id="limits"></div>
+      </div>
+      <div class="card">
+        <h2>scope, in the project's own words</h2>
+        <div class="note" id="scope"></div>
+      </div>
     </div>
   </div>
 
+  <!-- ============================ the sidebar ============================ -->
   <div>
     <div class="card">
       <h2>per-seam certification</h2>
@@ -115,7 +319,7 @@
       <div class="caveat" id="certCaveat"></div>
     </div>
 
-    <div class="card" style="margin-top:14px">
+    <div class="card">
       <h2>design</h2>
       <div id="knobs"></div>
       <div class="row" style="margin-top:10px">
@@ -128,7 +332,7 @@
       <div class="note" id="optNote"></div>
     </div>
 
-    <div class="card" style="margin-top:14px">
+    <div class="card">
       <h2>scheme</h2>
       <div class="row">
         <span class="qty">tiling</span>
@@ -144,55 +348,62 @@
       <div class="note" id="schemeNote"></div>
     </div>
 
-    <div class="card" style="margin-top:14px">
-      <h2>what this is not</h2>
-      <div class="note" id="scope"></div>
+    <div class="card">
+      <h2>the recorded run</h2>
+      <div class="note" id="recorded"></div>
     </div>
   </div>
 </main>
 
 <script>
 const $ = s => document.querySelector(s);
-let META = null, S = null, IMG = null, dragging = null;
+const $$ = s => Array.from(document.querySelectorAll(s));
+let META=null, S=null, IMG=null, dragging=null, TAB="live", SUBSEL=null;
 
 function fmt(x, n=4){ if(x===undefined||x===null||!isFinite(x)) return "—";
   const a=Math.abs(x); if(a!==0&&(a<1e-3||a>=1e5)) return x.toExponential(2);
   return x.toFixed(n); }
+function pct(x, n=2){ return (x===undefined||x===null||!isFinite(x)) ? "—"
+  : (x*100).toFixed(n)+"%"; }
+function esc(s){ return String(s===undefined||s===null?"":s)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* Two voices, one block: the plain one always, the technical one unless the
+   reader has asked for plain only.  Neither is a summary of the other. */
+function voices(o){
+  return `<div class="plainbox">${esc(o.plain)}</div>` +
+         (o.technical?`<div class="techbox">${esc(o.technical)}</div>`:"") +
+         (o.matters?`<div class="matters">${esc(o.matters)}</div>`:"") +
+         (o.watch?`<div class="watch">${esc(o.watch)}</div>`:"");
+}
 
 /* ---------------- the stage: field + plate + floor ---------------- */
 function draw(){
   if(!S) return;
   const cv = $("#cv"), g = cv.getContext("2d");
-  const D = S.domain, W = D.nx, H = D.ny;
-  const scale = 3;
+  const D = S.domain, W = D.nx, H = D.ny, scale = 3;
   cv.width = W*scale; cv.height = H*scale;
   g.imageSmoothingEnabled = false;
   if(IMG) g.drawImage(IMG, 0, 0, cv.width, cv.height);
   else { g.fillStyle="#05070a"; g.fillRect(0,0,cv.width,cv.height); }
-
-  // domain -> canvas.  y is flipped: the array's row 0 is y = 0 and the image's
-  // row 0 is the top, and the field PNG is already flipped, so the plate must
-  // be flipped the same way or the two pictures disagree.
   const px = x => (x/D.dx)*scale;
   const py = y => cv.height - (y/D.dx)*scale;
 
-  // the rolling road
   g.strokeStyle="#8899aa"; g.lineWidth=2; g.setLineDash([7,5]);
   g.beginPath(); g.moveTo(0,cv.height-1); g.lineTo(cv.width,cv.height-1);
   g.stroke(); g.setLineDash([]);
 
   const G = S.geometry;
   if(G && G.quads){
-    // the ride-height leader, from the floor to the leading edge
-    g.strokeStyle="#58a6ff"; g.lineWidth=1.5; g.setLineDash([3,3]);
+    g.strokeStyle = S.outside ? "#f85149" : "#58a6ff";
+    g.lineWidth=1.5; g.setLineDash([3,3]);
     g.beginPath();
     g.moveTo(px(G.chord_x[0]), cv.height); g.lineTo(px(G.chord_x[0]), py(G.chord_y[0]));
     g.stroke(); g.setLineDash([]);
-    g.fillStyle="#58a6ff"; g.font="11px ui-monospace,monospace";
+    g.fillStyle = S.outside ? "#f85149" : "#58a6ff";
+    g.font="11px ui-monospace,monospace";
     g.fillText("h = "+fmt(S.readout.ride_height,4), px(G.chord_x[0])+5,
                (cv.height+py(G.chord_y[0]))/2);
-
-    // the plate, one quad per chordwise station, coloured by von Mises
     for(const q of G.quads){
       g.beginPath();
       g.moveTo(px(q.p[0][0]), py(q.p[0][1]));
@@ -201,53 +412,60 @@ function draw(){
       g.fillStyle = q.colour; g.fill();
       g.strokeStyle="rgba(0,0,0,.45)"; g.lineWidth=.6; g.stroke();
     }
-    // the undeflected chord line, so the bending is visible against something
     g.strokeStyle="rgba(255,255,255,.35)"; g.lineWidth=1; g.setLineDash([4,4]);
     g.beginPath();
     g.moveTo(px(G.chord_x[0]), py(G.chord_y[0]));
-    const dx = G.chord_x[1]-G.chord_x[0], dy = G.chord_y[1]-G.chord_y[0];
-    const L = Math.hypot(dx,dy);
+    const dx=G.chord_x[1]-G.chord_x[0], dy=G.chord_y[1]-G.chord_y[0];
+    const L=Math.hypot(dx,dy);
     g.lineTo(px(G.chord_x[0]+L*Math.cos(20*Math.PI/180)),
              py(G.chord_y[0]+L*Math.sin(20*Math.PI/180)));
     g.stroke(); g.setLineDash([]);
   }
+  if(S.outside){
+    g.fillStyle="rgba(248,81,73,.13)"; g.fillRect(0,0,cv.width,cv.height);
+    g.strokeStyle="#f85149"; g.lineWidth=3;
+    g.strokeRect(1.5,1.5,cv.width-3,cv.height-3);
+  }
 }
 
 /* ---------------- readout ---------------- */
-function stat(k, v, u, frac, cls){
+function stat(k, v, u, frac, cls, big){
   const bar = frac===undefined ? "" :
     `<div class="bar"><i class="${cls||''}" style="width:${Math.max(0,Math.min(100,frac*100))}%"></i></div>`;
-  return `<div class="stat ${cls||''}"><div class="k">${k}</div>
+  return `<div class="stat ${cls||''} ${big?'big':''}"><div class="k">${k}</div>
           <div class="v">${v}</div><div class="u">${u||""}</div>${bar}</div>`;
 }
 function readout(){
   const r = S.readout;
-  const sfrac = r.vm_max / r.vm_ceiling, dfrac = r.delta_max / r.delta_ceiling;
-  const scls = sfrac>1 ? "bad" : sfrac>0.9 ? "warn" : "";
-  const dcls = dfrac>1 ? "bad" : dfrac>0.9 ? "warn" : "";
+  const sfrac = r.vm_max/r.vm_ceiling, dfrac = r.delta_max/r.delta_ceiling;
+  const scls = sfrac>1?"bad":sfrac>0.9?"warn":"";
+  const dcls = dfrac>1?"bad":dfrac>0.9?"warn":"";
   $("#readout").innerHTML =
-    stat("downforce", fmt(r.downforce,5), "per unit span") +
-    stat("drag", fmt(r.drag,5), "L/D " + fmt(r.lift_to_drag,2)) +
-    stat("ride height", fmt(r.ride_height,5), "h") +
-    stat("tip deflection", fmt(r.tip,5), "delta at the trailing edge") +
-    stat("max von Mises", fmt(r.vm_max,1),
-         "ceiling " + fmt(r.vm_ceiling,0), sfrac, scls) +
-    stat("max |delta|", fmt(r.delta_max,5),
-         "ceiling " + fmt(r.delta_ceiling,3), dfrac, dcls) +
+    stat("downforce", fmt(r.downforce,5), "per unit span", undefined,
+         S.outside?"bad":"", true) +
+    stat("drag", fmt(r.drag,5), "L/D "+fmt(r.lift_to_drag,2)) +
+    stat("ride height", fmt(r.ride_height,5),
+         S.outside?"BELOW THE DECLARED FLOOR":"h", undefined, S.outside?"bad":"") +
+    stat("tip deflection", fmt(r.tip,5), "at the trailing edge") +
+    stat("max von Mises", fmt(r.vm_max,1), "ceiling "+fmt(r.vm_ceiling,0),
+         sfrac, scls) +
+    stat("max |delta|", fmt(r.delta_max,5), "ceiling "+fmt(r.delta_ceiling,3),
+         dfrac, dcls) +
     stat("interface residual", fmt(r.interface_residual,3),
          "33-equation Newton, 3 fixed steps") +
     stat("step", S.step_ms===null?"—":fmt(S.step_ms,0)+" ms",
-         S.mode==="optimize" ? "one adjoint" : "one macro-step");
+         S.mode==="optimize"?"one adjoint":"one macro-step");
   $("#notice").textContent = S.notice || "";
+  document.body.classList.toggle("unsafe", !S.enforce);
+  document.body.classList.toggle("quiet", !!S.quiet);
 }
 
 /* ---------------- the certification panel ---------------- */
 function seams(){
-  const c = S.certification || {};
-  const box = $("#seams");
+  const c = S.certification || {}, box = $("#seams");
   if(c.state !== "ok"){
-    box.innerHTML = `<div class="qty">${c.state==="running"
-      ? "compiling…" : (c.error||"waiting for the first compile")}</div>`;
+    box.innerHTML = `<div class="qty">${c.state==="running"?"compiling…"
+      :(esc(c.error)||"waiting for the first compile")}</div>`;
     return;
   }
   const q = S.seam_quantities || {};
@@ -257,46 +475,47 @@ function seams(){
   });
   box.innerHTML = order.map(id=>{
     const s = c.seams[id];
-    const ref = s.refusals.map(r=>`<b>${r}</b>`).join(" ");
-    const dec = s.decertifications.join(" ");
-    const gl  = s.global_decertifications.length;
-    const qq = q[id] ? `<div class="qty">${q[id].label}: ${fmt(q[id].value,4)}</div>` : "";
+    const ref = s.refusals.map(r=>`<b>${esc(r)}</b>`).join(" ");
+    const dec = s.decertifications.map(r=>`<i>${esc(r)}</i>`).join(" ");
+    const gl = s.global_decertifications.length;
+    const qq = q[id]?`<div class="qty">${esc(q[id].label)}: ${fmt(q[id].value,4)}</div>`:"";
     return `<div class="seam"><span class="dot ${s.colour}"></span><div>
-      <div><span class="n">${id}</span>
-        <span class="kind">· ${s.kind} · ${s.a} ↔ ${s.b}</span></div>
-      <div class="rules">${ref}${ref&&dec?" ":""}${dec}${
-        (ref||dec)?" ":""}${gl?`+${gl} graph-level`:""}</div>
-      ${qq}</div></div>`;
+      <div><span class="n">${esc(id)}</span>
+        <span class="kind">· ${esc(s.kind)} · ${esc(s.a)} ↔ ${esc(s.b)}</span></div>
+      <div class="rules">${ref}${ref&&dec?" ":""}${dec}${(ref||dec)?" ":""}${
+        gl?`+${gl} graph-level`:""}</div>${qq}</div></div>`;
   }).join("");
-
-  const worst = order.map(i=>c.seams[i].colour);
+  const chip = $("#verdictChip");
+  chip.textContent = c.verdict==="refuse" ? "graph: refused"
+    : c.verdict==="admit-uncertified" ? "graph: runs, not certified"
+    : "graph: "+c.verdict;
+  chip.className = "chip " + (c.verdict==="refuse"?"red"
+    : c.verdict==="admit"?"green":"amber");
   $("#certNote").innerHTML =
-    `graph verdict <b>${c.verdict}</b> · every colour is `+
-    `<code>compile_scheme</code>'s own decision, grouped by the seam its `+
-    `<code>subject</code> reaches. Green needs zero refusals AND zero `+
-    `decertifications; ${c.unmeasured&&c.unmeasured.length?
-      `<b>${c.unmeasured.length}</b> constants are unmeasured (W1, W3, W49), `+
-      `which has forced <code>admit-uncertified</code> on every graph in this `+
-      `package since W56 — so nothing here can be green.`:""}`;
+    `Every colour is <code>compile_scheme</code>'s own decision, grouped by the
+     seam its <code>subject</code> reaches. <b>Red</b> = at least one refusal.
+     <b>Amber</b> = no refusal, at least one decertification. <b>Green</b> =
+     neither${c.unmeasured&&c.unmeasured.length?`, and nothing here is green:
+     <b>${c.unmeasured.length}</b> bound constants are unmeasured (W1, W3, W49),
+     which has forced <code>admit-uncertified</code> on every graph in this
+     package since W56`:""}.`;
   $("#certCaveat").innerHTML =
     `<b>The colour is a property of the declaration, not of the design point.</b>
      Over the sixteen corners of the design box, zero produce a different
-     per-seam verdict map — so these lights change when the interface is
-     <i>declared</i> to move (the two surface seams go red at
-     <code>L2/InterfaceMotion</code>; the seven fluid–fluid ones stay amber) and
-     they do not flicker as a knob turns. The compile is still re-run on every
-     design change, on its own thread, because the honest way to show that is to
-     run it${c.wall_s?` (${fmt(c.wall_s,1)} s)`:""}. What moves with the design is
-     the quantity under each light.`;
+     per-seam map — so these lights do not flicker as a knob turns, and the
+     compile is still re-run on every design change${c.wall_s?
+       ` (${fmt(c.wall_s,1)} s)`:""} because the honest way to show that is to
+     run it. What moves with the design is the quantity under each light.
+     <b>Beat ① is where a colour actually changes.</b>`;
 }
 
 /* ---------------- knobs ---------------- */
 function knobs(){
-  if($("#knobs").dataset.built) { syncKnobs(); return; }
+  if($("#knobs").dataset.built){ syncKnobs(); return; }
   $("#knobs").dataset.built = "1";
   $("#knobs").innerHTML = META.keys.map(k=>{
     const [lo,hi] = META.box[k];
-    return `<div class="knob"><label><span>${META.labels[k]}</span>
+    return `<div class="knob"><label><span>${esc(META.labels[k])}</span>
       <b id="v_${k}"></b></label>
       <input type="range" id="s_${k}" min="${lo}" max="${hi}"
              step="${(hi-lo)/500}"></div>`;
@@ -325,11 +544,11 @@ function hist(){
   const w = cv.width = cv.clientWidth, h = cv.height;
   g.clearRect(0,0,w,h);
   const t = S.trace || [];
-  if(t.length < 2){ return; }
+  if(t.length < 2) return;
   const series = [
     {k:"load", c:"#3fb950", lbl:"downforce"},
-    {k:"vm",   c:"#d29922", lbl:"max von Mises", scale:1/S.readout.vm_ceiling},
-    {k:"h",    c:"#58a6ff", lbl:"ride height"},
+    {k:"vm", c:"#d29922", lbl:"max von Mises", scale:1/S.readout.vm_ceiling},
+    {k:"h", c:"#58a6ff", lbl:"ride height"},
   ];
   for(const s of series){
     const ys = t.map(p=> s.scale ? p[s.k]*s.scale : p[s.k]);
@@ -343,14 +562,457 @@ function hist(){
     });
     g.stroke();
   }
-  // the stress ceiling, on the von Mises trace's own scale
   $("#histNote").innerHTML = series.map(s=>
     `<span style="color:${s.c}">■</span> ${s.lbl}`).join(" &nbsp; ") +
     ` &nbsp;·&nbsp; each trace is auto-scaled to its own range, so read the
       SHAPE here and the VALUE in the readout above`;
 }
 
-/* ---------------- ramps ---------------- */
+/* ---------------- ① substitution ---------------- */
+function subPanel(){
+  const t = (S.tasks||{}).substitution || {state:"idle"};
+  $("#subState").textContent =
+    t.state==="running" ? "compiling three graphs…"
+    : t.state==="error" ? ("error: "+esc(t.error))
+    : t.state==="done" ? `${fmt(t.wall_s,1)} s · three compiles, no weights, no marching`
+    : "not run yet";
+  $("#bSub").disabled = t.state==="running";
+  $("#subProg").style.display = t.state==="running" ? "block" : "none";
+  if(t.state!=="done"){ $("#subCands").innerHTML=""; $("#subDetail").innerHTML="";
+    $("#subPremise").innerHTML=""; return; }
+  const order = t.seam_order || [];
+  $("#subCands").innerHTML = t.order.map(k=>{
+    const r = t.rows[k];
+    const lights = order.map(s=>
+      `<span style="background:var(--${r.colours[s]})"></span>`).join("");
+    return `<div class="cand ${SUBSEL===k?'on':''}" data-cand="${k}">
+      <div class="nm">${esc(r.name)}</div>
+      <div class="lights">${lights}</div>
+      <div class="sm">${r.n_red} refused · ${r.n_amber} uncertified
+        ${r.is_incumbent?" · this is what is running":""}</div></div>`;
+  }).join("");
+  $$("[data-cand]").forEach(el => el.onclick = ()=>{
+    SUBSEL = el.dataset.cand; subPanel(); });
+  const sel = t.rows[SUBSEL || t.order[t.order.length-1]];
+  SUBSEL = sel.key;
+  const added = Object.entries(sel.added);
+  const rules = {};
+  for(const [, a] of added){
+    for(const r of a.refusals) rules[r] = "refuse";
+    for(const r of a.decertifications) if(!rules[r]) rules[r] = "decertify";
+  }
+  const notes = t.notes || {};
+  $("#subDetail").innerHTML = `
+    <div class="card" style="background:var(--panel2);margin-top:11px">
+      <h2>${esc(sel.name)}</h2>
+      <div class="plainbox">${esc(sel.plain)}</div>
+      <div class="techbox">declared: ${
+        Object.keys(sel.declaration).length
+          ? Object.entries(sel.declaration).map(([k,v])=>`${k}=${esc(v)}`).join(", ")
+          : "unchanged — this is the incumbent"}
+        <br>${esc(sel.provenance)}</div>
+      ${sel.caveat?`<div class="caveat red">${esc(sel.caveat)}</div>`:""}
+      ${added.length? `
+        <div class="note" style="margin-top:11px"><b>What the compiler says that
+          it did not say about the incumbent</b>, at
+          ${added.length} of ${order.length} seams:</div>
+        <table style="margin-top:5px"><tr><th>rule</th><th>verdict</th>
+          <th>what it means</th></tr>
+        ${Object.entries(rules).map(([r,v])=>`<tr>
+          <td><code>${esc(r)}</code></td>
+          <td class="v" style="color:var(--${v==='refuse'?'red':'amber'})">${v}</td>
+          <td>${esc(notes[r]||"")}</td></tr>`).join("")}
+        </table>`
+      : `<div class="note" style="margin-top:11px">No seam-level rule fires that
+          did not fire on the incumbent.</div>`}
+      <div class="techbox">the measurement the middle description rests on:
+        ${esc(t.measurement.sentence)} (${esc(t.measurement.where)})</div>
+    </div>`;
+  $("#subPremise").innerHTML = `<b>Why the refusal needs a cut.</b>
+    ${esc(t.premise)}`;
+}
+
+/* ---------------- ② the envelope ---------------- */
+function envPanel(){
+  const on = !!S.enforce;
+  const b = $("#bEnforce");
+  b.textContent = on ? "enforcing declared envelopes (safe)"
+                     : "NOT enforcing — outside the model";
+  b.classList.toggle("on", !on);
+  $("#envState").innerHTML = (on
+    ? "The march stops when either expert says the design is outside what it is "
+      + "valid for. "
+    : "<b style='color:var(--red)'>The march continues past both experts' "
+      + "declared limits.</b> ")
+    + "<b>put it on the floor</b> sets the free ride height and the spring rate "
+    + "to the bottom of their range — a design that settles below the "
+    + "suspension's declared floor — and starts marching, so the difference "
+    + "between the two states is one click.";
+  const d = S.decline;
+  $("#envDecline").innerHTML = d ? `
+    <div class="card" style="background:var(--panel2);border-color:var(--amber);
+         margin-top:11px">
+      <h2>the last decline</h2>
+      <div class="kv">
+        <span>which expert</span><b>${esc(d.expert)}</b>
+        <span>at macro-step</span><b>${d.step}</b>
+        <span>while</span><b>${d.was_optimising?"optimising":"marching"}</b>
+      </div>
+      <div class="techbox">${esc(d.message)}</div>
+      <div class="note">That is not a crash. It is the model declining to
+        answer, which is the behaviour every path but <code>run</code> was
+        missing until W145.</div>
+    </div>` : `<div class="note" style="margin-top:11px">Nothing has declined
+      yet this session. Press <b>optimise</b> and let it run: in this flow model
+      downforce rises all the way to the floor, so the search goes there.</div>`;
+  const R = (META.recorded||{});
+  const mk = (rec, label) => rec ? `
+    <span>settled downforce</span><b>${fmt(rec.best_J,6)}</b>
+    <span>against a start of</span><b>${fmt(rec.start_J,6)}</b>
+    <span>improvement</span><b>${pct(rec.best_J/rec.start_J-1,1)}</b>
+    <span>declined by an expert, gradient</span><b>${rec.declined_grad} of ${rec.evals_grad}</b>
+    <span>declined by an expert, population</span><b>${rec.declined_pop} of ${rec.evals_pop}</b>
+    <span>merely infeasible, population</span><b>${rec.infeasible_pop} of ${rec.evals_pop}</b>
+    <span>stress ceiling active</span><b>${rec.active?(rec.active.sigma?"yes":"no"):"—"}</b>
+  ` : `<span>${label}</span><b>—</b>`;
+  $("#envEnforced").innerHTML = mk(R.design, "not in the artifact");
+  $("#envUnenforced").innerHTML = mk(R.design_unenforced, "not in the artifact");
+  const a = R.design && R.design_unenforced;
+  $("#envCaveat").innerHTML = a ? `<b>${pct(
+      R.design_unenforced.best_J/R.design.best_J-1,1)} of the unenforced
+      answer was bought outside the model.</b> Both columns are the same code,
+      the same box, the same budget and the same seed; one check separates them.
+      <b>Declined</b> and <b>infeasible</b> are different rows on purpose: a
+      declined design is one an expert says it cannot speak for, an infeasible
+      one is inside the model and over a ceiling.
+      And the binding constraint in the enforced column is <b>neither named
+      ceiling</b> — it is the suspension's declared floor, which is a result
+      about this model and is reported as one rather than tuned away.`
+    : `The recorded columns are not on this machine, so only the live behaviour
+       is shown.`;
+}
+
+/* ---------------- ③ ablation ---------------- */
+function ablPanel(){
+  const t = (S.tasks||{}).ablation || {state:"idle"};
+  $("#bAbl").disabled = t.state==="running";
+  $("#ablProg").style.display = t.state==="running" ? "block" : "none";
+  $("#ablProg").firstElementChild.style.width = ((t.progress||0)*100)+"%";
+  $("#ablState").textContent =
+    t.state==="running" ? `marching: ${esc(t.doing||"")}`
+    : t.state==="error" ? ("error: "+esc(t.error))
+    : t.state==="done" ? `${fmt(t.wall_s,1)} s · ${t.steps} macro-steps per column`
+    : "not run yet · three rollouts, tens of seconds";
+  if(t.state!=="done"){ $("#ablOut").innerHTML=""; }
+  else {
+    const rows = Object.entries(t.frozen).map(([tag,r])=>{
+      if(!r.ok) return `<tr><td>${esc(tag)}</td>
+        <td class="v" style="color:var(--red)" colspan="3">DECLINED</td></tr>
+        <tr><td colspan="4" class="qty">${esc(r.why)}</td></tr>`;
+      return `<tr><td>${esc(tag)}<div class="qty">${esc(r.parent)}</div></td>
+        <td class="v">${fmt(r.load,6)}</td>
+        <td class="v">${fmt(r.h,5)}</td>
+        <td class="v" style="color:var(--amber)">${pct(r.worth)}</td></tr>`;
+    }).join("");
+    $("#ablOut").innerHTML = `
+      <table style="margin-top:11px">
+        <tr><th>column</th><th style="text-align:right">downforce</th>
+            <th style="text-align:right">ride height</th>
+            <th style="text-align:right">what the seam is worth</th></tr>
+        <tr><td><b>both seams live</b></td>
+            <td class="v">${fmt(t.live.load,6)}</td>
+            <td class="v">${fmt(t.live.h,5)}</td><td class="v">—</td></tr>
+        ${rows}
+      </table>
+      <div class="note">Each frozen column is pinned at the height the live
+        column above settles to (<b>${fmt(t.h_live,5)}</b>), measured in this
+        same run rather than assumed — which is the whole subtlety: using the
+        reference-load release height instead differs by 37% at the optimum and
+        would be read as the seam's worth.${t.h_hint!==null&&t.h_hint!==undefined
+          ? ` The march on screen was at ${fmt(t.h_hint,5)} when this started,
+              ${pct(t.h_hint_error,2)} away, which is why it is not what gets
+              used.` : ""}</div>`;
+  }
+  const R = (META.recorded||{}).ablation || {};
+  const wr = R.worth_at_reference || {}, wo = R.worth_at_optimum || {};
+  const keys = Array.from(new Set(Object.keys(wr).concat(Object.keys(wo))));
+  $("#ablCaveat").innerHTML = keys.length ? `<b>Recorded, at
+    ${R.steps} macro-steps</b> — the same ablation at the reference design and
+    at the constrained optimum:<table style="margin-top:5px">
+    <tr><th>seam frozen</th><th style="text-align:right">at the reference</th>
+        <th style="text-align:right">at the optimum</th></tr>
+    ${keys.map(k=>`<tr><td>${esc(k)}</td>
+      <td class="v">${wr[k]!==undefined?pct(wr[k]):"—"}</td>
+      <td class="v">${wo[k]!==undefined?pct(wo[k]):
+        "<span style='color:var(--red)'>declined</span>"}</td></tr>`).join("")}
+    </table>` : "";
+}
+
+/* ---------------- ④ the race ---------------- */
+function racePanel(){
+  const t = (S.tasks||{}).race || {state:"idle"};
+  $("#bRace").disabled = t.state==="running";
+  $("#raceProg").style.display = t.state==="running" ? "block" : "none";
+  $("#raceProg").firstElementChild.style.width = ((t.progress||0)*100)+"%";
+  const snap = t.state==="done" ? t : (t.live || null);
+  $("#raceState").textContent =
+    t.state==="running" ? "racing…"
+    : t.state==="error" ? ("error: "+esc(t.error))
+    : t.state==="done" ? `${fmt(t.wall_s,1)} s (after ${fmt(t.warm_s,1)} s of warm-up, excluded from both clocks)`
+    : "not run yet";
+  raceChart(snap);
+  const c = snap && snap.comparison;
+  $("#raceOut").innerHTML = !c ? "" : `
+    <div class="readout" style="margin-top:11px">
+      ${stat("wall-clock", c.ratio_wall?fmt(c.ratio_wall,2)+"×":"—",
+             "gradient vs population, to the same objective", undefined,
+             "", true)}
+      ${stat("in evaluations", c.ratio_rollouts?fmt(c.ratio_rollouts,1)+"×":"—",
+             "flattering: prices a gradient iterate at one forward eval")}
+      ${stat("quality", c.quality_ratio?fmt(c.quality_ratio,3)+"×":"—",
+             "what each column actually found")}
+      ${stat("declined", `${snap.gradient.declined} / ${snap.population.declined}`,
+             "gradient / population, by an expert's envelope")}
+    </div>
+    <div class="note">Both columns ran <b>one evaluation each, in turn</b>, and
+      the live march was held for the duration, so each column was timed against
+      the same quiet machine. Population optimiser:
+      <code>${esc(snap.population.optimiser)}</code>, ${snap.steps} macro-steps
+      per evaluation.</div>`;
+  const R = (META.recorded||{}).design;
+  const rc = R && R.comparison;
+  $("#raceCaveat").innerHTML = rc ? `<b>Recorded, full scale</b> —
+    ${R.n_grad} Adam steps against ${R.n_pop} CMA-ES evaluations on a
+    ${R.steps}-macro-step objective from a settled field:
+    <b>${fmt(rc.ratio_wall,2)}×</b> in wall-clock,
+    ${fmt(rc.ratio_full_budget,1)}× in rollouts,
+    quality ${fmt(rc.quality_ratio,3)}×, and a gradient iterate costs
+    ${fmt(rc.grad_iterate_in_pop_evals,2)} forward evaluations.
+    <b>The live race above is short and can go either way.</b> Its two budgets
+    are <i>scaled</i> from the recorded ones rather than chosen — the same
+    1&nbsp;:&nbsp;6.67 ratio, on a shorter horizon — because picking them
+    independently would mean picking them until the answer came out the way this
+    panel would prefer. Below about nine gradient iterates Adam has not turned
+    yet and the population column wins on wall-clock. That is a real property of
+    the estimator, and a demo that hid it would be rigging the comparison it
+    exists to make honest.`
+    : `The recorded full-scale comparison is not on this machine.`;
+}
+function raceChart(snap){
+  const cv = $("#raceCv"), g = cv.getContext("2d");
+  const w = cv.width = cv.clientWidth, h = cv.height;
+  g.clearRect(0,0,w,h);
+  if(!snap) return;
+  const cols = [
+    {h:snap.gradient.history, c:"#3fb950", lbl:"gradient (Adam on the adjoint)"},
+    {h:snap.population.history, c:"#d29922", lbl:"population (CMA-ES)"},
+  ];
+  const pts = cols.flatMap(c=>c.h.filter(r=>r.feasible));
+  if(pts.length<2) return;
+  const tmax = Math.max(...cols.flatMap(c=>c.h.map(r=>r.wall_s)), 1e-9);
+  const js = pts.map(r=>r.J);
+  const lo = Math.min(...js), hi = Math.max(...js), pad=(hi-lo)*0.12||1e-6;
+  for(const c of cols){
+    let best = -Infinity;
+    g.strokeStyle=c.c; g.lineWidth=1.8; g.beginPath();
+    let started=false;
+    for(const r of c.h){
+      if(!r.feasible) continue;
+      best = Math.max(best, r.J);
+      const X = r.wall_s/tmax*(w-4)+2;
+      const Y = h - (best-lo+pad)/((hi-lo)+2*pad)*(h-4) - 2;
+      started ? g.lineTo(X,Y) : (g.moveTo(X,Y), started=true);
+    }
+    g.stroke();
+  }
+  g.fillStyle="#5f6b78"; g.font="10px ui-sans-serif,system-ui";
+  g.fillText("wall-clock seconds →  best feasible objective so far ↑", 4, h-4);
+  let x=4;
+  for(const c of cols){
+    g.fillStyle=c.c; g.fillRect(x, 6, 8, 8);
+    g.fillStyle="#8b98a5"; g.fillText(c.lbl, x+12, 14);
+    x += g.measureText(c.lbl).width + 28;
+  }
+}
+
+/* ---------------- ⑤ the balance ---------------- */
+function balPanel(){
+  const b = S.balance || {};
+  const last = b.last, rec = b.recorded || {};
+  const row = (k,v,u,cls) => stat(k, v===null||v===undefined?"—":fmt(v,4), u,
+                                  undefined, cls);
+  $("#balOut").innerHTML = `
+    <div class="readout">
+      ${row("static accounting", last?last.static:null,
+            "no interface power at all", "bad")}
+      ${row("with the motion terms", last?last.with_motion:null,
+            "what the two seams carry", "warn")}
+      ${row("+ the half-step term", last?last.corrected:null,
+            "the scheme's own mid-point", "")}
+      ${stat("settled", b.settled===null||b.settled===undefined?"—":fmt(b.settled,4),
+             `worst over the last ${b.window||0} of ${b.n||0} steps`)}
+    </div>
+    <div class="note">All three are normalised by the running maximum of
+      |dE/dt| over this session (${fmt(b.level,4)}), which is <b>still
+      growing</b> early in a march — so the first frames are not a reading.</div>`;
+  balChart(b);
+  $("#balCaveat").innerHTML = rec.settled!==undefined ? `<b>Recorded, over
+    ${rec.steps} macro-steps</b>: static ${fmt(rec.static,4)} (the normalising
+    level), with the motion terms ${fmt(rec.with_motion,4)}, plus the half-step
+    term ${fmt(rec.corrected,4)} — a factor of ${fmt(rec.factor,1)} — and once
+    the transient has passed, <b>${fmt(rec.settled,4)}</b>.` : "";
+}
+function balChart(b){
+  const cv = $("#balCv"), g = cv.getContext("2d");
+  const w = cv.width = cv.clientWidth, h = cv.height;
+  g.clearRect(0,0,w,h);
+  const s = (b.series||[]);
+  if(s.length<2) return;
+  const cols = ["#f85149","#d29922","#3fb950"];
+  const lbl = ["static","with motion","+ half-step"];
+  const lg = x => Math.log10(Math.max(x, 1e-12));
+  const all = s.flat().map(lg);
+  const lo = Math.min(...all), hi = Math.max(...all), pad=(hi-lo)*0.08||0.5;
+  for(let k=0;k<3;k++){
+    g.strokeStyle=cols[k]; g.lineWidth=1.5; g.beginPath();
+    s.forEach((r,i)=>{
+      const X = i/(s.length-1)*w;
+      const Y = h - (lg(r[k])-lo+pad)/((hi-lo)+2*pad)*h;
+      i? g.lineTo(X,Y): g.moveTo(X,Y);
+    });
+    g.stroke();
+  }
+  g.font="10px ui-sans-serif,system-ui"; let x=4;
+  for(let k=0;k<3;k++){
+    g.fillStyle=cols[k]; g.fillRect(x,6,8,8);
+    g.fillStyle="#8b98a5"; g.fillText(lbl[k], x+12, 14);
+    x += g.measureText(lbl[k]).width + 26;
+  }
+  g.fillStyle="#5f6b78"; g.fillText("log scale, per macro-step", 4, h-4);
+}
+
+/* ---------------- the explainer + tabs ---------------- */
+const TABS = [
+  ["live","live simulation"], ["substitution","① it refuses a real AI model"],
+  ["envelope","② it knows when to stop"], ["ablation","③ the joints are the physics"],
+  ["race","④ gradients vs guessing"], ["balance","⑤ energy at the seams"],
+  ["limits","what it does not claim"],
+];
+function buildTabs(){
+  $("#tabs").innerHTML = TABS.map(([k,l])=>
+    `<button data-tab="${k}" class="${k===TAB?'on':''}">${l}</button>`).join("");
+  $$("[data-tab]").forEach(b=> b.onclick = ()=>{
+    TAB = b.dataset.tab;
+    $$("[data-tab]").forEach(x=>x.classList.toggle("on", x.dataset.tab===TAB));
+    $$(".panel").forEach(p=>p.classList.toggle("on", p.id==="p_"+TAB));
+    if(S) render();
+  });
+}
+function buildWhy(){
+  const E = META.explain;
+  $("#whyWhat").textContent = "What this is, and why it is new";
+  $("#whyLede").innerHTML =
+    `${esc(E.headline.what)}<br><br><b>${esc(E.headline.novel)}</b>
+     <br><br>${esc(E.headline.why)}`;
+  $("#whyList").innerHTML = E.why_novel.map(p=>
+    `<li class="${p.n===5?'key':''}"><div class="t"><em>${p.n}</em>${esc(p.title)}</div>
+     <p>${esc(p.plain)}</p>
+     <details><summary>the technical version</summary>
+       <div class="techbox">${esc(p.technical)}</div></details></li>`
+  ).join("");
+  let open = true;
+  const set = () => {
+    $("#whyList").style.display = open ? "grid" : "none";
+    $("#whyToggle").textContent = open ? "hide the five points"
+                                       : "show the five points in full";
+  };
+  $("#whyToggle").onclick = e => { e.preventDefault(); open=!open; set(); };
+  set();
+  const beat = k => E.beats.find(b=>b.key===k);
+  $("#subExplain").innerHTML = voices(beat("substitution"));
+  $("#envExplain").innerHTML = voices(beat("envelope"));
+  $("#ablExplain").innerHTML = voices(beat("ablation"));
+  $("#raceExplain").innerHTML = voices(beat("race"));
+  $("#balExplain").innerHTML = voices(beat("balance"));
+  $("#liveExplain").innerHTML = `
+    <div class="plainbox">The colours are air speed. The shape crossing the
+      picture is the wing, coloured by how hard the material is working — blue
+      is slack, red is at the stress ceiling. The dashed white line is where the
+      wing would sit if it could not bend, so the gap between them is the
+      bending. The blue leader is the ride height, and the bottom of the picture
+      is a road moving underneath at full speed, which is what a wind tunnel
+      cannot do and a real car always has.</div>
+    <div class="techbox">Six exposed reference.WindowNS windows of 80x80 at halo
+      16 over 208x144 cells, one global spectral Leray projection per exchange.
+      The plate is drawn from FlexWing.stations(delta, h) — the same call the
+      physics makes — as 32 quads, each coloured by the peak von Mises over the
+      two elements through the thickness. The stress ramp is anchored on the
+      CEILING, not on the frame's own maximum: a ramp that renormalises every
+      frame makes a design at 20% of the ceiling look identical to one at 99%.</div>`;
+  $("#limits").innerHTML = E.not_claimed.map(x=>
+    `<div style="margin-bottom:13px"><div style="font-weight:650">${esc(x.title)}</div>
+     <div class="plainbox" style="margin-top:4px">${esc(x.plain)}</div>
+     <div class="techbox">${esc(x.technical)}</div></div>`).join("");
+}
+function recordedPanel(){
+  const R = META.recorded || {};
+  if(!R.available){ $("#recorded").innerHTML =
+    `<b>Not available.</b> ${esc(R.why||"")}`; return; }
+  const c = R.controls || {};
+  $("#recorded").innerHTML = `
+    <div class="kv">
+      <span>the assembly's own gate</span><b></b>
+      <span>&nbsp;&nbsp;k → ∞ reproduces CS-12</span><b>${fmt(c.k_to_infinity,0)}</b>
+      <span>&nbsp;&nbsp;E* → ∞ reproduces CS-10</span><b>${fmt(c.S_to_infinity,0)}</b>
+      <span>&nbsp;&nbsp;stress map</span><b>${fmt(c.stress_map,0)}</b>
+      <span>&nbsp;&nbsp;bitwise reproducible</span><b>${c.bitwise?"yes":"no"}</b>
+      <span>adjoint premium</span><b>${fmt((R.cost||{}).adjoint_over_forward,2)}×</b>
+    </div>
+    <div class="note">Every panel that shows a live number shows the recorded
+      one beside it. This demo never writes the artifact and never falls back to
+      a hard-coded copy of a number in it — a wall-clock figure in a document
+      was wrong by 4× the next day on unchanged code, so the numbers are read
+      from the run that produced them or not shown.</div>`;
+}
+
+/* ---------------- wiring ---------------- */
+let ws = null;
+function send(m){ if(ws && ws.readyState===1) ws.send(JSON.stringify(m)); }
+
+function render(){
+  if(!$("#knobs").dataset.built) knobs(); else syncKnobs();
+  readout(); seams(); draw();
+  if(TAB==="live") hist();
+  if(TAB==="substitution") subPanel();
+  if(TAB==="envelope") envPanel();
+  if(TAB==="ablation") ablPanel();
+  if(TAB==="race") racePanel();
+  if(TAB==="balance") balPanel();
+  if(!$("#ramp").style.background) ramps();
+  $("#hdr").textContent =
+    `${S.config.tiling==="single"?"referent (one window)":"six windows"} · `+
+    `${S.config.coupling} coupling · step ${S.iteration} · `+
+    (S.eta_s===null?"timing…":`${fmt(S.eta_s,2)} s/step (measured here)`);
+  for(const b of $$("[data-cfg]"))
+    b.classList.toggle("on", S.config[b.dataset.cfg] === b.dataset.val);
+  for(const [id,m] of [["bRun","run"],["bOpt","optimize"],["bStep","step"],
+                       ["bPause","paused"]])
+    $("#"+id).classList.toggle("on", S.mode===m);
+  $("#optNote").innerHTML =
+    `The optimiser's rollout <b>is</b> the live march — warm-started and
+     ${S.config.horizon} macro-steps long — so the field animates inside the
+     gradient step. <b>That is a different estimator</b> from the results page's
+     120-macro-step rollout from a settled field, and its number is a demo
+     number. Constraints enter as a smooth exterior penalty at weight
+     ${fmt(S.config.penalty,0)}, on margins normalised by their own ceiling.`;
+  $("#schemeNote").innerHTML =
+    `<b>joint</b> solves both seams as one 33-equation system;
+     <b>split</b> solves them in turn, which is the ablation;
+     <b>lagged</b> holds the answer for ${S.config.lag} macro-step(s).
+     <b>referent</b> is the same code path at one window — it differs from six
+     windows by the cut and by nothing else. <b>Beat ① needs six</b>: with one
+     window nothing is decomposed, so the rule that refuses has no premise.`;
+}
 function ramps(){
   const mk = (el, stops, lo, hi, txt) => {
     const c = document.createElement("canvas");
@@ -367,45 +1029,12 @@ function ramps(){
   mk($("#sramp"), S.ramp.stress, 0, fmt(S.readout.vm_ceiling,0), $("#srampTxt"));
 }
 
-/* ---------------- wiring ---------------- */
-let ws = null;
-function send(m){ if(ws && ws.readyState===1) ws.send(JSON.stringify(m)); }
-
-function apply(state){
-  S = state;
-  if(!$("#knobs").dataset.built) knobs(); else syncKnobs();
-  readout(); seams(); hist(); draw();
-  if(!$("#ramp").style.background) ramps();
-  $("#hdr").textContent =
-    `${S.config.tiling==="single"?"referent (one window)":"six windows"} · `+
-    `${S.config.coupling} coupling · step ${S.iteration} · `+
-    (S.eta_s===null?"timing…":`${fmt(S.eta_s,2)} s/step (measured here)`);
-  for(const b of document.querySelectorAll("[data-cfg]"))
-    b.classList.toggle("on", S.config[b.dataset.cfg] === b.dataset.val);
-  for(const [id,m] of [["bRun","run"],["bOpt","optimize"],["bStep","step"],
-                       ["bPause","paused"]])
-    $("#"+id).classList.toggle("on", S.mode===m);
-  $("#optNote").innerHTML =
-    `The optimiser's rollout <b>is</b> the live march — warm-started and
-     ${S.config.horizon} macro-steps long — so the field animates inside the
-     gradient step. <b>That is a different estimator</b> from the results page's
-     ${'120'}-macro-step rollout from a settled field, and its number is a demo
-     number. Constraints enter as a smooth exterior penalty at weight
-     ${fmt(S.config.penalty,0)}, on margins normalised by their own ceiling.`;
-  $("#schemeNote").innerHTML =
-    `<b>joint</b> solves both seams as one 33-equation system;
-     <b>split</b> solves them in turn, which is the ablation;
-     <b>lagged</b> holds the answer for ${S.config.lag} macro-step(s).
-     <b>referent</b> is the same code path at one window — it differs from six
-     windows by the cut and by nothing else.`;
-}
-
 function connect(){
   ws = new WebSocket((location.protocol==="https:"?"wss":"ws")+"://"+
                      location.host+"/ws");
   ws.binaryType = "blob";
   ws.onmessage = ev => {
-    if(typeof ev.data === "string"){ apply(JSON.parse(ev.data)); return; }
+    if(typeof ev.data === "string"){ S = JSON.parse(ev.data); render(); return; }
     const url = URL.createObjectURL(ev.data);
     const im = new Image();
     im.onload = ()=>{ if(IMG&&IMG.src) URL.revokeObjectURL(IMG.src);
@@ -417,17 +1046,40 @@ function connect(){
 
 (async ()=>{
   META = await (await fetch("/api/meta")).json();
+  buildTabs(); buildWhy(); recordedPanel();
   $("#scope").innerHTML =
-    `<b>The structure.</b> ${META.scope.structure}
-     <div style="margin-top:7px"><b>The thickness.</b> ${META.scope.thickness}</div>
-     <div style="margin-top:7px"><b>R10 in the assembly.</b> ${META.scope.r10}</div>`;
+    `<b>The structure.</b> ${esc(META.scope.structure)}
+     <div style="margin-top:7px"><b>The thickness.</b> ${esc(META.scope.thickness)}</div>
+     <div style="margin-top:7px"><b>R10 in the assembly.</b> ${esc(META.scope.r10)}</div>`;
   for(const [id,m] of [["bRun","run"],["bOpt","optimize"],["bStep","step"],
                        ["bPause","paused"]])
     $("#"+id).onclick = ()=> send({type:"mode", mode:m});
   $("#bReset").onclick = ()=> send({type:"reset"});
-  for(const b of document.querySelectorAll("[data-cfg]"))
-    b.onclick = ()=> send({type:"config",
-                           config:{[b.dataset.cfg]: b.dataset.val}});
+  $("#bSub").onclick = ()=> send({type:"substitution"});
+  $("#bAbl").onclick = ()=> send({type:"ablation"});
+  $("#bRace").onclick = ()=> send({type:"race"});
+  $("#bEnforce").onclick = ()=> send({type:"config",
+                                      config:{enforce: !S.enforce}});
+  //: one click for beat 2's demonstration. The bottom corner of the ride-height
+  //: and spring-rate box settles BELOW the suspension's declared floor, so with
+  //: the check on the march stops at macro-step 0 and says so, and with it off
+  //: the same design reports a downforce nobody should use.
+  $("#bFloor").onclick = ()=>{
+    send({type:"design", design:{h0: META.box.h0[0], k: META.box.k[0]}});
+    send({type:"reset"});
+    send({type:"mode", mode:"run"});
+  };
+  $("#bRef").onclick = ()=>{
+    send({type:"design", design: META.reference});
+    send({type:"reset"});
+    send({type:"mode", mode:"run"});
+  };
+  $("#bPlain").onclick = ()=>{
+    document.body.classList.toggle("plainonly");
+    $("#bPlain").classList.toggle("on", document.body.classList.contains("plainonly"));
+  };
+  for(const b of $$("[data-cfg]"))
+    b.onclick = ()=> send({type:"config", config:{[b.dataset.cfg]: b.dataset.val}});
   connect();
 })();
 </script>

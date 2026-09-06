@@ -26,6 +26,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 
 from ..cases import front_wing as F
+from . import explain as EX
+from . import substitution as SUB
 from .engine import RULE_NOTE, DemoConfig, Engine
 
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
@@ -67,16 +69,44 @@ def create_app(engine: Engine | None = None) -> FastAPI:
                       "structure": W_SCOPE},
             "config": asdict(eng.cfg),
             "defaults": asdict(DemoConfig()),
+            #: the plain-language layer, authored in `explain.py` so it can be
+            #: reviewed and tested rather than buried in a template
+            "explain": EX.payload(),
+            #: the candidate experts beat 1 offers, and the measurement the
+            #: middle one rests on -- quoted with its provenance, never re-run
+            "candidates": [dict(key=c.key, name=c.name, plain=c.plain,
+                                provenance=c.provenance, caveat=c.caveat,
+                                is_incumbent=c.is_incumbent)
+                           for c in SUB.CANDIDATES],
+            "w93": dict(SUB.W93_MEASUREMENT),
+            #: the full-scale run, so no panel's live number is the only number
+            "recorded": eng.recorded,
         })
 
     @app.get("/api/state")
     async def state():
         return JSONResponse(app.state.engine.frame.payload or {})
 
+    @app.get("/api/recorded")
+    async def recorded():
+        return JSONResponse(app.state.engine.recorded)
+
     @app.post("/api/compile")
     async def recompile():
         app.state.engine.request_compile()
         return JSONResponse({"ok": True})
+
+    @app.post("/api/substitution")
+    async def substitution():
+        return JSONResponse({"started": app.state.engine.request_substitution()})
+
+    @app.post("/api/ablation")
+    async def ablation():
+        return JSONResponse({"started": app.state.engine.request_ablation()})
+
+    @app.post("/api/race")
+    async def race():
+        return JSONResponse({"started": app.state.engine.request_race()})
 
     @app.websocket("/ws")
     async def ws(sock: WebSocket):
@@ -152,6 +182,10 @@ def _dispatch(eng: Engine, msg: dict[str, Any]) -> None:
         eng.post("reset")
     elif kind == "compile":
         eng.post("compile")
+    elif kind in ("substitution", "ablation", "race"):
+        #: posted to the queue rather than started here, so a beat always begins
+        #: between macro-steps and reads a state no half-finished step is inside
+        eng.post(kind, msg.get("params") or {})
 
 
 def run(host: str = "127.0.0.1", port: int = 8012,
