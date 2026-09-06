@@ -178,6 +178,14 @@ def check() -> int:
     return 0
 
 
+#: Flags that belong to `run.sh` / `run.cmd` and mean nothing to the app.
+#: The launchers pass their whole argument list through, so without this
+#: `./run.sh --reinstall` rebuilds the virtual environment and then dies on
+#: `unrecognized arguments: --reinstall` -- the install worked and the user is
+#: told it did not. (The PoC 1a bundle's `run.py` has the same defect.)
+LAUNCHER_ONLY = ("--check", "--reinstall")
+
+
 def main() -> int:
     if "--check" in sys.argv:
         return check()
@@ -185,7 +193,7 @@ def main() -> int:
         return 1
     print()
     from atlas.demo_frontwing.cli import main as demo_main
-    return demo_main([a for a in sys.argv[1:] if a != "--check"])
+    return demo_main([a for a in sys.argv[1:] if a not in LAUNCHER_ONLY])
 
 
 if __name__ == "__main__":
