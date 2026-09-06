@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atlas — a composed physics graph, timed and differentiable</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --line:#263041; --ink:#e6edf3;
+    --dim:#8b98a8; --accent:#4da3ff; --good:#3fb950; --warn:#d29922; --bad:#f85149;
+    --classic:#e8a33d; --cut:#a78bfa;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:13px 20px;border-bottom:1px solid var(--line)}
+  header h1{margin:0;font-size:17px;font-weight:650;letter-spacing:.2px}
+  header .sub{color:var(--dim);font-size:12.5px;margin-top:5px;max-width:135ch}
+  header .who{margin-top:7px;font-size:12px;color:var(--dim)}
+  header .who b{color:var(--ink)}
+  .lic{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:5px;
+       background:rgba(210,153,34,.12);border:1px solid rgba(210,153,34,.3);
+       color:#e3c07b;font-size:11px}
+  .wrap{display:grid;grid-template-columns:minmax(0,1fr) 384px;gap:16px;
+        padding:16px 20px;align-items:start}
+  @media(max-width:1180px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:13px;margin-bottom:14px}
+  .card h2{margin:0 0 9px;font-size:11.5px;text-transform:uppercase;
+           letter-spacing:.09em;color:var(--dim);font-weight:600}
+  .panes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:760px){.panes{grid-template-columns:1fr}}
+  .pane h3{margin:0;font-size:13.5px;font-weight:650}
+  .pane .tag{font-size:11.5px;color:var(--dim);margin:2px 0 7px;min-height:30px}
+  .stage{position:relative;background:#0b0e13;border:1px solid var(--line);
+         border-radius:8px;overflow:hidden}
+  .stage canvas{display:block;width:100%;height:auto}
+  .stage .badge{position:absolute;right:7px;top:7px;background:rgba(6,9,14,.78);
+        border:1px solid var(--line);border-radius:6px;padding:3px 8px;
+        font-size:11.5px;font-variant-numeric:tabular-nums;pointer-events:none}
+  .stage .hint{position:absolute;left:8px;bottom:7px;color:#cfd8e3;font-size:11.5px;
+        background:rgba(6,9,14,.72);padding:4px 8px;border-radius:6px;pointer-events:none}
+  .stage .veil{position:absolute;inset:0;display:flex;align-items:center;
+        justify-content:center;text-align:center;padding:22px;color:var(--dim);
+        font-size:12.5px;background:rgba(11,14,19,.86);line-height:1.5}
+  .panefoot{display:flex;justify-content:space-between;gap:8px;margin-top:7px;
+        font-size:12px;color:var(--dim)}
+  .panefoot b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){.two{grid-template-columns:1fr}}
+  .big{font-size:38px;font-weight:660;line-height:1.05;letter-spacing:-.5px;
+       font-variant-numeric:tabular-nums}
+  .mid{font-size:24px;font-weight:650;font-variant-numeric:tabular-nums}
+  .unit{color:var(--dim);font-size:12px}
+  .row{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+  label.lb{color:var(--dim);font-size:12.5px;min-width:108px}
+  input[type=range]{flex:1;min-width:90px;accent-color:var(--accent)}
+  .val{font-variant-numeric:tabular-nums;min-width:54px;text-align:right;font-size:12.5px}
+  button{background:#1e2733;color:var(--ink);border:1px solid var(--line);
+         border-radius:7px;padding:8px 13px;font-size:13px;cursor:pointer;font-weight:550}
+  button:hover:not(:disabled){border-color:#3a4a63;background:#243044}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.pri{background:var(--accent);border-color:var(--accent);color:#06121f}
+  button.pri:hover:not(:disabled){background:#6fb6ff}
+  button.warm{background:#3a2f1c;border-color:#5c4a25;color:#f0d194}
+  button.stop{background:#3a2226;border-color:#5b2f36;color:#ffc9cd}
+  select{background:#1e2733;color:var(--ink);border:1px solid var(--line);
+         border-radius:7px;padding:7px 9px;font-size:13px}
+  .pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;
+        font-weight:650}
+  .pill.ok{background:rgba(63,185,80,.15);color:var(--good);border:1px solid rgba(63,185,80,.35)}
+  .pill.bad{background:rgba(248,81,73,.14);color:var(--bad);border:1px solid rgba(248,81,73,.4)}
+  table.v,table.s{width:100%;border-collapse:collapse;font-size:12px;margin-top:7px}
+  table.v td,table.s td,table.s th{padding:4px 3px;border-bottom:1px solid #1d2531;
+        vertical-align:top}
+  table.s th{color:var(--dim);font-weight:600;text-align:right;font-size:11px}
+  table.s th:first-child{text-align:left}
+  table.v td.n,table.s td.n{text-align:right;font-variant-numeric:tabular-nums;
+        white-space:nowrap}
+  .why{color:var(--dim);font-size:11px;display:none}
+  tr.showwhy .why{display:block}
+  .track{height:9px;border-radius:5px;background:#1b2431;overflow:hidden;margin-top:5px}
+  .track > i{display:block;height:100%;border-radius:5px}
+  #ramp{height:11px;border-radius:3px;margin-top:4px}
+  .ramplab{display:flex;justify-content:space-between;color:var(--dim);
+        font-size:11px;margin-top:3px}
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0}
+  .kv span:last-child{font-variant-numeric:tabular-nums}
+  .muted{color:var(--dim)}
+  .note{color:var(--dim);font-size:11.5px;margin-top:8px;line-height:1.5}
+  .warnbox{background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.35);
+           border-radius:7px;padding:9px 11px;font-size:12.5px;margin-top:9px}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid #3a4a63;
+        border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;
+        vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  b.c{color:var(--accent)} b.k{color:var(--classic)} b.x{color:var(--cut)}
+  #spark{width:100%;height:78px;display:block;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>A composed graph of frozen physics experts — timed against the undivided solver, and differentiable where it is not</h1>
+  <div class="sub">
+    The same wind farm is solved two ways. On the left, the domain is <b>cut into
+    overlapping windows</b>, each marched by its own copy of a frozen fluid expert and
+    re-assembled every step. On the right, <b class="k">one undivided classical solver</b>
+    over the whole domain — the referent, and the thing that decides who is right.
+    Every number on this page was measured on the machine you are running it on, with
+    the columns taking turns so that neither is timed against the other's load — including
+    which of them is faster, which is <b>not the same on every machine</b>: the composed
+    column ran between 2.1x and 3.4x faster than the undivided one on the box this was
+    built on, 1.07x on one rented Linux box and 0.43x — slower — on another. What no
+    machine changes is that only the composed column can be differentiated.
+  </div>
+  <div class="who">
+    fluid expert in every window: <b id="expname">—</b>
+    <span id="explic" class="lic" hidden></span>
+    <span id="expnote" class="muted" style="margin-left:8px"></span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div>
+    <div class="card">
+      <div class="panes">
+        <div class="pane">
+          <h3><b class="c">Composed graph</b> <span class="muted" id="nwin"></span></h3>
+          <div class="tag" id="ctag">many windows, one expert each, coupled at their seams</div>
+          <div class="stage">
+            <canvas id="fieldC" width="760" height="520"></canvas>
+            <div class="badge" id="cbadge">—</div>
+            <div class="hint" id="chint">drag a turbine to move it · drag its white tip to angle it</div>
+          </div>
+          <div class="panefoot"><span>farm power, measured <b id="cpow">—</b></span>
+            <span id="cms">—</span></div>
+        </div>
+        <div class="pane">
+          <h3><b class="k">Undivided classical solver</b> <span class="muted">no cut</span></h3>
+          <div class="tag" id="ktag">the same discretization over the whole domain —
+            <b>scaling_ladder.reference_monolith</b>. It cannot be optimised, and it is
+            the accuracy authority.</div>
+          <div class="stage">
+            <canvas id="fieldK" width="760" height="520"></canvas>
+            <div class="badge" id="kbadge">—</div>
+            <div class="veil" id="kveil">The classical solver is only marched inside a
+              <b>timed measurement</b>, so that its cost is measured with the machine to
+              itself. Press <b>Time &amp; score both columns</b>.</div>
+          </div>
+          <div class="panefoot"><span>farm power, measured <b id="kpow">—</b></span>
+            <span id="kms">—</span></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:11px">
+        <button id="btnMeasure" class="pri">Time &amp; score both columns</button>
+        <span id="mstate" class="muted"></span>
+      </div>
+      <div class="track"><i id="mprog" style="width:0%;background:var(--accent)"></i></div>
+      <div id="mnote"></div>
+    </div>
+
+    <div class="two">
+      <div class="card">
+        <h2>How fast — measured here, on this machine</h2>
+        <div class="big" id="ratio">—</div>
+        <div class="unit" id="ratiosub">not measured yet</div>
+        <div id="bars" style="margin-top:10px"></div>
+        <div id="devnote"></div>
+        <div class="note" id="speednote"></div>
+      </div>
+
+      <div class="card">
+        <h2>How close — composed against the verifier</h2>
+        <div class="kv"><span class="muted">worst single cell, |Δu| / freestream</span>
+          <span id="alinf">—</span></div>
+        <div class="kv"><span class="muted">farm power, composed</span><span id="apc">—</span></div>
+        <div class="kv"><span class="muted">farm power, undivided classical</span><span id="apk">—</span></div>
+        <div class="kv"><span class="muted">difference in farm power</span><span id="apd">—</span></div>
+        <div class="kv" id="acutrow" hidden><span class="muted">worst cell, classical windows</span>
+          <span id="acut">—</span></div>
+        <div class="note">The single-cell figure is a worst case over the whole field and is
+          always much larger than the difference in farm power, which is what the turbines
+          actually integrate and what the optimiser maximises. Both are shown because they
+          answer different questions.
+          <br><br>These two power numbers come from the <b>measurement</b>: every column marched
+          from still air for the same number of steps. The big number lower down comes from the
+          <b>live march</b>, which is warm-started and carries the history of every layout you
+          have dragged through, so it is a different estimator and will not agree with them.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Total farm power, as the composed model measures it</h2>
+      <div class="row" style="align-items:flex-end;gap:14px">
+        <div class="big" id="power">—</div>
+        <div class="unit" id="powerpct" style="padding-bottom:6px"></div>
+        <div style="flex:1"></div>
+        <div class="unit" id="sparkinfo"></div>
+      </div>
+      <canvas id="spark" width="900" height="156"></canvas>
+      <div class="ramplab"><span>macro-steps →</span><span>optimiser iterations marked</span></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>① Optimise — only the composed graph can do this</h2>
+      <div class="row">
+        <button id="btnOpt" class="pri">Optimise</button>
+        <button id="btnStop" class="stop" disabled>Stop</button>
+        <button id="btnStep">Step once</button>
+      </div>
+      <div class="muted" style="font-size:11.5px;margin:-2px 0 8px">
+        One backward pass through the entire coupled simulation returns the derivative of
+        farm power with respect to every position and every yaw angle at once, so the
+        optimiser moves all of them together. The classical solver returns a number and no
+        derivative: searching with it means re-running it once per perturbed layout.
+      </div>
+      <div class="row">
+        <label class="lb">Replay</label>
+        <button id="btnPlay" style="min-width:38px;padding:6px 10px" disabled>▶</button>
+        <input type="range" id="scrub" min="0" max="0" value="0" disabled>
+        <span class="val" id="scrubv">—</span>
+      </div>
+      <div class="muted" style="font-size:11.5px;margin:-4px 0 6px" id="replaynote"></div>
+      <div class="kv"><span class="muted">optimiser steps</span><span id="iters">0</span></div>
+      <div class="kv"><span class="muted">seconds / optimiser step</span><span id="etas">—</span></div>
+      <div class="kv"><span class="muted">|∇ farm power|</span><span id="gnorm">—</span></div>
+      <div class="kv"><span class="muted">running on</span><span id="dev">—</span></div>
+    </div>
+
+    <div class="card">
+      <h2>② The layout, scored three ways</h2>
+      <div id="scoring"></div>
+    </div>
+
+    <div class="card">
+      <h2>Is this still in a regime the model was checked in?</h2>
+      <div id="vpill" class="pill ok">checking…</div>
+      <table class="v" id="vtab"></table>
+      <div class="muted" style="font-size:11px;margin-top:7px">click a row for why that limit exists</div>
+    </div>
+
+    <div class="card">
+      <h2>Set up the farm</h2>
+      <div class="row">
+        <label class="lb">Layout</label>
+        <select id="layout">
+          <option value="grid">regular grid</option>
+          <option value="staggered">staggered</option>
+        </select>
+        <button id="btnReset">Reset</button>
+      </div>
+      <div class="row"><label class="lb">Fluid expert</label>
+        <select id="expert"></select></div>
+      <div class="row"><label class="lb">Turbines</label>
+        <input type="range" id="k" min="4" max="25" step="1"><span class="val" id="kv"></span></div>
+      <div class="row"><label class="lb">Farm size</label>
+        <select id="domain"></select></div>
+      <div class="row"><label class="lb">Wind speed</label>
+        <input type="range" id="uinf" min="0.5" max="1.4" step="0.02"><span class="val" id="uinfv"></span></div>
+      <div class="row"><label class="lb">Wind direction</label>
+        <input type="range" id="ang" min="-15" max="15" step="0.5"><span class="val" id="angv"></span></div>
+      <div class="row"><label class="lb">Min spacing</label>
+        <input type="range" id="smin" min="1.5" max="6" step="0.1"><span class="val" id="sminv"></span></div>
+      <details style="margin-top:8px">
+        <summary class="muted" style="cursor:pointer;font-size:12.5px">optimiser and measurement settings</summary>
+        <div class="row"><label class="lb">Look-ahead</label>
+          <input type="range" id="horizon" min="3" max="15" step="1"><span class="val" id="horizonv"></span></div>
+        <div class="row"><label class="lb">Move rate</label>
+          <input type="range" id="lrpos" min="0.02" max="0.4" step="0.01"><span class="val" id="lrposv"></span></div>
+        <div class="row"><label class="lb">Turn rate</label>
+          <input type="range" id="lryaw" min="0.005" max="0.12" step="0.005"><span class="val" id="lryawv"></span></div>
+        <div class="row"><label class="lb">Measure length</label>
+          <input type="range" id="vsteps" min="10" max="60" step="5"><span class="val" id="vstepsv"></span></div>
+      </details>
+      <div id="notice"></div>
+      <div class="note"><a href="/compare" target="atlas-headtohead" id="lnkCompare">Open the
+        head-to-head in its own window</a> for the same measurement at full size.</div>
+    </div>
+
+    <div class="card">
+      <h2>Colour = wind speed</h2>
+      <div id="ramp"></div>
+      <div class="ramplab"><span id="rlo"></span><span>freestream</span><span id="rhi"></span></div>
+      <div class="muted" style="font-size:11.5px;margin-top:7px">
+        Cool and dark is slow air — a wake. Neutral grey is undisturbed wind. Warm is air
+        speeding up around the array. The scale is fixed and identical in both pictures, so
+        the same colour always means the same speed.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let S = null, META = null, ws = null;
+let liveImg = null, liveReady = false;
+const MEAS = {composed:null, monolith:null};   /* the measurement's two fields */
+let measSeq = -1;
+let drag = null, lastSend = 0, scrubbing = false;
+/* `synced` is false from the moment a socket opens until the first state
+   arrives from THAT socket. Without it, a reconnect (the server restarted, the
+   laptop slept) leaves the page holding the previous session's turbine list,
+   and the next drag pushes those stale positions back -- which silently moved a
+   turbine during testing. Nothing may be sent upstream before the client has
+   adopted the server's truth. */
+let synced = false;
+
+/* ---------- websocket ---------- */
+function connect(){
+  ws = new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
+  ws.binaryType = 'blob';
+  ws.onopen = () => { synced = false; drag = null; };
+  ws.onmessage = ev => {
+    if (typeof ev.data === 'string'){ S = JSON.parse(ev.data); synced = true; paint(); }
+    else {
+      const url = URL.createObjectURL(ev.data);
+      const nx = new Image();
+      nx.onload = () => { liveImg = nx; liveReady = true; draw(); URL.revokeObjectURL(url); };
+      nx.src = url;
+    }
+  };
+  ws.onclose = () => { synced = false; drag = null; setTimeout(connect, 1200); };
+}
+const send = m => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(m)); };
+
+/* the measurement's fields come over plain HTTP, exactly as the second window
+   fetches them: the socket carries one image and there are two to draw */
+function pullMeasured(seq){
+  ['composed','monolith'].forEach(side => {
+    const im = new Image();
+    im.onload = () => { MEAS[side] = im; draw(); };
+    im.src = `/api/compare/field?side=${side}&seq=${seq}`;
+  });
+}
+
+/* ---------- geometry and drawing ---------- */
+const cvC = $('fieldC'), cvK = $('fieldK');
+function dims(cv){
+  const lx = S ? S.domain_D[0] : 1, ly = S ? S.domain_D[1] : 1;
+  const W = cv.width, H = W * ly / lx;
+  if (Math.abs(cv.height - H) > 1) cv.height = H;
+  return {lx, ly, W, H: cv.height};
+}
+const toPx = (x, y, d) => [x / d.lx * d.W, (1 - y / d.ly) * d.H];
+const toWorld = (px, py, d) => [px / d.W * d.lx, (1 - py / d.H) * d.ly];
+
+/* a turbine is a bar one rotor diameter long, drawn to scale, rotated by its
+   yaw -- so the angle on screen IS the design variable, not a decoration */
+function turbines(g, list, d, live){
+  const R = 0.5 / d.lx * d.W, ar = (d.W/d.lx)/(d.H/d.ly);
+  list.forEach((t, i) => {
+    const gam = t.yaw_deg * Math.PI / 180;
+    const [px, py] = toPx(t.x, t.y, d);
+    const dx = -Math.sin(gam) * R, dy = -Math.cos(gam) * R * ar;
+    const ex =  Math.cos(gam) * R * 0.85, ey = Math.sin(gam) * R * 0.85 * ar;
+    g.lineCap = 'round';
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 7;
+    g.beginPath(); g.moveTo(px-dx, py-dy); g.lineTo(px+dx, py+dy); g.stroke();
+    g.strokeStyle = (live && drag && drag.i === i) ? '#4da3ff' : '#f2f6fb';
+    g.lineWidth = 4;
+    g.beginPath(); g.moveTo(px-dx, py-dy); g.lineTo(px+dx, py+dy); g.stroke();
+    if (!live) return;
+    g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.6;
+    g.beginPath(); g.moveTo(px, py); g.lineTo(px+ex, py-ey); g.stroke();
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(px+ex, py-ey, 3.6, 0, 7); g.fill();
+  });
+}
+
+function draw(){
+  if (!S) return;
+  const running = S.compare && S.compare.state === 'running';
+  /* while a measurement runs BOTH panes show that measurement, so the two
+     pictures are the same layout at the same step; outside one, the left pane
+     is the live march and the right holds the last measured field */
+  const dC = dims(cvC), gC = cvC.getContext('2d');
+  gC.clearRect(0,0,dC.W,dC.H);
+  const leftImg = running ? MEAS.composed : liveImg;
+  if (leftImg) gC.drawImage(leftImg, 0, 0, dC.W, dC.H);
+  turbines(gC, S.turbines, dC, !running);
+
+  const dK = dims(cvK), gK = cvK.getContext('2d');
+  gK.clearRect(0,0,dK.W,dK.H);
+  if (MEAS.monolith) gK.drawImage(MEAS.monolith, 0, 0, dK.W, dK.H);
+  if (MEAS.monolith) turbines(gK, measTheta(), dK, false);
+  $('kveil').hidden = !!MEAS.monolith;
+}
+
+/* the layout the RIGHT pane is a picture of: the one the measurement was
+   started on, which is not necessarily the one on screen now */
+function measTheta(){
+  const t = (S.verify && S.verify.last && S.verify.last.theta) || null;
+  const src = (S.compare && S.compare.state === 'running' && lastTheta) ? lastTheta : t;
+  if (!src) return S.turbines;
+  const out = [];
+  for (let i = 0; i < src.length; i += 3)
+    out.push({x:src[i], y:src[i+1], yaw_deg: src[i+2]*180/Math.PI});
+  return out;
+}
+let lastTheta = null;
+
+/* ---------- dragging, on the live pane only ---------- */
+function pick(px, py){
+  const d = dims(cvC); let best = null, bd = 1e9;
+  S.turbines.forEach((t, i) => {
+    const g = t.yaw_deg * Math.PI/180, R = 0.5/d.lx*d.W;
+    const [tx, ty] = toPx(t.x, t.y, d);
+    const hx = tx + Math.cos(g)*R*0.85, hy = ty - Math.sin(g)*R*0.85*(d.W/d.lx)/(d.H/d.ly);
+    const dh = Math.hypot(px-hx, py-hy), dc = Math.hypot(px-tx, py-ty);
+    if (dh < 13 && dh < bd){ bd = dh; best = {i, kind:'yaw'}; }
+    else if (dc < 20 && dc < bd){ bd = dc; best = {i, kind:'move'}; }
+  });
+  return best;
+}
+function evPos(e){
+  const r = cvC.getBoundingClientRect();
+  const s = cvC.width / r.width;
+  return [(e.clientX - r.left) * s, (e.clientY - r.top) * s];
+}
+cvC.addEventListener('pointerdown', e => {
+  if (!S || !synced) return;
+  const [px, py] = evPos(e); const hit = pick(px, py);
+  if (hit){ drag = hit; cvC.setPointerCapture(e.pointerId); }
+});
+cvC.addEventListener('pointermove', e => {
+  if (!drag || !S) return;
+  const d = dims(cvC); const [px, py] = evPos(e);
+  const t = S.turbines[drag.i];
+  if (drag.kind === 'move'){
+    const [wx, wy] = toWorld(px, py, d); t.x = wx; t.y = wy;
+  } else {
+    const [tx, ty] = toPx(t.x, t.y, d);
+    let a = Math.atan2(-(py - ty) * (d.H/d.ly)/(d.W/d.lx), px - tx) * 180/Math.PI;
+    t.yaw_deg = Math.max(-30, Math.min(30, a));
+  }
+  draw();
+  const now = performance.now();
+  if (now - lastSend > 45){ lastSend = now; pushTheta(); }
+});
+const endDrag = () => { if (drag){ drag = null; pushTheta(); draw(); } };
+cvC.addEventListener('pointerup', endDrag);
+cvC.addEventListener('pointercancel', endDrag);
+function pushTheta(){
+  if (!synced || !S) return;
+  send({type:'theta', theta: S.turbines.flatMap(t => [t.x, t.y, t.yaw_deg*Math.PI/180])});
+}
+
+/* ---------- formatting ---------- */
+const fmtn = v => (v == null || !isFinite(v)) ? '—'
+  : Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toFixed(3);
+const msf = v => (v == null || !isFinite(v)) ? '—'
+  : (v >= 1000 ? (v/1000).toFixed(2) + ' s' : Math.round(v) + ' ms');
+const pct = v => (v == null || !isFinite(v)) ? '—' : (v>=0?'+':'') + v.toFixed(1) + '%';
+
+/* ---------- the panels ---------- */
+function paint(){
+  if (!S) return;
+  const C = S.compare, running = C && C.state === 'running';
+  if (C && C.seq && C.seq !== measSeq){ measSeq = C.seq; pullMeasured(C.seq); }
+  if (running && !lastTheta) lastTheta = S.turbines.flatMap(t => [t.x, t.y, t.yaw_deg*Math.PI/180]);
+  if (!running) lastTheta = null;
+
+  $('expname').textContent = S.expert_label || S.expert;
+  $('expnote').textContent = S.expert_note || '';
+  const lic = $('explic');
+  lic.hidden = !S.expert_licence;
+  lic.textContent = S.expert_licence || '';
+  $('nwin').textContent = S.n_windows ? `— ${S.n_windows} windows, ${S.grid[0]}×${S.grid[1]} cells` : '';
+  $('ctag').textContent = `${S.n_windows} windows, each marched by its own copy of `
+    + `${S.expert_label}, re-assembled every macro-step`;
+  $('dev').textContent = (S.device || 'cpu').toUpperCase();
+
+  /* power */
+  $('power').textContent = fmtn(S.power);
+  $('powerpct').textContent = S.power_ideal > 0
+    ? (100*S.power/S.power_ideal).toFixed(0) + '% of the wind arriving at the farm' : '';
+  $('sparkinfo').textContent = S.step_ms ? Math.round(S.step_ms) + ' ms / frame, live' : '';
+
+  /* the measurement's state */
+  $('btnMeasure').disabled = !!running;
+  $('mprog').style.width = (running && C.steps ? 100*C.i/C.steps : (C && C.state==='done'?100:0)) + '%';
+  $('mstate').innerHTML = running
+    ? `<span class="spin"></span> step ${C.i} of ${C.steps}, ${C.columns.length} columns taking turns`
+    : (S.speed && S.speed.regions
+       ? `${S.speed.regions} measurement${S.speed.regions>1?'s':''} so far, `
+         + `${S.speed.steps} timed macro-steps`
+       : 'nothing measured yet');
+  $('mnote').innerHTML = running && C.paused_live
+    ? `<div class="warnbox">The live march is held still while this runs. A time per step
+       measured against a moving load is a measurement of the load.</div>` : '';
+
+  paintSpeed(); paintAccuracy(); paintScoring(); paintOptimiser();
+  paintValidity(); paintSetup(); paintRamp(); paintSpark();
+  draw();
+}
+
+function paintSpeed(){
+  const sp = S.speed || {};
+  const c = sp.columns || {};
+  const cm = c.composed && c.composed.ms, km = c.monolith && c.monolith.ms;
+  const xm = c.composed_classical && c.composed_classical.ms;
+  $('cms').innerHTML = cm ? `<b>${msf(cm)}</b> / macro-step` : 'not timed yet';
+  $('kms').innerHTML = km ? `<b>${msf(km)}</b> / macro-step` : 'not timed yet';
+  $('cbadge').textContent = cm ? msf(cm) + ' / step' : '';
+  $('kbadge').textContent = km ? msf(km) + ' / step' : '';
+
+  if (!sp.measured){
+    $('ratio').textContent = '—';
+    $('ratiosub').innerHTML = 'timing has not run yet <span class="muted">(estimate: none — '
+      + 'this demo quotes no wall-clock it has not measured here)</span>';
+  } else {
+    const r = sp.ratio;
+    const flying = Object.values(c).some(x => x && x.in_flight);
+    $('ratio').innerHTML = r >= 1
+      ? `${r.toFixed(2)}× <span class="unit">faster</span>`
+      : `${(1/r).toFixed(2)}× <span class="unit">slower</span>`;
+    const what = r >= 1
+      ? 'the composed graph against the undivided classical solver, per macro-step'
+      : 'the undivided classical solver is the faster one at this size on this machine';
+    /* mid-measurement the panel shows THIS region's own medians, so it fills in
+       after a few macro-steps instead of staying empty for the whole march --
+       the same statistic over fewer samples, and it says so */
+    $('ratiosub').innerHTML = flying
+      ? `${what} — <span class="spin"></span> measuring, ${sp.in_flight} steps so far`
+      : `${what}, over ${sp.regions} timed region${sp.regions>1?'s':''}`;
+  }
+  const rows = [['composed', 'var(--accent)'], ['composed_classical', 'var(--cut)'],
+                ['monolith', 'var(--classic)']];
+  const vals = rows.map(([k]) => (c[k] && c[k].ms) || 0);
+  const hi = Math.max(...vals, 1e-9);
+  $('bars').innerHTML = rows.map(([k, col], i) => {
+    if (!c[k] || !c[k].ms) return '';
+    return `<div style="margin:7px 0">
+      <div style="display:flex;justify-content:space-between;font-size:12px">
+        <span>${c[k].label}${c[k].in_flight ? ' <span class="muted">· this region</span>' : ''}</span>
+        <span class="val">${msf(c[k].ms)}</span></div>
+      <div class="track"><i style="width:${(100*vals[i]/hi).toFixed(1)}%;background:${col}"></i></div>
+    </div>`;
+  }).join('');
+  /* on a GPU run the composed columns are on the card and the monolith is
+     numpy on the CPU, so the ratio is not like-for-like and the panel says so
+     rather than letting the number stand on its own */
+  $('devnote').innerHTML = (sp.device && sp.device !== 'cpu')
+    ? `<div class="warnbox">The composed columns are on the
+       <b>${sp.device.toUpperCase()}</b> and the undivided classical solver is numpy on
+       the CPU. These two timings are not on the same hardware and the ratio between
+       them is not a like-for-like comparison. The power numbers are unaffected.</div>`
+    : '';
+  const pub = sp.published || {};
+  let extra = '';
+  if (sp.ratio_cut) extra = ` The same cut with the <b class="x">classical solver</b> in the
+    windows runs at ${sp.ratio_cut.toFixed(2)}× the monolith here, which is how you tell
+    what the cut costs from what the expert costs.`;
+  $('speednote').innerHTML =
+    `Median per column over every step but the first — the first pays for FFT plans and
+     allocation — exponentially averaged over measurement regions, with the live march
+     parked and the columns taking turns.${extra}
+     <br><br>No wall-clock constant is written into this demo: an earlier version quoted
+     212 ms per composed macro-step and the same code on the same box later measured
+     ~890 ms, because the machine had clocked itself down. Published for reference, measured
+     elsewhere and not by this page: <b>${pub.speedup_k12}×</b> at the 12-window rung and
+     <b>${pub.speedup_k25}×</b> at 24 (${pub.source}).`;
+}
+
+function paintAccuracy(){
+  const a = S.accuracy || {};
+  if (!a.measured){
+    $('alinf').textContent = $('apc').textContent = $('apk').textContent =
+      $('apd').textContent = '—';
+    const R0 = S.compare;
+    $('cpow').textContent = (R0 && R0.state === 'running')
+      ? fmtn(R0.composed_power) : '—';
+    $('kpow').textContent = (R0 && R0.state === 'running')
+      ? fmtn(R0.monolith_power) : '—';
+    return;
+  }
+  $('cpow').textContent = fmtn(a.composed_power);
+  $('kpow').textContent = fmtn(a.monolith_power);
+  /* while a measurement is running the panes ARE that measurement, so their
+     feet follow it rather than the last finished one */
+  const R = S.compare;
+  if (R && R.state === 'running'){
+    $('cpow').textContent = fmtn(R.composed_power);
+    $('kpow').textContent = fmtn(R.monolith_power);
+  }
+  $('alinf').textContent = a.linf == null ? '—' : a.linf.toFixed(3);
+  $('apc').textContent = fmtn(a.composed_power);
+  $('apk').textContent = fmtn(a.monolith_power);
+  const d = a.delta_pct;
+  $('apd').innerHTML = d == null ? '—'
+    : `<span style="color:${Math.abs(d)<10?'var(--good)':'var(--warn)'}">${pct(d)}</span>`;
+  /* the right-hand picture is whatever the last measurement drew, and the
+     optimiser moves the farm on the left in between -- so when the two are of
+     different layouts the pane says so rather than inviting the comparison */
+  const KT = 'the same discretization over the whole domain — '
+    + '<b>scaling_ladder.reference_monolith</b>. It cannot be optimised, and it is '
+    + 'the accuracy authority.';
+  $('ktag').innerHTML = (a.stale && !(S.compare && S.compare.state === 'running'))
+    ? KT + ` <b style="color:var(--warn)">This picture is from the last measurement`
+      + `${a.at_iter ? ', at optimiser step ' + a.at_iter : ' of the starting layout'}`
+      + `, not of the layout on the left.</b>`
+    : KT;
+  $('acutrow').hidden = a.third_linf == null;
+  if (a.third_linf != null) $('acut').textContent = a.third_linf.toFixed(3);
+}
+
+function paintScoring(){
+  const sc = S.scoring || {};
+  const el = $('scoring');
+  if (!sc.baseline){
+    el.innerHTML = `<div class="muted" style="font-size:12.5px">Press
+      <b>Time &amp; score both columns</b> once on the starting layout, run the optimiser,
+      then press it again. The table below is
+      <b>poc1a-frozen-expert-results §7.2</b>: one layout, priced by every column, with the
+      gain the <b class="k">undivided classical solver</b> confirms as the headline —
+      because it is the only one of the three with no composition error in it.</div>`;
+    return;
+  }
+  const cols = ['composed', 'composed_classical', 'monolith'];
+  const head = {composed:'composed', composed_classical:'cut, classical',
+                monolith:'monolith'};
+  const row = (s) => s ? `<tr><td>${s.label}</td>` + cols.map(k =>
+      `<td class="n">${fmtn(s.powers[k])}</td>`).join('') + '</tr>' : '';
+  const g = sc.gain;
+  let gains = '';
+  if (g){
+    gains = `<tr style="border-top:2px solid var(--line)"><td><b>gain over the start</b></td>`
+      + cols.map(k => `<td class="n" style="color:${k==='monolith'?'var(--good)':'var(--dim)'}">
+          ${pct(g[k])}</td>`).join('') + '</tr>';
+  }
+  let cap = '';
+  if (g && g.monolith != null){
+    const c = sc.capture || {};
+    if (c.measured_here && c.pct != null){
+      cap = `<div class="note" style="color:var(--ink)"><b>${c.pct.toFixed(1)}%</b> —
+        the fraction of the verified gain the frozen-expert pre-screen captured, measured in
+        this session: its optimum is worth ${pct(c.poseidon_gain)} under the verifier
+        against ${pct(c.classical_gain)} for the layout found on the classical column.</div>`;
+    } else {
+      const p = sc.published || {};
+      cap = `<div class="note"><b>The verifier confirms ${pct(g.monolith)}</b> for a layout
+        found entirely inside the composed column, by an optimiser that never called a
+        classical solver. How much of the available gain that is depends on what a search
+        run on the classical column would have found; this session has not run one, so the
+        fraction is not measured here. Published, measured elsewhere:
+        <b>${p.capture_k12}%</b> at the 12-turbine rung and <b>${p.capture_k25}%</b> at 25
+        (${p.source}). Switch the fluid expert to the classical column, optimise again and
+        score it, and this line is replaced by a number measured here.</div>`;
+    }
+  }
+  el.innerHTML = `<table class="s"><tr><th>layout</th>`
+    + cols.map(k => `<th>${head[k]}</th>`).join('') + '</tr>'
+    + row(sc.baseline)
+    + (sc.latest && sc.latest.hash !== sc.baseline.hash ? row(sc.latest) : '')
+    + gains + '</table>'
+    + (sc.latest && sc.latest.hash === sc.baseline.hash
+       ? '<div class="note">Only the starting layout has been scored so far.</div>' : '')
+    + (sc.current ? '' : '<div class="note">The rows above are layouts that were scored; '
+       + 'the farm on screen has moved since. Press <b>Time &amp; score both columns</b> '
+       + 'to price the layout that is there now.</div>')
+    + cap;
+}
+
+function paintOptimiser(){
+  const opt = S.mode === 'optimize', replaying = S.mode === 'replay';
+  $('btnOpt').disabled = opt; $('btnStop').disabled = !(opt || replaying);
+  $('iters').textContent = S.opt_iter;
+  $('etas').innerHTML = S.eta_s == null
+    ? '<span class="muted">not measured yet</span>'
+    : S.eta_s.toFixed(1) + ' s' + (S.eta_measured ? ''
+        : ' <span class="muted" style="font-size:11px">(estimate)</span>');
+  $('gnorm').textContent = S.grad_norm ? S.grad_norm.toExponential(2) : '—';
+  const rp = S.replay || {index:0, playing:false, n:0, iter:0};
+  $('btnPlay').textContent = rp.playing ? '⏸' : '▶';
+  $('btnPlay').disabled = rp.n < 2;
+  $('replaynote').textContent = rp.n < 2
+    ? 'press Optimise first — the replay walks back through the layouts it tried'
+    : (rp.playing ? `playing back ${rp.n} optimiser steps, ${rp.hold} frames of flow each`
+                  : (replaying ? 'paused — the wakes keep settling around this layout' : ''));
+  if (!scrubbing){
+    $('scrub').max = Math.max(0, rp.n-1);
+    $('scrub').disabled = rp.n < 2;
+    $('scrub').value = rp.index;
+    $('scrubv').textContent = rp.n ? `${rp.iter || rp.index+1} / ${rp.n}` : '—';
+  }
+  $('chint').textContent = (S.compare && S.compare.state === 'running')
+    ? 'the live march is parked while both columns are timed'
+    : 'drag a turbine to move it · drag its white tip to angle it';
+}
+
+function paintValidity(){
+  const V = S.validity, p = $('vpill');
+  p.className = 'pill ' + (V.ok ? 'ok' : 'bad');
+  p.textContent = V.ok ? 'inside the validated range' : 'OUTSIDE validated range';
+  $('vtab').innerHTML = V.rows.map((r,i) => {
+    const failed = r.gate && !r.ok;
+    const mark = !r.gate ? 'ℹ' : (r.ok ? '✓' : '⚠');
+    const col = failed ? 'var(--bad)' : 'var(--dim)';
+    return `<tr data-i="${i}"><td style="${r.gate?'':'color:var(--dim)'}">${mark} ${r.label}
+     ${r.gate?'':'<span class="muted" style="font-size:10.5px"> (diagnostic)</span>'}
+     <div class="why">${r.why}</div></td>
+     <td class="n" style="color:${col}">${fmtn(r.value)}${r.unit}
+     <span class="muted">/ ${fmtn(r.limit)}${r.unit}</span></td></tr>`;}).join('');
+  [...$('vtab').rows].forEach(tr => tr.onclick = () => tr.classList.toggle('showwhy'));
+}
+
+function paintSetup(){
+  const set = (id, v, fmt) => { const el = $(id);
+    if (document.activeElement !== el) el.value = v;
+    $(id+'v').textContent = fmt(v); };
+  const c = S.config;
+  if (S.capacity) $('k').max = Math.min(25, S.capacity);
+  set('k', c.k, v => v + (S.capacity ? ' / ' + Math.min(25, S.capacity) : ''));
+  set('uinf', c.u_inf, v => (+v).toFixed(2));
+  set('ang', c.inflow_deg, v => (+v).toFixed(1) + '°');
+  set('smin', c.s_min, v => (+v).toFixed(1) + ' D');
+  set('horizon', c.horizon, v => v + ' steps');
+  set('lrpos', c.lr_pos, v => (+v).toFixed(2));
+  set('lryaw', c.lr_yaw, v => (+v).toFixed(3));
+  set('vsteps', c.verify_steps, v => v + ' steps');
+  if ($('domain').value !== c.domain) $('domain').value = c.domain;
+  if ($('expert').value !== c.expert && $('expert').options.length) $('expert').value = c.expert;
+  $('notice').innerHTML = S.notice ? `<div class="warnbox">${S.notice}</div>` : '';
+}
+
+let rampDone = false;
+function paintRamp(){
+  if (rampDone || !S.ramp) return; rampDone = true;
+  const st = S.ramp.stops.map(([t,c]) => `rgb(${c[0]},${c[1]},${c[2]}) ${(t*100).toFixed(1)}%`);
+  $('ramp').style.background = `linear-gradient(90deg,${st.join(',')})`;
+  $('rlo').textContent = S.ramp.lo.toFixed(2) + '×';
+  $('rhi').textContent = S.ramp.hi.toFixed(2) + '×';
+}
+
+function paintSpark(){
+  const c = $('spark'), g = c.getContext('2d');
+  const w = c.width, h = c.height;
+  g.clearRect(0,0,w,h);
+  const tr = S.power_trace || [];
+  if (tr.length < 2) return;
+  const lo = 0, hi = Math.max(S.power_ideal*0.55, Math.max(...tr)*1.12, 1e-6);
+  const X = i => i/(tr.length-1)*(w-4)+2, Y = v => h-4 - (v-lo)/(hi-lo)*(h-10);
+  g.strokeStyle = '#233043'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(2, Y(0)); g.lineTo(w-2, Y(0)); g.stroke();
+  g.beginPath(); tr.forEach((v,i) => i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v)));
+  g.strokeStyle = '#4da3ff'; g.lineWidth = 2.2; g.stroke();
+  g.lineTo(X(tr.length-1), Y(0)); g.lineTo(X(0), Y(0)); g.closePath();
+  g.fillStyle = 'rgba(77,163,255,.14)'; g.fill();
+  g.fillStyle = '#4da3ff';
+  g.beginPath(); g.arc(X(tr.length-1), Y(tr[tr.length-1]), 3.2, 0, 7); g.fill();
+}
+
+/* ---------- controls ---------- */
+$('btnOpt').onclick = () => send({type:'mode', mode:'optimize'});
+$('btnStop').onclick = () => send({type:'mode', mode:'paused'});
+$('btnStep').onclick = () => send({type:'mode', mode:'step'});
+$('btnReset').onclick = () => send({type:'reset'});
+$('btnMeasure').onclick = () => {
+  $('btnMeasure').disabled = true;
+  send({type:'compare', force:true, pause_live:true});
+};
+$('layout').onchange = e => send({type:'layout', name:e.target.value});
+$('domain').onchange = e => send({type:'config', config:{domain:e.target.value}});
+$('expert').onchange = e => send({type:'config', config:{expert:e.target.value}});
+const cfgSlider = (id, key, num) => {
+  $(id).addEventListener('input', () => $(id+'v').textContent =
+    num === 0 ? $(id).value : (+$(id).value).toFixed(num));
+  $(id).addEventListener('change', () => send({type:'config',
+    config:{[key]: +$(id).value}}));
+};
+cfgSlider('k','k',0); cfgSlider('uinf','u_inf',2); cfgSlider('ang','inflow_deg',1);
+cfgSlider('smin','s_min',1); cfgSlider('horizon','horizon',0);
+cfgSlider('lrpos','lr_pos',2); cfgSlider('lryaw','lr_yaw',3);
+cfgSlider('vsteps','verify_steps',0);
+$('scrub').addEventListener('pointerdown', () => scrubbing = true);
+$('scrub').addEventListener('change', () => {
+  send({type:'replay', index:+$('scrub').value, play:false}); scrubbing = false; });
+$('scrub').addEventListener('input', () => $('scrubv').textContent =
+  (+$('scrub').value+1) + ' / ' + (+$('scrub').max+1));
+$('btnPlay').onclick = () => send({type:'replay',
+  play: !(S && S.replay && S.replay.playing)});
+
+/* the head-to-head window is the same measurement at full size */
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[target="atlas-headtohead"]');
+  if (a){ e.preventDefault();
+    const w = window.open('/compare', 'atlas-headtohead', 'width=1240,height=900');
+    if (w) w.focus(); }
+});
+
+fetch('/api/meta').then(r => r.json()).then(m => {
+  META = m;
+  $('domain').innerHTML = Object.entries(m.domains).map(([k,v]) =>
+    `<option value="${k}">${k} — ${v.cells[0]}×${v.cells[1]} cells, ${v.windows[0]*v.windows[1]} windows</option>`
+  ).join('');
+  /* only the experts this machine can actually build: a toggle that cannot work
+     is worse than one that is not offered */
+  $('expert').innerHTML = m.experts.map(e =>
+    `<option value="${e}">${m.expert_label[e] || e}</option>`).join('');
+  connect();
+});
+window.addEventListener('resize', draw);
+</script>
+</body>
+</html>

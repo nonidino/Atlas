@@ -1,0 +1,257 @@
+# Atlas 0.1 — single source of truth for every number in the model.
+#
+# Design authority is the wiki, not this file:
+#   wiki/concepts/Atlas 0.1/Atlas 0.1 implementation/00-atlas-0.1-implementation-plan.md
+#   wiki/concepts/Atlas 0.1/Atlas 0.1 implementation/impl-atlas-0.1-phase1-scaffold.md
+# If this file and a wiki page disagree on a number, the wiki page is right and
+# this file is the bug. Fix here; do not edit the page to match the code.
+#
+# Nothing numeric may be hardcoded inside a module -- every constant a module
+# needs is read from here (phase-1 spec section 3.7).
+
+meta:
+  name: atlas-0.1
+  phase: 1                    # native scaffold; identity experts, no conservation, no subcycling
+
+# ---------------------------------------------------------------- model dims
+model:
+  d_model: 256
+  n_layers: 6                 # backbone depth PER EXPERT (Phase 2). The identity
+                              # experts of Phase 1 ignore it; it is here so the
+                              # config is complete and Phase 2 changes no schema.
+  n_mp_layers: 4              # typed message-passing layers at token level.
+                              # 4 == the diameter of the declared agent graph
+                              # (a-b-c-d-g and a-b-e-f-g are both 4 hops), i.e.
+                              # the smallest depth at which every agent can
+                              # reach every other exactly once. Deeper wastes
+                              # compute; shallower silently disconnects agents.
+  n_heads: 8                  # d_head = d_model / n_heads = 32
+  n_fourier: 6                # K in gamma(r) = [sin(2^k pi r), cos(2^k pi r)]
+  d_edge: 16                  # edge-attribute width (see model/edges.py ATTR_LAYOUT)
+  d_ffn_mult: 4               # FFN hidden = d_ffn_mult * d_model
+  n_rigid: 6                  # rigid-body state width entering the bottleneck
+  use_bottleneck: true        # false == token-level graph only. The bottleneck is
+                              # an intentional ALL-agent path (gravity/trajectory
+                              # reach every token), so agent isolation is a property
+                              # of the token graph, not of the full forward pass;
+                              # the isolation test sets this false.
+  decoder_out_scale: 1.0e-3   # std of the decoder's final layer. Small, not zero:
+                              # zero-init makes every upstream gradient exactly
+                              # zero on step 0, which the M3 "no all-zero grad"
+                              # acceptance test cannot distinguish from a wiring bug.
+
+# ------------------------------------------------------------------ patching
+patch:
+  gas: [8, 8]                 # (n_z cells, n_y cells) per token, gas agents
+  solid: [8, 4]               # solid shell `c` -- only 8 cells through thickness
+  tol_patch_diag: 1.0         # boundary-token radius, in units of one patch diagonal
+
+# ------------------------------------------------------------------- edges
+edges:
+  K_match: 2                  # nearest neighbours in arc length, matched from BOTH
+                              # sides then unioned. K=2 both ways is what makes the
+                              # no-orphan-token property hold across a resolution
+                              # mismatch (gas grid finer than shell grid).
+
+# ------------------------------------------------------------- time stepping
+# dt_solver (CFL-limited, ~1e-7..1e-6 s) lives in Phase 0 and never appears here.
+dt_model:
+  a: 1.0e-3
+  b: 1.0e-3
+  e: 1.0e-3
+  d: 5.0e-3
+  f: 5.0e-3
+  g: 5.0e-3
+  c: 5.0e-2
+dt_macro: 5.0e-2              # multi-rate subcycling that uses these is Phase 3
+
+# ----------------------------------------------------------------- training
+train:
+  lr: 3.0e-4
+  weight_decay: 0.01
+  warmup: 500
+  batch_size: 8
+  grad_clip: 1.0
+
+# ------------------------------------------------------------- conditioning
+# Per-agent dimensionless scalars, FiLM'd into every token of that agent
+# (phase-1 spec 2.1; master plan "Nondimensionalization").
+cond:
+  gas: [Ma, Re, Pr, gamma, p_over_pinf]
+  solid: [Bi, alpha_dT, E_over_sigma]
+
+# -------------------------------------------------------------- geometry
+# Body-fixed planar frame: z axial, increasing DOWNSTREAM (injector face z=0,
+# exhaust toward +z); y transverse, symmetric about y=0. Metres.
+geometry:
+  chamber_halfheight: 0.10
+  throat_halfheight: 0.04
+  exit_halfheight: 0.12
+  z_injector: 0.0
+  z_converge: [0.30, 0.40]    # h: 0.10 -> 0.04
+  z_diverge: [0.40, 0.70]     # h: 0.04 -> 0.12  (planar area ratio eps = 3.0)
+  z_throat: 0.40
+  z_exit: 0.70
+  shell_thickness: 0.008
+  shell_z: [-4.0, 0.70]       # airframe extent; forward of z=-4.0 there is no vehicle
+  farfield_halfwidth: 1.5
+  atmos_front_z: [-5.0, 0.70]
+  atmos_stretch_ratio: 1.08   # geometric wall-normal stretching for agent `d`
+  plume_halfwidth: 0.6
+  plume_z: [0.70, 3.0]
+  throat_round_radius: 0.05   # D2 (corpus completion plan): fillet the throat
+                              # corner. The arc's LOWEST point is (z_throat,
+                              # throat_halfheight), so the throat station and
+                              # area are unchanged and the converging/diverging
+                              # walls become the tangent lines from their fixed
+                              # endpoints. 0.0 restores the piecewise-linear
+                              # contour the area-Mach oracle fails on.
+                              #
+                              # 0.05 = 1.25 * throat_halfheight, the standard
+                              # throat radius of curvature for a bell nozzle --
+                              # and the measured optimum. Area-Mach error over
+                              # the quasi-1D window, 120x24 (mean / max / exit):
+                              #   R=0.00   3.73% / 7.26% / 2.19%
+                              #   R=0.03   2.61% / 5.04% / 1.33%
+                              #   R=0.05   2.16% / 3.53% / 1.50%
+                              #   R=0.08   1.91% / 5.64% / 1.74%
+                              # Past 0.05 the window mean keeps falling but the
+                              # exit error -- what the thrust integral depends
+                              # on -- turns back up.
+
+# ------------------------------------------------------------------- agents
+# grid: [n_z, n_y] CELLS. Every grid must divide evenly by its patch size --
+# asserted at import. token counts are then fixed and are the phase-1 spec's
+# table 3.1; a change here that moves a token count is a spec violation.
+agents:
+  a:
+    name: combustion reaction
+    kind: reacting
+    tokenizer: reacting          # own tokenizer: extra Y field + its derived channel
+    expert: reacting_flow
+    grid: [48, 80]               # -> 6 x 10 = 60 tokens
+    patch: gas
+    z: [0.0, 0.12]
+    y_halfwidth: 0.10
+    y_map: uniform
+    fields: [rho, u, v, p, T, Y]
+    cond: gas
+  b:
+    name: combustion chamber
+    kind: confined_gas
+    tokenizer: confined_gas
+    expert: reacting_flow
+    grid: [112, 80]              # -> 14 x 10 = 140 tokens
+    patch: gas
+    z: [0.12, 0.40]
+    y_halfwidth: 0.10            # bounding half-height, for reference only
+    y_map: body_fitted           # y runs -h_in(z) .. +h_in(z): the grid contracts
+                                 # with the nozzle. A bounding box with a masked
+                                 # wall would give the Phase-0 solver a STAIRCASE
+                                 # nozzle contour, which cannot pass the 2%
+                                 # area-Mach oracle -- and solver and model must
+                                 # share cells, or the corpus needs interpolation.
+    fields: [rho, u, v, p, T]
+    cond: gas
+  e:
+    name: combustion outflow (nozzle)
+    kind: confined_gas
+    tokenizer: confined_gas
+    expert: reacting_flow
+    grid: [120, 96]              # -> 15 x 12 = 180 tokens
+    patch: gas
+    z: [0.40, 0.70]
+    y_halfwidth: 0.12            # bounding half-height, for reference only
+    y_map: body_fitted           # diverging; see agent b
+    fields: [rho, u, v, p, T]
+    cond: gas
+  c:
+    name: airframe (solid shell)
+    kind: solid
+    tokenizer: solid
+    expert: thermostruct
+    grid: [232, 16]              # 2 panels x 8 cells through thickness
+                                 # -> 29 x 4 = 116 tokens
+    patch: solid
+    z: [-4.0, 0.70]
+    y_map: shell                 # panel 0 = lower shell, panel 1 = upper shell
+    fields: [T, ux, uy, s_zz, s_yy, s_zy]
+    cond: solid
+  d:
+    name: atmosphere-front
+    kind: external_gas
+    tokenizer: external_gas
+    expert: external_flow
+    grid: [184, 96]              # 2 panels x 48 stretched cells
+                                 # -> 23 x 12 = 276 tokens
+    patch: gas
+    z: [-5.0, 0.70]
+    y_map: wall_stretched        # body-fitted: h_out(z) .. farfield, ratio 1.08
+    fields: [rho, u, v, p, T]
+    cond: gas
+  f:
+    name: plume
+    kind: free_jet
+    tokenizer: external_gas      # same fields + family as d/g -> shared parameters
+    expert: external_flow
+    grid: [152, 80]              # -> 19 x 10 = 190 tokens
+    patch: gas
+    z: [0.70, 3.0]
+    y_halfwidth: 0.6
+    y_map: uniform
+    fields: [rho, u, v, p, T]
+    cond: gas
+  g:
+    name: atmosphere-wake
+    kind: external_gas
+    tokenizer: external_gas
+    expert: external_flow
+    grid: [152, 96]              # 19 x 12 = 228 patches, minus the plume hole
+                                 # -> 152 tokens
+    patch: gas
+    z: [0.70, 3.0]
+    y_halfwidth: 1.5
+    y_map: uniform
+    hole: plume                  # agent `f`'s domain is carved out of `g`
+    fields: [rho, u, v, p, T]
+    cond: gas
+
+# ------------------------------------------------------------------- edges
+# The seven declared typed edges. b-g is ABSENT and must stay absent: it was a
+# two-hop shortcut standing in for a path that physically routes through f and c
+# (edge-generation-atlas-0.1). An import-time assertion guards against its return.
+#
+# `interface` names a constructor in geometry/contours.py. `declared_span` records
+# the span written in the master plan where the implemented curve is narrower --
+# see the d_g entry.
+edge_list:
+  - {src: a, dst: b, types: [heat, pressure],       interface: plane_a_b}
+  - {src: e, dst: b, types: [heat, pressure],       interface: plane_e_b}
+  - {src: b, dst: c, types: [heat, stress],         interface: wall_b_c}
+  - {src: c, dst: d, types: [stress, heat, fluid],  interface: wall_c_d}
+  - {src: e, dst: f, types: [conservation],         interface: plane_e_f}
+  - {src: d, dst: g, types: [conservation, heat, fluid], interface: plane_d_g}
+  - {src: g, dst: f, types: [heat, fluid],          interface: shear_g_f}
+
+edge_types: [heat, pressure, stress, fluid, conservation]
+
+# Interfaces that are geometrically real but NOT declared to the model. The
+# generator records their fluxes in /iface tagged `declared: false`; the model
+# reads only the declared seven. Decision D4 of the corpus completion plan:
+# recording is cheap, regenerating is not, and Phase 4's A4 (declared-vs-dense)
+# ablation has nothing to run on without these.
+recorded_interfaces:
+  - {src: d, dst: f, face: f_inlet_outside_exit,
+     note: "the plume's upstream face is wider than the nozzle exit, so most of it
+            faces the front atmosphere; the seven-edge list omits it"}
+  - {src: a, dst: c, face: a_lateral_walls,
+     note: "the reaction zone's own lateral walls -- b-c covers only z in [0.12, 0.40]"}
+  - {src: c, dst: f, face: shell_aft,
+     note: "the 8 mm shell aft face against the plume; solid-side record, so mass and
+            energy flux are structurally zero and the traction/heat channels carry it"}
+
+# Regions inside the modelled bounding box that no agent covers, declared so the
+# "agents cover the modelled region" assertion is exact rather than vacuous.
+unmodelled:
+  - {name: tank_interior,   z: [-4.0, 0.0],  y_halfwidth: 0.10}
+  - {name: forebody_slot,   z: [-5.0, -4.0], y_halfwidth: 0.108}

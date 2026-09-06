@@ -1,0 +1,8 @@
+assembled          2026-09-06
+
+nonidino/Atlas                       fc46c8dbbed396d20066f2b295b04be27e0870c4
+nonidino/physics-foundation-model    0a407b7fca92e5c7fb9c38ef6fc0131c6b7ecdb2
+
+No third-party weights, no third-party source, nothing fetched from
+the network at build time or at run time. Every solver in this bundle
+is first-party unpublished work.
