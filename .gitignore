@@ -97,5 +97,20 @@ out/w136/*
 out/w141/*
 !out/w141/w141.json
 
+# Tier 32 (control observability): gate 0's twelve reference-trace rows with the
+# full J(s) line behind each, gate 1's spectra at three probe states for four
+# agents -- every singular value, not just beta_ctrl and kappa -- the null
+# direction's overlap with the constant modes, the DtN blocks read off the same
+# marches, the sigma triple (lagged / perfect-seam-datum / solved) with all three
+# regularisation sweeps, and the five instrument controls including the epsilon
+# sweep that breaks at Poseidon-T's declared floor.  Cited line by line by
+# control-observability.md and re-derived by
+# tests/test_tier32_control_observability.py, which skips rather than fails
+# without it.  The run is reproducible from cold and was verified bit-identical
+# leaf by leaf, so the file is a convenience and not the only copy.
+!out/w149/
+out/w149/*
+!out/w149/w149.json
+
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/
