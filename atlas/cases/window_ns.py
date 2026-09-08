@@ -86,7 +86,7 @@ from ..graph import (
     GlobalField,
     MeasuredConstants,
 )
-from ..ports import PortType, ResponseHalf
+from ..ports import PortType, ResponseHalf, RingActuation
 from ..transfer import Prolongation
 
 # ---------------------------------------------------------------------------
@@ -544,6 +544,15 @@ def window_capabilities(expert: WindowAgent) -> ExpertCapabilities:
             # W66 / L3-C9: `respond` returns nu du/dn, the viscous traction --
             # the MECH EFFORT. The imposed trace is the velocity, the FLOW.
             response_half=ResponseHalf.EFFORT,
+            # W152. `step_batch` reads BOTH components of the ring -- `_pin`
+            # pins u and v alike -- and the declared MECH pair is the normal
+            # one, so a control living in this port drives one of the two.
+            # Lambda and the matching condition are unaffected: both want the
+            # conjugate pair. A CONTROL is bounded by this, and Tier 32
+            # measured the bound at 7.6% against 97.7% of the available sigma
+            # reduction on seam sx0.
+            ring_components=2,
+            actuation=RingActuation.CONJUGATE_PAIR,
             effective_resolution=M_EFF,
             motion_class=MotionClass.STATIC,
             prolongation=face_prolongation(expert.agent_id, f"{f}:MECH", expert.n),

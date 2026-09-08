@@ -154,6 +154,11 @@ $\sigma$ here is the vault's own definition — the composed macro-step under a 
 | **solving $J$**, unregularised, both components | $1.171\times10^{-5}$ | $\mathbf{21.1}$ |
 | solving $J$, best over three regularisation families | $4.829\times10^{-7}$ | $0.872$ |
 
+> **The venue, settled 2026-09-07 by Tier 33 — and it cuts the other way.**
+> The obvious objection to this table is that the venue was unwinnable: if $6.6\times$–$21\times$ was measured on an R10-compliant column at the split-step cadence, the baseline is $\sigma = 3.73\times10^{-8}$ and nothing could have beaten it. **Both figures did come from the exposed (R10-admissible) column — and its lag baseline of $5.5365\times10^{-7}$ is $\mathbf{14.8\times}$ *looser* than the scheme it names**, because it ran at one exchange per macro-step rather than per sub-step (**R10b**), which inflates the lag. So virtual control was given an order of magnitude more room than the real cadence leaves it and still lost. **The negative result is understated by its venue, not manufactured by it.** The embedded row is a free validation of the instrument in the same breath: its $\sigma_{\text{lagged}} = 2.2640\times10^{-5}$ reproduces the vault's published as-built $\sigma$ to $\mathbf{0.5\%}$ without being told it. [[interaction-horizon]] §0.
+>
+> **And the mechanism is now derived rather than described.** Write each agent as exact-plus-defect, $\mathcal E_i = \mathcal S_i + e_i$: the exact parts cancel at the true datum by construction and the defects do not, so the minimiser is $g^\star - T^{+}(e_i-e_j)$ — **the datum at which the two agents' errors cancel on the overlap.** That predicts the regularisation failure below, the full-ring result of §6, and the sign of the scheme comparison. [[gap-worklist]] W150 closes `refused` on it.
+
 **Two things, and they have to be read together.**
 
 **The channel carries the correction.** With the widened control, the monolith's own datum reaches $0.685$ against an available floor of $0.678$ — it captures $\mathbf{97.7\%}$ of what a perfect control on this seam could buy. So the seam is not merely observable in the rank sense; the correction that would remove $32.2\%$ of $\sigma$ is **expressible in the control's own coordinates**. That is a stronger statement than $\beta_{\text{ctrl}} > 0$ and it is the one the tier needed.

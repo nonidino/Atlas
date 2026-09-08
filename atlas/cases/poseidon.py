@@ -81,7 +81,7 @@ from ..graph import (
     MeasuredConstants,
 )
 from ..assembly import GridPartitionOfUnity
-from ..ports import PortType, ResponseHalf
+from ..ports import PortType, ResponseHalf, RingActuation
 from ..probe import OPERATOR_CONTENT_FLOOR, operator_content
 from ..transfer import Prolongation
 from .window_ns import H, M_EFF, MACRO_DT, NU, U_INF, fourier_basis, load_reference
@@ -567,6 +567,13 @@ def poseidon_capabilities(expert: PoseidonAgent,
             # about the wrapper, not about the weights, so `unknown` would be
             # dishonest in the opposite direction from W60.
             response_half=ResponseHalf.EFFORT,
+            # W152. The ring is written into the INITIAL CONDITION (W59) and
+            # `respond` writes one component of it, so the same 2-carried /
+            # 1-driven split holds here -- and for this expert it is not a
+            # choice the wrapper could make differently without retraining,
+            # since the checkpoint takes the whole field as its input.
+            ring_components=2,
+            actuation=RingActuation.CONJUGATE_PAIR,
             prolongation=face_prolongation(expert.agent_id, f"{f}:MECH", expert.n),
         )
         for f in expert.shared_faces

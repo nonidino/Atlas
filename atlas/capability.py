@@ -30,7 +30,8 @@ from typing import Any, Callable, Mapping, Sequence
 import numpy as np
 
 from .holes import UNMEASURED_CONSTANTS, Unmeasured
-from .ports import PortType, ResponseHalf, ScaleCheck, check_scales, spec_for
+from .ports import (PortType, ResponseHalf, RingActuation, ScaleCheck,
+                    check_scales, spec_for)
 from .transfer import InterfaceSpace, Prolongation
 
 
@@ -232,6 +233,14 @@ class PortDecl:
     #: from a flow, and both cheaper routes were measured and failed. See
     #: ports.ResponseHalf for the two measurements.
     response_half: ResponseHalf = ResponseHalf.UNDECLARED
+    #: W152. How many components the ring this port sits on actually
+    #: carries, and how many of them a control on this port may drive.
+    #: `Lambda` and the matching condition want the conjugate pair and are
+    #: unaffected; a CONTROL is bounded by `actuation`, and Tier 32
+    #: measured that bound at 7.6% against 97.7% of the available sigma
+    #: reduction on one seam. Undeclared by default -- see ports.RingActuation.
+    ring_components: int | None = None
+    actuation: RingActuation = RingActuation.UNDECLARED
     note: str = ""
 
     def __post_init__(self) -> None:
@@ -239,6 +248,13 @@ class PortDecl:
             self.port_type = PortType(str(self.port_type))
         if not isinstance(self.response_half, ResponseHalf):
             self.response_half = ResponseHalf(str(self.response_half))
+        if not isinstance(self.actuation, RingActuation):
+            self.actuation = RingActuation(str(self.actuation))
+        if self.ring_components is not None and self.ring_components < 1:
+            raise RecordError(
+                f"port {self.name!r}: ring_components = "
+                f"{self.ring_components}; a ring carries at least one"
+            )
         if self.port_type is not PortType.ADVEC and self.passengers:
             raise RecordError(
                 f"port {self.name!r}: only ADVEC carries passengers; {self.port_type.value} "
@@ -250,6 +266,20 @@ class PortDecl:
     @property
     def spec(self):
         return spec_for(self.port_type)
+
+    @property
+    def actuated_components(self) -> int | None:
+        """How many ring components a control on this port may drive.
+
+        ``None`` when undeclared, which is not the same as 1: a caller that
+        needs the number has to notice the absence rather than inherit the
+        narrow answer by default.
+        """
+        if self.actuation is RingActuation.CONJUGATE_PAIR:
+            return 1
+        if self.actuation is RingActuation.FULL_RING:
+            return self.ring_components
+        return None
 
     def scale_check(self) -> ScaleCheck:
         return check_scales(self.port_type, self.nondim, self.passengers)
@@ -264,6 +294,9 @@ class PortDecl:
             "passengers": list(self.passengers),
             "effective_resolution": self.effective_resolution,
             "response_half": self.response_half.value,
+            "ring_components": self.ring_components,
+            "actuation": self.actuation.value,
+            "actuated_components": self.actuated_components,
             "declares_interface_space": self.interface_space is not None,
             "declares_prolongation": self.prolongation is not None,
         }

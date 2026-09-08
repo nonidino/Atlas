@@ -112,5 +112,20 @@ out/w141/*
 out/w149/*
 !out/w149/w149.json
 
+# Tier 33 (the interaction horizon): gate A's fourteen configurations with Pi,
+# the measured Pi_w, both implied constants and the recorded-sigma reproduction
+# beside each; gate B's influence profiles at three probe states for five agent
+# columns -- the full seventy-shell profile in max AND mean, the far-field
+# spectrum with its effective rank and the constant-mode overlap, and the
+# per-mode decay table that splits the two families; gate C's Poseidon-T
+# horizon; the whole-graph Pi_w with and without the one-scalar pin; and the
+# Tier 32 confound read back from out/w149.  Cited line by line by
+# interaction-horizon.md and re-derived by
+# tests/test_tier33_interaction_horizon.py, which skips rather than fails
+# without it.  Reproducible from cold and verified bit-identical leaf by leaf.
+!out/w153/
+out/w153/*
+!out/w153/w153.json
+
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

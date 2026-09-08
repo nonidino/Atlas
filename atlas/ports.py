@@ -355,6 +355,38 @@ class ResponseHalf(enum.Enum):
         return ResponseHalf.UNDECLARED
 
 
+class RingActuation(enum.Enum):
+    """How much of the boundary ring a control living in this port may drive.
+
+    **W152, opened 2026-09-06 from a measurement and declared 2026-09-07.**
+    A port declares one conjugate pair -- `MECH` declares the traction and
+    the velocity NORMAL to the face -- while the ring the expert actually
+    reads carries every component of the field.  For a matching condition
+    that gap does not exist: the pair is what must agree, and `Lambda` is
+    the map between the two halves of it.  For a CONTROL it is the whole
+    question, because the control's reach is bounded by what it can move.
+
+    Measured on one seam, Tier 32 (`control-observability` section 6): the
+    conjugate pair alone reaches 0.36-0.73 of the seam jump and captures
+    **7.6%** of the available sigma reduction; the full ring reaches
+    0.93-0.95 and captures **97.7%**, for 6% of `beta_ctrl` and essentially
+    nothing in conditioning.  Nothing in the record distinguished those two
+    situations and the case study picked one silently.
+
+    ``UNDECLARED`` is the default for `ResponseHalf`'s reason: the
+    information is not recoverable from the numbers a probe returns, so a
+    record that has not thought about it must not be read as claiming the
+    favourable answer.
+    """
+
+    #: the declared conjugate pair alone -- for MECH, the normal component
+    CONJUGATE_PAIR = "conjugate-pair"
+    #: every component of the ring the expert reads
+    FULL_RING = "full-ring"
+    #: not stated. A control built on this port is of unknown reach.
+    UNDECLARED = "undeclared"
+
+
 @dataclass(frozen=True)
 class PairingCheck:
     """The outcome of checking a seam's declared conjugate pairing."""
