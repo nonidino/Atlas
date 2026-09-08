@@ -407,6 +407,170 @@ def load_recorded(path: str | None = None) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Tier 33's measured influence reach -- the bars under beat 4's three verdicts
+# ---------------------------------------------------------------------------
+
+#: `out/w153/w153.json`, the Tier 33 driver's own artifact. Same rule as
+#: `ARTIFACT` above and for the same reason: the demo never writes it, never
+#: re-runs it, and **never falls back to a hard-coded copy of a number in it.**
+#: If it is absent the reach panel says so and the three verdicts stand on their
+#: own, which is the state the beat was in before this was measured.
+HORIZON_ARTIFACT = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "out", "w153", "w153.json")
+
+#: How each measured agent in `w153.json` reaches the screen: which row of
+#: `side.rows` carries its Pi_w, which case carries its decay profile, and which
+#: of beat 4's three DECLARATIONS it is the measurement of.
+#:
+#: **The mapping is deliberately not one-to-one and the panel must not pretend
+#: it is.** `poseidon_declared` and `poseidon_probed` are two descriptions of one
+#: model, so they share one measured row -- which is the beat's own point, seen
+#: from the other side. And the embedded classical column is the measurement of
+#: no declaration on this screen: it is the control that separates "global" from
+#: "global because it is learned", and it carries no candidate key.
+_REACH_ROWS = (
+    dict(agent="WindowNS", variant="exposed",
+         case=("gateB", "cases", "windowns_exposed"),
+         label="the classical solver that is running",
+         plain="a local step: information moves a fixed number of cells per "
+               "sub-step and no further",
+         candidates=("windowns",)),
+    dict(agent="WindowNS", variant="embedded",
+         case=("gateB", "cases", "windowns_embedded"),
+         label="the same solver, carrying its own pressure solve",
+         plain="one whole-domain solve inside the step, so a poke anywhere is "
+               "felt everywhere -- and it is still a classical solver",
+         candidates=()),
+    dict(agent="Poseidon-T", variant="as declared",
+         case=("gateC",),
+         label="Poseidon-T",
+         plain="a frozen pretrained operator: global by construction, and "
+               "further out than the classical solve that is also global",
+         candidates=("poseidon_declared", "poseidon_probed")),
+)
+
+
+def load_horizon(path: str | None = None) -> dict:
+    """Tier 33's three measured reaches, for the panel under beat 4.
+
+    Reads the same handful of figures the screen quotes and no more, so that
+    adding one to the screen means adding it here, beside the path in the file
+    it came from.
+
+    The distinction the panel exists to draw: **the verdict is a property of the
+    declaration; the reach is a property of the model.** Both are on screen and
+    they are read from different places -- the verdict from `compile_scheme` on
+    the live graph, the reach from this artifact.
+    """
+    import json
+
+    p = path or HORIZON_ARTIFACT
+    if not os.path.isfile(p):
+        return dict(available=False, path=p,
+                    why="out/w153/w153.json is not here, so the three verdicts "
+                        "are shown without the measured reach underneath them. "
+                        "Run scripts/w153_influence_envelope.py to produce it.")
+    try:
+        with open(p, encoding="utf-8") as fh:
+            d = json.load(fh)
+    except (OSError, ValueError) as exc:                    # pragma: no cover
+        return dict(available=False, path=p, why=f"unreadable: {exc}")
+
+    side = (d.get("side") or {}).get("rows") or []
+    by_agent = {(r.get("agent"), r.get("variant")): r for r in side}
+
+    rows: list[dict] = []
+    for spec in _REACH_ROWS:
+        src = by_agent.get((spec["agent"], spec["variant"]))
+        if src is None:
+            return dict(available=False, path=p,
+                        why=f"{spec['agent']} ({spec['variant']}) is not in "
+                            "side.rows of this artifact, so the ranking would "
+                            "be incomplete and is not shown.")
+        cur: Any = d
+        for k in spec["case"]:
+            if not isinstance(cur, dict) or k not in cur:
+                cur = None
+                break
+            cur = cur[k]
+        states = (cur or {}).get("states") or []
+        far = [s.get("far_field") or {} for s in states]
+        if not far:
+            return dict(available=False, path=p,
+                        why=f"{spec['agent']} carries no probed states in this "
+                            "artifact, so its reach is not shown.")
+        #: **`exactly_zero` is asserted across EVERY probed state, not one.**
+        #: `d_eff` moves between 19 and 20 over the three spin-up states while
+        #: the far-field block is bitwise zero in all of them, so the bitwise
+        #: claim is the one that is quoted and the horizon is the DECLARED
+        #: `d_ref` it was tested at rather than a per-state fit.
+        zero = all(bool(f.get("exactly_zero")) for f in far)
+        #: **The far-field FROBENIUS is deliberately not what the panel shows.**
+        #: It is a raw magnitude in each agent's own units, and it ranks the
+        #: three the OPPOSITE way from the reach: 76.07 for the embedded
+        #: classical solver against 9.78 for Poseidon-T, while Poseidon-T is the
+        #: one whose influence does not decay. Showing it beside the bars would
+        #: invite exactly the misreading the bars exist to prevent. What is
+        #: shown instead is `profile_max` at b = d -- the response normalised by
+        #: its own peak, which is what the bar is measuring: **decay, not size.**
+        #: Sampled at TWO distances, not one, because "still 26% at b = 20" and
+        #: "still 61% at b = 20" do not say the thing that actually separates
+        #: these two rows: the embedded solver keeps decaying (0.264 -> 0.124)
+        #: and the checkpoint does not (0.612 -> 0.600). One sample would let
+        #: the panel call both of them flat, which is true of only one.
+        FAR_B = 60
+        d_ref = (cur or {}).get("d_ref")
+
+        def _profile_at(k: int):
+            vals = [s["profile_max"][k] for s in states
+                    if isinstance(s.get("profile_max"), list)
+                    and len(s["profile_max"]) > k]
+            return max(vals) if vals else None
+
+        at_d = _profile_at(int(d_ref)) if d_ref is not None else None
+        at_far = _profile_at(FAR_B)
+        rows.append(dict(
+            agent=spec["agent"], variant=spec["variant"],
+            label=spec["label"], plain=spec["plain"],
+            candidates=list(spec["candidates"]),
+            pi=src.get("Pi"), pi_w=src.get("Pi_w"),
+            far_zero=zero,
+            far_cells=far[0].get("n_far_cells"),
+            #: the worst over the probed states, so a quiet one cannot flatter
+            profile_at_d=at_d,
+            profile_at_far=at_far,
+            far_b=FAR_B,
+            far_frobenius=max(float(f.get("frobenius") or 0.0) for f in far),
+            #: `d` is the distance from the cut the far field was taken beyond,
+            #: carried for EVERY row so the panel never writes the number in.
+            #: `horizon` is the same value promoted to a claim, and only when
+            #: the far field is bitwise zero at it.
+            d=(cur or {}).get("d_ref"),
+            horizon=(cur or {}).get("d_ref") if zero else None,
+            states=len(states),
+        ))
+
+    ratio = (d.get("gateA") or {}).get("Pi_w_over_Pi") or {}
+    return dict(
+        available=True, path=p, generated=d.get("generated"),
+        #: what the screen prints. The absolute path is kept for a diagnostic
+        #: but is the wrong thing to show: it names one machine's checkout, and
+        #: in the standalone bundle it names a different one, so a reader
+        #: comparing the screen against the repository sees a path that is not
+        #: in the repository.
+        rel="out/w153/w153.json",
+        rows=rows,
+        #: the reduction control, which is what licenses adopting the refinement
+        #: at all: where the overlap is narrower than the domain of dependence
+        #: nothing decays inside it and the refined envelope returns the old
+        #: indicator exactly, so no past verdict can have moved silently.
+        reduces_exactly=dict(min=ratio.get("min"), max=ratio.get("max")),
+        exchanges="one per macro-step",
+    )
+
+
+# ---------------------------------------------------------------------------
 # the engine
 # ---------------------------------------------------------------------------
 
@@ -454,6 +618,9 @@ class Engine:
         self._task_lock = threading.Lock()
         self._task_threads: dict[str, threading.Thread] = {}
         self.recorded = load_recorded()
+        #: beat 4's measured-reach bars, from Tier 33's artifact rather than
+        #: from this run -- absent, the beat shows its three verdicts alone
+        self.horizon = load_horizon()
         self.request_compile()
 
     # -- state -------------------------------------------------------------
@@ -608,7 +775,7 @@ class Engine:
         state the user has since changed without any way to know it had.
 
         `quiet` suspends the live march for the duration, and it is **not a
-        speed optimisation**. Beat 4 reports a wall-clock ratio between two
+        speed optimisation**. Beat 1 reports a wall-clock ratio between two
         search columns; a 12-frames-per-second march in the background steals
         from both, unevenly, and the number it produces would be a measurement
         of the contention rather than of the search. Beat 3's three rollouts
@@ -644,7 +811,7 @@ class Engine:
         return True
 
     def request_substitution(self) -> bool:
-        """Beat 1 -- compile the graph once per candidate expert.
+        """Beat 4 -- compile the graph once per candidate expert.
 
         Declaration-level and therefore fast: a few compiles, no marching, no
         weights. It reads the live field only so the graph is built at the state
@@ -692,7 +859,7 @@ class Engine:
         return self._spawn("ablation", _fn, quiet=True)
 
     def request_race(self) -> bool:
-        """Beat 4 -- the gradient and the population, on one clock."""
+        """Beat 1 -- the gradient and the population, on one clock."""
         u = self.u.detach().cpu().numpy()
         v = self.v.detach().cpu().numpy()
         cfg = self.cfg

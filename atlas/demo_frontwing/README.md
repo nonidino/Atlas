@@ -29,7 +29,7 @@ over — see *the recorded run*, below.
 python scripts/w146_build_frontwing_bundle.py --commit
 ```
 
-which produces a ~4.3 MB directory that clones and runs on macOS, Linux or
+which produces a ~4.9 MB directory that clones and runs on macOS, Linux or
 Windows with one command and **no network access at run time**. See
 `bundle/README.md` for what is in it and how each piece resolves.
 
@@ -41,37 +41,46 @@ The page is a tab per beat over a march that never stops. Each carries a
 **plain-language** description and a **technical** one side by side, authored in
 `explain.py` rather than in the template so they can be reviewed, diffed and
 tested — `tests/test_tier31_frontwing_demo.py` checks every number they quote
-against `out/w141/w141.json` and asserts the vocabulary this project has decided
-it has not earned is absent.
+against `out/w141/w141.json` and `out/w153/w153.json` and asserts the vocabulary
+this project has decided it has not earned is absent.
 
-### ① `substitution.py` — offer it a real AI model and watch it refuse
+**The order is the argument, and it is `explain.BEATS`'s order alone.** The tab
+nav, the panel sequence and each panel's heading and ordinal are all built from
+that tuple at load time; nothing in `static/index.html` writes a beat's position
+down a second time, and `::test_the_pages_own_tab_nav_produces_the_new_beat_order`
+runs the page's own `tabsOf` through node to read the order back off the screen
+rather than out of Python.
 
-The same graph compiled three times with three **descriptions** of the fluid
-expert. Nothing about any model changes; only the capability record does.
+It was **re-cut on 2026-09-08**. It used to open on the substitution refusal —
+beat ④ below — which is this project's strongest claim and also a *negative
+result*, so the first thing a reader who has not read the vault saw was the
+compiler saying no. The positive result was already measured and already here,
+third and fourth. Nothing was re-measured to change the order and no figure
+moved: the refusal is not softened, it is sequenced, and *what this demo is not*
+still carries the tension whole.
 
-| description | verdict |
-|---|---|
-| `WindowNS`, the classical incumbent | 2 seams refused, 7 uncertified |
-| Poseidon-T, as `poseidon_capabilities` declares it | 2 refused, 7 uncertified, with **three new rules** at every fluid seam |
-| Poseidon-T with `elliptic_subsolve=embedded` | **9 of 9 refused** |
+### ① `race.py` — a better wing, and it gets there four times sooner
 
-**The verdict is a property of the declaration, so this beat needs no weights** —
-which is why the bundle carries no checkpoint and touches no network. The
-measurement behind the middle row is **W93** and is quoted with its provenance
-rather than re-run: `probe.support_reach` found Poseidon-T's response nonzero in
-every one of the 128 seam cells, 64 from the poke, where the record declares 2.
+Adam on the adjoint against CMA-ES on the same objective, **one evaluation each,
+in turn**, with the live march held for the duration — this beat reports a
+wall-clock ratio, and a 12-frames-per-second march in the background would be
+measured instead of the search. Both columns are **warmed before either clock
+starts**: unwarmed, a three-step race reads a 25× adjoint premium where a warmed
+one reads 5.1, which is the same mistake `stage_cost` made when it published 9.47
+against a re-measured 5.4–5.8.
 
-The third row is **declared, not measured**, and the panel says so: W60 records
-that `elliptic_signature` measures non-normality and was read as measuring
-globality, so this field is genuinely undeclarable for a learned operator.
+The two budgets are **scaled** from the recorded 30 : 200 rather than chosen.
+Below about nine gradient iterates Adam has not turned yet and the population
+column wins on wall-clock; the screen says that rather than tuning it away.
 
-> **It needs six windows.** On the single-window referent the fluid family has
-> one member, nothing is decomposed, and `L2/R10`'s premise does not hold — so
-> the rule correctly stays quiet however the expert is declared. That is
-> **W114**'s premise check working, and the payload carries a sentence saying so
-> rather than letting a quiet rule read as a passing one.
+Recorded: the search finds **+19.3%** downforce inside both ceilings, and gets
+there **4.31× in wall-clock**, 22.2× in rollouts, quality 1.003× — and W143 is
+why the first of those is quoted first.
 
-### ② `DemoConfig.enforce` — turn off one check and watch the optimiser lie
+### ② `DemoConfig.enforce` — and the win is real, not a constraint walked through
+
+The first thing worth asking about a number like 19.3% is whether the search
+cheated to get it. This beat is the receipt.
 
 **put it on the floor** sets the free ride height and the spring rate to the
 bottom of their range. That design settles below `Suspension`'s declared floor.
@@ -108,22 +117,73 @@ Recorded, the suspension seam goes **0.49% → 8.16%** between the reference des
 and the optimum, and the elastic column at the optimum **declines**: a rigid wing
 there makes more downforce and drives itself through the floor.
 
-### ④ `race.py` — the gradient and the population, on one clock
+### ④ `substitution.py` — how you know when not to trust the fast answer
 
-Adam on the adjoint against CMA-ES on the same objective, **one evaluation each,
-in turn**, with the live march held for the duration — beat 4 reports a
-wall-clock ratio, and a 12-frames-per-second march in the background would be
-measured instead of the search. Both columns are **warmed before either clock
-starts**: unwarmed, a three-step race reads a 25× adjoint premium where a warmed
-one reads 5.1, which is the same mistake `stage_cost` made when it published 9.47
-against a re-measured 5.4–5.8.
+A search that wins on the clock is only worth having if you know when *not* to
+believe it. Same graph, compiled three times with three **descriptions** of the
+fluid expert. Nothing about any model changes; only the capability record does.
 
-The two budgets are **scaled** from the recorded 30 : 200 rather than chosen.
-Below about nine gradient iterates Adam has not turned yet and the population
-column wins on wall-clock; the screen says that rather than tuning it away.
+| description | verdict |
+|---|---|
+| `WindowNS`, the classical incumbent | 2 seams refused, 7 uncertified |
+| Poseidon-T, as `poseidon_capabilities` declares it | 2 refused, 7 uncertified, with **three new rules** at every fluid seam |
+| Poseidon-T with `elliptic_subsolve=embedded` | **9 of 9 refused** |
 
-Recorded: **4.31× in wall-clock**, 22.2× in rollouts, quality 1.003× — and W143
-is why the first of those is quoted first.
+**The verdict is a property of the declaration, so this beat needs no weights** —
+which is why the bundle carries no checkpoint and touches no network. The
+measurement behind the middle row is **W93** and is quoted with its provenance
+rather than re-run: `probe.support_reach` found Poseidon-T's response nonzero in
+every one of the 128 seam cells, 64 from the poke, where the record declares 2.
+
+The third row is **declared, not measured**, and the panel says so: W60 records
+that `elliptic_signature` measures non-normality and was read as measuring
+globality, so this field is genuinely undeclarable for a learned operator.
+
+> **It needs six windows.** On the single-window referent the fluid family has
+> one member, nothing is decomposed, and `L2/R10`'s premise does not hold — so
+> the rule correctly stays quiet however the expert is declared. That is
+> **W114**'s premise check working, and the payload carries a sentence saying so
+> rather than letting a quiet rule read as a passing one.
+
+**Underneath the three verdicts, `engine.load_horizon` — what was measured.**
+The rule behind them rested on a 0/1 indicator: does influence reach past the
+cut? At one exchange per macro-step that reads $\Pi = 1.0000$ for *every* agent
+in this vault, which is the check being unavailable rather than a fact about any
+of them. **W153** replaced it with the sensitivity it stands for, and the three
+separate — `WindowNS` exposed at $\Pi_w = 0.186$, the same solver carrying its
+own elliptic part at $0.496$, Poseidon-T at $0.790$, on a scale where 1 is
+*everywhere*. The panel calls it **measured influence reach** in the plain voice
+and $\Pi_w$ in the technical one.
+
+The local column's far field beyond $b = 20$ — its declared $\rho s = 2\times10$
+— is **bitwise zero** over all $13{,}924$ cells, and it is asserted across every
+probed state rather than one, because `d_eff` moves between 19 and 20 over the
+spin-up while `exactly_zero` holds throughout.
+
+**This changes no verdict and could not have**: Poseidon-T is refused before the
+measurement and after it, and at halo 1 the ratio $\Pi_w/\Pi$ is $1.000000$, so
+no past verdict can have moved silently. What it changes is *why* — the compiler
+is not pattern-matching "neural network, therefore no". Read from
+`out/w153/w153.json`, never transcribed, and absent, the beat shows its three
+verdicts alone.
+
+> The mapping from bars to columns is deliberately **not** one-to-one: both
+> Poseidon descriptions light the same bar, because the verdict is a property of
+> the declaration and the reach is a property of the model. The embedded
+> classical row lights none — it is the control that separates *global* from
+> *global because it is learned*.
+
+**The figure beside each bar is a decay, not a magnitude.** The far-field
+Frobenius norm is the obvious thing to print and it ranks the three the *other*
+way round — $76.07$ embedded against $9.78$ for Poseidon-T, because it is a raw
+size in each agent's own units — so a bigger bar beside a smaller number would
+read as a broken panel. What is printed is `profile_max` normalised by each
+agent's own peak, worst over the probed states, at **two** distances: one would
+let the panel call both non-local rows flat and only one of them is. At $b = 20$
+and $b = 60$ the embedded solve reads $26\%$ then $12\%$ — *still falling,
+slowly* — and Poseidon-T reads $61\%$ then $61\%$ — *it has stopped falling off*.
+`::test_the_figure_beside_each_bar_ranks_the_same_way_the_bar_does` asserts the
+ordering and that the Frobenius really does invert.
 
 ### ⑤ `balance.py` — one needle for energy at the seams
 
@@ -187,7 +247,7 @@ is *declared* to move — the two surface seams go **red** at
 `L2/InterfaceMotion` and the seven fluid–fluid ones stay amber — and they do not
 flicker as a knob turns. The demo re-runs the compile on **every** design change
 anyway, on its own thread, because the honest way to show that is to run it.
-**Beat ① is where a colour actually changes**, and it changes because the
+**Beat ④ is where a colour actually changes**, and it changes because the
 declaration does.
 
 **2. What moves with the design is the quantity underneath each light**, and that
@@ -229,7 +289,7 @@ as an estimate until the first real one lands.
 
 | | |
 |---|---|
-| **six windows / referent** | the composed column against the single-window referent. They differ by the cut alone, and over 480 macro-steps the cut's own defect is `9.0e-5` in the tip deflection and `2.2e-5` in the ride height, against the seams' lag at `5.4e-2` and `2.3e-3` — factors of 602 and 106. **Beat ① needs six** |
+| **six windows / referent** | the composed column against the single-window referent. They differ by the cut alone, and over 480 macro-steps the cut's own defect is `9.0e-5` in the tip deflection and `2.2e-5` in the ride height, against the seams' lag at `5.4e-2` and `2.3e-3` — factors of 602 and 106. **Beat ④ needs six** |
 | **joint / split / lagged** | `joint` solves both seams as one 33-equation Newton system; `split` solves them in **turn**, which is the ablation; `lagged` solves once per macro-step and holds |
 
 Switching the tiling rebuilds the field; switching the coupling does not.
@@ -261,7 +321,7 @@ Switching the tiling rebuilds the field; switching the coupling does not.
   if it did.
 - **This is not faster than the solvers it is made of.** Every expert here is a
   classical solver. The orders of magnitude that make the whole idea worth having
-  arrive only with learned experts — and beat ① is the framework refusing the
+  arrive only with learned experts — and beat ④ is the framework refusing the
   most obvious candidate. That tension is the honest state of the programme.
 - **The optimiser can be stopped by an expert declining, and that is not a
   crash.** Both experts carry a declared envelope — a small-strain bound on the
@@ -279,11 +339,11 @@ Switching the tiling rebuilds the field; switching the coupling does not.
 
 | file | what it is |
 |---|---|
-| `engine.py` | the persistent march, the certification worker, the three on-demand beat workers, and `load_recorded` |
+| `engine.py` | the persistent march, the certification worker, the three on-demand beat workers, `load_recorded` and `load_horizon` |
 | `server.py` | FastAPI: binary websocket frames for the field, JSON for everything else |
-| `substitution.py` | beat ① — the candidate declarations and the verdict diff |
+| `substitution.py` | beat ④ — the candidate declarations and the verdict diff |
 | `ablation.py` | beat ③ — freeze each seam, measuring its own operating point |
-| `race.py` | beat ④ — the two search columns, warmed, on one clock |
+| `race.py` | beat ① — the two search columns, warmed, on one clock |
 | `balance.py` | beat ⑤ — the running power-residual accounting |
 | `explain.py` | **the prose**, in both voices, with the vocabulary check |
 | `static/index.html` | the page |

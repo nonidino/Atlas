@@ -1,4 +1,4 @@
-"""Beat 4 -- the gradient and the population, raced on one clock.
+"""Beat 1 -- the gradient and the population, raced on one clock.
 
 Two searches, the same objective, the same box, the same penalty, the same
 start, running side by side and reporting against **one wall clock**:

@@ -72,7 +72,7 @@ def create_app(engine: Engine | None = None) -> FastAPI:
             #: the plain-language layer, authored in `explain.py` so it can be
             #: reviewed and tested rather than buried in a template
             "explain": EX.payload(),
-            #: the candidate experts beat 1 offers, and the measurement the
+            #: the candidate experts beat 4 offers, and the measurement the
             #: middle one rests on -- quoted with its provenance, never re-run
             "candidates": [dict(key=c.key, name=c.name, plain=c.plain,
                                 provenance=c.provenance, caveat=c.caveat,
@@ -81,6 +81,10 @@ def create_app(engine: Engine | None = None) -> FastAPI:
             "w93": dict(SUB.W93_MEASUREMENT),
             #: the full-scale run, so no panel's live number is the only number
             "recorded": eng.recorded,
+            #: Tier 33's measured reach, under beat 4's three verdicts. A
+            #: SECOND artifact, read the same way: absent, the beat shows the
+            #: verdicts alone rather than a number with no run behind it
+            "horizon": eng.horizon,
         })
 
     @app.get("/api/state")

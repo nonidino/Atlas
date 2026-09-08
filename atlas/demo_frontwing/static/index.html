@@ -152,6 +152,25 @@
   .cand .lights{display:flex;gap:3px;margin:6px 0}
   .cand .lights span{width:12px;height:12px;border-radius:3px}
   .cand .sm{color:var(--dim);font-size:11px}
+  /* ---- beat 4's measured-reach bars (Tier 33) ---- */
+  .reach{display:grid;gap:9px;margin-top:4px}
+  .reach .r{background:var(--panel2);border:1px solid var(--line);
+            border-radius:6px;padding:9px 11px}
+  .reach .r.on{border-color:var(--violet)}
+  .reach .hd{display:flex;justify-content:space-between;align-items:baseline;
+             gap:10px}
+  .reach .nm{font-weight:600;font-size:12px}
+  .reach .pw{font-size:15px;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .reach .track{height:9px;background:#0b0f14;border-radius:3px;margin:7px 0 5px;
+                overflow:hidden;position:relative}
+  .reach .track i{display:block;height:100%;border-radius:3px}
+  .reach .track i.lo{background:var(--green)}
+  .reach .track i.mid{background:var(--amber)}
+  .reach .track i.hi{background:var(--red)}
+  .reach .sm{color:var(--dim);font-size:11px}
+  .reach .sm code{color:var(--dim2)}
+  .reach .flat{display:grid;grid-template-columns:auto 1fr;gap:1px 8px;
+               font-size:11px;color:var(--dim2);margin-top:5px}
   .prog{height:5px;background:#0b0f14;border-radius:3px;overflow:hidden;
         margin-top:7px}
   .prog i{display:block;height:100%;background:var(--violet);transition:width .3s}
@@ -219,24 +238,29 @@
       </div>
     </div>
 
-    <div class="panel" id="p_substitution">
+    <!-- **Panel order tracks explain.BEATS and nothing else.** The tab nav is
+         built from that tuple at load time, these blocks are in the same order,
+         and each heading's numeral and words are WRITTEN IN by `buildWhy` from
+         the same payload -- so a beat cannot be re-sequenced in Python and
+         leave a stale ordinal or a stale title on the screen here. -->
+    <div class="panel" id="p_race">
       <div class="card">
-        <h2><span class="n">①</span> offer it a real AI model and watch it refuse</h2>
-        <div id="subExplain"></div>
+        <h2 id="h_race"></h2>
+        <div id="raceExplain"></div>
         <div class="row" style="margin-top:11px">
-          <button class="btn" id="bSub">compile all three descriptions</button>
-          <span class="qty" id="subState"></span>
+          <button class="btn" id="bRace">race them, on one clock</button>
+          <span class="qty" id="raceState"></span>
         </div>
-        <div class="prog" id="subProg" style="display:none"><i style="width:0"></i></div>
-        <div class="cands" id="subCands"></div>
-        <div id="subDetail"></div>
-        <div class="caveat" id="subPremise"></div>
+        <div class="prog" id="raceProg" style="display:none"><i style="width:0"></i></div>
+        <canvas id="raceCv" height="170" style="width:100%;margin-top:10px"></canvas>
+        <div id="raceOut"></div>
+        <div class="caveat" id="raceCaveat"></div>
       </div>
     </div>
 
     <div class="panel" id="p_envelope">
       <div class="card">
-        <h2><span class="n">②</span> turn off one check and watch the optimiser lie</h2>
+        <h2 id="h_envelope"></h2>
         <div id="envExplain"></div>
         <div class="row" style="margin-top:11px">
           <button class="btn danger" id="bEnforce"></button>
@@ -261,7 +285,7 @@
 
     <div class="panel" id="p_ablation">
       <div class="card">
-        <h2><span class="n">③</span> freeze one joint and see what it was worth</h2>
+        <h2 id="h_ablation"></h2>
         <div id="ablExplain"></div>
         <div class="row" style="margin-top:11px">
           <button class="btn" id="bAbl">freeze each seam in turn</button>
@@ -273,24 +297,33 @@
       </div>
     </div>
 
-    <div class="panel" id="p_race">
+    <div class="panel" id="p_substitution">
       <div class="card">
-        <h2><span class="n">④</span> race the gradient against the population</h2>
-        <div id="raceExplain"></div>
+        <h2 id="h_substitution"></h2>
+        <div id="subExplain"></div>
         <div class="row" style="margin-top:11px">
-          <button class="btn" id="bRace">race them, on one clock</button>
-          <span class="qty" id="raceState"></span>
+          <button class="btn" id="bSub">compile all three descriptions</button>
+          <span class="qty" id="subState"></span>
         </div>
-        <div class="prog" id="raceProg" style="display:none"><i style="width:0"></i></div>
-        <canvas id="raceCv" height="170" style="width:100%;margin-top:10px"></canvas>
-        <div id="raceOut"></div>
-        <div class="caveat" id="raceCaveat"></div>
+        <div class="prog" id="subProg" style="display:none"><i style="width:0"></i></div>
+        <div class="cands" id="subCands"></div>
+        <div id="subDetail"></div>
+        <div class="caveat" id="subPremise"></div>
+      </div>
+      <!-- Tier 33, under the three verdicts rather than beside them: the
+           verdict is a property of the DECLARATION and the reach is a property
+           of the MODEL, and the two are read from different files. -->
+      <div class="card" id="reachCard">
+        <h2>what the compiler measured underneath those verdicts</h2>
+        <div id="reachExplain"></div>
+        <div id="reachOut" style="margin-top:11px"></div>
+        <div class="caveat" id="reachCaveat"></div>
       </div>
     </div>
 
     <div class="panel" id="p_balance">
       <div class="card">
-        <h2><span class="n">⑤</span> one needle for energy at the seams</h2>
+        <h2 id="h_balance"></h2>
         <div id="balExplain"></div>
         <div id="balOut" style="margin-top:11px"></div>
         <canvas id="balCv" height="140" style="width:100%;margin-top:10px"></canvas>
@@ -506,7 +539,8 @@ function seams(){
      compile is still re-run on every design change${c.wall_s?
        ` (${fmt(c.wall_s,1)} s)`:""} because the honest way to show that is to
      run it. What moves with the design is the quantity under each light.
-     <b>Beat ① is where a colour actually changes.</b>`;
+     <b>Beat ${beatN("substitution")} is where a colour actually
+     changes.</b>`;
 }
 
 /* ---------------- knobs ---------------- */
@@ -568,7 +602,7 @@ function hist(){
       SHAPE here and the VALUE in the readout above`;
 }
 
-/* ---------------- ① substitution ---------------- */
+/* ---------------- the substitution beat ---------------- */
 function subPanel(){
   const t = (S.tasks||{}).substitution || {state:"idle"};
   $("#subState").textContent =
@@ -630,6 +664,9 @@ function subPanel(){
     </div>`;
   $("#subPremise").innerHTML = `<b>Why the refusal needs a cut.</b>
     ${esc(t.premise)}`;
+  //: the reach bars highlight whichever description is selected above, and the
+  //: two Poseidon descriptions light the SAME bar, which is the point
+  reachPanel();
 }
 
 /* ---------------- ② the envelope ---------------- */
@@ -891,14 +928,34 @@ function balChart(b){
   g.fillStyle="#5f6b78"; g.fillText("log scale, per macro-step", 4, h-4);
 }
 
-/* ---------------- the explainer + tabs ---------------- */
-const TABS = [
-  ["live","live simulation"], ["substitution","① it refuses a real AI model"],
-  ["envelope","② it knows when to stop"], ["ablation","③ the joints are the physics"],
-  ["race","④ gradients vs guessing"], ["balance","⑤ energy at the seams"],
-  ["limits","what it does not claim"],
-];
+/* ---------------- the explainer + tabs ----------------
+
+   **The tab order is `explain.BEATS`'s order and is not written down twice.**
+   It used to be a literal array here with its own ordinals and its own words,
+   which meant re-sequencing the beats in Python left this list saying the old
+   thing -- and the list is what a viewer actually clicks, so the stale copy was
+   the authoritative one.  `tabsOf` derives the whole nav from the payload; the
+   panel blocks below are in the same order and take their headings from it too.
+   A test reads the order out of THIS function rather than out of the tuple. */
+const NUMERALS = ["①","②","③","④","⑤",
+                  "⑥","⑦","⑧","⑨"];
+function numeral(n){ return NUMERALS[n-1] || String(n); }
+/* The ordinal a named beat currently carries, LOOKED UP rather than written
+   in.  Two sentences elsewhere on this page point at the substitution beat;
+   both named it as the first one until it moved to fourth, and both were wrong
+   on screen while every test passed. */
+function beatN(key){
+  const bs = (META && META.explain && META.explain.beats) || [];
+  const b = bs.find(x => x.key === key);
+  return b ? numeral(b.n) : "";
+}
+function tabsOf(beats){
+  return [["live","live simulation"]]
+    .concat((beats||[]).map(b => [b.key, numeral(b.n)+" "+(b.tab||b.key)]))
+    .concat([["limits","what it does not claim"]]);
+}
 function buildTabs(){
+  const TABS = tabsOf(META && META.explain ? META.explain.beats : []);
   $("#tabs").innerHTML = TABS.map(([k,l])=>
     `<button data-tab="${k}" class="${k===TAB?'on':''}">${l}</button>`).join("");
   $$("[data-tab]").forEach(b=> b.onclick = ()=>{
@@ -929,11 +986,20 @@ function buildWhy(){
   $("#whyToggle").onclick = e => { e.preventDefault(); open=!open; set(); };
   set();
   const beat = k => E.beats.find(b=>b.key===k);
-  $("#subExplain").innerHTML = voices(beat("substitution"));
-  $("#envExplain").innerHTML = voices(beat("envelope"));
-  $("#ablExplain").innerHTML = voices(beat("ablation"));
-  $("#raceExplain").innerHTML = voices(beat("race"));
-  $("#balExplain").innerHTML = voices(beat("balance"));
+  //: every panel's heading is written from the payload, so the ordinal and the
+  //: words cannot drift from the tuple that decides the order
+  for(const b of E.beats){
+    const h = $("#h_"+b.key);
+    if(h) h.innerHTML = `<span class="n">${numeral(b.n)}</span> ${esc(b.title)}`;
+  }
+  const boxes = {substitution:"#subExplain", envelope:"#envExplain",
+                 ablation:"#ablExplain", race:"#raceExplain",
+                 balance:"#balExplain"};
+  for(const b of E.beats){
+    const el = boxes[b.key] && $(boxes[b.key]);
+    if(el) el.innerHTML = voices(b);
+  }
+  reachPanel(beat("substitution"));
   $("#liveExplain").innerHTML = `
     <div class="plainbox">The colours are air speed. The shape crossing the
       picture is the wing, coloured by how hard the material is working — blue
@@ -954,6 +1020,73 @@ function buildWhy(){
      <div class="plainbox" style="margin-top:4px">${esc(x.plain)}</div>
      <div class="techbox">${esc(x.technical)}</div></div>`).join("");
 }
+/* ---------------- beat 4's measured reach (Tier 33) ----------------
+
+   Under the three verdicts, not beside them.  The verdict is a property of the
+   DECLARATION and comes from `compile_scheme` on the live graph; the reach is a
+   property of the MODEL and comes from `out/w153/w153.json`.  Absent, this says
+   so and the verdicts stand on their own -- the same rule the recorded columns
+   follow, because a number with no run behind it is the failure mode this
+   demo's tests exist to prevent. */
+function reachPanel(beat){
+  if(beat){
+    $("#reachExplain").innerHTML =
+      `<div class="plainbox">${esc(beat.reach||"")}</div>` +
+      (beat.reach_technical
+        ? `<div class="techbox">${esc(beat.reach_technical)}</div>` : "");
+  }
+  const H = META.horizon || {};
+  if(!H.available){
+    $("#reachOut").innerHTML =
+      `<b>Not available.</b> ${esc(H.why||"")}`;
+    $("#reachCaveat").innerHTML = "";
+    return;
+  }
+  const sel = SUBSEL;
+  $("#reachOut").innerHTML = `<div class="reach">` + H.rows.map(r=>{
+    const w = Math.max(0, Math.min(1, r.pi_w||0));
+    const cls = w < 0.3 ? "lo" : (w < 0.6 ? "mid" : "hi");
+    const on = sel && (r.candidates||[]).indexOf(sel) >= 0;
+    /* the response at b = d, normalised by its own peak. NOT the raw far-field
+       magnitude, which is in each agent's own units and ranks the three the
+       other way round — the bar is measuring decay, not size. */
+    const far = r.far_zero
+      ? `<b style="color:var(--green)">exactly zero</b> past ${fmt(r.horizon,0)}
+         cells, over all ${r.far_cells.toLocaleString()} cells beyond it`
+      : `<b style="color:var(--red)">still ${pct(r.profile_at_d,0)}</b> of its
+         peak at ${fmt(r.d,0)} cells out, and ${pct(r.profile_at_far,0)} at
+         ${fmt(r.far_b,0)} — ${r.profile_at_far >= 0.9 * r.profile_at_d
+           ? "it has stopped falling off" : "still falling, but slowly"}`;
+    return `<div class="r ${on?'on':''}">
+      <div class="hd"><span class="nm">${esc(r.label)}</span>
+        <span class="pw">${fmt(r.pi_w,3)}</span></div>
+      <div class="track"><i class="${cls}" style="width:${(w*100).toFixed(1)}%"></i></div>
+      <div class="sm">${esc(r.plain)}</div>
+      <div class="flat">
+        <span>influence past the cut</span><span>${far}</span>
+        <span>the old yes/no test</span><span>reads
+          <b>${fmt(r.pi,4)}</b> — the same answer it gives every agent
+          in this project</span>
+        <span>which description above</span><span>${
+          (r.candidates||[]).length
+            ? (r.candidates||[]).map(c=>`<code>${esc(c)}</code>`).join(", ")
+            : "none — this row is the control that separates <em>global</em> "
+              + "from <em>global because it is learned</em>"}</span>
+      </div></div>`;
+  }).join("") + `</div>`;
+  const rx = H.reduces_exactly || {};
+  $("#reachCaveat").innerHTML =
+    `<b>This changes no verdict, and it could not have.</b> The refined
+     envelope returns the old one exactly where the old one was right: over the
+     sixteen configurations it was fitted on the ratio runs
+     ${fmt(rx.min,3)} to ${fmt(rx.max,6)}, and it is
+     ${fmt(rx.max,6)} at halo 1, where the overlap is narrower than the domain
+     of dependence and nothing decays inside it. Poseidon-T is refused before
+     this measurement and after it. Measured at ${esc(H.exchanges)};
+     read from <code>${esc(H.rel||H.path)}</code>, generated
+     ${esc(H.generated||"")} — this demo does not re-run it.`;
+}
+
 function recordedPanel(){
   const R = META.recorded || {};
   if(!R.available){ $("#recorded").innerHTML =
@@ -1010,8 +1143,9 @@ function render(){
      <b>split</b> solves them in turn, which is the ablation;
      <b>lagged</b> holds the answer for ${S.config.lag} macro-step(s).
      <b>referent</b> is the same code path at one window — it differs from six
-     windows by the cut and by nothing else. <b>Beat ① needs six</b>: with one
-     window nothing is decomposed, so the rule that refuses has no premise.`;
+     windows by the cut and by nothing else. <b>Beat
+     ${beatN("substitution")} needs six</b>: with one window nothing is
+     decomposed, so the rule that refuses has no premise.`;
 }
 function ramps(){
   const mk = (el, stops, lo, hi, txt) => {

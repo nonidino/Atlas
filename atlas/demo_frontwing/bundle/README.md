@@ -49,11 +49,97 @@ number and a tool that gives you a number *and its own opinion of that number*.
 Each has a **plain-language** description and a **technical** one, side by side;
 there is a toggle in the header for the plain one alone.
 
-### ① Offer it a real AI model and watch it refuse
+**The order is the argument, and it was re-cut on 2026-09-08.** It used to open
+on the substitution refusal — beat ④ below. That is this project's strongest
+*claim* and it is what a specialist should look at first, but it is a **negative
+result**, so opening on it meant the first thing anyone saw was the machine
+saying no. The positive result was already measured and already here, third and
+fourth. Nothing was re-measured to change the order and no figure moved; the
+refusal is not softened, it is sequenced, and *What this does not claim* below
+still carries the tension whole.
+
+### ① A better wing, and it gets there four times sooner
+
+Four knobs — how stiff the wing is, how thick it is, how stiff the spring is, how
+high it rides — and one number to push up: downforce. The search finds a wing
+with **19.3%** more of it than the one it started from, inside both the stress
+and the deflection ceilings.
+
+What lets it is that the whole coupled simulation, air and metal and suspension
+together, is differentiable end to end: one backward pass returns how the
+downforce moves for all four knobs at once. The alternative — what you do without
+a gradient — is to try many designs and keep the good ones. Both run here on the
+same problem, one evaluation each in turn, with the live march held so neither is
+timing the contention.
+
+Recorded: **4.31× in wall-clock**, then 22.2× in rollouts, with the two columns
+landing within **1.003×** of each other in the objective. The wall-clock figure
+is quoted first and the rollout figure is labelled flattering, because the
+rollout ratio prices a gradient iterate at one forward evaluation and it is 4.9
+of them on this graph. The gradient does not find a *better* design than the
+population does; it finds an equally good one sooner.
+
+Both columns are **warmed before either clock starts**. Unwarmed, a three-step
+race reads a 25× adjoint premium where a warmed one reads 5.1.
+
+The live race is short and **can go either way** — its budgets are *scaled* from
+the recorded 30 : 200 rather than chosen, and below about nine gradient iterates
+Adam has not turned yet.
+
+### ② And the win is real, not a constraint quietly walked through
+
+The first thing worth asking about a number like 19.3% is whether the search
+cheated to get it.
+
+Both components state, in writing, what they are valid for: the wing is a
+small-deflection model and stops being one past a stated bend; the suspension
+stops being one below a stated ride height. Until 2026-09-04 that check ran on
+the plain march and **not on the path the optimiser takes**. So the search walked
+the car through its own floor and reported a **27.5%** gain for a design the model
+does not stand behind.
+
+With the check live it is **19.3%**, the optimiser is refused eight times out of
+thirty-one, and the screen names which component objected and at which macro-step.
+The smaller number is the one that is inside the model.
+
+Untick *enforce declared envelopes* and the whole page turns red and stamps every
+number `OUTSIDE THE MODEL`. Both recorded columns are shown side by side: same
+code, same box, same budget, same seed, one check between them.
+
+The reason this matters past this one bug: with fifteen to twenty components, the
+chance that at least one is outside its training regime on a *novel* design
+approaches one — and a novel design is the entire point. Knowing when to abstain
+is the load-bearing safety property of the whole idea, and an optimiser is the
+worst adversary it will ever have, because a search finds and exploits precisely
+the places where a model is confidently wrong.
+
+### ③ Freeze one joint and see what it was worth
+
+Make the spring infinitely stiff and the wing is bolted in place — the graph
+becomes CS-12, one of the two case studies this was assembled from. Make the wing
+infinitely stiff and it cannot bend — the graph becomes CS-10, the other one.
+March each and read the downforce.
+
+At the starting design the suspension joint is worth **0.49%**. At the optimised
+design it is worth **8.16%**, because the optimum rides much closer to the ground,
+where a small change in height is a large change in force. The elastic column at
+the optimum **cannot be measured at all**: a rigid wing there makes *more*
+downforce and drives itself through the floor, so the model declines.
+
+That measurement also falsified a claim this project had written down — the
+prediction was that stiffening the wing shrinks what the *elastic* joint is
+worth. It went the other way, on the other joint, by a factor of seventeen.
+
+### ④ How you know when not to trust the fast answer
+
+A search that wins on the clock is only worth having if you know when *not* to
+believe it. This is that check, running on the same graph — and here it is
+correctly declining a case it should decline.
 
 Poseidon-T is a frozen 20.8-million-parameter neural operator trained by someone
 else on a great deal of fluid dynamics — exactly the kind of model this whole
-approach is supposed to run on. The panel compiles the same graph three times:
+approach is supposed to run on, and the one that would make beat ① orders of
+magnitude cheaper. The panel compiles the same graph three times:
 
 | description handed to the compiler | verdict |
 |---|---|
@@ -81,61 +167,35 @@ seam at a time.
 > decomposition, so the rule that refuses has no premise to fire on, and it
 > correctly stays quiet. The panel says which column it is in.
 
-### ② Turn off one check and watch the optimiser lie
+**Underneath the three verdicts: what the compiler measured.** The rule behind
+them used to rest on a yes-or-no — does a component's influence reach past the
+cut, or not? Asked that way it answers *yes* for every component in this project,
+the plainest classical solver included, which is the check being unavailable
+rather than a fact about any of them. **W153** replaced the indicator with a
+measurement of how far influence actually reaches, and the three separate:
 
-Both components state, in writing, what they are valid for: the wing is a
-small-deflection model and stops being one past a stated bend; the suspension
-stops being one below a stated ride height. Until 2026-09-04 that check ran on
-the plain march and **not on the path the optimiser takes**. So the search walked
-the car through its own floor and reported a **27.5%** gain for a design the model
-does not stand behind.
+| agent | measured reach | influence past the cut |
+|---|---|---|
+| `WindowNS`, the local classical solver | **0.186** | **bitwise zero** past 20 cells, its declared reach, over all 13,924 cells beyond it |
+| `WindowNS` carrying its own pressure solve | **0.496** | still **26%** of its peak at 20 cells out, and 12% at 60 — *still falling, slowly* |
+| **Poseidon-T** | **0.790** | still **61%** at 20 cells out, and **61%** at 60 — *it has stopped falling off* |
 
-With the check live it is **19.3%**, the optimiser is refused eight times out of
-thirty-one, and the screen names which component objected and at which macro-step.
+The figure in the third column is each agent's response **normalised by its own
+peak**, worst over the three probed states. The raw far-field magnitude would
+have been the obvious thing to print and it ranks the three the *other* way round
+— 76.07 for the embedded classical solve against 9.78 for Poseidon-T, because it
+is a size in each agent's own units while the bar is measuring *decay*. It is
+sampled at two distances because one would let the panel call both non-local rows
+flat, and only one of them is.
 
-Untick *enforce declared envelopes* and the whole page turns red and stamps every
-number `OUTSIDE THE MODEL`. Both recorded columns are shown side by side: same
-code, same box, same budget, same seed, one check between them.
-
-The reason this matters past this one bug: with fifteen to twenty components, the
-chance that at least one is outside its training regime on a *novel* design
-approaches one — and a novel design is the entire point. Knowing when to abstain
-is the load-bearing safety property of the whole idea.
-
-### ③ Freeze one joint and see what it was worth
-
-Make the spring infinitely stiff and the wing is bolted in place — the graph
-becomes CS-12, one of the two case studies this was assembled from. Make the wing
-infinitely stiff and it cannot bend — the graph becomes CS-10, the other one.
-March each and read the downforce.
-
-At the starting design the suspension joint is worth **0.49%**. At the optimised
-design it is worth **8.16%**, because the optimum rides much closer to the ground,
-where a small change in height is a large change in force. The elastic column at
-the optimum **cannot be measured at all**: a rigid wing there makes *more*
-downforce and drives itself through the floor, so the model declines.
-
-That measurement also falsified a claim this project had written down — the
-prediction was that stiffening the wing shrinks what the *elastic* joint is
-worth. It went the other way, on the other joint, by a factor of seventeen.
-
-### ④ Race the gradient against the population, on one clock
-
-One backward pass through the whole coupled rollout returns how much the
-downforce changes for each of four design knobs at once. The alternative — what
-you do without gradients — is to try many designs and keep the good ones. Both
-run here on the same problem, one evaluation each in turn, with the live march
-held so neither is timing the contention.
-
-The honest result is smaller than this project used to quote: **1.8× to 4.3× in
-wall-clock**, not the 18×–22× a naive rollout count reports, and the two columns
-land within **1.003×–1.008×** of each other in the objective. The gradient does
-not find a better design; it finds an equally good one sooner. Two errors
-compounded in the old number and both are named on screen.
-
-The live race is short and **can go either way** — its budgets are *scaled* from
-the recorded ones rather than chosen, and below about nine gradient iterates Adam
-has not turned yet.
+On a scale where 1 is *everywhere*. **This changes no verdict and could not
+have**: Poseidon-T is refused before the measurement and after it, and where the
+overlap is narrower than the domain of dependence the refined envelope returns
+the old indicator to 1.000000, so no past verdict can have moved silently. What
+it changes is *why* — the compiler is not pattern-matching "neural network,
+therefore no". It measured a graded property and put the three in the order the
+physics says they belong. Read from `out/w153/w153.json`, which travels with this
+bundle; the demo does not re-run it.
 
 ### ⑤ One needle for energy at the seams
 
@@ -158,10 +218,12 @@ two-agent one.
   (W1, W3, W49), and while that is true every graph comes back
   `admit-uncertified`.
 - **This is not faster than the solver it replaces.** Every component here is a
-  classical solver. The four-to-six orders of magnitude that make the whole idea
-  worth having arrive only with learned components — and beat ① is the framework
-  refusing the most obvious candidate. That tension is the honest state of the
-  programme, not a footnote.
+  classical solver, and beat ①'s 4.31× is one *search method* against another on
+  the same solvers — not a claim about the solvers themselves. The four-to-six
+  orders of magnitude that make the whole idea worth having arrive only with
+  learned components — and beat ④ is the framework refusing the most obvious
+  candidate. That tension is the honest state of the programme, not a footnote,
+  and moving that beat from first to fourth does not soften it.
 - **The physics is a demonstration, not an engineering model.** One Reynolds
   number (125), one grid (208×144), one angle of attack (20°). The wing is a
   porous inclined plate with no boundary layer of its own and no circulation
@@ -184,7 +246,8 @@ two-agent one.
 | the structural expert `ThermoStruct2D` | `vendor/src/atlas/solvers/` | `thermal_strain.load_solvers` reads `$ATLAS_BUILD_REPO/src/atlas`, same variable |
 | the settled flow field | `out/w141/settled.npz` | the demo releases from it, so the first frame is the state every recorded number was measured at |
 | **the recorded run** | `out/w141/w141.json` | every "recorded" figure on screen is read out of it at load time |
-| the driver that produced it | `scripts/w141_poc2_frontwing.py` | `python scripts/w141_poc2_frontwing.py --stages ...` |
+| **Tier 33's measured reach** | `out/w153/w153.json` | beat ④'s three reach bars are read out of it at load time. Carried whole (~0.46 MB) rather than reduced to the six numbers the screen quotes, because a six-number excerpt *is* the hard-coded copy the rule below bans |
+| the driver that produced the first | `scripts/w141_poc2_frontwing.py` | `python scripts/w141_poc2_frontwing.py --stages ...` |
 | the tests | `tests/` | `pytest tests/` — `conftest.py` sets `ATLAS_BUILD_REPO` |
 | the write-ups | `docs/` | the results page, the novelty assessment, both parent case studies |
 
@@ -198,11 +261,13 @@ collide, because the build repo's package is loaded under a private module name
 through `importlib.util.spec_from_file_location` rather than being put on
 `sys.path`.
 
-**The demo never writes `w141.json`** and never falls back to a hard-coded copy of
-a number in it. If the artifact is absent the recorded columns say so. A
-wall-clock figure in one of this project's own documents was wrong by a factor of
-four the next day on unchanged code, which is why numbers are read from the run
-that produced them or not shown at all.
+**The demo never writes either artifact** and never falls back to a hard-coded
+copy of a number in one. If `w141.json` is absent the recorded columns say so; if
+`w153.json` is absent beat ④ shows its three verdicts without the reach bars
+underneath them, which is the state that beat was in before the measurement
+existed. A wall-clock figure in one of this project's own documents was wrong by
+a factor of four the next day on unchanged code, which is why numbers are read
+from the run that produced them or not shown at all.
 
 ---
 

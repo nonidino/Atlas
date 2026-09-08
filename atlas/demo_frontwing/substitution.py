@@ -1,4 +1,4 @@
-"""Beat 1 -- swap an expert into a seam and watch the compiler answer.
+"""Beat 4 -- swap an expert into a seam and watch the compiler answer.
 
 This is the sharpest thing the framework does and the cheapest to show, because
 **the answer is a property of the DECLARATION and not of the weights.**  A

@@ -64,13 +64,21 @@ DOCS = [
 SCRIPTS = ["w141_poc2_frontwing.py"]
 TESTS = ["test_tier30_front_wing.py", "test_tier31_frontwing_demo.py"]
 
-#: The recorded run. `settled.npz` is the state the demo releases from and
+#: The recorded runs. `settled.npz` is the state the demo releases from and
 #: `w141.json` is every "recorded" number on screen. Both are small and both are
 #: the difference between a demo that shows one live number and a demo that
 #: shows a live number beside the one it should be compared with.
+#:
+#: `w153.json` joins them because beat 4's measured-reach bars read out of it.
+#: It is the larger of the three at ~0.46 MB and it is carried whole rather than
+#: reduced to the six numbers the screen quotes, for the reason the demo's own
+#: rule gives: a number and the run that produced it have to travel together or
+#: the number rots. A six-number excerpt IS the hard-coded copy that rule bans.
 ARTIFACTS = [
     ("out/w141/settled.npz", "the settled flow field the demo releases from"),
     ("out/w141/w141.json", "the full-scale run's own artifact"),
+    ("out/w153/w153.json", "Tier 33's own artifact, which beat 4's measured "
+                           "influence-reach bars are read out of"),
 ]
 
 #: The two solver trees, and what each is needed for. The whole build-repo
@@ -126,15 +134,20 @@ def build(out: str, build_repo: str) -> str:
             raise SystemExit(f"the bundle is missing {probe} -- the build repo "
                              "layout is not what the loaders expect")
 
-    # 3. the recorded run ----------------------------------------------------
-    os.makedirs(os.path.join(out, "out", "w141"))
+    # 3. the recorded runs ---------------------------------------------------
+    #: the destination directory comes from each artifact's own path rather than
+    #: being named here, so adding a second recorded run is one line in
+    #: ARTIFACTS and not two edits that can disagree
     for rel, why in ARTIFACTS:
         src = os.path.join(ROOT, *rel.split("/"))
         if not os.path.isfile(src):
             raise SystemExit(
-                f"{rel} is missing ({why}). Run "
-                "`python scripts/w141_poc2_frontwing.py` first.")
-        shutil.copyfile(src, os.path.join(out, *rel.split("/")))
+                f"{rel} is missing ({why}). Run its driver first: "
+                "`python scripts/w141_poc2_frontwing.py` for out/w141, "
+                "`python scripts/w153_influence_envelope.py` for out/w153.")
+        dst = os.path.join(out, *rel.split("/"))
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copyfile(src, dst)
 
     # 4. scripts, tests, docs ------------------------------------------------
     os.makedirs(os.path.join(out, "scripts"))

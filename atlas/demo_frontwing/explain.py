@@ -156,54 +156,98 @@ WHY_NOVEL = (
 # ---------------------------------------------------------------------------
 # the beats, each with what a viewer should take from it
 # ---------------------------------------------------------------------------
+#
+# **The order is the argument.**  It was re-cut on 2026-09-08 and the reason is
+# worth writing down beside it, because the previous order was defensible and
+# still wrong for the audience.
+#
+# It used to open on the substitution refusal -- the compiler handed a real
+# pretrained neural operator and declining it at every seam.  That is the
+# project's strongest *claim* and it is what a specialist should look at first.
+# It is also a **negative result**, and opening on it means the first thing a
+# reader who has not read the vault sees is the machine saying no.
+#
+# The positive result was already here and already measured; it was third and
+# fourth.  So the order now runs: the search wins on the clock (1), the win is
+# inside the model rather than bought by walking through a constraint (2), here
+# is what each joint was worth (3), and here is the check that tells you when
+# not to believe any of it -- correctly declining a case it should decline (4),
+# with the ledger last (5).
+#
+# **Nothing was re-measured to do this and no figure moved.**  The refusal is
+# not softened, it is sequenced: it stops being the headline and becomes the
+# reason to trust the headline.  `NOT_CLAIMED` still carries the tension whole.
 
 BEATS = (
     dict(
-        key="substitution",
+        key="race",
         n=1,
-        title="Offer it a real AI model and watch it refuse",
-        plain="Poseidon-T is a frozen twenty-million-parameter neural operator "
-              "trained on a great deal of fluid dynamics -- exactly the sort of "
-              "model this whole approach is meant to run on. Hand the compiler "
-              "an honest description of it and seven of the nine joints turn "
-              "amber with three new complaints. Describe it as what its "
-              "architecture actually makes it -- a model whose output anywhere "
-              "depends on the input everywhere -- and every joint turns red. "
-              "The reason is simple enough to say in one line: you cannot cut a "
-              "problem into pieces if each piece secretly depends on all the "
-              "others.",
-        technical="W93. probe.support_reach measured Poseidon-T's domain of "
-                  "dependence at a real wake seam as the whole 128-cell window "
-                  "where its record declares 2 -- a factor of 32, at every "
-                  "amplitude from 1 to 1e-3. required_halo() returns None, "
-                  "L2/R10/halo decertifies, and L2/R10 refuses outright once "
-                  "elliptic_subsolve is declared at the value the architecture "
-                  "implies. A neural operator's receptive field is global by "
-                  "construction: a fact about the architecture, not the physics.",
-        matters="This is a negative result about the whole "
-                "compose-pretrained-operators programme, and it was found by a "
-                "machine built to look rather than by someone reading a paper. "
-                "It is also why the programme's schedule changed: climb the "
-                "ladder with classical solvers and price each learned "
-                "substitution one seam at a time.",
-        watch="Switch between the three descriptions. Nothing about the model "
-              "changes -- only what is declared about it. The colours are "
-              "reading the declaration.",
+        tab="a better wing, sooner",
+        title="A better wing, and it gets there four times sooner",
+        plain="This is what the whole framework is for. Four knobs -- how stiff "
+              "the wing is, how thick it is, how stiff the spring is, how high "
+              "it rides -- and one number to push up: downforce. The search "
+              "finds a wing with 19.3% more of it than the one it started "
+              "from, inside both the stress and the deflection limits. What "
+              "lets it is that the whole coupled simulation, air and metal and "
+              "suspension together, can be differentiated: one backward pass "
+              "says how the downforce moves for all four knobs at once. The "
+              "alternative -- what you do without a gradient -- is to try many "
+              "designs and keep the good ones. Both are running here, on the "
+              "same problem and the same clock, and the gradient reaches the "
+              "population method's best answer 4.31 times sooner in wall-clock. "
+              "It does not find a better design than the population does. It "
+              "finds an equally good one sooner, and that is the honest shape "
+              "of the result.",
+        technical="W143. Adam on the adjoint against CMA-ES on the same "
+                  "objective, one evaluation each in turn, with the live march "
+                  "held for the duration -- a 12-frames-per-second march in the "
+                  "background would be measured instead of the search. "
+                  "Recorded: 4.31x in wall-clock, then 22.2x in rollouts, with "
+                  "the two columns landing within 1.003x of each other in the "
+                  "objective. The wall-clock figure is quoted first and the "
+                  "rollout figure is labelled flattering, because the rollout "
+                  "ratio prices a gradient iterate at one forward evaluation "
+                  "and it is 4.9 of them on this graph. Both columns are warmed "
+                  "before either clock starts: unwarmed, a three-step race "
+                  "reads a 25x adjoint premium where a warmed one reads 5.1 -- "
+                  "the same error stage_cost made when it published 9.47 "
+                  "against a warmed re-measurement's 5.4 to 5.8.",
+        matters="Differentiability, not raw speed, is the property the whole "
+                "approach rests on, and this is the measurement of what having "
+                "it buys. The figure is also smaller than this project used to "
+                "quote: the flattering version was in three of its own "
+                "documents before W143 corrected it, and the corrected one is "
+                "what is on the screen.",
+        watch="Press 'race them, on one clock'. The live race is short so it "
+              "finishes while you watch, and a short race can go either way -- "
+              "CMA-ES's first random sample sometimes beats three Adam steps, "
+              "and below about nine gradient iterates Adam has not turned yet. "
+              "The recorded full-scale run sits beside it and is labelled. The "
+              "two live budgets are scaled from the recorded run's 30 against "
+              "200 rather than picked, because picking them independently would "
+              "mean picking them until the answer came out the way this panel "
+              "would prefer.",
     ),
     dict(
         key="envelope",
         n=2,
-        title="Turn off one check and watch the optimiser lie",
-        plain="Both components say, in writing, what they are valid for: the "
-              "wing is a small-deflection model and stops being one past a "
-              "stated bend; the suspension stops being one below a stated ride "
-              "height. Until this was found, the check ran only on the plain "
-              "march and not on the path the optimiser takes -- so the search "
-              "walked the car through its own floor and reported a 27.5% gain "
-              "for a design the model does not stand behind. With the check "
-              "live it is 19.3%, the optimiser is refused eight times out of "
-              "thirty, and the screen names which component objected and at "
-              "which step.",
+        tab="the win is real",
+        title="And the win is real, not a constraint quietly walked through",
+        plain="The first thing worth asking about a number like 19.3% is "
+              "whether the search cheated to get it. Both components say, in "
+              "writing, what they are valid for: the wing is a "
+              "small-deflection model and stops being one past a stated bend; "
+              "the suspension stops being one below a stated ride height. "
+              "Until this was found, that check ran on the plain march and not "
+              "on the path the optimiser takes -- so the search walked the car "
+              "through its own floor and reported a 27.5% gain for a design the "
+              "model does not stand behind. With the check live it is 19.3%, "
+              "the optimiser is refused eight times out of thirty on the way, "
+              "and the screen names which component objected and at which step. "
+              "The smaller number is the one that is inside the model. You can "
+              "turn the check off on this screen and watch the larger one come "
+              "back.",
         technical="W145. run() enforced both experts' declared validity "
                   "envelopes and objective() -- the path every search marches "
                   "-- enforced neither. The same asymmetry was in wing_fsi, "
@@ -211,13 +255,18 @@ BEATS = (
                   "check_envelopes reading detached values. Found by extending "
                   "an ablation to the optimum purely to remove an unsupported "
                   "inference; it crashed at macro-step 4. Worth a fictitious "
-                  "6.9 percentage points.",
+                  "6.9 percentage points. declined and infeasible are separate "
+                  "rows on purpose: 39 of the population's 200 evaluations were "
+                  "declined by an expert and 66 were infeasible, and merging "
+                  "them would overstate this by a factor of 1.7.",
         matters="With 15-20 components, the chance that at least one is outside "
                 "its training regime on a novel design approaches one -- and a "
                 "novel design is the entire point. Knowing when to abstain is "
                 "the load-bearing safety property of the whole idea, not a "
-                "nicety. This is a small working instance of it, on the path "
-                "where it matters.",
+                "nicety, and an optimiser is the worst adversary it will ever "
+                "have, because a search finds and exploits precisely the places "
+                "where a model is confidently wrong. This is a small working "
+                "instance of it, on the path where it matters.",
         watch="Drag the free ride height and the spring rate both to the bottom "
               "of their range. That design settles below the suspension's "
               "declared floor, and with the check on the march stops and the "
@@ -234,16 +283,17 @@ BEATS = (
     dict(
         key="ablation",
         n=3,
+        tab="where the gain came from",
         title="Freeze one joint and see what it was worth",
-        plain="The claim of the whole approach is that the connections between "
-              "parts are the physics, not a correction to it. That is cheap to "
-              "check: make the spring infinitely stiff and the wing is bolted "
-              "in place; make the wing infinitely stiff and it cannot bend. "
-              "March each and read the downforce. At the starting design the "
-              "suspension joint is worth half a percent. At the optimised "
-              "design it is worth eight -- because the optimum rides much "
-              "closer to the ground, where a small change in height is a large "
-              "change in force.",
+        plain="Where did that gain come from? The claim of the whole approach "
+              "is that the connections between parts are the physics, not a "
+              "correction to it -- and that is cheap to check. Make the spring "
+              "infinitely stiff and the wing is bolted in place; make the wing "
+              "infinitely stiff and it cannot bend. March each and read the "
+              "downforce. At the starting design the suspension joint is worth "
+              "half a percent. At the optimised design it is worth eight -- "
+              "because the optimum rides much closer to the ground, where a "
+              "small change in height is a large change in force.",
         technical="Each frozen limit is a parent case study: k -> infinity is "
                   "CS-12, E* -> infinity is CS-10. Statically, those limits "
                   "reproduce their parents to 3.37e-10 and 6.36e-8, which is "
@@ -262,39 +312,93 @@ BEATS = (
               "The seam that barely mattered is now the one doing the work.",
     ),
     dict(
-        key="race",
+        key="substitution",
         n=4,
-        title="Race the gradient against the population, on one clock",
-        plain="Because the whole coupled simulation is differentiable, one "
-              "backward pass returns how much the downforce changes for each of "
-              "the four design knobs at once. The alternative -- what you do "
-              "without gradients -- is to try many designs and keep the good "
-              "ones. Both are running here on the same problem and the same "
-              "clock. The honest result is smaller than this project used to "
-              "quote: the gradient does not find a better design, it finds an "
-              "equally good one sooner, and 'sooner' is about two to four "
-              "times, not twenty.",
-        technical="W143. Two errors compounded: the denominator was CMA-ES's "
-                  "whole 200-evaluation budget rather than the 191 at which it "
-                  "peaked, and nobody divided by the adjoint premium -- 4.9 "
-                  "forward evaluations per gradient iterate on this graph. "
-                  "Corrected: 1.8x-4.3x in wall-clock against 18x-22x in "
-                  "rollouts, with the two columns landing within 1.003x-1.008x "
-                  "of each other in the objective. Opened against PoC 1 and PoC "
-                  "1a as well, not only fixed here.",
-        matters="Differentiability, not speed, is the property the whole vision "
-                "rests on. So the number that matters is whether having a "
-                "gradient changes the search -- and it is worth quoting "
-                "correctly, because the flattering version of this number was "
-                "in three of this project's own documents.",
-        watch="The live race is short so it finishes while you watch, and a "
-              "short race can go either way -- CMA-ES's first random sample "
-              "sometimes beats three Adam steps. The recorded full-scale run is "
-              "beside it and labelled.",
+        tab="when not to trust it",
+        title="How you know when not to trust the fast answer",
+        plain="A search that wins on the clock is only worth having if you know "
+              "when not to believe it, and that is what this panel is. The same "
+              "graph is compiled three times with three written descriptions of "
+              "the fluid expert, and the compiler answers at each of the nine "
+              "joints. Poseidon-T is a frozen twenty-million-parameter neural "
+              "operator trained on a great deal of fluid dynamics -- exactly "
+              "the sort of model this approach is meant to run on, and the one "
+              "that would make the search above orders of magnitude cheaper. "
+              "Hand the compiler an honest description of it and seven of the "
+              "nine joints gain three new complaints. Describe it as what its "
+              "architecture makes it -- a model whose output anywhere depends "
+              "on the input everywhere -- and every joint is refused. The "
+              "reason fits in a line: you cannot cut a problem into pieces if "
+              "each piece secretly depends on all the others. This is the same "
+              "check that was watching the search, correctly declining a case "
+              "it should decline.",
+        technical="W93. probe.support_reach measured Poseidon-T's domain of "
+                  "dependence at a real wake seam as the whole 128-cell window "
+                  "where its record declares 2 -- a factor of 32, at every "
+                  "amplitude from 1 to 1e-3. required_halo() returns None, "
+                  "L2/R10/halo decertifies, and L2/R10 refuses outright once "
+                  "elliptic_subsolve is declared at the value the architecture "
+                  "implies. A neural operator's receptive field is global by "
+                  "construction: a fact about the architecture, not the physics.",
+        #: **The Tier 33 addition, folded into this beat rather than given its
+        #: own.**  A sixth tab would split one trust-layer story in two; the
+        #: point of the measurement is that it sits UNDER these three verdicts
+        #: and says why they are what they are.  Every figure is read from
+        #: `out/w153/w153.json` by `engine.load_horizon`, never transcribed.
+        reach="There is something underneath those three verdicts that is newer "
+              "than the verdicts. The rule behind them used to rest on a "
+              "yes-or-no: does a component's influence reach past the cut, or "
+              "not? Asked that way it answers yes for every component in this "
+              "project, the plainest classical solver included -- which is the "
+              "check being unavailable rather than a fact about any of them. It "
+              "has since been replaced by a measurement of how far influence "
+              "actually reaches, and the three candidates separate cleanly. The "
+              "local classical solver's influence is exactly zero outside its "
+              "declared reach -- not small, zero, over all 13,924 cells beyond "
+              "it. The same solver carrying its own pressure solve spreads "
+              "across the whole window. Poseidon-T spreads furthest. On a scale "
+              "where 1 is 'everywhere', that is 0.186, 0.496 and 0.790. The "
+              "verdicts do not move -- Poseidon-T is still refused -- but the "
+              "reason is better than it was: the compiler is not "
+              "pattern-matching 'neural network, therefore no'. It measured a "
+              "graded property and put the three in the order the physics says "
+              "they belong.",
+        reach_technical="W153, Tier 33, read from out/w153/w153.json and not "
+                        "re-run here. Pi in the master error bound is a 0/1 "
+                        "indicator standing in for the sensitivity R_i(j), the "
+                        "norm of d E_i(j) / d g_i: tight for a local explicit "
+                        "agent and loose for influence that is dense but "
+                        "decaying, which is the only kind a learned operator "
+                        "has. At one exchange per macro-step it reads Pi = "
+                        "1.0000 for every agent in this vault. Pi_w substitutes "
+                        "the normalised sensitivity itself and ranks WindowNS "
+                        "exposed 0.186, WindowNS embedded 0.496 and Poseidon-T "
+                        "0.790 -- and Poseidon-T's bound is non-vacuous for the "
+                        "first time, by 1.27x, which is small and is said so. "
+                        "The instrument reduces exactly: the local agent's far "
+                        "field beyond b = 20 cells, its declared radius times "
+                        "sub-steps of 2 x 10, is bitwise zero over all 13,924 "
+                        "far cells, and at halo 1 the ratio Pi_w/Pi is "
+                        "1.000000, so no past verdict can move silently.",
+        matters="Two things at once. It is a negative result about the whole "
+                "compose-pretrained-operators programme, found by a machine "
+                "built to look rather than by someone reading a paper -- and it "
+                "is the reason to believe anything else on this screen, because "
+                "a check that never says no is not a check. It is also why the "
+                "programme's schedule changed: climb the ladder with classical "
+                "solvers and price each learned substitution one seam at a "
+                "time.",
+        watch="Switch between the three descriptions. Nothing about the model "
+              "changes -- only what is declared about it -- and the colours are "
+              "reading the declaration. Then look at the measured-reach bars "
+              "underneath: those are reading the models themselves rather than "
+              "their descriptions, which is why both Poseidon rows sit on one "
+              "bar. It is the same model twice, described two ways.",
     ),
     dict(
         key="balance",
         n=5,
+        tab="energy at the seams",
         title="One needle for energy at the seams",
         plain="If a coupling is quietly creating or destroying energy, "
               "everything downstream of it is wrong in a way no plot will show "
@@ -342,10 +446,14 @@ NOT_CLAIMED = (
     dict(
         title="This is not faster than the solver it replaces",
         plain="Every component here is a classical solver, not a trained model. "
-              "The four-to-six orders of magnitude that make the whole idea "
-              "worth having only arrive with learned components -- and beat 1 "
-              "is the framework refusing the most obvious candidate. That "
-              "tension is the honest state of the programme, not a detail.",
+              "The 4.31x on the first panel is one search method against "
+              "another on the same solvers; it is not a claim about the solvers "
+              "themselves. The four-to-six orders of magnitude that make the "
+              "whole idea worth having only arrive with learned components -- "
+              "and the fourth panel is the framework refusing the most obvious "
+              "candidate. That tension is the honest state of the programme, "
+              "not a detail, and moving that panel from first to fourth does "
+              "not soften it.",
         technical="Climb classically, substitute one certified seam at a time "
                   "(case-study-ladder-to-f1 section 2). The composed column is "
                   "measured against itself here; no speed claim is made.",

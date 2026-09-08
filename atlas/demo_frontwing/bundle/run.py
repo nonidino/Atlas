@@ -121,7 +121,8 @@ def check() -> int:
 
     from atlas.cases import front_wing as F
     from atlas.demo_frontwing import substitution as SUB
-    from atlas.demo_frontwing.engine import Engine, DemoConfig, load_recorded
+    from atlas.demo_frontwing.engine import (Engine, DemoConfig, load_horizon,
+                                             load_recorded)
 
     print("\n  the two external solvers")
     from atlas.cases.window_ns import load_reference
@@ -134,8 +135,15 @@ def check() -> int:
     rec = load_recorded()
     print(f"\n  the recorded artifact  "
           f"{'ok, ' + str(rec.get('generated')) if rec.get('available') else 'ABSENT -- the recorded columns will be blank'}")
+    hor = load_horizon()
+    print(f"  Tier 33's artifact     "
+          f"{'ok, ' + str(hor.get('generated')) if hor.get('available') else 'ABSENT -- beat 4 shows its verdicts without the reach bars'}")
+    if hor.get("available"):
+        for r in hor["rows"]:
+            print(f"    reach  {r['pi_w']:.3f}   {r['agent']} ({r['variant']})"
+                  f"{'   far field bitwise zero past ' + str(int(r['horizon'])) if r['far_zero'] else ''}")
 
-    print("\n  beat 1: the substitution, from declarations alone")
+    print("\n  beat 4: the substitution, from declarations alone")
     u = np.full((144, 208), F.U_INF)
     v = np.zeros((144, 208))
     t0 = time.perf_counter()

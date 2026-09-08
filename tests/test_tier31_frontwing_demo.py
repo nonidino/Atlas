@@ -8,7 +8,7 @@ Four kinds of test, in the order they would catch a regression:
 
   1. **the beats work** -- each of the three on-demand ones runs end to end and
      returns the shape the page renders;
-  2. **the beats say the right thing** -- beat 1's verdict map actually changes
+  2. **the beats say the right thing** -- beat 4's verdict map actually changes
      when the declaration does, and stays put when it does not;
   3. **the recorded numbers are read, not remembered** -- every figure the
      explainer quotes is checked against `out/w141/w141.json`, so a stale
@@ -37,12 +37,17 @@ from atlas.demo_frontwing.engine import (
     RULE_NOTE,
     DemoConfig,
     Engine,
+    load_horizon,
     load_recorded,
     seam_verdicts,
 )
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ARTIFACT = os.path.join(_ROOT, "out", "w141", "w141.json")
+#: Tier 33's artifact, which beat 4's measured-reach bars are read out of. A
+#: SECOND provenance file on this screen, held to the same rule as the first.
+_HORIZON = os.path.join(_ROOT, "out", "w153", "w153.json")
+_PAGE = os.path.join(_ROOT, "atlas", "demo_frontwing", "static", "index.html")
 
 
 @pytest.fixture(scope="module")
@@ -51,6 +56,20 @@ def art():
         pytest.skip("out/w141/w141.json is not here")
     with open(_ARTIFACT, encoding="utf-8") as fh:
         return json.load(fh)
+
+
+@pytest.fixture(scope="module")
+def horizon_art():
+    if not os.path.isfile(_HORIZON):
+        pytest.skip("out/w153/w153.json is not here")
+    with open(_HORIZON, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+@pytest.fixture(scope="module")
+def page():
+    with open(_PAGE, encoding="utf-8") as fh:
+        return fh.read()
 
 
 @pytest.fixture(scope="module")
@@ -63,7 +82,7 @@ def field():
 
 
 # ---------------------------------------------------------------------------
-# beat 1 -- the substitution
+# beat 4 -- the substitution
 # ---------------------------------------------------------------------------
 
 
@@ -75,7 +94,7 @@ def subs(field):
 
 
 def test_the_substitution_changes_the_verdict_map_and_the_incumbent_does_not(subs):
-    """Beat 1's whole claim in one assertion.
+    """Beat 4's whole claim in one assertion.
 
     Same graph, same field, same design, three DESCRIPTIONS of the fluid expert.
     The incumbent and the honest Poseidon-T record leave the colour map alone;
@@ -197,7 +216,7 @@ def test_both_frozen_limits_are_named_after_the_case_study_they_recover(field):
 
 
 # ---------------------------------------------------------------------------
-# beat 4 -- the race
+# beat 1 -- the race
 # ---------------------------------------------------------------------------
 
 
@@ -372,6 +391,7 @@ def test_every_number_the_explainer_quotes_is_in_the_artifact(art):
     being read off a screen by somebody who believes it."""
     prose = " ".join(EX._all_prose())
     d, un = art["design"], art["design_unenforced"]
+    c = d["comparison"]
     checks = [
         (f"{(d['gradient']['best_feasible']['J'] / d['start_eval']['J'] - 1) * 100:.1f}%",
          "the enforced improvement"),
@@ -380,6 +400,11 @@ def test_every_number_the_explainer_quotes_is_in_the_artifact(art):
         (f"{art['residual']['settled']:.2e}".replace("e-08", "e-8"),
          "the settled power residual"),
         (str(art["residual"]["steps"]), "the residual's horizon"),
+        #: the race is beat 1 now, so its three figures are the FIRST numbers a
+        #: reader meets and are held to the same rule as the rest
+        (f"{c['ratio_wall']:.2f}", "the wall-clock ratio"),
+        (f"{c['ratio_full_budget']:.1f}x", "the rollout ratio"),
+        (f"{c['quality_ratio']:.3f}x", "the quality ratio"),
     ]
     for needle, what in checks:
         assert needle in prose, f"{what}: {needle!r} is not in the explainer"
@@ -415,10 +440,286 @@ def test_the_explainer_covers_every_beat_the_page_renders():
     keys = {b["key"] for b in EX.BEATS}
     assert keys == {"substitution", "envelope", "ablation", "race", "balance"}
     for b in EX.BEATS:
-        for k in ("title", "plain", "technical", "matters", "watch"):
+        for k in ("title", "plain", "technical", "matters", "watch", "tab"):
             assert b.get(k), (b["key"], k)
     assert len(EX.WHY_NOVEL) == 5
     assert [x["n"] for x in EX.WHY_NOVEL] == [1, 2, 3, 4, 5]
+
+
+# ---------------------------------------------------------------------------
+# the order of the beats, which IS the argument
+# ---------------------------------------------------------------------------
+
+#: The sequence the demo was re-cut to on 2026-09-08, and the reason it is
+#: asserted rather than left to the tuple: the previous order opened on the
+#: substitution refusal, so the first thing a reader who has not read the vault
+#: saw was the compiler saying no. The positive result was already measured and
+#: already here, third and fourth. Leading with it is a claim about what this
+#: demonstration is for, and a claim about what it is for belongs in a test.
+BEAT_ORDER = ("race", "envelope", "ablation", "substitution", "balance")
+
+
+def test_the_beats_run_in_the_order_the_argument_needs():
+    """Win first, then the receipt for it, then where it came from, then the
+    check that says when not to believe it, then the ledger."""
+    assert [b["key"] for b in EX.BEATS] == list(BEAT_ORDER)
+    assert [b["n"] for b in EX.BEATS] == [1, 2, 3, 4, 5], (
+        "the ordinals on screen are drawn from `n`, so they must number the "
+        "tuple in the order it is in")
+
+
+def test_the_refusal_is_resequenced_and_not_softened():
+    """The one thing this re-cut is not allowed to have done.
+
+    Moving the substitution beat from first to fourth must leave every hard
+    sentence in place: still refused, still a negative result about composing
+    pretrained operators, and the tension between "no speed claim" and "the
+    orders of magnitude need learned experts" still stated where a reader will
+    meet it rather than dropped.
+    """
+    sub = next(b for b in EX.BEATS if b["key"] == "substitution")
+    body = " ".join(v for v in sub.values() if isinstance(v, str)).lower()
+    assert "refused" in body
+    assert "negative result" in body
+    not_claimed = " ".join(
+        v for x in EX.NOT_CLAIMED for v in x.values() if isinstance(v, str)
+    ).lower()
+    assert "classical solver" in not_claimed
+    assert "refusing the most obvious candidate" in not_claimed
+    #: and no panel may point at "beat 1" for the refusal any more
+    assert "beat 1 is the framework refusing" not in not_claimed
+
+
+def _tab_keys_the_page_builds(page: str, beats: list[dict]) -> list[str]:
+    """Run the page's OWN `tabsOf` and return the tab keys it produces.
+
+    The point of going through node rather than reading `EX.BEATS` again: the
+    nav is what a viewer clicks, and until this re-cut the nav was a second
+    hand-written list with its own ordinals. A test that only reads the Python
+    tuple would have passed while the screen showed the old order.
+    """
+    import shutil
+    import subprocess
+    import tempfile
+
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("node is not on PATH, so the page's own nav cannot be run")
+    i = page.index("const NUMERALS")
+    j = page.index("function buildTabs", i)
+    src = page[i:j]
+    assert "tabsOf" in src, "the tab builder is no longer where this test looks"
+    driver = (src + "\nconst B = " + json.dumps(beats) + ";\n"
+              "process.stdout.write(JSON.stringify(tabsOf(B).map(t => t[0])));")
+    with tempfile.TemporaryDirectory() as td:
+        p = os.path.join(td, "nav.js")
+        with open(p, "w", encoding="utf-8") as fh:
+            fh.write(driver)
+        out = subprocess.run([node, p], capture_output=True, text=True,
+                             check=True)
+    return json.loads(out.stdout)
+
+
+def test_the_pages_own_tab_nav_produces_the_new_beat_order(page):
+    """Read the order out of the page, not out of the tuple."""
+    keys = _tab_keys_the_page_builds(page, EX.payload()["beats"])
+    assert keys == ["live", *BEAT_ORDER, "limits"], keys
+
+
+def test_the_panels_are_in_the_dom_in_the_same_order_as_the_tabs(page):
+    """A tab that jumps backwards through the document is a tab a screen reader
+    and a keyboard user read in a different order from the one the argument
+    needs, and it is the shape the old hard-coded list had."""
+    import re
+
+    ids = re.findall(r'<div class="panel[^"]*" id="p_([a-z]+)"', page)
+    assert ids == ["live", *BEAT_ORDER, "limits"], ids
+
+
+def test_no_panel_heading_carries_its_own_ordinal_or_its_own_words(page):
+    """Both were written twice before: the tuple said one thing and the template
+    said another, and the template is what was on the screen. Every beat heading
+    is now an empty element `buildWhy` fills from the payload."""
+    import re
+
+    for b in EX.BEATS:
+        m = re.search(r'<h2 id="h_%s"></h2>' % b["key"], page)
+        assert m, f"p_{b['key']} does not take its heading from the payload"
+    #: and the numerals appear in exactly one place in the page
+    assert page.count("①") == 1, (
+        "the circled ordinals are written more than once, so one copy can go "
+        "stale against explain.BEATS")
+
+
+# ---------------------------------------------------------------------------
+# beat 4's measured reach -- Tier 33, read from its own artifact
+# ---------------------------------------------------------------------------
+
+
+def test_the_reach_loader_reads_tier_33s_artifact_rather_than_a_copy(horizon_art):
+    """The second provenance file on this screen, held to the first one's rule.
+
+    Every figure under beat 4's verdicts comes out of `out/w153/w153.json` at
+    load time and none is transcribed, so the bars cannot survive the tier they
+    came from being re-run with different numbers.
+    """
+    h = load_horizon()
+    assert h["available"] is True
+    rows = {(r["agent"], r["variant"]): r for r in h["rows"]}
+    src = {(r["agent"], r["variant"]): r for r in horizon_art["side"]["rows"]}
+    assert set(rows) <= set(src)
+    for k, r in rows.items():
+        assert r["pi_w"] == src[k]["Pi_w"]
+        assert r["pi"] == src[k]["Pi"]
+    assert (h["reduces_exactly"]["max"]
+            == horizon_art["gateA"]["Pi_w_over_Pi"]["max"])
+
+
+def test_the_reach_loader_says_so_rather_than_inventing_a_number(tmp_path):
+    h = load_horizon(str(tmp_path / "nothing.json"))
+    assert h["available"] is False
+    assert "why" in h and h["why"]
+    assert "rows" not in h, (
+        "an absent artifact must produce no rows at all, not empty ones a "
+        "panel could render as measurements")
+
+
+def test_the_reach_ranks_the_three_agents_the_way_the_measurement_did(horizon_art):
+    """The claim the bars make is an ORDERING, and it is the measured one.
+
+    Local classical below the same solver carrying its own elliptic part, below
+    the frozen operator. If this ever inverts, the panel is showing a ranking
+    the artifact does not support.
+    """
+    rows = load_horizon()["rows"]
+    assert [r["agent"] for r in rows] == ["WindowNS", "WindowNS", "Poseidon-T"]
+    pw = [r["pi_w"] for r in rows]
+    assert pw[0] < pw[1] < pw[2], pw
+    #: and the old yes/no test cannot tell them apart -- which is the point of
+    #: the panel and not an artefact of it. A flat 1.0000 here is a measurement
+    #: floor being reported as one, so it is asserted flat rather than assumed.
+    assert all(r["pi"] == 1.0 for r in rows), [r["pi"] for r in rows]
+
+
+def test_the_figure_beside_each_bar_ranks_the_same_way_the_bar_does(horizon_art):
+    """The one way this panel could mislead, closed.
+
+    The far-field **Frobenius** norm is a raw magnitude in each agent's own
+    units and it ranks the three the OTHER way round -- 76.07 for the embedded
+    classical solver against 9.78 for Poseidon-T, while Poseidon-T is the one
+    whose influence does not decay. A reader seeing a bigger bar beside a
+    smaller number would reasonably conclude the panel is wrong.
+
+    So the figure on screen is `profile_at_d`: the response at b = d normalised
+    by its own peak, which is what the bar measures -- decay, not size. This
+    asserts it is monotone with `pi_w`, and that the trap is real rather than
+    hypothetical, so the test still means something if someone swaps it back.
+    """
+    rows = load_horizon()["rows"]
+    shown = [r["profile_at_d"] for r in rows]
+    pw = [r["pi_w"] for r in rows]
+    assert shown[0] < shown[1] < shown[2], shown
+    assert pw[0] < pw[1] < pw[2], pw
+    #: the trap: the raw magnitude really does invert between rows 2 and 3
+    frob = [r["far_frobenius"] for r in rows]
+    assert frob[1] > frob[2], (
+        "the Frobenius no longer inverts, so this test is guarding nothing -- "
+        "check whether the artifact changed before relaxing it")
+
+
+def test_the_two_sample_points_separate_slow_decay_from_no_decay(horizon_art):
+    """One sample point would let the panel call both non-local rows flat.
+
+    Only one of them is. The embedded classical solver keeps decaying past the
+    horizon and the checkpoint does not, and that difference is the whole reason
+    the two sit at different heights -- so the panel samples at b = d AND at
+    b = 60 and reads the verdict off the pair rather than asserting it.
+    """
+    rows = load_horizon()["rows"]
+    emb, pos = rows[1], rows[2]
+    assert emb["far_b"] == pos["far_b"] > emb["d"], "the far sample is not far"
+    #: the classical elliptic solve halves again over the same distance
+    assert emb["profile_at_far"] < 0.6 * emb["profile_at_d"], (
+        emb["profile_at_d"], emb["profile_at_far"])
+    #: the checkpoint does not move -- this is "global by construction" measured
+    assert pos["profile_at_far"] >= 0.9 * pos["profile_at_d"], (
+        pos["profile_at_d"], pos["profile_at_far"])
+    #: and the local one is zero at both, in every probed state
+    assert rows[0]["profile_at_d"] == rows[0]["profile_at_far"] == 0.0
+
+
+def test_the_local_solvers_reach_is_bitwise_zero_in_every_probed_state(horizon_art):
+    """The single strongest assertion Tier 33 makes, and the one the plain
+    sentence 'not small, zero' rests on. It is taken over ALL probed states
+    rather than one, because `d_eff` moves between 19 and 20 across the spin-up
+    while the far-field block is exactly zero in all of them."""
+    local = load_horizon()["rows"][0]
+    assert local["far_zero"] is True
+    assert local["far_frobenius"] == 0.0
+    assert local["horizon"] == horizon_art["gateB"]["cases"][
+        "windowns_exposed"]["d_ref"]
+    states = horizon_art["gateB"]["cases"]["windowns_exposed"]["states"]
+    assert local["states"] == len(states) >= 3
+    assert all(s["far_field"]["exactly_zero"] for s in states)
+    #: the other two do not get the claim
+    for r in load_horizon()["rows"][1:]:
+        assert r["far_zero"] is False and r["horizon"] is None
+        assert r["far_frobenius"] > 0.0
+        #: and `d` is carried anyway, so the panel never writes 20 in itself
+        assert r["d"] == local["horizon"]
+
+
+def test_every_substitution_candidate_maps_to_a_measured_row(horizon_art):
+    """The bars sit under three DECLARATIONS and report three MODELS, and the
+    mapping is not one-to-one: both Poseidon descriptions are the same measured
+    model. Every candidate must reach a row, and the embedded classical row must
+    reach none -- it is the control, and labelling it as one of the three
+    columns would claim a declaration this screen does not offer."""
+    rows = load_horizon()["rows"]
+    mapped = [c for r in rows for c in r["candidates"]]
+    assert set(mapped) == {c.key for c in SUB.CANDIDATES}
+    assert len(mapped) == len(set(mapped)), "a candidate maps to two rows"
+    assert rows[1]["candidates"] == [], "the control must claim no declaration"
+    assert len(rows[2]["candidates"]) == 2, (
+        "both Poseidon descriptions are one measured model, which is the beat's "
+        "own point seen from the other side")
+
+
+def test_the_reach_prose_quotes_the_artifacts_own_numbers(horizon_art):
+    """Same rule as the w141 prose check, applied to the second artifact."""
+    prose = " ".join(EX._all_prose())
+    side = {(r["agent"], r["variant"]): r for r in horizon_art["side"]["rows"]}
+    for key in (("WindowNS", "exposed"), ("WindowNS", "embedded"),
+                ("Poseidon-T", "as declared")):
+        needle = f"{side[key]['Pi_w']:.3f}"
+        assert needle in prose, f"{key}: {needle!r} is not in the explainer"
+    far = horizon_art["gateB"]["cases"]["windowns_exposed"]["states"][0]
+    assert f"{far['far_field']['n_far_cells']:,}" in prose, "the far-cell count"
+    assert f"{far['far_field']['d']:.0f}" in prose, "the horizon it is zero past"
+    assert f"{horizon_art['gateA']['Pi_w_over_Pi']['max']:.6f}" in prose, (
+        "the reduction control -- the ratio that returns the old indicator "
+        "exactly, which is what licenses adopting the refinement at all")
+
+
+def test_the_reach_panel_does_not_upgrade_the_verdict():
+    """The measurement makes the refusal better argued, not milder. If the prose
+    ever says the reach CHANGES what the compiler decides, the beat has drifted
+    into claiming a capability nobody built."""
+    sub = next(b for b in EX.BEATS if b["key"] == "substitution")
+    body = (sub["reach"] + " " + sub["reach_technical"]).lower()
+    assert "still refused" in body
+    assert "verdicts do not move" in body
+
+
+def test_the_meta_endpoint_carries_the_reach_beside_the_recorded_run():
+    """The page reads both from `/api/meta`, so a loader nobody serves is a
+    loader nobody sees."""
+    import inspect
+
+    from atlas.demo_frontwing import server as SV
+    src = inspect.getsource(SV.create_app)
+    assert '"horizon": eng.horizon' in src
+    assert '"recorded": eng.recorded' in src
 
 
 # ---------------------------------------------------------------------------
@@ -477,7 +778,7 @@ def test_turning_enforcement_off_records_what_the_check_would_have_said():
 
 
 def test_the_engine_holds_the_march_for_the_beats_that_time_themselves():
-    """Beat 4 reports a wall-clock ratio; a 12-frames-per-second march in the
+    """Beat 1 reports a wall-clock ratio; a 12-frames-per-second march in the
     background would be measured instead of the search. Measured: the race went
     from 4% of its budget in 25 seconds to finishing."""
     import inspect

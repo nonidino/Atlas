@@ -42,13 +42,13 @@ def main(argv=None) -> int:
                     help="macro-steps per column in beat 3. The recorded "
                          "ablation is at 120 and is shown beside the live one")
     ap.add_argument("--race-steps", type=int, default=16,
-                    help="macro-steps per objective evaluation in beat 4")
+                    help="macro-steps per objective evaluation in beat 1")
     ap.add_argument("--race-grad", type=int, default=14,
-                    help="Adam steps in beat 4's gradient column. The two "
+                    help="Adam steps in beat 1's gradient column. The two "
                          "budgets are SCALED from the recorded 30:200 rather "
                          "than chosen -- see DemoConfig")
     ap.add_argument("--race-pop", type=int, default=93,
-                    help="objective evaluations in beat 4's CMA-ES column")
+                    help="objective evaluations in beat 1's CMA-ES column")
     ap.add_argument("--no-enforce", action="store_true",
                     help="start with beat 2's envelope check OFF. Everything "
                          "the demo then produces is stamped OUTSIDE THE MODEL; "
