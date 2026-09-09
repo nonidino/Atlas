@@ -9,7 +9,7 @@ exactly like these.
 
 ``wind_farm`` and ``rocket`` are **fixtures**: their ``boundary_response`` is a
 matrix somebody wrote down.  The **real case studies** call an actual solver or
-checkpoint, and only they can move a Tier 0 row.  There are twelve:
+checkpoint, and only they can move a Tier 0 row.  There are thirteen:
 
     window_ns       four reference.WindowNS windows; the whole Tier 0 stack, and
                     the only graph that reaches `admit`
@@ -56,6 +56,15 @@ checkpoint, and only they can move a Tier 0 row.  There are twelve:
                     per macro-step is worth 1.5 K across eight equally
                     defensible orders and the fixed point is worth none; and
                     the compiler cannot tell the circuit from a chain
+    powertrain      a drivetrain on the wake array's OPEN SHAFT. `wake_array`
+                    declares a `shaft:ROT` port whose note says "unconnected: no
+                    drivetrain"; this connects it to a motor-generator sitting in
+                    a DC circuit, which makes it the first graph to carry ELEC,
+                    the first CROSS-DOMAIN energy balance that is not an identity
+                    of its own solve (the two sides meet only through k_e = k_t,
+                    and breaking that equality breaks the balance in proportion),
+                    and W163's second directed cycle -- on which the compiler
+                    still reports nothing different from the chain
 
 None of them is imported here, because importing one would make the package
 depend on a checkout of another repository; import them explicitly.
