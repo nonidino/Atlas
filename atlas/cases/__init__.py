@@ -9,7 +9,7 @@ exactly like these.
 
 ``wind_farm`` and ``rocket`` are **fixtures**: their ``boundary_response`` is a
 matrix somebody wrote down.  The **real case studies** call an actual solver or
-checkpoint, and only they can move a Tier 0 row.  There are thirteen:
+checkpoint, and only they can move a Tier 0 row.  There are fourteen:
 
     window_ns       four reference.WindowNS windows; the whole Tier 0 stack, and
                     the only graph that reaches `admit`
@@ -67,6 +67,18 @@ checkpoint, and only they can move a Tier 0 row.  There are thirteen:
                     and breaking that equality breaks the balance in proportion),
                     and W163's second directed cycle -- on which the compiler
                     still reports nothing different from the chain
+    neural_interface  the learned operator on the INTERFACE instead of in a
+                    subdomain: it predicts the ring at t + dt and classical
+                    WindowNS windows own the subdomains, so a wrong guess costs
+                    iterations and not correctness. The only case study whose
+                    variable is the SCHEME -- it declares no new capability
+                    record and reuses `window_ns`'s agents on `poseidon`'s
+                    geometry. Both halves measured: the fixed point really is
+                    independent of the start, and a field predictor's entire
+                    budget is ONE SWEEP, because the best one is a sweep. What
+                    does pay is the operator -- exposing the elliptic part is
+                    worth 149x in sweeps, and R10 already refuses the slow
+                    arrangement from the declaration alone
 
 None of them is imported here, because importing one would make the package
 depend on a checkout of another repository; import them explicitly.

@@ -139,5 +139,19 @@ out/w153/*
 out/w159/*
 !out/w159/w159.json
 
+# Tier 38 (W166, the neural interface predictor): 38 KB, and it is the whole
+# record of a NEGATIVE, which is the reason to keep it rather than a summary.
+# Five predictor arms in two arrangements with their skills, sweep counts and
+# solve costs; the eleven-row halo sweep in both arrangements, which is where
+# the as-built contraction is seen crossing 1 between halo 18 and halo 20; the
+# four-accelerator ladder at three tolerances with the probe's own kappa,
+# alpha_star and rho(D^-1 S) beside it; and both compiles.  Cited line by line
+# by case-study-neural-interface-atlas-0.1.md, gap-worklist Tier 38 and log.md.
+# Reproducible from cold: scripts/w166_neural_interface.py; every part but the
+# Poseidon arm is deterministic and needs no torch (--no-neural).
+!out/w166/
+out/w166/*
+!out/w166/w166.json
+
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/
