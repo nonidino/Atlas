@@ -9,7 +9,7 @@ exactly like these.
 
 ``wind_farm`` and ``rocket`` are **fixtures**: their ``boundary_response`` is a
 matrix somebody wrote down.  The **real case studies** call an actual solver or
-checkpoint, and only they can move a Tier 0 row.  There are eleven:
+checkpoint, and only they can move a Tier 0 row.  There are twelve:
 
     window_ns       four reference.WindowNS windows; the whole Tier 0 stack, and
                     the only graph that reaches `admit`
@@ -46,6 +46,16 @@ checkpoint, and only they can move a Tier 0 row.  There are eleven:
                     SOLUTION_DEPENDENT, L2 refuses, and InterfaceMotion's three
                     measurements exist for the first time. Also the first design
                     PARAMETER, differentiated through the composed stack
+
+    cooling_loop    a solid block cooled by a CLOSED coolant circuit -- the
+                    first graph whose ports form a DIRECTED CYCLE. The coolant
+                    returns to the passage it left, so no agent's inputs are
+                    all available before the others have run, and
+                    `spec-wind-farm-wake` section 5.1's path-dependence concern
+                    finally has a graph that can test it. Measured, one sweep
+                    per macro-step is worth 1.5 K across eight equally
+                    defensible orders and the fixed point is worth none; and
+                    the compiler cannot tell the circuit from a chain
 
 None of them is imported here, because importing one would make the package
 depend on a checkout of another repository; import them explicitly.

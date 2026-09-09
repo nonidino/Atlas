@@ -127,5 +127,17 @@ out/w149/*
 out/w153/*
 !out/w153/w153.json
 
+# Tier 35 (W159, the cut defect bound on the front-wing graph): 128 KB, the
+# chi-weighted bound and both reference-free surrogates at every one of 160
+# exchanges across two columns, with the composed defect and the evaluated
+# identity residual beside each -- plus the zero-cut control's own 80 rows,
+# which are the reason to keep the per-exchange detail rather than the summary.
+# Cited line by line by gap-worklist Tier 35 and by log.md.  Reproducible from
+# cold: scripts/w159_frontwing_cut_defect.py, deterministic, repeat floor
+# measured at exactly 0.
+!out/w159/
+out/w159/*
+!out/w159/w159.json
+
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

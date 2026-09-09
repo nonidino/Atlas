@@ -339,17 +339,29 @@ for. The gap between them exists only during the transient, which is what
 Reproduced from `explain.NOT_CLAIMED`, which is what the page renders and what
 the tests read:
 
-1. **Nothing here is certified.** No seam is green. **Until 2026-09-08 the
-   reason was bookkeeping** — $L$, $\sigma$ and $C_\mu$ had been measured in
-   tier 0 on another graph and were not declared on this one, so W56's backstop
-   forced `admit-uncertified` and the refusal said nothing about this wing.
-   **W157 measured all three here** ([[poc2-novelty-audit]] §3.1) and
-   `unmeasured` is now empty — and it is still not green. Five named rules
-   stand: `L2/C2` (no measured `cut_defect_bound`), `L2/R10` on the
-   suspension's declared family, `R10/halo` and `L4/E7/passivity` (**W136** and
-   **W138**, both recorded *open false alarms*), and `R12`. With the interface
-   declared to move, `InterfaceMotion` refuses on top. **The state is better
-   and the claim is smaller: what blocks certification is now nameable.**
+1. **Nothing here is certified, and as of 2026-09-09 the reason is entirely
+   the checker.** No seam is green. **Until 2026-09-08 the reason was
+   bookkeeping** — $L$, $\sigma$ and $C_\mu$ had been measured in tier 0 on
+   another graph and were not declared on this one, so W56's backstop forced
+   `admit-uncertified` and the refusal said nothing about this wing. **W157
+   measured all three here** ([[poc2-novelty-audit]] §3.1) and left five named
+   rules standing. **Tier 35 took three of them and both survivors turned out to
+   be defects too.** `L2/C2` had a number nobody had measured and now has one
+   (**W159**: $5.622\times10^{-5}$, chi-weighted against a single-window
+   monolith, tight to $0.05\%$, with the identity closing to $10^{-10}$ and the
+   zero-cut control at exactly $0$); `R10/halo` was scoped to the agents the
+   decomposition actually cuts (**W136**); and the seam operator became
+   **oriented**, which took both surface seams' passivity defect to exactly zero
+   (**W138**) — checked against the case's own residual Jacobian rather than
+   asserted. What remains is `L2/R10`, which reads a two-line algebraic spring
+   as hiding a pressure solve (**W160**), and `R12`, which names the *elasticity*
+   agent as enforcing incompressibility when that agent is not even a subdomain
+   of the partition of unity (**W161**). Both open, both diagnosed, neither
+   repaired in the session that found them. **So of the five rules that stood
+   yesterday, four were defects in the checker and one was a missing number.
+   Zero were facts about this assembly** — which is §4's point arriving with a
+   count. With the interface declared to move, `InterfaceMotion` refuses on top,
+   and that one is a **named hole** rather than a defect.
 2. **This is not faster than the solvers it is made of.** Every expert is
    classical, and beat ①'s $4.31\times$ is one *search method* against another on
    the same solvers — not a claim about the solvers. The four-to-six orders of

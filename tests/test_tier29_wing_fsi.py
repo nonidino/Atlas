@@ -159,20 +159,63 @@ def test_the_structural_agent_is_irreducibly_embedded():
 
 
 @needs_expert
-def test_the_halo_rule_has_the_same_scope_defect_one_rule_along():
-    """**W136.** `L2/R10/halo` decertifies the structural agent for being
-    implicit with a nonzero stencil, and there is no halo on this seam to be
-    inadequate: `Gamma` is a PHYSICAL boundary of `Omega_solid`, the structure is
-    not tiled, and no overlap exists on that side to outrun anything.  Same
-    premise as R10's, same gap, one rule along -- recorded rather than fixed,
-    because a decertification that over-fires is honest and noisy where a
-    refusal that over-fires is terminal."""
+def test_the_halo_rule_checks_only_the_agents_the_decomposition_cuts():
+    """**W136, closed 2026-09-09.  This test asserted the defect until today.**
+
+    `L2/R10/halo` decertified the structural agent for being implicit with a
+    nonzero stencil -- every word true about STRUCT's domain of dependence, and
+    there was no halo on this seam to be inadequate: `Gamma` is a PHYSICAL
+    boundary of `Omega_solid`, the structure is not tiled, and no overlap exists
+    on that side to outrun anything.  Same premise as R10's, same gap, one rule
+    along.
+
+    The requirement is now checked only against the agents `_decomposition_cuts`
+    reports cut -- **R10's own premise predicate, shared rather than restated**.
+    Three things are asserted and the second is the one that matters: the rule
+    ADMITS; it admits for the right reason (the fluid windows' own 8-cell domain
+    of dependence is covered by the 16-cell overlap, so the check RAN rather
+    than being skipped); and the exclusion is on the record, because a rule that
+    quietly stops looking at an agent is the same failure in the other
+    direction."""
     u, v = _flat_field()
     g, _e = WF.build(u, v, motion=False)
     r = compile_scheme(g)
     halo = [d for d in r.decisions if d.rule == "R10/halo"]
-    assert halo and "STRUCT" in halo[0].subject
+    assert len(halo) == 1
+    assert halo[0].verdict is Verdict.ADMIT
+    #: it admits because the CUT agents' requirement is met, not because
+    #: nothing was checked
+    assert "16 cells covers the 8-cell" in halo[0].message
+    #: and the agent it stopped checking is named, in the evidence and in the
+    #: sentence
+    assert halo[0].evidence["uncut_agents"] == ["STRUCT"]
+    assert "STRUCT" in halo[0].message and "W136" in halo[0].message
+
+
+@needs_expert
+def test_the_halo_rule_still_fires_when_a_CUT_agent_is_the_opaque_one():
+    """W136's fix must narrow the rule's SUBJECT and not its teeth.
+
+    The control: give the structure the fluid's `governing_family`, which is
+    exactly the declaration `front_wing.build(struct_family=...)` runs as R10's
+    control.  The decomposition now reports STRUCT cut -- two agents of one
+    family -- and the halo rule decertifies it again, on the same sentence it
+    used before W136.  If this passes and the test above passes, the change is a
+    premise check rather than the rule being switched off."""
+    u, v = _flat_field()
+    g, _e = WF.build(u, v, motion=False)
+    for a in g.agents:
+        if a.agent_id == "STRUCT":
+            caps = a.capabilities
+            object.__setattr__(caps, "governing_family",
+                               "incompressible-navier-stokes-2d")
+            a.capabilities = caps
+    r = compile_scheme(g)
+    halo = [d for d in r.decisions if d.rule == "R10/halo"]
+    assert len(halo) == 1
     assert halo[0].verdict is Verdict.ADMIT_UNCERTIFIED
+    assert "STRUCT" in halo[0].subject
+    assert "implicit with a nonzero stencil" in halo[0].message
 
 
 @needs_expert

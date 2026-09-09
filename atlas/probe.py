@@ -461,6 +461,15 @@ class SeamOperator:
     #: W74's class. What `base_disagreement` found across this seam's two sides.
     base_check: dict[str, Any] | None = None
     probe_state: str = "unspecified"
+    #: **W138.** The agent whose outward normal both sides' EFFORT was taken
+    #: against, and the sign each block therefore entered the sum with. Empty
+    #: and all-``+1`` is the Steklov-Poincare convention every graph written
+    #: before 2026-09-08 means, and it is bitwise the old assembly. A number
+    #: read off this operator without them is a number whose reader cannot tell
+    #: which of two inequivalent matrices was assembled -- W58's class, one
+    #: object up.
+    effort_normal: str = ""
+    effort_signs: dict[str, float] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
 
     @property
@@ -539,6 +548,9 @@ class SeamOperator:
             # operator -- the one the scheme is built on -- reported only the
             # clipped number. Found by W2's first real assembly, 2026-08-27.
             "passivity_lambda_min": self.passivity_lambda_min,
+            "effort_normal": self.effort_normal,
+            "effort_signs": dict(self.effort_signs),
+            "oriented": bool(self.effort_normal),
             "operator_content": self.operator_content,
             "cut_score": self.cut_score,
             "conforming": self.conforming,
@@ -825,6 +837,20 @@ def _fill_diagnostics(block: ProbedBlock, S: np.ndarray, tol: float | None = Non
         block.alpha_star = np.diag(S).copy()
 
 
+def _effort_signs(connection: Any, agent_ids: list[str]) -> dict[str, float]:
+    """W138: each block's sign in the assembled sum, from the declaration.
+
+    Delegates to `graph.Connection.effort_signs` when the connection has it, so
+    the convention lives in one place; falls back to ``+1`` everywhere for any
+    caller passing a connection-shaped object of its own, which is what every
+    script written before 2026-09-08 does.
+    """
+    signs = getattr(connection, "effort_signs", None)
+    if signs is None:
+        return {a: 1.0 for a in agent_ids}
+    return {a: float(signs.get(a, 1.0)) for a in agent_ids}
+
+
 def assemble_seam(
     graph: Any,
     connection: Any,
@@ -843,6 +869,33 @@ def assemble_seam(
     those measurements reproduce bit-for-bit -- and `base_disagreement` then
     reports whether the two sides actually agreed, which on `thermal_seam` they
     do not, by 500 K.  See `base_disagreement` for why a base belongs to a seam.
+
+    **W138, closed 2026-09-08: the sum is ORIENTED.**  The formula in the first
+    line is written for the Steklov-Poincare convention -- each side reports the
+    traction against its OWN outward normal, the two normals at Gamma are
+    opposite, and each ``Lambda_i`` is separately positive semidefinite, so the
+    sum is the right object and its symmetric part is what E7 is about.  A
+    fluid-solid seam is usually **not** written that way: the fluid returns *the
+    load on the surface* and the solid *the reaction that holds it*, both
+    positive in one shared direction, and the well-posed interface condition is
+    their DIFFERENCE -- `front_wing.solve_seams` writes ``S_e(delta + dt w) - f``
+    and CS-10's scalar version ``k(h0 - h - dt v) - L``.  Adding them assembles a
+    matrix no scheme differentiates, and `L4/E7/passivity` then reports a defect
+    that is the convention rather than an amplified mode.
+
+    ``Connection.effort_normal`` names the agent whose outward normal both sides
+    report against; `Connection.effort_signs` turns it into a sign per side.  An
+    undeclared ``effort_normal`` gives both sides ``+1``, so every graph written
+    before this change assembles the same matrix it always did, to the bit.
+
+    Measured on `front_wing`, and the direction is not a preference: on the
+    ``wet`` seam the case's own residual Jacobian ``dt S_e + diag(g)`` -- the
+    oriented difference, reproduced by a central difference to ``1.15e-16``
+    relative -- is positive definite at ``lambda_min = +3.469`` while the sum is
+    indefinite at ``-3.488``.  On the seven fluid-fluid tiling seams, which are
+    genuinely own-outward, the sum is ``+0.486`` and the difference is indefinite
+    on three of them, so the field is doing work rather than being a switch that
+    is always on.
     """
     budget = budget or ProbeBudget()
     references = references or {}
@@ -866,7 +919,8 @@ def assemble_seam(
             probe_state,
             base_V,
         )
-    S = sum(b.S for b in blocks.values())
+    signs = _effort_signs(connection, list(blocks))
+    S = sum(signs[a] * b.S for a, b in blocks.items())
     total = float(np.linalg.norm(S, 2))
     for b in blocks.values():
         b.share = float(np.linalg.norm(b.S, 2) / total) if total > 0 else None
@@ -879,6 +933,8 @@ def assemble_seam(
         expected_null_dim=expected_null_dim,
         conforming=transfer.conforming,
         probe_state=probe_state,
+        effort_normal=getattr(connection, "effort_normal", "") or "",
+        effort_signs=dict(signs),
         base_check=base_disagreement(
             {a: b.base_M for a, b in blocks.items() if b.base_M is not None}
         ),

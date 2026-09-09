@@ -238,7 +238,7 @@ driver and the demo agree on this graph.
 |---|---|
 | **red** | at least one **refusal** reaches this seam. The composed march may still run — and does — but the compiler declines to certify it, and the run is a search instrument rather than a verified one |
 | **amber** | no refusal, at least one **decertification**. The bound applies with a constant nobody measured, or a hypothesis is `unchecked` |
-| **green** | neither. **Nothing in this graph is green**, and since **W157** the reason is no longer a missing ledger: `L`, `sigma` and `C_mu` are measured on this graph and declared with provenance, `unmeasured` is empty, and W56's backstop does not fire. What stands is five named rules -- `L2/C2` (no measured `cut_defect_bound`), `L2/R10` on the suspension's declared family, `R10/halo` and `L4/E7/passivity` (**W136** and **W138**, both recorded open *false alarms*), and `R12` -- plus `InterfaceMotion`'s refusal once the interface is declared to move |
+| **green** | neither. **Nothing in this graph is green**, and the reason is no longer a missing ledger: `L`, `sigma`, `C_mu` (**W157**) and `cut_defect_bound` (**W159**, chi-weighted, tight to 0.05% against a single-window monolith) are all measured on this graph and declared with provenance, `unmeasured` is empty, and W56's backstop does not fire. **Two objections stand and both are checker defects**: `L2/R10` reads the two-line algebraic suspension as hiding a pressure solve because it declares the flow's family (**W160**), and `R12` names STRUCT as enforcing incompressibility when STRUCT solves elasticity and is not a subdomain of the partition of unity at all (**W161**). Plus `InterfaceMotion`'s refusal once the interface is declared to move |
 
 **1. The colour is a property of the declaration, not of the design point.**
 Measured, not assumed: over the sixteen corners of the design box, **zero**
@@ -257,14 +257,22 @@ the interface residual, and the two constraint margins.
 The two surface seams carry different decertifications and the reasons are on
 hover:
 
-- **`wet`** (fluid ↔ structure, 32 stations) — `L2/R10/halo` and
-  `L4/E7/passivity`. The halo rule over-fires here (**W136**): this seam is a
-  *physical* boundary of the solid with no overlap for anything to outrun. The
-  passivity defect is an **orientation** artefact (**W138**): the two blocks are
-  added where the interface residual subtracts them, and flipping one sign takes
-  the defect to exactly zero.
-- **`mount`** (fluid ↔ lumped suspension, the ride height) — `L2/R10` and
-  `L4/E7/passivity`, CS-10's seam unchanged.
+- **`wet`** (fluid ↔ structure, 32 stations) — **clear as of Tier 35.** It
+  used to carry `L2/R10/halo` and `L4/E7/passivity` and both were checker
+  defects. The halo rule over-fired (**W136**): this seam is a *physical*
+  boundary of the solid with no overlap for anything to outrun, and the
+  requirement is now checked only against the agents the decomposition cuts.
+  The passivity defect was an **orientation** artefact (**W138**): the two
+  blocks were *added* where the interface residual *subtracts* them, so E7 was
+  reading a matrix no scheme differentiates. `Connection.effort_normal` names
+  which agent's outward normal both efforts are taken against, and the defect
+  went to exactly zero — checked against the case's own residual Jacobian,
+  which a central difference reproduces to 1.15e-16 and which is positive
+  definite where the unoriented sum is indefinite.
+- **`mount`** (fluid ↔ lumped suspension, the ride height) — `L2/R10` only,
+  and that is **W160**: `k (h0 - h) = L` is two lines of algebra with
+  `stencil_radius = 0`, and the rule infers a hidden pressure solve from the
+  governing family alone. Its passivity cleared with `wet`'s.
 
 ---
 

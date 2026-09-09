@@ -90,6 +90,37 @@ class Connection:
     space: InterfaceSpace | None = None
     prolongations: dict[str, Prolongation] = field(default_factory=dict)
     orientation: str = ""              # normal points from the first-named agent to the second
+    #: **W138, 2026-09-08.**  Which agent's outward normal BOTH sides report
+    #: their EFFORT against.  `response_half` names *which half* a port returns
+    #: and nothing named *which way its normal points*, so ``Lambda_M = sum_i
+    #: P_i^* Lambda_i P_i`` added two blocks that the interface residual
+    #: subtracts, and `L4/E7/passivity` read the symmetric part of a sum of two
+    #: oppositely-oriented responses.
+    #:
+    #: Empty --- the default, and what every graph written before 2026-09-08
+    #: means --- is the **Steklov-Poincare** convention: each side reports the
+    #: traction against its OWN outward normal, the two normals at Gamma are
+    #: opposite, each block is separately positive semidefinite, and the
+    #: assembled operator is their SUM.  That is what a tiling cut does and the
+    #: seven fluid-fluid seams of `front_wing` measure it: every block has
+    #: ``lambda_min`` near ``+0.25`` and the sum near ``+0.49``.
+    #:
+    #: Naming an agent says the two efforts are **co-oriented** --- both positive
+    #: in one shared direction, that agent's outward normal --- so the other
+    #: side's block is its own-outward block NEGATED, and the assembled operator
+    #: is the DIFFERENCE with the named side kept.  A field-solid seam where the
+    #: fluid returns *the load on the surface* and the solid *the reaction that
+    #: holds it* is this case, and it is the one the residual is written in.
+    #:
+    #: **It is checkable and it was checked, not asserted.**  On `front_wing`'s
+    #: `wet` seam the case's own ``solve_seams`` residual has the analytic
+    #: Jacobian ``dt S_e + diag(g)`` --- structure MINUS fluid in the shared
+    #: normal --- and a central difference reproduces it to ``1.15e-16``
+    #: relative.  That Jacobian is positive definite at ``lambda_min = +3.469``
+    #: where the SUM the probe was assembling is indefinite at ``-3.488``.  The
+    #: scheme differentiates the oriented operator; the probe was reading a
+    #: different matrix.
+    effort_normal: str = ""
     enforced: bool = True              # enforce the port residual, or measure only
     #: Opt in to having the compiler build M from the rule dim M = min_i m_i_eff,
     #: with the identity prolongation on each side. Only legal for the conforming
@@ -114,6 +145,28 @@ class Connection:
             raise GraphError(f"seam {self.seam_id!r} connects agent {self.a[0]!r} to itself")
         if not self.orientation:
             self.orientation = f"n points {self.a[0]} -> {self.b[0]}"
+        if self.effort_normal and self.effort_normal not in self.agents:
+            raise GraphError(
+                f"seam {self.seam_id!r} declares effort_normal="
+                f"{self.effort_normal!r}, which is not one of its two agents "
+                f"{self.agents}. The field names the agent whose outward normal "
+                "BOTH sides' effort is reported against, so it has to be a side "
+                "of this seam"
+            )
+
+    @property
+    def effort_signs(self) -> dict[str, float]:
+        """Each side's sign in the assembled operator (W138).
+
+        With no ``effort_normal`` both sides are ``+1``: each reports against its
+        own outward normal and the assembly is the Steklov-Poincare SUM.  Naming
+        an agent keeps that side at ``+1`` and negates the other, because the
+        other is reporting against a normal opposite to its own outward one.
+        """
+        a, b = self.agents
+        if not self.effort_normal:
+            return {a: 1.0, b: 1.0}
+        return {x: (1.0 if x == self.effort_normal else -1.0) for x in (a, b)}
 
     @property
     def agents(self) -> tuple[str, str]:
@@ -536,6 +589,7 @@ class CaseGraph:
                     "b": list(c.b),
                     "port_type": c.port_type.value,
                     "orientation": c.orientation,
+                    "effort_normal": c.effort_normal,
                     "enforced": c.enforced,
                 }
                 for c in self.connections

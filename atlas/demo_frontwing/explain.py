@@ -434,24 +434,29 @@ BEATS = (
 NOT_CLAIMED = (
     dict(
         title="Nothing here is certified",
-        plain="Not one joint on this screen is green. Until this week the "
-              "reason was bookkeeping: three constants the bounds rest on had "
-              "been measured on a different problem and never on this one, so "
-              "the software declined to certify anything at all and the "
-              "refusal said nothing about this wing. They have now been "
-              "measured here -- and it is still not green. Five named rules "
-              "stand, and two of them are known faults in the checker rather "
-              "than facts about the wing. The machine says which, rather than "
-              "rounding it up.",
-        technical="W157 measured L, sigma and C_mu on THIS graph and declared "
-                  "them with provenance, so W56's backstop no longer fires and "
-                  "the unmeasured list is empty. What remains: L2/C2 has no "
-                  "measured cut_defect_bound, L2/R10 flags the suspension's "
-                  "declared family, R10/halo and L4/E7/passivity at both "
-                  "surface seams are W136 and W138 -- both recorded as open "
-                  "FALSE ALARMS -- and R12 prices the constraint being applied "
-                  "twice per macro-step. With the interface declared to move, "
-                  "InterfaceMotion refuses on top of all of it.",
+        plain="Not one joint on this screen is green. Until recently the "
+              "reason was bookkeeping: constants the bounds rest on had been "
+              "measured on a different problem and never on this one, so the "
+              "software declined to certify anything at all and the refusal "
+              "said nothing about this wing. They have now been measured "
+              "here -- and it is still not green. TWO objections stand, and "
+              "the honest thing to say about them is that both are known "
+              "faults in the checker rather than facts about the wing. So "
+              "what stops this design being certified today is the software, "
+              "not the aerodynamics, and the software says so itself.",
+        technical="W157 measured L, sigma and C_mu on THIS graph; W159 measured "
+                  "cut_defect_bound against a single-window monolith (5.622e-5, "
+                  "chi-weighted, tight to 0.05%), so L2/C2 admits; W136 scoped "
+                  "the halo rule to the agents the decomposition actually cuts; "
+                  "and W138 made the seam operator ORIENTED, which took both "
+                  "surface seams' passivity defect to exactly zero. What "
+                  "remains is L2/R10 on the suspension -- a lumped two-line "
+                  "spring the rule reads as hiding a pressure solve (W160) -- "
+                  "and R12, which names STRUCT as enforcing incompressibility "
+                  "when STRUCT solves elasticity and is not in the blend "
+                  "(W161). Both are open, both are diagnosed, and neither was "
+                  "repaired in the session that found them. With the interface "
+                  "declared to move, InterfaceMotion refuses on top of it.",
     ),
     dict(
         title="This is not faster than the solver it replaces",

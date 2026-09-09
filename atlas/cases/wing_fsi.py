@@ -199,6 +199,7 @@ __all__ = [
     "flow_capabilities", "structure_capabilities", "build",
     "FSIRollout", "FSIResult", "referent_rollout", "composed_rollout",
     "settled_field", "N_SPIN", "MEASURED_STATIC", "MEASURED_MOVING",
+    "CUT_DEFECT_STATIC", "CUT_DEFECT_MOVING",
     "R10_HANDLE", "STRUCTURE_SCOPE",
 ]
 
@@ -1124,11 +1125,39 @@ STRUCTURE_SCOPE = (
 #:              INDICATOR does not carry sigma's variation -- the partition of
 #:              unity does.  That is [[interaction-horizon]]'s case for Pi_w
 #:              arriving on a second graph, and it is tracked as **W158**.
+#: **W159, measured 2026-09-09.**  `L2/C2`'s own quantity on THIS graph, in
+#: the chi-weighted form -- the one the derivation bounds the composed defect
+#: by, and the one that needs a monolith.  The monolith exists here because
+#: `solver_for` builds the same class at 80x80 and at 208x144, so ``E`` is the
+#: identical code path over one window covering the domain.
+#:
+#: Three controls, and the first two are the ones that could have failed:
+#: the identity ``A({E_i R_i u}) - E u = sum_i R_i^T chi_i D_i`` closes to
+#: **1.0e-10 relative** with SIGNED D_i, which is what says the lift, the
+#: weights, the cut and the forcing are all right; the zero-cut column on
+#: `SINGLE_TILING`, marched the same 80 exchanges, gives **exactly 0**; and two
+#: identical runs differ by **exactly 0**, so the floor is bitwise and the
+#: bound is signal.
+#:
+#: Declared as the MAX over 80 exchanges (20 macro-steps from the settled
+#: state), which is the conservative direction for a bound.  The spread is
+#: 1.003x fixed-shape and 1.178x aeroelastic, so this is a genuinely flat
+#: quantity here rather than a number sampled at one lucky state.
+#:
+#: **The bound is tight to 0.05%** (5.6225e-05 against a composed defect of
+#: 5.6199e-05), reproducing tier 0's 0.2% on a graph it was not fitted on; the
+#: max form is **229x** looser at 1.285e-02, which is the partition of unity's
+#: whole contribution.
+CUT_DEFECT_STATIC = 5.622488e-05
+CUT_DEFECT_MOVING = 6.054872e-05
+
 MEASURED_STATIC = MeasuredConstants(
     tau=0.0, gamma=0.0, norm_A=1.0,
     L=0.998719, L_stderr=0.000001,
     sigma=4.534925e-08,
     C_mu=1.2,
+    cut_defect_bound=CUT_DEFECT_STATIC,
+    cut_defect_bound_form="chi-weighted",
     probe_state=f"settled fixed-shape wake at delta = 0, E* = {E_STAR:.3g}, "
                 f"dt = {MACRO_DT}, nu = {NU}; L over 60 macro-steps from "
                 f"out/w141/settled.npz, sigma over one",
@@ -1138,13 +1167,18 @@ MEASURED_STATIC = MeasuredConstants(
     source="tau/gamma/norm_A: scripts/w136_wing_fsi.py, out/w136/. "
            "L/sigma/C_mu: scripts/w157_frontwing_constants.py, out/w157/ "
            "(C_mu is W49's 1.2, validated here 12/12, not this graph's implied "
-           "0.56 -- see the note above)")
+           "0.56 -- see the note above). "
+           "cut_defect_bound: scripts/w159_frontwing_cut_defect.py, out/w159/, "
+           "chi-weighted form against the single-window monolith, max over 80 "
+           "exchanges")
 
 MEASURED_MOVING = MeasuredConstants(
     tau=0.0, gamma=0.0, norm_A=1.0,
     L=0.998735, L_stderr=0.000002,
     sigma=3.173377e-07,
     C_mu=1.2,
+    cut_defect_bound=CUT_DEFECT_MOVING,
+    cut_defect_bound_form="chi-weighted",
     probe_state=f"settled aeroelastic state at E* = {E_STAR:.3g}, "
                 f"dt = {MACRO_DT}, nu = {NU}; L over 60 macro-steps from "
                 f"out/w141/settled.npz, sigma over one",
@@ -1155,7 +1189,10 @@ MEASURED_MOVING = MeasuredConstants(
     source="tau/gamma/norm_A: scripts/w136_wing_fsi.py, out/w136/. "
            "L/sigma/C_mu: scripts/w157_frontwing_constants.py, out/w157/ "
            "(C_mu is W49's 1.2, validated here 12/12, not this graph's implied "
-           "0.56 -- see the note above)")
+           "0.56 -- see the note above). "
+           "cut_defect_bound: scripts/w159_frontwing_cut_defect.py, out/w159/, "
+           "chi-weighted form against the single-window monolith, max over 80 "
+           "exchanges")
 
 
 # ---------------------------------------------------------------------------
@@ -1222,6 +1259,20 @@ def connections(tiling: WingTiling = DEFAULT_TILING) -> list[Connection]:
         # bends it and the reaction is not zero in any direction of the trace
         # space.  It is the boundary condition and not the physics.
         expected_null_dim=0,
+        # **W138, declared 2026-09-08.**  Both sides return their EFFORT in the
+        # SAME direction -- the fluid the aerodynamic load ON the surface, the
+        # structure the elastic reaction that holds it -- rather than each
+        # against its own outward normal.  So the well-posed interface condition
+        # is their DIFFERENCE, which is what `solve_interface` writes:
+        # `S_e(delta + dt w) - f_aero = 0`.  Naming STRUCT keeps the structure's
+        # block and negates the fluid's, which is the operator the residual is
+        # actually differentiated through.
+        #
+        # **Checked, not asserted.**  The case's own analytic Jacobian
+        # `dR/dw = dt S_e + diag(g)`, reproduced by a central difference to
+        # 1.15e-16 relative, is positive definite at lambda_min = +3.469 where
+        # the unoriented sum is indefinite at -3.488.
+        effort_normal="STRUCT",
         note="THE seam: fluid-structure MECH across two governing families, "
              "two-way, and its geometry is a function of the solution"))
     return conns

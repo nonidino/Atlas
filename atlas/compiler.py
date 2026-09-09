@@ -1224,6 +1224,43 @@ def _l3_global_fields(ctx: _Context) -> None:
             )
 
 
+def _decomposition_cuts(graph: CaseGraph) -> tuple[set[str], set[str]]:
+    """Which agents the decomposition actually cuts, from the declarations alone.
+
+    **This is R10's premise check, factored out at W136 so that two rules resting
+    on the same premise cannot come to disagree about it.**  W114 gave R10 the
+    predicate: an agent's domain has been cut when the graph contains **another
+    agent of the same `governing_family`**, which is the compile-time signature of
+    *"a larger region of the same physics, of which this agent has been given a
+    piece"*.  Its complement -- the sole agent of its family -- owns its whole
+    region, so every boundary it has is a **physical** one and the decomposition
+    has created no artificial face on it.
+
+    It is a **proxy for "is this agent's domain cut", not a decision procedure**,
+    and it is conservative in the safe direction: two agents of one family on
+    genuinely disjoint regions are reported cut, which inspection resolves, where
+    the other direction would be a silent admission.  What would replace it is a
+    structured domain declaration on `Agent`, which does not exist --
+    ``Agent.domain`` is free text.
+
+    Returns ``(cut, uncut)`` as sets of agent ids.  Agents that declare no
+    governing family are grouped together under ``""``, which is the behaviour
+    R10 has had since W114 and is preserved here deliberately: two agents that
+    both decline to say what they solve are not evidence that they solve
+    different things.
+    """
+    families: dict[str, int] = {}
+    for a in graph.agents:
+        fam = a.capabilities.governing_family or ""
+        families[fam] = families.get(fam, 0) + 1
+    cut: set[str] = set()
+    uncut: set[str] = set()
+    for a in graph.agents:
+        fam = a.capabilities.governing_family or ""
+        (cut if families.get(fam, 0) > 1 else uncut).add(a.agent_id)
+    return cut, uncut
+
+
 def _r10_elliptic(ctx: _Context) -> None:
     """R10: decomposing an agent that embeds a global elliptic solve is silent.
 
@@ -1266,18 +1303,12 @@ def _r10_elliptic(ctx: _Context) -> None:
     rec, graph = ctx.record, ctx.graph
     if len(graph.agents) < 2:
         return
-    families: dict[str, int] = {}
-    for a in graph.agents:
-        fam = a.capabilities.governing_family or ""
-        families[fam] = families.get(fam, 0) + 1
+    cut, _uncut = _decomposition_cuts(graph)
     embedded, sole = [], []
     for a in graph.agents:
         if a.capabilities.elliptic_subsolve is not EllipticSubsolve.EMBEDDED:
             continue
-        if families.get(a.capabilities.governing_family or "", 0) > 1:
-            embedded.append(a.agent_id)
-        else:
-            sole.append(a.agent_id)
+        (embedded if a.agent_id in cut else sole).append(a.agent_id)
     undeclared = [a.agent_id for a in graph.agents
                   if a.capabilities.elliptic_subsolve is EllipticSubsolve.NONE
                   and a.capabilities.governing_family
@@ -1343,6 +1374,25 @@ def _r10_elliptic(ctx: _Context) -> None:
         )
 
 
+def _uncut_clause(excluded: list[str]) -> str:
+    """W136: name the agents the halo requirement was NOT checked against.
+
+    The exclusion is the whole content of W136's fix, so it travels with every
+    outcome of the rule rather than only with the one it changed. A reader who
+    sees `R10/halo` admit on a graph containing an implicit agent has to be able
+    to tell the sound reason from the bug this replaced.
+    """
+    if not excluded:
+        return ""
+    return (
+        ". The requirement was checked against the agents the decomposition CUTS "
+        "and not against " + ", ".join(excluded) + ", each of which is the sole "
+        "agent of its governing_family and therefore owns its whole region: every "
+        "boundary it has is a physical one, and there is no artificial face for an "
+        "overlap to outrun (W136)"
+    )
+
+
 def _halo_rule(ctx: _Context) -> None:
     """The overlap must outrun the agent's own domain of dependence.
 
@@ -1351,12 +1401,43 @@ def _halo_rule(ctx: _Context) -> None:
     for ``substeps_per_macro_step`` of them, so the overlap must exceed the
     product or the blended region is contaminated. Re-assembling every sub-step
     reduces the requirement to ``stencil_radius``, which is the trade this priced.
+
+    **W136, closed 2026-09-08: the rule had R10's scope defect one rule along.**
+    Every word of the paragraph above is about an **artificial** boundary -- the
+    face the decomposition created, whose stale datum the overlap has to outrun --
+    and the rule never asked whether the agent it was decertifying has one. It
+    read ``time_discretization`` and ``stencil_radius`` off every agent in the
+    graph, so on `front_wing` and `wing_fsi` it decertified STRUCT for being
+    implicit with a nonzero stencil. That reasoning is correct about STRUCT's
+    domain of dependence and irrelevant to this graph: ``Gamma`` is a *physical*
+    boundary of ``Omega_solid``, the structure is not tiled, and there is no
+    overlap on that side for anything to outrun. The requirement is now checked
+    only against the agents `_decomposition_cuts` reports cut -- **R10's own
+    premise predicate, shared rather than restated**, so the two rules cannot
+    drift apart about which agents the decomposition touches.
+
+    The exclusion is reported in the decision's evidence rather than being
+    silent: a rule that quietly stops looking at an agent is the same failure in
+    the other direction, and it is the one that is not self-announcing.
     """
     rec, graph = ctx.record, ctx.graph
     axis = ctx.decomposition or graph.decomposition
     if axis is not Decomposition.OVERLAPPING:
         return
-    needs = {a.agent_id: a.capabilities.required_halo() for a in graph.agents}
+    cut, uncut = _decomposition_cuts(graph)
+    excluded = sorted(uncut)
+    needs = {a.agent_id: a.capabilities.required_halo() for a in graph.agents
+             if a.agent_id in cut}
+    if not needs:
+        rec.admit(
+            "L2", "R10/halo",
+            "the decomposition cuts no agent -- each is the sole one of its "
+            "governing_family, so every boundary it has is a physical boundary of its "
+            "own region and the decomposition has created no artificial face for an "
+            "overlap to outrun. The halo requirement has no subject here",
+            subject="<graph>", uncut_agents=excluded,
+        )
+        return
     unknown = [k for k, v in needs.items() if v is None]
     if unknown:
         # W69, 2026-08-30: `required_halo` now returns None for two different
@@ -1405,8 +1486,10 @@ def _halo_rule(ctx: _Context) -> None:
         rec.decertify(
             "L2", "R10/halo",
             "; ".join(parts) + ". The halo the exchange needs is undecidable here and "
-            "it is not assumed adequate",
+            "it is not assumed adequate"
+            + _uncut_clause(excluded),
             subject=", ".join(unknown), quantity="tau",
+            uncut_agents=excluded,
         )
         return
     required = max(v for v in needs.values())
@@ -1416,8 +1499,9 @@ def _halo_rule(ctx: _Context) -> None:
             "L2", "R10/halo",
             f"the agents' domain of dependence needs an overlap of {required} cells and "
             "the graph declares its overlap in physical units only, so the check cannot "
-            "run. Declare overlap_cells",
-            subject="<graph>", quantity="tau",
+            "run. Declare overlap_cells"
+            + _uncut_clause(excluded),
+            subject="<graph>", quantity="tau", uncut_agents=excluded,
         )
     elif have < required:
         rec.refuse(
@@ -1426,14 +1510,16 @@ def _halo_rule(ctx: _Context) -> None:
             f"macro-step is {required} (stencil_radius x substeps). The blended region "
             "is contaminated by each window's own artificial boundary, and the partition "
             "of unity gives that boundary full weight. Widen the overlap, or exchange "
-            "every sub-step, which drops the requirement to the stencil radius",
-            subject="<graph>", quantity="tau",
+            "every sub-step, which drops the requirement to the stencil radius"
+            + _uncut_clause(excluded),
+            subject="<graph>", quantity="tau", uncut_agents=excluded,
         )
     else:
         rec.admit(
             "L2", "R10/halo",
-            f"overlap {have} cells covers the {required}-cell domain of dependence",
-            subject="<graph>",
+            f"overlap {have} cells covers the {required}-cell domain of dependence"
+            + _uncut_clause(excluded),
+            subject="<graph>", uncut_agents=excluded,
         )
 
 

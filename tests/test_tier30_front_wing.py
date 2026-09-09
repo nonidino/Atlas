@@ -452,13 +452,91 @@ def test_the_constants_are_measured_now_and_nothing_is_green_anyway():
     #: and it is still not certified, for reasons that are now NAMED
     assert r.verdict.value == "admit-uncertified", r.verdict
     left = {d.rule for d in r.decisions if d.verdict.value != "admit"}
-    assert left == {"C2", "R10", "R10/halo", "E7/passivity", "R12"}, left
-    #: three of those five are recorded checker defects rather than findings
-    #: about this assembly -- W136 (the halo rule over-fires on a physical
-    #: boundary) and W138 (passivity is an orientation artefact). A test that
-    #: let them quietly disappear would hide the two open rows that explain
-    #: most of what this panel shows.
-    assert {"R10/halo", "E7/passivity"} <= left
+
+    #: **Tier 35 removed three of the five.** Two were recorded CHECKER DEFECTS
+    #: rather than findings about this assembly -- W136 (the halo rule
+    #: decertified STRUCT for being implicit with a nonzero stencil, on a seam
+    #: where Gamma is a physical boundary and there is no overlap to outrun) and
+    #: W138 (`Lambda_M` ADDED two blocks the interface residual SUBTRACTS, so E7
+    #: read the symmetric part of a sum of two oppositely-oriented responses).
+    #: The third was the one missing MEASUREMENT: W159 took `cut_defect_bound`
+    #: against the single-window monolith. Nothing was tuned -- see
+    #: `test_the_halo_rule_still_fires_when_a_CUT_agent_is_the_opaque_one`,
+    #: `test_the_oriented_seam_operator_is_the_schemes_own_jacobian` and
+    #: `test_the_cut_defect_bound_is_measured_and_declared_with_its_form`.
+    assert left == {"R10", "R12"}, left
+    assert not ({"R10/halo", "E7/passivity", "C2"} & left)
+
+
+def test_the_cut_defect_bound_is_measured_and_declared_with_its_form():
+    """**W159, closed 2026-09-09.** L2/C2's own quantity, on this graph.
+
+    Two things are asserted and the second is W58's, which is the whole reason
+    the first is not enough: the value is declared, AND the record says which of
+    four inequivalent quantities it is. A `cut_defect_bound` with no
+    `cut_defect_bound_form` is a number whose reader cannot tell what was
+    measured, and `L2/C2/W58` decertifies it rather than admitting it.
+
+    The form is `chi-weighted` -- L2/C2's own, the one the derivation bounds the
+    composed defect by -- and it is the form that needs a MONOLITH. This graph
+    has one because `solver_for` builds the same class at 80x80 and at 208x144.
+    The two reference-free surrogates were measured beside it and are NOT what
+    is declared: this tiling has six windows and seven overlapping pairs, so the
+    pairwise form is an under-estimate for a reason unrelated to disjointness.
+    """
+    u, v = _field()
+    for motion in (False, True):
+        g, _e = F.build(u, v, motion=motion)
+        assert g.measured.cut_defect_bound is not None
+        assert g.measured.cut_defect_bound_form == "chi-weighted"
+        assert 1e-6 < g.measured.cut_defect_bound < 1e-3
+        assert "w159" in (g.measured.source or "").lower()
+    #: and the rule now admits rather than decertifying
+    g, _e = F.build(u, v, motion=False)
+    r = compile_scheme(g)
+    c2 = [d for d in r.decisions if d.rule == "C2"]
+    assert c2 and all(d.verdict.value == "admit" for d in c2), c2
+
+
+def test_the_two_objections_that_REMAIN_are_recorded_as_diagnosed():
+    """What the front wing still reports, and what this session concluded it is.
+
+    Neither was fixed and that is deliberate -- see the Tier 35 log entry. What
+    this test pins is the DIAGNOSIS, so that a later change which clears either
+    one has to come past the evidence rather than around it:
+
+      * `L2/R10` fires on SUSP because the suspension declares an incompressible
+        `governing_family` with `elliptic_subsolve=none`, and the rule infers a
+        hidden pressure solve. SUSP is `k (h0 - h) = L` with `stencil_radius=0`:
+        two lines of algebra, no field, no pressure, nothing to solve. The
+        family declaration is deliberate and correct (E3 at the seam needs it).
+
+      * `L6/R12` fires because `_enforcing_agents` returns every EMBEDDED agent
+        regardless of family, and on this graph that is STRUCT -- a
+        plane-stress elasticity solver, which enforces no divergence-free
+        constraint and is not even a subdomain of the partition of unity, so
+        R12's own commutator identity has no term for it. Every agent that IS
+        in the blend is EXPOSED, which is the arrangement R12's ladder calls
+        the measured-stable one.
+    """
+    from atlas.compiler import _enforcing_agents
+
+    u, v = _field()
+    g, _e = F.build(u, v, motion=False)
+
+    susp = g.agent("SUSP").capabilities
+    assert int(susp.stencil_radius) == 0
+    assert susp.elliptic_subsolve.value == "none"
+    assert "incompressible" in (susp.governing_family or "")
+
+    #: R12 names STRUCT, and STRUCT is not in the blend
+    assert _enforcing_agents(g) == ["STRUCT"]
+    part = getattr(g.partition_of_unity, "partition", g.partition_of_unity)
+    assert "STRUCT" not in part.indices
+    assert (g.agent("STRUCT").capabilities.governing_family
+            == "plane-stress-elasticity-2d")
+    for name in part.indices:
+        assert g.agent(name).capabilities.elliptic_subsolve.value == "exposed"
 
 
 def test_the_verdict_does_not_move_over_the_design_box():
@@ -959,3 +1037,170 @@ def test_the_demos_paths_check_the_same_envelopes():
     i_susp = loop.index('"suspension" in msg')
     i_env = loop.index('"envelope" in msg')
     assert i_susp < i_env, "the suspension decline is being mislabelled"
+
+
+# ---------------------------------------------------------------------------
+# 7. W138 -- the seam operator is ORIENTED, and the orientation is the scheme's
+# ---------------------------------------------------------------------------
+
+
+def _lam_min(M):
+    M = np.asarray(M, dtype=float)
+    return float(np.linalg.eigvalsh(0.5 * (M + M.T))[0])
+
+
+def _wet_residual_jacobian():
+    """The (S+1)-square Jacobian of `solve_seams`' residual at the release state.
+
+    Built by CENTRAL DIFFERENCE on the residual the case actually solves, so the
+    comparison below is against the scheme rather than against the analytic form
+    the module's own docstring writes down.  Returns the finite-difference
+    Jacobian, the structural block `dt S_e` and the fluid block `-diag(g)` in
+    the shared normal, so the caller can assemble the two candidate operators.
+    """
+    u, v = _field()
+    ro = F.FrontWingRollout(tiling=F.DEFAULT_TILING, coupling="tight",
+                            motion=False, design=dict(F.DESIGN_REF))
+    opt = ro._opt
+    kn = ro.knobs(dict(F.DESIGN_REF))
+    e_star, tc, k, h0 = kn["e_star"], kn["tc"], kn["k"], kn["h0"]
+    U = torch.as_tensor(np.asarray(u), **opt)
+    V = torch.as_tensor(np.asarray(v), **opt)
+    S = F.N_STATION
+    delta = torch.zeros(S, **opt)
+    h = ro.release_height(h0, k)
+    w_delta = torch.zeros(S, **opt)
+    v_mount = torch.zeros((), **opt)
+    S_e, _m = ro.structure(e_star, tc)
+    dt, ny, wing = ro.dt_ex, ro.n_hat_y, ro.wing
+    w_ext = wing.external_normal(U, V, delta, ro.ny, ro.nx, h=h)
+
+    def resid(wd, vm):
+        ww = w_ext - (wd + vm * ny)
+        f = wing.normal_traction(ww)
+        load = -(f * ny * ro.ds).sum()
+        return torch.cat((S_e @ (delta + dt * wd) - f,
+                          (k * (h0 - h - dt * vm) - load).reshape(1)))
+
+    eps = 1e-6
+    J = np.zeros((S + 1, S + 1))
+    for j in range(S):
+        e = torch.zeros(S, **opt)
+        e[j] = eps
+        J[:, j] = np.asarray(((resid(w_delta + e, v_mount)
+                               - resid(w_delta - e, v_mount))
+                              / (2 * eps)).detach().cpu(), dtype=float)
+    de = torch.as_tensor(eps, **opt)
+    J[:, S] = np.asarray(((resid(w_delta, v_mount + de)
+                           - resid(w_delta, v_mount - de))
+                          / (2 * eps)).detach().cpu(), dtype=float)
+
+    g = F.C_N * torch.abs(w_ext - (w_delta + v_mount * ny))
+    struct = float(dt) * np.asarray(S_e.detach().cpu(), dtype=float)
+    fluid = -np.diag(np.asarray(g.detach().cpu(), dtype=float))
+    return J, struct, fluid
+
+
+def test_the_oriented_seam_operator_is_the_schemes_own_jacobian():
+    """**W138, closed 2026-09-09, and this is the measurement that closed it.**
+
+    `Lambda_M = sum_i P_i^* Lambda_i P_i` ADDS the two blocks that the interface
+    residual SUBTRACTS.  Both sides of this seam correctly declare `EFFORT` --
+    the fluid returns the load ON the surface, the structure the reaction it
+    takes to hold it -- and both are positive in the SAME direction, so the
+    well-posed condition is their difference: `solve_seams` writes
+    `S_e(delta + dt w) - f`.
+
+    The claim is falsifiable and it is checked in the only way that settles it:
+    against the Jacobian of the residual the case actually solves, taken by
+    central difference.  That Jacobian's wet block is `struct - fluid` and it is
+    POSITIVE DEFINITE; the sum the probe used to assemble is INDEFINITE.  So the
+    passivity defect E7 reported at this seam was a property of a matrix no
+    scheme differentiates.
+    """
+    J, struct, fluid = _wet_residual_jacobian()
+    S = F.N_STATION
+    minus, plus = struct - fluid, struct + fluid
+
+    #: the finite difference reproduces the module's own analytic dR1/dw_delta,
+    #: so what follows is about the SCHEME and not about a docstring
+    rel = np.linalg.norm(J[:S, :S] - minus) / np.linalg.norm(minus)
+    assert rel < 1e-9, rel
+
+    #: and the two candidate assemblies are not both available: exactly one is
+    #: definite, and it is the difference
+    assert _lam_min(minus) > 1.0, _lam_min(minus)
+    assert _lam_min(plus) < -1.0, _lam_min(plus)
+
+    #: the probe now assembles the same one. The seam operator lives on the
+    #: 17-dimensional interface space rather than in station space, so what
+    #: transfers is the DEFINITENESS and not the matrix
+    u, v = _field()
+    g, _e = F.build(u, v, motion=False)
+    r = compile_scheme(g)
+    for seam in ("wet", "mount"):
+        op = r.seam_operators[seam]
+        assert op.passivity_defect == 0.0, (seam, op.passivity_defect)
+        assert op.effort_normal, seam
+        assert op.effort_signs[g.connection(seam).a[0]] == -1.0
+    assert r.seam_operators["wet"].passivity_lambda_min > 0.0
+
+
+def test_the_orientation_is_declared_only_where_the_efforts_are_CO_ORIENTED():
+    """W138's field has to be doing work rather than being a switch left on.
+
+    The seven fluid-fluid tiling seams are the control: two windows of the same
+    solver either side of an artificial cut report their traction against their
+    OWN outward normals, the two normals are opposite, each block is separately
+    positive semidefinite, and the SUM is the Steklov-Poincare operator.  They
+    declare no `effort_normal`, they assemble to the sum they always did, and
+    orienting one BREAKS it.  If a fix that clears two decertifications also
+    clears them everywhere it is a switch and not a measurement.
+    """
+    u, v = _field()
+    g, _e = F.build(u, v, motion=False)
+    r = compile_scheme(g)
+
+    tiling = [c for c in g.connections if c.seam_id not in ("wet", "mount")]
+    assert len(tiling) == 7
+    for c in tiling:
+        assert c.effort_normal == "", c.seam_id
+        op = r.seam_operators[c.seam_id]
+        assert op.effort_signs == {c.a[0]: 1.0, c.b[0]: 1.0}
+        #: both blocks separately passive, which is what own-outward MEANS
+        for blk in op.blocks.values():
+            assert _lam_min(blk.S) > 0.0, c.seam_id
+        assert op.passivity_defect == 0.0, c.seam_id
+
+    #: and the falsification: orienting a tiling seam is not free. On at least
+    #: one of the seven the difference is indefinite where the sum is not, so a
+    #: blanket flip would have traded two false alarms for new ones.
+    broken = 0
+    for c in tiling:
+        op = r.seam_operators[c.seam_id]
+        diff = op.blocks[c.b[0]].S - op.blocks[c.a[0]].S
+        if _lam_min(diff) < 0.0:
+            broken += 1
+    assert broken >= 1, "orienting every seam would have cost nothing, which "\
+                        "would mean the declaration carries no information"
+
+
+def test_an_effort_normal_naming_a_non_member_is_refused_at_declaration():
+    """The field names one of the seam's two agents or it names nothing.
+
+    A convention field whose value can be a typo is the silent-wrongness class
+    one level down: the assembly would fall back to the sum and the record would
+    still say it was oriented.
+    """
+    from atlas.graph import Connection, GraphError
+    from atlas.ports import PortType
+
+    ok = Connection(seam_id="s", a=("A", "p"), b=("B", "p"),
+                    port_type=PortType.MECH, effort_normal="B")
+    assert ok.effort_signs == {"A": -1.0, "B": 1.0}
+    assert Connection(seam_id="s", a=("A", "p"), b=("B", "p"),
+                      port_type=PortType.MECH).effort_signs == {"A": 1.0,
+                                                                "B": 1.0}
+    with pytest.raises(GraphError):
+        Connection(seam_id="s", a=("A", "p"), b=("B", "p"),
+                   port_type=PortType.MECH, effort_normal="C")

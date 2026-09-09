@@ -459,6 +459,14 @@ def connections(tiling: WingTiling = DEFAULT_TILING) -> list[Connection]:
         # and it is a DIFFERENT row of the table from the `wet` seam beside it,
         # which is fluid-solid MECH on a CLAMPED body and is 0 for a third reason.
         expected_null_dim=0,
+        # **W138**, the `wet` seam's declaration on this seam's own physics.
+        # `solve_seams` writes `k(h0 - h - dt v_mount) - L`: the spring's
+        # reaction and the aerodynamic load, both positive in the same vertical
+        # direction, subtracted.  A lumped agent has no domain and so no outward
+        # normal of its own; naming SUSP says the shared direction is the one
+        # `orientation` points AWAY from the fluid, which is a direction whether
+        # or not the named side is a continuum.
+        effort_normal="SUSP",
         note="CS-10's seam: field-to-lumped MECH carrying the wing's POSITION, "
              "beside the field-to-field one carrying its SHAPE"))
     return conns
