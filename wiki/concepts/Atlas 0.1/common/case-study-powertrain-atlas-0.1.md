@@ -18,11 +18,13 @@
 
 ## 1. What only this case study can say
 
-### 1.1 The fifth port type, exercised
+### 1.1 The port vocabulary closes, and two types were open rather than one
 
-`ELEC` has been in `PORT_SPECS` since the port algebra was written and has appeared in exactly one place since: the rocket fixture's type list. Four of the five types have carried real seams; this is the fifth.
+**Censused rather than recalled.** `MECH`, `THERM` and `ADVEC` had carried real connections. `ROT` had been declared **three** times — `wind_farm`, `wind_farm_real`, `wake_array` — and every one of those declarations carries the note *"unconnected: no drivetrain"*, so the type had never appeared in a `Connection`. `ELEC` had never been declared **at all**: `rocket.py`'s own docstring says so in its fourth line, and correctly, because a solid-propellant rocket has no electrical bond.
 
-**Exercising it cost one scale set and one prolongation.** That is the whole content of the affordability claim — the port algebra promises that the twentieth expert costs what the fourth did, $O(K)$ declarations rather than $O(K^2)$ adapters — and until this session that promise had never been tested past two governing families. It now runs on four: incompressible Navier–Stokes, plane-stress elasticity, heat conduction, and a lumped DC circuit.
+This graph gives both their first seam. **All five of the closed vocabulary are now exercised**, and the two that were open were opened by the same seam pair.
+
+**The cost was one scale set and one prolongation each.** That is the whole content of the affordability claim — the port algebra promises that the twentieth expert costs what the fourth did, $O(K)$ declarations rather than $O(K^2)$ adapters — and until this session that promise had never been tested past two governing families. It now runs on four: incompressible Navier–Stokes, plane-stress elasticity, heat conduction, and a lumped DC circuit.
 
 One thing the type forced, and it is a real declaration rather than a formality: `PORT_SPECS[ELEC]`'s flow is a **current density** and its power is per unit area, so a lumped circuit terminal needs a declared cross-section for the power identity $s_e s_f = s_P$ to close. A real terminal has one; declaring it is what lets `check_scales` verify the set from the port list alone.
 

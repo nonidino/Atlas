@@ -3437,3 +3437,21 @@ Changed: `atlas/demo_frontwing/explain.py` (`NOT_CLAIMED`), `atlas/demo_frontwin
 Full suite **968 to 987** (19 added, all in `tests/test_tier37_powertrain.py`). `scripts/vault_scan.py`: 214 files, 0 problems.
 
 Changed: [[case-study-powertrain-atlas-0.1]] (new), [[gap-worklist]] (Tier 37: W164 open, W165 scoping rung 8), [[index]]. Code: `atlas/cases/powertrain.py` (new), `atlas/cases/__init__.py`, `tests/test_tier37_powertrain.py` (new).
+
+## [2026-09-09] correction | Tier 37 undercounted: TWO port types were open, not one
+
+**The Tier 37 entry above says** *"Four of the five declared port types had held a real seam; the fifth had appeared only in `PORT_SPECS` and in the rocket fixture's type list."* **That is wrong on both counts, and it understates the result.** The log is append-only, so this is a correction entry rather than an edit.
+
+**Censused rather than recalled**, over every case study in the package:
+
+* **`MECH`, `THERM` and `ADVEC`** had carried real connections — three, not four.
+* **`ROT` had been declared three times** — `wind_farm`, `wind_farm_real`, `wake_array` — and **every one of those declarations carries the note *"unconnected: no drivetrain"***. The type had never appeared in a `Connection` anywhere.
+* **`ELEC` had never been declared at all**, in any record, fixture or real. `rocket.py`'s own docstring says so in its fourth line — *"ELEC ports anywhere — which is a correct statement about a solid-propellant"* rocket — so the one place it was recalled from is a page saying it is absent.
+
+**So CS-14's two seam kinds give BOTH remaining types their first connection, and all five of the closed vocabulary are now exercised.** The claim is larger than the one recorded, and the reason it was recorded small is that it was written from memory of `rocket.py` rather than from a count.
+
+**The generalisable bit is the method and not the number.** A coverage claim is a measurement over the package and it was stated as a recollection; the census that corrected it is nine lines. `tests/test_tier37_powertrain.py::test_ROT_and_ELEC_had_BOTH_never_been_in_a_connection` now asserts it **against the other case studies rather than against a remembered number**, so it stays true if one of them grows a drivetrain rather than silently becoming false. **[AI Inference]:** this is [[poc2-novelty-audit]]'s own shape one level down — the audit exists because a demo can become more persuasive without becoming more true, and a coverage claim written from memory is the same failure with the sign reversed.
+
+Full suite **987 to 989** (two tests added, both in `tests/test_tier37_powertrain.py`; one renamed). `scripts/vault_scan.py`: 214 files, 0 problems.
+
+Changed: [[case-study-powertrain-atlas-0.1]] (§1.1), [[gap-worklist]] (Tier 37, point 1), [[index]]. Code: `atlas/cases/powertrain.py` (module docstring), `atlas/cases/__init__.py`, `tests/test_tier37_powertrain.py`.

@@ -59,7 +59,9 @@ checkpoint, and only they can move a Tier 0 row.  There are thirteen:
     powertrain      a drivetrain on the wake array's OPEN SHAFT. `wake_array`
                     declares a `shaft:ROT` port whose note says "unconnected: no
                     drivetrain"; this connects it to a motor-generator sitting in
-                    a DC circuit, which makes it the first graph to carry ELEC,
+                    a DC circuit. It gives BOTH ROT and ELEC their first real
+                    connection -- ROT had been declared three times and always
+                    as an explicitly unconnected open port, ELEC never at all --
                     the first CROSS-DOMAIN energy balance that is not an identity
                     of its own solve (the two sides meet only through k_e = k_t,
                     and breaking that equality breaks the balance in proportion),

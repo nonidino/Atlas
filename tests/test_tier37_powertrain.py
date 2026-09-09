@@ -97,10 +97,58 @@ def test_the_shaft_port_is_wake_arrays_own_and_is_now_connected():
     assert shaft[0].port_type is PortType.ROT
 
 
-def test_ELEC_is_carried_for_the_first_time_with_a_complete_scale_set():
-    """The fifth port type, exercised. `check_scales` validates the power
-    identity from the port list alone, so a scale set that does not close is a
-    declaration error and not a run-time surprise."""
+def test_ROT_and_ELEC_had_BOTH_never_been_in_a_connection():
+    """**Censused, because the first version of this page recalled it wrong.**
+
+    It said four of the five port types had carried a real seam and ELEC was the
+    fifth. Three had. `ROT` was declared three times -- `wind_farm`,
+    `wind_farm_real`, `wake_array` -- and every one of those declarations says
+    "unconnected: no drivetrain", so the type had never appeared in a
+    `Connection`; `ELEC` had never been declared anywhere at all. This graph
+    gives both their first seam.
+
+    The test is written against the OTHER case studies rather than against a
+    remembered number, so it stays true if one of them grows a drivetrain.
+    """
+    import importlib
+
+    from atlas.graph import Connection
+
+    others = ("wind_farm", "rocket", "thermal_seam", "brake_thermal",
+              "thermal_strain", "cooling_loop")
+    seen = set()
+    for name in others:
+        mod = importlib.import_module(f"atlas.cases.{name}")
+        try:
+            out = mod.build()
+        except Exception:                                      # noqa: BLE001
+            continue
+        g = out[0] if isinstance(out, tuple) else out
+        seen |= {c.port_type for c in g.connections}
+    assert PortType.ROT not in seen, (
+        "a ROT seam now exists elsewhere; this test's subject has moved")
+    assert PortType.ELEC not in seen
+
+    #: and here they both do
+    mine = {c.port_type for c in P.connections()}
+    assert mine == {PortType.ROT, PortType.ELEC}
+
+
+@needs_expert
+def test_the_shaft_ports_this_one_connects_were_all_declared_OPEN():
+    """Three modules declare a `shaft:ROT` and every one of them says so."""
+    import importlib
+
+    for name in ("wind_farm", "wind_farm_real", "wake_array"):
+        src = importlib.import_module(f"atlas.cases.{name}").__file__
+        text = open(src, encoding="utf-8").read()
+        assert "unconnected: no drivetrain" in text, name
+
+
+def test_the_ELEC_scale_set_is_complete_and_the_power_identity_closes():
+    """`check_scales` validates the power identity from the port list alone, so
+    a scale set that does not close is a declaration error and not a run-time
+    surprise."""
     e, f, p = (P.ELEC_SCALES["potential"], P.ELEC_SCALES["current_density"],
                P.ELEC_SCALES["power_area"])
     assert abs(e * f / p - 1.0) < 1e-12

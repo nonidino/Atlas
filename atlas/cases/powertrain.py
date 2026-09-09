@@ -15,13 +15,21 @@ where it is lost.
 What only this case study can say
 ---------------------------------
 
-**1. It is the first graph to carry `ELEC`.**  Five port types have been
-declared since the port algebra was written and four have been exercised;
-`ELEC` appeared only in `PORT_SPECS` and in the rocket fixture's type list.
-Exercising it costs one scale set and one prolongation, and the point of doing
-it is the affordability claim itself: **the port algebra promises that the
-twentieth expert costs what the fourth did**, and that has never been tested
-past two governing families.
+**1. It closes the port vocabulary, and TWO types were open rather than one.**
+Censused rather than recalled: `MECH`, `THERM` and `ADVEC` had carried real
+connections.  **`ROT` had been declared three times -- `wind_farm`,
+`wind_farm_real`, `wake_array` -- and every one of those declarations says
+"unconnected: no drivetrain"**, so the type had never appeared in a
+`Connection`.  **`ELEC` had never been declared at all**; `rocket.py`'s own
+docstring says so in its fourth line, and correctly, because a solid-propellant
+rocket has no electrical bond.
+
+This graph gives both their first seam, so all five of the closed vocabulary
+are now exercised.  **The cost was one scale set and one prolongation each**,
+which is the affordability claim being tested rather than restated: the port
+algebra promises the twentieth expert costs what the fourth did, `O(K)`
+declarations rather than `O(K^2)` adapters, and until this session it had never
+run past two governing families.
 
 **2. It is the first CROSS-DOMAIN energy balance in this package**, and unlike
 CS-13's loop balance it is **not** an identity of the solve.  The mechanical
