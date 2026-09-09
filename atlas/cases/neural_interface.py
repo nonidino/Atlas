@@ -1,4 +1,4 @@
-"""CS-16 -- a learned operator on the INTERFACE, with classical solvers owning
+"""CS-S1 -- a learned operator on the INTERFACE, with classical solvers owning
 the subdomains: the hybrid built, and the half of it that does not work measured.
 
 The proposal this file tests
@@ -105,7 +105,9 @@ rows apart at all.
 What this file is not
 ---------------------
 
-**It is not a rung on the f1 ladder** and it declares no new capability record:
+**It is not a rung on the f1 ladder** -- hence `CS-S1` and not a number from
+the ladder's own sequence, which reserves CS-16 for `vehicle.py` at rung 9 --
+and it declares no new capability record:
 the agents are `window_ns.WindowAgent` unchanged and the geometry is
 `poseidon.PoseidonTiling` unchanged, which is the affordability claim being
 *used* rather than restated.  What is new is a **scheme**, and the graph exists

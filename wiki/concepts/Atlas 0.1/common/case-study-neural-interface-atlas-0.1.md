@@ -1,6 +1,6 @@
-# CS-16 — the learned operator on the interface, and the ceiling on what a guess can buy
+# CS-S1 — the learned operator on the interface, and the ceiling on what a guess can buy
 
-**Not a rung on [[case-study-ladder-to-f1]]'s climb — the first case study whose variable is the SCHEME.** `atlas/cases/neural_interface.py`, `scripts/w166_neural_interface.py`, `tests/test_tier38_neural_interface.py`, `out/w166/w166.json`. Built 2026-09-09.
+**Not a rung on [[case-study-ladder-to-f1]]'s climb — the first case study whose variable is the SCHEME, which is why it carries `S1` rather than a number from the ladder's sequence (CS-16 is `vehicle.py`, rung 9).** `atlas/cases/neural_interface.py`, `scripts/w166_neural_interface.py`, `tests/test_tier38_neural_interface.py`, `out/w166/w166.json`. Built 2026-09-09.
 
 Every substitution certificate in this vault has refused Poseidon-T, and **R10** is why: a neural operator's domain of dependence is the whole window — [[gap-worklist]]'s W93 measured 64 cells against a declared 2, nonzero in all 128 seam cells — so cutting the domain cuts the operator, and no halo repairs it. That refusal is correct and it is **not about accuracy**. Fine-tuning the checkpoint to a one-step error of $10^{-9}$ would not move it.
 

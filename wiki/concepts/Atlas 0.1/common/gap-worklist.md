@@ -1368,7 +1368,7 @@ The first version flipped the sign on each element's `lo` terminal, which made o
 
 ---
 
-## Tier 38 — CS-16: the learned operator on the interface, and the ceiling on a guess
+## Tier 38 — CS-S1: the learned operator on the interface, and the ceiling on a guess
 
 **[[case-study-neural-interface-atlas-0.1]], `atlas/cases/neural_interface.py`, `scripts/w166_neural_interface.py`, `tests/test_tier38_neural_interface.py`, `out/w166/w166.json`. 2026-09-09.**
 

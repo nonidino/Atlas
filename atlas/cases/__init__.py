@@ -67,7 +67,8 @@ checkpoint, and only they can move a Tier 0 row.  There are fourteen:
                     and breaking that equality breaks the balance in proportion),
                     and W163's second directed cycle -- on which the compiler
                     still reports nothing different from the chain
-    neural_interface  the learned operator on the INTERFACE instead of in a
+    neural_interface  CS-S1, and the only one here with no rung: the learned
+                    operator on the INTERFACE instead of in a
                     subdomain: it predicts the ring at t + dt and classical
                     WindowNS windows own the subdomains, so a wrong guess costs
                     iterations and not correctness. The only case study whose

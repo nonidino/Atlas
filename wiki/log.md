@@ -3483,3 +3483,15 @@ Changed: [[case-study-powertrain-atlas-0.1]] (§1.1), [[gap-worklist]] (Tier 37,
 Full suite **989 to 1011** (22 added, all in `tests/test_tier38_neural_interface.py`). `scripts/vault_scan.py`: 215 files, 0 problems.
 
 Changed: [[case-study-neural-interface-atlas-0.1]] (new), [[gap-worklist]] (Tier 38: W166 closed with a negative; W167, W168, W169 open), [[index]]. Code: `atlas/cases/neural_interface.py` (new), `scripts/w166_neural_interface.py` (new), `tests/test_tier38_neural_interface.py` (new), `atlas/cases/__init__.py`, `.gitignore`.
+
+## [2026-09-09] correction | the neural-interface study is CS-S1, not CS-16 — CS-16 is rung 9's
+
+**The Tier 38 entry above calls the neural-interface study CS-16.** [[case-study-ladder-to-f1]] §4 reserves **CS-16 for `vehicle.py`** — the $\sim18$-agent full-vehicle graph at **rung 9**, the rung [[f1-pathmap-and-end-goal]] §3.2 calls *the rung that decides everything* — and §7's F1 row says outright that CS-16 is not built if the scaling exponent comes back super-linear. Taking that number for an off-ladder study makes the schedule ambiguous in the one place it is load-bearing. The log is append-only, so this is a correction entry rather than an edit.
+
+**It is `CS-S1` now: the first study whose variable is the SCHEME rather than the graph.** That is why it never had a rung, and its own module docstring already said so — *"It is not a rung on the f1 ladder"* — while the number it carried said the opposite. **The sentence was right and the number was wrong**, which is the same shape as the Tier 37 correction two entries up: a claim stated from the pattern of what came before rather than from a check against what the schedule reserves.
+
+**Nothing else about the study changes.** The measurements, the file names (`atlas/cases/neural_interface.py`, `scripts/w166_neural_interface.py`, `tests/test_tier38_neural_interface.py`, `out/w166/w166.json`), the W-numbers (W166 closed with a negative; W167, W168, W169 open) and the tier number are all as recorded. Only the designation moves, in [[case-study-neural-interface-atlas-0.1]] (title and subtitle), [[gap-worklist]] (Tier 38 header), [[index]] (row label, and *case study* → *scheme study*), `atlas/cases/neural_interface.py`, `atlas/cases/__init__.py` and `tests/test_tier38_neural_interface.py`.
+
+**The generalisable bit: an off-ladder study should not draw from the ladder's number sequence at all.** `S` for scheme keeps the two namespaces apart, so the next one — and W167's accelerator wiring is a candidate — cannot collide by accident with a rung that has been reserved since 2026-08-30.
+
+Full suite **1011**, unchanged (no test asserts the designation). `scripts/vault_scan.py`: 215 files, 0 problems.

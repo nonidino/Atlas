@@ -1,4 +1,4 @@
-"""Tier 38 -- CS-16, the learned operator on the interface.
+"""Tier 38 -- CS-S1, the learned operator on the interface.
 
 `atlas/cases/neural_interface.py`.  The hybrid built and its two halves
 separated: the half that is safe by construction, which is measured here rather
