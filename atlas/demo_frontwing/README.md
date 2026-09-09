@@ -238,7 +238,7 @@ driver and the demo agree on this graph.
 |---|---|
 | **red** | at least one **refusal** reaches this seam. The composed march may still run — and does — but the compiler declines to certify it, and the run is a search instrument rather than a verified one |
 | **amber** | no refusal, at least one **decertification**. The bound applies with a constant nobody measured, or a hypothesis is `unchecked` |
-| **green** | neither. **Nothing in this graph is green**, and the panel says why: `L`, `sigma` and `C_mu` are unmeasured (W1, W3, W49) and a non-empty `unmeasured` list has forced `admit-uncertified` on every graph in this package since **W56** |
+| **green** | neither. **Nothing in this graph is green**, and since **W157** the reason is no longer a missing ledger: `L`, `sigma` and `C_mu` are measured on this graph and declared with provenance, `unmeasured` is empty, and W56's backstop does not fire. What stands is five named rules -- `L2/C2` (no measured `cut_defect_bound`), `L2/R10` on the suspension's declared family, `R10/halo` and `L4/E7/passivity` (**W136** and **W138**, both recorded open *false alarms*), and `R12` -- plus `InterfaceMotion`'s refusal once the interface is declared to move |
 
 **1. The colour is a property of the declaration, not of the design point.**
 Measured, not assumed: over the sixteen corners of the design box, **zero**

@@ -434,14 +434,24 @@ BEATS = (
 NOT_CLAIMED = (
     dict(
         title="Nothing here is certified",
-        plain="Not one joint on this screen is green, and none ever has been in "
-              "this project. Three constants the bounds rest on have never been "
-              "measured, and while that is true every graph comes back 'runs, "
-              "not certified'. The machine is honest about that rather than "
+        plain="Not one joint on this screen is green. Until this week the "
+              "reason was bookkeeping: three constants the bounds rest on had "
+              "been measured on a different problem and never on this one, so "
+              "the software declined to certify anything at all and the "
+              "refusal said nothing about this wing. They have now been "
+              "measured here -- and it is still not green. Five named rules "
+              "stand, and two of them are known faults in the checker rather "
+              "than facts about the wing. The machine says which, rather than "
               "rounding it up.",
-        technical="L, sigma and C_mu are unmeasured (W1, W3, W49), and a "
-                  "non-empty unmeasured list has forced admit-uncertified on "
-                  "every graph in this package since W56.",
+        technical="W157 measured L, sigma and C_mu on THIS graph and declared "
+                  "them with provenance, so W56's backstop no longer fires and "
+                  "the unmeasured list is empty. What remains: L2/C2 has no "
+                  "measured cut_defect_bound, L2/R10 flags the suspension's "
+                  "declared family, R10/halo and L4/E7/passivity at both "
+                  "surface seams are W136 and W138 -- both recorded as open "
+                  "FALSE ALARMS -- and R12 prices the constraint being applied "
+                  "twice per macro-step. With the interface declared to move, "
+                  "InterfaceMotion refuses on top of all of it.",
     ),
     dict(
         title="This is not faster than the solver it replaces",

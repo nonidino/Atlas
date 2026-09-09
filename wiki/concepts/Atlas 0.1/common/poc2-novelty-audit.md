@@ -70,6 +70,15 @@ does not get read as an improved result.
 
 ---
 
+> **§3 was acted on the same day it was written, and it is now partly
+> superseded.** `scripts/w157_frontwing_constants.py` measured $L$, $\sigma$
+> and $C_\mu$ **on the front-wing graph**, they are declared on
+> `wing_fsi.MEASURED_STATIC` / `MEASURED_MOVING`, and `unmeasured` is now
+> **empty** for it. The bookkeeping half of §3 is closed. **The graph still does
+> not reach `admit`**, and what stands is now five *named rules* instead of an
+> empty ledger — which is a better state and a smaller claim. §3.1 records what
+> was measured and what it bought.
+
 ## 3. The compiler has never certified anything — measured 2026-09-08
 
 Every case study in the package that builds with no arguments was compiled this
@@ -113,6 +122,91 @@ to reach `admit` **on merit**. That would convert §3 from a hole into the
 result the whole package is missing. It is also the only way to find out whether
 the positive branch has bugs of its own — and W56 is direct evidence that it
 does, because the first graph to reach `admit` found one immediately.
+
+---
+
+## 3.1 What the measurement bought — W157, 2026-09-08
+
+The inference above was acted on the same day. `scripts/w157_frontwing_constants.py`,
+artifact `out/w157/w157.json`.
+
+| | measured, fixed-shape | measured, aeroelastic |
+|---|---|---|
+| $L$ | $0.998719 \pm 0.000001$ | $0.998735 \pm 0.000002$ |
+| $\sigma$ | $4.535\times10^{-8}$ | $3.173\times10^{-7}$ |
+| $\lVert\delta\lambda\rVert_{\text{rel}}$ | $4.457\times10^{-6}$ | $4.179\times10^{-5}$ |
+| $C_\mu$ implied | $0.0140$ | $0.0105$ |
+
+$L$ is fitted over **60 macro-steps** of a paired march from
+`out/w141/settled.npz`, one column perturbed by a divergence-free
+streamfunction blob at $10^{-3}$ of $\max\lvert u\rvert$. Both columns land on
+the **contractive** branch, so $T_{\text{pred}}$ is unbounded. The fit is clean
+(rms log residual $0.000$) and the rate is *slow*: the error decays only $7\%$
+over the horizon, which is honestly fitted rather than strong.
+
+$\sigma$ is the transmission error at the declared ramp — the same macro-step
+with the artificial ring held at $t^n$, against the same step with the ring
+ramped to the single-window referent's.
+
+**What is declared, and the one number that is not this graph's own.** $C_\mu$
+on the record is **W49's $1.2$**, not this graph's implied $0.56$. Over six
+partitions of unity and two columns the implied constant runs
+$[0.00307,\ 0.5504]$ — a spread of $\mathbf{179\times}$ while $\sigma$ moves
+$965\times$. **A constant that moves $179\times$ across the sample has not been
+bounded by it**, so the sampled maximum is not adopted; $1.2$ comes from
+sixteen configurations elsewhere and holds on all twelve here with $2.2\times$
+of margin. Declaring the looser number is the conservative direction.
+
+### What it bought, and what it did not
+
+`unmeasured` is now **empty**, W56's backstop no longer fires, and four
+decertifications cleared — `E5`, `W49`, `W56` and `eps_tol`. **The graph still
+does not reach `admit`.** What stands, measured after the declaration:
+
+| | fixed-shape | aeroelastic |
+|---|---|---|
+| verdict | `admit-uncertified` | **`refuse`** |
+| `L2/C2` — no measured `cut_defect_bound` | 1 | 1 |
+| `L2/R10` — the suspension's declared family | 1 | 1 |
+| `R10/halo` — **W136, an open false alarm** | 1 | 1 |
+| `L4/E7/passivity` — **W138, an open false alarm** | 2 | 2 |
+| `R12` — the constraint applied twice per macro-step | 1 | 1 |
+| `InterfaceMotion` — a **named hole**, not a stability rule | 0 | 4 |
+
+So §4's point survives the measurement intact and is sharpened by it: **three of
+the five remaining decertifications are recorded defects in the checker**, and
+the four refusals on the moving column come from a *named hole* rather than
+from anything the compiler measured about this wing.
+
+### The finding the sweep turned up — **W158**
+
+$\Pi$ moves only $0.750 \to 0.700$ across the ramp sweep while $\sigma$ moves
+$\mathbf{965\times}$. **On this graph the indicator does not carry $\sigma$'s
+variation — the partition of unity does**, which is W49's own *"overlap width is
+a precondition, the partition of unity is the mechanism"* arriving on a second
+graph and saying something stronger:
+the factorisation $\sigma \le C_\mu\Pi\lVert\delta\lambda\rVert$
+is doing far less work here than in tier 0. Compare
+the two directly — tier 0's $C_\mu$ spread was $5.18\times$ (indicator) and
+$3.71\times$ ($\Pi_w$) while $\sigma$ spanned $4.28\times10^{4}$; here the
+spread is $179\times$ while $\sigma$ spans $965\times$. **[AI Inference]:** this
+is [[interaction-horizon]]'s case for $\Pi_w$ presenting itself on a second
+graph, and re-deriving $C_\mu$ here against $\Pi_w$ rather than $\Pi$ is the
+obvious next measurement. Opened as **W158**.
+
+### And the positive control earned its place
+
+The control is the single-window referent through the identical harness: with
+one window there are no artificial faces, so $\Pi$ must be exactly $0$ and
+$\sigma$ exactly $0$. **It failed on the first run and caught a real defect.**
+`step_batch` reads a window's whole ring and cannot tell a cut from the domain
+edge, so supplying the referent's entire ring also overwrote the **real**
+boundary. That reported $\sigma = 6.86\times10^{-5}$ on a single window — where
+it must be zero — and to four significant figures *the same* $6.86\times10^{-5}$
+on six windows, which is the signature of a harness measuring its own plumbing.
+Restricting the replacement to artificial faces took the control to exactly $0$
+and the six-window $\sigma$ to $4.53\times10^{-8}$: **the first number was
+wrong by three orders of magnitude and would have been believed.**
 
 ---
 
@@ -242,7 +336,8 @@ Two consequences the demo does not draw:
 | 3 | A search made to respect declared validity envelopes | Not novel; W145 was a bug here |
 | 4 | Seam ablation | Not novel; falsified a written prediction, which is hygiene |
 | 5 | Power residual at seams | Not novel, and already recorded as such |
-| 6 | The compiler certifying something | **Never happened.** Once, as a bug (W56). Measured 2026-09-08 |
+| 6 | The compiler certifying something | **Still never happened.** Once, as a bug (W56). W157 measured the three constants on this graph, `unmeasured` is empty and four decertifications cleared — and it is still `admit-uncertified` (fixed-shape) / `refuse` (moving). §3.1 |
+| 6b | $\Pi$ carrying $\sigma$'s variation on this graph | **No** — $\Pi$ moves $1.07\times$ while $\sigma$ moves $965\times$. Opened as W158, and it is [[interaction-horizon]]'s argument on a second graph. §3.1 |
 | 7 | A refusal validated against a real divergence | **Never happened**, and the two decertifications at the headline seam are recorded false alarms (W136, W138) |
 | 8 | $\Pi_w$ as a measured graded reach | **The strongest recent result**, and undersold on screen (§7) |
 

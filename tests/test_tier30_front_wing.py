@@ -424,14 +424,41 @@ def test_the_panel_is_red_on_the_surface_seams_and_amber_on_the_fluid_ones():
     assert not any(s["colour"] == "green" for s in sv.values())
 
 
-def test_nothing_is_green_because_constants_are_unmeasured():
-    """`admit` needs every bound constant measured, and L, sigma and C_mu are
-    not (W1, W3, W49).  A non-empty `unmeasured` list has forced
-    `admit-uncertified` on every graph in this package since W56."""
+def test_the_constants_are_measured_now_and_nothing_is_green_anyway():
+    """**W157 changed this test's subject and that is the point of it.**
+
+    It used to assert `unmeasured` was NON-empty -- L, sigma and C_mu were
+    measured only in tier 0, on another graph at another state, so this graph
+    declared none of them and W56's backstop forced `admit-uncertified`. That
+    made "nothing is green" true for a **bookkeeping** reason, and
+    `poc2-novelty-audit` section 3 recorded that the compiler had therefore
+    never certified anything.
+
+    `scripts/w157_frontwing_constants.py` measured all three here, so the
+    backstop no longer fires -- and the graph is **still not green**. That is
+    the stronger statement and the one worth defending: what stands now is five
+    named rules rather than an empty ledger.
+    """
     u, v = _field()
     g, _e = F.build(u, v, motion=False)
     r = compile_scheme(g)
-    assert sorted(getattr(r, "unmeasured", ()) or ())
+
+    #: the ingest path works: every bound constant is declared, with provenance
+    assert not (getattr(r, "unmeasured", ()) or ()), r.unmeasured
+    for name in ("L", "sigma", "C_mu", "tau", "gamma", "norm_A"):
+        assert getattr(g.measured, name) is not None, name
+    assert g.measured.source and "w157" in g.measured.source.lower()
+
+    #: and it is still not certified, for reasons that are now NAMED
+    assert r.verdict.value == "admit-uncertified", r.verdict
+    left = {d.rule for d in r.decisions if d.verdict.value != "admit"}
+    assert left == {"C2", "R10", "R10/halo", "E7/passivity", "R12"}, left
+    #: three of those five are recorded checker defects rather than findings
+    #: about this assembly -- W136 (the halo rule over-fires on a physical
+    #: boundary) and W138 (passivity is an orientation artefact). A test that
+    #: let them quietly disappear would hide the two open rows that explain
+    #: most of what this panel shows.
+    assert {"R10/halo", "E7/passivity"} <= left
 
 
 def test_the_verdict_does_not_move_over_the_design_box():

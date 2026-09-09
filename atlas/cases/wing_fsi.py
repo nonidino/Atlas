@@ -1085,24 +1085,77 @@ STRUCTURE_SCOPE = (
     "mid-plane displacement differs from it by 1.3% of the compliance norm"
 )
 
+#: **W157, measured 2026-09-08 on THIS graph** -- `scripts/w157_frontwing_constants.py`,
+#: artifact `out/w157/w157.json`.  Before it, `L`, `sigma` and `C_mu` were
+#: measured only in tier 0, on `window_ns`, at another state and another scheme,
+#: and were therefore *not* declared here -- so `W56`'s backstop forced
+#: `admit-uncertified` on every compile of this graph.  [[poc2-novelty-audit]]
+#: section 3 recorded that the compiler had consequently never certified
+#: anything, and that the reason was **provenance rather than physics**.
+#:
+#: What each number is, and the one that is not this graph's own:
+#:
+#:   ``L``      paired march from the settled state, one column perturbed by a
+#:              divergence-free streamfunction blob at 1e-3 of max|u|, least
+#:              squares on log||e^n|| over 60 macro-steps.  Both columns land on
+#:              the **contractive** branch, so ``T_pred`` is unbounded.  The
+#:              error decays only 7% over the horizon, which is a slow rate
+#:              honestly fitted (rms log residual 0.000) and not a strong one.
+#:
+#:   ``sigma``  the transmission error at the DECLARED ramp: the same macro-step
+#:              run with the artificial ring held at t^n against the same step
+#:              with the ring ramped to the single-window referent's.  The
+#:              positive control is the referent through the identical harness,
+#:              where there is no artificial face and sigma is **exactly 0**, and
+#:              it caught a real defect first: replacing a window's WHOLE ring
+#:              also overwrites the domain boundary, which reported
+#:              sigma = 6.86e-5 on one window and the same 6.86e-5 on six.
+#:
+#:   ``C_mu``   **is tier 0's 1.2 and is deliberately not this graph's 0.56.**
+#:              Swept over six partitions of unity x two columns, the implied
+#:              constant here runs [0.0031, 0.5504] -- a spread of **179x**
+#:              while sigma moves 965x.  A constant that moves 179x across the
+#:              sample has not been bounded by it, so the sampled maximum is not
+#:              adopted; 1.2 comes from W49's sixteen configurations and holds
+#:              on all twelve here with 2.2x of margin.  Declaring the looser
+#:              number is the conservative direction and the honest one.
+#:              **The 179x is itself the finding**: Pi moves only 0.75 -> 0.70
+#:              across the sweep while sigma moves 965x, so on this graph the
+#:              INDICATOR does not carry sigma's variation -- the partition of
+#:              unity does.  That is [[interaction-horizon]]'s case for Pi_w
+#:              arriving on a second graph, and it is tracked as **W158**.
 MEASURED_STATIC = MeasuredConstants(
     tau=0.0, gamma=0.0, norm_A=1.0,
+    L=0.998719, L_stderr=0.000001,
+    sigma=4.534925e-08,
+    C_mu=1.2,
     probe_state=f"settled fixed-shape wake at delta = 0, E* = {E_STAR:.3g}, "
-                f"dt = {MACRO_DT}, nu = {NU}",
+                f"dt = {MACRO_DT}, nu = {NU}; L over 60 macro-steps from "
+                f"out/w141/settled.npz, sigma over one",
     scheme=f"exposed fluid agents + ProjectedAssembly, halo {HALO}, ramp {RAMP}, "
            f"{EXCHANGES} exchanges per macro-step, wing shape FROZEN",
     depth=0,
-    source="scripts/w136_wing_fsi.py, out/w136/")
+    source="tau/gamma/norm_A: scripts/w136_wing_fsi.py, out/w136/. "
+           "L/sigma/C_mu: scripts/w157_frontwing_constants.py, out/w157/ "
+           "(C_mu is W49's 1.2, validated here 12/12, not this graph's implied "
+           "0.56 -- see the note above)")
 
 MEASURED_MOVING = MeasuredConstants(
     tau=0.0, gamma=0.0, norm_A=1.0,
+    L=0.998735, L_stderr=0.000002,
+    sigma=3.173377e-07,
+    C_mu=1.2,
     probe_state=f"settled aeroelastic state at E* = {E_STAR:.3g}, "
-                f"dt = {MACRO_DT}, nu = {NU}",
+                f"dt = {MACRO_DT}, nu = {NU}; L over 60 macro-steps from "
+                f"out/w141/settled.npz, sigma over one",
     scheme=f"exposed fluid agents + ProjectedAssembly, halo {HALO}, ramp {RAMP}, "
            f"{EXCHANGES} exchanges per macro-step, the seam's own Newton solved "
            f"at every exchange",
     depth=0,
-    source="scripts/w136_wing_fsi.py, out/w136/")
+    source="tau/gamma/norm_A: scripts/w136_wing_fsi.py, out/w136/. "
+           "L/sigma/C_mu: scripts/w157_frontwing_constants.py, out/w157/ "
+           "(C_mu is W49's 1.2, validated here 12/12, not this graph's implied "
+           "0.56 -- see the note above)")
 
 
 # ---------------------------------------------------------------------------

@@ -1203,3 +1203,36 @@ One gradient iterate costs $\mathbf{5.4}$–$\mathbf{5.8}$ objective forwards he
 ### And the confound Tier 32 left open, settled
 
 **Both of Tier 32's headline pathologies came from the R10-ADMISSIBLE column, and its venue was $14.8\times$ *looser* than the scheme it names.** The objection was that a pathology measured against $\sigma=3.73\times10^{-8}$ is unwinnable by construction. Read from the artifact: the exposed column's lag baseline was $5.5365\times10^{-7}$, because it ran at one exchange per macro-step rather than per sub-step (**R10b**). **So virtual control was given an order of magnitude more room than the real scheme leaves it and still lost by $6.6\times$ to $21\times$** — the confound is real, it is named, and it cuts the other way. The embedded row is a free validation of the instrument: it reproduces the vault's published as-built $\sigma$ to $0.5\%$ without being told it.
+
+
+---
+
+## Tier 34 — the constants exist on the front-wing graph, and it is still not green (2026-09-08)
+
+**Opened by [[poc2-novelty-audit]] §3**, which found that the compiler had never certified anything and that the reason was **provenance rather than physics**: $L$, $\sigma$ and $C_\mu$ were measured in tier 0, on `window_ns`, at another state and another scheme, and were simply not declared on the front-wing records — so **W56**'s backstop forced `admit-uncertified` on every compile of it. The refusal was real and it said nothing about this wing.
+
+`scripts/w157_frontwing_constants.py` measured all three **here**. `unmeasured` is now empty, W56's backstop no longer fires, and four decertifications cleared (`E5`, `W49`, `W56`, `eps_tol`). **The graph still does not reach `admit`** — and that is the useful outcome, because what stands is now five *named rules* instead of an empty ledger.
+
+### Rows this tier opens
+
+| # | Gap | Task | Status |
+|---|---|---|---|
+| **W157** | `atlas/cases/wing_fsi.py` `MEASURED_STATIC` / `MEASURED_MOVING`; `scripts/w157_frontwing_constants.py`; `out/w157/w157.json` | **Measure $L$, $\sigma$ and $C_\mu$ on the front-wing graph and declare them with provenance**, so that a refusal to certify is a statement about this assembly rather than about a missing ledger | **`done`.** $L = 0.998719\pm0.000001$ (fixed-shape) and $0.998735\pm0.000002$ (aeroelastic), both **contractive**, fitted over 60 macro-steps with rms log residual $0.000$ — and honestly a *slow* rate, the error decaying only $7\%$ over the horizon. $\sigma = 4.535\times10^{-8}$ / $3.173\times10^{-7}$ at the declared ramp. **$C_\mu$ on the record is W49's $1.2$ and deliberately not this graph's implied $0.56$** — see W158. The positive control **failed first and caught a real defect**: replacing a window's whole transmission ring also overwrites the *domain* boundary, which reported $\sigma = 6.86\times10^{-5}$ on a single window where it must be exactly $0$, and the same $6.86\times10^{-5}$ to four figures on six windows. Restricting the replacement to artificial faces took the control to exactly $0$ and $\sigma$ to $4.53\times10^{-8}$: **the first number was wrong by three orders of magnitude and would have been believed** |
+| **W158** | [[interaction-horizon]]; `master-error-bound` §4.1; `out/w157/w157.json` | **$\Pi$ does not carry $\sigma$'s variation on this graph.** Over six partitions of unity $\times$ two columns, $\Pi$ moves $0.750 \to 0.700$ — a factor of $1.07$ — while $\sigma$ moves $\mathbf{965\times}$ and the implied $C_\mu$ spreads $\mathbf{179\times}$. Compare tier 0, where $C_\mu$ spread $5.18\times$ (indicator) and $3.71\times$ ($\Pi_w$) while $\sigma$ spanned $4.28\times10^{4}$: **the factorisation $\sigma\le C_\mu\Pi\lVert\delta\lambda\rVert$ is doing far less work here than it does there** | `open`. This is W49's own *"overlap width is a precondition, the partition of unity is the mechanism"* arriving on a second graph and saying something stronger — the indicator cannot see the mechanism at all. Done when $C_\mu$ is re-derived on this graph against $\Pi_w$ rather than $\Pi$ and the spread is reported beside the $179\times$. **[AI Inference]:** this is [[interaction-horizon]]'s case presenting itself unprompted on a graph it was not fitted on, which is the strongest evidence for $\Pi_w$ so far and is worth saying as such |
+| **W159** | `atlas/graph.py` `MeasuredConstants.cut_defect_bound`; `L2/C2` | **`L2/C2` is the last decertification on this graph that is a missing MEASUREMENT rather than a checker defect or a named hole.** The rule states it plainly: *"the graph declares no measured `cut_defect_bound`, so the criterion is a theorem with no value in it. Measure $\lVert\sum_i\chi_i\lvert E_iR_iu - R_iEu\rvert\rVert$ over one exchange interval"* | `open`, small, and it is the **cheapest remaining step toward a first honest `admit`**: of the five rules standing on the fixed-shape column, `R10/halo` and `L4/E7/passivity` are W136 and W138 (recorded false alarms), `L2/R10` is a question about the suspension's declared governing family, `R12` is a real scheme finding — and this one is a number nobody has taken. **W58 must be respected**: the quantity has two inequivalent readings and `cut_defect_bound_form` has to say which |
+
+### What now stands between the front wing and `admit`
+
+Measured after the declaration, so this is the state of the ledger rather than a prediction:
+
+| rule | fixed-shape | aeroelastic | what it is |
+|---|---|---|---|
+| `L2/C2` | 1 | 1 | a missing measurement — **W159** |
+| `L2/R10` | 1 | 1 | the suspension declares an incompressible family with `elliptic_subsolve=none` |
+| `R10/halo` | 1 | 1 | **W136**, an open *false alarm* |
+| `L4/E7/passivity` | 2 | 2 | **W138**, an open *false alarm* |
+| `R12` | 1 | 1 | the constraint applied twice per macro-step — a real finding |
+| `InterfaceMotion` | 0 | **4 refusals** | a **named hole**, not a stability rule |
+| **verdict** | `admit-uncertified` | **`refuse`** | |
+
+**Three of the five decertifications on the fixed-shape column are recorded defects in the checker rather than facts about the assembly**, which is [[poc2-novelty-audit]] §4's point surviving the measurement and being sharpened by it. Closing W136 and W138 is now the shortest path to a graph whose remaining objections are all about the physics.

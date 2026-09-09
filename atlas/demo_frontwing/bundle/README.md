@@ -215,7 +215,7 @@ two-agent one.
 
 - **Nothing here is certified.** Not one joint is green, and none ever has been
   in this project: three constants the bounds rest on have never been measured
-  (W1, W3, W49), and while that is true every graph comes back
+  (W1, W3, W49) ON THIS GRAPH until W157 measured them here; they are now\n  declared and `unmeasured` is empty, and it is still not green -- five named\n  rules stand, two of which (W136, W138) are recorded faults in the checker\n  rather than facts about the wing. Formerly, while a constant was missing, every graph came back
   `admit-uncertified`.
 - **This is not faster than the solver it replaces.** Every component here is a
   classical solver, and beat ①'s 4.31× is one *search method* against another on

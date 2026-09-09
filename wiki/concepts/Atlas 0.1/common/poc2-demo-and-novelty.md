@@ -339,9 +339,17 @@ for. The gap between them exists only during the transient, which is what
 Reproduced from `explain.NOT_CLAIMED`, which is what the page renders and what
 the tests read:
 
-1. **Nothing here is certified.** No seam is green and none ever has been in this
-   package: $L$, $\sigma$ and $C_\mu$ are unmeasured (W1, W3, W49) and a
-   non-empty `unmeasured` list has forced `admit-uncertified` since **W56**.
+1. **Nothing here is certified.** No seam is green. **Until 2026-09-08 the
+   reason was bookkeeping** — $L$, $\sigma$ and $C_\mu$ had been measured in
+   tier 0 on another graph and were not declared on this one, so W56's backstop
+   forced `admit-uncertified` and the refusal said nothing about this wing.
+   **W157 measured all three here** ([[poc2-novelty-audit]] §3.1) and
+   `unmeasured` is now empty — and it is still not green. Five named rules
+   stand: `L2/C2` (no measured `cut_defect_bound`), `L2/R10` on the
+   suspension's declared family, `R10/halo` and `L4/E7/passivity` (**W136** and
+   **W138**, both recorded *open false alarms*), and `R12`. With the interface
+   declared to move, `InterfaceMotion` refuses on top. **The state is better
+   and the claim is smaller: what blocks certification is now nameable.**
 2. **This is not faster than the solvers it is made of.** Every expert is
    classical, and beat ①'s $4.31\times$ is one *search method* against another on
    the same solvers — not a claim about the solvers. The four-to-six orders of
