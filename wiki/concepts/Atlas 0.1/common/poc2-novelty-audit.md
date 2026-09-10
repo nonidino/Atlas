@@ -23,6 +23,21 @@ The verdict, up front:
 > validated*, because the compiler has never certified anything and no refusal
 > has been checked against a coupling that actually fails.**
 
+> **[2026-09-09, Tier 39] The second clause of that verdict is superseded and
+> the third is not.** The compiler has now certified something: `front_wing` at
+> a fixed shape reaches **`admit`**, nine seams green, and `wing_fsi` reaches it
+> on the same repair. So the novel claim is no longer unfalsified for want of a
+> subject — there is a certified graph to argue about. **What has NOT changed is
+> the third clause**: no refusal has been checked against a coupling that
+> actually fails, and that is still the audit's sharpest open point. The route
+> to `admit` is also worth stating plainly, because it cuts both ways: of the
+> five rules standing after §3.1, **four were defects in the checker and one was
+> a missing number, and none was a fact about the assembly**. A compiler that
+> reaches `admit` by having its own false alarms removed one at a time has
+> demonstrated that its declarations are checkable; it has not yet demonstrated
+> that its refusals are earned. See [[log]]'s Tier 39 entry and [[gap-worklist]]
+> W160, W161.
+
 ---
 
 ## 1. The one claim that survives
@@ -78,6 +93,20 @@ does not get read as an improved result.
 > not reach `admit`**, and what stands is now five *named rules* instead of an
 > empty ledger — which is a better state and a smaller claim. §3.1 records what
 > was measured and what it bought.
+
+> **[2026-09-09, Tier 39] And now it does.** The table below is a correct
+> measurement of 2026-09-08 and is kept as one; the row that has moved is
+> `front_wing`, from **admit-uncertified, 9 seams, none green** to **`admit`, 9
+> seams, all green**, with `wing_fsi` moving from `admit-uncertified` to `admit`
+> beside it. W160 gave `L2/R10`'s undeclared branch the `stencil_radius` premise
+> check its own sentence presumed; W161 scoped `_enforcing_agents` to the family
+> the constraint comes from. Neither moved a threshold or softened a
+> declaration, both have controls that restore the objection, and both reproduce
+> on graphs they were not diagnosed on. **The qualification belongs in the same
+> breath**: the wing certifies at a **fixed shape**, and declaring the interface
+> to move still refuses the two surface seams at `L2/InterfaceMotion`. A racing
+> wing rides, so the case this framework can certify is not yet the case the
+> sport has.
 
 ## 3. The compiler has never certified anything — measured 2026-09-08
 

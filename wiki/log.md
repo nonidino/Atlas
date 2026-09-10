@@ -3495,3 +3495,248 @@ Changed: [[case-study-neural-interface-atlas-0.1]] (new), [[gap-worklist]] (Tier
 **The generalisable bit: an off-ladder study should not draw from the ladder's number sequence at all.** `S` for scheme keeps the two namespaces apart, so the next one — and W167's accelerator wiring is a candidate — cannot collide by accident with a rung that has been reserved since 2026-08-30.
 
 Full suite **1011**, unchanged (no test asserts the designation). `scripts/vault_scan.py`: 215 files, 0 problems.
+
+## [2026-09-09] tier 39 | the front wing certifies, and the compiler learns to see a cycle
+
+**The front wing reaches `admit`.** Fixed shape, nine seams, every one green, no
+refusal and no decertification — the first assembly this project has certified
+on merit. What closed it was the last two of the five rules standing after W157
+measured the constants, and **Tier 34/35 had already diagnosed both as defects
+in the CHECKER rather than facts about the wing** and deliberately left them
+open, because narrowing five rules in one session on the one graph being
+certified is the pattern the audit exists to catch. Closing them in a later
+session against evidence gathered on other graphs is the discipline working, not
+being suspended.
+
+**W160 — R10's undeclared branch was a scope defect for the third time, and the
+census is what makes it a class.** The branch reasoned *"an incompressible
+solver almost always contains a pressure solve"*, which is true of a **field**
+solver and vacuous for an algebraic closure with no field. Censused before it
+was narrowed, it fired on **six agents across four unrelated graphs and every
+one of them was two lines of algebra** — `ground_effect.Suspension` and its
+re-use in `front_wing` ($k(h_0-h) = L$), `cooling_loop`'s four lumped legs,
+`powertrain`'s actuator disk. **Not one field solver in the vault was in the
+list**: a 0% hit rate on the class the branch is about. It now checks
+`stencil_radius`, the compile-time signature of *"is there a field here at
+all"*, which the row had already named. The cleared agents get an admission
+naming them (`L2/R10/lumped`) rather than being dropped, on W136's discipline
+that a rule which quietly stops looking at an agent fails in the direction that
+does not announce itself. So all three of R10's branches now check a **premise**
+rather than a label, and all three checks are proxies read off declarations that
+already exist.
+
+**W161 — `_enforcing_agents` named an agent that enforces nothing, and the fix
+reached a graph it was not diagnosed on.** The predicate returned every agent
+with `elliptic_subsolve` in {embedded, unknown} **regardless of
+`governing_family`**, so on the front wing R12 decertified the assembly for
+applying the divergence-free projection twice while naming STRUCT — a
+plane-stress elasticity solver whose embedded solve is a *stiffness* solve, and
+which is not a subdomain of the partition of unity at all, so R12's own
+commutator identity $C(\sum_i \chi_i u_i) = \sum_i \nabla\chi_i \cdot u_i$ has
+no term for it. It now intersects with the family the constraint comes from,
+which is where the identity's index set comes from rather than a judgement call.
+**`wing_fsi` (CS-12) carried `L6/R12` as its single remaining decertification,
+for the same reason, and reaches `admit` on the same repair** — which is what
+makes this a class and not a one-graph fix, and it is asserted rather than
+remarked on.
+
+**Nothing was tuned, and both narrowings have controls that put the objection
+straight back.** Give SUSP a stencil and `L2/R10` returns. Make a fluid window
+embedded and `L6/R12` returns. Declare STRUCT with the fluid's family — STRUCT
+is embedded either way — and `L6/R12` returns, which isolates the family filter
+as the only thing that cleared it. No threshold moved and no declaration
+softened.
+
+**And the demo's headline changes shape rather than getting louder.** The panel
+used to be red on the two surface seams and amber on the seven fluid ones with
+nothing green; it is now green everywhere at a fixed shape, and **red on exactly
+the two surface seams once the interface is declared to move**, at
+`L2/InterfaceMotion` alone. That contrast is the sharper statement: the
+difference between the two graphs is one declaration, the compiler localises its
+consequence to the two seams whose geometry that declaration moves, and **a
+racing wing rides**. The explainer says so in the plain-language half, and the
+test that used to require the prose to say *"not one joint"* is green now
+requires it to name the limitation that is actually live — a test that pins a
+sentence rather than the claim it guards becomes a reason not to correct the
+page.
+
+**W163 — the compiler can tell a circuit from a chain, as `L5/R13`.** The row
+was opened 2026-09-08 and deliberately left unwritten until a second cyclic
+graph existed, because a rule invented the day its first graph appears is a rule
+validated on one graph. `powertrain` supplied the second, on unrelated physics.
+
+**The row's own [AI Inference] was checked and is FALSE, and that is the main
+finding.** It proposed that the contraction would be *"decidable from the same
+declared response the probe already builds"*. It is not:
+`ExpertCapabilities.boundary_response` maps
+$(\text{port}, \text{trace}) \to \text{flux}$ on the **same** port — a Dirichlet-to-Neumann map — and a cycle's
+gain is a **cross-port transfer**, which no capability field carries. On CS-13
+the two are unrelated quantities: perturbing a leg's ADVEC trace moves the
+declared response by $2303.89$ J/kg per unit mass flux, while the loop's
+transport gain is $a = 0.99926$ in **temperature** and appears only in the
+derivative with respect to the upstream *state*, reachable only by setting
+`leg.t_in` on the expert object — reaching around the declaration, not reading
+it. On CS-14 the ELEC response **is** the element's series resistance. Two
+circuits, two answers, so a rule that computed the gain would work on one of the
+two cyclic graphs in the package. **R13 asks, and decertifies rather than
+guessing.**
+
+**It says something different and true on each graph, which is the test that it
+was not fitted to one.** CS-13's ADVEC loop carries a temperature and composes
+to $0.9238$ — a contraction, the radiator's $0.925$ doing all the work — so
+swept it would converge from any start and the sweep order would stop mattering
+in the limit. CS-14's ELEC loop carries a potential and composes to **exactly
+$1$**, and structurally so: each element maps $V \to V - e + IR$, a translation,
+whatever the emfs and resistances are. Swept, it is **refused** — Kirchhoff's
+voltage law round a loop is a *constraint*, the potential has an arbitrary
+datum, and there is no isolated fixed point in it to reach. **That refusal
+reproduces a conclusion `CircuitSolve` had already reached by hand** when it
+chose to solve the loop rather than sweep it, *"because a directed loop has no
+first element"*. Both gains are **composed from the objects the solvers compose
+them from**, never written out as literals.
+
+**The rule's own first version was the defect it was closing, in the same
+session.** It fired at L2 and refused `powertrain` for a loop gain of exactly
+one — correct about the loop map and **about a scheme the compiler had not
+chosen**, since both circuits compile to `Accelerator.DIRECT_SCHUR`, which
+solves the assembled system in one shot and is order-free, R5's own sentence.
+That is precisely W160 and W161's defect — a rule reading a declaration it was
+never about — reproduced immediately after repairing it twice. R13 now runs
+after `_l5_l7_scheme`, and the gain **binds only for a sweeping accelerator**;
+the cycle is reported either way, because W163's complaint is that the compiler
+could not see the cycle at all. **The complaint is closed on both graphs**: the
+closed and open compiles now differ by a graph-level rule, `{L5/R13}`, where
+before the whole difference was the extra seam's own per-seam rows.
+
+**And the detector had a hang in it, found by stress-testing rather than by
+reading.** Enumerating a digraph's elementary cycles is **factorial** in the
+worst case, and on a complete digraph `directed_cycles` did not return at ten
+nodes in two minutes. Every graph in this package is sparse and the real cost is
+microseconds — but a compiler that hangs on a declaration is the worst failure
+mode available, and it is the shape this vault already has a memory about, where
+a blow-up reads as a hang. The bound is a **visit budget, not a cap on the
+output**, and the distinction is the whole of it: a cap would return a silent
+subset, and a rule reasoning over *some* of a graph's cycles is silently
+reasoning about a different graph. Past the budget `directed_cycles` **raises**,
+and R13 catches it and decertifies, naming what it could not check and saying
+explicitly that a budget is not evidence the graph has many cycles. Bounded, the
+worst synthetic case returns in $80$ ms; the two real circuits finish inside a
+budget $400\times$ smaller than the default.
+
+**W162 — a triangle in the adjacency is not a cross-point on a circuit.**
+`cross_points` now has **three states, not two**: `None` is undeclared and runs
+the adjacency proxy, a tuple names them, and **`()` is a declaration of NONE**,
+which was previously unsayable because an empty tuple is falsy and fell through
+exactly as silence did. Both circuits declare it, and the claim is about
+geometry: legs meet at inlet and outlet **planes**, one per seam, at distinct
+places along the path, so no cell is in two seams. `cooling_loop.build(n_legs=3)`
+compiles, where it was refused at `L2/I2/G1` for a multi-valued shared cell that
+does not exist. And the refusal now **names its proxy as a proxy** when the
+subject was inferred — that the triple came from the adjacency, that the
+inference holds on a tiling and fails on a circuit, and what to declare instead.
+Declare a cross-point on the same graph and the refusal returns, saying it was
+declared.
+
+**W167 — `alpha_star` is wired as the transmission condition it has been since
+Tier 0.** `Accelerator.ROBIN_RICHARDSON`, with `probe.robin_condition` producing
+the coefficient and its damping **from one $S$ in one object**, so a caller
+cannot take one without the other. **The guard's first version was wrong and its
+own divergence check caught it**: damping by $1/\rho$ is correct for a *positive
+real* spectrum — what a passive seam has, and what CS-S1 measured — and false
+the moment $D^{-1}S$ has a negative eigenvalue, because Richardson's iteration
+matrix is $I - \omega D^{-1}S$ and a negative $\mu$ puts
+$\lvert 1 - \omega\mu\rvert$ above one for **every** positive $\omega$. It
+diverged on an indefinite synthetic seam at iteration 707. The predicate is now
+the **contraction factor itself** rather than a proxy for it. Two declines — a
+singular diagonal, and a spectrum no damping contracts — and neither silently
+becomes plain Richardson: it raises, because a scheme wearing another scheme's
+name is R3's complaint one object along.
+
+**W168 — two messages that did not say what their rules were worth.** `L2/R10`'s
+refusal now carries the $149\times$: $74.81$ coupling sweeps per decade with the
+pressure solve embedded against $0.50$ with it exposed, $466$ sweeps against
+$7$, with the no-projection control at $0.49$ so the gain is the **exposure**
+and not the projection. And `R10/halo` now says **which quantity it bounds**,
+computed per graph — *accuracy* when every cut agent is `exposed`, *accuracy and
+convergence* when one is `embedded` or `unknown`. Measured rather than argued:
+the as-built contraction crosses $1$ between halo $18$ ($1.00642$) and halo $20$
+($0.980531$) against a declared reach of exactly $20$, while the exposed
+arrangement converges at every halo from $4$ up ($0.089$ at halo 4). Both
+branches are asserted, and the figures are asserted against `out/w166/w166.json`
+so the rule and its measurement cannot drift.
+
+### Rung 9, scoped and not started — and the gate's question answered anyway
+
+The integration graph was **scoped and budgeted and does not fit**, which is
+recorded here rather than half-built. Two blockers, and the first is the more
+important result available:
+
+**`CaseGraph.decomposition` is ONE field for the whole graph, and rung 9's graph
+does not have one axis** (**W171**). `front_wing` is `OVERLAPPING` with a
+partition of unity; `cooling_loop` and `powertrain` are both `NON_OVERLAPPING`
+with none. **Five rules branch on the axis and return early on the wrong one** —
+`_cut_policy`, `_halo_rule`, `_r12_conservative_assembly`, `_w49_sigma_branch`
+and the cross-point block — so a union graph would run the tiling's rules over
+the circuits or the circuits' over the tiling, and the second direction is
+**silent**, because a rule that returns early emits nothing. This is not a
+scheduling inconvenience: it is the schema asserting that a multiphysics vehicle
+is one decomposition, and it is not. Second, every joining seam needs **new
+ports on existing agents** with real physics in them — a radiator's air-side
+face, the machine's heat path into the block — and none exists.
+
+**But the gate's actual question is answerable from what is already declared,
+and it was answered** (**W172**). The $O(K)$ promise is that the $K$-th expert
+costs a constant number of new declarations rather than one per existing expert,
+and it is decidable by separating **per-agent** declarations from **per-pair**
+ones. Measured over every graph in the package and over the 18-agent union the
+three would form:
+
+| graph | $K$ | families | ports | per-agent prolongations | scale sets | **per-pair** |
+|---|---|---|---|---|---|---|
+| `ground_effect` | 7 | 1 | 16 | 16 | 1 | **0** |
+| `thermal_seam` | 2 | 2 | 2 | 2 | 1 | **0** |
+| `wing_fsi` | 7 | 2 | 16 | 16 | 1 | **0** |
+| `front_wing` | 8 | 2 | 18 | 18 | 1 | **0** |
+| `cooling_loop` | 5 | 2 | 10 | 10 | 2 | **0** |
+| `powertrain` | 5 | 2 | 12 | 12 | 3 | **0** |
+| **union** | **18** | **5** | **40** | **40** | **5** | **0** |
+
+**The per-pair column is empty at every family count from 1 to 5.** Every
+prolongation is declared on a **port** and owned by one agent ($2.22$ per
+agent); the interface space is derived from $\dim M = \min_i m_i^{\text{eff}}$
+and each side prolongs into it independently, so no seam needs a declaration
+neither of its sides owns; and scale sets number **5, one per port type**,
+constant in $K$ rather than growing with agents or pairs. Against the $153$
+pairs 18 agents could form, the per-pair count is $0.0000$.
+
+**What that is not.** It is evidence about the **algebra** and no evidence about
+the **integration cost**: the three joining seams do not exist, so this counts
+the union's *existing* structure at 5 families and not the cost of *adding* a
+subsystem. Each new seam needs two new ports, one per side — $O(1)$ per seam by
+inspection, and unmeasured. The distinction is exactly what rung 9 exists to
+find out, and W172 says not to quote the zero without it.
+
+### Also opened
+
+**W170**: `RULES` is documented as *"the nine admissibility rules, by number, so
+a refusal can cite one"* and stops at `R11`, while `R12` (2026-08-31) and `R13`
+(today) are both citable and absent — so `RULES[d.rule]` raises for a decision
+the compiler itself emitted. Noticed while adding R13 and **deliberately not
+fixed in the same session**: the question is which contract the dict has, and
+adding two lines answers it by default rather than deciding it.
+
+Full suite **1011 → 1044** (33 added across two new files; 5 rewritten in place, each of which had pinned a defect this tier closed). `scripts/vault_scan.py`: 215 files, 0 problems.
+
+Changed: [[gap-worklist]] (W160, W161, W162, W163, W167, W168 closed; W170,
+W171, W172 opened), [[log]], [[index]]. Code: `atlas/compiler.py` (W160, W161,
+W162's provenance clause, W163's `_r13_directed_cycle`, W168's two messages),
+`atlas/graph.py` (`cross_points` sentinel, `directed_cycles`,
+`DeclaredLoopGain`), `atlas/probe.py` (`RobinCondition`, `robin_condition`),
+`atlas/scheme.py` (`Accelerator.ROBIN_RICHARDSON`), `atlas/solve.py`
+(`_robin_richardson`), `atlas/cases/cooling_loop.py`,
+`atlas/cases/powertrain.py` (both: `cross_points=()`, `loop_gains`),
+`atlas/demo_frontwing/explain.py`, `atlas/demo_frontwing/README.md`,
+`tests/test_tier29_wing_fsi.py`, `tests/test_tier30_front_wing.py`,
+`tests/test_tier31_frontwing_demo.py`,
+`tests/test_tier39_robin_accelerator.py` (new),
+`tests/test_tier39_cycles_and_crosspoints.py` (new).

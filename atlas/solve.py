@@ -32,7 +32,7 @@ from .compiler import CompileResult
 from .emit import ConservationReport
 from .graph import CaseGraph, Connection
 from .multiphysics import check_sigma_lag, lag_distance
-from .probe import SeamOperator
+from .probe import SeamOperator, robin_condition
 from .scheme import Accelerator, Scheme
 from .transfer import SeamTransfer
 from .verdict import REFUSE
@@ -158,6 +158,9 @@ def solve_interface(
 
     target = tol if tol is not None else 1e-10 * max(1.0, float(np.linalg.norm(problem.chi)))
 
+    if accelerator is Accelerator.ROBIN_RICHARDSON:
+        return _robin_richardson(problem, lam, target, max_iter, history)
+
     if accelerator in (Accelerator.KRYLOV, Accelerator.NEWTON_KRYLOV):
         lam, iters, history = _gmres_like(problem, lam, target, max_iter)
         return lam, iters, history
@@ -171,6 +174,87 @@ def solve_interface(
         lam = lam - step * r
         history.append(float(np.linalg.norm(problem.residual(lam))))
         if history[-1] <= target:
+            return lam, k, history
+    return lam, max_iter, history
+
+
+def _robin_richardson(
+    problem: InterfaceProblem,
+    lam: np.ndarray,
+    target: float,
+    max_iter: int,
+    history: list[float],
+) -> tuple[np.ndarray, int, list[float]]:
+    """Richardson preconditioned by the MEASURED Robin coefficient.
+
+    **W167, 2026-09-09.**  ``alpha_star = diag(S)`` is, in a Fourier interface
+    basis, the measured symbol mode by mode -- the optimal Robin transmission
+    coefficient, read off the probe rather than derived from an operator nobody
+    has.  For a frozen expert that is the only route to one, and it is the
+    reason the field has been emitted since Tier 0.  Until now nothing consumed
+    it as a transmission condition: `SeamOperator.mode_shares` reads it, and
+    reads it as a ratio.
+
+    **The guard is not optional and is not local to this function.**  CS-S1
+    measured the bare coefficient on the as-built neural-interface seam: it cut
+    ``kappa`` from 22.686 to 7.345 and the iteration diverged, because
+    Richardson contracts iff the preconditioned spectrum lies inside ``(0, 2)``
+    and ``rho(D^-1 S) = 2.976`` does not.  Conditioning is the wrong statistic
+    for this iteration and a better one bought a divergence.  So the step is
+    ``omega D^-1`` with ``omega = min(1, 1/rho)``, and both numbers come out of
+    `probe.robin_condition` **together with the coefficient**, off the same S
+    this function is about to iterate on.  Rebuilt here rather than passed in,
+    for that reason: a caller cannot supply a coefficient measured on a
+    different operator.
+
+    Measured on that seam at ``tol = 1e-6``, counting the 34-call probe both
+    arms need: plain Richardson 594 expert calls, this 172.
+
+    **Two ways the coefficient is unavailable, and neither falls back.**  A zero
+    diagonal entry makes ``D`` singular, so there is no Robin coefficient on
+    that mode -- and that declines the PRECONDITIONER, not the seam, since a
+    zero diagonal entry is not a zero row.  A preconditioned spectrum that is
+    not positive makes the damped iteration a non-contraction: Richardson's
+    iteration matrix is ``I - omega D^-1 S`` and a negative ``mu`` puts
+    ``|1 - omega mu|`` above one for every positive omega, so no damping rescues
+    it, and that IS a statement about the seam.  `probe.robin_condition`
+    distinguishes them and this raises with whichever sentence applies.
+
+    It does not silently fall back in either case.  `solve_interface` has one
+    contract and it is to drive the residual down; returning the plain
+    Richardson answer under this accelerator's name would be a different scheme
+    wearing this one's label, which is R3's own complaint one object along.
+    """
+    cond = robin_condition(problem.S)
+    if cond is None or not cond.usable:
+        raise ValueError(
+            "Accelerator.ROBIN_RICHARDSON is not available on seam "
+            f"{problem.seam_id!r}: "
+            + (cond.why if cond is not None else
+               "the seam operator is not square, so it has no diagonal symbol "
+               "to read a Robin coefficient off")
+            + ". Choose another accelerator rather than treating this as plain "
+              "Richardson -- the two are different schemes and R3's complaint "
+              "about a scheme wearing a longer name applies here too"
+        )
+    M_inv = cond.M_inv
+    for k in range(1, max_iter + 1):
+        r = problem.residual(lam)
+        lam = lam - M_inv @ r
+        nr = float(np.linalg.norm(problem.residual(lam)))
+        history.append(nr)
+        if not np.isfinite(nr):
+            # The damping is derived from rho, so this should be unreachable.
+            # It is checked anyway: a divergence that returns a number is the
+            # silent-wrongness class, and CS-S1's whole finding is that this
+            # particular coefficient diverges when the guard is skipped.
+            raise FloatingPointError(
+                f"ROBIN_RICHARDSON diverged on seam {problem.seam_id!r} at "
+                f"iteration {k} despite omega = {cond.omega:.6g} derived from "
+                f"rho = {cond.rho:.6g}. The damping and the operator have come "
+                "apart -- the coefficient was not measured on this S"
+            )
+        if nr <= target:
             return lam, k, history
     return lam, max_iter, history
 

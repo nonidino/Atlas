@@ -238,14 +238,17 @@ driver and the demo agree on this graph.
 |---|---|
 | **red** | at least one **refusal** reaches this seam. The composed march may still run — and does — but the compiler declines to certify it, and the run is a search instrument rather than a verified one |
 | **amber** | no refusal, at least one **decertification**. The bound applies with a constant nobody measured, or a hypothesis is `unchecked` |
-| **green** | neither. **Nothing in this graph is green**, and the reason is no longer a missing ledger: `L`, `sigma`, `C_mu` (**W157**) and `cut_defect_bound` (**W159**, chi-weighted, tight to 0.05% against a single-window monolith) are all measured on this graph and declared with provenance, `unmeasured` is empty, and W56's backstop does not fire. **Two objections stand and both are checker defects**: `L2/R10` reads the two-line algebraic suspension as hiding a pressure solve because it declares the flow's family (**W160**), and `R12` names STRUCT as enforcing incompressibility when STRUCT solves elasticity and is not a subdomain of the partition of unity at all (**W161**). Plus `InterfaceMotion`'s refusal once the interface is declared to move |
+| **green** | neither. **At a fixed shape, all nine seams are green and the graph verdict is `admit`** — the first assembly this project has certified on merit. Every constant the bounds rest on is measured on THIS graph and declared with provenance: `L`, `sigma`, `C_mu` (**W157**) and `cut_defect_bound` (**W159**, chi-weighted, tight to 0.05% against a single-window monolith); `unmeasured` is empty and W56's backstop does not fire. Five rules stood after that; three fell in Tier 35 (**W136**, **W138**, **W159**) and the last two in Tier 39, both of them checker defects that Tier 34/35 had already diagnosed and deliberately left open: **W160** gave `L2/R10`'s undeclared branch the `stencil_radius` check its own sentence presumed, and **W161** scoped `_enforcing_agents` to the family the constraint comes from. **Declare the interface to move and the graph refuses** — `L2/InterfaceMotion` on the two surface seams, and the seven fluid–fluid ones stay green |
 
 **1. The colour is a property of the declaration, not of the design point.**
 Measured, not assumed: over the sixteen corners of the design box, **zero**
 produce a different per-seam verdict map. So the lights change when the interface
 is *declared* to move — the two surface seams go **red** at
-`L2/InterfaceMotion` and the seven fluid–fluid ones stay amber — and they do not
-flicker as a knob turns. The demo re-runs the compile on **every** design change
+`L2/InterfaceMotion` and the seven fluid–fluid ones stay **green** — and they do
+not flicker as a knob turns. **That contrast is now the panel's whole content**,
+and it is a sharper statement than the uniform amber it replaced: the difference
+between the two graphs is one declaration, and the compiler localises its
+consequence to exactly the two seams whose geometry that declaration moves. The demo re-runs the compile on **every** design change
 anyway, on its own thread, because the honest way to show that is to run it.
 **Beat ④ is where a colour actually changes**, and it changes because the
 declaration does.
@@ -254,8 +257,9 @@ declaration does.
 is what a designer would actually watch: each surface seam's one-sidedness ratio,
 the interface residual, and the two constraint margins.
 
-The two surface seams carry different decertifications and the reasons are on
-hover:
+The two surface seams cleared their decertifications at different tiers and the
+reasons are on hover. **Both are clear now**, so what follows is the record of
+what each one carried and why it went, not a list of live objections:
 
 - **`wet`** (fluid ↔ structure, 32 stations) — **clear as of Tier 35.** It
   used to carry `L2/R10/halo` and `L4/E7/passivity` and both were checker
@@ -269,10 +273,29 @@ hover:
   went to exactly zero — checked against the case's own residual Jacobian,
   which a central difference reproduces to 1.15e-16 and which is positive
   definite where the unoriented sum is indefinite.
-- **`mount`** (fluid ↔ lumped suspension, the ride height) — `L2/R10` only,
-  and that is **W160**: `k (h0 - h) = L` is two lines of algebra with
-  `stencil_radius = 0`, and the rule infers a hidden pressure solve from the
-  governing family alone. Its passivity cleared with `wet`'s.
+- **`mount`** (fluid ↔ lumped suspension, the ride height) — **clear as of
+  Tier 39.** It carried `L2/R10` alone, and that was **W160**: `k (h0 - h) = L`
+  is two lines of algebra with `stencil_radius = 0`, and the rule inferred a
+  hidden pressure solve from the governing family alone — a family the
+  suspension declares *deliberately*, because a lumped algebraic closure inside
+  a continuum problem is not a different continuum problem and declaring
+  otherwise fails E3 at this very seam. The branch now checks the stencil, which
+  is the compile-time signature of *"is there a field here at all"*. Censused
+  before the narrowing, it had fired on six agents across four unrelated graphs
+  and every one of them was algebraic — a 0% hit rate on the class it is about.
+  Its passivity cleared with `wet`'s.
+
+The graph-level `R12` decertification went the same way, and it is worth stating
+separately because it reached **every** seam rather than one. `_enforcing_agents`
+returned every agent with an embedded elliptic solve **regardless of governing
+family**, so on this graph it named STRUCT — a plane-stress elasticity solver
+whose embedded solve is a *stiffness* solve. STRUCT enforces no divergence-free
+constraint and is not a subdomain of the partition of unity at all, so R12's own
+commutator identity $C(\sum_i \chi_i u_i) = \sum_i \nabla\chi_i \cdot u_i$, a sum
+over the partition's subdomains, has no term for it. **W161** intersects the
+predicate with the family the constraint comes from. `wing_fsi` (CS-12) carried
+the same single decertification for the same reason and reaches `admit` on the
+same repair, which is what makes this a class rather than a one-graph fix.
 
 ---
 

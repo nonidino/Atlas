@@ -52,6 +52,7 @@ from .graph import (
     CUT_DEFECT_FORMS,
     CaseGraph,
     Connection,
+    CycleEnumerationBudget,
     Decomposition,
     FluxMatching,
 )
@@ -158,6 +159,9 @@ def compile_scheme(
     _l3_global_fields(ctx)
     _l4_transmission(ctx)
     scheme = _l5_l7_scheme(ctx)
+    # R13 -- a directed cycle is a fixed-point problem, not a list of seams.
+    # After the scheme, because the condition is about the scheme's iteration.
+    _r13_directed_cycle(ctx, scheme)
     certificate = _l6_assembly(ctx)
     claim = _l9_claims(ctx, quantities)
     _unmeasured_backstop(ctx)
@@ -604,6 +608,9 @@ def _l2_decomposition(ctx: _Context) -> None:
     _r10_elliptic(ctx)
     # The halo rule: a lagged exchange must outrun the agent's own domain of dependence.
     _halo_rule(ctx)
+    # R13 runs after the scheme, not here: whether a cycle's gain has to
+    # contract depends on whether the scheme SWEEPS the loop, and the
+    # accelerator is not decided until L5.
 
     # Cross-points. Conditional on the decomposition axis.
     cps = graph.detected_cross_points()
@@ -645,7 +652,9 @@ def _l2_decomposition(ctx: _Context) -> None:
             rec.refuse(
                 "L2", "I2/G1",
                 f"non-overlapping decomposition with {len(untreated)} cross-points and no "
-                "primal set. The shared cell is MULTI-VALUED: each incident seam carries "
+                "primal set"
+                + _cross_point_provenance(graph)
+                + ". The shared cell is MULTI-VALUED: each incident seam carries "
                 "its own multipliers over its own ring and truncates a different function "
                 "to the same interface modes, so the cell receives one value per seam and "
                 "they disagree -- measured at 1.62% of the trace scale in the streamwise "
@@ -673,6 +682,37 @@ def _l2_decomposition(ctx: _Context) -> None:
             )
 
     _cut_policy(ctx)
+
+
+def _cross_point_provenance(graph) -> str:
+    """W162: say whether the cross-points were DECLARED or inferred, and how.
+
+    The refusal below is severe -- it is a `refuse`, not a decertification --
+    and until 2026-09-09 it did not say where its subject came from. On a tiling
+    the adjacency triangle is a sound proxy for a shared corner. On a CIRCUIT it
+    is not: three legs joined by three distinct planes are pairwise adjacent and
+    share no point, and `cooling_loop.build(n_legs=3)` was refused for a
+    multi-valued cell that does not exist. A rule that cannot be told it is
+    wrong about its own subject is the failure this sentence exists to prevent.
+    """
+    if graph.cross_points_declared:
+        return (
+            ", from the graph's own `cross_points` declaration. This is not a "
+            "proxy: the graph named these vertices"
+        )
+    return (
+        ", inferred from the ADJACENCY and not declared. **This is a PROXY and "
+        "it can be wrong here**: `detected_cross_points` reads every "
+        "mutually-adjacent triple of agents as a shared vertex, which holds on "
+        "a tiling -- three subdomains meeting pairwise really do meet at a "
+        "corner -- and fails on a CIRCUIT, where three legs joined by three "
+        "DISTINCT planes are pairwise adjacent and share no point at all. The "
+        "triangle is then in the flow topology rather than in the geometry, and "
+        "nothing in the adjacency tells the two apart. If this graph has no "
+        "geometric cross-point, declare `cross_points=()` -- which since W162 "
+        "(2026-09-09) is a declaration of NONE rather than silence -- and this "
+        "refusal does not arise"
+    )
 
 
 #: **W64, decided 2026-08-29: cross-point COUPLING is out of scope, permanently.**
@@ -1299,6 +1339,27 @@ def _r10_elliptic(ctx: _Context) -> None:
     refusal that inspection resolves, where the other direction would be a silent
     admission. What would replace it is a structured domain declaration on
     `Agent`, which does not exist -- ``Agent.domain`` is free text.
+
+    **W160, closed 2026-09-09: the SAME scope defect a third time, in the
+    ``undeclared`` branch.** That branch reasons *"an incompressible solver
+    almost always contains a pressure solve"*, which is true of a **field**
+    solver and vacuous for an algebraic closure with no field. Censused before it
+    was narrowed, it fired on six agents across four unrelated graphs and every
+    one of them was two lines of algebra: `ground_effect.Suspension` and its
+    re-use in `front_wing` (a spring, k(h0-h)=L), `cooling_loop`'s four lumped
+    coolant legs, `powertrain`'s actuator disk. Not one field solver anywhere in
+    the vault was in the list -- the branch had a 0% hit rate on the class it is
+    about. It is now narrowed by ``stencil_radius``, which is the compile-time
+    signature already declared: zero means no spatial operator, hence no discrete
+    Laplacian, hence no pressure Poisson problem to hide.
+
+    So all three of R10's branches now check a **premise** rather than a label,
+    and all three checks are proxies read off declarations that exist: the
+    same-family count for *"is this agent's domain cut"*, `_decomposition_cuts`
+    for the halo, and now ``stencil_radius`` for *"is there a field here at
+    all"*. The cleared agents are named in an admission rather than dropped, on
+    W136's discipline -- a rule that quietly stops looking at an agent is the
+    same failure in the direction that does not announce itself.
     """
     rec, graph = ctx.record, ctx.graph
     if len(graph.agents) < 2:
@@ -1309,10 +1370,20 @@ def _r10_elliptic(ctx: _Context) -> None:
         if a.capabilities.elliptic_subsolve is not EllipticSubsolve.EMBEDDED:
             continue
         (embedded if a.agent_id in cut else sole).append(a.agent_id)
-    undeclared = [a.agent_id for a in graph.agents
-                  if a.capabilities.elliptic_subsolve is EllipticSubsolve.NONE
-                  and a.capabilities.governing_family
-                  and "incompressible" in a.capabilities.governing_family]
+    incompressible_none = [a for a in graph.agents
+                           if a.capabilities.elliptic_subsolve is EllipticSubsolve.NONE
+                           and a.capabilities.governing_family
+                           and "incompressible" in a.capabilities.governing_family]
+    # W160, closed 2026-09-09. The branch below reasons "an incompressible
+    # solver almost always contains a pressure solve". That is true of a FIELD
+    # solver and vacuous for an algebraic closure, and `stencil_radius` is the
+    # compile-time signature that separates them: zero means no spatial
+    # operator, hence no discrete Laplacian, hence no pressure Poisson problem
+    # for the declaration to be hiding.
+    undeclared = [a.agent_id for a in incompressible_none
+                  if a.capabilities.stencil_radius > 0]
+    lumped = [a.agent_id for a in incompressible_none
+              if a.capabilities.stencil_radius == 0]
     if embedded:
         rec.refuse(
             "L2", "R10",
@@ -1325,7 +1396,16 @@ def _r10_elliptic(ctx: _Context) -> None:
             "at 99.8% of the total defect, mislabelled as agent infidelity. Declare "
             "elliptic_subsolve=exposed and run that solve in the composition layer, "
             "which is what probed-dtn-coupling 2.1 assumes when it says the elliptic "
-            "part stays global",
+            "part stays global. **What taking that repair is worth, measured on one "
+            "graph at one state (W168, CS-S1 2026-09-09): 149x in coupling sweeps.** "
+            "The same four windows over the same field need 74.81 sweeps per decade "
+            "of interface residual with the pressure solve embedded and 0.50 with it "
+            "exposed -- 466 sweeps against 7 to the same tolerance, 59.8 seconds "
+            "against 0.62. A control with the projection dropped runs at 0.49, so the "
+            "gain is the EXPOSURE and not the projection. This rule is not "
+            "bookkeeping: it is the largest measured effect in this package, and it "
+            "is a refusal rather than a decertification because the error it names is "
+            "silent",
             subject=", ".join(embedded), quantity="tau",
         )
     if sole:
@@ -1366,11 +1446,261 @@ def _r10_elliptic(ctx: _Context) -> None:
     if undeclared:
         rec.decertify(
             "L2", "R10",
-            f"{len(undeclared)} agents declare an incompressible governing family and "
-            "elliptic_subsolve=none. An incompressible solver almost always contains a "
-            "pressure solve; if it does, this graph has an undeclared R10 violation and "
-            "tau will absorb it silently",
+            f"{len(undeclared)} agents declare an incompressible governing family, "
+            "elliptic_subsolve=none, and a NONZERO stencil_radius. A field solver on a "
+            "spatial stencil almost always contains a pressure solve; if it does, this "
+            "graph has an undeclared R10 violation and tau will absorb it silently. "
+            "The stencil is what makes the inference available: an agent with a "
+            "discrete Laplacian to build has somewhere to hide a pressure Poisson "
+            "problem, and W160 narrowed this branch to those agents on 2026-09-09",
             subject=", ".join(undeclared), quantity="tau",
+        )
+    if lumped:
+        rec.admit(
+            "L2", "R10/lumped",
+            f"{len(lumped)} agents declare an incompressible governing family and "
+            "elliptic_subsolve=none with stencil_radius=0, so there is no spatial "
+            "operator, no discrete Laplacian, and no pressure Poisson problem for the "
+            "declaration to be hiding. R10's undeclared branch reasons that an "
+            "incompressible solver almost always contains a pressure solve, which is "
+            "true of a FIELD solver and vacuous for an algebraic closure -- and the "
+            "family declaration is nonetheless correct, because a lumped closure "
+            "WITHIN a continuum problem is not a different continuum problem and "
+            "declaring otherwise fails E3 at the seam. Narrowed at W160 2026-09-09, "
+            "after the branch fired on six agents across four unrelated graphs and "
+            "every one of them was algebraic: front_wing/ground_effect's SUSP (a "
+            "two-line spring k(h0-h)=L), cooling_loop's four lumped coolant legs, and "
+            "powertrain's actuator disk. This is a PROXY, like R10's own premise "
+            "check: stencil_radius=0 is the compile-time signature of "
+            "'no spatial operator', not a proof that no solve is hidden, and an agent "
+            "that returns a field it computed somewhere else would pass it",
+            subject=", ".join(lumped), quantity="tau",
+            r10_premise="lumped: stencil_radius=0, no spatial operator",
+        )
+
+
+#: Accelerators that reach the interface solution by ITERATING on it, so a
+#: cycle's composed gain has to contract for the iteration to have a limit.
+#: `DIRECT_SCHUR` is not among them -- it solves the assembled system in one
+#: shot and is order-free, which is R5's own sentence -- and neither is the
+#: empty-operator case, which is not a coupling at all.
+SWEEPING_ACCELERATORS: frozenset = frozenset({
+    Accelerator.RICHARDSON, Accelerator.ROBIN_RICHARDSON,
+    Accelerator.KRYLOV, Accelerator.NEWTON_KRYLOV,
+})
+
+
+def _r13_directed_cycle(ctx: _Context, scheme) -> None:
+    """R13: a directed cycle is admissible when its composed gain contracts.
+
+    **Added 2026-09-09, W163, and it is stated against TWO graphs on purpose.**
+    A rule invented the same day the first cyclic graph appeared is a rule
+    validated on one graph, which is the failure this whole direction exists to
+    avoid, so the row was left open from 2026-09-08 until `powertrain` gave it a
+    second circuit on unrelated physics.
+
+    **The defect it repairs: the compiler could not tell a circuit from a
+    chain.**  Compile `cooling_loop` with the return seam and without it and the
+    entire difference in the decision record is the extra seam's own per-seam
+    rows -- same verdict, same rule set, same per-agent decisions.  Nine layers
+    of admissibility saw a directed cycle as a list of independent seams.
+    `powertrain` reproduces it exactly: drop `mgu_bus`'s closing edge and
+    nothing above L3 notices.  Meanwhile the measured consequence on CS-13 is
+    1.5 K of order dependence at one sweep per macro-step, which is larger than
+    several defects this framework does refuse over.
+
+    **What a cycle is, and why order-dependence is the symptom rather than the
+    disease.**  A chain has a topological order: every agent's inputs are
+    available before it runs, one sweep is exact, and the scheme is a
+    composition.  A cycle has none -- ``no agent's inputs are all available
+    before the others have run``, in `cooling_loop`'s own words -- so one sweep
+    is one step of a fixed-point iteration and the scheme's answer depends on
+    where the sweep started.  A cycle therefore has ``2n`` equally defensible
+    sweep orders and nothing in the declaration prefers one, which is
+    `spec-wind-farm-wake` 5.1 stated as a list.  The repair is not to pick an
+    order.  It is to require that the iteration those orders are all
+    approximating actually has a fixed point to reach, which is a property of
+    the loop map and not of the sweep.
+
+    **The condition.**  Let ``G`` be the composed map of one traversal.  Then
+
+        rho(G) < 1   -- a contraction.  Banach gives a unique fixed point and
+                       convergence from any start, so the sweep order stops
+                       mattering in the limit and the graph is a composition
+                       again.  ADMIT.
+        rho(G) = 1   -- no isolated fixed point.  The loop does not settle, and
+                       that is a statement about the circuit rather than a
+                       solver failure.  REFUSE.
+        rho(G) > 1   -- the iteration diverges.  REFUSE.
+
+    Both case studies already raise at exactly this condition inside their own
+    closed forms, which is the check this rule lifts to compile time:
+    `cooling_loop.LoopSolve._closed_form` raises when ``|1 - a_total| < 1e-15``
+    (``B / (1 - A)`` has no value at unit gain) and `powertrain.Circuit.
+    _closed_form` raises when the loop's total resistance is not positive (``I =
+    sum(emf) / sum(R)`` is unbounded).  Measured, the two circuits contract
+    comfortably: CS-13's composed gain is 0.9238, the product of the legs' own
+    coefficients with the radiator's 0.925 doing the work; CS-14's loop is
+    resistive at every element, which is the same statement in electrical form.
+
+    **The gain is DECLARED, and that is a finding rather than an interface
+    convenience.**  W163's row carried an [AI Inference] that the contraction
+    would be *"decidable from the same declared response the probe already
+    builds"*.  It was checked on both graphs and it is false:
+
+      * `boundary_response` is ``(port, trace) -> flux`` on the SAME port, a
+        Dirichlet-to-Neumann map.  A cycle's gain is a CROSS-port transfer --
+        inlet datum to outlet datum -- and no capability field carries one.
+      * On CS-13 the two are unrelated quantities.  Perturbing a leg's ADVEC
+        trace moves the declared response by 2303.89 J/kg per unit mass flux;
+        the loop's transport gain is ``a = 0.99926`` in TEMPERATURE and shows up
+        only in the derivative with respect to the upstream state, which the
+        port interface does not expose.  Reaching it means setting ``leg.t_in``
+        on the expert object, which is reaching around the declaration and not
+        reading it.
+      * On CS-14 the ELEC response IS the element's series resistance, up to the
+        declared terminal area -- so on that graph the ingredient is in the
+        interface after all.
+
+    Two circuits, two different answers, so a rule that computed the gain would
+    be a rule that works on one of the two cyclic graphs in the package.  It
+    asks instead, and decertifies rather than guessing when nothing is declared.
+    That decertification is the honest state of both graphs today: the cycle is
+    seen, its admissibility is not decidable from what has been declared, and
+    the record says which.
+
+    **What this does NOT do.**  It does not order the sweep, and it does not
+    certify a particular scheme's answer at a finite number of sweeps -- L2/C2
+    and the master bound own the truncation.  ``rho(G) < 1`` says the sequence
+    has a limit and every sweep order shares it; how far a one-sweep-per-
+    macro-step scheme sits from that limit is CS-13's measured 1.5 K, and it is
+    a different quantity from this one.
+    """
+    rec, graph = ctx.record, ctx.graph
+    try:
+        cycles = graph.directed_cycles()
+    except CycleEnumerationBudget as e:
+        # A PARTIAL cycle list is worse than none: a rule reasoning over some of
+        # a graph's cycles is silently reasoning about a different graph. So the
+        # detector raises and this says so, in L2/C2's shape -- a criterion with
+        # no value in it.
+        rec.decertify(
+            "L5", "R13",
+            f"the directed cycles of this seam graph could not be enumerated: "
+            f"{e}. R13's condition is therefore a theorem with no subject here. "
+            "It is not evidence that the graph HAS many cycles -- the search is "
+            "factorial in the worst case and this is a budget -- but it does "
+            "mean nothing below has been checked against the graph's topology",
+            subject="<graph>", quantity="loop_gain",
+            detector="directed_cycles (budget exceeded)",
+        )
+        return
+    if not cycles:
+        return
+    acc = getattr(scheme, "accelerator", None)
+    sweeps = acc in SWEEPING_ACCELERATORS
+    for cycle in cycles:
+        route = " -> ".join(cycle) + f" -> {cycle[0]}"
+        declared = graph.declared_loop_gain(cycle)
+        if not sweeps:
+            # **The rule is about an ITERATION and this scheme has none.** The
+            # composition layer solves the assembled interface system in one
+            # shot, so there is no sweep, no first agent to choose and no
+            # fixed-point sequence to converge -- R5's own sentence about a
+            # direct Schur solve being order-free, reaching the case R5 was
+            # written before anyone had. The cycle is still REPORTED, because
+            # W163's complaint is that the compiler could not tell a circuit
+            # from a chain at all, and an admission that names the cycle and
+            # says why it does not bind is the repair; silence would be the
+            # defect again in a quieter form.
+            gain = "undeclared" if declared is None else f"{declared.gain:.6g}"
+            rec.admit(
+                "L5", "R13",
+                f"the seam graph contains a DIRECTED CYCLE ({route}) with a "
+                f"composed loop gain of {gain}, and the scheme does not sweep "
+                f"it: accelerator={acc.value if acc else 'none'} solves the "
+                "assembled interface system in one shot, so there is no first "
+                "agent to choose, no sweep order for the answer to depend on, "
+                "and no fixed-point iteration for the gain to govern. R5 says "
+                "the same thing about ordering -- a direct Schur solve is "
+                "order-free -- and this is that sentence reaching the case R5 "
+                "was written before anyone had. **What this does NOT clear is "
+                "the cycle**: declare a sweeping accelerator and the gain "
+                "becomes binding, which on this graph is what R13 would then "
+                "decide on",
+                subject="<graph>", quantity="loop_gain",
+                cycle=list(cycle), accelerator=acc.value if acc else None,
+                binding=False,
+                loop_gain=None if declared is None else declared.gain,
+            )
+            continue
+        if declared is None:
+            rec.decertify(
+                "L5", "R13",
+                f"the seam graph contains a DIRECTED CYCLE ({route}) and the "
+                "graph declares no loop gain for it, so the criterion is a "
+                "theorem with no value in it. A cycle has no topological order: "
+                "no agent's inputs are all available before the others have "
+                "run, so one sweep is one step of a fixed-point iteration "
+                "rather than an evaluation, and the 2n rotations of the cycle "
+                "are 2n equally defensible schemes that nothing in the "
+                "declaration prefers. Whether they share a limit is decided by "
+                "the composed gain of one traversal and by nothing else. "
+                "**The compiler cannot measure it**: boundary_response is a "
+                "same-port Dirichlet-to-Neumann map and a cycle's gain is a "
+                "cross-port transfer, and the two come apart -- on CS-13 the "
+                "declared response moves 2303.89 J/kg per unit mass flux while "
+                "the transport gain is 0.99926 in temperature and reachable "
+                "only through the expert's internal state. Declare a "
+                "graph.DeclaredLoopGain. Until then the per-seam rows below are "
+                "the same rows this graph would get with the cycle CUT, which "
+                "is the defect W163 opened: compiled with and without the "
+                "closing seam, the decision records differ only by that seam's "
+                "own rows",
+                subject="<graph>", quantity="loop_gain",
+                cycle=list(cycle), detector="directed_cycles (structural proxy)",
+            )
+            continue
+        if not declared.contracts:
+            rec.refuse(
+                "L5", "R13",
+                f"the directed cycle {route} declares a composed loop gain of "
+                f"{declared.gain:.6g}, which is not a contraction. At a gain of "
+                "exactly one the loop map has no isolated fixed point -- a "
+                "circuit with no dissipative element does not settle, and that "
+                "is a statement about the circuit rather than a solver failure "
+                "-- and above one the iteration diverges. Either way the 2n "
+                "sweep orders do not share a limit, so the composed answer is a "
+                "property of where the sweep started and the graph is not a "
+                "composition. Both case studies raise at exactly this "
+                "condition inside their own closed forms: cooling_loop's "
+                "B / (1 - A) has no value at unit gain, and powertrain's "
+                "sum(emf) / sum(R) is unbounded at zero loop resistance",
+                subject="<graph>", quantity="loop_gain",
+                cycle=list(cycle), loop_gain=declared.gain,
+                source=declared.source,
+            )
+            continue
+        rec.admit(
+            "L5", "R13",
+            f"the directed cycle {route} declares a composed loop gain of "
+            f"{declared.gain:.6g} < 1, so one traversal is a contraction: the "
+            "loop map has a unique fixed point, every one of the 2n sweep "
+            "orders converges to it from any start, and the cycle's lack of a "
+            "topological order stops being a modelling choice in the limit. "
+            f"Source: {declared.source or 'not stated'}. **What this does NOT "
+            "certify is a finite-sweep answer** -- rho < 1 says the sequence "
+            "has a limit and says nothing about how far one sweep per "
+            "macro-step sits from it, which on CS-13 is a measured 1.5 K of "
+            "order dependence. That distance is L2/C2's and the master bound's "
+            "quantity, not this rule's. The cycle itself is found by a "
+            "STRUCTURAL proxy -- the elementary directed cycles of the seam "
+            "digraph, taken in each connection's own declared (a, b) order -- "
+            "which returns exactly these two circuits and nothing on any tiling "
+            "in the package, because a tiling orients its seams monotonically "
+            "along the grid axes and its digraph is acyclic",
+            subject="<graph>", quantity="loop_gain",
+            cycle=list(cycle), loop_gain=declared.gain, source=declared.source,
         )
 
 
@@ -1390,6 +1720,51 @@ def _uncut_clause(excluded: list[str]) -> str:
         "agent of its governing_family and therefore owns its whole region: every "
         "boundary it has is a physical one, and there is no artificial face for an "
         "overlap to outrun (W136)"
+    )
+
+
+def _halo_bounds(graph, cut: set[str]) -> str:
+    """Which quantity the halo requirement is bounding on THIS graph.
+
+    **W168, 2026-09-09.** The rule's sentence is about contaminated cells, which
+    is an accuracy statement, and on an embedded agent the same number is a
+    convergence threshold -- measured, and sharply. Naming the quantity is the
+    whole content of the row: a reader handed "widen the overlap" cannot
+    otherwise tell whether a narrower one costs them accuracy or costs them the
+    fixed point.
+    """
+    embedded = [a.agent_id for a in graph.agents
+                if a.agent_id in cut
+                and a.capabilities.elliptic_subsolve in (
+                    EllipticSubsolve.EMBEDDED, EllipticSubsolve.UNKNOWN)]
+    return "accuracy and convergence" if embedded else "accuracy"
+
+
+def _halo_bounds_clause(graph, cut: set[str]) -> str:
+    """The measured sentence behind `_halo_bounds`, for the decision's message."""
+    if _halo_bounds(graph, cut) == "accuracy":
+        return (
+            ". **What this bounds here is ACCURACY** (W168): every agent the "
+            "decomposition cuts declares elliptic_subsolve=exposed, so no local "
+            "step contains a global solve and a halo short of the reach carries "
+            "stale data into the blended region without stopping the sweep from "
+            "converging. Measured on CS-S1's exposed arrangement, the iteration "
+            "converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 "
+            "against a declared reach of 20 -- so a narrow halo here costs "
+            "accuracy and does not cost the fixed point"
+        )
+    return (
+        ". **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at "
+        "least one agent the decomposition cuts has its elliptic part embedded "
+        "or undeclared, and an embedded global solve has an infinite domain of "
+        "dependence inside its own region, for which the halo is what stands "
+        "in. Measured on CS-S1's as-built arrangement over four windows, the "
+        "sweep's contraction crosses 1 between halo 18 (1.00642) and halo 20 "
+        "(0.980531) against a declared reach of exactly 20 -- so one step short "
+        "of the requirement the iteration does not converge at all, rather than "
+        "converging to something less accurate. The same graph with the "
+        "elliptic part EXPOSED converges at every halo from 4 up, which is R10's "
+        "own repair showing up in this rule's threshold"
     )
 
 
@@ -1511,15 +1886,19 @@ def _halo_rule(ctx: _Context) -> None:
             "is contaminated by each window's own artificial boundary, and the partition "
             "of unity gives that boundary full weight. Widen the overlap, or exchange "
             "every sub-step, which drops the requirement to the stencil radius"
+            + _halo_bounds_clause(graph, cut)
             + _uncut_clause(excluded),
             subject="<graph>", quantity="tau", uncut_agents=excluded,
+            bounds=_halo_bounds(graph, cut),
         )
     else:
         rec.admit(
             "L2", "R10/halo",
             f"overlap {have} cells covers the {required}-cell domain of dependence"
+            + _halo_bounds_clause(graph, cut)
             + _uncut_clause(excluded),
             subject="<graph>", uncut_agents=excluded,
+            bounds=_halo_bounds(graph, cut),
         )
 
 
@@ -2535,17 +2914,24 @@ CONSTRAINED_FAMILIES: tuple[tuple[str, str], ...] = (
 )
 
 
-def _declared_constraint(graph) -> str | None:
-    """What the agents each enforce on their own subdomain, from the families."""
-    for a in graph.agents:
-        fam = a.capabilities.governing_family or ""
-        for needle, constraint in CONSTRAINED_FAMILIES:
-            if needle in fam:
-                return constraint
+def _constrained_family(fam: str | None) -> str | None:
+    """The constraint a single ``governing_family`` string carries, if any."""
+    for needle, constraint in CONSTRAINED_FAMILIES:
+        if needle in (fam or ""):
+            return constraint
     return None
 
 
-def _enforcing_agents(graph) -> list[str]:
+def _declared_constraint(graph) -> str | None:
+    """What the agents each enforce on their own subdomain, from the families."""
+    for a in graph.agents:
+        constraint = _constrained_family(a.capabilities.governing_family)
+        if constraint is not None:
+            return constraint
+    return None
+
+
+def _enforcing_agents(graph, constraint: str | None = None) -> list[str]:
     """Agents whose OWN step enforces the constraint, so the blend can break it.
 
     ``embedded`` says the elliptic solve is inside the agent, so the field it
@@ -2556,10 +2942,37 @@ def _enforcing_agents(graph) -> list[str]:
     part out, so its local field is NOT individually constrained, there is
     nothing for the blend to destroy, and the composition layer's single global
     application is downstream of the blend by construction.
+
+    **W161, closed 2026-09-09: an embedded solve is not automatically THIS
+    constraint's solve.**  The predicate above read ``elliptic_subsolve`` alone
+    and ignored ``governing_family``, so on the front wing it returned
+    ``['STRUCT']`` -- a plane-stress elasticity agent whose embedded solve is a
+    **stiffness** solve, not a pressure projection.  R12 then decertified the
+    assembly for applying the divergence-free projection twice, naming an agent
+    that had never applied it once.
+
+    The scope is the constraint's own derivation and not a judgement call.
+    L6/C2 is the commutator identity
+
+        C(sum_i chi_i u_i) = sum_i [C, chi_i] u_i = sum_i grad(chi_i).u_i
+
+    a sum over the subdomains of the **partition of unity**, whose hypothesis is
+    ``C u_i = 0`` on each of them.  An agent that does not carry the family the
+    constraint comes from has no ``C u_i = 0`` to state and, on this graph, no
+    ``chi_i`` either: the partition's subdomains are the six fluid windows and
+    STRUCT is not one of them.  So the filter is on the family that carries the
+    constraint, which is where the identity's index set comes from.
+
+    ``constraint`` is passed by the caller rather than recomputed so that the
+    two cannot disagree about which constraint is in play; ``None`` keeps the
+    old unfiltered behaviour for callers that have no constraint in hand.
     """
     return [a.agent_id for a in graph.agents
             if a.capabilities.elliptic_subsolve in (EllipticSubsolve.EMBEDDED,
-                                                    EllipticSubsolve.UNKNOWN)]
+                                                    EllipticSubsolve.UNKNOWN)
+            and (constraint is None
+                 or _constrained_family(a.capabilities.governing_family)
+                 == constraint)]
 
 
 def _r12_conservative_assembly(ctx: _Context, cert) -> None:
@@ -2636,7 +3049,7 @@ def _r12_conservative_assembly(ctx: _Context, cert) -> None:
     constraint = _declared_constraint(graph)
     if constraint is None:
         return
-    enforcing = _enforcing_agents(graph)
+    enforcing = _enforcing_agents(graph, constraint)
     proj = graph.assembly_projection
     if cond is not None and cond.constraint is None:
         cond.constraint = constraint

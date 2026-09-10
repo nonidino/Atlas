@@ -412,32 +412,62 @@ def test_the_demos_certification_panel_is_the_drivers():
         assert demo_sv(g, r) == drv.seam_verdicts(g, r)
 
 
-def test_the_panel_is_red_on_the_surface_seams_and_amber_on_the_fluid_ones():
+def test_the_panel_is_green_at_a_fixed_shape_and_red_on_the_surface_when_it_rides():
+    """**Rewritten 2026-09-09, W160 + W161.**  The panel used to be red on the
+    two surface seams and amber on the seven fluid ones, with nothing green
+    anywhere.  Both amber sources were checker defects and both are closed, so
+    what the panel shows now is the difference between the two graphs rather
+    than a uniform absence of certification:
+
+      * fixed shape -- every seam GREEN, and the graph verdict is `admit`.
+      * riding      -- the seven fluid-fluid seams stay green and the two
+                       SURFACE seams go red, on `L2/InterfaceMotion` alone.
+
+    The second half is the one worth keeping: the refusal that remains is about
+    a solution-dependent interface, it is local to the two seams that have one,
+    and it does not touch a seam whose geometry is fixed.
+    """
     from atlas.demo_frontwing.engine import seam_verdicts
     u, v = _field()
+
+    g, _e = F.build(u, v, motion=False)
+    sv = seam_verdicts(g, compile_scheme(g))
+    assert all(s["colour"] == "green" for s in sv.values()), {
+        k: s["colour"] for k, s in sv.items()}
+
     g, _e = F.build(u, v, motion=True)
     sv = seam_verdicts(g, compile_scheme(g))
     assert sv["wet"]["colour"] == "red" and sv["mount"]["colour"] == "red"
+    for seam in ("wet", "mount"):
+        assert sv[seam]["refusals"] == ["L2/InterfaceMotion"], sv[seam]
+        assert not sv[seam]["decertifications"]
     fluid = [s for k, s in sv.items() if s["kind"] == "fluid-fluid"]
-    assert fluid and all(s["colour"] == "amber" for s in fluid)
-    # nothing is green, and the reason is on the record
-    assert not any(s["colour"] == "green" for s in sv.values())
+    assert fluid and all(s["colour"] == "green" for s in fluid)
 
 
-def test_the_constants_are_measured_now_and_nothing_is_green_anyway():
-    """**W157 changed this test's subject and that is the point of it.**
+def test_the_constants_are_measured_and_the_fixed_shape_graph_is_CERTIFIED():
+    """**This test's subject has changed twice, and the second time is 2026-09-09.**
 
-    It used to assert `unmeasured` was NON-empty -- L, sigma and C_mu were
+    It began by asserting `unmeasured` was NON-empty -- L, sigma and C_mu were
     measured only in tier 0, on another graph at another state, so this graph
     declared none of them and W56's backstop forced `admit-uncertified`. That
     made "nothing is green" true for a **bookkeeping** reason, and
     `poc2-novelty-audit` section 3 recorded that the compiler had therefore
     never certified anything.
 
-    `scripts/w157_frontwing_constants.py` measured all three here, so the
-    backstop no longer fires -- and the graph is **still not green**. That is
-    the stronger statement and the one worth defending: what stands now is five
-    named rules rather than an empty ledger.
+    W157 measured all three here, so the backstop stopped firing and the graph
+    was still not green -- five named rules rather than an empty ledger. Tier 35
+    closed three (W136, W138, W159), leaving {R10, R12}, and Tier 34/35 recorded
+    BOTH of those as defects in the checker rather than facts about the wing,
+    then deliberately left them open: narrowing five rules in one session on the
+    one graph being certified is the pattern the audit exists to catch.
+
+    W160 and W161 closed them in a later session, each against more than one
+    graph, and this is now the record that **the front wing certifies at a fixed
+    shape** -- the first `admit` this project has reached on merit. What it does
+    NOT say is that the wing is certified when it rides: declaring the interface
+    solution-dependent still refuses at `L2/InterfaceMotion`, on the two surface
+    seams that have a moving geometry, and that refusal is about the physics.
     """
     u, v = _field()
     g, _e = F.build(u, v, motion=False)
@@ -449,11 +479,20 @@ def test_the_constants_are_measured_now_and_nothing_is_green_anyway():
         assert getattr(g.measured, name) is not None, name
     assert g.measured.source and "w157" in g.measured.source.lower()
 
-    #: and it is still not certified, for reasons that are now NAMED
-    assert r.verdict.value == "admit-uncertified", r.verdict
+    #: **and as of 2026-09-09 it IS certified.**  W160 and W161 closed the last
+    #: two objections, both of which Tier 34/35 had already recorded as defects
+    #: in the CHECKER rather than facts about the assembly, and neither repair
+    #: moved a threshold or softened a declaration: R10's undeclared branch now
+    #: checks `stencil_radius` before inferring a hidden pressure solve, and
+    #: `_enforcing_agents` now intersects with the family the constraint comes
+    #: from.  Both narrowings have controls in this file that put the objection
+    #: straight back, and both reproduce on graphs they were not diagnosed on.
+    assert r.verdict.value == "admit", [
+        f"{d.layer}/{d.rule}" for d in r.decisions if d.verdict.value != "admit"]
     left = {d.rule for d in r.decisions if d.verdict.value != "admit"}
 
-    #: **Tier 35 removed three of the five.** Two were recorded CHECKER DEFECTS
+    #: **Tier 35 removed three of the five, and Tier 39 the last two.** Two of
+    #: the first three were recorded CHECKER DEFECTS
     #: rather than findings about this assembly -- W136 (the halo rule
     #: decertified STRUCT for being implicit with a nonzero stencil, on a seam
     #: where Gamma is a physical boundary and there is no overlap to outrun) and
@@ -464,8 +503,21 @@ def test_the_constants_are_measured_now_and_nothing_is_green_anyway():
     #: `test_the_halo_rule_still_fires_when_a_CUT_agent_is_the_opaque_one`,
     #: `test_the_oriented_seam_operator_is_the_schemes_own_jacobian` and
     #: `test_the_cut_defect_bound_is_measured_and_declared_with_its_form`.
-    assert left == {"R10", "R12"}, left
-    assert not ({"R10/halo", "E7/passivity", "C2"} & left)
+    #: The last two went the same way: W160 gave R10's undeclared branch the
+    #: `stencil_radius` premise check its sentence had always presumed, and
+    #: W161 scoped `_enforcing_agents` to the family the constraint comes from.
+    #: Their controls are in
+    #: `test_the_two_objections_are_CLOSED_and_each_narrowing_has_a_control`.
+    assert left == set(), left
+    assert not ({"R10", "R12", "R10/halo", "E7/passivity", "C2"} & left)
+
+    #: the two closed here are ADMITTED for a stated reason rather than being
+    #: silently absent -- a rule that stops looking at an agent has to say so
+    lumped = [d for d in r.decisions if d.rule == "R10/lumped"]
+    assert len(lumped) == 1 and lumped[0].subject == "SUSP"
+    assert "stencil_radius=0" in lumped[0].message
+    r12 = [d for d in r.decisions if d.rule == "R12"]
+    assert len(r12) == 1 and r12[0].verdict.value == "admit"
 
 
 def test_the_cut_defect_bound_is_measured_and_declared_with_its_form():
@@ -498,12 +550,14 @@ def test_the_cut_defect_bound_is_measured_and_declared_with_its_form():
     assert c2 and all(d.verdict.value == "admit" for d in c2), c2
 
 
-def test_the_two_objections_that_REMAIN_are_recorded_as_diagnosed():
-    """What the front wing still reports, and what this session concluded it is.
+def test_the_two_objections_are_CLOSED_and_each_narrowing_has_a_control():
+    """What the front wing used to report, what it was, and the controls.
 
-    Neither was fixed and that is deliberate -- see the Tier 35 log entry. What
-    this test pins is the DIAGNOSIS, so that a later change which clears either
-    one has to come past the evidence rather than around it:
+    **Both were closed 2026-09-09 (W160, W161), one session after the Tier 35
+    entry that deliberately left them open.** This test keeps the diagnosis --
+    a later change that reopens either one has to come past the evidence rather
+    than around it -- and adds the control on each narrowing, because a rule
+    with nothing to fire on is not a rule:
 
       * `L2/R10` fires on SUSP because the suspension declares an incompressible
         `governing_family` with `elliptic_subsolve=none`, and the rule infers a
@@ -519,24 +573,59 @@ def test_the_two_objections_that_REMAIN_are_recorded_as_diagnosed():
         in the blend is EXPOSED, which is the arrangement R12's ladder calls
         the measured-stable one.
     """
+    from dataclasses import replace
+
+    from atlas.capability import EllipticSubsolve
     from atlas.compiler import _enforcing_agents
 
     u, v = _field()
     g, _e = F.build(u, v, motion=False)
 
+    def respin(graph, agent_id, **caps):
+        agents = [replace(a, capabilities=replace(a.capabilities, **caps))
+                  if a.agent_id == agent_id else a for a in graph.agents]
+        return replace(graph, agents=agents)
+
+    def objections(graph):
+        r = compile_scheme(graph)
+        return {f"{d.layer}/{d.rule}" for d in r.decisions
+                if d.verdict.value != "admit"}
+
+    #: the declarations the two diagnoses rest on, unchanged
     susp = g.agent("SUSP").capabilities
     assert int(susp.stencil_radius) == 0
     assert susp.elliptic_subsolve.value == "none"
     assert "incompressible" in (susp.governing_family or "")
 
-    #: R12 names STRUCT, and STRUCT is not in the blend
+    #: R12 USED to name STRUCT, and STRUCT is not in the blend. The unfiltered
+    #: call is kept as the record of the defect -- passing no constraint is the
+    #: old behaviour verbatim -- and the filtered call is what R12 now asks.
     assert _enforcing_agents(g) == ["STRUCT"]
+    assert _enforcing_agents(g, "divergence-free") == []
     part = getattr(g.partition_of_unity, "partition", g.partition_of_unity)
     assert "STRUCT" not in part.indices
     assert (g.agent("STRUCT").capabilities.governing_family
             == "plane-stress-elasticity-2d")
     for name in part.indices:
         assert g.agent(name).capabilities.elliptic_subsolve.value == "exposed"
+
+    #: nothing stands on the graph as declared
+    assert objections(g) == set()
+
+    #: **W160's control.** Give SUSP a spatial stencil and it is a FIELD solver
+    #: declaring no elliptic sub-solve, which is the class the branch is about.
+    assert "L2/R10" in objections(respin(g, "SUSP", stencil_radius=1))
+
+    #: **W161's control.** Make an agent that IS in the blend enforce the
+    #: constraint internally and R12's double application is real again.
+    assert "L6/R12" in objections(
+        respin(g, "F00", elliptic_subsolve=EllipticSubsolve.EMBEDDED))
+
+    #: **W161's counter-control**: the family filter is the ONLY thing that
+    #: cleared STRUCT. Declare STRUCT with the fluid's family -- STRUCT is
+    #: embedded either way -- and R12 comes straight back.
+    assert "L6/R12" in objections(
+        respin(g, "STRUCT", governing_family="incompressible-navier-stokes-2d"))
 
 
 def test_the_verdict_does_not_move_over_the_design_box():

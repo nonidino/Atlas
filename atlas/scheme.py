@@ -33,6 +33,14 @@ class Ordering(enum.Enum):
 
 class Accelerator(enum.Enum):
     RICHARDSON = "richardson"
+    #: **W167, added 2026-09-09.** Richardson preconditioned by the measured
+    #: Robin coefficient ``diag(S) = alpha_star``, damped by ``1/rho(D^-1 S)``.
+    #: The probe has emitted `alpha_star` since Tier 0 and nothing had ever used
+    #: it as a transmission condition, which is what it is; CS-S1 measured both
+    #: halves of why -- undamped it diverges at ``rho = 2.976`` while CUTTING
+    #: the condition number 22.686 -> 7.345, and damped it beats plain
+    #: Richardson 594 -> 172 expert calls to ``tol = 1e-6``.
+    ROBIN_RICHARDSON = "robin-richardson"
     KRYLOV = "krylov"
     NEWTON_KRYLOV = "newton-krylov"
     DIRECT_SCHUR = "direct-schur"

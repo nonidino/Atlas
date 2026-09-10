@@ -112,15 +112,32 @@ def test_the_fsi_graph_compiles_with_no_refusals():
     """**W114.** Before 2026-09-04 `L2/R10` refused every graph containing a
     quasi-static structural agent, because it read `elliptic_subsolve` alone and
     never asked whether the decomposition cut that agent.  Here it does not: the
-    fluid is tiled and `Omega_solid` is one agent's whole domain."""
+    fluid is tiled and `Omega_solid` is one agent's whole domain.
+
+    **W161, 2026-09-09: this graph now reaches `admit`, and it did not before.**
+    Its single remaining decertification was `L6/R12`, naming STRUCT as an agent
+    enforcing incompressibility inside its own step -- STRUCT solves plane-stress
+    elasticity and is not in the partition of unity at all.  `_enforcing_agents`
+    now intersects with the family the constraint comes from, and this graph is
+    the SECOND one the repair reaches: it was diagnosed on `front_wing` and was
+    never looked at here.  A one-graph fix is what the discipline is against, so
+    the reproduction is the point and it is asserted rather than remarked on.
+    """
     u, v = _flat_field()
     g, _e = WF.build(u, v, motion=False)
     r = compile_scheme(g)
-    assert r.verdict is Verdict.ADMIT_UNCERTIFIED
+    assert r.verdict is Verdict.ADMIT, [
+        f"{d.layer}/{d.rule}" for d in r.decisions.refusals
+        + r.decisions.decertifications]
     assert [f"{d.layer}/{d.rule}" for d in r.decisions.refusals] == []
     sole = [d for d in r.decisions if d.rule == "R10/sole-family"]
     assert len(sole) == 1 and sole[0].verdict is Verdict.ADMIT
     assert "STRUCT" in sole[0].subject
+    #: and R12 admits for the arrangement's own reason -- every agent in the
+    #: blend is EXPOSED -- rather than because the rule stopped looking
+    r12 = [d for d in r.decisions if d.rule == "R12"]
+    assert len(r12) == 1 and r12[0].verdict is Verdict.ADMIT
+    assert "exposed" in r12[0].message
 
 
 @needs_expert

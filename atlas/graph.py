@@ -243,6 +243,63 @@ class DeclaredTopologyEvent:
     e0_reset: float | None = None
 
 
+class CycleEnumerationBudget(RuntimeError):
+    """`directed_cycles` ran past its search budget. **W163.**
+
+    Raised rather than returning a partial list -- see `directed_cycles`.
+    """
+
+
+@dataclass(frozen=True)
+class DeclaredLoopGain:
+    """The composed gain of one traversal of a directed cycle, declared.
+
+    **W163, 2026-09-09.**  A directed cycle in the seam graph is a fixed-point
+    problem the compiler cannot see: compile `cooling_loop` with the return seam
+    and without it and the decision record differs only by the extra seam's own
+    rows -- same verdict, same rule set, same per-agent decisions -- while the
+    measured consequence of the cycle is 1.5 K of order dependence at one sweep
+    per macro-step.  `powertrain` reproduces that on unrelated physics.
+
+    **The gain has to be DECLARED because it cannot be probed**, and that is a
+    finding rather than a convenience.  W163's row carried an [AI Inference]
+    that the contraction would be "decidable from the same declared response the
+    probe already builds".  Checked on both graphs, it is not:
+
+      * `ExpertCapabilities.boundary_response` is ``(port, trace) -> flux`` on
+        the SAME port -- a Dirichlet-to-Neumann map.  A cycle's gain is a
+        CROSS-port transfer, from what the agent is fed on its inlet to what it
+        presents at its outlet, and no capability field carries one.
+      * On CS-13 the two derivatives are unrelated: perturbing an ADVEC leg's
+        port trace moves the response by 2303.89 J/kg per unit mass flux, while
+        the loop's transport gain is ``a = 0.99926`` in temperature and appears
+        only in the derivative with respect to the UPSTREAM STATE, which the
+        port interface does not expose.  Reaching it means setting ``leg.t_in``
+        on the expert object, which is reaching around the declaration.
+      * On CS-14 the ELEC response IS the element's resistance up to the
+        declared terminal area -- so on that graph the ingredient is in the
+        interface after all.  Two graphs, two answers, which is exactly why the
+        rule may not compute it: a mechanism that works on one of the two
+        circuits in the package is not a mechanism.
+
+    So the compiler asks, and refuses to guess.  ``gain`` is the spectral radius
+    of the composed loop map over one traversal; below one the sweep converges
+    to the cycle's fixed point from any start and the order of the sweep stops
+    mattering in the limit, at one the map has no isolated fixed point, and
+    above one it diverges.  Both case studies already raise at exactly this
+    condition inside their own closed forms.
+    """
+
+    agents: tuple[str, ...]           # the cycle, in traversal order
+    gain: float                       # rho of the composed one-traversal map
+    source: str = ""                  # where the number was measured
+    note: str = ""
+
+    @property
+    def contracts(self) -> bool:
+        return bool(self.gain < 1.0)
+
+
 #: **W58.**  The three legal values of `MeasuredConstants.cut_defect_bound_form`,
 #: with what each one is and what it costs.  There is no default: the whole row
 #: is that a number carrying neither form is unreadable.
@@ -399,8 +456,24 @@ class CaseGraph:
     overlap_cells: int | None = None
     global_fields: list[GlobalField] = field(default_factory=list)
     topology_events: list[DeclaredTopologyEvent] = field(default_factory=list)
-    cross_points: tuple[str, ...] = ()            # declared vertices where 3+ subdomains meet
+    #: Declared vertices where 3+ subdomains meet.
+    #:
+    #: **W162, 2026-09-09: three states, not two.** ``None`` is UNDECLARED and
+    #: falls through to `detected_cross_points`' adjacency proxy; a non-empty
+    #: tuple names them; and ``()`` is the declaration that this graph HAS
+    #: none, which was previously unsayable -- an empty tuple is falsy, so it
+    #: fell through to detection exactly as an absent declaration did. The
+    #: distinction is not cosmetic: on a circuit the proxy is wrong, and
+    #: `cooling_loop.build(n_legs=3)` was refused at `L2/I2/G1` for a
+    #: multi-valued shared cell that does not exist, with no way for the graph
+    #: to say so.
+    cross_points: tuple[str, ...] | None = None
     primal_cross_point_dofs: tuple[str, ...] = () # the FETI-DP / BDDC treatment, if applied
+    #: **W163.** The composed gain of each directed cycle in the seam graph, one
+    #: entry per cycle, matched to `directed_cycles()` by agent SET so that a
+    #: declaration does not have to guess which rotation the detector reports.
+    #: Empty means undeclared, and the rule decertifies rather than assuming.
+    loop_gains: tuple[DeclaredLoopGain, ...] = ()
     macro_dt: float | None = None
     #: R9. Which flux the seams match; see `FluxMatching`. Only consulted when
     #: the graph is multirate, because across one clock the two agree exactly.
@@ -518,18 +591,40 @@ class CaseGraph:
                     out.append((a.agent_id, p))
         return out
 
+    @property
+    def cross_points_declared(self) -> bool:
+        """W162: has this graph SAID anything about its cross-points?
+
+        Distinct from having any.  ``()`` is a declaration of none and ``None``
+        is silence, and the two used to be the same value.
+        """
+        return self.cross_points is not None
+
     def detected_cross_points(self) -> list[tuple[str, ...]]:
         """Structural proxy for vertices where three or more subdomains meet.
 
-        Declared cross points are authoritative.  Absent a declaration this
-        returns the 3-cliques of the connection graph, which is a *proxy*: three
-        pairwise-connected subdomains normally share a vertex, but the graph
-        alone cannot prove it and a geometric decomposition can produce a
-        cross-point with no triangle.  The compiler records it as a proxy and
-        leans on the real detector -- the probe's null-space count, where any
-        excess null direction beyond the declared count is a defect.
+        Declared cross points are authoritative, **including a declaration that
+        there are none** (W162): ``cross_points=()`` returns an empty list and
+        the proxy does not run, where ``cross_points=None`` is silence and it
+        does.
+
+        Absent a declaration this returns the 3-cliques of the connection graph,
+        which is a *proxy*: three pairwise-connected subdomains normally share a
+        vertex, but the graph alone cannot prove it and a geometric
+        decomposition can produce a cross-point with no triangle.  The compiler
+        records it as a proxy and leans on the real detector -- the probe's
+        null-space count, where any excess null direction beyond the declared
+        count is a defect.
+
+        **And it fails in the other direction on a CIRCUIT**, which is W162.
+        Three legs of a coolant loop are pairwise adjacent and share no point:
+        their three seams are three distinct planes, and the triangle is in the
+        FLOW topology rather than in the geometry.  A tiling's triangle and a
+        circuit's triangle are the same object in the adjacency and different
+        objects in space, and nothing in the adjacency tells them apart -- so
+        the escape has to be a declaration, and now there is one.
         """
-        if self.cross_points:
+        if self.cross_points is not None:
             return [(cp,) for cp in self.cross_points]
         adjacency = {a.agent_id: self.neighbours(a.agent_id) for a in self.agents}
         triangles: list[tuple[str, ...]] = []
@@ -537,6 +632,87 @@ class CaseGraph:
             if y in adjacency[x] and z in adjacency[x] and z in adjacency[y]:
                 triangles.append((x, y, z))
         return triangles
+
+    def directed_cycles(self, max_steps: int = 200_000
+                        ) -> list[tuple[str, ...]]:
+        """Elementary directed cycles of the seam digraph. **W163.**
+
+        Each connection contributes one edge ``a[0] -> b[0]``, in the order the
+        connection itself declares.  A cycle is a closed walk visiting each
+        agent once, reported from its lowest-named agent so that one cycle has
+        one representation.
+
+        **This is a PROXY for "the agents form a feedback loop", and it was
+        censused before it was trusted.**  Over every graph in the package it
+        returns exactly one cycle on `cooling_loop` (COLD -> PASS -> HOT -> RAD)
+        and exactly one on `powertrain` (BATT -> INV -> MGU -> BUS), zero on
+        both of their ``close_loop=False`` controls, and zero on `front_wing`,
+        `ground_effect`, `wing_fsi` and `thermal_seam`.  A tiling survives it
+        because a tiling orients its seams monotonically along the grid axes --
+        ``xhi -> xlo``, ``yhi -> ylo`` -- so its digraph is a grid poset, which
+        is acyclic.  What the proxy cannot see is a graph whose ``(a, b)`` order
+        is arbitrary rather than meaningful; there is none here, and the rule's
+        message says the detector is structural rather than physical.
+
+        **``max_steps`` is a budget and not a cap on the output**, and the
+        distinction is the whole of it.  The number of elementary cycles in a
+        digraph is factorial in the worst case -- found by stress-testing this
+        function rather than by reading it, on a complete digraph where it does
+        not return at ten nodes -- and every graph in this package is sparse
+        enough to finish in microseconds.  Past the budget it RAISES rather than
+        returning what it has, because a partial list is worse than none: a rule
+        reasoning over some of a graph's cycles is silently reasoning about a
+        different graph, which is the failure class this whole compiler exists
+        to refuse.  `_r13_directed_cycle` catches it and decertifies.
+        """
+        adjacency: dict[str, list[str]] = {}
+        for c in self.connections:
+            adjacency.setdefault(c.a[0], []).append(c.b[0])
+        found: list[tuple[str, ...]] = []
+        seen: set[frozenset] = set()
+        budget = [int(max(1, max_steps))]
+
+        def walk(start: str, node: str, path: list[str]) -> None:
+            for nxt in adjacency.get(node, ()):
+                budget[0] -= 1
+                if budget[0] <= 0:
+                    raise CycleEnumerationBudget(
+                        f"enumerating the elementary directed cycles of "
+                        f"{self.name!r} exceeded {max_steps} search steps over "
+                        f"{len(adjacency)} agents and {len(self.connections)} "
+                        "seams. The count of elementary cycles is factorial in "
+                        "the worst case, so this is a budget and not a bug -- "
+                        "but a PARTIAL list is worse than none, because a rule "
+                        "reasoning over some of a graph's cycles is silently "
+                        "reasoning about a different graph. Declare the cycles "
+                        "the graph has, or raise max_steps deliberately"
+                    )
+                if nxt == start and len(path) >= 2:
+                    key = frozenset(path)
+                    if key not in seen:
+                        seen.add(key)
+                        found.append(tuple(path))
+                elif nxt not in path and nxt > start:
+                    walk(start, nxt, path + [nxt])
+
+        for a in sorted(adjacency):
+            walk(a, a, [a])
+        return found
+
+    def declared_loop_gain(self, cycle: tuple[str, ...]
+                           ) -> "DeclaredLoopGain | None":
+        """The declaration for this cycle, matched by agent SET (W163).
+
+        By set rather than by sequence because a cycle has no distinguished
+        first agent -- that is the property the whole rule is about -- so a
+        declaration written in one rotation must match a detection reported in
+        another.
+        """
+        want = frozenset(cycle)
+        for g in self.loop_gains:
+            if frozenset(g.agents) == want:
+                return g
+        return None
 
     def seam_transfer(self, connection: Connection) -> SeamTransfer | None:
         """Assemble the seam's declared transfer from the connection or the ports.

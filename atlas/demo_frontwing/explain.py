@@ -433,30 +433,42 @@ BEATS = (
 
 NOT_CLAIMED = (
     dict(
-        title="Nothing here is certified",
-        plain="Not one joint on this screen is green. Until recently the "
-              "reason was bookkeeping: constants the bounds rest on had been "
-              "measured on a different problem and never on this one, so the "
-              "software declined to certify anything at all and the refusal "
-              "said nothing about this wing. They have now been measured "
-              "here -- and it is still not green. TWO objections stand, and "
-              "the honest thing to say about them is that both are known "
-              "faults in the checker rather than facts about the wing. So "
-              "what stops this design being certified today is the software, "
-              "not the aerodynamics, and the software says so itself.",
-        technical="W157 measured L, sigma and C_mu on THIS graph; W159 measured "
-                  "cut_defect_bound against a single-window monolith (5.622e-5, "
-                  "chi-weighted, tight to 0.05%), so L2/C2 admits; W136 scoped "
-                  "the halo rule to the agents the decomposition actually cuts; "
-                  "and W138 made the seam operator ORIENTED, which took both "
-                  "surface seams' passivity defect to exactly zero. What "
-                  "remains is L2/R10 on the suspension -- a lumped two-line "
-                  "spring the rule reads as hiding a pressure solve (W160) -- "
-                  "and R12, which names STRUCT as enforcing incompressibility "
-                  "when STRUCT solves elasticity and is not in the blend "
-                  "(W161). Both are open, both are diagnosed, and neither was "
-                  "repaired in the session that found them. With the interface "
-                  "declared to move, InterfaceMotion refuses on top of it.",
+        title="Certified at a fixed shape -- and not certified when it rides",
+        plain="This wing is the first assembly this project has ever "
+              "certified, and the qualification matters more than the "
+              "headline. Held at a FIXED shape, all nine joints are green and "
+              "the software raises no objection. Told that the wing MOVES -- "
+              "that its own deflection changes where the joint is -- the same "
+              "software refuses the two joints on the wing's surface and "
+              "keeps the seven inside the air green. That refusal is not "
+              "bookkeeping and it is not a bug: nothing here certifies a "
+              "joint whose geometry is a function of the answer, and the "
+              "riding wing is the case the framework still cannot certify. "
+              "A racing wing rides. So the honest reading is that the "
+              "machinery works on the problem it can state, and the problem "
+              "it cannot state is the one the sport actually has.",
+        technical="Every constant is measured on THIS graph -- W157 for L, "
+                  "sigma and C_mu, W159 for cut_defect_bound against a "
+                  "single-window monolith (5.622e-5, chi-weighted, tight to "
+                  "0.05%). Five rules stood after that. Three fell in Tier 35 "
+                  "as checker defects or missing measurements (W136 scoped the "
+                  "halo rule to the agents the decomposition cuts; W138 made "
+                  "the seam operator ORIENTED, taking both surface seams' "
+                  "passivity defect to exactly zero; W159 supplied L2/C2's "
+                  "value). The last two fell in Tier 39: W160 gave L2/R10's "
+                  "undeclared branch the stencil_radius check its own sentence "
+                  "presumed, so a two-line spring is no longer read as hiding "
+                  "a pressure solve; W161 scoped _enforcing_agents to the "
+                  "family the constraint comes from, so R12 no longer names a "
+                  "plane-stress elasticity solver as enforcing "
+                  "incompressibility. Neither moved a threshold or softened a "
+                  "declaration, both have controls that put the objection "
+                  "straight back, and both reproduce on graphs they were not "
+                  "diagnosed on -- W160 on cooling_loop's four lumped legs and "
+                  "powertrain's actuator disk, W161 on wing_fsi, which reaches "
+                  "admit for the same repair. With motion declared, "
+                  "L2/InterfaceMotion refuses `wet` and `mount` and nothing "
+                  "else.",
     ),
     dict(
         title="This is not faster than the solver it replaces",

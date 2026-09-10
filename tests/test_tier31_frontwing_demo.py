@@ -427,13 +427,34 @@ def test_the_explainer_does_not_use_the_vocabulary_this_project_has_not_earned()
     assert not hits, f"the explainer says: {hits}"
 
 
-def test_the_explainer_says_out_loud_that_nothing_is_certified():
-    """Every panel is amber or red and the page must not let that be missed."""
+def test_the_explainer_says_out_loud_what_is_NOT_certified(field):
+    """The page must not let the live limitation be missed.
+
+    **Rewritten 2026-09-09.** It used to require the prose to say "not one
+    joint" is green, which was true until W160 and W161 closed the last two
+    objections and is now false -- the fixed-shape graph reaches `admit` and
+    every seam is green. A test that pins a sentence rather than the claim it
+    guards turns into a reason not to correct the page, so what it guards now
+    is the limitation that is actually live: the RIDING wing is refused, on the
+    two surface seams, and a racing wing rides. The panel has to say so in the
+    plain-language half, not only in the technical one.
+    """
     titles = " ".join(x["title"] for x in EX.NOT_CLAIMED).lower()
     assert "certified" in titles
     body = " ".join(x["plain"] for x in EX.NOT_CLAIMED).lower()
-    assert "not one joint" in body or "none ever has been" in body
+    assert "not certified" in body or "cannot certify" in body
+    assert "rides" in body or "moves" in body
     assert "classical solver" in body
+
+    #: and the compiler agrees with the page: fixed shape admits, riding refuses
+    u, v = field
+    from atlas import compile_scheme
+    from atlas.cases import front_wing as FW
+    assert compile_scheme(FW.build(u, v, motion=False)[0]).verdict.value == "admit"
+    r = compile_scheme(FW.build(u, v, motion=True)[0])
+    assert r.verdict.value == "refuse"
+    assert {f"{d.layer}/{d.rule}" for d in r.decisions.refusals} == {
+        "L2/InterfaceMotion"}
 
 
 def test_the_explainer_covers_every_beat_the_page_renders():

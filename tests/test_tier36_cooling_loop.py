@@ -305,64 +305,135 @@ def test_the_spread_does_not_vanish_at_a_practical_number_of_sweeps():
 
 @needs_expert
 def test_the_circuit_compiles_and_the_verdict_is_recorded_as_it_comes():
+    """**Updated 2026-09-09 (W160): `R10` no longer stands here.**
+
+    It used to, on all four lumped legs, and that was the finding this graph
+    contributed to W160 -- the branch reasoned "an incompressible solver almost
+    always contains a pressure solve", which is true of a FIELD solver and
+    vacuous for four legs of algebra with `stencil_radius = 0`. The branch now
+    checks the stencil, so what is left here is E3 (a genuine multiphysics seam
+    at the wall) and W56 (the empty ledger this graph declares and does not
+    pretend to have filled).
+    """
     g, _e = C.build()
     r = compile_scheme(g)
     assert r.verdict is Verdict.ADMIT_UNCERTIFIED, r.verdict
     left = {d.rule for d in r.decisions if d.verdict.value != "admit"}
-    #: E3 fails at the wall because it is a genuine multiphysics seam; R10 is
-    #: W160 on four more agents; W56 is the empty ledger this graph declares.
-    assert {"E3", "R10", "W56"} <= left, left
+    assert {"E3", "W56"} <= left, left
+    #: W160: the four legs are CLEARED, and named in an admission rather than
+    #: dropped -- a rule that quietly stops looking at an agent fails in the
+    #: direction that does not announce itself
+    assert "R10" not in left, left
+    lumped = [d for d in r.decisions if d.rule == "R10/lumped"]
+    assert len(lumped) == 1
+    for leg in ("PASS", "HOT", "RAD", "COLD"):
+        assert leg in lumped[0].subject, lumped[0].subject
     assert not r.decisions.refusals
 
 
 @needs_expert
-def test_the_compiler_reports_NOTHING_different_about_the_cycle():
-    """**The named gap, and it is this case study's main result about Atlas.**
+def test_the_compiler_now_reports_something_different_about_the_cycle():
+    """**This case study's main result about Atlas, and its repair.**
 
-    Compile the circuit and compile the same agents as an open chain. The two
-    differ by the seam that closes the loop -- and by every rule the compiler
-    applies, they are the same graph: same verdict, same rule set, same
-    per-agent decisions. So nine layers of admissibility currently see a
-    DIRECTED CYCLE as a list of independent seams.
+    **The defect, recorded 2026-09-08 and kept here because the repair is only
+    checkable against it.** Compile the circuit and compile the same agents as
+    an open chain. They differ by the seam that closes the loop -- and by every
+    rule the compiler applied, they were the same graph: same verdict, same rule
+    set, same per-agent decisions, the only difference in the whole record being
+    the extra seam's own per-seam rows. Nine layers of admissibility saw a
+    DIRECTED CYCLE as a list of independent seams, while the measured
+    consequence is 1.5 K of order dependence at one sweep per macro-step.
 
-    That is not a claim that a rule is missing; measuring the consequence
-    (1.5 K of order dependence at one sweep per step) is what says the cycle is
-    physically real. It is the statement that no layer looks.
+    **Closed 2026-09-09 as `L5/R13`** (W163), written against this circuit and
+    `powertrain`'s -- a rule invented the day its first graph appears is a rule
+    validated on one graph, so the row waited for the second. There is now a
+    GRAPH-level rule that fires on the circuit and not on the chain, which is
+    what "the compiler can tell a circuit from a chain" means operationally.
     """
     gc, _ = C.build(close_loop=True)
     go, _ = C.build(close_loop=False)
     rc, ro = compile_scheme(gc), compile_scheme(go)
-    assert rc.verdict is ro.verdict
-    assert ({d.rule for d in rc.decisions if d.verdict.value != "admit"}
-            == {d.rule for d in ro.decisions if d.verdict.value != "admit"})
-    #: and the ONLY difference in the decision record is the extra seam's own
-    #: per-seam rows
+
+    #: the cycle is SEEN, and only on the closed graph
+    assert gc.directed_cycles() == [("COLD", "PASS", "HOT", "RAD")]
+    assert go.directed_cycles() == []
+
+    def graph_rules(rec):
+        return {f"{d.layer}/{d.rule}" for d in rec.decisions
+                if d.subject in ("<graph>", "<assembly>", "<run>")}
+
+    closed, opened = graph_rules(rc.decisions), graph_rules(ro.decisions)
+    assert "L5/R13" in closed
+    assert "L5/R13" not in opened
+    assert closed - opened == {"L5/R13"}, closed - opened
+
+    #: and what it says: the loop contracts, so the gain is not what stops this
+    #: graph being certified -- the rule is not smuggling in a new objection
+    r13 = [d for d in rc.decisions if d.rule == "R13"]
+    assert len(r13) == 1 and r13[0].verdict.value == "admit"
+    assert r13[0].evidence["loop_gain"] == pytest.approx(
+        C.LoopSolve().loop_gain, rel=1e-12)
+
+    #: the per-seam difference the old test asserted is still there underneath
     def by_seam(rec):
         return {(d.layer, d.rule, d.subject, d.verdict.value)
                 for d in rec.decisions}
     extra = by_seam(rc.decisions) - by_seam(ro.decisions)
-    assert extra and all("cold_pass" in str(x[2]) for x in extra), extra
+    seam_rows = [x for x in extra if "cold_pass" in str(x[2])]
+    assert seam_rows, extra
 
 
 @needs_expert
-def test_the_THREE_leg_circuit_is_refused_as_a_CROSS_POINT():
-    """A triangle in the agent adjacency is read as a substructuring
-    cross-point, and three legs joined by three DISTINCT planes share no point.
+def test_the_THREE_leg_circuit_is_no_longer_refused_for_a_point_it_lacks():
+    """**W162, closed 2026-09-09**, and the defect is kept because the repair
+    is only checkable against it.
 
-    Kept reachable rather than written up and thrown away, because a finding
-    whose reproduction is a paragraph is not reproducible.
+    A triangle in the agent adjacency was read as a substructuring cross-point,
+    and three legs joined by three DISTINCT planes share no point at all -- the
+    triangle is in the FLOW topology, not in the geometry, and nothing in the
+    adjacency tells the two apart. So the three-leg build was REFUSED at
+    `L2/I2/G1` for a multi-valued shared cell that does not exist.
+
+    **And the graph had no way to say so**: `cross_points` defaulted to `()`,
+    which is falsy, so a declaration of NONE was indistinguishable from silence.
+    It now has three states, this circuit declares `()`, and the claim is about
+    geometry -- legs meet at inlet and outlet PLANES, one per seam, at distinct
+    places along the path, so no cell is in two seams.
     """
+    from dataclasses import replace
+
     g, _e = C.build(n_legs=3)
+
+    #: the triangle is still there in the adjacency: nothing was hidden
+    adj = {a.agent_id: set(g.neighbours(a.agent_id)) for a in g.agents}
+    legs = [n for n in ("PASS", "HOT", "RAD", "COLD") if n in adj]
+    assert len(legs) == 3
+    assert all(b in adj[a] for a in legs for b in legs if a != b)
+
+    #: and the declaration is what stops it being read as geometry
+    assert g.cross_points == () and g.cross_points_declared
+    assert g.detected_cross_points() == []
     r = compile_scheme(g)
-    assert r.verdict is Verdict.REFUSE
-    ref = [d for d in r.decisions.refusals]
+    assert "I2/G1" not in {d.rule for d in r.decisions.refusals}
+    assert r.verdict is not Verdict.REFUSE, [
+        f"{d.layer}/{d.rule}" for d in r.decisions.refusals]
+
+    #: **the control**: take the declaration away and the old behaviour returns
+    #: verbatim, so the escape did not switch the rule off
+    silent = replace(g, cross_points=None)
+    assert len(silent.detected_cross_points()) == 1
+    rs = compile_scheme(silent)
+    ref = list(rs.decisions.refusals)
     assert [d.rule for d in ref] == ["I2/G1"], [d.rule for d in ref]
     assert "cross-point" in ref[0].message
-    #: the triangle is what triggers it, and it really is one
-    assert len(g.detected_cross_points()) == 1
-    #: while the four-leg circuit has none
+    #: and the refusal now names its subject as INFERRED, which is the half of
+    #: W162 that is about the message rather than the schema
+    assert "This is a PROXY" in ref[0].message
+
+    #: while the four-leg circuit has none either way
     g4, _ = C.build(n_legs=4)
     assert not g4.detected_cross_points()
+    assert not replace(g4, cross_points=None).detected_cross_points()
 
 
 # ---------------------------------------------------------------------------

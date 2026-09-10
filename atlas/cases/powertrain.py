@@ -94,7 +94,8 @@ import numpy as np
 from ..capability import (BCChannel, ClaimType, Differentiable, Direction,
                           EllipticSubsolve, ExpertCapabilities, MotionClass,
                           TimeDiscretization, port_decl)
-from ..graph import Agent, CaseGraph, Connection, Decomposition, MeasuredConstants
+from ..graph import (Agent, CaseGraph, Connection, Decomposition,
+                     DeclaredLoopGain, MeasuredConstants)
 from ..ports import PortType, ResponseHalf
 from ..transfer import Prolongation
 from . import wake_array as WA
@@ -628,6 +629,39 @@ class CircuitSolve:
         )
 
 
+def composed_loop_gain(elements: dict, order: tuple[str, ...],
+                       omega: float = 0.0, current: float = 1.0) -> float:
+    """The gain of one traversal, composed from the elements' OWN map.
+
+    **W163, and the answer is 1 for a structural reason.**  The ELEC seam
+    carries the terminal POTENTIAL, and each element's declared map is
+    ``V -> V - emf + I R`` -- a translation.  Its derivative is one, so the
+    derivative round the ring is one whatever the emfs and resistances are.
+    Composed here rather than asserted, so that an element which stopped being
+    affine in the potential would change this number instead of leaving a stale
+    literal behind.
+
+    A gain of exactly one is R13's "no isolated fixed point" case, and on this
+    circuit that is correct physics rather than a defect: Kirchhoff's voltage
+    law round a loop is a CONSTRAINT, and the potential has an arbitrary datum,
+    so there is nothing in it to converge to.  The determined quantity is the
+    current, which `CircuitSolve._closed_form` solves for directly -- and that
+    direct solve is exactly the repair R13's refusal names.
+    """
+    v = 1.0
+    eps = 1.0
+
+    def traverse(start: float) -> float:
+        v = start
+        for name in order:
+            e = elements[name]
+            e.v_in = v
+            v = v - e.emf(omega) + current * e.resistance
+        return v
+
+    return float((traverse(v + eps) - traverse(v)) / eps)
+
+
 def make_elements() -> dict:
     return {"MGU": MachineAgent(), "BUS": BusLeg(),
             "BATT": BatteryLeg(), "INV": InverterLeg()}
@@ -866,6 +900,32 @@ def build(motion: bool = False,
             name="powertrain" + ("" if close_loop else "-open-control"),
             agents=agents,
             connections=connections(close_loop),
+            # **W163, 2026-09-09.** Declared, and it is NOT a contraction -- see
+            # `composed_loop_gain`. `L2/R13` therefore refuses the swept scheme
+            # on this graph, which is the conclusion `CircuitSolve` had already
+            # reached by hand when it chose to solve the loop rather than sweep
+            # it. The declaration is what lets the compiler reach it too.
+            loop_gains=() if not close_loop else (DeclaredLoopGain(
+                agents=tuple(CIRCUIT_ORDER),
+                gain=composed_loop_gain(experts, CIRCUIT_ORDER),
+                source="composed from the elements' own emf/resistance map, "
+                       "V -> V - emf + I R, which is a translation in the "
+                       "potential the ELEC seam carries",
+                note="exactly 1, and structurally so: KVL round a loop is a "
+                     "constraint and the potential has an arbitrary datum, so "
+                     "there is no isolated fixed point in it. The determined "
+                     "quantity is the current, and CircuitSolve solves for it "
+                     "directly rather than sweeping"),),
+            # **W162, 2026-09-09**, and for `cooling_loop`'s reason on different
+            # physics: declared NONE rather than left silent. A circuit's
+            # elements meet at TERMINALS -- one pair per seam, at distinct
+            # places round the loop -- so no cell belongs to two seams and there
+            # is no vertex for a multiplier to be multi-valued at. The adjacency
+            # of a closed loop of four elements has no triangle, so this
+            # declaration changes no verdict here; it is written because the
+            # claim is a property of the CIRCUIT and not of its length, and a
+            # five-element loop with a shunt would have one.
+            cross_points=(),
             # Five agents, five disjoint elements, no region cut and no
             # partition of unity -- `thermal_seam`'s and `cooling_loop`'s shape.
             decomposition=Decomposition.NON_OVERLAPPING,

@@ -117,7 +117,8 @@ import numpy as np
 from ..capability import (BCChannel, ClaimType, Differentiable, Direction,
                           EllipticSubsolve, ExpertCapabilities, MotionClass,
                           TimeDiscretization, port_decl)
-from ..graph import Agent, CaseGraph, Connection, Decomposition, MeasuredConstants
+from ..graph import (Agent, CaseGraph, Connection, Decomposition,
+                     DeclaredLoopGain, MeasuredConstants)
 from ..ports import PortType, ResponseHalf
 from ..transfer import Prolongation
 
@@ -1252,6 +1253,25 @@ MEASURED_NONE = MeasuredConstants(
            "constant. L, sigma, C_mu and tau are open on this graph")
 
 
+def composed_loop_gain(legs: dict, order: tuple[str, ...]) -> float:
+    """The gain of one traversal, composed from the legs' OWN coefficients.
+
+    **W163.**  Every leg is affine in its inlet temperature, ``T -> a T + b``,
+    so one traversal is affine and its gain is the product of the legs' ``a``.
+    Composed here rather than written out, for `LoopSolve`'s own reason: a
+    closed form written out by hand is a second source of truth.  It is the same
+    product `LoopSolve.loop_gain` reports, and a test asserts the two agree.
+
+    ``a`` does not depend on ``Q_block`` -- the heat enters through ``b`` -- so
+    one number is the gain at every operating point, which is what makes it
+    declarable on the graph rather than only measurable on a run.
+    """
+    g = 1.0
+    for name in order:
+        g *= float(legs[name].coeffs(0.0)[0])
+    return g
+
+
 def build(motion: bool = False,
           experts: dict[str, Any] | None = None,
           measured: MeasuredConstants | None = "default",
@@ -1307,6 +1327,33 @@ def build(motion: bool = False,
             # case study is not entitled to make. It is also what keeps L2/C2 and
             # the halo rule off a graph they have no subject on.
             decomposition=Decomposition.NON_OVERLAPPING,
+            # **W162, 2026-09-09.** Declared NONE, which is a claim and not a
+            # silence: since W162 an empty tuple says "this graph has no
+            # geometric cross-point" where it used to be falsy and fall through
+            # to `detected_cross_points`' adjacency proxy. The claim is true and
+            # it is about geometry: the legs meet at inlet and outlet PLANES,
+            # one per seam, at distinct places along the circuit, so no cell
+            # belongs to two seams. What made the declaration necessary is the
+            # three-leg build, where three legs are pairwise adjacent -- an
+            # adjacency triangle with no shared vertex -- and `L2/I2/G1` refused
+            # it for a multi-valued shared cell that does not exist.
+            cross_points=(),
+            # **W163, 2026-09-09.** The composed gain of one traversal, which
+            # `L2/R13` needs and cannot measure: `boundary_response` is a
+            # same-port DtN map and this is a cross-port transfer, from the
+            # leg's inlet temperature to its outlet's. Composed from the legs
+            # themselves so it cannot drift from the solve.
+            loop_gains=() if not close_loop else (DeclaredLoopGain(
+                agents=tuple(order),
+                gain=composed_loop_gain(experts, order),
+                source="composed from the legs' own coeffs(), the same product "
+                       "LoopSolve.loop_gain reports; measured 0.9238 at every "
+                       "operating point, since a does not depend on Q_block",
+                note="the radiator's 0.925 is the whole contraction: the two "
+                     "lines and the passage are near-unity, so a loop with no "
+                     "dissipative leg would sit at gain 1 and R13 would refuse "
+                     "it -- which is exactly where LoopSolve._closed_form "
+                     "raises"),),
             macro_dt=MACRO_DT,
             measured=measured,
             note=("CS-13: a closed coolant circuit. The first graph in this "

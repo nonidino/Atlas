@@ -36,6 +36,7 @@ from atlas import compile_scheme                                   # noqa: E402
 from atlas.cases import powertrain as P                            # noqa: E402
 from atlas.cases import wake_array as WA                           # noqa: E402
 from atlas.ports import PortType                                   # noqa: E402
+from atlas.scheme import Accelerator                               # noqa: E402
 from atlas.verdict import Verdict                                  # noqa: E402
 
 
@@ -323,28 +324,67 @@ def test_dropping_the_return_conductor_turns_the_circuit_into_a_chain():
 
 
 @needs_expert
-def test_the_compiler_reports_NOTHING_different_about_the_cycle_HERE_EITHER():
-    """**W163's second graph, which is what that row said it was waiting for.**
+def test_the_compiler_now_says_something_different_about_THIS_cycle_TOO():
+    """**W163's second graph, which is what that row said it was waiting for --
+    and what the rule written from it says here is not what it says there.**
 
-    CS-13 found that compiling a circuit and compiling the same agents as a
-    chain gives the same verdict, the same rule set and the same per-agent
-    decisions. This is the same finding on completely different physics -- a DC
-    loop rather than a coolant loop, ELEC rather than ADVEC, a real actuator
-    disk rather than a conduction solver. One graph is an anecdote; two on
-    unrelated physics is the statement that no layer looks at loop topology.
+    **The defect, recorded 2026-09-09 and kept because the repair is only
+    checkable against it.** CS-13 found that compiling a circuit and compiling
+    the same agents as a chain gave the same verdict, the same rule set and the
+    same per-agent decisions. This graph reproduced it on completely different
+    physics -- a DC loop rather than a coolant loop, ELEC rather than ADVEC, a
+    real actuator disk rather than a conduction solver. One graph is an
+    anecdote; two on unrelated physics is the statement that no layer looks.
+
+    **Closed as `L5/R13`, and the interesting part is the disagreement.**
+    CS-13's ADVEC loop carries a temperature and composes to a gain of 0.9238 --
+    a contraction. This one carries a POTENTIAL and composes to **exactly 1**,
+    structurally: each element maps ``V -> V - emf + I R``, a translation, so
+    the derivative round the ring is one whatever the element values are. Swept,
+    that is R13's "no isolated fixed point" case and it is **refused** -- which
+    is correct physics and was already known here: Kirchhoff's voltage law round
+    a loop is a CONSTRAINT, the potential has an arbitrary datum, and
+    `CircuitSolve` solves the loop rather than sweeping it for exactly that
+    reason. A rule that said the same thing on both graphs would not have been
+    tested by the second one.
     """
     gc, _ = P.build(close_loop=True)
     go, _ = P.build(close_loop=False)
     rc, ro = compile_scheme(gc), compile_scheme(go)
-    assert rc.verdict is ro.verdict
-    assert ({d.rule for d in rc.decisions if d.verdict.value != "admit"}
-            == {d.rule for d in ro.decisions if d.verdict.value != "admit"})
 
+    assert gc.directed_cycles() == [("BATT", "INV", "MGU", "BUS")]
+    assert go.directed_cycles() == []
+
+    def graph_rules(rec):
+        return {f"{d.layer}/{d.rule}" for d in rec.decisions
+                if d.subject in ("<graph>", "<assembly>", "<run>")}
+
+    closed, opened = graph_rules(rc.decisions), graph_rules(ro.decisions)
+    assert "L5/R13" in closed
+    assert "L5/R13" not in opened
+    assert closed - opened == {"L5/R13"}, closed - opened
+
+    #: the gain is exactly one, and it is STRUCTURAL rather than a coincidence
+    #: of these element values
+    dec = gc.declared_loop_gain(gc.directed_cycles()[0])
+    assert dec is not None and dec.gain == pytest.approx(1.0, abs=1e-12)
+    assert not dec.contracts
+
+    #: as declared this graph does not sweep, so the gain does not bind and R13
+    #: does not refuse it -- both circuits compile to DIRECT_SCHUR, which R5
+    #: already calls order-free
+    assert rc.scheme.accelerator is Accelerator.DIRECT_SCHUR
+    r13 = [d for d in rc.decisions if d.rule == "R13"]
+    assert len(r13) == 1 and r13[0].verdict.value == "admit"
+    assert r13[0].evidence.get("binding") is False
+    assert "R13" not in {d.rule for d in rc.decisions.refusals}
+
+    #: and the per-seam difference the old test asserted is still underneath
     def rows(rec):
         return {(d.layer, d.rule, d.subject, d.verdict.value)
                 for d in rec.decisions}
     extra = rows(rc.decisions) - rows(ro.decisions)
-    assert extra and all("inv_mgu" in str(x[2]) for x in extra), extra
+    assert [x for x in extra if "inv_mgu" in str(x[2])], extra
 
 
 # ---------------------------------------------------------------------------
@@ -410,22 +450,45 @@ def test_the_two_sides_of_the_shaft_linearize_about_DIFFERENT_speeds():
 
 
 @needs_expert
-def test_W160_reproduces_here_on_a_THIRD_graph():
-    """`L2/R10`'s undeclared-pressure-solve branch fires on the ROTOR: an
+def test_W160_was_CLOSED_and_this_graph_was_a_third_of_its_evidence():
+    """**W160, closed 2026-09-09**, and this graph is why it was a class.
+
+    `L2/R10`'s undeclared-pressure-solve branch used to fire on the ROTOR: an
     actuator disk declares the flow's `governing_family` -- correctly, since an
     algebraic closure inside a continuum problem is not a different continuum
-    problem -- and `stencil_radius = 0`, so it has no field and no pressure
-    solve to hide.
+    problem, and declaring otherwise fails E3 at the seam -- and
+    `stencil_radius = 0`, so it has no field and no pressure solve to hide. The
+    front wing's suspension and CS-13's four coolant legs were the other five
+    agents. **Six agents, four unrelated graphs, every one of them algebra**, and
+    no field solver anywhere in the vault in the list: a 0% hit rate on the
+    class the branch is about.
 
-    The front wing's suspension and CS-13's four coolant legs are the other two.
-    A row that fires on three unrelated graphs is about a class.
+    The branch now checks `stencil_radius`, the compile-time signature of "is
+    there a field here at all", and the cleared agent is NAMED rather than
+    dropped.
     """
     g, _e = P.build()
-    r10 = [d for d in compile_scheme(g).decisions if d.rule == "R10"]
-    assert r10 and "ROTOR" in r10[0].subject
+    decisions = compile_scheme(g).decisions
+
+    #: the declaration the diagnosis rests on, unchanged
     caps = g.agent("ROTOR").capabilities
     assert int(caps.stencil_radius) == 0
     assert caps.elliptic_subsolve.value == "none"
+    assert "incompressible" in (caps.governing_family or "")
+
+    #: and R10 no longer fires on it
+    assert not [d for d in decisions if d.rule == "R10"]
+    lumped = [d for d in decisions if d.rule == "R10/lumped"]
+    assert len(lumped) == 1 and lumped[0].subject == "ROTOR"
+    assert lumped[0].verdict.value == "admit"
+
+    #: **the control**: give the rotor a stencil and it is a FIELD solver
+    #: declaring no elliptic sub-solve, which is the class the branch IS about
+    from dataclasses import replace
+    agents = [replace(a, capabilities=replace(a.capabilities, stencil_radius=1))
+              if a.agent_id == "ROTOR" else a for a in g.agents]
+    back = compile_scheme(replace(g, agents=agents))
+    assert [d for d in back.decisions if d.rule == "R10"]
 
 
 @needs_expert

@@ -339,29 +339,42 @@ for. The gap between them exists only during the transient, which is what
 Reproduced from `explain.NOT_CLAIMED`, which is what the page renders and what
 the tests read:
 
-1. **Nothing here is certified, and as of 2026-09-09 the reason is entirely
-   the checker.** No seam is green. **Until 2026-09-08 the reason was
-   bookkeeping** — $L$, $\sigma$ and $C_\mu$ had been measured in tier 0 on
-   another graph and were not declared on this one, so W56's backstop forced
-   `admit-uncertified` and the refusal said nothing about this wing. **W157
-   measured all three here** ([[poc2-novelty-audit]] §3.1) and left five named
-   rules standing. **Tier 35 took three of them and both survivors turned out to
-   be defects too.** `L2/C2` had a number nobody had measured and now has one
-   (**W159**: $5.622\times10^{-5}$, chi-weighted against a single-window
-   monolith, tight to $0.05\%$, with the identity closing to $10^{-10}$ and the
-   zero-cut control at exactly $0$); `R10/halo` was scoped to the agents the
-   decomposition actually cuts (**W136**); and the seam operator became
-   **oriented**, which took both surface seams' passivity defect to exactly zero
-   (**W138**) — checked against the case's own residual Jacobian rather than
-   asserted. What remains is `L2/R10`, which reads a two-line algebraic spring
-   as hiding a pressure solve (**W160**), and `R12`, which names the *elasticity*
-   agent as enforcing incompressibility when that agent is not even a subdomain
-   of the partition of unity (**W161**). Both open, both diagnosed, neither
-   repaired in the session that found them. **So of the five rules that stood
-   yesterday, four were defects in the checker and one was a missing number.
-   Zero were facts about this assembly** — which is §4's point arriving with a
-   count. With the interface declared to move, `InterfaceMotion` refuses on top,
-   and that one is a **named hole** rather than a defect.
+1. **Certified at a fixed shape — and not certified when it rides.** At a fixed
+   shape all nine seams are green and the graph verdict is **`admit`**, the
+   first assembly this project has certified on merit. Declare the interface to
+   move and the same software **refuses the two seams on the wing's surface**
+   at `L2/InterfaceMotion`, leaving the seven inside the air green. That
+   refusal is a **named hole** and not a defect: nothing here certifies a joint
+   whose geometry is a function of the answer. **A racing wing rides**, so the
+   machinery works on the problem it can state and the problem it cannot state
+   is the one the sport actually has.
+
+   **How it got there, because the route qualifies the result.** Until
+   2026-09-08 the reason nothing was green was *bookkeeping* — $L$, $\sigma$
+   and $C_\mu$ had been measured in tier 0 on another graph and were not
+   declared on this one, so W56's backstop forced `admit-uncertified` and the
+   refusal said nothing about this wing. **W157 measured all three here**
+   ([[poc2-novelty-audit]] §3.1) and left five named rules standing. **Tier 35
+   took three**: `L2/C2` got the number nobody had measured (**W159**:
+   $5.622\times10^{-5}$, chi-weighted against a single-window monolith, tight to
+   $0.05\%$, identity closing to $10^{-10}$, zero-cut control at exactly $0$);
+   `R10/halo` was scoped to the agents the decomposition actually cuts
+   (**W136**); and the seam operator became **oriented**, taking both surface
+   seams' passivity defect to exactly zero (**W138**) — checked against the
+   case's own residual Jacobian rather than asserted. **Tier 39 took the last
+   two**, and both were checker defects Tier 35 had already diagnosed and
+   deliberately left open: `L2/R10` read a two-line algebraic spring as hiding a
+   pressure solve and now checks `stencil_radius` (**W160**, censused at six
+   agents across four graphs, every one algebraic); `R12` named the *elasticity*
+   agent as enforcing incompressibility when it is not even a subdomain of the
+   partition of unity, and `_enforcing_agents` now intersects with the family
+   the constraint comes from (**W161**, which also takes `wing_fsi` to `admit`).
+
+   **So of the five rules that stood after W157, four were defects in the
+   checker and one was a missing number. Zero were facts about this assembly**
+   — which is §4's point arriving with a count, and it cuts both ways: a
+   compiler that reaches `admit` by having its own false alarms removed has
+   shown its declarations are checkable, not that its refusals are earned.
 2. **This is not faster than the solvers it is made of.** Every expert is
    classical, and beat ①'s $4.31\times$ is one *search method* against another on
    the same solvers — not a claim about the solvers. The four-to-six orders of

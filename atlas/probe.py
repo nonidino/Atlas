@@ -366,6 +366,157 @@ class ProbeBudget:
     allow_assembly: bool = True           # False forces matrix-free, disabling §4 diagnostics
 
 
+#: Richardson converges iff the preconditioned spectrum sits inside (0, 2), so
+#: a damping of ``1/rho`` puts the largest eigenvalue at exactly 1 and every
+#: other one below it. The margin is what keeps the guard off a spectrum that is
+#: only just inside, where the undamped iteration converges arbitrarily slowly.
+ROBIN_SAFE_RHO: float = 2.0
+
+
+@dataclass
+class RobinCondition:
+    """``alpha_star`` as a usable transmission condition, with its own guard.
+
+    **W167, 2026-09-09.** `alpha_star` is ``diag(S)``, which in a Fourier
+    interface basis IS the measured symbol mode by mode -- the optimal Robin
+    coefficient, read off rather than derived, which for a frozen expert is the
+    only available route. The probe has emitted it since Tier 0 and the only
+    thing in the vault that had ever read it was `SeamOperator.mode_shares`,
+    which reads it as a ratio. Nothing had used it as what it is.
+
+    **It cannot be used bare, and CS-S1 measured why.** Preconditioning
+    Richardson by ``D = diag(alpha_star)`` cut the seam's condition number from
+    22.686 to 7.345 on the as-built neural-interface arrangement -- and the
+    iteration DIVERGED, because Richardson's convergence is not governed by the
+    condition number but by whether the preconditioned spectrum lies inside
+    ``(0, 2)``, and ``rho(D^-1 S) = 2.976`` does not. Damped at
+    ``omega = 1/rho = 0.336`` the same coefficient beat plain Richardson
+    594 -> 172 expert calls to ``tol = 1e-6``, counting the probe both arms
+    need. A better-conditioned operator that diverges is the exact shape of
+    number this framework exists to stop being quoted, so the coefficient and
+    the spectral radius that makes it safe are produced together, in one object,
+    by one function.
+
+    ``omega`` is ``min(1, 1/rho)``: never an over-relaxation, because nothing
+    here has measured one, and ``1`` when the spectrum is already inside the
+    disc, which is the undamped iteration recovered rather than a special case.
+    """
+
+    alpha: np.ndarray                  # diag(S): the per-mode coefficient
+    rho: float                         # rho(D^-1 S), the preconditioned radius
+    omega: float                       # the damping that makes it a contraction
+    usable: bool                       # is this a contraction at all
+    #: ``max_mu |1 - omega mu|`` over the spectrum of ``D^-1 S``: the iteration
+    #: matrix's own spectral radius, and the ONLY statistic that decides this.
+    contraction: float = float("nan")
+    why: str = ""
+
+    @property
+    def M_inv(self) -> np.ndarray | None:
+        """``omega D^-1``, the preconditioner to apply. None when unusable."""
+        if not self.usable:
+            return None
+        return np.diag(self.omega / self.alpha)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"alpha_star": self.alpha.tolist(), "rho_D_inv_S": self.rho,
+                "omega": self.omega, "contraction": self.contraction,
+                "usable": self.usable, "why": self.why}
+
+
+def robin_condition(S: np.ndarray, alpha: np.ndarray | None = None
+                    ) -> RobinCondition | None:
+    """Build the transmission condition and its damping from ONE probed S.
+
+    The guard lives here rather than at the call site, so a caller cannot reach
+    the coefficient without also reaching the reason it is or is not safe.
+    Three ways it declines, and each is a real arrangement:
+
+      * a zero (or denormal) diagonal entry -- the seam has a mode the agents do
+        not respond to on the diagonal, so ``D`` is singular and there is no
+        Robin coefficient for that mode. `alpha_star` is still emitted; what is
+        withheld is the claim that dividing by it is defined.
+      * a non-finite ``rho`` -- the preconditioned operator has no spectrum to
+        read, which is the same class of nothing.
+      * ``rho <= 0`` -- the preconditioned spectrum has no positive part, so no
+        positive step size is a contraction and damping cannot rescue it.
+
+    A large-but-finite ``rho`` is NOT a decline: that is the measured case, and
+    the damping is exactly what handles it.
+
+      * the damped iteration is not a contraction -- ``max_mu |1 - omega mu|``
+        is at or above one over the computed spectrum. **The first version of
+        this function did not check this and was wrong**: it damped by
+        ``1/rho`` and declared the result safe whenever ``rho`` was finite and
+        positive, which is correct for a spectrum of positive reals -- what a
+        passive seam operator has, and what CS-S1 measured -- and false as soon
+        as ``D^-1 S`` has a negative or complex eigenvalue, because Richardson's
+        iteration matrix is ``I - omega D^-1 S`` and a negative ``mu`` puts
+        ``|1 - omega mu|`` above one for EVERY positive omega. It was caught by
+        `solve._robin_richardson`'s divergence check on an indefinite synthetic
+        seam at iteration 707, which is the check earning its place. ``rho`` is
+        a proxy for the contraction and this is the contraction itself.
+
+    ``omega`` stays ``min(1, 1/rho)`` -- the choice CS-S1 measured, the one that
+    reproduces 594 -> 172 expert calls -- rather than the ``2/(mu_min + mu_max)``
+    that would be optimal for a positive real spectrum. Wiring a different
+    coefficient than the one that was measured and quoting the measurement for
+    it is the substitution this framework refuses everywhere else.
+    """
+    S = np.asarray(S, dtype=float)
+    if S.ndim != 2 or S.shape[0] != S.shape[1] or S.size == 0:
+        return None
+    a = np.diag(S).copy() if alpha is None else np.asarray(alpha, dtype=float)
+    if a.shape != (S.shape[0],):
+        return None
+    floor = np.finfo(float).tiny
+    if not np.all(np.isfinite(a)) or np.any(np.abs(a) <= floor):
+        n_zero = int(np.sum(np.abs(a) <= floor))
+        return RobinCondition(
+            alpha=a, rho=float("nan"), omega=float("nan"), usable=False,
+            why=(f"{n_zero} of {a.size} interface modes have a zero diagonal "
+                 "response, so diag(alpha_star) is singular and there is no "
+                 "Robin coefficient on those modes. The seam operator may still "
+                 "be well posed -- a zero DIAGONAL entry is not a zero row -- "
+                 "so this declines the preconditioner, not the seam"))
+    with np.errstate(all="ignore"):
+        DS = S / a[:, None]
+        ev = np.linalg.eigvals(DS)
+    rho = float(np.max(np.abs(ev))) if ev.size else 0.0
+    if not np.isfinite(rho) or rho <= 0.0:
+        return RobinCondition(
+            alpha=a, rho=rho, omega=float("nan"), usable=False,
+            why=("the diagonally preconditioned operator has spectral radius "
+                 f"{rho!r}, so no positive step size contracts it and damping "
+                 "cannot rescue it"))
+    omega = min(1.0, 1.0 / rho)
+    contraction = float(np.max(np.abs(1.0 - omega * ev)))
+    if not np.isfinite(contraction) or contraction >= 1.0:
+        neg = int(np.sum(np.real(ev) <= 0.0))
+        cplx = int(np.sum(np.abs(np.imag(ev)) > 1e-12 * max(rho, 1.0)))
+        return RobinCondition(
+            alpha=a, rho=rho, omega=omega, usable=False,
+            contraction=contraction,
+            why=(f"damped by omega = {omega:.6g} the iteration matrix "
+                 f"I - omega D^-1 S still has spectral radius {contraction:.6g} "
+                 ">= 1, so this is not a contraction and iterating it diverges. "
+                 f"{neg} of {a.size} eigenvalues of D^-1 S have non-positive "
+                 f"real part and {cplx} are complex; a negative mu puts "
+                 "|1 - omega mu| above one for EVERY positive omega, so no "
+                 "damping rescues it. That is a statement about this seam -- a "
+                 "diagonal that does not dominate its own operator in sign -- "
+                 "and not about the coefficient"))
+    return RobinCondition(
+        alpha=a, rho=rho, omega=omega, usable=True, contraction=contraction,
+        why=(f"rho(D^-1 S) = {rho:.6g}"
+             + (f", outside the (0, {ROBIN_SAFE_RHO:g}) disc Richardson needs, "
+                f"so the coefficient is damped by omega = 1/rho = {omega:.6g}"
+                if rho >= ROBIN_SAFE_RHO else
+                f", already inside the (0, {ROBIN_SAFE_RHO:g}) disc, so the "
+                "undamped coefficient is a contraction and omega = 1")
+             + f"; the damped iteration contracts at {contraction:.6g}"))
+
+
 @dataclass
 class ProbedBlock:
     """One agent's contribution to a seam operator, plus everything it certifies."""
@@ -455,6 +606,11 @@ class SeamOperator:
     passivity_lambda_min: float | None = None
     passivity_eigvec: np.ndarray | None = None
     alpha_star: np.ndarray | None = None
+    #: **W167.** `alpha_star` with the spectral radius that says whether it can
+    #: be used as a transmission condition, and the damping that makes it safe.
+    #: Built by `robin_condition` from the same S, so the coefficient and its
+    #: guard cannot be separated by a caller taking one and not the other.
+    robin: "RobinCondition | None" = None
     operator_content: float | None = None
     cut_score: float | None = None
     conforming: bool = True
@@ -557,6 +713,16 @@ class SeamOperator:
             "empty": self.is_empty,
             "one_sided": self.one_sided,
             "mode_shares": None if self.mode_shares is None else self.mode_shares.tolist(),
+            # **W167.** Whether `alpha_star` is usable as a transmission
+            # condition on THIS seam, and the damping that makes it so. Without
+            # it a reader of the artifact cannot tell why
+            # `Accelerator.ROBIN_RICHARDSON` was or was not available here. The
+            # coefficient vector itself is not repeated: the blocks already
+            # carry `alpha_star` per side, and two copies of one array with no
+            # statement about which is which is W58's shape.
+            "robin": None if self.robin is None else {
+                k: v for k, v in self.robin.as_dict().items()
+                if k != "alpha_star"},
             "base_check": self.base_check,
             "declared_probe_state": self.probe_state,
             "derived_probe_state": self.derived_probe_state,
@@ -835,6 +1001,10 @@ def _fill_diagnostics(block: ProbedBlock, S: np.ndarray, tol: float | None = Non
         # by mode -- so the optimal Robin coefficient is read off rather than
         # derived, which for a frozen expert is the only available route.
         block.alpha_star = np.diag(S).copy()
+        # **W167.** The damping is computed from the SAME S, here, because a
+        # coefficient that diverges undamped and a coefficient that does not are
+        # the same array and are told apart only by the spectral radius.
+        block.robin = robin_condition(S, block.alpha_star)
 
 
 def _effort_signs(connection: Any, agent_ids: list[str]) -> dict[str, float]:
@@ -951,6 +1121,10 @@ def assemble_seam(
     op.passivity_lambda_min = proxy.passivity_lambda_min
     op.passivity_eigvec = proxy.passivity_eigvec
     op.alpha_star = proxy.alpha_star
+    #: W167: the ASSEMBLED operator's condition, which is the one a solve uses.
+    #: `proxy` is the block-shaped view of the assembled S, so its `robin` was
+    #: built from the same matrix `solve_interface` will iterate on.
+    op.robin = proxy.robin
     op.operator_content = proxy.operator_content
     op.cut_score = cut_score(S, op.beta)
     return op
