@@ -1,0 +1,1030 @@
+{
+ "generated": "2026-09-09 22:22:57",
+ "declared_reach": 20,
+ "halos": [
+  4,
+  8,
+  12,
+  16,
+  18,
+  20,
+  21,
+  22,
+  24,
+  32,
+  48
+ ],
+ "arrangements": {
+  "embedded + no projection  [CS-S1's 'as-built']": {
+   "expose_elliptic": false,
+   "project": false,
+   "rows": [
+    {
+     "halo": 4,
+     "mono_n": 252,
+     "converging": false,
+     "contraction": 1.5648105051464218,
+     "sweeps": 41,
+     "diverged": true,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 4 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange e"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & diverge -- EARNED"
+    },
+    {
+     "halo": 8,
+     "mono_n": 248,
+     "converging": false,
+     "contraction": 1.2200196603818962,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 8 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange e"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & diverge -- EARNED"
+    },
+    {
+     "halo": 12,
+     "mono_n": 244,
+     "converging": false,
+     "contraction": 1.1080966489688056,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 12 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & diverge -- EARNED"
+    },
+    {
+     "halo": 16,
+     "mono_n": 240,
+     "converging": false,
+     "contraction": 1.0351010566791639,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 16 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & diverge -- EARNED"
+    },
+    {
+     "halo": 18,
+     "mono_n": 238,
+     "converging": false,
+     "contraction": 1.0064179285110326,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 18 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & diverge -- EARNED"
+    },
+    {
+     "halo": 20,
+     "mono_n": 236,
+     "converging": true,
+     "contraction": 0.9805309711869189,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 20 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 21,
+     "mono_n": 235,
+     "converging": true,
+     "contraction": 0.9038342698894077,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 22,
+     "mono_n": 234,
+     "converging": true,
+     "contraction": 0.956461832217437,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 22 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 24,
+     "mono_n": 232,
+     "converging": true,
+     "contraction": 0.9336482463592614,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 24 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 32,
+     "mono_n": 224,
+     "converging": true,
+     "contraction": 0.8497688780801419,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 32 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 48,
+     "mono_n": 208,
+     "converging": true,
+     "contraction": 0.7014314745418195,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 48 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    }
+   ],
+   "tally": {
+    "refuse & diverge -- EARNED": 5,
+    "admit & converge -- earned": 6
+   },
+   "threshold": {
+    "largest_diverging": 18,
+    "smallest_converging": 20,
+    "declared_reach": 20,
+    "bracket_contains_reach": true
+   }
+  },
+  "embedded + global projection  [NEW]": {
+   "expose_elliptic": false,
+   "project": true,
+   "rows": [
+    {
+     "halo": 4,
+     "mono_n": 252,
+     "converging": true,
+     "contraction": 0.9839175426704374,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 4 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange e"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 8,
+     "mono_n": 248,
+     "converging": true,
+     "contraction": 0.9618056159400374,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 8 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange e"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 12,
+     "mono_n": 244,
+     "converging": true,
+     "contraction": 0.929905398426753,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 12 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 16,
+     "mono_n": 240,
+     "converging": true,
+     "contraction": 0.8986581431776646,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 16 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 18,
+     "mono_n": 238,
+     "converging": true,
+     "contraction": 0.8832993005281721,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 18 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 2,
+     "refused_rules": [
+      "L2/R10",
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 20,
+     "mono_n": 236,
+     "converging": true,
+     "contraction": 0.8680880248957501,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 20 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 21,
+     "mono_n": 235,
+     "converging": true,
+     "contraction": 0.860499349925732,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 22,
+     "mono_n": 234,
+     "converging": true,
+     "contraction": 0.8530058952311458,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 22 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 24,
+     "mono_n": 232,
+     "converging": true,
+     "contraction": 0.8380370829725149,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 24 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 32,
+     "mono_n": 224,
+     "converging": true,
+     "contraction": 0.7790142058987732,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 32 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 48,
+     "mono_n": 208,
+     "converging": true,
+     "contraction": 0.6627028072156619,
+     "sweeps": 60,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 48 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY *and* CONVERGENCE** (W168): at least one agent the decomposition cuts has its elliptic part embedded or undeclared, and an embedded global solve has an infinite domain of dependence insi"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10"
+     ],
+     "cell": "admit & converge -- earned"
+    }
+   ],
+   "tally": {
+    "refuse & converge -- OVER-fires": 5,
+    "admit & converge -- earned": 6
+   },
+   "threshold": {
+    "largest_diverging": null,
+    "smallest_converging": 4,
+    "declared_reach": 20,
+    "bracket_contains_reach": false
+   }
+  },
+  "exposed + global projection  [CS-S1's 'split-step']": {
+   "expose_elliptic": true,
+   "project": true,
+   "rows": [
+    {
+     "halo": 4,
+     "mono_n": 252,
+     "converging": true,
+     "contraction": 0.08899769989572674,
+     "sweeps": 12,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 4 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange e"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 8,
+     "mono_n": 248,
+     "converging": true,
+     "contraction": 0.017878882928580767,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 8 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange e"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 12,
+     "mono_n": 244,
+     "converging": true,
+     "contraction": 0.011213940614792453,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 12 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 16,
+     "mono_n": 240,
+     "converging": true,
+     "contraction": 0.010936614465948728,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 16 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 18,
+     "mono_n": 238,
+     "converging": true,
+     "contraction": 0.011031024817223433,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 18 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 20,
+     "mono_n": 236,
+     "converging": true,
+     "contraction": 0.011109073460022142,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 20 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 21,
+     "mono_n": 235,
+     "converging": true,
+     "contraction": 0.011124483248471078,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 22,
+     "mono_n": 234,
+     "converging": true,
+     "contraction": 0.011173949717600813,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 22 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 24,
+     "mono_n": 232,
+     "converging": true,
+     "contraction": 0.011136503324426571,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 24 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 32,
+     "mono_n": 224,
+     "converging": true,
+     "contraction": 0.010363456372962095,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 32 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 48,
+     "mono_n": 208,
+     "converging": true,
+     "contraction": 0.01180874397644153,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 48 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    }
+   ],
+   "tally": {
+    "refuse & converge -- OVER-fires": 5,
+    "admit & converge -- earned": 6
+   },
+   "threshold": {
+    "largest_diverging": null,
+    "smallest_converging": 4,
+    "declared_reach": 20,
+    "bracket_contains_reach": false
+   }
+  },
+  "exposed + no projection  [NEW]": {
+   "expose_elliptic": true,
+   "project": false,
+   "rows": [
+    {
+     "halo": 4,
+     "mono_n": 252,
+     "converging": true,
+     "contraction": 0.19511056925460374,
+     "sweeps": 15,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 4 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange e"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 8,
+     "mono_n": 248,
+     "converging": true,
+     "contraction": 0.014869637771056075,
+     "sweeps": 8,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 8 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange e"
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 12,
+     "mono_n": 244,
+     "converging": true,
+     "contraction": 0.008545530423731755,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 12 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 16,
+     "mono_n": 240,
+     "converging": true,
+     "contraction": 0.008542688418461751,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 16 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 18,
+     "mono_n": 238,
+     "converging": true,
+     "contraction": 0.008634770703383764,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "refuse"
+     ],
+     "halo_rule_refuses": true,
+     "halo_rule_messages": [
+      "overlap is 18 cells and the agents' domain of dependence over one macro-step is 20 (stencil_radius x substeps). The blended region is contaminated by each window's own artificial boundary, and the partition of unity gives that boundary full weight. Widen the overlap, or exchange "
+     ],
+     "graph_verdict": "refuse",
+     "n_refusals": 1,
+     "refused_rules": [
+      "L2/R10/halo"
+     ],
+     "cell": "refuse & converge -- OVER-fires"
+    },
+    {
+     "halo": 20,
+     "mono_n": 236,
+     "converging": true,
+     "contraction": 0.008714785593145697,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 20 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 21,
+     "mono_n": 235,
+     "converging": true,
+     "contraction": 0.008742478997861385,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 22,
+     "mono_n": 234,
+     "converging": true,
+     "contraction": 0.008771788116536963,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 22 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 24,
+     "mono_n": 232,
+     "converging": true,
+     "contraction": 0.008794387882099687,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 24 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 32,
+     "mono_n": 224,
+     "converging": true,
+     "contraction": 0.008658809947505154,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 32 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    },
+    {
+     "halo": 48,
+     "mono_n": 208,
+     "converging": true,
+     "contraction": 0.009212726266703667,
+     "sweeps": 7,
+     "diverged": false,
+     "halo_rule_verdicts": [
+      "admit"
+     ],
+     "halo_rule_refuses": false,
+     "halo_rule_messages": [
+      "overlap 48 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blende"
+     ],
+     "graph_verdict": "admit-uncertified",
+     "n_refusals": 0,
+     "refused_rules": [],
+     "cell": "admit & converge -- earned"
+    }
+   ],
+   "tally": {
+    "refuse & converge -- OVER-fires": 5,
+    "admit & converge -- earned": 6
+   },
+   "threshold": {
+    "largest_diverging": null,
+    "smallest_converging": 4,
+    "declared_reach": 20,
+    "bracket_contains_reach": false
+   }
+  }
+ },
+ "project_is_declarable": {
+  "build_parameters": [
+   "u_full",
+   "v_full",
+   "tiling",
+   "dt",
+   "nu",
+   "expose_elliptic",
+   "experts"
+  ],
+  "project_in_build": false,
+  "halo_convergence_parameters": [
+   "u_full",
+   "v_full",
+   "halos",
+   "expose_elliptic",
+   "project",
+   "cap",
+   "ramp"
+  ],
+  "note": "the global projection is a property of the COMPOSITION LAYER and the graph has no field for it, so the compile cannot distinguish the two cells of the 2x2 that differ in it"
+ },
+ "cs_s1_artifact": {
+  "split-step": {
+   "largest_diverging": null,
+   "smallest_converging": 4,
+   "declared_reach": 20,
+   "bracket_contains_reach": false
+  },
+  "as-built": {
+   "largest_diverging": 18,
+   "smallest_converging": 20,
+   "declared_reach": 20,
+   "bracket_contains_reach": true
+  }
+ },
+ "elapsed_seconds": 332.18287710000004
+}

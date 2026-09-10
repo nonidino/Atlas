@@ -143,9 +143,19 @@ magnitude cheaper. The panel compiles the same graph three times:
 
 | description handed to the compiler | verdict |
 |---|---|
-| **WindowNS**, the classical solver actually running | 2 seams refused, 7 uncertified |
+| **WindowNS**, the classical solver actually running | 2 seams refused, 7 **clean** |
 | **Poseidon-T, as its own wrapper declares it** | 2 refused, 7 uncertified — but with **three new complaints** at every fluid seam |
-| **Poseidon-T, with the elliptic part declared** | **9 of 9 refused** |
+| **Poseidon-T, with the elliptic part declared** | **9 of 9 red** (one graph-level rule, painted across nine seams) |
+
+> **How the nine is counted (corrected 2026-09-10, W177).** `L2/R10` is a
+> **graph-level** rule: it emits ONE decision naming the six fluid agents, and
+> the panel paints it across all nine seams so it can be seen. Nine tiles is
+> one refusal, not nine independent verdicts. And the two reds in the first
+> two rows are `L2/InterfaceMotion` on the **riding** shape -- they fire on the
+> classical incumbent as well, so they are not substitution results. At a
+> **fixed** shape the incumbent is `admit` (nine green) and Poseidon-T as its
+> own wrapper declares it is `admit-uncertified` (nine amber, **zero**
+> refused). See `wiki/concepts/Atlas 0.1/common/substitution-campaign-checkpoint.md`.
 
 Nothing about the model changes between those rows. Only the *description* does.
 The reason is one line long: **you cannot cut a problem into pieces if each piece

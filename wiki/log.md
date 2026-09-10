@@ -3740,3 +3740,95 @@ W162's provenance clause, W163's `_r13_directed_cycle`, W168's two messages),
 `tests/test_tier31_frontwing_demo.py`,
 `tests/test_tier39_robin_accelerator.py` (new),
 `tests/test_tier39_cycles_and_crosspoints.py` (new).
+
+---
+
+## [2026-09-10] tier 40 | the epsilon-halo is measured and does not exist, and the checkpoint says the framework is not what binds
+
+**The one proposed route past `L2/R10` is measured and there is no halo at the end of it.** [[case-study-ladder-to-f1]] §5's middle row — an $\varepsilon$-halo, *the radius beyond which the response falls below $\varepsilon_{\text{tol}}$* — was marked **[AI Inference]**, unbuilt, and named as the thing to attack first. It is now [[epsilon-halo-measurement]], and the answer is §5's **third** outcome: the tail is not summable, `L2/R10` stands, and **no rule was written**.
+
+**The instrument the question needed was not the one pointed at it.** `probe.support_reach` pokes one seam cell and counts how many move — one column, and a boolean. A halo *declaration* is about the whole operator, so the quantity is the band truncation of the dense seam response, $E(r)=\lVert S-S_r\rVert$, built in $n+1$ solves. That is **exactly** $\lVert\Lambda-\tilde\Lambda\rVert$ in [[master-error-bound]] §4, so the truncated tail is not a free approximation: it enters $\sigma$ as $C_\mu E(r)\lVert\lambda^\star\rVert/\beta$, which is the *explicit term* the proposal required. Twelve lines and $1035$ seconds for the whole sweep. **The reason this question stayed open for nine tiers is that the only instrument aimed at it returned a boolean**, and that is the cheapest thing in this entry.
+
+### It plateaus
+
+$E(r)/\lVert S\rVert_2$ is flat from $r\approx16$ out to $r=64$ on a $128$-cell seam, at $0.27$ to $0.75$, with a terminal slope of $10^{-5}$ to $3\times10^{-4}$ per cell. **Six of six learned configurations reach no target at any non-trivial radius, including $10^{-1}$** — not *the halo is large*, but *there is no halo, at ten percent, on a seam whose whole length is $128$ cells*. Extrapolating the terminal slopes, $10^{-2}$ arrives at $1.5\times10^{3}$ to $5.7\times10^{4}$ cells.
+
+**On two donors, which is what makes it a statement about a class.** Poseidon-B — $157.7$M parameters, `depths` $[8,8,8,8]$ against T's $[4,4,4,4]$, its own weights, and cached on this machine all along — plateaus at $0.32$, $0.56$ and $0.52$ against T's $0.27$, $0.75$ and $0.30$. Same behaviour, not a similar number.
+
+**And the positive control earned its place.** `windowns-split-step` — the same classical solver with its elliptic part handed to the composition layer — reads **exactly zero** past $r=13$ in float64, with a fitted along-seam length $\ell=0.397$ cells at $R^2=0.995$ and $0.999$ on two different base states, agreeing to three digits. The negative is not the instrument returning *global* for everything. In between sits `windowns-as-built`, globally supported because an elliptic solve inverts a dense inverse: a real power-law tail, $r^\star(10^{-2})=46$–$70$ and $r^\star(10^{-3})=110$–$120$. **That is §5's second outcome, and it belongs to the classical solver rather than to the checkpoints** — the bound exists and buys nothing at the widths a tiling can afford.
+
+### Two more kills that do not need the decay at all
+
+**$\Pi=1$ above sixteen cells.** [[master-error-bound]] §4.1's overlapping branch is $\sigma\le C_\mu\Pi\lVert\delta\lambda\rVert$, and on this tiling $\Pi$ reaches $1$ at a reach of $16$ — so an $\varepsilon$-halo would have to be **below** $16$ to buy anything in $\sigma$ and large enough to make the truncation small, and at $16$ the truncation is still $0.27$–$0.75$ of the operator. Two requirements pointing opposite ways with a gap of orders. This is [[control-observability]]'s $\Pi=1$ identity arriving as a **finite** statement: the pinning does not need globality, sixteen cells is enough.
+
+**And $\varepsilon_{\text{tol}}$ does not exist on the graph the proposal is about.** `scheme.eps_tol` is `None`; $\tau$ and $\sigma$ are unmeasur**able** rather than unmeasured, because `poseidon.build`'s own docstring records that a checkpoint fixed at $128\times128$ has **no same-class monolith at any resolution** and therefore no reference pair. The comparand is structurally unavailable, which is why every figure here is quoted relative to $\lVert S\rVert$: a tail that is a constant fraction of its own operator is not below any tolerance a composition could declare.
+
+### The transverse direction, which nobody had measured on a learned expert
+
+`L2/R10/halo`'s own sentence is about a distance **into** the window, and §4.1's measurement is **along** the seam. They can differ — an operator that mixes along the seam through attention and only diffuses across it would be global one way and compact the other, and would have a derivable halo. Measured: neither checkpoint's response ever falls to $1\%$ of its face value at any depth, at three poke positions and on both donors, while the local classical solver's transverse reach is $15$–$20$ cells against a **declared** $\rho s = 20$. **The declaration the halo rule reads is correct for the agent it was derived for, with no margin to spare** — which is the strongest evidence available that the rule's arithmetic is right and its subject is wrong.
+
+### The sharpest secondary finding: the proposal's own words name the wrong test
+
+*"The radius beyond which the **response** falls below $\varepsilon_{\text{tol}}$"* is, read literally, a **per-cell** test — and per cell the checkpoints look like they pass. The mean entry at $d=20$ is $2.3\times10^{-5}$ against a peak of $3.4\times10^{-4}$, down by a factor of $15$. Summed over the $107$ cells beyond, the dropped tail is **$1.4$ to $3.5$ times the peak entry**, against $0.04$ for the classical global operator and exactly $0$ for the local one. A per-cell threshold on an $n$-cell seam admits $n\varepsilon_{\text{tol}}$. **An $\varepsilon$-halo written to §5's wording would have looked derivable at $r\approx20$ and would have been wrong**, and the compiler would have carried a bounded halo for an operator that has none. Tier 24's *a verified number can be verified against the wrong question*, reaching a rule that had not been written yet.
+
+### And one control came back the other way, which is why it was run
+
+The amplitude ladder separates the operator from the instrument. Against $a=10^{-2}$ the checkpoint's disagreement is $0.534$ at $a=1$, $0.310$ at $10^{-3}$, **$2.68$ at $10^{-4}$** and $28.7$ at $10^{-5}$ — a clean V, nonlinearity above and float32 cancellation below — while both float64 classical columns are flat at $0.002$ over the same decades. So $a=10^{-4}$ is the instrument's floor, that row is **kept in the tables and is not evidence**, and W93's original *"nonzero at every amplitude from $1$ to $10^{-3}$"* is sound where pushing it one decade further would not have been.
+
+---
+
+## The checkpoint the ladder scheduled, stood on — and the premise it was handed was wrong
+
+[[case-study-ladder-to-f1]] §7 names a stopping rule and says to declare it **after CS-12** *rather than approach it asymptotically*. CS-12, CS-13, CS-14 and CS-S1 are built. [[substitution-campaign-checkpoint]] is the declaration, and standing on it required **counting**, which had never been done.
+
+**"Nine of nine seams have refused Poseidon-T on R10"** appears in W166, in this log's Tier 33 entry, and in both demo READMEs. Compiled rather than recalled, three things are wrong with it:
+
+1. **It is conditional on a declaration this vault records as undeclarable.** It is `front_wing` under `elliptic_subsolve=EMBEDDED`, which the demo's own panel calls *"DECLARED, not measured"* and which W60 says cannot be settled for a learned operator. Under the record `poseidon_capabilities` actually builds, the same graph is **`admit-uncertified` with zero refusals** — as is `poseidon-t-2x2`, the graph holding the live weights.
+2. **`L2/R10` is a graph-level rule.** One decision, naming six agents, painted across nine seam tiles so it can be seen. One rule firing once is not nine independent verdicts, and reading it as nine is what made the campaign look decided.
+3. **The riding-shape refusal is `L2/InterfaceMotion` and fires on the classical incumbent too.** Quoting it as a substitution result attributes to the checkpoint a refusal it shares with the solver it would replace.
+
+**And the campaign's own instrument had never been run.** §5 step 3 is `certify_substitution` at every seam, not a compile. Run at all eight agent-sides of the live graph, with the incumbent block probed on the same window at the same state: **three sides return an informative `admit`** — not a blind pass — on a $\beta_{\min}$ window $0.2\%$ to $1.1\%$ of $\beta$ wide. **And what they admit is measured too.** $\lVert\Delta\rVert/\lVert S_i\rVert$ is $0.95$–$1.01$ on **every** side and the checkpoint's own block is $0.8\%$–$9\%$ of the incumbent's, so the swap is — to within $5\%$ — the same as **deleting the block**. That is **W76's null replacement, measured rather than supposed**: its docstring gives $\lVert\Delta\rVert = \lVert S_i\rVert$ as the hypothetical worst case and this is it, on a real checkpoint. The seam stays invertible because the block contributes almost nothing, and it also explains the knife edge without appealing to the tolerance — the informative band's width **is** $\lVert S_i\rVert - \lVert\Delta\rVert$, so a ratio near $1$ makes it nearly zero by construction. The same fact is [[epsilon-halo-measurement]] §4.1's first column from the other side: $\lVert S\rVert_2 = 0.0048$ against `WindowNS`'s $0.393$, a factor of $82$, which is [[noether-1.0-rbc]]'s **smoothed-near-copy** signature arriving as a seam measurement instead of a rollout one. Two refuse at every tolerance, with $\lVert\Delta\rVert/\beta$ at $1.02$ and $1.12$, which is **W109's saturated reading arriving on a second, unrelated graph**.
+
+**The control that should have killed those three came back the other way.** The windows are $6\times10^{-4}$ to $4\times10^{-3}$ wide, and the checkpoint is noise-dominated at $\varepsilon=10^{-4}$ under a delta probe. Under the **Fourier** probe the certificate uses, a $10\times$ change in $\varepsilon$ moves the window's endpoints by $5$–$34\%$ of its width. A Fourier mode spreads $\varepsilon$ over all $128$ cells where a delta concentrates it, so the same checkpoint is unusable at $10^{-4}$ under one probe and steady under the other. **That is a fact about the probe basis and not about the weights**, and it was worth $78$ seconds to learn.
+
+**So §7's stopping rule does not fire**, and the declaration is three-part rather than one letter: **(c)** a coupling framework plus classical verification is what has been *demonstrated* and is the only branch with a certified artifact behind it; **(b)** a foundation model pending a theory branch is **closed**, because the theory branch was the $\varepsilon$-halo; **(a)** a foundation model on a constrained expert class is **the live route and is unattempted** — [[expert-donor-survey]] §4 names three bounded-receptive-field donors and none has been probed, and `scripts/w173_epsilon_halo.py` runs against any object with a `boundary_response`.
+
+**And the binding constraint is re-identified.** Nine tiers of responses to the campaign have attacked the **receptive field**. At the certificate the receptive field is not what binds: $\beta_{\min}$ is, it derives from $\varepsilon_{\text{tol}}=\min(\tau,\sigma)$, and both are unmeasurable for a fixed-resolution checkpoint. **That is W95** — *no referent from a checkpoint alone* — which was closed **by classical-first** rather than answered. Classical-first routed around it for the ladder and left it standing for the campaign.
+
+---
+
+## Is a refusal earned? One is, in one arrangement, and the 2$\times$2 had to be completed first
+
+[[poc2-novelty-audit]] §4's third clause is the audit's sharpest point and Tier 39 left it standing. `L2/R10/halo` is the one rule with a numeric threshold on one declared integer, and CS-S1 built a sweep that varies exactly it — so the confusion table can be filled in.
+
+**CS-S1 swept two of four cells and they differ in two variables at once**: its *as-built* is (embedded elliptic, **no** global projection), its *split-step* is (exposed, **with** projection). A bracket measured across a two-variable change attributes nothing. All four run:
+
+- **(embedded, unprojected)** — the only cell that diverges. The rule refuses at halos $4$–$18$, contraction $1.565\to1.006$, and admits at $20$–$48$, $0.981\to0.701$. **$11$ of $11$ correct**, declared reach $20$ inside the measured bracket $(18,20]$. **A refusal checked against a coupling that actually fails.**
+- **The other three converge at every halo from $4$ up**, and the identical rule **over-fires $5$ of $11$** in each. With the projection restored and the elliptic part still embedded, halo $4$ gives contraction $0.98392$.
+- **Nothing under-fires anywhere.**
+
+**And the compiler cannot tell the cells apart.** `project` is a parameter of the exchange, not of `neural_interface.build` — asked of the constructor rather than argued — so all four compile to the same declarations and the same verdict. Opened as **W175**, which is one variable, not a new schema: `GlobalField.produced_by` naming all agents already means *"a global operation owned by the composition layer"*, and `build` declares it **unconditionally**, including in the two cells where the composition layer does not project. The message that over-attributes is Tier 39's own W168 text, and every factual claim in it is true as stated; what is over-broad is the attribution. **Not fixed here**: it is a rule narrowed on the graph it was diagnosed on, and W174's 2$\times$2 is the second graph it needs.
+
+---
+
+## W171 is scoped, and its [AI Inference] is false
+
+The row said the natural carrier of the decomposition axis is the **agent**. Censused, it is not, and the work is smaller than the row assumed:
+
+- **The count is wrong in both numbers**: **seven** functions read the axis, and **three** return having emitted nothing. The other four emit on both branches — they would say the wrong thing *loudly*, which is the cheaper failure. `_cut_policy` looks silent and is not: it emits `L2/C3` and then returns.
+- **A cut is a relation among several agents, not a property of one**, and an uncut agent — `front_wing`'s STRUCT — has no axis at all, so an agent-carried field needs a third state that `_decomposition_cuts` already computes separately.
+- **The carrier that works is the CONNECTION and the field is already declared.** `geometrically_coincident` separates the axis exactly, on four graphs with no exception: `front_wing` $7$ non-coincident cuts and $2$ coincident physical interfaces (`wet`, `mount`), `wing_fsi` $7$ and $1$, `cooling_loop` $0$ and $5$, `powertrain` $0$ and $5$. Two overlapping graphs and two non-overlapping ones.
+
+**Budget:** no new declaration, one derived per-seam axis, three silent rules taught to iterate seams and four loud ones taught to scope their subject, and one field each on `CaseGraph` and `Scheme` that must become a set — reaching `Scheme.as_dict`'s `D_decomposition` and therefore the emitted artifact. **What does not fit** is `partition_of_unity`, `overlap` and `overlap_cells`, each still graph-global and each needing the same treatment before a union graph can carry a tiling *and* two circuits. Left open with the scope recorded, so the next session prices it from a census rather than from the row's estimate.
+
+---
+
+### What this tier did not do, named
+
+No rule was written and no rule was narrowed. W173's measurement says do not write the halo's tolerance branch; W175 is diagnosed and left open; W171 is scoped and not built; W176 is an **[AI Inference]** about banded-plus-low-rank structure, deliberately not written against one architecture family. The only code changed is a `__main__` guard on a script's stdout wrapper — re-wrapping on **import** garbage-collects the importer's wrapper and closes the shared buffer under it, which killed the transverse run on its first `print`.
+
+**Four of this tier's own claims were wrong or incomplete when first written, and three of them were caught by its own tests**: the R10 refusal's subject is six agent ids and not `<graph>`; $E(r)$ at $r=16$ is $0.275$ on one configuration and not above $0.3$; and *silent on the wrong axis* means **emits no decision**, not *ends in a return*, which is what let `_cut_policy` in. The last is the same class as the row being corrected. **The fourth was not caught by a test and nearly shipped**: the checkpoint page was written with *three of eight sides admit* as its headline and no column saying what they admit. Adding $\lVert\Delta\rVert/\lVert S_i\rVert$ — two lines, from operators already in hand — turned it into **W76's null replacement measured at $0.95$–$1.01$**, which is a different and more important finding than the admits. It was found by asking *what does an `admit` here actually mean* rather than by any check, which is the one this tier has no instrument for.
+
+Full suite **1044 → 1067** (23 added in one new file, none rewritten — this tier closed no row that a test had pinned). `scripts/vault_scan.py`: 217 files, 0 problems.
+
+Changed: [[gap-worklist]] (W173, W174 opened and closed; W175, W176, W177 opened; W166's figure corrected; W171 scoped), [[log]], [[index]], [[epsilon-halo-measurement]] (new), [[substitution-campaign-checkpoint]] (new). Code: `scripts/w173_epsilon_halo.py` (new), `scripts/w173_transverse_reach.py` (new), `scripts/w173_tables.py` (new), `scripts/w174_refusal_validation.py` (new), `scripts/w177_campaign_census.py` (new), `scripts/w171_decomposition_scope.py` (new), `tests/test_tier40_epsilon_halo.py` (new). Artifacts: `out/w173/w173.json`, `out/w173/transverse.json`, `out/w174/w174.json`, `out/w177/w177.json`, `out/w171/w171.json`.

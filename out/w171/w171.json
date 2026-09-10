@@ -1,0 +1,179 @@
+{
+ "generated": "2026-09-10 00:27:14",
+ "branch_sites": [
+  {
+   "function": "_decide_rung",
+   "lineno": 431,
+   "returns_early_on_wrong_axis": false,
+   "emits_on_both_axes": false
+  },
+  {
+   "function": "_l2_decomposition",
+   "lineno": 553,
+   "returns_early_on_wrong_axis": false,
+   "emits_on_both_axes": true
+  },
+  {
+   "function": "_cut_policy",
+   "lineno": 764,
+   "returns_early_on_wrong_axis": false,
+   "emits_on_both_axes": true
+  },
+  {
+   "function": "_halo_rule",
+   "lineno": 1771,
+   "returns_early_on_wrong_axis": true,
+   "emits_on_both_axes": true
+  },
+  {
+   "function": "_l5_l7_scheme",
+   "lineno": 2341,
+   "returns_early_on_wrong_axis": false,
+   "emits_on_both_axes": true
+  },
+  {
+   "function": "_r12_conservative_assembly",
+   "lineno": 2978,
+   "returns_early_on_wrong_axis": true,
+   "emits_on_both_axes": false
+  },
+  {
+   "function": "_w49_sigma_branch",
+   "lineno": 3211,
+   "returns_early_on_wrong_axis": true,
+   "emits_on_both_axes": false
+  }
+ ],
+ "n_sites": 7,
+ "n_silent": 3,
+ "graphs": [
+  {
+   "graph": "front_wing (fixed shape)",
+   "case": "front-wing-3x2-fixed-shape",
+   "decomposition": "overlapping",
+   "n_agents": 8,
+   "n_seams": 9,
+   "families": {
+    "incompressible-navier-stokes-2d": 7,
+    "plane-stress-elasticity-2d": 1
+   },
+   "n_families": 2,
+   "cut_families": 1,
+   "sole_agents": [
+    "STRUCT"
+   ],
+   "partition_of_unity": true,
+   "overlap_cells": 16,
+   "geometrically_coincident": {
+    "true": 2,
+    "false": 7
+   },
+   "coincident_matches_axis": false
+  },
+  {
+   "graph": "wing_fsi",
+   "case": "wing-fsi-3x2-fixed-shape",
+   "decomposition": "overlapping",
+   "n_agents": 7,
+   "n_seams": 8,
+   "families": {
+    "incompressible-navier-stokes-2d": 6,
+    "plane-stress-elasticity-2d": 1
+   },
+   "n_families": 2,
+   "cut_families": 1,
+   "sole_agents": [
+    "STRUCT"
+   ],
+   "partition_of_unity": true,
+   "overlap_cells": 16,
+   "geometrically_coincident": {
+    "true": 1,
+    "false": 7
+   },
+   "coincident_matches_axis": false
+  },
+  {
+   "graph": "cooling_loop",
+   "case": "cooling-loop",
+   "decomposition": "non-overlapping",
+   "n_agents": 5,
+   "n_seams": 5,
+   "families": {
+    "heat-conduction-2d": 1,
+    "incompressible-thermal-transport-1d": 4
+   },
+   "n_families": 2,
+   "cut_families": 1,
+   "sole_agents": [
+    "BLOCK"
+   ],
+   "partition_of_unity": false,
+   "overlap_cells": null,
+   "geometrically_coincident": {
+    "true": 5,
+    "false": 0
+   },
+   "coincident_matches_axis": true
+  },
+  {
+   "graph": "powertrain",
+   "case": "powertrain",
+   "decomposition": "non-overlapping",
+   "n_agents": 5,
+   "n_seams": 5,
+   "families": {
+    "incompressible-navier-stokes-2d": 1,
+    "lumped-dc-circuit": 4
+   },
+   "n_families": 2,
+   "cut_families": 1,
+   "sole_agents": [
+    "ROTOR"
+   ],
+   "partition_of_unity": false,
+   "overlap_cells": null,
+   "geometrically_coincident": {
+    "true": 5,
+    "false": 0
+   },
+   "coincident_matches_axis": true
+  }
+ ],
+ "cut_regions": [
+  {
+   "graph": "front_wing (fixed shape)",
+   "family": "incompressible-navier-stokes-2d",
+   "n_agents": 7,
+   "axis": "overlapping"
+  },
+  {
+   "graph": "wing_fsi",
+   "family": "incompressible-navier-stokes-2d",
+   "n_agents": 6,
+   "axis": "overlapping"
+  },
+  {
+   "graph": "cooling_loop",
+   "family": "incompressible-thermal-transport-1d",
+   "n_agents": 4,
+   "axis": "non-overlapping"
+  },
+  {
+   "graph": "powertrain",
+   "family": "lumped-dc-circuit",
+   "n_agents": 4,
+   "axis": "non-overlapping"
+  }
+ ],
+ "schema_reach": {
+  "CaseGraph.decomposition": "one field, atlas/graph.py:450",
+  "Scheme.decomposition": "one field, atlas/scheme.py:101, emitted as D_decomposition in as_dict()",
+  "_Context.decomposition": "one field, set once by R2's axis lift from `transmission`, which is also graph-global",
+  "CaseGraph.partition_of_unity": "one object for the whole graph; the overlapping branch's entire mechanism",
+  "CaseGraph.overlap / overlap_cells": "one number for the whole graph",
+  "Agent.domain": "free text (str = \"\"), so no structured domain declaration exists to hang a per-region axis on",
+  "_decomposition_cuts": "derives cut/uncut by grouping on governing_family; its own docstring calls this a proxy and not a decision procedure"
+ },
+ "elapsed_seconds": 4.221979399999327
+}

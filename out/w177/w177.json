@@ -1,0 +1,1622 @@
+{
+ "generated": "2026-09-10 00:42:07",
+ "rows": [
+  {
+   "name": "WindowNS (classical, the incumbent) [fixed shape]",
+   "graph": "front-wing-3x2-fixed-shape",
+   "n_seams": 9,
+   "graph_verdict": "admit",
+   "seams_refused": 0,
+   "seams_uncertified_only": 0,
+   "seams_clean": 9,
+   "graph_level_refusals": [],
+   "per_seam": {
+    "x00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x01": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x11": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y20": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "wet": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "mount": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    }
+   },
+   "candidate": "windowns_fixed",
+   "shape": "fixed shape",
+   "declaration": {},
+   "declared_not_measured": false,
+   "caveat": "",
+   "is_incumbent": true
+  },
+  {
+   "name": "Poseidon-T, as its own wrapper declares it [fixed shape]",
+   "graph": "front-wing-3x2-fixed-shape",
+   "n_seams": 9,
+   "graph_verdict": "admit-uncertified",
+   "seams_refused": 0,
+   "seams_uncertified_only": 0,
+   "seams_clean": 9,
+   "graph_level_refusals": [],
+   "per_seam": {
+    "x00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x01": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x11": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y20": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "wet": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "mount": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    }
+   },
+   "candidate": "poseidon_declared_fixed",
+   "shape": "fixed shape",
+   "declaration": {
+    "time_discretization": "unknown",
+    "stencil_radius": 2,
+    "substeps_per_macro_step": 1,
+    "differentiable": "none",
+    "elliptic_subsolve": "unknown"
+   },
+   "declared_not_measured": false,
+   "caveat": "The record is honest and the compiler still cannot decide the overlap: radius x sub-steps is an EXPLICIT agent's domain of dependence and this agent has not said its step is explicit.",
+   "is_incumbent": false
+  },
+  {
+   "name": "Poseidon-T, with the elliptic part declared [fixed shape]",
+   "graph": "front-wing-3x2-fixed-shape",
+   "n_seams": 9,
+   "graph_verdict": "refuse",
+   "seams_refused": 0,
+   "seams_uncertified_only": 0,
+   "seams_clean": 9,
+   "graph_level_refusals": [
+    "L2/R10"
+   ],
+   "per_seam": {
+    "x00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x01": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x11": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y20": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "wet": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "mount": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    }
+   },
+   "candidate": "poseidon_probed_fixed",
+   "shape": "fixed shape",
+   "declaration": {
+    "time_discretization": "unknown",
+    "stencil_radius": 2,
+    "substeps_per_macro_step": 1,
+    "differentiable": "none",
+    "elliptic_subsolve": "embedded"
+   },
+   "declared_not_measured": true,
+   "caveat": "DECLARED, not measured. W60 says this field is undeclarable for a learned operator; this row shows what follows if it is declared at the value the architecture implies.",
+   "is_incumbent": false
+  },
+  {
+   "name": "WindowNS (classical, the incumbent) [riding]",
+   "graph": "front-wing-3x2-riding",
+   "n_seams": 9,
+   "graph_verdict": "refuse",
+   "seams_refused": 0,
+   "seams_uncertified_only": 0,
+   "seams_clean": 9,
+   "graph_level_refusals": [
+    "L2/InterfaceMotion"
+   ],
+   "per_seam": {
+    "x00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x01": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x11": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y20": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "wet": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "mount": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    }
+   },
+   "candidate": "windowns_riding",
+   "shape": "riding",
+   "declaration": {},
+   "declared_not_measured": false,
+   "caveat": "",
+   "is_incumbent": true
+  },
+  {
+   "name": "Poseidon-T, as its own wrapper declares it [riding]",
+   "graph": "front-wing-3x2-riding",
+   "n_seams": 9,
+   "graph_verdict": "refuse",
+   "seams_refused": 0,
+   "seams_uncertified_only": 0,
+   "seams_clean": 9,
+   "graph_level_refusals": [
+    "L2/InterfaceMotion"
+   ],
+   "per_seam": {
+    "x00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x01": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x11": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y20": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "wet": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "mount": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    }
+   },
+   "candidate": "poseidon_declared_riding",
+   "shape": "riding",
+   "declaration": {
+    "time_discretization": "unknown",
+    "stencil_radius": 2,
+    "substeps_per_macro_step": 1,
+    "differentiable": "none",
+    "elliptic_subsolve": "unknown"
+   },
+   "declared_not_measured": false,
+   "caveat": "The record is honest and the compiler still cannot decide the overlap: radius x sub-steps is an EXPLICIT agent's domain of dependence and this agent has not said its step is explicit.",
+   "is_incumbent": false
+  },
+  {
+   "name": "Poseidon-T, with the elliptic part declared [riding]",
+   "graph": "front-wing-3x2-riding",
+   "n_seams": 9,
+   "graph_verdict": "refuse",
+   "seams_refused": 0,
+   "seams_uncertified_only": 0,
+   "seams_clean": 9,
+   "graph_level_refusals": [
+    "L2/InterfaceMotion",
+    "L2/R10"
+   ],
+   "per_seam": {
+    "x00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x01": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "x11": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y00": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y10": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "y20": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "wet": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    },
+    "mount": {
+     "refusals": [],
+     "decertifications": [],
+     "colour": "green"
+    }
+   },
+   "candidate": "poseidon_probed_riding",
+   "shape": "riding",
+   "declaration": {
+    "time_discretization": "unknown",
+    "stencil_radius": 2,
+    "substeps_per_macro_step": 1,
+    "differentiable": "none",
+    "elliptic_subsolve": "embedded"
+   },
+   "declared_not_measured": true,
+   "caveat": "DECLARED, not measured. W60 says this field is undeclarable for a learned operator; this row shows what follows if it is declared at the value the architecture implies.",
+   "is_incumbent": false
+  },
+  {
+   "name": "poseidon-t-2x2, as poseidon_capabilities defaults",
+   "graph": "poseidon-t-2x2",
+   "n_seams": 4,
+   "graph_verdict": "admit-uncertified",
+   "seams_refused": 0,
+   "seams_uncertified_only": 4,
+   "seams_clean": 0,
+   "graph_level_refusals": [],
+   "per_seam": {
+    "sx0": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sx1": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sy0": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sy1": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    }
+   },
+   "candidate": "poseidon_live_none",
+   "declaration": {
+    "elliptic_subsolve": "none"
+   },
+   "declared_not_measured": false,
+   "eps_tol": null,
+   "unmeasured": [
+    "L (W1)",
+    "beta (W2)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)"
+   ]
+  },
+  {
+   "name": "poseidon-t-2x2, elliptic_subsolve=unknown",
+   "graph": "poseidon-t-2x2",
+   "n_seams": 4,
+   "graph_verdict": "admit-uncertified",
+   "seams_refused": 0,
+   "seams_uncertified_only": 4,
+   "seams_clean": 0,
+   "graph_level_refusals": [],
+   "per_seam": {
+    "sx0": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sx1": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sy0": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sy1": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    }
+   },
+   "candidate": "poseidon_live_unknown",
+   "declaration": {
+    "elliptic_subsolve": "unknown"
+   },
+   "declared_not_measured": false,
+   "eps_tol": null,
+   "unmeasured": [
+    "L (W1)",
+    "beta (W2)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)"
+   ]
+  },
+  {
+   "name": "poseidon-t-2x2, elliptic_subsolve=embedded [DECLARED, not measured -- W60]",
+   "graph": "poseidon-t-2x2",
+   "n_seams": 4,
+   "graph_verdict": "refuse",
+   "seams_refused": 0,
+   "seams_uncertified_only": 4,
+   "seams_clean": 0,
+   "graph_level_refusals": [
+    "L2/R10"
+   ],
+   "per_seam": {
+    "sx0": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sx1": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sy0": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    },
+    "sy1": {
+     "refusals": [],
+     "decertifications": [
+      "L3/C8"
+     ],
+     "colour": "amber"
+    }
+   },
+   "candidate": "poseidon_live_embedded",
+   "declaration": {
+    "elliptic_subsolve": "embedded"
+   },
+   "declared_not_measured": true,
+   "eps_tol": null,
+   "unmeasured": [
+    "L (W1)",
+    "beta (W2)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)"
+   ]
+  }
+ ],
+ "certificates": {
+  "rows": [
+   {
+    "seam": "sx0",
+    "agent": "P00",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.3900407331674091,
+    "beta": 0.34858874944758966,
+    "block_norm": 0.3925712037634315,
+    "visible_above": -0.04398245431584186,
+    "fails_above": -0.04145198371981945,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.003415703196326019,
+    "delta_over_block": 0.993554110511001,
+    "new_over_old_block": 0.008700850096953025,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sx0",
+    "agent": "P10",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.07104694587762289,
+    "beta": 0.34858874944758966,
+    "block_norm": 0.07501130813793364,
+    "visible_above": 0.273577441309656,
+    "fails_above": 0.27754180356996677,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.006748376585783542,
+    "delta_over_block": 0.9471498050264512,
+    "new_over_old_block": 0.08996479002038428,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.27555962243981136,
+      "verdict": "admit",
+      "blind": false,
+      "passes": true
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sx1",
+    "agent": "P01",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.38592079495903664,
+    "beta": 0.37685490122680926,
+    "block_norm": 0.3884969540326036,
+    "visible_above": -0.011642052805794334,
+    "fails_above": -0.009065893732227381,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.003641745817949329,
+    "delta_over_block": 0.9933689079236624,
+    "new_over_old_block": 0.009373936604001546,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sx1",
+    "agent": "P11",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.07245468243006324,
+    "beta": 0.37685490122680926,
+    "block_norm": 0.07480515780498567,
+    "visible_above": 0.30204974342182356,
+    "fails_above": 0.304400218796746,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.005623898690856029,
+    "delta_over_block": 0.968578699064441,
+    "new_over_old_block": 0.07518062732408544,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.30322498110928475,
+      "verdict": "admit",
+      "blind": false,
+      "passes": true
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sy0",
+    "agent": "P00",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.19704722866856747,
+    "beta": 0.272795140877604,
+    "block_norm": 0.19448149006259072,
+    "visible_above": 0.07831365081501326,
+    "fails_above": 0.07574791220903651,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.009750972649671062,
+    "delta_over_block": 1.013192713636403,
+    "new_over_old_block": 0.050138306974781346,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sy0",
+    "agent": "P01",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.1884663280136824,
+    "beta": 0.272795140877604,
+    "block_norm": 0.18911111667179178,
+    "visible_above": 0.0836840242058122,
+    "fails_above": 0.08432881286392158,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.0038627042522466014,
+    "delta_over_block": 0.9965904243523216,
+    "new_over_old_block": 0.020425580051702856,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.08400641853486689,
+      "verdict": "admit",
+      "blind": false,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sy1",
+    "agent": "P10",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.19090402548726387,
+    "beta": 0.2887026444691001,
+    "block_norm": 0.18913749945866629,
+    "visible_above": 0.09956514501043381,
+    "fails_above": 0.09779861898183623,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.005209221431505566,
+    "delta_over_block": 1.0093399036872837,
+    "new_over_old_block": 0.02754198107945261,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sy1",
+    "agent": "P11",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.20354050093877382,
+    "beta": 0.2887026444691001,
+    "block_norm": 0.202232526168741,
+    "visible_above": 0.08647011830035911,
+    "fails_above": 0.08516214353032628,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.006065488865475919,
+    "delta_over_block": 1.0064676775532218,
+    "new_over_old_block": 0.02999264747558427,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   }
+  ],
+  "tally": {
+   "admit-uncertified": 8
+  },
+  "beta_min": null,
+  "why_no_beta_min": "eps_tol = min(tau, sigma) is the derivation W81 gives, and this graph declares neither; both are structurally unmeasurable for a checkpoint fixed at 128x128, which has no same-class monolith"
+ },
+ "certificates_eps1e-3": {
+  "rows": [
+   {
+    "seam": "sx0",
+    "agent": "P00",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.390216874240805,
+    "beta": 0.3485901548512796,
+    "block_norm": 0.3925814090413132,
+    "visible_above": -0.043991254190033635,
+    "fails_above": -0.04162671938952539,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.003272465280474317,
+    "delta_over_block": 0.9939769567634839,
+    "new_over_old_block": 0.008335762226911616,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sx0",
+    "agent": "P10",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.07126164860212761,
+    "beta": 0.3485901548512796,
+    "block_norm": 0.07500830324149499,
+    "visible_above": 0.2735818516097846,
+    "fails_above": 0.27732850624915195,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.006634518308602718,
+    "delta_over_block": 0.9500501347523526,
+    "new_over_old_block": 0.08845045177521717,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.27545517892946825,
+      "verdict": "admit",
+      "blind": false,
+      "passes": true
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sx1",
+    "agent": "P01",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.3858974591005866,
+    "beta": 0.37683772641766705,
+    "block_norm": 0.3885158531835689,
+    "visible_above": -0.011678126765901853,
+    "fails_above": -0.009059732682919541,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.00324922759572107,
+    "delta_over_block": 0.9932605219027056,
+    "new_over_old_block": 0.008363178925895337,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sx1",
+    "agent": "P11",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.07224248685891209,
+    "beta": 0.37683772641766705,
+    "block_norm": 0.07480191259742633,
+    "visible_above": 0.3020358138202407,
+    "fails_above": 0.30459523955875495,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.005594678890073369,
+    "delta_over_block": 0.9657839532487799,
+    "new_over_old_block": 0.07479325990209858,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.3033155266894978,
+      "verdict": "admit",
+      "blind": false,
+      "passes": true
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sy0",
+    "agent": "P00",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.1971863090925648,
+    "beta": 0.27279567932664417,
+    "block_norm": 0.19451298824713484,
+    "visible_above": 0.07828269107950933,
+    "fails_above": 0.07560937023407938,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.00998007575763432,
+    "delta_over_block": 1.0137436624130898,
+    "new_over_old_block": 0.05130801725668993,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sy0",
+    "agent": "P01",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.18824469108280986,
+    "beta": 0.27279567932664417,
+    "block_norm": 0.1890762002480165,
+    "visible_above": 0.08371947907862767,
+    "fails_above": 0.08455098824383431,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.0037357114685154604,
+    "delta_over_block": 0.9956022536727734,
+    "new_over_old_block": 0.019757703315463417,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.08413523366123099,
+      "verdict": "admit",
+      "blind": false,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sy1",
+    "agent": "P10",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.19103531317399663,
+    "beta": 0.288702634891798,
+    "block_norm": 0.18917378474673524,
+    "visible_above": 0.09952885014506274,
+    "fails_above": 0.09766732171780135,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.0050584784784978324,
+    "delta_over_block": 1.009840308633427,
+    "new_over_old_block": 0.0267398492093928,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   },
+   {
+    "seam": "sy1",
+    "agent": "P11",
+    "verdict": "admit-uncertified",
+    "passes": null,
+    "blind": null,
+    "delta_norm": 0.2037649412750486,
+    "beta": 0.288702634891798,
+    "block_norm": 0.20220144635468199,
+    "visible_above": 0.086501188537116,
+    "fails_above": 0.08493769361674938,
+    "beta_min": null,
+    "same_port_list": true,
+    "new_block_norm": 0.006046144186451269,
+    "delta_over_block": 1.0077323626935097,
+    "new_over_old_block": 0.029901587231209587,
+    "beta_min_sweep": [
+     {
+      "beta_min": 0.0,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 1e-06,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.0001,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.01,
+      "verdict": "admit-uncertified",
+      "blind": true,
+      "passes": true
+     },
+     {
+      "beta_min": 0.1,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     },
+     {
+      "beta_min": 0.5,
+      "verdict": "refuse",
+      "blind": false,
+      "passes": false
+     }
+    ]
+   }
+  ],
+  "tally": {
+   "admit-uncertified": 8
+  },
+  "beta_min": null,
+  "why_no_beta_min": "eps_tol = min(tau, sigma) is the derivation W81 gives, and this graph declares neither; both are structurally unmeasurable for a checkpoint fixed at 128x128, which has no same-class monolith"
+ },
+ "window_resolution": {
+  "rows": [
+   {
+    "seam": "sx0",
+    "agent": "P00",
+    "window_width": 0.002530470596022405,
+    "endpoint_shift": 0.0001747356697059388,
+    "window_over_beta": 0.007259186075375222,
+    "shift_over_width": 0.06905263786925729,
+    "admits_somewhere": false,
+    "resolvable": false
+   },
+   {
+    "seam": "sx0",
+    "agent": "P10",
+    "window_width": 0.003964362260310772,
+    "endpoint_shift": 0.00021329732081482033,
+    "window_over_beta": 0.011372605302360207,
+    "shift_over_width": 0.05380369068443802,
+    "admits_somewhere": true,
+    "resolvable": true
+   },
+   {
+    "seam": "sx1",
+    "agent": "P01",
+    "window_width": 0.0025761590735669526,
+    "endpoint_shift": 3.607396010751884e-05,
+    "window_over_beta": 0.00683594419279291,
+    "shift_over_width": 0.014003001785744077,
+    "admits_somewhere": false,
+    "resolvable": false
+   },
+   {
+    "seam": "sx1",
+    "agent": "P11",
+    "window_width": 0.002350475374922445,
+    "endpoint_shift": 0.00019502076200894614,
+    "window_over_beta": 0.00623708320435991,
+    "shift_over_width": 0.08297077437596254,
+    "admits_somewhere": true,
+    "resolvable": true
+   },
+   {
+    "seam": "sy0",
+    "agent": "P00",
+    "window_width": -0.002565738605976753,
+    "endpoint_shift": 0.00013854197495713483,
+    "window_over_beta": -0.00940536769724917,
+    "shift_over_width": Infinity,
+    "admits_somewhere": false,
+    "resolvable": false
+   },
+   {
+    "seam": "sy0",
+    "agent": "P01",
+    "window_width": 0.0006447886581093798,
+    "endpoint_shift": 0.00022217537991273129,
+    "window_over_beta": 0.0023636368889674597,
+    "shift_over_width": 0.34457085607582477,
+    "admits_somewhere": true,
+    "resolvable": true
+   },
+   {
+    "seam": "sy1",
+    "agent": "P10",
+    "window_width": -0.001766526028597587,
+    "endpoint_shift": 0.00013129726403487973,
+    "window_over_beta": -0.006118842561508502,
+    "shift_over_width": Infinity,
+    "admits_somewhere": false,
+    "resolvable": false
+   },
+   {
+    "seam": "sy1",
+    "agent": "P11",
+    "window_width": -0.0013079747700328326,
+    "endpoint_shift": 0.00022444991357689625,
+    "window_over_beta": -0.0045305257679162875,
+    "shift_over_width": Infinity,
+    "admits_somewhere": false,
+    "resolvable": false
+   }
+  ],
+  "n_rows": 8,
+  "n_admitting": 3,
+  "n_resolvable": 3,
+  "note": "an informative admit exists only on (visible_above, fails_above); a window narrower than the endpoint shift between two probe amplitudes is the instrument, not a verdict"
+ },
+ "stopping_rule": {
+  "trigger": "refuse or blind at EVERY seam of EVERY case study",
+  "rows_counted": [
+   "poseidon_declared_fixed",
+   "poseidon_declared_riding",
+   "poseidon_live_none",
+   "poseidon_live_unknown"
+  ],
+  "excluded_declared_not_measured": [
+   "poseidon_probed_fixed",
+   "poseidon_probed_riding",
+   "poseidon_live_embedded"
+  ],
+  "total_seams": 26,
+  "seams_refused": 0,
+  "seams_uncertified_only": 8,
+  "seams_clean": 18,
+  "every_seam_refused": false
+ },
+ "elapsed_seconds": 83.58849640000062
+}

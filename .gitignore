@@ -153,5 +153,22 @@ out/w159/*
 out/w166/*
 !out/w166/w166.json
 
+# Tier 40 (W173 the epsilon-halo, W174 the refusal validation, W177 the
+# campaign census, W171 the decomposition scope). JSON only: w173's
+# seam_operators.npz is 1.2 MB of dense operators and is a rebuildable cache.
+!out/w173/
+out/w173/*
+!out/w173/w173.json
+!out/w173/transverse.json
+!out/w174/
+out/w174/*
+!out/w174/w174.json
+!out/w177/
+out/w177/*
+!out/w177/w177.json
+!out/w171/
+out/w171/*
+!out/w171/w171.json
+
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/
