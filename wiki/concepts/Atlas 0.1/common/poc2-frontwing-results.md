@@ -500,6 +500,8 @@ The declared floor is $h > 0.0703125$, which is $4.5$ cells; [[case-study-ground
 
 **The ratio is the claim and the milliseconds are not.** [[poc1a-frozen-expert-results]]'s own demo shipped a table of milliseconds-per-step that was wrong by a factor of four the next time anyone measured it, on unchanged code, because the box was in a different power state. **[AI Inference]:** the one column here that *would* be GPU-shaped is a frozen neural expert in the windows — dense matmul, which is what PoC 1a ran on an A100 — and **W137** is the row that says what certifying such a swap at this graph's aero-structure seam would cost.
 
+> **Corrected 2026-09-10 (Tier 41, W137).** W137's answer to *what it would cost* was that the certificate is blind at this kind of seam, read off the fluid's share of the assembled operator, $1.44\times10^{-5}$. The certificate does not read the share. It reads $\lVert S_F\rVert$ against $\beta$, the assembled operator's smallest singular value, and on `wing_fsi`'s wetted seam under the exact momentum exchange that is $1.39$: a replacement of the flow expert that ignores its boundary data is refused at every tolerance. Measured on CS-12's seam (`scripts/w137_certificate_visibility.py`), not re-probed on this graph's; W137 is closed, and [[gap-worklist]] Tier 41 carries the reading.
+
 ---
 
 ## 11. What this opens
@@ -513,6 +515,8 @@ The declared floor is $h > 0.0703125$, which is $4.5$ cells; [[case-study-ground
 | **W143** | **Every gradient-vs-population ratio on this project is in rollouts, and one gradient rollout is not one population rollout.** PoC 1 measures the adjoint premium on its own page and never divides by it; PoC 1a inherits the convention. Measured here on three columns it is $3.7$–$6.4$, and it takes rollout ratios of $18$–$22\times$ down to wall-clock ratios of $\mathbf{1.8}$–$\mathbf{4.3\times}$ — §9.3 and §9.6. This PoC also made a second error first, in the other direction: dividing by the baseline's *whole* budget rather than by the evaluation it peaked at, which flatters by $54$–$59\%$ on two of the three columns. Neither overturns PoC 1's conclusion, which rests on a trend in $n$ that a constant per-iterate factor leaves alone |
 
 **And three things this graph is now the place to ask.** Whether the two seams' mutual coupling strengthens where the deflection is a larger fraction of the ride height (§7.1); whether a knob on the **fluid** side of the wetted seam changes sign with the horizon, which is the test CS-12 §8 proposes for its own **[AI Inference]** and which this graph can now run against a knob that does not; and **W137** — what it would cost to certify a learned expert in these windows, at a seam where the fluid's block is $10^{-5}$ of the assembled operator.
+
+> **Corrected 2026-09-10 (Tier 41, W137).** $10^{-5}$ is the fluid block against the operator's **largest** singular value, and a substitution certificate is not charged against that: it is charged against $\beta$, the **smallest**. On CS-12's wetted seam under the effort the march uses, $\lVert S_F\rVert/\beta = 1.39$, so the cost is not blindness — the same correction as the note on the thread-cost paragraph above. W137 is closed; what remains open is the scaled certificate, moved to **W178** on a graph where its premise holds.
 
 ---
 

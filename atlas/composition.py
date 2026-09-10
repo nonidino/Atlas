@@ -416,6 +416,81 @@ class SubstitutionCertificate:
             return None
         return (lo, self.fails_above)
 
+    # -- what a verdict rests on: reported beside it, never charged against it --
+    #
+    # **W109 / W137 / W177, 2026-09-10 (Tier 41).**  Readings a certificate could
+    # always have computed from its own fields and did not report.  Each was first
+    # done by hand on a real seam -- W109's saturated refusals on the reuse probe,
+    # W177's eight sides of the live checkpoint, W137's fluid side of `wing_fsi`
+    # -- and none of them changes `verdict`.
+
+    @property
+    def decision_margin(self) -> float | None:
+        """**W109.** ``(beta - beta_min) - ||Delta||``: how far this swap is from flipping.
+
+        ``margin`` is the allowance; this is the swap measured against it --
+        positive by how much it passes, negative by how much it is refused.  W109
+        found `refuse` at 55 cells whose closest cell sat a quarter of one percent
+        from flipping; the verdict cannot tell those apart and this can.  `None`
+        when no beta_min was supplied, where `fails_above` is the same reading
+        with the tolerance left free.
+        """
+        return None if self.margin is None else self.margin - self.delta_norm
+
+    @property
+    def decision_margin_over_beta(self) -> float | None:
+        m = self.decision_margin
+        if m is None or self.beta == 0.0:
+            return None
+        return m / self.beta
+
+    @property
+    def null_replacement_ratio(self) -> float | None:
+        """**W76, measured by W177.** ``||Delta|| / ||S_i||``: how close the swap is to deleting the block.
+
+        A replacement that ignores its boundary data removes ``S_i`` and nothing
+        else, so ``||Delta|| = ||S_i||`` IS the null replacement.  On all eight
+        agent-sides of `poseidon-t-2x2` this reads 0.95-1.01, so the three
+        informative admits there admit an expert within 5% of absent.  A ratio
+        near 1 refuses nothing -- an under-responding block can be harmless --
+        but it says what an `admit` rests on.  `None` without a block norm.
+        """
+        if self.block_norm is None or self.block_norm <= 0.0:
+            return None
+        return self.delta_norm / self.block_norm
+
+    @property
+    def block_over_beta(self) -> float | None:
+        """``||S_i|| / beta``: can a total failure of this agent be seen at all.
+
+        `blind` is ``||S_i|| < beta - beta_min``, so below 1 this ratio names a
+        band of tolerances in which no replacement of the agent could fail, and
+        at or above 1 there is none.  It is the scale-free form of `visible_above`,
+        which equals ``beta * (1 - block_over_beta)``.  It is NOT the block's share
+        of the operator, ``||S_i|| / ||S||``: beta is the smallest singular value
+        of the assembled operator and ``||S||`` its largest, so the two are
+        different readings of one seam -- and at `wing_fsi`'s wetted seam they
+        point opposite ways.  **W137, measured 2026-09-10**: under the declared
+        (exact momentum exchange) effort the fluid's share is 1.44e-5, which W137
+        read as blind by five orders, and ``||S_F|| / beta`` is 1.39, so a
+        replacement that ignores its boundary data is REFUSED at every
+        beta_min >= 0.  `None` without a block norm.
+        """
+        if self.block_norm is None or self.beta == 0.0:
+            return None
+        return self.block_norm / self.beta
+
+    def _margin_clause(self) -> str:
+        m = self.decision_margin
+        if m is None:
+            return ""
+        rel = self.decision_margin_over_beta
+        side = "passes" if m > 0.0 else "is refused"
+        pct = "" if rel is None else f", {abs(rel):.3%} of beta"
+        tail = ("" if self.null_replacement_ratio is None
+                else f"; ||Delta||/||S_i|| = {self.null_replacement_ratio:.3g}")
+        return f" [W109: this swap {side} by {abs(m):.4g}{pct}{tail}]"
+
     @property
     def blind(self) -> bool | None:
         """Could this test have failed at all?  **W76, measured 2026-08-29.**
@@ -506,6 +581,7 @@ class SubstitutionCertificate:
             return (
                 f"||Delta|| = {self.delta_norm:.4g} < beta - beta_min = {self.margin:.4g}: "
                 "the swap preserves admissibility without re-certifying the graph"
+                + self._margin_clause()
             )
         base = (
             f"||Delta|| = {self.delta_norm:.4g} exceeds beta - beta_min = {self.margin:.4g}: "
@@ -514,7 +590,7 @@ class SubstitutionCertificate:
             "theorem, because the swap moves beta as well as tau and beta sits in the "
             "denominator of both sigma and L. No swap is accepted on the grounds that the "
             "new expert benchmarks better"
-        )
+        ) + self._margin_clause()
         if self.passivity_preserved:
             return base + (
                 ". Both experts are incrementally passive, so the L <= 1 branch survives "
@@ -539,6 +615,12 @@ class SubstitutionCertificate:
                                    else list(self.informative_window)),
             "passes": self.passes,
             "verdict": self.verdict.value,
+            #: W109: the verdict's own distance from flipping, beside it
+            "decision_margin": self.decision_margin,
+            "decision_margin_over_beta": self.decision_margin_over_beta,
+            #: W76/W177 and W137: what an admit rests on -- reported, not charged
+            "null_replacement_ratio": self.null_replacement_ratio,
+            "block_over_beta": self.block_over_beta,
             "passivity_preserved": self.passivity_preserved,
             "block_norm": self.block_norm,
             "blind": self.blind,

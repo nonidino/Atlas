@@ -1,7 +1,7 @@
 # The Case-Study Ladder to the F1 Car — a revised build plan
 
 **Type:** Core Concept — Program Plan (folder: `Atlas 0.1/common/`)
-**Status:** opened 2026-08-30, after the sixth real case study; **CS-7 run 2026-08-31 and section 7 updated with its measured values**; **CS-8 run 2026-08-31, Phase A complete, section 7's rung-4 row and section 8 updated** ([[tier0-measurements]] section 19, [[case-study-scaling-ladder-atlas-0.1]]). **2026-09-01: section 9 added** — a cross-machine re-read of the PoC 1a demo, the hybrid-library framing made standing rather than transitional, and one insertion (**CS-9★**, adaptive seam placement) — see [[poc1-retrospective-and-hybrid-roadmap]] for the full argument; this page carries only the resulting change to the schedule. Phase A is one case study in and the schedule below is confirmed rather than stopped. **2026-09-03: CS-10 run, section 11 added, and section 7's F5 row rewritten from a schedule entry into a measurement** ([[case-study-ground-effect-atlas-0.1]], [[gap-worklist]] Tier 24) — W97 closes, `InterfaceMotion` has all three of its numbers, and F5 is not falsified but fails in a way the criterion does not describe. Opened after the sixth real case study ([[case-study-wake-array-atlas-0.1]]). This page **revises** [[f1-pathmap-and-end-goal]] rather than replacing it: the end goal, the two claims and the falsification criteria are unchanged, and the *order and the currency* of the work are what move. Where the two disagree, the pathmap owns the goal and this page owns the schedule.
+**Status:** opened 2026-08-30, after the sixth real case study; **CS-7 run 2026-08-31 and section 7 updated with its measured values**; **CS-8 run 2026-08-31, Phase A complete, section 7's rung-4 row and section 8 updated** ([[tier0-measurements]] section 19, [[case-study-scaling-ladder-atlas-0.1]]). **2026-09-01: section 9 added** — a cross-machine re-read of the PoC 1a demo, the hybrid-library framing made standing rather than transitional, and one insertion (**CS-9★**, adaptive seam placement) — see [[poc1-retrospective-and-hybrid-roadmap]] for the full argument; this page carries only the resulting change to the schedule. Phase A is one case study in and the schedule below is confirmed rather than stopped. **2026-09-03: CS-10 run, section 11 added, and section 7's F5 row rewritten from a schedule entry into a measurement** ([[case-study-ground-effect-atlas-0.1]], [[gap-worklist]] Tier 24) — W97 closes, `InterfaceMotion` has all three of its numbers, and F5 is not falsified but fails in a way the criterion does not describe. Opened after the sixth real case study ([[case-study-wake-array-atlas-0.1]]). This page **revises** [[f1-pathmap-and-end-goal]] rather than replacing it: the end goal, the two claims and the falsification criteria are unchanged, and the *order and the currency* of the work are what move. Where the two disagree, the pathmap owns the goal and this page owns the schedule. **2026-09-10: §14 added** — CS-13, CS-14, CS-S1, Tier 39's two certified graphs and Tier 40's checkpoint, recorded against this schedule, with the rungs recounted; §1's count, §2.3's and §5's **[AI Inference]** and §7's stopping rule are each resolved where they stand rather than rewritten. **2026-09-10 (Tier 41): §15 added** — branch (a)'s first probe, CS-S2, comes back not compact with W95 binding; the certificate reports its margin with no verdict moved; W137 reverses; the critical path recounted.
 **Related:** [[f1-pathmap-and-end-goal]] · [[gap-worklist]] · [[case-study-wake-array-atlas-0.1]] · [[expert-library-atlas-0.1]] · [[port-algebra-atlas-0.1]] · [[atlas-implementation]] · [[end-to-end-architecture-spec]] · [[tier0-measurements]] · [[master-error-bound]] · [[incremental-transfer-roadmap]] · [[poc1-retrospective-and-hybrid-roadmap]]
 
 > **Read §2 first if you read nothing else.** It is one strategic change, it is worth more than the rest of the page, and everything in §4 is scheduled by it.
@@ -11,6 +11,8 @@
 # 1. Where the program actually stands
 
 Eighteen tiers of measurement, six real case studies, one compiler with nine layers, and — measured against [[f1-pathmap-and-end-goal]]'s own ladder — **rung 1 to 2 of 12**.
+
+> **Recounted 2026-09-10.** The sentence above is the count as of 2026-08-30 and stays as written; §14.1 is the count now. Rungs 0 and 2 are built, and rung 1's question — *can frozen experts be coupled at all* — was answered on rung 2's graphs, while the RBC case study named for it was never built. Rung 3 was never built and has no row in §4. Rung 4 is measured and the answer is qualified. Rungs 5, 6 and 7 are built, classically. Rung 8 is scoped and not started, rung 9 is blocked, rungs 10 and 11 are exercised on small graphs only, and rung 12 is a separate programme.
 
 That is not a slow result; the last five days built the *certification machinery*, which is the part nobody else has. But it is worth stating plainly what the machinery has and has not been pointed at:
 
@@ -71,6 +73,8 @@ Its own docstring says what it was built for: *"exactly the b-c and c-d coupling
 So rung 5's gate — *aeroelastic response vs. reference; $\mathcal R$ closes* — is reachable with **zero new training data**. What is deferred to the substitution campaign is only the *speed*, which nothing gates on until rung 10.
 
 **[AI Inference]:** the same argument probably holds for rungs 6 and 7. Conduction is in `thermostruct2d`, a compressible gas is in `compressible2d`, and a motor map, a battery and a coolant circuit are **lumped algebraic experts with zero fitted parameters** — the class `disk.ActuatorDisk` already belongs to, which cost an afternoon. On this reading the first rung that genuinely requires a new *learned* expert is not rung 5 but the substitution campaign, and the first that requires new *physics code* is rung 8's contact model. This is a claim about the build repo's contents and it should be checked against each solver before a rung is scheduled on it.
+
+> **Checked 2026-09-10, and it held on both halves.** CS-13 (rung 6) was built from one imported solver — `ThermoStruct2D.step_thermal`, unmodified — and four closed-form coolant legs of the `disk.ActuatorDisk` class, and CS-14 (rung 7) from the build repo's actuator disk and closed-form circuit elements: no new field solver in either. And [[gap-worklist]] W165 found the build repo has **no contact solver** — its one match for *contact* is HLLC's contact discontinuity — so rung 8 is the first rung that needs new physics code, as the inference said. What it did not foresee is that a contact seam's interface condition is a **complementarity** condition rather than an equation, so whether such a seam is admissible at all is a question for a page before it is one for a module.
 
 ## 2.4 What this costs, stated honestly
 
@@ -217,6 +221,8 @@ Runs in parallel from Phase B. For each classical expert in a compiled graph:
 
 **[AI Inference]:** the middle row is the one worth attacking first and no page in this vault has proposed it. `support_reach` currently asks whether the response is *nonzero* past the declared radius; the physically meaningful question is whether it is *larger than the defect the composition already tolerates*. An $\varepsilon$-halo — the radius beyond which the response falls below $\varepsilon_{\text{tol}}$, with the truncated tail carried as an explicit term in $\sigma$ — would be a bounded halo for an operator whose support is formally global, and $\varepsilon_{\text{tol}} = \min(\tau,\sigma)$ already exists in the compiler. Whether the tail is summable is an empirical question about the architecture and is measurable with the probe that exists. **This is a hypothesis, it is not derived, and it should be attacked at CS-7 where the machinery is already in hand.**
 
+> **Resolved 2026-09-10 (Tier 40), by measurement: the middle row does not exist for the scOT class.** [[epsilon-halo-measurement]] band-truncates the dense seam operator, $E(r)=\lVert S-S_r\rVert$, which is exactly the tail term the paragraph above asks to carry in $\sigma$. On Poseidon-T and Poseidon-B, $E(r)/\lVert S\rVert_2$ plateaus at $0.27$–$0.75$ from $r\approx16$ to $r=64$ on a $128$-cell seam, and the transverse response never falls to $1\%$ of its face value at any depth, while the positive control — split-step `WindowNS` — reads exactly zero past $r=13$. Two further kills need no decay at all: $\Pi=1$ for every halo of $16$ cells or more, and $\varepsilon_{\text{tol}}$ has no value on the graph, because $\tau$ and $\sigma$ are unmeasurable for a checkpoint fixed at one resolution. So the checkpoints give the table's **third** row, the classical embedded-elliptic solver gives its **second** — $r^\star(10^{-2}) = 46$–$70$ cells, real and worth nothing at the widths a tiling can afford — and no rule was written. The paragraph above is left as written; this is the answer to it. **The first row — *some architectures pass the halo rule* — is unmeasured**, and §14.5 schedules its first probe.
+
 ---
 
 # 6. The W-rows on the critical path
@@ -240,6 +246,8 @@ Everything else on [[gap-worklist]] is real and none of it blocks this schedule.
 
 Two more that are not blockers and are getting worse with every added expert: **W69**'s *three unverifiable declarations* (`validity`, `response_half`, `governing_family`) scale linearly in expert count, and **W99** is a live silent bug in the build repo's own adapter.
 
+> **2026-09-10: one row in this table did not survive, and the path has moved.** **W95** reads *closed by classical-first*, and at the substitution certificate it is what binds: $\beta_{\min}$ derives from $\varepsilon_{\text{tol}}=\min(\tau,\sigma)$, and neither exists for an expert with no same-class reference pair ([[substitution-campaign-checkpoint]] §3.3, [[gap-worklist]] W177). Classical-first routed around it for the ladder and left it standing for the campaign. The rows that now stand on the critical path are in §14.4.
+
 ---
 
 # 7. Gates, and what would stop the program
@@ -256,6 +264,8 @@ Two more that are not blockers and are getting worse with every added expert: **
 | **F4** | a monolithic FM reaches the coverage first | continuous | continuous |
 
 **One new stopping rule, which the pathmap does not have.** If the substitution campaign returns `refuse` or `blind` at **every** seam of **every** case study, the composed model cannot be certified with learned experts at all, and the honest outcome is the framework rather than the foundation model. That is [[f1-pathmap-and-end-goal]] §7's floor, and it is worth naming a checkpoint at which it is declared rather than approached asymptotically: **after CS-12**, by which point three expert families and all four coupling kinds have been tried.
+
+> **Stood on 2026-09-10 (Tier 40): the rule does not fire.** [[substitution-campaign-checkpoint]] counted what had been quoted from memory. *Nine of nine seams refused* was one graph-level `L2/R10` decision painted across nine tiles, and conditional on a declaration — `elliptic_subsolve=embedded` — that the vault records as undeclarable; compiled as `poseidon_capabilities` declares it, no seam of any graph refuses the learned expert. And the campaign's own instrument, `certify_substitution`, run at all eight agent-sides of the graph holding the live weights, returns an informative `admit` at three — with $\lVert\Delta\rVert/\lVert S_i\rVert = 0.95$–$1.01$ on every side, so what it admits is within $5\%$ of deleting the block. The declaration is three-part rather than one letter: **(c)** a coupling framework plus classical verification is *demonstrated*; **(a)** a foundation model on a constrained expert class is the **one live route, and unattempted**; **(b)** the theory branch — §5's $\varepsilon$-halo — is **closed**. The paragraph below stands unchanged, and the checkpoint leaned on it.
 
 **And one thing that is not a stopping rule.** `admit-uncertified` is not failure. Six real case studies have landed there and the certificates they could not issue were named, not assumed. A car that composes, runs fast, and reports honestly which of its seams are uncertified is worth building; a car that reports `admit` because nobody measured the constant is the silent-wrongness class this whole framework exists to refuse.
 
@@ -493,3 +503,111 @@ Full record: [[case-study-wing-fsi-atlas-0.1]]; measurements in [[gap-worklist]]
 - **§4.2 in its widened form.** Every lumped agent in the loop is massless and its constitutive law is one half of an interface equation.
 - **W137's question at a THERM seam.** CS-12 measured the disparity at a `MECH` seam between a stiff solid and a soft fluid; a coolant circuit against a wall is the same shape one port type along, and whether the certificate is blind there is a measurement the loop can make cheaply.
 - **And the tier's own mechanism.** Two of the three defects CS-12 found are rules reading a field that is not the one their sentence names. A cyclic graph is where path-dependence of message passing becomes real, and it is worth asking *before* the build which rule states a premise about acyclicity that nothing checks.
+
+---
+
+# 14. Where the schedule stands after CS-14, CS-S1 and the checkpoint (2026-09-10)
+
+Full records: [[case-study-cooling-loop-atlas-0.1]] (Tier 36), [[case-study-powertrain-atlas-0.1]] (Tier 37), [[case-study-neural-interface-atlas-0.1]] (Tier 38), [[gap-worklist]] Tier 39, and Tier 40's two pages, [[epsilon-halo-measurement]] and [[substitution-campaign-checkpoint]].
+
+**§13's next step was CS-13. Two more ladder rows and one off-ladder study were built after it, and then the checkpoint §7 scheduled *after CS-12* was stood on.** This section does for them what §8–§13 did for their rows — it records what each changed on this page — and adds one thing none of those had to: a recount of the rungs, because §1's *rung 1 to 2 of 12* stayed on this page after it stopped being true.
+
+## 14.1 The rungs, recounted
+
+| rung | what [[f1-pathmap-and-end-goal]] §3 asks | status | evidence |
+|---|---|---|---|
+| **0** | scaffold | **built** | M0/M3 green |
+| **1** | can frozen experts be coupled at all | **answered, on rung 2's graphs** | §7's F2 row: the frozen checkpoint couples stably at every rung of CS-7 to $110$ macro-steps. The RBC case study named for this rung was never built |
+| **2** | field ↔ lumped, with a closed-form expert as a peer | **built** | the wind farm, then the wake array |
+| **3** | a second **learned** expert joins a graph | **never built** | no row in §4, and no graph in `atlas/cases` holds two learned experts |
+| **4** | does an expert's certificate travel | **measured, qualified** | CS-8: a certificate is the expert's *at a probe state*, so a library carries one per expert per regime |
+| **5** | a structural expert, two-way FSI | **built classically, and certified** | CS-12 `wing_fsi`, `admit` since Tier 39 |
+| **6** | a closed thermal loop | **built classically** | CS-13 `cooling_loop`: the block's first law closes to $3.6\times10^{-7}$ W against $1787$ W |
+| **7** | `ELEC` and `ROT`, energy across domains | **built classically** | CS-14 `powertrain`: $T\omega = \sum_i I^2R_i + V_{oc}I$ to $1.9\times10^{-15}$, breaking in exact proportion when $k_e \ne k_t$ |
+| **8** | tyre and contact | **scoped, not started** | W165 |
+| **9** | the full-vehicle graph | **blocked** | W171, then W172 |
+| **10** | design-parameter gradients | **exercised on a small graph** | CS-10: a reverse-mode adjoint against a central difference to $1.32\times10^{-6}$ — and a sign change with the rollout horizon, now a convention: a reported sensitivity carries its horizon or is refused ([[end-to-end-architecture-spec]] §0.4) |
+| **11** | an optimizer in the loop | **exercised on small graphs; its gate not posed** | on PoC 1a's classical column the gradient search needs $17.9\times$ and $48.3\times$ fewer rollouts than CMA-ES to reach $75\%$ of its gain, at $36$ and $75$ design variables; on the frozen column at $36$ the advantage falls to $8.0\times$; PoC 2's is $1.8$–$4.3\times$ in wall-clock (W143). *Recovers a known-good design from a bad start* has not been asked |
+| **12** | the agent layer | **a separate programme** | [[f1-pathmap-and-end-goal]] §6 |
+
+## 14.2 What the three built rows changed on this page
+
+**CS-13 and CS-14 checked §2.3's inference** — the note under §2.3 — **and found the compiler blind to loop topology, on two unrelated graphs.** Compiled with the return seam and without it: same verdict, same rule set, same per-agent decisions (W163). Tier 39 closed it as `L5/R13`, which reports the cycle on both graphs and binds the loop gain only for a sweeping accelerator — and the two gains say why no single number could have been the rule: CS-13's coolant loop composes to $0.9238$, a contraction, and CS-14's circuit to exactly $1$, a constraint.
+
+**CS-S1 is off the ladder. It moved the learned expert to where it cannot do harm, and found it cannot pay there.** On the interface as a predictor, Poseidon-T cannot introduce a silent error and needs no certificate — a start that is pure noise converges to the same answer. But a field predictor's whole budget is **one sweep**, and the checkpoint costs $61\times$ that in the admitted arrangement. The lever that does pay was already declared: exposing the elliptic part is worth $149\times$ in coupling sweeps.
+
+**Tier 39 certified the first two graphs on merit, and both are classical**: the front wing — CS-10 and CS-12 assembled — at a fixed shape, and `wing_fsi`. Declared to ride, the front wing is refused at `L2/InterfaceMotion`, which fires on the classical incumbent too: §11's moving-interface price arriving at an assembly, not a substitution result.
+
+## 14.3 The checkpoint, and where each half of the programme stands
+
+§5's middle row and §7's stopping rule are resolved where they stand, in the notes under each. Read together, they separate the programme's two claims further than §2.2's table did:
+
+- **The coupling half** has climbed to rung 7 with every expert classical, holds two certified graphs, and has one refusal checked against a coupling that really diverges: `L2/R10/halo` is right on $11$ of $11$ halos in the one arrangement that diverges, and over-fires on $5$ of $11$ in each of the three that do not — arrangements the compiler cannot tell apart (W174, W175).
+- **The foundation-model half** has no learned expert admitted with a nonzero contribution. The three informative admits the certificate returns are within $5\%$ of the null replacement, on a $\beta_{\min}$ window $0.2\%$–$1.1\%$ of $\beta$ wide that nothing in the framework can locate.
+
+**And the binding constraint is not the one nine tiers attacked.** At the compile it is `L2/R10`'s halo. At the certificate it is the missing **reference pair** — no same-class monolith, so no $\tau$, no $\sigma$, no $\varepsilon_{\text{tol}}$ and no $\beta_{\min}$. That is W95, whose worklist row has stood `open` since Tier 18 on the rollout referent and which §6 filed as *closed by classical-first*; the note under §6 says why that filing did not survive.
+
+## 14.4 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W165** — contact is a complementarity condition, not an equation | rung 8, and any seam with a kink in its response | `open`, large. Its own first step, marked **[AI Inference]** on the worklist, is a page — *is an inequality-constrained seam admissible at all* — before any module |
+| **W171** — `decomposition` is one field per graph | rung 9's integration graph | `open`, **scoped** in Tier 40: the carrier is the connection, not the agent. Part 1 fits a tier; `partition_of_unity`, `overlap` and `overlap_cells` do not |
+| **W172** — the seams that would join the subsystems do not exist | rung 9's $O(K)$ integration cost | `open`, after W171 |
+| **W95** — no same-class reference pair | every learned substitution verdict | `open` on the rollout referent; **binding** at the certificate (W177), and not yet re-scoped against it |
+| **W109**, **W137**, **W177** — an `admit` does not say what it rests on | the campaign reading an absent expert as a faithful one | `open` |
+| **W175** — the halo branch is one variable short of its cause | the attribution of the one validated refusal | `open`, pinned by two defect-asserting tests |
+
+**Not on it**: W176's banded-plus-low-rank reading, an **[AI Inference]** waiting on a second architecture family; and every row on [[gap-worklist]] that is real and blocks nothing above.
+
+## 14.5 The next step
+
+**Tier 41 probes branch (a) with the instrument that already exists** — one bounded-receptive-field donor through Tier 40's scripts unchanged, split-step `WindowNS` re-run as the positive control, and a classical elliptic solve on the donor's own patch, so that *global because of the physics* and *global because of the architecture* can be told apart. It is registered off the ladder as **CS-S2**. Beside it, the substitution certificate learns to report the two ratios Tier 40 computed by hand — $\lVert\Delta\rVert/\lVert S_i\rVert$, and $\lVert S_i\rVert$ against $\beta$ — as reporting, not as a verdict. Rung 8's module and rung 9 are not started.
+
+---
+
+# 15. CS-S2 is run, and the certificate says what an admit rests on (2026-09-10)
+
+Full records: [[case-study-bounded-donor-atlas-0.1]] (CS-S2, off the ladder) and [[gap-worklist]] Tier 41.
+
+**§14.5's next step was branch (a)'s first probe, and it came back negative.** This section records what that and the tier's two smaller results change on this page. No rung moves.
+
+## 15.1 Branch (a), probed once: not compact
+
+The donor was **NeuberNet** — the one bounded donor in [[expert-donor-survey]] with a continuum boundary port — read through [[epsilon-halo-measurement]]'s instrument unchanged, beside linear elasticity solved classically on the donor's own disc, with split-step `WindowNS` re-run as the positive control (exactly zero from $r=14$ again, to the digit). Of §14.5's three outcomes it is the third:
+
+- **Not compact, and less compact than the physics it approximates.** On its $29$-sensor ring, band-truncating the $u_x$ port leaves $0.69$ of the operator outside $r=4$ where the elastic physics leaves $0.14$; poked at one sensor, its response keeps $95$–$139\%$ of itself from $0.5$ to $2\,R_n$ deep where the physics keeps $12$–$17\%$. The classical control is global along the ring too — a Dirichlet-to-Neumann operator is — so *global along the seam* is physics here, and *global into the patch* is the donor's.
+- **W95 binds for this donor as well.** NeuberNet is not resolution-fixed and still has no same-class reference pair: it is defined on one disc inside its training ranges.
+- **What it admits would be W76's null replacement again.** On its in-plane ports its operator differs from linear elasticity's by $100$–$110\%$ of the classical norm — [[substitution-campaign-checkpoint]]'s signature on Poseidon-T, arriving on a second architecture family. It is faithful along the far fields it was trained on, tension to $8\%$ and torsion to $12\%$ where both loads are signed, and absent along anything else.
+
+**[AI Inference]:** the survey's *bounded* described the donor's **domain**, and what a halo rule or a certificate consumes is a bounded **response**. Branch (a) therefore narrows to architectures whose locality is a property of the operator — MACE's finite cutoff, DeepFlame's point — and both are unmeasured.
+
+Two things CS-S2 found on the way are framework findings rather than donor ones:
+
+- **A convention check has to excite every component it vouches for (W179).** The adapter passed a stress comparison at a tension-only base with its hoop input the wrong way round, because both subjects' hoop shears are identically zero there. At a base carrying torsion the same comparison reads cosine $-1.000$.
+- **A learned forward can switch branches where its own classifier changes its call, and a one-sided probe cannot see it (W180).** At a zero-torsion base NeuberNet's torsion derivative taken one way and the other way differ in magnitude by a factor near $50$ — $0.18$ against $8.7$ of the physical response — because its sign network's call changes between the two steps.
+
+## 15.2 The certificate reports its margin; no verdict moves
+
+`SubstitutionCertificate` now reports what [[substitution-campaign-checkpoint]] computed by hand: `decision_margin`, $(\beta-\beta_{\min})-\lVert\Delta\rVert$, closing **W109**; `null_replacement_ratio`, $\lVert\Delta\rVert/\lVert S_i\rVert$; and `block_over_beta`, $\lVert S_i\rVert/\beta$. A test restates the pre-Tier-41 truth table and every verdict of W177's census, so a rule that moved one would have to rewrite it first.
+
+**No verdict-changing rule was written, because the two graphs do not support one threshold.** On `poseidon-t-2x2` real swaps read $\lVert\Delta\rVert/\lVert S_i\rVert = 0.95$–$1.01$ and six of eight sides have a blind band; on `wing_fsi`'s fluid side there is no learned swap to read, and no blind band at the declared effort.
+
+**And W137 reversed.** It said the fluid's certificate at an aero-structure seam is blind by five orders, reading the fluid's **share** of the operator, $1.44\times10^{-5}$. The certificate reads $\lVert S_F\rVert/\beta$, and under the effort the graph declares that is $1.39$: a replacement that ignores its boundary data is refused at every tolerance. W137 closes on its own done-when. The scaled certificate it proposed is not derived, and moves to **W178** at `poseidon-t-2x2`, where its premise holds.
+
+## 15.3 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W165** — contact is a complementarity condition, not an equation | rung 8 | `open`, large; its first step is a page, not a module |
+| **W171** — `decomposition` is one field per graph | rung 9's integration graph | `open`, scoped; part 1 did not fit beside CS-S2 — $7$ rule sites, and a decomposition field that must become a set reaching the emitted artifact |
+| **W172** — the seams that would join the subsystems do not exist | rung 9's $O(K)$ integration cost | `open`, after W171 |
+| **W95** — no same-class reference pair | every learned substitution verdict | `open`; **binding for bounded donors too** (CS-S2), not yet re-scoped against the certificate |
+| **W178** — a scaled certificate, $\beta$ restricted to what agent $i$ can move | an informative verdict at a seam with a real blind band | `open`, a derivation |
+| **W175** — the halo branch is one variable short of its cause | the attribution of the one validated refusal | `open`, pinned by two defect-asserting tests |
+
+**Closed off it**: W109 (the margin is reported) and W137 (its premise is false at the declared effort). **W177** has its first half met and stays open on W95. **Not on it**: W176 — the second architecture family's far field is recorded and does not decide the row; and W179 and W180, which are real and block nothing above until a learned expert is placed at a seam.
+
+## 15.4 The next step
+
+**Not started, and the choice is the user's.** In line: rung 8's admissibility page, W165's own first step — can an inequality-constrained seam compile at all; W171 part 1, then part 2; W175, after deciding whether W174's 2$\times$2 counts as a second graph; W95, re-scoped against the certificate; W178; and whether to fetch NeuberNet's CC BY 4.0 Zenodo analyses as a plastic-branch referent, or a finite-cutoff donor for branch (a) — both downloads, so both asked before.

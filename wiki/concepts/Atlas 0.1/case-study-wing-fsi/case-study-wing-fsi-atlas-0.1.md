@@ -159,6 +159,8 @@ Two consequences that bound what any number here means, both in `wing_fsi.STRUCT
 
 > **What that costs the substitution campaign, and it is the sharpest thing on this page.** `composition.SubstitutionCertificate` can only see a perturbation bounded by the swapped agent's own block, and the fluid's share of this seam is $\mathbf{1.44\times10^{-5}}$. **The flow expert is the one you want to replace with a learned operator, and at an aero-structure seam its certificate is blind by five orders — worse than W97's lumped case by three.** Every aero-structure coupling in a Formula 1 car has this shape. Opened as **W137**.
 
+> **Corrected 2026-09-10 (Tier 41), and the correction reverses the paragraph above at the effort this graph declares.** The share is right, and it is not what the certificate reads. `SubstitutionCertificate` is blind to agent $i$ only when $\lVert S_i\rVert < \beta - \beta_{\min}$, and $\beta$ is the assembled operator's **smallest** singular value, where the share divides by its largest. Re-probed on this page's own settled field (`scripts/w137_certificate_visibility.py`): under the exact momentum exchange — the effort the march uses — $\lVert S_{\text{fluid}}\rVert = 7.018$ against $\beta = 5.054$ once W138's orientation is declared ($2.166$ before it), so $\lVert S_{\text{fluid}}\rVert/\beta = 1.39$ ($3.24$ unoriented). **A replacement of the flow expert that ignores its boundary data is refused at every $\beta_{\min} \ge 0$**, and one that under-responds by $10\%$ is admitted, informatively, below $\beta_{\min} = 4.35$. The blindness is real under the two efforts this graph does not declare — $\lVert S_{\text{fluid}}\rVert/\beta = 2.7\times10^{-4}$ diffusive and $0.052$ co-normal — and the compiler's own `L4/block-share` on `wet` had already read the right quantity: *"the substitution certificate can see it"*. The table above and its ratio stand; the step from a small share to a blind certificate does not. **W137 closed** ([[gap-worklist]] Tier 41).
+
 ### 4.3 $n_0(\Gamma)$ gains a fifth row, and it differs from CS-9's by the boundary condition
 
 | what meets at the seam | $n_0(\Gamma)$ |
@@ -390,6 +392,8 @@ $N_{\text{sign}}$ is reported as $\le 20$ rather than $= 20$ because $20$ is the
 ### 10.2 W137 — at a fluid–structure seam the FLUID's certificate is blind, and W97's repair does not transfer
 
 §4.2. The fluid's block is $1.44\times10^{-5}$ of the assembled operator, so `SubstitutionCertificate` cannot see any replacement of the flow expert — and the flow expert is the one the substitution campaign exists to replace. W97 closed the same *reading* at a field-to-lumped seam by finding an effort-convention defect and repairing it; here the co-normal buys $190\times$, the exact momentum exchange buys $1.79\times10^{4}$, and $6.9\times10^{4}$ remains, uniformly across every mode of the declared interface space. **The one-sidedness is the structure's stiffness and no effort convention is wrong.**
+
+> **Corrected 2026-09-10 (Tier 41).** The first sentence is the share reading, and the certificate does not read the share: under the declared effort $\lVert S_{\text{fluid}}\rVert/\beta = 1.39$, and a replacement of the flow expert that ignores its boundary data is refused at every tolerance — see the note under §4.2. What stands is the rest: the co-normal does not close the disparity, it leaves the fluid blind at the certificate ($0.052$), and the structure's stiffness is what remains of the ratio.
 
 ### 10.3 W138 — $\Lambda_M$ ADDS two blocks that the interface residual SUBTRACTS
 

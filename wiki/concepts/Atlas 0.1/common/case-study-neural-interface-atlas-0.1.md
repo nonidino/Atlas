@@ -4,6 +4,8 @@
 
 Every substitution certificate in this vault has refused Poseidon-T, and **R10** is why: a neural operator's domain of dependence is the whole window — [[gap-worklist]]'s W93 measured 64 cells against a declared 2, nonzero in all 128 seam cells — so cutting the domain cuts the operator, and no halo repairs it. That refusal is correct and it is **not about accuracy**. Fine-tuning the checkpoint to a one-step error of $10^{-9}$ would not move it.
 
+> **[Corrected 2026-09-10, W177]** Not every certificate, and the refusal is not the certificate's. What refuses Poseidon-T is the compiler's `L2/R10`, and only under `elliptic_subsolve=embedded` — a declaration W60 records as undeclarable for a learned operator; compiled as `poseidon_capabilities` declares it, no seam of any graph refuses the learned expert. The campaign's own instrument, `certify_substitution`, run at all eight agent-sides of `poseidon-t-2x2`, returns an informative `admit` at three, with $\lVert\Delta\rVert/\lVert S_i\rVert = 0.95$–$1.01$ on every side — so what it admits is within $5\%$ of deleting the block ([[substitution-campaign-checkpoint]] §2–§3). The paragraph above stays as Tier 38 wrote it.
+
 So put the learned operator where its globality is an asset instead of a liability:
 
 > **Let the neural operator predict the interface trace. Let classical solvers own the subdomains.**

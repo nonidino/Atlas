@@ -170,5 +170,20 @@ out/w177/*
 out/w171/*
 !out/w171/w171.json
 
+# Tier 41 (CS-S2 the bounded donor, W137's visibility check). JSON only:
+# cs_s2's operators.npz holds dense operators measured on third-party weights
+# that are kept OUTSIDE this repository (~/.cache/neubernet, no licence), and
+# it is a rebuildable cache.
+!out/cs_s2/
+out/cs_s2/*
+!out/cs_s2/cs_s2.json
+# the hoop-sign diagnosis, both conventions side by side; the second run's
+# artifact it corrects stays local (cs_s2_run2_hoop_plus1.json)
+!out/cs_s2/torsion_control.json
+!out/cs_s2/sign_jump.json
+!out/w137/
+out/w137/*
+!out/w137/w137.json
+
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

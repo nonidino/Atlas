@@ -1140,10 +1140,19 @@ class Engine:
         """What actually MOVES with the design, under a verdict that does not.
 
         Both are one-sidedness ratios -- the partner's block against the fluid's
-        -- which is the quantity `SubstitutionCertificate` is blind in proportion
-        to (W97, W137).  They are computed from the design and the current
+        (W97, W137).  They are computed from the design and the current
         traction rather than probed, because a probe is seconds and this panel is
         per frame; the driver's `compile` stage probes them properly.
+
+        **Corrected 2026-09-10 (Tier 41, W137).**  This docstring used to call
+        the ratio "the quantity `SubstitutionCertificate` is blind in proportion
+        to".  It is not: the certificate is blind to agent i only when
+        ``||S_i|| < beta - beta_min``, and ``beta`` is the assembled operator's
+        SMALLEST singular value.  At this seam, under the effort the march uses,
+        ``||S_fluid|| / beta`` is 1.39 and a replacement of the fluid that ignores
+        its boundary data is refused at every tolerance
+        (`scripts/w137_certificate_visibility.py`).  The ratio shown is a
+        disparity, not a blindness.
         """
         kn = self.ro.knobs()
         S_e, _m = self.ro.structure(kn["e_star"], kn["tc"])
@@ -1156,8 +1165,9 @@ class Engine:
             "wet": dict(label="structure / fluid, operator norm",
                         value=struct / max(fluid, 1e-30),
                         note="W137: the fluid's share of this seam is the "
-                             "reciprocal, and SubstitutionCertificate is blind "
-                             "in proportion to it"),
+                             "reciprocal -- a disparity, not a blindness: the "
+                             "certificate reads ||S_fluid||/beta, which is 1.39 "
+                             "at the declared effort (corrected 2026-09-10)"),
             "mount": dict(label="spring / fluid, rate",
                           value=float(self.design["k"]) / max(fluid, 1e-30),
                           note="W97 closed the same reading at CS-10's seam by "

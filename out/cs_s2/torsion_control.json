@@ -1,0 +1,3635 @@
+{
+ "generated": "2026-09-10 17:34:18",
+ "complete": true,
+ "study": "CS-S2 torsion control",
+ "source": {
+  "repository": "https://github.com/grossIt/neubernet",
+  "commit": "cce93244dfc27db9dbe351760760a8142cee0bb0",
+  "commit_date": "2025-07-09",
+  "licence": null,
+  "licence_note": "no licence on the repository (GitHub API: license null); the Zenodo dataset doi:10.5281/zenodo.14880154 is CC BY 4.0 and its preview does not show the weight files; the article is CC BY-NC-ND 4.0",
+  "paper": "Grossi, Beghini & Benedetti, NeuberNet, Communications Engineering (2025), doi:10.1038/s44172-025-00549-5",
+  "stored_outside_repository": "~/.cache/neubernet (NEUBERNET_DIR)"
+ },
+ "files": {
+  "neubernet.pt": {
+   "size": 89998330,
+   "sha256": "a89de3f48c36be8c576f2a2cc5a32d5ef6313d2925426e7c33cdd142b804a0a6",
+   "matches": true
+  },
+  "yieldnet.pt": {
+   "size": 2165818,
+   "sha256": "f495f28644ebbef67cc25a287978ff69dd8c19f498e7242e1721163db4871adc",
+   "matches": true
+  },
+  "signnet.pt": {
+   "size": 2165004,
+   "sha256": "4a44bb5386fdbe607f324495f71617bbc2f628b3e611819b4067f06c05040506",
+   "matches": true
+  },
+  "definitions.py": {
+   "size": 17874,
+   "sha256": "873a60a30866db42bc71e7be813429263eb548bbb8675432f79f9991c1fcdf93",
+   "matches": true
+  }
+ },
+ "torch": {
+  "version": "2.7.1+cpu",
+  "threads": 1,
+  "device": "cpu",
+  "dtype": "float32"
+ },
+ "hoop_conventions": {
+  "+1": "ROTY = +u_theta / rho",
+  "-1": "ROTY = -u_theta / rho"
+ },
+ "amplitude": 0.01,
+ "stage_seconds": {
+  "setup": 0.5085201000038069,
+  "classical": 13.072153299988713,
+  "bases": 0.896588099989458,
+  "convention_check": 808.6546931000048,
+  "directional": 557.9292308000004,
+  "signnet": 0.5946767999994336
+ },
+ "setup": {
+  "same_patch_as_driver": {
+   "alpha_deg": true,
+   "R_over_Rn": true,
+   "nu": true,
+   "sy_over_E": true,
+   "Et_over_E": true,
+   "material_sensors": true,
+   "amplitude": true
+  },
+  "material_sensors": 29,
+  "adapter_in_cs_s2_neubernet_equals": {
+   "+1": true,
+   "-1": false
+  }
+ },
+ "classical": {
+  "far_field_disc_nodes": 13599,
+  "patch_fine_nodes": 19119,
+  "patch_fine_nodes_in_driver": 19119,
+  "operator_norm2": 0.962890944445263
+ },
+ "bases": {
+  "tension-elastic": {
+   "target_elastic_von_mises_over_sy": 0.7,
+   "scale": 0.12469900145246521,
+   "regime": {
+    "+1": {
+     "elastic_von_mises_over_sy": 0.6999999284744263,
+     "small_scale_indicator": 4.3627190589904785,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 11.627175331115723
+    },
+    "-1": {
+     "elastic_von_mises_over_sy": 0.6999999284744263,
+     "small_scale_indicator": 4.3627190589904785,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 11.627175331115723
+    }
+   },
+   "scale_in_driver": 0.12469900145246521
+  },
+  "tension-plastic": {
+   "target_elastic_von_mises_over_sy": 1.6,
+   "scale": 0.28502628903420624,
+   "regime": {
+    "+1": {
+     "elastic_von_mises_over_sy": 1.600000023841858,
+     "small_scale_indicator": 4.362719535827637,
+     "branch": "plastic",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 26.576400756835938
+    },
+    "-1": {
+     "elastic_von_mises_over_sy": 1.600000023841858,
+     "small_scale_indicator": 4.362719535827637,
+     "branch": "plastic",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 26.576400756835938
+    }
+   },
+   "scale_in_driver": 0.28502628903420624
+  },
+  "torsion-elastic": {
+   "target_elastic_von_mises_over_sy": 0.7,
+   "scale": 0.08381451677088053,
+   "regime": {
+    "+1": {
+     "elastic_von_mises_over_sy": 0.699999988079071,
+     "small_scale_indicator": 2.5895485877990723,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": -1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 10.016326904296875
+    },
+    "-1": {
+     "elastic_von_mises_over_sy": 0.699999988079071,
+     "small_scale_indicator": 2.5895485877990723,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": -1.0,
+     "sign_torsion": -1.0,
+     "branch_norm": 10.016326904296875
+    }
+   }
+  },
+  "tension-torsion-elastic": {
+   "target_elastic_von_mises_over_sy": 0.7,
+   "scale": 0.08066538320615586,
+   "regime": {
+    "+1": {
+     "elastic_von_mises_over_sy": 0.7000000476837158,
+     "small_scale_indicator": 3.0519614219665527,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 10.772473335266113
+    },
+    "-1": {
+     "elastic_von_mises_over_sy": 0.7000000476837158,
+     "small_scale_indicator": 3.0519614219665527,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": -1.0,
+     "branch_norm": 10.772473335266113
+    }
+   }
+  },
+  "tension-torsion-plastic": {
+   "target_elastic_von_mises_over_sy": 1.6,
+   "scale": 0.1843780187569277,
+   "regime": {
+    "+1": {
+     "elastic_von_mises_over_sy": 1.6000001430511475,
+     "small_scale_indicator": 3.0519614219665527,
+     "branch": "plastic",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 24.6227970123291
+    },
+    "-1": {
+     "elastic_von_mises_over_sy": 1.6000001430511475,
+     "small_scale_indicator": 3.0519614219665527,
+     "branch": "plastic",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": -1.0,
+     "branch_norm": 24.6227970123291
+    }
+   },
+   "scale_in_driver": 0.1843780187569277
+  }
+ },
+ "convention_check": {
+  "what": "elastic branch: NeuberNet under each hoop convention against the classical patch, from the same sensor data, per component",
+  "grid_points": 243,
+  "rows": [
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "points": 241,
+    "regime": {
+     "elastic_von_mises_over_sy": 0.6999999284744263,
+     "small_scale_indicator": 4.3627190589904785,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 11.627175331115723
+    },
+    "stress": {
+     "s_xx": {
+      "norm_neubernet": 0.9869658222104993,
+      "norm_classical": 0.9294320052971483,
+      "rel_error": 0.1258688991116178,
+      "cosine": 0.9943445321874074,
+      "norm_ratio": 1.0619021257988173,
+      "sign_agreement_where_classical_above_10pct": 0.976878612716763
+     },
+     "s_yy": {
+      "norm_neubernet": 3.2615815737089564,
+      "norm_classical": 3.1496225539277103,
+      "rel_error": 0.03614628948622695,
+      "cosine": 0.9999792482221123,
+      "norm_ratio": 1.0355468053280317,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_zz": {
+      "norm_neubernet": 0.9148444926516195,
+      "norm_classical": 0.8373334551660548,
+      "rel_error": 0.14197075123039907,
+      "cosine": 0.9946975001687925,
+      "norm_ratio": 1.092568900725689,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_xy": {
+      "norm_neubernet": 0.7284367535518228,
+      "norm_classical": 0.7035666074384884,
+      "rel_error": 0.05516664671716826,
+      "cosine": 0.9991337071963784,
+      "norm_ratio": 1.0353486732462764,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_yz": {
+      "norm_neubernet": 0.03656981318606753,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_xz": {
+      "norm_neubernet": 0.02756002383353634,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    },
+    "stress_in_plane": {
+     "norm_neubernet": 3.602717924821419,
+     "norm_classical": 3.4612280148703896,
+     "rel_error": 0.059410625294636484,
+     "cosine": 0.999107211740457,
+     "norm_ratio": 1.040878529048982,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "stress_hoop_shears": {
+     "norm_neubernet": 0.04579198783814663,
+     "norm_classical": 0.0,
+     "rel_error": null,
+     "cosine": null,
+     "norm_ratio": null,
+     "sign_agreement_where_classical_above_10pct": null
+    },
+    "control_mirrored_points": {
+     "s_xx": {
+      "norm_neubernet": 0.6256222231469583,
+      "norm_classical": 0.5335214030197228,
+      "rel_error": 0.5650218262441093,
+      "cosine": 0.8765810040396844,
+      "norm_ratio": 1.172628163754905,
+      "sign_agreement_where_classical_above_10pct": 0.9565217391304348
+     },
+     "s_yy": {
+      "norm_neubernet": 2.300932240886115,
+      "norm_classical": 2.2588403072910963,
+      "rel_error": 0.6610518417729087,
+      "cosine": 0.7856726918175093,
+      "norm_ratio": 1.0186343113584233,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_zz": {
+      "norm_neubernet": 0.571156015780344,
+      "norm_classical": 0.528101813807713,
+      "rel_error": 0.8092644630223841,
+      "cosine": 0.7003020584139101,
+      "norm_ratio": 1.081526328535405,
+      "sign_agreement_where_classical_above_10pct": 0.5865384615384616
+     },
+     "s_xy": {
+      "norm_neubernet": 0.7245805693010522,
+      "norm_classical": 0.6800350101398512,
+      "rel_error": 0.8800336180015519,
+      "cosine": 0.6385899492459168,
+      "norm_ratio": 1.0655048026895557,
+      "sign_agreement_where_classical_above_10pct": 0.8137254901960784
+     },
+     "s_yz": {
+      "norm_neubernet": 0.025092021545599422,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_xz": {
+      "norm_neubernet": 0.027448311895918183,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    },
+    "control_mirrored_points_all": {
+     "norm_neubernet": 2.5570122327408673,
+     "norm_classical": 2.4755491839359545,
+     "rel_error": 0.6834685833154525,
+     "cosine": 0.7744005984927801,
+     "norm_ratio": 1.032907061323416,
+     "sign_agreement_where_classical_above_10pct": 0.9920634920634921
+    },
+    "ring_flux": {
+     "t_x": {
+      "norm_neubernet": 0.1757378267834868,
+      "norm_classical": 0.15726846066687963,
+      "rel_error": 0.25168687725689337,
+      "cosine": 0.9778267468158907,
+      "norm_ratio": 1.1174384618396456,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.5262514813320016,
+      "norm_classical": 0.5090341320232451,
+      "rel_error": 0.03758835695668978,
+      "cosine": 0.9998699724961762,
+      "norm_ratio": 1.0338235655049755,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0063532181938871345,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "points": 241,
+    "regime": {
+     "elastic_von_mises_over_sy": 0.6999999284744263,
+     "small_scale_indicator": 4.3627190589904785,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 11.627175331115723
+    },
+    "stress": {
+     "s_xx": {
+      "norm_neubernet": 0.9869658222104993,
+      "norm_classical": 0.9294320052971483,
+      "rel_error": 0.1258688991116178,
+      "cosine": 0.9943445321874074,
+      "norm_ratio": 1.0619021257988173,
+      "sign_agreement_where_classical_above_10pct": 0.976878612716763
+     },
+     "s_yy": {
+      "norm_neubernet": 3.2615815737089564,
+      "norm_classical": 3.1496225539277103,
+      "rel_error": 0.03614628948622695,
+      "cosine": 0.9999792482221123,
+      "norm_ratio": 1.0355468053280317,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_zz": {
+      "norm_neubernet": 0.9148444926516195,
+      "norm_classical": 0.8373334551660548,
+      "rel_error": 0.14197075123039907,
+      "cosine": 0.9946975001687925,
+      "norm_ratio": 1.092568900725689,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_xy": {
+      "norm_neubernet": 0.7284367535518228,
+      "norm_classical": 0.7035666074384884,
+      "rel_error": 0.05516664671716826,
+      "cosine": 0.9991337071963784,
+      "norm_ratio": 1.0353486732462764,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_yz": {
+      "norm_neubernet": 0.03656981318606753,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_xz": {
+      "norm_neubernet": 0.02756002383353634,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    },
+    "stress_in_plane": {
+     "norm_neubernet": 3.602717924821419,
+     "norm_classical": 3.4612280148703896,
+     "rel_error": 0.059410625294636484,
+     "cosine": 0.999107211740457,
+     "norm_ratio": 1.040878529048982,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "stress_hoop_shears": {
+     "norm_neubernet": 0.04579198783814663,
+     "norm_classical": 0.0,
+     "rel_error": null,
+     "cosine": null,
+     "norm_ratio": null,
+     "sign_agreement_where_classical_above_10pct": null
+    },
+    "control_mirrored_points": {
+     "s_xx": {
+      "norm_neubernet": 0.6256222231469583,
+      "norm_classical": 0.5335214030197228,
+      "rel_error": 0.5650218262441093,
+      "cosine": 0.8765810040396844,
+      "norm_ratio": 1.172628163754905,
+      "sign_agreement_where_classical_above_10pct": 0.9565217391304348
+     },
+     "s_yy": {
+      "norm_neubernet": 2.300932240886115,
+      "norm_classical": 2.2588403072910963,
+      "rel_error": 0.6610518417729087,
+      "cosine": 0.7856726918175093,
+      "norm_ratio": 1.0186343113584233,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_zz": {
+      "norm_neubernet": 0.571156015780344,
+      "norm_classical": 0.528101813807713,
+      "rel_error": 0.8092644630223841,
+      "cosine": 0.7003020584139101,
+      "norm_ratio": 1.081526328535405,
+      "sign_agreement_where_classical_above_10pct": 0.5865384615384616
+     },
+     "s_xy": {
+      "norm_neubernet": 0.7245805693010522,
+      "norm_classical": 0.6800350101398512,
+      "rel_error": 0.8800336180015519,
+      "cosine": 0.6385899492459168,
+      "norm_ratio": 1.0655048026895557,
+      "sign_agreement_where_classical_above_10pct": 0.8137254901960784
+     },
+     "s_yz": {
+      "norm_neubernet": 0.025092021545599422,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_xz": {
+      "norm_neubernet": 0.027448311895918183,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    },
+    "control_mirrored_points_all": {
+     "norm_neubernet": 2.5570122327408673,
+     "norm_classical": 2.4755491839359545,
+     "rel_error": 0.6834685833154525,
+     "cosine": 0.7744005984927801,
+     "norm_ratio": 1.032907061323416,
+     "sign_agreement_where_classical_above_10pct": 0.9920634920634921
+    },
+    "ring_flux": {
+     "t_x": {
+      "norm_neubernet": 0.1757378267834868,
+      "norm_classical": 0.15726846066687963,
+      "rel_error": 0.25168687725689337,
+      "cosine": 0.9778267468158907,
+      "norm_ratio": 1.1174384618396456,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.5262514813320016,
+      "norm_classical": 0.5090341320232451,
+      "rel_error": 0.03758835695668978,
+      "cosine": 0.9998699724961762,
+      "norm_ratio": 1.0338235655049755,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0063532181938871345,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "+1",
+    "points": 241,
+    "regime": {
+     "elastic_von_mises_over_sy": 0.699999988079071,
+     "small_scale_indicator": 2.5895485877990723,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": -1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 10.016326904296875
+    },
+    "stress": {
+     "s_xx": {
+      "norm_neubernet": 0.0016181194380502667,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_yy": {
+      "norm_neubernet": 0.0017529012019672089,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_zz": {
+      "norm_neubernet": 0.0015880866902011797,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_xy": {
+      "norm_neubernet": 0.0017831709699587693,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_yz": {
+      "norm_neubernet": 2.428323601994525,
+      "norm_classical": 2.471279865261237,
+      "rel_error": 1.9825647720701114,
+      "cosine": -0.9998929931489209,
+      "norm_ratio": 0.9826178071247422,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     },
+     "s_xz": {
+      "norm_neubernet": 1.2693415178875906,
+      "norm_classical": 1.2442499170726984,
+      "rel_error": 2.019601202028984,
+      "cosine": -0.9988816343292862,
+      "norm_ratio": 1.0201660458004485,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    },
+    "stress_in_plane": {
+     "norm_neubernet": 0.0033753060873574162,
+     "norm_classical": 0.0,
+     "rel_error": null,
+     "cosine": null,
+     "norm_ratio": null,
+     "sign_agreement_where_classical_above_10pct": null
+    },
+    "stress_hoop_shears": {
+     "norm_neubernet": 2.740069963529551,
+     "norm_classical": 2.7668361043945144,
+     "rel_error": 1.9901102984211108,
+     "cosine": -0.9995663450531199,
+     "norm_ratio": 0.9903260837089514,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "control_mirrored_points": {
+     "s_xx": {
+      "norm_neubernet": 0.0014541738132426347,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_yy": {
+      "norm_neubernet": 0.001297930281232953,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_zz": {
+      "norm_neubernet": 0.001253422795918155,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_xy": {
+      "norm_neubernet": 0.0016638866227928937,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_yz": {
+      "norm_neubernet": 1.6875242637938301,
+      "norm_classical": 1.7339019314709356,
+      "rel_error": 1.9477575370590856,
+      "cosine": -0.9486434780367543,
+      "norm_ratio": 0.9732524274670128,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     },
+     "s_xz": {
+      "norm_neubernet": 1.2620803946632224,
+      "norm_classical": 1.19903375391305,
+      "rel_error": 1.9837346758716317,
+      "cosine": -0.8679976703100327,
+      "norm_ratio": 1.0525812059455537,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    },
+    "control_mirrored_points_all": {
+     "norm_neubernet": 2.107271506550135,
+     "norm_classical": 2.108102903318873,
+     "rel_error": 1.959469023881885,
+     "cosine": -0.9205167662760273,
+     "norm_ratio": 0.9996056185077924,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "ring_flux": {
+     "t_x": {
+      "norm_neubernet": 0.0006202822880689845,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0006021485177357691,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.3788392138182027,
+      "norm_classical": 0.3908922776370914,
+      "rel_error": 1.9670793830476643,
+      "cosine": -0.9957641377026811,
+      "norm_ratio": 0.9691652547045738,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "-1",
+    "points": 241,
+    "regime": {
+     "elastic_von_mises_over_sy": 0.699999988079071,
+     "small_scale_indicator": 2.5895485877990723,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": -1.0,
+     "sign_torsion": -1.0,
+     "branch_norm": 10.016326904296875
+    },
+    "stress": {
+     "s_xx": {
+      "norm_neubernet": 0.0016181194380502667,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_yy": {
+      "norm_neubernet": 0.0017529012019672089,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_zz": {
+      "norm_neubernet": 0.0015880866902011797,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_xy": {
+      "norm_neubernet": 0.0017831709699587693,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_yz": {
+      "norm_neubernet": 2.428323601994525,
+      "norm_classical": 2.471279865261237,
+      "rel_error": 0.022637011813881554,
+      "cosine": 0.9998929931489209,
+      "norm_ratio": 0.9826178071247422,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_xz": {
+      "norm_neubernet": 1.2693415178875906,
+      "norm_classical": 1.2442499170726984,
+      "rel_error": 0.051850812639027605,
+      "cosine": 0.9988816343292862,
+      "norm_ratio": 1.0201660458004485,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    },
+    "stress_in_plane": {
+     "norm_neubernet": 0.0033753060873574162,
+     "norm_classical": 0.0,
+     "rel_error": null,
+     "cosine": null,
+     "norm_ratio": null,
+     "sign_agreement_where_classical_above_10pct": null
+    },
+    "stress_hoop_shears": {
+     "norm_neubernet": 2.740069963529551,
+     "norm_classical": 2.7668361043945144,
+     "rel_error": 0.030862667850599008,
+     "cosine": 0.9995663450531199,
+     "norm_ratio": 0.9903260837089514,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "control_mirrored_points": {
+     "s_xx": {
+      "norm_neubernet": 0.0014541738132426347,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_yy": {
+      "norm_neubernet": 0.001297930281232953,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_zz": {
+      "norm_neubernet": 0.001253422795918155,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_xy": {
+      "norm_neubernet": 0.0016638866227928937,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "s_yz": {
+      "norm_neubernet": 1.6875242637938301,
+      "norm_classical": 1.7339019314709356,
+      "rel_error": 0.3173029340715129,
+      "cosine": 0.9486434780367543,
+      "norm_ratio": 0.9732524274670128,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_xz": {
+      "norm_neubernet": 1.2620803946632224,
+      "norm_classical": 1.19903375391305,
+      "rel_error": 0.5297651611460171,
+      "cosine": 0.8679976703100327,
+      "norm_ratio": 1.0525812059455537,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    },
+    "control_mirrored_points_all": {
+     "norm_neubernet": 2.107271506550135,
+     "norm_classical": 2.108102903318873,
+     "rel_error": 0.39862755744186085,
+     "cosine": 0.9205167662760273,
+     "norm_ratio": 0.9996056185077924,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "ring_flux": {
+     "t_x": {
+      "norm_neubernet": 0.0006202822880689845,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0006021485177357691,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.3788392138182027,
+      "norm_classical": 0.3908922776370914,
+      "rel_error": 0.09571458949388634,
+      "cosine": 0.9957641377026811,
+      "norm_ratio": 0.9691652547045738,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "+1",
+    "points": 241,
+    "regime": {
+     "elastic_von_mises_over_sy": 0.7000000476837158,
+     "small_scale_indicator": 3.0519614219665527,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": 1.0,
+     "branch_norm": 10.772473335266113
+    },
+    "stress": {
+     "s_xx": {
+      "norm_neubernet": 0.6318108914905347,
+      "norm_classical": 0.6012316698457244,
+      "rel_error": 0.1194498881431427,
+      "cosine": 0.9944419677557327,
+      "norm_ratio": 1.050860962884169,
+      "sign_agreement_where_classical_above_10pct": 0.976878612716763
+     },
+     "s_yy": {
+      "norm_neubernet": 2.0976669113320323,
+      "norm_classical": 2.0374301903626617,
+      "rel_error": 0.030640289754123567,
+      "cosine": 0.999968561818956,
+      "norm_ratio": 1.029565047801048,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_zz": {
+      "norm_neubernet": 0.5735301506897952,
+      "norm_classical": 0.5416548909419436,
+      "rel_error": 0.09257051736010855,
+      "cosine": 0.9975887831523427,
+      "norm_ratio": 1.058847912722472,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_xy": {
+      "norm_neubernet": 0.4752393778088609,
+      "norm_classical": 0.4551236925639353,
+      "rel_error": 0.06252929388973806,
+      "cosine": 0.999063193021385,
+      "norm_ratio": 1.0441982818596063,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_yz": {
+      "norm_neubernet": 1.9093541370737064,
+      "norm_classical": 1.9027418640224236,
+      "rel_error": 2.0033346363727498,
+      "cosine": -0.999719511518195,
+      "norm_ratio": 1.003475128800343,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     },
+     "s_xz": {
+      "norm_neubernet": 0.9121142535508685,
+      "norm_classical": 0.9580001196142914,
+      "rel_error": 1.9515390012117702,
+      "cosine": -0.9988449395512973,
+      "norm_ratio": 0.9521024422398846,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    },
+    "stress_in_plane": {
+     "norm_neubernet": 2.3139102777492786,
+     "norm_classical": 2.239001763697624,
+     "rel_error": 0.04969203986086593,
+     "cosine": 0.9993468611447415,
+     "norm_ratio": 1.033456210381874,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "stress_hoop_shears": {
+     "norm_neubernet": 2.1160306312270474,
+     "norm_classical": 2.1303029902538566,
+     "rel_error": 1.9929685285772585,
+     "cosine": -0.999334244744779,
+     "norm_ratio": 0.9933003149823733,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "control_mirrored_points": {
+     "s_xx": {
+      "norm_neubernet": 0.3993297540085134,
+      "norm_classical": 0.345124723710616,
+      "rel_error": 0.5554756725375145,
+      "cosine": 0.8773245126760046,
+      "norm_ratio": 1.157059250102719,
+      "sign_agreement_where_classical_above_10pct": 0.9565217391304348
+     },
+     "s_yy": {
+      "norm_neubernet": 1.4803810386000953,
+      "norm_classical": 1.4612003052695248,
+      "rel_error": 0.6605967253800072,
+      "cosine": 0.7847180787928795,
+      "norm_ratio": 1.0131266967720982,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_zz": {
+      "norm_neubernet": 0.35568347677173534,
+      "norm_classical": 0.341618895792874,
+      "rel_error": 0.8021489011691614,
+      "cosine": 0.691814198097754,
+      "norm_ratio": 1.041170383582613,
+      "sign_agreement_where_classical_above_10pct": 0.5480769230769231
+     },
+     "s_xy": {
+      "norm_neubernet": 0.47247436154495054,
+      "norm_classical": 0.43990155532596376,
+      "rel_error": 0.8828154971195649,
+      "cosine": 0.6397357855891197,
+      "norm_ratio": 1.0740456718659488,
+      "sign_agreement_where_classical_above_10pct": 0.8137254901960784
+     },
+     "s_yz": {
+      "norm_neubernet": 1.322878060606945,
+      "norm_classical": 1.3350037118399523,
+      "rel_error": 1.9604685063489493,
+      "cosine": -0.9392914448729259,
+      "norm_ratio": 0.9909171404352912,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     },
+     "s_xz": {
+      "norm_neubernet": 0.9079470079384249,
+      "norm_classical": 0.9231863019711662,
+      "rel_error": 1.9159016479154092,
+      "cosine": -0.8660059991103367,
+      "norm_ratio": 0.9834927208081372,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    },
+    "control_mirrored_points_all": {
+     "norm_neubernet": 2.2967605801015623,
+     "norm_classical": 2.2801188815828604,
+     "rel_error": 1.4659597351662133,
+     "cosine": -0.06670686032966598,
+     "norm_ratio": 1.0072986100212236,
+     "sign_agreement_where_classical_above_10pct": 0.4430604982206406
+    },
+    "ring_flux": {
+     "t_x": {
+      "norm_neubernet": 0.11315286372474952,
+      "norm_classical": 0.10173393931122793,
+      "rel_error": 0.2520315736866202,
+      "cosine": 0.9771086812254273,
+      "norm_ratio": 1.112243018316517,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.34031268298852074,
+      "norm_classical": 0.3292843795571224,
+      "rel_error": 0.03628571556618828,
+      "cosine": 0.9999056803306235,
+      "norm_ratio": 1.0334917296904003,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.3015146317934771,
+      "norm_classical": 0.3009643348931467,
+      "rel_error": 1.99757636026155,
+      "cosine": -0.9915126135454762,
+      "norm_ratio": 1.0018284455549384,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "-1",
+    "points": 241,
+    "regime": {
+     "elastic_von_mises_over_sy": 0.7000000476837158,
+     "small_scale_indicator": 3.0519614219665527,
+     "branch": "elastic (rescaled)",
+     "small_scale_plasticity_violated": false,
+     "sign_tension": 1.0,
+     "sign_torsion": -1.0,
+     "branch_norm": 10.772473335266113
+    },
+    "stress": {
+     "s_xx": {
+      "norm_neubernet": 0.6318108914905347,
+      "norm_classical": 0.6012316698457244,
+      "rel_error": 0.1194498881431427,
+      "cosine": 0.9944419677557327,
+      "norm_ratio": 1.050860962884169,
+      "sign_agreement_where_classical_above_10pct": 0.976878612716763
+     },
+     "s_yy": {
+      "norm_neubernet": 2.0976669113320323,
+      "norm_classical": 2.0374301903626617,
+      "rel_error": 0.030640289754123567,
+      "cosine": 0.999968561818956,
+      "norm_ratio": 1.029565047801048,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_zz": {
+      "norm_neubernet": 0.5735301506897952,
+      "norm_classical": 0.5416548909419436,
+      "rel_error": 0.09257051736010855,
+      "cosine": 0.9975887831523427,
+      "norm_ratio": 1.058847912722472,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_xy": {
+      "norm_neubernet": 0.4752393778088609,
+      "norm_classical": 0.4551236925639353,
+      "rel_error": 0.06252929388973806,
+      "cosine": 0.999063193021385,
+      "norm_ratio": 1.0441982818596063,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_yz": {
+      "norm_neubernet": 1.9093541370737064,
+      "norm_classical": 1.9027418640224236,
+      "rel_error": 0.02397921914891038,
+      "cosine": 0.999719511518195,
+      "norm_ratio": 1.003475128800343,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_xz": {
+      "norm_neubernet": 0.9121142535508685,
+      "norm_classical": 0.9580001196142914,
+      "rel_error": 0.06703467600930757,
+      "cosine": 0.9988449395512973,
+      "norm_ratio": 0.9521024422398846,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    },
+    "stress_in_plane": {
+     "norm_neubernet": 2.3139102777492786,
+     "norm_classical": 2.239001763697624,
+     "rel_error": 0.04969203986086593,
+     "cosine": 0.9993468611447415,
+     "norm_ratio": 1.033456210381874,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "stress_hoop_shears": {
+     "norm_neubernet": 2.1160306312270474,
+     "norm_classical": 2.1303029902538566,
+     "rel_error": 0.03697939411022922,
+     "cosine": 0.999334244744779,
+     "norm_ratio": 0.9933003149823733,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "control_mirrored_points": {
+     "s_xx": {
+      "norm_neubernet": 0.3993297540085134,
+      "norm_classical": 0.345124723710616,
+      "rel_error": 0.5554756725375145,
+      "cosine": 0.8773245126760046,
+      "norm_ratio": 1.157059250102719,
+      "sign_agreement_where_classical_above_10pct": 0.9565217391304348
+     },
+     "s_yy": {
+      "norm_neubernet": 1.4803810386000953,
+      "norm_classical": 1.4612003052695248,
+      "rel_error": 0.6605967253800072,
+      "cosine": 0.7847180787928795,
+      "norm_ratio": 1.0131266967720982,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_zz": {
+      "norm_neubernet": 0.35568347677173534,
+      "norm_classical": 0.341618895792874,
+      "rel_error": 0.8021489011691614,
+      "cosine": 0.691814198097754,
+      "norm_ratio": 1.041170383582613,
+      "sign_agreement_where_classical_above_10pct": 0.5480769230769231
+     },
+     "s_xy": {
+      "norm_neubernet": 0.47247436154495054,
+      "norm_classical": 0.43990155532596376,
+      "rel_error": 0.8828154971195649,
+      "cosine": 0.6397357855891197,
+      "norm_ratio": 1.0740456718659488,
+      "sign_agreement_where_classical_above_10pct": 0.8137254901960784
+     },
+     "s_yz": {
+      "norm_neubernet": 1.322878060606945,
+      "norm_classical": 1.3350037118399523,
+      "rel_error": 0.34698241170242167,
+      "cosine": 0.9392914448729259,
+      "norm_ratio": 0.9909171404352912,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "s_xz": {
+      "norm_neubernet": 0.9079470079384249,
+      "norm_classical": 0.9231863019711662,
+      "rel_error": 0.5136504057043119,
+      "cosine": 0.8660059991103367,
+      "norm_ratio": 0.9834927208081372,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    },
+    "control_mirrored_points_all": {
+     "norm_neubernet": 2.2967605801015623,
+     "norm_classical": 2.2801188815828604,
+     "rel_error": 0.5605911919462429,
+     "cosine": 0.8440337295944214,
+     "norm_ratio": 1.0072986100212236,
+     "sign_agreement_where_classical_above_10pct": 0.994661921708185
+    },
+    "ring_flux": {
+     "t_x": {
+      "norm_neubernet": 0.11315286372474952,
+      "norm_classical": 0.10173393931122793,
+      "rel_error": 0.2520315736866202,
+      "cosine": 0.9771086812254273,
+      "norm_ratio": 1.112243018316517,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.34031268298852074,
+      "norm_classical": 0.3292843795571224,
+      "rel_error": 0.03628571556618828,
+      "cosine": 0.9999056803306235,
+      "norm_ratio": 1.0334917296904003,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.3015146317934771,
+      "norm_classical": 0.3009643348931467,
+      "rel_error": 0.13041914571973967,
+      "cosine": 0.9915126135454762,
+      "norm_ratio": 1.0018284455549384,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    }
+   }
+  ]
+ },
+ "directional": {
+  "what": "d/da flux(base + a v) for NeuberNet against S_classical v",
+  "rows": [
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "direction": "tension far field",
+    "plus": {
+     "norm_neubernet": 0.2918400637124524,
+     "norm_classical": 0.2802246317505628,
+     "rel_error": 0.08336927386731706,
+     "cosine": 0.9974879757226609,
+     "norm_ratio": 1.0414504317101891,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.09242778525025097,
+      "norm_classical": 0.08271878940203017,
+      "rel_error": 0.2516365386768055,
+      "cosine": 0.977829972574743,
+      "norm_ratio": 1.1173735244242164,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.27679695719160924,
+      "norm_classical": 0.26773764419595747,
+      "rel_error": 0.037601248176551166,
+      "cosine": 0.9998699296009812,
+      "norm_ratio": 1.0338365306188368,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0033424229068474832,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "direction": "torsion far field",
+    "plus": {
+     "norm_neubernet": 0.027066102168276884,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 1.1771496842330595,
+     "cosine": -0.9689256518234814,
+     "norm_ratio": 0.18194284537832756,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.002654423050998349,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0026800703862724777,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.02680196163668914,
+      "norm_classical": 0.1487615636217862,
+      "rel_error": 1.1768765515659856,
+      "cosine": -0.9784746743991765,
+      "norm_ratio": 0.18016724874464807,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    },
+    "minus": {
+     "norm_neubernet": 1.2957656416950156,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 9.583770614702674,
+     "cosine": -0.8598056489099003,
+     "norm_ratio": 8.710352393104655,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "central": {
+     "norm_neubernet": 0.660471455182997,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 5.327036255214101,
+     "cosine": -0.8632709635895641,
+     "norm_ratio": 4.4397990926082915,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_vs_minus_cosine": 0.9288072222615182,
+    "sign_torsion_at": {
+     "base": 1.0,
+     "base+av": 1.0,
+     "base-av": -1.0
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "direction": "smooth mode k=3 on u_y",
+    "plus": {
+     "norm_neubernet": 0.8782901877238687,
+     "norm_classical": 0.8022681340498471,
+     "rel_error": 1.121963031629493,
+     "cosine": 0.4291794374567393,
+     "norm_ratio": 1.0947589097054902,
+     "sign_agreement_where_classical_above_10pct": 0.8775510204081632
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.7304340550945254,
+      "norm_classical": 0.35522092034113556,
+      "rel_error": 2.1575911639770564,
+      "cosine": 0.13935162521236133,
+      "norm_ratio": 2.056281072615472,
+      "sign_agreement_where_classical_above_10pct": 0.76
+     },
+     "t_y": {
+      "norm_neubernet": 0.482472909525982,
+      "norm_classical": 0.7193415438189428,
+      "rel_error": 0.6486639688700334,
+      "cosine": 0.7671617116327365,
+      "norm_ratio": 0.6707146468485069,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.07127156925261374,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "direction": "smooth mode k=3 on u_theta",
+    "plus": {
+     "norm_neubernet": 0.003706386033344953,
+     "norm_classical": 0.5410715654646653,
+     "rel_error": 1.00564846495896,
+     "cosine": -0.8234870053336296,
+     "norm_ratio": 0.006850084665162466,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0007515847469384621,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.000313664060863636,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0036158031823187663,
+      "norm_classical": 0.5410715654646653,
+      "rel_error": 1.0056473385358218,
+      "cosine": -0.8441169447868884,
+      "norm_ratio": 0.006682670857437428,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "direction": "one sensor on u_y",
+    "plus": {
+     "norm_neubernet": 0.04235949863613089,
+     "norm_classical": 0.6769803318351335,
+     "rel_error": 1.0020321223208593,
+     "cosine": -0.0012243174506846972,
+     "norm_ratio": 0.06257123973056103,
+     "sign_agreement_where_classical_above_10pct": 0.2857142857142857
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.038727842392723165,
+      "norm_classical": 0.14225629840951176,
+      "rel_error": 1.0421729908995765,
+      "cosine": -0.02205769944885917,
+      "norm_ratio": 0.2722399136327709,
+      "sign_agreement_where_classical_above_10pct": 0.5
+     },
+     "t_y": {
+      "norm_neubernet": 0.016749110690011944,
+      "norm_classical": 0.6618651790617418,
+      "rel_error": 1.0001229272990555,
+      "cosine": 0.0077950151321811625,
+      "norm_ratio": 0.025305925164027267,
+      "sign_agreement_where_classical_above_10pct": 0.2
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0037347877319195842,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "direction": "one sensor on u_theta",
+    "plus": {
+     "norm_neubernet": 0.00017353532353599086,
+     "norm_classical": 0.4243765016155409,
+     "rel_error": 1.0000005322165624,
+     "cosine": -0.0010970641199717771,
+     "norm_ratio": 0.0004089183139862047,
+     "sign_agreement_where_classical_above_10pct": 0.4
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 9.808436498688383e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 6.025288414333563e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.00012985975439785245,
+      "norm_classical": 0.42437650161554086,
+      "rel_error": 1.0000004954278805,
+      "cosine": -0.001466038326360631,
+      "norm_ratio": 0.0003060012840095879,
+      "sign_agreement_where_classical_above_10pct": 0.4
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "direction": "tension far field",
+    "plus": {
+     "norm_neubernet": 0.2918400637124524,
+     "norm_classical": 0.2802246317505628,
+     "rel_error": 0.08336927386731706,
+     "cosine": 0.9974879757226609,
+     "norm_ratio": 1.0414504317101891,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.09242778525025097,
+      "norm_classical": 0.08271878940203017,
+      "rel_error": 0.2516365386768055,
+      "cosine": 0.977829972574743,
+      "norm_ratio": 1.1173735244242164,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.27679695719160924,
+      "norm_classical": 0.26773764419595747,
+      "rel_error": 0.037601248176551166,
+      "cosine": 0.9998699296009812,
+      "norm_ratio": 1.0338365306188368,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0033424229068474832,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "direction": "torsion far field",
+    "plus": {
+     "norm_neubernet": 1.2957656416950156,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 7.867135338157688,
+     "cosine": 0.8598056489099003,
+     "norm_ratio": 8.710352393104655,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.002654423050998349,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0026800703862724777,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 1.2957601512078871,
+      "norm_classical": 0.1487615636217862,
+      "rel_error": 7.86709447429134,
+      "cosine": 0.8598092921395859,
+      "norm_ratio": 8.710315485135991,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    },
+    "minus": {
+     "norm_neubernet": 0.027066102168276884,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.8249394031556088,
+     "cosine": 0.9689256518234814,
+     "norm_ratio": 0.18194284537832756,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "central": {
+     "norm_neubernet": 0.660471455182997,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 3.611968535450626,
+     "cosine": 0.8632709635895641,
+     "norm_ratio": 4.4397990926082915,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_vs_minus_cosine": 0.9288072222615182,
+    "sign_torsion_at": {
+     "base": 1.0,
+     "base+av": -1.0,
+     "base-av": 1.0
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "direction": "smooth mode k=3 on u_y",
+    "plus": {
+     "norm_neubernet": 0.8782901877238687,
+     "norm_classical": 0.8022681340498471,
+     "rel_error": 1.121963031629493,
+     "cosine": 0.4291794374567393,
+     "norm_ratio": 1.0947589097054902,
+     "sign_agreement_where_classical_above_10pct": 0.8775510204081632
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.7304340550945254,
+      "norm_classical": 0.35522092034113556,
+      "rel_error": 2.1575911639770564,
+      "cosine": 0.13935162521236133,
+      "norm_ratio": 2.056281072615472,
+      "sign_agreement_where_classical_above_10pct": 0.76
+     },
+     "t_y": {
+      "norm_neubernet": 0.482472909525982,
+      "norm_classical": 0.7193415438189428,
+      "rel_error": 0.6486639688700334,
+      "cosine": 0.7671617116327365,
+      "norm_ratio": 0.6707146468485069,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.07127156925261374,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "direction": "smooth mode k=3 on u_theta",
+    "plus": {
+     "norm_neubernet": 0.0037122280998163463,
+     "norm_classical": 0.5410715654646653,
+     "rel_error": 0.9943267179007965,
+     "cosine": 0.8279875652933232,
+     "norm_ratio": 0.006860881880991718,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0007551137502415426,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0003172349106295082,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0036207461524857165,
+      "norm_classical": 0.5410715654646653,
+      "rel_error": 0.9943255656492896,
+      "cosine": 0.8489075391463863,
+      "norm_ratio": 0.006691806377546871,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "direction": "one sensor on u_y",
+    "plus": {
+     "norm_neubernet": 0.04235949863613089,
+     "norm_classical": 0.6769803318351335,
+     "rel_error": 1.0020321223208593,
+     "cosine": -0.0012243174506846972,
+     "norm_ratio": 0.06257123973056103,
+     "sign_agreement_where_classical_above_10pct": 0.2857142857142857
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.038727842392723165,
+      "norm_classical": 0.14225629840951176,
+      "rel_error": 1.0421729908995765,
+      "cosine": -0.02205769944885917,
+      "norm_ratio": 0.2722399136327709,
+      "sign_agreement_where_classical_above_10pct": 0.5
+     },
+     "t_y": {
+      "norm_neubernet": 0.016749110690011944,
+      "norm_classical": 0.6618651790617418,
+      "rel_error": 1.0001229272990555,
+      "cosine": 0.0077950151321811625,
+      "norm_ratio": 0.025305925164027267,
+      "sign_agreement_where_classical_above_10pct": 0.2
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0037347877319195842,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "direction": "one sensor on u_theta",
+    "plus": {
+     "norm_neubernet": 0.00017357790044605573,
+     "norm_classical": 0.4243765016155409,
+     "rel_error": 1.0000000108235325,
+     "cosine": 0.00017804712198313195,
+     "norm_ratio": 0.00040901864213798214,
+     "sign_agreement_where_classical_above_10pct": 0.6
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 9.799599407039653e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 5.883339349788804e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.00013063194279707511,
+      "norm_classical": 0.42437650161554086,
+      "rel_error": 0.9999999745522509,
+      "cosine": 0.00023658107620968716,
+      "norm_ratio": 0.0003078208673189442,
+      "sign_agreement_where_classical_above_10pct": 0.6
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "direction": "tension far field",
+    "plus": {
+     "norm_neubernet": 0.2921942286964014,
+     "norm_classical": 0.2802246317505628,
+     "rel_error": 0.08607453422803518,
+     "cosine": 0.9973222220699979,
+     "norm_ratio": 1.0427142927124733,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0952564903624104,
+      "norm_classical": 0.08271878940203017,
+      "rel_error": 0.2639914716435867,
+      "cosine": 0.9797155301815358,
+      "norm_ratio": 1.1515701698612204,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.2762309952549811,
+      "norm_classical": 0.26773764419595747,
+      "rel_error": 0.038239851335114386,
+      "cosine": 0.9997790303059513,
+      "norm_ratio": 1.0317226629991836,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.00032494270801997614,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "direction": "torsion far field",
+    "plus": {
+     "norm_neubernet": 0.14742148115899312,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 1.9893533928041531,
+     "cosine": -0.9967097619551266,
+     "norm_ratio": 0.9909917425565644,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0033849246851160365,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0031902400225260925,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.1473480836678446,
+      "norm_classical": 0.1487615636217862,
+      "rel_error": 1.9891076576579376,
+      "cosine": -0.9972062461584478,
+      "norm_ratio": 0.9904983524001183,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    },
+    "minus": {
+     "norm_neubernet": 0.14667752195167305,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 1.9840776743145059,
+     "cosine": -0.9961485734823173,
+     "norm_ratio": 0.9859907248930803,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "central": {
+     "norm_neubernet": 0.14704542596695308,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 1.9867020800392976,
+     "cosine": -0.9964574950906405,
+     "norm_ratio": 0.9884638369411318,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_vs_minus_cosine": 0.9998891377954412,
+    "sign_torsion_at": {
+     "base": 1.0,
+     "base+av": 1.0,
+     "base-av": 1.0
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "direction": "smooth mode k=3 on u_y",
+    "plus": {
+     "norm_neubernet": 0.9030102991695662,
+     "norm_classical": 0.8022681340498471,
+     "rel_error": 1.1111448166504765,
+     "cosine": 0.458553122125565,
+     "norm_ratio": 1.1255716896184982,
+     "sign_agreement_where_classical_above_10pct": 0.8775510204081632
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.7478076305136102,
+      "norm_classical": 0.35522092034113556,
+      "rel_error": 2.182556800177077,
+      "cosine": 0.1587200821301304,
+      "norm_ratio": 2.1051902849512776,
+      "sign_agreement_where_classical_above_10pct": 0.76
+     },
+     "t_y": {
+      "norm_neubernet": 0.5037087110957004,
+      "norm_classical": 0.7193415438189428,
+      "rel_error": 0.6077005092414247,
+      "cosine": 0.800466260058408,
+      "norm_ratio": 0.700235813465659,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.049888701308389675,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "direction": "smooth mode k=3 on u_theta",
+    "plus": {
+     "norm_neubernet": 0.019647786682912238,
+     "norm_classical": 0.5410715654646653,
+     "rel_error": 1.0282398891483053,
+     "cosine": -0.7705101247837347,
+     "norm_ratio": 0.036312731876861744,
+     "sign_agreement_where_classical_above_10pct": 0.15384615384615385
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0007099148912899482,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0003847997104680098,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.019631186198678163,
+      "norm_classical": 0.5410715654646653,
+      "rel_error": 1.0282388061014593,
+      "cosine": -0.7711616820074918,
+      "norm_ratio": 0.036282051121683236,
+      "sign_agreement_where_classical_above_10pct": 0.15384615384615385
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "direction": "one sensor on u_y",
+    "plus": {
+     "norm_neubernet": 0.05080044269889103,
+     "norm_classical": 0.6769803318351335,
+     "rel_error": 1.002682317240087,
+     "cosine": 0.001726661355016439,
+     "norm_ratio": 0.07503976158536696,
+     "sign_agreement_where_classical_above_10pct": 0.42857142857142855
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.04707210821140833,
+      "norm_classical": 0.14225629840951176,
+      "rel_error": 1.0581967680425812,
+      "cosine": -0.01554552702620035,
+      "norm_ratio": 0.3308964786634777,
+      "sign_agreement_where_classical_above_10pct": 0.5
+     },
+     "t_y": {
+      "norm_neubernet": 0.019092656786948315,
+      "norm_classical": 0.6618651790617418,
+      "rel_error": 1.0000428825287018,
+      "cosine": 0.012936777380963646,
+      "norm_ratio": 0.028846746121338505,
+      "sign_agreement_where_classical_above_10pct": 0.4
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0006099702882699068,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "direction": "one sensor on u_theta",
+    "plus": {
+     "norm_neubernet": 0.0013266931425911963,
+     "norm_classical": 0.4243765016155409,
+     "rel_error": 1.0000058462505792,
+     "cosine": -0.0003069685893561289,
+     "norm_ratio": 0.0031262172564707623,
+     "sign_agreement_where_classical_above_10pct": 0.4
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.00011803190538594388,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 6.76273682066802e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0013197006111156067,
+      "norm_classical": 0.42437650161554086,
+      "rel_error": 1.0000057948753571,
+      "cosine": -0.0003085950851726881,
+      "norm_ratio": 0.0031097400682924114,
+      "sign_agreement_where_classical_above_10pct": 0.4
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "direction": "tension far field",
+    "plus": {
+     "norm_neubernet": 0.2921942286964014,
+     "norm_classical": 0.2802246317505628,
+     "rel_error": 0.08607453422803518,
+     "cosine": 0.9973222220699979,
+     "norm_ratio": 1.0427142927124733,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0952564903624104,
+      "norm_classical": 0.08271878940203017,
+      "rel_error": 0.2639914716435867,
+      "cosine": 0.9797155301815358,
+      "norm_ratio": 1.1515701698612204,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.2762309952549811,
+      "norm_classical": 0.26773764419595747,
+      "rel_error": 0.038239851335114386,
+      "cosine": 0.9997790303059513,
+      "norm_ratio": 1.0317226629991836,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.00032494270801997614,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "direction": "torsion far field",
+    "plus": {
+     "norm_neubernet": 0.14667752195167305,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.08826778255460031,
+     "cosine": 0.9961485734823173,
+     "norm_ratio": 0.9859907248930803,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0034007551891013545,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0031968348124272964,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.14660324197373462,
+      "norm_classical": 0.1487615636217862,
+      "rel_error": 0.08250331078168915,
+      "cosine": 0.9966532955680331,
+      "norm_ratio": 0.9854914025134952,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    },
+    "minus": {
+     "norm_neubernet": 0.14742148115899312,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.081254822436562,
+     "cosine": 0.9967097619551266,
+     "norm_ratio": 0.9909917425565644,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "central": {
+     "norm_neubernet": 0.14704542596695308,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.08447697347974359,
+     "cosine": 0.9964574950906405,
+     "norm_ratio": 0.9884638369411318,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_vs_minus_cosine": 0.9998891377954412,
+    "sign_torsion_at": {
+     "base": 1.0,
+     "base+av": 1.0,
+     "base-av": 1.0
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "direction": "smooth mode k=3 on u_y",
+    "plus": {
+     "norm_neubernet": 0.9030102991695662,
+     "norm_classical": 0.8022681340498471,
+     "rel_error": 1.1111448166504765,
+     "cosine": 0.458553122125565,
+     "norm_ratio": 1.1255716896184982,
+     "sign_agreement_where_classical_above_10pct": 0.8775510204081632
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.7478076305136102,
+      "norm_classical": 0.35522092034113556,
+      "rel_error": 2.182556800177077,
+      "cosine": 0.1587200821301304,
+      "norm_ratio": 2.1051902849512776,
+      "sign_agreement_where_classical_above_10pct": 0.76
+     },
+     "t_y": {
+      "norm_neubernet": 0.5037087110957004,
+      "norm_classical": 0.7193415438189428,
+      "rel_error": 0.6077005092414247,
+      "cosine": 0.800466260058408,
+      "norm_ratio": 0.700235813465659,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.049888701308389675,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "direction": "smooth mode k=3 on u_theta",
+    "plus": {
+     "norm_neubernet": 0.019666030118111112,
+     "norm_classical": 0.5410715654646653,
+     "rel_error": 0.9723022417978663,
+     "cosine": 0.7696682389923688,
+     "norm_ratio": 0.03634644910830267,
+     "sign_agreement_where_classical_above_10pct": 0.8461538461538461
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0007024225875139327,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.000398797708196212,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.019649435195520024,
+      "norm_classical": 0.5410715654646653,
+      "rel_error": 0.9723010957620211,
+      "cosine": 0.7703182619940381,
+      "norm_ratio": 0.03631577863206569,
+      "sign_agreement_where_classical_above_10pct": 0.8461538461538461
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "direction": "one sensor on u_y",
+    "plus": {
+     "norm_neubernet": 0.05080044269889103,
+     "norm_classical": 0.6769803318351335,
+     "rel_error": 1.002682317240087,
+     "cosine": 0.001726661355016439,
+     "norm_ratio": 0.07503976158536696,
+     "sign_agreement_where_classical_above_10pct": 0.42857142857142855
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.04707210821140833,
+      "norm_classical": 0.14225629840951176,
+      "rel_error": 1.0581967680425812,
+      "cosine": -0.01554552702620035,
+      "norm_ratio": 0.3308964786634777,
+      "sign_agreement_where_classical_above_10pct": 0.5
+     },
+     "t_y": {
+      "norm_neubernet": 0.019092656786948315,
+      "norm_classical": 0.6618651790617418,
+      "rel_error": 1.0000428825287018,
+      "cosine": 0.012936777380963646,
+      "norm_ratio": 0.028846746121338505,
+      "sign_agreement_where_classical_above_10pct": 0.4
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0006099702882699068,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "direction": "one sensor on u_theta",
+    "plus": {
+     "norm_neubernet": 0.001329234113904983,
+     "norm_classical": 0.4243765016155409,
+     "rel_error": 1.0000036115356659,
+     "cosine": 0.00041306726098923894,
+     "norm_ratio": 0.0031322047965539517,
+     "sign_agreement_where_classical_above_10pct": 0.6
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.00011210656717249403,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 6.42615937217246e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0013229383563635566,
+      "norm_classical": 0.42437650161554086,
+      "rel_error": 1.000003565178642,
+      "cosine": 0.0004150330149572724,
+      "norm_ratio": 0.0031173694851795958,
+      "sign_agreement_where_classical_above_10pct": 0.6
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "+1",
+    "direction": "tension far field",
+    "plus": {
+     "norm_neubernet": 1.7175523616302355,
+     "norm_classical": 0.2802246317505628,
+     "rel_error": 6.029275366473955,
+     "cosine": 0.18068524728683946,
+     "norm_ratio": 6.129198389523037,
+     "sign_agreement_where_classical_above_10pct": 0.8775510204081632
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.14329008306079663,
+      "norm_classical": 0.08271878940203017,
+      "rel_error": 1.4647820369388271,
+      "cosine": 0.5354645579190762,
+      "norm_ratio": 1.732255562449997,
+      "sign_agreement_where_classical_above_10pct": 0.8148148148148148
+     },
+     "t_y": {
+      "norm_neubernet": 0.3181199719189418,
+      "norm_classical": 0.26773764419595747,
+      "rel_error": 0.40312846742216474,
+      "cosine": 0.9465140687536506,
+      "norm_ratio": 1.1881779750258408,
+      "sign_agreement_where_classical_above_10pct": 0.8928571428571429
+     },
+     "t_theta": {
+      "norm_neubernet": 1.6817412852470264,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "+1",
+    "direction": "torsion far field",
+    "plus": {
+     "norm_neubernet": 0.1441716613387045,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 1.9670582567180153,
+     "cosine": -0.9957604733454742,
+     "norm_ratio": 0.9691459126179183,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.00023660862469790852,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.00022889819611753763,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.14417128547369143,
+      "norm_classical": 0.1487615636217862,
+      "rel_error": 1.967057011880452,
+      "cosine": -0.995763069365355,
+      "norm_ratio": 0.9691433859907176,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    },
+    "minus": {
+     "norm_neubernet": 0.14417588928526992,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 1.9670871023457264,
+     "cosine": -0.9957613983751139,
+     "norm_ratio": 0.9691743335786994,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "central": {
+     "norm_neubernet": 0.14417377529806813,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 1.967072679487317,
+     "cosine": -0.9957609359632101,
+     "norm_ratio": 0.9691601230047425,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_vs_minus_cosine": 0.9999999996138249,
+    "sign_torsion_at": {
+     "base": 1.0,
+     "base+av": 1.0,
+     "base-av": 1.0
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "+1",
+    "direction": "smooth mode k=3 on u_y",
+    "plus": {
+     "norm_neubernet": 3.536518554162575,
+     "norm_classical": 0.8022681340498471,
+     "rel_error": 4.490376151899425,
+     "cosine": 0.03043356990250024,
+     "norm_ratio": 4.408150347827278,
+     "sign_agreement_where_classical_above_10pct": 0.8367346938775511
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.1781053218757011,
+      "norm_classical": 0.35522092034113556,
+      "rel_error": 1.0946556127430016,
+      "cosine": 0.05297653568171165,
+      "norm_ratio": 0.5013931096869466,
+      "sign_agreement_where_classical_above_10pct": 0.72
+     },
+     "t_y": {
+      "norm_neubernet": 0.13703255788552107,
+      "norm_classical": 0.7193415438189428,
+      "rel_error": 0.8458745527411113,
+      "cosine": 0.8419688316765063,
+      "norm_ratio": 0.19049721104389875,
+      "sign_agreement_where_classical_above_10pct": 0.9583333333333334
+     },
+     "t_theta": {
+      "norm_neubernet": 3.5293716234388035,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "+1",
+    "direction": "smooth mode k=3 on u_theta",
+    "plus": {
+     "norm_neubernet": 0.1757676157368225,
+     "norm_classical": 0.5410715654646653,
+     "rel_error": 1.3144844804380795,
+     "cosine": -0.9578874437018515,
+     "norm_ratio": 0.32485095679695447,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0004367564203320847,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.00019304064089616056,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.17576696709264675,
+      "norm_classical": 0.5410715654646653,
+      "rel_error": 1.3144841841734898,
+      "cosine": -0.9578909786556695,
+      "norm_ratio": 0.3248497579829395,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "+1",
+    "direction": "one sensor on u_y",
+    "plus": {
+     "norm_neubernet": 0.11895254265533879,
+     "norm_classical": 0.6769803318351335,
+     "rel_error": 1.0149627938647725,
+     "cosine": 0.00206220396718679,
+     "norm_ratio": 0.1757104853148194,
+     "sign_agreement_where_classical_above_10pct": 0.2857142857142857
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.020220082872614998,
+      "norm_classical": 0.14225629840951176,
+      "rel_error": 1.0095836050097544,
+      "cosine": 0.0033216558390672074,
+      "norm_ratio": 0.1421384015940556,
+      "sign_agreement_where_classical_above_10pct": 0.5
+     },
+     "t_y": {
+      "norm_neubernet": 0.005733572466267454,
+      "norm_classical": 0.6618651790617418,
+      "rel_error": 0.9996801911948081,
+      "cosine": 0.04124317228728819,
+      "norm_ratio": 0.00866274982828882,
+      "sign_agreement_where_classical_above_10pct": 0.2
+     },
+     "t_theta": {
+      "norm_neubernet": 0.11708109070028702,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "+1",
+    "direction": "one sensor on u_theta",
+    "plus": {
+     "norm_neubernet": 0.00791121312716987,
+     "norm_classical": 0.4243765016155409,
+     "rel_error": 1.0005393816358508,
+     "cosine": -0.01962054756803183,
+     "norm_ratio": 0.018641967915407683,
+     "sign_agreement_where_classical_above_10pct": 0.8
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 2.1573081160957622e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 2.7688947148437205e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.007911135257842575,
+      "norm_classical": 0.42437650161554086,
+      "rel_error": 1.000539378217076,
+      "cosine": -0.019620740693138433,
+      "norm_ratio": 0.018641784424269513,
+      "sign_agreement_where_classical_above_10pct": 0.8
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "-1",
+    "direction": "tension far field",
+    "plus": {
+     "norm_neubernet": 1.7175523616302355,
+     "norm_classical": 0.2802246317505628,
+     "rel_error": 6.029275366473955,
+     "cosine": 0.18068524728683946,
+     "norm_ratio": 6.129198389523037,
+     "sign_agreement_where_classical_above_10pct": 0.8775510204081632
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.14329008306079663,
+      "norm_classical": 0.08271878940203017,
+      "rel_error": 1.4647820369388271,
+      "cosine": 0.5354645579190762,
+      "norm_ratio": 1.732255562449997,
+      "sign_agreement_where_classical_above_10pct": 0.8148148148148148
+     },
+     "t_y": {
+      "norm_neubernet": 0.3181199719189418,
+      "norm_classical": 0.26773764419595747,
+      "rel_error": 0.40312846742216474,
+      "cosine": 0.9465140687536506,
+      "norm_ratio": 1.1881779750258408,
+      "sign_agreement_where_classical_above_10pct": 0.8928571428571429
+     },
+     "t_theta": {
+      "norm_neubernet": 1.6817412852470264,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "-1",
+    "direction": "torsion far field",
+    "plus": {
+     "norm_neubernet": 0.1441716613387045,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.09575706013405773,
+     "cosine": 0.9957604733454742,
+     "norm_ratio": 0.9691459126179183,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.00023660862469790852,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.00022889819611753763,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.14417128547369143,
+      "norm_classical": 0.1487615636217862,
+      "rel_error": 0.09573148505613514,
+      "cosine": 0.995763069365355,
+      "norm_ratio": 0.9691433859907176,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    },
+    "minus": {
+     "norm_neubernet": 0.14417588928526992,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.09573980113059961,
+     "cosine": 0.9957613983751139,
+     "norm_ratio": 0.9691743335786994,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "central": {
+     "norm_neubernet": 0.14417377529806813,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.09574842901960738,
+     "cosine": 0.9957609359632101,
+     "norm_ratio": 0.9691601230047425,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_vs_minus_cosine": 0.9999999996138249,
+    "sign_torsion_at": {
+     "base": -1.0,
+     "base+av": -1.0,
+     "base-av": -1.0
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "-1",
+    "direction": "smooth mode k=3 on u_y",
+    "plus": {
+     "norm_neubernet": 0.8931718423925478,
+     "norm_classical": 0.8022681340498471,
+     "rel_error": 1.5127474142254418,
+     "cosine": -0.021983654699439345,
+     "norm_ratio": 1.1133083871645493,
+     "sign_agreement_where_classical_above_10pct": 0.5714285714285714
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.3173750855838441,
+      "norm_classical": 0.35522092034113556,
+      "rel_error": 1.2114597410095713,
+      "cosine": 0.1850299300873299,
+      "norm_ratio": 0.8934583168104335,
+      "sign_agreement_where_classical_above_10pct": 0.72
+     },
+     "t_y": {
+      "norm_neubernet": 0.15907415568983377,
+      "norm_classical": 0.7193415438189428,
+      "rel_error": 1.0910606877036437,
+      "cosine": -0.31996038526685666,
+      "norm_ratio": 0.22113856353314207,
+      "sign_agreement_where_classical_above_10pct": 0.4166666666666667
+     },
+     "t_theta": {
+      "norm_neubernet": 0.8195879501829638,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "-1",
+    "direction": "smooth mode k=3 on u_theta",
+    "plus": {
+     "norm_neubernet": 0.1757676157368225,
+     "norm_classical": 0.5410715654646653,
+     "rel_error": 0.695116421149167,
+     "cosine": 0.9578874437018515,
+     "norm_ratio": 0.32485095679695447,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0004367564203320847,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.00019304064089616056,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.17576696709264675,
+      "norm_classical": 0.5410715654646653,
+      "rel_error": 0.6951158609044277,
+      "cosine": 0.9578909786556695,
+      "norm_ratio": 0.3248497579829395,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "-1",
+    "direction": "one sensor on u_y",
+    "plus": {
+     "norm_neubernet": 0.11895254265533879,
+     "norm_classical": 0.6769803318351335,
+     "rel_error": 1.0149627938647725,
+     "cosine": 0.00206220396718679,
+     "norm_ratio": 0.1757104853148194,
+     "sign_agreement_where_classical_above_10pct": 0.2857142857142857
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.020220082872614998,
+      "norm_classical": 0.14225629840951176,
+      "rel_error": 1.0095836050097544,
+      "cosine": 0.0033216558390672074,
+      "norm_ratio": 0.1421384015940556,
+      "sign_agreement_where_classical_above_10pct": 0.5
+     },
+     "t_y": {
+      "norm_neubernet": 0.005733572466267454,
+      "norm_classical": 0.6618651790617418,
+      "rel_error": 0.9996801911948081,
+      "cosine": 0.04124317228728819,
+      "norm_ratio": 0.00866274982828882,
+      "sign_agreement_where_classical_above_10pct": 0.2
+     },
+     "t_theta": {
+      "norm_neubernet": 0.11708109070028702,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "torsion-elastic",
+    "hoop": "-1",
+    "direction": "one sensor on u_theta",
+    "plus": {
+     "norm_neubernet": 0.00791121312716987,
+     "norm_classical": 0.4243765016155409,
+     "rel_error": 0.9998079774292997,
+     "cosine": 0.01962054756803183,
+     "norm_ratio": 0.018641967915407683,
+     "sign_agreement_where_classical_above_10pct": 0.2
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 2.1573081160957622e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 2.7688947148437205e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.007911135257842575,
+      "norm_classical": 0.42437650161554086,
+      "rel_error": 0.9998079740080239,
+      "cosine": 0.019620740693138433,
+      "norm_ratio": 0.018641784424269513,
+      "sign_agreement_where_classical_above_10pct": 0.2
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "+1",
+    "direction": "tension far field",
+    "plus": {
+     "norm_neubernet": 0.28917697928638986,
+     "norm_classical": 0.2802246317505628,
+     "rel_error": 0.08330832158740276,
+     "cosine": 0.9971317989938242,
+     "norm_ratio": 1.0319470400581912,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.09353088006634432,
+      "norm_classical": 0.08271878940203017,
+      "rel_error": 0.2588189673617736,
+      "cosine": 0.9779331314987111,
+      "norm_ratio": 1.1307090050818465,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.27357662456783227,
+      "norm_classical": 0.26773764419595747,
+      "rel_error": 0.02782694200386628,
+      "cosine": 0.9998538257903449,
+      "norm_ratio": 1.0218085894847169,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.005579454569007123,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "+1",
+    "direction": "torsion far field",
+    "plus": {
+     "norm_neubernet": 0.15008193956417337,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 2.0052642966295204,
+     "cosine": -0.9928152562621686,
+     "norm_ratio": 1.0088757869320608,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0015197713428214503,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0022348339624946047,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.15005760359132023,
+      "norm_classical": 0.1487615636217862,
+      "rel_error": 2.00518199702363,
+      "cosine": -0.9929762685970743,
+      "norm_ratio": 1.008712196470515,
+      "sign_agreement_where_classical_above_10pct": 0.0
+     }
+    },
+    "minus": {
+     "norm_neubernet": 0.14975113728547215,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 2.0030937950578767,
+     "cosine": -0.9929132346752102,
+     "norm_ratio": 1.0066520789348643,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "central": {
+     "norm_neubernet": 0.14991574491851511,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 2.004176349123854,
+     "cosine": -0.9928694466646761,
+     "norm_ratio": 1.0077585988519409,
+     "sign_agreement_where_classical_above_10pct": 0.0
+    },
+    "plus_vs_minus_cosine": 0.9999788280817618,
+    "sign_torsion_at": {
+     "base": 1.0,
+     "base+av": 1.0,
+     "base-av": 1.0
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "+1",
+    "direction": "smooth mode k=3 on u_y",
+    "plus": {
+     "norm_neubernet": 1.2270518196311022,
+     "norm_classical": 0.8022681340498471,
+     "rel_error": 1.5453336619936595,
+     "cosine": 0.3109714277011333,
+     "norm_ratio": 1.5294784468590923,
+     "sign_agreement_where_classical_above_10pct": 0.8775510204081632
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.7513587468903358,
+      "norm_classical": 0.35522092034113556,
+      "rel_error": 2.2266678699953255,
+      "cosine": 0.12196724752834946,
+      "norm_ratio": 2.115187208480768,
+      "sign_agreement_where_classical_above_10pct": 0.76
+     },
+     "t_y": {
+      "norm_neubernet": 0.4687732201296495,
+      "norm_classical": 0.7193415438189428,
+      "rel_error": 0.6060372697145321,
+      "cosine": 0.8112945614938071,
+      "norm_ratio": 0.6516698836007156,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.8493337798655266,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "+1",
+    "direction": "smooth mode k=3 on u_theta",
+    "plus": {
+     "norm_neubernet": 0.058772662877803666,
+     "norm_classical": 0.5410715654646653,
+     "rel_error": 1.0974965993957602,
+     "cosine": -0.887014699904762,
+     "norm_ratio": 0.10862271579052664,
+     "sign_agreement_where_classical_above_10pct": 0.07692307692307693
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0014081719322021427,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0005686315335028625,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.058753039170211664,
+      "norm_classical": 0.5410715654646653,
+      "rel_error": 1.0974930104075926,
+      "cosine": -0.8873109657209066,
+      "norm_ratio": 0.10858644756124879,
+      "sign_agreement_where_classical_above_10pct": 0.07692307692307693
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "+1",
+    "direction": "one sensor on u_y",
+    "plus": {
+     "norm_neubernet": 0.05727159425306447,
+     "norm_classical": 0.6769803318351335,
+     "rel_error": 1.0033821610297422,
+     "cosine": 0.002252776625607024,
+     "norm_ratio": 0.08459860879239242,
+     "sign_agreement_where_classical_above_10pct": 0.2857142857142857
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.02378724190138156,
+      "norm_classical": 0.14225629840951176,
+      "rel_error": 1.0156819470750416,
+      "cosine": -0.010912073098739653,
+      "norm_ratio": 0.16721398045171587,
+      "sign_agreement_where_classical_above_10pct": 0.5
+     },
+     "t_y": {
+      "norm_neubernet": 0.01742036937454665,
+      "norm_classical": 0.6618651790617418,
+      "rel_error": 1.0000626949538152,
+      "cosine": 0.010777967675663889,
+      "norm_ratio": 0.02632011763973097,
+      "sign_agreement_where_classical_above_10pct": 0.2
+     },
+     "t_theta": {
+      "norm_neubernet": 0.049099219564746256,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "+1",
+    "direction": "one sensor on u_theta",
+    "plus": {
+     "norm_neubernet": 0.0013309717931460708,
+     "norm_classical": 0.4243765016155409,
+     "rel_error": 1.0000436496312715,
+     "cosine": -0.012349712534977844,
+     "norm_ratio": 0.0031362994606893894,
+     "sign_agreement_where_classical_above_10pct": 0.8
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 7.772039770477648e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 5.398821507010117e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0013276033769784646,
+      "norm_classical": 0.42437650161554086,
+      "rel_error": 1.0000436247700144,
+      "cosine": -0.012381046419848479,
+      "norm_ratio": 0.0031283621310898876,
+      "sign_agreement_where_classical_above_10pct": 0.8
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "-1",
+    "direction": "tension far field",
+    "plus": {
+     "norm_neubernet": 0.28917697928638986,
+     "norm_classical": 0.2802246317505628,
+     "rel_error": 0.08330832158740276,
+     "cosine": 0.9971317989938242,
+     "norm_ratio": 1.0319470400581912,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.09353088006634432,
+      "norm_classical": 0.08271878940203017,
+      "rel_error": 0.2588189673617736,
+      "cosine": 0.9779331314987111,
+      "norm_ratio": 1.1307090050818465,
+      "sign_agreement_where_classical_above_10pct": 0.9259259259259259
+     },
+     "t_y": {
+      "norm_neubernet": 0.27357662456783227,
+      "norm_classical": 0.26773764419595747,
+      "rel_error": 0.02782694200386628,
+      "cosine": 0.9998538257903449,
+      "norm_ratio": 1.0218085894847169,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.005579454569007123,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "-1",
+    "direction": "torsion far field",
+    "plus": {
+     "norm_neubernet": 0.15008193956417337,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.12073030927850319,
+     "cosine": 0.9928152562621686,
+     "norm_ratio": 1.0088757869320608,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0015197713428214503,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0022348339624946047,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.15005760359132023,
+      "norm_classical": 0.1487615636217862,
+      "rel_error": 0.11935555885282216,
+      "cosine": 0.9929762685970743,
+      "norm_ratio": 1.008712196470515,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     }
+    },
+    "minus": {
+     "norm_neubernet": 0.14975113728547215,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.11963303995302477,
+     "cosine": 0.9929132346752102,
+     "norm_ratio": 1.0066520789348643,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "central": {
+     "norm_neubernet": 0.14991574491851511,
+     "norm_classical": 0.1487615636217862,
+     "rel_error": 0.12013304596419394,
+     "cosine": 0.9928694466646761,
+     "norm_ratio": 1.0077585988519409,
+     "sign_agreement_where_classical_above_10pct": 1.0
+    },
+    "plus_vs_minus_cosine": 0.9999788280817618,
+    "sign_torsion_at": {
+     "base": -1.0,
+     "base+av": -1.0,
+     "base-av": -1.0
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "-1",
+    "direction": "smooth mode k=3 on u_y",
+    "plus": {
+     "norm_neubernet": 1.2270518196311022,
+     "norm_classical": 0.8022681340498471,
+     "rel_error": 1.5453336619936595,
+     "cosine": 0.3109714277011333,
+     "norm_ratio": 1.5294784468590923,
+     "sign_agreement_where_classical_above_10pct": 0.8775510204081632
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.7513587468903358,
+      "norm_classical": 0.35522092034113556,
+      "rel_error": 2.2266678699953255,
+      "cosine": 0.12196724752834946,
+      "norm_ratio": 2.115187208480768,
+      "sign_agreement_where_classical_above_10pct": 0.76
+     },
+     "t_y": {
+      "norm_neubernet": 0.4687732201296495,
+      "norm_classical": 0.7193415438189428,
+      "rel_error": 0.6060372697145321,
+      "cosine": 0.8112945614938071,
+      "norm_ratio": 0.6516698836007156,
+      "sign_agreement_where_classical_above_10pct": 1.0
+     },
+     "t_theta": {
+      "norm_neubernet": 0.8493337798655266,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "-1",
+    "direction": "smooth mode k=3 on u_theta",
+    "plus": {
+     "norm_neubernet": 0.058772662877803666,
+     "norm_classical": 0.5410715654646653,
+     "rel_error": 0.9050408847594462,
+     "cosine": 0.887014699904762,
+     "norm_ratio": 0.10862271579052664,
+     "sign_agreement_where_classical_above_10pct": 0.9230769230769231
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.0014081719322021427,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 0.0005686315335028625,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.058753039170211664,
+      "norm_classical": 0.5410715654646653,
+      "rel_error": 0.905036532574472,
+      "cosine": 0.8873109657209066,
+      "norm_ratio": 0.10858644756124879,
+      "sign_agreement_where_classical_above_10pct": 0.9230769230769231
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "-1",
+    "direction": "one sensor on u_y",
+    "plus": {
+     "norm_neubernet": 0.05727159425306447,
+     "norm_classical": 0.6769803318351335,
+     "rel_error": 1.0033821610297422,
+     "cosine": 0.002252776625607024,
+     "norm_ratio": 0.08459860879239242,
+     "sign_agreement_where_classical_above_10pct": 0.2857142857142857
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 0.02378724190138156,
+      "norm_classical": 0.14225629840951176,
+      "rel_error": 1.0156819470750416,
+      "cosine": -0.010912073098739653,
+      "norm_ratio": 0.16721398045171587,
+      "sign_agreement_where_classical_above_10pct": 0.5
+     },
+     "t_y": {
+      "norm_neubernet": 0.01742036937454665,
+      "norm_classical": 0.6618651790617418,
+      "rel_error": 1.0000626949538152,
+      "cosine": 0.010777967675663889,
+      "norm_ratio": 0.02632011763973097,
+      "sign_agreement_where_classical_above_10pct": 0.2
+     },
+     "t_theta": {
+      "norm_neubernet": 0.049099219564746256,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     }
+    }
+   },
+   {
+    "base": "tension-torsion-elastic",
+    "hoop": "-1",
+    "direction": "one sensor on u_theta",
+    "plus": {
+     "norm_neubernet": 0.0013309717931460708,
+     "norm_classical": 0.4243765016155409,
+     "rel_error": 0.9999661852186708,
+     "cosine": 0.012349712534977844,
+     "norm_ratio": 0.0031362994606893894,
+     "sign_agreement_where_classical_above_10pct": 0.2
+    },
+    "plus_by_block": {
+     "t_x": {
+      "norm_neubernet": 7.772039770477648e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_y": {
+      "norm_neubernet": 5.398821507010117e-05,
+      "norm_classical": 0.0,
+      "rel_error": null,
+      "cosine": null,
+      "norm_ratio": null,
+      "sign_agreement_where_classical_above_10pct": null
+     },
+     "t_theta": {
+      "norm_neubernet": 0.0013276033769784646,
+      "norm_classical": 0.42437650161554086,
+      "rel_error": 0.9999661603554877,
+      "cosine": 0.012381046419848479,
+      "norm_ratio": 0.0031283621310898876,
+      "sign_agreement_where_classical_above_10pct": 0.2
+     }
+    }
+   }
+  ]
+ },
+ "signnet": {
+  "what": "regime() at base + a v and base - a v, v the torsion far field scaled to max |v| = 1",
+  "rows": [
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "a": 0.1,
+    "elastic_von_mises_over_sy": 0.7012621760368347,
+    "small_scale_indicator": 4.3524885177612305,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.6334228515625
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "a": -0.1,
+    "elastic_von_mises_over_sy": 0.7012621760368347,
+    "small_scale_indicator": 4.3524885177612305,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": -1.0,
+    "branch_norm": 11.6334228515625
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "a": 0.01,
+    "elastic_von_mises_over_sy": 0.7000896334648132,
+    "small_scale_indicator": 4.36199426651001,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627237319946289
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "a": -0.01,
+    "elastic_von_mises_over_sy": 0.7000896334648132,
+    "small_scale_indicator": 4.36199426651001,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": -1.0,
+    "branch_norm": 11.627237319946289
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "a": 0.001,
+    "elastic_von_mises_over_sy": 0.7000085711479187,
+    "small_scale_indicator": 4.362649917602539,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627176284790039
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "a": -0.001,
+    "elastic_von_mises_over_sy": 0.6999914050102234,
+    "small_scale_indicator": 4.362788200378418,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627176284790039
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "a": 0.0001,
+    "elastic_von_mises_over_sy": 0.7000007033348083,
+    "small_scale_indicator": 4.362712383270264,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627175331115723
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "+1",
+    "a": -0.0001,
+    "elastic_von_mises_over_sy": 0.6999990940093994,
+    "small_scale_indicator": 4.362726211547852,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627175331115723
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "a": 0.1,
+    "elastic_von_mises_over_sy": 0.7012621760368347,
+    "small_scale_indicator": 4.3524885177612305,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": -1.0,
+    "branch_norm": 11.6334228515625
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "a": -0.1,
+    "elastic_von_mises_over_sy": 0.7012621760368347,
+    "small_scale_indicator": 4.3524885177612305,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.6334228515625
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "a": 0.01,
+    "elastic_von_mises_over_sy": 0.7000896334648132,
+    "small_scale_indicator": 4.36199426651001,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": -1.0,
+    "branch_norm": 11.627237319946289
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "a": -0.01,
+    "elastic_von_mises_over_sy": 0.7000896334648132,
+    "small_scale_indicator": 4.36199426651001,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627237319946289
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "a": 0.001,
+    "elastic_von_mises_over_sy": 0.6999914050102234,
+    "small_scale_indicator": 4.362788200378418,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627176284790039
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "a": -0.001,
+    "elastic_von_mises_over_sy": 0.7000085711479187,
+    "small_scale_indicator": 4.362649917602539,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627176284790039
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "a": 0.0001,
+    "elastic_von_mises_over_sy": 0.6999990940093994,
+    "small_scale_indicator": 4.362726211547852,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627175331115723
+   },
+   {
+    "base": "tension-elastic",
+    "hoop": "-1",
+    "a": -0.0001,
+    "elastic_von_mises_over_sy": 0.7000007033348083,
+    "small_scale_indicator": 4.362712383270264,
+    "branch": "elastic (rescaled)",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 11.627175331115723
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "a": 0.1,
+    "elastic_von_mises_over_sy": 1.60103440284729,
+    "small_scale_indicator": 4.359055995941162,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.579133987426758
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "a": -0.1,
+    "elastic_von_mises_over_sy": 1.60103440284729,
+    "small_scale_indicator": 4.359055995941162,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": -1.0,
+    "branch_norm": 26.579133987426758
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "a": 0.01,
+    "elastic_von_mises_over_sy": 1.600087285041809,
+    "small_scale_indicator": 4.362410545349121,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576427459716797
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "a": -0.01,
+    "elastic_von_mises_over_sy": 1.5999157428741455,
+    "small_scale_indicator": 4.363016605377197,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576427459716797
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "a": 0.001,
+    "elastic_von_mises_over_sy": 1.6000086069107056,
+    "small_scale_indicator": 4.36268949508667,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576400756835938
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "a": -0.001,
+    "elastic_von_mises_over_sy": 1.5999912023544312,
+    "small_scale_indicator": 4.362750053405762,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576400756835938
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "a": 0.0001,
+    "elastic_von_mises_over_sy": 1.6000006198883057,
+    "small_scale_indicator": 4.3627166748046875,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576400756835938
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "+1",
+    "a": -0.0001,
+    "elastic_von_mises_over_sy": 1.599999189376831,
+    "small_scale_indicator": 4.362723350524902,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576400756835938
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "a": 0.1,
+    "elastic_von_mises_over_sy": 1.60103440284729,
+    "small_scale_indicator": 4.359055995941162,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": -1.0,
+    "branch_norm": 26.579133987426758
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "a": -0.1,
+    "elastic_von_mises_over_sy": 1.60103440284729,
+    "small_scale_indicator": 4.359055995941162,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.579133987426758
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "a": 0.01,
+    "elastic_von_mises_over_sy": 1.5999157428741455,
+    "small_scale_indicator": 4.363016605377197,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576427459716797
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "a": -0.01,
+    "elastic_von_mises_over_sy": 1.600087285041809,
+    "small_scale_indicator": 4.362410545349121,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576427459716797
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "a": 0.001,
+    "elastic_von_mises_over_sy": 1.5999912023544312,
+    "small_scale_indicator": 4.362750053405762,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576400756835938
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "a": -0.001,
+    "elastic_von_mises_over_sy": 1.6000086069107056,
+    "small_scale_indicator": 4.36268949508667,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576400756835938
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "a": 0.0001,
+    "elastic_von_mises_over_sy": 1.599999189376831,
+    "small_scale_indicator": 4.362723350524902,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576400756835938
+   },
+   {
+    "base": "tension-plastic",
+    "hoop": "-1",
+    "a": -0.0001,
+    "elastic_von_mises_over_sy": 1.6000006198883057,
+    "small_scale_indicator": 4.3627166748046875,
+    "branch": "plastic",
+    "small_scale_plasticity_violated": false,
+    "sign_tension": 1.0,
+    "sign_torsion": 1.0,
+    "branch_norm": 26.576400756835938
+   }
+  ]
+ },
+ "elapsed_seconds": 1382.1258189999935
+}

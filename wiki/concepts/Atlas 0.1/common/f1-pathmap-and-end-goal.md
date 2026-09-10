@@ -1,7 +1,7 @@
 # The End Goal and the Path to It: Autonomous Multiphysics Design
 
 **Type:** Core Concept — Program Roadmap and Vision (folder: `Atlas 0.1/common/`)
-**Status:** Living roadmap, written 2026-08-19. **Every case study, every expert, and every architectural decision should be checkable against §3's ladder.** If a piece of work does not advance a rung, it needs a reason.
+**Status:** Living roadmap, written 2026-08-19. **Every case study, every expert, and every architectural decision should be checkable against §3's ladder.** If a piece of work does not advance a rung, it needs a reason. **2026-09-10: §3.3 added** — the rungs recounted against what is built; the schedule and its evidence are [[case-study-ladder-to-f1]] §14.
 **Related Concepts:** [[port-algebra-atlas-0.1]], [[prior-art-and-novelty-atlas-0.1]], [[pfm-purpose-and-direction]], [[00-atlas-0.1-overview]], [[expert-library-atlas-0.1]], [[spec-wind-farm-wake-atlas-0.1]], [[incremental-transfer-roadmap]], [[physics-foundation-models]]
 
 ---
@@ -69,9 +69,32 @@ Each rung adds **exactly one new capability**. A rung is complete when its gate 
 
 Rung 0 is built. Rungs 1 and 2 are fully specified. Rung 4 — the reuse test — is the one most likely to be skipped by accident and is the one that actually tests the foundation-model claim, so it is scheduled explicitly rather than folded into "expansion."
 
+> **2026-09-10:** this paragraph is the count as of 2026-08-19 and stays as written. §3.3 is the count now.
+
 ## 3.2 The rung that decides everything
 
 **Rung 9.** Everything before it can succeed while the program still fails, because composition error might grow super-linearly and only show at scale. The $N=2,3,5,8$ sweep in [[case-study-wind-farm-wake-2d-atlas-0.1]] Phase F is the **early warning** for rung 9 and should be treated as such: it is a cheap look at the expensive question, and a bad result there is a reason to stop and rethink, not to press on.
+
+## 3.3 Where the work sits, recounted 2026-09-10
+
+§3.1 is this page's count as of 2026-08-19 and stays as written. The schedule has since been owned by [[case-study-ladder-to-f1]], which reordered this ladder on 2026-08-30 — *climb it classically, substitute learned experts afterwards* — without changing a rung, a gate or a claim; its §14.1 carries the evidence for each row below.
+
+| rung | status on 2026-09-10 |
+|---|---|
+| **0** | built |
+| **1** | answered on rung 2's graphs — frozen experts couple, and stably ([[case-study-ladder-to-f1]] §7, F2); the RBC case study named for it was never built |
+| **2** | built — the wind farm, then the wake array |
+| **3** | **never built**; the revised ladder has no row for it, and no graph in `atlas/cases` holds two learned experts |
+| **4** | measured, and qualified: a certificate is the expert's *at a probe state*, so a library carries one per expert per regime |
+| **5**, **6**, **7** | built **classically** — CS-12 `wing_fsi`, CS-13 `cooling_loop`, CS-14 `powertrain` |
+| **8** | scoped, not started |
+| **9** | blocked on a schema change |
+| **10**, **11** | exercised on small graphs only, not on the vehicle graph; rung 11's gate as written has not been posed |
+| **12** | a different research programme (§6) |
+
+**The two halves of the programme now stand in different places.** §3.2's early warning was run (CS-7) and did not fire, and the coupling half has climbed to rung 7 with every expert classical. The foundation-model half has no learned expert admitted with a nonzero contribution ([[substitution-campaign-checkpoint]]): what has been demonstrated is §7's floor — a coupling framework plus classical verification — and the route that would lift it, a constrained expert class, is open and unattempted.
+
+**[AI Inference]:** rung 3's absence matters more than its position suggests. The ladder assigned the foundation-model claim a configuration — two learned experts meeting in one graph — that no graph has ever held, and the substitution campaign tests a different one: a learned expert replacing a classical one, seam by seam. A negative from the campaign therefore does not answer rung 3's question, and a positive would not either.
 
 ---
 

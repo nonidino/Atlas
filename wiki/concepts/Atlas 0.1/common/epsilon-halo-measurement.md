@@ -78,6 +78,8 @@ $E(r)/\lVert S\rVert_2$, the fraction of the operator's spectral norm left outsi
 | **windowns-split-step** C00 | $0.0015$ | $\mathbf 0$ | $\mathbf 0$ | $\mathbf 0$ | $0$ |
 | **windowns-split-step** C11 | $0.0027$ | $\mathbf 0$ | $\mathbf 0$ | $\mathbf 0$ | $0$ |
 
+> **Corrected 2026-09-10 (Tier 41).** *Exact zero at $r=13$* in the next paragraph is one radius early. $E(13)/\lVert S\rVert_2$ is $1.4\times10^{-14}$ on C00 and $2.2\times10^{-14}$ on C11, and the first exact zero is $E(14)$ — in `out/w173/w173.json`, and again in CS-S2's same-session re-run of the control ([[case-study-bounded-donor-atlas-0.1]]), to the digit. §0's and §5.1's *exactly zero past $r=13$* are right as written. A test that read *past 13* as *from 13* failed on the re-run and was corrected, not loosened.
+
 **Read the shape, not the level.** The classical local operator reaches *exact* zero at $r=13$ and stays there. The classical global one keeps falling — it loses a factor of $4$ between $r=20$ and $r=64$. The two checkpoints **stop falling**: between $r=16$ and $r=64$ Poseidon-T's `yhi` face moves from $0.7534$ to $0.7525$, which is $0.1\%$ of itself over $48$ cells.
 
 **$r^\star$, the smallest radius reaching a target.** $n=128$, so $r=127$ means *keep the whole operator* and is arithmetic rather than decay; it is marked $(127)$ and is not an answer:
@@ -175,6 +177,8 @@ The ladder's claim is about an **expert class**. Poseidon-B is $7.6\times$ Posei
 
 **Scope, stated rather than implied.** Two checkpoints of **one** architecture family is not a survey. [[expert-donor-survey]]'s fourth cross-cutting finding already reached the same verdict by reading rather than measuring — *"the locality verdict is near-unanimous: of ~20 entries, three are bounded, and all three are local operators or finite-radius message passing, never transformers or spectral mixing"* — and names **MACE** ($r_{\text{cut}}\times$ layers) as the locality existence proof from outside continuum fluids. **And that survey's own Open question 3 asks for exactly this measurement** — *"nobody has run the same delta-poke on it that produced W93's 64. Until that measurement exists, 'bounded' is a derivation"* — so the instrument built here is the one that question was waiting for, pointed at the wrong half of the survey. This page measures the negative half and does not measure the positive half. See §8.
 
+> **The positive half, attempted 2026-09-10 (Tier 41, [[case-study-bounded-donor-atlas-0.1]]).** The same two functions, unchanged, on NeuberNet — the one bounded donor in the survey with a continuum boundary port — beside linear elasticity solved on its own disc, with split-step `WindowNS` re-run as the positive control in the same session and reading exactly zero from $r=14$ again, to the digit. It did not come back compact: along its $29$-sensor ring the band truncation stays at $0.69$ of the operator outside $r=4$ where the elastic physics keeps $0.14$, and into the disc its response does not decay where the physics' does. So the negative now stands on a second architecture family — a NOMAD DeepONet beside scOT — measured on a very different seam, and the positive half is unmeasured on the two donors whose locality is a property of the operator rather than of its domain, MACE and DeepFlame.
+
 ## 5.3 Is $S$ an operator, or the instrument's own floor?
 
 A linear response satisfies $S(a)=S(a/2)$ exactly, so the disagreement between two amplitudes is nonlinearity (growing with $a$) plus cancellation (growing as $1/a$). Relative disagreement against $a=10^{-2}$:
@@ -247,6 +251,8 @@ This is the vault's own recurring class — Tier 24's *a verified number can be 
 | tail not summable | **R10 stands and there is no $\varepsilon$-halo** | **this is the checkpoints' answer.** The truncation is flat to $10^{-5}$ per cell at $27$–$75\%$ of the operator norm; $\Pi=1$ above $16$ cells regardless; and the transverse profile never reaches $1\%$ of its face value at any depth |
 
 > **What "summable" can and cannot mean here, stated once.** On a finite seam every sum is finite, so *summable* in the literal sense is vacuous and is not what §5 is asking. The question a halo rule actually needs is whether $E(r)\to0$ **fast enough that a radius exists at which the truncation is below what the composition tolerates** — which is why every figure above is a decay *rate* and an $r^\star$, not a convergence claim. Read that way the three subjects separate cleanly: exponential with $\ell=0.397$ cells and exact zero at $r=13$; power law with exponent $-1.75$ to $-1.84$ and $r^\star(10^{-2})=46$–$70$; and a curve that stops decreasing, whose terminal slope implies $10^{3}$–$10^{4}$ cells on a seam of $128$. The middle one is summable and useless; the last is the one this page is about.
+
+> **Corrected 2026-09-10 (Tier 41).** *Exact zero at $r=13$* above is one radius early: the first exact zero is $E(14)$, and $E(13)/\lVert S\rVert_2 = 1.4\times10^{-14}$ — see the note at the head of §4.1.
 
 **`L2/R10` stands, unchanged, and no rule was written.** [[case-study-ladder-to-f1]] §5's instruction was to measure before writing one, and the measurement says do not write it.
 

@@ -3832,3 +3832,55 @@ No rule was written and no rule was narrowed. W173's measurement says do not wri
 Full suite **1044 → 1067** (23 added in one new file, none rewritten — this tier closed no row that a test had pinned). `scripts/vault_scan.py`: 217 files, 0 problems.
 
 Changed: [[gap-worklist]] (W173, W174 opened and closed; W175, W176, W177 opened; W166's figure corrected; W171 scoped), [[log]], [[index]], [[epsilon-halo-measurement]] (new), [[substitution-campaign-checkpoint]] (new). Code: `scripts/w173_epsilon_halo.py` (new), `scripts/w173_transverse_reach.py` (new), `scripts/w173_tables.py` (new), `scripts/w174_refusal_validation.py` (new), `scripts/w177_campaign_census.py` (new), `scripts/w171_decomposition_scope.py` (new), `tests/test_tier40_epsilon_halo.py` (new). Artifacts: `out/w173/w173.json`, `out/w173/transverse.json`, `out/w174/w174.json`, `out/w177/w177.json`, `out/w171/w171.json`.
+
+## [2026-09-10] tier 41 | the certificate says what an admit rests on, W137 reverses, and branch (a)'s first donor is not compact
+
+**Branch (a) — the one live route [[substitution-campaign-checkpoint]] left standing — is probed once, and the answer is the brief's third outcome.** NeuberNet, the only bounded donor in [[expert-donor-survey]] with a continuum boundary port, read through [[epsilon-halo-measurement]]'s instrument unchanged and beside linear elasticity solved classically on the same disc, is **not compact, and less compact than the physics it approximates**. W95 binds for it too. Beside that, the substitution certificate learned to report what an `admit` rests on, and reading it on the second graph reversed W137. The full record is [[case-study-bounded-donor-atlas-0.1]] (CS-S2, off the ladder), [[case-study-ladder-to-f1]] §15 and [[gap-worklist]] Tier 41.
+
+### The plan pages first
+
+[[case-study-ladder-to-f1]] still opened with *rung 1 to 2 of 12* and linked neither Tier 40 page. §14 recounts the rungs: 0–2 and 5–7 built, 3 never built, 4 measured, 8 scoped, 9 blocked, 10–11 on small graphs, 12 a separate programme. Dated notes resolve §2.3's and §5's **[AI Inference]** and §7's stopping rule where they stand, and [[f1-pathmap-and-end-goal]] gains a §3.3. W177's first half is checked and met.
+
+### The certificate reports its margin, and no verdict moves
+
+`SubstitutionCertificate` now carries `decision_margin` $=(\beta-\beta_{\min})-\lVert\Delta\rVert$ beside its verdict, closing **W109**, and two readings charged against nothing: `null_replacement_ratio` $\lVert\Delta\rVert/\lVert S_i\rVert$ and `block_over_beta` $\lVert S_i\rVert/\beta$. A test restates the pre-Tier-41 truth table and reproduces every verdict of W177's census, so a rule that moved one would have to rewrite it first. **No verdict-changing rule was written**: the two graphs do not share a threshold.
+
+**And W137 reverses.** It said the flow expert's certificate at an aero-structure seam is blind by five orders, because the fluid's block is $1.44\times10^{-5}$ of the assembled operator. That is the block's **share**, which divides by the operator's largest singular value. The certificate reads $\lVert S_F\rVert$ against $\beta$, its smallest, and under the effort `wing_fsi` declares that is $7.018$ against $5.054$ — so a replacement that ignores its boundary data is refused at every tolerance, and one that under-responds by $10\%$ is admitted informatively below $\beta_{\min}=4.35$. W137 closes on its own done-when. **That deviates from the brief**, which said W137 stays open unless the scaled certificate is derived: the measurement answered the row the other way. The derivation moves to **W178**, on `poseidon-t-2x2`, where six of eight sides have a real blind band.
+
+### CS-S2: the patch is bounded and the response is not
+
+On its $29$-sensor ring the donor's $u_x$ port keeps $0.69$ of its norm outside a band of four sensors where the elastic physics keeps $0.14$. Its whole coupled operator has effective rank $6$–$7$ of $87$ against the physics' $72$. Poked at one sensor, its response keeps $95$–$139\%$ of itself from $0.5$ to $2\,R_n$ deep where the physics keeps $11$–$17\%$ on either of two meshes. **The classical control is global along the ring too** — a Dirichlet-to-Neumann operator is — so that half of the globality is physics. The half into the patch is the donor's.
+
+**What the donor has is its training manifold.** It matches linear elasticity along the tension far field to $8.3\%$ and along torsion to $12.1\%$ where both loads are signed. One sensor's worth of boundary data gets $6\%$ of the classical flux, orthogonal to it. Its operator is $100$–$110\%$ of the classical norm away from the classical one: W177's null-replacement signature, arriving on a second architecture family. The positive control, split-step `WindowNS` re-run in the same session, reads exactly zero from $r=14$ again, to the digit.
+
+**W95 binds.** NeuberNet is not resolution-fixed and still has no same-class reference pair, because it is defined on one disc. **[AI Inference]:** the survey's *bounded* described a domain, and a halo rule or a certificate consumes a response. Branch (a) narrows to donors whose locality is a property of the operator — MACE, DeepFlame — and both are unmeasured. W176's second family is recorded, and it does not decide that row: the donor is low-rank everywhere and unbanded, and the physics' far field is low-rank too.
+
+### Two framework findings the donor forced
+
+**W179 — a convention check vouches only for the components it excites.** The adapter passed a stress comparison against linear elasticity with its hoop input the wrong way round, because the check was run at a tension-only base, where both subjects' hoop shears are identically zero. The second run's torsion far field then read cosine $-0.969$ and $-0.997$, and two readings fitted: the sign network deciding at its own boundary, or a convention. A control stating both conventions at bases carrying torsion separated them — cosine $-1.000$ one way and $+1.000$ the other, in-plane stresses bitwise identical under both. It was the convention.
+
+**W180 — the published forward jumps where its sign network changes its call.** And the other reading was real as well. Production mode multiplies the torsion input and output shears by a sign network's call, and the call changes a finite step from zero load: at $a^\star=8.1\times10^{-3}$ along the torsion far field on the elastic tension base, $1.8\times10^{-2}$ on the plastic one, and $2.5\times10^{-5}$ along tension at zero tension. Across an interval of relative width $2\times10^{-3}$ there the flux jumps by $8.5\%$, $9.0\%$ and $0.6\%$ of the physical response to a unit step — three to five orders more than elasticity moves across the same interval. A difference ladder straddling the point reads $4.4\times$ and $31\times$ the physics. Every instrument here that builds an operator differences one way.
+
+### What went wrong on the way, each kept as a measurement
+
+1. **The first run died** at the transverse stage looking up the sensor at $180^\circ$, which the pipeline writes as $-180$, having written nothing; every stage now flushes the artifact.
+2. **A pointwise flux at hat knots does not converge**: $36$–$42\%$ between meshes, against the Galerkin dual's $2.8$–$6.4\%$.
+3. **A trace clamped at the notch flanks** disagreed at the flank-end sensors only, and the pipeline's own gap filling replaced it.
+4. **The hoop sign**, above; the second run is kept locally.
+5. **A test off by one.** The positive-control test pinned `<= 13` where the first exact zero is at $r=14$. Tier 40's *past $r=13$* is right; [[epsilon-halo-measurement]]'s two *at $r=13$* now carry dated notes, and the test pins `== 14`.
+6. **The checkpoint carries $2{,}198{,}346$ subnormal weights**, $9.8\%$ of its parameters. An unguarded CPU forward took $61.5$ s, and $0.28$ s with denormals flushed, with the output bitwise equal. Two runs had been launched without the flush and crawled, and half an hour went on the laptop — it is on battery, and its hardware was healthy throughout — before the weights were counted. The adapter now sets the flush. The third run, made with it, reproduces the second bit for bit on every in-plane and classical number, and the whole driver runs in under five minutes on one CPU thread. So no GPU was needed.
+
+### The brief, checked
+
+- The build repository carried $14$ uncommitted files, not two; none are this programme's, and they were left alone.
+- **The brief's 11–23 minutes for the suite was right**, and the 4h26m baseline recorded before this tier was the outlier. At this tree the same $1067$ tests and $45$ new ones ran in about $22.5$ minutes of summed test time — on battery, partly in parallel groups — with the five clock-sensitive files taking $2.5$ minutes between them. What slowed the baseline was not measured. **[AI Inference]:** the one slowdown this tier did measure, subnormal arithmetic in a float32 checkpoint, drifted $50\times$ with the machine's state over one afternoon, and the suite loads float32 checkpoints of its own.
+- W95's worklist row was `open` where [[case-study-ladder-to-f1]] §6 had filed it *closed by classical-first*.
+- W171 part 1's scope did not reproduce as quoted: the decomposition field is referenced $81$ times in $17$ test files, not $83$ times in $22$.
+
+### What this tier did not do, named
+
+**Task C, W171 part 1** — it did not fit beside CS-S2. Nor W175, rung 8's page or module, or rung 9. W95 is not reopened or re-scoped against the certificate; W176 and W178 are not built; no demo bundle was rebuilt. **Nothing was downloaded**: not NeuberNet's CC BY 4.0 Zenodo analyses, which would be the plastic branch's referent, and not a finite-cutoff donor.
+
+**The full suite at this tree: $1112$ passed** — the $1067$ baseline tests and the $45$ new ones — run as disjoint groups, with the five clock-sensitive files serially and alone. `scripts/vault_scan.py`: $218$ files, $0$ problems.
+
+Changed: [[case-study-bounded-donor-atlas-0.1]] (new), [[case-study-ladder-to-f1]] (§14, §15, dated notes), [[f1-pathmap-and-end-goal]] (§3.3), [[gap-worklist]] (Tier 41; W95, W109, W137, W176, W177 annotated; W178, W179, W180 opened), [[expert-donor-survey]], [[substitution-campaign-checkpoint]], [[epsilon-halo-measurement]], [[case-study-wing-fsi-atlas-0.1]], [[poc2-frontwing-results]], [[case-study-neural-interface-atlas-0.1]], [[code-and-papers]], [[index]], [[log]]. Code: `atlas/composition.py`, `atlas/demo_frontwing/engine.py` (docstring), `scripts/w137_certificate_visibility.py` (new), `scripts/cs_s2_elastic_patch.py` (new), `scripts/cs_s2_neubernet.py` (new), `scripts/cs_s2_bounded_donor.py` (new), `scripts/cs_s2_torsion_control.py` (new), `scripts/cs_s2_sign_jump.py` (new), `tests/test_tier41_certificate_reading.py` (new), `tests/test_tier41_bounded_donor.py` (new). Artifacts: `out/w137/w137.json`, `out/cs_s2/cs_s2.json`, `out/cs_s2/torsion_control.json`, `out/cs_s2/sign_jump.json`; the operators and the weights stay out of the repository.
