@@ -927,3 +927,63 @@ Checked against the port algebra before anything was built, two of the three joi
 - Then W190, W193, W182, W186's re-census, W191, W184, W183's G2, W95, W188's rider, W185, W187, W178, W175.
 
 **Rung 9's march and rung 8's module are each a tier.** Tier 46 did §19.6's first item and named the rest as not done.
+
+---
+
+# 21. Rung 9's gate, restated: neither clause fits the vehicle as written (2026-09-11)
+
+Full record: [[rung9-gate-restated]] and [[gap-worklist]] Tier 47.
+
+**§20.6's first item was taken — and read before it was built.** Rung 9's gate is *"$\mathcal R$ closes; composition error sub-linear in $N$"*, and the graph now exists, so each clause was held against it first.
+
+## 21.1 Why neither clause fits
+
+- **$N$ is not a dial on a vehicle.** The unions three subsystems form sit at $N = 8, 10, 13, 18$; $N = 13$ is two different graphs; every step up adds a subsystem's physics. CS-7's ladder could hold the physics still and this graph cannot — and holding it still is what cut CS-7's classical exponent from $+0.80$ to $+0.14$.
+- **$\mathcal R$ cannot be written from the records.** No field carries dissipation, the tiling's domain boundaries are not ports, and the three clocks are in three unrelated unit systems.
+
+## 21.2 What was measured instead
+
+This vault's own practice since CS-9 — each join's receiving subsystem closes its own balance with the join's term in it and fails without it:
+
+- **J2 passes**: the block's first law closes to $3\times10^{-8}$ with the mount term and fails by seven orders without it.
+- **J3 fails by exactly a factor of two**: the rotor is still one diameter wide in a host whose face is half that. Re-sized, the balance closes — and the powertrain has **no operating point**, the machine demanding $31\times$ the torque the disk can give (**W199**).
+- **J1 carries no power**; its coupling moves the loop, $-1.35$ K for $10\%$ more air.
+
+## 21.3 The gate, proposed
+
+**G1**, $O(1)$ declarations per join — **met**. **G2**, each join's receiver balance with and without its term, over a march — **J2 passes and J3 fails at the release state; no march**. **G3**, per-join composition error against a tightly coupled referent, and whether the joins' errors add — **not built**. The $N$ clause is withdrawn to CS-7, where $N$ is a dial. **Rung 9 is not complete** (**W198**).
+
+## 21.4 What moves on this page
+
+§20.3's rung-9 row becomes **the gate is restated; J3 fails its receiver balance and cannot pass it with the powertrain as sized**. And the schedule's CS-16 line — *graded against CS-7's prediction* — has no subject on the graph CS-16 turned out to be.
+
+## 21.5 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W199** — the rotor keeps its native size, and the machine was sized for it | G2 at J3, and any march | `open`, medium, **new** — a design decision |
+| **W201** — no unit of time or length | any march of the union | `open`, medium, **new** |
+| **W200** — $\mathcal R$ cannot be assembled from the records | G2 by declaration rather than by hand | `open`, medium, **new** |
+| **W198** — the gate itself | marking rung 9 complete | `open`, **new** |
+| **W196** — a join's re-derived state is not local | a march, and whether rung 9's integration cost is $O(K)$ | `open`, medium |
+| **W194** — R9's subject is the graph, not the multirate seam | any multirate union | `open`, medium |
+| **W197**, **W195** | E7 and the power path on rotor seams; a per-pair measure | `open`, small to medium |
+| **W190**, **W193**, **W182**, **W183**, **W184**, **W186**, **W95**, **W165** | as §20.5 | `open` |
+| **W191**, **W188**, **W187**, **W185**, **W181**, **W178**, **W175** | how this vault reasons, one mislabelled partition, and attribution | `open`, small to medium |
+
+**Closed off it**: nothing. This tier restated a gate and closed no row.
+
+## 21.6 The next step
+
+**Not started, and the choice is the user's.** Rung 9's march cannot begin until two things are decided that are not framework work:
+
+- **W199 and W201 together — which vehicle this is**: the speed and the wing chord that relate the tiling's units to seconds and metres, and a rotor sized for its host with a powertrain sized for that rotor.
+
+In line after that:
+
+- **W194**, cheap: R9 scoped to the multirate seams.
+- **W200**: declared dissipation and boundary power, or §6 restated as a per-receiver residual.
+- **W197**'s orientation, then the march itself — the devices as body forces (W94), the shared operating point (W196), G2 over the march and G3 against a tight referent.
+- Then W190, W193, W182, W186's re-census, W191, W184, W183's G2, W95, W188's rider, W185, W187, W178, W175.
+
+**Rung 9's march is at least a tier, and its two design decisions come first.** Tier 47 did §20.6's first item as a re-read and named the rest as not done.

@@ -238,6 +238,15 @@ out/w189/*
 !out/w172/
 out/w172/*
 !out/w172/w172.json
+# Tier 47 (W198, rung 9's gate restated). JSON only: the record
+# scripts/rung9_gate.py writes -- N on the vehicle graph, what R(t) needs against
+# what the records declare, each join's receiving balance with and without its
+# term, the rotor's power path and a host-sized rotor's operating point, and the
+# coolant loop's response to the air. tests/test_tier47_rung9_gate.py asserts
+# against it.
+!out/rung9/
+out/rung9/*
+!out/rung9/rung9.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

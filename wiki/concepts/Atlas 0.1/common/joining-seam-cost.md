@@ -317,6 +317,8 @@ Tier 39's caveat said the zero per-pair count was evidence about the algebra and
 - **No measured constants on the union**, so `admit-uncertified` is its ceiling (W56, W190).
 - **Rung 9's integration graph — the third task — was not started.** Nothing downloaded, no machine rented, NeuberNet not loaded, nothing pushed.
 
+**2026-09-11, Tier 47.** [[rung9-gate-restated]] held rung 9's gate against this union. §8.1's operating point hides a larger fact: the rotor is still one diameter wide in a host whose face is half that, so the power its shaft delivers is exactly twice what the flow gives up through the face — and a rotor re-sized for its host leaves this powertrain with no operating point at all (W199).
+
 ## See Also
 
 - [[per-region-assembly]] — the union Tier 45 built, and the input it handed this tier: the graph-level fields and W192.

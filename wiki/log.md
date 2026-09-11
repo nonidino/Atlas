@@ -4179,3 +4179,55 @@ Tier 39's table has no script, so the counter reproduced it before counting anyt
 `scripts/w172_joining_cost.py`: $56$ seconds — the counter's six graphs, fourteen unions and nine variants compiled, every port evaluated at its own base on each graph a cost is read from, and `wake_array`'s reference graph compiled in $11$ seconds for W197's control. **The full suite: $1210$ tests across $46$ files, $1209$ passed and $1$ failed** — the census test above — and **its file re-run after the re-point: $37$ passed**. Four parallel groups in three and a half minutes, then the five clock-sensitive files serially and alone in three. `scripts/vault_scan.py wiki`: **$223$ files, $0$ problems.**
 
 Changed: [[joining-seam-cost]] (new), [[case-study-ladder-to-f1]] (§20), [[f1-pathmap-and-end-goal]] (§3.3's rung-9 row), [[gap-worklist]] (Tier 46; **W172 closed**; W192 priced; W194–W197 opened), [[per-region-assembly]] (a dated note under §7), [[index]]. Code: `tests/test_tier45_region_assembly.py` (one test re-pointed). Added: `atlas/cases/integration_union.py`, `scripts/w172_joining_cost.py`, `tests/test_tier46_joining_seams.py`, `out/w172/w172.json`, and the tier's `.gitignore` allowlist pair.
+
+## [2026-09-11] tier 47 | W198: rung 9's gate does not fit the full-vehicle graph as written, and a replacement is proposed rather than substituted
+
+**Rung 9's gate, held against the graph that exists.** [[rung9-gate-restated]], `scripts/rung9_gate.py`, `tests/test_tier47_rung9_gate.py`, `out/rung9/rung9.json`. The brief's third task: [[f1-pathmap-and-end-goal]] §3 gives rung 9 the gate *"$\mathcal R$ closes; composition error sub-linear in $N$"*, with the instruction that if it no longer fits the graph that can be built, say so and propose the replacement rather than silently substituting one — what [[case-study-learned-pair-atlas-0.1]] §9 did for rung 3 (W183). Tier 46 built the graph ([[joining-seam-cost]]), so each clause was held against it before anything else was attempted.
+
+### Neither clause has a subject on this graph
+
+- **"Sub-linear in $N$" has no variable.** The unions of the three subsystems sit at $N = 8, 10, 13$ and $18$; $N = 13$ is two graphs, with three and four families; and every step up in $N$ adds a different subsystem's physics. [[case-study-scaling-ladder-atlas-0.1]] answered the question where $N$ is a dial — exponents $+0.804$, $+0.477$ and $+0.851$, and $+0.138$, $+0.201$ and $+0.160$ with the physics held fixed — and that control is the one a vehicle cannot run.
+- **"$\mathcal R$ closes" cannot be assembled from the records** (**W200**, **W201**). All 18 agents declare `storage`, but no field on `ExpertCapabilities` or `CaseGraph` can carry dissipation, while 13 of the 18 dissipate by their own constants; the graph has no open port, while ten window faces are the fluid domain's inlet, outlet, ground and top and carry energy through no port; and the three clocks, $0.0125$, $0.05$ and $0.2$, are in the tiling's convective units, SI seconds and `wake_array`'s rotor diameters, with no unit field anywhere. `L7/R9` compares them as bare numbers.
+
+### The clause that can be measured, join by join, at the release state
+
+This vault's practice since CS-9: each join's receiving subsystem closes its own balance with the join's term in it, **and fails without it** — the second half is the control.
+
+- **J2 passes.** The block's first law closes to $3.3\times10^{-8}$ for the unjoined block on its declared source (the control), $4.0\times10^{-8}$ with the mount carrying 1800 W and $3.0\times10^{-8}$ with the joined 134 W; without the term it is off by $1.00$, $1.00$ and $0.27$.
+- **J3 fails by exactly the disk's declared width** (**W199**). Flow power through the upstream face over shaft power: $1.000000$ on `wake_array`'s own geometry (the control); $0.500000$ on the host's 32-cell face at $1/64$ with uniform inflow; $0.537342$ at the settled inflow, which is $0.5$ times its non-uniformity $\overline{u^3}/\bar u^{3} = 1.074684$; and $1.074684$ with the disk re-sized to its face. The two declared faces carry exactly zero net power at the rotor's base against a shaft power of $0.785$ — **W197**, seen as power.
+- **Closing J3 leaves the powertrain with no operating point.** `CircuitSolve` builds its disk at the default width and cannot be told otherwise. A subclass that can reproduces Tier 46's shaft speed, induction and current exactly at width $1$ (the control); at width $0.5$ the declared tip-speed ratio doubles $\omega$, the loop current goes from $0.146$ to $4.76$, and the machine demands $31\times$ the largest torque the disk can deliver anywhere in its induction clamp.
+- **J1 carries no power**, so the clause has no subject there: the core's pressure drop takes $0.304$ of flow work that no record can name. Its parametric check passes — identical at the build state (the control), and $10\%$ more air lowers the coolant's return temperature by $1.35$ K and raises the radiator's rejection by $11.8$ W, the block's first law at $1.5\times10^{-10}$ throughout.
+
+### The gate, proposed and not substituted
+
+- **G1**, $O(1)$ integration work per join: **met** by Tier 46, qualified by W196.
+- **G2**, each join's receiver balance **over a march**: measured at the release state only — J2 passes, J3 fails and cannot pass with the powertrain as sized, J1's parametric check passes.
+- **G3**, each join's composition error against a tightly coupled referent of the same union: **not built**.
+- The clause in $N$ is **withdrawn** to CS-7's physics-held-fixed exponents, and the global $\mathcal R(t)$ is kept as a monitor rather than a clause. **Rung 9 is not complete**, and G2's one failure is a design fault rather than a framework one. The pathmap's rung table keeps its original gate; the restatement lives in §3.3's row and on the new page, as W183's did.
+
+### Opened
+
+- **W198**: rung 9's gate, restated — this tier's row.
+- **W199**: the rotor keeps `wake_array`'s one-diameter disk in a half-unit host face, and `CircuitSolve` hard-codes the width; a host-sized rotor leaves the declared machine with no operating point.
+- **W200**: $\mathcal R(t)$ is not assemblable — no dissipation field, and domain-boundary power through no port.
+- **W201**: no record carries a unit of time or length, so three clocks are compared as numbers.
+- W196 and W197 annotated.
+
+### What this tier did NOT do, named
+
+- **Nothing marches the union.** G2 is measured at the release state only and G3 is not built; [[rung9-gate-restated]] §6 lists the seven decisions a march needs first, and the first two — the units, and a rotor and machine sized for each other — are the choice of which vehicle this is.
+- **W198–W201 were opened and not fixed.** The rotor is not re-sized in `integration_union`, `CircuitSolve` is unchanged, and no unit or dissipation field was added.
+- **The fluid's own energy budget was not attempted.**
+- W182, W183–W187, W190, W191, W193, W194, W195, W175, W178 untouched. Nothing downloaded, no machine rented, NeuberNet not loaded, nothing pushed.
+
+### How it was done, and three things worth recording
+
+- **J3's raw ratio reads as a leak.** At the settled inflow, face power over shaft power is $0.537$ — a 46% shortfall with no evident cause. It is a factor because of two controls: the uniform-inflow row on the host geometry, exactly $0.5$, and the settled row divided by $\overline{u^3}/\bar u^{3}$, also exactly $0.5$. What is left is the disk's declared width.
+- **The width-$0.5$ operating point is licensed by the width-$1$ one.** The sized subclass overrides only the disk's torque and shaft speed; at width $1$ it reproduces the parent's $\omega$, induction and current exactly, which is what lets the width-$0.5$ row be read as the width and nothing else.
+- **The gate-pinning test failed on its first run, on this tier's own edit.** `test_W198_the_gate_being_restated_is_the_pathmaps_own` found two rows opening `| **9** |` — the ladder's, and §3.3's status row this tier had just extended. It now filters to the ladder row, which carries the gate; 13 passed.
+
+### How it was run
+
+`scripts/rung9_gate.py`: $1.4$ seconds, from `out/w141/settled.npz`; the fluid is read, never marched. Run twice — the first run's census gave the suspension spring its class name for a reason, and the second is the committed one. **The full suite: $1223$ tests across $47$ files, $1222$ passed and $1$ failed** — `tests/test_tier22_demo.py::test_server_boots_optimises_and_verifies`, *"no optimiser step completed"*, after $4$ h $17$ min. The four parallel groups finished in five minutes and nineteen seconds, the thirteen new tests being the whole difference from Tier 46's count; the serial phase then started `test_tier22_demo.py` at 07:39, and the Windows System log shows the laptop, on battery, entering Modern Standby at 07:40:13 and leaving it at 11:55:51, apart from two wakes of a few seconds. The test waits on a wall-clock deadline of 240 s, which had long passed when the process resumed. **That file re-run alone: $39$ passed in $60$ s**, with no power transition over its window. The re-run was launched by hand, without the runner's `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`, `KMP_DUPLICATE_LIB_OK` and `-p no:cacheprovider`; nothing in the Hugging Face cache changed. `scripts/vault_scan.py wiki`: **$224$ files, $0$ problems.**
+
+Changed: [[case-study-ladder-to-f1]] (§21), [[f1-pathmap-and-end-goal]] (§3.3's rung-9 row), [[gap-worklist]] (Tier 47; **W198–W201 opened**; W196, W197 annotated), [[joining-seam-cost]] (a dated note before See Also), [[index]]. Added: [[rung9-gate-restated]], `scripts/rung9_gate.py`, `tests/test_tier47_rung9_gate.py`, `out/rung9/rung9.json`, and the tier's `.gitignore` allowlist pair.

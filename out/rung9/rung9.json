@@ -1,0 +1,765 @@
+{
+ "what": "rung 9's gate, re-read against the joined union",
+ "date": "2026-09-11",
+ "state": "out/w141/settled.npz; the fluid is read, never marched",
+ "n_on_the_vehicle": {
+  "unions": [
+   {
+    "label": "fw",
+    "N": 8,
+    "families": 2,
+    "subsystems": [
+     "front_wing"
+    ],
+    "joins": [],
+    "ports": 18,
+    "seams": 9
+   },
+   {
+    "label": "fw+cl",
+    "N": 13,
+    "families": 4,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop"
+    ],
+    "joins": [],
+    "ports": 28,
+    "seams": 14
+   },
+   {
+    "label": "fw+cl|J1",
+    "N": 13,
+    "families": 4,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop"
+    ],
+    "joins": [
+     "J1"
+    ],
+    "ports": 32,
+    "seams": 16
+   },
+   {
+    "label": "fw+pt",
+    "N": 13,
+    "families": 3,
+    "subsystems": [
+     "front_wing",
+     "powertrain"
+    ],
+    "joins": [],
+    "ports": 30,
+    "seams": 14
+   },
+   {
+    "label": "fw+pt|J3",
+    "N": 13,
+    "families": 3,
+    "subsystems": [
+     "front_wing",
+     "powertrain"
+    ],
+    "joins": [
+     "J3"
+    ],
+    "ports": 32,
+    "seams": 16
+   },
+   {
+    "label": "cl+pt",
+    "N": 10,
+    "families": 4,
+    "subsystems": [
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [],
+    "ports": 22,
+    "seams": 10
+   },
+   {
+    "label": "cl+pt|J2",
+    "N": 10,
+    "families": 4,
+    "subsystems": [
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [
+     "J2"
+    ],
+    "ports": 24,
+    "seams": 11
+   },
+   {
+    "label": "all",
+    "N": 18,
+    "families": 5,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [],
+    "ports": 40,
+    "seams": 19
+   },
+   {
+    "label": "all|J1",
+    "N": 18,
+    "families": 5,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [
+     "J1"
+    ],
+    "ports": 44,
+    "seams": 21
+   },
+   {
+    "label": "all|J3",
+    "N": 18,
+    "families": 5,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [
+     "J3"
+    ],
+    "ports": 42,
+    "seams": 21
+   },
+   {
+    "label": "all|J1+J2",
+    "N": 18,
+    "families": 5,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [
+     "J1",
+     "J2"
+    ],
+    "ports": 46,
+    "seams": 22
+   },
+   {
+    "label": "all|J1+J3",
+    "N": 18,
+    "families": 5,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [
+     "J1",
+     "J3"
+    ],
+    "ports": 46,
+    "seams": 23
+   },
+   {
+    "label": "all|J2+J3",
+    "N": 18,
+    "families": 5,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [
+     "J2",
+     "J3"
+    ],
+    "ports": 44,
+    "seams": 22
+   },
+   {
+    "label": "all|J1+J2+J3",
+    "N": 18,
+    "families": 5,
+    "subsystems": [
+     "front_wing",
+     "cooling_loop",
+     "powertrain"
+    ],
+    "joins": [
+     "J1",
+     "J2",
+     "J3"
+    ],
+    "ports": 48,
+    "seams": 24
+   }
+  ],
+  "disjoint_by_N": {
+   "8": [
+    {
+     "subsystems": [
+      "front_wing"
+     ],
+     "families": 2
+    }
+   ],
+   "10": [
+    {
+     "subsystems": [
+      "cooling_loop",
+      "powertrain"
+     ],
+     "families": 4
+    }
+   ],
+   "13": [
+    {
+     "subsystems": [
+      "front_wing",
+      "cooling_loop"
+     ],
+     "families": 4
+    },
+    {
+     "subsystems": [
+      "front_wing",
+      "powertrain"
+     ],
+     "families": 3
+    }
+   ],
+   "18": [
+    {
+     "subsystems": [
+      "front_wing",
+      "cooling_loop",
+      "powertrain"
+     ],
+     "families": 5
+    }
+   ]
+  },
+  "N_values": [
+   8,
+   10,
+   13,
+   18
+  ],
+  "N_with_more_than_one_graph": [
+   13
+  ],
+  "families_at_N13": [
+   3,
+   4
+  ],
+  "physics_added_with_every_increase_in_N": true
+ },
+ "r_prerequisites": {
+  "capability_fields_that_could_carry_dissipation": [],
+  "graph_fields_that_could_carry_dissipation": [],
+  "capability_fields_that_could_carry_a_unit": [],
+  "agents": [
+   {
+    "agent": "F00",
+    "family": "incompressible-navier-stokes-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "viscous, nu = 0.004",
+    "dt_native": 0.0125,
+    "L_native": 1.25
+   },
+   {
+    "agent": "F10",
+    "family": "incompressible-navier-stokes-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "viscous, nu = 0.004",
+    "dt_native": 0.0125,
+    "L_native": 1.25
+   },
+   {
+    "agent": "F20",
+    "family": "incompressible-navier-stokes-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "viscous, nu = 0.004",
+    "dt_native": 0.0125,
+    "L_native": 1.25
+   },
+   {
+    "agent": "F01",
+    "family": "incompressible-navier-stokes-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "viscous, nu = 0.004",
+    "dt_native": 0.0125,
+    "L_native": 1.25
+   },
+   {
+    "agent": "F11",
+    "family": "incompressible-navier-stokes-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "viscous, nu = 0.004",
+    "dt_native": 0.0125,
+    "L_native": 1.25
+   },
+   {
+    "agent": "F21",
+    "family": "incompressible-navier-stokes-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "viscous, nu = 0.004",
+    "dt_native": 0.0125,
+    "L_native": 1.25
+   },
+   {
+    "agent": "STRUCT",
+    "family": "plane-stress-elasticity-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": false,
+    "why": "quasi-static elasticity stores and returns",
+    "dt_native": 0.0125,
+    "L_native": 0.5
+   },
+   {
+    "agent": "SUSP",
+    "family": "incompressible-navier-stokes-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": false,
+    "why": "a spring stores and returns",
+    "dt_native": 0.0125,
+    "L_native": 0.5
+   },
+   {
+    "agent": "BLOCK",
+    "family": "heat-conduction-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": false,
+    "why": "conduction moves heat and destroys no energy",
+    "dt_native": 0.05,
+    "L_native": 0.2
+   },
+   {
+    "agent": "PASS",
+    "family": "incompressible-thermal-transport-1d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": false,
+    "why": "picks up the wall heat and loses none",
+    "dt_native": 0.05,
+    "L_native": 0.2
+   },
+   {
+    "agent": "HOT",
+    "family": "incompressible-thermal-transport-1d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "heat lost to ambient at UA = 0.4 W/K",
+    "dt_native": 0.05,
+    "L_native": 0.2
+   },
+   {
+    "agent": "RAD",
+    "family": "incompressible-thermal-transport-1d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "pressure drop 1/2 K u^2 with K = 1.2, and heat rejected to ambient at UA = 42 W/K",
+    "dt_native": 0.05,
+    "L_native": 0.2
+   },
+   {
+    "agent": "COLD",
+    "family": "incompressible-thermal-transport-1d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "heat lost to ambient at UA = 0.4 W/K",
+    "dt_native": 0.05,
+    "L_native": 0.2
+   },
+   {
+    "agent": "ROTOR",
+    "family": "incompressible-navier-stokes-2d",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": false,
+    "why": "local-induction form: P = T U_d, all of it to the shaft",
+    "dt_native": 0.2,
+    "L_native": 1.0
+   },
+   {
+    "agent": "MGU",
+    "family": "lumped-dc-circuit",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "I^2 R with R = 0.15",
+    "dt_native": 0.2,
+    "L_native": 1.0
+   },
+   {
+    "agent": "BUS",
+    "family": "lumped-dc-circuit",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "I^2 R with R = 0.05",
+    "dt_native": 0.2,
+    "L_native": 1.0
+   },
+   {
+    "agent": "BATT",
+    "family": "lumped-dc-circuit",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "I^2 R with R = 0.07",
+    "dt_native": 0.2,
+    "L_native": 1.0
+   },
+   {
+    "agent": "INV",
+    "family": "lumped-dc-circuit",
+    "storage_declared": true,
+    "dissipative_by_its_own_constants": true,
+    "why": "I^2 R with R = 0.03",
+    "dt_native": 0.2,
+    "L_native": 1.0
+   }
+  ],
+  "n_storage_declared": 18,
+  "n_dissipative_by_their_own_constants": 13,
+  "open_ports": [],
+  "window_faces_that_are_domain_boundaries": {
+   "F00": [
+    "xlo",
+    "ylo"
+   ],
+   "F10": [
+    "ylo"
+   ],
+   "F20": [
+    "xhi",
+    "ylo"
+   ],
+   "F01": [
+    "xlo",
+    "yhi"
+   ],
+   "F11": [
+    "yhi"
+   ],
+   "F21": [
+    "xhi",
+    "yhi"
+   ]
+  },
+  "n_window_faces_that_are_domain_boundaries": 10,
+  "clocks_by_subsystem": {
+   "front_wing": [
+    0.0125
+   ],
+   "cooling_loop": [
+    0.05
+   ],
+   "powertrain": [
+    0.2
+   ]
+  },
+  "clock_units_as_the_modules_state_them": {
+   "front_wing": "convective: the tiling's length unit (64 cells, DX = 1/64) over U_inf = 1",
+   "powertrain": "convective: wake_array's rotor diameter D = 1 over U_inf = 1 (disk.py: D = U_inf = rho = 1)",
+   "cooling_loop": "seconds (MACRO_DT = 0.05 s)"
+  }
+ },
+ "referents": {
+  "tiling_monolith_declared": true,
+  "front_wing_has_a_referent_rollout": true,
+  "cooling_loop_has_a_closed_form": true,
+  "powertrain_has_a_closed_form": true,
+  "joining_seams": {
+   "J1_core_up": {
+    "families": [
+     "incompressible-navier-stokes-2d",
+     "incompressible-thermal-transport-1d"
+    ],
+    "same_family": false
+   },
+   "J1_core_down": {
+    "families": [
+     "incompressible-navier-stokes-2d",
+     "incompressible-thermal-transport-1d"
+    ],
+    "same_family": false
+   },
+   "J2_heat": {
+    "families": [
+     "heat-conduction-2d",
+     "lumped-dc-circuit"
+    ],
+    "same_family": false
+   },
+   "J3_rotor_up": {
+    "families": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "same_family": true
+   },
+   "J3_rotor_down": {
+    "families": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "same_family": true
+   }
+  }
+ },
+ "j2_balance": {
+  "control: BlockAgent, its declared source": {
+   "stored_rate": 1326.1863351389766,
+   "q_outer": 1799.839208316666,
+   "q_wall": 473.6528135800258,
+   "residual": -5.9597663494059816e-05,
+   "relative": 3.3112770973469164e-08,
+   "source_term": "t_source behind H_OUTER",
+   "relative_without_the_source_term": 0.999999966887229,
+   "factor_without_over_with": 30199827.36233267
+  },
+  "J2 without J3: mount at the reference heat": {
+   "stored_rate": 1231.1582492347807,
+   "q_outer": 1704.8111318073054,
+   "q_wall": 473.6528135923467,
+   "residual": -6.89801779572008e-05,
+   "relative": 4.0462064489263094e-08,
+   "source_term": "the machine's casing behind h_mount",
+   "relative_without_the_source_term": 0.9999999595379355,
+   "factor_without_over_with": 24714506.591805093
+  },
+  "J2 with J3: mount at the joined operating point": {
+   "stored_rate": -346.44433961529285,
+   "q_outer": 127.20845975503524,
+   "q_wall": 473.65281358070933,
+   "residual": 1.4210381266366312e-05,
+   "relative": 3.0001682369284386e-08,
+   "source_term": "the machine's casing behind h_mount",
+   "relative_without_the_source_term": 0.268569024226308,
+   "factor_without_over_with": 8951798.79983224
+  },
+  "q_machine_W": {
+   "without_J3": 1800.0,
+   "with_J3": 134.31119921159222
+  }
+ },
+ "j3_power": {
+  "control: native geometry (wake_array), uniform inflow": {
+   "cells": 32,
+   "cell_measure": 0.03125,
+   "face_length": 1.0,
+   "disk_width": 1.0,
+   "u_disk": 1.0,
+   "thrust_through_the_face": 0.9999999999999999,
+   "thrust_of_the_disk": 0.9999999999999999,
+   "power_through_the_upstream_face": 0.9999999999999999,
+   "shaft_power": 0.9999999999999999,
+   "omega": 15.0,
+   "torque": 0.06666666666666667,
+   "power_ratio_face_over_shaft": 1.0,
+   "thrust_ratio_face_over_disk": 1.0,
+   "inflow_nonuniformity_mean_u3_over_mean_u_cubed": 1.0,
+   "power_ratio_over_nonuniformity": 1.0,
+   "declared_two_face_net_power_at_the_rotors_base": 0.0
+  },
+  "host geometry, uniform inflow, the disk as powertrain declares it": {
+   "cells": 32,
+   "cell_measure": 0.015625,
+   "face_length": 0.5,
+   "disk_width": 1.0,
+   "u_disk": 1.0,
+   "thrust_through_the_face": 0.49999999999999994,
+   "thrust_of_the_disk": 0.9999999999999999,
+   "power_through_the_upstream_face": 0.49999999999999994,
+   "shaft_power": 0.9999999999999999,
+   "omega": 15.0,
+   "torque": 0.06666666666666667,
+   "power_ratio_face_over_shaft": 0.5,
+   "thrust_ratio_face_over_disk": 0.5,
+   "inflow_nonuniformity_mean_u3_over_mean_u_cubed": 1.0,
+   "power_ratio_over_nonuniformity": 0.5,
+   "declared_two_face_net_power_at_the_rotors_base": 0.0
+  },
+  "host geometry, the settled inflow, the disk as powertrain declares it": {
+   "cells": 32,
+   "cell_measure": 0.015625,
+   "face_length": 0.5,
+   "disk_width": 1.0,
+   "u_disk": 0.9224705849548147,
+   "thrust_through_the_face": 0.43635130454086113,
+   "thrust_of_the_disk": 0.8509519801068779,
+   "power_through_the_upstream_face": 0.4218016225561868,
+   "shaft_power": 0.7849781708576495,
+   "omega": 13.837058774322221,
+   "torque": 0.05673013200712519,
+   "power_ratio_face_over_shaft": 0.5373418500228303,
+   "thrust_ratio_face_over_disk": 0.5127801741363317,
+   "inflow_nonuniformity_mean_u3_over_mean_u_cubed": 1.0746837000456606,
+   "power_ratio_over_nonuniformity": 0.5,
+   "declared_two_face_net_power_at_the_rotors_base": 0.0,
+   "declared_two_face_net_power_at_the_host_rings": 0.007717481691373366
+  },
+  "host geometry, the settled inflow, the disk re-sized to its host face": {
+   "cells": 32,
+   "cell_measure": 0.015625,
+   "face_length": 0.5,
+   "disk_width": 0.5,
+   "u_disk": 0.9224705849548147,
+   "thrust_through_the_face": 0.43635130454086113,
+   "thrust_of_the_disk": 0.42547599005343895,
+   "power_through_the_upstream_face": 0.4218016225561868,
+   "shaft_power": 0.39248908542882477,
+   "omega": 27.674117548644443,
+   "torque": 0.014182533001781298,
+   "power_ratio_face_over_shaft": 1.0746837000456606,
+   "thrust_ratio_face_over_disk": 1.0255603482726634,
+   "inflow_nonuniformity_mean_u3_over_mean_u_cubed": 1.0746837000456606,
+   "power_ratio_over_nonuniformity": 1.0,
+   "declared_two_face_net_power_at_the_rotors_base": 0.0,
+   "declared_two_face_net_power_at_the_host_rings": 0.007717481691373366
+  },
+  "host_face_length": 0.5,
+  "declared_disk_width": 1.0,
+  "circuit_solve_builds_its_disk_at_the_default_width": true
+ },
+ "sized_operating_points": {
+  "parent CircuitSolve (Tier 46's J3)": {
+   "omega": 13.837058774322221,
+   "induction": 0.11379170615831491,
+   "torque_rotor": 0.014568625810740655,
+   "torque_machine": 0.014568625810740699,
+   "p_mech": 0.20158693160432617,
+   "current": 0.14568625810740699,
+   "v_emf": 1.3837058774322222,
+   "p_electrical": 0.20158693160432678,
+   "dissipation": {
+    "MGU": 0.0031836728702007012,
+    "BUS": 0.0010612242900669003,
+    "BATT": 0.0014857140060936607,
+    "INV": 0.0006367345740401402
+   },
+   "p_stored": 0.19521958586392538,
+   "residual": 3.0290786147901852e-15,
+   "bridge_residual": 3.0290786147901852e-15,
+   "torque_residual": 2.976813836995327e-15,
+   "kvl_residual": 8.933825901280557e-17,
+   "closed_form": 0.14568625810740699,
+   "current_gap": 5.677379349917488e-14,
+   "mgu_valid": true,
+   "rotor_valid": true,
+   "iterations": 44
+  },
+  "width 1, the declared rotor": {
+   "omega": 13.837058774322221,
+   "induction": 0.11379170615831491,
+   "torque_rotor": 0.014568625810740655,
+   "torque_machine": 0.014568625810740699,
+   "p_mech": 0.20158693160432617,
+   "current": 0.14568625810740699,
+   "v_emf": 1.3837058774322222,
+   "p_electrical": 0.20158693160432678,
+   "dissipation": {
+    "MGU": 0.0031836728702007012,
+    "BUS": 0.0010612242900669003,
+    "BATT": 0.0014857140060936607,
+    "INV": 0.0006367345740401402
+   },
+   "p_stored": 0.19521958586392538,
+   "residual": 3.0290786147901852e-15,
+   "bridge_residual": 3.0290786147901852e-15,
+   "torque_residual": 2.976813836995327e-15,
+   "kvl_residual": 8.933825901280557e-17,
+   "closed_form": 0.14568625810740699,
+   "current_gap": 5.677379349917488e-14,
+   "mgu_valid": true,
+   "rotor_valid": true,
+   "iterations": 44,
+   "largest_torque_the_disk_can_deliver_in_its_clamp": 0.06109398831536559,
+   "torque_the_machine_demands": 0.014568625810740699,
+   "demand_over_largest_supply": 0.2384625101824721
+  },
+  "width 0.5, the host face": {
+   "omega": 27.674117548644443,
+   "induction": 0.4,
+   "torque_rotor": 0.015273497078841397,
+   "torque_machine": 0.4758039182881481,
+   "p_mech": 0.42268055353873435,
+   "current": 4.758039182881481,
+   "v_emf": 2.7674117548644444,
+   "p_electrical": 13.167453564811826,
+   "dissipation": {
+    "MGU": 3.3958405298753203,
+    "BUS": 1.1319468432917734,
+    "BATT": 1.584725580608483,
+    "INV": 0.679168105975064
+   },
+   "p_stored": 6.375772505061184,
+   "residual": 30.152257785630923,
+   "bridge_residual": 30.152257785630923,
+   "torque_residual": 0.9678995979398561,
+   "kvl_residual": 1.1102230246251565e-16,
+   "closed_form": 4.758039182881481,
+   "current_gap": 7.093422027719662e-15,
+   "mgu_valid": true,
+   "rotor_valid": false,
+   "iterations": 47,
+   "largest_torque_the_disk_can_deliver_in_its_clamp": 0.015273497078841397,
+   "torque_the_machine_demands": 0.4758039182881481,
+   "demand_over_largest_supply": 31.152257785630926
+  },
+  "width_1_reproduces_the_parent": true
+ },
+ "j1_loop_response": {
+  "control: the declared radiator": {
+   "t_return": 321.05918432225377,
+   "q_block": 889.3034635370738,
+   "q_rejected": {
+    "HOT": 9.079054007492005,
+    "RAD": 916.8309608330935,
+    "COLD": 8.393448696502901
+   },
+   "loop_balance_residual": 1.5696829390493347e-14,
+   "block_first_law_relative": 1.5474919088951663e-10,
+   "ua_rad": 42.0
+  },
+  "the core in the flow, at the build state": {
+   "t_return": 321.05918432225377,
+   "q_block": 889.3034635370738,
+   "q_rejected": {
+    "HOT": 9.079054007492005,
+    "RAD": 916.8309608330935,
+    "COLD": 8.393448696502901
+   },
+   "loop_balance_residual": 1.5696829390493347e-14,
+   "block_first_law_relative": 1.5474919088951663e-10,
+   "ua_rad": 42.0
+  },
+  "the core in the flow, air +10%": {
+   "t_return": 319.7075834756386,
+   "q_block": 900.0085403760115,
+   "q_rejected": {
+    "HOT": 8.546540606938606,
+    "RAD": 928.6093916978552,
+    "COLD": 7.85260807124132
+   },
+   "loop_balance_residual": 2.5022908509046102e-14,
+   "block_first_law_relative": 1.4951544079514408e-10,
+   "ua_rad": 45.32767450255342
+  },
+  "identical_at_the_build_state": true,
+  "t_return_change_K_for_air_plus_10pct": -1.3516008466151561,
+  "rad_rejection_change_W_for_air_plus_10pct": 11.77843086476173,
+  "flow_work_on_the_core_in_tiling_units_per_span": 0.3040792977212877,
+  "power_crossing_into_the_coolant_through_J1": 0.0
+ },
+ "elapsed_seconds": 1.3754983999970136
+}
