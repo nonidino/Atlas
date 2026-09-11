@@ -297,6 +297,14 @@ class _Context:
             names.append("p_decline")
         if self.graph.partition_of_unity is None:
             names.append("norm_A")
+        elif self.graph.per_region("partition_of_unity"):
+            # W189: ||A|| is computed per region, so an overlapping region with
+            # no partition filed under it -- or a graph with no overlapping region
+            # to file one under -- leaves ||A|| unmeasured.
+            over = [fam for fam, ax in self.graph.region_axes().items()
+                    if ax is Decomposition.OVERLAPPING]
+            if not over or any(self.graph.partition_for(f) is None for f in over):
+                names.append("norm_A")
         # W45: a constant the graph declares as measured is measured. Before this
         # the list was hard-coded and consulted nothing, so a measurement could
         # never reach a compile.
@@ -644,6 +652,10 @@ def _l2_decomposition(ctx: _Context) -> None:
         stamp.fails(Hypothesis.E2, f"{len(moving)} ports declare non-static motion")
     # the second half of E2 -- declared transfer per seam -- is stamped at L3.
 
+    # W189 -- a value declared per region is filed under a region that can hold
+    # it. Silent on a graph that declares none, which is every graph before W189.
+    _region_declarations(ctx)
+
     # R10 -- an embedded elliptic sub-solve is not decomposable.
     _r10_elliptic(ctx)
     # The halo rule: a lagged exchange must outrun the agent's own domain of dependence.
@@ -755,6 +767,145 @@ def _l2_decomposition(ctx: _Context) -> None:
             )
 
     _cut_policy(ctx)
+
+
+#: W189. What each per-region field IS, for the declaration check's sentences.
+_PER_REGION_WHAT = {
+    "partition_of_unity": "a partition of unity",
+    "overlap": "an overlap",
+    "overlap_cells": "an overlap-cell count",
+}
+
+
+def _region_declarations(ctx: _Context) -> None:
+    """**L2/W189/regions** -- a value declared per region is filed under one that can hold it.
+
+    W189 lets `partition_of_unity`, `overlap` and `overlap_cells` be declared per
+    REGION -- a ``dict`` keyed by governing_family -- because a vehicle is a
+    fluid tiling and two circuits at once, and one object per graph could not
+    say so.  A key is a declaration like any other, and three ways of getting it
+    wrong are decidable from the graph alone, before anything is probed:
+
+      * it names no agent's family, so nothing reads the value and the region it
+        was meant for reads as undeclared;
+      * it names a family with ONE agent, which owns its whole region (W114), so
+        there is no artificial face for a partition to weight or an overlap to
+        outrun;
+      * it names a region whose own seams are NON-overlapping, and a partition,
+        an overlap and a halo are properties of an OVERLAPPING cover -- one
+        region cut both ways is `region_axis_conflicts`' defect through another
+        field.
+
+    Each refuses.  A partition carries one more decidable fact, its subdomain
+    NAMES, read against the agents: a subdomain that is an agent of another
+    family refuses, because the blend would weight another region's state into
+    this one and neither the identity nor convexity can see it -- both are
+    properties of the weights alone; a subdomain that is no agent at all
+    decertifies, because then whether the partition covers the region cannot be
+    decided.  That second case is not hypothetical: censused before this rule
+    was written, `channel_ns`'s partition names `window_ns`'s windows (W191).
+
+    A graph declaring nothing per region emits nothing here, which is what keeps
+    every artifact written before W189 byte-identical.  A graph declaring
+    cleanly gets one admission naming what it filed where, and it discloses the
+    region agents its partition does not blend.
+    """
+    rec, graph = ctx.record, ctx.graph
+    if not graph.declares_per_region():
+        return
+    clean: list[tuple[str, str, dict[str, Any]]] = []
+    for name, rows in graph.region_declaration_report().items():
+        what = _PER_REGION_WHAT[name]
+        for key, row in rows.items():
+            status = row["status"]
+            where = dict(subject=f"<region:{key}>", quantity=name, field=name,
+                         region=key)
+            if status == "no-such-region":
+                rec.refuse(
+                    "L2", "W189/regions",
+                    f"{name} files {what} under {key!r}, and no agent of this graph "
+                    "declares that governing_family, so nothing reads the value: "
+                    "the region it was meant for reads as undeclared, and this "
+                    "entry is silently unused. A per-region value is filed under a "
+                    "REGION -- a governing_family with more than one agent -- and a "
+                    "key that names none is a declaration the compile cannot attach "
+                    "to anything",
+                    **where)
+                continue
+            if status == "not-a-cut-region":
+                rec.refuse(
+                    "L2", "W189/regions",
+                    f"{name} files {what} under {key!r}, whose only agent is "
+                    f"{row['sole_agent']}. A sole agent of its governing_family owns "
+                    "its whole region (W114): the decomposition created no "
+                    "artificial face on it, so there is no cover for a partition to "
+                    "weight and no overlap for a halo to outrun, and the value "
+                    "describes a cut that does not exist",
+                    sole_agent=row["sole_agent"], **where)
+                continue
+            if status == "non-overlapping-region":
+                rec.refuse(
+                    "L2", "W189/regions",
+                    f"{name} files {what} under region {key!r}, whose own seams "
+                    "declare it NON-OVERLAPPING. A partition of unity, an overlap and "
+                    "an overlap-cell count are properties of an OVERLAPPING cover: a "
+                    "substructuring cut shares no cells, so there is nothing to "
+                    "blend and no overlap to outrun. One region cannot be cut both "
+                    "ways, and this is `region_axis_conflicts`' defect declared "
+                    "through a different field",
+                    axis=row["axis"], **where)
+                continue
+            if row.get("foreign"):
+                foreign = row["foreign"]
+                rec.refuse(
+                    "L2", "W189/regions",
+                    f"the partition of unity filed under region {key!r} names "
+                    f"{sorted(foreign)} as subdomains, and they are agents of "
+                    f"{sorted(set(foreign.values()))}. The blend would weight another "
+                    "region's state into this one -- and neither the "
+                    "partition-of-unity identity nor L6/C1's convexity can see it, "
+                    "because both are properties of the WEIGHTS and say nothing "
+                    "about whose values are being weighted",
+                    foreign=dict(foreign), **where)
+                continue
+            if row.get("unmatched"):
+                rec.decertify(
+                    "L2", "W189/regions",
+                    f"the partition of unity filed under region {key!r} names "
+                    f"subdomains {row['unmatched']} that are not agents of this "
+                    "graph, so whether it covers this region's agents -- and only "
+                    "them -- cannot be decided from the declaration. Not "
+                    "hypothetical: censused over every partition in the package "
+                    "before this rule existed, channel_ns's names window_ns's "
+                    "windows W00..W11 while its own agents are C00..C11, and nothing "
+                    "read the names, so nothing noticed (W191). Name each subdomain "
+                    "after the agent whose local solve it weights",
+                    unmatched=list(row["unmatched"]), **where)
+                continue
+            clean.append((name, key, row))
+    if not clean:
+        return
+    parts = []
+    for name, key, row in clean:
+        text = f"{name} under {key!r}"
+        if row.get("unblended"):
+            text += (f" (the region also holds {', '.join(row['unblended'])}, "
+                     "which the partition does not blend: a lumped closure of the "
+                     "region's own family is in the region by W114's proxy and is "
+                     "not a subdomain of the cover)")
+        parts.append(text)
+    rec.admit(
+        "L2", "W189/regions",
+        "declared per region, each value filed under an OVERLAPPING cut region of "
+        "this graph and each partition's subdomains agents of the region it is "
+        "filed under: " + "; ".join(parts) + ". Every rule whose subject is that "
+        "region's cover reads the region's own value and names the region; a field "
+        "still declared as one value is the graph's, exactly as before W189",
+        subject="<graph>",
+        declared={n: [k for nn, k, _r in clean if nn == n]
+                  for n in CaseGraph.PER_REGION_FIELDS
+                  if any(nn == n for nn, _k, _r in clean)},
+    )
 
 
 def _cross_point_provenance(graph) -> str:
@@ -884,7 +1035,43 @@ def _cut_policy(ctx: _Context) -> None:
 
 
 def _cut_policy_for(ctx: _Context, axis: Decomposition) -> None:
-    """`_cut_policy`'s body for ONE axis. See that function's docstring."""
+    """`_cut_policy`'s body for ONE axis. See that function's docstring.
+
+    **W189.**  On a graph that declares anything per region, the criterion runs
+    once per REGION on this axis -- the overlapping branch against the partition
+    filed under that region -- and each pass is re-issued as a decision about
+    its region.  A graph that declares nothing per region takes the
+    graph-scoped path, unchanged.
+    """
+    rec, graph = ctx.record, ctx.graph
+    regions = ctx.regions_on(axis)
+    if graph.declares_per_region() and regions:
+        # A partition still declared as ONE object is the graph's and is read as
+        # the graph's in every pass: filing the overlap per region does not make
+        # a graph-scoped partition any region's.
+        scoped = graph.per_region("partition_of_unity")
+        for fam in regions:
+            start = len(rec)
+            _cut_policy_region(
+                ctx, axis,
+                (None if axis is not Decomposition.OVERLAPPING
+                 else graph.partition_for(fam) if scoped
+                 else graph.partition_of_unity),
+                on_branch=len(regions))
+            rec.rescope(start, fam)
+        return
+    _cut_policy_region(ctx, axis, graph.partition_of_unity)
+
+
+def _cut_policy_region(ctx: _Context, axis: Decomposition, pou: Any,
+                       on_branch: int = 1) -> None:
+    """The criterion for one axis against one partition. Split out at W189.
+
+    ``on_branch`` is how many regions share this axis.  Above one, a cut-defect
+    bound declared once for the graph cannot say which region's cut it measured
+    -- `MeasuredConstants` carries a probe state, a scheme and a depth and no
+    region -- and quoting it for each of them is W190 rather than a number.
+    """
     rec, graph = ctx.record, ctx.graph
     declared = (graph.measured.cut_defect_bound
                 if graph.measured is not None else None)
@@ -927,6 +1114,19 @@ def _cut_policy_for(ctx: _Context, axis: Decomposition) -> None:
                 "shape imported onto the overlapping branch",
                 subject="<graph>", quantity="cut placement",
             )
+        elif on_branch > 1:
+            # **W190.** One number per graph, and several regions on this branch.
+            rec.decertify(
+                "L2", "C3/W190",
+                f"cut_defect_bound is declared at {float(value):.6g}, once for the "
+                f"graph, and {on_branch} regions are on the substructuring branch. "
+                "MeasuredConstants has no region -- its provenance is a probe state, "
+                "a scheme and a depth -- so the record cannot say which region's cut "
+                "this measured, and quoting it for each of them is W56's defect "
+                "with the guard bypassed",
+                subject="<graph>", quantity="cut_defect_bound",
+                cut_defect_bound=float(value), regions_on_branch=on_branch,
+            )
         elif (getattr(graph.measured, "cut_defect_bound_form", None)
               not in (None, "substructuring-residual")):
             # **W58 on this branch.** L2/C2's three forms are quantities of the
@@ -955,7 +1155,6 @@ def _cut_policy_for(ctx: _Context, axis: Decomposition) -> None:
             )
         return
 
-    pou = graph.partition_of_unity
     if pou is None:
         rec.decertify(
             "L2", "C2",
@@ -1016,6 +1215,21 @@ def _cut_policy_for(ctx: _Context, axis: Decomposition) -> None:
             " over one exchange interval and declare it on MeasuredConstants. This is "
             "a missing measurement, not an unearned inference",
             subject="<graph>", quantity="cut_defect_bound",
+        )
+        return
+
+    if on_branch > 1:
+        # **W190.** One number per graph, and several overlapping regions.
+        rec.decertify(
+            "L2", "C2/W190",
+            f"cut_defect_bound is declared at {declared:.4e}, once for the graph, "
+            f"and {on_branch} regions are on the overlapping branch, each with its "
+            "own partition. MeasuredConstants has no region -- its provenance is a "
+            "probe state, a scheme and a depth -- so the record cannot say which "
+            "region's chi-weighted restriction defect this is, and quoting it for "
+            "each of them is W56's defect with the guard bypassed",
+            subject="<graph>", quantity="cut_defect_bound",
+            cut_defect_bound=declared, regions_on_branch=on_branch,
         )
         return
 
@@ -1903,10 +2117,53 @@ def _halo_rule(ctx: _Context) -> None:
             subject="<graph>", region_axes=ctx.axis_summary(),
         )
         return
+    cut_all, uncut_all = _decomposition_cuts(graph)
+    if graph.per_region("overlap_cells"):
+        # **W189.** One requirement per overlapping REGION, against the overlap
+        # filed under that region. A tiling whose halo covers its reach and a
+        # second tiling whose halo does not are two answers, and one count per
+        # graph could give only one of them. Each pass is the body below,
+        # unchanged, re-issued as a decision about its region -- and the agents it
+        # did not check are split into the sole agents W136's clause is about and
+        # the cut agents of OTHER regions, which that clause would misdescribe.
+        for fam, ids in overlapping.items():
+            members = set(ids)
+            start = len(rec)
+            _halo_rule_for(ctx, cut_all & members, sorted(uncut_all),
+                           graph.overlap_cells_for(fam),
+                           others=sorted(cut_all - members))
+            rec.rescope(start, fam)
+        return
     in_overlapping = {aid for ids in overlapping.values() for aid in ids}
-    cut, uncut = _decomposition_cuts(graph)
-    cut = cut & in_overlapping
+    cut = cut_all & in_overlapping
     excluded = sorted({a.agent_id for a in graph.agents} - cut)
+    _halo_rule_for(ctx, cut, excluded, graph.overlap_cells)
+
+
+def _other_regions_clause(others: Sequence[str]) -> str:
+    """W189: name the cut agents of OTHER regions, which this pass did not check.
+
+    Empty on the graph-scoped path, so every sentence there is what it was.
+    """
+    if not others:
+        return ""
+    return (
+        ". Nor against " + ", ".join(others) + ", which the decomposition does cut "
+        "but which belong to other regions: an overlapping region is checked "
+        "against the overlap filed under it, and a non-overlapping one has no halo "
+        "requirement at all (W189)"
+    )
+
+
+def _halo_rule_for(ctx: _Context, cut: set[str], excluded: list[str], have: Any,
+                   others: Sequence[str] = ()) -> None:
+    """`_halo_rule`'s requirement over one set of cut agents and one overlap.
+
+    Split out at W189 so a per-region pass runs this body rather than a copy of
+    it, which is W136's reason for sharing `_decomposition_cuts` applied one
+    level down.  ``others`` is empty on the graph-scoped path.
+    """
+    rec, graph = ctx.record, ctx.graph
     needs = {a.agent_id: a.capabilities.required_halo() for a in graph.agents
              if a.agent_id in cut}
     if not needs:
@@ -1968,20 +2225,21 @@ def _halo_rule(ctx: _Context) -> None:
             "L2", "R10/halo",
             "; ".join(parts) + ". The halo the exchange needs is undecidable here and "
             "it is not assumed adequate"
-            + _uncut_clause(excluded),
+            + _uncut_clause(excluded)
+            + _other_regions_clause(others),
             subject=", ".join(unknown), quantity="tau",
             uncut_agents=excluded,
         )
         return
     required = max(v for v in needs.values())
-    have = graph.overlap_cells
     if have is None:
         rec.decertify(
             "L2", "R10/halo",
             f"the agents' domain of dependence needs an overlap of {required} cells and "
             "the graph declares its overlap in physical units only, so the check cannot "
             "run. Declare overlap_cells"
-            + _uncut_clause(excluded),
+            + _uncut_clause(excluded)
+            + _other_regions_clause(others),
             subject="<graph>", quantity="tau", uncut_agents=excluded,
         )
     elif have < required:
@@ -1993,7 +2251,8 @@ def _halo_rule(ctx: _Context) -> None:
             "of unity gives that boundary full weight. Widen the overlap, or exchange "
             "every sub-step, which drops the requirement to the stencil radius"
             + _halo_bounds_clause(graph, cut)
-            + _uncut_clause(excluded),
+            + _uncut_clause(excluded)
+            + _other_regions_clause(others),
             subject="<graph>", quantity="tau", uncut_agents=excluded,
             bounds=_halo_bounds(graph, cut),
         )
@@ -2002,7 +2261,8 @@ def _halo_rule(ctx: _Context) -> None:
             "L2", "R10/halo",
             f"overlap {have} cells covers the {required}-cell domain of dependence"
             + _halo_bounds_clause(graph, cut)
-            + _uncut_clause(excluded),
+            + _uncut_clause(excluded)
+            + _other_regions_clause(others),
             subject="<graph>", uncut_agents=excluded,
             bounds=_halo_bounds(graph, cut),
         )
@@ -2569,7 +2829,14 @@ def _l5_l7_scheme(ctx: _Context) -> Scheme:
         levels=levels,
         window=window,
         eps_tol=eps_tol,
-        overlap=None if decomposition is Decomposition.NON_OVERLAPPING else graph.overlap,
+        overlap=(None if decomposition is Decomposition.NON_OVERLAPPING
+                 or graph.per_region("overlap") else graph.overlap),
+        # W189: a graph that files its overlap per region reports each
+        # overlapping region's own under its region, and no single one.
+        overlap_by_region=({fam: graph.overlap_for(fam)
+                            for fam in ctx.regions_on(Decomposition.OVERLAPPING)
+                            if graph.overlap_for(fam) is not None}
+                           if graph.per_region("overlap") else {}),
         exchange_interval=exchange,
         multirate=multirate,
         flux_matching=flux_matching,
@@ -2946,12 +3213,32 @@ def _l6_assembly(ctx: _Context) -> AssemblyCertificate:
     it costs 166x on the composed macro-step. So it refuses.
     """
     rec, graph, stamp = ctx.record, ctx.graph, ctx.stamp
+    if graph.per_region("partition_of_unity"):
+        # **W189.** Partitions filed per region are certified per region, each
+        # decision naming its region. See `_l6_assembly_by_region`.
+        return _l6_assembly_by_region(ctx)
     pou: PartitionOfUnity | None = graph.partition_of_unity
     # W100: the constraint the agents each enforce is derived from their declared
     # governing family here, so L6/C2 and R12 read the same string and the
     # certificate carries it whether or not a projection is declared.
     cert = certify(pou, constraint=_declared_constraint(graph))
     ctx.holes.activate(ASSEMBLY_CERTIFICATE, "<assembly>")
+    return _l6_certify(ctx, pou, cert, stamp)
+
+
+def _l6_certify(ctx: _Context, pou: Any, cert: AssemblyCertificate, stamp: Any,
+                region: str | None = None, n_regions: int = 1
+                ) -> AssemblyCertificate:
+    """L6/E6, R11 and L6/C1 on ONE partition, then R12 and W49 on it.
+
+    Split out of `_l6_assembly` at W189 so the per-region path runs this body
+    rather than a copy of it.  ``stamp`` is the envelope stamp on the
+    graph-scoped path and a per-region tally on the other (`_E6Tally`), because
+    stamping E6 region by region would make its status depend on the order the
+    regions were visited.  ``region`` is None on the graph-scoped path, where
+    every sentence, subject and evidence field is what it was before W189.
+    """
+    rec = ctx.record
 
     if pou is None:
         rec.decertify(
@@ -3013,8 +3300,8 @@ def _l6_assembly(ctx: _Context) -> AssemblyCertificate:
             f"identity {cert.pou_residual:.3e} and L6/C1 convexity (min chi = "
             f"{cond.chi_min:.4g}): the blend is at least as accurate as what it blends",
         )
-    _r12_conservative_assembly(ctx, cert)
-    _w49_sigma_branch(ctx, cond)
+    _r12_conservative_assembly(ctx, cert, region=region)
+    _w49_sigma_branch(ctx, cond, region=region, n_regions=n_regions)
     ctx.holes.measure(ASSEMBLY_CERTIFICATE, "pou_residual", cert.pou_residual)
     ctx.holes.measure(ASSEMBLY_CERTIFICATE, "norm_A", cert.norm_A)
     ctx.holes.measure(
@@ -3035,6 +3322,110 @@ def _l6_assembly(ctx: _Context) -> AssemblyCertificate:
     )
     return cert
 
+
+
+@dataclass
+class _E6Tally:
+    """W189: E6 over several regions, stamped ONCE.
+
+    `EnvelopeStamp.set` never lets a later ``holds`` overwrite a ``fails``, but a
+    later ``unchecked`` DOES overwrite a ``holds`` -- so stamping region by region
+    would make E6's status depend on which region happened to be visited last.
+    One region that fails fails E6 for the run; otherwise one overlapping region
+    with nothing filed under it leaves E6 unchecked; otherwise it holds.  Every
+    region's own reason is kept, under its name.
+    """
+
+    rows: list = field(default_factory=list)
+
+    def sink(self, region: str) -> "_E6Sink":
+        return _E6Sink(self, region)
+
+    def stamp(self, stamp: EnvelopeStamp) -> None:
+        for status in ("fails", "unchecked", "holds"):
+            named = [f"region {r!r}: {why}" for r, s, why in self.rows if s == status]
+            if named:
+                getattr(stamp, status)(Hypothesis.E6, "; ".join(named))
+                return
+
+
+@dataclass
+class _E6Sink:
+    """One region's view of an `_E6Tally`, with the stamp's three verbs."""
+
+    tally: _E6Tally
+    region: str
+
+    def holds(self, h: Hypothesis, why: str) -> None:
+        self.tally.rows.append((self.region, "holds", why))
+
+    def fails(self, h: Hypothesis, why: str) -> None:
+        self.tally.rows.append((self.region, "fails", why))
+
+    def unchecked(self, h: Hypothesis, why: str) -> None:
+        self.tally.rows.append((self.region, "unchecked", why))
+
+
+def _l6_assembly_by_region(ctx: _Context) -> AssemblyCertificate:
+    """**W189** -- L6 once per OVERLAPPING region, each against its own partition.
+
+    The graph-scoped `_l6_assembly` certifies one partition and cannot say whose
+    cover it weights.  Filed per region, each overlapping region's partition is
+    certified by the same body -- the identity (L6/E6), convexity (R11), L6/C1,
+    then R12 and W49 -- and every decision it emits is re-issued as a decision
+    about that region.  An overlapping region with nothing filed under it gets
+    L6/E6's "no assembly declared", naming it, rather than being passed over.
+    The constraint R12 reads is the REGION's family's rather than the first one
+    found anywhere in the graph, because the commutator identity L6/C2 rests on
+    is a sum over this partition's subdomains and nobody else's.
+
+    The certificate the artifact carries has no graph-level assembly -- a graph
+    whose regions each carry a partition has no single one -- so its top-level
+    fields are unset and each region's own certificate is under ``regions``.
+    """
+    rec, graph, stamp = ctx.record, ctx.graph, ctx.stamp
+    axes = graph.region_axes()
+    over = [fam for fam in graph.regions()
+            if axes.get(fam) is Decomposition.OVERLAPPING]
+    filed = [fam for fam in over if graph.partition_for(fam) is not None]
+    top = AssemblyCertificate(
+        kind="per-region", norm_A=None,
+        note=("W189: this graph files its partitions of unity per region, so it "
+              "has no single assembly and the fields above are unset. Each "
+              "overlapping region's own certificate is under `regions`; a region "
+              "with nothing filed under it is absent there and decertified at "
+              "L6/E6 by name"))
+    if not over:
+        rec.decertify(
+            "L6", "E6",
+            "partitions of unity are declared per region and this graph has no "
+            "OVERLAPPING cut region to file one under, so no assembly is certified "
+            "and ||A|| is not computed. L is not computable without ||A||, so no "
+            "bound can be claimed",
+            subject="<assembly>", quantity="||A||",
+        )
+        stamp.unchecked(Hypothesis.E6, "partitions declared per region, and no "
+                                       "overlapping region to file one under")
+        ctx.holes.activate(ASSEMBLY_CERTIFICATE, "<assembly>")
+        for name in ("pou_residual", "norm_A", "blend_defect", "condition",
+                     "conservative"):
+            ctx.holes.measure(ASSEMBLY_CERTIFICATE, name, None)
+        return top
+    tally = _E6Tally()
+    for fam in over:
+        pou = graph.partition_for(fam)
+        start, held = len(rec), len(ctx.holes.measurements)
+        cert = certify(pou, constraint=_constrained_family(fam))
+        ctx.holes.activate(ASSEMBLY_CERTIFICATE, f"<assembly:{fam}>", region=fam)
+        _l6_certify(ctx, pou, cert, tally.sink(fam), region=fam,
+                    n_regions=len(filed))
+        rec.rescope(start, fam)
+        for m in ctx.holes.measurements[held:]:
+            m.note = f"region {fam!r}" + (f": {m.note}" if m.note else "")
+        if pou is not None:
+            top.regions[fam] = cert
+    tally.stamp(stamp)
+    return top
 
 
 #: Governing families whose agents enforce a pointwise linear constraint on the
@@ -3108,7 +3499,8 @@ def _enforcing_agents(graph, constraint: str | None = None) -> list[str]:
                  == constraint)]
 
 
-def _r12_conservative_assembly(ctx: _Context, cert) -> None:
+def _r12_conservative_assembly(ctx: _Context, cert,
+                               region: str | None = None) -> None:
     """R12: an assembly must preserve the constraint its agents enforce.
 
     **Added 2026-08-31 from the measurement that ended a rollout.**  `assembly.L6_C2`
@@ -3172,29 +3564,63 @@ def _r12_conservative_assembly(ctx: _Context, cert) -> None:
     """
     rec, graph = ctx.record, ctx.graph
     cond = cert.condition
-    if graph.partition_of_unity is None or len(graph.agents) < 2:
-        return
-    # **W171.** A single-valued-flux or substructuring assembly is not a blend,
-    # so the commutator identity has no chi to be taken with -- but that is a
-    # statement about a REGION, and this returned on the graph's single axis.
-    # On a union graph with a tiling in it the blend is real and this said
-    # nothing. It now proceeds when ANY region is overlapping, and names which.
-    overlapping_r12 = ctx.regions_on(Decomposition.OVERLAPPING)
-    if not overlapping_r12:
-        rec.admit(
-            "L6", "R12",
-            "no region of this graph is decomposed along an OVERLAPPING axis, so "
-            "the assembly is not a blend and L6/C2's commutator identity has no "
-            "chi to be taken with. That is a different conservation question and "
-            "this rule is not it. Axes present: " + str(ctx.axis_summary()),
-            subject="<assembly>", region_axes=ctx.axis_summary(),
-        )
-        return
-    constraint = _declared_constraint(graph)
-    if constraint is None:
-        return
-    enforcing = _enforcing_agents(graph, constraint)
-    proj = graph.assembly_projection
+    if region is not None:
+        # **W189.** ONE region's partition: the blend is this region's, the
+        # constraint is this region's family's, and the agents that can break it
+        # are this region's agents -- the commutator identity is a sum over the
+        # partition's own subdomains, which is W161's reason made structural
+        # rather than filtered for.
+        if region not in ctx.regions_on(Decomposition.OVERLAPPING):
+            rec.admit(
+                "L6", "R12",
+                "this region's partition is not blended in the scheme as compiled: "
+                "R2's lift poses the whole interface problem in the non-overlapping "
+                "view, so L6/C2's commutator identity has no chi to be taken with "
+                "here. That is a different conservation question and this rule is "
+                "not it. Axes present: " + str(ctx.axis_summary()),
+                subject="<assembly>", region_axes=ctx.axis_summary(),
+            )
+            return
+        constraint = _constrained_family(region)
+        if constraint is None:
+            rec.admit(
+                "L6", "R12",
+                "this region's governing_family carries no pointwise linear "
+                "constraint the compiler recognizes (CONSTRAINED_FAMILIES), so no "
+                "agent of it returns a field the blend could break and L6/C2 has "
+                "no subject here. Stated rather than passed over: on the "
+                "graph-scoped path this case returns in silence",
+                subject="<assembly>",
+            )
+            return
+        members = set(graph.regions().get(region, ()))
+        enforcing = [a for a in _enforcing_agents(graph, constraint)
+                     if a in members]
+        proj = graph.assembly_projection_for(region)
+    else:
+        if graph.partition_of_unity is None or len(graph.agents) < 2:
+            return
+        # **W171.** A single-valued-flux or substructuring assembly is not a blend,
+        # so the commutator identity has no chi to be taken with -- but that is a
+        # statement about a REGION, and this returned on the graph's single axis.
+        # On a union graph with a tiling in it the blend is real and this said
+        # nothing. It now proceeds when ANY region is overlapping, and names which.
+        overlapping_r12 = ctx.regions_on(Decomposition.OVERLAPPING)
+        if not overlapping_r12:
+            rec.admit(
+                "L6", "R12",
+                "no region of this graph is decomposed along an OVERLAPPING axis, so "
+                "the assembly is not a blend and L6/C2's commutator identity has no "
+                "chi to be taken with. That is a different conservation question and "
+                "this rule is not it. Axes present: " + str(ctx.axis_summary()),
+                subject="<assembly>", region_axes=ctx.axis_summary(),
+            )
+            return
+        constraint = _declared_constraint(graph)
+        if constraint is None:
+            return
+        enforcing = _enforcing_agents(graph, constraint)
+        proj = graph.assembly_projection
     if cond is not None and cond.constraint is None:
         cond.constraint = constraint
 
@@ -3352,7 +3778,8 @@ def _r12_conservative_assembly(ctx: _Context, cert) -> None:
     )
 
 
-def _w49_sigma_branch(ctx: _Context, cond) -> None:
+def _w49_sigma_branch(ctx: _Context, cond, region: str | None = None,
+                      n_regions: int = 1) -> None:
     """W49: which branch of the master bound's sigma term this graph is on.
 
     `master-error-bound` section 4 routes the transmission error through an
@@ -3362,13 +3789,30 @@ def _w49_sigma_branch(ctx: _Context, cond) -> None:
     it overestimates by 4.6e7. Section 4.1 now carries the overlapping form,
     ``sigma <= C_mu * Pi * ||d_lambda||``, and ``Pi`` is a property of the
     partition of unity, so it is emitted from here.
+
+    **W189.** With ``region`` set, ``cond`` is that region's own certificate, so
+    ``Pi`` is that region's.  ``C_mu`` is not: `MeasuredConstants` is one record
+    per graph, and when ``n_regions`` overlapping regions each carry a partition
+    the record cannot say which one's expert and scheme the constant belongs to,
+    so quoting it is W190 rather than a bound.
     """
+    overlapping_w49 = ctx.regions_on(Decomposition.OVERLAPPING)
+    if region is not None and region not in overlapping_w49:
+        ctx.record.admit(
+            "L6", "W49",
+            "this region's partition is not blended in the scheme as compiled -- "
+            "R2's lift poses the whole interface problem in the non-overlapping "
+            "view -- so sigma is on master-error-bound section 4's substructuring "
+            "branch for it rather than on 4.1's product form. Axes present: "
+            + str(ctx.axis_summary()),
+            subject="<assembly>", quantity="sigma", region_axes=ctx.axis_summary(),
+        )
+        return
     # **W171.** Which branch of sigma a graph is on is a property of the REGION,
     # and this returned on the graph's single axis having emitted nothing -- so a
     # union graph with an overlapping region got neither branch's sigma. It now
     # fires when any region is overlapping and names them; the substructuring
     # regions are on section 4's branch and `_cut_policy` speaks for those.
-    overlapping_w49 = ctx.regions_on(Decomposition.OVERLAPPING)
     if not overlapping_w49:
         ctx.record.admit(
             "L6", "W49",
@@ -3412,6 +3856,21 @@ def _w49_sigma_branch(ctx: _Context, cond) -> None:
             "another expert -- W55 is open precisely because one solver is one "
             "solver. Declare C_mu on MeasuredConstants",
             subject="<assembly>", quantity="sigma",
+        )
+        return
+    if region is not None and n_regions > 1:
+        # **W190.** One C_mu per graph, and several regions each with a Pi.
+        ctx.record.decertify(
+            "L6", "W49/W190",
+            f"Pi = {pi:.4g} is measured for this region, and the graph declares ONE "
+            f"C_mu = {c_mu} while {n_regions} overlapping regions carry partitions. "
+            "MeasuredConstants has no region -- its provenance is a probe state, a "
+            "scheme and a depth -- so the record cannot say which region's expert "
+            "and scheme the constant was measured on, and W55 is open precisely "
+            "because one solver's C_mu is not another's. Quoting it for every "
+            "region is W56's defect with the guard bypassed",
+            subject="<assembly>", quantity="sigma", contaminated_weight=pi,
+            C_mu=c_mu, regions_with_partitions=n_regions,
         )
         return
     ctx.record.admit(

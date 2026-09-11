@@ -471,12 +471,18 @@ class CaseGraph:
     agents: list[Agent]
     connections: list[Connection]
     decomposition: Decomposition = Decomposition.OVERLAPPING
-    overlap: float | None = None                  # delta, for the overlapping case
+    #: delta, for the overlapping case.  **W189:** a ``dict`` keyed by REGION
+    #: files one overlap per overlapping region -- see `per_region` -- and a
+    #: bare number is the graph's own, which is what every graph written before
+    #: 2026-09-10 meant and still means.
+    overlap: float | dict[str, float] | None = None
     #: The same overlap in CELLS. The halo rule (R10) compares it against the
     #: agents' domain of dependence, which is counted in cells, and a physical
     #: delta cannot be converted without the agents' grid spacing -- so it is
     #: declared rather than derived, and the check decertifies when it is absent.
-    overlap_cells: int | None = None
+    #: **W189:** per region as a ``dict``, exactly like ``overlap``; the halo
+    #: rule then checks each overlapping region against its own count.
+    overlap_cells: int | dict[str, int] | None = None
     global_fields: list[GlobalField] = field(default_factory=list)
     topology_events: list[DeclaredTopologyEvent] = field(default_factory=list)
     #: Declared vertices where 3+ subdomains meet.
@@ -508,7 +514,22 @@ class CaseGraph:
     #: One field rather than two, because the two halves are one step and a graph
     #: that could declare them apart could declare a projection its assembly does
     #: not apply.
-    partition_of_unity: Any | None = None         # see assembly.PartitionOfUnity
+    #:
+    #: **W189, 2026-09-10: one per OVERLAPPING REGION, or one for the graph.**  A
+    #: ``dict`` keyed by region -- a governing_family with more than one agent,
+    #: exactly `regions()`' keys -- files each partition under the region whose
+    #: cover it weights; a bare object is the graph's own, which is what every
+    #: graph written before this meant and still means.  The shape was censused
+    #: over all forty constructible graphs before it was chosen: every one of the
+    #: 22 that carries a partition has exactly ONE overlapping region, and the
+    #: one graph with two overlapping regions (`rocket`) carries none -- so the
+    #: map is sparse, and a non-overlapping or uncut region has nothing to file.
+    #: The key is DECLARED rather than derived, because neither direction
+    #: derives: in 12 of the 22 the region also holds agents the partition does
+    #: not blend (a suspension, rotor disks -- lumped closures of the fluid's own
+    #: family), and in 2 the partition's subdomains are not agent ids at all
+    #: (`channel_ns`, W191).  `region_declaration_report` checks what it can.
+    partition_of_unity: Any | dict[str, Any] | None = None   # see assembly.PartitionOfUnity
     #: W45: measured bound constants, with provenance. Unset fields stay unmeasured.
     measured: MeasuredConstants | None = None
     note: str = ""
@@ -553,7 +574,20 @@ class CaseGraph:
         Duck-typed off `partition_of_unity` rather than a second field, so a
         graph cannot declare a projection its assembly does not apply.  L6/C2
         and R12 ask this one question and this is where they ask it.
+
+        **W189.**  A graph that files its partitions per region has one
+        projection per region and no single answer, so this RAISES rather than
+        returning None -- which would read as "no projection declared" on a
+        graph whose regions may each declare one.  Ask `assembly_projection_for`.
         """
+        if isinstance(self.partition_of_unity, dict):
+            raise GraphError(
+                f"case {self.name!r} files its partitions of unity per region "
+                f"({sorted(self.partition_of_unity)}), so it has one assembly "
+                "projection per region and no graph-level one: ask "
+                "assembly_projection_for(region). Returning None here would say "
+                "no projection is declared on a graph whose regions may each "
+                "declare one (W189)")
         return getattr(self.partition_of_unity, "projection", None)
 
     def connections_of(self, agent_id: str) -> list[Connection]:
@@ -686,6 +720,139 @@ class CaseGraph:
         and what `decomposition` as a single field could not express.
         """
         return frozenset(self.region_axes().values())
+
+    # -- W189: the overlapping mechanism, per REGION rather than per graph --
+
+    #: The three fields that may be declared per region.  Not a dataclass field
+    #: (it carries no annotation): a constant of the schema, which the compiler
+    #: and `emit` read rather than restating.
+    PER_REGION_FIELDS = ("partition_of_unity", "overlap", "overlap_cells")
+
+    def per_region(self, name: str) -> bool:
+        """Is ``name`` -- one of `PER_REGION_FIELDS` -- declared per region?
+
+        **W189.**  A ``dict`` is the per-region form, keyed by region; anything
+        else, ``None`` included, is the graph-scoped form every graph written
+        before W189 uses.  Asking about any other field raises, because a silent
+        ``False`` would read as "graph-scoped" for a field that has no per-region
+        form at all.
+        """
+        if name not in self.PER_REGION_FIELDS:
+            raise GraphError(
+                f"{name!r} has no per-region form; the fields that do are "
+                f"{self.PER_REGION_FIELDS} (W189)")
+        return isinstance(getattr(self, name), dict)
+
+    def declares_per_region(self) -> bool:
+        """Does this graph declare ANY of the three per region?
+
+        The switch every region-scoped rule reads.  A graph that declares none
+        takes exactly the path it always took, which is what keeps every
+        artifact written before W189 byte-identical -- and that is measured, over
+        forty graphs, not assumed.
+        """
+        return any(self.per_region(n) for n in self.PER_REGION_FIELDS)
+
+    def region_value(self, name: str, region: str) -> Any:
+        """The value of ``name`` filed under ``region``, or None.
+
+        ``None`` for the graph-scoped form too, deliberately.  A partition the
+        graph declares as its own is not ANY region's, and Tier 44's union is the
+        case that shows why: its one partition covered only the tiling and had to
+        be declared as the whole graph's.  Answering a region query with it
+        would be guessing which region it was meant for.
+        """
+        value = getattr(self, name)
+        return value.get(region) if isinstance(value, dict) else None
+
+    def partition_for(self, region: str) -> Any:
+        """The partition of unity filed under ``region`` (W189)."""
+        return self.region_value("partition_of_unity", region)
+
+    def overlap_for(self, region: str) -> Any:
+        """The overlap filed under ``region`` (W189)."""
+        return self.region_value("overlap", region)
+
+    def overlap_cells_for(self, region: str) -> Any:
+        """The overlap-cell count filed under ``region`` (W189)."""
+        return self.region_value("overlap_cells", region)
+
+    def assembly_projection_for(self, region: str) -> Any:
+        """The constraint projection the partition filed under ``region`` declares."""
+        return getattr(self.partition_for(region), "projection", None)
+
+    def region_declaration_report(self) -> dict[str, dict[str, dict[str, Any]]]:
+        """What every per-region key names, reported and never resolved. **W189.**
+
+        For each field declared per region and each key in it: whether the key
+        is an OVERLAPPING cut region of this graph and, if not, which of three
+        ways it is not -- no agent of that family (``no-such-region``), a family
+        with one agent, which owns its whole domain so nothing was cut
+        (``not-a-cut-region``), or a region whose own seams declare it
+        NON-overlapping, where a substructuring cut shares no cells and there is
+        no cover to weight (``non-overlapping-region``).  The axis read is the
+        DECLARED one, `region_axes`, and not R2's lift: a partition is certified
+        on its declaration whatever view the interface problem is posed in.
+
+        A partition also carries its subdomain NAMES, and they are read against
+        the agents, which is decidable only where they ARE agent ids:
+
+          * ``foreign``   -- subdomains that are agents of ANOTHER family, whose
+                             state the blend would weight into this region;
+          * ``unmatched`` -- subdomains that name no agent, so whether the
+                             partition covers this region cannot be decided;
+          * ``unblended`` -- agents of the region the partition does not blend.
+                             Disclosure, not a defect: censused before this was
+                             written, 12 of the 22 partitions in the package leave
+                             out a lumped closure of the fluid's own family (a
+                             suspension, rotor disks) that W114's family proxy
+                             puts in the region.
+
+        ``unmatched`` was not hypothetical when this was written: `channel_ns`'s
+        partition names `window_ns`'s windows (W00..W11) while its agents are
+        C00..C11.  Nothing read the names, so nothing noticed (W191).
+
+        A graph that declares nothing per region returns an empty dict.
+        """
+        family_of = {a.agent_id: a.capabilities.governing_family or ""
+                     for a in self.agents}
+        counts: dict[str, int] = {}
+        for fam in family_of.values():
+            counts[fam] = counts.get(fam, 0) + 1
+        regions = self.regions()
+        axes = self.region_axes()
+        out: dict[str, dict[str, dict[str, Any]]] = {}
+        for name in self.PER_REGION_FIELDS:
+            value = getattr(self, name)
+            if not isinstance(value, dict):
+                continue
+            rows: dict[str, dict[str, Any]] = {}
+            for key, item in value.items():
+                row: dict[str, Any] = {
+                    "region_agents": list(regions.get(key, [])),
+                    "axis": axes[key].value if key in axes else None,
+                }
+                n = counts.get(key, 0)
+                if n == 0:
+                    row["status"] = "no-such-region"
+                elif n == 1:
+                    row["status"] = "not-a-cut-region"
+                    row["sole_agent"] = next(a for a, f in family_of.items()
+                                             if f == key)
+                elif axes.get(key) is not Decomposition.OVERLAPPING:
+                    row["status"] = "non-overlapping-region"
+                else:
+                    row["status"] = "region"
+                if name == "partition_of_unity" and hasattr(item, "subdomains"):
+                    subs = [str(s) for s in item.subdomains()]
+                    row["subdomains"] = subs
+                    row["foreign"] = {s: family_of[s] for s in subs
+                                      if s in family_of and family_of[s] != key}
+                    row["unmatched"] = sorted(s for s in subs if s not in family_of)
+                    row["unblended"] = sorted(set(regions.get(key, [])) - set(subs))
+                rows[str(key)] = row
+            out[name] = rows
+        return out
 
     # -- structural properties the compiler gates on -----------------------
     # -- structural properties the compiler gates on -----------------------

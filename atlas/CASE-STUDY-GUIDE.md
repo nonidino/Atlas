@@ -352,6 +352,20 @@ one is emitted:
   overlapping branch. Undeclared, that bound decertifies rather than assuming your
   assembly is clean.
 
+**A graph with more than one region files the partition under the region it
+covers (W189).** `partition_of_unity`, `overlap` and `overlap_cells` each also
+take a `dict` keyed by REGION — a `governing_family` with more than one agent in
+the graph — so a fluid tiling beside a coolant circuit declares
+`partition_of_unity={"incompressible-navier-stokes-2d": tiling_pou}` and the
+circuit, whose cut is non-overlapping, declares nothing. A bare object still
+means the graph's own, exactly as before. `L2/W189/regions` refuses a key that
+names no cut region, a sole agent's family or a NON-overlapping region, and a
+partition whose subdomains are another region's agents; it decertifies a
+partition whose subdomain names are not agent ids, because then whether it
+covers the region cannot be decided. **Name each subdomain after the agent whose
+local solve it weights.** Every assembly and halo decision on such a graph names
+the region it is about.
+
 **The accuracy is not the admissibility, and both matter.** A convex partition that
 gives full weight right up to each window's artificial edge is perfectly admissible
 and measurably bad: on the four-window tiling it costs `tau = 5.0e-5` against

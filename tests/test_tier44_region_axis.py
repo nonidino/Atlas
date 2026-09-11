@@ -204,14 +204,22 @@ def test_W171_the_cut_policy_emits_BOTH_branches_on_a_union(w171):
 # --------------------------------------------------------------------------
 
 
-def test_W171_part_2_is_the_partition_of_unity_and_it_is_still_graph_global(w171):
-    """Two rules stay silent WITHOUT a partition -- and not because of the axis.
+def test_W171_part_2_was_the_partition_of_unity_and_W189_files_it_per_region(w171, union):
+    """**Closed in Tier 45 (W189). The measurement is kept and the claim moved on.**
 
+    *The diagnosis, which stands as a measurement of Tier 44's tree:* two rules
+    stayed silent WITHOUT a partition, and not because of the axis --
     `_r12_conservative_assembly` and `_w49_sigma_branch` are both gated on
-    `graph.partition_of_unity` before they reach any axis, and that object is
-    still one per graph. So a union whose tiling has a partition must declare it
-    as the WHOLE graph's. That is Tier 41's part 2, and this is the measurement
-    that says the remaining obstruction is the partition rather than the axis.
+    `graph.partition_of_unity` before they reach any axis, and that object was one
+    per graph, so a union whose tiling had a partition had to declare it as the
+    WHOLE graph's.  That is Tier 41's part 2, and the numbers below are Tier 44's.
+
+    *What changed:* the partition, the overlap and the overlap-cell count can each
+    be filed under a REGION.  The graph-scoped form still means what it meant --
+    so this fixture, which declares its tiling's partition as the graph's, still
+    compiles exactly as Tier 44 measured it (the byte-identity control in
+    `test_tier45_region_assembly.py` compiles it and compares every byte) -- and
+    the per-region form is what the fixture could not say.
     """
     without = w171["union_compile"]["coverage"]["silent_rules"]
     with_pou = w171["union_with_pou_compile"]["coverage"]["silent_rules"]
@@ -220,17 +228,42 @@ def test_W171_part_2_is_the_partition_of_unity_and_it_is_still_graph_global(w171
     # the halo rule is NOT gated on the partition, which is why it speaks in both
     assert w171["union_compile"]["coverage"]["rules"]["R10/halo"]
 
+    # the closure: the fixture's single partition is the GRAPH's and is not read
+    # as any region's -- and the same object filed under the tiling's region is
+    _, with_pou_graph = union
+    assert not with_pou_graph.per_region("partition_of_unity")
+    fluid = "incompressible-navier-stokes-2d"
+    assert with_pou_graph.partition_for(fluid) is None
+    import copy
 
-def test_W171_the_graph_global_fields_that_remain_are_named():
-    """Part 2's subjects, asserted so the boundary cannot quietly move."""
-    from atlas.graph import CaseGraph
+    scoped = copy.copy(with_pou_graph)
+    scoped.partition_of_unity = {fluid: with_pou_graph.partition_of_unity}
+    assert scoped.per_region("partition_of_unity")
+    assert scoped.partition_for(fluid) is with_pou_graph.partition_of_unity
 
-    for name in ("partition_of_unity", "overlap", "overlap_cells"):
+
+def test_W171_the_fields_that_were_graph_global_now_have_a_per_region_form():
+    """Part 2's subjects, asserted so the boundary cannot quietly move -- again.
+
+    Tier 44 pinned that these three were still one per graph.  Tier 45 gives each
+    a per-region form, and the control is that nothing ELSE grew one: asking for
+    the per-region form of any other field raises rather than answering False.
+    """
+    from atlas.graph import CaseGraph, GraphError
+
+    assert CaseGraph.PER_REGION_FIELDS == ("partition_of_unity", "overlap",
+                                           "overlap_cells")
+    for name in CaseGraph.PER_REGION_FIELDS:
         assert name in CaseGraph.__dataclass_fields__, name
-    # and the axis is no longer among them: it is per-seam and per-region
+    # and the axis is per-seam and per-region, as Tier 44 left it
     assert hasattr(CaseGraph, "region_axes")
     assert hasattr(CaseGraph, "seam_axis")
     assert hasattr(CaseGraph, "agent_axis")
+    from atlas.cases import cooling_loop as CL
+
+    g = CL.build()[0]
+    with pytest.raises(GraphError):
+        g.per_region("cross_points")
 
 
 # --------------------------------------------------------------------------

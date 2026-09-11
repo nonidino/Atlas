@@ -1618,3 +1618,46 @@ Two of three populated cells ambiguous. The repair is a declaration — `Connect
 - **Part 2 (W189) was not built** — `partition_of_unity`, `overlap` and `overlap_cells` stay graph-global, and the measurement in §6 is what says the remaining obstruction is those rather than the axis.
 - **Nothing checks `cut_axis`.** It is a label exactly as `geometrically_coincident` is, and `region_axis_conflicts` reports a region whose seams disagree rather than resolving it.
 - **W182 (rung 8's module), W183–W187, W175, W178** untouched. Nothing downloaded, no machine rented.
+
+## Tier 45 — W189 is built, and the partition of unity is one per OVERLAPPING region
+
+**[[per-region-assembly]], `atlas/graph.py`, `atlas/compiler.py`, `atlas/verdict.py`, `atlas/assembly.py`, `atlas/scheme.py`, `atlas/emit.py`, `atlas/solve.py`, `scripts/w189_artifact_control.py`, `scripts/w189_region_assembly.py`, `tests/test_tier45_region_assembly.py`, `out/w189/`. 2026-09-10.**
+
+W171's part 2, taken **before** W172 although [[case-study-ladder-to-f1]] §18.6 listed them the other way round: W172's honest version needs a union carrying a **real** tiling beside the circuits, and a real tiling's partition could not be declared as anything but the whole graph's. The shape was **counted before it was built** — W188's instruction, applied — and the counting chose it.
+
+| # | Gap | Task | Status |
+|---|---|---|---|
+| **W189** | `atlas/graph.py` `CaseGraph.partition_of_unity`/`overlap`/`overlap_cells`, `per_region`, `region_declaration_report`; `atlas/compiler.py` `_region_declarations`, `_l6_assembly_by_region`, `_halo_rule_for`, `_cut_policy_region`, R12 and W49 per region; `atlas/verdict.py` `DecisionRecord.rescope` | **The partition, the overlap and the overlap-cell count are each declared per REGION, and every rule whose subject is a region's cover names it.** Done on its own done-when | **`done`, 2026-09-10.** Each field takes `{region: value}`; a single object still means the graph's and is **not** read as any region's. **The shape is one per OVERLAPPING region**, from a census of forty constructible graphs taken before any code changed: all 22 partition-carrying graphs have exactly one overlapping region, and the one graph with two (`rocket`) carries none. The key is **declared**, because neither direction derives — in 12 of 22 the family region holds lumped closures the partition does not blend, and in 2 the subdomain names are no agent's. Every scoped rule runs its unchanged body per region and `rescope`s its decisions, so a region-scoped decision cannot drift from the graph-scoped one it is. `L2/W189/regions` refuses a key naming no cut region, a sole agent's family or a non-overlapping region, and a partition that blends another region's agent; it decertifies subdomain names that are no agent's. E6 is stamped once by severity, because `EnvelopeStamp.set` lets a later `unchecked` overwrite `holds`. **The control is the claim**: forty artifacts byte-identical before and after, against a repeat floor of forty of forty under two hash seeds, eleven of them recompiled live by the test on every run. On `window_ns`'s real tiling beside both circuits — fourteen agents, three regions — every assembly and halo decision names the fluid region and none a circuit; the graph-scoped control names no region at all; `window_ns` declared both ways reaches identical rules; and two regions each get every rule, by name |
+| **W172** | the integration graph | **NOT started.** Both its prerequisites are now met — the axis (W171) and the overlapping mechanism (W189) are per region | `open`, unchanged, **and it has a union to start from**: `scripts/w189_region_assembly.py`'s `union_graph` carries a real tiling and both circuits. Its input from this tier, measured and not a count: of the union's graph-global fields the parts **disagree** on three (`decomposition`, `macro_dt` at $0.05$, $0.05$ and $0.2$, `measured`) and two needed **scoping** (`global_fields`, `cross_points`); its one refusal, `L7/R9`, is `powertrain`'s clock; and joining the graphs re-derived one agent's region (W192). **The caveat stands exactly as written**: the zero-per-pair count is evidence about the *algebra* and none about the *integration cost* |
+| **W188** | the habit | *(annotated)* **Applied before building, for the first time.** The census priced both candidate derivations of a partition's region — from the region, and from the partition's subdomain names — and both failed on the count (12 of 22 and 2 of 22) before either was written, where Tier 40's derivation failed two tiers after it was proposed | `open`: the rider is still not written into the two-graph bar's own statement |
+| **W190** | `atlas/graph.py` `MeasuredConstants` | *(opened)* **Measured constants are one record per graph, and their provenance has no region.** A probe state, a scheme and a depth say nothing about which region's expert and cut a constant was measured on, so on a graph with two overlapping regions each carrying a partition a single $C_\mu$ or `cut_defect_bound` belongs to neither | `open`, **medium**. Guarded now: `L6/W49/W190`, `L2/C2/W190` and `L2/C3/W190` decertify rather than quote one constant for two or more regions — fired on `rocket` with two synthetic partitions, silent on the same graph with no constants declared. `L`, $\tau$ and $\sigma$ are still graph-level and unguarded. Done when constants can be filed per region with the discipline the partition now has |
+| **W191** | `atlas/cases/channel_ns.py` | *(opened)* **`channel_ns`'s partition of unity names `window_ns`'s windows.** Its subdomains are `W00`…`W11` and its agents `C00`…`C11`. Latent — nothing reads subdomain names on a graph-scoped partition — and found only because the W189 census read them | `open`, **small**. Done when the partition names its own agents; that changes `channel_ns`'s artifact, so it must be recorded as the one intended difference against a fresh control rather than slipped past it |
+| **W192** | `CaseGraph.regions`, W114's proxy | *(opened)* **Joining graphs re-derives an agent's region.** `powertrain`'s `ROTOR` declares the fluid's governing family and is the sole, uncut agent of it in `powertrain`; in the union beside `window_ns` the same agent is cut and in the fluid region with `W00`…`W11`. No verdict moves on this graph, because the rotor has no stencil and no elliptic part | `open`, **medium**, and W172's to price: a region is a property of the graph and not of the agent, so adding a subsystem can change a rule's premise for agents it does not touch. **[AI Inference]:** an agent declaring an embedded elliptic part pulled into a region this way would move `L2/R10` from its `sole-family` admission to a refusal, with nothing about the agent changed. Relates to W114 and W184 |
+| **W193** | `CaseGraph.cross_points`, `compiler._l2_decomposition`'s `_cp_axis` | *(opened)* **A named cross-point has no region.** `cross_points` is a tuple of labels; a vertex named `"centre"` contains no agents, so `_cp_axis` falls back to the graph's one remaining axis field. The same union with `decomposition=NON_OVERLAPPING` — every seam's own `cut_axis` unchanged — is refused at `L2/I2/G1` for the tiling's own cross-point | `open`, **small to medium**. Done when a declared cross-point names its agents or its region |
+
+### The census that chose the shape
+
+| forty graphs, twenty-two partitions | count |
+|---|---|
+| partition-carrying graphs with exactly one overlapping region | **22 of 22** |
+| graphs with two overlapping regions, and partitions among them | 1, and **0** |
+| subdomains exactly one region's agents | 8 |
+| subdomains a strict subset — `SUSP` or rotor disks unblended | **12** |
+| subdomains naming no agent — `channel_ns` | **2** |
+
+### The union, per region and graph-scoped
+
+| rule | per region | graph-scoped |
+|---|---|---|
+| `L2/R10/halo`, `L2/C2`, `L6/L6/C1`, `L6/R12`, `L6/W49` | each names the fluid region | each names no region |
+| `L2/C3/W57` | twice, naming each circuit | once, `<graph>` |
+| `L2/W189/regions` | one admission, listing the fluid region's declarations | — |
+| verdict | `refuse`, `L7/R9` only — `powertrain`'s clock | the same |
+
+### What this tier did NOT do, named
+
+- **W172 was not started.** The union is disjoint; no joining seam exists and the $O(K)$ count was not re-run.
+- **Rung 9's graph was not built** — fourteen agents and three regions against rung 9's $\sim 18$ across five families with three joining seams.
+- **W190, W191, W192 and W193 were opened and not fixed.** On a graph-scoped union the halo rule's W136 clause still misdescribes other regions' cut agents as sole agents; the per-region path does not, and the legacy sentence stays byte-identical by the control.
+- **No run rolls a per-region graph forward**; `solve.py`'s per-region assembly branch is exercised by nothing.
+- **W182, W183–W187, W175, W178** untouched. Nothing downloaded — Poseidon-T from the local cache with the hub offline — no machine rented, NeuberNet not loaded.

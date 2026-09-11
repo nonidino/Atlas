@@ -814,3 +814,59 @@ Rung 9 is not built and is not close. What has changed is that the thing that ma
 - Then W184, W183's G2, W95, W188's rider, W185, W187, W178, W175.
 
 **W172, W189 and rung 8's module are each a tier.** Tier 44 did §17.5's second item and named the rest as not done.
+
+---
+
+# 19. Rung 9's schema is complete, and the partition is one per overlapping region (2026-09-10)
+
+Full record: [[per-region-assembly]] and [[gap-worklist]] Tier 45.
+
+**§18.6's second item was taken ahead of its first**, and the reason is concrete: W172's honest version needs a union carrying a **real** tiling beside the circuits, and until this tier a real tiling's partition of unity could only be declared as the whole graph's. W189 is closed; **W172 was not started**, and §19.4 says so.
+
+## 19.1 The shape was counted before it was built
+
+The row's open question was whether one partition per region is even the right object. **Counted over all forty constructible graphs before any code changed**: every one of the 22 that carries a partition has exactly one overlapping region, and the only graph with two overlapping regions carries none. So the object is **one partition per OVERLAPPING region** — a sparse map, which is the vehicle's shape — and its key is **declared**, because neither derivation survives the count: in 12 of the 22 the family region holds lumped closures the partition does not blend, and in 2 the partition's subdomain names are no agent's. Both derivations failed on the census before either was built, where Tier 40's failed two tiers after it was proposed — [[gap-worklist]] W188's instruction, working.
+
+## 19.2 The control, and the union
+
+**Forty artifacts byte-identical before and after**, against a repeat floor of forty of forty under two hash seeds. Every scoped rule runs its unchanged body per region and re-issues its decisions through one mechanism, `DecisionRecord.rescope`, so a region-scoped decision is the graph-scoped decision with its region named — and `window_ns` declared both ways reaches the identical rule set.
+
+On `window_ns`'s real four-window tiling beside **both** circuits — fourteen agents, three regions — every assembly and halo decision names the fluid region and **none names a circuit**, the substructuring criterion names each circuit, and the same union declared the old way reaches the same verdict and **names no region at all**. Given two overlapping regions, `rocket` gets every rule twice, once per region.
+
+## 19.3 What moves on this page
+
+**§18.3's rung-9 row.** *Unblocked on the schema; the integration graph still unbuilt* becomes **the schema is complete; the integration graph still unbuilt**. §14.1 and §18.3 stay as written and this is the count now.
+
+## 19.4 What this tier did not do
+
+**W172 was not started.** The union is **disjoint**, so the $O(K)$ count was not re-run across joining seams and the caveat stands exactly as written. What the tier produced for W172 is **input**, measured rather than counted: of the union's graph-global fields the parts disagree on three — `decomposition`, `macro_dt` and `measured` — and two had to be scoped; its one refusal is `powertrain`'s clock and not the assembly; and **one agent's region was re-derived by the union itself** — `powertrain`'s rotor, sole in its own graph and cut in the fluid region beside the tiling (**W192**).
+
+## 19.5 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W172** — the seams that would join the subsystems do not exist | rung 9's $O(K)$ integration cost | `open`; **both prerequisites met**, and a real-tiling union exists to start from |
+| **W192** — joining graphs re-derives an agent's region | how W172 counts what adding a subsystem changes | `open`, medium, **new** |
+| **W190** — measured constants are one record per graph | any bound on a graph with two overlapping regions | `open`, medium, **new**; guarded where it would be quoted |
+| **W193** — a named cross-point has no region | union verdicts on a tiling's cross-points | `open`, small to medium, **new** |
+| **W182** — an inequality seam compiles, and nothing can declare otherwise | rung 8's first module | `open`, medium |
+| **W183** — rung 3's gate has no subject | marking rung 3 complete | `open` |
+| **W184** — a port cannot say what kind of boundary it is | rung 3's G2, and W192's cousin one object down | `open`, medium |
+| **W186** — R10 has no subject in a two-agent multi-family graph | the campaign's reading of its own blocker | `open`, a re-scoping |
+| **W95** — no same-class reference pair | every learned substitution verdict | `open` |
+| **W165** — rung 8 itself | rung 8's gate | `open`, large |
+| **W191**, **W188**, **W187**, **W185**, **W181**, **W178**, **W175** | how this vault reasons, one mislabelled partition, and attribution | `open`, small to medium |
+
+**Closed off it**: **W189**, the rest of rung 9's schema.
+
+## 19.6 The next step
+
+**Not started, and the choice is the user's.** In line:
+
+- **W172** — build the three joining seams on the union `scripts/w189_region_assembly.py` already constructs, and re-run the count across them at more than one family count. It is still the one row whose answer changes what rung 9 costs, and it now has W192 to count with it.
+- **W186's re-census**, cheap, and it changes how the substitution campaign reads its own nine tiers.
+- **W182**, rung 8's first module.
+- **W191** and **W193**, each small; W191 moves one artifact on purpose and must say so against a fresh control.
+- Then W190, W184, W183's G2, W95, W188's rider, W185, W187, W178, W175.
+
+**W172 and rung 8's module are each a tier.** Tier 45 did §18.6's second item and named the rest as not done.

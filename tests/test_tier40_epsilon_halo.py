@@ -262,10 +262,24 @@ def test_W173_no_epsilon_branch_was_written_into_the_halo_rule():
     grows a tolerance branch, this fails, and whoever wrote it has to come back
     to `out/w173/w173.json` first.  `case-study-ladder-to-f1` section 5's own
     instruction was MEASURE BEFORE WRITING ANY RULE.
+
+    **Re-pointed at Tier 45 (W189); both assertions verbatim.**  The halo rule's
+    body moved from `_halo_rule` into `_halo_rule_for`, which a per-region pass
+    runs once per region, and this test FAILED on the move: `probe.support_reach`
+    was no longer in `_halo_rule`'s own source.  That failure was the test
+    working -- and its first assertion, *no tolerance token*, had meanwhile become
+    vacuous on the husk left behind, which is the worse half of it.  So the
+    subject is now the rule where it lives, both functions, with two anchors: the
+    subject really holds the requirement (``required_halo()``), and `_halo_rule`
+    still delegates to `_halo_rule_for`.  A future move fails here again instead
+    of passing emptily.
     """
     from atlas import compiler
 
-    src = inspect.getsource(compiler._halo_rule)
+    head = inspect.getsource(compiler._halo_rule)
+    assert "_halo_rule_for(" in head, "the halo rule's body moved again: re-point this test"
+    src = head + inspect.getsource(compiler._halo_rule_for)
+    assert "required_halo()" in src, "the subject no longer holds the requirement"
     for token in ("eps_tol", "epsilon_halo", "eps_halo", "tolerance_halo"):
         assert token not in src, f"_halo_rule grew {token}: re-read out/w173"
     # and the compiler still names the probe rather than a threshold

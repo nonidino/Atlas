@@ -37,6 +37,53 @@ class EmitRefused(RuntimeError):
     """A run artifact that cannot carry a stamp is not an artifact."""
 
 
+def _chi_shape(pou: Any) -> str | None:
+    """chi's kind and its ramp, as the harness names them (W54)."""
+    if pou is None:
+        return None
+    chi = getattr(pou, "kind", "partition-of-unity")
+    ramp = getattr(pou, "ramp_cells", None)
+    if ramp is not None:
+        chi = f"{chi}, ramp {ramp} cells"
+    return chi
+
+
+def _projection_text(pou: Any) -> str:
+    """The assembly's constraint projection, as the harness names it (W100).
+
+    Derived from the assembly the graph declares, so a run that applied the
+    projection cannot emit a defect that says it did not, and a run that did not
+    cannot emit one that says it did.  One function for the graph-scoped and the
+    per-region paths (W189), so the two cannot come to spell it differently.
+    """
+    proj = getattr(pou, "projection", None)
+    return ("none" if proj is None else
+            f"{proj.constraint} projection, {proj.scope}, {proj.stage}, "
+            f"{proj.cadence}x per exchange")
+
+
+def _agent_harness(graph: Any) -> dict[str, Any]:
+    """The two harness parameters read off the AGENTS: cadence and elliptic placement."""
+    placements = set()
+    for agent in getattr(graph, "agents", ()) or ():
+        caps = getattr(agent, "capabilities", None)
+        ell = getattr(caps, "elliptic_subsolve", None)
+        val = getattr(ell, "value", ell)
+        if val in ("embedded", "unknown"):
+            placements.add("agent")
+        elif val == "exposed":
+            placements.add("composition")
+    cadences = {getattr(a.capabilities, "substeps_per_macro_step", None)
+                for a in (getattr(graph, "agents", ()) or ())}
+    cadences.discard(None)
+    return {
+        "exchange_cadence": (int(max(cadences)) if cadences else None),
+        "elliptic_placement": (
+            "mixed" if len(placements) > 1
+            else (next(iter(placements)) if placements else None)),
+    }
+
+
 @dataclass(frozen=True)
 class HarnessParameters:
     """**W54, closed 2026-08-30.** What the composition layer did, beside the depth.
@@ -91,42 +138,48 @@ class HarnessParameters:
 
         Duck-typed rather than imported, to keep `emit` below `graph` in the
         dependency order -- the same reason `_jsonable` lives in `verdict`.
+
+        **W189.** A graph that files its partition of unity or its overlap-cell
+        count per REGION has no single chi shape, overlap or projection to
+        report, so those are None at the top level and each region's own are
+        under ``regions`` in ``extra``.  A graph declaring one value takes
+        exactly the path it always took, so its harness is unchanged.
         """
         pou = getattr(graph, "partition_of_unity", None)
-        chi = None
-        if pou is not None:
-            chi = getattr(pou, "kind", "partition-of-unity")
-            ramp = getattr(pou, "ramp_cells", None)
-            if ramp is not None:
-                chi = f"{chi}, ramp {ramp} cells"
-        placements = set()
-        for agent in getattr(graph, "agents", ()) or ():
-            caps = getattr(agent, "capabilities", None)
-            ell = getattr(caps, "elliptic_subsolve", None)
-            val = getattr(ell, "value", ell)
-            if val in ("embedded", "unknown"):
-                placements.add("agent")
-            elif val == "exposed":
-                placements.add("composition")
-        cadences = {getattr(a.capabilities, "substeps_per_macro_step", None)
-                    for a in (getattr(graph, "agents", ()) or ())}
-        cadences.discard(None)
-        proj = getattr(pou, "projection", None)
+        cells = getattr(graph, "overlap_cells", None)
+        if isinstance(pou, dict) or isinstance(cells, dict):
+            return cls._from_graph_by_region(graph, pou, cells)
         return cls(
-            overlap_cells=getattr(graph, "overlap_cells", None),
-            chi_shape=chi,
+            overlap_cells=cells,
+            chi_shape=_chi_shape(pou),
             exchange_dt=getattr(graph, "macro_dt", None),
-            exchange_cadence=(int(max(cadences)) if cadences else None),
-            elliptic_placement=(
-                "mixed" if len(placements) > 1
-                else (next(iter(placements)) if placements else None)),
-            # W100: derived from the assembly the graph declares, so a run that
-            # applied the projection cannot emit a defect that says it did not,
-            # and a run that did not cannot emit one that says it did.
-            assembly_projection=(
-                "none" if proj is None else
-                f"{proj.constraint} projection, {proj.scope}, {proj.stage}, "
-                f"{proj.cadence}x per exchange"),
+            assembly_projection=_projection_text(pou),
+            **_agent_harness(graph),
+        )
+
+    @classmethod
+    def _from_graph_by_region(cls, graph: Any, pou: Any, cells: Any
+                              ) -> "HarnessParameters":
+        """`from_graph` for a graph that files its assembly per region (W189)."""
+        parts = pou if isinstance(pou, dict) else {}
+        counts = cells if isinstance(cells, dict) else {}
+        regions: dict[str, Any] = {}
+        for region in list(parts) + [k for k in counts if k not in parts]:
+            part = parts.get(region)
+            regions[str(region)] = {
+                "overlap_cells": counts.get(region),
+                "chi_shape": _chi_shape(part),
+                "assembly_projection": (None if part is None
+                                        else _projection_text(part)),
+            }
+        return cls(
+            overlap_cells=None if isinstance(cells, dict) else cells,
+            chi_shape=None if isinstance(pou, dict) else _chi_shape(pou),
+            exchange_dt=getattr(graph, "macro_dt", None),
+            assembly_projection=(None if isinstance(pou, dict)
+                                 else _projection_text(pou)),
+            extra=(("regions", regions),),
+            **_agent_harness(graph),
         )
 
     def key(self) -> tuple:

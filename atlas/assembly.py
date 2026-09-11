@@ -905,6 +905,13 @@ class AssemblyCertificate:
             "which is the quantity convexity actually bounds."
         )
     )
+    #: **W189.** One certificate per OVERLAPPING region, when the graph files its
+    #: partitions per region.  The graph then has no single assembly, so the
+    #: fields above are unset, ``kind`` is ``"per-region"``, and each region's
+    #: own certificate is here under its region.  Empty for every graph that
+    #: declares one partition, and then not emitted, so those artifacts are
+    #: byte-identical to before W189.
+    regions: dict[str, "AssemblyCertificate"] = field(default_factory=dict)
 
     @property
     def identity_holds(self) -> bool | None:
@@ -929,7 +936,7 @@ class AssemblyCertificate:
     def as_dict(self) -> dict[str, Any]:
         from .verdict import _jsonable
 
-        return {
+        out = {
             "kind": self.kind,
             "pou_residual": self.pou_residual,
             "identity_holds": self.identity_holds,
@@ -944,6 +951,11 @@ class AssemblyCertificate:
             "hole": ASSEMBLY_CERTIFICATE.name,
             "note": self.note,
         }
+        if self.regions:
+            # W189. Emitted only by a graph that files its partitions per region,
+            # so every graph declaring one partition emits exactly what it did.
+            out["regions"] = {k: v.as_dict() for k, v in self.regions.items()}
+        return out
 
 
 def certify(

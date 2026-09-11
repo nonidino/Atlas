@@ -1,0 +1,1285 @@
+{
+ "rows": {
+  "rocket": {
+   "graph": "rocket-ascent-2d",
+   "declared_axis": "overlapping",
+   "n_agents": 7,
+   "regions": {
+    "reacting-compressible-flow": [
+     "a",
+     "b",
+     "e"
+    ],
+    "external-compressible-flow": [
+     "d",
+     "f",
+     "g"
+    ]
+   },
+   "region_axes": {
+    "reacting-compressible-flow": "overlapping",
+    "external-compressible-flow": "overlapping"
+   },
+   "n_overlapping_regions": 2,
+   "n_non_overlapping_regions": 0,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "rocket-staging": {
+   "graph": "rocket-ascent-2d-with-staging",
+   "declared_axis": "overlapping",
+   "n_agents": 7,
+   "regions": {
+    "reacting-compressible-flow": [
+     "a",
+     "b",
+     "e"
+    ],
+    "external-compressible-flow": [
+     "d",
+     "f",
+     "g"
+    ]
+   },
+   "region_axes": {
+    "reacting-compressible-flow": "overlapping",
+    "external-compressible-flow": "overlapping"
+   },
+   "n_overlapping_regions": 2,
+   "n_non_overlapping_regions": 0,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "wind_farm": {
+   "graph": "wind-farm-wake-2d-as-built",
+   "declared_axis": "overlapping",
+   "n_agents": 8,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "Bm",
+     "Bp",
+     "F",
+     "I",
+     "N",
+     "R1",
+     "R2",
+     "W"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "wind_farm-boundary": {
+   "graph": "wind-farm-wake-2d-boundary-capable",
+   "declared_axis": "overlapping",
+   "n_agents": 8,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "Bm",
+     "Bp",
+     "F",
+     "I",
+     "N",
+     "R1",
+     "R2",
+     "W"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "thermal_seam": {
+   "graph": "thermal-seam-as-built-entropy-native",
+   "declared_axis": "non-overlapping",
+   "n_agents": 2,
+   "regions": {},
+   "region_axes": {},
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 0,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "thermal_seam-split-matched": {
+   "graph": "thermal-seam-split-step-entropy-matched",
+   "declared_axis": "non-overlapping",
+   "n_agents": 2,
+   "regions": {},
+   "region_axes": {},
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 0,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "brake_thermal": {
+   "graph": "brake-thermal-as-built-entropy-native",
+   "declared_axis": "non-overlapping",
+   "n_agents": 2,
+   "regions": {},
+   "region_axes": {},
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 0,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "brake_thermal-split": {
+   "graph": "brake-thermal-split-step-entropy-native",
+   "declared_axis": "non-overlapping",
+   "n_agents": 2,
+   "regions": {},
+   "region_axes": {},
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 0,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "thermal_strain": {
+   "graph": "thermal-strain-surface-mech",
+   "declared_axis": "overlapping",
+   "n_agents": 2,
+   "regions": {},
+   "region_axes": {},
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.008,
+   "overlap_cells": 6,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "thermal_strain-global-field": {
+   "graph": "thermal-strain-global-field",
+   "declared_axis": "overlapping",
+   "n_agents": 2,
+   "regions": {},
+   "region_axes": {},
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.008,
+   "overlap_cells": 6,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "cooling_loop": {
+   "graph": "cooling-loop",
+   "declared_axis": "non-overlapping",
+   "n_agents": 5,
+   "regions": {
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ]
+   },
+   "region_axes": {
+    "incompressible-thermal-transport-1d": "non-overlapping"
+   },
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 1,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "cooling_loop-open": {
+   "graph": "cooling-loop-open-control",
+   "declared_axis": "non-overlapping",
+   "n_agents": 5,
+   "regions": {
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ]
+   },
+   "region_axes": {
+    "incompressible-thermal-transport-1d": "non-overlapping"
+   },
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 1,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "cooling_loop-3leg": {
+   "graph": "cooling-loop-3leg",
+   "declared_axis": "non-overlapping",
+   "n_agents": 4,
+   "regions": {
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "PASS",
+     "RAD"
+    ]
+   },
+   "region_axes": {
+    "incompressible-thermal-transport-1d": "non-overlapping"
+   },
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 1,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "powertrain": {
+   "graph": "powertrain",
+   "declared_axis": "non-overlapping",
+   "n_agents": 5,
+   "regions": {
+    "lumped-dc-circuit": [
+     "BATT",
+     "BUS",
+     "INV",
+     "MGU"
+    ]
+   },
+   "region_axes": {
+    "lumped-dc-circuit": "non-overlapping"
+   },
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 1,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "powertrain-open": {
+   "graph": "powertrain-open-control",
+   "declared_axis": "non-overlapping",
+   "n_agents": 5,
+   "regions": {
+    "lumped-dc-circuit": [
+     "BATT",
+     "BUS",
+     "INV",
+     "MGU"
+    ]
+   },
+   "region_axes": {
+    "lumped-dc-circuit": "non-overlapping"
+   },
+   "n_overlapping_regions": 0,
+   "n_non_overlapping_regions": 1,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "window_ns": {
+   "graph": "window-ns-2x2-split-step",
+   "declared_axis": "overlapping",
+   "n_agents": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": "GridPartitionOfUnity",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": "incompressible-navier-stokes-2d",
+   "that_region_axis": "overlapping"
+  },
+  "window_ns-as-built": {
+   "graph": "window-ns-2x2-as-built",
+   "declared_axis": "overlapping",
+   "n_agents": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": "GridPartitionOfUnity",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": "incompressible-navier-stokes-2d",
+   "that_region_axis": "overlapping"
+  },
+  "channel_ns": {
+   "graph": "channel-ns-2x2-split-step",
+   "declared_axis": "overlapping",
+   "n_agents": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "C00",
+     "C01",
+     "C10",
+     "C11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": "GridPartitionOfUnity",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "pou_keys_are_agent_ids": false,
+   "pou_families": [],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "channel_ns-as-built": {
+   "graph": "channel-ns-2x2-as-built",
+   "declared_axis": "overlapping",
+   "n_agents": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "C00",
+     "C01",
+     "C10",
+     "C11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": "GridPartitionOfUnity",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "pou_keys_are_agent_ids": false,
+   "pou_families": [],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "wind_farm_real": {
+   "graph": "wind-farm-real-8-agent-split-step",
+   "declared_axis": "overlapping",
+   "n_agents": 8,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "Bm",
+     "Bp",
+     "F",
+     "I",
+     "N",
+     "R1",
+     "R2",
+     "W"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "wind_farm_real-as-built": {
+   "graph": "wind-farm-real-8-agent-as-built",
+   "declared_axis": "overlapping",
+   "n_agents": 8,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "Bm",
+     "Bp",
+     "F",
+     "I",
+     "N",
+     "R1",
+     "R2",
+     "W"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "neural_interface": {
+   "graph": "neural-interface-2x2",
+   "declared_axis": "overlapping",
+   "n_agents": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "C00",
+     "C01",
+     "C10",
+     "C11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": "GridPartitionOfUnity",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "C00",
+    "C01",
+    "C10",
+    "C11"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": "incompressible-navier-stokes-2d",
+   "that_region_axis": "overlapping"
+  },
+  "neural_interface-embedded": {
+   "graph": "neural-interface-2x2",
+   "declared_axis": "overlapping",
+   "n_agents": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "C00",
+     "C01",
+     "C10",
+     "C11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": "GridPartitionOfUnity",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "C00",
+    "C01",
+    "C10",
+    "C11"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": "incompressible-navier-stokes-2d",
+   "that_region_axis": "overlapping"
+  },
+  "front_wing": {
+   "graph": "front-wing-3x2-fixed-shape",
+   "declared_axis": "overlapping",
+   "n_agents": 8,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "SUSP"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.25,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "front_wing-riding": {
+   "graph": "front-wing-3x2-riding",
+   "declared_axis": "overlapping",
+   "n_agents": 8,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "SUSP"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.25,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "ground_effect": {
+   "graph": "ground-effect-3x2-fixed-floor",
+   "declared_axis": "overlapping",
+   "n_agents": 7,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "SUSP"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.25,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "ground_effect-moving": {
+   "graph": "ground-effect-3x2-moving",
+   "declared_axis": "overlapping",
+   "n_agents": 7,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "SUSP"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.25,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "wing_fsi": {
+   "graph": "wing-fsi-3x2-fixed-shape",
+   "declared_axis": "overlapping",
+   "n_agents": 7,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.25,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": "incompressible-navier-stokes-2d",
+   "that_region_axis": "overlapping"
+  },
+  "wing_fsi-moving": {
+   "graph": "wing-fsi-3x2-deforming",
+   "declared_axis": "overlapping",
+   "n_agents": 7,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.25,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": "incompressible-navier-stokes-2d",
+   "that_region_axis": "overlapping"
+  },
+  "wake_array-reference": {
+   "graph": "wake-array-3x2-reference",
+   "declared_axis": "overlapping",
+   "n_agents": 9,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "R1",
+     "R2",
+     "R3"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "wake_array-reference_exposed": {
+   "graph": "wake-array-3x2-reference_exposed",
+   "declared_axis": "overlapping",
+   "n_agents": 9,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "R1",
+     "R2",
+     "R3"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "wake_array-bare-blend": {
+   "graph": "wake-array-3x2-reference_exposed",
+   "declared_axis": "overlapping",
+   "n_agents": 9,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "R1",
+     "R2",
+     "R3"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": 16,
+   "pou": "GridPartitionOfUnity",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "scaling_ladder-N6-reference_exposed": {
+   "graph": "scaling-ladder-N6-3x2-reference_exposed",
+   "declared_axis": "overlapping",
+   "n_agents": 9,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "R1",
+     "R2",
+     "R3"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "scaling_ladder-N6-reference": {
+   "graph": "scaling-ladder-N6-3x2-reference",
+   "declared_axis": "overlapping",
+   "n_agents": 9,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "R1",
+     "R2",
+     "R3"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "scaling_ladder-N12-reference_exposed": {
+   "graph": "scaling-ladder-N12-4x3-reference_exposed",
+   "declared_axis": "overlapping",
+   "n_agents": 17,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F02",
+     "F10",
+     "F11",
+     "F12",
+     "F20",
+     "F21",
+     "F22",
+     "F30",
+     "F31",
+     "F32",
+     "R1",
+     "R2",
+     "R3",
+     "R4",
+     "R5"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F02",
+    "F10",
+    "F11",
+    "F12",
+    "F20",
+    "F21",
+    "F22",
+    "F30",
+    "F31",
+    "F32"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "reuse_probe-N6": {
+   "graph": "reuse-probe-N6-reference_exposed",
+   "declared_axis": "overlapping",
+   "n_agents": 9,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "R1",
+     "R2",
+     "R3"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  },
+  "tier44-union": {
+   "graph": "w171-union-circuit-plus-tiling",
+   "declared_axis": "non-overlapping",
+   "n_agents": 7,
+   "regions": {
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ],
+    "incompressible-navier-stokes-2d": [
+     "F_I",
+     "F_R1"
+    ]
+   },
+   "region_axes": {
+    "incompressible-thermal-transport-1d": "non-overlapping",
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 1,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": null,
+   "pou_inner": null,
+   "projection": false
+  },
+  "tier44-union-with-pou": {
+   "graph": "w171-union-circuit-plus-tiling",
+   "declared_axis": "non-overlapping",
+   "n_agents": 7,
+   "regions": {
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ],
+    "incompressible-navier-stokes-2d": [
+     "F_I",
+     "F_R1"
+    ]
+   },
+   "region_axes": {
+    "incompressible-thermal-transport-1d": "non-overlapping",
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 1,
+   "overlap": null,
+   "overlap_cells": null,
+   "pou": "PartitionOfUnity",
+   "pou_inner": "PartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "F_I",
+    "F_R1"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": "incompressible-navier-stokes-2d",
+   "that_region_axis": "overlapping"
+  },
+  "poseidon": {
+   "graph": "poseidon-t-2x2",
+   "declared_axis": "overlapping",
+   "n_agents": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "P00",
+     "P01",
+     "P10",
+     "P11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.328125,
+   "overlap_cells": 21,
+   "pou": "GridPartitionOfUnity",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": false,
+   "pou_subdomains": [
+    "P00",
+    "P01",
+    "P10",
+    "P11"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": "incompressible-navier-stokes-2d",
+   "that_region_axis": "overlapping"
+  },
+  "wake_array-poseidon": {
+   "graph": "wake-array-3x2-poseidon",
+   "declared_axis": "overlapping",
+   "n_agents": 9,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "F00",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "F21",
+     "R1",
+     "R2",
+     "R3"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "n_overlapping_regions": 1,
+   "n_non_overlapping_regions": 0,
+   "overlap": 0.5,
+   "overlap_cells": 16,
+   "pou": "ProjectedAssembly",
+   "pou_inner": "GridPartitionOfUnity",
+   "projection": true,
+   "pou_subdomains": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "F20",
+    "F21"
+   ],
+   "pou_keys_are_agent_ids": true,
+   "pou_families": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "pou_keys_equal_one_regions_agents": null,
+   "that_region_axis": null
+  }
+ },
+ "summary": {
+  "graphs_censused": 40,
+  "graphs_with_a_partition": 22,
+  "keys_are_agent_ids": 20,
+  "keys_are_exactly_one_regions_agents": 8,
+  "that_region_is_overlapping": 8,
+  "exceptions": [
+   "channel_ns",
+   "channel_ns-as-built",
+   "front_wing",
+   "front_wing-riding",
+   "ground_effect",
+   "ground_effect-moving",
+   "reuse_probe-N6",
+   "scaling_ladder-N12-reference_exposed",
+   "scaling_ladder-N6-reference",
+   "scaling_ladder-N6-reference_exposed",
+   "wake_array-bare-blend",
+   "wake_array-poseidon",
+   "wake_array-reference",
+   "wake_array-reference_exposed"
+  ],
+  "max_overlapping_regions_in_one_graph": 2
+ }
+}

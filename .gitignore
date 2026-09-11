@@ -211,6 +211,24 @@ out/rung3/*
 out/w171b/*
 !out/w171b/w171b.json
 !out/w171b/before.json
+# Tier 45 (W189, the partition of unity, overlap and overlap cells per region).
+# JSON only. The byte-identity control is committed as MANIFESTS -- one sha256 per
+# graph for all forty constructible case graphs, before the change (twice, under
+# two PYTHONHASHSEEDs, which is the repeat floor) and after it -- together with
+# the two comparisons tests/test_tier45_region_assembly.py asserts, the partition
+# census the per-region shape was chosen on, and the union measurement the page
+# quotes. The full artifacts behind the hashes (artifacts/, ~5 MB) and the run
+# logs stay local: they are rebuilt by scripts/w189_artifact_control.py, and the
+# hashes are what the test compares.
+!out/w189/
+out/w189/*
+!out/w189/control_before1.json
+!out/w189/control_before2.json
+!out/w189/control_after.json
+!out/w189/compare_before1_vs_before2.json
+!out/w189/compare_before1_vs_after.json
+!out/w189/census.json
+!out/w189/w189.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

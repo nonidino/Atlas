@@ -146,6 +146,37 @@ class DecisionRecord:
     def extend(self, decisions: Iterable[Decision]) -> None:
         self._decisions.extend(decisions)
 
+    def rescope(self, start: int, region: str) -> None:
+        """Re-issue the decisions recorded since ``start`` as decisions about ``region``.
+
+        **W189, 2026-09-10.**  A rule written for one graph-scoped subject runs
+        once per region by emitting its own decisions and then re-issuing them
+        here: the sentence is unchanged and prefixed with the region, a
+        graph-scoped subject -- ``<graph>`` or ``<assembly>`` -- becomes that
+        region's, and the evidence gains ``region``.  Agent and seam subjects stay
+        as they are, because they already name something inside the region.
+
+        One mechanism for every per-region rule, so a region-scoped decision
+        cannot drift from the graph-scoped decision it is.  W136 factored
+        `_decomposition_cuts` out so two rules resting on one premise could not
+        come to disagree about it; this is that move applied to scope.  It is
+        also what makes the equivalence control a structural fact rather than a
+        hope: a graph declared per region reaches the same rules with the same
+        sentences, and the only difference is which region each is about.
+        """
+        from dataclasses import replace
+
+        for i in range(start, len(self._decisions)):
+            d = self._decisions[i]
+            subject = d.subject
+            if subject in (None, "<graph>"):
+                subject = f"<region:{region}>"
+            elif subject == "<assembly>":
+                subject = f"<assembly:{region}>"
+            self._decisions[i] = replace(
+                d, subject=subject, message=f"region {region!r}: {d.message}",
+                evidence={**d.evidence, "region": region})
+
     @property
     def verdict(self) -> Verdict:
         v = ADMIT

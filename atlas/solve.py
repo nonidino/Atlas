@@ -362,7 +362,20 @@ def coupled_step(
 
     assembled = None
     pou: PartitionOfUnity | None = graph.partition_of_unity
-    if pou is not None:
+    if isinstance(pou, dict):
+        # **W189.** Partitions filed per region blend per region: each over its
+        # own subdomains, and the step reports one assembled field per region
+        # rather than inventing a graph-wide one that no declaration describes.
+        per_region = {}
+        for region, part in pou.items():
+            restrictions = getattr(part, "restrictions", None)
+            if restrictions is None:
+                continue
+            keyed = {k: locals_[k] for k in restrictions if k in locals_}
+            if len(keyed) == len(restrictions):
+                per_region[region] = part.assemble(keyed)
+        assembled = per_region or None
+    elif pou is not None:
         keyed = {k: locals_[k] for k in pou.restrictions if k in locals_}
         if len(keyed) == len(pou.restrictions):
             assembled = pou.assemble(keyed)

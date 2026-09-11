@@ -113,6 +113,12 @@ class Scheme:
     #: as a single value could not say and which rung 9 needs.
     decomposition_axes: frozenset = frozenset()
     overlap: float | None = None
+    #: **W189.** The overlap filed under each OVERLAPPING region, when the graph
+    #: declares it per region -- and then ``overlap`` is None, because a graph
+    #: whose regions each carry their own overlap has no one overlap to report.
+    #: Empty for every graph that declares one number, and then it is not
+    #: emitted at all, so those artifacts are byte-identical to before W189.
+    overlap_by_region: dict = field(default_factory=dict)
     exchange_interval: float | None = None
     multirate: bool = False
     flux_matching: str = "pointwise"      # "pointwise" | "time-integrated"
@@ -132,7 +138,7 @@ class Scheme:
         }[axis]
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        out = {
             "D_decomposition": self.decomposition.value,
             # W171. Sorted so the artifact is stable; a single-axis graph emits
             # a one-element list whose only member is D_decomposition.
@@ -146,12 +152,19 @@ class Scheme:
             "W_window": self.window,
             "eps_tol": self.eps_tol,
             "overlap": self.overlap,
+        }
+        if self.overlap_by_region:
+            # W189. Emitted only by a graph that files its overlap per region, so
+            # every graph declaring one number emits exactly what it did.
+            out["overlap_by_region"] = dict(self.overlap_by_region)
+        out.update({
             "exchange_interval": self.exchange_interval,
             "multirate": self.multirate,
             "flux_matching": self.flux_matching,
             "defaulted": list(self.defaulted),
             "why": dict(self.why),
-        }
+        })
+        return out
 
     def report(self) -> str:
         lines = ["scheme Sigma"]

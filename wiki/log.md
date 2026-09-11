@@ -4094,3 +4094,43 @@ A patch script written through a shell heredoc turned `\r\n` into real newlines 
 `scripts/w171_region_axis.py`, under half a second, numpy only. **The full suite: $1150$ passed, $0$ failed** — the $1137$ at Tier 43 plus this tier's $12$ plus one falsification test added to Tier 40's file — as four disjoint parallel groups ($3.4$ min) plus the five clock-sensitive files serially and alone ($2.8$ min), **$6.1$ minutes wall across $44$ test files**, on battery. `scripts/vault_scan.py wiki`: **$221$ files, $0$ problems.**
 
 Changed: [[per-region-decomposition-axis]] (new), [[case-study-ladder-to-f1]] (§18), [[f1-pathmap-and-end-goal]] (§3.3's rung-9 row), [[gap-worklist]] (Tier 44; **W171 closed, part 1**; W172 annotated; W188 and W189 opened), [[index]]. Code: `atlas/graph.py`, `atlas/compiler.py`, `atlas/scheme.py`, `tests/test_tier40_epsilon_halo.py` (two tests rewritten). Added: `scripts/w171_region_axis.py`, `tests/test_tier44_region_axis.py`, `out/w171b/w171b.json`, `out/w171b/before.json`, and the tier's `.gitignore` allowlist pair. `before.json` is committed because the finding is a **difference** and half of it is no longer reproducible from this tree.
+
+## [2026-09-10] tier 45 | W189: the partition of unity, the overlap and the overlap cells are per region, and the object is one per overlapping region
+
+**Rung 9's schema, finished — and the shape was counted before it was built.** [[per-region-assembly]], `atlas/graph.py`, `atlas/compiler.py`, `atlas/verdict.py`, `atlas/assembly.py`, `atlas/scheme.py`, `atlas/emit.py`, `atlas/solve.py`, `scripts/w189_artifact_control.py`, `scripts/w189_region_assembly.py`, `tests/test_tier45_region_assembly.py`, `out/w189/`. Taken **ahead of W172**, reversing [[case-study-ladder-to-f1]] §18.6's order, because W172's honest version needs a union carrying a real tiling, and a real tiling's partition could only be declared as the whole graph's.
+
+### The census chose the shape
+
+Over all forty constructible graphs, before any code changed: **22 carry a partition of unity, and every one has exactly one overlapping region**; the one graph with two overlapping regions (`rocket`) carries none. So the object is one partition per **overlapping** region — a sparse map, which is a vehicle's shape. **The key is declared**, because both candidate derivations failed on the count before either was built: in 12 of 22 the family region holds lumped closures the partition does not blend (`SUSP`, rotor disks), and in 2 the subdomain names are no agent's — `channel_ns`, whose partition names `window_ns`'s windows (**W191**). W188's instruction, applied before building for the first time.
+
+### The control came first, and it is the claim
+
+Forty artifacts — the sha256 of `RunArtifact.to_json()` — captured from the unchanged tree twice, under `PYTHONHASHSEED` 1 and 2: **forty of forty identical**, the repeat floor. After the change, on the final tree: **forty of forty identical**, eleven of them recompiled live by the test on every run. What made that possible without touching a single legacy sentence is `DecisionRecord.rescope`: every scoped rule runs its unchanged body once per region and re-issues its own decisions with the region named, so a per-region decision is the graph-scoped decision, scoped — and `window_ns` declared both ways reaches the identical rule set.
+
+### The union, on a real tiling
+
+`window_ns`'s four `reference.WindowNS` windows beside **both** circuits: fourteen agents, three regions. Every assembly and halo decision names the fluid region and **none names a circuit**; `L2/C3` names each circuit; the same union declared the old way reaches the same verdict and **names no region at all**. Its one refusal, `L7/R9`, is `powertrain`'s clock ($0.2$ against $0.05$), and the union with only the coolant circuit compiles without it. `rocket` given a partition per overlapping region gets every rule twice, once naming each; with one graph-level $C_\mu$ and cut-defect bound across the two regions, both decertify per region rather than being quoted (**W190**). `L2/W189/regions` fired on each of four defective declarations and stayed quiet on the clean one.
+
+### What the union found, and this tier did not fix
+
+- **W192**: joining graphs moved `powertrain`'s `ROTOR` — the sole, uncut agent of its family in its own graph — into the fluid region beside the tiling, unchanged. No verdict moves here; it is the first measured instance of a union re-deriving a premise across its parts, and it is W172's to price.
+- **W193**: a named cross-point contains no agents, so it is judged by the graph's leftover axis field; flipping that field on the same union refuses the tiling's own `"centre"` at `L2/I2/G1`.
+- On a graph-scoped union the halo rule's W136 clause calls other regions' cut agents sole agents — Tier 44's own union says so. Left byte-identical by the control; the per-region path names them correctly.
+
+### What this tier did NOT do, named
+
+- **W172 was not started.** The union is disjoint; the $O(K)$ count was not re-run across joining seams, and the caveat stands exactly as written. The page's §7 is input to W172, not its answer.
+- **Rung 9's graph was not built.** W190–W193 were opened and not fixed. No run rolls a per-region graph forward.
+- **W182, W183–W187, W175, W178** untouched. Nothing downloaded — Poseidon-T loaded from the local cache with the hub offline — no machine rented, NeuberNet not loaded.
+
+### How it was done, and three things worth recording
+
+- **A capture died at graph eight**: `os.replace` onto its manifest raised `PermissionError [WinError 5]`, OneDrive holding a just-written file, and the persist step sat outside the per-graph `try`. Every write now retries, and the repeat floor was re-captured in full.
+- **The suite's first launch ran one group of four.** A one-line chain of `(group) & \` continuations broke after the first `&`; the backgrounded group finished — 232 passed — and the command exited 1 with no test failed. Re-run from a script file, with every group's log checked at launch.
+- **One existing test failed on the change, and it was the test working.** Tier 40's `test_W173_no_epsilon_branch_was_written_into_the_halo_rule` reads `_halo_rule`'s source, and W189 moved the body into `_halo_rule_for`: the positive assertion failed, and the negative one had become vacuous on the husk left behind. Re-pointed at both functions with both assertions verbatim, and two anchors so the next move fails instead of passing emptily.
+
+### How it was run
+
+`scripts/w189_artifact_control.py`: a census and four full forty-graph captures of $3.4$ to $3.7$ minutes each — two before, two after, the committed one from the final tree — plus the one that died at graph eight. `scripts/w189_region_assembly.py`: $21$ seconds, numpy only. **The full suite: $1187$ tests across $45$ files, $1186$ passed and $1$ failed** — the W173 source test above — and **its whole file re-run after the re-point: $24$ passed**. Four parallel groups, then the five clock-sensitive files serially and alone. `scripts/vault_scan.py wiki`: **$222$ files, $0$ problems.**
+
+Changed: [[per-region-assembly]] (new), [[case-study-ladder-to-f1]] (§19), [[f1-pathmap-and-end-goal]] (§3.3's rung-9 row), [[gap-worklist]] (Tier 45; **W189 closed**; W172 and W188 annotated; W190–W193 opened), [[per-region-decomposition-axis]] (a dated note under §6), [[index]]. Code: `atlas/graph.py`, `atlas/compiler.py`, `atlas/verdict.py`, `atlas/assembly.py`, `atlas/scheme.py`, `atlas/emit.py`, `atlas/solve.py`, `atlas/CASE-STUDY-GUIDE.md`, `tests/test_tier44_region_axis.py` (two tests re-pointed), `tests/test_tier40_epsilon_halo.py` (one test re-pointed). Added: `scripts/w189_artifact_control.py`, `scripts/w189_region_assembly.py`, `tests/test_tier45_region_assembly.py`, seven JSON files under `out/w189/`, and the tier's `.gitignore` allowlist pair.

@@ -1,0 +1,5818 @@
+{
+ "what": "W189 -- partition of unity, overlap and overlap cells, per region",
+ "date": "2026-09-10",
+ "union": {
+  "graph": "w189-union-per-region-window_ns+cooling_loop+powertrain",
+  "n_agents": 14,
+  "n_seams": 14,
+  "regions": {
+   "incompressible-navier-stokes-2d": [
+    "ROTOR",
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "incompressible-thermal-transport-1d": [
+    "COLD",
+    "HOT",
+    "PASS",
+    "RAD"
+   ],
+   "lumped-dc-circuit": [
+    "BATT",
+    "BUS",
+    "INV",
+    "MGU"
+   ]
+  },
+  "region_axes": {
+   "incompressible-navier-stokes-2d": "overlapping",
+   "incompressible-thermal-transport-1d": "non-overlapping",
+   "lumped-dc-circuit": "non-overlapping"
+  },
+  "verdict": "refuse",
+  "n_decisions": 206,
+  "refusals": [
+   "L7/R9"
+  ],
+  "refusal_messages": {
+   "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+  },
+  "rule_verdicts": [
+   [
+    "L1",
+    "E3",
+    "admit-uncertified",
+    2
+   ],
+   [
+    "L2",
+    "C2",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L2",
+    "C2/W58",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "C3/W57",
+    "admit-uncertified",
+    2
+   ],
+   [
+    "L2",
+    "I2/G1",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/halo",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/lumped",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/sole-family",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "W189/regions",
+    "admit",
+    1
+   ],
+   [
+    "L3",
+    "C1",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C2/C3/C6",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C4",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C5",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C7",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C8",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C9",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "dim-M",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "global-field",
+    "admit",
+    1
+   ],
+   [
+    "L4",
+    "G5/cut-score",
+    "admit",
+    14
+   ],
+   [
+    "L4",
+    "R2b/W46",
+    "admit",
+    1
+   ],
+   [
+    "L4",
+    "block-share",
+    "admit",
+    11
+   ],
+   [
+    "L4",
+    "block-share",
+    "admit-uncertified",
+    3
+   ],
+   [
+    "L4",
+    "null-space",
+    "admit",
+    14
+   ],
+   [
+    "L4",
+    "operator-content",
+    "admit",
+    4
+   ],
+   [
+    "L4",
+    "operator-content",
+    "admit-uncertified",
+    10
+   ],
+   [
+    "L4",
+    "probe-base",
+    "admit",
+    13
+   ],
+   [
+    "L4",
+    "probe-base",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L5",
+    "R13",
+    "admit",
+    2
+   ],
+   [
+    "L5",
+    "W171/axes",
+    "admit",
+    1
+   ],
+   [
+    "L5",
+    "eps_tol",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L6",
+    "L6/C1",
+    "admit",
+    1
+   ],
+   [
+    "L6",
+    "R12",
+    "admit",
+    1
+   ],
+   [
+    "L6",
+    "W49",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L7",
+    "R9",
+    "refuse",
+    1
+   ],
+   [
+    "L7",
+    "R9/order",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L8",
+    "W56",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L9",
+    "E5",
+    "admit-uncertified",
+    1
+   ]
+  ],
+  "coverage": {
+   "rows": [
+    {
+     "rule": "L2/W189/regions",
+     "verdict": "admit",
+     "subject": "<graph>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d' (the region also holds ROTOR, which the partition does not blend: a lumped closure of the region's own family is in the region by W114's proxy and is not a subdomain of the cover); overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+    },
+    {
+     "rule": "L2/R10/halo",
+     "verdict": "admit",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against BATT, BUS, COLD, HOT, INV, MGU, PASS, RAD, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+    },
+    {
+     "rule": "L2/C3/W57",
+     "verdict": "admit-uncertified",
+     "subject": "<region:incompressible-thermal-transport-1d>",
+     "regions_named": [
+      "incompressible-thermal-transport-1d"
+     ],
+     "message": "region 'incompressible-thermal-transport-1d': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+    },
+    {
+     "rule": "L2/C3/W57",
+     "verdict": "admit-uncertified",
+     "subject": "<region:lumped-dc-circuit>",
+     "regions_named": [
+      "lumped-dc-circuit"
+     ],
+     "message": "region 'lumped-dc-circuit': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+    },
+    {
+     "rule": "L2/C2/W58",
+     "verdict": "admit",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+    },
+    {
+     "rule": "L2/C2",
+     "verdict": "admit-uncertified",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+    },
+    {
+     "rule": "L6/L6/C1",
+     "verdict": "admit",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': convex (min chi = 0.001946) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+    },
+    {
+     "rule": "L6/R12",
+     "verdict": "admit",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+    },
+    {
+     "rule": "L6/W49",
+     "verdict": "admit-uncertified",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': Pi = 0.09541 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+    }
+   ],
+   "regions_by_rule": {
+    "L2/W189/regions": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/R10/halo": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/C3/W57": [
+     "incompressible-thermal-transport-1d",
+     "lumped-dc-circuit"
+    ],
+    "L2/C2/W58": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/C2": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/L6/C1": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/R12": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/W49": [
+     "incompressible-navier-stokes-2d"
+    ]
+   }
+  },
+  "scheme": {
+   "D_decomposition": "overlapping",
+   "D_decomposition_axes": [
+    "non-overlapping",
+    "overlapping"
+   ],
+   "overlap": null,
+   "overlap_by_region": {
+    "incompressible-navier-stokes-2d": 0.328125
+   }
+  },
+  "assembly_kind": "per-region",
+  "assembly_regions": [
+   "incompressible-navier-stokes-2d"
+  ],
+  "assembly_region_certificates": {
+   "incompressible-navier-stokes-2d": {
+    "pou_residual": 1.1102230246251565e-16,
+    "identity_holds": true,
+    "norm_A": 1.0,
+    "condition_holds": true
+   }
+  },
+  "harness": {
+   "overlap_cells": null,
+   "chi_shape": null,
+   "exchange_dt": 0.05,
+   "exchange_cadence": 10,
+   "elliptic_placement": "mixed",
+   "assembly_projection": null,
+   "regions": {
+    "incompressible-navier-stokes-2d": {
+     "overlap_cells": 21,
+     "chi_shape": "partition-of-unity",
+     "assembly_projection": "none"
+    }
+   }
+  },
+  "envelope_E6": {
+   "status": "holds",
+   "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+   "owned_by": [
+    "L6"
+   ],
+   "evidence": [
+    "region 'incompressible-navier-stokes-2d': identity 1.110e-16 and L6/C1 convexity (min chi = 0.001946): the blend is at least as accurate as what it blends"
+   ]
+  },
+  "unmeasured": [
+   "L (W1)",
+   "sigma (W3)",
+   "tau (W3)",
+   "C_mu (W3)"
+  ],
+  "w189_decisions": [
+   {
+    "verdict": "admit",
+    "subject": "<graph>",
+    "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d' (the region also holds ROTOR, which the partition does not blend: a lumped closure of the region's own family is in the region by W114's proxy and is not a subdomain of the cover); overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+    "evidence": {
+     "declared": {
+      "partition_of_unity": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "overlap": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "overlap_cells": [
+       "incompressible-navier-stokes-2d"
+      ]
+     }
+    }
+   }
+  ],
+  "compile_s": 1.6308912999957101,
+  "speaks_only_about_the_tiling": {
+   "stray": [],
+   "unnamed": [],
+   "ok": true
+  },
+  "substructuring_branch_regions": [
+   "incompressible-thermal-transport-1d",
+   "lumped-dc-circuit"
+  ]
+ },
+ "union_graph_scoped": {
+  "graph": "w189-union-graph-scoped-window_ns+cooling_loop+powertrain",
+  "n_agents": 14,
+  "n_seams": 14,
+  "regions": {
+   "incompressible-navier-stokes-2d": [
+    "ROTOR",
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "incompressible-thermal-transport-1d": [
+    "COLD",
+    "HOT",
+    "PASS",
+    "RAD"
+   ],
+   "lumped-dc-circuit": [
+    "BATT",
+    "BUS",
+    "INV",
+    "MGU"
+   ]
+  },
+  "region_axes": {
+   "incompressible-navier-stokes-2d": "overlapping",
+   "incompressible-thermal-transport-1d": "non-overlapping",
+   "lumped-dc-circuit": "non-overlapping"
+  },
+  "verdict": "refuse",
+  "n_decisions": 204,
+  "refusals": [
+   "L7/R9"
+  ],
+  "refusal_messages": {
+   "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+  },
+  "rule_verdicts": [
+   [
+    "L1",
+    "E3",
+    "admit-uncertified",
+    2
+   ],
+   [
+    "L2",
+    "C2",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L2",
+    "C2/W58",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "C3/W57",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L2",
+    "I2/G1",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/halo",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/lumped",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/sole-family",
+    "admit",
+    1
+   ],
+   [
+    "L3",
+    "C1",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C2/C3/C6",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C4",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C5",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C7",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C8",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C9",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "dim-M",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "global-field",
+    "admit",
+    1
+   ],
+   [
+    "L4",
+    "G5/cut-score",
+    "admit",
+    14
+   ],
+   [
+    "L4",
+    "R2b/W46",
+    "admit",
+    1
+   ],
+   [
+    "L4",
+    "block-share",
+    "admit",
+    11
+   ],
+   [
+    "L4",
+    "block-share",
+    "admit-uncertified",
+    3
+   ],
+   [
+    "L4",
+    "null-space",
+    "admit",
+    14
+   ],
+   [
+    "L4",
+    "operator-content",
+    "admit",
+    4
+   ],
+   [
+    "L4",
+    "operator-content",
+    "admit-uncertified",
+    10
+   ],
+   [
+    "L4",
+    "probe-base",
+    "admit",
+    13
+   ],
+   [
+    "L4",
+    "probe-base",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L5",
+    "R13",
+    "admit",
+    2
+   ],
+   [
+    "L5",
+    "W171/axes",
+    "admit",
+    1
+   ],
+   [
+    "L5",
+    "eps_tol",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L6",
+    "L6/C1",
+    "admit",
+    1
+   ],
+   [
+    "L6",
+    "R12",
+    "admit",
+    1
+   ],
+   [
+    "L6",
+    "W49",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L7",
+    "R9",
+    "refuse",
+    1
+   ],
+   [
+    "L7",
+    "R9/order",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L8",
+    "W56",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L9",
+    "E5",
+    "admit-uncertified",
+    1
+   ]
+  ],
+  "coverage": {
+   "rows": [
+    {
+     "rule": "L2/R10/halo",
+     "verdict": "admit",
+     "subject": "<graph>",
+     "regions_named": [],
+     "message": "overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point. The requirement was checked against the agents the decomposition CUTS and not against BATT, BLOCK, BUS, COLD, HOT, INV, MGU, PASS, RAD, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136)"
+    },
+    {
+     "rule": "L2/C3/W57",
+     "verdict": "admit-uncertified",
+     "subject": "<graph>",
+     "regions_named": [],
+     "message": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+    },
+    {
+     "rule": "L2/C2/W58",
+     "verdict": "admit",
+     "subject": "<graph>",
+     "regions_named": [],
+     "message": "disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+    },
+    {
+     "rule": "L2/C2",
+     "verdict": "admit-uncertified",
+     "subject": "<graph>",
+     "regions_named": [],
+     "message": "L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+    },
+    {
+     "rule": "L6/L6/C1",
+     "verdict": "admit",
+     "subject": "<assembly>",
+     "regions_named": [],
+     "message": "convex (min chi = 0.001946) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+    },
+    {
+     "rule": "L6/R12",
+     "verdict": "admit",
+     "subject": "<assembly>",
+     "regions_named": [],
+     "message": "the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+    },
+    {
+     "rule": "L6/W49",
+     "verdict": "admit-uncertified",
+     "subject": "<assembly>",
+     "regions_named": [],
+     "message": "Pi = 0.09541 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+    }
+   ],
+   "regions_by_rule": {
+    "L2/R10/halo": [
+     "<unnamed>"
+    ],
+    "L2/C3/W57": [
+     "<unnamed>"
+    ],
+    "L2/C2/W58": [
+     "<unnamed>"
+    ],
+    "L2/C2": [
+     "<unnamed>"
+    ],
+    "L6/L6/C1": [
+     "<unnamed>"
+    ],
+    "L6/R12": [
+     "<unnamed>"
+    ],
+    "L6/W49": [
+     "<unnamed>"
+    ]
+   }
+  },
+  "scheme": {
+   "D_decomposition": "overlapping",
+   "D_decomposition_axes": [
+    "non-overlapping",
+    "overlapping"
+   ],
+   "overlap": 0.328125,
+   "overlap_by_region": null
+  },
+  "assembly_kind": "partition-of-unity",
+  "assembly_regions": [],
+  "assembly_region_certificates": {},
+  "harness": {
+   "overlap_cells": 21,
+   "chi_shape": "partition-of-unity",
+   "exchange_dt": 0.05,
+   "exchange_cadence": 10,
+   "elliptic_placement": "mixed",
+   "assembly_projection": "none"
+  },
+  "envelope_E6": {
+   "status": "holds",
+   "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+   "owned_by": [
+    "L6"
+   ],
+   "evidence": [
+    "identity 1.110e-16 and L6/C1 convexity (min chi = 0.001946): the blend is at least as accurate as what it blends"
+   ]
+  },
+  "unmeasured": [
+   "L (W1)",
+   "sigma (W3)",
+   "tau (W3)",
+   "C_mu (W3)"
+  ],
+  "w189_decisions": [],
+  "compile_s": 1.819531700006337
+ },
+ "union_one_circuit": {
+  "graph": "w189-union-per-region-window_ns+cooling_loop",
+  "n_agents": 9,
+  "n_seams": 9,
+  "regions": {
+   "incompressible-navier-stokes-2d": [
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "incompressible-thermal-transport-1d": [
+    "COLD",
+    "HOT",
+    "PASS",
+    "RAD"
+   ]
+  },
+  "region_axes": {
+   "incompressible-navier-stokes-2d": "overlapping",
+   "incompressible-thermal-transport-1d": "non-overlapping"
+  },
+  "verdict": "admit-uncertified",
+  "n_decisions": 137,
+  "refusals": [],
+  "refusal_messages": {},
+  "rule_verdicts": [
+   [
+    "L1",
+    "E3",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L2",
+    "C2",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L2",
+    "C2/W58",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "C3/W57",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L2",
+    "I2/G1",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/halo",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/lumped",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/sole-family",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "W189/regions",
+    "admit",
+    1
+   ],
+   [
+    "L3",
+    "C1",
+    "admit",
+    9
+   ],
+   [
+    "L3",
+    "C2/C3/C6",
+    "admit",
+    9
+   ],
+   [
+    "L3",
+    "C4",
+    "admit",
+    9
+   ],
+   [
+    "L3",
+    "C5",
+    "admit",
+    9
+   ],
+   [
+    "L3",
+    "C7",
+    "admit",
+    9
+   ],
+   [
+    "L3",
+    "C8",
+    "admit",
+    9
+   ],
+   [
+    "L3",
+    "C9",
+    "admit",
+    9
+   ],
+   [
+    "L3",
+    "dim-M",
+    "admit",
+    9
+   ],
+   [
+    "L3",
+    "global-field",
+    "admit",
+    1
+   ],
+   [
+    "L4",
+    "G5/cut-score",
+    "admit",
+    9
+   ],
+   [
+    "L4",
+    "R2b/W46",
+    "admit",
+    1
+   ],
+   [
+    "L4",
+    "block-share",
+    "admit",
+    7
+   ],
+   [
+    "L4",
+    "block-share",
+    "admit-uncertified",
+    2
+   ],
+   [
+    "L4",
+    "null-space",
+    "admit",
+    9
+   ],
+   [
+    "L4",
+    "operator-content",
+    "admit",
+    4
+   ],
+   [
+    "L4",
+    "operator-content",
+    "admit-uncertified",
+    5
+   ],
+   [
+    "L4",
+    "probe-base",
+    "admit",
+    9
+   ],
+   [
+    "L5",
+    "R13",
+    "admit",
+    1
+   ],
+   [
+    "L5",
+    "W171/axes",
+    "admit",
+    1
+   ],
+   [
+    "L5",
+    "eps_tol",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L6",
+    "L6/C1",
+    "admit",
+    1
+   ],
+   [
+    "L6",
+    "R12",
+    "admit",
+    1
+   ],
+   [
+    "L6",
+    "W49",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L7",
+    "R10b",
+    "admit",
+    1
+   ],
+   [
+    "L8",
+    "W56",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L9",
+    "E5",
+    "admit-uncertified",
+    1
+   ]
+  ],
+  "coverage": {
+   "rows": [
+    {
+     "rule": "L2/W189/regions",
+     "verdict": "admit",
+     "subject": "<graph>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d'; overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+    },
+    {
+     "rule": "L2/R10/halo",
+     "verdict": "admit",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against COLD, HOT, PASS, RAD, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+    },
+    {
+     "rule": "L2/C3/W57",
+     "verdict": "admit-uncertified",
+     "subject": "<region:incompressible-thermal-transport-1d>",
+     "regions_named": [
+      "incompressible-thermal-transport-1d"
+     ],
+     "message": "region 'incompressible-thermal-transport-1d': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+    },
+    {
+     "rule": "L2/C2/W58",
+     "verdict": "admit",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+    },
+    {
+     "rule": "L2/C2",
+     "verdict": "admit-uncertified",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+    },
+    {
+     "rule": "L6/L6/C1",
+     "verdict": "admit",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': convex (min chi = 0.001946) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+    },
+    {
+     "rule": "L6/R12",
+     "verdict": "admit",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+    },
+    {
+     "rule": "L6/W49",
+     "verdict": "admit-uncertified",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': Pi = 0.09541 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+    }
+   ],
+   "regions_by_rule": {
+    "L2/W189/regions": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/R10/halo": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/C3/W57": [
+     "incompressible-thermal-transport-1d"
+    ],
+    "L2/C2/W58": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/C2": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/L6/C1": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/R12": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/W49": [
+     "incompressible-navier-stokes-2d"
+    ]
+   }
+  },
+  "scheme": {
+   "D_decomposition": "overlapping",
+   "D_decomposition_axes": [
+    "non-overlapping",
+    "overlapping"
+   ],
+   "overlap": null,
+   "overlap_by_region": {
+    "incompressible-navier-stokes-2d": 0.328125
+   }
+  },
+  "assembly_kind": "per-region",
+  "assembly_regions": [
+   "incompressible-navier-stokes-2d"
+  ],
+  "assembly_region_certificates": {
+   "incompressible-navier-stokes-2d": {
+    "pou_residual": 1.1102230246251565e-16,
+    "identity_holds": true,
+    "norm_A": 1.0,
+    "condition_holds": true
+   }
+  },
+  "harness": {
+   "overlap_cells": null,
+   "chi_shape": null,
+   "exchange_dt": 0.05,
+   "exchange_cadence": 10,
+   "elliptic_placement": "mixed",
+   "assembly_projection": null,
+   "regions": {
+    "incompressible-navier-stokes-2d": {
+     "overlap_cells": 21,
+     "chi_shape": "partition-of-unity",
+     "assembly_projection": "none"
+    }
+   }
+  },
+  "envelope_E6": {
+   "status": "holds",
+   "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+   "owned_by": [
+    "L6"
+   ],
+   "evidence": [
+    "region 'incompressible-navier-stokes-2d': identity 1.110e-16 and L6/C1 convexity (min chi = 0.001946): the blend is at least as accurate as what it blends"
+   ]
+  },
+  "unmeasured": [
+   "L (W1)",
+   "sigma (W3)",
+   "tau (W3)",
+   "C_mu (W3)"
+  ],
+  "w189_decisions": [
+   {
+    "verdict": "admit",
+    "subject": "<graph>",
+    "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d'; overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+    "evidence": {
+     "declared": {
+      "partition_of_unity": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "overlap": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "overlap_cells": [
+       "incompressible-navier-stokes-2d"
+      ]
+     }
+    }
+   }
+  ],
+  "compile_s": 1.9641677000035997,
+  "speaks_only_about_the_tiling": {
+   "stray": [],
+   "unnamed": [],
+   "ok": true
+  }
+ },
+ "reconciliation": [
+  {
+   "field": "decomposition",
+   "parts": {
+    "window_ns": "overlapping",
+    "cooling_loop": "non-overlapping",
+    "powertrain": "non-overlapping"
+   },
+   "union": "overlapping",
+   "parts_disagree": true,
+   "per_region_after_w189": false
+  },
+  {
+   "field": "partition_of_unity",
+   "parts": {
+    "window_ns": "GridPartitionOfUnity over ['W00', 'W01', 'W10', 'W11']",
+    "cooling_loop": null,
+    "powertrain": null
+   },
+   "union": {
+    "incompressible-navier-stokes-2d": "GridPartitionOfUnity over ['W00', 'W01', 'W10', 'W11']"
+   },
+   "parts_disagree": false,
+   "per_region_after_w189": true
+  },
+  {
+   "field": "overlap",
+   "parts": {
+    "window_ns": 0.328125,
+    "cooling_loop": null,
+    "powertrain": null
+   },
+   "union": {
+    "incompressible-navier-stokes-2d": 0.328125
+   },
+   "parts_disagree": false,
+   "per_region_after_w189": true
+  },
+  {
+   "field": "overlap_cells",
+   "parts": {
+    "window_ns": 21,
+    "cooling_loop": null,
+    "powertrain": null
+   },
+   "union": {
+    "incompressible-navier-stokes-2d": 21
+   },
+   "parts_disagree": false,
+   "per_region_after_w189": true
+  },
+  {
+   "field": "global_fields",
+   "parts": {
+    "window_ns": [
+     "pressure"
+    ],
+    "cooling_loop": [],
+    "powertrain": []
+   },
+   "union": [
+    "pressure"
+   ],
+   "parts_disagree": false,
+   "per_region_after_w189": false
+  },
+  {
+   "field": "cross_points",
+   "parts": {
+    "window_ns": [
+     "centre"
+    ],
+    "cooling_loop": [],
+    "powertrain": []
+   },
+   "union": [
+    "centre"
+   ],
+   "parts_disagree": false,
+   "per_region_after_w189": false
+  },
+  {
+   "field": "primal_cross_point_dofs",
+   "parts": {
+    "window_ns": [],
+    "cooling_loop": [],
+    "powertrain": []
+   },
+   "union": [],
+   "parts_disagree": false,
+   "per_region_after_w189": false
+  },
+  {
+   "field": "loop_gains",
+   "parts": {
+    "window_ns": [],
+    "cooling_loop": [
+     [
+      "PASS",
+      "HOT",
+      "RAD",
+      "COLD"
+     ]
+    ],
+    "powertrain": [
+     [
+      "MGU",
+      "BUS",
+      "BATT",
+      "INV"
+     ]
+    ]
+   },
+   "union": [
+    [
+     "PASS",
+     "HOT",
+     "RAD",
+     "COLD"
+    ],
+    [
+     "MGU",
+     "BUS",
+     "BATT",
+     "INV"
+    ]
+   ],
+   "parts_disagree": true,
+   "per_region_after_w189": false
+  },
+  {
+   "field": "macro_dt",
+   "parts": {
+    "window_ns": 0.05,
+    "cooling_loop": 0.05,
+    "powertrain": 0.2
+   },
+   "union": 0.05,
+   "parts_disagree": true,
+   "per_region_after_w189": false
+  },
+  {
+   "field": "flux_matching",
+   "parts": {
+    "window_ns": "FluxMatching.POINTWISE",
+    "cooling_loop": "FluxMatching.POINTWISE",
+    "powertrain": "FluxMatching.POINTWISE"
+   },
+   "union": "FluxMatching.POINTWISE",
+   "parts_disagree": false,
+   "per_region_after_w189": false
+  },
+  {
+   "field": "measured",
+   "parts": {
+    "window_ns": "MeasuredConstants(source='scripts/tier0_window_ns.py, scripts/w49_sigma_halo.py, scripts/w16_cut_policy.py, out/tier0b/, out/w16/')",
+    "cooling_loop": "MeasuredConstants(source='not measured: CS-13 declares the topology and does not claim a constant. L, sigma, C_mu and tau are open on this graph')",
+    "powertrain": "MeasuredConstants(source='not measured: CS-14 declares the topology and the port type and does not claim a constant. L, sigma, C_mu and tau are open here')"
+   },
+   "union": null,
+   "parts_disagree": true,
+   "per_region_after_w189": false
+  },
+  {
+   "field": "topology_events",
+   "parts": {
+    "window_ns": [],
+    "cooling_loop": [],
+    "powertrain": []
+   },
+   "union": [],
+   "parts_disagree": false,
+   "per_region_after_w189": false
+  }
+ ],
+ "composition_effects": {
+  "regions_in_parts": {
+   "window_ns": {
+    "incompressible-navier-stokes-2d": [
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ]
+   },
+   "cooling_loop": {
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ]
+   },
+   "powertrain": {
+    "lumped-dc-circuit": [
+     "BATT",
+     "BUS",
+     "INV",
+     "MGU"
+    ]
+   }
+  },
+  "regions_in_union": {
+   "incompressible-navier-stokes-2d": [
+    "ROTOR",
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "incompressible-thermal-transport-1d": [
+    "COLD",
+    "HOT",
+    "PASS",
+    "RAD"
+   ],
+   "lumped-dc-circuit": [
+    "BATT",
+    "BUS",
+    "INV",
+    "MGU"
+   ]
+  },
+  "changed": [
+   {
+    "agent": "ROTOR",
+    "from_graph": "powertrain",
+    "family": "incompressible-navier-stokes-2d",
+    "in_its_own_graph": {
+     "status": "sole",
+     "region": null
+    },
+    "in_the_union": {
+     "status": "cut",
+     "region": "incompressible-navier-stokes-2d",
+     "region_agents": [
+      "ROTOR",
+      "W00",
+      "W01",
+      "W10",
+      "W11"
+     ]
+    },
+    "stencil_radius": 0,
+    "elliptic_subsolve": "none"
+   }
+  ],
+  "dt_native": {
+   "window_ns": [
+    0.05
+   ],
+   "cooling_loop": [
+    0.05
+   ],
+   "powertrain": [
+    0.2
+   ]
+  }
+ },
+ "union_graph_axis_non_overlapping": {
+  "graph": "w189-union-graph-axis-non-overlapping",
+  "n_agents": 14,
+  "n_seams": 14,
+  "regions": {
+   "incompressible-navier-stokes-2d": [
+    "ROTOR",
+    "W00",
+    "W01",
+    "W10",
+    "W11"
+   ],
+   "incompressible-thermal-transport-1d": [
+    "COLD",
+    "HOT",
+    "PASS",
+    "RAD"
+   ],
+   "lumped-dc-circuit": [
+    "BATT",
+    "BUS",
+    "INV",
+    "MGU"
+   ]
+  },
+  "region_axes": {
+   "incompressible-navier-stokes-2d": "overlapping",
+   "incompressible-thermal-transport-1d": "non-overlapping",
+   "lumped-dc-circuit": "non-overlapping"
+  },
+  "verdict": "refuse",
+  "n_decisions": 206,
+  "refusals": [
+   "L2/I2/G1",
+   "L7/R9"
+  ],
+  "refusal_messages": {
+   "L2/I2/G1/<graph>": "non-overlapping decomposition with 1 cross-points and no primal set, from the graph's own `cross_points` declaration. This is not a proxy: the graph named these vertices. The shared cell is MULTI-VALUED: each incident seam carries its own multipliers over its own ring and truncates a different function to the same interface modes, so the cell receives one value per seam and they disagree -- measured at 1.62% of the trace scale in the streamwise component and 66.7% in the transverse one, with the sign disagreeing. The treatment is to make those degrees of freedom primal -- single-valued, in a small coarse problem -- and keep the rest dual, which is exactly what removes a multi-valued cell. It is a property of the DECLARED INTERFACE SPACE and not of the expert, so no better probe removes it. This refusal does NOT rest on beta: beta does not collapse at a real cross-point (measured 1.00x), and the off-diagonal coupling it would take a multi-port response to see is 1.8% of the operator norm and is not certified here at all (W64)",
+   "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+  },
+  "rule_verdicts": [
+   [
+    "L1",
+    "E3",
+    "admit-uncertified",
+    2
+   ],
+   [
+    "L2",
+    "C2",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L2",
+    "C2/W58",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "C3/W57",
+    "admit-uncertified",
+    2
+   ],
+   [
+    "L2",
+    "I2/G1",
+    "refuse",
+    1
+   ],
+   [
+    "L2",
+    "R10/halo",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/lumped",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "R10/sole-family",
+    "admit",
+    1
+   ],
+   [
+    "L2",
+    "W189/regions",
+    "admit",
+    1
+   ],
+   [
+    "L3",
+    "C1",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C2/C3/C6",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C4",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C5",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C7",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C8",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "C9",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "dim-M",
+    "admit",
+    14
+   ],
+   [
+    "L3",
+    "global-field",
+    "admit",
+    1
+   ],
+   [
+    "L4",
+    "G5/cut-score",
+    "admit",
+    14
+   ],
+   [
+    "L4",
+    "R2b/W46",
+    "admit",
+    1
+   ],
+   [
+    "L4",
+    "block-share",
+    "admit",
+    11
+   ],
+   [
+    "L4",
+    "block-share",
+    "admit-uncertified",
+    3
+   ],
+   [
+    "L4",
+    "null-space",
+    "admit",
+    14
+   ],
+   [
+    "L4",
+    "operator-content",
+    "admit",
+    4
+   ],
+   [
+    "L4",
+    "operator-content",
+    "admit-uncertified",
+    10
+   ],
+   [
+    "L4",
+    "probe-base",
+    "admit",
+    13
+   ],
+   [
+    "L4",
+    "probe-base",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L5",
+    "R13",
+    "admit",
+    2
+   ],
+   [
+    "L5",
+    "W171/axes",
+    "admit",
+    1
+   ],
+   [
+    "L5",
+    "eps_tol",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L6",
+    "L6/C1",
+    "admit",
+    1
+   ],
+   [
+    "L6",
+    "R12",
+    "admit",
+    1
+   ],
+   [
+    "L6",
+    "W49",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L7",
+    "R9",
+    "refuse",
+    1
+   ],
+   [
+    "L7",
+    "R9/order",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L8",
+    "W56",
+    "admit-uncertified",
+    1
+   ],
+   [
+    "L9",
+    "E5",
+    "admit-uncertified",
+    1
+   ]
+  ],
+  "coverage": {
+   "rows": [
+    {
+     "rule": "L2/W189/regions",
+     "verdict": "admit",
+     "subject": "<graph>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d' (the region also holds ROTOR, which the partition does not blend: a lumped closure of the region's own family is in the region by W114's proxy and is not a subdomain of the cover); overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+    },
+    {
+     "rule": "L2/R10/halo",
+     "verdict": "admit",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against BATT, BUS, COLD, HOT, INV, MGU, PASS, RAD, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+    },
+    {
+     "rule": "L2/C3/W57",
+     "verdict": "admit-uncertified",
+     "subject": "<region:incompressible-thermal-transport-1d>",
+     "regions_named": [
+      "incompressible-thermal-transport-1d"
+     ],
+     "message": "region 'incompressible-thermal-transport-1d': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+    },
+    {
+     "rule": "L2/C3/W57",
+     "verdict": "admit-uncertified",
+     "subject": "<region:lumped-dc-circuit>",
+     "regions_named": [
+      "lumped-dc-circuit"
+     ],
+     "message": "region 'lumped-dc-circuit': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+    },
+    {
+     "rule": "L2/C2/W58",
+     "verdict": "admit",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+    },
+    {
+     "rule": "L2/C2",
+     "verdict": "admit-uncertified",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+    },
+    {
+     "rule": "L6/L6/C1",
+     "verdict": "admit",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': convex (min chi = 0.001946) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+    },
+    {
+     "rule": "L6/R12",
+     "verdict": "admit",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+    },
+    {
+     "rule": "L6/W49",
+     "verdict": "admit-uncertified",
+     "subject": "<assembly:incompressible-navier-stokes-2d>",
+     "regions_named": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "message": "region 'incompressible-navier-stokes-2d': Pi = 0.09541 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+    }
+   ],
+   "regions_by_rule": {
+    "L2/W189/regions": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/R10/halo": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/C3/W57": [
+     "incompressible-thermal-transport-1d",
+     "lumped-dc-circuit"
+    ],
+    "L2/C2/W58": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L2/C2": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/L6/C1": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/R12": [
+     "incompressible-navier-stokes-2d"
+    ],
+    "L6/W49": [
+     "incompressible-navier-stokes-2d"
+    ]
+   }
+  },
+  "scheme": {
+   "D_decomposition": "non-overlapping",
+   "D_decomposition_axes": [
+    "non-overlapping",
+    "overlapping"
+   ],
+   "overlap": null,
+   "overlap_by_region": {
+    "incompressible-navier-stokes-2d": 0.328125
+   }
+  },
+  "assembly_kind": "per-region",
+  "assembly_regions": [
+   "incompressible-navier-stokes-2d"
+  ],
+  "assembly_region_certificates": {
+   "incompressible-navier-stokes-2d": {
+    "pou_residual": 1.1102230246251565e-16,
+    "identity_holds": true,
+    "norm_A": 1.0,
+    "condition_holds": true
+   }
+  },
+  "harness": {
+   "overlap_cells": null,
+   "chi_shape": null,
+   "exchange_dt": 0.05,
+   "exchange_cadence": 10,
+   "elliptic_placement": "mixed",
+   "assembly_projection": null,
+   "regions": {
+    "incompressible-navier-stokes-2d": {
+     "overlap_cells": 21,
+     "chi_shape": "partition-of-unity",
+     "assembly_projection": "none"
+    }
+   }
+  },
+  "envelope_E6": {
+   "status": "holds",
+   "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+   "owned_by": [
+    "L6"
+   ],
+   "evidence": [
+    "region 'incompressible-navier-stokes-2d': identity 1.110e-16 and L6/C1 convexity (min chi = 0.001946): the blend is at least as accurate as what it blends"
+   ]
+  },
+  "unmeasured": [
+   "L (W1)",
+   "sigma (W3)",
+   "tau (W3)",
+   "C_mu (W3)"
+  ],
+  "w189_decisions": [
+   {
+    "verdict": "admit",
+    "subject": "<graph>",
+    "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d' (the region also holds ROTOR, which the partition does not blend: a lumped closure of the region's own family is in the region by W114's proxy and is not a subdomain of the cover); overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+    "evidence": {
+     "declared": {
+      "partition_of_unity": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "overlap": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "overlap_cells": [
+       "incompressible-navier-stokes-2d"
+      ]
+     }
+    }
+   }
+  ],
+  "compile_s": 2.0426554000005126
+ },
+ "equivalence": {
+  "graph_scoped": {
+   "graph": "window-ns-2x2-split-step",
+   "n_agents": 4,
+   "n_seams": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "verdict": "admit-uncertified",
+   "n_decisions": 64,
+   "refusals": [],
+   "refusal_messages": {},
+   "rule_verdicts": [
+    [
+     "L2",
+     "C2",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "C2/W58",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "I2/G1",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     2
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L4",
+     "null-space",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     4
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "L6/C1",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "R12",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "W49",
+     "admit",
+     1
+    ],
+    [
+     "L7",
+     "R10b",
+     "admit",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [],
+      "message": "overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [],
+      "message": "disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [],
+      "message": "cut criterion applies and is measured: the restriction defect over one exchange interval is 2.6268e-07, in the chi-weighted form -- || sum_i chi_i |D_i| ||, D_i = E_i R_i - R_i E. L2/C2's own quantity, and the one the derivation bounds the composed defect by. Needs a MONOLITHIC reference, exactly as tau does, so it is a diagnostic and not a condition -- bounding the composed defect cellwise by the identity A({E_i R_i u}) - E u = sum_i R_i^T chi_i D_i together with chi >= 0 (L6/C1). Derived, not adopted"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly>",
+      "regions_named": [],
+      "message": "convex (min chi = 0.001946) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly>",
+      "regions_named": [],
+      "message": "the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+     },
+     {
+      "rule": "L6/W49",
+      "verdict": "admit",
+      "subject": "<assembly>",
+      "regions_named": [],
+      "message": "Pi = 0.09541: the assembly gives that much weight to cells a stale artificial-boundary datum can reach, so sigma <= 1.2 * 0.09541 * ||d_lambda|| on the overlapping branch (master-error-bound 4.1). Pi = 1 would mean the overlap is narrower than the agents' domain of dependence and nothing in the blend is clean; Pi = 0 would mean the partition vanishes over the whole contaminated band"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/R10/halo": [
+      "<unnamed>"
+     ],
+     "L2/C2/W58": [
+      "<unnamed>"
+     ],
+     "L2/C2": [
+      "<unnamed>"
+     ],
+     "L6/L6/C1": [
+      "<unnamed>"
+     ],
+     "L6/R12": [
+      "<unnamed>"
+     ],
+     "L6/W49": [
+      "<unnamed>"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "overlapping"
+    ],
+    "overlap": 0.328125,
+    "overlap_by_region": null
+   },
+   "assembly_kind": "partition-of-unity",
+   "assembly_regions": [],
+   "assembly_region_certificates": {},
+   "harness": {
+    "overlap_cells": 21,
+    "chi_shape": "partition-of-unity",
+    "exchange_dt": 0.05,
+    "exchange_cadence": 10,
+    "elliptic_placement": "composition",
+    "assembly_projection": "none"
+   },
+   "envelope_E6": {
+    "status": "holds",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "identity 1.110e-16 and L6/C1 convexity (min chi = 0.001946): the blend is at least as accurate as what it blends"
+    ]
+   },
+   "unmeasured": [],
+   "w189_decisions": [],
+   "compile_s": 1.7789016999886371
+  },
+  "per_region": {
+   "graph": "window-ns-2x2-split-step-per-region",
+   "n_agents": 4,
+   "n_seams": 4,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "verdict": "admit-uncertified",
+   "n_decisions": 65,
+   "refusals": [],
+   "refusal_messages": {},
+   "rule_verdicts": [
+    [
+     "L2",
+     "C2",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "C2/W58",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "I2/G1",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     4
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     2
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L4",
+     "null-space",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     4
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "L6/C1",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "R12",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "W49",
+     "admit",
+     1
+    ],
+    [
+     "L7",
+     "R10b",
+     "admit",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d'; overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': cut criterion applies and is measured: the restriction defect over one exchange interval is 2.6268e-07, in the chi-weighted form -- || sum_i chi_i |D_i| ||, D_i = E_i R_i - R_i E. L2/C2's own quantity, and the one the derivation bounds the composed defect by. Needs a MONOLITHIC reference, exactly as tau does, so it is a diagnostic and not a condition -- bounding the composed defect cellwise by the identity A({E_i R_i u}) - E u = sum_i R_i^T chi_i D_i together with chi >= 0 (L6/C1). Derived, not adopted"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': convex (min chi = 0.001946) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+     },
+     {
+      "rule": "L6/W49",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': Pi = 0.09541: the assembly gives that much weight to cells a stale artificial-boundary datum can reach, so sigma <= 1.2 * 0.09541 * ||d_lambda|| on the overlapping branch (master-error-bound 4.1). Pi = 1 would mean the overlap is narrower than the agents' domain of dependence and nothing in the blend is clean; Pi = 0 would mean the partition vanishes over the whole contaminated band"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/W189/regions": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/R10/halo": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C2/W58": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C2": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/L6/C1": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/R12": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/W49": [
+      "incompressible-navier-stokes-2d"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "overlapping"
+    ],
+    "overlap": null,
+    "overlap_by_region": {
+     "incompressible-navier-stokes-2d": 0.328125
+    }
+   },
+   "assembly_kind": "per-region",
+   "assembly_regions": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "assembly_region_certificates": {
+    "incompressible-navier-stokes-2d": {
+     "pou_residual": 1.1102230246251565e-16,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    }
+   },
+   "harness": {
+    "overlap_cells": null,
+    "chi_shape": null,
+    "exchange_dt": 0.05,
+    "exchange_cadence": 10,
+    "elliptic_placement": "composition",
+    "assembly_projection": null,
+    "regions": {
+     "incompressible-navier-stokes-2d": {
+      "overlap_cells": 21,
+      "chi_shape": "partition-of-unity",
+      "assembly_projection": "none"
+     }
+    }
+   },
+   "envelope_E6": {
+    "status": "holds",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "region 'incompressible-navier-stokes-2d': identity 1.110e-16 and L6/C1 convexity (min chi = 0.001946): the blend is at least as accurate as what it blends"
+    ]
+   },
+   "unmeasured": [],
+   "w189_decisions": [
+    {
+     "verdict": "admit",
+     "subject": "<graph>",
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d'; overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+     "evidence": {
+      "declared": {
+       "partition_of_unity": [
+        "incompressible-navier-stokes-2d"
+       ],
+       "overlap": [
+        "incompressible-navier-stokes-2d"
+       ],
+       "overlap_cells": [
+        "incompressible-navier-stokes-2d"
+       ]
+      }
+     }
+    }
+   ],
+   "compile_s": 2.113086099998327
+  },
+  "same_verdict": true,
+  "same_rules_and_verdicts": true,
+  "only_in_graph_scoped": [],
+  "only_in_per_region": []
+ },
+ "two_regions": {
+  "both_declared": {
+   "graph": "w189-rocket-2-regions",
+   "n_agents": 7,
+   "n_seams": 19,
+   "regions": {
+    "reacting-compressible-flow": [
+     "a",
+     "b",
+     "e"
+    ],
+    "external-compressible-flow": [
+     "d",
+     "f",
+     "g"
+    ]
+   },
+   "region_axes": {
+    "reacting-compressible-flow": "overlapping",
+    "external-compressible-flow": "overlapping"
+   },
+   "verdict": "refuse",
+   "n_decisions": 279,
+   "refusals": [
+    "L2/InterfaceMotion",
+    "L7/R9"
+   ],
+   "refusal_messages": {
+    "L2/InterfaceMotion/a.b:MECH": "port a.b:MECH declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/a.b:THERM": "port a.b:THERM declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/a.b:ADVEC": "port a.b:ADVEC declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:MECH": "port f.e:MECH declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:THERM": "port f.e:THERM declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:ADVEC": "port f.e:ADVEC declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:MECH": "port f.g:MECH declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:THERM": "port f.g:THERM declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:ADVEC": "port f.g:ADVEC declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+   },
+   "rule_verdicts": [
+    [
+     "L1",
+     "3.4",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L1",
+     "E7",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L2",
+     "C2",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "C2/W58",
+     "admit",
+     2
+    ],
+    [
+     "L2",
+     "InterfaceMotion",
+     "refuse",
+     9
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C8",
+     "admit-uncertified",
+     19
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     19
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L6",
+     "L6/C1",
+     "admit",
+     2
+    ],
+    [
+     "L6",
+     "R12",
+     "admit",
+     2
+    ],
+    [
+     "L6",
+     "W49",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L7",
+     "R9",
+     "refuse",
+     1
+    ],
+    [
+     "L7",
+     "R9/order",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [
+       "external-compressible-flow",
+       "reacting-compressible-flow"
+      ],
+      "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'reacting-compressible-flow'; partition_of_unity under 'external-compressible-flow'; overlap_cells under 'reacting-compressible-flow'; overlap_cells under 'external-compressible-flow'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit-uncertified",
+      "subject": "a, b, e",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': 3 agents (a, b, e) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.support_reach rather than declaring it. The halo the exchange needs is undecidable here and it is not assumed adequate. The requirement was checked against the agents the decomposition CUTS and not against c, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against d, f, g, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit-uncertified",
+      "subject": "d, f, g",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': 3 agents (d, f, g) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.support_reach rather than declaring it. The halo the exchange needs is undecidable here and it is not assumed adequate. The requirement was checked against the agents the decomposition CUTS and not against c, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against a, b, e, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': disclosure: 4 cells are contaminated for more than one subdomain (up to 2 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit-uncertified",
+      "subject": "<region:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': disclosure: 4 cells are contaminated for more than one subdomain (up to 2 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit-uncertified",
+      "subject": "<region:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': convex (min chi = 0.5) and the identity holds (0.000e+00), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': this region's governing_family carries no pointwise linear constraint the compiler recognizes (CONSTRAINED_FAMILIES), so no agent of it returns a field the blend could break and L6/C2 has no subject here. Stated rather than passed over: on the graph-scoped path this case returns in silence"
+     },
+     {
+      "rule": "L6/W49",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': Pi = 1 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': convex (min chi = 0.5) and the identity holds (0.000e+00), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': this region's governing_family carries no pointwise linear constraint the compiler recognizes (CONSTRAINED_FAMILIES), so no agent of it returns a field the blend could break and L6/C2 has no subject here. Stated rather than passed over: on the graph-scoped path this case returns in silence"
+     },
+     {
+      "rule": "L6/W49",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': Pi = 1 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/W189/regions": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L2/R10/halo": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L2/C2/W58": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L2/C2": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L6/L6/C1": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L6/R12": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L6/W49": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "overlapping"
+    ],
+    "overlap": null,
+    "overlap_by_region": null
+   },
+   "assembly_kind": "per-region",
+   "assembly_regions": [
+    "external-compressible-flow",
+    "reacting-compressible-flow"
+   ],
+   "assembly_region_certificates": {
+    "reacting-compressible-flow": {
+     "pou_residual": 0.0,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    },
+    "external-compressible-flow": {
+     "pou_residual": 0.0,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    }
+   },
+   "harness": {
+    "overlap_cells": null,
+    "chi_shape": null,
+    "exchange_dt": 0.001,
+    "exchange_cadence": null,
+    "elliptic_placement": null,
+    "assembly_projection": null,
+    "regions": {
+     "reacting-compressible-flow": {
+      "overlap_cells": 4,
+      "chi_shape": "partition-of-unity, ramp 2 cells",
+      "assembly_projection": "none"
+     },
+     "external-compressible-flow": {
+      "overlap_cells": 4,
+      "chi_shape": "partition-of-unity, ramp 2 cells",
+      "assembly_projection": "none"
+     }
+    }
+   },
+   "envelope_E6": {
+    "status": "holds",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "region 'reacting-compressible-flow': identity 0.000e+00 and L6/C1 convexity (min chi = 0.5): the blend is at least as accurate as what it blends; region 'external-compressible-flow': identity 0.000e+00 and L6/C1 convexity (min chi = 0.5): the blend is at least as accurate as what it blends"
+    ]
+   },
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)"
+   ],
+   "w189_decisions": [
+    {
+     "verdict": "admit",
+     "subject": "<graph>",
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'reacting-compressible-flow'; partition_of_unity under 'external-compressible-flow'; overlap_cells under 'reacting-compressible-flow'; overlap_cells under 'external-compressible-flow'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+     "evidence": {
+      "declared": {
+       "partition_of_unity": [
+        "reacting-compressible-flow",
+        "external-compressible-flow"
+       ],
+       "overlap_cells": [
+        "reacting-compressible-flow",
+        "external-compressible-flow"
+       ]
+      }
+     }
+    }
+   ],
+   "compile_s": 0.053810199999134056
+  },
+  "one_declared": {
+   "graph": "w189-rocket-1-region",
+   "n_agents": 7,
+   "n_seams": 19,
+   "regions": {
+    "reacting-compressible-flow": [
+     "a",
+     "b",
+     "e"
+    ],
+    "external-compressible-flow": [
+     "d",
+     "f",
+     "g"
+    ]
+   },
+   "region_axes": {
+    "reacting-compressible-flow": "overlapping",
+    "external-compressible-flow": "overlapping"
+   },
+   "verdict": "refuse",
+   "n_decisions": 276,
+   "refusals": [
+    "L2/InterfaceMotion",
+    "L7/R9"
+   ],
+   "refusal_messages": {
+    "L2/InterfaceMotion/a.b:MECH": "port a.b:MECH declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/a.b:THERM": "port a.b:THERM declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/a.b:ADVEC": "port a.b:ADVEC declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:MECH": "port f.e:MECH declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:THERM": "port f.e:THERM declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:ADVEC": "port f.e:ADVEC declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:MECH": "port f.g:MECH declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:THERM": "port f.g:THERM declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:ADVEC": "port f.g:ADVEC declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+   },
+   "rule_verdicts": [
+    [
+     "L1",
+     "3.4",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L1",
+     "E7",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L2",
+     "C2",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "C2/W58",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "InterfaceMotion",
+     "refuse",
+     9
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C8",
+     "admit-uncertified",
+     19
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     19
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L6",
+     "L6/C1",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "R12",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "W49",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L7",
+     "R9",
+     "refuse",
+     1
+    ],
+    [
+     "L7",
+     "R9/order",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'reacting-compressible-flow'; overlap_cells under 'reacting-compressible-flow'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit-uncertified",
+      "subject": "a, b, e",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': 3 agents (a, b, e) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.support_reach rather than declaring it. The halo the exchange needs is undecidable here and it is not assumed adequate. The requirement was checked against the agents the decomposition CUTS and not against c, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against d, f, g, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit-uncertified",
+      "subject": "d, f, g",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': 3 agents (d, f, g) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.support_reach rather than declaring it. The halo the exchange needs is undecidable here and it is not assumed adequate. The requirement was checked against the agents the decomposition CUTS and not against c, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against a, b, e, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': disclosure: 4 cells are contaminated for more than one subdomain (up to 2 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit-uncertified",
+      "subject": "<region:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit-uncertified",
+      "subject": "<region:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': L2/C2 bounds the composed defect by the chi-weighted restriction defect sum_i chi_i |E_i R_i - R_i E|, and the graph declares no partition of unity, so there are no chi to weight with. The bound is not evaluable and the cut is uncharacterized"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': convex (min chi = 0.5) and the identity holds (0.000e+00), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': this region's governing_family carries no pointwise linear constraint the compiler recognizes (CONSTRAINED_FAMILIES), so no agent of it returns a field the blend could break and L6/C2 has no subject here. Stated rather than passed over: on the graph-scoped path this case returns in silence"
+     },
+     {
+      "rule": "L6/W49",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': Pi = 1 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+     },
+     {
+      "rule": "L6/E6",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/W189/regions": [
+      "reacting-compressible-flow"
+     ],
+     "L2/R10/halo": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L2/C2/W58": [
+      "reacting-compressible-flow"
+     ],
+     "L2/C2": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L6/L6/C1": [
+      "reacting-compressible-flow"
+     ],
+     "L6/R12": [
+      "reacting-compressible-flow"
+     ],
+     "L6/W49": [
+      "reacting-compressible-flow"
+     ],
+     "L6/E6": [
+      "external-compressible-flow"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "overlapping"
+    ],
+    "overlap": null,
+    "overlap_by_region": null
+   },
+   "assembly_kind": "per-region",
+   "assembly_regions": [
+    "reacting-compressible-flow"
+   ],
+   "assembly_region_certificates": {
+    "reacting-compressible-flow": {
+     "pou_residual": 0.0,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    }
+   },
+   "harness": {
+    "overlap_cells": null,
+    "chi_shape": null,
+    "exchange_dt": 0.001,
+    "exchange_cadence": null,
+    "elliptic_placement": null,
+    "assembly_projection": null,
+    "regions": {
+     "reacting-compressible-flow": {
+      "overlap_cells": 4,
+      "chi_shape": "partition-of-unity, ramp 2 cells",
+      "assembly_projection": "none"
+     }
+    }
+   },
+   "envelope_E6": {
+    "status": "unchecked",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "region 'external-compressible-flow': no assembly declared"
+    ]
+   },
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)",
+    "norm_A (W28)"
+   ],
+   "w189_decisions": [
+    {
+     "verdict": "admit",
+     "subject": "<graph>",
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'reacting-compressible-flow'; overlap_cells under 'reacting-compressible-flow'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+     "evidence": {
+      "declared": {
+       "partition_of_unity": [
+        "reacting-compressible-flow"
+       ],
+       "overlap_cells": [
+        "reacting-compressible-flow"
+       ]
+      }
+     }
+    }
+   ],
+   "compile_s": 0.06600939999043476
+  },
+  "both_declared_with_graph_constants": {
+   "graph": "w189-rocket-2-regions",
+   "n_agents": 7,
+   "n_seams": 19,
+   "regions": {
+    "reacting-compressible-flow": [
+     "a",
+     "b",
+     "e"
+    ],
+    "external-compressible-flow": [
+     "d",
+     "f",
+     "g"
+    ]
+   },
+   "region_axes": {
+    "reacting-compressible-flow": "overlapping",
+    "external-compressible-flow": "overlapping"
+   },
+   "verdict": "refuse",
+   "n_decisions": 279,
+   "refusals": [
+    "L2/InterfaceMotion",
+    "L7/R9"
+   ],
+   "refusal_messages": {
+    "L2/InterfaceMotion/a.b:MECH": "port a.b:MECH declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/a.b:THERM": "port a.b:THERM declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/a.b:ADVEC": "port a.b:ADVEC declares motion_class=solution_dependent. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:MECH": "port f.e:MECH declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:THERM": "port f.e:THERM declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.e:ADVEC": "port f.e:ADVEC declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:MECH": "port f.g:MECH declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:THERM": "port f.g:THERM declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L2/InterfaceMotion/f.g:ADVEC": "port f.g:ADVEC declares motion_class=prescribed. A moving interface changes the interface operator every step and invalidates a cached S, which is the entire economic argument for probing. No rule exists, and a moving interface silently invalidating a cached operator is the silent-wrongness class",
+    "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+   },
+   "rule_verdicts": [
+    [
+     "L1",
+     "3.4",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L1",
+     "E7",
+     "admit-uncertified",
+     7
+    ],
+    [
+     "L2",
+     "C2/W190",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "C2/W58",
+     "admit",
+     2
+    ],
+    [
+     "L2",
+     "InterfaceMotion",
+     "refuse",
+     9
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "C8",
+     "admit-uncertified",
+     19
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     19
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     19
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     19
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L6",
+     "L6/C1",
+     "admit",
+     2
+    ],
+    [
+     "L6",
+     "R12",
+     "admit",
+     2
+    ],
+    [
+     "L6",
+     "W49/W190",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L7",
+     "R9",
+     "refuse",
+     1
+    ],
+    [
+     "L7",
+     "R9/order",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [
+       "external-compressible-flow",
+       "reacting-compressible-flow"
+      ],
+      "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'reacting-compressible-flow'; partition_of_unity under 'external-compressible-flow'; overlap_cells under 'reacting-compressible-flow'; overlap_cells under 'external-compressible-flow'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit-uncertified",
+      "subject": "a, b, e",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': 3 agents (a, b, e) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.support_reach rather than declaring it. The halo the exchange needs is undecidable here and it is not assumed adequate. The requirement was checked against the agents the decomposition CUTS and not against c, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against d, f, g, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit-uncertified",
+      "subject": "d, f, g",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': 3 agents (d, f, g) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.support_reach rather than declaring it. The halo the exchange needs is undecidable here and it is not assumed adequate. The requirement was checked against the agents the decomposition CUTS and not against c, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against a, b, e, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': disclosure: 4 cells are contaminated for more than one subdomain (up to 2 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2/W190",
+      "verdict": "admit-uncertified",
+      "subject": "<region:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': cut_defect_bound is declared at 1.0000e-03, once for the graph, and 2 regions are on the overlapping branch, each with its own partition. MeasuredConstants has no region -- its provenance is a probe state, a scheme and a depth -- so the record cannot say which region's chi-weighted restriction defect this is, and quoting it for each of them is W56's defect with the guard bypassed"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': disclosure: 4 cells are contaminated for more than one subdomain (up to 2 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2/W190",
+      "verdict": "admit-uncertified",
+      "subject": "<region:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': cut_defect_bound is declared at 1.0000e-03, once for the graph, and 2 regions are on the overlapping branch, each with its own partition. MeasuredConstants has no region -- its provenance is a probe state, a scheme and a depth -- so the record cannot say which region's chi-weighted restriction defect this is, and quoting it for each of them is W56's defect with the guard bypassed"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': convex (min chi = 0.5) and the identity holds (0.000e+00), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': this region's governing_family carries no pointwise linear constraint the compiler recognizes (CONSTRAINED_FAMILIES), so no agent of it returns a field the blend could break and L6/C2 has no subject here. Stated rather than passed over: on the graph-scoped path this case returns in silence"
+     },
+     {
+      "rule": "L6/W49/W190",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:reacting-compressible-flow>",
+      "regions_named": [
+       "reacting-compressible-flow"
+      ],
+      "message": "region 'reacting-compressible-flow': Pi = 1 is measured for this region, and the graph declares ONE C_mu = 1.2 while 2 overlapping regions carry partitions. MeasuredConstants has no region -- its provenance is a probe state, a scheme and a depth -- so the record cannot say which region's expert and scheme the constant was measured on, and W55 is open precisely because one solver's C_mu is not another's. Quoting it for every region is W56's defect with the guard bypassed"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': convex (min chi = 0.5) and the identity holds (0.000e+00), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': this region's governing_family carries no pointwise linear constraint the compiler recognizes (CONSTRAINED_FAMILIES), so no agent of it returns a field the blend could break and L6/C2 has no subject here. Stated rather than passed over: on the graph-scoped path this case returns in silence"
+     },
+     {
+      "rule": "L6/W49/W190",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:external-compressible-flow>",
+      "regions_named": [
+       "external-compressible-flow"
+      ],
+      "message": "region 'external-compressible-flow': Pi = 1 is measured for this region, and the graph declares ONE C_mu = 1.2 while 2 overlapping regions carry partitions. MeasuredConstants has no region -- its provenance is a probe state, a scheme and a depth -- so the record cannot say which region's expert and scheme the constant was measured on, and W55 is open precisely because one solver's C_mu is not another's. Quoting it for every region is W56's defect with the guard bypassed"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/W189/regions": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L2/R10/halo": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L2/C2/W58": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L2/C2/W190": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L6/L6/C1": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L6/R12": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ],
+     "L6/W49/W190": [
+      "external-compressible-flow",
+      "reacting-compressible-flow"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "overlapping"
+    ],
+    "overlap": null,
+    "overlap_by_region": null
+   },
+   "assembly_kind": "per-region",
+   "assembly_regions": [
+    "external-compressible-flow",
+    "reacting-compressible-flow"
+   ],
+   "assembly_region_certificates": {
+    "reacting-compressible-flow": {
+     "pou_residual": 0.0,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    },
+    "external-compressible-flow": {
+     "pou_residual": 0.0,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    }
+   },
+   "harness": {
+    "overlap_cells": null,
+    "chi_shape": null,
+    "exchange_dt": 0.001,
+    "exchange_cadence": null,
+    "elliptic_placement": null,
+    "assembly_projection": null,
+    "regions": {
+     "reacting-compressible-flow": {
+      "overlap_cells": 4,
+      "chi_shape": "partition-of-unity, ramp 2 cells",
+      "assembly_projection": "none"
+     },
+     "external-compressible-flow": {
+      "overlap_cells": 4,
+      "chi_shape": "partition-of-unity, ramp 2 cells",
+      "assembly_projection": "none"
+     }
+    }
+   },
+   "envelope_E6": {
+    "status": "holds",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "region 'reacting-compressible-flow': identity 0.000e+00 and L6/C1 convexity (min chi = 0.5): the blend is at least as accurate as what it blends; region 'external-compressible-flow': identity 0.000e+00 and L6/C1 convexity (min chi = 0.5): the blend is at least as accurate as what it blends"
+    ]
+   },
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "p_decline (W36)"
+   ],
+   "w189_decisions": [
+    {
+     "verdict": "admit",
+     "subject": "<graph>",
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'reacting-compressible-flow'; partition_of_unity under 'external-compressible-flow'; overlap_cells under 'reacting-compressible-flow'; overlap_cells under 'external-compressible-flow'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+     "evidence": {
+      "declared": {
+       "partition_of_unity": [
+        "reacting-compressible-flow",
+        "external-compressible-flow"
+       ],
+       "overlap_cells": [
+        "reacting-compressible-flow",
+        "external-compressible-flow"
+       ]
+      }
+     }
+    }
+   ],
+   "compile_s": 0.06803280000167433
+  }
+ },
+ "defects": {
+  "key-names-a-sole-agents-family": {
+   "graph": "w189-defect-sole-family-key",
+   "n_agents": 14,
+   "n_seams": 14,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "ROTOR",
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ],
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ],
+    "lumped-dc-circuit": [
+     "BATT",
+     "BUS",
+     "INV",
+     "MGU"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping",
+    "incompressible-thermal-transport-1d": "non-overlapping",
+    "lumped-dc-circuit": "non-overlapping"
+   },
+   "verdict": "refuse",
+   "n_decisions": 204,
+   "refusals": [
+    "L2/W189/regions",
+    "L7/R9"
+   ],
+   "refusal_messages": {
+    "L2/W189/regions/<region:heat-conduction-2d>": "partition_of_unity files a partition of unity under 'heat-conduction-2d', whose only agent is BLOCK. A sole agent of its governing_family owns its whole region (W114): the decomposition created no artificial face on it, so there is no cover for a partition to weight and no overlap for a halo to outrun, and the value describes a cut that does not exist",
+    "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+   },
+   "rule_verdicts": [
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "C2",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "I2/G1",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/lumped",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/sole-family",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "refuse",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     14
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     11
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit-uncertified",
+     3
+    ],
+    [
+     "L4",
+     "null-space",
+     "admit",
+     14
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit-uncertified",
+     10
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     13
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L5",
+     "R13",
+     "admit",
+     2
+    ],
+    [
+     "L5",
+     "W171/axes",
+     "admit",
+     1
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L7",
+     "R9",
+     "refuse",
+     1
+    ],
+    [
+     "L7",
+     "R9/order",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "refuse",
+      "subject": "<region:heat-conduction-2d>",
+      "regions_named": [
+       "heat-conduction-2d"
+      ],
+      "message": "partition_of_unity files a partition of unity under 'heat-conduction-2d', whose only agent is BLOCK. A sole agent of its governing_family owns its whole region (W114): the decomposition created no artificial face on it, so there is no cover for a partition to weight and no overlap for a halo to outrun, and the value describes a cut that does not exist"
+     },
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against BATT, BUS, COLD, HOT, INV, MGU, PASS, RAD, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/C3/W57",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-thermal-transport-1d>",
+      "regions_named": [
+       "incompressible-thermal-transport-1d"
+      ],
+      "message": "region 'incompressible-thermal-transport-1d': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+     },
+     {
+      "rule": "L2/C3/W57",
+      "verdict": "admit-uncertified",
+      "subject": "<region:lumped-dc-circuit>",
+      "regions_named": [
+       "lumped-dc-circuit"
+      ],
+      "message": "region 'lumped-dc-circuit': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': L2/C2 bounds the composed defect by the chi-weighted restriction defect sum_i chi_i |E_i R_i - R_i E|, and the graph declares no partition of unity, so there are no chi to weight with. The bound is not evaluable and the cut is uncharacterized"
+     },
+     {
+      "rule": "L6/E6",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/W189/regions": [
+      "heat-conduction-2d",
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/R10/halo": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C3/W57": [
+      "incompressible-thermal-transport-1d",
+      "lumped-dc-circuit"
+     ],
+     "L2/C2": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/E6": [
+      "incompressible-navier-stokes-2d"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "non-overlapping",
+     "overlapping"
+    ],
+    "overlap": null,
+    "overlap_by_region": {
+     "incompressible-navier-stokes-2d": 0.328125
+    }
+   },
+   "assembly_kind": "per-region",
+   "assembly_regions": [],
+   "assembly_region_certificates": {},
+   "harness": {
+    "overlap_cells": null,
+    "chi_shape": null,
+    "exchange_dt": 0.05,
+    "exchange_cadence": 10,
+    "elliptic_placement": "mixed",
+    "assembly_projection": null,
+    "regions": {
+     "heat-conduction-2d": {
+      "overlap_cells": null,
+      "chi_shape": "partition-of-unity",
+      "assembly_projection": "none"
+     },
+     "incompressible-navier-stokes-2d": {
+      "overlap_cells": 21,
+      "chi_shape": null,
+      "assembly_projection": null
+     }
+    }
+   },
+   "envelope_E6": {
+    "status": "unchecked",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "region 'incompressible-navier-stokes-2d': no assembly declared"
+    ]
+   },
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "norm_A (W28)"
+   ],
+   "w189_decisions": [
+    {
+     "verdict": "refuse",
+     "subject": "<region:heat-conduction-2d>",
+     "message": "partition_of_unity files a partition of unity under 'heat-conduction-2d', whose only agent is BLOCK. A sole agent of its governing_family owns its whole region (W114): the decomposition created no artificial face on it, so there is no cover for a partition to weight and no overlap for a halo to outrun, and the value describes a cut that does not exist",
+     "evidence": {
+      "sole_agent": "BLOCK",
+      "field": "partition_of_unity",
+      "region": "heat-conduction-2d"
+     }
+    },
+    {
+     "verdict": "admit",
+     "subject": "<graph>",
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+     "evidence": {
+      "declared": {
+       "overlap": [
+        "incompressible-navier-stokes-2d"
+       ],
+       "overlap_cells": [
+        "incompressible-navier-stokes-2d"
+       ]
+      }
+     }
+    }
+   ],
+   "compile_s": 2.1569276999944123
+  },
+  "key-names-the-coolant-NON-overlapping-region": {
+   "graph": "w189-defect-non-overlapping-key",
+   "n_agents": 14,
+   "n_seams": 14,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "ROTOR",
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ],
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ],
+    "lumped-dc-circuit": [
+     "BATT",
+     "BUS",
+     "INV",
+     "MGU"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping",
+    "incompressible-thermal-transport-1d": "non-overlapping",
+    "lumped-dc-circuit": "non-overlapping"
+   },
+   "verdict": "refuse",
+   "n_decisions": 207,
+   "refusals": [
+    "L2/W189/regions",
+    "L7/R9"
+   ],
+   "refusal_messages": {
+    "L2/W189/regions/<region:incompressible-thermal-transport-1d>": "overlap_cells files an overlap-cell count under region 'incompressible-thermal-transport-1d', whose own seams declare it NON-OVERLAPPING. A partition of unity, an overlap and an overlap-cell count are properties of an OVERLAPPING cover: a substructuring cut shares no cells, so there is nothing to blend and no overlap to outrun. One region cannot be cut both ways, and this is `region_axis_conflicts`' defect declared through a different field",
+    "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+   },
+   "rule_verdicts": [
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "C2",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L2",
+     "C2/W58",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "I2/G1",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L2",
+     "R10/lumped",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/sole-family",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "refuse",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     14
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     11
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit-uncertified",
+     3
+    ],
+    [
+     "L4",
+     "null-space",
+     "admit",
+     14
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit-uncertified",
+     10
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     13
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L5",
+     "R13",
+     "admit",
+     2
+    ],
+    [
+     "L5",
+     "W171/axes",
+     "admit",
+     1
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L6",
+     "L6/C1",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "R12",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "W49",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L7",
+     "R9",
+     "refuse",
+     1
+    ],
+    [
+     "L7",
+     "R9/order",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "refuse",
+      "subject": "<region:incompressible-thermal-transport-1d>",
+      "regions_named": [
+       "incompressible-thermal-transport-1d"
+      ],
+      "message": "overlap_cells files an overlap-cell count under region 'incompressible-thermal-transport-1d', whose own seams declare it NON-OVERLAPPING. A partition of unity, an overlap and an overlap-cell count are properties of an OVERLAPPING cover: a substructuring cut shares no cells, so there is nothing to blend and no overlap to outrun. One region cannot be cut both ways, and this is `region_axis_conflicts`' defect declared through a different field"
+     },
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d' (the region also holds ROTOR, which the partition does not blend: a lumped closure of the region's own family is in the region by W114's proxy and is not a subdomain of the cover); overlap under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': the agents' domain of dependence needs an overlap of 20 cells and the graph declares its overlap in physical units only, so the check cannot run. Declare overlap_cells. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against BATT, BUS, COLD, HOT, INV, MGU, PASS, RAD, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/C3/W57",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-thermal-transport-1d>",
+      "regions_named": [
+       "incompressible-thermal-transport-1d"
+      ],
+      "message": "region 'incompressible-thermal-transport-1d': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+     },
+     {
+      "rule": "L2/C3/W57",
+      "verdict": "admit-uncertified",
+      "subject": "<region:lumped-dc-circuit>",
+      "regions_named": [
+       "lumped-dc-circuit"
+      ],
+      "message": "region 'lumped-dc-circuit': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': convex (min chi = 0.001946) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+     },
+     {
+      "rule": "L6/W49",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': Pi = 0.09541 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/W189/regions": [
+      "incompressible-navier-stokes-2d",
+      "incompressible-thermal-transport-1d"
+     ],
+     "L2/R10/halo": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C3/W57": [
+      "incompressible-thermal-transport-1d",
+      "lumped-dc-circuit"
+     ],
+     "L2/C2/W58": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C2": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/L6/C1": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/R12": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/W49": [
+      "incompressible-navier-stokes-2d"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "non-overlapping",
+     "overlapping"
+    ],
+    "overlap": null,
+    "overlap_by_region": {
+     "incompressible-navier-stokes-2d": 0.328125
+    }
+   },
+   "assembly_kind": "per-region",
+   "assembly_regions": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "assembly_region_certificates": {
+    "incompressible-navier-stokes-2d": {
+     "pou_residual": 1.1102230246251565e-16,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    }
+   },
+   "harness": {
+    "overlap_cells": null,
+    "chi_shape": null,
+    "exchange_dt": 0.05,
+    "exchange_cadence": 10,
+    "elliptic_placement": "mixed",
+    "assembly_projection": null,
+    "regions": {
+     "incompressible-navier-stokes-2d": {
+      "overlap_cells": null,
+      "chi_shape": "partition-of-unity",
+      "assembly_projection": "none"
+     },
+     "incompressible-thermal-transport-1d": {
+      "overlap_cells": 21,
+      "chi_shape": null,
+      "assembly_projection": null
+     }
+    }
+   },
+   "envelope_E6": {
+    "status": "holds",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "region 'incompressible-navier-stokes-2d': identity 1.110e-16 and L6/C1 convexity (min chi = 0.001946): the blend is at least as accurate as what it blends"
+    ]
+   },
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)"
+   ],
+   "w189_decisions": [
+    {
+     "verdict": "refuse",
+     "subject": "<region:incompressible-thermal-transport-1d>",
+     "message": "overlap_cells files an overlap-cell count under region 'incompressible-thermal-transport-1d', whose own seams declare it NON-OVERLAPPING. A partition of unity, an overlap and an overlap-cell count are properties of an OVERLAPPING cover: a substructuring cut shares no cells, so there is nothing to blend and no overlap to outrun. One region cannot be cut both ways, and this is `region_axis_conflicts`' defect declared through a different field",
+     "evidence": {
+      "axis": "non-overlapping",
+      "field": "overlap_cells",
+      "region": "incompressible-thermal-transport-1d"
+     }
+    },
+    {
+     "verdict": "admit",
+     "subject": "<graph>",
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d' (the region also holds ROTOR, which the partition does not blend: a lumped closure of the region's own family is in the region by W114's proxy and is not a subdomain of the cover); overlap under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+     "evidence": {
+      "declared": {
+       "partition_of_unity": [
+        "incompressible-navier-stokes-2d"
+       ],
+       "overlap": [
+        "incompressible-navier-stokes-2d"
+       ]
+      }
+     }
+    }
+   ],
+   "compile_s": 2.4001917999994475
+  },
+  "partition-blends-a-circuit-agent": {
+   "graph": "w189-defect-foreign-agent",
+   "n_agents": 14,
+   "n_seams": 14,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "ROTOR",
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ],
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ],
+    "lumped-dc-circuit": [
+     "BATT",
+     "BUS",
+     "INV",
+     "MGU"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping",
+    "incompressible-thermal-transport-1d": "non-overlapping",
+    "lumped-dc-circuit": "non-overlapping"
+   },
+   "verdict": "refuse",
+   "n_decisions": 207,
+   "refusals": [
+    "L2/W189/regions",
+    "L7/R9"
+   ],
+   "refusal_messages": {
+    "L2/W189/regions/<region:incompressible-navier-stokes-2d>": "the partition of unity filed under region 'incompressible-navier-stokes-2d' names ['PASS'] as subdomains, and they are agents of ['incompressible-thermal-transport-1d']. The blend would weight another region's state into this one -- and neither the partition-of-unity identity nor L6/C1's convexity can see it, because both are properties of the WEIGHTS and say nothing about whose values are being weighted",
+    "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+   },
+   "rule_verdicts": [
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "C2",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L2",
+     "C2/W58",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "I2/G1",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/lumped",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/sole-family",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "refuse",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     14
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     11
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit-uncertified",
+     3
+    ],
+    [
+     "L4",
+     "null-space",
+     "admit",
+     14
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit-uncertified",
+     10
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     13
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L5",
+     "R13",
+     "admit",
+     2
+    ],
+    [
+     "L5",
+     "W171/axes",
+     "admit",
+     1
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L6",
+     "L6/C1",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "R12",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "W49",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L7",
+     "R9",
+     "refuse",
+     1
+    ],
+    [
+     "L7",
+     "R9/order",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "refuse",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "the partition of unity filed under region 'incompressible-navier-stokes-2d' names ['PASS'] as subdomains, and they are agents of ['incompressible-thermal-transport-1d']. The blend would weight another region's state into this one -- and neither the partition-of-unity identity nor L6/C1's convexity can see it, because both are properties of the WEIGHTS and say nothing about whose values are being weighted"
+     },
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against BATT, BUS, COLD, HOT, INV, MGU, PASS, RAD, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/C3/W57",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-thermal-transport-1d>",
+      "regions_named": [
+       "incompressible-thermal-transport-1d"
+      ],
+      "message": "region 'incompressible-thermal-transport-1d': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+     },
+     {
+      "rule": "L2/C3/W57",
+      "verdict": "admit-uncertified",
+      "subject": "<region:lumped-dc-circuit>",
+      "regions_named": [
+       "lumped-dc-circuit"
+      ],
+      "message": "region 'lumped-dc-circuit': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': convex (min chi = 0) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+     },
+     {
+      "rule": "L6/W49",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': Pi = 0.09541 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/W189/regions": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/R10/halo": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C3/W57": [
+      "incompressible-thermal-transport-1d",
+      "lumped-dc-circuit"
+     ],
+     "L2/C2/W58": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C2": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/L6/C1": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/R12": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/W49": [
+      "incompressible-navier-stokes-2d"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "non-overlapping",
+     "overlapping"
+    ],
+    "overlap": null,
+    "overlap_by_region": {
+     "incompressible-navier-stokes-2d": 0.328125
+    }
+   },
+   "assembly_kind": "per-region",
+   "assembly_regions": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "assembly_region_certificates": {
+    "incompressible-navier-stokes-2d": {
+     "pou_residual": 1.1102230246251565e-16,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    }
+   },
+   "harness": {
+    "overlap_cells": null,
+    "chi_shape": null,
+    "exchange_dt": 0.05,
+    "exchange_cadence": 10,
+    "elliptic_placement": "mixed",
+    "assembly_projection": null,
+    "regions": {
+     "incompressible-navier-stokes-2d": {
+      "overlap_cells": 21,
+      "chi_shape": "partition-of-unity",
+      "assembly_projection": "none"
+     }
+    }
+   },
+   "envelope_E6": {
+    "status": "holds",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "region 'incompressible-navier-stokes-2d': identity 1.110e-16 and L6/C1 convexity (min chi = 0): the blend is at least as accurate as what it blends"
+    ]
+   },
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)"
+   ],
+   "w189_decisions": [
+    {
+     "verdict": "refuse",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "message": "the partition of unity filed under region 'incompressible-navier-stokes-2d' names ['PASS'] as subdomains, and they are agents of ['incompressible-thermal-transport-1d']. The blend would weight another region's state into this one -- and neither the partition-of-unity identity nor L6/C1's convexity can see it, because both are properties of the WEIGHTS and say nothing about whose values are being weighted",
+     "evidence": {
+      "foreign": {
+       "PASS": "incompressible-thermal-transport-1d"
+      },
+      "field": "partition_of_unity",
+      "region": "incompressible-navier-stokes-2d"
+     }
+    },
+    {
+     "verdict": "admit",
+     "subject": "<graph>",
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+     "evidence": {
+      "declared": {
+       "overlap": [
+        "incompressible-navier-stokes-2d"
+       ],
+       "overlap_cells": [
+        "incompressible-navier-stokes-2d"
+       ]
+      }
+     }
+    }
+   ],
+   "compile_s": 2.302046299999347
+  },
+  "partition-names-no-agent": {
+   "graph": "w189-defect-unmatched-keys",
+   "n_agents": 14,
+   "n_seams": 14,
+   "regions": {
+    "incompressible-navier-stokes-2d": [
+     "ROTOR",
+     "W00",
+     "W01",
+     "W10",
+     "W11"
+    ],
+    "incompressible-thermal-transport-1d": [
+     "COLD",
+     "HOT",
+     "PASS",
+     "RAD"
+    ],
+    "lumped-dc-circuit": [
+     "BATT",
+     "BUS",
+     "INV",
+     "MGU"
+    ]
+   },
+   "region_axes": {
+    "incompressible-navier-stokes-2d": "overlapping",
+    "incompressible-thermal-transport-1d": "non-overlapping",
+    "lumped-dc-circuit": "non-overlapping"
+   },
+   "verdict": "refuse",
+   "n_decisions": 207,
+   "refusals": [
+    "L7/R9"
+   ],
+   "refusal_messages": {
+    "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side"
+   },
+   "rule_verdicts": [
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "C2",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L2",
+     "C2/W58",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     2
+    ],
+    [
+     "L2",
+     "I2/G1",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/halo",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/lumped",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "R10/sole-family",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit",
+     1
+    ],
+    [
+     "L2",
+     "W189/regions",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     14
+    ],
+    [
+     "L3",
+     "global-field",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     14
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     1
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     11
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit-uncertified",
+     3
+    ],
+    [
+     "L4",
+     "null-space",
+     "admit",
+     14
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     4
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit-uncertified",
+     10
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     13
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L5",
+     "R13",
+     "admit",
+     2
+    ],
+    [
+     "L5",
+     "W171/axes",
+     "admit",
+     1
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L6",
+     "L6/C1",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "R12",
+     "admit",
+     1
+    ],
+    [
+     "L6",
+     "W49",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L7",
+     "R9",
+     "refuse",
+     1
+    ],
+    [
+     "L7",
+     "R9/order",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     1
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     1
+    ]
+   ],
+   "coverage": {
+    "rows": [
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "the partition of unity filed under region 'incompressible-navier-stokes-2d' names subdomains ['X00', 'X01', 'X10', 'X11'] that are not agents of this graph, so whether it covers this region's agents -- and only them -- cannot be decided from the declaration. Not hypothetical: censused over every partition in the package before this rule existed, channel_ns's names window_ns's windows W00..W11 while its own agents are C00..C11, and nothing read the names, so nothing noticed (W191). Name each subdomain after the agent whose local solve it weights"
+     },
+     {
+      "rule": "L2/W189/regions",
+      "verdict": "admit",
+      "subject": "<graph>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189"
+     },
+     {
+      "rule": "L2/R10/halo",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': overlap 21 cells covers the 20-cell domain of dependence. **What this bounds here is ACCURACY** (W168): every agent the decomposition cuts declares elliptic_subsolve=exposed, so no local step contains a global solve and a halo short of the reach carries stale data into the blended region without stopping the sweep from converging. Measured on CS-S1's exposed arrangement, the iteration converges at EVERY halo from 4 up -- contraction 0.089 at halo 4 against a declared reach of 20 -- so a narrow halo here costs accuracy and does not cost the fixed point. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136). Nor against BATT, BUS, COLD, HOT, INV, MGU, PASS, RAD, which the decomposition does cut but which belong to other regions: an overlapping region is checked against the overlap filed under it, and a non-overlapping one has no halo requirement at all (W189)"
+     },
+     {
+      "rule": "L2/C3/W57",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-thermal-transport-1d>",
+      "regions_named": [
+       "incompressible-thermal-transport-1d"
+      ],
+      "message": "region 'incompressible-thermal-transport-1d': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+     },
+     {
+      "rule": "L2/C3/W57",
+      "verdict": "admit-uncertified",
+      "subject": "<region:lumped-dc-circuit>",
+      "regions_named": [
+       "lumped-dc-circuit"
+      ],
+      "message": "region 'lumped-dc-circuit': substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+     },
+     {
+      "rule": "L2/C2/W58",
+      "verdict": "admit",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': disclosure: 152 cells are contaminated for more than one subdomain (up to 3 at once), so the reference-free surrogate is NOT provably equal to the max form of L2/C2's bound. Any agreement between them here is measured, not derived (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound"
+     },
+     {
+      "rule": "L2/C2",
+      "verdict": "admit-uncertified",
+      "subject": "<region:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+     },
+     {
+      "rule": "L6/L6/C1",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': convex (min chi = 0.001946) and the identity holds (1.110e-16), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere"
+     },
+     {
+      "rule": "L6/R12",
+      "verdict": "admit",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row"
+     },
+     {
+      "rule": "L6/W49",
+      "verdict": "admit-uncertified",
+      "subject": "<assembly:incompressible-navier-stokes-2d>",
+      "regions_named": [
+       "incompressible-navier-stokes-2d"
+      ],
+      "message": "region 'incompressible-navier-stokes-2d': Pi = 0.09541 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+     }
+    ],
+    "regions_by_rule": {
+     "L2/W189/regions": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/R10/halo": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C3/W57": [
+      "incompressible-thermal-transport-1d",
+      "lumped-dc-circuit"
+     ],
+     "L2/C2/W58": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L2/C2": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/L6/C1": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/R12": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "L6/W49": [
+      "incompressible-navier-stokes-2d"
+     ]
+    }
+   },
+   "scheme": {
+    "D_decomposition": "overlapping",
+    "D_decomposition_axes": [
+     "non-overlapping",
+     "overlapping"
+    ],
+    "overlap": null,
+    "overlap_by_region": {
+     "incompressible-navier-stokes-2d": 0.328125
+    }
+   },
+   "assembly_kind": "per-region",
+   "assembly_regions": [
+    "incompressible-navier-stokes-2d"
+   ],
+   "assembly_region_certificates": {
+    "incompressible-navier-stokes-2d": {
+     "pou_residual": 1.1102230246251565e-16,
+     "identity_holds": true,
+     "norm_A": 1.0,
+     "condition_holds": true
+    }
+   },
+   "harness": {
+    "overlap_cells": null,
+    "chi_shape": null,
+    "exchange_dt": 0.05,
+    "exchange_cadence": 10,
+    "elliptic_placement": "mixed",
+    "assembly_projection": null,
+    "regions": {
+     "incompressible-navier-stokes-2d": {
+      "overlap_cells": 21,
+      "chi_shape": "partition-of-unity",
+      "assembly_projection": "none"
+     }
+    }
+   },
+   "envelope_E6": {
+    "status": "holds",
+    "statement": "assembly bounded with ||A|| known, and the blend at least as accurate as what it blends",
+    "owned_by": [
+     "L6"
+    ],
+    "evidence": [
+     "region 'incompressible-navier-stokes-2d': identity 1.110e-16 and L6/C1 convexity (min chi = 0.001946): the blend is at least as accurate as what it blends"
+    ]
+   },
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)"
+   ],
+   "w189_decisions": [
+    {
+     "verdict": "admit-uncertified",
+     "subject": "<region:incompressible-navier-stokes-2d>",
+     "message": "the partition of unity filed under region 'incompressible-navier-stokes-2d' names subdomains ['X00', 'X01', 'X10', 'X11'] that are not agents of this graph, so whether it covers this region's agents -- and only them -- cannot be decided from the declaration. Not hypothetical: censused over every partition in the package before this rule existed, channel_ns's names window_ns's windows W00..W11 while its own agents are C00..C11, and nothing read the names, so nothing noticed (W191). Name each subdomain after the agent whose local solve it weights",
+     "evidence": {
+      "unmatched": [
+       "X00",
+       "X01",
+       "X10",
+       "X11"
+      ],
+      "field": "partition_of_unity",
+      "region": "incompressible-navier-stokes-2d"
+     }
+    },
+    {
+     "verdict": "admit",
+     "subject": "<graph>",
+     "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+     "evidence": {
+      "declared": {
+       "overlap": [
+        "incompressible-navier-stokes-2d"
+       ],
+       "overlap_cells": [
+        "incompressible-navier-stokes-2d"
+       ]
+      }
+     }
+    }
+   ],
+   "compile_s": 2.1967339999973774
+  }
+ },
+ "defects_clean_union_w189": [
+  {
+   "verdict": "admit",
+   "subject": "<graph>",
+   "message": "declared per region, each value filed under an OVERLAPPING cut region of this graph and each partition's subdomains agents of the region it is filed under: partition_of_unity under 'incompressible-navier-stokes-2d' (the region also holds ROTOR, which the partition does not blend: a lumped closure of the region's own family is in the region by W114's proxy and is not a subdomain of the cover); overlap under 'incompressible-navier-stokes-2d'; overlap_cells under 'incompressible-navier-stokes-2d'. Every rule whose subject is that region's cover reads the region's own value and names the region; a field still declared as one value is the graph's, exactly as before W189",
+   "evidence": {
+    "declared": {
+     "partition_of_unity": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "overlap": [
+      "incompressible-navier-stokes-2d"
+     ],
+     "overlap_cells": [
+      "incompressible-navier-stokes-2d"
+     ]
+    }
+   }
+  }
+ ],
+ "elapsed_seconds": 21.27822959999321
+}

@@ -151,6 +151,8 @@ Tier 41 priced part 1 and said `partition_of_unity`, `overlap` and `overlap_cell
 
 `_r12_conservative_assembly` and `_w49_sigma_branch` are both gated on `graph.partition_of_unity` **before** they reach any axis. So with a partition present, part 1's change is **sufficient for all three rules**; what remains is that the partition is one object per graph, so a partition covering only the tiling still has to be declared as the whole graph's. **That is part 2, and it is exactly where Tier 41 drew it.** **W189.**
 
+> **2026-09-10, Tier 45:** part 2 is built — [[per-region-assembly]]. The partition of unity, the overlap and the overlap-cell count are each filed per OVERLAPPING region, and this section's union, declared that way, names its region in every assembly decision. This section stays as written; it is Tier 44's measurement of where part 1 stopped.
+
 ---
 
 # 7. What this does NOT do
