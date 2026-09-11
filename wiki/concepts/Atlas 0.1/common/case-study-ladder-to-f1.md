@@ -611,3 +611,66 @@ Two things CS-S2 found on the way are framework findings rather than donor ones:
 ## 15.4 The next step
 
 **Not started, and the choice is the user's.** In line: rung 8's admissibility page, W165's own first step — can an inequality-constrained seam compile at all; W171 part 1, then part 2; W175, after deciding whether W174's 2$\times$2 counts as a second graph; W95, re-scoped against the certificate; W178; and whether to fetch NeuberNet's CC BY 4.0 Zenodo analyses as a plastic-branch referent, or a finite-cutoff donor for branch (a) — both downloads, so both asked before.
+
+---
+
+# 16. Rung 8's admissibility question is answered, and it reshapes the module (2026-09-10)
+
+Full record: [[inequality-seam-admissibility]] (the decision, with one measurement) and [[gap-worklist]] Tier 42.
+
+**§15.4's list put rung 8's admissibility page first and the choice was taken.** W165's own first step — *can an inequality-constrained seam be compiled at all* — is done. This section does for it what §8–§15 did for their rows: what it settles, what moves on this page, the critical path restated, and the next step. **No rung is marked complete.** Rung 8's status line moves and its module changes shape.
+
+## 16.1 It compiles, and that is the defect
+
+**The answer is no, and the reason it looks like yes is that nothing asks.** Three two-agent graphs differing only in the shape of one side's `boundary_response` — linear, kinked at the probe base, kinked behind a gap of $10^{-3}$ — compile to the **same verdict under the same eighteen decisions in the same order**, with the same envelope stamp and $\beta$ spanning $0.13\%$. At the solved interface trace:
+
+| fixture | reported residual | the condition it stands for | ratio |
+|---|---|---|---|
+| smooth **(control)** | $8.02\times10^{-16}$ | $9.66\times10^{-16}$ | $1.204$ |
+| kink-at-base | $4.75\times10^{-16}$ | $4.420\times10^{-2}$ | $9.30\times10^{13}$ |
+| kink-at-gap | $5.45\times10^{-16}$ | $4.031\times10^{-2}$ | $7.39\times10^{13}$ |
+
+For an affine seam $S\lambda-\chi$ **is** the port-matching condition; for a kinked one the two part company, and only the first is ever reported. That is the **silent-wrongness class** measured rather than argued, which is what makes the verdict a **refusal** — `L3/C10` on a declared condition class (**W182**) — and not a decertification.
+
+Three things worth carrying off the page:
+
+- **No rule can be widened into it.** Enumerated layer by layer at the code, every rule that reads a declaration reads one that exists and is correct. The equality is written down in exactly one place, C5's docstring, and the check there is that an orientation string is non-empty. **L1, where a declaration would have to live, has no field for it** — which is the whole verdict in one row.
+- **The refusal a contact graph gets today is about the wrong property.** `MotionClass.SOLUTION_DEPENDENT` is the only field a contact seam can truthfully set, and it refuses at `L2/InterfaceMotion` — *and it refuses the linear control just as hard*. So the question is not merely unanswered, it is **unasked**: the compile stops at L2 and never reaches L3.
+- **L9 is the one layer whose theory survives intact**, because the master bound needs Lipschitz continuity and not differentiability. The top of the error theory is fine and the instrument feeding it is not, which is [[tier0-measurements]]'s shape on a fixture.
+
+## 16.2 What moves on this page
+
+**§14.1's rung-8 row.** *scoped, not started* becomes **first step done; the module reshaped; the rung open**. §14.1 stays as written and this is the count now.
+
+**And the module is a different and much smaller object than §4's Phase C row implies.** W165 carried an `[AI Inference]` that if the answer were a named hole the module's job would change *from coupling a tyre to emitting the measurement the missing rule would constrain*. It is a named hole, so it does. Rung 8's first module is: a declared condition class with `EQUALITY` as the default so every existing graph is byte-identical; `L3/C10`; a `NamedHole` emitting three numbers — the branch gap $\lVert J_+-J_-\rVert/\lVert J_-\rVert$, the active-set switch rate per macro-step, and the violated-condition residual; and a probe that returns **both** one-sided blocks at a declared switch, or declines. **None of that needs a contact expert.**
+
+**What still does.** The passivity pair — a genuinely non-associated Coulomb tangent beside W138's orientation artefact, on one unmodified instrument — is where W165 priced most of the rung's value, and a fixture cannot supply it: the question it answers is whether anything *other than the analyst's prior knowledge* separates a repairable convention error from irreducible physics. That is clause 4 of the page's done-when and rung 8 cannot be finished without it. **The row's budget — more than rungs 6 and 7 together — stands for the rung; it never priced the page.**
+
+**One prediction is confirmed and its own diagnostic refuted**, which is the correction most worth carrying. W165 said the probed block would depend on probe amplitude *"in a way no `epsilon` sweep will settle"*. Over nine decades the smooth control is stable to $2.49\times10^{-10}$, the **kink at the base to $2.33\times10^{-10}$** — nine digits, the control's nine — and only the offset kink drifts, at $1.37\times10^{-1}$. $\mathrm{relu}$ is positively homogeneous, so the one-sided quotient is exactly step-independent, and the sweep returns $J_+$ to fifteen digits while $J_-$ sits $26.1\%$ away unmentioned. **A stable sweep is not evidence of differentiability.** §5's negative had the same shape — *the proposal's own wording names the wrong test* — and the instrument that covers all three cases is a two-sided probe, which is **W180**'s done-when arrived at from the other side.
+
+## 16.3 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W182** — an inequality seam compiles, and nothing can declare otherwise | rung 8's first module, and any seam with a discrete component in its condition | `open`, **medium**, scoped: a default-valued declaration, one L3 condition, one `NamedHole` and three numbers. It is the whole of rung 8 that is buildable without an expert |
+| **W165** — rung 8 itself | rung 8's gate | `open`, **large**, and **reshaped**. Its first step is done. Clause 4 of its done-when needs a contact expert nobody here has, and the build repo has none |
+| **W171** — `decomposition` is one field per graph | rung 9's integration graph | `open`, scoped in Tier 40, **not started**. Part 1 is $7$ rule sites and $81$ references across $17$ test files; `partition_of_unity`, `overlap` and `overlap_cells` are part 2 |
+| **W172** — the seams that would join the subsystems do not exist | rung 9's $O(K)$ integration cost | `open`, after W171 |
+| **rung 3** — no graph holds two learned experts | the foundation-model claim's own configuration | `open`, **never built**, and the substitution campaign tests a different arrangement ([[f1-pathmap-and-end-goal]] §3.3). Not attempted in Tier 42 |
+| **W95** — no same-class reference pair | every learned substitution verdict | `open`; binding at the certificate and for bounded donors, still not re-scoped against it |
+| **W181** — R7 states a hypothesis it does not check | the auditability of every probed block | `open`, small-to-medium, pinned by two defect-asserting tests |
+| **W178** — a scaled certificate | an informative verdict at a seam with a real blind band | `open`, a derivation |
+| **W175** — the halo branch is one variable short of its cause | the attribution of the one validated refusal | `open`, pinned by two defect-asserting tests |
+
+**Closed off it**: nothing. **Not on it**: W176, W179, W180 — though W180 is now *coupled* to W182 by a shared instrument, and closing either half-closes the other.
+
+## 16.4 The next step
+
+**Not started, and the choice is the user's.** In line, in the order the work actually unblocks:
+
+- **W182, rung 8's first module.** The only piece of rung 8 buildable today, scoped to a default-valued declaration and one refusal, with a byte-identical-artifact test as its own control. It also gives **W180** its instrument.
+- **Rung 3** — a second learned expert joining a graph, which no graph has ever held and which the substitution campaign does not test. Poseidon-T and NeuberNet are both local and are different families; `thermal_seam` is the natural template and its coherence is unchecked. **Expect a refusal and treat it as the result**: `L2/R10` has a live reason against one and W95 against both, so the finding would be the first time the framework has been asked this exact question.
+- **W171 part 1, then part 2, then W172** — rung 9, in that order and not otherwise.
+- Then W175, W95 re-scoped against the certificate, and W178.
+
+**Rung 8's module, rung 3 and rung 9 are each a tier.** Tier 42 did the first of §15.4's list and named the rest as not done.

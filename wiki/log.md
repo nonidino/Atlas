@@ -3884,3 +3884,74 @@ On its $29$-sensor ring the donor's $u_x$ port keeps $0.69$ of its norm outside 
 **The full suite at this tree: $1112$ passed** — the $1067$ baseline tests and the $45$ new ones — run as disjoint groups, with the five clock-sensitive files serially and alone. `scripts/vault_scan.py`: $218$ files, $0$ problems.
 
 Changed: [[case-study-bounded-donor-atlas-0.1]] (new), [[case-study-ladder-to-f1]] (§14, §15, dated notes), [[f1-pathmap-and-end-goal]] (§3.3), [[gap-worklist]] (Tier 41; W95, W109, W137, W176, W177 annotated; W178, W179, W180 opened), [[expert-donor-survey]], [[substitution-campaign-checkpoint]], [[epsilon-halo-measurement]], [[case-study-wing-fsi-atlas-0.1]], [[poc2-frontwing-results]], [[case-study-neural-interface-atlas-0.1]], [[code-and-papers]], [[index]], [[log]]. Code: `atlas/composition.py`, `atlas/demo_frontwing/engine.py` (docstring), `scripts/w137_certificate_visibility.py` (new), `scripts/cs_s2_elastic_patch.py` (new), `scripts/cs_s2_neubernet.py` (new), `scripts/cs_s2_bounded_donor.py` (new), `scripts/cs_s2_torsion_control.py` (new), `scripts/cs_s2_sign_jump.py` (new), `tests/test_tier41_certificate_reading.py` (new), `tests/test_tier41_bounded_donor.py` (new). Artifacts: `out/w137/w137.json`, `out/cs_s2/cs_s2.json`, `out/cs_s2/torsion_control.json`, `out/cs_s2/sign_jump.json`; the operators and the weights stay out of the repository.
+
+---
+
+## [2026-09-10] tier 42 | rung 8's admissibility question is answered: an inequality seam compiles, and that is the defect
+
+**Can a seam whose interface condition is an INEQUALITY be compiled at all?** W165's own first step, and the worklist marked it **[AI Inference]** that the page should come before the module. It should have, and the reason is the answer: **it compiles**, and compiling is the defect. [[inequality-seam-admissibility]], `scripts/w181_inequality_seam_probe.py`, `tests/test_tier42_inequality_seam.py`, `out/w181/w181.json`.
+
+**No contact expert was written and no tyre case study exists.** The whole finding is available from the declaration plus the *shape* of one callable, in six seconds of `numpy`, against a row that priced the rung at more than rungs 6 and 7 together. The budget is not wrong — it prices the *rung* — and the page is what separated the two.
+
+### The measurement
+
+Three two-agent graphs on one `MECH` seam, identical in every declaration, differing only in agent B's `boundary_response`: linear; linear plus a rectifier at the probe base; linear plus a rectifier behind a gap of $10^{-3}$. A rectifier is what a complementarity condition becomes once it is solved for one of its two variables, and it is not contact physics — there is no $\mu$, no patch, no Hertzian distribution anywhere in this tier.
+
+**They compile to the same verdict under the same eighteen decisions in the same order**, with the same envelope stamp — `E1: holds` included — and $\beta$ spanning $0.13\%$. And at the solved interface trace:
+
+| fixture | reported residual | the condition it stands for | ratio |
+|---|---|---|---|
+| smooth **(control)** | $8.02\times10^{-16}$ | $9.66\times10^{-16}$ | $1.204$ |
+| kink-at-base | $4.75\times10^{-16}$ | $4.420\times10^{-2}$ | $9.30\times10^{13}$ |
+| kink-at-gap | $5.45\times10^{-16}$ | $4.031\times10^{-2}$ | $7.39\times10^{13}$ |
+
+For an affine seam $S\lambda-\chi$ **is** the port-matching condition $\sum_i P_i^{\ast}f_i(P_i\lambda)$; for a kinked one the two part company, and only the first is ever reported. **The framework reports a machine-precision interface solve on a seam whose matching condition is violated at $4\%$ of the trace scale.**
+
+### The verdict: a named hole, refused at L3, on a declaration
+
+Enumerated layer by layer at the code rather than argued: **two layers break silently** — L4's one-sided chord and L5's four accelerators, none of which projects onto a cone; **E1 is stamped `holds` where it is false and cannot be declared otherwise**, because a contact patch's active set switches at a time the solution decides and a `TopologyEvent` fires at a declared $t$; **C5's runtime residual reads a correct open patch as a fault**, since $e_A=e_B$ holds at a contact seam and $f_A=-f_B$ does not; `L4/E7/passivity` **gains** information; and **L9 survives intact**, because the master bound needs Lipschitz continuity and not differentiability. The equality is written down in exactly one place — C5's docstring at `admissibility.py:281` — and the check there is that an orientation string is non-empty.
+
+**No rule can be widened into it**: every rule that reads a declaration reads one that exists and is correct, and L1, where a declaration would have to live, has no field for it. So the repair is a declared condition class (`EQUALITY` default, so every existing graph stays byte-identical) and a new `L3/C10` that **refuses** the other — `refuse` rather than `admit-uncertified` because the split rule refuses the silent-wrongness class and the $10^{13}$ ratio measures that the class is right, and not a fourth `FailureClass` because `SILENT_WRONGNESS` already names it. **W182**, opened, scoped, not built.
+
+### Two corrections to W165's own predictions
+
+**Prediction (c) holds and is worse than stated.** R7's sentence is *"deterministic and **smooth** $\to$ finite differences with the step set by the reproducibility floor"*; `probe_route` is three lines with no third clause. Beside it, counted: **no decision anywhere cites R7** — zero across three compiles — so the defect is not auditable from a run artifact; and **the reproducibility floor sets the probe step for nobody**, $0$ of $24$ constructible agents and $0$ of $19$ resolvable declarations, because `max(1e-2, 100 * floor)` beats every floor in the package. All $24$ take the finite-difference route. **W181**.
+
+**Prediction (a) holds and its own proposed diagnostic is refuted**, which is the more useful half. W165 said the block would depend on amplitude *"in a way no `epsilon` sweep will settle"*. Over nine decades the smooth control drifts $2.49\times10^{-10}$ and **the kink at the probe base drifts $2.33\times10^{-10}$** — nine digits, the control's nine — because $\mathrm{relu}$ is positively homogeneous and the one-sided quotient is exactly step-independent. The matrix it returns so stably is $J_+$ to fifteen digits, with $J_-$ $26.1\%$ away and never mentioned. Only the offset kink drifts, at $1.37\times10^{-1}$, and below the gap it is **bit-identical** to the linear control while the compiler's own default step of $10^{-2}$ sits above it. **A stable sweep is not evidence of differentiability.** This is [[epsilon-halo-measurement]]'s shape a second time — *the proposal's own wording names the wrong test* — and the instrument that separates all three is **W180**'s two-sided probe, whose own [AI Inference] predicted one instrument would have to see both a kink by physics and a jump by architecture.
+
+**And the refusal a contact graph gets today is about the wrong property.** `MotionClass.SOLUTION_DEPENDENT` is the only field a contact seam can truthfully set; set it and `L2/InterfaceMotion` refuses, alone — **and it refuses the smooth control just as hard**. So the question is not merely unanswered, it is unasked: the compile stops at L2 and never reaches L3.
+
+### What rung 8 becomes, and its done-when
+
+The module's job changes from *couple a tyre* to *emit the measurement the missing rule would constrain* — a declaration, one L3 condition, a `NamedHole` and three numbers (the branch gap $\lVert J_+-J_-\rVert/\lVert J_-\rVert$, the switch rate per macro-step, the violated-condition residual), plus a probe that returns both one-sided blocks or declines. **None of that needs a contact expert.** Rung 8 itself does: its done-when is five clauses and clause 4 — the passivity pair, a genuinely non-associated Coulomb tangent beside W138's orientation artefact on one instrument — is where W165 priced most of the rung's value and is not answerable by a fixture. Clause 5 forbids marking the rung done against a gate nobody restated.
+
+### What this tier did NOT do, named
+
+**Tasks 2 and 3 were not started.** **Rung 3** — a second learned expert joining a graph, which no graph has ever held — was not attempted; **W171 part 1** and **W172**, rung 9's blockers, were not attempted. Rung 8's *module* was not built either: W182 is opened and scoped, not closed.
+
+**No rule was written and no schema changed.** `atlas/` is untouched at this tier's HEAD; the only files added are one script, one test file and one page. `test_W182_no_inequality_branch_was_written` fails if a complementarity branch appears in `solve.py` without the page being re-read first, which is W173's guard one rule along.
+
+**Prediction (b) was not measured, deliberately.** A synthetic non-symmetric block would confirm only that the rule reads the symmetric part's smallest eigenvalue correctly. The W138 pair is informative only if the non-symmetry arrives from a real non-associated flow rule, because what it tests is whether anything *other than the analyst's prior knowledge* separates a convention artefact from irreducible physics.
+
+**L7 is enumerated and argued, not measured.** R9 checks that the clocks nest and that both sides can integrate; nothing asks whether the integrand is continuous *inside* the interval, and a macro-step containing a switch has one that is not.
+
+**Nothing was downloaded and no machine was rented.** W175, W95, W176 and W178 are untouched.
+
+### Housekeeping, and one thing that is not a change
+
+`wiki/concepts/Atlas 0.1/common/case-study-thermal-strain-atlas-0.1.md` shows modified in `git status` and is **byte-identical to HEAD** — a stale stat-cache entry, not an edit. Staging is by explicit path, so it is not committed.
+
+Three line citations in the page were off by a few lines on first draft and were corrected against the source, each verified at the cited line rather than re-counted by eye. One claim was tightened: the first draft said the existing suite already asserts `L4/E7/passivity` fires on a non-symmetric block; checked, those tests use a **symmetric indefinite** one, so the sentence now says what is actually covered.
+
+### The brief, checked
+
+- **The build repository's `atlas-0.1` is at `a00d3af` as the brief says, and it is not what is checked out.** The working tree there sits on `atlas-0.1-windfarm` at `0a407b7`. Nothing in that repo was modified.
+- **W165's claim that no contact solver can be borrowed is verified at the source.** `src/atlas/solvers/` holds `atmosphere`, `compressible2d`, `grid`, `oracles`, `riemann`, `thermo`, `thermostruct2d`, `trajectory`; the only *contact* in any of them is HLLC's **contact discontinuity** in `riemann.py`, a gas-dynamics wave, and there is no `friction`, `coulomb` or `penalty` anywhere in the directory. The rung really is the first one whose expert does not already exist.
+- **The suite baseline was right.** $1112$ at HEAD, $1126$ here — the baseline plus this tier's $14$.
+- The vault's page count goes $218 \to 219$.
+
+### How it was run
+
+No `pytest-xdist` is installed, so *parallel groups* means four pytest **processes** over disjoint file sets, each writing to its own file — a pipe to `tail` hides progress until exit, which this project has paid for. Then the five clock-sensitive files serially and alone. **$1126$ passed, $0$ failed**: four groups at $227$, $192$, $315$ and $233$ in $8.1$ minutes wall, then `tier21` $36$, `tier22` $39$, `tier31` $42$, `tier32` $20$, `tier33` $22$ in $5.1$ minutes. **$13.2$ minutes wall on battery at $59\%$**, against Tier 41's $\approx22.5$ minutes of summed test time — the difference is four processes rather than one and is not a claim about anything. `scripts/vault_scan.py wiki`: **$219$ files, $0$ problems.**
+
+Changed: [[inequality-seam-admissibility]] (new), [[case-study-ladder-to-f1]] (§16), [[f1-pathmap-and-end-goal]] (§3.3's rung-8 row), [[gap-worklist]] (Tier 42; W165 annotated; W181 and W182 opened), [[index]]. Added: `scripts/w181_inequality_seam_probe.py`, `tests/test_tier42_inequality_seam.py`, `out/w181/w181.json`. `atlas/` unchanged. `.gitignore` gains the tier's allowlist pair, on the pattern every `out/` artifact here follows: the JSON is committed because the tests assert the page's figures against it rather than retyping them.

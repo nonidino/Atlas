@@ -184,6 +184,15 @@ out/cs_s2/*
 !out/w137/
 out/w137/*
 !out/w137/w137.json
+# Tier 42 (W181/W182, the inequality-seam probe). JSON only, and it is small:
+# the whole artifact is three compiles, one nine-decade sweep and two censuses
+# over declarations. Committed because tests/test_tier42_inequality_seam.py
+# asserts the page's figures against it rather than retyping them, and because
+# the run is six seconds of numpy from cold -- no checkpoint, no torch, no
+# network -- so a fresh clone can rebuild it or check it, either way.
+!out/w181/
+out/w181/*
+!out/w181/w181.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

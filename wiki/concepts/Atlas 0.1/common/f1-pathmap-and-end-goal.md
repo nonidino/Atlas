@@ -87,7 +87,7 @@ Rung 0 is built. Rungs 1 and 2 are fully specified. Rung 4 — the reuse test �
 | **3** | **never built**; the revised ladder has no row for it, and no graph in `atlas/cases` holds two learned experts |
 | **4** | measured, and qualified: a certificate is the expert's *at a probe state*, so a library carries one per expert per regime |
 | **5**, **6**, **7** | built **classically** — CS-12 `wing_fsi`, CS-13 `cooling_loop`, CS-14 `powertrain` |
-| **8** | scoped, not started |
+| **8** | **first step done, rung open** — its admissibility question is answered and the answer is a **named hole**: an inequality-constrained seam compiles to the same verdict under the same decisions as an equality one, so the repair is a refusal on a declared condition class rather than a widened rule ([[inequality-seam-admissibility]], W182). The module reshapes from *couple a tyre* to *emit the measurement the missing rule would constrain* and no longer needs a contact expert; **§8's clause 4 — the passivity pair — still does**, and the rung's gate below is one this page must restate rather than quietly retire |
 | **9** | blocked on a schema change |
 | **10**, **11** | exercised on small graphs only, not on the vehicle graph; rung 11's gate as written has not been posed |
 | **12** | a different research programme (§6) |

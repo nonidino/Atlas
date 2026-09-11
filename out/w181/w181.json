@@ -1,0 +1,1245 @@
+{
+ "what": "W181 -- an inequality-shaped seam through the nine layers, measured from the declaration alone",
+ "date": "2026-09-10",
+ "compiles": {
+  "smooth": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "envelope": [
+    "holds",
+    "holds",
+    "holds",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "holds"
+   ],
+   "rules": [
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     "A, B"
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     "s"
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     "<assembly>"
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     "<run>"
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     "<graph>"
+    ]
+   ],
+   "n_decisions": 18,
+   "beta": 3.5617169384350196,
+   "kappa": 1.226503674337364,
+   "norm_S": 4.368458911940179,
+   "passivity_defect": 0.0,
+   "probe_route": {
+    "A": "finite-difference",
+    "B": "finite-difference"
+   },
+   "rules_identical_to_smooth": true,
+   "verdict_identical_to_smooth": true
+  },
+  "kink-at-base": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "envelope": [
+    "holds",
+    "holds",
+    "holds",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "holds"
+   ],
+   "rules": [
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     "A, B"
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     "s"
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     "<assembly>"
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     "<run>"
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     "<graph>"
+    ]
+   ],
+   "n_decisions": 18,
+   "beta": 3.566386202530582,
+   "kappa": 1.3208142781010095,
+   "norm_S": 4.710533817524832,
+   "passivity_defect": 0.0,
+   "probe_route": {
+    "A": "finite-difference",
+    "B": "finite-difference"
+   },
+   "rules_identical_to_smooth": true,
+   "verdict_identical_to_smooth": true
+  },
+  "kink-at-gap": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "envelope": [
+    "holds",
+    "holds",
+    "holds",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "holds"
+   ],
+   "rules": [
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     "A, B"
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L3",
+     "dim-M",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     "s"
+    ],
+    [
+     "L3",
+     "C8",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     "s"
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     "s"
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     "<assembly>"
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     "<run>"
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     "<graph>"
+    ]
+   ],
+   "n_decisions": 18,
+   "beta": 3.566233835032971,
+   "kappa": 1.3066206259246909,
+   "norm_S": 4.659714685724592,
+   "passivity_defect": 0.0,
+   "probe_route": {
+    "A": "finite-difference",
+    "B": "finite-difference"
+   },
+   "rules_identical_to_smooth": true,
+   "verdict_identical_to_smooth": true
+  }
+ },
+ "r7": {
+  "source_mentions": {
+   "compiler": {
+    "mentions_R7": 0,
+    "mentions_smooth": 0
+   },
+   "probe": {
+    "mentions_R7": 0,
+    "mentions_smooth": 1
+   },
+   "capability": {
+    "mentions_R7": 1,
+    "mentions_smooth": 0
+   },
+   "scheme": {
+    "mentions_R7": 1,
+    "mentions_smooth": 1
+   },
+   "conformance": {
+    "mentions_R7": 0,
+    "mentions_smooth": 1
+   }
+  },
+  "decisions_citing_R7": [],
+  "n_decisions_citing_R7": 0,
+  "probe_route_source": "    def probe_route(self) -> str:\n        \"\"\"R7 -- the probing method follows ``differentiable``.\"\"\"\n        if self.differentiable.has_jvp:\n            return \"jvp\"\n        if self.deterministic:\n            return \"finite-difference\"\n        return \"regression\"\n",
+  "rule_text": "the probing method follows differentiable: jvp -> exact JVP; deterministic and smooth -> finite differences with the step set by the reproducibility floor; otherwise regularized regression over more probes than modes"
+ },
+ "step_census": {
+  "rows": [
+   {
+    "case": "brake_thermal",
+    "agent": "duct",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "brake_thermal",
+    "agent": "disc",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "channel_ns",
+    "skipped": "build() missing 2 required positional arguments: 'u_full' and 'v_full'"
+   },
+   {
+    "case": "cooling_loop",
+    "agent": "BLOCK",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "cooling_loop",
+    "agent": "PASS",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "cooling_loop",
+    "agent": "HOT",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "cooling_loop",
+    "agent": "RAD",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "cooling_loop",
+    "agent": "COLD",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "front_wing",
+    "skipped": "build() missing 2 required positional arguments: 'u_full' and 'v_full'"
+   },
+   {
+    "case": "ground_effect",
+    "skipped": "build() missing 2 required positional arguments: 'u_full' and 'v_full'"
+   },
+   {
+    "case": "powertrain",
+    "agent": "ROTOR",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "powertrain",
+    "agent": "MGU",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "powertrain",
+    "agent": "BUS",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "powertrain",
+    "agent": "BATT",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "powertrain",
+    "agent": "INV",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "thermal_seam",
+    "agent": "gas",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "thermal_seam",
+    "agent": "shell",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "thermal_strain",
+    "agent": "cond",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "thermal_strain",
+    "agent": "elas",
+    "route": "finite-difference",
+    "floor": 2.220446049250313e-16,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm",
+    "agent": "I",
+    "route": "finite-difference",
+    "floor": 1e-06,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm",
+    "agent": "N",
+    "route": "finite-difference",
+    "floor": 1e-06,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm",
+    "agent": "F",
+    "route": "finite-difference",
+    "floor": 1e-06,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm",
+    "agent": "W",
+    "route": "finite-difference",
+    "floor": 1e-06,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm",
+    "agent": "Bp",
+    "route": "finite-difference",
+    "floor": 1e-06,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm",
+    "agent": "Bm",
+    "route": "finite-difference",
+    "floor": 1e-06,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm",
+    "agent": "R1",
+    "route": "finite-difference",
+    "floor": 1e-06,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm",
+    "agent": "R2",
+    "route": "finite-difference",
+    "floor": 1e-06,
+    "step": 0.01,
+    "step_set_by_floor": false
+   },
+   {
+    "case": "wind_farm_real",
+    "skipped": "build() missing 2 required positional arguments: 'u_full' and 'v_full'"
+   },
+   {
+    "case": "window_ns",
+    "skipped": "build() missing 2 required positional arguments: 'u_full' and 'v_full'"
+   },
+   {
+    "case": "wing_fsi",
+    "skipped": "build() missing 2 required positional arguments: 'u_full' and 'v_full'"
+   }
+  ],
+  "n_agents": 24,
+  "n_step_set_by_floor": 0,
+  "source": {
+   "rows": [
+    {
+     "file": "brake_thermal.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "brake_thermal.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "channel_ns.py",
+     "text": "np.finfo(float).eps",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "cooling_loop.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "cooling_loop.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "ground_effect.py",
+     "text": "np.finfo(float).eps",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "ground_effect.py",
+     "text": "np.finfo(float).eps",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "poseidon.py",
+     "text": "reproducibility_floor",
+     "value": null,
+     "step_set_by_floor": null
+    },
+    {
+     "file": "powertrain.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "thermal_seam.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "thermal_seam.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "thermal_strain.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "thermal_strain.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "wake_array.py",
+     "text": "float(reproducibility_floor)",
+     "value": null,
+     "step_set_by_floor": null
+    },
+    {
+     "file": "wake_array.py",
+     "text": "np.finfo(float).eps",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "wind_farm.py",
+     "text": "1.0e-6",
+     "value": 1e-06,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "wind_farm_real.py",
+     "text": "np.finfo(float).eps",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "wind_farm_real.py",
+     "text": "np.finfo(float).eps",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "window_ns.py",
+     "text": "np.finfo(float).eps",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "wing_fsi.py",
+     "text": "np.finfo(float).eps",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    },
+    {
+     "file": "wing_fsi.py",
+     "text": "float(np.finfo(float).eps)",
+     "value": 2.220446049250313e-16,
+     "step_set_by_floor": false
+    }
+   ],
+   "n_declarations": 21,
+   "n_resolved": 19,
+   "n_step_set_by_floor": 0,
+   "floor_needed_to_set_the_step": 0.0001
+  }
+ },
+ "sweep": {
+  "smooth": {
+   "rows": [
+    {
+     "eps": 1e-08,
+     "norm_S": 4.3684589121673,
+     "beta": 3.5617169382403735,
+     "kappa": 1.2265036744681594,
+     "passivity_defect": 0.0,
+     "drift": 0.0
+    },
+    {
+     "eps": 1e-07,
+     "norm_S": 4.36845891189826,
+     "beta": 3.561716938444789,
+     "kappa": 1.2265036743222308,
+     "passivity_defect": 0.0,
+     "drift": 2.493345426785201e-10
+    },
+    {
+     "eps": 1e-06,
+     "norm_S": 4.368458911939419,
+     "beta": 3.561716938441785,
+     "kappa": 1.226503674334821,
+     "passivity_defect": 0.0,
+     "drift": 2.4279140562237276e-10
+    },
+    {
+     "eps": 1e-05,
+     "norm_S": 4.3684589119400075,
+     "beta": 3.561716938435326,
+     "kappa": 1.2265036743372104,
+     "passivity_defect": 0.0,
+     "drift": 2.4288046423932827e-10
+    },
+    {
+     "eps": 0.0001,
+     "norm_S": 4.368458911940224,
+     "beta": 3.5617169384350587,
+     "kappa": 1.2265036743373634,
+     "passivity_defect": 0.0,
+     "drift": 2.4296311737699994e-10
+    },
+    {
+     "eps": 0.001,
+     "norm_S": 4.368458911940178,
+     "beta": 3.561716938435017,
+     "kappa": 1.2265036743373647,
+     "passivity_defect": 0.0,
+     "drift": 2.429681363081771e-10
+    },
+    {
+     "eps": 0.01,
+     "norm_S": 4.368458911940179,
+     "beta": 3.5617169384350196,
+     "kappa": 1.226503674337364,
+     "passivity_defect": 0.0,
+     "drift": 2.4296762217115507e-10
+    },
+    {
+     "eps": 0.1,
+     "norm_S": 4.36845891194018,
+     "beta": 3.561716938435021,
+     "kappa": 1.2265036743373638,
+     "passivity_defect": 0.0,
+     "drift": 2.4296772272771784e-10
+    },
+    {
+     "eps": 1.0,
+     "norm_S": 4.368458911940179,
+     "beta": 3.561716938435019,
+     "kappa": 1.2265036743373643,
+     "passivity_defect": 0.0,
+     "drift": 2.4296774718490026e-10
+    }
+   ],
+   "max_drift": 2.493345426785201e-10,
+   "digits_stable": 9,
+   "monotone_in_eps": false
+  },
+  "kink-at-base": {
+   "rows": [
+    {
+     "eps": 1e-08,
+     "norm_S": 4.710533817730679,
+     "beta": 3.5663862023049226,
+     "kappa": 1.3208142782423014,
+     "passivity_defect": 0.0,
+     "drift": 0.0
+    },
+    {
+     "eps": 1e-07,
+     "norm_S": 4.710533817513763,
+     "beta": 3.56638620253931,
+     "kappa": 1.3208142780946737,
+     "passivity_defect": 0.0,
+     "drift": 2.333864163618219e-10
+    },
+    {
+     "eps": 1e-06,
+     "norm_S": 4.710533817526499,
+     "beta": 3.566386202537844,
+     "kappa": 1.3208142780987877,
+     "passivity_defect": 0.0,
+     "drift": 2.2704811154724254e-10
+    },
+    {
+     "eps": 1e-05,
+     "norm_S": 4.710533817525203,
+     "beta": 3.566386202530898,
+     "kappa": 1.3208142781009966,
+     "passivity_defect": 0.0,
+     "drift": 2.271291243708488e-10
+    },
+    {
+     "eps": 0.0001,
+     "norm_S": 4.710533817524809,
+     "beta": 3.5663862025306194,
+     "kappa": 1.3208142781009893,
+     "passivity_defect": 0.0,
+     "drift": 2.2720015478616362e-10
+    },
+    {
+     "eps": 0.001,
+     "norm_S": 4.71053381752483,
+     "beta": 3.5663862025305786,
+     "kappa": 1.3208142781010104,
+     "passivity_defect": 0.0,
+     "drift": 2.2720557059698845e-10
+    },
+    {
+     "eps": 0.01,
+     "norm_S": 4.710533817524832,
+     "beta": 3.566386202530582,
+     "kappa": 1.3208142781010095,
+     "passivity_defect": 0.0,
+     "drift": 2.2720516184645873e-10
+    },
+    {
+     "eps": 0.1,
+     "norm_S": 4.710533817524833,
+     "beta": 3.5663862025305835,
+     "kappa": 1.3208142781010093,
+     "passivity_defect": 0.0,
+     "drift": 2.272052009493515e-10
+    },
+    {
+     "eps": 1.0,
+     "norm_S": 4.710533817524832,
+     "beta": 3.5663862025305826,
+     "kappa": 1.3208142781010095,
+     "passivity_defect": 0.0,
+     "drift": 2.2720527870162337e-10
+    }
+   ],
+   "max_drift": 2.333864163618219e-10,
+   "digits_stable": 9,
+   "monotone_in_eps": false
+  },
+  "kink-at-gap": {
+   "rows": [
+    {
+     "eps": 1e-08,
+     "norm_S": 4.3684589121673,
+     "beta": 3.5617169382403735,
+     "kappa": 1.2265036744681594,
+     "passivity_defect": 0.0,
+     "drift": 0.0
+    },
+    {
+     "eps": 1e-07,
+     "norm_S": 4.36845891189826,
+     "beta": 3.561716938444789,
+     "kappa": 1.2265036743222308,
+     "passivity_defect": 0.0,
+     "drift": 2.493345426785201e-10
+    },
+    {
+     "eps": 1e-06,
+     "norm_S": 4.368458911939419,
+     "beta": 3.561716938441785,
+     "kappa": 1.226503674334821,
+     "passivity_defect": 0.0,
+     "drift": 2.4279140562237276e-10
+    },
+    {
+     "eps": 1e-05,
+     "norm_S": 4.3684589119400075,
+     "beta": 3.561716938435326,
+     "kappa": 1.2265036743372104,
+     "passivity_defect": 0.0,
+     "drift": 2.4288046423932827e-10
+    },
+    {
+     "eps": 0.0001,
+     "norm_S": 4.368458911940224,
+     "beta": 3.5617169384350587,
+     "kappa": 1.2265036743373634,
+     "passivity_defect": 0.0,
+     "drift": 2.4296311737699994e-10
+    },
+    {
+     "eps": 0.001,
+     "norm_S": 4.368458911940178,
+     "beta": 3.561716938435017,
+     "kappa": 1.2265036743373647,
+     "passivity_defect": 0.0,
+     "drift": 2.429681363081771e-10
+    },
+    {
+     "eps": 0.01,
+     "norm_S": 4.659714685724592,
+     "beta": 3.566233835032971,
+     "kappa": 1.3066206259246909,
+     "passivity_defect": 0.0,
+     "drift": 0.12361338643170966
+    },
+    {
+     "eps": 0.1,
+     "norm_S": 4.705393517240321,
+     "beta": 3.5663719360094426,
+     "kappa": 1.3193782369500628,
+     "passivity_defect": 0.0,
+     "drift": 0.1359747250835611
+    },
+    {
+     "eps": 1.0,
+     "norm_S": 4.710019239672429,
+     "beta": 3.5663847849080668,
+     "kappa": 1.3206705175515274,
+     "passivity_defect": 0.0,
+     "drift": 0.13721085894874624
+    }
+   ],
+   "max_drift": 0.13721085894874624,
+   "digits_stable": 0,
+   "monotone_in_eps": false
+  }
+ },
+ "truth": {
+  "jump_relative": 0.2614632192086418,
+  "gap": 0.001,
+  "gain": 0.6,
+  "rows": [
+   {
+    "shape": "kink-at-base",
+    "eps": 1e-08,
+    "to_J_minus": 0.2614632192667043,
+    "to_J_plus": 1.9039608935368156e-10,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-base",
+    "eps": 1e-07,
+    "to_J_minus": 0.2614632192062288,
+    "to_J_plus": 1.6886188880930407e-11,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-base",
+    "eps": 1e-06,
+    "to_J_minus": 0.2614632192092526,
+    "to_J_plus": 2.177398651535834e-12,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-base",
+    "eps": 1e-05,
+    "to_J_minus": 0.26146321920864785,
+    "to_J_plus": 1.7240322172124674e-13,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-base",
+    "eps": 0.0001,
+    "to_J_minus": 0.26146321920864785,
+    "to_J_plus": 2.244865733169296e-14,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-base",
+    "eps": 0.001,
+    "to_J_minus": 0.2614632192086418,
+    "to_J_plus": 1.610958726373074e-15,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-base",
+    "eps": 0.01,
+    "to_J_minus": 0.2614632192086418,
+    "to_J_plus": 1.6985790894520848e-16,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-base",
+    "eps": 0.1,
+    "to_J_minus": 0.261463219208642,
+    "to_J_plus": 1.7138772730559871e-16,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-base",
+    "eps": 1.0,
+    "to_J_minus": 0.2614632192086418,
+    "to_J_plus": 6.05494918738614e-18,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 1e-08,
+    "to_J_minus": 2.1786007997929857e-10,
+    "to_J_plus": 0.2285029727038196,
+    "straddles_gap": false
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 1e-07,
+    "to_J_minus": 1.8959480176673822e-11,
+    "to_J_plus": 0.2285029727434586,
+    "straddles_gap": false
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 1e-06,
+    "to_J_minus": 2.5008931828502434e-12,
+    "to_J_plus": 0.22850297274213732,
+    "straddles_gap": false
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 1e-05,
+    "to_J_minus": 1.9792776515817256e-13,
+    "to_J_plus": 0.22850297274266593,
+    "straddles_gap": false
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 0.0001,
+    "to_J_minus": 2.519046658302451e-14,
+    "to_J_plus": 0.22850297274270548,
+    "straddles_gap": false
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 0.001,
+    "to_J_minus": 1.8594346368650714e-15,
+    "to_J_plus": 0.22850297274270684,
+    "straddles_gap": false
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 0.01,
+    "to_J_minus": 0.2353168972877778,
+    "to_J_plus": 0.022850297274270532,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 0.1,
+    "to_J_minus": 0.2588485870165553,
+    "to_J_plus": 0.0022850297274271546,
+    "straddles_gap": true
+   },
+   {
+    "shape": "kink-at-gap",
+    "eps": 1.0,
+    "to_J_minus": 0.261201755989433,
+    "to_J_plus": 0.00022850297274285076,
+    "straddles_gap": true
+   }
+  ]
+ },
+ "declared_truthfully": {
+  "smooth": {
+   "verdict": "refuse",
+   "runnable": false,
+   "refusing_rules": [
+    [
+     "L2",
+     "InterfaceMotion"
+    ],
+    [
+     "L2",
+     "InterfaceMotion"
+    ]
+   ],
+   "envelope": [
+    "holds",
+    "fails",
+    "holds",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "holds"
+   ]
+  },
+  "kink-at-gap": {
+   "verdict": "refuse",
+   "runnable": false,
+   "refusing_rules": [
+    [
+     "L2",
+     "InterfaceMotion"
+    ],
+    [
+     "L2",
+     "InterfaceMotion"
+    ]
+   ],
+   "envelope": [
+    "holds",
+    "fails",
+    "holds",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "holds"
+   ]
+  }
+ },
+ "residual": {
+  "smooth": {
+   "reported_residual": 4.536890596062306e-17,
+   "true_residual": 5.463690523629807e-17,
+   "chi_norm": 0.05656854249492382,
+   "reported_relative": 8.020165264942833e-16,
+   "true_relative": 9.658531548908285e-16,
+   "ratio_true_over_reported": 1.2042808632793343,
+   "iterations": 1,
+   "lam_norm": 0.014001214367164864
+  },
+  "kink-at-base": {
+   "reported_residual": 2.6874220530932865e-17,
+   "true_residual": 0.0025003806943288062,
+   "chi_norm": 0.05656854249492382,
+   "reported_relative": 4.750735894131341e-16,
+   "true_relative": 0.044200903612695665,
+   "ratio_true_over_reported": 93040119673454.67,
+   "iterations": 1,
+   "lam_norm": 0.013807178736642466
+  },
+  "kink-at-gap": {
+   "reported_residual": 3.08371190295267e-17,
+   "true_residual": 0.0022801849645334993,
+   "chi_norm": 0.05656854249492382,
+   "reported_relative": 5.451283994508762e-16,
+   "true_relative": 0.04030835626953111,
+   "ratio_true_over_reported": 73942866139674.4,
+   "iterations": 1,
+   "lam_norm": 0.013823226698204415
+  }
+ },
+ "elapsed_seconds": 5.8377861976623535
+}
