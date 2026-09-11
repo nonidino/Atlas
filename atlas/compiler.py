@@ -243,6 +243,46 @@ class _Context:
     transmission: Transmission | None = None
     decomposition: Decomposition | None = None
 
+    # -- W171: which region a subject is in, and that region's axis ---------
+
+    def region_axis(self, agent_id: str | None = None) -> Decomposition | None:
+        """The axis governing ``agent_id``'s region, or ``None`` if it is uncut.
+
+        **One helper for seven rule sites.**  W136 factored `_decomposition_cuts`
+        out so two rules resting on one premise could not drift about it; this is
+        the same move for the axis, and the reason is the same.
+
+        `ctx.decomposition` is the graph-global SCHEME axis and R2 may lift it to
+        non-overlapping for the whole interface problem.  That lift is genuinely
+        global -- probed-DtN poses the interface problem in the non-overlapping
+        view everywhere -- so it wins here, which is what keeps every lifted
+        graph behaving exactly as it did before W171.
+        """
+        if (self.decomposition is Decomposition.NON_OVERLAPPING
+                and self.decomposition is not self.graph.decomposition):
+            return Decomposition.NON_OVERLAPPING          # R2's lift, graph-wide
+        if agent_id is None:
+            return self.decomposition or self.graph.decomposition
+        return self.graph.agent_axis(agent_id)
+
+    def regions_on(self, axis: Decomposition) -> dict[str, list[str]]:
+        """The cut regions currently governed by ``axis``, family -> agent ids."""
+        if (self.decomposition is Decomposition.NON_OVERLAPPING
+                and self.decomposition is not self.graph.decomposition):
+            return (dict(self.graph.regions())
+                    if axis is Decomposition.NON_OVERLAPPING else {})
+        axes = self.graph.region_axes()
+        return {fam: ids for fam, ids in self.graph.regions().items()
+                if axes.get(fam) is axis}
+
+    def axis_summary(self) -> dict[str, str]:
+        """Every region's axis, for a decision's evidence."""
+        if (self.decomposition is Decomposition.NON_OVERLAPPING
+                and self.decomposition is not self.graph.decomposition):
+            return {fam: Decomposition.NON_OVERLAPPING.value
+                    for fam in self.graph.regions()}
+        return {fam: ax.value for fam, ax in self.graph.region_axes().items()}
+
     def unmeasured(self) -> list[str]:
         """The constants this compile still lacks, each with its worklist item.
 
@@ -614,7 +654,40 @@ def _l2_decomposition(ctx: _Context) -> None:
 
     # Cross-points. Conditional on the decomposition axis.
     cps = graph.detected_cross_points()
-    axis = ctx.decomposition or graph.decomposition
+    # **W171.** A cross-point among a TILING's agents is handled by the partition
+    # of unity; one among a CIRCUIT's is not, and is refused. Which it is depends
+    # on the region its agents are in, not on one field per graph -- so the axis
+    # is taken from the vertex's own agents. A vertex spanning two regions has no
+    # single axis and is treated as non-overlapping, which is the conservative
+    # direction: it can be refused and inspected rather than silently admitted.
+    def _cp_axis(vertex) -> Decomposition:
+        seen = {ctx.region_axis(a) for a in vertex
+                if a in {x.agent_id for x in graph.agents}} - {None}
+        if len(seen) == 1:
+            return seen.pop()
+        return (ctx.decomposition or graph.decomposition) if not seen \
+            else Decomposition.NON_OVERLAPPING
+
+    by_axis: dict[Decomposition, list] = {}
+    for _c in cps:
+        by_axis.setdefault(_cp_axis(_c), []).append(_c)
+    axis = (ctx.decomposition or graph.decomposition) if not cps else (
+        Decomposition.OVERLAPPING
+        if set(by_axis) == {Decomposition.OVERLAPPING} else
+        (ctx.decomposition or graph.decomposition) if len(by_axis) > 1
+        else next(iter(by_axis)))
+    if len(by_axis) > 1:
+        rec.admit(
+            "L2", "I2/G1/regions",
+            "this graph's cross-points do not all sit in one region: "
+            + str({k.value: [list(v) for v in vs] for k, vs in by_axis.items()})
+            + ". Each is judged by the axis of the region its agents are in, "
+            "and a vertex spanning two regions is treated as non-overlapping, "
+            "which is the direction that can be inspected rather than the one "
+            "that is silently admitted",
+            subject="<graph>", region_axes=ctx.axis_summary(),
+        )
+        cps = [c for c in cps if _cp_axis(c) is not Decomposition.OVERLAPPING]
     if axis is Decomposition.OVERLAPPING:
         if cps:
             rec.admit(
@@ -797,7 +870,22 @@ def _cut_policy(ctx: _Context) -> None:
     the quantity Q was reaching for lives there.  That is **W57**.
     """
     rec, graph = ctx.record, ctx.graph
-    axis = ctx.decomposition or graph.decomposition
+    # **W171.** The cut criterion is a property of the REGION: L2/C2 is the
+    # overlapping branch and L2/C3 the substructuring one, and a union graph is
+    # on both at once. This used to read the graph's single axis and emit exactly
+    # one of the two, so on a union it named the wrong criterion for one of its
+    # regions -- loudly, which is the cheaper failure and still a wrong one.
+    # It now runs once per axis PRESENT, each pass naming the regions it is for.
+    for _axis in (Decomposition.NON_OVERLAPPING, Decomposition.OVERLAPPING):
+        if ctx.regions_on(_axis) or (not graph.regions()
+                                     and _axis is (ctx.decomposition
+                                                   or graph.decomposition)):
+            _cut_policy_for(ctx, _axis)
+
+
+def _cut_policy_for(ctx: _Context, axis: Decomposition) -> None:
+    """`_cut_policy`'s body for ONE axis. See that function's docstring."""
+    rec, graph = ctx.record, ctx.graph
     declared = (graph.measured.cut_defect_bound
                 if graph.measured is not None else None)
 
@@ -1796,11 +1884,29 @@ def _halo_rule(ctx: _Context) -> None:
     the other direction, and it is the one that is not self-announcing.
     """
     rec, graph = ctx.record, ctx.graph
-    axis = ctx.decomposition or graph.decomposition
-    if axis is not Decomposition.OVERLAPPING:
+    # **W171.** This read the graph's single axis and returned on the wrong one,
+    # emitting nothing -- so on a union graph carrying a tiling beside a circuit
+    # it said nothing about the tiling. It now asks which REGIONS are overlapping
+    # and scopes the requirement to their agents; where there are none it says so
+    # rather than returning in silence, which is this rule's own stated
+    # discipline about the agents it excludes.
+    overlapping = ctx.regions_on(Decomposition.OVERLAPPING)
+    if not overlapping:
+        rec.admit(
+            "L2", "R10/halo",
+            "no region of this graph is decomposed along an OVERLAPPING axis, so "
+            "the halo requirement has no subject: there is no artificial face "
+            "whose stale datum an overlap has to outrun. The axes present are "
+            + str(ctx.axis_summary()) + ". This is stated rather than passed "
+            "over, because a rule that quietly stops looking is the failure in "
+            "the other direction and it is the one that is not self-announcing",
+            subject="<graph>", region_axes=ctx.axis_summary(),
+        )
         return
+    in_overlapping = {aid for ids in overlapping.values() for aid in ids}
     cut, uncut = _decomposition_cuts(graph)
-    excluded = sorted(uncut)
+    cut = cut & in_overlapping
+    excluded = sorted({a.agent_id for a in graph.agents} - cut)
     needs = {a.agent_id: a.capabilities.required_halo() for a in graph.agents
              if a.agent_id in cut}
     if not needs:
@@ -2351,12 +2457,37 @@ def _l5_l7_scheme(ctx: _Context) -> Scheme:
 
     # The decomposition axis was decided with the rung, before L2's cross-point check.
     decomposition = ctx.decomposition or graph.decomposition
+    # **W171.** The scheme's own axis stays ONE value, because the interface
+    # problem is one problem however many regions the graph has. What was missing
+    # is the SET: a union graph has a tiling and a circuit in it, and an artifact
+    # that reports one axis for such a graph is reporting a graph that does not
+    # exist. Both are emitted, and for every graph written before W171 the set
+    # has one element and equals the axis -- which is the control.
+    axis_set = frozenset(ctx.axis_summary().values()) or frozenset(
+        {decomposition.value})
     why["D_decomposition"] = (
         "probed-DtN requires the non-overlapping view, which INTRODUCES cross-points the "
         "overlapping scheme does not have"
         if transmission is Transmission.PROBED_DTN
         else "as declared"
     )
+    if len(axis_set) > 1:
+        why["D_decomposition"] += (
+            f"; and this graph carries {len(axis_set)} axes at once "
+            f"({sorted(axis_set)}) -- the scheme's own axis is the interface "
+            "problem's, and the per-region axes are reported beside it (W171)"
+        )
+        rec.admit(
+            "L5", "W171/axes",
+            f"this graph is decomposed along {len(axis_set)} different axes: "
+            + str(ctx.axis_summary())
+            + ". The scheme carries one axis because the interface problem is one "
+            "problem; every rule whose subject is a REGION reads that region's "
+            "axis instead. Before W171 the graph could not say this and three "
+            "rules returned early on the graph's single axis having emitted "
+            "nothing at all about the region they skipped",
+            subject="<graph>", region_axes=ctx.axis_summary(),
+        )
 
     # ordering: additive by rule, always.
     ordering = Ordering.ADDITIVE
@@ -2430,6 +2561,8 @@ def _l5_l7_scheme(ctx: _Context) -> Scheme:
 
     scheme = Scheme(
         decomposition=decomposition,
+        decomposition_axes=frozenset(
+            Decomposition(v) for v in axis_set),
         transmission=transmission,
         ordering=ordering,
         accelerator=accelerator,
@@ -3041,10 +3174,21 @@ def _r12_conservative_assembly(ctx: _Context, cert) -> None:
     cond = cert.condition
     if graph.partition_of_unity is None or len(graph.agents) < 2:
         return
-    if ctx.decomposition is not Decomposition.OVERLAPPING:
-        # A single-valued-flux or substructuring assembly is not a blend, so the
-        # commutator identity has no chi to be taken with. It has its own
-        # conservation question and this is not it.
+    # **W171.** A single-valued-flux or substructuring assembly is not a blend,
+    # so the commutator identity has no chi to be taken with -- but that is a
+    # statement about a REGION, and this returned on the graph's single axis.
+    # On a union graph with a tiling in it the blend is real and this said
+    # nothing. It now proceeds when ANY region is overlapping, and names which.
+    overlapping_r12 = ctx.regions_on(Decomposition.OVERLAPPING)
+    if not overlapping_r12:
+        rec.admit(
+            "L6", "R12",
+            "no region of this graph is decomposed along an OVERLAPPING axis, so "
+            "the assembly is not a blend and L6/C2's commutator identity has no "
+            "chi to be taken with. That is a different conservation question and "
+            "this rule is not it. Axes present: " + str(ctx.axis_summary()),
+            subject="<assembly>", region_axes=ctx.axis_summary(),
+        )
         return
     constraint = _declared_constraint(graph)
     if constraint is None:
@@ -3219,7 +3363,20 @@ def _w49_sigma_branch(ctx: _Context, cond) -> None:
     ``sigma <= C_mu * Pi * ||d_lambda||``, and ``Pi`` is a property of the
     partition of unity, so it is emitted from here.
     """
-    if ctx.decomposition is not Decomposition.OVERLAPPING:
+    # **W171.** Which branch of sigma a graph is on is a property of the REGION,
+    # and this returned on the graph's single axis having emitted nothing -- so a
+    # union graph with an overlapping region got neither branch's sigma. It now
+    # fires when any region is overlapping and names them; the substructuring
+    # regions are on section 4's branch and `_cut_policy` speaks for those.
+    overlapping_w49 = ctx.regions_on(Decomposition.OVERLAPPING)
+    if not overlapping_w49:
+        ctx.record.admit(
+            "L6", "W49",
+            "no region is overlapping, so sigma is on master-error-bound section "
+            "4's substructuring branch for every region of this graph rather than "
+            "on 4.1's product form. Axes present: " + str(ctx.axis_summary()),
+            subject="<assembly>", quantity="sigma", region_axes=ctx.axis_summary(),
+        )
         return
     pi = cond.contaminated_weight
     if pi is None:

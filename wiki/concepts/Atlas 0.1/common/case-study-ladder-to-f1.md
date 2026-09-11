@@ -740,3 +740,77 @@ Two more that travel: **`L4/E7/passivity` fails on NeuberNet and reads exactly z
 - Then W184, W183's G2, W95 re-scoped against the certificate, W185, W187, W178, W175.
 
 **Rung 8's module, rung 9 and the re-census are each a tier.** Tier 43 did §16.4's second item and named the rest as not done.
+
+---
+
+# 18. Rung 9's blocker is removed, and the carrier had to be declared (2026-09-10)
+
+Full record: [[per-region-decomposition-axis]] and [[gap-worklist]] Tier 44.
+
+**§17.5's second item was taken.** W171 — *`decomposition` is one field per graph, and rung 9's graph does not have one axis* — was scoped at Tier 40, priced at Tier 41 and untouched through two tiers since. Part 1 is built. **W172 was not started**, and §18.4 says so.
+
+## 18.1 The axis is per region, and the seven rules read it
+
+`CaseGraph.decomposition` was one field; a vehicle is a fluid tiling and two circuits at once. Now every seam has an axis, every cut **region** has one, and the rules ask the region their subject is in.
+
+**The three rules W171 is actually about** — `_halo_rule`, `_r12_conservative_assembly`, `_w49_sigma_branch` — each opened with `if <the graph's axis> is not OVERLAPPING: return`, emitting nothing. Measured on a union graph carrying a coolant circuit beside a fluid tiling: **all three said nothing at all about the tiling**. Each now asks which regions are overlapping, scopes to their agents, and **says so when there are none** — `_halo_rule`'s own stated discipline about the agents it excludes, applied to the axis.
+
+**The four that were loud** are scoped where scoping is the right answer and left alone where it is not. `_cut_policy` now emits once per axis *present*, so a union gets `L2/C2` for its tiling **and** `L2/C3` for its circuit rather than one of the two; each cross-point is judged by the axis of the region its agents are in, with a vertex spanning two regions treated as non-overlapping — the direction that can be inspected. `_decide_rung` and `_l5_l7_scheme` stay graph-global **on purpose**: R2's lift to the non-overlapping view is a property of the *interface problem*, which is one problem however many regions a graph has.
+
+**The control is the claim.** Seven constructible graphs, **zero disagreements**: one axis each, equal to the one declared, `D_decomposition` unchanged in the artifact, and the new `D_decomposition_axes` a one-element list containing it. A change that moved an axis on a graph nobody was asking about would be a behaviour change wearing a schema change's name.
+
+## 18.2 And the carrier had to be declared, which is the tier's correction
+
+Tier 40 found the row's `[AI Inference]` false — the agent is the wrong carrier, because a cut is a relation among several agents — and proposed the **connection**, *deriving* the axis from `geometrically_coincident`, measured on four graphs with no exception. **Censused over all eleven constructible graphs, per seam, the derivation does not separate the axis:**
+
+| same family | coincident | declared axes seen |
+|---|---|---|
+| True | False | `{overlapping}` |
+| **True** | **True** | **`{overlapping, non-overlapping}`** |
+| **False** | **True** | **`{overlapping, non-overlapping}`** |
+
+Two of three populated cells ambiguous, so no ordering of the clauses rescues it. The breakers are the two the sample did not contain — `window_ns` and `wind_farm_real`, overlapping tilings whose every seam declares coincidence, **and they are right to**: coincidence is a property of the two sides' *discretizations* and the axis is a property of their *domains*. The obvious fallbacks fail on a third: `rocket` is overlapping with no partition of unity and no `overlap_cells`.
+
+So the axis is **declared** — `Connection.cut_axis`, `None` = inherit the graph's — which is what every prior graph means and is why all seven reproduce.
+
+> **This row's carrier has now been proposed twice, measured twice and falsified twice by widening the sample**, and both times the measurement was right on what it was measured on. **W188** turns that into a standing instruction: two graphs is enough to open a *rule* and is not enough to conclude that an existing field *decides* something, because a derivation is a claim about the whole population. The census that falsified this one cost under a second and the proposal had stood for two tiers.
+
+## 18.3 What moves on this page
+
+**§14.1's rung-9 row.** *blocked* becomes **unblocked on the schema; the integration graph still unbuilt**. §14.1 stays as written and this is the count now.
+
+Rung 9 is not built and is not close. What has changed is that the thing that made it *unexpressible* is gone: a graph can now say it is a tiling and a circuit at once, and the rules will read the region rather than one field.
+
+## 18.4 What this tier did not do
+
+**W172 was not started**, and it was W171's dependent. The union built here is **disjoint** — the three seams that would *join* the subsystems do not exist — so nothing re-runs the $O(K)$ count across them, and the caveat stands exactly as written: **the zero-per-pair count is strong evidence about the algebra and no evidence about the integration cost.**
+
+**Part 2 (W189) was not built.** `partition_of_unity`, `overlap` and `overlap_cells` are still one object per graph, and that boundary is now a measurement: with a partition present all three formerly-silent rules speak, so part 1 is sufficient for the *rules*, and what remains is that a partition covering only the tiling must be declared as the whole graph's.
+
+## 18.5 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W172** — the seams that would join the subsystems do not exist | rung 9's $O(K)$ integration cost | `open`, **and its prerequisite is now met** |
+| **W189** — `partition_of_unity`, `overlap`, `overlap_cells` are one per graph | rung 9's schema, the rest of it | `open`, medium, W171 part 2 |
+| **W182** — an inequality seam compiles, and nothing can declare otherwise | rung 8's first module | `open`, medium, scoped in Tier 42 |
+| **W183** — rung 3's gate has no subject | marking rung 3 complete | `open`; G2 needs a seam that is not a fiction |
+| **W184** — a port cannot say what kind of boundary it is | rung 3's G2, and `_decomposition_cuts`' proxy | `open`, medium |
+| **W186** — R10 has no subject in a two-agent multi-family graph | the campaign's reading of its own blocker | `open`, a re-scoping |
+| **W95** — no same-class reference pair | every learned substitution verdict | `open`; CS-17 shows it binding on both halves at once |
+| **W165** — rung 8 itself | rung 8's gate | `open`, large; clause 4 needs an expert nobody here has |
+| **W188**, **W187**, **W185**, **W181**, **W178**, **W175** | how this vault reasons, and attribution | `open`, small to medium |
+
+**Closed off it**: **W171 part 1**, the first row closed in three tiers.
+
+## 18.6 The next step
+
+**Not started, and the choice is the user's.** In line:
+
+- **W172**, whose prerequisite is now met — build the three joining seams on a real union and re-run the count across them. It is the one row whose answer changes what rung 9 costs.
+- **W189**, part 2, if the union is to carry a real tiling rather than a two-window fixture.
+- **W182**, rung 8's first module — still the only piece of rung 8 buildable without a contact expert.
+- **W186's re-census**, cheap, and it changes how the substitution campaign reads its own nine tiers.
+- Then W184, W183's G2, W95, W188's rider, W185, W187, W178, W175.
+
+**W172, W189 and rung 8's module are each a tier.** Tier 44 did §17.5's second item and named the rest as not done.

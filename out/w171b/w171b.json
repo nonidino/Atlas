@@ -1,0 +1,629 @@
+{
+ "what": "W171 -- the decomposition axis, per region rather than per graph",
+ "date": "2026-09-10",
+ "control": {
+  "rows": [
+   {
+    "case": "brake_thermal",
+    "graph": "brake-thermal-as-built-entropy-native",
+    "declared": "non-overlapping",
+    "regions": {},
+    "n_regions": 0,
+    "axis_set": [],
+    "uncut_agents": [
+     "disc",
+     "duct"
+    ],
+    "seam_axes": {
+     "cht": null
+    },
+    "not_a_cut": [
+     "cht"
+    ],
+    "conflicts": {},
+    "reproduces_declared": true
+   },
+   {
+    "case": "cooling_loop",
+    "graph": "cooling-loop",
+    "declared": "non-overlapping",
+    "regions": {
+     "incompressible-thermal-transport-1d": "non-overlapping"
+    },
+    "n_regions": 1,
+    "axis_set": [
+     "non-overlapping"
+    ],
+    "uncut_agents": [
+     "BLOCK"
+    ],
+    "seam_axes": {
+     "wall": null,
+     "pass_hot": "non-overlapping",
+     "hot_rad": "non-overlapping",
+     "rad_cold": "non-overlapping",
+     "cold_pass": "non-overlapping"
+    },
+    "not_a_cut": [
+     "wall"
+    ],
+    "conflicts": {},
+    "reproduces_declared": true
+   },
+   {
+    "case": "powertrain",
+    "graph": "powertrain",
+    "declared": "non-overlapping",
+    "regions": {
+     "lumped-dc-circuit": "non-overlapping"
+    },
+    "n_regions": 1,
+    "axis_set": [
+     "non-overlapping"
+    ],
+    "uncut_agents": [
+     "ROTOR"
+    ],
+    "seam_axes": {
+     "shaft": null,
+     "mgu_bus": "non-overlapping",
+     "bus_batt": "non-overlapping",
+     "batt_inv": "non-overlapping",
+     "inv_mgu": "non-overlapping"
+    },
+    "not_a_cut": [
+     "shaft"
+    ],
+    "conflicts": {},
+    "reproduces_declared": true
+   },
+   {
+    "case": "rocket",
+    "graph": "rocket-ascent-2d",
+    "declared": "overlapping",
+    "regions": {
+     "reacting-compressible-flow": "overlapping",
+     "external-compressible-flow": "overlapping"
+    },
+    "n_regions": 2,
+    "axis_set": [
+     "overlapping"
+    ],
+    "uncut_agents": [
+     "c"
+    ],
+    "seam_axes": {
+     "a-b:MECH": "overlapping",
+     "a-b:THERM": "overlapping",
+     "a-b:ADVEC": "overlapping",
+     "b-c:MECH": null,
+     "b-c:THERM": null,
+     "c-d:MECH": null,
+     "c-d:THERM": null,
+     "d-g:MECH": "overlapping",
+     "d-g:THERM": "overlapping",
+     "d-g:ADVEC": "overlapping",
+     "e-f:MECH": null,
+     "e-f:THERM": null,
+     "e-f:ADVEC": null,
+     "e-b:MECH": "overlapping",
+     "e-b:THERM": "overlapping",
+     "e-b:ADVEC": "overlapping",
+     "g-f:MECH": "overlapping",
+     "g-f:THERM": "overlapping",
+     "g-f:ADVEC": "overlapping"
+    },
+    "not_a_cut": [
+     "b-c:MECH",
+     "b-c:THERM",
+     "c-d:MECH",
+     "c-d:THERM",
+     "e-f:ADVEC",
+     "e-f:MECH",
+     "e-f:THERM"
+    ],
+    "conflicts": {},
+    "reproduces_declared": true
+   },
+   {
+    "case": "thermal_seam",
+    "graph": "thermal-seam-as-built-entropy-native",
+    "declared": "non-overlapping",
+    "regions": {},
+    "n_regions": 0,
+    "axis_set": [],
+    "uncut_agents": [
+     "gas",
+     "shell"
+    ],
+    "seam_axes": {
+     "cht": null
+    },
+    "not_a_cut": [
+     "cht"
+    ],
+    "conflicts": {},
+    "reproduces_declared": true
+   },
+   {
+    "case": "thermal_strain",
+    "graph": "thermal-strain-surface-mech",
+    "declared": "overlapping",
+    "regions": {},
+    "n_regions": 0,
+    "axis_set": [],
+    "uncut_agents": [
+     "cond",
+     "elas"
+    ],
+    "seam_axes": {
+     "thermal-pressure": null
+    },
+    "not_a_cut": [
+     "thermal-pressure"
+    ],
+    "conflicts": {},
+    "reproduces_declared": true
+   },
+   {
+    "case": "wind_farm",
+    "graph": "wind-farm-wake-2d-as-built",
+    "declared": "overlapping",
+    "regions": {
+     "incompressible-navier-stokes-2d": "overlapping"
+    },
+    "n_regions": 1,
+    "axis_set": [
+     "overlapping"
+    ],
+    "uncut_agents": [],
+    "seam_axes": {
+     "e1": "overlapping",
+     "e1a": "overlapping",
+     "e2": "overlapping",
+     "e3": "overlapping",
+     "e4": "overlapping",
+     "e4a": "overlapping",
+     "e5": "overlapping",
+     "e5a": "overlapping",
+     "e6": "overlapping",
+     "e7": "overlapping",
+     "e7a": "overlapping",
+     "e8": "overlapping",
+     "e9": "overlapping",
+     "e10": "overlapping",
+     "e11": "overlapping"
+    },
+    "not_a_cut": [],
+    "conflicts": {},
+    "reproduces_declared": true
+   }
+  ],
+  "disagree": [],
+  "n_checked": 7,
+  "needs_field_state_not_checked_here": [
+   "channel_ns",
+   "front_wing",
+   "ground_effect",
+   "wind_farm_real",
+   "window_ns",
+   "wing_fsi"
+  ]
+ },
+ "union": {
+  "name": "w171-union-circuit-plus-tiling",
+  "n_agents": 7,
+  "n_seams": 6,
+  "declared_single_field": "non-overlapping",
+  "regions": {
+   "incompressible-thermal-transport-1d": "non-overlapping",
+   "incompressible-navier-stokes-2d": "overlapping"
+  },
+  "axis_set": [
+   "non-overlapping",
+   "overlapping"
+  ],
+  "carries_two_axes": true,
+  "uncut_agents": [
+   "BLOCK"
+  ],
+  "seam_axes": {
+   "wall": null,
+   "pass_hot": "non-overlapping",
+   "hot_rad": "non-overlapping",
+   "rad_cold": "non-overlapping",
+   "cold_pass": "non-overlapping",
+   "F_e1": "overlapping"
+  }
+ },
+ "union_compile": {
+  "coverage": {
+   "regions": {
+    "incompressible-thermal-transport-1d": "non-overlapping",
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "rules": {
+    "R10/halo": [
+     {
+      "verdict": "admit-uncertified",
+      "subject": "F_I, F_R1",
+      "message": "1 agents (F_I) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.s"
+     }
+    ],
+    "R12": [],
+    "W49": []
+   },
+   "silent_rules": [
+    "R12",
+    "W49"
+   ],
+   "overlapping_regions_present": [
+    "incompressible-navier-stokes-2d"
+   ]
+  },
+  "verdict": "refuse",
+  "runnable": false,
+  "n_decisions": 98,
+  "rules": [
+   "L1/3.4",
+   "L1/C8",
+   "L1/E3",
+   "L1/E7",
+   "L2/C2",
+   "L2/C3/W57",
+   "L2/R10",
+   "L2/R10/halo",
+   "L2/R10/lumped",
+   "L2/R10/sole-family",
+   "L3/C1",
+   "L3/C2/C3/C6",
+   "L3/C4",
+   "L3/C5",
+   "L3/C7",
+   "L3/C8",
+   "L3/C9",
+   "L3/dim-M",
+   "L4/E7/passivity",
+   "L4/G5/cut-score",
+   "L4/block-share",
+   "L4/null-space",
+   "L4/operator-content",
+   "L4/probe-base",
+   "L4/probe/provisional",
+   "L5/R13",
+   "L5/W171/axes",
+   "L5/eps_tol",
+   "L6/E6",
+   "L7/R3",
+   "L7/R9",
+   "L7/R9/order",
+   "L8/W56",
+   "L9/E5"
+  ],
+  "refusals": [
+   "L3/C2/C3/C6",
+   "L7/R9"
+  ],
+  "messages": {
+   "L1/E7/F_I": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself",
+   "L1/C8/F_I": "validity: none, so the run cannot abstain and every bound is vacuous wherever the expert is out of distribution, with nothing saying where that is",
+   "L1/E7/F_R1": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself",
+   "L1/3.4/<graph>": "1 of 7 agents declare no validity predicate, so the run cannot abstain and the exposure grows with K=7: P(some agent OOD) = 1 - (1-p)^K. This decertifies at every K rather than refusing at a threshold, because the threshold is K* = ceil(log(1-eps) / log(1-p)) and p is unmeasured (UNMEASURED(K_ood, unset))",
+   "L1/E3/wall": "multiphysics seam: BLOCK and PASS declare different governing families ('heat-conduction-2d' against 'incompressible-thermal-transport-1d'), so they share no monolithic reference and E3 fails. **tau is NOT undefined here**: both sides declare lambda_ref, so a reference PAIR exists and tau is measurable against the tightly coupled trajectory -- see `multiphysics.seam_defect_split`, which attributes per agent and measures in interface power, the one unit both sides of the bond share. What is wrong is that it has not been RUN: this seam carries a measurable tau and no measurement. Declare the result on the graph's MeasuredConstants and this clears",
+   "L2/R10/sole-family/BLOCK": "1 agents declare elliptic_subsolve=embedded and are the ONLY agent of their governing_family in this graph, so the decomposition does not cut them: the elliptic solve runs over exactly the region a monolith would run it over, and R10's premise -- that the decomposition changes the operator rather than restricting it -- does not hold. R10 is right about the class it was derived on (a tiling of one family) and refused outside it until W114 closed 2026-09-04. The predicate is a PROXY for whether this agent's own domain is cut, and it is conservative: two agents of one family on disjoint regions would still be refused. What it does NOT clear is the agent's reach -- an embedded elliptic solve has an infinite domain of dependence inside its own region whether or not that region was cut, so the halo rule and support_reach still apply",
+   "L2/R10/F_I, F_R1": "2 agents declare an incompressible governing family, elliptic_subsolve=none, and a NONZERO stencil_radius. A field solver on a spatial stencil almost always contains a pressure solve; if it does, this graph has an undeclared R10 violation and tau will absorb it silently. The stencil is what makes the inference available: an agent with a discrete Laplacian to build has somewhere to hide a pressure Poisson problem, and W160 narrowed this branch to those agents on 2026-09-09",
+   "L2/R10/lumped/PASS, HOT, RAD, COLD": "4 agents declare an incompressible governing family and elliptic_subsolve=none with stencil_radius=0, so there is no spatial operator, no discrete Laplacian, and no pressure Poisson problem for the declaration to be hiding. R10's undeclared branch reasons that an incompressible solver almost always contains a pressure solve, which is true of a FIELD solver and vacuous for an algebraic closure -- and the family declaration is nonetheless correct, because a lumped closure WITHIN a continuum problem is not a different continuum problem and declaring otherwise fails E3 at the seam. Narrowed at W160 2026-09-09, after the branch fired on six agents across four unrelated graphs and every one of them was algebraic: front_wing/ground_effect's SUSP (a two-line spring k(h0-h)=L), cooling_loop's four lumped coolant legs, and powertrain's actuator disk. This is a PROXY, like R10's own premise check: stencil_radius=0 is the compile-time signature of 'no spatial operator', not a proof that no solve is hidden, and an agent that returns a field it computed somewhere else would pass it",
+   "L2/R10/halo/F_I, F_R1": "1 agents (F_I) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.support_reach rather than declaring it; 1 agents (F_R1) are implicit with a nonzero stencil, so one macro-step inverts an operator coupling every cell to every other and stencil_radius x substeps is an EXPLICIT agent's domain of dependence, not theirs. Measured on a conducting shell declaring radius 1, substeps 1: a delta on the seam still moves the response 5 cells out at the 1e-6 level. The halo the exchange needs is undecidable here and it is not assumed adequate. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, COLD, HOT, PASS, RAD, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136)",
+   "L2/C3/W57/<graph>": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch",
+   "L2/C2/<graph>": "L2/C2 bounds the composed defect by the chi-weighted restriction defect sum_i chi_i |E_i R_i - R_i E|, and the graph declares no partition of unity, so there are no chi to weight with. The bound is not evaluable and the cut is uncharacterized",
+   "L3/dim-M/wall": "interface space derived for this seam: dim M = min_i m_i_eff = 16, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/wall": "both sides declare THERM",
+   "L3/C2/C3/C6/wall": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/wall": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/wall": "power-preserving pairing with orientation: n points BLOCK -> PASS",
+   "L3/C9/wall": "THERM: both sides return the flow (entropy flux  q_n / T); the imposed trace is therefore the effort and the pairing is a power.",
+   "L3/C7/wall": "achievable rung: probed-DtN",
+   "L3/C8/wall": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/dim-M/pass_hot": "interface space derived for this seam: dim M = min_i m_i_eff = 1, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/pass_hot": "both sides declare ADVEC",
+   "L3/C2/C3/C6/pass_hot": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/pass_hot": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/pass_hot": "power-preserving pairing with orientation: flow goes PASS -> HOT",
+   "L3/C9/pass_hot": "ADVEC: both sides return the effort (total enthalpy  h0   (chemical potential per species)); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/pass_hot": "achievable rung: probed-DtN",
+   "L3/C8/pass_hot": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/dim-M/hot_rad": "interface space derived for this seam: dim M = min_i m_i_eff = 1, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/hot_rad": "both sides declare ADVEC",
+   "L3/C2/C3/C6/hot_rad": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/hot_rad": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/hot_rad": "power-preserving pairing with orientation: flow goes HOT -> RAD",
+   "L3/C9/hot_rad": "ADVEC: both sides return the effort (total enthalpy  h0   (chemical potential per species)); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/hot_rad": "achievable rung: probed-DtN",
+   "L3/C8/hot_rad": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/dim-M/rad_cold": "interface space derived for this seam: dim M = min_i m_i_eff = 1, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/rad_cold": "both sides declare ADVEC",
+   "L3/C2/C3/C6/rad_cold": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/rad_cold": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/rad_cold": "power-preserving pairing with orientation: flow goes RAD -> COLD",
+   "L3/C9/rad_cold": "ADVEC: both sides return the effort (total enthalpy  h0   (chemical potential per species)); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/rad_cold": "achievable rung: probed-DtN",
+   "L3/C8/rad_cold": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/dim-M/cold_pass": "interface space derived for this seam: dim M = min_i m_i_eff = 1, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/cold_pass": "both sides declare ADVEC",
+   "L3/C2/C3/C6/cold_pass": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/cold_pass": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/cold_pass": "power-preserving pairing with orientation: flow goes COLD -> PASS",
+   "L3/C9/cold_pass": "ADVEC: both sides return the effort (total enthalpy  h0   (chemical potential per species)); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/cold_pass": "achievable rung: probed-DtN",
+   "L3/C8/cold_pass": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/C1/F_e1": "both sides declare MECH",
+   "L3/C2/C3/C6/F_e1": "no common interface space and prolongation pair declared for this seam. This refusal cites a missing declaration, not an unbuilt mechanism: declare M and one P_i per side and the mapping class, the reduction and adjointness are all derived. Geometric coincidence is the special case P_i = identity",
+   "L3/C4/F_e1": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/F_e1": "power-preserving pairing with orientation: n points I -> R1",
+   "L3/C9/F_e1": "MECH: both sides return the effort (traction  t = sigma . n); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/F_e1": "achievable rung: dirichlet",
+   "L3/C8/F_e1": "no validity predicate on ['F_I']: the run cannot abstain, so every bound is vacuous wherever the expert is out of distribution and nothing says where that is. The declination rate p is undefined, so the abstention horizon T_abs cannot be reported either",
+   "L4/operator-content/wall": "2 of 2 blocks on this seam have an identity defect below 0.001 (BLOCK 6.72e-04, PASS 3.90e-05): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/wall": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/wall": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. BLOCK becomes visible only once beta_min > 3.741, PASS becomes visible only once beta_min > 3.693 (assembled beta = 7.443, block norms BLOCK 3.702, PASS 3.75). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.504 and max 0.504 of the response, with 0 of 16 modes above 0.90.",
+   "L4/null-space/wall": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/wall": "cut score 5.628e-06 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/operator-content/pass_hot": "2 of 2 blocks on this seam have an identity defect below 0.001 (HOT 0.00e+00, PASS 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/pass_hot": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/pass_hot": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. HOT becomes visible only once beta_min > 2304, PASS becomes visible only once beta_min > 2304 (assembled beta = 4608, block norms HOT 2304, PASS 2304). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.500 and max 0.500 of the response, with 0 of 1 modes above 0.90.",
+   "L4/null-space/pass_hot": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/pass_hot": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/operator-content/hot_rad": "2 of 2 blocks on this seam have an identity defect below 0.001 (HOT 0.00e+00, RAD 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/hot_rad": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/hot_rad": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. HOT becomes visible only once beta_min > 2293, RAD becomes visible only once beta_min > 2304 (assembled beta = 4597, block norms HOT 2304, RAD 2293). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.501 and max 0.501 of the response, with 0 of 1 modes above 0.90.",
+   "L4/null-space/hot_rad": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/hot_rad": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/operator-content/rad_cold": "2 of 2 blocks on this seam have an identity defect below 0.001 (COLD 0.00e+00, RAD 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/rad_cold": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/rad_cold": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. COLD becomes visible only once beta_min > 2293, RAD becomes visible only once beta_min > 2304 (assembled beta = 4598, block norms COLD 2304, RAD 2293). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.501 and max 0.501 of the response, with 0 of 1 modes above 0.90.",
+   "L4/null-space/rad_cold": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/rad_cold": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/operator-content/cold_pass": "2 of 2 blocks on this seam have an identity defect below 0.001 (COLD 0.00e+00, PASS 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/cold_pass": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/cold_pass": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. COLD becomes visible only once beta_min > 2304, PASS becomes visible only once beta_min > 2304 (assembled beta = 4608, block norms COLD 2304, PASS 2304). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.500 and max 0.500 of the response, with 0 of 1 modes above 0.90.",
+   "L4/null-space/cold_pass": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/cold_pass": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/probe/provisional/F_e1": "probed on a provisional interface space so the diagnosis is available even though the connection is refused. The finding below is a measurement; the connection remains inadmissible until M and one prolongation per side are declared",
+   "L4/operator-content/F_e1": "2 of 2 blocks on this seam have an identity defect below 0.001 (F_I 0.00e+00, F_R1 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/F_e1": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/F_e1": "a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F_I kappa inf against the assembled 1 (infx). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F_I 0, F_R1 0.4, assembled 0.4 Per-mode, read off alpha_star, the dominant side holds median 1.000 and max 1.000 of the response, with 16 of 16 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.4 for F_I.",
+   "L4/E7/passivity/F_e1": "the probed symmetric part is positive semidefinite, but the probe ran on a PROVISIONAL interface space, so it certifies nothing about a transfer pair that was never declared. E7 stays unchecked",
+   "L4/G5/cut-score/F_e1": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L5/W171/axes/<graph>": "this graph is decomposed along 2 different axes: {'incompressible-thermal-transport-1d': 'non-overlapping', 'incompressible-navier-stokes-2d': 'overlapping'}. The scheme carries one axis because the interface problem is one problem; every rule whose subject is a REGION reads that region's axis instead. Before W171 the graph could not say this and three rules returned early on the graph's single axis having emitted nothing at all about the region they skipped",
+   "L7/R3/<graph>": "W = 1: ['F_I'] declare bc_time_varying = false, so a longer window is refused. a window W > 1 requires bc_time_varying on every agent at that interface; a ring held constant across the window is a W = 1 scheme wearing a longer name. And this is not only an admissibility rule: it is the precondition for reducing the temporal component of the transmission term at all, so these experts carry a floor on sigma that no scheme removes",
+   "L5/eps_tol/<graph>": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit",
+   "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side",
+   "L7/R9/order/<graph>": "and the accounting the mechanism does not carry: the interface representation order CAPS the scheme order -- a second-order expert coupled through an interface held constant across the macro-step is a first-order method -- while stability is set by the coupling stiffness, which can force a macro-step SHORTER than any agent's native step. That is the opposite direction from R4 and is not implied by it. [AI Inference] the relevant stiffness is the probed operator's condition number, which the probe already prints. Untested",
+   "L5/R13/<graph>": "the seam graph contains a DIRECTED CYCLE (COLD -> PASS -> HOT -> RAD -> COLD) with a composed loop gain of undeclared, and the scheme does not sweep it: accelerator=direct-schur solves the assembled interface system in one shot, so there is no first agent to choose, no sweep order for the answer to depend on, and no fixed-point iteration for the gain to govern. R5 says the same thing about ordering -- a direct Schur solve is order-free -- and this is that sentence reaching the case R5 was written before anyone had. **What this does NOT clear is the cycle**: declare a sweeping accelerator and the gain becomes binding, which on this graph is what R13 would then decide on",
+   "L6/E6/<assembly>": "no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed",
+   "L9/E5/<run>": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate",
+   "L8/W56/<graph>": "6 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), p_decline (W36), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+  },
+  "D_decomposition": "non-overlapping",
+  "D_decomposition_axes": [
+   "non-overlapping",
+   "overlapping"
+  ]
+ },
+ "union_with_pou": {
+  "name": "w171-union-circuit-plus-tiling",
+  "n_agents": 7,
+  "n_seams": 6,
+  "declared_single_field": "non-overlapping",
+  "regions": {
+   "incompressible-thermal-transport-1d": "non-overlapping",
+   "incompressible-navier-stokes-2d": "overlapping"
+  },
+  "axis_set": [
+   "non-overlapping",
+   "overlapping"
+  ],
+  "carries_two_axes": true,
+  "uncut_agents": [
+   "BLOCK"
+  ],
+  "seam_axes": {
+   "wall": null,
+   "pass_hot": "non-overlapping",
+   "hot_rad": "non-overlapping",
+   "rad_cold": "non-overlapping",
+   "cold_pass": "non-overlapping",
+   "F_e1": "overlapping"
+  }
+ },
+ "union_with_pou_compile": {
+  "coverage": {
+   "regions": {
+    "incompressible-thermal-transport-1d": "non-overlapping",
+    "incompressible-navier-stokes-2d": "overlapping"
+   },
+   "rules": {
+    "R10/halo": [
+     {
+      "verdict": "admit-uncertified",
+      "subject": "F_I, F_R1",
+      "message": "1 agents (F_I) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.s"
+     }
+    ],
+    "R12": [
+     {
+      "verdict": "admit",
+      "subject": "<assembly>",
+      "message": "the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applie"
+     }
+    ],
+    "W49": [
+     {
+      "verdict": "admit-uncertified",
+      "subject": "<assembly>",
+      "message": "Pi = 0.4286 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+     }
+    ]
+   },
+   "silent_rules": [],
+   "overlapping_regions_present": [
+    "incompressible-navier-stokes-2d"
+   ]
+  },
+  "verdict": "refuse",
+  "runnable": false,
+  "n_decisions": 101,
+  "rules": [
+   "L1/3.4",
+   "L1/C8",
+   "L1/E3",
+   "L1/E7",
+   "L2/C2",
+   "L2/C2/W58",
+   "L2/C3/W57",
+   "L2/R10",
+   "L2/R10/halo",
+   "L2/R10/lumped",
+   "L2/R10/sole-family",
+   "L3/C1",
+   "L3/C2/C3/C6",
+   "L3/C4",
+   "L3/C5",
+   "L3/C7",
+   "L3/C8",
+   "L3/C9",
+   "L3/dim-M",
+   "L4/E7/passivity",
+   "L4/G5/cut-score",
+   "L4/block-share",
+   "L4/null-space",
+   "L4/operator-content",
+   "L4/probe-base",
+   "L4/probe/provisional",
+   "L5/R13",
+   "L5/W171/axes",
+   "L5/eps_tol",
+   "L6/L6/C1",
+   "L6/R12",
+   "L6/W49",
+   "L7/R3",
+   "L7/R9",
+   "L7/R9/order",
+   "L8/W56",
+   "L9/E5"
+  ],
+  "refusals": [
+   "L3/C2/C3/C6",
+   "L7/R9"
+  ],
+  "messages": {
+   "L1/E7/F_I": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself",
+   "L1/C8/F_I": "validity: none, so the run cannot abstain and every bound is vacuous wherever the expert is out of distribution, with nothing saying where that is",
+   "L1/E7/F_R1": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself",
+   "L1/3.4/<graph>": "1 of 7 agents declare no validity predicate, so the run cannot abstain and the exposure grows with K=7: P(some agent OOD) = 1 - (1-p)^K. This decertifies at every K rather than refusing at a threshold, because the threshold is K* = ceil(log(1-eps) / log(1-p)) and p is unmeasured (UNMEASURED(K_ood, unset))",
+   "L1/E3/wall": "multiphysics seam: BLOCK and PASS declare different governing families ('heat-conduction-2d' against 'incompressible-thermal-transport-1d'), so they share no monolithic reference and E3 fails. **tau is NOT undefined here**: both sides declare lambda_ref, so a reference PAIR exists and tau is measurable against the tightly coupled trajectory -- see `multiphysics.seam_defect_split`, which attributes per agent and measures in interface power, the one unit both sides of the bond share. What is wrong is that it has not been RUN: this seam carries a measurable tau and no measurement. Declare the result on the graph's MeasuredConstants and this clears",
+   "L2/R10/sole-family/BLOCK": "1 agents declare elliptic_subsolve=embedded and are the ONLY agent of their governing_family in this graph, so the decomposition does not cut them: the elliptic solve runs over exactly the region a monolith would run it over, and R10's premise -- that the decomposition changes the operator rather than restricting it -- does not hold. R10 is right about the class it was derived on (a tiling of one family) and refused outside it until W114 closed 2026-09-04. The predicate is a PROXY for whether this agent's own domain is cut, and it is conservative: two agents of one family on disjoint regions would still be refused. What it does NOT clear is the agent's reach -- an embedded elliptic solve has an infinite domain of dependence inside its own region whether or not that region was cut, so the halo rule and support_reach still apply",
+   "L2/R10/F_I, F_R1": "2 agents declare an incompressible governing family, elliptic_subsolve=none, and a NONZERO stencil_radius. A field solver on a spatial stencil almost always contains a pressure solve; if it does, this graph has an undeclared R10 violation and tau will absorb it silently. The stencil is what makes the inference available: an agent with a discrete Laplacian to build has somewhere to hide a pressure Poisson problem, and W160 narrowed this branch to those agents on 2026-09-09",
+   "L2/R10/lumped/PASS, HOT, RAD, COLD": "4 agents declare an incompressible governing family and elliptic_subsolve=none with stencil_radius=0, so there is no spatial operator, no discrete Laplacian, and no pressure Poisson problem for the declaration to be hiding. R10's undeclared branch reasons that an incompressible solver almost always contains a pressure solve, which is true of a FIELD solver and vacuous for an algebraic closure -- and the family declaration is nonetheless correct, because a lumped closure WITHIN a continuum problem is not a different continuum problem and declaring otherwise fails E3 at the seam. Narrowed at W160 2026-09-09, after the branch fired on six agents across four unrelated graphs and every one of them was algebraic: front_wing/ground_effect's SUSP (a two-line spring k(h0-h)=L), cooling_loop's four lumped coolant legs, and powertrain's actuator disk. This is a PROXY, like R10's own premise check: stencil_radius=0 is the compile-time signature of 'no spatial operator', not a proof that no solve is hidden, and an agent that returns a field it computed somewhere else would pass it",
+   "L2/R10/halo/F_I, F_R1": "1 agents (F_I) declare time_discretization=unknown with a nonzero stencil, so radius x substeps -- an EXPLICIT agent's domain of dependence -- is not licensed for them. Measured on a frozen neural operator declaring radius 2, substeps 1: probe.support_reach finds the response nonzero in every one of the 128 seam cells, 64 from the poke, a factor of 32 above the declaration. Measure it with probe.support_reach rather than declaring it; 1 agents (F_R1) are implicit with a nonzero stencil, so one macro-step inverts an operator coupling every cell to every other and stencil_radius x substeps is an EXPLICIT agent's domain of dependence, not theirs. Measured on a conducting shell declaring radius 1, substeps 1: a delta on the seam still moves the response 5 cells out at the 1e-6 level. The halo the exchange needs is undecidable here and it is not assumed adequate. The requirement was checked against the agents the decomposition CUTS and not against BLOCK, COLD, HOT, PASS, RAD, each of which is the sole agent of its governing_family and therefore owns its whole region: every boundary it has is a physical one, and there is no artificial face for an overlap to outrun (W136)",
+   "L2/C3/W57/<graph>": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch",
+   "L2/C2/W58/<graph>": "disclosure: the contaminated sets are pairwise disjoint, so the reference-free neighbour disagreement EQUALS the max form of L2/C2's bound (W58). The chi-weighted and max forms of cut_defect_bound both need a monolithic reference and are unaffected by this; what it decides is whether the REFERENCE-FREE neighbour disagreement may be quoted as the bound",
+   "L2/C2/<graph>": "L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference",
+   "L3/dim-M/wall": "interface space derived for this seam: dim M = min_i m_i_eff = 16, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/wall": "both sides declare THERM",
+   "L3/C2/C3/C6/wall": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/wall": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/wall": "power-preserving pairing with orientation: n points BLOCK -> PASS",
+   "L3/C9/wall": "THERM: both sides return the flow (entropy flux  q_n / T); the imposed trace is therefore the effort and the pairing is a power.",
+   "L3/C7/wall": "achievable rung: probed-DtN",
+   "L3/C8/wall": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/dim-M/pass_hot": "interface space derived for this seam: dim M = min_i m_i_eff = 1, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/pass_hot": "both sides declare ADVEC",
+   "L3/C2/C3/C6/pass_hot": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/pass_hot": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/pass_hot": "power-preserving pairing with orientation: flow goes PASS -> HOT",
+   "L3/C9/pass_hot": "ADVEC: both sides return the effort (total enthalpy  h0   (chemical potential per species)); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/pass_hot": "achievable rung: probed-DtN",
+   "L3/C8/pass_hot": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/dim-M/hot_rad": "interface space derived for this seam: dim M = min_i m_i_eff = 1, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/hot_rad": "both sides declare ADVEC",
+   "L3/C2/C3/C6/hot_rad": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/hot_rad": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/hot_rad": "power-preserving pairing with orientation: flow goes HOT -> RAD",
+   "L3/C9/hot_rad": "ADVEC: both sides return the effort (total enthalpy  h0   (chemical potential per species)); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/hot_rad": "achievable rung: probed-DtN",
+   "L3/C8/hot_rad": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/dim-M/rad_cold": "interface space derived for this seam: dim M = min_i m_i_eff = 1, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/rad_cold": "both sides declare ADVEC",
+   "L3/C2/C3/C6/rad_cold": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/rad_cold": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/rad_cold": "power-preserving pairing with orientation: flow goes RAD -> COLD",
+   "L3/C9/rad_cold": "ADVEC: both sides return the effort (total enthalpy  h0   (chemical potential per species)); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/rad_cold": "achievable rung: probed-DtN",
+   "L3/C8/rad_cold": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/dim-M/cold_pass": "interface space derived for this seam: dim M = min_i m_i_eff = 1, with the identity prolongation on each side (the conforming special case). The multiplier space and the probe basis are the same space",
+   "L3/C1/cold_pass": "both sides declare ADVEC",
+   "L3/C2/C3/C6/cold_pass": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+   "L3/C4/cold_pass": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/cold_pass": "power-preserving pairing with orientation: flow goes COLD -> PASS",
+   "L3/C9/cold_pass": "ADVEC: both sides return the effort (total enthalpy  h0   (chemical potential per species)); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/cold_pass": "achievable rung: probed-DtN",
+   "L3/C8/cold_pass": "both sides declare validity; the connection carries an abstention hook and a declination halts the rollout, typing the claim on the interval before it",
+   "L3/C1/F_e1": "both sides declare MECH",
+   "L3/C2/C3/C6/F_e1": "no common interface space and prolongation pair declared for this seam. This refusal cites a missing declaration, not an unbuilt mechanism: declare M and one P_i per side and the mapping class, the reduction and adjointness are all derived. Geometric coincidence is the special case P_i = identity",
+   "L3/C4/F_e1": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+   "L3/C5/F_e1": "power-preserving pairing with orientation: n points I -> R1",
+   "L3/C9/F_e1": "MECH: both sides return the effort (traction  t = sigma . n); the imposed trace is therefore the flow and the pairing is a power.",
+   "L3/C7/F_e1": "achievable rung: dirichlet",
+   "L3/C8/F_e1": "no validity predicate on ['F_I']: the run cannot abstain, so every bound is vacuous wherever the expert is out of distribution and nothing says where that is. The declination rate p is undefined, so the abstention horizon T_abs cannot be reported either",
+   "L4/operator-content/wall": "2 of 2 blocks on this seam have an identity defect below 0.001 (BLOCK 6.72e-04, PASS 3.90e-05): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/wall": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/wall": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. BLOCK becomes visible only once beta_min > 3.741, PASS becomes visible only once beta_min > 3.693 (assembled beta = 7.443, block norms BLOCK 3.702, PASS 3.75). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.504 and max 0.504 of the response, with 0 of 16 modes above 0.90.",
+   "L4/null-space/wall": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/wall": "cut score 5.628e-06 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/operator-content/pass_hot": "2 of 2 blocks on this seam have an identity defect below 0.001 (HOT 0.00e+00, PASS 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/pass_hot": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/pass_hot": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. HOT becomes visible only once beta_min > 2304, PASS becomes visible only once beta_min > 2304 (assembled beta = 4608, block norms HOT 2304, PASS 2304). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.500 and max 0.500 of the response, with 0 of 1 modes above 0.90.",
+   "L4/null-space/pass_hot": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/pass_hot": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/operator-content/hot_rad": "2 of 2 blocks on this seam have an identity defect below 0.001 (HOT 0.00e+00, RAD 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/hot_rad": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/hot_rad": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. HOT becomes visible only once beta_min > 2293, RAD becomes visible only once beta_min > 2304 (assembled beta = 4597, block norms HOT 2304, RAD 2293). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.501 and max 0.501 of the response, with 0 of 1 modes above 0.90.",
+   "L4/null-space/hot_rad": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/hot_rad": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/operator-content/rad_cold": "2 of 2 blocks on this seam have an identity defect below 0.001 (COLD 0.00e+00, RAD 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/rad_cold": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/rad_cold": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. COLD becomes visible only once beta_min > 2293, RAD becomes visible only once beta_min > 2304 (assembled beta = 4598, block norms COLD 2304, RAD 2293). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.501 and max 0.501 of the response, with 0 of 1 modes above 0.90.",
+   "L4/null-space/rad_cold": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/rad_cold": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/operator-content/cold_pass": "2 of 2 blocks on this seam have an identity defect below 0.001 (COLD 0.00e+00, PASS 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/cold_pass": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/cold_pass": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. COLD becomes visible only once beta_min > 2304, PASS becomes visible only once beta_min > 2304 (assembled beta = 4608, block norms COLD 2304, PASS 2304). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.500 and max 0.500 of the response, with 0 of 1 modes above 0.90.",
+   "L4/null-space/cold_pass": "measured null-space dimension 0 matches the declared 0",
+   "L4/G5/cut-score/cold_pass": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L4/probe/provisional/F_e1": "probed on a provisional interface space so the diagnosis is available even though the connection is refused. The finding below is a measurement; the connection remains inadmissible until M and one prolongation per side are declared",
+   "L4/operator-content/F_e1": "2 of 2 blocks on this seam have an identity defect below 0.001 (F_I 0.00e+00, F_R1 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor",
+   "L4/probe-base/F_e1": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+   "L4/block-share/F_e1": "a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F_I kappa inf against the assembled 1 (infx). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F_I 0, F_R1 0.4, assembled 0.4 Per-mode, read off alpha_star, the dominant side holds median 1.000 and max 1.000 of the response, with 16 of 16 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.4 for F_I.",
+   "L4/E7/passivity/F_e1": "the probed symmetric part is positive semidefinite, but the probe ran on a PROVISIONAL interface space, so it certifies nothing about a transfer pair that was never declared. E7 stays unchecked",
+   "L4/G5/cut-score/F_e1": "cut score 0 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+   "L5/W171/axes/<graph>": "this graph is decomposed along 2 different axes: {'incompressible-thermal-transport-1d': 'non-overlapping', 'incompressible-navier-stokes-2d': 'overlapping'}. The scheme carries one axis because the interface problem is one problem; every rule whose subject is a REGION reads that region's axis instead. Before W171 the graph could not say this and three rules returned early on the graph's single axis having emitted nothing at all about the region they skipped",
+   "L7/R3/<graph>": "W = 1: ['F_I'] declare bc_time_varying = false, so a longer window is refused. a window W > 1 requires bc_time_varying on every agent at that interface; a ring held constant across the window is a W = 1 scheme wearing a longer name. And this is not only an admissibility rule: it is the precondition for reducing the temporal component of the transmission term at all, so these experts carry a floor on sigma that no scheme removes",
+   "L5/eps_tol/<graph>": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit",
+   "L7/R9/<graph>": "multirate coupling requires conservation on the TIME-INTEGRATED flux over the macro-step. Pointwise-in-time flux matching across different clocks is not conservative, and the residual is computed correctly and means nothing -- the same silent signature as a bitwise-zero residual. **Measured on thermal_seam's own 500:1 mismatch** (scripts/w7_multirate_matching.py): the pointwise match hands the slow side one instantaneous flux scaled over the whole interval, and at ratio 1 the two conventions agree to machine precision, so the discrepancy is the clocks and not the instrument. Declare flux_matching=TIME_INTEGRATED and supply boundary_response_integrated on each side",
+   "L7/R9/order/<graph>": "and the accounting the mechanism does not carry: the interface representation order CAPS the scheme order -- a second-order expert coupled through an interface held constant across the macro-step is a first-order method -- while stability is set by the coupling stiffness, which can force a macro-step SHORTER than any agent's native step. That is the opposite direction from R4 and is not implied by it. [AI Inference] the relevant stiffness is the probed operator's condition number, which the probe already prints. Untested",
+   "L5/R13/<graph>": "the seam graph contains a DIRECTED CYCLE (COLD -> PASS -> HOT -> RAD -> COLD) with a composed loop gain of undeclared, and the scheme does not sweep it: accelerator=direct-schur solves the assembled interface system in one shot, so there is no first agent to choose, no sweep order for the answer to depend on, and no fixed-point iteration for the gain to govern. R5 says the same thing about ordering -- a direct Schur solve is order-free -- and this is that sentence reaching the case R5 was written before anyone had. **What this does NOT clear is the cycle**: declare a sweeping accelerator and the gain becomes binding, which on this graph is what R13 would then decide on",
+   "L6/L6/C1/<assembly>": "convex (min chi = 0) and the identity holds (0.000e+00), so the blend is at least as accurate as the local solves it blends at every cell. ||A|| = 1, which is 1 for any convex partition of unity and is a theorem rather than a measurement. The other half of E6 -- that the blend is at least as accurate as the local solves it blends -- now HAS a condition and this graph satisfies it: it follows from convexity at every cell and in every l^p norm, with no exact solution needed anywhere",
+   "L6/R12/<assembly>": "the constraint is divergence-free and every agent declares elliptic_subsolve=exposed, so no local field is individually constrained and the composition layer's single global application is downstream of the blend by construction. L6/C2's hypothesis -- C u_i = 0 on every subdomain -- does not hold here, so its conclusion is not needed. **What this does NOT check is that the composition layer applies that elliptic part at all**: R10b fixes the cadence it must be applied at and assumes it happens, and nothing on the graph says it does. Measured 2026-08-31 on the CS-7 ladder, the same exposed agents with no global projection run 120 macro-steps without leaving the band and with ||div u||_rms at 1.25 at six windows -- stable, and not incompressible. Declaring an assembly.ProjectedAssembly is what makes it checkable, and W105 is the row",
+   "L6/W49/<assembly>": "Pi = 0.4286 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants",
+   "L9/E5/<run>": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate",
+   "L8/W56/<graph>": "5 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), p_decline (W36)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+  },
+  "D_decomposition": "non-overlapping",
+  "D_decomposition_axes": [
+   "non-overlapping",
+   "overlapping"
+  ]
+ },
+ "elapsed_seconds": 0.43561159999808297
+}

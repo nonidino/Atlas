@@ -106,6 +106,12 @@ class Scheme:
     window: int
     eps_tol: float | None
 
+    #: **W171.** Every axis this graph is decomposed along. One element for
+    #: every graph written before 2026-09-10, and equal to `decomposition` there,
+    #: which is the control that says the change moved nothing. More than one is
+    #: a UNION graph -- a tiling and a circuit in one compile -- which `decomposition`
+    #: as a single value could not say and which rung 9 needs.
+    decomposition_axes: frozenset = frozenset()
     overlap: float | None = None
     exchange_interval: float | None = None
     multirate: bool = False
@@ -128,6 +134,11 @@ class Scheme:
     def as_dict(self) -> dict[str, Any]:
         return {
             "D_decomposition": self.decomposition.value,
+            # W171. Sorted so the artifact is stable; a single-axis graph emits
+            # a one-element list whose only member is D_decomposition.
+            "D_decomposition_axes": sorted(
+                x.value for x in (self.decomposition_axes
+                                  or {self.decomposition})),
             "Lambda_transmission": self.transmission.value,
             "O_ordering": self.ordering.value,
             "K_accelerator": self.accelerator.value,

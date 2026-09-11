@@ -1573,3 +1573,48 @@ Beside it, `L4/block-share` reports the fluid **blind at every cell**: its share
 - **No composition error was measured.** No $\tau$, no $\sigma$, no $L$. The additivity result is about which rules fire.
 - **W184's schema change was not built**, and its row says to price it against `_decomposition_cuts` first rather than build it for rung 3 alone.
 - **Rung 9 (W171, W172) and rung 8's module (W182) were not started.** Nothing was downloaded and no machine was rented.
+
+---
+
+## Tier 44 — W171 part 1 is built, and the carrier had to be declared after all
+
+**[[per-region-decomposition-axis]], `atlas/graph.py`, `atlas/compiler.py`, `atlas/scheme.py`, `scripts/w171_region_axis.py`, `tests/test_tier44_region_axis.py`, `out/w171b/w171b.json`. 2026-09-10.**
+
+Rung 9's blocker, scoped at Tier 40 and priced at Tier 41 and untouched through two tiers since. Built — **and the way it was built is not the way it was scoped**, because Tier 40's third finding does not survive a wider sample. This is the **first rule change in three tiers**; Tiers 42 and 43 wrote none.
+
+| # | Gap | Task | Status |
+|---|---|---|---|
+| **W171** | `atlas/graph.py` `Connection.cut_axis`, `CaseGraph.seam_axis`/`regions`/`region_axes`/`agent_axis`/`decomposition_axes`; `atlas/compiler.py` `_Context.region_axis`/`regions_on`/`axis_summary` and seven rule sites; `atlas/scheme.py` `decomposition_axes` | **The axis is per REGION, and the seven rules read the region their subject is in.** Done on its own done-when | **`done` (part 1), 2026-09-10.** The three rules that returned early emitting nothing now ask `ctx.regions_on(OVERLAPPING)`, scope to those regions' agents, and **say so when there are none**; `_cut_policy` emits once per axis PRESENT, so a union graph gets `L2/C2` for its tiling and `L2/C3` for its circuit instead of one of the two; each cross-point is judged by the axis of the region its agents are in, with a vertex spanning two regions treated as non-overlapping — the direction that can be inspected rather than the one silently admitted; and `_decide_rung`/`_l5_l7_scheme` stay graph-global on purpose, because R2's lift is a property of the **interface problem**, which is one problem however many regions a graph has. **The control is the claim**: seven constructible graphs, **zero disagreements**, one axis each, equal to the declared one, with `D_decomposition` unchanged in the artifact and `D_decomposition_axes` a one-element list containing it. Measured on a union — a coolant circuit and a fluid tiling in one compile: before, all three rules emitted **nothing** with an overlapping region present; after, all three speak. Tier 40's defect-asserting test is **rewritten rather than deleted**, predicate verbatim, expected answer flipped from *three are silent* to *none is*, with a two-stub control that says the predicate still has teeth. **Part 2 is W189** |
+| **W188** | the habit, not a module; [[per-region-decomposition-axis]] §2 | *(opened)* **A carrier for this row has now been proposed twice, measured twice, and falsified twice by widening the sample.** The row's own `[AI Inference]` said the natural carrier is the **agent**; Tier 40 checked it against four graphs and it is false. Tier 40 then said the carrier is the **connection** *and the field is already declared*, deriving the axis from `geometrically_coincident` — measured on `front_wing`, `wing_fsi`, `cooling_loop` and `powertrain`, with no exception, which is this vault's own two-unrelated-graphs bar met twice. Censused over **all eleven** constructible case graphs, per seam, it does not separate the axis: $(\text{same family},\ \text{coincident})$ appears under **both** axes, and so does $(\text{different family},\ \text{coincident})$, so no ordering of the clauses rescues it. The graphs that break it are the two the sample did not contain — **`window_ns`** and **`wind_farm_real`**, overlapping tilings whose every seam declares coincidence, **correctly**: coincidence is a property of the two sides' *discretizations* (E2's coincidence half) and the axis is a property of their *domains*. The obvious fallbacks fail on a third: **`rocket` is overlapping with no partition of unity and no `overlap_cells`** | `open`, and it is a **standing instruction rather than a repair**. The carrier finding — *a cut is a relation among several agents, so the agent is the wrong carrier* — is untouched and was never the problem; what failed twice is *therefore this existing field carries it*. Done when this vault's own two-graph bar carries an explicit rider for **derivations**: two graphs is enough to open a rule and is **not** enough to conclude that an existing field decides something, because a derivation is a claim about the whole population and a rule is a claim about a class. Until then, price a proposed derivation against **every constructible graph** before building on it — the census here cost under a second and the proposal it falsified had survived two tiers |
+| **W189** | `atlas/graph.py` `CaseGraph.partition_of_unity`, `overlap`, `overlap_cells` | *(opened; W171 part 2)* **Three objects are still one per graph, and the boundary is now measured rather than claimed.** `_r12_conservative_assembly` and `_w49_sigma_branch` are gated on `graph.partition_of_unity` **before** they reach any axis, so on a union with no partition they stay silent for a reason that is not the axis. Give the union a partition and **all three formerly-silent rules speak** — so part 1's change is *sufficient* for the rules, and what remains is that a partition covering only the tiling still has to be declared as the **whole graph's**. Likewise `overlap` and `overlap_cells` are one number each, and the halo rule compares them against the domain of dependence of agents that are now known to be in a particular region | `open`, **medium**, and it is the rest of rung 9's schema. Done when a partition of unity, an overlap and an overlap-cell count can each be declared per REGION, and when `_l6_assembly`'s identity and R11's convexity are checked per region rather than over one object. **Price it against a real union first**: the fixture here is $7$ agents and rung 9's is $18$ across $5$ families, and the question of whether one partition per region is even the right shape — against one per *overlapping* region, of which a vehicle has few — has not been asked |
+| **W172** | `wiki/concepts/Atlas 0.1/common/`; the integration graph | **NOT started.** W171 part 1 is done, which was its stated prerequisite | `open`, unchanged. The union built here is **disjoint** — the three seams that would JOIN the subsystems do not exist — so nothing in this tier re-runs the $O(K)$ count across them. **The caveat stands exactly as written**: the zero-per-pair count is strong evidence about the *algebra* and no evidence about the *integration cost*, and the difference is what rung 9 exists to find out. Do not quote it without that |
+
+### The census that falsified the derivation
+
+Per seam, over every constructible case graph:
+
+| same family | coincident | declared axes seen | |
+|---|---|---|---|
+| True | False | `{overlapping}` | separates |
+| **True** | **True** | **`{overlapping, non-overlapping}`** | **ambiguous** |
+| **False** | **True** | **`{overlapping, non-overlapping}`** | **ambiguous** |
+
+Two of three populated cells ambiguous. The repair is a declaration — `Connection.cut_axis`, `None` = inherit — which is what every graph written before this tier means and is why all seven reproduce.
+
+### And the rules, before and after, on a graph that has two axes
+
+| rule | union, before | union, after | union with a partition of unity |
+|---|---|---|---|
+| `L2/R10/halo` | **nothing** | `admit-uncertified`, naming the tiling's agents | same |
+| `L6/R12` | **nothing** | **nothing** (gated on the partition — W189) | `admit` |
+| `L6/W49` | **nothing** | **nothing** (gated on the partition — W189) | `admit-uncertified` |
+| `_cut_policy` | one branch | **both**: `L2/C2` and `L2/C3/W57` | same |
+| `D_decomposition_axes` | — | `['non-overlapping', 'overlapping']` | same |
+
+### What this tier did NOT do, named
+
+- **W172 was not started**, and it is the row W171 was the prerequisite for. The joining seams do not exist and the $O(K)$ count was not re-run.
+- **Rung 9's graph was not built.** The fixture is $7$ agents and two regions; rung 9's is $18$ across $5$ families with three joining seams.
+- **Part 2 (W189) was not built** — `partition_of_unity`, `overlap` and `overlap_cells` stay graph-global, and the measurement in §6 is what says the remaining obstruction is those rather than the axis.
+- **Nothing checks `cut_axis`.** It is a label exactly as `geometrically_coincident` is, and `region_axis_conflicts` reports a region whose seams disagree rather than resolving it.
+- **W182 (rung 8's module), W183–W187, W175, W178** untouched. Nothing downloaded, no machine rented.

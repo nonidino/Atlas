@@ -133,6 +133,29 @@ class Connection:
     #: admissibility needs a declared interface space and prolongation even in the
     #: coincident case, where the prolongation is the identity.
     geometrically_coincident: bool = False
+    #: **W171.** The decomposition axis of the cut THIS seam is, when it is one.
+    #:
+    #: ``None`` -- the default, and what every graph written before 2026-09-10
+    #: means -- inherits the graph's own ``decomposition``.  Naming an axis says
+    #: *this seam is a cut of this kind*, which is what a union graph needs: a
+    #: tiling and a circuit in one compile have two axes and one field per graph
+    #: cannot say so.
+    #:
+    #: **It is a declaration and not a derivation, and that is a correction.**
+    #: Tier 40 proposed deriving it from ``geometrically_coincident`` and
+    #: measured the proposal on four graphs.  Censused over all eleven
+    #: constructible case graphs it does not separate the axis: a same-family
+    #: coincident seam appears under BOTH axes, because coincidence is a
+    #: property of the two sides' *discretizations* -- E2's coincidence half --
+    #: and the axis is a property of their *domains*.  `window_ns` and
+    #: `wind_farm_real` are overlapping tilings declaring coincident seams and
+    #: are right to.  Nothing else derived separates it either: `rocket` is
+    #: overlapping with no partition of unity and no ``overlap_cells``.
+    #:
+    #: Like ``geometrically_coincident``, nothing checks it.  A seam that
+    #: declares an axis its region's other seams contradict is reported by
+    #: `CaseGraph.region_axis_conflicts` rather than resolved.
+    cut_axis: "Decomposition | None" = None
     #: The null-space dimension the case expects, e.g. one for incompressibility.
     #: Leaving it None disables the free correctness check rather than defaulting it.
     expected_null_dim: int | None = None
@@ -557,6 +580,114 @@ class CaseGraph:
                     out.append((a.agent_id, p.name))
         return out
 
+    # -- W171: the decomposition axis, per REGION rather than per graph ----
+
+    def seam_axis(self, connection: Connection) -> "Decomposition | None":
+        """The axis of the cut this seam IS, or ``None`` when it is not a cut.
+
+        **W171, derived from Tier 40's measurement rather than declared.**  The
+        row's own `[AI Inference]` said the natural carrier is the AGENT, and
+        that was measured FALSE: a cut is a **relation among several agents**,
+        not a property of one -- two agents of one family cut two different ways
+        is one fact about one region and is unrepresentable on either agent --
+        and an agent that is not cut has no axis at all.
+
+        The carrier that works is the **connection**, and the field is already
+        declared.  Two clauses, in order:
+
+        1.  **Different `governing_family` on the two sides: not a cut.**  Gamma
+            is a physical boundary between two regions, not a face a
+            decomposition created, so neither axis applies and the overlapping
+            mechanism has no subject there.  This is `_decomposition_cuts`'
+            own predicate (W114), read on the seam instead of on the agent.
+        2.  **Same family: the seam's own ``cut_axis``, or the graph's.**
+            Tier 40 proposed deriving this from ``geometrically_coincident`` and
+            measured the proposal on four graphs.  Censused over all eleven
+            constructible case graphs, per seam, it **does not separate the
+            axis** -- ``same_family=True, coincident=True`` appears under both
+            axes, and so does ``same_family=False, coincident=True`` -- because
+            coincidence is a property of the two sides' *discretizations* and
+            the axis is a property of their *domains*.  So it is declared, and
+            ``None`` inherits the graph's, which is what every graph written
+            before W171 means.
+
+        Nothing checks the declaration, exactly as nothing checks
+        ``geometrically_coincident``; `region_axis_conflicts` reports a region
+        whose own seams disagree rather than resolving it.
+        """
+        fa = self.agent(connection.a[0]).capabilities.governing_family or ""
+        fb = self.agent(connection.b[0]).capabilities.governing_family or ""
+        if fa != fb:
+            return None
+        return connection.cut_axis or self.decomposition
+
+    def regions(self) -> dict[str, list[str]]:
+        """The CUT regions, keyed by governing family, each a list of agent ids.
+
+        A region is a family with more than one agent in this graph -- exactly
+        `_decomposition_cuts`' cut set, grouped instead of flattened.  A sole
+        agent of its family owns its whole domain and is in no region.
+        """
+        by_family: dict[str, list[str]] = {}
+        for a in self.agents:
+            by_family.setdefault(a.capabilities.governing_family or "", []).append(
+                a.agent_id)
+        return {fam: ids for fam, ids in by_family.items() if len(ids) > 1}
+
+    def region_axes(self) -> dict[str, "Decomposition"]:
+        """One axis per cut region, derived from that region's own seams.
+
+        A region whose intra-family seams disagree is reported through
+        `region_axis_conflicts` rather than resolved here; a region with no
+        intra-family seam to derive from falls back to the graph's declared
+        ``decomposition``, which is what every single-axis graph means.
+        """
+        out: dict[str, "Decomposition"] = {}
+        for fam, ids in self.regions().items():
+            members = set(ids)
+            seen = {
+                self.seam_axis(c)
+                for c in self.connections
+                if c.a[0] in members and c.b[0] in members
+            } - {None}
+            out[fam] = seen.pop() if len(seen) == 1 else self.decomposition
+        return out
+
+    def region_axis_conflicts(self) -> dict[str, list[str]]:
+        """Regions whose own seams do not agree about the axis.
+
+        Reported, never resolved.  One region cut two ways is a declaration
+        defect and the compiler should say so rather than pick.
+        """
+        out: dict[str, list[str]] = {}
+        for fam, ids in self.regions().items():
+            members = set(ids)
+            seen: dict[str, list[str]] = {}
+            for c in self.connections:
+                if c.a[0] in members and c.b[0] in members:
+                    axis = self.seam_axis(c)
+                    if axis is not None:
+                        seen.setdefault(axis.value, []).append(c.seam_id)
+            if len(seen) > 1:
+                out[fam] = sorted(s for v in seen.values() for s in v)
+        return out
+
+    def agent_axis(self, agent_id: str) -> "Decomposition | None":
+        """The axis of the region this agent is in; ``None`` when it is not cut."""
+        fam = self.agent(agent_id).capabilities.governing_family or ""
+        return self.region_axes().get(fam)
+
+    def decomposition_axes(self) -> frozenset:
+        """Every axis present in this graph.
+
+        One element for every graph written before W171, which is the control
+        that says the derivation did not move any of them.  Two is a union graph
+        -- a tiling and a circuit in one compile -- which is what rung 9 needs
+        and what `decomposition` as a single field could not express.
+        """
+        return frozenset(self.region_axes().values())
+
+    # -- structural properties the compiler gates on -----------------------
     # -- structural properties the compiler gates on -----------------------
 
     def governing_families(self) -> dict[str, str | None]:

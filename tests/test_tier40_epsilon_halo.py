@@ -40,6 +40,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from atlas import Budget, compile_scheme                            # noqa: E402
 from atlas.capability import EllipticSubsolve                       # noqa: E402
+from atlas.graph import Decomposition                               # noqa: E402
 from atlas.cases import cooling_loop as CL                          # noqa: E402
 from atlas.cases import front_wing as F                             # noqa: E402
 from atlas.cases import neural_interface as NI                      # noqa: E402
@@ -447,11 +448,65 @@ def test_W171_the_axis_is_already_declared_per_seam_on_four_graphs():
         assert all(flags), name
 
 
-def test_W171_three_of_the_seven_axis_readers_emit_nothing_on_the_wrong_axis():
-    """**And the row's count is wrong in both numbers.**  It says five rules
-    branch and return early.  Seven functions read the axis; THREE of them
-    return early and emit nothing, and the other four emit on both branches --
-    so they would say the wrong thing loudly, which is the cheaper failure.
+def test_W171_but_coincidence_does_NOT_separate_the_axis_over_all_eleven_graphs():
+    """**Tier 44: the four-graph result above is true and does not generalise.**
+
+    The test above checks `geometrically_coincident` against the axis on four
+    graphs and it holds there.  Tier 40 concluded from it that *the field is
+    already declared* and the axis could be DERIVED.  Censused over every
+    constructible case graph, per seam, that conclusion is false in the one way
+    no ordering of clauses can rescue: the same ``(same_family, coincident)``
+    pair appears under BOTH axes.
+
+    `window_ns` and `wind_farm_real` are overlapping tilings whose seams declare
+    coincidence -- correctly, because coincidence is a property of the two sides'
+    *discretizations* (E2's coincidence half) and the axis is a property of their
+    *domains*.  So the axis became a DECLARATION on the connection,
+    ``Connection.cut_axis``, defaulting to None = inherit the graph's.
+
+    This test is the falsification, kept beside the claim it corrects.
+    """
+    from atlas.cases import window_ns as WNS
+
+    u, v = NI.load_state()
+    overlapping_and_coincident = []
+    for name, g in (("window_ns", WNS.build(u, v)[0]),
+                    ("cooling_loop", CL.build()[0])):
+        for c in g.connections:
+            fa = g.agent(c.a[0]).capabilities.governing_family
+            fb = g.agent(c.b[0]).capabilities.governing_family
+            if fa == fb and c.geometrically_coincident:
+                overlapping_and_coincident.append((name, g.decomposition.value))
+    axes = {axis for _n, axis in overlapping_and_coincident}
+    assert axes == {"overlapping", "non-overlapping"}, axes
+
+    # and the repair: the axis is declared on the connection, and None inherits
+    from atlas.graph import Connection
+
+    assert "cut_axis" in Connection.__dataclass_fields__
+    assert Connection.__dataclass_fields__["cut_axis"].default is None
+
+
+def test_W171_no_axis_reader_emits_nothing_on_the_wrong_axis_any_more():
+    """**W171, closed in Tier 44. The diagnosis is kept and the answer flipped.**
+
+    *The diagnosis, which stands:* the row said five rules branch on the axis and
+    return early.  Seven functions read it; THREE returned early emitting
+    nothing -- `_halo_rule`, `_r12_conservative_assembly`, `_w49_sigma_branch` --
+    and the other four emitted on both branches, so they would say the wrong
+    thing loudly, which is the cheaper failure and not the silent one the row was
+    about.  Measured on a union graph before the change: with an overlapping
+    region present, all three emitted nothing at all about it.
+
+    *What changed:* each of the three now asks `ctx.regions_on(OVERLAPPING)`
+    rather than the graph's single axis, scopes its subject to those regions, and
+    **says so** where there are none instead of returning in silence.  So the
+    expected answer is now zero, and this test fails if any of them goes quiet
+    again.
+
+    The predicate below is unchanged from the version that asserted the defect --
+    keeping it is the point, because a rewritten predicate would be a different
+    question wearing the same name.
     """
     import ast
     import textwrap
@@ -491,9 +546,25 @@ def test_W171_three_of_the_seven_axis_readers_emit_nothing_on_the_wrong_axis():
         fn = getattr(compiler, name)
         assert "Decomposition." in inspect.getsource(fn), name
         (silent if returns_early_on_the_axis(fn) else loud).append(name)
-    assert set(silent) == {"_halo_rule", "_r12_conservative_assembly",
-                           "_w49_sigma_branch"}, silent
-    assert len(loud) == 3, loud
+    assert silent == [], silent
+    assert len(loud) == 6, loud
+
+    # The control: the predicate still has teeth. A function that returns on the
+    # axis having emitted nothing is still detected as silent, so `silent == []`
+    # above is a fact about the compiler and not about a broken detector.
+    def _silent_stub(ctx):
+        if ctx.decomposition is not Decomposition.OVERLAPPING:
+            return
+        ctx.record.admit("L0", "stub", "reached", subject="x")
+
+    def _loud_stub(ctx):
+        if ctx.decomposition is not Decomposition.OVERLAPPING:
+            ctx.record.admit("L0", "stub", "not overlapping", subject="x")
+            return
+        ctx.record.admit("L0", "stub", "overlapping", subject="x")
+
+    assert returns_early_on_the_axis(_silent_stub) is True
+    assert returns_early_on_the_axis(_loud_stub) is False
 
 
 def test_W171_one_field_carries_the_axis_all_the_way_into_the_artifact():

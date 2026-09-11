@@ -201,6 +201,16 @@ out/w181/*
 !out/rung3/
 out/rung3/*
 !out/rung3/rung3.json
+# Tier 44 (W171 part 1, the per-region decomposition axis). JSON only, and
+# small: the control over every constructible case graph, the union graph's
+# two-axis report, and the before/after rule coverage the page quotes and the
+# tests assert. `before.json` is the same run with the three rules unchanged --
+# kept because the finding is a DIFFERENCE and half of it is not reproducible
+# from this tree any more.
+!out/w171b/
+out/w171b/*
+!out/w171b/w171b.json
+!out/w171b/before.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/
