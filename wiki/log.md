@@ -4134,3 +4134,48 @@ Forty artifacts — the sha256 of `RunArtifact.to_json()` — captured from the 
 `scripts/w189_artifact_control.py`: a census and four full forty-graph captures of $3.4$ to $3.7$ minutes each — two before, two after, the committed one from the final tree — plus the one that died at graph eight. `scripts/w189_region_assembly.py`: $21$ seconds, numpy only. **The full suite: $1187$ tests across $45$ files, $1186$ passed and $1$ failed** — the W173 source test above — and **its whole file re-run after the re-point: $24$ passed**. Four parallel groups, then the five clock-sensitive files serially and alone. `scripts/vault_scan.py wiki`: **$222$ files, $0$ problems.**
 
 Changed: [[per-region-assembly]] (new), [[case-study-ladder-to-f1]] (§19), [[f1-pathmap-and-end-goal]] (§3.3's rung-9 row), [[gap-worklist]] (Tier 45; **W189 closed**; W172 and W188 annotated; W190–W193 opened), [[per-region-decomposition-axis]] (a dated note under §6), [[index]]. Code: `atlas/graph.py`, `atlas/compiler.py`, `atlas/verdict.py`, `atlas/assembly.py`, `atlas/scheme.py`, `atlas/emit.py`, `atlas/solve.py`, `atlas/CASE-STUDY-GUIDE.md`, `tests/test_tier44_region_axis.py` (two tests re-pointed), `tests/test_tier40_epsilon_halo.py` (one test re-pointed). Added: `scripts/w189_artifact_control.py`, `scripts/w189_region_assembly.py`, `tests/test_tier45_region_assembly.py`, seven JSON files under `out/w189/`, and the tier's `.gitignore` allowlist pair.
+
+## [2026-09-11] tier 46 | W172: the joining seams exist, and a join is O(1) in declarations and not in state
+
+**Rung 9's joining seams, built and counted.** [[joining-seam-cost]], `atlas/cases/integration_union.py`, `scripts/w172_joining_cost.py`, `tests/test_tier46_joining_seams.py`, `out/w172/w172.json`. [[case-study-ladder-to-f1]] §19.6's first item, on W172's own done-when: joining seams on a union that compiles, the count re-run at more than one family count, and existing structure and adding-a-subsystem cost stated separately.
+
+### What joins what was checked before anything was built
+
+Two of the three joins assumed since Tier 39 are **not constructible** on the records: `FSIFlowWindow` carries $u$ and $v$ and no temperature, so the tiling has no `THERM` bond to give the cooling loop; and `STRUCT` is clamped with one connected port, so the powertrain has neither a rotational degree of freedom nor a second loaded face to meet. The joins built, one per pair of subsystems: **J1**, the radiator core standing in the flow on the `x01` overlap — `MECH`, $\pm\tfrac12 K u^2$ with $K = 1.2$ and $UA \propto u^{0.8}$ referenced to the build state; **J2**, the machine's $I^2R$ into the block's dry face through a bolted mount — `THERM`, `effort_normal` on the block; **J3**, the rotor on the `x10` overlap in the wing's wake — `MECH`, its two faces the only open ports in the three graphs. Each device splits its overlap seam into a bypass and its own two, `wake_array`'s convention.
+
+### The counter came first
+
+Tier 39's table has no script, so the counter reproduced it before counting anything new — all six graphs and the union row, **exactly**. The disjoint union is built from the three graphs' own `build()` calls and equals its parts declaration for declaration, prolongation matrices included, so a join's cost cannot hide in it.
+
+### What was measured
+
+- **The joined union compiles**: 18 agents, 5 families, 48 ports, 24 seams, **no open port and zero per-pair declarations**. Its one refusal is `L7/R9`, as on the disjoint union and on every union of two or three subsystems measured; with ten agents' clocks reconciled both admit, `admit-uncertified`.
+- **A join's declaration cost is constant in the family count** — J1 identical at 4 and 5 families, J2 at 4, 5 and 5 with J3, J3's declarations at 3 and 5 — and **no join is "two new ports and nothing else"**: J1 splits an existing seam; J2 moves the block's coolant-side response and needs one unit reconciliation, $p_{\text{ref}} = 42{,}187.5$ W per power unit, held rather than re-fitted; J3 re-declares the rotor's two open ports for a host with a 4-cell cutoff at $1/64$ where `wake_array` declared 8 cells at $1/32$.
+- **What a join re-derives is not local** (**W196**). The rotor's inflow in the wake is $0.922$, so J3 re-solves `powertrain`'s operating point ($\omega$ from $15$ to $13.837$, still generating); with J2 present the machine's heat falls from $1800$ to $134.3$ W and the casing datum from $396$ to $362.7$ K, and the ports J3 moves on agents off its own seams go from **3 to 6** at the same agents and families. The insertion order decides which join is charged. No verdict moves.
+- **Adding a subsystem adds exactly its own Tier 39 row** in both orders, plus nine graph-level fields reconciled once per union and four `cut_axis` declarations per circuit. `ROTOR`'s region changes when `powertrain` meets the tiling and never when a join is made (**W192**, priced).
+- **The rotor's join, four ways**: re-declared ports; per-pair declarations at 9 modes against 17; the native ports, **refused** at `L3/C2/C3/C6` — the control; and per pair with each side in its own cell measure, **admitted** by L3 with traces $1/\sqrt{2}$ apart and seen only indirectly, by `L4/probe-base` at 41% (**W195**).
+
+### Opened
+
+- **W194**: `L7/R9` refuses the disjoint union, which has **no** multirate seam, and asks all 18 agents for an integrated response where the joined union's five multirate seams touch 8 — `is_multirate` reads the graph, not the seam. W136's scope defect, on the clocks.
+- **W195**: `C2/C3/C6` checks each side's prolongation in its own measure and never that the two describe one face.
+- **W196**: a join's declarations are local and the state it re-derives is not, and nothing reads the provenance of a declared operating point.
+- **W197**: every actuator down seam reads non-passive — `wake_array`'s own `R1_down` to `R3_down` at $2.000$, this union's two at $0.947$ and $1.858$ — while no up seam does; recorded nowhere until this control.
+
+### What this tier did NOT do, named
+
+- **Nothing marches the joined union.** The operating point is solved by `CircuitSolve` alone and each port is evaluated at its own base. Rung 9's gate is about a run.
+- **W194–W197 were opened and not fixed.** `THERM` on the tiling was not built; the machine's `ELEC` response does not follow its casing temperature; the rotor stays linearized at its declared induction $1/3$.
+- **Rung 9's integration graph, the brief's third task, was not started.** W182, W183–W187, W190, W191, W193, W175, W178 untouched. Nothing downloaded, no machine rented, NeuberNet not loaded.
+
+### How it was done, and three things worth recording
+
+- **The state column was wrong in the first run.** It counted a datum a join introduces as one it re-derives, and it could not see `powertrain`'s declared shaft speed at all, because only a joined build recorded one. The build now records every partner-read datum unconditionally, the column is split into introduced and re-derived, and the second run is the committed one.
+- **The operating point forced a design decision before it forced a number.** Re-fitting $p_{\text{ref}}$ whenever J3 moved the operating point would have kept the block's source at 1800 W and made a unit depend on a state. Holding it is what exposed W196.
+- **One existing test failed on the change, and it was the census working.** Tier 45's `test_W189_control_the_capture_is_the_whole_package` counts `atlas/cases` against its capture and failed at `assert 21 == 20`. It is re-pointed by naming `integration_union` as added after the capture, with an assertion that the named module exists, so an unnamed addition still fails.
+
+### How it was run
+
+`scripts/w172_joining_cost.py`: $56$ seconds — the counter's six graphs, fourteen unions and nine variants compiled, every port evaluated at its own base on each graph a cost is read from, and `wake_array`'s reference graph compiled in $11$ seconds for W197's control. **The full suite: $1210$ tests across $46$ files, $1209$ passed and $1$ failed** — the census test above — and **its file re-run after the re-point: $37$ passed**. Four parallel groups in three and a half minutes, then the five clock-sensitive files serially and alone in three. `scripts/vault_scan.py wiki`: **$223$ files, $0$ problems.**
+
+Changed: [[joining-seam-cost]] (new), [[case-study-ladder-to-f1]] (§20), [[f1-pathmap-and-end-goal]] (§3.3's rung-9 row), [[gap-worklist]] (Tier 46; **W172 closed**; W192 priced; W194–W197 opened), [[per-region-assembly]] (a dated note under §7), [[index]]. Code: `tests/test_tier45_region_assembly.py` (one test re-pointed). Added: `atlas/cases/integration_union.py`, `scripts/w172_joining_cost.py`, `tests/test_tier46_joining_seams.py`, `out/w172/w172.json`, and the tier's `.gitignore` allowlist pair.

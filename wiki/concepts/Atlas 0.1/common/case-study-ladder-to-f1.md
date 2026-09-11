@@ -870,3 +870,60 @@ On `window_ns`'s real four-window tiling beside **both** circuits — fourteen a
 - Then W190, W184, W183's G2, W95, W188's rider, W185, W187, W178, W175.
 
 **W172 and rung 8's module are each a tier.** Tier 45 did §18.6's second item and named the rest as not done.
+
+---
+
+# 20. Rung 9's joining seams exist, and a join is O(1) in declarations but not in state (2026-09-11)
+
+Full record: [[joining-seam-cost]] and [[gap-worklist]] Tier 46.
+
+**§19.6's first item was taken.** W172 — *the seams that would join the subsystems do not exist* — is closed on its own done-when: the joining seams exist on a union that compiles, the count was re-run across them at three, four and five families, and existing structure and adding-a-subsystem cost are stated separately.
+
+## 20.1 What joins what
+
+Checked against the port algebra before anything was built, two of the three joins this page's schedule assumed are **not constructible**: the tiling carries no temperature, so there is no `THERM` bond from the aero side to the cooling loop, and the clamped structure offers the powertrain neither a rotational degree of freedom nor a second loaded face. **The replacements are recorded as decisions**: the radiator core stands in the airflow (`MECH`), and the rotor — the only open ports in the three graphs — stands in the wing's wake (`MECH`), beside the machine's heat conducted into the cooled block (`THERM`).
+
+## 20.2 The count, across the joins
+
+- **Existing structure is unchanged by joining**: 48 ports, 48 prolongations, five scale sets and **zero per-pair declarations** after all three joins, as before them.
+- **A join's declaration cost does not grow with the family count** — measured at 3, 4 and 5 — and it is a small constant: two to four ports, one split seam or two re-declared ports, at most one unit reconciliation.
+- **It is not "two new ports and nothing else."** One join splits an existing seam, one moves an existing response, one re-declares an open port for its new host.
+- **What a join re-derives is not local.** The rotor in the wake moves the powertrain's operating point, and with the heat path present that reaches six ports on agents off its own seams instead of three — at the same agents and families. No rule sees it (**W196**).
+- **Adding a subsystem adds exactly its own structure**, in both orders, plus nine graph-level fields reconciled once per union.
+
+## 20.3 What moves on this page
+
+**§19.3's rung-9 row.** *The schema is complete; the integration graph still unbuilt* becomes **the joining seams exist and the joined union compiles; nothing marches it**. And this page's affordability premise — rung $n+1$ costs what rung $n$ cost — is now **measured for declarations and unmeasured for state**.
+
+## 20.4 What this tier did not do
+
+**Nothing marches the joined union**, and rung 9's gate is about a run. The union compiles to `refuse` on `L7/R9` alone and to `admit-uncertified` with its clocks reconciled — and R9 turns out to refuse a union with **no** multirate seam, because its subject is the graph (**W194**). A per-pair form of the rotor's join in two cell measures is admitted by L3 (**W195**), and every actuator down seam in the package reads non-passive, `wake_array` included (**W197**). **Task 3, rung 9's integration graph, was not started.**
+
+## 20.5 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W196** — a join's re-derived state is not local, and no rule reads it | a march of the joined union, and whether rung 9's integration cost is $O(K)$ | `open`, medium, **new** |
+| **W194** — R9's subject is the graph, not the multirate seam | any multirate union, joined or not | `open`, medium, **new** |
+| **W192** — joining graphs re-derives an agent's region | how a union counts what adding a subsystem changes | `open`, medium, **priced**: a subsystem moves a region, a join does not |
+| **W195** — L3 never compares the two sides' measures | any per-pair transfer | `open`, small to medium, **new** |
+| **W197** — every actuator down seam reads non-passive | E7 on every rotor graph | `open`, small to medium, **new** |
+| **W190** — measured constants are one record per graph | any bound on the union | `open`, medium |
+| **W193** — a named cross-point has no region | union verdicts on a tiling's cross-points | `open`, small to medium |
+| **W182** — an inequality seam compiles, and nothing can declare otherwise | rung 8's first module | `open`, medium |
+| **W183**, **W184**, **W186** | rung 3's gate, a port's kind of boundary, R10's subject | `open` |
+| **W95**, **W165** | every learned substitution verdict; rung 8 itself | `open` |
+| **W191**, **W188**, **W187**, **W185**, **W181**, **W178**, **W175** | how this vault reasons, one mislabelled partition, and attribution | `open`, small to medium |
+
+**Closed off it**: **W172**, the joining seams.
+
+## 20.6 The next step
+
+**Not started, and the choice is the user's.** In line:
+
+- **Rung 9's integration graph (the brief's third task).** The joined union exists and admits with its clocks reconciled. A march needs a decision this tier exposed and did not make — whether the shared operating point is solved union-wide or declared per subsystem (**W196**) — and rung 9's gate is about composition error at scale, decided by a run, so the gate should be re-read against what a march of this graph can actually produce before it is attempted.
+- **W194**, cheap and well-controlled: re-scope R9 to the multirate seam, with the disjoint union and `thermal_seam` as the two controls.
+- **W197**'s diagnosis on `wake_array`, and **W195**'s measure check — each small.
+- Then W190, W193, W182, W186's re-census, W191, W184, W183's G2, W95, W188's rider, W185, W187, W178, W175.
+
+**Rung 9's march and rung 8's module are each a tier.** Tier 46 did §19.6's first item and named the rest as not done.

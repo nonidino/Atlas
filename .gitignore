@@ -229,6 +229,15 @@ out/w189/*
 !out/w189/compare_before1_vs_after.json
 !out/w189/census.json
 !out/w189/w189.json
+# Tier 46 (W172, the joining seams and the O(K) count across them). JSON only:
+# the one record scripts/w172_joining_cost.py writes -- the counter control, the
+# fourteen unions, each join's marginal cost at two family counts, both insertion
+# orders, the four rotor-port forms, the clocks, the physics controls and the
+# device-down passivity control on wake_array's own graph.
+# tests/test_tier46_joining_seams.py asserts against it.
+!out/w172/
+out/w172/*
+!out/w172/w172.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

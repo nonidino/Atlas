@@ -80,20 +80,38 @@ def before():
 # --------------------------------------------------------------------------
 
 
+#: Case modules added AFTER the Tier 45 capture, each named with the tier that
+#: added it.  The capture is the package as it stood when the control was taken,
+#: and it is not re-taken for a module that changes no existing graph; so a new
+#: module is named here or this test fails -- which it did, on Tier 46's, and that
+#: was the test working.
+ADDED_AFTER_CAPTURE = {
+    "integration_union": "Tier 46 (W172): the joined union, built from existing "
+                         "cases' own build() calls; it changes none of them",
+}
+
+
 def test_W189_control_the_capture_is_the_whole_package(before):
-    """Twenty case modules: eighteen build graphs and two do not.
+    """Twenty case modules at the capture: eighteen build graphs and two do not.
 
     `seam_placement` is a search over decompositions and `wind_farm_design` an
     optimiser over rollouts; neither constructs a `CaseGraph`.  The census names
-    them rather than quietly counting to eighteen.
+    them rather than quietly counting to eighteen.  Modules added since the
+    capture are named in `ADDED_AFTER_CAPTURE`, and a module in neither place
+    still fails.
     """
     cases = sorted(f[:-3] for f in os.listdir(os.path.join(_ROOT, "atlas", "cases"))
                    if f.endswith(".py") and f != "__init__.py")
-    assert len(cases) == 20, cases
+    assert set(ADDED_AFTER_CAPTURE) <= set(cases), \
+        "a module named as added after the capture is not in the package"
+    assert len(cases) == 20 + len(ADDED_AFTER_CAPTURE), cases
     built = set(before["modules_constructed"])
     named = set(before["no_graph_modules"])
     assert built.isdisjoint(named)
-    assert (built | named) >= set(cases) - {"__init__"}, sorted(set(cases) - built - named)
+    assert not (built | named) & set(ADDED_AFTER_CAPTURE), \
+        "a module in the capture cannot also be named as added after it"
+    at_capture = set(cases) - {"__init__"} - set(ADDED_AFTER_CAPTURE)
+    assert (built | named) >= at_capture, sorted(at_capture - built - named)
     rows = before["rows"]
     assert len(rows) == 40
     assert all("sha256" in r for r in rows.values()), [

@@ -227,6 +227,8 @@ This is not W172's count — no seam joins anything here — but it is the list 
 
 `cross_points` names vertices by label. A vertex named `"centre"` contains no agents, so `_cp_axis` cannot find its region and falls back to the one axis field the graph still has. **The same union with `decomposition=NON_OVERLAPPING`** — every seam's own `cut_axis` unchanged — **is refused at `L2/I2/G1`** for the tiling's own cross-point. The verdict follows a field that W171 was supposed to have made a fallback.
 
+**2026-09-11, Tier 46 — answered in [[joining-seam-cost]].** The joining seams now exist, on a union carrying `front_wing`'s six-window tiling beside both circuits. The fields in §7.1 are reconciled **once per union** and no join changed any of them (that page's §6.3). W192 is priced: a subsystem meeting the tiling moves `ROTOR`'s region in both insertion orders, and no join moves a region — while the analogue in *state*, which does move with joins, is W196. And `L7/R9`'s refusal of the clocks turns out to fire on a union with no multirate seam at all (W194).
+
 ---
 
 # 8. What was found and not fixed
