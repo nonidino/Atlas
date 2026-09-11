@@ -674,3 +674,69 @@ Three things worth carrying off the page:
 - Then W175, W95 re-scoped against the certificate, and W178.
 
 **Rung 8's module, rung 3 and rung 9 are each a tier.** Tier 42 did the first of §15.4's list and named the rest as not done.
+
+---
+
+# 17. Rung 3 is built, out of order, and it compiles (2026-09-10)
+
+Full record: [[case-study-learned-pair-atlas-0.1]] (CS-17) and [[gap-worklist]] Tier 43.
+
+**§16.4's second item was taken.** Rung 3 — *a second learned expert joins an existing graph; first true multi-family coupling* — had never been built, has no row in §4, and is the one configuration the substitution campaign structurally cannot reach. It is built now, as **CS-17**, out of numeric order because rung 3 is a back-fill: CS-15 and CS-16 stay reserved for rungs 8 and 9.
+
+## 17.1 The result, and it is not the one that was expected
+
+**The graph compiles.** Poseidon-T against NeuberNet across a `MECH` seam reaches `admit-uncertified` with **zero refusals** — and so does every cell of a $2\times2$ against the classical incumbents on the identical geometry. The brief that commissioned it said to expect a refusal and to treat a refusal as the result; there is none, anywhere, and the reason is a rule this vault narrowed on purpose.
+
+`L2/R10` refuses an agent with an embedded elliptic solve **only when the graph holds another agent of the same `governing_family`** — W114, closed at CS-12 so that multiphysics graphs would stop being refused for a reason that never applied to them. In a two-agent multiphysics graph each agent is the sole one of its family, so R10 admits, explicitly, as `L2/R10/sole-family`. **It admits even when Poseidon-T declares the `embedded` that W93 measured**, and declaring that measured value is *cleaner* than the package default, because W160's undeclared-pressure-solve branch then stops firing as well.
+
+**And the rule still works**: its positive control, run in the same compile on the same two-agent shape with one declaration changed, refuses the moment a second same-family agent is present. So the admit is the premise clearing and **not** a rule being weakened to get one. **W186** is the consequence, and it re-scopes nine tiers of work: *the substitution campaign's blocker is a property of tilings.*
+
+## 17.2 What the second learned expert costs, attributed
+
+| cell | fluid | solid | decerts | extra over CC | $\tau$ | E7 |
+|---|---|---|---|---|---|---|
+| CC | `WindowNS` | classical patch | 10 | — | **defined** | holds |
+| CL | `WindowNS` | **NeuberNet** | 11 | `L4/E7/passivity` | UNDEFINED | **fails** |
+| LC | **Poseidon-T** | classical patch | 12 | `L2/R10`, `L4/R2b/W46` | UNDEFINED | holds |
+| LL | **Poseidon-T** | **NeuberNet** | 13 | all three | UNDEFINED | **fails** |
+
+**Exactly additive as sets, with empty intersection.** At the level of which rules fire, two learned experts cost the union of what each costs alone and nothing more — and each cost is charged to one expert by a control rather than by inspection. That is rung 3's own result and no single-substitution experiment could produce it. ($\beta$ is *not* additive — $3.2916 \to 0.8878$ for the pair against $2.9227$ and $0.5199$ for the singles — so the rules are a union and the constants they name are not.)
+
+**The sharpest single finding is §6.2's.** A reference pair is a **pair**. With one checkpoint the missing half has a classical peer that still declares `lambda_ref`, so the repair is a measurement somebody could make; with two there is nothing on the seam to appeal to, because NeuberNet is defined on one disc and Poseidon-T is fixed at $128^2$. **That is W95 on both halves of one seam at once**, and it confirms [[f1-pathmap-and-end-goal]] §3.3's `[AI Inference]` in its strongest form.
+
+Two more that travel: **`L4/E7/passivity` fails on NeuberNet and reads exactly zero on the classical patch on the same ring at the same base** — a *third* kind of non-symmetry beside W138's convention artefact and rung 8's non-associated physics (W185). And **a learned expert imports its own expressiveness into every seam it touches**: NeuberNet's measured effective rank on its own port is $3$ against the classical patch's $25$, so $\dim M=\min_i m_i^{\text{eff}}$ puts a $128$-cell fluid face and a $29$-sensor ring through a **three-dimensional** interface space.
+
+## 17.3 What this changes on this page
+
+**§14.1's rung-3 row.** *never built* becomes **built as a compile, not as a run; the gate restated**. §14.1 stays as written and this is the count now.
+
+**And the ladder's currency changes for one row.** §4's Phase A/B/C schedule has no rung-3 row because the revised ladder assumed the substitution campaign would carry the foundation-model claim. CS-17 shows it cannot: the campaign's arrangement always leaves one side able to answer, and the configuration the pathmap actually assigned rung 3 behaves differently in the one way that matters. **A row is not added retroactively** — §4 stays as written — but any future reading of *"the campaign is the foundation-model half"* should carry §17.1's re-scoping beside it.
+
+**The gate is restated, not substituted.** [[f1-pathmap-and-end-goal]] §3's rung-3 gate — *non-regression on rung 2; `THERM` port residual* — has no subject on the only graph rung 3 can be built on: this graph shares nothing with the wind farm, and neither available learned expert has a `THERM` port or can have one. The replacement is three clauses, **G1** met and **G2**, **G3** open, and **rung 3 may not be marked complete on G1 alone**. That is **W183**.
+
+## 17.4 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W182** — an inequality seam compiles, and nothing can declare otherwise | rung 8's first module | `open`, medium, scoped in Tier 42 |
+| **W183** — rung 3's gate has no subject | marking rung 3 complete | `open`. G2 needs a seam that is not a fiction, which needs a donor nobody has |
+| **W184** — a port cannot say what kind of boundary it is | G2, and `_decomposition_cuts`' proxy | `open`, medium, a schema change two rules want |
+| **W171** — `decomposition` is one field per graph | rung 9's integration graph | `open`, scoped in Tier 40, **not started** |
+| **W172** — the seams that would join the subsystems do not exist | rung 9's $O(K)$ integration cost | `open`, after W171 |
+| **W186** — R10 has no subject in a two-agent multi-family graph | the campaign's reading of its own blocker | `open`, a re-scoping rather than a repair |
+| **W95** — no same-class reference pair | every learned substitution verdict | `open`, and CS-17 shows it binding on **both halves at once** |
+| **W165** — rung 8 itself | rung 8's gate | `open`, large, reshaped in Tier 42; clause 4 needs an expert nobody here has |
+| **W187**, **W185**, **W181**, **W178**, **W175** | attribution and auditability, each real | `open`, small to medium |
+
+**Closed off it**: nothing. **Not on it**: W176, W179, W180 — W180 still coupled to W182 by a shared instrument.
+
+## 17.5 The next step
+
+**Not started, and the choice is the user's.** In line:
+
+- **W182, rung 8's first module** — the only piece of rung 8 buildable without a contact expert, and it gives W180 its instrument.
+- **W171 part 1, then part 2, then W172** — rung 9, in that order and not otherwise. Untouched through two tiers now, and it is the longest-standing blocker on this list.
+- **W186's re-census** — re-run [[substitution-campaign-checkpoint]]'s verdict count in the two-agent multiphysics arrangement, where `L2/R10` does not bind, and name what is left. Cheap, and it changes how the campaign reads its own nine tiers.
+- Then W184, W183's G2, W95 re-scoped against the certificate, W185, W187, W178, W175.
+
+**Rung 8's module, rung 9 and the re-census are each a tier.** Tier 43 did §16.4's second item and named the rest as not done.

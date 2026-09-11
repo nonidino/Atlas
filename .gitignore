@@ -193,6 +193,14 @@ out/w137/*
 !out/w181/
 out/w181/*
 !out/w181/w181.json
+# Tier 43 (rung 3, CS-17: the learned pair). JSON only. The dense operators are
+# not written at all here -- the artifact carries the spectra, the block norms
+# and every decision message, which is what the page quotes and the tests
+# assert. NeuberNet is UNLICENSED and local-only, so nothing derived from its
+# weights beyond measured numbers is committed, and no test loads it.
+!out/rung3/
+out/rung3/*
+!out/rung3/rung3.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

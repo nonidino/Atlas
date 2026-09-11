@@ -3955,3 +3955,75 @@ Three line citations in the page were off by a few lines on first draft and were
 No `pytest-xdist` is installed, so *parallel groups* means four pytest **processes** over disjoint file sets, each writing to its own file — a pipe to `tail` hides progress until exit, which this project has paid for. Then the five clock-sensitive files serially and alone. **$1126$ passed, $0$ failed**: four groups at $227$, $192$, $315$ and $233$ in $8.1$ minutes wall, then `tier21` $36$, `tier22` $39$, `tier31` $42$, `tier32` $20$, `tier33` $22$ in $5.1$ minutes. **$13.2$ minutes wall on battery at $59\%$**, against Tier 41's $\approx22.5$ minutes of summed test time — the difference is four processes rather than one and is not a claim about anything. `scripts/vault_scan.py wiki`: **$219$ files, $0$ problems.**
 
 Changed: [[inequality-seam-admissibility]] (new), [[case-study-ladder-to-f1]] (§16), [[f1-pathmap-and-end-goal]] (§3.3's rung-8 row), [[gap-worklist]] (Tier 42; W165 annotated; W181 and W182 opened), [[index]]. Added: `scripts/w181_inequality_seam_probe.py`, `tests/test_tier42_inequality_seam.py`, `out/w181/w181.json`. `atlas/` unchanged. `.gitignore` gains the tier's allowlist pair, on the pattern every `out/` artifact here follows: the JSON is committed because the tests assert the page's figures against it rather than retyping them.
+
+---
+
+## [2026-09-10] tier 43 | rung 3 is built, out of order, and the graph compiles
+
+**The first Atlas graph ever to hold two learned experts of different governing families.** [[case-study-learned-pair-atlas-0.1]] (CS-17), `scripts/rung3_learned_pair.py`, `tests/test_tier43_rung3_learned_pair.py`, `out/rung3/rung3.json`.
+
+[[f1-pathmap-and-end-goal]] §3 defines rung 3 as *"a second **learned** expert joins an existing graph; first true multi-family coupling"*; §3.3 records it **never built**, with an `[AI Inference]` that the substitution campaign tests a different configuration so neither its negatives nor its positives answer it. Built now — out of numeric order, because rung 3 is a back-fill and CS-15 and CS-16 stay reserved for rungs 8 and 9.
+
+### The design decision, because the suggested template is not coherent
+
+The template to hand was `thermal_seam` — a gas against a shell, with Poseidon-T on one side and NeuberNet on the other. **It is not constructible and the check costs nothing**: `thermal_seam`'s bond is `THERM`, and neither learned expert carries a temperature field at all. Poseidon-T declares four `face:MECH` ports and returns $\nu\,\partial u/\partial n$; NeuberNet takes displacements and returns tractions. **`MECH` is the only bond both can declare**, so the rung-3 graph is a learned *fluid-structure* seam — `wing_fsi`'s shape, not `thermal_seam`'s. Asserted live in the suite off `poseidon_capabilities`, so a port added to the record fails a test rather than sliding past.
+
+**And the seam is a geometric fiction, declared in the open.** NeuberNet's ring at $5R_n$ is an **internal cut in a solid**; a fluid face is a **wetted surface**. Handing fluid traction to an internal material cut is wrong in a way no prolongation repairs — and `PortDecl.geometry` is **free text**, so all nine layers admit it in silence. That is R10's own recorded problem (*"`Agent.domain` is free text"*) **one object down**, on the port, where it decides admissibility rather than a proxy. **W184**. The fiction is written on the port's `geometry` string, in the artifact, in the page and in a test, so the compiler's silence reads as the schema's silence and never as the fixture's virtue.
+
+### The result: it compiles, and R10's premise is why
+
+A $2\times2$ against the classical incumbents on the identical geometry — `WindowNS` on Poseidon-T's own 128-cell tiling ([[case-study-neural-interface-atlas-0.1]] built it for exactly this comparison), and CS-S2's classical elastic patch on the identical 29-sensor ring with the identical trace and Galerkin flux. One declared $\dim M$ for every cell, so the only thing that varies is which expert answers.
+
+| cell | fluid | solid | verdict | refusals | decerts | $\tau$ | E7 | $\beta$ |
+|---|---|---|---|---|---|---|---|---|
+| CC | `WindowNS` | classical patch | `admit-uncertified` | **0** | 10 | **defined** | holds | $3.2916$ |
+| CL | `WindowNS` | **NeuberNet** | `admit-uncertified` | **0** | 11 | UNDEFINED | **fails** | $0.5199$ |
+| LC | **Poseidon-T** | classical patch | `admit-uncertified` | **0** | 12 | UNDEFINED | holds | $2.9227$ |
+| **LL** | **Poseidon-T** | **NeuberNet** | `admit-uncertified` | **0** | 13 | UNDEFINED | **fails** | $0.8878$ |
+
+**The brief expected a refusal and there is none, anywhere.** `L2/R10` refuses an embedded elliptic solve **only when the graph holds another agent of the same `governing_family`** — W114, closed at CS-12 so that multiphysics graphs would stop being refused for a reason that never applied to them. In a two-agent multiphysics graph neither agent has a same-family peer, so R10 admits explicitly as `L2/R10/sole-family`. **It admits even when Poseidon-T declares the `embedded` that W93 measured**; compiled all three ways (`none`, `embedded`, `unknown`) it is zero refusals each, and declaring the *measured* value is **cleaner** than the package default, because W160's undeclared-pressure-solve branch then stops firing as well.
+
+**And the rule still works.** Its positive control, in the same compile, on the same two-agent shape with one declaration changed: with a second agent of the embedded agent's own family present, `L2/R10` **refuses**. So this is the premise clearing, not a rule weakened to get an admit. **No rule was written, narrowed or weakened in this tier and `atlas/` is unchanged.** The consequence is **W186**, and it re-scopes nine tiers: *the substitution campaign's blocker is a property of tilings.*
+
+### What the second learned expert costs: exactly additive, each cost attributed
+
+$$\text{extra}(\mathrm{LL}) \;=\; \text{extra}(\mathrm{CL}) \;\cup\; \text{extra}(\mathrm{LC}), \qquad \text{extra}(\mathrm{CL})\cap\text{extra}(\mathrm{LC})=\varnothing$$
+
+as **sets**: `L4/E7/passivity` is NeuberNet's, `L2/R10` and `L4/R2b/W46` are Poseidon's. At the level of which rules fire there is no interaction term, and each cost is charged by a control rather than by inspection. **[AI Inference]:** that is not additivity in the bound — $\beta$ moves $3.2916\to0.8878$ for the pair against $2.9227$ and $0.5199$ for the singles — so the rules are a union and the constants they name are not. Nothing here measures a composed error.
+
+**The sharpest finding is the reference pair, and it is a PAIR.** $\tau$ is defined in CC and UNDEFINED in all three cells holding a checkpoint — but those three are not one situation. In LC and CL the missing half is one side's and the seam has a classical peer that *does* declare `lambda_ref`, so the repair is a measurement somebody could make. In LL there is nothing on the seam to appeal to: NeuberNet is defined on **one disc** and cannot be its own referent (CS-S2 §9), and Poseidon-T is fixed at $128\times128$ and cannot be evaluated on a larger domain at any resolution. **That is W95 on both halves of one seam simultaneously**, and a campaign that swaps one side at a time structurally cannot exhibit it. §3.3's inference is confirmed in its strongest form.
+
+Two more that travel:
+
+- **`L4/E7/passivity` fails on NeuberNet at $1.062$ and reads exactly $0.0$ on the classical patch on the same ring at the same base.** A **third** kind of non-symmetry: not W138's orientation **convention**, which one declaration took to zero; not rung 8's non-associated **physics**; but an **architecture** artefact — a learned operator that is not passive because nothing made it so, beside the classical operator it approximates, which is passive by construction. **W185**, with an `[AI Inference]` that the three separate by their *controls* rather than by the defect, one control short.
+- **A learned expert imports its own expressiveness into every seam it touches.** `effective_resolution` is *"the expert's own measured spectral cutoff"* and nobody had measured NeuberNet's; measured here on the $29\times29$ `ring:ux` block at CS-S2's amplitude and flux, its effective rank at $99\%$ of the energy is **3** against the classical patch's **25**, the classical spectrum nearly flat at $0.83$ for five singular values and the checkpoint's collapsing from $0.4618$ to $0.0682$ after one. Through $\dim M=\min_i m_i^{\text{eff}}$ a $128$-cell fluid face meets a $29$-sensor ring through a **three-dimensional** interface space, and the three is the checkpoint's.
+
+Beside them, `L4/block-share` reports the fluid **blind in every cell**: its share of the assembled operator is $1.49\times10^{-5}$ learned and $5.46\times10^{-4}$ classical, so Poseidon-T's block is $0.8\%$ of `WindowNS`'s on identical geometry, state and face. **$1.49\times10^{-5}$ is W137's number on a third graph** — it read $1.44\times10^{-5}$ at `wing_fsi`'s aero-structure seam.
+
+### The gate, restated rather than substituted
+
+[[f1-pathmap-and-end-goal]] §3's rung-3 gate is *"non-regression on rung 2; `THERM` port residual"*, written when rung 3 meant *wind farm + stratification*. Neither clause has a subject: this graph shares no agent, geometry or port with the wind farm, and neither available learned expert has a `THERM` port or can have one. The replacement is three clauses — **G1** the graph compiles and every decision is attributable (**met**), **G2** the composition runs and $\mathcal R(t)$ closes across the learned seam (**not met, not attempted**), **G3** at least one expert carries a certificate at this seam (**not met, structurally**). **Rung 3 is built as a COMPILE and not as a RUN, and is not complete.** **W183**.
+
+### One correction the study had to make first
+
+`window_ns.window_capabilities` declares `lambda_ref=None`, which is right for a **tiling** — the referent there is the monolith the windows were cut from — and wrong at a **multiphysics seam**, where the same solver is its own referent. `wing_fsi` already works around it by writing its own record; this study had to as well, and **without that correction all four cells read $\tau$ UNDEFINED and nothing was attributable**. One record, two correct values, chosen by the graph it is dropped into. **W187**, and its failure mode is silent: a missing `lambda_ref` reads in the artifact exactly like W95's structural obstruction.
+
+### What this tier did NOT do, named
+
+- **No rollout.** The verdict is `admit-uncertified` so the framework calls the graph runnable, and it was not run. The seam is a fiction (W184), so $\mathcal R(t)$ across it would be a number about the fixture; and the two experts have no common time base — Poseidon-T's macro-step is a lead time into a one-shot map, NeuberNet is quasi-static — so the solid's `dt_native` is declared equal to the fluid's on `wing_fsi`'s precedent, which makes `E4` and `R9` pass trivially and is **a declaration of convenience**. That is gate clause **G2**, and it is open.
+- **No composition error measured.** No $\tau$, no $\sigma$, no $L$.
+- **`atlas/` is unchanged.** The rung-3 graph lives in `scripts/` on CS-S2's precedent, because NeuberNet is **unlicensed and local-only**: the weights stay in `~/.cache/neubernet`, only measured numbers are committed, and **no test loads them**, so the suite passes on a machine that has never had them.
+- **W184's schema change was not built**, and its row prices it against `_decomposition_cuts` first rather than building it for rung 3 alone.
+- **Not started**: W182 (rung 8's first module), W171 and W172 (rung 9), W186's re-census, W175, W178, W176. **Nothing was downloaded and no machine was rented.**
+
+### The brief, checked
+
+- **The suggested `thermal_seam` template was not coherent** and the reason is a declaration, not a judgement: neither learned expert has a `THERM` port. The brief asked for this to be checked before committing, and it was.
+- **The brief said to expect a refusal and treat a refusal as the result.** There is none, in any of the seven compiles. The refusal was expected from `L2/R10` and from W95; R10's premise does not hold here, and W95 binds at the **certificate** rather than at the compile, so it decertifies rather than refusing. Both are reported as the result, with R10's positive control so *no refusal* is evidence rather than absence.
+- **"Do not weaken a rule to get an admit"** — no rule was touched, and the positive control is what makes that checkable rather than asserted.
+
+### How it was run
+
+`scripts/rung3_learned_pair.py`, one CPU thread, denormals flushed (CS-S2's $220\times$ lesson), TF32 asserted off, $33.7$ s end to end for seven compiles: $52$ NeuberNet calls and $20$ Poseidon-T calls. **The full suite: $1137$ passed, $0$ failed** — the $1126$ at Tier 42 plus this tier's $11$ — as four disjoint parallel groups ($8.0$ min) plus the five clock-sensitive files serially and alone ($5.0$ min), $13.0$ minutes wall across $43$ test files, on battery at $52\%$. `scripts/vault_scan.py wiki`: **$220$ files, $0$ problems.**
+
+Changed: [[case-study-learned-pair-atlas-0.1]] (new), [[case-study-ladder-to-f1]] (§17), [[f1-pathmap-and-end-goal]] (§3.3's rung-3 row), [[gap-worklist]] (Tier 43; W183–W187 opened), [[index]]. Added: `scripts/rung3_learned_pair.py`, `tests/test_tier43_rung3_learned_pair.py`, `out/rung3/rung3.json`, and the tier's `.gitignore` allowlist pair.

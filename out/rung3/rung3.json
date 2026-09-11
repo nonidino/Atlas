@@ -1,0 +1,1152 @@
+{
+ "what": "rung 3 -- two learned experts of different families in one graph",
+ "date": "2026-09-10",
+ "torch": {
+  "version": "2.7.1+cpu",
+  "threads": 1,
+  "flush_denormal": true,
+  "tf32_matmul": false
+ },
+ "stage_seconds": {
+  "solid_build": 5.346140599998762,
+  "solid_base": 0.3994565000029979,
+  "port_measurement": 10.371085600010701,
+  "fluid_build": 5.481862299988279
+ },
+ "solid": {
+  "base": "tension-elastic, CS-S2's construction, elastic von Mises 0.7 sigma_y",
+  "regime": {
+   "elastic_von_mises_over_sy": 0.6999999284744263,
+   "small_scale_indicator": 4.3627190589904785,
+   "branch": "elastic (rescaled)",
+   "small_scale_plasticity_violated": false,
+   "sign_tension": 1.0,
+   "sign_torsion": 1.0,
+   "branch_norm": 11.627175331115723
+  },
+  "material_sensors": 29,
+  "classical_nodes": 4890
+ },
+ "port": {
+  "neubernet": {
+   "label": "NeuberNet ring:ux",
+   "n": 29,
+   "norm2": 0.46176772574043423,
+   "singular_values": [
+    0.46176772574043423,
+    0.06823258119771466,
+    0.041674099929582265,
+    0.03808192594602775,
+    0.01045411627040208,
+    0.006121384318045671,
+    0.00463587763383793,
+    0.001879848964321611,
+    0.0010886658831023284,
+    0.0006188469658854908
+   ],
+   "effective_rank_99": 3,
+   "effective_rank_999": 4,
+   "repeat_call_relative": 0.0,
+   "seconds": 10.048955800011754
+  },
+  "classical": {
+   "label": "classical patch ring:ux",
+   "n": 29,
+   "norm2": 0.8328033027531493,
+   "singular_values": [
+    0.8328033027531493,
+    0.8155637100583253,
+    0.8107241111539681,
+    0.8051775463753351,
+    0.7969111807802787,
+    0.7927135624183387,
+    0.7903902025937162,
+    0.7890928065787501,
+    0.7807499768514061,
+    0.7754865098361895
+   ],
+   "effective_rank_99": 25,
+   "effective_rank_999": 27,
+   "repeat_call_relative": 0.0,
+   "seconds": 0.32205709999834653
+  }
+ },
+ "coherence": {
+  "template_suggested": "thermal_seam (Compressible2D vs ThermoStruct2D, THERM)",
+  "thermal_seam_port_type": "THERM",
+  "poseidon_port_types": [
+   "MECH"
+  ],
+  "poseidon_ports": [
+   "xhi:MECH"
+  ],
+  "neubernet_port_types": [
+   "MECH"
+  ],
+  "neubernet_ports": [
+   "ring:ux",
+   "ring:uy",
+   "ring:ut",
+   "ring:all"
+  ],
+  "neubernet_trace": "displacement at the material sensors",
+  "neubernet_flux": "traction, hat-weighted (the Galerkin dual)",
+  "either_declares_THERM": false,
+  "verdict": "NOT constructible. thermal_seam's bond is THERM -- temperature against entropy flux -- and neither learned expert carries a temperature field at all. Poseidon-T is incompressible NS and returns nu du/dn; NeuberNet is quasi-static mechanics and returns a traction. MECH is the only port type both can declare, so the rung-3 graph is a learned FLUID-STRUCTURE seam -- wing_fsi's shape -- and not thermal_seam's.",
+  "geometry_caveat": "NeuberNet's ring at 5 R_n is an INTERNAL CUT in a solid; a fluid face is a WETTED SURFACE. Coupling them is physically wrong and PortDecl.geometry is free text, so no rule can see it. Declared here in the open and reported as a finding about the schema."
+ },
+ "dim_M": {
+  "declared_for_every_cell": 3,
+  "poseidon_m_eff": 16,
+  "windowns_m_eff": 16,
+  "neubernet_m_eff_measured": 3,
+  "classical_m_eff_measured": 25,
+  "per_cell_if_each_declared_its_own": {
+   "LL": 3,
+   "LC": 16,
+   "CL": 3,
+   "CC": 16
+  },
+  "why_one_value": "dim M = min_i m_i_eff would differ between cells, so the diff would conflate 'the solid side is learned' with 'the interface space is smaller'. Every cell is declared at the smallest honest value so the only thing that varies is which expert answers."
+ },
+ "cells": {
+  "LL": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "envelope": [
+    "holds",
+    "holds",
+    "fails",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "fails"
+   ],
+   "n_decisions": 26,
+   "decisions": [
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     "FLUID"
+    ],
+    [
+     "L1",
+     "E7",
+     "admit-uncertified",
+     "SOLID"
+    ],
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     "SOLID"
+    ],
+    [
+     "L1",
+     "3.4",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit-uncertified",
+     "FLUID, SOLID"
+    ],
+    [
+     "L2",
+     "R10/sole-family",
+     "admit",
+     "SOLID"
+    ],
+    [
+     "L2",
+     "R10",
+     "admit-uncertified",
+     "FLUID"
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C8",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "E7/passivity",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L7",
+     "R3",
+     "admit",
+     "<graph>"
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     "<assembly>"
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     "<run>"
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     "<graph>"
+    ]
+   ],
+   "messages": {
+    "L1/C8/FLUID": "validity: none, so the run cannot abstain and every bound is vacuous wherever the expert is out of distribution, with nothing saying where that is",
+    "L1/E7/SOLID": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself",
+    "L1/C8/SOLID": "validity: none, so the run cannot abstain and every bound is vacuous wherever the expert is out of distribution, with nothing saying where that is",
+    "L1/3.4/<graph>": "2 of 2 agents declare no validity predicate, so the run cannot abstain and the exposure grows with K=2: P(some agent OOD) = 1 - (1-p)^K. This decertifies at every K rather than refusing at a threshold, because the threshold is K* = ceil(log(1-eps) / log(1-p)) and p is unmeasured (UNMEASURED(K_ood, unset))",
+    "L1/E3/fsi": "multiphysics seam: FLUID and SOLID declare different governing families ('incompressible-navier-stokes-2d' against 'elastic-plastic-notch-2d') and carry no lambda_ref, so there is no reference trajectory either side can be scored against and tau is emitted as UNDEFINED for both. The composition still RUNS correctly -- probing never mentions a governing equation, so the transmission layer is robust to this failure. It is the error ATTRIBUTION that has no referent. Note this is now a statement about the missing REFERENCE and not about the differing families: declare lambda_ref on both sides and tau becomes measurable without either family moving",
+    "L4/R2b/W46/FLUID, SOLID": "2 agents declare time_discretization=unknown, so whether the probed-DtN interface condition applies to them is undecided -- and an undecided premise is not a favourable one. The rung is held at dirichlet rather than lifted: lifting it would pick the scheme that is measured 8.9x worse than doing nothing whenever the agents turn out to be explicit, and every diagnostic would read healthy while it did. Declare time_discretization to lift the decertification",
+    "L2/R10/sole-family/SOLID": "1 agents declare elliptic_subsolve=embedded and are the ONLY agent of their governing_family in this graph, so the decomposition does not cut them: the elliptic solve runs over exactly the region a monolith would run it over, and R10's premise -- that the decomposition changes the operator rather than restricting it -- does not hold. R10 is right about the class it was derived on (a tiling of one family) and refused outside it until W114 closed 2026-09-04. The predicate is a PROXY for whether this agent's own domain is cut, and it is conservative: two agents of one family on disjoint regions would still be refused. What it does NOT clear is the agent's reach -- an embedded elliptic solve has an infinite domain of dependence inside its own region whether or not that region was cut, so the halo rule and support_reach still apply",
+    "L2/R10/FLUID": "1 agents declare an incompressible governing family, elliptic_subsolve=none, and a NONZERO stencil_radius. A field solver on a spatial stencil almost always contains a pressure solve; if it does, this graph has an undeclared R10 violation and tau will absorb it silently. The stencil is what makes the inference available: an agent with a discrete Laplacian to build has somewhere to hide a pressure Poisson problem, and W160 narrowed this branch to those agents on 2026-09-09",
+    "L2/C3/W57/<graph>": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch",
+    "L3/C1/fsi": "both sides declare MECH",
+    "L3/C2/C3/C6/fsi": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+    "L3/C4/fsi": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+    "L3/C5/fsi": "power-preserving pairing with orientation: n points FLUID -> SOLID",
+    "L3/C9/fsi": "MECH: both sides return the effort (traction  t = sigma . n); the imposed trace is therefore the flow and the pairing is a power.",
+    "L3/C7/fsi": "achievable rung: probed-DtN",
+    "L3/C8/fsi": "no validity predicate on ['FLUID', 'SOLID']: the run cannot abstain, so every bound is vacuous wherever the expert is out of distribution and nothing says where that is. The declination rate p is undefined, so the abstention horizon T_abs cannot be reported either",
+    "L4/operator-content/fsi": "every block on this seam carries resolvable operator content (identity defect FLUID 0.721, SOLID 0.63), so beta and kappa are statements about the experts' operators rather than about a film coefficient",
+    "L4/probe-base/fsi": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+    "L4/block-share/fsi": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. FLUID becomes visible only once beta_min > 0.8847 (assembled beta = 0.8878, block norms FLUID 0.003093, SOLID 207.2). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 1.000 and max 1.000 of the response, with 3 of 3 modes above 0.90.",
+    "L4/E7/passivity/fsi": "passivity defect 1.062e+00 on the assembled seam: the symmetric part has a negative mode, so the L <= 1 branch is unavailable and L falls back to fitted. The eigenvector names which interface mode is amplified",
+    "L4/G5/cut-score/fsi": "cut score 0.05664 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+    "L7/R3/<graph>": "W = 1: ['FLUID', 'SOLID'] declare bc_time_varying = false, so a longer window is refused. a window W > 1 requires bc_time_varying on every agent at that interface; a ring held constant across the window is a W = 1 scheme wearing a longer name. And this is not only an admissibility rule: it is the precondition for reducing the temporal component of the transmission term at all, so these experts carry a floor on sigma that no scheme removes",
+    "L5/eps_tol/<graph>": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit",
+    "L6/E6/<assembly>": "no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed",
+    "L9/E5/<run>": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate",
+    "L8/W56/<graph>": "6 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), p_decline (W36), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+   },
+   "refusals": [],
+   "decertifications": [
+    "L1/3.4",
+    "L1/C8",
+    "L1/E3",
+    "L1/E7",
+    "L2/C3/W57",
+    "L2/R10",
+    "L3/C8",
+    "L4/E7/passivity",
+    "L4/R2b/W46",
+    "L5/eps_tol",
+    "L6/E6",
+    "L8/W56",
+    "L9/E5"
+   ],
+   "tau_undefined_seams": [
+    "fsi"
+   ],
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)",
+    "norm_A (W28)"
+   ],
+   "beta": 0.8877973487808157,
+   "kappa": 233.3904697260867,
+   "norm_S": 207.203440253529,
+   "passivity_defect": 1.0623338088411534,
+   "blocks": {
+    "FLUID": 0.0030932990207519417,
+    "SOLID": 207.20480952186892
+   },
+   "seconds": 2.4498191000020597,
+   "fluid": "FLUID",
+   "name": "rung3-poseidon-neubernet"
+  },
+  "LC": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "envelope": [
+    "holds",
+    "holds",
+    "fails",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "holds"
+   ],
+   "n_decisions": 25,
+   "decisions": [
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     "FLUID"
+    ],
+    [
+     "L1",
+     "E7",
+     "admit-uncertified",
+     "SOLID"
+    ],
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     "SOLID"
+    ],
+    [
+     "L1",
+     "3.4",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit-uncertified",
+     "FLUID"
+    ],
+    [
+     "L2",
+     "R10/sole-family",
+     "admit",
+     "SOLID"
+    ],
+    [
+     "L2",
+     "R10",
+     "admit-uncertified",
+     "FLUID"
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C8",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L7",
+     "R3",
+     "admit",
+     "<graph>"
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     "<assembly>"
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     "<run>"
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     "<graph>"
+    ]
+   ],
+   "messages": {
+    "L1/C8/FLUID": "validity: none, so the run cannot abstain and every bound is vacuous wherever the expert is out of distribution, with nothing saying where that is",
+    "L1/E7/SOLID": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself",
+    "L1/C8/SOLID": "validity: none, so the run cannot abstain and every bound is vacuous wherever the expert is out of distribution, with nothing saying where that is",
+    "L1/3.4/<graph>": "2 of 2 agents declare no validity predicate, so the run cannot abstain and the exposure grows with K=2: P(some agent OOD) = 1 - (1-p)^K. This decertifies at every K rather than refusing at a threshold, because the threshold is K* = ceil(log(1-eps) / log(1-p)) and p is unmeasured (UNMEASURED(K_ood, unset))",
+    "L1/E3/fsi": "multiphysics seam: FLUID and SOLID declare different governing families ('incompressible-navier-stokes-2d' against 'elastic-plastic-notch-2d') and carry no lambda_ref, so there is no reference trajectory either side can be scored against and tau is emitted as UNDEFINED for both. The composition still RUNS correctly -- probing never mentions a governing equation, so the transmission layer is robust to this failure. It is the error ATTRIBUTION that has no referent. Note this is now a statement about the missing REFERENCE and not about the differing families: declare lambda_ref on both sides and tau becomes measurable without either family moving",
+    "L4/R2b/W46/FLUID": "1 agents declare time_discretization=unknown, so whether the probed-DtN interface condition applies to them is undecided -- and an undecided premise is not a favourable one. The rung is held at dirichlet rather than lifted: lifting it would pick the scheme that is measured 8.9x worse than doing nothing whenever the agents turn out to be explicit, and every diagnostic would read healthy while it did. Declare time_discretization to lift the decertification",
+    "L2/R10/sole-family/SOLID": "1 agents declare elliptic_subsolve=embedded and are the ONLY agent of their governing_family in this graph, so the decomposition does not cut them: the elliptic solve runs over exactly the region a monolith would run it over, and R10's premise -- that the decomposition changes the operator rather than restricting it -- does not hold. R10 is right about the class it was derived on (a tiling of one family) and refused outside it until W114 closed 2026-09-04. The predicate is a PROXY for whether this agent's own domain is cut, and it is conservative: two agents of one family on disjoint regions would still be refused. What it does NOT clear is the agent's reach -- an embedded elliptic solve has an infinite domain of dependence inside its own region whether or not that region was cut, so the halo rule and support_reach still apply",
+    "L2/R10/FLUID": "1 agents declare an incompressible governing family, elliptic_subsolve=none, and a NONZERO stencil_radius. A field solver on a spatial stencil almost always contains a pressure solve; if it does, this graph has an undeclared R10 violation and tau will absorb it silently. The stencil is what makes the inference available: an agent with a discrete Laplacian to build has somewhere to hide a pressure Poisson problem, and W160 narrowed this branch to those agents on 2026-09-09",
+    "L2/C3/W57/<graph>": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch",
+    "L3/C1/fsi": "both sides declare MECH",
+    "L3/C2/C3/C6/fsi": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+    "L3/C4/fsi": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+    "L3/C5/fsi": "power-preserving pairing with orientation: n points FLUID -> SOLID",
+    "L3/C9/fsi": "MECH: both sides return the effort (traction  t = sigma . n); the imposed trace is therefore the flow and the pairing is a power.",
+    "L3/C7/fsi": "achievable rung: probed-DtN",
+    "L3/C8/fsi": "no validity predicate on ['FLUID', 'SOLID']: the run cannot abstain, so every bound is vacuous wherever the expert is out of distribution and nothing says where that is. The declination rate p is undefined, so the abstention horizon T_abs cannot be reported either",
+    "L4/operator-content/fsi": "every block on this seam carries resolvable operator content (identity defect FLUID 0.721, SOLID 0.691), so beta and kappa are statements about the experts' operators rather than about a film coefficient",
+    "L4/probe-base/fsi": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+    "L4/block-share/fsi": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. FLUID becomes visible only once beta_min > 2.92 (assembled beta = 2.923, block norms FLUID 0.003093, SOLID 696.5). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 1.000 and max 1.000 of the response, with 3 of 3 modes above 0.90.",
+    "L4/G5/cut-score/fsi": "cut score 0.01108 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+    "L7/R3/<graph>": "W = 1: ['FLUID', 'SOLID'] declare bc_time_varying = false, so a longer window is refused. a window W > 1 requires bc_time_varying on every agent at that interface; a ring held constant across the window is a W = 1 scheme wearing a longer name. And this is not only an admissibility rule: it is the precondition for reducing the temporal component of the transmission term at all, so these experts carry a floor on sigma that no scheme removes",
+    "L5/eps_tol/<graph>": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit",
+    "L6/E6/<assembly>": "no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed",
+    "L9/E5/<run>": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate",
+    "L8/W56/<graph>": "6 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), p_decline (W36), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+   },
+   "refusals": [],
+   "decertifications": [
+    "L1/3.4",
+    "L1/C8",
+    "L1/E3",
+    "L1/E7",
+    "L2/C3/W57",
+    "L2/R10",
+    "L3/C8",
+    "L4/R2b/W46",
+    "L5/eps_tol",
+    "L6/E6",
+    "L8/W56",
+    "L9/E5"
+   ],
+   "tau_undefined_seams": [
+    "fsi"
+   ],
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)",
+    "norm_A (W28)"
+   ],
+   "beta": 2.922678964998055,
+   "kappa": 238.29861292753685,
+   "norm_S": 696.4703433915256,
+   "passivity_defect": 0.0,
+   "blocks": {
+    "FLUID": 0.0030932990207519417,
+    "SOLID": 696.471698686144
+   },
+   "seconds": 1.7196545999904629,
+   "fluid": "FLUID",
+   "name": "rung3-poseidon-classical"
+  },
+  "CL": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "envelope": [
+    "holds",
+    "holds",
+    "fails",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "fails"
+   ],
+   "n_decisions": 25,
+   "decisions": [
+    [
+     "L1",
+     "E7",
+     "admit-uncertified",
+     "SOLID"
+    ],
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     "SOLID"
+    ],
+    [
+     "L1",
+     "3.4",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     "FLUID"
+    ],
+    [
+     "L2",
+     "R10/sole-family",
+     "admit",
+     "SOLID"
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C8",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "E7/passivity",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L7",
+     "R3",
+     "admit",
+     "<graph>"
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L7",
+     "R10b",
+     "admit",
+     "<graph>"
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     "<assembly>"
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     "<run>"
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     "<graph>"
+    ]
+   ],
+   "messages": {
+    "L1/E7/SOLID": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself",
+    "L1/C8/SOLID": "validity: none, so the run cannot abstain and every bound is vacuous wherever the expert is out of distribution, with nothing saying where that is",
+    "L1/3.4/<graph>": "1 of 2 agents declare no validity predicate, so the run cannot abstain and the exposure grows with K=2: P(some agent OOD) = 1 - (1-p)^K. This decertifies at every K rather than refusing at a threshold, because the threshold is K* = ceil(log(1-eps) / log(1-p)) and p is unmeasured (UNMEASURED(K_ood, unset))",
+    "L1/E3/fsi": "multiphysics seam: FLUID and SOLID declare different governing families ('incompressible-navier-stokes-2d' against 'elastic-plastic-notch-2d') and carry no lambda_ref, so there is no reference trajectory either side can be scored against and tau is emitted as UNDEFINED for both. The composition still RUNS correctly -- probing never mentions a governing equation, so the transmission layer is robust to this failure. It is the error ATTRIBUTION that has no referent. Note this is now a statement about the missing REFERENCE and not about the differing families: declare lambda_ref on both sides and tau becomes measurable without either family moving",
+    "L4/R2b/W46/FLUID": "R2 would lift the rung to probed-DtN, and 1 agents declare time_discretization=explicit. The flux-balance condition sum_i Lambda_i lambda = chi is the interface condition of a boundary-value problem; an explicit macro-step poses none, so the condition is a STEADY one and the true trace does not satisfy it. Measured: solving it exactly moved the trace 41x past the truth and made the composed step 8.9x worse than not solving it, while beta, kappa, the passivity spectrum and the probe residual all read healthy. The rung is held at dirichlet; use an overlapping halo, or give the agent an implicit macro-step",
+    "L2/R10/sole-family/SOLID": "1 agents declare elliptic_subsolve=embedded and are the ONLY agent of their governing_family in this graph, so the decomposition does not cut them: the elliptic solve runs over exactly the region a monolith would run it over, and R10's premise -- that the decomposition changes the operator rather than restricting it -- does not hold. R10 is right about the class it was derived on (a tiling of one family) and refused outside it until W114 closed 2026-09-04. The predicate is a PROXY for whether this agent's own domain is cut, and it is conservative: two agents of one family on disjoint regions would still be refused. What it does NOT clear is the agent's reach -- an embedded elliptic solve has an infinite domain of dependence inside its own region whether or not that region was cut, so the halo rule and support_reach still apply",
+    "L2/C3/W57/<graph>": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch",
+    "L3/C1/fsi": "both sides declare MECH",
+    "L3/C2/C3/C6/fsi": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+    "L3/C4/fsi": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+    "L3/C5/fsi": "power-preserving pairing with orientation: n points FLUID -> SOLID",
+    "L3/C9/fsi": "MECH: both sides return the effort (traction  t = sigma . n); the imposed trace is therefore the flow and the pairing is a power.",
+    "L3/C7/fsi": "achievable rung: probed-DtN",
+    "L3/C8/fsi": "no validity predicate on ['SOLID']: the run cannot abstain, so every bound is vacuous wherever the expert is out of distribution and nothing says where that is. The declination rate p is undefined, so the abstention horizon T_abs cannot be reported either",
+    "L4/operator-content/fsi": "every block on this seam carries resolvable operator content (identity defect FLUID 0.0302, SOLID 0.63), so beta and kappa are statements about the experts' operators rather than about a film coefficient",
+    "L4/probe-base/fsi": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+    "L4/block-share/fsi": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. FLUID becomes visible only once beta_min > 0.1394 (assembled beta = 0.5199, block norms FLUID 0.3805, SOLID 207.2). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.997 and max 0.998 of the response, with 2 of 3 modes above 0.90.",
+    "L4/E7/passivity/fsi": "passivity defect 6.932e-01 on the assembled seam: the symmetric part has a negative mode, so the L <= 1 branch is unavailable and L falls back to fitted. The eigenvector names which interface mode is amplified",
+    "L4/G5/cut-score/fsi": "cut score 0.09659 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+    "L7/R3/<graph>": "W = 1: ['SOLID'] declare bc_time_varying = false, so a longer window is refused. a window W > 1 requires bc_time_varying on every agent at that interface; a ring held constant across the window is a W = 1 scheme wearing a longer name. And this is not only an admissibility rule: it is the precondition for reducing the temporal component of the transmission term at all, so these experts carry a floor on sigma that no scheme removes",
+    "L5/eps_tol/<graph>": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit",
+    "L7/R10b/<graph>": "exchange interval 0.005 = macro-step 0.05 / 10 sub-steps: the composition layer applies the exposed elliptic part at the same cadence the agents' own sub-stepping would have. Exchanging at the macro-step instead would make the composed step a different splitting from the reference, measured at two orders of magnitude in tau and invisible to every other diagnostic",
+    "L6/E6/<assembly>": "no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed",
+    "L9/E5/<run>": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate",
+    "L8/W56/<graph>": "6 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), p_decline (W36), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+   },
+   "refusals": [],
+   "decertifications": [
+    "L1/3.4",
+    "L1/C8",
+    "L1/E3",
+    "L1/E7",
+    "L2/C3/W57",
+    "L3/C8",
+    "L4/E7/passivity",
+    "L5/eps_tol",
+    "L6/E6",
+    "L8/W56",
+    "L9/E5"
+   ],
+   "tau_undefined_seams": [
+    "fsi"
+   ],
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)",
+    "norm_A (W28)"
+   ],
+   "beta": 0.5198515301258745,
+   "kappa": 399.28887025883665,
+   "norm_S": 207.570930166288,
+   "passivity_defect": 0.6931753444377166,
+   "blocks": {
+    "FLUID": 0.38048390085007466,
+    "SOLID": 207.20480952186892
+   },
+   "seconds": 0.7159680999902776,
+   "fluid": "FLUID",
+   "name": "rung3-windowns-neubernet"
+  },
+  "CC": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "envelope": [
+    "holds",
+    "holds",
+    "fails",
+    "holds",
+    "unchecked",
+    "unchecked",
+    "holds"
+   ],
+   "n_decisions": 24,
+   "decisions": [
+    [
+     "L1",
+     "E7",
+     "admit-uncertified",
+     "SOLID"
+    ],
+    [
+     "L1",
+     "C8",
+     "admit-uncertified",
+     "SOLID"
+    ],
+    [
+     "L1",
+     "3.4",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L1",
+     "E3",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "R2b/W46",
+     "admit",
+     "FLUID"
+    ],
+    [
+     "L2",
+     "R10/sole-family",
+     "admit",
+     "SOLID"
+    ],
+    [
+     "L2",
+     "C3/W57",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L3",
+     "C1",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C2/C3/C6",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C4",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C5",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C9",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C7",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L3",
+     "C8",
+     "admit-uncertified",
+     "fsi"
+    ],
+    [
+     "L4",
+     "operator-content",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "probe-base",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "block-share",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L4",
+     "G5/cut-score",
+     "admit",
+     "fsi"
+    ],
+    [
+     "L7",
+     "R3",
+     "admit",
+     "<graph>"
+    ],
+    [
+     "L5",
+     "eps_tol",
+     "admit-uncertified",
+     "<graph>"
+    ],
+    [
+     "L7",
+     "R10b",
+     "admit",
+     "<graph>"
+    ],
+    [
+     "L6",
+     "E6",
+     "admit-uncertified",
+     "<assembly>"
+    ],
+    [
+     "L9",
+     "E5",
+     "admit-uncertified",
+     "<run>"
+    ],
+    [
+     "L8",
+     "W56",
+     "admit-uncertified",
+     "<graph>"
+    ]
+   ],
+   "messages": {
+    "L1/E7/SOLID": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself",
+    "L1/C8/SOLID": "validity: none, so the run cannot abstain and every bound is vacuous wherever the expert is out of distribution, with nothing saying where that is",
+    "L1/3.4/<graph>": "1 of 2 agents declare no validity predicate, so the run cannot abstain and the exposure grows with K=2: P(some agent OOD) = 1 - (1-p)^K. This decertifies at every K rather than refusing at a threshold, because the threshold is K* = ceil(log(1-eps) / log(1-p)) and p is unmeasured (UNMEASURED(K_ood, unset))",
+    "L1/E3/fsi": "multiphysics seam: FLUID and SOLID declare different governing families ('incompressible-navier-stokes-2d' against 'elastic-plastic-notch-2d'), so they share no monolithic reference and E3 fails. **tau is NOT undefined here**: both sides declare lambda_ref, so a reference PAIR exists and tau is measurable against the tightly coupled trajectory -- see `multiphysics.seam_defect_split`, which attributes per agent and measures in interface power, the one unit both sides of the bond share. What is wrong is that it has not been RUN: this seam carries a measurable tau and no measurement. Declare the result on the graph's MeasuredConstants and this clears",
+    "L4/R2b/W46/FLUID": "R2 would lift the rung to probed-DtN, and 1 agents declare time_discretization=explicit. The flux-balance condition sum_i Lambda_i lambda = chi is the interface condition of a boundary-value problem; an explicit macro-step poses none, so the condition is a STEADY one and the true trace does not satisfy it. Measured: solving it exactly moved the trace 41x past the truth and made the composed step 8.9x worse than not solving it, while beta, kappa, the passivity spectrum and the probe residual all read healthy. The rung is held at dirichlet; use an overlapping halo, or give the agent an implicit macro-step",
+    "L2/R10/sole-family/SOLID": "1 agents declare elliptic_subsolve=embedded and are the ONLY agent of their governing_family in this graph, so the decomposition does not cut them: the elliptic solve runs over exactly the region a monolith would run it over, and R10's premise -- that the decomposition changes the operator rather than restricting it -- does not hold. R10 is right about the class it was derived on (a tiling of one family) and refused outside it until W114 closed 2026-09-04. The predicate is a PROXY for whether this agent's own domain is cut, and it is conservative: two agents of one family on disjoint regions would still be refused. What it does NOT clear is the agent's reach -- an embedded elliptic solve has an infinite domain of dependence inside its own region whether or not that region was cut, so the halo rule and support_reach still apply",
+    "L2/C3/W57/<graph>": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch",
+    "L3/C1/fsi": "both sides declare MECH",
+    "L3/C2/C3/C6/fsi": "non-conforming transfer, admitted through a declared common interface space. Adds a consistency term sigma_nc to sigma, which is not reduced by iteration and belongs to the coupling rather than to the agents. [AI Inference] that probing accommodates non-conforming interfaces is unverified and cheap to falsify: probe two agents at deliberately mismatched resolutions and watch beta",
+    "L3/C4/fsi": "scale sets are complete, satisfy s_e * s_f = s_P, and compose at the port",
+    "L3/C5/fsi": "power-preserving pairing with orientation: n points FLUID -> SOLID",
+    "L3/C9/fsi": "MECH: both sides return the effort (traction  t = sigma . n); the imposed trace is therefore the flow and the pairing is a power.",
+    "L3/C7/fsi": "achievable rung: probed-DtN",
+    "L3/C8/fsi": "no validity predicate on ['SOLID']: the run cannot abstain, so every bound is vacuous wherever the expert is out of distribution and nothing says where that is. The declination rate p is undefined, so the abstention horizon T_abs cannot be reported either",
+    "L4/operator-content/fsi": "every block on this seam carries resolvable operator content (identity defect FLUID 0.0302, SOLID 0.691), so beta and kappa are statements about the experts' operators rather than about a film coefficient",
+    "L4/probe-base/fsi": "both sides of this seam are linearized about the same interface state, so the assembled operator is a Jacobian of the interface map",
+    "L4/block-share/fsi": "disclosure, not a defect of this compile: the substitution certificate is BLIND at this seam. FLUID becomes visible only once beta_min > 2.911 (assembled beta = 3.292, block norms FLUID 0.3805, SOLID 696.5). Replacing such an agent with one that UNDER-responds -- including one that ignores its boundary data entirely, which is exactly the bc_channel failure conformance calls the foundational hole -- moves the seam by at most its own block norm, so that class of failure cannot be caught. Since W81 the threshold above is the certificate's own `visible_above`, `certify_substitution` takes beta_min with NO default and reports `visible_above`/`fails_above` when none is given, and the 1e-12 sibling default has been renamed `beta_int_floor` because it guards a different quantity. The one derived candidate is eps_tol = min(tau, sigma), which this graph must measure before it can be used here. This compile makes no substitution claim, so it is recorded and not charged against the verdict; `composition.SubstitutionCertificate.blind` is where it has teeth, and it downgrades the pass there. Per-mode, read off alpha_star, the dominant side holds median 0.998 and max 0.999 of the response, with 3 of 3 modes above 0.90.",
+    "L4/G5/cut-score/fsi": "cut score 0.009837 (lower is better; [AI Inference] that this is the right scalarization). Cut quality is measurable before any rollout from quantities the probe already returns",
+    "L7/R3/<graph>": "W = 1: ['SOLID'] declare bc_time_varying = false, so a longer window is refused. a window W > 1 requires bc_time_varying on every agent at that interface; a ring held constant across the window is a W = 1 scheme wearing a longer name. And this is not only an admissibility rule: it is the precondition for reducing the temporal component of the transmission term at all, so these experts carry a floor on sigma that no scheme removes",
+    "L5/eps_tol/<graph>": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit",
+    "L7/R10b/<graph>": "exchange interval 0.005 = macro-step 0.05 / 10 sub-steps: the composition layer applies the exposed elliptic part at the same cadence the agents' own sub-stepping would have. Exchanging at the macro-step instead would make the composed step a different splitting from the reference, measured at two orders of magnitude in tau and invisible to every other diagnostic",
+    "L6/E6/<assembly>": "no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed",
+    "L9/E5/<run>": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate",
+    "L8/W56/<graph>": "6 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), p_decline (W36), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+   },
+   "refusals": [],
+   "decertifications": [
+    "L1/3.4",
+    "L1/C8",
+    "L1/E3",
+    "L1/E7",
+    "L2/C3/W57",
+    "L3/C8",
+    "L5/eps_tol",
+    "L6/E6",
+    "L8/W56",
+    "L9/E5"
+   ],
+   "tau_undefined_seams": [],
+   "unmeasured": [
+    "L (W1)",
+    "sigma (W3)",
+    "tau (W3)",
+    "C_mu (W3)",
+    "p_decline (W36)",
+    "norm_A (W28)"
+   ],
+   "beta": 3.2915990040697514,
+   "kappa": 211.70194989734,
+   "norm_S": 696.8379274417088,
+   "passivity_defect": 0.0,
+   "blocks": {
+    "FLUID": 0.38048390085007466,
+    "SOLID": 696.471698686144
+   },
+   "seconds": 0.18565829998988193,
+   "fluid": "FLUID",
+   "name": "rung3-windowns-classical"
+  }
+ },
+ "diff": {
+  "LL": {
+   "identical_to_CC": false,
+   "verdict_same_as_CC": true,
+   "refusing_rules": [],
+   "only_here": [
+    "L2/R10/admit-uncertified",
+    "L4/E7/passivity/admit-uncertified",
+    "L4/R2b/W46/admit-uncertified"
+   ],
+   "missing_here": [
+    "L4/R2b/W46/admit",
+    "L7/R10b/admit"
+   ]
+  },
+  "LC": {
+   "identical_to_CC": false,
+   "verdict_same_as_CC": true,
+   "refusing_rules": [],
+   "only_here": [
+    "L2/R10/admit-uncertified",
+    "L4/R2b/W46/admit-uncertified"
+   ],
+   "missing_here": [
+    "L4/R2b/W46/admit",
+    "L7/R10b/admit"
+   ]
+  },
+  "CL": {
+   "identical_to_CC": false,
+   "verdict_same_as_CC": true,
+   "refusing_rules": [],
+   "only_here": [
+    "L4/E7/passivity/admit-uncertified"
+   ],
+   "missing_here": []
+  }
+ },
+ "elliptic_axis": {
+  "none": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "refusals": [],
+   "decertifications": [
+    "L1/3.4",
+    "L1/C8",
+    "L1/E3",
+    "L1/E7",
+    "L2/C3/W57",
+    "L2/R10",
+    "L3/C8",
+    "L4/E7/passivity",
+    "L4/R2b/W46",
+    "L5/eps_tol",
+    "L6/E6",
+    "L8/W56",
+    "L9/E5"
+   ],
+   "same_decisions_as_LL": true
+  },
+  "embedded": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "refusals": [],
+   "decertifications": [
+    "L1/3.4",
+    "L1/C8",
+    "L1/E3",
+    "L1/E7",
+    "L2/C3/W57",
+    "L3/C8",
+    "L4/E7/passivity",
+    "L4/R2b/W46",
+    "L5/eps_tol",
+    "L6/E6",
+    "L8/W56",
+    "L9/E5"
+   ],
+   "same_decisions_as_LL": false
+  },
+  "unknown": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "refusals": [],
+   "decertifications": [
+    "L1/3.4",
+    "L1/C8",
+    "L1/E3",
+    "L1/E7",
+    "L2/C3/W57",
+    "L2/R10/W60",
+    "L3/C8",
+    "L4/E7/passivity",
+    "L4/R2b/W46",
+    "L5/eps_tol",
+    "L6/E6",
+    "L8/W56",
+    "L9/E5"
+   ],
+   "same_decisions_as_LL": false
+  }
+ },
+ "r10_positive_control": {
+  "same_family": {
+   "verdict": "refuse",
+   "runnable": false,
+   "refusing_rules": [
+    "L2/R10"
+   ]
+  },
+  "different_family": {
+   "verdict": "admit-uncertified",
+   "runnable": true,
+   "refusing_rules": []
+  },
+  "reads": "R10 refuses the EMBEDDED agent when a second agent of its own family is present and admits it when there is not. Rung 3's graph is the second case, so its zero refusals are the premise clearing rather than the rule being absent."
+ },
+ "expert_calls": {
+  "poseidon": 20,
+  "neubernet": 52
+ },
+ "elapsed_seconds": 33.672131700004684
+}
