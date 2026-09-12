@@ -4399,3 +4399,81 @@ python scripts/run_suite.py                           # 1291 passed, 0 failed, n
 **Changed:** `.gitignore` (the Tier 49 allowlist pair and the W189 re-capture pair, each with the reason and the rebuild cost), `atlas/compiler.py` and `atlas/graph.py` (**W194** only), `wiki/index.md` (two rows, and the date), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 49 section, **W209**–**W213**, with **W94**, **W194**, **W196**–**W201** closed or annotated), [[case-study-ladder-to-f1]] (§23), [[f1-pathmap-and-end-goal]] (§3.3), [[joining-seam-cost]] (a dated note on §6.4), `tests/test_tier45_region_assembly.py` and `tests/test_tier46_joining_seams.py` (rewritten around W194's closure, diagnosis kept).
 
 **Added:** `atlas/cases/vehicle_march.py`, `scripts/tier49_union_march.py`, `tests/test_tier49_union_march.py`, `out/tier49/tier49.json`, `out/w189/control_tier49.json`, `out/w189/compare_before1_vs_tier49.json`, [[case-study-vehicle-march-atlas-0.1]], [[vehicle-scale-and-sizing]].
+
+## [2026-09-12] tier 50 | W205: the corrupted checkpoint's saving was a draw, and the shrink overshoots
+
+**The brief's second task, and the cheapest live row in the package.** [[corrupted-checkpoint-and-jacobian-fidelity]], `scripts/w205_corruption_sweep.py`, `tests/test_tier50_corruption_sweep.py`, `out/w205/w205.json`. Tier 48 measured a copy of Poseidon-T carrying Gaussian noise at $3\%$ of every weight tensor's rms needing **fewer** classical calls inside defect correction than the clean checkpoint — $71$ against $99$ at six windows, $138$ against $222$ at twelve — and concluded that whatever the shrunk column contributes, *it is not what the checkpoint learned*. That was **one seed at one magnitude**, and W205 said so.
+
+### The instrument, and the control that gates it
+
+Everything reuses `scripts/w202_kill_tests.py` unchanged: its `Maps`, its seven arms, its `DEC_SETTINGS`, its stopping rule and its cached reference marches. The one addition is `Maps.set_corruption(sigma, seed)`, which re-draws `Pw`'s noise on a **deepcopy** so the clean checkpoint is never touched — **and both its defaults are Tier 48's**, which is what makes the first stage a control. It passed at both rungs to the call: $71$ and $99$ at six windows, $138$ and $222$ at twelve. Nothing swept until it did, and the driver refuses to continue if it does not.
+
+**A design property that decides what the grid can conclude, and it is not obvious.** `manual_seed` fixes the *sequence* of draws and the corruption is `randn(shape) * sigma * rms`, so **a seed is a direction in weight space and $\sigma$ is its radius**: a row of the grid is one ray sampled at five radii, not five independent draws. It shows in the data — one seed is the worst of its row at three different magnitudes, because it is the same direction scaled — and it is why the decision magnitude was extended from four directions to twelve.
+
+### The verdict: Tier 48 drew the good one, twice
+
+Twelve directions at $\sigma = 0.03$, six windows: $\mathbf{71}, 71, 72, 79, 79, 84, 87, 91, 91, 91, 118, \mathbf{140}$ against a clean checkpoint at $99$. **$71$ is the joint minimum**, the spread is $69$, and the pre-registered verdict is **NOISE** — the corrupted family at one magnitude spans from the best arm Tier 48 measured to the cold march at $141$.
+
+Four directions at twelve windows: $\mathbf{138}, 221, 261, \mathbf{309}$ against a clean $222$, **mean $232.2$**. The typical corrupted copy is **worse** than the clean one there, and one direction is worse than not iterating at all. So Tier 48's reading of its two rungs as a widening margin — $+28$ then $+84$ — **reverses** when each point is sampled rather than drawn once: $+9.5$ and $\mathbf{-10.2}$. **A trend built from one sample per point is not a trend.**
+
+### What survives, reported beside the verdict rather than instead of it
+
+At six windows ten of twelve directions do beat the clean checkpoint (sign test $p = 0.019$), median saving $13.5$ calls against the claimed $28$, while the mean is not significantly below ($t_{11} = 1.61$) because the distribution has a heavy upper tail. Both readings are recorded and neither stands alone. And the response to the corruption's **magnitude is non-monotone**: means $93.5$, $88.0$, $89.5$, $117.0$, $130.2$ at $\sigma = 0.003, 0.01, 0.03, 0.1, 0.3$ — a little weight noise helps and a lot hurts, and at $\sigma = 0.3$ **no direction beats the clean checkpoint** with a spread far below the gap. The learned content carries something reliably; destroying it is reliably bad.
+
+### The mechanism, measured where it was inferred
+
+Tier 48 read its mechanism off the error structure of stalled iterates and marked it **[AI Inference]**. Theorem 2 is about a derivative, so the derivative is probed: $D\Psi d \approx (\Psi(w^\star + \varepsilon d) - \Psi(w^\star))/\varepsilon$ along unit-rms band-limited random fields, paired across maps, with the **Rayleigh quotient** $\langle d, D\Psi d\rangle/\langle d,d\rangle$ rather than the amplification, because an amplification has no sign and cannot tell a map that preserves a mode from one that inverts it.
+
+**Over twenty copies, Theorem 2's assembled per-band eigenvalue $\lambda = \lvert\phi-\psi\rvert/\lvert1-\psi\rvert$ orders the classical-call counts at $\rho = +0.83$, against accuracy's $+0.69$.** §2.2's *"Jacobian fidelity, not accuracy"* is confirmed as the thing that decides an arm.
+
+**And three numbers locate the defect in the composition layer's own knob rather than in the checkpoint.** On the slow band — where the classical map *amplifies* ($1.2585$), so the rate lives there — $\phi = 0.4780$ and the clean column reads $\mathbf{0.5578}$: it **preserves what the monolith damps**, which is §5's inference confirmed. Then $\alpha^\star = 0.5$ takes it to $\mathbf{0.2789}$, **below $\phi$ by $0.199$ where the excess above it was only $0.080$** — the correction overshoots by two and a half times. The corruption raises $\psi_{\text{slow}}$ back toward $\phi$ ($0.5578 \to 0.5836$ over the helpful range) and collapses it to $0.3818$ at $\sigma = 0.3$. **The corruption buys back part of an overshooting shrink**, and the *dissipation* candidate named in W205's own row is refuted in sign: what helps is damping **less**. $\alpha^\star$ was fixed on $N=2$ as the only value at which the checkpoint converged without falling back — a **stability** criterion applied to a **fidelity** quantity (**W214**).
+
+### The number that replaces the inversion
+
+The composition layer with the checkpoint replaced by the identity needs $112$ classical calls against the clean checkpoint's $99$, so **the learned content is worth $13$ classical calls** — against a **$69$-call** spread from perturbing the same weights by $3\%$, about five times more. **The contribution is nonzero and it is about a fifth of the noise floor of the object that carries it.** That does not depend on any single draw, and it is the sentence [[f1-pathmap-and-end-goal]] §3.3 now carries. **Caveat, named**: the identity is not a randomly initialised network of the same architecture, so $13$ is what this checkpoint buys over doing nothing and not what training bought over initialisation, which no arm measures.
+
+### One correction to the reading, made before any cell was read
+
+The first version of the verdict rule asked whether *every* magnitude's spread cleared the clean checkpoint, which scores the $\sigma \to 0$ **continuity control** — a copy corrupted a tenth as hard, which *should* sit near the clean checkpoint — as evidence of noise. That is backwards: it is the control working. The rule now decides at Tier 48's own magnitude and treats the others as controls. Recorded because a reading repaired after the numbers are in is not a pre-registered reading; measured, the control behaves ($5.5$ calls from the clean checkpoint against the decision cell's $9.5$).
+
+### Opened
+
+- **W214**: the shrink is chosen for stability and overshoots fidelity by $2.5\times$; matching $(1-\alpha)\psi_{\text{slow}}$ to $\phi_{\text{slow}}$ wants $\alpha \approx 0.14$, at three forward calls. **The cheapest live experiment in the package.**
+- **W215**: a randomised arm is scored as if it were deterministic — one number per arm in the artifact, a Bernoulli clause evaluated once — and its spread *grows* with the rung ($77\%$ and $74\%$ of the mean), so a single draw is less informative at scale, not more.
+- **W205 closed**; **W204**, **W76** annotated; **W208** untouched.
+
+### What this tier did NOT do, named
+
+- **No expert was trained or fine-tuned**, and **the Jacobians were still not assembled** — three band-limited directions at three draws each is a projection, not a spectrum, and $\rho = +0.83$ is a rank correlation over twenty copies rather than causation.
+- **Only $\alpha^\star = 0.5$ was run**; W214's repair is stated and untested.
+- **The second rung is four directions at one magnitude**, not twelve at five, because an arm there is $300$–$500$ s.
+- **`out/w202/w202.json` is untouched and every Tier 48 test still passes.** Two test docstrings and two sections of [[defect-correction-learned-operator]] are **annotated** rather than rewritten, because their assertions are true of what that tier measured; what does not survive is the generalisation from them.
+- **Rung 9 did not move**, and Task 3 — W204's coarse competitor across a coupled seam — was not started.
+- **Nothing was downloaded** — Poseidon-T from the local cache with the hub offline — **no machine was rented and NeuberNet was not loaded.**
+
+### How it was run
+
+Every process exported `KMP_DUPLICATE_LIB_OK=TRUE`, `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`; TF32 is disabled in the driver it imports and the flags are asserted rather than trusted. `tasklist` showed no other Python process before the first run.
+
+```
+python scripts/w205_corruption_sweep.py --stages repro --rung 6
+python scripts/w205_corruption_sweep.py --stages sweep --rung 6
+python scripts/w205_corruption_sweep.py --stages sweep,summary --rung 6 \
+    --sigmas 0.03 --seeds 20260915,20260916,20260917,20260918,20260919,20260920,20260921,20260922
+python scripts/w205_corruption_sweep.py --stages probe --rung 6 \
+    --seeds 20260911,20260912,20260913,20260914
+python scripts/w205_corruption_sweep.py --stages repro,sweep,summary --rung 12 \
+    --sigmas 0.03 --seeds 20260911,20260912,20260913,20260914
+python scripts/vault_scan.py wiki                            # 229 files, 0 problems
+python scripts/run_suite.py                                  # 1307 passed, 0 failed, no missing logs, 389 s
+```
+
+The suite ran as the brief asks: four `pytest` processes over disjoint file sets, each with its own log under `out/suite/` and each checked to exist seconds after launch, then `tier21`, `tier22`, `tier31`, `tier32` and `tier33` serially and alone. Fifty-one files, up from Tier 49's fifty: $1307$ tests against $1291$, the sixteen new ones being this tier's.
+
+The six-window grid is $1284$ s for twenty cells and $587$ s for the eight extra directions; the probe is $88$ s for twenty-three maps; the twelve-window stage is $2359$ s for its control plus four cells, at $277$–$513$ s an arm. The reference `.npz` caches under `out/w202/` are reused and stay ignored.
+
+**Two bugs were found by their own controls and fixed before the numbers they would have moved.** The probe's per-band seed used `hash()` of a string, which Python salts per process, so the paired comparison across maps would not have reproduced between runs; and `_theorem2` iterated every key of the probe block looking for a `bands` entry, which `settings` also has, holding the band *definitions* as a list. Both are in the committed driver.
+
+**Changed:** `.gitignore` (the Tier 50 allowlist pair, with what rebuilding actually costs), `scripts/w202_kill_tests.py` (`set_corruption`, defaults unchanged), `tests/test_tier48_learned_contribution.py` (two docstrings annotated, no assertion touched), `wiki/index.md` (one row), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 50 section, **W205** closed, **W214**–**W215** opened, **W204** and **W76** annotated), [[case-study-ladder-to-f1]] (§24), [[defect-correction-learned-operator]] (§5 and §8.2.1 annotated), [[f1-pathmap-and-end-goal]] (§3.3's Tier 48 note extended).
+
+**Added:** `scripts/w205_corruption_sweep.py`, `tests/test_tier50_corruption_sweep.py`, `out/w205/w205.json`, [[corrupted-checkpoint-and-jacobian-fidelity]].

@@ -278,7 +278,17 @@ def test_G5_fails_and_classical_coarsening_is_what_pays(art):
 def test_G6_the_corrupted_checkpoint_does_not_cost_more_classical_calls(art):
     """Loud on failure has two halves here, and the second one fails: a checkpoint
     with 3% Gaussian noise on every weight needs FEWER classical calls than the
-    clean one, so the saving cannot be attributed to what the checkpoint learned."""
+    clean one.
+
+    **2026-09-12, Tier 50 (W205): this cell is the MINIMUM of twelve.**  The
+    corruption was swept over twelve directions at this magnitude and the counts
+    run 71 to 140 about a clean checkpoint at 99, so the 71 pinned here is an
+    extreme value and not an effect size, and this clause was a one-draw
+    Bernoulli trial.  The assertion is left as it is because it is true of this
+    artifact and it is what Tier 48 measured; what does not survive is the
+    reading that a corrupted checkpoint IS the better operator.  See
+    [[corrupted-checkpoint-and-jacobian-fidelity]].
+    """
     a = _arms(art, 6)
     assert a["Pw_a0.5"]["inside_certificate"]
     assert a["Pw_a0.5"]["phi_calls"] < a["P_a0.5"]["phi_calls"]
@@ -480,6 +490,13 @@ def test_the_corrupted_checkpoint_is_the_cheaper_operator_on_both_out_of_sample_
     In sample the classical calls ordered as the checkpoint's integrity did.  Out of
     sample the corrupted copy needs fewer classical calls than the clean one at six
     windows and at twelve, and at twelve it is also cheaper in total.
+
+    **2026-09-12, Tier 50 (W205): one draw per rung, and the draw was the good
+    one.**  Twelve directions at six windows give 71 to 140 about a clean 99, so
+    the title's "is the cheaper operator" is not supported as a general claim --
+    the typical direction saves about half what this cell does, and two of
+    twelve are worse than not corrupting at all.  The assertions stay: they are
+    true of this artifact.  See [[corrupted-checkpoint-and-jacobian-fidelity]].
     """
     for rung, clean, corrupt in (("N6", "P_a0.5", "Pw_a0.5"), ("N12", "P_a0.5", "Pw_a0.5")):
         rows = art["accounting"][rung]["arms"]

@@ -239,8 +239,13 @@ class Maps:
             self.ex = wa.scaled_expert(threads=8)
         self.calls = {"F": 0, "P": 0, "Z": 0, "C": 0, "E": 0, "Pc": 0, "Pw": 0}
         #: `Pw`'s corruption: Gaussian noise on every weight tensor at this fraction
-        #: of the tensor's own rms, drawn once from a fixed seed.
+        #: of the tensor's own rms, drawn once from a fixed seed.  **Tier 49 (W205)
+        #: made both a parameter and changed neither default**, so every Tier 48
+        #: number reproduces bitwise; `scripts/w205_corruption_sweep.py` moves them
+        #: through `set_corruption` and asserts the default cell against the
+        #: committed artifact before it sweeps anything.
         self.corrupt_sigma = 0.03
+        self.corrupt_seed = 20260911
         self._corrupted = None
         #: **The outflow ring is problem data, not state.**  `WindowNS.step_batch`
         #: with ``bc0=None`` holds every ring at its INPUT value and `_band` resets
@@ -317,7 +322,7 @@ class Maps:
             import torch                                                  # noqa: PLC0415
             ex = copy.copy(self.ex)
             model = copy.deepcopy(self.ex.model)
-            gen = torch.Generator().manual_seed(20260911)
+            gen = torch.Generator().manual_seed(int(self.corrupt_seed))
             with torch.no_grad():
                 for p in model.parameters():
                     scale = p.detach().float().pow(2).mean().sqrt()
@@ -330,6 +335,18 @@ class Maps:
 
         fx, _ = self.forcing(u, active)
         return self._composed(u, v, fx, dt, corrupted)
+
+    def set_corruption(self, sigma: float, seed: int) -> None:
+        """Re-draw `Pw`'s corruption at a new magnitude and seed (W205).
+
+        Clears the cached copy so the next `Pw` call rebuilds it.  The clean
+        checkpoint `self.ex` is never touched -- the corruption is applied to a
+        deepcopy -- so `P`, `Pc` and every other arm are unaffected and the
+        sweep's cells differ by the two numbers and nothing else.
+        """
+        self.corrupt_sigma = float(sigma)
+        self.corrupt_seed = int(seed)
+        self._corrupted = None
 
     def Z(self, u, v, dt=wa.MACRO_DT, active=None):
         self.calls["Z"] += 1

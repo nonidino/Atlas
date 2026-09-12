@@ -265,6 +265,24 @@ out/rung9/*
 !out/w202/
 out/w202/*
 !out/w202/w202.json
+# Tier 50 (W205, the corruption sweep). JSON only: the record
+# scripts/w205_corruption_sweep.py writes -- the reproduction control against
+# Tier 48's own cell, the magnitude x direction grid of defect-correction arms,
+# the per-magnitude summary and its pre-registered verdict, and the derivative
+# probe (per-band Rayleigh quotients for every map, Theorem 2's assembled
+# eigenvalues, and the rank correlations against classical calls).
+# tests/test_tier50_corruption_sweep.py asserts against it.
+#
+# **Rebuilding it is not seconds.** The six-window grid is twelve directions at
+# sigma = 0.03 plus four at each of four other magnitudes -- 28 defect-correction
+# marches at 55-95 s each, about 21 minutes with the reproduction control -- and
+# the twelve-window confirmation is four directions plus its control at 300-500 s
+# an arm, about 40 minutes. The probe is 23 maps at ~90 s total. It reuses
+# out/w202/*.npz, which are ignored and cost another 244 s at six windows and
+# longer at twelve to rebuild.
+!out/w205/
+out/w205/*
+!out/w205/w205.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

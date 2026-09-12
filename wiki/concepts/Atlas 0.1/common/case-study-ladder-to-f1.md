@@ -1111,3 +1111,51 @@ Full records: [[case-study-vehicle-march-atlas-0.1]] (**CS-18**), [[vehicle-scal
 - **No dissipation field, no boundary port, no unit on any record**, and `L7/R9` still compares bare numbers.
 - **Tasks 2 and 3 of the brief were not started** — the corruption sweep and the coarse competitor across a coupled seam.
 - **Nothing was downloaded, no checkpoint was loaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
+
+---
+
+# 24. The corrupted checkpoint, swept: Tier 48's number was the best of twelve (2026-09-12)
+
+Full record: [[corrupted-checkpoint-and-jacobian-fidelity]] and [[gap-worklist]] Tier 50.
+
+**§23.5's first item was taken.** Tier 48's most quoted result — a checkpoint with $3\%$ Gaussian weight noise needing fewer classical calls inside defect correction than the clean one, $71$ against $99$ at six windows and $138$ against $222$ at twelve — was **one seed at one magnitude**, and W205 said so. **No rung moves**, and this section records what came back.
+
+## 24.1 The verdict
+
+**Tier 48 drew the good one, twice.** Twelve directions at the same magnitude on the first rung run $\mathbf{71}$ to $\mathbf{140}$ about a clean checkpoint at $99$, so $71$ is the joint *minimum* and the pre-registered verdict is **NOISE**. On the second rung four directions give $\mathbf{138}, 221, 261, \mathbf{309}$ about a clean $222$ — mean $\mathbf{232.2}$, so the typical corrupted copy is **worse** than the clean one there, and one is worse than not iterating at all.
+
+**A trend built from one sample per point is not a trend.** That tier read its two rungs as a widening margin, $+28$ then $+84$. Over directions the margins are $+9.5$ and $\mathbf{-10.2}$: the centres move the *other* way.
+
+## 24.2 What survives, and it is smaller
+
+Ten of twelve directions do beat the clean checkpoint at six windows (sign test $p = 0.019$), median saving $13.5$ calls against the claimed $28$, while the mean is not significantly below because the tail is heavy. And the response to the corruption's *magnitude* is **non-monotone** — $93.5, 88.0, 89.5, 117.0, 130.2$ at $\sigma = 0.003$ to $0.3$ — with **no direction beating the clean checkpoint at $\sigma = 0.3$**. So the checkpoint's learned content carries something reliably; destroying it is reliably bad.
+
+## 24.3 The mechanism, measured where it was inferred
+
+Probing each map's derivative along band-limited perturbations at $w^\star$ and assembling Theorem 2's per-band eigenvalue: over twenty copies it orders the classical-call counts at $\rho = \mathbf{+0.83}$ against **accuracy's $+0.69$**. On the slow band the classical map reads $\phi = 0.4780$ and the clean column $\mathbf{0.5578}$ — it **preserves what the monolith damps**, which is [[defect-correction-learned-operator]] §5's **[AI Inference]** confirmed on the derivative — and $\alpha^\star = 0.5$ takes it to $\mathbf{0.2789}$, past $\phi$ by $0.199$ where the excess above it was $0.080$. **The shrink overshoots by two and a half times, and the corruption buys back part of the overshoot** (**W214**).
+
+## 24.4 What moves on this page
+
+**§14.3's sentence gains a number rather than changing.** *The foundation-model half has no learned expert admitted with a nonzero contribution* stands; what is new is that the contribution is **$13$ classical calls** over the identity in this slot, against a **$69$-call** spread from perturbing the same weights by $3\%$ — about five times more. The learned content is real and it is smaller than the noise floor of the object carrying it. **Caveat, named**: the identity is not a randomly initialised network, so $13$ is what this checkpoint buys over doing nothing, not what training bought over initialisation.
+
+**§22.4's critical path loses W205 and gains two rows.** **W214** — choose $\alpha$ from the probed $\psi_{\text{slow}}$ rather than from a convergence grid, three forward calls — is now the cheapest live experiment in the package, cheaper than anything W204 proposes. **W215** — a randomised arm is scored as if it were deterministic, and its spread *grows* with the rung ($77\%$ and $74\%$ of the mean) — is the methodological row underneath the whole episode.
+
+## 24.5 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W214** — the shrink is chosen for stability and overshoots fidelity | any honest reading of what a cheap map contributes in this slot | `open`, **small**, **new** — and the cheapest row in the package |
+| **W215** — a randomised arm scored as a deterministic one | any gate clause over a randomised arm | `open`, medium, **new** |
+| **W204** — the entry condition | a learned contribution in the certified slot | `open`, unchanged; the target is now a number, $\phi_{\text{slow}} = 0.4780$ |
+| **W209**–**W213**, **W199**–**W201**, **W194**–**W198** | rung 9's march and its graph | `open`, as §23.5 |
+| **W203**, **W206**, **W207**, **W208** | boundary data, the answer-side certificate, the tripwire, $\Theta$ | `open`, as §22.4 |
+
+## 24.6 What this tier did NOT do, named
+
+- **No rung moved and no expert was trained.** The corruption is applied to a deepcopy of a frozen checkpoint.
+- **The Jacobians were still not assembled** — three band-limited directions at three draws each is a projection, not a spectrum, and $\rho = +0.83$ is a rank correlation over twenty copies, not causation.
+- **W214's repair is stated and untested**; only $\alpha^\star = 0.5$ was run.
+- **The second rung is four directions at one magnitude**, not twelve at five, because an arm there is $300$–$500$ s.
+- **`out/w202/w202.json` is untouched and every Tier 48 test still passes**; two test docstrings and two page sections are annotated rather than rewritten.
+- **Task 3 — the coarse competitor across a coupled seam (W204) — was not started.**
+- **Nothing was downloaded, no machine was rented, NeuberNet was not loaded.**
