@@ -247,6 +247,18 @@ out/w172/*
 !out/rung9/
 out/rung9/*
 !out/rung9/rung9.json
+# Tier 48 (W202 onward, what a learned expert can contribute: the kill tests and
+# defect correction). JSON only: the record scripts/w202_kill_tests.py writes --
+# the reproduction control, the per-call costs, the classical settled state's
+# residual and error histories, the warm starts, every defect-correction arm, the
+# energy certificate's floor, self-consistency and the fine-tuning price.
+# tests/test_tier48_learned_contribution.py asserts against it. The .npz caches
+# hold the classical settled states -- 26 MB, and the reference stage rebuilds
+# them (19 s at two windows, 244 s at six, longer at twelve), so they are
+# ignored rather than committed.
+!out/w202/
+out/w202/*
+!out/w202/w202.json
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/

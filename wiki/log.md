@@ -4231,3 +4231,83 @@ This vault's practice since CS-9: each join's receiving subsystem closes its own
 `scripts/rung9_gate.py`: $1.4$ seconds, from `out/w141/settled.npz`; the fluid is read, never marched. Run twice — the first run's census gave the suspension spring its class name for a reason, and the second is the committed one. **The full suite: $1223$ tests across $47$ files, $1222$ passed and $1$ failed** — `tests/test_tier22_demo.py::test_server_boots_optimises_and_verifies`, *"no optimiser step completed"*, after $4$ h $17$ min. The four parallel groups finished in five minutes and nineteen seconds, the thirteen new tests being the whole difference from Tier 46's count; the serial phase then started `test_tier22_demo.py` at 07:39, and the Windows System log shows the laptop, on battery, entering Modern Standby at 07:40:13 and leaving it at 11:55:51, apart from two wakes of a few seconds. The test waits on a wall-clock deadline of 240 s, which had long passed when the process resumed. **That file re-run alone: $39$ passed in $60$ s**, with no power transition over its window. The re-run was launched by hand, without the runner's `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`, `KMP_DUPLICATE_LIB_OK` and `-p no:cacheprovider`; nothing in the Hugging Face cache changed. `scripts/vault_scan.py wiki`: **$224$ files, $0$ problems.**
 
 Changed: [[case-study-ladder-to-f1]] (§21), [[f1-pathmap-and-end-goal]] (§3.3's rung-9 row), [[gap-worklist]] (Tier 47; **W198–W201 opened**; W196, W197 annotated), [[joining-seam-cost]] (a dated note before See Also), [[index]]. Added: [[rung9-gate-restated]], `scripts/rung9_gate.py`, `tests/test_tier47_rung9_gate.py`, `out/rung9/rung9.json`, and the tier's `.gitignore` allowlist pair.
+
+## [2026-09-12] tier 48 | what a learned expert can contribute: fourteen formulations, and the one slot where the answer is certified whatever the expert does
+
+**The brief's question, and it is not a rung.** [[learned-contribution-kill-tests]], [[defect-correction-learned-operator]], `atlas/defect_correction.py`, `scripts/w202_kill_tests.py`, `scripts/run_suite.py`, `tests/test_tier48_defect_correction.py`, `tests/test_tier48_learned_contribution.py`, `out/w202/w202.json`. After forty-seven tiers no learned expert had been admitted with a meaningful contribution, and [[substitution-campaign-checkpoint]] traced why to one chain — no same-class reference pair, so no $\tau$, no $\sigma$, no $\varepsilon_{\text{tol}}$, no $\beta_{\min}$ (W95). The task was to find a way for a learned expert to contribute *at all*, with its error bounded or with a guarantee of another kind, and to hold it to a gate written in advance.
+
+### Two facts that changed before the first candidate was written
+
+- **CS-S1's cost ratio of $61$ is an arrangement, not a property of the checkpoint.** That figure is one thread, a batch of four, against the cheapest classical window in the vault. Measured against the *monolith* in one process, a Poseidon-T composed step costs $3.43$, $2.01$ and $\mathbf{0.296}$ classical steps at two, six and twelve windows — it crosses below a classical step between six and twelve — while a $2\times$-coarse classical solver costs $0.197$, $0.132$ and $\mathbf{0.0320}$ and stays $17.4\times$, $15.2\times$ and $9.2\times$ cheaper than the checkpoint. **The gap narrows with the graph and is still an order of magnitude.**
+- **The learned column is not the least accurate cheap column available.** CS-7's own long march, against the classical monolith at $120$ steps in rms velocity: the checkpoint's column $0.0822$, $0.0959$, $0.121$ at two, six and twelve windows against the R10-compliant classical composed column's $0.0891$, $0.0937$, $0.0830$ — and the checkpoint's error **saturates** rather than drifting. Together these reopened the formulations CS-S1's $61$ had closed.
+
+### Fourteen formulations, and what killed them
+
+Each drops one of the four assumptions under the W95 chain — that the referent must be a same-class monolith, that what is certified is the expert, that the guarantee is deterministic and a priori, that the learned model is an agent at a seam — and each carries its claim, its hypotheses marked *checkable here / at cost / assumed*, a cost model and a kill test. **Seven died**: a borrowed-class referent would issue a verdict about an expert within $5\%$ of absent; a conformal shortlist needs simultaneous coverage, which costs as many classical evaluations as it saves; a subspace certificate has two faithful directions of $87$; the checkpoint's seam block is a zero preconditioner; a per-regime calibrated error of $0.08$–$0.12$ rms is a third of the wake; the relative-energy certificate on the answer dies on its own floor and a growth factor of $10^{10.9}$ over one transit; and **a learned start buys nothing** — from the checkpoint's settled state, $2.6\times$ closer than the freestream, the classical march needs $75$ steps against $68$, because relaxation in an open advective domain is transit-limited. **Two were not chosen** (parareal saves no work; trust-region has an exact adjoint already), **three stand unmeasured** (multifidelity Monte Carlo, light adaptation, a native-domain precursor), **one survives as a detector** — the checkpoint's own lead-time semigroup gives a referent-free *proof of failure*, $\delta_{\text{SC}}=2.04\times10^{-2}$ against a classical step-doubling gap of $1.60\times10^{-3}$, holding at $0.195$ of the true error sum and **exactly silent on the identity map** — and **one was converged on**.
+
+### The slot: defect correction, where a learned map changes the rate and not the answer
+
+Stetter's defect correction with the classical composed macro-step as the target and the learned composed column as the approximate operator. **Theorem 1**: any limit of the iteration satisfies $\Phi(w)=w$, whatever the cheap map is. **Corollary 1**: a constant cheap map makes the iteration the classical march **bit for bit**, so W76's null replacement is an identity in the same currency rather than a supposition. **Theorem 2**: the rate is $\rho(I-J_\Psi^{-1}J_\Phi)$ — the cheap map is in the iteration operator, which is why CS-S1's one-sweep ceiling on a *start* does not bind here. The returned state is certified by its own classical residual times $\Theta$, read off the middle half of a converged classical march. **W95 is dissolved for the answer** — nothing certifies the expert — and what remains is an **entry condition**: $J_\Psi$ no closer to singular than $J_\Phi$ on any mode, at a cost per call beating classical coarsening.
+
+### Measured, in sample and out
+
+**In sample, at two windows, it looks like a contribution.** Shrunk halfway toward the null element the checkpoint reaches the certified state in $25$ classical calls; the detuned checkpoint needs $32$, the composition layer with the checkpoint replaced by the identity falls back at $35$, and the cold march needs $47$ — an ordering that follows the checkpoint's integrity. Every one of the twelve arms returns a state inside $\Theta r=3.24\times10^{-4}$.
+
+**Out of sample, at six windows, it is not.** $99$ classical calls where the gate asked for at most $0.8\times\min(141,112)=89.6$; a cost of $313.8$ classical-equivalents against the cold march's $141$ and the coarse classical solver's $\mathbf{51.9}$; and **a checkpoint carrying Gaussian noise at $3\%$ of every weight tensor's rms needs $71$ classical calls — fewer than the clean one.** G2 and G4 pass (every arm inside its own $\Theta r$, the checkpoint's bound $1.14\times$ its error, and $50$ further classical steps moving the answer less than $2\Theta r$); **G1, G5 and the second half of G6 fail**. The mechanism reproduces: where the unshrunk checkpoint stalls, $59.7\%$ of its error is in the lowest modes and $31.4\%$ is constant per window, against $3$–$10\%$ and $\le0.2\%$ for arms the iteration cap stopped.
+
+**At twelve windows it is fifth of seven, and the certificate itself fails.** Cold march $267$ classical calls; the checkpoint needs $222$ against a gate asking for $192$, and costs $258.4$ classical-equivalents against the cold march's $267$ and a $2\times$-coarse classical solver's $\mathbf{38.1}$ — a $7.0\times$ saving. Ranked by cost the order is the coarse solver, **the corrupted checkpoint at $175.0$**, the coarse solver shrunk, the composition layer with no checkpoint at all, *then* the checkpoint, the detuned checkpoint, and the unshrunk checkpoint at $294.3$ — which costs more than not iterating. The checkpoint's per-call price has fallen below a classical step here ($0.296$) and it still does not pay, because the competitor's fell faster. **And G2 fails**: two arms of seven return a state outside their own $\Theta r$ — the coarse solver by $3\%$, the corrupted checkpoint by $14\%$. $\Theta$ is an operator norm estimated from the largest error-to-residual ratio along **one** approach to the settled state; the worst arm here needs $3.81$ where that march reports $3.35$, and the estimate falls with rung size while the requirement rises (**W208**). Theorem 1 is untouched — every arm's limit is still $\Phi$'s fixed point — and what broke is the finite-residual bound built on an estimated constant, together with the claim that the guarantee is indifferent to the cheap map. The mechanism reproduces a third time: the unshrunk checkpoint stalls at $k=2$ with $47.9\%$ of its error in the lowest modes and $44.8\%$ constant per window, against $8.0$–$17.4\%$ and $\le4.0\%$ for the shrunk arms the cap stopped, and $2.9\%$ / $1.0\%$ where the composition layer alone stalls — the same split as at six windows. (The coarse solver at $\alpha=0$ shows the same signature, $47.3\%$ and $36.1\%$, at an error three orders of magnitude smaller: that is a converged arm's remainder, not a stall.)
+
+**The gate, whole.** G1 passes in sample ($0.89$) and fails out of sample ($1.10$, $1.16$); G2 passes at two and six and fails at twelve; G4 is measured at six and twelve and passes at both; G5 fails on all three; G6 fails on its second half at six and on both halves at twelve; **G3 asks for all of them at six and twelve, so it fails.** Nothing was re-tuned, no clause was moved, and the prediction §7 recorded before the out-of-sample runs — G2 and G4 pass, G1 plausible, G5 fails — was itself too optimistic on two clauses.
+
+### Two findings that belong to no candidate
+
+- **The classical monolith's settled state was not isolated.** `WindowNS.step_batch` with `bc0=None` holds every ring at its input value and the freestream band resets only the inlet and the two laterals, so the outflow column is carried as **state**. The classical march from the checkpoint's settled state **converges exactly** — one-step residual $1.6\times10^{-16}$ — while sitting $5.87\times10^{-2}$ from the reference settled state, $29\%$ of the cold distance; pinned, the same start reaches $1.8\times10^{-5}$. Every fixed point of that map is one of a family and a residual certificate has an infinite constant along it (**W203**). Every reference trajectory published here starts from the freestream, where the column is freestream at every step, so nothing already measured moves.
+- **The cost ledger above**, which is why the gate's accounting clause is charged against a classical competitor rather than against the cold march alone.
+
+### Opened
+
+- **W202**: the contribution question, asked as fourteen formulations and answered — `closed` with a negative, its live descendants W204, W205 and W208.
+- **W203**: boundary data carried as state, so the classical fixed point is not isolated.
+- **W204**: the slot is real and classical coarsening pays in it; what a learned expert must clear is an entry condition in cost and Jacobian fidelity.
+- **W205**: a corrupted checkpoint is the better cheap operator out of sample, so the in-sample saving is not attributable to what the checkpoint learned.
+- **W206**: the answer-side relative-energy certificate — valid per step, floor above the checkpoint's own error, vacuous over a transit.
+- **W207**: W13's falsifiable half has an instrument, and it is blind to the null replacement.
+- **W208**: the certificate's constant is read off one approach to the settled state and under-bounds others — it holds at two and six windows and fails at twelve, on two arms of seven.
+- W95, W76 and W13 annotated.
+
+### What this tier did NOT do, named
+
+- **No rung moved, no rule was written or narrowed**, and the compiler is untouched; `atlas/` gains one module.
+- **No expert was trained.** One fine-tuning iteration is priced at $0.630$ s, $2000$ of them at $0.35$ h, and nothing was fine-tuned.
+- **No trajectory is certified** — the certified object is a settled state — and **the Jacobians were never assembled**: both mechanism readings are error structure, marked **[AI Inference]**.
+- **W203 is diagnosed and not fixed**; the outflow pin lives in the driver.
+- **W208 is diagnosed and not fixed.** $\Theta$ still comes from one march; the two arms that land outside their bound stay outside, and the certificate is reported per arm with the constant that arm would have needed printed beside it.
+- **No design family was built**, so multifidelity Monte Carlo stays unkilled and unrun.
+- **Nothing was downloaded** — Poseidon-T from the local cache with the hub offline — **no machine was rented, NeuberNet was not loaded, nothing was pushed.**
+
+### How it was run
+
+Every process exported `KMP_DUPLICATE_LIB_OK=TRUE`, `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`, and the driver asserts all three before it imports anything; TF32 is disabled and the flags are asserted rather than trusted. Poseidon-T came from the local cache with the hub offline, and denormals are flushed before any forward.
+
+```
+python scripts/w202_kill_tests.py                     # repro, reference, warm, dec, energy, selfcons, finetune at N=2
+python scripts/w202_kill_tests.py --stages cost --rungs 2,6,12
+python scripts/w202_kill_tests.py --stages reference --rung 6
+python scripts/w202_kill_tests.py --stages dec --rung 6 \
+    --keys C_a0,C_a0.5,Z_a0.5,P_a0.5,P_a0,Pc_a0.5,Pw_a0.5 --marched P_a0.5,C_a0.5
+python scripts/w202_kill_tests.py --stages reference --rung 12
+python scripts/w202_kill_tests.py --stages dec --rung 12 \
+    --keys C_a0,C_a0.5,Z_a0.5,P_a0.5,P_a0,Pc_a0.5,Pw_a0.5 --marched P_a0.5,C_a0.5 --marched-steps 30
+python scripts/w202_kill_tests.py --stages dec --rung 2      # re-run: that block predated the per-arm certificate
+python scripts/w202_kill_tests.py --stages account
+python scripts/vault_scan.py wiki                            # 226 files, 0 problems
+python scripts/run_suite.py                                  # 1258 passed, 0 failed, no missing logs, 389 s
+```
+
+The twelve-window `dec` stage is the long one at $2683$ s, and the six-window reference march is $244$ s with twelve longer still — which is why the `.npz` caches exist and why the `.gitignore` comment now says what rebuilding them costs instead of claiming it is seconds. The suite ran as the brief asks: four `pytest` processes over disjoint file sets, each with its own log under `out/suite/` and each log checked to exist seconds after launch, then `tier21`, `tier22`, `tier31`, `tier32` and `tier33` serially and alone.
+
+**Two corrections landed in the driver while the record was being written, and both make the gate harder.** `stage_account` was judging G2 and G6 against $\Theta\,r_{\text{stop}}$ where §3 and §7 define the certificate as the *returned state's own* residual times $\Theta$; under the stricter and pre-registered reading two arms at twelve windows fall outside, which is how W208 was found. And G4 was reported `False` at $N=2$, where §7 never asked for it — it now reports *not measured*, because an unmeasured clause is not a failed one.
+
+**Changed:** `.gitignore` (the Tier 48 allowlist pair, with the reason the JSON is committed), `wiki/index.md` (two rows), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 48 section, **W202**–**W208**, with **W95**, **W76**, **W13** and **W178** annotated), [[case-study-ladder-to-f1]] (§22), [[f1-pathmap-and-end-goal]] (§3.3).
+
+**Added:** `atlas/defect_correction.py`, `scripts/w202_kill_tests.py`, `scripts/run_suite.py`, `tests/test_tier48_defect_correction.py`, `tests/test_tier48_learned_contribution.py`, `out/w202/w202.json`, [[defect-correction-learned-operator]], [[learned-contribution-kill-tests]].

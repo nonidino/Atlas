@@ -987,3 +987,63 @@ In line after that:
 - Then W190, W193, W182, W186's re-census, W191, W184, W183's G2, W95, W188's rider, W185, W187, W178, W175.
 
 **Rung 9's march is at least a tier, and its two design decisions come first.** Tier 47 did §20.6's first item as a re-read and named the rest as not done.
+
+---
+
+# 22. What a learned expert can contribute, asked as fourteen formulations (2026-09-12)
+
+Full records: [[learned-contribution-kill-tests]] (the divergence and the kill tests), [[defect-correction-learned-operator]] (the formulation, its pre-registered gate and CS-S3) and [[gap-worklist]] Tier 48.
+
+**§21.6's list was not taken.** Rung 9's march waits on two decisions that are not framework work, and the question asked instead is the one §5's campaign and §14.3's recount leave standing: **can a learned expert contribute at all** — with its error bounded, or with a guarantee of another kind. **No rung moves**, and this section records what came back.
+
+## 22.1 The shape of the answer
+
+Fourteen formulations, each dropping one assumption under the W95 chain; kill tests on `wake_array`'s own graphs at two windows, five minutes of compute; **seven dead, two not chosen, three standing and unmeasured, one detector, one converged on**. The one converged on is a slot where a learned map **cannot** change the answer: defect correction with the classical composed macro-step as the target operator, whose limit is the classical settled state whatever the cheap map is, and whose returned state carries the classical residual times a measured constant — a constant §22.2 records holding at two rungs and **failing at the third**.
+
+## 22.2 What was measured
+
+- **In sample, at two windows, the checkpoint looks like a contribution** — shrunk halfway to the null element it reaches the certified state in $25$ classical calls against a detuned copy's $32$, the composition layer without it at $35$, and the cold classical march's $47$.
+- **Out of sample, at six windows, it is not** — $99$ classical calls where the gate asked for at most $0.8\times\min(141,112)$; a cost of $314$ classical-equivalents against the cold march's $141$ and against a $2\times$-coarse classical solver's $\mathbf{51.9}$; and **a checkpoint with Gaussian noise on every weight tensor needs $71$, fewer than the clean one**.
+- **At twelve windows it is fifth of seven arms by cost.** $222$ classical calls against the gate's $0.8\times\min(267,240)=192$; $258.4$ classical-equivalents against the cold march's $267$ and the coarse classical solver's $\mathbf{38.1}$ — a $7.0\times$ saving the checkpoint does not approach. Ahead of it sit that coarse solver, **the corrupted checkpoint at $175.0$**, the coarse solver shrunk, and the composition layer with no checkpoint in it at all; behind it, the detuned checkpoint and the unshrunk one, which costs **more than not iterating**. The checkpoint's per-call price has fallen below a classical step here ($0.296$) and it still does not pay.
+- **The certificate holds at two and six windows and fails at twelve.** On the first two rungs every arm returns a state inside its own $\Theta r$, the checkpoint's bound is $1.14\times$ its measured error, and $50$ further classical steps move the certified answer less than $2\Theta r$ ($30$ steps at twelve, also inside). At twelve windows **two arms of seven land outside their own bound** — the coarse classical solver by $3\%$, the corrupted checkpoint by $14\%$ — because $\Theta$ is read off one approach to the settled state and then used on every other, and the worst arm needs $3.81$ where the cold march reports $3.35$ (**W208**). Theorem 1 is untouched; what fails is the finite-residual bound built on an estimated constant.
+- **Two findings belong to no candidate.** CS-S1's $61\times$ cost ratio is an *arrangement*: measured against the monolith in one process, the checkpoint is $3.43$, $2.01$ and $0.296$ of a classical step at two, six and twelve windows — while $2\times$ coarsening reaches $0.032$. And **the classical monolith's settled state is not isolated**: it carries its outflow ring as state, so a march from the checkpoint's settled state converges *exactly*, residual $1.6\times10^{-16}$, a third of the cold distance from the reference (**W203**).
+
+## 22.3 What moves on this page
+
+**§5's campaign table gains a row it did not have.** Its three outcomes are all about certifying the *expert*; this tier measures a fourth arrangement, in which nothing certifies the expert and the answer is certified instead — and the checkpoint still fails, on cost and on Jacobian fidelity rather than on a missing referent.
+
+**§14.3's sentence stands and is now priced.** *The foundation-model half has no learned expert admitted with a nonzero contribution* remains true; what is new is an **entry condition** with numbers in it, and the measurement that the in-sample saving is not attributable to what the checkpoint learned (**W205**).
+
+**CS-S1's ceiling is scoped rather than repealed.** It binds on a *start*, and this tier confirms it one level up for a different reason: a start is flushed out in one transit of an open domain whatever its size, so the checkpoint's settled state costs $75$ classical steps where the freestream costs $68$. It does **not** bind on a cheap map inside the iteration operator, which is why the slot in §22.1 exists at all.
+
+## 22.4 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W204** — the entry condition for a learned cheap operator | any learned contribution in the one certified slot | `open`, medium, **new** |
+| **W205** — a corrupted checkpoint is the better cheap operator | attributing the in-sample saving to the checkpoint | `open`, medium, **new** |
+| **W203** — boundary data carried as state | every settled-state claim and every residual certificate | `open`, small to medium, **new** |
+| **W208** — $\Theta$ from a march under-bounds other approaches | the residual certificate this tier proposed, at scale | `open`, medium, **new** |
+| **W206**, **W207** — the answer-side certificate's horizon, and the referent-free tripwire | a runtime guarantee and W13's falsifiable half | `open`, **new** |
+| **W199**, **W201**, **W200**, **W198** | rung 9's march and its gate | `open`, as §21.5 |
+| **W196**, **W194**, **W197**, **W195** | a march of the joined union | `open`, as §21.5 |
+| **W190**, **W193**, **W182**, **W183**, **W184**, **W186**, **W95**, **W165** | as §21.5 | `open` |
+
+## 22.5 The next step
+
+**Not started, and the choice is the user's.** In line:
+
+- **W205 first**, because it decides how to read everything else here: a corruption sweep over seeds and magnitudes at two rungs, against the property of the column that is doing the work.
+- **W204 where the condition could hold** — three dimensions or an accelerator, both of which move the same lever that the classical competitor uses.
+- **W203**, small and structural: boundary data declared as problem data.
+- **W208**, because it is the one clause of this tier's own gate that the theory was supposed to guarantee: $\Theta$ from a power iteration on $I-D\Phi$ rather than from one march, and the three rungs re-judged against it.
+- Then rung 9's two design decisions (W199, W201) and its march, as §21.6 lists them.
+
+## 22.6 What this tier did NOT do, named
+
+- **No rung moved, and no rule was written or narrowed.** `atlas/` gains one module and nothing in the compiler changed.
+- **No expert was trained**, though one iteration is priced at $0.630$ s and $2000$ of them at $0.35$ h.
+- **No trajectory is certified** — the certified object is a settled state — and **no design family was built**, so multifidelity Monte Carlo stays unkilled and unrun.
+- **The Jacobians were never assembled**: both mechanism readings are error structure, marked **[AI Inference]**.
+- **The certificate that failed at twelve windows was not repaired, and not withdrawn.** $\Theta$ still comes from one classical march; the two arms outside their bound stay outside, and each arm now reports the constant it would have needed beside the constant it was given (**W208**).
+- **Nothing was downloaded, no machine was rented, and NeuberNet was not loaded.**
