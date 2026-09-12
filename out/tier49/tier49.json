@@ -1,0 +1,1449 @@
+{
+ "what": "rung 9's gate, over a march of the joined union",
+ "date": "2026-09-12",
+ "release_state": "out/w141/settled.npz",
+ "decisions": {
+  "W201_units": {
+   "clock_table": {
+    "scale": {
+     "l0_m": 0.5,
+     "u0_ms": 50.0,
+     "t0_s": 0.01,
+     "chord_m": 0.25,
+     "cell_m": 0.0078125,
+     "domain_m": [
+      1.625,
+      1.125
+     ],
+     "rotor_diameter_m": 0.25,
+     "reynolds_model": 250.0,
+     "reynolds_vehicle": 1612903.2258064516
+    },
+    "subsystems": {
+     "front_wing": {
+      "dt_native_bare": 0.0125,
+      "unit_system": "front_wing",
+      "dt_native_s": 0.000125,
+      "L_native_bare": 1.25,
+      "L_native_m": 0.625,
+      "over_the_fastest_clock": 1.0
+     },
+     "cooling_loop": {
+      "dt_native_bare": 0.05,
+      "unit_system": "cooling_loop",
+      "dt_native_s": 0.05,
+      "L_native_bare": 0.2,
+      "L_native_m": 0.2,
+      "over_the_fastest_clock": 400.0
+     },
+     "powertrain": {
+      "dt_native_bare": 0.2,
+      "unit_system": "powertrain",
+      "dt_native_s": 0.001,
+      "L_native_bare": 1.0,
+      "L_native_m": 0.25,
+      "over_the_fastest_clock": 8.0
+     }
+    },
+    "bare_numbers": [
+     0.0125,
+     0.05,
+     0.2
+    ],
+    "seconds": [
+     0.000125,
+     0.001,
+     0.05
+    ],
+    "spread_in_bare_numbers": 16.0,
+    "spread_in_seconds": 400.0,
+    "what_reconciling_the_bare_numbers_does_to_the_coolant_clock": 400.0
+   },
+   "alternatives": {
+    "box": {
+     "l0_m": [
+      0.25,
+      1.0
+     ],
+     "u0_ms": [
+      30.0,
+      90.0
+     ]
+    },
+    "corners": {
+     "l0=0.25 m, u0=30.0 m/s": {
+      "t0_s": 0.008333333333333333,
+      "chord_m": 0.125,
+      "coolant_over_fluid_clock": 480.0
+     },
+     "l0=0.25 m, u0=90.0 m/s": {
+      "t0_s": 0.002777777777777778,
+      "chord_m": 0.125,
+      "coolant_over_fluid_clock": 1440.0
+     },
+     "l0=1.0 m, u0=30.0 m/s": {
+      "t0_s": 0.03333333333333333,
+      "chord_m": 0.5,
+      "coolant_over_fluid_clock": 120.0
+     },
+     "l0=1.0 m, u0=90.0 m/s": {
+      "t0_s": 0.011111111111111112,
+      "chord_m": 0.5,
+      "coolant_over_fluid_clock": 360.0
+     }
+    },
+    "ratio_min": 120.0,
+    "ratio_max": 1440.0,
+    "ratio_never_below_100": true,
+    "chosen": {
+     "l0_m": 0.5,
+     "u0_ms": 50.0,
+     "coolant_over_fluid_clock": 400.0
+    }
+   },
+   "what_Tier_46_reconciled": "ten agents' dt_native re-declared at the tiling's bare 0.0125",
+   "the_bare_numbers_understate_the_spread_by": 25.0
+  },
+  "W199_sizing": {
+   "rotor_face_in_the_host": 0.5,
+   "rotor_diameter_m": 0.25,
+   "rows": {
+    "control: width 1, the machine powertrain declares": {
+     "width": 1.0,
+     "machine_scale": 1.0,
+     "omega": 13.837058774322221,
+     "induction": 0.11379170615831491,
+     "current": 0.14568625810740699,
+     "torque_rotor": 0.014568625810740655,
+     "torque_machine": 0.014568625810740699,
+     "largest_torque_in_the_clamp": 0.06109398831536559,
+     "demand_over_largest_supply": 0.2384625101824721,
+     "rotor_valid": true,
+     "mgu_valid": true,
+     "thrust": 0.21852938716110984,
+     "shaft_power": 0.20158693160432617,
+     "torque_residual": 2.976813836995327e-15,
+     "balance_residual": 3.0290786147901852e-15,
+     "k_t": 0.1,
+     "r_total": 0.3,
+     "r_mgu": 0.15,
+     "I2R_nondim": 0.0063673457404014025,
+     "q_machine_W_at_the_held_p_ref": 134.31119921159228
+    },
+    "Tier 47's failure: width 0.5, that same machine": {
+     "width": 0.5,
+     "machine_scale": 1.0,
+     "omega": 27.674117548644443,
+     "induction": 0.4,
+     "current": 4.758039182881481,
+     "torque_rotor": 0.015273497078841397,
+     "torque_machine": 0.4758039182881481,
+     "largest_torque_in_the_clamp": 0.015273497078841397,
+     "demand_over_largest_supply": 31.152257785630926,
+     "rotor_valid": false,
+     "mgu_valid": true,
+     "thrust": 0.45820491236524197,
+     "shaft_power": 0.42268055353873435,
+     "torque_residual": 0.9678995979398561,
+     "balance_residual": 30.152257785630923,
+     "k_t": 0.1,
+     "r_total": 0.3,
+     "r_mgu": 0.15,
+     "I2R_nondim": 6.7916810597506405,
+     "q_machine_W_at_the_held_p_ref": 143262.02235411527
+    },
+    "the choice: width 0.5, the machine scaled by the width": {
+     "width": 0.5,
+     "machine_scale": 0.5,
+     "omega": 27.674117548644443,
+     "induction": 0.11379170615831491,
+     "current": 0.07284312905370349,
+     "torque_rotor": 0.003642156452685164,
+     "torque_machine": 0.0036421564526851746,
+     "largest_torque_in_the_clamp": 0.015273497078841397,
+     "demand_over_largest_supply": 0.2384625101824721,
+     "rotor_valid": true,
+     "mgu_valid": true,
+     "thrust": 0.10926469358055492,
+     "shaft_power": 0.10079346580216308,
+     "torque_residual": 2.976813836995327e-15,
+     "balance_residual": 3.0290786147901852e-15,
+     "k_t": 0.05,
+     "r_total": 0.6,
+     "r_mgu": 0.3,
+     "I2R_nondim": 0.0031836728702007012,
+     "q_machine_W_at_the_held_p_ref": 67.15559960579614
+    }
+   },
+   "the_similarity_invariant": "k_e = k_t scale with the width and every resistance inversely, so the back-EMF and the demand/supply ratio are unchanged",
+   "control_reproduces_Tier_46_omega": true,
+   "same_induction_as_the_control": true,
+   "same_demand_over_supply": true,
+   "shaft_power_ratio_sized_over_control": 0.5,
+   "q_machine_ratio_sized_over_control": 0.5
+  },
+  "W196_operating_point_stiffness": {
+   "rows": {
+    "width 1, the machine powertrain declares": {
+     "d_backEMF_du": 1.5,
+     "backEMF_at_the_settled_inflow": 1.383705877432222,
+     "V_oc": 1.34,
+     "current": 0.14568625810740626,
+     "elasticity_of_the_current_in_the_inflow": 31.659492011756154,
+     "elasticity_of_the_machines_heat_in_the_inflow": 63.31898402351231
+    },
+    "width 0.5, the machine scaled by the width": {
+     "d_backEMF_du": 1.5,
+     "backEMF_at_the_settled_inflow": 1.383705877432222,
+     "V_oc": 1.34,
+     "current": 0.07284312905370313,
+     "elasticity_of_the_current_in_the_inflow": 31.659492011756154,
+     "elasticity_of_the_machines_heat_in_the_inflow": 63.31898402351231
+    }
+   },
+   "the_similarity_preserves_the_elasticity_exactly": true,
+   "so": "re-sizing restored the operating point's EXISTENCE and left its CONDITIONING exactly where it was -- the back-EMF is the similarity's invariant, and the stiffness is a property of the back-EMF against V_oc"
+  },
+  "W94_body_force": {
+   "devices": {
+    "ROTOR": {
+     "join": "J3",
+     "x_plane": 2.125,
+     "y0": 0.1875,
+     "width": 0.5,
+     "rows": [
+      12,
+      43
+     ],
+     "ring_read_at_column": 128,
+     "downstream_ring_column": 143,
+     "cells_between_the_ring_and_the_plane": 7.5,
+     "sum_f_dA": -0.1093,
+     "thrust": -0.1093,
+     "exact_to": 0.0
+    },
+    "RAD": {
+     "join": "J1",
+     "x_plane": 1.125,
+     "y0": 1.5,
+     "width": 0.5,
+     "rows": [
+      96,
+      127
+     ],
+     "ring_read_at_column": 64,
+     "downstream_ring_column": 79,
+     "cells_between_the_ring_and_the_plane": 7.5,
+     "sum_f_dA": -0.3,
+     "thrust": -0.3,
+     "exact_to": 0.0
+    }
+   },
+   "thickness": {
+    "ROTOR": {
+     "u_disk": 0.92,
+     "thickness_used": 0.015625,
+     "thickness_from_the_donors_rule": 0.0028750000000000004,
+     "cells_used": 1.0,
+     "cells_from_the_rule": 0.18400000000000002,
+     "floor_bound": true,
+     "dt_apply": 0.003125
+    },
+    "RAD": {
+     "u_disk": 1.0,
+     "thickness_used": 0.015625,
+     "thickness_from_the_donors_rule": 0.003125,
+     "cells_used": 1.0,
+     "cells_from_the_rule": 0.2,
+     "floor_bound": true,
+     "dt_apply": 0.003125
+    }
+   },
+   "the_rule": "Delta_d = <U_d> dt, the distance a parcel travels while the impulse is applied -- w100_scaling_ladder._forcing's, unchanged -- with a declared floor of one cell, because on this host the rule alone gives 0.18 of a cell"
+  },
+  "W194_multirate_seams": {
+   "joined": {
+    "multirate_seams": [
+     "J1_core_down",
+     "J1_core_up",
+     "J2_heat",
+     "J3_rotor_down",
+     "J3_rotor_up"
+    ],
+    "agents_at_a_multirate_seam": [
+     "BLOCK",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "MGU",
+     "RAD",
+     "ROTOR"
+    ],
+    "n_seams": 5,
+    "n_agents": 8,
+    "n_agents_in_the_graph": 18,
+    "graph_is_multirate_by_agents": true,
+    "graph_is_multirate_by_seams": true
+   },
+   "disjoint": {
+    "multirate_seams": [],
+    "agents_at_a_multirate_seam": [],
+    "n_seams": 0,
+    "n_agents": 0,
+    "n_agents_in_the_graph": 18,
+    "graph_is_multirate_by_agents": true,
+    "graph_is_multirate_by_seams": false
+   }
+  },
+  "W200_named_hole": {
+   "a_dissipation_field_was_added": false,
+   "domain_boundaries_became_ports": false,
+   "instead": "each join's receiver balance is written by hand, which is what CS-9, CS-12 and the front-wing demo each did"
+  },
+  "W197_named": {
+   "the_orientation_was_decided": false,
+   "instead": "a march applies the device as a BODY FORCE, so the power path is the force's work on the fluid and does not go through the two declared ports at all"
+  }
+ },
+ "elapsed_seconds": 0.2134543999854941,
+ "calib": {
+  "steps": 40,
+  "wall_s": 20.173950000025798,
+  "s_per_macro_step_tight": 0.23183147500021734,
+  "repeat_floor": {
+   "u_core": {
+    "max_abs_diff": 0.0,
+    "bitwise_identical": true
+   },
+   "ua": {
+    "max_abs_diff": 0.0,
+    "bitwise_identical": true
+   },
+   "u_rotor": {
+    "max_abs_diff": 0.0,
+    "bitwise_identical": true
+   },
+   "current": {
+    "max_abs_diff": 0.0,
+    "bitwise_identical": true
+   },
+   "q_machine": {
+    "max_abs_diff": 0.0,
+    "bitwise_identical": true
+   }
+  },
+  "repeat_floor_is_bitwise": true,
+  "J3_balance": {
+   "receiver": "the powertrain's shaft",
+   "the join's term: work the rotor's body force does on the fluid": 0.06642429388480743,
+   "the shaft's claim, T <U_d>": 0.06849949286525418,
+   "ratio_with_the_term": 0.969704900085481,
+   "residual_with_the_term": 0.03029509991451893,
+   "residual_without_the_term": 1.0,
+   "u on the ring the disk reads": 0.9133329869310854,
+   "u in the cell the sink sits in": 0.885375695298561,
+   "u_plane / u_ring": 0.9693898150701153,
+   "both devices' work on the fluid": 0.29103085886683033,
+   "the core's share of it": 0.2246065649820229,
+   "horizon_macro_steps": 10
+  },
+  "J1_balance": {
+   "receiver": "the coolant circuit's radiator",
+   "no power crosses": true,
+   "the join's term: UA follows the air": 39.53100495310773,
+   "UA at release": 41.780867989822,
+   "air through the core, release -> settled": [
+    0.9979650806149921,
+    0.9312494943176473
+   ],
+   "UA predicted by the declared exponent": 39.53102012931647,
+   "tracking_residual": 3.8390632684158675e-07,
+   "the air's mechanical loss across the core, unaccounted": 0.24254776077704573
+  },
+  "join_inner_residual_first": 2.6215627432438177e-06,
+  "join_inner_residual_last": 9.062568924616398e-10,
+  "unsteadiness_band_over_the_settle_window": {
+   "load": {
+    "mean": 0.23869384942077537,
+    "peak_to_peak_relative": 0.0032728198315647486
+   },
+   "u_rotor": {
+    "mean": 0.9133329869310854,
+    "peak_to_peak_relative": 0.0014848123738210232
+   },
+   "u_core": {
+    "mean": 0.9312494943176473,
+    "peak_to_peak_relative": 0.0068645562611954255
+   },
+   "induction": {
+    "mean": 0.08248667342715905,
+    "peak_to_peak_relative": 0.05947400759405205
+   }
+  },
+  "note": "this stage fixed vehicle_march.GATE's numbers and ran before any 1200-step arm"
+ },
+ "progress": {
+  "referent": {
+   "steps": 1200,
+   "wall_s": 422.37922880001133,
+   "coolant_steps": 3
+  },
+  "repeat": {
+   "steps": 1200,
+   "wall_s": 225.2264946999785,
+   "coolant_steps": 3
+  },
+  "all_lagged": {
+   "steps": 1200,
+   "wall_s": 40.68140690002474,
+   "coolant_steps": 3
+  },
+  "J1_lagged": {
+   "steps": 1200,
+   "wall_s": 206.6595699999889,
+   "coolant_steps": 3
+  },
+  "J3_lagged": {
+   "steps": 1200,
+   "wall_s": 199.0335452000145,
+   "coolant_steps": 3
+  }
+ },
+ "gate_stage": {
+  "horizon": 1200,
+  "settle_frac": 0.25,
+  "gate": {
+   "G1": {
+    "clause": "J3's receiving balance, over a march",
+    "measured_as": "the work the rotor's body force does on the fluid over the settle window, against the shaft power the union's shared operating point claims",
+    "passes_if": "relative residual <= 0.075 with the join's term, and >= 0.5 both without it and when the shaft is charged against the OTHER device's work",
+    "tol_with": 0.075,
+    "tol_without": 0.5
+   },
+   "G2": {
+    "clause": "J2's receiving balance, over a march",
+    "measured_as": "the block's first law over the coolant circuit's own march, with the mount term and without it",
+    "passes_if": "relative residual <= 1e-6 with the mount term and >= 1e-2 without it",
+    "tol_with": 1e-06,
+    "tol_without": 0.01
+   },
+   "G3": {
+    "clause": "J1's parametric check, over a march",
+    "measured_as": "UA against the declared exponent's prediction from the measured air, over the march; the null holds UA at UA_RAD",
+    "passes_if": "tracking residual <= 1e-6 with the join's term, and UA exactly constant without it while the air moves",
+    "tol_with": 1e-06,
+    "tol_without": 0.0
+   },
+   "G4": {
+    "clause": "composition error, per join, at vehicle scale",
+    "measured_as": "the crossing vector's relative l2 error of each single-join-lagged arm against the all-tight referent",
+    "passes_if": "each join's error exceeds 10x the repeat floor, or is reported NOT RESOLVED rather than as a number",
+    "floor_multiple": 10.0
+   },
+   "G5": {
+    "clause": "do the joins' errors add",
+    "measured_as": "the all-lagged arm's error against the sum of the single-join-lagged arms' errors",
+    "passes_if": "ADD if |e_all - sum(e_i)| <= 0.25 sum(e_i); COMPOUND -- Claim B failing at vehicle scale -- if e_all > 2.0 sum(e_i); otherwise NEITHER, reported as neither",
+    "add_tol": 0.25,
+    "compound_factor": 2.0
+   },
+   "G6": {
+    "clause": "the repeat floor",
+    "measured_as": "the referent marched twice as two independent constructions in one process -- a fresh rollout, solver, circuit and block each time. Cross-process reproducibility is NOT tested here",
+    "passes_if": "bitwise identical in every crossing quantity, and the floor quoted beside every difference G4 reports"
+   }
+  },
+  "prediction": "G1 passes, at a residual LARGER than the 0.030 the 40-step instrument run showed, because the rotor's own wake deepens over a longer horizon and the whole residual is the gap between the ring the disk reads and the cell its force sits in. G2 and G3 pass. G4 resolves all three joins. G5 returns ADD rather than COMPOUND, because two of the three joins are one-way and the third is algebraic, so there is no loop for an error to go round -- and COMPOUND would have been the more valuable result, since it is Claim B failing at vehicle scale, which f1-pathmap-and-end-goal section 7 calls the most likely failure on the ladder.",
+  "arms": {
+   "referent": {
+    "join_coupling": {
+     "J1": "tight",
+     "J2": "tight",
+     "J3": "tight"
+    },
+    "null": null,
+    "wall_s": 422.37922880001133,
+    "coolant_steps": 3,
+    "settled": {
+     "u_rotor": 0.9225377638876237,
+     "u_core": 0.9066181136345866,
+     "ua": 38.69231325963538,
+     "induction": 0.11400943660110784,
+     "omega": 27.67613291662871,
+     "current": 0.07301107638572561,
+     "thrust_rotor": 0.10951661457858843,
+     "shaft_power": 0.1010332127726391,
+     "thrust_core": 0.2467178013539572,
+     "core_flow_power": 0.2239186351707309,
+     "q_machine": 67.46562595758034,
+     "load": 0.24033893489346855,
+     "drag": 0.0874762184364653,
+     "u_max": 1.3212724818746406,
+     "power_on_the_fluid": -0.302303324168107,
+     "t_wall": 359.04174734049707,
+     "power_rotor": -0.09700479748973621,
+     "power_core": -0.2052985266783708,
+     "u_at_the_rotor_plane": 0.8815700664837816
+    },
+    "crossing_vector": {
+     "u_core": 0.9066181136345866,
+     "ua": 38.69231325963538,
+     "u_rotor": 0.9225377638876237,
+     "current": 0.07301107638572561,
+     "q_machine": 67.46562595758034,
+     "t_wall": 359.04174734049707
+    },
+    "J3_balance": {
+     "receiver": "the powertrain's shaft",
+     "the join's term: work the rotor's body force does on the fluid": 0.09700479748973621,
+     "the shaft's claim, T <U_d>": 0.1010332127726391,
+     "ratio_with_the_term": 0.9601278117130823,
+     "residual_with_the_term": 0.03987218828691774,
+     "residual_without_the_term": 1.0,
+     "u on the ring the disk reads": 0.9225377638876237,
+     "u in the cell the sink sits in": 0.8815700664837816,
+     "u_plane / u_ring": 0.9555923898104701,
+     "both devices' work on the fluid": 0.302303324168107,
+     "the core's share of it": 0.2052985266783708,
+     "horizon_macro_steps": 300
+    },
+    "J1_balance": {
+     "receiver": "the coolant circuit's radiator",
+     "no power crosses": true,
+     "the join's term: UA follows the air": 38.69231325963538,
+     "UA at release": 41.780867989822,
+     "air through the core, release -> settled": [
+      0.9979650806149921,
+      0.9066181136345866
+     ],
+     "UA predicted by the declared exponent": 38.692313259850984,
+     "tracking_residual": 5.572349378313577e-12,
+     "the air's mechanical loss across the core, unaccounted": 0.2239186351707309
+    },
+    "join_inner_residual_last": 7.659513132502953e-11,
+    "thickness": {
+     "ROTOR": {
+      "u_disk": 0.9225419901937596,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.002882943719355499,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.18450839803875194,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     },
+     "RAD": {
+      "u_disk": 0.9066095621846194,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.0028331548818269357,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.1813219124369239,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     }
+    }
+   },
+   "repeat": {
+    "join_coupling": {
+     "J1": "tight",
+     "J2": "tight",
+     "J3": "tight"
+    },
+    "null": null,
+    "wall_s": 225.2264946999785,
+    "coolant_steps": 3,
+    "settled": {
+     "u_rotor": 0.9225377638876237,
+     "u_core": 0.9066181136345866,
+     "ua": 38.69231325963538,
+     "induction": 0.11400943660110784,
+     "omega": 27.67613291662871,
+     "current": 0.07301107638572561,
+     "thrust_rotor": 0.10951661457858843,
+     "shaft_power": 0.1010332127726391,
+     "thrust_core": 0.2467178013539572,
+     "core_flow_power": 0.2239186351707309,
+     "q_machine": 67.46562595758034,
+     "load": 0.24033893489346855,
+     "drag": 0.0874762184364653,
+     "u_max": 1.3212724818746406,
+     "power_on_the_fluid": -0.302303324168107,
+     "t_wall": 359.04174734049707,
+     "power_rotor": -0.09700479748973621,
+     "power_core": -0.2052985266783708,
+     "u_at_the_rotor_plane": 0.8815700664837816
+    },
+    "crossing_vector": {
+     "u_core": 0.9066181136345866,
+     "ua": 38.69231325963538,
+     "u_rotor": 0.9225377638876237,
+     "current": 0.07301107638572561,
+     "q_machine": 67.46562595758034,
+     "t_wall": 359.04174734049707
+    },
+    "J3_balance": {
+     "receiver": "the powertrain's shaft",
+     "the join's term: work the rotor's body force does on the fluid": 0.09700479748973621,
+     "the shaft's claim, T <U_d>": 0.1010332127726391,
+     "ratio_with_the_term": 0.9601278117130823,
+     "residual_with_the_term": 0.03987218828691774,
+     "residual_without_the_term": 1.0,
+     "u on the ring the disk reads": 0.9225377638876237,
+     "u in the cell the sink sits in": 0.8815700664837816,
+     "u_plane / u_ring": 0.9555923898104701,
+     "both devices' work on the fluid": 0.302303324168107,
+     "the core's share of it": 0.2052985266783708,
+     "horizon_macro_steps": 300
+    },
+    "J1_balance": {
+     "receiver": "the coolant circuit's radiator",
+     "no power crosses": true,
+     "the join's term: UA follows the air": 38.69231325963538,
+     "UA at release": 41.780867989822,
+     "air through the core, release -> settled": [
+      0.9979650806149921,
+      0.9066181136345866
+     ],
+     "UA predicted by the declared exponent": 38.692313259850984,
+     "tracking_residual": 5.572349378313577e-12,
+     "the air's mechanical loss across the core, unaccounted": 0.2239186351707309
+    },
+    "join_inner_residual_last": 7.659513132502953e-11,
+    "thickness": {
+     "ROTOR": {
+      "u_disk": 0.9225419901937596,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.002882943719355499,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.18450839803875194,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     },
+     "RAD": {
+      "u_disk": 0.9066095621846194,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.0028331548818269357,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.1813219124369239,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     }
+    }
+   },
+   "all_lagged": {
+    "join_coupling": {
+     "J1": "lagged",
+     "J2": "lagged",
+     "J3": "lagged"
+    },
+    "null": null,
+    "wall_s": 40.68140690002474,
+    "coolant_steps": 3,
+    "settled": {
+     "u_rotor": 0.9225377762970294,
+     "u_core": 0.906618123738528,
+     "ua": 38.69231360460437,
+     "induction": 0.11400947680556574,
+     "omega": 27.67613328891088,
+     "current": 0.07301110740923998,
+     "thrust_rotor": 0.10951666111385995,
+     "shaft_power": 0.10103325706207993,
+     "thrust_core": 0.2467178068920966,
+     "core_flow_power": 0.22391864276494877,
+     "q_machine": 67.46568328894949,
+     "load": 0.2403389613040595,
+     "drag": 0.08747622804913427,
+     "u_max": 1.3212725344590464,
+     "power_on_the_fluid": -0.3023033918339448,
+     "t_wall": 359.04174612776956,
+     "power_rotor": -0.09700489730767797,
+     "power_core": -0.2052984945262668,
+     "u_at_the_rotor_plane": 0.8815700975389817
+    },
+    "crossing_vector": {
+     "u_core": 0.906618123738528,
+     "ua": 38.69231360460437,
+     "u_rotor": 0.9225377762970294,
+     "current": 0.07301110740923998,
+     "q_machine": 67.46568328894949,
+     "t_wall": 359.04174612776956
+    },
+    "J3_balance": {
+     "receiver": "the powertrain's shaft",
+     "the join's term: work the rotor's body force does on the fluid": 0.09700489730767797,
+     "the shaft's claim, T <U_d>": 0.10103325706207993,
+     "ratio_with_the_term": 0.9601283787978178,
+     "residual_with_the_term": 0.039871621202182225,
+     "residual_without_the_term": 1.0,
+     "u on the ring the disk reads": 0.9225377762970294,
+     "u in the cell the sink sits in": 0.8815700975389817,
+     "u_plane / u_ring": 0.9555924106192295,
+     "both devices' work on the fluid": 0.3023033918339448,
+     "the core's share of it": 0.2052984945262668,
+     "horizon_macro_steps": 300
+    },
+    "J1_balance": {
+     "receiver": "the coolant circuit's radiator",
+     "no power crosses": true,
+     "the join's term: UA follows the air": 38.69231360460437,
+     "UA at release": 42.0,
+     "air through the core, release -> settled": [
+      1.0045120148815045,
+      0.906618123738528
+     ],
+     "UA predicted by the declared exponent": 38.692313604820804,
+     "tracking_residual": 5.593651481351599e-12,
+     "the air's mechanical loss across the core, unaccounted": 0.22391864276494877
+    },
+    "join_inner_residual_last": 0.0,
+    "thickness": {
+     "ROTOR": {
+      "u_disk": 0.9225419952630906,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.002882943735197158,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.18450839905261812,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     },
+     "RAD": {
+      "u_disk": 0.9066095600765345,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.0028331548752391703,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.1813219120153069,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     }
+    }
+   },
+   "J1_lagged": {
+    "join_coupling": {
+     "J1": "lagged",
+     "J2": "tight",
+     "J3": "tight"
+    },
+    "null": null,
+    "wall_s": 206.6595699999889,
+    "coolant_steps": 3,
+    "settled": {
+     "u_rotor": 0.9225377857760865,
+     "u_core": 0.9066181456655181,
+     "ua": 38.69231435323732,
+     "induction": 0.11400950751666557,
+     "omega": 27.67613357328259,
+     "current": 0.07301113110688258,
+     "thrust_rotor": 0.10951669666032388,
+     "shaft_power": 0.10103329089294419,
+     "thrust_core": 0.24671781882438726,
+     "core_flow_power": 0.22391865900754904,
+     "q_machine": 67.46572708006391,
+     "load": 0.2403389443655807,
+     "drag": 0.08747622188403219,
+     "u_max": 1.3212725012757325,
+     "power_on_the_fluid": -0.3023033800802365,
+     "t_wall": 359.0417461436293,
+     "power_rotor": -0.09700487058636938,
+     "power_core": -0.2052985094938671,
+     "u_at_the_rotor_plane": 0.8815700659058476
+    },
+    "crossing_vector": {
+     "u_core": 0.9066181456655181,
+     "ua": 38.69231435323732,
+     "u_rotor": 0.9225377857760865,
+     "current": 0.07301113110688258,
+     "q_machine": 67.46572708006391,
+     "t_wall": 359.0417461436293
+    },
+    "J3_balance": {
+     "receiver": "the powertrain's shaft",
+     "the join's term: work the rotor's body force does on the fluid": 0.09700487058636938,
+     "the shaft's claim, T <U_d>": 0.10103329089294419,
+     "ratio_with_the_term": 0.9601277928198602,
+     "residual_with_the_term": 0.039872207180139896,
+     "residual_without_the_term": 1.0,
+     "u on the ring the disk reads": 0.9225377857760865,
+     "u in the cell the sink sits in": 0.8815700659058476,
+     "u_plane / u_ring": 0.955592366511281,
+     "both devices' work on the fluid": 0.3023033800802365,
+     "the core's share of it": 0.2052985094938671,
+     "horizon_macro_steps": 300
+    },
+    "J1_balance": {
+     "receiver": "the coolant circuit's radiator",
+     "no power crosses": true,
+     "the join's term: UA follows the air": 38.69231435323732,
+     "UA at release": 42.0,
+     "air through the core, release -> settled": [
+      1.0045120148815045,
+      0.9066181456655181
+     ],
+     "UA predicted by the declared exponent": 38.69231435345439,
+     "tracking_residual": 5.610178905086117e-12,
+     "the air's mechanical loss across the core, unaccounted": 0.22391865900754904
+    },
+    "join_inner_residual_last": 7.600729184931154e-11,
+    "thickness": {
+     "ROTOR": {
+      "u_disk": 0.9225419964383312,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.0028829437388697855,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.18450839928766627,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     },
+     "RAD": {
+      "u_disk": 0.9066095673905228,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.0028331548980953837,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.18132191347810456,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     }
+    }
+   },
+   "J3_lagged": {
+    "join_coupling": {
+     "J1": "tight",
+     "J2": "tight",
+     "J3": "lagged"
+    },
+    "null": null,
+    "wall_s": 199.0335452000145,
+    "coolant_steps": 3,
+    "settled": {
+     "u_rotor": 0.9225377543602287,
+     "u_core": 0.9066180917709055,
+     "ua": 38.69231251316393,
+     "induction": 0.11400940573338801,
+     "omega": 27.676132630806862,
+     "current": 0.07301105256723846,
+     "thrust_rotor": 0.10951657885085765,
+     "shaft_power": 0.10103317876925866,
+     "thrust_core": 0.24671778945616082,
+     "core_flow_power": 0.22391861897514445,
+     "q_machine": 67.46558194320093,
+     "load": 0.24033895188466564,
+     "drag": 0.08747622462075529,
+     "u_max": 1.3212725151596991,
+     "power_on_the_fluid": -0.30230333595487086,
+     "t_wall": 359.0417473244053,
+     "power_rotor": -0.09700482426343837,
+     "power_core": -0.2052985116914325,
+     "u_at_the_rotor_plane": 0.8815700982266458
+    },
+    "crossing_vector": {
+     "u_core": 0.9066180917709055,
+     "ua": 38.69231251316393,
+     "u_rotor": 0.9225377543602287,
+     "current": 0.07301105256723846,
+     "q_machine": 67.46558194320093,
+     "t_wall": 359.0417473244053
+    },
+    "J3_balance": {
+     "receiver": "the powertrain's shaft",
+     "the join's term: work the rotor's body force does on the fluid": 0.09700482426343837,
+     "the shaft's claim, T <U_d>": 0.10103317876925866,
+     "ratio_with_the_term": 0.9601283998495156,
+     "residual_with_the_term": 0.039871600150484354,
+     "residual_without_the_term": 1.0,
+     "u on the ring the disk reads": 0.9225377543602287,
+     "u in the cell the sink sits in": 0.8815700982266458,
+     "u_plane / u_ring": 0.9555924340874336,
+     "both devices' work on the fluid": 0.30230333595487086,
+     "the core's share of it": 0.2052985116914325,
+     "horizon_macro_steps": 300
+    },
+    "J1_balance": {
+     "receiver": "the coolant circuit's radiator",
+     "no power crosses": true,
+     "the join's term: UA follows the air": 38.69231251316393,
+     "UA at release": 41.78070287235296,
+     "air through the core, release -> settled": [
+      0.9979601506854925,
+      0.9066180917709055
+     ],
+     "UA predicted by the declared exponent": 38.692312513378894,
+     "tracking_residual": 5.555821953069617e-12,
+     "the air's mechanical loss across the core, unaccounted": 0.22391861897514445
+    },
+    "join_inner_residual_last": 8.067019737397393e-13,
+    "thickness": {
+     "ROTOR": {
+      "u_disk": 0.9225419890091386,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.0028829437156535583,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.18450839780182773,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     },
+     "RAD": {
+      "u_disk": 0.9066095548904203,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.0028331548590325635,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.18132191097808406,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     }
+    }
+   },
+   "null_J3": {
+    "join_coupling": {
+     "J1": "tight",
+     "J2": "tight",
+     "J3": "tight"
+    },
+    "null": "J3",
+    "wall_s": 226.61648409999907,
+    "coolant_steps": 3,
+    "settled": {
+     "u_rotor": 0.9845701401731568,
+     "u_core": 0.8936992127681676,
+     "ua": 38.25060265827462,
+     "induction": 0.26087203919686314,
+     "omega": 29.5371042051947,
+     "current": 0.2280920170995584,
+     "thrust_rotor": 0.34213802564933754,
+     "shaft_power": 0.33685891037361265,
+     "thrust_core": 0.23973841821439257,
+     "core_flow_power": 0.21448678300250407,
+     "q_machine": 658.4542198636877,
+     "load": 0.26863631429485707,
+     "drag": 0.09777562224630829,
+     "u_max": 1.3681681105940466,
+     "power_on_the_fluid": -0.19637476754272265,
+     "t_wall": 359.0434207767289,
+     "power_rotor": 0.0,
+     "power_core": -0.19637476754272265,
+     "u_at_the_rotor_plane": 0.9830298640207858
+    },
+    "crossing_vector": {
+     "u_core": 0.8936992127681676,
+     "ua": 38.25060265827462,
+     "u_rotor": 0.9845701401731568,
+     "current": 0.2280920170995584,
+     "q_machine": 658.4542198636877,
+     "t_wall": 359.0434207767289
+    },
+    "J3_balance": {
+     "receiver": "the powertrain's shaft",
+     "the join's term: work the rotor's body force does on the fluid": -0.0,
+     "the shaft's claim, T <U_d>": 0.33685891037361265,
+     "ratio_with_the_term": -0.0,
+     "residual_with_the_term": 1.0,
+     "residual_without_the_term": 1.0,
+     "u on the ring the disk reads": 0.9845701401731568,
+     "u in the cell the sink sits in": 0.9830298640207858,
+     "u_plane / u_ring": 0.9984355851457164,
+     "both devices' work on the fluid": 0.19637476754272265,
+     "the core's share of it": 0.19637476754272265,
+     "horizon_macro_steps": 300
+    },
+    "J1_balance": {
+     "receiver": "the coolant circuit's radiator",
+     "no power crosses": true,
+     "the join's term: UA follows the air": 38.25060265827462,
+     "UA at release": 41.78348204269815,
+     "air through the core, release -> settled": [
+      0.9980431293133754,
+      0.8936992127681676
+     ],
+     "UA predicted by the declared exponent": 38.250602665388115,
+     "tracking_residual": 1.8597071737352457e-10,
+     "the air's mechanical loss across the core, unaccounted": 0.21448678300250407
+    },
+    "join_inner_residual_last": 8.615428538651705e-13,
+    "thickness": {
+     "ROTOR": {
+      "u_disk": 0.9846788485056,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.00307712140158,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.19693576970112,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     },
+     "RAD": {
+      "u_disk": 0.8936440369737875,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.002792637615543086,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.1787288073947575,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     }
+    }
+   },
+   "null_J1": {
+    "join_coupling": {
+     "J1": "tight",
+     "J2": "tight",
+     "J3": "tight"
+    },
+    "null": "J1",
+    "wall_s": 215.44552770000882,
+    "coolant_steps": 3,
+    "settled": {
+     "u_rotor": 0.9225377638876237,
+     "u_core": 0.9066181136345866,
+     "ua": 42.0,
+     "induction": 0.11400943660110784,
+     "omega": 27.67613291662871,
+     "current": 0.07301107638572561,
+     "thrust_rotor": 0.10951661457858843,
+     "shaft_power": 0.1010332127726391,
+     "thrust_core": 0.2467178013539572,
+     "core_flow_power": 0.2239186351707309,
+     "q_machine": 67.46562595758034,
+     "load": 0.24033893489346855,
+     "drag": 0.0874762184364653,
+     "u_max": 1.3212724818746406,
+     "power_on_the_fluid": -0.302303324168107,
+     "t_wall": 359.02858945203343,
+     "power_rotor": -0.09700479748973621,
+     "power_core": -0.2052985266783708,
+     "u_at_the_rotor_plane": 0.8815700664837816
+    },
+    "crossing_vector": {
+     "u_core": 0.9066181136345866,
+     "ua": 42.0,
+     "u_rotor": 0.9225377638876237,
+     "current": 0.07301107638572561,
+     "q_machine": 67.46562595758034,
+     "t_wall": 359.02858945203343
+    },
+    "J3_balance": {
+     "receiver": "the powertrain's shaft",
+     "the join's term: work the rotor's body force does on the fluid": 0.09700479748973621,
+     "the shaft's claim, T <U_d>": 0.1010332127726391,
+     "ratio_with_the_term": 0.9601278117130823,
+     "residual_with_the_term": 0.03987218828691774,
+     "residual_without_the_term": 1.0,
+     "u on the ring the disk reads": 0.9225377638876237,
+     "u in the cell the sink sits in": 0.8815700664837816,
+     "u_plane / u_ring": 0.9555923898104701,
+     "both devices' work on the fluid": 0.302303324168107,
+     "the core's share of it": 0.2052985266783708,
+     "horizon_macro_steps": 300
+    },
+    "J1_balance": {
+     "receiver": "the coolant circuit's radiator",
+     "no power crosses": true,
+     "the join's term: UA follows the air": 42.0,
+     "UA at release": 42.0,
+     "air through the core, release -> settled": [
+      0.9979650806149921,
+      0.9066181136345866
+     ],
+     "UA predicted by the declared exponent": 38.895246439341975,
+     "tracking_residual": 0.07982347060070591,
+     "the air's mechanical loss across the core, unaccounted": 0.2239186351707309
+    },
+    "join_inner_residual_last": 7.659513132502953e-11,
+    "thickness": {
+     "ROTOR": {
+      "u_disk": 0.9225419901937596,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.002882943719355499,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.18450839803875194,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     },
+     "RAD": {
+      "u_disk": 0.9066095621846194,
+      "thickness_used": 0.015625,
+      "thickness_from_the_donors_rule": 0.0028331548818269357,
+      "cells_used": 1.0,
+      "cells_from_the_rule": 0.1813219124369239,
+      "floor_bound": true,
+      "dt_apply": 0.003125
+     }
+    }
+   }
+  },
+  "G6": {
+   "per_quantity": {
+    "u_core": {
+     "max_abs_diff": 0.0,
+     "bitwise": true
+    },
+    "ua": {
+     "max_abs_diff": 0.0,
+     "bitwise": true
+    },
+    "u_rotor": {
+     "max_abs_diff": 0.0,
+     "bitwise": true
+    },
+    "current": {
+     "max_abs_diff": 0.0,
+     "bitwise": true
+    },
+    "q_machine": {
+     "max_abs_diff": 0.0,
+     "bitwise": true
+    }
+   },
+   "bitwise_in_every_crossing_quantity": true,
+   "repeat_floor_in_the_crossing_norm": 0.0,
+   "verdict": "pass"
+  },
+  "G1": {
+   "with_the_term": 0.03987218828691774,
+   "tol_with": 0.075,
+   "null_J3_residual": 1.0,
+   "mis_attributed_residual": 1.0319904815891185,
+   "tol_without": 0.5,
+   "u_ring": 0.9225377638876237,
+   "u_plane": 0.8815700664837816,
+   "u_plane_over_u_ring": 0.9555923898104701,
+   "the_residual_the_velocity_gap_alone_predicts": 0.04440761018952988,
+   "verdict": "pass"
+  },
+  "G3": {
+   "tracking_residual": 5.572349378313577e-12,
+   "tol_with": 1e-06,
+   "UA_release_to_settled": [
+    41.780867989822,
+    38.69231325963538
+   ],
+   "air_release_to_settled": [
+    0.9979650806149921,
+    0.9066181136345866
+   ],
+   "null_UA_range": [
+    42.0,
+    42.0
+   ],
+   "null_UA_is_exactly_constant": true,
+   "null_air_moved_by": 0.0913555184303727,
+   "the_air_s_mechanical_loss_unaccounted": 0.2239186351707309,
+   "verdict": "pass"
+  },
+  "G4": {
+   "errors": {
+    "J1_lagged": 1.6765983099107108e-06,
+    "J3_lagged": 7.301432544058319e-07,
+    "all_lagged": 9.503082745806234e-07,
+    "J2_lagged": 0.001970096069573584,
+    "J2_lagged_on_the_union_horizon": 4.519106593242095e-11
+   },
+   "repeat_floor": 0.0,
+   "floor_multiple_required": 10.0,
+   "the_clause_as_written_is_vacuous_because_the_floor_is_zero": true,
+   "the_floor_that_binds_instead": {
+    "what": "the fluid's own unsteadiness over the settle window, per crossing quantity, relative peak-to-peak",
+    "per_quantity": {
+     "u_core": 3.0250162368246052e-05,
+     "ua": 2.420010234141701e-05,
+     "u_rotor": 1.4254872528127287e-05,
+     "current": 0.0004502966836565127,
+     "q_machine": 0.0009005209148834905
+    },
+    "norm": 0.0010076750171171683,
+    "errors_above_the_unsteadiness_band": {
+     "J1_lagged": false,
+     "J3_lagged": false,
+     "J2_lagged": true,
+     "J2_lagged_on_the_union_horizon": false
+    }
+   },
+   "resolved_above_the_floor": {
+    "J1_lagged": true,
+    "J3_lagged": true,
+    "J2_lagged": true,
+    "J2_lagged_on_the_union_horizon": true
+   },
+   "per_component": {
+    "J1_lagged": {
+     "u_core": 3.533012532186059e-08,
+     "ua": 2.8264062106162008e-08,
+     "u_rotor": 2.3726359696963328e-08,
+     "current": 7.494911686784386e-07,
+     "q_machine": 1.4988741619966555e-06,
+     "t_wall": -3.333505787440009e-09
+    },
+    "J3_lagged": {
+     "u_core": -2.411564556123605e-08,
+     "ua": -1.9292499907592996e-08,
+     "u_rotor": -1.0327376674430848e-08,
+     "current": -3.262311464768654e-07,
+     "q_machine": -6.523971101955677e-07,
+     "t_wall": -4.4818594832167745e-11
+    },
+    "all_lagged": {
+     "u_core": 1.1144649890983489e-08,
+     "ua": 8.915698404399162e-09,
+     "u_rotor": 1.3451379673530435e-08,
+     "current": 4.249151759476327e-07,
+     "q_machine": 8.497863665421352e-07,
+     "t_wall": -3.3776782791543936e-09
+    }
+   },
+   "verdict": "pass",
+   "not_resolved": []
+  },
+  "G5_superposition": {
+   "what": "the per-join error VECTORS added, against the error vector of the arm with both joins lagged",
+   "components": [
+    "u_core",
+    "ua",
+    "u_rotor",
+    "current",
+    "q_machine",
+    "t_wall"
+   ],
+   "e_J1": [
+    3.533012532186059e-08,
+    2.8264062106162008e-08,
+    2.3726359696963328e-08,
+    7.494911686784386e-07,
+    1.4988741619966555e-06,
+    -3.333505787440009e-09
+   ],
+   "e_J3": [
+    -2.411564556123605e-08,
+    -1.9292499907592996e-08,
+    -1.0327376674430848e-08,
+    -3.262311464768654e-07,
+    -6.523971101955677e-07,
+    -4.4818594832167745e-11
+   ],
+   "e_J1_plus_e_J3": [
+    1.1214479760624543e-08,
+    8.971562198569013e-09,
+    1.339898302253248e-08,
+    4.2326002220157316e-07,
+    8.464770518010878e-07,
+    -3.3783243822721767e-09
+   ],
+   "e_both_lagged": [
+    1.1144649890983489e-08,
+    8.915698404399162e-09,
+    1.3451379673530435e-08,
+    4.249151759476327e-07,
+    8.497863665421352e-07,
+    -3.3776782791543936e-09
+   ],
+   "residual_norm": 3.701599759440032e-09,
+   "relative_residual": 0.003895156822741094,
+   "the_two_joins_errors_point_opposite_ways": true,
+   "cosine": -0.9998805411200233
+  },
+  "G5": {
+   "e_all_lagged": 9.503082745806234e-07,
+   "the_well_posed_form": {
+    "joins": [
+     "J1",
+     "J3"
+    ],
+    "share_a_clock": true,
+    "sum_of_the_single_join_errors": 2.4067415643165427e-06,
+    "gap": 1.4564332897359193e-06,
+    "gap_over_sum": 0.60514735413626,
+    "verdict": "NEITHER"
+   },
+   "as_pre_registered_over_three_joins": {
+    "sum_of_the_single_join_errors": 0.0019725028111379004,
+    "gap": 0.0019715525028633197,
+    "gap_over_sum": 0.9995182220936696,
+    "verdict": "NEITHER",
+    "has_no_subject_because": "J1 and J3's errors are measured over 1200 fluid macro-steps (0.15 s) and J2's over 1200 coolant steps (60 s), a horizon 400x longer in seconds. The three joins do not share a clock, so their errors are not addends of one sum"
+   },
+   "add_tol": 0.25,
+   "compound_factor": 2.0,
+   "verdict": "NEITHER"
+  }
+ },
+ "slow": {
+  "q_machine_W": 67.46562595758034,
+  "ua_W_per_K": 38.69231325963538,
+  "dt_s": 0.05,
+  "block_thermal_time_constant_s": 50.1,
+  "block_wall_start_K": 359.47106779454083,
+  "block_wall_settled_K": 309.76090421866223,
+  "fluid_macro_steps_to_span_the_block_s_transient": 400800.0,
+  "coolant_steps_to_span_it": 1002.0,
+  "with_the_mount_term": {
+   "relative": 4.070653488816957e-09,
+   "t_wall": 324.8514962601908,
+   "q_block": 219.66297562089304,
+   "loop_residual": 5.713058043537429e-14,
+   "t_return": 306.5428944098427
+  },
+  "the_block_with_its_own_declared_source": {
+   "relative": 8.880528096247821e-11,
+   "t_wall": 446.59083984926724,
+   "q_block": 1349.7204331462885,
+   "loop_residual": 3.4235156170591873e-15,
+   "t_return": 334.1239157057965
+  },
+  "the_mount_balance_without_the_mount_term": 0.9980592706869276,
+  "tol_with": 1e-06,
+  "tol_without": 0.01,
+  "G2_verdict": "pass",
+  "replay": {
+   "lag_1": [
+    359.4710677943378,
+    359.041783725347,
+    358.76462336407513
+   ],
+   "lag_3": [
+    359.4710677943378,
+    359.0417837251519,
+    358.7646233609934
+   ]
+  },
+  "second_vehicle_scale": {
+   "scale": {
+    "l0_m": 1.0,
+    "u0_ms": 30.0,
+    "chord_m": 0.5,
+    "t0_s": 0.03333333333333333
+   },
+   "n_fluid_per_coolant": 120,
+   "coolant_steps_over_the_same_fluid_horizon": 10,
+   "at_the_declared_scale": 3,
+   "t_wall_final_K": 357.5982732092103,
+   "t_wall_final_at_the_declared_scale_K": 358.76462336407513,
+   "q_block_final_W": 524.0597288216057
+  }
+ },
+ "r9": {
+  "joined_native": {
+   "verdict": "refuse",
+   "refusals": [
+    "L7/R9"
+   ],
+   "multirate_by_agents": true,
+   "seams": {
+    "multirate_seams": [
+     "J1_core_down",
+     "J1_core_up",
+     "J2_heat",
+     "J3_rotor_down",
+     "J3_rotor_up"
+    ],
+    "agents_at_a_multirate_seam": [
+     "BLOCK",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "MGU",
+     "RAD",
+     "ROTOR"
+    ],
+    "n_seams": 5,
+    "n_agents": 8,
+    "n_agents_in_the_graph": 18,
+    "graph_is_multirate_by_agents": true,
+    "graph_is_multirate_by_seams": true
+   }
+  },
+  "disjoint_native": {
+   "verdict": "admit-uncertified",
+   "refusals": [],
+   "multirate_by_agents": true,
+   "seams": {
+    "multirate_seams": [],
+    "agents_at_a_multirate_seam": [],
+    "n_seams": 0,
+    "n_agents": 0,
+    "n_agents_in_the_graph": 18,
+    "graph_is_multirate_by_agents": true,
+    "graph_is_multirate_by_seams": false
+   }
+  },
+  "joined_time_integrated": {
+   "verdict": "refuse",
+   "refusals": [
+    "L7/R9/quadrature"
+   ],
+   "multirate_by_agents": true,
+   "seams": {
+    "multirate_seams": [
+     "J1_core_down",
+     "J1_core_up",
+     "J2_heat",
+     "J3_rotor_down",
+     "J3_rotor_up"
+    ],
+    "agents_at_a_multirate_seam": [
+     "BLOCK",
+     "F01",
+     "F10",
+     "F11",
+     "F20",
+     "MGU",
+     "RAD",
+     "ROTOR"
+    ],
+    "n_seams": 5,
+    "n_agents": 8,
+    "n_agents_in_the_graph": 18,
+    "graph_is_multirate_by_agents": true,
+    "graph_is_multirate_by_seams": true
+   }
+  },
+  "control_thermal_seam_default": {
+   "verdict": "admit-uncertified",
+   "refusals": [],
+   "multirate_by_agents": true,
+   "seams": {
+    "multirate_seams": [
+     "cht"
+    ],
+    "agents_at_a_multirate_seam": [
+     "gas",
+     "shell"
+    ],
+    "n_seams": 1,
+    "n_agents": 2,
+    "n_agents_in_the_graph": 2,
+    "graph_is_multirate_by_agents": true,
+    "graph_is_multirate_by_seams": true
+   }
+  },
+  "control_thermal_seam_pointwise": {
+   "verdict": "refuse",
+   "refusals": [
+    "L7/R9"
+   ],
+   "multirate_by_agents": true,
+   "seams": {
+    "multirate_seams": [
+     "cht"
+    ],
+    "agents_at_a_multirate_seam": [
+     "gas",
+     "shell"
+    ],
+    "n_seams": 1,
+    "n_agents": 2,
+    "n_agents_in_the_graph": 2,
+    "graph_is_multirate_by_agents": true,
+    "graph_is_multirate_by_seams": true
+   }
+  },
+  "control_joined_reconciled_clocks": {
+   "verdict": "admit-uncertified",
+   "refusals": [],
+   "multirate_by_agents": false,
+   "seams": {
+    "multirate_seams": [],
+    "agents_at_a_multirate_seam": [],
+    "n_seams": 0,
+    "n_agents": 0,
+    "n_agents_in_the_graph": 18,
+    "graph_is_multirate_by_agents": false,
+    "graph_is_multirate_by_seams": false
+   }
+  }
+ }
+}

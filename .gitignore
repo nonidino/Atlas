@@ -229,6 +229,12 @@ out/w189/*
 !out/w189/compare_before1_vs_after.json
 !out/w189/census.json
 !out/w189/w189.json
+# Tier 49: W194 is a behaviour change, so the byte-identical control was
+# re-run against it. 38 of 40 artifacts identical, 2 differ (both Tier 44
+# union fixtures, multirate by agents with no multirate seam), 0 uncompared.
+# tests/test_tier45_region_assembly.py asserts the pair and the count.
+!out/w189/control_tier49.json
+!out/w189/compare_before1_vs_tier49.json
 # Tier 46 (W172, the joining seams and the O(K) count across them). JSON only:
 # the one record scripts/w172_joining_cost.py writes -- the counter control, the
 # fourteen unions, each join's marginal cost at two family counts, both insertion
@@ -262,3 +268,17 @@ out/w202/*
 
 # a local clone of the poc1-windfarm-demo branch, for trying the bundle out
 atlas-demo/
+# Tier 49 (rung 9, the union marched: CS-18). JSON only: the record
+# scripts/tier49_union_march.py writes -- the seven decisions with their
+# controls (the clock table in seconds against the bare numbers L7/R9 compares,
+# the rotor and machine sizing beside Tier 47's failure and the width-1 control,
+# the body force's discrete-thrust identity, the multirate seams), the
+# instrument run that fixed the gate, the seven arms and every clause's verdict,
+# the slow half on its own clock, and W194's before/after compiles.
+# tests/test_tier49_union_march.py asserts against it. The .npz caches hold the
+# seven marches' traces and final fields -- about 4 MB, and rebuilding them is
+# the five tight arms at 1200 macro-steps each, roughly 25-35 minutes in total
+# on this host -- so they are ignored rather than committed.
+!out/tier49/
+out/tier49/*
+!out/tier49/tier49.json

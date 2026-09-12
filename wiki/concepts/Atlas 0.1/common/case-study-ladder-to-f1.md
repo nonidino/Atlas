@@ -1047,3 +1047,67 @@ Fourteen formulations, each dropping one assumption under the W95 chain; kill te
 - **The Jacobians were never assembled**: both mechanism readings are error structure, marked **[AI Inference]**.
 - **The certificate that failed at twelve windows was not repaired, and not withdrawn.** $\Theta$ still comes from one classical march; the two arms outside their bound stay outside, and each arm now reports the constant it would have needed beside the constant it was given (**W208**).
 - **Nothing was downloaded, no machine was rented, and NeuberNet was not loaded.**
+
+---
+
+# 23. Rung 9 is marched: the seven decisions, the gate, and the clock the union cannot span (2026-09-12)
+
+Full records: [[case-study-vehicle-march-atlas-0.1]] (**CS-18**), [[vehicle-scale-and-sizing]] (the two decisions that are not framework work) and [[gap-worklist]] Tier 49.
+
+**§21.6's list was taken.** Rung 9's march waited on two decisions the vault could not derive — which vehicle this is, and a rotor that fits its host — and this tier makes them, makes the other five, and marches the union: eighteen agents, five families, three joins, three clocks, seven arms at $1200$ fluid macro-steps, with the gate written as numbers before any arm ran.
+
+## 23.1 The two decisions §21.6 was waiting on
+
+**Which vehicle this is (W201).** $L_0 = 0.50$ m — a $0.25$ m front-wing chord — and $U_0 = 50$ m/s. The finding is in the arithmetic: the three clocks `L7/R9` compares as the bare numbers $0.0125$, $0.05$, $0.2$, spread $\mathbf{16}$, are in seconds $1.25\times10^{-4}$, $10^{-3}$, $5\times10^{-2}$, spread $\mathbf{400}$ — and the *ordering* changes, the coolant circuit going from the middle clock to the slowest by $50\times$. Tier 46's "reconciled clocks" equalised numbers, not times. The ratio is $4U_0/L_0$, never below $100$ over any plausible F1 choice, so **the decision moves the number and not the conclusion**.
+
+**A rotor for its host and a machine for the rotor (W199).** The disk takes its host face, $D = 0.5$; the machine is re-sized by a **similarity** rather than a fit — $k_e = k_t \to Ak$, every resistance $\to R/A$ — which returns the control's induction and demand-over-supply ratio to $\le10^{-12}$ with shaft power and machine heat each exactly halved. Both controls land: width $1$ reproduces Tier 46's operating point to every published digit, and width $0.5$ un-resized reproduces Tier 47's $31.15\times$.
+
+## 23.2 What the gate says
+
+**G2 is met over a march on all three joins.** J3's receiving balance closes to $\mathbf{0.0399}$ against a pre-registered $0.075$, with both controls failing; J2's block closes its first law to $\mathbf{4.07\times10^{-9}}$ with the mount term and $\mathbf{0.998}$ without; J1's conductance tracks its declared exponent to $5.57\times10^{-12}$ while its null holds $UA$ at exactly $42.000$ on a **bitwise-identical** fluid.
+
+**G3 is built, and its answer is stronger than the clause could express.** The pre-registered clause compares norms and returns **NEITHER**. The per-component data show J1's and J3's error vectors **anti-parallel at a cosine of $-0.9999$**, summing to the both-lagged arm's error with a relative residual of $\mathbf{0.0039}$: **the joins' composition errors superpose to four parts in a thousand and partially cancel.** A norm cannot see a sign, and the triangle inequality is slack exactly when two errors are anti-parallel — which is the case the clause most wanted to find.
+
+**And they are below the noise.** All three per-join errors sit near $10^{-6}$ against a flow whose own unsteadiness over the settle window has a norm of $1.008\times10^{-3}$. The repeat floor is bitwise **zero**, which makes G4's *ten times the floor* vacuous; against the floor that binds, the joins are **not resolved** at this horizon.
+
+**The negative is the clock.** The block's thermal time constant is $\mathbf{50.1}$ s $= 1002$ coolant steps $= \mathbf{400{,}800}$ fluid macro-steps — about $21$ hours of this host at the lagged price, four days at the tight one. **The union marches and no single march spans the vehicle's own time scales**, and no choice of $L_0$ and $U_0$ removes that.
+
+## 23.3 What moves on this page
+
+**§21.3's row becomes: G2 met over a march on all three joins, G3 built and measured, rung 9 marched and not complete.** §21.5's critical path loses W199, W201 and W194 and gains W209–W213.
+
+**§14.3's sentence is untouched.** Nothing learned was run in this tier; the coupling half climbed, the foundation-model half did not move.
+
+**And §5's campaign gains nothing, because this tier has no expert in it** — which is worth saying explicitly, since rung 9 is the rung [[f1-pathmap-and-end-goal]] §3.2 calls the one that decides everything, and it has now been marched with **every expert classical**.
+
+## 23.4 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W209** — the union that marches and the union that compiles differ | the gate being measured on a graph the compiler has seen | `open`, medium, **new** |
+| **W213** — nothing can declare a subsystem quasi-steady | a march that spans the vehicle's clocks | `open`, medium, **new** |
+| **W211** — the shared operating point's stiffness is $63.3$ and no rule reads it | any claim that a stale operating point is harmless | `open`, medium, **new** |
+| **W212**, **W210** — the anti-parallel errors, and the body force against the claimed power | G3's mechanism, and `wake_array`'s own accounting | `open`, **new** |
+| **W198** — rung 9's gate | marking rung 9 complete | `open` |
+| **W200**, **W201** as schema holes, **W197**, **W195**, **W196** | declared dissipation, units on a record, the port orientation, the per-pair measure | `open`, as §21.5 |
+| **W204**, **W205**, **W203**, **W208**, **W206**, **W207** | the foundation-model half | `open`, as §22.4 |
+| **W190**, **W193**, **W182**, **W183**, **W184**, **W186**, **W95**, **W165** | as §22.4 | `open` |
+
+**Closed off it**: **W194** (R9 scoped to the multirate seam, with the two Tier 46 tests rewritten and the diagnosis kept), **W199** and **W201** as decisions.
+
+## 23.5 The next step
+
+- **W205 first**, as §22.5 says — a corruption sweep over seeds and magnitudes at two rungs. It is the cheapest live row in the vault and it decides how to read all of Tier 48.
+- **W209**, small and structural: put the re-sized device and machine on the union itself so the graph that marches is the graph that compiles.
+- **W213**: a quasi-steady declaration with a verdict, which is what a vehicle-scale march actually needs.
+- **W204** where the condition could hold, and **W203**, **W208**, as §22.5 lists them.
+- Then G3 above a floor — a second graph, or a longer horizon, or a device count that makes the joins' errors bigger than the flow's own wander.
+
+## 23.6 What this tier did NOT do, named
+
+- **No rung is marked complete.** G3 is one horizon on one graph, below the flow's own noise, with the additivity question well posed over two joins of three.
+- **The march is not differentiable through the devices**, so rung 10 gains nothing.
+- **`integration_union` and every subsystem module are unchanged**, which is exactly why W209 exists.
+- **No dissipation field, no boundary port, no unit on any record**, and `L7/R9` still compares bare numbers.
+- **Tasks 2 and 3 of the brief were not started** — the corruption sweep and the coarse competitor across a coupled seam.
+- **Nothing was downloaded, no checkpoint was loaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**

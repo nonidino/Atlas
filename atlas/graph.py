@@ -878,8 +878,49 @@ class CaseGraph:
         return {a.agent_id: a.capabilities.dt_native for a in self.agents}
 
     def is_multirate(self) -> bool:
+        """Do the AGENTS declare different native steps?
+
+        True of a graph whose parts run at different clocks even when no seam
+        joins two of them -- the disjoint union of three subsystems is the
+        worked example.  `multirate_seams` is the narrower question, and W194
+        is that `L7/R9`'s premise is the narrower one.
+        """
         steps = [v for v in self.native_steps().values() if v is not None]
         return len(set(steps)) > 1
+
+    def multirate_seams(self) -> list[str]:
+        """Seam ids whose two sides declare DIFFERENT native steps (W194).
+
+        `FluxMatching`'s own docstring states R9's requirement as every agent
+        *at a multirate seam*; until Tier 49 the rule read every agent in the
+        graph, so a union in which every seam joins two agents on one clock --
+        the tiling at 0.0125, the coolant circuit at 0.05, the electrical
+        circuit at 0.2, and no flux crossing between any two of them -- was
+        refused for a mismatch no seam carried.  This is the predicate the rule
+        should have had: a flux-matching condition is about a flux, and a flux
+        crosses a seam.
+        """
+        dt = self.native_steps()
+        out = []
+        for c in self.connections:
+            a, b = dt.get(c.a[0]), dt.get(c.b[0])
+            if a is None or b is None or a <= 0.0 or b <= 0.0:
+                continue
+            if abs(a - b) > 1.0e-12 * max(a, b):
+                out.append(c.seam_id)
+        return sorted(out)
+
+    def agents_at_multirate_seams(self) -> list[str]:
+        """The agents R9's integrated-response requirement is actually about."""
+        dt = self.native_steps()
+        seen: set[str] = set()
+        for c in self.connections:
+            a, b = dt.get(c.a[0]), dt.get(c.b[0])
+            if a is None or b is None or a <= 0.0 or b <= 0.0:
+                continue
+            if abs(a - b) > 1.0e-12 * max(a, b):
+                seen.update((c.a[0], c.b[0]))
+        return sorted(seen)
 
     def moving_ports(self) -> list[tuple[str, PortDecl]]:
         out = []

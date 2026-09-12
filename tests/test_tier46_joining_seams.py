@@ -177,10 +177,22 @@ def test_W172_the_joined_union_has_no_open_port_and_no_per_pair_declaration(join
     assert art["unions"]["all|J1+J2+J3"]["count"]["ports"] == 48
 
 
-def test_W172_the_joined_union_compiles_and_its_one_refusal_is_the_clock(joined, disjoint):
+def test_W172_the_joined_union_compiles_and_its_one_refusal_is_the_clock(joined,
+                                                                          disjoint,
+                                                                          art):
+    """**Rewritten 2026-09-12, Tier 49, and the diagnosis is kept.**  Tier 46
+    measured BOTH unions refusing at `L7/R9` and only there, and recorded the
+    disjoint one's refusal as W194: every seam in it joins two agents on one
+    clock, so nothing crossed a clock boundary and the rule fired anyway,
+    because `is_multirate` reads every agent.  Tier 49 scoped R9's premise to
+    the multirate SEAM, so the disjoint union is no longer refused.  The joined
+    union's refusal is unmoved -- its five joining seams really do cross
+    clocks -- and Tier 46's own record still carries what it measured."""
     _g, _m, r = joined
     _gd, _md, rd = disjoint
-    assert _refusals(r) == {"L7/R9"} == _refusals(rd)
+    assert _refusals(r) == {"L7/R9"}
+    assert _refusals(rd) == set()                     # W194 closed, Tier 49
+    assert art["unions"]["all"]["verdict"] == "refuse"     # as measured
     for seam in DEVICE_SEAMS + ("J2_heat", "x01_bypass", "x10_bypass"):
         decisions = _at(r, seam)
         assert decisions, seam
@@ -344,13 +356,28 @@ def test_W172_the_rotor_forms_price_the_same_join_three_ways(art):
 # --------------------------------------------------------------------------
 
 
-def test_W194_R9_refuses_a_union_that_has_no_multirate_seam(disjoint, J, art):
+def test_W194_a_union_with_no_multirate_seam_is_no_longer_refused(disjoint, J, art):
+    """**Rewritten 2026-09-12, Tier 49: the defect this row named is closed, and
+    the diagnosis is kept rather than deleted.**  What Tier 46 measured is still
+    in `out/w172/w172.json` and asserted below: the disjoint union has NO
+    multirate seam and `refuse`d anyway, at `L7/R9` and nothing else, which is
+    the false refusal W194 named.  `L7/R9`'s premise is now the multirate seam,
+    so the live compile admits -- and re-running `scripts/w172_joining_cost.py`
+    today would write a different verdict into that artifact than the one Tier
+    46 published, which is recorded on [[joining-seam-cost]] as a dated note."""
     g, _m, r = disjoint
     assert J.count(g)["multirate_seams"] == []
-    assert "L7/R9" in _refusals(r)
+    assert g.is_multirate() is True            # the AGENTS still differ
+    assert "L7/R9" not in _refusals(r)         # the SEAMS do not (Tier 49)
+    assert art["unions"]["all"]["verdict"] == "refuse"   # as Tier 46 saw it
     assert art["clocks"]["disjoint|reconciled|pointwise"]["verdict"] == "admit-uncertified"
     assert len(art["clocks"]["disjoint|reconciled|pointwise"][
         "dt_native_redeclared_against_native"]) == 10
+    # the false refusal itself, as Tier 46 recorded it: no multirate seam, and
+    # `L7/R9` fired on the graph anyway
+    row = art["clocks"]["disjoint|native|pointwise"]
+    assert row["multirate_seams"] == [] and row["verdict"] == "refuse"
+    assert row["refusals"] == ["L7/R9@<graph>"]
 
 
 def test_W194_time_integrated_matching_asks_all_eighteen_not_the_eight_at_a_multirate_seam(art):

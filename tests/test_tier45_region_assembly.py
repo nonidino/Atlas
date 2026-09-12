@@ -88,6 +88,24 @@ def before():
 ADDED_AFTER_CAPTURE = {
     "integration_union": "Tier 46 (W172): the joined union, built from existing "
                          "cases' own build() calls; it changes none of them",
+    "vehicle_march": "Tier 49 (CS-18): the union's march, the vehicle scale and "
+                     "the host-sized rotor; it builds no CaseGraph of its own "
+                     "and changes none of the cases",
+}
+
+#: **The two artifacts Tier 49's W194 moves, and the reason.**  `L7/R9`'s premise
+#: is now the multirate SEAM rather than the graph, so a graph whose AGENTS
+#: declare different native steps while NO SEAM joins two of them stops being
+#: refused and records an `R9/scope` admit instead.  Both Tier 44 union fixtures
+#: are exactly that shape, as the disjoint union of `integration_union` is.
+#: Measured over the whole capture: 38 of 40 artifacts are byte-identical, these
+#: two differ, and none is uncompared (`out/w189/compare_before1_vs_tier49.json`).
+#: The control keeps its force -- it is the reason the change was priced at all --
+#: and what changes is that this tier's behaviour change is NAMED rather than
+#: allowed to hide inside it.
+MOVED_BY_W194 = {
+    "tier44-union": "multirate by agents, no multirate seam (W194, Tier 49)",
+    "tier44-union-with-pou": "the same fixture with its partition of unity",
 }
 
 
@@ -147,14 +165,50 @@ def test_W189_control_every_existing_graph_compiles_byte_identically_after():
 
 @pytest.mark.parametrize("key", LIVE)
 def test_W189_control_live_recompile_matches_the_pre_change_bytes(before, key):
-    """The same comparison, recompiled now rather than read from the record."""
+    """The same comparison, recompiled now rather than read from the record.
+
+    **2026-09-12, Tier 49.**  Two of the eleven live keys are expected to differ
+    now, and they are named in `MOVED_BY_W194` with the reason: `L7/R9` no longer
+    refuses a graph whose agents declare different clocks when no seam joins two
+    of them.  Every other key must still match the pre-change bytes, which is
+    what makes this a control rather than a formality -- a change that moved a
+    third artifact would fail here, loudly, and should.
+    """
     need = NEEDS.get(key)
     if need and not os.path.exists(os.path.join(_ROOT, *need)):
         pytest.skip(f"{os.path.join(*need)} is a local cache and is not on disk")
     import w189_artifact_control as CTRL
 
     _g, _r, text, _t = CTRL.compile_artifact(key)
-    assert CTRL.digest(text) == before["rows"][key]["sha256"], key
+    same = CTRL.digest(text) == before["rows"][key]["sha256"]
+    if key in MOVED_BY_W194:
+        assert not same, (
+            f"{key} is named as moved by W194 and did not move; if the rule was "
+            "reverted, take it out of MOVED_BY_W194 rather than leaving a dead "
+            "exemption behind")
+        # and it moved for the stated reason, not for some other one
+        assert _r.verdict is not None
+        rules = {f"{d.layer}/{d.rule}" for d in _r.decisions._decisions}
+        assert "L7/R9/scope" in rules, (key, sorted(rules))
+        assert "L7/R9" not in {f"{d.layer}/{d.rule}" for d in _r.decisions.refusals}
+        assert _g.is_multirate() is True and _g.multirate_seams() == []
+    else:
+        assert same, key
+
+
+def test_W189_control_W194_moved_exactly_two_of_the_forty(before):
+    """**The price of Tier 49's one behaviour change, measured over the whole
+    capture rather than over the eleven keys the live test recompiles.**
+
+    `scripts/w189_artifact_control.py capture tier49` then
+    `compare before1 tier49`: 38 identical, 2 differ, 0 uncompared.
+    """
+    cmp_ = _load(os.path.join(_ROOT, "out", "w189",
+                              "compare_before1_vs_tier49.json"),
+                 "the Tier 49 comparison")
+    assert sorted(cmp_["differ"]) == sorted(MOVED_BY_W194)
+    assert cmp_["not_compared"] == []
+    assert len(cmp_["identical"]) == 38
 
 
 # --------------------------------------------------------------------------

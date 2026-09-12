@@ -3045,6 +3045,33 @@ def _clocks(ctx: _Context) -> tuple[float | None, bool, str]:
         Hypothesis.E4,
         f"multirate: native steps {sorted(set(steps))} differ across agents",
     )
+
+    #: **W194 -- R9's premise is the multirate SEAM, not the graph.**  A flux
+    #: matching condition is about a flux, and a flux crosses a seam.  Before
+    #: Tier 49 this branch fired on `is_multirate()`, which reads every agent's
+    #: native step, so the disjoint union of three subsystems -- every seam
+    #: joining two agents on ONE clock, no flux crossing between any two of
+    #: them -- was refused for a mismatch no seam carried.  E4 still FAILS: the
+    #: agents really do run at different steps and no scoping changes that.
+    #: What the narrower premise costs is the refusal, not the hypothesis.
+    seams = graph.multirate_seams()
+    if not seams:
+        exchange = _r10b_exchange_cadence(ctx, exchange)
+        rec.admit(
+            "L7", "R9/scope",
+            f"the agents declare {len(set(steps))} different native steps "
+            f"{sorted(set(steps))} and NO SEAM JOINS TWO OF THEM, so there is no "
+            "flux crossing a clock boundary for a matching condition to be about. "
+            "R9 is not posed. FluxMatching's own docstring states the requirement "
+            "as every agent at a multirate seam; until 2026-09-12 the rule read "
+            "every agent in the graph and refused this case (W194). E4 still "
+            "fails -- the agents do run at different steps -- and what the "
+            "narrower premise costs is the refusal, not the hypothesis",
+            subject="<graph>", quantity="flux residual",
+            native_steps=sorted(set(steps)), multirate_seams=[],
+        )
+        return exchange, True, "no multirate seam"
+
     matching = _r9_flux_matching(ctx, exchange, steps)
     rec.decertify(
         "L7", "R9/order",
@@ -3115,7 +3142,16 @@ def _r9_flux_matching(ctx: _Context, exchange: float | None,
     quad: dict[str, int] = {}
     ragged: list[str] = []
     silent: list[str] = []
+    #: **W194's second half.**  The requirement is about the agents whose flux
+    #: crosses a clock boundary, which is the agents AT a multirate seam.  On
+    #: the joined union that is eight of eighteen; the rule used to ask all
+    #: eighteen for a `boundary_response_integrated`, which is W136's scope
+    #: defect -- a rule reading every agent in the graph where its premise is
+    #: about a subset -- one rule along, on the clocks.
+    at_seam = set(graph.agents_at_multirate_seams())
     for a in graph.agents:
+        if at_seam and a.agent_id not in at_seam:
+            continue
         dt_i = a.capabilities.dt_native
         if dt_i is None or exchange is None or dt_i <= 0.0:
             continue

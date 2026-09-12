@@ -4311,3 +4311,91 @@ The twelve-window `dec` stage is the long one at $2683$ s, and the six-window re
 **Changed:** `.gitignore` (the Tier 48 allowlist pair, with the reason the JSON is committed), `wiki/index.md` (two rows), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 48 section, **W202**–**W208**, with **W95**, **W76**, **W13** and **W178** annotated), [[case-study-ladder-to-f1]] (§22), [[f1-pathmap-and-end-goal]] (§3.3).
 
 **Added:** `atlas/defect_correction.py`, `scripts/w202_kill_tests.py`, `scripts/run_suite.py`, `tests/test_tier48_defect_correction.py`, `tests/test_tier48_learned_contribution.py`, `out/w202/w202.json`, [[defect-correction-learned-operator]], [[learned-contribution-kill-tests]].
+
+## [2026-09-12] tier 49 | rung 9 is marched: the seven decisions, the gate, and the clock the union cannot span
+
+**The brief's Task 1, and the rung §3.2 calls the one that decides everything.** [[case-study-vehicle-march-atlas-0.1]] (CS-18), [[vehicle-scale-and-sizing]], `atlas/cases/vehicle_march.py`, `scripts/tier49_union_march.py`, `atlas/compiler.py`, `atlas/graph.py`, `tests/test_tier49_union_march.py`, `out/tier49/tier49.json`. Tier 46 built the joined union and compiled it; Tier 47 restated rung 9's gate, measured each join's receiving balance **at the release state, one step each**, and listed seven decisions a march needs first — saying of the first two that they *"are not framework work at all."* **Nothing had ever marched it.** This tier makes the seven and marches.
+
+### The two decisions that are not framework work
+
+**Which vehicle this is (W201).** $L_0 = 0.50$ m — a $0.25$ m front-wing chord, a $1.625\times1.125$ m box — and $U_0 = 50$ m/s, so $T_0 = 0.01$ s. The finding is the arithmetic: the union's three clocks, which `L7/R9` compares as the bare numbers $0.0125$, $0.05$ and $0.2$ — **a spread of $16$** — are in seconds $1.25\times10^{-4}$, $10^{-3}$ and $5\times10^{-2}$, **a spread of $400$**; and the *ordering changes*, the coolant circuit going from the middle clock to the slowest by $50\times$ over `wake_array`'s. Tier 46's "reconciled clocks" therefore put the coolant circuit at $1/400$ of its own step, and **`L7/R9` admitted a graph whose clocks it had not compared.** The spread is $4U_0/L_0$ and nothing else, so over a plausible F1 box — chord $0.125$–$0.5$ m, $30$–$90$ m/s — it runs $120$ to $1440$ and **is never below $100$**: the choice moves the number and not the conclusion, which is what makes it safe to make rather than ask. **Stated because a page with metres on it invites the other reading: kinematic similarity yes, dynamic similarity no** — the tiling marches at $Re = 250$ against a vehicle's $1.61\times10^{6}$.
+
+**A rotor for its host and a machine for the rotor (W199).** The disk takes its host face, $D = 0.5$ and $0.25$ m. From `disk.py`'s own formulae $T\propto A$, $\omega\propto A^{-1}$, $\tau_{\text{disk}}\propto A^{2}$, while the machine sits just above $V_{oc}$ so halving the width multiplies its current by $32$ — Tier 47's $31\times$ torque demand. Requiring the **same induction at the same inflow** fixes the scaling uniquely, as a **similarity rather than a fit**: the back-EMF must not move, so $k_e = k_t \to Ak$; the torque must follow $A^2$, so $R \to R/A$. **Three columns, two of them controls.** Width $1$ reproduces Tier 46 to every published digit ($\omega = 13.837059$, $a = 0.11379171$, $I = 0.1456863$, $q_{\text{machine}} = 134.31$ W); width $0.5$ un-resized reproduces Tier 47's $\mathbf{31.152258}$ with `rotor_valid` false; and the re-sized machine returns the control's induction and demand-over-supply ratio to $\le10^{-12}$, with shaft power and machine heat each **exactly halved**. **One arithmetic trap, recorded because this tier fell into it**: the casing heat is $I^2R_{\text{MGU}}$ and not $I^2R_{\text{total}}$, which doubles it *exactly* since $R_{\text{total}} = 2R_{\text{MGU}}$ on this circuit — invisible in any ratio, and caught only by the width-$1$ control failing to reproduce $134.31$ W.
+
+### The other five, and what the march is
+
+Dissipation and boundary power (**W200**) are **not declared**: each receiver's balance is written by hand, as CS-9 and CS-12 did, and the hole now has a number — the air gives up $0.223919$ of mechanical work across the radiator core and no record can name where it goes. The down faces' orientation (**W197**) is **dissolved for a march**: the device is a body force, so the power path is the force's work and does not go through the two declared ports at all; the row stays open for a compile, with its subject narrowed. The devices are applied as body forces (**W94**) through the donor's own exact-overlap sink, with $\sum f_x\,\mathrm dA = -T$ asserted on every call and measured exactly $0$ — and one declared departure, a one-cell thickness floor, because the donor's rule $\Delta_d = \langle U_d\rangle\Delta t$ gives $1.6$ cells on `wake_array`'s lattice and **$0.182$ of a cell** on this host. The shared operating point (**W196**) is **solved across the union at every exchange**, its inner fixed point falling $2.62\times10^{-6}\to9.06\times10^{-10}$ over three declared iterations. And **W194 is closed**: `L7/R9`'s premise is the multirate **seam**.
+
+The march: eighteen agents, five families, three joins, three clocks. $1200$ fluid macro-steps $=$ $15$ tiling time units $=$ $4.6$ transits $=$ $\mathbf{0.15}$ s $=$ exactly three coolant steps, with the circuit algebraic and the coolant circuit sub-cycled $400{:}1$. Seven arms. Tight and lagged differ in **which state the device reads** — the end of the exchange, by a fixed-point iteration, against the start of the macro-step, held — which is CS-12's own distinction carried to the joins, at five solver calls per exchange against one.
+
+### The gate, pre-registered and measured
+
+Written as numbers after a $40$-macro-step instrument run and **before** any $1200$-step arm, any null arm and the second vehicle scale. Its weakness is named on the page: this graph has one geometry, so "out of sample" means a longer horizon and a different clock ratio rather than a different rung.
+
+| clause | verdict | the number |
+|---|---|---|
+| **G1** · J3's receiving balance over a march | **pass** | $0.0399$ against a pre-registered $0.075$; controls at $1.000$ and $1.032$ |
+| **G2** · J2's receiving balance over a march | **pass** | $4.07\times10^{-9}$ with the mount term, $0.998$ without — a factor of $2.45\times10^{8}$ |
+| **G3** · J1's parametric check over a march | **pass** | $5.57\times10^{-12}$; the null pins $UA$ at exactly $42.000$ on a **bitwise-identical** fluid |
+| **G4** · composition error per join | **pass as written, vacuous as written** | the repeat floor is $0$; against the floor that binds, **not resolved** |
+| **G5** · do the joins' errors add | **NEITHER** | and the vector form the clause could not express says **superposition to $0.0039$** |
+| **G6** · the repeat floor | **pass** | bitwise over $1200$ macro-steps |
+
+**G1's residual is diagnosed rather than merely small.** `disk.disk_average` reads $\langle U_d\rangle$ **deliberately** $7.5$ cells upstream of the strip, to avoid the classic actuator-disk double-counting error, while the force does its work inside the strip where that same force has already slowed the flow: $u_{\text{plane}}/u_{\text{ring}} = 0.955592$, and that gap alone predicts $0.0444$ against a measured $0.0399$. **[AI Inference]:** this is a property of the local-induction closure rather than of the composition, so it should appear in `wake_array`'s own march, where it has never been checked (**W210**).
+
+**G5 is the finding, and the clause could not have reported it.** As pre-registered it compares **norms**: $e_{\text{both}} = 9.503\times10^{-7}$ against $e_{J1}+e_{J3} = 2.407\times10^{-6}$, a gap of $0.605$ — neither ADD nor COMPOUND. The per-component data show J1's and J3's error vectors **anti-parallel at $\cos = -0.9999$**, summing to the both-lagged arm's error with a relative residual of $\mathbf{0.0039}$. **The joins' composition errors superpose to four parts in a thousand and partially cancel**, so the pair's error is smaller than either join's alone — a *stronger* statement than ADD, and one a norm is structurally unable to make, the triangle inequality being slack exactly when two errors are anti-parallel. **The three-join form of the clause has no subject at all**, because J1's and J3's errors are measured over $0.15$ s and J2's over $60$ s; it is restated rather than silently substituted, which is W183's and W198's precedent. Why the two are anti-parallel is **not diagnosed** (**W212**).
+
+**And they are unresolvable here.** All three per-join errors sit near $10^{-6}$ against a flow whose own unsteadiness over the settle window has a norm of $1.008\times10^{-3}$. The repeat floor is bitwise **zero**, so G4's *ten times the floor* is zero and every nonzero difference clears it — reported as vacuous rather than passed quietly, with the floor that binds given beside it.
+
+### The negative is the clock
+
+The block's own thermal time constant, measured rather than quoted: **$50.1$ s $= 1002$ coolant steps $= \mathbf{400{,}800}$ fluid macro-steps**, about $21$ hours of this host at the lagged price and four days at the tight one. **The union marches and no single march spans the vehicle's own time scales**, and since the ratio is $4U_0/L_0$ and never below $100$, no choice of vehicle removes it. The second vehicle scale — $L_0 = 1.0$ m, $U_0 = 30$ m/s, ratio $120$ — is a free out-of-sample cell, because the coupling on the coolant side is one-way and the fluid trajectory does not depend on the coolant clock at all (asserted **bitwise**): over the same fluid horizon it takes $10$ coolant steps instead of $3$. **Nothing in `atlas/` can declare a subsystem quasi-steady and `L7/R9` has no verdict for one** (**W213**).
+
+### W196 has a magnitude now, and it is 63.3
+
+The machine sits just above the battery's open-circuit voltage, so $I = (k_e\lambda u/r - V_{oc})/R$ is a small difference of two large numbers and the heat is its square: $\mathrm d\ln I/\mathrm d\ln u = \mathbf{31.66}$ and $\mathrm d\ln q/\mathrm d\ln u = \mathbf{63.32}$. Measured on the march's own null arm: withholding the rotor's force raises its inflow $6.7\%$ and takes the machine's heat from $67.47$ W to $\mathbf{658.45}$ W. **The W199 similarity preserves this elasticity exactly** — the back-EMF is its invariant — so re-sizing restored the operating point's *existence* and left its *conditioning* precisely where it was. A one-percent error upstream of this rotor is a sixty-three-percent error in a different subsystem's heat, and no rule reads it (**W211**).
+
+### What closing W194 cost, priced
+
+`CaseGraph.multirate_seams` and `agents_at_multirate_seams` exist and `L7/R9` reads them. The disjoint union — $0$ multirate seams — stops being refused; the joined union still refuses on its five; the quadrature branch names **eight** agents where it named eighteen; **E4 still fails**, because the agents really do run at different steps. Controls: `thermal_seam` **pointwise** still refuses, `thermal_seam` at its own default admits for Tier 17's reason, and the joined union with clocks reconciled admits. **Closing it broke two Tier 46 tests and two of Tier 45's forty byte-identical artifacts.** Both Tier 46 tests are rewritten to assert the new behaviour **and keep the diagnosis**, asserting `out/w172/w172.json`'s record of the false refusal beside the live compile that now admits; [[joining-seam-cost]] §6.4 carries a dated note, because re-running its script today writes different verdicts into two of its cells. And the byte-identical control was **re-captured and re-compared**: **38 of 40 artifacts identical, 2 differ, 0 uncompared**, the two being the Tier 44 union fixtures — multirate by agents with no multirate seam, the same shape as the disjoint union. A behaviour change, priced, rather than one hiding inside a control.
+
+### Opened
+
+- **W209**: the union that MARCHES and the union that COMPILES are not the same object — `vehicle_march` re-sizes the rotor and the machine, `integration_union` does neither, so the gate is measured on a graph the compiler has not seen.
+- **W210**: a body force's work and a disk's claimed power have never been compared on the graph the body force was written for.
+- **W211**: the shared operating point's stiffness is $63.3$ and no rule reads it.
+- **W212**: two joins' composition errors are anti-parallel at $-0.9999$ and nothing says why.
+- **W213**: nothing can declare a subsystem quasi-steady on another's clock, and that is the closure a vehicle-scale march needs.
+- **W194** closed; **W199** and **W201** closed as decisions and open as schema holes; **W196**, **W197**, **W198**, **W200** and **W94** annotated.
+
+### What this tier did NOT do, named
+
+- **No rung is marked complete.** G3 is one horizon on one graph, below the flow's own noise, with the additivity question well posed over two joins of three.
+- **The march is not differentiable through the devices** — the donor's body force is numpy and the operating point a bisection — so **rung 10 gains nothing from it**.
+- **`integration_union`, `powertrain`, `cooling_loop`, `wake_array` and `front_wing` are unchanged**, which is exactly why W209 exists; `atlas/` gains one module and the compiler change is W194's and nothing else.
+- **No dissipation field, no boundary port, no unit on any record.** `L7/R9` still compares bare numbers.
+- **Tasks 2 and 3 of the brief were not started** — W205's corruption sweep and W204's coarse competitor across a coupled seam. The brief said Task 1 alone is a good session; it was.
+- **Nothing was downloaded, no checkpoint was loaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
+
+### How it was run
+
+Every process exports `KMP_DUPLICATE_LIB_OK=TRUE`, `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` before importing anything; TF32 is disabled and the flags are asserted rather than trusted; torch runs on one thread.
+
+```
+python scripts/tier49_union_march.py decisions
+python scripts/tier49_union_march.py calib            # the instrument; fixed the gate
+python scripts/tier49_union_march.py gate             # the seven arms, ~30 min
+python scripts/tier49_union_march.py slow r9
+python scripts/w189_artifact_control.py capture tier49        # ~15 min
+python scripts/w189_artifact_control.py compare before1 tier49
+python scripts/vault_scan.py wiki                     # 228 files, 0 problems
+python scripts/run_suite.py                           # 1291 passed, 0 failed, no missing logs, 397 s
+```
+
+**Three corrections landed before the arms were trusted, and every one was caught by a control rather than by inspection.** The radiator's reference air speed was being re-derived on every refresh, which made $UA(u) = UA_{\text{rad}}(u/u)^{0.8}$ identically $UA_{\text{rad}}$ and the join carry no dependence at all. The machine's casing heat was charged against the loop's total resistance rather than its windings', which doubles it *exactly* and was caught only by the width-$1$ control failing to reproduce Tier 46's $134.31$ W. And **the first version of the tight coupling re-read the START state**, so its fixed point converged in one call and `join_residual` was identically zero — it now iterates against the end of the exchange and the residual falls three orders. **Two null arms were rebuilt for the same reason.** J3's first null removed the whole device, so the shaft claimed nothing and the balance read $0/0$ instead of failing; it now withholds the force and leaves the claim. J1's first null removed the core's drag *and* its conductance dependence, varying two things at once; it now pins $UA$ alone, which is why the null arm's fluid comes out **bitwise identical** to the referent's. **A null arm that cannot fail is not a control, and a control that varies two things is not one either.**
+
+**The wall-clock numbers in `out/tier49/tier49.json` are contaminated and the page says so.** The referent arm and its bitwise-identical repeat — the same computation, the same answer to the bit — took $422.6$ s and $225.2$ s, because a window of $200$ macro-steps inside the first took $209$ s where its neighbours took $37$. The cost quoted is structural: five solver calls per exchange against one, with the measured $225.2/40.7 = 5.5$ beside it.
+
+**Changed:** `.gitignore` (the Tier 49 allowlist pair and the W189 re-capture pair, each with the reason and the rebuild cost), `atlas/compiler.py` and `atlas/graph.py` (**W194** only), `wiki/index.md` (two rows, and the date), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 49 section, **W209**–**W213**, with **W94**, **W194**, **W196**–**W201** closed or annotated), [[case-study-ladder-to-f1]] (§23), [[f1-pathmap-and-end-goal]] (§3.3), [[joining-seam-cost]] (a dated note on §6.4), `tests/test_tier45_region_assembly.py` and `tests/test_tier46_joining_seams.py` (rewritten around W194's closure, diagnosis kept).
+
+**Added:** `atlas/cases/vehicle_march.py`, `scripts/tier49_union_march.py`, `tests/test_tier49_union_march.py`, `out/tier49/tier49.json`, `out/w189/control_tier49.json`, `out/w189/compare_before1_vs_tier49.json`, [[case-study-vehicle-march-atlas-0.1]], [[vehicle-scale-and-sizing]].
