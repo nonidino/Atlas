@@ -4477,3 +4477,88 @@ The six-window grid is $1284$ s for twenty cells and $587$ s for the eight extra
 **Changed:** `.gitignore` (the Tier 50 allowlist pair, with what rebuilding actually costs), `scripts/w202_kill_tests.py` (`set_corruption`, defaults unchanged), `tests/test_tier48_learned_contribution.py` (two docstrings annotated, no assertion touched), `wiki/index.md` (one row), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 50 section, **W205** closed, **W214**–**W215** opened, **W204** and **W76** annotated), [[case-study-ladder-to-f1]] (§24), [[defect-correction-learned-operator]] (§5 and §8.2.1 annotated), [[f1-pathmap-and-end-goal]] (§3.3's Tier 48 note extended).
 
 **Added:** `scripts/w205_corruption_sweep.py`, `tests/test_tier50_corruption_sweep.py`, `out/w205/w205.json`, [[corrupted-checkpoint-and-jacobian-fidelity]].
+
+## [2026-09-12] tier 51 | PoC 3 RaceLab phase 1 — a car as a graph, and the two disciplines a car breaks (CS-19)
+
+`POC3-RACELAB-REQUIREMENTS.md` §9's **phase 1**, and the whole of it: the car's geometry, a static window decomposition **derived from that geometry**, the assembled `CaseGraph`, and a headless march at the declared vehicle scale. No server, no dashboard, no expert switch, no third dimension — those are phases 2 to 5, and the brief's standing rule is that an honest partial tier is worth more than three thin ones.
+
+**Nothing physical is new.** `RaceTiling` **subclasses** `ground_effect.GroundTiling`, so the partition of unity, the halo, the cut and the assembly are that class's and not a second copy — asserted by a test that builds a uniform `RaceTiling` and checks its weights match `wing_fsi.DEFAULT_TILING`'s **array for array**. Every one of the car's bodies is a `wing_fsi.FlexWing` at a different position. `vehicle_march.receiver_balances` reads this march **unchanged**, so phase 1's join numbers are the same function of the same trace keys that produced [[case-study-vehicle-march-atlas-0.1]]'s. What is new is a **shape**, and the tier is about what a shape does to the framework's own disciplines.
+
+### The box, measured rather than guessed
+
+§10's first named risk answered before anything was built on it: eight candidate boxes timed in **one process with the front-wing case as a control in that same process**, so what is reported is a ratio. Chosen: $\mathbf{672\times240}$, **fourteen $128\times128$ windows**, $0.1558$ s a macro-step for the composition layer — $\mathbf{6.05\times}$ the control, $3.2\times$ of headroom under the $0.5$ s ceiling. The control re-timed at the end reads $0.9647$ of its first reading, so **a single-draw timing here resolves nothing below about $5\%$** and the table is read accordingly. **The window is 128 cells because that is Poseidon-T's own resolution**: a window that is not 128 has to be resized before the checkpoint can see it in phase 2, and a resize is an error that is not the expert's. The full-length-car box was measured too — $1024\times240$, $0.2191$ s, affordable — and rejected because it is $8.0$ m of domain to hold $5.6$ m of car.
+
+### The compile, and thirty-six red tiles that are one refusal
+
+26 agents, 36 seams, CS-18's five governing families. The joined union refuses at **`L7/R9` alone**; the disjoint union and the clocks-reconciled control refuse nothing — **CS-18 §4.5's table reproduced on a graph that is not CS-18's**, which is what turns that refusal from a property of the front wing's layout into a statement about the clocks. And of the thirty-six seams the map paints red, **not one earns a refusal on its own subject**: 21 are locally clean, 15 locally decertified, because `L7/R9` is a single graph-level decision seen thirty-six times. The artifact records `local_verdict` beside `verdict` so the two readings cannot be confused — PoC 2 published the other one once and **W177** corrected it.
+
+### The gate: four pass, one splits as predicted, one fails and is diagnosed
+
+| clause | verdict | the number |
+|---|---|---|
+| **P1 · the compile** | **pass** | `L7/R9` alone joined; nothing disjoint or clocks-reconciled |
+| **P2 · J3's receiving balance** | **pass** | $\mathbf{0.010130}$ against a pre-registered $0.075$; the null at exactly $1.0000$ |
+| **P3 · J1's parametric check** | **fail**, diagnosed | $3.482\times10^{-6}$ against $10^{-6}$ — **Jensen's term to $0.9995$**, pointwise residual exactly $0$ |
+| **P4 · J2's receiving balance** | **pass** | $5.289\times10^{-11}$ against $\mathbf{1.0000000060}$, a factor of $1.89\times10^{10}$ |
+| **P5 · the repeat floor** | **pass** | bitwise over 600 macro-steps, two independent constructions |
+| **P6 · the macro-step cost** | **splits, as predicted** | lagged $0.3363$ s **passes** the $0.5$ s ceiling; tight $1.7133$ s **fails** it |
+| **P7 · the body force conserves** | **pass** | $2.14\times10^{-16}$ over thirteen bodies |
+
+**P2's residual is the geometry, to five significant figures.** The ring the disk reads and the cell its force sits in stand at $1.0101289$, which predicts $0.0101289$ against a measured $0.0101300$ — CS-18 §7.1's diagnosis reproduced exactly, **with the sign inverted because a duct accelerates where open flow decelerates**. And it is **resolved**: a balance is a ratio of co-varying quantities, so it is read against **the ratio's own band**, $0.00116$, and the residual is $8.8\times$ it. Reading it against the components' band instead — $u_{\text{rotor}}$ moves by $0.047$, the loop current by $0.141$ — would have charged the join with unsteadiness that cancels inside it.
+
+**P3's failure is not the join's.** `receiver_balances` averages $UA$ and $u$ over the settle window and *then* applies a concave map, so it measures the window's variance times the curvature. Measured on a 120-step march: the **pointwise** residual is $\mathbf{0.0}$ at every macro-step, the averaged residual is $9.9257\times10^{-7}$, and Jensen's $\tfrac12 p(p-1)\mathrm{Var}(u)/\bar u^2$ at $p = 0.8$ is $9.9306\times10^{-7}$ — **a ratio of $\mathbf{0.9995}$**. CS-18's window sat at $10^{-3}$ and that clause returned $5.57\times10^{-12}$. **The threshold was not moved**; the fail is published with its mechanism, which is what Tier 49 did with G4 and G5.
+
+**P4 needed three columns and not two.** A block with no mount term carries `cooling_loop`'s own declared gas temperature on its dry face and its first law still shuts, at $1.004\times10^{-10}$. The null is the balance *written with the mount term* and the term withheld. Asking the wrong object was this tier's first attempt and it reported a pass as a fail.
+
+### Two disciplines break on a car
+
+**W124 — no seam through a body — is unachievable in $x$ and met in $y$.** It holds on the front wing with eight cells to spare because there is **one** body in 208 cells. Thirteen bodies cover $72$ to $501$ of $672$ almost without a gap and the largest stride the halo allows is $112$, so **every covering layout cuts the car**; the longest gap between consecutive non-cuttable bodies is shorter than a band. The objective becomes *cut where the car is thinnest* — exact, by dynamic programming over the offsets rather than a search — and the answer still bands $\mathbf{26.9\%}$ of the car's occupancy. In $y$ the cut clears every body by $10.46$ cells. **W218.**
+
+**And the compiler cannot see any of it.** Ten of the thirteen bodies are body forces with **no agent, no port and no capability record** — only the front wing is declared, through STRUCT, SUSP and the `wet` and `mount` seams, and only because CS-12 already declared it. So the graph the compiler certifies does not contain the car and W218's $26.9\%$ has nothing to fire on. **W220, the largest schema gap the tier opens.**
+
+### The largest finding had no clause at all
+
+**An expert walked out of its own declared envelope and the march never read the flag that says so.** The machine's loop current is $I = (k_e\omega - V_{oc})/R_{\text{total}}$ with $\omega = \lambda u/r$, so on this rotor $k_e\omega = 1.5u$ against $V_{oc} = 1.34$: **it generates only above $u = \mathbf{0.8933}$.** Re-siting the device from open flow into a radiator duct downstream of the core dropped its inflow from CS-18's $0.9225$ to $\mathbf{0.6692}$. The loop current crossed **sign**, $+0.0729 \to \mathbf{-0.5605}$; the induction pinned at its clamp floor $0.02$; `rotor_valid` went `False` on **all five arms**, re-derived from each arm's own settled inflow; the machine's heat went $67.5$ W $\to \mathbf{3982}$ W.
+
+`SizedCircuitSolve.solve` returns that flag, `RaceRollout.refresh` records it into `JoinState`, and **nothing consults it** — not the march, not the compile, which has no state to evaluate a `validity` predicate at. **This is CS-18 §7.2's $\mathrm{d}\ln q/\mathrm{d}\ln u = 63.3$ realised rather than predicted** (W196, W211 — *"no rule reads it"*), and **PoC 2's W145 on a second subsystem**. Every number above is stamped *outside the rotor's declared envelope*; they remain measurements of the graph as declared, because a receiving balance is a statement about whether the work matches the claim and it does either way. **The repair is priced and not taken**: scaling $k_e = k_t$ by $\mathbf{1.3786}$ restores validity at the duct's own inflow, controlled, and it is a second vehicle decision of exactly the kind [[vehicle-scale-and-sizing]] §0.1 makes the user's. **W222.**
+
+### Two numbers that were derived rather than inherited, and both changed a decision
+
+**The wheel's coefficient.** Giving each of a wheel's twelve chords the plate's own $C_N = 20$ made a wheel $22.2\times$ too draggy — $11.52$ against $1.00$ for the whole rest of the car, a peak force density $16\times$ the next largest body's — and the march blew up at macro-step 2 with $u_{\max} = 16.6$. Equating the ring's drag to a cylinder's gives $c_n = \tfrac34 C_D = 0.9$ in two lines, and the twelve-chord ring reproduces the continuous integral to $\mathbf{1.23\%}$.
+
+**The rotation, which is not expressible.** The surface velocity is **computed** and projected onto each station's outward normal. In the continuum that is exactly zero; on a polygon a chord's normal is radial only at its midpoint, so what survives is $\omega s$ — **machine zero ($1.3\times10^{-15}$) at one station a chord, and $0.17255 \to 0.08702 \to 0.04360$ as the chords go $12 \to 24 \to 48$, ratios $1.983$ and $1.996$.** First order in the chord length is a discretisation artifact's signature, not a physical effect's; at the declared geometry it is $\mathbf{17\%}$ of the free stream and it moved the field by $12.9\%$ over eight macro-steps. **So the declared car's wheels do not roll, and the arm that says why is kept. W219.**
+
+### What this tier did NOT do, named
+
+- **No rung moved**, no expert was trained, and **no learned expert of any kind appears** — phase 1 is classical throughout, and [[case-study-ladder-to-f1]] §14.3's sentence is unchanged.
+- **No envelope check was added** (W222). The repair is stated, PoC 2's `Engine._absorb` is the pattern, and it is not built.
+- **The structure is rigid** (`motion=False`), so the `wet` and `mount` seams are **declared and not solved**.
+- **The horizon is $0.71$ transits of the domain** against CS-18's $4.6$ (W221), and the flow does not settle to that tier's band at any horizon this host can afford: over 1600 lagged macro-steps the fluid band falls $0.087 \to 0.187 \to 0.114 \to 0.058$ across trailing windows, a factor of three and not an order.
+- **`integration_union`, `vehicle_march`, `wing_fsi`, `front_wing`, `ground_effect`, `cooling_loop`, `powertrain` and `wake_array` are unchanged**, so every number on [[case-study-vehicle-march-atlas-0.1]] and [[joining-seam-cost]] is bitwise what it was.
+- **Phases 2 to 5 were not started**, and neither were W214, W215, W204 or W209–W213.
+- **Nothing was downloaded, no checkpoint was loaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
+
+### How it was run
+
+Every process exported `KMP_DUPLICATE_LIB_OK=TRUE`, `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`; TF32 is disabled in the driver and the flags are **asserted** rather than trusted, with `torch.set_num_threads(1)`.
+
+**`tasklist` found two idle `server.py` processes from an earlier demo running throughout, and the machine moved from battery to mains part-way through the session.** Both are now recorded in the artifact by `machine_state()`, which writes the process list and the power state beside every timing — because this tier measured the same configuration three times in three processes and got **three different fastest thread counts**, with an eight-thread reading spanning a factor of $3.5$. What settled it was measuring the thing actually run rather than a proxy: on the composition layer alone eight threads is fastest ($0.1026$ s against one thread's $0.1414$), and on the **full march with the car in it** eight threads is $0.684$ s a macro-step against one thread's $\mathbf{0.333}$ — the proxy gave the opposite answer, because the car's body force is thirty-five small stamping kernels a call. **W217.**
+
+```
+python scripts/tier51_racelab_graph.py --stages size,calib
+python scripts/tier51_racelab_graph.py --stages geometry,windows
+python scripts/tier51_racelab_graph.py --stages compile,settle,march,slow
+python scripts/tier51_racelab_graph.py --stages slow,envelope,jensen
+python scripts/vault_scan.py wiki                            # 230 files, 0 problems
+python scripts/run_suite.py                                  # 1349 passed, 0 failed, no missing logs, 407 s
+```
+
+The suite ran as the brief asks: four `pytest` processes over disjoint file sets, each with its own log under `out/suite/` and each checked to exist seconds after launch, then `tier21`, `tier22`, `tier31`, `tier32` and `tier33` serially and alone. **Fifty-two files, up from Tier 50's fifty-one: $1349$ tests against $1307$, the forty-two new ones being this tier's.**
+
+The third command is $4866$ s — the settle instrument at $1600$ lagged macro-steps ($547$ s), then five arms at 600 steps: four tight at $1009$–$1028$ s each and one lagged at $202$ s. **The referent and its repeat came back $0.03\%$ apart in wall time ($1028.0$ s against $1028.3$ s) and bitwise identical in answer**, and the measured tight-over-lagged of $\mathbf{5.10}$ agrees with the structural five solver calls an exchange against one. The `.npz` caches under `out/racelab/cache/` hold each arm's final field, about 7 MB, and stay ignored.
+
+**One test failed on the first suite run and it was the right one.** `tests/test_tier45_region_assembly.py::test_W189_control_the_capture_is_the_whole_package` asserts that `atlas/cases/` holds exactly the twenty modules of the W189 capture plus those declared in `ADDED_AFTER_CAPTURE`; `racelab.py` was in neither place. That is the census working as designed — *"a module in neither place still fails"* — and the fix is the declaration it asks for, with the reason the capture is untouched: `racelab` imports every case module and changes none of them.
+
+**Changed:** `.gitignore` (the Tier 51 allowlist pair, with what rebuilding actually costs), `tests/test_tier45_region_assembly.py` (one `ADDED_AFTER_CAPTURE` entry, no assertion touched), `wiki/index.md` (one row), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 51 section, **W216**–**W222** opened), [[case-study-ladder-to-f1]] (§25).
+
+**Added:** `atlas/cases/racelab.py`, `scripts/tier51_racelab_graph.py`, `tests/test_tier51_racelab_graph.py`, `out/racelab/racelab.json`, [[case-study-racelab-graph-atlas-0.1]].

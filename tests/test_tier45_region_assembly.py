@@ -91,6 +91,12 @@ ADDED_AFTER_CAPTURE = {
     "vehicle_march": "Tier 49 (CS-18): the union's march, the vehicle scale and "
                      "the host-sized rotor; it builds no CaseGraph of its own "
                      "and changes none of the cases",
+    "racelab": "Tier 51 (CS-19): PoC 3's phase 1 -- the car, its geometry-derived "
+               "window layout and the union re-sited onto it.  It DOES build a "
+               "CaseGraph of its own, from a tiling that subclasses "
+               "ground_effect.GroundTiling, and it changes none of the cases: "
+               "every module it imports is unchanged, which is why the W189 "
+               "byte-identity capture below is untouched by it",
 }
 
 #: **The two artifacts Tier 49's W194 moves, and the reason.**  `L7/R9`'s premise

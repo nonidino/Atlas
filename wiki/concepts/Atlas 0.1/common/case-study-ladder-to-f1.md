@@ -1159,3 +1159,72 @@ Probing each map's derivative along band-limited perturbations at $w^\star$ and 
 - **`out/w202/w202.json` is untouched and every Tier 48 test still passes**; two test docstrings and two page sections are annotated rather than rewritten.
 - **Task 3 — the coarse competitor across a coupled seam (W204) — was not started.**
 - **Nothing was downloaded, no machine was rented, NeuberNet was not loaded.**
+
+---
+
+# 25. A car as a graph: PoC 3's first phase, and the two disciplines a car breaks (2026-09-12)
+
+Full record: [[case-study-racelab-graph-atlas-0.1]] and [[gap-worklist]] Tier 51.
+
+**§24.5's critical path did not move, and this section is not about it.** `POC3-RACELAB-REQUIREMENTS.md` specifies RaceLab — the demo that cashes in rung 9 — in five phases, and this is phase 1: the car's geometry, a window decomposition derived from it, the assembled `CaseGraph` and a headless march. **No rung moves.** Everything physical is CS-18's, re-sited: the tiling subclasses `ground_effect.GroundTiling`, every body is a `wing_fsi.FlexWing`, and `vehicle_march.receiver_balances` reads this march unchanged. What is new is a **shape**, and what a shape does to two of the framework's own disciplines is the whole of this section.
+
+## 25.1 The verdict
+
+**The car marches, and the graph it marches is not the graph the compiler sees.** Fourteen $128\times128$ windows over a $672\times240$ box, laid out by a dynamic program over the car's own occupancy; 26 agents across CS-18's five families; five arms at 600 macro-steps with a null per join. **Four of seven gate clauses pass, one splits as predicted, one fails and is diagnosed.** J3's receiving balance closes to $\mathbf{0.010130}$ against a pre-registered $0.075$ — and the residual is *the geometry*, the $1.0101289$ ratio between the ring the disk reads and the cell its force sits in predicting $0.0101289$ to five figures. J2's closes to $5.29\times10^{-11}$ against $1.0000000060$ with the term withheld. The repeat is bitwise. **P6 splits exactly as predicted**: the lagged column marches at $0.336$ s a macro-step and passes the requirements' $0.5$ s ceiling, the tight one at $1.713$ s and fails it — so the interactive column is the lagged one, and that is the answer to §10's first risk rather than a caveat on it.
+
+**And the same compile reproduces CS-18's verdicts on a graph that is not CS-18's** — `L7/R9` alone on the joined union, nothing on the disjoint one or the clocks-reconciled control — which is what turns that refusal from a property of the front wing's layout into a statement about the clocks.
+
+## 25.1.1 The largest result had no clause
+
+**An expert walked out of its own envelope and the march never read the flag that says so.** Re-siting the device from open flow into a radiator duct dropped its inflow from CS-18's $0.9225$ to $\mathbf{0.6692}$, past the $u = 0.8933$ at which this machine stops generating. The loop current crossed **sign**, $+0.0729 \to -0.5605$; the induction pinned at its clamp floor; `rotor_valid` went `False` on **all five arms**; the machine's heat went $67.5$ W $\to 3982$ W. `SizedCircuitSolve.solve` returns that flag and `JoinState` records it, and **nothing consults it** — which is CS-18's **W211** realised rather than predicted, and PoC 2's **W145** on a second subsystem. Every number above is therefore stamped *outside the rotor's declared envelope*; they remain measurements of the graph as declared, because a receiving balance is a statement about whether the work matches the claim and it does either way. **The repair is priced and not taken**: scaling $k_e = k_t$ by $\mathbf{1.3786}$ restores validity at the duct's own inflow, and it is a second vehicle decision of exactly the kind [[vehicle-scale-and-sizing]] §0.1 says is the user's call.
+
+## 25.1.2 The one failure, and why it is not the join
+
+P3's tracking residual is $3.482\times10^{-6}$ against an inherited $10^{-6}$. **The pointwise residual is exactly zero at every macro-step.** `receiver_balances` averages $UA$ and $u$ over the settle window and *then* applies a concave map, so what it measures is the window's variance times the curvature: the averaged residual is **Jensen's term to $0.9995$**. CS-18's window was settled to $10^{-3}$ and got $5.57\times10^{-12}$; this one sits at $2\times10^{-2}$ and gets $3.48\times10^{-6}$, which is the same clause reporting the same thing about a different flow. **The threshold is not moved** — the fail is published with its mechanism, which is what this ladder did with G4 and G5 one tier ago.
+
+## 25.2 What a car does to two disciplines
+
+**W124 survives in one direction and not the other.** *No seam should pass through a body* holds on the front wing with eight cells to spare because there is **one** body in $208$ cells. The car has thirteen whose $x$-spans cover $72$ to $501$ of $672$ almost without a gap, and the largest stride the halo allows is $112$, so **every covering layout cuts the car** — the longest gap between consecutive bodies is shorter than a band. The objective becomes *cut where the car is thinnest*, exact by dynamic programming, and the answer still bands $\mathbf{26.9\%}$ of the car's occupancy. In $y$ the discipline is met with $10.5$ cells to spare, because in $y$ a car is thin. **W218.**
+
+**And the compiler cannot see any of it.** Ten of the thirteen bodies are body forces with **no agent, no port and no capability record**: only the front wing is declared, through STRUCT, SUSP and the `wet` and `mount` seams, and only because CS-12 already declared it. So the graph the compiler certifies does not contain the car, and W218's $26.9\%$ has nothing to fire on. **W220 — the largest SCHEMA gap this tier opens**, beside W222's largest finding: a decomposition derived from geometry, checked against a graph that carries no geometry.
+
+## 25.3 Two things that were measured rather than assumed, and both changed a decision
+
+**The wheel's coefficient.** Giving each of a wheel's twelve chords the plate's own $C_N = 20$ made a wheel $22\times$ too draggy — $11.52$ against $1.00$ for the whole rest of the car — and the march blew up at macro-step 2. Equating the ring's drag to a cylinder's gives $c_n = \tfrac34 C_D = 0.9$ in two lines, and the twelve-chord ring reproduces the continuous integral to $\mathbf{1.23\%}$.
+
+**The rotation.** The requirements ask for a rotating-surface boundary condition and **this model cannot express one.** The surface velocity is computed and projected onto each station's normal; in the continuum that is exactly zero, and on a polygon it is $\omega s$ from each chord's midpoint — **machine zero at one station a chord, and halving to $1.983$ and $1.996$ as the chords go $12\to24\to48$.** First order in the chord length is a discretisation artifact's signature, and at the declared geometry it is $\mathbf{17\%}$ of the free stream. So the declared car's wheels do not roll, and the arm that says why is kept. **W219.**
+
+## 25.4 What moves on this page
+
+**§14.3's sentence is unchanged and this page must not be read as moving it.** *The foundation-model half has no learned expert admitted with a nonzero contribution* stands: **phase 1 is classical throughout and contains no learned expert of any kind.** What phase 1 hands phase 2 is a window Poseidon-T can see without a resize — $128\times128$, the checkpoint's own resolution, chosen for that reason and not for speed — and a cost decomposition saying which number a learned column has to beat.
+
+**The coupling half does not move either.** The three joins, their receiver balances and their nulls are CS-18's, re-sited to a different graph, and agreeing with that tier is the point: the car's graph has 26 agents against 18 and 14 fluid windows against 6, so a threshold met on both is a statement about the joins rather than about the front wing's layout.
+
+## 25.5 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W222** — an expert left its envelope and nothing read the flag | every march in the package: the check exists, is recorded, and is consulted by nothing | `open`, **large**, **new** — W211 realised, and W145 on a second subsystem |
+| **W220** — ten of the car's bodies are invisible to the compiler | any rule about a seam crossing a body, or about an immersed interface moving | `open`, **large**, **new** — and the largest thing phase 1 found |
+| **W216** — the car's body force costs more than the fluid solve | phase 3's frame rate, and phase 4's cost model | `open`, **small**, **new** — the cheapest row this tier opens |
+| **W218** — W124 is unachievable on a car and no rule reads how badly | a certified decomposition of anything shaped like a machine | `open`, medium, **new** |
+| **W219**, **W217**, **W221** — the rotation, the thread measurement, the settling | the wheels, every timing on the page, and what "settled" means here | `open`, **new** |
+| **W214**, **W215**, **W204** | the shrink, the randomised arm, the entry condition | `open`, as §24.5 |
+| **W209**–**W213**, **W199**–**W201**, **W194**–**W198** | rung 9's march and its graph | `open`, as §23.5 |
+| **W203**, **W206**, **W207**, **W208** | boundary data, the answer-side certificate, the tripwire, $\Theta$ | `open`, as §22.4 |
+
+## 25.6 The next step
+
+**Phase 2 — the switch — is the next thing, and it is the first phase that touches the foundation-model half.** Per-window classical / learned / certified, with the per-window one-step error against the classical expert on the same input state, which is exact and needs no global referent, and the per-call cost. The three tiers behind it say what to expect and none of it is encouraging about the learned column: Tier 48 measured no learned contribution in the one certified slot, Tier 50 measured that tier's headline as the best of twelve draws, and phase 1 has now measured that the composition layer a learned expert would replace is $0.156$ s of a $0.333$ s macro-step. **The demo's claim is that the mechanism works and is measurable, not that it is fast**, and the requirements say so in §4.2 before any of it is built.
+
+**[AI Inference]:** W216 is on phase 2's critical path and not only phase 3's, because a per-window cost measurement that charges the car's body force to every column equally will make the learned column look better than it is by about a factor of two. Unmeasured, and cheap to check once the batched kernel exists.
+
+## 25.7 What this tier did NOT do, named
+
+- **No rung moved**, no expert was trained, and no learned expert of any kind appears.
+- **The structure is rigid**, so the `wet` and `mount` seams are declared and not solved.
+- **Phases 2 to 5 were not started**, which the brief asked for: an honest partial tier over three thin ones.
+- **Every module it builds on is unchanged**, so every number on [[case-study-vehicle-march-atlas-0.1]] and [[joining-seam-cost]] is bitwise what it was.
+- **The envelope repair was priced and not taken** (W222): scaling the machine for the inflow its host actually delivers is a second vehicle decision and [[vehicle-scale-and-sizing]] §0.1 makes it the user's.
+- **The horizon is $0.71$ transits of the domain** against CS-18's $4.6$, and the flow does not settle to that tier's band at any horizon this host can afford.
+- **Nothing was downloaded, no checkpoint was loaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**

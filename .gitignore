@@ -300,3 +300,27 @@ atlas-demo/
 !out/tier49/
 out/tier49/*
 !out/tier49/tier49.json
+
+# Tier 51 (PoC 3 RaceLab phase 1, CS-19). JSON only: the record
+# scripts/tier51_racelab_graph.py writes -- the eight-box timing measurement
+# with the front-wing control timed in the same process, the car's thirteen
+# bodies with their release-state forces and the conservation identity, the
+# wheel's derived coefficient against the cylinder drag it reproduces and the
+# rotation artifact's two convergence tables, the derived layout with both
+# profiles and the window-count frontier, the three compiles (joined, disjoint,
+# clocks reconciled) with every decision, the instrument run, the five arms
+# with each join's receiver balance and its null, and J2 on the coolant clock.
+# tests/test_tier51_racelab_graph.py asserts against it.
+#
+# **Rebuilding it is about ninety minutes, not seconds.** The size stage is
+# eight boxes plus four thread settings at ~10 s each; the compile stage is
+# three compiles of a 26-agent graph at ~9 s each; the instrument is three
+# 40-step marches; and the arms are four TIGHT columns at 1.7 s a macro-step
+# plus one lagged at 0.33 s. Measured, the third command is 4866 s: the settle
+# instrument at 1600 lagged steps (547 s), then four tight arms at 1009-1028 s
+# each and one lagged at 202 s. The .npz caches under out/racelab/cache/ hold
+# each arm's final field -- 13 MB -- and are ignored rather than committed
+# because they are a by-product of the arms and nothing cites them.
+!out/racelab/
+out/racelab/*
+!out/racelab/racelab.json
