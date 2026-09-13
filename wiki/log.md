@@ -4862,3 +4862,36 @@ The suite's wall time, $449$ s, was taken with no other Python process running a
 **Changed:** `atlas/cases/racelab.py` (`geometry_fingerprint`), `scripts/tier54_traced_car.py` (W246, and stages `slow`, `gate`, `trace`, `ablate`), `atlas/demo_racelab/engine.py` (`U_DUCT` for the drawn car, `find_release` by fingerprint, and the learned-switch refusal Tier 57 opens as W243), `atlas/demo_racelab/static/index.html` (the release note every frame, and W243's greyed-out switch), `tests/test_tier52_racelab_switch.py` (the drawn car's sizing, and a settled field chosen by fingerprint), `tests/test_tier54_racelab_3d.py` (the release test pins the match instead of the order, its diagnosis kept), `.gitignore`, [[gap-worklist]], `wiki/index.md`.
 
 **NOT done:** the arms (P2–P6 unmeasured on the drawn car); any sizing beyond W228's; any attribution of the fluid breach to a part of the car; a redraw or a longer box — both the user's call. Nothing downloaded except PyPI's metadata page for torch, which was read; no machine rented; the unlicensed structural checkpoint not loaded; nothing pushed.
+
+---
+
+## [2026-09-13] tier 57 | PoC 3 phase 5 — the bundle, and four rounds that each hid a defect
+
+`scripts/build_racelab_bundle.py` builds `poc3-racelab-demo`: the framework, the build repository's whole solver package, Poseidon-T in the hub's own cache layout, the drawn car's settled field, the recorded runs, every PoC 3 test and the pages they quote at their own paths — $90.3$ MB — and refuses to finish on any use or file of the unlicensed structural checkpoint, any stray weight or field, a vendored `scOT`, or a settled field for another car. See [[poc3-racelab-bundle]].
+
+**Verified on fresh clones, in four rounds and a final build, and each of the first three rounds passed every check it had while hiding a defect the next check found.**
+
+- **Round 1 — W250.** Windows passed. Linux, on Python $3.10$, installed every pin and then **refused the settled field the bundle had been built with**: Tier 56's fingerprint hashed wheel segments computed with `cos`, `sin` and `atan2`, which the Windows C runtime and glibc round differently in the last bit — four of $52$ rows, `993c358a` against `f591a83c`. A wheel is now hashed by what defines it; `a1f67a8e` on both, with a one-ulp-nudge test that changes the old formula on both platforms.
+- **Round 2 — W251.** Both platforms passed, **and the page, once opened, received nothing**: plain `uvicorn` has no WebSocket implementation, every upgrade was refused, the controls sent into nothing. No PoC 3 test had ever opened the server, and the development machine had `websockets` from long ago. Pinned, and the self-test now asks the demo's own server for a real frame over a real socket.
+- **Round 3 — W253.** The page worked; **then the network was cut**, and the new socket check called the page broken, because `websockets` 15 routes even loopback through the environment's proxy. It connects directly now.
+- **Round 4 — everything.** $164$ of $164$ copied files identical by blob hash on both platforms, `run.sh` `100755`, `--check` exit `0` with a JSON and a PNG frame over `/ws`, the bundle's own tests $160$ passed and $6$ skipped on both, every page control clicked and read back — the live stamp reproducing Tier 56's W244 and W245 — and with no network, exit `3`, the classical column marching and zero connections off the machine. The identity check was broken on purpose and caught the one altered file; the weights' SHA-256 is the one the hub publishes.
+- **The final build — W255.** Rebuilt for the write-up, its tests run in the venv the network cut had emptied of `scOT` found a Tier 53 test that passed only where `scOT` was installed. Fixed; the final build `e6dad68c` passes its tests with `scOT` absent and present on Windows and on Linux, and a venv built from round 2's requirements fails exactly the two socket tests — W251, caught on a real defective environment.
+
+**W243:** with the learned expert absent the switch had tinted windows that went on marching classical; now it is refused and greyed out with the reason, verified in the real no-network bundle.
+
+```
+python scripts/build_racelab_bundle.py --out C:/Users/Nauni/poc3_build --commit
+python scripts/verify_racelab_bundle.py --bundle C:/Users/Nauni/poc3_build --clone <new dir> --launch
+python scripts/verify_racelab_offline.py --clone <verified clone>
+python scripts/vault_scan.py wiki        # 236 files, 0 problems
+python scripts/run_suite.py              # 1490 passed, 0 failed
+```
+
+The suite ran on mains with no Python process but the user's own idle `phone-remote` server, $441$ s against the usual $\sim 440$. **The laptop ran on battery from 15:07 to 16:39**, which covers rounds 1 to 3, and rounds 2 and 3 overlapped the two platforms; only round 4's self-test costs were taken on mains with the platforms sequential, and no cost in this tier is quoted as a claim.
+
+**Opened:** **W248** (no GPU use, named), **W249** and **W252** (suspected in PoC 2's and PoC 1's bundles), **W254** (PoC 1's and PoC 2's builders cannot rebuild in place). **Closed:** **W243**, **W250**, **W251**, **W253**, **W255**.
+
+**Added:** `scripts/build_racelab_bundle.py`, `scripts/verify_racelab_bundle.py`, `scripts/verify_racelab_offline.py`, `atlas/demo_racelab/bundle/` (launchers, pins, constraints, README, PROVENANCE, licence), `tests/test_tier57_racelab_bundle.py`, `tests/test_tier57_racelab_bundle_records.py`, `out/racelab_bundle/verify_*.json`, [[poc3-racelab-bundle]].
+**Changed:** `atlas/cases/racelab.py` (W250), `atlas/demo_racelab/server.py` (`socket_check`, W251, W253), `atlas/demo_racelab/engine.py` and `static/index.html` (W243, in Tier 56's commit), `atlas/demo_racelab/README.md`, `tests/test_tier53_racelab_demo.py` (W255), `tests/test_tier56_racelab_drawn_car.py` (W250's test), `out/racelab5/racelab5.json` (re-spun to the new fingerprint, bitwise otherwise), [[poc3-racelab-drawn-car]] (annotated), `.gitignore`, [[gap-worklist]], `wiki/index.md`.
+
+**NOT done:** pushing the branch; a machine that truly has nothing (both platforms ran on this laptop, from the local branch); macOS; Python 3.11; re-running the launcher, network cut and page on the final build, which differs from round 4's in four files none of which that code runs; verifying W249, W252 or W254 on the earlier bundles. About 13 GB of verification clones were left on disk. The unlicensed structural checkpoint was not loaded; no machine was rented; downloads were the installs the user approved.

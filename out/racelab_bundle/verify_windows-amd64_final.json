@@ -1,0 +1,121 @@
+{
+ "at": "2026-09-13T18:34:14",
+ "platform": "windows-amd64",
+ "python": "3.12.7",
+ "bundle": "C:\\Users\\Nauni\\poc3_build",
+ "clone": "C:\\Users\\Nauni\\poc3_final2",
+ "clone_exit_code": 0,
+ "clone_s": 1.0747323036193848,
+ "head": "e6dad68ccc46084017e568d28280001b8322e322",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "source_commits": {
+  "atlas": "a180352b11e6c42a409cf15c892d4831d90072bc",
+  "build_repo": "0a407b7fca92e5c7fb9c38ef6fc0131c6b7ecdb2",
+  "snapshot": "ec976ed5d25883ec9db4e486ebbeeefa9e08303b",
+  "weights_sha256": "e97428c93a16cbb52a41bc4794eb71be3aed436fb9cc547d9eeebb20f3940fb2",
+  "car": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 165,
+  "different": [],
+  "not_from_either_repo": [
+   "SOURCE_COMMITS",
+   "out/racelab5/cache/settled.npz",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/refs/main",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/config.json",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/model.safetensors",
+   "vendor/hf-cache/hub/version.txt"
+  ],
+  "by_group": {
+   "tests": [
+    8,
+    0
+   ],
+   "atlas": [
+    78,
+    0
+   ],
+   "scripts": [
+    7,
+    0
+   ],
+   "wiki": [
+    6,
+    0
+   ],
+   "out": [
+    5,
+    0
+   ],
+   "vendor/src": [
+    50,
+    0
+   ],
+   "launchers": [
+    11,
+    0
+   ]
+  },
+  "tests_in_the_bundle": [
+   "tests/test_tier51_racelab_graph.py",
+   "tests/test_tier52_racelab_switch.py",
+   "tests/test_tier53_racelab_demo.py",
+   "tests/test_tier54_racelab_3d.py",
+   "tests/test_tier55_car_geometry.py",
+   "tests/test_tier56_racelab_drawn_car.py",
+   "tests/test_tier57_racelab_bundle.py",
+   "tests/test_tier57_racelab_bundle_records.py"
+  ],
+  "poc3_tests_upstream": [
+   "tests/test_tier51_racelab_graph.py",
+   "tests/test_tier52_racelab_switch.py",
+   "tests/test_tier53_racelab_demo.py",
+   "tests/test_tier54_racelab_3d.py",
+   "tests/test_tier55_car_geometry.py",
+   "tests/test_tier56_racelab_drawn_car.py",
+   "tests/test_tier57_racelab_bundle.py",
+   "tests/test_tier57_racelab_bundle_records.py"
+  ],
+  "every_poc3_test_is_carried": true,
+  "settled.npz_identical_to_atlas_0.1_s_cache": true,
+  "weights_sha256_matches_SOURCE_COMMITS": true
+ },
+ "scan_unlicensed_checkpoint": {
+  "files_or_dirs_named_for_it": [],
+  "uses": [],
+  "prose_mentions_by_file": {
+   "atlas/cases/racelab_switch.py": 1,
+   "atlas/demo_racelab/README.md": 1,
+   "out/racelab2/racelab2.json": 1,
+   "scripts/tier51_racelab_graph.py": 1,
+   "scripts/tier52_racelab_switch.py": 1,
+   "tests/test_tier51_racelab_graph.py": 2,
+   "tests/test_tier52_racelab_switch.py": 1,
+   "wiki/concepts/Atlas 0.1/common/case-study-racelab-graph-atlas-0.1.md": 1,
+   "wiki/concepts/Atlas 0.1/common/case-study-racelab-switch-atlas-0.1.md": 2,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-3d.md": 1,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-demo.md": 1,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-traced-car.md": 1
+  },
+  "prose_mentions_total": 14
+ },
+ "scan_data": {
+  "allowed": [
+   {
+    "file": "out/racelab5/cache/settled.npz",
+    "bytes": 2581474
+   },
+   {
+    "file": "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/model.safetensors",
+    "bytes": 83200584
+   }
+  ],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "static_checks_pass": true
+}

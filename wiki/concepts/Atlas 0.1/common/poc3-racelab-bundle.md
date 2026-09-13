@@ -6,7 +6,7 @@
 
 # 0. The result, in one paragraph
 
-**The `poc3-racelab-demo` branch is built, and a fresh clone of it installs, self-tests and serves a working page on Windows 11 and on Linux, with the classical column still running when the network is cut.** It took four rounds of verification, and **each of the first three passed every check it had while hiding a defect a later check found**: the car's fingerprint read the platform's C library, so Linux refused the settled field Windows had built (W250); the page could never receive a frame, because plain `uvicorn` has no WebSocket implementation and nothing but opening the page would have shown it (W251); and the check written to catch that went through the environment's proxy, so a user behind one would have been told a working page was broken (W253). Round four passes all of it: $164$ of $164$ copied files identical by blob hash on both platforms, the launcher's self-test exits `0` on both — including a real WebSocket frame from the demo's own server — the bundle's own tests run $160$ passed and $6$ skipped on both, every control on the page does what it says when clicked, and with no network the self-test exits `3`, runs the classical column, and opens no connection off the machine. **The bundle ships the drawn car as it is**, which leaves its declared envelopes after twenty macro-steps ([[poc3-racelab-drawn-car]]); the page stamps it, and that is a decision about the car, not the bundle. **The branch was built and committed locally and not pushed.**
+**The `poc3-racelab-demo` branch is built, and a fresh clone of it installs, self-tests and serves a working page on Windows 11 and on Linux, with the classical column still running when the network is cut.** It took four rounds of verification and a final build, and **each of the first three rounds passed every check it had while hiding a defect a later check found**: the car's fingerprint read the platform's C library, so Linux refused the settled field Windows had built (W250); the page could never receive a frame, because plain `uvicorn` has no WebSocket implementation and nothing but opening the page would have shown it (W251); and the check written to catch that went through the environment's proxy, so a user behind one would have been told a working page was broken (W253). Round four passes all of it: $164$ of $164$ copied files identical by blob hash on both platforms, the launcher's self-test exits `0` on both — including a real WebSocket frame from the demo's own server — the bundle's own tests run $160$ passed and $6$ skipped on both, every control on the page does what it says when clicked, and with no network the self-test exits `3`, runs the classical column, and opens no connection off the machine. **The bundle ships the drawn car as it is**, which leaves its declared envelopes after twenty macro-steps ([[poc3-racelab-drawn-car]]); the page stamps it, and that is a decision about the car, not the bundle. **The branch was built and committed locally and not pushed.**
 
 ---
 
@@ -132,9 +132,25 @@ The mode, preset, march and 3-D controls were clicked with the mouse; the five f
 
 On the round-4 Windows clone, with `scOT` uninstalled and every proxy variable pointed at a closed port, the launcher reported that the fetch failed, **marched the classical column, carried a frame over the page's socket, and exited `3`**. Run again in-process with every socket connection off the machine refused and recorded, the self-test exited `3` with **zero connection attempts** — only its own loopback connection to the demo's server, which is allowed and recorded. **With no network, the classical column still runs.**
 
+## 5.7 The final build, and the defect the last test run found (W255)
+
+Committing this page and the records meant the bundle had to be rebuilt, because one of the pages it carries was annotated. **Running the rebuilt bundle's tests in the Windows venv the no-network check had just emptied of `scOT` found one more:** `test_tier53_racelab_demo.py::test_the_page_renders_the_certified_refusal_and_clears_it` flipped a window to learned on a bare engine and asserted it moved, and it got its expert by building the real checkpoint on first use. Since W243 the engine refuses a learned flip when no expert is present, so **in exactly the classical-only environment the bundle promises, its own test suite reported a failure** instead of saying anything true about the page. The test now gives the engine a present stand-in, as the Tier 57 tests do; it passes in both environments, in four seconds instead of loading Poseidon.
+
+**The final build is `e6dad68c`, from `atlas-0.1` at `a180352`.** Against round 4's fully verified build `e495ce5f` it differs in exactly four files, compared blob by blob between the two clones: `SOURCE_COMMITS`, that test, the new records test file, and one annotated page. No launcher, no framework source and no vendored file changed, so §5.4–§5.6 verified this build's code. The final build itself was verified statically on fresh clones on both platforms — $165$ of $165$ copied files identical — and its tests were run on it:
+
+| environment | the final build's tests |
+|---|---|
+| Windows, round 4's venv, `scOT` absent (the classical-only case) | **$160$ passed, $23$ skipped** |
+| Windows, round 4's venv, `scOT` restored | **$160$ passed, $23$ skipped** |
+| Linux, round 4's venv, `scOT` present | **$160$ passed, $23$ skipped** |
+| Windows, round 2's venv — built before `websockets` was pinned | $158$ passed, **$2$ failed**: both socket tests, *"No module named 'websockets'"* |
+
+The last row is a control that came for free: an environment built from round 2's requirements has W251's defect, and the tests written for W251 fail on it. The $23$ skips are the six builder scans and the seventeen records tests, whose records live upstream and are not carried.
+
 # 6. What this tier did NOT do, named
 
-- **The branch is not pushed.** It exists as a commit in the local build directory; `git -C <build dir> push --force <remote> poc3-racelab-demo` publishes it, and that is a deliberate separate act.
+- **The branch is not pushed.** It exists as commit `e6dad68c` in the local build directory `C:\Users\Nauni\poc3_build`; `git -C C:\Users\Nauni\poc3_build push --force https://github.com/nonidino/Atlas.git poc3-racelab-demo` would publish it — the build directory has no remote of its own — and that is a deliberate separate act.
+- **The final build's launcher, self-test, network cut and page were not re-run on it.** They ran on round 4's build, which differs from the final one in four files, none of them code the launcher or the page runs (§5.7).
 - **Neither verification machine is a machine that has nothing.** Both platforms ran on the development laptop: Windows with its Anaconda Python and a warm pip cache, Linux under WSL2 on the same hardware with a micromamba Python. The clones came from the local branch, not from GitHub. A clean VM or a borrowed laptop is the stronger test, and it was not run.
 - **macOS was not verified, and neither was Python $3.11$.** The requirements ask for Windows and one of macOS or Linux, which is met; the range in between is claimed from the pins' published wheels, not from a run.
 - **The CUDA path does not exist** in this demo (W248), so nothing about a GPU was verified.
@@ -152,4 +168,4 @@ On the round-4 Windows clone, with `scOT` uninstalled and every proxy variable p
 - [[poc3-racelab-demo]] — phase 3, the dashboard.
 - [[poc3-racelab-3d]] — phase 4, the 3-D column the toggle marches.
 - [[poc1a-frozen-expert-results]] — PoC 1, whose bundle this one follows.
-- [[gap-worklist]] — W243 and W248 to W254.
+- [[gap-worklist]] — W243 and W248 to W255.
