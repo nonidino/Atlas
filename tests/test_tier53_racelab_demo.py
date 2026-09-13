@@ -275,6 +275,17 @@ def test_the_page_renders_the_certified_refusal_and_clears_it():
 
     from atlas.demo_racelab import engine as E
     eng = E.Engine()
+    #: **An expert has to be PRESENT for the learned flip below to be allowed**
+    #: (W243, Tier 57): with none, the engine refuses the flip rather than
+    #: tinting a window that goes on marching classical.  This test used to get
+    #: one by building the real checkpoint on first use -- so it passed only
+    #: where `scOT` was installed, and it FAILED in the bundle's own
+    #: classical-only environment, found by running the bundle's tests in a
+    #: venv the no-network check had just removed `scOT` from.  A stand-in
+    #: with `ex` set is what `test_tier57_racelab_bundle` uses; it is never
+    #: marched here.
+    eng.stack = type("PresentStack", (), {"ex": object()})()
+    eng.stack_error = None
     n = eng.names[0]
     eng.post({"kind": "mode", "window": n, "mode": "certified"})
     eng._drain()
