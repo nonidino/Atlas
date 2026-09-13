@@ -97,6 +97,11 @@ ADDED_AFTER_CAPTURE = {
                "ground_effect.GroundTiling, and it changes none of the cases: "
                "every module it imports is unchanged, which is why the W189 "
                "byte-identity capture below is untouched by it",
+    "racelab_switch": "Tier 52 (CS-20): PoC 3's phase 2 -- the per-window "
+                      "classical / learned / certified switch.  It builds NO "
+                      "CaseGraph of its own: it reads racelab's, puts a "
+                      "different expert in some of its fluid windows, and "
+                      "measures.  Every module it imports is unchanged",
 }
 
 #: **The two artifacts Tier 49's W194 moves, and the reason.**  `L7/R9`'s premise

@@ -4562,3 +4562,75 @@ The third command is $4866$ s — the settle instrument at $1600$ lagged macro-s
 **Changed:** `.gitignore` (the Tier 51 allowlist pair, with what rebuilding actually costs), `tests/test_tier45_region_assembly.py` (one `ADDED_AFTER_CAPTURE` entry, no assertion touched), `wiki/index.md` (one row), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 51 section, **W216**–**W222** opened), [[case-study-ladder-to-f1]] (§25).
 
 **Added:** `atlas/cases/racelab.py`, `scripts/tier51_racelab_graph.py`, `tests/test_tier51_racelab_graph.py`, `out/racelab/racelab.json`, [[case-study-racelab-graph-atlas-0.1]].
+
+## [2026-09-12] tier 52 | the envelope consulted (W222), and RaceLab phase 2 — the switch (CS-20)
+
+Two things, and the first is why the second is trustworthy.
+
+### W222, closed, and the sharp form of it
+
+**The predicates existed and nobody asked them.** `powertrain.MachineAgent.validity` declares the motoring condition **in its own docstring** — *"a generator can only push current into the battery while its back-EMF exceeds the open-circuit voltage; below that speed the loop current reverses and the machine MOTORS, which is a legitimate mode and a different one from the mode this graph declares, so the record declines rather than reporting a negative generated power as if it were generation"* — the disk declares its induction clamp, and the fluid window declares a cell-Reynolds bound. **All three were computed during Tier 51 and read by nothing.**
+
+`RaceRollout._absorb` now consults every one, once, at the end of every macro-step, on the single path a march takes — PoC 2's `Engine._absorb` and **W145**'s lesson, that a check present on one path and absent from another is worse than no check. **Three states and never two**: `True`, `False`, and `None` for *not consultable*, because a predicate that cannot be evaluated is not a pass. **`enforce` defaults ON**; OFF still runs the check and records what it would have said, so a number from outside an envelope can be published **with** the stamp rather than as though it were in.
+
+**The vehicle repair is W199's own similarity one level on.** That row re-sized the machine when the disk's WIDTH moved; here the INFLOW moved and the same two conditions decide the scaling uniquely — $k_e \to k_e/x$ from the back-EMF being invariant under $\omega \propto x$, and $R \to R/x^3$ from the torque having to follow the disk's $x^2$ — at $x = u_{\text{host}}/u_{\text{ref}}$. **Three controls, and all three are the point**: at $x = 1$ it is the identity **bitwise** on every element; at the duct's inflow it returns the reference induction $0.11388706$ to a gap of **exactly $0$**; and the declined/repaired pair is taken from **one** settled field, so one declaration differs and nothing else.
+
+**And it found a second thing in its first run.** Every CS-19 arm released from a uniform freestream, whose transient leaves the disk's clamp for **58 macro-steps** (steps $0$ to $57$). That is inherited practice — CS-18 releases from `out/w141/settled.npz`, and `atlas/demo_frontwing`'s README says what happens when you do not — that Tier 51 did not follow and did not say. The spin-up now runs with `enforce=False` **by design**, and the measured columns release from what it ends at with `enforce=True`.
+
+### Phase 2: the switch
+
+**The switch is built, every number §5.2 and §5.3 ask for is measurable, and the learned column cannot be asked for the step the composition layer runs at.**
+
+**The scaling is over-determined and that is the whole story.** One 128-cell window spans $2.0$ tiling length units **by geometry** — `Scaling.length` IS that number — so `time` is $1.0$ and the lead follows: a macro-step is $\tfrac18$ of the checkpoint's native step and **one exchange, the cadence the composition layer actually runs at, is $\tfrac1{32}$ of it**. `wake_array` gets a native lead because its window spans 4 rotor diameters at a macro-step of $0.2$ and exchanges once; `ground_effect`'s spans 2 units at $0.0125$ and exchanges four times.
+
+| macro-steps | lead / native | median per-window error |
+|---|---|---|
+| 1 | $1/8$ | $0.3607$ |
+| 2 | $1/4$ | $0.5615$ |
+| 4 | $1/2$ | $0.7301$ |
+| **8** | $\mathbf{1}$ | $\mathbf{0.1708}$ |
+| 16 | $2$ | $0.2408$ |
+
+**A sharp minimum AT the native lead, and $4.3\times$ the minimum at an eighth of it.** That is [[prior-art-and-novelty-atlas-0.1]] §4's named assumption — *"error shrinks with the macro step, which fails for an expert trained at a native $\Delta t$"* — **measured false**, and turned from a citation into a curve.
+
+**In a march it is not subtle.** All-learned runs at $\mathbf{0.067\times}$ the classical speed with an rms field error of $3.844$, and is **outside a declared envelope for 35 of 40 macro-steps**: the learned columns do not merely degrade, they leave the fluid expert's own bound, and the check says so rather than the field quietly going wrong.
+
+**Per call at its own lead it is a DRAW and is reported as one.** With each column at its own best thread count — both prefer four here, and the classical column's preference **differs from CS-19's**, where the full march with the body force was fastest at one — the classical column takes $0.5216$ s and the learned call $0.4526$ s, a ratio of $1.153$. A second independent draw gave $0.944$, the other side of one. **Two measurements $20\%$ apart do not establish a $15\%$ effect** (**W215**'s class, again).
+
+**The certified mode does what its theorem says and costs what Tiers 48 and 50 predicted.** Both windows reach the classical fixed point — Theorem 1, a proof and not a measurement — and against **W76's null replacement**, the same iteration with the checkpoint swapped for the identity, the checkpoint bought $\mathbf{5}$ and $\mathbf{7}$ classical calls out of $270$ and $165$, about $\mathbf{2\%}$, while costing $\mathbf{3\times}$ the wall time. Tier 48 measured $13\%$ in its slot; **same direction, smaller**.
+
+**One of five governing families on this graph has a shippable learned option and sixteen of twenty-six agents**, each of the other four greyed out **with its reason** (§4.3).
+
+### What this tier did NOT do, named
+
+- **No rung moved, no expert was trained**, and **[[case-study-ladder-to-f1]] §14.3 is unchanged**: the foundation-model half still has no learned expert admitted with a nonzero contribution.
+- **CS-19's arms were NOT re-run on the repaired column.** That page stands as the record of what the un-repaired graph did, stamped there; **the two RaceLab pages therefore describe two different vehicles**, and that is named rather than reconciled.
+- **The mechanism behind the error-vs-lead curve is not diagnosed** (**W223**) — it is offered as an **[AI Inference]** and the study that would settle it needs a checkpoint whose training lead can be varied.
+- **The per-window error's normalisation ranks empty windows worst** (**W224**): F01 is almost all free stream, has the graph's smallest denominator, and reads $0.4403$ against a median of $0.1708$.
+- **`CERTIFIED` is not a per-macro-step mode** (**W226**) and `MixedRollout` raises rather than quietly running something else; the requirements' §4.2 describes it as one and that is a real gap, not a wording change.
+- **The mixed marches are 40 macro-steps** — a sixth of the spin-up — so they are a cost-and-divergence measurement and not a settled-state one.
+- **§5.4's second referent, the single-domain monolith, was not run**, as in CS-19.
+- **No dashboard, no three dimensions, no bundle** — phases 3, 4 and 5.
+- **Nothing was downloaded** — Poseidon-T from the local cache with the hub offline — **no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
+
+### How it was run
+
+Every process exported `KMP_DUPLICATE_LIB_OK=TRUE`, `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`; TF32 is disabled in the driver and the flags are **asserted** rather than trusted. `machine_state()` records the process list and the power state into the artifact beside every timing, as Tier 51's does.
+
+```
+python scripts/tier52_racelab_switch.py --stages envelope
+python scripts/tier52_racelab_switch.py --stages spinup,scaling
+python scripts/tier52_racelab_switch.py --stages windows,families
+python scripts/tier52_racelab_switch.py --stages certified
+python scripts/tier52_racelab_switch.py --stages assign
+python scripts/vault_scan.py wiki                            # 231 files, 0 problems
+python scripts/run_suite.py                                  # 1371 passed, 0 failed, no missing logs, 657 s
+```
+
+**Fifty-three test files, up from Tier 51's fifty-two: $1371$ tests against $1349$, the twenty-two new ones being this tier's.** The `assign` stage is $374$ s — four 40-step marches, three of them with Poseidon called once per exchange — and `spinup` is $87$ s for 240 lagged macro-steps. The `.npz` cache under `out/racelab2/cache/` holds the settled release state, about 2 MB, and stays ignored.
+
+**One test failed on the first suite run and it was the right one, for the second tier running.** `tests/test_tier45_region_assembly.py::test_W189_control_the_capture_is_the_whole_package` asserts that `atlas/cases/` holds exactly the W189 capture's twenty modules plus those declared in `ADDED_AFTER_CAPTURE`, and `racelab_switch.py` was in neither. The fix is the declaration it asks for: that module builds **no** `CaseGraph` of its own — it reads `racelab`'s, puts a different expert in some of its fluid windows, and measures — so the byte-identity capture is untouched by it.
+
+**Changed:** `.gitignore` (the Tier 52 allowlist pair), `atlas/cases/racelab.py` (the envelope check, `machine_for_host`, `settled_field`; `march` gains `enforce` and `host_inflow`, and its inline `u_max` guard becomes one of the predicates `validity_report` consults), `tests/test_tier45_region_assembly.py` (one `ADDED_AFTER_CAPTURE` entry, no assertion touched), `wiki/index.md` (one row), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 52 section, **W222** closed, **W223**–**W226** opened, **W215** and **W216** annotated), [[case-study-ladder-to-f1]] (§26).
+
+**Added:** `atlas/cases/racelab_switch.py`, `scripts/tier52_racelab_switch.py`, `tests/test_tier52_racelab_switch.py`, `out/racelab2/racelab2.json`, [[case-study-racelab-switch-atlas-0.1]].

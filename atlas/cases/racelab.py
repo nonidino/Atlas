@@ -103,6 +103,8 @@ __all__ = [
     "RaceDeviceSpec", "RaceDeviceForcing", "device_sites", "ring_velocity",
     "RaceWindow", "make_experts", "connections", "build",
     "RaceRollout", "march", "GATE", "PREDICTION",
+    "machine_for_host", "U_HOST_REF", "EnvelopeDeclined", "ENVELOPE_STATES",
+    "settled_field", "N_SPIN",
 ]
 
 
@@ -1208,6 +1210,91 @@ def ring_velocity(u_full: np.ndarray, site: IU.DeviceSite,
     return np.asarray(u_full, dtype=float)[oy + site.cells, ox].copy()
 
 
+
+# ===========================================================================
+# DECISION 8 -- a machine sized for the inflow its HOST delivers (W222)
+# ===========================================================================
+
+#: The inflow `powertrain`'s machine was sized at, which is the ring CS-18's
+#: rotor sat in: open flow in `front_wing`'s tiling, downstream of nothing.
+#: `machine_for_host` is a similarity ABOUT this point, so it is the one number
+#: the whole re-sizing is referred to and it is declared rather than inferred.
+U_HOST_REF = 0.9225
+
+
+def machine_for_host(u_host: float, u_ref: float = U_HOST_REF,
+                     scale: float = None) -> dict[str, Any]:
+    """`vehicle_march.machine_for_rotor`'s similarity, applied to the INFLOW.
+
+    **Why this exists (W222).**  Tier 51 re-sited the device from open flow into
+    a radiator duct downstream of the core, and its inflow fell from ``u_ref``
+    to ``0.669``.  The machine sits just above the battery's open-circuit
+    voltage, so `powertrain.MachineAgent.validity` -- which declares *"a
+    generator can only push current into the battery while its back-EMF exceeds
+    the open-circuit voltage; below that speed the loop current reverses and the
+    machine MOTORS, which is a legitimate mode and a different one from the mode
+    this graph declares"* -- returns False, and every arm of that tier marched
+    with it False and nothing asked.
+
+    **This is not a new decision; it is W199's own similarity applied to the
+    thing that changed.**  That row re-sized the machine when the disk's WIDTH
+    moved.  Here the width is unchanged and the INFLOW moved, and the same two
+    conditions decide the scaling uniquely.  Write ``x = u_host / u_ref``:
+
+      * the back-EMF must not move.  ``omega = lambda u / r`` so
+        ``omega ~ x``, and ``k_e omega`` invariant gives ``k_e -> k_e / x``;
+        ``k_e = k_t`` is the same air-gap flux linkage, so ``k_t`` follows.
+      * the torque must follow the disk's.  ``T ~ u^2`` at fixed induction and
+        ``tau_disk = T r / lambda``, so ``tau ~ x^2``; with ``k_t ~ 1/x`` that
+        needs ``I ~ x^3``, and the numerator ``k_e omega - V_oc`` is invariant,
+        so ``R -> R / x^3`` for every element.
+
+    ``x = 1`` must therefore reproduce `machine_for_rotor` exactly, and that is
+    the control `scripts/tier52_racelab_switch.py` stage ``envelope`` asserts
+    rather than this docstring claiming it.
+
+    **What it costs is a smaller machine on a slower shaft**, and the induction,
+    the demand-over-supply ratio and `rotor_valid` all come back to what they
+    were at ``u_ref`` -- which is what makes it a similarity rather than a fit.
+    """
+    x = float(u_host) / float(u_ref)
+    if not (x > 0.0):
+        raise ValueError(f"the host inflow ratio must be positive, got {x}")
+    els = VM.machine_for_rotor(HOST_ROTOR_WIDTH if scale is None else scale)
+    x3 = x ** 3
+    for e in els.values():
+        e.resistance = e.resistance / x3
+    mgu = els["MGU"]
+    mgu.k_e = mgu.k_e / x
+    mgu.k_t = mgu.k_t / x
+    mgu.r_total = mgu.r_total / x3
+    return els
+
+
+# ===========================================================================
+# the envelope, CONSULTED (W222)
+# ===========================================================================
+
+#: What `check_envelopes` reports per expert.  Three states and not two:
+#: ``True`` inside, ``False`` declined, and ``None`` **not consultable** -- an
+#: expert whose record declares no predicate, or one whose predicate could not
+#: be evaluated at this state.  A missing check that defaults to ``False`` is a
+#: false alarm and one that defaults to ``True`` is the hole this row exists to
+#: close, so neither is allowed.
+ENVELOPE_STATES = (True, False, None)
+
+
+class EnvelopeDeclined(RuntimeError):
+    """One or more declared envelopes declined the state the march is in.
+
+    Carries `report` so a caller can say WHICH expert declined and at what
+    value, rather than only that something did.
+    """
+
+    def __init__(self, message: str, report: dict) -> None:
+        super().__init__(message)
+        self.report = report
+
 # ===========================================================================
 # the graph
 # ===========================================================================
@@ -1542,6 +1629,7 @@ class RaceRollout(W.FSIRollout):
                  rotor_width: float = None, machine_scale: float | None = None,
                  n_join_inner: int = 3, p_ref: float | None = None,
                  null: str | None = None, wheel_omega: float | None = 0.0,
+                 enforce: bool = True, host_inflow: float | None = None,
                  **kw) -> None:
         if tiling is None:
             tiling, _i = layout()
@@ -1564,7 +1652,15 @@ class RaceRollout(W.FSIRollout):
         self.machine_scale = (self.rotor_width if machine_scale is None
                               else float(machine_scale))
         self.n_join_inner = int(n_join_inner)
-        self.elements = VM.machine_for_rotor(self.machine_scale)
+        #: **Decision 8 (W222).**  ``host_inflow`` re-sizes the machine for
+        #: the inflow its host actually delivers, by the same similarity
+        #: W199 used when the disk's WIDTH moved.  ``None`` is the machine
+        #: `powertrain` declares, which is what Tier 51 marched and what
+        #: `MGU.validity` declines in this duct.
+        self.host_inflow = host_inflow
+        self.elements = (VM.machine_for_rotor(self.machine_scale)
+                         if host_inflow is None else
+                         machine_for_host(host_inflow, scale=self.machine_scale))
         self.p_ref = (IU.calibrated_p_ref(PT.MachineAgent())[0] if p_ref is None
                       else float(p_ref))
         self.null = null if null in ("J1", "J3") else None
@@ -1599,6 +1695,14 @@ class RaceRollout(W.FSIRollout):
         self.work_trace: list[dict] = []
         self._exchange_i = 0
         self.body_force_calls = 0
+        #: **W222.**  ``enforce`` ON is the default, because a check that
+        #: is off by default is not a check.  OFF still RUNS the check and
+        #: records what it would have said into `outside`.
+        self.enforce = bool(enforce)
+        self.outside: dict | None = None
+        self.outside_first: dict | None = None
+        self.outside_steps = 0
+        self.envelope: dict | None = None
 
     # -- the car's body force ----------------------------------------------
 
@@ -1686,6 +1790,151 @@ class RaceRollout(W.FSIRollout):
         self._fx_dev = fx
         s.step = int(step)
 
+
+    # -- the envelope, consulted (W222) ------------------------------------
+
+    def validity_report(self, u=None, v=None) -> dict:
+        """Every DECLARED validity predicate on this graph, at this state.
+
+        **The predicates are not new and that is the point.**
+        `powertrain.MachineAgent.validity` already declares the condition Tier
+        51 walked past -- *"a generator can only push current into the battery
+        while its back-EMF exceeds the open-circuit voltage; below that speed
+        the loop current reverses and the machine MOTORS, which is a legitimate
+        mode and a different one from the mode this graph declares, so the
+        record declines rather than reporting a negative generated power as if
+        it were generation."*  The disk declares its induction clamp and the
+        fluid window declares its cell-Reynolds bound.  **All three existed and
+        none was consulted.**
+
+        Three states per expert, never two: ``True`` inside, ``False``
+        declined, ``None`` **not consultable**.  A predicate that cannot be
+        evaluated is not a pass.
+        """
+        import torch
+        out: dict[str, Any] = {}
+        s = self.state
+
+        # -- the machine: its own declared predicate, at the shaft speed the
+        # -- union's operating point actually solved
+        mgu = self.elements.get("MGU")
+        if mgu is None or "J3" not in self.joins:
+            out["MGU"] = {"valid": None,
+                          "why": "no J3 in this union, so no shaft speed"}
+        else:
+            try:
+                ok = bool(mgu.validity(np.full(1, s.omega)))
+                out["MGU"] = {
+                    "valid": ok, "omega": float(s.omega),
+                    "back_emf": float(mgu.k_e * s.omega),
+                    "V_oc": float(PT.V_OC),
+                    "current": float(s.current),
+                    "why": ("the back-EMF exceeds the open-circuit voltage"
+                            if ok else
+                            "the back-EMF %.6g is at or below the battery's "
+                            "open-circuit voltage %.6g, so the loop current "
+                            "reverses and the machine MOTORS -- a legitimate "
+                            "mode, and not the one this graph declares"
+                            % (mgu.k_e * s.omega, PT.V_OC))}
+            except Exception as exc:                         # pragma: no cover
+                out["MGU"] = {"valid": None, "why": "not consultable: %s" % exc}
+
+        # -- the disk: `clamp_induction` is its own declared envelope
+        if "J3" not in self.joins:
+            out["ROTOR"] = {"valid": None, "why": "no J3 in this union"}
+        elif s.step < 0:
+            out["ROTOR"] = {"valid": None, "why": "no operating point solved yet"}
+        else:
+            out["ROTOR"] = {
+                "valid": bool(s.rotor_valid), "induction": float(s.induction),
+                "why": ("the induction is inside the disk's clamp" if s.rotor_valid
+                        else "the induction %.6g is AT the clamp `clamp_induction` "
+                             "declares, so the disk has no operating point here"
+                             % s.induction)}
+
+        # -- the fluid windows: the cell-Reynolds bound `FSIFlowWindow.validity`
+        # -- declares, evaluated on the assembled field
+        if u is None or v is None:
+            out["FLUID"] = {"valid": None, "why": "no field handed in"}
+        else:
+            with torch.no_grad():
+                umax = float(torch.max(torch.hypot(u, v)))
+            finite = bool(torch.isfinite(u).all() and torch.isfinite(v).all())
+            re_h = self.solver.h * umax / self.nu
+            ok = bool(finite and re_h <= 8.0 and umax <= U_MAX_BAND)
+            out["FLUID"] = {
+                "valid": ok, "u_max": umax, "cell_reynolds": re_h,
+                "finite": finite, "band": U_MAX_BAND,
+                "why": ("inside the window expert's cell-Reynolds bound"
+                        if ok else
+                        "u_max = %.6g gives a cell Reynolds number of %.4g "
+                        "against the window expert's declared bound of 8, or "
+                        "went past the declared band of %.4g -- and WindowNS sizes "
+                        "its sub-step count from u_max, so a march past this "
+                        "reads as a hang rather than as a blow-up"
+                        % (umax, re_h, U_MAX_BAND))}
+
+        # -- the radiator core, if J1 is in
+        if "J1" not in self.joins or self._core is None:
+            out["RAD"] = {"valid": None, "why": "no J1 in this union"}
+        else:
+            try:
+                out["RAD"] = {"valid": bool(self._core.validity()),
+                              "ua": float(s.ua)}
+            except Exception as exc:                         # pragma: no cover
+                out["RAD"] = {"valid": None, "why": "not consultable: %s" % exc}
+
+        out["_declined"] = sorted(k for k, r_ in out.items()
+                                  if not k.startswith("_")
+                                  and r_.get("valid") is False)
+        out["_unconsultable"] = sorted(k for k, r_ in out.items()
+                                       if not k.startswith("_")
+                                       and r_.get("valid") is None)
+        return out
+
+    def check_envelopes(self, step: int, u=None, v=None) -> dict:
+        """Raise `EnvelopeDeclined` if any declared predicate declines.
+
+        **W222.**  Tier 51 marched 600 macro-steps with `MGU.validity` False and
+        nothing said so, which is PoC 2's W145 on a second subsystem: the flag
+        existed, was computed, was recorded into `JoinState` -- and was read by
+        nothing.
+        """
+        rep = self.validity_report(u, v)
+        bad = rep["_declined"]
+        if bad:
+            why = "; ".join("%s: %s" % (k, rep[k].get("why", "declined"))
+                            for k in bad)
+            raise EnvelopeDeclined(
+                "the march left a declared envelope at macro-step %d -- %s"
+                % (step, why), rep)
+        return rep
+
+    def _absorb(self, step: int, u, v) -> None:
+        """The ONE place every path funnels through, PoC 2's `Engine._absorb`.
+
+        ``enforce`` does not remove the check.  With it off, the check still
+        runs and what it WOULD have said is recorded into `outside`, so a caller
+        can report the number beside the reason the model declines to stand
+        behind it -- which is the only way to publish a measurement of a graph
+        that is out of envelope without publishing it as if it were in.
+        `outside_first` is sticky: a march that left the envelope at step 4 and
+        came back at step 40 still left it.
+        """
+        try:
+            rep = self.check_envelopes(step, u, v)
+            self.outside = None
+            self.envelope = rep
+        except EnvelopeDeclined as exc:
+            if self.enforce:
+                raise
+            self.outside = {"step": int(step), "why": str(exc)[:400],
+                            "declined": list(exc.report["_declined"])}
+            self.envelope = exc.report
+            self.outside_steps += 1
+            if self.outside_first is None:
+                self.outside_first = dict(self.outside)
+
     # -- the exchange ------------------------------------------------------
 
     def _advance(self, u, v):
@@ -1752,13 +2001,17 @@ class RaceRollout(W.FSIRollout):
         load = drag = None
         for _ in range(GE.EXCHANGES):
             u, v, load, drag = self.exchange(u, v)
+        #: **W222: the one funnel.**  Every path into this rollout goes
+        #: through `macro_step`, so the check goes here and nowhere else.
+        self._absorb(step, u, v)
         return u, v, load, drag
 
 
 def march(u0: np.ndarray = None, v0: np.ndarray = None, steps: int = 200,
           tiling: "RaceTiling" = None, objects: Sequence[Any] = None,
           joins=("J1", "J2", "J3"), join_coupling="tight",
-          null: str | None = None,
+          null: str | None = None, enforce: bool = True,
+          host_inflow: float | None = None,
           n_per_coolant: int = VM.N_FLUID_PER_COOLANT,
           progress=None, **kw) -> VM.UnionMarch:
     """March the car: the fluid on its clock, the coolant circuit sub-cycled.
@@ -1774,17 +2027,31 @@ def march(u0: np.ndarray = None, v0: np.ndarray = None, steps: int = 200,
     place -- CS-18 section 3.4's rule, because a null arm that cannot fail is
     not a control.
 
-    **A stalled march is a blow-up.**  `WindowNS` sets its sub-step count from
-    ``u_max``, so a diverging field reads as a hang rather than as an error.
-    The loop checks finiteness and a declared speed band every macro-step and
-    raises with the step number.
+    **Every declared envelope is CONSULTED, once, at the end of each
+    macro-step** (W222).  `RaceRollout._absorb` is the single funnel, as
+    PoC 2's `Engine._absorb` is: `MachineAgent.validity`, the disk's
+    induction clamp and the fluid window's cell-Reynolds bound all
+    existed before this tier and none of them was read, which is how Tier
+    51 marched 600 macro-steps with the machine motoring.  ``enforce``
+    ON is the default; OFF still runs the check and records what it would
+    have said, so a measurement of an out-of-envelope graph can be
+    published WITH the stamp rather than as if it were in.
+
+    ``host_inflow`` is decision 8: re-size the machine for the inflow its
+    host actually delivers (`machine_for_host`).  ``None`` leaves the
+    machine `powertrain` declares, which is the Tier 51 configuration.
+
+    **A stalled march is a blow-up.**  `WindowNS` sets its sub-step count
+    from ``u_max``, so a diverging field reads as a hang rather than as an
+    error; that bound is one of the predicates `validity_report` consults.
     """
     import time
     import torch
     if tiling is None:
         tiling, _i = layout()
     r = RaceRollout(tiling=tiling, objects=objects, joins=joins,
-                    join_coupling=join_coupling, null=null, **kw)
+                    join_coupling=join_coupling, null=null,
+                    enforce=enforce, host_inflow=host_inflow, **kw)
     opt = dict(dtype=W.TORCH_DTYPE, device=r.device)
     u = (torch.full((r.ny, r.nx), GE.U_INF, **opt) if u0 is None
          else torch.as_tensor(np.asarray(u0), **opt))
@@ -1835,13 +2102,9 @@ def march(u0: np.ndarray = None, v0: np.ndarray = None, steps: int = 200,
                 u.detach().cpu().numpy()[rotor_spec.rows, i_pl].mean()))
         else:
             trace["u_at_the_rotor_plane"].append(float("nan"))
-        if not torch.isfinite(u).all():
-            raise RuntimeError(f"the car's fluid is not finite at macro-step {s}")
-        if umax > U_MAX_BAND:
-            raise RuntimeError(
-                f"u_max reached {umax:.4g} at macro-step {s}, past the declared "
-                f"band of {U_MAX_BAND}: WindowNS scales its sub-step count with "
-                "u_max, so this would read as a hang rather than as a blow-up")
+        #: finiteness and the speed band are `validity_report`'s FLUID
+        #: predicate, consulted by `_absorb` at the end of every
+        #: `macro_step` -- so this loop no longer carries its own copy.
         if (s + 1) % n_per_coolant == 0:
             if isinstance(block, IU.MountedBlock):
                 block.q_machine = float(st.q_machine)
@@ -1870,8 +2133,87 @@ def march(u0: np.ndarray = None, v0: np.ndarray = None, steps: int = 200,
                "body_force_calls": r.body_force_calls,
                "substeps_max": max(r.substep_log) if r.substep_log else None,
                "device_ring_to_plane_cells": {
-                   d.site.device: d.ring_to_plane_cells for d in r.specs}})
+                   d.site.device: d.ring_to_plane_cells for d in r.specs},
+               "enforce": bool(enforce),
+               "host_inflow": host_inflow,
+               "outside_the_envelope": r.outside_first,
+               "outside_the_envelope_steps": r.outside_steps,
+               "envelope_at_the_end": r.envelope})
 
+
+
+# ===========================================================================
+# the spin-up: a release state the experts stand behind (W222, W223)
+# ===========================================================================
+
+#: How many lagged macro-steps the car takes to get from a uniform freestream
+#: to a state every declared envelope admits.  Measured, not guessed:
+#: `scripts/tier52_racelab_switch.py` stage ``spinup`` reports the last
+#: macro-step at which any predicate declined, and this is that plus a margin.
+N_SPIN = 240
+
+
+def settled_field(steps: int = N_SPIN, host_inflow: float | None = None,
+                  tiling: "RaceTiling" = None, objects: Sequence[Any] = None,
+                  joins=("J1", "J2", "J3"), progress=None, **kw):
+    """March from the freestream to a state the experts admit, and return it.
+
+    **Why this exists, and it is inherited practice rather than a new idea.**
+    CS-18 releases its arms from ``out/w141/settled.npz``; `atlas/demo_frontwing`
+    says in its README that without the settled cache *"the demo releases from
+    the freestream, says so on screen, and shows a transient that no number on
+    the results page was measured at."*  **Tier 51 released every arm from a
+    uniform freestream and did not say so**, and the envelope check added in
+    Tier 52 found it immediately: from ``u = U_inf`` everywhere, the flow
+    through the duct is still at the free stream, the machine over-generates and
+    the disk's induction hits the UPPER edge of `clamp_induction`.
+
+    So the spin-up runs with ``enforce=False`` -- the check still runs, and what
+    it would have said is recorded and returned -- and the measured arms release
+    from the state it ends at, with ``enforce=True``.  **The transient is
+    declared rather than marched through in silence.**
+
+    Returns ``(u, v, report)`` with the report carrying the last macro-step at
+    which any predicate declined and which ones, so the caller can assert the
+    release state is admitted rather than assume it.
+    """
+    import torch
+    if tiling is None:
+        tiling, _i = layout()
+    r = RaceRollout(tiling=tiling, objects=objects, joins=joins,
+                    join_coupling="lagged", enforce=False,
+                    host_inflow=host_inflow, **kw)
+    opt = dict(dtype=W.TORCH_DTYPE, device=r.device)
+    u = torch.full((r.ny, r.nx), GE.U_INF, **opt)
+    v = torch.zeros((r.ny, r.nx), **opt)
+    r.refresh(u, 0, which=tuple(j for j in ("J1", "J3") if j in r.joins))
+    declined_at: list[int] = []
+    who: dict[str, int] = {}
+    for s in range(steps):
+        u, v, _load, _drag = r.macro_step(u, v, s)
+        if r.outside is not None:
+            declined_at.append(s)
+            for k in r.outside["declined"]:
+                who[k] = who.get(k, 0) + 1
+        if progress is not None:
+            progress(s, 0.0)
+    rep = {
+        "steps": steps,
+        "macro_steps_outside": len(declined_at),
+        "last_macro_step_outside": (max(declined_at) if declined_at else None),
+        "first_macro_step_outside": (min(declined_at) if declined_at else None),
+        "which_experts_declined": who,
+        "release_state_is_admitted": r.outside is None,
+        "envelope_at_the_release_state": r.envelope,
+        "host_inflow": host_inflow,
+        "u_rotor_at_the_release_state": float(r.state.u_rotor),
+        "note": "the spin-up runs with enforce=False BY DESIGN -- a march that "
+                "stops at macro-step 3 of a transient reports nothing -- and "
+                "the measured arms release from what it ends at with "
+                "enforce=True",
+    }
+    return (u.detach().cpu().numpy().copy(),
+            v.detach().cpu().numpy().copy(), rep)
 
 # ===========================================================================
 # the gate, PRE-REGISTERED

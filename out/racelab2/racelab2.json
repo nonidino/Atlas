@@ -1,0 +1,1587 @@
+{
+ "meta": {
+  "tier": 52,
+  "phase": 2,
+  "torch_threads_at_start": 16,
+  "tf32_matmul": false,
+  "tf32_cudnn": false,
+  "u_duct_tier51": 0.6691530373612168,
+  "spin_steps": 240,
+  "mixed_steps": 40,
+  "machine_state_at_start": {
+   "python_processes_running": 1,
+   "python_processes": [
+    "\"python.exe\",\"8656\",\"Console\",\"1\",\"237,520 K\""
+   ],
+   "battery_status_raw": "2",
+   "on_mains": true
+  }
+ },
+ "envelope": {
+  "control_x_equals_1_reproduces_machine_for_rotor": {
+   "all_bitwise": true,
+   "per_field": {
+    "MGU.resistance": true,
+    "MGU.k_e": true,
+    "MGU.k_t": true,
+    "MGU.r_total": true,
+    "BUS.resistance": true,
+    "BATT.resistance": true,
+    "INV.resistance": true
+   },
+   "why": "the similarity is ABOUT the reference inflow, so at that inflow it must be the identity or it is a fit and not a similarity"
+  },
+  "crossover": {
+   "k_e": 0.05,
+   "R_total": 0.6000000000000001,
+   "V_oc": 1.34,
+   "d_back_emf_d_u": 1.5,
+   "u_at_which_the_machine_stops_generating": 0.8933333333333334,
+   "formula": "I = (k_e omega - V_oc) / R_total with omega = lambda u / r, so the current changes sign at u = V_oc / (2 lambda k_e / A)"
+  },
+  "sweep_with_the_declared_machine": [
+   {
+    "u": 0.55,
+    "induction": 0.02,
+    "current": -0.8583333333333334,
+    "rotor_valid": false,
+    "MGU_validity": false
+   },
+   {
+    "u": 0.6,
+    "induction": 0.02,
+    "current": -0.7333333333333335,
+    "rotor_valid": false,
+    "MGU_validity": false
+   },
+   {
+    "u": 0.6692,
+    "induction": 0.02,
+    "current": -0.5603333333333335,
+    "rotor_valid": false,
+    "MGU_validity": false
+   },
+   {
+    "u": 0.7,
+    "induction": 0.02,
+    "current": -0.4833333333333334,
+    "rotor_valid": false,
+    "MGU_validity": false
+   },
+   {
+    "u": 0.8,
+    "induction": 0.02,
+    "current": -0.23333333333333317,
+    "rotor_valid": false,
+    "MGU_validity": false
+   },
+   {
+    "u": 0.8933,
+    "induction": 0.02,
+    "current": -8.33333333335092e-05,
+    "rotor_valid": false,
+    "MGU_validity": false
+   },
+   {
+    "u": 0.9225,
+    "induction": 0.1138870630804174,
+    "current": 0.0729166666666666,
+    "rotor_valid": true,
+    "MGU_validity": true
+   },
+   {
+    "u": 1.0,
+    "induction": 0.28571428571428525,
+    "current": 0.26666666666666655,
+    "rotor_valid": true,
+    "MGU_validity": true
+   }
+  ],
+  "repair": {
+   "u_ref": 0.9225,
+   "u_host": 0.6691530373612168,
+   "x": 0.7253691461910209,
+   "k_e_before": 0.05,
+   "k_e_after": 0.06893042013511952,
+   "R_total_before": 0.6000000000000001,
+   "R_total_after": 1.5720777245475535,
+   "derivation": "k_e ~ 1/x from the back-EMF being invariant under omega ~ x; R ~ 1/x^3 from the torque having to follow the disk's x^2 with k_t ~ 1/x -- W199's own two conditions, applied to the inflow instead of the width",
+   "at_u_ref_declared_machine": {
+    "induction": 0.1138870630804174,
+    "current": 0.0729166666666666,
+    "rotor_valid": true
+   },
+   "at_u_host_declared_machine": {
+    "induction": 0.02,
+    "current": -0.5604507399302913,
+    "rotor_valid": false
+   },
+   "at_u_host_host_sized_machine": {
+    "induction": 0.1138870630804174,
+    "current": 0.027829412831729603,
+    "rotor_valid": true
+   },
+   "induction_matches_the_reference": true,
+   "induction_gap": 0.0
+  }
+ },
+ "elapsed_seconds": 374.37897879999946,
+ "spinup": {
+  "steps": 240,
+  "macro_steps_outside": 58,
+  "last_macro_step_outside": 57,
+  "first_macro_step_outside": 0,
+  "which_experts_declined": {
+   "ROTOR": 58
+  },
+  "release_state_is_admitted": true,
+  "envelope_at_the_release_state": {
+   "MGU": {
+    "valid": true,
+    "omega": 20.163994020279276,
+    "back_emf": 1.389912579419888,
+    "V_oc": 1.34,
+    "current": 0.03174943492965843,
+    "why": "the back-EMF exceeds the open-circuit voltage"
+   },
+   "ROTOR": {
+    "valid": true,
+    "induction": 0.1268897793242013,
+    "why": "the induction is inside the disk's clamp"
+   },
+   "FLUID": {
+    "valid": true,
+    "u_max": 1.337463743077928,
+    "cell_reynolds": 5.2244677463981555,
+    "finite": true,
+    "band": 4.0,
+    "why": "inside the window expert's cell-Reynolds bound"
+   },
+   "RAD": {
+    "valid": true,
+    "ua": 33.5011540128386
+   },
+   "_declined": [],
+   "_unconsultable": []
+  },
+  "host_inflow": 0.6691530373612168,
+  "u_rotor_at_the_release_state": 0.6721331340093092,
+  "note": "the spin-up runs with enforce=False BY DESIGN -- a march that stops at macro-step 3 of a transient reports nothing -- and the measured arms release from what it ends at with enforce=True",
+  "wall_s": 83.18039250001311,
+  "picard": {
+   "sized_for": 0.6691530373612168,
+   "settled_at": 0.6721331340093092,
+   "relative_residual": 0.004453535262791774,
+   "why_one_step": "the machine is sized for an inflow that its own thrust then changes, so the sizing is a fixed point.  ONE Picard step is taken from CS-19's measurement and the residual is reported rather than iterated away"
+  },
+  "control_tier51_machine_from_this_field": {
+   "declined": true,
+   "who": [
+    "MGU",
+    "ROTOR"
+   ],
+   "message": "the march left a declared envelope at macro-step 0 -- MGU: the back-EMF 1.00812 is at or below the battery's open-circuit voltage 1.34, so the loop current reverses and the machine MOTORS -- a legitimate mode, and not the one this graph declares; ROTOR: the induction 0.02 is AT the clamp `clamp_indu"
+  },
+  "repaired_marches_clean": {
+   "outside_steps": 0,
+   "enforce": true,
+   "envelope_at_the_end": {
+    "MGU": {
+     "valid": true,
+     "omega": 20.157437386829034,
+     "back_emf": 1.389460627921491,
+     "V_oc": 1.34,
+     "current": 0.03146194819071412,
+     "why": "the back-EMF exceeds the open-circuit voltage"
+    },
+    "ROTOR": {
+     "valid": true,
+     "induction": 0.12595703881708709,
+     "why": "the induction is inside the disk's clamp"
+    },
+    "FLUID": {
+     "valid": true,
+     "u_max": 1.3378613204154741,
+     "cell_reynolds": 5.226020782872945,
+     "finite": true,
+     "band": 4.0,
+     "why": "inside the window expert's cell-Reynolds bound"
+    },
+    "RAD": {
+     "valid": true,
+     "ua": 41.9341342305848
+    },
+    "_declined": [],
+    "_unconsultable": []
+   },
+   "settled": {
+    "u_rotor": 0.6719411340269918,
+    "u_core": 0.7520904440777516,
+    "ua": 41.945118129708376,
+    "induction": 0.12607051575602699,
+    "omega": 20.158234020809758,
+    "current": 0.03149687796176022,
+    "thrust_rotor": 0.06513279092546144,
+    "shaft_power": 0.043765403314872116,
+    "thrust_core": 0.17045696300897667,
+    "core_flow_power": 0.12936073921175456,
+    "q_machine": 32.897535035206715,
+    "load": 0.6192699406556473,
+    "drag": 0.9893239981044673,
+    "u_max": 1.337811249061848,
+    "power_on_the_fluid": -0.16198922518229875,
+    "t_wall": 360.0,
+    "power_rotor": -0.04259994963011709,
+    "power_core": -0.11938927555218165,
+    "u_at_the_rotor_plane": 0.651868826313185
+   }
+  }
+ },
+ "scaling": {
+  "available": true,
+  "window_cells": 128,
+  "window_span_length_units": 2.0,
+  "scaling_length": 2.0,
+  "scaling_velocity": 2.0,
+  "scaling_time": 1.0,
+  "native_lead": 0.1,
+  "why_length_is_not_a_knob": "one window is wx cells at dx, so it spans wx*dx length units; the scaling's `length` IS that number and declaring another would be declaring a different window",
+  "exchange": {
+   "dt": 0.003125,
+   "lead": 0.003125,
+   "lead_over_native": 0.03125,
+   "macro_steps": 0.25,
+   "lead_is_native": false,
+   "lead_below_native": true,
+   "lead_above_max": false,
+   "u_inf_normalized": 1.278772378516624,
+   "dx_over_D": 0.015625
+  },
+  "macro_step": {
+   "dt": 0.0125,
+   "lead": 0.0125,
+   "lead_over_native": 0.125,
+   "macro_steps": 1.0,
+   "lead_is_native": false,
+   "lead_below_native": true,
+   "lead_above_max": false,
+   "u_inf_normalized": 1.278772378516624,
+   "dx_over_D": 0.015625
+  },
+  "native": {
+   "dt": 0.1,
+   "lead": 0.1,
+   "lead_over_native": 1.0,
+   "macro_steps": 8.0,
+   "lead_is_native": true,
+   "lead_below_native": false,
+   "lead_above_max": false,
+   "u_inf_normalized": 1.278772378516624,
+   "dx_over_D": 0.015625
+  },
+  "the_composition_layer_asks_for": 0.03125
+ },
+ "windows": {
+  "one_macro_step": {
+   "n_macro": 1,
+   "dt": 0.0125,
+   "lead": 0.0125,
+   "lead_over_native": 0.125,
+   "per_window": {
+    "F00": 0.45980401312894864,
+    "F10": 0.29869590741356145,
+    "F20": 0.3224477611239547,
+    "F30": 0.34663151489137334,
+    "F40": 0.3450404013665129,
+    "F50": 0.3163603254486258,
+    "F60": 0.3294732361671673,
+    "F01": 1.4252449327129226,
+    "F11": 0.6376457311546128,
+    "F21": 0.548795569393564,
+    "F31": 0.49750252650843263,
+    "F41": 0.47888411050868185,
+    "F51": 0.34424673328450506,
+    "F61": 0.374804308243061
+   },
+   "min": 0.29869590741356145,
+   "median": 0.36071791156721716,
+   "max": 1.4252449327129226,
+   "mean": 0.48039836223899457,
+   "worst_window": "F01",
+   "best_window": "F10",
+   "classical_s": 0.0893322000047192,
+   "learned_s": 0.6993497999792453,
+   "classical_over_learned": 0.12773607714961857,
+   "n_windows": 14
+  },
+  "error_vs_lead": {
+   "rows": [
+    {
+     "n_macro": 1,
+     "dt": 0.0125,
+     "lead": 0.0125,
+     "lead_over_native": 0.125,
+     "per_window": {
+      "F00": 0.45980401312894864,
+      "F10": 0.29869590741356145,
+      "F20": 0.3224477611239547,
+      "F30": 0.34663151489137334,
+      "F40": 0.3450404013665129,
+      "F50": 0.3163603254486258,
+      "F60": 0.3294732361671673,
+      "F01": 1.4252449327129226,
+      "F11": 0.6376457311546128,
+      "F21": 0.548795569393564,
+      "F31": 0.49750252650843263,
+      "F41": 0.47888411050868185,
+      "F51": 0.34424673328450506,
+      "F61": 0.374804308243061
+     },
+     "min": 0.29869590741356145,
+     "median": 0.36071791156721716,
+     "max": 1.4252449327129226,
+     "mean": 0.48039836223899457,
+     "worst_window": "F01",
+     "best_window": "F10",
+     "classical_s": 0.07118479997734539,
+     "learned_s": 0.527009800018277,
+     "classical_over_learned": 0.13507300997984603,
+     "n_windows": 14
+    },
+    {
+     "n_macro": 2,
+     "dt": 0.025,
+     "lead": 0.025,
+     "lead_over_native": 0.25,
+     "per_window": {
+      "F00": 0.785892511180664,
+      "F10": 0.5601412629802346,
+      "F20": 0.5418315583371892,
+      "F30": 0.5249512737571979,
+      "F40": 0.5446568335987889,
+      "F50": 0.48999690908627724,
+      "F60": 0.5108475791917193,
+      "F01": 2.1244676533427396,
+      "F11": 0.9418886519936805,
+      "F21": 0.8112957626155012,
+      "F31": 0.7360728362677078,
+      "F41": 0.716488164645678,
+      "F51": 0.5161699033206397,
+      "F61": 0.5627627677234126
+     },
+     "min": 0.48999690908627724,
+     "median": 0.5614520153518237,
+     "max": 2.1244676533427396,
+     "mean": 0.7405331191458165,
+     "worst_window": "F01",
+     "best_window": "F50",
+     "classical_s": 0.1102872000192292,
+     "learned_s": 0.4774999000073876,
+     "classical_over_learned": 0.23096800652214355,
+     "n_windows": 14
+    },
+    {
+     "n_macro": 4,
+     "dt": 0.05,
+     "lead": 0.05,
+     "lead_over_native": 0.5,
+     "per_window": {
+      "F00": 1.0479650889772105,
+      "F10": 0.7158685108807596,
+      "F20": 0.6990639596186741,
+      "F30": 0.6853953177741156,
+      "F40": 0.72343770833943,
+      "F50": 0.6552243323699246,
+      "F60": 0.6698040464286985,
+      "F01": 2.8187808615044974,
+      "F11": 1.2364598343558022,
+      "F21": 1.0624041669985693,
+      "F31": 0.958825818633429,
+      "F41": 0.9394574880833505,
+      "F51": 0.6781708638361315,
+      "F61": 0.7367484764100684
+     },
+     "min": 0.6552243323699246,
+     "median": 0.7300930923747492,
+     "max": 2.8187808615044974,
+     "mean": 0.9734004624436186,
+     "worst_window": "F01",
+     "best_window": "F50",
+     "classical_s": 0.24362599998130463,
+     "learned_s": 0.4892714000015985,
+     "classical_over_learned": 0.49793631914824504,
+     "n_windows": 14
+    },
+    {
+     "n_macro": 8,
+     "dt": 0.1,
+     "lead": 0.1,
+     "lead_over_native": 1.0,
+     "per_window": {
+      "F00": 0.37489223535909216,
+      "F10": 0.16629580008011446,
+      "F20": 0.15588145502032205,
+      "F30": 0.11498150412641812,
+      "F40": 0.2932598642518778,
+      "F50": 0.14855745396952863,
+      "F60": 0.1974339800482462,
+      "F01": 0.440304937339382,
+      "F11": 0.19676069716000438,
+      "F21": 0.1314180089055957,
+      "F31": 0.08647137443412944,
+      "F41": 0.17525006414434394,
+      "F51": 0.1557438598788778,
+      "F61": 0.18687190888499916
+     },
+     "min": 0.08647137443412944,
+     "median": 0.17077293211222921,
+     "max": 0.440304937339382,
+     "mean": 0.2017230816859237,
+     "worst_window": "F01",
+     "best_window": "F31",
+     "classical_s": 0.4239141999860294,
+     "learned_s": 0.4944713999866508,
+     "classical_over_learned": 0.8573078240672237,
+     "n_windows": 14
+    },
+    {
+     "n_macro": 16,
+     "dt": 0.2,
+     "lead": 0.2,
+     "lead_over_native": 2.0,
+     "per_window": {
+      "F00": 0.6087667008366379,
+      "F10": 0.2437633929245338,
+      "F20": 0.21412139532962912,
+      "F30": 0.15727721516633167,
+      "F40": 0.45566031395166423,
+      "F50": 0.2378613547587495,
+      "F60": 0.29421300752793916,
+      "F01": 0.6095013997373425,
+      "F11": 0.2754807645593307,
+      "F21": 0.16804036331570904,
+      "F31": 0.08402471919260183,
+      "F41": 0.22934287263671943,
+      "F51": 0.2247363990111077,
+      "F61": 0.2548903273548913
+     },
+     "min": 0.08402471919260183,
+     "median": 0.24081237384164167,
+     "max": 0.6095013997373425,
+     "mean": 0.28983430187879916,
+     "worst_window": "F01",
+     "best_window": "F31",
+     "classical_s": 0.8127565000031609,
+     "learned_s": 0.5018760000239126,
+     "classical_over_learned": 1.619436872782193,
+     "n_windows": 14
+    }
+   ],
+   "best_median_at_n_macro": 8,
+   "best_median": 0.17077293211222921,
+   "best_lead_over_native": 1.0,
+   "note": "the composition layer's own cadence is one EXCHANGE, which is 1/4 of a macro-step and so 1/32 of the checkpoint's native lead on this tiling"
+  },
+  "per_call_cost": {
+   "rows": [
+    {
+     "threads": 1,
+     "classical_s": 0.7160609000129625,
+     "learned_s": 1.1526778999977978,
+     "repeats": 2
+    },
+    {
+     "threads": 2,
+     "classical_s": 0.5835097999952268,
+     "learned_s": 0.6714500500092981,
+     "repeats": 2
+    },
+    {
+     "threads": 4,
+     "classical_s": 0.5216286500071874,
+     "learned_s": 0.4525675000040792,
+     "repeats": 2
+    },
+    {
+     "threads": 8,
+     "classical_s": 0.5838716499856673,
+     "learned_s": 0.5009339499956695,
+     "repeats": 2
+    }
+   ],
+   "n_macro": 8,
+   "classical_best": {
+    "threads": 4,
+    "classical_s": 0.5216286500071874,
+    "learned_s": 0.4525675000040792,
+    "repeats": 2
+   },
+   "learned_best": {
+    "threads": 4,
+    "classical_s": 0.5216286500071874,
+    "learned_s": 0.4525675000040792,
+    "repeats": 2
+   },
+   "ratio_each_at_its_own_best": 1.1525985626508437,
+   "reading": "greater than one means the learned column is faster than the classical column it replaces, at that many macro-steps"
+  }
+ },
+ "families": {
+  "per_agent": {
+   "F00": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F10": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F20": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F30": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F40": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F50": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F60": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F01": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F11": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F21": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F31": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F41": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F51": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "F61": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "STRUCT": {
+    "family": "plane-stress-elasticity-2d",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "no shippable learned structural expert exists in this project. NeuberNet is unlicensed and local-only and must not appear in a bundle (requirements section 2.1); anything else would have to be trained from scratch and licensed by us"
+   },
+   "SUSP": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "BLOCK": {
+    "family": "heat-conduction-2d",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "no learned conduction operator is vendored, and the block's solver is a 2-D FE conduction step with no public checkpoint at this geometry"
+   },
+   "PASS": {
+    "family": "incompressible-thermal-transport-1d",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "the coolant legs are one-dimensional advection with closed-form decay; there is no operator to learn that is cheaper than the closed form"
+   },
+   "HOT": {
+    "family": "incompressible-thermal-transport-1d",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "the coolant legs are one-dimensional advection with closed-form decay; there is no operator to learn that is cheaper than the closed form"
+   },
+   "RAD": {
+    "family": "incompressible-thermal-transport-1d",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "the coolant legs are one-dimensional advection with closed-form decay; there is no operator to learn that is cheaper than the closed form"
+   },
+   "COLD": {
+    "family": "incompressible-thermal-transport-1d",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "the coolant legs are one-dimensional advection with closed-form decay; there is no operator to learn that is cheaper than the closed form"
+   },
+   "ROTOR": {
+    "family": "incompressible-navier-stokes-2d",
+    "switch_available": true,
+    "modes": [
+     "classical",
+     "learned",
+     "certified"
+    ],
+    "why_not": null
+   },
+   "MGU": {
+    "family": "lumped-dc-circuit",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "the circuit is algebraic -- `CircuitSolve` is a bisection on two scalar equations -- so a learned surrogate would be replacing microseconds of arithmetic"
+   },
+   "BUS": {
+    "family": "lumped-dc-circuit",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "the circuit is algebraic -- `CircuitSolve` is a bisection on two scalar equations -- so a learned surrogate would be replacing microseconds of arithmetic"
+   },
+   "BATT": {
+    "family": "lumped-dc-circuit",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "the circuit is algebraic -- `CircuitSolve` is a bisection on two scalar equations -- so a learned surrogate would be replacing microseconds of arithmetic"
+   },
+   "INV": {
+    "family": "lumped-dc-circuit",
+    "switch_available": false,
+    "modes": [
+     "classical"
+    ],
+    "why_not": "the circuit is algebraic -- `CircuitSolve` is a bisection on two scalar equations -- so a learned surrogate would be replacing microseconds of arithmetic"
+   }
+  },
+  "families": {
+   "incompressible-navier-stokes-2d": 16,
+   "plane-stress-elasticity-2d": 1,
+   "heat-conduction-2d": 1,
+   "incompressible-thermal-transport-1d": 4,
+   "lumped-dc-circuit": 4
+  },
+  "n_families": 5,
+  "families_with_a_learned_option": [
+   "incompressible-navier-stokes-2d"
+  ],
+  "families_without": [
+   "heat-conduction-2d",
+   "incompressible-thermal-transport-1d",
+   "lumped-dc-circuit",
+   "plane-stress-elasticity-2d"
+  ],
+  "n_agents_switchable": 16,
+  "n_agents_total": 26,
+  "the_fact": "1 of 5 governing families on this graph have a shippable learned option, and 16 of 26 agents",
+  "graph_verdict": "refuse"
+ },
+ "certified": {
+  "windows": {
+   "F40": {
+    "with_the_checkpoint": {
+     "status": "fallback_converged",
+     "stop_reason": "stalled",
+     "residual": 8.921057964161649e-07,
+     "phi_calls": 270,
+     "psi_calls": 54,
+     "fallback_from": 9,
+     "rows": [
+      {
+       "k": 0,
+       "residual": 0.0070040545687919675,
+       "phi_calls": 1,
+       "psi_calls": 0,
+       "inner_steps": 6
+      },
+      {
+       "k": 1,
+       "residual": 0.006603260469850082,
+       "phi_calls": 2,
+       "psi_calls": 7,
+       "inner_steps": 3
+      },
+      {
+       "k": 2,
+       "residual": 0.006241159914661522,
+       "phi_calls": 3,
+       "psi_calls": 11,
+       "inner_steps": 4
+      },
+      {
+       "k": 3,
+       "residual": 0.006097411992574076,
+       "phi_calls": 4,
+       "psi_calls": 16,
+       "inner_steps": 6
+      },
+      {
+       "k": 4,
+       "residual": 0.00636189242391343,
+       "phi_calls": 5,
+       "psi_calls": 23,
+       "inner_steps": 6
+      },
+      {
+       "k": 5,
+       "residual": 0.006328342265641146,
+       "phi_calls": 6,
+       "psi_calls": 30,
+       "inner_steps": 5
+      },
+      {
+       "k": 6,
+       "residual": 0.006733037801635191,
+       "phi_calls": 7,
+       "psi_calls": 36,
+       "inner_steps": 3
+      },
+      {
+       "k": 7,
+       "residual": 0.0067281715276681225,
+       "phi_calls": 8,
+       "psi_calls": 40,
+       "inner_steps": 4
+      },
+      {
+       "k": 8,
+       "residual": 0.006982841274401945,
+       "phi_calls": 9,
+       "psi_calls": 45,
+       "inner_steps": 8
+      },
+      {
+       "k": 9,
+       "residual": 0.0077294733125396415,
+       "phi_calls": 10,
+       "psi_calls": 54
+      }
+     ],
+     "fallback_rows": [
+      {
+       "j": 0,
+       "phase": "fallback",
+       "residual": 0.006097411992574076,
+       "phi_calls": 11,
+       "psi_calls": 54
+      },
+      {
+       "j": 25,
+       "phase": "fallback",
+       "residual": 0.004012189650398909,
+       "phi_calls": 36,
+       "psi_calls": 54
+      },
+      {
+       "j": 50,
+       "phase": "fallback",
+       "residual": 0.002683515354863022,
+       "phi_calls": 61,
+       "psi_calls": 54
+      },
+      {
+       "j": 75,
+       "phase": "fallback",
+       "residual": 0.0016994989151193202,
+       "phi_calls": 86,
+       "psi_calls": 54
+      },
+      {
+       "j": 100,
+       "phase": "fallback",
+       "residual": 0.001335425375274196,
+       "phi_calls": 111,
+       "psi_calls": 54
+      },
+      {
+       "j": 125,
+       "phase": "fallback",
+       "residual": 0.0007666007510717686,
+       "phi_calls": 136,
+       "psi_calls": 54
+      },
+      {
+       "j": 150,
+       "phase": "fallback",
+       "residual": 0.0004546499185981257,
+       "phi_calls": 161,
+       "psi_calls": 54
+      },
+      {
+       "j": 175,
+       "phase": "fallback",
+       "residual": 0.0002461682457687702,
+       "phi_calls": 186,
+       "psi_calls": 54
+      },
+      {
+       "j": 200,
+       "phase": "fallback",
+       "residual": 0.00010277907393220992,
+       "phi_calls": 211,
+       "psi_calls": 54
+      },
+      {
+       "j": 225,
+       "phase": "fallback",
+       "residual": 2.6793041160257632e-05,
+       "phi_calls": 236,
+       "psi_calls": 54
+      },
+      {
+       "j": 250,
+       "phase": "fallback",
+       "residual": 2.664397645790138e-06,
+       "phi_calls": 261,
+       "psi_calls": 54
+      },
+      {
+       "j": 259,
+       "phase": "fallback",
+       "residual": 8.921057964161649e-07,
+       "phi_calls": 270,
+       "psi_calls": 54
+      }
+     ],
+     "window": "F40",
+     "wall_s": 8.548531100008404,
+     "alpha": 0.5,
+     "use_learned": true,
+     "r_stop": 1e-06,
+     "k_max": 12
+    },
+    "null_identity": {
+     "status": "fallback_converged",
+     "stop_reason": "stalled",
+     "residual": 9.893202440997758e-07,
+     "phi_calls": 275,
+     "psi_calls": 20,
+     "fallback_from": 4,
+     "rows": [
+      {
+       "k": 0,
+       "residual": 0.0070040545687919675,
+       "phi_calls": 1,
+       "psi_calls": 0,
+       "inner_steps": 4
+      },
+      {
+       "k": 1,
+       "residual": 0.006488987367280478,
+       "phi_calls": 2,
+       "psi_calls": 5,
+       "inner_steps": 4
+      },
+      {
+       "k": 2,
+       "residual": 0.006305400059029187,
+       "phi_calls": 3,
+       "psi_calls": 10,
+       "inner_steps": 4
+      },
+      {
+       "k": 3,
+       "residual": 0.006361781955024493,
+       "phi_calls": 4,
+       "psi_calls": 15,
+       "inner_steps": 4
+      },
+      {
+       "k": 4,
+       "residual": 0.006691817201860035,
+       "phi_calls": 5,
+       "psi_calls": 20
+      }
+     ],
+     "fallback_rows": [
+      {
+       "j": 0,
+       "phase": "fallback",
+       "residual": 0.006305400059029187,
+       "phi_calls": 6,
+       "psi_calls": 20
+      },
+      {
+       "j": 25,
+       "phase": "fallback",
+       "residual": 0.004063023243833879,
+       "phi_calls": 31,
+       "psi_calls": 20
+      },
+      {
+       "j": 50,
+       "phase": "fallback",
+       "residual": 0.002769378133218297,
+       "phi_calls": 56,
+       "psi_calls": 20
+      },
+      {
+       "j": 75,
+       "phase": "fallback",
+       "residual": 0.001709429809517677,
+       "phi_calls": 81,
+       "psi_calls": 20
+      },
+      {
+       "j": 100,
+       "phase": "fallback",
+       "residual": 0.0013373429550422096,
+       "phi_calls": 106,
+       "psi_calls": 20
+      },
+      {
+       "j": 125,
+       "phase": "fallback",
+       "residual": 0.0007973125893746767,
+       "phi_calls": 131,
+       "psi_calls": 20
+      },
+      {
+       "j": 150,
+       "phase": "fallback",
+       "residual": 0.00048267104090744497,
+       "phi_calls": 156,
+       "psi_calls": 20
+      },
+      {
+       "j": 175,
+       "phase": "fallback",
+       "residual": 0.00026346716568627663,
+       "phi_calls": 181,
+       "psi_calls": 20
+      },
+      {
+       "j": 200,
+       "phase": "fallback",
+       "residual": 0.00011639469854372658,
+       "phi_calls": 206,
+       "psi_calls": 20
+      },
+      {
+       "j": 225,
+       "phase": "fallback",
+       "residual": 3.625658053741812e-05,
+       "phi_calls": 231,
+       "psi_calls": 20
+      },
+      {
+       "j": 250,
+       "phase": "fallback",
+       "residual": 6.262790151061887e-06,
+       "phi_calls": 256,
+       "psi_calls": 20
+      },
+      {
+       "j": 269,
+       "phase": "fallback",
+       "residual": 9.893202440997758e-07,
+       "phi_calls": 275,
+       "psi_calls": 20
+      }
+     ],
+     "window": "F40",
+     "wall_s": 2.8778124999953434,
+     "alpha": 0.5,
+     "use_learned": false,
+     "r_stop": 1e-06,
+     "k_max": 12
+    },
+    "what_the_checkpoint_bought_in_classical_calls": 5,
+    "classical_calls": {
+     "with": 270,
+     "null": 275
+    }
+   },
+   "F01": {
+    "with_the_checkpoint": {
+     "status": "fallback_converged",
+     "stop_reason": "max_outer",
+     "residual": 8.485458246625213e-07,
+     "phi_calls": 165,
+     "psi_calls": 48,
+     "fallback_from": 11,
+     "rows": [
+      {
+       "k": 0,
+       "residual": 0.0007410289673150415,
+       "phi_calls": 1,
+       "psi_calls": 0,
+       "inner_steps": 3
+      },
+      {
+       "k": 1,
+       "residual": 0.0006840766908543607,
+       "phi_calls": 2,
+       "psi_calls": 4,
+       "inner_steps": 3
+      },
+      {
+       "k": 2,
+       "residual": 0.0006604794764757243,
+       "phi_calls": 3,
+       "psi_calls": 8,
+       "inner_steps": 3
+      },
+      {
+       "k": 3,
+       "residual": 0.0006388797599091062,
+       "phi_calls": 4,
+       "psi_calls": 12,
+       "inner_steps": 3
+      },
+      {
+       "k": 4,
+       "residual": 0.0006308683481431279,
+       "phi_calls": 5,
+       "psi_calls": 16,
+       "inner_steps": 3
+      },
+      {
+       "k": 5,
+       "residual": 0.0006242716257064165,
+       "phi_calls": 6,
+       "psi_calls": 20,
+       "inner_steps": 3
+      },
+      {
+       "k": 6,
+       "residual": 0.000617417978920361,
+       "phi_calls": 7,
+       "psi_calls": 24,
+       "inner_steps": 3
+      },
+      {
+       "k": 7,
+       "residual": 0.0006158988613755733,
+       "phi_calls": 8,
+       "psi_calls": 28,
+       "inner_steps": 3
+      },
+      {
+       "k": 8,
+       "residual": 0.0006128247690437332,
+       "phi_calls": 9,
+       "psi_calls": 32,
+       "inner_steps": 3
+      },
+      {
+       "k": 9,
+       "residual": 0.0006107813767823616,
+       "phi_calls": 10,
+       "psi_calls": 36,
+       "inner_steps": 3
+      },
+      {
+       "k": 10,
+       "residual": 0.0006127505623066833,
+       "phi_calls": 11,
+       "psi_calls": 40,
+       "inner_steps": 3
+      },
+      {
+       "k": 11,
+       "residual": 0.0006118885187773555,
+       "phi_calls": 12,
+       "psi_calls": 44,
+       "inner_steps": 3
+      }
+     ],
+     "fallback_rows": [
+      {
+       "j": 0,
+       "phase": "fallback",
+       "residual": 0.0006107813767823616,
+       "phi_calls": 13,
+       "psi_calls": 48
+      },
+      {
+       "j": 25,
+       "phase": "fallback",
+       "residual": 0.00042935416452376376,
+       "phi_calls": 38,
+       "psi_calls": 48
+      },
+      {
+       "j": 50,
+       "phase": "fallback",
+       "residual": 0.00036844567820720926,
+       "phi_calls": 63,
+       "psi_calls": 48
+      },
+      {
+       "j": 75,
+       "phase": "fallback",
+       "residual": 0.00031227522050683034,
+       "phi_calls": 88,
+       "psi_calls": 48
+      },
+      {
+       "j": 100,
+       "phase": "fallback",
+       "residual": 0.00014558016988695148,
+       "phi_calls": 113,
+       "psi_calls": 48
+      },
+      {
+       "j": 125,
+       "phase": "fallback",
+       "residual": 5.684594930780673e-05,
+       "phi_calls": 138,
+       "psi_calls": 48
+      },
+      {
+       "j": 150,
+       "phase": "fallback",
+       "residual": 1.4934554502972969e-06,
+       "phi_calls": 163,
+       "psi_calls": 48
+      },
+      {
+       "j": 152,
+       "phase": "fallback",
+       "residual": 8.485458246625213e-07,
+       "phi_calls": 165,
+       "psi_calls": 48
+      }
+     ],
+     "window": "F01",
+     "wall_s": 6.793995399988489,
+     "alpha": 0.5,
+     "use_learned": true,
+     "r_stop": 1e-06,
+     "k_max": 12
+    },
+    "null_identity": {
+     "status": "fallback_converged",
+     "stop_reason": "stalled",
+     "residual": 9.086619572387445e-07,
+     "phi_calls": 172,
+     "psi_calls": 10,
+     "fallback_from": 2,
+     "rows": [
+      {
+       "k": 0,
+       "residual": 0.0007410289673150415,
+       "phi_calls": 1,
+       "psi_calls": 0,
+       "inner_steps": 4
+      },
+      {
+       "k": 1,
+       "residual": 0.0008187728767689233,
+       "phi_calls": 2,
+       "psi_calls": 5,
+       "inner_steps": 4
+      },
+      {
+       "k": 2,
+       "residual": 0.0009501917106423342,
+       "phi_calls": 3,
+       "psi_calls": 10
+      }
+     ],
+     "fallback_rows": [
+      {
+       "j": 0,
+       "phase": "fallback",
+       "residual": 0.0007410289673150415,
+       "phi_calls": 4,
+       "psi_calls": 10
+      },
+      {
+       "j": 25,
+       "phase": "fallback",
+       "residual": 0.0004405212296653757,
+       "phi_calls": 29,
+       "psi_calls": 10
+      },
+      {
+       "j": 50,
+       "phase": "fallback",
+       "residual": 0.00038142045605396254,
+       "phi_calls": 54,
+       "psi_calls": 10
+      },
+      {
+       "j": 75,
+       "phase": "fallback",
+       "residual": 0.00033467760658924625,
+       "phi_calls": 79,
+       "psi_calls": 10
+      },
+      {
+       "j": 100,
+       "phase": "fallback",
+       "residual": 0.00023357414633619708,
+       "phi_calls": 104,
+       "psi_calls": 10
+      },
+      {
+       "j": 125,
+       "phase": "fallback",
+       "residual": 0.00011257798403336711,
+       "phi_calls": 129,
+       "psi_calls": 10
+      },
+      {
+       "j": 150,
+       "phase": "fallback",
+       "residual": 2.3988937455636655e-05,
+       "phi_calls": 154,
+       "psi_calls": 10
+      },
+      {
+       "j": 168,
+       "phase": "fallback",
+       "residual": 9.086619572387445e-07,
+       "phi_calls": 172,
+       "psi_calls": 10
+      }
+     ],
+     "window": "F01",
+     "wall_s": 1.7970627000031527,
+     "alpha": 0.5,
+     "use_learned": false,
+     "r_stop": 1e-06,
+     "k_max": 12
+    },
+    "what_the_checkpoint_bought_in_classical_calls": 7,
+    "classical_calls": {
+     "with": 165,
+     "null": 172
+    }
+   }
+  },
+  "note": "psi is the checkpoint shrunk by alpha, and the null replaces it with the IDENTITY -- W76's null replacement.  Whatever the checkpoint column does that the identity column also does is not the checkpoint's.  Tier 48 measured that difference at 13 classical calls against a 69-call spread from perturbing the same weights by 3%",
+  "theorem_1": "the limit is the classical map's own fixed point whatever psi does, so what is measured here is the PRICE of getting there and never the accuracy of the answer"
+ },
+ "assign": {
+  "steps": 40,
+  "columns": {
+   "classical": {
+    "steps": 40,
+    "wall_s": 12.541148000018438,
+    "s_per_macro_step": 0.31352870000046096,
+    "macro_steps_per_s": 3.189500674096278,
+    "assignment": {
+     "F00": "classical",
+     "F10": "classical",
+     "F20": "classical",
+     "F30": "classical",
+     "F40": "classical",
+     "F50": "classical",
+     "F60": "classical",
+     "F01": "classical",
+     "F11": "classical",
+     "F21": "classical",
+     "F31": "classical",
+     "F41": "classical",
+     "F51": "classical",
+     "F61": "classical"
+    },
+    "ledger": {
+     "classical": 14,
+     "learned": 0,
+     "certified": 0
+    },
+    "mode_calls": {
+     "classical": 2240,
+     "learned": 0,
+     "certified": 0
+    },
+    "outside_the_envelope": null,
+    "outside_steps": 0,
+    "enforce": false,
+    "rms_field_error_vs_all_classical": 0.0,
+    "speed_ratio_vs_all_classical": 1.0,
+    "settled": {
+     "u_rotor": 0.6704993830161242,
+     "u_core": 0.7370041848913288,
+     "ua": 41.27064273574412,
+     "current": 0.029600397246636278,
+     "q_machine": 29.055987907516318,
+     "load": 0.5802125683151719,
+     "drag": 0.9694606300122596,
+     "u_max": 1.3415621118894612
+    }
+   },
+   "upper-learned": {
+    "steps": 40,
+    "wall_s": 69.59253039999749,
+    "s_per_macro_step": 1.7398132599999372,
+    "macro_steps_per_s": 0.5747743295162816,
+    "assignment": {
+     "F00": "classical",
+     "F10": "classical",
+     "F20": "classical",
+     "F30": "classical",
+     "F40": "classical",
+     "F50": "classical",
+     "F60": "classical",
+     "F01": "learned",
+     "F11": "learned",
+     "F21": "learned",
+     "F31": "learned",
+     "F41": "learned",
+     "F51": "learned",
+     "F61": "learned"
+    },
+    "ledger": {
+     "classical": 7,
+     "learned": 7,
+     "certified": 0
+    },
+    "mode_calls": {
+     "classical": 1120,
+     "learned": 1120,
+     "certified": 0
+    },
+    "outside_the_envelope": {
+     "step": 7,
+     "why": "the march left a declared envelope at macro-step 7 -- FLUID: u_max = 2.11193 gives a cell Reynolds number of 8.25 against the window expert's declared bound of 8, or went past the declared band of 4 -- and WindowNS sizes its sub-step count from u_max, so a march past this reads as a hang rather than as a blow-up",
+     "declined": [
+      "FLUID"
+     ]
+    },
+    "outside_steps": 33,
+    "enforce": false,
+    "rms_field_error_vs_all_classical": 2.6168890390174697,
+    "speed_ratio_vs_all_classical": 0.18020824832687635,
+    "settled": {
+     "u_rotor": 0.6805888922411281,
+     "u_core": 0.758471549281785,
+     "ua": 42.2295669031498,
+     "current": 0.04287214772647039,
+     "q_machine": 61.06115184363447,
+     "load": 0.6975206782977719,
+     "drag": 1.0318757708305695,
+     "u_max": 4.995672612116015
+    }
+   },
+   "wake-learned": {
+    "steps": 40,
+    "wall_s": 102.53696179998224,
+    "s_per_macro_step": 2.563424044999556,
+    "macro_steps_per_s": 0.39010323007256226,
+    "assignment": {
+     "F00": "classical",
+     "F10": "classical",
+     "F20": "classical",
+     "F30": "classical",
+     "F40": "learned",
+     "F50": "learned",
+     "F60": "learned",
+     "F01": "classical",
+     "F11": "classical",
+     "F21": "classical",
+     "F31": "classical",
+     "F41": "learned",
+     "F51": "learned",
+     "F61": "learned"
+    },
+    "ledger": {
+     "classical": 8,
+     "learned": 6,
+     "certified": 0
+    },
+    "mode_calls": {
+     "classical": 1280,
+     "learned": 960,
+     "certified": 0
+    },
+    "outside_the_envelope": {
+     "step": 5,
+     "why": "the march left a declared envelope at macro-step 5 -- FLUID: u_max = 2.19006 gives a cell Reynolds number of 8.555 against the window expert's declared bound of 8, or went past the declared band of 4 -- and WindowNS sizes its sub-step count from u_max, so a march past this reads as a hang rather than as a blow-up",
+     "declined": [
+      "FLUID"
+     ]
+    },
+    "outside_steps": 35,
+    "enforce": false,
+    "rms_field_error_vs_all_classical": 3.7054749495398767,
+    "speed_ratio_vs_all_classical": 0.12230855859063117,
+    "settled": {
+     "u_rotor": 0.7542561258957764,
+     "u_core": 0.7560077742763668,
+     "ua": 42.11980487684349,
+     "current": 0.1397741002199775,
+     "q_machine": 647.9028330202516,
+     "load": 0.8742183740731736,
+     "drag": 1.1982512115808261,
+     "u_max": 5.480736857278934
+    }
+   },
+   "learned": {
+    "steps": 40,
+    "wall_s": 187.8331263999862,
+    "s_per_macro_step": 4.695828159999655,
+    "macro_steps_per_s": 0.21295498172575236,
+    "assignment": {
+     "F00": "learned",
+     "F10": "learned",
+     "F20": "learned",
+     "F30": "learned",
+     "F40": "learned",
+     "F50": "learned",
+     "F60": "learned",
+     "F01": "learned",
+     "F11": "learned",
+     "F21": "learned",
+     "F31": "learned",
+     "F41": "learned",
+     "F51": "learned",
+     "F61": "learned"
+    },
+    "ledger": {
+     "classical": 0,
+     "learned": 14,
+     "certified": 0
+    },
+    "mode_calls": {
+     "classical": 0,
+     "learned": 2240,
+     "certified": 0
+    },
+    "outside_the_envelope": {
+     "step": 5,
+     "why": "the march left a declared envelope at macro-step 5 -- FLUID: u_max = 2.18833 gives a cell Reynolds number of 8.548 against the window expert's declared bound of 8, or went past the declared band of 4 -- and WindowNS sizes its sub-step count from u_max, so a march past this reads as a hang rather than as a blow-up; ROTOR: the induction 0.4 is AT the clamp `clamp_induction` declares, so the disk has",
+     "declined": [
+      "FLUID",
+      "ROTOR"
+     ]
+    },
+    "outside_steps": 35,
+    "enforce": false,
+    "rms_field_error_vs_all_classical": 3.8443296380911196,
+    "speed_ratio_vs_all_classical": 0.06676749857909707,
+    "settled": {
+     "u_rotor": 0.9137171536582385,
+     "u_core": 0.8900556548677852,
+     "ua": 47.99532489827693,
+     "current": 0.34952929490046747,
+     "q_machine": 4055.016687604127,
+     "load": 1.1110711212315272,
+     "drag": 1.4364212944679173,
+     "u_max": 5.478866282804423
+    }
+   }
+  },
+  "referent": "the all-classical composed march at the same horizon",
+  "not_run": "the single-domain monolith -- section 5.4's SECOND referent, against which the composed classical answer carries its own composition defect. CS-19 did not run it either and neither tier claims it"
+ }
+}

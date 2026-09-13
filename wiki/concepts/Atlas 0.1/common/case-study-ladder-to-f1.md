@@ -1228,3 +1228,72 @@ P3's tracking residual is $3.482\times10^{-6}$ against an inherited $10^{-6}$. *
 - **The envelope repair was priced and not taken** (W222): scaling the machine for the inflow its host actually delivers is a second vehicle decision and [[vehicle-scale-and-sizing]] §0.1 makes it the user's.
 - **The horizon is $0.71$ transits of the domain** against CS-18's $4.6$, and the flow does not settle to that tier's band at any horizon this host can afford.
 - **Nothing was downloaded, no checkpoint was loaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
+
+---
+
+# 26. The switch, and the cadence a frozen expert cannot be asked for (2026-09-12)
+
+Full record: [[case-study-racelab-switch-atlas-0.1]] and [[gap-worklist]] Tier 52.
+
+**§25.5's critical path loses W222 and the demo gains its switch.** PoC 3's phase 2: per-window classical / learned / certified, with the one-step error against the classical expert on the same input state — the number §5.4 calls the most trustworthy because it needs no global referent — and the per-call cost. **No rung moves**, and §14.3's sentence does not move either.
+
+## 26.1 The verdict
+
+**The switch is built, every number §5.2 and §5.3 ask for is measurable, and the learned column cannot be asked for the step the composition layer runs at.** The scaling is over-determined: one 128-cell window spans $2.0$ length units **by geometry**, so a macro-step is $\tfrac18$ of the checkpoint's native lead and **one exchange is $\tfrac1{32}$ of it**. Measured across leads the per-window median error is $0.3607$, $0.5615$, $0.7301$, $\mathbf{0.1708}$, $0.2408$ at $\tfrac18$, $\tfrac14$, $\tfrac12$, $1$ and $2$ times native — **a sharp minimum AT the native lead**, and $4.3\times$ the minimum at an eighth of it.
+
+**That is [[prior-art-and-novelty-atlas-0.1]] §4's named assumption measured false.** That page lists what partitioned-coupling stability theory assumes and a frozen neural expert lacks, *"above all that error shrinks with the macro step, which fails for an expert trained at a native $\Delta t$."* It has been a citation since it was written. It is now a curve.
+
+## 26.2 What that does in a march, and it is not subtle
+
+| assignment | s / macro-step | speed | rms field error | steps outside an envelope |
+|---|---|---|---|---|
+| all classical | $\mathbf{0.3135}$ | $1.000$ | $0$ | $\mathbf{0}$ |
+| upper row learned | $1.7398$ | $0.180$ | $2.617$ | $33$ of $40$ |
+| all learned | $4.6958$ | $\mathbf{0.067}$ | $3.844$ | $\mathbf{35}$ of $40$ |
+
+**The learned columns do not merely degrade — they leave the fluid expert's own declared bound**, and the check added in this tier says so rather than the field quietly going wrong. Per call at its own lead, with each column at its own best thread count, the learned column is a **draw**: $1.153$ in one process and $0.944$ in another, two draws $20\%$ apart, so the page says *even* and not *faster* (**W215** again).
+
+## 26.3 The certified mode does what its theorem says and costs what Tier 48 predicted
+
+Both windows reach the classical fixed point — which is Theorem 1 and not a measurement. Against **W76's null replacement**, the same iteration with the checkpoint swapped for the identity, the checkpoint bought $\mathbf{5}$ and $\mathbf{7}$ classical calls out of $270$ and $165$ — about $\mathbf{2\%}$ — and cost $\mathbf{3\times}$ the wall time. Tier 48 measured $13\%$ in its slot and [[corrupted-checkpoint-and-jacobian-fidelity]] then measured that $13$ against a $69$-call spread from perturbing the same weights by $3\%$. **Same direction, smaller.**
+
+## 26.4 W222, closed, and the sharper form of it
+
+**The predicates existed and nobody asked them.** `powertrain.MachineAgent.validity` declares the motoring condition in its own docstring; the disk declares its induction clamp; the fluid window declares a cell-Reynolds bound. All three were computed during Tier 51 and read by nothing. `RaceRollout._absorb` consults all of them, once, on the one path a march takes, with `enforce` on by default and three states — `True`, `False`, and `None` for *not consultable*, because a check that cannot be evaluated is not a pass.
+
+**It found a second thing in its first run**: every CS-19 arm released from a uniform freestream, whose transient leaves the disk's clamp for **58** macro-steps. That is inherited practice — CS-18 releases from a settled cache and PoC 2's README says what happens when you do not — that Tier 51 did not follow and did not say.
+
+The vehicle repair is W199's own similarity one level on, $k_e \to k_e/x$ and $R \to R/x^3$, with three controls: identity at $x = 1$ bitwise, the reference induction returned to a gap of **exactly 0**, and a declined/repaired pair from one settled field.
+
+## 26.5 What moves on this page
+
+**§14.3 does not move and phase 2 was never going to move it.** *The foundation-model half has no learned expert admitted with a nonzero contribution* stands, and the certified slot's contribution on this graph is $2\%$ of the classical calls.
+
+**What is new is a diagnosis rather than a verdict.** Three tiers have now measured the learned column not paying, and this one says *where the loss is*: not in the weights, not in the theorem, but in **the cadence**. A frozen operator has a native step; a composition layer has an exchange rate; on this graph they differ by $32$, and nothing in the framework reads either number.
+
+## 26.6 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W226** — `CERTIFIED` is not a per-macro-step mode | the requirements' own §4.2, and any demo that offers it as one | `open`, medium, **new** |
+| **W225** — the demo will show a broken column every time | phase 3's screen | `open`, medium, **new** |
+| **W223** — why the error grows as the step shrinks | what the NEXT expert has to come with | `open`, medium, **new** |
+| **W220** — ten of the car's bodies are invisible to the compiler | any rule about a seam crossing a body | `open`, **large**, as §25.5 |
+| **W216**, **W218**, **W224**, **W221**, **W217** | the body force's cost, W124 on a car, the error's normalisation, the settling, the timings | `open` |
+| **W214**, **W215**, **W204** | the shrink, the randomised arm, the entry condition | `open`, as §24.5 |
+| **W209**–**W213**, **W199**–**W201**, **W194**–**W198** | rung 9's march and its graph | `open`, as §23.5 |
+
+## 26.7 The next step
+
+**Phase 3 is the dashboard, and W225 is its first design decision rather than a defect to fix.** The screen has to show the lead ratio beside the switch, or offer the comparison §5.1 shows is fair — the learned column at eight macro-steps against the classical one over the same horizon — and say which it is showing. A switch that silently asks a checkpoint for a thirty-second of its native step and then reports the error as the expert's is the kind of number this vault exists to not publish.
+
+**[AI Inference]:** the cadence mismatch is not a property of Poseidon-T and is not a property of RaceLab. It is what happens when a composition layer built around an explicit sub-stepped solver meets an operator trained to take one large step, and **any** frozen operator dropped into `ground_effect`'s tiling meets the same factor of 32. Unmeasured against a second checkpoint, because this project has one.
+
+## 26.8 What this tier did NOT do, named
+
+- **No rung moved, no expert was trained**, and no threshold was adjusted.
+- **CS-19's arms were not re-run on the repaired column**, so the two RaceLab pages describe two different vehicles and say so.
+- **The mixed marches are 40 macro-steps** and are a cost-and-divergence measurement, not a settled-state one.
+- **Section 5.4's second referent — the single-domain monolith — was not run**, as in CS-19.
+- **No dashboard, no three dimensions, no bundle**: phases 3, 4 and 5.
+- **Nothing was downloaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
