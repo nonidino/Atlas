@@ -301,13 +301,27 @@ def test_the_demo_releases_from_the_traced_car_s_own_settled_field():
     The demo released the traced car from the HAND-DRAWN car's cache and
     stamped OUTSIDE THE MODEL from macro-step 6 for it -- correctly, which is
     how it was noticed.
+
+    **This test then pinned the repair as a directory ORDER**, and the next car
+    walked straight through it: when the user drew the car in Tier 55 the
+    demo went on preferring ``out/racelab4`` -- the traced car's field -- for a
+    car that was no longer traced, and this test went on passing.  An order
+    says which cache is newest, not which car it belongs to.  So it pins the
+    MATCH now: the engine asks for the car's fingerprint and keeps the answer
+    of whether the field is this car's, and the fallback still says, in
+    capitals, when it is not.  `test_tier57_racelab_bundle.py` exercises the
+    mechanism on real files.
     """
     src = open(os.path.join(DEMO, "engine.py"), encoding="utf-8").read()
     i = src.index("def _release")
     body = src[i:i + 2000]
-    # the ORDER IN THE CODE, not the first mention in the prose around it
-    assert '("racelab4", "racelab2")' in body,         "the traced car's cache is not preferred"
-    assert "HAND-DRAWN" in body, "the fallback does not say it is the wrong car"
+    assert "find_release(root, RL.geometry_fingerprint())" in body, \
+        "the release is not matched to the car"
+    assert 'self.notes["release_is_this_car_s"]' in body
+    j = src.index("def find_release")
+    fn = src[j:j + 3000]
+    assert "DIFFERENT CAR" in fn, "the fallback does not say it is the wrong car"
+    assert "fp == fingerprint" in fn
 
 
 def test_a_two_d_engine_is_unchanged_by_any_of_this():

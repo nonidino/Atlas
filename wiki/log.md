@@ -4813,3 +4813,52 @@ python scripts/run_suite.py              # 1422 passed, 0 failed
 **Changed:** `atlas/cases/racelab.py` (`car_bodies` reads the file; the three knob defaults are the drawn angles), `tests/test_tier51_racelab_graph.py` (parts by role), `.gitignore`, [[gap-worklist]] (**W240**-**W242**).
 
 **NOT done:** the arms still describe the car that was in place when they ran, and this is a different car. Nothing has been re-marched.
+
+---
+
+## [2026-09-13] tier 56 | the drawn car, re-sized, and the arms that were not run
+
+Tier 54's five arms described the traced car, and the car on disk is now the one the user drew. So Tier 54's driver was re-run for it, into `out/racelab5`. **The gate refused and the arms were not run** — which is what the driver was rebuilt to do after it lost a referent arm in Tier 54 — and why it refused is the tier. See [[poc3-racelab-drawn-car]].
+
+### Before it could run, the driver needed six changes
+
+It wrote to `out/racelab4` unconditionally, so a re-run would have **overwritten Tier 54's committed record** — `--out` is required now. It hard-coded the traced car's description and would have stamped it on the drawn car; it handed any new record Tier 54's prediction; it recorded each probe's endpoints and nothing between; its horizon floor could return a horizon its own probe had refuted; and a failing stage left its reason only in a console. All six closed, as **W246**, which also carries the seventh defect found later in this entry.
+
+**A settled field now records the car it belongs to (W247).** `racelab.geometry_fingerprint` hashes the built bodies; the spin-up stores it in `settled.npz`; the driver refuses a field for another car and so does the bundle builder; the demo matches by fingerprint and says in capitals when it cannot. The demo had released the wrong car's flow twice, because the repair chose by directory order and the test pinned the order.
+
+### Two envelopes, and the sizing can move neither
+
+**W244, the machine.** The duct flow falls $16.6\%$ over $600$ macro-steps against the traced car's $2.0\%$, and is still falling at the last one. Sized for the minimum ($0.442762$) the disk is on its **upper** clamp at macro-step $0$; sized for release ($0.531725$) it reaches the **lower** clamp at $20$. No constant spans a sixth. **Prediction 3 — that W228's minimum-sizing would again admit the arms — is falsified.**
+
+**W245, the fluid.** Read off the rollout's own envelope every macro-step: the cell-Reynolds bound of $8$ breaks at macro-step $56$ and never recovers — $544$ of $600$ steps, $u_{\max}$ $1.82 \to 3.30$, cell Re $12.90$ — **on the outflow column**, $x = 671$, $y = 100$–$118$, where the wake the car sheds meets the edge of the box with $v = -3.00$ on the boundary column and $2.02$ one column in. The check fired correctly, on a boundary artifact.
+
+**And the first reading of that trace was wrong.** It named `RW_ENDPLATE` as the location on every declined step — the nearest body, **$155$ cells** away, because a nearest neighbour always exists. Repeated here it would have sent the user to redraw a plate that is not where the flow breaks. The summariser names a boundary as a boundary and a body only within $8$ cells now, and the record keeps both readings side by side.
+
+### The ablation, and the half of it that can be believed
+
+$200$ macro-steps with rear-body plates removed, beside the intact car through the same code path, bitwise equal to the trace. **The fluid breach moves by at most three steps in any arm — and that says nothing**, because every arm releases from the intact car's field, whose wake already reaches the outlet. **The machine's declines do move, because the duct responds within steps**: the endplate alone takes the rotor's first decline from $20$ to $123$, and the closed rear box — `RW_ENDPLATE`, `RW_ENDPLATE_LO`, `DIFF_EXIT` — keeps rotor and machine inside for all $200$ steps marched.
+
+### The gate, as far as it goes
+
+P1 **passes** (joined: `L7/R9` only; disjoint and clocks-reconciled: nothing); P7 **passes** at $7.5\times10^{-15}$; P2–P6 are `None` — unmeasured, not failed. `size` was marched twice, before and after the trajectory change, and agreed bitwise; and the hand-stepped trace equals `racelab.march`'s trajectory bitwise over all $600$ steps.
+
+**The demo** releases the drawn car from its own field and is sized for its release state, $0.5317$ — twenty macro-steps inside, then the stamp.
+
+```
+python scripts/tier54_traced_car.py --out out/racelab5 --stages spinup,size,verify,arms,slow,gate,compare --compare-with out/racelab4/racelab4.json
+python scripts/tier54_traced_car.py --out out/racelab5 --stages trace
+python scripts/tier54_traced_car.py --out out/racelab5 --stages ablate --ablate-steps 200 --drop "RW_ENDPLATE;DIFF_EXIT;RW_ENDPLATE,RW_ENDPLATE_LO,DIFF_EXIT"
+python scripts/tier54_traced_car.py --out out/racelab5 --stages size,verify,arms
+python scripts/tier54_traced_car.py --out out/racelab5 --stages gate
+python scripts/vault_scan.py wiki        # 235 files, 0 problems
+python scripts/run_suite.py              # 1467 passed, 1 skipped, 0 failed
+```
+
+The suite's wall time, $449$ s, was taken with no other Python process running and the machine on mains, against the usual $\sim 440$ s. The one skip is Tier 57's constraints test, which waits on a verified install. **The lagged macro-steps in this tier read $0.42$–$0.70$ s against the smoke run's $0.41$, and the cause is not separated**: `WindowNS` sizes its sub-steps from $u_{\max}$, which nearly doubled over the horizon, and during the trace the CPU was seen clocked down to $1.4$ GHz with a browser using about a core. No clause was judged on a wall time, because P6 needs the arms.
+
+**Opened:** **W244** (no constant sizing spans the drawn car's duct flow), **W245** (the fluid breaks at the outflow boundary). **Closed:** **W246** (the re-used driver's seven defects), **W247** (a settled field that did not know its car).
+
+**Added:** `tests/test_tier56_racelab_drawn_car.py`, `out/racelab5/racelab5.json`, [[poc3-racelab-drawn-car]].
+**Changed:** `atlas/cases/racelab.py` (`geometry_fingerprint`), `scripts/tier54_traced_car.py` (W246, and stages `slow`, `gate`, `trace`, `ablate`), `atlas/demo_racelab/engine.py` (`U_DUCT` for the drawn car, `find_release` by fingerprint, and the learned-switch refusal Tier 57 opens as W243), `atlas/demo_racelab/static/index.html` (the release note every frame, and W243's greyed-out switch), `tests/test_tier52_racelab_switch.py` (the drawn car's sizing, and a settled field chosen by fingerprint), `tests/test_tier54_racelab_3d.py` (the release test pins the match instead of the order, its diagnosis kept), `.gitignore`, [[gap-worklist]], `wiki/index.md`.
+
+**NOT done:** the arms (P2–P6 unmeasured on the drawn car); any sizing beyond W228's; any attribution of the fluid breach to a part of the car; a redraw or a longer box — both the user's call. Nothing downloaded except PyPI's metadata page for torch, which was read; no machine rented; the unlicensed structural checkpoint not loaded; nothing pushed.

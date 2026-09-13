@@ -97,7 +97,8 @@ from .ground_effect import DX, GroundTiling
 __all__ = [
     "RNX", "RNY", "WX", "WY", "HALO_MIN", "RAMP",
     "Body", "PlateBody", "WheelBody", "DeviceWindowSpec",
-    "CAR", "CAR_NOTES", "car_bodies", "body_extents", "CarParams",
+    "CAR", "CAR_NOTES", "car_bodies", "geometry_fingerprint", "body_extents",
+    "CarParams",
     "RaceTiling", "windows_from_geometry", "LAYOUT", "layout", "layout_report",
     "layout_frontier", "body_profile", "force_profile", "PROFILE_KINDS",
     "DUCT_CORE_RANGE", "TURBINE_RANGE", "DUCT_Y0", "WING_BODY_ID",
@@ -515,6 +516,35 @@ def car_bodies(p: CarParams = None, device: str = "cpu",
         else:
             flat.extend(o.bodies)
     return out, flat
+
+
+def geometry_fingerprint(p: CarParams = None, geometry: dict = None) -> str:
+    """A hash of the car AS BUILT, so a field can say which car it belongs to.
+
+    **A settled field belongs to a geometry, and nothing recorded which.**  The
+    demo released the traced car from the hand-drawn car's settled field in
+    Tier 54, and then released the drawn car from the traced car's in Tier 55
+    -- the same defect twice, each time found only because the envelope stamp
+    turned red.  A directory name cannot carry the answer, because the car is
+    now edited with a mouse and the directory does not change when it does.
+
+    The hash is over the BUILT bodies rather than the file's bytes: the file's
+    bytes move with line endings and key order, which change nothing, and the
+    knob-owned entries (`y_plus_ride`, `y_plus_duct`, `alpha_from`) are only
+    resolved at build time, which changes everything.  ``label`` is left out
+    because it is a caption.
+    """
+    import hashlib
+    _objs, flat = car_bodies(p, geometry=geometry)
+    rows = ["RNX=%d RNY=%d DUCT_Y0=%r DEVICE_CELLS=%d"
+            % (RNX, RNY, float(DUCT_Y0), int(IU.DEVICE_CELLS))]
+    for b in flat:
+        rows.append("|".join((
+            str(b.body_id), repr(float(b.x_le)), repr(float(b.y_le)),
+            repr(float(b.chord)), repr(float(b.alpha_deg)),
+            repr(float(b.c_n)), str(int(b.n_station)), str(b.group),
+            str(bool(b.cuttable)))))
+    return hashlib.sha256("\n".join(rows).encode("utf-8")).hexdigest()
 
 
 #: The duct's lower wall, in cells.  The device planes span the 32 cells above

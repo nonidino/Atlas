@@ -378,6 +378,23 @@ out/racelab3/*
 out/racelab4/*
 !out/racelab4/racelab4.json
 
+# Tier 56 -- the drawn car, re-sized and re-marched: the same script as Tier 54
+# (`tier54_traced_car.py --out out/racelab5`), with P4's null (stage slow) and
+# all seven clauses judged in code (stage gate). JSON only. Rebuilding costs
+# about 100 minutes on the development laptop: the spin-up is 240 lagged
+# macro-steps (~1.5 min), each sizing probe a 600-step lagged march (~4 min,
+# and a second one runs if the first probe's first decline is the machine
+# rather than the fluid), the verify marches the whole chosen horizon (~3-4
+# min), and the five arms are most of it -- four TIGHT arms at ~2 s a
+# macro-step. slow and gate are about a minute each. The .npz files under
+# out/racelab5/cache/ are ignored: settled.npz (~2.6 MB) is the release state
+# the demo and the tests read, carries the fingerprint of the car it was
+# settled around, and `--stages spinup` regenerates it; the arm_*.npz are each
+# arm's final field and nothing cites them.
+!out/racelab5/
+out/racelab5/*
+!out/racelab5/racelab5.json
+
 # The car editor's leavings. The geometry ITSELF is tracked -- it is the car --
 # but its rolling backup, the tracing backdrops and the check's picture are not.
 atlas/cases/car_geometry.json.bak

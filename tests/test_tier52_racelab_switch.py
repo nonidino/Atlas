@@ -55,14 +55,14 @@ from atlas.cases import wake_array as WA                              # noqa: E4
 ART = os.path.join(_ROOT, "out", "racelab2", "racelab2.json")
 PAGE = os.path.join(_ROOT, "wiki", "concepts", "Atlas 0.1", "common",
                     "case-study-racelab-switch-atlas-0.1.md")
-U_DUCT = 0.654077065086774
-#: **Re-measured 2026-09-13 for the TRACED car** (Tier 54 stage
-#: `size`).  The duct moved from y 44..76 to y 18..50 when the car
-#: became a traced silhouette, so the ring velocity moved with it:
-#: 0.6691530373612168 was the hand-drawn car's and sizing the
-#: machine for it now puts the disk's induction ON its clamp at
-#: macro-step 0.  Measured as the horizon's MINIMUM, which is
-#: W228's procedure.
+U_DUCT = 0.5317254889754462
+#: **Re-measured 2026-09-13 for the car the user DREW** (Tier 56, stage
+#: `spinup` of out/racelab5) -- the release state's inflow, because on
+#: this car W228's horizon-minimum sizing has no admissible answer
+#: (W244): the duct flow falls 16.6% over 600 macro-steps.  The pair
+#: below marches two macro-steps, well inside the twenty this sizing
+#: admits.  0.654077065086774 was the traced car's minimum, and
+#: 0.6691530373612168 the hand-drawn car's release value before it.
 
 
 def _art():
@@ -87,16 +87,25 @@ def _settled():
     hand-drawn car's, settled around bodies that moved on 2026-09-13 when the
     car became a traced silhouette; releasing the traced car from it puts the
     wrong flow through the radiator duct and pins the disk's induction on its
-    clamp at macro-step 0.  Tier 54's cache is the traced car's own and is
-    preferred; the older one is the fallback so a checkout that has never run
-    Tier 54 still skips cleanly rather than failing for the wrong reason.
+    clamp at macro-step 0.  Then the traced car was replaced by the drawn one
+    and this helper went on handing the drawn car the traced car's field,
+    because it chose by directory order.
+
+    **So it chooses by fingerprint now** (`racelab.geometry_fingerprint`, which
+    Tier 56's spin-up stores in the field): the field returned was settled
+    around the car being built, or the test skips and says so.  A field that
+    belongs to another car is a skip and never a silent pass.
     """
-    for tier in ("racelab4", "racelab2"):
+    want = RL.geometry_fingerprint()
+    for tier in ("racelab5", "racelab4", "racelab2"):
         p = os.path.join(_ROOT, "out", tier, "cache", "settled.npz")
         if os.path.isfile(p):
-            d = np.load(p)
-            return d["u"], d["v"]
-    pytest.skip("no settled field; run tier54_traced_car.py --stages spinup")
+            with np.load(p) as d:
+                if "geometry" in d.files and str(d["geometry"]) == want:
+                    return d["u"], d["v"]
+    pytest.skip("no settled field was settled around the car built now; run "
+                "python scripts/tier54_traced_car.py --out out/racelab5 "
+                "--stages spinup")
 
 
 # ---------------------------------------------------------------------------

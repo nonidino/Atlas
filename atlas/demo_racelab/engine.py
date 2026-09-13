@@ -54,13 +54,18 @@ LEAD_RATIO = (GE.MACRO_DT / GE.EXCHANGES) / 0.1
 #: The inflow the machine is sized for (CS-20 §2.2).  Without it the powertrain
 #: is outside its declared envelope from the first macro-step.
 #:
-#: **Re-measured 2026-09-13 for the TRACED car** (Tier 54 stage ``size``).  The
-#: duct moved from y 44..76 down to y 18..50 when the car became a traced
-#: silhouette, and the ring velocity moved with it: ``0.6691530373612168`` was
-#: the hand-drawn car's, and sizing the machine for it now puts the disk's
-#: induction ON its clamp at macro-step 0.  Measured as the horizon's MINIMUM,
-#: which is W228's procedure.
-U_DUCT = 0.654077065086774
+#: **Re-measured 2026-09-13 for the car the user DREW** (Tier 56, stage
+#: ``spinup`` of ``out/racelab5``), and it is the release state's value because
+#: nothing better exists for this car.  ``0.654077065086774`` was the traced
+#: car's horizon minimum; on the drawn car the duct carries 0.5317 at release
+#: and the machine sized for 0.654 motors from macro-step 0.  **W228's
+#: procedure -- size for the horizon's MINIMUM -- has no admissible answer
+#: here**: ``u_rotor`` falls 16.6% over 600 macro-steps, the machine sized for
+#: that minimum puts the disk's induction on its UPPER clamp at macro-step 0,
+#: and sized for the release state it reaches the LOWER clamp at macro-step 20.
+#: No constant spans a fall that wide (W244).  This value buys the first twenty
+#: macro-steps, and the page stamps every one after them.
+U_DUCT = 0.5317254889754462
 
 #: Colour ramp bounds for the speed overlay, in free streams.
 U_LO, U_HI = 0.0, 2.0
@@ -138,6 +143,55 @@ def field_png(u: np.ndarray, v: np.ndarray, which: str = "speed",
     Image.fromarray(np.ascontiguousarray(rgb), mode="RGB").save(
         buf, format="PNG", compress_level=1)
     return buf.getvalue()
+
+
+#: Where a settled field is looked for, newest first.  Each directory holds the
+#: release state one tier's spin-up produced for the car built at the time.
+RELEASE_TIERS = ("racelab5", "racelab4", "racelab2")
+
+#: How to regenerate the release state for whatever car is built now.
+RESPIN = "python scripts/tier54_traced_car.py --out out/racelab5 --stages spinup"
+
+
+def find_release(root: str, fingerprint: str, tiers=RELEASE_TIERS):
+    """``(u, v, note, is_this_car_s)`` -- the settled field for THIS car.
+
+    Every cache that exists is opened and the first whose recorded fingerprint
+    is the car's is returned, with ``True``.  If none is, the newest cache is
+    returned with ``False`` and a note that says, in capitals, that it was
+    settled around a different car -- a transient on screen is better than a
+    freestream one, and saying so is what makes it acceptable.  With no cache
+    at all it is ``(None, None, note, None)``: not "no", but "nothing to ask".
+
+    A field written before fingerprints existed carries none, and is never
+    taken for this car's: an unknown provenance is not a matching one.
+    """
+    import os
+    found = []
+    for tier in tiers:
+        p = os.path.join(root, "out", tier, "cache", "settled.npz")
+        if not os.path.isfile(p):
+            continue
+        with np.load(p) as d:
+            fp = str(d["geometry"]) if "geometry" in d.files else None
+            u, v = d["u"], d["v"]
+        if fp == fingerprint:
+            return (u, v, "the settled field in out/%s/cache, settled around "
+                          "THIS car (fingerprint %s)" % (tier, fp[:12]), True)
+        found.append((tier, fp, u, v))
+    if found:
+        tier, fp, u, v = found[0]
+        return (u, v,
+                "the settled field in out/%s/cache -- WHICH WAS SETTLED AROUND A "
+                "DIFFERENT CAR (%s; the car built now is %s), so the flow "
+                "through the duct is another car's and the first macro-steps "
+                "are a transient. Run `%s`"
+                % (tier, ("fingerprint " + fp[:12]) if fp else
+                   "it carries no fingerprint", fingerprint[:12], RESPIN),
+                False)
+    return (None, None,
+            "THE FREESTREAM -- no settled cache, so this is a transient no "
+            "recorded number was measured at. Run `%s`" % RESPIN, None)
 
 
 @dataclass
@@ -294,43 +348,31 @@ class Engine:
         return self.stack
 
     def _release(self):
-        """The settled field the CURRENT car's spin-up produced, or the
-        freestream.
+        """The settled field THIS car's spin-up produced, or the freestream.
 
         **Absent, the demo says so on screen.**  PoC 2's README: without the
         settled cache the demo *"releases from the freestream, says so on
         screen, and shows a transient that no number on the results page was
         measured at"* -- and here that transient leaves the disk's clamp for 58
         macro-steps, which the envelope stamp will report.
+
+        **A settled field belongs to a GEOMETRY, and it is matched by the
+        fingerprint it carries rather than by the directory it sits in.**
+        This demo released the traced car from the hand-drawn car's field in
+        Tier 54 and the drawn car from the traced car's in Tier 55: the
+        directory order said which cache was newest, not which car it
+        belonged to.  See `find_release`.
         """
         import os
-        #: **A settled field belongs to a GEOMETRY.**  ``out/racelab2`` holds
-        #: the hand-drawn car's, settled around bodies that moved when the car
-        #: became a traced silhouette; releasing the traced car from it puts
-        #: the wrong flow through the radiator duct and the disk's induction
-        #: pins on its clamp within a handful of macro-steps -- which the page
-        #: then stamps, correctly, as OUTSIDE THE MODEL.  Tier 54's cache is
-        #: the traced car's own and is preferred.
         root = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))))
-        for tier in ("racelab4", "racelab2"):
-            p = os.path.join(root, "out", tier, "cache", "settled.npz")
-            if os.path.isfile(p):
-                d = np.load(p)
-                self.notes["release"] = "the settled field, out/%s/cache" % tier
-                if tier != "racelab4":
-                    self.notes["release"] += (
-                        " -- WHICH IS THE HAND-DRAWN CAR'S. The car this "
-                        "marches is traced, so this release state was settled "
-                        "around different bodies. Run "
-                        "`python scripts/tier54_traced_car.py --stages spinup`")
-                return d["u"], d["v"]
-        self.notes["release"] = (
-            "THE FREESTREAM -- no settled cache, so this is a transient no "
-            "recorded number was measured at. Run "
-            "`python scripts/tier54_traced_car.py --stages spinup`")
-        return (np.full((self.tiling.ny, self.tiling.nx), GE.U_INF),
-                np.zeros((self.tiling.ny, self.tiling.nx)))
+        u, v, note, matches = find_release(root, RL.geometry_fingerprint())
+        self.notes["release"] = note
+        self.notes["release_is_this_car_s"] = matches
+        if u is None:
+            return (np.full((self.tiling.ny, self.tiling.nx), GE.U_INF),
+                    np.zeros((self.tiling.ny, self.tiling.nx)))
+        return u, v
 
     def _loop(self) -> None:
         import torch
@@ -451,7 +493,29 @@ class Engine:
 
     # -- messages -----------------------------------------------------------
 
+    # -- the learned expert, and what happens when it is not here -----------
+
+    def learned_available(self) -> bool:
+        """Whether a window can actually be switched to the learned expert."""
+        return bool(self.cfg.dims != "3d" and self._stack() is not None
+                    and self.stack.ex is not None)
+
+    def _refuse_learned(self) -> None:
+        self.notes["learned_refused"] = (
+            "the learned expert is NOT AVAILABLE on this machine, so no window "
+            "was switched: %s. The classical column runs; the switch is greyed "
+            "out rather than left to do nothing"
+            % (self.stack_error or "the window stack was not built"))
+
     def _drain(self) -> None:
+        #: **W243.**  A mode flip used to change `assignment` first and build
+        #: the rollout after, catching the failure into a note the page never
+        #: drew -- so with the learned expert missing, "all learned" tinted
+        #: every window learned and counted them learned in the ledger while
+        #: the march went on classical.  A control that visibly does something
+        #: it did not do.  Now the flip is refused BEFORE the assignment moves,
+        #: and a rollout that still cannot be built puts the old one back.
+        before = dict(self.assignment)
         rebuilt = False
         while True:
             try:
@@ -471,17 +535,26 @@ class Engine:
                             "`racelab_switch.certified_window`, not marched "
                             "(W226)")
                         continue
+                    if m == SW.Mode.LEARNED.value and not self.learned_available():
+                        self._refuse_learned()
+                        continue
                     self.notes.pop("certified_note", None)
+                    self.notes.pop("learned_refused", None)
                     self.assignment[n] = m
                     rebuilt = True
             elif kind == "preset":
                 try:
-                    self.assignment = SW.assignment_from(msg.get("name"),
-                                                         self.tiling)
-                    self.notes.pop("certified_note", None)
-                    rebuilt = True
+                    want = SW.assignment_from(msg.get("name"), self.tiling)
                 except ValueError:
-                    pass
+                    continue
+                if (SW.Mode.LEARNED.value in want.values()
+                        and not self.learned_available()):
+                    self._refuse_learned()
+                    continue
+                self.assignment = want
+                self.notes.pop("certified_note", None)
+                self.notes.pop("learned_refused", None)
+                rebuilt = True
             elif kind == "select":
                 if msg.get("window") in self.assignment:
                     self.selected = msg["window"]
@@ -510,7 +583,11 @@ class Engine:
             try:
                 self._roll = self._rollout(self.assignment)
             except Exception as exc:
-                self.notes["error"] = str(exc)[:300]
+                #: the march did not change, so neither may what the page says
+                #: is marching
+                self.assignment = before
+                self.notes["error"] = ("the switch was NOT applied: %s"
+                                       % str(exc)[:300])
 
     # -- the frame ----------------------------------------------------------
 

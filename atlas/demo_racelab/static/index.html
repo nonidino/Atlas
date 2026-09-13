@@ -79,6 +79,8 @@ td.v{text-align:right;font-weight:600}
     <div class="note" id="dimsnote"></div>
     <h2 style="margin-top:14px">the switch</h2>
     <div class="row" id="presets"></div>
+    <div id="learnednote"></div>
+    <div id="errnote"></div>
     <div class="note" id="leadnote"></div>
     <h2 style="margin-top:14px">field</h2>
     <div class="row" id="fields"></div>
@@ -262,8 +264,26 @@ function render(){
   const d3 = f.dims === "3d";
   document.querySelectorAll("[data-dims]").forEach(b =>
     b.classList.toggle("on", b.dataset.dims === f.dims));
+  // W243: in 2-D the learned expert can be ABSENT -- no scOT on a machine that
+  // had no network at install time -- and a control that needs it must then be
+  // greyed out with the reason, never left live to do nothing.  The classical
+  // preset and the classical mode stay live.
+  const noLearned = !d3 && f.learned_available === false;
+  const needsLearned = b => (b.dataset.mode && b.dataset.mode !== "classical")
+    || (b.dataset.preset && b.dataset.preset !== "classical") || b.id === "measure";
   document.querySelectorAll("[data-mode],[data-preset],#measure")
-    .forEach(b => { b.disabled = d3; b.style.opacity = d3 ? 0.4 : 1; });
+    .forEach(b => { b.disabled = d3 || (noLearned && needsLearned(b));
+                    b.style.opacity = b.disabled ? 0.4 : 1; });
+  $("learnednote").innerHTML = noLearned
+    ? `<div class="warn"><b>the learned switch is greyed out: the learned expert is not available here.</b> `
+      + (f.stack_error || "the window stack was not built")
+      + `<br>The classical column runs. Installing <code>scOT</code> (re-run the launcher with a network) enables it.</div>`
+    : "";
+  const errs = [f.notes.learned_refused, f.notes.error].filter(Boolean);
+  $("errnote").innerHTML = errs.map(e => `<div class="warn">${e}</div>`).join("");
+  if (f.notes.release) {
+    $("release").innerHTML = "<b>released from</b>: " + f.notes.release;
+  }
   $("dimsnote").innerHTML = d3 && f.three_d
     ? `<div class="warn"><b>the learned switch is greyed out in 3-D.</b> `
       + f.three_d.why_no_learned_option + `</div>`
