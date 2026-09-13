@@ -4634,3 +4634,75 @@ python scripts/run_suite.py                                  # 1371 passed, 0 fa
 **Changed:** `.gitignore` (the Tier 52 allowlist pair), `atlas/cases/racelab.py` (the envelope check, `machine_for_host`, `settled_field`; `march` gains `enforce` and `host_inflow`, and its inline `u_max` guard becomes one of the predicates `validity_report` consults), `tests/test_tier45_region_assembly.py` (one `ADDED_AFTER_CAPTURE` entry, no assertion touched), `wiki/index.md` (one row), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 52 section, **W222** closed, **W223**–**W226** opened, **W215** and **W216** annotated), [[case-study-ladder-to-f1]] (§26).
 
 **Added:** `atlas/cases/racelab_switch.py`, `scripts/tier52_racelab_switch.py`, `tests/test_tier52_racelab_switch.py`, `out/racelab2/racelab2.json`, [[case-study-racelab-switch-atlas-0.1]].
+
+## [2026-09-13] tier 53 | CS-19's arms re-run on the repaired column, and PoC 3's demo
+
+The demo marches a column, so that column's joins have to conserve before anything on the screen means anything — which makes the re-run the demo's own referent being certified rather than bookkeeping beside it. **All five arms are now inside the envelope**, against CS-19's every arm outside for every macro-step, at the same horizon with the same five arms, the same settle fraction and **every threshold inherited unchanged**.
+
+### The result worth more than the pass
+
+**P3 moved from fail to pass with no threshold touched, and the tier pre-registered the outcome that would have refuted the reason.** CS-20 diagnosed CS-19's P3 failure as Jensen's term — the clause averages a *concave* map over the settle window, so it measures the window's variance times the curvature rather than the join. This tier's prediction, recorded before any arm ran: *"**If P3 still fails, the CS-20 diagnosis is wrong** and that is the most informative outcome available here."*
+
+| | CS-19 | this run |
+|---|---|---|
+| tracking residual | $3.482\times10^{-6}$ — **fail** | $\mathbf{7.954\times10^{-7}}$ — **pass** |
+| the **pointwise** residual | $0.0$ | $\mathbf{1.877\times10^{-16}}$ |
+| Jensen's $\tfrac12 p(p-1)\mathrm{Var}(u)/\bar u^2$ | $9.931\times10^{-7}$ | $\mathbf{7.956\times10^{-7}}$ |
+| **averaged residual over Jensen's term** | $0.9995$ | $\mathbf{0.99973}$ |
+
+**A tier confirming a previous tier's inference with a test that could have refuted it** is the strongest thing these three tiers produced.
+
+### The gate, and the vehicle
+
+| clause | verdict | the number |
+|---|---|---|
+| **P2 · J3's receiving balance** | **pass** | $0.002401$ against $0.075$; the null at exactly $1.0000$ |
+| **P3 · J1's parametric check** | **pass** | $7.954\times10^{-7}$ against $10^{-6}$ |
+| **P4 · J2's receiving balance** | **pass** | $5.517\times10^{-9}$ against $\mathbf{0.997772}$, a factor of $1.8\times10^{8}$ |
+| **P5 · the repeat floor** | **pass** | bitwise in every crossing quantity **and in the field** |
+| **P6 · the macro-step cost** | **splits, as before** | lagged $\mathbf{0.3232}$ s passes the $0.5$ s ceiling; tight fails at $1.867$ s on the clean arm |
+
+**The machine's heat falls by a factor of $\mathbf{949}$** — $3982$ W motoring to $4.198$ W generating, the loop current crossing back to $+0.010235$ — **the block runs $\mathbf{438}$ K cooler**, and its thermal time constant returns to $50.8$ s, within $1.4\%$ of the $50.1$ s CS-18 measured on the front wing's graph. **The aerodynamics move by under $8\%$** (downforce $0.928$, drag $0.964$): the excursion was catastrophic for the powertrain and the thermal loop and nearly invisible in the flow, which is CS-18 §7.2's elasticity of $63.3$ seen from the other side.
+
+**P2's residual is no longer the velocity gap, and that is new.** CS-19 measured $0.010130$ against a gap predicting $0.0101289$ — five significant figures. Here the residual is $0.002401$ and the gap predicts $0.0040331$: **the gap over-predicts by $1.68\times$**, and the sign has gone back to CS-18's direction because the repaired machine extracts $2.5\times$ the thrust. Not diagnosed (**W231**). The residual is also now **below the ratio's own band** ($0.002401$ against $0.004683$), so it **passes and is not resolved**, where CS-19's sat at $8.8\times$ its band.
+
+### The middle attempt is the finding
+
+**The re-run took three attempts.** Sizing the machine for the host's inflow **at one instant** — CS-20's repair — admits the release state and is **declined at macro-step 312**: $u_{\text{rotor}}$ falls $6.3\%$ over the horizon while the machine's margin over its own crossover is $3.3\%$ of $u$, so the margin is consumed, the induction sits on its clamp and the current crosses sign near 300 — the failure CS-20 repaired, arriving later instead of at step 0. Sizing for the horizon's **minimum** admits all 600: verified on a twelve-minute lagged march **before** a ninety-minute commitment, with the current positive throughout at a minimum of $+0.0087$ and the induction at $0.0477$ against a clamp floor of $0.02$. It is still **one Picard step** — sized for $0.63000$, the trajectory's minimum is $0.61753$, a $1.98\%$ residual the margin absorbs. **W228**, and CS-20 §2.2 carries a dated note.
+
+**So the envelope check has now produced three findings nobody was looking for** — the motoring machine, the freestream release, and the margin consumed by drift — and **the pattern in all three is one thing: a quantity checked at one state and assumed over a trajectory.** A compile evaluates `validity` at a build state, once, and no rule reads it again. **W229**, and it is the largest row this tier opens.
+
+### The demo
+
+`python -m atlas.demo_racelab --open` — FastAPI, a background engine thread, one `index.html`, the pattern PoC 2 established. Driven through its own socket: the car and its fourteen windows with mode tints, a per-window inspector carrying the one-step error that needs no referent, and the three things CS-20 said a dashboard must not hide — **the $1/32$ lead ratio beside the switch**, the **`OUTSIDE THE MODEL` stamp**, and **four of five families greyed out with their reasons**. Measured live: all-classical at $0.675$ s a macro-step with a second all-classical column held beside it, **0 macro-steps outside**, the machine generating at $I = +0.03041$; *measure windows* returns 14 windows at a median one-step error of $0.351$; flipping three to learned gives $\mathbf{0.259\times}$ the classical speed; `certified` is refused as a march mode and the page says why.
+
+### What this tier did NOT do, named
+
+- **No rung moved, no expert was trained**, and **[[case-study-ladder-to-f1]] §14.3 is unchanged** — this tier contains no learned expert at all, and the demo's README says in its own words that it is not evidence one pays.
+- **The sizing is one Picard step** and is not iterated to convergence, which would need a settled flow this graph does not have.
+- **CS-19 is not rewritten** — it stands as the record of what the un-repaired graph measured, with a dated note pointing at the re-run, which is this vault's practice with [[joining-seam-cost]] §6.4. **CS-20 §2.2 is superseded in one respect and annotated, not rewritten.**
+- **The demo was driven through its own socket, not through a browser.** Every endpoint, message and number the page reads is produced and correct; **nobody has looked at the rendered page.**
+- **No parameter sliders** (**W230**), **no three dimensions** (phase 4), **no bundle** (phase 5).
+- **§5.4's second referent, the single-domain monolith, is still not run** on any RaceLab page.
+- **Nothing was downloaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
+
+### How it was run
+
+Every process exported `KMP_DUPLICATE_LIB_OK=TRUE`, `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`; TF32 is disabled and the flags are asserted.
+
+**Two threads, and that is a measurement rather than a default (W227).** The field is bitwise identical at 1, 2, 4 and 8 threads, but `power_on_the_fluid` and `power_core` — **exactly the two domain sums J3's receiving balance is built from** — differ by one ulp above two, because a full-domain reduction's order depends on the thread count. Two threads is bitwise the one-thread answer in the field **and** in every trace, and is the fastest count that is. **So this package's *"bitwise in every crossing quantity"* claims are thread-count-conditional and have never said so.**
+
+```
+python scripts/tier53_racelab_rerun.py --stages threads
+python scripts/tier53_racelab_rerun.py --stages arms,slow,compare
+python scripts/vault_scan.py wiki                            # 232 files, 0 problems
+python scripts/run_suite.py                                  # 1389 passed, 0 failed, no missing logs, 455 s
+```
+
+**Fifty-four test files, up from Tier 52's fifty-three: $1389$ tests against $1371$, the eighteen new ones being this tier's.** The arms stage is $6690$ s, and **one arm of it is contaminated**: the referent read $3411.6$ s ($5.686$ s a macro-step) and its bitwise-identical repeat read $1120.3$ s ($1.867$), a factor of $\mathbf{3.05}$. That is [[case-study-vehicle-march-atlas-0.1]] §3.4's own experience and the reason a repeat arm exists — **and it corrects a reading taken mid-run**: a five-step probe had predicted $2.038$ s a macro-step and the clean arm read $1.867$, within $9\%$, so the probe was sound and the arm was not. The cost quoted is the repeat's.
+
+**Two defects were caught by their own discipline before they reached anything.** A patch script's asserted `str.replace` matched nothing and wrote **no file at all**, which is why the sizing change did not silently half-apply — and the stale log it left behind was misread for one turn before the task output was checked. And a dated note added to two pages through a Python string literal turned `\times` into a **TAB** in both; `vault_scan` caught it, both files were restored from git, and the notes were re-applied through an editor that handles text literally. Both are the traps this vault has recorded and both fired as designed.
+
+**Changed:** `.gitignore` (the Tier 53 allowlist pair), `wiki/index.md` (one row), `wiki/log.md` (this entry), [[gap-worklist]] (Tier 53 section, **W227**–**W231** opened, **W221** and **W222** annotated), [[case-study-ladder-to-f1]] (§27), [[case-study-racelab-graph-atlas-0.1]] (a dated note on §7.8), [[case-study-racelab-switch-atlas-0.1]] (a dated note on §2.2 and one line of §10).
+
+**Added:** `atlas/demo_racelab/` (`engine.py`, `server.py`, `static/index.html`, `README.md`, `__main__.py`, `__init__.py`), `scripts/tier53_racelab_rerun.py`, `tests/test_tier53_racelab_demo.py`, `out/racelab3/racelab3.json`, [[poc3-racelab-demo]].

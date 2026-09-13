@@ -429,6 +429,8 @@ CS-18 measured $50.1$ s and $400{,}800$ fluid macro-steps on the front wing's gr
 | **P6 · the macro-step cost** | **splits** | lagged $0.3363$ s passes, tight $1.7133$ s fails |
 | **P7 · the body force conserves** | **pass** | $2.14\times10^{-16}$ |
 
+> **Re-run on the repaired column, 2026-09-13 (Tier 53).** Every arm on this page ran outside the rotor's declared envelope (§7.6). [[poc3-racelab-demo]] §4 re-runs all five at this horizon, with the same five arms, the same settle fraction and every threshold unchanged, on a column the check admits for all 600 macro-steps. **P3 moves from fail to pass** at $7.954 \times 10^{-7}$ with no threshold touched, **P2 falls to $0.002401$**, the machine's heat falls by a factor of **949** and the block runs **438 K cooler**. The numbers below are kept as the record of what THIS tier measured, which is what they are.
+
 **Nothing was re-tuned and no threshold was moved.** One clause failed and one split; both were predicted to behave as they did — P6 explicitly, P3 not at all — and the fail is reported with its mechanism rather than with a wider tolerance.
 
 ---

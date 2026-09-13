@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Atlas PoC 3 - RaceLab</title>
+<style>
+:root{
+  --bg:#0d1017; --panel:#151a24; --edge:#232a38; --ink:#dde3ee; --dim:#8c97ab;
+  --cls:#3b82f6; --lrn:#f59e0b; --crt:#22c55e; --bad:#ef4444; --ok:#22c55e;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:13px/1.45 ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif}
+header{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;
+  padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--edge)}
+header h1{font-size:15px;margin:0;letter-spacing:.2px}
+.lic{color:var(--dim);font-size:11.5px}
+.lic b{color:var(--ink);font-weight:600}
+#wrap{display:grid;grid-template-columns:270px 1fr 310px;gap:10px;padding:10px}
+.panel{background:var(--panel);border:1px solid var(--edge);border-radius:8px;
+  padding:10px 12px}
+.panel h2{font-size:11px;text-transform:uppercase;letter-spacing:.9px;
+  color:var(--dim);margin:0 0 8px}
+#stage{position:relative;background:#070a10;border:1px solid var(--edge);
+  border-radius:8px;overflow:hidden}
+#stage.outside{border-color:var(--bad);box-shadow:0 0 0 2px rgba(239,68,68,.35)}
+#fieldimg{display:block;width:100%;image-rendering:pixelated}
+#svg{position:absolute;inset:0;width:100%;height:100%}
+.win{fill:transparent;stroke:#6b7793;stroke-width:.6;cursor:pointer}
+.win.classical{fill:rgba(59,130,246,.10)}
+.win.learned{fill:rgba(245,158,11,.16)}
+.win.sel{stroke:#fff;stroke-width:1.6}
+.wlab{fill:#cfd7e6;font-size:5px;pointer-events:none;font-weight:600}
+.body{stroke:#f2f5fa;stroke-width:1.2;fill:none;opacity:.92}
+.body.wheel{stroke:#ffd9a0}
+.dev{stroke:#22c55e;stroke-width:1.4;opacity:.9}
+.band{fill:rgba(255,255,255,.05)}
+button{background:#1d2432;color:var(--ink);border:1px solid var(--edge);
+  border-radius:6px;padding:5px 9px;font:inherit;cursor:pointer}
+button:hover{background:#27303f}
+button.on{background:var(--cls);border-color:var(--cls);color:#07101f}
+button.lrn.on{background:var(--lrn);border-color:var(--lrn);color:#2a1a00}
+button.crt.on{background:var(--crt);border-color:var(--crt);color:#04210f}
+button:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td{padding:2px 0;vertical-align:top}
+td.k{color:var(--dim);padding-right:8px;white-space:nowrap}
+td.v{text-align:right;font-weight:600}
+.warn{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.5);
+  border-radius:6px;padding:8px 10px;margin:8px 0;color:#ffd9d9}
+.warn b{color:#fff}
+.note{color:var(--dim);font-size:11.5px;margin:6px 0}
+.pill{display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;
+  border:1px solid var(--edge);color:var(--dim)}
+.pill.cls{border-color:var(--cls);color:#9dc2ff}
+.pill.lrn{border-color:var(--lrn);color:#ffd699}
+.big{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+#bottom{grid-column:1/-1;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.fam{font-size:11.5px;margin:3px 0;color:var(--dim)}
+.fam b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <h1>RaceLab &mdash; a car as a graph of interchangeable physics experts</h1>
+  <span class="lic" id="lic"></span>
+</header>
+
+<div id="wrap">
+  <!-- ------------------------------------------------ left -->
+  <div class="panel">
+    <h2>the switch</h2>
+    <div class="row" id="presets"></div>
+    <div class="note" id="leadnote"></div>
+    <h2 style="margin-top:14px">field</h2>
+    <div class="row" id="fields"></div>
+    <h2 style="margin-top:14px">march</h2>
+    <div class="row">
+      <button id="pause">pause</button>
+      <button id="stepb">step</button>
+      <button id="reset">reset</button>
+      <button id="measure" title="one-step error per window against WindowNS on the same input state">measure windows</button>
+    </div>
+    <div class="note" id="release"></div>
+    <h2 style="margin-top:14px">no learned option</h2>
+    <div id="families"></div>
+  </div>
+
+  <!-- ---------------------------------------------- centre -->
+  <div>
+    <div id="stage">
+      <img id="fieldimg" alt="flow field">
+      <svg id="svg" preserveAspectRatio="none"></svg>
+    </div>
+    <div id="stamp"></div>
+    <div class="note" id="layoutnote"></div>
+  </div>
+
+  <!-- ----------------------------------------------- right -->
+  <div class="panel">
+    <h2>window inspector</h2>
+    <div class="row"><span class="big" id="wname">-</span>
+      <span class="pill" id="wmode"></span></div>
+    <div class="row" id="modebtns"></div>
+    <table id="wtab"></table>
+    <div class="note" id="wnote"></div>
+    <h2 style="margin-top:14px">the graph</h2>
+    <table id="gtab"></table>
+    <div class="note" id="gnote"></div>
+  </div>
+
+  <!-- ---------------------------------------------- bottom -->
+  <div id="bottom">
+    <div class="panel"><h2>speed</h2><table id="sptab"></table></div>
+    <div class="panel"><h2>accuracy</h2><table id="actab"></table>
+      <div class="note" id="acnote"></div></div>
+    <div class="panel"><h2>ledger</h2><table id="ldtab"></table></div>
+    <div class="panel"><h2>the machine</h2><table id="mctab"></table></div>
+  </div>
+</div>
+
+<script>
+const S = {meta:null, frame:null, blobUrl:null};
+const $ = id => document.getElementById(id);
+const fmt = (x, n=4) => (x===null||x===undefined||Number.isNaN(x)) ? "&mdash;"
+  : (Math.abs(x)>=1e4||(Math.abs(x)<1e-3&&x!==0)) ? x.toExponential(2) : x.toFixed(n);
+const rows = (t, pairs) => { t.innerHTML = pairs.map(([k,v]) =>
+  `<tr><td class="k">${k}</td><td class="v">${v}</td></tr>`).join(""); };
+
+let ws;
+function connect(){
+  ws = new WebSocket((location.protocol==="https:"?"wss":"ws")+"://"+location.host+"/ws");
+  ws.binaryType = "arraybuffer";
+  ws.onmessage = ev => {
+    if (typeof ev.data === "string"){ S.frame = JSON.parse(ev.data); render(); }
+    else {
+      const blob = new Blob([ev.data], {type:"image/png"});
+      if (S.blobUrl) URL.revokeObjectURL(S.blobUrl);
+      S.blobUrl = URL.createObjectURL(blob);
+      $("fieldimg").src = S.blobUrl;
+    }
+  };
+  ws.onclose = () => setTimeout(connect, 1200);
+}
+const send = m => { if (ws && ws.readyState===1) ws.send(JSON.stringify(m)); };
+
+async function boot(){
+  S.meta = await (await fetch("/api/meta")).json();
+  const m = S.meta;
+  $("lic").innerHTML = m.licences.map(l =>
+    `<b>${l.name}</b> &mdash; ${l.what} &middot; <i>${l.licence}</i>`).join(" &nbsp;|&nbsp; ");
+  $("presets").innerHTML = m.presets.map(p =>
+    `<button data-preset="${p}">${p}</button>`).join("");
+  $("fields").innerHTML = m.fields.map(f =>
+    `<button data-field="${f}">${f}</button>`).join("");
+  $("modebtns").innerHTML = m.modes.map(x =>
+    `<button class="${x==='learned'?'lrn':x==='certified'?'crt':''}" data-mode="${x}">${x}</button>`).join("");
+  $("leadnote").innerHTML =
+    `<b>the lead the composition layer asks for:</b> `+
+    `<span class="pill lrn">1/${Math.round(1/m.notes.lead_ratio)} of native</span><br>`+
+    m.notes.lead_ratio_note;
+  $("release").innerHTML = "<b>released from</b>: " + m.notes.release;
+  const L = m.layout;
+  $("layoutnote").innerHTML =
+    `${L.n_windows} windows of ${m.notes.window[0]}&times;${m.notes.window[1]} over `+
+    `${m.notes.domain[0]}&times;${m.notes.domain[1]} cells `+
+    `(${L.domain_metres[0].toFixed(2)} &times; ${L.domain_metres[1].toFixed(2)} m), halo ${L.halo}. `+
+    `<b>${(100*L.banded_force_fraction).toFixed(1)}%</b> of the car sits inside a cut &mdash; `+
+    `every covering layout cuts this car, so the layout minimises the breach rather than avoiding it. `+
+    `The y-cut clears every body by ${L.y_cut_to_body_clearance_cells.toFixed(1)} cells.`;
+  const nf = m.no_learned_option;
+  $("families").innerHTML = Object.keys(nf).map(k =>
+    `<div class="fam"><b>${k}</b> &mdash; ${nf[k]}</div>`).join("");
+  drawStatic();
+  connect();
+}
+
+function drawStatic(){
+  const g = S.meta.geometry, svg = $("svg");
+  svg.setAttribute("viewBox", `0 0 ${g.nx} ${g.ny}`);
+  const Y = y => g.ny - y;                       // array y up, svg y down
+  let s = "";
+  for (const b of g.x_bands) s += `<rect class="band" x="${b[0]}" y="0" width="${b[1]-b[0]}" height="${g.ny}"/>`;
+  for (const b of g.y_bands) s += `<rect class="band" x="0" y="${Y(b[1])}" width="${g.nx}" height="${b[1]-b[0]}"/>`;
+  for (const w of g.windows)
+    s += `<rect class="win" id="w_${w.name}" data-w="${w.name}" x="${w.x}" y="${Y(w.y+w.h)}" width="${w.w}" height="${w.h}"/>`;
+  for (const b of g.bodies){
+    const cls = b.id.startsWith("WHEEL") ? "body wheel" : "body";
+    s += `<line class="${cls}" x1="${b.x0}" y1="${Y(b.y0)}" x2="${b.x1}" y2="${Y(b.y1)}"/>`;
+  }
+  for (const d of g.devices)
+    s += `<line class="dev" x1="${d.x}" y1="${Y(d.y1)}" x2="${d.x}" y2="${Y(d.y0)}"/>`;
+  for (const w of g.windows)
+    s += `<text class="wlab" x="${w.x+4}" y="${Y(w.y+w.h)+8}">${w.name}</text>`;
+  svg.innerHTML = s;
+  svg.querySelectorAll(".win").forEach(el =>
+    el.addEventListener("click", () => send({kind:"select", window:el.dataset.w})));
+}
+
+function render(){
+  const f = S.frame; if (!f) return;
+  for (const [n, mode] of Object.entries(f.assignment)){
+    const el = $("w_"+n); if (!el) continue;
+    el.setAttribute("class", "win " + mode + (n===f.selected ? " sel" : ""));
+  }
+  $("stage").className = f.outside_steps > 0 ? "outside" : "";
+  $("stamp").innerHTML = f.outside_steps > 0 ? `<div class="warn">
+    <b>OUTSIDE THE MODEL</b> &mdash; a declared envelope has declined this state on
+    ${f.outside_steps} macro-step${f.outside_steps===1?"":"s"}.
+    ${f.outside ? "Last: <b>"+f.outside.declined.join(", ")+"</b>. "+f.outside.why : ""}
+    <br>Every number below is a measurement of a state the model declines to stand behind.
+    </div>` : "";
+
+  $("pause").textContent = f.paused ? "resume" : "pause";
+  document.querySelectorAll("[data-field]").forEach(b =>
+    b.classList.toggle("on", b.dataset.field === f.field));
+  document.querySelectorAll("[data-mode]").forEach(b =>
+    b.classList.toggle("on", b.dataset.mode === f.assignment[f.selected]));
+
+  // ---- inspector -----------------------------------------------------
+  const n = f.selected, mode = f.assignment[n];
+  $("wname").textContent = n;
+  $("wmode").textContent = mode;
+  $("wmode").className = "pill " + (mode==="learned" ? "lrn" : "cls");
+  const e = f.window_error ? f.window_error[n] : null;
+  const wm = f.notes.window_error_meta;
+  rows($("wtab"), [
+    ["one-step error vs WindowNS", e===null||e===undefined ? "&mdash;" : fmt(e,4)],
+    ["measured at macro-step", f.window_error_at===null ? "&mdash;" : f.window_error_at],
+    ["lead of that measurement", wm ? (wm.lead_over_native).toFixed(3)+"&times; native" : "&mdash;"],
+    ["the march asks for", (S.meta.notes.lead_ratio).toFixed(5)+"&times; native"],
+    ["classical, that call", wm ? fmt(wm.classical_s,3)+" s" : "&mdash;"],
+    ["learned, that call", wm ? fmt(wm.learned_s,3)+" s" : "&mdash;"],
+  ]);
+  $("wnote").innerHTML = e===null||e===undefined
+    ? "Press <b>measure windows</b>: one macro-step of each expert from the same input state. It needs no global referent, which is why it is the number to trust most."
+    : "This is a <b>one-step</b> error against the classical expert on the <b>same input state</b> &mdash; exact, and independent of any referent march.";
+
+  // ---- the graph ------------------------------------------------------
+  const v = f.verdicts || {};
+  rows($("gtab"), [
+    ["graph verdict", v.graph_verdict || "&mdash;"],
+    ["refusals", (v.refusals||[]).join(", ") || "none"],
+    ["agents / seams", (v.n_agents||"?")+" / "+(v.n_seams||"?")],
+  ]);
+  $("gnote").textContent = v.how_to_read || "";
+
+  // ---- bottom ---------------------------------------------------------
+  rows($("sptab"), [
+    ["macro-steps / s", fmt(f.macro_steps_per_s,2)],
+    ["s / macro-step", fmt(f.s_per_macro_step,3)],
+    ["all-classical, s / step", fmt(f.referent_s_per_macro_step,3)],
+    ["speed vs all-classical", f.speed_ratio_vs_all_classical===null ? "&mdash;"
+      : fmt(f.speed_ratio_vs_all_classical,3)+"&times;"],
+  ]);
+  rows($("actab"), [
+    ["rms field error vs all-classical", fmt(f.rms_vs_all_classical,4)],
+    ["macro-step", f.step],
+    ["downforce", fmt(f.load,4)],
+    ["drag", fmt(f.drag,4)],
+  ]);
+  $("acnote").innerHTML = "The referent is the <b>all-classical composed march</b> from the same release state, held beside this one. "+
+    "The composed classical answer carries its own composition defect against a single-domain monolith; that second referent is <b>not</b> run here.";
+  const L = f.ledger || {};
+  rows($("ldtab"), Object.keys(L).map(k => [k, L[k]]).concat(
+    [["of", S.meta.layout.n_windows]]));
+  const st = f.state || {};
+  rows($("mctab"), [
+    ["u at the turbine ring", fmt(st.u_rotor,4)],
+    ["induction", fmt(st.induction,4)],
+    ["loop current", fmt(st.current,4)],
+    ["machine heat (W)", fmt(st.q_machine,1)],
+    ["UA", fmt(st.ua,3)],
+  ]);
+}
+
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.preset) send({kind:"preset", name:b.dataset.preset});
+  else if (b.dataset.field) send({kind:"field", name:b.dataset.field});
+  else if (b.dataset.mode) send({kind:"mode", window:S.frame.selected, mode:b.dataset.mode});
+  else if (b.id==="pause") send({kind:"pause", value:!S.frame.paused});
+  else if (b.id==="stepb") send({kind:"step"});
+  else if (b.id==="reset") send({kind:"reset"});
+  else if (b.id==="measure") send({kind:"measure"});
+});
+
+boot();
+</script>
+</body>
+</html>

@@ -345,3 +345,24 @@ out/racelab/*
 !out/racelab2/
 out/racelab2/*
 !out/racelab2/racelab2.json
+
+# Tier 53 (CS-19's arms re-run on the repaired column, and PoC 3's demo).
+# JSON only: the record scripts/tier53_racelab_rerun.py writes -- the thread
+# measurement (the field is bitwise at every count; two domain sums are not
+# above two), the five arms with each join's receiver balance and its null, the
+# Jensen test of CS-20's diagnosis, J2 on the coolant clock, and the
+# side-by-side against out/racelab/racelab.json. The sizing control -- the
+# attempt that was declined at macro-step 312 -- is in it too, because the
+# reason the sizing is a RANGE is that measurement.
+# tests/test_tier53_racelab_demo.py asserts against it.
+#
+# **Rebuilding it is about two hours**, and one arm of that is contaminated:
+# four tight arms at 600 macro-steps read 1.6-1.9 s a macro-step when the box
+# is quiet and 5.7 when it is not, which is why there is a repeat arm. The
+# lagged arm is 194 s. It needs out/racelab2/cache/settled.npz, which
+# `tier52_racelab_switch.py --stages spinup` regenerates in 87 s.
+# The .npz caches under out/racelab3/cache/ hold each arm's final field, about
+# 7 MB, and are a by-product nothing cites.
+!out/racelab3/
+out/racelab3/*
+!out/racelab3/racelab3.json

@@ -1297,3 +1297,82 @@ The vehicle repair is W199's own similarity one level on, $k_e \to k_e/x$ and $R
 - **Section 5.4's second referent — the single-domain monolith — was not run**, as in CS-19.
 - **No dashboard, no three dimensions, no bundle**: phases 3, 4 and 5.
 - **Nothing was downloaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
+
+---
+
+# 27. One vehicle, one demo, and a check that keeps finding things (2026-09-13)
+
+Full record: [[poc3-racelab-demo]] and [[gap-worklist]] Tier 53.
+
+CS-19 measured five arms on a graph whose powertrain was outside its declared envelope for every macro-step; CS-20 built the check, found that, repaired it, and did not re-run them. **The two RaceLab pages described two different vehicles.** This closes it, builds PoC 3's dashboard, and the closing turned out to be the more interesting half.
+
+## 27.1 The verdict
+
+**All five arms are now inside the envelope** — zero macro-steps outside, against CS-19's every arm outside for every macro-step — at the same horizon, with the same five arms and **every threshold inherited unchanged**.
+
+| clause | CS-19 | this run |
+|---|---|---|
+| P2 · J3's receiving balance | pass, $0.010130$ | **pass**, $\mathbf{0.002401}$ |
+| P3 · J1's parametric check | **fail**, $3.482\times10^{-6}$ | **pass**, $\mathbf{7.954\times10^{-7}}$ |
+| P4 · J2's receiving balance | pass | **pass**, $5.517\times10^{-9}$ against $0.997772$ |
+| P5 · the repeat floor | pass | **pass**, bitwise |
+| P6 · the macro-step cost | splits | **splits**, lagged $0.3232$ s |
+
+**The machine's heat falls by a factor of $\mathbf{949}$** — $3982$ W motoring to $4.198$ W generating — **the block runs $438$ K cooler**, and its thermal time constant returns to $50.8$ s, within $1.4\%$ of the $50.1$ s CS-18 measured on the front wing's graph. **The aerodynamics move by under $8\%$.** CS-19's powertrain excursion was catastrophic for the powertrain and the thermal loop and nearly invisible in the flow, which is CS-18 §7.2's elasticity of $63.3$ seen from the other side.
+
+## 27.2 The result worth more than the pass
+
+**P3 moved from fail to pass with no threshold touched, and the tier pre-registered the outcome that would have refuted the reason.**
+
+CS-20 diagnosed CS-19's P3 failure as Jensen's term — the clause averages a *concave* map over the settle window, so it measures the window's variance times the curvature rather than the join. Tier 53's prediction, recorded before any arm ran, said: *"**If P3 still fails, the CS-20 diagnosis is wrong** and that is the most informative outcome available here."*
+
+| | |
+|---|---|
+| the **pointwise** residual | $\mathbf{1.877\times10^{-16}}$ |
+| the averaged residual | $7.954\times10^{-7}$ |
+| Jensen's $\tfrac12 p(p-1)\mathrm{Var}(u)/\bar u^2$ | $\mathbf{7.956\times10^{-7}}$ |
+| **ratio** | $\mathbf{0.99973}$ |
+
+**A tier confirming a previous tier's inference with a test that could have refuted it** is the strongest thing this ladder produced in three tiers, and it is worth more than the clause passing.
+
+## 27.3 The re-run took three attempts, and the middle one is the finding
+
+Sizing the machine for the host's inflow **at one instant** — CS-20's repair — admits the release state and is **declined at macro-step 312**. $u_{\text{rotor}}$ falls $6.3\%$ over the horizon while the machine's margin over its own crossover is $3.3\%$ of $u$, so the margin is consumed, the induction sits on its clamp and the current crosses sign near 300 — the failure CS-20 repaired, arriving later instead of at step 0.
+
+Sizing for the horizon's **minimum** admits all 600, verified on a twelve-minute lagged march before a ninety-minute commitment. **W228**.
+
+**And that is the third finding the envelope check has produced that nobody was looking for**, after the motoring machine and the freestream release. The pattern in all three is one thing: **a quantity checked at one state and assumed over a trajectory**. A compile evaluates `validity` at a build state, once, and no rule reads it again. **W229**, and it is the largest row this tier opens.
+
+## 27.4 What moves on this page
+
+**§14.3 does not move.** *The foundation-model half has no learned expert admitted with a nonzero contribution* stands; this tier contains no learned expert at all and the demo's own README says it is not evidence that one pays.
+
+**The coupling half does not move either, and now says so on a certified column.** Every clause CS-18 wrote is met on a graph of 26 agents that the compiler and the march agree about — which is what CS-19 could not claim, because its numbers were taken outside an expert's declared envelope.
+
+**What is new is a method rather than a result**: an envelope consulted every macro-step on one funnel has now found three defects in three tiers, none of them the one it was built for.
+
+## 27.5 The critical path now
+
+| row | what it blocks | status |
+|---|---|---|
+| **W229** — a declared envelope is checked at a state and assumed over a trajectory | every march in the package, and every `validity` verdict a compile has ever emitted | `open`, **large**, **new** |
+| **W220** — ten of the car's bodies are invisible to the compiler | any rule about a seam crossing a body | `open`, **large**, as §25.5 |
+| **W228** — an expert sized at one state of a flow that does not settle | any sizing decision on this vehicle, and the next one | `open`, medium, **new** |
+| **W226**, **W225**, **W223** | the certified mode's kind, the demo's honest frame, the error-vs-lead mechanism | `open`, as §26.6 |
+| **W227**, **W230**, **W231**, **W224**, **W221**, **W218**, **W216**, **W217** | thread-conditional bitwise claims, the sliders, J3's residual, the normalisation, the settling, W124 on a car, the body force's cost, the timings | `open` |
+| **W214**, **W215**, **W204**, **W209**–**W213**, **W199**–**W201**, **W194**–**W198**, **W203**, **W206**–**W208** | as §24.5, §23.5 and §22.4 | `open` |
+
+## 27.6 The next step
+
+**Phases 4 and 5 are what remain of PoC 3**, and §9 of the requirements says phase 4 is optional to ship. **The cheapest real work is W229**, because it is not about this vehicle: a compile that emits a `validity` verdict at a build state and never says that is what it did is doing that on every graph in this package, and the repair — *declare that the verdict is about the build state* — is a sentence in a record, not a scheme.
+
+**[AI Inference]:** W229 and W220 are the same shape from two directions. One says the compiler cannot see most of the car; the other says what it can see, it checked once. Both are the compile being a statement about a *configuration* where the march is a statement about a *trajectory*, and nothing in the package reconciles the two. Unmeasured as a single gap, and it may be one row rather than two.
+
+## 27.7 What this tier did NOT do, named
+
+- **No rung moved**, no expert was trained, and no threshold was touched.
+- **The sizing is one Picard step**, not iterated to convergence.
+- **CS-19 is not rewritten** and **CS-20 is superseded in one respect and annotated**, both with dated notes.
+- **The demo was driven through its own socket, not through a browser.**
+- **No parameter sliders, no three dimensions, no bundle.**
+- **Nothing was downloaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**

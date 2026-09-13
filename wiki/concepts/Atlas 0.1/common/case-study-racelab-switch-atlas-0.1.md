@@ -53,6 +53,8 @@ $$\boxed{\;k_e = k_t \;\longrightarrow\; k_e/x,\qquad R_i \;\longrightarrow\; R_
 | $k_e$, before $\to$ after | $0.0500 \to 0.0689$ |
 | $R_{\text{total}}$, before $\to$ after | $0.600 \to 1.572$ |
 
+> **Superseded in one respect, 2026-09-13 (Tier 53).** The sizing below is for the host's inflow measured **at one instant**, and that is not enough over a horizon: $u_{\mathrm{rotor}}$ falls $6.3\%$ across 600 macro-steps while this machine's margin over its own crossover is $3.3\%$ of $u$, so the induction reaches its clamp at **macro-step 312**. Sizing for the horizon's **minimum** admits all 600. Everything else here stands — the similarity is still exact, the $x = 1$ control is still the identity bitwise, and the induction still returns to $0.11388706$ at the sizing inflow. What changes is WHICH inflow to size at. See [[poc3-racelab-demo]] §2 and [[gap-worklist]] **W228**.
+
 **Three controls, and all three are the point.**
 
 1. **At $x = 1$ the similarity is the identity**, bitwise, on every element's `resistance`, `k_e`, `k_t` and `r_total`. A similarity about a reference point that is not the identity *at* that point is a fit.
@@ -227,7 +229,7 @@ Forty macro-steps from the admitted release state, every column against the all-
 - **[[case-study-ladder-to-f1]] §14.3 is unchanged.** The certified slot's learned contribution here is $2\%$ of the classical calls, *smaller* than Tier 48's $13\%$ and in the same direction.
 - **The mechanism behind §5.1's curve is not diagnosed** (**W223**). A minimum at the native lead is measured; why the error grows as the step shrinks is an inference, and the study that would settle it needs a checkpoint whose training lead can be varied.
 - **The per-window error's normalisation ranks empty windows worst** (**W224**), and no second normalisation is offered.
-- **CS-19's arms were NOT re-run on the repaired column.** Every number on that page stands as the record of what the un-repaired graph did, stamped there as outside the envelope; this tier does not restate them and does not correct them. **So the two pages describe two different vehicles**, and that is named rather than reconciled.
+- **CS-19's arms were NOT re-run on the repaired column** — *done in Tier 53, see [[poc3-racelab-demo]] §4; the sizing this page used needed §2's amendment first.* Every number on that page stands as the record of what the un-repaired graph did, stamped there as outside the envelope; this tier does not restate them and does not correct them. **So the two pages describe two different vehicles**, and that is named rather than reconciled.
 - **`CERTIFIED` is not a per-macro-step mode**, and `MixedRollout` raises rather than quietly running something else. Defect correction certifies a fixed point and an explicit time step has none to certify; the requirements' §4.2 describes it as a per-window march mode and **that is not what it is**. **W226.**
 - **The second referent of §5.4 was not run** — the single-domain monolith, against which the composed classical answer carries its own composition defect. CS-19 did not run it either and neither page claims it.
 - **The mixed marches are 40 macro-steps**, which is a sixth of the spin-up and far short of anything settled; they are a cost-and-divergence measurement, not a settled-state one.
