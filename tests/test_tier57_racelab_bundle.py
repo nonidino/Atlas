@@ -191,6 +191,27 @@ def test_W251_the_control_a_server_with_no_websocket_library_fails_it(
     assert not ok, detail
 
 
+def test_W253_the_socket_check_does_not_go_through_the_environment_s_proxy(
+        monkeypatch):
+    """Found by the no-network check: with every proxy variable pointed at a
+    closed port -- which is what a dead corporate proxy looks like -- the check
+    reported the page's socket broken.  websockets 15 routes even a
+    ``ws://127.0.0.1`` connection through the environment's proxy, so a user
+    behind a proxy would have been told a working page cannot receive frames.
+    The check talks to its own server on loopback and must connect directly."""
+    from atlas.demo_racelab import server as S
+    dead = "http://127.0.0.1:9"
+    for var in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY",
+                "http_proxy", "https_proxy", "all_proxy"):
+        monkeypatch.setenv(var, dead)
+    monkeypatch.setenv("NO_PROXY", "")
+    monkeypatch.setenv("no_proxy", "")
+    e = _engine(learned=False)
+    e._publish()
+    ok, detail = S.socket_check(e, timeout_s=15.0)
+    assert ok, detail
+
+
 def test_W251_the_bundle_pins_a_websocket_library_and_the_self_test_uses_it():
     req = _launcher("requirements.txt")
     assert re.search(r"^websockets==\d", req, re.MULTILINE), \

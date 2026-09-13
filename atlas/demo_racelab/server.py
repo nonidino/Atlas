@@ -172,8 +172,13 @@ def socket_check(engine: Engine, timeout_s: float = 30.0) -> tuple[bool, str]:
                 return False, "the server did not start"
             time.sleep(0.05)
         got_json = got_png = False
+        #: ``proxy=None`` -- W253.  websockets 15 routes even a loopback URL
+        #: through the environment's HTTP(S)_PROXY, so behind a proxy (or,
+        #: as the no-network check found it, with the proxy variables
+        #: pointed at a dead port) this check called a working page broken.
+        #: It is asking its own server on 127.0.0.1; it connects directly.
         with connect("ws://127.0.0.1:%d/ws" % port, open_timeout=timeout_s,
-                     close_timeout=2) as sock:
+                     close_timeout=2, proxy=None) as sock:
             t0 = time.time()
             while not (got_json and got_png) and time.time() - t0 < timeout_s:
                 msg = sock.recv(timeout=timeout_s)
