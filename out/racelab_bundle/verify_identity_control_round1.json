@@ -1,0 +1,14 @@
+{
+ "altered": "tests/test_tier56_racelab_drawn_car.py (What -> what)",
+ "different": [
+  "tests/test_tier56_racelab_drawn_car.py"
+ ],
+ "identical": 162,
+ "by_group_tests": [
+  6,
+  1
+ ],
+ "caught_exactly_the_altered_file": true,
+ "bundle_head": "f0789529f91123373d741f723f6e1c96153cba99",
+ "atlas_commit": "693382ef7a0c478d6273152a3b0d94a85e4066d1"
+}

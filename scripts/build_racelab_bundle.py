@@ -100,6 +100,9 @@ TESTS = [
     "test_tier55_car_geometry.py",
     "test_tier56_racelab_drawn_car.py",
     "test_tier57_racelab_bundle.py",
+    #: records OF the bundle, which it does not carry, so every test in it
+    #: skips there and says why -- carried so the bundle has every PoC 3 test
+    "test_tier57_racelab_bundle_records.py",
 ]
 
 #: The recorded runs.  Each is what a test asserts against or what the demo

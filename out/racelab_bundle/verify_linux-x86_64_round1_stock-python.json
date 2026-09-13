@@ -1,0 +1,130 @@
+{
+ "at": "2026-09-13T15:07:17",
+ "platform": "linux-x86_64",
+ "python": "3.12.3",
+ "bundle": "/mnt/c/Users/Nauni/poc3_build",
+ "clone": "/home/nauni/poc3a",
+ "clone_exit_code": 0,
+ "clone_s": 9.215663433074951,
+ "head": "f0789529f91123373d741f723f6e1c96153cba99",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "run_sh_is_executable_on_disk": true,
+ "source_commits": {
+  "atlas": "693382ef7a0c478d6273152a3b0d94a85e4066d1",
+  "build_repo": "0a407b7fca92e5c7fb9c38ef6fc0131c6b7ecdb2",
+  "snapshot": "ec976ed5d25883ec9db4e486ebbeeefa9e08303b",
+  "weights_sha256": "e97428c93a16cbb52a41bc4794eb71be3aed436fb9cc547d9eeebb20f3940fb2",
+  "car": "993c358a0f2491b2e1021d9a40b41d6947e472eaba5a19f892f5d40c8056d785",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 163,
+  "different": [],
+  "not_from_either_repo": [
+   "SOURCE_COMMITS",
+   "out/racelab5/cache/settled.npz",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/refs/main",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/config.json",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/model.safetensors",
+   "vendor/hf-cache/hub/version.txt"
+  ],
+  "by_group": {
+   "tests": [
+    7,
+    0
+   ],
+   "atlas": [
+    78,
+    0
+   ],
+   "scripts": [
+    7,
+    0
+   ],
+   "wiki": [
+    6,
+    0
+   ],
+   "out": [
+    5,
+    0
+   ],
+   "vendor/src": [
+    50,
+    0
+   ],
+   "launchers": [
+    10,
+    0
+   ]
+  },
+  "tests_in_the_bundle": [
+   "tests/test_tier51_racelab_graph.py",
+   "tests/test_tier52_racelab_switch.py",
+   "tests/test_tier53_racelab_demo.py",
+   "tests/test_tier54_racelab_3d.py",
+   "tests/test_tier55_car_geometry.py",
+   "tests/test_tier56_racelab_drawn_car.py",
+   "tests/test_tier57_racelab_bundle.py"
+  ],
+  "poc3_tests_upstream": [
+   "tests/test_tier51_racelab_graph.py",
+   "tests/test_tier52_racelab_switch.py",
+   "tests/test_tier53_racelab_demo.py",
+   "tests/test_tier54_racelab_3d.py",
+   "tests/test_tier55_car_geometry.py",
+   "tests/test_tier56_racelab_drawn_car.py",
+   "tests/test_tier57_racelab_bundle.py"
+  ],
+  "every_poc3_test_is_carried": true,
+  "settled.npz_identical_to_atlas_0.1_s_cache": true,
+  "weights_sha256_matches_SOURCE_COMMITS": true
+ },
+ "scan_unlicensed_checkpoint": {
+  "files_or_dirs_named_for_it": [],
+  "uses": [],
+  "prose_mentions_by_file": {
+   "scripts/tier51_racelab_graph.py": 1,
+   "scripts/tier52_racelab_switch.py": 1,
+   "atlas/cases/racelab_switch.py": 1,
+   "atlas/demo_racelab/README.md": 1,
+   "out/racelab2/racelab2.json": 1,
+   "tests/test_tier52_racelab_switch.py": 1,
+   "tests/test_tier51_racelab_graph.py": 2,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-3d.md": 1,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-traced-car.md": 1,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-demo.md": 1,
+   "wiki/concepts/Atlas 0.1/common/case-study-racelab-switch-atlas-0.1.md": 2,
+   "wiki/concepts/Atlas 0.1/common/case-study-racelab-graph-atlas-0.1.md": 1
+  },
+  "prose_mentions_total": 14
+ },
+ "scan_data": {
+  "allowed": [
+   {
+    "file": "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/model.safetensors",
+    "bytes": 83200584
+   },
+   {
+    "file": "out/racelab5/cache/settled.npz",
+    "bytes": 2581474
+   }
+  ],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "launch_check": {
+  "argv": [
+   "--check"
+  ],
+  "exit_code": 1,
+  "wall_s": 0.17543911933898926,
+  "log": "/mnt/c/Users/Nauni/OneDrive/Desktop/Foundation_Model/out/racelab_bundle/launch_stock-python_linux-x86_64.log",
+  "tail": "==> creating .venv with Python 3.12.3\nThe virtual environment was not created successfully because ensurepip is not\navailable.  On Debian/Ubuntu systems, you need to install the python3-venv\npackage using the following command.\n\n    apt install python3.12-venv\n\nYou may need to use sudo with that command.  After installing the python3-venv\npackage, recreate your virtual environment.\n\nFailing command: /home/nauni/poc3a/.venv/bin/python3.12\n\n\nCould not create a virtual environment with python3.12.\nDebian and Ubuntu ship python without its venv module:\n    sudo apt install python3.12-venv\nor point this script at another interpreter:\n    PYTHON=/path/to/python3.12 ./run.sh\n",
+  "python_given": null
+ },
+ "static_checks_pass": true
+}

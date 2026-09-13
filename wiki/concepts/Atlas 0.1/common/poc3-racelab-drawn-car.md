@@ -27,6 +27,8 @@ Two stages were added for the gate — `slow` (P4 with its null, Tier 53's recip
 
 **A settled field now carries the car it was settled around** (`racelab.geometry_fingerprint`, a SHA-256 over the *built* bodies). The demo had released the traced car from the hand-drawn car's field in Tier 54 and the drawn car from the traced car's field after Tier 55 — the same defect twice, because a directory order says which cache is newest and not which car it belongs to. Every stage that releases from `settled.npz` now refuses a field for a different car, and so does the bundle builder. The fingerprint repeats, ignores a caption, and changes on a move of $10^{-9}$ cells and on a knob.
 
+*(Annotated the same day, in Tier 57: hashing the built bodies turned out to hash the platform's C library as well — a wheel's segments come out of `cos`, `sin` and `atan2`, which Windows and glibc round differently in the last bit — so the bundle's Linux clone fingerprinted this car differently and refused its own settled field. A wheel is now hashed by what defines it, and the field and this page's record were re-spun to the new value, bitwise unchanged otherwise. See [[poc3-racelab-bundle]] §5.1 and W250.)*
+
 ---
 
 # 2. The prediction, registered before the spin-up
@@ -143,4 +145,5 @@ The trace's first summary said the fastest cell was at `RW_ENDPLATE` on all $544
 - [[case-study-racelab-switch-atlas-0.1]] — CS-20, where the machine was first sized for its host (W228).
 - [[case-study-racelab-graph-atlas-0.1]] — CS-19, the arms and the gate.
 - [[poc3-racelab-demo]] — the dashboard this car now appears on.
+- [[poc3-racelab-bundle]] — phase 5, which ships this car and found W250.
 - [[gap-worklist]] — W244 to W247.

@@ -1,0 +1,130 @@
+{
+ "at": "2026-09-13T15:16:04",
+ "platform": "linux-x86_64",
+ "python": "3.12.3",
+ "bundle": "/mnt/c/Users/Nauni/poc3_build",
+ "clone": "/home/nauni/poc3b",
+ "clone_exit_code": 0,
+ "clone_s": 7.297501564025879,
+ "head": "f0789529f91123373d741f723f6e1c96153cba99",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "run_sh_is_executable_on_disk": true,
+ "source_commits": {
+  "atlas": "693382ef7a0c478d6273152a3b0d94a85e4066d1",
+  "build_repo": "0a407b7fca92e5c7fb9c38ef6fc0131c6b7ecdb2",
+  "snapshot": "ec976ed5d25883ec9db4e486ebbeeefa9e08303b",
+  "weights_sha256": "e97428c93a16cbb52a41bc4794eb71be3aed436fb9cc547d9eeebb20f3940fb2",
+  "car": "993c358a0f2491b2e1021d9a40b41d6947e472eaba5a19f892f5d40c8056d785",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 163,
+  "different": [],
+  "not_from_either_repo": [
+   "SOURCE_COMMITS",
+   "out/racelab5/cache/settled.npz",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/refs/main",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/config.json",
+   "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/model.safetensors",
+   "vendor/hf-cache/hub/version.txt"
+  ],
+  "by_group": {
+   "tests": [
+    7,
+    0
+   ],
+   "atlas": [
+    78,
+    0
+   ],
+   "scripts": [
+    7,
+    0
+   ],
+   "wiki": [
+    6,
+    0
+   ],
+   "out": [
+    5,
+    0
+   ],
+   "vendor/src": [
+    50,
+    0
+   ],
+   "launchers": [
+    10,
+    0
+   ]
+  },
+  "tests_in_the_bundle": [
+   "tests/test_tier51_racelab_graph.py",
+   "tests/test_tier52_racelab_switch.py",
+   "tests/test_tier53_racelab_demo.py",
+   "tests/test_tier54_racelab_3d.py",
+   "tests/test_tier55_car_geometry.py",
+   "tests/test_tier56_racelab_drawn_car.py",
+   "tests/test_tier57_racelab_bundle.py"
+  ],
+  "poc3_tests_upstream": [
+   "tests/test_tier51_racelab_graph.py",
+   "tests/test_tier52_racelab_switch.py",
+   "tests/test_tier53_racelab_demo.py",
+   "tests/test_tier54_racelab_3d.py",
+   "tests/test_tier55_car_geometry.py",
+   "tests/test_tier56_racelab_drawn_car.py",
+   "tests/test_tier57_racelab_bundle.py"
+  ],
+  "every_poc3_test_is_carried": true,
+  "settled.npz_identical_to_atlas_0.1_s_cache": true,
+  "weights_sha256_matches_SOURCE_COMMITS": true
+ },
+ "scan_unlicensed_checkpoint": {
+  "files_or_dirs_named_for_it": [],
+  "uses": [],
+  "prose_mentions_by_file": {
+   "scripts/tier51_racelab_graph.py": 1,
+   "scripts/tier52_racelab_switch.py": 1,
+   "atlas/cases/racelab_switch.py": 1,
+   "atlas/demo_racelab/README.md": 1,
+   "out/racelab2/racelab2.json": 1,
+   "tests/test_tier52_racelab_switch.py": 1,
+   "tests/test_tier51_racelab_graph.py": 2,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-3d.md": 1,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-traced-car.md": 1,
+   "wiki/concepts/Atlas 0.1/common/poc3-racelab-demo.md": 1,
+   "wiki/concepts/Atlas 0.1/common/case-study-racelab-switch-atlas-0.1.md": 2,
+   "wiki/concepts/Atlas 0.1/common/case-study-racelab-graph-atlas-0.1.md": 1
+  },
+  "prose_mentions_total": 14
+ },
+ "scan_data": {
+  "allowed": [
+   {
+    "file": "vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/ec976ed5d25883ec9db4e486ebbeeefa9e08303b/model.safetensors",
+    "bytes": 83200584
+   },
+   {
+    "file": "out/racelab5/cache/settled.npz",
+    "bytes": 2581474
+   }
+  ],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "launch_check": {
+  "argv": [
+   "--check"
+  ],
+  "exit_code": 1,
+  "wall_s": 87.54566287994385,
+  "log": "/mnt/c/Users/Nauni/OneDrive/Desktop/Foundation_Model/out/racelab_bundle/launch_py310_linux-x86_64.log",
+  "tail": "80 kB)\nUsing cached certifi-2026.7.22-py3-none-any.whl (136 kB)\nDownloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)\nUsing cached requests-2.34.2-py3-none-any.whl (73 kB)\nDownloading sniffio-1.3.1-py3-none-any.whl (10 kB)\nUsing cached annotated_types-0.8.0-py3-none-any.whl (13 kB)\nDownloading charset_normalizer-3.5.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (261 kB)\nDownloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)\nUsing cached urllib3-2.7.0-py3-none-any.whl (131 kB)\nInstalling collected packages: urllib3, typing-inspection, tqdm, tomli, sniffio, safetensors, regex, PyYAML, pydantic-core, pluggy, pillow, packaging, numpy, iniconfig, idna, h11, exceptiongroup, click, charset_normalizer, certifi, annotated-types, uvicorn, scipy, requests, pytest, pydantic, httpcore, anyio, starlette, huggingface-hub, httpx, tokenizers, fastapi, transformers\nSuccessfully installed PyYAML-6.0.2 annotated-types-0.8.0 anyio-4.15.1 certifi-2026.7.22 charset_normalizer-3.5.1 click-8.5.0 exceptiongroup-1.3.1 fastapi-0.115.5 h11-0.16.0 httpcore-1.0.9 httpx-0.27.2 huggingface-hub-0.26.2 idna-3.19 iniconfig-2.3.0 numpy-1.26.4 packaging-26.3 pillow-11.0.0 pluggy-1.6.0 pydantic-2.13.5 pydantic-core-2.46.5 pytest-8.3.3 regex-2026.9.10 requests-2.34.2 safetensors-0.4.5 scipy-1.13.1 sniffio-1.3.1 starlette-0.41.3 tokenizers-0.19.1 tomli-2.4.1 tqdm-4.70.1 transformers-4.44.2 typing-inspection-0.4.4 urllib3-2.7.0 uvicorn-0.32.1\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: /home/nauni/poc3b/.venv/bin/python -m pip install --upgrade pip\n==> installing scOT (the Poseidon-T model class) from its pinned commit\nCollecting https://github.com/camlab-ethz/poseidon/archive/b8fa28f59bd7f7673323f28d11a12c6f3a215c61.zip\n  Downloading https://github.com/camlab-ethz/poseidon/archive/b8fa28f59bd7f7673323f28d11a12c6f3a215c61.zip\n     \\ 443.1 kB 3.7 MB/s 0:00:00\n  Installing build dependencies: started\n  Installing build dependencies: finished with status 'done'\n  Getting requirements to build wheel: started\n  Getting requirements to build wheel: finished with status 'done'\n  Preparing metadata (pyproject.toml): started\n  Preparing metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: scOT\n  Building wheel for scOT (pyproject.toml): started\n  Building wheel for scOT (pyproject.toml): finished with status 'done'\n  Created wheel for scOT: filename=scot-1.0.0-py2.py3-none-any.whl size=43010 sha256=c12340cb7708521b0ab58c2fd62d9ce14c3d94acbc6989df487ea0d19ae97648\n  Stored in directory: /tmp/pip-ephem-wheel-cache-m27_wwoy/wheels/5b/cc/02/61abeab0f9ba33bc7da520c7a56de73010fcdac82c8f69fed3\nSuccessfully built scOT\nInstalling collected packages: scOT\nSuccessfully installed scOT-1.0.0\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: /home/nauni/poc3b/.venv/bin/python -m pip install --upgrade pip\n  packages the classical column needs\n    ok       numpy            1.26.4\n    ok       scipy            1.13.1\n    ok       torch            2.7.1+cpu\n    ok       yaml             6.0.2\n    ok       PIL              11.0.0\n    ok       fastapi          0.115.5\n    ok       uvicorn          0.32.1\n  packages the learned column needs\n    ok       transformers     4.44.2\n    ok       safetensors      0.4.5\n    ok       huggingface_hub  0.26.2\n    ok       scOT             \n\n  python   3.10.21  (linux)\n  torch    2.7.1+cpu   numpy 1.26.4   threads 2   TF32 off (asserted)\n  gpu      not used: every column in this demo runs on the CPU\n\n  the build repository's solvers\n    ok     reference.WindowNS   vendor/src/atlas/cases/windfarm/reference.py\n    ok     thermostruct2d       vendor/src/atlas/solvers/thermostruct2d.py\n\n  the car and the field it releases from\n    car      f591a83c3d8bf2f6  (27 plates, 2 wheels)\n    field    993c358a0f2491b2  (out/racelab5/cache/settled.npz)\n    [!] the settled field was settled around a DIFFERENT car\n",
+  "python_given": "/home/nauni/mm-py310/bin/python3.10"
+ },
+ "static_checks_pass": true
+}
