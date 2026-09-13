@@ -366,3 +366,14 @@ out/racelab2/*
 !out/racelab3/
 out/racelab3/*
 !out/racelab3/racelab3.json
+
+# Tier 54 -- the traced car, re-sized and re-marched. Rebuilding costs about
+# 100 minutes: the spin-up is 240 macro-steps, the sizing probe a 600-step
+# lagged march, and the five arms at 600 macro-steps are ~90 minutes of it,
+# four of them tightly coupled. It needs out/racelab4/cache/settled.npz, which
+# `tier54_traced_car.py --stages spinup` regenerates. The .npz caches under
+# out/racelab4/cache/ hold each arm's final field and are a by-product nothing
+# cites.
+!out/racelab4/
+out/racelab4/*
+!out/racelab4/racelab4.json

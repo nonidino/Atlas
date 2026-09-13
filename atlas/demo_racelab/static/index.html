@@ -71,7 +71,13 @@ td.v{text-align:right;font-weight:600}
 <div id="wrap">
   <!-- ------------------------------------------------ left -->
   <div class="panel">
-    <h2>the switch</h2>
+    <h2>dimensions</h2>
+    <div class="row" id="dims">
+      <button data-dims="2d">2-D</button>
+      <button data-dims="3d">3-D half-car</button>
+    </div>
+    <div class="note" id="dimsnote"></div>
+    <h2 style="margin-top:14px">the switch</h2>
     <div class="row" id="presets"></div>
     <div class="note" id="leadnote"></div>
     <h2 style="margin-top:14px">field</h2>
@@ -163,6 +169,7 @@ async function boot(){
     m.notes.lead_ratio_note;
   $("release").innerHTML = "<b>released from</b>: " + m.notes.release;
   const L = m.layout;
+  S.layoutnote2d = null;
   $("layoutnote").innerHTML =
     `${L.n_windows} windows of ${m.notes.window[0]}&times;${m.notes.window[1]} over `+
     `${m.notes.domain[0]}&times;${m.notes.domain[1]} cells `+
@@ -205,6 +212,37 @@ function render(){
     const el = $("w_"+n); if (!el) continue;
     el.setAttribute("class", "win " + mode + (n===f.selected ? " sel" : ""));
   }
+  // In three dimensions there is no declared envelope at all (W238), so a
+  // stamp carried over from the 2-D march would be reporting on a column that
+  // is not running.  Saying there is nothing to check is more honest than
+  // either showing a stale decline or showing silence.
+  if (f.dims === "3d") {
+    $("stage").className = "";
+    // The vector overlay is the 2-D car: fourteen 128x128 windows, the
+    // centreline bodies, the device planes.  Drawing it over a z-slice of the
+    // half-car superimposes two different objects that happen to render alike,
+    // which is W239 and worse than W239 describes.  It is hidden here, and the
+    // layout note is replaced rather than left to describe a decomposition the
+    // picture beneath it is not of.
+    $("svg").style.display = "none";
+    if (S.layoutnote2d === null || S.layoutnote2d === undefined)
+      S.layoutnote2d = $("layoutnote").innerHTML;
+    $("layoutnote").innerHTML =
+      `a <b>z-slice</b> of the half-car in a box, ${f.three_d ?
+        f.three_d.box_cells.toLocaleString() : "?"} cells over `
+      + `${f.three_d ? f.three_d.windows : "?"} windows along x, on a lattice `
+      + `coarsened <b>${f.three_d ? f.three_d.coarsen : "?"}&times;</b> from the `
+      + `2-D one. <b>The 2-D window overlay is hidden</b>: those fourteen `
+      + `128&times;128 windows belong to the centreline car and would be `
+      + `describing a decomposition this picture is not of.`;
+    $("stamp").innerHTML = `<div class="warn"><b>NO DECLARED ENVELOPE IN 3-D.</b>
+      Every predicate this package checks belongs to the 2-D car's experts and
+      devices. The 3-D solver declares none, so none is consulted and the
+      <b>OUTSIDE THE MODEL</b> stamp cannot fire here at all. That is a gap
+      (<b>W238</b>) and not a clean bill of health.</div>`;
+  } else {
+  $("svg").style.display = "";
+  if (S.layoutnote2d) { $("layoutnote").innerHTML = S.layoutnote2d; }
   $("stage").className = f.outside_steps > 0 ? "outside" : "";
   $("stamp").innerHTML = f.outside_steps > 0 ? `<div class="warn">
     <b>OUTSIDE THE MODEL</b> &mdash; a declared envelope has declined this state on
@@ -212,12 +250,32 @@ function render(){
     ${f.outside ? "Last: <b>"+f.outside.declined.join(", ")+"</b>. "+f.outside.why : ""}
     <br>Every number below is a measurement of a state the model declines to stand behind.
     </div>` : "";
+  }
 
   $("pause").textContent = f.paused ? "resume" : "pause";
   document.querySelectorAll("[data-field]").forEach(b =>
     b.classList.toggle("on", b.dataset.field === f.field));
   document.querySelectorAll("[data-mode]").forEach(b =>
     b.classList.toggle("on", b.dataset.mode === f.assignment[f.selected]));
+
+  // ---- three dimensions ----------------------------------------------
+  const d3 = f.dims === "3d";
+  document.querySelectorAll("[data-dims]").forEach(b =>
+    b.classList.toggle("on", b.dataset.dims === f.dims));
+  document.querySelectorAll("[data-mode],[data-preset],#measure")
+    .forEach(b => { b.disabled = d3; b.style.opacity = d3 ? 0.4 : 1; });
+  $("dimsnote").innerHTML = d3 && f.three_d
+    ? `<div class="warn"><b>the learned switch is greyed out in 3-D.</b> `
+      + f.three_d.why_no_learned_option + `</div>`
+      + `<b>${f.three_d.panels}</b> wetted panels over `
+      + `<b>${f.three_d.windows}</b> windows of `
+      + `${f.three_d.box_cells.toLocaleString()} cells, coarsened `
+      + `${f.three_d.coarsen}&times; from the 2-D lattice; `
+      + `<b>${fmt(f.three_d.s_per_macro_step, 3)} s</b> a macro-step. `
+      + `The overlay is a <b>z-slice</b> through the half-car, not the 2-D car.`
+    : "the 2-D centreline car. <b>3-D</b> marches the half-car in a box with a "
+      + "symmetry plane -- body, wings with an endplate, floor, diffuser, "
+      + "sidepod and one wheel each end -- and is <b>classical only</b>.";
 
   // ---- inspector -----------------------------------------------------
   const n = f.selected, mode = f.assignment[n];
@@ -282,6 +340,7 @@ document.addEventListener("click", ev => {
   const b = ev.target.closest("button"); if (!b) return;
   if (b.dataset.preset) send({kind:"preset", name:b.dataset.preset});
   else if (b.dataset.field) send({kind:"field", name:b.dataset.field});
+  else if (b.dataset.dims) send({kind:"dims", value:b.dataset.dims});
   else if (b.dataset.mode) send({kind:"mode", window:S.frame.selected, mode:b.dataset.mode});
   else if (b.id==="pause") send({kind:"pause", value:!S.frame.paused});
   else if (b.id==="stepb") send({kind:"step"});

@@ -98,16 +98,19 @@ def tiling():
 def test_the_car_is_a_car_and_not_a_rectangle(car):
     objs, flat = car
     ids = {getattr(o, "body_id", None) for o in objs}
+    # POD_LO went when the car became a TRACED silhouette (2026-09-13): a real
+    # Formula One sidepod has no separate undercut on a centreline slice -- the
+    # floor IS the underside -- so the part list is the traced car's parts.
     for want in ("FW_MAIN", "FW_FLAP", "NOSE", "FLOOR", "DIFF", "POD_UP",
-                 "POD_LO", "DUCT_UP", "DUCT_LO", "RW_MAIN", "RW_FLAP",
+                 "SHELL_U12", "DUCT_UP", "DUCT_LO", "RW_MAIN", "RW_FLAP",
                  "WHEEL_F", "WHEEL_R"):
         assert want in ids, f"the car has no {want}"
     #: the requirements' section 3.1 asks for a front wing, a floor, a
     #: diffuser, a sidepod, a radiator duct, a rear wing, two wheels and a
     #: moving ground.  The ground is `ground_effect`'s band condition and has
     #: no body.
-    assert len(objs) == 13
-    assert len(flat) == 11 + 2 * 12, "each wheel is twelve plate segments"
+    assert len(objs) == 24
+    assert len(flat) == 22 + 2 * 12, "each wheel is twelve plate segments"
 
 
 def test_the_front_wing_is_CS12_s_plate_at_CS12_s_chord(car):

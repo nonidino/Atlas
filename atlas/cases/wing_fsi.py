@@ -369,7 +369,15 @@ class FlexWing:
         self.x_mid = self.x_le + 0.5 * self.chord * math.cos(self.alpha)
         self.y_mid_offset = 0.5 * self.chord * math.sin(self.alpha)
         self.box_x = int(round(0.5 * self.chord / DX)) + 8
-        self.box_y = int(round(0.5 * self.chord * math.sin(self.alpha) / DX)) + 10
+        # abs(), because the box has to COVER the body's vertical extent and a
+        # body leaning nose-DOWN spans just as much of it as one leaning up.
+        # With the signed sine the box SHRANK as alpha went negative: a plate
+        # dropping more than ~11 cells got box_y <= 0 and torch.arange raised
+        # "upper bound and larger bound inconsistent with step sign", and one
+        # dropping less than that got a box too small to hold its own kernel,
+        # which renormalises over the clipped region -- so the force stayed
+        # conserved but was squeezed into too narrow a band of y.  W235.
+        self.box_y = int(round(0.5 * self.chord * abs(math.sin(self.alpha)) / DX)) + 10
         self._opt = opt
 
     # -- geometry ---------------------------------------------------------

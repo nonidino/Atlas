@@ -436,32 +436,93 @@ def car_bodies(p: CarParams = None, device: str = "cpu"
         out.append(PlateBody(b, device=device))
         return b
 
+    # The body is ONE CONNECTED CHAIN, front to back, and each segment starts
+    # where the last one ended: NOSE -> BULKHEAD -> POD_UP -> TAIL_UP over the
+    # top, NOSE_LO and POD_LO -> TAIL_LO underneath.  Before 2026-09-13 these
+    # were disconnected plates that did not read as a car on the screen at all
+    # -- the nose sloped the WRONG WAY (trailing edge low), ended in mid-air
+    # 45 cells ahead of the sidepod, the body had no rear, and the floor ran
+    # straight through both wheels.  See `CAR_NOTES` and CS-19's dated note.
+    #
+    # Two constraints shape it.  `DUCT_LO` at y=44 and `DUCT_UP` at y=76 are
+    # STRUCTURAL -- the 32 cells between them are `DEVICE_CELLS`, where the
+    # radiator core and the recovery turbine planes sit -- so the sidepod has
+    # to ENCLOSE that band: POD_UP stays above 76 and POD_LO below 44 for the
+    # duct's whole run.  And no body plate may sit inside a wheel, or it
+    # double-counts that wheel's drag, which is why the floor and the sidepod
+    # undercut both start at x=205, clear of the front wheel's x=200.
     plate("FW_MAIN", 72.0, 14.0 + h, GE.CHORD / DX, 14.0, group="front-wing",
           n_station=W.N_STATION,
           label="front wing, main plane, in ground effect")
     plate("FW_FLAP", 96.0, 20.0 + h, 16.0, p.front_flap_deg, group="front-wing",
           label="front wing, flap")
-    plate("NOSE", 112.0, 66.0, 64.0, -7.0, group="body",
-          label="nose, sloping down to the front wing")
-    plate("FLOOR", 150.0, 12.0 + h, 202.0, 0.0, group="floor",
-          label="floor, flat bottom")
-    plate("DIFF", 352.0, 12.0 + h, 78.0, p.diffuser_deg, group="floor",
-          label="diffuser ramp")
-    plate("POD_UP", 220.0, 84.0, 200.0, -5.0, group="body", cuttable=True,
-          label="sidepod, upper surface")
-    plate("POD_LO", 220.0, 40.0, 200.0, 3.0, group="body", cuttable=True,
-          label="sidepod, lower surface")
-    plate("DUCT_UP", 236.0, 76.0, 168.0, 0.0, group="duct", cuttable=True,
-          label="radiator duct, upper wall")
-    plate("DUCT_LO", 236.0, 44.0, 168.0, 0.0, group="duct", cuttable=True,
-          label="radiator duct, lower wall")
-    plate("RW_MAIN", 460.0, 84.0, 32.0, p.rear_wing_deg, group="rear-wing",
+    # SHELL_U* and SHELL_L00 are TRACED, not drawn by hand: a CC0 Formula One
+    # side view (freesvg.org id 48844, public domain) rasterised to 1200x310,
+    # thresholded to a silhouette, its upper and lower profiles simplified with
+    # Douglas-Peucker and welded into a chain, then mapped ISOTROPICALLY --
+    # one scale on both axes, so the car is not distorted --  by
+    #     x = 94.0 + raster_x * 0.3760,   y = (309 - raster_y) * 0.3760
+    # with the tyre contact line at y = 0.  The wing and tyre stretches of the
+    # silhouette are NOT traced: the front and rear wings stay the calibrated
+    # aerofoils below, and the wheels stay `WheelBody` rings.
+    plate("NOSE", 167.7, 60.7, 91.1, 25.3, group="body",
+          label="nose, rising from behind the front wheel")
+    plate("SHELL_U01", 250.0, 99.6, 25.2, 13.8, group="body", cuttable=True,
+          label="chassis, rising to the cockpit")
+    # The roll hoop's SPIKE is clipped to a flat crown at y = 105.7.  The
+    # trace reaches y = 116.2 there, and the tiling's horizontal seam is at
+    # y = 112: two 128-tall rows in a 240-tall box force row offsets of 0 and
+    # 112 exactly, so the seam cannot move and a body crossing it would have
+    # its force split between two experts that exchange only a ring.  The
+    # clipped car clears the seam by 6.3 cells.
+    plate("SHELL_U02", 274.5, 105.7, 12.2, 0.0, group="body", cuttable=True,
+          label="airbox crown, forward half")
+    plate("SHELL_U03", 286.7, 105.7, 12.2, 0.0, group="body", cuttable=True,
+          label="airbox crown, rear half")
+    plate("SHELL_U04", 298.9, 105.7, 14.0, -83.0, group="body", cuttable=True,
+          label="airbox, trailing face")
+    plate("SHELL_U05", 300.6, 91.8, 14.1, -83.1, group="body", cuttable=True,
+          label="behind the airbox, falling to the engine cover")
+    plate("SHELL_U06", 302.3, 77.8, 14.9, -47.0, group="body", cuttable=True,
+          label="engine cover, forward shoulder")
+    plate("POD_UP", 312.5, 66.9, 43.4, -5.0, group="body", cuttable=True,
+          label="engine cover, over the radiator duct")
+    plate("SHELL_U08", 355.7, 63.2, 9.4, 87.7, group="body", cuttable=True,
+          label="rear deck step")
+    plate("SHELL_U09", 356.1, 72.6, 8.5, -12.8, group="body", cuttable=True,
+          label="rear deck")
+    plate("SHELL_U10", 364.3, 70.7, 8.5, -77.2, group="body", cuttable=True,
+          label="rear deck, trailing face")
+    plate("SHELL_U11", 366.2, 62.4, 12.1, 25.8, group="body", cuttable=True,
+          label="engine cover, coke-bottle waist")
+    plate("SHELL_U12", 377.1, 67.7, 47.8, -2.1, group="body", cuttable=True,
+          label="engine cover, tapering over the rear wheel")
+    plate("SHELL_U13", 454.2, 63.7, 18.9, -5.1, group="body", cuttable=True,
+          label="rear bodywork, behind the rear wheel")
+    plate("FLOOR", 170.0, 9.8, 237.3, 0.0, group="floor",
+          label="floor, flat bottom, running between the wheels")
+    # The diffuser is NOT traced.  On a centreline slice the ground-touching
+    # rear wheel occupies the floor's exit -- at the floor's height the tyre
+    # spans x = 411.6 to 463 -- so a traced ramp would sit inside the wheel and
+    # double-count its drag.  It keeps its own knob and starts behind the tyre.
+    plate("DIFF", 465.0, 12.0 + h, 40.0, p.diffuser_deg, group="floor",
+          label="diffuser ramp, emerging behind the rear wheel")
+    plate("DUCT_UP", 230.0, DUCT_Y0 + DEVICE_CELLS, 174.0, 0.0, group="duct",
+          cuttable=True, label="radiator duct, upper wall")
+    plate("DUCT_LO", 230.0, DUCT_Y0, 174.0, 0.0, group="duct",
+          cuttable=True, label="radiator duct, lower wall")
+    plate("RW_MAIN", 474.0, 88.0, 32.0, p.rear_wing_deg, group="rear-wing",
           label="rear wing, main plane")
-    plate("RW_FLAP", 486.0, 92.0, 18.0, p.rear_wing_deg + 16.0, group="rear-wing",
+    plate("RW_FLAP", 500.0, 96.0, 18.0, p.rear_wing_deg + 16.0, group="rear-wing",
           label="rear wing, flap")
 
-    wf = WheelBody("WHEEL_F", 172.0, 30.0, 28.0, label="front wheel")
-    wr = WheelBody("WHEEL_R", 452.0, 30.0, 28.0, label="rear wheel")
+    # Traced too: the tyres' contact patches locate the centres and the crowns
+    # give the radius, on the same isotropic map as the shell.  The front wheel
+    # sits clear of the front wing -- its leading edge is x = 111.3 against the
+    # flap's trailing edge at 109.9 -- because a body inside a wheel would
+    # double-count that wheel's drag.
+    wf = WheelBody("WHEEL_F", 144.8, 33.5, 33.5, label="front wheel")
+    wr = WheelBody("WHEEL_R", 437.3, 33.5, 33.5, label="rear wheel")
     out.extend([wf, wr])
 
     flat: list[Body] = []
@@ -476,19 +537,32 @@ def car_bodies(p: CarParams = None, device: str = "cpu"
 #: The duct's lower wall, in cells.  The device planes span the 32 cells above
 #: it, which is `integration_union.DEVICE_CELLS` exactly: the duct is declared
 #: 32 cells tall so that a device fills it rather than being declared to.
-DUCT_Y0 = 44
+#:
+#: **Lowered from 44 to 18 on 2026-09-13, when the car became a traced
+#: silhouette rather than a hand-drawn one.** A real Formula One body TAPERS
+#: behind the cockpit, and the old band put the duct's roof at y = 76 where a
+#: traced engine cover sits at y = 60.6 at its lowest -- the duct poked out
+#: through the bodywork by 16 cells and the turbine plane floated OUTSIDE the
+#: car, at the rear wheel.  The device planes' x positions are untouched in
+#: kind: they still sit on tiling seams inside the duct, so the graph's
+#: topology is the same and only the rows the devices occupy have moved.  The
+#: traced body spans y = 9.4 to 60.6 at the duct's tightest station, so a
+#: 32-cell duct at 18..50 clears the floor by 8.6 cells and the shell by 10.6.
+DUCT_Y0 = 18
 
 #: The x-window the radiator core's plane is allowed to sit in: inside the duct,
 #: clear of both its ends.  `windows_from_geometry` puts a CUT here, because
 #: `integration_union.DeviceSite` declares a device on the overlap of a tiling
 #: x-seam and nowhere else.
-DUCT_CORE_RANGE = (264.0, 312.0)
+DUCT_CORE_RANGE = (268.0, 296.0)
 
 #: The x-window the recovery turbine's plane is allowed to sit in: the same
 #: duct, DOWNSTREAM of the core.  The two devices have to be at least one
 #: stride apart, because each needs a cut of its own, which is why the duct is
-#: 132 cells long and not the 92 a radiator alone would need.
-TURBINE_RANGE = (348.0, 396.0)
+#: 174 cells long and not the 92 a radiator alone would need.  Its downstream
+#: end stops at x = 378, clear of the rear tyre, which at the duct's heights
+#: spans x = 394.5 to 452.1.
+TURBINE_RANGE = (380.0, 406.0)
 
 
 #: Every departure from a real car, in one place, so no page has to hunt for

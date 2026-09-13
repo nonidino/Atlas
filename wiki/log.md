@@ -4726,3 +4726,54 @@ python -m pytest tests/test_tier53_racelab_demo.py -q     # 19 passed, up from 1
 ```
 
 **Changed:** `atlas/demo_racelab/engine.py` (clear the note on any other switch action), `atlas/demo_racelab/static/index.html` (render it), `tests/test_tier53_racelab_demo.py` (the regression test, with a control), [[poc3-racelab-demo]] (§5.4, and the §6 bullet superseded), [[gap-worklist]] (**W232**–**W234**, and its own bullet superseded), [[case-study-ladder-to-f1]] (§27.7's bullet), `wiki/index.md`.
+
+---
+
+## [2026-09-13] tier 54 | the traced car, its arms re-run, and phase 4 in three dimensions
+
+The car did not look like a car. Plotted from `car_bodies()` rather than from the screen it was eleven plates and two rings with nothing joined to anything: **the nose sloped the wrong way**, ended in mid-air 45 cells ahead of the sidepod, the body had no rear, and the floor ran straight through both wheels. The renderer was faithful — there was no car outline in the model to draw.
+
+### The car is traced now
+
+A **CC0** Formula One side view (freesvg.org id 48844, public domain) rasterised to $1200\times310$, thresholded to a silhouette, its profiles simplified with Douglas–Peucker and **welded into a chain**, mapped **isotropically** so the car is not distorted. 22 plates and 2 wheels against 11 and 2; the wheels' centres come from their own contact patches. The wings are **not** traced — they stay the calibrated aerofoils, because `FW_MAIN` carries the real chord CS-12's structure was built at.
+
+Three compromises, each with its reason in the code: **the roll hoop's spike is clipped** to $y = 105.7$ because the tiling's horizontal seam is at $112$ and two 128-tall rows in a 240-tall box force it there; **the diffuser is not traced** because on a centreline slice the ground-touching rear tyre occupies the floor's exit; and the car is **scaled up** so the tyres clear both the calibrated front wing and the turbine cut, which $w_x = 128$ and `device_overlap_max` $= 16$ force exactly $112$ cells from the core's.
+
+**W235, and it is why the old car could never have had a tapering rear.** `wing_fsi.box_y` used the **signed** sine of the incidence, so the stamping box *shrank* as a body leaned nose-down: past about $11$ cells of drop `torch.arange` raised, and short of that the box was too small to hold its own kernel — which renormalises over the clipped region, so the force stayed conserved and was squeezed into too narrow a band of $y$. Every engine cover that falls is a negative-alpha plate.
+
+**The layout survived**: 14 windows, same names, cuts at $112/174/286/398/496/544$, banded fraction $26.9\% \to 31.3\%$. `DUCT_Y0` moved $44 \to 18$, because a real body tapers and the old band put the duct's roof $16$ cells outside the engine cover with the turbine plane floating **outside the car**.
+
+### The process failed before the physics did
+
+The first arms run was **declined at macro-step 552** by the **fluid**: $u_{\max} = 2.04971$, cell Reynolds $8.007$ against a declared bound of $8$. **The sizing probe had already recorded that the envelope would object on 46 macro-steps.** The tier read the $u_{\text{rotor}}$ band out of that same dictionary, ignored that field, and gated the arms on an **eighty-step** verify against a **six-hundred-step** horizon. Two lessons at once — [[positive-controls-need-a-horizon]], and the sharper one: **a gate that reads a different quantity from the one that predicts the failure is not a gate.** It cost a twenty-five-minute referent arm. `verify` now marches the whole horizon the arms will use and `arms` refuses any other.
+
+**The horizon is $530$ and not CS-19's $600$, and the bound was not touched.** The traced car is blockier — bigger wheels, an airbox, a floor between the wheels instead of through them — so it accelerates the flow more and first breaches at macro-step $554$ by $0.1\%$. The envelope caught a geometry change's consequence $554$ macro-steps downstream of it, for the fifth time.
+
+### The arms
+
+**All five inside the envelope for every macro-step, every threshold inherited unchanged.** P2 passes at $0.036194$ against $0.075$ with its null at exactly $1.0000$; P3 at $\mathbf{1.853\times10^{-7}}$ against $10^{-6}$; P4 at $1.081\times10^{-8}$ **without its null arm, which was not run**; P5 is bitwise in every crossing quantity and in the field; P6 splits as always, the lagged column $0.3955$ s under the $0.5$ s ceiling and the tight one $1.9824$ s.
+
+**P2's residual is nearly the velocity gap again.** CS-19 measured the gap to five figures, Tier 53 had it over-predicting by $1.68\times$ and opened **W231**; the traced car has it over-predicting by $\mathbf{1.098\times}$, with a residual $15\times$ Tier 53's that still passes at half tolerance. Not diagnosed; the three-row table is the object.
+
+The duct moved nearer the floor and got steadier with it: $u_{\text{rotor}}$ falls $\mathbf{2.01\%}$ over the horizon where the hand-drawn car's fell $6.3\%$, and the machine generates at $8.005$ W against $4.198$ W with $28\%$ more induction.
+
+### Phase 4 — the half-car in three dimensions
+
+`atlas/cases/racelab3d.py`: a **half-car in a box** with a symmetry plane — body, wings with an endplate, floor, diffuser, sidepod duct, and one wheel each end as outboard cylinders — a 3-D window solver, and a **2-D/3-D toggle** on the dashboard with the learned switch `disabled` (not hidden) and the reason printed in full. See [[poc3-racelab-3d]].
+
+**Opening the page found three more**, which is Tier 53's own lesson arriving on schedule: the **2-D vector overlay was drawn on top of the 3-D slice** (fourteen $128\timesimes128$ windows and the centreline bodies superimposed on a z-slice, with the 2-D caption beneath it — worse than **W239** describes, which is about two pictures resembling each other and not about them being drawn on one another); **the caption never came back**, because it is set once from the meta message and overwriting it in 3-D made that permanent, caught only by toggling BACK; and **the demo was releasing the traced car from the hand-drawn car's settled field**, so the disk's induction pinned on its clamp and the page stamped `OUTSIDE THE MODEL` from macro-step 6 — correctly, which is how it was noticed. A settled field belongs to a geometry.
+
+**W236, and the measurement that caught it is the point.** The solver's first arrangement kept velocity at cell centres and paired a backward divergence with a forward gradient so the two composed to exactly the compact Laplacian the DCT inverts — verified against the spectral operator to $4.5\times10^{-13}$ — **and converged at first order anyway.** The convergence study said "order 1.1" and named nothing. The operator-level control named it in one measurement: **a projection applied to an analytically divergence-free field perturbed it by a relative $O(h^{0.96})$**, where it must be $O(h^2)$, because a one-sided difference is only first-order accurate *at the cell centre* even though two compose to a second-order Laplacian. Staggering (MAC) fixed it — the projection is now $O(h^{1.98})$ and $143\times$ smaller at $n = 16$ — and the **whole step is declared at the order it was measured at**, $1.09 \to 1.30 \to 1.49$ and still climbing, rather than rounded up to its interior operators'.
+
+**And CS-19 §7.4's `[AI Inference]` is measured at last.** That page said a 3-D surface carries $O(n^2)$ stations where a curve carries $O(n)$ and deferred it to this phase: the fitted exponent is $\mathbf{1.910}$ against a 2-D station count fixed at $440$. **CONFIRMED.** Its *consequence* — that the stamping therefore dominates the wall time — is **not** established, and **W237** says so rather than letting it pass as measured.
+
+```
+python scripts/tier54_traced_car.py --stages spinup,size,verify,arms,compare
+python scripts/vault_scan.py wiki
+python scripts/run_suite.py
+```
+
+**Opened:** **W235** (the signed sine), **W236** (a projection that inverted one operator and applied another), **W237** (the 3-D cost is not split between surface and solver), **W238** (**the 3-D column has no declared envelope**, the largest row this phase opens), **W239** (the coarsened lattice and two pictures that look alike).
+
+**Added:** `atlas/cases/racelab3d.py`, `scripts/tier54_traced_car.py`, `tests/test_tier54_racelab_3d.py`, `out/racelab4/racelab4.json`, [[poc3-racelab-traced-car]], [[poc3-racelab-3d]].
+**Changed:** `atlas/cases/racelab.py` (the traced car, `DUCT_Y0`, the device ranges), `atlas/cases/wing_fsi.py` (W235), `atlas/demo_racelab/engine.py` (the 3-D branch and a re-measured `U_DUCT`), `atlas/demo_racelab/static/index.html` (the toggle), `tests/test_tier51_racelab_graph.py` and `tests/test_tier52_racelab_switch.py` (the car's part list, its counts, and the settled field a test releases from), `.gitignore`, [[gap-worklist]], `wiki/index.md`.

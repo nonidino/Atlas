@@ -53,7 +53,14 @@ LEAD_RATIO = (GE.MACRO_DT / GE.EXCHANGES) / 0.1
 
 #: The inflow the machine is sized for (CS-20 §2.2).  Without it the powertrain
 #: is outside its declared envelope from the first macro-step.
-U_DUCT = 0.6691530373612168
+#:
+#: **Re-measured 2026-09-13 for the TRACED car** (Tier 54 stage ``size``).  The
+#: duct moved from y 44..76 down to y 18..50 when the car became a traced
+#: silhouette, and the ring velocity moved with it: ``0.6691530373612168`` was
+#: the hand-drawn car's, and sizing the machine for it now puts the disk's
+#: induction ON its clamp at macro-step 0.  Measured as the horizon's MINIMUM,
+#: which is W228's procedure.
+U_DUCT = 0.654077065086774
 
 #: Colour ramp bounds for the speed overlay, in free streams.
 U_LO, U_HI = 0.0, 2.0
@@ -151,6 +158,12 @@ class RaceConfig:
     referent: bool = True
     field: str = "speed"
     paused: bool = False
+    #: **Phase 4.**  `"3d"` marches the half-car in `racelab3d` instead, and the
+    #: learned switch goes with it: Poseidon-T is a 2-D operator at a fixed
+    #: 128x128 and there is no 3-D checkpoint in this project, so in three
+    #: dimensions the column is classical by necessity and the page says why
+    #: rather than simply offering nothing.
+    dims: str = "2d"
 
 
 @dataclass
@@ -187,6 +200,7 @@ class Engine:
         self.rms_vs_referent: float | None = None
         self.stack: SW.WindowStack | None = None
         self.stack_error: str | None = None
+        self._m3 = None                 # the 3-D march, built on first use
         self.families: dict = {}
         self.seam_verdicts: dict = {}
         self._u = self._v = None
@@ -280,7 +294,8 @@ class Engine:
         return self.stack
 
     def _release(self):
-        """The settled field CS-20's spin-up produced, or the freestream.
+        """The settled field the CURRENT car's spin-up produced, or the
+        freestream.
 
         **Absent, the demo says so on screen.**  PoC 2's README: without the
         settled cache the demo *"releases from the freestream, says so on
@@ -289,17 +304,31 @@ class Engine:
         macro-steps, which the envelope stamp will report.
         """
         import os
-        p = os.path.join(os.path.dirname(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__)))),
-            "out", "racelab2", "cache", "settled.npz")
-        if os.path.isfile(p):
-            d = np.load(p)
-            self.notes["release"] = "the settled field, out/racelab2/cache"
-            return d["u"], d["v"]
+        #: **A settled field belongs to a GEOMETRY.**  ``out/racelab2`` holds
+        #: the hand-drawn car's, settled around bodies that moved when the car
+        #: became a traced silhouette; releasing the traced car from it puts
+        #: the wrong flow through the radiator duct and the disk's induction
+        #: pins on its clamp within a handful of macro-steps -- which the page
+        #: then stamps, correctly, as OUTSIDE THE MODEL.  Tier 54's cache is
+        #: the traced car's own and is preferred.
+        root = os.path.dirname(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))))
+        for tier in ("racelab4", "racelab2"):
+            p = os.path.join(root, "out", tier, "cache", "settled.npz")
+            if os.path.isfile(p):
+                d = np.load(p)
+                self.notes["release"] = "the settled field, out/%s/cache" % tier
+                if tier != "racelab4":
+                    self.notes["release"] += (
+                        " -- WHICH IS THE HAND-DRAWN CAR'S. The car this "
+                        "marches is traced, so this release state was settled "
+                        "around different bodies. Run "
+                        "`python scripts/tier54_traced_car.py --stages spinup`")
+                return d["u"], d["v"]
         self.notes["release"] = (
-            "THE FREESTREAM -- out/racelab2/cache/settled.npz is absent, so "
-            "this is a transient no recorded number was measured at. Run "
-            "`python scripts/tier52_racelab_switch.py --stages spinup`")
+            "THE FREESTREAM -- no settled cache, so this is a transient no "
+            "recorded number was measured at. Run "
+            "`python scripts/tier54_traced_car.py --stages spinup`")
         return (np.full((self.tiling.ny, self.tiling.nx), GE.U_INF),
                 np.zeros((self.tiling.ny, self.tiling.nx)))
 
@@ -326,7 +355,17 @@ class Engine:
                 self._publish()
                 last = time.perf_counter()
 
+    def _march3d_once(self) -> None:
+        """One macro-step of the half-car in three dimensions."""
+        from atlas.cases import racelab3d as R3
+        if self._m3 is None:
+            self._m3 = R3.March3D()
+        self.step_s = self._m3.step()
+        self.step_i = self._m3.step_i
+
     def _march_once(self) -> None:
+        if self.cfg.dims == "3d":
+            return self._march3d_once()
         import torch
         opt = dict(dtype=RL.W.TORCH_DTYPE, device="cpu")
         u = torch.as_tensor(self._u, **opt)
@@ -446,6 +485,10 @@ class Engine:
             elif kind == "select":
                 if msg.get("window") in self.assignment:
                     self.selected = msg["window"]
+            elif kind == "dims":
+                if msg.get("value") in ("2d", "3d"):
+                    self.cfg.dims = msg["value"]
+                    rebuilt = True
             elif kind == "field":
                 if msg.get("name") in FIELDS:
                     self.cfg.field = msg["name"]
@@ -472,11 +515,19 @@ class Engine:
     # -- the frame ----------------------------------------------------------
 
     def _publish(self) -> None:
-        if self._u is None:
+        if self._u is None and not (self.cfg.dims == "3d"
+                                    and self._m3 is not None):
             return
         ref = (self._ru, self._rv) if self.cfg.referent else None
+        three_d = self.cfg.dims == "3d" and self._m3 is not None
         try:
-            png = field_png(self._u, self._v, self.cfg.field, ref)
+            if three_d:
+                # a z-slice through the half-car, transposed into the (y, x)
+                # order the 2-D overlay and the page already use
+                sl = self._m3.speed_slice().T
+                png = field_png(sl, np.zeros_like(sl), "speed", None)
+            else:
+                png = field_png(self._u, self._v, self.cfg.field, ref)
         except Exception:                                     # pragma: no cover
             png = b""
         ledger = {m: sum(1 for x in self.assignment.values() if x == m)
@@ -508,10 +559,14 @@ class Engine:
             "families": self.families,
             "verdicts": self.seam_verdicts,
             "stack_error": self.stack_error,
-            "learned_available": bool(self.stack and self.stack.ex),
+            "learned_available": (False if self.cfg.dims == "3d"
+                                  else bool(self.stack and self.stack.ex)),
+            "dims": self.cfg.dims,
+            "three_d": (self._m3.as_dict() if self._m3 is not None else None),
             "config": asdict(self.cfg),
         }
         with self.lock:
+            w, h = ((self._m3.tiling.nx, self._m3.tiling.ny) if three_d
+                    else (self.tiling.nx, self.tiling.ny))
             self.frame = Frame(seq=self.frame.seq + 1, png=png,
-                               width=self.tiling.nx, height=self.tiling.ny,
-                               payload=payload)
+                               width=w, height=h, payload=payload)

@@ -55,7 +55,14 @@ from atlas.cases import wake_array as WA                              # noqa: E4
 ART = os.path.join(_ROOT, "out", "racelab2", "racelab2.json")
 PAGE = os.path.join(_ROOT, "wiki", "concepts", "Atlas 0.1", "common",
                     "case-study-racelab-switch-atlas-0.1.md")
-U_DUCT = 0.6691530373612168
+U_DUCT = 0.654077065086774
+#: **Re-measured 2026-09-13 for the TRACED car** (Tier 54 stage
+#: `size`).  The duct moved from y 44..76 to y 18..50 when the car
+#: became a traced silhouette, so the ring velocity moved with it:
+#: 0.6691530373612168 was the hand-drawn car's and sizing the
+#: machine for it now puts the disk's induction ON its clamp at
+#: macro-step 0.  Measured as the horizon's MINIMUM, which is
+#: W228's procedure.
 
 
 def _art():
@@ -74,11 +81,22 @@ def _page():
 
 
 def _settled():
-    p = os.path.join(_ROOT, "out", "racelab2", "cache", "settled.npz")
-    if not os.path.isfile(p):
-        pytest.skip("no settled field; run --stages spinup")
-    d = np.load(p)
-    return d["u"], d["v"]
+    """The settled field for the car that is CURRENTLY built.
+
+    **A settled field belongs to a geometry.**  ``out/racelab2`` holds the
+    hand-drawn car's, settled around bodies that moved on 2026-09-13 when the
+    car became a traced silhouette; releasing the traced car from it puts the
+    wrong flow through the radiator duct and pins the disk's induction on its
+    clamp at macro-step 0.  Tier 54's cache is the traced car's own and is
+    preferred; the older one is the fallback so a checkout that has never run
+    Tier 54 still skips cleanly rather than failing for the wrong reason.
+    """
+    for tier in ("racelab4", "racelab2"):
+        p = os.path.join(_ROOT, "out", tier, "cache", "settled.npz")
+        if os.path.isfile(p):
+            d = np.load(p)
+            return d["u"], d["v"]
+    pytest.skip("no settled field; run tier54_traced_car.py --stages spinup")
 
 
 # ---------------------------------------------------------------------------

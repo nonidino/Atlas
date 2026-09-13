@@ -102,6 +102,15 @@ ADDED_AFTER_CAPTURE = {
                       "CaseGraph of its own: it reads racelab's, puts a "
                       "different expert in some of its fluid windows, and "
                       "measures.  Every module it imports is unchanged",
+    "racelab3d": "Tier 54: PoC 3's phase 4 -- the half-car in three dimensions, "
+                 "classical only.  It builds NO CaseGraph of its own and "
+                 "declares no region: it is a 3-D window solver, a swept "
+                 "half-car and a march, and it READS racelab's bodies to sweep "
+                 "them.  It imports no case but racelab and changes none, "
+                 "which is why the W189 byte-identity capture below is "
+                 "untouched by it.  Its own gap is W238: this column has no "
+                 "declared envelope at all, so nothing about it is checked the "
+                 "way the 2-D column's experts are",
 }
 
 #: **The two artifacts Tier 49's W194 moves, and the reason.**  `L7/R9`'s premise

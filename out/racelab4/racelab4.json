@@ -1,0 +1,778 @@
+{
+ "prediction": [
+  "u_rotor in the traced duct is DIFFERENT from Tier 53's 0.6692, because the duct moved from y 44..76 to y 18..50 -- nearer the floor, where the ground-effect flow is faster -- and the body above it changed shape. Direction not predicted.",
+  "u_rotor still FALLS over the horizon, as it did in Tier 53 (6.3%), because CS-19 section 6.2's finding that this flow does not settle is a property of the decomposition and not of the old car's shape.",
+  "Sizing for the horizon's MINIMUM admits all 600 macro-steps, as W228's procedure did for the old car.  If it does not, the procedure is insufficient rather than mis-applied, and that is the informative outcome.",
+  "P5 (the repeat floor) is bitwise, because nothing about determinism depends on the car's shape.",
+  "The aerodynamic coefficients MOVE A LOT -- the traced car has 22 plates against 11, an airbox, and a floor that no longer runs through both wheels -- so downforce and drag are not comparable with Tier 53's and this tier does not pretend they are."
+ ],
+ "geometry": {
+  "source": "freesvg.org id 48844, CC0 / public domain",
+  "method": "rasterised 1200x310 in a browser, thresholded to a silhouette, profiles simplified with Douglas-Peucker and welded into a chain, mapped ISOTROPICALLY",
+  "map": "x = 94.0 + raster_x * 0.3760, y = (309 - raster_y) * 0.3760",
+  "plates": 22,
+  "flat_bodies": 46,
+  "duct_band": [
+   18,
+   50
+  ],
+  "core_range": [
+   268.0,
+   296.0
+  ],
+  "turbine_range": [
+   380.0,
+   406.0
+  ]
+ },
+ "spinup": {
+  "steps": 240,
+  "macro_steps_outside": 154,
+  "last_macro_step_outside": 239,
+  "first_macro_step_outside": 86,
+  "which_experts_declined": {
+   "ROTOR": 154,
+   "MGU": 150
+  },
+  "release_state_is_admitted": false,
+  "envelope_at_the_release_state": {
+   "MGU": {
+    "valid": false,
+    "omega": 20.037415071733985,
+    "back_emf": 1.0018707535866993,
+    "V_oc": 1.34,
+    "current": -0.563548744022168,
+    "why": "the back-EMF 1.00187 is at or below the battery's open-circuit voltage 1.34, so the loop current reverses and the machine MOTORS -- a legitimate mode, and not the one this graph declares"
+   },
+   "ROTOR": {
+    "valid": false,
+    "induction": 0.02,
+    "why": "the induction 0.02 is AT the clamp `clamp_induction` declares, so the disk has no operating point here"
+   },
+   "FLUID": {
+    "valid": true,
+    "u_max": 1.590726042797704,
+    "cell_reynolds": 6.213773604678531,
+    "finite": true,
+    "band": 4.0,
+    "why": "inside the window expert's cell-Reynolds bound"
+   },
+   "RAD": {
+    "valid": true,
+    "ua": 31.52837803977594
+   },
+   "_declined": [
+    "MGU",
+    "ROTOR"
+   ],
+   "_unconsultable": []
+  },
+  "host_inflow": null,
+  "u_rotor_at_the_release_state": 0.6679138357244662,
+  "note": "the spin-up runs with enforce=False BY DESIGN -- a march that stops at macro-step 3 of a transient reports nothing -- and the measured arms release from what it ends at with enforce=True",
+  "wall_s": 91.63454350002576,
+  "s_per_macro_step": 0.38181059791677396
+ },
+ "stage_wall_s": {
+  "spinup": 91.64488739997614,
+  "size": 224.03186829999322,
+  "verify": 192.18255230004434,
+  "arms": 4408.4318279,
+  "compare": 0.001471599971409887
+ },
+ "size": {
+  "probe_host_inflow": 0.6679138357244662,
+  "wall_s": 224.02536610001698,
+  "s_per_macro_step": 0.37337561016669496,
+  "u_rotor_first": 0.6674596459873547,
+  "u_rotor_last": 0.6540770650867742,
+  "u_rotor_min": 0.6540770650867742,
+  "u_rotor_max": 0.6674596459873547,
+  "u_rotor_argmin": 599,
+  "fall_fraction": 0.02005002247107246,
+  "outside_the_envelope_steps": 46,
+  "outside_the_envelope_first": {
+   "step": 554,
+   "why": "the march left a declared envelope at macro-step 554 -- FLUID: u_max = 2.05072 gives a cell Reynolds number of 8.011 against the window expert's declared bound of 8, or went past the declared band of 4 -- and WindowNS sizes its sub-step count from u_max, so a march past this reads as a hang rather than as a blow-up",
+   "declined": [
+    "FLUID"
+   ]
+  },
+  "U_DUCT_to_size_for": 0.6540770650867742,
+  "note": "W228: size for the horizon's MINIMUM, not for one instant. This probe runs with enforce=False by design -- it is measuring what the envelope would object to, so it must not be stopped by it.",
+  "first_outside_macro_step": 554,
+  "safe_horizon": 530,
+  "horizon_is_CS19_s": false,
+  "why_the_horizon_moved": "the traced car leaves the FLUID envelope before CS-19's 600 macro-steps: the window expert's cell-Reynolds bound of 8 is breached at macro-step 554, on 46 macro-steps of the probe. The arms run at 530 instead, which is inside it with 24 macro-steps of margin, and the comparison is therefore at a SHORTER horizon and says so."
+ },
+ "verify": {
+  "steps": 530,
+  "host_inflow": 0.6540770650867742,
+  "admitted": true,
+  "why_declined": null,
+  "wall_s": 192.17952150001656,
+  "probe_said_outside_steps": 46,
+  "probe_said_first_outside_at": 554,
+  "induction_min": 0.0698444258219233,
+  "induction_max": 0.16894662895728796,
+  "current_min": 0.014773081685484888,
+  "current_is_positive_throughout": true
+ },
+ "arms": {
+  "horizon": 530,
+  "horizon_is_CS19_s": false,
+  "why_the_horizon_moved": "the traced car leaves the FLUID envelope before CS-19's 600 macro-steps: the window expert's cell-Reynolds bound of 8 is breached at macro-step 554, on 46 macro-steps of the probe. The arms run at 530 instead, which is inside it with 24 macro-steps of margin, and the comparison is therefore at a SHORTER horizon and says so.",
+  "settle_frac": 0.25,
+  "threads": 2,
+  "host_inflow": 0.6540770650867742,
+  "released_from": "out/racelab4/cache/settled.npz",
+  "enforce": true,
+  "arms": {
+   "referent": {
+    "wall_s": 1050.6534828000003,
+    "s_per_macro_step": 1.9823650618867932,
+    "settled": {
+     "u_rotor": 0.6453427054834068,
+     "u_core": 0.6081448911673453,
+     "ua": 37.58888374687087,
+     "induction": 0.07085854141428974,
+     "omega": 19.3602811645022,
+     "current": 0.015013172620875493,
+     "thrust_rotor": 0.031761513624362255,
+     "shaft_power": 0.02049714732829944,
+     "thrust_core": 0.11128056505616885,
+     "core_flow_power": 0.06808367116950842,
+     "q_machine": 8.004994094382614,
+     "load": 0.5937348728482958,
+     "drag": 1.4954658920073962,
+     "u_max": 1.8213996285435494,
+     "power_on_the_fluid": -0.08497508987564398,
+     "t_wall": 359.47507485293727,
+     "power_rotor": -0.01975527860771327,
+     "power_core": -0.06521981126793071,
+     "u_at_the_rotor_plane": 0.6197037010576554
+    },
+    "balances": {
+     "J3": {
+      "receiver": "the powertrain's shaft",
+      "the join's term: work the rotor's body force does on the fluid": 0.01975527860771327,
+      "the shaft's claim, T <U_d>": 0.02049714732829944,
+      "ratio_with_the_term": 0.9638062453909424,
+      "residual_with_the_term": 0.03619375460905759,
+      "residual_without_the_term": 1.0,
+      "u on the ring the disk reads": 0.6453427054834068,
+      "u in the cell the sink sits in": 0.6197037010576554,
+      "u_plane / u_ring": 0.9602707147568268,
+      "both devices' work on the fluid": 0.08497508987564398,
+      "the core's share of it": 0.06521981126793071,
+      "horizon_macro_steps": 132
+     },
+     "J1": {
+      "receiver": "the coolant circuit's radiator",
+      "no power crosses": true,
+      "the join's term: UA follows the air": 37.58888374687087,
+      "UA at release": 41.991689225792804,
+      "air through the core, release -> settled": [
+       0.6984524707840251,
+       0.6081448911673453
+      ],
+      "UA predicted by the declared exponent": 37.58889071030501,
+      "tracking_residual": 1.8525245111134377e-07,
+      "the air's mechanical loss across the core, unaccounted": 0.06808367116950842
+     },
+     "J2": {
+      "receiver": "the cooled block",
+      "coolant steps taken": 1,
+      "block first law, relative": 1.0813467974826503e-08,
+      "q_machine_W": 8.004994094382614,
+      "t_wall_K": 359.47106779074585,
+      "loop residual": 8.373303080632492e-14
+     }
+    },
+    "outside_the_envelope_steps": 0,
+    "coolant_steps": 1,
+    "J3_ratio_per_step_band": {
+     "mean": 0.9638072964977104,
+     "ptp": 0.0005336544465777138,
+     "relative_ptp": 0.0005536941342080631
+    },
+    "notes": {
+     "null": null,
+     "n_per_coolant": 400,
+     "rotor_width": 0.5,
+     "machine_scale": 0.5,
+     "p_ref": 42187.50000000006,
+     "n_join_inner": 3,
+     "coolant_steps_taken": 1,
+     "n_windows": 14,
+     "body_force_calls": 10600,
+     "substeps_max": 1,
+     "device_ring_to_plane_cells": {
+      "RAD": 7.5,
+      "ROTOR": 7.5
+     },
+     "enforce": true,
+     "host_inflow": 0.6540770650867742,
+     "outside_the_envelope": null,
+     "outside_the_envelope_steps": 0,
+     "envelope_at_the_end": {
+      "MGU": {
+       "valid": true,
+       "omega": 19.360264272737385,
+       "back_emf": 1.3652706037958104,
+       "V_oc": 1.34,
+       "current": 0.015012464970286354,
+       "why": "the back-EMF exceeds the open-circuit voltage"
+      },
+      "ROTOR": {
+       "valid": true,
+       "induction": 0.0708570705325291,
+       "why": "the induction is inside the disk's clamp"
+      },
+      "FLUID": {
+       "valid": true,
+       "u_max": 1.960038517148524,
+       "cell_reynolds": 7.656400457611421,
+       "finite": true,
+       "band": 4.0,
+       "why": "inside the window expert's cell-Reynolds bound"
+      },
+      "RAD": {
+       "valid": true,
+       "ua": 37.52085049456082
+      },
+      "_declined": [],
+      "_unconsultable": []
+     }
+    }
+   },
+   "repeat": {
+    "wall_s": 1049.4104802999645,
+    "s_per_macro_step": 1.9800197741508765,
+    "settled": {
+     "u_rotor": 0.6453427054834068,
+     "u_core": 0.6081448911673453,
+     "ua": 37.58888374687087,
+     "induction": 0.07085854141428974,
+     "omega": 19.3602811645022,
+     "current": 0.015013172620875493,
+     "thrust_rotor": 0.031761513624362255,
+     "shaft_power": 0.02049714732829944,
+     "thrust_core": 0.11128056505616885,
+     "core_flow_power": 0.06808367116950842,
+     "q_machine": 8.004994094382614,
+     "load": 0.5937348728482958,
+     "drag": 1.4954658920073962,
+     "u_max": 1.8213996285435494,
+     "power_on_the_fluid": -0.08497508987564398,
+     "t_wall": 359.47507485293727,
+     "power_rotor": -0.01975527860771327,
+     "power_core": -0.06521981126793071,
+     "u_at_the_rotor_plane": 0.6197037010576554
+    },
+    "balances": {
+     "J3": {
+      "receiver": "the powertrain's shaft",
+      "the join's term: work the rotor's body force does on the fluid": 0.01975527860771327,
+      "the shaft's claim, T <U_d>": 0.02049714732829944,
+      "ratio_with_the_term": 0.9638062453909424,
+      "residual_with_the_term": 0.03619375460905759,
+      "residual_without_the_term": 1.0,
+      "u on the ring the disk reads": 0.6453427054834068,
+      "u in the cell the sink sits in": 0.6197037010576554,
+      "u_plane / u_ring": 0.9602707147568268,
+      "both devices' work on the fluid": 0.08497508987564398,
+      "the core's share of it": 0.06521981126793071,
+      "horizon_macro_steps": 132
+     },
+     "J1": {
+      "receiver": "the coolant circuit's radiator",
+      "no power crosses": true,
+      "the join's term: UA follows the air": 37.58888374687087,
+      "UA at release": 41.991689225792804,
+      "air through the core, release -> settled": [
+       0.6984524707840251,
+       0.6081448911673453
+      ],
+      "UA predicted by the declared exponent": 37.58889071030501,
+      "tracking_residual": 1.8525245111134377e-07,
+      "the air's mechanical loss across the core, unaccounted": 0.06808367116950842
+     },
+     "J2": {
+      "receiver": "the cooled block",
+      "coolant steps taken": 1,
+      "block first law, relative": 1.0813467974826503e-08,
+      "q_machine_W": 8.004994094382614,
+      "t_wall_K": 359.47106779074585,
+      "loop residual": 8.373303080632492e-14
+     }
+    },
+    "outside_the_envelope_steps": 0,
+    "coolant_steps": 1,
+    "J3_ratio_per_step_band": {
+     "mean": 0.9638072964977104,
+     "ptp": 0.0005336544465777138,
+     "relative_ptp": 0.0005536941342080631
+    },
+    "notes": {
+     "null": null,
+     "n_per_coolant": 400,
+     "rotor_width": 0.5,
+     "machine_scale": 0.5,
+     "p_ref": 42187.50000000006,
+     "n_join_inner": 3,
+     "coolant_steps_taken": 1,
+     "n_windows": 14,
+     "body_force_calls": 10600,
+     "substeps_max": 1,
+     "device_ring_to_plane_cells": {
+      "RAD": 7.5,
+      "ROTOR": 7.5
+     },
+     "enforce": true,
+     "host_inflow": 0.6540770650867742,
+     "outside_the_envelope": null,
+     "outside_the_envelope_steps": 0,
+     "envelope_at_the_end": {
+      "MGU": {
+       "valid": true,
+       "omega": 19.360264272737385,
+       "back_emf": 1.3652706037958104,
+       "V_oc": 1.34,
+       "current": 0.015012464970286354,
+       "why": "the back-EMF exceeds the open-circuit voltage"
+      },
+      "ROTOR": {
+       "valid": true,
+       "induction": 0.0708570705325291,
+       "why": "the induction is inside the disk's clamp"
+      },
+      "FLUID": {
+       "valid": true,
+       "u_max": 1.960038517148524,
+       "cell_reynolds": 7.656400457611421,
+       "finite": true,
+       "band": 4.0,
+       "why": "inside the window expert's cell-Reynolds bound"
+      },
+      "RAD": {
+       "valid": true,
+       "ua": 37.52085049456082
+      },
+      "_declined": [],
+      "_unconsultable": []
+     }
+    }
+   },
+   "all_lagged": {
+    "wall_s": 209.635269899969,
+    "s_per_macro_step": 0.3955382450942811,
+    "settled": {
+     "u_rotor": 0.6453406914206049,
+     "u_core": 0.6081611032525713,
+     "ua": 37.58968532617142,
+     "induction": 0.07084776650003088,
+     "omega": 19.360220742618147,
+     "current": 0.015010641352987854,
+     "thrust_rotor": 0.03175615853376745,
+     "shaft_power": 0.020493632330508226,
+     "thrust_core": 0.11128654232992068,
+     "core_flow_power": 0.06808919683802306,
+     "q_machine": 8.002397478610739,
+     "load": 0.5937359341149775,
+     "drag": 1.4954645791370345,
+     "u_max": 1.8214063116354131,
+     "power_on_the_fluid": -0.08496902727707586,
+     "t_wall": 359.47507485293823,
+     "power_rotor": -0.01974880947663068,
+     "power_core": -0.06522021780044517,
+     "u_at_the_rotor_plane": 0.619700019863506
+    },
+    "balances": {
+     "J3": {
+      "receiver": "the powertrain's shaft",
+      "the join's term: work the rotor's body force does on the fluid": 0.01974880947663068,
+      "the shaft's claim, T <U_d>": 0.020493632330508226,
+      "ratio_with_the_term": 0.9636558887236035,
+      "residual_with_the_term": 0.03634411127639649,
+      "residual_without_the_term": 1.0,
+      "u on the ring the disk reads": 0.6453406914206049,
+      "u in the cell the sink sits in": 0.619700019863506,
+      "u_plane / u_ring": 0.9602680074292922,
+      "both devices' work on the fluid": 0.08496902727707586,
+      "the core's share of it": 0.06522021780044517,
+      "horizon_macro_steps": 132
+     },
+     "J1": {
+      "receiver": "the coolant circuit's radiator",
+      "no power crosses": true,
+      "the join's term: UA follows the air": 37.58968532617142,
+      "UA at release": 42.0,
+      "air through the core, release -> settled": [
+       0.6986252676065348,
+       0.6081611032525713
+      ],
+      "UA predicted by the declared exponent": 37.589692351734975,
+      "tracking_residual": 1.8690133159854183e-07,
+      "the air's mechanical loss across the core, unaccounted": 0.06808919683802306
+     },
+     "J2": {
+      "receiver": "the cooled block",
+      "coolant steps taken": 1,
+      "block first law, relative": 1.0814319794595747e-08,
+      "q_machine_W": 8.002397478610739,
+      "t_wall_K": 359.47106779074693,
+      "loop residual": 5.699106808807303e-14
+     }
+    },
+    "outside_the_envelope_steps": 0,
+    "coolant_steps": 1,
+    "J3_ratio_per_step_band": {
+     "mean": 0.9636610896463861,
+     "ptp": 0.0014078680152873613,
+     "relative_ptp": 0.0014609576233943161
+    },
+    "notes": {
+     "null": null,
+     "n_per_coolant": 400,
+     "rotor_width": 0.5,
+     "machine_scale": 0.5,
+     "p_ref": 42187.50000000006,
+     "n_join_inner": 3,
+     "coolant_steps_taken": 1,
+     "n_windows": 14,
+     "body_force_calls": 2120,
+     "substeps_max": 1,
+     "device_ring_to_plane_cells": {
+      "RAD": 7.5,
+      "ROTOR": 7.5
+     },
+     "enforce": true,
+     "host_inflow": 0.6540770650867742,
+     "outside_the_envelope": null,
+     "outside_the_envelope_steps": 0,
+     "envelope_at_the_end": {
+      "MGU": {
+       "valid": true,
+       "omega": 19.360359370989734,
+       "back_emf": 1.3652773100497424,
+       "V_oc": 1.34,
+       "current": 0.015016448943247539,
+       "why": "the back-EMF exceeds the open-circuit voltage"
+      },
+      "ROTOR": {
+       "valid": true,
+       "induction": 0.07087389477649655,
+       "why": "the induction is inside the disk's clamp"
+      },
+      "FLUID": {
+       "valid": true,
+       "u_max": 1.9600248767380937,
+       "cell_reynolds": 7.656347174758178,
+       "finite": true,
+       "band": 4.0,
+       "why": "inside the window expert's cell-Reynolds bound"
+      },
+      "RAD": {
+       "valid": true,
+       "ua": 37.52133540593251
+      },
+      "_declined": [],
+      "_unconsultable": []
+     }
+    }
+   },
+   "null_J3": {
+    "wall_s": 1038.4392122999998,
+    "s_per_macro_step": 1.9593192684905656,
+    "settled": {
+     "u_rotor": 0.6830768088332961,
+     "u_core": 0.6144517502033394,
+     "ua": 37.90041772979068,
+     "induction": 0.22060083225080035,
+     "omega": 20.492304264998882,
+     "current": 0.06243727677079927,
+     "thrust_rotor": 0.13209082896085247,
+     "shaft_power": 0.09023270758083825,
+     "thrust_core": 0.11358904413360472,
+     "core_flow_power": 0.07020191467282719,
+     "q_machine": 138.517524308684,
+     "load": 0.6396282621337279,
+     "drag": 1.509608447005877,
+     "u_max": 1.811843257731445,
+     "power_on_the_fluid": -0.06734284663744698,
+     "t_wall": 359.4750748616263,
+     "power_rotor": 0.0,
+     "power_core": -0.06734284663744698,
+     "u_at_the_rotor_plane": 0.6670984080096869
+    },
+    "balances": {
+     "J3": {
+      "receiver": "the powertrain's shaft",
+      "the join's term: work the rotor's body force does on the fluid": -0.0,
+      "the shaft's claim, T <U_d>": 0.09023270758083825,
+      "ratio_with_the_term": -0.0,
+      "residual_with_the_term": 1.0,
+      "residual_without_the_term": 1.0,
+      "u on the ring the disk reads": 0.6830768088332961,
+      "u in the cell the sink sits in": 0.6670984080096869,
+      "u_plane / u_ring": 0.9766081930802181,
+      "both devices' work on the fluid": 0.06734284663744698,
+      "the core's share of it": 0.06734284663744698,
+      "horizon_macro_steps": 132
+     },
+     "J1": {
+      "receiver": "the coolant circuit's radiator",
+      "no power crosses": true,
+      "the join's term: UA follows the air": 37.90041772979068,
+      "UA at release": 41.994148512155505,
+      "air through the core, release -> settled": [
+       0.6985036031402929,
+       0.6144517502033394
+      ],
+      "UA predicted by the declared exponent": 37.90042567213132,
+      "tracking_residual": 2.095580853449976e-07,
+      "the air's mechanical loss across the core, unaccounted": 0.07020191467282719
+     },
+     "J2": {
+      "receiver": "the cooled block",
+      "coolant steps taken": 1,
+      "block first law, relative": 1.065746597638996e-08,
+      "q_machine_W": 138.517524308684,
+      "t_wall_K": 359.47106779950127,
+      "loop residual": 2.6084373465796237e-14
+     }
+    },
+    "outside_the_envelope_steps": 0,
+    "coolant_steps": 1,
+    "J3_ratio_per_step_band": {
+     "mean": 0.0,
+     "ptp": 0.0,
+     "relative_ptp": null
+    },
+    "notes": {
+     "null": "J3",
+     "n_per_coolant": 400,
+     "rotor_width": 0.5,
+     "machine_scale": 0.5,
+     "p_ref": 42187.50000000006,
+     "n_join_inner": 3,
+     "coolant_steps_taken": 1,
+     "n_windows": 14,
+     "body_force_calls": 10600,
+     "substeps_max": 1,
+     "device_ring_to_plane_cells": {
+      "RAD": 7.5,
+      "ROTOR": 7.5
+     },
+     "enforce": true,
+     "host_inflow": 0.6540770650867742,
+     "outside_the_envelope": null,
+     "outside_the_envelope_steps": 0,
+     "envelope_at_the_end": {
+      "MGU": {
+       "valid": true,
+       "omega": 20.452560043135804,
+       "back_emf": 1.4422984421025138,
+       "V_oc": 1.34,
+       "current": 0.06077226294187191,
+       "why": "the back-EMF exceeds the open-circuit voltage"
+      },
+      "ROTOR": {
+       "valid": true,
+       "induction": 0.2166806511820728,
+       "why": "the induction is inside the disk's clamp"
+      },
+      "FLUID": {
+       "valid": true,
+       "u_max": 1.9358294820534505,
+       "cell_reynolds": 7.561833914271291,
+       "finite": true,
+       "band": 4.0,
+       "why": "inside the window expert's cell-Reynolds bound"
+      },
+      "RAD": {
+       "valid": true,
+       "ua": 37.82708588983115
+      },
+      "_declined": [],
+      "_unconsultable": []
+     }
+    }
+   },
+   "null_J1": {
+    "wall_s": 1060.1067084000097,
+    "s_per_macro_step": 2.0002013366037916,
+    "settled": {
+     "u_rotor": 0.6453427054834068,
+     "u_core": 0.6081448911673453,
+     "ua": 42.0,
+     "induction": 0.07085854141428974,
+     "omega": 19.3602811645022,
+     "current": 0.015013172620875493,
+     "thrust_rotor": 0.031761513624362255,
+     "shaft_power": 0.02049714732829944,
+     "thrust_core": 0.11128056505616885,
+     "core_flow_power": 0.06808367116950842,
+     "q_machine": 8.004994094382614,
+     "load": 0.5937348728482958,
+     "drag": 1.4954658920073962,
+     "u_max": 1.8213996285435494,
+     "power_on_the_fluid": -0.08497508987564398,
+     "t_wall": 359.47507485293727,
+     "power_rotor": -0.01975527860771327,
+     "power_core": -0.06521981126793071,
+     "u_at_the_rotor_plane": 0.6197037010576554
+    },
+    "balances": {
+     "J3": {
+      "receiver": "the powertrain's shaft",
+      "the join's term: work the rotor's body force does on the fluid": 0.01975527860771327,
+      "the shaft's claim, T <U_d>": 0.02049714732829944,
+      "ratio_with_the_term": 0.9638062453909424,
+      "residual_with_the_term": 0.03619375460905759,
+      "residual_without_the_term": 1.0,
+      "u on the ring the disk reads": 0.6453427054834068,
+      "u in the cell the sink sits in": 0.6197037010576554,
+      "u_plane / u_ring": 0.9602707147568268,
+      "both devices' work on the fluid": 0.08497508987564398,
+      "the core's share of it": 0.06521981126793071,
+      "horizon_macro_steps": 132
+     },
+     "J1": {
+      "receiver": "the coolant circuit's radiator",
+      "no power crosses": true,
+      "the join's term: UA follows the air": 42.0,
+      "UA at release": 42.0,
+      "air through the core, release -> settled": [
+       0.6984524707840251,
+       0.6081448911673453
+      ],
+      "UA predicted by the declared exponent": 37.59633010579378,
+      "tracking_residual": 0.11713031250163403,
+      "the air's mechanical loss across the core, unaccounted": 0.06808367116950842
+     },
+     "J2": {
+      "receiver": "the cooled block",
+      "coolant steps taken": 1,
+      "block first law, relative": 1.141777926964501e-08,
+      "q_machine_W": 8.004994094382614,
+      "t_wall_K": 359.47106779074585,
+      "loop residual": 2.4549998561016732e-14
+     }
+    },
+    "outside_the_envelope_steps": 0,
+    "coolant_steps": 1,
+    "J3_ratio_per_step_band": {
+     "mean": 0.9638072964977104,
+     "ptp": 0.0005336544465777138,
+     "relative_ptp": 0.0005536941342080631
+    },
+    "notes": {
+     "null": "J1",
+     "n_per_coolant": 400,
+     "rotor_width": 0.5,
+     "machine_scale": 0.5,
+     "p_ref": 42187.50000000006,
+     "n_join_inner": 3,
+     "coolant_steps_taken": 1,
+     "n_windows": 14,
+     "body_force_calls": 10600,
+     "substeps_max": 1,
+     "device_ring_to_plane_cells": {
+      "RAD": 7.5,
+      "ROTOR": 7.5
+     },
+     "enforce": true,
+     "host_inflow": 0.6540770650867742,
+     "outside_the_envelope": null,
+     "outside_the_envelope_steps": 0,
+     "envelope_at_the_end": {
+      "MGU": {
+       "valid": true,
+       "omega": 19.360264272737385,
+       "back_emf": 1.3652706037958104,
+       "V_oc": 1.34,
+       "current": 0.015012464970286354,
+       "why": "the back-EMF exceeds the open-circuit voltage"
+      },
+      "ROTOR": {
+       "valid": true,
+       "induction": 0.0708570705325291,
+       "why": "the induction is inside the disk's clamp"
+      },
+      "FLUID": {
+       "valid": true,
+       "u_max": 1.960038517148524,
+       "cell_reynolds": 7.656400457611421,
+       "finite": true,
+       "band": 4.0,
+       "why": "inside the window expert's cell-Reynolds bound"
+      },
+      "RAD": {
+       "valid": true,
+       "ua": 42.0
+      },
+      "_declined": [],
+      "_unconsultable": []
+     }
+    }
+   }
+  },
+  "repeat_floor": {
+   "bitwise_in_every_crossing_quantity": true,
+   "bitwise_in_the_field": true
+  },
+  "G1_J3": {
+   "residual_with_the_term": 0.03619375460905759,
+   "residual_without_the_term_null_arm": 1.0,
+   "u_plane_over_u_ring": 0.9602707147568268,
+   "what_the_velocity_gap_alone_predicts": 0.03972928524317321,
+   "the_ratio_s_own_band": {
+    "mean": 0.9638072964977104,
+    "ptp": 0.0005336544465777138,
+    "relative_ptp": 0.0005536941342080631
+   }
+  },
+  "G3_J1": {
+   "tracking_residual": 1.8525245111134377e-07,
+   "null_arm_ua_settled": 42.0,
+   "null_arm_fluid_is_bitwise_identical": true
+  }
+ },
+ "compare": {
+  "note": "the aerodynamic coefficients are NOT comparable -- the car is a different shape -- and are shown to say by how much, not to be judged against a threshold",
+  "referent": {
+   "s_per_macro_step": [
+    5.685929055333302,
+    1.9823650618867932
+   ],
+   "outside_steps": [
+    0,
+    0
+   ]
+  },
+  "all_lagged": {
+   "s_per_macro_step": [
+    0.3232243001666696,
+    0.3955382450942811
+   ],
+   "outside_steps": [
+    0,
+    0
+   ]
+  },
+  "J3_residual": [
+   0.0024012133893636404,
+   0.03619375460905759
+  ],
+  "J1_tracking_residual": [
+   7.953967898904353e-07,
+   1.8525245111134377e-07
+  ],
+  "host_inflow": [
+   0.63,
+   0.6540770650867742
+  ]
+ }
+}
