@@ -162,6 +162,47 @@ def test_the_page_greys_the_learned_controls_out_with_the_reason():
 
 
 # ---------------------------------------------------------------------------
+# 1b. W251 -- the page's socket, through the real server
+# ---------------------------------------------------------------------------
+
+
+def test_W251_the_page_s_socket_carries_a_frame_through_the_real_server():
+    """The first bundle pinned plain uvicorn, whose WebSocket support is
+    nothing unless a library is installed beside it, so the page never got a
+    frame -- and every engine-level test passed.  This one opens the socket."""
+    from atlas.demo_racelab import server as S
+    e = _engine(learned=False)
+    e._publish()
+    ok, detail = S.socket_check(e)
+    assert ok, detail
+
+
+def test_W251_the_control_a_server_with_no_websocket_library_fails_it(
+        monkeypatch):
+    """The exact state the first bundle shipped in: uvicorn's automatic
+    WebSocket protocol resolves to nothing.  The check must say so -- or the
+    test above would pass on a check that could not fail."""
+    import uvicorn.protocols.websockets.auto as auto
+    from atlas.demo_racelab import server as S
+    monkeypatch.setattr(auto, "AutoWebSocketsProtocol", None)
+    e = _engine(learned=False)
+    e._publish()
+    ok, detail = S.socket_check(e, timeout_s=10.0)
+    assert not ok, detail
+
+
+def test_W251_the_bundle_pins_a_websocket_library_and_the_self_test_uses_it():
+    req = _launcher("requirements.txt")
+    assert re.search(r"^websockets==\d", req, re.MULTILINE), \
+        "no WebSocket library is pinned"
+    src = _launcher("run.py")
+    assert '("websockets",' in src, "the package check does not name it"
+    body = src[src.index("def check()"):]
+    assert body.count("socket_check(eng)") >= 2, \
+        "the classical-only path or the full path does not open the socket"
+
+
+# ---------------------------------------------------------------------------
 # 2. a settled field belongs to a car
 # ---------------------------------------------------------------------------
 

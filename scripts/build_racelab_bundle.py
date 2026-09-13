@@ -165,6 +165,40 @@ def _hf_cache() -> str:
     return os.path.join(os.path.expanduser("~"), ".cache", "huggingface", "hub")
 
 
+def _rmtree(path: str) -> None:
+    """`shutil.rmtree` that survives a previous build on Windows.
+
+    Found by rebuilding in place: `copytree` copies directory attributes, the
+    source `atlas/` lives in OneDrive, which marks folders READ-ONLY, so the
+    copy's folders are read-only too and `os.rmdir` answers WinError 5.  Git's
+    own objects are read-only as well, and a scanner can hold a fresh file for a
+    moment.  So: clear the attribute and retry, a few times, then give up
+    loudly.
+    """
+    import stat
+    import time
+
+    def retry(func, p, _exc):
+        try:
+            os.chmod(p, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+        except OSError:
+            pass
+        for k in range(6):
+            try:
+                func(p)
+                return
+            except FileNotFoundError:
+                return
+            except PermissionError:
+                time.sleep(0.3 * (k + 1))
+        func(p)
+
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(path, onexc=retry)
+    else:                                                   # pragma: no cover
+        shutil.rmtree(path, onerror=retry)
+
+
 def _sha256(path: str) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:
@@ -266,7 +300,7 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
             + "\ncommit them, or pass --allow-dirty for a scratch build")
 
     if os.path.isdir(out):
-        shutil.rmtree(out)
+        _rmtree(out)
     os.makedirs(out)
 
     # 1. the framework and the demo -----------------------------------------

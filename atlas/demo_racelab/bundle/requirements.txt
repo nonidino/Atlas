@@ -18,6 +18,15 @@ pillow==11.0.0
 fastapi==0.115.5
 uvicorn==0.32.1
 
+# The page's live connection. Plain uvicorn carries NO WebSocket
+# implementation of its own: without this it refuses every upgrade ("No
+# supported WebSocket library detected"), the page never receives a frame, and
+# every control on it sends into nothing -- which is exactly what the first
+# build of this bundle did, with a self-test that passed because it drove the
+# engine rather than the socket (W251). The development machine never showed
+# it, because uvicorn[standard] had put websockets there long ago.
+websockets==15.0.1
+
 # The build repository's solver package reads its configuration with PyYAML at
 # import time (src/atlas/config), and the CLASSICAL column loads that package
 # for the block's conduction and the wing's structure. Listed here rather than

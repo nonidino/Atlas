@@ -124,6 +124,74 @@ def create_app(engine: Engine | None = None) -> FastAPI:
     return app
 
 
+def socket_check(engine: Engine, timeout_s: float = 30.0) -> tuple[bool, str]:
+    """The page's live connection: this app, a real port, a real WebSocket.
+
+    **W251, found by opening the page, and nothing short of that found it.**
+    The first build of the PoC 3 bundle pinned plain uvicorn, which carries no
+    WebSocket implementation of its own, so every upgrade to ``/ws`` was
+    refused ("No supported WebSocket library detected"), the page never
+    received a frame, and every control on it sent into nothing -- while the
+    bundle's self-test, which drove the engine directly, printed OK on Windows
+    and on Linux.  The development machine never showed it: `uvicorn[standard]`
+    had put a WebSocket library there long before.
+
+    So this asks the app `create_app` builds for a frame over the socket the
+    page uses, with ``ws="auto"`` exactly as `run` has it -- with no library,
+    auto means refuse, which is the failure.  ``engine`` must already have
+    published a frame; its march is NOT started.  Returns ``(True, detail)``
+    when a JSON frame and a PNG frame both arrived, ``(False, reason)``
+    otherwise -- never raises.
+    """
+    import socket
+    import threading
+    import time
+
+    import uvicorn
+
+    engine.start = lambda: None       # the frame is published; do not march
+    try:
+        from websockets.sync.client import connect
+    except Exception as exc:
+        return False, ("no WebSocket client to check with (%s): the page's "
+                       "server has no WebSocket library either" % exc)
+    app = create_app(engine)
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port,
+                                           ws="auto", lifespan="off",
+                                           log_level="error"))
+    th = threading.Thread(target=server.run, daemon=True)
+    th.start()
+    try:
+        t0 = time.time()
+        while not server.started:
+            if not th.is_alive() or time.time() - t0 > timeout_s:
+                return False, "the server did not start"
+            time.sleep(0.05)
+        got_json = got_png = False
+        with connect("ws://127.0.0.1:%d/ws" % port, open_timeout=timeout_s,
+                     close_timeout=2) as sock:
+            t0 = time.time()
+            while not (got_json and got_png) and time.time() - t0 < timeout_s:
+                msg = sock.recv(timeout=timeout_s)
+                if isinstance(msg, str):
+                    got_json = got_json or "seq" in json.loads(msg)
+                elif bytes(msg[:8]) == b"\x89PNG\r\n\x1a\n":
+                    got_png = True
+        if got_json and got_png:
+            return True, "a JSON frame and a PNG frame arrived over /ws"
+        return False, ("over /ws: JSON frame %s, PNG frame %s"
+                       % (got_json, got_png))
+    except Exception as exc:
+        return False, "%s: %s" % (type(exc).__name__, str(exc)[:300])
+    finally:
+        server.should_exit = True
+        th.join(timeout=10)
+
+
 def run(host: str = "127.0.0.1", port: int = 8013, open_browser: bool = False,
         log_level: str = "warning") -> None:
     import uvicorn

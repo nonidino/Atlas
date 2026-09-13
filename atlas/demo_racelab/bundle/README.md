@@ -92,12 +92,15 @@ shorter (`C:\poc3`), or run `git config --global core.longpaths true` first.
 
 Imports every dependency and names any that is missing; loads the solvers and
 **asserts they came from this checkout's `vendor/`**; checks that the settled
-field was settled around **this** car; compiles the graph; and marches the
+field was settled around **this** car; compiles the graph; marches the
 all-classical column and then the all-learned column beside it, through the
-demo's own engine, with the per-window one-step error. About a minute. The exit
-code is `0` when both columns marched, `3` when the classical column marched and
-the learned expert is not available here, and anything else when something is
-broken.
+demo's own engine, with the per-window one-step error; and finally **asks the
+demo's own server, on a real local port, for a frame over the WebSocket the page
+uses** — because a self-test that only drives the engine once passed on a bundle
+whose page could never receive a frame. A minute or two. The exit code is `0`
+when both columns marched and the page can receive them, `3` when the classical
+column marched, the page can receive it, and the learned expert is not
+available here, and anything else when something is broken.
 
 ### With no network, or without `scOT`
 

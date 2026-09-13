@@ -60,6 +60,9 @@ REQUIRED = [
     ("PIL", "PNG encoding of the field (pillow)"),
     ("fastapi", "the server"),
     ("uvicorn", "the server"),
+    ("websockets", "the page's live connection: without it uvicorn refuses "
+                   "every WebSocket upgrade and the page never receives a "
+                   "frame (W251)"),
 ]
 
 #: What the LEARNED column needs on top.  Missing, the classical column still
@@ -118,6 +121,14 @@ def _tf32_off():
     assert torch.backends.cudnn.allow_tf32 is False
 
 
+def socket_check(eng):
+    """`demo_racelab.server.socket_check` -- the page's live connection, checked
+    through the demo's own server (W251).  Imported here, not defined here, so
+    the tests exercise the same function the self-test does."""
+    from atlas.demo_racelab.server import socket_check as check
+    return check(eng)
+
+
 def _under(path: str, root: str) -> bool:
     try:
         return os.path.commonpath([os.path.abspath(path),
@@ -140,7 +151,9 @@ def check() -> int:
       4. the graph compiles and the verdict comes out;
       5. **both columns march**, alternately, through the demo's own engine:
          the all-classical column, then every window flipped to learned beside
-         the all-classical referent, and the per-window one-step error.
+         the all-classical referent, and the per-window one-step error;
+      6. **the page can receive them**: the demo's own server, on a real port,
+         hands a real WebSocket client a frame (W251).
 
     Nothing is compared against a stored number; the point is that the answers
     are produced here.  Exit 0: both columns marched.  Exit 3: the classical
@@ -263,8 +276,16 @@ def check() -> int:
             print("    missing: %s" % ", ".join(missing))
         print("    The classical column runs; the page greys the learned switch "
               "out with this reason.")
-        print("\n  PARTIAL -- the classical column marched; the learned one "
-              "could not be built.")
+        print("\n  the page's live connection  (the demo's own server, a real "
+              "port, a real WebSocket)")
+        ok, detail = socket_check(eng)
+        print("    %s   %s" % ("ok  " if ok else "[!] ", detail))
+        if not ok:
+            print("    The page would receive nothing, so the classical column "
+                  "could not be seen either.")
+            return BROKEN
+        print("\n  PARTIAL -- the classical column marched and the page can "
+              "receive it; the learned one could not be built.")
         return CLASSICAL_ONLY
 
     print("\n  the learned column  (all 14 windows Poseidon-T, beside the "
@@ -298,8 +319,17 @@ def check() -> int:
         print("    [!] the field did not encode to a PNG")
         return BROKEN
 
-    print("\n  OK -- both columns marched, the checkpoint loaded offline, and "
-          "the solvers came from vendor/.")
+    print("\n  the page's live connection  (the demo's own server, a real port, "
+          "a real WebSocket)")
+    ok, detail = socket_check(eng)
+    print("    %s   %s" % ("ok  " if ok else "[!] ", detail))
+    if not ok:
+        print("    The page would receive nothing: no field, no numbers, and "
+              "every control would send into nothing.")
+        return BROKEN
+
+    print("\n  OK -- both columns marched, the checkpoint loaded offline, the "
+          "solvers came from vendor/, and the page can receive the march.")
     print("  Now run:  python run.py")
     return OK
 
