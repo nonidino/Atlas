@@ -1,0 +1,13 @@
+# run.sh must keep LF endings whatever machine it is checked out on: a CRLF in
+# the shebang makes bash fail with "bad interpreter: /usr/bin/env bash^M", which
+# is the single most likely way this bundle fails to start on a Mac.
+*.sh text eol=lf
+
+# and the Windows launcher wants CRLF for the same kind of reason
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# the checkpoint and the settled field are binary and must never be touched by
+# eol conversion
+*.safetensors binary
+*.npz binary

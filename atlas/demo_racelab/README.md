@@ -15,19 +15,27 @@ It needs `fastapi`, `uvicorn` and `pillow` beside the package's own
 dependencies, and it needs the build repo for `reference.WindowNS` exactly as
 `atlas/cases/wing_fsi.py` does. The learned column additionally needs
 Poseidon-T in the local Hugging Face cache and `scOT` installed; **without them
-the classical column still runs** and the page says the learned switch is
-unavailable rather than failing.
+the classical column still runs**, and the page greys the learned switch out
+**with the reason** — a flip to learned is refused rather than tinting windows
+that go on marching classical (W243).
 
-Run this first if `out/racelab2/cache/settled.npz` is absent:
+On a machine that has nothing, use the self-contained branch instead:
+`git clone --branch poc3-racelab-demo --single-branch …` and `./run.sh`
+(`scripts/build_racelab_bundle.py` builds it; `bundle/README.md` is its README).
+
+Run this first if the car has been redrawn, or if `out/racelab5/cache/settled.npz`
+is absent:
 
 ```bash
-python scripts/tier52_racelab_switch.py --stages spinup
+python scripts/tier54_traced_car.py --out out/racelab5 --stages spinup
 ```
 
-Without it the demo releases from a uniform freestream, **says so on screen**,
-and shows a transient whose first 58 macro-steps leave the disk's induction
-clamp — which the envelope stamp will report in red. That is `demo_frontwing`'s
-own rule and the reason it exists.
+**A settled field belongs to the car it was settled around**, and it carries
+that car's fingerprint (`racelab.geometry_fingerprint`). The demo releases from
+the field whose fingerprint matches the car built now; if none does, it releases
+from the newest one and says, in capitals, that it was settled around a
+different car; with none at all it releases from a uniform freestream and says
+that. That is `demo_frontwing`'s own rule and the reason it exists.
 
 ---
 
@@ -135,8 +143,16 @@ field rather than about this code.
   can move it across a window boundary, which the static decomposition (E1, a
   fixed graph) forbids without a visible rebuild. **A slider that moves a number
   nothing reads is worse than no slider**, so none is shown.
-- **No 3-D.** That is phase 4 and is optional to ship.
-- **No bundle.** That is phase 5.
+- **3-D is classical only** (phase 4), and has no declared envelope at all
+  (W238) — the page says so rather than showing no stamp.
+- **No GPU.** Every column runs on the CPU; the bundle installs the CPU-only
+  torch wheel for that reason (phase 5).
+- **The drawn car does not stay inside its envelopes.** On the car in
+  `car_geometry.json` the machine's clamp declines at macro-step 20 and the
+  fluid's cell-Reynolds bound at macro-step 56, on the outflow boundary where
+  the car's wake leaves the box — so the page is stamped `OUTSIDE THE MODEL`
+  for all but the first twenty macro-steps. See [[poc3-racelab-drawn-car]]
+  (W244, W245).
 - **One Reynolds number, one grid, one incidence**, and every body porous with
   no boundary layer and no Kutta condition — `poc2-frontwing-results`' own list,
   now thirteen times over instead of once.

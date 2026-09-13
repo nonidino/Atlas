@@ -1,0 +1,29 @@
+# Everything run.sh / run.cmd creates. Deleting .venv undoes the whole install.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# demo output. The recorded runs below are FORCE-ADDED by the build script:
+# the settled field the demo releases from and the records the tests read are
+# part of the bundle, and everything else under out/ is not.
+out/*
+!out/racelab/
+out/racelab/*
+!out/racelab/racelab.json
+!out/racelab2/
+out/racelab2/*
+!out/racelab2/racelab2.json
+!out/racelab3/
+out/racelab3/*
+!out/racelab3/racelab3.json
+!out/racelab4/
+out/racelab4/*
+!out/racelab4/racelab4.json
+!out/racelab5/
+out/racelab5/*
+!out/racelab5/racelab5.json
+!out/racelab5/cache/
+out/racelab5/cache/*
+!out/racelab5/cache/settled.npz
+*.log

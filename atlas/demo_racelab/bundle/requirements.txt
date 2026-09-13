@@ -1,0 +1,47 @@
+# Every top-level dependency, pinned to an exact version. Nothing here is
+# resolved by "latest": a demo that installs a different set of packages on
+# every machine is a demo whose numbers cannot be compared between machines.
+#
+# The packages THESE pull in are pinned too, in constraints.txt, which the
+# launchers pass with -c. A constraint pins a package only if something needs
+# it, so one file serves every platform: a Windows-only dependency listed there
+# is simply not installed on Linux.
+#
+# torch is NOT here. It is installed separately by run.sh / run.cmd from
+# pytorch's CPU index, because every column in this demo runs on the CPU -- the
+# composed march is float64 and the learned expert is stepped on the CPU inside
+# it -- so a CUDA wheel would be gigabytes this demo never touches.
+
+numpy==1.26.4
+scipy==1.13.1
+pillow==11.0.0
+fastapi==0.115.5
+uvicorn==0.32.1
+
+# The build repository's solver package reads its configuration with PyYAML at
+# import time (src/atlas/config), and the CLASSICAL column loads that package
+# for the block's conduction and the wing's structure. Listed here rather than
+# left to arrive with transformers, because the classical column must not
+# depend on the learned expert's install.
+PyYAML==6.0.2
+
+# The learned expert's backbone. Poseidon-T is a Swin-v2 variant and `scOT`
+# reads its blocks straight out of transformers, so this pin and the scOT
+# commit below have to move together.
+transformers==4.44.2
+safetensors==0.4.5
+huggingface-hub==0.26.2
+
+# only needed for `pytest tests/`
+pytest==8.3.3
+httpx==0.27.2
+
+# `scOT` -- the Poseidon model class -- is installed by the launchers from a
+# pinned source archive rather than listed here, and NOT vendored into this
+# branch, because github.com/camlab-ethz/poseidon publishes no licence file and
+# is therefore not ours to redistribute. The launchers install it with
+# --no-deps: its own pins (torch 2.0.1, transformers 4.29.2, wandb) are years
+# old and would tear down everything above. If that one fetch fails -- no
+# network, or GitHub unreachable -- the CLASSICAL column still runs and the
+# page greys the learned switch out with the reason.
+#   https://github.com/camlab-ethz/poseidon/archive/b8fa28f59bd7f7673323f28d11a12c6f3a215c61.zip

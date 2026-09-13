@@ -395,6 +395,20 @@ out/racelab4/*
 out/racelab5/*
 !out/racelab5/racelab5.json
 
+# Tier 57 -- PoC 3 phase 5, the bundle. JSON only: what
+# scripts/verify_racelab_bundle.py found on a FRESH CLONE of the
+# poc3-racelab-demo branch, one record per platform -- the mode run.sh has in
+# the index, its line endings as checked out, the blob-hash identity of every
+# copied file against the commit SOURCE_COMMITS names, the scans, and (with
+# --launch) the launcher's own self-test. tests/test_tier57_racelab_bundle.py
+# reads them. Rebuilding a record costs a build (about a minute), a clone, and
+# with --launch a full install into a fresh .venv: minutes with a warm pip
+# cache, and a few hundred megabytes of downloads without one. The launch logs
+# beside them are ignored.
+!out/racelab_bundle/
+out/racelab_bundle/*
+!out/racelab_bundle/verify_*.json
+
 # The car editor's leavings. The geometry ITSELF is tracked -- it is the car --
 # but its rolling backup, the tracing backdrops and the check's picture are not.
 atlas/cases/car_geometry.json.bak
