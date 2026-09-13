@@ -4777,3 +4777,39 @@ python scripts/run_suite.py
 
 **Added:** `atlas/cases/racelab3d.py`, `scripts/tier54_traced_car.py`, `tests/test_tier54_racelab_3d.py`, `out/racelab4/racelab4.json`, [[poc3-racelab-traced-car]], [[poc3-racelab-3d]].
 **Changed:** `atlas/cases/racelab.py` (the traced car, `DUCT_Y0`, the device ranges), `atlas/cases/wing_fsi.py` (W235), `atlas/demo_racelab/engine.py` (the 3-D branch and a re-measured `U_DUCT`), `atlas/demo_racelab/static/index.html` (the toggle), `tests/test_tier51_racelab_graph.py` and `tests/test_tier52_racelab_switch.py` (the car's part list, its counts, and the settled field a test releases from), `.gitignore`, [[gap-worklist]], `wiki/index.md`.
+
+---
+
+## [2026-09-13] tier 55 | the car's shape becomes data, and the person who knows what a car looks like draws it
+
+**Three automatic attempts at a car produced three cars that were not good enough**, the third traced from a drawing the user supplied. The fourth attempt was to stop tracing. `atlas/cases/car_geometry.json` now holds the geometry -- plates as a leading-edge point, a chord in cells and an angle, wheels as a centre and a radius -- and `racelab.py` reads it. Nothing about the car is in Python any more, and `test_editing_the_file_moves_the_car` pins that.
+
+`scripts/car_editor.py` serves a page that draws the file and lets it be dragged: welded points so the outline does not tear, split to add detail, a backdrop to trace over, arrow-key nudges, undo. **Check runs the real model** -- the same `car_bodies` and `windows_from_geometry` the march calls -- and the checks discriminate rather than merely pass: pushing the body through the tiling seam, a plate into a wheel and the rear tyre over the turbine cut produces exactly those three errors and nothing else, with the unbroken car as the control.
+
+**The user drew the car.** 24 of its 27 plates are frozen byte-for-byte and asserted plate by plate; three moved and each for a reason the model forces. The radiator duct they drew was 19.5 cells tall where `DEVICE_CELLS` is 32, so it was rebuilt 32 tall **about their own centreline** -- their walls averaged y = 34.25, `DUCT_Y0` = 18 gives a centre of 34.0 -- keeping their x and length exactly. Their plate named `FW_MAIN` was an 11.9-cell segment of the wing's upper surface, and `WING_BODY_ID` is what the front wing's STRUCTURE couples to at CS-12's 32 stations and 0.25 m chord, so it was renamed `FW_UPPER` and a 32-cell main plane added along the mean line of the section they drew. Four ids had been used twice, and a duplicate `body_id` is a real defect because the code resolves them with `next(...)`.
+
+### Three things measured, and each of them a finding
+
+**W241 -- a knob and the drawing disagreed and nothing said so.** `DIFF`, `FW_FLAP` and `RW_FLAP` take their incidence from `CarParams`, so the editor drew the stored number and the march used the knob: a flap drawn at 21.8 built at 30, a diffuser drawn flat built at 11, a rear flap drawn at 43.6 built at 32. **The third was found only by listing every drawn angle against every built one**; the other two had been found by reading the file, and that method would never have found the third. The defaults now ARE the drawing, so the knob still sweeps and the nominal car is the drawn car.
+
+**W242 -- a Save that failed silently, which is W233 again one tier later.** The editor's Save let its `fetch` reject on its own, so with the server stopped the button did nothing, looked like it had worked, and an editing session was lost. Closed: every failure path writes to the report, a dirty marker rides the tab title, a draft is kept in browser storage and `beforeunload` warns. **This project has now shipped a silently-failing control in two consecutive tiers.**
+
+**W240 -- the tyre is transparent to the flow exactly where it touches the road.** Asked how air gets under a 2-D car whose wheels reach the ground, the measurement says it goes straight through the tyre: the flux from road to floor height is 99% of free stream THROUGH the front tyre's axle station, 102% under the floor mid-car, and u at the contact patch is 1.0000. The mechanism follows from the model rather than from a mistake -- a wheel is twelve chords stamped as porous body forces whose normal traction vanishes as the surface becomes tangent to the stream, and at the road it IS tangent, so the two contact chords carry 0.030 against 0.420 at the tyre's sides and cancel. **The underfloor is not starved, it is over-supplied**, and this car's ground effect is not produced by the mechanism that produces it on a real one. Recorded rather than repaired: three dimensions would fix it, but that column has no joins, no devices and no declared envelope (W238).
+
+### And one checker bug the user's car found
+
+The front-wing check compared **x-extents**, so it failed a wing whose trailing edge sits exactly ON the tread -- `FW_UNDER_TE` is 24.4 from the tyre centre against a radius of 24.4, touching and not penetrating. It measures real clearance now. Two tests that hard-coded plate names were changed to pick by role, because a test that pins the name of a hand-drawn plate fails for a reason that is not about the car.
+
+```
+python scripts/car_editor.py --open      # draw it
+python scripts/car_check.py              # 0 failed, 1 warning
+python scripts/vault_scan.py wiki        # 234 files, 0 problems
+python scripts/run_suite.py              # 1422 passed, 0 failed
+```
+
+**The wall time of the last two suite runs is contaminated** and says so here rather than being quoted: an editor server was up through both, 897 s and 883 s against the usual ~440 s. The pass counts are unaffected.
+
+**Added:** `atlas/cases/car_geometry.json`, `scripts/car_editor.py`, `scripts/car_editor.html`, `scripts/car_check.py`, `scripts/CAR_EDITOR.md`, `tests/test_tier55_car_geometry.py`.
+**Changed:** `atlas/cases/racelab.py` (`car_bodies` reads the file; the three knob defaults are the drawn angles), `tests/test_tier51_racelab_graph.py` (parts by role), `.gitignore`, [[gap-worklist]] (**W240**-**W242**).
+
+**NOT done:** the arms still describe the car that was in place when they ran, and this is a different car. Nothing has been re-marched.

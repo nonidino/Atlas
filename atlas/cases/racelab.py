@@ -72,7 +72,9 @@ carries every such departure in one place and the case study repeats them.
 
 from __future__ import annotations
 
+import json
 import math
+import os
 from dataclasses import dataclass, field, replace
 from typing import Any, Sequence
 
@@ -412,9 +414,20 @@ class CarParams:
 
     ride_height: float = 0.22        # cells above the road, the floor's leading edge
     rake: float = 0.10               # rear ride height minus front, in cells per unit
-    diffuser_deg: float = 11.0
-    front_flap_deg: float = 30.0
-    rear_wing_deg: float = 16.0
+    #: **The two knob-driven angles are the DRAWN ones (2026-09-13).**  `DIFF`
+    #: and `FW_FLAP` take their incidence from these fields rather than from
+    #: `car_geometry.json`, so a default that disagreed with the drawing meant
+    #: the model built a flap at 30 degrees that had been drawn at 21.8 and a
+    #: diffuser at 11 that had been drawn flat -- the editor showed one car and
+    #: the march ran another.  The defaults now ARE the drawing, so the knob
+    #: still sweeps its declared range and the nominal car is the drawn car.
+    diffuser_deg: float = 0.0
+    front_flap_deg: float = 21.8
+    #: RW_FLAP is `rear_wing_deg + 16`, and it was drawn at 43.6, so the
+    #: default is 27.6.  RW_MAIN was deleted from the car, so nothing else
+    #: reads this field -- which is why the mismatch went unnoticed until
+    #: the built angles were listed against the drawn ones.
+    rear_wing_deg: float = 27.6
 
 
 #: The car, front to back, in cells on the ``608 x 240`` lattice.
@@ -423,107 +436,77 @@ class CarParams:
 #: to right.  Angles are to the free stream and POSITIVE means the trailing edge
 #: is higher than the leading edge, which for a wing in this project's sign
 #: convention is the downforce-making direction (`ground_effect` line 211).
-def car_bodies(p: CarParams = None, device: str = "cpu"
-               ) -> tuple[list[Any], list[Body]]:
-    """The car's bodies, and the flat list of `Body` records behind them."""
+#: Where the car's shape lives.  **It is data, not code.**  A geometry that
+#: only exists as literals in a function can only be changed by someone who
+#: reads Python, and the person who knows what a Formula One car looks like is
+#: not necessarily that person.  `scripts/car_editor.py` edits this file with
+#: the mouse and `scripts/car_check.py` tells you whether what you drew is
+#: something this model can actually march.
+GEOMETRY_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "car_geometry.json")
+
+_GEOM_CACHE: dict[str, Any] = {}
+
+
+def load_geometry(path: str = None, reload: bool = False) -> dict:
+    """Read `car_geometry.json`.  Cached, because `car_bodies` is hot."""
+    path = GEOMETRY_JSON if path is None else path
+    key = os.path.abspath(path)
+    if reload or key not in _GEOM_CACHE:
+        with open(path, encoding="utf-8") as fh:
+            _GEOM_CACHE[key] = json.load(fh)
+    return _GEOM_CACHE[key]
+
+
+def car_bodies(p: CarParams = None, device: str = "cpu",
+               geometry: dict = None) -> tuple[list[Any], list[Body]]:
+    """The car's bodies, and the flat list of `Body` records behind them.
+
+    **The shape comes from `car_geometry.json`.**  Every plate is a
+    leading-edge point, a chord in cells and an angle in degrees, with POSITIVE
+    alpha meaning the trailing edge is HIGHER; every wheel is a centre and a
+    radius.  Three kinds of entry are not free numbers, because a knob owns
+    them and would overwrite anything stored here:
+
+      ``y_plus_ride``   the height is this plus `CarParams.ride_height`
+      ``y_plus_duct``   the height is `DUCT_Y0` plus this, so the radiator
+                        duct stays exactly `DEVICE_CELLS` tall whatever the
+                        band is moved to
+      ``alpha_from``    the angle is `CarParams.<that name>` plus an optional
+                        ``alpha_offset`` -- the diffuser ramp, the front flap
+                        and the rear wing are section 3.3's own knobs
+
+    The editor shows those locked and says so, rather than letting a number be
+    typed that the build would silently discard.
+    """
     p = CarParams() if p is None else p
-    h = p.ride_height
+    doc = load_geometry() if geometry is None else geometry
     out: list[Any] = []
 
-    def plate(body_id, x_le, y_le, chord, alpha_deg, **kw):
-        b = Body(body_id=body_id, x_le=x_le, y_le=y_le, chord=chord,
-                 alpha_deg=alpha_deg, **kw)
+    for e in doc["plates"]:
+        y = float(e["y"])
+        if "y_plus_ride" in e:
+            y = float(e["y_plus_ride"]) + p.ride_height
+        if "y_plus_duct" in e:
+            y = DUCT_Y0 + float(e["y_plus_duct"])
+        a = float(e["alpha"])
+        if "alpha_from" in e:
+            a = (float(getattr(p, e["alpha_from"]))
+                 + float(e.get("alpha_offset", 0.0)))
+        kw: dict[str, Any] = {}
+        if e.get("n_station"):
+            kw["n_station"] = int(e["n_station"])
+        b = Body(body_id=str(e["id"]), x_le=float(e["x"]), y_le=y,
+                 chord=float(e["chord"]), alpha_deg=a,
+                 group=str(e.get("group", "body")),
+                 cuttable=bool(e.get("cuttable", False)),
+                 label=str(e.get("label", "")), **kw)
         out.append(PlateBody(b, device=device))
-        return b
 
-    # The body is ONE CONNECTED CHAIN, front to back, and each segment starts
-    # where the last one ended: NOSE -> BULKHEAD -> POD_UP -> TAIL_UP over the
-    # top, NOSE_LO and POD_LO -> TAIL_LO underneath.  Before 2026-09-13 these
-    # were disconnected plates that did not read as a car on the screen at all
-    # -- the nose sloped the WRONG WAY (trailing edge low), ended in mid-air
-    # 45 cells ahead of the sidepod, the body had no rear, and the floor ran
-    # straight through both wheels.  See `CAR_NOTES` and CS-19's dated note.
-    #
-    # Two constraints shape it.  `DUCT_LO` at y=44 and `DUCT_UP` at y=76 are
-    # STRUCTURAL -- the 32 cells between them are `DEVICE_CELLS`, where the
-    # radiator core and the recovery turbine planes sit -- so the sidepod has
-    # to ENCLOSE that band: POD_UP stays above 76 and POD_LO below 44 for the
-    # duct's whole run.  And no body plate may sit inside a wheel, or it
-    # double-counts that wheel's drag, which is why the floor and the sidepod
-    # undercut both start at x=205, clear of the front wheel's x=200.
-    plate("FW_MAIN", 72.0, 14.0 + h, GE.CHORD / DX, 14.0, group="front-wing",
-          n_station=W.N_STATION,
-          label="front wing, main plane, in ground effect")
-    plate("FW_FLAP", 96.0, 20.0 + h, 16.0, p.front_flap_deg, group="front-wing",
-          label="front wing, flap")
-    # SHELL_U* and SHELL_L00 are TRACED, not drawn by hand: a CC0 Formula One
-    # side view (freesvg.org id 48844, public domain) rasterised to 1200x310,
-    # thresholded to a silhouette, its upper and lower profiles simplified with
-    # Douglas-Peucker and welded into a chain, then mapped ISOTROPICALLY --
-    # one scale on both axes, so the car is not distorted --  by
-    #     x = 94.0 + raster_x * 0.3760,   y = (309 - raster_y) * 0.3760
-    # with the tyre contact line at y = 0.  The wing and tyre stretches of the
-    # silhouette are NOT traced: the front and rear wings stay the calibrated
-    # aerofoils below, and the wheels stay `WheelBody` rings.
-    plate("NOSE", 167.7, 60.7, 91.1, 25.3, group="body",
-          label="nose, rising from behind the front wheel")
-    plate("SHELL_U01", 250.0, 99.6, 25.2, 13.8, group="body", cuttable=True,
-          label="chassis, rising to the cockpit")
-    # The roll hoop's SPIKE is clipped to a flat crown at y = 105.7.  The
-    # trace reaches y = 116.2 there, and the tiling's horizontal seam is at
-    # y = 112: two 128-tall rows in a 240-tall box force row offsets of 0 and
-    # 112 exactly, so the seam cannot move and a body crossing it would have
-    # its force split between two experts that exchange only a ring.  The
-    # clipped car clears the seam by 6.3 cells.
-    plate("SHELL_U02", 274.5, 105.7, 12.2, 0.0, group="body", cuttable=True,
-          label="airbox crown, forward half")
-    plate("SHELL_U03", 286.7, 105.7, 12.2, 0.0, group="body", cuttable=True,
-          label="airbox crown, rear half")
-    plate("SHELL_U04", 298.9, 105.7, 14.0, -83.0, group="body", cuttable=True,
-          label="airbox, trailing face")
-    plate("SHELL_U05", 300.6, 91.8, 14.1, -83.1, group="body", cuttable=True,
-          label="behind the airbox, falling to the engine cover")
-    plate("SHELL_U06", 302.3, 77.8, 14.9, -47.0, group="body", cuttable=True,
-          label="engine cover, forward shoulder")
-    plate("POD_UP", 312.5, 66.9, 43.4, -5.0, group="body", cuttable=True,
-          label="engine cover, over the radiator duct")
-    plate("SHELL_U08", 355.7, 63.2, 9.4, 87.7, group="body", cuttable=True,
-          label="rear deck step")
-    plate("SHELL_U09", 356.1, 72.6, 8.5, -12.8, group="body", cuttable=True,
-          label="rear deck")
-    plate("SHELL_U10", 364.3, 70.7, 8.5, -77.2, group="body", cuttable=True,
-          label="rear deck, trailing face")
-    plate("SHELL_U11", 366.2, 62.4, 12.1, 25.8, group="body", cuttable=True,
-          label="engine cover, coke-bottle waist")
-    plate("SHELL_U12", 377.1, 67.7, 47.8, -2.1, group="body", cuttable=True,
-          label="engine cover, tapering over the rear wheel")
-    plate("SHELL_U13", 454.2, 63.7, 18.9, -5.1, group="body", cuttable=True,
-          label="rear bodywork, behind the rear wheel")
-    plate("FLOOR", 170.0, 9.8, 237.3, 0.0, group="floor",
-          label="floor, flat bottom, running between the wheels")
-    # The diffuser is NOT traced.  On a centreline slice the ground-touching
-    # rear wheel occupies the floor's exit -- at the floor's height the tyre
-    # spans x = 411.6 to 463 -- so a traced ramp would sit inside the wheel and
-    # double-count its drag.  It keeps its own knob and starts behind the tyre.
-    plate("DIFF", 465.0, 12.0 + h, 40.0, p.diffuser_deg, group="floor",
-          label="diffuser ramp, emerging behind the rear wheel")
-    plate("DUCT_UP", 230.0, DUCT_Y0 + DEVICE_CELLS, 174.0, 0.0, group="duct",
-          cuttable=True, label="radiator duct, upper wall")
-    plate("DUCT_LO", 230.0, DUCT_Y0, 174.0, 0.0, group="duct",
-          cuttable=True, label="radiator duct, lower wall")
-    plate("RW_MAIN", 474.0, 88.0, 32.0, p.rear_wing_deg, group="rear-wing",
-          label="rear wing, main plane")
-    plate("RW_FLAP", 500.0, 96.0, 18.0, p.rear_wing_deg + 16.0, group="rear-wing",
-          label="rear wing, flap")
-
-    # Traced too: the tyres' contact patches locate the centres and the crowns
-    # give the radius, on the same isotropic map as the shell.  The front wheel
-    # sits clear of the front wing -- its leading edge is x = 111.3 against the
-    # flap's trailing edge at 109.9 -- because a body inside a wheel would
-    # double-count that wheel's drag.
-    wf = WheelBody("WHEEL_F", 144.8, 33.5, 33.5, label="front wheel")
-    wr = WheelBody("WHEEL_R", 437.3, 33.5, 33.5, label="rear wheel")
-    out.extend([wf, wr])
+    for w in doc["wheels"]:
+        out.append(WheelBody(str(w["id"]), float(w["x"]), float(w["y"]),
+                             float(w["r"]),
+                             label=str(w.get("label", "wheel"))))
 
     flat: list[Body] = []
     for o in out:
@@ -559,9 +542,9 @@ DUCT_CORE_RANGE = (268.0, 296.0)
 #: The x-window the recovery turbine's plane is allowed to sit in: the same
 #: duct, DOWNSTREAM of the core.  The two devices have to be at least one
 #: stride apart, because each needs a cut of its own, which is why the duct is
-#: 174 cells long and not the 92 a radiator alone would need.  Its downstream
+#: 150 cells long and not the 92 a radiator alone would need.  Its downstream
 #: end stops at x = 378, clear of the rear tyre, which at the duct's heights
-#: spans x = 394.5 to 452.1.
+#: spans x = 443.4 to 486.2.
 TURBINE_RANGE = (380.0, 406.0)
 
 

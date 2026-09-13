@@ -377,3 +377,10 @@ out/racelab3/*
 !out/racelab4/
 out/racelab4/*
 !out/racelab4/racelab4.json
+
+# The car editor's leavings. The geometry ITSELF is tracked -- it is the car --
+# but its rolling backup, the tracing backdrops and the check's picture are not.
+atlas/cases/car_geometry.json.bak
+out/backdrops/
+out/car_geometry.png
+out/editor.log

@@ -1,0 +1,306 @@
+{
+ "version": 1,
+ "note": "THE CAR'S GEOMETRY, IN CELLS, AND THIS FILE IS THE SOURCE OF TRUTH.  atlas/cases/racelab.py reads it; nothing is hard-coded in Python any more.  Edit it with `python scripts/car_editor.py` or by hand, then check it with `python scripts/car_check.py`.",
+ "axes": "x runs downstream from the inlet at 0 to the outlet at 672. y runs UP from the road at 0. A plate is its leading-edge point (x, y) plus a chord in cells and an angle in degrees, where POSITIVE alpha means the trailing edge is HIGHER.",
+ "wheels": [
+  {
+   "id": "WHEEL_F",
+   "x": 146,
+   "y": 24.4,
+   "r": 24.4,
+   "label": "front wheel"
+  },
+  {
+   "id": "WHEEL_R",
+   "x": 464.8,
+   "y": 24,
+   "r": 24.4,
+   "label": "rear wheel"
+  }
+ ],
+ "plates": [
+  {
+   "id": "FW_MAIN",
+   "group": "front-wing",
+   "x": 72.0,
+   "y": 14.22,
+   "y_plus_ride": 14.0,
+   "chord": 32.0,
+   "alpha": 14.0,
+   "cuttable": false,
+   "n_station": 32,
+   "label": "front wing, main plane, in ground effect"
+  },
+  {
+   "id": "FW_UPPER",
+   "group": "front-wing",
+   "x": 85,
+   "y": 22.5,
+   "chord": 11.93,
+   "alpha": 56.98,
+   "cuttable": false,
+   "label": "front wing, upper surface",
+   "y_plus_ride": 22.28,
+   "chord_real": true,
+   "n_station": 32
+  },
+  {
+   "id": "FW_FLAP",
+   "group": "front-wing",
+   "x": 91.5,
+   "y": 32.5,
+   "chord": 18.82,
+   "alpha": 21.77,
+   "cuttable": false,
+   "label": "front wing, flap",
+   "y_plus_ride": 32.28,
+   "alpha_from": "front_flap_deg"
+  },
+  {
+   "id": "NOSE_TIP",
+   "group": "body",
+   "x": 107,
+   "y": 29.5,
+   "chord": 16.76,
+   "alpha": 17.35,
+   "cuttable": true,
+   "label": "nose tip, ahead of the front tyre"
+  },
+  {
+   "id": "NOSE",
+   "group": "body",
+   "x": 166.5,
+   "y": 39.5,
+   "chord": 52.47,
+   "alpha": 7.67,
+   "cuttable": false,
+   "label": "nose, rising behind the front tyre"
+  },
+  {
+   "id": "CHASSIS",
+   "group": "body",
+   "x": 218.5,
+   "y": 46.5,
+   "chord": 38.43,
+   "alpha": 32.24,
+   "cuttable": true,
+   "label": "chassis, rising to the cockpit"
+  },
+  {
+   "id": "COCKPIT",
+   "group": "body",
+   "x": 251,
+   "y": 67,
+   "chord": 50.56,
+   "alpha": -2.83,
+   "cuttable": true,
+   "label": "cockpit opening"
+  },
+  {
+   "id": "ROLL_HOOP",
+   "group": "body",
+   "x": 301.5,
+   "y": 64.5,
+   "chord": 21.08,
+   "alpha": 88.62,
+   "cuttable": true,
+   "label": "roll hoop, leading face"
+  },
+  {
+   "id": "AIRBOX",
+   "group": "body",
+   "x": 302,
+   "y": 85.6,
+   "chord": 36.5,
+   "alpha": 3.1,
+   "cuttable": true,
+   "label": "airbox crown"
+  },
+  {
+   "id": "POD_UP",
+   "group": "body",
+   "x": 338.4,
+   "y": 87.6,
+   "chord": 100.7,
+   "alpha": -8.5,
+   "cuttable": true,
+   "label": "engine cover, over the radiator duct"
+  },
+  {
+   "id": "COVER_TAIL",
+   "group": "body",
+   "x": 438,
+   "y": 72.8,
+   "chord": 21.12,
+   "alpha": -18.78,
+   "cuttable": true,
+   "label": "engine cover, falling to the rear tyre"
+  },
+  {
+   "id": "FLOOR_LE",
+   "group": "floor",
+   "x": 170,
+   "y": 18.5,
+   "chord": 11.1,
+   "alpha": -7.77,
+   "cuttable": true,
+   "label": "floor, leading edge"
+  },
+  {
+   "id": "FLOOR_STEP",
+   "group": "floor",
+   "x": 181,
+   "y": 17,
+   "chord": 12.7,
+   "alpha": -33.43,
+   "cuttable": true,
+   "label": "floor, stepping down to the flat bottom"
+  },
+  {
+   "id": "FLOOR",
+   "group": "floor",
+   "x": 191.6,
+   "y": 10,
+   "chord": 252.4,
+   "alpha": 0.23,
+   "cuttable": false,
+   "label": "floor, flat bottom, running between the tyres"
+  },
+  {
+   "id": "DIFF",
+   "group": "floor",
+   "x": 485,
+   "y": 11,
+   "chord": 10,
+   "alpha": 0,
+   "cuttable": false,
+   "label": "diffuser ramp",
+   "y_plus_ride": 10.78,
+   "alpha_from": "diffuser_deg"
+  },
+  {
+   "id": "RW_FLAP",
+   "group": "rear-wing",
+   "x": 495.5,
+   "y": 81.5,
+   "chord": 28.98,
+   "alpha": 43.59,
+   "cuttable": false,
+   "label": "rear wing, flap",
+   "alpha_from": "rear_wing_deg",
+   "alpha_offset": 16
+  },
+  {
+   "id": "FW_UNDER_TE",
+   "group": "front-wing",
+   "x": 107,
+   "y": 13.5,
+   "chord": 16.37,
+   "alpha": 23.44,
+   "cuttable": true,
+   "label": "front wing, lower surface, trailing"
+  },
+  {
+   "id": "FW_TRAILING",
+   "group": "front-wing",
+   "x": 109,
+   "y": 39.5,
+   "chord": 10.58,
+   "alpha": -98.35,
+   "cuttable": true,
+   "label": "front wing, trailing edge, closing the section"
+  },
+  {
+   "id": "FW_LEADING",
+   "group": "front-wing",
+   "x": 63,
+   "y": 11.5,
+   "chord": 24.61,
+   "alpha": 26.57,
+   "cuttable": true,
+   "label": "front wing, leading edge"
+  },
+  {
+   "id": "FW_UNDER",
+   "group": "front-wing",
+   "x": 63,
+   "y": 11.5,
+   "chord": 44.04,
+   "alpha": 2.61,
+   "cuttable": true,
+   "label": "front wing, lower surface"
+  },
+  {
+   "id": "DIFF_EXIT",
+   "group": "floor",
+   "x": 495,
+   "y": 38.5,
+   "chord": 26.97,
+   "alpha": -90.02,
+   "cuttable": true,
+   "label": "diffuser exit, closing to the floor"
+  },
+  {
+   "id": "RW_ENDPLATE_LO",
+   "group": "rear-wing",
+   "x": 517,
+   "y": 39,
+   "chord": 21.99,
+   "alpha": -178.67,
+   "cuttable": true,
+   "label": "rear wing endplate, lower edge"
+  },
+  {
+   "id": "RW_ENDPLATE",
+   "group": "rear-wing",
+   "x": 517,
+   "y": 100.5,
+   "chord": 61.47,
+   "alpha": -89.5,
+   "cuttable": true,
+   "label": "rear wing endplate, trailing face"
+  },
+  {
+   "id": "RW_PYLON",
+   "group": "rear-wing",
+   "x": 478.5,
+   "y": 67,
+   "chord": 22.32,
+   "alpha": 40.45,
+   "cuttable": true,
+   "label": "rear wing pylon, rising from the deck"
+  },
+  {
+   "id": "TAIL_DECK",
+   "group": "body",
+   "x": 458.5,
+   "y": 66,
+   "chord": 20.59,
+   "alpha": 4.14,
+   "cuttable": true,
+   "label": "rear deck, behind the engine cover"
+  },
+  {
+   "id": "DUCT_LO",
+   "group": "duct",
+   "x": 248.5,
+   "y": 18.0,
+   "y_plus_duct": 0.0,
+   "chord": 168.0,
+   "alpha": 0.0,
+   "cuttable": true,
+   "label": "radiator duct, lower wall"
+  },
+  {
+   "id": "DUCT_UP",
+   "group": "duct",
+   "x": 248.5,
+   "y": 50.0,
+   "y_plus_duct": 32.0,
+   "chord": 168.0,
+   "alpha": 0.0,
+   "cuttable": true,
+   "label": "radiator duct, upper wall"
+  }
+ ]
+}
