@@ -206,13 +206,33 @@ Measured through the socket on this host, all-classical unless stated:
 | compile | `refuse`, `L7/R9` alone, 26 agents, 36 seams |
 | **measure windows** | 14 windows, median one-step error $\mathbf{0.351}$ at $0.125\times$ native |
 | **three windows flipped to learned** | ledger $11/3$, speed $\mathbf{0.259\times}$, rms field error $0.065$ and climbing |
-| **`certified` selected** | refused as a march mode; the window stays classical and the page says why |
+| **`certified` selected** | refused as a march mode; the window stays classical and the page says why — ***false when written, see §5.4.** The refusal was real and nothing was drawn; **W233**, fixed* |
 
 ## 5.3 What is not wired, and why that is the honest choice
 
 **The requirements' §3.3 lists thirteen parameters and this page exposes none of them as sliders.** §3.3's own rule is that *"a slider that moves a number nothing reads is worse than no slider: if a parameter cannot reach its subsystem, it is omitted and the omission is recorded."*
 
 Phase 1 wired three geometry knobs into `CarParams` and stopped there. A parameter that moves a body can move it across a window boundary, and the decomposition is **static** — that is E1, a fixed graph, and §4.1 says a parameter that would change it is either clamped or the window set is rebuilt with a visible *recompiling* state. **Neither is built**, so no slider is shown and the omission is here. That is **W230**.
+
+---
+
+## 5.4 The rendered page, opened — and one control that did nothing
+
+**Dated note, 2026-09-13, added after this tier was committed as `3f4a9c6`.** §6's bullet *"nobody has looked at the rendered page"* was true when it was written and is no longer: the page was opened in a browser at `http://127.0.0.1:8013/` and driven through its own controls. [[atlas-proof-of-concept-1]] §10 is the reason this was worth doing — **PoC 1a's** demo carried three defects found by reading the rendered page against the API and **not** by its tests, *"which is the argument for looking at the thing"* — and it happened again.
+
+**Everything renders.** At $1280\times880$ the field image loads at its natural $672\times240$ and displays at $963\times344$, the aspect preserved; the overlay carries **14** window rects with their mode classes, **35** body polylines, **2** device planes, **7** overlap bands and **14** labels; all four bottom panels populate; the header carries both expert names with their licences; and the $1/32$ lead pill, the family list with four of five greyed out, and the graph panel's `refuse` / `L7/R9` / $26/36$ all read correctly.
+
+**Every control was exercised.** The four presets are semantically right — `upper-learned` selects the seven row-1 windows, `wake-learned` the six rearmost — the five field selectors produce five distinct images, clicking a rect selects that window, a per-window button changes **exactly one** window and does not leak to its neighbours, *pause* holds the step count and relabels itself, *step* advances by exactly one and stays paused, *resume* resumes, *reset* returns the column to step 7 with the rms at $0$, and *measure windows* returns 14 errors in under $6$ s at a median of $0.4958$ across $[0.3390, 0.8371]$. Flipping all fourteen windows to learned tints them amber and moves the numbers with them: the speed ratio falls to $\mathbf{0.110\times}$ and the rms field error against the all-classical referent rises from exactly $0$ to $0.4306$.
+
+### What looking found, and the socket could not
+
+**A control that did nothing, and a claim of this tier's that was false.** §5.2's table and the tier's own summary say *"refused as a march mode; the window stays classical and the page says why."* **The refusal is real and the page said nothing.** The engine sets `notes["certified_note"]`, declines the assignment and the socket carries that note in **every subsequent frame** — and `index.html` never referenced it, so clicking `certified` produced no visible response of any kind. **W233**, fixed here: the note now renders as a refusal banner in the inspector and is cleared when another mode is chosen.
+
+**The test that should have caught it passed.** `test_the_demo_refuses_certified_as_a_march_mode` asserts the engine *produces* the note, which it does. **Producing a refusal and displaying one are two claims and the suite only made the first.** A regression test now asserts the page references it, and that test fails when the render is removed. The general form: **this package verifies demos through their sockets, and a socket cannot see what a page declines to draw.**
+
+**An all-learned column leaves the fluid envelope.** Driving all fourteen windows to learned for roughly thirty macro-steps produced a live decline this tier never saw: at macro-step 179, $u_{\max} = 2.77311$ gives a cell Reynolds number of $\mathbf{10.83}$ against the window expert's declared bound of $8$, and the page stamped `OUTSIDE THE MODEL` over **23** macro-steps. §5.2 measured a *three*-window flip and reported **0 macro-steps outside**; fourteen is a different question with a different answer. **This is an observation and not a measurement, and the distinction is this vault's own rule** — there is no control, the classical column was not re-run from the same perturbed state, the flip was hand-timed rather than at a fixed macro-step, and it is one draw. What it establishes is that the path exists and that the stamp fires down it. **W232** asks for the controlled version.
+
+**Two numbers the page displays without their meaning (W234).** The `speed vs all-classical` ratio was read at $0.846\times$ and later at $0.982\times$ on an **all-classical** column whose rms against the referent was exactly $0$ — two bitwise-identical computations — so the spread is wall-clock noise in a ratio shown to three figures with no indication of its width, which is **W215** on a screen rather than in a script. And `rms field error vs all-classical` does **not** return to zero when a learned column is switched back to classical: it read $1.316$ after the switch back and kept climbing. That is correct, because by then the two columns are on different trajectories and the row measures exactly that — but the page does not say so, and a viewer would reasonably read it as an instantaneous comparison of modes.
 
 ---
 
@@ -224,7 +244,7 @@ Phase 1 wired three geometry knobs into `CarParams` and stopped there. A paramet
 - **CS-19's page is not rewritten.** It stands as the record of what the un-repaired graph measured, with a dated note pointing here — the vault's own practice with [[joining-seam-cost]] §6.4.
 - **CS-20 §2.2 is superseded in one respect only** — which inflow to size at — and annotated rather than rewritten, because everything else on it is true of what it measured.
 - **No parameter sliders** (§5.3, **W230**), **no three dimensions** (phase 4) and **no bundle** (phase 5).
-- **The demo was driven through its own socket, not through a browser.** Nobody has looked at the page with human eyes; what is verified is that every endpoint, message and number the page reads is produced and correct.
+- **The demo was driven through its own socket, not through a browser.** *(Superseded the same day — see §5.4.* The page was opened and every control exercised. Everything renders; **one control did nothing**, because a refusal this tier claimed the page displayed was produced and never drawn — **W233**, fixed. The claim in this bullet's original form, that verifying the socket verified the page, is exactly what was wrong with it.*)*
 - **Section 5.4's second referent, the single-domain monolith, is still not run**, here or on either previous page.
 - **Nothing was downloaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**
 

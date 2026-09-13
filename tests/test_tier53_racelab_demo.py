@@ -260,6 +260,31 @@ def test_the_demo_refuses_certified_as_a_march_mode():
     assert "fixed point" in eng.notes["certified_note"]
 
 
+def test_the_page_renders_the_certified_refusal_and_clears_it():
+    """W233: the refusal was produced and never displayed.
+
+    The test above asserts the engine *produces* the note, and it passed while
+    the page said nothing at all: the socket carried `certified_note` in every
+    frame and `index.html` never referenced it, so clicking `certified` was a
+    control that did nothing visible. A refusal the user cannot see is not a
+    refusal. Found by opening the page, which is the only way it could be.
+    """
+    html = open(os.path.join(DEMO, "static", "index.html"),
+                encoding="utf-8").read()
+    assert "certified_note" in html, "the refusal reaches the page unrendered"
+
+    from atlas.demo_racelab import engine as E
+    eng = E.Engine()
+    n = eng.names[0]
+    eng.post({"kind": "mode", "window": n, "mode": "certified"})
+    eng._drain()
+    assert "certified_note" in eng.notes
+    eng.post({"kind": "mode", "window": n, "mode": "learned"})
+    eng._drain()
+    assert eng.assignment[n] == SW.Mode.LEARNED.value
+    assert "certified_note" not in eng.notes, "a stale refusal outlives its click"
+
+
 def test_the_demo_names_every_family_without_a_learned_option():
     from atlas.demo_racelab import server as SV
     assert set(SW.NO_LEARNED_OPTION) == {

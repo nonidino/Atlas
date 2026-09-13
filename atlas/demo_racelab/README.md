@@ -116,7 +116,10 @@ field rather than about this code.
 4. **Certified mode has a proof, not a measurement** — and it is *not a
    per-macro-step mode*. Defect correction certifies a **fixed point**, and an
    explicit time step has none to certify, so selecting it does not march: the
-   page says so and the assignment does not change. It is measured per window by
+   page says so and the assignment does not change. (*The "says so" half was
+   false when this was written -- the note was produced, carried in every frame,
+   and never drawn. Found by opening the page; fixed, and pinned by a regression
+   test that fails when the render is removed. **W233**.*) It is measured per window by
    `racelab_switch.certified_window`, where CS-20 found the checkpoint bought
    5 and 7 classical calls out of 270 and 165 at 3x the wall time. **W226.**
 

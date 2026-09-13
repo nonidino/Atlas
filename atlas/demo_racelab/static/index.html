@@ -234,9 +234,11 @@ function render(){
     ["classical, that call", wm ? fmt(wm.classical_s,3)+" s" : "&mdash;"],
     ["learned, that call", wm ? fmt(wm.learned_s,3)+" s" : "&mdash;"],
   ]);
-  $("wnote").innerHTML = e===null||e===undefined
+  const cn = f.notes.certified_note;
+  $("wnote").innerHTML = (cn ? `<div class="warn"><b>certified is refused as a march mode.</b> ${cn}</div>` : "")
+    + (e===null||e===undefined
     ? "Press <b>measure windows</b>: one macro-step of each expert from the same input state. It needs no global referent, which is why it is the number to trust most."
-    : "This is a <b>one-step</b> error against the classical expert on the <b>same input state</b> &mdash; exact, and independent of any referent march.";
+    : "This is a <b>one-step</b> error against the classical expert on the <b>same input state</b> &mdash; exact, and independent of any referent march.");
 
   // ---- the graph ------------------------------------------------------
   const v = f.verdicts || {};

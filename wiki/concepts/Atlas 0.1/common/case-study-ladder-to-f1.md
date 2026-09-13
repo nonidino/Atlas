@@ -1373,6 +1373,6 @@ Sizing for the horizon's **minimum** admits all 600, verified on a twelve-minute
 - **No rung moved**, no expert was trained, and no threshold was touched.
 - **The sizing is one Picard step**, not iterated to convergence.
 - **CS-19 is not rewritten** and **CS-20 is superseded in one respect and annotated**, both with dated notes.
-- **The demo was driven through its own socket, not through a browser.**
+- **The demo was driven through its own socket, not through a browser.** *(Superseded the same day: the page was opened, everything renders, and one control did nothing — **W233**, fixed. See [[poc3-racelab-demo]] §5.4.)*
 - **No parameter sliders, no three dimensions, no bundle.**
 - **Nothing was downloaded, no machine was rented, NeuberNet was not loaded, and nothing was pushed.**

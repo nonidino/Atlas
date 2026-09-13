@@ -432,12 +432,14 @@ class Engine:
                             "`racelab_switch.certified_window`, not marched "
                             "(W226)")
                         continue
+                    self.notes.pop("certified_note", None)
                     self.assignment[n] = m
                     rebuilt = True
             elif kind == "preset":
                 try:
                     self.assignment = SW.assignment_from(msg.get("name"),
                                                          self.tiling)
+                    self.notes.pop("certified_note", None)
                     rebuilt = True
                 except ValueError:
                     pass
