@@ -10,7 +10,7 @@
  ],
  "prediction_recorded_at": "2026-09-13T13:31:57",
  "geometry": {
-  "fingerprint": "993c358a0f2491b2e1021d9a40b41d6947e472eaba5a19f892f5d40c8056d785",
+  "fingerprint": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
   "fingerprint_is": "sha256 over the BUILT bodies at the default CarParams (racelab.geometry_fingerprint)",
   "geometry_file": "atlas/cases/car_geometry.json",
   "plates": 27,
@@ -164,6 +164,26 @@
     "battery_status_raw": "2",
     "on_mains": true
    }
+  },
+  {
+   "stages": [
+    "spinup"
+   ],
+   "started_at": "2026-09-13T15:24:30",
+   "argv": [
+    "--out",
+    "out/racelab5",
+    "--stages",
+    "spinup"
+   ],
+   "machine_state": {
+    "python_processes_running": 1,
+    "python_processes": [
+     "\"python.exe\",\"31588\",\"Console\",\"1\",\"243,000 K\""
+    ],
+    "battery_status_raw": "1",
+    "on_mains": false
+   }
   }
  ],
  "spinup": {
@@ -212,13 +232,13 @@
   "host_inflow": null,
   "u_rotor_at_the_release_state": 0.5317254889754462,
   "note": "the spin-up runs with enforce=False BY DESIGN -- a march that stops at macro-step 3 of a transient reports nothing -- and the measured arms release from what it ends at with enforce=True",
-  "wall_s": 100.80187450000085,
-  "s_per_macro_step": 0.4200078104166702,
-  "geometry_fingerprint": "993c358a0f2491b2e1021d9a40b41d6947e472eaba5a19f892f5d40c8056d785",
+  "wall_s": 448.6205551000312,
+  "s_per_macro_step": 1.8692523129167966,
+  "geometry_fingerprint": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
   "written_to": "out/racelab5/cache/settled.npz"
  },
  "stage_wall_s": {
-  "spinup": 100.81474070000695,
+  "spinup": 448.64333659998374,
   "size": 600.5840955000021,
   "verify": 0.0049014000105671585,
   "trace": 419.446026599966,

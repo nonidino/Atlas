@@ -179,8 +179,12 @@ def identity(clone: str, build_repo: str, sc: dict) -> dict:
 
 def launch(clone: str, log: str, args: list, env_extra: dict | None = None,
            timeout: int = 7200) -> dict:
+    """Run the launcher as a user would, with none of this machine's own
+    atlas, Hugging Face or virtual-environment settings leaking into it."""
     env = dict(os.environ)
-    for k in ("ATLAS_BUILD_REPO", "HF_HOME", "PYTHONPATH", "VIRTUAL_ENV"):
+    for k in ("ATLAS_BUILD_REPO", "HF_HOME", "HF_HUB_OFFLINE",
+              "TRANSFORMERS_OFFLINE", "PYTHONPATH", "VIRTUAL_ENV", "PYTHON",
+              "KMP_DUPLICATE_LIB_OK", "PYTHONIOENCODING", "PYTHONUTF8"):
         env.pop(k, None)
     if env_extra:
         env.update(env_extra)
@@ -210,6 +214,10 @@ def main(argv=None) -> int:
                                      "physics-foundation-model")))
     ap.add_argument("--launch", action="store_true",
                     help="also run the launcher's --check in the clone")
+    ap.add_argument("--python", default=None,
+                    help="the interpreter the launcher is told to use (PYTHON=)")
+    ap.add_argument("--launch-tag", default="check",
+                    help="names the launch log, so two launches keep two logs")
     ap.add_argument("--record", default=None)
     args = ap.parse_args(argv)
 
@@ -261,8 +269,10 @@ def main(argv=None) -> int:
 
     if args.launch:
         out["launch_check"] = launch(
-            clone, os.path.join(os.path.dirname(rec), "launch_check_%s.log"
-                                % plat), ["--check"])
+            clone, os.path.join(os.path.dirname(rec), "launch_%s_%s.log"
+                                % (args.launch_tag, plat)), ["--check"],
+            env_extra={"PYTHON": args.python} if args.python else None)
+        out["launch_check"]["python_given"] = args.python
     ok = (out["run_sh_mode_in_the_index"] == "100755"
           and not out["run_sh_has_a_carriage_return"]
           and not out["identity"]["different"]

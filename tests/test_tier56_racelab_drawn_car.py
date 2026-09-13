@@ -90,6 +90,36 @@ def test_the_fingerprint_sees_a_billionth_of_a_cell_and_a_knob():
     assert RL.geometry_fingerprint(geometry=doc) != RL.geometry_fingerprint()
     assert (RL.geometry_fingerprint(RL.CarParams(diffuser_deg=7.5))
             != RL.geometry_fingerprint())
+    doc2 = copy.deepcopy(RL.load_geometry())
+    doc2["wheels"][0]["r"] += 1e-9
+    assert RL.geometry_fingerprint(geometry=doc2) != RL.geometry_fingerprint()
+
+
+def test_W250_the_fingerprint_does_not_read_the_platform_s_trigonometry(
+        monkeypatch):
+    """The same car fingerprinted as 993c358a on Windows and f591a83c on Linux,
+    because a wheel's segments come out of cos, sin and atan2, and the two C
+    runtimes round those differently in the last bit -- found when the bundle's
+    self-test, on Linux, refused the field it had been built with.
+
+    Simulated here by nudging every trigonometric result by ONE ulp.  The
+    segments must move -- or this control is dead -- and the car's identity
+    must not.
+    """
+    import math
+    base = RL.geometry_fingerprint()
+    _o, before = RL.car_bodies()
+    for name in ("cos", "sin", "atan2"):
+        real = getattr(math, name)
+        monkeypatch.setattr(
+            math, name,
+            (lambda f: (lambda *a: math.nextafter(f(*a), math.inf)))(real))
+    _o, after = RL.car_bodies()
+    moved = [a.body_id for a, b in zip(before, after)
+             if (a.x_le, a.y_le, a.alpha_deg) != (b.x_le, b.y_le, b.alpha_deg)]
+    assert moved, "the nudge did not reach the wheel segments"
+    assert all(m.startswith("WHEEL") for m in moved), moved
+    assert RL.geometry_fingerprint() == base
 
 
 def test_the_record_describes_the_car_that_is_built():

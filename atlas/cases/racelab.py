@@ -528,22 +528,40 @@ def geometry_fingerprint(p: CarParams = None, geometry: dict = None) -> str:
     turned red.  A directory name cannot carry the answer, because the car is
     now edited with a mouse and the directory does not change when it does.
 
-    The hash is over the BUILT bodies rather than the file's bytes: the file's
+    The hash is over the BUILT car rather than the file's bytes: the file's
     bytes move with line endings and key order, which change nothing, and the
     knob-owned entries (`y_plus_ride`, `y_plus_duct`, `alpha_from`) are only
     resolved at build time, which changes everything.  ``label`` is left out
     because it is a caption.
+
+    **A wheel is hashed by what DEFINES it, not by the segments computed from
+    it (W250).**  The first version hashed every flat body, and a wheel's
+    twelve segments come out of ``cos``, ``sin`` and ``atan2`` -- which the
+    Windows C runtime and glibc round differently in the last bit.  So the same
+    `car_geometry.json` fingerprinted as ``993c358a`` on Windows and
+    ``f591a83c`` on Linux, and the bundle's self-test refused, on Linux, the
+    very field it had been built with.  A plate's numbers are the file's own or
+    an IEEE sum of them, identical everywhere; a wheel's centre, radius,
+    segment count and coefficient are the same.  Nothing here calls a
+    transcendental function.
     """
     import hashlib
-    _objs, flat = car_bodies(p, geometry=geometry)
+    objs, _flat = car_bodies(p, geometry=geometry)
     rows = ["RNX=%d RNY=%d DUCT_Y0=%r DEVICE_CELLS=%d"
             % (RNX, RNY, float(DUCT_Y0), int(IU.DEVICE_CELLS))]
-    for b in flat:
-        rows.append("|".join((
-            str(b.body_id), repr(float(b.x_le)), repr(float(b.y_le)),
-            repr(float(b.chord)), repr(float(b.alpha_deg)),
-            repr(float(b.c_n)), str(int(b.n_station)), str(b.group),
-            str(bool(b.cuttable)))))
+    for o in objs:
+        if isinstance(o, PlateBody):
+            b = o.body
+            rows.append("plate|" + "|".join((
+                str(b.body_id), repr(float(b.x_le)), repr(float(b.y_le)),
+                repr(float(b.chord)), repr(float(b.alpha_deg)),
+                repr(float(b.c_n)), str(int(b.n_station)), str(b.group),
+                str(bool(b.cuttable)))))
+        else:
+            rows.append("wheel|" + "|".join((
+                str(o.body_id), repr(float(o.xc)), repr(float(o.yc)),
+                repr(float(o.r)), str(int(o.n_seg)), repr(float(o.c_n)),
+                str(int(o.n_station)), str(o.group), repr(float(o.omega)))))
     return hashlib.sha256("\n".join(rows).encode("utf-8")).hexdigest()
 
 
