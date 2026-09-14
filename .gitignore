@@ -409,6 +409,29 @@ out/racelab5/*
 out/racelab6/*
 !out/racelab6/racelab6.json
 
+# Tier 59 -- W258 repaired at the outlet (`racelab.OUTFLOW = "convective"`) and
+# W259's start (`tier59_outflow_and_start.py --out out/racelab7`). JSON only:
+# the pinned column's bitwise control, the drawn car on the repaired column at
+# both sizings, and the box-length control on both columns. Rebuilding costs
+# about 35 minutes on the development laptop. out/racelab7/cache/ is ignored:
+# each arm's settled field (with its identity, outlet condition included), every
+# probe's rows in full, and probe 1's snapshots.
+!out/racelab7/
+out/racelab7/*
+!out/racelab7/racelab7.json
+
+# Tier 59 -- the drawn car's arms, at last: Tier 56's driver on the repaired
+# column with the release state settled against the sized machine
+# (`tier54_traced_car.py --out out/racelab8`). JSON only. Rebuilding costs about
+# two hours on the development laptop, most of it the four tight arms.
+# out/racelab8/cache/ is ignored: settled.npz (the settled release state the
+# demo releases from, with the car's fingerprint, the outlet condition and the
+# machine it was settled against), settled_declared.npz (the spin-up's own
+# field), and each arm's final field.
+!out/racelab8/
+out/racelab8/*
+!out/racelab8/racelab8.json
+
 # Tier 57 -- PoC 3 phase 5, the bundle. JSON only: what
 # scripts/verify_racelab_bundle.py found on a FRESH CLONE of the
 # poc3-racelab-demo branch, one record per platform -- the mode run.sh has in

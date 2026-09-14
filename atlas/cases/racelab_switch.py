@@ -574,6 +574,9 @@ class MixedRollout(RL.RaceRollout):
 
     def _advance(self, u, v):
         import torch
+        #: W258: the outlet's condition is the composition layer's, so it is
+        #: applied whichever expert steps the windows behind it
+        u, v = self.relax_outflow(u, v)
         fx, fy, load, drag = self.car_forcing(u, v)
         fdev = torch.as_tensor(self._fx_dev, **self._opt_t)
         fx = fx + fdev

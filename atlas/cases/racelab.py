@@ -107,7 +107,7 @@ __all__ = [
     "RaceWindow", "make_experts", "connections", "build",
     "RaceRollout", "march", "GATE", "PREDICTION",
     "machine_for_host", "U_HOST_REF", "EnvelopeDeclined", "ENVELOPE_STATES",
-    "settled_field", "N_SPIN",
+    "settled_field", "N_SPIN", "OUTFLOW", "OUTFLOW_MODES",
 ]
 
 
@@ -193,6 +193,34 @@ HOST_ROTOR_WIDTH = VM.HOST_ROTOR_WIDTH
 #: body in this flow produces (the front-wing case settles near 1.5) and far
 #: below the runaway, so it separates the two.
 U_MAX_BAND = 4.0
+
+#: **W258: the domain's outlet was pinned, and an outlet is an open boundary.**
+#: Every window is built ``transmission="dirichlet"`` (`ground_effect.solver_for`),
+#: so on every sub-step `WindowNS` overwrites its whole ring from its input --
+#: the face that is the DOMAIN's outlet included, which no neighbour supplies.
+#: Nothing a window does then moves the last column; the global projection
+#: corrects it once per exchange and nothing relaxes what that adds.  Tier 58
+#: measured the consequence on five cars: the car's own flow never left the
+#: cell-Reynolds bound, the last column alone did, and the wake set when.
+#: `WindowNS`'s own docstring calls a pinned outflow over-constrained, and its
+#: `_convect_outflow` is the remedy the expert adopted.
+#:
+#: ``"convective"`` applies that remedy where the composition layer applies its
+#: other boundary conditions -- once per exchange, to the domain's one open
+#: face, BEFORE the windows step, which is the order `WindowNS.step_batch` uses
+#: -- so the last column relaxes toward its interior neighbour at the rate the
+#: flow carries information out::
+#:
+#:     a_last  <-  a_last - C (a_last - a_{last-1}),    C = clip(u_last dt_ex / h, 0, 1)
+#:
+#: for both velocity components, wherever ``u_last > 0``.  A window here takes
+#: ONE sub-step per exchange while the speed stays under two free-stream
+#: speeds (``ceil(0.5 u_max)``), so once per exchange is the expert's own
+#: cadence and not a coarsening of it.  ``"pinned"`` is the column Tiers 51 to
+#: 58 marched, kept bitwise as the control, and every driver of a record
+#: measured before this row passes it explicitly.
+OUTFLOW_MODES = ("convective", "pinned")
+OUTFLOW = "convective"
 
 
 # ===========================================================================
@@ -1735,7 +1763,12 @@ class RaceRollout(W.FSIRollout):
                  n_join_inner: int = 3, p_ref: float | None = None,
                  null: str | None = None, wheel_omega: float | None = 0.0,
                  enforce: bool = True, host_inflow: float | None = None,
+                 outflow: str = OUTFLOW,
                  **kw) -> None:
+        if outflow not in OUTFLOW_MODES:
+            raise ValueError(f"outflow is one of {OUTFLOW_MODES}, not {outflow!r}")
+        #: W258.  Which condition the domain's outlet carries; see `OUTFLOW`.
+        self.outflow = outflow
         if tiling is None:
             tiling, _i = layout()
         kw.setdefault("coupling", "lagged")
@@ -2042,8 +2075,34 @@ class RaceRollout(W.FSIRollout):
 
     # -- the exchange ------------------------------------------------------
 
+    def relax_outflow(self, u, v):
+        """W258's repair: `WindowNS._convect_outflow` on the domain's outlet.
+
+        Applied to the ASSEMBLED field before it is cut, so every expert that
+        steps a window touching the outlet -- classical or learned -- receives
+        the relaxed column as its ring.  Out-of-place, like `band`, so nothing
+        that differentiates a march is broken by an in-place write.  With
+        ``outflow="pinned"`` it returns its inputs unchanged, which is what
+        makes the old column a bitwise control and not an approximate one.
+        """
+        if self.outflow == "pinned":
+            return u, v
+        import torch
+        c = self.dt_ex / float(self.solver.h)
+        ul, vl = u[:, -1:], v[:, -1:]
+        un, vn = u[:, -2:-1], v[:, -2:-1]
+        #: outflow is decided from the column's own normal velocity, and the
+        #: Courant number is clipped to the upwind limit, as the expert does
+        cour = torch.clamp(ul * c, 0.0, 1.0)
+        out = ul > 0.0
+        ul2 = torch.where(out, ul - cour * (ul - un), ul)
+        vl2 = torch.where(out, vl - cour * (vl - vn), vl)
+        return (torch.cat((u[:, :-1], ul2), dim=1),
+                torch.cat((v[:, :-1], vl2), dim=1))
+
     def _advance(self, u, v):
         import torch
+        u, v = self.relax_outflow(u, v)
         fx, fy, load, drag = self.car_forcing(u, v)
         fdev = torch.as_tensor(self._fx_dev, **self._opt_t)
         fx = fx + fdev
@@ -2241,6 +2300,7 @@ def march(u0: np.ndarray = None, v0: np.ndarray = None, steps: int = 200,
                    d.site.device: d.ring_to_plane_cells for d in r.specs},
                "enforce": bool(enforce),
                "host_inflow": host_inflow,
+               "outflow": r.outflow,
                "outside_the_envelope": r.outside_first,
                "outside_the_envelope_steps": r.outside_steps,
                "envelope_at_the_end": r.envelope})
@@ -2311,6 +2371,7 @@ def settled_field(steps: int = N_SPIN, host_inflow: float | None = None,
         "release_state_is_admitted": r.outside is None,
         "envelope_at_the_release_state": r.envelope,
         "host_inflow": host_inflow,
+        "outflow": r.outflow,
         "u_rotor_at_the_release_state": float(r.state.u_rotor),
         "note": "the spin-up runs with enforce=False BY DESIGN -- a march that "
                 "stops at macro-step 3 of a transient reports nothing -- and "

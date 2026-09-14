@@ -186,6 +186,8 @@ The choices the numbers leave, each unmeasured as a repair:
 3. **the rear box** — a drawing change that improves the aerodynamics and delays the breach, and repairs neither fault;
 4. **the device planes** — a declaration, so a drawing change cannot move the machine.
 
+*(Annotated 2026-09-14, in Tier 59: choices 1 and 2 were measured and made. The outlet relaxes convectively (`racelab.OUTFLOW`), and the drawn car's fluid envelope declines on no macro-step at either sizing. The release state is settled against the machine W228 sizes, and the machine stays inside on all 600. Tier 56's own driver then found the car as drawn a horizon of 600, verified it enforced, and ran all five arms inside every envelope, the gate passing with every threshold inherited. The drawing was not changed. See [[poc3-racelab-outlet-and-start]]. Choices 3 and 4 were not taken.)*
+
 ---
 
 # 10. The timings, and why none of them is a claim

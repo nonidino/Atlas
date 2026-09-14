@@ -80,6 +80,10 @@ from atlas.cases import wing_fsi as W                                   # noqa: 
 
 OUT = os.path.join(HERE, "out", "racelab")
 CACHE = os.path.join(OUT, "cache")
+#: W258: this record was measured on the column whose outlet is pinned, and
+#: `racelab.OUTFLOW` became the repaired one later (Tier 59); every march here
+#: names the column its record describes.
+OUTFLOW = "pinned"
 
 #: **The horizon, chosen from stage ``settle``'s curve.**  600 fluid
 #: macro-steps is 7.5 of the tiling's time units, at the declared vehicle
@@ -458,7 +462,8 @@ def stage_geometry() -> dict:
     fields = {}
     for tag, omega in (("rolling", None), ("static", 0.0)):
         r = RL.RaceRollout(tiling=t_layout, joins=("J1", "J2", "J3"),
-                           join_coupling="lagged", wheel_omega=omega)
+                           join_coupling="lagged", wheel_omega=omega,
+                           outflow=OUTFLOW)
         uu = torch.full((r.ny, r.nx), GE.U_INF, dtype=W.TORCH_DTYPE)
         vv = torch.zeros((r.ny, r.nx), dtype=W.TORCH_DTYPE)
         r.refresh(uu, 0)
@@ -780,20 +785,20 @@ def _march(u, v, tag, **kw):
             print("      %s: macro-step %d / %s, %.0f s" %
                   (tag, s, kw.get("steps", "?"), el), flush=True)
 
-    m = RL.march(u, v, progress=progress, **kw)
+    m = RL.march(u, v, progress=progress, outflow=OUTFLOW, **kw)
     return m, None
 
 
 def stage_calib(u, v) -> dict:
     """The instrument: a short march, its repeat, the settling and the cost."""
     t0 = time.perf_counter()
-    m1 = RL.march(u, v, steps=CALIB_STEPS, join_coupling="tight")
+    m1 = RL.march(u, v, steps=CALIB_STEPS, join_coupling="tight", outflow=OUTFLOW)
     t_tight = (time.perf_counter() - t0) / CALIB_STEPS
     t0 = time.perf_counter()
-    m2 = RL.march(u, v, steps=CALIB_STEPS, join_coupling="tight")
+    m2 = RL.march(u, v, steps=CALIB_STEPS, join_coupling="tight", outflow=OUTFLOW)
     t_repeat = (time.perf_counter() - t0) / CALIB_STEPS
     t0 = time.perf_counter()
-    ml = RL.march(u, v, steps=CALIB_STEPS, join_coupling="lagged")
+    ml = RL.march(u, v, steps=CALIB_STEPS, join_coupling="lagged", outflow=OUTFLOW)
     t_lagged = (time.perf_counter() - t0) / CALIB_STEPS
     bitwise = all(np.array_equal(np.asarray(m1.trace[k]), np.asarray(m2.trace[k]))
                   for k in m1.trace)
@@ -865,7 +870,7 @@ def stage_settle(u, v) -> dict:
     "settled" label on a flow that is not.
     """
     t0 = time.perf_counter()
-    m = RL.march(u, v, steps=SETTLE_STEPS, join_coupling="lagged")
+    m = RL.march(u, v, steps=SETTLE_STEPS, join_coupling="lagged", outflow=OUTFLOW)
     wall = time.perf_counter() - t0
     out = {"steps": SETTLE_STEPS, "wall_s": wall,
            "s_per_macro_step": wall / SETTLE_STEPS,
@@ -912,7 +917,7 @@ def stage_march(u, v) -> dict:
     for tag, kw in ARMS:
         print("   arm %s ..." % tag, flush=True)
         t0 = time.perf_counter()
-        m = RL.march(u, v, steps=HORIZON, **kw)
+        m = RL.march(u, v, steps=HORIZON, outflow=OUTFLOW, **kw)
         wall = time.perf_counter() - t0
         marches[tag] = m
         bal = VM.receiver_balances(m, SETTLE_FRAC)
@@ -1206,7 +1211,7 @@ def stage_jensen(u, v) -> dict:
     than of the join.  The POINTWISE residual is the identity the clause is
     actually about, and it has to be machine zero.
     """
-    m = RL.march(u, v, steps=120, join_coupling="lagged")
+    m = RL.march(u, v, steps=120, join_coupling="lagged", outflow=OUTFLOW)
     ua = np.asarray(m.trace["ua"], dtype=float)
     uc = np.asarray(m.trace["u_core"], dtype=float)
     ua0, u0 = float(ua[0]), float(uc[0])

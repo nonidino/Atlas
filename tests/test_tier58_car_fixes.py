@@ -82,12 +82,12 @@ def T():
 def isolated_out(tmp_path):
     """Point Tier 54's record I/O at a temporary directory, and put it back."""
     import tier54_traced_car as T54
-    old = (T54.OUT, T54.CACHE, T54.NAME)
+    old = (T54.OUT, T54.CACHE, T54.NAME, T54.OUTFLOW)
     T54.configure(str(tmp_path / "racelab_probe"))
     try:
         yield T54
     finally:
-        T54.OUT, T54.CACHE, T54.NAME = old
+        T54.OUT, T54.CACHE, T54.NAME, T54.OUTFLOW = old
 
 
 # ---------------------------------------------------------------------------
@@ -197,7 +197,11 @@ def test_arm_march_takes_tier56_s_trajectory_bitwise(T):
     t, _info, doc, _flat = T.arm_tiling("drawn")
     host = 0.5317254889754462
     mine, _s, _m = T.arm_march(d["u"], d["v"], host, 2, t, doc, "test")
-    theirs, _s2 = T54.traced_march(d["u"], d["v"], host, 2, label="test")
+    #: both on the column Tier 56 and Tier 58 measured (W258): this script
+    #: names it, and Tier 56's driver is told it
+    assert T.OUTFLOW == "pinned"
+    theirs, _s2 = T54.traced_march(d["u"], d["v"], host, 2, label="test",
+                                   outflow="pinned")
     for a, b in zip(mine, theirs):
         for k in b:
             assert a[k] == b[k], k

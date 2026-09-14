@@ -71,6 +71,10 @@ from atlas.cases import vehicle_march as VM                             # noqa: 
 
 OUT = os.path.join(HERE, "out", "racelab3")
 CACHE = os.path.join(OUT, "cache")
+#: W258: this record was measured on the column whose outlet is pinned, and
+#: `racelab.OUTFLOW` became the repaired one later (Tier 59); every march here
+#: names the column its record describes.
+OUTFLOW = "pinned"
 CS19 = os.path.join(HERE, "out", "racelab", "racelab.json")
 SETTLED = os.path.join(HERE, "out", "racelab2", "cache", "settled.npz")
 
@@ -232,7 +236,8 @@ def stage_threads() -> dict:
     for n in (1, 2, 4, 8):
         torch.set_num_threads(n)
         t0 = time.perf_counter()
-        m = RL.march(u0, v0, steps=5, join_coupling="tight", host_inflow=U_DUCT)
+        m = RL.march(u0, v0, steps=5, join_coupling="tight", host_inflow=U_DUCT,
+                     outflow=OUTFLOW)
         wall = time.perf_counter() - t0
         cur = ({k: np.asarray(v).copy() for k, v in m.trace.items()},
                m.u.copy(), m.v.copy())
@@ -290,7 +295,8 @@ def stage_arms() -> dict:
     for tag, kw in ARMS:
         print("   arm %s ..." % tag, flush=True)
         t0 = time.perf_counter()
-        m = RL.march(u0, v0, steps=HORIZON, host_inflow=U_DUCT, **kw)
+        m = RL.march(u0, v0, steps=HORIZON, host_inflow=U_DUCT, outflow=OUTFLOW,
+                     **kw)
         wall = time.perf_counter() - t0
         marches[tag] = m
         bal = VM.receiver_balances(m, SETTLE_FRAC)

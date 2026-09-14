@@ -241,25 +241,33 @@ def test_the_script_will_not_run_without_an_output_directory():
 
 def test_the_script_refuses_a_settled_field_for_another_car(tmp_path):
     import tier54_traced_car as T
-    old = (T.OUT, T.CACHE, T.NAME)
+    old = (T.OUT, T.CACHE, T.NAME, T.OUTFLOW)
     try:
         T.configure(str(tmp_path / "racelab_probe"))
         os.makedirs(T.CACHE)
         u = np.ones((2, 3))
         np.savez(os.path.join(T.CACHE, "settled"), u=u, v=u,
-                 geometry=np.array("0" * 64))
+                 geometry=np.array("0" * 64), outflow=np.array(T.OUTFLOW))
         with pytest.raises(RuntimeError, match="DIFFERENT car"):
             T.settled()
         np.savez(os.path.join(T.CACHE, "settled"), u=u, v=u)
         with pytest.raises(RuntimeError, match="DIFFERENT car"):
             T.settled()
-        # the control: its own car is accepted
+        # Tier 59 (W258): the right car on the other column is refused too
+        other = next(m for m in RL.OUTFLOW_MODES if m != T.OUTFLOW)
         np.savez(os.path.join(T.CACHE, "settled"), u=u, v=u,
-                 geometry=np.array(RL.geometry_fingerprint()))
+                 geometry=np.array(RL.geometry_fingerprint()),
+                 outflow=np.array(other))
+        with pytest.raises(RuntimeError, match="column"):
+            T.settled()
+        # the control: its own car, on its own column, is accepted
+        np.savez(os.path.join(T.CACHE, "settled"), u=u, v=u,
+                 geometry=np.array(RL.geometry_fingerprint()),
+                 outflow=np.array(T.OUTFLOW))
         uu, _vv = T.settled()
         assert uu.shape == (2, 3)
     finally:
-        T.OUT, T.CACHE, T.NAME = old
+        T.OUT, T.CACHE, T.NAME, T.OUTFLOW = old
 
 
 def test_a_probe_that_declines_before_the_floor_has_no_horizon():
@@ -290,20 +298,38 @@ def test_a_probe_keeps_its_whole_trajectory():
 # ---------------------------------------------------------------------------
 
 
-def test_the_demo_is_sized_for_this_car_s_release_state():
+def test_the_demo_was_sized_for_this_record_s_release_state_until_tier59():
+    """Tier 56 sized the demo for the drawn car's UNSETTLED release state,
+    0.5317, because W228 had no admissible answer on the pinned column; that
+    bought twenty macro-steps and the page stamped every one after them (W244).
+
+    **Superseded in Tier 59, and the diagnosis kept here.**  The outlet was
+    repaired (W258) and the release state settled against the sized machine
+    (W259); the demo is sized for `out/racelab8`'s verified sizing now, which
+    `tests/test_tier59_outflow.py` pins.  What this record still says is what
+    it measured."""
     from atlas.demo_racelab import engine as E
     a = _art()
-    assert E.U_DUCT == a["spinup"]["u_rotor_at_the_release_state"]
+    assert a["spinup"]["u_rotor_at_the_release_state"] == 0.5317254889754462
+    assert E.U_DUCT != a["spinup"]["u_rotor_at_the_release_state"]
     assert E.RaceConfig().host_inflow == E.U_DUCT
 
 
-def test_the_demo_releases_this_car_from_its_own_field():
+def test_this_record_s_field_is_this_car_s_on_the_pinned_column():
+    """The field Tier 56 settled is still the drawn car's -- on the column it
+    was settled on.  The demo now marches the repaired one and releases from
+    `out/racelab8` (Tier 59); asked for the pinned column, it finds this."""
     from atlas.demo_racelab import engine as E
     if not os.path.isfile(FIELD):
         pytest.skip("out/racelab5/cache/settled.npz is absent")
-    _u, _v, note, mine = E.find_release(_ROOT, RL.geometry_fingerprint())
+    _u, _v, note, mine = E.find_release(_ROOT, RL.geometry_fingerprint(),
+                                        tiers=("racelab5",), outflow="pinned")
     assert mine is True, note
     assert "out/racelab5" in note
+    # the control: on the demo's own column the same field is not this column's
+    _u, _v, note, mine = E.find_release(_ROOT, RL.geometry_fingerprint(),
+                                        tiers=("racelab5",))
+    assert mine is False and "OTHER COLUMN" in note
 
 
 # ---------------------------------------------------------------------------

@@ -4937,3 +4937,45 @@ The run was on mains throughout with one Python process, and the System log show
 **Changed:** `.gitignore`, [[poc3-racelab-drawn-car]] (§3 and §4.2 annotated), [[gap-worklist]], `wiki/index.md`.
 
 **NOT done:** adopting any fix — the drawing, the demo, the bundle and `out/racelab5` are unchanged, and the choice is the user's; marching any of the four repairs the numbers point at (an outflow treatment, a spin-up with the sized machine, pinned device planes, the box removed together with a longer box); the arms and the gate. Nothing downloaded, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+---
+
+## [2026-09-14] tier 59 | the outlet opened, the start settled, and the drawn car's arms
+
+The user said to measure the candidates in whatever order the evidence suggested, and to fix the issue. The outlet came first — the only fault with a mechanism in the code, and a candidate for the duct flow's fall as well — then the start, then Tier 56's pipeline itself. See [[poc3-racelab-outlet-and-start]].
+
+### W258, the outlet
+
+Every RaceLab window is built `transmission="dirichlet"`, which overwrites all four faces of a window's ring on every sub-step — the domain's outlet included, where no neighbour supplies data — and `WindowNS`'s own docstring calls that over-constrained. **`racelab.OUTFLOW = "convective"`** now relaxes the outflow column by the expert's `_convect_outflow` rule, once per exchange, before the windows step, in `RaceRollout` and `MixedRollout` alike. `"pinned"` is kept as the control, and the drivers of every record before this tier now pass it explicitly. A settled field records its outlet, and the driver refuses and the demo declines a field for the other column.
+
+Measured into `out/racelab7`: the pinned column through the new code reproduces Tier 56's settled field and Tier 58's first 60 macro-steps **bitwise**; on the repaired column the drawn car's fluid envelope declines on **no** macro-step at either sizing (pinned: 544 of 600), the release inflow moves $0.03\%$, and the largest speed over 600 macro-steps is $1.859$. The box-length control splits: pinned, an 800-cell box moves the breach from 56 to 265; repaired, neither box breaches, but the duct flows differ by up to $2.2\%$ (W260).
+
+### W259, the start
+
+On the repaired column W228's sizing put the machine outside on macro-steps 0 to 2 only. The release state was then **settled for 120 macro-steps against the machine W228 sizes** — Tier 52's own practice, dropped by Tier 54's driver — and W228 applied again on it: the machine inside on all 600 at both sizings, inflow ratio $0.9809$ to $1.0258$.
+
+### The arms
+
+`tier54_traced_car.py --out out/racelab8`, with `stage settle` added and the record registered on the repaired column, in three runs of under two hours: the driver reproduces Tier 59's numbers exactly, finds **a horizon of 600**, verifies it **enforced** at $0.445657$, and runs **all five arms with no macro-step outside**. P1 pass; P2 $0.029210$ with its null at $1.0$; P3 $9.79\times10^{-8}$ with the null's fluid bitwise; P4 $5.59\times10^{-9}$ with its null at $0.998$; P5 bitwise; P6 lagged $0.428$ s (pass) and tight $2.17$ s (fail), the split it always has; P7 $6.2\times10^{-16}$. The demo is sized for the verified value and releases from the settled state; opened and marched, it carried no stamp at macro-step 59, where Tier 56's stamped from 20.
+
+**The prediction**, eighteen items across three registrations, each written before the stage it predicts: fifteen confirmed; **R3** (the repaired column box-length independent to $1\%$) and **R5** (the outlet explains at least 3 points of the fall; it explains 2.7) falsified; and **racelab8's item 3** falsified in its second half — every arm inside, but the duct flow moves $4.4\%$ over the horizon, not under $3\%$ (W261).
+
+```
+python scripts/tier59_outflow_and_start.py --out out/racelab7 --stages control,repair,summary
+python scripts/tier59_outflow_and_start.py --out out/racelab7 --stages start,summary
+python scripts/tier54_traced_car.py --out out/racelab8 --stages spinup,size,settle,verify
+python scripts/tier54_traced_car.py --out out/racelab8 --stages arms
+python scripts/tier54_traced_car.py --out out/racelab8 --stages slow,gate,compare --compare-with out/racelab4/racelab4.json
+python -m pytest tests/test_tier51_racelab_graph.py tests/test_tier52_racelab_switch.py tests/test_tier53_racelab_demo.py tests/test_tier54_racelab_3d.py tests/test_tier56_racelab_drawn_car.py tests/test_tier57_racelab_bundle.py tests/test_tier58_car_fixes.py tests/test_tier59_outflow.py -p no:cacheprovider   # 199 passed
+python scripts/vault_scan.py wiki        # 238 files, 0 problems
+python scripts/run_suite.py              # 1535 passed, 0 failed
+```
+
+Every run was on mains, with the user's idle `phone-remote` server beside it; the arms ran with nothing else marching so P6's lagged figure is not shared with a test run. No cost here is quoted as a claim beyond P6's own verdict.
+
+**Closed:** **W244**, **W245**, **W258**, **W259**. **Opened:** **W260** (box-length sensitivity on the repaired column), **W261** (the settled duct flow drifts $4.4\%$; the claim stops at 600 macro-steps), **W262** (the bundle ships the pinned column's release state and was not rebuilt).
+
+**Added:** `scripts/tier59_outflow_and_start.py`, `tests/test_tier59_outflow.py`, `out/racelab7/racelab7.json`, `out/racelab8/racelab8.json`, [[poc3-racelab-outlet-and-start]].
+**Changed:** `atlas/cases/racelab.py` (`OUTFLOW`, `RaceRollout.relax_outflow`), `atlas/cases/racelab_switch.py` (`MixedRollout._advance`), `atlas/demo_racelab/engine.py` (`U_DUCT`, `RELEASE_TIERS`, `find_release` by column), `atlas/demo_racelab/README.md`, `scripts/tier54_traced_car.py` (per-record outlet, `stage settle`, the racelab8 registration), `scripts/tier51_racelab_graph.py`, `tier52_racelab_switch.py`, `tier53_racelab_rerun.py`, `tier58_car_fixes.py` (the pinned column named), `tests/test_tier56_racelab_drawn_car.py`, `tests/test_tier57_racelab_bundle.py`, `tests/test_tier58_car_fixes.py` (each with its diagnosis kept), `.gitignore`, [[poc3-racelab-car-fixes]] (§9 annotated), [[gap-worklist]], `wiki/index.md`.
+
+**NOT done:** rebuilding or re-verifying the bundle (W262); explaining W260 or W261; re-measuring the learned column on the repaired outlet; W257's device planes. Nothing downloaded, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

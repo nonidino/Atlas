@@ -111,6 +111,11 @@ HORIZON = T54.HORIZON                   # 600, CS-19's
 N_SPIN = RL.N_SPIN                      # 240, Tier 56's
 CONTROL_PROBE2_STEPS = 60
 THREADS = T54.THREADS                   # W227: bitwise the one-thread answer
+#: **The column this tier measured.**  Tier 58 found W258 on the column whose
+#: outlet is pinned, and `racelab.OUTFLOW` became the repaired one afterwards
+#: (Tier 59).  Every march here names the pinned column explicitly, so this
+#: file goes on reproducing its own committed record.
+OUTFLOW = "pinned"
 SNAPS = (0, 150, 300, 450, 599)
 #: Tier 56's snapshots show a sawtooth in v over the last six columns beside the
 #: spike on the last one; eight is `ground_effect.BAND`, the inflow band's width.
@@ -331,7 +336,7 @@ def fluid_breach(value: float, h: float, nu: float) -> bool:
 
 
 def arm_march(u0, v0, host_inflow: float, steps: int, tiling, doc: dict,
-              label: str, snaps=()):
+              label: str, snaps=(), outflow: str | None = None):
     """Tier 56's `traced_march`, on an arm's own tiling and bodies, reading three
     more things after every macro-step: the largest speed without the outflow
     column, without the last `EXCLUDE_LAST` columns, and on the outflow column.
@@ -343,7 +348,8 @@ def arm_march(u0, v0, host_inflow: float, steps: int, tiling, doc: dict,
     """
     objs, _flat = RL.car_bodies(geometry=doc)
     r = RL.RaceRollout(tiling=tiling, objects=objs, join_coupling="lagged",
-                       enforce=False, host_inflow=host_inflow)
+                       enforce=False, host_inflow=host_inflow,
+                       outflow=OUTFLOW if outflow is None else outflow)
     opt = dict(dtype=W.TORCH_DTYPE, device=r.device)
     u = torch.as_tensor(np.asarray(u0), **opt)
     v = torch.as_tensor(np.asarray(v0), **opt)
@@ -387,7 +393,7 @@ def arm_march(u0, v0, host_inflow: float, steps: int, tiling, doc: dict,
     meta = {"wall_s": wall, "s_per_macro_step": wall / max(steps, 1),
             "nx": int(r.nx), "ny": int(r.ny), "h": float(r.solver.h),
             "nu": float(r.nu), "host_inflow": host_inflow, "steps": steps,
-            "torch_threads": torch.get_num_threads()}
+            "torch_threads": torch.get_num_threads(), "outflow": r.outflow}
     return rows, saved, meta
 
 
@@ -728,6 +734,7 @@ def run_arm(res: dict, name: str, steps: dict) -> dict:
         t0 = time.perf_counter()
         u, v, rep = RL.settled_field(
             steps=steps["spin"], host_inflow=None, tiling=t, objects=objs,
+            outflow=OUTFLOW,
             progress=T54.watch("spin-" + name, steps["spin"], every=40))
         wall = time.perf_counter() - t0
         save_arm_field(name, ident, u, v)

@@ -192,12 +192,41 @@ PREDICTION_DRAWN = (
     "percent slower than Tier 54's 0.3955 s.",
 )
 
+#: **Tier 59's prediction for the drawn car on the repaired column, recorded
+#: 2026-09-14 before stage ``spinup`` ran**, and after Tier 59's own record
+#: (`out/racelab7`) showed the settled state admitted at W228's sizing for 600
+#: unenforced macro-steps.  Items 1 and 2 are therefore expected to reproduce a
+#: measurement; items 3 to 9 are the arms, which Tier 59 did not march.
+PREDICTION_REPAIRED = (
+    "The pipeline reproduces Tier 59's stage start: settled for 120 macro-steps "
+    "at W228's first sizing (0.456800), the release state carries u_rotor "
+    "0.457249, W228 sizes for 0.445657, and the horizon is CS-19's 600 -- the "
+    "first admissible horizon the drawn car has had.",
+    "verify admits all 600 macro-steps ENFORCED at that sizing.",
+    "All five arms run inside every declared envelope for all 600 macro-steps, "
+    "and the referent arm's u_rotor moves by less than 3% over them.",
+    "P1 passes unchanged (L7/R9 and nothing else joined; nothing disjoint; "
+    "nothing once the clocks are reconciled): the refusal is about the clocks.",
+    "P7 passes at machine precision at the settled release state.",
+    "P2 passes, with its null at or above 0.5; its residual's ratio to the "
+    "ring-to-plane velocity gap is not predicted (W231, unresolved).",
+    "P3 passes -- a settled state has little variance for Jensen's term to "
+    "read -- with its null leaving the fluid bitwise identical; P4 passes, and "
+    "its null on the coolant clock fails as a null must, at or above 0.01.",
+    "P5 is bitwise in every crossing quantity and in the field.",
+    "P6 splits as it always has: the lagged column's macro-step under the "
+    "0.5 s ceiling on mains, the tight column's over it.",
+)
+
 #: What each record's car IS, in words, beside the fingerprint that says it
 #: exactly.  Keyed by the record's name so a new output directory cannot
 #: silently inherit another car's description or another tier's prediction.
 RUNS = {
     "racelab4": {
         "prediction": PREDICTION,
+        #: W258: every record before Tier 59 was marched on the column whose
+        #: outlet is pinned, and names it so it can be re-run on that column
+        "outflow": "pinned",
         "described_as": {
             "source": "freesvg.org id 48844, CC0 / public domain",
             "method": "rasterised 1200x310 in a browser, thresholded to a "
@@ -209,6 +238,7 @@ RUNS = {
     },
     "racelab5": {
         "prediction": PREDICTION_DRAWN,
+        "outflow": "pinned",
         "described_as": {
             "source": "atlas/cases/car_geometry.json, drawn by hand by the "
                       "user in scripts/car_editor.py (Tier 55)",
@@ -219,15 +249,45 @@ RUNS = {
                       "angles set to the drawn ones -- W241)",
         },
     },
+    "racelab8": {
+        "prediction": PREDICTION_REPAIRED,
+        #: W258, repaired: the domain's outlet relaxes convectively
+        "outflow": "convective",
+        #: W259, repaired: the release state is re-settled for this many
+        #: macro-steps against the machine W228 sizes (`stage_settle`),
+        #: Tier 59's `N_SETTLE`
+        "settle": 120,
+        "described_as": {
+            "source": "atlas/cases/car_geometry.json, drawn by hand by the "
+                      "user in scripts/car_editor.py (Tier 55) -- the car "
+                      "out/racelab5 measured, unchanged",
+            "method": "27 plates and 2 wheels placed with the mouse; three "
+                      "plates moved by the model for reasons it forces (the "
+                      "duct rebuilt DEVICE_CELLS tall about the drawn "
+                      "centreline, FW_MAIN at CS-12's chord, knob-owned "
+                      "angles set to the drawn ones -- W241)",
+            "column": "the repaired outlet (W258) and a release state settled "
+                      "against the sized machine (W259), Tier 59",
+        },
+    },
 }
+
+
+#: **Which outlet condition this record's column carries (W258).**  Set by
+#: `configure` from the record's `RUNS` entry; a record with no entry marches
+#: `racelab.OUTFLOW`, the repaired column.  Every march in this file passes it,
+#: and a settled field records it, because a field settled on one column is not
+#: the release state of the other.
+OUTFLOW: str = RL.OUTFLOW
 
 
 def configure(out: str) -> None:
     """Point every path in this file at one output directory."""
-    global OUT, CACHE, NAME
+    global OUT, CACHE, NAME, OUTFLOW
     OUT = os.path.abspath(out)
     CACHE = os.path.join(OUT, "cache")
     NAME = os.path.basename(os.path.normpath(OUT))
+    OUTFLOW = RUNS.get(NAME, {}).get("outflow", RL.OUTFLOW)
 
 
 def _rel(path: str) -> str:
@@ -362,6 +422,7 @@ def geometry_record() -> dict:
         "cuts": list(info.get("cols", [])),
         "device_planes": list(info.get("device_planes", [])),
         "banded_force_fraction": info.get("banded_force_fraction"),
+        "outflow": OUTFLOW,
         "described_as": RUNS.get(NAME, {}).get(
             "described_as", "no description registered for this record name"),
     }
@@ -387,6 +448,16 @@ def settled():
             "(fingerprint %s) from the one this process builds (%s). A settled "
             "field belongs to a geometry; re-run --stages spinup."
             % (_rel(path), (have or "none recorded")[:16], want[:16]))
+    #: **and to a column (W258).**  A field that records no outlet condition
+    #: was settled before the condition existed as a choice, so on the pinned
+    #: column -- that is known by construction, not assumed.
+    col = str(d["outflow"]) if "outflow" in d.files else "pinned"
+    if col != OUTFLOW:
+        raise RuntimeError(
+            "the settled field at %s was settled on the column whose outlet is "
+            "%s, and this record marches the one whose outlet is %s (W258). A "
+            "settled field belongs to a column as well as a car; re-run "
+            "--stages spinup." % (_rel(path), col, OUTFLOW))
     return d["u"], d["v"]
 
 
@@ -436,10 +507,12 @@ def stage_spinup() -> dict:
     torch.set_num_threads(THREADS)
     t0 = time.perf_counter()
     u, v, rep = RL.settled_field(steps=RL.N_SPIN, host_inflow=None,
+                                 outflow=OUTFLOW,
                                  progress=watch("spin", RL.N_SPIN, every=20))
     wall = time.perf_counter() - t0
     fp = RL.geometry_fingerprint()
-    save_field("settled", u=u, v=v, geometry=np.array(fp))
+    save_field("settled", u=u, v=v, geometry=np.array(fp),
+               outflow=np.array(OUTFLOW))
     rep["wall_s"] = wall
     rep["s_per_macro_step"] = wall / RL.N_SPIN
     rep["geometry_fingerprint"] = fp
@@ -461,7 +534,7 @@ def _probe(u0, v0, host_inflow, label) -> dict:
     """
     t0 = time.perf_counter()
     m = RL.march(u0, v0, steps=HORIZON, host_inflow=host_inflow,
-                 join_coupling="lagged", enforce=False,
+                 join_coupling="lagged", enforce=False, outflow=OUTFLOW,
                  progress=watch(label, HORIZON, every=50))
     wall = time.perf_counter() - t0
     ur = np.asarray(m.trace["u_rotor"], dtype=float)
@@ -510,11 +583,21 @@ def _horizon_from(probe: dict) -> int | None:
     return min(HORIZON, h) if h >= HORIZON_FLOOR else None
 
 
+def release_u_rotor(res) -> float:
+    """The inflow the release state carries: the spin-up's, or -- once stage
+    ``settle`` has re-settled the release state against a sized machine -- the
+    settled state's (W259)."""
+    st = res.get("settle") or {}
+    if st.get("marched"):
+        return float(st["u_rotor_at_the_settled_state"])
+    return float(res["spinup"]["u_rotor_at_the_release_state"])
+
+
 def stage_size(res) -> dict:
     """March the horizon UNENFORCED, read the u_rotor band, choose the horizon."""
     torch.set_num_threads(THREADS)
     u0, v0 = settled()
-    u_rel = res["spinup"]["u_rotor_at_the_release_state"]
+    u_rel = release_u_rotor(res)
     print("   probe 1 at the RELEASE state's sizing, host_inflow=%.6f ..."
           % u_rel, flush=True)
     p1 = _probe(u0, v0, u_rel, "probe1")
@@ -585,6 +668,79 @@ def stage_size(res) -> dict:
     return out
 
 
+def stage_settle(res) -> dict:
+    """W259 (Tier 59): re-settle the release state against the machine W228
+    sized, then size again ON the settled state.
+
+    Tier 52 settled its release state with the machine it had sized; this
+    driver's spin-up settles with the machine `powertrain` declares, which at
+    the drawn car's release state sits on its lower clamp and motors, so every
+    probe from it opens with a thrust several times larger arriving in one step
+    -- and the machine outside its window for the first few macro-steps (Tier
+    58, W259).  Tier 59 measured the repair on the repaired column.  This stage
+    applies it: march the record's declared number of macro-steps at W228's
+    sizing from the spin-up's field, keep that field as
+    ``settled_declared.npz``, write the result as ``settled.npz`` with the
+    machine it was settled against, and run stage ``size`` again from it.  The
+    sizing measured before the settle is kept under ``size_before_the_settle``.
+
+    A record that declares no settle -- every record before Tier 59 -- is left
+    exactly as it was.
+    """
+    n = RUNS.get(NAME, {}).get("settle")
+    if not n:
+        return {"marched": False,
+                "why": "this record declares no settle; its release state is "
+                       "the spin-up's, settled with the declared machine"}
+    torch.set_num_threads(THREADS)
+    if "size" not in res:
+        raise RuntimeError("stage settle needs stage size's W228 sizing first")
+    path = os.path.join(CACHE, "settled.npz")
+    with np.load(path) as d:
+        if "settled_against" in d.files:
+            raise RuntimeError(
+                "%s is already settled against a machine (%s); re-run --stages "
+                "spinup,size before settling again" % (_rel(path),
+                                                        float(d["settled_against"])))
+    u0, v0 = settled()
+    fp = RL.geometry_fingerprint()
+    save_field("settled_declared", u=u0, v=v0, geometry=np.array(fp),
+               outflow=np.array(OUTFLOW))
+    ud = float(res["size"]["U_DUCT_to_size_for"])
+    print("   settling %d macro-steps at W228's sizing %.6f ..." % (n, ud),
+          flush=True)
+    t0 = time.perf_counter()
+    m = RL.march(u0, v0, steps=int(n), host_inflow=ud, join_coupling="lagged",
+                 enforce=False, outflow=OUTFLOW,
+                 progress=watch("settle", int(n), every=40))
+    wall = time.perf_counter() - t0
+    save_field("settled", u=m.u, v=m.v, geometry=np.array(fp),
+               outflow=np.array(OUTFLOW), settled_against=np.array(ud),
+               n_settle=np.array(int(n)))
+    ur = np.asarray(m.trace["u_rotor"], dtype=float)
+    first = m.notes.get("outside_the_envelope")
+    out = {
+        "marched": True, "steps": int(n), "host_inflow": ud, "wall_s": wall,
+        "s_per_macro_step": wall / int(n),
+        "u_rotor_first": float(ur[0]), "u_rotor_at_the_settled_state": float(ur[-1]),
+        "trace": {k: [float(x) for x in np.asarray(m.trace[k], dtype=float)]
+                  for k in ("u_rotor", "u_max", "induction", "current")},
+        "outside_the_envelope_steps": m.notes["outside_the_envelope_steps"],
+        "outside_the_envelope_first": first,
+        "declared_field_kept_at": _rel(os.path.join(CACHE, "settled_declared.npz")),
+        "written_to": _rel(path),
+        "outflow": OUTFLOW,
+    }
+    res["settle"] = out
+    res["size_before_the_settle"] = res["size"]
+    print("   settled: u_rotor %.6f -> %.6f; outside on %d; sizing again from the "
+          "settled state" % (ur[0], ur[-1], out["outside_the_envelope_steps"]),
+          flush=True)
+    res["size"] = stage_size(res)
+    persist(res)
+    return out
+
+
 def stage_verify(res) -> dict:
     """The WHOLE chosen horizon, ENFORCED, at the measured sizing."""
     torch.set_num_threads(THREADS)
@@ -610,7 +766,7 @@ def stage_verify(res) -> dict:
     admitted, why, m = True, None, None
     try:
         m = RL.march(u0, v0, steps=steps, host_inflow=ud,
-                     join_coupling="lagged", enforce=True,
+                     join_coupling="lagged", enforce=True, outflow=OUTFLOW,
                      progress=watch("verify", steps, every=50))
     except RL.EnvelopeDeclined as exc:
         admitted, why, m = False, str(exc), None
@@ -669,6 +825,7 @@ def stage_arms(res) -> dict:
         t0 = time.perf_counter()
         try:
             m = RL.march(u0, v0, steps=horizon, host_inflow=ud,
+                         outflow=OUTFLOW,
                          progress=watch(tag, horizon, every=50), **kw)
         except Exception as exc:
             out["failed_arm"] = {"arm": tag, "type": type(exc).__name__,
@@ -990,7 +1147,7 @@ def _nearest_body(flat, x: float, y: float) -> tuple[str, float]:
 
 
 def traced_march(u0, v0, host_inflow, steps, objects=None, label="trace",
-                 snaps=()) -> tuple[list, dict]:
+                 snaps=(), outflow=None) -> tuple[list, dict]:
     """March by hand, lagged and unenforced, and read the MODEL's own envelope
     after every macro-step -- which expert declined, the cell Reynolds number it
     computed, and where in the field the fastest cell is.
@@ -1005,7 +1162,8 @@ def traced_march(u0, v0, host_inflow, steps, objects=None, label="trace",
     from atlas.cases import wing_fsi as W
     t, _i = RL.layout()
     r = RL.RaceRollout(tiling=t, objects=objects, join_coupling="lagged",
-                       enforce=False, host_inflow=host_inflow)
+                       enforce=False, host_inflow=host_inflow,
+                       outflow=OUTFLOW if outflow is None else outflow)
     opt = dict(dtype=W.TORCH_DTYPE, device=r.device)
     u = torch.as_tensor(np.asarray(u0), **opt)
     v = torch.as_tensor(np.asarray(v0), **opt)
@@ -1162,8 +1320,8 @@ def stage_ablate(res, steps: int, drops: list) -> dict:
     return out
 
 
-STAGES = ("spinup", "size", "verify", "arms", "slow", "gate", "compare",
-          "trace", "ablate")
+STAGES = ("spinup", "size", "settle", "verify", "arms", "slow", "gate",
+          "compare", "trace", "ablate")
 
 
 def main(argv):
@@ -1215,6 +1373,8 @@ def main(argv):
                 res[s] = stage_spinup()
             elif s == "size":
                 res[s] = stage_size(res)
+            elif s == "settle":
+                res[s] = stage_settle(res)
             elif s == "verify":
                 res[s] = stage_verify(res)
             elif s == "arms":

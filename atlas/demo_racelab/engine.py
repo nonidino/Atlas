@@ -54,18 +54,19 @@ LEAD_RATIO = (GE.MACRO_DT / GE.EXCHANGES) / 0.1
 #: The inflow the machine is sized for (CS-20 §2.2).  Without it the powertrain
 #: is outside its declared envelope from the first macro-step.
 #:
-#: **Re-measured 2026-09-13 for the car the user DREW** (Tier 56, stage
-#: ``spinup`` of ``out/racelab5``), and it is the release state's value because
-#: nothing better exists for this car.  ``0.654077065086774`` was the traced
-#: car's horizon minimum; on the drawn car the duct carries 0.5317 at release
-#: and the machine sized for 0.654 motors from macro-step 0.  **W228's
-#: procedure -- size for the horizon's MINIMUM -- has no admissible answer
-#: here**: ``u_rotor`` falls 16.6% over 600 macro-steps, the machine sized for
-#: that minimum puts the disk's induction on its UPPER clamp at macro-step 0,
-#: and sized for the release state it reaches the LOWER clamp at macro-step 20.
-#: No constant spans a fall that wide (W244).  This value buys the first twenty
-#: macro-steps, and the page stamps every one after them.
-U_DUCT = 0.5317254889754462
+#: **Re-measured 2026-09-14 for the car the user drew, on the repaired column**
+#: (Tier 59, ``out/racelab8``): W228's horizon minimum measured FROM the release
+#: state settled against the machine W228 sizes, and verified -- 600 macro-steps
+#: marched ENFORCED at exactly this value and admitted, the disk's induction
+#: between 0.050 and 0.181 and the machine generating on every step.
+#:
+#: Its history is the diagnosis, kept.  Tier 56 sized this demo for the
+#: unsettled release state, 0.5317, because W228 had no admissible answer on
+#: the pinned column: that bought twenty macro-steps and the page stamped
+#: every one after them (W244).  Tier 58 found both reasons outside the
+#: drawing -- the domain's pinned outlet (W258) and a release state settled
+#: against a machine the march never runs (W259) -- and Tier 59 repaired both.
+U_DUCT = 0.44565659437257343
 
 #: Colour ramp bounds for the speed overlay, in free streams.
 U_LO, U_HI = 0.0, 2.0
@@ -146,14 +147,19 @@ def field_png(u: np.ndarray, v: np.ndarray, which: str = "speed",
 
 
 #: Where a settled field is looked for, newest first.  Each directory holds the
-#: release state one tier's spin-up produced for the car built at the time.
-RELEASE_TIERS = ("racelab5", "racelab4", "racelab2")
+#: release state one tier's spin-up produced for the car built at the time --
+#: ``racelab8`` the drawn car on the repaired column, settled against the sized
+#: machine (Tier 59).
+RELEASE_TIERS = ("racelab8", "racelab5", "racelab4", "racelab2")
 
-#: How to regenerate the release state for whatever car is built now.
-RESPIN = "python scripts/tier54_traced_car.py --out out/racelab5 --stages spinup"
+#: How to regenerate the release state for whatever car is built now: the
+#: spin-up, W228's sizing, and the settle against the machine it sizes.
+RESPIN = ("python scripts/tier54_traced_car.py --out out/racelab8 "
+          "--stages spinup,size,settle")
 
 
-def find_release(root: str, fingerprint: str, tiers=RELEASE_TIERS):
+def find_release(root: str, fingerprint: str, tiers=RELEASE_TIERS,
+                 outflow: str | None = None):
     """``(u, v, note, is_this_car_s)`` -- the settled field for THIS car.
 
     Every cache that exists is opened and the first whose recorded fingerprint
@@ -165,8 +171,15 @@ def find_release(root: str, fingerprint: str, tiers=RELEASE_TIERS):
 
     A field written before fingerprints existed carries none, and is never
     taken for this car's: an unknown provenance is not a matching one.
+
+    **And a field belongs to a column (W258, Tier 59).**  The demo marches
+    `racelab.OUTFLOW`'s outlet unless told otherwise, and a field settled on
+    the other one is not this column's release state however right its car
+    is.  A field that records no outlet condition was settled before the
+    condition was a choice -- on the pinned column, by construction.
     """
     import os
+    want = RL.OUTFLOW if outflow is None else outflow
     found = []
     for tier in tiers:
         p = os.path.join(root, "out", tier, "cache", "settled.npz")
@@ -174,13 +187,21 @@ def find_release(root: str, fingerprint: str, tiers=RELEASE_TIERS):
             continue
         with np.load(p) as d:
             fp = str(d["geometry"]) if "geometry" in d.files else None
+            col = str(d["outflow"]) if "outflow" in d.files else "pinned"
             u, v = d["u"], d["v"]
-        if fp == fingerprint:
+        if fp == fingerprint and col == want:
             return (u, v, "the settled field in out/%s/cache, settled around "
-                          "THIS car (fingerprint %s)" % (tier, fp[:12]), True)
-        found.append((tier, fp, u, v))
+                          "THIS car (fingerprint %s) on this column (the %s "
+                          "outlet)" % (tier, fp[:12], col), True)
+        found.append((tier, fp, col, u, v))
     if found:
-        tier, fp, u, v = found[0]
+        tier, fp, col, u, v = found[0]
+        if fp == fingerprint:
+            return (u, v,
+                    "the settled field in out/%s/cache -- THIS car, but SETTLED "
+                    "ON THE OTHER COLUMN (the %s outlet; this demo marches the "
+                    "%s one), so the first macro-steps are a transient. Run `%s`"
+                    % (tier, col, want, RESPIN), False)
         return (u, v,
                 "the settled field in out/%s/cache -- WHICH WAS SETTLED AROUND A "
                 "DIFFERENT CAR (%s; the car built now is %s), so the flow "

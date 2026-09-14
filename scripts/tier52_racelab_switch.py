@@ -74,6 +74,10 @@ from atlas.cases import wake_array as WA                                # noqa: 
 
 OUT = os.path.join(HERE, "out", "racelab2")
 CACHE = os.path.join(OUT, "cache")
+#: W258: this record was measured on the column whose outlet is pinned, and
+#: `racelab.OUTFLOW` became the repaired one later (Tier 59); every march here
+#: names the column its record describes.
+OUTFLOW = "pinned"
 
 #: **The inflow the machine is sized for, and where the number comes from.**
 #: CS-19 measured the turbine's settled ring velocity at 0.6691530373612168 with
@@ -271,7 +275,8 @@ def stage_envelope() -> dict:
 def stage_spinup() -> dict:
     torch.set_num_threads(1)
     t0 = time.perf_counter()
-    u, v, rep = RL.settled_field(steps=SPIN_STEPS, host_inflow=U_DUCT_TIER51)
+    u, v, rep = RL.settled_field(steps=SPIN_STEPS, host_inflow=U_DUCT_TIER51,
+                                 outflow=OUTFLOW)
     rep["wall_s"] = time.perf_counter() - t0
     save_field("settled", u=u, v=v)
     rep["picard"] = {
@@ -287,7 +292,7 @@ def stage_spinup() -> dict:
     # the control: the SAME settled field with the machine CS-19 declared
     d = load_field("settled")
     try:
-        RL.march(d["u"], d["v"], steps=2, join_coupling="lagged")
+        RL.march(d["u"], d["v"], steps=2, join_coupling="lagged", outflow=OUTFLOW)
         rep["control_tier51_machine_from_this_field"] = {
             "declined": False,
             "why": "the check did not fire, which would mean the repair is "
@@ -297,7 +302,7 @@ def stage_spinup() -> dict:
             "declined": True, "who": list(exc.report["_declined"]),
             "message": str(exc)[:300]}
     m = RL.march(d["u"], d["v"], steps=4, join_coupling="lagged",
-                 host_inflow=U_DUCT_TIER51)
+                 host_inflow=U_DUCT_TIER51, outflow=OUTFLOW)
     rep["repaired_marches_clean"] = {
         "outside_steps": m.notes["outside_the_envelope_steps"],
         "enforce": m.notes["enforce"],
@@ -383,7 +388,7 @@ def stage_assign(stack, u, v) -> dict:
     return SW.switch_report(
         u, v, ["upper-learned", "wake-learned", "learned"], stack=stack,
         steps=MIXED_STEPS, host_inflow=U_DUCT_TIER51, enforce=False,
-        join_coupling="lagged")
+        join_coupling="lagged", outflow=OUTFLOW)
 
 
 STAGES = ("envelope", "spinup", "scaling", "windows", "certified",

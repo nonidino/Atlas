@@ -23,19 +23,22 @@ On a machine that has nothing, use the self-contained branch instead:
 `git clone --branch poc3-racelab-demo --single-branch …` and `./run.sh`
 (`scripts/build_racelab_bundle.py` builds it; `bundle/README.md` is its README).
 
-Run this first if the car has been redrawn, or if `out/racelab5/cache/settled.npz`
-is absent:
+Run this first if the car has been redrawn, or if `out/racelab8/cache/settled.npz`
+is absent — the spin-up, W228's sizing, and the settle against the machine it
+sizes (Tier 59):
 
 ```bash
-python scripts/tier54_traced_car.py --out out/racelab5 --stages spinup
+python scripts/tier54_traced_car.py --out out/racelab8 --stages spinup,size,settle
 ```
 
-**A settled field belongs to the car it was settled around**, and it carries
-that car's fingerprint (`racelab.geometry_fingerprint`). The demo releases from
-the field whose fingerprint matches the car built now; if none does, it releases
-from the newest one and says, in capitals, that it was settled around a
-different car; with none at all it releases from a uniform freestream and says
-that. That is `demo_frontwing`'s own rule and the reason it exists.
+**A settled field belongs to the car it was settled around, and to the column
+it was settled on.** It carries the car's fingerprint
+(`racelab.geometry_fingerprint`) and the outlet condition it was marched with
+(`racelab.OUTFLOW`, W258). The demo releases from the field that matches both;
+if none does, it releases from the newest one and says, in capitals, whether it
+belongs to a different car or to the other column; with none at all it releases
+from a uniform freestream and says that. That is `demo_frontwing`'s own rule
+and the reason it exists.
 
 ---
 
@@ -147,12 +150,18 @@ field rather than about this code.
   (W238) — the page says so rather than showing no stamp.
 - **No GPU.** Every column runs on the CPU; the bundle installs the CPU-only
   torch wheel for that reason (phase 5).
-- **The drawn car does not stay inside its envelopes.** On the car in
-  `car_geometry.json` the machine's clamp declines at macro-step 20 and the
-  fluid's cell-Reynolds bound at macro-step 56, on the outflow boundary where
-  the car's wake leaves the box — so the page is stamped `OUTSIDE THE MODEL`
-  for all but the first twenty macro-steps. See [[poc3-racelab-drawn-car]]
-  (W244, W245).
+- **The drawn car stays inside its envelopes for the 600 macro-steps that
+  were verified, and no further claim is made.** Until Tier 59 it did not: the
+  domain's outlet was pinned, so the outflow column alone broke the fluid's
+  cell-Reynolds bound from macro-step 56 (W245, re-scoped as W258), and the
+  release state had been settled against a machine the march never runs, so
+  the disk left its clamp within twenty macro-steps (W244, W259). The outlet
+  now relaxes convectively, and the release state is settled against the
+  machine the demo is sized for: `out/racelab8`'s verify marched 600
+  macro-steps enforced at exactly `U_DUCT` and was admitted. The duct flow still
+  drifts down by about 2.5% over those 600, so a march left running long
+  enough will meet the machine's lower clamp, and the page will stamp it when
+  it does. See [[poc3-racelab-car-fixes]] and [[poc3-racelab-outlet-and-start]].
 - **One Reynolds number, one grid, one incidence**, and every body porous with
   no boundary layer and no Kutta condition — `poc2-frontwing-results`' own list,
   now thirteen times over instead of once.

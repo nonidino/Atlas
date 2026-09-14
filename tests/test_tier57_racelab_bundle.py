@@ -228,12 +228,18 @@ def test_W251_the_bundle_pins_a_websocket_library_and_the_self_test_uses_it():
 # ---------------------------------------------------------------------------
 
 
-def _field(root, tier, fingerprint=None, value=1.0):
+def _field(root, tier, fingerprint=None, value=1.0, outflow="default"):
+    """A settled field on disk.  Since Tier 59 (W258) a field records its
+    column's outlet condition; ``"default"`` writes the demo's own, and
+    ``None`` writes none -- a field from before the condition was a choice."""
+    from atlas.cases import racelab as RL
     d = os.path.join(root, "out", tier, "cache")
     os.makedirs(d, exist_ok=True)
     arrays = {"u": np.full((2, 3), value), "v": np.zeros((2, 3))}
     if fingerprint is not None:
         arrays["geometry"] = np.array(fingerprint)
+    if outflow is not None:
+        arrays["outflow"] = np.array(RL.OUTFLOW if outflow == "default" else outflow)
     np.savez(os.path.join(d, "settled"), **arrays)
 
 
@@ -274,6 +280,24 @@ def test_no_field_at_all_is_not_a_no_but_nothing_to_ask(tmp_path):
     u, v, note, mine = find_release(str(tmp_path), "a" * 64)
     assert u is None and v is None and mine is None
     assert "FREESTREAM" in note
+
+
+def test_W258_the_right_car_on_the_other_column_is_not_this_column_s(tmp_path):
+    """Tier 59: a settled field belongs to a column as well as a car."""
+    from atlas.cases import racelab as RL
+    from atlas.demo_racelab.engine import find_release
+    other = next(m for m in RL.OUTFLOW_MODES if m != RL.OUTFLOW)
+    _field(tmp_path, "racelab8", "a" * 64, value=8.0, outflow=other)
+    _u, _v, note, mine = find_release(str(tmp_path), "a" * 64)
+    assert mine is False and "OTHER COLUMN" in note
+    # the control: asked for that column, the same file is this car's
+    u, _v, _n, mine = find_release(str(tmp_path), "a" * 64, outflow=other)
+    assert mine is True and float(u[0, 0]) == 8.0
+    # and a field recording no outlet condition is the pinned column's
+    _field(tmp_path, "racelab5", "a" * 64, value=5.0, outflow=None)
+    u, _v, _n, mine = find_release(str(tmp_path), "a" * 64, tiers=("racelab5",),
+                                   outflow="pinned")
+    assert mine is True and float(u[0, 0]) == 5.0
 
 
 # ---------------------------------------------------------------------------
