@@ -64,6 +64,8 @@ The machine is sharp: on the traced car a $2\%$ range of inflow already moved th
 
 The procedure is not mis-applied here; it is insufficient, which is what Tier 54's own prediction said the informative outcome would be. What would fix it is a *declaration*, not a threshold — a machine whose sizing follows its inflow — and that is a new model, not taken here.
 
+*(Annotated the same day, in Tier 58: read per macro-step rather than by its first decline, probe 2's machine is outside on macro-steps $0$ to $8$ only — the inflow starts $20\%$ above the sizing and falls into the window — and inside for the other $591$; "sizing for the minimum buys none" is the first decline's reading, and the $553$ outside steps are $9$ of the rotor's and $544$ of the fluid's. The same holds in every arm Tier 58 marched, $5$ to $12$ steps at the start. See [[poc3-racelab-car-fixes]] §8.2, W259.)*
+
 ---
 
 # 4. W245 — the fluid leaves its envelope at the outflow boundary
@@ -97,6 +99,8 @@ The trace's first summary said the fastest cell was at `RW_ENDPLATE` on all $544
 | the closed rear box: `RW_ENDPLATE`, `RW_ENDPLATE_LO`, `DIFF_EXIT` | $59$ | **none in $200$** | **none in $200$** | $2.3994$ |
 
 **It cannot attribute the fluid breach to any plate, and saying so is the result.** Every arm starts from the intact car's settled field, whose wake already reaches the outlet at macro-step $0$, and $200$ macro-steps is about a quarter of a transit of the box: removing a body does not remove a wake it has already made. The fluid column moves by at most three macro-steps in any arm, and that is uninformative in both directions. **The machine is different, because the duct flow responds within a few macro-steps.** The endplate alone moves the rotor's first decline from $20$ to $123$, the diffuser exit alone to $94$, and the closed box the two form with the endplate's lower edge keeps the rotor and the machine inside their clamps for **all $200$ macro-steps marched** — "none in $200$" is not "never", it is as far as the arm went. **So the rear box the user drew is what pulls the duct's inflow down over those $200$ macro-steps** — the fall W244 is about — though whether the car without it stays within one constant's reach over the full $600$ was not marched. A discriminating ablation of the fluid breach would re-spin each car from the freestream — about five minutes an arm — and was not run.
+
+*(Annotated the same day, in Tier 58, which re-spun each car from the freestream: **neither reading of this section survives.** Without the closed rear box the duct flow falls $17.9\%$ over $600$ macro-steps against $16.0\%$ with it on the same layout, and the machine leaves its window at macro-step $22$ against $18$ — "none in $200$" was the box removed from a flow it had already shaped, and **the rear box does not carry W244** (W256). And the fluid breach this section rightly called unreadable moves from macro-step $56$ to $394$ once the car is spun up without the box, while the car's own flow never leaves the envelope in any arm — only the outflow column does (W258). Removing the box also moves the device planes $14$ cells, so the comparison there is made against the intact car on the moved layout. See [[poc3-racelab-car-fixes]] §7–§8.)*
 
 ---
 

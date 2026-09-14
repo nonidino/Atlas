@@ -395,6 +395,20 @@ out/racelab4/*
 out/racelab5/*
 !out/racelab5/racelab5.json
 
+# Tier 58 -- the drawn car's two faults, and candidate fixes measured on copies
+# (`tier58_car_fixes.py --out out/racelab6`). JSON only: the machine's inflow
+# window, every arm's derived layout, and for each of five arms its spin-up, its
+# release-sizing probe and -- when that probe's machine declined -- its
+# minimum-sizing probe, each with the whole trajectory of the numbers the page
+# quotes. Rebuilding costs about 70 minutes on the development laptop: five
+# 240-step spin-ups and up to nine 600-step lagged probes, one arm in a box 19%
+# longer. out/racelab6/cache/ is ignored: each arm's settled field (~2.6 MB, with
+# the arm's identity inside), every probe's rows in full, and probe 1's five
+# snapshots (~13 MB an arm).
+!out/racelab6/
+out/racelab6/*
+!out/racelab6/racelab6.json
+
 # Tier 57 -- PoC 3 phase 5, the bundle. JSON only: what
 # scripts/verify_racelab_bundle.py found on a FRESH CLONE of the
 # poc3-racelab-demo branch, one record per platform -- the mode run.sh has in

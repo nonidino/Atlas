@@ -4895,3 +4895,45 @@ The suite ran on mains with no Python process but the user's own idle `phone-rem
 **Changed:** `atlas/cases/racelab.py` (W250), `atlas/demo_racelab/server.py` (`socket_check`, W251, W253), `atlas/demo_racelab/engine.py` and `static/index.html` (W243, in Tier 56's commit), `atlas/demo_racelab/README.md`, `tests/test_tier53_racelab_demo.py` (W255), `tests/test_tier56_racelab_drawn_car.py` (W250's test), `out/racelab5/racelab5.json` (re-spun to the new fingerprint, bitwise otherwise), [[poc3-racelab-drawn-car]] (annotated), `.gitignore`, [[gap-worklist]], `wiki/index.md`.
 
 **NOT done:** pushing the branch; a machine that truly has nothing (both platforms ran on this laptop, from the local branch); macOS; Python 3.11; re-running the launcher, network cut and page on the final build, which differs from round 4's in four files none of which that code runs; verifying W249, W252 or W254 on the earlier bundles. About 13 GB of verification clones were left on disk. The unlicensed structural checkpoint was not loaded; no machine was rented; downloads were the installs the user approved.
+
+---
+
+## [2026-09-13] tier 58 | the drawn car's two faults, and candidate fixes measured on copies
+
+After Tier 57 the user was asked what next and chose to **measure fixes before redrawing anything**: leave `car_geometry.json` untouched, test candidate fixes on copies, each spun up from the freestream so no result inherits the old wake, then choose with numbers. They also asked to delete this session's bundle verification clones (done: seven on Windows, seven in WSL; `C:\Users\Nauni\poc3_build` and `~/mm-py310` kept), not to push, and accepted the unlicensed checkpoint's name in prose as it stands. See [[poc3-racelab-car-fixes]].
+
+### Four readings before the run, and what they changed
+
+Read out of Tier 56's record before the script was written, and carried in the new record under `read_before_this_run`: every over-bound cell in Tier 56's snapshots is on the outflow column, so each probe now also records the speed without that column; Tier 56's minimum-sizing probe had the rotor on a clamp for only $9$ of $600$ steps, so each probe records every expert's declines per step; the derived layout moves both device planes $14$ cells when the rear changes or the box grows, so a fifth arm — the intact car on the moved layout — is the reference every fix is compared with; and the machine's window was sketched from a uniform ring.
+
+### The run
+
+`scripts/tier58_car_fixes.py --out out/racelab6`: five arms — the car as drawn, the car on the moved layout, the rear box removed, the endplate removed, a box $128$ cells longer — each a $240$-step spin-up and a $600$-step release-sizing probe, plus a $600$-step probe at W228's sizing wherever the machine declined. $82$ minutes on mains. **The control is Tier 56 bitwise**: the settled field, all $600$ trace rows, the first $60$ steps of its minimum-sizing probe, the layout.
+
+### What it found
+
+- **W258 (W245 re-scoped):** in every arm, at both sizings, on all $5460$ macro-steps, the car's own flow stays inside the cell-Reynolds bound; only the outflow column breaks it, and the wake sets when — $56$ as drawn, $294$ without the endplate, $394$ without the rear box, $265$ in the longer box. RaceLab builds every window `dirichlet`, which `WindowNS`'s own docstring calls over-constrained on an outflow face; the solver's characteristic and convective outflows go unused.
+- **W256:** the duct flow falls $14.7$ to $18.0\%$ in every arm — with the rear box or without it — so Tier 56's attribution of W244 to the box is refuted: its ablation removed the box from a flow the box had already shaped.
+- **W259:** at W228's sizing the machine is outside only on the first $5$ to $12$ steps, on its upper clamp, in every arm, then inside to the end — by $0.06$ to $0.19\%$. At release the pipeline swaps the spin-up's clamped, motoring machine for a sized one with $6\times$ (release sizing) to $33\times$ (W228's) the thrust coefficient.
+- **W257:** a drawing change moves the machine — on the unchanged car the moved planes alone change the duct flow by $-6.2\%$, and the layout objective is not tied ($6$ to $10\%$ apart).
+- **The machine's window, measured exactly:** inside for $u_{\text{rotor}}/u_{\text{host}} \in [0.9731, 1.1408]$, the same at three sizings to $10^{-15}$, reproducing all $1200$ per-step verdicts Tier 56 recorded and every verdict in this tier's ten probes.
+- **The rear box removed** buys $39\%$ more downforce and $26\%$ less drag against the same-layout reference, and a breach $338$ steps later — and repairs neither fault.
+
+**The prediction**, registered at 19:40:12 before any stage: C1, F1, F3, M1, M4, W1 and A1 confirmed; **F2** (removing rear plates would not move the breach) and **M2** (the rear box carries W244) falsified, both by the freestream spin-up the ablation lacked; **M3** falsified narrowly (the endplate's fall, $18.0\%$, is above both neighbours); **K1** falsified on timing noise — the reference arm ran $28\%$ slower than the control on the same car — larger than the effect it predicted.
+
+```
+python scripts/tier58_car_fixes.py --out out/racelab6                      # 82 min
+python scripts/tier58_car_fixes.py --out out/racelab6 --stages layouts,summary
+python -m pytest tests/test_tier58_car_fixes.py -p no:cacheprovider        # 24 passed
+python scripts/vault_scan.py wiki        # 237 files, 0 problems
+python scripts/run_suite.py              # 1514 passed, 0 failed
+```
+
+The run was on mains throughout with one Python process, and the System log shows no power transition from 19:35 to its end. A $30$-second processor-performance log, begun at 19:54 after the control finished, reads $172$ to $237\%$ of base frequency; OneDrive used about a quarter of a core while the cache was written. The suite, $1514$ against Tier 57's $1490$ — exactly this tier's $24$ tests more — took $781$ s against the usual $\sim 440$, on mains, with no power event inside its window (21:15 to 21:28; the laptop's first transition afterwards is at 21:43), and the cause is not separated. No cost in this tier is quoted as a claim.
+
+**Opened:** **W257** (a drawing change moves the machine), **W258** (W245 re-scoped to the outflow column), **W259** (the machine's start, and its thin end). **Closed:** **W256** (Tier 56's rear-box attribution, by measurement). W244 and W245 annotated.
+
+**Added:** `scripts/tier58_car_fixes.py`, `tests/test_tier58_car_fixes.py`, `out/racelab6/racelab6.json`, [[poc3-racelab-car-fixes]].
+**Changed:** `.gitignore`, [[poc3-racelab-drawn-car]] (§3 and §4.2 annotated), [[gap-worklist]], `wiki/index.md`.
+
+**NOT done:** adopting any fix — the drawing, the demo, the bundle and `out/racelab5` are unchanged, and the choice is the user's; marching any of the four repairs the numbers point at (an outflow treatment, a spin-up with the sized machine, pinned device planes, the box removed together with a longer box); the arms and the gate. Nothing downloaded, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
