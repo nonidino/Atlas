@@ -128,6 +128,10 @@ ADDED_AFTER_CAPTURE = {
                      "patches, and the multi-body manufactured solutions.  It builds "
                      "NO CaseGraph, declares no region and imports no case but "
                      "overset and overset_ns",
+    "car_union": "Tier 64: the radiator core and the turbine in the body-fitted duct and "
+                 "the three joins marched on it.  It builds NO CaseGraph and declares no "
+                 "region; it READS car_solids, racelab, vehicle_march and integration_union "
+                 "and changes none of them, so the W189 byte-identity capture is untouched",
     "car_solids": "Tier 62: the drawn car's plates as solids by the user's rule, the "
                   "grids round them and the car's march on overset_ns.  It builds NO "
                   "CaseGraph and declares no region; it READS racelab's bodies and "

@@ -473,6 +473,21 @@ out/racelab11/*
 out/racelab12/*
 !out/racelab12/racelab12.json
 
+# Tier 64 -- the radiator core and the recovery turbine in the body-fitted duct,
+# and the three joins marched on it (`tier64_car_union.py --out out/racelab13`).
+# JSON only: the devices' controls, the device-free prefix compared step by step
+# with Tier 63's march, each arm's sizing, envelope record and receiver balances,
+# J2 on the coolant clock, and the verdicts. Rebuilding costs about an hour on
+# the development laptop: the prefix is 640 steps and each arm another 640, and
+# the W228 sizing rule is iterated until an arm stays inside the envelope.
+# Ignored beside it: each arm's full trajectory (arm<k>.json, a few MB), the
+# prefix's own (prefix.json), the run logs, and out/racelab13/cache/prefix_t8.npz
+# -- the state at t = 8 every arm releases from, which `--stages prefix`
+# regenerates in about twenty minutes.
+!out/racelab13/
+out/racelab13/*
+!out/racelab13/racelab13.json
+
 # Tier 57 -- PoC 3 phase 5, the bundle. JSON only: what
 # scripts/verify_racelab_bundle.py found on a FRESH CLONE of the
 # poc3-racelab-demo branch, one record per platform -- the mode run.sh has in

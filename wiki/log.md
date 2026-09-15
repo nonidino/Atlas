@@ -5125,3 +5125,39 @@ python scripts/run_suite.py              # 1609 passed, 0 failed, 383 s on batte
 **Changed:** `atlas/cases/car_solids.py` (openings; `check=False`; attribution by the uncut plates), `scripts/tier62_car_solids.py` (the openings pinned off, the geometry hook, the openings recorded), `tests/test_tier62_car_solids.py` (the fixture pins the openings off), `POC3-RACELAB-REQUIREMENTS.md` (§13.1 status, §13.2), `.gitignore` (the `out/racelab12` allowlist), [[gap-worklist]], [[index]].
 
 **NOT done:** the duct settled or its openings' pressures measured; another opening size tried; any device, join or agent in the duct; the front wing's generator; any cost on mains. RaceLab's column, records, gate, demo, bundle and `car_geometry.json` are unchanged. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-15] tier 64 | the devices in the body-fitted duct, and the union's three joins
+
+**[[poc3-racelab-car-union]].** The user accepted Tier 63's weaker duct for now and asked for the next steps, so the radiator core and the recovery turbine go back into it — on solid walls this time — with J1, J2 and J3 solved on the body-fitted march.
+
+### Built
+
+`atlas/cases/car_union.py`. A device is a **continuous force density** rather than a strip of cells: overlapping grids have no single lattice for the exact-overlap identity, so $f_x = -T\varphi(x-x_p)\chi(y)/W$ with a raised cosine two cells either side, sampled by every grid at its own points. Its samples integrate to one on the background for any position of the plane ($1.0$ within $2\times10^{-16}$), and to $2.2\times10^{-16}$ on the quadrature lattice the work is read on. Rings, strips and pressure lines are fixed sparse interpolation matrices (`probe_matrix`, `car_solids.probe`'s rule, agreeing with it to $1.3\times10^{-15}$). The device is the duct's **open** width, $29$ cells, so W199's width similarity and W222's inflow similarity both apply; `machine_band` measures where the machine generates at all. The joins are lagged, the coolant sub-cycled every $400$ steps, the envelopes consulted every step and **recorded rather than enforced**, and the trace carries `vehicle_march`'s own keys so `receiver_balances` reads this march unchanged.
+
+### Measured
+
+A device-free prefix to $t = 8$ that repeats Tier 63's march **bitwise** — every step's forces, speed, divergence and iteration counts, every probe — and a kept state every arm releases from; a device-free arm from it to $t = 16$, bitwise too, so the restart costs nothing measurable.
+
+**J3 closes to $3.40\times10^{-4}$** over $[12, 16]$ against the porous column's $0.0292$, with $u_{\text{plane}}/u_{\text{ring}} = 0.99960$ against $0.968$: in a solid duct continuity holds the two stations together and CS-18's ring-to-plane gap is not there. Charging the shaft against the core's work instead gives $1.96$. **J2's** first law closes to $9.8\times10^{-9}$ and P4's slow recipe passes both clauses ($5.5\times10^{-9}$ with the mount term, $0.998$ without), at a machine heat of $0.076$ W against $1.265$ — the cube of a fifth of the air. The devices slow the duct $6.7\%$ ($0.08952 \to 0.08351$) and move the car's drag and lift by $0.28\%$ and $0.01\%$; the joins cost $0.75\%$ of a $0.61$ s step.
+
+**The sizing had to be iterated** (**W282**): the machine generates only for $0.9731\,u_h \le u \le 1.1408\,u_h$, the same at three sizing inflows, so arm 1 — W228's rule applied once, sized for Tier 63's device-free duct — spent $196$ of $321$ window steps motoring, and arm 2, sized for arm 1's own minimum, was admitted with every decline before the window and all of them the rotor's clamp.
+
+Two of sixteen predictions failed. **W283**: `CoreRadiator.ua` reads $\langle|u|\rangle$ while the trace's `u_core` is the signed mean, and at the core's ring **8 of 32 cells flow backwards along the duct's roof** ($-0.027$ against $+0.25$ on the floor), healing by the turbine's ring — a $8.5\%$ gap at the core's reference state, $0.7\%$ over the window, and the whole of `receiver_balances`' J1 tracking residual. **W284**: the pressure-jump check used one stretch of duct as another's friction reference, which with no device at all already reads $-0.0067$ at the core's station; net of a device-free arm over the same window the two devices' jumps are $1.092$ and $0.986$ of $T/W$, so the fluid does feel the forces and the registered clause stands failed.
+
+```
+python scripts/tier64_car_union.py --out out/racelab13 --stages controls,prefix
+python scripts/tier64_car_union.py --out out/racelab13 --stages arms,null
+python scripts/tier64_car_union.py --out out/racelab13 --stages ring,slow,compare,summary
+python -m pytest tests/test_tier64_car_union.py tests/test_tier45_region_assembly.py tests/test_tier63_duct_openings.py -p no:cacheprovider   # 55 passed
+python scripts/vault_scan.py wiki        # 243 files, 0 problems
+python scripts/run_suite.py              # 1618 passed, 0 failed, 375 s on mains
+```
+
+About $44$ minutes on **mains**, beside the user's two phone-remote servers: the prefix $775$ s for $640$ steps, each arm about $540$ s, the device-free arm $539$ s.
+
+**Opened:** **W282** (the machine's band is narrower than the duct's own drift, so the sizing must be iterated), **W283** (the conductance's air is not the trace's air, and the ring is partly reversed), **W284** (a duct stretch is not its own friction reference). **Annotated:** W197, W222, W229, W281.
+
+**Added:** `atlas/cases/car_union.py`, `scripts/tier64_car_union.py`, `tests/test_tier64_car_union.py`, `out/racelab13/racelab13.json`, [[poc3-racelab-car-union]].
+**Changed:** `tests/test_tier45_region_assembly.py` (the census names `car_union`), `POC3-RACELAB-REQUIREMENTS.md` (§13.1 status), `.gitignore` (the `out/racelab13` allowlist), [[gap-worklist]], [[index]].
+
+**NOT done:** no tight coupling, no composition-error arms, no null arm marched; no graph, compile, agent or seam on the body-fitted column, so `L7/R9` and P1 are untouched; the duct is still W281's weak one and the front wing still W275's filled wedge; W283 and W284 are measured, not repaired. RaceLab's column, records, gate, demo, bundle and `car_geometry.json` are unchanged. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
