@@ -118,6 +118,11 @@ ADDED_AFTER_CAPTURE = {
                "SciPy alone, which is why the W189 byte-identity capture below "
                "is untouched by it.  The overlap it builds has no declaration "
                "the compiler can read yet (W268)",
+    "overset_ns": "Tier 61: incompressible Navier-Stokes on overset's grids -- the "
+                  "rotational pressure correction, the cylinder benchmark and a "
+                  "manufactured solution.  It builds NO CaseGraph, declares no region "
+                  "and imports no case but overset, which is numpy and SciPy alone, "
+                  "so the W189 byte-identity capture below is untouched by it",
 }
 
 #: **The two artifacts Tier 49's W194 moves, and the reason.**  `L7/R9`'s premise

@@ -5020,3 +5020,42 @@ The first full-suite run read 1562 passed and 1 failed: `test_tier45_region_asse
 **Changed:** `POC3-RACELAB-REQUIREMENTS.md` (§13, the user's decisions, each with what is built), `.gitignore` (the `out/racelab9` allowlist), `tests/test_tier45_region_assembly.py` (`ADDED_AFTER_CAPTURE` names `overset`), `atlas/demo_racelab/README.md` (its drift figure quoted the release sizing's $2.5\%$ for the sizing the demo runs, whose record says $4.4\%$ with $0.8\%$ left above the clamp — an error from Tier 59, found by the review), [[gap-worklist]], [[index]].
 
 **NOT done:** a flow solver; any car part on a grid; cutting grids by the box or by each other; any cost on mains; smoothing checked on concave shapes; RaceLab's column, records, gate, car, demo engine and bundle are unchanged. Nothing downloaded or installed (`pyamg`, already present, was used only for pricing), no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-15] tier 61 | Navier–Stokes on body-fitted grids: the flow solver, verified
+
+**[[poc3-racelab-overset-flow]].** An incompressible flow on Tier 60's composite grids, checked on a manufactured solution and on the cylinder at $\mathrm{Re} = 100$ before any car part goes on the grids.
+
+### Built
+
+`atlas/cases/overset_ns.py`: BDF2 with the rotational incremental pressure correction; momentum implicit in viscosity and in advection (linearised about the extrapolated velocity), BiCGSTAB with Jacobi; the pressure factored once with SuperLU; every grid coupled implicitly through its interpolation rows; the box's conditions at the edge cells' centres with second-order one-sided rows; a zero-mean constraint with a uniform compatibility unknown when no face is open; forces from the wall stresses; flux through a background rectangle and a body-grid ring. `overset.py` gained a refactor so the flow solver reads the same Laplacian and wall rows the pressure system assembles, bitwise.
+
+### Found and repaired before the registered run
+
+The first march of the manufactured solution blew up within ten steps from a corner: the increment was pinned there, and the interpolation equations make the pure-Neumann problem slightly incompatible, so the pin became a point source. The background's edge condition for the increment was first order. A flux routine tested a velocity where it meant an index; BiCGSTAB broke down when its guess already solved the system.
+
+### Measured
+
+**The cylinder** ($384\times256$ background at $h = 1/32$, $256\times33$ body grid, $\Delta t = 0.0125$, $t\in[70, 120]$): St $0.16908$, $C_D$ $1.38254$, $C_L'$ $0.33784$, twenty cycles with the period steady to $0.001\%$; half the step moves St $0.057\%$ and $C_D$ $0.069\%$, a body grid twice as fine $0.011\%$ and $0.040\%$; the net flux round the overlap is $2.2\times10^{-4}$ of the free-stream flux. References: Ding $0.164$, $1.325$, $0.28$; Uhlmann $0.169$, $1.453$, $0.339$. C1 to C5 held.
+
+**The manufactured solution** converges at first order in time (velocity $0.89$, $0.94$; T1, T2 failed) and, at $\Delta t = 0.002$, at $0.78$ in space on the background because the temporal error floors it (S1 to S3 failed). **The diagnosis, one change per arm:** BDF2 momentum with the exact pressure and no projection reads $1.96$; the rotational term changes nothing; the projection decides it — the compact Laplacian and the divergence-of-gradient differ. The exact divergence-of-correction reads $1.93$ on one grid and blows up from the overlap on the composite; five compact passes a step leave $1.10$. **With the time error pushed down** the velocity is second order in space ($2.52$, $1.81$) and the pressure is not ($1.22$, $1.39$): S4, registered after the first failures, failed on its pressure clause.
+
+**P1 was not measured.** The laptop was on battery when the price could run alone, and the judge had never read the power state its prose names; it now returns `None` for a price not taken on mains, and a test pins it.
+
+```
+python scripts/tier61_overset_flow.py --out out/racelab10 --stages mms_space,mms_time
+python scripts/tier61_overset_flow.py --out out/racelab10 --stages diagnose,space_small_dt
+python scripts/tier61_overset_flow.py --out out/racelab10 --stages cylinder --arm base      # and dt_half, body_fine
+python scripts/tier61_overset_flow.py --out out/racelab10 --stages summary
+python -m pytest tests/test_tier61_overset_flow.py -p no:cacheprovider   # 16 passed
+python scripts/vault_scan.py wiki        # 240 files, 0 problems
+python scripts/run_suite.py              # 1579 passed, 0 failed, 1846 s on battery
+```
+
+The suite's wall time includes a modern-standby period from 13:00:16 to 13:16:39 (System events 506 and 507) that suspended two of its groups; every test passed. The diagnosis stage's first run failed on a keyword clash in its arm builder and was re-run whole; the failure stays in the record's `stage_errors`.
+
+**Opened:** **W271** (first order in time: the collocated approximate projection), **W272** (the divergence grows under refinement), **W273** (the pressure's spatial order with the time error removed), **W274** (the step's price at the car's size, not measured on mains). **Annotated:** W226, W269.
+
+**Added:** `atlas/cases/overset_ns.py`, `scripts/tier61_overset_flow.py`, `tests/test_tier61_overset_flow.py`, `out/racelab10/racelab10.json`, [[poc3-racelab-overset-flow]].
+**Changed:** `atlas/cases/overset.py` (the Laplacian and wall-row assembly shared with the flow solver, matrices bitwise Tier 60's), `.gitignore` (the `out/racelab10` allowlist), `tests/test_tier45_region_assembly.py` (`ADDED_AFTER_CAPTURE` names `overset_ns`), [[gap-worklist]], [[index]].
+
+**NOT done:** second order in time; W272 and W273 diagnosed; the cylinder's background refined or its domain lengthened; any cost on an idle machine on mains; several bodies, a road or the car (Tier 62, under way). RaceLab's column, records, gate, car, demo and bundle are unchanged. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

@@ -1009,7 +1009,15 @@ class Overset:
                 b[rows[e]] -= (8.0 / 3.0) * ih2 * box_value(fx, fy)
         R.append(rows); C.append(rows); V.append(centre)
 
-    def _assemble_component(self, c, rhs, wall_value, outer_value, R, C, V, b) -> None:
+    def laplacian_triplets(self, c: CurvilinearGrid
+                           ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray],
+                                      np.ndarray, np.ndarray]:
+        """The nine-point conservative Laplacian at a body grid's discretisation
+        points, as COO pieces in global numbering, and the points' ``(j, i)``.
+
+        One copy of the stencil, read by the pressure system here and by the
+        flow solver (`overset_ns`), so the two cannot drift apart.
+        """
         S = self.status[c.name]
         idx = self.index[c.name]
         nj, ni = c.shape
@@ -1040,12 +1048,40 @@ class Overset:
             (1, -1): -0.25 * (bm + dp),
             (-1, -1): 0.25 * (bm + dm),
         }
+        R: list[np.ndarray] = []
+        C: list[np.ndarray] = []
+        V: list[np.ndarray] = []
         for (dj, di), val in coef.items():
             nb = idx[jj + dj, np.mod(ii + di, ni)]
             if np.any(nb < 0):                              # pragma: no cover
                 raise OversetError(f"{c.name}: a stencil reaches a hole")
             R.append(rows); C.append(nb); V.append(val / Jc)
-        b[rows] = rhs(c.x[jj, ii], c.y[jj, ii])
+        return R, C, V, jj, ii
+
+    def neumann_wall_triplets(self, c: CurvilinearGrid
+                              ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
+        """``dp/dn`` at a body grid's wall points, one-sided second order in ``eta``,
+        with ``n`` pointing out of the fluid -- the rows' left-hand side."""
+        idx = self.index[c.name]
+        ni = c.ni
+        J, a12, a22 = c.J, c.a12, c.a22
+        wrow = idx[0, :]
+        g12 = a12[0] / J[0]
+        g22 = a22[0] / J[0]
+        sq = np.sqrt(g22)
+        i_all = np.arange(ni)
+        R = [wrow] * 5
+        C = [idx[0, np.mod(i_all + 1, ni)], idx[0, np.mod(i_all - 1, ni)],
+             idx[0, i_all], idx[1, i_all], idx[2, i_all]]
+        V = [-0.5 * g12 / sq, 0.5 * g12 / sq, 1.5 * sq, -2.0 * sq, 0.5 * sq]
+        return R, C, V
+
+    def _assemble_component(self, c, rhs, wall_value, outer_value, R, C, V, b) -> None:
+        idx = self.index[c.name]
+        nj, ni = c.shape
+        LR, LC, LV, jj, ii = self.laplacian_triplets(c)
+        R += LR; C += LC; V += LV
+        b[idx[jj, ii]] = rhs(c.x[jj, ii], c.y[jj, ii])
         # the wall, row 0
         wrow = idx[0, :]
         if wall_value is None:
@@ -1055,14 +1091,8 @@ class Overset:
             R.append(wrow); C.append(wrow); V.append(np.ones(ni))
             b[wrow] = gw
         else:
-            g12 = a12[0] / J[0]
-            g22 = a22[0] / J[0]
-            sq = np.sqrt(g22)
-            i_all = np.arange(ni)
-            R += [wrow] * 5
-            C += [idx[0, np.mod(i_all + 1, ni)], idx[0, np.mod(i_all - 1, ni)],
-                  idx[0, i_all], idx[1, i_all], idx[2, i_all]]
-            V += [-0.5 * g12 / sq, 0.5 * g12 / sq, 1.5 * sq, -2.0 * sq, 0.5 * sq]
+            NR, NC, NV = self.neumann_wall_triplets(c)
+            R += NR; C += NC; V += NV
             b[wrow] = gw
         if c.outer == "dirichlet":
             orow = idx[nj - 1, :]

@@ -443,6 +443,17 @@ out/racelab8/*
 out/racelab9/*
 !out/racelab9/racelab9.json
 
+# Tier 61 -- Navier-Stokes on body-fitted grids: the manufactured solution in
+# space and time, the diagnosis of its first-order time accuracy, the small-step
+# space study, the cylinder at Re = 100 in three arms, and the verdicts
+# (`tier61_overset_flow.py --out out/racelab10`). JSON only. Rebuilding costs
+# about four hours on the development laptop, nearly all of it the three
+# cylinder arms. Each arm's full trajectory (cylinder_<arm>.json, ~1 MB each)
+# and the run logs are ignored; the record carries every arm's statistics.
+!out/racelab10/
+out/racelab10/*
+!out/racelab10/racelab10.json
+
 # Tier 57 -- PoC 3 phase 5, the bundle. JSON only: what
 # scripts/verify_racelab_bundle.py found on a FRESH CLONE of the
 # poc3-racelab-demo branch, one record per platform -- the mode run.sh has in
