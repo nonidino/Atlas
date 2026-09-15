@@ -381,10 +381,29 @@ def stage_flow(res) -> dict:
 _CAR: dict = {}
 
 
+#: **The rule as this tier ran it.**  Tier 63 added the duct's openings to the
+#: rule's defaults; this tier's car had none, so a re-run pins them off and
+#: reproduces the sealed pod its record describes.
+TIER62_SOLIDS = {"openings": []}
+
+
+def _tier62_geometry():
+    import copy
+    from atlas.cases import racelab as RL
+    doc = copy.deepcopy(RL.load_geometry())
+    doc["solids"] = dict(doc.get("solids", {}), **TIER62_SOLIDS)
+    return doc
+
+
+#: What the car stages build the car from.  Tier 63 imports these stages and
+#: points this at the rule as it stands, openings and all.
+GEOMETRY = _tier62_geometry
+
+
 def _car():
     if "ov" not in _CAR:
         t0 = time.perf_counter()
-        solids, rec = CS.car_solids()
+        solids, rec = CS.car_solids(geometry=GEOMETRY())
         t_solids = time.perf_counter() - t0
         t0 = time.perf_counter()
         ov, grec = CS.car_overset(solids)
@@ -401,6 +420,7 @@ def stage_car(res) -> dict:
            "filled_pockets": C["rec"]["filled_pockets"], "dropped_slivers": C["rec"]["dropped_slivers"],
            "clearance_cut_after_weld_cells": C["rec"]["clearance_cut_after_weld_cells"],
            "fillets": C["rec"]["fillets"], "solids": C["rec"]["solids"], "grids": C["grec"],
+           "openings": C["rec"].get("openings", []),
            "grid_settings": {k: v for k, v in CS.GRID.items()},
            "n_unknowns": ov.n_unknowns, "report": ov.report(), "solids_s": C["solids_s"],
            "overset_s": C["overset_s"], "geometry_fingerprint": RL.geometry_fingerprint()}
@@ -452,7 +472,7 @@ def stage_car(res) -> dict:
 
 def _duct_flux(flow, x_cells, n=64):
     from atlas.cases import racelab as RL
-    rule = CS.solids_rule()
+    rule = CS.solids_rule(GEOMETRY())
     half = 0.5 * float(rule["panel_thickness_cells"])
     y0 = RL.DUCT_Y0 + half
     y1 = RL.DUCT_Y0 + RL.DEVICE_CELLS - half
@@ -500,7 +520,7 @@ def stage_march(res) -> dict:
     ov, solids = C["ov"], C["solids"]
     fname = "march.json"
     flow = CS.car_flow(ov, solids, precond="ilu")
-    members = CS.wall_members(ov, solids)
+    members = CS.wall_members(ov, solids, geometry=GEOMETRY())
     owner = np.empty(ov.n_unknowns, dtype=object)
     for g in ov.grids:
         ix = ov.index[g.name]

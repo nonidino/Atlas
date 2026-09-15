@@ -1,0 +1,1205 @@
+{
+ "tier": 63,
+ "prediction": [
+  {
+   "id": "D1",
+   "claim": "the duct flows forward: its mean streamwise velocity at the turbine plane over t in [12, 16] is positive",
+   "why": "the inlet faces the stream on the chassis's slope and the outlet opens where the pod's top falls away behind the airbox, which should be the lower pressure"
+  },
+  {
+   "id": "D2",
+   "claim": "the duct carries a useful flow: that mean is at least 0.10, a fifth of the porous column's 0.457",
+   "why": "an inlet of 19 cells feeds a duct of 29 open cells and a pod that also leaks at the wheels; a fifth is a floor, not an estimate"
+  },
+  {
+   "id": "D3",
+   "claim": "and at most the porous column's 0.457",
+   "why": "the porous plates let the whole pod carry flow; solid walls and two openings cannot do better"
+  },
+  {
+   "id": "D4",
+   "claim": "mass is conserved along the duct: over [12, 16] the core-plane and turbine-plane fluxes differ by <= 2% of the core's",
+   "why": "they agreed to 2e-5 on the sealed pod"
+  },
+  {
+   "id": "D5",
+   "claim": "the march is as sound as the sealed pod's: no blow-up with the largest speed <= 4, the largest divergence over [12, 16] <= 0.2, the contour's net flux <= 1% of its inflow, and the drag's spread <= 10% of its mean",
+   "why": "Tier 62 read 3.82, 0.030, 0.14% and 1.1% on the same machinery"
+  },
+  {
+   "id": "D6",
+   "claim": "the openings do not undo the lift: the car's mean vertical force over [12, 16] is still positive",
+   "why": "the lift is the front wing's, which the openings do not touch"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-15T15:17:55",
+ "read_before_this_run": [
+  "Tier 62's sealed pod over t in [12, 16]: the duct's mean streamwise velocity -0.109 at both device planes, reversed by t = 1.6; the car's drag 2.736 and vertical force +1.834 (the front wing +1.419, the body shell -0.901, the front wheel's drag 1.869); the porous column's settled rotor inflow +0.457.",
+  "The openings chosen for the rule before anything was marched: an inlet removing 25% to 75% of CHASSIS's centreline (19.2 cells of a panel rising at 32 degrees ahead of the duct) and an outlet removing the last 20% of POD_UP (20.1 cells, ending just behind the duct's exit at x = 416.5). They split Tier 62's body shell into three solids: the nose with CHASSIS's front, the middle of the body (fillet 4.5 by the ladder, 8.2 cells added) and the tail with the rear wing and the diffuser (fillet 6, 67.6 cells added). The front wing is unchanged (fillet 6).",
+  "The opened car's composite was built and nothing measured on it: 377,267 unknowns, no orphans, in 25 s after 60 s of solids.",
+  "Nothing was marched on the opened car before these predictions were written."
+ ],
+ "rule": {
+  "aerofoil": [
+   "FW_MAIN",
+   "FW_FLAP",
+   "RW_FLAP"
+  ],
+  "aerofoil_thickness": 0.12,
+  "aerofoil_te_thickness": 0.01,
+  "panel_thickness_cells": 3.0,
+  "thickness_cells": {},
+  "weld_cells": 1.5,
+  "fillet_cells": "auto",
+  "fillet_by_member": {},
+  "wheel_gap_fraction": 0.02,
+  "wheel_clearance_cells": 4.0,
+  "min_area_cells": 1.0,
+  "openings": [
+   {
+    "plate": "CHASSIS",
+    "from": 0.25,
+    "to": 0.75,
+    "role": "inlet"
+   },
+   {
+    "plate": "POD_UP",
+    "from": 0.8,
+    "to": 1.0,
+    "role": "outlet"
+   }
+  ],
+  "from_file": []
+ },
+ "car": {
+  "rule": {
+   "aerofoil": [
+    "FW_MAIN",
+    "FW_FLAP",
+    "RW_FLAP"
+   ],
+   "aerofoil_thickness": 0.12,
+   "aerofoil_te_thickness": 0.01,
+   "panel_thickness_cells": 3.0,
+   "thickness_cells": {},
+   "weld_cells": 1.5,
+   "fillet_cells": "auto",
+   "fillet_by_member": {},
+   "wheel_gap_fraction": 0.02,
+   "wheel_clearance_cells": 4.0,
+   "min_area_cells": 1.0,
+   "openings": [
+    {
+     "plate": "CHASSIS",
+     "from": 0.25,
+     "to": 0.75,
+     "role": "inlet"
+    },
+    {
+     "plate": "POD_UP",
+     "from": 0.8,
+     "to": 1.0,
+     "role": "outlet"
+    }
+   ],
+   "from_file": []
+  },
+  "trimmed": {
+   "NOSE_TIP": 18.444,
+   "NOSE": 15.689,
+   "FLOOR_LE": 15.291,
+   "FLOOR": 17.016,
+   "DIFF": 18.836,
+   "FW_UNDER_TE": 16.578
+  },
+  "filled_pockets": [],
+  "dropped_slivers": [],
+  "clearance_cut_after_weld_cells": 0.0,
+  "fillets": [
+   {
+    "members": [
+     "FW_MAIN",
+     "FW_UPPER",
+     "FW_FLAP",
+     "NOSE_TIP",
+     "FW_UNDER_TE",
+     "FW_TRAILING",
+     "FW_LEADING",
+     "FW_UNDER"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 81 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 1.5,
+      "added_cells": 16.46,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: the Jacobian is not positive at 1 points -- the grid is left-handed or folds (i must run clockwise round the body and j outward)"
+     },
+     {
+      "fillet_cells": 3.0,
+      "added_cells": 69.23,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 30 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 4.5,
+      "added_cells": 136.85,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": false,
+      "max_skew_deg": 83.96,
+      "thickness_min": 0.0409
+     },
+     {
+      "fillet_cells": 6.0,
+      "added_cells": 427.14,
+      "cut_back_cells": -0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 63.56,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 6.0
+   },
+   {
+    "members": [
+     "NOSE",
+     "CHASSIS"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 21.57,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 0.0
+   },
+   {
+    "members": [
+     "FLOOR_LE",
+     "FLOOR_STEP",
+     "FLOOR"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 29.97,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 0.0
+   },
+   {
+    "members": [
+     "CHASSIS",
+     "COCKPIT",
+     "ROLL_HOOP",
+     "AIRBOX",
+     "POD_UP"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 214 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 1.5,
+      "added_cells": 0.7,
+      "cut_back_cells": -0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 125 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 3.0,
+      "added_cells": 3.52,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: the Jacobian is not positive at 6 points -- the grid is left-handed or folds (i must run clockwise round the body and j outward)"
+     },
+     {
+      "fillet_cells": 4.5,
+      "added_cells": 8.24,
+      "cut_back_cells": -0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 56.8,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 4.5
+   },
+   {
+    "members": [
+     "DUCT_LO"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 21.04,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 0.0
+   },
+   {
+    "members": [
+     "DUCT_UP"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 21.04,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 0.0
+   },
+   {
+    "members": [
+     "COVER_TAIL",
+     "DIFF",
+     "RW_FLAP",
+     "DIFF_EXIT",
+     "RW_ENDPLATE_LO",
+     "RW_ENDPLATE",
+     "RW_PYLON",
+     "TAIL_DECK"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 192 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 1.5,
+      "added_cells": 3.72,
+      "cut_back_cells": -0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 91 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 3.0,
+      "added_cells": 17.82,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": false,
+      "max_skew_deg": 85.12,
+      "thickness_min": 0.0441
+     },
+     {
+      "fillet_cells": 4.5,
+      "added_cells": 39.43,
+      "cut_back_cells": -0.0,
+      "ok": false,
+      "folds": false,
+      "max_skew_deg": 57.46,
+      "thickness_min": 0.0669,
+      "orphans_alone": 48
+     },
+     {
+      "fillet_cells": 6.0,
+      "added_cells": 67.64,
+      "cut_back_cells": -0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 51.03,
+      "thickness_min": 0.0908,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 6.0
+   }
+  ],
+  "solids": [
+   {
+    "name": "shell0",
+    "kind": "shell",
+    "members": [
+     "FW_MAIN",
+     "FW_UPPER",
+     "FW_FLAP",
+     "NOSE_TIP",
+     "FW_UNDER_TE",
+     "FW_TRAILING",
+     "FW_LEADING",
+     "FW_UNDER"
+    ],
+    "groups": [
+     "front-wing",
+     "body"
+    ],
+    "area_cells": 893.02
+   },
+   {
+    "name": "shell1",
+    "kind": "shell",
+    "members": [
+     "NOSE",
+     "CHASSIS"
+    ],
+    "groups": [
+     "body"
+    ],
+    "area_cells": 177.6
+   },
+   {
+    "name": "shell2",
+    "kind": "shell",
+    "members": [
+     "FLOOR_LE",
+     "FLOOR_STEP",
+     "FLOOR"
+    ],
+    "groups": [
+     "floor"
+    ],
+    "area_cells": 803.35
+   },
+   {
+    "name": "shell3",
+    "kind": "shell",
+    "members": [
+     "CHASSIS",
+     "COCKPIT",
+     "ROLL_HOOP",
+     "AIRBOX",
+     "POD_UP"
+    ],
+    "groups": [
+     "body"
+    ],
+    "area_cells": 609.44
+   },
+   {
+    "name": "shell4",
+    "kind": "shell",
+    "members": [
+     "DUCT_LO"
+    ],
+    "groups": [
+     "duct"
+    ],
+    "area_cells": 511.07
+   },
+   {
+    "name": "shell5",
+    "kind": "shell",
+    "members": [
+     "DUCT_UP"
+    ],
+    "groups": [
+     "duct"
+    ],
+    "area_cells": 511.07
+   },
+   {
+    "name": "shell6",
+    "kind": "shell",
+    "members": [
+     "COVER_TAIL",
+     "DIFF",
+     "RW_FLAP",
+     "DIFF_EXIT",
+     "RW_ENDPLATE_LO",
+     "RW_ENDPLATE",
+     "RW_PYLON",
+     "TAIL_DECK"
+    ],
+    "groups": [
+     "body",
+     "floor",
+     "rear-wing"
+    ],
+    "area_cells": 689.75
+   },
+   {
+    "name": "WHEEL_F",
+    "kind": "wheel",
+    "members": [
+     "WHEEL_F"
+    ],
+    "groups": [
+     "wheel"
+    ],
+    "area_cells": 1870.37
+   },
+   {
+    "name": "WHEEL_R",
+    "kind": "wheel",
+    "members": [
+     "WHEEL_R"
+    ],
+    "groups": [
+     "wheel"
+    ],
+    "area_cells": 1870.37
+   }
+  ],
+  "grids": {
+   "shell0": {
+    "shape": [
+     25,
+     512
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 2.669676440636426e-06,
+     "folded_cells": 0,
+     "min_jacobian": 2.552554185983352e-06,
+     "max_aspect_ratio": 16.646392809190054,
+     "max_skew_deg": 63.564155782563375,
+     "max_wall_skew_deg": 20.707264991279356,
+     "mean_wall_spacing": 0.0013602011703277611
+    },
+    "thickness_min": 0.1
+   },
+   "shell1": {
+    "shape": [
+     25,
+     448
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 2.3970036051590426e-06,
+     "folded_cells": 0,
+     "min_jacobian": 2.2656693064761054e-06,
+     "max_aspect_ratio": 7.874395247301628,
+     "max_skew_deg": 21.56857604950308,
+     "max_wall_skew_deg": 16.32443120563034,
+     "mean_wall_spacing": 0.001360201307928629
+    },
+    "thickness_min": 0.1
+   },
+   "shell2": {
+    "shape": [
+     25,
+     1856
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 1.3373965825347334e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.2660545736707727e-06,
+     "max_aspect_ratio": 6.832496418465016,
+     "max_skew_deg": 29.970538005915625,
+     "max_wall_skew_deg": 16.72736062442694,
+     "mean_wall_spacing": 0.0013601985310927778
+    },
+    "thickness_min": 0.1
+   },
+   "shell3": {
+    "shape": [
+     25,
+     1344
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 1.9576659280318154e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.854113537842522e-06,
+     "max_aspect_ratio": 26.1129375797562,
+     "max_skew_deg": 56.80274022300251,
+     "max_wall_skew_deg": 16.703392571042457,
+     "mean_wall_spacing": 0.0013601994432387054
+    },
+    "thickness_min": 0.1
+   },
+   "shell4": {
+    "shape": [
+     25,
+     1152
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 1.615202979032837e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.5130424308522322e-06,
+     "max_aspect_ratio": 5.0483427070983415,
+     "max_skew_deg": 21.040774314561578,
+     "max_wall_skew_deg": 16.68435475647738,
+     "mean_wall_spacing": 0.0013601999619599124
+    },
+    "thickness_min": 0.1
+   },
+   "shell5": {
+    "shape": [
+     25,
+     1152
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 1.6152029789218147e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.5130424308520539e-06,
+     "max_aspect_ratio": 5.048342707097035,
+     "max_skew_deg": 21.040774314559155,
+     "max_wall_skew_deg": 16.684354756479397,
+     "mean_wall_spacing": 0.001360199961959914
+    },
+    "thickness_min": 0.1
+   },
+   "shell6": {
+    "shape": [
+     25,
+     1344
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 2.0259534501132492e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.8596464869690354e-06,
+     "max_aspect_ratio": 20.269207376875595,
+     "max_skew_deg": 51.030254490488126,
+     "max_wall_skew_deg": 21.023919166273043,
+     "mean_wall_spacing": 0.001350358974186167
+    },
+    "thickness_min": 0.09083025153599023
+   },
+   "WHEEL_F": {
+    "shape": [
+     33,
+     512
+    ],
+    "patch_shape": [
+     33,
+     224
+    ]
+   },
+   "WHEEL_R": {
+    "shape": [
+     33,
+     512
+    ],
+    "patch_shape": [
+     33,
+     224
+    ]
+   }
+  },
+  "openings": [
+   {
+    "plate": "CHASSIS",
+    "from": 0.25,
+    "to": 0.75,
+    "role": "inlet",
+    "length_cells": 19.215
+   },
+   {
+    "plate": "POD_UP",
+    "from": 0.8,
+    "to": 1.0,
+    "role": "outlet",
+    "length_cells": 20.14
+   }
+  ],
+  "grid_settings": {
+   "h": 0.015625,
+   "body_thickness": 0.1,
+   "body_nj": 25,
+   "body_beta": 2.0,
+   "room": 0.4,
+   "room_floor": 0.03,
+   "cluster": 4.0,
+   "sigma_wall": 0.02,
+   "kappa": 0.5,
+   "wheel_thickness": 0.15,
+   "wheel_nj": 33,
+   "wheel_beta": 3.0,
+   "wall_spacing_h": 0.3,
+   "patch_half_width_r": 0.8,
+   "patch_height_r": 0.25,
+   "patch_nj": 33,
+   "patch_spacing_h": 0.175,
+   "hole_margin": 0.04,
+   "max_skew_deg": 70.0
+  },
+  "n_unknowns": 377267,
+  "report": {
+   "n_unknowns": 377267,
+   "width": 3,
+   "hole_margin": 0.04,
+   "build_s": 6.852498400001423,
+   "grids": {
+    "bg": {
+     "hole": 14882,
+     "discretisation": 144917,
+     "interpolation": 2153,
+     "holes_cut_by": {
+      "shell0": 1301,
+      "shell1": 512,
+      "shell2": 2202,
+      "shell3": 1661,
+      "shell4": 1392,
+      "shell5": 1561,
+      "shell6": 1737,
+      "WHEEL_F": 2257,
+      "WHEEL_R": 2259
+     },
+     "donor_grids": {
+      "shell0": 142,
+      "shell1": 128,
+      "shell2": 362,
+      "shell3": 409,
+      "shell4": 186,
+      "shell5": 360,
+      "shell6": 364,
+      "WHEEL_F": 91,
+      "road_WHEEL_F": 12,
+      "WHEEL_R": 89,
+      "road_WHEEL_R": 10
+     }
+    },
+    "shell0": {
+     "hole": 187,
+     "discretisation": 11569,
+     "interpolation": 532,
+     "wall": 512,
+     "holes_cut_by": {
+      "WHEEL_F": 187
+     },
+     "donor_grids": {
+      "WHEEL_F": 192,
+      "bg": 340
+     }
+    },
+    "shell1": {
+     "hole": 81,
+     "discretisation": 10213,
+     "interpolation": 458,
+     "wall": 448,
+     "holes_cut_by": {
+      "WHEEL_F": 81
+     },
+     "donor_grids": {
+      "WHEEL_F": 59,
+      "bg": 399
+     }
+    },
+    "shell2": {
+     "hole": 2076,
+     "discretisation": 40581,
+     "interpolation": 1887,
+     "wall": 1856,
+     "holes_cut_by": {
+      "shell4": 1795,
+      "WHEEL_F": 140,
+      "WHEEL_R": 141
+     },
+     "donor_grids": {
+      "shell4": 453,
+      "WHEEL_F": 102,
+      "WHEEL_R": 96,
+      "bg": 1236
+     }
+    },
+    "shell3": {
+     "discretisation": 30912,
+     "interpolation": 1344,
+     "wall": 1344,
+     "holes_cut_by": {},
+     "donor_grids": {
+      "bg": 1337,
+      "shell5": 7
+     }
+    },
+    "shell4": {
+     "hole": 2211,
+     "discretisation": 24275,
+     "interpolation": 1162,
+     "wall": 1152,
+     "holes_cut_by": {
+      "shell2": 2211
+     },
+     "donor_grids": {
+      "shell2": 575,
+      "bg": 587
+     }
+    },
+    "shell5": {
+     "discretisation": 26496,
+     "interpolation": 1152,
+     "wall": 1152,
+     "holes_cut_by": {},
+     "donor_grids": {
+      "bg": 1139,
+      "shell3": 13
+     }
+    },
+    "shell6": {
+     "hole": 353,
+     "discretisation": 30545,
+     "interpolation": 1358,
+     "wall": 1344,
+     "holes_cut_by": {
+      "WHEEL_R": 353
+     },
+     "donor_grids": {
+      "WHEEL_R": 161,
+      "bg": 1197
+     }
+    },
+    "WHEEL_F": {
+     "hole": 2051,
+     "discretisation": 13690,
+     "interpolation": 643,
+     "wall": 512,
+     "holes_cut_by": {
+      "road": 1701,
+      "shell0": 214,
+      "shell1": 70,
+      "shell2": 66
+     },
+     "donor_grids": {
+      "shell0": 105,
+      "shell1": 55,
+      "shell2": 47,
+      "road_WHEEL_F": 151,
+      "bg": 285
+     }
+    },
+    "road_WHEEL_F": {
+     "hole": 2216,
+     "discretisation": 4620,
+     "interpolation": 334,
+     "wall": 222,
+     "holes_cut_by": {
+      "WHEEL_F": 2216
+     },
+     "donor_grids": {
+      "WHEEL_F": 274,
+      "bg": 60
+     }
+    },
+    "WHEEL_R": {
+     "hole": 2188,
+     "discretisation": 13475,
+     "interpolation": 721,
+     "wall": 512,
+     "holes_cut_by": {
+      "road": 1701,
+      "shell2": 70,
+      "shell6": 417
+     },
+     "donor_grids": {
+      "shell2": 58,
+      "shell6": 231,
+      "road_WHEEL_R": 151,
+      "bg": 281
+     }
+    },
+    "road_WHEEL_R": {
+     "hole": 2216,
+     "discretisation": 4620,
+     "interpolation": 334,
+     "wall": 222,
+     "holes_cut_by": {
+      "WHEEL_R": 2216
+     },
+     "donor_grids": {
+      "WHEEL_R": 276,
+      "bg": 58
+     }
+    }
+   },
+   "road": 0.0,
+   "component_margin": 0.0
+  },
+  "solids_s": 78.74109039999894,
+  "overset_s": 42.34232229999907,
+  "geometry_fingerprint": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
+  "poisson": {
+   "solve": {
+    "method": "splu",
+    "n": 377267,
+    "nnz": 2787167,
+    "factor_s": 6.298394400000689,
+    "fill_nnz": 45518447,
+    "solve_s": 0.19918629999847326,
+    "relative_residual": 1.9784482521039748e-13
+   },
+   "wall_s": 7.7482910999988235,
+   "grids": {
+    "bg": {
+     "max_err": 0.0029832496018822874,
+     "rms_err": 0.0004881299469697264
+    },
+    "shell0": {
+     "max_err": 0.000472968691286213,
+     "rms_err": 0.00028531067660294505
+    },
+    "shell1": {
+     "max_err": 0.0011745220101417042,
+     "rms_err": 0.0005312296244955307
+    },
+    "shell2": {
+     "max_err": 0.0011997856483373093,
+     "rms_err": 0.0004918443032247249
+    },
+    "shell3": {
+     "max_err": 0.0024371094608683086,
+     "rms_err": 0.001210953333247455
+    },
+    "shell4": {
+     "max_err": 0.00212439952033652,
+     "rms_err": 0.0011821954872383834
+    },
+    "shell5": {
+     "max_err": 0.002102457984707762,
+     "rms_err": 0.001396359313067083
+    },
+    "shell6": {
+     "max_err": 0.0030385888032060243,
+     "rms_err": 0.0015711185753167832
+    },
+    "WHEEL_F": {
+     "max_err": 0.001257930213227218,
+     "rms_err": 0.0004927469430824312
+    },
+    "road_WHEEL_F": {
+     "max_err": 0.00031070491562946306,
+     "rms_err": 7.29811295690828e-05
+    },
+    "WHEEL_R": {
+     "max_err": 0.0019193840822620545,
+     "rms_err": 0.0009479256056779069
+    },
+    "road_WHEEL_R": {
+     "max_err": 0.0001805194343036387,
+     "rms_err": 3.5339550425544887e-05
+    }
+   }
+  },
+  "uniform_stream_error": 1.5968883880132903e-14
+ },
+ "stage_wall_s": {
+  "car": 146.48552910000035,
+  "march": 8123.4196094,
+  "compare": 0.01315969999996014,
+  "summary": 0.003707600000780076
+ },
+ "march": {
+  "summary": {
+   "steps": 1280,
+   "steps_done": 1280,
+   "window": [
+    12.0,
+    16.0
+   ],
+   "wall_s": 8111.983713399999,
+   "median_step_s": 1.2512555499997688,
+   "iterations_max": 19,
+   "iterations_max_after_t1": 7,
+   "u_max_max": 3.3748691626254548,
+   "u_max_last": 2.1997307256719347,
+   "max_div_window": 0.030884126233312048,
+   "max_div_window_at": [
+    "road_WHEEL_R",
+    7.564764573991031,
+    0.0016219636597561706
+   ],
+   "fx_mean_window": 2.913296773604722,
+   "fy_mean_window": 2.940203796228116,
+   "fx_spread_window": 0.028628734626763297,
+   "fy_spread_window": 0.037516736538974804,
+   "by_solid_window": {
+    "shell0": {
+     "fx": -0.23920024624813188,
+     "fy": 1.4261137207498813
+    },
+    "shell1": {
+     "fx": -0.07898236144527686,
+     "fy": 0.21411012743870728
+    },
+    "shell2": {
+     "fx": -0.3610421533528371,
+     "fy": -0.01153622595642929
+    },
+    "shell3": {
+     "fx": 0.3272323481557821,
+     "fy": -0.23220765159122883
+    },
+    "shell4": {
+     "fx": 0.01833262042061547,
+     "fy": 0.14134535005712656
+    },
+    "shell5": {
+     "fx": 0.044884757306097374,
+     "fy": 0.5703302621485435
+    },
+    "shell6": {
+     "fx": 0.6514021625970381,
+     "fy": -0.0031998018861780783
+    },
+    "WHEEL_F": {
+     "fx": 1.6699912308122173,
+     "fy": 0.5208931369990891
+    },
+    "WHEEL_R": {
+     "fx": 0.8806784153592174,
+     "fy": 0.3143548782686044
+    }
+   },
+   "turbine_u_mean_window": 0.08952440531776723,
+   "core_u_mean_window": 0.0895180818375747,
+   "duct_flux_mismatch_window": 9.476752509968308e-05,
+   "duct_unprobed_points": 0,
+   "contour_relative_window": 0.0015897017655764642,
+   "by_member_window": {
+    "FW_LEADING": {
+     "fx": 0.40021898683623724,
+     "fy": -0.615473433366141
+    },
+    "FW_UNDER": {
+     "fx": -0.07669363857060481,
+     "fy": 2.1714791801857145
+    },
+    "FW_UPPER": {
+     "fx": 0.31264134537308735,
+     "fy": -0.2102810720168795
+    },
+    "FW_FLAP": {
+     "fx": 0.12759625071267058,
+     "fy": -0.3009018284099505
+    },
+    "FW_TRAILING": {
+     "fx": -0.08475713646650271,
+     "fy": -0.11977897001447244
+    },
+    "NOSE_TIP": {
+     "fx": -0.38238754095647676,
+     "fy": 0.11620073009566807
+    },
+    "FW_UNDER_TE": {
+     "fx": -0.5358195899612093,
+     "fy": 0.38486894542749706
+    },
+    "NOSE": {
+     "fx": -0.015571003740017427,
+     "fy": 0.20513871271618014
+    },
+    "CHASSIS": {
+     "fx": 0.019946075922572394,
+     "fy": -0.05507105635790679
+    },
+    "FLOOR_STEP": {
+     "fx": -0.1370038756722868,
+     "fy": -0.20270953062041788
+    },
+    "FLOOR_LE": {
+     "fx": -0.02686737580203556,
+     "fy": -0.1513533035201795
+    },
+    "FLOOR": {
+     "fx": -0.19717042473732263,
+     "fy": 0.34253082156156617
+    },
+    "COCKPIT": {
+     "fx": 0.03078898566866847,
+     "fy": -0.5294030803203812
+    },
+    "ROLL_HOOP": {
+     "fx": 0.20247579872343457,
+     "fy": 0.009484378392067946
+    },
+    "AIRBOX": {
+     "fx": 0.011820398279486947,
+     "fy": 0.28172100985902027
+    },
+    "POD_UP": {
+     "fx": -0.02116571022205907,
+     "fy": 0.1251243277393267
+    },
+    "DUCT_LO": {
+     "fx": 0.01833134758737802,
+     "fy": 0.1413436873533949
+    },
+    "DUCT_UP": {
+     "fx": 0.044882633122971485,
+     "fy": 0.5703034335781721
+    },
+    "COVER_TAIL": {
+     "fx": 0.06001682536349713,
+     "fy": 0.09344842085571974
+    },
+    "TAIL_DECK": {
+     "fx": 0.007758387786717287,
+     "fy": 0.028989528060977786
+    },
+    "RW_PYLON": {
+     "fx": -0.03446157181234376,
+     "fy": 0.052096828820701296
+    },
+    "RW_FLAP": {
+     "fx": 0.09306139665834963,
+     "fy": -0.01118032090079566
+    },
+    "RW_ENDPLATE": {
+     "fx": 0.39422504851170115,
+     "fy": 0.041101003169692674
+    },
+    "RW_ENDPLATE_LO": {
+     "fx": 0.0194992362839103,
+     "fy": -0.1747343957361797
+    },
+    "DIFF_EXIT": {
+     "fx": 0.11718737793066442,
+     "fy": -0.02751800500824171
+    },
+    "DIFF": {
+     "fx": -0.005769787954610574,
+     "fy": -0.005641066331590883
+    },
+    "WHEEL_F": {
+     "fx": 1.6699895754240581,
+     "fy": 0.5208918972120168
+    },
+    "WHEEL_R": {
+     "fx": 0.8807755388606385,
+     "fy": 0.3142312584796501
+    }
+   }
+  },
+  "file": "march.json",
+  "machine_before": {
+   "python_processes_running": 3,
+   "python_processes": [
+    "\"python.exe\",\"9636\",\"Console\",\"1\",\"1,002,572 K\"",
+    "\"python.exe\",\"18840\",\"Console\",\"1\",\"4,188 K\"",
+    "\"python.exe\",\"17840\",\"Console\",\"1\",\"67,044 K\""
+   ],
+   "battery_status_raw": "1",
+   "on_mains": false,
+   "reference_matmul_1024_s": 0.0224791999989975,
+   "taken_at": "2026-09-15T15:20:32"
+  },
+  "machine_after": {
+   "python_processes_running": 3,
+   "python_processes": [
+    "\"python.exe\",\"9636\",\"Console\",\"1\",\"1,038,452 K\"",
+    "\"python.exe\",\"26136\",\"Console\",\"1\",\"4,152 K\"",
+    "\"python.exe\",\"12700\",\"Console\",\"1\",\"90,588 K\""
+   ],
+   "battery_status_raw": "2",
+   "on_mains": true,
+   "reference_matmul_1024_s": 0.01270690000092145,
+   "taken_at": "2026-09-15T17:35:44"
+  }
+ },
+ "compare": {
+  "porous_u_rotor_at_the_settled_state": 0.4572493482905237,
+  "porous_geometry_fingerprint": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
+  "sealed_turbine_u_mean": -0.1091953244548123,
+  "sealed_fx_mean": 2.7357105981776213,
+  "sealed_fy_mean": 1.8338031485590416,
+  "opened_turbine_u_mean": 0.08952440531776723,
+  "opened_core_u_mean": 0.0895180818375747,
+  "opened_fx_mean": 2.913296773604722,
+  "opened_fy_mean": 2.940203796228116,
+  "turbine_ratio_to_porous": 0.19578902769892167,
+  "same_drawing": true
+ },
+ "verdicts": {
+  "D1": true,
+  "D2": false,
+  "D3": true,
+  "D4": true,
+  "D5": true,
+  "D6": true
+ },
+ "verdicts_missing": []
+}

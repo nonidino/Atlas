@@ -216,7 +216,7 @@ def solids_fixed():
             rec = json.load(fh)
         if "car" in rec:
             fillets = {f["members"][0]: f["fillet_cells"] for f in rec["car"]["fillets"]}
-    doc["solids"] = {"fillet_by_member": fillets}
+    doc["solids"] = {"fillet_by_member": fillets, "openings": []}   # Tier 62 ran without openings
     return CS.car_solids(geometry=doc, check=False)
 
 

@@ -465,6 +465,14 @@ out/racelab10/*
 out/racelab11/*
 !out/racelab11/racelab11.json
 
+# Tier 63 -- the duct opened by the solids rule, the car re-marched and the
+# duct's flow measured (`tier63_duct_openings.py --out out/racelab12`). JSON
+# only. Rebuilding costs about an hour on the development laptop. The march's
+# trajectory (march.json) and the run logs are ignored.
+!out/racelab12/
+out/racelab12/*
+!out/racelab12/racelab12.json
+
 # Tier 57 -- PoC 3 phase 5, the bundle. JSON only: what
 # scripts/verify_racelab_bundle.py found on a FRESH CLONE of the
 # poc3-racelab-demo branch, one record per platform -- the mode run.sh has in

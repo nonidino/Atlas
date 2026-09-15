@@ -5095,3 +5095,33 @@ The first `compare` failed on summary keys an earlier draft of the march used; i
 **Changed:** `atlas/cases/overset.py`, `atlas/cases/overset_ns.py` (both additions off by default), `.gitignore` (the `out/racelab11` allowlist), `tests/test_tier45_region_assembly.py` (`ADDED_AFTER_CAPTURE` names `overset_multi` and `car_solids`), [[gap-worklist]], [[index]].
 
 **NOT done:** the front wing kept as drawn; W277, W278's pressures and W280 diagnosed; anything of RaceLab's march — devices, joins, agents, seams, learned windows, the demo (Tier 63); forces shown independent of the step or the grids; any cost on mains. RaceLab's column, records, gate, demo, bundle and `car_geometry.json` are unchanged. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-15] tier 63 | the duct opened: the car's cooling air on solid walls
+
+**[[poc3-racelab-duct-openings]].** After Tier 62 the user was asked two questions and decided: the duct gets **openings cut by the solids rule**, measured before the devices go in, and the front wing gets **a better grid generator** so it keeps its drawn shape. Both are in `POC3-RACELAB-REQUIREMENTS.md` §13.2. This tier is the first.
+
+### Built
+
+`car_solids.SOLIDS_DEFAULT["openings"]`: each removes a stretch of a panel's centreline before thickening — an inlet in `CHASSIS` ($0.25$–$0.75$, $19.2$ cells), an outlet at the end of `POD_UP` ($0.80$–$1.00$, $20.1$ cells) — refusing an opening on an aerofoil, on a plate the car lacks, or with its ends reversed. Tier 62's script pins the openings off (`TIER62_SOLIDS`) so its record still reproduces; its car stages take their geometry from one hook that `scripts/tier63_duct_openings.py` points at the rule as it stands.
+
+### Measured
+
+The opened car: three solids where the body shell was, $377{,}267$ unknowns, a manufactured pressure within $3.0\times10^{-3}$, the uniform stream exact to $1.6\times10^{-14}$. Marched to $t = 16$: **the duct flows forward at $+0.090$** over $[12, 16]$ (D1 held) — under D2's floor of $0.10$ (failed) and falling, from $0.121$ at $t = 2$–$6$ to $0.088$ over the last two units; within the porous column's $0.457$ (D3), mass conserved along it to $9.5\times10^{-5}$ (D4), the march as sound as the sealed pod's (D5), and the lift still positive at $+2.940$ (D6), its rise on the duct's upper plate.
+
+Two quick attempts at the other decision — a thickness cap where the smoothed normals converge, and a grid serving its own outer ring from its far wall — still folded the front wing and the tail and left orphans in the middle of the body; a hyperbolic marcher prototyped beside them folds Tier 60's dent at every dissipation tried. None of it is committed; the generator is a tier of its own.
+
+```
+python scripts/tier63_duct_openings.py --out out/racelab12 --stages car,march,compare,summary
+python -m pytest tests/test_tier63_duct_openings.py tests/test_tier62_car_solids.py -p no:cacheprovider   # 30 passed
+python scripts/vault_scan.py wiki        # 242 files, 0 problems
+python scripts/run_suite.py              # 1609 passed, 0 failed, 383 s on battery
+```
+
+**The laptop entered modern standby from 15:32 to 17:10 during the march** — the app's keep-awake hold lapses after five idle minutes, and the session waited in ten-minute blocks — so its $8112$ s of wall time are not a cost.
+
+**Opened:** **W281** (the opened duct carries a fifth of the porous column's flow and had not settled). **Annotated:** W275, W278, W279.
+
+**Added:** `scripts/tier63_duct_openings.py`, `tests/test_tier63_duct_openings.py`, `out/racelab12/racelab12.json`, [[poc3-racelab-duct-openings]].
+**Changed:** `atlas/cases/car_solids.py` (openings; `check=False`; attribution by the uncut plates), `scripts/tier62_car_solids.py` (the openings pinned off, the geometry hook, the openings recorded), `tests/test_tier62_car_solids.py` (the fixture pins the openings off), `POC3-RACELAB-REQUIREMENTS.md` (§13.1 status, §13.2), `.gitignore` (the `out/racelab12` allowlist), [[gap-worklist]], [[index]].
+
+**NOT done:** the duct settled or its openings' pressures measured; another opening size tried; any device, join or agent in the duct; the front wing's generator; any cost on mains. RaceLab's column, records, gate, demo, bundle and `car_geometry.json` are unchanged. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

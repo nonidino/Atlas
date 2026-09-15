@@ -2100,3 +2100,23 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **No cost was taken on mains.**
 - **RaceLab's column, its records, the gate, the demo, the bundle and `car_geometry.json` are unchanged.**
 - **Nothing was downloaded or installed** (`shapely` was already present), no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+### Tier 63 — the duct opened: the car's cooling air on solid walls (2026-09-15)
+
+**[[poc3-racelab-duct-openings]], `atlas/cases/car_solids.py` (`SOLIDS_DEFAULT["openings"]`), `scripts/tier63_duct_openings.py`, `tests/test_tier63_duct_openings.py`, `out/racelab12/`.** The user decided the rule should cut the duct's openings and that the duct be measured before the devices go in. An inlet in `CHASSIS` ($19.2$ cells) and an outlet at the end of `POD_UP` ($20.1$ cells), cut along the centreline so their edges are caps, split the body shell into three solids. The duct now flows forward, $+0.090$ over $[12, 16]$ against the sealed pod's $-0.109$ and the porous column's $+0.457$; D2's floor of $0.10$ failed, the other five predictions held.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W281** | **the opened duct carries a fifth of the porous column's flow, and it had not settled** | Over successive two-unit windows the turbine plane reads $0.121$, $0.121$, $0.113$, $0.102$, $0.095$, $0.091$, $0.088$ — steady to $t = 6$, then falling without levelling. D2 ($\ge 0.10$) failed at $0.0895$. The pod has four openings (the new inlet and outlet and both wheels' clearances) and the duct is a channel its flow can bypass | **open, and it gates the devices**: a march long enough to settle, the pressures at the four openings over time, and the opening sizes as the knob the rule already exposes. A radiator core sized for $0.457$ would see a fifth of it |
+| **W278** | the solid car's duct flows backwards | *(annotated)* **Repaired in direction**: with the rule's openings it flows forward at $+0.090$. Its size is W281 | `open` → W281 |
+| **W279** | the solid car makes lift | *(annotated)* With the pod open the lift rises from $+1.834$ to $+2.940$ and the drag from $2.736$ to $2.913$; the front wing's share is unchanged ($+1.43$) and the rise is the duct's upper plate ($+0.13$ to $+0.57$) and the pod's split shell | `open` |
+| **W275** | the front wing was filled before a grid could wrap it | *(annotated)* The user chose a better grid generator (2026-09-15). Two quick attempts — a thickness cap where the smoothed normals converge, with no floor, and self-interpolation from a grid's far wall — still folded the front wing (9 cells) and the tail (26) at no fillet and left 29–64 orphans in the middle of the body; neither is committed. A hyperbolic marcher prototyped beside them grids a circle and folds Tier 60's dent at every dissipation tried. The robust version (adaptive dissipation and cell-area smoothing, or collar grids at the junctions) is a tier of its own | `open`, decided |
+
+### What Tier 63 did NOT do, named
+
+- **The duct's flow did not settle** (W281); no other opening size or position was marched, and the pressures at the pod's openings were not measured.
+- **No device, join or agent is in the duct.**
+- **The front wing is still the filled wedge** (W275).
+- **No cost was taken on mains, and the march's wall time includes 98 minutes of standby** (15:32 to 17:10).
+- **RaceLab's column, its records, the gate, the demo, the bundle and `car_geometry.json` are unchanged**; Tier 62's script pins the openings off so its record still reproduces.
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.

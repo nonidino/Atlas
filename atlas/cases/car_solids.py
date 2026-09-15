@@ -85,6 +85,16 @@ SOLIDS_DEFAULT: dict[str, Any] = {
     "wheel_gap_fraction": 0.02,
     "wheel_clearance_cells": 4.0,
     "min_area_cells": 1.0,
+    #: **The duct's openings (Tier 63, the user's decision after Tier 62's sealed
+    #: pod flowed backwards).**  Each removes the stretch ``[from, to]`` of a
+    #: panel's centreline, as fractions of its length, before the panel is
+    #: thickened -- so an opening's two edges are round caps.  An inlet in the
+    #: chassis's forward-facing slope ahead of the duct, an outlet at the end
+    #: of the pod's top just behind the duct's exit.
+    "openings": [
+        {"plate": "CHASSIS", "from": 0.25, "to": 0.75, "role": "inlet"},
+        {"plate": "POD_UP", "from": 0.80, "to": 1.00, "role": "outlet"},
+    ],
 }
 
 #: The fillet radii ``"auto"`` tries, smallest first, in cells.
@@ -141,7 +151,19 @@ class Solid:
     notes: list[str] = field(default_factory=list)
 
 
-def _plate_polygon(b, rule, keep_out=None):
+def _openings_for(b, rule) -> list[tuple[float, float]]:
+    out = []
+    for o in rule.get("openings", []):
+        if o["plate"] != b.body_id:
+            continue
+        a0, a1 = float(o["from"]), float(o["to"])
+        if not 0.0 <= a0 < a1 <= 1.0:
+            raise ValueError(f"opening on {b.body_id}: need 0 <= from < to <= 1, got {a0}, {a1}")
+        out.append((a0, a1))
+    return out
+
+
+def _plate_polygon(b, rule, keep_out=None, openings: bool = True):
     """A plate's solid, in cells.  ``keep_out`` (the wheels' clearance discs) trims
     a PANEL along its centreline before it is thickened, so a trimmed end is a
     round cap like any other.  **Why not cut the solid (Tier 62).**  The first
@@ -150,7 +172,12 @@ def _plate_polygon(b, rule, keep_out=None):
     car's first steps put their largest divergence, growing from 3.5 to 28 in
     six steps, exactly on those two corners."""
     from shapely.geometry import LineString, Polygon
+    from shapely.ops import substring, unary_union
+    cuts = _openings_for(b, rule) if openings else []
     if b.body_id in rule["aerofoil"]:
+        if cuts:
+            raise ValueError(f"{b.body_id}: an opening is cut into a panel's centreline, and "
+                             "this plate is an aerofoil")
         xy = OM.aerofoil_outline(b.x_le, b.y_le, b.chord, rule["aerofoil_thickness"],
                                  b.alpha_deg, rule["aerofoil_te_thickness"], n=1600)
         poly = Polygon(xy)
@@ -160,11 +187,15 @@ def _plate_polygon(b, rule, keep_out=None):
         return poly
     t = float(rule["thickness_cells"].get(b.body_id, rule["panel_thickness_cells"]))
     line = LineString([(b.x_le, b.y_le), (b.x_te, b.y_te)])
+    for a0, a1 in cuts:
+        full = LineString([(b.x_le, b.y_le), (b.x_te, b.y_te)])
+        gap = substring(full, a0 * full.length, a1 * full.length)
+        line = line.difference(gap.buffer(1e-9, cap_style=2))
     if keep_out is not None:
         line = line.difference(keep_out.buffer(0.5 * t, quad_segs=64))
-        if line.is_empty:
-            return None
-    return line.buffer(0.5 * t, quad_segs=32)
+    if line.is_empty:
+        return None
+    return unary_union([line.buffer(0.5 * t, quad_segs=32)])
 
 
 def _body_grid(name: str, outline: np.ndarray, G: dict, extra: dict | None = None):
@@ -235,6 +266,12 @@ def car_solids(p=None, geometry: dict | None = None, u_inf: float = GE.U_INF,
     clear = float(rule["wheel_clearance_cells"])
     keep_out = unary_union([c.buffer(clear, quad_segs=64) for _w, _cy, c in circles]) if circles else None
     polys = {}
+    record["openings"] = []
+    for o in rule.get("openings", []):
+        b = next((q for q in plates if q.body_id == o["plate"]), None)
+        if b is None:
+            raise ValueError(f"an opening names a plate the car does not have: {o['plate']}")
+        record["openings"].append(dict(o, length_cells=round(float(b.chord) * (float(o["to"]) - float(o["from"])), 3)))
     for b in plates:
         whole = _plate_polygon(b, rule)
         trimmed = _plate_polygon(b, rule, keep_out)
@@ -438,7 +475,8 @@ def wall_members(ov, solids: Sequence[Solid], geometry: dict | None = None, p=No
     doc = RL.load_geometry() if geometry is None else geometry
     rule = solids_rule(doc)
     objs, _flat = RL.car_bodies(p, geometry=doc)
-    plates = {o.body.body_id: _plate_polygon(o.body, rule) for o in objs if isinstance(o, RL.PlateBody)}
+    plates = {o.body.body_id: _plate_polygon(o.body, rule, openings=False)
+              for o in objs if isinstance(o, RL.PlateBody)}
     out = {}
     h = GE.DX
     for s in solids:
