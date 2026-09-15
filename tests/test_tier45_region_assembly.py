@@ -123,6 +123,16 @@ ADDED_AFTER_CAPTURE = {
                   "manufactured solution.  It builds NO CaseGraph, declares no region "
                   "and imports no case but overset, which is numpy and SciPy alone, "
                   "so the W189 byte-identity capture below is untouched by it",
+    "overset_multi": "Tier 62: several bodies and a road on overset's grids -- a "
+                     "subclass that cuts grids by each other and by the road, road "
+                     "patches, and the multi-body manufactured solutions.  It builds "
+                     "NO CaseGraph, declares no region and imports no case but "
+                     "overset and overset_ns",
+    "car_solids": "Tier 62: the drawn car's plates as solids by the user's rule, the "
+                  "grids round them and the car's march on overset_ns.  It builds NO "
+                  "CaseGraph and declares no region; it READS racelab's bodies and "
+                  "car_geometry.json to shape the solids, and changes neither, so the "
+                  "W189 byte-identity capture below is untouched by it",
 }
 
 #: **The two artifacts Tier 49's W194 moves, and the reason.**  `L7/R9`'s premise

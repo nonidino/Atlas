@@ -1,0 +1,2001 @@
+{
+ "tier": 62,
+ "prediction": [
+  {
+   "id": "V1",
+   "claim": "on Tier 60's own geometry at L2 and L3, MultiOverset's point statuses are Tier 60's exactly, its interpolation points and stencils are the same, and its weights differ by at most 1e-15",
+   "why": "with one body and no road the candidate order and the first stencil tried are Tier 60's"
+  },
+  {
+   "id": "V2",
+   "claim": "on the multi-body composite at L3 and L4 every interpolation equation reproduces a linear field to 1e-10, and every donor node carries its own equation",
+   "why": "Newton on the same Lagrange map the weights come from, for every shifted stencil too"
+  },
+  {
+   "id": "V3",
+   "claim": "four configurations are refused: two bodies that overlap, a wheel on the road, a gap under two grid rows, and a grid leaving through the inlet",
+   "why": "each is a refusal written into MultiOverset's classification"
+  },
+  {
+   "id": "V4",
+   "claim": "the generator with clustering and room-limited thickness is one mapping: at twice the columns and rows, sampled at every other, it is the coarser grid to 1e-12",
+   "why": "the density and the room are properties of the outline's master resampling"
+  },
+  {
+   "id": "M1",
+   "claim": "the multi-body manufactured pressure: max-error order >= 1.7 on every grid from L3 to L4 and >= 1.8 from L4 to L5",
+   "why": "the exploration read 1.94 to 2.07 from L3 to L4 at these settings with thicker body grids; L5 has not been run"
+  },
+  {
+   "id": "M2",
+   "claim": "the multi-body manufactured flow at dt = 0.00025 to t = 0.05: velocity max-error order L3->L4 >= 1.6 on every grid",
+   "why": "Tier 61's S4 read 2.52 and 1.81 on one body with the time error removed; the tyre's gap and the trailing edge are harder"
+  },
+  {
+   "id": "M3",
+   "claim": "the same runs: pressure rms-error order L3->L4 >= 1.0 on every grid",
+   "why": "Tier 61 measured 1.22 and 1.39 for one body (W273), undiagnosed"
+  },
+  {
+   "id": "M4",
+   "claim": "on the car's composite, a manufactured pressure's max error is <= 1e-2 on every grid and the uniform stream with every wall moving with it stays uniform to 1e-12 over three steps",
+   "why": "6.3e-3 and 2e-14 were read on the same construction before the rule's last changes"
+  },
+  {
+   "id": "K1",
+   "claim": "the car marches to t = 16 without a blow-up: every momentum solve converges and the largest speed never exceeds 4",
+   "why": "to t = 2 the speed peaked at 3.8 during the ramp and fell to 2.5"
+  },
+  {
+   "id": "K2",
+   "claim": "over t in [12, 16] the largest divergence anywhere stays <= 0.2",
+   "why": "it fell to 0.17 by t = 2 and was still falling"
+  },
+  {
+   "id": "K3",
+   "claim": "over t in [12, 16] the net flux out of a contour round the car is <= 1% of the inflow through it",
+   "why": "0.5% at most over the ramp and the first two units"
+  },
+  {
+   "id": "K4",
+   "claim": "the duct carries flow: its mean streamwise velocity at the turbine plane over t in [12, 16] lies in [0.08, 0.40] -- positive, and below the porous column's settled 0.457",
+   "why": "0.154 over the first two units; with solid walls the pod is fed only through the clearances at the wheels"
+  },
+  {
+   "id": "K5",
+   "claim": "mass is conserved along the duct: over t in [12, 16] the flux through the core plane and through the turbine plane differ by <= 2% of the core's",
+   "why": "they agreed to five figures over the first two units"
+  },
+  {
+   "id": "K6",
+   "claim": "the car makes downforce: the mean vertical force on all its solids over t in [12, 16] is negative",
+   "why": "-1.10 at t = 2, and falling"
+  },
+  {
+   "id": "K7",
+   "claim": "the forces settle: over t in [12, 16] the drag's peak-to-peak spread is <= 10% of its mean",
+   "why": "at Re 250 per unit the wheels shed, but most of the car's drag is its pressure on slow-moving solid faces"
+  },
+  {
+   "id": "K8",
+   "claim": "the momentum solves stay cheap after the ramp: at most 60 BiCGSTAB iterations a component on any step with t > 1",
+   "why": "33 at most during the ramp, 3 to 4 at t = 2; an iteration count does not depend on the power state"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-15T13:40:32",
+ "read_before_this_run": [
+  "The multi-body manufactured pressure at L3 and L4 with body grids 0.15 thick and a NACA trailing edge closed to a point: max-error orders wheel 2.17, panel 2.26, road patch 2.08, background 1.14 and aerofoil 1.12, both maxima in the fan behind the trailing edge. With the trailing edge rounded to 1% of the chord: 1.67 and 1.72; with the columns clustered where the outline turns (4): 1.76 and 1.82; with the normals also smoothed at the wall (0.02, kappa 0.5): 1.94 and 2.01. Those settings became the car's, so these orders were chosen on this geometry.",
+  "At L2 the multi-body composite had orphans (39 with body grids 0.10 thick, 1 at 0.15); L3 is the coarsest level used. With the car's final settings (bodies 0.10 thick, the smaller road patch) the composite was built, and nothing measured, at L3, L4 and L5: 46,613, 183,652 and 728,356 unknowns. Two points between a tyre's polygon and its interpolant's curve were orphans until a stencil starting at a wall row was allowed a quarter row past it (WALL_REACH).",
+  "The manufactured flow on the multi-body composite at L3 only, 20 steps at dt = 0.001, earlier settings: velocity errors 1.2e-5 to 8.8e-4, divergence at most 9.3e-3 (the aerofoil).",
+  "The car's welded shells: an offset grid 0.10 thick folds round the front wing and the body shell with no fillet; the ladder picks the smallest fillet that neither folds, nor skews past 70 degrees, nor leaves an orphan against the background alone. Trimming the thickened panels at a wheel's clearance left square corners; trimming the centreline instead leaves caps.",
+  "The car's first steps. Impulsive start: divergence 2.3e3 and speed 23 at step 1, the second momentum solve did not converge. From rest with the stream, road and wheels ramped together: divergence growing at a road patch's end, 0.5 to 2.5 in six steps. Walls ramped from the stream to rest, wheel clearance 2 cells: divergence 28 by step 11 in the slits; clearance 4 cells and a smaller road patch: the march below.",
+  "On the car's composite the uniform stream with every wall moving with it stayed uniform to 2e-14 over three steps, and a manufactured pressure's max error was at most 6.3e-3 per grid.",
+  "The car marched to t = 2 (ILU; the first factor at drop 1e-4 was singular, 1e-6 worked): largest divergence 7.3 during the ramp, then 4.6, 2.4, 1.1, 0.61, 0.36, 0.24, 0.17 at t = 0.5 to 2.0; largest speed 3.8, then 2.5; drag 35 during the ramp falling to 4.4; vertical force -1.10 at t = 2 and falling; the duct's mean streamwise velocity 0.154 at both device planes over the whole run; the contour's net flux at most 0.5% of its inflow; BiCGSTAB at most 33 iterations, 3 to 4 at the end; a median step of 1.68 s on battery. Jacobi had taken 100 to 300.",
+  "The immersed column's settled release state (Tier 59, out/racelab8): the rotor's inflow 0.457, its minimum over the horizon 0.446, the largest speed 1.83."
+ ],
+ "controls": {
+  "tier60_L2": {
+   "statuses_identical": true,
+   "same_interpolation_points": true,
+   "same_stencils": true,
+   "max_weight_difference": 0.0
+  },
+  "tier60_L3": {
+   "statuses_identical": true,
+   "same_interpolation_points": true,
+   "same_stencils": true,
+   "max_weight_difference": 0.0
+  },
+  "multi_L3": {
+   "n_unknowns": 46613,
+   "build_s": 1.227032700000109,
+   "linear_exactness": 1.3322676295501878e-15,
+   "donors_carry_their_own_equation": true,
+   "report": {
+    "n_unknowns": 46613,
+    "width": 3,
+    "hole_margin": 0.04,
+    "build_s": 1.227032700000109,
+    "grids": {
+     "bg": {
+      "hole": 2356,
+      "discretisation": 12296,
+      "interpolation": 324,
+      "holes_cut_by": {
+       "wheel": 1474,
+       "panel": 604,
+       "aerofoil": 278
+      },
+      "donor_grids": {
+       "wheel": 87,
+       "panel": 153,
+       "aerofoil": 75,
+       "road": 9
+      }
+     },
+     "wheel": {
+      "hole": 1596,
+      "discretisation": 10209,
+      "interpolation": 483,
+      "wall": 384,
+      "holes_cut_by": {
+       "road": 1466,
+       "panel": 130
+      },
+      "donor_grids": {
+       "panel": 72,
+       "road": 121,
+       "bg": 290
+      }
+     },
+     "panel": {
+      "hole": 357,
+      "discretisation": 11391,
+      "interpolation": 540,
+      "wall": 512,
+      "holes_cut_by": {
+       "wheel": 347,
+       "aerofoil": 10
+      },
+      "donor_grids": {
+       "wheel": 100,
+       "aerofoil": 53,
+       "bg": 387
+      }
+     },
+     "aerofoil": {
+      "hole": 20,
+      "discretisation": 5866,
+      "interpolation": 258,
+      "wall": 256,
+      "holes_cut_by": {
+       "panel": 20
+      },
+      "donor_grids": {
+       "panel": 80,
+       "bg": 178
+      }
+     },
+     "road": {
+      "hole": 1747,
+      "discretisation": 3632,
+      "interpolation": 287,
+      "wall": 175,
+      "holes_cut_by": {
+       "wheel": 1747
+      },
+      "donor_grids": {
+       "wheel": 239,
+       "bg": 48
+      }
+     }
+    },
+    "road": 0.0,
+    "component_margin": 0.0
+   }
+  },
+  "multi_L4": {
+   "n_unknowns": 183652,
+   "build_s": 3.864247200000136,
+   "linear_exactness": 1.3322676295501878e-15,
+   "donors_carry_their_own_equation": true,
+   "report": {
+    "n_unknowns": 183652,
+    "width": 3,
+    "hole_margin": 0.04,
+    "build_s": 3.864247200000136,
+    "grids": {
+     "bg": {
+      "hole": 9415,
+      "discretisation": 49450,
+      "interpolation": 655,
+      "holes_cut_by": {
+       "wheel": 5862,
+       "panel": 2440,
+       "aerofoil": 1113
+      },
+      "donor_grids": {
+       "wheel": 177,
+       "panel": 304,
+       "aerofoil": 158,
+       "road": 16
+      }
+     },
+     "wheel": {
+      "hole": 6281,
+      "discretisation": 41905,
+      "interpolation": 966,
+      "wall": 768,
+      "holes_cut_by": {
+       "road": 5768,
+       "panel": 513
+      },
+      "donor_grids": {
+       "panel": 139,
+       "road": 245,
+       "bg": 582
+      }
+     },
+     "panel": {
+      "hole": 1361,
+      "discretisation": 46715,
+      "interpolation": 1076,
+      "wall": 1024,
+      "holes_cut_by": {
+       "wheel": 1341,
+       "aerofoil": 20
+      },
+      "donor_grids": {
+       "wheel": 190,
+       "aerofoil": 84,
+       "bg": 802
+      }
+     },
+     "aerofoil": {
+      "hole": 39,
+      "discretisation": 24023,
+      "interpolation": 514,
+      "wall": 512,
+      "holes_cut_by": {
+       "panel": 39
+      },
+      "donor_grids": {
+       "panel": 139,
+       "bg": 375
+      }
+     },
+     "road": {
+      "hole": 6836,
+      "discretisation": 15124,
+      "interpolation": 570,
+      "wall": 350,
+      "holes_cut_by": {
+       "wheel": 6836
+      },
+      "donor_grids": {
+       "wheel": 457,
+       "bg": 113
+      }
+     }
+    },
+    "road": 0.0,
+    "component_margin": 0.0
+   }
+  },
+  "refusals": {
+   "two_bodies_overlap": "a: its wall at (1.3000, 0.5000) lies inside b -- two bodies overlap",
+   "a_wheel_on_the_road": "w: the wall at (1.5294, 0.0014) is closer than two grid rows to another body or the road -- a gap no interpolation can close",
+   "a_gap_under_two_rows": "w: the wall at (1.5147, 0.0016) is closer than two grid rows to another body or the road -- a gap no interpolation can close",
+   "a_grid_through_the_inlet": "w leaves the background box through its inlet, outlet or top, which nothing cuts"
+  },
+  "generator_resolution_independence": 0.0
+ },
+ "stage_wall_s": {
+  "controls": 40.94057100000009,
+  "poisson": 135.80658410000024,
+  "flow": 273.5508810000001,
+  "car": 176.76597980000042,
+  "march": 2990.8279440000006,
+  "compare": 0.029987200000505254,
+  "summary": 0.014808699999775854
+ },
+ "poisson": {
+  "levels": [
+   {
+    "level": 3,
+    "h": 0.015625,
+    "n_unknowns": 46613,
+    "build_s": 1.1311470999999074,
+    "assemble_s": 0.05080600000019331,
+    "solve": {
+     "method": "splu",
+     "n": 46613,
+     "nnz": 365704,
+     "factor_s": 0.716548800000055,
+     "fill_nnz": 5151914,
+     "solve_s": 0.01995809999971243,
+     "relative_residual": 4.541092556319331e-13
+    },
+    "overset": {
+     "n_unknowns": 46613,
+     "width": 3,
+     "hole_margin": 0.04,
+     "build_s": 1.1311470999999074,
+     "grids": {
+      "bg": {
+       "hole": 2356,
+       "discretisation": 12296,
+       "interpolation": 324,
+       "holes_cut_by": {
+        "wheel": 1474,
+        "panel": 604,
+        "aerofoil": 278
+       },
+       "donor_grids": {
+        "wheel": 87,
+        "panel": 153,
+        "aerofoil": 75,
+        "road": 9
+       }
+      },
+      "wheel": {
+       "hole": 1596,
+       "discretisation": 10209,
+       "interpolation": 483,
+       "wall": 384,
+       "holes_cut_by": {
+        "road": 1466,
+        "panel": 130
+       },
+       "donor_grids": {
+        "panel": 72,
+        "road": 121,
+        "bg": 290
+       }
+      },
+      "panel": {
+       "hole": 357,
+       "discretisation": 11391,
+       "interpolation": 540,
+       "wall": 512,
+       "holes_cut_by": {
+        "wheel": 347,
+        "aerofoil": 10
+       },
+       "donor_grids": {
+        "wheel": 100,
+        "aerofoil": 53,
+        "bg": 387
+       }
+      },
+      "aerofoil": {
+       "hole": 20,
+       "discretisation": 5866,
+       "interpolation": 258,
+       "wall": 256,
+       "holes_cut_by": {
+        "panel": 20
+       },
+       "donor_grids": {
+        "panel": 80,
+        "bg": 178
+       }
+      },
+      "road": {
+       "hole": 1747,
+       "discretisation": 3632,
+       "interpolation": 287,
+       "wall": 175,
+       "holes_cut_by": {
+        "wheel": 1747
+       },
+       "donor_grids": {
+        "wheel": 239,
+        "bg": 48
+       }
+      }
+     },
+     "road": 0.0,
+     "component_margin": 0.0
+    },
+    "grids": {
+     "bg": {
+      "max_err": 0.0013734275812540275,
+      "rms_err": 0.0002799550996565211,
+      "max_at": {
+       "j": 27,
+       "i": 130,
+       "x": 2.0390625,
+       "y": 0.421875,
+       "status": "interpolation"
+      }
+     },
+     "wheel": {
+      "max_err": 0.0010412434581780206,
+      "rms_err": 0.0006081287614319591,
+      "max_at": {
+       "j": 0,
+       "i": 235,
+       "x": 0.6712418388280836,
+       "y": 0.5000868457604571,
+       "status": "wall"
+      }
+     },
+     "panel": {
+      "max_err": 0.0007273113049667268,
+      "rms_err": 0.0003522633666776353,
+      "max_at": {
+       "j": 24,
+       "i": 111,
+       "x": 1.8235686783625593,
+       "y": 0.29619862938070274,
+       "status": "interpolation"
+      }
+     },
+     "aerofoil": {
+      "max_err": 0.001494980050294692,
+      "rms_err": 0.0005355292305971352,
+      "max_at": {
+       "j": 15,
+       "i": 128,
+       "x": 2.029649168742868,
+       "y": 0.4125624767132457,
+       "status": "discretisation"
+      }
+     },
+     "road": {
+      "max_err": 0.00024367085185283965,
+      "rms_err": 4.3558401686172665e-05,
+      "max_at": {
+       "j": 32,
+       "i": 0,
+       "x": 0.66,
+       "y": 0.075,
+       "status": "interpolation"
+      }
+     }
+    },
+    "wall_total_s": 14.19242129999975
+   },
+   {
+    "level": 4,
+    "h": 0.0078125,
+    "n_unknowns": 183652,
+    "build_s": 4.162249899999551,
+    "assemble_s": 0.24013990000003105,
+    "solve": {
+     "method": "splu",
+     "n": 183652,
+     "nnz": 1445802,
+     "factor_s": 3.7744847000003574,
+     "fill_nnz": 27706536,
+     "solve_s": 0.09253200000057404,
+     "relative_residual": 7.338601461377517e-13
+    },
+    "overset": {
+     "n_unknowns": 183652,
+     "width": 3,
+     "hole_margin": 0.04,
+     "build_s": 4.162249899999551,
+     "grids": {
+      "bg": {
+       "hole": 9415,
+       "discretisation": 49450,
+       "interpolation": 655,
+       "holes_cut_by": {
+        "wheel": 5862,
+        "panel": 2440,
+        "aerofoil": 1113
+       },
+       "donor_grids": {
+        "wheel": 177,
+        "panel": 304,
+        "aerofoil": 158,
+        "road": 16
+       }
+      },
+      "wheel": {
+       "hole": 6281,
+       "discretisation": 41905,
+       "interpolation": 966,
+       "wall": 768,
+       "holes_cut_by": {
+        "road": 5768,
+        "panel": 513
+       },
+       "donor_grids": {
+        "panel": 139,
+        "road": 245,
+        "bg": 582
+       }
+      },
+      "panel": {
+       "hole": 1361,
+       "discretisation": 46715,
+       "interpolation": 1076,
+       "wall": 1024,
+       "holes_cut_by": {
+        "wheel": 1341,
+        "aerofoil": 20
+       },
+       "donor_grids": {
+        "wheel": 190,
+        "aerofoil": 84,
+        "bg": 802
+       }
+      },
+      "aerofoil": {
+       "hole": 39,
+       "discretisation": 24023,
+       "interpolation": 514,
+       "wall": 512,
+       "holes_cut_by": {
+        "panel": 39
+       },
+       "donor_grids": {
+        "panel": 139,
+        "bg": 375
+       }
+      },
+      "road": {
+       "hole": 6836,
+       "discretisation": 15124,
+       "interpolation": 570,
+       "wall": 350,
+       "holes_cut_by": {
+        "wheel": 6836
+       },
+       "donor_grids": {
+        "wheel": 457,
+        "bg": 113
+       }
+      }
+     },
+     "road": 0.0,
+     "component_margin": 0.0
+    },
+    "grids": {
+     "bg": {
+      "max_err": 0.00037343911696829934,
+      "rms_err": 6.820678863496078e-05,
+      "max_at": {
+       "j": 53,
+       "i": 260,
+       "x": 2.03515625,
+       "y": 0.4140625,
+       "status": "interpolation"
+      }
+     },
+     "wheel": {
+      "max_err": 0.0002516548917405048,
+      "rms_err": 0.00014795979492020415,
+      "max_at": {
+       "j": 0,
+       "i": 470,
+       "x": 0.6712418388280836,
+       "y": 0.5000868457604571,
+       "status": "wall"
+      }
+     },
+     "panel": {
+      "max_err": 0.00017556251690287183,
+      "rms_err": 8.56669298612989e-05,
+      "max_at": {
+       "j": 48,
+       "i": 222,
+       "x": 1.8235686783625593,
+       "y": 0.29619862938070274,
+       "status": "interpolation"
+      }
+     },
+     "aerofoil": {
+      "max_err": 0.000375889171674082,
+      "rms_err": 0.00012898990661098492,
+      "max_at": {
+       "j": 29,
+       "i": 256,
+       "x": 2.027468294343178,
+       "y": 0.41209947754458237,
+       "status": "discretisation"
+      }
+     },
+     "road": {
+      "max_err": 5.7133617209381704e-05,
+      "rms_err": 9.944385357542395e-06,
+      "max_at": {
+       "j": 64,
+       "i": 0,
+       "x": 0.66,
+       "y": 0.075,
+       "status": "interpolation"
+      }
+     }
+    },
+    "wall_total_s": 20.825936100000035
+   },
+   {
+    "level": 5,
+    "h": 0.00390625,
+    "n_unknowns": 728356,
+    "build_s": 17.022544099999322,
+    "assemble_s": 0.9491020000004937,
+    "solve": {
+     "method": "splu",
+     "n": 728356,
+     "nnz": 5746085,
+     "factor_s": 66.90432689999943,
+     "fill_nnz": 153160947,
+     "solve_s": 0.49625620000006165,
+     "relative_residual": 1.1204794500172254e-12
+    },
+    "overset": {
+     "n_unknowns": 728356,
+     "width": 3,
+     "hole_margin": 0.04,
+     "build_s": 17.022544099999322,
+     "grids": {
+      "bg": {
+       "hole": 37595,
+       "discretisation": 197641,
+       "interpolation": 1308,
+       "holes_cut_by": {
+        "wheel": 23402,
+        "panel": 9746,
+        "aerofoil": 4447
+       },
+       "donor_grids": {
+        "wheel": 353,
+        "panel": 608,
+        "aerofoil": 314,
+        "road": 33
+       }
+      },
+      "wheel": {
+       "hole": 24928,
+       "discretisation": 169751,
+       "interpolation": 1929,
+       "wall": 1536,
+       "holes_cut_by": {
+        "road": 22888,
+        "panel": 2040
+       },
+       "donor_grids": {
+        "panel": 268,
+        "road": 491,
+        "bg": 1170
+       }
+      },
+      "panel": {
+       "hole": 5335,
+       "discretisation": 189123,
+       "interpolation": 2150,
+       "wall": 2048,
+       "holes_cut_by": {
+        "wheel": 5271,
+        "aerofoil": 64
+       },
+       "donor_grids": {
+        "wheel": 355,
+        "aerofoil": 159,
+        "bg": 1636
+       }
+      },
+      "aerofoil": {
+       "hole": 114,
+       "discretisation": 97162,
+       "interpolation": 1028,
+       "wall": 1024,
+       "holes_cut_by": {
+        "panel": 114
+       },
+       "donor_grids": {
+        "panel": 258,
+        "bg": 770
+       }
+      },
+      "road": {
+       "hole": 27031,
+       "discretisation": 61818,
+       "interpolation": 1137,
+       "wall": 701,
+       "holes_cut_by": {
+        "wheel": 27031
+       },
+       "donor_grids": {
+        "wheel": 899,
+        "bg": 238
+       }
+      }
+     },
+     "road": 0.0,
+     "component_margin": 0.0
+    },
+    "grids": {
+     "bg": {
+      "max_err": 9.316700465911154e-05,
+      "rms_err": 1.6840267732759206e-05,
+      "max_at": {
+       "j": 106,
+       "i": 520,
+       "x": 2.033203125,
+       "y": 0.4140625,
+       "status": "interpolation"
+      }
+     },
+     "wheel": {
+      "max_err": 6.20342116269823e-05,
+      "rms_err": 3.66149781276552e-05,
+      "max_at": {
+       "j": 0,
+       "i": 940,
+       "x": 0.6712418388280836,
+       "y": 0.5000868457604571,
+       "status": "wall"
+      }
+     },
+     "panel": {
+      "max_err": 4.31141324411799e-05,
+      "rms_err": 2.1238427728470293e-05,
+      "max_at": {
+       "j": 96,
+       "i": 440,
+       "x": 1.8141354125919154,
+       "y": 0.29602393927383897,
+       "status": "interpolation"
+      }
+     },
+     "aerofoil": {
+      "max_err": 9.356232472912396e-05,
+      "rms_err": 3.179610543481785e-05,
+      "max_at": {
+       "j": 59,
+       "i": 512,
+       "x": 2.028547373760412,
+       "y": 0.4123285632128705,
+       "status": "discretisation"
+      }
+     },
+     "road": {
+      "max_err": 1.389172815480233e-05,
+      "rms_err": 2.3813925385247755e-06,
+      "max_at": {
+       "j": 128,
+       "i": 0,
+       "x": 0.66,
+       "y": 0.075,
+       "status": "interpolation"
+      }
+     }
+    },
+    "wall_total_s": 100.75377790000039
+   }
+  ],
+  "orders": {
+   "bg.max_err": [
+    1.8788358814182788,
+    2.0029820385904187
+   ],
+   "bg.rms_err": [
+    2.0372082171675077,
+    2.0180002630321883
+   ],
+   "wheel.max_err": [
+    2.048788884853694,
+    2.0203106608247094
+   ],
+   "wheel.rms_err": [
+    2.0391716174319603,
+    2.0146993667833173
+   ],
+   "panel.max_err": [
+    2.050588142759238,
+    2.0257521032958974
+   ],
+   "panel.rms_err": [
+    2.039844159718989,
+    2.0120614179749348
+   ],
+   "aerofoil.max_err": [
+    1.9917469715179323,
+    2.0063077422545392
+   ],
+   "aerofoil.rms_err": [
+    2.0537071432489413,
+    2.0203362079042795
+   ],
+   "road.max_err": [
+    2.092521907810304,
+    2.040113787637948
+   ],
+   "road.rms_err": [
+    2.1309969085273153,
+    2.062076755867576
+   ]
+  }
+ },
+ "flow": {
+  "dt": 0.00025,
+  "T": 0.05,
+  "levels": [
+   {
+    "level": 3,
+    "h": 0.015625,
+    "dt": 0.00025,
+    "T": 0.05000000000000004,
+    "steps": 200,
+    "n_unknowns": 46613,
+    "wall_s": 20.446002099999532,
+    "setup_s": 0.903878000000077,
+    "momentum_iterations_max": 12,
+    "divergence": {
+     "bg": 1.2624712377173886e-05,
+     "wheel": 3.014672192891421e-05,
+     "panel": 2.3782374793723804e-05,
+     "aerofoil": 0.0001294165067129427,
+     "road": 7.511631064005542e-05
+    },
+    "grids": {
+     "bg": {
+      "u_max_err": 0.00014676031639834775,
+      "u_rms_err": 5.873026969863053e-06,
+      "p_max_err": 0.0006484894478552272,
+      "p_rms_err": 7.199807401880847e-05,
+      "u_max_at": [
+       2.0390625,
+       0.40625
+      ],
+      "p_max_at": [
+       1.7109375,
+       0.25
+      ]
+     },
+     "wheel": {
+      "u_max_err": 3.2066422596545296e-05,
+      "u_rms_err": 9.408954800268683e-06,
+      "p_max_err": 0.00044144389921501204,
+      "p_rms_err": 7.288364931650594e-05,
+      "u_max_at": [
+       1.244766397841258,
+       0.49028147894779317
+      ],
+      "p_max_at": [
+       1.3228106491435554,
+       0.20009144575951826
+      ]
+     },
+     "panel": {
+      "u_max_err": 2.7336082642548387e-05,
+      "u_rms_err": 6.980072588832537e-06,
+      "p_max_err": 0.0002946458739145619,
+      "p_rms_err": 6.865442545124433e-05,
+      "u_max_at": [
+       1.4594842252240878,
+       0.2894563237803539
+      ],
+      "p_max_at": [
+       2.3249724433597554,
+       0.17882752046610323
+      ]
+     },
+     "aerofoil": {
+      "u_max_err": 0.00016360748948551773,
+      "u_rms_err": 1.491680642449765e-05,
+      "p_max_err": 0.0024822727065685448,
+      "p_rms_err": 9.348369393204979e-05,
+      "u_max_at": [
+       2.029649168742868,
+       0.4125624767132457
+      ],
+      "p_max_at": [
+       1.9915197317224427,
+       0.4044725512805502
+      ]
+     },
+     "road": {
+      "u_max_err": 3.0188887521875873e-05,
+      "u_rms_err": 3.309731336292694e-06,
+      "p_max_err": 0.0003155087325777328,
+      "p_rms_err": 3.0405777966786228e-05,
+      "u_max_at": [
+       0.66,
+       0.017313957197825396
+      ],
+      "p_max_at": [
+       0.6627272727272727,
+       0.0
+      ]
+     }
+    },
+    "wall_total_s": 34.804974599999696
+   },
+   {
+    "level": 4,
+    "h": 0.0078125,
+    "dt": 0.00025,
+    "T": 0.05000000000000004,
+    "steps": 200,
+    "n_unknowns": 183652,
+    "wall_s": 213.63952829999926,
+    "setup_s": 9.563236200000574,
+    "momentum_iterations_max": 26,
+    "divergence": {
+     "bg": 6.233842155367597e-06,
+     "wheel": 1.2197158258508978e-05,
+     "panel": 1.491536304762224e-05,
+     "aerofoil": 8.728118601908363e-05,
+     "road": 3.5303118536944567e-05
+    },
+    "grids": {
+     "bg": {
+      "u_max_err": 3.923138478545418e-05,
+      "u_rms_err": 1.5468687233561078e-06,
+      "p_max_err": 0.00018330344553527458,
+      "p_rms_err": 1.6589162781393924e-05,
+      "u_max_at": [
+       2.03515625,
+       0.40625
+      ],
+      "p_max_at": [
+       2.03515625,
+       0.4140625
+      ]
+     },
+     "wheel": {
+      "u_max_err": 9.522752249880098e-06,
+      "u_rms_err": 2.8734910551697407e-06,
+      "p_max_err": 0.00014092661406196836,
+      "p_rms_err": 2.9183979045444578e-05,
+      "u_max_at": [
+       1.236207978537797,
+       0.4786947186861539
+      ],
+      "p_max_at": [
+       1.328607260671469,
+       0.19490518621716374
+      ]
+     },
+     "panel": {
+      "u_max_err": 6.855862965782222e-06,
+      "u_rms_err": 2.262880861875199e-06,
+      "p_max_err": 0.0001169124647207526,
+      "p_rms_err": 2.721375959444261e-05,
+      "u_max_at": [
+       1.4594842252240878,
+       0.2894563237803539
+      ],
+      "p_max_at": [
+       1.3285067741851413,
+       0.041753497679273346
+      ]
+     },
+     "aerofoil": {
+      "u_max_err": 3.989176079421952e-05,
+      "u_rms_err": 3.7345168859452466e-06,
+      "p_max_err": 0.000938843674097618,
+      "p_rms_err": 3.2193244036493e-05,
+      "u_max_at": [
+       2.0303656186907966,
+       0.40628745230755237
+      ],
+      "p_max_at": [
+       1.9915197317224427,
+       0.4044725512805502
+      ]
+     },
+     "road": {
+      "u_max_err": 4.245860146190328e-06,
+      "u_rms_err": 6.665782274311331e-07,
+      "p_max_err": 0.00012824285262461477,
+      "p_rms_err": 2.608637682537469e-05,
+      "u_max_at": [
+       0.66,
+       0.007620286467467302
+      ],
+      "p_max_at": [
+       0.6613675213675214,
+       0.0
+      ]
+     }
+    },
+    "wall_total_s": 238.71660880000036
+   }
+  ],
+  "orders": {
+   "bg.u_max_err": [
+    1.9033817544567448
+   ],
+   "bg.u_rms_err": [
+    1.9247534967855644
+   ],
+   "bg.p_max_err": [
+    1.8228491949851153
+   ],
+   "bg.p_rms_err": [
+    2.1177172358420373
+   ],
+   "wheel.u_max_err": [
+    1.7516129081847969
+   ],
+   "wheel.u_rms_err": [
+    1.7112299109128613
+   ],
+   "wheel.p_max_err": [
+    1.6472860139311292
+   ],
+   "wheel.p_rms_err": [
+    1.3204185985882937
+   ],
+   "panel.u_max_err": [
+    1.9953963360224727
+   ],
+   "panel.u_rms_err": [
+    1.6250814093929287
+   ],
+   "panel.p_max_err": [
+    1.3335533112777003
+   ],
+   "panel.p_rms_err": [
+    1.335016439823824
+   ],
+   "aerofoil.u_max_err": [
+    2.03607608278089
+   ],
+   "aerofoil.u_rms_err": [
+    1.9979451719292602
+   ],
+   "aerofoil.p_max_err": [
+    1.4027047597194315
+   ],
+   "aerofoil.p_rms_err": [
+    1.537956781084523
+   ],
+   "road.u_max_err": [
+    2.8298888372739426
+   ],
+   "road.u_rms_err": [
+    2.3118680123295956
+   ],
+   "road.p_max_err": [
+    1.2988015141753453
+   ],
+   "road.p_rms_err": [
+    0.22104892294186215
+   ]
+  }
+ },
+ "car": {
+  "rule": {
+   "aerofoil": [
+    "FW_MAIN",
+    "FW_FLAP",
+    "RW_FLAP"
+   ],
+   "aerofoil_thickness": 0.12,
+   "aerofoil_te_thickness": 0.01,
+   "panel_thickness_cells": 3.0,
+   "thickness_cells": {},
+   "weld_cells": 1.5,
+   "fillet_cells": "auto",
+   "fillet_by_member": {},
+   "wheel_gap_fraction": 0.02,
+   "wheel_clearance_cells": 4.0,
+   "min_area_cells": 1.0,
+   "from_file": []
+  },
+  "trimmed": {
+   "NOSE_TIP": 18.444,
+   "NOSE": 15.689,
+   "FLOOR_LE": 15.291,
+   "FLOOR": 17.016,
+   "DIFF": 18.836,
+   "FW_UNDER_TE": 16.578
+  },
+  "filled_pockets": [],
+  "dropped_slivers": [],
+  "clearance_cut_after_weld_cells": 0.0,
+  "fillets": [
+   {
+    "members": [
+     "FW_MAIN",
+     "FW_UPPER",
+     "FW_FLAP",
+     "NOSE_TIP",
+     "FW_UNDER_TE",
+     "FW_TRAILING",
+     "FW_LEADING",
+     "FW_UNDER"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 81 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 1.5,
+      "added_cells": 16.46,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: the Jacobian is not positive at 1 points -- the grid is left-handed or folds (i must run clockwise round the body and j outward)"
+     },
+     {
+      "fillet_cells": 3.0,
+      "added_cells": 69.23,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 30 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 4.5,
+      "added_cells": 136.85,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": false,
+      "max_skew_deg": 83.96,
+      "thickness_min": 0.0409
+     },
+     {
+      "fillet_cells": 6.0,
+      "added_cells": 427.14,
+      "cut_back_cells": -0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 63.56,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 6.0
+   },
+   {
+    "members": [
+     "NOSE",
+     "CHASSIS",
+     "COCKPIT",
+     "ROLL_HOOP",
+     "AIRBOX",
+     "POD_UP",
+     "COVER_TAIL",
+     "DIFF",
+     "RW_FLAP",
+     "DIFF_EXIT",
+     "RW_ENDPLATE_LO",
+     "RW_ENDPLATE",
+     "RW_PYLON",
+     "TAIL_DECK"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 454 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 1.5,
+      "added_cells": 4.43,
+      "cut_back_cells": -0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: 246 cells fold within 0.1 of the outline -- a concave region too tight for this thickness, or too few points round it"
+     },
+     {
+      "fillet_cells": 3.0,
+      "added_cells": 21.39,
+      "cut_back_cells": -0.0,
+      "ok": false,
+      "folds": true,
+      "why": "probe: the Jacobian is not positive at 6 points -- the grid is left-handed or folds (i must run clockwise round the body and j outward)"
+     },
+     {
+      "fillet_cells": 4.5,
+      "added_cells": 47.78,
+      "cut_back_cells": 0.0,
+      "ok": false,
+      "folds": false,
+      "max_skew_deg": 57.55,
+      "thickness_min": 0.0672,
+      "orphans_alone": 62
+     },
+     {
+      "fillet_cells": 6.0,
+      "added_cells": 82.6,
+      "cut_back_cells": -0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 51.11,
+      "thickness_min": 0.0912,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 6.0
+   },
+   {
+    "members": [
+     "FLOOR_LE",
+     "FLOOR_STEP",
+     "FLOOR"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 29.97,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 0.0
+   },
+   {
+    "members": [
+     "DUCT_LO"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 21.04,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 0.0
+   },
+   {
+    "members": [
+     "DUCT_UP"
+    ],
+    "attempts": [
+     {
+      "fillet_cells": 0.0,
+      "added_cells": 0.0,
+      "cut_back_cells": 0.0,
+      "ok": true,
+      "folds": false,
+      "max_skew_deg": 21.04,
+      "thickness_min": 0.1,
+      "orphans_alone": 0
+     }
+    ],
+    "fillet_cells": 0.0
+   }
+  ],
+  "solids": [
+   {
+    "name": "shell0",
+    "kind": "shell",
+    "members": [
+     "FW_MAIN",
+     "FW_UPPER",
+     "FW_FLAP",
+     "NOSE_TIP",
+     "FW_UNDER_TE",
+     "FW_TRAILING",
+     "FW_LEADING",
+     "FW_UNDER"
+    ],
+    "groups": [
+     "front-wing",
+     "body"
+    ],
+    "area_cells": 893.02
+   },
+   {
+    "name": "shell1",
+    "kind": "shell",
+    "members": [
+     "NOSE",
+     "CHASSIS",
+     "COCKPIT",
+     "ROLL_HOOP",
+     "AIRBOX",
+     "POD_UP",
+     "COVER_TAIL",
+     "DIFF",
+     "RW_FLAP",
+     "DIFF_EXIT",
+     "RW_ENDPLATE_LO",
+     "RW_ENDPLATE",
+     "RW_PYLON",
+     "TAIL_DECK"
+    ],
+    "groups": [
+     "body",
+     "floor",
+     "rear-wing"
+    ],
+    "area_cells": 1587.47
+   },
+   {
+    "name": "shell2",
+    "kind": "shell",
+    "members": [
+     "FLOOR_LE",
+     "FLOOR_STEP",
+     "FLOOR"
+    ],
+    "groups": [
+     "floor"
+    ],
+    "area_cells": 803.35
+   },
+   {
+    "name": "shell3",
+    "kind": "shell",
+    "members": [
+     "DUCT_LO"
+    ],
+    "groups": [
+     "duct"
+    ],
+    "area_cells": 511.07
+   },
+   {
+    "name": "shell4",
+    "kind": "shell",
+    "members": [
+     "DUCT_UP"
+    ],
+    "groups": [
+     "duct"
+    ],
+    "area_cells": 511.07
+   },
+   {
+    "name": "WHEEL_F",
+    "kind": "wheel",
+    "members": [
+     "WHEEL_F"
+    ],
+    "groups": [
+     "wheel"
+    ],
+    "area_cells": 1870.37
+   },
+   {
+    "name": "WHEEL_R",
+    "kind": "wheel",
+    "members": [
+     "WHEEL_R"
+    ],
+    "groups": [
+     "wheel"
+    ],
+    "area_cells": 1870.37
+   }
+  ],
+  "grids": {
+   "shell0": {
+    "shape": [
+     25,
+     512
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 2.669676440636426e-06,
+     "folded_cells": 0,
+     "min_jacobian": 2.552554185983352e-06,
+     "max_aspect_ratio": 16.646392809190054,
+     "max_skew_deg": 63.564155782563375,
+     "max_wall_skew_deg": 20.707264991279356,
+     "mean_wall_spacing": 0.0013602011703277611
+    },
+    "thickness_min": 0.1
+   },
+   "shell1": {
+    "shape": [
+     25,
+     3328
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 1.481683586934679e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.2850932881038579e-06,
+     "max_aspect_ratio": 28.552081575680422,
+     "max_skew_deg": 51.112218156481376,
+     "max_wall_skew_deg": 21.169288052105724,
+     "mean_wall_spacing": 0.0013549860625777547
+    },
+    "thickness_min": 0.09115086707398573
+   },
+   "shell2": {
+    "shape": [
+     25,
+     1856
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 1.3373965825347334e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.2660545736707727e-06,
+     "max_aspect_ratio": 6.832496418465016,
+     "max_skew_deg": 29.970538005915625,
+     "max_wall_skew_deg": 16.72736062442694,
+     "mean_wall_spacing": 0.0013601985310927778
+    },
+    "thickness_min": 0.1
+   },
+   "shell3": {
+    "shape": [
+     25,
+     1152
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 1.615202979032837e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.5130424308522322e-06,
+     "max_aspect_ratio": 5.0483427070983415,
+     "max_skew_deg": 21.040774314561578,
+     "max_wall_skew_deg": 16.68435475647738,
+     "mean_wall_spacing": 0.0013601999619599124
+    },
+    "thickness_min": 0.1
+   },
+   "shell4": {
+    "shape": [
+     25,
+     1152
+    ],
+    "settings": {
+     "beta": 2.0,
+     "cluster": 4.0,
+     "sigma_wall": 0.02,
+     "kappa": 0.5,
+     "room": 0.4,
+     "room_floor": 0.03
+    },
+    "quality": {
+     "min_cell_area": 1.6152029789218147e-06,
+     "folded_cells": 0,
+     "min_jacobian": 1.5130424308520539e-06,
+     "max_aspect_ratio": 5.048342707097035,
+     "max_skew_deg": 21.040774314559155,
+     "max_wall_skew_deg": 16.684354756479397,
+     "mean_wall_spacing": 0.001360199961959914
+    },
+    "thickness_min": 0.1
+   },
+   "WHEEL_F": {
+    "shape": [
+     33,
+     512
+    ],
+    "patch_shape": [
+     33,
+     224
+    ]
+   },
+   "WHEEL_R": {
+    "shape": [
+     33,
+     512
+    ],
+    "patch_shape": [
+     33,
+     224
+    ]
+   }
+  },
+  "grid_settings": {
+   "h": 0.015625,
+   "body_thickness": 0.1,
+   "body_nj": 25,
+   "body_beta": 2.0,
+   "room": 0.4,
+   "room_floor": 0.03,
+   "cluster": 4.0,
+   "sigma_wall": 0.02,
+   "kappa": 0.5,
+   "wheel_thickness": 0.15,
+   "wheel_nj": 33,
+   "wheel_beta": 3.0,
+   "wall_spacing_h": 0.3,
+   "patch_half_width_r": 0.8,
+   "patch_height_r": 0.25,
+   "patch_nj": 33,
+   "patch_spacing_h": 0.175,
+   "hole_margin": 0.04,
+   "max_skew_deg": 70.0
+  },
+  "n_unknowns": 381698,
+  "report": {
+   "n_unknowns": 381698,
+   "width": 3,
+   "hole_margin": 0.04,
+   "build_s": 16.51181120000001,
+   "grids": {
+    "bg": {
+     "hole": 15101,
+     "discretisation": 144676,
+     "interpolation": 2175,
+     "holes_cut_by": {
+      "shell0": 1301,
+      "shell1": 4129,
+      "shell2": 2202,
+      "shell3": 1392,
+      "shell4": 1561,
+      "WHEEL_F": 2257,
+      "WHEEL_R": 2259
+     },
+     "donor_grids": {
+      "shell0": 142,
+      "shell1": 923,
+      "shell2": 362,
+      "shell3": 186,
+      "shell4": 360,
+      "WHEEL_F": 91,
+      "road_WHEEL_F": 12,
+      "WHEEL_R": 89,
+      "road_WHEEL_R": 10
+     }
+    },
+    "shell0": {
+     "hole": 187,
+     "discretisation": 11569,
+     "interpolation": 532,
+     "wall": 512,
+     "holes_cut_by": {
+      "WHEEL_F": 187
+     },
+     "donor_grids": {
+      "WHEEL_F": 192,
+      "bg": 340
+     }
+    },
+    "shell1": {
+     "hole": 584,
+     "discretisation": 75936,
+     "interpolation": 3352,
+     "wall": 3328,
+     "holes_cut_by": {
+      "WHEEL_F": 100,
+      "WHEEL_R": 484
+     },
+     "donor_grids": {
+      "WHEEL_F": 71,
+      "WHEEL_R": 216,
+      "bg": 3057,
+      "shell4": 8
+     }
+    },
+    "shell2": {
+     "hole": 2076,
+     "discretisation": 40581,
+     "interpolation": 1887,
+     "wall": 1856,
+     "holes_cut_by": {
+      "shell3": 1795,
+      "WHEEL_F": 140,
+      "WHEEL_R": 141
+     },
+     "donor_grids": {
+      "shell3": 453,
+      "WHEEL_F": 102,
+      "WHEEL_R": 96,
+      "bg": 1236
+     }
+    },
+    "shell3": {
+     "hole": 2211,
+     "discretisation": 24275,
+     "interpolation": 1162,
+     "wall": 1152,
+     "holes_cut_by": {
+      "shell2": 2211
+     },
+     "donor_grids": {
+      "shell2": 575,
+      "bg": 587
+     }
+    },
+    "shell4": {
+     "discretisation": 26496,
+     "interpolation": 1152,
+     "wall": 1152,
+     "holes_cut_by": {},
+     "donor_grids": {
+      "bg": 1133,
+      "shell1": 19
+     }
+    },
+    "WHEEL_F": {
+     "hole": 2051,
+     "discretisation": 13690,
+     "interpolation": 643,
+     "wall": 512,
+     "holes_cut_by": {
+      "road": 1701,
+      "shell0": 214,
+      "shell1": 70,
+      "shell2": 66
+     },
+     "donor_grids": {
+      "shell0": 105,
+      "shell1": 55,
+      "shell2": 47,
+      "road_WHEEL_F": 151,
+      "bg": 285
+     }
+    },
+    "road_WHEEL_F": {
+     "hole": 2216,
+     "discretisation": 4620,
+     "interpolation": 334,
+     "wall": 222,
+     "holes_cut_by": {
+      "WHEEL_F": 2216
+     },
+     "donor_grids": {
+      "WHEEL_F": 274,
+      "bg": 60
+     }
+    },
+    "WHEEL_R": {
+     "hole": 2188,
+     "discretisation": 13475,
+     "interpolation": 721,
+     "wall": 512,
+     "holes_cut_by": {
+      "road": 1701,
+      "shell1": 417,
+      "shell2": 70
+     },
+     "donor_grids": {
+      "shell1": 231,
+      "shell2": 58,
+      "road_WHEEL_R": 151,
+      "bg": 281
+     }
+    },
+    "road_WHEEL_R": {
+     "hole": 2216,
+     "discretisation": 4620,
+     "interpolation": 334,
+     "wall": 222,
+     "holes_cut_by": {
+      "WHEEL_R": 2216
+     },
+     "donor_grids": {
+      "WHEEL_R": 276,
+      "bg": 58
+     }
+    }
+   },
+   "road": 0.0,
+   "component_margin": 0.0
+  },
+  "solids_s": 100.16714020000018,
+  "overset_s": 47.94297900000038,
+  "geometry_fingerprint": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
+  "poisson": {
+   "solve": {
+    "method": "splu",
+    "n": 381698,
+    "nnz": 2827456,
+    "factor_s": 6.128886600000442,
+    "fill_nnz": 45084528,
+    "solve_s": 0.18079390000002604,
+    "relative_residual": 1.9695908170124129e-13
+   },
+   "wall_s": 7.494363300000259,
+   "grids": {
+    "bg": {
+     "max_err": 0.005586848782874243,
+     "rms_err": 0.0011639383679033447
+    },
+    "shell0": {
+     "max_err": 0.0003857382664975706,
+     "rms_err": 0.0002340599610817673
+    },
+    "shell1": {
+     "max_err": 0.005654125009142641,
+     "rms_err": 0.0030286670408543864
+    },
+    "shell2": {
+     "max_err": 0.00348949965306411,
+     "rms_err": 0.0013316451328297388
+    },
+    "shell3": {
+     "max_err": 0.004080601482562396,
+     "rms_err": 0.0029311968146343353
+    },
+    "shell4": {
+     "max_err": 0.004723115659894188,
+     "rms_err": 0.00367863609802824
+    },
+    "WHEEL_F": {
+     "max_err": 0.0008362219208372795,
+     "rms_err": 0.00031325223635550426
+    },
+    "road_WHEEL_F": {
+     "max_err": 0.00028865841808616705,
+     "rms_err": 6.993246682052666e-05
+    },
+    "WHEEL_R": {
+     "max_err": 0.004437587390748954,
+     "rms_err": 0.0030635290310069337
+    },
+    "road_WHEEL_R": {
+     "max_err": 0.00046090030515932856,
+     "rms_err": 6.921270918457871e-05
+    }
+   }
+  },
+  "uniform_stream_error": 1.9237469305703963e-14
+ },
+ "march": {
+  "summary": {
+   "steps": 1280,
+   "steps_done": 1280,
+   "window": [
+    12.0,
+    16.0
+   ],
+   "wall_s": 2819.3323941,
+   "median_step_s": 1.3874976999995852,
+   "iterations_max": 33,
+   "iterations_max_after_t1": 7,
+   "u_max_max": 3.822552945880247,
+   "u_max_last": 2.191526082632408,
+   "max_div_window": 0.030009428884770428,
+   "max_div_window_at": [
+    "road_WHEEL_R",
+    7.564764573991031,
+    0.0016219636597561706
+   ],
+   "fx_mean_window": 2.7357105981776213,
+   "fy_mean_window": 1.8338031485590416,
+   "fx_spread_window": 0.030140023514866776,
+   "fy_spread_window": 0.12713639171414703,
+   "by_solid_window": {
+    "shell0": {
+     "fx": -0.24558267704208028,
+     "fy": 1.4191868461927124
+    },
+    "shell1": {
+     "fx": 0.7011771058971304,
+     "fy": -0.9008506128188764
+    },
+    "shell2": {
+     "fx": -0.36870083608089027,
+     "fy": 0.262852282971911
+    },
+    "shell3": {
+     "fx": -0.026653653797847544,
+     "fy": 0.13820784275341058
+    },
+    "shell4": {
+     "fx": -0.009582350332038159,
+     "fy": 0.13266377293077689
+    },
+    "WHEEL_F": {
+     "fx": 1.8691740460693191,
+     "fy": 0.3483522165811239
+    },
+    "WHEEL_R": {
+     "fx": 0.8158789634640284,
+     "fy": 0.4333907999479832
+    }
+   },
+   "turbine_u_mean_window": -0.1091953244548123,
+   "core_u_mean_window": -0.10919319991974531,
+   "duct_flux_mismatch_window": 2.0349494788498792e-05,
+   "duct_unprobed_points": 0,
+   "contour_relative_window": 0.0014452468513822608,
+   "by_member_window": {
+    "FW_LEADING": {
+     "fx": 0.39131241615778384,
+     "fy": -0.6010246343700721
+    },
+    "FW_UNDER": {
+     "fx": -0.07666203725188489,
+     "fy": 2.1426622379202906
+    },
+    "FW_UPPER": {
+     "fx": 0.30605772337967,
+     "fy": -0.20550360203901571
+    },
+    "FW_FLAP": {
+     "fx": 0.12486264270692479,
+     "fy": -0.2947356265655845
+    },
+    "FW_TRAILING": {
+     "fx": -0.0836258537851035,
+     "fy": -0.11787738710076313
+    },
+    "NOSE_TIP": {
+     "fx": -0.3777451604688685,
+     "fy": 0.11534272050571576
+    },
+    "FW_UNDER_TE": {
+     "fx": -0.5297825304027927,
+     "fy": 0.38032369596617605
+    },
+    "NOSE": {
+     "fx": 0.04474189819246698,
+     "fy": -0.15807716412081196
+    },
+    "CHASSIS": {
+     "fx": 0.10391164010055658,
+     "fy": -0.19296090620775871
+    },
+    "COCKPIT": {
+     "fx": 0.01870003021507116,
+     "fy": -0.39033711686185474
+    },
+    "ROLL_HOOP": {
+     "fx": 0.1430303872734607,
+     "fy": 0.00038076051943047515
+    },
+    "AIRBOX": {
+     "fx": 0.027309024072000265,
+     "fy": 0.15798521061446225
+    },
+    "POD_UP": {
+     "fx": 0.0023096672430064596,
+     "fy": 0.009581568375475597
+    },
+    "COVER_TAIL": {
+     "fx": -0.010499776687064236,
+     "fy": -0.037987980069842546
+    },
+    "TAIL_DECK": {
+     "fx": 0.013635904108228805,
+     "fy": -0.06915277339306002
+    },
+    "RW_PYLON": {
+     "fx": 0.044284956102054594,
+     "fy": -0.04987953800837444
+    },
+    "RW_FLAP": {
+     "fx": 0.1551309049250223,
+     "fy": -0.11008586496836498
+    },
+    "RW_ENDPLATE": {
+     "fx": 0.14533637904408686,
+     "fy": 0.026173936188791574
+    },
+    "RW_ENDPLATE_LO": {
+     "fx": 0.007613210542528634,
+     "fy": -0.07558140422012243
+    },
+    "DIFF_EXIT": {
+     "fx": 0.017685700379183385,
+     "fy": -0.010027312820700431
+    },
+    "DIFF": {
+     "fx": -0.011961823752719637,
+     "fy": -0.0018061465820586693
+    },
+    "FLOOR_STEP": {
+     "fx": -0.13248803176888294,
+     "fy": -0.19494563463797412
+    },
+    "FLOOR_LE": {
+     "fx": -0.044033922704216195,
+     "fy": -0.14375235419571153
+    },
+    "FLOOR": {
+     "fx": -0.1921768661537632,
+     "fy": 0.6015401537033084
+    },
+    "DUCT_LO": {
+     "fx": -0.026650869994714176,
+     "fy": 0.13820412844994928
+    },
+    "DUCT_UP": {
+     "fx": -0.009579082387308998,
+     "fy": 0.13267393725416135
+    },
+    "WHEEL_F": {
+     "fx": 1.8692309041190187,
+     "fy": 0.3483138184631967
+    },
+    "WHEEL_R": {
+     "fx": 0.8159588349309934,
+     "fy": 0.433293434283324
+    }
+   }
+  },
+  "file": "march.json",
+  "machine_before": {
+   "python_processes_running": 1,
+   "python_processes": [
+    "\"python.exe\",\"2908\",\"Console\",\"1\",\"998,616 K\""
+   ],
+   "battery_status_raw": "1",
+   "on_mains": false,
+   "reference_matmul_1024_s": 0.023924600000100327,
+   "taken_at": "2026-09-15T13:54:09"
+  },
+  "machine_after": {
+   "python_processes_running": 3,
+   "python_processes": [
+    "\"python.exe\",\"2908\",\"Console\",\"1\",\"1,035,712 K\"",
+    "\"python.exe\",\"11492\",\"Console\",\"1\",\"4,252 K\"",
+    "\"python.exe\",\"16588\",\"Console\",\"1\",\"80,228 K\""
+   ],
+   "battery_status_raw": "1",
+   "on_mains": false,
+   "reference_matmul_1024_s": 0.02332049999949959,
+   "taken_at": "2026-09-15T14:41:10"
+  }
+ },
+ "stage_errors": {
+  "compare": "Traceback (most recent call last):\n  File \"C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\scripts\\tier62_car_solids.py\", line 719, in main\n    {\"controls\": stage_controls, \"poisson\": stage_poisson, \"flow\": stage_flow, \"car\": stage_car,\n  File \"C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\scripts\\tier62_car_solids.py\", line 625, in stage_compare\n    out[\"body_fitted_turbine_u_mean\"] = M[\"turbine_u_mean_last_window\"]\n                                        ~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nKeyError: 'turbine_u_mean_last_window'\n"
+ },
+ "compare": {
+  "against": "out/racelab8/racelab8.json, the drawn car on the repaired porous column",
+  "porous_u_rotor_at_the_settled_state": 0.4572493482905237,
+  "porous_u_rotor_min_over_the_horizon": 0.44565659437257343,
+  "porous_u_max_max": 1.825274527058496,
+  "porous_geometry_fingerprint": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
+  "body_fitted_turbine_u_mean": -0.1091953244548123,
+  "body_fitted_core_u_mean": -0.10919319991974531,
+  "turbine_ratio": -0.2388091418020624,
+  "same_drawing": true
+ },
+ "verdicts": {
+  "V1": true,
+  "V2": true,
+  "V3": true,
+  "V4": true,
+  "M1": true,
+  "M2": true,
+  "M3": false,
+  "M4": true,
+  "K1": true,
+  "K2": true,
+  "K3": true,
+  "K4": false,
+  "K5": true,
+  "K6": false,
+  "K7": true,
+  "K8": true
+ },
+ "verdicts_missing": []
+}

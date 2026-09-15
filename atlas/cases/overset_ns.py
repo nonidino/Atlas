@@ -115,6 +115,9 @@ FACES = ("xlo", "xhi", "ylo", "yhi")
 #: held exactly divergence-free over the region they share over-constrain it.
 PROJECTIONS = ("compact", "exact")
 
+#: How the momentum solve is preconditioned; see `OversetFlow`.
+PRECONDITIONERS = ("jacobi", "ilu")
+
 VelocityFn = Callable[[np.ndarray, np.ndarray, float], tuple[np.ndarray, np.ndarray]]
 
 
@@ -141,13 +144,29 @@ class OversetFlow:
                                          tuple[np.ndarray, np.ndarray]] | None = None,
                  forcing: VelocityFn | None = None,
                  chi: float = 0.5, rtol: float = 1e-10, maxiter: int = 400,
-                 projection: str = "compact", passes: int = 1) -> None:
+                 projection: str = "compact", passes: int = 1,
+                 precond: str = "jacobi", ilu_every: int = 20, ilu_drop_tol: float = 1e-4,
+                 ilu_fill: float = 8.0) -> None:
         if ov.bg is None:
             raise ValueError("the flow solver needs a background grid")
         if projection not in PROJECTIONS:
             raise ValueError(f"projection must be one of {PROJECTIONS}")
+        if precond not in PRECONDITIONERS:
+            raise ValueError(f"precond must be one of {PRECONDITIONERS}")
         self.projection = projection
         self.passes = int(passes)
+        #: Tier 62: the car's momentum rows -- cells 27 times longer than wide and
+        #: skewed 60 degrees, at a wall spacing of 0.0014 -- took Jacobi-
+        #: preconditioned BiCGSTAB 100 to 300 iterations a component.  ``'ilu'``
+        #: factors the momentum matrix incompletely every ``ilu_every`` steps and
+        #: reuses it between, because the matrix changes only through the
+        #: advecting velocity.  ``'jacobi'`` is Tier 61's, unchanged.
+        self.precond = precond
+        self.ilu_every = int(ilu_every)
+        self.ilu_drop_tol = float(ilu_drop_tol)
+        self.ilu_fill = float(ilu_fill)
+        self._ilu = None
+        self._ilu_k = -1
         self.ov = ov
         self.nu = float(nu)
         self.dt = float(dt)
@@ -202,14 +221,21 @@ class OversetFlow:
         jj, ii = np.meshgrid(np.arange(ny), np.arange(nx), indexing="ij")
         face = {"xlo": ii == 0, "xhi": ii == nx - 1, "ylo": jj == 0, "yhi": jj == ny - 1}
         on_edge = face["xlo"] | face["xhi"] | face["ylo"] | face["yhi"]
-        if np.any(on_edge & (S != DISC)):
+        # Tier 62: along a ROAD a wheel's hole may reach the edge cells, which are
+        # then holes or interpolation points (`overset_multi.MultiOverset` decides
+        # which, and allows it on the road only).  Every edge cell that still
+        # carries the box's condition needs its two cells inward.
+        multi = hasattr(ov, "road")
+        if not multi and np.any(on_edge & (S != DISC)):
             raise OversetError("a hole or an interpolation point reaches the box's outer "
                                "ring of cells, which carries the box's conditions")
         dirichlet_edge = np.zeros_like(on_edge)
         for f in FACES:
             if self.box[f] == "dirichlet":
                 dirichlet_edge |= face[f]
-        out_edge = on_edge & ~dirichlet_edge
+        live_edge = on_edge & (S == DISC)
+        out_edge = live_edge & ~dirichlet_edge
+        dirichlet_edge = dirichlet_edge & live_edge
         # the cells one and two steps in from each edge cell (diagonally at a corner)
         ji = np.clip(jj, 1, ny - 2)
         ii_in = np.clip(ii, 1, nx - 2)
@@ -221,9 +247,12 @@ class OversetFlow:
         interp[idx[S == INTERP]] = True
         edge_d[idx[dirichlet_edge]] = True
         edge_out[idx[out_edge]] = True
-        inner[idx[on_edge]] = inner_bg[on_edge]
+        inner[idx[live_edge]] = inner_bg[live_edge]
         inner2 = np.full(n, -1, dtype=np.int64)
-        inner2[idx[on_edge]] = inner2_bg[on_edge]
+        inner2[idx[live_edge]] = inner2_bg[live_edge]
+        if np.any(inner[idx[live_edge]] < 0) or np.any(inner2[idx[live_edge]] < 0):
+            raise OversetError("an edge cell that carries the box's condition has a hole "
+                               "one or two cells inward")
         self.inner2 = inner2
         # body grids
         self.outer_dirichlet = np.zeros(n, dtype=bool)
@@ -401,8 +430,14 @@ class OversetFlow:
         for c in self.ov.comps:
             a, b = self.wall_velocity(c, t)
             rows = self.ov.index[c.name][0, :]
-            uw[rows] = a
-            vw[rows] = b
+            live = self.ov.status[c.name][0, :] == WALL
+            if np.all(live):
+                uw[rows] = a
+                vw[rows] = b
+            else:
+                # a road patch's two end points are interpolation points
+                uw[rows[live]] = np.broadcast_to(a, rows.shape)[live]
+                vw[rows[live]] = np.broadcast_to(b, rows.shape)[live]
         return uw, vw
 
     # -- the step -----------------------------------------------------------
@@ -443,7 +478,32 @@ class OversetFlow:
         diag = M.diagonal()
         if np.any(diag == 0):                                    # pragma: no cover
             raise AssertionError("a momentum row has a zero diagonal")
-        precond = spla.LinearOperator(M.shape, matvec=lambda r: r / diag)
+        t_ilu = 0.0
+        ilu_note = None
+        if self.precond == "ilu":
+            if self._ilu is None or self.k - self._ilu_k >= self.ilu_every:
+                t0 = time.perf_counter()
+                self._ilu = None
+                # SuperLU's incomplete factor can meet an exactly zero pivot after
+                # dropping (it did on the car); tighter dropping first, then Jacobi
+                # for this refresh, and the step's record says which ran
+                for drop, fill in ((self.ilu_drop_tol, self.ilu_fill),
+                                   (0.01 * self.ilu_drop_tol, 1.5 * self.ilu_fill)):
+                    try:
+                        self._ilu = spla.spilu(M.tocsc(), drop_tol=drop, fill_factor=fill)
+                        ilu_note = f"ilu drop {drop:g} fill {fill:g}"
+                        break
+                    except RuntimeError as exc:
+                        ilu_note = f"ilu failed ({exc}) at drop {drop:g}"
+                self._ilu_k = self.k
+                t_ilu = time.perf_counter() - t0
+            if self._ilu is not None:
+                ilu = self._ilu
+                precond = spla.LinearOperator(M.shape, matvec=ilu.solve)
+            else:
+                precond = spla.LinearOperator(M.shape, matvec=lambda r: r / diag)
+        else:
+            precond = spla.LinearOperator(M.shape, matvec=lambda r: r / diag)
         t_asm = time.perf_counter() - t_start
         its = []
         sol = []
@@ -503,7 +563,11 @@ class OversetFlow:
         for c in self.ov.comps:
             ic = self.ov.index[c.name]
             dw = c.divergence(ut[ic], vt[ic])[0]
-            pn[ic[0, :]] -= self.chi * nu * dw
+            at_wall = self.ov.status[c.name][0, :] == WALL
+            if np.all(at_wall):
+                pn[ic[0, :]] -= self.chi * nu * dw
+            else:
+                pn[ic[0, at_wall]] -= self.chi * nu * dw[at_wall]
         pn[ir] = (self.W @ pn)[ir]
         self.Um1, self.Vm1 = self.U, self.V
         self.U, self.V, self.P = un, vn, pn
@@ -511,7 +575,7 @@ class OversetFlow:
         self.k += 1
         div_n = self.Dx @ un + self.Dy @ vn
         rec = {"k": self.k, "t": t1, "iterations": its, "assemble_s": t_asm,
-               "momentum_s": t_mom, "pressure_s": t_p,
+               "momentum_s": t_mom, "pressure_s": t_p, "ilu_s": t_ilu, "ilu_note": ilu_note,
                "step_s": time.perf_counter() - t_start,
                "max_div": float(np.abs(div_n[d]).max()) if d.any() else 0.0,
                "u_max": float(np.hypot(un, vn).max())}

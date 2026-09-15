@@ -323,6 +323,10 @@ class CurvilinearGrid:
     wall: str = "neumann"
     outer: str = "interp"
     meta: dict = field(default_factory=dict)
+    #: ``False`` for a grid that does not close round a body -- Tier 62's road
+    #: patch, whose row 0 lies along the road and whose other three sides are
+    #: interpolation.  Its ``i`` derivatives are one-sided at the two ends.
+    periodic: bool = True
 
     def __post_init__(self) -> None:
         self.x = np.asarray(self.x, dtype=float)
@@ -336,8 +340,9 @@ class CurvilinearGrid:
             raise ValueError("wall must be 'neumann' or 'dirichlet'")
         if self.outer not in ("interp", "dirichlet"):
             raise ValueError("outer must be 'interp' or 'dirichlet'")
-        self.x_xi = _d_periodic(self.x, 1)
-        self.y_xi = _d_periodic(self.y, 1)
+        d_xi = _d_periodic if self.periodic else _d_open
+        self.x_xi = d_xi(self.x, 1)
+        self.y_xi = d_xi(self.y, 1)
         self.x_eta = _d_open(self.x, 0)
         self.y_eta = _d_open(self.y, 0)
         self.J = self.x_xi * self.y_eta - self.x_eta * self.y_xi
@@ -379,7 +384,7 @@ class CurvilinearGrid:
 
     def gradient(self, p: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """``grad p`` at every point from the grid's own metrics."""
-        p_xi = _d_periodic(p, 1)
+        p_xi = (_d_periodic if self.periodic else _d_open)(p, 1)
         p_eta = _d_open(p, 0)
         px = (self.y_eta * p_xi - self.y_xi * p_eta) / self.J
         py = (-self.x_eta * p_xi + self.x_xi * p_eta) / self.J
@@ -389,7 +394,7 @@ class CurvilinearGrid:
         """Conservative form: ``(1/J) [ d_xi(y_eta u - x_eta v) + d_eta(-y_xi u + x_xi v) ]``."""
         U = self.y_eta * u - self.x_eta * v
         V = -self.y_xi * u + self.x_xi * v
-        return (_d_periodic(U, 1) + _d_open(V, 0)) / self.J
+        return ((_d_periodic if self.periodic else _d_open)(U, 1) + _d_open(V, 0)) / self.J
 
 
 def ogrid_annulus(name: str, cx: float, cy: float, r_in: float, r_out: float,
@@ -438,9 +443,56 @@ N_MASTER = 16384
 KAPPA = 0.25
 
 
+def _clustered_positions(M: np.ndarray, L: float, ni: int, cluster: float,
+                         width: float) -> np.ndarray:
+    """Fractional master indices of ``ni`` columns spaced by a density that rises
+    with how fast the outline TURNS -- ``1 + cluster * width * rate``, the turning
+    rate smoothed along the outline by a Gaussian of ``width`` -- so a tight
+    corner gets columns in proportion to the angle it turns through.  The
+    density is a property of the outline, never of ``ni``: refining samples the
+    same distribution."""
+    n = M.shape[0]
+    ds = L / n
+    ex = np.roll(M[:, 0], -1) - M[:, 0]
+    ey = np.roll(M[:, 1], -1) - M[:, 1]
+    heading = np.arctan2(ey, ex)
+    turn = np.angle(np.exp(1j * (heading - np.roll(heading, 1))))
+    k = 2.0 * math.pi * np.fft.fftfreq(n, d=ds)
+    rate = np.real(np.fft.ifft(np.fft.fft(np.abs(turn) / ds) * np.exp(-0.5 * (width * k) ** 2)))
+    density = 1.0 + cluster * width * np.maximum(rate, 0.0)
+    F = np.concatenate([[0.0], np.cumsum(density)])
+    targets = np.arange(ni) * (F[-1] / ni)
+    return np.interp(targets, F, np.arange(n + 1, dtype=float))
+
+
+def _room_along_normals(M: np.ndarray, nx0: np.ndarray, ny0: np.ndarray, body: np.ndarray,
+                        L: float) -> np.ndarray:
+    """How far each master point can go along its outward normal before meeting
+    the outline again -- ``inf`` where the ray escapes.  A cavity's width, or the
+    distance across a concave corner."""
+    P = resample_closed(body, 4096)
+    ax, ay = P[:, 0], P[:, 1]
+    ex, ey = np.roll(ax, -1) - ax, np.roll(ay, -1) - ay
+    tmin = 0.5 * L / 4096
+    out = np.full(M.shape[0], np.inf)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        for k0 in range(0, M.shape[0], 256):
+            ox, oy = M[k0:k0 + 256, 0][:, None], M[k0:k0 + 256, 1][:, None]
+            dx, dy = nx0[k0:k0 + 256][:, None], ny0[k0:k0 + 256][:, None]
+            den = -dx * ey + dy * ex
+            wx, wy = ax - ox, ay - oy
+            t = (-wx * ey + wy * ex) / den
+            u = (dx * wy - dy * wx) / den
+            hit = (np.abs(den) > 1e-14) & (u >= 0.0) & (u <= 1.0) & (t > tmin)
+            out[k0:k0 + 256] = np.where(hit, t, np.inf).min(axis=1)
+    return out
+
+
 def ogrid_from_outline(name: str, outline: np.ndarray, ni: int, nj: int,
                        thickness: float, beta: float = 2.0,
                        sigma_wall: float = 0.0, kappa: float = KAPPA,
+                       cluster: float = 0.0, cluster_width: float | None = None,
+                       room: float = 0.0, room_floor: float = 0.0,
                        **kw) -> CurvilinearGrid:
     """An O-grid offset outward from a closed outline, defined by the outline alone.
 
@@ -461,6 +513,17 @@ def ogrid_from_outline(name: str, outline: np.ndarray, ni: int, nj: int,
 
     **A folded grid is refused**, not repaired: every cell's signed area must be
     positive.  The outline is what cuts the background, and row 0 IS it.
+
+    ``cluster > 0`` (Tier 62) spaces the columns by `_clustered_positions`
+    instead of evenly by arc length, over ``cluster_width`` (default: the
+    thickness).  Zero -- the default -- is Tier 60's even spacing, bit for bit.
+
+    ``room > 0`` (Tier 62) lets the thickness VARY round the body: at each
+    column it is at most ``room`` times the distance along the normal to the
+    outline itself (`_room_along_normals`) and never under ``room_floor``, taken
+    as a running minimum over one thickness and then smoothed over half of one,
+    so a grid reaching into a cavity or a concave corner of its own body stops
+    short of the far wall instead of folding.  Zero is a uniform thickness.
     """
     body = orient_clockwise(np.asarray(outline, dtype=float))
     M = resample_closed(body, N_MASTER)
@@ -477,7 +540,12 @@ def ogrid_from_outline(name: str, outline: np.ndarray, ni: int, nj: int,
     s = np.linspace(0.0, 1.0, nj)
     phi = s if beta == 0 else np.expm1(beta * s) / np.expm1(beta)
     dist = thickness * phi
-    pos = np.arange(ni) * (N_MASTER / ni)
+    if cluster > 0:
+        pos = _clustered_positions(M, L, ni, cluster,
+                                   thickness if cluster_width is None else cluster_width)
+        pos = np.minimum(pos, np.nextafter(float(N_MASTER), 0.0))
+    else:
+        pos = np.arange(ni) * (N_MASTER / ni)
     lo = np.floor(pos).astype(np.int64)
     fr = pos - lo
     hi = np.mod(lo + 1, N_MASTER)
@@ -488,6 +556,16 @@ def ogrid_from_outline(name: str, outline: np.ndarray, ni: int, nj: int,
     X = np.empty((nj, ni))
     Y = np.empty((nj, ni))
     px0, py0 = sample(M[:, 0]), sample(M[:, 1])
+    scale = None
+    if room > 0:
+        from scipy.ndimage import minimum_filter1d
+        reach = _room_along_normals(M, nx0, ny0, body, L)
+        local = np.clip(room * reach, room_floor, thickness)
+        half = max(1, int(math.ceil(thickness / (L / N_MASTER))))
+        local = minimum_filter1d(local, size=2 * half + 1, mode="wrap")
+        local = np.real(np.fft.ifft(np.fft.fft(local) * np.exp(-0.5 * (0.5 * thickness * k) ** 2)))
+        local = np.clip(local, room_floor, thickness)
+        scale = sample(local / thickness)
     for j, d in enumerate(dist):
         sig = sigma_wall + kappa * d
         g = np.exp(-0.5 * (sig * k) ** 2)
@@ -497,8 +575,9 @@ def ogrid_from_outline(name: str, outline: np.ndarray, ni: int, nj: int,
         if np.any(mm < 1e-6):
             raise GridQualityError(f"{name}: the smoothed normal vanishes {d:.4f} from "
                                    "the wall -- the smoothing is wider than the body")
-        X[j] = px0 + d * sample(nx_ / mm)
-        Y[j] = py0 + d * sample(ny_ / mm)
+        dd = d if scale is None else d * scale
+        X[j] = px0 + dd * sample(nx_ / mm)
+        Y[j] = py0 + dd * sample(ny_ / mm)
     q = _cell_areas(X, Y)
     if not np.all(q > 0):
         raise GridQualityError(
@@ -508,6 +587,11 @@ def ogrid_from_outline(name: str, outline: np.ndarray, ni: int, nj: int,
     g = CurvilinearGrid(name, X, Y, body=body, **kw)
     g.meta.update(kind="offset", thickness=thickness, beta=beta,
                   sigma_wall=sigma_wall, kappa=kappa, perimeter=L)
+    if cluster > 0:
+        g.meta.update(cluster=cluster, cluster_width=cluster_width)
+    if scale is not None:
+        g.meta.update(room=room, room_floor=room_floor,
+                      thickness_min=float(thickness * scale.min()))
     return g
 
 

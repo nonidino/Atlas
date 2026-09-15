@@ -5059,3 +5059,39 @@ The suite's wall time includes a modern-standby period from 13:00:16 to 13:16:39
 **Changed:** `atlas/cases/overset.py` (the Laplacian and wall-row assembly shared with the flow solver, matrices bitwise Tier 60's), `.gitignore` (the `out/racelab10` allowlist), `tests/test_tier45_region_assembly.py` (`ADDED_AFTER_CAPTURE` names `overset_ns`), [[gap-worklist]], [[index]].
 
 **NOT done:** second order in time; W272 and W273 diagnosed; the cylinder's background refined or its domain lengthened; any cost on an idle machine on mains; several bodies, a road or the car (Tier 62, under way). RaceLab's column, records, gate, car, demo and bundle are unchanged. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-15] tier 62 | the drawn car as solids, on body-fitted grids
+
+**[[poc3-racelab-car-solids]].** The user's rule for turning the drawing into solids is built, the grids can now be cut by each other and by the road, and the car the user drew marched on them.
+
+### Built
+
+`atlas/cases/overset_multi.py`: `MultiOverset`, a subclass of Tier 60's `Overset` that cuts every grid by every other body and by the road, marks fringe on the Laplacian's own stencil, tries donors in a declared order with shifted stencils, and refuses overlaps, a gap under two grid rows and a grid through the inlet; `road_patch`; `aerofoil_outline` with a rounded trailing edge; the multi-body manufactured solutions. `atlas/cases/overset.py` gained non-periodic grids and two generator options, clustered columns and room-limited thickness, both off by default. `atlas/cases/overset_ns.py` gained the edge handling a road needs and an incomplete-LU preconditioner with fallbacks. `atlas/cases/car_solids.py`: the rule (`SOLIDS_DEFAULT`, overridable from `car_geometry.json`), the fillet ladder, the grids, the walls-ramped start, forces by the plate each wall point belongs to, and a probe.
+
+### Found on the way, before anything was registered
+
+A NACA trailing edge closed to a point held the manufactured pressure to order $1.1$ in the fan behind it; rounded, clustered and smoothed it read $2.0$. The welded front wing and body shell folded under every offset grid until filleted; the ladder's third test (no orphan against the background alone) exists because a $4.5$-cell fillet passed the first two and left $61$ orphans in the rear wing. Subtracting the wheels' clearance from thickened panels left square corners where the first steps' divergence grew to $28$; the trim moved to the centreline. The impulsive start blew up at step 2 and the start from rest grew a spurious boundary layer on the road; the walls-ramped start marches. A $2$-cell clearance grew divergence $28$ in the slits; $4$ cells did not.
+
+### Measured
+
+**V1–V4 held**: bit for bit Tier 60's joins, interpolation exact to $1.3\times10^{-15}$, four refusals, one generator mapping. **M1 held** ($1.88$–$2.10$ through level 5), **M2 held** ($1.75$–$2.83$), **M3 failed** (the road patch's pressure at $0.22$), **M4 held**. **The march** ($t = 16$, $1280$ steps, $47$ minutes, median $1.39$ s, at most $7$ iterations after $t = 1$): no blow-up (K1), divergence $0.030$ over $[12, 16]$ (K2), contour flux $0.14\%$ (K3), the duct's two planes agreeing to $2\times10^{-5}$ (K5), drag settled to $1.1\%$ (K7) — and **the duct at $-0.109$ where $[0.08, 0.40]$ was predicted (K4 failed)** and **a mean vertical force of $+1.834$ where downforce was predicted (K6 failed)**. K4's band came from an exploration whose summary window began at $t = 0$, where the duct still held the uniform stream.
+
+```
+python scripts/tier62_car_solids.py --out out/racelab11 --stages controls,poisson,flow,car
+python scripts/tier62_car_solids.py --out out/racelab11 --stages march
+python scripts/tier62_car_solids.py --out out/racelab11 --stages compare,summary
+python -m pytest tests/test_tier62_car_solids.py -p no:cacheprovider   # 22 passed
+python scripts/vault_scan.py wiki        # 241 files, 0 problems
+python scripts/run_suite.py              # 1601 passed, 0 failed, 679 s on battery
+```
+
+The suite ran beside the user's two phone-remote `server.py` processes, with no standby event in the hour before it finished.
+
+The first `compare` failed on summary keys an earlier draft of the march used; it stays in the record's `stage_errors` and the stage was re-run. The app held the machine awake for the march after two modern-standby periods (13:00–13:16 and 13:32–13:35) had stretched earlier runs.
+
+**Closed:** **W264**, **W265**, **W266**. **Opened:** **W275** (the front wing filled before a grid could wrap it), **W276** (the wheels' clearance decides how the pod is fed), **W277** (the road patch's pressure at its end), **W278** (the solid car's duct flows backwards), **W279** (the solid car makes lift), **W280** (the first incomplete LU factor is singular). **Annotated:** W219, W257, W263.
+
+**Added:** `atlas/cases/overset_multi.py`, `atlas/cases/car_solids.py`, `scripts/tier62_car_solids.py`, `tests/test_tier62_car_solids.py`, `out/racelab11/racelab11.json`, [[poc3-racelab-car-solids]].
+**Changed:** `atlas/cases/overset.py`, `atlas/cases/overset_ns.py` (both additions off by default), `.gitignore` (the `out/racelab11` allowlist), `tests/test_tier45_region_assembly.py` (`ADDED_AFTER_CAPTURE` names `overset_multi` and `car_solids`), [[gap-worklist]], [[index]].
+
+**NOT done:** the front wing kept as drawn; W277, W278's pressures and W280 diagnosed; anything of RaceLab's march — devices, joins, agents, seams, learned windows, the demo (Tier 63); forces shown independent of the step or the grids; any cost on mains. RaceLab's column, records, gate, demo, bundle and `car_geometry.json` are unchanged. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

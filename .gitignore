@@ -454,6 +454,17 @@ out/racelab9/*
 out/racelab10/*
 !out/racelab10/racelab10.json
 
+# Tier 62 -- the drawn car as solids on body-fitted grids: the multi-body
+# controls and manufactured solutions, the car's solids, grids and composite,
+# its first march and the comparison with the porous column
+# (`tier62_car_solids.py --out out/racelab11`). JSON only. Rebuilding costs
+# about an hour on the development laptop, most of it the march. The march's
+# full trajectory (march.json, several MB) and the run logs are ignored; the
+# record carries its summary.
+!out/racelab11/
+out/racelab11/*
+!out/racelab11/racelab11.json
+
 # Tier 57 -- PoC 3 phase 5, the bundle. JSON only: what
 # scripts/verify_racelab_bundle.py found on a FRESH CLONE of the
 # poc3-racelab-demo branch, one record per platform -- the mode run.sh has in
