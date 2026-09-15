@@ -432,6 +432,17 @@ out/racelab7/*
 out/racelab8/*
 !out/racelab8/racelab8.json
 
+# Tier 60 -- body-fitted overset grids: the manufactured-solution convergence at
+# four resolutions, the exactness properties and refusals, the generated grids,
+# and the composite pressure system priced at the car's size
+# (`tier60_body_fitted_grids.py --out out/racelab9`). JSON only. Rebuilding costs
+# a few minutes, most of it the price stage's three solvers; the price itself
+# depends on the machine and its power state, which the record carries. The run
+# log and the figure beside it are ignored.
+!out/racelab9/
+out/racelab9/*
+!out/racelab9/racelab9.json
+
 # Tier 57 -- PoC 3 phase 5, the bundle. JSON only: what
 # scripts/verify_racelab_bundle.py found on a FRESH CLONE of the
 # poc3-racelab-demo branch, one record per platform -- the mode run.sh has in

@@ -381,3 +381,20 @@ RaceLab is done when:
 5. Every number on screen is traceable to a recorded run in the vault.
 6. The dashboard names which families have no learned option, and why.
 7. The full suite is green and `vault_scan` reports 0 problems.
+
+---
+
+# 13. Amendments
+
+## 13.1 2026-09-14 — the user's decisions after the Tier 59 review
+
+Everything above stands as written; where these conflict with it, these win.
+Each row says what is built, so the document never describes a demo that does
+not exist.
+
+| section | as written | decided | status |
+|---|---|---|---|
+| §4.1 windows | 12–20 fluid windows laid out along the body, with `wing_fsi`'s halo and partition of unity — which means rectangles | **Body-fitted grids.** Curved grids wrapped round each part of the car, overlapping a Cartesian background, with the bodies as real walls rather than porous body forces. The background keeps rectangular windows, and the learned expert runs only there, because Poseidon-T accepts nothing but a uniform 128 × 128 grid. | **Foundation built** in Tier 60 (the grids, the overlap, the composite pressure solve; [[poc3-racelab-body-fitted-grids]]). The flow solver, the car on it and the demo are not. |
+| §4.2 certified mode | a per-window mode | **Live.** An implicit fluid time step, so that a macro-step has a fixed point for defect correction to certify; the classical column becomes that implicit step (W226's second option, not an amendment of §4.2 to a steady-state mode). | not started |
+| §3.3 parameters | thirteen sliders | **Powertrain and cooling** — state of charge, battery power draw, coolant mass flow, ambient temperature — **and geometry** — ride height, rake, diffuser angle, front flap, rear wing, radiator duct area — with a visible recompiling state for geometry. Brake and plate-stiffness knobs stay omitted: there is no brake subsystem and the structure is rigid. | not started |
+| §3.2 and §9, phase 4 | a half-car in a box, classical only | **A real Formula One car's CAD model**, after the two-dimensional work is done. Its licence is checked and its download approved before anything is fetched. | not started |

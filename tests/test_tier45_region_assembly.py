@@ -111,6 +111,13 @@ ADDED_AFTER_CAPTURE = {
                  "untouched by it.  Its own gap is W238: this column has no "
                  "declared envelope at all, so nothing about it is checked the "
                  "way the 2-D column's experts are",
+    "overset": "Tier 60: the body-fitted foundation for PoC 3 -- curved body "
+               "grids, the overlap between them and a Cartesian background, and "
+               "one composite pressure system.  It builds NO CaseGraph of its "
+               "own, declares no region and imports no case: it is numpy and "
+               "SciPy alone, which is why the W189 byte-identity capture below "
+               "is untouched by it.  The overlap it builds has no declaration "
+               "the compiler can read yet (W268)",
 }
 
 #: **The two artifacts Tier 49's W194 moves, and the reason.**  `L7/R9`'s premise

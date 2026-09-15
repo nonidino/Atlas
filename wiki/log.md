@@ -4979,3 +4979,44 @@ Every run was on mains, with the user's idle `phone-remote` server beside it; th
 **Changed:** `atlas/cases/racelab.py` (`OUTFLOW`, `RaceRollout.relax_outflow`), `atlas/cases/racelab_switch.py` (`MixedRollout._advance`), `atlas/demo_racelab/engine.py` (`U_DUCT`, `RELEASE_TIERS`, `find_release` by column), `atlas/demo_racelab/README.md`, `scripts/tier54_traced_car.py` (per-record outlet, `stage settle`, the racelab8 registration), `scripts/tier51_racelab_graph.py`, `tier52_racelab_switch.py`, `tier53_racelab_rerun.py`, `tier58_car_fixes.py` (the pinned column named), `tests/test_tier56_racelab_drawn_car.py`, `tests/test_tier57_racelab_bundle.py`, `tests/test_tier58_car_fixes.py` (each with its diagnosis kept), `.gitignore`, [[poc3-racelab-car-fixes]] (§9 annotated), [[gap-worklist]], `wiki/index.md`.
 
 **NOT done:** rebuilding or re-verifying the bundle (W262); explaining W260 or W261; re-measuring the learned column on the repaired outlet; W257's device planes. Nothing downloaded, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-15] tier 60 | body-fitted overset grids: the grids, the overlap and the pressure solve
+
+The work ran on the evening of 2026-09-14 and every record carries that date; this entry was written just after midnight. The user reviewed what was left of PoC 3 and decided four things, recorded in `POC3-RACELAB-REQUIREMENTS.md` §13: RaceLab's windows must follow the car, by **body-fitted grids** (curved grids round each part overlapping a Cartesian background, the bodies as walls), chosen over shaped regions on the same lattice and over keeping the boxes; the certified mode goes **live** through an implicit fluid step; **both** the powertrain/cooling knobs and the geometry knobs go on the page; and 3-D moves to a **real Formula One CAD model** after the 2-D work. This tier is the foundation of the first. See [[poc3-racelab-body-fitted-grids]].
+
+### What was built
+
+`atlas/cases/overset.py`, with numpy and SciPy only (both already bundle dependencies):
+- **body grids** with $\xi$ clockwise and periodic, $\eta$ outward, $J > 0$ required, and the metric stored as $a_{ab} = J g^{ab}$;
+- a **generator** that offsets a closed outline along a normal smoothed over a width growing with distance from the wall — defined by the outline alone, so a finer grid is the same mapping (a first, layer-marching version shrank a circle's grid by $1.1\times10^{-2}$ and was replaced);
+- **hole cutting** in the background, interpolation points on both sides of every overlap, **donors located on the same width-$w$ Lagrange map their weights interpolate with**, explicit interpolation, and orphans refused by name;
+- one **composite pressure system**: five-point background, nine-point conservative curvilinear Laplacian, a Neumann wall row, a quadratic ghost at the box, and one interpolation equation per interpolation point.
+
+### Verified
+
+A manufactured solution at $h = 1/16$ to $1/128$, with the box and the body grid alone as controls through the same assembly. Between the two finest levels every width-3 arm on an analytic grid reads pressure order $1.99$–$2.01$ and gradient $1.92$–$2.00$; the composite's body-grid error is $1.82\times$ the body grid's alone; linear fields interpolate to $\le 1.1\times10^{-15}$; rows annihilate constants to $3.7\times10^{-16}$; a too-thin grid ($180$ orphans), a grid leaving the box and two intersecting bodies are refused. **Width-2 (bilinear) interpolation costs the background's gradient an order** ($1.57$, $1.59$, $0.79$), so width 3 is the default. **The box's gradient first read order $1.00$** with the linear ghost $2g - p_0$; the quadratic ghost $(8g - 6p_0 + p_1)/3$ made it $2.00$, before the predictions were written.
+
+### G4, and the smoothing
+
+Fourteen predictions were registered before the run; thirteen held. **G4 failed**: on a generated grid round a thin ellipse (tip radius $0.0375$, grid $0.45$ deep) the composite converged at $1.74$. A diagnosis with one change per arm, labelled as written after the verdict: the grid **alone** fails the same way ($1.67$, then $1.75$ at L4→L5), so not the overlap; a $64{,}000$-point outline changes nothing to four figures; a blunter tip ($1.99$) or a thinner grid ($1.98$) recovers; and on the grid alone the order follows the smoothing monotonically — $\kappa = 0.25$: $1.99$, $\kappa = 1$: $1.67$, $\kappa = 4$: $1.01$. **`overset.KAPPA` became $0.25$**, two predictions registered for it before the diagnosis stage ran both held (D1: the same composite at $1.99$; D2: the ellipse, plate and NACA 0012 unfolded, the dent refused), and every earlier stage stays pinned to $\kappa = 1$ so the record reproduces.
+
+### The price
+
+At a car-size stand-in — the $672\times240$ background and eight body grids, $204{,}599$ unknowns — SuperLU factors in $3.79$ s and solves in a median $0.103$ s; smoothed-aggregation AMG with BiCGSTAB takes $21$ iterations and $2.97$ s; incomplete LU failed as singular. **By the rule written before the number existed, the flow solver will solve the pressure once per macro-step.** Building the overlap took $46.8$ s, $44$ of them in two edge loops; vectorised with the answer bitwise unchanged, $15.3$ s. **Every cost was taken on battery**, one Python process, the app holding the machine awake.
+
+```
+python scripts/tier60_body_fitted_grids.py --out out/racelab9 --stages poisson,properties,generator,price,summary
+python scripts/tier60_body_fitted_grids.py --out out/racelab9 --stages diagnose,build_cost,summary
+python -m pytest tests/test_tier60_overset_grids.py -p no:cacheprovider   # 28 passed
+python scripts/vault_scan.py wiki        # 239 files, 0 problems
+python scripts/run_suite.py              # 1563 passed, 0 failed, 895 s on battery
+```
+
+The first full-suite run read 1562 passed and 1 failed: `test_tier45_region_assembly.py`'s package census, which requires every case module to be named, did not know `overset`. It was named and the suite re-run whole. The only power event in the two hours before the final run was a power-source change at 22:13, before the tier began.
+
+**Opened:** **W263** (how much smoothing concave car shapes need), **W264** (the drawn car is zero-thickness plates), **W265** (the wheels touch the road), **W266** (grids cut by the box or each other are refused, not built), **W267** (the overlap's build time), **W268** (no compiler declaration for an overlap), **W269** (the pressure once per macro-step fixes the time integration), **W270** (the learned expert has no window near the car). **Annotated:** W218, W219, W220, W226, W230, W240, W257.
+
+**Added:** `atlas/cases/overset.py`, `scripts/tier60_body_fitted_grids.py`, `tests/test_tier60_overset_grids.py`, `out/racelab9/racelab9.json`, [[poc3-racelab-body-fitted-grids]].
+**Changed:** `POC3-RACELAB-REQUIREMENTS.md` (§13, the user's decisions, each with what is built), `.gitignore` (the `out/racelab9` allowlist), `tests/test_tier45_region_assembly.py` (`ADDED_AFTER_CAPTURE` names `overset`), `atlas/demo_racelab/README.md` (its drift figure quoted the release sizing's $2.5\%$ for the sizing the demo runs, whose record says $4.4\%$ with $0.8\%$ left above the clamp — an error from Tier 59, found by the review), [[gap-worklist]], [[index]].
+
+**NOT done:** a flow solver; any car part on a grid; cutting grids by the box or by each other; any cost on mains; smoothing checked on concave shapes; RaceLab's column, records, gate, car, demo engine and bundle are unchanged. Nothing downloaded or installed (`pyamg`, already present, was used only for pricing), no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

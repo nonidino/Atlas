@@ -158,10 +158,11 @@ field rather than about this code.
   the disk left its clamp within twenty macro-steps (W244, W259). The outlet
   now relaxes convectively, and the release state is settled against the
   machine the demo is sized for: `out/racelab8`'s verify marched 600
-  macro-steps enforced at exactly `U_DUCT` and was admitted. The duct flow still
-  drifts down by about 2.5% over those 600, so a march left running long
-  enough will meet the machine's lower clamp, and the page will stamp it when
-  it does. See [[poc3-racelab-car-fixes]] and [[poc3-racelab-outlet-and-start]].
+  macro-steps enforced at exactly `U_DUCT` and was admitted. At that sizing the
+  duct flow still drifts down by about 4.4% over those 600, leaving the machine
+  0.8% above its lower clamp at the end (W261), so a march left running long
+  enough will meet the clamp, and the page will stamp it when it does. See
+  [[poc3-racelab-car-fixes]] and [[poc3-racelab-outlet-and-start]].
 - **One Reynolds number, one grid, one incidence**, and every body porous with
   no boundary layer and no Kutta condition — `poc2-frontwing-results`' own list,
   now thirteen times over instead of once.
