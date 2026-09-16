@@ -1,0 +1,371 @@
+{
+ "tier": 66,
+ "prediction": [
+  {
+   "id": "G1",
+   "claim": "the masked set is EXACTLY the set inside the solids' outlines at every raster tried, 0 either way, not just at the 320 x 180 the exploration checked",
+   "why": "the mask is where the donor search fails and the outlines are what the grids were cut from; neither depends on the raster, so agreeing once is agreeing always"
+  },
+  {
+   "id": "G2",
+   "claim": "drawing the background alone would leave at least 3,000 of the 320 x 180 raster's drawable pixels blank",
+   "why": "the hole margin cuts the background a margin BEYOND each body, and the body grids claim 5,137 pixels in exactly that region"
+  },
+  {
+   "id": "G3",
+   "claim": "the mask and the source map do not depend on the state: identical for Tier 64's prefix and for a random vector",
+   "why": "the operator is built from the geometry and the donor search alone, and reads no solution at all"
+  },
+  {
+   "id": "G4",
+   "claim": "building the same raster twice gives a bitwise identical operator",
+   "why": "the donor search is a fixed sequence of array operations with no randomness and no iteration count that depends on the machine"
+  },
+  {
+   "id": "G5",
+   "claim": "a raster pixel is the SAME NUMBER as a direct probe at that point, to 0.0 exactly and not merely to rounding",
+   "why": "the raster is that operator applied at those points; there is no second path for the two to differ along"
+  },
+  {
+   "id": "G6",
+   "claim": "a frame costs under 1% of a march step, both measured in this process",
+   "why": "a frame is one sparse matrix-vector product against a step that solves the momentum equations and a pressure Poisson on 377,267 unknowns"
+  },
+  {
+   "id": "G7",
+   "claim": "the PNG carries exactly as many car-coloured pixels as the mask has masked ones, and the field's colour map never produces that colour",
+   "why": "field_png writes the car's colour AFTER the colour map, over the non-finite pixels the mask put there"
+  },
+  {
+   "id": "G8",
+   "claim": "at a raster the exploration did not try, the linear control stays at rounding and the quadratic control does NOT improve",
+   "why": "both errors are set by the GRID spacing; refining the pixels cannot refine the grids, which is what makes the pair identify what is being measured"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-15T23:42:22",
+ "read_before_this_run": [
+  "Tier 62-64: the body-fitted composite is 12 grids (a Cartesian background 241 x 672 at h = 0.015625 and eleven curvilinear) with 377,267 unknowns, and it marches at a median 0.62-0.81 s a step (out/racelab13: prefix 0.8076, null arm 0.6228).",
+  "Tier 65: the composite is ONE implicit solve -- 12,078 interpolation rows over 40 grid pairs -- so no grid can be stepped or drawn alone, and the fluid is one expert.",
+  "car_union.probe_matrix: the devices' strips already read the composite at arbitrary points, taking the first body grid in ov.comps order that holds the point and the background otherwise, and RAISING when a point is held by nothing.",
+  "Explored before these predictions were written (out/t66_explore.json), on this composite and Tier 64's cached prefix state at t = 8: a raster of 320 x 180 over the background's own extent leaves 2,785 points (4.84%) held by no grid; the masked set and the set inside the solids' outlines agreed EXACTLY there, 2,785 both ways and 0 either way; the operator cost 15.9 / 63.9 / 261.6 s to build at 160x90 / 320x180 / 640x360 and 0.0001 / 0.0003 / 0.0019 s to apply; a linear field came back at 3.55e-15, 3.55e-15 and 2.66e-15 and a quadratic at 5.42e-6, 4.46e-6 and 5.51e-6; and of the 54,815 drawn pixels at 320 x 180 the background owned 49,678 and the eleven body grids 5,137.",
+  "NOT measured before these predictions: whether the mask is the car at a raster the exploration did not try; how much of the picture the BACKGROUND ALONE could not draw; whether the mask and the operator depend on the state or on the build; whether a raster pixel is the same number as a direct probe; what a frame costs beside a step measured in the same process; and what the PNG actually contains."
+ ],
+ "machine": {
+  "python_processes_running": 3,
+  "python_processes": [
+   "\"python.exe\",\"13848\",\"Console\",\"1\",\"4,232 K\"",
+   "\"python.exe\",\"11560\",\"Console\",\"1\",\"67,328 K\"",
+   "\"python.exe\",\"27704\",\"Console\",\"1\",\"242,268 K\""
+  ],
+  "battery_status_raw": "2",
+  "on_mains": true,
+  "reference_matmul_1024_s": 0.009334700000181329,
+  "taken_at": "2026-09-15T23:42:23"
+ },
+ "raster": {
+  "composite": {
+   "grids": 12,
+   "components": 11,
+   "n_unknowns": 377267,
+   "build_s": 67.1830723000021,
+   "bg_shape": [
+    241,
+    672
+   ],
+   "h": 0.015625
+  },
+  "by_raster": {
+   "160x90": {
+    "nx": 160,
+    "ny": 90,
+    "points": 14400,
+    "extent": [
+     0.0078125,
+     10.4921875,
+     0.0,
+     3.75
+    ],
+    "masked": 702,
+    "masked_frac": 0.04875,
+    "drawn": 13698,
+    "nnz": 123282,
+    "build_s": 15.801092300003802,
+    "per_grid": {
+     "shell0": 84,
+     "shell1": 69,
+     "shell2": 224,
+     "shell3": 219,
+     "shell4": 128,
+     "shell5": 172,
+     "shell6": 230,
+     "WHEEL_F": 78,
+     "road_WHEEL_F": 10,
+     "WHEEL_R": 73,
+     "road_WHEEL_R": 9,
+     "bg": 12402
+    },
+    "from_background": 12402,
+    "from_body_grids": 1296,
+    "controls": {
+     "linear_max_err": 3.552713678800501e-15,
+     "quadratic_max_err": 5.421093395741039e-06,
+     "a": 0.37,
+     "b": -0.81,
+     "c": 2.5
+    },
+    "mask_vs_solids": {
+     "masked": 702,
+     "inside_solid": 702,
+     "both": 702,
+     "masked_not_inside": 0,
+     "inside_not_masked": 0
+    },
+    "apply_s": 0.0001418699997884687
+   },
+   "320x180": {
+    "nx": 320,
+    "ny": 180,
+    "points": 57600,
+    "extent": [
+     0.0078125,
+     10.4921875,
+     0.0,
+     3.75
+    ],
+    "masked": 2785,
+    "masked_frac": 0.048350694444444446,
+    "drawn": 54815,
+    "nnz": 493335,
+    "build_s": 63.159711200001766,
+    "per_grid": {
+     "shell0": 326,
+     "shell1": 279,
+     "shell2": 964,
+     "shell3": 865,
+     "shell4": 429,
+     "shell5": 774,
+     "shell6": 846,
+     "WHEEL_F": 308,
+     "road_WHEEL_F": 19,
+     "WHEEL_R": 309,
+     "road_WHEEL_R": 18,
+     "bg": 49678
+    },
+    "from_background": 49678,
+    "from_body_grids": 5137,
+    "controls": {
+     "linear_max_err": 3.552713678800501e-15,
+     "quadratic_max_err": 4.463229042350747e-06,
+     "a": 0.37,
+     "b": -0.81,
+     "c": 2.5
+    },
+    "mask_vs_solids": {
+     "masked": 2785,
+     "inside_solid": 2785,
+     "both": 2785,
+     "masked_not_inside": 0,
+     "inside_not_masked": 0
+    },
+    "apply_s": 0.0003087000000959961
+   },
+   "480x270": {
+    "nx": 480,
+    "ny": 270,
+    "points": 129600,
+    "extent": [
+     0.0078125,
+     10.4921875,
+     0.0,
+     3.75
+    ],
+    "masked": 6296,
+    "masked_frac": 0.04858024691358025,
+    "drawn": 123304,
+    "nnz": 1109736,
+    "build_s": 143.53568749999977,
+    "per_grid": {
+     "shell0": 750,
+     "shell1": 637,
+     "shell2": 2245,
+     "shell3": 1945,
+     "shell4": 1026,
+     "shell5": 1803,
+     "shell6": 1865,
+     "WHEEL_F": 683,
+     "road_WHEEL_F": 32,
+     "WHEEL_R": 712,
+     "road_WHEEL_R": 33,
+     "bg": 111573
+    },
+    "from_background": 111573,
+    "from_body_grids": 11731,
+    "controls": {
+     "linear_max_err": 3.552713678800501e-15,
+     "quadratic_max_err": 5.759094751311977e-06,
+     "a": 0.37,
+     "b": -0.81,
+     "c": 2.5
+    },
+    "mask_vs_solids": {
+     "masked": 6296,
+     "inside_solid": 6296,
+     "both": 6296,
+     "masked_not_inside": 0,
+     "inside_not_masked": 0
+    },
+    "apply_s": 0.000749675000042771
+   }
+  }
+ },
+ "stage_wall_s": {
+  "raster": 295.1743381999986,
+  "blank": 3.7707096000012825,
+  "state": 201.55489269999816,
+  "summary": 0.003802999999606982
+ },
+ "blank": {
+  "drawable": 54815,
+  "background_can_draw": 51102,
+  "background_blank": 3713,
+  "background_blank_frac_of_drawable": 0.06773693332117121,
+  "note": "pixels the composite can draw and the background alone cannot: the boundary layers, the wheel clearances and the cooling duct"
+ },
+ "state": {
+  "state": {
+   "t": 8.00000000000008,
+   "k": 641,
+   "file": "out\\racelab13\\cache\\prefix_t8.npz"
+  },
+  "fields": {
+   "u": [
+    -1.4283830025678208,
+    2.776800644039484
+   ],
+   "v": [
+    -0.9961215148039082,
+    1.1107987378684654
+   ],
+   "speed": [
+    5.26350701491529e-08,
+    2.8030348548253503
+   ],
+   "p": [
+    -5.3631589999683875,
+    10.518207112568579
+   ]
+  },
+  "nonfinite_drawn": 0,
+  "state_independence": {
+   "mask_identical": true,
+   "note": "the mask is the operator's, so a different state must not move it"
+  },
+  "determinism": {
+   "indices_identical": true,
+   "indptr_identical": true,
+   "data_bitwise_identical": true,
+   "mask_identical": true,
+   "source_identical": true
+  },
+  "pixel_vs_direct": {
+   "n": 55,
+   "any_missing": false,
+   "max_abs_diff": 0.0
+  },
+  "cost": {
+   "apply_s": 0.0002132539999729488,
+   "steps": [
+    {
+     "wall_s": 3.4355466999986675,
+     "solver_step_s": 3.427361200003361,
+     "ilu_s": 2.9391811000023154,
+     "iterations": [
+      1,
+      1
+     ]
+    },
+    {
+     "wall_s": 0.5098398999980418,
+     "solver_step_s": 0.500928199995542,
+     "ilu_s": 0.0,
+     "iterations": [
+      1,
+      1
+     ]
+    },
+    {
+     "wall_s": 0.5445164999982808,
+     "solver_step_s": 0.5357427999988431,
+     "ilu_s": 0.0,
+     "iterations": [
+      1,
+      1
+     ]
+    },
+    {
+     "wall_s": 0.6525679999977001,
+     "solver_step_s": 0.6446314999993774,
+     "ilu_s": 0.0,
+     "iterations": [
+      1,
+      1
+     ]
+    },
+    {
+     "wall_s": 0.6257152000034694,
+     "solver_step_s": 0.6177735999954166,
+     "ilu_s": 0.0,
+     "iterations": [
+      1,
+      1
+     ]
+    }
+   ],
+   "first_step_s": 3.4355466999986675,
+   "steps_that_refactored": 1,
+   "steps_timed": 5,
+   "step_s": 0.5851158500008751,
+   "step_s_is": "the median of the steps that did NOT refactor the incomplete LU",
+   "ratio": 0.0003644645756436608,
+   "tier64_median_step_s": 0.6228487499993207,
+   "note": "both halves measured in this process, on this machine, seconds apart"
+  },
+  "png": {
+   "bytes": 44612,
+   "shape": [
+    180,
+    320,
+    3
+   ],
+   "lo": 0.0,
+   "hi": 2.0,
+   "car_pixels": 2785,
+   "masked": 2785,
+   "car_pixels_match_mask": true,
+   "colour_map_can_make_the_car_colour": false,
+   "car_colour_margin": 79.06326580656784,
+   "car_colour_min_margin": 60.0,
+   "field_max": 2.8030348548253503,
+   "clipped_pixels": 4146,
+   "file": "out\\racelab15\\overlay_speed.png"
+  },
+  "controls_480x270": {
+   "linear_max_err": 3.552713678800501e-15,
+   "quadratic_max_err": 5.759094751311977e-06,
+   "a": 0.37,
+   "b": -0.81,
+   "c": 2.5
+  }
+ },
+ "verdicts": {
+  "G1": true,
+  "G8": true,
+  "G2": true,
+  "G3": true,
+  "G4": true,
+  "G5": true,
+  "G6": true,
+  "G7": true
+ },
+ "verdicts_missing": []
+}

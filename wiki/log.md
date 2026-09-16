@@ -5193,3 +5193,39 @@ About two and a half minutes for the tier's own stages, nearly all of it the com
 **Changed:** `atlas/compiler.py` (`_decomposition_cuts` narrowed by `stencil_radius`), `tests/test_tier45_region_assembly.py` (`car_graph` in the census, `MOVED_BY_W285` and its reason asserted), `.gitignore` (the `out/racelab14` allowlist), [[gap-worklist]], [[index]].
 
 **NOT done:** nothing marched, no seam operator probed, the fluid's strip response explicit rather than solved; the overlap, the domain boundaries and the strip's geometry declared or excluded but never checked against the solver; P2-P7 not re-run on this graph; no learned expert and no demo on the body-fitted column. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 66 | the body-fitted composite on one raster, the demo's field overlay
+
+**[[poc3-racelab-car-render]].** The porous column's fluid is fourteen rectangles on one lattice, so a picture of it is an array slice. The body-fitted column is twelve overlapping grids and no array holds the answer, so the demo could not draw it at all. `atlas/cases/car_render.py` turns the composite into one rectangle of pixels.
+
+### Built
+
+**`CompositeRaster`: the SOLVER'S OWN interpolation asked over a raster.** `car_union.probe_matrix` — the operator the devices' strips already read the composite with, taking the first body grid in `ov.comps` order that holds a point and the background otherwise — was **split rather than copied**: `probe_matrix_masked` is now the primitive, returning the operator, a `missing` flag and the grid that drew each point, and the strict `probe_matrix` is a wrapper that raises, message and behaviour unchanged (Tier 64's tests pass untouched). A strip must reach every point it applies force at; a picture necessarily lands inside the car, and those pixels are not an error, they are the car. **Writing the two searches twice would have let the picture come to disagree with the solve**, which is the artifact this project exists not to produce.
+
+### Measured
+
+**The masked set is EXACTLY the set inside the solids' outlines** — $702$, $2{,}785$ and $6{,}296$ at $160\times90$, $320\times180$ and $480\times270$, with $0$ discrepancy either way at every one. That is a real check and not a tautology: the mask comes from the donor search and the outlines come from the drawing, and the search never consults them. **The justification for the tier**: drawing the background alone would leave $3{,}713$ of the $54{,}815$ drawable pixels blank ($6.8\%$) — the boundary layers, the wheel clearances and the cooling duct. **The controls**: a linear field laid on every node returns at $3.55\times10^{-15}$ at every raster, and the quadratic beside it — which is what stops the first from being vacuous, since a renderer that ignored the grids entirely would pass it — returns at $4.5\times10^{-6}$ and **does not improve when the pixels are refined**, because that error is the grid's. A pixel equals a direct probe **to $0.0$ exactly**; the operator is bitwise identical on a second build and unmoved by the state. **W287**: the operator costs $63.2$ s to build at $320\times180$, depends on the geometry alone, and is **not cached**, so a demo would pay it at every start.
+
+**Two failures behind green rows, and both are the tier's real content.**
+
+*A measurement.* Timing one step to divide the frame cost by gave $3.24$ s, five times Tier 64's median, because `overset_ns` refactors the incomplete LU on the first step after a state is loaded ($2.85$ s of $3.32$, $86\%$) and then reuses it for twenty. That would have let the claim pass by a factor of five **in the permissive direction**. The denominator is now the median of the steps that did not refactor, $0.5684$ s, giving $0.0400\%$ — and re-timed on a later run the seconds moved $6\%$ while the ratio did not move the conclusion at all, which is the argument for quoting ratios measured in one process.
+
+*Two more things were visible only by looking.* The car draws as an **outline, not a silhouette** — the mask is $2{,}785$ pixels, under $5\%$, while the car's bounding box covers nearly $29\%$ of the domain — because the solids are thin plates; the dark region enclosed by the shell is **background unknowns**, air the solver marches and the duct's openings feed, not a hole. And $4{,}146$ pixels ($7.6\%$) are **clipped** at the scale's top, since it is fixed at $[0,2]$ and the field reaches $2.803$; the record now carries `field_max` and `clipped_pixels` so the picture cannot quietly imply it is a measurement up there.
+
+*A predicate.* G7 asked for the car in "a colour the field's map cannot produce", which held — and **opening the PNG showed the claim was nearly worthless**. The car was $(38,38,42)$, near-black; the map paints still air $(0,0,89)$; the car and the wake read as one thing, in the one place where confusing an object with slow air costs something. Equality tests identity where the eye needs separation. `car_colour_margin` measures the real quantity — distance to the nearest colour the map can make — and it condemns the guess: a mid grey scores $3.6$, a slate $6.2$, the first choice $56.8$, and the dark maroon now used $79.1$. A test pins it above $60$ **with a failing control**, so it cannot pass by measuring nothing. **The registered G7 was left as written and is still judged as written** — a pre-registered criterion is not rewritten once the data are in — so the finding is filed as "the prediction was too weak", which is a fact about the prediction and not about the renderer.
+
+```
+python scripts/tier66_car_render.py --out out/racelab15 --stages raster,blank,state,summary
+python -m pytest tests/test_tier66_car_render.py tests/test_tier45_region_assembly.py tests/test_tier64_car_union.py -p no:cacheprovider
+python scripts/vault_scan.py wiki        # 245 files, 0 problems
+python scripts/run_suite.py              # 1643 passed, 0 failed, 375 s
+```
+
+About seven minutes, most of it building the operator at three resolutions on a composite that takes a minute to assemble. Eight of eight predictions held.
+
+**Opened:** **W287** (the overlay's operator is cacheable and not cached). **Annotated:** W270.
+
+**Added:** `atlas/cases/car_render.py`, `scripts/tier66_car_render.py`, `tests/test_tier66_car_render.py`, `out/racelab15/racelab15.json`, `out/racelab15/overlay_speed.png`, [[poc3-racelab-car-render]].
+**Changed:** `atlas/cases/car_union.py` (`probe_matrix_masked` the primitive, `probe_matrix` its wrapper), `tests/test_tier45_region_assembly.py` (`car_render` in the census -- **the W189 control caught the new module, as it is built to**), `.gitignore` (the `out/racelab15` allowlist), [[gap-worklist]], [[index]].
+
+**NOT done:** the demo does NOT run on the body-fitted column -- this is the overlay and only the overlay, nothing marches it live and `atlas/demo_racelab` is untouched; the operator is not cached (W287); only `speed` was encoded, and vorticity is the one field that is not just another `sample` call because it is a derivative on curvilinear grids; body outlines, grid boundaries and window tints are not drawn; the picture was opened and looked at, but **nothing about the FLOW it shows was checked** -- that is Tier 64's question, and no feature of the rendered field has been compared with anything. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

@@ -128,6 +128,10 @@ ADDED_AFTER_CAPTURE = {
                      "patches, and the multi-body manufactured solutions.  It builds "
                      "NO CaseGraph, declares no region and imports no case but "
                      "overset and overset_ns",
+    "car_render": "Tier 66: the body-fitted composite sampled onto ONE RASTER, the demo's "
+                  "field overlay.  It builds NO CaseGraph and declares no region: it is a "
+                  "VIEW, and it reads the composite only through car_union's own probe "
+                  "operator so the picture cannot come to disagree with the solve",
     "car_graph": "Tier 65: the body-fitted column DECLARED -- one fluid expert for the "
                  "whole composite, a strip MECH port per device (W94's first expressible "
                  "bond for a volumetric device) and the coolant circuit and powertrain "

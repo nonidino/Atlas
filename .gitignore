@@ -520,3 +520,15 @@ out/editor.log
 !out/racelab14/
 out/racelab14/*
 !out/racelab14/racelab14.json
+
+# Tier 66 -- the body-fitted composite on one raster, the demo's field overlay
+# (`tier66_car_render.py --out out/racelab15`). The JSON carries the operator's
+# cost and mask at three rasters, the two controls, what the background alone
+# could not draw, and the checks on the operator; `overlay_speed.png` is the
+# frame the page shows, kept because it is the deliverable and it is 40 KB.
+# Rebuilding costs about seven minutes, most of it building the operator at
+# three resolutions on a composite that takes a minute to assemble.
+!out/racelab15/
+out/racelab15/*
+!out/racelab15/racelab15.json
+!out/racelab15/overlay_speed.png

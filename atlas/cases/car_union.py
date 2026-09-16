@@ -167,16 +167,32 @@ def open_band(solids: Sequence[CS.Solid], x_cells: float, y_from: float, y_to: f
     return sorted(out)
 
 
-def probe_matrix(ov, px, py) -> sp.csr_matrix:
-    """`car_solids.probe` as a sparse matrix: row k interpolates the composite at
-    point k from the first body grid (in `ov.comps` order) that holds it with a
-    usable stencil, else from the background.  Built once; applied every step."""
+def probe_matrix_masked(ov, px, py) -> tuple[sp.csr_matrix, np.ndarray, np.ndarray]:
+    """The probe operator, with the unreachable points REPORTED rather than fatal.
+
+    Row k interpolates the composite at point k from the first body grid (in
+    `ov.comps` order) that holds it with a usable stencil, else from the
+    background.  Returns ``(M, missing, source)``: ``missing[k]`` is True where
+    no grid could hold the point -- its row of ``M`` is empty, so ``M @ vec`` is
+    zero there and the caller must not read it -- and ``source[k]`` indexes
+    ``list(ov.comps) + [ov.bg]``, or is -1 where ``missing``.
+
+    **Why this is the primitive and `probe_matrix` is the wrapper (Tier 66).**
+    A device's strip must reach every one of its points or the join is being
+    applied somewhere the composite cannot evaluate, so `probe_matrix` raises.
+    A PICTURE of the composite is the same operator asked over a raster that
+    covers the whole domain, and a raster necessarily lands inside the bodies,
+    where there is no fluid and nothing to draw.  Both need the same donor
+    search in the same grid order; if they were written twice they could come
+    to disagree, and then the picture would stop being a picture of the solve.
+    """
     px = np.asarray(px, dtype=float).ravel()
     py = np.asarray(py, dtype=float).ravel()
     m = px.size
     rows, cols, vals = [], [], []
     open_ = np.ones(m, dtype=bool)
-    for c in list(ov.comps) + [ov.bg]:
+    source = np.full(m, -1, dtype=np.int64)
+    for gi, c in enumerate(list(ov.comps) + [ov.bg]):
         sel = np.nonzero(open_)[0]
         if not sel.size:
             break
@@ -192,10 +208,27 @@ def probe_matrix(ov, px, py) -> sp.csr_matrix:
             cols.append(idx.ravel())
             vals.append(res["weights"][good].ravel())
             open_[q] = False
-    if np.any(open_):
-        raise OV.OversetError(f"{int(open_.sum())} probe point(s) have no usable stencil on any grid")
-    return sp.csr_matrix((np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))),
-                         shape=(m, ov.n_unknowns))
+            source[q] = gi
+    if rows:
+        M = sp.csr_matrix((np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))),
+                          shape=(m, ov.n_unknowns))
+    else:                                                        # pragma: no cover
+        M = sp.csr_matrix((m, ov.n_unknowns))
+    return M, open_, source
+
+
+def probe_matrix(ov, px, py) -> sp.csr_matrix:
+    """`car_solids.probe` as a sparse matrix: row k interpolates the composite at
+    point k from the first body grid (in `ov.comps` order) that holds it with a
+    usable stencil, else from the background.  Built once; applied every step.
+
+    Every point must be reachable; a point that is not is an error here, because
+    the caller is a device's strip and not a picture.  `probe_matrix_masked` is
+    the same search without that requirement."""
+    M, missing, _source = probe_matrix_masked(ov, px, py)
+    if np.any(missing):
+        raise OV.OversetError(f"{int(missing.sum())} probe point(s) have no usable stencil on any grid")
+    return M
 
 
 @dataclass(frozen=True)

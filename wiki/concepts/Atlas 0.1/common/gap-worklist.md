@@ -2164,3 +2164,21 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **P2-P7 are not re-run on this graph**; the gate's clauses still read the porous column.
 - **No learned expert and no demo on the body-fitted column** (W270 untouched).
 - **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+
+### Tier 66 — the body-fitted composite on one raster, the demo's field overlay (2026-09-16)
+
+**[[poc3-racelab-car-render]], `atlas/cases/car_render.py`, `scripts/tier66_car_render.py`, `tests/test_tier66_car_render.py`, `out/racelab15/`.** The demo could not draw the body-fitted column at all: twelve overlapping grids and no array that holds the answer. `CompositeRaster` turns the composite into one rectangle of pixels using **the solver's own interpolation operator**, and `car_union.probe_matrix` was split (masked primitive, strict wrapper) rather than copied so the picture and the solve cannot drift apart. Eight of eight predictions held.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W287** | **the overlay's operator is cacheable and is not cached** | The probe operator is a function of the geometry and the raster ALONE — it reads no solution, is bitwise identical on a second build, and does not move when the state does, all three measured. It costs $63.2$ s to build at $320\times180$ ($15.8$ at $160\times90$, $143.5$ at $480\times270$) and $0.000228$ s to apply. So a demo on this column pays a minute of startup for something that could be written once per car. The cache key is already named in `car_render.RASTER_CACHE_NOTE`: the geometry fingerprint, `car_solids.GRID`, the hole margin, the stencil width and the raster — **and nothing in it changes while the demo runs** | **open, small and well-specified.** Nothing blocks it but the writing |
+| **W270** | no learned expert on the body-fitted column | *(annotated)* Unchanged, and now with the picture in place the shape of the hole is clearer: the overlay draws the whole composite, but the only place a Poseidon window could live is the background's rectangles, and nothing declares them. The renderer already reports which grid drew each pixel (`source`), which is the map a per-window tint would need | `open` |
+
+### What Tier 66 did NOT do, named
+
+- **The demo does not run on the body-fitted column.** This is the overlay and only the overlay: nothing marches it live, no engine was changed, `atlas/demo_racelab` is untouched.
+- **Only `speed` was encoded.** $u$, $v$ and pressure are the same `sample` call; **vorticity is not**, because it is a derivative and the grids are curvilinear.
+- **The PNG was never looked at.** It was checked for what it contains — the car's pixels, the colour map's range — and a socket cannot see an undrawn page.
+- **Body outlines, grid boundaries and window tints** of the requirements' §5.1 are not drawn.
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
