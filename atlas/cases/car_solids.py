@@ -95,6 +95,11 @@ SOLIDS_DEFAULT: dict[str, Any] = {
         {"plate": "CHASSIS", "from": 0.25, "to": 0.75, "role": "inlet"},
         {"plate": "POD_UP", "from": 0.80, "to": 1.00, "role": "outlet"},
     ],
+    #: Section 3.3's *radiator duct area, 0.3 to 1.5 of nominal*, wired in Tier
+    #: 69.  It scales every opening's span about its own centre; `1.0` IS the
+    #: drawn duct, so the nominal car and every cache keyed on its fingerprint
+    #: are unchanged by the knob existing.
+    "duct_area": 1.0,
 }
 
 #: The fillet radii ``"auto"`` tries, smallest first, in cells.
@@ -151,7 +156,36 @@ class Solid:
     notes: list[str] = field(default_factory=list)
 
 
+def scaled_opening(a0: float, a1: float, area: float) -> tuple[float, float]:
+    """One opening's span, scaled about its own centre and kept inside the panel.
+
+    `duct_area` is section 3.3's *radiator duct area, 0.3 to 1.5 of nominal*,
+    and until Tier 69 it reached nothing: these spans were literals and no code
+    multiplied them.  Scaling about the CENTRE keeps the inlet where it was
+    drawn and only opens or closes it.
+
+    **It clamps, and the clamp is why this returns the achieved span rather
+    than the asked-for one.**  The outlet is drawn from 0.80 to 1.00, so at
+    1.5x it would run to 1.05 -- off the end of the panel.  The span is held
+    inside ``[0, 1]``, which means a large `duct_area` delivers less than it
+    asks for, and `openings_report` records both so the difference is visible
+    rather than assumed away.
+    """
+    area = float(area)
+    if area <= 0.0:
+        raise ValueError(f"duct_area must be positive, got {area}")
+    mid = 0.5 * (a0 + a1)
+    half = 0.5 * (a1 - a0) * area
+    lo, hi = mid - half, mid + half
+    if lo < 0.0:
+        lo, hi = 0.0, min(1.0, hi - lo)
+    if hi > 1.0:
+        lo, hi = max(0.0, lo - (hi - 1.0)), 1.0
+    return (lo, hi)
+
+
 def _openings_for(b, rule) -> list[tuple[float, float]]:
+    area = float(rule.get("duct_area", 1.0))
     out = []
     for o in rule.get("openings", []):
         if o["plate"] != b.body_id:
@@ -159,8 +193,30 @@ def _openings_for(b, rule) -> list[tuple[float, float]]:
         a0, a1 = float(o["from"]), float(o["to"])
         if not 0.0 <= a0 < a1 <= 1.0:
             raise ValueError(f"opening on {b.body_id}: need 0 <= from < to <= 1, got {a0}, {a1}")
+        if area != 1.0:
+            a0, a1 = scaled_opening(a0, a1, area)
         out.append((a0, a1))
     return out
+
+
+def openings_report(rule: dict | None = None) -> list[dict]:
+    """Each opening's nominal and achieved span at this `duct_area`.
+
+    The knob's probe: a `duct_area` that changes no achieved span has not
+    reached the duct, whatever the rule says.
+    """
+    r = dict(SOLIDS_DEFAULT if rule is None else rule)
+    area = float(r.get("duct_area", 1.0))
+    rows = []
+    for o in r.get("openings", []):
+        a0, a1 = float(o["from"]), float(o["to"])
+        b0, b1 = scaled_opening(a0, a1, area) if area != 1.0 else (a0, a1)
+        rows.append({"plate": o["plate"], "role": o.get("role"),
+                     "duct_area": area,
+                     "nominal": [a0, a1], "nominal_span": a1 - a0,
+                     "achieved": [b0, b1], "achieved_span": b1 - b0,
+                     "clamped": bool(abs((b1 - b0) - (a1 - a0) * area) > 1e-12)})
+    return rows
 
 
 def _plate_polygon(b, rule, keep_out=None, openings: bool = True):

@@ -94,11 +94,15 @@ KNOBS: tuple[Knob, ...] = (
     Knob("ride_height", "vehicle", 0.15, 0.60, 0.22, "tiling units",
          ("front wing", "floor", "diffuser"), "bodies whose built pose moves", "wired",
          "moves DIFF, FW_FLAP, FW_MAIN and FW_UPPER -- four bodies"),
-    Knob("rake", "vehicle", 0.0, 0.15, 0.10, "cells per unit",
-         ("floor", "diffuser"), "bodies whose built pose moves", "dead",
-         "`rake` appears EXACTLY ONCE in the package: its own declaration in "
-         "CarParams. No body, grid, force or record reads it, so the slider "
-         "would move a number nothing reads"),
+    Knob("rake", "vehicle", 0.0, 0.15, 0.0, "cells",
+         ("floor", "diffuser"), "bodies whose built pose moves", "wired",
+         "WIRED IN TIER 70. It pitches the floor group rigidly about its own "
+         "leading edge -- five bodies move, FLOOR_LE sits at the pivot and "
+         "does not, DIFF rises 0.1342 cells at rake 0.15, and every plate's "
+         "incidence gains atan(rake/351.97). Its default moved 0.10 -> 0.0 in "
+         "the same change because while it reached nothing every car ever "
+         "built here was the rake = 0 car, and wiring it at 0.10 would have "
+         "pitched the floor under every cached field and record"),
     Knob("diffuser_deg", "aero", 0.0, 15.0, 0.0, "degrees",
          ("floor geometry",), "bodies whose built pose moves", "wired",
          "moves DIFF"),
@@ -109,10 +113,15 @@ KNOBS: tuple[Knob, ...] = (
          ("rear wing geometry",), "bodies whose built pose moves", "wired",
          "moves RW_FLAP"),
     Knob("duct_area", "cooling", 0.3, 1.5, 1.0, "of nominal",
-         ("duct geometry", "core inflow", "UA"), "the openings' spans", "dead",
-         "the duct's openings are FIXED LITERALS in car_solids.SOLIDS_DEFAULT "
-         "-- a CHASSIS inlet from 0.25 to 0.75 and a POD_UP outlet from 0.8 to "
-         "1.0 -- and nothing scales them"),
+         ("duct geometry", "core inflow", "UA"), "the openings' achieved spans", "wired",
+         "WIRED IN TIER 70. It scales each opening's span about its own centre, "
+         "so the inlet's 0.500 becomes 0.150 at 0.3 and 0.750 at 1.5 and the "
+         "outlet's 0.200 becomes 0.060 and 0.300. An opening that would run off "
+         "the end of its panel is SHIFTED to keep its span rather than losing "
+         "it -- the outlet moves to [0.70, 1.00] at 1.5 -- and "
+         "car_solids.openings_report records nominal beside achieved so a "
+         "clamp is visible. 1.0 IS the drawn duct, so the nominal car is "
+         "unchanged by the knob existing"),
     Knob("coolant_mdot", "cooling", 0.05, 0.30, 0.15, "kg/s",
          ("cooling_loop",), "the circuit's fixed-point return temperature", "global",
          "reaches the loop: 310.156 K at 0.05 against 310.865 K at 0.30 -- but "
@@ -206,6 +215,18 @@ def bodies_moved(name: str, lo: float, hi: float) -> list[str]:
     return sorted(k for k in a if k in b and a[k] != b[k])
 
 
+def duct_report(area: float) -> list[dict]:
+    """Every opening's nominal and achieved span at this `duct_area`."""
+    from . import car_solids as CS
+
+    return CS.openings_report(dict(CS.SOLIDS_DEFAULT, duct_area=float(area)))
+
+
+def duct_spans(area: float) -> float:
+    """The duct's TOTAL achieved opening, the one number the knob must move."""
+    return float(sum(r["achieved_span"] for r in duct_report(area)))
+
+
 def loop_return(mdot: float | None = None, t_amb: float | None = None) -> float:
     """The coolant circuit's fixed-point return temperature.
 
@@ -260,6 +281,97 @@ def soc_reach(omega: float = 20.0) -> dict[str, Any]:
     }
 
 
+#: Knobs whose change forces the car to be re-cut and re-gridded, which costs a
+#: composite rebuild (66-90 s, Tier 68).  Section 4.1 already anticipates this:
+#: a parameter that would change the decomposition is either clamped or the
+#: window set is rebuilt "with a visible recompiling state".
+REGRID = ("ride_height", "rake", "diffuser_deg", "front_flap_deg",
+          "rear_wing_deg", "duct_area")
+
+
+@dataclass
+class KnobState:
+    """The knobs' current values, and what each change actually moved.
+
+    This is criterion 2's machinery: `set` applies a value and returns the
+    subsystems that RESPONDED, measured, so a screen can show the response
+    rather than assert it.  A knob that reaches nothing is refused here rather
+    than accepted and quietly ignored -- section 3.3's rule, enforced at the one
+    place a value enters.
+    """
+
+    values: dict[str, float] = None  # type: ignore[assignment]
+
+    def __post_init__(self) -> None:
+        if self.values is None:
+            self.values = {k.name: k.default for k in KNOBS}
+
+    def car_params(self):
+        """`racelab.CarParams` at the current geometry values."""
+        from . import racelab as RL
+
+        fields = {f for f in RL.CarParams.__dataclass_fields__}
+        return RL.CarParams(**{k: v for k, v in self.values.items() if k in fields})
+
+    def solids_rule(self) -> dict:
+        """`car_solids.SOLIDS_DEFAULT` at the current duct area."""
+        from . import car_solids as CS
+
+        return dict(CS.SOLIDS_DEFAULT, duct_area=float(self.values["duct_area"]))
+
+    def set(self, name: str, value: float) -> dict[str, Any]:
+        """Move one knob, and report what responded.
+
+        Refuses a knob that reaches nothing and a value outside its declared
+        range, because a dashboard that accepts either is showing a control that
+        does not control.
+        """
+        k = KNOBS_BY_NAME.get(name)
+        if k is None:
+            raise KeyError(f"no such knob: {name!r}")
+        if k in must_not_be_shown():
+            raise ValueError(f"{name} reaches nothing and must not be offered: {k.note}")
+        value = float(value)
+        if not (k.lo <= value <= k.hi):
+            raise ValueError(f"{name} must be within [{k.lo}, {k.hi}], got {value}")
+        before = self._probe(k)
+        old = self.values[name]
+        self.values[name] = value
+        after = self._probe(k)
+        return {"knob": name, "from": old, "to": value, "group": k.group,
+                "reaches": list(k.reaches), "responded": self._responded(k, before, after),
+                "needs_regrid": name in REGRID,
+                "before": before, "after": after}
+
+    def _probe(self, k: Knob) -> Any:
+        if k.probe == "bodies whose built pose moves":
+            return built_bodies(**{f.name: self.values[f.name]
+                                   for f in KNOBS
+                                   if f.name in _car_param_names()})
+        if k.probe == "the openings' achieved spans":
+            return duct_spans(self.values["duct_area"])
+        if k.probe == "the circuit's fixed-point return temperature":
+            return loop_return(mdot=self.values.get("coolant_mdot"),
+                               t_amb=self.values.get("ambient_t"))
+        if k.name == "battery_soc":
+            return battery_emf(self.values["battery_soc"] * 1.34)
+        return None                                              # pragma: no cover
+
+    @staticmethod
+    def _responded(k: Knob, before: Any, after: Any) -> list[str]:
+        if isinstance(before, dict) and isinstance(after, dict):
+            return sorted(b for b in before if b in after and before[b] != after[b])
+        if moved(before, after):
+            return list(k.reaches)
+        return []
+
+
+def _car_param_names() -> set[str]:
+    from . import racelab as RL
+
+    return set(RL.CarParams.__dataclass_fields__)
+
+
 def reach_report() -> dict[str, Any]:
     """Move every knob end to end and measure what it claims to reach."""
     rows: dict[str, Any] = {}
@@ -279,6 +391,12 @@ def reach_report() -> dict[str, Any]:
                                else {"t_amb": k.hi}))
             row["lo_value"], row["hi_value"] = a, b
             row["reaches_something"] = moved(a, b)
+        elif k.probe == "the openings' achieved spans":
+            a = duct_spans(k.lo)
+            b = duct_spans(k.hi)
+            row["lo_value"], row["hi_value"] = a, b
+            row["reaches_something"] = moved(a, b)
+            row["detail"] = duct_report(k.lo) + duct_report(k.hi)
         elif k.name == "battery_soc":
             s = soc_reach()
             row.update(s)

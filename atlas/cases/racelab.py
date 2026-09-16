@@ -442,7 +442,25 @@ class CarParams:
     """
 
     ride_height: float = 0.22        # cells above the road, the floor's leading edge
-    rake: float = 0.10               # rear ride height minus front, in cells per unit
+    #: Rear ride height minus front, in cells, applied across the floor.
+    #:
+    #: **It reached nothing until Tier 69.**  It was declared here with a
+    #: default of 0.10 and the string `rake` appeared EXACTLY ONCE in the whole
+    #: package -- this line -- so moving it changed none of the car's 51 built
+    #: bodies.  Section 3.3's rule is that a slider moving a number nothing
+    #: reads is worse than no slider, so it is now wired: `RAKE_GROUPS` names
+    #: the plates it pitches and `car_bodies` applies it.
+    #:
+    #: **The default moved from 0.10 to 0.0 in the same change, and it had to.**
+    #: While rake reached nothing, every car ever built here -- the drawing, the
+    #: solids, the grids, the settled fields, the raster cache and every record
+    #: of Tiers 62 to 68 -- was the rake = 0 car, whatever this default said.
+    #: Wiring the knob at 0.10 would have pitched the floor under all of them
+    #: silently: `geometry_fingerprint` moves from a1f67a8e to 44eb4bdc, which
+    #: is the number those caches are keyed on.  So the default IS the drawn
+    #: car, exactly as `diffuser_deg` and `front_flap_deg` record for the same
+    #: reason, and the knob sweeps its declared range from there.
+    rake: float = 0.0
     #: **The two knob-driven angles are the DRAWN ones (2026-09-13).**  `DIFF`
     #: and `FW_FLAP` take their incidence from these fields rather than from
     #: `car_geometry.json`, so a default that disagreed with the drawing meant
@@ -511,6 +529,7 @@ def car_bodies(p: CarParams = None, device: str = "cpu",
     p = CarParams() if p is None else p
     doc = load_geometry() if geometry is None else geometry
     out: list[Any] = []
+    span = rake_span(doc)
 
     for e in doc["plates"]:
         y = float(e["y"])
@@ -522,6 +541,17 @@ def car_bodies(p: CarParams = None, device: str = "cpu",
         if "alpha_from" in e:
             a = (float(getattr(p, e["alpha_from"]))
                  + float(e.get("alpha_offset", 0.0)))
+        # RAKE: the floor pitches about its own leading edge, so a plate rises
+        # in proportion to how far down the floor it sits and its incidence
+        # gains the pitch angle.  A per-plate rise WITHOUT the angle would be a
+        # staircase pretending to be a ramp; the two together are one rigid
+        # rotation, which is what rake is.
+        if p.rake and span is not None and str(e.get("group", "")) in RAKE_GROUPS:
+            x0, length = span
+            if length > 0.0:
+                slope = float(p.rake) / length
+                y += (float(e["x"]) - x0) * slope
+                a += math.degrees(math.atan(slope))
         kw: dict[str, Any] = {}
         if e.get("n_station"):
             kw["n_station"] = int(e["n_station"])
@@ -626,6 +656,30 @@ TURBINE_RANGE = (380.0, 406.0)
 
 #: Every departure from a real car, in one place, so no page has to hunt for
 #: them and none of them is discovered on screen.
+#: The plate groups `CarParams.rake` pitches.  Section 3.3 scopes rake to "floor,
+#: diffuser", and `DIFF` and `DIFF_EXIT` are both in the `floor` group, so one
+#: group is the whole of it.
+RAKE_GROUPS: tuple[str, ...] = ("floor",)
+
+
+def rake_span(doc: dict | None = None) -> tuple[float, float] | None:
+    """``(x0, length)`` of the plates rake pitches, in cells, or None if there are none.
+
+    The pitch is about the FRONT of the floor, so ``x0`` is its leading edge and
+    ``length`` reaches the trailing edge of the last plate in the group -- which
+    makes `CarParams.rake` exactly "how much higher the rear of the floor sits
+    than its front", the quantity section 3.3 names.
+    """
+    doc = load_geometry() if doc is None else doc
+    xs = [(float(e["x"]), float(e["x"]) + float(e["chord"]))
+          for e in doc["plates"] if str(e.get("group", "")) in RAKE_GROUPS]
+    if not xs:
+        return None
+    x0 = min(a for a, _b in xs)
+    x1 = max(b for _a, b in xs)
+    return (x0, x1 - x0)
+
+
 CAR_NOTES: tuple[str, ...] = (
     "The car is a two-dimensional centreline slice.  There is no flow around "
     "the sides of anything, which is where most of a real car's wheel drag and "

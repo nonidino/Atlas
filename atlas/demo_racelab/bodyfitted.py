@@ -51,6 +51,7 @@ from typing import Any
 
 import numpy as np
 
+from ..cases import car_knobs as CW_KNOBS
 from ..cases import car_render as CR
 from ..cases import car_windows as CW
 
@@ -130,6 +131,33 @@ class BodyFittedColumn:
     step_i: int = 0
     step_s: float | None = None
     steps: list = field(default_factory=list)
+    #: Section 3.3's parameters, and what each one reaches (Tiers 69-70).
+    knobs: Any = None
+    #: Set when a geometry knob has moved and the composite no longer matches
+    #: the car the knobs describe.  Section 4.1 asks for a visible "recompiling"
+    #: state rather than a silent mismatch, and this is what a page reads to
+    #: show it: the column goes on marching the OLD car and says so.
+    pending_regrid: list = field(default_factory=list)
+
+    def set_knob(self, name: str, value: float) -> dict:
+        """Move one knob and report what responded.
+
+        A geometry knob does NOT re-cut the car here.  Re-gridding costs a
+        composite rebuild -- 66 to 90 s measured (Tier 68) -- so the change is
+        recorded, `pending_regrid` names it, and the column keeps marching the
+        car it actually has until `regrid()` is called.  A demo that silently
+        marched the old car while the sliders showed the new one would be the
+        defect this project keeps finding: the editor showing one car and the
+        march running another.
+        """
+        if self.knobs is None:
+            self.knobs = CW_KNOBS.KnobState()
+        r = self.knobs.set(name, value)
+        if r["needs_regrid"] and name not in self.pending_regrid:
+            self.pending_regrid.append(name)
+        r["marching"] = "the car BEFORE this change" if r["needs_regrid"] else "current"
+        r["pending_regrid"] = list(self.pending_regrid)
+        return r
 
     # -- building -----------------------------------------------------------
 

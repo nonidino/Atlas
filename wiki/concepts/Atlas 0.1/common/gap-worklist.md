@@ -2240,3 +2240,22 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **`rake`, `duct_area`, `road_speed` and `battery_power` are still unwired** (W290) and the cooling knobs still go through globals (W291).
 - **Nothing was marched**, and the body-fitted column was not touched.
 - **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+
+### Tier 70 — rake and the duct area wired, and the knob layer criterion 2 needs (2026-09-16)
+
+**[[poc3-racelab-knobs-wired]], `scripts/tier70_knobs_wired.py`, `tests/test_tier70_knobs_wired.py`, `out/racelab19/`.** The two dead-and-repairable knobs wired, and `KnobState` built as the machinery a screen drives. Four of five predictions held.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W290** | three declared knobs reach nothing, and a fourth has nothing to reach | *(narrowed)* **`rake` and `duct_area` are wired.** Rake pitches the floor group rigidly about its leading edge — five bodies, the pivot fixed, one angle of $0.024418^\circ$ on every plate, `DIFF` rising $0.134244$ at $0.15$. Duct area scales each opening about its centre, total span $0.210 \to 1.050$, shifting rather than truncating an opening that would run off its panel. **Both defaults are the drawn car**, so the fingerprint is unchanged at `a1f67a8e` — wiring rake at its old $0.10$ would have moved it to `44eb4bdc` and pitched the floor under every cached field and record | **open, narrowed to two.** `road_speed` needs a dimensional scale; `battery_power` needs a different powertrain model. Both are refused where a value enters, with their reason |
+| **W291** | the cooling knobs reach their subsystem only through module globals | *(unchanged)* `KnobState` sets them, but `loop_return` still gets there by rebinding `cooling_loop.MDOT` and `T_AMB` — global state under the demo's background march thread, and a leg's `weight_hash` is built from `MDOT` | `open`, and now on the critical path: a screen that moves this knob under a marching thread is the case the globals cannot survive |
+| **W292** | **a geometry knob cannot re-cut the car inside a frame, and `regrid()` is not written** | A composite rebuild costs $66$–$90$ s (Tier 68). `set_knob` records the change in `pending_regrid` and reports `marching: "the car BEFORE this change"`, which is section 4.1's visible recompiling state — but **nothing rebuilds**, so a geometry knob currently moves the declared car and not the marched one | **open.** The honest options are the ones §4.1 names: clamp the knob, or rebuild with the state visible. Rebuilding also invalidates the raster cache and the settled release state, both of which are keyed on the fingerprint |
+
+### What Tier 70 did NOT do, named
+
+- **Criterion 2 is still not met: there is no page.** `KnobState` is the machinery and `set_knob` the entry point, but nothing renders a slider, so nobody can move a parameter and watch.
+- **`regrid()` is written down and not written** (W292).
+- **The cooling knobs still go through module globals** (W291), and `road_speed` and `battery_power` are refused rather than shown.
+- **Nothing was marched**, and no knob has been moved on a live column.
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.

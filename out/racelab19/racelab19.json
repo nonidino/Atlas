@@ -1,0 +1,305 @@
+{
+ "tier": 70,
+ "prediction": [
+  {
+   "id": "M1",
+   "claim": "the nominal car is UNCHANGED: the fingerprint at the wired defaults is the one every committed record and cache was built on",
+   "why": "rake's default moved 0.10 -> 0.0 and duct_area's is 1.0, both of which are the car as drawn, so the build is the same build"
+  },
+  {
+   "id": "M2",
+   "claim": "the tally becomes six wired, two global, one partial, one dead and one absent",
+   "why": "rake and duct_area move from dead to wired and nothing else changes"
+  },
+  {
+   "id": "M3",
+   "claim": "every offerable knob reports at least one subsystem that RESPONDED when it is moved across its declared range",
+   "why": "that is what `wired` and `global` mean, measured rather than declared"
+  },
+  {
+   "id": "M4",
+   "claim": "each of the four unofferable knobs is refused AT THE POINT A VALUE ENTERS, with its reason, and so is any value outside a declared range",
+   "why": "section 3.3's rule is worth nothing if a dashboard can still set the value"
+  },
+  {
+   "id": "M5",
+   "claim": "rake is a rigid pitch: the pivot does not move, the rear rises by rake times its fractional distance, and every pitched plate gains the same angle",
+   "why": "a per-plate rise without the angle would be a staircase pretending to be a ramp"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-16T12:44:59",
+ "read_before_this_run": [
+  "Tier 69 (out/racelab18): four of section 3.3's eleven knobs reach their subsystem; `rake` appears exactly once in the package and moves 0 of the car's 51 bodies; the duct's openings are fixed literals nothing scales; `road_speed` reaches no field because the column is nondimensional; and `battery_power` has nothing to reach because this circuit is a generator with no demand input.",
+  "Section 3.3: a parameter that cannot reach its subsystem is omitted and the omission recorded.  Section 4.1: a parameter that would change the decomposition is clamped or the window set is rebuilt with a VISIBLE recompiling state.",
+  "racelab's own note beside diffuser_deg and front_flap_deg: a default that disagreed with the drawing meant the model built a flap at 30 degrees drawn at 21.8 -- the editor showed one car and the march ran another -- so the defaults now ARE the drawing.",
+  "Tier 68: a composite rebuild costs 66 to 90 s, so a geometry knob cannot re-cut the car inside a frame.",
+  "Explored before these predictions were written: rake wired as a rigid pitch of the floor group about its leading edge moves 5 bodies with FLOOR_LE at the pivot; duct_area scaling each opening about its centre takes the total achieved span from 0.210 to 1.050 across its range; and HEAD's geometry fingerprint is a1f67a8e, which equals the fingerprint at rake = 0 and NOT the one at rake = 0.10.",
+  "NOT measured before these predictions: whether the wired defaults leave the nominal car's fingerprint exactly where it was; whether every offerable knob reports a non-empty response; whether the four unofferable ones are refused at the point a value enters; and what the tally becomes."
+ ],
+ "machine_state": {
+  "python_processes_running": 1,
+  "python_processes": [
+   "\"python.exe\",\"27776\",\"Console\",\"1\",\"241,952 K\""
+  ],
+  "battery_status_raw": "2",
+  "on_mains": true,
+  "reference_matmul_1024_s": 0.009616399998776615,
+  "taken_at": "2026-09-16T12:45:00"
+ },
+ "wire": {
+  "by_how": {
+   "wired": [
+    "ride_height",
+    "rake",
+    "diffuser_deg",
+    "front_flap_deg",
+    "rear_wing_deg",
+    "duct_area"
+   ],
+   "global": [
+    "coolant_mdot",
+    "ambient_t"
+   ],
+   "partial": [
+    "battery_soc"
+   ],
+   "dead": [
+    "road_speed"
+   ],
+   "absent": [
+    "battery_power"
+   ]
+  },
+  "tally": {
+   "wired": 6,
+   "global": 2,
+   "partial": 1,
+   "dead": 1,
+   "absent": 1
+  },
+  "rake_bodies": [
+   "DIFF",
+   "DIFF_EXIT",
+   "FLOOR",
+   "FLOOR_LE",
+   "FLOOR_STEP"
+  ],
+  "duct_spans": {
+   "lo": 0.21000000000000002,
+   "nominal": 0.7,
+   "hi": 1.05
+  },
+  "duct_report_lo": [
+   {
+    "plate": "CHASSIS",
+    "role": "inlet",
+    "duct_area": 0.3,
+    "nominal": [
+     0.25,
+     0.75
+    ],
+    "nominal_span": 0.5,
+    "achieved": [
+     0.425,
+     0.575
+    ],
+    "achieved_span": 0.14999999999999997,
+    "clamped": false
+   },
+   {
+    "plate": "POD_UP",
+    "role": "outlet",
+    "duct_area": 0.3,
+    "nominal": [
+     0.8,
+     1.0
+    ],
+    "nominal_span": 0.19999999999999996,
+    "achieved": [
+     0.87,
+     0.93
+    ],
+    "achieved_span": 0.06000000000000005,
+    "clamped": false
+   }
+  ],
+  "duct_report_hi": [
+   {
+    "plate": "CHASSIS",
+    "role": "inlet",
+    "duct_area": 1.5,
+    "nominal": [
+     0.25,
+     0.75
+    ],
+    "nominal_span": 0.5,
+    "achieved": [
+     0.125,
+     0.875
+    ],
+    "achieved_span": 0.75,
+    "clamped": false
+   },
+   {
+    "plate": "POD_UP",
+    "role": "outlet",
+    "duct_area": 1.5,
+    "nominal": [
+     0.8,
+     1.0
+    ],
+    "nominal_span": 0.19999999999999996,
+    "achieved": [
+     0.7,
+     1.0
+    ],
+    "achieved_span": 0.30000000000000004,
+    "clamped": false
+   }
+  ]
+ },
+ "stage_wall_s": {
+  "wire": 1.9690507000050275,
+  "respond": 2.0339603000029456,
+  "nominal": 0.012642899993807077,
+  "summary": 0.004291899997042492
+ },
+ "respond": {
+  "moved": {
+   "ride_height": {
+    "from": 0.22,
+    "to": 0.6,
+    "responded": [
+     "DIFF",
+     "FW_FLAP",
+     "FW_MAIN",
+     "FW_UPPER"
+    ],
+    "n_responded": 4,
+    "needs_regrid": true
+   },
+   "rake": {
+    "from": 0.0,
+    "to": 0.15,
+    "responded": [
+     "DIFF",
+     "DIFF_EXIT",
+     "FLOOR",
+     "FLOOR_LE",
+     "FLOOR_STEP"
+    ],
+    "n_responded": 5,
+    "needs_regrid": true
+   },
+   "diffuser_deg": {
+    "from": 0.0,
+    "to": 15.0,
+    "responded": [
+     "DIFF"
+    ],
+    "n_responded": 1,
+    "needs_regrid": true
+   },
+   "front_flap_deg": {
+    "from": 21.8,
+    "to": 30.0,
+    "responded": [
+     "FW_FLAP"
+    ],
+    "n_responded": 1,
+    "needs_regrid": true
+   },
+   "rear_wing_deg": {
+    "from": 27.6,
+    "to": 30.0,
+    "responded": [
+     "RW_FLAP"
+    ],
+    "n_responded": 1,
+    "needs_regrid": true
+   },
+   "duct_area": {
+    "from": 1.0,
+    "to": 1.5,
+    "responded": [
+     "duct geometry",
+     "core inflow",
+     "UA"
+    ],
+    "n_responded": 3,
+    "needs_regrid": true
+   },
+   "coolant_mdot": {
+    "from": 0.15,
+    "to": 0.3,
+    "responded": [
+     "cooling_loop"
+    ],
+    "n_responded": 1,
+    "needs_regrid": false
+   },
+   "ambient_t": {
+    "from": 300.0,
+    "to": 318.0,
+    "responded": [
+     "cooling_loop",
+     "brake_thermal"
+    ],
+    "n_responded": 2,
+    "needs_regrid": false
+   },
+   "battery_soc": {
+    "from": 1.0,
+    "to": 0.0,
+    "responded": [
+     "powertrain open-circuit voltage"
+    ],
+    "n_responded": 1,
+    "needs_regrid": false
+   }
+  },
+  "refused": {
+   "road_speed": {
+    "refused": true,
+    "why": "road_speed reaches nothing and must not be offered: ground_effect.U_INF is 1.0 and the whole column is nondimensional, so road speed sets a SCALE and no field in the march reads it; changing it would "
+   },
+   "battery_power": {
+    "refused": true,
+    "why": "battery_power reaches nothing and must not be offered: THIS CIRCUIT HAS NO DEMAND INPUT. The machine is a generator: its current follows the shaft speed through current_at(omega), and the battery rece"
+   }
+  },
+  "out_of_range_refused": true,
+  "all_responded": true
+ },
+ "nominal": {
+  "fingerprint": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
+  "nominal_fingerprint": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
+  "unchanged": true,
+  "default_rake": 0.0,
+  "default_duct_area": 1.0,
+  "fingerprint_at_rake_0_10": "44eb4bdc0245cb17526279a7c5424ac17c1be3eb93fa30e00039204b4eaecd3c",
+  "rake_span": [
+   170.0,
+   351.97
+  ],
+  "pivot_moved": 0.0,
+  "diff_rise": 0.1342443959999997,
+  "diff_rise_expected": 0.13424439582918998,
+  "pitch_deg": 0.024417894725829996,
+  "pitch_gained": {
+   "DIFF": 0.024417895,
+   "FLOOR": 0.024417894999999995,
+   "FLOOR_LE": 0.024417894999999135,
+   "FLOOR_STEP": 0.024417894999999135
+  },
+  "rigid": true
+ },
+ "verdicts": {
+  "M1": true,
+  "M5": true,
+  "M2": true,
+  "M3": true,
+  "M4": false
+ },
+ "verdicts_missing": []
+}

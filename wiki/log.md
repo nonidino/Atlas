@@ -5325,3 +5325,37 @@ Four of five predictions held.
 **Changed:** `atlas/cases/powertrain.py` (`MachineAgent` gains `v_oc` and `r_total`, defaulting to the module constants), `tests/test_tier45_region_assembly.py` (`car_knobs` in the census), `.gitignore` (the `out/racelab18` allowlist), [[gap-worklist]], [[index]].
 
 **NOT done:** **no knob is exposed on any screen, so criterion 2 is NOT met by this tier** -- wiring them into the demo, with the "recompiling" state a geometry change needs, is the next one; `rake`, `duct_area`, `road_speed` and `battery_power` are still unwired and `must_not_be_shown` keeps them off a dashboard; the cooling knobs still go through module globals; nothing was marched and the body-fitted column was not touched. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 70 | rake and the duct area wired, and the knob layer criterion 2 needs
+
+**[[poc3-racelab-knobs-wired]].** Tier 69 found four of section 3.3's eleven knobs reaching their subsystem. This wires the two that were dead and repairable, and builds the state a screen would drive.
+
+### Built
+
+**`rake` is a rigid pitch of the floor group about its own leading edge.** Raising each plate by its share and leaving the angles alone would be a staircase pretending to be a ramp, so the height and the incidence move together: $y \mathrel{+}= \text{rake}\,(x - x_0)/L$ and $\alpha \mathrel{+}= \arctan(\text{rake}/L)$, with $L = 351.97$ cells. Five bodies move; `FLOOR_LE` sits at the pivot and does not; `DIFF` rises $0.134244$ at $\text{rake} = 0.15$, which is $0.15\,(485-170)/351.97$ to nine figures; and every plate gains the same $0.024418^\circ$, which is what makes it one rotation rather than five translations.
+
+**`duct_area` scales each opening about its own centre**, so the inlet stays where it was drawn and only opens or closes: the total achieved span runs $0.210$ at $0.3$, $0.700$ at nominal and $1.050$ at $1.5$. **An opening that would run off the end of its panel is SHIFTED, not truncated** -- at $1.5$ the outlet's centred span would be $[0.75, 1.05]$ and becomes $[0.70, 1.00]$, keeping the full $0.300$ -- and `openings_report` returns nominal beside achieved with a `clamped` flag so the one case that genuinely cannot fit stays visible.
+
+**`car_knobs.KnobState` is criterion 2's machinery.** `set` applies one value and returns the subsystems that RESPONDED, measured, so a page can show the response rather than assert it; nine of nine offerable knobs report at least one. It refuses two things at the point a value enters rather than after: a knob that reaches nothing (`road_speed`, `battery_power`, each with its reason, and the stored value does not move) and a value outside a declared range. A geometry knob is flagged `needs_regrid` and does NOT re-cut the car -- a rebuild costs $66$-$90$ s (Tier 68) -- so `BodyFittedColumn.set_knob` records it in `pending_regrid` and reports `marching: the car BEFORE this change`, which is section 4.1's visible recompiling state.
+
+### The check that mattered most
+
+**Wiring a knob must not move the car every cache and record was built on.** `geometry_fingerprint` keys the settled fields, the raster cache and every record of Tiers 62 to 68, and `rake` had spent its whole life declared-but-dead -- so the car all of them were built on is the rake $= 0$ car, whatever the default said. Wiring it at its old default of $0.10$ would have pitched the floor under all of them silently: the fingerprint moves from `a1f67a8e` to `44eb4bdc`. So the default moved $0.10 \to 0.0$ in the same change and `duct_area`'s is $1.0$, and the fingerprint is unchanged. `racelab` already carried the same note beside `diffuser_deg` and `front_flap_deg`, recording that a default disagreeing with the drawing once meant the editor showed one car and the march ran another.
+
+**M4 failed by contradicting M2, registered three lines above it.** M4 said "each of the FOUR unofferable knobs is refused"; M2 predicted the tally becomes dead $= 1$, absent $= 1$ -- two. The four was Tier 69's count, and this tier is the thing that changed it. Everything M4 was about held: both remaining unofferable knobs are refused where a value enters, with their reason, the stored value does not move, and out-of-range and unknown names are refused too. Only the number was wrong. **That is the third tier running with a prediction refuted by something already written beside it** -- Tier 68's K1 by its own `why`, Tier 69's L1 by its choice of baseline, M4 by its sibling -- and all three are catchable by one division, one question about the baseline, or one glance at the neighbour.
+
+```
+python scripts/tier70_knobs_wired.py --out out/racelab19 --stages wire,respond,nominal,summary
+python -m pytest tests/test_tier70_knobs_wired.py tests/test_tier69_car_knobs.py -p no:cacheprovider
+python scripts/vault_scan.py wiki        # 249 files, 0 problems
+python scripts/run_suite.py              # 1700 passed, 0 failed, 516 s
+```
+
+Four of five predictions held.
+
+**Narrowed:** **W290** -- `rake` and `duct_area` are wired, leaving `road_speed` (needs a dimensional scale) and `battery_power` (needs a different powertrain model). **Still open:** W291.
+
+**Added:** `scripts/tier70_knobs_wired.py`, `tests/test_tier70_knobs_wired.py`, `out/racelab19/racelab19.json`, [[poc3-racelab-knobs-wired]].
+**Changed:** `atlas/cases/racelab.py` (`RAKE_GROUPS`, `rake_span`, the pitch in `car_bodies`, and rake's default $0.10 \to 0.0$), `atlas/cases/car_solids.py` (`scaled_opening`, `openings_report`, `duct_area` in `SOLIDS_DEFAULT`), `atlas/cases/car_knobs.py` (both verdicts, the duct probe, `KnobState`, `REGRID`), `atlas/demo_racelab/bodyfitted.py` (`set_knob`, `pending_regrid`), `tests/test_tier69_car_knobs.py` (the tally moves four to six, with the diagnosis kept), `.gitignore`, [[gap-worklist]], [[index]].
+
+**NOT done:** **criterion 2 is STILL NOT MET and this is the honest line -- there is no page**, so nobody can yet move a parameter and watch; `regrid()` is written down and not written, so a geometry knob marks `pending_regrid` and the column goes on marching the car it has; the cooling knobs still reach through module globals (W291); `road_speed` and `battery_power` are refused rather than shown; nothing was marched and no knob has been moved on a live column. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

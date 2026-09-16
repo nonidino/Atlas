@@ -566,3 +566,12 @@ out/racelab17/*
 !out/racelab18/
 out/racelab18/*
 !out/racelab18/racelab18.json
+
+# Tier 70 -- rake and the duct area wired, and the knob layer criterion 2
+# needs (tier70_knobs_wired.py --out out/racelab19). JSON only: the reach
+# tally with both knobs in, every offerable knob moved with the subsystems
+# that responded, the four refusals, and the fingerprint check that says
+# wiring them did not move the nominal car.
+!out/racelab19/
+out/racelab19/*
+!out/racelab19/racelab19.json
