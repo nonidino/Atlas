@@ -584,3 +584,13 @@ out/racelab19/*
 !out/racelab20/
 out/racelab20/*
 !out/racelab20/racelab20.json
+
+# Tier 72 -- the fixed point the implicit step has, and the certified mode on
+# it (tier72_certified_step.py --out out/racelab21). JSON only: existence and
+# reachability of the momentum solve's fixed point for all three sweeps on the
+# cylinder and the car, every cheap map against one classical answer, the
+# certified step against the classical step, and why Poseidon-T could not be
+# called at this column's time step.
+!out/racelab21/
+out/racelab21/*
+!out/racelab21/racelab21.json

@@ -5398,3 +5398,47 @@ python scripts/run_suite.py              # 1714 passed, 0 failed, 532 s
 **Changed:** `atlas/cases/cooling_loop.py` (`LoopSettings` threaded through the legs, the solve, the sweep study), `atlas/cases/car_union.py` (`loop_settings`, `set_loop_settings`, `load_state`'s guard), `atlas/cases/car_knobs.py` (the two cooling knobs regraded, `loop_settings`), `atlas/cases/car_render.py` (the cache key carries the knobs), `atlas/demo_racelab/bodyfitted.py` (`regrid`, `settled_path`, `set_knob`, the release logic), `tests/test_tier69_car_knobs.py`, `.gitignore`, [[gap-worklist]], [[index]].
 
 **NOT done:** the porous column's dashboard is untouched; no checkpoint is loaded, so the learned switch, the presets and the referent have nothing to act on; **a committed geometry cannot be spun up** (W293), so a geometry change is something a viewer can make and see refused rather than watch run; the state-of-charge knob still reaches the battery and not the marching machine, because `racelab.machine_for_host` builds it without the knob; `road_speed` and `battery_power` are still refused with their reasons. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 72 | the fixed point the implicit step has, and the certified mode on it
+
+**[[poc3-racelab-certified-step]].** Section 12's criterion 4 -- *flip to certified and watch the error go to the classical answer, and see what that cost* -- has never been startable. W226 said why: defect correction certifies a FIXED POINT, and the porous column's `WindowNS` step is explicit, so one call to $\phi$ already IS the answer. The user chose W226's second exit on 2026-09-14, an implicit time step, and rejected amending section 4.2.
+
+### The step they chose already existed
+
+`overset_ns.OversetFlow.step` is implicit in viscosity AND in advection (linearised about $u^{*}$) with BDF2 in time, and its own docstring says the implicit advection *"is the kind of step the live certified mode the user chose will need"*. Nothing had used it. Its momentum system $Mx = b$ is solved ITERATIVELY, so $x^{\star} = M^{-1}b$ is the fixed point of $\phi_P(x) = x + P(b - Mx)$ for **any** non-singular $P$; the projection is one factored solve and the interpolation one sparse apply, neither of which iterates, so **certifying the momentum solve certifies the step**. The certified mode therefore belongs on the body-fitted column, which is where this tier put it.
+
+### Measured, on the real car (377,267 unknowns, settled at $t = 12$)
+
+The fixed point **exists** for all three sweeps, at $3.753\times10^{-13}$, $3.542\times10^{-11}$ and $4.757\times10^{-11}$ relative. **Existence is not reachability, and the geometry decides which sweep**: `picard` -- the explicit evaluation of the implicit right-hand side, and the one shaped like a learned expert's map -- **diverges at $327.8$ a sweep**, because the body grids' near-wall spacing of $0.0014$ puts $(\Delta t/a_0)\nu/h^{2}$ at $17.0$ before the Laplacian's stencil factor. The step's own incomplete factor contracts at $0.007719$. The null element is the classical sweep march **bitwise**, at 3 $\phi$ calls each. The deliberately wrong cheap map lands $6.151\times10^{-9}$ from the classical answer having cost 86 inner calls against the null element's 4 -- Theorem 1 surviving the adversarial map. The certified step lands $1.163\times10^{-12}$ relative from the classical step, at $1.67\times$ its cost.
+
+**It does not pay, and the reason is more specific than "defect correction is slow".** On a settled car the classical solve takes **one** BiCGSTAB iteration a component, because the extrapolated $u^{*}$ is already almost the answer -- the certified mode is racing a solve that is very nearly free. Section 4.2 says RaceLab must not imply otherwise.
+
+### Three defects found by building the instrument, each before its number was recorded
+
+**The price comparison was rigged in the certified mode's disfavour, twice.** `certified_step_report` timed a certified step that was also running a full classical solve to fetch its reference, so it priced classical PLUS certified against classical; and `MomentumSystem` factored a **fresh** incomplete factor every call where `step` refreshes one every 20 steps and reuses it between. The repair is the one the assembly already had -- use the FLOW's own preconditioner, one definition -- and it also fixed a crash, because SuperLU's factor is **exactly singular** on the car at the step's own drop tolerance and the retry for that already lives in `_momentum_precond`. The fair factor moves the cylinder's rate from $0.0066$ to $0.4733$, **72 times slower a sweep**, which is the honest finding underneath: $\phi$ is plain preconditioned Richardson, whose rate IS $\lVert I - PM\rVert$, while the classical solve is a Krylov method that adapts to a mediocre preconditioner instead of inheriting it.
+
+**And a cheap map that could not be built answered under its own name.** On the car `detuned_psi` returns `None` and `certified_momentum` substituted the null map in silence, so the record read *"detuned: 2.951 s, 6.3 times the classical step"* for a run of the null map plus two failed factorisations. The number was real and the label was wrong -- the same defect class as Tier 71's knob reporting a response the march does not have. The report now carries which map RAN and why.
+
+### P5 failed, and the prediction asked the wrong question
+
+P5 claimed the wrong cheap map lands within a factor of 10 of the null element's answer. The cost half held (86 against 4); the error half read $6.151\times10^{-9}$ against $1.267\times10^{-12}$, a ratio of **4854**. **Both are far below any tolerance asked for against a state of order one -- both arms reached the classical answer, which is all Theorem 1 claims.** A ratio between two numbers at their stopping floor is a reading of the floor: the same pair read $0.40$ at one cylinder resolution and $84$ at another while nothing about Theorem 1 changed. The claim needed a threshold on each error, not a ratio between them. **The verdict is left as judged and the reason recorded beside it**; the cylinder TEST was corrected to assert each error against the state's scale, and the prediction was deliberately not.
+
+### Poseidon-T could not be called at all
+
+**P8 is `None`, not `False`.** The checkpoint loaded in $1.1$ s and **refused**: *"lead time 0.0250 is below the expert's native 0.1. Sub-native steps are out of distribution."* So on top of W288's spatial block -- a uniform $128\times128$ grid cannot accept a curvilinear patch, ceiling $33.4\%$ -- the column's time step is a second, independent one (**W294**). Nothing was forced through `step_unchecked`: a number from an out-of-distribution call would look like a measurement and would not be one.
+
+```
+python scripts/tier72_certified_step.py --out out/racelab21 --stages cylinder,car,learned,control,summary
+python -m pytest tests/test_tier72_certified_step.py tests/test_tier61_overset_flow.py -p no:cacheprovider
+python scripts/vault_scan.py wiki        # 251 files, 0 problems
+python scripts/run_suite.py              # 1733 passed, 0 failed, 489 s, no missing logs
+```
+
+Seven of eight judged predictions held; P8 not measured.
+
+**Opened:** **W294** (Poseidon-T's native step is four times the column's, a second block on top of W288's), **W295** (the certified mode is per STEP, not per window, so section 5.2's per-window telemetry has no referent on this column). **Annotated:** W226 (its second exit is built and measured), W271.
+
+**Added:** `atlas/cases/certified_step.py`, `scripts/tier72_certified_step.py`, `tests/test_tier72_certified_step.py`, `out/racelab21/racelab21.json`, [[poc3-racelab-certified-step]].
+**Changed:** `atlas/cases/overset_ns.py` (`_assemble_momentum`, `_momentum_precond` and `_momentum_solve` extracted from `step`, and the `momentum_solver` seam -- **bitwise inert**, verified on six steps and two preconditioners before anything was built on it), `tests/test_tier45_region_assembly.py` (`certified_step` in the census), `.gitignore`, [[gap-worklist]], [[index]].
+
+**NOT done:** **criterion 4 is NOT met and this is the honest line -- there is no screen**, so nobody can yet flip to certified and watch; no learned expert ran, so the mode has been exercised only with classical cheap maps and one adversarial one; the certified mode is per step and Tier 65 made this column ONE fluid expert, so "certified on window $k$" has no referent here (W295); the contraction rate was read at one point in the incomplete factor's refresh cycle and its degradation across the cycle was not measured; W271 is untouched, so "the classical answer" remains a first-order-in-time scheme's; the porous column is exactly as it was. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

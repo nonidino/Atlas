@@ -193,6 +193,15 @@ class OversetFlow:
         self.P = np.zeros(n)
         self.Um1 = None
         self.Vm1 = None
+        #: The momentum solve `step` uses.  ``None`` is `_momentum_solve`, the
+        #: classical BiCGSTAB whose answer every other mode is scored against.
+        #: `atlas.cases.certified_step` puts a defect-corrected solve here, which
+        #: is what makes the certified mode the SAME step with a different solve
+        #: rather than a second march free to drift from it.  Anything installed
+        #: must take ``(M, bu, bv, us, vs, precond)`` and return
+        #: ``(ut, vt, iterations)``.
+        self.momentum_solver: Callable[..., tuple[np.ndarray, np.ndarray,
+                                                  list[int]]] | None = None
         self.log: list[dict[str, Any]] = []
 
     # -- rows ---------------------------------------------------------------
@@ -442,9 +451,20 @@ class OversetFlow:
 
     # -- the step -----------------------------------------------------------
 
-    def step(self) -> dict[str, Any]:
-        t_start = time.perf_counter()
-        dt, nu = self.dt, self.nu
+    def _assemble_momentum(self) -> tuple[Any, np.ndarray, np.ndarray,
+                                          np.ndarray, np.ndarray, float, float]:
+        """The momentum system this step must solve: ``(M, bu, bv, us, vs, a0, t1)``.
+
+        One definition, used by `step` and by the certified step in
+        `atlas.cases.certified_step`, which needs the SAME ``M`` and ``b`` the
+        classical solve is given -- a replica of this assembly would be a second
+        car free to drift from the first.
+
+        ``M`` is the same matrix for both components; only the right-hand side
+        differs.  ``us, vs`` are the extrapolated advecting velocity, which is
+        also what `step` hands the solver as its starting guess.
+        """
+        dt = self.dt
         t1 = self.t + dt
         if self.k == 0 or self.Um1 is None:
             a0 = 1.0
@@ -475,6 +495,11 @@ class OversetFlow:
         if np.any(ed):
             ub, vb = self.box_velocity(self.X[ed], self.Y[ed], t1)
             bu[ed], bv[ed] = ub, vb
+        return M, bu, bv, us, vs, a0, t1
+
+    def _momentum_precond(self, M) -> tuple[Any, float, str | None]:
+        """The preconditioner for this step's momentum system, refreshing the
+        incomplete factor when it is due: ``(precond, t_ilu, ilu_note)``."""
         diag = M.diagonal()
         if np.any(diag == 0):                                    # pragma: no cover
             raise AssertionError("a momentum row has a zero diagonal")
@@ -504,10 +529,18 @@ class OversetFlow:
                 precond = spla.LinearOperator(M.shape, matvec=lambda r: r / diag)
         else:
             precond = spla.LinearOperator(M.shape, matvec=lambda r: r / diag)
-        t_asm = time.perf_counter() - t_start
+        return precond, t_ilu, ilu_note
+
+    def _momentum_solve(self, M, bu, bv, us, vs, precond
+                        ) -> tuple[np.ndarray, np.ndarray, list[int]]:
+        """Solve ``M x = b`` for both components: ``(ut, vt, iterations)``.
+
+        This is the CLASSICAL answer the certified step is certified against --
+        ``x* = M^{-1} b`` to `rtol`.  The certified step reaches the same ``x*``
+        by a different route and is checked against this one.
+        """
         its = []
         sol = []
-        t0 = time.perf_counter()
         for b, x0 in ((bu, us), (bv, vs)):
             count = [0]
             bn = np.linalg.norm(b)
@@ -532,8 +565,19 @@ class OversetFlow:
                                    f"step {self.k} -- a blow-up reads as this")
             its.append(count[0])
             sol.append(x)
-        ut, vt = sol
+        return sol[0], sol[1], its
+
+    def step(self) -> dict[str, Any]:
+        t_start = time.perf_counter()
+        dt, nu = self.dt, self.nu
+        M, bu, bv, us, vs, a0, t1 = self._assemble_momentum()
+        precond, t_ilu, ilu_note = self._momentum_precond(M)
+        t_asm = time.perf_counter() - t_start
+        t0 = time.perf_counter()
+        solve = self.momentum_solver or self._momentum_solve
+        ut, vt, its = solve(M, bu, bv, us, vs, precond)
         t_mom = time.perf_counter() - t0
+        d = self.disc
         div_t = self.Dx @ ut + self.Dy @ vt
         t0 = time.perf_counter()
         un, vn = ut.copy(), vt.copy()

@@ -128,6 +128,12 @@ ADDED_AFTER_CAPTURE = {
                      "patches, and the multi-body manufactured solutions.  It builds "
                      "NO CaseGraph, declares no region and imports no case but "
                      "overset and overset_ns",
+    "certified_step": "Tier 72: the certified mode on the body-fitted column -- the fixed "
+                      "point the IMPLICIT step has (its momentum system's own answer, "
+                      "M^{-1} b) and an explicit step does not, which is W226 as the user "
+                      "decided it.  It builds NO CaseGraph and declares no region: it "
+                      "reads overset_ns's own assembly, puts defect correction round the "
+                      "momentum solve, and measures what reaching the fixed point costs",
     "car_knobs": "Tier 69: section 3.3's parameters and what each one ACTUALLY reaches -- "
                  "the declared knobs, their probes, and the verdict per knob (wired, "
                  "global, partial, dead, absent).  It builds NO CaseGraph and declares "
