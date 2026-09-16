@@ -54,6 +54,7 @@ import numpy as np
 from ..cases import car_knobs as CW_KNOBS
 from ..cases import car_render as CR
 from ..cases import car_windows as CW
+from ..cases import certified_step as CT
 
 #: The fields this column can draw.  `vorticity` is absent ON PURPOSE and the
 #: page is told why: it is a derivative, and on twelve overlapping curvilinear
@@ -79,6 +80,41 @@ LEARNED_HOLE = (
     "hold 61.0% of this column's unknowns, and a uniform grid cannot accept a "
     "curvilinear patch in any arrangement, so no tiling however clever can reach "
     "them (Tier 67, W288)."
+)
+
+#: The expert modes this column offers, section 4.2's three with the one it
+#: cannot honour named rather than hidden.
+MODES = ("classical", "certified")
+
+#: Why `learned` is not among them.  Two INDEPENDENT blocks, and the second was
+#: only found when the checkpoint was actually asked to run (Tier 72, W294).
+LEARNED_REFUSED = (
+    "Poseidon-T is blocked here twice over. In SPACE, it accepts nothing but a "
+    "uniform 128 x 128 grid, and the body-fitted grids hold 61.0% of this "
+    "column's unknowns (W288). In TIME, this column marches at a lead of 0.0250 "
+    "against the checkpoint's native 0.1, and the wrapper REFUSES a sub-native "
+    "step as out of distribution rather than extrapolating (W294). Nothing was "
+    "forced through, because a number from an out-of-distribution call would "
+    "look like a measurement and would not be one."
+)
+
+#: Why the certified mode is offered for the fluid as a WHOLE and not per
+#: window.  Section 5.2 asks for per-window certified telemetry; Tier 65 made
+#: this column one fluid expert, and this says so rather than faking a split.
+CERTIFIED_NOT_PER_WINDOW = (
+    "The certified mode here is one switch for the whole fluid, not one per "
+    "window. The momentum system couples every grid IMPLICITLY inside a single "
+    "linear solve -- which is exactly why it has a fixed point to certify -- so "
+    "there is no per-window step whose answer could be certified separately "
+    "(Tier 65, W295). The porous column is where section 12's per-window story "
+    "is told, over fourteen windows."
+)
+
+#: What the certified mode is, in one line the page can show beside the switch.
+CERTIFIED_WHAT = (
+    "Defect correction on the step's own momentum system. Its limit is the "
+    "classical answer whatever the cheap map does -- a proof, not a measurement "
+    "(section 5.4's rule 4) -- so what is measured here is only the PRICE."
 )
 
 #: The scale the speed field is drawn on.  The field reaches about 2.8; fixing
@@ -144,6 +180,22 @@ class BodyFittedColumn:
     #: True when the committed car has no spun-up field of its own, so this
     #: column must NOT march it.  See `build`.
     needs_spin_up: bool = False
+    #: Section 4.2's expert switch, for the fluid as a whole (`CERTIFIED_NOT_PER_WINDOW`).
+    mode: str = "classical"
+    #: Off by default.  The certified mode's residual and its certificate are
+    #: free; MEASURING the error against the classical answer costs a full
+    #: classical solve every step, and that cost belongs to the verification and
+    #: not to the mode.  Criterion 4 asks a viewer to watch the error go to the
+    #: classical answer, so the switch exists -- with its price on the page.
+    verify: bool = False
+    _solver: Any = None
+    #: Wall times per mode, so the cost ratio has BOTH halves measured in this
+    #: process.  A ms/step figure quoted from anywhere else rots.
+    mode_steps: dict = field(
+        default_factory=lambda: {"classical": [], "certified": [],
+                                 "certified+verify": []})
+    #: The last certified step's report, which is what section 5.2 asks for.
+    certified_last: dict | None = None
 
     def settled_path(self, root: str = ".") -> str:
         """Where this CAR's settled release state lives.
@@ -389,6 +441,105 @@ class BodyFittedColumn:
 
     # -- marching -----------------------------------------------------------
 
+    # -- section 4.2's expert switch ----------------------------------------
+
+    def set_mode(self, mode: str) -> dict:
+        """Flip the fluid between the classical solve and the certified one.
+
+        `learned` is REFUSED with its reason rather than hidden, which is
+        section 4.3's rule applied to a mode instead of a family.
+        """
+        if mode == "learned":
+            raise ValueError(LEARNED_REFUSED)
+        if mode not in MODES:
+            raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
+        if self.flow is None:
+            raise RuntimeError("build() first")
+        if mode == "classical":
+            self.flow.momentum_solver = None
+            self._solver = None
+        else:
+            self._solver = CT.CertifiedMomentumSolver(
+                self.flow, sweep="ilu", compare_classical=bool(self.verify))
+            self.flow.momentum_solver = self._solver
+        self.mode = mode
+        self.certified_last = None
+        return {"mode": self.mode, "verify": self.verify,
+                "what": CERTIFIED_WHAT if mode == "certified" else None}
+
+    def set_verify(self, on: bool) -> dict:
+        """Turn the measured error against the classical answer on or off.
+
+        It costs a full classical solve a step, so it is the verification's
+        price and not the mode's, and `cost` reports the two separately.
+        """
+        self.verify = bool(on)
+        if self._solver is not None:
+            self._solver.compare_classical = self.verify
+        return {"verify": self.verify}
+
+    #: How many steps each arm needs before a ratio is quoted at all.  Section
+    #: 5.4's rule 5: never show a single-draw number as an effect size.
+    MIN_SAMPLES = 5
+
+    def _bucket(self) -> str:
+        """Which arm this step belongs to.
+
+        **A verified certified step is its own arm.**  With `verify` on, a full
+        classical solve runs beside the certified one every step, so mixing
+        those samples in with the unverified ones would put the verification's
+        price inside the mode's.
+        """
+        if self.mode != "certified":
+            return "classical"
+        return "certified+verify" if self.verify else "certified"
+
+    def cost(self) -> dict:
+        """The speed ratio, with BOTH halves measured in this process.
+
+        Reported with a replicate count and a spread, and **withheld entirely**
+        until each arm has `MIN_SAMPLES` steps -- section 5.4's rule 5.
+        """
+        def arm(name):
+            xs = [x for x in self.mode_steps.get(name, [])[-20:] if x]
+            if not xs:
+                return {"n": 0, "median_s": None, "lo_s": None, "hi_s": None}
+            return {"n": len(xs), "median_s": float(np.median(xs)),
+                    "lo_s": float(np.min(xs)), "hi_s": float(np.max(xs))}
+
+        arms = {k: arm(k) for k in ("classical", "certified", "certified+verify")}
+        here = self._bucket()
+        c, k = arms["classical"], arms[here]
+
+        def ratio(name):
+            a, b = arms["classical"], arms[name]
+            if a["n"] < self.MIN_SAMPLES or b["n"] < self.MIN_SAMPLES:
+                return None
+            return b["median_s"] / a["median_s"]
+
+        enough = (c["n"] >= self.MIN_SAMPLES and k["n"] >= self.MIN_SAMPLES
+                  and here != "classical")
+        return {
+            "arms": arms, "comparing": here,
+            "classical_s": c["median_s"], "certified_s": k["median_s"],
+            "ratio": (k["median_s"] / c["median_s"]) if enough else None,
+            # **The mode's own price, always, separately from the
+            # instrument's.**  While verify is on, the compared arm includes a
+            # classical solve a step, so quoting only that ratio would price the
+            # verification and call it the mode.
+            "ratio_mode_only": ratio("certified"),
+            "ratio_with_verify": ratio("certified+verify"),
+            "enough": bool(enough), "min_samples": self.MIN_SAMPLES,
+            "classical_steps": c["n"], "certified_steps": k["n"],
+            "why": ("both halves are medians over this session's own steps, "
+                    "excluding the ones that refactored the incomplete LU, and "
+                    "each is reported with its count and range because a "
+                    "single-draw number is not an effect size. A verified "
+                    "certified step is a SEPARATE arm: with verify on a classical "
+                    "solve runs beside the certified one every step, and that is "
+                    "the verification's price, not the mode's."),
+        }
+
     def step(self) -> dict:
         if self.union is None:
             raise RuntimeError("build() first")
@@ -406,7 +557,33 @@ class BodyFittedColumn:
                "solver_step_s": float(rec.get("step_s", 0.0) or 0.0),
                "ilu_s": float(rec.get("ilu_s", 0.0) or 0.0),
                "max_div": float(rec.get("max_div", 0.0) or 0.0),
-               "u_max": float(rec.get("u_max", 0.0) or 0.0)}
+               "u_max": float(rec.get("u_max", 0.0) or 0.0),
+               "mode": self.mode,
+               # what the classical solve cost, in its own currency: the page
+               # shows it beside the certified mode's outer count so the two
+               # are read against each other rather than in isolation
+               "iterations": list(rec.get("iterations") or [])}
+        # the ILU-refactor step is about five times a typical one, so it is
+        # excluded from BOTH halves of the ratio rather than from neither
+        if row["ilu_s"] == 0.0:
+            b = self._bucket()
+            self.mode_steps.setdefault(b, []).append(self.step_s)
+            del self.mode_steps[b][:-64]
+        if self._solver is not None and self._solver.reports:
+            r = self._solver.reports[-1]
+            del self._solver.reports[:-4]
+            self.certified_last = {
+                "outer_iterations": r.outer_iterations,
+                "inner_cheap_calls": r.inner_cheap_calls,
+                "residual": r.residual,
+                "algebraic_residual": r.algebraic_residual,
+                "error_to_classical": (None if not np.isfinite(r.error_to_classical)
+                                       else r.error_to_classical),
+                "status": r.status,
+                "psi_ran": r.psi_ran,
+                "classical_iterations": r.classical_iterations,
+            }
+            row["certified"] = dict(self.certified_last)
         self.steps.append(row)
         if len(self.steps) > 512:
             del self.steps[:-512]
@@ -479,7 +656,44 @@ class BodyFittedColumn:
             "coverage": self.coverage,
             "learned_hole": LEARNED_HOLE,
             "referent": self.referent_state(),
+            "mode": self.mode,
+            "certified": self.certified_state(),
+            "cost": self.cost(),
         }
+
+    def certified_state(self) -> dict:
+        """Section 5.2's certified row: outer iterations, inner cheap calls and
+        the residual -- plus what criterion 4 asks a viewer to watch.
+
+        **The residual is free and the error is not.**  The residual is computed
+        every outer iteration whatever else is on; MEASURING the error against
+        the classical answer needs the classical solve run beside the certified
+        one, which is what `verify` buys and what it costs.  Section 5.4's rule 4
+        is the reason the mode is still honest with `verify` off: the certified
+        limit is the classical answer by a PROOF, and the residual is what
+        bounds the distance to it.
+        """
+        last_classical = next((s for s in reversed(self.steps)
+                               if s.get("mode") == "classical"), None)
+        out = {"mode": self.mode, "verify": self.verify,
+               "classical_iterations": (last_classical or {}).get("iterations"),
+               "what": CERTIFIED_WHAT,
+               "not_per_window": CERTIFIED_NOT_PER_WINDOW,
+               "learned_refused": LEARNED_REFUSED,
+               "last": self.certified_last}
+        if self.mode != "certified":
+            out["note"] = ("the fluid is running the classical solve; flip to "
+                           "certified to see what the mode costs")
+        elif not self.verify:
+            out["note"] = ("the residual bounds the distance to the classical "
+                           "answer and is free; turn verify on to MEASURE that "
+                           "distance, at the price of a classical solve a step")
+        else:
+            out["note"] = ("verify is on: a classical solve is running beside the "
+                           "certified one every step, so the error is measured "
+                           "rather than bounded -- and the step time below "
+                           "includes it")
+        return out
 
     def referent_state(self) -> dict:
         """Off, and refused with a reason while it would measure zero."""

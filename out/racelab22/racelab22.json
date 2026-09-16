@@ -1,0 +1,283 @@
+{
+ "tier": 73,
+ "prediction": [
+  {
+   "id": "Q1",
+   "claim": "every one of 24 certified steps on the live column converges, and with verify on the measured error to the classical answer stays below 1e-6 on every one of them",
+   "why": "the fixed point is the momentum system's own answer and the settled car reached it in 2 outer iterations; what is untested is whether that holds step after step rather than once"
+  },
+  {
+   "id": "Q2",
+   "claim": "the certificate is never violated: on every verified step the measured error is at most 10 times the reported residual",
+   "why": "the certificate is ||w - w*|| <= Theta r with Theta a property of the CLASSICAL map; the one step observed on the page read error 6.204e-9 against residual 6.213e-9, so Theta is about 1 there. Ten is the falsifiable line, and Theta is NOT guaranteed to be 1 away from that state"
+  },
+  {
+   "id": "Q3",
+   "claim": "a certified march TRACKS the classical one: after 24 steps from the same settled state the two velocity fields differ by less than 1e-6 relative, while the field itself has moved by more than 1e-3 over the same steps",
+   "why": "each step is certified to about 1e-8 and the accumulation over 24 steps is the thing no single-step measurement can see. **The second clause is the positive control**: a gap that is small only because nothing moved is not a result, and this vault has already published one of those"
+  },
+  {
+   "id": "Q4",
+   "claim": "the mode's own price and the verification's price are different numbers, both above 1, and the verification is the larger",
+   "why": "verify runs a full classical solve beside the certified one every step. The page read 1.10x and 1.58x before this run, so this is a re-measurement with replicates rather than a discovery -- what it adds is the spread"
+  },
+  {
+   "id": "Q5",
+   "claim": "criterion 2 survives criterion 4: moving the ambient temperature knob while the certified mode is ON still moves the marching coolant return",
+   "why": "the mode changes the fluid's momentum solve and nothing in the circuit, so it should not reach the loop -- but Tier 71's whole lesson was a knob that REPORTED a response the march did not have, and nothing has checked this combination"
+  },
+  {
+   "id": "Q6",
+   "claim": "the classical mode is bit-for-bit what it was before the switch existed: with the mode classical the flow's momentum_solver is None, and a step is identical to one taken with the attribute never set",
+   "why": "the switch is a seam, not a rewrite. If flipping back to classical left anything installed, every classical number this demo reports would be about a different solver than the one it names"
+  }
+ ],
+ "n_steps": 24,
+ "prediction_recorded_at": "2026-09-16T17:58:42",
+ "read_before_this_run": [
+  "Tier 72: the body-fitted column's implicit step has a fixed point (its momentum system's own answer), the step's incomplete factor reaches it at 0.007719 a sweep on the car, and a certified step landed 1.163e-12 relative from the classical step. P8 was NOT measured: Poseidon-T refused the call at a lead of 0.0250 against its native 0.1 (W294).",
+  "W295: this column is ONE fluid expert (Tier 65), so there is no per-window step whose answer could be certified separately, and section 5.2's per-window certified telemetry has nothing to attach to.",
+  "Explored before these predictions were written, ON THE RUNNING DASHBOARD at port 8014: the switch flips, `learned` is refused showing BOTH blocks, and with verify on the page drew outer iterations 2, inner cheap calls 2, residual 6.213e-9, error to classical 6.204e-9, status converged, classical step 0.654 s (n=20), certified step 0.717 s (n=20), certified + verify step 1.034 s (n=19), cost of the mode 1.10x and cost with verify 1.58x.",
+  "Two defects found by opening the page and not by any test: the panel read `arms[comparing]`, so while the mode was classical it drew the CLASSICAL arm's 0.516 s under a 'certified step' label; and the cost row said '20 this arm' counting the classical arm's steps. Both were repaired before these predictions were registered.",
+  "Also found while writing the tests: `cylinder_flow` starts impulsively, and the certified sweep does NOT converge through that transient -- it returns fallback_unconverged and the next step blows up. The real column never marches from rest either, which is W293.",
+  "NOT measured before these predictions: whether a certified MARCH tracks the classical one over many steps rather than one; whether every step of such a march converges; whether the certificate's residual bounds the measured error step after step; and whether a knob still reaches its subsystem while the certified mode is on."
+ ],
+ "machine_state": {
+  "python_processes_running": 1,
+  "python_processes": [
+   "\"python.exe\",\"12172\",\"Console\",\"1\",\"256,084 K\""
+  ],
+  "battery_status_raw": "2",
+  "on_mains": true,
+  "reference_matmul_1024_s": 0.02348429999256041,
+  "taken_at": "2026-09-16T17:58:43"
+ },
+ "switch": {
+  "n_unknowns": 377267,
+  "classical_solver_is_none": true,
+  "certified_plain": {
+   "steps": 24,
+   "all_converged": true,
+   "statuses": [
+    "converged"
+   ],
+   "outer": [
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+   ],
+   "inner": [
+    2,
+    2,
+    2,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+   ],
+   "residual_max": 1.0376974414907667e-08,
+   "error_reported_with_verify_off": []
+  },
+  "certified_verified": {
+   "steps": 24,
+   "all_converged": true,
+   "statuses": [
+    "converged"
+   ],
+   "error_max": 9.727206212086855e-09,
+   "error_min": 2.9760333791360593e-09,
+   "residual_max": 9.727308914637058e-09,
+   "error_over_residual_max": 1.0000452344670203,
+   "classical_iterations_seen": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "outer": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+   ]
+  },
+  "cost": {
+   "arms": {
+    "classical": {
+     "n": 20,
+     "median_s": 0.6835238999992725,
+     "lo_s": 0.560845200001495,
+     "hi_s": 0.7864159000018844
+    },
+    "certified": {
+     "n": 20,
+     "median_s": 0.8262309500059928,
+     "lo_s": 0.6234101000009105,
+     "hi_s": 1.0353357999993023
+    },
+    "certified+verify": {
+     "n": 20,
+     "median_s": 1.253137350002362,
+     "lo_s": 1.0307789999933448,
+     "hi_s": 1.62059120000049
+    }
+   },
+   "comparing": "certified+verify",
+   "classical_s": 0.6835238999992725,
+   "certified_s": 1.253137350002362,
+   "ratio": 1.8333482560064038,
+   "ratio_mode_only": 1.2087813608373783,
+   "ratio_with_verify": 1.8333482560064038,
+   "enough": true,
+   "min_samples": 5,
+   "classical_steps": 20,
+   "certified_steps": 20,
+   "why": "both halves are medians over this session's own steps, excluding the ones that refactored the incomplete LU, and each is reported with its count and range because a single-draw number is not an effect size. A verified certified step is a SEPARATE arm: with verify on a classical solve runs beside the certified one every step, and that is the verification's price, not the mode's."
+  },
+  "knob_while_certified": {
+   "knob": "ambient_t",
+   "mode": "certified",
+   "responded": [
+    "cooling_loop",
+    "brake_thermal"
+   ],
+   "coolant_return_before": null,
+   "coolant_return_after": null,
+   "moved": false,
+   "delta": null
+  },
+  "back_to_classical_solver_is_none": true
+ },
+ "stage_wall_s": {
+  "switch": 223.75816140000825,
+  "trajectory": 288.42508299999463,
+  "page": 0.004907700000330806,
+  "summary": 0.010987600006046705,
+  "knobhorizon": 1177.2577279999969
+ },
+ "trajectory": {
+  "steps": 24,
+  "same_start": true,
+  "gap": 2.4673962771300758e-08,
+  "scale": 0.8659615503410061,
+  "relative_gap": 2.8493138940850694e-08,
+  "moved": 0.008522000299079208,
+  "relative_move": 0.009841083932333183,
+  "gap_over_move": 2.8953252646525667e-06,
+  "fingerprint_a": "a1f67a8e2792",
+  "fingerprint_b": "a1f67a8e2792"
+ },
+ "page": {
+  "labels_present": {
+   "outer iterations": true,
+   "inner cheap calls": true,
+   "residual": true,
+   "error to classical": true,
+   "cost of the mode": true,
+   "cost with verify": true,
+   "BiCGSTAB iterations": true
+  },
+  "sends_mode": true,
+  "sends_verify": true,
+  "reads_compared_arm_by_name": true,
+  "names_the_not_per_window_reason": true,
+  "learned_refusal_names_both_blocks": true,
+  "all_labels": true
+ },
+ "verdicts": {
+  "Q1": true,
+  "Q2": true,
+  "Q4": true,
+  "Q5": false,
+  "Q6": true,
+  "Q3": true,
+  "page": true
+ },
+ "verdicts_missing": [],
+ "knobhorizon": {
+  "n_fluid_per_coolant": 400,
+  "q5_probe_steps": 3,
+  "why_q5_read_nothing": "the coolant circuit sub-cycles once every 400 fluid steps and Q5's probe took 3, so the loop never ran and the return was None in either mode; `moved` reported False where it should have reported None",
+  "classical_short_probe": {
+   "before": null,
+   "after": null,
+   "moved": null,
+   "note": "the control: if this also reads None, the failure is the probe's horizon"
+  },
+  "certified_full_horizon": {
+   "mode": "certified",
+   "responded": [
+    "cooling_loop",
+    "brake_thermal"
+   ],
+   "before": 311.72749880543364,
+   "after": 331.83723611484635,
+   "moved": true,
+   "delta": 20.109737309412708,
+   "coolant_rows": 2
+  },
+  "diagnosis_holds": true
+ }
+}

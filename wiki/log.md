@@ -5442,3 +5442,48 @@ Seven of eight judged predictions held; P8 not measured.
 **Changed:** `atlas/cases/overset_ns.py` (`_assemble_momentum`, `_momentum_precond` and `_momentum_solve` extracted from `step`, and the `momentum_solver` seam -- **bitwise inert**, verified on six steps and two preconditioners before anything was built on it), `tests/test_tier45_region_assembly.py` (`certified_step` in the census), `.gitignore`, [[gap-worklist]], [[index]].
 
 **NOT done:** **criterion 4 is NOT met and this is the honest line -- there is no screen**, so nobody can yet flip to certified and watch; no learned expert ran, so the mode has been exercised only with classical cheap maps and one adversarial one; the certified mode is per step and Tier 65 made this column ONE fluid expert, so "certified on window $k$" has no referent here (W295); the contraction rate was read at one point in the incomplete factor's refresh cycle and its degradation across the cycle was not measured; W271 is untouched, so "the classical answer" remains a first-order-in-time scheme's; the porous column is exactly as it was. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 73 | the certified mode on the screen, and what it costs over a march
+
+**[[poc3-racelab-certified-screen]].** Section 12's criterion 4 -- *flip to certified and watch the error go to the classical answer, and see what that cost* -- is **met** on the body-fitted column. Tier 72 built the mechanism and priced one step; this puts it on the dashboard and measures the two things one step cannot answer.
+
+### On the screen
+
+A three-way switch, with `learned` drawn **refused and naming BOTH of its blocks** -- the uniform $128\times128$ interface against $61.0\%$ of the unknowns (W288) *and* a lead of $0.0250$ against the checkpoint's native $0.1$ (W294). Naming only the spatial one would leave a reader thinking a better tiling could fix it. Section 5.2's row -- outer iterations, inner cheap calls, residual, system residual, error to the classical answer, which cheap map ran, status -- sits beside the classical solve's own BiCGSTAB count, so the two are read against each other. W295's reason is under the panel in full: this column is ONE fluid expert, so the mode is one switch for the whole fluid and the page says so rather than faking a per-window split.
+
+**The two prices are kept apart, and that is what the panel turns on.** The residual is computed every outer iteration and is free; MEASURING the distance to the classical answer needs the classical solve run beside the certified one. So `verify` is a toggle and a verified certified step is **its own timing arm**: classical $0.684$ s, certified $0.826$ s, certified+verify $1.253$ s, each $n = 20$ with its range -- **cost of the mode $1.209\times$, cost with verify $1.833\times$**. Quoting only the compared arm would price the instrument and call it the mode, which is the confound Tier 72 found inside its own report. Every ratio is withheld below five steps an arm (section 5.4's rule 5).
+
+### What one step could not answer
+
+**The certified march tracks the classical one.** Two columns built and released from the SAME settled state at $t = 12$ -- each arm re-spun rather than continued -- and marched 24 steps: relative gap $\mathbf{2.849\times10^{-8}}$, **while the field itself moved $9.841\times10^{-3}$** over the same steps. That second number is the positive control and is what makes it a result: the two marches agree five and a half orders tighter than the physics changed.
+
+Every certified step **converged**, outer iterations $2$--$3$, residual at most $1.038\times10^{-8}$. With verify on, the measured error ran $2.976$--$9.727\times10^{-9}$ and $\max(\text{error}/\text{residual}) = \mathbf{1.0000}$ -- the certificate is tight, not merely satisfied. And the classical mode is still the classical mode: `momentum_solver` is `None`, and with verify off **no step reported an error**, because nothing computed one.
+
+### Q5 failed, and the probe was three steps against a four-hundred-step clock
+
+`vehicle_march.N_FLUID_PER_COOLANT` is **400**: the coolant circuit sub-cycles once every four hundred fluid steps, and Q5's probe took **three**. The loop never ran, the return read `None`, and nothing could have moved it -- **in either mode**. Three faults, only one about coolant: **no horizon** (a probe $1/133$ of the cadence it probes); **no control** -- Q5's `why` argued about the certified mode while the identical probe fails identically in the classical one, and one run of that control at registration would have shown it; and **`False` where `None` belonged**, collapsing *absent* into *did not move* in a flag built for exactly that distinction.
+
+Re-measured over a real horizon with the knob moved while CERTIFIED: the marching coolant return goes $311.727499 \to \mathbf{331.837236}$ K, $+20.11$ K, at steps 402 and 804 -- against Tier 71's $+19.31$ K on the classical march, agreeing to about four percent. **So criterion 2 does survive criterion 4.** Q5's verdict is left as judged and the diagnosis recorded beside it.
+
+### What the page found, and no test would
+
+**The panel showed one arm's numbers under another arm's name.** It rendered `arms[cost.comparing]`, and while the mode was classical that IS the classical arm -- so the row labelled "certified step" displayed $0.516$ s $(n = 20)$, the classical arm's own timing, and the cost row read "20 this arm" counting classical steps. **Third instance of that defect class in four tiers**: Tier 71's knob reporting a response the march did not have, Tier 72's `detuned_psi` answering under its own name when it could not be built, and now this. Each arm is rendered under its own key and a test asserts `A[cost.comparing]` does not appear in the page at all.
+
+Also found, writing the fixture: **the certified sweep does not converge through an impulsive start** -- `fallback_unconverged`, then the next step blows up. The real column never marches from rest either, which is W293.
+
+```
+python scripts/tier73_certified_screen.py --out out/racelab22 --stages switch,trajectory,page,knobhorizon,summary
+python -m pytest tests/test_tier73_certified_screen.py -p no:cacheprovider
+python -m uvicorn atlas.demo_racelab.bodyfitted_server:create_app --factory --port 8014
+python scripts/vault_scan.py wiki        # 252 files, 0 problems
+python scripts/run_suite.py              # 1747 passed, 0 failed, 864 s, no missing logs
+```
+
+Five of six judged predictions held. The suite's $864$ s against Tier 72's $489$ s is the machine and not the tests: it ran at $1.4$ GHz of $3.8$, and this time with **no** `phone-remote` process running, which is recorded because it is the kind of number that rots.
+
+**Opened:** **W296** (a probe shorter than the sub-cycle it probes reads `None` and the tier read it as `False`). **Annotated:** W295 (the page now carries its reason), W294, W293 (written into the requirements' section 12.1 as a blocker).
+
+**Added:** `scripts/tier73_certified_screen.py`, `tests/test_tier73_certified_screen.py`, `out/racelab22/racelab22.json`, [[poc3-racelab-certified-screen]].
+**Changed:** `atlas/demo_racelab/bodyfitted.py` (`MODES`, `LEARNED_REFUSED`, `CERTIFIED_NOT_PER_WINDOW`, `set_mode`, `set_verify`, `cost` with its arms and replicate counts, the certified row in `step` and `telemetry`), `atlas/demo_racelab/bodyfitted_server.py` (`/api/mode`, `/api/verify`, the worker's handlers, the mode in the payload and the meta), `atlas/demo_racelab/static/bodyfitted.html` (the switch, the certified panel, the two prices, W295's reason), `atlas/cases/certified_step.py` (`MomentumSystem.from_parts`, so the solver stops re-assembling the system `step` just built), `POC3-RACELAB-REQUIREMENTS.md` (**section 12.1, the blockers before RaceLab is done -- W293 first**), `.gitignore`, [[gap-worklist]], [[index]].
+
+**NOT done:** **W293 still stands** -- a committed geometry cannot be spun up, so a viewer can move a geometry knob, commit it, and be refused rather than shown a car; no learned expert runs and none can on this column; the certified mode is not per window (W295) and section 5.2's per-window certified telemetry is told only on the porous column; the porous dashboard is untouched; the bundle is not rebuilt and the gate is not re-run, both of which are in section 12.1; the cost was read at one point in the incomplete factor's refresh cycle, on a machine at $1.4$ GHz of $3.8$ with the user's two `phone-remote` processes running. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

@@ -382,6 +382,23 @@ RaceLab is done when:
 6. The dashboard names which families have no learned option, and why.
 7. The full suite is green and `vault_scan` reports 0 problems.
 
+## 12.1 Blockers that must be cleared before RaceLab is done
+
+**This list exists so that nothing here is finished by being forgotten.** Each
+row is open, each names the W-row that tracks it, and none of them is optional:
+criterion 1 or 2 is false while it stands.
+
+| # | blocker | why it blocks a criterion | state |
+|---|---|---|---|
+| **1** | **W293 — a committed geometry cannot be spun up.** A geometry commit re-cuts the car, and the new car has **no field of its own**. Settling it means marching from rest, and Tier 62 measured that start failing here: first-step divergence $2.3\times10^{3}$, a momentum solve that did not converge, and a spurious road boundary layer. Only the walls-ramped spin-up works, and it is a **script**, not something the demo can reach. So the column re-cuts, refuses the wrong car's prefix, and `step()` **raises**. | **Criterion 2** — *move a parameter and watch every coupled subsystem respond*. A viewer can move a geometry knob and commit it, and what they then see is a refusal, not a car. The cooling and powertrain knobs do respond live; the six geometry knobs of §3.3 do not. | **open.** Done when either (a) the ramped spin-up is reachable from the demo, with its cost on screen, or (b) a commit is **refused up front** for any geometry with no spun-up field, so the viewer is told before they commit rather than after. |
+| **2** | **Bundle rebuilt and verified on two operating systems.** The bundle predates Tiers 60–72; nothing since the porous column is in it. | **Criterion 1** — *one clone, one command, a car simulating, on Windows and on macOS or Linux*. | **open.** Ask before any `pip install`. See `atlas/demo_racelab/README.md` and `scripts/build_racelab_bundle.py`. |
+| **3** | **P1–P7 re-run on the body-fitted column.** The gate clauses were run on the porous column. | **Criterion 5** — *every number on screen traceable to a recorded run*. | **open.** |
+| **4** | **W275 — the front-wing grid generator.** The welded endplate could only be gridded after a fillet filled it $+92\%$, and the filled wedge makes lift (W279). | Not a criterion, but the car on screen is not the car that was drawn, and criterion 5 makes that a claim about the geometry. | **open**, its own tier, likely two. |
+
+**Not a blocker, on hold by the user's instruction (2026-09-16):** 3-D on a real
+Formula One CAD model (§13.1, §13.3). No licence check and no download is to be
+raised until they re-open it.
+
 ---
 
 # 13. Amendments

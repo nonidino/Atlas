@@ -110,6 +110,26 @@ class MomentumSystem:
     from the first, which this vault has already paid for twice.
     """
 
+    @classmethod
+    def from_parts(cls, flow, M, bu, bv, us, vs, precond, *, sweep: str = "ilu"):
+        """The system `step` has ALREADY assembled, without assembling it again.
+
+        `CertifiedMomentumSolver` is handed exactly these parts by `step`, and
+        re-deriving them would cost a second full assembly every step -- which
+        would land on the cost ratio criterion 4 puts on the screen, as a price
+        of the instrument rather than of the mode.
+        """
+        self = cls.__new__(cls)
+        if sweep not in SWEEPS:
+            raise ValueError(f"sweep must be one of {SWEEPS}, got {sweep!r}")
+        self.flow, self.sweep = flow, sweep
+        self.M, self.bu, self.bv, self.us, self.vs = M, bu, bv, us, vs
+        # the same rule `_assemble_momentum` uses; only `picard` reads it
+        self.a0 = 1.0 if (flow.k == 0 or flow.Um1 is None) else 1.5
+        self.t1 = flow.t + flow.dt
+        self._finish(precond)
+        return self
+
     def __init__(self, flow, *, sweep: str = "ilu", precond=None) -> None:
         if sweep not in SWEEPS:
             raise ValueError(f"sweep must be one of {SWEEPS}, got {sweep!r}")
@@ -117,6 +137,10 @@ class MomentumSystem:
         self.sweep = sweep
         self.M, self.bu, self.bv, self.us, self.vs, self.a0, self.t1 = \
             flow._assemble_momentum()
+        self._finish(precond)
+
+    def _finish(self, precond) -> None:
+        flow, sweep = self.flow, self.sweep
         self.n = self.bu.size
         self._diag = self.M.diagonal()
         if np.any(self._diag == 0):                              # pragma: no cover
@@ -452,7 +476,8 @@ class CertifiedMomentumSolver:
     def __call__(self, M, bu, bv, us, vs, precond):
         # rebuilt from the flow rather than from the arguments so that ONE
         # assembly is in play; the arguments are what `step` just built from it
-        sys = MomentumSystem(self.flow, sweep=self.sweep, precond=precond)
+        sys = MomentumSystem.from_parts(self.flow, M, bu, bv, us, vs, precond,
+                                        sweep=self.sweep)
         ref, cits, cwall = (None, None, float("nan"))
         if self.compare_classical:
             ref, cits, cwall = sys.classical()

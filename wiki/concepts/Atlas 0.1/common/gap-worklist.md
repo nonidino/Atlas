@@ -2311,3 +2311,29 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **The contraction rate was read at one point in the refresh cycle**, and its degradation across the cycle was not measured.
 - **The porous column is exactly as it was**, and still refuses a `CERTIFIED` window — the control that keeps this tier's claim conditional on implicitness rather than universal.
 - **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+---
+
+### Tier 73 — the certified mode on the screen, and what it costs over a march (2026-09-16)
+
+**[[poc3-racelab-certified-screen]], `atlas/demo_racelab/static/bodyfitted.html`, `scripts/tier73_certified_screen.py`, `out/racelab22/`.** Section 12's **criterion 4 is met**: a three-way switch, section 5.2's row live, and the error going to the classical answer with its price beside it. Five of six judged predictions held.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W296** | **a probe shorter than the sub-cycle it probes reads `None`, and the tier read it as `False`** | `vehicle_march.N_FLUID_PER_COOLANT` is $400$: the coolant circuit steps once every four hundred fluid steps. Q5's probe took **three**, so the loop never ran, the return was `None`, and nothing could have moved it **in either mode**. Three faults and only one about coolant: **no horizon**; **no control**, since Q5's `why` argued about the certified mode while the identical probe fails identically in the classical one; and **`False` returned where `None` belonged**, collapsing *absent* into *did not move* in a flag built for exactly that distinction (Tier 69's `nan != nan` repair) | **closed as a measurement, open as a rule.** Re-measured over a real horizon with the knob moved while certified: $311.727499 \to 331.837236$ K, $+20.11$ K at steps 402 and 804, against Tier 71's $+19.31$ K classically. `_moved` now returns three states and never two. **The rule the row leaves behind**: before registering a prediction about a quantity, find the cadence at which that quantity is COMPUTED, and make the probe longer than it — and give any *X survives Y* claim a control in which $Y$ is absent |
+| **W295** | the certified mode is per STEP and section 5.2 asks for it per window | *(annotated)* The page now carries the reason rather than faking a split: `CERTIFIED_NOT_PER_WINDOW` is drawn under the panel, naming the single implicit linear solve that couples every grid — which is exactly why a fixed point exists — and pointing at the porous column, where section 12's per-window story is told over fourteen windows | `open`, told on screen |
+| **W294** | Poseidon-T cannot be called at this column's time step | *(annotated)* Now on the screen: `learned` is a **refused** button naming BOTH blocks, the spatial $61.0\%$ and the temporal $0.0250$ against $0.1$. Naming only the first would leave a reader thinking a better tiling could fix it | `open`, shown with its reason |
+| **W293** | a committed geometry cannot be spun up | *(annotated)* **Written into `POC3-RACELAB-REQUIREMENTS.md` §12.1** as the first of four blockers before RaceLab is done, so it cannot be finished by being forgotten. Unchanged otherwise. It also turned up from a new direction: the certified sweep does **not** converge through an impulsive start — `fallback_unconverged`, then the next step blows up — which is the same fact about this column seen from the solver's side | **open**, and now tracked in the definition of done |
+
+**What the page found, and no test would — for the third time in four tiers.** The panel rendered `arms[cost.comparing]`, and while the mode was classical that IS the classical arm, so the row labelled **"certified step"** displayed $0.516$ s $(n=20)$ — the classical arm's own timing — and the cost row read "20 this arm" counting classical steps. The numbers were real and the labels were wrong. The class: **Tier 71's** knob reporting a response the march did not have; **Tier 72's** `detuned_psi` answering under its own name when it could not be built; **this**. Each arm is now rendered under its own key, and a test asserts `A[cost.comparing]` does not appear in the page at all.
+
+**And the measurement decision worth keeping.** The residual is computed every outer iteration and is free; *measuring* the distance to the classical answer needs the classical solve run beside the certified one. So `verify` is a toggle, a verified certified step is **its own timing arm**, and the panel reports **two** prices — cost of the mode $1.209\times$, cost with verify $1.833\times$ — because quoting only the compared arm would price the instrument and call it the mode. That is the confound Tier 72 found inside `certified_step_report`, met again one layer up and designed out rather than repaired.
+
+**What this tier did not do:**
+
+- **W293 still stands**, so a geometry commit is still something a viewer can make and see refused. It is now §12.1's first blocker.
+- **No learned expert runs**, and none can on this column (W294).
+- **Section 5.2's per-window certified telemetry is unaddressed here** (W295) and told on the porous column.
+- **The bundle is not rebuilt and P1–P7 are not re-run**, both of which are §12.1 blockers for criteria 1 and 5.
+- **The cost was read at one point in the incomplete factor's refresh cycle**, on a machine at $1.4$ GHz of $3.8$ with the user's two `phone-remote` processes running.
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.

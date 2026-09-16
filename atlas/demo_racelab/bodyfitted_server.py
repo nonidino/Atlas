@@ -49,6 +49,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, Response
 
 from ..cases import car_knobs as CK
+from . import bodyfitted as BF
 from .bodyfitted import FIELD_HOLES, FIELDS, LEARNED_HOLE, BodyFittedColumn
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -150,6 +151,12 @@ class BodyFittedEngine:
                     self._note("knob", **r)
                 elif kind == "commit":
                     self._commit()
+                elif kind == "mode":
+                    r = self.col.set_mode(str(msg.get("name")))
+                    self._note("mode", **r)
+                elif kind == "verify":
+                    r = self.col.set_verify(bool(msg.get("value", True)))
+                    self._note("verify", **r)
                 elif kind == "field":
                     if msg.get("name") in FIELDS:
                         self.field = msg["name"]
@@ -194,6 +201,7 @@ class BodyFittedEngine:
             self.payload = {"seq": self.frame_seq, "overlay": payload,
                             "telemetry": tel, "status": self.status,
                             "pending_regrid": list(self.col.pending_regrid),
+                            "mode": self.col.mode, "verify": self.col.verify,
                             "knobs": dict(self.col.knob_state().values),
                             "fingerprint": self.col._fingerprint[:12],
                             "released_from": self.build_report.get("released_from"),
@@ -212,6 +220,10 @@ class BodyFittedEngine:
         return {"title": "RaceLab - the body-fitted column",
                 "fields": list(FIELDS), "field_holes": dict(FIELD_HOLES),
                 "learned_hole": LEARNED_HOLE,
+                "modes": list(BF.MODES),
+                "mode_refused": {"learned": BF.LEARNED_REFUSED},
+                "certified_what": BF.CERTIFIED_WHAT,
+                "certified_not_per_window": BF.CERTIFIED_NOT_PER_WINDOW,
                 "knobs": offerable, "refused_knobs": refused,
                 "omitted": dict(CK.OMITTED),
                 "status": self.status, "progress": self.progress,
@@ -269,6 +281,16 @@ def create_app(engine: BodyFittedEngine | None = None):
     @app.post("/api/commit")
     async def commit():
         eng.post({"kind": "commit"})
+        return JSONResponse({"queued": True})
+
+    @app.post("/api/mode")
+    async def mode(body: dict):
+        eng.post({"kind": "mode", "name": body.get("name")})
+        return JSONResponse({"queued": True})
+
+    @app.post("/api/verify")
+    async def verify(body: dict):
+        eng.post({"kind": "verify", "value": body.get("value", True)})
         return JSONResponse({"queued": True})
 
     @app.websocket("/ws")

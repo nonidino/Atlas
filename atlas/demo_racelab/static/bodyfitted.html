@@ -86,6 +86,19 @@
   .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px;
             background: var(--car); vertical-align: middle; margin-right: 4px; }
   .evt { font-size: 11px; color: var(--dim); margin-top: 3px; }
+  .modes { display: flex; gap: 6px; margin-bottom: 8px; }
+  .modes button { flex: 1; }
+  .modes button.on { background: #1b3a4d; border-color: var(--accent); color: var(--accent); }
+  .modes button.refused { opacity: .5; border-style: dashed; cursor: help; }
+  .certified {
+    border: 1px solid #2a4d5e; background: #101a1e; border-radius: 6px;
+    padding: 10px; margin-top: 10px;
+  }
+  .certified.idle { border-color: #2a3340; background: #12151a; }
+  .certified .big { font-size: 18px; color: var(--accent); font-weight: 600; }
+  .certified table td:last-child { color: #cfe6f2; }
+  .verify { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; }
+  .price { font-size: 11px; color: var(--warn); margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -133,7 +146,22 @@
 
   <!-- RIGHT: what it is doing -->
   <section class="panel">
-    <h2>Telemetry</h2>
+    <h2>The fluid expert</h2>
+    <div class="modes" id="modes"></div>
+    <div class="note" id="modeWhat"></div>
+
+    <div class="certified idle" id="certPanel">
+      <div><b id="certHead">classical</b></div>
+      <table id="cert"></table>
+      <label class="verify">
+        <input type="checkbox" id="verify">
+        <span>verify &mdash; measure the error against the classical answer</span>
+      </label>
+      <div class="price" id="certNote"></div>
+    </div>
+    <div class="note" id="notPerWindow"></div>
+
+    <h2 style="margin-top:14px">Telemetry</h2>
     <table id="tel"></table>
     <div class="learned">
       <div class="big" id="cov61">61.0%</div>
@@ -149,6 +177,7 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
 let META = null, KNOBS = {}, DIRTY = new Set(), FIELD = "speed", LAST_URL = null;
+let MODE = "classical", VERIFY = false;
 
 function fmt(v, n) {
   if (v === null || v === undefined) return "-";
@@ -159,10 +188,39 @@ function fmt(v, n) {
 async function boot() {
   META = await (await fetch("/api/meta")).json();
   $("learnedWhy").textContent = META.learned_hole;
+  $("notPerWindow").textContent = META.certified_not_per_window || "";
   renderKnobs();
   renderFields();
   renderHoles();
+  renderModes();
   connect();
+}
+
+// Section 4.2's switch. `learned` is drawn REFUSED rather than omitted --
+// section 4.3's rule is that an option with no shippable expert is greyed out
+// WITH its reason, never hidden.
+function renderModes() {
+  const host = $("modes");
+  host.innerHTML = "";
+  for (const m of (META.modes || [])) {
+    const b = document.createElement("button");
+    b.textContent = m;
+    b.id = "mode-" + m;
+    b.className = m === MODE ? "on" : "";
+    b.onclick = () => { send({ kind: "mode", name: m }); };
+    host.appendChild(b);
+  }
+  for (const [m, why] of Object.entries(META.mode_refused || {})) {
+    const b = document.createElement("button");
+    b.textContent = m;
+    b.id = "mode-" + m;
+    b.className = "refused";
+    b.title = why;
+    b.onclick = () => { $("modeWhat").textContent = why; };
+    host.appendChild(b);
+  }
+  $("modeWhat").textContent = MODE === "certified"
+    ? (META.certified_what || "") : "";
 }
 
 function renderKnobs() {
@@ -290,6 +348,10 @@ function onState(s) {
     : "";
   $("marching").className = "tag " + (pend.length ? "busy" : "");
 
+  // the ENGINE's mode, not the button that was clicked: a mode the worker
+  // refused must not leave the page showing it as selected
+  if (s.mode && s.mode !== MODE) { MODE = s.mode; renderModes(); }
+
   if (s.telemetry) onTelemetry(s.telemetry);
   if (s.events) onEvents(s.events);
 }
@@ -316,6 +378,73 @@ function onTelemetry(t) {
   ];
   $("tel").innerHTML = rows
     .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  renderCertified(t.certified || {}, t.cost || {});
+}
+
+// Criterion 4: flip to certified, watch the error go to the classical answer,
+// and see what that cost.  The residual is always there; the measured error
+// appears only with `verify`, because measuring it runs a classical solve.
+function renderCertified(c, cost) {
+  const on = c.mode === "certified";
+  const L = c.last || null;
+  $("certPanel").className = "certified" + (on ? "" : " idle");
+  $("certHead").textContent = on
+    ? "certified — defect correction on the momentum system"
+    : "classical — BiCGSTAB on the momentum system";
+  if (VERIFY !== !!c.verify) { VERIFY = !!c.verify; $("verify").checked = VERIFY; }
+
+  const rows = [];
+  if (on && L) {
+    rows.push(["outer iterations", fmt(L.outer_iterations)]);
+    rows.push(["inner cheap calls", fmt(L.inner_cheap_calls)]);
+    rows.push(["residual", L.residual === null ? "-" : L.residual.toExponential(3)]);
+    rows.push(["system residual", L.algebraic_residual === null ? "-"
+      : L.algebraic_residual.toExponential(3)]);
+    rows.push(["error to classical", L.error_to_classical === null
+      ? "not measured — verify off"
+      : L.error_to_classical.toExponential(3)]);
+    rows.push(["cheap map", L.psi_ran || "-"]);
+    rows.push(["status", L.status || "-"]);
+  } else if (on) {
+    rows.push(["outer iterations", "waiting for a step"]);
+  }
+  // the classical solve's own currency, always shown, so the certified mode's
+  // outer count is read against something rather than in isolation
+  const ci = c.classical_iterations;
+  rows.push(["BiCGSTAB iterations", (ci && ci.length) ? ci.join(" + ") : "-"]);
+  // Section 5.4's rule 5: never a single-draw number as an effect size. The
+  // ratio is withheld until both arms have enough steps, and it is always
+  // shown with its counts and ranges.
+  // **Each arm under its OWN name.** Reading `arms[comparing]` put the
+  // classical arm's 0.516 s under a "certified step" label whenever the mode
+  // was classical -- a number that was real and a label that was wrong, which
+  // is the defect this panel exists to avoid making.
+  const A = cost.arms || {};
+  const span = (a) => fmt(a.median_s, 3) + " s  (n=" + a.n + ", "
+    + fmt(a.lo_s, 3) + "–" + fmt(a.hi_s, 3) + ")";
+  for (const [key, label] of [["classical", "classical step"],
+                              ["certified", "certified step"],
+                              ["certified+verify", "certified + verify step"]]) {
+    if (A[key] && A[key].n) rows.push([label, span(A[key])]);
+  }
+  if (cost.ratio_mode_only) {
+    rows.push(["cost of the mode", cost.ratio_mode_only.toFixed(2) + "× classical"]);
+  }
+  if (cost.ratio_with_verify) {
+    rows.push(["cost with verify", cost.ratio_with_verify.toFixed(2)
+      + "× classical"]);
+  }
+  if (!cost.ratio_mode_only && !cost.ratio_with_verify
+      && cost.min_samples !== undefined) {
+    const have = ((A.certified || {}).n || 0) + ((A["certified+verify"] || {}).n || 0);
+    rows.push(["cost", on
+      ? ("held back — needs " + cost.min_samples + " steps in each arm ("
+         + (A.classical ? A.classical.n : 0) + " classical, " + have + " certified)")
+      : "flip to certified to price it"]);
+  }
+  $("cert").innerHTML = rows
+    .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  $("certNote").textContent = c.note || "";
 }
 
 function onEvents(evts) {
@@ -324,6 +453,8 @@ function onEvents(evts) {
       const who = (e.responded || []).join(", ") || "nothing";
       return `<div class="evt"><b>${e.knob}</b> &rarr; ${fmt(e.to)} &mdash; responded: ${who}</div>`;
     }
+    if (e.kind === "mode") return `<div class="evt" style="color:var(--accent)">fluid expert &rarr; <b>${e.mode}</b></div>`;
+    if (e.kind === "verify") return `<div class="evt">verify ${e.verify ? "on &mdash; a classical solve a step" : "off"}</div>`;
     if (e.kind === "refused") return `<div class="evt" style="color:var(--bad)">refused: ${e.why}</div>`;
     if (e.kind === "commit") return `<div class="evt" style="color:var(--ok)">committed in ${fmt(e.wall_s, 1)} s &mdash; car ${e.fingerprint || ""}</div>`;
     if (e.kind === "error") return `<div class="evt" style="color:var(--bad)">${e.why}</div>`;
@@ -332,6 +463,7 @@ function onEvents(evts) {
 }
 
 $("commit").onclick = () => { send({ kind: "commit" }); $("commit").disabled = true; };
+$("verify").onchange = (e) => { send({ kind: "verify", value: e.target.checked }); };
 boot();
 </script>
 </body>

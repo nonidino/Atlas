@@ -594,3 +594,13 @@ out/racelab20/*
 !out/racelab21/
 out/racelab21/*
 !out/racelab21/racelab21.json
+
+# Tier 73 -- the certified mode on the screen, section 12's criterion 4
+# (tier73_certified_screen.py --out out/racelab22). JSON only: every certified
+# step's outer/inner/residual over a live march, the measured error against the
+# classical answer with verify on, the mode's price and the verification's
+# price kept apart, a certified march against a classical one from the same
+# settled state with its positive control, and a knob moved while certified.
+!out/racelab22/
+out/racelab22/*
+!out/racelab22/racelab22.json
