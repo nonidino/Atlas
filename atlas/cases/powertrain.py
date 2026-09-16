@@ -376,6 +376,22 @@ class MachineAgent(_Element):
     k_e: float = K_E
     k_t: float = K_T
     omega: float = 15.0
+    #: The open-circuit voltage of the battery this machine is wired to, and
+    #: the total loop resistance it drives against.
+    #:
+    #: **These were the module constants, read directly, and that was a coupling
+    #: defect (Tier 69).**  `BatteryLeg.v_oc` is a real field its `emf` honours,
+    #: so a state-of-charge knob moved the battery -- and `current_at` and
+    #: `validity` went on reading `V_OC`, leaving the machine drawing against a
+    #: battery that was no longer there.  `validity` is the predicate W282's
+    #: envelope is written on, so the machine would have declined, or failed to
+    #: decline, at the wrong shaft speed for the state of charge it was in.
+    #:
+    #: The defaults ARE the module constants, so every existing graph, record
+    #: and weight hash is unchanged; what moves is that a caller can now say
+    #: which battery.
+    v_oc: float = V_OC
+    r_total: float = R_TOTAL
 
     def emf(self, omega: float | None = None) -> float:
         return self.k_e * (self.omega if omega is None else float(omega))
@@ -408,7 +424,7 @@ class MachineAgent(_Element):
 
     def current_at(self, omega: float) -> float:
         """The loop current the circuit carries at this shaft speed."""
-        return (self.k_e * float(omega) - V_OC) / R_TOTAL
+        return (self.k_e * float(omega) - self.v_oc) / self.r_total
 
     def validity(self, state=None, cond=None) -> bool:
         """**A real predicate, not a placeholder.**
@@ -421,7 +437,7 @@ class MachineAgent(_Element):
         generation.
         """
         w = self.omega if state is None else float(np.mean(np.asarray(state)))
-        return bool(self.k_e * w > V_OC)
+        return bool(self.k_e * w > self.v_oc)
 
     def base_for(self, port) -> np.ndarray:
         name = getattr(port, "name", str(port))

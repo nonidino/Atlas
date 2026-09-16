@@ -557,3 +557,12 @@ out/racelab16/*
 !out/racelab17/
 out/racelab17/*
 !out/racelab17/racelab17.json
+
+# Tier 69 -- section 3.3's parameters and what each one actually reaches
+# (`tier69_car_knobs.py --out out/racelab18`). JSON only: every knob moved end
+# to end with the quantity it claims to reach measured at both, the
+# motor-generator's repair, and the 40-artifact byte control with what this
+# tier added to the moved set (nothing).
+!out/racelab18/
+out/racelab18/*
+!out/racelab18/racelab18.json

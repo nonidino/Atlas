@@ -2222,3 +2222,21 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **No knob moves anything** on this column — that is criterion 2, and its own tier.
 - **The porous column is untouched**: its engine, records, gate and bundle are exactly as they were.
 - **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+
+### Tier 69 — section 3.3's parameters, and what each one actually reaches (2026-09-16)
+
+**[[poc3-racelab-knobs]], `atlas/cases/car_knobs.py`, `scripts/tier69_car_knobs.py`, `tests/test_tier69_car_knobs.py`, `out/racelab18/`.** Criterion 2's purpose is to show the coupling is real. Section 3.3's rule makes it testable — a slider that moves a number nothing reads is worse than no slider — so every knob was moved end to end and the quantity it claims to reach was measured at both ends. Four of eleven reach their subsystem. Four of five predictions held.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W290** | **three declared knobs reach nothing, and a fourth has nothing to reach** | **`rake`** is declared in `CarParams` with a default of $0.10$ and appears **exactly once in the package — its own declaration**; moving it $0.00 \to 0.15$ changes $0$ of the car's $51$ built bodies. **`duct_area`** has nothing to scale: the openings are fixed literals in `car_solids.SOLIDS_DEFAULT`. **`road_speed`** cannot reach a field because the column is nondimensional (`U_INF` is $1.0$); it sets a scale. And **`battery_power`** is unwireable as specified: this circuit is a generator feeding a battery, its current follows shaft speed through `current_at(omega)`, and **nothing accepts a demand** | **open.** Section 3.3's own rule says a knob that cannot reach its subsystem is omitted and the omission recorded; `car_knobs.must_not_be_shown()` keeps all four off a dashboard until they are wired. Wiring `rake` and `duct_area` is ordinary work; `road_speed` needs a dimensional scale; `battery_power` needs a different powertrain model |
+| **W291** | **the cooling knobs reach their subsystem only through module globals** | `coolant_mdot` and `ambient_t` do move the loop — return $310.156 \to 310.865$ K and $288.133 \to 325.778$ K — but only by rebinding `cooling_loop.MDOT` and `T_AMB`, which ten call sites read directly. That is global state under the demo's background march thread, and worse: **a leg's `weight_hash` is built from `MDOT`** (`loop-leg-<id>-mdot{MDOT:.6g}`), so moving the knob moves a capability record's identity with nothing noticing | **open.** The fix is a settings object threaded through the legs, with the module constants as its defaults so every existing test and weight hash is unchanged. Its own tier |
+| **W282** | the machine generates only inside a band of its sizing inflow | *(annotated, and a coupling defect behind it repaired)* `MachineAgent.current_at` and `.validity` read the **module** `V_OC`, while `BatteryLeg.v_oc` is a real field — so a state-of-charge knob moved the battery and left the machine drawing against a battery that was no longer there, **including in the predicate this row's envelope is written on**. The machine now has its own `v_oc` and `r_total`, defaulting to the module constants: the default `current_at(20)` is unchanged at $2.200000$, and the decline threshold moves $13.400 \to 8.000$ rad/s at $v_{oc} = 0.80$, so the same shaft speed is outside the envelope on a full battery and inside on a depleted one | `open` as a row, with its wiring defect closed |
+
+### What Tier 69 did NOT do, named
+
+- **No knob is exposed on any screen**, so **criterion 2 is not met by this tier**; wiring them into the demo, with the "recompiling" state a geometry change needs, is the next one.
+- **`rake`, `duct_area`, `road_speed` and `battery_power` are still unwired** (W290) and the cooling knobs still go through globals (W291).
+- **Nothing was marched**, and the body-fitted column was not touched.
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.

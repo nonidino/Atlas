@@ -128,6 +128,10 @@ ADDED_AFTER_CAPTURE = {
                      "patches, and the multi-body manufactured solutions.  It builds "
                      "NO CaseGraph, declares no region and imports no case but "
                      "overset and overset_ns",
+    "car_knobs": "Tier 69: section 3.3's parameters and what each one ACTUALLY reaches -- "
+                 "the declared knobs, their probes, and the verdict per knob (wired, "
+                 "global, partial, dead, absent).  It builds NO CaseGraph and declares "
+                 "no region: it moves knobs and reads what moves",
     "car_windows": "Tier 67: WHERE a learned expert may sit on the body-fitted column -- "
                    "128 x 128 placements on the Cartesian background, the two admissibility "
                    "tests (no holes, and every cell one the background OWNS) and what the "

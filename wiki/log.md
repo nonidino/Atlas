@@ -5293,3 +5293,35 @@ python scripts/run_suite.py              # 1673 passed, 0 failed, 493 s
 **Changed:** `atlas/cases/car_render.py` (the cache, its validator, and `linear_control`'s empty-selection fix), `POC3-RACELAB-REQUIREMENTS.md` (amendment 13.3, the screen decisions), `.gitignore` (the `out/racelab17` allowlist, and why `out/cache/` is not committed), [[gap-worklist]], [[index]].
 
 **NOT done:** **there is no page** -- this is the engine, and the dashboard that switches columns and shows the $61\%$ is the next tier, with `static/index.html` untouched; no checkpoint is loaded and no window runs a learned expert, so the mode switch, the presets and the referent have nothing to act on; the composite is not cached, so a start still costs about a minute; **no knob moves anything** on this column, which is criterion 2 and its own tier; the porous column's engine, records, gate and bundle are exactly as they were. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 69 | section 3.3's parameters, and what each one actually reaches
+
+**[[poc3-racelab-knobs]].** Criterion 2 is *"they can move a parameter and watch every coupled subsystem respond"*, and its purpose is to show the coupling is REAL -- that one knob propagates through every subsystem the graph says it reaches. Section 3.3 gives the rule that makes it testable: a slider that moves a number nothing reads is worse than no slider. So every one of the eleven was moved end to end and the quantity it CLAIMS to reach was measured at both ends.
+
+### Measured
+
+**Four reach their subsystem**: ride height moves `DIFF`, `FW_FLAP`, `FW_MAIN` and `FW_UPPER`; diffuser, front flap and rear wing move one body each. **Three reach nothing.** **`rake`** is declared in `CarParams` with a default of $0.10$ and **appears exactly once in the entire package -- its own declaration**; moving it $0.00$ to $0.15$ changes $0$ of the car's $51$ built bodies. **`duct_area`** has nothing to scale: the duct's openings are fixed literals in `car_solids.SOLIDS_DEFAULT`. **`road_speed`** cannot reach a field because the column is nondimensional -- `U_INF` is $1.0$ -- so it sets a scale and moves no number the march computes. **One has nothing to reach at all**: `battery_power` asks for a demand, and this circuit is a generator feeding a battery whose current follows shaft speed through `current_at(omega)`; nothing accepts a demand, so the knob is unwireable as specified rather than unwired, which is a fact about the case study (**W290**). **Two reach theirs only by rebinding a module global** -- the loop's return moves $310.156$ to $310.865$ K with the coolant flow and $288.133$ to $325.778$ K with ambient -- and `cooling_loop` builds a leg's `weight_hash` from `MDOT`, so that knob moves a capability record's identity with nothing noticing (**W291**).
+
+### Built
+
+**The one defect repaired here.** `BatteryLeg.v_oc` is a real field its `emf()` honours, and `MachineAgent` had **no `v_oc` field at all**: `current_at` and `validity` read the module constant. So a state-of-charge knob moved the battery and left the machine drawing against a battery that was no longer there -- **including in `validity`, which is the predicate W282's envelope is written on**, so at a lower charge the machine would have declined, or failed to, at the wrong shaft speed. The machine now carries its own `v_oc` and `r_total`, defaulting to the module constants: the default `current_at(20)` is **unchanged at $2.200000$**, and the decline threshold moves $13.400$ to $8.000$ rad/s at $v_{oc} = 0.80$, so **the same shaft speed is outside the envelope on a full battery and inside on a depleted one** -- physically right, and not expressible before.
+
+**The reach test committed the defect it detects.** Its first version called a knob wired whenever its two readings differed, and since `nan != nan` is True in Python, a probe returning `nan` at both ends -- because it called an API that did not exist -- reported its knob as MOVING. `car_knobs.moved` now requires both readings finite AND different, with a test that refuses a `nan` pair, an `inf` and non-numbers.
+
+**L1 failed on the wrong baseline, and the failure is mine.** It asked whether the repair leaves every captured artifact byte-identical; $16$ of $40$ differ. But the capture is a **Tier 45** baseline that ACCUMULATES every deliberate change since -- W194 moved the union fixtures, W285 moved `front_wing` -- and running the identical control against HEAD's `powertrain.py`, before this tier's edit, gave **the same sixteen**. So this tier added none and healed none, which the record now carries as `added_by_this_tier`. A prediction that compares today's tree against a months-old baseline measures the project's history and not the change in front of it. L1 is left as registered and judged as registered; the right question is recorded beside it rather than substituted for it.
+
+```
+python scripts/tier69_car_knobs.py --out out/racelab18 --stages reach,machine,control,summary
+python -m pytest tests/test_tier69_car_knobs.py tests/test_tier37_powertrain.py -p no:cacheprovider
+python scripts/vault_scan.py wiki        # 248 files, 0 problems
+python scripts/run_suite.py              # 1687 passed, 0 failed, 476 s
+```
+
+Four of five predictions held.
+
+**Opened:** **W290** (three declared knobs reach nothing and a fourth has nothing to reach), **W291** (the cooling knobs reach only through module globals, one of which is in a weight hash). **Annotated:** W282, whose wiring defect is closed.
+
+**Added:** `atlas/cases/car_knobs.py`, `scripts/tier69_car_knobs.py`, `tests/test_tier69_car_knobs.py`, `out/racelab18/racelab18.json`, [[poc3-racelab-knobs]].
+**Changed:** `atlas/cases/powertrain.py` (`MachineAgent` gains `v_oc` and `r_total`, defaulting to the module constants), `tests/test_tier45_region_assembly.py` (`car_knobs` in the census), `.gitignore` (the `out/racelab18` allowlist), [[gap-worklist]], [[index]].
+
+**NOT done:** **no knob is exposed on any screen, so criterion 2 is NOT met by this tier** -- wiring them into the demo, with the "recompiling" state a geometry change needs, is the next one; `rake`, `duct_area`, `road_speed` and `battery_power` are still unwired and `must_not_be_shown` keeps them off a dashboard; the cooling knobs still go through module globals; nothing was marched and the body-fitted column was not touched. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

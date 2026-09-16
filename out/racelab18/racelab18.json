@@ -1,0 +1,454 @@
+{
+ "tier": 69,
+ "prediction": [
+  {
+   "id": "L1",
+   "claim": "giving MachineAgent its own v_oc and r_total leaves EVERY captured compile artifact byte-identical",
+   "why": "the new fields default to the module constants the methods used to read, so every existing caller computes exactly what it computed before"
+  },
+  {
+   "id": "L2",
+   "claim": "the machine's loop current and validity now follow the battery: at v_oc = 0.80 the decline threshold moves from 13.4 to 8.0 rad/s",
+   "why": "validity is k_e * omega > v_oc, so the threshold is v_oc / k_e and k_e is 0.10"
+  },
+  {
+   "id": "L3",
+   "claim": "exactly four of section 3.3's eleven knobs reach their subsystem as declared; three reach nothing, one has nothing to reach, two reach only through a module global and one reaches half of what it claims",
+   "why": "measured knob by knob in the reach stage; this pins the tally so a later tier cannot quietly change it without the number moving"
+  },
+  {
+   "id": "L4",
+   "claim": "the reach test's `moved` refuses a pair of nans",
+   "why": "nan != nan is True, so the obvious comparison calls a broken probe a working knob"
+  },
+  {
+   "id": "L5",
+   "claim": "rake still reaches nothing after the repair",
+   "why": "the repair is in the powertrain and rake is geometry; this is the control that says the tier fixed the thing it meant to and not something else"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-16T12:06:35",
+ "read_before_this_run": [
+  "Requirements section 3.3: every parameter must be honestly wired; a slider that moves a number nothing reads is worse than no slider, and a parameter that cannot reach its subsystem is omitted and the omission recorded.  Amendment 13.1 already omitted brake duty, brake duct and plate stiffness.",
+  "racelab.CarParams carries five geometry knobs (ride_height, rake, diffuser_deg, front_flap_deg, rear_wing_deg) and the geometry file has knob-owned entries -- y_plus_ride, y_plus_duct, alpha_from -- resolved at build time.",
+  "Tier 64's W282: the machine generates only between 0.9731 and 1.1408 of its sizing inflow, and MachineAgent.validity is the predicate that envelope is written on.",
+  "Explored before these predictions were written (out/t69_reach.json): ride_height moves four bodies, diffuser_deg, front_flap_deg and rear_wing_deg one each; RAKE MOVES NOTHING and appears exactly once in the package, its own declaration; the duct's openings are fixed literals in car_solids.SOLIDS_DEFAULT so duct_area reaches nothing; ground_effect.U_INF is 1.0 and the column is nondimensional so road_speed reaches no field; the powertrain has no demand input at all, so battery_power cannot be wired; coolant_mdot moves the loop's return from 310.156 to 310.865 K and ambient_t from 288.133 to 325.778 K, both only by rebinding a module constant; and MachineAgent had NO v_oc field, reading the module V_OC in current_at and validity, so a state-of-charge knob moved BatteryLeg.emf and nothing else.",
+  "Also explored: the first version of this reach test called a knob wired whenever its two readings differed, and since nan != nan is True in Python a probe that returned nan at both ends -- because it called an API that did not exist -- reported the knob as MOVING.",
+  "NOT measured before these predictions: whether giving the machine its own v_oc and r_total leaves every existing test and every captured compile artifact untouched; where the validity threshold moves to at a lower state of charge; and whether the repair accidentally wires anything else."
+ ],
+ "machine_state": {
+  "python_processes_running": 1,
+  "python_processes": [
+   "\"python.exe\",\"25916\",\"Console\",\"1\",\"54,248 K\""
+  ],
+  "battery_status_raw": "2",
+  "on_mains": true,
+  "reference_matmul_1024_s": 0.009469299999182113,
+  "taken_at": "2026-09-16T12:06:35"
+ },
+ "reach": {
+  "knobs": {
+   "ride_height": {
+    "group": "vehicle",
+    "how": "wired",
+    "lo": 0.15,
+    "hi": 0.6,
+    "reaches": [
+     "front wing",
+     "floor",
+     "diffuser"
+    ],
+    "probe": "bodies whose built pose moves",
+    "note": "moves DIFF, FW_FLAP, FW_MAIN and FW_UPPER -- four bodies",
+    "bodies_moved": [
+     "DIFF",
+     "FW_FLAP",
+     "FW_MAIN",
+     "FW_UPPER"
+    ],
+    "n_moved": 4,
+    "reaches_something": true
+   },
+   "rake": {
+    "group": "vehicle",
+    "how": "dead",
+    "lo": 0.0,
+    "hi": 0.15,
+    "reaches": [
+     "floor",
+     "diffuser"
+    ],
+    "probe": "bodies whose built pose moves",
+    "note": "`rake` appears EXACTLY ONCE in the package: its own declaration in CarParams. No body, grid, force or record reads it, so the slider would move a number nothing reads",
+    "bodies_moved": [],
+    "n_moved": 0,
+    "reaches_something": false
+   },
+   "diffuser_deg": {
+    "group": "aero",
+    "how": "wired",
+    "lo": 0.0,
+    "hi": 15.0,
+    "reaches": [
+     "floor geometry"
+    ],
+    "probe": "bodies whose built pose moves",
+    "note": "moves DIFF",
+    "bodies_moved": [
+     "DIFF"
+    ],
+    "n_moved": 1,
+    "reaches_something": true
+   },
+   "front_flap_deg": {
+    "group": "aero",
+    "how": "wired",
+    "lo": 0.0,
+    "hi": 30.0,
+    "reaches": [
+     "front wing geometry"
+    ],
+    "probe": "bodies whose built pose moves",
+    "note": "moves FW_FLAP",
+    "bodies_moved": [
+     "FW_FLAP"
+    ],
+    "n_moved": 1,
+    "reaches_something": true
+   },
+   "rear_wing_deg": {
+    "group": "aero",
+    "how": "wired",
+    "lo": 0.0,
+    "hi": 30.0,
+    "reaches": [
+     "rear wing geometry"
+    ],
+    "probe": "bodies whose built pose moves",
+    "note": "moves RW_FLAP",
+    "bodies_moved": [
+     "RW_FLAP"
+    ],
+    "n_moved": 1,
+    "reaches_something": true
+   },
+   "duct_area": {
+    "group": "cooling",
+    "how": "dead",
+    "lo": 0.3,
+    "hi": 1.5,
+    "reaches": [
+     "duct geometry",
+     "core inflow",
+     "UA"
+    ],
+    "probe": "the openings' spans",
+    "note": "the duct's openings are FIXED LITERALS in car_solids.SOLIDS_DEFAULT -- a CHASSIS inlet from 0.25 to 0.75 and a POD_UP outlet from 0.8 to 1.0 -- and nothing scales them",
+    "reaches_something": false
+   },
+   "coolant_mdot": {
+    "group": "cooling",
+    "how": "global",
+    "lo": 0.05,
+    "hi": 0.3,
+    "reaches": [
+     "cooling_loop"
+    ],
+    "probe": "the circuit's fixed-point return temperature",
+    "note": "reaches the loop: 310.156 K at 0.05 against 310.865 K at 0.30 -- but only by rebinding cooling_loop.MDOT, which ten call sites read directly and which a leg's weight_hash is built from",
+    "lo_value": 310.15590799325037,
+    "hi_value": 310.8651776101412,
+    "reaches_something": true
+   },
+   "ambient_t": {
+    "group": "cooling",
+    "how": "global",
+    "lo": 273.0,
+    "hi": 318.0,
+    "reaches": [
+     "cooling_loop",
+     "brake_thermal"
+    ],
+    "probe": "the circuit's fixed-point return temperature",
+    "note": "reaches the loop strongly: 288.133 K at 273 against 325.778 K at 318 -- again only by rebinding cooling_loop.T_AMB",
+    "lo_value": 288.13324795163436,
+    "hi_value": 325.778298976495,
+    "reaches_something": true
+   },
+   "battery_power": {
+    "group": "powertrain",
+    "how": "absent",
+    "lo": 0.0,
+    "hi": 350.0,
+    "reaches": [
+     "powertrain",
+     "J2 heat into the block"
+    ],
+    "probe": "the loop current",
+    "note": "THIS CIRCUIT HAS NO DEMAND INPUT. The machine is a generator: its current follows the shaft speed through current_at(omega), and the battery receives what is pushed into it. There is no quantity a power draw could set, so the knob cannot be wired without a different powertrain model",
+    "reaches_something": false
+   },
+   "battery_soc": {
+    "group": "powertrain",
+    "how": "partial",
+    "lo": 0.0,
+    "hi": 1.0,
+    "reaches": [
+     "powertrain open-circuit voltage"
+    ],
+    "probe": "battery EMF and the machine's loop current",
+    "note": "BatteryLeg.v_oc is a real field and its emf() reads it, but MachineAgent has NO v_oc field at all: current_at and validity read the MODULE constant V_OC. So a state-of-charge knob moves the battery and leaves the machine drawing from it unchanged -- including the validity predicate W282's envelope is written on",
+    "battery_emf_hi": -1.34,
+    "battery_emf_lo": -0.8,
+    "battery_moves": true,
+    "machine_has_v_oc": true,
+    "machine_current": 2.1999999999999993,
+    "machine_moves_with_the_battery": false,
+    "why": "MachineAgent.current_at and .validity read the module constant V_OC, so no battery instance can move them",
+    "reaches_something": true,
+    "reaches_all_it_claims": false
+   },
+   "road_speed": {
+    "group": "vehicle",
+    "how": "dead",
+    "lo": 20.0,
+    "hi": 90.0,
+    "reaches": [
+     "the fluid's freestream",
+     "the scale's U0"
+    ],
+    "probe": "ground_effect's freestream",
+    "note": "ground_effect.U_INF is 1.0 and the whole column is nondimensional, so road speed sets a SCALE and no field in the march reads it; changing it would rename the axes and move nothing",
+    "reaches_something": false
+   }
+  },
+  "by_how": {
+   "wired": [
+    "ride_height",
+    "diffuser_deg",
+    "front_flap_deg",
+    "rear_wing_deg"
+   ],
+   "global": [
+    "coolant_mdot",
+    "ambient_t"
+   ],
+   "partial": [
+    "battery_soc"
+   ],
+   "dead": [
+    "rake",
+    "duct_area",
+    "road_speed"
+   ],
+   "absent": [
+    "battery_power"
+   ]
+  },
+  "n_wired": 4,
+  "n_total": 11,
+  "omitted": {
+   "brake_duty": "there is no brake subsystem in RaceLab's graph",
+   "brake_duct": "there is no brake subsystem in RaceLab's graph",
+   "plate_stiffness": "the structure is rigid in this column"
+  },
+  "nan_pair_refused": true
+ },
+ "stage_wall_s": {
+  "reach": 3.016868599996087,
+  "machine": 0.0012890999933006242,
+  "control": 302.57673899999645,
+  "summary": 0.0038364999927580357
+ },
+ "machine": {
+  "has_v_oc": true,
+  "has_r_total": true,
+  "default_current_at_20": 2.1999999999999993,
+  "lowered_current_at_20": 3.999999999999999,
+  "default_threshold": 13.4,
+  "lowered_threshold": 8.0,
+  "validity_at_10": {
+   "default": false,
+   "v_oc_0.80": true
+  },
+  "module_V_OC": 1.34,
+  "module_R_TOTAL": 0.30000000000000004,
+  "note": "the same shaft speed is OUTSIDE the envelope on a full battery and INSIDE on a depleted one, which is physically right and was not expressible before",
+  "default_preserved": true
+ },
+ "control": {
+  "tested": true,
+  "n": 40,
+  "compared": 40,
+  "skipped": 0,
+  "moved": [
+   "front_wing",
+   "front_wing-riding",
+   "ground_effect",
+   "ground_effect-moving",
+   "reuse_probe-N6",
+   "scaling_ladder-N12-reference_exposed",
+   "scaling_ladder-N6-reference",
+   "scaling_ladder-N6-reference_exposed",
+   "tier44-union",
+   "tier44-union-with-pou",
+   "wake_array-bare-blend",
+   "wake_array-poseidon",
+   "wake_array-reference",
+   "wake_array-reference_exposed",
+   "wind_farm_real",
+   "wind_farm_real-as-built"
+  ],
+  "rows": {
+   "brake_thermal": {
+    "same": true
+   },
+   "brake_thermal-split": {
+    "same": true
+   },
+   "channel_ns": {
+    "same": true
+   },
+   "channel_ns-as-built": {
+    "same": true
+   },
+   "cooling_loop": {
+    "same": true
+   },
+   "cooling_loop-3leg": {
+    "same": true
+   },
+   "cooling_loop-open": {
+    "same": true
+   },
+   "front_wing": {
+    "same": false
+   },
+   "front_wing-riding": {
+    "same": false
+   },
+   "ground_effect": {
+    "same": false
+   },
+   "ground_effect-moving": {
+    "same": false
+   },
+   "neural_interface": {
+    "same": true
+   },
+   "neural_interface-embedded": {
+    "same": true
+   },
+   "poseidon": {
+    "same": true
+   },
+   "powertrain": {
+    "same": true
+   },
+   "powertrain-open": {
+    "same": true
+   },
+   "reuse_probe-N6": {
+    "same": false
+   },
+   "rocket": {
+    "same": true
+   },
+   "rocket-staging": {
+    "same": true
+   },
+   "scaling_ladder-N12-reference_exposed": {
+    "same": false
+   },
+   "scaling_ladder-N6-reference": {
+    "same": false
+   },
+   "scaling_ladder-N6-reference_exposed": {
+    "same": false
+   },
+   "thermal_seam": {
+    "same": true
+   },
+   "thermal_seam-split-matched": {
+    "same": true
+   },
+   "thermal_strain": {
+    "same": true
+   },
+   "thermal_strain-global-field": {
+    "same": true
+   },
+   "tier44-union": {
+    "same": false
+   },
+   "tier44-union-with-pou": {
+    "same": false
+   },
+   "wake_array-bare-blend": {
+    "same": false
+   },
+   "wake_array-poseidon": {
+    "same": false
+   },
+   "wake_array-reference": {
+    "same": false
+   },
+   "wake_array-reference_exposed": {
+    "same": false
+   },
+   "wind_farm": {
+    "same": true
+   },
+   "wind_farm-boundary": {
+    "same": true
+   },
+   "wind_farm_real": {
+    "same": false
+   },
+   "wind_farm_real-as-built": {
+    "same": false
+   },
+   "window_ns": {
+    "same": true
+   },
+   "window_ns-as-built": {
+    "same": true
+   },
+   "wing_fsi": {
+    "same": true
+   },
+   "wing_fsi-moving": {
+    "same": true
+   }
+  },
+  "moved_before_this_tier": [
+   "front_wing",
+   "front_wing-riding",
+   "ground_effect",
+   "ground_effect-moving",
+   "reuse_probe-N6",
+   "scaling_ladder-N12-reference_exposed",
+   "scaling_ladder-N6-reference",
+   "scaling_ladder-N6-reference_exposed",
+   "tier44-union",
+   "tier44-union-with-pou",
+   "wake_array-bare-blend",
+   "wake_array-poseidon",
+   "wake_array-reference",
+   "wake_array-reference_exposed",
+   "wind_farm_real",
+   "wind_farm_real-as-built"
+  ],
+  "added_by_this_tier": [],
+  "healed_by_this_tier": [],
+  "note": "the capture is Tier 45's and it accumulates every deliberate change since; `added_by_this_tier` is the number this tier answers for, and it was established by running this same stage against HEAD's powertrain, which gave the identical sixteen"
+ },
+ "verdicts": {
+  "L1": false,
+  "L2": true,
+  "L3": true,
+  "L4": true,
+  "L5": true
+ },
+ "verdicts_missing": []
+}
