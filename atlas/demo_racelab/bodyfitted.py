@@ -138,6 +138,68 @@ class BodyFittedColumn:
     #: state rather than a silent mismatch, and this is what a page reads to
     #: show it: the column goes on marching the OLD car and says so.
     pending_regrid: list = field(default_factory=list)
+    #: The car this column is actually built on, so a release state and a
+    #: cache can be checked against it rather than assumed to match.
+    _fingerprint: str = ""
+    #: True when the committed car has no spun-up field of its own, so this
+    #: column must NOT march it.  See `build`.
+    needs_spin_up: bool = False
+
+    def settled_path(self, root: str = ".") -> str:
+        """Where this CAR's settled release state lives.
+
+        **The fingerprint is in the NAME, and it has to be.**  Until Tier 71
+        this was `bodyfitted_t12.npz` for every car, so committing a geometry
+        change would have released the new car from the old car's settled field
+        -- W258 and W259's defect, which cost two tiers to find the last time.
+        A car with no settled state of its own is released from the nearest one
+        and SAID SO, in capitals, which is `demo_frontwing`'s rule.
+        """
+        if self.cfg.settled:
+            return self.cfg.settled
+        from ..cases import racelab as RL
+
+        fp = RL.geometry_fingerprint(self.knob_state().car_params())[:12]
+        return os.path.join(os.path.abspath(root), "out", "cache",
+                            "bodyfitted_t%g_%s.npz" % (self.cfg.release_t, fp))
+
+    def knob_state(self):
+        if self.knobs is None:
+            self.knobs = CW_KNOBS.KnobState()
+        return self.knobs
+
+    def regrid(self, root: str = ".", progress=None) -> dict:
+        """Rebuild the car from the committed knobs.  **On commit, not per slider.**
+
+        The user's decision (2026-09-16): sliders move freely and nothing is
+        re-cut until a commit, because a rebuild costs 66-90 s for the composite
+        plus up to 63 s for the probe operator and cannot run inside a frame.
+
+        Returns what it cost and, importantly, **where the new car was released
+        from** -- a car with no settled state of its own gets the nearest one
+        with a stamp saying it belongs to a different car, rather than a silent
+        release that would be W258's defect wearing a new geometry.
+        """
+        def say(msg, frac):
+            if progress is not None:
+                progress({"stage": msg, "fraction": frac,
+                          "pending": list(self.pending_regrid)})
+
+        from ..cases import racelab as RL
+
+        t0 = time.perf_counter()
+        st = self.knob_state()
+        before_fp = self._fingerprint
+        say("re-cutting the car", 0.0)
+        rep = self.build(root=root, params=st.car_params(), rule=st.solids_rule(),
+                         progress=progress)
+        self.pending_regrid = []
+        rep["regrid_s"] = time.perf_counter() - t0
+        rep["fingerprint_before"] = before_fp
+        rep["fingerprint_after"] = RL.geometry_fingerprint(st.car_params())
+        rep["knobs"] = dict(st.values)
+        say("ready", 1.0)
+        return rep
 
     def set_knob(self, name: str, value: float) -> dict:
         """Move one knob and report what responded.
@@ -155,13 +217,22 @@ class BodyFittedColumn:
         r = self.knobs.set(name, value)
         if r["needs_regrid"] and name not in self.pending_regrid:
             self.pending_regrid.append(name)
+        elif name in ("coolant_mdot", "ambient_t") and self.union is not None:
+            # **This is what W291 was about.**  Before Tier 71 the knob moved a
+            # probe and not the march: the page reported the coolant loop
+            # "responding" while the running circuit's return temperature never
+            # moved, because the only route in was rebinding a module constant
+            # that the marching CarUnion had already read.
+            r["applied_to_the_march"] = self.union.set_loop_settings(
+                self.knobs.loop_settings())
         r["marching"] = "the car BEFORE this change" if r["needs_regrid"] else "current"
         r["pending_regrid"] = list(self.pending_regrid)
         return r
 
     # -- building -----------------------------------------------------------
 
-    def build(self, root: str = ".") -> dict:
+    def build(self, root: str = ".", params=None, rule: dict | None = None,
+              progress=None) -> dict:
         """The composite, the flow, the devices and the probe operator.
 
         The composite is the expensive half and is NOT cached -- it is a live
@@ -179,56 +250,107 @@ class BodyFittedColumn:
         import tier63_duct_openings as T63
         T62.GEOMETRY = T63.geometry
 
+        from ..cases import racelab as RL
+
+        st = self.knob_state()
+        params = st.car_params() if params is None else params
+        rule = st.solids_rule() if rule is None else rule
+        self._fingerprint = RL.geometry_fingerprint(params)
+        if progress is not None:
+            progress({"stage": "cutting the solids", "fraction": 0.05})
+
         from ..cases import car_solids as CS
         from ..cases import car_union as CU
 
-        rep: dict[str, Any] = {}
+        rep: dict[str, Any] = {"fingerprint": self._fingerprint,
+                               "knobs": dict(st.values)}
         t0 = time.perf_counter()
-        C = T62._car()
-        self.ov, self.solids = C["ov"], C["solids"]
+        # The car is rebuilt FROM THE COMMITTED KNOBS, not from the module
+        # defaults: `T62._car()` memoises one car per process, which is right
+        # for a tier script and wrong for a demo whose geometry moves.
+        doc = dict(T63.geometry())
+        # `duct_area` is a solids-rule setting, not a CarParams field, and
+        # `car_solids` takes its rule from the geometry document's own
+        # "solids" block -- so the knob is handed over the way the file
+        # would have carried it, rather than by a second code path.
+        doc["solids"] = dict(doc.get("solids", {}),
+                             duct_area=float(rule.get("duct_area", 1.0)))
+        self.solids, _rec = CS.car_solids(p=params, geometry=doc)
+        self.ov, _grec = CS.car_overset(self.solids)
         rep["composite_s"] = time.perf_counter() - t0
         rep["grids"] = len(self.ov.grids)
         rep["n_unknowns"] = int(self.ov.n_unknowns)
 
+        if progress is not None:
+            progress({"stage": "building the probe operator", "fraction": 0.55})
         t0 = time.perf_counter()
         self.raster, rep["raster"] = CR.cached_raster(
-            self.ov, self.cfg.nx, self.cfg.ny, path=self.cfg.cache_path)
+            self.ov, self.cfg.nx, self.cfg.ny, path=self.cfg.cache_path,
+            params=params, solids_rule=rule)
         rep["raster_s"] = time.perf_counter() - t0
 
         t0 = time.perf_counter()
         self.flow = CS.car_flow(self.ov, self.solids, precond="ilu")
         rep["flow_s"] = time.perf_counter() - t0
 
-        settled = self.cfg.settled or os.path.join(
-            os.path.abspath(root), "out", "cache",
-            "bodyfitted_t%g.npz" % self.cfg.release_t)
+        settled = self.settled_path(root)
         prefix = os.path.join(os.path.abspath(root), self.cfg.prefix)
 
         t0 = time.perf_counter()
         D = _devices(self.ov, root)
         self.union = CU.CarUnion(self.flow, D, _sizing(root),
-                                 solids=[s.name for s in self.solids], t_on=0.0)
+                                 solids=[s.name for s in self.solids], t_on=0.0,
+                                 loop_settings=st.loop_settings())
         rep["devices_s"] = time.perf_counter() - t0
 
+        # **Releasing is where a committed geometry goes wrong (Tier 71).**  The
+        # settled state is named for this car, so it is either this car's or
+        # absent.  The PREFIX is not: it was written on whatever car was current
+        # when Tier 64 cached it, and the first geometry commit loaded it into a
+        # composite with a different unknown count.  `load_state` now refuses
+        # that, and what is left is a choice the page has to be told about, not
+        # one this module can make quietly.
+        rep["settle_s"] = 0.0
         if os.path.isfile(settled):
-            st = CU.load_state(self.flow, settled)
+            got = CU.load_state(self.flow, settled)
             rep["released_from"] = {"file": os.path.relpath(settled, os.path.abspath(root)),
-                                    "t": float(st["t"]), "k": int(st["k"]),
+                                    "t": float(got["t"]), "k": int(got["k"]),
                                     "kind": "settled with the devices on"}
-            rep["settle_s"] = 0.0
-        elif os.path.isfile(prefix):
-            st = CU.load_state(self.flow, prefix)
-            rep["settle_s"] = self._settle_to(settled, root)
-            rep["released_from"] = {"file": os.path.relpath(settled, os.path.abspath(root)),
-                                    "t": float(self.flow.t), "k": int(self.flow.k),
-                                    "kind": "settled here, from the device-free prefix at "
-                                            "t = %.3f" % float(st["t"])}
         else:
-            rep["released_from"] = {"file": None,
-                                    "why": "neither a settled state nor the cached prefix is "
-                                           "on disk; this column starts from the solver's "
-                                           "own initial field"}
-            rep["settle_s"] = 0.0
+            from_prefix = None
+            if os.path.isfile(prefix):
+                try:
+                    from_prefix = CU.load_state(self.flow, prefix)
+                except CU.StateBelongsToAnotherCar as exc:
+                    rep["prefix_refused"] = str(exc)
+            if from_prefix is not None:
+                rep["settle_s"] = self._settle_to(settled, root)
+                rep["released_from"] = {
+                    "file": os.path.relpath(settled, os.path.abspath(root)),
+                    "t": float(self.flow.t), "k": int(self.flow.k),
+                    "kind": "settled here, from the device-free prefix at t = %.3f"
+                            % float(from_prefix["t"])}
+            else:
+                # **And this is where a committed geometry stops, honestly.**
+                # Settling a car with no prefix means marching from the solver's
+                # initial field, which is REST -- and Tier 62 measured that both
+                # the impulsive start and the from-rest start FAIL on this car
+                # (divergence 2.3e3, a momentum solve that did not converge, a
+                # spurious road boundary layer).  Only the walls-ramped spin-up
+                # works, and it is a script, not something a dashboard can do
+                # between frames.  So the car is re-cut and the column declines
+                # to march it, rather than marching a field that is known to
+                # blow up and calling the pictures physics.
+                self.needs_spin_up = True
+                rep["released_from"] = {
+                    "file": None, "spun_up": False,
+                    "kind": "NOT SPUN UP",
+                    "why": ("this car has no settled state and no prefix of its own -- the "
+                            "cached prefix was written on a different car, with a different "
+                            "unknown count. Spinning one up needs car_solids' walls-ramped "
+                            "start (Tier 62: the impulsive and from-rest starts both fail), "
+                            "which is a script and not something this column can do between "
+                            "frames. Run the spin-up for this geometry, then commit again")}
         rep["u_host_sized"] = float(self.union.u_host)
 
         self.coverage = _coverage(self.ov)
@@ -270,6 +392,11 @@ class BodyFittedColumn:
     def step(self) -> dict:
         if self.union is None:
             raise RuntimeError("build() first")
+        if self.needs_spin_up:
+            raise RuntimeError(
+                "this car has no spun-up field: marching it from rest is the start "
+                "Tier 62 measured blowing up, so the column declines rather than "
+                "drawing pictures of it")
         t0 = time.perf_counter()
         rec = self.union.step()
         self.step_s = time.perf_counter() - t0

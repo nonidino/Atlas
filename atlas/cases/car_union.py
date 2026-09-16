@@ -98,6 +98,7 @@ __all__ = [
     "DEVICE_X_CELLS", "RING_UPSTREAM_CELLS", "HALF_WIDTH_CELLS", "QUAD_PER_CELL", "RING_SAMPLES",
     "duct_band", "open_band", "probe_matrix", "DuctDevice", "DuctDevices", "car_devices",
     "machine_band", "CarUnion", "TRACE_KEYS", "save_state", "load_state",
+    "StateBelongsToAnotherCar",
 ]
 
 #: The device planes, in cells: the porous column's (Tier 59's derived layout),
@@ -450,7 +451,8 @@ class CarUnion:
 
     def __init__(self, flow, devices: DuctDevices, u_host: float, *, solids: Sequence[str] = (),
                  t_on: float = 0.0, p_ref: float | None = None,
-                 n_per_coolant: int = VM.N_FLUID_PER_COOLANT) -> None:
+                 n_per_coolant: int = VM.N_FLUID_PER_COOLANT,
+                 loop_settings=None) -> None:
         self.flow = flow
         self.dev = devices
         self.width = devices.devices["ROTOR"].width
@@ -465,7 +467,13 @@ class CarUnion:
         self.state = VM.JoinState()
         self._core: IU.CoreRadiator | None = None
         self.block = IU.MountedBlock(q_machine=0.0)
-        self.loop = CL.LoopSolve(block=self.block)
+        # **The circuit runs at a declared operating point (W291, Tier 71).**
+        # It used to be built from the module constants, so section 3.3's
+        # coolant-flow and ambient knobs could not reach the loop that is
+        # actually marching -- only a probe that rebound the globals, measured,
+        # and put them back.  `set_loop_settings` moves a live march.
+        self.loop_settings = CL.LoopSettings() if loop_settings is None else loop_settings
+        self.loop = CL.LoopSolve(block=self.block, settings=self.loop_settings)
         self.t_in = CL.T_COOLANT_0
         self.coolant: list[dict] = []
         self.trace: dict[str, list] = {k: [] for k in ("t",) + TRACE_KEYS + (
@@ -540,6 +548,19 @@ class CarUnion:
         return out
 
     # -- the step -----------------------------------------------------------
+
+    def set_loop_settings(self, settings) -> dict[str, Any]:
+        """Move the coolant circuit's operating point on a RUNNING march.
+
+        Rebuilding `LoopSolve` is four lines of algebra a leg, so a cooling
+        knob costs nothing and takes effect at the next coolant step -- unlike
+        a geometry knob, which re-cuts the car and waits for a commit.
+        """
+        before = self.loop_settings
+        self.loop_settings = settings
+        self.loop = CL.LoopSolve(block=self.block, settings=settings)
+        return {"from": {"mdot": before.mdot, "t_amb": before.t_amb},
+                "to": {"mdot": settings.mdot, "t_amb": settings.t_amb}}
 
     def step(self) -> dict[str, Any]:
         flow = self.flow
@@ -652,7 +673,31 @@ def save_state(flow, path: str) -> str:
     return path
 
 
+class StateBelongsToAnotherCar(ValueError):
+    """A saved field was written on a composite with a different unknown count."""
+
+
 def load_state(flow, path: str) -> dict[str, Any]:
+    """Release a march from a saved field, refusing one that is not this car's.
+
+    **A release state belongs to its car, and nothing checked (Tier 71).**  The
+    dashboard's first geometry commit re-cut the car, found no settled state for
+    the new one, fell back to the cached prefix -- which was written on the OLD
+    car -- and loaded it.  `set_state` took the wrong-sized vectors without
+    complaint and the mismatch surfaced two hundred lines later as a bare
+    ``dimension mismatch`` inside a device's ring probe, which says nothing
+    about what actually went wrong.
+
+    The unknown count is a cheap and exact proxy for "same composite", so it is
+    checked here rather than in the one caller that happened to be bitten.
+    """
     with np.load(path) as z:
+        n = int(np.asarray(z["U"]).size)
+        want = int(getattr(flow.ov, "n_unknowns", n))
+        if n != want:
+            raise StateBelongsToAnotherCar(
+                f"{os.path.basename(path)} holds {n} unknowns and this composite has "
+                f"{want}: it was written on a different car, and releasing from it "
+                "would march one car's field on another's grids")
         flow.set_state(z["U"], z["V"], z["P"], u_prev=z["Um1"], v_prev=z["Vm1"], t=float(z["t"]))
         return {"t": float(z["t"]), "k": int(z["k"])}

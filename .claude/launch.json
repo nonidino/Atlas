@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "racelab-bodyfitted",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uvicorn", "atlas.demo_racelab.bodyfitted_server:create_app", "--factory", "--host", "127.0.0.1", "--port", "8014"],
+      "port": 8014
+    }
+  ]
+}

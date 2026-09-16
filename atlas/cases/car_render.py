@@ -334,7 +334,8 @@ def field_png(a: np.ndarray, lo: float, hi: float, *, lut: str = "speed",
 # ---------------------------------------------------------------------------
 
 
-def raster_cache_key(ov, nx: int, ny: int, extent, geometry: dict | None = None) -> str:
+def raster_cache_key(ov, nx: int, ny: int, extent, geometry: dict | None = None,
+                     params=None, solids_rule: dict | None = None) -> str:
     """A hash of everything the operator depends on -- `RASTER_CACHE_NOTE`.
 
     Hashed over DEFINITIONS: the car's fingerprint (itself a hash of the built
@@ -349,9 +350,18 @@ def raster_cache_key(ov, nx: int, ny: int, extent, geometry: dict | None = None)
     from . import car_solids as CS
     from . import racelab as RL
 
+    # **The knobs belong in the key (Tier 71).**  `geometry_fingerprint` takes
+    # the CarParams as its FIRST argument, and this used to pass only the
+    # geometry document -- so every rake and every ride height hashed to the
+    # same key.  The validator would have caught the mismatch and rebuilt, so
+    # nothing was ever silently wrong; what happened instead is that each
+    # geometry overwrote the previous one's cache, and switching back paid the
+    # 63 s again.  `duct_area` is not in CarParams at all -- it is a solids-rule
+    # setting -- so it is hashed separately.
     payload = {
         "version": RASTER_CACHE_VERSION,
-        "geometry": RL.geometry_fingerprint(geometry=geometry),
+        "geometry": RL.geometry_fingerprint(params, geometry=geometry),
+        "duct_area": float((solids_rule or CS.SOLIDS_DEFAULT).get("duct_area", 1.0)),
         "grid": {k: CS.GRID[k] for k in sorted(CS.GRID)},
         "hole_margin": float(getattr(ov, "hole_margin", float("nan"))),
         "width": int(getattr(ov, "width", -1)),
@@ -464,7 +474,8 @@ def load_raster(ov, path: str, key: str, *, validate: bool = True
 
 
 def cached_raster(ov, nx: int = NX, ny: int = NY, extent=None, *, path: str | None = None,
-                  geometry: dict | None = None, validate: bool = True
+                  geometry: dict | None = None, params=None,
+                  solids_rule: dict | None = None, validate: bool = True
                   ) -> tuple["CompositeRaster", dict]:
     """The operator, from disk if it is there and sound, else built and written.
 
@@ -479,7 +490,8 @@ def cached_raster(ov, nx: int = NX, ny: int = NY, extent=None, *, path: str | No
     if extent is None:
         extent = (float(bg.X.min()), float(bg.X.max()),
                   float(bg.Y.min()), float(bg.Y.max()))
-    key = raster_cache_key(ov, nx, ny, extent, geometry=geometry)
+    key = raster_cache_key(ov, nx, ny, extent, geometry=geometry, params=params,
+                           solids_rule=solids_rule)
     if path is None:
         path = os.path.join("out", "cache", f"raster_{nx}x{ny}_{key}.npz")
     t0 = _time.perf_counter()

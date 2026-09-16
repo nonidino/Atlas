@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RaceLab - the body-fitted column</title>
+<style>
+  :root {
+    --bg: #0e1013; --panel: #161a20; --edge: #262c35; --ink: #e6e9ee;
+    --dim: #8b95a3; --accent: #5cc8ff; --warn: #ffb454; --bad: #ff6b6b;
+    --ok: #7bd88f; --car: #5c222c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 13px/1.5 ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--edge); background: var(--panel);
+  }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+  .tag {
+    font-size: 11px; padding: 2px 7px; border-radius: 999px;
+    border: 1px solid var(--edge); color: var(--dim);
+  }
+  .tag.live { color: var(--ok); border-color: #2f5e3c; }
+  .tag.busy { color: var(--warn); border-color: #5e4a2f; }
+  .tag.bad { color: var(--bad); border-color: #5e2f2f; }
+  main { display: grid; grid-template-columns: 300px 1fr 300px; gap: 12px; padding: 12px; }
+  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel); border: 1px solid var(--edge);
+    border-radius: 8px; padding: 12px;
+  }
+  .panel h2 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--dim); margin: 0 0 10px; font-weight: 600;
+  }
+  .group { margin-bottom: 14px; }
+  .group > .gname {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  .knob { margin-bottom: 10px; }
+  .knob label { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+  .knob .val { color: var(--dim); font-variant-numeric: tabular-nums; }
+  .knob input[type=range] { width: 100%; accent-color: var(--accent); }
+  .knob.dirty label { color: var(--warn); }
+  .knob.dirty .val { color: var(--warn); }
+  .knob .reach { font-size: 11px; color: var(--dim); min-height: 15px; }
+  .knob .reach b { color: var(--ok); font-weight: 500; }
+  .refused { opacity: .55; border-top: 1px dashed var(--edge); padding-top: 10px; margin-top: 10px; }
+  .refused .why { font-size: 11px; color: var(--dim); }
+  button {
+    font: inherit; color: var(--ink); background: #1d2430; cursor: pointer;
+    border: 1px solid var(--edge); border-radius: 6px; padding: 7px 12px;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: #1b3a4d; border-color: #2a6d8f; }
+  #commit.ready { background: #4a3517; border-color: var(--warn); color: #ffd9a0; }
+  .stage { position: relative; }
+  #view { width: 100%; display: block; border-radius: 6px; background: #000; image-rendering: auto; }
+  #overlayMsg {
+    position: absolute; inset: 0; display: none; place-items: center; text-align: center;
+    background: rgba(8,10,13,.86); border-radius: 6px; padding: 20px;
+  }
+  #overlayMsg.on { display: grid; }
+  .bar { width: 260px; height: 6px; background: #222a35; border-radius: 3px; margin: 10px auto 0; }
+  .bar > i { display: block; height: 100%; background: var(--warn); border-radius: 3px; width: 0; }
+  .fields { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 6px; }
+  .fields button.on { border-color: var(--accent); color: var(--accent); }
+  .holes { font-size: 11px; color: var(--dim); }
+  .holes div { margin-top: 5px; }
+  .holes b { color: var(--warn); font-weight: 500; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  td { padding: 2px 0; font-size: 12px; }
+  td:last-child { text-align: right; color: var(--dim); }
+  .note { font-size: 11px; color: var(--dim); margin-top: 8px; }
+  .learned {
+    border: 1px solid #5e4a2f; background: #1e1a12; border-radius: 6px;
+    padding: 10px; margin-top: 10px;
+  }
+  .learned .big { font-size: 20px; color: var(--warn); font-weight: 600; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+            background: var(--car); vertical-align: middle; margin-right: 4px; }
+  .evt { font-size: 11px; color: var(--dim); margin-top: 3px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RaceLab &mdash; the body-fitted column</h1>
+  <span class="tag" id="status">connecting</span>
+  <span class="tag" id="car">car -</span>
+  <span class="tag" id="rate">- steps/s</span>
+  <span class="tag" id="marching"></span>
+</header>
+
+<main>
+  <!-- LEFT: the knobs -->
+  <section class="panel">
+    <h2>Parameters</h2>
+    <div id="knobs"></div>
+    <button id="commit" disabled>Commit &mdash; re-cut the car</button>
+    <div class="note" id="commitNote">
+      Sliders move freely. A geometry change is not re-cut until you commit,
+      because rebuilding the car costs about a minute and a half.
+    </div>
+    <div id="refused" class="refused"></div>
+  </section>
+
+  <!-- CENTRE: the picture -->
+  <section class="panel">
+    <h2>Field</h2>
+    <div class="stage">
+      <img id="view" alt="the body-fitted car's flow field">
+      <div id="overlayMsg">
+        <div>
+          <div id="overlayTitle" style="font-size:15px">building the car</div>
+          <div id="overlayStage" style="color:var(--dim);margin-top:4px">&nbsp;</div>
+          <div class="bar"><i id="overlayBar"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="fields" id="fields"></div>
+    <div class="holes" id="holes"></div>
+    <div class="note">
+      <span class="swatch"></span>The car is drawn in a colour the field's map cannot
+      produce, so a body never reads as slow air.
+    </div>
+  </section>
+
+  <!-- RIGHT: what it is doing -->
+  <section class="panel">
+    <h2>Telemetry</h2>
+    <table id="tel"></table>
+    <div class="learned">
+      <div class="big" id="cov61">61.0%</div>
+      <div>of this column <b>can never run a learned expert</b>.</div>
+      <div class="note" id="learnedWhy"></div>
+    </div>
+    <h2 style="margin-top:14px">Recent</h2>
+    <div id="events"></div>
+  </section>
+</main>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+let META = null, KNOBS = {}, DIRTY = new Set(), FIELD = "speed", LAST_URL = null;
+
+function fmt(v, n) {
+  if (v === null || v === undefined) return "-";
+  if (typeof v !== "number") return String(v);
+  return Number.isInteger(v) && n === undefined ? String(v) : v.toFixed(n === undefined ? 3 : n);
+}
+
+async function boot() {
+  META = await (await fetch("/api/meta")).json();
+  $("learnedWhy").textContent = META.learned_hole;
+  renderKnobs();
+  renderFields();
+  renderHoles();
+  connect();
+}
+
+function renderKnobs() {
+  const byGroup = {};
+  for (const k of META.knobs) (byGroup[k.group] = byGroup[k.group] || []).push(k);
+  const host = $("knobs");
+  host.innerHTML = "";
+  for (const [g, list] of Object.entries(byGroup)) {
+    const box = document.createElement("div");
+    box.className = "group";
+    box.innerHTML = `<div class="gname">${g}</div>`;
+    for (const k of list) {
+      KNOBS[k.name] = k;
+      const step = (k.hi - k.lo) / 100;
+      const row = document.createElement("div");
+      row.className = "knob";
+      row.id = "knob-" + k.name;
+      row.innerHTML =
+        `<label><span>${k.name.replace(/_/g, " ")}</span>` +
+        `<span class="val" id="v-${k.name}">${fmt(k.default)}</span></label>` +
+        `<input type="range" id="r-${k.name}" min="${k.lo}" max="${k.hi}" ` +
+        `step="${step}" value="${k.default}">` +
+        `<div class="reach" id="re-${k.name}">${k.regrid ? "re-cuts the car on commit" : "applies at once"}</div>`;
+      box.appendChild(row);
+      row.querySelector("input").addEventListener("input", (e) => {
+        $("v-" + k.name).textContent = fmt(parseFloat(e.target.value));
+      });
+      row.querySelector("input").addEventListener("change", (e) => {
+        send({ kind: "knob", name: k.name, value: parseFloat(e.target.value) });
+      });
+    }
+    host.appendChild(box);
+  }
+  const ref = $("refused");
+  ref.innerHTML = "<h2>Not offered</h2>";
+  for (const k of META.refused_knobs) {
+    const d = document.createElement("div");
+    d.innerHTML = `<b>${k.name.replace(/_/g, " ")}</b><div class="why">${k.note}</div>`;
+    d.style.marginBottom = "8px";
+    ref.appendChild(d);
+  }
+}
+
+function renderFields() {
+  const host = $("fields");
+  host.innerHTML = "";
+  for (const f of META.fields) {
+    const b = document.createElement("button");
+    b.textContent = f;
+    b.className = f === FIELD ? "on" : "";
+    b.onclick = () => { FIELD = f; send({ kind: "field", name: f }); renderFields(); };
+    host.appendChild(b);
+  }
+}
+
+function renderHoles() {
+  const host = $("holes");
+  host.innerHTML = "<div><b>Not drawn, and why:</b></div>";
+  for (const [name, why] of Object.entries(META.field_holes)) {
+    const d = document.createElement("div");
+    d.innerHTML = `<b>${name}</b> &mdash; ${why}`;
+    host.appendChild(d);
+  }
+}
+
+let WS = null;
+function send(msg) { if (WS && WS.readyState === 1) WS.send(JSON.stringify(msg)); }
+
+function connect() {
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  WS = new WebSocket(proto + "//" + location.host + "/ws");
+  WS.binaryType = "blob";
+  WS.onmessage = (ev) => {
+    if (typeof ev.data === "string") { onState(JSON.parse(ev.data)); return; }
+    const url = URL.createObjectURL(ev.data);
+    $("view").src = url;
+    if (LAST_URL) URL.revokeObjectURL(LAST_URL);
+    LAST_URL = url;
+  };
+  WS.onclose = () => {
+    $("status").textContent = "disconnected";
+    $("status").className = "tag bad";
+    setTimeout(connect, 1500);
+  };
+}
+
+function onState(s) {
+  const st = s.status || "";
+  const tag = $("status");
+  tag.textContent = st;
+  tag.className = "tag " + (st === "marching" ? "live" : st === "failed" ? "bad" : "busy");
+
+  const busy = st === "building" || st === "recompiling";
+  $("overlayMsg").className = busy ? "on" : "";
+  if (busy && s.progress) {
+    $("overlayTitle").textContent =
+      st === "recompiling" ? "re-cutting the car" : "building the car";
+    $("overlayStage").textContent = s.progress.stage || "";
+    $("overlayBar").style.width = Math.round(100 * (s.progress.fraction || 0)) + "%";
+  }
+  if (s.error) { $("overlayStage").textContent = s.error; }
+
+  if (s.fingerprint) $("car").textContent = "car " + s.fingerprint;
+  if (s.knobs) {
+    for (const [name, v] of Object.entries(s.knobs)) {
+      const el = $("r-" + name);
+      if (el && document.activeElement !== el) { el.value = v; $("v-" + name).textContent = fmt(v); }
+    }
+  }
+
+  const pend = s.pending_regrid || [];
+  DIRTY = new Set(pend);
+  for (const name of Object.keys(KNOBS)) {
+    const row = $("knob-" + name);
+    if (row) row.className = "knob" + (DIRTY.has(name) ? " dirty" : "");
+  }
+  const commit = $("commit");
+  commit.disabled = pend.length === 0 || busy;
+  commit.className = pend.length && !busy ? "ready" : "";
+  commit.textContent = pend.length
+    ? `Commit ${pend.length} change${pend.length > 1 ? "s" : ""} - re-cut the car`
+    : "Commit - re-cut the car";
+  $("marching").textContent = pend.length
+    ? "MARCHING THE CAR BEFORE THESE CHANGES"
+    : "";
+  $("marching").className = "tag " + (pend.length ? "busy" : "");
+
+  if (s.telemetry) onTelemetry(s.telemetry);
+  if (s.events) onEvents(s.events);
+}
+
+function onTelemetry(t) {
+  const rate = t.steps_per_second;
+  $("rate").textContent = rate ? rate.toFixed(2) + " steps/s" : "- steps/s";
+  const cov = t.coverage || {};
+  if (cov.body_grid_frac) $("cov61").textContent = (100 * cov.body_grid_frac).toFixed(1) + "%";
+  const env = t.envelope || {};
+  const declined = (env._declined || []).join(", ");
+  const rows = [
+    ["step", t.step_i], ["t", fmt(t.t)],
+    ["downforce", fmt(t.load)], ["drag", fmt(t.drag)],
+    ["u at the rotor", fmt(t.u_at_the_rotor_plane, 4)],
+    ["u at the core", fmt(t.u_at_the_core_plane, 4)],
+    ["shaft power", fmt(t.shaft_power, 6)],
+    ["machine heat", fmt(t.q_machine, 4)],
+    ["coolant return", fmt(t.coolant_return_t, 2)],
+    ["learned reach", cov.reach_frac_of_composite
+      ? (100 * cov.reach_frac_of_composite).toFixed(1) + "% max" : "-"],
+    ["envelope", declined ? "OUTSIDE: " + declined : "inside"],
+    ["referent", (t.referent && t.referent.on) ? "on" : "off"],
+  ];
+  $("tel").innerHTML = rows
+    .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+}
+
+function onEvents(evts) {
+  $("events").innerHTML = evts.slice().reverse().map((e) => {
+    if (e.kind === "knob") {
+      const who = (e.responded || []).join(", ") || "nothing";
+      return `<div class="evt"><b>${e.knob}</b> &rarr; ${fmt(e.to)} &mdash; responded: ${who}</div>`;
+    }
+    if (e.kind === "refused") return `<div class="evt" style="color:var(--bad)">refused: ${e.why}</div>`;
+    if (e.kind === "commit") return `<div class="evt" style="color:var(--ok)">committed in ${fmt(e.wall_s, 1)} s &mdash; car ${e.fingerprint || ""}</div>`;
+    if (e.kind === "error") return `<div class="evt" style="color:var(--bad)">${e.why}</div>`;
+    return "";
+  }).join("");
+}
+
+$("commit").onclick = () => { send({ kind: "commit" }); $("commit").disabled = true; };
+boot();
+</script>
+</body>
+</html>

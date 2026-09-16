@@ -575,3 +575,12 @@ out/racelab18/*
 !out/racelab19/
 out/racelab19/*
 !out/racelab19/racelab19.json
+
+# Tier 71 -- the dashboard, and the coolant knob that finally reaches the
+# march (tier71_dashboard.py --out out/racelab20). JSON only: LoopSettings
+# threaded through the legs and CarUnion, the constants left untouched by a
+# full reach report, the weight hash moving with the knob, the 40-artifact
+# byte control, and a geometry commit end to end.
+!out/racelab20/
+out/racelab20/*
+!out/racelab20/racelab20.json

@@ -1,0 +1,194 @@
+{
+ "tier": 71,
+ "prediction": [
+  {
+   "id": "N1",
+   "claim": "the default LoopSettings is the module constants field for field, so nothing that existed changes",
+   "why": "every field defaults to the constant it replaces, which is the whole reason the refactor can be additive"
+  },
+  {
+   "id": "N2",
+   "claim": "a full reach report moves NO module constant, where Tier 69's rebound two and put them back",
+   "why": "the probe now passes settings instead of assigning to cooling_loop.MDOT"
+  },
+  {
+   "id": "N3",
+   "claim": "the leg's weight_hash moves with the coolant flow, so a capability record cannot claim the machine that used to run",
+   "why": "the hash is built from the leg's own settings tag rather than from the module"
+  },
+  {
+   "id": "N4",
+   "claim": "threading the settings adds NOTHING to Tier 45's moved set",
+   "why": "the defaults are the constants the legs used to read, so every existing graph compiles to the bytes it compiled to before"
+  },
+  {
+   "id": "N5",
+   "claim": "a geometry commit lands on a DIFFERENT fingerprint and an HONEST release: either a state named for that car, or a refusal to march at all -- never the old car's field",
+   "why": "the settled state's filename carries the fingerprint and load_state checks the unknown count, so the only two outcomes left are this car's field or none"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-16T15:18:34",
+ "read_before_this_run": [
+  "Tier 69's W291: coolant_mdot and ambient_t reached the loop only by rebinding cooling_loop.MDOT and T_AMB, which ten call sites read directly, and a leg's weight_hash is built from MDOT -- so moving the knob moved a capability record's identity with nothing noticing.",
+  "Tier 70: KnobState.set reports the subsystems that responded; a geometry knob is flagged needs_regrid and does not re-cut the car, because a rebuild costs 66-90 s.",
+  "The user's decision (2026-09-16): the dashboard rebuilds ON COMMIT, not on slider move.",
+  "Explored before these predictions were written, ON THE RUNNING DASHBOARD: the page loaded and /api/meta answered while EVERY WebSocket upgrade was refused with 403, so no frame would ever have arrived -- the module carries `from __future__ import annotations`, so `sock: WebSocket` is a string FastAPI resolves against MODULE globals, and FastAPI had been imported inside create_app; and with that repaired the page marched at about 2 steps a second while the coolant return stood at exactly 313.633745 K across every step, with the ambient knob reporting that cooling_loop had responded.",
+  "Also explored: LoopSettings threaded through the legs reproduces the rebinding probe's own numbers -- 310.155908 K at mdot 0.05 and 325.778299 K at t_amb 318 -- with no module constant moved, and the knob tally goes from 6 wired / 2 global to 8 wired / 0 global.",
+  "NOT measured before these predictions: whether the LIVE march's return temperature follows the knob and by how much; whether threading the settings leaves every captured artifact where Tier 69 left it; and whether a geometry commit completes and lands on a car with a different fingerprint and a release state of its own."
+ ],
+ "machine_state": {
+  "python_processes_running": 1,
+  "python_processes": [
+   "\"python.exe\",\"13856\",\"Console\",\"1\",\"240,656 K\""
+  ],
+  "battery_status_raw": "2",
+  "on_mains": true,
+  "reference_matmul_1024_s": 0.009626099999877624,
+  "taken_at": "2026-09-16T15:18:35"
+ },
+ "settings": {
+  "defaults_are_the_constants": true,
+  "constants_before": [
+   0.15,
+   300.0,
+   42.0,
+   45.0,
+   3600.0
+  ],
+  "constants_after": [
+   0.15,
+   300.0,
+   42.0,
+   45.0,
+   3600.0
+  ],
+  "constants_untouched": true,
+  "solves": {
+   "mdot0.05_tamb300": {
+    "t_return": 310.15590799325037,
+    "residual": 6.769577843926128e-15,
+    "weight_tag": "mdot0.05-tamb300"
+   },
+   "mdot0.15_tamb300": {
+    "t_return": 310.72027856663885,
+    "residual": 3.011401202066019e-14,
+    "weight_tag": "mdot0.15-tamb300"
+   },
+   "mdot0.3_tamb300": {
+    "t_return": 310.8651776101412,
+    "residual": 3.500478112887421e-14,
+    "weight_tag": "mdot0.3-tamb300"
+   },
+   "mdot0.15_tamb273": {
+    "t_return": 288.13324795163436,
+    "residual": 2.0181560403543288e-14,
+    "weight_tag": "mdot0.15-tamb273"
+   },
+   "mdot0.15_tamb318": {
+    "t_return": 325.778298976495,
+    "residual": 1.3018915037217765e-13,
+    "weight_tag": "mdot0.15-tamb318"
+   }
+  },
+  "weight_tags_differ": true,
+  "tally": {
+   "wired": 8,
+   "global": 0,
+   "partial": 1,
+   "dead": 1,
+   "absent": 1
+  }
+ },
+ "stage_wall_s": {
+  "settings": 5.8581279999925755,
+  "control": 288.8207255999878,
+  "commit": 194.8589265999908,
+  "summary": 0.0015933999966364354
+ },
+ "control": {
+  "tested": true,
+  "compared": 40,
+  "moved": [
+   "front_wing",
+   "front_wing-riding",
+   "ground_effect",
+   "ground_effect-moving",
+   "reuse_probe-N6",
+   "scaling_ladder-N12-reference_exposed",
+   "scaling_ladder-N6-reference",
+   "scaling_ladder-N6-reference_exposed",
+   "tier44-union",
+   "tier44-union-with-pou",
+   "wake_array-bare-blend",
+   "wake_array-poseidon",
+   "wake_array-reference",
+   "wake_array-reference_exposed",
+   "wind_farm_real",
+   "wind_farm_real-as-built"
+  ],
+  "added_by_this_tier": [],
+  "healed_by_this_tier": []
+ },
+ "commit": {
+  "build_s": 87.91777510000975,
+  "commit_s": 105.96974499999487,
+  "fingerprint_before": "a1f67a8e279280a2e6b98ca77a01017afed294b4a1e1388fda04af09e5e77a8f",
+  "fingerprint_after": "1b39f94d64799167464887a1c3fce7e1d15071233e76feea20e59a2fe99a2957",
+  "changed": true,
+  "nominal_before": true,
+  "knob": {
+   "knob": "rake",
+   "from": 0.0,
+   "to": 0.12,
+   "responded": [
+    "DIFF",
+    "DIFF_EXIT",
+    "FLOOR",
+    "FLOOR_LE",
+    "FLOOR_STEP"
+   ],
+   "needs_regrid": true,
+   "marching": "the car BEFORE this change"
+  },
+  "pending_after_knob": [
+   "rake"
+  ],
+  "pending_after_commit": [],
+  "released_before": {
+   "file": "out\\cache\\bodyfitted_t12_a1f67a8e2792.npz",
+   "t": 11.999999999999853,
+   "k": 321,
+   "kind": "settled with the devices on"
+  },
+  "released_after": {
+   "file": null,
+   "spun_up": false,
+   "kind": "NOT SPUN UP",
+   "why": "this car has no settled state and no prefix of its own -- the cached prefix was written on a different car, with a different unknown count. Spinning one up needs car_solids' walls-ramped start (Tier 62: the impulsive and from-rest starts both fail), which is a script and not something this column can do between frames. Run the spin-up for this geometry, then commit again"
+  },
+  "stages": [
+   "cutting the solids",
+   "building the probe operator",
+   "re-cutting the car",
+   "cutting the solids",
+   "building the probe operator",
+   "ready"
+  ],
+  "n_unknowns_before": 377267,
+  "n_unknowns_after": 377176,
+  "unknowns_changed_by": -91,
+  "prefix_refused": "prefix_t8.npz holds 377267 unknowns and this composite has 377176: it was written on a different car, and releasing from it would march one car's field on another's grids",
+  "needs_spin_up": true,
+  "release_is_honest": true,
+  "declined_to_march": true,
+  "decline_reason": "this car has no spun-up field: marching it from rest is the start Tier 62 measured blowing up, so the column declines rather than drawing pictures of it"
+ },
+ "verdicts": {
+  "N1": true,
+  "N2": true,
+  "N3": true,
+  "N4": true,
+  "N5": true
+ },
+ "verdicts_missing": []
+}

@@ -203,6 +203,42 @@ THERM_SCALES = {"temperature": 350.0, "entropy_flux": 1.0e4 / 350.0,
 T_PASSAGE = 0.006                # m, passage height
 A_PASSAGE = WIDTH * T_PASSAGE    # m^2
 MASS_FLUX = MDOT / A_PASSAGE     # kg/(m^2 s)
+
+
+@dataclass(frozen=True)
+class LoopSettings:
+    """The circuit's operating point: what section 3.3's cooling knobs set.
+
+    **These were module constants read directly by every leg, and that was
+    W291.**  A knob could only reach the loop by rebinding `MDOT` or `T_AMB`,
+    which is global state under a demo's background march thread -- and the
+    demo proved it: the page reported ambient temperature "responding" while
+    the marching circuit's return temperature never moved, because the probe
+    rebound the global, measured, and put it back.  A knob that reports a
+    response the march does not have is worse than a knob that does nothing.
+
+    Every field defaults to the constant it replaces, so every existing leg,
+    graph, record and weight hash is unchanged; what moves is that a caller can
+    now say WHICH operating point, and the leg carries it.
+    """
+
+    mdot: float = MDOT
+    t_amb: float = T_AMB
+    ua_rad: float = UA_RAD
+    w_pump: float = W_PUMP
+    cp: float = CP_COOLANT
+
+    @property
+    def mass_flux(self) -> float:
+        return self.mdot / A_PASSAGE
+
+    def tag(self) -> str:
+        """What a capability record's `weight_hash` must carry.
+
+        The hash used to be built from the module `MDOT`, so moving the knob
+        moved the physics and left the record claiming the old machine.
+        """
+        return "mdot%.6g-tamb%.6g" % (self.mdot, self.t_amb)
 #: **L3/C4 refused the first version of this dict and it was right to.**
 #: ADVEC is a MULTIBOND: the base triple describes the port, and every
 #: passenger needs its own conjugate pair on top, because a mass flux carries
@@ -502,6 +538,8 @@ class _Leg:
     agent_id: str = "LEG"
     dt: float = DT_LEG
     t_in: float = T_COOLANT_0
+    #: The operating point this leg runs at (W291).
+    s: LoopSettings = field(default_factory=LoopSettings)
 
     # -- the affine coefficients, which is all a leg IS --------------------
 
@@ -516,7 +554,7 @@ class _Leg:
 
     def h0(self, t: float) -> float:
         """ADVEC's declared EFFORT: specific total enthalpy, J/kg."""
-        return CP_COOLANT * float(t)
+        return self.s.cp * float(t)
 
     def respond_advec(self, port_name: str, trace: np.ndarray) -> np.ndarray:
         """(inlet mass flux) -> (outlet specific total enthalpy).
@@ -528,19 +566,19 @@ class _Leg:
         mass flux it carries.
         """
         m = np.asarray(trace, dtype=float).reshape(-1)
-        scale = float(np.mean(m)) / MASS_FLUX if MASS_FLUX else 0.0
+        scale = float(np.mean(m)) / self.s.mass_flux if self.s.mass_flux else 0.0
         return np.full(m.shape, self.h0(self.outlet()) * (1.0 + scale))
 
     def storage(self, state=None) -> float:
         """``m cp T^2 / 2``: the leg's own thermal energy, positive definite."""
         t = self.t_in if state is None else float(np.mean(np.asarray(state)))
-        return float(0.5 * MDOT * self.dt * CP_COOLANT * t * t)
+        return float(0.5 * self.s.mdot * self.dt * self.s.cp * t * t)
 
     def validity(self, state=None, cond=None) -> bool:
         return True
 
     def base_trace(self) -> np.ndarray:
-        return np.full(N_SEAM, MASS_FLUX)
+        return np.full(N_SEAM, self.s.mass_flux)
 
     def base_for(self, port) -> np.ndarray:
         """The operating point of THIS port's own variable (W74).
@@ -556,7 +594,7 @@ class _Leg:
         #: in V, beside the trace -- the prolongation is what takes it to M,
         #: and `L4/probe` refuses a base of the wrong length rather than
         #: reshaping it
-        return np.full(N_SEAM, MASS_FLUX)
+        return np.full(N_SEAM, self.s.mass_flux)
 
 
 @dataclass
@@ -573,7 +611,7 @@ class CoolantLeg(_Leg):
     agent_id: str = "PASS"
 
     def coeffs(self, q_w: float = 0.0) -> tuple[float, float]:
-        return 1.0, float(q_w) / (MDOT * CP_COOLANT)
+        return 1.0, float(q_w) / (self.s.mdot * self.s.cp)
 
     def wall_temperature(self) -> np.ndarray:
         """The bulk temperature this leg presents to the block, per seam cell.
@@ -612,16 +650,16 @@ class RadiatorLeg(_Leg):
 
     @property
     def decay(self) -> float:
-        return math.exp(-UA_RAD / (MDOT * CP_COOLANT))
+        return math.exp(-self.s.ua_rad / (self.s.mdot * self.s.cp))
 
     def coeffs(self, q_w: float = 0.0) -> tuple[float, float]:
         d = self.decay
-        return d, T_AMB * (1.0 - d)
+        return d, self.s.t_amb * (1.0 - d)
 
     def heat_out(self, t_in: float | None = None) -> float:
         """Watts rejected to ambient.  Term ``Q_rad`` of the loop balance."""
         ti = self.t_in if t_in is None else float(t_in)
-        return float(MDOT * CP_COOLANT * (ti - self.outlet(ti)))
+        return float(self.s.mdot * self.s.cp * (ti - self.outlet(ti)))
 
 
 @dataclass
@@ -641,12 +679,12 @@ class LineLeg(_Leg):
     ua: float = 0.0
 
     def coeffs(self, q_w: float = 0.0) -> tuple[float, float]:
-        d = math.exp(-self.ua / (MDOT * CP_COOLANT))
-        return d, T_AMB * (1.0 - d)
+        d = math.exp(-self.ua / (self.s.mdot * self.s.cp))
+        return d, self.s.t_amb * (1.0 - d)
 
     def heat_out(self, t_in: float | None = None) -> float:
         ti = self.t_in if t_in is None else float(t_in)
-        return float(MDOT * CP_COOLANT * (ti - self.outlet(ti)))
+        return float(self.s.mdot * self.s.cp * (ti - self.outlet(ti)))
 
 
 @dataclass
@@ -670,14 +708,14 @@ class PumpLeg(_Leg):
         pump in it, and splitting them into two agents would be adding a node
         to make a diagram tidier rather than to model anything.
         """
-        d = math.exp(-self.ua / (MDOT * CP_COOLANT))
-        return d, T_AMB * (1.0 - d) + W_PUMP / (MDOT * CP_COOLANT)
+        d = math.exp(-self.ua / (self.s.mdot * self.s.cp))
+        return d, self.s.t_amb * (1.0 - d) + self.s.w_pump / (self.s.mdot * self.s.cp)
 
     def heat_out(self, t_in: float | None = None) -> float:
         """Heat rejected to ambient, NOT counting the pump work put in."""
         ti = self.t_in if t_in is None else float(t_in)
-        d = math.exp(-self.ua / (MDOT * CP_COOLANT))
-        return float(MDOT * CP_COOLANT * (ti - (d * ti + T_AMB * (1.0 - d))))
+        d = math.exp(-self.ua / (self.s.mdot * self.s.cp))
+        return float(self.s.mdot * self.s.cp * (ti - (d * ti + self.s.t_amb * (1.0 - d))))
 
 
 # ---------------------------------------------------------------------------
@@ -714,11 +752,28 @@ def loop_order(n_legs: int = 4) -> tuple[str, ...]:
     raise ValueError("n_legs is 4 (the circuit) or 3 (the triangle control)")
 
 
-def make_legs(n_legs: int = 4) -> dict[str, "_Leg"]:
-    """One expert per leg, keyed by the name `LOOP_ORDER` uses."""
-    made = {"PASS": CoolantLeg(), "RAD": RadiatorLeg(),
-            "HOT": LineLeg(agent_id="HOT", ua=UA_LINE),
-            "COLD": PumpLeg(agent_id="COLD", ua=UA_LINE)}
+def _settings_of(expert) -> "LoopSettings":
+    """The operating point an expert runs at, or the module default.
+
+    A capability record is built for whatever object is handed in, and not
+    every one of them is a leg -- so this falls back rather than raising,
+    and the fallback is exactly the constants the record used to hard-code.
+    """
+    got = getattr(expert, "s", None)
+    return got if isinstance(got, LoopSettings) else LoopSettings()
+
+
+def make_legs(n_legs: int = 4, settings: "LoopSettings | None" = None
+              ) -> dict[str, "_Leg"]:
+    """One expert per leg, keyed by the name `LOOP_ORDER` uses.
+
+    ``settings`` is the operating point every leg runs at; omitted, it is the
+    module constants, so an existing caller builds exactly the legs it did.
+    """
+    st = LoopSettings() if settings is None else settings
+    made = {"PASS": CoolantLeg(s=st), "RAD": RadiatorLeg(s=st),
+            "HOT": LineLeg(agent_id="HOT", ua=UA_LINE, s=st),
+            "COLD": PumpLeg(agent_id="COLD", ua=UA_LINE, s=st)}
     return {k: made[k] for k in loop_order(n_legs)}
 
 
@@ -780,10 +835,13 @@ class LoopSolve:
     """
 
     def __init__(self, block: BlockAgent | None = None, n_legs: int = 4,
-                 tol: float = 1.0e-12, max_iter: int = 400) -> None:
+                 tol: float = 1.0e-12, max_iter: int = 400,
+                 settings: "LoopSettings | None" = None) -> None:
         self.block = block if block is not None else BlockAgent()
         self.order = loop_order(n_legs)
-        self.legs = make_legs(n_legs)
+        self.settings = LoopSettings() if settings is None else settings
+        self.n_legs = n_legs
+        self.legs = make_legs(n_legs, self.settings)
         self.tol = tol
         self.max_iter = max_iter
 
@@ -929,9 +987,11 @@ class SweepStudy:
     q_block: float = 900.0
     t_start: float = T_COOLANT_0
     n_legs: int = 4
+    #: The operating point the swept legs run at (W291).
+    settings: LoopSettings = field(default_factory=LoopSettings)
 
     def _legs(self) -> dict:
-        return make_legs(self.n_legs)
+        return make_legs(self.n_legs, self.settings)
 
     def upstream_of(self) -> dict[str, str]:
         """Who feeds whom, read from the CONNECTION LIST rather than from memory.
@@ -1171,7 +1231,10 @@ def leg_capabilities(expert: _Leg, upstream: str, downstream: str,
         governing_family="incompressible-thermal-transport-1d",
         lambda_ref="itself: a closed form has no infidelity to measure",
         claim_types=frozenset({ClaimType.TRAJECTORY}),
-        weight_hash=f"loop-leg-{expert.agent_id}-mdot{MDOT:.6g}",
+        # **The record moves with the knob (W291).**  This was built from the
+        # module MDOT, so changing the coolant flow changed the physics and
+        # left the capability record claiming the machine that used to run.
+        weight_hash=f"loop-leg-{expert.agent_id}-{_settings_of(expert).tag()}",
         boundary_response=respond,
         # **W74, and `L4/probe-base` caught this one too.** `probe_base` is one
         # callable per expert and it takes the PORT, which matters here because

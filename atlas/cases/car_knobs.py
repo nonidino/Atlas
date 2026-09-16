@@ -63,7 +63,9 @@ def moved(a: float, b: float) -> bool:
 #: ``"global"``   it is reached only by rebinding a MODULE-LEVEL constant, which
 #:                works in a script and is not safe under the demo's background
 #:                march thread, and which also moves a capability record's
-#:                `weight_hash` without anything noticing.
+#:                `weight_hash` without anything noticing.  **Empty since
+#:                Tier 71**, which threaded `cooling_loop.LoopSettings`; the
+#:                category is kept because it names a real way to fail.
 #: ``"partial"``  one subsystem reads it and another that should does not.
 #: ``"dead"``     nothing reads it.
 #: ``"absent"``   the model has no quantity for it to reach.
@@ -123,15 +125,16 @@ KNOBS: tuple[Knob, ...] = (
          "clamp is visible. 1.0 IS the drawn duct, so the nominal car is "
          "unchanged by the knob existing"),
     Knob("coolant_mdot", "cooling", 0.05, 0.30, 0.15, "kg/s",
-         ("cooling_loop",), "the circuit's fixed-point return temperature", "global",
-         "reaches the loop: 310.156 K at 0.05 against 310.865 K at 0.30 -- but "
-         "only by rebinding cooling_loop.MDOT, which ten call sites read "
-         "directly and which a leg's weight_hash is built from"),
+         ("cooling_loop",), "the circuit's fixed-point return temperature", "wired",
+         "WIRED IN TIER 71. Reaches the loop through LoopSettings: 310.156 K "
+         "at 0.05 against 310.865 K at 0.30, and the leg's weight_hash moves "
+         "with it, so the capability record cannot claim the machine that "
+         "used to run"),
     Knob("ambient_t", "cooling", 273.0, 318.0, 300.0, "K",
          ("cooling_loop", "brake_thermal"), "the circuit's fixed-point return temperature",
-         "global",
-         "reaches the loop strongly: 288.133 K at 273 against 325.778 K at 318 "
-         "-- again only by rebinding cooling_loop.T_AMB"),
+         "wired",
+         "WIRED IN TIER 71. Reaches the loop through LoopSettings: 288.133 K "
+         "at 273 against 325.778 K at 318, with no module constant moved"),
     Knob("battery_power", "powertrain", 0.0, 350.0, 0.0, "kW",
          ("powertrain", "J2 heat into the block"), "the loop current", "absent",
          "THIS CIRCUIT HAS NO DEMAND INPUT. The machine is a generator: its "
@@ -142,11 +145,13 @@ KNOBS: tuple[Knob, ...] = (
     Knob("battery_soc", "powertrain", 0.0, 1.0, 1.0, "fraction",
          ("powertrain open-circuit voltage",), "battery EMF and the machine's loop current",
          "partial",
-         "BatteryLeg.v_oc is a real field and its emf() reads it, but "
-         "MachineAgent has NO v_oc field at all: current_at and validity read "
-         "the MODULE constant V_OC. So a state-of-charge knob moves the "
-         "battery and leaves the machine drawing from it unchanged -- "
-         "including the validity predicate W282's envelope is written on"),
+         "Tier 69 found MachineAgent with NO v_oc field at all -- current_at "
+         "and validity read the MODULE constant -- and repaired it, so a "
+         "machine CAN now be told which battery it draws from and its "
+         "decline threshold moves 13.4 -> 8.0 rad/s at v_oc 0.80. What is "
+         "still missing is the wiring: racelab.machine_for_host builds the "
+         "marching machine without the knob, so the state of charge reaches "
+         "the battery model and not the machine that is running"),
     Knob("road_speed", "vehicle", 20.0, 90.0, 40.0, "m/s",
          ("the fluid's freestream", "the scale's U0"), "ground_effect's freestream", "dead",
          "ground_effect.U_INF is 1.0 and the whole column is nondimensional, so "
@@ -227,26 +232,30 @@ def duct_spans(area: float) -> float:
     return float(sum(r["achieved_span"] for r in duct_report(area)))
 
 
-def loop_return(mdot: float | None = None, t_amb: float | None = None) -> float:
-    """The coolant circuit's fixed-point return temperature.
+def loop_settings(mdot: float | None = None, t_amb: float | None = None):
+    """The circuit's operating point at these knob values."""
+    from . import cooling_loop as CL
 
-    Reached by rebinding the module constants, which is what `how="global"`
-    records: ten call sites read `MDOT` directly, so there is no parameter to
-    pass.  The rebinding is undone in a `finally`, because leaving a module
-    constant moved would make every later measurement quietly wrong.
+    d = CL.LoopSettings()
+    return CL.LoopSettings(mdot=d.mdot if mdot is None else float(mdot),
+                           t_amb=d.t_amb if t_amb is None else float(t_amb))
+
+
+def loop_return(mdot: float | None = None, t_amb: float | None = None) -> float:
+    """The coolant circuit's fixed-point return temperature at these knobs.
+
+    **This used to rebind the module constants and put them back** -- which was
+    W291, and which the dashboard proved was not merely inelegant: the page
+    reported ambient temperature "responding" while the marching circuit's
+    return temperature never moved, because the probe's rebinding never reached
+    the running `CarUnion`.  The settings are now passed, so the number this
+    returns is the number the march would get.
     """
     from . import cooling_loop as CL
     from . import integration_union as IU
 
-    old_m, old_t = CL.MDOT, CL.T_AMB
-    try:
-        if mdot is not None:
-            CL.MDOT = float(mdot)
-        if t_amb is not None:
-            CL.T_AMB = float(t_amb)
-        return float(CL.LoopSolve(block=IU.MountedBlock(q_machine=0.0)).solve().t_return)
-    finally:
-        CL.MDOT, CL.T_AMB = old_m, old_t
+    return float(CL.LoopSolve(block=IU.MountedBlock(q_machine=0.0),
+                              settings=loop_settings(mdot, t_amb)).solve().t_return)
 
 
 def battery_emf(v_oc: float) -> float:
@@ -312,6 +321,14 @@ class KnobState:
 
         fields = {f for f in RL.CarParams.__dataclass_fields__}
         return RL.CarParams(**{k: v for k, v in self.values.items() if k in fields})
+
+    def loop_settings(self):
+        """`cooling_loop.LoopSettings` at the current cooling values.
+
+        What a marching circuit must be built with, so a cooling knob reaches
+        the loop that is running and not only the probe that measures it.
+        """
+        return loop_settings(self.values["coolant_mdot"], self.values["ambient_t"])
 
     def solids_rule(self) -> dict:
         """`car_solids.SOLIDS_DEFAULT` at the current duct area."""

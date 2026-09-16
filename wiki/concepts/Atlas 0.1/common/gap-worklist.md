@@ -2259,3 +2259,26 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **The cooling knobs still go through module globals** (W291), and `road_speed` and `battery_power` are refused rather than shown.
 - **Nothing was marched**, and no knob has been moved on a live column.
 - **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+
+### Tier 71 — the dashboard, and the coolant knob that finally reaches the march (2026-09-16)
+
+**[[poc3-racelab-dashboard]], `atlas/demo_racelab/bodyfitted_server.py`, `atlas/demo_racelab/static/bodyfitted.html`, `scripts/tier71_dashboard.py`, `out/racelab20/`.** The body-fitted column has a screen, built to the user's decision that it **rebuilds on commit, not on slider move**. Five of five predictions held, and the page found two defects nothing else would have.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W291** | the cooling knobs reach their subsystem only through module globals | *(Tier 69)* | **closed in this tier.** `cooling_loop.LoopSettings` is threaded through every leg, `LoopSolve`, `SweepStudy` and `CarUnion`, each field defaulting to the constant it replaces — so nothing that existed changes, a full reach report moves **no** module constant, and the leg's `weight_hash` moves with the knob. **Proven on the running march**: ambient $300 \to 318$ K took the marching circuit's return from $312.361655$ to $331.668647$ K, $+19.31$ K on a number that had been frozen at $313.633745$ across every step while the page claimed a response |
+| **W293** | **a committed geometry cannot be spun up, so the column declines to march it** | A geometry commit re-cuts the car and the new car has no field of its own. Settling it means marching from **rest**, and Tier 62 measured that start failing here — the impulsive start put the first step's divergence at $2.3\times10^{3}$ with a momentum solve that did not converge, and the from-rest start grew a spurious road boundary layer. Only the walls-ramped spin-up works, and it is a script | **open.** The column re-cuts, refuses the wrong car's prefix, and `step()` **raises** rather than drawing pictures of a field known to blow up. What is needed is the ramped spin-up reachable from the demo, or a commit that is refused up front for geometries with no spun-up field |
+| **W292** | a geometry knob cannot re-cut the car inside a frame, and `regrid()` is not written | *(narrowed)* `regrid()` is written and works: $106$ s, fingerprint `a1f67a8e2792` $\to$ `1b39f94d6479`, `pending_regrid` cleared. What it cannot do is give the new car a field — that is W293 | **open, narrowed** |
+
+**Also found, and it is the kind that hides:** `car_union.load_state` never checked that a saved field belonged to this car. A $0.12$-cell pitch of the floor moves the hole cutting and takes the composite from $377{,}267$ to $\mathbf{377{,}176}$ unknowns, so the old car's vectors are the **wrong length** — and `set_state` accepted them, with the failure surfacing two hundred lines later as a bare `dimension mismatch` inside a device's ring probe. It now raises `StateBelongsToAnotherCar` naming both counts.
+
+**And the page found what no test would:** every WebSocket upgrade was refused **403** while `/` returned the page and `/api/meta` answered $200$. `bodyfitted_server` carries `from __future__ import annotations`, so `sock: WebSocket` is a string FastAPI resolves against **module** globals — and FastAPI had been imported inside `create_app`. A test now asserts the import sits above `create_app`, because moving it back would restore a dashboard that loads, looks alive, and never receives a frame.
+
+### What Tier 71 did NOT do, named
+
+- **The porous column's dashboard is untouched**; this is a second page at its own route (requirements 13.3).
+- **No checkpoint is loaded**, so the learned switch, the presets and the referent still have nothing to act on — and the page says so.
+- **The state-of-charge knob still reaches the battery and not the marching machine**: Tier 69 gave `MachineAgent` its own `v_oc`, but `racelab.machine_for_host` builds the marching machine without the knob.
+- **`road_speed` and `battery_power` are still refused**, with their reasons on the page.
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.

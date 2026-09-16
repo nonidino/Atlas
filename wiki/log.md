@@ -5359,3 +5359,42 @@ Four of five predictions held.
 **Changed:** `atlas/cases/racelab.py` (`RAKE_GROUPS`, `rake_span`, the pitch in `car_bodies`, and rake's default $0.10 \to 0.0$), `atlas/cases/car_solids.py` (`scaled_opening`, `openings_report`, `duct_area` in `SOLIDS_DEFAULT`), `atlas/cases/car_knobs.py` (both verdicts, the duct probe, `KnobState`, `REGRID`), `atlas/demo_racelab/bodyfitted.py` (`set_knob`, `pending_regrid`), `tests/test_tier69_car_knobs.py` (the tally moves four to six, with the diagnosis kept), `.gitignore`, [[gap-worklist]], [[index]].
 
 **NOT done:** **criterion 2 is STILL NOT MET and this is the honest line -- there is no page**, so nobody can yet move a parameter and watch; `regrid()` is written down and not written, so a geometry knob marks `pending_regrid` and the column goes on marching the car it has; the cooling knobs still reach through module globals (W291); `road_speed` and `battery_power` are refused rather than shown; nothing was marched and no knob has been moved on a live column. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 71 | the dashboard, and the coolant knob that finally reaches the march
+
+**[[poc3-racelab-dashboard]].** The body-fitted column has a screen, built to the user's decision that it **rebuilds on commit, not on slider move**. Five of five predictions held, and the page found two defects nothing else would have.
+
+### Built
+
+**The dashboard** (`atlas/demo_racelab/bodyfitted_server.py`, `static/bodyfitted.html`): a march in a worker thread, frames over a WebSocket, nine sliders grouped as section 3.3 groups them, and the three things the page is obliged to show rather than drop -- the $61\%$ no learned expert can reach with its reason, the fields it cannot draw with theirs, and **which car is marching**. A cooling knob applies at once; a geometry knob goes amber and the header reads `MARCHING THE CAR BEFORE THESE CHANGES`; **Commit** re-cuts with a progress overlay. Commits are handled on the worker between steps, so the composite is never rebuilt underneath a march reading it.
+
+### W291, closed, and proven on the running march
+
+`cooling_loop` declared `MDOT` and `T_AMB` as module constants that ten call sites read directly, so a knob could only reach the loop by **rebinding** them. **The dashboard turned that from a code smell into a measurement**: the page reported `ambient_t -> responded: cooling_loop, brake_thermal` while the telemetry's coolant return stood at **exactly $313.633745$ K on every step**, because the probe's rebinding was undone before the marching circuit ever looked. A knob that reports a response the march does not have is worse than one that does nothing.
+
+`LoopSettings` -- `mdot`, `t_amb`, `ua_rad`, `w_pump`, `cp`, **each defaulting to the constant it replaces** -- is now carried by `_Leg` and threaded through `make_legs`, `LoopSolve`, `SweepStudy` and `CarUnion`. The defaults being the constants is what makes it additive: a full reach report moves **no** constant, the four operating points reproduce the old probe's numbers exactly ($310.155908$, $310.865178$, $288.133248$, $325.778299$ K), and the $40$-artifact byte control adds **none**. The leg's `weight_hash` is built from its own settings tag, so a record can no longer claim the machine that used to run. **On the live march**: ambient $300 \to 318$ K took the return from $312.361655$ to $\mathbf{331.668647}$ K, $+19.31$ K. Tally $6$ wired $/2$ global becomes $\mathbf{8/0}$.
+
+### What the page found, and no test would have
+
+**Every WebSocket upgrade was refused 403** while `/` returned the page and `/api/meta` answered $200$ -- a page that loads, renders its sliders and shows a dead frame forever. `bodyfitted_server` carries `from __future__ import annotations`, so `sock: WebSocket` is the STRING and FastAPI resolves it with `get_type_hints` against the **module's** globals; FastAPI had been imported inside `create_app`. A test now asserts the import sits above `create_app`, because moving it back would restore the defect silently.
+
+### What the first commit found, behind one `dimension mismatch`
+
+**A $0.12$-cell pitch of the floor takes the composite from $377{,}267$ to $377{,}176$ unknowns** -- $91$ fewer, because moving the floor moves the hole cutting -- so a field written on one car is not stale on another, it is the **wrong length**. `car_union.load_state` never checked: `set_state` accepted the wrong-sized vectors and the failure surfaced two hundred lines later inside a device's ring probe. It now raises `StateBelongsToAnotherCar` naming both counts, in `load_state` rather than in the one caller that happened to be bitten.
+
+**And the honest consequence, W293.** A committed car has no field of its own, so settling it means marching from **rest** -- and Tier 62 measured that start failing here (divergence $2.3\times10^{3}$, a momentum solve that did not converge, a spurious road boundary layer). Only the walls-ramped spin-up works and it is a script. So the column re-cuts, refuses the wrong car's prefix, and **`step()` raises rather than drawing**: a demo that marched a field known to blow up and called the pictures physics is the artifact this project exists not to produce.
+
+```
+python scripts/tier71_dashboard.py --out out/racelab20 --stages settings,control,commit,summary
+python -m pytest tests/test_tier71_dashboard.py tests/test_tier36_cooling_loop.py -p no:cacheprovider
+python -m uvicorn atlas.demo_racelab.bodyfitted_server:create_app --factory --port 8014
+python scripts/vault_scan.py wiki        # 250 files, 0 problems
+python scripts/run_suite.py              # 1714 passed, 0 failed, 532 s
+```
+
+**Closed:** **W291**. **Narrowed:** W292 (`regrid()` is written and works -- $106$ s, a new fingerprint, `pending_regrid` cleared; what it cannot do is give the new car a field). **Opened:** **W293**.
+
+**Added:** `atlas/demo_racelab/bodyfitted_server.py`, `atlas/demo_racelab/static/bodyfitted.html`, `scripts/tier71_dashboard.py`, `tests/test_tier71_dashboard.py`, `out/racelab20/racelab20.json`, `.claude/launch.json`, [[poc3-racelab-dashboard]].
+**Changed:** `atlas/cases/cooling_loop.py` (`LoopSettings` threaded through the legs, the solve, the sweep study), `atlas/cases/car_union.py` (`loop_settings`, `set_loop_settings`, `load_state`'s guard), `atlas/cases/car_knobs.py` (the two cooling knobs regraded, `loop_settings`), `atlas/cases/car_render.py` (the cache key carries the knobs), `atlas/demo_racelab/bodyfitted.py` (`regrid`, `settled_path`, `set_knob`, the release logic), `tests/test_tier69_car_knobs.py`, `.gitignore`, [[gap-worklist]], [[index]].
+
+**NOT done:** the porous column's dashboard is untouched; no checkpoint is loaded, so the learned switch, the presets and the referent have nothing to act on; **a committed geometry cannot be spun up** (W293), so a geometry change is something a viewer can make and see refused rather than watch run; the state-of-charge knob still reaches the battery and not the marching machine, because `racelab.machine_for_host` builds it without the knob; `road_speed` and `battery_power` are still refused with their reasons. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

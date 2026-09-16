@@ -84,7 +84,7 @@ def test_a_knob_that_reaches_nothing_is_never_offered_as_working():
     assert "road_speed" in hidden, "the column is nondimensional; nothing reads a road speed"
     assert "battery_power" in hidden, "this circuit is a generator and accepts no demand"
     assert wired == {"ride_height", "rake", "diffuser_deg", "front_flap_deg",
-                     "rear_wing_deg", "duct_area"}
+                     "rear_wing_deg", "duct_area", "coolant_mdot", "ambient_t"}
 
 
 def test_the_omitted_knobs_from_amendment_13_1_are_kept_in_one_place():
@@ -210,9 +210,16 @@ def test_the_battery_was_always_parameterised_and_still_is():
 # ---------------------------------------------------------------------------
 
 
-def test_the_cooling_probe_restores_the_module_constants():
-    """It reaches the loop by REBINDING a module constant, so it must put them
-    back -- a constant left moved would make every later measurement wrong."""
+def test_the_cooling_probe_moves_no_module_constant():
+    """**Tier 69 measured this knob as reaching the loop only by REBINDING
+    `cooling_loop.MDOT`, and Tier 71 threaded `LoopSettings` instead.**  The
+    diagnosis is kept: that route was global state under a marching thread, and
+    the dashboard proved it was not merely inelegant -- the page reported the
+    loop responding while the running circuit's return temperature never moved.
+
+    The probe must now reach the loop WITHOUT touching a module constant, so
+    this asserts the constants are untouched by a probe that genuinely moves the
+    answer -- which is a stronger statement than restoring them afterwards."""
     from atlas.cases import cooling_loop as CL
 
     before = (CL.MDOT, CL.T_AMB)
@@ -221,6 +228,10 @@ def test_the_cooling_probe_restores_the_module_constants():
     assert (CL.MDOT, CL.T_AMB) == before
     assert CK.moved(lo, hi)
     assert math.isfinite(lo) and math.isfinite(hi)
+    # and the settings are what carry it
+    st = CK.loop_settings(mdot=0.30, t_amb=310.0)
+    assert st.mdot == 0.30 and st.t_amb == 310.0
+    assert CL.LoopSettings().mdot == CL.MDOT, "the default must be the constant it replaced"
 
 
 # ---------------------------------------------------------------------------
