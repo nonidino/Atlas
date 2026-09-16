@@ -1,0 +1,263 @@
+{
+ "tier": 67,
+ "prediction": [
+  {
+   "id": "H1",
+   "claim": "requiring every cell be OWNED rather than merely non-hole removes at least 1,000 of the car's 18,109 admissible placements",
+   "why": "the background's 2,153 INTERP cells are the fringe that hugs the car's holes, and a 128 x 128 window that clears a hole by a little still straddles the fringe around it"
+  },
+  {
+   "id": "H2",
+   "claim": "the greedy tiling's count depends on the order: the four declared orders do not all give the same number of windows on the car",
+   "why": "greedy set packing is order-dependent, and it already is on the verification composite, where row gives 14 and the other three give 15"
+  },
+  {
+   "id": "H3",
+   "claim": "the learned expert's CEILING -- the union of every admissible placement -- is under 35% of the composite's unknowns",
+   "why": "the body-fitted grids hold 61.0% of them and a uniform window cannot accept a curvilinear grid at all, so the ceiling cannot exceed 39% however the tiling is cut"
+  },
+  {
+   "id": "H4",
+   "claim": "a window extracted from the car and written straight back leaves the solution vector BITWISE identical, and a changed block changes exactly 128 x 128 entries and no others",
+   "why": "extract and scatter_into index the same unknowns through the same index map"
+  },
+  {
+   "id": "H5",
+   "claim": "the summed-area admissibility test agrees with brute force on every sampled placement of the car's background",
+   "why": "the inclusion-exclusion identity is exact in integers; there is no tolerance in it"
+  },
+  {
+   "id": "H6",
+   "claim": "the stricter OWNED test does not collapse the tiling: it still finds at least 3 windows on the car",
+   "why": "the placements it removes are those hugging the fringe, and a greedy tiling's windows sit in open background where there is no fringe to straddle"
+  },
+  {
+   "id": "H7",
+   "claim": "the OWNED reach is a subset of the LIVE reach, cell for cell",
+   "why": "a DISC cell is non-HOLE, so every owned-admissible placement is live-admissible, and reach is a union over placements"
+  },
+  {
+   "id": "H8",
+   "claim": "a window off the car is dense and finite, and every one of its cells is a DISC cell under the owned test",
+   "why": "admissibility is defined cell by cell, so it is the same statement read back"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-16T07:12:56",
+ "read_before_this_run": [
+  "The requirements' section 4.1 decided row: the background keeps rectangular windows and the learned expert runs only there, because Poseidon-T accepts nothing but a uniform 128 x 128 grid.  Its status names the learned background windows and the demo on them as NOT built.",
+  "racelab_switch: `adapters.Scaling.length` is the tiling units one 128-cell window spans, and 128 cells at dx = 1/64 is 2.0 length units, with no choice in it.  racelab's own lattice is 240 x 672 at that spacing with WX = WY = 128.",
+  "Tier 65: the composite is ONE implicit solve, 12,078 interpolation rows over 40 grid pairs, so a grid cannot be stepped alone.  Tier 66: the body grids own 5,137 of a 320 x 180 raster's pixels, the near-wall region and the duct.",
+  "Explored before these predictions were written (out/t67_explore.json), on the car's own composite: the background is 241 x 672 at h = 1/64, so it is 3.766 x 10.500 length units and a 128-cell window spans 2.000; 9.2% of its cells are holes; 18,109 of 62,130 placements (29.15%) are free of holes; a greedy row-order tiling finds 4 windows covering 44.6% of the live background, the union of all placements reaches 85.7% of it, and the body-fitted grids hold 230,197 of the composite's 377,267 unknowns (61.0%).",
+  "Explored on the verification composite only: requiring every cell be a DISC cell rather than merely non-HOLE removed 198 of 4,943 placements and left the tiling count unchanged at 14, and the four declared orders gave 14, 15, 15 and 15 windows.",
+  "NOT measured before these predictions: any of the OWNED numbers on the car; whether the car's tiling count depends on the order; the ceiling expressed against the COMPOSITE's unknowns rather than the background's; and whether a window comes out of the car's composite dense, finite and bitwise reversible."
+ ],
+ "machine": {
+  "python_processes_running": 3,
+  "python_processes": [
+   "\"python.exe\",\"13848\",\"Console\",\"1\",\"3,736 K\"",
+   "\"python.exe\",\"11560\",\"Console\",\"1\",\"23,444 K\"",
+   "\"python.exe\",\"8420\",\"Console\",\"1\",\"242,404 K\""
+  ],
+  "battery_status_raw": "2",
+  "on_mains": true,
+  "reference_matmul_1024_s": 0.009865999993053265,
+  "taken_at": "2026-09-16T07:12:57"
+ },
+ "live": {
+  "window_cells": 128,
+  "window_span": 2.0,
+  "background_shape": [
+   241,
+   672
+  ],
+  "h": 0.015625,
+  "background_live": 147070,
+  "background_owned": 144917,
+  "background_interp": 2153,
+  "background_holes": 14882,
+  "placements": 62130,
+  "placements_hole_free": 18109,
+  "placements_hole_free_frac": 0.29146949943666506,
+  "require": "live",
+  "order": "row",
+  "n_windows": 4,
+  "windows": [
+   {
+    "j": 0,
+    "i": 522,
+    "w": 128,
+    "x0": 8.1640625,
+    "x1": 10.1640625,
+    "y0": 0.0,
+    "y1": 2.0
+   },
+   {
+    "j": 45,
+    "i": 0,
+    "w": 128,
+    "x0": 0.0078125,
+    "x1": 2.0078125,
+    "y0": 0.703125,
+    "y1": 2.703125
+   },
+   {
+    "j": 72,
+    "i": 128,
+    "w": 128,
+    "x0": 2.0078125,
+    "x1": 4.0078125,
+    "y0": 1.125,
+    "y1": 3.125
+   },
+   {
+    "j": 88,
+    "i": 363,
+    "w": 128,
+    "x0": 5.6796875,
+    "x1": 7.6796875,
+    "y0": 1.375,
+    "y1": 3.375
+   }
+  ],
+  "tiled_cells": 65536,
+  "tiled_frac_of_background_live": 0.44561093356904874,
+  "reach_cells": 126059,
+  "reach_frac_of_background_live": 0.8571360576596179,
+  "composite_unknowns": 377267,
+  "body_grid_unknowns": 230197,
+  "body_grid_frac": 0.6101699857130362,
+  "tiled_frac_of_composite": 0.1737125165996496,
+  "reach_frac_of_composite": 0.33413736160332075,
+  "note": "the learned expert is bounded by the body grids, not by the hole pattern: a uniform window cannot accept a curvilinear grid at all",
+  "by_order": {
+   "row": 4,
+   "column": 5,
+   "downstream": 5,
+   "upstream": 5
+  },
+  "orders_agree": false
+ },
+ "stage_wall_s": {
+  "territory": 66.0396660999977,
+  "owned": 0.2694055999891134,
+  "window": 0.06696379999630153,
+  "summary": 0.001646199991228059
+ },
+ "owned": {
+  "window_cells": 128,
+  "window_span": 2.0,
+  "background_shape": [
+   241,
+   672
+  ],
+  "h": 0.015625,
+  "background_live": 147070,
+  "background_owned": 144917,
+  "background_interp": 2153,
+  "background_holes": 14882,
+  "placements": 62130,
+  "placements_hole_free": 17462,
+  "placements_hole_free_frac": 0.2810558506357637,
+  "require": "owned",
+  "order": "row",
+  "n_windows": 4,
+  "windows": [
+   {
+    "j": 0,
+    "i": 523,
+    "w": 128,
+    "x0": 8.1796875,
+    "x1": 10.1796875,
+    "y0": 0.0,
+    "y1": 2.0
+   },
+   {
+    "j": 46,
+    "i": 0,
+    "w": 128,
+    "x0": 0.0078125,
+    "x1": 2.0078125,
+    "y0": 0.71875,
+    "y1": 2.71875
+   },
+   {
+    "j": 73,
+    "i": 128,
+    "w": 128,
+    "x0": 2.0078125,
+    "x1": 4.0078125,
+    "y0": 1.140625,
+    "y1": 3.140625
+   },
+   {
+    "j": 89,
+    "i": 363,
+    "w": 128,
+    "x0": 5.6796875,
+    "x1": 7.6796875,
+    "y0": 1.390625,
+    "y1": 3.390625
+   }
+  ],
+  "tiled_cells": 65536,
+  "tiled_frac_of_background_live": 0.4522312772138534,
+  "reach_cells": 125412,
+  "reach_frac_of_background_live": 0.8654057149954801,
+  "composite_unknowns": 377267,
+  "body_grid_unknowns": 230197,
+  "body_grid_frac": 0.6101699857130362,
+  "tiled_frac_of_composite": 0.1737125165996496,
+  "reach_frac_of_composite": 0.3324223958098641,
+  "note": "the learned expert is bounded by the body grids, not by the hole pattern: a uniform window cannot accept a curvilinear grid at all",
+  "by_order": {
+   "row": 4,
+   "column": 5,
+   "downstream": 5,
+   "upstream": 5
+  },
+  "orders_agree": false,
+  "placements_lost_to_owning": 647,
+  "owned_reach_inside_live_reach": true,
+  "owned_reach_cells": 125412,
+  "live_reach_cells": 126059
+ },
+ "window": {
+  "window": {
+   "j": 0,
+   "i": 523,
+   "w": 128,
+   "x0": 8.1796875,
+   "x1": 10.1796875,
+   "y0": 0.0,
+   "y1": 2.0
+  },
+  "block_shape": [
+   128,
+   128
+  ],
+  "finite": true,
+  "round_trip_bitwise": true,
+  "changed_entries": 16384,
+  "expected_entries": 16384,
+  "all_cells_disc": true,
+  "status_counts": {
+   "1": 16384
+  },
+  "brute_force": {
+   "sampled": 400,
+   "agree": 400,
+   "disagree": 0
+  }
+ },
+ "verdicts": {
+  "H1": false,
+  "H2": true,
+  "H3": true,
+  "H6": true,
+  "H7": true,
+  "H4": true,
+  "H5": true,
+  "H8": true
+ },
+ "verdicts_missing": []
+}

@@ -5229,3 +5229,35 @@ About seven minutes, most of it building the operator at three resolutions on a 
 **Changed:** `atlas/cases/car_union.py` (`probe_matrix_masked` the primitive, `probe_matrix` its wrapper), `tests/test_tier45_region_assembly.py` (`car_render` in the census -- **the W189 control caught the new module, as it is built to**), `.gitignore` (the `out/racelab15` allowlist), [[gap-worklist]], [[index]].
 
 **NOT done:** the demo does NOT run on the body-fitted column -- this is the overlay and only the overlay, nothing marches it live and `atlas/demo_racelab` is untouched; the operator is not cached (W287); only `speed` was encoded, and vorticity is the one field that is not just another `sample` call because it is a derivative on curvilinear grids; body outlines, grid boundaries and window tints are not drawn; the picture was opened and looked at, but **nothing about the FLOW it shows was checked** -- that is Tier 64's question, and no feature of the rendered field has been compared with anything. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 67 | where a learned expert can sit on the body-fitted column
+
+**[[poc3-racelab-car-windows]].** The requirements' section 4.1 decided that the background keeps rectangular windows and the learned expert runs only there, because Poseidon-T accepts nothing but a uniform $128\times128$ grid. Nobody had measured what "only there" costs. `atlas/cases/car_windows.py` works it out.
+
+### Built
+
+**A placement layer with two admissibility tests, and the difference between them is the point.** `hole_free` tests every $128\times128$ block with a summed-area table — $62{,}130$ candidates, each otherwise a $128\times128$ reduction — under `require="live"` (no holes) or `require="owned"` (every cell a `DISC` cell the background's own equation decides). `reach` unions every admissible placement; `tile` packs them greedily in one of four **declared** orders, because greedy set packing is order-dependent and the tie-break should be written down rather than inherited from `np.nonzero`. `extract` and `scatter_into` make a window a lossless view of the composite rather than a copy that can drift from it, and a window with a hole raises rather than returning whatever the index map holds.
+
+### Measured
+
+**The arithmetic has no freedom in it**: the background is $241\times672$ at $h = 1/64$ — the porous column's own lattice plus a row — so $128$ cells is exactly $2.0$ length units. The car spans $x\in[0.96, 8.11]$, leaving $0.95$ upstream, **less than half a window**, so nothing learned can ever sit in front of the car. **$18{,}109$ of $62{,}130$ placements** are hole-free ($29.15\%$), and the fast test agreed with brute force at every placement of the verification composite and $400$ sampled on the car's, with no disagreement anywhere. A greedy tiling finds four windows — the wake, upstream-and-above, over the front, over the rear — and **the count depends on the order**: $4$, $5$, $5$, $5$.
+
+**The binding constraint is none of that.** The body-fitted grids hold **$230{,}197$ of the composite's $377{,}267$ unknowns, $61.0\%$**, and a uniform grid cannot accept a curvilinear patch in any arrangement. So the **ceiling** — the union of every admissible placement, which no tiling however clever can pass — is $33.4\%$ of the composite, and a real four-window tiling covers $17.4\%$. Both denominators are reported because the background's own ($85.7\%$) flatters the learned expert fourfold. What the learned expert can never touch is exactly the boundary layers, the wheel clearances and the duct. **W288** is opened: that number belongs beside the demo's expert switch, not in a footnote.
+
+**H1 failed, and usefully.** It predicted that requiring cells be OWNED rather than merely held would cost at least $1{,}000$ placements, because the fringe hugs the holes. It cost **$647$** — real, and three times smaller. A window big enough to clear the car at $128\times128$ has mostly left the thin $2{,}153$-cell fringe behind already, and the tiling does not notice the stricter test at all ($4,5,5,5$ under both). The distinction is conceptually essential and numerically almost free here, which sharpens rather than weakens the claim that the obstacle is the body grids' $61\%$ and nothing else.
+
+```
+python scripts/tier67_car_windows.py --out out/racelab16 --stages territory,owned,window,summary
+python -m pytest tests/test_tier67_car_windows.py tests/test_tier45_region_assembly.py -p no:cacheprovider
+python scripts/vault_scan.py wiki        # 246 files, 0 problems
+python scripts/run_suite.py              # 1656 passed, 0 failed, 370 s
+```
+
+About two minutes of work, nearly all of it the composite the first stage builds. **The machine slept about seven hours between the launch and the first stage**; nothing in this tier is timed -- every prediction is combinatorial or exact -- so the suspension corrupts nothing, and it is recorded rather than left to be noticed later. Seven of eight predictions held.
+
+**Opened:** **W288** (the learned expert reaches at most a third of this column, and none of it near the car). **Annotated:** W270.
+
+**Added:** `atlas/cases/car_windows.py`, `scripts/tier67_car_windows.py`, `tests/test_tier67_car_windows.py`, `out/racelab16/racelab16.json`, [[poc3-racelab-car-windows]].
+**Changed:** `tests/test_tier45_region_assembly.py` (`car_windows` in the census), `.gitignore` (the `out/racelab16` allowlist), [[gap-worklist]], [[index]].
+
+**NOT done:** no checkpoint was loaded and nothing learned was run -- this is where a learned expert COULD sit, not a measurement of one sitting there; nothing was marched; the tilings are greedy and the counts are lower bounds, with no maximum-packing argument; the fringe question is measured but not settled, since nothing says what a learned expert should do at a window edge abutting an `INTERP` cell, which is a seam question this tier does not declare; no graph, agents or compile, so Tier 65's one-fluid-expert declaration is untouched. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

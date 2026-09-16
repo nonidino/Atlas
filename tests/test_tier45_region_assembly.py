@@ -128,6 +128,12 @@ ADDED_AFTER_CAPTURE = {
                      "patches, and the multi-body manufactured solutions.  It builds "
                      "NO CaseGraph, declares no region and imports no case but "
                      "overset and overset_ns",
+    "car_windows": "Tier 67: WHERE a learned expert may sit on the body-fitted column -- "
+                   "128 x 128 placements on the Cartesian background, the two admissibility "
+                   "tests (no holes, and every cell one the background OWNS) and what the "
+                   "body grids' 61% of the unknowns puts out of reach.  It builds NO "
+                   "CaseGraph and declares no region: it places windows on a geometry and "
+                   "loads no checkpoint",
     "car_render": "Tier 66: the body-fitted composite sampled onto ONE RASTER, the demo's "
                   "field overlay.  It builds NO CaseGraph and declares no region: it is a "
                   "VIEW, and it reads the composite only through car_union's own probe "

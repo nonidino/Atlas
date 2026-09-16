@@ -532,3 +532,13 @@ out/racelab14/*
 out/racelab15/*
 !out/racelab15/racelab15.json
 !out/racelab15/overlay_speed.png
+
+# Tier 67 -- where a learned expert can sit on the body-fitted column
+# (`tier67_car_windows.py --out out/racelab16`). JSON only: every 128 x 128
+# placement on the background under both admissibility tests, the greedy tilings
+# under four declared orders, the ceiling expressed against the composite's
+# unknowns, and one window taken out and put back. Rebuilding costs about two
+# minutes, nearly all of it the composite the first stage builds.
+!out/racelab16/
+out/racelab16/*
+!out/racelab16/racelab16.json

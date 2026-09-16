@@ -2182,3 +2182,22 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **The PNG was never looked at.** It was checked for what it contains — the car's pixels, the colour map's range — and a socket cannot see an undrawn page.
 - **Body outlines, grid boundaries and window tints** of the requirements' §5.1 are not drawn.
 - **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+
+### Tier 67 — where a learned expert can sit on the body-fitted column (2026-09-16)
+
+**[[poc3-racelab-car-windows]], `atlas/cases/car_windows.py`, `scripts/tier67_car_windows.py`, `tests/test_tier67_car_windows.py`, `out/racelab16/`.** The requirements decided the learned expert runs only in the background's rectangles because Poseidon-T accepts nothing but a uniform $128\times128$ grid; this measures the price of that decision. Seven of eight predictions held.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W288** | **the learned expert can reach at most a third of this column, and none of it near the car** | $128$ cells at $h=1/64$ is $2.0$ length units, with no freedom in it. $18{,}109$ of $62{,}130$ placements are admissible, so places are not scarce — but the **body-fitted grids hold $230{,}197$ of $377{,}267$ unknowns, $61.0\%$**, and a uniform grid cannot accept a curvilinear patch in any arrangement. The **ceiling**, the union of every admissible placement, is $33.4\%$ of the composite; a real four-window tiling covers $17.4\%$. The unreachable $61\%$ is exactly the boundary layers, the wheel clearances and the duct — the physics the body-fitted column exists to resolve — and the gap upstream of the car is $0.95$, less than half a window, so nothing learned can sit in front of it either | **open, and it is a fact rather than a defect.** It cannot be packed away: it is a property of the checkpoint's interface, so it improves only with a checkpoint that accepts a curvilinear patch, or with a coarser near-wall region, which defeats the column. **The demo must show it beside the expert switch**, because a speed-and-accuracy story told over a third of the problem and silent about the other two-thirds is the artifact this project exists not to produce |
+| **W270** | no learned expert on the body-fitted column | *(annotated)* Unchanged, and now bounded: the territory is measured, the windows are placeable, `extract`/`scatter_into` move a window in and out bitwise, and what remains is loading a checkpoint and stepping one. What is NOT answered is what a learned expert does at a window edge abutting an `INTERP` cell — the fringe the body grids feed — which is a seam question | `open` |
+
+### What Tier 67 did NOT do, named
+
+- **No checkpoint was loaded and nothing learned was run**, and nothing was marched. This is where a learned expert *could* sit.
+- **The tilings are greedy, not maximal**; four orders are declared and measured, and the counts ($4,5,5,5$) are lower bounds.
+- **The fringe is measured, not settled**: `require="owned"` keeps `INTERP` cells out of a window, but nothing says what happens at an edge that abuts one.
+- **No graph, agents or compile** — Tier 65's one-fluid-expert declaration is untouched, and splitting the background into window agents would change it.
+- **The machine slept about seven hours mid-run.** Nothing here is timed, so nothing is corrupted; it is recorded rather than left to be found later.
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
