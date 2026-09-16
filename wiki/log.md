@@ -5161,3 +5161,35 @@ About $44$ minutes on **mains**, beside the user's two phone-remote servers: the
 **Changed:** `tests/test_tier45_region_assembly.py` (the census names `car_union`), `POC3-RACELAB-REQUIREMENTS.md` (§13.1 status), `.gitignore` (the `out/racelab13` allowlist), [[gap-worklist]], [[index]].
 
 **NOT done:** no tight coupling, no composition-error arms, no null arm marched; no graph, compile, agent or seam on the body-fitted column, so `L7/R9` and P1 are untouched; the duct is still W281's weak one and the front wing still W275's filled wedge; W283 and W284 are measured, not repaired. RaceLab's column, records, gate, demo, bundle and `car_geometry.json` are unchanged. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-15] tier 65 | the body-fitted column declared, and a volumetric device's port
+
+**[[poc3-racelab-car-graph]].** Tier 64 marched the devices and the joins and declared nothing, so the compiler had never seen the column and P1 could not be stated on it. `atlas/cases/car_graph.py` writes the declaration.
+
+### Built
+
+**One fluid expert for the whole overset composite** with a **strip MECH port** per device, and the coolant circuit and powertrain unchanged. Three declarations fail first and each measures something: an expert with no ports is refused by the record layer (*"expert 'FLUID' declares no ports"*); one agent per grid would be a lie, and the composite's $12{,}078$ interpolation rows ($3.2\%$ of $377{,}267$ unknowns, $108{,}702$ donor entries, $40$ grid pairs, one matrix) measure why — **W268 answered by decision**; and the device's two faces on one agent is a self-seam, refused by the graph layer by name. What works is the strip: effort $T/W$, flow the band's mean velocity, product the power the force takes out of the fluid — **W94's first expressible bond for a volumetric device**, declarable because this host accepts a body force and reports the work it does. The compiler also caught two declaration errors (a MECH seam's two sides both return the effort; the trace is the device's $32$ cells over the duct's $29$, non-conforming by construction).
+
+### Measured
+
+The joined column refuses **`L7/R9` and nothing else**, with $11$ agents and $13$ seams against the porous column's $26$ and $36$; its disjoint union refuses nothing, reconciling the clocks removes the refusal, and one join alone still earns it. No seam earns a refusal of its own. **W285**: R10's premise — *another agent of the same `governing_family`* — was being met by the actuator disk (`stencil_radius` $0$, no region), so it refused a composite nothing decomposes; narrowed by the signature W160 used on the branch beside it, and priced: the porous column's compile unchanged, the suite passing, **one** of forty captured artifacts moved (`front_wing`'s halo admission gains the lumped suspension in its uncut list) with **no verdict changed**, named in `MOVED_BY_W285`. **W286**: the declared bond reproduces the march's shaft power to sixteen digits step by step and to $0.9762$ at the single state the record is written at — D5's registered $1\%$ failed, and the reason is W229 on a capability record.
+
+```
+python scripts/tier65_car_graph.py --out out/racelab14 --stages record,compile,power,summary
+python scripts/run_suite.py            # D2 has no verdict yet, so the record test fails here
+python scripts/tier65_car_graph.py --out out/racelab14 --stages summary --suite 1628 0
+python scripts/run_suite.py            # 1628 passed, 0 failed -- the confirming run, 359 s
+python -m pytest tests/test_tier65_car_graph.py tests/test_tier45_region_assembly.py -p no:cacheprovider
+python scripts/vault_scan.py wiki        # 244 files, 0 problems
+```
+
+About two and a half minutes for the tier's own stages, nearly all of it the composite the `record` stage builds to count its interpolation rows; the two suite runs are about six minutes each on mains, with no other process of ours on the machine.
+
+**D2's tally is a fixed point, not a reading**, and the page says so: this tier's tests are inside the suite D2 quotes, and one of them refuses a record with an unjudged prediction, so the first run read $1626$ passed and $2$ failed with **both failures this tier's own bookkeeping** — every other file green, which is the part the narrowing answers for. The tally was written and the whole suite re-run against the record carrying it, and that run reproduced it exactly. The other first-run failure was a real defect and was repaired, not predicted away: the page test stripped commas and looked for `12078`, which cannot match the vault's LaTeX `$12{,}078$`; it now asserts the LaTeX form, as Tier 62 does. `MOVED_BY_W285`'s check was also strengthened from *"nothing refuses"* — vacuous on an artifact whose $132$ decisions all admit — to a decision-by-decision comparison against the captured pre-change artifact, which confirms one decision differs (`R10/halo`, `uncut_agents` gaining `SUSP`) and no verdict anywhere moved.
+
+**Opened:** **W285** (closed in the same tier) and **W286** (a record is written at a state and quoted over a window). **Annotated:** W94 (narrowed to the frozen-operator case), W200, W229, W268.
+
+**Added:** `atlas/cases/car_graph.py`, `scripts/tier65_car_graph.py`, `tests/test_tier65_car_graph.py`, `out/racelab14/racelab14.json`, [[poc3-racelab-car-graph]].
+**Changed:** `atlas/compiler.py` (`_decomposition_cuts` narrowed by `stencil_radius`), `tests/test_tier45_region_assembly.py` (`car_graph` in the census, `MOVED_BY_W285` and its reason asserted), `.gitignore` (the `out/racelab14` allowlist), [[gap-worklist]], [[index]].
+
+**NOT done:** nothing marched, no seam operator probed, the fluid's strip response explicit rather than solved; the overlap, the domain boundaries and the strip's geometry declared or excluded but never checked against the solver; P2-P7 not re-run on this graph; no learned expert and no demo on the body-fitted column. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

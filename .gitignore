@@ -508,3 +508,15 @@ atlas/cases/car_geometry.json.bak
 out/backdrops/
 out/car_geometry.png
 out/editor.log
+
+# Tier 65 -- the body-fitted column declared and compiled
+# (`tier65_car_graph.py --out out/racelab14`). JSON only: the record layer's
+# refusal of a port-less expert, the composite's interpolation rows, the compile
+# of the joined / disjoint / clocks-reconciled / one-join-at-a-time variants
+# beside the porous column's, the strip bond against Tier 64's march, and the
+# verdicts. Rebuilding costs about two and a half minutes, nearly all of it the
+# composite the record stage builds to count its rows. The run logs beside it
+# are ignored.
+!out/racelab14/
+out/racelab14/*
+!out/racelab14/racelab14.json

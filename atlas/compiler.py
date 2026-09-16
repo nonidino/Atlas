@@ -1593,13 +1593,25 @@ def _decomposition_cuts(graph: CaseGraph) -> tuple[set[str], set[str]]:
     """
     families: dict[str, int] = {}
     for a in graph.agents:
+        # W285, 2026-09-15: an agent with no spatial operator has no REGION, so it
+        # is not "a larger region of the same physics, of which this agent has been
+        # given a piece" and cannot be evidence that a family's domain was cut.
+        # This is W160's narrowing, applied to the branch beside the one it fixed:
+        # there `stencil_radius == 0` separated a field solver from an algebraic
+        # closure, and here it separates a piece of a domain from a closure that
+        # declares the same family without owning any of it.  Found on the
+        # body-fitted column, where the actuator disk (stencil 0) made the ONE
+        # fluid expert read as cut and R10 refused a composite nothing decomposes.
+        if a.capabilities.stencil_radius == 0:
+            continue
         fam = a.capabilities.governing_family or ""
         families[fam] = families.get(fam, 0) + 1
     cut: set[str] = set()
     uncut: set[str] = set()
     for a in graph.agents:
         fam = a.capabilities.governing_family or ""
-        (cut if families.get(fam, 0) > 1 else uncut).add(a.agent_id)
+        n = 0 if a.capabilities.stencil_radius == 0 else families.get(fam, 0)
+        (cut if n > 1 else uncut).add(a.agent_id)
     return cut, uncut
 
 

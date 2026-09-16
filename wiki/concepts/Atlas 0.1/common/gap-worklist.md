@@ -2143,3 +2143,24 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **The registered window is not a settled state**: the duct falls $3.5\%$ across it, which is why the sizing had to be iterated.
 - **Nothing was repaired about W283 or W284**, only measured.
 - **Every march ran on mains**; nothing was downloaded, installed or rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+
+### Tier 65 — the body-fitted column declared, and a volumetric device's port (2026-09-15)
+
+**[[poc3-racelab-car-graph]], `atlas/cases/car_graph.py`, `scripts/tier65_car_graph.py`, `tests/test_tier65_car_graph.py`, `out/racelab14/`.** The column Tier 64 marched is now a `CaseGraph`: one fluid expert for the whole overset composite, a **strip MECH port** per device — the first expressible bond for a volumetric device in this package — and the coolant circuit and powertrain unchanged. It compiles, refusing at `L7/R9` and nothing else, with $11$ agents and $13$ seams against the porous column's $26$ and $36$. Six of seven predictions held.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W285** | **R10's premise counted an agent that owns no region** | R10 refuses an EMBEDDED elliptic sub-solve when *another agent of the same `governing_family`* exists — the proxy for "this family's region has been cut". The actuator disk declares `incompressible-navier-stokes-2d` with `stencil_radius` $0$ and no field at all, so on the body-fitted column it made the ONE fluid expert read as cut and R10 refused a composite nothing decomposes. **W160 narrowed the branch beside this one by exactly this signature and left this one** | **closed in this tier.** The premise now ignores agents with no spatial operator, in `_decomposition_cuts` so that the halo rule and R10 cannot come to disagree (W136). Priced: the porous column's compile unchanged, the whole suite passing, and **one** of the forty captured artifacts moved — `front_wing`, where the lumped suspension joins the structure in the halo rule's uncut list, with no verdict anywhere changed. Named in `MOVED_BY_W285` and asserted to have moved for that reason |
+| **W94** | an actuator disk has no expressible bond against a frozen operator | *(annotated, and half closed)* **A device applied as a body force over a strip presents the traction its force integrates to**: effort $T/W$, flow the band's mean velocity, product the power the force takes out of the fluid — which Tier 64 measured against the shaft's claim to $3.4\times10^{-4}$. The bond is declarable because THIS host accepts a body force and reports the work it does; against a frozen operator that reports neither, the row stands | `open`, narrowed to the frozen-operator case |
+| **W268** | an overset overlap has no declaration the compiler can read | *(annotated, answered by decision)* It is not a seam: the composite is ONE implicit solve, whose $12{,}078$ interpolation rows ($3.2\%$ of $377{,}267$ unknowns, $108{,}702$ donor entries over $40$ grid pairs) are rows of the same matrix as its momentum equations, so no grid can be stepped alone. The overlap is inside the expert, and what the declaration cannot say is that it exists | `open` as a declaration, decided as a modelling choice |
+| **W286** | **a capability record is written at a state and quoted over a window** | The strip bond reproduces the march's shaft power to sixteen digits evaluated step by step, and reads $0.9762$ of it at the single state the record is written at, because the window's induction swings $0.082$ to $0.202$ and the power is cubic in the inflow. D5 registered $1\%$ and failed | **open, small.** It is W229 seen on a record rather than on an envelope: either a record declares the state it is written at as part of its identity (the weight hash does not carry it), or a quantity read off a record over a horizon is refused |
+| **W200** | no global power balance can be assembled | *(annotated)* Unchanged and now visible in a second way: the body-fitted column's road, inlet, top and outflow are where its momentum enters and leaves, and the declaration gives them no ports, so the only declared power crossings on the whole column are the two device strips | `open` |
+
+### What Tier 65 did NOT do, named
+
+- **Nothing was marched**, no seam operator was probed, and the fluid's strip response is explicit direct forcing rather than a solved DtN map.
+- **The overlap, the domain boundaries and the strip's geometry are declared or excluded, never checked against the solver.**
+- **P2-P7 are not re-run on this graph**; the gate's clauses still read the porous column.
+- **No learned expert and no demo on the body-fitted column** (W270 untouched).
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.

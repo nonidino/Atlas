@@ -128,6 +128,12 @@ ADDED_AFTER_CAPTURE = {
                      "patches, and the multi-body manufactured solutions.  It builds "
                      "NO CaseGraph, declares no region and imports no case but "
                      "overset and overset_ns",
+    "car_graph": "Tier 65: the body-fitted column DECLARED -- one fluid expert for the "
+                 "whole composite, a strip MECH port per device (W94's first expressible "
+                 "bond for a volumetric device) and the coolant circuit and powertrain "
+                 "unchanged.  It builds a CaseGraph of ITS OWN and changes no existing "
+                 "case; the one artifact its narrowing of R10's premise moves is named in "
+                 "MOVED_BY_W285 with the reason",
     "car_union": "Tier 64: the radiator core and the turbine in the body-fitted duct and "
                  "the three joins marched on it.  It builds NO CaseGraph and declares no "
                  "region; it READS car_solids, racelab, vehicle_march and integration_union "
@@ -152,6 +158,22 @@ ADDED_AFTER_CAPTURE = {
 MOVED_BY_W194 = {
     "tier44-union": "multirate by agents, no multirate seam (W194, Tier 49)",
     "tier44-union-with-pou": "the same fixture with its partition of unity",
+}
+
+#: **The one artifact Tier 65's W285 moves, and the reason.**  R10's premise --
+#: *"another agent of the same governing_family"*, the proxy for "has this
+#: agent's domain been cut" -- counted agents that declare no spatial operator
+#: at all.  W160 narrowed the branch beside it by `stencil_radius` for exactly
+#: this reason and this one was left; the body-fitted column found it, where the
+#: actuator disk (family `incompressible-navier-stokes-2d`, `stencil_radius` 0)
+#: made the ONE fluid expert read as cut and R10 refused a composite that nothing
+#: decomposes.  On `front_wing` the correction moves NO verdict: the lumped
+#: suspension joins STRUCT in the halo rule's `uncut_agents`, where it belongs --
+#: a spring owns no region for an overlap to outrun.  The artifact differs in
+#: that admission's evidence and nowhere else.
+MOVED_BY_W285 = {
+    "front_wing": "the lumped suspension has no spatial operator and now reads "
+                  "uncut in the halo rule's admission (W285, Tier 65)",
 }
 
 
@@ -227,7 +249,45 @@ def test_W189_control_live_recompile_matches_the_pre_change_bytes(before, key):
 
     _g, _r, text, _t = CTRL.compile_artifact(key)
     same = CTRL.digest(text) == before["rows"][key]["sha256"]
-    if key in MOVED_BY_W194:
+    if key in MOVED_BY_W285:
+        assert not same, (
+            f"{key} is named as moved by W285 and did not move; if the narrowing "
+            "was reverted, take it out of MOVED_BY_W285 rather than leaving a dead "
+            "exemption behind")
+        # and it moved for the stated reason: an agent with no spatial operator
+        # joined the halo rule's uncut list, and NO verdict moved with it.
+        #
+        # "No verdict moved" is what the page, the log and the worklist all
+        # claim as W285's price, so it is checked and not stood in for: this
+        # artifact admits all 132 of its decisions, so a refusal count alone
+        # would pass a change that rewrote every admission it has.
+        import json as _json
+        now = _json.loads(text)
+        assert now["verdict"] == before["rows"][key]["verdict"]
+        assert len(now["decisions"]) == before["rows"][key]["n_decisions"]
+        assert [d for d in now["decisions"] if d["verdict"] == "refuse"] == []
+        uncut = [d for d in now["decisions"]
+                 if isinstance(d.get("evidence"), dict) and "uncut_agents" in d["evidence"]]
+        assert uncut, "the halo admission that names the uncut agents is gone"
+        assert "SUSP" in uncut[0]["evidence"]["uncut_agents"], uncut[0]["evidence"]
+        # the pre-change artifact itself is a local-only cache (out/w189/ is
+        # gitignored), so a clone compares what the tracked manifest carries and
+        # a working tree that has the capture compares decision by decision
+        _was = os.path.join(OUT, "artifacts", "before1", f"{key}.json")
+        if os.path.exists(_was):
+            with open(_was, encoding="utf-8") as _fh:
+                was = _json.load(_fh)
+            spine = [[(d["layer"], d["rule"], d["verdict"], d["failure_class"],
+                       d["subject"], d["quantity"]) for d in a["decisions"]]
+                     for a in (was, now)]
+            assert spine[0] == spine[1], (
+                "W285 is an admission's evidence, not a verdict change")
+            differ = [(w, n) for w, n in zip(was["decisions"], now["decisions"]) if w != n]
+            assert len(differ) == 1, [w["rule"] for w, _n in differ]
+            assert differ[0][0]["rule"] == "R10/halo", differ[0][0]["rule"]
+            assert "SUSP" not in differ[0][0]["evidence"]["uncut_agents"]
+            assert "SUSP" in differ[0][1]["evidence"]["uncut_agents"]
+    elif key in MOVED_BY_W194:
         assert not same, (
             f"{key} is named as moved by W194 and did not move; if the rule was "
             "reverted, take it out of MOVED_BY_W194 rather than leaving a dead "
