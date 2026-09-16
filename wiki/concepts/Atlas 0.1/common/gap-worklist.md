@@ -2201,3 +2201,24 @@ Closed: **W244**, **W245**, **W258**, **W259** (annotated in their rows above).
 - **No graph, agents or compile** — Tier 65's one-fluid-expert declaration is untouched, and splitting the background into window agents would change it.
 - **The machine slept about seven hours mid-run.** Nothing here is timed, so nothing is corrupted; it is recorded rather than left to be found later.
 - **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.
+
+
+### Tier 68 — the body-fitted car as a demo column, and the cache that starts it (2026-09-16)
+
+**[[poc3-racelab-bodyfitted-demo]], `atlas/demo_racelab/bodyfitted.py`, `scripts/tier68_bodyfitted_demo.py`, `tests/test_tier68_bodyfitted_demo.py`, `out/racelab17/`.** The engine that puts the body-fitted column on a screen, as a second column beside the porous one. Six of seven predictions held.
+
+| row | the thing | what is wrong | state |
+|---|---|---|---|
+| **W287** | the overlay's operator is cacheable and is not cached | *(Tier 66)* | **closed in this tier.** $64.3$ s becomes $0.12$ s, and the cache **validates against the live composite rather than trusting its key**: it refuses a wrong key, rolled column indices (at $4.198$ on the car's own operator), a mask **one pixel** too large or too small, and an all-masked raster. Fixing the last exposed a real defect in Tier 66 — `linear_control` reduced over an empty selection and raised; it now returns $\infty$ |
+| **W289** | **the composite is the remaining start-up cost and is not cacheable the way the operator is** | Building the twelve-grid composite costs $66$–$90$ s depending on the clock, and it is now the whole of a warm start ($96.0$ s). The operator could be cached because it is a sparse matrix and two integer arrays; the composite is a live object graph of grids, hole classifications, donor searches and index maps, and pickling it would be **a second definition of the car, free to drift from the first** — which is the defect [[hash-definitions-not-libm-outputs]] and W250 are both about | **open.** Options not yet weighed: cache the composite's *inputs* and rebuild deterministically; cache only the donor searches, which are the expensive part; or accept the minute and show a progress state, which §4.1 already anticipates for geometry changes |
+| **W288** | the learned expert reaches at most a third of this column | *(annotated)* The engine now carries the numbers in its telemetry (`coverage`) and the reason in `LEARNED_HOLE`, so the page has what it needs to label the $61\%$. Nothing draws it yet | `open` |
+| **W270** | no learned expert on the body-fitted column | *(annotated)* Unchanged, and now the referent's honest state is recorded with it: **with no learned window the all-classical march IS this march**, so the referent is refused with that reason rather than run to report an identically-zero error | `open` |
+
+### What Tier 68 did NOT do, named
+
+- **There is no page.** This is the engine; `atlas/demo_racelab/static/index.html` is untouched and the column switch, the sliders and the $61\%$ label are the next tier.
+- **No checkpoint is loaded and no window runs a learned expert**, so the mode switch, the presets and the referent have nothing to act on.
+- **The composite is not cached** (W289), so a start still costs about a minute.
+- **No knob moves anything** on this column — that is criterion 2, and its own tier.
+- **The porous column is untouched**: its engine, records, gate and bundle are exactly as they were.
+- **Nothing was downloaded or installed**, no machine was rented, the unlicensed structural checkpoint was not loaded, and nothing was pushed.

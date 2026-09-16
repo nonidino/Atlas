@@ -5261,3 +5261,35 @@ About two minutes of work, nearly all of it the composite the first stage builds
 **Changed:** `tests/test_tier45_region_assembly.py` (`car_windows` in the census), `.gitignore` (the `out/racelab16` allowlist), [[gap-worklist]], [[index]].
 
 **NOT done:** no checkpoint was loaded and nothing learned was run -- this is where a learned expert COULD sit, not a measurement of one sitting there; nothing was marched; the tilings are greedy and the counts are lower bounds, with no maximum-packing argument; the fringe question is measured but not settled, since nothing says what a learned expert should do at a window edge abutting an `INTERP` cell, which is a seam question this tier does not declare; no graph, agents or compile, so Tier 65's one-fluid-expert declaration is untouched. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 68 | the body-fitted car as a demo column, and the cache that starts it
+
+**[[poc3-racelab-bodyfitted-demo]].** Tiers 60-67 built a second column and none of it had ever been on a screen. `atlas/demo_racelab/bodyfitted.py` is the engine that puts it there, as a **second** column beside the porous one (requirements 13.3) -- the porous column is the only place section 12's window-flipping criteria can be told over fourteen windows.
+
+### Built
+
+**A cache that validates instead of trusting its key (W287, closed).** The probe operator is a function of the geometry and the raster alone, so it goes to disk: $64.3$ s becomes $0.12$ s. A key only covers the inputs somebody remembered to hash, so a loaded operator is put through Tier 66's own positive control against the **live** composite before it is used, and a sample of its masked pixels is re-probed. Planted faults, all refused: a wrong key; the column indices rolled (caught at $1.08$ on the verification composite and at $4.198$ on the car's own operator); the mask **one pixel** too large; the mask **one pixel** too small; every pixel masked. That last case exposed a real defect in Tier 66: `linear_control` reduced over an empty selection and **raised** when nothing was drawn, so a raster drawing no pixels crashed rather than failing cleanly. It now returns $\infty$ -- a picture of nothing passes no control.
+
+**A release state that belongs to its machine.** Third instance of that defect here, and the first caught by prediction rather than by a red envelope stamp. Tier 64's cached prefix is device-free at $t = 8$; the machine is sized for $u_{\text{host}} = 0.0829$ and generates only for $0.9731$ to $1.1408$ of it (W282). Released there the rotor sits at $\mathbf{1.2921}$ and is outside on **60 of 60** steps, closing at $0.0013$ a step -- about $300$ steps, three minutes, with every frame stamped `OUTSIDE` before the column said anything believable. Settled once to $t = 12$ with the devices on and cached, it starts at $\mathbf{1.0348}$ with $0$ of $30$ declined, and reloads to a delta of exactly $0.0$.
+
+**Three refusals with reasons, not silent gaps** (section 4.3's rule, applied to fields): **vorticity** is a derivative on twelve overlapping curvilinear grids, an operator this column does not have; **temperature** has no field because the coolant loop is lumped and owns no region; and the **referent march** -- whose real reason turned out not to be speed. Requirements 13.3 turned it off because it halves the frame rate, but writing the column showed the stronger argument: **with no window running a learned expert the all-classical march IS this march**, so a referent would buy a second $0.6$ s solve a step to measure an error that is identically zero. Section 5.4's third rule is untouched: the per-window one-step error needs no referent and stays on.
+
+### Measured
+
+Warm build $96.0$ s against a cold $134.1$ s; marching $1.55$-$1.84$ steps a second; all four offered fields draw the car in exactly $2{,}785$ of $2{,}785$ masked pixels. Six of seven predictions held.
+
+**K1 failed, and its own registered reason had already refuted it.** It claimed a warm build under a quarter of the cold $134.1$ s, while the *why* written beside it said the composite, flow and devices -- $69.7$ s -- would remain. $69.7/134.1 = 0.52$, double the claim, **before any measurement was taken**. Nothing checked the claim against its justification, which is this vault's own drift row in its least excusable form, both halves written in one breath. Measured: $0.716$. The structural fact the prediction should have stated is that **the composite is not cached and dominates** (**W289**) -- and caching it would mean pickling a live object graph of grids, donor searches and index maps, a second definition of the car free to drift from the first. The $0.716$ also divides a numerator taken on mains restored minutes earlier and still ramping (composite $90.1$ s, matmul $0.0155$) by a denominator taken on warm mains (composite $66.0$ s, matmul $0.0099$); on one machine state it would be about $0.52$, still twice the claim. Recorded rather than tidied away.
+
+```
+python scripts/tier68_bodyfitted_demo.py --out out/racelab17 --stages build,settle,frames,summary
+python -m pytest tests/test_tier68_bodyfitted_demo.py -p no:cacheprovider
+python scripts/vault_scan.py wiki        # 247 files, 0 problems
+python scripts/run_suite.py              # 1673 passed, 0 failed, 493 s
+```
+
+**Opened:** **W289** (the composite is the remaining start-up cost and is not cacheable the way the operator is). **Closed:** **W287**. **Annotated:** W288, W270.
+
+**Added:** `atlas/demo_racelab/bodyfitted.py`, `scripts/tier68_bodyfitted_demo.py`, `tests/test_tier68_bodyfitted_demo.py`, `out/racelab17/racelab17.json`, [[poc3-racelab-bodyfitted-demo]].
+**Changed:** `atlas/cases/car_render.py` (the cache, its validator, and `linear_control`'s empty-selection fix), `POC3-RACELAB-REQUIREMENTS.md` (amendment 13.3, the screen decisions), `.gitignore` (the `out/racelab17` allowlist, and why `out/cache/` is not committed), [[gap-worklist]], [[index]].
+
+**NOT done:** **there is no page** -- this is the engine, and the dashboard that switches columns and shows the $61\%$ is the next tier, with `static/index.html` untouched; no checkpoint is loaded and no window runs a learned expert, so the mode switch, the presets and the referent have nothing to act on; the composite is not cached, so a start still costs about a minute; **no knob moves anything** on this column, which is criterion 2 and its own tier; the porous column's engine, records, gate and bundle are exactly as they were. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.

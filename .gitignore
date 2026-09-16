@@ -542,3 +542,18 @@ out/racelab15/*
 !out/racelab16/
 out/racelab16/*
 !out/racelab16/racelab16.json
+
+# Tier 68 -- the body-fitted car as a demo column, and the caches that start it
+# (`tier68_bodyfitted_demo.py --out out/racelab17`). JSON only: the build with
+# both caches warm, the evidence that a device-free release sits outside the
+# machine's envelope and a settled one does not, every field drawn and every
+# field refused with its reason, and the validator run against the car's own
+# operator.
+#
+# `out/cache/` is NOT committed and is not meant to be: the probe operator is
+# 6.7 MB and the settled state 15 MB, both are derived, and both rebuild --
+# the operator in 63 s and the settled state in a settle march. They are
+# caches, not records.
+!out/racelab17/
+out/racelab17/*
+!out/racelab17/racelab17.json

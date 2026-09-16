@@ -1,0 +1,532 @@
+{
+ "tier": 68,
+ "prediction": [
+  {
+   "id": "K1",
+   "claim": "with both caches warm the column builds in under a quarter of the 134.1 s cold build",
+   "why": "the raster's 64.3 s becomes 0.09 s and the settle is skipped entirely, leaving the composite, the flow and the devices, which came to 69.7 s"
+  },
+  {
+   "id": "K2",
+   "claim": "a warm build does ZERO settling steps and still starts inside the machine's envelope",
+   "why": "the settled state was written at t = 12 by a march with the devices on, so there is nothing left to settle and the rotor is already in its band"
+  },
+  {
+   "id": "K3",
+   "claim": "released from the settled state, NO step of the run is outside the envelope",
+   "why": "Tier 64 admitted this arm over a window beginning at t = 12, which is where this state was written"
+  },
+  {
+   "id": "K4",
+   "claim": "every field the column OFFERS draws the car in exactly as many car-coloured pixels as the raster masks",
+   "why": "field_png writes the car's colour over the non-finite pixels the mask puts there, whatever field is being coloured"
+  },
+  {
+   "id": "K5",
+   "claim": "the cache validator rejects a corrupted operator built on the CAR, not merely on the verification composite",
+   "why": "the control it runs is the linear field laid on the live composite, which does not care how big the composite is"
+  },
+  {
+   "id": "K6",
+   "claim": "the column names a reason for every field it does not offer and for the referent it does not run",
+   "why": "section 4.3's rule is that what is not offered is greyed out WITH the reason; this applies it to fields and to the referent"
+  },
+  {
+   "id": "K7",
+   "claim": "the settled state reloads deterministically: two builds from it give a first-step rotor ratio agreeing to 1e-9",
+   "why": "the state is a saved vector and the step is the same arithmetic; nothing in the release is random"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-16T11:49:00",
+ "read_before_this_run": [
+  "Requirements 13.3 (decided 2026-09-16): both columns switchable, the 61% drawn and labelled classical-only, the referent off by default, pressure added, temperature dropped on this column because the coolant loop is lumped and owns no region.",
+  "Tier 66: the overlay is the solver's own probe operator over a raster; it costs 63 s to build at 320 x 180 and 0.0002 s to apply, and it is a function of the geometry alone -- W287 asked for it to be cached.",
+  "Tier 67: a uniform 128 x 128 window reaches at most 33.4% of this column and the body grids hold 61.0% of the unknowns, so the learned switch can never be offered near the car.",
+  "Tier 64: the machine generates only between 0.9731 and 1.1408 of its sizing inflow (W282); arm 2 was sized at u_host = 0.0829 and admitted, with every decline BEFORE its window, which began at t = 12 after releasing from the device-free prefix at t = 8.",
+  "Explored before these predictions were written: a cold build costs 134.1 s (composite 66.0, raster 64.3, flow 2.6, devices 1.1) and the raster cache turns 64.3 s into 0.09 s, a 715x saving; the cache validator catches a wrong key, corrupted weights and a mask wrong by ONE pixel in either direction; released from the DEVICE-FREE prefix the rotor-plane ratio is 1.2921 at step 1 and 1.2086 at step 60 and ALL 60 steps are outside the envelope, closing at about 0.0013 a step; released from a state settled to t = 12 with the devices on it is 1.0348 and no step of 60 is outside.",
+  "NOT measured before these predictions: what a build costs with BOTH caches warm; whether the settled state reloads deterministically; whether every OFFERED field's PNG carries the car exactly; whether the validator rejects a corrupted operator built on the CAR rather than on the verification composite; and whether a warm build does any settling at all."
+ ],
+ "machine": {
+  "python_processes_running": 1,
+  "python_processes": [
+   "\"python.exe\",\"21196\",\"Console\",\"1\",\"255,744 K\""
+  ],
+  "battery_status_raw": "2",
+  "on_mains": true,
+  "reference_matmul_1024_s": 0.015467600009287708,
+  "taken_at": "2026-09-16T11:49:00"
+ },
+ "build": {
+  "composite_s": 90.08879049999814,
+  "raster_s": 0.12060779999592341,
+  "flow_s": 4.094819999998435,
+  "devices_s": 1.5848079999996116,
+  "settle_s": 0.0,
+  "total_s": 95.88902629999211,
+  "wall_s": 95.9816060000012,
+  "grids": 12,
+  "n_unknowns": 377267,
+  "u_host_sized": 0.08293773923977797,
+  "raster_cache": {
+   "hit": true,
+   "why": "hit",
+   "path": "out\\cache\\raster_320x180_755cdaf5eb6a230fad49511ce15e6b2f.npz",
+   "key": "755cdaf5eb6a230fad49511ce15e6b2f",
+   "load_s": 0.11872929999663029,
+   "build_s": null
+  },
+  "released_from": {
+   "file": "out\\cache\\bodyfitted_t12.npz",
+   "t": 11.999999999999853,
+   "k": 321,
+   "kind": "settled with the devices on"
+  },
+  "coverage": {
+   "window_cells": 128,
+   "window_span": 2.0,
+   "n_windows": 4,
+   "windows": [
+    {
+     "j": 0,
+     "i": 523,
+     "w": 128,
+     "x0": 8.1796875,
+     "x1": 10.1796875,
+     "y0": 0.0,
+     "y1": 2.0
+    },
+    {
+     "j": 46,
+     "i": 0,
+     "w": 128,
+     "x0": 0.0078125,
+     "x1": 2.0078125,
+     "y0": 0.71875,
+     "y1": 2.71875
+    },
+    {
+     "j": 73,
+     "i": 128,
+     "w": 128,
+     "x0": 2.0078125,
+     "x1": 4.0078125,
+     "y0": 1.140625,
+     "y1": 3.140625
+    },
+    {
+     "j": 89,
+     "i": 363,
+     "w": 128,
+     "x0": 5.6796875,
+     "x1": 7.6796875,
+     "y0": 1.390625,
+     "y1": 3.390625
+    }
+   ],
+   "reach_frac_of_composite": 0.3324223958098641,
+   "tiled_frac_of_composite": 0.1737125165996496,
+   "body_grid_frac": 0.6101699857130362,
+   "body_grid_unknowns": 230197,
+   "composite_unknowns": 377267,
+   "windows_learned": 0,
+   "note": "a learned expert could cover at most reach_frac_of_composite of this column and body_grid_frac of it can never be covered at all"
+  },
+  "cold_build_s": 134.1,
+  "warm_over_cold": 0.7157465026100015
+ },
+ "stage_wall_s": {
+  "build": 95.98570409999229,
+  "settle": 30.828567000004114,
+  "frames": 0.32194710000476334,
+  "summary": 0.002590599993709475
+ },
+ "settle": {
+  "n": 30,
+  "u_host": 0.08293773923977797,
+  "band": {
+   "u_host": 0.08293773923977797,
+   "width": 0.453125,
+   "ratio_lo": 0.9731378555297852,
+   "ratio_hi": 1.1407594680786133
+  },
+  "ratio_first": 1.0348070377226377,
+  "ratio_last": 1.027694393755731,
+  "declined_steps": 0,
+  "outside_steps": 0,
+  "steps_per_second": 1.5536068147079978,
+  "reload_ratio_delta": 0.0,
+  "rows": [
+   {
+    "i": 1,
+    "t": 12.012499999999852,
+    "u_rotor": 0.08582455625812721,
+    "ratio": 1.0348070377226377,
+    "declined": [],
+    "wall_s": 0.5984108999982709,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 2,
+    "t": 12.024999999999851,
+    "u_rotor": 0.08580210426294167,
+    "ratio": 1.0345363286896772,
+    "declined": [],
+    "wall_s": 0.581909500004258,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 3,
+    "t": 12.03749999999985,
+    "u_rotor": 0.08577981972069554,
+    "ratio": 1.034267638676537,
+    "declined": [],
+    "wall_s": 0.5746366999956081,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 4,
+    "t": 12.04999999999985,
+    "u_rotor": 0.08575770149491674,
+    "ratio": 1.0340009539805044,
+    "declined": [],
+    "wall_s": 0.6536868000112008,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 5,
+    "t": 12.062499999999849,
+    "u_rotor": 0.08573574750296242,
+    "ratio": 1.03373624949066,
+    "declined": [],
+    "wall_s": 0.6213430000061635,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 6,
+    "t": 12.074999999999848,
+    "u_rotor": 0.08571395584901406,
+    "ratio": 1.03347350234867,
+    "declined": [],
+    "wall_s": 0.5845656000019517,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 7,
+    "t": 12.087499999999848,
+    "u_rotor": 0.0856923246432495,
+    "ratio": 1.0332126897685003,
+    "declined": [],
+    "wall_s": 0.5823796000040602,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 8,
+    "t": 12.099999999999847,
+    "u_rotor": 0.08567085198405694,
+    "ratio": 1.0329537888219664,
+    "declined": [],
+    "wall_s": 0.7668626999948174,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 9,
+    "t": 12.112499999999846,
+    "u_rotor": 0.08564953595864452,
+    "ratio": 1.032696776446083,
+    "declined": [],
+    "wall_s": 0.8434659000049578,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 10,
+    "t": 12.124999999999845,
+    "u_rotor": 0.08562837464403061,
+    "ratio": 1.0324416294550043,
+    "declined": [],
+    "wall_s": 0.610470700004953,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 11,
+    "t": 12.137499999999845,
+    "u_rotor": 0.08560736610820731,
+    "ratio": 1.0321883245540524,
+    "declined": [],
+    "wall_s": 0.6524323000048753,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 12,
+    "t": 12.149999999999844,
+    "u_rotor": 0.08558650841180739,
+    "ratio": 1.0319368383598166,
+    "declined": [],
+    "wall_s": 0.5740962999989279,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 13,
+    "t": 12.162499999999843,
+    "u_rotor": 0.08556579960982685,
+    "ratio": 1.0316871474209226,
+    "declined": [],
+    "wall_s": 0.6067270999919856,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 14,
+    "t": 12.174999999999843,
+    "u_rotor": 0.08554523775328911,
+    "ratio": 1.0314392282380969,
+    "declined": [],
+    "wall_s": 0.819123799999943,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 15,
+    "t": 12.187499999999842,
+    "u_rotor": 0.08552482089088217,
+    "ratio": 1.0311930572839079,
+    "declined": [],
+    "wall_s": 0.6126423000096111,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 16,
+    "t": 12.199999999999841,
+    "u_rotor": 0.08550454707057925,
+    "ratio": 1.0309486110223054,
+    "declined": [],
+    "wall_s": 0.6078161000041291,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 17,
+    "t": 12.21249999999984,
+    "u_rotor": 0.08548441434116139,
+    "ratio": 1.0307058659269797,
+    "declined": [],
+    "wall_s": 0.643109500000719,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 18,
+    "t": 12.22499999999984,
+    "u_rotor": 0.08546442075362773,
+    "ratio": 1.0304647984983648,
+    "declined": [],
+    "wall_s": 0.6362775999878068,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 19,
+    "t": 12.237499999999839,
+    "u_rotor": 0.08544456436250839,
+    "ratio": 1.030225385279469,
+    "declined": [],
+    "wall_s": 0.725254799996037,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 20,
+    "t": 12.249999999999838,
+    "u_rotor": 0.08542484322753002,
+    "ratio": 1.029987602875956,
+    "declined": [],
+    "wall_s": 0.6800125000008848,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 21,
+    "t": 12.262499999999838,
+    "u_rotor": 0.08540525541306941,
+    "ratio": 1.0297514279495574,
+    "declined": [],
+    "wall_s": 5.118130999995628,
+    "ilu_s": 4.4724046000046656
+   },
+   {
+    "i": 22,
+    "t": 12.274999999999837,
+    "u_rotor": 0.08538579922185255,
+    "ratio": 1.029516840035838,
+    "declined": [],
+    "wall_s": 0.6084594999992987,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 23,
+    "t": 12.287499999999836,
+    "u_rotor": 0.08536647202827058,
+    "ratio": 1.0292838074772088,
+    "declined": [],
+    "wall_s": 0.7240471000113757,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 24,
+    "t": 12.299999999999836,
+    "u_rotor": 0.0853472726450819,
+    "ratio": 1.029052315958816,
+    "declined": [],
+    "wall_s": 0.6436635000136448,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 25,
+    "t": 12.312499999999835,
+    "u_rotor": 0.08532819894272803,
+    "ratio": 1.028822339804068,
+    "declined": [],
+    "wall_s": 0.8808591999986675,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 26,
+    "t": 12.324999999999834,
+    "u_rotor": 0.08530924900905837,
+    "ratio": 1.0285938559577108,
+    "declined": [],
+    "wall_s": 0.5885041000001365,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 27,
+    "t": 12.337499999999833,
+    "u_rotor": 0.08529042096719236,
+    "ratio": 1.0283668417897507,
+    "declined": [],
+    "wall_s": 0.643782300001476,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 28,
+    "t": 12.349999999999833,
+    "u_rotor": 0.08527171295530851,
+    "ratio": 1.0281412748517642,
+    "declined": [],
+    "wall_s": 0.8354052000067895,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 29,
+    "t": 12.362499999999832,
+    "u_rotor": 0.08525312312621675,
+    "ratio": 1.027917132871742,
+    "declined": [],
+    "wall_s": 0.5920765000046231,
+    "ilu_s": 0.0
+   },
+   {
+    "i": 30,
+    "t": 12.374999999999831,
+    "u_rotor": 0.08523464964749453,
+    "ratio": 1.027694393755731,
+    "declined": [],
+    "wall_s": 0.6720997999946121,
+    "ilu_s": 0.0
+   }
+  ],
+  "from_the_device_free_prefix": {
+   "ratio_first": 1.2920886,
+   "ratio_at_60": 1.2086,
+   "declined_steps_of_60": 60,
+   "note": "explored: releasing from prefix_t8 is outside the band on every one of 60 steps and closes at about 0.0013 a step, so about 300 steps -- three minutes -- would pass before the column said anything trustworthy"
+  }
+ },
+ "frames": {
+  "fields": {
+   "speed": {
+    "bytes": 41575,
+    "lo": 0.0,
+    "hi": 2.0,
+    "clipped_pixels": 3073,
+    "field_max": 2.3278801918338927,
+    "car_pixels": 2785,
+    "masked": 2785,
+    "car_matches_mask": true
+   },
+   "u": {
+    "bytes": 29479,
+    "lo": -0.5951221142508417,
+    "hi": 2.162511462473668,
+    "clipped_pixels": 549,
+    "field_max": 2.317542472587632,
+    "car_pixels": 2785,
+    "masked": 2785,
+    "car_matches_mask": true
+   },
+   "v": {
+    "bytes": 36924,
+    "lo": -0.24921590220114717,
+    "hi": 0.5792337628873528,
+    "clipped_pixels": 549,
+    "field_max": 1.0909859831771778,
+    "car_pixels": 2785,
+    "masked": 2785,
+    "car_matches_mask": true
+   },
+   "p": {
+    "bytes": 22930,
+    "lo": -0.007706369960115081,
+    "hi": 2.5176814472576936,
+    "clipped_pixels": 549,
+    "field_max": 9.410872054874664,
+    "car_pixels": 2785,
+    "masked": 2785,
+    "car_matches_mask": true
+   }
+  },
+  "masked": 2785,
+  "offered": [
+   "speed",
+   "u",
+   "v",
+   "p"
+  ],
+  "holes": {
+   "vorticity": "a derivative on twelve overlapping curvilinear grids, which is an operator this column does not have -- not another sample of the probe operator",
+   "temperature": "the coolant loop is lumped and owns no region, so there is no thermal field over the fluid; the return, block and disc temperatures are numbers in the telemetry instead",
+   "error": "the all-classical referent IS this march until a window runs a learned expert, so the error field would be identically zero"
+  },
+  "referent": {
+   "on": false,
+   "available": false,
+   "why": "no window is running a learned expert, so the all-classical referent IS this march and its error is identically zero; running it would cost a second solve a step to measure nothing"
+  },
+  "learned_hole": "Poseidon-T accepts nothing but a uniform 128 x 128 grid.  The body-fitted grids -- the boundary layers, the wheel clearances and the cooling duct -- hold 61.0% of this column's unknowns, and a uniform grid cannot accept a curvilinear patch in any arrangement, so no tiling however clever can reach them (Tier 67, W288).",
+  "telemetry_keys": [
+   "coolant_return_t",
+   "coverage",
+   "drag",
+   "envelope",
+   "learned_hole",
+   "load",
+   "outside_steps",
+   "q_machine",
+   "referent",
+   "shaft_power",
+   "step_i",
+   "step_s",
+   "steps_per_second",
+   "t",
+   "u_at_the_core_plane",
+   "u_at_the_rotor_plane"
+  ],
+  "validator": {
+   "tested": true,
+   "refused": true,
+   "why": "failed the linear control at 4.198e+00"
+  }
+ },
+ "verdicts": {
+  "K1": false,
+  "K2": true,
+  "K3": true,
+  "K7": true,
+  "K4": true,
+  "K5": true,
+  "K6": true
+ },
+ "verdicts_missing": []
+}

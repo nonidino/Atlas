@@ -85,13 +85,19 @@ from . import car_union as CU
 #: page scales down anyway.
 NX, NY = 320, 180
 
-#: What a cache key for the built operator would have to carry, if one is ever
-#: added: the operator is a function of the geometry and the raster ALONE.
+#: What a cache key for the built operator carries: the operator is a function of
+#: the geometry and the raster ALONE.
 RASTER_CACHE_NOTE = (
     "racelab.geometry_fingerprint(), the grid settings car_solids.GRID, the "
     "hole margin, the stencil width, and (nx, ny, extent) -- but NOT the state, "
     "the time, or anything the march changes"
 )
+
+#: Bump when anything about how the operator is BUILT changes -- the donor
+#: search, the grid order, the mask rule.  A key describes the inputs; this
+#: describes the construction, and a cache that forgets it would serve an
+#: operator built by code that no longer exists.
+RASTER_CACHE_VERSION = 1
 
 
 class CompositeRaster:
@@ -211,6 +217,12 @@ def linear_control(raster: "CompositeRaster", a: float = 0.37, b: float = -0.81,
     """
     ov = raster.ov
     ok = ~raster.mask
+    if not ok.any():
+        # a raster that draws nothing cannot pass a control, and must not be
+        # allowed to pass it vacuously by reducing over an empty selection
+        return {"linear_max_err": float("inf"), "quadratic_max_err": float("inf"),
+                "a": a, "b": b, "c": c, "drawn": 0,
+                "note": "every pixel is masked; there is nothing to check"}
     got = raster.sample(gather(ov, lambda X, Y: a * X + b * Y + c))
     want = (a * raster.px + b * raster.py + c).reshape(raster.ny, raster.nx)
     lin = float(np.max(np.abs(got[ok] - want[ok])))
@@ -315,3 +327,173 @@ def field_png(a: np.ndarray, lo: float, hi: float, *, lut: str = "speed",
     buf = io.BytesIO()
     Image.fromarray(rgb[::-1], mode="RGB").save(buf, format="PNG", compress_level=1)
     return buf.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# the cache (W287), and why it validates instead of trusting its key
+# ---------------------------------------------------------------------------
+
+
+def raster_cache_key(ov, nx: int, ny: int, extent, geometry: dict | None = None) -> str:
+    """A hash of everything the operator depends on -- `RASTER_CACHE_NOTE`.
+
+    Hashed over DEFINITIONS: the car's fingerprint (itself a hash of the built
+    car rather than of segments computed from it, W250), the grid settings, the
+    integers.  No derived float array goes in, because `cos` and `atan2` differ
+    in the last bit between this machine and glibc and a key that moved with
+    them would miss on the very cache it had just written.
+    """
+    import hashlib
+    import json as _json
+
+    from . import car_solids as CS
+    from . import racelab as RL
+
+    payload = {
+        "version": RASTER_CACHE_VERSION,
+        "geometry": RL.geometry_fingerprint(geometry=geometry),
+        "grid": {k: CS.GRID[k] for k in sorted(CS.GRID)},
+        "hole_margin": float(getattr(ov, "hole_margin", float("nan"))),
+        "width": int(getattr(ov, "width", -1)),
+        "n_unknowns": int(ov.n_unknowns),
+        "grids": [g.name for g in ov.grids],
+        "raster": [int(nx), int(ny), [float(v) for v in extent]],
+    }
+    blob = _json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(blob).hexdigest()[:32]
+
+
+def save_raster(raster: "CompositeRaster", path: str, key: str) -> str:
+    """Write a built operator beside its key.
+
+    `np.savez` appends ``.npz`` to whatever name it is given, so the temporary
+    file is named WITH the suffix and `os.replace` is given that same name --
+    otherwise the replace raises `FileNotFoundError` and a retry wrapper that
+    only catches `PermissionError` does not see it.
+    """
+    import os
+
+    d = os.path.dirname(os.path.abspath(path))
+    if d:
+        os.makedirs(d, exist_ok=True)
+    tmp = path + ".tmp.npz"
+    M = raster.M.tocsr()
+    np.savez(tmp, key=np.array(key), data=M.data, indices=M.indices,
+             indptr=M.indptr, shape=np.asarray(M.shape, dtype=np.int64),
+             mask=raster.mask, source=raster.source,
+             nx=np.array(raster.nx), ny=np.array(raster.ny),
+             extent=np.asarray(raster.extent, dtype=float),
+             grid_names=np.array(raster.grid_names, dtype=object), allow_pickle=True)
+    os.replace(tmp, path)
+    return path
+
+
+def load_raster(ov, path: str, key: str, *, validate: bool = True
+                ) -> tuple["CompositeRaster | None", str]:
+    """Rebuild a `CompositeRaster` from disk, or say why not.
+
+    Returns ``(raster, why)``; ``why`` is ``"hit"``, or the reason it was
+    rejected.
+
+    **It validates rather than trusting the key.**  A key describes the inputs
+    someone remembered to hash; a cache that is wrong because of an input nobody
+    thought of is exactly the silent-wrongness this package refuses.  So a loaded
+    operator is put through the tier's own positive control -- a linear field
+    laid on the LIVE composite must come back through it at rounding -- and its
+    mask is checked against the live composite's hole count.  Both are
+    milliseconds against a 63 s rebuild, so validating always is free.
+    """
+    import os
+
+    if not os.path.isfile(path):
+        return None, "no cache file"
+    try:
+        z = np.load(path, allow_pickle=True)
+        if str(z["key"]) != key:
+            return None, "key differs (the geometry or the raster changed)"
+        import scipy.sparse as sp
+
+        M = sp.csr_matrix((z["data"], z["indices"], z["indptr"]),
+                          shape=tuple(int(v) for v in z["shape"]))
+        if M.shape[1] != ov.n_unknowns:
+            return None, f"operator has {M.shape[1]} columns, composite has {ov.n_unknowns}"
+        r = CompositeRaster.__new__(CompositeRaster)
+        r.ov = ov
+        r.nx = int(z["nx"])
+        r.ny = int(z["ny"])
+        r.extent = tuple(float(v) for v in z["extent"])
+        x0, x1, y0, y1 = r.extent
+        r.xs = np.linspace(x0, x1, r.nx)
+        r.ys = np.linspace(y0, y1, r.ny)
+        PX, PY = np.meshgrid(r.xs, r.ys)
+        r.px, r.py = PX.ravel(), PY.ravel()
+        r.M = M
+        r.mask = np.asarray(z["mask"], dtype=bool)
+        r.source = np.asarray(z["source"], dtype=np.int64)
+        r.grid_names = [str(s) for s in z["grid_names"]]
+        r.build_s = 0.0
+    except Exception as exc:                                     # pragma: no cover
+        return None, f"unreadable: {type(exc).__name__}: {exc}"
+    if validate:
+        # (0) a degenerate mask first, because a raster that draws nothing would
+        # otherwise reach the control with an empty selection
+        drawn = int((~r.mask).sum())
+        if drawn == 0:
+            return None, "every pixel is masked"
+        if int(r.mask.sum()) == 0:
+            return None, "nothing is masked; this composite has no bodies"
+        # (a) the operator itself, against the LIVE composite.  `gather` lays a
+        # plane on the live nodes, so if the geometry moved, M's columns point
+        # at different nodes and the plane comes back bent.  This also catches a
+        # mask that is too SMALL: an unmasked pixel whose row is empty returns
+        # 0, which is not the plane.
+        c = linear_control(r)
+        if not (c["linear_max_err"] < 1e-10):
+            return None, f"failed the linear control at {c['linear_max_err']:.3e}"
+        # (b) a mask that is too LARGE hides car and (a) cannot see it, because
+        # it never reads a masked pixel.  So a sample of masked pixels is put
+        # back through the donor search: every one must still be unreachable.
+        # About 1 ms a point, so 256 of them against a 63 s rebuild.
+        idx = np.flatnonzero(r.mask.ravel())
+        take = idx[:: max(1, idx.size // 256)][:256]
+        _M, missing, _s = CU.probe_matrix_masked(ov, r.px[take], r.py[take])
+        if not bool(np.all(missing)):
+            n = int((~missing).sum())
+            return None, f"{n} of {take.size} sampled masked pixels are reachable now"
+    return r, "hit"
+
+
+def cached_raster(ov, nx: int = NX, ny: int = NY, extent=None, *, path: str | None = None,
+                  geometry: dict | None = None, validate: bool = True
+                  ) -> tuple["CompositeRaster", dict]:
+    """The operator, from disk if it is there and sound, else built and written.
+
+    Closes **W287**: the operator is a function of the geometry and the raster
+    alone, costs 63 s to build at 320 x 180 and 0.0002 s to apply, so a demo that
+    rebuilt it at every start would pay a minute for nothing.
+    """
+    import os
+    import time as _time
+
+    bg = ov.bg
+    if extent is None:
+        extent = (float(bg.X.min()), float(bg.X.max()),
+                  float(bg.Y.min()), float(bg.Y.max()))
+    key = raster_cache_key(ov, nx, ny, extent, geometry=geometry)
+    if path is None:
+        path = os.path.join("out", "cache", f"raster_{nx}x{ny}_{key}.npz")
+    t0 = _time.perf_counter()
+    r, why = load_raster(ov, path, key, validate=validate)
+    if r is not None:
+        return r, {"hit": True, "why": why, "path": path, "key": key,
+                   "load_s": _time.perf_counter() - t0, "build_s": None}
+    t0 = _time.perf_counter()
+    r = CompositeRaster(ov, nx, ny, extent)
+    build_s = _time.perf_counter() - t0
+    try:
+        save_raster(r, path, key)
+        wrote = True
+    except Exception as exc:                                     # pragma: no cover
+        wrote = f"{type(exc).__name__}: {exc}"
+    return r, {"hit": False, "why": why, "path": path, "key": key,
+               "load_s": None, "build_s": build_s, "wrote": wrote}

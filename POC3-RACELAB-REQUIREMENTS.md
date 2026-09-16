@@ -406,3 +406,21 @@ not exist.
 | §3.1 the car | plates of zero thickness, porous | **Solids by a declared, editable rule**: wing elements aerofoil-like at about 12% of the chord, body and floor panels a few cells thick, touching shell plates welded into one closed body, every thickness in `car_geometry.json`; **wheels about 2% of their radius above the road, rolling at road speed**. | **Built** in Tier 62. |
 | §3.4 cooling duct | a duct fed by the flow through porous plates | **Openings cut by the rule.** With solid walls the drawn pod has no inlet or outlet and its duct flowed backwards in Tier 62 (W278). The solids rule cuts an inlet in the body shell ahead of the duct and an outlet behind it, sized by editable numbers in `car_geometry.json`, and the duct's flow is measured before the radiator core and the turbine are put in it. **Then (after Tier 63's measurement): the weaker flow is accepted for now and fixed later** (W281) — the devices go in at the flow the duct has. | **Built** in Tier 63: the duct flows forward at a fifth of the porous column's flow, not yet settled; the fix is deferred by decision. |
 | §3.1 front wing | the drawn plates | **A better grid generator**, so the front wing keeps its drawn shape. Welded, its endplate outline could only be gridded after a fillet filled it 92%, and the wedge that marched made lift (W275, W279). Grids that wrap the notch without filling it are built and verified, and the car is re-gridded on them. | not started |
+
+## 13.3 2026-09-16 — the screen, once the body-fitted column changed what a window is
+
+Sections 5 and 6 were written when the fluid was fourteen rectangles on one
+lattice. Tier 65 made the body-fitted column **one** fluid expert, Tier 66 gave
+it an overlay, and Tier 67 measured that a uniform $128\times128$ window can
+reach at most **33.4%** of its unknowns — the body-fitted grids hold **61.0%**,
+and a uniform grid cannot accept a curvilinear patch in any arrangement (W288).
+These rows answer what the screen does about that.
+
+| section | as written | decided | status |
+|---|---|---|---|
+| §6 which column | one demo, the porous column | **Both, switchable.** The porous demo stays exactly as it is — it is the only place §12's criteria 3 and 4 can be shown over fourteen windows — and the body-fitted column is added as a second selectable column, where the solids, the duct and the devices reach the screen for the first time. *Rejected: replacing the porous demo, which would gut the window-flipping story; and leaving the body-fitted column with no dashboard at all.* | not started |
+| §5.1 the region with no learned option | a per-window mode tint everywhere | **The 61% is drawn and labelled classical-only**, with the figure and the reason on screen, extending §4.3's existing rule (a family with no learned option is greyed out **with the reason**, never hidden) from families to regions. *Rejected: tinting only the learned windows, which lets a viewer read "untinted" as classical-by-choice rather than learned-is-impossible; and reporting a coverage fraction with no spatial marking.* | not started |
+| §5.3 the referent march | rms against an all-classical march, always | **Off by default, one click on.** The body-fitted column marches at about $0.6$ s a step, so a second march halves the frame rate; the screen says so when it is on. §5.4's third rule is untouched — the **per-window one-step error needs no referent and stays always on**, and it remains the number to trust most. | not started |
+| §5.1 pressure | listed as a field | **Added.** The demo's field list omitted it; `car_render` already samples $P$, so it costs nothing. | not started |
+| §5.1 temperature | "where a thermal agent owns the region" | **Dropped on this column, and recorded as a hole.** The coolant loop is lumped and owns no region, so there is no thermal field to draw. Coolant return, disc and block temperatures show as **numbers** in the global telemetry, which is what §5.3 asks for anyway. | not started |
+| §3.2 and §9 phase 4, the 3-D car | a real Formula One CAD model | **On hold** at the user's instruction (2026-09-16). No licence check and no download is to be raised until they re-open it. | on hold |
