@@ -163,6 +163,19 @@ ADDED_AFTER_CAPTURE = {
                   "CaseGraph and declares no region; it READS racelab's bodies and "
                   "car_geometry.json to shape the solids, and changes neither, so the "
                   "W189 byte-identity capture below is untouched by it",
+    "rocket_experts": "Tier 76 (CS-21): the rocket's first REAL experts -- the "
+                      "airframe shell and the combustion chamber, wrapping the "
+                      "build repo's `thermostruct2d` and `compressible2d` "
+                      "unmodified on `grid.build_blocks`' own meshes. It builds "
+                      "NO CaseGraph for the capture to see: `build_bc_graph` "
+                      "makes a two-agent seam graph for the probe and is called "
+                      "by the script and the tests, never by the census. It "
+                      "changes no other case. `rocket` itself DOES move -- Tier "
+                      "76 changed its default from the fixture to the real "
+                      "experts -- and rather than spend an exemption on it, "
+                      "`w189_artifact_control` pins the capture to "
+                      "`declarations='fixture'`, which is the pre-change graph "
+                      "bit for bit, so this control still compares 40 of 40",
 }
 
 #: **The two artifacts Tier 49's W194 moves, and the reason.**  `L7/R9`'s premise

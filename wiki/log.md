@@ -5552,3 +5552,208 @@ Fixed by rounding the pitch at $10^{-12}$ degrees, six orders above `atan`'s las
 **Changed:** `scripts/build_racelab_bundle.py` (Tiers 58-73 in every list, the settled field resolved and checked against the car, the generated ignore allowlist, and the `ls-files` assertion in `commit`), `atlas/demo_racelab/bundle/requirements.txt` (**`shapely==2.1.0`**, with why nothing import-time could see it), `tests/test_tier57_racelab_bundle.py` (the allowlist assertion rewritten for where the allowlist now lives, diagnosis kept), `atlas/demo_racelab/bodyfitted.py` (`commit_check`), `atlas/demo_racelab/bodyfitted_server.py` (the check before the rebuild, `run`, and this column's own `socket_check`), `atlas/demo_racelab/__main__.py` (`--column`), `atlas/demo_racelab/static/bodyfitted.html` (the refusal on the button), `atlas/demo_racelab/bundle/run.py` (the body-fitted section of `--check`, on both paths), `atlas/demo_racelab/bundle/gitignore`, `atlas/demo_racelab/bundle/README.md`, [[gap-worklist]], [[index]].
 
 **NOT done:** **W293 is not closed** -- the walls-ramped spin-up is still a script, so a new geometry still cannot be marched, only refused earlier; **P1-P7 are not re-run** on the body-fitted column, so criterion 5 leans on the tier records rather than on the gate; W275 is untouched and the front wing still carries the filled wedge; **macOS is audited and branch-tested but NOT RUN** -- no Mac executed the demo, and criterion 1's "Windows and macOS **or** Linux" is satisfied by Linux; the branch is built locally and **not pushed**. Nothing was downloaded into this repository and no machine was rented; the Linux install went into `~/poc3-bundle/.venv` only, with the user's approval, and the unlicensed structural checkpoint was not loaded.
+
+---
+
+## [2026-09-17] tier 76 | the rocket's first real experts, and the wall that was never listening
+
+**CS-21**, and rung **R0** of `ROCKET-POC-PLAN.md`. Full record on [[case-study-rocket-bc-seam-atlas-0.1]]. Build repo pinned at `0a407b7`.
+
+**On timings.** 1400 MHz of a 3800 MHz maximum throughout, and **the power state changed mid-session** — battery at 46% when the first arms ran, AC at 98% by the last — so every duration here spans two power states. Costs are quoted in **solver calls and CFL sub-steps**, which are deterministic; the seconds are commentary, and the tier measured how far they drift (a cost *ratio* moved $87.0 \to 78.4$ across two runs of one identical sweep whose sub-step ratio was $84.75$ both times).
+
+*(Filing note: Tier 75's macOS record was appended under the Tier 74 heading rather than getting its own. The log is append-only so it is left as it stands, and said here rather than silently.)*
+
+### What was wired
+
+`atlas/cases/rocket.py` had been a **declaration exercise** since it was written: every agent's `boundary_response` was `capability.linear_response` on a seeded random matrix, so the seven agents, seven typed edges and 49 decertifications all described a record that nothing physical backed. **No rocket physics had ever been run through Atlas.**
+
+The **b–c seam** now is. `compressible2d.Compressible2D` on the $112\times80$ chamber against `thermostruct2d.ThermoStruct2D` on the $232\times8$ airframe panel, both imported verbatim under the private name `atlas_build_solvers`, both meshed by `grid.build_blocks` — the same call `data/generate.py` builds its own solvers from — at the midpoint of `data/sweep.py`'s own declared corpus range ($p_c = 5\times10^{6}$ Pa, $T_c = 2800$ K, $\gamma = 1.22$, $R = 361$). The seam is **112 gas cells against 14 airframe cells** over the same $0.28$ m, genuinely non-conforming.
+
+### R0's four gates, all met
+
+$\beta = 0.149619$, $\kappa = 2.22739$, **null dimension $0$ against a declared $0$** (excess $0$), $\omega = 0.302781$, at $\dim M + 1 = \mathbf{9}$ solver calls per block and $306$ CFL sub-steps for the gas — the cost in both currencies the gate asks for.
+
+**The must-pass control.** The shell's conduction step is linear, so its response exists in closed form; the probed block reproduces an independently assembled operator to $8.29\times10^{-9}$, at the $10^{-8}$ floor that CG's `rtol = 1e-10` over the probe's $10^{-2}$ step sets. The same probe against the *affine* operator is off by $0.99982$, which is the control's own control: the declared bond $(T,\ q_n/T)$ really is nonlinear, and had it not been, gate 4 would have passed for a reason other than the one claimed.
+
+**The must-fail control.** W66's three legs, on real solvers rather than fixtures built to fail: one side's `response_half` flipped **refuses** (`L3/C9`), and **both sides flipped passes silently**.
+
+### W301 — the finding nobody was looking for
+
+`compressible2d` line 170 sets the isothermal ghost to $T_g = \max(2T_{\text{wall}} - T_i,\ 20)$. The clamp is a **correct positivity guard** — below $T_i/2$ a linear ghost is negative and $\rho_g = p/(RT_g)$ divides by it. What it also does is turn the Dirichlet channel into a **saturated** one below $T_{\text{wall}} = (T_i+20)/2$, with no diagnostic anywhere.
+
+At the rocket's own probe base the post-step gas field is **bitwise identical** for a $300$ K and a $449.42$ K wall. A one-cell poke moves **1 of 112** response cells. The probed block reproduces the **frozen-field** algebraic derivative of `generate.py::_wall_flux` to $\mathbf{0.999996923}$. **The gas block of the seam operator contains no solver.**
+
+**And `thermal_seam` is in the same regime.** This vault's flagship multiphysics case study, whose numbers W68, W71, W74, W83, W86 and W87 all quote: $T_i = 900$ K, threshold $460.0$ K, declared base $400$ K — bitwise identical from $300$ to $459$ K, first difference at **exactly** $460.00$ K, and its one-cell poke reproduces the $9.3\times10^{-2}$ [[tier0-measurements]] recorded. **What is new is the mechanism, not the observation.** `probe.operator_content`'s own docstring already records that gas block as *"exactly diagonal — a delta at one seam cell moves that cell's flux by 9.3e-2 and every other cell by bit-zero"*, and nothing here overturns that. What it lacked was a cause, and the cause it was read with — *"the difference of two film coefficients"* — is a statement about competing **scales**, of which there are none: the trace never enters the solver, so the block would look identical for **any** interior solver, changes at a **threshold** rather than a gradient, and has no operator underneath for $\omega$ to measure.
+
+**Nothing catches it.** `is_empty` misses it ($\Lambda \ne 0$, the algebraic term depends on the trace). `operator_content` — the statistic built for exactly this job — reads $\omega = 0.3028$, three hundred times above its floor, because a saturated channel whose film coefficient varies $2.01\times$ along the wall is *diagonal but not scalar*. **The discriminator already exists and has never been read**: `SupportReach.exact_zeros` $= n-1$, emitted by the probe since Tier 0 and consumed by no layer. Measured $111/111$ and $47/47$ on the two gas agents, $0/13$ on the shell.
+
+**[AI Inference]:** the saturation is undetectable through the L1 interface *by construction* — "did the trace reach the solver's state" is a question about internals that L1 forbids asking — so `exact_zeros` is a necessary, not sufficient, condition. Unverified beyond the three agents measured.
+
+### R1 — the ledger, one factor at a time, and it is additive
+
+| arm | decerts | what moved |
+|---|---|---|
+| known fields | $-1$ | `L4/R2b/W46` |
+| `NON_OVERLAPPING` | $-1$ | `L2/C2` $-1$, `L2/R10/halo` $-1$, `L2/C3/W57` $+1$ |
+| YAML clocks (50:1) | $0$ | **nothing** |
+| `TIME_INTEGRATED` | $0$ | `L7/R9` $\to$ `L7/R9/quadrature` |
+| `storage`+`validity`, all 7 **[counting control]** | $\mathbf{-34}$ | `L1/E7` $-7$, `L1/C8` $-7$, `L3/C8` $-19$, `L1/3.4` $-1$ |
+
+**A claim in both plan documents is wrong.** `ROCKET-POC-PLAN.md` §2 and `ATLAS-CLASSICAL-PLAN.md` §7 both say declaring `time_discretization` *"lifts both `L4/R2b/W46` AND `L2/R10/halo`"*. It lifts **one**; `L2/R10/halo` is the *decomposition's*. What declaring the clock does instead is make that rule **decidable**, and the answer is that the gas agents need an overlap of **33,446 cells** against a chamber of $8{,}960$.
+
+**A third was wrong and was invisible, and correcting it moved a boundary rather than a count.** `data/generate.py` sets `rxn = self.reaction if a == "a" else None`, so `a` is the only REACTING agent; the fixture labelled `a`, `b` and `e` alike, which is wrong for two of the three and could not be seen because it made `a-b` and `e-b` agree. Read off source, the multiphysics seams move from $\{\texttt{b-c},\texttt{c-d},\texttt{e-f}\}$ to $\{\texttt{a-b},\texttt{b-c},\texttt{c-d}\}$ — the nozzle outflow and the plume stop being a family boundary, and the one place a reaction term is genuinely on one side only becomes one. `L1/E3` still reports **7** records, so a count alone conceals it entirely.
+
+**And $\tau$ stops being undefined anywhere in the graph:** `tau_undefined_seams` goes from **7 to 0**. E3 still *fails* — the families do differ — but it now emits *"**tau is NOT undefined here**: both sides declare `lambda_ref`, so a reference PAIR exists and tau is measurable against the tightly coupled trajectory."* That is W83's move made for a rocket. The caution belongs with it: five of the seven `lambda_ref` declarations name solvers the agent is not yet running, so this is the paperwork half again, and W69's column not a free move.
+
+**Two more declarations were wrong rather than absent.** The clocks (the fixture's 100:1 against the YAML's declared 50:1 — corrected, and it buys *nothing*, which is said because it is true), and the decomposition: `domains.verify` asserts **at import** that every active cell centre lies in exactly one agent's domain, so the rocket is a disjoint partition and `OVERLAPPING` was wrong.
+
+**The warning the ledger carries.** 34 of 49 decertifications — **69%** — turn on two fields that a graph of seeded random matrices can declare, and the compiler cannot tell. That is W69's promotion problem raised from one field to a whole layer, and the only defence now in place is that `rocket.build` names its declaration level in the graph's own note.
+
+### The verdict, and it is not monotone
+
+`python -m atlas rocket`: **`refuse`, 10 refusals, 43 decertifications**, from 49. Identical at the YAML's $1$ ms gas clock ($662.76$ s to compile) and at the reduced $10^{-5}$ s cadence ($6.7$ s). Six went away and **two arrived that the fixture could not have produced**: `L4/probe-base` (the two sides linearised $1374$ apart on $M$, **876%** of the base norm — W74's class, against `thermal_seam`'s $500$ K) and `L4/E7/passivity` (defect $3.966\times10^{-1}$).
+
+**And the fixture was not neutral.** The envelope stamp moves once in the whole tier, at the step where physics arrives: **E7 goes `holds` → `fails`**, and only at the `real` level. `_responder` built every stub as $A = g(A_0 + A_0^{\mathsf T} + 3I)$ — symmetric and diagonally dominant, hence positive definite by construction — so the passivity hypothesis, the one deciding whether the $L \le 1$ branch of the master bound is available, held on this graph *for a reason that had nothing to do with a rocket*, and sat green through every compile since the file was written. Nothing was wrong with writing it that way; the lesson is narrower and worth carrying: **the hypotheses a stub satisfies are the ones nobody has tested.**
+
+`L2/InterfaceMotion` still refuses **nine** ports at every declaration level, pinned by a test, **because it should** — Stage C is untouched and the refusal is the product.
+
+### Two numbers that generalise past this seam
+
+The **probe cadence** costs $\mathbf{0.294\%}$ of $\beta$ over a $100\times$ range and $84.75\times$ in **sub-steps** — quoted in sub-steps because two runs of the identical sweep gave wall-clock ratios of $87.0$ and $78.4$, an $11\%$ spread, against a sub-step ratio of $84.75$ both times. The probe base's **burn-time horizon** costs $\mathbf{26.496\%}$. **The horizon matters about $90\times$ more than the cadence**, which is the ordering a reader would be least likely to guess. A $\beta$ here carries its burn time or it carries nothing — CS-10's convention, applied to a base rather than an output.
+
+The shell has **no steady state during a burn** (the wall is still rising at $100$ s), and its own `validity` predicate **declines at $t = 10.35$ s**, when the uncooled Al–Li airframe reaches solidus. That is what a validity predicate is for, and it earned its keep the first time it was asked.
+
+### Predictions
+
+**Fifteen registered before any arm ran; eleven held, four were refuted, and all four are diagnosed.** P3 ($\omega < 0.10$ on the shell, measured $0.3151$) — the physics was right and the inference was not: force $h$ uniform and $\omega$ falls to $\mathbf{0.081904}$, inside the predicted range, with the off-diagonal fraction barely moving. P4 (13 calls at $\dim M = 12$) — the *rule* $m+1$ held and the $m$ did not, because the fixture's uniform `M_EFF = 12` is unattainable on a wall of 14 cells. P9 (above). P13 (an `L2/R10` refusal from the embedded shell) — the baseline output already said why not, and I did not read it carefully enough: R10 is checked against agents the decomposition **cuts**, and `c` owns its whole region (W136).
+
+**Opened:** **W300** (the seam), **W301** (the saturated channel and its `exact_zeros` detector), **W302** (the declaration ledger), **W303** (`effort_normal` at b–c, to settle whether the passivity defect is the convention or a real mode), **W304** (a common `seam_base`), **W305** (MECH and the trajectory agent).
+
+### How to reproduce
+
+```
+python scripts/w300_rocket_bc_seam.py --stage all --json out/w300.json
+python scripts/w302_declaration_ledger.py --with-real --json out/w302.json
+python -m atlas rocket                   # refuse, 10 refusals, 43 decertifications
+python -m pytest tests/test_tier76_rocket_experts.py -q     # 29 passed
+python scripts/scan_control_chars.py <page>                 # clean
+python scripts/vault_scan.py wiki        # 254 files, 0 problems
+python scripts/run_suite.py              # 1807 passed, 0 failed, 388 s, no missing logs
+```
+
+A third `run_suite` was needed and the first two are the reason it was: run 1 failed 4 tests — two in `test_compiler.py::TestRocketAscent` and two in `test_tier45_region_assembly.py` — all four of them pre-existing tests pinning the old default, none of them a defect in the new code. That is [[gap-worklist]]'s own *"closing a defect breaks its tests"*, and it was fixed by pinning the diagnosis to the `fixture` level rather than rewriting it.
+
+**Added:** `atlas/cases/rocket_experts.py`, `scripts/w300_rocket_bc_seam.py`, `scripts/w302_declaration_ledger.py`, `scripts/scan_control_chars.py`, `tests/test_tier76_rocket_experts.py`, `out/w300.json`, `out/w302.json`, [[case-study-rocket-bc-seam-atlas-0.1]].
+**Changed:** `atlas/cases/rocket.py` (the stale docstring corrected, three declaration levels, the clocks, the decomposition, the flux matching, the governing families, and `b`/`c` wired to real physics on the b–c port only), `tests/test_compiler.py` (`TestRocketAscent` pinned to the fixture level, diagnosis kept, and a new `TestRocketAscentWithRealExperts` for what the new default does instead), `tests/test_tier45_region_assembly.py` (`rocket_experts` registered in `ADDED_AFTER_CAPTURE`), `scripts/w189_artifact_control.py` (the rocket's two artifacts pinned to the fixture level, so the byte control stays at 40 of 40 rather than spending an exemption), [[gap-worklist]], [[index]].
+
+**NOT done:** **MECH is not wired** and is left stubbed deliberately — a free-body quasi-static solve returns a displacement where the bond wants a velocity, and the rigid-body directions it projects out are the thrust the trajectory agent integrates, so it belongs with that agent rather than ahead of it. Five of seven agents are still seeded random matrices. **R2 is half done**: `L7/R9` clears and both sides of b–c supply `boundary_response_integrated`, but the composed defect at the 50:1 ratio has **not** been measured against CS-11's bound. `L2/InterfaceMotion` untouched by design. Nothing downloaded, no machine rented, the F1 `.blend` untouched, and the **36 unpushed commits are still unpushed** — now 37.
+
+---
+
+## [2026-09-17] tier 77 | the b-c seam's base and its convention: two errors that nearly cancelled
+
+Continues Tier 76 the same day. Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §10. Build repo pinned at `0a407b7`.
+
+**Why this tier exists.** Tier 76 published $\beta = 0.149619$ for the rocket's b-c seam **with its own decertification attached**: `L4/probe-base` said the two sides were linearised 1374 apart on $M$, and the compiler's wording is that such a number is *"not merely the wrong point but no point at all."* It also flipped `E7` to `fails` with no verdict on whether that was physics or a sign convention. Publishing both was right; leaving them was not.
+
+### The evidence is a root, not an argument
+
+`assemble_seam` sums the two blocks unless a seam declares `effort_normal`. The rocket declared none. Scanned over the admissible interval $[250, 2800]$ K, the **SUM residual has no sign change at all** — it stays in $[43.2, 61.5]$, flat — while the **DIFFERENCE has exactly one**, root at $\mathbf{1035.487}$ K.
+
+The sum cannot have a root, algebraically. `generate.py::_step_structure` hands the **gas's own** conduction-limited $h$ to the **shell's** Robin channel, so both sides carry the same film coefficient and
+
+$$q_{\text{gas}} + q_{\text{shell}} = h\,(T_i - \lambda) + h\,\bigl(\lambda - T_{\text{face}}(\lambda)\bigr) = h\,\bigl(T_i - T_{\text{face}}(\lambda)\bigr)$$
+
+with $\lambda$ **cancelled**. Its root is thermal equilibrium, which one 50 ms macro step cannot reach.
+
+> **A method note, because it cost 204 s of CPU.** The first version of this stage ran Newton blind on that residual and was killed without converging. No damping would have helped. A scan costs one solver call per point and shows a sign change or its absence directly; Newton is for after a root is bracketed. The vault already holds *a comparison is not a result until it has been marched past where the curves could cross*; the sibling is **a root is not a result until something has shown the residual changes sign.**
+
+### The corrected numbers
+
+| assembly | base | $\sigma_{\min}$ | $\kappa$ | symmetric spectrum | one-signed |
+|---|---|---|---|---|---|
+| **SUM** *(Tier 76, as published)* | each side's own | $0.149619$ | $2.2274$ | $[-0.33326, -0.14962]$ | yes |
+| SUM | $\lambda^{\ast} = 1035.487$ K | $\mathbf{0.0013150}$ | $\mathbf{142.41}$ | $[-0.005560, +0.18727]$ | **NO** |
+| DIFFERENCE | each side's own | $0.200562$ | $2.2212$ | $[-0.44549, -0.20056]$ | yes |
+| **DIFFERENCE** *(corrected)* | $\lambda^{\ast}$ | $\mathbf{0.123188}$ | $\mathbf{3.7141}$ | $[-0.45753, -0.12318]$ | yes |
+
+**The published number was wrong twice and the two errors nearly cancelled** — $0.149619$ against $0.123188$, 21% apart, close enough to look ordinary. Fix *either* alone and it moves far further: right base + wrong assembly gives $0.0013150$, a factor of **114 down**; wrong base + right assembly gives $0.200562$, up 34%. **The doubly-wrong configuration landed nearest the doubly-right one.** Pinned by `test_two_errors_that_nearly_cancelled`.
+
+### W306 — the diagnostic cannot tell a global sign from an amplified mode
+
+Three of those four rows are **one-signed**: every eigenvalue of the symmetric part has the same sign. A one-signed negative operator is passive up to a **global sign**, which the interface problem $S\lambda = \chi$ is indifferent to because $\chi$ flips with $S$. Only the sum at the consistent base is genuinely **mixed**. `L4/E7/passivity` rejects all four identically, because `passivity_defect = abs(lam_min)` **never reads $\lambda_{\max}$**. The separating quantity is one line and the probe already has it.
+
+So Tier 76's reading of that decertification as "a finding the fixture could not have produced" is **half right** — it is real and could not have come from a stub, and it is **not** an amplified mode.
+
+### W307 — `thermal_seam`'s E7 holds by an accident
+
+Both CHT seams here have the **same sign structure**: fluid block negative, solid block positive. So the difference is always one-signed and the sum always cancels; whether the sum is definite is a question of which block **dominates**, and that is a modelling choice.
+
+| | solid | fluid | ratio | sum |
+|---|---|---|---|---|
+| `thermal_seam` | $+1.099$ | $-0.0855$ | $\mathbf{12.9}$ | **definite**, $\sigma_{\min} = 1.0136$ |
+| rocket b-c | $+0.2363$ | $-0.2254$ | $\mathbf{1.05}$ | near-singular, mixed |
+
+`thermal_seam` declares `H_IN_NOMINAL = 500` independently of its gas; the rocket follows `generate.py` and hands the shell the gas's own $h$. **[AI Inference]:** so `thermal_seam`'s `E7: holds`, quoted across Tier 13-16, is not evidence that CHT seams are passive — it is a property of a 500. Unverified beyond two seams.
+
+### Predictions: three held, five refuted
+
+Q1 ($\lambda^{\ast}$ pinned to the metal) **refuted** — 1035.487 K; the mechanism assumed the sum condition. Q2 ($\beta$ moves $<2\times$) **refuted**, $100\times$, and it depended on Q1. Q3 **held but uninformative** — the swept range spans $209\times$, so nearly anything is inside it. Q4 (declaring `effort_normal` makes the defect worse) **refuted in its conclusion**: I tested one of the two differences and reasoned from magnitude instead of checking both orientations. Q5 (the defect is physics) **refuted**. Q7 (sum has no root, difference does) **held qualitatively and decisively, refuted quantitatively** — the predicted band missed by 28% because the estimate ignored the $1/T$ in the declared bond. Q8 **held**.
+
+**Q4 and Q5 failed against a note in the code I was using.** `assemble_seam`'s docstring says of a fluid-solid seam: *"Adding them assembles a matrix no scheme differentiates, and `L4/E7/passivity` then reports a defect that is the convention rather than an amplified mode."* It says it of MECH; it is equally true of THERM. **Second tier running in which a prediction failed against a statement already written in the module under test** (Tier 76's P13 was the same shape). The lesson is specific: *read the docstring of the function whose output you are about to predict.*
+
+### What is declared, and what is not
+
+`effort_normal = "b"` on **b-c:THERM only**, and NOT at the `fixture` level, so Tier 76's byte-identity control still compares 40 of 40. Read off the meshes: both sides return heat positive in the direction gas $\to$ shell, which is $+y$, which is `b`'s own outward normal. Which agent is named carries no physical content — it flips a global sign that the interface solve is indifferent to. **The other six edges are not declared**: their sign structure has not been measured.
+
+`python -m atlas rocket` is **unchanged at `refuse`, 10 refusals, 43 decertifications**. The correction moves numbers, not the verdict.
+
+### How to reproduce
+
+```
+python scripts/w304_seam_base.py --json out/w304.json
+python scripts/w303_cht_convention.py --json out/w303.json
+python -m pytest tests/test_tier77_seam_base_and_convention.py -q   # 7 passed
+python scripts/vault_scan.py wiki        # 254 files, 0 problems
+python scripts/run_suite.py
+```
+
+**Opened:** **W306** (the passivity diagnostic cannot distinguish a one-signed spectrum from a mixed one), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident, so it is not evidence about CHT seams in general). **Closed:** **W303** (the convention, measured and declared), **W304** (the common seam base, with the corrected operator).
+
+**Added:** `scripts/w304_seam_base.py`, `scripts/w303_cht_convention.py`, `scripts/w301_saturation_sweep.py` (written, **not yet run** -- Q6 is unresolved), `tests/test_tier77_seam_base_and_convention.py`, `out/w303.json`, `out/w304.json`, `out/w304_lam.json`.
+**Changed:** `atlas/cases/rocket_experts.py` (`effort_normal` on the b-c connection, with the measurement), `atlas/cases/rocket.py` (`EFFORT_NORMAL`, applied above the fixture level only), [[case-study-rocket-bc-seam-atlas-0.1]] (§10, and a supersession banner on §3.2), [[gap-worklist]], [[index]].
+
+**NOT done:** **Q6 is unresolved** -- `w301_saturation_sweep.py` exists and has not been run, so the W301 detector's false-positive rate is still unmeasured and the rule is still only a proposal. **W306 is named, not implemented**: nothing yet computes $\lambda_{\max}$ or reports the sign structure. **W307 is an [AI Inference] over two seams.** The six undeclared edges keep their undeclared convention. MECH, the five stub agents and R2's composed-defect half are all exactly where Tier 76 left them.
+
+### Addendum, same day — Q6 ran after all, and it kills the W301 rule as stated
+
+*Appended rather than edited: the entry above says Q6 was not run, which was true when it was written and is no longer. The log is append-only, so the correction goes here.*
+
+`scripts/w301_saturation_sweep.py` was run. **Q6 predicted the detector would flag exactly two agents — the rocket's `b` and `thermal_seam`'s gas. It flags 15 of 110 real-callable ports, 13.6%.**
+
+Tier 76 proposed `SupportReach.exact_zeros == n - 1` as the L1-visible signature of a saturated boundary channel, and flagged it as necessary-but-not-sufficient. **Measured, the insufficiency is not a corner case — it is the common case.** Of the 15:
+
+| | count | what they are |
+|---|---|---|
+| genuinely saturated | **2** | `thermal_seam.gas`, `rocket.b` — the two this tier knows about |
+| $n = 1$ lumped agents | 2 | `powertrain.MGU`, `car_graph.MGU` on `shaft:ROT`. With one cell, *"the poked cell responds and no others"* is **vacuous** |
+| legitimately diagonal experts | 11 | `ROTOR`, `FLUID`, `RAD`, `PASS` across `powertrain`, `car_graph` and `cooling_loop` — lumped or gain-type responses with no spatial coupling, several with peaks that are round numbers ($3$, $5$) |
+
+So the rule's precision on real-callable ports is $2/15 = \mathbf{13\%}$, or $2/13$ excluding the vacuous $n=1$ cases. **Being exactly diagonal is an ordinary property of a lumped expert, and this vault has many.**
+
+**The negative result is the finding, and it sharpens Tier 76's [AI Inference] rather than overturning it.** That section argued the saturation is undetectable through the L1 interface *by construction*, because *"did the trace reach the solver's state"* is a question about internals L1 forbids asking, and offered `exact_zeros` as a necessary condition only. The measurement says the necessary condition is far too weak to be a rule: **the discriminator Tier 76 actually used — a BITWISE-identical field response across a range of traces — needs the expert's internal state, and there is no L1-visible substitute.**
+
+The sweep also found a bug in its own first version, and it is the same shape as the finding: it probed `caps.ports[0]` only, so it reported that the rocket's `b` did **not** trip — because that agent's first port is `a:MECH`, still a seeded random matrix, while the one backed by `compressible2d` is `c:THERM`. **A sweep that probes one port of a mixed record measures the port it happened to pick.** Fixed to cover every port; the rate above is over all 141.
+
+Two controls bracket the measurement and both behaved: an exactly-diagonal responder trips, a one-cell banded one does not. Without them the 13.6% would be uninterpretable.
+
+**W301's status therefore changes from "open, with the detector identified and measured" to "open, and the proposed detector is REFUSED as a rule"** — 13% precision, with a named reason. What remains open is whether any L1-visible signature exists at all.
+
+**Added:** `out/w301.json`, `out/w301.log`.
+**Changed:** `scripts/w301_saturation_sweep.py` (every port, and the rate split by whether the response is a real callable or a `linear_response` fixture).
+
+### Verification, and a wall-clock number that must NOT be quoted
+
+`python scripts/run_suite.py`: **1814 passed, 0 failed, no missing logs** (1807 at the end of Tier 76 plus this tier's 7). `python scripts/vault_scan.py wiki`: **254 files, 0 problems**. `python -m atlas rocket`: **refuse, 10 refusals, 43 decertifications**, unchanged.
+
+**The suite reported `wall 15508s` and that number is worthless.** The machine entered Modern Standby at 08:42:27 and left it at 12:22:57 -- **3 h 40 m** -- with the run in progress and **the charger plugged in at 98%**. That is new: the earlier record of this failure (Tier 47) was on battery, and Modern Standby turns out to be an idle timeout rather than a power policy, so *on AC* is not a reason to trust a duration. **The pass and fail counts survive a suspend and only the timings are destroyed**, so the tallies above stand and the seconds are discarded. `Get-WinEvent -FilterHashtable @{LogName='System'; Id=506,507}` is what shows it.

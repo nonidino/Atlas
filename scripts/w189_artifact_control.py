@@ -122,8 +122,21 @@ def _union(with_pou):
 #: state at import, so the order is part of what is held constant.  Keys are
 #: stable names; the builders are the calls the suite itself makes.
 VARIANTS = [
-    ("rocket", lambda: _cases("rocket").build()),
-    ("rocket-staging", lambda: _cases("rocket").build(with_staging=True)),
+    # **Pinned to `declarations="fixture"` at Tier 76.**  That tier changed
+    # `rocket.build`'s DEFAULT to `"real"` -- correcting two declarations that
+    # were wrong rather than absent (the clocks and the decomposition) and
+    # wiring b and c to real build-repo solvers -- so the default no longer
+    # produces the artifact this capture was taken of.
+    #
+    # Pinning rather than naming it in a MOVED_BY set is deliberate: the
+    # fixture level IS the pre-change graph, bit for bit, so the control keeps
+    # its full force at 40 of 40 identical instead of permanently losing an
+    # artifact to an exemption. What the new default does instead is pinned by
+    # `tests/test_compiler.py::TestRocketAscentWithRealExperts` and by
+    # `tests/test_tier76_rocket_experts.py`.
+    ("rocket", lambda: _cases("rocket").build(declarations="fixture")),
+    ("rocket-staging", lambda: _cases("rocket").build(with_staging=True,
+                                                      declarations="fixture")),
     ("wind_farm", lambda: _cases("wind_farm").build()),
     ("wind_farm-boundary", lambda: _cases("wind_farm").build(
         boundary_capable=True, declare_transfer=True)),

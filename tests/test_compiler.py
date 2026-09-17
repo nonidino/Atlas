@@ -173,11 +173,29 @@ class TestWindFarmBoundaryCapable:
 
 
 class TestRocketAscent:
-    """end-to-end-architecture-spec §13.2: the rocket does not compile."""
+    """end-to-end-architecture-spec §13.2: the rocket does not compile.
+
+    **Pinned to `declarations="fixture"` at Tier 76.**  These tests pin §13.2's
+    paper analysis of the graph as it was written, and Tier 76 changed
+    `rocket.build`'s default to `"real"` -- correcting two declarations that were
+    WRONG rather than absent and wiring b and c to real solvers.  Two of them
+    failed against the new default, both for the right reason:
+
+    * `tau` at b-c is no longer UNDEFINED, because both sides now declare
+      `lambda_ref` -- which is exactly what L1/E3's own message says declaring it
+      does, and the point of that message;
+    * `R9` is no longer the refusal, because the graph declares
+      `TIME_INTEGRATED`; `R9/quadrature` takes its place and names the agents
+      that supply no integral.
+
+    **The diagnosis is kept rather than rewritten**: the fixture level exists so
+    the pre-Tier-76 compile stays reachable and checkable, and what the new level
+    does instead is pinned by `TestRocketAscentWithRealExperts` below.
+    """
 
     @pytest.fixture(scope="class")
     def result(self):
-        return compile_scheme(rocket.build())
+        return compile_scheme(rocket.build(declarations="fixture"))
 
     def test_it_does_not_compile(self, result):
         assert result.verdict is REFUSE
@@ -210,11 +228,55 @@ class TestRocketAscent:
         assert "TopologyEvent" not in touched      # staging is out of scope here
 
     def test_staging_trips_the_fourth(self):
-        result = compile_scheme(rocket.build(with_staging=True))
+        result = compile_scheme(rocket.build(with_staging=True,
+                                             declarations="fixture"))
         assert "TopologyEvent" in result.holes.touched()
         assert result.envelope[Hypothesis.E1] is Status.FAILS
         refusal = [d for d in result.decisions.refusals if d.rule == "TopologyEvent"]
         assert refusal and "ledger" in refusal[0].message
+
+
+class TestRocketAscentWithRealExperts:
+    """What Tier 76's default changes, pinned so the movement is checkable.
+
+    The two assertions `TestRocketAscent` had to give up are the two most
+    interesting rows here: what used to be UNDEFINED is now measured, and what
+    used to be `R9` is now a more specific refusal naming who is missing.
+    """
+
+    @pytest.fixture(scope="class")
+    def result(self):
+        return compile_scheme(rocket.build())        # the default is "real"
+
+    def test_it_still_does_not_compile(self, result):
+        """Six decertifications go away and TWO ARRIVE that the fixture could
+        not have produced. The movement is not monotone and it should not be."""
+        assert result.verdict is REFUSE
+        rules = {d.rule for d in result.decisions.decertifications}
+        assert "probe-base" in rules      # the two sides linearise 876% apart
+        assert "E7/passivity" in rules    # a negative mode in the symmetric part
+
+    def test_tau_at_b_c_is_no_longer_undefined(self, result):
+        """L1/E3's own message: *declare lambda_ref on both sides and tau becomes
+        measurable without either family moving.* Both sides now do."""
+        assert not any(s.startswith("b-c") for s in result.tau_undefined_seams)
+
+    def test_R9_clears_and_names_who_is_missing(self, result):
+        """Declaring the matching is not enough -- each side of every multirate
+        seam must SUPPLY the integral. b and c do; d, e and f do not."""
+        rules = {d.rule for d in result.decisions.refusals}
+        assert "R9" not in rules
+        assert "R9/quadrature" in rules
+        msg = [d for d in result.decisions.refusals if d.rule == "R9/quadrature"][0]
+        for aid in ("d", "e", "f"):
+            assert f"'{aid}'" in msg.message
+        for aid in ("b", "c"):
+            assert f"'{aid}'" not in msg.message
+
+    def test_interface_motion_is_untouched(self, result):
+        """Stage C research. Nine ports refuse and they should."""
+        im = [d for d in result.decisions.refusals if d.rule == "InterfaceMotion"]
+        assert len(im) == 9
 
 
 class TestTheEmitContract:
