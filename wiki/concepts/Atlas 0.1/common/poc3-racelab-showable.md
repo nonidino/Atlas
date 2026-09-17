@@ -38,15 +38,23 @@ building it, and whether it has a settled field is then one `isfile`.
 |---|---|---|
 | nothing pending | `nothing_pending` | — |
 | the nominal car | **committable** | `bodyfitted_t12_a1f67a8e2792.npz` |
-| rake moved to $0.10$ | **refused**, `no_spun_up_field` | `bodyfitted_t12_44eb4bdc0245.npz` |
+| rake moved to $0.10$ | **refused**, `no_spun_up_field` | `bodyfitted_t12_1b567bed0ac6.npz` |
 | rake moved back | **committable** | `bodyfitted_t12_a1f67a8e2792.npz` |
 
 Four checks in $\mathbf{0.014}$ s with **no composite built** — that is R1. The
 first and last rows are R2's control: a check that refused everything would pass
 a test that only moved a knob, so the nominal car being committable is what
-makes the refusal mean something. The refused row names `44eb4bdc0245`, which is
-the fingerprint **Tier 70 recorded** for the rake $= 0.10$ car — the prediction
-of the new car is right, not merely different.
+makes the refusal mean something. The refused row names a car that is not the
+one marching, which is the whole claim: the commit's destination is known from
+the parameters before anything is cut.
+
+**That row read `44eb4bdc0245` when this tier was first written**, matching what
+Tier 70 recorded for the rake $= 0.10$ car — and §5 below moved it to
+`1b567bed0ac6` by rounding the pitch angle, so that a raked car fingerprints the
+same on every platform. The nominal car's `a1f67a8e2792` is untouched, which is
+what every cache and record is keyed on. The cross-check against Tier 70's
+number is therefore **spent**: it confirmed the prediction before the rounding
+and cannot confirm it after, because the rounding is exactly what changed it.
 
 On the page the Commit button reads **"Commit refused — this car has no spun-up
 field"**, greyed, with the reason and what would lift it beneath; the header
@@ -197,6 +205,58 @@ that cannot be verified to match would be dead weight at best.
 
 ---
 
+## 5b. macOS — audited and branch-tested, not run
+
+**No Mac was available**, and that limit is stated before the findings rather
+than after them. What follows is a static audit plus the launcher's Mac branches
+exercised under a faked `uname`. It is not a Mac running the demo.
+
+**A latent cross-platform defect, found and fixed (W299).** `geometry_fingerprint`
+exists so a settled field can say which car it belongs to, and **W250 hardened it
+against exactly this**: it hashes a wheel's *defining* numbers rather than the
+segments `cos`/`sin`/`atan2` compute from them, because those differ in the last
+bit between the Windows C runtime and glibc — and once split one car in two, so
+the bundle refused on Linux the very field it had been built with. Its docstring
+promised *"Nothing here calls a transcendental function."*
+
+Tier 70's `rake` broke that promise. A rigid pitch moves each plate's incidence
+by $\deg(\arctan(\text{slope}))$, and `alpha_deg` is hashed. So any non-zero rake
+put `atan` back into the fingerprint.
+
+| | |
+|---|---|
+| default $\text{rake} = 0$ | branch not taken, no transcendental — **the nominal car was never at risk** |
+| $\text{rake} \neq 0$ | `atan`, last-bit spread $\approx 3.5\times10^{-18}$ |
+
+Fixed by rounding the pitch at $10^{-12}$ degrees — six orders above the wobble,
+and about $3\times10^{-12}$ cells of geometry. The **body gets the rounded angle
+too**, so the car and its hash stay one definition.
+
+**The control is what makes this a finding rather than a guess.** The test moves
+`atan` by one unit in the last place — the most another libm can differ by — and
+requires the fingerprint not to move. With the rounding removed it fails, and the
+fingerprint goes `44eb4bdc0245` $\to$ `09f6b78672c4`: the same car, two
+identities, which is W250's failure exactly.
+
+**And torch has no Intel Mac.** `torch==2.7.1` publishes macOS wheels for
+**arm64 only**, for Python 3.9–3.13. `run.sh` now reads `uname -m` and stops with
+that explanation, rather than letting pip fall through to a source build that
+fails much later with an error about the build. Both branches were exercised
+under a faked `uname`: Intel is refused before any download, and Apple Silicon
+takes the PyPI path and **not** the CPU wheel index, which publishes no macOS
+wheel at all. macOS still ships bash 3.2, and a test now refuses bash-4 syntax
+in the launcher.
+
+Nothing else macOS-specific surfaced: no case-insensitive filename collisions in
+252 bundled files, and `shapely`, `numpy` and `scipy` all publish arm64 wheels at
+the pinned versions.
+
+**What is still unverified**: that the demo *runs* on a Mac. The honest way to
+close that is a `macos-14` GitHub Actions runner (Apple Silicon), which needs the
+branch pushed.
+
+---
+
 ## 6. What this tier did NOT do
 
 - **W293 is not closed.** The walls-ramped spin-up is still a script, so a new
@@ -204,8 +264,10 @@ that cannot be verified to match would be dead weight at best.
 - **P1–P7 are not re-run** on the body-fitted column (§12.1's third blocker), so
   criterion 5 leans on the tier records rather than on the gate.
 - **W275 is untouched** — the front wing still carries the filled wedge.
-- **macOS is not tested.** "Windows and macOS or Linux" is satisfied by Linux;
-  nothing here ran on a Mac.
+- **macOS is audited, not run.** §5b: the Mac branches are exercised under a
+  faked `uname` and a real cross-platform defect was found and fixed, but no Mac
+  executed the demo. Criterion 1's "Windows **and** macOS **or** Linux" is
+  satisfied by Linux.
 - **The branch is built locally and not pushed.** `--commit` refreshes the
   orphan branch inside the build directory; publishing is a separate act.
 - Nothing was downloaded into this repository, no machine was rented, the

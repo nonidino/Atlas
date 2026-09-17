@@ -52,9 +52,9 @@
   "reference_matmul_1024_s": 0.01869769999757409,
   "taken_at": "2026-09-16T20:03:29"
  },
- "built_bundle": "C:\\Users\\Nauni\\AppData\\Local\\Temp\\claude\\C--Users-Nauni-OneDrive-Desktop-Foundation-Model\\2a9e2bba-f8d9-478a-8579-7dbb2a4ec0e5\\scratchpad\\bundle_v5",
+ "built_bundle": "C:\\Users\\Nauni\\AppData\\Local\\Temp\\claude\\C--Users-Nauni-OneDrive-Desktop-Foundation-Model\\2a9e2bba-f8d9-478a-8579-7dbb2a4ec0e5\\scratchpad\\bundle_v6",
  "commit_check": {
-  "wall_s": 0.025769099986064248,
+  "wall_s": 0.013405099991359748,
   "built_a_composite": false,
   "idle": {
    "ok": false,
@@ -77,9 +77,9 @@
    "pending": [
     "rake"
    ],
-   "settled": "bodyfitted_t12_44eb4bdc0245.npz",
+   "settled": "bodyfitted_t12_1b567bed0ac6.npz",
    "reason": "this geometry has no spun-up field, so the column would re-cut the car and then decline to march it (W293). Settling a new car means marching from rest, and that start was measured failing on this car -- divergence 2.3e3 and a momentum solve that did not converge. The commit is refused here, before the rebuild, rather than after ninety seconds of it.",
-   "what_would_make_it_possible": "a walls-ramped spin-up reachable from the demo, which is a script today (scripts/tier62_car_solids.py); or a settled field for this geometry cached at out/cache/bodyfitted_t12_44eb4bdc0245.npz"
+   "what_would_make_it_possible": "a walls-ramped spin-up reachable from the demo, which is a script today (scripts/tier62_car_solids.py); or a settled field for this geometry cached at out/cache/bodyfitted_t12_1b567bed0ac6.npz"
   },
   "back": {
    "ok": true,
@@ -94,9 +94,9 @@
   "restores": true
  },
  "stage_wall_s": {
-  "commit_check": 0.02947729999141302,
-  "bundle": 1.042060699997819,
-  "summary": 0.0033753000025171787
+  "commit_check": 0.015929100001812913,
+  "bundle": 0.9077013000060106,
+  "summary": 0.002706699990085326
  },
  "bundle": {
   "missing": {
@@ -121,7 +121,7 @@
    "settled_field": "bodyfitted_t12_a1f67a8e2792.npz"
   },
   "carries_what_it_reads": true,
-  "scan_on": "C:\\Users\\Nauni\\AppData\\Local\\Temp\\claude\\C--Users-Nauni-OneDrive-Desktop-Foundation-Model\\2a9e2bba-f8d9-478a-8579-7dbb2a4ec0e5\\scratchpad\\bundle_v5",
+  "scan_on": "C:\\Users\\Nauni\\AppData\\Local\\Temp\\claude\\C--Users-Nauni-OneDrive-Desktop-Foundation-Model\\2a9e2bba-f8d9-478a-8579-7dbb2a4ec0e5\\scratchpad\\bundle_v6",
   "scan": {
    "unlicensed_files": [],
    "unlicensed_uses": [],

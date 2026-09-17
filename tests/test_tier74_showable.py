@@ -126,6 +126,74 @@ def test_the_page_greys_the_button_and_says_why():
 
 
 # ---------------------------------------------------------------------------
+# W299 -- the fingerprint must not depend on the platform's libm
+# ---------------------------------------------------------------------------
+
+
+def test_the_nominal_car_reaches_no_transcendental():
+    """W250's guarantee, still true where it matters most.
+
+    `geometry_fingerprint` hashes a wheel's DEFINING numbers rather than the
+    segments `cos`/`sin`/`atan2` compute from them, because those differ in the
+    last bit between the Windows C runtime and glibc -- and once split one car
+    into two, so the bundle refused on Linux the very field it was built with.
+    At the default `rake = 0` the pitch branch is not taken at all.
+    """
+    from atlas.cases import racelab as RL
+
+    assert RL.CarParams().rake == 0.0, \
+        "a non-zero default rake puts atan into every fingerprint"
+    assert RL.geometry_fingerprint()[:12] == "a1f67a8e2792", \
+        "the nominal car moved; every settled field and raster cache is keyed " \
+        "on this fingerprint"
+
+
+def test_a_raked_car_s_pitch_angle_is_rounded_clear_of_libm():
+    """**Tier 70 put a transcendental back into a hashed field.**
+
+    A rigid pitch moves each plate's incidence by ``degrees(atan(slope))``, and
+    `alpha_deg` is hashed. `atan` is exactly the kind of function W250 was
+    about. The angle is rounded at 1e-12 degrees -- six orders above `atan`'s
+    last-bit spread of about 3.5e-18 here -- so two platforms agree, and the
+    body gets the rounded angle too, so the car and its hash stay one thing.
+    """
+    import math
+
+    from atlas.cases import racelab as RL
+
+    rake = 0.10
+    before = RL.geometry_fingerprint(RL.CarParams(rake=rake))
+    objs, _flat = RL.car_bodies(RL.CarParams(rake=rake))
+    assert any(getattr(o, "body", None) is not None
+               and o.body.group in RL.RAKE_GROUPS for o in objs), \
+        "no plate is in a rake group, so this test is vacuous"
+
+    # **The other platform, simulated.**  Neither algebra nor differencing can
+    # recover the added term from the sum -- float subtraction does not invert
+    # float addition, which this test learned twice. So the property is tested
+    # the way it will actually be met: move `atan` by one unit in the last
+    # place, the most another libm can differ by, and require the fingerprint
+    # not to move. Without the rounding this fails, which is the defect W250
+    # was about and rake put back.
+    real_atan = math.atan
+    try:
+        math.atan = lambda x: math.nextafter(real_atan(x), math.inf)
+        nudged = RL.geometry_fingerprint(RL.CarParams(rake=rake))
+    finally:
+        math.atan = real_atan
+    assert nudged == before, (
+        "a one-ULP difference in atan moved the fingerprint %s -> %s: this car "
+        "would be a different car on another platform, and the demo would "
+        "refuse the settled field built for it" % (before[:12], nudged[:12]))
+
+    # the failing control: WITHOUT the rounding, one ULP does move it
+    unrounded = math.degrees(real_atan(rake / RL.rake_span()[1]))
+    assert repr(unrounded) != repr(round(unrounded, 12)), \
+        "the pitch angle is already a 12-decimal number, so the rounding " \
+        "proves nothing here and this test is vacuous"
+
+
+# ---------------------------------------------------------------------------
 # criterion 1 -- the bundle carries the column it claims to
 # ---------------------------------------------------------------------------
 
@@ -336,6 +404,49 @@ def test_the_commit_asserts_every_artifact_actually_lands_in_the_branch():
 @pytest.mark.parametrize("name", ["run.sh", "run.cmd", "run.py"])
 def test_the_launcher_templates_are_present(name):
     assert os.path.isfile(os.path.join(_ROOT, "atlas", "demo_racelab", "bundle", name))
+
+
+@templates_only
+def test_the_mac_branches_are_declared_and_distinct():
+    """**macOS is the one platform this cannot be run on from here.**
+
+    So what the Mac path DOES is pinned instead, because two of its mistakes
+    are silent: using the CPU wheel index (which publishes no macOS wheel at
+    all), and letting an Intel Mac fall through to a source build that fails
+    after a long wait with an error about the build rather than about the
+    missing wheel. torch 2.7.1 publishes arm64 macOS wheels only, for Python
+    3.9 to 3.13.
+    """
+    sh = open(os.path.join(_ROOT, "atlas", "demo_racelab", "bundle", "run.sh"),
+              encoding="utf-8").read()
+    # split on the shell token, not the word: the branch's own prose says
+    # "Nothing else in the bundle needs changing", and a bare "else" cuts the
+    # block in the middle of an echo
+    after = sh.split('if [ "$(uname -s)" = "Darwin" ]', 1)[1]
+    darwin = after.split("\n  else\n", 1)[0]
+    assert "uname -m" in darwin, "the Mac branch does not look at the architecture"
+    assert "arm64" in darwin
+    assert "download.pytorch.org" not in darwin, \
+        "the CPU wheel index publishes no macOS wheel; Darwin must use PyPI"
+    # and it must stop rather than attempt a build that cannot succeed
+    assert "exit 1" in darwin
+    # the non-Darwin branch is the one that uses the CPU index
+    other = after.split("\n  else\n", 1)[1]
+    assert "download.pytorch.org/whl/cpu" in other
+
+
+@templates_only
+def test_no_bash_4_only_syntax_because_macos_ships_bash_3_2():
+    """macOS still ships bash 3.2. Associative arrays, `${x,,}` and `&>>` are
+    bash 4 and would fail there before the script printed anything."""
+    sh = open(os.path.join(_ROOT, "atlas", "demo_racelab", "bundle", "run.sh"),
+              encoding="utf-8").read()
+    for bad, why in ((r"declare\s+-A", "associative arrays are bash 4"),
+                     (r"\$\{[A-Za-z_]+,,\}", "${x,,} is bash 4"),
+                     (r"\$\{[A-Za-z_]+\^\^\}", "${x^^} is bash 4"),
+                     (r"&>>", "&>> is bash 4"),
+                     (r"readarray|mapfile", "readarray/mapfile are bash 4")):
+        assert not re.search(bad, sh), why
 
 
 @templates_only

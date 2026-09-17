@@ -32,6 +32,17 @@ cd poc3
 ./run.sh
 ```
 
+**On a Mac this needs Apple Silicon.** The pinned `torch==2.7.1` publishes macOS
+wheels for arm64 only — there is no Intel macOS wheel to install, for any Python
+version. `run.sh` checks `uname -m` and stops with that explanation rather than
+letting pip fall through to a source build that fails much later with an error
+about the build. If you are on Apple Silicon and still see it, you are running an
+Intel Python under Rosetta; install a native one and point at it:
+
+```bash
+PYTHON=/opt/homebrew/bin/python3.12 ./run.sh
+```
+
 **Windows** — in PowerShell, which is what Windows 11 opens by default:
 
 ```powershell

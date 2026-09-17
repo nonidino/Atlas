@@ -94,7 +94,30 @@ if [ ! -f "$VENV/.deps-ok" ] || [ requirements.txt -nt "$VENV/.deps-ok" ] \
   if [ "$(uname -s)" = "Darwin" ]; then
     # macOS wheels on PyPI are CPU/MPS; there is nothing to choose. The demo
     # does not use MPS: the composed march is float64 and MPS has no float64.
-    echo "    torch: macOS, wheel from PyPI"
+    #
+    # **torch 2.7.1 publishes NO Intel macOS wheel** -- arm64 only, for Python
+    # 3.9 to 3.13. On an Intel Mac pip would fall through to a source build and
+    # fail after a long wait with an error about the build, which says nothing
+    # about the real cause. So it is said here instead.
+    ARCH="$(uname -m)"
+    if [ "$ARCH" != "arm64" ]; then
+      echo
+      echo "This bundle pins torch $TORCH, and that release publishes macOS"
+      echo "wheels for Apple Silicon (arm64) only -- there is no Intel macOS"
+      echo "wheel to install, and \`uname -m\` here says '$ARCH'."
+      echo
+      echo "  * On an Apple Silicon Mac: you are probably running an Intel"
+      echo "    python under Rosetta. Install a native one and point at it:"
+      echo "        PYTHON=/opt/homebrew/bin/python3.12 ./run.sh"
+      echo "  * On an Intel Mac: run the demo on Linux or Windows, or edit"
+      echo "    TORCH in this script to a release that still ships an Intel"
+      echo "    macOS wheel (torch 2.2.2 was the last). Nothing else in the"
+      echo "    bundle needs changing, but the pinned numbers were measured"
+      echo "    with $TORCH."
+      echo
+      exit 1
+    fi
+    echo "    torch: macOS on Apple Silicon, wheel from PyPI"
     "$VPY" -m pip install "$TORCH" ${C1:+"$C1"} ${C2:+"$C2"}
   else
     # The CPU-only wheel, whether or not there is a GPU: nothing in this demo

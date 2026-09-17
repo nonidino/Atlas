@@ -456,8 +456,11 @@ class CarParams:
     #: solids, the grids, the settled fields, the raster cache and every record
     #: of Tiers 62 to 68 -- was the rake = 0 car, whatever this default said.
     #: Wiring the knob at 0.10 would have pitched the floor under all of them
-    #: silently: `geometry_fingerprint` moves from a1f67a8e to 44eb4bdc, which
-    #: is the number those caches are keyed on.  So the default IS the drawn
+    #: silently: `geometry_fingerprint` moves from a1f67a8e to 44eb4bdc -- the
+    #: number Tier 70 measured, and now 1b567bed, because Tier 75 rounded the
+    #: pitch angle so that a rake car fingerprints the same on every platform
+    #: (W250 again, W299).  Either way it is not a1f67a8e, which is the number
+    #: those caches are keyed on.  So the default IS the drawn
     #: car, exactly as `diffuser_deg` and `front_flap_deg` record for the same
     #: reason, and the knob sweeps its declared range from there.
     rake: float = 0.0
@@ -551,7 +554,20 @@ def car_bodies(p: CarParams = None, device: str = "cpu",
             if length > 0.0:
                 slope = float(p.rake) / length
                 y += (float(e["x"]) - x0) * slope
-                a += math.degrees(math.atan(slope))
+                # **Rounded, and W250 is the reason.**  `alpha_deg` is hashed by
+                # `geometry_fingerprint`, whose whole point is that the same car
+                # fingerprints the same on every machine -- it hashes a wheel's
+                # DEFINING numbers rather than the segments `cos`/`sin`/`atan2`
+                # compute from them, because those differ in the last bit
+                # between the Windows C runtime and glibc, and once split one
+                # car into two so that the bundle refused its own settled field.
+                # `atan` is the same kind of function, and rake put it back into
+                # a hashed field.  Its last-bit wobble here is about 3.5e-18
+                # degrees; rounding at 1e-12 absorbs it with six orders to spare
+                # and moves the plate by roughly 3e-12 cells, which is nothing.
+                # The BODY gets the rounded angle too, so the car and its
+                # fingerprint stay one definition rather than two.
+                a += round(math.degrees(math.atan(slope)), 12)
         kw: dict[str, Any] = {}
         if e.get("n_station"):
             kw["n_station"] = int(e["n_station"])
@@ -600,8 +616,17 @@ def geometry_fingerprint(p: CarParams = None, geometry: dict = None) -> str:
     ``f591a83c`` on Linux, and the bundle's self-test refused, on Linux, the
     very field it had been built with.  A plate's numbers are the file's own or
     an IEEE sum of them, identical everywhere; a wheel's centre, radius,
-    segment count and coefficient are the same.  Nothing here calls a
-    transcendental function.
+    segment count and coefficient are the same.
+
+    **One transcendental survives, and it is rounded for exactly this reason.**
+    Tier 70's `rake` pitches the floor group, and a rigid pitch moves each
+    plate's incidence by ``degrees(atan(slope))`` -- which lands in
+    ``alpha_deg``, which is hashed here.  `car_bodies` rounds that angle at
+    1e-12 degrees, six orders above `atan`'s last-bit spread of about 3.5e-18,
+    so the derived angle is identical on every platform.  At the default
+    ``rake = 0`` the branch is not taken at all and no transcendental is
+    reached, which is why the nominal car's fingerprint is what it has always
+    been.
     """
     import hashlib
     objs, _flat = car_bodies(p, geometry=geometry)
