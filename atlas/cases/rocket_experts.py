@@ -403,13 +403,41 @@ class ShellAgent:
         return self._ts.step_thermal(T, self.dt, self._h_field(), T_gas_full,
                                      H_OUTER, T_AMBIENT, T_inf=T_AMBIENT)
 
-    def respond(self, port_name: str, trace: np.ndarray) -> np.ndarray:
-        """(gas temperature on the seam) -> (the declared THERM flow on the seam).
+    def n_port(self, port_name: str) -> int:
+        """Cells on the named port. `b:*` is the chamber window; `d:*` the OUTER
+        face over the whole airframe."""
+        return self._n_face if _neighbour_of(port_name) == "d" else self.n_seam
 
-        One backward-Euler step from the agent's own state, then the heat that
-        crossed the seam window of the inner face, ``h (T_gas - T_wall)``,
-        converted to the declared flow.
+    def port_weights(self, port_name: str) -> np.ndarray:
+        which = "outer" if _neighbour_of(port_name) == "d" else "inner"
+        _a, _b, L = self._ts._face(which)
+        L = np.asarray(L, dtype=float)
+        return L if which == "outer" else L[self._cells]
+
+    def _outer_face_T(self, T: np.ndarray) -> np.ndarray:
+        a, b, _L = self._ts._face("outer")
+        return 0.5 * (T[a] + T[b])
+
+    def respond(self, port_name: str, trace: np.ndarray) -> np.ndarray:
+        """(gas temperature on the port) -> (the declared THERM flow there).
+
+        Two ports, and they are different faces of the same expert:
+
+        ``b:THERM``  the chamber window of the INNER face -- one backward-Euler
+                     step, then the heat that crossed it, ``h (T_gas - T_wall)``.
+        ``d:THERM``  the OUTER face over the whole airframe, driven through
+                     `step_thermal`'s own ``h_out, T_gas_out`` arguments. This is
+                     the face the atmosphere sees, and it is the one `c-d`
+                     declares.
         """
+        if _neighbour_of(port_name) == "d":
+            T_out = np.asarray(trace, dtype=float).reshape(self._n_face)
+            full_in = self._full_trace(self.base_trace())
+            T = self._ts.step_thermal(self._T0, self.dt, self._h_field(), full_in,
+                                      H_OUTER, T_out, T_inf=T_AMBIENT)
+            T_face = self._outer_face_T(T)
+            q = H_OUTER * (T_out - T_face)                  # W/m^2, into the shell
+            return _as_flow(q, 0.5 * (T_out + T_face), self.flux_convention)
         full = self._full_trace(trace)
         T = self._step(self._T0, full)
         T_face = self._face_T(T)[self._cells]
@@ -487,8 +515,16 @@ class ShellAgent:
             "curve": curve,
         }
 
-    def base_trace(self) -> np.ndarray:
-        """The probe base: the gas temperature this side is linearised about."""
+    def base_trace(self, port_name: str = "b:THERM") -> np.ndarray:
+        """The probe base for the named port -- W74, per face.
+
+        The inner window is linearised about the chamber; the outer face about
+        the atmosphere it actually radiates to. Using one number for both would
+        put the outer face at 2800 K, which is the error W74 is about with a
+        different sign.
+        """
+        if _neighbour_of(port_name) == "d":
+            return np.full(self._n_face, ambient_state()[2])
         return np.full(self.n_seam, T_CHAMBER)
 
     # -- the record's callables --------------------------------------------
@@ -1213,3 +1249,693 @@ def bc_dim_M() -> int:
     """
     return min(modes_for(seam_cells_bc(shell_panel()).size),
                modes_for(chamber_block().shape[0]))
+
+
+# ---------------------------------------------------------------------------
+# R0 rungs 3-7: the remaining gas agents, and the two KINDS of port they have
+# ---------------------------------------------------------------------------
+
+#: **The undeclared interface this tier found, recorded where the code is.**
+#:
+#: The airframe `c` spans ``shell_z = [-4.0, 0.70]`` and agent `e`, the nozzle,
+#: spans ``[0.40, 0.70]``.  At z = 0.55 `domains.contains` puts the nozzle
+#: interior in `e` and the shell thickness in `c`: **they share a boundary and no
+#: edge declares it.**  `wall_b_c` stops at the throat and `wall_c_d` is the
+#: OUTER wall, so no interface curve runs along the diverging nozzle's inner
+#: surface at all.
+#:
+#: `contours.plane_d_g`'s own docstring already records a SECOND one -- *"a real,
+#: currently UNDECLARED d-f interface"* over the strip between the exit radius
+#: and the plume half-width.  So this is not a one-off: **`domains.verify`
+#: checks that the agents PARTITION the box and that every declared edge lies on
+#: both its agents' boundaries, and nothing checks the converse** -- that every
+#: shared boundary has an edge.  Two are missing.
+UNDECLARED_INTERFACES = {
+    "e-c": "the diverging nozzle's inner wall, z in [z_throat, z_exit]. `e` and "
+           "`c` share it and no edge declares it; wall_b_c stops at the throat "
+           "and wall_c_d is the outer wall",
+    "d-f": "the strip exit_halfheight < |y| <= plume_halfwidth at z = z_exit, "
+           "recorded by contours.plane_d_g's own docstring",
+}
+
+#: Which block face each agent's declared neighbours sit on, and whether that
+#: face is a WALL (the trace is a wall temperature, the response a wall flux) or
+#: a PLANE the flow crosses (the trace is a state, the response a flux through
+#: it).  Read off `config/atlas_0_1.yaml`'s geometry and `contours.py`'s
+#: interface constructors, not chosen.
+#:
+#: The two kinds need different channels and it is not a detail: `wall_noslip`
+#: clamps its ghost temperature and `prescribed` does not, which is exactly the
+#: difference W301 is about.
+AGENT_FACES: dict[str, dict[str, tuple[str, str]]] = {
+    #        neighbour: (block side, kind)
+    "a": {"b": ("imax", "plane")},
+    "b": {"a": ("imin", "plane"), "e": ("imax", "plane"), "c": ("jmax", "wall")},
+    "e": {"b": ("imin", "plane"), "f": ("imax", "plane"), "c": ("jmax", "wall")},
+    "d": {"c": ("jmin", "wall"), "g": ("imax", "plane")},
+    "f": {"e": ("imin", "plane"), "g": ("jmax", "plane")},
+    "g": {"d": ("imin", "plane"), "f": ("hole", "plane")},
+}
+
+#: `data/generate.py` line 129: the ENGINE agents and the plume get `gas_cfg`
+#: (combustion products); `d` and `g` get `air_cfg`.  Different parameters of the
+#: same equations, which is why Tier 76 gave them one governing family.
+ENGINE_AGENTS = ("a", "b", "e", "f")
+
+#: US Standard 1976 at 5 km, the mid-point of the ascent this PoC marches.  Read
+#: from the build repo's own `atmosphere` module rather than tabulated here.
+ALTITUDE_M = 5000.0
+
+
+@lru_cache(maxsize=1)
+def ambient_state() -> tuple[float, float, float]:
+    """(rho, p, T) at `ALTITUDE_M`, from the build repo's own atmosphere.
+
+    `atmosphere.properties` returns ``(T, p, rho, a)`` -- temperature FIRST.
+    Unpacking it as ``(rho, p, T)`` is the obvious mistake and this function
+    made it on its first run, reporting a density of 255.7 and a temperature of
+    0.74.  The order is taken from the source rather than assumed, and the
+    assertion below is what would catch it next time.
+    """
+    load_solvers()
+    atm = importlib.import_module("atlas_build_solvers.solvers.atmosphere")
+    T, p, rho, _a = atm.properties(ALTITUDE_M)
+    T, p, rho = float(T), float(p), float(rho)
+    assert 200.0 < T < 320.0 and 1.0e4 < p < 1.1e5 and 0.1 < rho < 1.5, (T, p, rho)
+    return rho, p, T
+
+
+#: The freestream Mach the external agents see. 0.8 at 5 km is a representative
+#: point of the ascent `trajectory.py` marches; it is a STATE, not a result, and
+#: every number probed against it carries it in `probe_state`.
+M_INF = 0.8
+
+
+@dataclass
+class GasAgent:
+    """Any of the six `compressible2d` agents, built from the config.
+
+    **One class rather than six, because the six differ only in declarations the
+    config already carries** -- mesh, z range, gas constants, clock -- and a
+    per-agent class would be six places for the same bug.  What genuinely differs
+    is the KIND of each face, and that is `AGENT_FACES`.
+
+    Two kinds of port, and the difference is the whole reason `b`'s wall and
+    `e`'s throat plane could not share a code path:
+
+    ``wall``   `BC("wall_noslip", {"T_wall": ...})`.  The trace is a wall
+               temperature and the response the conduction-limited wall flux --
+               `thermal_seam.GasAgent`'s channel, and the one W301 found is
+               SATURATED below ``T_wall = (T_i + 20)/2``.
+    ``plane``  `BC("prescribed", {"state": ...})`.  The flow CROSSES it, so the
+               trace is a total enthalpy and the response the mass flux through
+               the face -- ADVEC's declared bond ``(h0, rho u.n)``.  This channel
+               writes the ghost state directly and has **no clamp**, which is the
+               cross-check that W301 is about `wall_noslip` and not about
+               `compressible2d`.
+    """
+
+    agent_id: str
+    dt: float | None = None
+    _blk: Any = field(default=None, repr=False)
+    _sol_cfg: Any = field(default=None, repr=False)
+    _U0: Any = field(default=None, repr=False)
+    _calls: int = 0
+    _substeps: int = 0
+
+    def __post_init__(self) -> None:
+        C2, _TS, TH, _GR = load_solvers()
+        cfg = rocket_config()
+        if self.dt is None:
+            self.dt = float(cfg.dt_model[self.agent_id])
+        # `d` is a two-panel map; the UPPER panel is taken, for the same symmetry
+        # reason `c` is, and `generate.py` indexes its panels the same way.
+        blocks = agent_blocks(self.agent_id)
+        self._blk = blocks[-1] if len(blocks) > 1 else blocks[0]
+        engine = self.agent_id in ENGINE_AGENTS
+        self._sol_cfg = C2.GasConfig(gamma=GAMMA_GAS if engine else 1.4,
+                                     R=R_GAS if engine else 287.0)
+        nz, ny = self._blk.shape
+        W = np.zeros((nz, ny, 4))
+        if engine:
+            W[..., 0] = P_CHAMBER / (R_GAS * T_CHAMBER)
+            W[..., 1] = U_CHAMBER
+            W[..., 3] = P_CHAMBER
+        else:
+            rho, p, T = ambient_state()
+            W[..., 0] = rho
+            W[..., 1] = M_INF * float(np.sqrt(1.4 * 287.0 * T))
+            W[..., 3] = p
+        self._U0 = TH.prim_to_cons(W, self._sol_cfg.gamma)
+        self._C2, self._TH = C2, TH
+
+    # -- geometry ----------------------------------------------------------
+    def face(self, neighbour: str) -> tuple[str, str]:
+        try:
+            return AGENT_FACES[self.agent_id][neighbour]
+        except KeyError:
+            raise KeyError(
+                f"agent {self.agent_id!r} declares no face toward {neighbour!r}; "
+                f"it has {sorted(AGENT_FACES[self.agent_id])}. If this is the "
+                f"nozzle wall, see UNDECLARED_INTERFACES"
+            ) from None
+
+    def hole_band(self):
+        """(j_lo, j_hi) of the blanked band, or None. Agent `g` carries the plume
+        as a hole rather than as a face, so its `f` port is a different channel
+        again -- `Compressible2D.hole_state`, which the solver's own comment calls
+        *"set by the coupler"* and which nothing in this vault had ever set."""
+        b = self._blk.blanked
+        if not b.any():
+            return None
+        js = np.nonzero(b.any(axis=0))[0]
+        return int(js.min()), int(js.max())
+
+    def n_face(self, neighbour: str) -> int:
+        side, _kind = self.face(neighbour)
+        nz, ny = self._blk.shape
+        if side == "hole":
+            return nz
+        return ny if side in ("imin", "imax") else nz
+
+    def face_weights(self, neighbour: str) -> np.ndarray:
+        """Arc lengths of that face's cells -- the V-space measure."""
+        side, _kind = self.face(neighbour)
+        blk = self._blk
+        if side == "hole":
+            band = self.hole_band()
+            return np.asarray(blk.a_j[:, band[0]], dtype=float)
+        if side == "imin":
+            return np.asarray(blk.a_i[0], dtype=float)
+        if side == "imax":
+            return np.asarray(blk.a_i[-1], dtype=float)
+        if side == "jmin":
+            return np.asarray(blk.a_j[:, 0], dtype=float)
+        return np.asarray(blk.a_j[:, -1], dtype=float)
+
+    # -- the solve ---------------------------------------------------------
+    def _bcs(self, neighbour: str, trace: np.ndarray) -> dict:
+        """Every side's BC, with the PORT's side carrying the imposed trace.
+
+        The non-port sides are held at the agent's own operating condition. They
+        are a modelling choice and they are reported in `probe_state`: a probe is
+        a derivative with respect to ONE face, and what the other three do sets
+        the point it is taken at.
+        """
+        C2 = self._C2
+        cfg = self._sol_cfg
+        side, kind = self.face(neighbour)
+        nz, ny = self._blk.shape
+        engine = self.agent_id in ENGINE_AGENTS
+        if engine:
+            rho0, u0, p0 = P_CHAMBER / (R_GAS * T_CHAMBER), U_CHAMBER, P_CHAMBER
+            T_wall_bg = T_SHELL_COLD
+        else:
+            rho_a, p_a, T_a = ambient_state()
+            rho0, u0, p0 = rho_a, M_INF * float(np.sqrt(1.4 * 287.0 * T_a)), p_a
+            T_wall_bg = T_a
+        free = C2.BC("freestream", {"prim": np.array([rho0, u0, 0.0, p0])})
+        out = {
+            "imin": free,
+            "imax": C2.BC("outflow", {"p_inf": p0}),
+            "jmin": C2.BC("wall_noslip", {"T_wall": np.full(nz, T_wall_bg)}),
+            "jmax": C2.BC("wall_noslip", {"T_wall": np.full(nz, T_wall_bg)}),
+        }
+        # the external agents' outboard face is the farfield, not a wall
+        if not engine:
+            out["jmax"] = free
+        if side == "hole":
+            return out                      # the hole is not a face; see _advance
+        if kind == "wall":
+            out[side] = C2.BC("wall_noslip",
+                              {"T_wall": np.asarray(trace, float).reshape(nz)})
+        else:
+            # ADVEC's effort is a total enthalpy. Hold (p, u, v) at the
+            # operating point and let h0 set the density, so the trace moves the
+            # ONE declared variable and nothing else: h0 = gamma/(gamma-1) p/rho
+            # + |u|^2/2 solved for rho.
+            h0 = np.asarray(trace, float).reshape(-1)
+            n = ny if side in ("imin", "imax") else nz
+            h0 = h0.reshape(n)
+            ke = 0.5 * u0 * u0
+            cp_over = cfg.gamma / (cfg.gamma - 1.0)
+            rho = cp_over * p0 / np.maximum(h0 - ke, 1.0)
+            W = np.zeros((n, 4))
+            W[:, 0], W[:, 1], W[:, 3] = rho, u0, p0
+            U = self._TH.prim_to_cons(W, cfg.gamma)
+            state = U[None, :, :] if side in ("imin", "imax") else U[:, None, :]
+            out[side] = C2.BC("prescribed", {"state": state})
+        return out
+
+    def _state_from_h0(self, h0) -> np.ndarray:
+        """A conservative state carrying the declared effort and nothing else.
+
+        (p, u, v) are held at the operating point and h0 sets the density, so the
+        trace moves the ONE declared variable:
+        ``h0 = gamma/(gamma-1) p/rho + |u|^2/2`` solved for rho.
+        """
+        cfg = self._sol_cfg
+        engine = self.agent_id in ENGINE_AGENTS
+        if engine:
+            p0, u0 = P_CHAMBER, U_CHAMBER
+        else:
+            rho_a, p_a, T_a = ambient_state()
+            p0, u0 = p_a, M_INF * float(np.sqrt(1.4 * 287.0 * T_a))
+            del rho_a
+        h0 = np.atleast_1d(np.asarray(h0, dtype=float))
+        rho = cfg.gamma / (cfg.gamma - 1.0) * p0 / np.maximum(h0 - 0.5 * u0 * u0, 1.0)
+        W = np.zeros((h0.size, 4))
+        W[:, 0], W[:, 1], W[:, 3] = rho, u0, p0
+        return self._TH.prim_to_cons(W, cfg.gamma)
+
+    def _advance(self, neighbour: str, trace: np.ndarray):
+        side, _kind = self.face(neighbour)
+        sol = self._C2.Compressible2D(self._blk, self._sol_cfg,
+                                      bcs=self._bcs(neighbour, trace))
+        if side == "hole":
+            # the band's ghost is ONE state, so the trace is reduced to the mean
+            # -- and that is a real loss of resolution, declared rather than
+            # hidden: `effective_resolution` on this port is 1.
+            sol.hole_state = self._state_from_h0(
+                float(np.mean(np.asarray(trace, dtype=float))))[0]
+        U, n = sol.advance(self._U0, self.dt)
+        self._calls += 1
+        self._substeps += int(n)
+        return U
+
+    def wall_h(self, T_wall: float | None = None, neighbour: str = "c") -> np.ndarray:
+        """The conduction-limited ``h`` the shell's Robin channel needs.
+
+        `generate.py::_step_structure` takes this from the gas and hands it to
+        `step_thermal`. It is NOT on a port and is not certified: it is a
+        coefficient of the SHELL's own channel, computed here so the two sides
+        are set up at one operating point rather than at two.
+        """
+        side, kind = self.face(neighbour)
+        if kind != "wall":
+            raise ValueError(
+                f"agent {self.agent_id!r} face toward {neighbour!r} is a "
+                f"{kind!r}, not a wall; there is no film coefficient on it"
+            )
+        nz, _ny = self._blk.shape
+        Tw = (T_SHELL_COLD if self.agent_id in ENGINE_AGENTS
+              else ambient_state()[2]) if T_wall is None else float(T_wall)
+        U = self._advance(neighbour, np.full(nz, Tw))
+        TH, cfg, blk = self._TH, self._sol_cfg, self._blk
+        W = TH.cons_to_prim(U, cfg.gamma)
+        T = W[..., 3] / (W[..., 0] * cfg.R)
+        j = 0 if side == "jmin" else -1
+        dn = 0.5 * blk.vol[:, j] / np.maximum(blk.a_j[:, j], 1e-30)
+        mu = TH.sutherland(T[:, j], cfg.mu_ref, cfg.T_mu_ref, cfg.sutherland_S)
+        return mu * cfg.cp / cfg.Pr / np.maximum(dn, 1e-9)
+
+    def h0_operating(self) -> float:
+        """The total enthalpy the plane ports are linearised about -- W74 again.
+
+        ADVEC's effort has no absolute origin the way a temperature does, but it
+        has no natural ZERO either: h0 = 0 is a gas with no thermal energy, which
+        is not a state any of these agents is ever in.
+        """
+        cfg = self._sol_cfg
+        engine = self.agent_id in ENGINE_AGENTS
+        if engine:
+            p, rho, u = P_CHAMBER, P_CHAMBER / (R_GAS * T_CHAMBER), U_CHAMBER
+        else:
+            rho, p, T = ambient_state()
+            u = M_INF * float(np.sqrt(1.4 * 287.0 * T))
+        return float(cfg.gamma / (cfg.gamma - 1.0) * p / rho + 0.5 * u * u)
+
+    def base_trace(self, neighbour: str) -> np.ndarray:
+        side, kind = self.face(neighbour)
+        n = self.n_face(neighbour)
+        if kind == "wall":
+            return np.full(n, T_SHELL_COLD if self.agent_id in ENGINE_AGENTS
+                           else ambient_state()[2])
+        return np.full(n, self.h0_operating())
+
+    def respond(self, port_name: str, trace: np.ndarray) -> np.ndarray:
+        """(the declared effort on one face) -> (the declared flow on that face).
+
+        ``wall``   (T_wall) -> q_n/T, `generate.py::_wall_flux`'s own quantity.
+        ``plane``  (h0)     -> rho u.n, ADVEC's declared conjugate flow.
+        """
+        neighbour = _neighbour_of(port_name)
+        side, kind = self.face(neighbour)
+        U = self._advance(neighbour, trace)
+        TH, cfg, blk = self._TH, self._sol_cfg, self._blk
+        W = TH.cons_to_prim(U, cfg.gamma)
+        if kind == "wall":
+            T = W[..., 3] / (W[..., 0] * cfg.R)
+            j = 0 if side == "jmin" else -1
+            dn = 0.5 * blk.vol[:, j] / np.maximum(blk.a_j[:, j], 1e-30)
+            mu = TH.sutherland(T[:, j], cfg.mu_ref, cfg.T_mu_ref, cfg.sutherland_S)
+            k_gas = mu * cfg.cp / cfg.Pr
+            Tw = np.asarray(trace, float).reshape(T[:, j].shape)
+            q = k_gas * (T[:, j] - Tw) / np.maximum(dn, 1e-9)
+            return q / np.maximum(0.5 * (T[:, j] + Tw), 1.0)
+        if side == "hole":
+            band = self.hole_band()
+            j = band[0]
+            rho, u, v = W[:, j, 0], W[:, j, 1], W[:, j, 2]
+            nrm = blk.n_j[:, j]
+            return rho * (u * nrm[..., 0] + v * nrm[..., 1])
+        # a plane: the mass flux through it, against the face's own normal
+        if side in ("imin", "imax"):
+            i = 0 if side == "imin" else -1
+            rho, u, v = W[i, :, 0], W[i, :, 1], W[i, :, 2]
+            nrm = blk.n_i[0 if side == "imin" else -1]
+        else:
+            j = 0 if side == "jmin" else -1
+            rho, u, v = W[:, j, 0], W[:, j, 1], W[:, j, 2]
+            nrm = blk.n_j[:, 0 if side == "jmin" else -1]
+        return rho * (u * nrm[..., 0] + v * nrm[..., 1])
+
+    def respond_integrated(self, port_name: str, trace: np.ndarray,
+                           n_substeps: int) -> np.ndarray:
+        """The same flow, averaged over ``n_substeps`` of this agent's own clock."""
+        n = max(1, int(n_substeps))
+        acc = None
+        saved = self._U0
+        try:
+            for _ in range(n):
+                out = np.asarray(self.respond(port_name, trace), float)
+                acc = out if acc is None else acc + out
+                self._U0 = self._advance(_neighbour_of(port_name), trace)
+        finally:
+            self._U0 = saved
+        return acc / n
+
+    # -- the record's callables --------------------------------------------
+    def storage(self, state=None) -> float:
+        U = self._U0 if state is None else state
+        return float(np.sum(U[..., 3] * self._blk.vol))
+
+    def validity(self, state=None, cond=None) -> bool:
+        U = self._U0 if state is None else np.asarray(state)
+        W = self._TH.cons_to_prim(U, self._sol_cfg.gamma)
+        return bool(np.all(W[..., 0] > 0.0) and np.all(W[..., 3] > 0.0))
+
+    @property
+    def solver_calls(self) -> int:
+        return self._calls
+
+    @property
+    def solver_substeps(self) -> int:
+        return self._substeps
+
+
+def _neighbour_of(port_name: str) -> str:
+    """``"c:THERM"`` -> ``"c"``. The rocket names a port for the agent across it."""
+    return port_name.split(":")[0]
+
+
+#: **W309, measured 2026-09-17.  `grid.Block`'s face normals are oriented by
+#: INDEX, not outward -- so every gas-gas seam in this graph needs
+#: `effort_normal`, and Tier 77's b-c was not a special case.**
+#:
+#: Measured directly: for every gas block, ``n_i[0]`` and ``n_i[-1]`` both point
+#: ``+z``, and ``n_j[:, 0]`` and ``n_j[:, -1]`` both point ``+y`` (with the
+#: body-fitted tilt).  They are ``[e_y, -e_x]`` and ``[-e_y, e_x]`` of the edge
+#: vectors, which is a consistent orientation and NOT an outward normal.  So a
+#: seam between two blocks has both sides reporting their flux against the same
+#: physical direction -- exactly the shape `assemble_seam`'s W138 note describes,
+#: where the well-posed condition is the DIFFERENCE and the Steklov-Poincare sum
+#: is a matrix no scheme differentiates.
+#:
+#: The rule that follows: **`effort_normal` names the agent for which the seam is
+#: its `imax` or `jmax` face**, because that is the one side where the
+#: index-oriented normal coincides with the agent's own outward normal.
+#:
+#: **And it reproduces the one seam that was measured independently.**  Tier 77
+#: derived ``b-c -> "b"`` from the geometry of the shell's inner face and the
+#: chamber's jmax wall, before any of this was looked at; the rule gives the same
+#: answer.  That is the cross-check that makes it a rule rather than a pattern.
+#:
+#: `c-d` is the one edge the rule cannot reach, because `c` is a `ThermoStruct2D`
+#: and has no Block: agent `d`'s face toward the shell is its **jmin**, whose
+#: index normal ``+y`` points away from the vehicle and is therefore the SHELL's
+#: outward normal, so the named agent is `c`.
+EFFORT_NORMAL_ROCKET = {
+    "a-b": "a",   # a's face to b is its imax
+    "e-b": "b",   # b's face to e is its imax
+    "b-c": "b",   # b's wall to c is its jmax -- and Tier 77 measured this one
+    "c-d": "c",   # d's face to c is its jmin; +y is the shell's outward normal
+    "e-f": "e",   # e's face to f is its imax
+    "d-g": "d",   # d's face to g is its imax
+    "g-f": "f",   # f's face to g is its jmax; g carries it as a blanked hole
+}
+
+
+#: **The motion class each port really carries, from `rocket.AGENTS`.**
+#:
+#: The first version of `build_rocket_real` declared every port STATIC, and the
+#: measurement caught it immediately: the nine `L2/InterfaceMotion` refusals
+#: vanished. **That is the "declare it away" failure exactly** -- the combustion
+#: front and the plume boundary are the one genuine research hole in this graph,
+#: and a builder that quietly makes them static has removed the product rather
+#: than earned it. They are carried here so the new graph refuses for the same
+#: reasons the old one did.
+PORT_MOTION = {
+    ("a", "b"): MotionClass.SOLUTION_DEPENDENT,   # the combustion front moves
+    ("f", "e"): MotionClass.PRESCRIBED,           # the plume boundary moves
+    ("f", "g"): MotionClass.PRESCRIBED,
+}
+
+
+def gas_capabilities(expert: GasAgent, neighbour: str, port_type: PortType,
+                     m_eff: int | None = None,
+                     response_half: ResponseHalf = ResponseHalf.FLOW,
+                     ) -> ExpertCapabilities:
+    """One agent's record for ONE declared face.
+
+    The rocket's graph gives each agent several faces and several port types per
+    face; this builds the record for one of them, so a caller can assemble
+    exactly the ports a seam needs and no more.
+    """
+    side, kind = expert.face(neighbour)
+    n = expert.n_face(neighbour)
+    m = modes_for(n) if m_eff is None else int(m_eff)
+    w = expert.face_weights(neighbour)
+    scales = dict(THERM_SCALES) if port_type is PortType.THERM else dict(ADVEC_SCALES_R)
+    name = f"{neighbour}:{port_type.value}"
+    dt_cfl = 2.99e-7 if expert.agent_id in ENGINE_AGENTS else 1.6e-6
+    return ExpertCapabilities(
+        expert_id=expert.agent_id,
+        ports=[port_decl(
+            name=name, port_type=port_type,
+            geometry=f"{expert.agent_id}.{side} ({kind}), {n} cells",
+            direction=Direction.BIDIRECTIONAL,
+            nondim=scales,
+            passengers=("h0",) if port_type is PortType.ADVEC else (),
+            effective_resolution=m,
+            motion_class=PORT_MOTION.get((expert.agent_id, neighbour),
+                                         MotionClass.STATIC),
+            response_half=response_half,
+            prolongation=face_prolongation(
+                expert.agent_id, name, w, m,
+                f"{m}-mode real Fourier basis on {n} non-uniform face cells"),
+            note=("isothermal no-slip wall; trace T_wall, response the "
+                  "conduction-limited flux generate.py exchanges"
+                  if kind == "wall" else
+                  "a plane the flow CROSSES: BC('prescribed') writes the ghost "
+                  "state directly, with NO clamp -- the trace is h0 and the "
+                  "response the mass flux through the face"),
+        )],
+        bc_channel=BCChannel.DIRICHLET,
+        bc_time_varying=True,
+        elliptic_subsolve=EllipticSubsolve.NONE,
+        time_discretization=TimeDiscretization.EXPLICIT,
+        stencil_radius=2,
+        substeps_per_macro_step=max(1, int(np.ceil(expert.dt / dt_cfl))),
+        differentiable=Differentiable.NONE,
+        dt_native=expert.dt,
+        storage=expert.storage,
+        equivariances=(),
+        validity=expert.validity,
+        governing_family=("reacting-compressible-flow" if expert.agent_id == "a"
+                          else "compressible-navier-stokes-2d"),
+        lambda_ref=f"compressible2d.Compressible2D, agent {expert.agent_id}'s own "
+                   "block and discretization",
+        claim_types=frozenset({ClaimType.TRAJECTORY}),
+        weight_hash="compressible2d/2-hllc-minmod-ssprk2",
+        boundary_response=expert.respond,
+        boundary_response_integrated=expert.respond_integrated,
+        probe_base=lambda p, _e=expert: _e.base_trace(_neighbour_of(p)),
+        reproducibility_floor=float(np.finfo(float).eps),
+        deterministic=True,
+        note=f"solvers/compressible2d.py, build repo 0a407b7, unmodified; mesh "
+             f"from grid.build_blocks; {kind} port on {side}",
+    )
+
+
+#: ADVEC pairs (h0, rho u.n) in J/kg and kg/(m^2 s): s_e s_f = s_P in W/m^2.
+#: Sized on the chamber's own operating point rather than on the fixture's
+#: numbers, which were declared before any physics existed to size them against.
+ADVEC_SCALES_R = {
+    "enthalpy": 5.6e6, "mass_flux": 1.0e2, "power_area": 5.6e8,
+    "h0_effort": 5.6e6, "h0_flow": 1.0e2, "h0_power": 5.6e8,
+}
+
+
+#: **The port type each declared edge is probed on, and why it is that one.**
+#:
+#: `rocket.py` declares MECH, THERM and ADVEC on most edges.  This names the ONE
+#: whose conjugate bond the wired channel actually carries, so a number is
+#: measured where it means something rather than on every type indiscriminately.
+#:
+#: The `g-f` row is the finding.  `rocket.py` declares ADVEC on it; the config's
+#: own `edge_list` says ``(heat, fluid)``; and **ADVEC's declared flow is
+#: identically zero there** -- the shear layer's normal is exactly ``+y`` and the
+#: flow is ``+z``, so ``rho u.n == 0`` for any trace.  Measured: perturbing h0 by
+#: 1000 J/kg moves the response by 4.2e-10, the solver's own transverse velocity
+#: noise.  That is `CASE-STUDY-GUIDE` mistake 6 -- an interface problem that is
+#: EMPTY rather than hard -- and it is a declaration error, not physics.
+SEAM_PORT_TYPE = {
+    "a-b": PortType.ADVEC,   # the reaction zone's exit plane; mass crosses
+    "e-b": PortType.ADVEC,   # the throat plane
+    "b-c": PortType.THERM,   # the chamber wall
+    "c-d": PortType.THERM,   # the airframe's outer face
+    "e-f": PortType.ADVEC,   # the nozzle exit plane
+    "d-g": PortType.ADVEC,   # the atmosphere front/wake plane
+    "g-f": PortType.ADVEC,   # DECLARED, and measured EMPTY -- see above
+}
+
+#: Which agent sits on each end of each declared edge, from `rocket.py`'s EDGES.
+SEAM_SIDES = {
+    "a-b": ("a", "b"), "e-b": ("e", "b"), "b-c": ("b", "c"),
+    "c-d": ("c", "d"), "e-f": ("e", "f"), "d-g": ("d", "g"),
+    "g-f": ("g", "f"),
+}
+
+
+def make_rocket_experts(dt_scale: float = 1.0e-3,
+                        burn_time: float = T_PROBE_BURN) -> dict[str, Any]:
+    """All seven agents, at a stated probe cadence.
+
+    ``dt_scale`` multiplies each agent's declared clock.  It is a DECLARATION and
+    it is reported: the chamber alone is 3310 CFL sub-steps at its own 1 ms, and
+    Tier 76 measured beta moving 0.3% over a 100x cadence range against an 84.75x
+    cost, so the trade is priced rather than assumed.
+    """
+    cfg = rocket_config()
+    experts: dict[str, Any] = {}
+    for aid in ("a", "b", "e", "d", "f", "g"):
+        experts[aid] = GasAgent(aid, dt=float(cfg.dt_model[aid]) * dt_scale)
+    shell = ShellAgent(dt=float(cfg.dt_model["c"]))
+    shell.march(T_CHAMBER, gas_h_on_shell_seam(experts["b"], shell, T_SHELL_COLD),
+                burn_time=burn_time)
+    experts["c"] = shell
+    return experts
+
+
+def rocket_port_name(agent_id: str, neighbour: str, seam_id: str) -> str:
+    del agent_id
+    return "%s:%s" % (neighbour, SEAM_PORT_TYPE[seam_id].value)
+
+
+def _n_on(expert, agent_id: str, neighbour: str, seam_id: str) -> int:
+    if agent_id == "c":
+        return expert.n_port(rocket_port_name(agent_id, neighbour, seam_id))
+    return expert.n_face(neighbour)
+
+
+def _caps_for(expert, agent_id: str, ports):
+    """One record carrying every port that agent owns, each at its seam's dim M."""
+    if agent_id == "c":
+        caps = shell_capabilities(expert, m_eff=ports[0][2])
+        decls = []
+        for neighbour, seam_id, m in ports:
+            name = rocket_port_name(agent_id, neighbour, seam_id)
+            n = expert.n_port(name)
+            decls.append(port_decl(
+                name=name, port_type=SEAM_PORT_TYPE[seam_id],
+                geometry="shell %s, %d line elements"
+                         % ("outer face" if neighbour == "d" else "inner window", n),
+                direction=Direction.BIDIRECTIONAL, nondim=dict(THERM_SCALES),
+                effective_resolution=m, motion_class=MotionClass.STATIC,
+                response_half=ResponseHalf.FLOW,
+                prolongation=face_prolongation(
+                    agent_id, name, expert.port_weights(name), m,
+                    "%d-mode real Fourier basis on %d face cells" % (m, n)),
+                note="the agent's own Robin surface term",
+            ))
+        caps.ports = decls
+        caps.probe_base = lambda p, _e=expert: _e.base_trace(p)
+        return caps
+    base, decls = None, []
+    for neighbour, seam_id, m in ports:
+        one = gas_capabilities(expert, neighbour, SEAM_PORT_TYPE[seam_id], m_eff=m)
+        decls.append(one.ports[0])
+        base = base or one
+    base.ports = decls
+    return base
+
+
+def build_rocket_real(experts=None, dt_scale: float = 1.0e-3,
+                      declare_effort_normal: bool = True,
+                      m_cap: int | None = None):
+    """The whole rocket graph with **all seven agents on real physics**.
+
+    R0's completion.  Every agent's `boundary_response` steps a build-repo solver
+    on the build repo's own mesh; nothing here is a seeded random matrix.
+
+    One port type per edge (`SEAM_PORT_TYPE`), so a number is measured where its
+    conjugate bond means something.  The MECH ports `rocket.py` also declares are
+    NOT carried here -- see the module docstring.
+    """
+    from ..graph import Agent, CaseGraph, Connection, Decomposition, FluxMatching
+
+    experts = experts or make_rocket_experts(dt_scale=dt_scale)
+    # dim M per seam FIRST: both sides must be declared at the same number or
+    # L3/C2/C3/C6 refuses the pair. Tier 77 learned that one the loud way.
+    #: ``m_cap`` DECLARES a coarser interface space, which is not the same thing
+    #: as capping the probe's budget.  `ProbeBudget.max_modes` shrinks the space
+    #: and leaves the declared prolongation at its original width, so
+    #: `Prolongation.prolong` raises ``dim mismatch``; a budget cannot narrow a
+    #: space somebody else declared.  Declaring the narrower space builds the
+    #: matching prolongation with it, and it is a DECLARATION -- reported, and
+    #: the reason a number taken under it is not the number at full resolution.
+    dims, owned = {}, {a: [] for a in experts}
+    for seam_id, (x, y) in SEAM_SIDES.items():
+        m = min(modes_for(_n_on(experts[x], x, y, seam_id)),
+                modes_for(_n_on(experts[y], y, x, seam_id)))
+        if m_cap is not None:
+            m = min(m, int(m_cap))
+        dims[seam_id] = m
+        owned[x].append((y, seam_id, m))
+        owned[y].append((x, seam_id, m))
+
+    agents = [Agent(a, _caps_for(experts[a], a, owned[a]),
+                    domain=a, role="structure" if a == "c" else "")
+              for a in ("a", "b", "e", "c", "d", "f", "g")]
+    connections = []
+    for seam_id, (x, y) in SEAM_SIDES.items():
+        connections.append(Connection(
+            seam_id=seam_id,
+            a=(x, rocket_port_name(x, y, seam_id)),
+            b=(y, rocket_port_name(y, x, seam_id)),
+            port_type=SEAM_PORT_TYPE[seam_id],
+            geometrically_coincident=True,
+            derive_space=True,
+            # W309: Block face normals are index-oriented, so both sides report
+            # against one shared direction on every gas-gas seam.
+            effort_normal=(EFFORT_NORMAL_ROCKET[seam_id]
+                           if declare_effort_normal else ""),
+            # n_0(Gamma) = 0: a uniform shift of the effort produces a uniform
+            # change in the flow, so no direction of the trace space is invisible.
+            # `rocket.py`'s own connections declare NOTHING here, which is why
+            # `excess_null_directions` is None right across that graph.
+            expected_null_dim=0,
+            note="%s, %s, real physics on both sides"
+                 % (seam_id, SEAM_PORT_TYPE[seam_id].value),
+        ))
+    return CaseGraph(
+        name="rocket-ascent-2d-real",
+        agents=agents,
+        connections=connections,
+        decomposition=Decomposition.NON_OVERLAPPING,
+        macro_dt=max(a.capabilities.dt_native for a in agents),
+        flux_matching=FluxMatching.TIME_INTEGRATED,
+        note="R0 complete: all seven agents wired to build-repo solvers at "
+             "dt_scale=%g" % dt_scale,
+    ), experts

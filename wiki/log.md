@@ -5816,3 +5816,81 @@ python scripts/run_suite.py
 ### Verification
 
 `python scripts/run_suite.py`: **1824 passed, 0 failed, no missing logs** (1814 at the end of Tier 77 plus this tier's 10), **621 s** -- and this one IS a real duration: no Modern Standby transition over the run window, unlike Tier 77's, whose 15508 s spanned a 3 h 40 m suspend. `python scripts/vault_scan.py wiki`: **254 files, 0 problems**. `python -m atlas rocket`: **refuse, 10 refusals, 43 decertifications**, unchanged -- W306 changes what the certificate says, not what it decides.
+
+---
+
+## [2026-09-17] tier 79 | R0 complete, and what the other six agents cost to believe
+
+All seven rocket agents now step a build-repo solver on the build repo's own mesh. **Nothing in the rocket graph is a seeded random matrix any more.** Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §13.
+
+It also found that most of what it measured **is not yet believable**, for a reason worth more than the numbers.
+
+### Two kinds of port, and a third
+
+b-c is a **wall**; almost every other seam is a **plane the flow crosses**. They need different channels: `BC("wall_noslip", {"T_wall": ...})` with the trace a temperature, against `BC("prescribed", {"state": ...})` with the trace a total enthalpy and the response the mass flux. Agent `g` needs a third — it carries the plume as a **blanked hole**, so its `f` port drives `Compressible2D.hole_state`, a field whose own comment says *"set by the coupler"* and which nothing in this vault had ever set. The hole's ghost is one state for the whole band, so that port's effective resolution really is 1 and is declared so.
+
+### The correction that matters most
+
+**Tier 76 justified a reduced probe cadence by measuring that $\beta$ moved 0.3% over a 100x range — on a WALL.** A wall's response is algebraic in the trace (`_wall_flux` subtracts $T_{\text{wall}}$ directly), so it converges at any cadence. A plane's needs the wave to cross cells.
+
+| `dt_scale` | sub-steps | plane `e-f` peak | cells responding | wall `b-c` peak |
+|---|---|---|---|---|
+| $10^{-3}$ | 8 | $4.66\times10^{-11}$ | 11 of 96 | $0.193867$ |
+| $10^{-2}$ | 72 | $2.18\times10^{-10}$ | 29 of 96 | $0.193867$ |
+| $10^{-1}$ | 720 | $1.43\times10^{-7}$ | **96 of 96** | $0.193722$ |
+| $1$ (declared) | 7274 | $9.80\times10^{-6}$ | 96 of 96 | — |
+
+**The wall is flat to four digits; the plane moves five orders and has not converged at the declared clock.** So every ADVEC number in this tier's seam table is the operator the probe could see in 8 sub-steps, not the seam's — reported because the difference *is* the finding. The cadence justification stands where it was measured and was over-generalised by me to a port kind it does not fit. Measured price of doing it properly: one call on `e` at its declared clock is ~268 s, so a full $\dim M = 41$ probe of e-f is 84 calls and about **7.2 hours**.
+
+**And one plane seam was paid for, so the claim is load-bearing rather than rhetorical.** `e-f` probed twice at the SAME declared interface space ($\dim M = 8$) and two cadences $1000\times$ apart:
+
+| | $10^{-3}$ | $1$ (declared) | ratio |
+|---|---|---|---|
+| CFL sub-steps | $45$ | $41\,445$ | $921\times$ |
+| $\beta$ | $6.79758\times10^{-7}$ | $\mathbf{2.91212\times10^{-5}}$ | $\mathbf{42.8\times}$ |
+| $\omega$ | $0.0212435$ | $0.0907455$ | $4.27\times$ |
+| `e`'s share | $0.0637$ | $\mathbf{0.362}$ | $5.68\times$ |
+| wall cost | $1$ s | $2786$ s | $2786\times$ |
+
+Sign structure `positive` at both, null dim $0$ against a declared $0$ at both, neither empty — **the qualitative reading survives the reduced cadence and every magnitude does not.** The share is the consequence that bites: at the reduced cadence `e` carries $6.4\%$ of the seam and reads as a passenger, converged it carries $36\%$, and W76 established that a substitution certificate can only see a perturbation bounded by the swapped agent's own block. **A certificate taken at the reduced cadence would admit any replacement of the nozzle, whatever it did.**
+
+### The mistake that mattered most
+
+The first `build_rocket_real` declared `motion_class=STATIC` on every port, and the compile came back with **1 refusal instead of 4** — the `L2/InterfaceMotion` refusals had silently vanished. **That is the "declare it away" failure in its purest form**: the one genuine research hole in this graph, removed by a default in a builder rather than by any argument. Now carried from `rocket.AGENTS`, with `PORT_MOTION` saying why in the code and a test pinning the count.
+
+### Findings
+
+**W309 — `grid.Block` face normals are index-oriented, not outward.** Measured on every gas block: $\mathbf n_i[0] = \mathbf n_i[-1] = (+1,0)$ and $\mathbf n_j[:,0]\cdot\mathbf n_j[:,-1] > 0$. So on **every** gas-gas seam both sides report against one shared direction, and Tier 77's b-c was not special. The rule — *`effort_normal` names the agent for which the seam is its `imax`/`jmax` face* — **reproduces the b-c answer derived independently a tier earlier from the geometry of a wall**, which is what makes it a rule rather than a pattern.
+
+**W311 — a second undeclared interface.** `e` and `c` share the diverging nozzle's inner wall over $z \in [0.40, 0.70]$ and no edge declares it; `wall_b_c` stops at the throat and `wall_c_d` is the outer wall. `contours.plane_d_g`'s own docstring already records a d-f one. So `domains.verify` checks the agents **partition** the box and that every **declared** edge lies on both agents' boundaries — and never the converse. **The consequence was predicted at $>2\times$ and refuted at $1.4741\times$**: the undeclared nozzle wall carries $\bar h = 281.27$ against the chamber's $190.81$. Material, and smaller than I claimed.
+
+**g-f's ADVEC operator is identically zero.** $\Lambda = 0$ — empty, not ill-conditioned, which is `CASE-STUDY-GUIDE` mistake 6. The cause is exact: the shear layer's normal is precisely $+y$, the flow is $+z$, so $\rho\mathbf u\cdot\mathbf n \equiv 0$ for any trace. Perturbing $h_0$ by 1000 J/kg moves it by $4.2\times10^{-10}$. **The config agrees** — its `edge_list` gives g-f the types `(heat, fluid)`, not `conservation`. A declaration error with an exact cause.
+
+**W301's signature cross-checked, and it is about `wall_noslip`, not the solver.** Wall ports: 1 of 2 trip. Plane ports: 1 of 10. **Both exceptions are informative**: `d`'s wall does *not* trip because the atmosphere sits at 255.7 K against a 255.7 K wall, so the clamp threshold of 138 K is far below the trace — the mechanism confirmed from the other side; and `f.g:ADVEC` trips *vacuously*, because its response is the zero operator above.
+
+**W313 — every $\beta$ in this vault is in raw physical units.** `Prolongation.nondim_diag` is specified by `interface-transfer-theory` §6 as the diagonal unit conversion and **no case sets it** — grep returns zero. Within-seam comparisons are unaffected; reading $\beta$ across port types as a ranking is not safe, and nothing says so.
+
+**And `ProbeBudget.max_modes` is incompatible with a declared prolongation** — it shrinks the space and leaves the prolongation at its original width, so `prolong` raises `dim mismatch`. A budget cannot narrow a space somebody else declared; the narrower space has to be *declared*, which is what `build_rocket_real(m_cap=...)` now does.
+
+### The graph, compiled
+
+| | fixture (Tier 75) | **real (Tier 79)** |
+|---|---|---|
+| verdict | `refuse` | `refuse` |
+| refusals | 10 | **4** |
+| decertifications | 49 | **22** |
+
+Four refusals: `L2/InterfaceMotion` $\times 3$ and `L5/R6` $\times 1$ — **and the second is the framework catching this tier's own declaration error, unprompted.** The g-f ADVEC operator was found empty by hand; `L5/R6` refuses the graph for it independently: *"Seams `['g-f']` assemble to a zero block … iterating an empty interface problem converges instantly and means nothing — the degenerate-axis trap, generalized: an axis whose value cannot affect the answer must be refused when the configuration is READ, not discovered by measuring it."* The PoC's stated product, demonstrated on its own author, at compile time.
+
+The InterfaceMotion count is three rather than nine because this graph declares one port type per seam where the fixture declared three — the same three moving faces, refusing for the same reason.
+
+**Opened:** **W309** (index-oriented block normals), **W310** (R0 complete), **W311** (the undeclared nozzle wall), **W312** (a plane port's probe cadence), **W313** (`nondim_diag` set by nobody).
+
+**Added:** `scripts/w310_rocket_r0_complete.py`, `scripts/w312_plane_seam_converged.py`, `tests/test_tier79_r0_complete.py`, `out/w310.json`, `out/w312.json`.
+**Changed:** `atlas/cases/rocket_experts.py` (`GasAgent` for all six gas agents, the wall/plane/hole channels, the shell's outer face, `AGENT_FACES`, `PORT_MOTION`, `EFFORT_NORMAL_ROCKET`, `SEAM_PORT_TYPE`, `build_rocket_real`), [[case-study-rocket-bc-seam-atlas-0.1]] (§13), [[gap-worklist]], [[index]].
+
+**NOT done:** **the ADVEC seam operators are not converged** and the price of converging them is measured, not paid. **MECH is still stubbed on every seam** — `rocket.py` declares it and no channel here carries it. The undeclared e-c interface is **reported, not added**: adding it changes the config's edge list, which is the build repo's file and not this vault's. W308 still waits on an audit of [[poc3-racelab-car-graph]]. R2's composed-defect half is untouched.
+
+### Verification
+
+`python scripts/run_suite.py`: **1836 passed, 0 failed, no missing logs**, **797 s** -- a real duration, with no Modern Standby transition over the run window (checked, after Tier 77's 15508 s spanned a 3 h 40 m suspend). `python scripts/vault_scan.py wiki`: **254 files, 0 problems** -- and it earned its keep this tier, catching 5 TAB bytes and a backspace that a non-raw Python `replace()` target wrote into `index.md` from `\times`, `\to` and `\beta`. The seven-agent graph: **refuse, 4 refusals, 22 decertifications**.
