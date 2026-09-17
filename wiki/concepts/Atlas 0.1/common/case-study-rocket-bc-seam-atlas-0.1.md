@@ -537,4 +537,59 @@ It probed `caps.ports[0]` only, and reported that the rocket's `b` did **not** t
 
 ---
 
-**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident). See [[gap-worklist]].
+
+---
+
+## 12. Tier 78 — W306 implemented, and it was not a rocket detail
+
+§10.3 named W306: `passivity_defect` is $\lvert\lambda_{\min}\rvert$ and nothing read $\lambda_{\max}$, so a **one-signed negative** operator — passive up to a global sign that $S\lambda = \chi$ is indifferent to, because $\chi$ flips with $S$ — reported the same number as a genuinely **mixed** spectrum. This section closes it for the diagnostic, and the tier's own gate came first.
+
+### 12.1 The gate: is the rocket the only place this matters?
+
+A rule change that serves one case study is a fix, and should be called one. So before touching `probe.py`, every buildable case was compiled and every seam it probes classified — **60 seams across 8 cases**:
+
+| | count |
+|---|---|
+| seams classified | $60$ |
+| reporting a passivity defect | $\mathbf{4}$ |
+| of those, **MIXED** — a genuinely amplified mode | $1$ |
+| of those, **ONE-SIGNED** — a global sign | $\mathbf{3}$ |
+
+The three one-signed ones are the rocket's `b-c:THERM` and **`car_graph`'s `J1_core_strip` and `J3_rotor_strip`** — the latter two on a graph that *does* declare `effort_normal` and has it **inverted**. The single mixed one is `thermal_strain`'s `thermal-pressure` seam, at $\lambda \in [-1.93\times10^{9},\ +3.23\times10^{11}]$.
+
+**So three quarters of the passivity defects in this vault are sign conventions**, and the one the rule was written for is the minority case.
+
+### 12.2 What was implemented, and what deliberately was not
+
+`ProbedBlock` and `SeamOperator` now carry `passivity_lambda_max` and `sign_structure` $\in$ {`positive`, `negative`, `mixed`, `zero`}, classified against **the same tolerance the defect is clipped at** — so an eigenvalue at arithmetic-noise level does not turn every operator into `mixed`. Both are emitted, and `L4/E7/passivity` now names the structure and the remedy. On the rocket it reads:
+
+> *"the spectrum is ONE-SIGNED NEGATIVE ($\lambda_{\max} = -2.193\times10^{-1} < 0$) … a global SIGN rather than an amplified mode … the seam declares `effort_normal='b'`, so try the OTHER side."*
+
+**The verdict is unchanged, deliberately.** A negative-definite operator still does not give the $L \le 1$ branch and still needs fixing before it can, so it is still a decertification. Changing what the rule *decides* would move every artifact that has one, and the evidence for that change is not in hand. What changes is that the certificate now says which failure it is.
+
+**A number that explains why the fix is cheap:** negating $S$ changes no singular value, so $\beta$ and $\kappa$ — the quantities the master bound actually uses — are untouched by the orientation. Only E7's test moves. That is pinned by `test_a_global_sign_leaves_the_singular_values_alone`.
+
+### 12.3 What a schema extension costs a byte-identity control, measured
+
+Two new keys on every seam move every artifact that has one: **7 of the 11 live keys** in the W189 control. Naming seven exemptions would have gutted it, so the live test now requires the difference to be **confined to the new keys** — delete them from both sides and the bytes must match again. That is a strictly stronger claim than *"these moved and I meant it"*, and it is mechanical rather than a list of names.
+
+The two costs are separable and were measured apart:
+
+| | live keys moved |
+|---|---|
+| compute the fields, do **not** emit them | $1$ of $11$ — only `thermal_strain`, whose *message* changed |
+| emit them | $8$ of $11$ |
+
+So the diagnostic is nearly free and the **publication** is what costs the control — which is the right way round, since publication is the whole point.
+
+### 12.4 W308 — found, measured, and deliberately not fixed
+
+`car_graph`'s two inverted declarations are a two-character fix: naming the other agent gives a **positive definite** operator with every singular value unchanged. `J2_heat` already names the right one, which is the control that makes this a finding rather than a blanket flip.
+
+It is **not** fixed here. [[poc3-racelab-car-graph]] records those seams as earning `L4/E7/passivity` in *"the package's standing decertification set"*, alongside a decision count of $191$ decisions, $156$ admits, $34$ decertifications and one refusal. Correcting the declarations changes those counts, so it belongs with an audit of that page rather than as a side effect of a diagnostic tier. Pinned meanwhile by a test that asserts both structures, the flip's effect, and that `J2_heat` is untouched — so a future change cannot quietly alter any of it.
+
+**[AI Inference]:** the shape is likely general. A seam whose two sides both report in one shared direction needs `effort_normal`, and this vault now has four examples — one FSI (`front_wing`, W138), one CHT (the rocket), and two lumped-to-field joins (`car_graph`) — against zero counter-examples. Whether *every* such seam is one-signed rather than mixed is not established; `thermal_strain` shows a mixed spectrum exists.
+
+---
+
+**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams — found by W306, measured, not fixed). See [[gap-worklist]].

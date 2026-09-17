@@ -279,7 +279,17 @@ def test_W306_passivity_defect_cannot_tell_a_global_sign_from_an_amplified_mode(
     # while the two matrices are different in the way that matters:
     assert np.linalg.eigvalsh(one_signed).max() < 0.0
     assert np.linalg.eigvalsh(mixed).max() > 0.0
-    # the distinguishing quantity exists and is one line; nothing computes it.
-    assert not hasattr(ProbedBlock(agent_id="t", seam_id="s", S=mixed,
-                                   route="assembled", n_solves=0, dim_M=3),
-                       "passivity_lambda_max")
+    # **CLOSED at Tier 78 (W306), and the diagnosis above is kept rather than
+    # rewritten.** This test originally ended by asserting that
+    # `passivity_lambda_max` did NOT exist -- that was the gap it named. It does
+    # now, and everything above still holds: the OLD quantity still cannot tell
+    # the two apart, which is exactly why a new one was needed.
+    blk_one = ProbedBlock(agent_id="t", seam_id="s", S=one_signed,
+                          route="assembled", n_solves=0, dim_M=3)
+    blk_mix = ProbedBlock(agent_id="t", seam_id="s", S=mixed,
+                          route="assembled", n_solves=0, dim_M=3)
+    _fill_diagnostics(blk_one, one_signed)
+    _fill_diagnostics(blk_mix, mixed)
+    assert blk_one.sign_structure == "negative"
+    assert blk_mix.sign_structure == "mixed"
+    assert blk_one.passivity_lambda_max < 0.0 < blk_mix.passivity_lambda_max

@@ -2419,6 +2419,57 @@ def _provisional_transfer(ctx: _Context, conn: Connection) -> SeamTransfer | Non
     )
 
 
+def _passivity_structure_note(op: Any) -> str:
+    """**W306, 2026-09-17.** Which KIND of passivity failure this is.
+
+    `passivity_defect` is ``abs(lam_min)``, and until Tier 78 nothing read
+    ``lam_max``.  Two different failures reported the same number:
+
+    ``negative``  every mode damped and the whole operator a GLOBAL SIGN away
+                  from passive.  The interface problem ``S lam = chi`` is
+                  indifferent to that sign because chi flips with S, so this is a
+                  DECLARATION inconsistency -- an undeclared or inverted
+                  `effort_normal` -- and the remedy is one character.
+    ``mixed``     ``lam_min < 0 < lam_max``: a genuinely amplified interface
+                  mode, which is what E7 is about.
+
+    Measured across 60 seams in 8 cases before this was written
+    (`scripts/w306_sign_structure.py`): **4 seams reported a defect and 3 were
+    one-signed** -- the rocket's ``b-c:THERM``, and `car_graph`'s
+    ``J1_core_strip`` and ``J3_rotor_strip``, the latter two on a graph that DOES
+    declare `effort_normal` and has it inverted.  Only `thermal_strain`'s
+    ``thermal-pressure`` was a real amplified mode.  So the VERDICT is unchanged
+    -- a negative-definite operator still does not give the ``L <= 1`` branch,
+    and still needs fixing before it can -- but the REASON and the REMEDY are
+    different, and a reader could not previously tell which they had.
+    """
+    kind = getattr(op, "sign_structure", None)
+    lam_max = getattr(op, "passivity_lambda_max", None)
+    if kind is None or lam_max is None:
+        return ""
+    if kind == "negative":
+        named = getattr(op, "effort_normal", "") or ""
+        who = (f"the seam declares effort_normal={named!r}, so try the OTHER side"
+               if named else "the seam declares no effort_normal, so both blocks "
+                             "entered the sum with +1")
+        return (
+            f". **W306: the spectrum is ONE-SIGNED NEGATIVE** (lambda_max = "
+            f"{lam_max:.3e} < 0), so every mode is damped and this is a global "
+            f"SIGN rather than an amplified mode -- S lam = chi is indifferent "
+            f"to it because chi flips with S. That makes it a DECLARATION "
+            f"inconsistency rather than a physical defect: {who}. The L <= 1 "
+            f"branch is still unavailable until the orientation is fixed, which "
+            f"is why this is still a decertification"
+        )
+    if kind == "mixed":
+        return (
+            f". **W306: the spectrum is MIXED** (lambda_max = {lam_max:.3e} > 0 "
+            f"> lambda_min), so this is a genuinely amplified interface mode and "
+            f"no choice of effort_normal removes it"
+        )
+    return ""
+
+
 def _l4_verdicts(
     ctx: _Context, conn: Connection, op: SeamOperator, provisional: bool = False
 ) -> None:
@@ -2669,7 +2720,8 @@ def _l4_verdicts(
             f"passivity defect {op.passivity_defect:.3e} on the assembled seam: the "
             "symmetric part has a negative mode, so the L <= 1 branch is unavailable "
             "and L falls back to fitted. The eigenvector names which interface mode is "
-            "amplified",
+            "amplified"
+            + _passivity_structure_note(op),
             subject=conn.seam_id, quantity="L", defect=op.passivity_defect,
         )
         # A MEASURED negative mode is a genuine failure of E7, unlike a missing

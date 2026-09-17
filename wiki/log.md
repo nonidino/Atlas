@@ -5757,3 +5757,62 @@ Two controls bracket the measurement and both behaved: an exactly-diagonal respo
 `python scripts/run_suite.py`: **1814 passed, 0 failed, no missing logs** (1807 at the end of Tier 76 plus this tier's 7). `python scripts/vault_scan.py wiki`: **254 files, 0 problems**. `python -m atlas rocket`: **refuse, 10 refusals, 43 decertifications**, unchanged.
 
 **The suite reported `wall 15508s` and that number is worthless.** The machine entered Modern Standby at 08:42:27 and left it at 12:22:57 -- **3 h 40 m** -- with the run in progress and **the charger plugged in at 98%**. That is new: the earlier record of this failure (Tier 47) was on battery, and Modern Standby turns out to be an idle timeout rather than a power policy, so *on AC* is not a reason to trust a duration. **The pass and fail counts survive a suspend and only the timings are destroyed**, so the tallies above stand and the seconds are discarded. `Get-WinEvent -FilterHashtable @{LogName='System'; Id=506,507}` is what shows it.
+
+---
+
+## [2026-09-17] tier 78 | the sign structure E7 never read, and it was not a rocket detail
+
+W306, opened at Tier 77 and closed here for the diagnostic. Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §12.
+
+### The gate came first, and it was the right question
+
+`_fill_diagnostics` set `passivity_defect = abs(lam_min)` and never read `lam_max`, so a **one-signed negative** operator — passive up to a global sign that $S\lambda = \chi$ is indifferent to, because $\chi$ flips with $S$ — reported the same number as a genuinely **mixed** spectrum. **A rule change that serves one case study is a fix and should be called one**, so before touching `probe.py` every buildable case was compiled and every seam classified.
+
+**60 seams across 8 cases. 4 report a passivity defect and 3 of them are one-signed.** The three: the rocket's `b-c:THERM`, and **`car_graph`'s `J1_core_strip` and `J3_rotor_strip`** — the latter two on a graph that *does* declare `effort_normal` and has it **inverted**. The one genuine amplified mode is `thermal_strain`'s `thermal-pressure`, at $\lambda \in [-1.93\times10^{9}, +3.23\times10^{11}]$.
+
+So **three quarters of this vault's passivity defects are sign conventions**, and the case the rule was written for is the minority.
+
+### What landed, and what deliberately did not
+
+`ProbedBlock` and `SeamOperator` carry `passivity_lambda_max` and `sign_structure` in {`positive`, `negative`, `mixed`, `zero`}, classified against **the same tolerance the defect is clipped at** — otherwise an eigenvalue at noise level would turn every operator into `mixed`. Both are emitted, and `L4/E7/passivity` names the structure and the remedy.
+
+**The verdict is unchanged, deliberately.** A negative-definite operator still does not give the $L \le 1$ branch and still needs fixing, so it is still a decertification. Changing what the rule *decides* would move every artifact that has one and the evidence for that is not in hand. What changes is that the certificate now says which failure it is.
+
+And a number that says why the fix is cheap when someone does apply it: **negating $S$ changes no singular value**, so $\beta$ and $\kappa$ — what the master bound actually uses — are untouched by the orientation. Only E7's test moves.
+
+### What a schema extension costs a byte-identity control, measured
+
+Two new keys on every seam move every artifact that has one — **7 of 11 live keys**. Naming seven exemptions would have gutted the W189 control, so the live test now requires the difference to be **confined to the new keys**: delete them from both sides and the bytes must match again. Stronger than *"these moved and I meant it"*, and mechanical rather than a list.
+
+The two costs are separable and were measured apart: **computing without emitting moves 1 of 11** (the message change on `thermal_strain`), **emitting moves 8**. So the diagnostic is nearly free and the *publication* is what costs the control — the right way round, since publication is the point.
+
+### W308 — found, measured, and deliberately not fixed
+
+`car_graph`'s two inverted declarations are a two-character fix: naming the other agent gives a **positive definite** operator with every singular value unchanged. `J2_heat` already names the right one, which is the control that makes this a finding rather than a blanket flip.
+
+It is left because [[poc3-racelab-car-graph]] records those seams as earning `L4/E7/passivity` in *"the package's standing decertification set"*, alongside $191$ decisions, $156$ admits, $34$ decertifications and one refusal. Correcting the declarations changes those counts, so it belongs with an audit of that page rather than as a side effect of a diagnostic tier. Pinned meanwhile by a test asserting both structures, the flip's effect and that `J2_heat` is untouched.
+
+### Predictions
+
+T1 — *a sweep finds at least one seam other than the rocket's currently misreported* — **held, and by two**: `car_graph` contributes both. T2 — *emitting the field moves more than 30 of 40* — **mis-specified rather than wrong**: the live test recompiles 11 keys, not 40, so the number I named was not one the instrument produces; measured, 8 of 11 moved. T3 — *not emitting keeps all 40 identical* — **refuted**: not emitting still moves 1, because the *message* changed too. Both halves had to be measured separately to see that, and doing so is what produced the confinement check.
+
+### How to reproduce
+
+```
+python scripts/w306_sign_structure.py --json out/w306.json
+python -m pytest tests/test_tier78_sign_structure.py -q       # 10 passed
+python -m pytest tests/test_tier45_region_assembly.py -q       # 38 passed
+python scripts/vault_scan.py wiki                              # 254 files, 0 problems
+python scripts/run_suite.py
+```
+
+**Opened:** **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams). **Closed:** **W306**, for the diagnostic — the rule now says which failure it is; changing what it *decides* is not done and not justified by this evidence.
+
+**Added:** `scripts/w306_sign_structure.py`, `tests/test_tier78_sign_structure.py`, `out/w306.json`.
+**Changed:** `atlas/probe.py` (`passivity_lambda_max` and `sign_structure` on both dataclasses, computed, emitted), `atlas/compiler.py` (`_passivity_structure_note`, read by `L4/E7/passivity`), `tests/test_tier45_region_assembly.py` (the confinement check, replacing seven exemptions; `MOVED_BY_W306` for the one message change), `tests/test_tier77_seam_base_and_convention.py` (its W306 test asserted the field did NOT exist — that was the gap it named; the diagnosis is kept and the assertion now checks the gap is closed), [[case-study-rocket-bc-seam-atlas-0.1]] (§12), [[gap-worklist]], [[index]].
+
+**NOT done:** W308 is left for an audit of [[poc3-racelab-car-graph]]. **The rule's DECISION is unchanged** — only its message. W307 is still an [AI Inference] over two seams. R0's remaining five agents, MECH, and R2's composed-defect half are all where Tier 77 left them.
+
+### Verification
+
+`python scripts/run_suite.py`: **1824 passed, 0 failed, no missing logs** (1814 at the end of Tier 77 plus this tier's 10), **621 s** -- and this one IS a real duration: no Modern Standby transition over the run window, unlike Tier 77's, whose 15508 s spanned a 3 h 40 m suspend. `python scripts/vault_scan.py wiki`: **254 files, 0 problems**. `python -m atlas rocket`: **refuse, 10 refusals, 43 decertifications**, unchanged -- W306 changes what the certificate says, not what it decides.

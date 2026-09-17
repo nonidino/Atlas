@@ -204,6 +204,46 @@ MOVED_BY_W194 = {
 #: suspension joins STRUCT in the halo rule's `uncut_agents`, where it belongs --
 #: a spring owns no region for an overlap to outrun.  The artifact differs in
 #: that admission's evidence and nowhere else.
+#: **W306, Tier 78.**  The two keys `probe` began emitting so a reader can tell a
+#: GLOBAL SIGN from an AMPLIFIED MODE -- three of the four passivity defects in
+#: this vault turned out to be the former.  A schema extension that adds a key to
+#: every seam moves every artifact that has one, and naming seven exemptions
+#: would gut the control, so the live test instead requires the difference to be
+#: **confined to these keys**: delete them from both sides and the bytes must
+#: match again.  Measured when it landed: of 11 live keys, 7 moved and were
+#: confined, 3 were already named by W194/W285, and 1 -- `thermal_strain` -- also
+#: changed its E7 message, which is `MOVED_BY_W306` below.
+W306_KEYS = ("passivity_lambda_max", "sign_structure")
+
+
+def _scrub_w306(text: str) -> str:
+    """The artifact with W306's two keys removed, wherever they appear."""
+    import json as _json
+
+    def drop(x):
+        if isinstance(x, dict):
+            for k in W306_KEYS:
+                x.pop(k, None)
+            for v in x.values():
+                drop(v)
+        elif isinstance(x, list):
+            for v in x:
+                drop(v)
+        return x
+
+    return _json.dumps(drop(_json.loads(text)), indent=2, sort_keys=True, default=str)
+
+
+#: The one live artifact whose E7/passivity MESSAGE changed, because it is the
+#: only one whose defect is a genuinely mixed spectrum. Everything else that
+#: moved moved only by the two new keys.
+MOVED_BY_W306 = {
+    "thermal_strain": "the E7/passivity message now names the sign structure, "
+                      "and thermal-pressure is the vault's only MIXED spectrum "
+                      "(W306, Tier 78)",
+}
+
+
 MOVED_BY_W285 = {
     "front_wing": "the lumped suspension has no spatial operator and now reads "
                   "uncut in the halo rule's admission (W285, Tier 65)",
@@ -331,8 +371,39 @@ def test_W189_control_live_recompile_matches_the_pre_change_bytes(before, key):
         assert "L7/R9/scope" in rules, (key, sorted(rules))
         assert "L7/R9" not in {f"{d.layer}/{d.rule}" for d in _r.decisions.refusals}
         assert _g.is_multirate() is True and _g.multirate_seams() == []
+    elif key in MOVED_BY_W306:
+        assert not same, (
+            f"{key} is named as moved by W306 and did not move; if the message "
+            "was reverted, take it out of MOVED_BY_W306 rather than leaving a "
+            "dead exemption behind")
+        # It moved for the stated reason: the E7/passivity message now names the
+        # SIGN STRUCTURE, and this is the only LIVE case whose defect is a
+        # genuinely MIXED spectrum rather than a global sign.
+        import json as _json
+        now = _json.loads(text)
+        assert now["verdict"] == before["rows"][key]["verdict"]
+        assert len(now["decisions"]) == before["rows"][key]["n_decisions"]
+        pas = [d for d in now["decisions"] if d["rule"] == "E7/passivity"]
+        assert pas, "the passivity decertification is gone"
+        assert "W306: the spectrum is MIXED" in pas[0]["message"], pas[0]["message"][:200]
     else:
-        assert same, key
+        # **W306, Tier 78.** A schema extension that adds two keys to every seam
+        # moves every artifact that has one -- 7 of the 11 live keys. Naming
+        # seven exemptions would gut this control; instead the difference is
+        # required to be CONFINED to the new keys, which is a strictly stronger
+        # claim than "I meant it" and is checked mechanically.
+        if not same:
+            import json as _json
+            _was = os.path.join(OUT, "artifacts", "before1", f"{key}.json")
+            if not os.path.exists(_was):
+                pytest.skip(f"{key} moved and the pre-change artifact is a "
+                            "local-only cache, so the confinement check cannot run")
+            with open(_was, encoding="utf-8") as _fh:
+                old_text = _fh.read()
+            assert _scrub_w306(text) == _scrub_w306(old_text), (
+                f"{key} moved for a reason OTHER than W306's two new keys")
+        else:
+            assert same, key
 
 
 def test_W189_control_W194_moved_exactly_two_of_the_forty(before):

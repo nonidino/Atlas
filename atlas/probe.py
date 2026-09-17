@@ -534,6 +534,14 @@ class ProbedBlock:
     null_tol: float | None = None
     passivity_defect: float | None = None      # pi_i, zeroed below the noise floor
     passivity_lambda_min: float | None = None  # the raw eigenvalue, never clipped
+    #: **W306.** The OTHER end of the spectrum, which nothing read until Tier 78.
+    #: With `passivity_lambda_min` alone, a one-signed negative operator -- passive
+    #: up to a global sign the interface solve is indifferent to -- reports the
+    #: same defect as one with a genuinely amplified mode.
+    passivity_lambda_max: float | None = None
+    #: **W306.** ``positive`` | ``negative`` | ``mixed`` | ``zero``, from the two
+    #: eigenvalue extremes against the same tolerance the defect is clipped at.
+    sign_structure: str | None = None
     passivity_tol: float | None = None
     passivity_eigvec: np.ndarray | None = None # which interface mode is amplified
     alpha_star: np.ndarray | None = None       # per-mode optimal Robin coefficient
@@ -579,6 +587,8 @@ class ProbedBlock:
             "null_dim": self.null_dim,
             "passivity_defect": self.passivity_defect,
             "passivity_lambda_min": self.passivity_lambda_min,
+            "passivity_lambda_max": self.passivity_lambda_max,
+            "sign_structure": self.sign_structure,
             "Xi": self.Xi,
             "alpha_star": None if self.alpha_star is None else self.alpha_star.tolist(),
             "operator_content": self.operator_content,
@@ -604,6 +614,9 @@ class SeamOperator:
     expected_null_dim: int | None = None
     passivity_defect: float | None = None
     passivity_lambda_min: float | None = None
+    #: **W306.** See `ProbedBlock.passivity_lambda_max`.
+    passivity_lambda_max: float | None = None
+    sign_structure: str | None = None
     passivity_eigvec: np.ndarray | None = None
     alpha_star: np.ndarray | None = None
     #: **W167.** `alpha_star` with the spectral radius that says whether it can
@@ -704,6 +717,12 @@ class SeamOperator:
             # operator -- the one the scheme is built on -- reported only the
             # clipped number. Found by W2's first real assembly, 2026-08-27.
             "passivity_lambda_min": self.passivity_lambda_min,
+            # **W306.** The same argument one step further: emitting only
+            # `lam_min` meant a reader could not tell a global sign from an
+            # amplified mode, and 3 of the 4 defects in this vault were the
+            # former. `effort_normal` is directly below because it is the remedy.
+            "passivity_lambda_max": self.passivity_lambda_max,
+            "sign_structure": self.sign_structure,
             "effort_normal": self.effort_normal,
             "effort_signs": dict(self.effort_signs),
             "oriented": bool(self.effort_normal),
@@ -994,6 +1013,34 @@ def _fill_diagnostics(block: ProbedBlock, S: np.ndarray, tol: float | None = Non
     block.passivity_tol = float(pass_tol)
     block.passivity_defect = abs(lam_min) if lam_min < -pass_tol else 0.0
     block.passivity_eigvec = evecs[:, 0].copy()
+    # **W306, 2026-09-17.**  `passivity_defect` is `abs(lam_min)` and nothing
+    # read `lam_max`, so two different things reported the same number:
+    #
+    #   ONE-SIGNED NEGATIVE  every mode damped and the whole operator a GLOBAL
+    #                        SIGN away from passive.  The interface problem
+    #                        ``S lam = chi`` is indifferent to that sign because
+    #                        chi flips with S, so it is a DECLARATION
+    #                        inconsistency -- an undeclared or inverted
+    #                        `effort_normal` -- and the remedy is one character.
+    #   MIXED                ``lam_min < 0 < lam_max``: a genuinely amplified
+    #                        interface mode, which is what E7 is about.
+    #
+    # Measured across the vault before this was added (`w306_sign_structure.py`,
+    # 60 seams over 8 cases): **4 seams reported a defect and 3 of them were
+    # one-signed** -- the rocket's b-c:THERM and `car_graph`'s J1_core_strip and
+    # J3_rotor_strip, the latter two on a graph that DOES declare `effort_normal`
+    # and has it inverted.  Only `thermal_strain`'s thermal-pressure seam was a
+    # real amplified mode.  So the distinction is not a rocket detail.
+    lam_max = float(evals[-1])
+    block.passivity_lambda_max = lam_max
+    if abs(lam_min) <= pass_tol and abs(lam_max) <= pass_tol:
+        block.sign_structure = "zero"
+    elif lam_min > -pass_tol:
+        block.sign_structure = "positive"
+    elif lam_max < pass_tol:
+        block.sign_structure = "negative"
+    else:
+        block.sign_structure = "mixed"
 
     if S.shape[0] == S.shape[1]:
         block.operator_content = operator_content(S)
@@ -1119,6 +1166,8 @@ def assemble_seam(
     op.null_dim = proxy.null_dim
     op.passivity_defect = proxy.passivity_defect
     op.passivity_lambda_min = proxy.passivity_lambda_min
+    op.passivity_lambda_max = proxy.passivity_lambda_max
+    op.sign_structure = proxy.sign_structure
     op.passivity_eigvec = proxy.passivity_eigvec
     op.alpha_star = proxy.alpha_star
     #: W167: the ASSEMBLED operator's condition, which is the one a solve uses.
