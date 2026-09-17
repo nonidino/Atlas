@@ -67,6 +67,42 @@ script. (A zip does not carry the executable bit: on macOS or Linux run
 On Windows, if `git clone` reports **"Filename too long"**, the checkout path is
 too deep for the bundled checkpoint's own directory name: clone somewhere
 shorter (`C:\poc3`), or run `git config --global core.longpaths true` first.
+The deepest path inside this branch is **120 characters**
+(`vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/snapshots/<40 hex>/model.safetensors`),
+and Windows' limit is 260, so the directory you clone into needs to be shorter
+than about **139 characters**. `C:\poc3` leaves 133 to spare; a path inside a
+synced `OneDrive\Documents\...` folder can be most of the way there on its own.
+A clone that hits this stops **part way through the checkout**, leaving a
+directory that looks plausible and is missing files.
+
+### Two columns
+
+There are two, and neither replaces the other:
+
+```bash
+./run.sh                          # the porous column, :8013
+./run.sh --column body-fitted     # the body-fitted column, :8014
+```
+
+**Porous** is fourteen rectangular windows on one lattice, and it is where a
+window can be clicked and flipped to a learned expert.
+
+**Body-fitted** is twelve curvilinear grids wrapped round the car with its
+panels as real walls — the solids, the cooling duct, the radiator core and the
+recovery turbine — and it is where the **certified mode** is: defect correction
+on the implicit step's own momentum system, whose limit is the classical answer
+by a proof rather than a measurement. Flip to it and the panel shows the outer
+iterations, the inner cheap calls and the residual; tick **verify** and it also
+measures the error against the classical answer, which costs a classical solve
+every step and is reported as its own price.
+
+They listen on different ports and can run at the same time.
+
+The body-fitted column takes **about a minute to appear the first time**: it
+cuts the grids, finds their donors, builds one composite pressure system, and
+then builds the probe operator its picture is drawn through, which is cached
+afterwards. The settled field it releases from is in this branch, so it does
+not have to march four minutes to reach one.
 
 ### Requirements
 

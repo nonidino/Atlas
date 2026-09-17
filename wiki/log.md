@@ -5487,3 +5487,56 @@ Five of six judged predictions held. The suite's $864$ s against Tier 72's $489$
 **Changed:** `atlas/demo_racelab/bodyfitted.py` (`MODES`, `LEARNED_REFUSED`, `CERTIFIED_NOT_PER_WINDOW`, `set_mode`, `set_verify`, `cost` with its arms and replicate counts, the certified row in `step` and `telemetry`), `atlas/demo_racelab/bodyfitted_server.py` (`/api/mode`, `/api/verify`, the worker's handlers, the mode in the payload and the meta), `atlas/demo_racelab/static/bodyfitted.html` (the switch, the certified panel, the two prices, W295's reason), `atlas/cases/certified_step.py` (`MomentumSystem.from_parts`, so the solver stops re-assembling the system `step` just built), `POC3-RACELAB-REQUIREMENTS.md` (**section 12.1, the blockers before RaceLab is done -- W293 first**), `.gitignore`, [[gap-worklist]], [[index]].
 
 **NOT done:** **W293 still stands** -- a committed geometry cannot be spun up, so a viewer can move a geometry knob, commit it, and be refused rather than shown a car; no learned expert runs and none can on this column; the certified mode is not per window (W295) and section 5.2's per-window certified telemetry is told only on the porous column; the porous dashboard is untouched; the bundle is not rebuilt and the gate is not re-run, both of which are in section 12.1; the cost was read at one point in the incomplete factor's refresh cycle, on a machine at $1.4$ GHz of $3.8$ with the user's two `phone-remote` processes running. Nothing downloaded or installed, no machine rented, the unlicensed structural checkpoint not loaded, nothing pushed.
+
+## [2026-09-16] tier 74 | showable: the bundle carrying the column it claims to
+
+**[[poc3-racelab-showable]].** Two of section 12's criteria. Six of six registered predictions held, and the work found three defects that every test in this repository passed straight through.
+
+### Criterion 1 was not nearly done -- it was describing a different demo
+
+**The bundle's file lists stopped at Tier 57.** `SCRIPTS`, `TESTS`, `WIKI_PAGES` and `ARTIFACTS` named nothing after it, so the branch a person would clone shipped the **porous column and nothing else**: no body-fitted car, no solids, no duct, no devices, no certified mode, no second dashboard. Thirteen tiers of work that existed only on this machine.
+
+The lists now carry Tiers 58-73 -- 16 scripts, 16 tests, 16 pages, 18 records -- **plus the two things the demo READS from disk rather than tests against**: `tier62_car_solids` and `tier63_duct_openings`, which `BodyFittedColumn.build` and `_devices` import while building, and the settled field it releases from. Without that field the page settles about four minutes before its first frame, or refuses outright. Built at **112.4 MB**: framework 3.0, solvers 0.5, checkpoint 83.2, recorded runs 24.3, four allowed binaries and **zero** unexpected.
+
+**Verified by cloning, and then by running the clone.** On Windows 11 / Python 3.12.7 and on Ubuntu (WSL) / Python 3.10.21, `run.py --check` passes both columns and both socket checks from a **clone of the branch**. The two machines **disagree on every time and agree on every number that is not one**: classical $376$ ms a macro-step against $702$, learned $2931$ against $5817$, and rms against the referent $0.244$ on both with a per-window one-step error of median $0.230$ and max $0.619$ on both. A clone into a short path carries 23 scripts, 24 tests, 22 pages, 23 record directories, the $15$ MB field, and `run.sh` at **100755** in the index.
+
+**And the page itself, on the Linux clone.** `python run.py --column body-fitted` drew its first frame after about $120$ s and marched -- step 8, car `a1f67a8e2792`, downforce $2.9246$, drag $2.9010$ -- and flipped to **certified** over the socket at outer iterations $2$, inner cheap calls $2$, residual $\mathbf{9.660\times10^{-9}}$, converged. Section 12's criterion 4 is reachable from a clone on the other operating system, not only on the machine it was built on.
+
+### The defect the self-test could not see, and the reason to start the page
+
+**`run.py --check` passed on Linux while the body-fitted page could not start at all.** Started the way a person starts it, the column reached *"cutting the solids"* and stopped: `ModuleNotFoundError: No module named 'shapely'`. `shapely` is imported **inside** the functions that use it -- `car_solids` and `car_union` cut the drawn panels into closed solids, the duct's openings and the device rings -- so nothing at module level went looking for it, it was never in `requirements.txt`, and it was present here because Anaconda ships it.
+
+**And the check written earlier in this same tier gave false assurance**: `body_fitted_check` verified the settled field, the tier scripts and the socket, all of which were fine, and none of which builds a composite. That is W251's lesson one layer up -- *a self-test that does not do what the page does will pass while the page cannot start.* Repaired in three layers: `shapely==2.1.0` pinned; added to the launcher's `REQUIRED` so a missing install is reported as a missing package rather than as a progress overlay that stops; and `body_fitted_check` now imports what the column imports while building. Cutting the solids for real is the stronger check and costs $63$ s on every self-test, which is not what that check is for.
+
+### Three more defects, each invisible to every test here
+
+**The orphan branch would have dropped the settled field, silently.** `commit()` force-adds every path in `ARTIFACTS` past the `out/*` ignore rule -- and the field is **not** in `ARTIFACTS`, because its name carries the car's fingerprint and is resolved at build time. `git add` on an ignored path says nothing at all, so a fresh clone would have had a body-fitted page with nothing to release from while the bundle directory here had it and every test passed. The field is now force-added, **and** `commit()` reads `git ls-files` back and refuses if any expected path is untracked: `25 recorded runs tracked, including bodyfitted_t12_a1f67a8e2792.npz`.
+
+**The ignore template and the artifact list were two lists that had to agree.** The template's hand-written allowlist stopped at `racelab5` while `ARTIFACTS` reached `racelab22`. The allowlist is now **generated by the build from `ARTIFACTS` itself** -- one list, two readers.
+
+Closing that one **broke the test that pinned it**, the way diagnosed defects here do: `test_tier57` asserted the hand-written allowlist was in the TEMPLATE, which is precisely the copy that had to go. Rewritten rather than deleted, with the diagnosis kept -- it now asserts the generated allowlist in the BUNDLE's `.gitignore`, including the body-fitted field by pattern, and asserts the template does **not** carry a hand-written copy, naming the drift as the reason. Both halves run: inside a built bundle, 34 passed / 21 skipped, and the `IN_BUNDLE` branch was confirmed to RUN rather than skip. `test_tier74_showable.py` is carried into the bundle too, with its builder-and-template tests skipping there and saying why -- the rule `test_tier57_racelab_bundle_records` already follows, so the bundle still holds every PoC 3 test.
+
+**And the bundle grew a binary by being used.** Running the demo writes the probe operator's raster cache into `out/cache/`, $6.7$ MB the build never put there. Found because the tier's scan of a **used** bundle disagreed with the build's scan of a fresh one; it is now ignored by name.
+
+### Criterion 2, for the six geometry knobs
+
+`commit_check` answers *would this land on a car that can march?* before anything is rebuilt: `geometry_fingerprint` is a function of the PARAMETERS, so the car a commit would produce is named without building it. Four checks in **0.014 s with no composite built**. The refused row names `44eb4bdc0245`, which is the fingerprint **Tier 70 recorded** for the rake $= 0.10$ car -- the prediction of the new car is right, not merely different. Its control is the pair around it: the nominal car stays committable and moving the knob back restores it, so a check that refused everything would not pass. On the page the button reads `Commit refused - this car has no spun-up field` with the reason beneath, the header still reads `MARCHING THE CAR BEFORE THESE CHANGES`, and **the car that was running keeps running**.
+
+### What a clone still needs from its own machine
+
+The deepest path inside the branch is **120 characters**, and Windows' limit is 260, so the directory cloned into must be under about **139**. Found by cloning into this session's scratchpad at 148: `git clone` reported *"Filename too long"* and stopped **part way through the checkout**, leaving a directory that looked plausible and was missing its pages and its `run.sh`. The README now carries the number rather than the advice alone.
+
+```
+python scripts/tier74_showable.py --out out/racelab23 --stages commit_check,bundle,summary --built-bundle <dir>
+python scripts/build_racelab_bundle.py --out <dir> --commit
+python -m pytest tests/test_tier74_showable.py -p no:cacheprovider
+python scripts/vault_scan.py wiki        # 253 files, 0 problems
+python scripts/run_suite.py              # 1770 passed, 0 failed, 461 s, no missing logs
+```
+
+**Opened:** **W297** (a bundle's audit is a property of a FRESH build, and anything auditing a directory someone has run is auditing the run too), **W298** (a dependency imported inside a function is invisible to every import-time check, and `shapely` was one the demo has always needed and never declared). **Annotated:** W293 (refused earlier and more cheaply, not closed).
+
+**Added:** `scripts/tier74_showable.py`, `tests/test_tier74_showable.py`, `out/racelab23/racelab23.json`, [[poc3-racelab-showable]].
+**Changed:** `scripts/build_racelab_bundle.py` (Tiers 58-73 in every list, the settled field resolved and checked against the car, the generated ignore allowlist, and the `ls-files` assertion in `commit`), `atlas/demo_racelab/bundle/requirements.txt` (**`shapely==2.1.0`**, with why nothing import-time could see it), `tests/test_tier57_racelab_bundle.py` (the allowlist assertion rewritten for where the allowlist now lives, diagnosis kept), `atlas/demo_racelab/bodyfitted.py` (`commit_check`), `atlas/demo_racelab/bodyfitted_server.py` (the check before the rebuild, `run`, and this column's own `socket_check`), `atlas/demo_racelab/__main__.py` (`--column`), `atlas/demo_racelab/static/bodyfitted.html` (the refusal on the button), `atlas/demo_racelab/bundle/run.py` (the body-fitted section of `--check`, on both paths), `atlas/demo_racelab/bundle/gitignore`, `atlas/demo_racelab/bundle/README.md`, [[gap-worklist]], [[index]].
+
+**NOT done:** **W293 is not closed** -- the walls-ramped spin-up is still a script, so a new geometry still cannot be marched, only refused earlier; **P1-P7 are not re-run** on the body-fitted column, so criterion 5 leans on the tier records rather than on the gate; W275 is untouched and the front wing still carries the filled wedge; **macOS is not tested** -- "Windows and macOS or Linux" is satisfied by Linux and nothing ran on a Mac; the branch is built locally and **not pushed**. Nothing was downloaded into this repository and no machine was rented; the Linux install went into `~/poc3-bundle/.venv` only, with the user's approval, and the unlicensed structural checkpoint was not loaded.

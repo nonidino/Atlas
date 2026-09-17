@@ -604,3 +604,12 @@ out/racelab21/*
 !out/racelab22/
 out/racelab22/*
 !out/racelab22/racelab22.json
+
+# Tier 74 -- showable: the bundle carrying the column it claims to
+# (tier74_showable.py --out out/racelab23). JSON only: the commit refusal with
+# its control and the car it names, the bundle's lists checked closed, what the
+# body-fitted demo reads from disk, the fresh build's scans, and the two
+# columns on their own ports.
+!out/racelab23/
+out/racelab23/*
+!out/racelab23/racelab23.json

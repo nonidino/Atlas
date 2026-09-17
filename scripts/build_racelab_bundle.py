@@ -78,6 +78,26 @@ WIKI_PAGES = [
     "poc3-racelab-traced-car.md",
     "poc3-racelab-3d.md",
     "poc3-racelab-drawn-car.md",
+    # the body-fitted column, Tiers 58-73.  Each of the first fourteen is
+    # OPENED by the test of its tier, so leaving one out turns a passing test
+    # into a skip; the last two are not opened by any test and are here because
+    # the certified mode is what the demo is for.
+    "poc3-racelab-car-fixes.md",
+    "poc3-racelab-outlet-and-start.md",
+    "poc3-racelab-body-fitted-grids.md",
+    "poc3-racelab-overset-flow.md",
+    "poc3-racelab-car-solids.md",
+    "poc3-racelab-duct-openings.md",
+    "poc3-racelab-car-union.md",
+    "poc3-racelab-car-graph.md",
+    "poc3-racelab-car-render.md",
+    "poc3-racelab-car-windows.md",
+    "poc3-racelab-bodyfitted-demo.md",
+    "poc3-racelab-knobs.md",
+    "poc3-racelab-knobs-wired.md",
+    "poc3-racelab-dashboard.md",
+    "poc3-racelab-certified-step.md",
+    "poc3-racelab-certified-screen.md",
 ]
 WIKI_DIR = ("wiki", "concepts", "Atlas 0.1", "common")
 
@@ -90,6 +110,28 @@ SCRIPTS = [
     "car_editor.py",
     "car_editor.html",
     "CAR_EDITOR.md",
+    # Tiers 58-73, the body-fitted column.  These are not optional extras: the
+    # demo IMPORTS `tier62_car_solids` and `tier63_duct_openings` at build time
+    # (`bodyfitted._devices`, `BodyFittedColumn.build`), so without them the
+    # body-fitted page does not start at all.  The rest are what their tests
+    # import.  The dependency graph is closed inside this list plus
+    # `tier53_racelab_rerun.py`, which is already above.
+    "tier58_car_fixes.py",
+    "tier59_outflow_and_start.py",
+    "tier60_body_fitted_grids.py",
+    "tier61_overset_flow.py",
+    "tier62_car_solids.py",
+    "tier63_duct_openings.py",
+    "tier64_car_union.py",
+    "tier65_car_graph.py",
+    "tier66_car_render.py",
+    "tier67_car_windows.py",
+    "tier68_bodyfitted_demo.py",
+    "tier69_car_knobs.py",
+    "tier70_knobs_wired.py",
+    "tier71_dashboard.py",
+    "tier72_certified_step.py",
+    "tier73_certified_screen.py",
 ]
 #: Every PoC 3 test file, unchanged.
 TESTS = [
@@ -103,6 +145,27 @@ TESTS = [
     #: records OF the bundle, which it does not carry, so every test in it
     #: skips there and says why -- carried so the bundle has every PoC 3 test
     "test_tier57_racelab_bundle_records.py",
+    # Tiers 58-73, the body-fitted column and the certified mode
+    "test_tier58_car_fixes.py",
+    "test_tier59_outflow.py",
+    "test_tier60_overset_grids.py",
+    "test_tier61_overset_flow.py",
+    "test_tier62_car_solids.py",
+    "test_tier63_duct_openings.py",
+    "test_tier64_car_union.py",
+    "test_tier65_car_graph.py",
+    "test_tier66_car_render.py",
+    "test_tier67_car_windows.py",
+    "test_tier68_bodyfitted_demo.py",
+    "test_tier69_car_knobs.py",
+    "test_tier70_knobs_wired.py",
+    "test_tier71_dashboard.py",
+    "test_tier72_certified_step.py",
+    "test_tier73_certified_screen.py",
+    #: about the BUILDER and the launcher templates, which live upstream --
+    #: those tests skip here and say why, the way the bundle-records ones do,
+    #: so the bundle still carries every PoC 3 test
+    "test_tier74_showable.py",
 ]
 
 #: The recorded runs.  Each is what a test asserts against or what the demo
@@ -117,12 +180,52 @@ ARTIFACTS = [
     ("out/racelab3/racelab3.json", "Tier 53's record"),
     ("out/racelab2/racelab2.json", "Tier 52's record"),
     ("out/racelab/racelab.json", "Tier 51's record, CS-19"),
+    # -- the body-fitted column, Tiers 58-73 -------------------------------
+    ("out/racelab6/racelab6.json", "Tier 58's record, the car's fixes"),
+    ("out/racelab7/racelab7.json", "Tier 59's record, the outlet and the start"),
+    ("out/racelab8/racelab8.json", "Tier 59's arms"),
+    ("out/racelab8/cache/settled.npz",
+     "Tier 59's settled arm; without it one test in test_tier59 skips"),
+    ("out/racelab9/racelab9.json", "Tier 60's record, the overset grids"),
+    ("out/racelab10/racelab10.json", "Tier 61's record, the flow solver"),
+    ("out/racelab11/racelab11.json", "Tier 62's record, the car as solids"),
+    ("out/racelab12/racelab12.json", "Tier 63's record, the duct openings"),
+    ("out/racelab13/racelab13.json",
+     "Tier 64's record -- `bodyfitted._sizing` READS it for the machine's "
+     "sizing inflow, so the body-fitted demo needs it, not only its test"),
+    ("out/racelab14/racelab14.json", "Tier 65's record, the graph"),
+    ("out/racelab15/racelab15.json", "Tier 66's record, the overlay"),
+    ("out/racelab16/racelab16.json", "Tier 67's record, the learned territory"),
+    ("out/racelab17/racelab17.json", "Tier 68's record, the demo engine"),
+    ("out/racelab18/racelab18.json", "Tier 69's record, the knobs"),
+    ("out/racelab19/racelab19.json", "Tier 70's record, the knobs wired"),
+    ("out/racelab20/racelab20.json", "Tier 71's record, the dashboard"),
+    ("out/racelab21/racelab21.json", "Tier 72's record, the certified step"),
+    ("out/racelab22/racelab22.json", "Tier 73's record, the certified screen"),
 ]
+
+#: The body-fitted column's settled release state.  Its name carries the car's
+#: fingerprint, so the path is not a constant -- it is asked for at build time
+#: and checked, exactly as `BodyFittedColumn.settled_path` computes it.
+#:
+#: **The demo does not start without it.**  With no settled field for this car
+#: the column falls back to Tier 64's device-free prefix and settles from t = 8
+#: to t = 12, which is 320 steps -- about four minutes before the first frame --
+#: and if the prefix belongs to another car it refuses to march at all (W293).
+def _bodyfitted_settled() -> tuple[str, str]:
+    from atlas.demo_racelab.bodyfitted import BodyFittedColumn
+
+    path = BodyFittedColumn().settled_path(ROOT)
+    rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
+    return rel, os.path.basename(path)
 #: The only binary files the bundle may carry, by exact path pattern.
 BINARY_ALLOWED = (
     re.compile(r"^vendor/hf-cache/hub/models--camlab-ethz--Poseidon-T/"
                r"snapshots/[0-9a-f]{40}/model\.safetensors$"),
     re.compile(r"^out/racelab5/cache/settled\.npz$"),
+    re.compile(r"^out/racelab8/cache/settled\.npz$"),
+    #: the body-fitted release state, named for the car it was settled around
+    re.compile(r"^out/cache/bodyfitted_t\d+(\.\d+)?_[0-9a-f]{12}\.npz$"),
 )
 #: What a weight or field file looks like, so an unexpected one is caught by
 #: its extension before anything else.
@@ -386,6 +489,28 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
             "scripts/tier54_traced_car.py --out out/racelab5 --stages spinup`."
             % ((field_fp or "no fingerprint")[:16], car[:16]))
 
+    # 4b. the body-fitted column's settled field ----------------------------
+    # Its name carries the car's fingerprint, so the check that it belongs to
+    # this car IS the check that the file exists under that name -- which is
+    # what `settled_path` computes and what `load_state` refuses a mismatch of.
+    bf_rel, bf_name = _bodyfitted_settled()
+    bf_src = os.path.join(ROOT, *bf_rel.split("/"))
+    if not os.path.isfile(bf_src):
+        raise SystemExit(
+            "the body-fitted column's settled field %s is missing, so the "
+            "body-fitted page would settle for about four minutes before its "
+            "first frame, or refuse to march. Build it once with `python "
+            "scripts/tier68_bodyfitted_demo.py --out out/racelab17 "
+            "--stages build,settle`." % bf_rel)
+    bf_fp = re.search(r"_([0-9a-f]{12})\.npz$", bf_name)
+    if bf_fp is None or bf_fp.group(1) != car[:12]:
+        raise SystemExit(
+            "%s does not carry this repository's car (%s): the body-fitted "
+            "demo would release from another car's flow" % (bf_name, car[:12]))
+    bf_dst = os.path.join(out, *bf_rel.split("/"))
+    os.makedirs(os.path.dirname(bf_dst), exist_ok=True)
+    shutil.copyfile(bf_src, bf_dst)
+
     # 5. scripts, tests, the pages the tests quote --------------------------
     os.makedirs(os.path.join(out, "scripts"))
     for f in SCRIPTS:
@@ -415,8 +540,29 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
     if os.path.isfile(os.path.join(TEMPLATES, "constraints.txt")):
         shutil.copyfile(os.path.join(TEMPLATES, "constraints.txt"),
                         os.path.join(out, "constraints.txt"))
-    shutil.copyfile(os.path.join(TEMPLATES, "gitignore"),
-                    os.path.join(out, ".gitignore"))
+    # **The allowlist is GENERATED from ARTIFACTS, not written by hand.**  The
+    # template's hand-written version stopped at racelab5 while ARTIFACTS grew
+    # to racelab22, so `--commit` would have dropped every record added after
+    # Tier 57 from the orphan branch -- silently, because `git add` on an
+    # ignored path says nothing.  One list, two readers.
+    keep = [a for a, _w in ARTIFACTS] + [_bodyfitted_settled()[0]]
+    rules = []
+    for rel in keep:
+        parts = rel.split("/")[1:]          # everything under out/
+        for i in range(len(parts) - 1):
+            d = "/".join(parts[:i + 1])
+            rules += ["!out/%s/" % d, "out/%s/*" % d]
+        rules.append("!out/%s" % "/".join(parts))
+    seen, ordered = set(), []
+    for r in rules:                          # stable, de-duplicated
+        if r not in seen:
+            seen.add(r)
+            ordered.append(r)
+    with open(os.path.join(TEMPLATES, "gitignore"), encoding="utf-8") as fh:
+        base = fh.read()
+    with open(os.path.join(out, ".gitignore"), "w", encoding="utf-8",
+              newline="\n") as fh:
+        fh.write(base.rstrip("\n") + "\n" + "\n".join(ordered) + "\n")
     shutil.copyfile(os.path.join(TEMPLATES, "gitattributes"),
                     os.path.join(out, ".gitattributes"))
     os.chmod(os.path.join(out, "run.sh"), 0o755)
@@ -513,8 +659,14 @@ def commit(out: str, message: str) -> str:
     git("config", "user.name", _cfg("user.name", "atlas"))
     git("add", "-A")
     #: the recorded runs sit behind an `out/*` ignore rule so that a user's own
-    #: runs do not get committed; the ones that ARE the bundle are force-added
-    for rel, _why in ARTIFACTS:
+    #: runs do not get committed; the ones that ARE the bundle are force-added.
+    #: The body-fitted column's settled field is here too and was NOT before:
+    #: it is not in `ARTIFACTS` (its name carries the car's fingerprint, so it
+    #: is resolved at build time), so `out/*` would have dropped it from the
+    #: branch and the body-fitted page would have had nothing to release from
+    #: on a fresh clone -- while every test still passed here.
+    must_track = [rel for rel, _why in ARTIFACTS] + [_bodyfitted_settled()[0]]
+    for rel in must_track:
         git("add", "-f", rel)
     # `os.chmod` above does nothing on Windows -- NTFS has no execute bit and
     # git records 100644 -- so the mode is set in the INDEX.  Without this
@@ -529,6 +681,18 @@ def commit(out: str, message: str) -> str:
     if not mode or mode[0] != "100755":
         raise SystemExit("run.sh is not 100755 in the index; a Linux clone "
                          "would fail with exit 126")
+    # **What a fresh clone would actually get.**  `git add` on an ignored path
+    # says nothing, so a rule that quietly drops a file leaves a branch that
+    # builds, tests and demos here and is missing a file there.  Asked of the
+    # index rather than of the ignore rules, because the index is what clones.
+    tracked = set(git("ls-files").splitlines())
+    lost = [p for p in must_track if p not in tracked]
+    if lost:
+        raise SystemExit(
+            "these are in the bundle directory but NOT in the branch, so a "
+            "clone would not get them:\n  " + "\n  ".join(lost))
+    print("  %d recorded runs tracked, including %s"
+          % (len(must_track), os.path.basename(must_track[-1])))
     print("  to publish:  git -C %s push --force <remote> %s" % (out, BRANCH))
     return head
 

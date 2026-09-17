@@ -99,6 +99,11 @@
   .certified table td:last-child { color: #cfe6f2; }
   .verify { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; }
   .price { font-size: 11px; color: var(--warn); margin-top: 6px; }
+  .blocked:not(:empty) {
+    border: 1px solid #6b3b3b; background: #1e1414; border-radius: 6px;
+    padding: 9px; margin-top: 8px; font-size: 11px; color: #f0b9b9;
+  }
+  .blocked b { color: var(--bad); }
 </style>
 </head>
 <body>
@@ -116,6 +121,7 @@
     <h2>Parameters</h2>
     <div id="knobs"></div>
     <button id="commit" disabled>Commit &mdash; re-cut the car</button>
+    <div class="blocked" id="commitBlocked"></div>
     <div class="note" id="commitNote">
       Sliders move freely. A geometry change is not re-cut until you commit,
       because rebuilding the car costs about a minute and a half.
@@ -337,12 +343,25 @@ function onState(s) {
     const row = $("knob-" + name);
     if (row) row.className = "knob" + (DIRTY.has(name) ? " dirty" : "");
   }
+  // **W293 on the button, not after ninety seconds of rebuilding.** A commit
+  // that would land on a car with no spun-up field is refused here, with its
+  // reason, while the current car goes on marching.
+  const chk = s.commit_check || {};
+  const blocked = pend.length > 0 && chk.ok === false
+                  && chk.kind !== "nothing_pending";
   const commit = $("commit");
-  commit.disabled = pend.length === 0 || busy;
-  commit.className = pend.length && !busy ? "ready" : "";
-  commit.textContent = pend.length
-    ? `Commit ${pend.length} change${pend.length > 1 ? "s" : ""} - re-cut the car`
-    : "Commit - re-cut the car";
+  commit.disabled = pend.length === 0 || busy || blocked;
+  commit.className = (pend.length && !busy && !blocked) ? "ready" : "";
+  commit.textContent = blocked
+    ? "Commit refused - this car has no spun-up field"
+    : (pend.length
+        ? `Commit ${pend.length} change${pend.length > 1 ? "s" : ""} - re-cut the car`
+        : "Commit - re-cut the car");
+  $("commitBlocked").innerHTML = blocked
+    ? `<b>Refused before the rebuild.</b> ${chk.reason}`
+      + `<div style="margin-top:5px">What would make it possible: `
+      + `${chk.what_would_make_it_possible}</div>`
+    : "";
   $("marching").textContent = pend.length
     ? "MARCHING THE CAR BEFORE THESE CHANGES"
     : "";
@@ -455,6 +474,7 @@ function onEvents(evts) {
     }
     if (e.kind === "mode") return `<div class="evt" style="color:var(--accent)">fluid expert &rarr; <b>${e.mode}</b></div>`;
     if (e.kind === "verify") return `<div class="evt">verify ${e.verify ? "on &mdash; a classical solve a step" : "off"}</div>`;
+    if (e.kind === "commit_refused") return `<div class="evt" style="color:var(--bad)">commit refused: ${e.reason}</div>`;
     if (e.kind === "refused") return `<div class="evt" style="color:var(--bad)">refused: ${e.why}</div>`;
     if (e.kind === "commit") return `<div class="evt" style="color:var(--ok)">committed in ${fmt(e.wall_s, 1)} s &mdash; car ${e.fingerprint || ""}</div>`;
     if (e.kind === "error") return `<div class="evt" style="color:var(--bad)">${e.why}</div>`;

@@ -1,0 +1,155 @@
+{
+ "tier": 74,
+ "prediction": [
+  {
+   "id": "R1",
+   "claim": "the commit refusal costs no rebuild: `commit_check` names the car a commit would build, and refuses, without constructing a composite",
+   "why": "`geometry_fingerprint` is a function of the PARAMETERS, so the new car can be named from the knobs alone and whether it has a settled field is one `isfile`"
+  },
+  {
+   "id": "R2",
+   "claim": "the refusal tracks the geometry rather than latching: the nominal car is committable, a moved geometry knob is refused, and moving it back is committable again",
+   "why": "it is a function of the knob state with no memory. **The first clause is the control**: a check that refused everything would pass a test that only moved a knob"
+  },
+  {
+   "id": "R3",
+   "claim": "the bundle's lists are CLOSED -- every script, test, wiki page and record it names exists in this repository",
+   "why": "the lists are hand-written and sixteen of each were added at once; a name that does not resolve fails the build, but only when someone runs it"
+  },
+  {
+   "id": "R4",
+   "claim": "the bundle carries everything the body-fitted demo READS from disk: the two tier scripts it imports while building, Tier 64's record for the machine sizing, and the settled field named for this car",
+   "why": "these are not test fixtures -- they are what `build`, `_devices` and `_sizing` open. A bundle missing them ships a page that never draws, which is the failure this project has already shipped once (W251)"
+  },
+  {
+   "id": "R5",
+   "claim": "the built bundle contains no unexpected binary, no trace of the unlicensed structural checkpoint, and no vendored scOT",
+   "why": "the scans already existed; what is new is 24 MB of recorded runs and a 15 MB field, and BINARY_ALLOWED had to be widened to admit them -- which is exactly the kind of widening that lets something else through"
+  },
+  {
+   "id": "R6",
+   "claim": "both columns are reachable by one command each, on different ports",
+   "why": "`python -m atlas.demo_racelab --column body-fitted` is new; two engines on one port would be one engine"
+  }
+ ],
+ "prediction_recorded_at": "2026-09-16T20:03:27",
+ "read_before_this_run": [
+  "The bundle's file lists (SCRIPTS, TESTS, WIKI_PAGES, ARTIFACTS) stopped at Tier 57 and its last verification was commit 5a84ec8, so it shipped the porous column and none of Tiers 58-73.",
+  "`BodyFittedColumn.build` imports `tier62_car_solids` and `tier63_duct_openings` from scripts/ at build time, and `_sizing` reads out/racelab13/racelab13.json -- so the body-fitted page does not start without them, and nothing else in the bundle would notice.",
+  "W293: a geometry commit re-cuts the car, the new car has no settled field, and `step()` raises. Until this tier the column re-cut FIRST -- ninety seconds -- and refused after.",
+  "Explored before these predictions were written: a scratch build (--allow-dirty) came to 112.4 MB with 4 allowed binaries and 0 unexpected; `python run.py --check` in it passed both columns and both socket checks; the body-fitted page served frames from the bundle at 1.72 steps/s; and moving the rake slider on that page turned the Commit button into 'Commit refused - this car has no spun-up field' while the header still read MARCHING THE CAR BEFORE THESE CHANGES and the status stayed `marching`.",
+  "Also explored: the Linux interpreter (~/mm-py310, 3.10.21) had NO packages at all, so the Linux half needed an install, which the user approved.",
+  "NOT measured before these predictions: whether the built bundle's lists are closed -- that every script, test, page and record it names exists and that nothing the body-fitted demo reads is missing from it."
+ ],
+ "machine_state": {
+  "python_processes_running": 2,
+  "python_processes": [
+   "\"python.exe\",\"18016\",\"Console\",\"1\",\"1,321,584 K\"",
+   "\"python.exe\",\"19988\",\"Console\",\"1\",\"255,764 K\""
+  ],
+  "battery_status_raw": "2",
+  "on_mains": true,
+  "reference_matmul_1024_s": 0.01869769999757409,
+  "taken_at": "2026-09-16T20:03:29"
+ },
+ "built_bundle": "C:\\Users\\Nauni\\AppData\\Local\\Temp\\claude\\C--Users-Nauni-OneDrive-Desktop-Foundation-Model\\2a9e2bba-f8d9-478a-8579-7dbb2a4ec0e5\\scratchpad\\bundle_v5",
+ "commit_check": {
+  "wall_s": 0.025769099986064248,
+  "built_a_composite": false,
+  "idle": {
+   "ok": false,
+   "kind": "nothing_pending",
+   "pending": [],
+   "reason": "no geometry knob has moved since the last commit"
+  },
+  "nominal": {
+   "ok": true,
+   "kind": "has_settled_field",
+   "pending": [
+    "rake"
+   ],
+   "settled": "bodyfitted_t12_a1f67a8e2792.npz",
+   "reason": "this car has a settled field of its own"
+  },
+  "moved": {
+   "ok": false,
+   "kind": "no_spun_up_field",
+   "pending": [
+    "rake"
+   ],
+   "settled": "bodyfitted_t12_44eb4bdc0245.npz",
+   "reason": "this geometry has no spun-up field, so the column would re-cut the car and then decline to march it (W293). Settling a new car means marching from rest, and that start was measured failing on this car -- divergence 2.3e3 and a momentum solve that did not converge. The commit is refused here, before the rebuild, rather than after ninety seconds of it.",
+   "what_would_make_it_possible": "a walls-ramped spin-up reachable from the demo, which is a script today (scripts/tier62_car_solids.py); or a settled field for this geometry cached at out/cache/bodyfitted_t12_44eb4bdc0245.npz"
+  },
+  "back": {
+   "ok": true,
+   "kind": "has_settled_field",
+   "pending": [
+    "rake"
+   ],
+   "settled": "bodyfitted_t12_a1f67a8e2792.npz",
+   "reason": "this car has a settled field of its own"
+  },
+  "names_a_different_car": true,
+  "restores": true
+ },
+ "stage_wall_s": {
+  "commit_check": 0.02947729999141302,
+  "bundle": 1.042060699997819,
+  "summary": 0.0033753000025171787
+ },
+ "bundle": {
+  "missing": {
+   "scripts": [],
+   "tests": [],
+   "artifacts": [],
+   "pages": []
+  },
+  "closed": true,
+  "counts": {
+   "scripts": 23,
+   "tests": 25,
+   "pages": 22,
+   "artifacts": 24
+  },
+  "body_fitted_reads": {
+   "tier62_car_solids.py": true,
+   "tier63_duct_openings.py": true,
+   "out/racelab13/racelab13.json": true,
+   "settled_field_present": true,
+   "settled_field_allowed": true,
+   "settled_field": "bodyfitted_t12_a1f67a8e2792.npz"
+  },
+  "carries_what_it_reads": true,
+  "scan_on": "C:\\Users\\Nauni\\AppData\\Local\\Temp\\claude\\C--Users-Nauni-OneDrive-Desktop-Foundation-Model\\2a9e2bba-f8d9-478a-8579-7dbb2a4ec0e5\\scratchpad\\bundle_v5",
+  "scan": {
+   "unlicensed_files": [],
+   "unlicensed_uses": [],
+   "prose_mentions": 14,
+   "binaries_allowed": 4,
+   "binaries_unexpected": [],
+   "scot_dirs": []
+  },
+  "clean": true,
+  "columns": {
+   "names": [
+    "porous",
+    "body-fitted"
+   ],
+   "ports": {
+    "porous": 8013,
+    "body-fitted": 8014
+   },
+   "distinct_ports": true
+  }
+ },
+ "verdicts": {
+  "R1": true,
+  "R2": true,
+  "R3": true,
+  "R4": true,
+  "R5": true,
+  "R6": true
+ },
+ "verdicts_missing": []
+}

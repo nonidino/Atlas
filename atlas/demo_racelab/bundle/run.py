@@ -1,8 +1,24 @@
 """Start the PoC 3 RaceLab demo from this bundle. No installation, no paths.
 
-    python run.py                     # then open http://127.0.0.1:8013/
-    python run.py --open              # ... and open a browser for you
-    python run.py --check             # self-test only, no server
+    python run.py                          # then open http://127.0.0.1:8013/
+    python run.py --open                   # ... and open a browser for you
+    python run.py --check                  # self-test only, no server
+
+    python run.py --column body-fitted     # the other column, on :8014
+
+**There are two columns and neither replaces the other.**  The default,
+`porous`, is fourteen rectangular windows on one lattice: it is where a window
+can be clicked and flipped to a learned expert.  `body-fitted` is twelve overset
+grids with the car as real walls -- the solids, the cooling duct, the radiator
+and turbine, and the **certified mode**, whose limit is the classical answer by
+a proof rather than a measurement.  They listen on different ports and can run
+side by side.
+
+**The body-fitted column takes about a minute to appear the first time.**  It
+cuts twelve curvilinear grids, finds their donors and builds one composite
+pressure system, and then builds a probe operator for the picture, which is
+cached afterwards (about 64 s, once).  The settled field it releases from IS in
+this bundle, so it does not have to march four minutes to reach one.
 
 Everything this needs is in this directory, including three things that would
 normally have to be found on the machine:
@@ -63,6 +79,13 @@ REQUIRED = [
     ("websockets", "the page's live connection: without it uvicorn refuses "
                    "every WebSocket upgrade and the page never receives a "
                    "frame (W251)"),
+    ("shapely", "cutting the car's panels into closed solids, and the device "
+                "rings -- the BODY-FITTED column's first build step. It is "
+                "imported INSIDE the functions that use it (`car_solids`, "
+                "`car_union`), so nothing at import time missed it and the "
+                "Linux bundle got as far as 'cutting the solids' before "
+                "stopping. Found by starting that column's page on a clean "
+                "machine; the self-test had passed"),
 ]
 
 #: What the LEARNED column needs on top.  Missing, the classical column still
@@ -284,8 +307,14 @@ def check() -> int:
             print("    The page would receive nothing, so the classical column "
                   "could not be seen either.")
             return BROKEN
+        # the body-fitted column needs no learned expert -- W294 says it could
+        # not use one here anyway -- so it is checked on this path too
+        if not body_fitted_check():
+            return BROKEN
         print("\n  PARTIAL -- the classical column marched and the page can "
               "receive it; the learned one could not be built.")
+        print("  The body-fitted column is unaffected: python run.py "
+              "--column body-fitted")
         return CLASSICAL_ONLY
 
     print("\n  the learned column  (all 14 windows Poseidon-T, beside the "
@@ -328,10 +357,101 @@ def check() -> int:
               "every control would send into nothing.")
         return BROKEN
 
+    if not body_fitted_check():
+        return BROKEN
+
     print("\n  OK -- both columns marched, the checkpoint loaded offline, the "
           "solvers came from vendor/, and the page can receive the march.")
-    print("  Now run:  python run.py")
+    print("  Now run:  python run.py           (porous, :8013)")
+    print("       or:  python run.py --column body-fitted   (:8014)")
     return OK
+
+
+def body_fitted_check() -> bool:
+    """The OTHER column: its settled field, its scripts, and its own socket.
+
+    **Passing the porous column's socket check says nothing about this one.**
+    Tier 71 found every upgrade to `bodyfitted_server`'s ``/ws`` refused 403
+    while its page and its JSON routes answered 200, and the porous column was
+    fine throughout. So this asks THIS app, on a real port, for a frame.
+
+    The composite is NOT built here: ninety seconds would make the self-test
+    unusable, and what this check exists to catch lives in the transport and in
+    what is on disk. What it does check on disk is the pair the body-fitted page
+    cannot start without -- the settled field named for this car, and the two
+    tier scripts `BodyFittedColumn.build` imports.
+    """
+    print("\n  the body-fitted column  (the solids, the duct, the certified "
+          "mode -- python run.py --column body-fitted)")
+    ok = True
+    try:
+        from atlas.demo_racelab.bodyfitted import BodyFittedColumn
+        from atlas.cases import racelab as RL
+
+        here = os.path.dirname(os.path.abspath(__file__))
+        settled = BodyFittedColumn().settled_path(here)
+        have = os.path.isfile(settled)
+        print("    %s   the settled field it releases from: %s"
+              % ("ok  " if have else "[!] ", os.path.basename(settled)))
+        if not have:
+            print("      Without it the column settles from t = 8 for about "
+                  "four minutes before the first frame, or declines to march.")
+            ok = False
+        else:
+            print("      (the car is %s, and the field's name carries it)"
+                  % RL.geometry_fingerprint()[:12])
+        for s in ("tier62_car_solids.py", "tier63_duct_openings.py"):
+            p = os.path.join(here, "scripts", s)
+            if not os.path.isfile(p):
+                print("    [!]    scripts/%s is missing -- the column imports "
+                      "it while building" % s)
+                ok = False
+
+        # **What the column imports, imported.**  Checking that files exist is
+        # not checking that the column starts: this test passed on a clean
+        # Linux machine while the page stopped at "cutting the solids" with no
+        # `shapely` -- an import that lives INSIDE the function that uses it,
+        # so nothing at module level went looking for it.
+        #
+        # `shapely` itself is in REQUIRED above, which is where a missing
+        # package belongs and is what now fails loudly.  This imports the
+        # modules and the two tier scripts the column reaches for while
+        # building, because a bundle can also be missing one of THOSE -- and
+        # doing it here costs milliseconds.  Cutting the solids for real would
+        # cost 63 s on every self-test, which is not what this check is for.
+        import sys as _sys
+        if os.path.join(here, "scripts") not in _sys.path:
+            _sys.path.insert(0, os.path.join(here, "scripts"))
+        import tier62_car_solids                      # noqa: F401
+        import tier63_duct_openings                   # noqa: F401
+        from atlas.cases import car_solids            # noqa: F401
+        from atlas.cases import car_union             # noqa: F401
+        import shapely                                # noqa: F401
+        print("    ok     what it imports while building resolves "
+              "(shapely %s, both tier scripts)" % shapely.__version__)
+    except ImportError as exc:
+        print("    [!]    something the body-fitted column imports is missing: "
+              "%s" % exc)
+        print("      Its page would start, show a progress overlay, and stop "
+              "-- which is how this was found, with the rest of the self-test "
+              "passing.")
+        return False
+    except Exception as exc:                                  # pragma: no cover
+        print("    [!]    the column could not be inspected: %s: %s"
+              % (type(exc).__name__, str(exc)[:200]))
+        return False
+
+    try:
+        from atlas.demo_racelab.bodyfitted_server import socket_check as bf_check
+        got, detail = bf_check()
+    except Exception as exc:                                  # pragma: no cover
+        got, detail = False, "%s: %s" % (type(exc).__name__, str(exc)[:200])
+    print("    %s   its own page's live connection: %s"
+          % ("ok  " if got else "[!] ", detail))
+    if not got:
+        print("      Its page would load, render, and never receive a frame.")
+        ok = False
+    return ok
 
 
 #: Flags that belong to `run.sh` / `run.cmd` and mean nothing to the app.  The

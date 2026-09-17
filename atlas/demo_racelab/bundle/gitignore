@@ -3,27 +3,21 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-
-# demo output. The recorded runs below are FORCE-ADDED by the build script:
-# the settled field the demo releases from and the records the tests read are
-# part of the bundle, and everything else under out/ is not.
-out/*
-!out/racelab/
-out/racelab/*
-!out/racelab/racelab.json
-!out/racelab2/
-out/racelab2/*
-!out/racelab2/racelab2.json
-!out/racelab3/
-out/racelab3/*
-!out/racelab3/racelab3.json
-!out/racelab4/
-out/racelab4/*
-!out/racelab4/racelab4.json
-!out/racelab5/
-out/racelab5/*
-!out/racelab5/racelab5.json
-!out/racelab5/cache/
-out/racelab5/cache/*
-!out/racelab5/cache/settled.npz
 *.log
+
+# Caches the demo WRITES while it runs, which are not part of the bundle.
+# The body-fitted column builds a probe operator for its picture on first
+# start (about 64 s) and caches it here; it validates itself against the live
+# composite before it is used, so a stale one is refused rather than trusted.
+# Without this rule a bundle that has been RUN carries a 6.7 MB file the build
+# never put there -- which is how it was found.
+out/cache/raster_*.npz
+out/cache/t68_smoke.npz
+
+# demo output. Everything under out/ is ignored except the recorded runs the
+# build script force-adds, and THOSE RULES ARE GENERATED BELOW by
+# `scripts/build_racelab_bundle.py` from its own ARTIFACTS list. They are not
+# maintained by hand: this file and that list disagreed once already, and the
+# effect was a bundle whose orphan branch silently dropped every record added
+# after Tier 57.
+out/*

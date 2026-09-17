@@ -173,6 +173,14 @@ class BodyFittedEngine:
         if not self.col.pending_regrid:
             self._note("commit", skipped="nothing pending")
             return
+        # **W293, refused where it costs nothing.**  Until this check the column
+        # re-cut the car -- ninety seconds -- and only then found it had no
+        # spun-up field and declined to march it.  The viewer paid the rebuild
+        # to be told no, and lost the car that was marching.
+        chk = self.col.commit_check(self.root)
+        if not chk["ok"]:
+            self._note("commit_refused", **chk)
+            return
         self.status = "recompiling"
         t0 = time.perf_counter()
         try:
@@ -202,6 +210,9 @@ class BodyFittedEngine:
                             "telemetry": tel, "status": self.status,
                             "pending_regrid": list(self.col.pending_regrid),
                             "mode": self.col.mode, "verify": self.col.verify,
+                            # so the page can refuse the commit on the BUTTON,
+                            # before the click, rather than only in an event
+                            "commit_check": self.col.commit_check(self.root),
                             "knobs": dict(self.col.knob_state().values),
                             "fingerprint": self.col._fingerprint[:12],
                             "released_from": self.build_report.get("released_from"),
@@ -328,3 +339,101 @@ def create_app(engine: BodyFittedEngine | None = None):
 
     app.state.engine = eng
     return app
+
+
+#: A one-pixel PNG.  `socket_check` needs A frame to push, not THIS column's
+#: frame: building the composite costs about ninety seconds and would make the
+#: launcher's self-test unusable, while the two things this check exists to
+#: catch -- no WebSocket library, and the 403 that `from __future__ import
+#: annotations` causes when FastAPI is imported inside `create_app` -- are both
+#: in the transport and neither depends on what the frame contains.
+_PIXEL_PNG = bytes.fromhex(
+    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4"
+    "890000000a49444154789c6300010000050001" "0d0a2db4" "0000000049454e44ae426082")
+
+
+def socket_check(timeout_s: float = 30.0) -> tuple[bool, str]:
+    """THIS column's page receiving a frame over THIS column's socket.
+
+    The porous column has its own (`server.socket_check`, W251) and passing one
+    says nothing about the other: Tier 71 found every upgrade to this module's
+    ``/ws`` refused **403** while ``/`` and ``/api/meta`` answered 200, because
+    this module carries ``from __future__ import annotations`` and FastAPI was
+    resolving ``sock: WebSocket`` as a string against module globals it had not
+    been imported into.  A page that loads, renders its sliders, and never
+    receives a frame.
+
+    Returns ``(True, detail)`` when a JSON frame and a PNG frame both arrived,
+    ``(False, reason)`` otherwise -- never raises.
+    """
+    import socket as _socket
+    import threading
+
+    import uvicorn
+
+    try:
+        from websockets.sync.client import connect
+    except Exception as exc:
+        return False, ("no WebSocket client to check with (%s): the page's "
+                       "server has no WebSocket library either" % exc)
+
+    eng = BodyFittedEngine(autostart=False)
+    eng.status = "marching"
+    eng.frame_seq = 1
+    eng.png = _PIXEL_PNG
+    eng.payload = {"seq": 1, "status": "marching", "telemetry": {},
+                   "mode": "classical", "verify": False}
+    app = create_app(eng)
+    s = _socket.socket()
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port,
+                                           ws="auto", lifespan="off",
+                                           log_level="error"))
+    th = threading.Thread(target=server.run, daemon=True)
+    th.start()
+    try:
+        t0 = time.time()
+        while not server.started:
+            if not th.is_alive() or time.time() - t0 > timeout_s:
+                return False, "the server did not start"
+            time.sleep(0.05)
+        got_json = got_png = False
+        # ``proxy=None`` -- W253: websockets 15 routes even a loopback URL
+        # through the environment's proxy variables, which called a working
+        # page broken once already.
+        with connect("ws://127.0.0.1:%d/ws" % port, open_timeout=timeout_s,
+                     close_timeout=2, proxy=None) as sock:
+            t0 = time.time()
+            while not (got_json and got_png) and time.time() - t0 < timeout_s:
+                msg = sock.recv(timeout=timeout_s)
+                if isinstance(msg, str):
+                    got_json = got_json or "seq" in json.loads(msg)
+                elif bytes(msg[:8]) == b"\x89PNG\r\n\x1a\n":
+                    got_png = True
+        if got_json and got_png:
+            return True, "a JSON frame and a PNG frame arrived over /ws"
+        return False, ("over /ws: JSON frame %s, PNG frame %s"
+                       % (got_json, got_png))
+    except Exception as exc:
+        return False, "%s: %s" % (type(exc).__name__, str(exc)[:300])
+    finally:
+        server.should_exit = True
+        th.join(timeout=10)
+
+
+def run(host: str = "127.0.0.1", port: int = 8014, open_browser: bool = False,
+        log_level: str = "warning") -> None:
+    """Serve the body-fitted column, the same shape `server.run` serves the
+    porous one -- so `python -m atlas.demo_racelab --column body-fitted` and the
+    bundle's `run.py` reach it by one path rather than two."""
+    import uvicorn
+
+    app = create_app()
+    if open_browser:
+        import threading
+        import webbrowser
+        threading.Timer(1.2, lambda: webbrowser.open(
+            "http://%s:%d/" % (host, port))).start()
+    uvicorn.run(app, host=host, port=port, log_level=log_level)

@@ -34,6 +34,15 @@ websockets==15.0.1
 # depend on the learned expert's install.
 PyYAML==6.0.2
 
+# The body-fitted column cuts the car's drawn panels into closed solids, and
+# cuts the duct's openings and the device rings, with plane geometry. It is
+# imported INSIDE the functions that use it (`car_solids`, `car_union`) rather
+# than at module level, so a missing install shows up not as an import error at
+# start-up but as a column that gets as far as "cutting the solids" and stops
+# -- which is exactly how it was found: on a clean Linux machine, with the
+# bundle's own self-test passing, because that test never built a composite.
+shapely==2.1.0
+
 # The learned expert's backbone. Poseidon-T is a Swin-v2 variant and `scOT`
 # reads its blocks straight out of transformers, so this pin and the scOT
 # commit below have to move together.

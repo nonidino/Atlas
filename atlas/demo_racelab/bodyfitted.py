@@ -220,6 +220,51 @@ class BodyFittedColumn:
             self.knobs = CW_KNOBS.KnobState()
         return self.knobs
 
+    def commit_check(self, root: str = ".") -> dict:
+        """Would committing the pending knobs land on a car that can march?
+
+        **W293, told BEFORE the commit instead of after.**  A geometry commit
+        re-cuts the car, and the new car has no settled field of its own.
+        Settling one means marching from rest, and Tier 62 measured that start
+        failing here -- divergence $2.3\\times10^{3}$, a momentum solve that did
+        not converge, a spurious road boundary layer.  Only the walls-ramped
+        spin-up works and it is a script.
+
+        Until this check, the column re-cut anyway: ninety seconds of rebuilding
+        followed by a `step()` that raises.  The viewer paid the rebuild to be
+        told no.  `geometry_fingerprint` is a function of the PARAMETERS, so the
+        car a commit would produce can be named without building it, and whether
+        it has a settled field is then one `isfile`.
+
+        This does not fix W293 -- the ramped spin-up is still not reachable from
+        the demo.  It moves the refusal to where it costs nothing and says what
+        would make it possible.
+        """
+        pend = list(self.pending_regrid)
+        if not pend:
+            return {"ok": False, "kind": "nothing_pending", "pending": [],
+                    "reason": "no geometry knob has moved since the last commit"}
+        want = self.settled_path(root)
+        if os.path.isfile(want):
+            return {"ok": True, "kind": "has_settled_field", "pending": pend,
+                    "settled": os.path.basename(want),
+                    "reason": "this car has a settled field of its own"}
+        return {
+            "ok": False, "kind": "no_spun_up_field", "pending": pend,
+            "settled": os.path.basename(want),
+            "reason": (
+                "this geometry has no spun-up field, so the column would re-cut "
+                "the car and then decline to march it (W293). Settling a new car "
+                "means marching from rest, and that start was measured failing "
+                "on this car -- divergence 2.3e3 and a momentum solve that did "
+                "not converge. The commit is refused here, before the rebuild, "
+                "rather than after ninety seconds of it."),
+            "what_would_make_it_possible": (
+                "a walls-ramped spin-up reachable from the demo, which is a "
+                "script today (scripts/tier62_car_solids.py); or a settled field "
+                "for this geometry cached at out/cache/" + os.path.basename(want)),
+        }
+
     def regrid(self, root: str = ".", progress=None) -> dict:
         """Rebuild the car from the committed knobs.  **On commit, not per slider.**
 
