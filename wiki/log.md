@@ -5948,3 +5948,28 @@ $3.93\times$ of clock ratio at a fixed interval moves $\sigma$ by $1.0000000836\
 The same march, same code, same chamber: $\approx 215\,000$, $111\,496$ and $65\,204$–$70\,070$ s of wall per second of gas time — **$3.3\times$ apart**. The first spanned a **five-minute Modern Standby**, which `perf_counter` counts as work and which looks identical to a slow run; it was caught by reading System events $506$/$507$. The driver now records `BatteryStatus`, the clock and the standby count beside every cost it prints; this tier's record carries `standby_during_run = 0` over a $2436$ s core. **This is why sub-steps and not seconds are the quotable unit.**
 
 **Eleven of twelve registered predictions held.**
+
+### Addendum, 2026-09-18 — the anchor, and the bound it breaks
+
+The $2.57$ h row at the declared $5\times10^{-2}$ s landed, and **it inverts this entry's headline.**
+
+| $\Delta t_{\text{ex}}$ [s] | lag [K] | lag$/\Delta t$ | peakedness | $\sigma$ | $\sigma/$lag | order | bound/meas |
+|---|---|---|---|---|---|---|---|
+| $2\times10^{-4}$ | $5.178951\times10^{-3}$ | $25.8948$ | $1.6839$ | $2.533447\times10^{-6}$ | $4.8918\times10^{-4}$ | — | $2.4999$ |
+| $1\times10^{-3}$ | $2.589046\times10^{-2}$ | $25.8905$ | $1.6835$ | $1.395465\times10^{-5}$ | $5.3899\times10^{-4}$ | $1.0601$ | $2.2688$ |
+| $5\times10^{-3}$ | $1.294344\times10^{-1}$ | $25.8869$ | $1.6833$ | $6.675523\times10^{-5}$ | $5.1575\times10^{-4}$ | $0.9725$ | $2.3707$ |
+| $\mathbf{5\times10^{-2}}$ | $\mathbf{1.292034}$ | $25.8407$ | $1.6811$ | $\mathbf{5.837575\times10^{-3}}$ | $\mathbf{4.5181\times10^{-3}}$ | $\mathbf{1.9417}$ | $\mathbf{0.2702}$ |
+
+**The bound is violated at the rocket's own declared clocks, under-predicting by $3.7\times$.** The cheap sweep is internally consistent, first order, and agrees with CS-11 to within a factor — and it is wrong about the one interval the graph actually runs at.
+
+**The failure is not in the lag.** The trace drift is linear to $0.2\%$ over $250\times$ and the profile's shape does not move; what jumps is the gas's response per unit lag, $8.8\times$ in the last decade. **No $C_2$ repairs it** — the rocket's is negative, so the quadratic term pulls the bound further down.
+
+**The disjunction was registered before the run:** *if A1 holds and A2 fails, $\sigma$ is not first order out to the declared interval.* A1 held to four digits ($1.292034$ against $[1.22958, 1.35902]$); A2 failed by $8.7\times$. So three predictions that held on $25\times$ of interval were refuted by one row a decade further out — **which is the whole argument for anchors, made by a case that would otherwise have published a false bound with a clean table behind it.** The tier closes at **eight of twelve**.
+
+**What survives, and it matters:** CS-11 §4's argument is that a bound written in the *interval* rather than the *ratio* can be checked at an affordable ratio and applied at the $10^4$–$10^5$ a real conjugate seam runs at. §14.6 confirms the ratio is not the variable, $1900\times$ more sharply than CS-11 could. **CS-11 never licensed extrapolating in the interval**, and its own table spans $400\times$ and stops. The rocket shows what happens one decade past where the checking stops.
+
+**[AI Inference]** the threshold is the fast agent's own residence time: one chamber flow-through is $\approx 6\times10^{-3}$ s, so the sweep's largest interval is $0.83$ of one and the anchor is $8.3$. Supported by the arithmetic and by nothing about the trace having moved; settled by $s_\Gamma$ measured inside the gap (`--stages knee`, four marches of $10^{-2}$ s, $\approx 70$ min on AC). **Named and not paid** — it refines a mechanism and the gate does not turn on it.
+
+**Cost:** $9259$ s, $364\,093$ gas sub-steps, **zero Modern Standby events**, $92\,590$ s of wall per second of gas time — about $40\%$ above the sweep's own rate, because the chamber accelerates as it develops and a longer march is dearer per unit of gas time.
+
+**And a note on what it took to get the row at all.** The anchor was launched three times. The first died with the session that started it; the second completed; a follow-up `knee` run died the same way ten minutes in, with an empty stderr and no standby event to blame, and **the cause is not known**. Long runs here need a launch that outlives the session and a record that is written incrementally — this one survived only because `_persist` writes after every stage and `_load` merges rather than replaces, which was itself a bug fixed before the first launch.

@@ -351,7 +351,16 @@ def test_R2_gate_first_half_L7_R9_admits():
 
 
 def test_R2_gate_second_half_the_defect_is_measured_and_bounded():
-    """The gate's second half: sigma at the pinned 50:1, beside CS-11's bound."""
+    """The gate's second half: sigma at the pinned 50:1, beside CS-11's bound.
+
+    **This test asserted ``bound_holds is True`` until the anchor ran.** The
+    core's three rows span 25x of exchange interval, are first order, and put
+    the bound at 2.269x-2.500x -- a clean table that agrees with CS-11 to within
+    a factor. The declared interval is a further 10x out, and there the bound is
+    VIOLATED at 0.2702. The old assertion is kept as the diagnosis it became:
+    the sweep really does hold everywhere it was measured, which is exactly why
+    a bound published from it would have been believed.
+    """
     res = _results()
     law = res["sigma_law"]
     graded = [r for r in law["rows"] if r["sigma"] > 0.0]
@@ -359,9 +368,50 @@ def test_R2_gate_second_half_the_defect_is_measured_and_bounded():
     assert control and control[0]["sigma"] == 0.0
     assert graded, "no graded intervals"
     assert all(r["ratio"] == 50 for r in graded), "the ratio is pinned at 50"
-    assert law["bound_holds"] is True
-    lo, hi = law["tightness"]
-    assert lo >= 1.0
+
+    cheap = [r for r in graded if r["interval"] <= 5.0e-3]
+    assert len(cheap) == 3
+    assert all(r["bound_over_measured"] >= 1.0 for r in cheap), \
+        "the cheap sweep is where the bound DOES hold; that is the point"
+    assert 2.2 < min(r["bound_over_measured"] for r in cheap) < 2.6
+
+    declared = [r for r in graded if abs(r["interval"] - 5.0e-2) < 1e-15]
+    if not declared:
+        pytest.skip("the anchor row is not in the record; run --stages anchor")
+    a = declared[0]
+    assert a["bound_over_measured"] < 1.0, "the anchor must VIOLATE the bound"
+    assert a["bound_over_measured"] == pytest.approx(0.2702, abs=5e-4)
+    assert law["bound_holds"] is False
+    assert law["tightness"][0] < 1.0
+
+
+def test_the_anchor_breaks_the_ORDER_and_not_the_lag():
+    """Why the violation is a finding and not a measurement error.
+
+    If the lag had drifted from linear, or the lag PROFILE had changed shape,
+    the anchor would only be saying the extrapolation was sloppy. Neither did:
+    across 250x of interval the drift rate is constant to 0.2% and the profile's
+    peakedness is constant to 0.2%. What moved is sigma per unit lag, and it
+    moved by 8.8x in the last decade -- so the seam's RESPONSE changed, not the
+    trace it responds to.
+    """
+    res = _results()
+    rows = [r for r in res["sigma_law"]["rows"] if r["sigma"] > 0.0]
+    if not any(abs(r["interval"] - 5.0e-2) < 1e-15 for r in rows):
+        pytest.skip("the anchor row is not in the record")
+    rates = [r["lag"] / r["interval"] for r in rows]
+    peaks = [r["lag_max"] / r["lag"] for r in rows]
+    assert max(rates) / min(rates) < 1.005, rates
+    assert max(peaks) / min(peaks) < 1.005, peaks
+
+    per_lag = [r["sigma"] / r["lag"] for r in rows]
+    assert max(per_lag[:3]) / min(per_lag[:3]) < 1.2, "flat over the cheap sweep"
+    assert per_lag[-1] / per_lag[-2] > 5.0, "and it jumps at the declared interval"
+
+    last = rows[-1]["exponent"]
+    assert 1.8 < last < 2.1, "first order becomes very nearly second: %r" % last
+    # and no choice of C2 rescues it, because the rocket's C2 is NEGATIVE
+    assert res["slope"]["C2"] < 0.0
 
 
 def test_the_transfer_control_was_actually_run():

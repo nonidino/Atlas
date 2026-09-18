@@ -55,7 +55,7 @@ from atlas.cases import rocket_experts as RE
 from atlas.multiphysics import ResponseHalf, interface_power
 
 STAGES = ("setup", "r9", "rate", "slope", "sigma_law", "ratio", "trace_rank",
-          "two_way", "transfer", "anchor", "constants")
+          "two_way", "transfer", "anchor", "knee", "constants")
 
 #: The core is everything affordable in one sitting; `anchor` is the declared
 #: exchange interval and costs 3.10 h on its own.
@@ -65,7 +65,8 @@ CORE = ("setup", "r9", "rate", "slope", "sigma_law", "ratio", "trace_rank",
 #: Stages that march the seam and so need `setup`'s settled state.  The others
 #: are a compile, a shell march and arithmetic, and forcing them through a ten
 #: minute settle they never read would be paying for nothing.
-NEEDS_SETUP = ("slope", "sigma_law", "ratio", "trace_rank", "two_way", "anchor")
+NEEDS_SETUP = ("slope", "sigma_law", "ratio", "trace_rank", "two_way",
+               "anchor", "knee")
 
 #: Exchange intervals, in seconds.  The RATIO is pinned at 50 in every row --
 #: the gas's step is ``interval / 50`` -- so every row is "at 50:1" and the
@@ -103,6 +104,13 @@ SETTLE = 6.0e-3
 #: CFL numbers for CS-11's own control -- the ratio moved at a FIXED interval by
 #: refining the fast agent's own stability step.  `GasConfig.cfl` defaults 0.4.
 CFLS = (0.4, 0.2, 0.1)
+
+#: **The knee, placed after the anchor broke the bound.** The sweep tops out
+#: at 0.83 chamber flow-throughs and the anchor is at 8.3; 1e-2 s is 1.67,
+#: just past one, which is where a residence-time threshold would first show.
+#: Two marches for the defect and two for the seam slope at the same
+#: interval, because the defect alone cannot say WHICH of the two grew.
+KNEE_INTERVALS = (1.0e-2,)
 
 #: **What the CORE predicts for the ANCHOR, registered 2026-09-17 before the
 #: anchor ran and after the core's three graded rows were in hand.**
@@ -899,6 +907,105 @@ def stage_anchor(out: dict, a) -> None:
               % (out["sigma_law"]["tightness"][0],
                  out["sigma_law"]["tightness"][1],
                  graded[-1]["interval"] / graded[0]["interval"]))
+
+
+def stage_knee(out: dict, a) -> None:
+    """Where the order changes, and WHY -- the seam's slope at the same interval.
+
+    The anchor broke the bound at the declared interval while leaving the lag
+    exactly linear (``lag / DT`` is 25.89 at every row over 250x) and the lag
+    profile's shape unchanged (peakedness 1.68 throughout).  So nothing about
+    the TRACE changed; what changed is the gas's response to a given trace
+    displacement, which grew 8.8x in the last decade.
+
+    That is a property of the seam and there is a direct instrument for it --
+    `sigma_uniform`, the same functional the slope stage uses.  `s_seam` was
+    measured flat to 1.0125x over 5e-5 .. 1e-3.  Measuring it HERE, at an
+    interval inside the gap, separates two explanations that the sigma column
+    alone cannot:
+
+      * if ``s_seam`` has climbed, the seam's own response to a displacement
+        grows with the march duration, and the bound's FIRST constant stops
+        being a constant somewhere in this decade -- the bound does not merely
+        need a bigger C2, its linear term is wrong;
+      * if ``s_seam`` is still flat, the growth is in how the RUN's lag couples
+        rather than in the seam, and W86's profile argument is the place to
+        look.
+
+    One chamber flow-through is about 0.30 m at 50 m/s, or 6e-3 s: the sweep's
+    largest interval is 0.83 of one and the anchor is 8.3.  That is the obvious
+    threshold and it is what this stage is placed to straddle.
+    """
+    seam, U0 = out["_seam"], out["_U0"]
+    sl = out.get("slope", {})
+    shift = SLOPE_CHECK_SHIFTS[0]
+    print("=== the knee: where the order changes, and whether s_seam moved ===")
+    print("  one chamber flow-through is about 6e-3 s; the sweep's largest")
+    print("  interval is 0.83 of one and the anchor is 8.3.")
+    print("  s_seam was %.6e per K, flat to %.4fx over 5e-5 .. 1e-3."
+          % (sl.get("s_seam", float("nan")),
+             sl.get("s_seam_spread", float("nan"))))
+    print()
+    rows = []
+    for dt_ex in KNEE_INTERVALS:
+        t0 = time.perf_counter()
+        r = lag_defect(seam, U0, dt_ex, DECLARED_RATIO)
+        t1 = time.perf_counter()
+        sg, _p0 = sigma_uniform(seam, U0, dt_ex, DECLARED_RATIO,
+                                seam.trace_on_gas(seam.T_shell0), shift)
+        t2 = time.perf_counter()
+        s_here = sg / shift
+        rel = s_here / sl["s_seam"] if sl.get("s_seam") else float("nan")
+        r["control"] = False
+        if sl:
+            r["bound"] = _bound(sl["s_seam"], sl["C2"], r["lag"])
+            r["bound_over_measured"] = r["bound"] / r["sigma"]
+        r["wall_s"] = t2 - t0
+        r["s_seam_here"] = s_here
+        r["s_seam_rel"] = rel
+        r["flowthroughs"] = dt_ex / 6.0e-3
+        rows.append(r)
+        print("  DT = %g s  (%.2f flow-throughs)" % (dt_ex, dt_ex / 6.0e-3))
+        print("    lag       %.6e K    sigma      %.6e" % (r["lag"], r["sigma"]))
+        print("    sigma/lag %.6e      bound/meas %.4f"
+              % (r["sigma"] / r["lag"], r.get("bound_over_measured", float("nan"))))
+        print("    s_seam    %.6e per K   -> %.4fx the small-interval value"
+              % (s_here, rel))
+        print("    cost      %.0f s (defect %.0f s, slope %.0f s)"
+              % (t2 - t0, t1 - t0, t2 - t1), flush=True)
+        out["knee"] = dict(rows=rows, shift=shift)
+        _persist(out, a)
+
+    #: Fold into the law's own table, as the anchor does, so the order column
+    #: reads across one table rather than across a table and two footnotes.
+    law = out.setdefault("sigma_law", {}).setdefault("rows", [])
+    for r in rows:
+        law[:] = [x for x in law if abs(x["interval"] - r["interval"]) > 1e-15]
+        law.append(r)
+    law.sort(key=lambda x: x["interval"])
+    prev = None
+    for x in law:
+        if x["sigma"] > 0.0 and prev is not None:
+            x["exponent"] = float(np.log(x["sigma"] / prev["sigma"])
+                                  / np.log(x["interval"] / prev["interval"]))
+        if x["sigma"] > 0.0:
+            prev = x
+    graded = [x for x in law if x["sigma"] > 0.0 and "bound_over_measured" in x]
+    if graded:
+        out["sigma_law"]["bound_holds"] = all(
+            x["bound_over_measured"] >= 1.0 for x in graded)
+        out["sigma_law"]["tightness"] = [
+            min(x["bound_over_measured"] for x in graded),
+            max(x["bound_over_measured"] for x in graded)]
+    print()
+    print("  the order column, read across the whole table:")
+    for x in law:
+        if x["sigma"] > 0.0:
+            print("    DT = %-9g  sigma/lag %.6e  order %s"
+                  % (x["interval"], x["sigma"] / x["lag"],
+                     ("%.4f" % x["exponent"]) if x.get("exponent") is not None
+                     and x.get("exponent") == x.get("exponent") else "--"))
+    out["knee"] = dict(rows=rows, shift=shift)
 
 
 def stage_constants(out: dict, a) -> None:

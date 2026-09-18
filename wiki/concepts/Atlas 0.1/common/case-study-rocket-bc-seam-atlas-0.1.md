@@ -735,7 +735,7 @@ That is the PoC's stated product demonstrated on its own author: a coupling that
 
 ---
 
-## 14. Tier 80 — R2's remaining half: the composed defect at 50:1, and a bound that transfers
+## 14. Tier 80 — R2's remaining half: the composed defect at 50:1, and the bound that breaks at it
 
 R2 asked for two things: declare `flux_matching=TIME_INTEGRATED` with a `boundary_response_integrated` on each side, and **report the composed defect at 50:1 beside CS-11's bound**. The first was declared at Tier 76. It did not *clear* until Tier 79, and that dependency is the first thing worth stating.
 
@@ -804,7 +804,7 @@ CS-11 measured $\dot\lambda$ at a settled state. The rocket's shell has none —
 
 $\dot\lambda$ spans $\mathbf{2.582\times}$ over the burn window, against CS-11's single settled $11.94$ K/s — the rocket's is $2.174\times$ CS-11's at the declared $5$ s base. Worth setting beside Tier 76's §7.2: **the rate is about twice as horizon-sensitive as $\beta$ was** ($2.58\times$ against $1.265\times$ over the same window), so a $\sigma$ quoted without its burn time is looser than a $\beta$ quoted without one.
 
-### 14.5 The defect, at a pinned 50:1, over 25x of interval
+### 14.5 The defect, at a pinned 50:1, over 250x of interval
 
 | $\Delta t_{\text{ex}}$ [s] | ratio | lag [K] | measured $\sigma$ | bound | bound/measured | order | cost |
 |---|---|---|---|---|---|---|---|
@@ -812,17 +812,29 @@ $\dot\lambda$ spans $\mathbf{2.582\times}$ over the burn window, against CS-11's
 | $2\times10^{-4}$ | $50$ | $5.17895\times10^{-3}$ | $2.53345\times10^{-6}$ | $6.33324\times10^{-6}$ | $2.4999$ | — | $28$ s |
 | $1\times10^{-3}$ | $50$ | $2.58905\times10^{-2}$ | $1.39546\times10^{-5}$ | $3.16601\times10^{-5}$ | $2.2688$ | $1.060$ | $135$ s |
 | $5\times10^{-3}$ | $50$ | $1.29434\times10^{-1}$ | $6.67552\times10^{-5}$ | $1.58256\times10^{-4}$ | $2.3707$ | $0.973$ | $652$ s |
-<!-- W314 anchor row goes here -->
+| $\mathbf{5\times10^{-2}}$ **(declared)** | $50$ | $1.292034$ | $\mathbf{5.837575\times10^{-3}}$ | $1.577278\times10^{-3}$ | $\mathbf{0.2702}$ | $\mathbf{1.9417}$ | $9259$ s |
 
-> **The bound holds at every graded interval and is loose by $2.269\times$ to $2.500\times$ over $25\times$ of exchange interval. CS-11's own tightness on the brake seam was $1.426\times$ to $2.178\times$ — the ranges nearly touch.** A bound whose constants were measured on a cast-iron disc against a cooling duct, re-measured on a rocket chamber against an Al–Li airframe, comes out at comparable tightness on different physics, different scales and an opposite-signed $C_2$.
+> **Over the first $25\times$ the bound holds and is loose by $2.269\times$ to $2.500\times$, against CS-11's own $1.426\times$–$2.178\times$ on the brake. At the declared interval it is VIOLATED: $\mathbf{0.2702}$, under-predicting the measured defect by $\mathbf{3.7\times}$.**
+
+**That row cost $2.57$ hours and it is the only reason any of this is known.** The cheap sweep is internally consistent, first order, and agrees with CS-11 to within a factor — and it is wrong about the one interval the graph actually runs at. A bound published from §14.5's first three rows would have carried $25\times$ of clean supporting evidence and failed at the declared clocks.
+
+**The failure is not in the lag, and that is what makes it a finding rather than a measurement error.** Three quantities were checked across the whole $250\times$:
+
+| | $2\times10^{-4}$ | $1\times10^{-3}$ | $5\times10^{-3}$ | $5\times10^{-2}$ |
+|---|---|---|---|---|
+| lag$/\Delta t_{\text{ex}}$ [K/s] | $25.8948$ | $25.8905$ | $25.8869$ | $25.8407$ |
+| profile peakedness | $1.6839$ | $1.6835$ | $1.6833$ | $1.6811$ |
+| $\sigma/$lag | $4.8918\times10^{-4}$ | $5.3899\times10^{-4}$ | $5.1575\times10^{-4}$ | $\mathbf{4.5181\times10^{-3}}$ |
+
+**The trace drift is linear to $0.2\%$ over $250\times$ and the profile's shape does not move. The gas's response per unit lag jumps $8.8\times$ in the last decade**, taking the order from $1.060$ and $0.973$ to $\mathbf{1.9417}$ — first order to very nearly second. So $\sigma$ stops being first order in the interval somewhere between $5\times10^{-3}$ and $5\times10^{-2}$ s, and **no choice of $C_2$ repairs it**: the rocket's $C_2$ is *negative* (§14.3), so the quadratic term pulls the bound further down, not up.
 
 **Ratio 1 is the control and its defect is exactly zero, bitwise.** One gas call *is* the interval, so there is nothing to be stale about. It carries no tightness ratio, and quoting $0/0$ as one would be W106's mistake.
 
-**First order in the interval**, at $1.060$ and $0.973$. That is now four case studies and four coupling kinds at order one: CS-9's volumetric splitting ($1.003$), CS-10's field-to-lumped lag ($1.258$, $1.165$), CS-11's multirate lag, and this.
+**First order in the interval — over the cheap sweep, and only there**, at $1.060$ and $0.973$. Over that range it joins CS-9's volumetric splitting ($1.003$), CS-10's field-to-lumped lag ($1.258$, $1.165$) and CS-11's multirate lag: four case studies, four coupling kinds, order one. **The declared row leaves that family at $1.9417$**, which is the first time anything in this vault has measured a coupling defect *out of* first order rather than into it — and it took an interval an order of magnitude beyond where any of the four checked.
 
 **A cross-check that fell out unasked.** The lag scales as $5.17895\times10^{-3} \to 2.58905\times10^{-2} \to 1.29434\times10^{-1}$ for intervals $5\times$ apart — ratios of exactly $5.0$ and $5.0$ — so $\dot\lambda$ derived from the sweep is $25.89$ K/s against the $25.9594$ K/s the shell's own single step gave in §14.4. **Two unrelated routes, $0.3\%$ apart.**
 
-**And the looseness has a mechanism, quantified rather than attributed.** CS-11 ascribed its own $1.4$–$2.2\times$ to **W86** — $s_\Gamma$ is measured by displacing the trace *uniformly* and a run's lag is not uniform. Here that is a number. The lag profile's peakedness $\lVert\delta\lambda\rVert_\infty / \lVert\delta\lambda\rVert_{\text{rms}}$ is $1.6839$, $1.6835$, $1.6833$ across the three intervals — **fixed**, so the profile scales with the interval without changing shape. And the measured $\sigma/\text{lag}$ is $4.89$–$5.39\times10^{-4}$ against $s_\Gamma = 1.2229\times10^{-3}$: the real non-uniform lag produces $\mathbf{40\%}$–$\mathbf{44\%}$ of what a uniform shift of the same norm would. The reciprocal, $2.27$–$2.50$, **is** the tightness column. The bound's looseness on this seam is the profile effect and nothing else.
+**And the looseness has a mechanism, quantified rather than attributed.** CS-11 ascribed its own $1.4$–$2.2\times$ to **W86** — $s_\Gamma$ is measured by displacing the trace *uniformly* and a run's lag is not uniform. Here that is a number. The lag profile's peakedness $\lVert\delta\lambda\rVert_\infty / \lVert\delta\lambda\rVert_{\text{rms}}$ is $1.6839$, $1.6835$, $1.6833$ across the three intervals — **fixed**, so the profile scales with the interval without changing shape. And the measured $\sigma/\text{lag}$ is $4.89$–$5.39\times10^{-4}$ against $s_\Gamma = 1.2229\times10^{-3}$: the real non-uniform lag produces $\mathbf{40\%}$–$\mathbf{44\%}$ of what a uniform shift of the same norm would. The reciprocal, $2.27$–$2.50$, **is** the tightness column for those three rows. **So over the cheap sweep the bound's looseness is the profile effect and nothing else** — which is why it looked so well understood, and why the declared row is not a bigger version of the same thing: there the profile is unchanged ($1.6811$) and the response per unit lag has moved instead.
 
 ### 14.6 CS-11's own control, replicated — and 1900x sharper
 
@@ -907,38 +919,52 @@ Measured on the shell's own inner face ($232$ cells, $4.7254$ m of arc), taking 
 
 **And the build repo knows.** Its own comment names an interface its own config does not declare, and the consequence — a scalar wall temperature for every gas agent (§14.8) — is not a shortcut but a *forced* one: a per-face array cannot be handed to a face whose interface has no edge.
 
-### 14.11 The anchor — the declared interval, and what the core commits to
+### 14.11 The anchor — the declared interval, and the bound it breaks
 
-Every row in §14.5 is at the declared $50{:}1$, but the declared **exchange interval** is $5\times10^{-2}$ s — the shell's own step, which is where `R4` floors it — and the sweep stops $10\times$ short of it. That row is the one the gate names, and it costs what it costs: the chamber marches at $65\,204$–$70\,070$ s of wall per second of gas time on this machine, measured per row rather than estimated, so two columns of $5\times10^{-2}$ s is $\approx 1.8$ hours.
+Every row in §14.5 is at the declared $50{:}1$, but the declared **exchange interval** is $5\times10^{-2}$ s — the shell's own step, which is where `R4` floors it — and the sweep stops $10\times$ short of it. That row is the one the gate names, and it costs what it costs: the chamber marches at $65\,204$–$70\,070$ s of wall per second of gas time on this machine, measured per row rather than estimated, so two columns of $5\times10^{-2}$ s was budgeted at $\approx 1.8$ hours. **It cost $2.57$**, and the miss is itself a number worth keeping — see below.
 
 **Before it ran, the core's three rows were made to commit to it**, so the anchor can refute the extrapolation rather than decorate it:
 
-| | registered | basis |
-|---|---|---|
-| **A1** | lag $= 1.2943$ K within $5\%$ | lag$/\Delta t_{\text{ex}}$ was $25.89$ K/s, flat to $0.1\%$ over $25\times$ |
-| **A2** | $\sigma \in [5.5\times10^{-4},\ 8.0\times10^{-4}]$ | $\sigma/$lag times that lag |
-| **A3** | bound/measured $\in [2.0,\ 2.8]$ | the core's $2.269$–$2.500$, widened by half its span |
+| | registered | measured | |
+|---|---|---|---|
+| **A1** | lag $\in [1.22958,\ 1.35902]$ K | $\mathbf{1.292034}$ | **held** |
+| **A2** | $\sigma \in [5.5\times10^{-4},\ 8.0\times10^{-4}]$ | $\mathbf{5.837575\times10^{-3}}$ | **failed, $8.7\times$ high** |
+| **A3** | bound/measured $\in [2.0,\ 2.8]$ | $\mathbf{0.2702}$ | **failed** |
 
-> If **A1 holds and A2 fails**, $\sigma$ is not first order out to the declared interval, and the bound's usefulness stops somewhere between $5\times10^{-3}$ and $5\times10^{-2}$. That is the most interesting outcome available here, and it is why the anchor is worth the time.
+The disjunction was registered before the run:
+
+> *If **A1 holds and A2 fails**, $\sigma$ is not first order out to the declared interval, and the bound's usefulness stops somewhere between $5\times10^{-3}$ and $5\times10^{-2}$. That is the most interesting outcome available here, and it is why the anchor is worth the time.*
+
+**A1 held to four digits and A2 failed by $8.7\times$.** So the extrapolation's *premise* — that the trace drifts linearly, at a rate the shell's own single step predicts — is exactly right, and its *conclusion* is wrong, because the quantity that stopped being linear is the seam's response and not the trace.
+
+**Cost, measured rather than estimated:** $9259$ s ($2.57$ h), $364\,093$ gas sub-steps, **zero Modern Standby events** over the window, at $100\%$ charge on AC. That is $92\,590$ s of wall per second of gas time, about $40\%$ above the sweep's own $65\,204$–$70\,070$ — the chamber accelerates as it develops, so a longer march is dearer per unit of gas time, not merely longer.
+
+> **What this costs the rest of the vault.** [[case-study-brake-thermal-atlas-0.1]] §4's argument is that a bound written in the *interval* rather than the *ratio* can be checked at a ratio you can afford and applied at the $10^4$–$10^5$ a real conjugate seam runs at. That argument survives — §14.6 confirms the ratio is not the variable, $1900\times$ more sharply than CS-11 could. **What does not survive is extrapolating in the INTERVAL**, and CS-11 never claimed to; its own table spans $400\times$ of interval and stops. The rocket shows what happens one decade past where the checking stopped, and the answer is that the order changes.
+
+**And the mechanism is bounded but not measured.** The chamber is $0.30$ m at a $50$ m/s inlet, so one flow-through is $\approx 6\times10^{-3}$ s: the sweep's largest interval is $\mathbf{0.83}$ flow-throughs and the anchor is $\mathbf{8.3}$. **[AI Inference]:** the order changes when the exchange interval crosses the fast agent's own residence time, because below it the gas cannot carry a wall perturbation out of the domain and above it the perturbation is advected through repeatedly. What supports this is the arithmetic above and the fact that nothing about the trace moved; what would settle it is $s_\Gamma$ measured at an interval inside the gap — flat means the growth is in how the run's lag couples, climbing means the seam's own linear constant stops being constant. That measurement is one stage (`--stages knee`), four marches of $10^{-2}$ s — $1.67$ flow-throughs, placed to straddle the threshold — and **$\approx 70$ minutes on AC**.
+
+**It was attempted and it is not in this record.** The run died ten minutes in, during its settle, with an empty stderr and no Modern Standby event to blame, and **the cause is not known** — the anchor had survived nearly three hours by the identical launch. So the mechanism is named, priced and unpaid: it refines an inference, and the gate does not turn on it.
 
 ### 14.12 The predictions
 
-**Eleven of twelve held**, over a $2436$ s run with **zero Modern Standby events** (the driver counts them itself — see §14.13).
+**Eleven of twelve held on the core; the anchor moved three of them to failed, so the tier closes at eight of twelve.** Both runs recorded **zero Modern Standby events** (the driver counts them itself — see §14.13).
 
 | | claim | got | |
 |---|---|---|---|
 | P1 | `L7/R9` admits on the real graph | `True` | **held** |
 | P2 | the ratio-1 control is exactly zero, not small | $0.0$ | **held** |
-| P3 | $\sigma$ first order: every exponent in $[0.90, 1.10]$ | $1.060$, $0.973$ | **held** |
-| P4 | the bound with rocket constants holds everywhere graded | `True` | **held** |
+| P3 | $\sigma$ first order: every exponent in $[0.90, 1.10]$ | $1.060$, $0.973$, $\mathbf{1.942}$ | **refuted by the anchor** |
+| P4 | the bound with rocket constants holds everywhere graded | `False` | **refuted by the anchor** |
 | P5 | $\dot\lambda$ exceeds CS-11's and lies in $[20, 200]$ K/s | $25.96$ | **held** |
 | P6 | CS-11's own constants do **not** bound the rocket | $17.62$ | **refuted** |
 | P7 | $4\times$ of ratio at fixed interval moves $\sigma$ by $<1.05\times$ | $1.0000000836$ | **held** |
 | P8 | $\dot\lambda$ at $0.5$ s and $5$ s differ by $>2\times$ | $2.582$ | **held** |
-| P9 | tightness within an order of magnitude of CS-11's | $[2.269, 2.500]$ | **held** |
+| P9 | tightness within an order of magnitude of CS-11's | $[0.270, 2.500]$ | **refuted by the anchor** |
 | P10 | $s_\Gamma$ constant in the interval to better than $1.5\times$ | $1.0125$ | **held** |
 | P11 | the rank-1 trace changes $\sigma$ by $>1.2\times$ | $1.2310$, $1.1661$ | **held** |
 | P12 | the two-way referent moves $\sigma$ by $>1.5\times$ somewhere | $0.3935$, $1.0980$ | **held** |
+
+> **Three predictions that held on 25x of interval were refuted by one row 10x further out — and the row was registered, priced and paid for precisely because the core could not reach it.** That is the whole argument for anchors, stated by a case that would otherwise have published a false bound with a clean table behind it.
 
 **P6 is the useful one and §14.7 says why.** It was also flagged as likely to fail *before* the transfer stage ran, from the slope stage's first row — $s_\Gamma$ came in $7.8\times$ below CS-11's, which fixes the direction of the discrepancy and hence the answer. A prediction refuted by a number measured two stages earlier is a prediction that should have been re-registered, and saying so is cheaper than pretending the order was not visible.
 

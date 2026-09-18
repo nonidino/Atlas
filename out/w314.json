@@ -45,12 +45,12 @@
     "wall_spread_K": 320.68940087894157,
     "machine": {
       "battery_status": 2,
-      "charge_pct": 98,
+      "charge_pct": 78,
       "mhz_now": 1400,
       "mhz_max": 3800
     },
-    "standby_last_hour": 0,
-    "setup_wall_s": 466.4166155999992
+    "standby_last_hour": 7,
+    "setup_wall_s": 627.3162820999999
   },
   "r9": {
     "rows": [
@@ -265,14 +265,52 @@
         "exponent": 0.9725258453465516,
         "bound": 0.00015825640982488392,
         "bound_over_measured": 2.3706969634859747
+      },
+      {
+        "interval": 0.05,
+        "ratio": 50,
+        "dt_gas": 0.001,
+        "sigma": 0.005837574822588519,
+        "lag": 1.2920342055704392,
+        "lag_max": 2.172015759029364,
+        "p_ref": 34858.66741886879,
+        "p_held": 34655.177339595415,
+        "lag_rate": 25.840684111408784,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 9259.2705962,
+        "control": false,
+        "bound": 0.00157727794661248,
+        "bound_over_measured": 0.2701940436821806,
+        "anchor_predictions": {
+          "A1_lag_K": {
+            "lo": 1.229585,
+            "hi": 1.359015,
+            "got": 1.2920342055704392,
+            "held": true
+          },
+          "A2_sigma": {
+            "lo": 0.00055,
+            "hi": 0.0008,
+            "got": 0.005837574822588519,
+            "held": false
+          },
+          "A3_bound_over_measured": {
+            "lo": 2.0,
+            "hi": 2.8,
+            "got": 0.2701940436821806,
+            "held": false
+          }
+        },
+        "exponent": 1.9417471943952007
       }
     ],
-    "bound_holds": true,
+    "bound_holds": false,
     "tightness": [
-      2.2687825114411595,
+      0.2701940436821806,
       2.499850003910972
     ],
-    "lag_rate": 25.890698528265446
+    "lag_rate": 25.87819492405128
   },
   "ratio": {
     "rows": [
@@ -412,15 +450,16 @@
       "claim": "sigma is first order in the interval: every exponent in [0.90, 1.10]",
       "got": [
         1.0601414016588662,
-        0.9725258453465516
+        0.9725258453465516,
+        1.9417471943952007
       ],
-      "held": true
+      "held": false
     },
     {
       "name": "P4",
       "claim": "the bound with ROCKET constants holds at every graded interval",
-      "got": true,
-      "held": true
+      "got": false,
+      "held": false
     },
     {
       "name": "P5",
@@ -450,10 +489,10 @@
       "name": "P9",
       "claim": "the tightness is within an order of magnitude of CS-11's, i.e. in [1, 10]",
       "got": [
-        2.2687825114411595,
+        0.2701940436821806,
         2.499850003910972
       ],
-      "held": true
+      "held": false
     },
     {
       "name": "P10",
@@ -480,8 +519,55 @@
       "held": true
     }
   ],
-  "wall_seconds": 2436.3004093999916,
+  "wall_seconds": 9890.9592934,
   "standby_during_run": 0,
+  "anchor": {
+    "row": {
+      "interval": 0.05,
+      "ratio": 50,
+      "dt_gas": 0.001,
+      "sigma": 0.005837574822588519,
+      "lag": 1.2920342055704392,
+      "lag_max": 2.172015759029364,
+      "p_ref": 34858.66741886879,
+      "p_held": 34655.177339595415,
+      "lag_rate": 25.840684111408784,
+      "scalar_trace": false,
+      "two_way": false,
+      "wall_s": 9259.2705962,
+      "control": false,
+      "bound": 0.00157727794661248,
+      "bound_over_measured": 0.2701940436821806,
+      "anchor_predictions": {
+        "A1_lag_K": {
+          "lo": 1.229585,
+          "hi": 1.359015,
+          "got": 1.2920342055704392,
+          "held": true
+        },
+        "A2_sigma": {
+          "lo": 0.00055,
+          "hi": 0.0008,
+          "got": 0.005837574822588519,
+          "held": false
+        },
+        "A3_bound_over_measured": {
+          "lo": 2.0,
+          "hi": 2.8,
+          "got": 0.2701940436821806,
+          "held": false
+        }
+      },
+      "exponent": 1.9417471943952007
+    },
+    "machine": {
+      "battery_status": 2,
+      "charge_pct": 100,
+      "mhz_now": 1400,
+      "mhz_max": 3800
+    },
+    "standby_during": 0
+  },
   "_signature": {
     "burn": 5.0,
     "settle": 0.006,
