@@ -1,0 +1,498 @@
+{
+  "setup": {
+    "gas_shape": [
+      112,
+      80
+    ],
+    "n_face_gas": 112,
+    "n_seam_shell": 14,
+    "dt_gas_declared": 0.001,
+    "dt_shell": 0.05,
+    "declared_ratio": 50.0,
+    "dt_macro": 0.05,
+    "cfl": 0.4,
+    "settle_seconds": 0.006,
+    "settle_curve": [
+      {
+        "t": 0.002,
+        "rel_change": 0.007486438106894642
+      },
+      {
+        "t": 0.004,
+        "rel_change": 0.00023192568202728034
+      },
+      {
+        "t": 0.006,
+        "rel_change": 9.050386117577525e-05
+      }
+    ],
+    "marched": {
+      "burn_time_s": 5.0,
+      "steps": 100,
+      "T_wall_mean_K": 449.4197129792197,
+      "T_wall_min_K": 369.32858489081605,
+      "T_wall_max_K": 690.0179857697576,
+      "valid_at_base": true,
+      "validity_lost_s": null
+    },
+    "h_cold_mean": 183.87249688093965,
+    "gas_near_wall_T_mean": 2464.175927820053,
+    "gas_near_wall_T_min": 1490.151010473322,
+    "gas_near_wall_T_max": 2804.19103542211,
+    "shell_linearised_about_K": 2800.0,
+    "base_gap_near_wall_over_chamber": 0.8800628313643046,
+    "h_settled_mean": 185.33854608349475,
+    "wall_spread_K": 320.68940087894157,
+    "machine": {
+      "battery_status": 2,
+      "charge_pct": 98,
+      "mhz_now": 1400,
+      "mhz_max": 3800
+    },
+    "standby_last_hour": 0,
+    "setup_wall_s": 466.4166155999992
+  },
+  "r9": {
+    "rows": [
+      {
+        "layer": "L7",
+        "rule": "R9",
+        "verdict": "admit",
+        "subject": "<graph>",
+        "message": "time-integrated flux matching over an exchange interval of 0.05, with each side quadrature'd on its own clock: b x50000, c x1, d x10000, e x50000, f x10000. The clocks nest, every side supplies boundary_response_integrated, and `solve.coupled_step` calls it. E4 still FAILS -- the agents really do run at different steps and no declaration changes that -- and what E4's failure costs is the pointwise condition, not the coupling: the conserved quantity over the interval is the integral, and that is what is matched"
+      },
+      {
+        "layer": "L7",
+        "rule": "R9/lag",
+        "verdict": "admit-uncertified",
+        "subject": "<graph>",
+        "message": "and R9 is not the multirate defect, it is the smaller one. Matching the integral fixes what the pointwise convention loses to the fast side's flux TRANSIENT; it does nothing about the fast side's trace being STALE for the whole interval, which here is 50000 of that agent's own steps. Measured on thermal_seam at its own 500:1 mismatch, both in interface power over one exchange interval (scripts/w7_multirate_matching.py, stage lagvsleak): R9's term is 5.9972e-05 and the lag term is 3.7431e-03, a factor of **62.4**. So this rule refused every multirate graph for the whole life of the compiler over the term 62x smaller than the one it does not mention. The lag term is sigma, it is a function of the lag (W86), and a multirate exchange interval is where that lag is largest -- so declare sigma with the sigma_lag it was measured at and expect it to be the term that decides this graph"
+      },
+      {
+        "layer": "L7",
+        "rule": "R9/order",
+        "verdict": "admit-uncertified",
+        "subject": "<graph>",
+        "message": "and the accounting the mechanism does not carry: the interface representation order CAPS the scheme order -- a second-order expert coupled through an interface held constant across the macro-step is a first-order method -- while stability is set by the coupling stiffness, which can force a macro-step SHORTER than any agent's native step. That is the opposite direction from R4 and is not implied by it. [AI Inference] the relevant stiffness is the probed operator's condition number, which the probe already prints. Untested"
+      }
+    ],
+    "admits": true,
+    "flux_matching": "time-integrated",
+    "macro_dt": 0.05,
+    "verdict": "refuse",
+    "at_multirate": [
+      "b",
+      "c",
+      "d",
+      "e",
+      "f"
+    ],
+    "wall_s": 33.38457720002043
+  },
+  "rate": {
+    "rows": [
+      {
+        "burn": 0.5,
+        "wall_mean": 316.7841846950715,
+        "rate": 51.59958517026546,
+        "rel_to_5s": 1.9877011796727204
+      },
+      {
+        "burn": 1.0,
+        "wall_mean": 335.25372720164916,
+        "rate": 43.84904844446192,
+        "rel_to_5s": 1.6891377136653603
+      },
+      {
+        "burn": 5.0,
+        "wall_mean": 449.4197129792197,
+        "rate": 25.959427754005485,
+        "rel_to_5s": 1.0
+      },
+      {
+        "burn": 10.0,
+        "wall_mean": 557.6469172286405,
+        "rate": 19.981619515806575,
+        "rel_to_5s": 0.7697249610104927
+      }
+    ],
+    "lambda_dot_at_5s": 25.959427754005485,
+    "lo": 19.981619515806575,
+    "hi": 51.59958517026546,
+    "span": 2.5823525029814185,
+    "cs11_lambda_dot": 11.94,
+    "over_cs11": 2.174156428308667
+  },
+  "slope": {
+    "rows": [
+      {
+        "shift": 0.01,
+        "sigma": 1.222888867801625e-05,
+        "slope": 0.001222888867801625,
+        "exponent": NaN
+      },
+      {
+        "shift": 0.03,
+        "sigma": 3.668567801105264e-05,
+        "slope": 0.0012228559337017547,
+        "exponent": 0.9999754856601727
+      },
+      {
+        "shift": 0.1,
+        "sigma": 0.00012227406679747832,
+        "slope": 0.001222740667974783,
+        "exponent": 0.9999217059623489
+      },
+      {
+        "shift": 0.3,
+        "sigma": 0.0003667234108645445,
+        "slope": 0.0012224113695484817,
+        "exponent": 0.9997548288678181
+      },
+      {
+        "shift": 1.0,
+        "sigma": 0.0012212592007983753,
+        "slope": 0.0012212592007983753,
+        "exponent": 0.9992167745623962
+      },
+      {
+        "shift": 3.0,
+        "sigma": 0.0036539115220474722,
+        "slope": 0.0012179705073491573,
+        "exponent": 0.9975455369490849
+      },
+      {
+        "shift": 10.0,
+        "sigma": 0.012064974802336112,
+        "slope": 0.001206497480233611,
+        "exponent": 0.9921389940259673
+      }
+    ],
+    "s_seam": 0.001222888867801625,
+    "C2": -1.639138756801377e-06,
+    "checks": [
+      {
+        "interval": 5e-05,
+        "s_seam": 0.0012200167483581521,
+        "rel": 0.9976513651247508,
+        "slopes": [
+          0.0012200167483581521,
+          0.0012185262895707506
+        ]
+      },
+      {
+        "interval": 0.001,
+        "s_seam": 0.0012352950670266644,
+        "rel": 1.0101449931810582,
+        "slopes": [
+          0.0012352950670266644,
+          0.0012338661503597996
+        ]
+      }
+    ],
+    "s_seam_spread": 1.0125230401050422,
+    "interval": 0.0002,
+    "ratio": 50
+  },
+  "sigma_law": {
+    "rows": [
+      {
+        "interval": 4e-06,
+        "ratio": 1,
+        "dt_gas": 4e-06,
+        "sigma": 0.0,
+        "lag": 0.0,
+        "lag_max": 0.0,
+        "p_ref": 32707.15790852296,
+        "p_held": 32707.15790852296,
+        "lag_rate": 0.0,
+        "scalar_trace": false,
+        "two_way": false,
+        "control": true,
+        "bound": 0.0,
+        "bound_over_measured": Infinity
+      },
+      {
+        "interval": 0.0002,
+        "ratio": 50,
+        "dt_gas": 4e-06,
+        "sigma": 2.5334470470193003e-06,
+        "lag": 0.0051789510407437254,
+        "lag_max": 0.008721069124931091,
+        "p_ref": 33039.990538438775,
+        "p_held": 33039.90683337231,
+        "lag_rate": 25.894755203718628,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 28.02818570000818,
+        "control": false,
+        "exponent": NaN,
+        "bound": 6.333237610399438e-06,
+        "bound_over_measured": 2.499850003910972
+      },
+      {
+        "interval": 0.001,
+        "ratio": 50,
+        "dt_gas": 2e-05,
+        "sigma": 1.3954647528790784e-05,
+        "lag": 0.025890463018623626,
+        "lag_max": 0.04358760395734862,
+        "p_ref": 34623.33978589537,
+        "p_held": 34622.85662939239,
+        "lag_rate": 25.890463018623624,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 135.0112038999796,
+        "control": false,
+        "exponent": 1.0601414016588662,
+        "bound": 3.1660060266646123e-05,
+        "bound_over_measured": 2.2687825114411595
+      },
+      {
+        "interval": 0.005,
+        "ratio": 50,
+        "dt_gas": 0.0001,
+        "sigma": 6.675522526176307e-05,
+        "lag": 0.12943438681227046,
+        "lag_max": 0.2178761382264156,
+        "p_ref": 34322.78979300344,
+        "p_held": 34320.498567439194,
+        "lag_rate": 25.88687736245409,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 652.0405525999959,
+        "control": false,
+        "exponent": 0.9725258453465516,
+        "bound": 0.00015825640982488392,
+        "bound_over_measured": 2.3706969634859747
+      }
+    ],
+    "bound_holds": true,
+    "tightness": [
+      2.2687825114411595,
+      2.499850003910972
+    ],
+    "lag_rate": 25.890698528265446
+  },
+  "ratio": {
+    "rows": [
+      {
+        "cfl": 0.4,
+        "substeps": 1400,
+        "dt_stable": 2.8571428571428575e-07,
+        "sigma": 2.5334470470193003e-06,
+        "relative": 1.0,
+        "ratio": 700.0
+      },
+      {
+        "cfl": 0.2,
+        "substeps": 2800,
+        "dt_stable": 1.4285714285714287e-07,
+        "sigma": 2.5334472175154096e-06,
+        "relative": 1.000000067298075,
+        "ratio": 1400.0
+      },
+      {
+        "cfl": 0.1,
+        "substeps": 5500,
+        "dt_stable": 7.272727272727273e-08,
+        "sigma": 2.5334472588199837e-06,
+        "relative": 1.0000000836017802,
+        "ratio": 2750.0
+      }
+    ],
+    "ratio_span": 3.9285714285714284,
+    "sigma_move": 1.0000000836017802
+  },
+  "trace_rank": {
+    "rows": [
+      {
+        "interval": 0.0002,
+        "sigma_face": 2.5334470470193003e-06,
+        "sigma_scalar": 3.118723646046936e-06,
+        "lag_face": 0.0051789510407437254,
+        "lag_scalar": 0.004773138520533848,
+        "ratio": 1.2310198666738412
+      },
+      {
+        "interval": 0.001,
+        "sigma_face": 1.3954647528790784e-05,
+        "sigma_scalar": 1.627314730187471e-05,
+        "lag_face": 0.025890463018623626,
+        "lag_scalar": 0.023863939034072242,
+        "ratio": 1.1661453482290018
+      }
+    ],
+    "wall_spread_K": 320.68940087894157,
+    "wall_scalar_K": 449.4197129792197,
+    "wall_min_K": 369.32858489081605,
+    "wall_max_K": 690.0179857697576,
+    "generate_py_source": "C:\\Users\\Nauni\\physics-foundation-model\\src\\atlas\\data\\generate.py"
+  },
+  "two_way": {
+    "rows": [
+      {
+        "interval": 0.0002,
+        "sigma_declared": 2.5334470470193003e-06,
+        "sigma_two_way": 9.967998211075893e-07,
+        "lag_two_way": 0.03680600031088383,
+        "ratio": 0.3934559525451157
+      },
+      {
+        "interval": 0.001,
+        "sigma_declared": 1.3954647528790784e-05,
+        "sigma_two_way": 1.5322406041056267e-05,
+        "lag_two_way": 0.12232908771519889,
+        "ratio": 1.0980145510263564
+      }
+    ],
+    "spread": 2.790692436913767
+  },
+  "transfer": {
+    "rows": [
+      {
+        "interval": 0.0002,
+        "sigma": 2.5334470470193003e-06,
+        "bound_rocket": 6.333237610399438e-06,
+        "rel_rocket": 2.499850003910972,
+        "bound_cs11": 4.918280967960297e-05,
+        "rel_cs11": 19.41339557006667
+      },
+      {
+        "interval": 0.001,
+        "sigma": 1.3954647528790784e-05,
+        "bound_rocket": 3.1660060266646123e-05,
+        "rel_rocket": 2.2687825114411595,
+        "bound_cs11": 0.00024588094857874525,
+        "rel_cs11": 17.620004236685414
+      },
+      {
+        "interval": 0.005,
+        "sigma": 6.675522526176307e-05,
+        "bound_rocket": 0.00015825640982488392,
+        "rel_rocket": 2.3706969634859747,
+        "bound_cs11": 0.001229425968387281,
+        "rel_cs11": 18.416924870920745
+      }
+    ],
+    "cs11_holds": true,
+    "cs11_worst": 17.620004236685414,
+    "s_seam_ratio": 0.12877123052477993,
+    "C2_ratio": -0.11472135755888696
+  },
+  "constants": {
+    "s_seam": 0.001222888867801625,
+    "C2": -1.639138756801377e-06,
+    "lambda_dot": 25.959427754005485,
+    "burn_time": 5.0,
+    "bound_holds": true,
+    "tightness": [
+      2.2687825114411595,
+      2.499850003910972
+    ],
+    "ratio": 50,
+    "cfl": 0.4,
+    "settle_seconds": 0.006
+  },
+  "predictions": [
+    {
+      "name": "P1",
+      "claim": "L7/R9 ADMITS on the real graph",
+      "got": true,
+      "held": true
+    },
+    {
+      "name": "P2",
+      "claim": "the ratio-1 control is EXACTLY zero, not small",
+      "got": 0.0,
+      "held": true
+    },
+    {
+      "name": "P3",
+      "claim": "sigma is first order in the interval: every exponent in [0.90, 1.10]",
+      "got": [
+        1.0601414016588662,
+        0.9725258453465516
+      ],
+      "held": true
+    },
+    {
+      "name": "P4",
+      "claim": "the bound with ROCKET constants holds at every graded interval",
+      "got": true,
+      "held": true
+    },
+    {
+      "name": "P5",
+      "claim": "lambda_dot here exceeds CS-11's 11.94 K/s and lies in [20, 200] K/s",
+      "got": 25.959427754005485,
+      "held": true
+    },
+    {
+      "name": "P6",
+      "claim": "CS-11's OWN constants do NOT bound the rocket's defect",
+      "got": 17.620004236685414,
+      "held": false
+    },
+    {
+      "name": "P7",
+      "claim": "4x of clock ratio at a fixed interval moves sigma by less than 1.05x",
+      "got": 1.0000000836017802,
+      "held": true
+    },
+    {
+      "name": "P8",
+      "claim": "lambda_dot at 0.5 s and 5.0 s of burn differ by more than 2x",
+      "got": 2.5823525029814185,
+      "held": true
+    },
+    {
+      "name": "P9",
+      "claim": "the tightness is within an order of magnitude of CS-11's, i.e. in [1, 10]",
+      "got": [
+        2.2687825114411595,
+        2.499850003910972
+      ],
+      "held": true
+    },
+    {
+      "name": "P10",
+      "claim": "s_seam is constant in the interval to better than 1.5x",
+      "got": 1.0125230401050422,
+      "held": true
+    },
+    {
+      "name": "P11",
+      "claim": "the build repo's rank-1 trace changes the defect by more than 1.2x",
+      "got": [
+        1.2310198666738412,
+        1.1661453482290018
+      ],
+      "held": true
+    },
+    {
+      "name": "P12",
+      "claim": "the two-way referent moves sigma by more than 1.5x at some interval",
+      "got": [
+        0.3934559525451157,
+        1.0980145510263564
+      ],
+      "held": true
+    }
+  ],
+  "wall_seconds": 2436.3004093999916,
+  "standby_during_run": 0,
+  "_signature": {
+    "burn": 5.0,
+    "settle": 0.006,
+    "ratio": 50,
+    "cfl": 0.4,
+    "slope_interval": 0.0002,
+    "intervals": [
+      0.0002,
+      0.001,
+      0.005
+    ],
+    "anchor": 0.05
+  }
+}

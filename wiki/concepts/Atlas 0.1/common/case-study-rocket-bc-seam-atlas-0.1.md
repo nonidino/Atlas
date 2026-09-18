@@ -735,4 +735,235 @@ That is the PoC's stated product demonstrated on its own author: a coupling that
 
 ---
 
-**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units). See [[gap-worklist]].
+## 14. Tier 80 — R2's remaining half: the composed defect at 50:1, and a bound that transfers
+
+R2 asked for two things: declare `flux_matching=TIME_INTEGRATED` with a `boundary_response_integrated` on each side, and **report the composed defect at 50:1 beside CS-11's bound**. The first was declared at Tier 76. It did not *clear* until Tier 79, and that dependency is the first thing worth stating.
+
+### 14.1 R2's gate could not clear until R0 closed
+
+Tier 76's residue (§6.2) carries `L7/R9/quadrature` as a **refusal** — *"`d`, `e`, `f` supply no `boundary_response_integrated`"*. The declaration was in place and the graph refused anyway, because three of the seven agents were stubs. Tier 79 wired them. Only then:
+
+> `L7/R9` **admit** — *"time-integrated flux matching over an exchange interval of $0.05$, with each side quadrature'd on its own clock: `b x50000, c x1, d x10000, e x50000, f x10000`. The clocks nest, every side supplies `boundary_response_integrated`, and `solve.coupled_step` calls it."*
+
+The agents at a multirate seam are `['b', 'c', 'd', 'e', 'f']`, which is W194's narrowing of R9's premise doing its work — the rule asks the agents *at* a multirate seam, not all seven. The quadrature counts above are at the probe cadence $\texttt{dt\_scale} = 10^{-3}$; at the declared clocks they read `b x50, d x10, c x1`.
+
+> **A declaration is not a capability.** R2's first half was written down three tiers before anything in the graph could satisfy it, and nothing in the declaration said so — the refusal did.
+
+What survives is `R9/lag` and `R9/order`, both `admit-uncertified`. **`R9/lag` is the term this tier measures**, and its own message names the exit: *"declare sigma with the `sigma_lag` it was measured at and expect it to be the term that decides this graph."*
+
+### 14.2 What CS-11's bound is, and what had to be re-measured to use it
+
+[[case-study-brake-thermal-atlas-0.1]] §3 supplies
+
+$$\sigma(\Delta t_{\text{ex}}) \;\le\; s_\Gamma\,\lVert\delta\lambda\rVert \;+\; C_2\,\lVert\delta\lambda\rVert^2, \qquad \lVert\delta\lambda\rVert \;\le\; \dot\lambda_{\max}\,\Delta t_{\text{ex}}$$
+
+with **two constants it calls properties of the SEAM** and **one rate it calls a property of the RUN**. If that split is real, the constants must be re-measured here and the form must still hold. If it is not, CS-11 is a description of one brake. Three things make the rocket a genuinely different test.
+
+**The referent is built against the declaration, and the alternative is priced rather than hidden.** Both columns march the same gas from the same state over the same interval and sub-step it the same number of times; the only difference is the trace it is handed — the referent's own path from a tightly coupled rollout at the gas's clock, or its value at the start held constant. The functional is **the gas's own wall flux in both columns**, because CS-11 found that reading the slope through one side while reading the defect through the other made its bound over-predict by $5.7\times$–$8.6\times$ and look exactly like a lag-profile effect.
+
+**The chamber has a steady state and the shell does not, so one side is settled and the other is marched.** The gas is a fed reservoir with an outflow, so it settles: pre-marched $6\times10^{-3}$ s of gas time (about one flow-through at $0.30$ m and $50$ m/s), with the relative state change falling $7.49\times10^{-3} \to 2.32\times10^{-4} \to 9.05\times10^{-5}$ over three checkpoints. The shell is marched $5.00$ s of burn, as Tier 76 established it must be.
+
+**The ratio is pinned at 50 in every row and the interval moves.** CS-11 pinned the interval and moved the ratio; this is the complement, so the two statements check each other on a second seam. §14.6 runs CS-11's own version as well.
+
+### 14.3 The rocket's own constants — and one CS-11 never tested
+
+| shift [K] | $\sigma$ | $\sigma/$shift | log ratio |
+|---|---|---|---|
+| $0.01$ | $1.22289\times10^{-5}$ | $1.22289\times10^{-3}$ | — |
+| $0.03$ | $3.66857\times10^{-5}$ | $1.22286\times10^{-3}$ | $1.0000$ |
+| $0.1$ | $1.22274\times10^{-4}$ | $1.22274\times10^{-3}$ | $0.9999$ |
+| $0.3$ | $3.66723\times10^{-4}$ | $1.22241\times10^{-3}$ | $0.9998$ |
+| $1$ | $1.22126\times10^{-3}$ | $1.22126\times10^{-3}$ | $0.9992$ |
+| $3$ | $3.65391\times10^{-3}$ | $1.21797\times10^{-3}$ | $0.9975$ |
+| $10$ | $1.20650\times10^{-2}$ | $1.20650\times10^{-3}$ | $0.9921$ |
+
+$$s_\Gamma = \mathbf{1.222889\times10^{-3}}\ \mathrm{K}^{-1}, \qquad C_2 = \mathbf{-1.639139\times10^{-6}}\ \mathrm{K}^{-2}$$
+
+**$C_2$ is negative, and CS-11's is $+1.4288\times10^{-5}$.** The rocket's $\sigma$ is *sub*-linear in a uniform shift where the brake's was super-linear — the log-ratio column falls away from $1$ rather than rising. So the second-order term bends the two seams in opposite directions. It stays a correction in the range that matters (at a $1.3$ K lag it is $0.17\%$ of the linear term), but *"CS-11's bound form transfers"* is a claim with a caveat: **the quadratic coefficient does not even keep its sign.**
+
+**And the test CS-11 did not run.** CS-11 measured $s_\Gamma$ at one interval and then *used* it as a constant in the interval, which is what lets a bound be checked cheaply and spent expensively. Whether it **is** one was never checked. Here it is:
+
+| $\Delta t_{\text{ex}}$ [s] | $s_\Gamma$ | rel to base |
+|---|---|---|
+| $5\times10^{-5}$ | $1.22002\times10^{-3}$ | $0.9977$ |
+| $2\times10^{-4}$ | $1.222889\times10^{-3}$ | — |
+| $1\times10^{-3}$ | $1.23530\times10^{-3}$ | $1.0101$ |
+
+> **$s_\Gamma$ moves by $1.0125\times$ over $20\times$ of exchange interval.** That is the licence the extrapolation needs, and without it the anchor's bound would rest on an assumption rather than a measurement.
+
+### 14.4 The run-derived constant carries a burn time, and the cost of not saying which is $2.58\times$
+
+CS-11 measured $\dot\lambda$ at a settled state. The rocket's shell has none — Tier 76 renamed `settle()` to `march()` for exactly that reason — so the rate is a function of when in the burn it is taken:
+
+| burn [s] | wall mean [K] | $\dot\lambda$ [K/s] | rel to 5 s |
+|---|---|---|---|
+| $0.5$ | $316.7842$ | $5.15996\times10^{1}$ | $1.9877$ |
+| $1$ | $335.2537$ | $4.38490\times10^{1}$ | $1.6891$ |
+| $5$ | $449.4197$ | $\mathbf{2.59594\times10^{1}}$ | $1.0000$ |
+| $10$ | $557.6469$ | $1.99816\times10^{1}$ | $0.7697$ |
+
+$\dot\lambda$ spans $\mathbf{2.582\times}$ over the burn window, against CS-11's single settled $11.94$ K/s — the rocket's is $2.174\times$ CS-11's at the declared $5$ s base. Worth setting beside Tier 76's §7.2: **the rate is about twice as horizon-sensitive as $\beta$ was** ($2.58\times$ against $1.265\times$ over the same window), so a $\sigma$ quoted without its burn time is looser than a $\beta$ quoted without one.
+
+### 14.5 The defect, at a pinned 50:1, over 25x of interval
+
+| $\Delta t_{\text{ex}}$ [s] | ratio | lag [K] | measured $\sigma$ | bound | bound/measured | order | cost |
+|---|---|---|---|---|---|---|---|
+| $4\times10^{-6}$ | $1$ | $0$ | $\mathbf{0}$ | $0$ | — **control** | — | — |
+| $2\times10^{-4}$ | $50$ | $5.17895\times10^{-3}$ | $2.53345\times10^{-6}$ | $6.33324\times10^{-6}$ | $2.4999$ | — | $28$ s |
+| $1\times10^{-3}$ | $50$ | $2.58905\times10^{-2}$ | $1.39546\times10^{-5}$ | $3.16601\times10^{-5}$ | $2.2688$ | $1.060$ | $135$ s |
+| $5\times10^{-3}$ | $50$ | $1.29434\times10^{-1}$ | $6.67552\times10^{-5}$ | $1.58256\times10^{-4}$ | $2.3707$ | $0.973$ | $652$ s |
+<!-- W314 anchor row goes here -->
+
+> **The bound holds at every graded interval and is loose by $2.269\times$ to $2.500\times$ over $25\times$ of exchange interval. CS-11's own tightness on the brake seam was $1.426\times$ to $2.178\times$ — the ranges nearly touch.** A bound whose constants were measured on a cast-iron disc against a cooling duct, re-measured on a rocket chamber against an Al–Li airframe, comes out at comparable tightness on different physics, different scales and an opposite-signed $C_2$.
+
+**Ratio 1 is the control and its defect is exactly zero, bitwise.** One gas call *is* the interval, so there is nothing to be stale about. It carries no tightness ratio, and quoting $0/0$ as one would be W106's mistake.
+
+**First order in the interval**, at $1.060$ and $0.973$. That is now four case studies and four coupling kinds at order one: CS-9's volumetric splitting ($1.003$), CS-10's field-to-lumped lag ($1.258$, $1.165$), CS-11's multirate lag, and this.
+
+**A cross-check that fell out unasked.** The lag scales as $5.17895\times10^{-3} \to 2.58905\times10^{-2} \to 1.29434\times10^{-1}$ for intervals $5\times$ apart — ratios of exactly $5.0$ and $5.0$ — so $\dot\lambda$ derived from the sweep is $25.89$ K/s against the $25.9594$ K/s the shell's own single step gave in §14.4. **Two unrelated routes, $0.3\%$ apart.**
+
+**And the looseness has a mechanism, quantified rather than attributed.** CS-11 ascribed its own $1.4$–$2.2\times$ to **W86** — $s_\Gamma$ is measured by displacing the trace *uniformly* and a run's lag is not uniform. Here that is a number. The lag profile's peakedness $\lVert\delta\lambda\rVert_\infty / \lVert\delta\lambda\rVert_{\text{rms}}$ is $1.6839$, $1.6835$, $1.6833$ across the three intervals — **fixed**, so the profile scales with the interval without changing shape. And the measured $\sigma/\text{lag}$ is $4.89$–$5.39\times10^{-4}$ against $s_\Gamma = 1.2229\times10^{-3}$: the real non-uniform lag produces $\mathbf{40\%}$–$\mathbf{44\%}$ of what a uniform shift of the same norm would. The reciprocal, $2.27$–$2.50$, **is** the tightness column. The bound's looseness on this seam is the profile effect and nothing else.
+
+### 14.6 CS-11's own control, replicated — and 1900x sharper
+
+Pin the interval and move the ratio by refining the gas's own stability step through its CFL number:
+
+| CFL | sub-steps | $\Delta t_{\text{stable}}$ [s] | ratio | $\sigma$ | relative |
+|---|---|---|---|---|---|
+| $0.40$ | $1400$ | $2.85714\times10^{-7}$ | $700$ | $2.533447\times10^{-6}$ | $1.000000$ |
+| $0.20$ | $2800$ | $1.42857\times10^{-7}$ | $1400$ | $2.533447\times10^{-6}$ | $1.000000$ |
+| $0.10$ | $5500$ | $7.27273\times10^{-8}$ | $2750$ | $2.533447\times10^{-6}$ | $1.000000$ |
+
+> **$3.93\times$ of clock ratio at a fixed interval moves $\sigma$ by $1.0000000836\times$.** CS-11 measured $8\times$ of ratio moving it by $1.000160\times$.
+
+**A reading of exactly $1.000000$ is the signature of a floor, so it was checked rather than quoted.** The stored values are $2.53344704701930033$, $2.53344721751540963$ and $2.53344725881998366 \times 10^{-6}$: **pairwise different, none bitwise equal**, with a maximum relative spread of $8.360\times10^{-8}$. The numbers genuinely move and genuinely do not matter. Had they been bitwise identical, the control would have been vacuous for the same reason **W301** makes the saturated channel vacuous, and this table would say nothing.
+
+The scope CS-11 attached still applies and is worth repeating: this holds for a fast agent that **sub-steps internally at its own stability limit**, which `Compressible2D` does. A frozen learned expert whose `dt_native` is fixed by its weights is the case where the ratio re-enters, and neither case study can see it.
+
+### 14.7 The control that makes "the bound holds" mean something
+
+If CS-11's own constants happened to bound the rocket too, §14.5 would be evidence of nothing.
+
+| $\Delta t_{\text{ex}}$ [s] | measured $\sigma$ | rocket bound | ratio | **CS-11's bound** | ratio |
+|---|---|---|---|---|---|
+| $2\times10^{-4}$ | $2.53345\times10^{-6}$ | $6.33324\times10^{-6}$ | $2.4999$ | $4.91828\times10^{-5}$ | $\mathbf{19.4134}$ |
+| $1\times10^{-3}$ | $1.39546\times10^{-5}$ | $3.16601\times10^{-5}$ | $2.2688$ | $2.45881\times10^{-4}$ | $\mathbf{17.6200}$ |
+| $5\times10^{-3}$ | $6.67552\times10^{-5}$ | $1.58256\times10^{-4}$ | $2.3707$ | $1.22943\times10^{-3}$ | $\mathbf{18.4169}$ |
+
+**P6 predicted CS-11's constants would fail to bound the rocket, and it was refuted: they bound it, by $17.6\times$ to $19.4\times$.** The honest reading is not *"the bound transfers"*:
+
+> The two seams' constants differ by $7.8\times$ ($s_\Gamma$ ratio $0.1288$; $C_2$ ratio $-0.1147$, sign included), **which is what proves they are seam properties**. Borrowing happened to land on the conservative side here. That is the *sign of the discrepancy*, not a property of the method — had the rocket's seam been the more sensitive one, the same borrowing would have been unsafe by the same factor. **A borrowed $s_\Gamma$ is a coin flip, and this one landed safe.**
+
+### 14.8 W315 — the build repo's shell-to-gas trace is rank 1
+
+`generate.py::_wall_T` returns
+
+```python
+return float(np.mean([T.mean() for T in self.T_shell]))
+```
+
+**one number, the mean over every panel of every station**, and hands it to every gas agent's `wall_noslip` BC. The other direction is per-station, by `np.interp` on normalized index. So the build repo's own coupler transports a **rank-1** shell-to-gas trace, while this vault probes that seam at $\dim M = 8$ and Tier 76 reported $\beta$, $\kappa$ and $\omega$ on it.
+
+The wall the gas would see per station is $369.3286$–$690.0180$ K, a spread of $320.6894$ K. The wall `generate.py` hands it is $449.4197$ K.
+
+| $\Delta t_{\text{ex}}$ [s] | $\sigma$, per-station trace | $\sigma$, `generate.py`'s scalar | ratio |
+|---|---|---|---|
+| $2\times10^{-4}$ | $2.53345\times10^{-6}$ | $3.11872\times10^{-6}$ | $1.2310$ |
+| $1\times10^{-3}$ | $1.39546\times10^{-5}$ | $1.62731\times10^{-5}$ | $1.1661$ |
+
+So the collapse costs $17\%$–$23\%$ on this tier's quantity — material, and much smaller than the rank suggests. **The reason it is not worse is §14.5's mechanism**: $\sigma$ responds to the lag's norm far more than to its shape, which is the same fact that keeps the bound only $2.3\times$ loose.
+
+> **The declaration and the implementation disagree about the dimension of the interface, and the vault's side is the richer one.** `Compressible2D`'s `wall_noslip` accepts a per-face array — Tier 79 relied on it — so this is a capability the solver has and the coupler does not use. Every $\dim M = 8$ number this case study has published on b–c describes a coupling the build repo would have to be changed to realise.
+
+### 14.9 W316 — the shell is linearised about a gas temperature the gas does not have
+
+`ShellAgent.march` drives the shell with `T_CHAMBER` and `base_trace` returns the same $2800$ K. Measured at the settled state, the gas's own near-wall cell is **$1490.151$–$2804.191$ K, mean $2464.176$ K** — a ratio of $0.8801$ in the mean and a factor of $1.88$ across the window. The two sides' **film coefficients** agree to under a percent ($183.872$ from the march against $185.339$ settled); their **temperatures** do not.
+
+This is W74's class on the one direction of this seam nobody had checked. Tier 77 measured the other direction at $876\%$ of the base norm and it moved $\beta$ by $114\times$; this is the same class, one direction along, priced on $\sigma$:
+
+| $\Delta t_{\text{ex}}$ [s] | declared trace | two-way referent | ratio |
+|---|---|---|---|
+| $2\times10^{-4}$ | $2.53345\times10^{-6}$ | $9.96800\times10^{-7}$ | $0.3935$ |
+| $1\times10^{-3}$ | $1.39546\times10^{-5}$ | $1.53224\times10^{-5}$ | $1.0980$ |
+
+**The ratio changes direction between the two intervals, and that is the finding rather than a wobble.** Driving the shell with the gas's real near-wall temperature puts a **step** into its boundary condition at $t=0$ — the state was marched under $2800$ K and the referent hands it $2464$ K — and a startup transient decays over a fixed time, so it dominates a short interval and washes out of a long one. Spread across the two: $2.79\times$. That is why the declared trace is the default here and the two-way version is a control: **a referent that is more physical and less consistent with the state it starts from is not a better referent.** Closing it properly means marching the shell under the gas's own near-wall temperature from the start, which moves the probe state every number since Tier 76 was taken at.
+
+### 14.10 W317 — a third undeclared interface, and the declared seam is the minority
+
+W311 derived `e-c` from the geometry; `contours.plane_d_g`'s docstring recorded `d-f`. This one is named in **the build repo's own source**, as the stated reason `_wall_T` returns a scalar:
+
+> *"the per-station map is available (`T_shell`) but the gas agents' wall BC takes a per-face array only on the faces that touch the shell, and `a`'s lateral walls are an **UNDECLARED a-c interface** (see the implementation log)."*
+
+Measured on the shell's own inner face ($232$ cells, $4.7254$ m of arc), taking each cell by its midpoint:
+
+| window | cells | arc [m] | share of the engine-side wall |
+|---|---|---|---|
+| **a-c**, undeclared | $6$ | $0.121552$ | $16.6\%$ |
+| **b-c**, declared | $14$ | $0.299018$ | $\mathbf{40.7\%}$ |
+| **e-c**, undeclared | $15$ | $0.313893$ | $42.7\%$ |
+| engine-side total ($z \in [0, 0.70]$) | $35$ | $0.734463$ | — |
+
+> **The one declared conjugate seam covers $40.7\%$ of the wall that actually has gas behind it, and $6.3\%$ of the shell's inner face.** W311 reported one undeclared interface; with `a-c` the undeclared majority is $59.3\%$ — and W311 already measured `e-c` as the hotter part ($\bar h = 281.27$ against the chamber's $190.81$).
+
+**And the build repo knows.** Its own comment names an interface its own config does not declare, and the consequence — a scalar wall temperature for every gas agent (§14.8) — is not a shortcut but a *forced* one: a per-face array cannot be handed to a face whose interface has no edge.
+
+### 14.11 The anchor — the declared interval, and what the core commits to
+
+Every row in §14.5 is at the declared $50{:}1$, but the declared **exchange interval** is $5\times10^{-2}$ s — the shell's own step, which is where `R4` floors it — and the sweep stops $10\times$ short of it. That row is the one the gate names, and it costs what it costs: the chamber marches at $65\,204$–$70\,070$ s of wall per second of gas time on this machine, measured per row rather than estimated, so two columns of $5\times10^{-2}$ s is $\approx 1.8$ hours.
+
+**Before it ran, the core's three rows were made to commit to it**, so the anchor can refute the extrapolation rather than decorate it:
+
+| | registered | basis |
+|---|---|---|
+| **A1** | lag $= 1.2943$ K within $5\%$ | lag$/\Delta t_{\text{ex}}$ was $25.89$ K/s, flat to $0.1\%$ over $25\times$ |
+| **A2** | $\sigma \in [5.5\times10^{-4},\ 8.0\times10^{-4}]$ | $\sigma/$lag times that lag |
+| **A3** | bound/measured $\in [2.0,\ 2.8]$ | the core's $2.269$–$2.500$, widened by half its span |
+
+> If **A1 holds and A2 fails**, $\sigma$ is not first order out to the declared interval, and the bound's usefulness stops somewhere between $5\times10^{-3}$ and $5\times10^{-2}$. That is the most interesting outcome available here, and it is why the anchor is worth the time.
+
+### 14.12 The predictions
+
+**Eleven of twelve held**, over a $2436$ s run with **zero Modern Standby events** (the driver counts them itself — see §14.13).
+
+| | claim | got | |
+|---|---|---|---|
+| P1 | `L7/R9` admits on the real graph | `True` | **held** |
+| P2 | the ratio-1 control is exactly zero, not small | $0.0$ | **held** |
+| P3 | $\sigma$ first order: every exponent in $[0.90, 1.10]$ | $1.060$, $0.973$ | **held** |
+| P4 | the bound with rocket constants holds everywhere graded | `True` | **held** |
+| P5 | $\dot\lambda$ exceeds CS-11's and lies in $[20, 200]$ K/s | $25.96$ | **held** |
+| P6 | CS-11's own constants do **not** bound the rocket | $17.62$ | **refuted** |
+| P7 | $4\times$ of ratio at fixed interval moves $\sigma$ by $<1.05\times$ | $1.0000000836$ | **held** |
+| P8 | $\dot\lambda$ at $0.5$ s and $5$ s differ by $>2\times$ | $2.582$ | **held** |
+| P9 | tightness within an order of magnitude of CS-11's | $[2.269, 2.500]$ | **held** |
+| P10 | $s_\Gamma$ constant in the interval to better than $1.5\times$ | $1.0125$ | **held** |
+| P11 | the rank-1 trace changes $\sigma$ by $>1.2\times$ | $1.2310$, $1.1661$ | **held** |
+| P12 | the two-way referent moves $\sigma$ by $>1.5\times$ somewhere | $0.3935$, $1.0980$ | **held** |
+
+**P6 is the useful one and §14.7 says why.** It was also flagged as likely to fail *before* the transfer stage ran, from the slope stage's first row — $s_\Gamma$ came in $7.8\times$ below CS-11's, which fixes the direction of the discrepancy and hence the answer. A prediction refuted by a number measured two stages earlier is a prediction that should have been re-registered, and saying so is cheaper than pretending the order was not visible.
+
+### 14.13 A cost this tier could not quote until it measured its own machine
+
+Three readings of the same quantity, same code, same chamber:
+
+| | s of wall per second of gas time | why |
+|---|---|---|
+| first sizing | $\approx 215\,000$ | **spanned a five-minute Modern Standby**; `perf_counter` counts S0 idle as work |
+| on battery, clean | $111\,496$ (3 samples, spread $1.041$) | $1.4$ GHz |
+| on AC, settled | $65\,204$–$70\,070$ | measured per sweep row |
+
+> **The same measurement differs by $3.3\times$ depending on whether the laptop was plugged in and whether it slept.** The standby was found by reading System events $506$/$507$, not by noticing a slow run — it looks identical to a slow run. The driver now records `BatteryStatus`, the clock and the standby count beside every cost it prints, and the tier's own record carries `standby_during_run = 0`.
+
+This is why [[tier0-measurements]]'s convention of quoting **sub-steps** rather than seconds keeps earning itself: $1400$, $2800$ and $5500$ sub-steps in §14.6 are the same numbers on any machine, and the seconds beside them are not.
+
+### 14.14 What this tier did not do
+
+- **MECH is still stubbed on every seam**, and the trajectory agent is still unbuilt. W305 is untouched.
+- **W316 is measured and not closed.** Closing it moves the probe state every number since Tier 76 was taken at, which is a re-baselining and not a fix.
+- **W317 is reported and not fixed**, for W311's reason: adding the edge changes `config/atlas_0_1.yaml`, which is the build repo's file.
+- **`sigma` is measured and not yet declared** on the graph. `build_rocket_real` now takes `measured=`, and `L7/R9/lag`'s own message asks for it; the number it should carry is the anchor's, at the native interval, which is what §14.11 is for.
+- **`L2/InterfaceMotion` is untouched** and still refuses. It should.
+
+---
+
+**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units), **W314** (R2's remaining half — the composed defect at 50:1 against CS-11's bound, *§14*), **W315** (`generate.py` collapses the shell to one number, so the build repo's shell-to-gas trace is rank 1, *§14.8*), **W316** (the shell is linearised about a gas temperature the gas does not have, *§14.9*), **W317** (a third undeclared interface — `a-c`, named by the build repo itself, and the declared seam is 40.7% of the conjugate wall, *§14.10*). See [[gap-worklist]].

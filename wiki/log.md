@@ -5894,3 +5894,57 @@ The InterfaceMotion count is three rather than nine because this graph declares 
 ### Verification
 
 `python scripts/run_suite.py`: **1836 passed, 0 failed, no missing logs**, **797 s** -- a real duration, with no Modern Standby transition over the run window (checked, after Tier 77's 15508 s spanned a 3 h 40 m suspend). `python scripts/vault_scan.py wiki`: **254 files, 0 problems** -- and it earned its keep this tier, catching 5 TAB bytes and a backspace that a non-raw Python `replace()` target wrote into `index.md` from `\times`, `\to` and `\beta`. The seven-agent graph: **refuse, 4 refusals, 22 decertifications**.
+
+## [2026-09-17] tier 80 | R2's remaining half — the composed defect at 50:1, against CS-11's bound
+
+**PoC 4, rung R2.** Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §14; rows on [[gap-worklist]].
+
+### The gate, both halves
+
+R2 asked for `flux_matching=TIME_INTEGRATED` with a `boundary_response_integrated` on each side, and then for the composed defect at $50{:}1$ reported beside [[case-study-brake-thermal-atlas-0.1]]'s bound.
+
+**The first half was declared at Tier 76 and refused until Tier 79.** Tier 76's residue carries `L7/R9/quadrature` as a refusal — `d`, `e`, `f` were stubs with no integrated response. The declaration was in place and the graph refused anyway. *A declaration is not a capability, and nothing in the declaration said so; the refusal did.*
+
+With R0 closed, **`L7/R9` admits**: *"time-integrated flux matching over an exchange interval of $0.05$, with each side quadrature'd on its own clock."* Agents at a multirate seam: `['b','c','d','e','f']`.
+
+### The second half — and CS-11's bound transfers
+
+| $\Delta t_{\text{ex}}$ [s] | ratio | lag [K] | measured $\sigma$ | bound | bound/measured | order |
+|---|---|---|---|---|---|---|
+| $4\times10^{-6}$ | $1$ | $0$ | $\mathbf{0}$ | $0$ | — **control** | — |
+| $2\times10^{-4}$ | $50$ | $5.17895\times10^{-3}$ | $2.53345\times10^{-6}$ | $6.33324\times10^{-6}$ | $2.4999$ | — |
+| $1\times10^{-3}$ | $50$ | $2.58905\times10^{-2}$ | $1.39546\times10^{-5}$ | $3.16601\times10^{-5}$ | $2.2688$ | $1.060$ |
+| $5\times10^{-3}$ | $50$ | $1.29434\times10^{-1}$ | $6.67552\times10^{-5}$ | $1.58256\times10^{-4}$ | $2.3707$ | $0.973$ |
+
+$s_\Gamma = 1.222889\times10^{-3}\,\mathrm K^{-1}$, $C_2 = -1.639139\times10^{-6}\,\mathrm K^{-2}$, $\dot\lambda = 25.9594$ K/s at a 5 s burn.
+
+**Loose by $2.269\times$ to $2.500\times$ against CS-11's own $1.426\times$–$2.178\times$** — the ranges nearly touch, on different physics and an opposite-signed $C_2$. The ratio-1 control is bitwise zero. Order $1.060$/$0.973$: four case studies, four coupling kinds, one order.
+
+**The looseness is quantified rather than attributed.** The lag profile's peakedness is $1.6839/1.6835/1.6833$ — fixed across intervals — and the real lag produces $40\%$–$44\%$ of what a uniform shift of the same norm would, whose reciprocal $2.27$–$2.50$ **is** the tightness column.
+
+**A cross-check nobody asked for:** the lag scales exactly $5.0\times$ with the interval, so $\dot\lambda$ from the sweep is $25.89$ K/s against the shell's own single-step $25.9594$ — two unrelated routes, $0.3\%$ apart.
+
+### P6 refuted, and it is the useful one
+
+P6 registered that CS-11's own constants would **fail** to bound the rocket. They bound it, by $17.6\times$–$19.4\times$. So the reading is not that the bound transfers: the two seams' constants differ by $7.8\times$ ($s_\Gamma$ ratio $0.1288$, $C_2$ ratio $-0.1147$ with the sign), **which is what proves they are seam properties**, and borrowing landed conservative by the sign of the discrepancy rather than by anything about the method. It was also decidable two stages earlier, from the slope stage's first row — a prediction whose outcome becomes visible mid-run should be re-registered, not left to be refuted by a number already in hand.
+
+### CS-11's own control, and the floor check that made it mean something
+
+$3.93\times$ of clock ratio at a fixed interval moves $\sigma$ by $1.0000000836\times$ (CS-11: $1.000160$ over $8\times$). A reading of exactly $1.000000$ is the signature of a floor, so the stored values were checked: **pairwise different, none bitwise equal**, spread $8.36\times10^{-8}$. Had they been identical the control would have been vacuous for W301's reason.
+
+**And the test CS-11 never ran:** $s_\Gamma$ moves $1.0125\times$ over $20\times$ of exchange interval, which is the licence a bound checked cheaply and spent expensively actually needs.
+
+**Opened:** **W314** (R2's remaining half), **W315** (`generate.py` collapses the shell to one number — the build repo's shell-to-gas trace is rank 1), **W316** (the shell linearised about a gas temperature the gas does not have), **W317** (a third undeclared interface, `a-c`, named by the build repo itself — the declared seam is $40.7\%$ of the conjugate wall).
+
+**Added:** `scripts/w314_rocket_multirate_defect.py`, `tests/test_tier80_multirate_defect.py`, `out/w314.json`, `out/w314_core.log`.
+**Changed:** `atlas/cases/rocket_experts.py` (`UNDECLARED_INTERFACES` gains `a-c`, `ENGINE_WALL_M`/`ENGINE_WALL_TOTAL_M`/`SHELL_INNER_FACE_M`, `build_rocket_real(measured=)`), `tests/test_tier45_region_assembly.py` (the `rocket_experts` exemption's stated reason had gone stale at Tier 79 — it named only `build_bc_graph`), `.gitignore`, the case study, the worklist and this index.
+
+**And a convention four tiers had silently stopped following.** `.gitignore`'s own comment says *"the current case study's artifacts are force-included below since the wiki cites them directly"* — and **nothing from Tiers 76–79 is tracked**, though CS-21 is the current case study and cites those artifacts line by line. So on a clone, none of §§6–13's numbers can be checked against the run that produced them. `out/w314.json` is force-included here because this tier's tests *read* it (four gate tests skip without it); the earlier ones are **recorded and not fixed**, because re-running four tiers' artifacts is not this tier's scope.
+
+**NOT done:** **the anchor at the declared $5\times10^{-2}$ s is priced and running, not reported** — see the addendum. **`sigma` is measured and not yet declared** on the graph; `build_rocket_real` now takes `measured=` and `L7/R9/lag`'s own message asks for it, but the number it should carry is the anchor's. **W316 is priced and not closed** — closing it re-bases every number since Tier 76. **W317 is reported and not fixed**, for W311's reason: it changes the build repo's config. **MECH is still stubbed on every seam** and the trajectory agent is still unbuilt (W305).
+
+### The machine, because the cost could not be quoted without it
+
+The same march, same code, same chamber: $\approx 215\,000$, $111\,496$ and $65\,204$–$70\,070$ s of wall per second of gas time — **$3.3\times$ apart**. The first spanned a **five-minute Modern Standby**, which `perf_counter` counts as work and which looks identical to a slow run; it was caught by reading System events $506$/$507$. The driver now records `BatteryStatus`, the clock and the standby count beside every cost it prints; this tier's record carries `standby_during_run = 0` over a $2436$ s core. **This is why sub-steps and not seconds are the quotable unit.**
+
+**Eleven of twelve registered predictions held.**

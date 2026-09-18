@@ -613,3 +613,21 @@ out/racelab22/*
 !out/racelab23/
 out/racelab23/*
 !out/racelab23/racelab23.json
+
+# Tier 80 -- CS-21's multirate lag defect
+# (w314_rocket_multirate_defect.py --json out/w314.json). 15 KB, JSON only:
+# the R9 decisions, the slope stage's constants with the interval-independence
+# check CS-11 never ran, the sigma law at a pinned 50:1 with its bitwise-zero
+# single-rate control, CS-11's own ratio control at full precision (so the
+# "exactly 1.000000" reading can be checked against a floor), the rank-1-trace
+# and two-way arms, the transfer control against CS-11's published constants,
+# and the anchor at the declared exchange interval.
+#
+# It is force-included because `tests/test_tier80_multirate_defect.py` READS it
+# -- four gate tests skip without it -- and section 14 cites it line by line.
+# **Nothing from Tiers 76-79 is tracked**, though the rule at the top of this
+# block says the current case study's artifacts are, and CS-21 is it: so on a
+# clone, none of sections 6-13's numbers can be checked against the run that
+# produced them. Recorded rather than fixed here, because re-running four
+# tiers' artifacts is not this tier's scope.
+!out/w314.json

@@ -1270,13 +1270,34 @@ def bc_dim_M() -> int:
 #: checks that the agents PARTITION the box and that every declared edge lies on
 #: both its agents' boundaries, and nothing checks the converse** -- that every
 #: shared boundary has an edge.  Two are missing.
+#: **W311 and W317.**  Interfaces two agents physically share that no edge in
+#: `config/atlas_0_1.yaml` declares.  Measured on the shell's own inner face
+#: (232 cells, 4.7254 m of arc), taking each cell by its midpoint: the
+#: ENGINE-SIDE wall -- the part with gas on the other side, z in [0, 0.70] -- is
+#: 35 cells and 0.734463 m, and the one DECLARED window is 14 cells and
+#: 0.299018 m of it.  So **the declared conjugate seam is 40.7% of the wall that
+#: is actually conjugate**, and the other 59.3% is in here.
 UNDECLARED_INTERFACES = {
+    "a-c": "the injector/combustion zone's lateral walls below the chamber "
+           "window, 6 cells and 0.121552 m. **Named by the build repo's own "
+           "source**: generate.py::_wall_T's docstring says `a`'s lateral walls "
+           "are an UNDECLARED a-c interface, and that is the stated reason it "
+           "hands every gas agent one scalar wall temperature instead of the "
+           "per-station map it already has",
     "e-c": "the diverging nozzle's inner wall, z in [z_throat, z_exit]. `e` and "
            "`c` share it and no edge declares it; wall_b_c stops at the throat "
-           "and wall_c_d is the outer wall",
+           "and wall_c_d is the outer wall. 15 cells and 0.313893 m, and W311 "
+           "measured it as the hottest part of the engine",
     "d-f": "the strip exit_halfheight < |y| <= plume_halfwidth at z = z_exit, "
            "recorded by contours.plane_d_g's own docstring",
 }
+
+#: Arc length in metres on the shell's inner face, cells taken by midpoint.
+#: Measured by `scripts/w314_rocket_multirate_defect.py`.  Only `b-c` is
+#: declared, and it is the smaller half.
+ENGINE_WALL_M = {"a-c": 0.121552, "b-c": 0.299018, "e-c": 0.313893}
+ENGINE_WALL_TOTAL_M = 0.734463
+SHELL_INNER_FACE_M = 4.725411
 
 #: Which block face each agent's declared neighbours sit on, and whether that
 #: face is a WALL (the trace is a wall temperature, the response a wall flux) or
@@ -1873,7 +1894,8 @@ def _caps_for(expert, agent_id: str, ports):
 
 def build_rocket_real(experts=None, dt_scale: float = 1.0e-3,
                       declare_effort_normal: bool = True,
-                      m_cap: int | None = None):
+                      m_cap: int | None = None,
+                      measured=None):
     """The whole rocket graph with **all seven agents on real physics**.
 
     R0's completion.  Every agent's `boundary_response` steps a build-repo solver
@@ -1936,6 +1958,16 @@ def build_rocket_real(experts=None, dt_scale: float = 1.0e-3,
         decomposition=Decomposition.NON_OVERLAPPING,
         macro_dt=max(a.capabilities.dt_native for a in agents),
         flux_matching=FluxMatching.TIME_INTEGRATED,
+        #: **Tier 80.**  `L7/R9/lag`'s own message ends *"declare sigma with the
+        #: sigma_lag it was measured at"*, and until this tier nothing on this
+        #: graph could: sigma is a property of a RUN and no run existed.  It is
+        #: passed rather than hard-wired because a constant measured at one
+        #: operating point is not a constant of the case -- W314's probe state is
+        #: part of the number.  This graph is not in the W189 census (see
+        #: `tests/test_tier45_region_assembly.py`'s exemption), so declaring it
+        #: costs the byte-identity control nothing.
+        measured=measured,
         note="R0 complete: all seven agents wired to build-repo solvers at "
-             "dt_scale=%g" % dt_scale,
+             "dt_scale=%g%s" % (dt_scale,
+                                "" if measured is None else ", sigma declared"),
     ), experts
