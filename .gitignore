@@ -637,3 +637,14 @@ out/racelab23/*
 # map, the trajectory agent's probed block against its closed form, the
 # composed c-trajectory seam, and the one-sidedness checks read off the solver.
 !out/w305.json
+
+# Tier 84-85 -- W312's converged ADVEC seams (w312_advec_converged.py) and the
+# coupled episode (w321_rocket_episode.py). JSON only: the four-seam and g-f
+# convergence records with both cadences side by side, and the episode's
+# summary with its acceleration audit. The episode's .npz of fields is a
+# rebuildable cache and stays ignored.
+!out/w312_converged.json
+!out/w312_gf.json
+!out/w321/
+out/w321/*
+!out/w321/episode.json

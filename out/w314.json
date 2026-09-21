@@ -45,12 +45,12 @@
     "wall_spread_K": 320.68940087894157,
     "machine": {
       "battery_status": 2,
-      "charge_pct": 78,
+      "charge_pct": 85,
       "mhz_now": 1400,
       "mhz_max": 3800
     },
-    "standby_last_hour": 7,
-    "setup_wall_s": 627.3162820999999
+    "standby_last_hour": 1,
+    "setup_wall_s": 852.668109100021
   },
   "r9": {
     "rows": [
@@ -267,6 +267,27 @@
         "bound_over_measured": 2.3706969634859747
       },
       {
+        "interval": 0.01,
+        "ratio": 50,
+        "dt_gas": 0.0002,
+        "sigma": 0.00032754841996772915,
+        "lag": 0.2588179952685018,
+        "lag_max": 0.43559989168159063,
+        "p_ref": 34774.49202114617,
+        "p_held": 34763.101691229465,
+        "lag_rate": 25.88179952685018,
+        "scalar_trace": false,
+        "two_way": false,
+        "control": false,
+        "bound": 0.00031639584461480466,
+        "bound_over_measured": 0.9659513687960294,
+        "wall_s": 5944.285608500009,
+        "s_seam_here": 0.020882331114047484,
+        "s_seam_rel": 17.0762296263171,
+        "flowthroughs": 1.6666666666666667,
+        "exponent": 2.294755516137416
+      },
+      {
         "interval": 0.05,
         "ratio": 50,
         "dt_gas": 0.001,
@@ -302,7 +323,7 @@
             "held": false
           }
         },
-        "exponent": 1.9417471943952007
+        "exponent": 1.7897147854159992
       }
     ],
     "bound_holds": false,
@@ -451,7 +472,8 @@
       "got": [
         1.0601414016588662,
         0.9725258453465516,
-        1.9417471943952007
+        2.294755516137416,
+        1.7897147854159992
       ],
       "held": false
     },
@@ -519,7 +541,7 @@
       "held": true
     }
   ],
-  "wall_seconds": 9890.9592934,
+  "wall_seconds": 6797.053799999994,
   "standby_during_run": 0,
   "anchor": {
     "row": {
@@ -567,6 +589,32 @@
       "mhz_max": 3800
     },
     "standby_during": 0
+  },
+  "knee": {
+    "rows": [
+      {
+        "interval": 0.01,
+        "ratio": 50,
+        "dt_gas": 0.0002,
+        "sigma": 0.00032754841996772915,
+        "lag": 0.2588179952685018,
+        "lag_max": 0.43559989168159063,
+        "p_ref": 34774.49202114617,
+        "p_held": 34763.101691229465,
+        "lag_rate": 25.88179952685018,
+        "scalar_trace": false,
+        "two_way": false,
+        "control": false,
+        "bound": 0.00031639584461480466,
+        "bound_over_measured": 0.9659513687960294,
+        "wall_s": 5944.285608500009,
+        "s_seam_here": 0.020882331114047484,
+        "s_seam_rel": 17.0762296263171,
+        "flowthroughs": 1.6666666666666667,
+        "exponent": 2.294755516137416
+      }
+    ],
+    "shift": 0.1
   },
   "_signature": {
     "burn": 5.0,
