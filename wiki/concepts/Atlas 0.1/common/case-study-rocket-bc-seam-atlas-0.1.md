@@ -1096,4 +1096,55 @@ Three things have to land before that argument can be made, and none of them bel
 
 ---
 
+---
+
+## 16. Tier 83 — W312 priced, and one of the five seams removed from the bill
+
+W312 left every ADVEC number in §13.3 as *"the operator the probe could see in 8 sub-steps"*, with one seam paid for and the rest carrying a label. Converging the rest was quoted at *"~7.2 hours for a full $\dim M = 41$ seam"* — a figure extrapolated from **one** measured call on agent `e`, at $268$ s, on a machine that Tier 80 later showed was running at $1.4$ GHz on battery.
+
+### 16.1 The bill, computed without paying it
+
+The cost of a probe call is the number of CFL sub-steps it takes, and `Compressible2D.max_stable_dt` returns that **without marching anything** — one evaluation per agent, $0.01$ s for all six.
+
+| agent | block | cells | $\Delta t_{\text{model}}$ [s] | $\Delta t_{\text{CFL}}$ [s] | sub-steps | s / call |
+|---|---|---|---|---|---|---|
+| `a` | $48\times80$ | $3840$ | $10^{-3}$ | $8.6171\times10^{-7}$ | $1160$ | $13.9$ |
+| `b` | $112\times80$ | $8960$ | $10^{-3}$ | $3.0210\times10^{-7}$ | $\mathbf{3310}$ | $92.6$ |
+| `e` | $120\times96$ | $11520$ | $10^{-3}$ | $2.8004\times10^{-7}$ | $3571$ | $128.4$ |
+| `d` | $184\times48$ | $8832$ | $5\times10^{-3}$ | $1.7207\times10^{-6}$ | $2906$ | $80.1$ |
+| `f` | $152\times80$ | $12160$ | $5\times10^{-3}$ | $5.1703\times10^{-6}$ | $967$ | $36.7$ |
+| `g` | $152\times96$ | $14592$ | $5\times10^{-3}$ | $1.0491\times10^{-5}$ | $477$ | $21.7$ |
+
+The per-call seconds are **calibrated**, not directly measured: Tier 80 measured the chamber at $92\,590$ s of wall per second of gas time on AC, which fixes the cost of one sub-step at agent `b`'s size, and the rest scale by cell count. **It cross-checks twice.** `b`'s $3310$ sub-steps reproduces `ChamberGasAgent`'s own docstring figure of *"about 3350"*, derived independently at Tier 76. And `e` comes out at $128.4$ s against Tier 79's **measured** $268$ s — a factor of $2.09$, which is the battery-versus-AC ratio Tier 80 established at $2.6$, on a call whose sub-step count is fixed. *Two independent routes to the same number, one of them the figure being replaced.*
+
+Per seam, at each seam's own $\dim M$ rather than at `e-f`'s $41$:
+
+| seam | $\dim M$ | calls | hours |
+|---|---|---|---|
+| `a-b` | $41$ | $84$ | $1.24$ |
+| `d-g` | $25$ | $52$ | $0.74$ |
+| `e-b` | $41$ | $84$ | $2.58$ |
+| `e-f` | $41$ | $84$ | $1.93$ |
+| `g-f` | $77$ | $156$ | $1.27$ |
+| **total** | | $\mathbf{460}$ | $\mathbf{7.75}$ |
+
+> **So the whole job is $7.75$ hours, not the $7.2$ hours *per seam* W312 implied.** The row's figure was right about `e-f` and wrong as a unit: $\dim M$ is not $41$ everywhere — it is $25$ on `d-g` and $77$ on `g-f` — and four of the six agents are cheaper per call than `e`, which is the most expensive one in the graph and the one the estimate was taken on. **An estimate extrapolated from the worst case, on the wrong power state, was high by a factor and low by a factor at the same time.**
+
+### 16.2 And one seam comes off the bill for nothing
+
+`g-f` is $1.27$ of those hours and **does not need running**. Tier 79 found its ADVEC operator identically zero and attributed it to the shear layer's normal being perpendicular to the flow. That attribution is now checked directly, and it is exact:
+
+- over the whole hole band $j \in [29, 66]$, the face normal is $n_z = \mathbf{-0.000\times10^{0}}$ and $n_y = \mathbf{1.000000}$ — not small, **exactly** zero and one;
+- the plume flows at $u_z = 256.4$ m/s.
+
+So the declared flow $\rho\,\mathbf u\cdot\mathbf n = \rho(u_z n_z + u_y n_y)$ collapses to $\rho\,u_y$: **the transverse mass flux through a band the flow is parallel to**, which Tier 79 measured at $4.2\times10^{-10}$ — the solver's own noise. **A cadence changes how long the solver runs; it does not change a normal.** Converging this seam would converge noise, at $1.27$ hours.
+
+That leaves **$6.48$ hours** for the four seams where a cadence could actually move something, and it is a cost that has been priced rather than guessed.
+
+### 16.3 What is not decided here
+
+The $6.48$ hours are **not spent**. W312's own definition of done — *"one plane seam probed at its declared clock, and the ADVEC numbers either replaced or labelled"* — was met at Tier 79 by the second branch: the numbers are labelled, in §13.2 and §13.3, and the anchor established what the label costs ($\beta$ moving $42.8\times$, agent `e`'s block share going $6.4\%$ to $36\%$). Replacing them is a separate decision with a price now attached to it, and the price is small enough that it is worth making deliberately rather than by drift.
+
+---
+
 **Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units), **W314** (R2's remaining half — the composed defect at 50:1 against CS-11's bound, *§14*), **W315** (`generate.py` collapses the shell to one number, so the build repo's shell-to-gas trace is rank 1, *§14.8*), **W316** (the shell is linearised about a gas temperature the gas does not have, *§14.9*), **W317** (a third undeclared interface — `a-c`, named by the build repo itself, and the declared seam is 40.7% of the conjugate wall, *§14.10*). **W305** (the trajectory agent and MECH on b-c — *§15*), **W318** (the b-c MECH operator has no spectral gap, so `expected_null_dim` is not a well-posed declaration for a compact response — *§15.3*), **W319** (`Compressible2D` has no wall-velocity boundary condition, so every gas-solid MECH bond is one-sided by a missing capability — *§15.4*), **W320** (`_solve_free` computes the trajectory's input as a Lagrange multiplier and discards it — *§15.2*). See [[gap-worklist]].

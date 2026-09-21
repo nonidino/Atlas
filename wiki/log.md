@@ -6037,3 +6037,41 @@ Tier 78 found this the moment W306's `sign_structure` field made it visible, mea
 **Changed:** `atlas/cases/car_graph.py` (two `effort_normal` declarations, each with the measurement in a comment), `tests/test_tier78_sign_structure.py` (the pinning test rewritten to assert the corrected state **while keeping the diagnosis of what the defect was**, plus a new blast-radius test that flips the declarations back and requires $191$/$34$ to reappear), [[poc3-racelab-car-graph]], [[case-study-rocket-bc-seam-atlas-0.1]] §12.4, the worklist.
 
 **NOT done:** nothing further. This row is closed.
+
+## [2026-09-21] tier 83 | W312 priced, and one of five seams removed from the bill
+
+Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §16; row on [[gap-worklist]].
+
+W312 quoted *"~7.2 hours for a full $\dim M = 41$ seam"*, extrapolated from **one** measured call on agent `e` at $268$ s — on a machine Tier 80 later showed was at $1.4$ GHz on battery.
+
+**The bill, computed without paying it.** `Compressible2D.max_stable_dt` returns a call's sub-step count without marching: all six agents price in $0.01$ s.
+
+| agent | sub-steps at its declared clock | s / call |
+|---|---|---|
+| `a` | $1160$ | $13.9$ |
+| `b` | $3310$ | $92.6$ |
+| `e` | $3571$ | $128.4$ |
+| `d` | $2906$ | $80.1$ |
+| `f` | $967$ | $36.7$ |
+| `g` | $477$ | $21.7$ |
+
+| seam | $\dim M$ | calls | hours |
+|---|---|---|---|
+| `a-b` | $41$ | $84$ | $1.24$ |
+| `d-g` | $25$ | $52$ | $0.74$ |
+| `e-b` | $41$ | $84$ | $2.58$ |
+| `e-f` | $41$ | $84$ | $1.93$ |
+| `g-f` | $77$ | $156$ | $1.27$ |
+| **total** | | $\mathbf{460}$ | $\mathbf{7.75}$ |
+
+**The whole job is $7.75$ h, not $7.2$ h per seam.** $\dim M$ is $25$ on `d-g` and $77$ on `g-f`, not $41$ everywhere, and `e` is the most expensive agent in the graph and the one the estimate was taken on — *an estimate extrapolated from the worst case, on the wrong power state, high by a factor and low by a factor at once.*
+
+It cross-checks twice: `b`'s $3310$ sub-steps reproduces `ChamberGasAgent`'s independently derived *"about 3350"*, and `e`'s $128.4$ s is Tier 79's measured $268$ s divided by $2.09$ — the battery-versus-AC ratio Tier 80 established.
+
+**And `g-f` comes off the bill for nothing.** Over the whole hole band $j \in [29, 66]$ the face normal is $n_z = -0.000\times10^{0}$ and $n_y = 1.000000$ — **exactly**, not approximately — against a plume at $u_z = 256.4$ m/s. So the declared flow $\rho\,\mathbf u\cdot\mathbf n$ collapses to $\rho u_y$: the transverse mass flux through a band the flow is parallel to, which Tier 79 measured at $4.2\times10^{-10}$. **A cadence changes how long the solver runs; it does not change a normal.** Converging it would converge noise, at $1.27$ h.
+
+**$6.48$ h remain, priced and deliberately unspent.** W312's definition of done was met at Tier 79 by its *labelled* branch; replacing the numbers is a separate decision that now has a number attached to it.
+
+**Changed:** [[case-study-rocket-bc-seam-atlas-0.1]] §16, the worklist, this log.
+
+**NOT done:** the $6.48$ h are not spent.
