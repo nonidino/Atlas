@@ -1147,4 +1147,87 @@ The $6.48$ hours are **not spent**. W312's own definition of done — *"one plan
 
 ---
 
-**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units), **W314** (R2's remaining half — the composed defect at 50:1 against CS-11's bound, *§14*), **W315** (`generate.py` collapses the shell to one number, so the build repo's shell-to-gas trace is rank 1, *§14.8*), **W316** (the shell is linearised about a gas temperature the gas does not have, *§14.9*), **W317** (a third undeclared interface — `a-c`, named by the build repo itself, and the declared seam is 40.7% of the conjugate wall, *§14.10*). **W305** (the trajectory agent and MECH on b-c — *§15*), **W318** (the b-c MECH operator has no spectral gap, so `expected_null_dim` is not a well-posed declaration for a compact response — *§15.3*), **W319** (`Compressible2D` has no wall-velocity boundary condition, so every gas-solid MECH bond is one-sided by a missing capability — *§15.4*), **W320** (`_solve_free` computes the trajectory's input as a Lagrange multiplier and discards it — *§15.2*). See [[gap-worklist]].
+---
+
+## 17. Tiers 84–85 — the knee measured, every ADVEC seam converged, and the vehicle marched
+
+### 17.1 The knee: the bound's LINEAR constant is what fails
+
+§14.11 left the residence-time mechanism as an [AI Inference], named a measurement that would settle it, and priced it. It was run. At $\Delta t_{\text{ex}} = 10^{-2}$ s — **1.67 chamber flow-throughs**, straddling the threshold:
+
+| | value |
+|---|---|
+| lag | $2.588180\times10^{-1}$ K |
+| $\sigma$ | $3.275484\times10^{-4}$ |
+| $\sigma/$lag | $1.265555\times10^{-3}$ |
+| bound/measured | $\mathbf{0.9660}$ — already violated |
+| $s_\Gamma$ **here** | $2.088233\times10^{-2}$ K$^{-1}$ — $\mathbf{17.0762\times}$ the small-interval value |
+
+$s_\Gamma$ was flat to $1.0125\times$ over $5\times10^{-5}$ to $10^{-3}$ (§14.3). It is **seventeen times larger** at $10^{-2}$. That settles the disjunction the stage registered before it ran:
+
+> *if $s_\Gamma$ has climbed, the seam's own response to a displacement grows with the march duration, and the bound's **first** constant stops being a constant somewhere in this decade — the bound does not merely need a bigger $C_2$, its linear term is wrong.*
+
+**It climbed.** So the failure at the declared interval is not a missing quadratic term — no $C_2$, of either sign, repairs a linear coefficient that is itself a function of the interval. And the order across the whole table now reads
+
+$$1.060,\quad 0.973,\quad \mathbf{2.295},\quad 1.790$$
+
+placing the break **between 0.83 and 1.67 flow-throughs** — at one residence time, where the inference said it would be. The violation also starts *earlier* than the anchor showed: bound/measured is already $0.9660$ at $10^{-2}$, not just $0.2702$ at $5\times10^{-2}$.
+
+### 17.2 Every ADVEC seam converged, at matched $\dim M$
+
+W312's four remaining seams, plus `g-f` run to remove doubt rather than because the price demanded it:
+
+| seam | $\beta$ reduced | $\beta$ declared | ratio | sign same? | share movement |
+|---|---|---|---|---|---|
+| `a-b` | $8.74547\times10^{-7}$ | $4.08487\times10^{-5}$ | $46.7\times$ | yes | `a` $0.0001 \to 0.0001$ |
+| `e-b` | $5.17669\times10^{-8}$ | $5.64308\times10^{-5}$ | $\mathbf{1090\times}$ | yes | `e` $0.996 \to 0.755$ |
+| `e-f` | $5.58034\times10^{-7}$ | $1.23716\times10^{-5}$ | $22.2\times$ | yes | `e` $0.231 \to \mathbf{0.765}$ |
+| `d-g` | $9.72545\times10^{-17}$ | $9.26906\times10^{-7}$ | $\mathbf{9.53\times10^{9}}$ | **NO** | `d` $0.0001 \to \mathbf{0.288}$ |
+| `g-f` | $2.57829\times10^{-12}$ | $8.60692\times10^{-13}$ | $0.334\times$ | yes | `g` $\mathbf{0.0 \to 0.0}$ |
+
+> **`d-g` is the result.** At the reduced cadence it was numerically empty — $\beta$ at machine epsilon, $\kappa = 6.27\times10^{11}$, agent `d` carrying $10^{-4}$ of the seam. Converged, $\beta$ moves by **nine and a half billion**, $\kappa$ collapses to $1055$, the **sign structure changes**, and `d` carries $\mathbf{29\%}$. By W76 a substitution certificate taken at the cheap cadence could not see `d` at all.
+
+**And `g-f` is the control that makes `d-g` mean something.** Both looked empty at the reduced cadence. One woke up by nine orders; the other went *down* ($0.334\times$), stayed at noise, and kept `g`'s share at **exactly 0.0 at both cadences**. So `d-g` was *small* and `g-f` is *structurally empty* — Tier 83's geometric argument ($n_z = -0.000\times10^{0}$ exactly) survives a direct test instead of standing on inference. It cost $950$ s to stop guessing.
+
+**One correction to Tier 79.** Its anchor reported $\beta$ moving $42.8\times$ on `e-f`. At the true $\dim M = 41$ it moves $\mathbf{22.2\times}$ — the anchor was taken at $\dim M = 8$ and overstated the movement about twofold. The direction and the lesson stand; the factor does not.
+
+### 17.3 How it was made affordable, and the speedup figure that is wrong
+
+`probe_block` is a sequential loop, but its calls are **independent**: the traces are `base` and `base + step·direction_k`, all fixed before any response is computed, and each `respond` restarts its agent from its own `_U0`. So the framework was left as the authority and only the arithmetic moved — record the request set with a zero-returning recorder, fill it across a process pool, then re-run `probe_block` from the cache.
+
+Two controls make that sound. A **determinism control** records the set twice and refuses to continue unless the two agree. And a **round-trip control**: at one cadence on both arms, the cached route reproduces a direct probe **bit for bit** ($\beta = 9.72545\times10^{-17}$ either way, $\kappa$, $\omega$ and every block share identical). The cache is a no-op on the numbers.
+
+> **The script prints a $9.98\times$ speedup and that figure is wrong.** It is measured against *contended* per-call times — the same calls, run ten-wide, each take $2.35\times$ longer than they would alone. Against the uncontended serial estimate the real gain is $\mathbf{4.24\times}$, and the gap is exactly the per-call inflation the scaling test predicted at 10–12 workers. A speedup quoted against a denominator the parallelism itself inflated is a speedup measured against nothing.
+
+### 17.4 The vehicle, marched
+
+The first coupled run in this case study: `generate.CoupledEpisode` advancing all six gas blocks, then the shell, then the loads, then the rigid body — the trajectory agent Tier 81 built, doing its job inside the build repo's own coupler rather than beside it.
+
+**Two declarations, both reported.** `coarsen = 4` (blocks $12\times20$ to $46\times12$), and $\Delta t_{\text{macro}} = 5\times10^{-3}$ s against the config's own $5\times10^{-2}$. The second is a **10× reduction and it is the right direction**: $5\times10^{-3}$ s is $0.83$ chamber flow-throughs, which §17.1 places **below the knee**, where $\sigma$ is still first order and CS-11's bound still holds. At the config's own macro step ($8.3$ flow-throughs) it does not.
+
+Cost: $30$ macro steps, $626\,165$ CFL sub-steps, $1647$ s — $54.9$ s a step against the $49.2$ s priced beforehand.
+
+### 17.5 W322 — the engine decelerates the vehicle
+
+| $t$ [s] | $y$ [m] | $v_y$ [m/s] | $m$ [kg] | $F_{y,\text{thrust}}$ [N] |
+|---|---|---|---|---|
+| $0.0000$ | $25000.000$ | $1044.3619$ | $50000.00$ | — |
+| $0.0050$ | $25005.222$ | $1044.2616$ | $49998.12$ | $-5.165\times10^{5}$ |
+| $0.0750$ | $25078.243$ | $1042.0187$ | $49971.73$ | $-1.138\times10^{6}$ |
+| $0.1450$ | $25151.104$ | $1039.7451$ | $49945.35$ | $-1.138\times10^{6}$ |
+
+**The vehicle is slowing down under thrust**, at $-20$ to $-35$ m/s². `generate.py::_compute_loads` sets
+
+```python
+F_thrust = (-thrust * np.cos(th), -thrust * np.sin(th))   # body -z is 'up'
+```
+
+with `thrust` a positive momentum-flux integral over the nozzle exit and `th` the state's $\theta$. `initial_state` sets $\theta_0 = \pi/2$, so $F_{y,\text{thrust}} = -\text{thrust}$: **downward, in a state vector whose $y$ is unambiguously altitude** — `rhs` subtracts `gravity(y)` from the same component.
+
+**This is not an integrator artefact and the audit is what establishes that.** Each step's $\mathrm{d}v_y/\mathrm{d}t$ was reconciled against the loads the integrator was actually handed, and it agrees to $\mathbf{1.00001}$ at every step. The trajectory is integrating its inputs correctly; the inputs have the wrong sign.
+
+> **And the audit caught its own bug first, which is why it is trustworthy.** Its first version paired `loads[i]` with the step out of `rigid[i]` and reported ratios of $2.04$, $1.05$, $1.62$ — noise-looking, and easy to write up as "the loads are inconsistent". They were not: `run()` seeds both lists with the pre-run state and appends **after** `step_macro`, so `loads[k]` is the load that *produced* `rigid[k]`. The tell was that measured$[i]$ equalled predicted$[i+1]$ to five digits — a clean one-step lag, which is the signature of an off-by-one and not of a broken integrator. *A control that reports a real defect and a bookkeeping error identically has not yet been calibrated.*
+
+---
+
+**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units), **W314** (R2's remaining half — the composed defect at 50:1 against CS-11's bound, *§14*), **W315** (`generate.py` collapses the shell to one number, so the build repo's shell-to-gas trace is rank 1, *§14.8*), **W316** (the shell is linearised about a gas temperature the gas does not have, *§14.9*), **W317** (a third undeclared interface — `a-c`, named by the build repo itself, and the declared seam is 40.7% of the conjugate wall, *§14.10*). **W305** (the trajectory agent and MECH on b-c — *§15*), **W318** (the b-c MECH operator has no spectral gap, so `expected_null_dim` is not a well-posed declaration for a compact response — *§15.3*), **W319** (`Compressible2D` has no wall-velocity boundary condition, so every gas-solid MECH bond is one-sided by a missing capability — *§15.4*), **W320** (`_solve_free` computes the trajectory's input as a Lagrange multiplier and discards it — *§15.2*). **W321** (the graph marched, not just probed — *§17.4*), **W322** (the engine decelerates the vehicle — *§17.5*). See [[gap-worklist]].

@@ -6075,3 +6075,21 @@ It cross-checks twice: `b`'s $3310$ sub-steps reproduces `ChamberGasAgent`'s ind
 **Changed:** [[case-study-rocket-bc-seam-atlas-0.1]] §16, the worklist, this log.
 
 **NOT done:** the $6.48$ h are not spent.
+
+## [2026-09-21] tiers 84-85 | the knee, every ADVEC seam converged, and the vehicle marched
+
+Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §17; rows on [[gap-worklist]].
+
+**The knee.** $s_\Gamma$ was flat to $1.0125\times$ over $5\times10^{-5}$ to $10^{-3}$; at $10^{-2}$ s — $1.67$ chamber flow-throughs — it is $2.088233\times10^{-2}$ K$^{-1}$, **$17.0762\times$** larger. So the CS-11 bound's **linear** constant stops being constant, and no $C_2$ repairs it. Order across the table: $1.060, 0.973, \mathbf{2.295}, 1.790$ — the break sits between $0.83$ and $1.67$ flow-throughs, at one residence time, where §14.11's [AI Inference] said. bound/measured is already $0.9660$ at $10^{-2}$.
+
+**W312, all five seams converged** at matched $\dim M$: `a-b` $46.7\times$, `e-b` $1090\times$, `e-f` $22.2\times$, **`d-g` $9.53\times10^{9}$ with a sign change and agent `d` going $0.0001 \to 0.288$**, `g-f` $0.334\times$ with `g` at **exactly 0.0 both ways**. `d-g` was small; `g-f` is structurally empty. Tier 79's $42.8\times$ on `e-f` corrects to $22.2\times$ — it was measured at $\dim M = 8$.
+
+**The vehicle marched**: $30$ macro steps, $626\,165$ sub-steps, $1647$ s, at a macro step of $5\times10^{-3}$ s — $0.83$ flow-throughs, deliberately below the knee.
+
+**W322 opened: the engine decelerates the vehicle.** $F_{y,\text{thrust}} = -5.165\times10^{5}$ N at $\theta = \pi/2$ in a state whose $y$ is altitude; $v_y$ falls $1044.36 \to 1039.75$ m/s. The acceleration audit reconciles every step against the loads to $1.00001$, so the integrator is right and its inputs are not.
+
+**Opened:** **W321** (the coupled episode), **W322** (the thrust sign). **Closed:** W312, and W314's knee half.
+
+**Added:** `scripts/w312_advec_converged.py`, `scripts/w321_rocket_episode.py`, `scripts/w321_episode_viz_data.py`, `out/w312_converged.json`, `out/w312_gf.json`, `out/w321/episode.json`.
+
+**NOT done:** W322 is reported, not fixed — it is the build repo's file. The trajectory agent is still not compiled into the graph. The full-fidelity episode (`coarsen = 1`, the config's own macro step) is unpriced and unrun.
