@@ -328,7 +328,16 @@ def connections(joins: Sequence[str] = ("J1", "J2", "J3")) -> list[Connection]:
             seam_id="J1_core_strip", a=("RAD", "strip:MECH"), b=("FLUID", "core:MECH"),
             port_type=PortType.MECH, derive_space=True,
             geometrically_coincident=True, expected_null_dim=0,
-            effort_normal="RAD",
+            #: **W308, corrected at Tier 82.**  This named `RAD`, which made the
+            #: assembled operator NEGATIVE definite -- passive only up to a
+            #: global sign, which `S lambda = chi` is indifferent to but which
+            #: `L4/E7/passivity` is not.  Naming the other side makes it
+            #: positive definite with **every singular value bitwise unchanged**
+            #: (measured: max relative difference 0.0), so beta and kappa are
+            #: untouched and only E7's test moves.  `J2_heat` already named the
+            #: right agent, which is the control that made this a finding rather
+            #: than a blanket flip.
+            effort_normal="FLUID",
             note="J1: the radiator core's loss as a traction on the strip its body "
                  "force acts over, against the band's mean velocity"))
     if "J2" in joins:
@@ -344,7 +353,12 @@ def connections(joins: Sequence[str] = ("J1", "J2", "J3")) -> list[Connection]:
             seam_id="J3_rotor_strip", a=("ROTOR", "strip:MECH"), b=("FLUID", "rotor:MECH"),
             port_type=PortType.MECH, derive_space=True,
             geometrically_coincident=True, expected_null_dim=0,
-            effort_normal="ROTOR",
+            #: **W308, corrected at Tier 82** -- the same inversion as `J1`, and
+            #: see its note. Together the two corrections take this graph from
+            #: 191 decisions to 189: `L4/E7/passivity` stops firing on both strip
+            #: seams, the 156 admits and the one refusal are unchanged, and the
+            #: refusal was never these seams' -- it is the clocks.
+            effort_normal="FLUID",
             note="J3: the turbine's thrust over its band as a traction on the strip "
                  "its body force acts over, against the band's mean velocity"))
     return out

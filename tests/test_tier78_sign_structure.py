@@ -127,20 +127,26 @@ def test_the_verdict_is_deliberately_unchanged():
 # ===========================================================================
 
 
-def test_W308_car_graph_has_two_inverted_declarations_and_one_correct_one():
-    """**Found by W306, and deliberately NOT fixed here.**
+def test_W308_car_graph_declarations_corrected_and_the_defect_it_had():
+    """**Found by W306 at Tier 78, deferred there, CORRECTED at Tier 82.**
 
-    Two of `car_graph`'s three declared seams name the agent that makes the
-    operator negative definite; naming the other side makes it positive definite
-    with the singular values untouched. The third, ``J2_heat``, already names the
-    right one -- which is the control that makes this a finding rather than a
-    blanket flip.
+    What the defect was: two of `car_graph`'s three declared seams named the
+    agent that makes the assembled operator NEGATIVE definite -- passive only up
+    to a global sign, which ``S lambda = chi`` is indifferent to because chi
+    flips with S, but which `L4/E7/passivity` is not. `J2_heat` already named
+    the right agent, and that is the control that made this a finding rather
+    than a blanket flip.
 
-    It is not fixed in this tier because
-    [[poc3-racelab-car-graph]] records those two seams as earning
-    `L4/E7/passivity` in "the package's standing decertification set", so the fix
-    changes a PoC 3 case study's recorded decision counts and belongs with an
-    audit of that page rather than as a side effect of a diagnostic tier.
+    It was deferred at Tier 78 because [[poc3-racelab-car-graph]] records those
+    two seams as earning `L4/E7/passivity` in "the package's standing
+    decertification set", so the fix moves a PoC 3 case study's decision counts
+    and belonged with an audit of that page. The audit found the counts in
+    exactly one sentence; Tier 82 corrected both and updated it.
+
+    **The movement, measured:** 191 decisions -> 189, decertifications 34 -> 32,
+    admits unchanged at 156, the one refusal unchanged -- it was never these
+    seams', it is the clocks. `car_graph` is not in the W189 census, so the
+    correction costs the byte-identity control nothing.
     """
     from atlas.cases import car_graph
 
@@ -149,16 +155,61 @@ def test_W308_car_graph_has_two_inverted_declarations_and_one_correct_one():
     r = compile_scheme(g)
     got = {s: r.seam_operators[s].sign_structure
            for s in ("J1_core_strip", "J3_rotor_strip", "J2_heat")}
-    assert got == {"J1_core_strip": "negative",
-                   "J3_rotor_strip": "negative",
+    assert got == {"J1_core_strip": "positive",
+                   "J3_rotor_strip": "positive",
                    "J2_heat": "positive"}, got
+
+    # the two corrected seams name the fluid side, and J2 is untouched
+    byid = {c.seam_id: c for c in g.connections}
+    assert byid["J1_core_strip"].effort_normal == "FLUID"
+    assert byid["J3_rotor_strip"].effort_normal == "FLUID"
+    assert byid["J2_heat"].effort_normal == "BLOCK", "the control must not move"
+
+    # E7/passivity no longer fires on either strip seam
+    fired = {d.subject for d in r.decisions.decisions if "E7/passivity" in d.rule}
+    assert not (fired & {"J1_core_strip", "J3_rotor_strip"}), fired
+
+    # and the diagnosis is kept: negating S is what the declaration chooses
+    # between, and it moves the sign structure while leaving every singular
+    # value exactly where it was. That is why beta and kappa are untouched.
     for seam in ("J1_core_strip", "J3_rotor_strip"):
         op = r.seam_operators[seam]
-        assert op.effort_normal, f"{seam} declares no effort_normal at all"
-        # naming the other side negates S, which makes it positive definite ...
         ev = np.linalg.eigvalsh(0.5 * (op.S + op.S.T))
-        assert (-ev).min() > 0.0
-        # ... and leaves every singular value exactly where it was
+        assert ev.min() > 0.0, "corrected: positive definite"
         sv_a = np.linalg.svd(op.S, compute_uv=False)
         sv_b = np.linalg.svd(-op.S, compute_uv=False)
-        assert np.allclose(sv_a, sv_b)
+        assert np.allclose(sv_a, sv_b, rtol=0, atol=0), "bitwise, not merely close"
+
+
+def test_W308_the_correction_moves_exactly_two_decertifications():
+    """The blast radius, asserted so it cannot widen unnoticed.
+
+    Flipping the two declarations back reproduces the pre-correction counts
+    exactly, which is what makes '191 -> 189' a measurement of this change and
+    not of everything else that has happened since.
+    """
+    import dataclasses
+
+    from atlas.cases import car_graph
+
+    built = car_graph.build()
+    g = built[0] if isinstance(built, tuple) else built
+
+    def counts(graph):
+        res = compile_scheme(graph)
+        out = {}
+        for d in res.decisions.decisions:
+            out[d.verdict.value] = out.get(d.verdict.value, 0) + 1
+        return out, len(res.decisions.decisions)
+
+    now, n_now = counts(g)
+    back = {"J1_core_strip": "RAD", "J3_rotor_strip": "ROTOR"}
+    g_old = dataclasses.replace(g, connections=[
+        dataclasses.replace(c, effort_normal=back[c.seam_id])
+        if c.seam_id in back else c for c in g.connections])
+    was, n_was = counts(g_old)
+
+    assert (n_was, n_now) == (191, 189), (n_was, n_now)
+    assert was["admit-uncertified"] - now["admit-uncertified"] == 2
+    assert was["admit"] == now["admit"] == 156
+    assert was["refuse"] == now["refuse"] == 1

@@ -631,3 +631,9 @@ out/racelab23/*
 # produced them. Recorded rather than fixed here, because re-running four
 # tiers' artifacts is not this tier's scope.
 !out/w314.json
+
+# Tier 81 -- W305 (w305_trajectory_and_mech.py --json out/w305.json). ~6 KB,
+# JSON only: the b-c MECH spectrum with its tolerance sweep, the rigid-load
+# map, the trajectory agent's probed block against its closed form, the
+# composed c-trajectory seam, and the one-sidedness checks read off the solver.
+!out/w305.json

@@ -582,11 +582,13 @@ The two costs are separable and were measured apart:
 
 So the diagnostic is nearly free and the **publication** is what costs the control — which is the right way round, since publication is the whole point.
 
-### 12.4 W308 — found, measured, and deliberately not fixed
+### 12.4 W308 — found, measured, deferred, and closed at Tier 82
 
 `car_graph`'s two inverted declarations are a two-character fix: naming the other agent gives a **positive definite** operator with every singular value unchanged. `J2_heat` already names the right one, which is the control that makes this a finding rather than a blanket flip.
 
-It is **not** fixed here. [[poc3-racelab-car-graph]] records those seams as earning `L4/E7/passivity` in *"the package's standing decertification set"*, alongside a decision count of $191$ decisions, $156$ admits, $34$ decertifications and one refusal. Correcting the declarations changes those counts, so it belongs with an audit of that page rather than as a side effect of a diagnostic tier. Pinned meanwhile by a test that asserts both structures, the flip's effect, and that `J2_heat` is untouched — so a future change cannot quietly alter any of it.
+It was **not** fixed here. [[poc3-racelab-car-graph]] records those seams as earning `L4/E7/passivity` in *"the package's standing decertification set"*, alongside a decision count of $191$ decisions, $156$ admits, $34$ decertifications and one refusal. Correcting the declarations changes those counts, so it belonged with an audit of that page rather than as a side effect of a diagnostic tier. Pinned meanwhile by a test that asserts both structures, the flip's effect, and that `J2_heat` is untouched — so a future change cannot quietly alter any of it.
+
+> **Closed 2026-09-21 (Tier 82).** The audit found those counts recorded in **exactly one sentence**, and the movement is as narrow as Tier 78 predicted: **$191$ decisions $\to$ $189$, decertifications $34 \to 32$, admits unchanged at $156$, the one refusal unchanged** — it was never these seams', it is the clocks. All three seams now read `positive`, `E7/passivity` fires on neither strip seam, and **every singular value is bitwise identical** (maximum relative difference $0.0$). That verifies on a real graph what §12 argued in principle: negating $S$ changes no singular value, so $\beta$ and $\kappa$ are untouched and only E7's test moves. `car_graph` is not in the W189 census, so the correction costs the byte-identity control nothing. **The blast radius is asserted by its own test**, which flips the declarations back and requires the old counts to reappear — so $191 \to 189$ stays a measurement of *this* change rather than of everything since.
 
 **[AI Inference]:** the shape is likely general. A seam whose two sides both report in one shared direction needs `effort_normal`, and this vault now has four examples — one FSI (`front_wing`, W138), one CHT (the rocket), and two lumped-to-field joins (`car_graph`) — against zero counter-examples. Whether *every* such seam is one-signed rather than mixed is not established; `thermal_strain` shows a mixed spectrum exists.
 
@@ -992,4 +994,106 @@ This is why [[tier0-measurements]]'s convention of quoting **sub-steps** rather 
 
 ---
 
-**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units), **W314** (R2's remaining half — the composed defect at 50:1 against CS-11's bound, *§14*), **W315** (`generate.py` collapses the shell to one number, so the build repo's shell-to-gas trace is rank 1, *§14.8*), **W316** (the shell is linearised about a gas temperature the gas does not have, *§14.9*), **W317** (a third undeclared interface — `a-c`, named by the build repo itself, and the declared seam is 40.7% of the conjugate wall, *§14.10*). See [[gap-worklist]].
+---
+
+## 15. Tier 81 — the trajectory agent, and the MECH bond that has no null space to measure
+
+The last part of the original brief. R0's ordering named the trajectory agent — *"lumped, dim M = 1 — the cheapest of all"* — and it was never built; MECH is declared on seven of `rocket.py`'s edges and no channel has ever carried it. **W305 asked for "a MECH response on b–c whose null space is measured against the rigid-body count, coupled to the trajectory agent rather than ahead of it".** Two of those three clauses turned out not to be answerable as written, and saying why is the tier.
+
+### 15.1 The trajectory agent, and why its port is 3-dimensional
+
+`solvers/trajectory.py` is used verbatim, which its own docstring insists on: *"written once and reused **verbatim** by Atlas's non-learned `rigid_body` expert … not a data-generation helper that gets replaced later"*, and, on the integrator, *"RK4 is correct here; do not 'upgrade' it to leapfrog"* — because mass is expelled, drag dissipates and thrust does work, so the system is not conservative. The wrapper adds a port, a `storage`, a `validity` and nothing else.
+
+**Its probed block is analytic, and measured it is exactly that:**
+
+$$B \;=\; \frac{\partial(\text{velocity after one step})}{\partial(\text{rigid load})} \;=\; \operatorname{diag}\!\left(\frac{\Delta t}{m},\ \frac{\Delta t}{m},\ \frac{\Delta t}{I}\right)$$
+
+| | measured | analytic |
+|---|---|---|
+| translations | $1.0000000000\times10^{-6}$, $1.0000000013\times10^{-6}$ | $\Delta t/m = 1.0\times10^{-6}$ |
+| rotation | $5.0000000000\times10^{-6}$ | $\Delta t/I = 5.0\times10^{-6}$ |
+| off-diagonal | $\mathbf{0}$, exactly | the three planar modes do not mix |
+
+Maximum relative departure $2.565\times10^{-10}$. **This is the first agent in the rocket graph whose probed block can be checked against a closed form**, and it is the cheapest by a wide margin — a response is microseconds against the chamber's minutes.
+
+> **The brief said $\dim M = 1$ and the port is 3.** A planar rigid body has two translations and one rotation, and the structure's own `_rigid_modes` returns a $[2n, 3]$ basis, orthonormal here to $1.78\times10^{-15}$. One is the count for a single scalar channel; this bond is not one.
+
+Its `validity` declines two ways, both read off the sources rather than chosen: `atmosphere.py` is the 1976 standard tabulated to $86$ km, and `rhs` floors the mass at $10^{-6}$ kg — so a burn past the propellant load returns a number rather than failing, and the floor is a guard rather than a licence.
+
+### 15.2 The coupling variable already exists inside the build repo, and is discarded
+
+`ThermoStruct2D.solve_mechanical` is a **free-body** solve: it removes the three planar rigid-body modes by projection rather than by pinning nodes, and its own comment says why — *"any pin that also blocks a component of uniform thermal expansion manufactures stress in a plate that should have none"*. `_solve_free` does it with a bordered Lagrange system
+
+$$\begin{bmatrix} K & V \\ V^{\mathsf T} & 0\end{bmatrix}\begin{bmatrix} u \\ \ell \end{bmatrix} = \begin{bmatrix} f \\ 0\end{bmatrix}$$
+
+and returns `lu.solve(rhs)[: f.size]`. Because $KV = 0$ and $V$ is orthonormal, left-multiplying the first block row by $V^{\mathsf T}$ gives
+
+$$\boxed{\ \ell = V^{\mathsf T} f\ }$$
+
+exactly — **the net force and torque on the body, which is precisely what `trajectory.rk4_step` integrates.** The build repo computes the trajectory's input as a Lagrange multiplier and slices it off on the very next character.
+
+> **So the structure and the trajectory already share an interface variable, and nothing declares it.** That is this vault's recurring shape — W311's undeclared nozzle wall, W317's `a-c`, W315's rank-1 trace — in its sharpest form yet: not a quantity nobody computed, but one computed and thrown away inside a single expression.
+
+The identity is pinned as **pure algebra on a synthetic system** where $K$, $f$ and $V$ are controlled, rather than on the real shell where observing $\ell$ would mean changing the build repo. The load is recovered here by the surface integral instead — the same construction `generate.py::_compute_loads` uses for `F_aero`.
+
+**And a control that says the map is physical.** Under a *uniform* ambient traction the net rigid load is $(-3.55\times10^{-15},\ -5.68\times10^{-14},\ 0.1386)$: **the two forces cancel to machine precision and the torque does not.** That is the shell's thickness talking — inner and outer faces have equal projected area so a uniform pressure exerts no net force, but they sit at different radii so it exerts a **couple**. The trajectory must receive that couple and the structure must not, which is exactly what the projection arranges. Both halves are asserted, because only the pair rules out a sign error.
+
+The rigid-load map $\partial(V^{\mathsf T}f)/\partial(\text{traction})$ is $3\times14$ with singular values $2.8739\times10^{-3}$, $4.4638\times10^{-4}$, $3.2478\times10^{-5}$ — **rank 3**, so a 14-cell window is enough to drive the whole body, with the torque mode $88.5\times$ weaker than the leading translation.
+
+### 15.3 The MECH response on b–c, and the null space it does not have
+
+MECH's bond is $(\text{traction},\ \text{velocity})$ and `solve_mechanical` is quasi-static: it returns a **displacement**. W305 flagged that the flow needs a time derivative *"whose convention is what R2 decides"* — and R2 decided, by declaring `FluxMatching.TIME_INTEGRATED` over the macro-step. So the flow is $v = \delta u/\Delta t$ at that clock. It is a declaration, it is reported, and §14's lesson applies directly: **a quantity divided by $\Delta t$ is not cadence-free, so a $\beta$ measured here carries its clock.**
+
+The operator is $14\times14$ and costs $0.08$ s a response — **four orders of magnitude cheaper than a gas response**, which is why this tier is minutes where Tier 80 was hours. Its singular values:
+
+$$5.242\times10^{-5},\ 1.123\times10^{-7},\ 4.574\times10^{-9},\ 7.195\times10^{-10},\ \ldots,\ 5.942\times10^{-14}$$
+
+$$\beta = 5.941852\times10^{-14}, \qquad \kappa = \mathbf{8.822\times10^{8}}$$
+
+Read the null dimension at a tolerance and you get whatever you asked for:
+
+| relative tolerance | rank | **null dim** |
+|---|---|---|
+| $10^{-2}$ | 1 | $\mathbf{13}$ |
+| $10^{-3}$, $10^{-4}$ | 2 | $12$ |
+| $10^{-6}$ | 6 | $8$ |
+| $10^{-8}$ | 11 | $\mathbf{3}$ |
+| $10^{-10}$, $10^{-12}$ | 14 | $\mathbf{0}$ |
+
+> **W305 asked for the null space "measured against the rigid-body count", and at $10^{-8}$ it is exactly 3. That number is an artefact of the threshold and not a measurement.** The consecutive singular-value ratios are $466$, $24.6$, $6.36$, $3.31$, $2.92$, $2.95$, … — after the second mode they settle at about three per mode and **never gap**. A genuine null space announces itself as a jump of many orders; here nothing separates signal from null, so any null dimension in $[0, 13]$ is available for the asking.
+
+This is [[tier0-measurements]] W106's mistake with the sign reversed. W106 was about a *reproducibility floor* of exactly zero making a movement test meaningless; this is about a *spectrum with no floor* making a rank test meaningless. **The tier's test therefore asserts that two tolerances DISAGREE** — the only way to state "there is no answer here" as something that can fail. If the operator ever grew a real null space, four decades of tolerance would agree on it.
+
+**And the contrast with THERM on the same fourteen cells is the most striking number in the tier.** Tier 77 measured b–c THERM at $\kappa = 3.7141$. MECH is $8.82\times10^{8}$ — **eight orders apart, on the same seam, the same cells, the same operating point.** The reason is structural and it is already on the record: the THERM response is nearly *algebraic* (W301 — `_wall_flux` subtracts $T_{\text{wall}}$ directly), while the MECH response is a quasi-static elliptic solve, which is a **smoothing** operator and therefore compact, with geometrically decaying singular values. *Port type, not physics regime, is what decides whether a seam operator has a rank you can name.*
+
+### 15.4 The gas cannot respond at all, and a declaration cannot see why
+
+`Compressible2D` has eight boundary kinds — `wall_slip`, `wall_noslip`, `symmetry`, `inlet_massflow`, `freestream`, `outflow`, `prescribed`, `extrapolate` — and **none of them takes a wall velocity**. `_reflect(no_slip=True)` sets the ghost momentum to $-U$, which is a stationary wall, and `wall_noslip` reads only `T_wall` and `no_slip_mask`. Checked against the source rather than asserted, including the negative: no `u_wall`, `v_wall`, `wall_velocity` or `wall_speed` appears anywhere in the file.
+
+> **So the gas can SUPPLY a traction — it has the wall pressure — and cannot RESPOND to one. The MECH bond at every gas–solid seam in this graph is one-sided by a missing capability, not by a modelling choice, and the declaration is identical either way.** W97 found a field-to-lumped MECH seam one-sided by $\mathrm{Re}_h$; this one is one-sided by a boundary condition that does not exist.
+
+That is why MECH is still not wired into the seven-agent graph. Assembling it would produce a seam whose gas block is identically zero — the `L5/R6` empty-operator refusal that Tier 79 earned on g–f ADVEC, arrived at for a different reason and carrying a different remedy: g–f needed the *declaration* corrected, and this needs the *solver* extended.
+
+### 15.5 The c–trajectory seam, which is two-sided
+
+Composing the structure's hand-over with the body's response gives the seam in the rigid-mode space, $3\times14$:
+
+$$\beta = 3.972877\times10^{-11}, \qquad \kappa = \mathbf{295.51}$$
+
+against b–c MECH's $8.82\times10^{8}$ — **three million times better conditioned.** And it is genuinely two-sided: **the body responds to a load with a velocity natively.** It is the one port in this graph that needs no time derivative supplied and declares none, which is the exact contrast with §15.3's $\delta u/\Delta t$ and the reason the pair is worth building together.
+
+### 15.6 What was deliberately not done
+
+**The trajectory agent is built and measured and is NOT in the compiled graph.** The seven-agent compile is unchanged at `refuse`, **4 refusals, 22 decertifications, 81 admits** — exactly where Tier 79 left it, asserted rather than assumed, because *a builder that constructs declarations is a place where a refusal can be lost without anybody deciding to lose it* (Tier 79's own lesson). Adding an eighth agent would move the count, and it should move it for a reason that has been argued rather than as a side effect of a tier about something else.
+
+Three things have to land before that argument can be made, and none of them belongs here:
+
+- **MECH needs a responding gas side**, which needs a moving-wall boundary condition in the build repo (§15.4);
+- **the `c`–trajectory edge is not in `config/atlas_0_1.yaml`'s `edge_list`** — a fourth undeclared interface, and like W311 and W317 it is the build repo's file;
+- **the rigid load must be handed over by the structure rather than recomputed** beside it, which means `solve_mechanical` returning its own multiplier (§15.2).
+
+**Five of five registered predictions held**, over a $61$ s run — the whole tier costs less than one gas response at the declared clock.
+
+---
+
+**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units), **W314** (R2's remaining half — the composed defect at 50:1 against CS-11's bound, *§14*), **W315** (`generate.py` collapses the shell to one number, so the build repo's shell-to-gas trace is rank 1, *§14.8*), **W316** (the shell is linearised about a gas temperature the gas does not have, *§14.9*), **W317** (a third undeclared interface — `a-c`, named by the build repo itself, and the declared seam is 40.7% of the conjugate wall, *§14.10*). **W305** (the trajectory agent and MECH on b-c — *§15*), **W318** (the b-c MECH operator has no spectral gap, so `expected_null_dim` is not a well-posed declaration for a compact response — *§15.3*), **W319** (`Compressible2D` has no wall-velocity boundary condition, so every gas-solid MECH bond is one-sided by a missing capability — *§15.4*), **W320** (`_solve_free` computes the trajectory's input as a Lagrange multiplier and discards it — *§15.2*). See [[gap-worklist]].

@@ -5973,3 +5973,67 @@ The $2.57$ h row at the declared $5\times10^{-2}$ s landed, and **it inverts thi
 **Cost:** $9259$ s, $364\,093$ gas sub-steps, **zero Modern Standby events**, $92\,590$ s of wall per second of gas time — about $40\%$ above the sweep's own rate, because the chamber accelerates as it develops and a longer march is dearer per unit of gas time.
 
 **And a note on what it took to get the row at all.** The anchor was launched three times. The first died with the session that started it; the second completed; a follow-up `knee` run died the same way ten minutes in, with an empty stderr and no standby event to blame, and **the cause is not known**. Long runs here need a launch that outlives the session and a record that is written incrementally — this one survived only because `_persist` writes after every stage and `_load` merges rather than replaces, which was itself a bug fixed before the first launch.
+
+## [2026-09-21] tier 81 | W305 — the trajectory agent, and the MECH bond with no null space
+
+**PoC 4, the last part of the original brief.** Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §15; rows on [[gap-worklist]].
+
+W305 asked for *"a MECH response on b–c whose null space is measured against the rigid-body count, coupled to the trajectory agent rather than ahead of it"*. **Two of those three clauses were not answerable as written.**
+
+### The trajectory agent
+
+`solvers/trajectory.py` used **verbatim**, which its own docstring requires. Its probed block is the first in this graph checkable against a closed form:
+
+| | measured | analytic |
+|---|---|---|
+| translations | $1.0000000000\times10^{-6}$, $1.0000000013\times10^{-6}$ | $\Delta t/m$ |
+| rotation | $5.0000000000\times10^{-6}$ | $\Delta t/I$ |
+| off-diagonal | $\mathbf{0}$ exactly | the three planar modes do not mix |
+
+**Its port is 3-dimensional, not the $\dim M = 1$ the brief named.**
+
+### W318 — the null space that is not there
+
+Singular values of the $14\times14$ b–c MECH operator decay geometrically with **no gap**: ratios $466$, $24.6$, $6.36$, $3.31$, $2.92$, $2.95$. So the null dimension is $13$ at $10^{-2}$, $3$ at $10^{-8}$, $0$ at $10^{-10}$ — **the rigid-body count is obtainable at exactly one tolerance and means nothing.** $\beta = 5.941852\times10^{-14}$, $\kappa = 8.822\times10^{8}$, against THERM's $\kappa = 3.7141$ on the same cells. *Port type, not physics regime, decides whether a seam operator has a rank you can name.*
+
+### W319 and W320
+
+The gas cannot respond — `Compressible2D` has no wall-velocity boundary condition, checked against the source including the negative — so every gas–solid MECH bond here is one-sided by a **missing capability**, and a declaration cannot see the difference. And the trajectory's input already exists: $\ell = V^{\mathsf T}f$ is computed by `_solve_free` and sliced off on the next character.
+
+**Opened:** **W318** (no spectral gap, so `expected_null_dim` is not well posed for a compact response), **W319** (no wall-velocity BC), **W320** (the discarded multiplier).
+
+**Added:** `scripts/w305_trajectory_and_mech.py`, `tests/test_tier81_trajectory_and_mech.py`, `out/w305.json`.
+**Changed:** `atlas/cases/rocket_experts.py` (`TrajectoryAgent`, `ShellAgent.respond_mech`, `ShellAgent.rigid_load`, `face_normals`, the `Compressible2D` BC constants), the case study, the worklist and this index.
+
+**NOT done:** MECH is still **unwired** into the graph, for W319's reason. The trajectory agent is built and **not compiled in** — the seven-agent count is unchanged at `refuse`, 4 refusals, 22 decertifications, asserted rather than assumed, because Tier 79 established that a builder is where a refusal goes missing. The `c`–trajectory edge is a **fourth** undeclared interface and is not added, for W311's reason.
+
+**Five of five predictions held, over a 61 s run** — the whole tier costs less than one gas response at the declared clock.
+
+## [2026-09-21] tier 82 | W308 closed — car_graph's two inverted declarations, after the audit
+
+Full record on [[poc3-racelab-car-graph]] §"the refusal is the clocks" and [[case-study-rocket-bc-seam-atlas-0.1]] §12.4; row on [[gap-worklist]].
+
+Tier 78 found this the moment W306's `sign_structure` field made it visible, measured it conclusively, and **deliberately did not fix it** — because [[poc3-racelab-car-graph]] records those two seams' decertifications alongside a decision count, and changing a PoC 3 case study's recorded counts as a side effect of a diagnostic tier is the wrong way round. This is the audit it was waiting for.
+
+**The audit.** The counts appear in **exactly one sentence** of that page. Nothing else on it cites them.
+
+**The movement, measured both ways:**
+
+| | as declared | corrected |
+|---|---|---|
+| decisions | $191$ | $\mathbf{189}$ |
+| admits | $156$ | $156$ |
+| decertifications | $34$ | $\mathbf{32}$ |
+| refusals | $1$ | $1$ |
+| sign structures | J1 `negative`, J2 `positive`, J3 `negative` | **all three `positive`** |
+| `L4/E7/passivity` fires on | `J1_core_strip`, `J3_rotor_strip` | **neither** |
+
+**Every singular value is bitwise identical** — maximum relative difference $0.0$, not merely close — so $\beta$ and $\kappa$ on that page are untouched and only E7's test moves. That is Tier 78's claim that *negating $S$ changes no singular value*, verified on the real graph rather than argued.
+
+`J2_heat` already named the right agent and is untouched, which is the control that made this a finding rather than a blanket flip. **The refusal was never these seams'** — the page's own paragraph says it is the clocks, and it is unchanged.
+
+`car_graph` is not in the W189 census, so the correction costs the byte-identity control nothing — checked before applying rather than assumed.
+
+**Changed:** `atlas/cases/car_graph.py` (two `effort_normal` declarations, each with the measurement in a comment), `tests/test_tier78_sign_structure.py` (the pinning test rewritten to assert the corrected state **while keeping the diagnosis of what the defect was**, plus a new blast-radius test that flips the declarations back and requires $191$/$34$ to reappear), [[poc3-racelab-car-graph]], [[case-study-rocket-bc-seam-atlas-0.1]] §12.4, the worklist.
+
+**NOT done:** nothing further. This row is closed.

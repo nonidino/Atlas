@@ -545,9 +545,219 @@ class ShellAgent:
         T = self._T0 if state is None else np.asarray(state)
         return bool(np.all(np.asarray(T, dtype=float) < 770.0))
 
+    # -- MECH, and the half of it this solver cannot carry (W305) -----------
+    def face_normals(self, which: str = "inner") -> np.ndarray:
+        """Outward unit normals of a face's cells, as `solve_mechanical` builds
+        them: from the node pair, rotated, normalised by the cell length."""
+        a, b, L = self._ts._face(which)
+        nodes = self._ts.mesh.nodes.reshape(-1, 2)
+        tang = nodes[b] - nodes[a]
+        return np.stack([-tang[:, 1], tang[:, 0]], axis=1) / np.maximum(L, 1e-30)[:, None]
+
+    def _p_fields(self, p_seam: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """(inner, outer) pressure over the WHOLE faces, with the seam window
+        carrying ``p_seam`` and the declared ambient elsewhere."""
+        p_in = np.full(self._n_face, float(ambient_state()[1]))
+        p_in[self._cells] = np.asarray(p_seam, dtype=float).ravel()
+        p_out = np.full(self._n_face, float(ambient_state()[1]))
+        return p_in, p_out
+
+    def respond_mech(self, port_name: str, trace: np.ndarray) -> np.ndarray:
+        """(normal traction on the seam) -> (normal VELOCITY on the seam).
+
+        **The time derivative W305 said R2 would have to decide.**  MECH's bond
+        is ``(traction, velocity)`` and `solve_mechanical` is quasi-static: it
+        returns a DISPLACEMENT.  R2 settled the convention by declaring
+        `FluxMatching.TIME_INTEGRATED` over the macro-step, so the flow is the
+        displacement increment over that interval, ``v = du / dt``, taken
+        against the unloaded configuration.  It is a declaration, it is reported,
+        and §14's own lesson applies: a quantity divided by dt is not cadence
+        free, so a beta measured here carries its clock.
+        """
+        del port_name
+        p_in, p_out = self._p_fields(trace)
+        u, _sigma = self._ts.solve_mechanical(self._T0, p_in, p_out)
+        self._calls += 1
+        a, b, _L = self._ts._face("inner")
+        u_face = 0.5 * (u[a] + u[b])                      # per inner-face cell
+        nrm = self.face_normals("inner")
+        return (u_face * nrm).sum(1)[self._cells] / self.dt
+
+    def rigid_load(self, p_seam: np.ndarray) -> np.ndarray:
+        """The net rigid-body load the free-body projection REMOVES, as ``V^T f``.
+
+        **This quantity already exists inside the build repo and is thrown
+        away.**  `_solve_free` solves the bordered system
+
+            [ K   V ] [u]   [f]
+            [ V^T 0 ] [l] = [0]
+
+        and returns ``lu.solve(rhs)[: f.size]`` -- it computes the multiplier and
+        slices it off on the next character.  Because ``K V = 0`` and ``V`` is
+        orthonormal, left-multiplying the first block row by ``V^T`` gives
+        ``l = V^T f`` exactly: the net force and torque on the body, which is
+        precisely what `trajectory.rk4_step` integrates.  So the structure and
+        the trajectory already share an interface variable; nothing declares it.
+
+        It is recovered here by the surface integral rather than by changing the
+        build repo, which is the same construction `generate.py::_compute_loads`
+        uses for `F_aero`.  The thermal body force is self-equilibrated on a free
+        body and contributes nothing to ``V^T f``, which is asserted by the
+        tier's test rather than assumed.
+        """
+        p_in, p_out = self._p_fields(p_seam)
+        V = self._ts._rigid_modes()
+        f = np.zeros(self._ts.mesh.n_nodes * 2)
+        for which, p, sign in (("inner", p_in, +1.0), ("outer", p_out, -1.0)):
+            a, b, L = self._ts._face(which)
+            nrm = self.face_normals(which)
+            trac = sign * np.asarray(p, float)[:, None] * nrm * L[:, None] * 0.5
+            for nid in (a, b):
+                np.add.at(f, 2 * nid, trac[:, 0])
+                np.add.at(f, 2 * nid + 1, trac[:, 1])
+        return V.T @ f
+
     @property
     def solver_calls(self) -> int:
         return self._calls
+
+
+#: **W305.**  `Compressible2D`'s wall conditions, verbatim from its own `BC`
+#: docstring.  None of them takes a wall VELOCITY: `_reflect(no_slip=True)`
+#: negates the ghost momentum, which is a stationary wall, and the only
+#: parameter `wall_noslip` reads is `T_wall` (plus `no_slip_mask`).  So a gas
+#: agent can SUPPLY a traction and cannot RESPOND to a velocity, and the MECH
+#: bond at every gas-solid seam in this graph is one-sided by a missing
+#: capability rather than by a modelling choice.
+COMPRESSIBLE2D_BC_KINDS = ("wall_slip", "wall_noslip", "symmetry",
+                           "inlet_massflow", "freestream", "outflow",
+                           "prescribed", "extrapolate")
+WALL_BC_PARAMS = ("T_wall", "no_slip_mask")
+
+
+@dataclass
+class TrajectoryAgent:
+    """The 3-DOF planar rigid body -- `solvers/trajectory.py` used verbatim.
+
+    That module's own docstring says it is *"written once and reused verbatim by
+    Atlas's non-learned `rigid_body` expert ... not a data-generation helper that
+    gets replaced later"*, so this wrapper adds a port and a record and changes
+    no physics.  State is ``(x, y, theta, vx, vy, omega, m)`` in the world frame.
+
+    **Its port is the rigid-mode space, and that space has dimension 3, not 1.**
+    The brief called this agent *"lumped, dim M = 1 -- the cheapest of all"*; a
+    planar rigid body has two translations and one rotation, and the structure's
+    own `_rigid_modes` returns a ``[2n, 3]`` basis.  One is the count for a
+    single scalar channel, and this bond is not one.
+    """
+
+    dt: float = 5.0e-2
+    state: Any = None
+    mdot: float = 0.0
+    inertia: float = 1.0e4
+    _traj: Any = field(default=None, repr=False)
+    _calls: int = 0
+
+    def __post_init__(self) -> None:
+        self._traj = _trajectory_module()
+        if self.state is None:
+            h0, v0 = _launch_state()
+            self.state = self._traj.initial_state(h0=h0, v0=v0)
+
+    @property
+    def n_seam(self) -> int:
+        return 3
+
+    def seam_weights(self) -> np.ndarray:
+        """A lumped port has no measure; the three modes are already orthonormal
+        in the structure's own basis, so the weight is one apiece."""
+        return np.ones(3)
+
+    def _loads_from(self, rigid: np.ndarray):
+        """A rigid-mode load 3-vector -> the build repo's own `Loads` record.
+
+        The structure's `V` is QR-orthonormalised from (translation-z,
+        translation-y, rotation about the centroid), so component 2 is a torque
+        and the first two are forces.  `Loads` keeps thrust and aero apart
+        because the trajectory records them separately; a probe perturbs the
+        total, so the whole vector is handed over as `F_aero` and the split is
+        left to whoever has both halves.
+        """
+        r = np.asarray(rigid, dtype=float).ravel()
+        return self._traj.Loads(F_thrust=(0.0, 0.0),
+                                F_aero=(float(r[0]), float(r[1])),
+                                torque=float(r[2]), mdot=self.mdot,
+                                inertia=self.inertia)
+
+    def respond(self, port_name: str, trace: np.ndarray) -> np.ndarray:
+        """(rigid-mode load) -> (the body's velocity over one step).
+
+        The conjugate flow is a velocity, which this agent has natively -- it is
+        the one port in this graph that needs no time derivative supplied, and
+        the contrast with `ShellAgent.respond_mech` is the point of the pair.
+        """
+        del port_name
+        s = self._traj.rk4_step(self.state, self.dt, self._loads_from(trace))
+        self._calls += 1
+        return np.array([s[3], s[4], s[5]])
+
+    def base_trace(self) -> np.ndarray:
+        """W74 on a lumped port: the load the body is actually flying under."""
+        return np.zeros(3)
+
+    def march(self, loads, steps: int = 1):
+        for _ in range(int(steps)):
+            self.state = self._traj.rk4_step(self.state, self.dt,
+                                             self._loads_from(loads))
+            self._calls += 1
+        return self.state
+
+    def storage(self, state=None) -> float:
+        """Kinetic plus gravitational potential -- the natural Lyapunov
+        functional, and NOT conserved here, which is why `trajectory.py`'s own
+        docstring refuses a symplectic integrator: mass is expelled, drag
+        dissipates and thrust does work."""
+        s = self.state if state is None else np.asarray(state, dtype=float)
+        _atm = _atmosphere_module()
+        m = max(float(s[6]), 1e-6)
+        ke = 0.5 * m * (s[3] ** 2 + s[4] ** 2) + 0.5 * self.inertia * s[5] ** 2
+        return float(ke + m * _atm.gravity(float(s[1])) * float(s[1]))
+
+    def validity(self, state=None, cond=None) -> bool:
+        """Two ways this agent stops being believed, both read off its sources.
+
+        `atmosphere.py` is the 1976 standard, tabulated to 86 km; above it the
+        density it returns is an extrapolation of a model that has ended.  And
+        `rhs` floors the mass at 1e-6 kg, so a burn past the propellant load
+        returns a number rather than failing -- the floor is a guard, not a
+        licence, and the predicate says so.
+        """
+        del cond
+        s = self.state if state is None else np.asarray(state, dtype=float)
+        return bool(float(s[6]) > 1.0 and 0.0 <= float(s[1]) <= 86.0e3)
+
+    @property
+    def solver_calls(self) -> int:
+        return self._calls
+
+
+@lru_cache(maxsize=1)
+def _trajectory_module():
+    load_solvers()
+    return importlib.import_module("atlas_build_solvers.solvers.trajectory")
+
+
+@lru_cache(maxsize=1)
+def _atmosphere_module():
+    load_solvers()
+    return importlib.import_module("atlas_build_solvers.solvers.atmosphere")
+
+
+def _launch_state() -> tuple[float, float]:
+    """``(h0, v0)`` from the config, so the body starts where the corpus does."""
+    cfg = rocket_config()
+    return (float(getattr(cfg, "h0", 0.0)),
+            float(getattr(cfg, "v_flight", 0.0)))
 
 
 @lru_cache(maxsize=2)
