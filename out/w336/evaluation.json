@@ -1,0 +1,91 @@
+{
+ "A1": {
+  "claim": "every block's content changes by its boundary inflows to 1e-10 (mass, both momenta, energy), every macro step",
+  "got": 1.1742471342930012e-13,
+  "held": true
+ },
+ "A2": {
+  "claim": "engine and airframe walls pass mass at under 1e-12 of mdot dt, face by face, every step",
+  "got": 4.967834078888043e-17,
+  "held": true
+ },
+ "A3": {
+  "claim": "the shell's energy change equals its Robin heat input to 1e-9 of its stored energy, every step",
+  "got": 1.1133610833074857e-11,
+  "held": true
+ },
+ "A4": {
+  "claim": "the instrumented re-run reproduces out/w321's rigid states to 1e-9",
+  "got": {
+   "worst": 1.4301975034694062e-19,
+   "omega_abs": 0.0,
+   "steps": 29,
+   "flight_bitwise_steps": 29
+  },
+  "held": true
+ },
+ "P1": {
+  "claim": "the injector delivers the declared mdot to within 2%, averaged over the last 10 steps",
+  "got": 1.1771681130443978,
+  "held": false
+ },
+ "P2": {
+  "claim": "the a|b and b|e seams create under 1% of mdot dt in mass per step, averaged over the last 10 steps",
+  "got": [
+   0.00015052864863561533,
+   0.030425731234959667
+  ],
+  "held": false
+ },
+ "P3": {
+  "claim": "the exit-plane and wall routes to the thrust agree to 2%, averaged over the last 10 steps",
+  "got": 0.01674999810619169,
+  "held": true
+ },
+ "P4": {
+  "claim": "the loads' cell-centred exit thrust and the solver's own face flux at the same instant agree to 2%",
+  "got": 3.6546819797771657e-08,
+  "held": true
+ },
+ "P5": {
+  "claim": "the gas's heat loss at the engine walls and the shell's heat gain agree to 2% per side, averaged over the last 10 steps",
+  "got": [
+   0.04737645799373086,
+   0.047376457993829266
+  ],
+  "held": false
+ },
+ "P6": {
+  "claim": "the vehicle's mass loss and the nozzle's mass outflow agree to 2%",
+  "got": 0.12809685455421044,
+  "held": false
+ },
+ "P7": {
+  "claim": "the outer face's radiation, applied against the adjacent gas temperature instead of the ambient, moves the outer heat input by under 5%",
+  "got": 0.8119588575329206,
+  "held": false
+ },
+ "control_wall": {
+  "got": 0.052190754658767415,
+  "note": "must FAIL A2's 1e-12 for the gate to have teeth"
+ },
+ "P8": {
+  "claim": "seam mass creation scales at least linearly with the coupling step: 10 ms over 5 ms and 5 ms over 2.5 ms both at least 1.5",
+  "got": [
+   2.1921141704079603,
+   1.3340978186423789
+  ],
+  "held": false
+ },
+ "P9": {
+  "claim": "v_y at 60 ms moves by under 0.01% between the 5 ms and 2.5 ms coupling steps",
+  "got": 3.5051385882934046e-05,
+  "held": true
+ },
+ "P13": {
+  "claim": "the airframe drag at coarsen 4 is within 10% of coarsen 1",
+  "got": 0.33233593506197634,
+  "held": false
+ },
+ "_report_time": "2026-09-24 21:41:11"
+}

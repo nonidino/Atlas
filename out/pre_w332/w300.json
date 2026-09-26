@@ -1,0 +1,472 @@
+{
+  "script": "w300_rocket_bc_seam.py",
+  "date": "2026-09-17",
+  "build_repo_commit": "0a407b7",
+  "machine": "battery, 1400 of 3800 MHz -- quote ratios, not wall-clock",
+  "setup": {
+    "build_repo_commit": "0a407b7",
+    "p_chamber_Pa": 5000000.0,
+    "T_chamber_K": 2800.0,
+    "gamma": 1.22,
+    "R_gas": 361.0,
+    "h_cold_mean_W_m2K": 183.87249688093965,
+    "h_cold_min_W_m2K": 156.83975994955193,
+    "h_cold_max_W_m2K": 315.1097774678376,
+    "h_hot_mean_W_m2K": 183.87249688093965,
+    "h_hot_over_cold": 1.0,
+    "T_shell_cold_K": 288.15,
+    "dt_gas_s": 1e-05,
+    "dt_shell_s": 0.05,
+    "gas_cells": 8960,
+    "shell_cells": 1856,
+    "n_seam_gas": 112,
+    "n_seam_shell": 14,
+    "m_eff_gas": 57,
+    "m_eff_shell": 8,
+    "dim_M": 8,
+    "flux_convention": "entropy",
+    "setup_seconds": 1.8544549999933224,
+    "setup_gas_calls": 2,
+    "setup_shell_calls": 100,
+    "burn_time_s": 5.0,
+    "steps": 100,
+    "T_wall_mean_K": 449.4197129792197,
+    "T_wall_min_K": 369.32858489081605,
+    "T_wall_max_K": 690.0179857697576,
+    "valid_at_base": true,
+    "validity_lost_s": null,
+    "curve_tail": [
+      5.0,
+      449.4197129792197,
+      690.0179857697576
+    ]
+  },
+  "linearity": {
+    "heat": {
+      "rel_error": 8.292883556248222e-09,
+      "fd_step": 0.01,
+      "n_calls": 15,
+      "seconds": 0.023840900015784428,
+      "norm_exact": 720.413165560705
+    },
+    "entropy": {
+      "rel_error": 3.0230984689069646e-06,
+      "fd_step": 0.01,
+      "n_calls": 15,
+      "seconds": 0.02474419999634847,
+      "norm_exact": 0.1324725776417555,
+      "vs_affine_operator": 0.9998187352839238
+    }
+  },
+  "seam": {
+    "dt_gas=1e-05": {
+      "label": "dt_gas=1e-05",
+      "probe_state": "rocket b-c, build repo 0a407b7: chamber p_c=5e+06 Pa, T_c=2800.0 K, gamma=1.22, R=361.0; shell wall MARCHED 5.00 s of burn to 449.4197 K mean (690.0180 K max) under h=183.8725 W/(m^2 K); dt_gas=1e-05 s, dt_shell=0.05 s; dim M=8; validity holds",
+      "dim_M": 8,
+      "beta": 0.14961911622883345,
+      "kappa": 2.2273890516910284,
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "excess_null_directions": 0,
+      "operator_content": 0.3027814524687456,
+      "passivity_defect": 0.33325998137335894,
+      "passivity_lambda_min": -0.33325998137335894,
+      "cut_score": 2.0217956505060086,
+      "conforming": false,
+      "one_sided": 0.16947200021050218,
+      "seconds": 7.0698278000054415,
+      "gas_calls": 9,
+      "gas_substeps": 306,
+      "shell_calls": 9,
+      "blocks": {
+        "b": {
+          "n_solves": 9,
+          "route": "finite-difference",
+          "share": 1.168194080980712,
+          "beta": 0.1751175007689788,
+          "kappa": 2.2231492341053394,
+          "null_dim": 0,
+          "operator_content": 0.302794149587015,
+          "norm_F": 0.6996400517861305,
+          "base_summary": [
+            449.4197129792198,
+            449.4197129792197,
+            449.4197129792197
+          ]
+        },
+        "c": {
+          "n_solves": 9,
+          "route": "finite-difference",
+          "share": 0.16947200021050218,
+          "beta": 0.02476668948339839,
+          "kappa": 2.2804111820366426,
+          "null_dim": 0,
+          "operator_content": 0.31508247788045307,
+          "norm_F": 0.0959147045787991,
+          "base_summary": [
+            2800.0,
+            2800.0,
+            2800.0
+          ]
+        }
+      },
+      "base_check": {
+        "agents": [
+          "b",
+          "c"
+        ],
+        "consistent": false,
+        "spread": 1286.3449710581385,
+        "relative_spread": 5.255400571991382
+      }
+    }
+  },
+  "reach": {
+    "c (shell)": {
+      "reach": 7,
+      "n": 14,
+      "nonzero": 14,
+      "exact_zeros": 0,
+      "fraction": 1.0,
+      "peak": 0.025147470590979992,
+      "is_global": true,
+      "consistent_with": [
+        "embedded"
+      ],
+      "profile": [
+        0.025147470590979992,
+        0.00010088567441357554,
+        1.6193461107150142e-05,
+        1.2798599016150547e-06,
+        8.905678328119393e-07,
+        3.402936954444158e-08,
+        1.3002295418118592e-07
+      ],
+      "seconds": 0.004503100004512817,
+      "declared": "embedded"
+    },
+    "b (gas)": {
+      "reach": 0,
+      "n": 112,
+      "nonzero": 1,
+      "exact_zeros": 111,
+      "fraction": 0.008928571428571428,
+      "peak": 0.1750638522458985,
+      "is_global": false,
+      "consistent_with": [
+        "exposed",
+        "none"
+      ],
+      "profile": [
+        0.1750638522458985,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "seconds": 1.6039375999826007,
+      "declared": "none"
+    }
+  },
+  "saturation": {
+    "rocket_chamber": {
+      "T_i_initial_K": 2800.0,
+      "clamp_threshold_K": 1410.0,
+      "scan": [
+        {
+          "T_wall": 300.0,
+          "max_dT": 0.0,
+          "max_dp": 0.0,
+          "bitwise_equal": true
+        },
+        {
+          "T_wall": 449.42,
+          "max_dT": 0.0,
+          "max_dp": 0.0,
+          "bitwise_equal": true
+        },
+        {
+          "T_wall": 690.0,
+          "max_dT": 4.578809573731405,
+          "max_dp": 117.58225422631949,
+          "bitwise_equal": false
+        },
+        {
+          "T_wall": 1000.0,
+          "max_dT": 244.47590312955685,
+          "max_dp": 3636.660532794893,
+          "bitwise_equal": false
+        },
+        {
+          "T_wall": 1200.0,
+          "max_dT": 517.2611278909887,
+          "max_dp": 7593.104632251896,
+          "bitwise_equal": false
+        },
+        {
+          "T_wall": 1217.0,
+          "max_dT": 524.5412794311039,
+          "max_dp": 7597.647180884145,
+          "bitwise_equal": false
+        },
+        {
+          "T_wall": 1400.0,
+          "max_dT": 550.6882967503632,
+          "max_dp": 7343.839883587323,
+          "bitwise_equal": false
+        },
+        {
+          "T_wall": 1500.0,
+          "max_dT": 1049.2747632218138,
+          "max_dp": 16203.786716941744,
+          "bitwise_equal": false
+        }
+      ]
+    },
+    "thermal_seam": {
+      "T_i_initial_K": 900.0,
+      "clamp_threshold_K": 460.0,
+      "declared_base_K": 400.0,
+      "scan": [
+        {
+          "T_wall": 300.0,
+          "max_dT": 0.0,
+          "bitwise_equal": true
+        },
+        {
+          "T_wall": 350.0,
+          "max_dT": 0.0,
+          "bitwise_equal": true
+        },
+        {
+          "T_wall": 400.0,
+          "max_dT": 0.0,
+          "bitwise_equal": true
+        },
+        {
+          "T_wall": 440.0,
+          "max_dT": 0.0,
+          "bitwise_equal": true
+        },
+        {
+          "T_wall": 459.0,
+          "max_dT": 0.0,
+          "bitwise_equal": true
+        },
+        {
+          "T_wall": 460.0,
+          "max_dT": 1.2668673093685356e-05,
+          "bitwise_equal": false
+        },
+        {
+          "T_wall": 480.0,
+          "max_dT": 0.035488275322450136,
+          "bitwise_equal": false
+        },
+        {
+          "T_wall": 600.0,
+          "max_dT": 0.14401879031618137,
+          "bitwise_equal": false
+        }
+      ]
+    },
+    "support_reach_signature": {
+      "rocket b (gas)": {
+        "reach": 0,
+        "n": 112,
+        "nonzero": 1,
+        "exact_zeros": 111,
+        "fraction": 0.008928571428571428,
+        "peak": 0.1750638213239597,
+        "is_global": false,
+        "consistent_with": [
+          "exposed",
+          "none"
+        ],
+        "profile": [
+          0.1750638213239597,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "thermal_seam gas": {
+        "reach": 0,
+        "n": 48,
+        "nonzero": 1,
+        "exact_zeros": 47,
+        "fraction": 0.020833333333333332,
+        "peak": 0.09255355259745102,
+        "is_global": false,
+        "consistent_with": [
+          "exposed",
+          "none"
+        ],
+        "profile": [
+          0.09255355259745102,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "rocket c (shell)": {
+        "reach": 7,
+        "n": 14,
+        "nonzero": 14,
+        "exact_zeros": 0,
+        "fraction": 1.0,
+        "peak": 0.025147470590979992,
+        "is_global": true,
+        "consistent_with": [
+          "embedded"
+        ],
+        "profile": [
+          0.025147470590979992,
+          0.00010088567441357554,
+          1.6193461107150142e-05,
+          1.2798599016150547e-06,
+          8.905678328119393e-07,
+          3.402936954444158e-08,
+          1.3002295418118592e-07
+        ]
+      }
+    }
+  },
+  "halves": {
+    "both FLOW (the truth)": {
+      "verdict": "admit-uncertified",
+      "c9_refusals": 0,
+      "all_refusals": {},
+      "message": null
+    },
+    "shell flipped to EFFORT": {
+      "verdict": "refuse",
+      "c9_refusals": 1,
+      "all_refusals": {
+        "C9": 1
+      },
+      "message": "THERM: one side returns the flow and the other the effort. Lambda_M = sum_i P_i^* Lambda_i P_i ADDS the two responses, so the assembled operator would be a temperature plus a entropy flux  q_n / T, which is not a quantity."
+    },
+    "gas flipped to EFFORT": {
+      "verdict": "refuse",
+      "c9_refusals": 1,
+      "all_refusals": {
+        "C9": 1
+      },
+      "message": "THERM: one side returns the effort and the other the flow. Lambda_M = sum_i P_i^* Lambda_i P_i ADDS the two responses, so the assembled operator would be a temperature plus a entropy flux  q_n / T, which is not a quantity."
+    },
+    "BOTH flipped to EFFORT": {
+      "verdict": "admit-uncertified",
+      "c9_refusals": 0,
+      "all_refusals": {},
+      "message": null
+    },
+    "_legs_reproduce_W66": true
+  },
+  "cadence": [
+    {
+      "dt_gas": 1e-06,
+      "beta": 0.14920054943787378,
+      "kappa": 2.2033950395748314,
+      "omega": 0.2987226304017387,
+      "null_dim": 0,
+      "gas_block_norm": 0.6959088279060355,
+      "gas_share": 1.1781209410448776,
+      "seconds": 0.8094451999932062,
+      "gas_calls": 9,
+      "gas_substeps": 36
+    },
+    {
+      "dt_gas": 1e-05,
+      "beta": 0.14961911622883345,
+      "kappa": 2.2273890516910284,
+      "omega": 0.3027814524687456,
+      "null_dim": 0,
+      "gas_block_norm": 0.6996400517861305,
+      "gas_share": 1.168194080980712,
+      "seconds": 6.7518225999956485,
+      "gas_calls": 9,
+      "gas_substeps": 306
+    },
+    {
+      "dt_gas": 0.0001,
+      "beta": 0.14963912711521474,
+      "kappa": 2.239646766396821,
+      "omega": 0.3047514466684631,
+      "null_dim": 0,
+      "gas_block_norm": 0.700361689954928,
+      "gas_share": 1.1635940976564128,
+      "seconds": 62.723142999981064,
+      "gas_calls": 9,
+      "gas_substeps": 3051
+    }
+  ],
+  "burn": [
+    {
+      "burn_s": 0.5,
+      "T_wall_mean_K": 316.7841846950715,
+      "T_wall_max_K": 375.0632404281577,
+      "valid": true,
+      "beta": 0.16962105205838307,
+      "kappa": 2.3763009384146483,
+      "omega": 0.32663625841990707,
+      "null_dim": 0,
+      "shell_share": 0.09347437842341319
+    },
+    {
+      "burn_s": 1.0,
+      "T_wall_mean_K": 335.25372720164916,
+      "T_wall_max_K": 432.2541120281869,
+      "valid": true,
+      "beta": 0.16680290675475606,
+      "kappa": 2.347679368248452,
+      "omega": 0.32225600615132133,
+      "null_dim": 0,
+      "shell_share": 0.1059443390213499
+    },
+    {
+      "burn_s": 2.5,
+      "T_wall_mean_K": 383.0728637224579,
+      "T_wall_max_K": 554.6111854080143,
+      "valid": true,
+      "beta": 0.1595368992209687,
+      "kappa": 2.288019663772896,
+      "omega": 0.3128169610455436,
+      "null_dim": 0,
+      "shell_share": 0.1344194673754732
+    },
+    {
+      "burn_s": 5.0,
+      "T_wall_mean_K": 449.4197129792197,
+      "T_wall_max_K": 690.0179857697576,
+      "valid": true,
+      "beta": 0.14961911622883345,
+      "kappa": 2.2273890516910284,
+      "omega": 0.3027814524687456,
+      "null_dim": 0,
+      "shell_share": 0.16947200021050218
+    },
+    {
+      "burn_s": 10.0,
+      "T_wall_mean_K": 557.6469172286405,
+      "T_wall_max_K": 859.1481176137335,
+      "valid": false,
+      "beta": 0.13409181139749562,
+      "kappa": 2.1628020358083426,
+      "omega": 0.29148798948905363,
+      "null_dim": 0,
+      "shell_share": 0.2222175799841416
+    }
+  ]
+}

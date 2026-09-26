@@ -477,7 +477,15 @@ def test_the_support_gate_gets_every_known_declaration_right():
     assert not support_reach(
         T.ShellAgent(dt=5e-2, expose_elliptic=True).respond, "inner:THERM", lam).is_global
     gas = T.GasAgent(dt=T.DT_GAS)
-    assert not support_reach(gas.respond, "wall:THERM", gas.base_trace()).is_global
+    # Until Tier 86 this read NOT global -- for the wrong reason: the isothermal
+    # wall was saturated (W301), so the poke never entered the solver and only
+    # the algebraic -T_wall term at the poked cell moved. With the wall face's
+    # conduction one-sided from T_wall the poke enters the gas, and over one
+    # probe step its explicit sub-steps carry it to every seam cell -- a real,
+    # strongly decaying tail, which is what `is_global` counts.
+    sr = support_reach(gas.respond, "wall:THERM", gas.base_trace())
+    assert sr.is_global
+    assert sr.profile[1] < 1e-2 * sr.profile[0]
 
     st = np.load(os.path.join(_ROOT, "out", "tier0b", "s0_state.npz"))
     for mode, expect in (("as-built", True), ("split-step", False)):

@@ -1,0 +1,50 @@
+====================================================================================
+W303 -- does W138's convention question reach conjugate heat transfer?
+====================================================================================
+`assemble_seam`'s own note says a fluid-solid seam usually has both
+sides positive in ONE shared direction, so the well-posed condition is
+their DIFFERENCE and adding them makes L4/E7/passivity report the
+convention. It says it of MECH. Both THERM sides here return heat INTO
+THE SOLID, which is the same shape.
+
+------------------------------------------------------------------------------------
+CASE: thermal_seam cht
+  duct, T_hot=900 K, T_wall_0=400 K, matched clocks
+     base [K]     sum (scalar)   difference (scalar)
+       250.00    -2.03196e+01       3.12812e+01
+       331.25    -6.03233e+00       1.49901e+01
+       412.50     5.32143e+00       1.88140e+00
+       493.75     1.45536e+01      -8.90110e+00
+       575.00     2.22032e+01      -1.79304e+01
+       656.25     2.86418e+01      -2.56046e+01
+       737.50     3.41337e+01      -3.22094e+01
+       818.75     3.88718e+01      -3.79551e+01
+       900.00     4.30001e+01      -4.30000e+01
+  roots bracketed:  sum [(331.25, 412.5)]   difference [(412.5, 493.75)]
+  operators compared at a common base of 453.125 K:
+    block gas    ||S||_F 0.34086     sym lambda in [-0.08529, -0.08516]
+    block shell  ||S||_F 4.3966      sym lambda in [1.099, 1.099]
+    sum         ||S||_F 4.0557      sigma_min 1.0138      sym lambda_min 1.0138      definite True
+    difference  ||S||_F 4.7374      sigma_min 1.1843      sym lambda_min -1.1844     definite False
+
+------------------------------------------------------------------------------------
+CASE: rocket b-c:THERM
+  rocket b-c, build repo 0a407b7+dirty:b6bbcec4240a5943: chamber p_c=5e+06 Pa, T_c=2800.0 K, gamma=1.22, R=361.0; shell wall MARCHED 5.00 s of burn to 478.9557 K mean (870.7665 K max) under h=211.3966 W/(m^2 K); dt_gas=1e-05 s, dt_shell=0.05 s; dim M=8; validity DECLINES
+     base [K]     sum (scalar)   difference (scalar)
+       250.00     4.26686e+01       7.65446e+01
+       568.75     5.70006e+01       3.74247e+01
+       887.50     6.03898e+01       1.35360e+01
+      1206.25     6.01265e+01      -3.43609e+00
+      1525.00     5.84501e+01      -1.64534e+01
+      1843.75     5.62240e+01      -2.69032e+01
+      2162.50     5.38238e+01      -3.55498e+01
+      2481.25     5.14226e+01      -4.28615e+01
+      2800.00     4.91013e+01      -4.91469e+01
+  roots bracketed:  sum NONE   difference [(887.5, 1206.25)]
+  operators compared at a common base of 1046.88 K:
+    block b      ||S||_F 0.48217     sym lambda in [-0.2641, -0.1249]
+    block c      ||S||_F 0.54008     sym lambda in [0.1237, 0.3266]
+    sum         ||S||_F 0.073509    sigma_min 0.00023153  sym lambda_min -0.0037708  definite False
+    difference  ||S||_F 1.0213      sigma_min 0.24916     sym lambda_min -0.59068    definite False
+
+artifact written to out/w334/w303.json

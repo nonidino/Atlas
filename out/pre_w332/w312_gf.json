@@ -1,0 +1,86 @@
+{
+  "seams": [
+    "g-f"
+  ],
+  "dt_scale": 1.0,
+  "workers": 12,
+  "determinism_control": {
+    "n1": 156,
+    "n2": 156,
+    "identical": true,
+    "per_seam": {
+      "g-f": 156
+    }
+  },
+  "cheap": {
+    "g-f": {
+      "dim_M": 77,
+      "beta": 2.5782891534986087e-12,
+      "kappa": 33.786014412438455,
+      "omega": 0.7038823905706232,
+      "sign_structure": "mixed",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": true,
+      "one_sided": 0.0,
+      "effort_normal": "f",
+      "blocks": {
+        "g": {
+          "share": 0.0,
+          "n_solves": 78,
+          "norm_F": 0.0
+        },
+        "f": {
+          "share": 1.0,
+          "n_solves": 78,
+          "norm_F": 1.2962703104217413e-10
+        }
+      }
+    }
+  },
+  "n_traces": 156,
+  "per_seam_traces": {
+    "g-f": 156
+  },
+  "by_agent": {
+    "f": 78,
+    "g": 78
+  },
+  "fill": {
+    "wall_s": 800.1799697999959,
+    "serial_s": 9494.905792800244,
+    "speedup": 11.865962847299821,
+    "per_call_mean": 60.86478072307849,
+    "per_call_max": 87.0342894999776
+  },
+  "converged": {
+    "g-f": {
+      "dim_M": 77,
+      "beta": 8.606916927006646e-13,
+      "kappa": 48729.82731567319,
+      "omega": 0.9998463759774643,
+      "sign_structure": "mixed",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": true,
+      "one_sided": 0.0,
+      "effort_normal": "f",
+      "blocks": {
+        "g": {
+          "share": 0.0,
+          "n_solves": 78,
+          "norm_F": 0.0
+        },
+        "f": {
+          "share": 1.0,
+          "n_solves": 78,
+          "norm_F": 5.26545724520451e-08
+        }
+      }
+    }
+  },
+  "beta_movement": {
+    "g-f": 0.3338227954505216
+  },
+  "wall_seconds": 950.0799275999889
+}

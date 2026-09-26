@@ -1,0 +1,132 @@
+====================================================================================
+W305 -- the trajectory agent, and MECH on b-c
+====================================================================================
+
+=== the two agents this row is about ===
+  shell: 232 inner-face cells, 14 on the b-c window; marched 5.00 s to 478.9557 K
+  trajectory: state ('x', 'y', 'theta', 'vx', 'vy', 'omega', 'm')
+              initial [0.0000e+00 0.0000e+00 1.5708e+00 0.0000e+00 0.0000e+00 0.0000e+00
+ 5.0000e+04]
+              dt = 0.05 s, port dimension 3, validity True
+  setup 0.52 s
+
+=== the MECH response on b-c, and the null space it does not have ===
+  14 x 14 operator in 0.12 s -- a MECH response is 0.008 s, against minutes for a gas one
+  the trace is a normal traction [Pa]; the flow is du/dt on the same cells [m/s]
+
+  singular values:
+     0  5.191948e-05
+     1  1.109742e-07
+     2  4.531039e-09
+     3  7.206742e-10
+     4  2.132436e-10
+     5  7.037629e-11
+     6  2.356257e-11
+     7  2.174431e-11
+     8  7.674073e-12
+     9  2.345369e-12
+    10  1.283923e-12
+    11  4.747691e-13
+    12  3.181498e-13
+    13  6.099108e-14
+
+  beta = 6.099108e-14   kappa = 8.5126e+08
+
+  effective rank, read at several tolerances:
+    tol 0.01      rank  1   null dim 13
+    tol 0.001     rank  2   null dim 12
+    tol 0.0001    rank  2   null dim 12
+    tol 1e-06     rank  6   null dim  8
+    tol 1e-08     rank 11   null dim  3
+    tol 1e-10     rank 14   null dim  0
+    tol 1e-12     rank 14   null dim  0
+
+  consecutive ratios: [467.85  24.49   6.29   3.38   3.03   2.99   1.08   2.83   3.27   1.83   2.7    1.49   5.22]
+  after the second mode the largest ratio is 6.29 -- **no gap**, so the null
+  dimension is a property of the tolerance and not of the operator.
+
+=== the half of this bond the build repo cannot carry ===
+  bc_docstring_lists_eight_kinds     True
+  noslip_negates_momentum            True
+  wall_reads_T_wall                  True
+  wall_reads_no_slip_mask            True
+  no_wall_velocity_param             True
+
+  So a gas agent can SUPPLY a traction -- it has the wall pressure --
+  and cannot RESPOND to a velocity: there is no channel to impose one.
+  The MECH bond at every gas-solid seam in this graph is one-sided by
+  a MISSING CAPABILITY, and a declaration cannot see the difference
+  between that and a modelling choice. W97 found a field-to-lumped
+  MECH seam one-sided by Re_h; this is one-sided by a boundary
+  condition that does not exist.
+
+=== the load the projection removes, which is the trajectory's input ===
+  the rigid-load map d(V^T f)/d(traction) is 3 x 14
+  singular values: 2.838828e-03, 4.595940e-04, 3.337581e-05
+  rank 3 -- the seam window drives all three planar modes, the
+  torque one 85.1x more weakly than the leading translation.
+
+  V is orthonormal to 1.78e-15
+  at a UNIFORM ambient traction the net rigid load is [-1.7171e-16 -7.5139e-14  1.3840e-01]
+  -- the two FORCES cancel to machine precision and the TORQUE does
+  not. That is right and it is the shell's thickness talking: the
+  inner and outer faces have equal projected area, so a uniform
+  pressure exerts no net force, but they sit at different radii, so
+  it exerts a COUPLE. The trajectory must receive that couple and the
+  structure must not, which is precisely what the projection does.
+
+=== the trajectory agent, probed ===
+  probed block (load -> velocity over one step):
+[[1.0000000000e-06 0.0000000000e+00 0.0000000000e+00]
+ [0.0000000000e+00 1.0000000013e-06 0.0000000000e+00]
+ [0.0000000000e+00 0.0000000000e+00 5.0000000000e-06]]
+
+  analytic dt/m = 1.0000000000e-06 on the translations, dt/I = 5.0000000000e-06 on the rotation
+  max relative departure: 2.565e-10
+  off-diagonal magnitude / diagonal: 0.000e+00
+
+  response at the base (pure gravity): [ 0.        -0.4903325  0.       ]
+  storage 0.000000e+00 J   validity True
+
+=== the c-trajectory seam, assembled ===
+  the structure hands over V^T f (3 x 14) and the body turns it into
+  a velocity (3 x 3); composed, the seam is 3 x 14.
+  singular values: 1.158606e-08, 4.600938e-10, 4.084444e-11
+  beta = 4.084444e-11   kappa = 283.6632
+
+  **This bond is two-sided and the b-c MECH one is not.** The body
+  responds to a load with a velocity natively -- no time derivative
+  is supplied and none is declared -- while the shell's flow had to be
+  du/dt at a stated clock. The contrast is the tier's point.
+
+=== what the compiler says about the graph as it stands ===
+  verdict refuse in 15 s
+  {'admit-uncertified': 20, 'admit': 82, 'refuse': 4}
+
+  This is the SEVEN-agent graph, unchanged. The trajectory agent is
+  built and measured here and is deliberately NOT added to it -- see
+  the tier's record for why.
+
+=== what this row publishes ===
+  b-c MECH   beta 6.099108e-14  kappa 8.512636e+08
+             null dim: 13 at 1e-2, 3 at 1e-8, 0 at 1e-10
+  c-traj     beta 4.084444e-11  kappa 2.836632e+02  dim M 3
+  rigid map  rank 3, torque weaker by 8.505647e+01
+  trajectory block is diagonal to 2.565283e-10
+
+====================================================================================
+PREDICTIONS
+====================================================================================
+  R1   HELD   the trajectory agent's probed block is EXACTLY diagonal dt/m, dt/m, dt/I to better than 1e-6 relative
+       got: 2.565283326472906e-10
+  R2   HELD   the c-trajectory seam is 3-dimensional, not the 1 the brief named
+       got: [3, 14]
+  R3   HELD   the composed c-trajectory seam is far better conditioned than b-c MECH: kappa below 1e3 against b-c's 1e8
+       got: 283.66320122601104
+  R4   HELD   the rigid-load map has full rank 3 -- the seam window drives every planar mode
+       got: 3
+  R5   HELD   the seven-agent graph still refuses, and adding nothing to it leaves the count where Tier 79 left it
+       got: {'admit-uncertified': 20, 'admit': 82, 'refuse': 4}
+
+  5 of 5 held.
+  wall 16 s

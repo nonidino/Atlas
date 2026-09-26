@@ -1,0 +1,9 @@
+configuration                      sigma_min   kappa     symmetric spectrum       one-signed
+SUM, own bases (Tier 76)           0.149262    2.1947    [-0.32759, -0.14926]     True
+SUM, old root                      0.00124791  153.48    [-0.0031436, 0.19152]     False
+SUM, new root                      0.000189945 1004.1    [-0.014223, 0.19071]     False
+DIFFERENCE, own bases              0.200182    2.2424    [-0.4489, -0.20018]     True
+DIFFERENCE, old root               0.124841    3.7614    [-0.46957, -0.12484]     True
+DIFFERENCE, new root (corrected)   0.0259584   17.399    [-0.45164, -0.025954]     True
+right base, wrong assembly / Tier 76: 0.001273   wrong base, right assembly / Tier 76: 1.341   Tier 76 / corrected: 5.75
+wrote out/w334/w334_tier77_table_oldwall.json

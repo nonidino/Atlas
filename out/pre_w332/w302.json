@@ -1,0 +1,269 @@
+{
+  "script": "w302_declaration_ledger.py",
+  "date": "2026-09-17",
+  "fixture": {
+    "verdict": "refuse",
+    "n_decert": 49,
+    "n_refuse": 10,
+    "decert": {
+      "L1/E7": 7,
+      "L1/C8": 7,
+      "L1/3.4": 1,
+      "L1/E3": 7,
+      "L4/R2b/W46": 1,
+      "L2/R10/halo": 1,
+      "L2/C2": 1,
+      "L3/C8": 19,
+      "L5/eps_tol": 1,
+      "L7/R9/order": 1,
+      "L6/E6": 1,
+      "L9/E5": 1,
+      "L8/W56": 1
+    },
+    "refuse": {
+      "L2/InterfaceMotion": 9,
+      "L7/R9": 1
+    }
+  },
+  "arms": {
+    "known fields (time_disc, stencil, elliptic, substeps, lambda_ref)": {
+      "verdict": "refuse",
+      "n_decert": 48,
+      "n_refuse": 10,
+      "decert": {
+        "L1/E7": 7,
+        "L1/C8": 7,
+        "L1/3.4": 1,
+        "L1/E3": 7,
+        "L2/R10/halo": 1,
+        "L2/C2": 1,
+        "L3/C8": 19,
+        "L5/eps_tol": 1,
+        "L7/R9/order": 1,
+        "L6/E6": 1,
+        "L9/E5": 1,
+        "L8/W56": 1
+      },
+      "refuse": {
+        "L2/InterfaceMotion": 9,
+        "L7/R9": 1
+      },
+      "delta_decert": {
+        "L4/R2b/W46": -1
+      },
+      "delta_refuse": {}
+    },
+    "  ... minus lambda_ref": {
+      "verdict": "refuse",
+      "n_decert": 48,
+      "n_refuse": 10,
+      "decert": {
+        "L1/E7": 7,
+        "L1/C8": 7,
+        "L1/3.4": 1,
+        "L1/E3": 7,
+        "L2/R10/halo": 1,
+        "L2/C2": 1,
+        "L3/C8": 19,
+        "L5/eps_tol": 1,
+        "L7/R9/order": 1,
+        "L6/E6": 1,
+        "L9/E5": 1,
+        "L8/W56": 1
+      },
+      "refuse": {
+        "L2/InterfaceMotion": 9,
+        "L7/R9": 1
+      },
+      "delta_decert": {
+        "L4/R2b/W46": -1
+      },
+      "delta_refuse": {}
+    },
+    "decomposition NON_OVERLAPPING (P14)": {
+      "verdict": "refuse",
+      "n_decert": 48,
+      "n_refuse": 10,
+      "decert": {
+        "L1/E7": 7,
+        "L1/C8": 7,
+        "L1/3.4": 1,
+        "L1/E3": 7,
+        "L4/R2b/W46": 1,
+        "L2/C3/W57": 1,
+        "L3/C8": 19,
+        "L5/eps_tol": 1,
+        "L7/R9/order": 1,
+        "L6/E6": 1,
+        "L9/E5": 1,
+        "L8/W56": 1
+      },
+      "refuse": {
+        "L2/InterfaceMotion": 9,
+        "L7/R9": 1
+      },
+      "delta_decert": {
+        "L2/C2": -1,
+        "L2/C3/W57": 1,
+        "L2/R10/halo": -1
+      },
+      "delta_refuse": {}
+    },
+    "clocks from the YAML (50:1, not 100:1)": {
+      "verdict": "refuse",
+      "n_decert": 49,
+      "n_refuse": 10,
+      "decert": {
+        "L1/E7": 7,
+        "L1/C8": 7,
+        "L1/3.4": 1,
+        "L1/E3": 7,
+        "L4/R2b/W46": 1,
+        "L2/R10/halo": 1,
+        "L2/C2": 1,
+        "L3/C8": 19,
+        "L5/eps_tol": 1,
+        "L7/R9/order": 1,
+        "L6/E6": 1,
+        "L9/E5": 1,
+        "L8/W56": 1
+      },
+      "refuse": {
+        "L2/InterfaceMotion": 9,
+        "L7/R9": 1
+      },
+      "delta_decert": {},
+      "delta_refuse": {}
+    },
+    "flux_matching TIME_INTEGRATED": {
+      "verdict": "refuse",
+      "n_decert": 49,
+      "n_refuse": 10,
+      "decert": {
+        "L1/E7": 7,
+        "L1/C8": 7,
+        "L1/3.4": 1,
+        "L1/E3": 7,
+        "L4/R2b/W46": 1,
+        "L2/R10/halo": 1,
+        "L2/C2": 1,
+        "L3/C8": 19,
+        "L5/eps_tol": 1,
+        "L7/R9/order": 1,
+        "L6/E6": 1,
+        "L9/E5": 1,
+        "L8/W56": 1
+      },
+      "refuse": {
+        "L2/InterfaceMotion": 9,
+        "L7/R9/quadrature": 1
+      },
+      "delta_decert": {},
+      "delta_refuse": {
+        "L7/R9": -1,
+        "L7/R9/quadrature": 1
+      }
+    },
+    "storage + validity, all 7 [COUNTING CONTROL]": {
+      "verdict": "refuse",
+      "n_decert": 15,
+      "n_refuse": 10,
+      "decert": {
+        "L1/E3": 7,
+        "L4/R2b/W46": 1,
+        "L2/R10/halo": 1,
+        "L2/C2": 1,
+        "L5/eps_tol": 1,
+        "L7/R9/order": 1,
+        "L6/E6": 1,
+        "L9/E5": 1,
+        "L8/W56": 1
+      },
+      "refuse": {
+        "L2/InterfaceMotion": 9,
+        "L7/R9": 1
+      },
+      "delta_decert": {
+        "L1/3.4": -1,
+        "L1/C8": -7,
+        "L1/E7": -7,
+        "L3/C8": -19
+      },
+      "delta_refuse": {}
+    }
+  },
+  "levels": {
+    "known": {
+      "verdict": "refuse",
+      "n_decert": 47,
+      "n_refuse": 10,
+      "decert": {
+        "L1/E7": 7,
+        "L1/C8": 7,
+        "L1/3.4": 1,
+        "L1/E3": 7,
+        "L2/C3/W57": 1,
+        "L3/C8": 19,
+        "L5/eps_tol": 1,
+        "L7/R9/order": 1,
+        "L6/E6": 1,
+        "L9/E5": 1,
+        "L8/W56": 1
+      },
+      "refuse": {
+        "L2/InterfaceMotion": 9,
+        "L7/R9/quadrature": 1
+      },
+      "delta_decert": {
+        "L2/C2": -1,
+        "L2/C3/W57": 1,
+        "L2/R10/halo": -1,
+        "L4/R2b/W46": -1
+      },
+      "delta_refuse": {
+        "L7/R9": -1,
+        "L7/R9/quadrature": 1
+      }
+    },
+    "real": {
+      "verdict": "refuse",
+      "n_decert": 43,
+      "n_refuse": 10,
+      "decert": {
+        "L1/E7": 5,
+        "L1/C8": 5,
+        "L1/3.4": 1,
+        "L1/E3": 7,
+        "L2/C3/W57": 1,
+        "L3/C8": 17,
+        "L4/probe-base": 1,
+        "L4/E7/passivity": 1,
+        "L5/eps_tol": 1,
+        "L7/R9/order": 1,
+        "L6/E6": 1,
+        "L9/E5": 1,
+        "L8/W56": 1
+      },
+      "refuse": {
+        "L2/InterfaceMotion": 9,
+        "L7/R9/quadrature": 1
+      },
+      "delta_decert": {
+        "L1/C8": -2,
+        "L1/E7": -2,
+        "L2/C2": -1,
+        "L2/C3/W57": 1,
+        "L2/R10/halo": -1,
+        "L3/C8": -2,
+        "L4/E7/passivity": 1,
+        "L4/R2b/W46": -1,
+        "L4/probe-base": 1
+      },
+      "delta_refuse": {
+        "L7/R9": -1,
+        "L7/R9/quadrature": 1
+      }
+    }
+  },
+  "additive": true
+}

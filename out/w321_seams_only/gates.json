@@ -1,0 +1,113 @@
+{
+ "gates": {
+  "G1_polylines": {
+   "value": "2.78e-17 m",
+   "passed": true,
+   "detail": ""
+  },
+  "G2_coverage": {
+   "value": "0 points",
+   "passed": true,
+   "detail": ""
+  },
+  "G3_hole": {
+   "value": "0.00e+00 m",
+   "passed": true,
+   "detail": ""
+  },
+  "C1_inner": {
+   "value": "0.0002 m",
+   "passed": true,
+   "detail": "(half a gas wall cell is 0.0050 m)"
+  },
+  "C3_barrel": {
+   "value": "0",
+   "passed": true,
+   "detail": ""
+  },
+  "C2_outer": {
+   "value": "0.0375 m",
+   "passed": true,
+   "detail": "(half of d's largest wall cell is 0.0750 m)"
+  },
+  "C4_gas_model": {
+   "value": "6.66e-16",
+   "passed": true,
+   "detail": ""
+  },
+  "C5_hole_state": {
+   "value": "pair of f's edge rows",
+   "passed": true,
+   "detail": ""
+  },
+  "E1_mirror": {
+   "value": "2.74e-04",
+   "passed": false,
+   "detail": ""
+  },
+  "E2_directions": {
+   "value": "thrust up True, drag to tail True, drag down True, |side|/drag 1.17e-05",
+   "passed": false,
+   "detail": ""
+  },
+  "E3_climbs": {
+   "value": "+1.809 m/s",
+   "passed": true,
+   "detail": ""
+  },
+  "E4_audit": {
+   "value": "3.46e-04",
+   "passed": true,
+   "detail": ""
+  },
+  "E5_wake_energy": {
+   "value": "0.293",
+   "passed": true,
+   "detail": "step 2: g 1386 K against 4737 K"
+  }
+ },
+ "registered": {
+  "G1_polylines": "max |gap or overlap| between gas wall, shell faces and d, coarsen 1 and 4",
+  "G2_coverage": "raster points claimed by no block or by two, engine window and whole domain",
+  "G3_hole": "|g's hole edge - f's edge|, coarsen 1 and 4",
+  "C1_inner": "max |source z - station z| on the shell's inner face (with a p = z probe)",
+  "C2_outer": "max |source z - station z| on the shell's outer face",
+  "C3_barrel": "barrel stations: h and p - p_inf",
+  "C4_gas_model": "max relative change of p, T, u, v across _as_gas",
+  "C5_hole_state": "hole_state is (lo, hi) of f's own edge rows",
+  "E1_mirror": "max |uy_lower + uy_upper(mirrored)| / max |uy|, every step",
+  "E2_directions": "thrust up, drag to the tail and down, |side| / drag, every marched step",
+  "E3_climbs": "vy(end) - vy(0) > 0",
+  "E4_audit": "dvy/dt against the loads it was handed",
+  "E5_wake_energy": "max T in g over max inflow stagnation T (air, d's outlet, f's edge rows)"
+ },
+ "episode": {
+  "run": "out/w321",
+  "build_repo": {
+   "commit": "0a407b7",
+   "branch": "atlas-0.1-windfarm",
+   "dirty": true,
+   "diff_sha256": "c26f4fe0d6ca89b4",
+   "untracked": [
+    "tests/test_atlas_seams.py"
+   ]
+  },
+  "vy": [
+   1044.3618721186829,
+   1046.170832977616
+  ],
+  "loads_last": [
+   -175.84370027722355,
+   1141998.0050497788,
+   0.0009488667722178096,
+   -832.0093689466443
+  ],
+  "loads_body_last": [
+   -1141998.0050497788,
+   -175.84370027729346,
+   832.0093689466443,
+   0.0009488667722687555
+  ]
+ },
+ "all_passed": false
+}

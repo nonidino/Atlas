@@ -1,0 +1,32 @@
+{
+  "seam": "e-f",
+  "dt_scale": 0.001,
+  "modes_cap": 8,
+  "dim_M": 8,
+  "beta": 6.989863638237714e-07,
+  "kappa": 1.0387686180473614,
+  "omega": 0.012383507454054001,
+  "sign_structure": "positive",
+  "null_dim": 0,
+  "expected_null_dim": 0,
+  "passivity_defect": 0.0,
+  "is_empty": false,
+  "one_sided": 0.037198507606625617,
+  "effort_normal": "e",
+  "solver_calls": 18,
+  "solver_substeps": 45,
+  "probe_seconds": 0.5764390998519957,
+  "total_seconds": 0.8298833009321243,
+  "blocks": {
+    "e": {
+      "share": 0.037198507606625617,
+      "norm_F": 2.7009954845198026e-08,
+      "n_solves": 9
+    },
+    "f": {
+      "share": 0.9998969428098713,
+      "norm_F": 2.0534494798995093e-06,
+      "n_solves": 9
+    }
+  }
+}

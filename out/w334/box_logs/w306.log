@@ -1,0 +1,79 @@
+========================================================================================================
+W306 -- is the rocket the ONLY seam where a passivity defect is a sign
+        convention rather than an amplified mode?
+========================================================================================================
+case             seam                   sign structure         lam_min       lam_max       defect
+--------------------------------------------------------------------------------------------------------
+wind_farm        e1                     one-signed-positive    0.4           0.4           0         
+wind_farm        e10                    zero                   0             0             0         
+wind_farm        e11                    zero                   0             0             0         
+wind_farm        e1a                    one-signed-positive    0.4           0.4           0         
+wind_farm        e2                     zero                   0             0             0         
+wind_farm        e3                     zero                   0             0             0         
+wind_farm        e4                     one-signed-positive    0.4           0.4           0         
+wind_farm        e4a                    one-signed-positive    0.4           0.4           0         
+wind_farm        e5                     zero                   0             0             0         
+wind_farm        e5a                    zero                   0             0             0         
+wind_farm        e6                     one-signed-positive    0.4           0.4           0         
+wind_farm        e7                     one-signed-positive    0.4           0.4           0         
+wind_farm        e7a                    one-signed-positive    0.4           0.4           0         
+wind_farm        e8                     zero                   0             0             0         
+wind_farm        e9                     zero                   0             0             0         
+thermal_seam     cht                    one-signed-positive    0.37596       0.37701       0         
+rocket           a-b:ADVEC              one-signed-positive    4.5972        7.3479        0         
+rocket           a-b:MECH               one-signed-positive    4.5972        7.3479        0         
+rocket           a-b:THERM              one-signed-positive    4.5972        7.3479        0         
+rocket           b-c:MECH               one-signed-positive    3.6479        5.671         0         
+rocket           b-c:THERM              one-signed-negative    -0.49387      -0.21931      0.49387      <-- MISREPORTED: a sign, not a mode
+rocket           c-d:MECH               one-signed-positive    3.3891        5.2295        0         
+rocket           c-d:THERM              one-signed-positive    3.3891        5.2295        0         
+rocket           d-g:ADVEC              one-signed-positive    3.8512        5.5809        0         
+rocket           d-g:MECH               one-signed-positive    3.8512        5.5809        0         
+rocket           d-g:THERM              one-signed-positive    3.8512        5.5809        0         
+rocket           e-b:ADVEC              one-signed-positive    4.5472        7.2762        0         
+rocket           e-b:MECH               one-signed-positive    4.5472        7.2762        0         
+rocket           e-b:THERM              one-signed-positive    4.5472        7.2762        0         
+rocket           e-f:ADVEC              one-signed-positive    4.5164        6.322         0         
+rocket           e-f:MECH               one-signed-positive    4.5164        6.322         0         
+rocket           e-f:THERM              one-signed-positive    4.5164        6.322         0         
+rocket           g-f:ADVEC              one-signed-positive    3.5507        5.5594        0         
+rocket           g-f:MECH               one-signed-positive    3.5507        5.5594        0         
+rocket           g-f:THERM              one-signed-positive    3.5507        5.5594        0         
+thermal_strain   thermal-pressure       mixed                  -1.9342e+09   3.2341e+11    1.9342e+09
+brake_thermal    cht                    one-signed-positive    3.2122        3.3885        0         
+cooling_loop     cold_pass              one-signed-positive    4608.5        4608.5        0         
+cooling_loop     hot_rad                one-signed-positive    4597.1        4597.1        0         
+cooling_loop     pass_hot               one-signed-positive    4607.9        4607.9        0         
+cooling_loop     rad_cold               one-signed-positive    4597.7        4597.7        0         
+cooling_loop     wall                   one-signed-positive    7.4429        7.4515        0         
+powertrain       batt_inv               one-signed-positive    1.5e-05       1.5e-05       0         
+powertrain       bus_batt               one-signed-positive    1.8e-05       1.8e-05       0         
+powertrain       inv_mgu                one-signed-positive    2.7e-05       2.7e-05       0         
+powertrain       mgu_bus                one-signed-positive    3e-05         3e-05         0         
+powertrain       shaft                  one-signed-positive    0.033333      0.033333      0         
+car_graph        J1_core_strip          one-signed-positive    4.8786        4.9139        0         
+car_graph        J2_heat                one-signed-positive    13.154        13.289        0         
+car_graph        J3_rotor_strip         one-signed-positive    4.4074        5             0         
+car_graph        batt_inv               one-signed-positive    0.045553      0.045553      0         
+car_graph        bus_batt               one-signed-positive    0.054663      0.054663      0         
+car_graph        cold_pass              one-signed-positive    4608.5        4608.5        0         
+car_graph        hot_rad                one-signed-positive    4597.1        4597.1        0         
+car_graph        inv_mgu                one-signed-positive    0.081995      0.081995      0         
+car_graph        mgu_bus                one-signed-positive    0.091106      0.091106      0         
+car_graph        pass_hot               one-signed-positive    4607.9        4607.9        0         
+car_graph        rad_cold               one-signed-positive    4597.7        4597.7        0         
+car_graph        shaft                  one-signed-positive    0.84673       0.84673       0         
+car_graph        wall                   one-signed-positive    7.4429        7.4515        0         
+
+========================================================================================================
+  60 seams classified across 8 cases; 0 cases skipped and named.
+  2 report a passivity defect.
+    1 of those are MIXED        -- a genuinely amplified mode, which is what E7 is about
+    1 of those are ONE-SIGNED   -- a global sign the interface solve is indifferent to
+        rocket / b-c:THERM  (effort_normal='b')
+
+  <= 1 misreported seam: **W306 is real but NOT a vault-wide rule**,
+  and a change to what L4/E7/passivity DECIDES is not justified by
+  this evidence. Ship the diagnostic; say the scope out loud.
+
+artifact written to out/w334/w306.json

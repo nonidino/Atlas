@@ -15,10 +15,19 @@ it pins are findings rather than features:
   while this vault probes the seam at ``dim M = 8``;
 * **W316** -- the shell is marched and linearised about ``T_gas = 2800 K`` while
   the gas's own near-wall cell is 1490..2804 K, which is W74's class on the one
-  direction of this seam nobody had checked;
+  direction of this seam nobody had checked.  **Re-measured at Tier 86** with
+  W301 and W332 fixed: 2696..2804 K, mean 2756 K, ratio 0.984 against 0.880.
+  The finding stands at about an eighth of its size; the rest was the wall's
+  saturated channel and its mass leak (``out/w332_w316_setup.json``);
 * **the prediction evaluator agrees with the prose it is written beside**, which
   is a standing rule here after a gate and its evaluation were found disagreeing
-  in the permissive direction.
+  in the permissive direction;
+* **W334 (Tier 86)** -- the anchor's violation of the bound (0.2702) and the
+  knee's second-order jump were the old wall's.  Re-derived with W301 and W332
+  fixed, sigma is first order over the whole 250x of interval (exponents
+  0.9997..1.0021) and the bound holds at the declared interval at 2.278x.  The
+  old record is kept at ``out/pre_w332/w314.json`` and read as the control, so
+  the diagnosis stays checkable rather than quoted.
 
 The cheap tests run at intervals of 1e-6 s of gas time.  The chamber marches at
 about 1.1e5 s of wall per second of gas time, so an interval is priced before it
@@ -65,6 +74,18 @@ def _results():
     if not os.path.exists(W314):
         pytest.skip("out/w314.json not present; run scripts/w314_... --stages core")
     with open(W314, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+#: The record as Tiers 80-85 had it: W301's saturated isothermal channel and
+#: W332's leaking wall.  W334 moved it here when the re-derived one took its name.
+W314_OLD = os.path.join(os.path.dirname(W314), "pre_w332", "w314.json")
+
+
+def _old_results():
+    if not os.path.exists(W314_OLD):
+        pytest.skip("out/pre_w332/w314.json not present; the old-wall control needs it")
+    with open(W314_OLD, encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -159,24 +180,25 @@ def test_both_columns_do_the_same_work():
 
 
 @needs_expert
-def test_W315_generate_py_collapses_the_shell_to_one_number():
-    """The finding, read off the build repo rather than asserted about it.
+def test_W315_closed_generate_py_hands_each_gas_wall_the_shell_at_its_z():
+    """W315, closed at Tier 86 -- read off the build repo, not asserted about it.
 
-    ``_wall_T`` returns ``float(np.mean([T.mean() for T in self.T_shell]))`` --
-    the mean over every panel of every station -- and every gas agent's wall BC
-    gets that one number.  The gas-to-shell direction is per-station via
-    ``np.interp``; the shell-to-gas direction has rank 1.  So the interface space
-    this vault probes at ``dim M = 8`` is one the build repo's own coupler cannot
-    transport.
+    Until then ``_wall_T`` returned ``float(np.mean([T.mean() for T in
+    self.T_shell]))`` -- the mean over every panel of every station -- and every
+    gas agent's wall BC got that one number, while the gas-to-shell direction
+    was mapped by ARRAY INDEX (``np.interp(np.linspace(0, 1, ni), ...)``), which
+    stretched b's 0.28 m of wall over the whole 4.7 m airframe (W323). Both are
+    gone: each gas wall cell takes the shell's own surface temperature at its z,
+    and each shell station takes the gas wall at its z.
     """
     src = os.path.join(RE.build_repo(), "src", "atlas", "data", "generate.py")
     if not os.path.exists(src):
         pytest.skip("build repo checkout not present")
     body = open(src, encoding="utf-8").read()
-    assert "def _wall_T(self, agent: str) -> float:" in body
-    assert "return float(np.mean([T.mean() for T in self.T_shell]))" in body
-    # and the other direction really is per-station
-    assert "np.interp(np.linspace(0, 1, ni)" in body
+    assert "return float(np.mean([T.mean() for T in self.T_shell]))" not in body
+    assert "np.interp(np.linspace(0, 1, ni)" not in body
+    assert "def _wall_T(self, agent: str, k: int, side: str) -> np.ndarray:" in body
+    assert "def _shell_inner_loads(self, k: int, p_inf: float):" in body
 
 
 @needs_expert
@@ -198,35 +220,36 @@ def test_W315_the_scalar_trace_is_rank_one_and_the_per_face_one_is_not():
 
 
 @needs_expert
-def test_W317_a_c_is_undeclared_and_the_build_repo_says_so():
-    """The third one, and the only one the build repo names itself.
+def test_W317_a_c_is_undeclared_and_now_recorded():
+    """The third undeclared interface -- and since Tier 86, a RECORDED one.
 
-    W311 derived `e-c` from the geometry and `d-f` came from
-    `contours.plane_d_g`'s docstring.  This one is written down in
-    `generate.py::_wall_T`, as the stated reason that method returns a scalar --
-    so the build repo knows about an interface its own config does not declare.
+    W311 derived `e-c` from the geometry, `d-f` came from
+    `contours.plane_d_g`'s docstring, and this one was written down in the old
+    `generate.py::_wall_T` as the stated reason it returned a scalar. The
+    coupler now exchanges across all three by position and the config records
+    them (`recorded_interfaces`) without declaring them to the model -- the
+    declaration is still a design decision, and recording them means taking it
+    later needs no regenerated corpus.
     """
     assert "a-c" in RE.UNDECLARED_INTERFACES
-    src = os.path.join(RE.build_repo(), "src", "atlas", "data", "generate.py")
-    if not os.path.exists(src):
-        pytest.skip("build repo checkout not present")
-    # collapse the docstring's own line wrapping before matching
-    body = " ".join(open(src, encoding="utf-8").read().split())
-    assert "`a`'s lateral walls are an UNDECLARED a-c interface" in body
-    # and it is genuinely not in the config's edge list
     cfg = RE.rocket_config()
     edges = {"%s-%s" % (e.src, e.dst) for e in cfg.edge_list}
     assert "a-c" not in edges and "c-a" not in edges
     assert "e-c" not in edges and "c-e" not in edges
     assert "b-c" in edges or "c-b" in edges
+    recorded = {"%s-%s" % (r.src, r.dst) for r in cfg.recorded_interfaces}
+    assert recorded == {"a-c", "e-c", "d-f"}
 
 
 @needs_expert
 def test_W317_the_declared_seam_is_the_minority_of_the_conjugate_wall():
-    """40.7%: the declared b-c window against the wall that has gas behind it.
+    """40.8%: the declared b-c window against the wall that has gas behind it.
 
     Re-measured from the mesh here rather than read from the constants, so the
-    constants cannot drift away from the geometry they describe.
+    constants cannot drift away from the geometry they describe. They did move
+    at Tier 86 (40.7% before): the shell now has nodes at the nozzle's kinks,
+    so its inner face IS the contour -- 0.296619 m of b-c, not the 0.299018 m
+    of chords that cut across the converging-section corner and the throat.
     """
     sh = RE.ShellAgent(dt=5.0e-2)
     zs = sh._blk.nodes[:, 0, 0]
@@ -248,27 +271,76 @@ def test_W317_the_declared_seam_is_the_minority_of_the_conjugate_wall():
 # ===========================================================================
 
 
+def _old_residual(self, U):
+    """`Compressible2D.residual` as it was until W332 (Tier 86): the isothermal
+    ghost handed to the inviscid flux as well as the viscous one."""
+    Ue = self.ghost(U)
+    r = self._inviscid_residual(Ue)
+    if not self.cfg.inviscid:
+        r = r + self._viscous_residual(Ue)
+    if self._hole is not None:
+        j0, j1 = self._hole
+        r[:, j0:j1 + 1] = 0.0
+    return r
+
+
 @needs_expert
-def test_W316_the_shell_is_marched_about_a_gas_temperature_the_gas_does_not_have():
-    """W74's class, on the direction of this seam nobody had checked.
+def test_W316_a_barely_started_chamber_was_cooled_by_the_wall_leak(monkeypatch):
+    """W316 read the gas's near-wall cell well below the 2800 K the shell is
+    linearised about, and strongly non-uniform.  This test marches the gas only
+    1e-4 s, a barely-started chamber, and until Tier 86 it asserted exactly that:
+    the near-wall mean below 2800 K, spread over more than 100 K.
 
-    `ShellAgent.march` drives the shell with ``T_CHAMBER`` and `base_trace`
-    returns the same 2800 K.  The gas's own near-wall cell is well below that
-    over most of the window, and strongly non-uniform -- which is what makes it
-    a base disagreement rather than a units question.
-
-    This test marches the gas only 1e-4 s, so it reads the near-wall field of a
-    barely-started chamber and asserts only the SIGN and the non-uniformity.  The
-    settled numbers are in `out/w314.json` and are pinned separately.
+    **That early cooling was W332.**  The isothermal ghost is ~125x denser than
+    the cell beside a cold wall, and handed to the Riemann solver it let the wall
+    face pass mass whenever the gas moved normal to it -- cold, dense ghost gas
+    into the chamber's wall cells.  With the inviscid flux given the plain
+    mirror, the same 1e-4 s leaves the near-wall gas within a few kelvin of the
+    chamber and nearly uniform, because conduction alone has barely begun.  The
+    old reading is kept as the control: put the old residual back and it
+    returns.  The settled numbers, re-measured with the fix, are in
+    `out/w332_w316_setup.json` (the old ones in `out/w314.json`).
     """
+    import importlib
+
     W = _driver()
     seam = W.BCSeam(burn_time=RE.T_PROBE_BURN)
-    U, _flow, _q, _T = seam.gas_step(seam.gas._U0, 1.0e-4,
-                                     seam.trace_on_gas(seam.T_shell0))
+    trace = seam.trace_on_gas(seam.T_shell0)
+    U, _flow, _q, _T = seam.gas_step(seam.gas._U0, 1.0e-4, trace)
     Tg, _h = seam.gas_near_wall(U)
-    assert Tg.mean() < RE.T_CHAMBER
-    assert float(Tg.max() - Tg.min()) > 100.0
+    assert abs(Tg.mean() / RE.T_CHAMBER - 1.0) < 1.0e-2
+    assert float(Tg.max() - Tg.min()) < 20.0
+    # the control: the old wall, and the old reading
+    C2 = importlib.import_module("atlas_build_solvers.solvers.compressible2d")
+    monkeypatch.setattr(C2.Compressible2D, "residual", _old_residual)
+    U0, _flow, _q, _T = seam.gas_step(seam.gas._U0, 1.0e-4, trace)
+    T0, _h = seam.gas_near_wall(U0)
+    assert T0.mean() < RE.T_CHAMBER
+    assert float(T0.max() - T0.min()) > 100.0
     assert RE.ShellAgent(dt=5.0e-2).base_trace("b:THERM")[0] == RE.T_CHAMBER
+
+
+def test_W316_re_measured_the_gap_is_an_eighth_of_what_was_recorded():
+    """The settled state, both ways.  `out/w314.json` was taken with W301's
+    saturated channel and W332's leaking wall; `out/w332_w316_setup.json` is the
+    same `setup` stage re-run with both fixed.  W316 survives -- the shell is
+    still linearised about a hotter gas than the wall layer holds -- but at
+    1.6% where 12% was recorded, and the 1490 K floor is gone."""
+    # the pre-Tier-86 record moved to out/pre_w332/ when W334 re-derived it
+    old_path = W314_OLD
+    new_path = os.path.join(os.path.dirname(W314), "w332_w316_setup.json")
+    if not (os.path.exists(old_path) and os.path.exists(new_path)):
+        pytest.skip("the two setup records are not both present")
+    with open(old_path, encoding="utf-8") as fh:
+        old = json.load(fh)["setup"]
+    with open(new_path, encoding="utf-8") as fh:
+        new = json.load(fh)["setup"]
+    assert old["base_gap_near_wall_over_chamber"] == pytest.approx(0.8801, abs=1e-4)
+    assert new["base_gap_near_wall_over_chamber"] == pytest.approx(0.9841, abs=1e-4)
+    assert new["gas_near_wall_T_min"] > 2600.0 > 1500.0 > old["gas_near_wall_T_min"]
+    gap_old = 1.0 - old["base_gap_near_wall_over_chamber"]
+    gap_new = 1.0 - new["base_gap_near_wall_over_chamber"]
+    assert 0.0 < gap_new < gap_old / 5.0, "still a gap, and a far smaller one"
 
 
 # ===========================================================================
@@ -350,20 +422,31 @@ def test_R2_gate_first_half_L7_R9_admits():
     assert set(res["r9"]["at_multirate"]) <= set("abcdefg")
 
 
+def _graded(res):
+    return [r for r in res["sigma_law"]["rows"] if r["sigma"] > 0.0]
+
+
+def _anchor_row(rows):
+    declared = [r for r in rows if abs(r["interval"] - 5.0e-2) < 1e-15]
+    if not declared:
+        pytest.skip("the anchor row is not in the record; run --stages anchor")
+    return declared[0]
+
+
 def test_R2_gate_second_half_the_defect_is_measured_and_bounded():
     """The gate's second half: sigma at the pinned 50:1, beside CS-11's bound.
 
-    **This test asserted ``bound_holds is True`` until the anchor ran.** The
-    core's three rows span 25x of exchange interval, are first order, and put
-    the bound at 2.269x-2.500x -- a clean table that agrees with CS-11 to within
-    a factor. The declared interval is a further 10x out, and there the bound is
-    VIOLATED at 0.2702. The old assertion is kept as the diagnosis it became:
-    the sweep really does hold everywhere it was measured, which is exactly why
-    a bound published from it would have been believed.
+    **This test has asserted three things in turn.** ``bound_holds is True``
+    until the anchor ran (Tier 80). Then the anchor VIOLATING the bound at
+    0.2702, the core's clean 2.269x-2.500x table notwithstanding (Tiers 80-85).
+    Then W334 re-derived the record with W301 and W332 fixed (Tier 86), and the
+    violation was the wall's: at the declared interval the bound holds at
+    2.278x, inside the core's own span. The violation is kept as the control,
+    read off the old record, so the diagnosis stays a measurement.
     """
     res = _results()
     law = res["sigma_law"]
-    graded = [r for r in law["rows"] if r["sigma"] > 0.0]
+    graded = _graded(res)
     control = [r for r in law["rows"] if r.get("control")]
     assert control and control[0]["sigma"] == 0.0
     assert graded, "no graded intervals"
@@ -371,34 +454,75 @@ def test_R2_gate_second_half_the_defect_is_measured_and_bounded():
 
     cheap = [r for r in graded if r["interval"] <= 5.0e-3]
     assert len(cheap) == 3
-    assert all(r["bound_over_measured"] >= 1.0 for r in cheap), \
-        "the cheap sweep is where the bound DOES hold; that is the point"
+    assert all(r["bound_over_measured"] >= 1.0 for r in cheap)
     assert 2.2 < min(r["bound_over_measured"] for r in cheap) < 2.6
 
-    declared = [r for r in graded if abs(r["interval"] - 5.0e-2) < 1e-15]
-    if not declared:
-        pytest.skip("the anchor row is not in the record; run --stages anchor")
-    a = declared[0]
-    assert a["bound_over_measured"] < 1.0, "the anchor must VIOLATE the bound"
+    a = _anchor_row(graded)
+    assert a["bound_over_measured"] == pytest.approx(2.2782, abs=5e-4)
+    assert law["bound_holds"] is True
+    # loose by about the same factor at every interval, the anchor included
+    tight = [r["bound_over_measured"] for r in graded]
+    assert 2.2 < min(tight) and max(tight) < 2.4, tight
+    assert law["tightness"] == pytest.approx([min(tight), max(tight)])
+
+
+def test_R2_gate_control_the_old_wall_violated_the_bound():
+    """The control for the gate above: the same stages, the same driver, the old
+    wall -- and the anchor violates the bound it now clears by 2.3x."""
+    old = _old_results()
+    law = old["sigma_law"]
+    cheap = [r for r in _graded(old) if r["interval"] <= 5.0e-3]
+    assert all(r["bound_over_measured"] >= 1.0 for r in cheap), \
+        "the cheap sweep held on the old wall too, which is why it was believed"
+    a = _anchor_row(_graded(old))
     assert a["bound_over_measured"] == pytest.approx(0.2702, abs=5e-4)
     assert law["bound_holds"] is False
     assert law["tightness"][0] < 1.0
 
 
-def test_the_anchor_breaks_the_ORDER_and_not_the_lag():
-    """Why the violation is a finding and not a measurement error.
+def test_W334_first_order_over_the_whole_250x():
+    """What the anchor and the knee say once the wall is fixed.
 
-    If the lag had drifted from linear, or the lag PROFILE had changed shape,
-    the anchor would only be saying the extrapolation was sloppy. Neither did:
-    across 250x of interval the drift rate is constant to 0.2% and the profile's
-    peakedness is constant to 0.2%. What moved is sigma per unit lag, and it
-    moved by 8.8x in the last decade -- so the seam's RESPONSE changed, not the
-    trace it responds to.
+    The lag's drift rate and its profile's peakedness are constant across 250x
+    of interval, as they were before; so is sigma per unit lag now, to 0.8%,
+    and every exponent is 1 to 0.3%. The knee's slope probe, which read the
+    seam's own response 17x steeper at 1e-2 s on the old wall, reads it 1.008x.
+    There is no knee. C2 is still negative, so it is s_seam alone that carries
+    the bound.
     """
     res = _results()
-    rows = [r for r in res["sigma_law"]["rows"] if r["sigma"] > 0.0]
-    if not any(abs(r["interval"] - 5.0e-2) < 1e-15 for r in rows):
-        pytest.skip("the anchor row is not in the record")
+    rows = _graded(res)
+    _anchor_row(rows)
+    rates = [r["lag"] / r["interval"] for r in rows]
+    peaks = [r["lag_max"] / r["lag"] for r in rows]
+    assert max(rates) / min(rates) < 1.005, rates
+    assert max(peaks) / min(peaks) < 1.005, peaks
+
+    per_lag = [r["sigma"] / r["lag"] for r in rows]
+    assert max(per_lag) / min(per_lag) < 1.02, per_lag
+    exps = [r["exponent"] for r in rows if r.get("exponent") == r.get("exponent")
+            and r.get("exponent") is not None]
+    assert len(exps) == 4 and all(0.997 < e < 1.003 for e in exps), exps
+    knee = res["knee"]["rows"][0]
+    assert knee["interval"] == pytest.approx(1.0e-2)
+    assert knee["s_seam_rel"] == pytest.approx(1.0077, abs=1e-3)
+    assert res["slope"]["C2"] < 0.0
+
+
+def test_W334_control_the_old_wall_broke_the_ORDER_and_not_the_lag():
+    """The old record's diagnosis, kept checkable.
+
+    On the old wall the lag's drift rate and profile were just as constant --
+    so the extrapolation was not sloppy -- while sigma per unit lag rose 8.8x
+    in the last decade and the exponents went to 2.295 across the 1e-2 s knee
+    and 1.790 beyond it. That was read, correctly, as the seam's RESPONSE
+    changing rather than the trace it responds to. W334 found the response that
+    changed was the wall's: a saturated isothermal channel (W301) and a ghost
+    125x denser than the gas handed to the Riemann solver (W332).
+    """
+    old = _old_results()
+    rows = _graded(old)
+    _anchor_row(rows)
     rates = [r["lag"] / r["interval"] for r in rows]
     peaks = [r["lag_max"] / r["lag"] for r in rows]
     assert max(rates) / min(rates) < 1.005, rates
@@ -406,12 +530,47 @@ def test_the_anchor_breaks_the_ORDER_and_not_the_lag():
 
     per_lag = [r["sigma"] / r["lag"] for r in rows]
     assert max(per_lag[:3]) / min(per_lag[:3]) < 1.2, "flat over the cheap sweep"
-    assert per_lag[-1] / per_lag[-2] > 5.0, "and it jumps at the declared interval"
+    flat = max(per_lag[:3])
+    assert per_lag[-1] / flat > 5.0, "and jumped by the declared interval"
+    assert 1.5 < per_lag[-2] / flat < per_lag[-1] / flat
 
-    last = rows[-1]["exponent"]
-    assert 1.8 < last < 2.1, "first order becomes very nearly second: %r" % last
-    # and no choice of C2 rescues it, because the rocket's C2 is NEGATIVE
-    assert res["slope"]["C2"] < 0.0
+    exps = [r["exponent"] for r in rows if r.get("exponent") == r.get("exponent")
+            and r.get("exponent") is not None]
+    assert all(0.9 < e < 1.1 for e in exps[:2]), "first order over the cheap sweep: %r" % exps
+    assert exps[-2] > 2.0, "second order across the knee: %r" % exps
+    assert 1.7 < exps[-1] < 2.1, "and still very nearly second beyond it: %r" % exps
+    assert old["knee"]["rows"][0]["s_seam_rel"] > 10.0
+    assert old["slope"]["C2"] < 0.0
+
+
+def test_W334_the_anchor_predictions_failed_on_their_registration_not_their_rule():
+    """A1 and A2 were registered from the old core's lag rate, 25.89 K/s, and
+    fail on the re-derived record: the fixed wall heats the shell faster (31.70
+    K/s), so the lag is 1.581 K where 1.294 was registered, and sigma misses
+    the top of A2's range by 0.7% because it rides on that lag. The rule behind
+    them -- lag linear in the interval, sigma a fixed multiple of the lag -- is
+    what the anchor tests, and applied to the NEW core's own graded rows it
+    lands within 0.23% on the lag and 0.57% on sigma. (A consistency check, not
+    a registration: the core and the anchor ran side by side on the box.)
+    """
+    W = _driver()
+    res = _results()
+    rows = _graded(res)
+    a = _anchor_row(rows)
+    got = a["anchor_predictions"]
+    assert got["A1_lag_K"]["held"] is False and got["A2_sigma"]["held"] is False
+    assert got["A3_bound_over_measured"]["held"] is True
+    assert W.ANCHOR_PREDICTIONS["A1_lag_K"] == pytest.approx((1.2943 * 0.95, 1.2943 * 1.05))
+
+    cheap = [r for r in rows if r["interval"] <= 5.0e-3]
+    rate = sum(r["lag"] / r["interval"] for r in cheap) / len(cheap)
+    per_lag = sum(r["sigma"] / r["lag"] for r in cheap) / len(cheap)
+    lag_rule = rate * a["interval"]
+    assert a["lag"] == pytest.approx(lag_rule, rel=3e-3)
+    assert a["sigma"] == pytest.approx(per_lag * a["lag"], rel=1e-2)
+    # and the registration really was the old core's: it held A1 at 1.292 K
+    old = _anchor_row(_graded(_old_results()))["anchor_predictions"]
+    assert old["A1_lag_K"]["held"] is True and old["A3_bound_over_measured"]["held"] is False
 
 
 def test_the_transfer_control_was_actually_run():
@@ -428,6 +587,17 @@ def test_the_run_was_not_suspended():
     The first sizing of this tier spanned a five-minute standby and read 2.6x
     high, so the driver counts the events itself and the record carries the
     count.
+
+    **W334's record reads -1, 'not counted'.** It was re-derived on a rented
+    Linux box (Tier 86), which has no Windows event log to count and no Modern
+    Standby to be suspended by. -1 is accepted only with the evidence that
+    PowerShell was absent -- the same record's machine probe failing to find
+    it -- so a count that failed ON Windows still fails here.
     """
     res = _results()
-    assert res.get("standby_during_run", 0) == 0
+    n = res.get("standby_during_run", 0)
+    if n == -1:
+        err = str(res["setup"].get("machine", {}).get("error", ""))
+        assert "FileNotFoundError" in err, "-1 on a machine that has PowerShell: %r" % err
+        return
+    assert n == 0

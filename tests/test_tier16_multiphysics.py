@@ -344,13 +344,24 @@ def test_the_real_pair_is_its_own_reference_and_measures_tau_zero():
                           np.full(T.N_SEAM, T.T_WALL_0), measure=T.H_SEAM)
     assert d.converged
     assert d.tau == {"gas": 0.0, "shell": 0.0}
-    assert d.trace_reference == pytest.approx(372.1377, rel=1e-4)
+    # 372.1377 K until Tier 86, while W301 held the gas's wall BC saturated: the
+    # gas now feels the wall temperature it is handed (372.4964 K). Then W332:
+    # the inviscid flux had been handed the isothermal ghost, whose density made
+    # the wall face pass mass, and it now sees the plain mirror -- the consistent
+    # interface temperature moves -0.26 K more. Both moves are the solver
+    # getting the wall right, not the seam method changing.
+    assert d.trace_reference == pytest.approx(372.2359, rel=1e-4)
 
 
 def test_the_gas_state_norm_is_blind_where_the_bond_power_is_not():
     """Why the defect is measured in interface power and not in either agent's
-    own norm: the gas's interior is bit-identical across 100 K of wall
-    temperature over one macro-step while its flow moves 10%."""
+    own norm: across 100 K of wall temperature over one macro-step the gas's
+    state norm moves ~5e-5 while its interface flow moves ~31%.
+
+    Until Tier 86 the interior was BIT-identical across that range -- which was
+    W301 (a saturated isothermal wall that never reached the solver), not a
+    property of the norm. The conclusion survives the fix; the bit-identity
+    did not."""
     from atlas.cases import thermal_seam as T
 
     gas = T.GasAgent(dt=T.DT_GAS)
@@ -360,5 +371,6 @@ def test_the_gas_state_norm_is_blind_where_the_bond_power_is_not():
         states.append(np.linalg.norm(U))
         flows.append(np.linalg.norm(
             np.asarray(gas.respond("wall:THERM", np.full(T.N_SEAM, wall)), float)))
-    assert states[0] == states[1] == states[2]
+    assert not states[0] == states[1] == states[2], "the wall reaches the gas"
+    assert (max(states) - min(states)) / min(states) < 1e-3
     assert max(flows) / min(flows) > 1.25

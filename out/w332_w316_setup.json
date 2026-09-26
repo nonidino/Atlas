@@ -1,0 +1,144 @@
+{
+  "setup": {
+    "gas_shape": [
+      112,
+      80
+    ],
+    "n_face_gas": 112,
+    "n_seam_shell": 14,
+    "dt_gas_declared": 0.001,
+    "dt_shell": 0.05,
+    "declared_ratio": 50.0,
+    "dt_macro": 0.05,
+    "cfl": 0.4,
+    "settle_seconds": 0.006,
+    "settle_curve": [
+      {
+        "t": 0.002,
+        "rel_change": 0.0074437181109813216
+      },
+      {
+        "t": 0.004,
+        "rel_change": 0.00022205798700098298
+      },
+      {
+        "t": 0.006,
+        "rel_change": 7.757133711710922e-05
+      }
+    ],
+    "marched": {
+      "burn_time_s": 5.0,
+      "steps": 100,
+      "T_wall_mean_K": 478.95569621392366,
+      "T_wall_min_K": 369.18081353826545,
+      "T_wall_max_K": 870.7665100622742,
+      "valid_at_base": false,
+      "validity_lost_s": 2.95
+    },
+    "h_cold_mean": 211.39655604701122,
+    "gas_near_wall_T_mean": 2755.5541421438215,
+    "gas_near_wall_T_min": 2695.8660680626735,
+    "gas_near_wall_T_max": 2803.5889435254717,
+    "shell_linearised_about_K": 2800.0,
+    "base_gap_near_wall_over_chamber": 0.9841264793370791,
+    "h_settled_mean": 208.91896752107868,
+    "wall_spread_K": 501.5856965240087,
+    "machine": {
+      "battery_status": 2,
+      "charge_pct": 93,
+      "mhz_now": 1400,
+      "mhz_max": 3800
+    },
+    "standby_last_hour": 4,
+    "setup_wall_s": 861.5658295000321
+  },
+  "predictions": [
+    {
+      "name": "P1",
+      "claim": "L7/R9 ADMITS on the real graph",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P2",
+      "claim": "the ratio-1 control is EXACTLY zero, not small",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P3",
+      "claim": "sigma is first order in the interval: every exponent in [0.90, 1.10]",
+      "got": [],
+      "held": false
+    },
+    {
+      "name": "P4",
+      "claim": "the bound with ROCKET constants holds at every graded interval",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P5",
+      "claim": "lambda_dot here exceeds CS-11's 11.94 K/s and lies in [20, 200] K/s",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P6",
+      "claim": "CS-11's OWN constants do NOT bound the rocket's defect",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P7",
+      "claim": "4x of clock ratio at a fixed interval moves sigma by less than 1.05x",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P8",
+      "claim": "lambda_dot at 0.5 s and 5.0 s of burn differ by more than 2x",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P9",
+      "claim": "the tightness is within an order of magnitude of CS-11's, i.e. in [1, 10]",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P10",
+      "claim": "s_seam is constant in the interval to better than 1.5x",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P11",
+      "claim": "the build repo's rank-1 trace changes the defect by more than 1.2x",
+      "got": [],
+      "held": false
+    },
+    {
+      "name": "P12",
+      "claim": "the two-way referent moves sigma by more than 1.5x at some interval",
+      "got": [],
+      "held": false
+    }
+  ],
+  "wall_seconds": 861.5682895000209,
+  "standby_during_run": 0,
+  "_signature": {
+    "burn": 5.0,
+    "settle": 0.006,
+    "ratio": 50,
+    "cfl": 0.4,
+    "slope_interval": 0.0002,
+    "intervals": [
+      0.0002,
+      0.001,
+      0.005
+    ],
+    "anchor": 0.05
+  }
+}

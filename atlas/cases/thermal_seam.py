@@ -152,6 +152,38 @@ def build_repo() -> str:
 
 
 @lru_cache(maxsize=1)
+def build_repo_identity() -> str:
+    """The build repo's commit, and a hash of its uncommitted diff when there is
+    one: ``0a407b7`` or ``0a407b7+dirty:f06f8d898d46f3a0``.
+
+    A number measured through the build repo's solvers is a number about the
+    code that ran. Until Tier 86 that was always commit 0a407b7 and the modules
+    wrote the string in by hand; Tier 86 changed the build repo, so it is read.
+
+    ``ATLAS_BUILD_REPO_IDENTITY`` overrides it, for a copy of the tree shipped
+    without its git history (a rented machine, W334): the identity is read where
+    the history is, and the copy is checked against a manifest of that tree's
+    files before anything runs."""
+    override = os.environ.get("ATLAS_BUILD_REPO_IDENTITY")
+    if override:
+        return override
+    import hashlib
+    import subprocess
+
+    def git(*a):
+        try:
+            return subprocess.run(["git", "-C", build_repo(), *a], capture_output=True,
+                                  text=True, encoding="utf-8", timeout=60).stdout
+        except (OSError, subprocess.SubprocessError):
+            return ""
+    commit = git("rev-parse", "--short", "HEAD").strip() or "unknown"
+    diff = git("diff", "HEAD")
+    if diff.strip():
+        return "%s+dirty:%s" % (commit, hashlib.sha256(diff.encode("utf-8")).hexdigest()[:16])
+    return commit
+
+
+@lru_cache(maxsize=1)
 def load_solvers(module_name: str = "atlas_build_solvers"):
     """Import the build repo's `atlas` package under a private name.
 

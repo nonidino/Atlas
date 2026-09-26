@@ -1,0 +1,20 @@
+========================================================================================
+W312 -- e-f at dt_scale=0.001, dim M capped at 8
+========================================================================================
+  ('e', 'f:ADVEC') <-> ('f', 'e:ADVEC'), ADVEC, effort_normal='e'
+  agent clocks: {'e': 1e-06, 'f': 5e-06}
+  probing ... this is the expensive one; the cost IS the measurement
+
+  dim M            8
+  beta             6.98986e-07
+  kappa            1.03877
+  omega            0.0123835
+  sign structure   positive
+  null dim         0 (declared 0)
+  empty            False
+  blocks           {'e': 0.0372, 'f': 0.9999}
+
+  COST: 18 response calls, 45 CFL sub-steps, 1 s of probe
+  Extrapolated to the full dim M = 41 this seam declares: 0.0 hours
+
+artifact written to out/w334/w312_underresolved.json

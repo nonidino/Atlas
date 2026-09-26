@@ -1,0 +1,64 @@
+==============================================================================
+W302 -- the declaration ledger, one factor at a time
+==============================================================================
+BASELINE (declarations='fixture', the Tier-75 graph):
+  verdict refuse      10 refusals, 49 decertifications
+  refusals: {'L2/InterfaceMotion': 9, 'L7/R9': 1}
+
+------------------------------------------------------------------------------
+ARM: known fields (time_disc, stencil, elliptic, substeps, lambda_ref)
+  verdict refuse      10 refusals (+0), 49 decerts (+0)
+  decertifications moved: L4/E7/passivity +1, L4/R2b/W46 -1
+------------------------------------------------------------------------------
+ARM:   ... minus lambda_ref
+  verdict refuse      10 refusals (+0), 49 decerts (+0)
+  decertifications moved: L4/E7/passivity +1, L4/R2b/W46 -1
+------------------------------------------------------------------------------
+ARM: decomposition NON_OVERLAPPING (P14)
+  verdict refuse      10 refusals (+0), 48 decerts (-1)
+  decertifications moved: L2/C2 -1, L2/C3/W57 +1, L2/R10/halo -1
+------------------------------------------------------------------------------
+ARM: clocks from the YAML (50:1, not 100:1)
+  verdict refuse      10 refusals (+0), 49 decerts (+0)
+  decertifications moved: NONE
+------------------------------------------------------------------------------
+ARM: flux_matching TIME_INTEGRATED
+  verdict refuse      10 refusals (+0), 49 decerts (+0)
+  decertifications moved: NONE
+  REFUSALS moved:         L7/R9 -1, L7/R9/quadrature +1
+------------------------------------------------------------------------------
+ARM: storage + validity, all 7 [COUNTING CONTROL]
+  verdict refuse      10 refusals (+0), 15 decerts (-34)
+  decertifications moved: L1/3.4 -1, L1/C8 -7, L1/E7 -7, L3/C8 -19
+------------------------------------------------------------------------------
+
+==============================================================================
+COMBINED LEVELS
+==============================================================================
+LEVEL 'known': verdict refuse      10 refusals (+0), 48 decerts (-1)
+  surviving decertifications, by rule:
+    L1/3.4           1
+    L1/C8            7
+    L1/E3            7
+    L1/E7            7
+    L2/C3/W57        1
+    L3/C8            19
+    L4/E7/passivity  1
+    L5/eps_tol       1
+    L6/E6            1
+    L7/R9/order      1
+    L8/W56           1
+    L9/E5            1
+  refusals, by rule:
+    L2/InterfaceMotion       9
+    L7/R9/quadrature         1
+
+ADDITIVITY -- the sum of the four parts against the whole 'known' level:
+    L2/C2            parts -1   whole -1
+    L2/C3/W57        parts +1   whole +1
+    L2/R10/halo      parts -1   whole -1
+    L4/E7/passivity  parts +1   whole +1
+    L4/R2b/W46       parts -1   whole -1
+  additive: True
+
+artifact written to out/w334/w302.json

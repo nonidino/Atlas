@@ -1,0 +1,109 @@
+{
+  "script": "w304_seam_base.py",
+  "date": "2026-09-17",
+  "build_repo_commit": "0a407b7",
+  "dt_gas": 1e-05,
+  "admissible_K": [
+    250.0,
+    2800.0
+  ],
+  "probe_state": "rocket b-c, build repo 0a407b7: chamber p_c=5e+06 Pa, T_c=2800.0 K, gamma=1.22, R=361.0; shell wall MARCHED 5.00 s of burn to 449.4197 K mean (690.0180 K max) under h=183.8725 W/(m^2 K); dt_gas=1e-05 s, dt_shell=0.05 s; dim M=8; validity holds",
+  "lamstar": {
+    "scan": [
+      {
+        "base_K": 250.0,
+        "gas_norm": 166.1594830256787,
+        "shell_norm": 67.58079780604767,
+        "sum_scalar": 43.24842258836109,
+        "diff_scalar": 75.48618142994546
+      },
+      {
+        "base_K": 505.0,
+        "gas_norm": 130.13171019679316,
+        "shell_norm": 22.74240153234205,
+        "sum_scalar": 56.881453502279435,
+        "diff_scalar": 41.54337882195176
+      },
+      {
+        "base_K": 760.0,
+        "gas_norm": 101.06124088118302,
+        "shell_norm": 50.70251886580298,
+        "sum_scalar": 61.5423509548655,
+        "diff_scalar": 19.545107848312472
+      },
+      {
+        "base_K": 1015.0,
+        "gas_norm": 82.7921675232516,
+        "shell_norm": 75.66395236323206,
+        "sum_scalar": 60.43383943634444,
+        "diff_scalar": 1.3349748188393766
+      },
+      {
+        "base_K": 1270.0,
+        "gas_norm": 64.77785908916364,
+        "shell_norm": 94.01426713723114,
+        "sum_scalar": 59.44819634984348,
+        "diff_scalar": -11.571320130118458
+      },
+      {
+        "base_K": 1525.0,
+        "gas_norm": 67.88742490480222,
+        "shell_norm": 107.89893401835214,
+        "sum_scalar": 60.481950897893796,
+        "diff_scalar": -19.329406269832276
+      },
+      {
+        "base_K": 1780.0,
+        "gas_norm": 53.31433386190524,
+        "shell_norm": 118.74349859651251,
+        "sum_scalar": 58.853917904742424,
+        "diff_scalar": -27.712858233630374
+      },
+      {
+        "base_K": 2035.0,
+        "gas_norm": 38.460511062445114,
+        "shell_norm": 127.4412217477312,
+        "sum_scalar": 57.0137571360726,
+        "diff_scalar": -34.90786194078031
+      },
+      {
+        "base_K": 2290.0,
+        "gas_norm": 24.521737155976624,
+        "shell_norm": 134.570221913349,
+        "sum_scalar": 55.09266739551133,
+        "diff_scalar": -41.17881834616184
+      },
+      {
+        "base_K": 2545.0,
+        "gas_norm": 11.685028613171921,
+        "shell_norm": 140.5191602079219,
+        "sum_scalar": 53.169119808759504,
+        "diff_scalar": -46.70644283631589
+      },
+      {
+        "base_K": 2800.0,
+        "gas_norm": 0.2880858777141104,
+        "shell_norm": 145.55843472990998,
+        "sum_scalar": 51.28901486658623,
+        "diff_scalar": -51.621816357908635
+      }
+    ],
+    "brackets_sum": [],
+    "brackets_difference": [
+      [
+        1015.0,
+        1270.0
+      ]
+    ],
+    "admissible_interval_K": [
+      250.0,
+      2800.0
+    ],
+    "newton_start_K": 449.4197129792197,
+    "gas_base_K": 449.4197129792198,
+    "shell_base_K": 2800.0,
+    "sum_root": null,
+    "difference_root": 1035.4865550994873,
+    "gas_calls": 30
+  }
+}

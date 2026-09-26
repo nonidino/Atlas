@@ -470,7 +470,8 @@ def _real_bc_capabilities(agent_id: str, faces: list[str], level: str,
     caps.boundary_response_jvp = None
     caps.note = (f"MIXED: {real_port} is REAL "
                  f"({'thermostruct2d' if agent_id == 'c' else 'compressible2d'}, "
-                 f"build repo 0a407b7, unmodified, on grid.build_blocks' own mesh); "
+                 f"build repo {RE.build_repo_identity()}, imported unmodified, on "
+                 f"grid.build_blocks' own mesh); "
                  f"every other face including {other} is still a seeded random matrix")
     del other
     return caps, expert

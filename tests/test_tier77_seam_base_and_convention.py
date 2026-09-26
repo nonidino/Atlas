@@ -57,6 +57,35 @@ def _bc(dt_gas=DT_GAS_TEST):
     return shell, gas, graph, _derive_transfer(ctx, graph.connections[0])
 
 
+#: The consistent interface state: the root of the DIFFERENCE residual. Tier 77
+#: measured 1035.487 K with the pre-Tier-86 wall (W301's saturated channel and
+#: W332's leak); `w304_seam_base.py` re-measured it at Tier 86 (W334) with both
+#: fixed, on the rented box, at 1133.885 K.
+LAMSTAR_OLD_WALL = 1035.487
+LAMSTAR = 1133.885
+
+
+def _old_wall(monkeypatch):
+    """Put the pre-Tier-86 wall back, for a control: the isothermal ghost handed
+    to the inviscid flux (W332 reverted) and the wall face's conduction left to
+    the clamped ghost (W301 reverted)."""
+    import importlib
+    C2 = importlib.import_module("atlas_build_solvers.solvers.compressible2d")
+
+    def residual(self, U):
+        Ue = self.ghost(U)
+        r = self._inviscid_residual(Ue)
+        if not self.cfg.inviscid:
+            r = r + self._viscous_residual(Ue)
+        if self._hole is not None:
+            j0, j1 = self._hole
+            r[:, j0:j1 + 1] = 0.0
+        return r
+    monkeypatch.setattr(C2.Compressible2D, "residual", residual)
+    monkeypatch.setattr(C2.Compressible2D, "_isothermal_wall_conduction",
+                        lambda self, *a, **k: None)
+
+
 def _uniform(P, value):
     M = P.effective_matrix()
     mu, _r, _rk, _sv = np.linalg.lstsq(M, np.full(M.shape[0], float(value)), rcond=None)
@@ -141,6 +170,11 @@ def test_the_difference_is_one_signed_and_the_sum_is_not_at_the_root():
     At the CONSISTENT base the sum is genuinely MIXED -- it has an amplified
     mode -- while the difference is one-signed. `L4/E7/passivity` rejects both,
     because it tests ``lambda_min > 0`` and never looks at ``lambda_max``.
+
+    Re-measured at Tier 86 (W334) at the root the fixed wall gives: still mixed
+    against one-signed, and the difference's smallest singular value is 47x the
+    sum's -- where Tier 77, with the old wall, measured 94x ("two orders"). The
+    finding stands; its margin halved.
     """
     shell, gas, g, tr = _bc()
     caps = {a.agent_id: a.capabilities for a in g.agents}
@@ -150,7 +184,7 @@ def test_the_difference_is_one_signed_and_the_sum_is_not_at_the_root():
         P = tr.prolongations[aid]
         blocks[aid] = probe_block(
             caps[aid], caps[aid].port(ports[aid]), tr.space, P, "t77",
-            base_V=P.prolong(_uniform(P, 1035.487), tr.space)).S
+            base_V=P.prolong(_uniform(P, LAMSTAR), tr.space)).S
 
     def spectrum(S):
         return np.linalg.eigvalsh(0.5 * (S + S.T))
@@ -159,42 +193,64 @@ def test_the_difference_is_one_signed_and_the_sum_is_not_at_the_root():
     ev_dif = spectrum(blocks["b"] - blocks["c"])
     assert ev_sum.min() < 0.0 < ev_sum.max(), "the sum should be MIXED at lambda*"
     assert ev_dif.max() < 0.0, "the difference should be one-signed"
-    # and the difference's smallest singular value is two orders larger
+    # and the difference's smallest singular value is well over an order larger
     s_sum = np.linalg.svd(blocks["b"] + blocks["c"], compute_uv=False).min()
     s_dif = np.linalg.svd(blocks["b"] - blocks["c"], compute_uv=False).min()
-    assert s_dif / s_sum > 50.0, (s_dif, s_sum)
+    assert 20.0 < s_dif / s_sum < 100.0, (s_dif, s_sum)
 
 
-@needs_expert
-def test_two_errors_that_nearly_cancelled():
-    """**Why Tier 76's number looked unremarkable.**
-
-    It was wrong twice -- the wrong base AND the wrong assembly -- and the two
-    errors nearly cancelled. Fixing either one alone moves it far further than
-    fixing both.
-    """
+def _four_corners(root):
+    """sigma_min for the two bases against the two assemblies: (wrong base,
+    wrong assembly) -- Tier 76 as published -- through (right, right)."""
     shell, gas, g, tr = _bc()
     caps = {a.agent_id: a.capabilities for a in g.agents}
     ports = {"b": "c:THERM", "c": "b:THERM"}
+    cache = {}
 
     def sigma_min(base, sign_c):
-        blk = {}
-        for aid in ("b", "c"):
-            P = tr.prolongations[aid]
-            bv = None if base is None else P.prolong(_uniform(P, base), tr.space)
-            blk[aid] = probe_block(caps[aid], caps[aid].port(ports[aid]), tr.space,
-                                   P, "t77", base_V=bv).S
-        S = blk["b"] + sign_c * blk["c"]
+        if base not in cache:
+            blk = {}
+            for aid in ("b", "c"):
+                P = tr.prolongations[aid]
+                bv = None if base is None else P.prolong(_uniform(P, base), tr.space)
+                blk[aid] = probe_block(caps[aid], caps[aid].port(ports[aid]), tr.space,
+                                       P, "t77", base_V=bv).S
+            cache[base] = blk
+        S = cache[base]["b"] + sign_c * cache[base]["c"]
         return float(np.linalg.svd(S, compute_uv=False).min())
 
-    wrong_wrong = sigma_min(None, +1.0)          # Tier 76 as published
-    right_wrong = sigma_min(1035.487, +1.0)      # right base, wrong assembly
-    wrong_right = sigma_min(None, -1.0)          # wrong base, right assembly
-    right_right = sigma_min(1035.487, -1.0)      # the corrected number
-    # fixing ONE of the two moves it much further than fixing BOTH
-    assert right_wrong < 0.02 * wrong_wrong, (right_wrong, wrong_wrong)
+    return (sigma_min(None, +1.0), sigma_min(root, +1.0),
+            sigma_min(None, -1.0), sigma_min(root, -1.0))
+
+
+@needs_expert
+def test_two_errors_that_nearly_cancelled(monkeypatch):
+    """**Why Tier 76's number looked unremarkable -- and what was the wall's.**
+
+    Tier 77: Tier 76's beta was wrong twice -- the wrong base AND the wrong
+    assembly -- and the two errors nearly cancelled. Fixing either alone moved
+    it far further than fixing both: the configuration wrong in BOTH respects
+    (0.149619) landed nearest the one right in both (0.123188).
+
+    Re-measured at Tier 86 (W334) with the fixed wall, at its own root: fixing
+    the base alone still collapses beta (~30x down), but the corrected beta
+    nearly doubles (0.2299) and the doubly-wrong number (0.1465) is no longer
+    the nearest to it -- "wrong base, right assembly" (0.1974) is. **The near-
+    cancellation was the old wall's.** The control puts the old wall back, at
+    the old root, and the pattern returns.
+    """
+    wrong_wrong, right_wrong, wrong_right, right_right = _four_corners(LAMSTAR)
+    assert right_wrong < 0.05 * wrong_wrong, (right_wrong, wrong_wrong)
     assert 1.0 < wrong_right / wrong_wrong < 2.0
     assert 0.5 < wrong_wrong / right_right < 2.0, (wrong_wrong, right_right)
+    assert abs(wrong_right - right_right) < abs(wrong_wrong - right_right), \
+        "with the fixed wall the doubly-wrong number is NOT the nearest"
+
+    # the control: the old wall, at the root it gave
+    _old_wall(monkeypatch)
+    ww, rw, wr, rr = _four_corners(LAMSTAR_OLD_WALL)
+    assert rw < 0.02 * ww, (rw, ww)
+    assert abs(ww - rr) < abs(wr - rr), "with the old wall the doubly-wrong IS the nearest"
 
 
 # ===========================================================================

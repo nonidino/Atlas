@@ -308,6 +308,123 @@ class BCSeam:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# W334 (Tier 86): the two columns of an interval are independent -- both start
+# from U0 and neither reads the other -- so on Linux they can run as two forked
+# processes. Opt-in (W314_FORK=1); the seam's substep counters, which the CFL
+# stage records as data, are added back from the children so the record is the
+# same either way. And a record/replay cache (W314_RECORD / W314_REPLAY) lets
+# the 50 ms anchor march in its own process while the core runs, then be folded
+# in through the real stage code, so its bound uses the new core's slope.
+# ---------------------------------------------------------------------------
+_FORK_TASKS = None
+
+
+def _fork_worker(i):
+    fn, args = _FORK_TASKS[i]
+    seam = args[0]
+    s0, m0 = seam.gas_substeps, seam.gas_marched_s
+    val = fn(*args)
+    return val, seam.gas_substeps - s0, seam.gas_marched_s - m0
+
+
+def _fork_child(i, conn):
+    """Runs in a forked child: the task is inherited, only the result is sent."""
+    try:
+        conn.send(_fork_worker(i))
+    except BaseException as exc:                          # noqa: BLE001
+        conn.send(RuntimeError("column %d failed: %r" % (i, exc)))
+    finally:
+        conn.close()
+
+
+def _both(task_a, task_b):
+    """Two independent (fn, args) calls whose first argument is the seam.
+
+    Under W314_FORK=1 each runs in a forked child. A forked Process inherits the
+    task rather than pickling it, so this works however the script was loaded;
+    only the (small) results cross back, through pipes."""
+    global _FORK_TASKS
+    import multiprocessing as mp
+    if os.environ.get("W314_FORK") == "1" and "fork" in mp.get_all_start_methods():
+        ctx = mp.get_context("fork")
+        _FORK_TASKS = (task_a, task_b)
+        try:
+            pipes, procs = [], []
+            for i in (0, 1):
+                recv, send = ctx.Pipe(duplex=False)
+                p = ctx.Process(target=_fork_child, args=(i, send))
+                p.start()
+                send.close()
+                pipes.append(recv)
+                procs.append(p)
+            got = [r.recv() for r in pipes]
+            for p in procs:
+                p.join()
+        finally:
+            _FORK_TASKS = None
+        for g in got:
+            if isinstance(g, BaseException):
+                raise g
+        (ra, sa, ma), (rb, sb, mb) = got
+        seam = task_a[1][0]
+        seam.gas_substeps += int(sa) + int(sb)
+        seam.gas_marched_s += float(ma) + float(mb)
+        return ra, rb
+    return task_a[0](*task_a[1]), task_b[0](*task_b[1])
+
+
+def _cache_key(interval, ratio, scalar_trace, two_way):
+    return "%r|%d|%d|%d" % (float(interval), int(ratio), int(bool(scalar_trace)),
+                            int(bool(two_way)))
+
+
+def _replayed(key):
+    path = os.environ.get("W314_REPLAY")
+    if not path or not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh).get(key)
+
+
+def _record(key, entry):
+    path = os.environ.get("W314_RECORD")
+    if not path:
+        return
+    book = {}
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as fh:
+            book = json.load(fh)
+    book[key] = entry
+    with open(path + ".tmp", "w", encoding="utf-8") as fh:
+        json.dump(book, fh, indent=1, default=float)
+    os.replace(path + ".tmp", path)
+
+
+def _ref_column(seam, U0, n, dt, scalar_trace, two_way, h_dec, T_dec):
+    Ts = seam.T_shell0.copy()
+    U, acc = U0.copy(), 0.0
+    lam = seam.trace_on_gas(Ts, scalar=scalar_trace)
+    for _ in range(n):
+        lam = seam.trace_on_gas(Ts, scalar=scalar_trace)
+        U, flow, _q, _Tf = seam.gas_step(U, dt, lam)
+        acc += seam.power(lam, flow)
+        if two_way:
+            Tg, h = seam.gas_near_wall(U)
+            Ts = seam.shell_step(Ts, dt, seam.R @ h, seam.R @ Tg)
+        else:
+            Ts = seam.shell_step(Ts, dt, h_dec, T_dec)
+    return acc / n, lam
+
+
+def _held_column(seam, U0, n, dt, lam0):
+    U, acc = U0.copy(), 0.0
+    for _ in range(n):
+        U, flow, _q, _Tf = seam.gas_step(U, dt, lam0)
+        acc += seam.power(lam0, flow)
+    return acc / n
+
+
 def lag_defect(seam: BCSeam, U0, interval: float, ratio: int,
                scalar_trace: bool = False, two_way: bool = False) -> dict:
     """sigma over one exchange interval, against the single-rate referent.
@@ -340,38 +457,38 @@ def lag_defect(seam: BCSeam, U0, interval: float, ratio: int,
     """
     n = max(1, int(ratio))
     dt = interval / n
+    key = _cache_key(interval, n, scalar_trace, two_way)
+    hit = _replayed(key)
+    if hit is not None:
+        seam.gas_substeps += int(hit["substeps"])
+        seam.gas_marched_s += float(hit["marched_s"])
+        out = dict(hit["result"])
+        out["_wall_s"] = float(hit["wall_s"])
+        print("  [replayed %s from %s: %.0f s, %d sub-steps]"
+              % (key, os.environ.get("W314_REPLAY"), hit["wall_s"], hit["substeps"]),
+              flush=True)
+        return out
+    t0, s0, m0 = time.perf_counter(), seam.gas_substeps, seam.gas_marched_s
     Ts = seam.T_shell0.copy()
     lam0 = seam.trace_on_gas(Ts, scalar=scalar_trace)
     h_dec = np.asarray(seam.h_cold, dtype=float)
     T_dec = np.full(seam.shell.n_seam, float(RE.T_CHAMBER))
 
-    U, acc = U0.copy(), 0.0
-    lam = lam0
-    for _ in range(n):
-        lam = seam.trace_on_gas(Ts, scalar=scalar_trace)
-        U, flow, _q, _Tf = seam.gas_step(U, dt, lam)
-        acc += seam.power(lam, flow)
-        if two_way:
-            Tg, h = seam.gas_near_wall(U)
-            Ts = seam.shell_step(Ts, dt, seam.R @ h, seam.R @ Tg)
-        else:
-            Ts = seam.shell_step(Ts, dt, h_dec, T_dec)
-    p_ref = acc / n
-    lam_end = lam
-
-    U, acc = U0.copy(), 0.0
-    for _ in range(n):
-        U, flow, _q, _Tf = seam.gas_step(U, dt, lam0)
-        acc += seam.power(lam0, flow)
-    p_held = acc / n
+    (p_ref, lam_end), p_held = _both(
+        (_ref_column, (seam, U0, n, dt, scalar_trace, two_way, h_dec, T_dec)),
+        (_held_column, (seam, U0, n, dt, lam0)))
 
     lag = float(np.linalg.norm(lam_end - lam0) / np.sqrt(lam0.size))
-    return dict(interval=interval, ratio=n, dt_gas=dt,
-                sigma=abs(p_held - p_ref) / abs(p_ref), lag=lag,
-                lag_max=float(np.max(np.abs(lam_end - lam0))),
-                p_ref=float(p_ref), p_held=float(p_held),
-                lag_rate=lag / interval, scalar_trace=bool(scalar_trace),
-                two_way=bool(two_way))
+    result = dict(interval=interval, ratio=n, dt_gas=dt,
+                  sigma=abs(p_held - p_ref) / abs(p_ref), lag=lag,
+                  lag_max=float(np.max(np.abs(lam_end - lam0))),
+                  p_ref=float(p_ref), p_held=float(p_held),
+                  lag_rate=lag / interval, scalar_trace=bool(scalar_trace),
+                  two_way=bool(two_way))
+    _record(key, dict(result=result, wall_s=time.perf_counter() - t0,
+                      substeps=seam.gas_substeps - s0,
+                      marched_s=seam.gas_marched_s - m0))
+    return result
 
 
 def sigma_uniform(seam: BCSeam, U0, interval: float, ratio: int,
@@ -382,17 +499,19 @@ def sigma_uniform(seam: BCSeam, U0, interval: float, ratio: int,
     rather than of the run.  Evaluated through the same functional `lag_defect`
     reads, which is the part CS-11 had to fix.
     """
-    def power_of(trace):
-        n = max(1, int(ratio))
-        U, acc = U0.copy(), 0.0
-        for _ in range(n):
-            U, flow, _q, _Tf = seam.gas_step(U, interval / n, trace)
-            acc += seam.power(trace, flow)
-        return acc / n
-
-    pa = power_of(lam)
-    pb = power_of(lam + shift)
+    pa, pb = _both((_power_of, (seam, U0, interval, ratio, lam)),
+                   (_power_of, (seam, U0, interval, ratio, lam + shift)))
     return abs(pb - pa) / abs(pa), pa
+
+
+def _power_of(seam, U0, interval, ratio, trace):
+    """`sigma_uniform`'s inner march, at module level so it can be forked."""
+    n = max(1, int(ratio))
+    U, acc = U0.copy(), 0.0
+    for _ in range(n):
+        U, flow, _q, _Tf = seam.gas_step(U, interval / n, trace)
+        acc += seam.power(trace, flow)
+    return acc / n
 
 
 # ---------------------------------------------------------------------------
@@ -850,7 +969,7 @@ def stage_anchor(out: dict, a) -> None:
     seam, U0 = out["_seam"], out["_U0"]
     t0 = time.perf_counter()
     r = lag_defect(seam, U0, ANCHOR_INTERVAL, DECLARED_RATIO)
-    r["wall_s"] = time.perf_counter() - t0
+    r["wall_s"] = r.pop("_wall_s", time.perf_counter() - t0)
     r["control"] = False
     sl = out.get("slope", {})
     if sl:

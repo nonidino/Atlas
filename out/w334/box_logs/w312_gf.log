@@ -1,0 +1,35 @@
+====================================================================================
+W312 -- ADVEC at the declared clock, 1 seams, 8 workers
+====================================================================================
+
+=== control: the recorded request set must be deterministic ===
+  two independent recordings at dt_scale=0.001: 156 and 156 traces, identical sets: True
+
+=== the reduced cadence, for the comparison (dt_scale=0.001) ===
+  g-f   beta 2.57829e-12  kappa 33.79      omega 0.7039     dim M 77   shares {'g': 0.0, 'f': 1.0}
+  reduced-cadence arm: 2 s
+
+=== recording the declared-clock request set ===
+  156 distinct traces: {'g-f': 156}
+  by agent: {'f': 78, 'g': 78}
+
+=== filling 156 responses across 8 workers ===
+      25/ 156      56 s elapsed   0.44 calls/s  eta   295 s
+      50/ 156     101 s elapsed   0.49 calls/s  eta   214 s
+      75/ 156     143 s elapsed   0.52 calls/s  eta   155 s
+     100/ 156     173 s elapsed   0.58 calls/s  eta    97 s
+     125/ 156     200 s elapsed   0.62 calls/s  eta    50 s
+     150/ 156     228 s elapsed   0.66 calls/s  eta     9 s
+     156/ 156     236 s elapsed   0.66 calls/s  eta     0 s
+  filled in 236 s; serial equivalent 1844 s; speedup 7.81x
+
+=== assembling, with the framework doing its own arithmetic ===
+  g-f   beta 3.83691e-12  kappa 4428       omega 0.9965     dim M 77   shares {'g': 0.0, 'f': 1.0}
+
+=== what the reduced cadence was hiding ===
+  seam   beta reduced   beta declared  ratio      sign same?
+  g-f    2.57829e-12    3.83691e-12    1.488      True      
+
+  Tier 79's anchor on e-f moved beta by 42.8x at dim M = 8.
+
+total 301 s (0.08 h)

@@ -1,0 +1,7 @@
+e flux rusanov (a, b stay hllc), inviscid
+  macro 1  e  5.3e-16 4.4e-16 5.9e-16 7.9e-16 1.1e-15
+  macro 2  e  5.2e-16 6.0e-16 7.5e-16 1.7e-15 1.0e-15
+  macro 3  e  7.9e-16 6.7e-16 5.9e-16 6.7e-16 1.0e-15
+  macro 4  e  1.2e-15 8.8e-16 7.7e-16 9.9e-16 1.1e-15
+  macro 5  e  5.7e-15 5.7e-15 5.9e-15 6.1e-15 5.7e-15
+wall 144 s

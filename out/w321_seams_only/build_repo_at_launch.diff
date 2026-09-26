@@ -1,0 +1,1358 @@
+diff --git a/src/atlas/config/__init__.py b/src/atlas/config/__init__.py
+index 8ebe77d..819b31d 100644
+--- a/src/atlas/config/__init__.py
++++ b/src/atlas/config/__init__.py
+@@ -95,11 +95,27 @@ class EdgeCfg:
+     interface: str                 # constructor name in geometry/contours.py
+ 
+ 
++@dataclass(frozen=True)
++class RecordedCfg:
++    """An interface that is physically there, exchanged by the coupler and
++    recorded in every episode, but NOT declared to the model. Declaring it is a
++    design decision about the token graph; recording it means that decision
++    never needs the corpus regenerated."""
++    src: str
++    dst: str
++    note: str
++
++
+ @dataclass(frozen=True)
+ class RegionCfg:
+     name: str
+     z: tuple[float, float]
+     y_halfwidth: float
++    # What a solid face bordering this region sees, when it borders one: the
++    # region has no agent, so its boundary condition is a declaration, not a
++    # result. None when no solid face borders it.
++    wall_h: float | None = None          # W/(m^2 K); 0 is adiabatic
++    wall_p_gauge: float | None = None    # Pa above the local ambient pressure
+ 
+ 
+ @dataclass(frozen=True)
+@@ -116,6 +132,7 @@ class AtlasConfig:
+     edge_list: tuple[EdgeCfg, ...]
+     edge_types: tuple[str, ...]
+     unmodelled: tuple[RegionCfg, ...]
++    recorded_interfaces: tuple[RecordedCfg, ...] = ()
+     _raw: str = ""         # verbatim YAML text, for the fingerprint
+ 
+     # -- lookups ------------------------------------------------------------
+@@ -205,14 +222,21 @@ def load_config(path: str | Path | None = None) -> AtlasConfig:
+         edge_list=edge_list,
+         edge_types=tuple(d["edge_types"]),
+         unmodelled=tuple(
+-            RegionCfg(name=r["name"], z=tuple(r["z"]), y_halfwidth=float(r["y_halfwidth"]))
++            RegionCfg(name=r["name"], z=tuple(r["z"]), y_halfwidth=float(r["y_halfwidth"]),
++                      wall_h=None if r.get("wall_h") is None else float(r["wall_h"]),
++                      wall_p_gauge=(None if r.get("wall_p_gauge") is None
++                                    else float(r["wall_p_gauge"])))
+             for r in d.get("unmodelled", [])
+         ),
++        recorded_interfaces=tuple(
++            RecordedCfg(src=r["src"], dst=r["dst"], note=" ".join(str(r["note"]).split()))
++            for r in d.get("recorded_interfaces", [])
++        ),
+         _raw=raw,
+     )
+ 
+ 
+ __all__ = [
+     "AtlasConfig", "ModelCfg", "GeometryCfg", "AgentCfg", "EdgeCfg", "RegionCfg",
+-    "load_config", "DEFAULT_CONFIG",
++    "RecordedCfg", "load_config", "DEFAULT_CONFIG",
+ ]
+diff --git a/src/atlas/config/atlas_0_1.yaml b/src/atlas/config/atlas_0_1.yaml
+index 18f7b58..6e96443 100644
+--- a/src/atlas/config/atlas_0_1.yaml
++++ b/src/atlas/config/atlas_0_1.yaml
+@@ -216,8 +216,29 @@ edge_list:
+ 
+ edge_types: [heat, pressure, stress, fluid, conservation]
+ 
++# Interfaces that are physically there, exchanged by the coupler and RECORDED in
++# every episode's /iface, but NOT declared to the model. Declaring one is a
++# decision about the token graph (and moves the spec's edge count); recording it
++# means that decision never needs the corpus regenerated. The same three the
++# atlas-0.1 branch records under decision D4. The shell's 8 mm aft face against
++# the plume (c-f) is sub-cell at every resolution here and carries no exchange,
++# so there is nothing to record.
++recorded_interfaces:
++  - {src: a, dst: c, note: "the reaction zone's own lateral walls, z in [0, 0.12]; b-c
++                            starts at the a-b plane"}
++  - {src: e, dst: c, note: "the diverging nozzle's inner wall, z in [z_throat, z_exit]
++                            -- the hottest wall in the engine; b-c stops at the throat"}
++  - {src: d, dst: f, note: "f's inlet outside the nozzle exit, |y| < plume_halfwidth at
++                            z = z_exit; d-g covers only |y| >= plume_halfwidth"}
++
+ # Regions inside the modelled bounding box that no agent covers, declared so the
+ # "agents cover the modelled region" assertion is exact rather than vacuous.
++#
++# tank_interior borders the airframe's inner face over the barrel, z in [-4, 0],
++# and no gas agent is there to give that face a boundary condition -- so it is
++# declared: adiabatic, at the local ambient pressure (zero net pressure load on
++# the barrel skin). The coupler used to stretch the chamber wall's 9-10 MPa and
++# its heat over this whole face instead (generate._step_structure, by index).
+ unmodelled:
+-  - {name: tank_interior,   z: [-4.0, 0.0],  y_halfwidth: 0.10}
++  - {name: tank_interior,   z: [-4.0, 0.0],  y_halfwidth: 0.10, wall_h: 0.0, wall_p_gauge: 0.0}
+   - {name: forebody_slot,   z: [-5.0, -4.0], y_halfwidth: 0.108}
+diff --git a/src/atlas/data/generate.py b/src/atlas/data/generate.py
+index ced465f..efc4485 100644
+--- a/src/atlas/data/generate.py
++++ b/src/atlas/data/generate.py
+@@ -7,7 +7,7 @@ macro step, which is exactly what the surrogate will imitate (spec §3.4):
+ 
+     for macro_step in range(N):
+         advance a, b, e            # walls at c's current surface temperature
+-        advance d, f, g            # freestream from atmosphere(h); f's inlet from e
++        advance d, f, g            # freestream = the rigid body's relative wind
+         interface fluxes
+         thermostruct step
+         loads -> trajectory
+@@ -18,20 +18,49 @@ how honestly: a cheaper episode is a physically correct run of a shorter window
+ on a coarser grid, and `/meta` records `full_fidelity` so a reduced run can never
+ be mistaken for a production one. See the implementation log for why the
+ production setting is not reachable on CPU.
++
++**Every seam is wired BY POSITION, in the receiving block's own gas model.**
++Rewritten 2026-09-23 after an audit of the first marched episode (the research
++vault's `scripts/w321_seam_audit.py` and `rocket-episode-seam-audit` page). What
++each exchange does now, and what it did before:
++
++* The airframe's inner face takes each station's heat and pressure from the
++  gas wall at the SAME z -- `a`, `b` or `e` -- and over the tank barrel, whose
++  interior no agent covers, the wall condition the config declares for that
++  region. It used to stretch `b`'s 0.28 m of wall over the whole 4.7 m airframe
++  by array index. The outer face takes `d`'s wall at the same z (it used to
++  stretch `d`'s 5.7 m onto the shell's 4.7 m).
++* Every gas wall takes the airframe's own surface temperature at its z (W315 --
++  it used to take ONE number, the mean over the whole shell).
++* Each shell panel is loaded on its own gas side (`grid.shell_faces`): the
++  lower panel's gas side is its last j edge, and it used to be loaded inside
++  out.
++* Plane seams map by position (the old `_remap` normalised both spans to [0, 1]
++  first); e-f maps conservatively; `d` feeds `g`'s inlet and the part of `f`'s
++  inlet outside the nozzle exit (d-g is declared, d-f is not, both are real).
++* A state crossing between the plume gas and air is re-expressed for the
++  receiver at the same pressure, temperature and velocity (`_as_gas`). Passing
++  the conserved vector unchanged had the receiver read p' = (g'-1)/(g-1) p.
++* `g`'s plume hole sees `f`'s EDGE rows, one per side, not `f`'s transverse mean.
++* Loads integrate pressure AND wall shear over both `d` panels against the
++  body's OUTWARD normal (the index-oriented `n_j` cancelled the drag and made a
++  side force), and one body->world rotation serves thrust and aero, with the
++  nose at body -z (W322 was this rotation, not a sign).
++* The freestream is the rigid body's relative wind, so it follows the vehicle's
++  speed and carries the sweep point's angle of attack -- which nothing applied.
+ """
+ from __future__ import annotations
+ 
+ import time
+-from dataclasses import dataclass, field
++from dataclasses import dataclass
+ from pathlib import Path
+ 
+ import numpy as np
+ 
+ from ..config import AtlasConfig, load_config
+-from ..geometry.contours import nozzle_inner, shell_outer
+ from ..solvers import atmosphere, thermo, trajectory
+-from ..solvers.compressible2d import BC, Compressible2D, GasConfig, ReactionConfig
+-from ..solvers.grid import Block, build_blocks
++from ..solvers.compressible2d import BC, NG, Compressible2D, GasConfig, ReactionConfig
++from ..solvers.grid import build_blocks, shell_faces
+ from ..solvers.thermostruct2d import ShellMesh, SolidMaterial, ThermoStruct2D
+ from . import normalize, schema
+ from .sweep import T_INJECT, SweepPoint, q_rxn_for
+@@ -55,30 +84,99 @@ class EpisodeSpec:
+         return self.coarsen == 1 and self.n_macro >= 200
+ 
+ 
+-def _coarsen_block(b: Block, k: int) -> Block:
+-    if k <= 1:
+-        return b
+-    return Block(b.name, b.nodes[::k, ::k].copy(), b.blanked[::k, ::k].copy())
++# --------------------------------------------------------------------------
++# exchange primitives
++# --------------------------------------------------------------------------
+ 
+ 
+ def _face_state(U: np.ndarray, side: str) -> np.ndarray:
+     return {"imin": U[:1], "imax": U[-1:], "jmin": U[:, :1], "jmax": U[:, -1:]}[side]
+ 
+ 
+-def _remap(state: np.ndarray, y_src: np.ndarray, y_dst: np.ndarray) -> np.ndarray:
+-    """Interpolate a face state onto a neighbour's face stations.
++def _remap(state: np.ndarray, x_src: np.ndarray, x_dst: np.ndarray) -> np.ndarray:
++    """Interpolate a face state onto a neighbour's face stations BY POSITION,
++    clamped at the ends.
+ 
+-    Grids differ across most interfaces (b has 80 transverse cells, e has 96), so
+-    a copy is not available. Interpolation happens ONLY on the coupling faces --
+-    never on the stored fields, which stay on the model's own cells."""
+-    s_src = (y_src - y_src.min()) / max(y_src.ptp(), 1e-30)
+-    s_dst = np.clip((y_dst - y_dst.min()) / max(y_dst.ptp(), 1e-30), 0.0, 1.0)
+-    out = np.empty((y_dst.size, state.shape[-1]))
++    Grids differ across most interfaces (b has 80 transverse cells, e has 96),
++    so a copy is not available. Interpolation happens ONLY on the coupling faces
++    -- never on the stored fields, which stay on the model's own cells. This
++    used to normalise both coordinate sets to [0, 1] first, which is a stretch
++    wherever the two spans differ."""
++    x_src = np.asarray(x_src, dtype=float)
++    x_dst = np.atleast_1d(np.asarray(x_dst, dtype=float))
++    out = np.empty((x_dst.size, state.shape[-1]))
+     for c in range(state.shape[-1]):
+-        out[:, c] = np.interp(s_dst, s_src, state[:, c])
++        out[:, c] = np.interp(x_dst, x_src, state[:, c])
+     return out
+ 
+ 
++def _cell_average(values, edges_src, edges_dst):
++    """Overlap-weighted average of cell values onto destination intervals.
++
++    Returns ``(avg, covered)``: the average over the part of each destination
++    interval that some source cell overlaps, and that part as a fraction of the
++    interval. Integrals are preserved: sum(avg * covered * width_dst) equals the
++    overlapped part of sum(values * width_src)."""
++    es = np.asarray(edges_src, dtype=float)
++    ed = np.asarray(edges_dst, dtype=float)
++    lo = np.maximum(es[None, :-1], ed[:-1, None])
++    hi = np.minimum(es[None, 1:], ed[1:, None])
++    w = np.clip(hi - lo, 0.0, None)                      # [n_dst, n_src]
++    tot = w.sum(axis=1)
++    v = np.asarray(values, dtype=float)
++    flat = v.reshape(v.shape[0], -1)
++    avg = (w @ flat) / np.maximum(tot, 1e-300)[:, None]
++    return avg.reshape((ed.size - 1,) + v.shape[1:]), tot / np.diff(ed)
++
++
++def _as_gas(U: np.ndarray, src: GasConfig, dst: GasConfig) -> np.ndarray:
++    """A conserved state of one gas, re-expressed for a block that runs another.
++
++    Pressure, temperature and velocity are what is continuous across a contact
++    between two gases, so those are kept and the density follows the receiver's
++    R. Handing the conserved vector across unchanged keeps rho and E instead,
++    and the receiver then reads p' = (g'-1)/(g-1) p and T' = p'/(rho R'): air
++    read by the plume's gas model came out at 0.437 T and 0.550 p, and plume gas
++    read as air at 2.287 T and 1.818 p."""
++    if src.gamma == dst.gamma and src.R == dst.R:
++        return U
++    W = thermo.cons_to_prim(U, src.gamma)
++    T = W[..., 3] / (np.maximum(W[..., 0], thermo.RHO_FLOOR) * src.R)
++    W = W.copy()
++    W[..., 0] = W[..., 3] / (dst.R * np.maximum(T, 1.0))
++    return thermo.prim_to_cons(W, dst.gamma)
++
++
++def _outward(blk, side: str):
++    """(unit outward normal, face length) of one block face. `Block`'s own
++    normals are index-oriented (W309): +i / +j, which is outward on a max face
++    and INWARD on a min face."""
++    if side == "imin":
++        return -blk.n_i[0], blk.a_i[0]
++    if side == "imax":
++        return blk.n_i[-1], blk.a_i[-1]
++    if side == "jmin":
++        return -blk.n_j[:, 0], blk.a_j[:, 0]
++    return blk.n_j[:, -1], blk.a_j[:, -1]
++
++
++def _face_cells(U: np.ndarray, side: str) -> np.ndarray:
++    """The cells adjacent to one face, as [n_face, nv]."""
++    return {"imin": U[0], "imax": U[-1], "jmin": U[:, 0], "jmax": U[:, -1]}[side]
++
++
++def _face_mid(blk, side: str) -> np.ndarray:
++    """Face midpoints, [n_face, 2]."""
++    n = {"imin": blk.nodes[0], "imax": blk.nodes[-1],
++         "jmin": blk.nodes[:, 0], "jmax": blk.nodes[:, -1]}[side]
++    return 0.5 * (n[:-1] + n[1:])
++
++
++def _face_centroid(blk, side: str) -> np.ndarray:
++    return {"imin": blk.centroid[0], "imax": blk.centroid[-1],
++            "jmin": blk.centroid[:, 0], "jmax": blk.centroid[:, -1]}[side]
++
++
+ class CoupledEpisode:
+     """One episode: build every solver, wire the declared interfaces, march."""
+ 
+@@ -90,6 +188,7 @@ class CoupledEpisode:
+         self.geo = cfg.geometry
+         self.scales = normalize.refs_for_episode(cfg, self.p)
+         self.mat = SolidMaterial()
++        self.tank = self._tank_wall()
+ 
+         gamma, R = self.p.gamma_gas, self.p.R_gas
+         self.gas_cfg = GasConfig(gamma=gamma, R=R, riemann=spec.riemann,
+@@ -98,11 +197,25 @@ class CoupledEpisode:
+                                  riemann=spec.riemann, inviscid=spec.inviscid)
+         self.reaction = self._reaction_for_residence(gamma, R)
+ 
+-        self.blocks = {a.id: tuple(_coarsen_block(b, spec.coarsen)
+-                                   for b in build_blocks(a, cfg)) for a in cfg.agents}
++        # built AT the episode's resolution, not subsampled from the full one:
++        # subsampling keeps whatever nodes happen to be multiples of k, and on
++        # `g` it moved the plume hole off centre (grid.build_blocks)
++        self.blocks = {a.id: build_blocks(a, cfg, spec.coarsen) for a in cfg.agents}
+         self._build_solvers()
+         self._init_state()
+ 
++    def _tank_wall(self):
++        """The wall condition the config declares for the shell's inner face
++        over the unmodelled tank barrel: (h [W/m^2K], gauge pressure [Pa])."""
++        for r in self.cfg.unmodelled:
++            if r.name == "tank_interior":
++                if r.wall_h is None or r.wall_p_gauge is None:
++                    break
++                return float(r.wall_h), float(r.wall_p_gauge)
++        raise ValueError("config: unmodelled/tank_interior must declare wall_h and "
++                         "wall_p_gauge -- the shell's inner face over the barrel has "
++                         "no gas agent, so its boundary condition is a declaration")
++
+     def _reaction_for_residence(self, gamma: float, R: float) -> ReactionConfig:
+         """Pick the pre-exponential from the RESIDENCE TIME of agent `a`.
+ 
+@@ -115,7 +228,8 @@ class CoupledEpisode:
+         geo = self.geo
+         rho_inj = self.p.p_c / (R * T_INJECT)
+         u_inj = self.scales.mdot / (2.0 * geo.chamber_halfheight) / rho_inj
+-        t_res = 0.12 / max(u_inj, 1.0)                  # agent `a` spans z in [0, 0.12]
++        a = self.cfg.agent("a")
++        t_res = (a.z[1] - a.z[0]) / max(u_inj, 1.0)
+         self.residence = t_res
+         T_act = 6000.0
+         A = (1.0 / (0.1 * t_res)) * float(np.exp(T_act / T_INJECT))
+@@ -126,70 +240,191 @@ class CoupledEpisode:
+     def _build_solvers(self):
+         self.sol: dict[str, list[Compressible2D]] = {}
+         for a in GAS_AGENTS:
+-            gc = self.gas_cfg if a in ENGINE_AGENTS or a == "f" else self.air_cfg
+             rxn = self.reaction if a == "a" else None
+-            self.sol[a] = [Compressible2D(b, gc, reaction=rxn, bcs={})
++            self.sol[a] = [Compressible2D(b, self._gas(a), reaction=rxn, bcs={})
+                            for b in self.blocks[a]]
+-        shell = self.blocks["c"]
+-        self.shell_mesh = [ShellMesh(b.nodes) for b in shell]
++        self.shell_mesh = []
++        for b in self.blocks["c"]:
++            inner_j, outer_j = shell_faces(b.nodes)
++            self.shell_mesh.append(ShellMesh(b.nodes, inner_j=inner_j, outer_j=outer_j))
+         self.shell = [ThermoStruct2D(m, self.mat) for m in self.shell_mesh]
+ 
++    def _gas(self, agent: str) -> GasConfig:
++        return self.gas_cfg if agent in ENGINE_AGENTS or agent == "f" else self.air_cfg
++
+     def _init_state(self):
+         p = self.p
+-        gamma, R = p.gamma_gas, p.R_gas
+-        T_inf, p_inf, rho_inf, c_inf = (float(x) for x in atmosphere.properties(p.h0))
++        gamma = p.gamma_gas
++        _, _, _, c_inf = (float(x) for x in atmosphere.properties(p.h0))
+         self.v_flight = p.M_inf * c_inf
+-        rho_c = p.p_c / (R * p.T_c)
++        # the sweep's angle of attack is the body's pitch against its velocity:
++        # the vehicle climbs vertically and is pitched by alpha
++        self.rigid = trajectory.initial_state(h0=p.h0, v0=self.v_flight,
++                                              theta0=np.pi / 2 + np.radians(p.alpha))
++        rho_c = p.p_c / (p.R_gas * p.T_c)
+ 
+         self.U: dict[str, list[np.ndarray]] = {}
+         for a in ENGINE_AGENTS:
+             nv = 5 if a == "a" else 4
+-            for b, _ in zip(self.blocks[a], [0]):
+-                nz, ny = b.shape
+-                W = np.zeros((nz, ny, nv))
+-                W[..., 0] = rho_c
+-                W[..., 1] = 50.0
+-                W[..., 3] = p.p_c
+-                if nv == 5:
+-                    W[..., 4] = 0.0
+-                self.U[a] = [thermo.prim_to_cons(W, gamma)]
++            b = self.blocks[a][0]
++            nz, ny = b.shape
++            W = np.zeros((nz, ny, nv))
++            W[..., 0] = rho_c
++            W[..., 1] = 50.0
++            W[..., 3] = p.p_c
++            self.U[a] = [thermo.prim_to_cons(W, gamma)]
++        U_air = thermo.prim_to_cons(self._freestream()[None, None, :], atmosphere.GAMMA_AIR)
+         for a in EXTERNAL_AGENTS:
+-            gam = gamma if a == "f" else atmosphere.GAMMA_AIR
+-            self.U[a] = []
+-            for b in self.blocks[a]:
+-                nz, ny = b.shape
+-                W = np.zeros((nz, ny, 4))
+-                W[..., 0] = rho_inf
+-                W[..., 1] = self.v_flight
+-                W[..., 3] = p_inf
+-                self.U[a].append(thermo.prim_to_cons(W, gam))
++            one = _as_gas(U_air, self.air_cfg, self._gas(a))
++            self.U[a] = [np.broadcast_to(one, b.shape + (4,)).copy() for b in self.blocks[a]]
+         self.T_shell = [np.full(m.n_nodes, 288.15) for m in self.shell_mesh]
+         self.sigma = [np.zeros((m.shape[0] * m.shape[1], 3)) for m in self.shell_mesh]
+         self.u_shell = [np.zeros((m.n_nodes, 2)) for m in self.shell_mesh]
+ 
+-        self.rigid = trajectory.initial_state(h0=p.h0, v0=self.v_flight)
+         self.loads = np.zeros(4)
+         self.t = 0.0
+         self.substeps = 0
+ 
+-    # ------------------------------------------------------- wall temperatures
+-    def _wall_T(self, agent: str) -> float:
+-        """Mean shell surface temperature seen by a gas agent. Scalar in 0.1: the
+-        per-station map is available (`T_shell`) but the gas agents' wall BC takes
+-        a per-face array only on the faces that touch the shell, and `a`'s lateral
+-        walls are an UNDECLARED a-c interface (see the implementation log)."""
+-        return float(np.mean([T.mean() for T in self.T_shell]))
++    # ------------------------------------------------------ frames and the air
++    def _body_axes(self) -> tuple[np.ndarray, np.ndarray]:
++        """World-frame images of the body axes.
++
++        theta is the direction the NOSE points, and the nose is at body -z (the
++        injector face is z = 0 and the exhaust leaves towards +z), so +z_body
++        maps to -(cos theta, sin theta). +y_body follows by a proper rotation.
++        `_compute_loads` used +z_body -> +(cos theta, sin theta) for thrust and
++        aero alike, which pointed the thrust down (W322) and would have pointed
++        the drag forward."""
++        th = float(self.rigid[2])
++        ez = -np.array([np.cos(th), np.sin(th)])
++        ey = np.array([-ez[1], ez[0]])
++        return ez, ey
+ 
+     def _atm(self):
+         h = float(self.rigid[1])
+         T, p_, rho, c = (float(x) for x in atmosphere.properties(h))
+         return T, p_, rho, c
+ 
++    def _freestream(self) -> np.ndarray:
++        """(rho, u, v, p) of the undisturbed air in BODY axes: the air is at rest
++        in the world frame, so the relative wind is minus the vehicle's velocity,
++        rotated into the body. This used to be (rho, v_flight, 0, p) with
++        v_flight frozen at t = 0 -- neither the vehicle's speed nor its angle of
++        attack reached the flow."""
++        _, p_, rho, _ = self._atm()
++        ez, ey = self._body_axes()
++        wind = -np.asarray(self.rigid[3:5], dtype=float)
++        return np.array([rho, float(wind @ ez), float(wind @ ey), p_])
++
++    # ------------------------------------------------- walls, by position in z
++    def _wall_flux(self, agent: str, k: int, side: str):
++        """(heat transfer coefficient, gas temperature, pressure) along a wall face
++        of a gas block, one entry per wall cell. The conduction-limited h is the
++        same k/dn `Compressible2D` uses on that face."""
++        s = self.sol[agent][k]
++        blk = s.block
++        U = self.U[agent][k]
++        cfg = s.cfg
++        W = thermo.cons_to_prim(U, cfg.gamma)
++        T = W[..., 3] / (W[..., 0] * cfg.R)
++        if side == "jmax":
++            dn = 0.5 * blk.vol[:, -1] / np.maximum(blk.a_j[:, -1], 1e-30)
++            T_in, p_in = T[:, -1], W[:, -1, 3]
++        else:
++            dn = 0.5 * blk.vol[:, 0] / np.maximum(blk.a_j[:, 0], 1e-30)
++            T_in, p_in = T[:, 0], W[:, 0, 3]
++        mu = thermo.sutherland(T_in, cfg.mu_ref, cfg.T_mu_ref, cfg.sutherland_S)
++        k_gas = mu * cfg.cp / cfg.Pr
++        h = k_gas / np.maximum(dn, 1e-9)                # conduction-limited h
++        return h, T_in, p_in
++
++    def _wall_edges(self, agent: str, k: int, side: str) -> np.ndarray:
++        """z of the wall face's nodes, [n_cells + 1]."""
++        return self.blocks[agent][k].nodes[:, -1 if side == "jmax" else 0, 0]
++
++    def _engine_wall(self, side: str):
++        """The engine's inner wall on one side, a then b then e, contiguous in z:
++        (z_edges, h, T_gas, p) per wall cell."""
++        zs, hs, Ts, ps = [], [], [], []
++        for agent in ENGINE_AGENTS:
++            h, T, p = self._wall_flux(agent, 0, side)
++            z = self._wall_edges(agent, 0, side)
++            if zs and not np.isclose(z[0], zs[-1][-1], rtol=0.0, atol=1e-12):
++                raise AssertionError(f"engine wall not contiguous at {agent}: "
++                                     f"{zs[-1][-1]} vs {z[0]}")
++            zs.append(z if not zs else z[1:])
++            hs.append(h); Ts.append(T); ps.append(p)
++        return np.concatenate(zs), np.concatenate(hs), np.concatenate(Ts), np.concatenate(ps)
++
++    def _panel(self, side: str) -> int:
++        """Shell panel on one side of the axis: the upper panel faces the gas
++        blocks' jmax walls."""
++        for k, m in enumerate(self.shell_mesh):
++            if (m.nodes[..., 1].mean() > 0) == (side == "jmax"):
++                return k
++        raise AssertionError(side)
++
++    def _shell_face(self, k: int, face: str):
++        """(z of the face's nodes, the shell's nodal temperature there)."""
++        m = self.shell_mesh[k]
++        j = m.inner_j if face == "inner" else m.outer_j
++        T = self.T_shell[k].reshape(m.nodes.shape[0], m.nodes.shape[1])
++        return m.nodes[:, j, 0], T[:, j]
++
++    def _wall_T(self, agent: str, k: int, side: str) -> np.ndarray:
++        """Per-cell wall temperature for a gas block's wall face: the airframe's
++        own surface temperature at the same z -- the trace of its finite-element
++        field, linear along the face. This used to be ONE number, the mean of
++        every station of both panels (W315). Where `d`'s wall runs ahead of the
++        airframe (the declared forebody slot) it takes the nose's value."""
++        if agent in ENGINE_AGENTS:
++            panel, face = self._panel(side), "inner"
++        else:
++            panel, face = k, "outer"
++        zs, Ts = self._shell_face(panel, face)
++        z = self._wall_edges(agent, k, side)
++        return np.interp(0.5 * (z[:-1] + z[1:]), zs, Ts)
++
++    def _shell_inner_loads(self, k: int, p_inf: float):
++        """(h, T_gas, p) on panel k's inner face, one entry per face segment,
++        averaged over the gas wall cells at the same z. Over the tank barrel,
++        which no gas agent covers, the config's declared wall condition."""
++        side = "jmax" if self.shell_mesh[k].nodes[..., 1].mean() > 0 else "jmin"
++        zE, hE, TE, pE = self._engine_wall(side)
++        zs, Ts = self._shell_face(k, "inner")
++        avg, cov = _cell_average(np.stack([hE, hE * TE, pE], axis=-1), zE, zs)
++        h_t, pg_t = self.tank
++        T_face = 0.5 * (Ts[:-1] + Ts[1:])
++        h = cov * avg[:, 0] + (1.0 - cov) * h_t
++        hT = cov * avg[:, 1] + (1.0 - cov) * h_t * T_face
++        p = cov * avg[:, 2] + (1.0 - cov) * (p_inf + pg_t)
++        T_gas = np.where(h > 0.0, hT / np.maximum(h, 1e-300), T_face)
++        return h, T_gas, p
++
++    def _shell_outer_loads(self, k: int):
++        """(h, T_gas, p) on panel k's outer face from agent `d`'s panel k wall,
++        averaged over the wall cells at the same z. `d` starts a metre ahead of
++        the nose, so every station is covered."""
++        wall_side = self._d_wall_side(k)
++        h, T, p = self._wall_flux("d", k, wall_side)
++        zd = self._wall_edges("d", k, wall_side)
++        zs, _ = self._shell_face(k, "outer")
++        avg, cov = _cell_average(np.stack([h, h * T, p], axis=-1), zd, zs)
++        if not np.allclose(cov, 1.0):
++            raise AssertionError(f"d does not cover shell panel {k}'s outer face")
++        return avg[:, 0], avg[:, 1] / np.maximum(avg[:, 0], 1e-300), avg[:, 2]
++
++    def _d_wall_side(self, k: int) -> str:
++        """`d`'s wall face on panel k: the panel's side nearer the axis."""
++        blk = self.blocks["d"][k]
++        y0 = np.abs(blk.nodes[:, 0, 1]).mean()
++        y1 = np.abs(blk.nodes[:, -1, 1]).mean()
++        return "jmin" if y0 < y1 else "jmax"
++
+     # -------------------------------------------------------------- one macro
+     def _wire_engine(self):
+-        p, geo = self.p, self.geo
++        geo = self.geo
+         Ua, Ub, Ue = self.U["a"][0], self.U["b"][0], self.U["e"][0]
+-        Tw = self._wall_T("engine")
+         ya = self.blocks["a"][0].centroid[-1, :, 1]
+         yb0 = self.blocks["b"][0].centroid[0, :, 1]
+         yb1 = self.blocks["b"][0].centroid[-1, :, 1]
+@@ -200,74 +435,112 @@ class CoupledEpisode:
+         # downstream boundary neither injects unburnt gas nor quenches the zone.
+         b_to_a = _remap(_face_state(Ub, "imin")[0], yb0, ya)
+         b_to_a = np.concatenate([b_to_a, _face_state(Ua, "imax")[0, :, 4:]], axis=-1)
++
++        def walls(agent):
++            return {s: BC("wall_noslip", {"T_wall": self._wall_T(agent, 0, s)})
++                    for s in ("jmin", "jmax")}
++
+         self.sol["a"][0].bcs = {
+             "imin": BC("inlet_massflow", {"mdot": mdot_flux, "T": T_INJECT}),
+             "imax": BC("prescribed", {"state": b_to_a[None]}),
+-            "jmin": BC("wall_noslip", {"T_wall": Tw}),
+-            "jmax": BC("wall_noslip", {"T_wall": Tw}),
++            **walls("a"),
+         }
+         self.sol["b"][0].bcs = {
+             "imin": BC("prescribed", {"state": _remap(_face_state(Ua, "imax")[0, :, :4], ya, yb0)[None]}),
+             "imax": BC("prescribed", {"state": _remap(_face_state(Ue, "imin")[0], ye0, yb1)[None]}),
+-            "jmin": BC("wall_noslip", {"T_wall": Tw}),
+-            "jmax": BC("wall_noslip", {"T_wall": Tw}),
++            **walls("b"),
+         }
+         _, p_inf, _, _ = self._atm()
+         self.sol["e"][0].bcs = {
+             "imin": BC("prescribed", {"state": _remap(_face_state(Ub, "imax")[0], yb1, ye0)[None]}),
+             "imax": BC("outflow", {"p_inf": p_inf}),
+-            "jmin": BC("wall_noslip", {"T_wall": Tw}),
+-            "jmax": BC("wall_noslip", {"T_wall": Tw}),
++            **walls("e"),
+         }
+ 
++    def _d_outlet(self, y: np.ndarray, dst: GasConfig) -> np.ndarray:
++        """`d`'s state at its outlet plane z = z_exit, at transverse positions y,
++        in the receiver's gas model. Panel by sign; within a panel by position,
++        clamped at the wall (the shell's 8 mm base is part of `d`'s first cell)."""
++        out = np.empty((y.size, 4))
++        for k, blk in enumerate(self.blocks["d"]):
++            sel = (y > 0) if blk.nodes[..., 1].mean() > 0 else (y <= 0)
++            if not sel.any():
++                continue
++            yc = blk.centroid[-1, :, 1]
++            order = np.argsort(yc)
++            st = _remap(self.U["d"][k][-1][order], yc[order], y[sel])
++            out[sel] = _as_gas(st, self.air_cfg, dst)
++        return out
++
+     def _wire_external(self):
+-        T_inf, p_inf, rho_inf, c_inf = self._atm()
+-        free = np.array([rho_inf, self.v_flight, 0.0, p_inf])
+-        Tw = self._wall_T("external")
+-        Ue = self.U["e"][0]
+-        ye = self.blocks["e"][0].centroid[-1, :, 1]
++        _, p_inf, _, _ = self._atm()
++        free = self._freestream()
+ 
+         for k, b in enumerate(self.blocks["d"]):
+-            wall_side = "jmin" if k == 1 else "jmax"      # panel 1 is the upper sheet
+-            far_side = "jmax" if k == 1 else "jmin"
++            wall_side = self._d_wall_side(k)
++            far_side = "jmax" if wall_side == "jmin" else "jmin"
+             self.sol["d"][k].bcs = {
+                 "imin": BC("freestream", {"prim": free}),
+                 "imax": BC("outflow", {"p_inf": p_inf}),
+-                wall_side: BC("wall_noslip", {"T_wall": Tw}),
++                wall_side: BC("wall_noslip", {"T_wall": self._wall_T("d", k, wall_side)}),
+                 far_side: BC("freestream", {"prim": free}),
+             }
+ 
+-        # f's inlet: the nozzle exit over |y| <= exit half-height, ambient
+-        # elsewhere. That "elsewhere" IS the undeclared d-f interface -- the
+-        # plume's upstream face is wider than the nozzle exit.
+-        yf = self.blocks["f"][0].centroid[0, :, 1]
+-        inlet = np.broadcast_to(thermo.prim_to_cons(free, atmosphere.GAMMA_AIR),
+-                                (yf.size, 4)).copy()
+-        core = np.abs(yf) <= self.geo.exit_halfheight
++        # f's inlet, by position: the nozzle exit over |y| <= exit half-height
++        # (conservatively -- e-f is a conservation-typed edge), and `d`'s outlet
++        # everywhere else. That "everywhere else" is the undeclared d-f interface;
++        # it used to be handed the freestream, in the wrong gas model.
++        fb, eb = self.blocks["f"][0], self.blocks["e"][0]
++        yf = fb.centroid[0, :, 1]
++        yf_edges = fb.nodes[0, :, 1]
++        ye_edges = eb.nodes[-1, :, 1]
++        core = (yf_edges[:-1] >= ye_edges[0] - 1e-12) & (yf_edges[1:] <= ye_edges[-1] + 1e-12)
++        inlet = np.empty((yf.size, 4))
+         if core.any():
+-            inlet[core] = _remap(_face_state(Ue, "imax")[0], ye, yf[core])
+-        # the g-f shear layer, both directions: f sees g's cells just outboard of
+-        # the plume, g sees f's state inside its blanked band.
+-        Ug = self.U["g"][0]
++            kk = np.flatnonzero(core)
++            edges = np.concatenate([yf_edges[kk], yf_edges[kk[-1] + 1:kk[-1] + 2]])
++            avg, cov = _cell_average(_face_state(self.U["e"][0], "imax")[0], ye_edges, edges)
++            if not np.allclose(cov, 1.0):
++                raise AssertionError("f's core inlet cells are not covered by e's exit")
++            inlet[core] = avg
++        if (~core).any():
++            inlet[~core] = self._d_outlet(yf[~core], self.gas_cfg)
++
++        # the g-f shear layer, both directions, on the node lines |y| = plume
++        # half-width that both blocks now share: f sees g's cells just outboard
++        # of the plume, g sees f's cells just inboard -- each in its own gas.
++        Ug, Uf = self.U["g"][0], self.U["f"][0]
+         j0, j1 = self.sol["g"][0]._hole
+-        g_lo = Ug[:, j0 - 1] if j0 > 0 else Ug[:, 0]
+-        g_hi = Ug[:, j1 + 1] if j1 + 1 < Ug.shape[1] else Ug[:, -1]
+-        yg = self.blocks["g"][0].centroid[:, 0, 0]      # z stations of g
+-        zf = self.blocks["f"][0].centroid[:, 0, 0]
++        zg = self.blocks["g"][0].centroid[:, 0, 0]
++        zf = fb.centroid[:, 0, 0]
++        g_lo = _as_gas(_remap(Ug[:, j0 - 1], zg, zf), self.air_cfg, self.gas_cfg)
++        g_hi = _as_gas(_remap(Ug[:, j1 + 1], zg, zf), self.air_cfg, self.gas_cfg)
+         self.sol["f"][0].bcs = {
+             "imin": BC("prescribed", {"state": inlet[None]}),
+             "imax": BC("outflow", {"p_inf": p_inf}),
+-            "jmin": BC("prescribed", {"state": _remap(g_lo, yg, zf)[:, None]}),
+-            "jmax": BC("prescribed", {"state": _remap(g_hi, yg, zf)[:, None]}),
++            "jmin": BC("prescribed", {"state": g_lo[:, None]}),
++            "jmax": BC("prescribed", {"state": g_hi[:, None]}),
+         }
++
++        # g's inlet is d's outlet over the live band (d-g, declared); the hole's
++        # inlet cells are blanked and only need to be finite
++        gb = self.blocks["g"][0]
++        yg = gb.centroid[0, :, 1]
++        g_in = np.broadcast_to(thermo.prim_to_cons(free, atmosphere.GAMMA_AIR), (yg.size, 4)).copy()
++        live = ~gb.blanked[0]
++        g_in[live] = self._d_outlet(yg[live], self.air_cfg)
+         self.sol["g"][0].bcs = {
+-            "imin": BC("freestream", {"prim": free}),
++            "imin": BC("prescribed", {"state": g_in[None]}),
+             "imax": BC("outflow", {"p_inf": p_inf}),
+             "jmin": BC("freestream", {"prim": free}),
+             "jmax": BC("freestream", {"prim": free}),
+         }
+-        # the plume hole is the declared g-f interface, not a wall
+-        self.sol["g"][0].hole_state = self.U["f"][0].mean(axis=1)
++        # the plume hole is the declared g-f interface, not a wall: each side of
++        # it sees f's own cells on that side, layer by layer
++        lo = np.stack([_remap(Uf[:, d], zf, zg) for d in range(NG)], axis=1)
++        hi = np.stack([_remap(Uf[:, -1 - d], zf, zg) for d in range(NG)], axis=1)
++        self.sol["g"][0].hole_state = (_as_gas(lo, self.gas_cfg, self.air_cfg),
++                                       _as_gas(hi, self.gas_cfg, self.air_cfg))
+ 
+     def _advance_gas(self, agents, dt):
+         for a in agents:
+@@ -275,107 +548,185 @@ class CoupledEpisode:
+                 self.U[a][k], n = s.advance(self.U[a][k], dt)
+                 self.substeps += n
+ 
+-    def _wall_flux(self, agent: str, k: int, side: str):
+-        """(heat flux, pressure) along a wall face of a gas block."""
+-        s = self.sol[agent][k]
+-        blk = s.block
+-        U = self.U[agent][k]
+-        cfg = s.cfg
+-        W = thermo.cons_to_prim(U, cfg.gamma)
+-        T = W[..., 3] / (W[..., 0] * cfg.R)
+-        if side == "jmax":
+-            dn = 0.5 * blk.vol[:, -1] / np.maximum(blk.a_j[:, -1], 1e-30)
+-            T_in, p_in = T[:, -1], W[:, -1, 3]
+-        else:
+-            dn = 0.5 * blk.vol[:, 0] / np.maximum(blk.a_j[:, 0], 1e-30)
+-            T_in, p_in = T[:, 0], W[:, 0, 3]
+-        mu = thermo.sutherland(T_in, cfg.mu_ref, cfg.T_mu_ref, cfg.sutherland_S)
+-        k_gas = mu * cfg.cp / cfg.Pr
+-        h = k_gas / np.maximum(dn, 1e-9)                # conduction-limited h
+-        return h, T_in, p_in
+-
+     def _step_structure(self, dt):
+-        _, p_inf, _, _ = self._atm()
++        T_inf, p_inf, _, _ = self._atm()
+         for k, ts in enumerate(self.shell):
+-            ni = ts.mesh.shape[0]
+-            h_in, T_in, p_in = self._wall_flux("b", 0, "jmax" if k == 1 else "jmin")
+-            h_out, T_out, p_out = self._wall_flux("d", k, "jmin" if k == 1 else "jmax")
+-            f = lambda v: np.interp(np.linspace(0, 1, ni), np.linspace(0, 1, v.size), v)  # noqa: E731
+-            self.T_shell[k] = ts.step_thermal(self.T_shell[k], dt, f(h_in), f(T_in),
+-                                              f(h_out), f(T_out), T_inf=self._atm()[0])
+-            self.u_shell[k], self.sigma[k] = ts.solve_mechanical(
+-                self.T_shell[k], f(p_in), f(p_out))
++            h_in, T_in, p_in = self._shell_inner_loads(k, p_inf)
++            h_out, T_out, p_out = self._shell_outer_loads(k)
++            self.T_shell[k] = ts.step_thermal(self.T_shell[k], dt, h_in, T_in,
++                                              h_out, T_out, T_inf=T_inf)
++            self.u_shell[k], self.sigma[k] = ts.solve_mechanical(self.T_shell[k], p_in, p_out)
+ 
+     # ---------------------------------------------------------- interface data
+     def _iface_records(self) -> dict[str, np.ndarray]:
+-        """One [C_edge, N] record per declared edge (spec §3.6)."""
++        """One [C_edge, N] record per declared edge (spec §3.6), plus one per
++        interface the config RECORDS without declaring (`recorded_interfaces`):
++        the coupler exchanges across those too, and a record means declaring one
++        later never needs the corpus regenerated."""
+         out = {}
+         for e in self.cfg.edge_list:
+             out[f"{e.src}-{e.dst}"] = self._iface_for(e.src, e.dst)
++        for r in self.cfg.recorded_interfaces:
++            out[f"{r.src}-{r.dst}"] = self._iface_for(r.src, r.dst)
+         return out
+ 
+-    def _iface_for(self, src: str, dst: str) -> np.ndarray:
+-        """Fluxes and traces on the shared interface, taken from the SOURCE side's
+-        face cells. Eight channels, see schema.IFACE_CHANNELS."""
+-        spec_faces = {
+-            ("a", "b"): ("a", 0, "imax"), ("e", "b"): ("e", 0, "imin"),
+-            ("b", "c"): ("b", 0, "jmax"), ("c", "d"): ("d", 0, "jmax"),
+-            ("e", "f"): ("e", 0, "imax"), ("d", "g"): ("d", 0, "imax"),
+-            ("g", "f"): ("f", 0, "jmax"),
+-        }
+-        agent, k, side = spec_faces[(src, dst)]
+-        s = self.sol[agent][k]
+-        U = self.U[agent][k]
+-        cfg, blk = s.cfg, s.block
+-        W = thermo.cons_to_prim(U, cfg.gamma)
+-        if side in ("imin", "imax"):
+-            sl = (0, slice(None)) if side == "imin" else (-1, slice(None))
+-            n = blk.n_i[0 if side == "imin" else -1]
+-            L = blk.a_i[0 if side == "imin" else -1]
+-        else:
+-            sl = (slice(None), 0) if side == "jmin" else (slice(None), -1)
+-            n = blk.n_j[:, 0 if side == "jmin" else -1]
+-            L = blk.a_j[:, 0 if side == "jmin" else -1]
+-        w = W[sl]
+-        rho, u, v, p = w[..., 0], w[..., 1], w[..., 2], w[..., 3]
+-        un = u * n[..., 0] + v * n[..., 1]
+-        T = p / (rho * cfg.R)
+-        E = p / (cfg.gamma - 1.0) + 0.5 * rho * (u ** 2 + v ** 2)
+-        mu = thermo.sutherland(T, cfg.mu_ref, cfg.T_mu_ref, cfg.sutherland_S)
+-        q = mu * cfg.cp / cfg.Pr * (T - self._wall_T("x")) / np.maximum(
+-            0.5 * blk.vol[sl] / np.maximum(L, 1e-30), 1e-9)
+-        return np.stack([rho * un, rho * u * un + p * n[..., 0],
+-                         rho * v * un + p * n[..., 1], (E + p) * un, q, p, T, L])
++    #: Where each declared edge is recorded: the block faces on the recorded
++    #: side (BOTH walls, BOTH panels -- it used to record one), and the kind.
++    #: Normals point OUT of the recorded block (W309: `Block`'s own normals are
++    #: index-oriented, so they point inward on a min face and would give the
++    #: two panels of one seam opposite signs).
++    IFACE_FACES = {
++        ("a", "b"): ("plane", [("a", 0, "imax")]),
++        ("e", "b"): ("plane", [("e", 0, "imin")]),
++        ("b", "c"): ("wall", [("b", 0, "jmin"), ("b", 0, "jmax")]),
++        ("c", "d"): ("wall", [("d", 0, None), ("d", 1, None)]),
++        ("e", "f"): ("plane", [("e", 0, "imax")]),
++        ("d", "g"): ("plane", [("d", 0, "imax"), ("d", 1, "imax")]),
++        ("g", "f"): ("plane", [("f", 0, "jmin"), ("f", 0, "jmax")]),
++        # recorded, not declared (config `recorded_interfaces`)
++        ("a", "c"): ("wall", [("a", 0, "jmin"), ("a", 0, "jmax")]),
++        ("e", "c"): ("wall", [("e", 0, "jmin"), ("e", 0, "jmax")]),
++        ("d", "f"): ("plane", [("d", 0, "imax"), ("d", 1, "imax")]),
++    }
+ 
++    def _neighbour(self, agent: str, k: int, side: str, dst: str):
++        """(cell states [n, nv], centroids [n, 2], gas) of the block on the other
++        side of a PLANE face, at the recorded face's stations."""
++        mid = _face_mid(self.blocks[agent][k], side)
++        if agent == "a":                                    # a|b
++            other, ns = "b", "imin"
++        elif agent == "e" and side == "imin":               # e|b
++            other, ns = "b", "imax"
++        elif agent == "e":                                  # e|f
++            other, ns = "f", "imin"
++        elif agent == "d":                                  # d|g or d|f
++            other, ns = dst, "imin"
++        else:                                               # f|g, g's cells beside the hole
++            gb = self.blocks["g"][0]
++            j0, j1 = self.sol["g"][0]._hole
++            j = j0 - 1 if side == "jmin" else j1 + 1
++            zc = gb.centroid[:, j, 0]
++            st = _remap(self.U["g"][0][:, j], zc, mid[:, 0])
++            cen = np.stack([mid[:, 0], np.full(mid.shape[0], gb.centroid[0, j, 1])], axis=-1)
++            return st, cen, self.air_cfg
++        nb, U = self.blocks[other][0], self.U[other][0]
++        cells = _face_cells(U, ns)
++        cc = _face_centroid(nb, ns)
++        axis = 1 if ns in ("imin", "imax") else 0
++        x = cc[:, axis]
++        order = np.argsort(x)
++        st = _remap(cells[order], x[order], mid[:, axis])
++        other = cc[:, 1 - axis].mean()
++        cen = np.stack([np.full(mid.shape[0], other), mid[:, axis]], axis=-1) if axis == 1 \
++            else np.stack([mid[:, axis], np.full(mid.shape[0], other)], axis=-1)
++        return st, cen, self._gas(other)
++
++    def _iface_for(self, src: str, dst: str) -> np.ndarray:
++        """Fluxes and traces on the shared interface, from the recorded side's
++        face cells, outward from that side. Eight channels, see
++        schema.IFACE_CHANNELS. The heat channel is the conduction across the
++        interface: h (T_gas - T_wall) on a wall, and -k dT/dn between the two
++        cells either side of a plane (it used to be a wall formula against the
++        shell's mean temperature on every seam, planes included)."""
++        kind, faces = self.IFACE_FACES[(src, dst)]
++        rows = []
++        for agent, k, side in faces:
++            if side is None:
++                side = self._d_wall_side(k)
++            s, blk, U = self.sol[agent][k], self.blocks[agent][k], self.U[agent][k]
++            cfg = s.cfg
++            w = thermo.cons_to_prim(_face_cells(U, side), cfg.gamma)
++            n, L = _outward(blk, side)
++            L = np.asarray(L, dtype=float).copy()
++            rho, u, v, p = w[:, 0], w[:, 1], w[:, 2], w[:, 3]
++            un = u * n[:, 0] + v * n[:, 1]
++            T = p / (rho * cfg.R)
++            E = p / (cfg.gamma - 1.0) + 0.5 * rho * (u ** 2 + v ** 2)
++            mu = thermo.sutherland(T, cfg.mu_ref, cfg.T_mu_ref, cfg.sutherland_S)
++            k_gas = mu * cfg.cp / cfg.Pr
++            if kind == "wall":
++                # an impermeable wall: the FACE carries no mass and no convected
++                # momentum or energy, whatever the cell beside it is doing -- the
++                # cell-centred rho u.n is a trace, not a flux through the face
++                un = np.zeros_like(un)
++                h, _, _ = self._wall_flux(agent, k, side)
++                q = h * (T - self._wall_T(agent, k, side))
++            else:
++                st, cen, gas = self._neighbour(agent, k, side, dst)
++                wn = thermo.cons_to_prim(st, gas.gamma)
++                Tn = wn[:, 3] / (wn[:, 0] * gas.R)
++                dist = np.linalg.norm(cen - _face_centroid(blk, side), axis=-1)
++                q = -k_gas * (Tn - T) / np.maximum(dist, 1e-12)
++            if (src, dst) in (("d", "g"), ("d", "f")):
++                # d's outlet plane is split at |y| = plume half-width: g's side
++                # (d-g, declared) and f's (d-f, recorded). d's cells have no node
++                # line there, so the straddling cell keeps the part of its face
++                # length that is on the named side.
++                y = blk.nodes[-1, :, 1]
++                lo = np.minimum(np.abs(y[:-1]), np.abs(y[1:]))
++                hi = np.maximum(np.abs(y[:-1]), np.abs(y[1:]))
++                hp = self.geo.plume_halfwidth
++                width = np.maximum(hi - lo, 1e-300)
++                if dst == "g":
++                    frac = np.clip((hi - np.maximum(lo, hp)) / width, 0.0, 1.0)
++                else:
++                    frac = np.clip((np.minimum(hi, hp) - lo) / width, 0.0, 1.0)
++                keep = frac > 0.0
++                L = L * frac
++                rows.append(np.stack([rho * un, rho * u * un + p * n[:, 0],
++                                      rho * v * un + p * n[:, 1], (E + p) * un,
++                                      q, p, T, L])[:, keep])
++                continue
++            rows.append(np.stack([rho * un, rho * u * un + p * n[:, 0],
++                                  rho * v * un + p * n[:, 1], (E + p) * un, q, p, T, L]))
++        return np.concatenate(rows, axis=1)
++
++    # ------------------------------------------------------------------- loads
+     def _compute_loads(self):
+-        """Thrust from the e-f interface integral; aero from the c-d traction."""
+-        geo = self.geo
++        """Thrust from the e-f interface integral; aero from the c-d traction,
++        pressure and wall shear, over BOTH panels against the body's outward
++        normal. Both in the body frame, then rotated by `_body_axes`."""
+         _, p_inf, _, _ = self._atm()
+-        Ue = self.U["e"][0]
+-        s = self.sol["e"][0]
+-        W = thermo.cons_to_prim(Ue, s.cfg.gamma)
+-        L = s.block.a_i[-1]
+-        rho, u, p = W[-1, :, 0], W[-1, :, 1], W[-1, :, 3]
+-        thrust = float(np.sum((rho * u * u + (p - p_inf)) * L))
+ 
+-        axial = 0.0
+-        normal = 0.0
+-        for k, b in enumerate(self.blocks["d"]):
+-            Ud = self.U["d"][k]
+-            j = 0 if k == 1 else -1
+-            Wd = thermo.cons_to_prim(Ud, self.air_cfg.gamma)
+-            pw = Wd[:, j, 3]
+-            nrm = b.n_j[:, j if j == 0 else -1]
+-            Lw = b.a_j[:, j if j == 0 else -1]
+-            axial += float(np.sum(-(pw - p_inf) * nrm[:, 0] * Lw))
+-            normal += float(np.sum(-(pw - p_inf) * nrm[:, 1] * Lw))
+-
+-        th = float(self.rigid[2])
+-        F_thrust = (-thrust * np.cos(th), -thrust * np.sin(th))   # body -z is 'up'
+-        F_aero = (axial * np.cos(th) - normal * np.sin(th),
+-                  axial * np.sin(th) + normal * np.cos(th))
++        # thrust: momentum and pressure leaving through the nozzle exit plane
++        # push the vehicle the other way
++        s = self.sol["e"][0]
++        W = thermo.cons_to_prim(_face_cells(self.U["e"][0], "imax"), s.cfg.gamma)
++        n, L = _outward(s.block, "imax")
++        rho, u, v, p = W[:, 0], W[:, 1], W[:, 2], W[:, 3]
++        un = u * n[:, 0] + v * n[:, 1]
++        Tz = float(np.sum((rho * u * un + (p - p_inf) * n[:, 0]) * L))
++        Ty = float(np.sum((rho * v * un + (p - p_inf) * n[:, 1]) * L))
++        thrust_body = np.array([-Tz, -Ty])
++
++        # aero: the gas's traction on the body, over both panels of `d`
++        aero_body = np.zeros(2)
++        for k, blk in enumerate(self.blocks["d"]):
++            sd = self.sol["d"][k]
++            side = self._d_wall_side(k)
++            n_gas, Lw = _outward(blk, side)              # out of the gas = into the body
++            n_body = -n_gas                               # the body's outward normal
++            Wd = thermo.cons_to_prim(_face_cells(self.U["d"][k], side), sd.cfg.gamma)
++            pw = Wd[:, 3]
++            aero_body += np.sum(-(pw - p_inf)[:, None] * n_body * Lw[:, None], axis=0)
++            if not sd.cfg.inviscid:
++                # no-slip wall: shear = mu u_t / dn along the wall, dragging the
++                # body the way the gas beside it moves
++                t = np.stack([n_body[:, 1], -n_body[:, 0]], axis=-1)
++                ut = Wd[:, 1] * t[:, 0] + Wd[:, 2] * t[:, 1]
++                T = Wd[:, 3] / (Wd[:, 0] * sd.cfg.R)
++                mu = thermo.sutherland(T, sd.cfg.mu_ref, sd.cfg.T_mu_ref, sd.cfg.sutherland_S)
++                j = 0 if side == "jmin" else -1
++                dn = 0.5 * blk.vol[:, j] / np.maximum(Lw, 1e-30)
++                aero_body += np.sum((mu * ut / dn * Lw)[:, None] * t, axis=0)
++
++        ez, ey = self._body_axes()
++        F_thrust = thrust_body[0] * ez + thrust_body[1] * ey
++        F_aero = aero_body[0] * ez + aero_body[1] * ey
+         self.loads = np.array([F_thrust[0], F_thrust[1], F_aero[0], F_aero[1]])
+-        return trajectory.Loads(F_thrust=F_thrust, F_aero=F_aero, torque=0.0,
++        self.loads_body = np.array([thrust_body[0], thrust_body[1], aero_body[0], aero_body[1]])
++        return trajectory.Loads(F_thrust=(float(F_thrust[0]), float(F_thrust[1])),
++                                F_aero=(float(F_aero[0]), float(F_aero[1])), torque=0.0,
+                                 mdot=self.scales.mdot)
+ 
+     # ------------------------------------------------------------- the episode
+@@ -474,7 +825,8 @@ def generate_episode(spec: EpisodeSpec, out_dir: str | Path,
+         "riemann": spec.riemann, "inviscid": bool(spec.inviscid),
+         "schema_version": schema.SCHEMA_VERSION,
+         "wall_seconds": res["wall_seconds"], "gas_substeps": res["substeps"],
+-        "solver_versions": "compressible2d/1 thermostruct2d/1 atmosphere/1976 trajectory/rk4",
++        "solver_versions": ("compressible2d/2 thermostruct2d/2 atmosphere/1976 "
++                            "trajectory/rk4 coupler/2"),
+     }
+     refs = {a: r.as_dict() for a, r in ep.scales.per_agent.items()}
+     name = f"episode_{spec.point.split}_{spec.point.idx:04d}.h5"
+diff --git a/src/atlas/data/schema.py b/src/atlas/data/schema.py
+index feb6975..49d5e54 100644
+--- a/src/atlas/data/schema.py
++++ b/src/atlas/data/schema.py
+@@ -25,7 +25,14 @@ from pathlib import Path
+ import h5py
+ import numpy as np
+ 
+-SCHEMA_VERSION = 1
++#: 2 (2026-09-23): /iface records are taken from BOTH walls or panels of a seam,
++#: with normals pointing OUT of the recorded block (they were index-oriented,
++#: W309, so a min face pointed inward); the heat channel is the conduction
++#: across the interface -- h (T_gas - T_wall) on a wall, -k dT/dn between the
++#: two cells either side of a plane -- where it used to be a wall formula against
++#: the shell's mean temperature on every seam; and d-g covers only its declared
++#: span |y| >= plume_halfwidth.
++SCHEMA_VERSION = 2
+ IFACE_CHANNELS = ("mass_flux", "mom_z_flux", "mom_y_flux", "energy_flux",
+                   "heat_flux", "p_trace", "T_trace", "seg_length")
+ RIGID_FIELDS = ("x", "y", "theta", "vx", "vy", "omega", "m")
+diff --git a/src/atlas/solvers/compressible2d.py b/src/atlas/solvers/compressible2d.py
+index bcac4f1..de414a7 100644
+--- a/src/atlas/solvers/compressible2d.py
++++ b/src/atlas/solvers/compressible2d.py
+@@ -90,7 +90,8 @@ class Compressible2D:
+         self.block, self.cfg, self.reaction = block, cfg, reaction
+         self.bcs = bcs or {}
+         self.nv = 5 if reaction is not None else 4
+-        self.hole_state: np.ndarray | None = None   # set by the coupler; see ghost()
++        # set by the coupler: one [n_z, nv] state, or (lo, hi) -- see _hole_layers
++        self.hole_state: np.ndarray | tuple | None = None
+         self._check_metric_premise()
+         self._hole = self._hole_band()
+ 
+@@ -244,7 +245,7 @@ class Compressible2D:
+                     lo = self._reflect(U[:, j0 - 1 - d][:, None], n, False)[:, 0]
+                     hi = self._reflect(U[:, j1 + 1 + d][:, None], n, False)[:, 0]
+                 else:
+-                    lo = hi = hs
++                    lo, hi = _hole_layers(hs, d)
+                 Ue[NG:nz + NG, NG + j0 + d] = lo
+                 Ue[NG:nz + NG, NG + j1 - d] = hi
+         return Ue
+@@ -343,8 +344,53 @@ class Compressible2D:
+         Fj = (0.5 * (hz[:, :-1] + hz[:, 1:]) * blk.n_j[..., 0, None]
+               + 0.5 * (hy[:, :-1] + hy[:, 1:]) * blk.n_j[..., 1, None]) * blk.a_j[..., None]
+ 
++        self._isothermal_wall_conduction(Fi, Fj, T, k * Tz, k * Ty, k)
+         return ((Fi[1:] - Fi[:-1]) + (Fj[:, 1:] - Fj[:, :-1])) / blk.vol[..., None]
+ 
++    def _isothermal_wall_conduction(self, Fi, Fj, T, Qz, Qy, k) -> None:
++        """Replace the conduction term on every ISOTHERMAL wall face with the
++        one-sided flux from the wall temperature, ``k(T_i) (T_i - T_w)/dn``.
++
++        W301. `_fill_side` builds the isothermal ghost as
++        ``T_g = max(2 T_w - T_i, 20 K)`` -- a correct positivity guard, since a
++        linear ghost below ``T_i/2`` is negative. But below
++        ``T_w = (T_i + 20)/2`` it saturates: the face average is no longer T_w,
++        and the gas cools against a wall it was not given. A 3000 K chamber
++        against a 290 K airframe saw a ~1510 K wall, while the shell was heated
++        as if the gas saw 290 K, so the seam did not conserve energy. Taking
++        the wall face's conduction from T_w directly makes the channel transmit
++        at every wall temperature, and it is exactly the flux
++        `generate._wall_flux` hands the shell (same k, same dn). The ghost is
++        left as it was: it still sets the inviscid flux and the interior
++        gradients, and neither needs it to be exact."""
++        blk = self.block
++        nz, ny = blk.shape
++        for side in ("imin", "imax", "jmin", "jmax"):
++            bc = self.bcs.get(side)
++            if bc is None or bc.kind != "wall_noslip" or "T_wall" not in bc.params:
++                continue
++            if side in ("jmin", "jmax"):
++                jc, jg, f = (NG, NG - 1, 0) if side == "jmin" else (ny + NG - 1, ny + NG, -1)
++                sl_c = (slice(NG, nz + NG), jc)
++                sl_g = (slice(NG, nz + NG), jg)
++                n, a, vol = blk.n_j[:, f], blk.a_j[:, f], blk.vol[:, 0 if f == 0 else -1]
++                target = (slice(None), f)
++            else:
++                ic, ig, f = (NG, NG - 1, 0) if side == "imin" else (nz + NG - 1, nz + NG, -1)
++                sl_c = (ic, slice(NG, ny + NG))
++                sl_g = (ig, slice(NG, ny + NG))
++                n, a, vol = blk.n_i[f], blk.a_i[f], blk.vol[0 if f == 0 else -1]
++                target = (f, slice(None))
++            avg = 0.5 * ((Qz[sl_c] + Qz[sl_g]) * n[..., 0] + (Qy[sl_c] + Qy[sl_g]) * n[..., 1]) * a
++            T_i = T[sl_c]
++            T_w = np.asarray(bc.params["T_wall"], dtype=float)
++            T_w = np.broadcast_to(T_w, T_i.shape) if T_w.ndim == 0 else T_w.reshape(T_i.shape)
++            dn = 0.5 * vol / np.maximum(a, 1e-30)
++            # d T / d(+index) across the face: the cell is on the + side at a min face
++            grad = (T_i - T_w) / dn if f == 0 else (T_w - T_i) / dn
++            wall = k[sl_c] * grad * a
++            (Fj if side in ("jmin", "jmax") else Fi)[target + (3,)] += wall - avg
++
+     # -- source -------------------------------------------------------------
+     def react(self, U: np.ndarray, dt: float) -> np.ndarray:
+         """Strang half-step of the progress-variable source, integrated
+@@ -431,6 +477,22 @@ class Compressible2D:
+         return np.asarray(times), np.stack(out)
+ 
+ 
++def _hole_layers(hs, d: int):
++    """(lo, hi) ghost states for hole layer ``d`` (0 = adjacent to the seam).
++
++    `hole_state` is either ONE state per i-station for the whole band,
++    ``[n_z, nv]`` -- the original contract, still what a solo probe sets -- or
++    the two sides separately, ``(lo, hi)``, each ``[n_z, nv]`` or
++    ``[n_z, NG, nv]`` with layer 0 next to the seam. A coupler should pass the
++    two sides: one state for the whole band hands the lower seam and the upper
++    seam the same neighbour, which is the plume's transverse MEAN rather than
++    either of its edges."""
++    if isinstance(hs, (tuple, list)):
++        lo, hi = (np.asarray(x, dtype=float) for x in hs)
++        return (lo[:, d] if lo.ndim == 3 else lo), (hi[:, d] if hi.ndim == 3 else hi)
++    return hs, hs
++
++
+ def _broadcast_wall(T_w, like, side):
+     T_w = np.asarray(T_w, dtype=float)
+     if T_w.ndim == 0:
+diff --git a/src/atlas/solvers/grid.py b/src/atlas/solvers/grid.py
+index aa482e8..3876b3f 100644
+--- a/src/atlas/solvers/grid.py
++++ b/src/atlas/solvers/grid.py
+@@ -101,21 +101,98 @@ class Block:
+         return np.minimum(dz, dy)
+ 
+ 
++# --------------------------------------------------------------------------
++# node distributions: every block that shares a seam has a node line ON it
++# --------------------------------------------------------------------------
++
++
++def segment_counts(lengths, n: int) -> np.ndarray:
++    """Cells per segment: proportional to length, at least one each, summing to n.
++
++    Largest-remainder rounding, so the split is deterministic and a segment's
++    share never differs from its proportional share by a whole cell."""
++    lengths = np.asarray(lengths, dtype=np.float64)
++    if n < lengths.size:
++        raise ValueError(f"{n} cells cannot give each of {lengths.size} segments one")
++    q = n * lengths / lengths.sum()
++    c = np.maximum(1, np.floor(q)).astype(int)
++    while c.sum() < n:
++        c[int(np.argmax(q - c))] += 1
++    while c.sum() > n:
++        c[int(np.argmin(np.where(c > 1, q - c, np.inf)))] -= 1
++    return c
++
++
++def axial_breaks(cfg: AtlasConfig) -> tuple[float, ...]:
++    """Every z at which a block must have a node: the contour's kinks and every
++    agent's extent.
++
++    A block with no node at a kink of h_in draws that wall as a chord across
++    it, and two blocks that draw different chords leave a gap on one side and
++    an overlap on the other. That is what the airframe and agent `d` did at the
++    converging-section start and at the throat -- a 14.7 mm gap against an 8 mm
++    skin at coarsen 4 (`scripts/w321_seam_audit.py` in the research vault).
++    With a node at every kink, every block's polyline IS the piecewise-linear
++    contour, so no two of them can disagree."""
++    geo = cfg.geometry
++    zs = {geo.z_injector, geo.z_throat, geo.z_exit, *geo.z_converge, *geo.z_diverge,
++          *geo.shell_z, *geo.atmos_front_z, *geo.plume_z}
++    for a in cfg.agents:
++        zs.update(float(v) for v in a.z)
++    return tuple(sorted(zs))
++
++
++def axial_nodes(z0: float, z1: float, n: int, breaks) -> np.ndarray:
++    """n cells on [z0, z1] with a node at every break strictly inside.
++
++    A uniform grid that already has a node at every break (to 1e-12) is
++    returned unchanged, bit for bit -- `b`'s 112 cells put node 72 on the
++    converging-section start, and nothing that already met the rule moves."""
++    z = np.linspace(z0, z1, n + 1)
++    inner = [float(b) for b in breaks if z0 < b < z1]
++    if all(np.isclose(z, b, rtol=0.0, atol=1e-12).any() for b in inner):
++        return z
++    edges = np.array([z0, *inner, z1], dtype=np.float64)
++    counts = segment_counts(np.diff(edges), n)
++    parts = [np.linspace(edges[k], edges[k + 1], counts[k] + 1)[:-1] for k in range(counts.size)]
++    return np.concatenate(parts + [np.array([z1])])
++
++
++def hole_band(n: int, half: float, hole: float) -> tuple[np.ndarray, int, int]:
++    """Transverse nodes on [-half, half] with node lines at +/-hole, symmetric.
++
++    Returns (y_nodes, j0, j1): cells j0..j1-1 are the hole. The middle band
++    takes the cell count of n's parity nearest its proportional share, so the
++    two outer bands are equal and the hole is centred at every resolution.
++    Blanking whole cells of a uniform grid instead puts the hole's edge on
++    whichever node happens to be nearest (+/-0.59375 at 96 cells, +/-0.625 at
++    24), and subsampling that mask moved it to [-0.500, 0.625]."""
++    q = n * (2.0 * hole) / (2.0 * half)
++    lo, hi = int(np.floor(q)), int(np.ceil(q))
++    cands = [m for m in range(max(1, lo - 1), hi + 2) if (n - m) % 2 == 0 and 0 < m < n]
++    m = min(cands, key=lambda c: (abs(c - q), -c))
++    o = (n - m) // 2
++    y = np.concatenate([np.linspace(-half, -hole, o + 1)[:-1],
++                        np.linspace(-hole, hole, m + 1)[:-1],
++                        np.linspace(hole, half, o + 1)])
++    return y, o, o + m
++
++
+ # --------------------------------------------------------------------------
+ # agent -> block(s), from the same profiles the model geometry uses
+ # --------------------------------------------------------------------------
+ 
+ 
+-def _nodes_uniform(a: AgentCfg, z_n, geo):
++def _nodes_uniform(a: AgentCfg, z_n, geo, n_y: int, y=None):
+     yh = a.y_halfwidth
+-    y = np.linspace(-yh, yh, a.grid[1] + 1)
++    y = np.linspace(-yh, yh, n_y + 1) if y is None else y
+     return np.stack([np.broadcast_to(z_n[:, None], (z_n.size, y.size)),
+                      np.broadcast_to(y[None, :], (z_n.size, y.size))], axis=-1)
+ 
+ 
+-def _nodes_body_fitted(a: AgentCfg, z_n, geo):
++def _nodes_body_fitted(a: AgentCfg, z_n, geo, n_y: int):
+     h = nozzle_inner(z_n, geo)[:, None]
+-    frac = np.linspace(-1.0, 1.0, a.grid[1] + 1)[None, :]
++    frac = np.linspace(-1.0, 1.0, n_y + 1)[None, :]
+     y = h * frac
+     return np.stack([np.broadcast_to(z_n[:, None], y.shape), y], axis=-1)
+ 
+@@ -136,27 +213,38 @@ def _panel_nodes_stretched(z_n, inner, outer, n, ratio, upper: bool):
+     return np.stack([np.broadcast_to(z_n[:, None], y.shape), y], axis=-1)
+ 
+ 
+-def build_blocks(a: AgentCfg, cfg: AtlasConfig) -> tuple[Block, ...]:
++def build_blocks(a: AgentCfg, cfg: AtlasConfig, coarsen: int = 1) -> tuple[Block, ...]:
+     """Blocks for one agent. Two for `c` and `d` (the y index runs over two
+-    disjoint sheets); one for everything else."""
++    disjoint sheets); one for everything else.
++
++    ``coarsen`` divides every cell count and REBUILDS the block at that
++    resolution with the same rules -- a node at every axial break, the plume
++    hole on node lines, the wall-normal stretch compounded (``ratio**k``, which
++    reproduces every k-th fine node exactly). Subsampling a fine block's nodes
++    and blank mask instead (``nodes[::k]``, ``blanked[::k]``) keeps whatever
++    nodes happen to be multiples of k, and on `g` that moved the hole off
++    centre."""
+     geo: GeometryCfg = cfg.geometry
+-    n_z, n_y = a.grid
+-    z_n = np.linspace(a.z[0], a.z[1], n_z + 1)
++    k = int(coarsen)
++    if k < 1 or a.grid[0] % k or a.grid[1] % k:
++        raise ValueError(f"agent {a.id}: grid {a.grid} does not coarsen by {k}")
++    n_z, n_y = a.grid[0] // k, a.grid[1] // k
++    z_n = axial_nodes(a.z[0], a.z[1], n_z, axial_breaks(cfg))
+     half = n_y // 2
+ 
+     if a.y_map == "uniform":
+-        nodes = _nodes_uniform(a, z_n, geo)
+         blank = np.zeros((n_z, n_y), dtype=bool)
+         if a.hole == "plume":
+-            # the plume is another agent's domain; blank whole cells, so the
+-            # g-f interface the solver sees is the cell-face-aligned version of
+-            # the declared curve |y| = plume_halfwidth (0.59375 vs 0.600 here).
+-            yc = 0.5 * (nodes[:-1, :-1, 1] + nodes[:-1, 1:, 1])
+-            blank = np.abs(yc) < geo.plume_halfwidth
+-        return (Block(a.id, nodes, blank),)
++            # the plume is another agent's domain. Its edge |y| = plume_halfwidth
++            # is a NODE LINE here, so the g-f interface the solver sees is the
++            # declared curve itself and the hole is exactly f's domain.
++            y, j0, j1 = hole_band(n_y, a.y_halfwidth, geo.plume_halfwidth)
++            blank[:, j0:j1] = True
++            return (Block(a.id, _nodes_uniform(a, z_n, geo, n_y, y), blank),)
++        return (Block(a.id, _nodes_uniform(a, z_n, geo, n_y), blank),)
+ 
+     if a.y_map == "body_fitted":
+-        nodes = _nodes_body_fitted(a, z_n, geo)
++        nodes = _nodes_body_fitted(a, z_n, geo, n_y)
+         return (Block(a.id, nodes, np.zeros((n_z, n_y), dtype=bool)),)
+ 
+     inner = nozzle_inner(z_n, geo) if a.y_map == "shell" else shell_outer(z_n, geo)
+@@ -166,13 +254,24 @@ def build_blocks(a: AgentCfg, cfg: AtlasConfig) -> tuple[Block, ...]:
+     else:
+         outer = np.full_like(inner, geo.farfield_halfwidth)
+         mk = lambda up: _panel_nodes_stretched(                         # noqa: E731
+-            z_n, inner, outer, half, geo.atmos_stretch_ratio, up)
++            z_n, inner, outer, half, geo.atmos_stretch_ratio ** k, up)
+     z = np.zeros((n_z, half), dtype=bool)
+     return (Block(f"{a.id}_lo", mk(False), z), Block(f"{a.id}_hi", mk(True), z))
+ 
+ 
+-def block_map(cfg: AtlasConfig) -> dict[str, tuple[Block, ...]]:
+-    return {a.id: build_blocks(a, cfg) for a in cfg.agents}
++def shell_faces(nodes: np.ndarray) -> tuple[int, int]:
++    """(inner_j, outer_j) of a shell panel: the inner face is the one nearer the
++    axis. `_panel_nodes` builds the lower panel mirrored, so its j = 0 edge is
++    the ATMOSPHERE side -- a panel's orientation has to be read off its
++    geometry, not assumed from the index."""
++    y0 = float(np.abs(nodes[:, 0, 1]).mean())
++    y1 = float(np.abs(nodes[:, -1, 1]).mean())
++    return (0, -1) if y0 < y1 else (-1, 0)
++
++
++def block_map(cfg: AtlasConfig, coarsen: int = 1) -> dict[str, tuple[Block, ...]]:
++    return {a.id: build_blocks(a, cfg, coarsen) for a in cfg.agents}
+ 
+ 
+-__all__ = ["Block", "build_blocks", "block_map"]
++__all__ = ["Block", "build_blocks", "block_map", "axial_breaks", "axial_nodes",
++           "hole_band", "segment_counts", "shell_faces"]
+diff --git a/src/atlas/solvers/thermostruct2d.py b/src/atlas/solvers/thermostruct2d.py
+index 29dc8a7..18c98c8 100644
+--- a/src/atlas/solvers/thermostruct2d.py
++++ b/src/atlas/solvers/thermostruct2d.py
+@@ -51,11 +51,20 @@ class SolidMaterial:
+ @dataclass(frozen=True, eq=False)
+ class ShellMesh:
+     """Structured Q1 mesh. nodes [n_i+1, n_j+1, 2]; j = 0 is one face, j = -1 the
+-    other. `inner_face`/`outer_face` name which j edge sees which gas agent."""
++    other. `inner_j`/`outer_j` name which j edge sees which gas agent, and
++    `ThermoStruct2D` reads them: "inner" loads (the chamber's heat and pressure)
++    go on `inner_j`, "outer" loads and radiation on `outer_j`. A mesh whose gas
++    side is its last j edge must say so (`grid.shell_faces` reads it off the
++    geometry)."""
+     nodes: np.ndarray
+     inner_j: int = 0
+     outer_j: int = -1
+ 
++    def __post_init__(self):
++        if {self.inner_j, self.outer_j} != {0, -1}:
++            raise ValueError(f"inner_j/outer_j must be 0 and -1 in some order, got "
++                             f"{self.inner_j}/{self.outer_j}")
++
+     @property
+     def shape(self) -> tuple[int, int]:
+         return self.nodes.shape[0] - 1, self.nodes.shape[1] - 1
+@@ -158,12 +167,26 @@ class ThermoStruct2D:
+         return B
+ 
+     # -- boundary faces -----------------------------------------------------
++    def _face_j(self, which: str) -> int:
++        """The j index of the named face, from the mesh's own declaration.
++
++        This used to be ``0 if which == "inner" else nj`` whatever the mesh said,
++        so a panel built with its gas side at j = nj -- the airframe's lower
++        panel, which `grid._panel_nodes` mirrors -- took the chamber's heat and
++        pressure on its OUTER skin, and both panels of a symmetric airframe
++        bent the same way."""
++        nj = self.mesh.shape[1]
++        j = self.mesh.inner_j if which == "inner" else self.mesh.outer_j
++        return nj if j == -1 else int(j)
++
+     def _face(self, which: str):
+         """(node pairs, lengths) along one j edge of the mesh."""
+         if which in self._face_cache:
+             return self._face_cache[which]
+         ni, nj = self.mesh.shape
+-        j = 0 if which == "inner" else nj
++        j = self._face_j(which)
++        if j not in (0, nj):
++            raise ValueError(f"face {which!r} is j = {j}; a boundary face is 0 or {nj}")
+         i = np.arange(ni)
+         a, b = self.mesh.nid(i, j), self.mesh.nid(i + 1, j)
+         p = self.mesh.nodes.reshape(-1, 2)
+@@ -232,8 +255,13 @@ class ThermoStruct2D:
+             d = np.stack([2 * self.conn, 2 * self.conn + 1], axis=-1).reshape(-1, 8)
+             np.add.at(f, d.ravel(), fe.ravel())
+ 
+-        # pressure traction on both faces (inward normal * p)
+-        for which, p, sign in (("inner", p_in, +1.0), ("outer", p_out, -1.0)):
++        # pressure traction on both faces, along the normal pointing INTO the
++        # solid. `nrm` below is the +j direction of the face's edge vector, which
++        # points into the solid on the j = 0 face and out of it on the j = nj
++        # face -- so the sign follows the face's INDEX, and inner/outer only
++        # decides which pressure goes where.
++        for which, p in (("inner", p_in), ("outer", p_out)):
++            sign = +1.0 if self._face_j(which) == 0 else -1.0
+             a, b, L = self._face(which)
+             pv = np.broadcast_to(np.asarray(p, dtype=float), a.shape)
+             nodes = self.mesh.nodes.reshape(-1, 2)

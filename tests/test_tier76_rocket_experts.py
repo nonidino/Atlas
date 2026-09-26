@@ -381,17 +381,17 @@ def test_shell_reach_is_global_and_corroborates_embedded():
 
 @needs_expert
 @pytest.mark.parametrize("which", ["rocket", "thermal_seam"])
-def test_W301_the_isothermal_wall_is_saturated_at_its_own_probe_base(which):
-    """`compressible2d` line 170: ``T_g = max(2 T_wall - T_i, 20)``.
+def test_W301_closed_the_isothermal_wall_now_transmits_at_its_own_probe_base(which):
+    """W301, closed at Tier 86 -- with the diagnosis kept.
 
-    The clamp is a correct positivity guard -- a linear ghost below ``T_i/2``
-    would give a negative temperature and ``rho_g = p/(R T_g)`` would divide by
-    it.  What it also does is turn the Dirichlet channel into a SATURATED one,
-    with no diagnostic anywhere.
-
-    BITWISE equality is the assertion, deliberately.  "Dominated by a film
-    coefficient" and "never reached the solver" are different claims, and only
-    an exact-zero test separates them.
+    `compressible2d` still sets the isothermal ghost to
+    ``T_g = max(2 T_wall - T_i, 20)``, a correct positivity guard, and at this
+    probe base BOTH traces still clamp it. Until Tier 86 that made the field
+    BITWISE identical for the two traces -- the Dirichlet channel was saturated
+    and nothing said so. The wall face's conduction is now taken one-sided from
+    T_wall (`Compressible2D._isothermal_wall_conduction`), so the same two
+    traces move the field, and the ghost's clamp no longer decides what the gas
+    feels.
     """
     if which == "rocket":
         agent = RE.ChamberGasAgent(dt=DT_GAS_TEST)
@@ -402,27 +402,32 @@ def test_W301_the_isothermal_wall_is_saturated_at_its_own_probe_base(which):
     TH, cfg = agent._TH, agent._cfg
     n = agent.n_seam if which == "rocket" else TSC.N_SEAM
 
+    # the diagnosis: both traces are below (T_i + 20)/2, so both clamp the ghost
+    T_i = TH.temperature(agent._U0, cfg.gamma, cfg.R)[:, j]
+    assert np.all(2.0 * lo - T_i < 20.0) and np.all(2.0 * hi - T_i < 20.0)
+
     def field(Tw):
         sol = agent._solver(np.full(n, float(Tw)))
         U, _k = sol.advance(agent._U0, agent.dt)
         W = TH.cons_to_prim(U, cfg.gamma)
-        return (W[..., 3] / (W[..., 0] * cfg.R))[:, j].copy(), W[:, j, 3].copy()
+        return (W[..., 3] / (W[..., 0] * cfg.R))[:, j].copy()
 
-    a_T, a_p = field(lo)
-    b_T, b_p = field(hi)
-    assert np.array_equal(a_T, b_T), "the trace moved the field; the clamp is not active"
-    assert np.array_equal(a_p, b_p)
+    a_T, b_T = field(lo), field(hi)
+    assert not np.array_equal(a_T, b_T), "the trace reaches the solver"
+    # a colder wall draws more heat, so the gas beside it ends colder
+    assert np.all(a_T <= b_T) and np.any(a_T < b_T)
 
 
 @needs_expert
 @pytest.mark.parametrize("which", ["rocket", "thermal_seam"])
-def test_W301_saturation_shows_up_as_exact_zeros_in_support_reach(which):
-    """The L1-VISIBLE signature, and it needs no new machinery.
+def test_W301_closed_support_reach_no_longer_reads_exact_zeros_n_minus_1(which):
+    """The L1-visible signature W301 was found by, and that it is gone.
 
-    `support_reach` has emitted `exact_zeros` since Tier 0 and no layer has ever
-    read it.  A saturated channel makes it exactly ``n - 1``: the poked cell
-    responds, through the algebraic ``-T_wall`` in the flux formula, and every
-    other cell is bit-zero because the solver never saw the poke.
+    A saturated channel made `support_reach.exact_zeros` exactly ``n - 1``: the
+    poked cell responded through the algebraic ``-T_wall`` in the flux formula
+    and every other cell was bit-zero, because the solver never saw the poke.
+    Measured before Tier 86: 111/111 on the chamber wall and 47/47 on
+    thermal_seam's. Now the poke enters the gas, and its neighbours respond.
     """
     if which == "rocket":
         agent, port = RE.ChamberGasAgent(dt=DT_GAS_TEST), "c:THERM"
@@ -432,9 +437,11 @@ def test_W301_saturation_shows_up_as_exact_zeros_in_support_reach(which):
         agent, port = TSC.GasAgent(), "wall:THERM"
         base = agent.base_trace()
     sr = support_reach(agent.respond, port, base)
-    assert sr.nonzero == 1
-    assert sr.exact_zeros == sr.n - 1
-    assert sr.reach == 0
+    assert sr.nonzero > 1
+    assert sr.exact_zeros < sr.n - 1
+    assert sr.reach > 0
+    # and the poked cell still dominates: the response decays away from it
+    assert sr.profile[1] < 0.1 * sr.profile[0]
 
 
 @needs_expert
@@ -484,9 +491,12 @@ def test_operator_content_does_not_detect_the_saturated_block():
     op, _tr = RE.seam_operator(RE.build_bc_graph(shell, gas))
     from atlas.probe import OPERATOR_CONTENT_FLOOR
     assert op.blocks["b"].operator_content > 10.0 * OPERATOR_CONTENT_FLOOR
-    # and the same block is bitwise diagonal in the spatial domain
+    # Until Tier 86 the same block was bitwise DIAGONAL in the spatial domain
+    # (exact_zeros == n - 1) while omega read it as healthy -- the measured limit
+    # of the statistic. W301 is closed, so the block is no longer diagonal; the
+    # limit it demonstrated stands, since omega never looked.
     sr = support_reach(gas.respond, "c:THERM", gas.base_trace())
-    assert sr.exact_zeros == sr.n - 1
+    assert sr.exact_zeros < sr.n - 1
 
 
 @needs_expert

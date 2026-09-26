@@ -1,0 +1,73 @@
+probe state: rocket b-c, build repo 0a407b7+dirty:b6bbcec4240a5943: chamber p_c=5e+06 Pa, T_c=2800.0 K, gamma=1.22, R=361.0; shell wall MARCHED 5.00 s of burn to 478.9557 K mean (870.7665 K max) under h=211.3966 W/(m^2 K); dt_gas=1e-05 s, dt_shell=0.05 s; dim M=8; validity DECLINES
+
+==============================================================================
+LAMSTAR -- which interface condition has a root, and where
+==============================================================================
+  one gas call per point; both conditions read off the SAME two halves.
+     base [K]      ||gas||      ||shell||    sum (scalar)  difference
+       250.00   2.07223e+02   9.84737e+01    4.26686e+01    7.65446e+01
+       505.00   1.72216e+02   3.89052e+01    5.54370e+01    4.35631e+01
+       760.00   1.42213e+02   5.07350e+01    5.96899e+01    2.19949e+01
+      1015.00   1.16211e+02   7.68576e+01    6.05475e+01    6.13831e+00
+      1270.00   9.34618e+01   9.82450e+01    5.98655e+01   -6.29808e+00
+      1525.00   7.33893e+01   1.15095e+02    5.84501e+01   -1.64534e+01
+      1780.00   5.55474e+01   1.28568e+02    5.66912e+01   -2.49765e+01
+      2035.00   3.95842e+01   1.39552e+02    5.47909e+01   -3.22730e+01
+      2290.00   2.52180e+01   1.48666e+02    5.28575e+01   -3.86147e+01
+      2545.00   1.22214e+01   1.56346e+02    5.09503e+01   -4.41927e+01
+      2800.00   4.85009e-01   1.62904e+02    4.91013e+01   -4.91469e+01
+
+  sign changes over [250, 2800] K:
+    SUM        (Steklov-Poincare, what Atlas assembles today): NONE
+    DIFFERENCE (what `effort_normal` would declare):           [(1015.0, 1270.0)]
+    difference root by bisection: 1133.885 K
+
+  cost: 30 gas boundary_response calls
+
+  the two sides' own declared bases: gas 478.9557 K, shell 2800 K
+
+==============================================================================
+REBASE -- the seam at the COMMON base, against Tier 76's mismatched one
+==============================================================================
+  split-base (Tier 76)     beta 0.197386     kappa 2.2686     omega 0.3115    ||S||_F 0.78911   
+      block b   share 0.8111   ||S||_F 0.66318    sym lambda in [-0.3632, -0.172]
+      block c   share 0.189    ||S||_F 0.12772    sym lambda in [0.02499, 0.08462]
+  seam-base (lambda*)      beta 0.229896     kappa 2.392      omega 0.3303    ||S||_F 0.94693   
+      block b   share 0.4594   ||S||_F 0.46112    sym lambda in [-0.2526, -0.1195]
+      block c   share 0.5406   ||S||_F 0.48694    sym lambda in [0.1099, 0.2973]
+
+  beta moves 0.197386 -> 0.229896, a factor of 1.1647
+  (thermal_seam's same move was 0.3757 -> 1.23807, a factor of 3.30)
+
+==============================================================================
+SWEEP -- beta over a common base across the admissible interval
+==============================================================================
+  base   250.00 K   beta 0.824519     kappa 1.7829     omega 0.2171    sym_min -1.47
+  base   380.00 K   beta 0.616214     kappa 1.9602     omega 0.2546    sym_min -1.208
+  base   510.00 K   beta 0.486218     kappa 2.0929     omega 0.28      sym_min -1.018
+  base   640.00 K   beta 0.39841      kappa 2.1932     omega 0.2978    sym_min -0.8738
+  base   770.00 K   beta 0.33585      kappa 2.2681     omega 0.3104    sym_min -0.7617
+  base   900.00 K   beta 0.289235     kappa 2.324      omega 0.3195    sym_min -0.6722
+  base  1133.88 K   beta 0.229896     kappa 2.392      omega 0.3303    sym_min -0.5499
+  base  1400.00 K   beta 0.184829     kappa 2.4373     omega 0.3374    sym_min -0.4505
+  base  2100.00 K   beta 0.118379     kappa 2.4823     omega 0.3444    sym_min -0.2938
+  base  2800.00 K   beta 0.0841914    kappa 2.4884     omega 0.3455    sym_min -0.2095
+
+  beta over the admissible interval: [0.0841914, 0.824519]
+
+==============================================================================
+PASSIVITY -- W303: is E7's failure physics or a convention?
+==============================================================================
+  at the common base, the ASSEMBLED symmetric part has lambda_min -0.54992
+  and per block:
+    b   sym lambda in [-0.25263, -0.11947]   trace -1.2503   ||S||_F 0.46112
+    c   sym lambda in [0.10989, 0.29731]   trace 1.2777   ||S||_F 0.48694
+  the gas block is 0.947x the shell's in Frobenius norm.
+
+  and the difference assembly (what `effort_normal` would declare):
+    sum (Steklov-Poincare, as declared)    ||S||_F 0.053048   sigma_min 0.0047232   sym lambda_min -0.012185
+    difference (effort_normal declared)    ||S||_F 0.94693    sigma_min 0.2299      sym lambda_min -0.54992
+
+  Q4 asked whether the difference is BETTER. Read the two rows above.
+
+artifact written to out/w334/w304.json

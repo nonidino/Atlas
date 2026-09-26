@@ -1,0 +1,221 @@
+{
+  "setup": {
+    "gas_shape": [
+      112,
+      80
+    ],
+    "n_face_gas": 112,
+    "n_seam_shell": 14,
+    "dt_gas_declared": 0.001,
+    "dt_shell": 0.05,
+    "declared_ratio": 50.0,
+    "dt_macro": 0.05,
+    "cfl": 0.4,
+    "settle_seconds": 0.006,
+    "settle_curve": [
+      {
+        "t": 0.002,
+        "rel_change": 0.007443718110981326
+      },
+      {
+        "t": 0.004,
+        "rel_change": 0.00022205798700098656
+      },
+      {
+        "t": 0.006,
+        "rel_change": 7.75713371171208e-05
+      }
+    ],
+    "marched": {
+      "burn_time_s": 5.0,
+      "steps": 100,
+      "T_wall_mean_K": 478.9556962139239,
+      "T_wall_min_K": 369.18081353826585,
+      "T_wall_max_K": 870.7665100622745,
+      "valid_at_base": false,
+      "validity_lost_s": 2.95
+    },
+    "h_cold_mean": 211.39655604701122,
+    "gas_near_wall_T_mean": 2755.554142143819,
+    "gas_near_wall_T_min": 2695.8660680626626,
+    "gas_near_wall_T_max": 2803.5889435254717,
+    "shell_linearised_about_K": 2800.0,
+    "base_gap_near_wall_over_chamber": 0.9841264793370782,
+    "h_settled_mean": 208.91896752107854,
+    "wall_spread_K": 501.58569652400865,
+    "machine": {
+      "error": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    "standby_last_hour": -1,
+    "setup_wall_s": 198.14181323698722
+  },
+  "anchor": {
+    "row": {
+      "interval": 0.05,
+      "ratio": 50,
+      "dt_gas": 0.001,
+      "sigma": 0.0008057680181369954,
+      "lag": 1.5814890774682793,
+      "lag_max": 3.1641408077458664,
+      "p_ref": 44185.69510733597,
+      "p_held": 44150.09168735932,
+      "lag_rate": 31.629781549365585,
+      "scalar_trace": false,
+      "two_way": false,
+      "wall_s": 1417.1263771380764,
+      "control": false,
+      "anchor_predictions": {
+        "A1_lag_K": {
+          "lo": 1.229585,
+          "hi": 1.359015,
+          "got": 1.5814890774682793,
+          "held": false
+        },
+        "A2_sigma": {
+          "lo": 0.00055,
+          "hi": 0.0008,
+          "got": 0.0008057680181369954,
+          "held": false
+        },
+        "A3_bound_over_measured": {
+          "lo": 2.0,
+          "hi": 2.8,
+          "got": null,
+          "held": false
+        }
+      }
+    },
+    "machine": {
+      "error": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    "standby_during": -1
+  },
+  "sigma_law": {
+    "rows": [
+      {
+        "interval": 0.05,
+        "ratio": 50,
+        "dt_gas": 0.001,
+        "sigma": 0.0008057680181369954,
+        "lag": 1.5814890774682793,
+        "lag_max": 3.1641408077458664,
+        "p_ref": 44185.69510733597,
+        "p_held": 44150.09168735932,
+        "lag_rate": 31.629781549365585,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 1417.1263771380764,
+        "control": false,
+        "anchor_predictions": {
+          "A1_lag_K": {
+            "lo": 1.229585,
+            "hi": 1.359015,
+            "got": 1.5814890774682793,
+            "held": false
+          },
+          "A2_sigma": {
+            "lo": 0.00055,
+            "hi": 0.0008,
+            "got": 0.0008057680181369954,
+            "held": false
+          },
+          "A3_bound_over_measured": {
+            "lo": 2.0,
+            "hi": 2.8,
+            "got": null,
+            "held": false
+          }
+        }
+      }
+    ]
+  },
+  "predictions": [
+    {
+      "name": "P1",
+      "claim": "L7/R9 ADMITS on the real graph",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P2",
+      "claim": "the ratio-1 control is EXACTLY zero, not small",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P3",
+      "claim": "sigma is first order in the interval: every exponent in [0.90, 1.10]",
+      "got": [],
+      "held": false
+    },
+    {
+      "name": "P4",
+      "claim": "the bound with ROCKET constants holds at every graded interval",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P5",
+      "claim": "lambda_dot here exceeds CS-11's 11.94 K/s and lies in [20, 200] K/s",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P6",
+      "claim": "CS-11's OWN constants do NOT bound the rocket's defect",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P7",
+      "claim": "4x of clock ratio at a fixed interval moves sigma by less than 1.05x",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P8",
+      "claim": "lambda_dot at 0.5 s and 5.0 s of burn differ by more than 2x",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P9",
+      "claim": "the tightness is within an order of magnitude of CS-11's, i.e. in [1, 10]",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P10",
+      "claim": "s_seam is constant in the interval to better than 1.5x",
+      "got": null,
+      "held": false
+    },
+    {
+      "name": "P11",
+      "claim": "the build repo's rank-1 trace changes the defect by more than 1.2x",
+      "got": [],
+      "held": false
+    },
+    {
+      "name": "P12",
+      "claim": "the two-way referent moves sigma by more than 1.5x at some interval",
+      "got": [],
+      "held": false
+    }
+  ],
+  "wall_seconds": 1615.2707049800083,
+  "standby_during_run": -1,
+  "_signature": {
+    "burn": 5.0,
+    "settle": 0.006,
+    "ratio": 50,
+    "cfl": 0.4,
+    "slope_interval": 0.0002,
+    "intervals": [
+      0.0002,
+      0.001,
+      0.005
+    ],
+    "anchor": 0.05
+  }
+}

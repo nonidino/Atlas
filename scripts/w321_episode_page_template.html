@@ -1,0 +1,647 @@
+<meta charset="utf-8">
+<title>Rocket Ascent Episode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --paper:#e8ecf1; --panel:#f7f9fb; --deck:#11161d; --ink:#141d29; --dim:#5b6b80;
+    --rule:#c5cfdb; --soft:#dde4ec;
+    --accent:#1d5f92; --accent-bg:#d9e8f4;
+    --warn:#a4451c; --warn-bg:#f7e4d9;
+    --ok:#2f6b3a; --ok-bg:#dcecde;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0d1219; --panel:#151d27; --deck:#080b10; --ink:#dde5ef; --dim:#8a9bb1;
+    --rule:#2a3643; --soft:#1d2733;
+    --accent:#72b5e2; --accent-bg:#17293a;
+    --warn:#e28d5d; --warn-bg:#2d1f17;
+    --ok:#7fc98d; --ok-bg:#15261a;
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --paper:#0d1219; --panel:#151d27; --deck:#080b10; --ink:#dde5ef; --dim:#8a9bb1;
+    --rule:#2a3643; --soft:#1d2733;
+    --accent:#72b5e2; --accent-bg:#17293a;
+    --warn:#e28d5d; --warn-bg:#2d1f17;
+    --ok:#7fc98d; --ok-bg:#15261a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);margin:0}
+  .wrap{max-width:1140px;margin:0 auto;padding-inline:20px;padding-block:30px 60px}
+  h1{font-size:clamp(27px,4.6vw,42px);line-height:1.06;margin:0 0 8px;letter-spacing:-.022em;font-weight:600;text-wrap:balance}
+  .lede{color:var(--dim);font-size:15.5px;max-width:66ch;margin:0 0 24px;line-height:1.55}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:0 0 9px}
+  h2{font-size:17px;margin:40px 0 6px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+  .cap{color:var(--dim);font-size:13.5px;line-height:1.55;max-width:74ch;margin:8px 0 0}
+  p{line-height:1.6;font-size:14.5px;max-width:70ch}
+  .spec{display:flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--panel)}
+  .spec div{flex:1 1 118px;padding:9px 13px;border-right:1px solid var(--soft)}
+  .spec div:last-child{border-right:0}
+  .spec dt{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:0 0 3px}
+  .spec dd{margin:0;font-family:var(--mono);font-size:14.5px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .stage{border:1px solid var(--rule);border-radius:3px;background:var(--deck);overflow:hidden}
+  .stage canvas{display:block;width:100%;height:auto;cursor:crosshair}
+  .stitle{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+  .stitle b{color:var(--ink);font-weight:600}
+  .bar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;padding:12px 2px 0}
+  .bar label{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin-right:6px}
+  .bar .grow{flex:1 1 220px;display:flex;align-items:center;gap:10px;min-width:0}
+  input[type=range]{flex:1 1 auto;min-width:120px;accent-color:var(--accent)}
+  select,button{font-family:var(--mono);font-size:12.5px;padding:6px 10px;background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:3px;max-width:100%}
+  button{cursor:pointer}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  .check{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .tval{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums;min-width:96px}
+  .ramp{display:flex;align-items:center;gap:9px;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums;flex-wrap:wrap}
+  .ramp .g{height:10px;flex:1 1 160px;border-radius:2px;border:1px solid var(--soft)}
+  .read{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin-top:9px;min-height:19px;font-variant-numeric:tabular-nums}
+  .read b{color:var(--ink)}
+  .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px;margin-top:10px}
+  .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin-top:10px}
+  .note{border-left:3px solid var(--accent);background:var(--accent-bg);padding:13px 16px;border-radius:0 3px 3px 0;font-size:14px;line-height:1.56;max-width:none}
+  .verdict{border-left:3px solid var(--ok);background:var(--ok-bg);padding:14px 17px;border-radius:0 3px 3px 0;margin-top:18px}
+  .verdict h3{margin:0 0 7px;font-size:15px;color:var(--ok);font-weight:600}
+  .verdict p{margin:0 0 8px;font-size:14px}
+  .verdict p:last-child{margin-bottom:0}
+  .chip{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;padding:2px 7px;border-radius:2px;border:1px solid currentColor;white-space:nowrap}
+  .chip.ok{color:var(--ok)} .chip.bad{color:var(--warn)} .chip.info{color:var(--dim)}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+  th,td{padding:7px 9px;border-bottom:1px solid var(--soft);vertical-align:top}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);font-weight:500;border-bottom:1px solid var(--rule);text-align:left}
+  .num td,.num th{text-align:right;white-space:nowrap;font-family:var(--mono)}
+  .num td:first-child,.num th:first-child,.num td:nth-child(2),.num th:nth-child(2){text-align:left}
+  .num td.bad{color:var(--warn);font-weight:600}
+  #w332t td:nth-child(2),#w332t th:nth-child(2){text-align:right}
+  #w332t td:first-child{white-space:normal;min-width:190px;font-family:var(--sans);font-size:13px}
+  .ba td{font-size:13px;line-height:1.45}
+  .ba td:first-child{font-weight:600;min-width:150px}
+  .ba .before{color:var(--warn)}
+  .scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:var(--panel);padding:0 10px}
+  code{font-family:var(--mono);font-size:.92em;background:var(--soft);padding:1px 5px;border-radius:2px}
+  .foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);color:var(--dim);font-size:12.5px;line-height:1.62}
+  .key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .key i{font-style:normal;color:var(--ink);font-weight:600}
+  @media (max-width:560px){ .ba td:first-child{min-width:110px} }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Atlas 0.1 &middot; PoC 4 &middot; coupled episode</p>
+  <h1>A rocket, marched</h1>
+  <p class="lede" id="lede">Six compressible gas blocks, a two-panel conducting airframe and a 3-DOF rigid body, advanced together for 0.145&nbsp;s of flight at 25&nbsp;km and Mach&nbsp;3.5. Re-marched twice. The seams were rebuilt first: blocks that share a seam now share its node lines, and the coupler exchanges across each one by position, in each block's own gas model. That run failed its symmetry checks. The cause was a wall in the gas solver that passed mass, so this is the second re-march, with that fixed.</p>
+
+  <dl class="spec">
+    <div><dt>Chamber</dt><dd id="s-pc"></dd></div>
+    <div><dt>Chamber T</dt><dd id="s-tc"></dd></div>
+    <div><dt>Altitude</dt><dd id="s-h0"></dd></div>
+    <div><dt>Mach</dt><dd id="s-m"></dd></div>
+    <div><dt>Macro steps</dt><dd id="s-n"></dd></div>
+    <div><dt>CFL sub-steps</dt><dd id="s-ss"></dd></div>
+    <div><dt>Build repo</dt><dd id="s-br"></dd></div>
+  </dl>
+
+  <h2>The vehicle</h2>
+  <p class="cap">Every block in SI units on one scale per field, so a seam shows a jump only where the physics has one. The domain is 8.0&nbsp;m long and the engine is 0.70&nbsp;m of it, so there are two views: the whole field, and the engine at about four times the linear scale. The nose is at the left, at <i>z</i>&nbsp;=&nbsp;&minus;4&nbsp;m; the exhaust leaves to the right. The strip ahead of the nose is the forebody slot, a region the configuration declares unmodelled: the air passes it along a slip, adiabatic wall, and nothing there counts as vehicle.</p>
+
+  <div class="bar">
+    <span><label for="fld">Field</label><select id="fld"></select></span>
+    <span><label for="scl">Scale</label><select id="scl">
+      <option value="all">one scale, all blocks</option>
+      <option value="patch">each block its own</option>
+    </select></span>
+    <label class="check" for="edges"><input type="checkbox" id="edges"> block outlines</label>
+    <span class="grow"><label for="t">Step</label><input type="range" id="t" min="0" value="0"><span class="tval" id="tlab"></span></span>
+    <button id="play" type="button">Play</button>
+  </div>
+  <div class="ramp"><span id="lo"></span><span class="g" id="ramp"></span><span id="hi"></span><span id="scalenote"></span></div>
+  <div class="read" id="read">Hover the field for a value.</div>
+
+  <div class="stage" style="margin-top:12px">
+    <div class="stitle"><span>Full field &mdash; 8.0 &times; 3.0 m</span><b id="ttl1"></b></div>
+    <canvas id="cv1" width="1700" height="640"></canvas>
+  </div>
+  <div class="stage" style="margin-top:14px">
+    <div class="stitle"><span>Engine &mdash; injector, chamber, nozzle, airframe, near plume</span><b id="ttl2"></b></div>
+    <canvas id="cv2" width="1700" height="820"></canvas>
+  </div>
+  <div class="key" id="key"></div>
+
+  <h2>What the rebuild changed</h2>
+  <p class="cap">The first march of this vehicle had seams that did not meet and a coupler that joined them wrongly. Each defect below was measured on that run, fixed in the build repository, and turned into a gate before this run was marched; the right-hand column is what the gate read.</p>
+  <div class="scroll" style="margin-top:10px"><table class="ba" id="ba"><thead><tr><th>Seam or load</th><th>First march</th><th>This march</th><th></th></tr></thead><tbody></tbody></table></div>
+  <div class="verdict" id="verdict" hidden>
+    <h3 id="v-title"></h3>
+    <p id="v-body"></p>
+  </div>
+
+  <h2>Found while checking the fix: a wall that passed mass</h2>
+  <p class="cap" id="w332-a"></p>
+  <div class="two">
+    <div class="stage"><div class="stitle"><span>Mirror asymmetry of the engine</span><b>log scale</b></div><canvas id="sym" width="880" height="400"></canvas></div>
+    <div class="scroll" style="padding:0"><table class="num" id="w332t"><thead><tr><th>Nozzle alone, walls at one temperature</th><th>5 ms</th><th>10 ms</th><th>15 ms</th><th>20 ms</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  <p class="cap" id="w332-b"></p>
+
+  <h2>The airframe</h2>
+  <p class="cap">The skin is 8&nbsp;mm thick and 4.7&nbsp;m long, in two panels either side of the axis, conducting along its length and loaded by the gas on both faces. Over the tank barrel (<i>z</i>&nbsp;&lt;&nbsp;0) the inner face borders a region no block models, and sees the wall the configuration declares there: adiabatic, at ambient pressure. Nose at the left.</p>
+  <div class="three">
+    <div class="stage"><div class="stitle"><span>Skin temperature</span><b>K</b></div><canvas id="sh1" width="880" height="320"></canvas></div>
+    <div class="stage"><div class="stitle"><span>Von Mises stress</span><b>MPa</b></div><canvas id="sh2" width="880" height="320"></canvas></div>
+    <div class="stage"><div class="stitle"><span>Transverse displacement</span><b>mm, lower panel negated</b></div><canvas id="sh3" width="880" height="320"></canvas></div>
+  </div>
+  <p class="cap">The third plot is the check on the panels: a symmetric vehicle at zero incidence bends its two panels as mirror images, so the upper panel's displacement and the lower panel's, negated, should be one line. In the first march they were the same line un-negated &mdash; the lower panel was loaded inside out, by up to 4.17&nbsp;m on a body 0.22&nbsp;m wide.</p>
+
+  <h2>Trajectory and loads</h2>
+  <div class="three">
+    <div class="stage"><div class="stitle"><span>Vertical velocity</span><b>m/s</b></div><canvas id="p1" width="880" height="380"></canvas></div>
+    <div class="stage"><div class="stitle"><span>Thrust, vertical</span><b>kN/m</b></div><canvas id="p2" width="880" height="380"></canvas></div>
+    <div class="stage"><div class="stitle"><span>Drag and side force</span><b>N/m</b></div><canvas id="p3" width="880" height="380"></canvas></div>
+  </div>
+  <p class="cap">Planar model: forces are per metre of depth, and so is the 50&nbsp;t mass the rigid body carries. Drag is the aerodynamic force along the body axis towards the tail &mdash; pressure and wall shear over both panels of the atmosphere block &mdash; and the side force is what a symmetric body at zero incidence must not have.</p>
+
+  <h2>What crosses each seam</h2>
+  <p class="cap">Seven seams are declared to the model; three more are physically there, exchanged by the coupler and recorded without being declared (declaring one is a decision about the model's graph, and recording it means that decision will not need the data regenerated). Values at the last step, integrated along each seam and per metre of depth, positive <em>out of</em> the block the record is taken from. A wall passes no mass.</p>
+  <div class="scroll" style="margin-top:10px"><table class="num" id="seams"><thead><tr><th>Seam</th><th>Status</th><th>Length</th><th>Mass</th><th>Energy</th><th>Heat</th><th>p trace</th><th>T trace</th></tr></thead><tbody></tbody></table></div>
+
+  <h2>The macro step is a declaration</h2>
+  <div class="note" id="macro">This ran at &Delta;<em>t</em><sub>macro</sub> = 5&times;10<sup>&minus;3</sup>&nbsp;s against the configuration's own 5&times;10<sup>&minus;2</sup>. A tenfold reduction, and a conservative one: one chamber flow-through is about 6&times;10<sup>&minus;3</sup>&nbsp;s, so this sits at <strong>0.83 flow-throughs</strong>. The multirate lag defect is first order in the exchange interval all the way to the configuration's own step, and the CS-11 bound holds there too, 2.28&times; loose. So the reduction cuts the coupling defect tenfold; it does not rescue a bound. (Tier 80 had the bound violated at 5&times;10<sup>&minus;2</sup>&nbsp;s, and Tier 84 found a knee at 1.67 flow-throughs. Both were the old isothermal wall's, and both went away when W334 re-derived them with the wall fixed.)</div>
+
+  <h2>What these numbers can be trusted for</h2>
+  <div class="note" id="residuals">This run was re-run under a ledger that reads the face fluxes the solver itself applies, block by block and seam by seam (W336). <strong>Exact:</strong> every block conserves mass, momentum and energy to 10<sup>&minus;13</sup>; the walls pass no mass; the skin's energy balance closes; and the re-run reproduces this page's run bitwise, on another machine. <strong>Right to about 1%:</strong> given the flow it receives, the nozzle's thrust is 0.989 of ideal planar-nozzle theory. <strong>Wrong, with a named cause:</strong> the injector delivers 17.7% more mass than the operating point declares, so the chamber runs at 1.13&times; its declared pressure (W337); the throat seam loses 3% of the mass flow every step, because blocks whose grids differ are joined by point interpolation (W340); the stationary walls do work, so 4.7% of the heat the gas loses at them never reaches the skin (W339); and the plume's seams do not conserve, because the plume block runs one gas model for exhaust and air (W341). <strong>Not known at this grid:</strong> every wall flux. The engine's wall heat doubles each time the wall cell halves, and at this resolution the air heats the skin in the wrong direction (W342). The skin temperatures and the drag shown here are not converged. The velocity gained carries an 8% error from the 5&nbsp;ms coupling step by 60&nbsp;ms. So this is a correct demonstration of the coupled machinery, and not yet a quantitative prediction of the vehicle.</div>
+
+  <div class="foot">
+    <strong>Provenance.</strong> Solvers, coupling order and loads are the build repository's own <code>generate.CoupledEpisode</code>, used as it stands &mdash; nothing here reimplements a solver. Build repository <span id="f-br"></span>. Operating point is corner case <span id="f-label"></span> from the project's own sweep. Grid coarsened <span id="f-co"></span>&times; per dimension, the blocks rebuilt at that resolution; both declarations are reported rather than buried. Cost <span id="f-cost"></span>
+    <br><br><strong>Reading the numbers.</strong> <span id="f-note"></span>
+  </div>
+</div>
+
+<script id="D" type="application/json">/*__EPISODE_DATA__*/</script>
+<script>
+(function(){
+var D=JSON.parse(document.getElementById('D').textContent);
+var M=D.meta,T=D.t,P=D.patches,EX=D.extent;
+var css=function(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();};
+function $(id){return document.getElementById(id);}
+
+// ---- numbers ------------------------------------------------------------
+var PRE=[[1e9,'G'],[1e6,'M'],[1e3,'k'],[1,''],[1e-3,'m']];
+function si(v,unit,digits){
+  if(v===null||v===undefined||!isFinite(v))return '–';
+  digits=digits||3;
+  if(unit==='K'||unit==='m/s'||unit==='kg/m³'||unit==='')return (+v).toPrecision(digits)+(unit?' '+unit:'');
+  var a=Math.abs(v);
+  if(a!==0&&a<1e-3)return v.toExponential(1)+' '+unit;
+  if(a===0)return '0 '+unit;
+  for(var i=0;i<PRE.length;i++){ if(a>=PRE[i][0]*0.9995||i===PRE.length-1){return (v/PRE[i][0]).toPrecision(digits)+' '+PRE[i][1]+unit;} }
+}
+function mm(v){return (v*1e3).toPrecision(3)+' mm';}
+
+$('s-pc').textContent=(M.p_c/1e6).toFixed(1)+' MPa';
+$('s-tc').textContent=M.T_c.toFixed(0)+' K';
+$('s-h0').textContent=(M.h0/1000).toFixed(0)+' km';
+$('s-m').textContent=M.M_inf.toFixed(2);
+$('s-n').textContent=(M.n_macro-1)+' ('+M.n_macro+' frames)';
+$('s-ss').textContent=(M.substeps||0).toLocaleString();
+var br=M.build_repo||{};
+var brs=(br.commit||'?')+(br.dirty?' + fixes'+(br.diff_sha256?' ('+br.diff_sha256.slice(0,8)+')':''):'');
+$('s-br').textContent=brs;
+$('f-br').textContent=(br.commit||'?')+' on '+(br.branch||'?')+(br.dirty?', with the seam and wall fixes uncommitted; diff hash '+br.diff_sha256+' recorded with the run':'');
+$('f-label').textContent=M.label;
+$('f-co').textContent=M.coarsen;
+$('f-cost').textContent=(M.substeps||0).toLocaleString()+' CFL sub-steps; '+(M.wall_seconds||0).toFixed(0)+' s of wall time on a laptop that moved from battery to mains during the run and shared the machine with test suites for part of it — a record of this run, not a benchmark.';
+$('f-note').textContent=D.note;
+
+// ---- decode ------------------------------------------------------------
+function b64(s){var r=atob(s),n=r.length,o=new Uint8Array(n);for(var i=0;i<n;i++)o[i]=r.charCodeAt(i);return o;}
+P.forEach(function(p){
+  p.blankA=b64(p.blank);
+  p.F={};
+  Object.keys(p.fields).forEach(function(k){
+    var f=p.fields[k],u=new Uint16Array(b64(f.d).buffer);
+    p.F[k]={q:u,lo:f.lo,hi:f.hi,n:p.nz*p.ny};
+  });
+});
+function val(p,fld,step,i){var f=p.F[fld];if(!f)return NaN;return f.lo+(f.hi-f.lo)*f.q[step*f.n+i]/65535;}
+
+// ---- fields ------------------------------------------------------------
+// kind: log for positive quantities that span decades, div for signed ones
+var FLDS=[
+  {v:'T',label:'temperature',unit:'K',kind:'log'},
+  {v:'p',label:'pressure',unit:'Pa',kind:'log'},
+  {v:'rho',label:'density',unit:'kg/m³',kind:'log'},
+  {v:'speed',label:'speed',unit:'m/s',kind:'lin'},
+  {v:'u',label:'axial velocity',unit:'m/s',kind:'div'},
+  {v:'v',label:'transverse velocity',unit:'m/s',kind:'div'},
+  {v:'c:T',label:'airframe temperature',unit:'K',kind:'lin'},
+  {v:'c:vm',label:'airframe von Mises stress',unit:'Pa',kind:'lin'},
+  {v:'c:uy',label:'airframe transverse displacement',unit:'m',kind:'div'},
+  {v:'c:s_zz',label:'airframe axial stress',unit:'Pa',kind:'div'}];
+var sel=$('fld');
+FLDS.forEach(function(f){var o=document.createElement('option');o.value=f.v;o.textContent=f.label+' ('+f.unit+')';sel.appendChild(o);});
+function spec(v){for(var i=0;i<FLDS.length;i++)if(FLDS[i].v===v)return FLDS[i];return FLDS[0];}
+function base(f){return f.indexOf(':')<0?f:f.split(':')[1];}
+function isShell(f){return f.indexOf('c:')===0;}
+function has(p,f){return isShell(f)?(p.agent==='c'&&p.F[base(f)]):(p.agent!=='c'&&p.F[base(f)]);}
+
+// ---- colour ------------------------------------------------------------
+var SEQ=[[10,19,48],[24,66,106],[22,120,124],[96,164,92],[208,183,70],[248,236,186]];
+var DIV=[[36,72,140],[86,140,196],[178,206,230],[240,240,238],[236,190,150],[206,116,66],[150,44,26]];
+function ramp(S,u){u=u<0?0:(u>1?1:u);var x=u*(S.length-1),i=Math.floor(x),f=x-i;
+  if(i>=S.length-1){i=S.length-2;f=1;}var a=S[i],b=S[i+1];
+  return[Math.round(a[0]+(b[0]-a[0])*f),Math.round(a[1]+(b[1]-a[1])*f),Math.round(a[2]+(b[2]-a[2])*f)];}
+function rgb(c){return'rgb('+c[0]+','+c[1]+','+c[2]+')';}
+function frac(sp,v,r){
+  if(sp.kind==='div'){var m=Math.max(Math.abs(r[0]),Math.abs(r[1]))||1;return (v/m+1)/2;}
+  if(sp.kind==='log'){var a=Math.log(Math.max(r[0],1e-30)),b=Math.log(Math.max(r[1],1e-30));
+    return (Math.log(Math.max(v,1e-30))-a)/((b-a)||1);}
+  return (v-r[0])/((r[1]-r[0])||1);
+}
+function paint(sp,v,r){return rgb(ramp(sp.kind==='div'?DIV:SEQ,frac(sp,v,r)));}
+function range(fld,mode,p){
+  var f=base(fld),lo=1e300,hi=-1e300;
+  var list=(mode==='patch'&&p)?[p]:P.filter(function(q){return has(q,fld);});
+  list.forEach(function(q){var g=q.F[f];if(!g)return;if(g.lo<lo)lo=g.lo;if(g.hi>hi)hi=g.hi;});
+  if(lo>hi){lo=0;hi=1;}
+  return[lo,hi];
+}
+
+// ---- views -------------------------------------------------------------
+function view(cv,win){
+  var W=cv.width,H=cv.height,pad=30;
+  var s=Math.min((W-2*pad)/(win.z1-win.z0),(H-2*pad)/(win.y1-win.y0));
+  return{s:s,ox:(W-s*(win.z1-win.z0))/2-win.z0*s,oy:H/2+s*(win.y1+win.y0)/2,W:W,H:H,win:win};
+}
+function X(V,z){return V.ox+z*V.s;} function Y(V,y){return V.oy-y*V.s;}
+function nodeXY(p,i,j){var k=i*(p.ny+1)+j;return[p.zn[k],p.yn[k]];}
+
+function draw(cv,win,fld,step,mode,edges){
+  var g=cv.getContext('2d'),V=view(cv,win),sp=spec(fld);
+  g.clearRect(0,0,V.W,V.H); g.fillStyle=css('--deck'); g.fillRect(0,0,V.W,V.H);
+  var gl=range(fld,'all');
+  P.forEach(function(p){
+    if(!has(p,fld))return;
+    var f=base(fld),r=(mode==='patch')?range(fld,'patch',p):gl;
+    var nz=p.nz,ny=p.ny,zn=p.zn,yn=p.yn,W1=ny+1;
+    for(var i=0;i<nz;i++)for(var j=0;j<ny;j++){
+      var idx=i*ny+j;
+      if(p.blankA[idx])continue;
+      var a=i*W1+j,b=(i+1)*W1+j,c=(i+1)*W1+j+1,d=i*W1+j+1;
+      g.fillStyle=paint(sp,val(p,f,step,idx),r);
+      g.beginPath();
+      g.moveTo(X(V,zn[a]),Y(V,yn[a])); g.lineTo(X(V,zn[b]),Y(V,yn[b]));
+      g.lineTo(X(V,zn[c]),Y(V,yn[c])); g.lineTo(X(V,zn[d]),Y(V,yn[d]));
+      g.closePath(); g.fill();
+      g.strokeStyle=g.fillStyle; g.lineWidth=.6; g.stroke();   // seal sub-pixel gaps between quads
+    }
+  });
+  if(edges){
+    g.strokeStyle='rgba(235,242,250,.55)'; g.lineWidth=1;
+    P.forEach(function(p){
+      if(p.agent==='c')return;
+      g.beginPath();
+      var i,j;
+      for(i=0;i<=p.nz;i++){var q=nodeXY(p,i,0);g[i?'lineTo':'moveTo'](X(V,q[0]),Y(V,q[1]));}
+      for(j=0;j<=p.ny;j++){var q2=nodeXY(p,p.nz,j);g.lineTo(X(V,q2[0]),Y(V,q2[1]));}
+      for(i=p.nz;i>=0;i--){var q3=nodeXY(p,i,p.ny);g.lineTo(X(V,q3[0]),Y(V,q3[1]));}
+      for(j=p.ny;j>=0;j--){var q4=nodeXY(p,0,j);g.lineTo(X(V,q4[0]),Y(V,q4[1]));}
+      g.stroke();
+      if(p.agent==='g'){             // the hole's two edges are g's seam with f
+        var js=[];for(j=0;j<p.ny;j++)if(p.blankA[j])js.push(j);
+        if(js.length){[js[0],js[js.length-1]+1].forEach(function(jj){
+          g.beginPath();var a=nodeXY(p,0,jj),b=nodeXY(p,p.nz,jj);
+          g.moveTo(X(V,a[0]),Y(V,a[1]));g.lineTo(X(V,b[0]),Y(V,b[1]));g.stroke();});}
+      }
+    });
+  }
+  // the airframe's outline, always, so the body is visible whatever is shown
+  P.filter(function(p){return p.agent==='c';}).forEach(function(p){
+    var W1=p.ny+1;
+    g.strokeStyle=isShell(fld)?'rgba(255,255,255,.6)':'rgba(255,255,255,.85)';
+    g.lineWidth=isShell(fld)?1:1.6; g.beginPath();
+    for(var i=0;i<=p.nz;i++){var k=i*W1;g[i?'lineTo':'moveTo'](X(V,p.zn[k]),Y(V,p.yn[k]));}
+    for(var i2=p.nz;i2>=0;i2--){var k2=i2*W1+p.ny;g.lineTo(X(V,p.zn[k2]),Y(V,p.yn[k2]));}
+    g.closePath(); g.stroke();
+  });
+  return V;
+}
+// labels sit at fixed places in the vehicle's own coordinates
+var L1=[[-2.3,0.72,'d · atmosphere'],[-2.3,0.0,'tank (not modelled)'],[-4.5,0.0,'forebody slot'],
+        [1.85,0.0,'f · plume'],[1.85,1.08,'g · wake'],[1.85,-1.08,'g · wake']];
+var L2=[[0.06,0.0,'a · injector'],[0.24,0.0,'b · chamber'],[0.56,0.0,'e · nozzle'],
+        [1.05,0.0,'f · plume'],[0.12,0.26,'d · atmosphere'],[-0.08,0.0,'tank']];
+function labels(cv,V,list){
+  var g=cv.getContext('2d');
+  g.font='600 15px '+css('--mono');
+  list.forEach(function(L){
+    var x=X(V,L[0]),y=Y(V,L[1]),t=L[2];
+    if(x<8||x>V.W-8||y<8||y>V.H-8)return;
+    var w=g.measureText(t).width;
+    g.fillStyle='rgba(8,11,16,.72)'; g.fillRect(x-w/2-7,y-12,w+14,22);
+    g.fillStyle='#e8eef6'; g.textAlign='center'; g.fillText(t,x,y+4); g.textAlign='left';
+  });
+}
+function airframeTag(cv,V,z){
+  var g=cv.getContext('2d'),y0=Y(V,0.108),x=X(V,z),y1=y0-34;
+  if(x<8||x>V.W-8)return;
+  g.strokeStyle='rgba(232,238,246,.8)';g.lineWidth=1;g.beginPath();g.moveTo(x,y0);g.lineTo(x,y1+6);g.stroke();
+  g.font='600 14px '+css('--mono');var t='c · airframe, 8 mm skin',w=g.measureText(t).width;
+  g.fillStyle='rgba(8,11,16,.72)';g.fillRect(x-w/2-7,y1-12,w+14,20);
+  g.fillStyle='#e8eef6';g.textAlign='center';g.fillText(t,x,y1+3);g.textAlign='left';
+}
+function brush(cv,V,win){
+  var g=cv.getContext('2d');
+  g.strokeStyle=css('--accent'); g.lineWidth=2; g.setLineDash([7,5]);
+  g.strokeRect(X(V,win.z0),Y(V,win.y1),(win.z1-win.z0)*V.s,(win.y1-win.y0)*V.s);
+  g.setLineDash([]);
+  g.font='600 13px '+css('--mono'); g.fillStyle=css('--accent');
+  g.fillText('engine view below',X(V,win.z0)+6,Y(V,win.y1)-8);
+}
+
+var FULL={z0:EX.z0,z1:EX.z1,y0:EX.y0,y1:EX.y1};
+var ZOOM={z0:-0.15,z1:1.35,y0:-0.40,y1:0.40};
+var cv1=$('cv1'),cv2=$('cv2'),V1,V2;
+
+function legend(fld,mode){
+  var sp=spec(fld),r=range(fld,'all'),S=sp.kind==='div'?DIV:SEQ,st=[];
+  for(var i=0;i<=12;i++)st.push(rgb(ramp(S,i/12))+' '+(i*100/12).toFixed(1)+'%');
+  $('ramp').style.background='linear-gradient(90deg,'+st.join(',')+')';
+  var shown=sp.unit==='m'?function(v){return mm(v);}:function(v){return si(v,sp.unit);};
+  if(sp.kind==='div'){var m=Math.max(Math.abs(r[0]),Math.abs(r[1]));$('lo').textContent=shown(-m);$('hi').textContent=shown(m);}
+  else{$('lo').textContent=shown(r[0]);$('hi').textContent=shown(r[1]);}
+  $('scalenote').textContent=(sp.kind==='log'?'log scale':(sp.kind==='div'?'zero at the centre':'linear'))+
+    (mode==='patch'?' · each block on its own range':'');
+}
+function render(){
+  var i=+$('t').value,fld=sel.value,mode=$('scl').value,edges=$('edges').checked;
+  $('tlab').textContent='t = '+T[i].toFixed(3)+' s';
+  V1=draw(cv1,FULL,fld,i,mode,edges); labels(cv1,V1,L1); airframeTag(cv1,V1,-3.2); brush(cv1,V1,ZOOM);
+  V2=draw(cv2,ZOOM,fld,i,mode,edges); labels(cv2,V2,L2); airframeTag(cv2,V2,0.2);
+  var nm=sel.options[sel.selectedIndex].textContent;
+  $('ttl1').textContent=nm; $('ttl2').textContent=nm;
+  legend(fld,mode);
+}
+
+// ---- hover readout ------------------------------------------------------
+function hover(cv,getV){
+  cv.addEventListener('mousemove',function(ev){
+    var V=getV(); if(!V)return;
+    var r=cv.getBoundingClientRect();
+    var px=(ev.clientX-r.left)*cv.width/r.width, py=(ev.clientY-r.top)*cv.height/r.height;
+    var Z=(px-V.ox)/V.s, Yw=(V.oy-py)/V.s;
+    var fld=sel.value,f=base(fld),sp=spec(fld),step=+$('t').value,best=null,bd=1e30;
+    P.forEach(function(p){
+      if(!has(p,fld))return;
+      var W1=p.ny+1;
+      for(var i=0;i<p.nz;i++)for(var j=0;j<p.ny;j++){
+        var idx=i*p.ny+j; if(p.blankA[idx])continue;
+        var k=i*W1+j,k2=(i+1)*W1+j+1,zc=(p.zn[k]+p.zn[k2])/2,yc=(p.yn[k]+p.yn[k2])/2;
+        var dd=(zc-Z)*(zc-Z)+(yc-Yw)*(yc-Yw);
+        if(dd<bd){bd=dd;best={p:p,idx:idx,z:zc,y:yc};}
+      }
+    });
+    var el=$('read');
+    if(!best||bd>0.25){el.textContent='Hover the field for a value.';return;}
+    var v=val(best.p,f,step,best.idx);
+    el.innerHTML='<b>'+best.p.agent+' · '+best.p.label+'</b> &nbsp; z = '+best.z.toFixed(3)+
+      ' m, y = '+best.y.toFixed(3)+' m &nbsp; &middot; &nbsp; '+sp.label+' = <b>'+
+      (sp.unit==='m'?mm(v):si(v,sp.unit,4))+'</b>';
+  });
+  cv.addEventListener('mouseleave',function(){$('read').textContent='Hover the field for a value.';});
+}
+hover(cv1,function(){return V1;}); hover(cv2,function(){return V2;});
+
+// ---- line plots ---------------------------------------------------------
+function frame(id){
+  var c=$(id),g=c.getContext('2d');
+  g.clearRect(0,0,c.width,c.height); g.fillStyle=css('--deck'); g.fillRect(0,0,c.width,c.height);
+  return{c:c,g:g,W:c.width,H:c.height};
+}
+function axes(F,L,R,Tp,B,lo,hi,fmt,xl,xr){
+  var g=F.g,W=F.W,H=F.H;
+  g.strokeStyle=css('--rule'); g.globalAlpha=.35; g.lineWidth=1;
+  for(var k=0;k<=4;k++){var yy=Tp+(H-Tp-B)*k/4;g.beginPath();g.moveTo(L,yy);g.lineTo(W-R,yy);g.stroke();}
+  g.globalAlpha=1; g.fillStyle=css('--dim'); g.font='400 13px '+css('--mono'); g.textAlign='right';
+  for(var k2=0;k2<=4;k2++){var y2=Tp+(H-Tp-B)*k2/4;g.fillText(fmt(hi-(hi-lo)*k2/4),L-8,y2+4);}
+  g.textAlign='left'; g.fillText(xl,L,H-12); g.textAlign='right'; g.fillText(xr,W-R,H-12); g.textAlign='left';
+}
+function series(F,L,R,Tp,B,xs,ys,x0,x1,lo,hi,col,width,dash){
+  var g=F.g,W=F.W,H=F.H;
+  var X_=function(x){return L+(W-L-R)*(x-x0)/((x1-x0)||1);},Y_=function(y){return Tp+(H-Tp-B)*(1-(y-lo)/((hi-lo)||1));};
+  g.strokeStyle=col; g.lineWidth=width; g.setLineDash(dash||[]); g.beginPath();
+  for(var i=0;i<xs.length;i++){var px=X_(xs[i]),py=Y_(ys[i]);i?g.lineTo(px,py):g.moveTo(px,py);}
+  g.stroke(); g.setLineDash([]);
+  g.fillStyle=col; g.beginPath(); g.arc(X_(xs[xs.length-1]),Y_(ys[ys.length-1]),4,0,7); g.fill();
+}
+function bounds(arrs,pad){
+  var lo=1e300,hi=-1e300;
+  arrs.forEach(function(a){a.forEach(function(v){if(isFinite(v)){if(v<lo)lo=v;if(v>hi)hi=v;}});});
+  if(!(hi>lo)){hi=lo+1;lo=lo-1;}
+  var d=(hi-lo)*(pad||.12); return[lo-d,hi+d];
+}
+function tag(F,x,y,t,col){F.g.fillStyle=col;F.g.font='500 13px '+css('--mono');F.g.fillText(t,x,y);}
+
+function timePlot(id,list,fmt,skip0){
+  // loads[0] is a pre-run zero that drove nothing, so a load plot starts at step 1
+  var F=frame(id),L=92,R=18,Tp=18,B=38,s0=skip0?1:0,idx=T.map(function(_,i){return i;}).slice(s0);
+  var bd=bounds(list.map(function(s){return s.v.slice(s0);}));
+  axes(F,L,R,Tp,B,bd[0],bd[1],fmt,'t = '+T[s0].toFixed(3)+' s','t = '+T[T.length-1].toFixed(3)+' s');
+  list.forEach(function(s,k){
+    series(F,L,R,Tp,B,idx,s.v.slice(s0),s0,T.length-1,bd[0],bd[1],s.col,s.w||2.4,s.dash);
+    if(s.name)tag(F,L+10,Tp+18+17*k,s.name,s.col);
+  });
+}
+function panelMeans(p,fld){      // station means through the thickness, and station z
+  var step=+$('t').value,zs=[],vs=[],W1=p.ny+1;
+  for(var i=0;i<p.nz;i++){
+    var acc=0;for(var j=0;j<p.ny;j++)acc+=val(p,fld,step,i*p.ny+j);
+    vs.push(acc/p.ny); zs.push(0.5*(p.zn[i*W1]+p.zn[(i+1)*W1]));
+  }
+  return{z:zs,v:vs};
+}
+function stripPlot(id,list,fmt){
+  var F=frame(id),L=78,R=16,Tp=16,B=36;
+  var bd=bounds(list.map(function(s){return s.v;}),.1);
+  var z0=Math.min.apply(null,list[0].z),z1=Math.max.apply(null,list[0].z);
+  axes(F,L,R,Tp,B,bd[0],bd[1],fmt,'nose, z = '+z0.toFixed(1)+' m','engine, z = '+z1.toFixed(2)+' m');
+  list.forEach(function(s,k){
+    series(F,L,R,Tp,B,s.z,s.v,z0,z1,bd[0],bd[1],s.col,s.w||2,s.dash);
+    tag(F,L+10,Tp+16+17*k,s.name,s.col);
+  });
+}
+function airframe(){
+  var c0=P.filter(function(p){return p.id==='c0';})[0],c1=P.filter(function(p){return p.id==='c1';})[0];
+  if(!c0||!c1)return;
+  var ac=css('--accent'),wa=css('--warn');
+  var t1=panelMeans(c1,'T'),t0=panelMeans(c0,'T');
+  stripPlot('sh1',[{z:t1.z,v:t1.v,col:ac,name:'upper panel'},{z:t0.z,v:t0.v,col:wa,name:'lower panel',dash:[6,5]}],
+    function(v){return v.toFixed(2);});
+  var m1=panelMeans(c1,'vm'),m0=panelMeans(c0,'vm');
+  stripPlot('sh2',[{z:m1.z,v:m1.v.map(function(v){return v/1e6;}),col:ac,name:'upper panel'},
+                   {z:m0.z,v:m0.v.map(function(v){return v/1e6;}),col:wa,name:'lower panel',dash:[6,5]}],
+    function(v){return v.toPrecision(3);});
+  var u1=panelMeans(c1,'uy'),u0=panelMeans(c0,'uy');
+  stripPlot('sh3',[{z:u1.z,v:u1.v.map(function(v){return v*1e3;}),col:ac,name:'upper panel'},
+                   {z:u0.z,v:u0.v.map(function(v){return -v*1e3;}),col:wa,name:'lower panel, negated',dash:[6,5]}],
+    function(v){return v.toPrecision(3);});
+}
+function loadsPlots(){
+  var ac=css('--accent'),wa=css('--warn'),ok=css('--ok');
+  timePlot('p1',[{v:D.rigid.vy,col:ac}],function(v){return v.toFixed(2);},false);
+  timePlot('p2',[{v:D.loads.Fy_thrust.map(function(v){return v/1e3;}),col:ok}],function(v){return v.toPrecision(4);},true);
+  var lb=D.loads_body;
+  if(lb)timePlot('p3',[{v:lb.aero_axial,col:wa,name:'drag (towards the tail)'},
+                       {v:lb.aero_normal,col:ac,name:'side force',dash:[6,5]}],function(v){return v.toPrecision(3);},true);
+}
+
+// ---- before / after -------------------------------------------------------
+function beforeAfter(){
+  var B=D.before||{},BE=D.before_episode||{},G=(D.gates||{}).gates||{},tb=document.querySelector('#ba tbody');
+  var lb=D.loads_body,last=T.length-1;
+  function row(name,before,after,gate){
+    var ok=gate===null?null:(G[gate]?G[gate].passed:null);
+    var chip=ok===null?'<span class="chip info">measured</span>':(ok?'<span class="chip ok">fixed</span>':'<span class="chip bad">check</span>');
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+name+'</td><td class="before">'+before+'</td><td>'+after+'</td><td>'+chip+'</td>';
+    tb.appendChild(tr);
+  }
+  function g(k){return G[k]?G[k].value:'–';}
+  var w=(B.walls||{}).coarse||{},h=B.g_hole||{},cv=((B.coverage||{})['full_domain_5mm'])||{};
+  var sm=B.shell_map||{},so=B.shell_orientation||{},ae=B.aero||{},gm=B.gas_model||{};
+  row('Nozzle throat: gas, skin and air',
+      'three polylines across one V: '+(w.gas_shell_gap*1e3).toFixed(1)+' mm gap gas–skin, '+(w.shell_d_gap*1e3).toFixed(1)+' mm skin–air, '+(w.shell_d_overlap*1e3).toFixed(1)+' mm overlap, against an 8 mm skin',
+      'one contour: largest gap or overlap '+g('G1_polylines'),'G1_polylines');
+  row('Plume hole in the wake block',
+      'hole ['+(h.hole?h.hole[0].toFixed(3)+', '+h.hole[1].toFixed(3):'?')+'] m against the plume’s ±0.600 m',
+      'hole edges on the plume’s node lines: error '+g('G3_hole'),'G3_hole');
+  row('Area claimed by no block, or by two',
+      (cv.gap_m2||0).toFixed(3)+' m² unclaimed, '+(cv.overlap_m2||0).toFixed(3)+' m² claimed twice',
+      g('G2_coverage')+' on a 0.5 mm and a 5 mm raster','G2_coverage');
+  row('Where the skin reads its wall',
+      'by array index: '+Math.round(100*(sm.fraction_outside_b||0))+'% of stations from a wall they are not on, the worst '+(sm.inner_max_misplacement||0).toFixed(2)+' m away',
+      'by position: worst '+g('C1_inner')+' inside, '+g('C2_outer')+' outside','C1_inner');
+  row('Lower airframe panel',
+      'loaded inside out: both panels bent the same way, up to '+(so.uy_max_abs||0).toFixed(2)+' m on a 0.22 m body',
+      'mirror images: residual '+g('E1_mirror'),'E1_mirror');
+  row('Aerodynamic load',
+      'drag '+((ae.as_coded||{}).axial||0).toFixed(3)+' N/m, side force '+Math.abs((ae.as_coded||{}).normal||0).toFixed(1)+' N/m',
+      lb?('drag '+lb.aero_axial[last].toFixed(1)+' N/m, side force '+si(lb.aero_normal[last],'N/m',2)):'–','E2_directions');
+  var vb=BE.rigid_first&&BE.rigid_last?BE.rigid_first[4].toFixed(2)+' → '+BE.rigid_last[4].toFixed(2)+' m/s':'';
+  var fb=BE.loads_last?si(BE.loads_last[1],'N/m',3):'';
+  row('Thrust direction',
+      'thrust '+fb+' (downward); v_y '+vb,
+      'thrust +'+si(D.loads.Fy_thrust[last],'N/m',3)+' (upward); v_y '+D.rigid.vy[0].toFixed(2)+' → '+D.rigid.vy[last].toFixed(2)+' m/s','E3_climbs');
+  row('Air and plume gas across the plume’s edges',
+      'states handed across unconverted: air read at '+(gm.freestream_T_read_by_f||0).toFixed(1)+' K and '+(gm.freestream_p_read_by_f||0).toFixed(0)+' Pa; wake air to '+(gm.g_T_max||0).toFixed(0)+' K against a '+(gm.air_T0||0).toFixed(0)+' K ceiling',
+      'converted at equal p, T and velocity (error '+g('C4_gas_model')+'); wake at '+g('E5_wake_energy')+' of its hottest inflow','E5_wake_energy');
+  var WM=D.wall_mass||{},fc=WM.face||{},c6=WM.c6||{},SY=D.symmetry||{};
+  var c6b=Object.keys(c6).map(function(k){return c6[k].before;});
+  function peak(r,upto){if(!r)return null;var v=r.engine,m=0;for(var i=0;i<v.length&&(upto===undefined||r.t[i]<=upto+1e-9);i++)m=Math.max(m,v[i]);return m;}
+  if(fc.before)row('Mass through the engine’s walls',
+      'an isothermal wall passed mass: '+fc.before.toFixed(0)+'× the gas’s own flux into it, and a closed engine block gained mass at '+
+        Math.min.apply(null,c6b).toFixed(0)+'–'+Math.max.apply(null,c6b).toFixed(0)+'× its wall flux',
+      'none: '+g('C6_wall_mass')+' of the wall flux, round-off','C6_wall_mass');
+  if(SY.prefix)row('The engine’s mirror symmetry',
+      'the nozzle '+peak(SY.prefix,0.015).toExponential(1)+' asymmetric within 15 ms, grown from round-off; '+peak(SY.prefix).toExponential(1)+' at worst',
+      'worst over the whole march '+g('E6_engine_mirror'),'E6_engine_mirror');
+  var so=D.seams_only||{};
+  row('The wall ahead of the nose',
+      'no-slip at the nose’s temperature for a metre before the vehicle began, its shear counted as drag and its record as the c–d seam'+
+        (so.cd_length&&D.airframe_outer_face?' ('+so.cd_length.toFixed(2)+' m of record for a '+D.airframe_outer_face.toFixed(2)+' m skin)':''),
+      'slip and adiabatic, as the configuration now declares; c–d is the skin’s outer face ('+g('C8_slot_record')+')','C8_slot_record');
+  row('This page',
+      'temperature divided by a different reference in each block, on one colour scale; plume and wake labels swapped',
+      'SI units, one scale per field; labels from the configuration',null);
+  var all=(D.gates||{}).all_passed;
+  if(D.gates){
+    var n=Object.keys(G).length,np=Object.keys(G).filter(function(k){return G[k].passed;}).length;
+    $('v-title').textContent=np+' of '+n+' gates pass';
+    var SO=((D.seams_only||{}).gates||{}).gates||{},son=Object.keys(SO).length,sop=Object.keys(SO).filter(function(k){return SO[k].passed;}).length;
+    var hist=son?' The first '+son+' were written before the first fixed march, which passed '+sop+' of them and failed both symmetry gates; the other '+(n-son)+' were written after that failure was traced to the wall, and before this march.':'';
+    $('v-body').textContent=(all?'Every gate was written before the march it reads, so the ones that read a march were predictions.'+hist+' Thrust points up, the drag is back, the two airframe panels are mirror images, the engine stays symmetric to round-off, and every point of the plane belongs to exactly one block.':
+      'Some gates did not pass; the table marks them. Every gate was written before the march it reads and is reported as it came out.'+hist);
+    var v=$('verdict'); v.hidden=false;
+    if(!all){v.style.borderLeftColor=css('--warn');v.style.background=css('--warn-bg');$('v-title').style.color=css('--warn');}
+  }
+}
+
+// ---- W332 -----------------------------------------------------------------
+function w332(){
+  var SO=((D.seams_only||{}).gates||{}).gates||{},WM=D.wall_mass||{},fc=WM.face||{};
+  var e1=SO.E1_mirror?SO.E1_mirror.value:'–',e2=SO.E2_directions?SO.E2_directions.value.split('|side|/drag ')[1]:'–';
+  var son=Object.keys(SO).length,sop=Object.keys(SO).filter(function(k){return SO[k].passed;}).length;
+  $('w332-a').textContent='The first fixed march passed '+sop+' of '+son+' gates. The two it failed were the symmetry checks: the airframe’s panels were not mirror images ('+e1+' against 1e-6), and a side force appeared ('+e2+' of the drag). '+
+    'The asymmetry was not in the seams. It was in the nozzle’s gas, at about 1e-2, and the first march had it too — the rebuilt seams made it visible, because the skin now reads the nozzle wall and the thrust is no longer a scalar along the axis. '+
+    'Marching the engine alone with both walls at one temperature isolates it (right): only the production flux, HLLC, together with the wall’s temperature condition, lets it grow.';
+  $('w332-b').textContent='The wall sets its temperature through a ghost cell whose temperature is 2T_wall − T_gas, floored at 20 K, at the gas’s pressure. Beside 2500 K gas and a 288 K wall that ghost is '+
+    (fc.ghost_over_cell_density||0).toFixed(0)+'× denser than the cell next to it. Handed to the Riemann solver, the pair is not a reflection: whenever the gas moved toward the wall, the wall face let mass through, at '+
+    (fc.before||0).toFixed(0)+'× the gas’s own flux into it. The fix hands the inviscid flux the plain mirror of the cell, which carries the wall’s pressure and nothing else, while the heat still reaches the wall by conduction through the viscous terms. '+
+    'Walls without a temperature condition were already mirrors and are unchanged bit for bit.';
+  var tb=document.querySelector('#w332t tbody'),X=D.w332||[];
+  function lab(r){
+    var f={hllc:'HLLC',hlle:'HLLE',rusanov:'Rusanov'}[r.flux],w={iso:'isothermal wall',adiab:'adiabatic wall',slip:'slip wall'}[r.wall];
+    return f+', '+w+(r.viscous?', viscous':'')+(r.wall==='iso'?(r.old_ghost?' — as it was':' — fixed'):'');
+  }
+  // the failure, then the four single changes that each remove it, then the fix
+  var ORDER=['hllc_iso_inviscid_oldghost','hlle_iso_inviscid_oldghost','rusanov_iso_inviscid_oldghost',
+             'hllc_adiab_inviscid','hllc_slip_inviscid','hllc_iso_inviscid'];
+  function rank(r){var i=ORDER.indexOf(r.variant);return i<0?99:i;}
+  X.sort(function(a,b){return rank(a)-rank(b);});
+  X.forEach(function(r){
+    var tr=document.createElement('tr'),grow=r.nozzle[r.nozzle.length-1]>1e-10;
+    tr.innerHTML='<td>'+lab(r)+'</td>'+r.nozzle.slice(0,4).map(function(v){return '<td'+(grow&&v>1e-10?' class="bad"':'')+'>'+v.toExponential(1)+'</td>';}).join('');
+    tb.appendChild(tr);
+  });
+  // the three runs' engine asymmetry, log10
+  // log10 axis with its gridlines on whole decades (0, -4, -8, -12, -16), from
+  // the first marched step: at t = 0 every run is exactly symmetric, log of 0
+  var SY=D.symmetry||{},F=frame('sym'),L=86,R=18,Tp=18,B=38,lo=-16,hi=0,t0=T[1],t1=T[T.length-1];
+  axes(F,L,R,Tp,B,lo,hi,function(v){return v===0?'1':'1e'+Math.round(v);},'t = '+t0.toFixed(3)+' s','t = '+t1.toFixed(3)+' s');
+  var runs=[['prefix','first march',css('--dim'),[3,4]],['seams_only','seams rebuilt',css('--warn'),[8,5]],['this','this march',css('--ok'),null]],k=0;
+  var ymid=Tp+(F.H-Tp-B)*0.42;      // the empty band between the two families of curves
+  runs.forEach(function(r){
+    var d=SY[r[0]];if(!d||d.t.length<2)return;
+    var ys=d.engine.slice(1).map(function(v){return Math.log10(Math.min(Math.max(v,1e-16),1));});
+    series(F,L,R,Tp,B,d.t.slice(1),ys,t0,t1,lo,hi,r[2],2.4,r[3]);
+    tag(F,L+14,ymid+17*k,r[1],r[2]); k++;
+  });
+}
+
+// ---- seams --------------------------------------------------------------
+function seams(){
+  var tb=document.querySelector('#seams tbody');
+  var keys=(D.declared||[]).concat(D.recorded||[]).filter(function(k){return D.iface[k];});
+  keys.forEach(function(k){
+    var r=D.iface[k],last=T.length-1,tr=document.createElement('tr');
+    var rec=(D.recorded||[]).indexOf(k)>=0;
+    function tot(ch,unit){var a=r[ch+'_total'];return a?si(a[last],unit,3):'–';}
+    function mean(ch,unit){var a=r[ch];return a?si(a[last],unit,4):'–';}
+    tr.innerHTML='<td>'+k+'</td><td>'+(rec?'<span class="chip info">recorded</span>':'<span class="chip ok">declared</span>')+'</td>'+
+      '<td>'+(r.length||0).toFixed(3)+' m</td><td>'+tot('mass_flux','kg/s')+'</td><td>'+tot('energy_flux','W')+'</td><td>'+tot('heat_flux','W')+'</td>'+
+      '<td>'+mean('p_trace','Pa')+'</td><td>'+mean('T_trace','K')+'</td>';
+    tb.appendChild(tr);
+  });
+  var ks=[['a','injector'],['b','chamber'],['e','nozzle'],['c','airframe'],['d','atmosphere'],['f','plume'],['g','wake']];
+  $('key').innerHTML=ks.map(function(k){return'<span><i>'+k[0]+'</i> '+k[1]+'</span>';}).join('');
+}
+
+function all(){ render(); airframe(); loadsPlots(); }
+var sl=$('t'); sl.max=T.length-1; sl.value=T.length-1;
+sl.addEventListener('input',all);
+sel.addEventListener('change',all);
+$('scl').addEventListener('change',all);
+$('edges').addEventListener('change',all);
+var timer=null,btn=$('play');
+btn.addEventListener('click',function(){
+  if(timer){clearInterval(timer);timer=null;btn.textContent='Play';return;}
+  btn.textContent='Pause';
+  timer=setInterval(function(){sl.value=(+sl.value+1)%T.length;all();},180);
+});
+if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)btn.hidden=true;
+if(window.matchMedia)window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){all();document.querySelector('#w332t tbody').innerHTML='';w332();});
+beforeAfter(); w332(); seams(); all();
+})();
+</script>

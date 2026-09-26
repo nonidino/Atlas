@@ -1,0 +1,85 @@
+================================================================================================
+SETUP -- all seven agents on real physics
+================================================================================================
+  id   cells     dt (probe)  dt (config) ports
+  a    3840      1e-06       0.001       ['b:ADVEC']
+  b    8960      1e-06       0.001       ['a:ADVEC', 'e:ADVEC', 'c:THERM']
+  e    11520     1e-06       0.001       ['b:ADVEC', 'f:ADVEC']
+  c    1856      0.05        0.05        ['b:THERM', 'd:THERM']
+  d    8832      5e-06       0.005       ['c:THERM', 'g:ADVEC']
+  f    12160     5e-06       0.005       ['e:ADVEC', 'g:ADVEC']
+  g    14592     5e-06       0.005       ['d:ADVEC', 'f:ADVEC']
+
+  built in 0.308 s;  dt_scale = 0.001
+  UNDECLARED interfaces this graph cannot carry:
+    a-c   the injector/combustion zone's lateral walls below the chamber window, 6 cells and 0.120000 m (0.121552 m of chords until Tier 86 put nodes on the kinks). Named by the build repo's own source until Tier 86, as the reason its coupler handed every gas agent ONE wall temperature; since Tier 86 the coupler exchanges across it by position and the config RECORDS it (`recorded_interfaces`) without declaring it
+    d-f   the strip exit_halfheight < |y| <= plume_halfwidth at z = z_exit, named by contours.plane_d_g's own docstring. Until Tier 86 f's inlet there was handed the freestream, in the wrong gas model; it is now fed from d's outlet and recorded, not declared
+    e-c   the diverging nozzle's inner wall, z in [z_throat, z_exit]. `e` and `c` share it and no edge declares it; wall_b_c stops at the throat and wall_c_d is the outer wall. 15 cells and 0.310483 m (0.313893 m of chords until Tier 86), and W311 measured it as the hottest part of the engine. Exchanged and recorded since Tier 86, not declared
+
+================================================================================================
+NOZZLE -- the film coefficient on the interface nobody declared
+================================================================================================
+  chamber wall (DECLARED, b-c)     h mean 211.295      min 165.091      max 473.316
+  nozzle wall  (UNDECLARED, e-c)   h mean 281.347      min 171.258      max 507.887
+
+  nozzle / chamber = 1.3315
+  The prediction was >2x. Read the number, not this line.
+
+================================================================================================
+SEAMS -- every declared seam, probed
+================================================================================================
+  seam   type   dimM  beta         kappa       omega     sign       null      cost
+  --------------------------------------------------------------------------------------------
+  a-b    ADVEC  41    8.7452e-07   1.0051      0.0007071 positive   0==0      84 calls / 2 s
+  e-b    ADVEC  41    6.7922e-07   1.2847      0.03673   positive   0==0      84 calls / 3.65 s
+  b-c    THERM  8     0.21931      2.2525      0.3088    negative   0==0      18 calls / 0.355 s
+  c-d    THERM  93    0.13748      1.0566      0.008172  positive   0==0      94 calls / 2.73 s
+  e-f    ADVEC  41    6.2716e-07   1.1581      0.02159   positive   0==0      84 calls / 2.59 s
+  d-g    ADVEC  25    9.153e-17    6.6608e+11  0.6145    positive   0==0      52 calls / 1.12 s
+  g-f    ADVEC  77    2.5783e-12   33.786      0.7039    mixed      0==0      156 calls / 2.26 s
+        ^ EMPTY: Lambda == 0. The interface problem is empty rather than ill-conditioned
+
+  total across every seam: 572 boundary_response calls
+
+================================================================================================
+REACH -- does the trace reach the solver? wall ports vs PLANE ports
+================================================================================================
+  `wall_noslip` clamps its ghost at max(2 T_wall - T_i, 20); `prescribed` has no clamp.
+
+  a   b:ADVEC    plane  n=80    nonzero=5     exact_zeros=75    tripped=False  peak=6.2101e-11
+  b   a:ADVEC    plane  n=80    nonzero=5     exact_zeros=75    tripped=False  peak=8.7814e-07
+  b   e:ADVEC    plane  n=80    nonzero=8     exact_zeros=72    tripped=False  peak=3.1662e-11
+  b   c:THERM    wall   n=112   nonzero=10    exact_zeros=102   tripped=False  peak=0.19382
+  e   b:ADVEC    plane  n=96    nonzero=11    exact_zeros=85    tripped=False  peak=8.7084e-07
+  e   f:ADVEC    plane  n=96    nonzero=5     exact_zeros=91    tripped=False  peak=4.6754e-11
+  d   c:THERM    wall   n=184   nonzero=8     exact_zeros=176   tripped=False  peak=0.06245
+  d   g:ADVEC    plane  n=48    nonzero=5     exact_zeros=43    tripped=False  peak=2.7285e-12
+  f   e:ADVEC    plane  n=80    nonzero=3     exact_zeros=77    tripped=False  peak=7.26e-07
+  f   g:ADVEC    plane  n=152   nonzero=1     exact_zeros=151   tripped=True   peak=1.0579e-11
+  g   d:ADVEC    plane  n=96    nonzero=0     exact_zeros=96    tripped=False  peak=0
+  g   f:ADVEC    plane  n=152   nonzero=0     exact_zeros=152   tripped=False  peak=0
+
+  wall  ports: 0 of 2 trip W301's signature
+  plane ports: 1 of 10 trip W301's signature
+
+================================================================================================
+COMPILE -- the whole seven-agent graph
+================================================================================================
+  verdict refuse   4 refusals, 20 decertifications   (14.3 s)
+  refusals       : {'L2/InterfaceMotion': 3, 'L5/R6': 1}
+  decertifications:
+      L1/E3              3
+      L2/C3/W57          1
+      L4/6.4(a)          1
+      L4/E7/passivity    1
+      L4/block-share     2
+      L4/operator-content 2
+      L4/probe-base      4
+      L5/eps_tol         1
+      L6/E6              1
+      L7/R9/lag          1
+      L7/R9/order        1
+      L8/W56             1
+      L9/E5              1
+
+artifact written to out/w334/w310.json

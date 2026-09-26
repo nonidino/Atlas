@@ -372,6 +372,9 @@ def predictions(out: dict) -> list[dict]:
     add("R4", "the rigid-load map has full rank 3 -- the seam window drives "
               "every planar mode",
         rg.get("rank"), rg.get("rank") == 3)
+    # R5's evaluator reads only the verdict and the four refusals, which is
+    # more permissive than its prose. Left as registered; the prose's full
+    # claim is checked against Tier 79's record by test_tier81 (W334, Tier 86).
     add("R5", "the seven-agent graph still refuses, and adding nothing to it "
               "leaves the count where Tier 79 left it",
         cm.get("counts"),

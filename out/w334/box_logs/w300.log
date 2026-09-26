@@ -1,0 +1,174 @@
+==============================================================================
+SETUP -- the b-c seam, both sides real
+==============================================================================
+  build_repo_commit      0a407b7+dirty:b6bbcec4240a5943
+  p_chamber_Pa           5e+06
+  T_chamber_K            2800
+  gamma                  1.22
+  R_gas                  361
+  gas_cells              8960
+  shell_cells            1856
+  n_seam_gas             112
+  n_seam_shell           14
+  m_eff_gas              57
+  m_eff_shell            8
+  dim_M                  8
+  dt_gas_s               1e-05
+  dt_shell_s             0.05
+  h_cold_mean_W_m2K      211.397
+  h_cold_min_W_m2K       165.086
+  h_cold_max_W_m2K       421.79
+  h_hot_mean_W_m2K       211.398
+  h_hot_over_cold        1.00001
+  burn_time_s            5
+  T_wall_mean_K          478.956
+  T_wall_min_K           369.181
+  T_wall_max_K           870.767
+  valid_at_base          False
+  validity_lost_s        2.95
+  setup_seconds          0.805817
+
+  probe state: rocket b-c, build repo 0a407b7+dirty:b6bbcec4240a5943: chamber p_c=5e+06 Pa, T_c=2800.0 K, gamma=1.22, R=361.0; shell wall MARCHED 5.00 s of burn to 478.9557 K mean (870.7665 K max) under h=211.3966 W/(m^2 K); dt_gas=1e-05 s, dt_shell=0.05 s; dim M=8; validity DECLINES
+
+  the wall's heating curve (mean, max over the 14 seam cells):
+      t [s]   T_mean [K]   T_max [K]
+      0.050     295.8199    308.1976
+      0.100     300.2194    323.2253
+      0.250     309.7824    360.6043
+      0.500     322.4330    411.5737
+      1.000     344.4387    493.8692
+      2.500     401.1405    672.5075
+      5.000     478.9557    870.7665
+
+==============================================================================
+LINEARITY -- GATE 4, the control that must PASS
+==============================================================================
+  heat     ||J_probe - J_exact||_F / ||J_exact||_F = 5.9425e-09
+           fd_step 0.01, 15 calls, 0.0181 s, ||J_exact||_F = 839.117
+  entropy  ||J_probe - J_exact||_F / ||J_exact||_F = 2.9046e-06
+           fd_step 0.01, 15 calls, 0.0184 s, ||J_exact||_F = 0.172226
+           the SAME probe against the AFFINE operator: 0.9998
+           (that is the control's control: if the entropy bond were
+            affine after all, this would be small and gate 4 would be
+            passing for a reason that is not the one claimed)
+
+  floor: CG rtol 1e-10 / fd_step 1e-2 = 1e-8. Nothing here can beat it.
+
+==============================================================================
+SEAM -- GATE 1 (beta, null dim, omega) and GATE 2 (cost)
+==============================================================================
+  dim M                 8   (conforming: False)
+  beta  = sigma_min(S)  0.197386
+  kappa = cond(S)       2.26857
+  null_dim              0   (declared 0, excess 0)
+  omega (operator cont) 0.311496
+  passivity lambda_min  -0.447784   defect 0.447784
+  one-sided share       0.188984
+
+  per block:
+    b      solves 9    route finite-difference  share 0.8111  ||S||_F 0.66318  omega 0.2843
+    c      solves 9    route finite-difference  share 0.189  ||S||_F 0.12772  omega 0.4504
+
+  COST, measured (not estimated):
+    gas    9 boundary_response calls, 306 CFL sub-steps
+    shell  9 step_thermal calls
+    wall   2.666 s TOTAL for the assembled seam
+    NOTE: on battery at 1400 of 3800 MHz. Ratios, not wall-clock.
+
+  base_disagreement across the two sides (W74's class):
+    agents                   ['b', 'c']
+    consistent               False
+    relative_spread          4.84605
+    spread                   1264.1
+
+==============================================================================
+REACH -- support_reach on both sides (the declaration, measured)
+==============================================================================
+  c (shell)  reach 7    of n=14    nonzero 14    fraction 1  is_global True
+             consistent_with ['embedded']   declared elliptic_subsolve=embedded   (0.00255 s)
+             profile: ['2.507e-02', '1.022e-04', '2.035e-05', '3.625e-07', '1.257e-06', '2.026e-07']
+  b (gas)    reach 24   of n=112   nonzero 39    fraction 0.3482  is_global False
+             consistent_with ['exposed', 'none']   declared elliptic_subsolve=none   (0.59 s)
+             profile: ['1.719e-01', '4.675e-07', '4.523e-08', '2.269e-08', '2.330e-08', '1.567e-08']
+
+==============================================================================
+SATURATION -- does the trace reach the solver? (W301)
+==============================================================================
+  rocket chamber: initial near-wall T_i = 2800 K, clamp threshold (T_i+20)/2 = 1410 K
+    T_wall      max|dT_i|        max|dp|       bitwise equal to the 300 K field
+     300.00    0.000000e+00    0.000000e+00   True
+     449.42    8.076745e-02    1.655083e+01   False
+     690.00    2.107649e-01    4.322821e+01   False
+    1000.00    3.782089e-01    7.770152e+01   False
+    1200.00    4.862156e-01    9.995235e+01   False
+    1217.00    4.953952e-01    1.018429e+02   False
+    1400.00    5.942076e-01    1.221764e+02   False
+    1500.00    6.351645e-01    1.330071e+02   False
+
+  thermal_seam (T_hot = 900 K, declared base 400 K): threshold 460 K
+    T_wall      max|dT_i|      bitwise equal to the 400 K field
+     300.00    4.674138e-01   False
+     350.00    2.337571e-01   False
+     400.00    0.000000e+00   True
+     440.00    1.870834e-01   False
+     459.00    2.759770e-01   False
+     460.00    2.802204e-01   False
+     480.00    3.520030e-01   False
+     600.00    7.823746e-01   False
+
+  The L1-visible signature. `support_reach` has emitted `exact_zeros`
+  since Tier 0 and no layer has ever read it. A saturated channel makes
+  it n-1 EXACTLY; a film-dominated one leaves a small nonzero tail.
+    rocket b (gas)     n=112  nonzero=42   exact_zeros=70   (n-1 = 111)  peak 0.175061
+    thermal_seam gas   n=48   nonzero=48   exact_zeros=0    (n-1 = 47)  peak 0.0923595
+    rocket c (shell)   n=14   nonzero=14   exact_zeros=0    (n-1 = 13)  peak 0.0250685
+
+  So the signature separates: both GAS blocks are saturated and read
+  exact_zeros = n-1; the shell, a genuine operator, does not.
+
+==============================================================================
+HALVES -- GATE 3, the control that must FAIL (W66's three legs)
+==============================================================================
+  probed at dt_gas=1e-06: these three legs decide a DECLARATION, not a
+  physical number, so the cadence is chosen for cost and stated.
+
+  both FLOW (the truth)        verdict admit-uncertified    C9 refusals: 0
+  shell flipped to EFFORT      verdict refuse               C9 refusals: 1
+  gas flipped to EFFORT        verdict refuse               C9 refusals: 1
+  BOTH flipped to EFFORT       verdict admit-uncertified    C9 refusals: 0
+
+  leg 1  same half both sides, correct   -> no C9 refusal : True
+  leg 2  ONE side wrong                  -> C9 REFUSES    : True
+  leg 3  BOTH sides wrong                -> no C9 refusal : True
+
+  Leg 3 is the finding and it is a NEGATIVE one: a matching pair of
+  wrong halves passes silently, on real solvers, exactly as W66 said
+  it does on a fixture built to fail.
+
+==============================================================================
+CADENCE -- beta against the gas's probe cadence
+==============================================================================
+  chamber CFL sub-step at the operating point: 2.99e-07 s
+  the YAML's own dt_model['b'] = 1e-3 is ~3350 of them.
+
+  dt_gas  1.0e-06  beta 0.197399     kappa 2.2688     omega 0.3115     ||S_b||_F 0.66339     share 0.8113       0.3 s  36 substeps
+  dt_gas  1.0e-05  beta 0.197386     kappa 2.2686     omega 0.3115     ||S_b||_F 0.66318     share 0.8111       2.6 s  306 substeps
+  dt_gas  1.0e-04  beta 0.197343     kappa 2.2671     omega 0.3112     ||S_b||_F 0.6631      share 0.8116      28.0 s  3078 substeps
+
+  beta over the cadence range: 0.197343 to 0.197399, a factor of 1
+  and the cost over the same range: a factor of 89.01
+
+==============================================================================
+BURN -- beta against the burn time the probe base carries
+==============================================================================
+  burn   0.50 s  T_wall  322.4330 K (max  411.5737)  valid True   beta 0.210346      kappa 2.1527      shell share 0.1159
+  burn   1.00 s  T_wall  344.4387 K (max  493.8692)  valid True   beta 0.208282      kappa 2.1799      shell share 0.1306
+  burn   2.50 s  T_wall  401.1405 K (max  672.5075)  valid True   beta 0.203369      kappa 2.2296      shell share 0.1599
+  burn   5.00 s  T_wall  478.9557 K (max  870.7665)  valid False  beta 0.197386      kappa 2.2686      shell share 0.189
+  burn  10.00 s  T_wall  602.3501 K (max 1111.5235)  valid False  beta 0.189202      kappa 2.2928      shell share 0.2222
+
+  beta over the burn window: 0.189202 to 0.210346, a factor of 1.112
+  A beta quoted without its burn time is a number whose reader
+  cannot reproduce it. That is CS-10's convention, here as a number.
+
+artifact written to out/w334/w300.json

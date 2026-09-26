@@ -215,7 +215,9 @@ def test_the_mech_seam_is_far_worse_conditioned_than_the_therm_one(shell):
         for k in range(n)])
     kappa = float(np.linalg.cond(J))
     assert kappa > 1.0e7, kappa
-    assert kappa / 3.7141 > 1.0e6, "MECH is millions of times worse than THERM"
+    # THERM's corrected kappa: 3.7141 at Tier 77 with the old wall, 2.3914
+    # re-measured at Tier 86 (W334) -- the comparison only got starker
+    assert kappa / 2.3914 > 1.0e6, "MECH is millions of times worse than THERM"
 
 
 @needs_expert
@@ -223,7 +225,8 @@ def test_W305_the_gas_has_no_wall_velocity_boundary_condition():
     """One-sided by a MISSING CAPABILITY, read off the solver rather than claimed.
 
     `_reflect(no_slip=True)` negates the ghost momentum -- a stationary wall --
-    and `wall_noslip` reads only `T_wall` and `no_slip_mask`. There is no channel
+    and `wall_noslip` reads only `T_wall` and two per-station masks,
+    `no_slip_mask` and (since Tier 86) `isothermal_mask`. There is no channel
     to impose a wall velocity, so the gas can supply a traction and cannot
     respond to one.
     """
@@ -234,7 +237,7 @@ def test_W305_the_gas_has_no_wall_velocity_boundary_condition():
     flat = " ".join(open(src, encoding="utf-8").read().split())
     assert "out[..., 1] = -U[..., 1]" in flat and "out[..., 2] = -U[..., 2]" in flat
     for p in RE.WALL_BC_PARAMS:
-        assert '"%s" in bc.params' % p in flat
+        assert ('"%s" in bc.params' % p in flat) or ('bc.params.get("%s")' % p in flat), p
     for name in ("u_wall", "v_wall", "wall_velocity", "wall_speed"):
         assert name not in flat, "found a wall-velocity channel after all: %s" % name
     for k in RE.COMPRESSIBLE2D_BC_KINDS:
@@ -322,3 +325,26 @@ def test_all_registered_predictions_held():
     res = _results()
     failed = [p["name"] for p in res["predictions"] if not p["held"]]
     assert not failed, failed
+
+
+def test_R5_prose_is_checked_against_the_tier_79_record():
+    """R5 says the seven-agent graph is left 'where Tier 79 left it', and its
+    evaluator checks only the verdict and the four refusals -- more permissive
+    than its prose, found when W334 re-derived both records (Tier 86) and the
+    counts moved, 22 -> 20 uncertified admits, with R5 still reading held.
+
+    The prose's claim is checked here instead, against Tier 79's own record: the
+    uncertified admits are Tier 79's decertifications and the refusals are its
+    refusals. It held on the old wall (22 = 22) and holds on the fixed one
+    (20 = 20); the registered evaluator is left as it was registered.
+    """
+    res = _results()
+    w310 = os.path.join(os.path.dirname(W305), "w310.json")
+    if not os.path.exists(w310):
+        pytest.skip("out/w310.json not present")
+    with open(w310, encoding="utf-8") as fh:
+        t79 = json.load(fh)["compile"]
+    counts = res["compile"]["counts"]
+    assert res["compile"]["verdict"] == t79["verdict"] == "refuse"
+    assert counts["refuse"] == t79["n_refusals"]
+    assert counts["admit-uncertified"] == t79["n_decertifications"]

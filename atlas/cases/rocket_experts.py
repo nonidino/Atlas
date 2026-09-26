@@ -15,9 +15,13 @@ midpoint of `data/sweep.py`'s own declared corpus range.  A number measured
 through this module is a number about the build repo at the commit it is pinned
 to, not about a second model of a rocket written inside the vault.
 
-**Build repo pinned at 0a407b7** (branch ``atlas-0.1-windfarm``), 2026-09-17. It
-is a second checkout and it can drift; a measurement quoted from here carries the
-commit or it carries nothing.
+**Build repo: Tiers 76-85 measured at 0a407b7** (branch ``atlas-0.1-windfarm``,
+2026-09-17). Tier 86 (2026-09-23) changed the build repo -- its seams: node lines
+on every shared seam, the isothermal wall's conduction (W301), the coupler wired
+by position -- so a measurement from here now carries `build_repo_identity()`,
+which reads the commit and, when the tree is dirty, a hash of its diff. It is a
+second checkout and it can drift; a number quoted from here carries that
+identity or it carries nothing.
 
 ---
 
@@ -82,7 +86,7 @@ from ..capability import (
 )
 from ..ports import PortType, ResponseHalf
 from ..transfer import Prolongation
-from .thermal_seam import build_repo, load_solvers
+from .thermal_seam import build_repo, build_repo_identity, load_solvers
 
 # ---------------------------------------------------------------------------
 # the build repo, under the private name
@@ -624,15 +628,17 @@ class ShellAgent:
 
 #: **W305.**  `Compressible2D`'s wall conditions, verbatim from its own `BC`
 #: docstring.  None of them takes a wall VELOCITY: `_reflect(no_slip=True)`
-#: negates the ghost momentum, which is a stationary wall, and the only
-#: parameter `wall_noslip` reads is `T_wall` (plus `no_slip_mask`).  So a gas
-#: agent can SUPPLY a traction and cannot RESPOND to a velocity, and the MECH
-#: bond at every gas-solid seam in this graph is one-sided by a missing
-#: capability rather than by a modelling choice.
+#: negates the ghost momentum, which is a stationary wall, and the parameters
+#: `wall_noslip` reads are `T_wall` and two per-station masks: `no_slip_mask`,
+#: and `isothermal_mask` (Tier 86, W333 -- the forebody slot's adiabatic
+#: stretch).  None is a velocity.  So a gas agent can SUPPLY a traction and
+#: cannot RESPOND to a velocity, and the MECH bond at every gas-solid seam in
+#: this graph is one-sided by a missing capability rather than by a modelling
+#: choice.
 COMPRESSIBLE2D_BC_KINDS = ("wall_slip", "wall_noslip", "symmetry",
                            "inlet_massflow", "freestream", "outflow",
                            "prescribed", "extrapolate")
-WALL_BC_PARAMS = ("T_wall", "no_slip_mask")
+WALL_BC_PARAMS = ("T_wall", "no_slip_mask", "isothermal_mask")
 
 
 @dataclass
@@ -1153,9 +1159,9 @@ def shell_capabilities(expert: ShellAgent, m_eff: int | None = None,
         probe_base=lambda _p, _e=expert: _e.base_trace(),
         reproducibility_floor=float(np.finfo(float).eps),
         deterministic=True,
-        note="solvers/thermostruct2d.py, build repo 0a407b7, unmodified; mesh from "
-             "solvers/grid.build_blocks, conduction graded against the erf slab by "
-             "that repo's M1 suite",
+        note="solvers/thermostruct2d.py, build repo " + build_repo_identity() +
+             ", imported unmodified; mesh from solvers/grid.build_blocks, conduction "
+             "graded against the erf slab by that repo's M1 suite",
     )
 
 
@@ -1210,9 +1216,10 @@ def chamber_gas_capabilities(expert: ChamberGasAgent, m_eff: int | None = None,
         probe_base=lambda _p, _e=expert: _e.base_trace(),
         reproducibility_floor=float(np.finfo(float).eps),
         deterministic=True,
-        note="solvers/compressible2d.py, build repo 0a407b7, unmodified; mesh from "
-             "solvers/grid.build_blocks, graded against the exact Riemann solution "
-             "and the isentropic vortex by that repo's M1 suite",
+        note="solvers/compressible2d.py, build repo " + build_repo_identity() +
+             ", imported unmodified; mesh from solvers/grid.build_blocks, graded "
+             "against the exact Riemann solution and the isentropic vortex by that "
+             "repo's M1 suite",
     )
 
 
@@ -1284,7 +1291,7 @@ def make_bc_experts(flux_convention: str = "entropy",
     elapsed = time.perf_counter() - t0
 
     prov = {
-        "build_repo_commit": "0a407b7",
+        "build_repo_commit": build_repo_identity(),
         "p_chamber_Pa": P_CHAMBER,
         "T_chamber_K": T_CHAMBER,
         "gamma": GAMMA_GAS,
@@ -1413,8 +1420,9 @@ def build_bc_graph(shell: ShellAgent, gas: ChamberGasAgent,
         flux_matching=flux_matching,
         measured=measured,
         note="R0 rungs 1 and 2: the first rocket seam with real physics on both "
-             "sides. compressible2d against thermostruct2d, build repo 0a407b7, "
-             "both unmodified, on grid.build_blocks' own meshes",
+             "sides. compressible2d against thermostruct2d, build repo "
+             + build_repo_identity() + ", both imported unmodified, on "
+             "grid.build_blocks' own meshes",
     )
 
 
@@ -1489,25 +1497,33 @@ def bc_dim_M() -> int:
 #: is actually conjugate**, and the other 59.3% is in here.
 UNDECLARED_INTERFACES = {
     "a-c": "the injector/combustion zone's lateral walls below the chamber "
-           "window, 6 cells and 0.121552 m. **Named by the build repo's own "
-           "source**: generate.py::_wall_T's docstring says `a`'s lateral walls "
-           "are an UNDECLARED a-c interface, and that is the stated reason it "
-           "hands every gas agent one scalar wall temperature instead of the "
-           "per-station map it already has",
+           "window, 6 cells and 0.120000 m (0.121552 m of chords until Tier 86 "
+           "put nodes on the kinks). Named by the build repo's own source until "
+           "Tier 86, as the reason its coupler handed every gas agent ONE wall "
+           "temperature; since Tier 86 the coupler exchanges across it by "
+           "position and the config RECORDS it (`recorded_interfaces`) without "
+           "declaring it",
     "e-c": "the diverging nozzle's inner wall, z in [z_throat, z_exit]. `e` and "
            "`c` share it and no edge declares it; wall_b_c stops at the throat "
-           "and wall_c_d is the outer wall. 15 cells and 0.313893 m, and W311 "
-           "measured it as the hottest part of the engine",
+           "and wall_c_d is the outer wall. 15 cells and 0.310483 m (0.313893 m "
+           "of chords until Tier 86), and W311 measured it as the hottest part "
+           "of the engine. Exchanged and recorded since Tier 86, not declared",
     "d-f": "the strip exit_halfheight < |y| <= plume_halfwidth at z = z_exit, "
-           "recorded by contours.plane_d_g's own docstring",
+           "named by contours.plane_d_g's own docstring. Until Tier 86 f's inlet "
+           "there was handed the freestream, in the wrong gas model; it is now "
+           "fed from d's outlet and recorded, not declared",
 }
 
 #: Arc length in metres on the shell's inner face, cells taken by midpoint.
-#: Measured by `scripts/w314_rocket_multirate_defect.py`.  Only `b-c` is
-#: declared, and it is the smaller half.
-ENGINE_WALL_M = {"a-c": 0.121552, "b-c": 0.299018, "e-c": 0.313893}
-ENGINE_WALL_TOTAL_M = 0.734463
-SHELL_INNER_FACE_M = 4.725411
+#: Only `b-c` is declared, and it is the smaller half. Re-measured at Tier 86:
+#: the shell now has nodes at the nozzle's kinks (z = 0.30, 0.40) and at the
+#: agents' ends (0, 0.12), so its inner face IS the contour -- 0.12, 0.18 +
+#: sqrt(0.1^2 + 0.06^2), sqrt(0.3^2 + 0.08^2). Until then it was chords that cut
+#: the corners: 0.121552, 0.299018 and 0.313893, totalling 0.734463 of 4.725411
+#: (measured by `scripts/w314_rocket_multirate_defect.py`).
+ENGINE_WALL_M = {"a-c": 0.1200000, "b-c": 0.2966190, "e-c": 0.3104835}
+ENGINE_WALL_TOTAL_M = 0.7271025
+SHELL_INNER_FACE_M = 4.7271025
 
 #: Which block face each agent's declared neighbours sit on, and whether that
 #: face is a WALL (the trace is a wall temperature, the response a wall flux) or
@@ -1994,8 +2010,8 @@ def gas_capabilities(expert: GasAgent, neighbour: str, port_type: PortType,
         probe_base=lambda p, _e=expert: _e.base_trace(_neighbour_of(p)),
         reproducibility_floor=float(np.finfo(float).eps),
         deterministic=True,
-        note=f"solvers/compressible2d.py, build repo 0a407b7, unmodified; mesh "
-             f"from grid.build_blocks; {kind} port on {side}",
+        note=f"solvers/compressible2d.py, build repo {build_repo_identity()}, "
+             f"imported unmodified; mesh from grid.build_blocks; {kind} port on {side}",
     )
 
 

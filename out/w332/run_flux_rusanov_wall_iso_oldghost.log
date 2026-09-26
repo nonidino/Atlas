@@ -1,0 +1,14 @@
+W332 engine symmetry: nozzle flux rusanov, nozzle walls iso, inviscid, OLD ghost in the inviscid flux
+   5 ms  a  1.3e-15 1.5e-15 8.4e-16 1.3e-15 1.2e-15
+   5 ms  b  1.1e-15 2.3e-14 1.3e-14 3.4e-15 1.2e-15
+   5 ms  e  5.3e-16 4.4e-16 5.9e-16 7.9e-16 1.1e-15
+  10 ms  a  9.8e-16 1.5e-15 1.6e-15 9.8e-16 1.3e-15
+  10 ms  b  2.3e-15 2.1e-15 1.3e-15 1.3e-15 1.8e-15
+  10 ms  e  5.2e-16 6.0e-16 7.5e-16 1.7e-15 1.0e-15
+  15 ms  a  1.3e-15 1.5e-15 1.0e-15 1.0e-15 8.3e-16
+  15 ms  b  5.2e-15 4.0e-15 3.7e-15 2.8e-15 1.9e-15
+  15 ms  e  7.9e-16 6.7e-16 5.9e-16 6.7e-16 1.0e-15
+  20 ms  a  9.8e-16 1.1e-15 8.2e-16 1.3e-15 8.2e-16
+  20 ms  b  1.0e-15 1.2e-15 1.2e-15 1.9e-15 4.7e-15
+  20 ms  e  1.2e-15 8.8e-16 7.7e-16 9.9e-16 1.1e-15
+nozzle max 1.67e-15; wrote out/w332\rusanov_iso_inviscid_oldghost.json (483 s)

@@ -1,0 +1,6 @@
+e walls iso, inviscid, hllc
+  macro 1  e  1.2e-15 1.1e-15 1.1e-15 1.4e-15 1.9e-15
+  macro 2  e  1.0e-13 3.4e-13 1.9e-13 1.2e-13 1.9e-13
+  macro 3  e  3.0e-08 2.4e-08 3.4e-08 1.6e-08 1.4e-08
+  macro 4  e  5.3e-03 1.7e-03 1.4e-03 1.8e-03 7.1e-04
+wall 149 s

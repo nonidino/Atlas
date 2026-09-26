@@ -23,6 +23,10 @@ The answer to the narrow question is that the seam probes cleanly — a finite $
 
 **Read §10 before quoting any number from §3.** The corrected seam operator is $\beta = 0.123188$, $\kappa = 3.7141$, at the consistent interface state $\lambda^{\ast} = 1035.487$ K with `effort_normal` declared.
 
+> **And read §18.8 before quoting any gas-side number from §2 to §17.** Every one of them was taken with an isothermal wall that was saturated (W301) and leaked mass (W332). Re-derived with both fixed, the corrected operator is $\beta = 0.229896$, $\kappa = 2.392$ at $\lambda^{\ast} = 1133.885$ K. **CS-11's bound holds at the declared interval** ($2.2782\times$ loose, where §14 reported it violated at $0.2702$), and there is no knee. The shell reaches solidus at $2.95$ s, before the 5 s probe base (W335). The sections below keep what they recorded, each with a one-line pointer.
+>
+> **And read §19 before quoting any number from the marched episode (§17.4, §18).** Its bookkeeping is exact and it reproduces bitwise. But its injector delivers $17.7\%$ more than declared (W337). Its throat seam loses $3\%$ of the mass flow (W340). Its stationary walls do work (W339). And every wall flux in it is a property of the grid (W342).
+
 ---
 
 ## 2. How it is built
@@ -51,6 +55,8 @@ a factor of **2.01 along one wall**, which matters in §5.
 **And then the shell does not settle.** Marched under that $h$ at its own 50 ms clock, the seam wall passes 294.6 K at 0.05 s, 335.3 K at 1 s, 449.4 K at 5 s, 557.6 K at 10 s and 1386.6 K at 100 s — **still rising**. There is no steady state during a burn, so a probe base here is a state *at a time*, and the time is part of the declaration. That is [[case-study-vehicle-march-atlas-0.1]]'s convention (CS-10 found a sensitivity that changed **sign** with its rollout horizon) applied to a base rather than to an output. The headline probe is taken at **5.00 s of burn**, where the seam wall is 449.4197 K in the mean and 690.0180 K at its hottest point.
 
 > **A finding that fell out of the setup, not out of a gate.** The shell's own `validity` predicate — the one 7 of 7 agents were missing, here declaring the Al–Li solidus at 770 K — **declines at $t = 10.35$ s.** The declared airframe material against the declared chamber, with no liner and no regenerative cooling, reaches solidus in ten and a third seconds of burn. That is what a validity predicate is *for*, and it earned its keep the first time it was asked.
+
+> **W334 (§18.8):** with the wall conducting, $\bar h = 211.40$, the wall at 5 s is $478.96$ K in the mean and $870.77$ K at its hottest, and the predicate declines at **$2.95$ s**. That is before the declared probe base, which is W335.
 
 The hottest point is at $z = 0.396$, the throat end, and the cause is geometric: in the converging section the inner surface is sloped, so the Robin face length is $\sqrt{\mathrm{d}z^2 + \mathrm{d}h^2} = 1.1662\,\mathrm{d}z$ while the element mass is unchanged. Seventeen per cent more heat into the same metal.
 
@@ -87,6 +93,8 @@ The third row is why the first two mean something. THERM's declared bond is $(T,
 ### 3.2 Gates 1 and 2 — the seam, and what it cost
 
 > **SUPERSEDED BY §10, and the reader should go there before quoting any number in this section.** The $\beta$ below is measured at two *mismatched* bases and with the *wrong assembly convention* — and the two errors nearly cancelled, which is why it looked unremarkable. The corrected value at the consistent interface state with the convention declared is $\beta = 0.123188$, $\kappa = 3.7141$. §10 has the full table and the evidence.
+>
+> **And by §18.8 (W334).** With the fixed wall, this section's configuration reads $0.146475$ and the corrected one $0.229896$.
 
 At $\dim M = 8$, burn 5.00 s, gas cadence $10^{-5}$ s:
 
@@ -138,9 +146,13 @@ The shell's profile falls $2.515\times 10^{-2} \to 1.009\times 10^{-4} \to 1.619
 
 Both declarations are corroborated. **One of the two corroborations is worthless**, and §4 is why.
 
+> **W334 (§18.8):** with W301 fixed, the gas's poke reaches 24 cells and moves 39 of 112, so its `reach` now reads the solver.
+
 ---
 
 ## 4. W301 — the isothermal wall is saturated, and the trace never reaches the solver
+
+> **Fixed in the solver at Tier 86 (§18.1), and re-derived at §18.8.** No wall temperature now gives a bitwise-identical field in either gas agent. This section records the defect as it was found.
 
 ### 4.1 The mechanism
 
@@ -257,6 +269,8 @@ $\beta$ finite and positive (P2) and the null space at the declared $0$ (P1); bo
 
 A count alone is not a result, and a count taken with five things changed at once is worse. Every arm below moves **exactly one** declaration off the Tier-75 fixture.
 
+> **Re-derived at §18.8 (W334).** The `real` level is unchanged. The `known` level reads 48, not 47, and that is Tier 77's doing rather than the wall's: `effort_normal` on b–c makes the stubs' difference indefinite, which adds one `L4/E7/passivity`.
+
 Baseline, `declarations="fixture"`: **`refuse`, 10 refusals, 49 decertifications** — and the refactor reproduces it **byte for byte**, not merely decision for decision. `w189_artifact_control` compares the rocket's whole emitted artifact against a capture taken before this tier, and pinning that control to the fixture level rather than spending an exemption on it keeps it at **40 of 40 identical**. The cost is that `build` puts no level tag in the graph's `name` or `note` at that level; the benefit is that a change which quietly rewrote every note the graph has would fail, where a count of matching decisions would not.
 
 Two pre-existing tests did have to move, and both for the right reason: `tau` at b–c is no longer `UNDEFINED` (both sides now declare `lambda_ref`, which is precisely what `L1/E3`'s own message says declaring it does), and `R9` is no longer the refusal. **The diagnosis was kept rather than rewritten** — `TestRocketAscent` is pinned to the fixture level and a new `TestRocketAscentWithRealExperts` pins what the new level does instead.
@@ -349,6 +363,8 @@ which is **symmetric and diagonally dominant by construction**, hence positive d
 
 ## 7. Two numbers about probing that generalise past this seam
 
+> **Re-derived at §18.8 (W334).** With the fixed wall, and in the difference assembly Tier 77 declared, the cadence costs $0.03\%$ and the horizon $11.2\%$ ($\beta$ $0.210346 \to 0.189202$ over 0.5–10 s). The ordering stands, and the horizon now dominates by about $390\times$. The 5 and 10 s rows are both past solidus now (W335).
+
 ### 7.1 The cadence costs 0.3% and 83×
 
 The chamber's CFL sub-step at the operating point is $2.990008\times 10^{-7}$ s, so the YAML's own $\Delta t_b = 10^{-3}$ s is about 3350 explicit sub-steps. Probing there is a quarter of an hour for one seam. Over a 100× cadence range:
@@ -439,6 +455,8 @@ Four configurations — two bases against two assemblies, at $\dim M = 8$:
 | DIFFERENCE | each side's own | $0.200562$ | $2.2212$ | $[-0.44549,\ -0.20056]$ | yes |
 | **DIFFERENCE** *(corrected)* | $\lambda^{\ast} = 1035.487$ K | $\mathbf{0.123188}$ | $\mathbf{3.7141}$ | $[-0.45753,\ -0.12318]$ | yes |
 
+> **W334 (§18.8): the near-cancellation was the old wall's.** With the fixed wall, $\lambda^{\ast} = 1133.885$ K and the corrected $\beta = 0.229896$ ($\kappa = 2.392$). The doubly-wrong configuration sits $36\%$ below it, and the nearest is the right assembly at the wrong base. Put the old wall back on today's code and this table returns to within $0.25\%$, and to $5\%$ on the near-singular sum.
+
 **Tier 76's number was wrong twice, and the two errors nearly cancelled.** $0.149619$ against the corrected $0.123188$ is 21% apart — close enough to look like an ordinary number. Fix *either* error alone and it moves much further: the right base with the wrong assembly gives $0.0013150$, a factor of **114 down**; the wrong base with the right assembly gives $0.200562$, up 34%. **The configuration that was wrong in both respects landed nearest the one that is right in both.** That is the most uncomfortable thing this tier measured, and it is pinned by `test_two_errors_that_nearly_cancelled`.
 
 ### 10.3 What E7's failure actually was — and W306
@@ -465,6 +483,8 @@ Both conjugate-heat-transfer seams in this vault have the **same sign structure*
 | rocket b–c | $+0.2363$ | $-0.2254$ | $\mathbf{1.05}$ | near-singular and mixed |
 
 `thermal_seam` declares `H_IN_NOMINAL = 500` **independently of its gas**; the rocket follows `generate.py` and hands the shell the gas's own $h = 183.87$, so its two blocks nearly cancel.
+
+> **W334 (§18.8):** with the fixed wall, the rocket's blocks are $+0.3266$ and $-0.2641$, a ratio of $1.24$. Its gas block is now cleanly negative where it was faintly mixed, and the sum is still near-singular and indefinite. `thermal_seam` stays at $12.9$. W307 stands.
 
 > **[AI Inference]:** this means `thermal_seam`'s `E7: holds` — quoted across Tier 13–16 — is **not evidence that conjugate-heat-transfer seams are passive**. It is a property of a 500. Any CHT seam whose two sides carry comparable film coefficients should be expected to land where the rocket did. Unverified beyond these two seams, and tracked as **W307**.
 
@@ -521,6 +541,8 @@ And the 15 real-callable trips break down as:
 
 Precision on real-callable ports is $2/15 = \mathbf{13\%}$, or $2/13$ once the vacuous $n = 1$ cases are removed. **That is not a rule; it is an 87% false-positive rate.**
 
+> **W334 (§18.8):** swept again with W301 fixed, the signature trips on 13 of 110, and **none** is saturated. The two genuine cases were the two that stopped tripping.
+
 Two controls bracket the measurement and both behaved — an exactly-diagonal responder trips, a one-cell banded one does not — so the 13.6% is a rate about the vault and not about the instrument.
 
 ### 11.2 The negative sharpens §4.5 rather than overturning it
@@ -558,6 +580,8 @@ A rule change that serves one case study is a fix, and should be called one. So 
 The three one-signed ones are the rocket's `b-c:THERM` and **`car_graph`'s `J1_core_strip` and `J3_rotor_strip`** — the latter two on a graph that *does* declare `effort_normal` and has it **inverted**. The single mixed one is `thermal_strain`'s `thermal-pressure` seam, at $\lambda \in [-1.93\times10^{9},\ +3.23\times10^{11}]$.
 
 **So three quarters of the passivity defects in this vault are sign conventions**, and the one the rule was written for is the minority case.
+
+> **Since Tier 82 (W308, §12.4), and re-derived at §18.8:** two defects remain. One is the rocket's b–c, one-signed, whose defect is $0.4939$ with the fixed wall. The other is `thermal_strain`'s mixed one.
 
 ### 12.2 What was implemented, and what deliberately was not
 
@@ -648,6 +672,8 @@ To make the claim above load-bearing rather than rhetorical, `e-f` was probed tw
 
 The **sign structure is `positive` at both**, the null dimension is $0$ against a declared $0$ at both, and neither is empty — so the *qualitative* reading of the seam survives the reduced cadence. Every *magnitude* does not.
 
+> **W334 (§18.8):** with the fixed wall, $\beta$ goes $6.98986\times10^{-7} \to 3.37917\times10^{-5}$, a factor of $48.3$, and `e`'s share goes $3.7\% \to 24.9\%$. The converged $\dim M = 41$ probe now agrees: $53.8\times$ and $25.0\%$. The argument below stands with smaller numbers.
+
 > **The block share is the consequence that bites.** At the reduced cadence agent `e` carries $6.4\%$ of the assembled operator and reads as a passenger; converged it carries $36\%$. [[tier0-measurements]] W76 established that a substitution certificate can only see a perturbation bounded by the swapped agent's own block, so **a certificate taken at the reduced cadence would be blind to `e`** — it would admit any replacement of the nozzle, whatever the replacement did. That is not a small quantitative error; it is the difference between a test and a formality.
 
 **And a note on how the anchor was made affordable, because the obvious route does not work.** `ProbeBudget(max_modes=8)` shrinks the interface space and leaves the **declared** prolongation at its original width, so `Prolongation.prolong` raises `dim mismatch`: a budget cannot narrow a space somebody else declared. The narrower space has to be *declared*, which `build_rocket_real(m_cap=...)` now does — and being a declaration, it is reported: $\dim M = 8$ against the $41$ this seam's meshes support, so the anchor is a number about a coarser interface than the graph's own.
@@ -665,6 +691,8 @@ At `dt_scale` $=10^{-3}$, **with the ADVEC rows carrying §13.2's caveat**:
 | e–f | ADVEC | 41 | $5.58\times10^{-7}$ | $1.3018$ | $0.0368$ | positive | $0=0$ | 84 calls |
 | d–g | ADVEC | 25 | $9.73\times10^{-17}$ | $6.27\times10^{11}$ | $0.6111$ | mixed | $0=0$ | 52 calls |
 | **g–f** | ADVEC | 77 | $2.58\times10^{-12}$ | $33.786$ | $0.7039$ | mixed | $0=0$ | **EMPTY** |
+
+> **W334 (§18.8):** with the fixed wall, e–b reads $\beta = 6.79\times10^{-7}$, $\kappa = 1.28$, and e–f moves $12\%$. a–b, b–c, c–d and g–f move under $2\%$. d–g reads `positive` at a $\beta$ of $9\times10^{-17}$, where the sign of the smallest eigenvalue is round-off.
 
 **The null check runs, and passes, on all seven** — which it could not do on `rocket.py`'s own graph, because those connections declare no `expected_null_dim` at all and `excess_null_directions` is therefore `None` right across it.
 
@@ -695,6 +723,8 @@ This is the second one. `contours.plane_d_g`'s own docstring already records *"a
 
 a ratio of $\mathbf{1.4741}$, not $>2$. So the omission is **material but smaller than claimed**: 47% more heat transfer per unit area, over the 0.30 m of wall that is the hottest part of the engine, into a shell whose own `validity` predicate already declines at 10.35 s of burn.
 
+> **W334 (§18.8):** $1.332$. With the wall conducting, the chamber wall's $\bar h$ rose to $211.30$ and the nozzle wall's stayed at $281.35$. The shell's predicate now declines at $2.95$ s.
+
 ### 13.6 W301's signature, cross-checked — and it is about `wall_noslip`, not about the solver
 
 Tier 76 found the isothermal wall saturated. If that were a property of `compressible2d` rather than of that one boundary condition, the plane ports would show it too. They do not:
@@ -708,6 +738,8 @@ and **both exceptions are informative**:
 
 - `d.c:THERM` is a wall and does **not** trip. Same BC, same solver — but `d` is the atmosphere at 255.7 K against a 255.7 K wall, so the clamp threshold $(T_i + 20)/2 \approx 138$ K is far below the imposed trace and the channel is **not saturated**. That is the mechanism confirmed from the other side: saturation needs a wall much colder than the gas, which is the engine's situation and not the atmosphere's.
 - `f.g:ADVEC` is a plane and *does* trip, **vacuously** — its response is the identically-zero shear-layer operator of §13.3, so "one cell responds and no others" is a statement about noise.
+
+> **W334 (§18.8):** with W301 fixed, `b.c:THERM` moves 10 of 112 cells and no longer trips, so no wall port does. `f.g` still trips, vacuously.
 
 ### 13.7 W313 — every $\beta$ in this vault is in raw physical units
 
@@ -725,6 +757,8 @@ Seven agents, seven seams, all real:
 | refusals | 10 | **4** |
 | decertifications | 49 | **22** |
 
+> **W334 (§18.8):** `refuse`, 4 refusals, **20** decertifications with the fixed wall. `L4/block-share` goes $3 \to 2$, and `L4/E7/passivity` goes $2 \to 1$ as d–g's round-off sign flips.
+
 The four refusals are `L2/InterfaceMotion` $\times 3$ and `L5/R6` $\times 1$ — **and the second one is the framework catching this tier's own declaration error, unprompted.** §13.3 found the g–f ADVEC operator empty by hand; `L5/R6` refuses the graph for it independently, and names the reason:
 
 > *"newton-krylov and direct-schur require a nonzero transmission operator; otherwise the interface system is not ill-conditioned but empty. Seams `['g-f']` assemble to a zero block … iterating an empty interface problem converges instantly and means nothing — the degenerate-axis trap, generalized: an axis whose value cannot affect the answer must be refused when the configuration is read, not discovered by measuring it."*
@@ -738,6 +772,8 @@ That is the PoC's stated product demonstrated on its own author: a coupling that
 ---
 
 ## 14. Tier 80 — R2's remaining half: the composed defect at 50:1, and the bound that breaks at it
+
+> **Re-derived at §18.8 (W334), and the headline reverses.** With the fixed wall, **the bound HOLDS at the declared interval**, $2.2782\times$ loose. $\sigma$ is first order over the whole $250\times$ (exponents $0.9997$–$1.0021$), and there is no knee. The constants are $s_\Gamma = 1.1627\times10^{-3}$, $C_2 = -1.228\times10^{-6}$ and $\dot\lambda = 32.20$ K/s, and 10 of 12 predictions hold. This section keeps what Tier 80 recorded on the old wall. Its method — anchors, registered extrapolations, the ratio control — is what found the reversal.
 
 R2 asked for two things: declare `flux_matching=TIME_INTEGRATED` with a `boundary_response_integrated` on each side, and **report the composed defect at 50:1 beside CS-11's bound**. The first was declared at Tier 76. It did not *clear* until Tier 79, and that dependency is the first thing worth stating.
 
@@ -817,6 +853,8 @@ $\dot\lambda$ spans $\mathbf{2.582\times}$ over the burn window, against CS-11's
 | $\mathbf{5\times10^{-2}}$ **(declared)** | $50$ | $1.292034$ | $\mathbf{5.837575\times10^{-3}}$ | $1.577278\times10^{-3}$ | $\mathbf{0.2702}$ | $\mathbf{1.9417}$ | $9259$ s |
 
 > **Over the first $25\times$ the bound holds and is loose by $2.269\times$ to $2.500\times$, against CS-11's own $1.426\times$–$2.178\times$ on the brake. At the declared interval it is VIOLATED: $\mathbf{0.2702}$, under-predicting the measured defect by $\mathbf{3.7\times}$.**
+>
+> **W334 (§18.8): that violation was the old wall's.** Re-derived, the declared row reads lag $1.581489$ K, $\sigma = 8.05768\times10^{-4}$, bound/measured $\mathbf{2.2782}$ and order $0.9997$. $\sigma/$lag is $5.055$–$5.095\times10^{-4}$ over all $250\times$.
 
 **That row cost $2.57$ hours and it is the only reason any of this is known.** The cheap sweep is internally consistent, first order, and agrees with CS-11 to within a factor — and it is wrong about the one interval the graph actually runs at. A bound published from §14.5's first three rows would have carried $25\times$ of clean supporting evidence and failed at the declared clocks.
 
@@ -900,7 +938,9 @@ This is W74's class on the one direction of this seam nobody had checked. Tier 7
 | $2\times10^{-4}$ | $2.53345\times10^{-6}$ | $9.96800\times10^{-7}$ | $0.3935$ |
 | $1\times10^{-3}$ | $1.39546\times10^{-5}$ | $1.53224\times10^{-5}$ | $1.0980$ |
 
-**The ratio changes direction between the two intervals, and that is the finding rather than a wobble.** Driving the shell with the gas's real near-wall temperature puts a **step** into its boundary condition at $t=0$ — the state was marched under $2800$ K and the referent hands it $2464$ K — and a startup transient decays over a fixed time, so it dominates a short interval and washes out of a long one. Spread across the two: $2.79\times$. That is why the declared trace is the default here and the two-way version is a control: **a referent that is more physical and less consistent with the state it starts from is not a better referent.** Closing it properly means marching the shell under the gas's own near-wall temperature from the start, which moves the probe state every number since Tier 76 was taken at.
+**The ratio changes direction between the two intervals, and that is the finding rather than a wobble.** Driving the shell with the gas's real near-wall temperature puts a **step** into its boundary condition at $t=0$ — the state was marched under $2800$ K and the referent hands it $2464$ K — and a startup transient decays over a fixed time, so it dominates a short interval and washes out of a long one. Spread across the two: $2.79\times$. That is why the declared trace is the default here and the two-way version is a control: **a referent that is more physical and less consistent with the state it starts from is not a better referent.**
+
+> **W334 (§18.8):** with the fixed wall the gap is 44 K rather than 336 K, and the two-way referent moves $\sigma$ by $0.101\times$ and $0.160\times$, no longer changing direction. The startup-step reading carries at the new size, on the arithmetic §18.8 gives: a 3% flux step on a half-millimetre face node. Closing it properly means marching the shell under the gas's own near-wall temperature from the start, which moves the probe state every number since Tier 76 was taken at.
 
 ### 14.10 W317 — a third undeclared interface, and the declared seam is the minority
 
@@ -937,6 +977,8 @@ The disjunction was registered before the run:
 
 > *If **A1 holds and A2 fails**, $\sigma$ is not first order out to the declared interval, and the bound's usefulness stops somewhere between $5\times10^{-3}$ and $5\times10^{-2}$. That is the most interesting outcome available here, and it is why the anchor is worth the time.*
 
+> **W334 (§18.8):** re-derived, **A3 holds** at $2.2782$. A1 and A2 fail on their registration: they were set from the old core's $25.89$ K/s, and the fixed wall heats the shell at $31.70$. The rule they encode lands within $0.23\%$ on the lag and $0.57\%$ on $\sigma$. The disjunction below was answered by the wall, not by the seam.
+
 **A1 held to four digits and A2 failed by $8.7\times$.** So the extrapolation's *premise* — that the trace drifts linearly, at a rate the shell's own single step predicts — is exactly right, and its *conclusion* is wrong, because the quantity that stopped being linear is the seam's response and not the trace.
 
 **Cost, measured rather than estimated:** $9259$ s ($2.57$ h), $364\,093$ gas sub-steps, **zero Modern Standby events** over the window, at $100\%$ charge on AC. That is $92\,590$ s of wall per second of gas time, about $40\%$ above the sweep's own $65\,204$–$70\,070$ — the chamber accelerates as it develops, so a longer march is dearer per unit of gas time, not merely longer.
@@ -948,6 +990,8 @@ The disjunction was registered before the run:
 **It was attempted and it is not in this record.** The run died ten minutes in, during its settle, with an empty stderr and no Modern Standby event to blame, and **the cause is not known** — the anchor had survived nearly three hours by the identical launch. So the mechanism is named, priced and unpaid: it refines an inference, and the gate does not turn on it.
 
 ### 14.12 The predictions
+
+> **W334 (§18.8):** re-derived, **10 of 12 hold**. P3, P4 and P9 hold, since the anchor no longer breaks them. **P11 fails** at $1.156\times$ against the registered $1.2\times$. P6 is refuted as before, by $18.70\times$.
 
 **Eleven of twelve held on the core; the anchor moved three of them to failed, so the tier closes at eight of twelve.** Both runs recorded **zero Modern Standby events** (the driver counts them itself — see §14.13).
 
@@ -1064,7 +1108,7 @@ Read the null dimension at a tolerance and you get whatever you asked for:
 
 This is [[tier0-measurements]] W106's mistake with the sign reversed. W106 was about a *reproducibility floor* of exactly zero making a movement test meaningless; this is about a *spectrum with no floor* making a rank test meaningless. **The tier's test therefore asserts that two tolerances DISAGREE** — the only way to state "there is no answer here" as something that can fail. If the operator ever grew a real null space, four decades of tolerance would agree on it.
 
-**And the contrast with THERM on the same fourteen cells is the most striking number in the tier.** Tier 77 measured b–c THERM at $\kappa = 3.7141$. MECH is $8.82\times10^{8}$ — **eight orders apart, on the same seam, the same cells, the same operating point.** The reason is structural and it is already on the record: the THERM response is nearly *algebraic* (W301 — `_wall_flux` subtracts $T_{\text{wall}}$ directly), while the MECH response is a quasi-static elliptic solve, which is a **smoothing** operator and therefore compact, with geometrically decaying singular values. *Port type, not physics regime, is what decides whether a seam operator has a rank you can name.*
+**And the contrast with THERM on the same fourteen cells is the most striking number in the tier.** Tier 77 measured b–c THERM at $\kappa = 3.7141$ ($2.392$ with the fixed wall, §18.8, so the contrast stands). MECH is $8.82\times10^{8}$ — **eight orders apart, on the same seam, the same cells, the same operating point.** The reason is structural and it is already on the record: the THERM response is nearly *algebraic* (W301 — `_wall_flux` subtracts $T_{\text{wall}}$ directly), while the MECH response is a quasi-static elliptic solve, which is a **smoothing** operator and therefore compact, with geometrically decaying singular values. *Port type, not physics regime, is what decides whether a seam operator has a rank you can name.*
 
 ### 15.4 The gas cannot respond at all, and a declaration cannot see why
 
@@ -1084,7 +1128,7 @@ against b–c MECH's $8.82\times10^{8}$ — **three million times better conditi
 
 ### 15.6 What was deliberately not done
 
-**The trajectory agent is built and measured and is NOT in the compiled graph.** The seven-agent compile is unchanged at `refuse`, **4 refusals, 22 decertifications, 81 admits** — exactly where Tier 79 left it, asserted rather than assumed, because *a builder that constructs declarations is a place where a refusal can be lost without anybody deciding to lose it* (Tier 79's own lesson). Adding an eighth agent would move the count, and it should move it for a reason that has been argued rather than as a side effect of a tier about something else.
+**The trajectory agent is built and measured and is NOT in the compiled graph.** *(Re-derived at §18.8: 4 refusals, 20, 82 — and still Tier 79's count, which Tier 79's re-derived record also moved to 20.)* The seven-agent compile is unchanged at `refuse`, **4 refusals, 22 decertifications, 81 admits** — exactly where Tier 79 left it, asserted rather than assumed, because *a builder that constructs declarations is a place where a refusal can be lost without anybody deciding to lose it* (Tier 79's own lesson). Adding an eighth agent would move the count, and it should move it for a reason that has been argued rather than as a side effect of a tier about something else.
 
 Three things have to land before that argument can be made, and none of them belongs here:
 
@@ -1153,6 +1197,8 @@ The $6.48$ hours are **not spent**. W312's own definition of done — *"one plan
 
 ### 17.1 The knee: the bound's LINEAR constant is what fails
 
+> **Re-derived at §18.8 (W334): there is no knee.** With the fixed wall, $s_\Gamma$ at $10^{-2}$ s is $1.0077\times$ its small-interval value, the order is $1.00$ at every interval, and the bound holds throughout at $2.28\times$–$2.30\times$. What follows is what the old wall produced, and the registered disjunction answered it correctly for that wall.
+
 §14.11 left the residence-time mechanism as an [AI Inference], named a measurement that would settle it, and priced it. It was run. At $\Delta t_{\text{ex}} = 10^{-2}$ s — **1.67 chamber flow-throughs**, straddling the threshold:
 
 | | value |
@@ -1174,6 +1220,8 @@ $$1.060,\quad 0.973,\quad \mathbf{2.295},\quad 1.790$$
 placing the break **between 0.83 and 1.67 flow-throughs** — at one residence time, where the inference said it would be. The violation also starts *earlier* than the anchor showed: bound/measured is already $0.9660$ at $10^{-2}$, not just $0.2702$ at $5\times10^{-2}$.
 
 ### 17.2 Every ADVEC seam converged, at matched $\dim M$
+
+> **Re-derived at §18.8 (W334).** e–b moves $82.6\times$, not $1090\times$, because its cheap probe is no longer near-singular. e–f moves $53.8\times$, and Tier 79's $\dim M = 8$ anchor now reads $48.3\times$, so the correction below reverses. d–g's sign change was round-off at $\beta \approx 9\times10^{-17}$. Its converged share ($29\%$) and g–f's exact $0.0$ stand.
 
 W312's four remaining seams, plus `g-f` run to remove doubt rather than because the price demanded it:
 
@@ -1205,6 +1253,8 @@ The first coupled run in this case study: `generate.CoupledEpisode` advancing al
 
 **Two declarations, both reported.** `coarsen = 4` (blocks $12\times20$ to $46\times12$), and $\Delta t_{\text{macro}} = 5\times10^{-3}$ s against the config's own $5\times10^{-2}$. The second is a **10× reduction and it is the right direction**: $5\times10^{-3}$ s is $0.83$ chamber flow-throughs, which §17.1 places **below the knee**, where $\sigma$ is still first order and CS-11's bound still holds. At the config's own macro step ($8.3$ flow-throughs) it does not.
 
+> **W334 (§18.8):** there is no knee, and the bound holds at the config's own $5\times10^{-2}$ s too, $2.28\times$ loose. The $10\times$ reduction is conservative rather than necessary.
+
 Cost: $30$ macro steps, $626\,165$ CFL sub-steps, $1647$ s — $54.9$ s a step against the $49.2$ s priced beforehand.
 
 ### 17.5 W322 — the engine decelerates the vehicle
@@ -1230,4 +1280,440 @@ with `thrust` a positive momentum-flux integral over the nozzle exit and `th` th
 
 ---
 
-**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units), **W314** (R2's remaining half — the composed defect at 50:1 against CS-11's bound, *§14*), **W315** (`generate.py` collapses the shell to one number, so the build repo's shell-to-gas trace is rank 1, *§14.8*), **W316** (the shell is linearised about a gas temperature the gas does not have, *§14.9*), **W317** (a third undeclared interface — `a-c`, named by the build repo itself, and the declared seam is 40.7% of the conjugate wall, *§14.10*). **W305** (the trajectory agent and MECH on b-c — *§15*), **W318** (the b-c MECH operator has no spectral gap, so `expected_null_dim` is not a well-posed declaration for a compact response — *§15.3*), **W319** (`Compressible2D` has no wall-velocity boundary condition, so every gas-solid MECH bond is one-sided by a missing capability — *§15.4*), **W320** (`_solve_free` computes the trajectory's input as a Lagrange multiplier and discards it — *§15.2*). **W321** (the graph marched, not just probed — *§17.4*), **W322** (the engine decelerates the vehicle — *§17.5*). See [[gap-worklist]].
+## 18. Tier 86 — the seams rebuilt, and a wall that passed mass
+
+Opened 2026-09-23, after [[rocket-episode-seam-audit]] found that §17.4's episode was pieced together wrongly: geometry that did not meet, and a coupler that joined the solvers by array index. **This tier changes the build repo.** Both checkouts carry the same fixes, uncommitted: `atlas-0.1-windfarm` at `0a407b7` (the pin this case study declares), and `atlas-0.1` at `a00d3af`. Every marched number below carries the diff hash of the tree that produced it.
+
+**A correction to §17.4 first.** "30 macro steps" counted frames. `run()` seeds the lists with the pre-run state, so 30 frames are **29 steps**, covering $0.145$ s.
+
+### 18.1 The audit's defects, and what closed each
+
+| row | defect | fix | gate | reading |
+|---|---|---|---|---|
+| **W327** | shell and `d` had no node at either nozzle kink; coarsening subsampled nodes and the blank mask; `g`'s hole sat at $[-0.500, 0.625]$ | axial breakpoints at both kinks and every agent's $z$ extent; blocks **rebuilt** at the coarse resolution; the hole on `f`'s node lines | G1, G2, G3 | polylines $2.78\times10^{-17}$ m apart; **0** raster points claimed by no block or by two; hole error $0$ |
+| **W323** (+W315) | the shell read its walls by array index — 95% of stations off, by up to $4.08$ m — from one scalar wall temperature | each station averages the gas wall cells at its own $z$; every gas wall reads the skin's own temperature by $z$; over the tank barrel the config **declares** the wall (adiabatic, ambient pressure) | C1, C2, C3 | $0.0002$ m inside (half a cell is $0.005$), $0.0375$ m outside (half of `d`'s cell is $0.075$), barrel exactly $0$ |
+| **W324** | the lower panel was loaded inside out | `ShellMesh` takes its gas faces from the geometry (`grid.shell_faces`); the traction sign follows the face | E1 | §18.2 |
+| **W325** | aero loads on W309's index normals, no shear: drag $0.000$, side force $1781.8$ N/m | both panels on the body's outward normal, plus wall shear $\mu u_t/\Delta n$ | E2 | §18.2 |
+| **W322** | widened: the body→world rotation, not just the thrust's sign | nose at body $-z$; thrust and aero share one proper rotation | E2, E3 | thrust up, drag to the tail and down |
+| **W326** | conserved states crossed gas models unconverted; the plume hole got `f`'s transverse mean | `_as_gas` at equal $p$, $T$, $\mathbf u$; the hole gets `f`'s edge rows, lower and upper separately | C4, C5, E5 | conversion error $6.66\times10^{-16}$; wake at $0.293$ of its hottest inflow's stagnation temperature |
+| **W328** | the freestream ignored $\alpha$ and the vehicle's speed | the relative wind from the rigid state | unit test | |
+| **W330** | records took one wall and one panel, index-oriented | both walls, both panels, outward normals; a–c, e–c and d–f recorded (config `recorded_interfaces`); d–g clipped to its declared span | unit tests | d–g $+$ d–f tile `d`'s outlet exactly |
+| **W331** | plane seams remapped by index; d–g carried nothing into `g` | remaps by position; `d`'s outlet feeds `g`'s inlet and `f`'s outer inlet | unit tests | |
+| **W329** | the page | SI units on one scale per field; labels from the config | — | |
+| **W301** | the isothermal channel saturates at the $20$ K ghost floor | the wall face's conduction taken one-sided from $T_w$: $k(T_i)(T_i - T_w)/\Delta n$, exactly what `_wall_flux` hands the shell | unit tests | exact to $10^{-12}$; 300 K and 600 K walls were bitwise identical before |
+
+W311 and W317, the undeclared nozzle-wall and injector-wall interfaces, are now **exchanged by position and recorded**. Declaring them stays a decision about the graph. All the tests that pinned these defects were rewritten to pin the fixes. Each keeps its original diagnosis as a control that the old behaviour is really gone.
+
+### 18.2 The first fixed march — 11 of 13, and the two it failed
+
+The gates were written before the march (`scripts/w323_seams_fixed.py`). The march went to `out/w321_seams_only`: 29 steps, $636\,902$ sub-steps, $v_y$ $1044.3619 \to 1046.1708$ m/s. **The vehicle climbs.** Thrust is $+1.142\times10^{6}$ N/m upward, and the acceleration audit reconciles every step to $3.46\times10^{-4}$.
+
+**E1 and E2 failed.** The panels' mirror residual was $2.74\times10^{-4}$ against $10^{-6}$. The side force was $1.17\times10^{-5}$ of the drag, against $10^{-6}$. The thresholds stayed where they were registered, and the failures were traced rather than excused. Per block, per step, $\max|p - p_{\text{mirror}}| / \max|p|$:
+
+| run | `e` (nozzle), step 3 | `e`, worst | `d` (air), worst | shell $u_y$, worst |
+|---|---|---|---|---|
+| pre-fix (`out/w321_prefix`) | $4.6\times10^{-3}$ | $6.0\times10^{-2}$ | $3\times10^{-14}$ | $2.00$ (inside out) |
+| seams rebuilt | $2.5\times10^{-3}$ | $4.6\times10^{-2}$ | $6\times10^{-7}$ | $2.7\times10^{-4}$ |
+
+**The asymmetry was already in the pre-fix run, and it is not in the seams.** The pre-fix run's nozzle went from $2\times10^{-15}$ to $4.6\times10^{-3}$ in one 5 ms step. Its walls then had one scalar temperature, and its outlet takes nothing from the plume, so nothing asymmetric entered it. The rebuilt seams made the asymmetry *visible*. The shell now reads the nozzle wall by position, so it bent asymmetrically. The air, reading the shell, followed at $10^{-7}$. And a side force of $10^{-7}$ of one panel's normal load is $10^{-5}$ of the drag, because the drag is about twenty times smaller than one panel's normal integral.
+
+### 18.3 W332 — the isothermal wall passed mass
+
+The engine (`a`, `b`, `e`) was marched **alone**, with the coupler's own wiring but both walls pinned at $288.15$ K, so nothing asymmetric can enter from outside (`scripts/w332_nozzle_symmetry.py`). The nozzle's asymmetry at the end of each 5 ms step, inviscid:
+
+| nozzle flux | nozzle walls | 5 ms | 10 ms | 15 ms | 20 ms |
+|---|---|---|---|---|---|
+| HLLC | isothermal, **as it was** | $1.9\times10^{-15}$ | $1.9\times10^{-13}$ | $1.4\times10^{-8}$ | $\mathbf{7.1\times10^{-4}}$ |
+| HLLE | isothermal, as it was | $7.6\times10^{-16}$ | $1.7\times10^{-15}$ | $2.0\times10^{-15}$ | $1.4\times10^{-12}$ |
+| Rusanov | isothermal, as it was | $1.1\times10^{-15}$ | $1.0\times10^{-15}$ | $1.0\times10^{-15}$ | $1.1\times10^{-15}$ |
+| HLLC | adiabatic | $1.7\times10^{-15}$ | $1.3\times10^{-15}$ | $1.8\times10^{-15}$ | $1.3\times10^{-15}$ |
+| HLLC | slip | $2.0\times10^{-15}$ | $1.6\times10^{-15}$ | $1.4\times10^{-15}$ | $1.9\times10^{-15}$ |
+| HLLC | isothermal, **fixed** | $1.7\times10^{-15}$ | $1.3\times10^{-15}$ | $1.8\times10^{-15}$ | $1.3\times10^{-15}$ |
+
+The records are `out/w332/*.json`, written by `scripts/w332_nozzle_symmetry.py` (`--old-ghost` restores the inviscid flux's old ghost). The first exploratory runs are archived beside them in `scratch_logs/`, and the script reproduces them. HLLE's $1.4\times10^{-12}$ is inherited from `b` rather than grown in the nozzle, and it is gone by 25 ms. Inviscid, the fixed isothermal wall gives **exactly** the adiabatic wall's numbers, as it should: with no viscous terms, a wall's temperature has nothing to act through. So the mode needs **both** HLLC and the isothermal wall. It grows about $10^{5}$ per 5 ms, from round-off to saturation in four steps. It lives in the wall-adjacent cells of the diverging section, rows 5–12, where the wall column runs at Mach 0.9 beside a Mach 1.9 core.
+
+**The mechanism.** `_fill_side` builds the isothermal ghost at the cell's pressure with
+
+$$T_g = \max(2T_w - T_i,\ 20\ \text{K}), \qquad \rho_g = \frac{p}{R\,T_g} = \frac{T_i}{T_g}\,\rho_i ,$$
+
+so beside $2500$ K gas and a $288$ K wall the ghost is **125 times denser** than the cell. That pair is then handed to the Riemann solver as the wall face's two states. For a true reflection — equal density and pressure, normal velocity reversed — HLLC's contact speed
+
+$$S_M = \frac{p_R - p_L + \rho_L u_L (S_L - u_L) - \rho_R u_R (S_R - u_R)}{\rho_L (S_L - u_L) - \rho_R (S_R - u_R)}$$
+
+has $u_L = -u_R$, $S_L = -S_R$ and $\rho_L = \rho_R$, so its numerator is $-\rho u (S_L + S_R) = 0$ **exactly**. The face carries pressure and nothing else. With $\rho_L = 125\,\rho_R$ the cancellation is gone. For gas moving into the wall at $50$ m/s, $S_M \approx +49$ m/s: **the wall face passes mass**, at $123\times$ the gas's own normal mass flux $\rho\,|v|\,a$ (`out/w332_wall_mass.json`). As a closed box on the coupler's own engine blocks, gas pushed at both walls, the net mass rate over $\rho\,|v|\,L_{\text{walls}}$ is:
+
+| block | before W332 | after |
+|---|---|---|
+| `a` | $168$ | $3.6\times10^{-15}$ |
+| `b` | $193$ | $7.4\times10^{-16}$ |
+| `e` | $119$ | $1.5\times10^{-15}$ |
+
+**The fix** (`Compressible2D.residual`): the inviscid flux sees every wall as a **mirror at the cell's own density**, and only the viscous operator sees the isothermal ghost. A wall's temperature reaches the gas by conduction, which the viscous terms and W301's override carry. The inviscid flux of an impermeable wall is its pressure, and the mirror problem gives exactly that. Blocks without an isothermal wall use a single ghost array as before, so their residual is **unchanged bit for bit**. That keeps every case without isothermal walls out of the blast radius.
+
+**This refutes a sentence written earlier the same day.** W301's docstring said the ghost *"still sets the inviscid flux and the interior gradients, and neither needs it to be exact."* The first half is what W332 measured to be wrong.
+
+**[AI Inference]:** every isothermal-wall result in this vault before Tier 86 carries this leak, including the thermal seam (Tiers 15–16) and the rocket (Tiers 76–85). Where the gas beside the wall has no normal velocity — a settled wall layer — the Riemann problem has $u_L = u_R = 0$ and equal pressures. Then $S_M = 0$ exactly whatever the densities, so a steady wall is barely touched. Transients, like the rocket's start-up and every probe's poke, are where it acted. §18.6 lists what moved in the pinned tests.
+
+### 18.4 W333 — the forebody slot counted as airframe
+
+`d` is one two-panel map over its whole range, $z \in [-5, 0.7]$. Ahead of the nose ($z < -4$) its inner boundary runs on at the airframe's half-height, bordering `forebody_slot`, which the config declares unmodelled. The coupler made that boundary **no-slip, at the nose's temperature**. That is a metre of flat plate before the vehicle began: its boundary layer arrived at the nose already grown, its shear was added to the drag, and its record was filed under the c–d seam. The first fixed march's c–d record was $11.454$ m long, against a skin whose outer face is $9.4542$ m.
+
+**The fix.** The config now declares the slot's wall, `gas_wall: slip_adiabatic`: a streamline of the freestream it lies along. The solver gained a per-station `isothermal_mask` beside the existing `no_slip_mask`, and the slot's stations are slip and adiabatic. Records and loads stop at the nose. Gates C7 and C8: the masks match the airframe's extent exactly, c–d equals the outer face to $2.2\times10^{-16}$, and changing the slot's cells changes the aero load by exactly $0$.
+
+**One pin moved with it.** `rocket_experts.WALL_BC_PARAMS` records what `wall_noslip` reads (W305/W319). It is now `T_wall`, `no_slip_mask` and `isothermal_mask`. None is a velocity, so W319's finding stands.
+
+### 18.5 The re-march — 17 of 17
+
+The four new gates (C6, C7, C8, E6) were written into `scripts/w323_seams_fixed.py` before the re-march, and E1–E5 kept their thresholds. **As a dry run against the seams-only march, E6 read $4.57\times10^{-2}$ and failed**, so the gate can fail, and C6–C8 passed on the fixed code. The re-march went to `out/w321`: build repo diff `b6bbcec4240a5943`, archived beside the run.
+
+| gate | seams-only march | **this march** | threshold |
+|---|---|---|---|
+| E1 — panels mirror images | $2.74\times10^{-4}$ ✗ | $\mathbf{6.46\times10^{-9}}$ | $10^{-6}$ |
+| E2 — $\lvert$side$\rvert$ / drag, worst step | $1.17\times10^{-5}$ ✗ | $\mathbf{6.30\times10^{-14}}$ | $10^{-6}$ |
+| E3 — climbs | $+1.809$ m/s | $+1.747$ m/s | $> 0$ |
+| E4 — acceleration audit | $3.46\times10^{-4}$ | $2.48\times10^{-4}$ | $0.02$ |
+| E5 — wake energy bound | $0.293$ | $0.290$ | $1.02$ |
+| E6 — engine mirror, worst | $4.57\times10^{-2}$ ✗ (dry run) | $\mathbf{2.18\times10^{-15}}$ | $10^{-8}$ |
+| C6 — closed-box wall mass | $168$ / $193$ / $119$ (old residual) | $3.63\times10^{-15}$ | $10^{-12}$ |
+| C7, C8 — the slot | — | pass; c–d $= 9.4542$ m exactly | |
+
+G1–G3 and C1–C5 read as before. **The engine stays symmetric to round-off for the whole 0.145 s.** The sideways thrust is $2\times10^{-10}$ N/m where it was $-175.8$, and the side force is $-3.5\times10^{-11}$ N/m.
+
+| | seams-only march | this march |
+|---|---|---|
+| $v_y$ | $1044.3619 \to 1046.1708$ m/s | $1044.3619 \to 1046.1087$ m/s |
+| thrust, last step | $1.142\times10^{6}$ N/m | $1.113\times10^{6}$ N/m |
+| drag, last step | $832.0$ N/m | $838.1$ N/m |
+| nozzle exit / injector mass flow, steps 10–29 | $1.092$ | $0.976$ |
+
+Thrust is $2.5\%$ lower. The drag is $0.7\%$ higher, because the airframe's boundary layer now starts at the nose instead of a metre upstream, and a thinner layer carries more shear.
+
+**[AI Inference]:** in the seams-only march, $9\%$ more mass left the nozzle than entered at the injector. That is what walls adding mass would look like, and the nozzle there was oscillating, which is when the leak acts. The records are cell-centred traces, and near the throat the area changes by $\sim2.5\%$ within half a cell, so a few percent of either ratio is where the trace is taken. The $11$-point swing between the runs is larger than that. It is not a conservation measurement.
+
+Cost: 29 steps, $647\,637$ CFL sub-steps, $4149$ s of wall time. The laptop moved from battery to mains mid-run and shared the machine with test suites for part of it, so the seconds describe this run and nothing more.
+
+### 18.6 What moved in the vault's pinned tests, and one finding re-measured
+
+The vault's 488 tests that load the build repo were re-run on the final code. Every pin that moved was rewritten to pin the fix, and each keeps its original diagnosis as a control that the old behaviour is really gone:
+
+| test | was | now |
+|---|---|---|
+| Tier 76, 79: W301's saturation signature | the wall bitwise identical at 300 K and 449 K; `exact_zeros == n - 1` | the wall transmits at its own probe base; `exact_zeros < n - 1` (the chamber's poke reached 11 of 112 cells with W301 alone, where it reached 1) |
+| Tier 80: W315, W317 | one scalar wall temperature; a–c unrecorded | per-cell by position; a–c recorded; the conjugate wall's shares recomputed (the declared seam is 40.8%) |
+| Tier 15 | the gas support was one cell | global, with the poke's neighbour below $10^{-2}$ of its own cell |
+| Tier 16: the thermal seam's consistent interface temperature | $372.1377$ K | $372.4964$ K with W301, then $\mathbf{372.2359}$ K with W332 |
+| Tier 81: what `wall_noslip` reads | `T_wall`, `no_slip_mask` | plus `isothermal_mask` (W333) |
+| Tier 80: W316 at $10^{-4}$ s | near-wall mean below 2800 K, spread over 100 K | $2802$ K, spread about 4 K; the old residual restores the old reading, kept as the control |
+
+One more was already red before any of this: Tier 80's jump test went red the day Tier 84 added its knee row to `out/w314.json`. It compared the last two rows, and the new row sits between them. It also assumed one exponent for the last decade, which the knee row splits into $2.295$ and $1.790$. It now reads the jump against the flat part of the sweep and checks the two exponents separately.
+
+**W316, re-measured.** The Tier-80 `setup` stage was re-run with both fixes (`out/w332_w316_setup.json`). The chamber's settled near-wall cell is $2696$–$2804$ K, mean $2756$ K, where Tier 80 recorded $1490$–$2804$ K, mean $2464$ K. The ratio to the 2800 K the shell is linearised about goes from $0.8801$ to $0.9841$. **The finding stands at about an eighth of its size.** The shell is still linearised about a hotter gas than its wall layer holds, by $1.6\%$ rather than $12\%$. The rest was the saturated channel and the leak.
+
+### 18.7 What this tier did not do
+
+- **It did not re-derive Tiers 76–85's gas-seam numbers (W334) — *paid later the same day, §18.8*.** As first recorded: the vault's probe wrapper gives every rocket gas agent an isothermal wall, so every THERM and ADVEC number in `out/w300` … `out/w314` was taken with W301's saturated channel and W332's leak. Their tests pass because they read those records. §18.6's W316 shows how large the difference can be. Re-deriving them is **about 7 hours**, from the records' own wall times. (It was first priced at 9, which counted the knee row twice.)
+
+  **Where the time goes.** The gas solver is explicit, so its step is held to the CFL limit, $\Delta t \le C\,\Delta x/(\lvert u\rvert + c)$. The chamber's smallest cells are $0.88$ mm and sound runs at $1100$ m/s in 2800 K gas, so $\Delta t \approx 3.0\times10^{-7}$ s. A simulated millisecond is therefore about 3300 steps of 8960 cells, and costs 93–112 s of wall.
+  - The multirate study marches the chamber twice per exchange interval: once with the trace following the skin, once with it held stale. The declared 50 ms interval alone is 100 ms of gas, $364\,093$ steps and $2.57$ h. The knee row adds $1.65$ h, and the shorter intervals about 50 min.
+  - The converged flow-through seams are finite-difference Jacobians: up to 42 marches per seam side, one per boundary mode plus the base. They took $1.84$ h on a 10-worker pool.
+  - The wall-seam probes cost seconds.
+
+  The two columns of each interval start from the same state and never read each other, so they can run side by side. On mains, that plausibly halves the total. It is still multi-hour work, so it waits for the owner. Until it runs, those pages quote the old wall. *(The owner approved it. With the columns forked and the anchor run beside the core on a rented 48-core CPU, it took 38 minutes.)*
+- **It did not declare a–c, e–c, d–f or c–f.** They are exchanged and recorded, and whether the model's graph should declare them is a modelling decision.
+- **It did not commit anything.** Both checkouts, and the vault, carry the changes uncommitted.
+- **The forebody slot is still a slot.** W333 made its wall honest. It did not model the flow around the nose, which is what removing the slot would take: a `d` block that closes across the axis ahead of the vehicle.
+
+### 18.8 W334 — Tiers 76–85 re-derived, and what the old wall had been saying
+
+**Done the same day.** Every record from `out/w300` to `out/w314` was re-run with W301 and W332 fixed, on a rented 48-core EPYC 9655: Linux, Python 3.11, and the laptop's numpy, scipy and pyyaml versions on OpenBLAS. The build repo went as a copy of the tree this page pins, identified in every record as `0a407b7+dirty:b6bbcec4240a5943`. The old records moved to `out/pre_w332/`, and the new ones took their names (`scripts/w334_swap_records.py`). `scripts/w334_compare_records.py` diffs each pair leaf by leaf and lists every label that changed.
+
+**The box reproduces the laptop.** Its `setup` stage matches the laptop's `out/w332_w316_setup.json` to $10^{-15}$ relative, on a different BLAS, in 158 s where the laptop took 862. The multirate study's two columns ran as forked processes, and its anchor ran as a separate job whose result was replayed into the record. Both routes were checked bitwise against the sequential driver before the box was rented. The whole job took 38 minutes of rental and about \$0.40. The anchor alone, $363\,725$ sub-steps, took 1417 s where Tier 80's took 9259.
+
+**Attribution first, because not every difference is the wall's.** Three other things changed between the original runs and these:
+
+- **Tier 77 declared `effort_normal = "b"` on b–c:THERM.** So `w300` and `w304` now assemble the *difference* where Tier 76 assembled the sum. The ledger's `known` level (`w302`) gains one `L4/E7/passivity` from its stubs, $47 \to 48$. Neither change is the wall's. The `real` level is unchanged: `refuse`, 10 refusals, 43 decertifications.
+- **Tier 82 fixed W308**, so `w306`'s two `car_graph` strip seams read `positive`. That leaves the rocket's b–c as the vault's only one-signed seam (defect $0.5085 \to 0.4939$), beside `thermal_strain`'s mixed one.
+- **Tier 86's own geometry fixes** (W323, W327). Where they could matter, they are separated below by an old-wall control: today's code with W301 and W332 reverted.
+
+Tiers 81–82 otherwise added MECH and trajectory code, which no gas record reads.
+
+| tier | quantity | old wall | **fixed wall** | reading |
+|---|---|---|---|---|
+| 76 | chamber $\bar h$ (min–max), W/(m² K) | $183.87$ ($156.84$–$315.11$) | $211.40$ ($165.09$–$421.79$) | the wall now conducts |
+| 76 | seam wall at 5 s, mean (max) | $449.42$ ($690.02$) K | $478.96$ ($870.77$) K | |
+| 76 | the shell's `validity` declines at | $10.35$ s | $\mathbf{2.95}$ **s** | **before the probe base — W335** |
+| 76 | a one-cell poke on the gas moves | 1 of 112 cells | 39 of 112 | W301's signature gone |
+| 76 | gate 4; the affine control | $8.29\times10^{-9}$; $0.99982$ | $5.94\times10^{-9}$; $0.99980$ | stands |
+| 76 | $\beta$ over $100\times$ of cadence; over 0.5–10 s of burn | $0.29\%$; $26.5\%$ | $0.03\%$; $11.2\%$ | the horizon still dominates (now in the difference assembly) |
+| 77 | $\lambda^{\ast}$ | $1035.487$ K | $\mathbf{1133.885}$ K | still one sign change, in $(1015, 1270)$ |
+| 77 | corrected $\beta$ ($\kappa$) | $0.123188$ ($3.7141$) | $\mathbf{0.229896}$ ($2.392$) | |
+| 77 | shell/gas block ratio | $1.05$ | $1.24$ | W307 stands |
+| 77 | `exact_zeros == n - 1` trips | 15 of 110, 2 saturated | 13 of 110, **none** saturated | refused more firmly |
+| 79 | e–b at the cheap cadence, $\beta$ ($\kappa$) | $5.18\times10^{-8}$ ($16.9$) | $6.79\times10^{-7}$ ($1.28$) | |
+| 79 | nozzle wall's $\bar h$ over the chamber's | $1.474$ | $1.332$ | W311 smaller again |
+| 79 | compile | `refuse`, 4, 22 | `refuse`, 4, **20** | `L4/block-share` $3\to2$, `L4/E7/passivity` $2\to1$ |
+| 80 | $s_\Gamma$; $C_2$ | $1.2229\times10^{-3}$; $-1.639\times10^{-6}$ | $1.1627\times10^{-3}$; $-1.228\times10^{-6}$ | $C_2$ still negative |
+| 80 | $\dot\lambda$ at 5 s; its span over the burn | $25.96$ K/s; $2.58\times$ | $32.20$ K/s; $2.94\times$ | |
+| 80 | **bound/measured at the declared $5\times10^{-2}$ s** | $\mathbf{0.2702}$ — **violated** | $\mathbf{2.2782}$ — **holds** | **§14.11's finding was the old wall's** |
+| 80 | CS-11's constants bound the rocket by | $17.6\times$–$19.4\times$ | $18.70\times$–$18.79\times$ | P6 refuted as before |
+| 80 | the rank-1 trace moves $\sigma$ by | $1.231\times$, $1.166\times$ | $1.156\times$, $1.155\times$ | **P11 now fails** |
+| 80 | the two-way referent moves $\sigma$ by | $0.393\times$, $1.098\times$ | $0.101\times$, $0.160\times$ | see below |
+| 80 | predictions | 8 of 12 | **10 of 12** | |
+| 81 | c–trajectory $\kappa$; b–c MECH | $295.51$; $8.82\times10^{8}$ | $283.66$; unchanged | W318 stands |
+| 84 | $s_\Gamma$ at $10^{-2}$ s, over its small-interval value | $17.08\times$ | $\mathbf{1.0077\times}$ | **there is no knee** |
+| 84 | $\beta$'s movement, cheap to converged: e–b; e–f; d–g | $1090\times$; $22.2\times$; $9.53\times10^{9}$ | $82.6\times$; $53.8\times$; $1.27\times10^{10}$ | |
+
+**1. The bound holds at the declared interval (§14.5, §14.11, §17.1).** Tier 80's central finding was that CS-11's bound, clean over $25\times$ of interval, is violated at the one interval the graph declares. It read $0.2702$, a $3.7\times$ under-prediction, with the order going to $1.94$. Tier 84 then found a knee at one chamber flow-through, where $s_\Gamma$ climbed $17\times$. **All of it was the old wall's.** Re-derived:
+
+| $\Delta t_{\text{ex}}$ [s] | lag [K] | $\sigma$ | $\sigma/$lag | bound/measured | order |
+|---|---|---|---|---|---|
+| $2\times10^{-4}$ | $6.34113\times10^{-3}$ | $3.20547\times10^{-6}$ | $5.0550\times10^{-4}$ | $2.3000$ | — |
+| $1\times10^{-3}$ | $3.17023\times10^{-2}$ | $1.60489\times10^{-5}$ | $5.0624\times10^{-4}$ | $2.2966$ | $1.0008$ |
+| $5\times10^{-3}$ | $1.58484\times10^{-1}$ | $8.05141\times10^{-5}$ | $5.0803\times10^{-4}$ | $2.2882$ | $1.0021$ |
+| $10^{-2}$, *the knee row* | $3.16893\times10^{-1}$ | $1.61243\times10^{-4}$ | $5.0882\times10^{-4}$ | $2.2843$ | $1.0019$ |
+| $\mathbf{5\times10^{-2}}$ **(declared)** | $1.581489$ | $8.05768\times10^{-4}$ | $5.0950\times10^{-4}$ | $\mathbf{2.2782}$ | $0.9997$ |
+
+$\sigma$ per unit lag is flat to $0.8\%$ over $250\times$ of interval, and every exponent is $1$ to $0.3\%$. **There is no knee**: $s_\Gamma$ at $10^{-2}$ s is $1.0077\times$ its small-interval value. The bound is loose by $2.28\times$–$2.30\times$ at every interval, the declared one included, inside the band CS-11 found on the brake. So the rocket is a second seam on which CS-11's form, written in the interval, holds a decade past where it was checked. §14.11's residence-time inference, which §17.1 took as confirmed, explained an artefact. Which of the two wall defects produced the knee is not separated here; the old-wall control for this stage would cost the anchor again.
+
+**The anchor's registered predictions, read honestly.** A1 and A2 were registered from the old core's lag rate, $25.89$ K/s, and both fail. The fixed wall heats the shell faster ($31.70$ K/s), so the lag is $1.5815$ K where $1.2943 \pm 5\%$ was registered. $\sigma$ misses the top of A2's range by $0.7\%$, because it rides on that lag. A3 holds. The rule the three encoded is that the lag is linear in the interval and $\sigma$ is a fixed multiple of it. Applied to the new core's own graded rows, that rule lands within $0.23\%$ on the lag and $0.57\%$ on $\sigma$. This is a consistency check, not a registration, because the core and the anchor ran side by side.
+
+**The predictions go from 8 of 12 to 10 of 12.** P3, P4 and P9, which the anchor had refuted, now hold. **P11 now fails**: the rank-1 trace moves $\sigma$ by $1.156\times$ and $1.155\times$, under the registered $1.2\times$. P6 is refuted as before.
+
+**2. The two errors that nearly cancelled were the old wall's (§10.2).** At the cadence §10.2 used, $10^{-5}$ s (`scripts/w334_tier77_table.py`):
+
+| assembly | base | old wall, as published | **fixed wall** | old wall on today's code |
+|---|---|---|---|---|
+| SUM *(Tier 76)* | each side's own | $0.149619$ | $0.146475$ | $0.149262$ |
+| SUM | $\lambda^{\ast}$ | $0.0013150$ | $0.0047232$ | $0.0012479$ |
+| DIFFERENCE | each side's own | $0.200562$ | $0.197386$ | $0.200182$ |
+| **DIFFERENCE** *(corrected)* | $\lambda^{\ast}$ | $0.123188$ | $\mathbf{0.229896}$ | $0.124841$ |
+
+(each at its own wall's $\lambda^{\ast}$). The doubly-wrong configuration is now $36\%$ *below* the corrected value rather than $21\%$ above it. The nearest configuration to the corrected one is now the right assembly at the wrong base, as a reader would expect. **The last column is the control**: W301 and W332 reverted on today's code reproduce the published table to $0.25\%$ on three rows, and to $5\%$ on the near-singular sum, whose value is steep in its base. So the near-cancellation belongs to the wall, and the small residue to Tier 86's other changes. The sum at $\lambda^{\ast}$ is still the one mixed spectrum, so §10.3's reading of E7 stands. `test_two_errors_that_nearly_cancelled` now asserts the fixed wall's ordering and keeps the old wall's as its control.
+
+**3. W301's signature is gone, and its detector is refused more firmly (§4, §11).** Both gas agents now transmit at their probe bases. In both saturation scans every wall temperature except the reference's own gives a different field, where the old scans had runs of bitwise-identical ones. A one-cell poke on the chamber moves 39 of 112 cells where it moved 1. Swept again, `exact_zeros == n - 1` trips on **13 of 110** real-callable ports, and **none** of them is saturated. The two ports that were saturated are the two that stopped tripping. As a saturation detector its precision is now $0/13$.
+
+**4. The solidus arrives at 2.95 s, before the declared probe base (§2.2) — W335.** With the wall conducting, the chamber's film coefficient is $\bar h = 211.40$ where it was $183.87$. The shell's own `validity` predicate now declines at **$2.95$ s** of burn, where it declined at $10.35$. At the declared 5 s base the seam wall is $478.96$ K in the mean and $\mathbf{870.77}$ K at its hottest, $100$ K past the Al–Li solidus. §7.2 quoted one row from a state the predicate declines, deliberately. **Now every b–c number at the 5 s base is quoted from one.** At 2.5 s the wall is still valid (hottest $672.5$ K). Moving the base is a decision about what the probe is for, so W335 records it and does not make it.
+
+**5. The flow-through seams (§13.2a, §17.2).** Converged at matched $\dim M$:
+
+| seam | movement, old wall | **fixed wall** | converged $\beta$ | share, cheap $\to$ converged |
+|---|---|---|---|---|
+| a–b | $46.7\times$ | $46.7\times$ | $4.085\times10^{-5}$ | `a` $0.0002$ |
+| e–b | $1090\times$ | $82.6\times$ | $5.607\times10^{-5}$ | `e` $0.998 \to 0.803$ |
+| e–f | $22.2\times$ | $53.8\times$ | $3.374\times10^{-5}$ | `e` $0.136 \to 0.250$ |
+| d–g | $9.53\times10^{9}$ | $1.27\times10^{10}$ | $1.164\times10^{-6}$ | `d` $0.0001 \to 0.285$ |
+| g–f | $0.334\times$ | $1.49\times$ | noise | `g` exactly $0.0$ at both |
+
+e–b's movement shrank because its cheap-cadence probe was near-singular on the old wall ($\kappa = 16.9$) and is not now ($1.28$). Its converged value barely moved. **Tier 84's "correction to Tier 79" reverses.** The $\dim M = 8$ anchor on e–f now reads $48.3\times$ against $53.8\times$ converged at $\dim M = 41$, and both put `e`'s share at $0.249$–$0.250$. On the old wall they were $0.362$ and $0.765$. **d–g's "sign-structure change" was round-off.** At the cheap cadence its $\beta$ is $9\times10^{-17}$, where the sign of the smallest eigenvalue carries no information, and it read `mixed` on one run and `positive` on the other. Its converged numbers carry the finding, and they stand: `d` goes from $10^{-4}$ of the seam to $29\%$. g–f stays structurally empty.
+
+**What stood.** Gate 4 and its affine control. W66's three legs. The ledger at the `real` level. The CFL-ratio control: $1.0000000003\times$, with the three values pairwise different, so it is not a floor. $s_\Gamma$ is constant in the interval, to $1.0021\times$. CS-11's constants bound the rocket, and §14.7's coin-flip reading of that. W315's collapse costs far less than its rank suggests. W318's contrast holds: THERM at $\kappa = 2.39$ against MECH's $8.82\times10^{8}$, still eight orders. W307 holds, and so does the ordering of horizon over cadence.
+
+**W316's two-way control, re-read.** The two-way referent now moves $\sigma$ by $0.101\times$ and $0.160\times$, the same side of 1 at both intervals, where the old wall's $0.393\times$ and $1.098\times$ changed direction. §14.9 read the old pair as a startup step: the shell had been marched under 2800 K, and the referent hands it the gas's own near-wall temperature. The step is now 44 K rather than 336 K. It still cuts the two-way lag to $35\%$ of the declared one at $2\times10^{-4}$ s. **[AI Inference]:** the step lands on the shell's face node, about half a millimetre of the 8 mm, eight-layer skin, whose heat capacity is $\rho c\,\delta/2 \approx 1.2\times10^{3}$ J/(m² K). A $3\%$ cut in the face's heat flux, $\approx 1.5\times10^{4}$ W/m², then changes its drift by about $12$ K/s, the same order as the $20$ K/s measured. On the old wall the same arithmetic gives a flux cut near $20\%$ and a drift that reverses, which is the old pair's larger, direction-changing movement. So §14.9's reading stands at the new size. It is not measured beyond this.
+
+**One evaluator was more permissive than its prose.** Tier 81's R5 says the seven-agent graph is left "where Tier 79 left it", and its code checks only the verdict and the four refusals. The re-derived records moved the uncertified admits $22 \to 20$, and R5 read `held` throughout. The prose's claim is now checked against Tier 79's own record by `test_tier81`, and it held on both walls ($22 = 22$, $20 = 20$). The registered evaluator is left as registered.
+
+**What moved in the tests.** Tier 80's gate tests now pin the re-derived record. The old wall's readings (the anchor's violation, the jump, the second-order exponents) are kept as controls that read `out/pre_w332/w314.json`. The standby test accepts the box's `-1`, meaning no event log to count, only beside the same record's evidence that PowerShell was absent. Tier 77's near-cancellation test was rewritten before the run, against the re-measured root, with the old wall as its control.
+
+---
+
+## 19. Tier 87 — W336: the episode's residuals, and what "correct" can mean here
+
+Opened 2026-09-24, on the owner's question: *can we evaluate the residuals, and how do we know this is correct?* The episode of §18 passes 17 of 17 gates. Those gates test symmetry, geometry, the coupler's bookkeeping and the trajectory's integration. None of them measures whether the coupled run **conserves** what it exchanges, or how far its numbers are from the ones a finer run would give.
+
+**The script** is `scripts/w336_episode_residuals.py`, with `scripts/w336_thermal_seam_diag.py` beside it. Its records are in `out/w336/`, and its tests are `tests/test_tier87_episode_residuals.py`. Every arm ran on a rented 48-thread Threadripper 7960X, from the shipped script (SHA-256 `10612cb0…eae33d`). The build repo went as `0a407b7+dirty:b6bbcec4240a5943`, the tree the episode was marched on.
+
+### 19.1 Three questions, and the one the build repo already answers
+
+"Is it correct" is three questions, and they have different answers:
+
+1. **Does the code solve its equations?** This is code verification. The build repo already has it, per solver:
+   - an isentropic vortex converging at order $\ge 1.7$;
+   - the Sod shock tube's wave positions;
+   - free-stream preservation on the curvilinear nozzle;
+   - a Stokes shear layer, and the Blasius growth law;
+   - the erf conduction slab;
+   - exact thermal stress;
+   - Tsiolkovsky for the trajectory;
+   - the nozzle's centreline Mach against area–Mach, within $5\%$ on a $120 \times 24$ grid.
+2. **Does this run satisfy its discrete equations, and do its seams conserve?** These are the residuals, §19.2–§19.6.
+3. **How far is it from the answer?** This is discretization error, §19.7, and validation against physics known independently, §19.8.
+
+Nothing before this tier asked the second and third of the coupled system.
+
+### 19.2 The instrument, and why its numbers can be believed
+
+A finite-volume update changes a block's content only through its boundary faces, so per block and per macro step
+
+$$\sum_{\text{cells}} V\,\bigl(U^{\text{after}} - U^{\text{before}}\bigr) \;=\; \sum_{\text{sub-steps}} \tfrac12\,\Delta t \sum_{\text{stages}} \;\sum_{\text{boundary faces}} \text{inflow} \;+\; \text{reaction}.$$
+
+The **ledger** wraps the solver's own flux functions and reads the arrays its residual differences. It does not recompute them. It weights them as SSP-RK2 does: $U^{n+1} = U^n + \tfrac12\Delta t\,[r(U^n) + r(U^{(1)})]$, so both stages at $\tfrac12\Delta t$. The accumulation is face by face, so every boundary can be read separately: walls, the injector, each side of each plane seam.
+
+Four controls, all pinned by the tests:
+
+| control | reading |
+|---|---|
+| a uniform stream through a channel, by hand | $\rho u H\,\Delta t$ in and out to $10^{-12}$; walls exactly zero |
+| the same march with and without the ledger | **bitwise** equal |
+| a budget with the inflow side left out | the residual is exactly that side's inflow |
+| the episode's engine with W332 reverted, one step | the walls pass $\mathbf{5.2\%}$ of $\dot m\,\Delta t$, where the fixed wall passes $5\times10^{-17}$ |
+
+**The re-run is the recorded run.** Altitude, attitude, vertical velocity and mass match `out/w321` **bitwise at all 29 steps**, on a different machine and BLAS.
+
+**One evaluator was fixed while the audit ran.** Gate A4 was first evaluated component by component. The lateral position and velocity are $10^{-20}$-level round-off in a symmetric flight, so dividing each by its own recorded value read $O(1)$ "deviations". A4 now measures position, velocity, attitude and mass each against its own magnitude. The change and its reason are in the script, and both readings are in the record.
+
+### 19.3 What closes exactly
+
+| account | residual |
+|---|---|
+| every block's content against its boundary inflows (mass, both momenta, energy), every step | $1.2\times10^{-13}$ |
+| mass through the engine's and the airframe's walls, face by face | $5\times10^{-17}$ of $\dot m\,\Delta t$ |
+| the shell's energy change against its Robin heat | $1.1\times10^{-11}$ of its stored energy |
+| the engine's mass account, and the two routes to the thrust | $10^{-15}$ (identities of the bookkeeping) |
+| the loads' cell-centred exit thrust against the solver's face flux | $3.7\times10^{-8}$ |
+
+The solver conserves. The walls are impermeable, which is W332's fix holding inside the coupled run. The shell's backward-Euler step conserves to its own CG tolerance. Everything below is therefore about the **coupling and the model**, not about a leak in a solver.
+
+### 19.4 W337 — the injector delivers 17.7% more than it declares
+
+Over the last ten steps the injector face passes $\mathbf{1.1772}$ times the declared $\dot m^{\ast} = 376.87$ kg/(s m): the ideal choked flow for $p_c = 8$ MPa and $T_c = 3400$ K. The engine run alone gives $1.1774$ at coarsen 4 and $1.1783$ at coarsen 2, so the excess does not depend on the grid.
+
+**[AI Inference], from the boundary condition's code.** `inlet_massflow` does not prescribe a flux. It builds a ghost state at $T_{\text{inject}} = 900$ K with $\rho u = \dot m/A$ and the interior's pressure, and the face flux is then the Riemann solution between that cold, dense ghost and the burning gas in `a`'s first cells. The build repo's own nozzle test uses the same condition with no reaction, injecting at the chamber temperature, where ghost and cell agree. So the excess would appear only with combustion. Not isolated here.
+
+**What it costs the episode.**
+- The chamber runs at a volume-mean $9.04$ MPa, $1.13\times$ the declared $8$.
+- The nozzle receives $1.147\,\dot m^{\ast}$, after the throat seam's loss (§19.5).
+- The vehicle loses mass at the *declared* rate while the nozzle expels $1.147\times$ that, so the mass-loss/outflow ratio is $0.872$.
+
+The episode's operating point is not the sweep point it is labelled with.
+
+### 19.5 The plane seams: two kinds of error, told apart by the coupling step
+
+A seam between two blocks exchanges frozen states once per macro step. Each side computes its own face flux, so their difference is mass, momentum or energy the coupling creates. Running the coupled episode at $\Delta t_{\text{macro}} = 10$, $5$ and $2.5$ ms separates a *lag*, which shrinks with the step, from a *floor*, which does not. Mean $\lvert$mass created$\rvert$ per step over 30–60 ms, relative to the flow through the seam:
+
+| seam | how states cross | 10 ms | 5 ms | 2.5 ms | reading |
+|---|---|---|---|---|---|
+| a\|b | identical transverse grids | $0.0196$ | $0.0130$ | $0.0012$ | lag |
+| e\|f | overlap average (integral-preserving) | $1.2\times10^{-3}$ | $3.2\times10^{-4}$ | $9.9\times10^{-5}$ | lag, order $1.97$ |
+| **b\|e**, the throat | **point interpolation**, 20 cells against 24 | $0.073$ | $\mathbf{0.029}$ | $\mathbf{0.030}$ | **floor — W340** |
+| d\|f | air handed to the exhaust gas's model | $0.335$ | $0.368$ | $0.371$ | **floor — W341** |
+| g\|f | the plume hole, both gas models | $0.277$ | $0.221$ | $0.232$ | **floor — W341** |
+
+**W340.** `_remap` interpolates cell states by position (`np.interp`), which preserves no integral. At the throat, where `b` has 20 transverse cells and `e` 24, about **$3.0\%$ of the mass flow vanishes every step**. The loss roughly halves when the grid does ($-3.1\%$ at coarsen 4, $-1.8\%$ at coarsen 2, at 30 ms), as an interpolation error should. The only seam built with `_cell_average`, e|f, shows no floor at all.
+
+**W341.** `f` runs the exhaust gas's $(\gamma, R)$ for everything in it, air included. `_as_gas` (W326) hands states across at equal $p$, $T$, $\mathbf u$, so the density changes by $R_{\text{air}}/R_{\text{gas}} = 287/361 = 0.795$ in one direction and the inverse in the other. A mass flux cannot survive that, and the d|f and g|f floors of $20$–$37\%$ are mostly that ratio. This is a limit of a single-species plume block, not a coding slip: $p$ and normal velocity are what a contact carries, and $T$ and $\rho$ are not.
+
+**The throat seam also destroys momentum**, $1.7\%$ of the thrust. That is exactly the gap between the two routes to the thrust: $1.1321\times10^{6}$ N/m from the forces on the injector and the walls, $1.1135\times10^{6}$ from the exit plane's momentum.
+
+### 19.6 The thermal seams
+
+**W339 — the stationary wall does work.** Per side and per 5 ms step, the gas loses $626.2$ J/m at the engine's walls. The shell gains $597.3$. The diagnostic splits the gas's side: the one-sided conduction W301 installs is $596.6$, and the shell matches it to $\mathbf{0.13\%}$, so the thermal coupling conserves heat. The remaining $29.6$ J/m, $\mathbf{4.7\%}$, is the viscous energy flux's *work* term. The solver builds the face value of $\mathbf u\cdot\boldsymbol\tau$ as the average of the cell's and the mirrored ghost's. That average is not zero, although a wall that does not move can do no work. Energy disappears at the wall face: $4\times10^{-6}$ of the engine's energy throughput, but $4.7\%$ of the heat that reaches the airframe. It is the same at every coupling step ($0.0474$, $0.0474$, $0.0473$), because it is a property of the face, not of the lag.
+
+**W338 — the skin radiates to the air beside it.** `step_thermal` folds the radiative coefficient into the outer Robin term, whose target is the adjacent gas's temperature, not the ambient. Averaged over the late steps, that costs the skin $0.95$ J/m per step per panel: $0.16\%$ of its engine-side heat input. A real bug with a negligible effect here.
+
+**W342, first half — the airframe's heating has the wrong sign at the episode's resolution.** At Mach 3.5 the boundary layer's recovery temperature is several hundred kelvin above the $288$ K skin, so the air should heat it. At coarsen 4 the conduction-limited flux runs the other way: the air *gains* $1.9$ J/m per step per panel from the skin. Coarsen 2 and 1 reverse it, to $+8.5$ and $+70$ J/m per step per panel. **[AI Inference]:** at coarsen 4 the cell beside the wall is too thick to hold the boundary layer's heated gas, so it reads closer to the free stream's static $222$ K than to the recovery temperature. Not measured directly. The magnitudes are small beside the engine's $600$.
+
+### 19.7 Convergence
+
+**The coupling step** (coarsen 4; at or around 60 ms):
+
+| quantity | 10 ms | 5 ms (the episode) | 2.5 ms | order | Richardson |
+|---|---|---|---|---|---|
+| $v_y$ gained by 60 ms [m/s] | $0.5915$ | $0.6797$ | $0.7164$ | $1.27$ | $0.7424$ |
+| shell inner face, hottest [K] | $293.374$ | $293.456$ | $293.499$ | $0.93$ | $293.547$ |
+| drag [N/m] | $849.00$ | $848.60$ | $848.68$ | flat | |
+| exit thrust, 40–60 ms mean [N/m] | $1.1256\times10^{6}$ | $1.1214\times10^{6}$ | $1.1138\times10^{6}$ | not monotone | |
+
+The velocity the vehicle gains by 60 ms is **$8\%$ below** its extrapolated value at the episode's 5 ms step, first order in the step. Most of that is the start-up, when the thrust sampled at 5 ms swings hardest.
+
+**The grid** (each subsystem alone, 30 ms, walls at 288.15 K):
+
+| quantity | coarsen 4 | coarsen 2 | coarsen 1 | reading |
+|---|---|---|---|---|
+| injector $\dot m / \dot m^{\ast}$ | $1.1774$ | $1.1783$ | lost | a property of the condition, not the grid |
+| throat seam b\|e | $-3.1\%$ | $-1.8\%$ | lost | an interpolation error |
+| chamber $p$ (volume mean) [MPa] | $9.18$ | $9.30$ | lost | |
+| exit Mach (mass mean) | $2.359$ | $2.389$ | lost | |
+| exit thrust [N/m] | $1.132\times10^{6}$ | $1.148\times10^{6}$ | lost | |
+| engine wall heat, per side per step [J/m] | $623$ | $1249$ | lost | **doubles per halving** |
+| airframe drag [N/m] | $855.4$ | $700.4$ | $642.0$ | pressure $832.7 \to 650.6 \to 525.4$ (order $0.54$); shear $22.7 \to 49.7 \to 116.7$ (diverging) |
+| airframe heat, per panel per step [J/m] | $-1.9$ | $+8.5$ | $+69.8$ | sign reversed at coarsen 4 |
+
+**The full-resolution engine's record was lost.** Its run finished on the rented box, but the session that was to collect it ended first, and the box idled until the account's credit ran out and it could not be restarted. Its first two steps had been printed to the box's log and read off during the session, so the three grids can be compared at $t = 10$ ms, still in the start-up transient. This comparison was not registered:
+
+| at 10 ms | coarsen 4 | coarsen 2 | coarsen 1 | order |
+|---|---|---|---|---|
+| throat $\dot m / \dot m^{\ast}$ (start-up) | $0.5955$ | $0.5900$ | $0.5868$ | $0.78$ |
+| chamber $p$ (volume mean) [MPa] | $9.491$ | $9.534$ | $9.594$ | differences grow |
+| exit Mach (mass mean) | $2.342$ | $2.373$ | $2.390$ | $0.85$ |
+| exit thrust, step mean [N/m] | $5.514\times10^{5}$ | $5.488\times10^{5}$ | $5.470\times10^{5}$ | $0.52$ |
+| engine wall heat, per side [J/m] | $581$ | $1151$ | $2256$ | doubles, $\times1.98$ and $\times1.96$ |
+
+**W342, second half — every wall flux is a property of the grid.** The model's heat transfer is `generate.py`'s conduction-limited $h = k/(\Delta n/2)$: laminar, with no wall model. The skin friction is $\mu u_t/\Delta n$. Halving the wall cell doubles both, and neither has converged at coarsen 1. The engine's *integral* quantities (ṁ, chamber pressure, exit Mach, thrust) move about $1.3\%$ per refinement and are the part of this episode a reader can quote.
+
+**This reaches W335.** The solidus at $2.95$ s (§18.8) was computed with the same conduction-limited $h$ on the full-resolution chamber. **[AI Inference]:** it is therefore a property of that mesh as much as of the vehicle. A real chamber's turbulent boundary layer would carry far more heat than this laminar model, so the true time is likely shorter, not longer. Not measured.
+
+### 19.8 Validation: the nozzle against ideal theory
+
+At the flow the nozzle actually receives, $1.147\,\dot m^{\ast}$, ideal theory at area ratio $3.0$ gives the thrust below:
+
+| | ideal | episode (late mean) | ratio |
+|---|---|---|---|
+| thrust, quasi-1D [N/m] | $1.1374\times10^{6}$ | $1.1135\times10^{6}$ | $0.979$ |
+| thrust, with the planar divergence $\sin\alpha/\alpha = 0.9887$ ($\alpha = 14.93°$) | $1.1261\times10^{6}$ | | $\mathbf{0.989}$ |
+| exit Mach (mass mean) | $2.420$ | $2.359$ | $0.975$ |
+| exit velocity [m/s] | $2309$ | $2238$ | $0.969$ |
+| exit pressure, scaled to the flow [Pa] | $5.82\times10^{5}$ | $6.10\times10^{5}$ | $1.049$ |
+
+**Given its inflow, the nozzle is right to about $1\%$ in thrust.** The rest of the gap is plausibly the viscous wall layer and the coarse grid, and §19.7 has it moving about $1.4\%$ per refinement. The thrust's excess over the *declared* operating point is W337's, not the nozzle's.
+
+### 19.9 The predictions
+
+Registered in the script before any arm ran:
+
+| | prediction | got | |
+|---|---|---|---|
+| A1 | every block closes to $10^{-10}$ | $1.2\times10^{-13}$ | held |
+| A2 | walls pass under $10^{-12}$ of $\dot m\,\Delta t$ | $5\times10^{-17}$ | held |
+| A3 | the shell closes to $10^{-9}$ of its stored energy | $1.1\times10^{-11}$ | held (re-based after a smoke test, before the audit) |
+| A4 | the re-run reproduces the record to $10^{-9}$ | bitwise in the flight components | held (evaluator fixed during the run, §19.2) |
+| P1 | the injector delivers $\dot m^{\ast}$ to $2\%$ | $1.1772$ | **failed — W337** |
+| P2 | a\|b and b\|e create under $1\%$ | $1.5\times10^{-4}$; $\mathbf{3.0\%}$ | **failed — W340** |
+| P3 | the two thrust routes agree to $2\%$ | $1.7\%$ | held |
+| P4 | cell-centred and face thrust agree to $2\%$ | $3.7\times10^{-8}$ | held |
+| P5 | engine heat lost and gained agree to $2\%$ | $4.7\%$ | **failed — W339** |
+| P6 | vehicle mass loss and nozzle outflow agree to $2\%$ | $12.8\%$ | **failed — W337, W340** |
+| P7 | the radiation target moves the outer heat under $5\%$ | $81\%$ | **failed**, and ill-posed: the outer heat itself is nearly zero at coarsen 4 |
+| P8 | seam creation at least linear in the step | $2.19$; $1.33$ | **failed — the throat's floor** |
+| P9 | $v_y$ at 60 ms moves under $0.01\%$ from 5 to 2.5 ms | $0.0035\%$ | held, **and uninformative**: $v_y$ is dominated by the $1044$ m/s it started with; the velocity *gained* moves $5\%$ |
+| P10 | throat $\dot m$ within $3\%$ of ideal at coarsen 1 | — | **not measured**: the 30 ms record was lost (§19.7) |
+| P11 | coarsen-4 thrust within $5\%$ of coarsen 1 | — | **not measured** as registered; $0.8\%$ at 10 ms, unregistered |
+| P12 | engine wall heat at coarsen 1 over twice coarsen 4's | — | **not measured** as registered; $3.88\times$ at 10 ms, unregistered |
+| P13 | coarsen-4 drag within $10\%$ of coarsen 1 | $33\%$ | **failed — W342** |
+
+### 19.10 So — is the episode correct?
+
+**To round-off:**
+- conservation inside every block;
+- impermeable walls;
+- the shell's energy;
+- the trajectory's integration of the loads it is handed (E4);
+- the run's reproducibility, across machines.
+
+**To about a percent:** the nozzle's thrust given its inflow, and the engine's integral quantities against the grid.
+
+**Wrong, with a named cause:**
+- the operating point (W337, $+17.7\%$ mass flow);
+- the throat seam (W340, $3\%$ of the mass flow per step);
+- work at stationary walls (W339, $4.7\%$ of the wall heat);
+- the plume's seams (W341, $20$–$37\%$);
+- the skin's radiation (W338, negligible).
+
+**Not known at this resolution:**
+- every wall flux (W342): engine heat, skin friction, and the airframe's heating, sign included;
+- the velocity gained, which carries an $8\%$ coupling-step error by 60 ms.
+
+So the episode is a correct demonstration of the coupled machinery, with its bookkeeping exact and its failures located. It is **not** a quantitative prediction of this vehicle. W337, W338, W339 and W340 are code: each has a clear fix and a test that pins it. W341 and W342 are modelling decisions — a two-gas plume, a wall model or a finer episode — with costs attached in §19.7.
+
+---
+
+**Worklist rows opened by this page:** W300 (the seam itself), **W301** (the saturated channel and its detector), W302 (the declaration ledger), **W303** (`effort_normal` at b–c — *closed at Tier 77, §10*), **W304** (the common seam base — *closed at Tier 77, §10*), W305 (MECH and the trajectory agent), **W306** (the passivity diagnostic cannot tell a global sign from an amplified mode — *implemented at Tier 78, §12*), **W307** (`thermal_seam`'s E7 holds by a film-coefficient accident), **W308** (`car_graph` declares `effort_normal` and has it inverted on two of three seams), **W309** (`grid.Block` face normals are index-oriented, so every gas seam needs `effort_normal`), **W310** (R0 complete — all seven agents on real physics), **W311** (a second undeclared interface, the nozzle wall), **W312** (a plane port's probe needs a cadence a wall's does not), **W313** (`Prolongation.nondim_diag` is specified and no case sets it, so every beta in this vault is in raw units), **W314** (R2's remaining half — the composed defect at 50:1 against CS-11's bound, *§14*), **W315** (`generate.py` collapses the shell to one number, so the build repo's shell-to-gas trace is rank 1, *§14.8*), **W316** (the shell is linearised about a gas temperature the gas does not have, *§14.9*), **W317** (a third undeclared interface — `a-c`, named by the build repo itself, and the declared seam is 40.7% of the conjugate wall, *§14.10*). **W305** (the trajectory agent and MECH on b-c — *§15*), **W318** (the b-c MECH operator has no spectral gap, so `expected_null_dim` is not a well-posed declaration for a compact response — *§15.3*), **W319** (`Compressible2D` has no wall-velocity boundary condition, so every gas-solid MECH bond is one-sided by a missing capability — *§15.4*), **W320** (`_solve_free` computes the trajectory's input as a Lagrange multiplier and discards it — *§15.2*). **W321** (the graph marched, not just probed — *§17.4*), **W322** (the engine decelerates the vehicle — *§17.5*; *closed and widened to the body rotation at Tier 86, §18.1*). **Tier 86:** **W323**–**W331** (the seams rebuilt — *§18.1*), **W332** (the isothermal wall passed mass — *§18.3*), **W333** (the forebody slot counted as airframe — *§18.4*), **W334** (Tiers 76–85's gas-seam records predate W301 and W332 — *priced at §18.7, re-derived at §18.8: the anchor's violation, the knee and the near-cancellation were the old wall's*), **W335** (the shell's validity now declines at 2.95 s, before the declared 5 s probe base — *§18.8*); W301 fixed in the solver, W315 closed, W316 re-measured at an eighth of its size (*§18.6*). **Tier 87:** **W336** (the episode's residuals — *done, §19*), **W337** (the injector delivers 17.7% more than it declares — *§19.4*), **W338** (the skin radiates to the air beside it — *§19.6*), **W339** (a stationary no-slip wall does work — *§19.6*), **W340** (non-conforming plane seams are handed over by point interpolation — *§19.5*), **W341** (the plume block runs one gas model for exhaust and air — *§19.5*), **W342** (every wall flux in the episode is a property of the grid — *§19.6, §19.7*). See [[gap-worklist]].

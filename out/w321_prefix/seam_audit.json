@@ -1,0 +1,196 @@
+{
+ "build_repo": {
+  "head": "0a407b7",
+  "branch": "atlas-0.1-windfarm"
+ },
+ "coarsen": 4,
+ "T_ref": {
+  "a": 3400.0,
+  "b": 3400.0,
+  "e": 3400.0,
+  "d": 221.55206472628421,
+  "f": 2067.8484747519537,
+  "g": 221.55206472628421,
+  "c": 3400.0
+ },
+ "g_hole": {
+  "hole": [
+   -0.5,
+   0.625
+  ],
+  "f": [
+   -0.6,
+   0.6
+  ],
+  "full_res": [
+   -0.59375,
+   0.59375
+  ],
+  "overlap_below": 0.09999999999999998,
+  "gap_above": 0.025000000000000022,
+  "f_jmin_reads_g_cell_y": -0.5625
+ },
+ "walls": {
+  "coarse": {
+   "gas_shell_gap": 0.014688187820983079,
+   "gas_shell_overlap": 0.0029053558327217094,
+   "shell_d_gap": 0.01736102229960062,
+   "shell_d_overlap": 0.012377665903890153,
+   "kink_nodes": {
+    "gas": [
+     true,
+     true
+    ],
+    "shell": [
+     false,
+     false
+    ],
+    "d": [
+     false,
+     false
+    ]
+   }
+  },
+  "full": {
+   "gas_shell_gap": 0.0027182685253115957,
+   "gas_shell_overlap": 0.0023110785033014225,
+   "shell_d_gap": 0.00349200850862387,
+   "shell_d_overlap": 0.00069267734553774,
+   "kink_nodes": {
+    "gas": [
+     true,
+     true
+    ],
+    "shell": [
+     false,
+     false
+    ],
+    "d": [
+     false,
+     false
+    ]
+   }
+  }
+ },
+ "walls_rounded_throat_atlas01": {
+  "coarse": {
+   "gas_shell_gap": 0.008440404714353401,
+   "gas_shell_overlap": 0.0034332557078207704,
+   "shell_d_gap": 0.0230560175074127,
+   "shell_d_overlap": 0.014740146830190315
+  },
+  "full": {
+   "gas_shell_gap": 0.0011751144747939105,
+   "gas_shell_overlap": 0.0027521858110625685,
+   "shell_d_gap": 0.0024865186041284904,
+   "shell_d_overlap": 0.0009465441016820106
+  }
+ },
+ "coverage": {
+  "engine_window_0.5mm": {
+   "gap_m2": 0.0033510000000000002,
+   "overlap_m2": 0.0016595
+  },
+  "full_domain_5mm": {
+   "gap_m2": 0.06060000000000001,
+   "overlap_m2": 0.2321
+  }
+ },
+ "shell_map": {
+  "stations": 58,
+  "inner_max_misplacement": 4.084482758620689,
+  "outer_max_misplacement": 0.9785607196401802,
+  "fraction_outside_b": 0.9482758620689655,
+  "rows": [
+   [
+    -3.9594827586206893,
+    0.125,
+    -4.9380434782608695
+   ],
+   [
+    -2.8249999999999997,
+    0.19131578947368422,
+    -3.5684782608695658
+   ],
+   [
+    -1.6905172413793101,
+    0.25763157894736843,
+    -2.198913043478261
+   ],
+   [
+    -0.5560344827586203,
+    0.3239473684210526,
+    -0.8293478260869567
+   ],
+   [
+    0.6594827586206898,
+    0.395,
+    0.6380434782608696
+   ]
+  ]
+ },
+ "shell_orientation": {
+  "inner_face": [
+   "ATMOSPHERE side",
+   "gas side"
+  ],
+  "T_cols_K": [
+   289.7049965089356,
+   288.30700586834064,
+   289.70518556000786,
+   288.30681687872953
+  ],
+  "uy_nose_mid_tail": [
+   -4.172973830083077,
+   2.350564538768481,
+   -2.035665898012702
+  ],
+  "uy_max_abs": 4.172973830083077,
+  "panels_identical_rel": 0.00014124233206672408,
+  "panels_mirror_rel": 1.9999202189262295
+ },
+ "aero": {
+  "as_coded": {
+   "axial": 1.9326762412674725e-12,
+   "normal": -1781.8277766098145
+  },
+  "outward": {
+   "axial": 715.483215454352,
+   "normal": 1.602984411874786e-11
+  },
+  "stored_F_aero_last": [
+   1781.827776609814,
+   1.8804141759654277e-12
+  ],
+  "recomputed_F_aero_x": 1781.8277766098145
+ },
+ "gas_model": {
+  "freestream_T": 221.55206472628421,
+  "freestream_T_read_by_f": 96.89321789399101,
+  "freestream_p": 2549.2206361884596,
+  "freestream_p_read_by_f": 1402.0713499036538,
+  "plume_edge_T": [
+   387.116053761186,
+   963.7646366465418
+  ],
+  "plume_mean_T": [
+   868.7834160511658,
+   1366.9787791236465
+  ],
+  "hole_T_read_by_g": [
+   1986.5245866504276,
+   3125.6777051538234
+  ],
+  "hole_p_factor": 1.818181818181818,
+  "air_T0": 764.3546233056804,
+  "g_T_max": 2175.32194374008
+ },
+ "atlas01_has": {
+  "index-stretched shell data": true,
+  "default ShellMesh for both panels": true,
+  "plume hole = transverse mean": true,
+  "subsampling coarsen": true,
+  "inverted body->inertial map": true,
+  "air-gamma inlet handed to f": true
+ }
+}

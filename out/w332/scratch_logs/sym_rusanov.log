@@ -1,0 +1,19 @@
+variant rusanov, blocks a(12, 20) b(28, 20) e(30, 24)
+  macro 1  a  2.6e-15 4.4e-15 8.7e-16 5.2e-15 8.0e-15
+  macro 1  b  7.9e-16 7.9e-16 7.9e-16 1.1e-15 1.2e-15
+  macro 1  e  5.8e-16 5.9e-16 5.9e-16 4.9e-16 1.4e-15
+C:\Users\Nauni\physics-foundation-model\src\atlas\solvers\compressible2d.py:80: RuntimeWarning: overflow encountered in multiply
+  return np.where(a * b <= 0.0, 0.0, np.where(np.abs(a) < np.abs(b), a, b))
+C:\Users\Nauni\physics-foundation-model\src\atlas\solvers\compressible2d.py:178: RuntimeWarning: overflow encountered in add
+  ghost[..., 1] ** 2 + ghost[..., 2] ** 2) / rho_g
+C:\Users\Nauni\physics-foundation-model\src\atlas\solvers\thermo.py:36: RuntimeWarning: overflow encountered in add
+  ke = 0.5 * (U[..., 1] ** 2 + U[..., 2] ** 2) / rho
+C:\Users\Nauni\physics-foundation-model\src\atlas\solvers\thermo.py:37: RuntimeWarning: invalid value encountered in subtract
+  p = (gamma - 1.0) * (U[..., 3] - ke)
+Traceback (most recent call last):
+  File "C:\Users\Nauni\AppData\Local\Temp\claude\C--Users-Nauni-OneDrive-Desktop-Foundation-Model\ff4d0754-a4c3-4ffb-9c86-c834f229ab2b\scratchpad\nozzle_symmetry.py", line 53, in <module>
+    ep.U[a][0], n = ep.sol[a][0].advance(ep.U[a][0], dt / chunks)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Nauni\physics-foundation-model\src\atlas\solvers\compressible2d.py", line 462, in advance
+    raise FloatingPointError(f"block {self.block.name}: non-positive dt at t={t}")
+FloatingPointError: block a: non-positive dt at t=0.0002603032262276306

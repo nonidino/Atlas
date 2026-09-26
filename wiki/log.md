@@ -6093,3 +6093,146 @@ Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §17; rows on [[gap-workl
 **Added:** `scripts/w312_advec_converged.py`, `scripts/w321_rocket_episode.py`, `scripts/w321_episode_viz_data.py`, `out/w312_converged.json`, `out/w312_gf.json`, `out/w321/episode.json`.
 
 **NOT done:** W322 is reported, not fixed — it is the build repo's file. The trajectory agent is still not compiled into the graph. The full-fidelity episode (`coarsen = 1`, the config's own macro step) is unpriced and unrun.
+
+## [2026-09-23] note | the marched rocket's seams — picture, mesh, or coupler
+
+Full record on [[rocket-episode-seam-audit]]. **Not a tier:** no predictions were registered and nothing was changed in the build repo or on the published page.
+
+**Asked:** the W321 episode page's geometry looks broken at every seam — is that just execution, with the internal systems fine? **Half right.** No defect was found inside a solver, but the piecing-together has three layers, and only the first is presentation.
+
+- **The picture.** The page draws per-agent $T/T_{\text{ref}}$ on one ramp: $3400$ K for a/b/e, $2067.8$ K for f, $221.6$ K for d/g. So the chamber and the ambient air are drawn the same colour, and a seam between families jumps by $1.64\times$ to $15.4\times$ whatever the physics does. `f` and `g` are labelled the wrong way round, the nose is placed at the wrong end, and the skin is given as 86 mm instead of 8.
+- **The meshes.** The shell and `d` have no node at either nozzle kink at any resolution, and `coarsen = 4` lengthens their chords fourfold. At the throat there is a $14.7$ mm gap between gas and skin, $17.4$ mm between skin and air, and $12.4$ mm overlaps. `blanked[::4]` moves `g`'s plume hole to $[-0.500,\ 0.625]$ against `f`'s $\pm 0.600$. The result is $0.10$ m of double cover and $0.025$ m of none along the whole plume, and `f`'s lower boundary condition is read from a `g` cell inside `f`.
+- **The coupler** (`generate.CoupledEpisode`, which writes the corpus):
+  - It maps the $0.28$ m chamber wall onto the $4.7$ m airframe by array index: 95% of stations are off, by up to $4.08$ m.
+  - It loads the lower panel inside out, because `_face("inner")` is always $j = 0$. The two panels bend identically to $1.4\times10^{-4}$, by up to $4.17$ m.
+  - `_compute_loads` inherits **W309**'s index normals. The drag is exactly $0.000$ where it should be $715.5$ N/m, and a $1781.8$ N/m side force appears that accounts for the stored lateral drift.
+  - **W322** is the body→inertial rotation, not the thrust sign. The aero force uses the same inverted map.
+  - Conserved states cross the f boundaries between two gas models unconverted, and `g`'s hole gets the plume's transverse mean. `g` reads $1987$–$3126$ K where the plume edge is $387$–$964$ K, and `g`'s air reaches $2175$ K against a $764$ K stagnation ceiling.
+
+**The branch.** The pinned `atlas-0.1-windfarm` forked at `50e57d8` and does not contain `a00d3af` (M2, D1–D6), so the march used a sharp throat. But every coupler pattern above is also present on `atlas-0.1`, and its rounded throat does not close the gaps.
+
+**Added:** `scripts/w321_seam_audit.py` (→ `out/w321/seam_audit.json`; `--figures` writes three PNGs), [[rocket-episode-seam-audit]]. **Changed:** [[index]].
+
+**NOT done:** no W-rows opened. Seven candidates are listed in §6 of the note, for the tier process to number and pin. Nothing is fixed, and the W321 run's numbers stand as a record of the coupler as it is.
+
+## [2026-09-23] tier 86 | the seams rebuilt, and a wall that passed mass
+
+Full record on [[case-study-rocket-bc-seam-atlas-0.1]] §18; rows on [[gap-worklist]]; the audit that started it, [[rocket-episode-seam-audit]] §7. **The build repo is changed**, in both checkouts, uncommitted: `atlas-0.1-windfarm` (`0a407b7`) and `atlas-0.1` (`a00d3af`).
+
+**Every defect the audit found is fixed**, pinned by a test that keeps its diagnosis as a control. Blocks that share a seam share its node lines at every resolution: polylines $2.78\times10^{-17}$ m apart, **0** raster points unclaimed or double. The shell reads its walls by position, and the tank barrel's wall is declared. Both panels load the right way out. The loads use outward normals plus wall shear, and one proper body rotation. States are converted between gas models, and the plume hole gets `f`'s own edge rows. The undeclared a–c, e–c and d–f are exchanged and recorded. The page shows SI units. Rows **W323**–**W331**; W301 fixed in the solver, W315 closed, W322 closed and widened.
+
+**The first fixed march passed 11 of 13 pre-registered gates, and the two it failed were the finding.** Both symmetry gates failed at $2.74\times10^{-4}$ and $1.17\times10^{-5}$ against $10^{-6}$, and the thresholds were not moved. Per block per step, the nozzle was $10^{-2}$ asymmetric in the pre-fix run too, grown from $2\times10^{-15}$ in one 5 ms step with nothing asymmetric entering it.
+
+**W332 — the isothermal wall passed mass.** The engine was marched alone with both walls at one temperature, changing one ingredient per run. Only HLLC *with* the isothermal wall grows ($1.9\times10^{-13} \to 1.4\times10^{-8} \to 7.1\times10^{-4}$ per 5 ms). HLLE, Rusanov, adiabatic and slip walls all stay at round-off. The isothermal ghost, $T_g = \max(2T_w - T_i, 20\text{ K})$ at the cell's pressure, is **125× denser** than the cell beside a cold wall. It was handed to the Riemann solver as the wall face's outer state, and that pair is not a reflection, so the face passed mass at **123×** the gas's normal flux. A closed engine block gained mass at 119–193× its wall flux. The fix: the inviscid flux sees the plain mirror, and only the viscous operator sees the isothermal ghost. Blocks without an isothermal wall are unchanged bit for bit. This refutes W301's docstring, written the same day, which said the ghost did not need to be exact for the inviscid flux.
+
+**W333 — the forebody slot counted as airframe.** `d`'s wall ahead of the nose was no-slip at the nose's temperature: a metre of flat plate before the vehicle. Its shear was counted as drag, and its record as c–d ($11.454$ m for a $9.4542$ m skin). The config now declares it `gas_wall: slip_adiabatic`, and the solver gained a per-station `isothermal_mask`.
+
+**The re-march passes 17 of 17** — four gates added for W332/W333 before it ran, E1–E5 unchanged. E1 $6.46\times10^{-9}$, E2 $6.30\times10^{-14}$, **E6 (engine mirror) $2.18\times10^{-15}$ for the whole march**, C6 $3.63\times10^{-15}$. $v_y$ $1044.36 \to 1046.11$ m/s, thrust $1.113\times10^{6}$ N/m ($-2.5\%$), drag $838.1$ N/m ($+0.7\%$). The page is republished.
+
+**W316 re-measured, at an eighth of its size.** With both fixes the chamber's settled near-wall cell is $2696$–$2804$ K, mean $2756$ K: ratio $0.9841$ to the shell's 2800 K, where $0.8801$ was recorded. Most of that gap was the wall's saturated channel and its leak.
+
+**Tests.** Build repo: windfarm 575 fast + slow seam tests, `atlas-0.1` 425 + slow, all passing. Vault: the 488 tests that load the build repo were re-run. Two pins moved and were rewritten with their history: the thermal seam's interface temperature, $372.1377 \to 372.4964 \to 372.2359$ K, and W316's barely-started chamber, whose old reading the old residual restores as the control. Tier 81's record of what `wall_noslip` reads gains `isothermal_mask`.
+
+**Added:** `scripts/w323_seams_fixed.py` (17 gates → `out/w323_seams_fixed.json`), `scripts/w332_nozzle_symmetry.py` (→ `out/w332/*.json`, scratch runs in `out/w332/scratch_logs/`), `scripts/w332_wall_mass.py` (→ `out/w332_wall_mass.json`), `out/w332_w316_setup.json`, `out/w321_seams_only/` (the first fixed march and its gates), `tests/test_atlas_seams.py` in both build-repo checkouts. **Changed:** `scripts/w321_rocket_episode.py`, `scripts/w321_episode_viz_data.py`, the page template, `atlas/cases/{rocket,rocket_experts,thermal_seam}.py`, tests for Tiers 15, 16, 76, 79, 80, 81, [[rocket-episode-seam-audit]], [[case-study-rocket-bc-seam-atlas-0.1]], [[gap-worklist]], [[index]].
+
+**NOT done: W334.** The vault's probe wrapper gives every rocket gas agent an isothermal wall, so every Tier 76–85 THERM and ADVEC record (`out/w300` … `out/w314`) was taken with the saturated channel and the leak. Their tests pass because they read those records. Re-deriving them is about 9 h of compute at the records' own clock, which is multi-hour, so it waits for the owner. Also not done: declaring a–c, e–c, d–f and c–f (a graph decision), and committing anything.
+
+## [2026-09-23] note | W334's price, itemised — about 7 h, not 9
+
+Asked why re-deriving Tiers 76–85's gas-seam records takes hours. **The chamber's CFL step.** The gas solver is explicit, so $\Delta t \le C\,\Delta x/(\lvert u\rvert + c)$. With 0.88 mm cells and sound at 1100 m/s in 2800 K gas, that is $\approx 3.0\times10^{-7}$ s, so one simulated millisecond is ~3300 steps of 8960 cells and 93–112 s of wall.
+
+The multirate study marches the chamber twice per exchange interval, one column with the trace following the skin and one with it held stale. The declared 50 ms interval alone is 100 ms of gas: $2.57$ h recorded. Its knee row adds $1.65$ h and its core stages about 50 min. The converged flow-through seams are finite-difference Jacobians, up to 42 marches per seam side, $1.84$ h on a 10-worker pool. The wall-seam probes cost seconds.
+
+**About 7 h as recorded, corrected from the Tier 86 entry's 9**, which counted the knee twice: `out/w314.json`'s $6797$ s total is the knee's own invocation (setup $853$ + knee $5944$), not the core. The two columns of each interval start from the same state and never read each other, so on mains, run side by side, the total plausibly halves. **Changed:** [[gap-worklist]] (W334), [[case-study-rocket-bc-seam-atlas-0.1]] §18.7, [[index]].
+
+## [2026-09-23] tier 86 | W334 — Tiers 76–85 re-derived, and what the old wall had been saying
+
+**Every gas-seam record from `out/w300` to `out/w314` was re-run with W301 and W332 fixed**, on a rented 48-core EPYC 9655 (Linux, Python 3.11, the laptop's package versions on OpenBLAS). It took 38 minutes and cost about \$0.40, and the instance was destroyed and verified gone. The build repo went as a copy of the pinned tree, identified as `0a407b7+dirty:b6bbcec4240a5943`. The multirate driver's two columns ran as forked processes, and its anchor ran beside the core and was replayed into the record. Both routes were checked bitwise against the sequential driver before renting. **The box reproduces the laptop's `setup` stage to $10^{-15}$** on a different BLAS, $5.5\times$ faster. All 15 records were hash-checked against the box after download. The old records are kept in `out/pre_w332/`; the new ones took the canonical names.
+
+**Three findings were the old wall's.**
+
+- **CS-11's bound holds at the declared interval**: $2.2782\times$ loose, where Tier 80 had it violated at $0.2702$. $\sigma$ is first order over all $250\times$ (exponents $0.9997$–$1.0021$), and $\sigma/$lag is flat to $0.8\%$.
+- **There is no knee**: $s_\Gamma$ at $10^{-2}$ s is $1.0077\times$, where Tier 84 read $17.08\times$.
+- **Tier 77's two errors did not nearly cancel.** The corrected $\beta$ is $0.229896$ at $\lambda^{\ast} = 1133.885$ K, and the doubly-wrong configuration sits $36\%$ below it. The old wall reverted on today's code reproduces the published table to $0.25\%$, which attributes the cancellation to the wall.
+
+**Attributed, not assumed.** Two differences are declarations, not the wall. Tier 77's `effort_normal` explains `w302`'s `known` $47 \to 48$ and the sum-to-difference change in `w300` and `w304`. Tier 82's W308 explains `w306`'s flips.
+
+**Also moved:**
+
+- W301's signature is gone, and its detector now trips 13 of 110 ports with none saturated.
+- e–b's converged movement is $82.6\times$ (was $1090\times$).
+- e–f's $\dim M = 8$ anchor ($48.3\times$) now agrees with its converged probe ($53.8\times$), reversing Tier 84's correction.
+- d–g's sign change was round-off at $\beta \approx 9\times10^{-17}$.
+- Predictions go from 8 to 10 of 12, and **P11 now fails** ($1.156\times$ against $1.2\times$).
+- W316's two-way control is $0.101\times$ and $0.160\times$. The startup-step reading carries at the new size, as an inference with its arithmetic.
+
+**New, W335 (open, the owner's decision).** With the wall conducting, the shell's `validity` declines at $2.95$ s, before the declared 5 s probe base: $870.77$ K at its hottest, $100$ K past solidus.
+
+**A registered evaluator more permissive than its prose.** Tier 81's R5 checked only the verdict and the refusals. Its prose's claim is now checked against Tier 79's record by a test, and it held on both walls.
+
+**Tests.** Tier 80's gate tests pin the re-derived record, with the old wall's readings kept as controls against `out/pre_w332/w314.json`. The standby test accepts the box's `-1` only beside its evidence that PowerShell was absent. 152 of 152 pass across Tiers 15, 16 and 76–81, and Tier 81's 13 pass with the new check, which was shown to fail on mismatched records. **The page** was republished (version 4): its macro-step note no longer cites the knee.
+
+**Added:** `scripts/w334_swap_records.py`, `scripts/w334_compare_records.py`, `scripts/w334_tier77_table.py` (with `--dt-gas` and `--old-wall`), `out/w334/` (the re-derived records, the box's logs, the Tier 77 tables for both walls), `out/pre_w332/`, the `rocket-episode-page` preview configuration. **Changed:** `scripts/w314_rocket_multirate_defect.py` (fork, record and replay), `scripts/w305_trajectory_and_mech.py` (a comment on R5), `scripts/w321_rocket_episode.py`, the page template, `atlas/cases/{thermal_seam,rocket_experts}.py`, tests for Tiers 77, 80 and 81, [[case-study-rocket-bc-seam-atlas-0.1]] (§18.8 and a pointer in every affected section), [[gap-worklist]], [[index]]. **NOT done:** W335's decision; committing anything (the vault and both build-repo checkouts are uncommitted); declaring a–c, e–c, d–f and c–f.
+
+## [2026-09-24] tier 87 | W336 — the episode's residuals, and what "correct" can mean here
+
+Asked: can we evaluate the residuals, and how do we know the episode is correct? It is three questions. **Does the code solve its equations** — the build repo's own suite, which was already there. **Does this run conserve** — measured here. **How far is it from a finer run and from theory** — measured here, three ways each.
+
+**The instrument.** `scripts/w336_episode_residuals.py` re-runs the episode under a ledger that reads the face-flux arrays the solver itself differences, at SSP-RK2's stage weights, and accounts every block, wall, seam and the shell per macro step. Four controls, pinned by `tests/test_tier87_episode_residuals.py`:
+- a uniform stream by hand ($10^{-12}$);
+- bitwise no-change with the ledger on;
+- a budget with a side left out;
+- the old wall, which passes $5.2\%$ of $\dot m$.
+
+Every arm ran on a rented 48-thread Threadripper 7960X.
+
+**Exact:**
+- every block closes to $1.2\times10^{-13}$;
+- the walls pass $5\times10^{-17}$ of $\dot m\,\Delta t$;
+- the shell closes to $1.1\times10^{-11}$ of its stored energy;
+- the re-run reproduces `out/w321` **bitwise** in altitude, attitude, $v_y$ and mass at all 29 steps, on another machine and BLAS.
+
+**Right to about 1%:** the nozzle's thrust given its inflow, $0.989$ of ideal planar theory.
+
+**Wrong, with a named cause:**
+- **W337:** the injector delivers $1.1772\,\dot m^{\ast}$, so the chamber runs at $1.13\times$ its declared pressure.
+- **W340:** $3.0\%$ of the mass flow vanishes at the throat every step. The seam is joined by point interpolation between 20 and 24 cells. The loss does not move with the coupling step and halves with the grid.
+- **W339:** the stationary walls do work, $29.6$ of $626.2$ J/m per side per step. The conduction crosses to the shell within $0.13\%$.
+- **W341:** d\|f and g\|f break by $37\%$ and $23\%$. The plume block runs one gas model for exhaust and air.
+- **W338:** the skin radiates to the adjacent air, $0.16\%$ of its heat.
+
+**Not known at this resolution (W342):** every wall flux doubles per grid halving, and the airframe's heating has the wrong sign at coarsen 4. Drag is $855$, $700$, $642$ N/m at coarsen 4, 2, 1. The velocity gained by 60 ms carries an $8\%$ error from the 5 ms coupling step (order $1.27$).
+
+**Predictions:**
+- 4 of 4 gates held;
+- 4 predictions held and 7 failed, each on a named cause;
+- P10–P12 were not measured as registered: the full-resolution engine's 30 ms record was lost (next entry), and its 10 ms readings are reported unregistered.
+- Two evaluators were fixed before or while the audit ran, both recorded. A3 was re-based on stored energy after a smoke test showed the CG floor. A4 measured each rigid quantity against its own magnitude after lateral round-off read $O(1)$.
+
+**The page** gained "What these numbers can be trusted for" (version 5).
+
+**Added:** `scripts/w336_episode_residuals.py`, `scripts/w336_thermal_seam_diag.py`, `out/w336/`, `tests/test_tier87_episode_residuals.py`, the `rocket-episode-page` preview configuration. **Changed:** the page template, [[case-study-rocket-bc-seam-atlas-0.1]] (§19, and a header pointer), [[gap-worklist]] (the Tier 87 block, W336–W342; a W335 pointer), [[index]].
+
+## [2026-09-26] note | the rocket episode handed off, and a box that idled out of credit
+
+**The handoff.** The episode is to be continued by another person's Claude on the same repositories, with no access to the session that built it. Everything it depends on was local:
+- 45 unpushed vault commits and 12 + 1 unpushed build-repo commits;
+- the W301 and W323–W333 fixes, uncommitted in both build-repo checkouts;
+- every Tier 76–87 record, git-ignored;
+- the rented-box tooling, in a session's temp folder;
+- the working lessons, in one assistant's private memory.
+
+What was done about each:
+- [[rocket-episode-pickup]] is written as the one page such a session needs.
+- `scripts/box/` holds the payload builder (identity and manifests), the manifest check, the status script and W334's and W336's job lists.
+- `.gitignore` force-includes the episode, the page and its inputs, and every Tier 76–87 record. That closes the gap Tier 80's note recorded ("Nothing from Tiers 76-79 is tracked").
+- All three branches were committed and pushed. The build repo's commits map the records' `0a407b7+dirty:b6bbcec4240a5943` to a real commit.
+
+**The incident.** The Tier 87 session ended while the full-resolution engine run was still on the rented box. The waits that would have downloaded it and destroyed the box died with the session. The box idled at about \$1/h until the account's whole credit ran out, and was destroyed two days later at a balance of $-\$0.37$. That run's 30 ms record was lost. ***Never let a session end with a box up*** — the pickup page carries the rule.
+
+**Scrubbed before pushing:**
+- no credentials in any of the commits;
+- no model weights, and nothing of NeuberNet's;
+- no file over 1.2 MB in the 45 earlier commits. This commit adds the three episodes' `.npz` records, the largest $4.6$ MB, about 16 MB of records in all.
+
+**Changed:** [[case-study-rocket-bc-seam-atlas-0.1]] §19.7 and §19.9 (the lost record, and a three-grid comparison at 10 ms read off the box's log, unregistered), [[gap-worklist]] (W342), [[index]].

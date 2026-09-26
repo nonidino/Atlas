@@ -219,16 +219,20 @@ def test_W312_a_wall_converges_at_any_cadence_and_a_plane_does_not():
 
 
 @needs_expert
-def test_W301s_signature_is_about_wall_noslip_and_not_about_the_solver():
-    """`d`'s wall does NOT saturate -- same BC, same solver, but the atmosphere
-    sits at 255.7 K against a 255.7 K wall, so the clamp threshold
-    (T_i + 20)/2 = 138 K is far below the trace. The engine's wall does."""
+def test_W301_closed_neither_wall_reads_the_saturation_signature():
+    """Until Tier 86 this pinned W301's signature on ONE of two walls: the
+    chamber's (exact_zeros == n - 1, the clamp active) and not the atmosphere's
+    -- same BC, same solver, but the atmosphere sits at 255.7 K against a
+    255.7 K wall, far above the clamp threshold (T_i + 20)/2 = 138 K. That was
+    what showed W301 was about `wall_noslip` and not about the solver. The wall
+    face's conduction is now one-sided from T_wall, so the chamber's wall
+    transmits too, and neither reads the signature."""
     experts = RE.make_rocket_experts(dt_scale=DT_SCALE)
     b, d = experts["b"], experts["d"]
     sr_b = support_reach(b.respond, "c:THERM", b.base_trace("c"))
     sr_d = support_reach(d.respond, "c:THERM", d.base_trace("c"))
-    assert sr_b.exact_zeros == sr_b.n - 1, "the chamber wall should be saturated"
-    assert sr_d.exact_zeros < sr_d.n - 1, "the atmosphere's wall should NOT be"
+    assert sr_b.exact_zeros < sr_b.n - 1, "the chamber wall no longer saturates"
+    assert sr_d.exact_zeros < sr_d.n - 1, "and the atmosphere's never did"
 
 
 # ===========================================================================

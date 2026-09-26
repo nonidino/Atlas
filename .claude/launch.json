@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "uvicorn", "atlas.demo_racelab.bodyfitted_server:create_app", "--factory", "--host", "127.0.0.1", "--port", "8014"],
       "port": 8014
+    },
+    {
+      "name": "rocket-episode-page",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8321", "--bind", "127.0.0.1", "--directory", "out/w321"],
+      "port": 8321
     }
   ]
 }

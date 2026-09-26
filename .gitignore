@@ -648,3 +648,49 @@ out/racelab23/*
 !out/w321/
 out/w321/*
 !out/w321/episode.json
+
+# Tiers 86-87 -- the episode rebuilt (W323-W333), Tiers 76-85 re-derived (W334),
+# and the episode's residual audit (W336). Force-included so the episode can be
+# picked up from a clone by someone with no access to the session that made it
+# (see [[rocket-episode-pickup]]):
+#
+# * the marched episode and its provenance -- `episode.npz` is what the audit
+#   compares a re-run against step by step, and the page is built from it;
+# * the page's other inputs (`scripts/w321_episode_viz_data.py` reads the
+#   pre-fix run, the seams-only run, the gates and W332's records), and the
+#   page itself, as published;
+# * every Tier 76-85 record as re-derived by W334, which closes the gap the
+#   Tier 80 note above recorded ("Nothing from Tiers 76-79 is tracked"), and
+#   the old-wall records W334 replaced, which Tier 80's tests read as controls;
+# * W336's audit records, which tests/test_tier87 reads.
+!out/w321/episode.npz
+!out/w321/rocket-episode.html
+!out/w321/build_repo_at_launch.diff
+!out/w321/build_repo_at_launch.untracked_test_atlas_seams.py
+!out/w321_prefix/
+out/w321_prefix/*
+!out/w321_prefix/episode.json
+!out/w321_prefix/episode.npz
+!out/w321_prefix/seam_audit.json
+!out/w321_seams_only/
+out/w321_seams_only/*
+!out/w321_seams_only/episode.json
+!out/w321_seams_only/episode.npz
+!out/w321_seams_only/gates.json
+!out/w321_seams_only/build_repo_at_launch.diff
+!out/w323_seams_fixed.json
+!out/w332/
+!out/w332_wall_mass.json
+!out/w332_w316_setup.json
+!out/w300.json
+!out/w301.json
+!out/w302.json
+!out/w303.json
+!out/w304.json
+!out/w306.json
+!out/w310.json
+!out/w312.json
+!out/w312_underresolved.json
+!out/pre_w332/
+!out/w334/
+!out/w336/

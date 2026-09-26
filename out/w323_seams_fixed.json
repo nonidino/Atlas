@@ -1,0 +1,137 @@
+{
+ "gates": {
+  "G1_polylines": {
+   "value": "2.78e-17 m",
+   "passed": true,
+   "detail": ""
+  },
+  "G2_coverage": {
+   "value": "0 points",
+   "passed": true,
+   "detail": ""
+  },
+  "G3_hole": {
+   "value": "0.00e+00 m",
+   "passed": true,
+   "detail": ""
+  },
+  "C1_inner": {
+   "value": "0.0002 m",
+   "passed": true,
+   "detail": "(half a gas wall cell is 0.0050 m)"
+  },
+  "C3_barrel": {
+   "value": "0",
+   "passed": true,
+   "detail": ""
+  },
+  "C2_outer": {
+   "value": "0.0375 m",
+   "passed": true,
+   "detail": "(half of d's largest wall cell is 0.0750 m)"
+  },
+  "C4_gas_model": {
+   "value": "6.66e-16",
+   "passed": true,
+   "detail": ""
+  },
+  "C5_hole_state": {
+   "value": "pair of f's edge rows",
+   "passed": true,
+   "detail": ""
+  },
+  "C6_wall_mass": {
+   "value": "3.63e-15",
+   "passed": true,
+   "detail": ""
+  },
+  "C7_slot_wall": {
+   "value": "ok",
+   "passed": true,
+   "detail": "slip and adiabatic ahead of the nose, no-slip isothermal behind it"
+  },
+  "C8_slot_record": {
+   "value": "length 2.22e-16, load change 0.00e+00",
+   "passed": true,
+   "detail": "(c-d 9.4542 m, the airframe's outer face 9.4542 m)"
+  },
+  "E1_mirror": {
+   "value": "6.46e-09",
+   "passed": true,
+   "detail": ""
+  },
+  "E2_directions": {
+   "value": "thrust up True, drag to tail True, drag down True, |side|/drag 6.30e-14",
+   "passed": true,
+   "detail": ""
+  },
+  "E3_climbs": {
+   "value": "+1.747 m/s",
+   "passed": true,
+   "detail": ""
+  },
+  "E4_audit": {
+   "value": "2.48e-04",
+   "passed": true,
+   "detail": ""
+  },
+  "E5_wake_energy": {
+   "value": "0.290",
+   "passed": true,
+   "detail": "step 5: g 1636 K against 5635 K"
+  },
+  "E6_engine_mirror": {
+   "value": "2.18e-15",
+   "passed": true,
+   "detail": "e at step 17"
+  }
+ },
+ "registered": {
+  "G1_polylines": "max |gap or overlap| between gas wall, shell faces and d, coarsen 1 and 4",
+  "G2_coverage": "raster points claimed by no block or by two, engine window and whole domain",
+  "G3_hole": "|g's hole edge - f's edge|, coarsen 1 and 4",
+  "C1_inner": "max |source z - station z| on the shell's inner face (with a p = z probe)",
+  "C2_outer": "max |source z - station z| on the shell's outer face",
+  "C3_barrel": "barrel stations: h and p - p_inf",
+  "C4_gas_model": "max relative change of p, T, u, v across _as_gas",
+  "C5_hole_state": "hole_state is (lo, hi) of f's own edge rows",
+  "E1_mirror": "max |uy_lower + uy_upper(mirrored)| / max |uy|, every step",
+  "E2_directions": "thrust up, drag to the tail and down, |side| / drag, every marched step",
+  "E3_climbs": "vy(end) - vy(0) > 0",
+  "E4_audit": "dvy/dt against the loads it was handed",
+  "E5_wake_energy": "max T in g over max inflow stagnation T (air, d's outlet, f's edge rows)",
+  "C6_wall_mass": "closed engine blocks with the coupler's isothermal walls, gas pushed at both walls: |net mass rate| / (rho |v| wall length)",
+  "C7_slot_wall": "d's wall is slip and adiabatic at exactly the stations ahead of the nose",
+  "C8_slot_record": "c-d length against the airframe's outer face (rel.), and the aero load's change when the slot's cells change",
+  "E6_engine_mirror": "max over steps of the p mirror asymmetry of a, b and e"
+ },
+ "episode": {
+  "run": "out/w321",
+  "build_repo": {
+   "commit": "0a407b7",
+   "branch": "atlas-0.1-windfarm",
+   "dirty": true,
+   "diff_sha256": "b6bbcec4240a5943",
+   "untracked": [
+    "tests/test_atlas_seams.py"
+   ]
+  },
+  "vy": [
+   1044.3618721186829,
+   1046.1087426227077
+  ],
+  "loads_last": [
+   2.136839213094051e-10,
+   1113215.1584145825,
+   -3.484211352945845e-11,
+   -838.0911914194226
+  ],
+  "loads_body_last": [
+   -1113215.1584145825,
+   1.4551915228366852e-10,
+   838.0911914194226,
+   -3.479079524471018e-11
+  ]
+ },
+ "all_passed": true
+}
