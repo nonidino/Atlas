@@ -76,7 +76,8 @@ Corner case 0 of the build repo's sweep, `underexpanded_max`: $p_c = 8$ MPa, $T_
 
 - Python 3.11 or 3.12 with **numpy 1.26.4, scipy 1.13.1, pyyaml 6.0.1, h5py 3.11.0, torch 2.7.1 (CPU)** — the versions every record was made with.
 - `KMP_DUPLICATE_LIB_OK=TRUE` before any import when torch and numpy's linear algebra share a process; `OMP_NUM_THREADS=MKL_NUM_THREADS=OPENBLAS_NUM_THREADS=1` for the solvers (their arrays are small; one thread is faster).
-- On Windows: the console is cp1252, so `print` only ASCII; OneDrive can hold a just-written file, so every persist step retries `os.replace`; Git Bash rewrites `/mnt/c` paths.
+- On Windows: the console is cp1252, so `print` only ASCII; OneDrive can hold a just-written file, so every persist step retries `os.replace`; Git Bash rewrites `/mnt/c` paths. The vault's longest path is 109 characters, so a clone in a deep directory can pass the 260-character limit and fail its checkout silently: clone with `git -c core.longpaths=true clone ...` there.
+- **Checked from clean clones on 2026-09-26**: a shallow clone of each repository, `ATLAS_BUILD_REPO` pointed at the build clone, and `pytest tests/test_tier87_episode_residuals.py tests/test_tier80_multirate_defect.py` gives 36 of 36, with nothing from the machine that made them.
 - **LaTeX in wiki pages is written with an editor tool, never inside Python string literals or shell heredocs**: `\t` in `\times` becomes a TAB and `\a` in `\ast` a BEL, silently. The vault scan catches control characters.
 - Long runs write to a file (`> log 2>&1`), never a pipe to `tail`, which hides progress until exit.
 
