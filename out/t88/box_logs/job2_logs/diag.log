@@ -1,0 +1,3 @@
+jmin: gas loses 597.112 J/m (conduction 597.112, work 0.000, inviscid -1.42e-11); shell gains 597.896 -- shell/conduction 1.00131, shell/total 1.00131
+jmax: gas loses 597.112 J/m (conduction 597.112, work 0.000, inviscid 8.24e-11); shell gains 597.896 -- shell/conduction 1.00131, shell/total 1.00131
+wrote /root/job2/vault/out/w336/thermal_seam_diag.json

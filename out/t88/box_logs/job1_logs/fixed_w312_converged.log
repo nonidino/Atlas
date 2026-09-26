@@ -1,0 +1,50 @@
+====================================================================================
+W312 -- ADVEC at the declared clock, 4 seams, 6 workers
+====================================================================================
+
+=== control: the recorded request set must be deterministic ===
+  two independent recordings at dt_scale=0.001: 304 and 304 traces, identical sets: True
+
+=== the reduced cadence, for the comparison (dt_scale=0.001) ===
+  a-b   beta 8.74518e-07  kappa 1.005      omega 0.0007072  dim M 41   shares {'a': 0.0002, 'b': 0.9999}
+  e-b   beta 6.79216e-07  kappa 1.285      omega 0.03673    dim M 41   shares {'e': 0.9981, 'b': 0.2337}
+  e-f   beta 6.27161e-07  kappa 1.158      omega 0.02159    dim M 41   shares {'e': 0.1361, 'f': 0.9996}
+  d-g   beta 8.93524e-17  kappa 6.823e+11  omega 0.6145     dim M 25   shares {'d': 0.0001, 'g': 1.0}
+  reduced-cadence arm: 18 s
+
+=== recording the declared-clock request set ===
+  304 distinct traces: {'a-b': 84, 'e-b': 84, 'e-f': 84, 'd-g': 52}
+  by agent: {'a': 42, 'b': 84, 'd': 26, 'e': 84, 'f': 42, 'g': 26}
+
+=== filling 304 responses across 6 workers ===
+      25/ 304      49 s elapsed   0.51 calls/s  eta   552 s
+      50/ 304     191 s elapsed   0.26 calls/s  eta   970 s
+      75/ 304     439 s elapsed   0.17 calls/s  eta  1339 s
+     100/ 304     752 s elapsed   0.13 calls/s  eta  1535 s
+     125/ 304    1019 s elapsed   0.12 calls/s  eta  1459 s
+     150/ 304    1275 s elapsed   0.12 calls/s  eta  1309 s
+     175/ 304    1712 s elapsed   0.10 calls/s  eta  1262 s
+     200/ 304    2057 s elapsed   0.10 calls/s  eta  1070 s
+     225/ 304    2464 s elapsed   0.09 calls/s  eta   865 s
+     250/ 304    2642 s elapsed   0.09 calls/s  eta   571 s
+     275/ 304    2754 s elapsed   0.10 calls/s  eta   290 s
+     300/ 304    2825 s elapsed   0.11 calls/s  eta    38 s
+     304/ 304    2834 s elapsed   0.11 calls/s  eta     0 s
+  filled in 2834 s; serial equivalent 16972 s; speedup 5.99x
+
+=== assembling, with the framework doing its own arithmetic ===
+  a-b   beta 4.08475e-05  kappa 1.052      omega 0.008263   dim M 41   shares {'a': 0.0002, 'b': 1.0002}
+  e-b   beta 5.60718e-05  kappa 1.089      omega 0.1109     dim M 41   shares {'e': 0.803, 'b': 0.267}
+  e-f   beta 3.37363e-05  kappa 1.232      omega 0.03401    dim M 41   shares {'e': 0.2499, 'f': 1.0615}
+  d-g   beta 1.16332e-06  kappa 862.8      omega 0.6162     dim M 25   shares {'d': 0.2849, 'g': 0.7328}
+
+=== what the reduced cadence was hiding ===
+  seam   beta reduced   beta declared  ratio      sign same?
+  a-b    8.74518e-07    4.08475e-05    46.71      True      
+  e-b    6.79216e-07    5.60718e-05    82.55      True      
+  e-f    6.27161e-07    3.37363e-05    53.79      True      
+  d-g    8.93524e-17    1.16332e-06    1.302e+10  True      
+
+  Tier 79's anchor on e-f moved beta by 42.8x at dim M = 8.
+
+total 2967 s (0.82 h)

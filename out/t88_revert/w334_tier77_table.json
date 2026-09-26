@@ -1,0 +1,55 @@
+{
+ "old_root_K": 1035.487,
+ "new_root_K": 1133.884859085083,
+ "dt_gas": 1e-05,
+ "wall": "fixed",
+ "table": {
+  "SUM, own bases (Tier 76)": {
+   "sigma_min": 0.14647474024307255,
+   "kappa": 1.9023219654898476,
+   "sym_min": -0.2786421153102416,
+   "sym_max": -0.1464747402422516,
+   "one_signed": true
+  },
+  "SUM, old root": {
+   "sigma_min": 0.0003400227285795711,
+   "kappa": 191.41965312479306,
+   "sym_min": -0.0025093564775844268,
+   "sym_max": 0.06508701250284243,
+   "one_signed": false
+  },
+  "SUM, new root": {
+   "sigma_min": 0.004723167992699493,
+   "kappa": 9.484440039083712,
+   "sym_min": -0.01218465353315479,
+   "sym_max": 0.044796575188076546,
+   "one_signed": false
+  },
+  "DIFFERENCE, own bases": {
+   "sigma_min": 0.19738572057714396,
+   "kappa": 2.268572888887013,
+   "sym_min": -0.4477838940612175,
+   "sym_max": -0.1973857205755147,
+   "one_signed": true
+  },
+  "DIFFERENCE, old root": {
+   "sigma_min": 0.251898215437952,
+   "kappa": 2.3675714681654116,
+   "sym_min": -0.5963870259446985,
+   "sym_max": -0.25189821542769203,
+   "one_signed": true
+  },
+  "DIFFERENCE, new root (corrected)": {
+   "sigma_min": 0.2298964916147049,
+   "kappa": 2.3920391808121795,
+   "sym_min": -0.5499214137740907,
+   "sym_max": -0.22989649160622544,
+   "one_signed": true
+  }
+ },
+ "ratios": {
+  "right_wrong_over_wrong_wrong": 0.032245614396458185,
+  "wrong_right_over_wrong_wrong": 1.3475751535697242,
+  "wrong_wrong_over_right_right": 0.6371334299809888
+ }
+}

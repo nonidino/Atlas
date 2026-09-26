@@ -1,0 +1,246 @@
+{
+  "seams": [
+    "a-b",
+    "e-b",
+    "e-f",
+    "d-g"
+  ],
+  "dt_scale": 1.0,
+  "workers": 6,
+  "determinism_control": {
+    "n1": 304,
+    "n2": 304,
+    "identical": true,
+    "per_seam": {
+      "a-b": 84,
+      "e-b": 84,
+      "e-f": 84,
+      "d-g": 52
+    }
+  },
+  "cheap": {
+    "a-b": {
+      "dim_M": 41,
+      "beta": 8.745195813526773e-07,
+      "kappa": 1.0051465169460971,
+      "omega": 0.0007070963855511888,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": false,
+      "one_sided": 0.00015411261001176737,
+      "effort_normal": "a",
+      "blocks": {
+        "a": {
+          "share": 0.00015411261001176737,
+          "n_solves": 42,
+          "norm_F": 4.6439331770445204e-10
+        },
+        "b": {
+          "share": 0.9999158811056882,
+          "n_solves": 42,
+          "norm_F": 5.622400227068759e-06
+        }
+      }
+    },
+    "e-b": {
+      "dim_M": 41,
+      "beta": 6.792183491498858e-07,
+      "kappa": 1.2847061984999257,
+      "omega": 0.03673204784067671,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": false,
+      "one_sided": 0.23367217065300722,
+      "effort_normal": "b",
+      "blocks": {
+        "e": {
+          "share": 0.9980871884446253,
+          "n_solves": 42,
+          "norm_F": 5.491494849968163e-06
+        },
+        "b": {
+          "share": 0.23367217065300722,
+          "n_solves": 42,
+          "norm_F": 2.3003642698616935e-07
+        }
+      }
+    },
+    "e-f": {
+      "dim_M": 41,
+      "beta": 6.271618268687703e-07,
+      "kappa": 1.1580980129344234,
+      "omega": 0.02158624610137522,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": false,
+      "one_sided": 0.1360624294291601,
+      "effort_normal": "e",
+      "blocks": {
+        "e": {
+          "share": 0.1360624294291601,
+          "n_solves": 42,
+          "norm_F": 1.0176388764073616e-07
+        },
+        "f": {
+          "share": 0.9996077195258181,
+          "n_solves": 42,
+          "norm_F": 4.648697972993478e-06
+        }
+      }
+    },
+    "d-g": {
+      "dim_M": 25,
+      "beta": 9.152948186653258e-17,
+      "kappa": 666086604318.8844,
+      "omega": 0.6144970850028777,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": false,
+      "one_sided": 9.414042095197193e-05,
+      "effort_normal": "d",
+      "blocks": {
+        "d": {
+          "share": 9.414042095197193e-05,
+          "n_solves": 26,
+          "norm_F": 5.753514259861297e-09
+        },
+        "g": {
+          "share": 0.9999688368223103,
+          "n_solves": 26,
+          "norm_F": 0.000231832169875798
+        }
+      }
+    }
+  },
+  "n_traces": 304,
+  "per_seam_traces": {
+    "a-b": 84,
+    "e-b": 84,
+    "e-f": 84,
+    "d-g": 52
+  },
+  "by_agent": {
+    "a": 42,
+    "b": 84,
+    "d": 26,
+    "e": 84,
+    "f": 42,
+    "g": 26
+  },
+  "fill": {
+    "wall_s": 2445.9051195457578,
+    "serial_s": 14641.965578339994,
+    "speedup": 5.986317891619293,
+    "per_call_mean": 48.16436045506577,
+    "per_call_max": 91.85765330120921
+  },
+  "converged": {
+    "a-b": {
+      "dim_M": 41,
+      "beta": 4.084751875455752e-05,
+      "kappa": 1.0515242163913365,
+      "omega": 0.00826341867155353,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": false,
+      "one_sided": 0.0001887407620309666,
+      "effort_normal": "a",
+      "blocks": {
+        "a": {
+          "share": 0.0001887407620309666,
+          "n_solves": 42,
+          "norm_F": 4.673655693385697e-08
+        },
+        "b": {
+          "share": 1.00015973683203,
+          "n_solves": 42,
+          "norm_F": 0.00026501591632514717
+        }
+      }
+    },
+    "e-b": {
+      "dim_M": 41,
+      "beta": 5.6070135496491404e-05,
+      "kappa": 1.089380075107636,
+      "omega": 0.11087709106659539,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": false,
+      "one_sided": 0.2669620551432321,
+      "effort_normal": "b",
+      "blocks": {
+        "e": {
+          "share": 0.8029960105221507,
+          "n_solves": 42,
+          "norm_F": 0.0002844579342184775
+        },
+        "b": {
+          "share": 0.2669620551432321,
+          "n_solves": 42,
+          "norm_F": 9.927722666148256e-05
+        }
+      }
+    },
+    "e-f": {
+      "dim_M": 41,
+      "beta": 3.3736516132055955e-05,
+      "kappa": 1.2321211687899651,
+      "omega": 0.034014070097118335,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": false,
+      "one_sided": 0.24994320352097,
+      "effort_normal": "e",
+      "blocks": {
+        "e": {
+          "share": 0.24994320352097,
+          "n_solves": 42,
+          "norm_F": 6.284654793738238e-05
+        },
+        "f": {
+          "share": 1.0615422992281176,
+          "n_solves": 42,
+          "norm_F": 0.0002825277329715189
+        }
+      }
+    },
+    "d-g": {
+      "dim_M": 25,
+      "beta": 1.1636766613951238e-06,
+      "kappa": 862.5763591258237,
+      "omega": 0.6162377764741832,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "is_empty": false,
+      "one_sided": 0.2849748849544441,
+      "effort_normal": "d",
+      "blocks": {
+        "d": {
+          "share": 0.2849748849544441,
+          "n_solves": 26,
+          "norm_F": 0.000288522380063128
+        },
+        "g": {
+          "share": 0.7327948537257272,
+          "n_solves": 26,
+          "norm_F": 0.0027955357870156267
+        }
+      }
+    }
+  },
+  "beta_movement": {
+    "a-b": 46.70852388619585,
+    "e-b": 82.55097284499035,
+    "e-f": 53.79236217308091,
+    "d-g": 12713681293.334383
+  },
+  "wall_seconds": 2573.3457697853446
+}

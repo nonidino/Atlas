@@ -1,0 +1,66 @@
+====================================================================================
+W321 -- a coupled rocket episode
+====================================================================================
+  build repo      : 76edd8b on atlas-0.1-windfarm  (DIRTY, diff 409bd71838fd6dc0, 0 untracked)
+  operating point : corner case 0, 'underexpanded_max'
+                    p_c = 8e+06 Pa, T_c = 3400.0 K, h0 = 25000 m, M_inf = 3.50, alpha = 0.0 deg
+  declarations    : coarsen = 4, dt_macro = 0.005 s (config's own is 0.05)
+                    0.005 s is 0.83 chamber flow-throughs; the bound holds to the config's own step (W334)
+  steps           : 29 macro steps (30 frames) = 0.145 s of flight
+  blocks          : {'a': (12, 20), 'b': (28, 20), 'e': (30, 24), 'd': (46, 12), 'f': (38, 20), 'g': (38, 24)}
+
+marching ...
+  step  1/29  225.7 s  vy 1044.3661 m/s  F_thrust_y 5.291e+05 N  F_aero_y -856.1 N
+  step  2/29  282.5 s  vy 1044.3728 m/s  F_thrust_y 5.547e+05 N  F_aero_y -855.2 N
+  step  3/29  296.4 s  vy 1044.4443 m/s  F_thrust_y 1.202e+06 N  F_aero_y -854.6 N
+  step  4/29  295.6 s  vy 1044.5191 m/s  F_thrust_y 1.235e+06 N  F_aero_y -854 N
+  step  5/29  307.5 s  vy 1044.5731 m/s  F_thrust_y 1.027e+06 N  F_aero_y -853.4 N
+  step  6/29  290.9 s  vy 1044.6287 m/s  F_thrust_y 1.043e+06 N  F_aero_y -852.7 N
+  step  7/29  277.7 s  vy 1044.6822 m/s  F_thrust_y 1.022e+06 N  F_aero_y -852.1 N
+  step  8/29  290.6 s  vy 1044.7368 m/s  F_thrust_y 1.033e+06 N  F_aero_y -851.5 N
+  step  9/29  271.3 s  vy 1044.7883 m/s  F_thrust_y 1.003e+06 N  F_aero_y -850.9 N
+  step 10/29  280.9 s  vy 1044.8405 m/s  F_thrust_y 1.009e+06 N  F_aero_y -850.2 N
+  step 11/29  284.2 s  vy 1044.8909 m/s  F_thrust_y 9.91e+05 N  F_aero_y -849.6 N
+  step 12/29  280.3 s  vy 1044.9417 m/s  F_thrust_y 9.947e+05 N  F_aero_y -849 N
+  step 13/29  160.9 s  vy 1044.9914 m/s  F_thrust_y 9.839e+05 N  F_aero_y -848.3 N
+  step 14/29  279.0 s  vy 1045.0413 m/s  F_thrust_y 9.86e+05 N  F_aero_y -847.7 N
+  step 15/29  274.5 s  vy 1045.0906 m/s  F_thrust_y 9.797e+05 N  F_aero_y -847.1 N
+  step 16/29  283.6 s  vy 1045.1400 m/s  F_thrust_y 9.81e+05 N  F_aero_y -846.4 N
+  step 17/29  277.0 s  vy 1045.1891 m/s  F_thrust_y 9.773e+05 N  F_aero_y -845.8 N
+  step 18/29  273.7 s  vy 1045.2382 m/s  F_thrust_y 9.78e+05 N  F_aero_y -845.2 N
+  step 19/29  275.6 s  vy 1045.2871 m/s  F_thrust_y 9.758e+05 N  F_aero_y -844.5 N
+  step 20/29  284.3 s  vy 1045.3361 m/s  F_thrust_y 9.763e+05 N  F_aero_y -843.9 N
+  step 21/29  269.6 s  vy 1045.3849 m/s  F_thrust_y 9.75e+05 N  F_aero_y -843.3 N
+  step 22/29  275.2 s  vy 1045.4338 m/s  F_thrust_y 9.752e+05 N  F_aero_y -842.6 N
+  step 23/29  279.9 s  vy 1045.4826 m/s  F_thrust_y 9.744e+05 N  F_aero_y -842 N
+  step 24/29  287.0 s  vy 1045.5314 m/s  F_thrust_y 9.746e+05 N  F_aero_y -841.4 N
+  step 25/29  277.9 s  vy 1045.5802 m/s  F_thrust_y 9.741e+05 N  F_aero_y -840.7 N
+  step 26/29  281.3 s  vy 1045.6290 m/s  F_thrust_y 9.742e+05 N  F_aero_y -840.1 N
+  step 27/29  279.3 s  vy 1045.6777 m/s  F_thrust_y 9.74e+05 N  F_aero_y -839.5 N
+  step 28/29  206.7 s  vy 1045.7265 m/s  F_thrust_y 9.74e+05 N  F_aero_y -838.9 N
+  step 29/29  97.0 s  vy 1045.7753 m/s  F_thrust_y 9.739e+05 N  F_aero_y -838.2 N
+
+=== the vehicle ===
+  t [s]    y [m]        vy [m/s]     m [kg]       F_thrust_y [N] F_aero_y [N]
+  0.0000   25000.000    1044.3619    50000.00     0            0           
+  0.0050   25005.222    1044.3661    49998.12     5.291e+05    -856.1      
+  0.0750   25078.353    1045.0906    49971.73     9.797e+05    -847.1      
+  0.1450   25151.533    1045.7753    49945.35     9.739e+05    -838.2      
+
+=== the acceleration audit ===
+  step 0: dvy/dt measured 0.8357       predicted 0.8355       ratio 1.00025 
+  step 1: dvy/dt measured 1.3466       predicted 1.3464       ratio 1.00016 
+  step 2: dvy/dt measured 14.3049      predicted 14.3044      ratio 1.00003 
+  step 3: dvy/dt measured 14.9634      predicted 14.9629      ratio 1.00003 
+  step 4: dvy/dt measured 10.7873      predicted 10.7869      ratio 1.00004 
+  step 5: dvy/dt measured 11.1218      predicted 11.1214      ratio 1.00004 
+  reconciles to 2%: True   (loads[k] is the load that PRODUCED rigid[k])
+
+=== the loads' directions ===
+  theta 1.5708 rad; last step: F_thrust = (1.324e-10, 9.739e+05) N, F_aero = (2.554e-11, -838.2) N
+  body frame: thrust axial -9.739e+05 N (towards the nose is negative), aero axial (drag) 838.2 N, aero normal 2.559e-11 N
+  thrust up True, drag to the tail True, drag down True, |side|/drag 3.05e-14
+
+=== cost ===
+  29 macro steps, 652106 CFL sub-steps, 7748 s wall (267.2 s a step)
+  written to out/w321_laptop\episode.npz and out/w321_laptop\episode.json

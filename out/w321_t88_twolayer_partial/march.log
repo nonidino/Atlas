@@ -1,0 +1,24 @@
+====================================================================================
+W321 -- a coupled rocket episode
+====================================================================================
+  build repo      : 76edd8b on atlas-0.1-windfarm  (DIRTY, diff 547399c4359a14b2, 0 untracked)
+  operating point : corner case 0, 'underexpanded_max'
+                    p_c = 8e+06 Pa, T_c = 3400.0 K, h0 = 25000 m, M_inf = 3.50, alpha = 0.0 deg
+  declarations    : coarsen = 4, dt_macro = 0.005 s (config's own is 0.05)
+                    0.005 s is 0.83 chamber flow-throughs; the bound holds to the config's own step (W334)
+  steps           : 29 macro steps (30 frames) = 0.145 s of flight
+  blocks          : {'a': (12, 20), 'b': (28, 20), 'e': (30, 24), 'd': (46, 12), 'f': (38, 20), 'g': (38, 24)}
+
+marching ...
+  step  1/29  99.3 s  vy 1044.3661 m/s  F_thrust_y 5.291e+05 N  F_aero_y -856.1 N
+  step  2/29  123.4 s  vy 1044.3728 m/s  F_thrust_y 5.547e+05 N  F_aero_y -855.2 N
+  step  3/29  87.5 s  vy 1044.4443 m/s  F_thrust_y 1.202e+06 N  F_aero_y -854.6 N
+  step  4/29  187.2 s  vy 1044.5191 m/s  F_thrust_y 1.235e+06 N  F_aero_y -854 N
+  step  5/29  285.7 s  vy 1044.5731 m/s  F_thrust_y 1.027e+06 N  F_aero_y -853.4 N
+  step  6/29  285.3 s  vy 1044.6287 m/s  F_thrust_y 1.043e+06 N  F_aero_y -852.7 N
+  step  7/29  280.6 s  vy 1044.6822 m/s  F_thrust_y 1.022e+06 N  F_aero_y -852.1 N
+  step  8/29  278.9 s  vy 1044.7368 m/s  F_thrust_y 1.033e+06 N  F_aero_y -851.5 N
+  step  9/29  280.0 s  vy 1044.7883 m/s  F_thrust_y 1.003e+06 N  F_aero_y -850.9 N
+  step 10/29  283.4 s  vy 1044.8405 m/s  F_thrust_y 1.009e+06 N  F_aero_y -850.2 N
+  step 11/29  286.3 s  vy 1044.8909 m/s  F_thrust_y 9.91e+05 N  F_aero_y -849.6 N
+  step 12/29  280.4 s  vy 1044.9417 m/s  F_thrust_y 9.947e+05 N  F_aero_y -849 N

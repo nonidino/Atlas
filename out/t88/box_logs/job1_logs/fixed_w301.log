@@ -1,0 +1,75 @@
+================================================================================================
+W301 -- does `exact_zeros == n-1` flag anything but the two known
+        saturated channels? The detector's false-positive rate.
+================================================================================================
+  control: exactly diagonal    n=32   nonzero=1    exact_zeros=31   tripped=True   expected=True
+  control: 1-cell banded       n=32   nonzero=3    exact_zeros=29   tripped=False  expected=True
+
+  thermal_seam        2 agents probed,  0 skipped,  0 TRIPPED   (  0.6 s)
+  rocket             40 agents probed,  0 skipped,  0 TRIPPED   (  1.9 s)
+  thermal_strain      3 agents probed,  0 skipped,  0 TRIPPED   (  0.0 s)
+  brake_thermal       2 agents probed,  0 skipped,  0 TRIPPED   (  0.0 s)
+  cooling_loop       10 agents probed,  0 skipped,  1 TRIPPED   (  0.0 s)
+        -> cooling_loop.PASS on wall:THERM: n=48 nonzero=1 peak=3.7441 channel=dirichlet
+  channel_ns         SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  front_wing         SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  wing_fsi           SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  ground_effect      SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  reuse_probe        SKIPPED  TypeError: build() missing 3 required positional arguments: 'u_full', 'v_full', a
+  powertrain         12 agents probed,  0 skipped,  3 TRIPPED   (  0.0 s)
+        -> powertrain.ROTOR on up:MECH: n=32 nonzero=1 peak=3 channel=dirichlet
+        -> powertrain.ROTOR on down:MECH: n=32 nonzero=1 peak=3 channel=dirichlet
+        -> powertrain.MGU on shaft:ROT: n=1 nonzero=1 peak=0.033333 channel=dirichlet
+  scaling_ladder     SKIPPED  TypeError: build() missing 3 required positional arguments: 'u_full', 'v_full', a
+  wind_farm          42 agents probed,  2 skipped,  4 TRIPPED   (  0.0 s)
+        -> wind_farm.R1 on face:MECH: n=16 nonzero=1 peak=0.4 channel=dirichlet
+        -> wind_farm.R1 on face:ADVEC: n=16 nonzero=1 peak=0.4 channel=dirichlet
+        -> wind_farm.R2 on face:MECH: n=16 nonzero=1 peak=0.4 channel=dirichlet
+        -> wind_farm.R2 on face:ADVEC: n=16 nonzero=1 peak=0.4 channel=dirichlet
+  neural_interface   SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  poseidon           SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  wake_array         SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  window_ns          SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  car_graph          30 agents probed,  0 skipped,  9 TRIPPED   (  0.1 s)
+        -> car_graph.FLUID on core:MECH: n=32 nonzero=1 peak=5 channel=dirichlet
+        -> car_graph.FLUID on rotor:MECH: n=32 nonzero=1 peak=5 channel=dirichlet
+        -> car_graph.PASS on wall:THERM: n=48 nonzero=1 peak=3.7441 channel=dirichlet
+        -> car_graph.RAD on up:MECH: n=32 nonzero=1 peak=0.69953 channel=dirichlet
+        -> car_graph.RAD on down:MECH: n=32 nonzero=1 peak=0.69953 channel=dirichlet
+        -> car_graph.RAD on strip:MECH: n=32 nonzero=1 peak=0.69953 channel=dirichlet
+        -> car_graph.ROTOR on up:MECH: n=32 nonzero=1 peak=1.1659 channel=dirichlet
+        -> car_graph.ROTOR on down:MECH: n=32 nonzero=1 peak=1.1659 channel=dirichlet
+        -> car_graph.MGU on shaft:ROT: n=1 nonzero=1 peak=0.84673 channel=dirichlet
+  racelab            SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  integration_union  SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+  wind_farm_real     SKIPPED  TypeError: build() missing 2 required positional arguments: 'u_full' and 'v_full'
+
+================================================================================================
+  141 PORTS probed across 8 cases; 15 skipped and named.
+
+  **The rate has to be read per KIND**, because a fixture built as
+  `linear_response(A)` with a diagonal A trips the signature trivially
+  and says nothing about whether the rule would fire on an expert.
+
+    callable   110 ports, 13 tripped  ( 11.8%)
+       -> cooling_loop     PASS     wall:THERM     n=48    peak=3.7441 channel=dirichlet
+       -> powertrain       ROTOR    up:MECH        n=32    peak=3 channel=dirichlet
+       -> powertrain       ROTOR    down:MECH      n=32    peak=3 channel=dirichlet
+       -> powertrain       MGU      shaft:ROT      n=1     peak=0.033333 channel=dirichlet
+       -> car_graph        FLUID    core:MECH      n=32    peak=5 channel=dirichlet
+       -> car_graph        FLUID    rotor:MECH     n=32    peak=5 channel=dirichlet
+       -> car_graph        PASS     wall:THERM     n=48    peak=3.7441 channel=dirichlet
+       -> car_graph        RAD      up:MECH        n=32    peak=0.69953 channel=dirichlet
+       -> car_graph        RAD      down:MECH      n=32    peak=0.69953 channel=dirichlet
+       -> car_graph        RAD      strip:MECH     n=32    peak=0.69953 channel=dirichlet
+       -> car_graph        ROTOR    up:MECH        n=32    peak=1.1659 channel=dirichlet
+       -> car_graph        ROTOR    down:MECH      n=32    peak=1.1659 channel=dirichlet
+       -> car_graph        MGU      shaft:ROT      n=1     peak=0.84673 channel=dirichlet
+
+    synthetic   31 ports,  4 tripped  ( 12.9%)
+       -> wind_farm        R1       face:MECH      n=16    peak=0.4 channel=dirichlet
+       -> wind_farm        R1       face:ADVEC     n=16    peak=0.4 channel=dirichlet
+       -> wind_farm        R2       face:MECH      n=16    peak=0.4 channel=dirichlet
+       -> wind_farm        R2       face:ADVEC     n=16    peak=0.4 channel=dirichlet
+
+artifact written to out/t88/w301.json

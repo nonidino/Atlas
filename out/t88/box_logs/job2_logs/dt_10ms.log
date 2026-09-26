@@ -1,0 +1,7 @@
+W336 dt_10ms: case 0 (underexpanded_max), coarsen 4, dt_macro 0.01, 6 steps
+  step  1 t=0.0100  163 s  tele 1.7e-13  wall 3.8e-17  inj 1.0000  exit 0.6310  ab -8.9e-01  be +4.6e-01  thrust exit 5.6282e+05 walls 1.2108e+06  
+  step  2 t=0.0200  183 s  tele 7.3e-14  wall 4.5e-17  inj 1.0000  exit 0.5978  ab +2.0e-01  be -5.9e-01  thrust exit 5.5433e+05 walls 1.1795e+06  
+  step  3 t=0.0300  187 s  tele 2.5e-13  wall 3.8e-17  inj 1.0000  exit 1.2220  ab +2.3e-01  be -1.2e-04  thrust exit 1.1944e+06 walls 1.0122e+06  
+  step  4 t=0.0400  192 s  tele 9.7e-14  wall 3.9e-17  inj 1.0000  exit 1.2653  ab +5.0e-02  be +2.1e-01  thrust exit 1.2349e+06 walls 1.1351e+06  
+  step  5 t=0.0500  188 s  tele 7.9e-14  wall 5.1e-17  inj 1.0000  exit 1.0598  ab +7.1e-02  be -1.5e-02  thrust exit 1.0293e+06 walls 9.964e+05  
+  step  6 t=0.0600  189 s  tele 7.9e-14  wall 4.5e-17  inj 1.0000  exit 1.0739  ab +4.6e-02  be +2.4e-02  thrust exit 1.043e+06 walls 1.0667e+06  

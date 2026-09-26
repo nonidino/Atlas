@@ -6236,3 +6236,42 @@ What was done about each:
 - no file over 1.2 MB in the 45 earlier commits. This commit adds the three episodes' `.npz` records, the largest $4.6$ MB, about 16 MB of records in all.
 
 **Changed:** [[case-study-rocket-bc-seam-atlas-0.1]] §19.7 and §19.9 (the lost record, and a three-grid comparison at 10 ms read off the box's log, unregistered), [[gap-worklist]] (W342), [[index]].
+
+## [2026-09-26] tier 88 | W337–W340 fixed, the episode re-marched and re-audited, and a floor that was the ghost's depth
+
+Carried out from [[rocket-episode-pickup]] by a session with none of the earlier context, on the owner's machine. Full record in [[case-study-rocket-bc-seam-atlas-0.1]] §20 and the [[gap-worklist]] Tier 88 block.
+
+**The build repo, both branches** (`atlas-0.1-windfarm` at `c1ccac6`, whose diff from `76edd8b` hashes to the records' `409bd71838fd6dc0`, and `atlas-0.1` at `edc3315`):
+- **W337:** `_inlet_face_flux` prescribes the injector face's flux.
+- **W338:** `_outer_robin` sends radiation to $T_\infty$.
+- **W339:** the no-slip face's viscous energy flux is the conduction alone.
+- **W340:** plane seams are handed over by overlap average, two ghost layers deep where each side's ghost is the other's cells and one where the source is an outflow boundary; `prescribed` accepts a layered state.
+- 15 new tests; each keeps its diagnosis as a control. The full suites pass: 89 on `atlas-0.1-windfarm`, 93 on `atlas-0.1`.
+
+**What was measured:**
+- The injector delivers $1.000000$ of its declared flow (it was $1.1772$), and the chamber runs at $0.980$ of its declared pressure.
+- The wall work is $0$; the shell receives the wall heat to $2.4\times10^{-4}$.
+- The radiation slip is $3\times10^{-16}$.
+- The throat is a lag, $+2.8\times10^{-4}$ late in the run (it was $-3.0\%$).
+- All 17 of Tier 86's gates pass on the new march. Tier 87's P1–P9 hold, and Tier 88's registered predictions hold at 12 of 14. Q5 (the thermal residue shrinks $1.24\times$ and $1.44\times$ per halving, not $1.5\times$) and Q14 (lateral round-off is not bitwise across boxes) fail on their own wording.
+- The full-resolution engine ran to 30 ms for the first time; P10 failed on a start-up window, and P11–P12 held.
+
+**Two diagnoses corrected along the way:**
+- **The throat.** A frozen-instant test (`scripts/w340_throat_diag.py`) showed the briefed overlap average left the throat's floor at $-3.1\%$: the cause was the ghost's depth, not the interpolation.
+- **The first fixed build.** It gave every seam two layers, and its partial coupling-step study showed e\|f turned into a $1.8\%$ floor; the one-way seams went back to one layer and every coupled stage was re-run.
+
+**Re-derived:** Tiers 76–85's records, twice on one box, fixed and reverted. The reverted run reproduces W334's records, and the fixes move nothing the pages quote. The old records are in `out/pre_w337/`. **New: W343**, d\|g coupled one way across a subsonic band beside the plume.
+
+**Compute.** A rented EPYC 7B13, 64 cores, under the owner's $\$0.70$/h cap: 3.8 h and $\$2.34$, about 50 min of it idle while the session was paused. Three stray contracts cost about $\$0.001$. One of them came from a create the owner rejected in the permission prompt; it still reached the API. All were destroyed, and the instance list read `[]`.
+
+**The page** was rebuilt with new notes and published as a new artifact; the owner's earlier one could not be read from this account.
+
+**Added:**
+- scripts: `scripts/w340_throat_diag.py`, `scripts/t88_swap_records.py`, `scripts/box/with_revert.py`, `scripts/box/run_t88.sh`, `scripts/box/run_t88b.sh`;
+- tests: `tests/test_tier88_episode_fixes.py`;
+- records: `out/w336` (the fixed audit), `out/w321` (the fixed march), `out/w321_laptop`, `out/w336_pre_w337`, `out/w321_pre_w337`, `out/w336_t88_twolayer`, `out/w321_t88_twolayer_*`, `out/t88`, `out/t88_revert`, `out/pre_w337`, `out/w323_seams_fixed_t88.json`, `out/w340_throat_diag.json`.
+
+**Changed:**
+- scripts: `scripts/w336_episode_residuals.py` (the ledger reads the solver's face-flux arrays and the outer Robin data; `revert`, `control_old`, `PREDICTIONS_T88`), `scripts/w336_thermal_seam_diag.py`, `scripts/w321_rocket_episode.py` (provenance from the identity on a box), `scripts/w321_episode_viz_data.py`, the page template;
+- tests: `tests/test_tier87_episode_residuals.py` (the Tier 87 pins read the kept records);
+- wiki: [[case-study-rocket-bc-seam-atlas-0.1]] (§20), [[gap-worklist]] (W337–W340 closed, Tier 88 block, W343), [[index]].

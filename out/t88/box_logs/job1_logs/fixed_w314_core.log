@@ -1,0 +1,208 @@
+========================================================================================
+W314 -- the composed defect at 50:1, against CS-11's bound
+stages: setup, r9, rate, slope, sigma_law, ratio, trace_rank, two_way, transfer, knee, constants
+========================================================================================
+
+=== the two agents, their clocks, and the ratio the YAML gives ===
+  chamber block (112, 80), 112 wall cells; shell seam window 14 cells
+  declared dt_model: b = 0.001 s, c = 0.05 s  ->  ratio 50
+  dt_macro = 0.05 s, which R4 floors at max_i dt_native = 0.05 s
+  shell MARCHED 5.00 s of burn to 478.9557 K mean (870.7665 K max); validity DECLINES
+  overlap maps: P (112, 14) (shell window -> gas face), R (14, 112) (the transpose)
+  row sums: P 1.000000000000..1.000000000000  R 1.000000000000..1.000000000000  (row-stochastic)
+
+  pre-marching the gas to a common start, 0.006 s of gas time:
+    settle  0.0020 s of gas time: relative state change 7.44372e-03
+    settle  0.0040 s of gas time: relative state change 2.22058e-04
+    settle  0.0060 s of gas time: relative state change 7.75714e-05
+
+  base consistency, gas -> shell:
+    the shell is marched and linearised about T_gas = 2800.0 K
+    the gas's own near-wall cell is  2695.882 .. 2803.589 K, mean 2755.558 K
+    ratio near-wall / chamber = 0.9841
+    h: march used 211.397 W/(m^2 K) mean; settled gas gives 208.919
+  the wall the gas sees: 369.181 .. 870.767 K (spread 501.586 K)
+
+  machine: battery_status=None charge=None% clock=None/None MHz
+  gas march rate so far: 53587 s of wall per second of gas time
+
+=== the gate's FIRST half: what L7/R9 decides on the real graph ===
+  L7  R9             admit                time-integrated flux matching over an exchange interval of 0.05, with each side quadrature'd on 
+  L7  R9/lag         admit-uncertified    and R9 is not the multirate defect, it is the smaller one. Matching the integral fixes what the 
+  L7  R9/order       admit-uncertified    and the accounting the mechanism does not carry: the interface representation order CAPS the sch
+
+  flux_matching declared: time-integrated
+  macro_dt 0.05; agents at a multirate seam: ['b', 'c', 'd', 'e', 'f']
+  L7/R9 ADMITS: True
+
+=== the run-derived constant, and the burn time it carries ===
+  CS-11 measured lambda_dot at a SETTLED state.  The rocket's shell
+  has none -- Tier 76 renamed settle() to march() for that reason --
+  so the rate is a function of when in the burn it is taken.
+
+    burn [s]  wall mean [K]     d(wall)/dt     rel to 5 s
+        0.50       322.4330    6.76535e+01              -
+        1.00       344.4387    5.72625e+01              -
+        5.00       478.9557    3.22004e+01              -
+       10.00       602.3502    2.30009e+01              -
+
+  lambda_dot over the swept burn times: 2.30009e+01 .. 6.76535e+01 K/s, a factor of 2.941
+  CS-11's own lambda_dot was 11.94 K/s at a settled state.
+
+=== s_seam and C2: the constants CS-11 calls SEAM properties ===
+  measured at DT = 0.0002 s, ratio 50
+    shift [K]          sigma     sigma/shift    log ratio
+        0.010    1.16268e-05     1.16268e-03          nan
+        0.030    3.48796e-05     1.16265e-03       1.0000
+        0.100    1.16257e-04     1.16257e-03       0.9999
+        0.300    3.48696e-04     1.16232e-03       0.9998
+        1.000    1.16146e-03     1.16146e-03       0.9994
+        3.000    3.47698e-03     1.15899e-03       0.9981
+       10.000    1.15040e-02     1.15040e-03       0.9938
+
+  s_seam = 1.162678e-03 per K (smallest shift, the linear branch)
+  C2     = -1.228200e-06 per K^2 (closes the gap at 10 K)
+
+  and whether s_seam IS a constant in the interval, which CS-11 used
+  it as and never tested:
+       DT [s]         s_seam    rel to base
+        5e-05    1.16208e-03         0.9995
+        0.001    1.16449e-03         1.0016
+
+  s_seam moves by 1.0021x over 20x of exchange interval.
+
+=== sigma as a function of the exchange interval, RATIO PINNED at 50 ===
+  CS-11 pinned the interval and moved the ratio.  This is the
+  complement: every row is at the declared 50:1 and the interval
+  moves, so the two statements check each other on a second seam.
+
+      DT [s]    ratio       lag [K]         sigma     sigma/lag log ratio
+       4e-06        1   0.00000e+00   0.00000e+00             -         -   <- single-rate CONTROL
+      0.0002       50   6.34113e-03   3.20548e-06   5.05505e-04       nan   [14 s]
+       0.001       50   3.17023e-02   1.60489e-05   5.06237e-04     1.001   [85 s]
+       0.005       50   1.58484e-01   8.05142e-05   5.08029e-04     1.002   [309 s]
+
+  the BOUND -- from the slope stage's constants and each interval's own
+  lag. Nothing here is fitted to this table.
+      DT [s]       measured          bound   bound/meas
+       4e-06    0.00000e+00    0.00000e+00          inf
+      0.0002    3.20548e-06    7.37264e-06       2.3000
+       0.001    1.60489e-05    3.68584e-05       2.2966
+       0.005    8.05142e-05    1.84234e-04       2.2882
+
+  ratio 1 is the single-rate control and its defect is 0.0e+00 --
+  EXACTLY zero, because one gas call IS the interval.  It carries
+  no tightness ratio; quoting 0/0 as one would be W106's mistake.
+  the bound holds at every graded interval: True
+  loose by 2.288x to 2.300x over 25x of exchange interval
+  CS-11's own tightness on the brake seam was 1.426x to 2.178x.
+
+=== CS-11's OWN control: the RATIO at a fixed exchange interval ===
+  The interval sweep moves two things at once.  Here the interval is
+  pinned and the gas's own stability step is refined through its CFL
+  number, so the ratio moves with the staleness untouched.
+
+     CFL   substeps  dt_stable [s]         sigma     relative
+    0.40       1400    2.85714e-07  3.205476e-06     1.000000
+    0.20       2800    1.42857e-07  3.205476e-06     1.000000
+    0.10       5500    7.27273e-08  3.205476e-06     1.000000
+
+  3.9x of clock ratio at a fixed interval moves sigma by 1.000000x.
+  CS-11 measured 8x of ratio moving sigma by 1.000160x.
+
+=== what the BUILD REPO's coupler actually transports on this seam ===
+  generate.py exists at that path: True; _wall_T returns a scalar mean over every panel: False
+  generate.py::_wall_T returns ONE number -- the mean over every shell
+  panel -- and hands it to every gas agent's wall BC.  The gas->shell
+  direction is per-station (np.interp on normalized index); the
+  shell->gas direction is rank 1.
+
+  the wall the gas would see, per station: 369.1808 .. 870.7665 K (spread 501.5857 K)
+  the wall generate.py hands it:           478.9557 K, rank 1
+
+  and what that costs the defect, at two intervals:
+      DT [s]  sigma per-face    sigma scalar      ratio
+      0.0002     3.20548e-06     3.70592e-06     1.1561
+       0.001     1.60489e-05     1.85380e-05     1.1551
+
+=== what the base disagreement costs THIS tier's quantity ===
+  The shell is marched and linearised about T_gas = 2800.0 K; the gas's
+  own near-wall cell is 2695.9 .. 2803.6 K, mean 2755.6 (ratio 0.9841).
+  Tier 77 measured the other direction of this at 876%% of the base
+  norm and it moved beta by 114x.  This is the same class, one
+  direction along, priced on sigma instead of on beta.
+
+      DT [s]  declared trace         two-way      ratio
+      0.0002     3.20548e-06     3.24455e-07     0.1012
+       0.001     1.60489e-05     2.56572e-06     0.1599
+
+  the two-way referent moves sigma by 0.1012x to 0.1599x, and that spread is 1.5794x
+
+=== the control that makes 'the bound holds' mean something ===
+  CS-11 calls s_seam and C2 SEAM properties and lambda_dot a RUN
+  property.  If its own constants happened to bound the rocket too,
+  the rocket's measurement would be evidence of nothing.
+
+      DT [s]      measured    rocket bnd      ratio     CS-11 bnd      ratio
+      0.0002   3.20548e-06   7.37264e-06     2.3000   6.02198e-05    18.7865
+       0.001   1.60489e-05   3.68584e-05     2.2966   3.01079e-04    18.7601
+       0.005   8.05142e-05   1.84234e-04     2.2882   1.50541e-03    18.6975
+
+  CS-11's own constants bound the rocket's defect: True (worst 18.6975)
+  s_seam: rocket 1.162678e-03 vs CS-11 9.496600e-03, a factor of 0.1224
+
+=== the knee: where the order changes, and whether s_seam moved ===
+  one chamber flow-through is about 6e-3 s; the sweep's largest
+  interval is 0.83 of one and the anchor is 8.3.
+  s_seam was 1.162678e-03 per K, flat to 1.0021x over 5e-5 .. 1e-3.
+
+  DT = 0.01 s  (1.67 flow-throughs)
+    lag       3.168932e-01 K    sigma      1.612430e-04
+    sigma/lag 5.088243e-04      bound/meas 2.2843
+    s_seam    1.171620e-03 per K   -> 1.0077x the small-interval value
+    cost      1250 s (defect 655 s, slope 595 s)
+
+  the order column, read across the whole table:
+    DT = 0.0002     sigma/lag 5.055053e-04  order --
+    DT = 0.001      sigma/lag 5.062371e-04  order 1.0008
+    DT = 0.005      sigma/lag 5.080290e-04  order 1.0021
+    DT = 0.01       sigma/lag 5.088243e-04  order 1.0019
+
+=== the constants this tier publishes, and the state they carry ===
+  s_seam     = 1.162678e-03 per K
+  C2         = -1.228200e-06 per K^2
+  lambda_dot = 3.220041e+01 K/s at a 5 s burn
+  bound      = s_seam * lag + C2 * lag^2,  lag <= lambda_dot * DT
+
+  probe state: chamber p_c=5e+06 Pa T_c=2800.0 K; shell marched 5.00 s to 478.9557 K; ratio pinned at 50; CFL 0.40; gas settled 0.006 s
+
+========================================================================================
+PREDICTIONS, registered before any arm ran
+========================================================================================
+  P1   HELD  L7/R9 ADMITS on the real graph
+       got: True
+  P2   HELD  the ratio-1 control is EXACTLY zero, not small
+       got: 0.0
+  P3   HELD  sigma is first order in the interval: every exponent in [0.90, 1.10]
+       got: [1.0008339010828915, 1.0020847531579018, 1.0019206140899286]
+  P4   HELD  the bound with ROCKET constants holds at every graded interval
+       got: True
+  P5   HELD  lambda_dot here exceeds CS-11's 11.94 K/s and lies in [20, 200] K/s
+       got: 32.200405036998085
+  P6   FAILED CS-11's OWN constants do NOT bound the rocket's defect
+       got: 18.69748521674964
+  P7   HELD  4x of clock ratio at a fixed interval moves sigma by less than 1.05x
+       got: 1.0000000003790381
+  P8   HELD  lambda_dot at 0.5 s and 5.0 s of burn differ by more than 2x
+       got: 2.9413370121692965
+  P9   HELD  the tightness is within an order of magnitude of CS-11's, i.e. in [1, 10]
+       got: [2.2842632376432417, 2.3000155791218764]
+  P10  HELD  s_seam is constant in the interval to better than 1.5x
+       got: 1.0020718320919617
+  P11  FAILED the build repo's rank-1 trace changes the defect by more than 1.2x
+       got: [1.1561215696211509, 1.1550941426851824]
+  P12  HELD  the two-way referent moves sigma by more than 1.5x at some interval
+       got: [0.10121901967062678, 0.1598688590175726]
+
+  10 of 12 held.
+  wall 2455 s; Modern Standby events during the run: -1

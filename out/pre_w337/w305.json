@@ -1,0 +1,237 @@
+{
+  "setup": {
+    "n_face": 232,
+    "n_seam": 14,
+    "dt_shell": 0.05,
+    "dt_gas": 1e-05,
+    "burn": 5.0,
+    "traj_dt": 0.05,
+    "traj_port_dim": 3,
+    "traj_state": [
+      0.0,
+      0.0,
+      1.5707963267948966,
+      0.0,
+      0.0,
+      0.0,
+      50000.0
+    ],
+    "traj_validity": true,
+    "marched": {
+      "burn_time_s": 5.0,
+      "steps": 100,
+      "T_wall_mean_K": 478.9556962139239,
+      "T_wall_min_K": 369.18081353826585,
+      "T_wall_max_K": 870.7665100622745,
+      "valid_at_base": false,
+      "validity_lost_s": 2.95
+    }
+  },
+  "bc_mech": {
+    "singular_values": [
+      5.191948047175983e-05,
+      1.1097416195725267e-07,
+      4.53103874933215e-09,
+      7.206741818537904e-10,
+      2.1324355439039815e-10,
+      7.037628695107449e-11,
+      2.356257483621184e-11,
+      2.1744307102327404e-11,
+      7.674072956866032e-12,
+      2.3453692761893445e-12,
+      1.2839230942077158e-12,
+      4.747691261111317e-13,
+      3.181497962492127e-13,
+      6.09910752318856e-14
+    ],
+    "beta": 6.09910752318856e-14,
+    "kappa": 851263570.5201796,
+    "ranks": {
+      "0.01": 1,
+      "0.001": 2,
+      "0.0001": 2,
+      "1e-06": 6,
+      "1e-08": 11,
+      "1e-10": 14,
+      "1e-12": 14
+    },
+    "ratios": [
+      467.8519716306509,
+      24.491991372532322,
+      6.287222247475215,
+      3.3795824868610453,
+      3.0300483817602486,
+      2.986782532905428,
+      1.0836204035073538,
+      2.833476724100292,
+      3.272010525069441,
+      1.8267209981425145,
+      2.7043104186753317,
+      1.4922817229756642,
+      5.2163336199537405
+    ],
+    "max_tail_ratio": 6.287222247475215,
+    "wall_s": 0.11572373704984784,
+    "calls": 115,
+    "response_at_base": [
+      255.30896291378184,
+      259.1765865840769,
+      262.67690830089424,
+      265.79808542250913,
+      268.52960816024023,
+      270.86243712357486,
+      272.78846766451016,
+      274.3020811236601,
+      275.39676252021854,
+      236.6012610933062,
+      236.606516899212,
+      236.60951530556576,
+      236.61159355677248,
+      236.6136717794158
+    ]
+  },
+  "onesided": {
+    "checks": {
+      "bc_docstring_lists_eight_kinds": true,
+      "noslip_negates_momentum": true,
+      "wall_reads_T_wall": true,
+      "wall_reads_no_slip_mask": true,
+      "no_wall_velocity_param": true
+    },
+    "source": "/root/w334/build/src/atlas/solvers/compressible2d.py",
+    "bc_kinds": [
+      "wall_slip",
+      "wall_noslip",
+      "symmetry",
+      "inlet_massflow",
+      "freestream",
+      "outflow",
+      "prescribed",
+      "extrapolate"
+    ],
+    "wall_params": [
+      "T_wall",
+      "no_slip_mask",
+      "isothermal_mask"
+    ]
+  },
+  "rigid": {
+    "singular_values": [
+      0.0028388281681621962,
+      0.00045959403784762,
+      3.337580655602243e-05
+    ],
+    "rank": 3,
+    "torque_weakness": 85.0564663777376,
+    "V_orthonormality": 1.7763568394002505e-15,
+    "load_at_ambient": [
+      -1.7170715604594328e-16,
+      -7.513892963957854e-14,
+      0.13840261000617465
+    ]
+  },
+  "trajectory": {
+    "block": [
+      [
+        1e-06,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0000000012826416e-06,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        5e-06
+      ]
+    ],
+    "analytic_diag": [
+      1e-06,
+      1e-06,
+      5e-06
+    ],
+    "max_rel_error": 2.565283326472906e-10,
+    "base_response": [
+      0.0,
+      -0.49033250062895917,
+      0.0
+    ],
+    "storage": 0.0,
+    "validity": true,
+    "mass": 50000.0,
+    "dt": 0.05,
+    "inertia": 10000.0
+  },
+  "seam": {
+    "singular_values": [
+      1.1586064583429644e-08,
+      4.600937948808988e-10,
+      4.0844439932123416e-11
+    ],
+    "beta": 4.0844439932123416e-11,
+    "kappa": 283.66320122601104,
+    "shape": [
+      3,
+      14
+    ]
+  },
+  "compile": {
+    "verdict": "refuse",
+    "counts": {
+      "admit-uncertified": 20,
+      "admit": 82,
+      "refuse": 4
+    },
+    "wall_s": 14.878241318045184
+  },
+  "constants": {
+    "bc_beta": 6.09910752318856e-14,
+    "bc_kappa": 851263570.5201796,
+    "seam_beta": 4.0844439932123416e-11,
+    "seam_kappa": 283.66320122601104,
+    "traj_block_error": 2.565283326472906e-10
+  },
+  "predictions": [
+    {
+      "name": "R1",
+      "claim": "the trajectory agent's probed block is EXACTLY diagonal dt/m, dt/m, dt/I to better than 1e-6 relative",
+      "got": 2.565283326472906e-10,
+      "held": true
+    },
+    {
+      "name": "R2",
+      "claim": "the c-trajectory seam is 3-dimensional, not the 1 the brief named",
+      "got": [
+        3,
+        14
+      ],
+      "held": true
+    },
+    {
+      "name": "R3",
+      "claim": "the composed c-trajectory seam is far better conditioned than b-c MECH: kappa below 1e3 against b-c's 1e8",
+      "got": 283.66320122601104,
+      "held": true
+    },
+    {
+      "name": "R4",
+      "claim": "the rigid-load map has full rank 3 -- the seam window drives every planar mode",
+      "got": 3,
+      "held": true
+    },
+    {
+      "name": "R5",
+      "claim": "the seven-agent graph still refuses, and adding nothing to it leaves the count where Tier 79 left it",
+      "got": {
+        "admit-uncertified": 20,
+        "admit": 82,
+        "refuse": 4
+      },
+      "held": true
+    }
+  ],
+  "wall_seconds": 15.513793520163745
+}

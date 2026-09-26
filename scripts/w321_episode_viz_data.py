@@ -168,8 +168,9 @@ def main(argv=None):
     ap.add_argument("--out", default="out/w321/viz.json")
     ap.add_argument("--before", default="out/w321_prefix/seam_audit.json",
                     help="the pre-fix audit, for the page's before/after table")
-    ap.add_argument("--gates", default="out/w323_seams_fixed.json",
-                    help="the post-fix verification's gates")
+    ap.add_argument("--gates", default="out/w323_seams_fixed_t88.json",
+                    help="the post-fix verification's gates, read against this march "
+                         "(Tier 86's own reading of its march is out/w323_seams_fixed.json)")
     ap.add_argument("--before-episode", default="out/w321_prefix/episode.json",
                     help="the pre-fix run's summary, for the before/after table")
     ap.add_argument("--prefix-run", default="out/w321_prefix",

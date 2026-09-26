@@ -1,0 +1,626 @@
+{
+  "setup": {
+    "gas_shape": [
+      112,
+      80
+    ],
+    "n_face_gas": 112,
+    "n_seam_shell": 14,
+    "dt_gas_declared": 0.001,
+    "dt_shell": 0.05,
+    "declared_ratio": 50.0,
+    "dt_macro": 0.05,
+    "cfl": 0.4,
+    "settle_seconds": 0.006,
+    "settle_curve": [
+      {
+        "t": 0.002,
+        "rel_change": 0.007443718110981322
+      },
+      {
+        "t": 0.004,
+        "rel_change": 0.00022205798700100564
+      },
+      {
+        "t": 0.006,
+        "rel_change": 7.757133711709583e-05
+      }
+    ],
+    "marched": {
+      "burn_time_s": 5.0,
+      "steps": 100,
+      "T_wall_mean_K": 478.9556962139239,
+      "T_wall_min_K": 369.18081353826597,
+      "T_wall_max_K": 870.7665100622745,
+      "valid_at_base": false,
+      "validity_lost_s": 2.95
+    },
+    "h_cold_mean": 211.39655604701122,
+    "gas_near_wall_T_mean": 2755.5541421438184,
+    "gas_near_wall_T_min": 2695.866068062646,
+    "gas_near_wall_T_max": 2803.5889435254703,
+    "shell_linearised_about_K": 2800.0,
+    "base_gap_near_wall_over_chamber": 0.984126479337078,
+    "h_settled_mean": 208.91896752107849,
+    "wall_spread_K": 501.58569652400854,
+    "machine": {
+      "error": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    "standby_last_hour": -1,
+    "setup_wall_s": 355.0867619924247
+  },
+  "r9": {
+    "rows": [
+      {
+        "layer": "L7",
+        "rule": "R9",
+        "verdict": "admit",
+        "subject": "<graph>",
+        "message": "time-integrated flux matching over an exchange interval of 0.05, with each side quadrature'd on its own clock: b x50000, c x1, d x10000, e x50000, f x10000. The clocks nest, every side supplies boundary_response_integrated, and `solve.coupled_step` calls it. E4 still FAILS -- the agents really do run at different steps and no declaration changes that -- and what E4's failure costs is the pointwise condition, not the coupling: the conserved quantity over the interval is the integral, and that is what is matched"
+      },
+      {
+        "layer": "L7",
+        "rule": "R9/lag",
+        "verdict": "admit-uncertified",
+        "subject": "<graph>",
+        "message": "and R9 is not the multirate defect, it is the smaller one. Matching the integral fixes what the pointwise convention loses to the fast side's flux TRANSIENT; it does nothing about the fast side's trace being STALE for the whole interval, which here is 50000 of that agent's own steps. Measured on thermal_seam at its own 500:1 mismatch, both in interface power over one exchange interval (scripts/w7_multirate_matching.py, stage lagvsleak): R9's term is 5.9972e-05 and the lag term is 3.7431e-03, a factor of **62.4**. So this rule refused every multirate graph for the whole life of the compiler over the term 62x smaller than the one it does not mention. The lag term is sigma, it is a function of the lag (W86), and a multirate exchange interval is where that lag is largest -- so declare sigma with the sigma_lag it was measured at and expect it to be the term that decides this graph"
+      },
+      {
+        "layer": "L7",
+        "rule": "R9/order",
+        "verdict": "admit-uncertified",
+        "subject": "<graph>",
+        "message": "and the accounting the mechanism does not carry: the interface representation order CAPS the scheme order -- a second-order expert coupled through an interface held constant across the macro-step is a first-order method -- while stability is set by the coupling stiffness, which can force a macro-step SHORTER than any agent's native step. That is the opposite direction from R4 and is not implied by it. [AI Inference] the relevant stiffness is the probed operator's condition number, which the probe already prints. Untested"
+      }
+    ],
+    "admits": true,
+    "flux_matching": "time-integrated",
+    "macro_dt": 0.05,
+    "verdict": "refuse",
+    "at_multirate": [
+      "b",
+      "c",
+      "d",
+      "e",
+      "f"
+    ],
+    "wall_s": 27.187728382647038
+  },
+  "rate": {
+    "rows": [
+      {
+        "burn": 0.5,
+        "wall_mean": 322.4329700670235,
+        "rate": 67.65350458742195,
+        "rel_to_5s": 2.1010141000944738
+      },
+      {
+        "burn": 1.0,
+        "wall_mean": 344.43868539644274,
+        "rate": 57.26250128917027,
+        "rel_to_5s": 1.7783161914363332
+      },
+      {
+        "burn": 5.0,
+        "wall_mean": 478.9556962139239,
+        "rate": 32.20040483516025,
+        "rel_to_5s": 1.0
+      },
+      {
+        "burn": 10.0,
+        "wall_mean": 602.3501487977285,
+        "rate": 23.00093622742959,
+        "rel_to_5s": 0.7143058090472956
+      }
+    ],
+    "lambda_dot_at_5s": 32.20040483516025,
+    "lo": 23.00093622742959,
+    "hi": 67.65350458742195,
+    "span": 2.9413369924804313,
+    "cs11_lambda_dot": 11.94,
+    "over_cs11": 2.6968513262278266
+  },
+  "slope": {
+    "rows": [
+      {
+        "shift": 0.01,
+        "sigma": 1.162676940068823e-05,
+        "slope": 0.001162676940068823,
+        "exponent": NaN
+      },
+      {
+        "shift": 0.03,
+        "sigma": 3.487956828445773e-05,
+        "slope": 0.001162652276148591,
+        "exponent": 0.9999806908479694
+      },
+      {
+        "shift": 0.1,
+        "sigma": 0.00011625659547091172,
+        "slope": 0.001162565954709117,
+        "exponent": 0.9999383308058606
+      },
+      {
+        "shift": 0.3,
+        "sigma": 0.000348695802744943,
+        "slope": 0.0011623193424831434,
+        "exponent": 0.999806892733194
+      },
+      {
+        "shift": 1.0,
+        "sigma": 0.0011614564382515455,
+        "slope": 0.0011614564382515455,
+        "exponent": 0.9993831469502075
+      },
+      {
+        "shift": 3.0,
+        "sigma": 0.0034769791212196583,
+        "slope": 0.0011589930404065528,
+        "exponent": 0.9980673725394358
+      },
+      {
+        "shift": 10.0,
+        "sigma": 0.011503949102087959,
+        "slope": 0.0011503949102087958,
+        "exponent": 0.9938152457610667
+      }
+    ],
+    "s_seam": 0.001162676940068823,
+    "C2": -1.2282029860027043e-06,
+    "checks": [
+      {
+        "interval": 5e-05,
+        "s_seam": 0.0011620786422610217,
+        "rel": 0.9994854135425049,
+        "slopes": [
+          0.0011620786422610217,
+          0.0011609685631174666
+        ]
+      },
+      {
+        "interval": 0.001,
+        "s_seam": 0.0011644862632011947,
+        "rel": 1.001556170136362,
+        "slopes": [
+          0.0011644862632011947,
+          0.0011633791613826616
+        ]
+      }
+    ],
+    "s_seam_spread": 1.002071822725774,
+    "interval": 0.0002,
+    "ratio": 50
+  },
+  "sigma_law": {
+    "rows": [
+      {
+        "interval": 4e-06,
+        "ratio": 1,
+        "dt_gas": 4e-06,
+        "sigma": 0.0,
+        "lag": 0.0,
+        "lag_max": 0.0,
+        "p_ref": 44178.98065936677,
+        "p_held": 44178.98065936677,
+        "lag_rate": 0.0,
+        "scalar_trace": false,
+        "two_way": false,
+        "control": true,
+        "bound": 0.0,
+        "bound_over_measured": Infinity
+      },
+      {
+        "interval": 0.0002,
+        "ratio": 50,
+        "dt_gas": 4e-06,
+        "sigma": 3.205466532184396e-06,
+        "lag": 0.006341132704945088,
+        "lag_max": 0.012703771154633614,
+        "p_ref": 44172.46264885242,
+        "p_held": 44172.32105550176,
+        "lag_rate": 31.705663524725438,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 11.118199914693832,
+        "control": false,
+        "exponent": NaN,
+        "bound": 7.372639383958064e-06,
+        "bound_over_measured": 2.300020702114119
+      },
+      {
+        "interval": 0.001,
+        "ratio": 50,
+        "dt_gas": 2e-05,
+        "sigma": 1.6048856889182304e-05,
+        "lag": 0.031702347957867784,
+        "lag_max": 0.06350736502383825,
+        "p_ref": 44157.40191721554,
+        "p_held": 44156.69324139157,
+        "lag_rate": 31.702347957867783,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 83.13404949754477,
+        "control": false,
+        "exponent": 1.0008338744191563,
+        "bound": 3.685835452491449e-05,
+        "bound_over_measured": 2.2966342574690652
+      },
+      {
+        "interval": 0.005,
+        "ratio": 50,
+        "dt_gas": 0.0001,
+        "sigma": 8.051405180878508e-05,
+        "lag": 0.15848351813699746,
+        "lag_max": 0.31743988169716886,
+        "p_ref": 44154.32767414149,
+        "p_held": 44150.77263031555,
+        "lag_rate": 31.69670362739949,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 308.4085913486779,
+        "control": false,
+        "exponent": 1.002085316979484,
+        "bound": 0.0001842342831131215,
+        "bound_over_measured": 2.2882252100622673
+      },
+      {
+        "interval": 0.01,
+        "ratio": 50,
+        "dt_gas": 0.0002,
+        "sigma": 0.0001612425154963023,
+        "lag": 0.3168932067290235,
+        "lag_max": 0.634645619289472,
+        "p_ref": 44156.63350764416,
+        "p_held": 44149.51358098154,
+        "lag_rate": 31.689320672902348,
+        "scalar_trace": false,
+        "two_way": false,
+        "control": false,
+        "bound": 0.00036832108618228837,
+        "bound_over_measured": 2.2842678002672,
+        "wall_s": 1266.4968034029007,
+        "s_seam_here": 0.0011716196923112847,
+        "s_seam_rel": 1.0076915194017113,
+        "flowthroughs": 1.6666666666666667,
+        "exponent": 1.0019196971827369
+      },
+      {
+        "interval": 0.05,
+        "ratio": 50,
+        "dt_gas": 0.001,
+        "sigma": 0.0008057680181369948,
+        "lag": 1.5814890774684485,
+        "lag_max": 3.1641408077458664,
+        "p_ref": 44185.695107335996,
+        "p_held": 44150.09168735935,
+        "lag_rate": 31.629781549368968,
+        "scalar_trace": false,
+        "two_way": false,
+        "wall_s": 3031.281825095415,
+        "control": false,
+        "bound": 0.001835689013395184,
+        "bound_over_measured": 2.278185497656578,
+        "anchor_predictions": {
+          "A1_lag_K": {
+            "lo": 1.229585,
+            "hi": 1.359015,
+            "got": 1.5814890774684485,
+            "held": false
+          },
+          "A2_sigma": {
+            "lo": 0.00055,
+            "hi": 0.0008,
+            "got": 0.0008057680181369948,
+            "held": false
+          },
+          "A3_bound_over_measured": {
+            "lo": 2.0,
+            "hi": 2.8,
+            "got": 2.278185497656578,
+            "held": true
+          }
+        },
+        "exponent": 0.999657290839621
+      }
+    ],
+    "bound_holds": true,
+    "tightness": [
+      2.278185497656578,
+      2.300020702114119
+    ],
+    "lag_rate": 31.684763466452807
+  },
+  "ratio": {
+    "rows": [
+      {
+        "cfl": 0.4,
+        "substeps": 1400,
+        "dt_stable": 2.8571428571428575e-07,
+        "sigma": 3.205466532184396e-06,
+        "relative": 1.0,
+        "ratio": 700.0
+      },
+      {
+        "cfl": 0.2,
+        "substeps": 2800,
+        "dt_stable": 1.4285714285714287e-07,
+        "sigma": 3.205466534277276e-06,
+        "relative": 1.0000000006529097,
+        "ratio": 1400.0
+      },
+      {
+        "cfl": 0.1,
+        "substeps": 5500,
+        "dt_stable": 7.272727272727273e-08,
+        "sigma": 3.205466534882756e-06,
+        "relative": 1.0000000008417995,
+        "ratio": 2750.0
+      }
+    ],
+    "ratio_span": 3.9285714285714284,
+    "sigma_move": 1.0000000008417995
+  },
+  "trace_rank": {
+    "rows": [
+      {
+        "interval": 0.0002,
+        "sigma_face": 3.205466532184396e-06,
+        "sigma_scalar": 3.705915604731962e-06,
+        "lag_face": 0.006341132704945088,
+        "lag_scalar": 0.0055477810897173185,
+        "ratio": 1.1561236305301652
+      },
+      {
+        "interval": 0.001,
+        "sigma_face": 1.6048856889182304e-05,
+        "sigma_scalar": 1.853797416806771e-05,
+        "lag_face": 0.031702347957867784,
+        "lag_scalar": 0.027738314338421333,
+        "ratio": 1.1550962349575933
+      }
+    ],
+    "wall_spread_K": 501.58569652400854,
+    "wall_scalar_K": 478.9556962139239,
+    "wall_min_K": 369.18081353826597,
+    "wall_max_K": 870.7665100622745,
+    "generate_py_source": "/root/job/build/src/atlas/data/generate.py"
+  },
+  "two_way": {
+    "rows": [
+      {
+        "interval": 0.0002,
+        "sigma_declared": 3.205466532184396e-06,
+        "sigma_two_way": 3.242127888322077e-07,
+        "lag_two_way": 0.0022378467060922896,
+        "ratio": 0.10114371358332973
+      },
+      {
+        "interval": 0.001,
+        "sigma_declared": 1.6048856889182304e-05,
+        "sigma_two_way": 2.564583837249071e-06,
+        "lag_two_way": 0.010270180618093558,
+        "ratio": 0.15979853611740552
+      }
+    ],
+    "spread": 1.5799156512653807
+  },
+  "transfer": {
+    "rows": [
+      {
+        "interval": 0.0002,
+        "sigma": 3.205466532184396e-06,
+        "bound_rocket": 7.372639383958064e-06,
+        "rel_rocket": 2.300020702114119,
+        "bound_cs11": 6.021977536574688e-05,
+        "rel_cs11": 18.786586838799263
+      },
+      {
+        "interval": 0.001,
+        "sigma": 1.6048856889182304e-05,
+        "bound_rocket": 3.685835452491449e-05,
+        "rel_rocket": 2.2966342574690652,
+        "bound_cs11": 0.0003010788776120052,
+        "rel_cs11": 18.760144706315298
+      },
+      {
+        "interval": 0.005,
+        "sigma": 8.051405180878508e-05,
+        "bound_rocket": 0.0001842342831131215,
+        "rel_rocket": 2.2882252100622673,
+        "bound_cs11": 0.0015054134504004551,
+        "rel_cs11": 18.69752442686279
+      }
+    ],
+    "cs11_holds": true,
+    "cs11_worst": 18.69752442686279,
+    "s_seam_ratio": 0.12243086368477382,
+    "C2_ratio": -0.08596045534733374
+  },
+  "knee": {
+    "rows": [
+      {
+        "interval": 0.01,
+        "ratio": 50,
+        "dt_gas": 0.0002,
+        "sigma": 0.0001612425154963023,
+        "lag": 0.3168932067290235,
+        "lag_max": 0.634645619289472,
+        "p_ref": 44156.63350764416,
+        "p_held": 44149.51358098154,
+        "lag_rate": 31.689320672902348,
+        "scalar_trace": false,
+        "two_way": false,
+        "control": false,
+        "bound": 0.00036832108618228837,
+        "bound_over_measured": 2.2842678002672,
+        "wall_s": 1266.4968034029007,
+        "s_seam_here": 0.0011716196923112847,
+        "s_seam_rel": 1.0076915194017113,
+        "flowthroughs": 1.6666666666666667,
+        "exponent": 1.0019196971827369
+      }
+    ],
+    "shift": 0.1
+  },
+  "constants": {
+    "s_seam": 0.001162676940068823,
+    "C2": -1.2282029860027043e-06,
+    "lambda_dot": 32.20040483516025,
+    "burn_time": 5.0,
+    "bound_holds": true,
+    "tightness": [
+      2.2842678002672,
+      2.300020702114119
+    ],
+    "ratio": 50,
+    "cfl": 0.4,
+    "settle_seconds": 0.006
+  },
+  "predictions": [
+    {
+      "name": "P1",
+      "claim": "L7/R9 ADMITS on the real graph",
+      "got": true,
+      "held": true
+    },
+    {
+      "name": "P2",
+      "claim": "the ratio-1 control is EXACTLY zero, not small",
+      "got": 0.0,
+      "held": true
+    },
+    {
+      "name": "P3",
+      "claim": "sigma is first order in the interval: every exponent in [0.90, 1.10]",
+      "got": [
+        1.0008338744191563,
+        1.002085316979484,
+        1.0019196971827369,
+        0.999657290839621
+      ],
+      "held": true
+    },
+    {
+      "name": "P4",
+      "claim": "the bound with ROCKET constants holds at every graded interval",
+      "got": true,
+      "held": true
+    },
+    {
+      "name": "P5",
+      "claim": "lambda_dot here exceeds CS-11's 11.94 K/s and lies in [20, 200] K/s",
+      "got": 32.20040483516025,
+      "held": true
+    },
+    {
+      "name": "P6",
+      "claim": "CS-11's OWN constants do NOT bound the rocket's defect",
+      "got": 18.69752442686279,
+      "held": false
+    },
+    {
+      "name": "P7",
+      "claim": "4x of clock ratio at a fixed interval moves sigma by less than 1.05x",
+      "got": 1.0000000008417995,
+      "held": true
+    },
+    {
+      "name": "P8",
+      "claim": "lambda_dot at 0.5 s and 5.0 s of burn differ by more than 2x",
+      "got": 2.9413369924804313,
+      "held": true
+    },
+    {
+      "name": "P9",
+      "claim": "the tightness is within an order of magnitude of CS-11's, i.e. in [1, 10]",
+      "got": [
+        2.278185497656578,
+        2.300020702114119
+      ],
+      "held": true
+    },
+    {
+      "name": "P10",
+      "claim": "s_seam is constant in the interval to better than 1.5x",
+      "got": 1.002071822725774,
+      "held": true
+    },
+    {
+      "name": "P11",
+      "claim": "the build repo's rank-1 trace changes the defect by more than 1.2x",
+      "got": [
+        1.1561236305301652,
+        1.1550962349575933
+      ],
+      "held": false
+    },
+    {
+      "name": "P12",
+      "claim": "the two-way referent moves sigma by more than 1.5x at some interval",
+      "got": [
+        0.10114371358332973,
+        0.15979853611740552
+      ],
+      "held": true
+    }
+  ],
+  "wall_seconds": 355.0907174311578,
+  "standby_during_run": -1,
+  "anchor": {
+    "row": {
+      "interval": 0.05,
+      "ratio": 50,
+      "dt_gas": 0.001,
+      "sigma": 0.0008057680181369948,
+      "lag": 1.5814890774684485,
+      "lag_max": 3.1641408077458664,
+      "p_ref": 44185.695107335996,
+      "p_held": 44150.09168735935,
+      "lag_rate": 31.629781549368968,
+      "scalar_trace": false,
+      "two_way": false,
+      "wall_s": 3031.281825095415,
+      "control": false,
+      "bound": 0.001835689013395184,
+      "bound_over_measured": 2.278185497656578,
+      "anchor_predictions": {
+        "A1_lag_K": {
+          "lo": 1.229585,
+          "hi": 1.359015,
+          "got": 1.5814890774684485,
+          "held": false
+        },
+        "A2_sigma": {
+          "lo": 0.00055,
+          "hi": 0.0008,
+          "got": 0.0008057680181369948,
+          "held": false
+        },
+        "A3_bound_over_measured": {
+          "lo": 2.0,
+          "hi": 2.8,
+          "got": 2.278185497656578,
+          "held": true
+        }
+      },
+      "exponent": 0.999657290839621
+    },
+    "machine": {
+      "error": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    "standby_during": -1
+  },
+  "_signature": {
+    "burn": 5.0,
+    "settle": 0.006,
+    "ratio": 50,
+    "cfl": 0.4,
+    "slope_interval": 0.0002,
+    "intervals": [
+      0.0002,
+      0.001,
+      0.005
+    ],
+    "anchor": 0.05
+  }
+}

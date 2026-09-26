@@ -1,0 +1,74 @@
+with_revert: W337,W338,W339,W340 reverted, running scripts/w314_rocket_multirate_defect.py
+========================================================================================
+W314 -- the composed defect at 50:1, against CS-11's bound
+stages: setup, anchor
+========================================================================================
+
+=== the two agents, their clocks, and the ratio the YAML gives ===
+  chamber block (112, 80), 112 wall cells; shell seam window 14 cells
+  declared dt_model: b = 0.001 s, c = 0.05 s  ->  ratio 50
+  dt_macro = 0.05 s, which R4 floors at max_i dt_native = 0.05 s
+  shell MARCHED 5.00 s of burn to 478.9557 K mean (870.7665 K max); validity DECLINES
+  overlap maps: P (112, 14) (shell window -> gas face), R (14, 112) (the transpose)
+  row sums: P 1.000000000000..1.000000000000  R 1.000000000000..1.000000000000  (row-stochastic)
+
+  pre-marching the gas to a common start, 0.006 s of gas time:
+    settle  0.0020 s of gas time: relative state change 7.44372e-03
+    settle  0.0040 s of gas time: relative state change 2.22058e-04
+    settle  0.0060 s of gas time: relative state change 7.75713e-05
+
+  base consistency, gas -> shell:
+    the shell is marched and linearised about T_gas = 2800.0 K
+    the gas's own near-wall cell is  2695.866 .. 2803.589 K, mean 2755.554 K
+    ratio near-wall / chamber = 0.9841
+    h: march used 211.397 W/(m^2 K) mean; settled gas gives 208.919
+  the wall the gas sees: 369.181 .. 870.767 K (spread 501.586 K)
+
+  machine: battery_status=None charge=None% clock=None/None MHz
+  gas march rate so far: 52930 s of wall per second of gas time
+
+=== the ANCHOR: the declared exchange interval, paid for ===
+  DT = 0.05 s at ratio 50 -- the config's own dt_macro against its own
+  dt_model['b'].  Two gas marches of 0.05 s each; the cost IS the
+  measurement and it is why this is a separate stage.
+
+  lag   1.581489e+00 K  (max 3.164141e+00 K)
+  sigma 8.057680e-04
+  cost  3031 s (0.84 h), 363725 gas sub-steps
+  machine: {'error': "FileNotFoundError(2, 'No such file or directory')"}
+
+  and the three the CORE registered before this ran:
+    A1_lag_K                 FAILED got 1.58149, registered [1.22958, 1.35902]
+    A2_sigma                 FAILED got 0.000805768, registered [0.00055, 0.0008]
+    A3_bound_over_measured   FAILED got None, registered [2, 2.8]
+
+========================================================================================
+PREDICTIONS, registered before any arm ran
+========================================================================================
+  P1   FAILED L7/R9 ADMITS on the real graph
+       got: None
+  P2   FAILED the ratio-1 control is EXACTLY zero, not small
+       got: None
+  P3   FAILED sigma is first order in the interval: every exponent in [0.90, 1.10]
+       got: []
+  P4   FAILED the bound with ROCKET constants holds at every graded interval
+       got: None
+  P5   FAILED lambda_dot here exceeds CS-11's 11.94 K/s and lies in [20, 200] K/s
+       got: None
+  P6   FAILED CS-11's OWN constants do NOT bound the rocket's defect
+       got: None
+  P7   FAILED 4x of clock ratio at a fixed interval moves sigma by less than 1.05x
+       got: None
+  P8   FAILED lambda_dot at 0.5 s and 5.0 s of burn differ by more than 2x
+       got: None
+  P9   FAILED the tightness is within an order of magnitude of CS-11's, i.e. in [1, 10]
+       got: None
+  P10  FAILED s_seam is constant in the interval to better than 1.5x
+       got: None
+  P11  FAILED the build repo's rank-1 trace changes the defect by more than 1.2x
+       got: []
+  P12  FAILED the two-way referent moves sigma by more than 1.5x at some interval
+       got: []
+
+  0 of 12 held.
+  wall 3349 s; Modern Standby events during the run: -1

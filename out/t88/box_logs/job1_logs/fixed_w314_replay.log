@@ -1,0 +1,78 @@
+========================================================================================
+W314 -- the composed defect at 50:1, against CS-11's bound
+stages: setup, anchor
+========================================================================================
+  merging into out/t88/w314.json, which already has: constants, knee, r9, rate, ratio, setup, sigma_law, slope, trace_rank, transfer, two_way
+
+=== the two agents, their clocks, and the ratio the YAML gives ===
+  chamber block (112, 80), 112 wall cells; shell seam window 14 cells
+  declared dt_model: b = 0.001 s, c = 0.05 s  ->  ratio 50
+  dt_macro = 0.05 s, which R4 floors at max_i dt_native = 0.05 s
+  shell MARCHED 5.00 s of burn to 478.9557 K mean (870.7665 K max); validity DECLINES
+  overlap maps: P (112, 14) (shell window -> gas face), R (14, 112) (the transpose)
+  row sums: P 1.000000000000..1.000000000000  R 1.000000000000..1.000000000000  (row-stochastic)
+
+  pre-marching the gas to a common start, 0.006 s of gas time:
+    settle  0.0020 s of gas time: relative state change 7.44372e-03
+    settle  0.0040 s of gas time: relative state change 2.22058e-04
+    settle  0.0060 s of gas time: relative state change 7.75714e-05
+
+  base consistency, gas -> shell:
+    the shell is marched and linearised about T_gas = 2800.0 K
+    the gas's own near-wall cell is  2695.882 .. 2803.589 K, mean 2755.558 K
+    ratio near-wall / chamber = 0.9841
+    h: march used 211.397 W/(m^2 K) mean; settled gas gives 208.919
+  the wall the gas sees: 369.181 .. 870.767 K (spread 501.586 K)
+
+  machine: battery_status=None charge=None% clock=None/None MHz
+  gas march rate so far: 59629 s of wall per second of gas time
+
+=== the ANCHOR: the declared exchange interval, paid for ===
+  DT = 0.05 s at ratio 50 -- the config's own dt_macro against its own
+  dt_model['b'].  Two gas marches of 0.05 s each; the cost IS the
+  measurement and it is why this is a separate stage.
+
+  [replayed 0.05|50|0|0 from out/t88/w314_anchor_cache.json: 3034 s, 343088 sub-steps]
+  lag   1.581489e+00 K  (max 3.164141e+00 K)
+  sigma 8.057602e-04
+  bound 1.835690e-03   ->  bound/measured 2.2782
+  cost  3034 s (0.84 h), 363725 gas sub-steps
+  machine: {'error': "FileNotFoundError(2, 'No such file or directory')"}
+
+  and the three the CORE registered before this ran:
+    A1_lag_K                 FAILED got 1.58149, registered [1.22958, 1.35902]
+    A2_sigma                 FAILED got 0.00080576, registered [0.00055, 0.0008]
+    A3_bound_over_measured   HELD   got 2.27821, registered [2, 2.8]
+  with the anchor folded in, the bound holds at every graded interval: True
+  and is loose by 2.2782x to 2.3000x over 250x of interval
+
+========================================================================================
+PREDICTIONS, registered before any arm ran
+========================================================================================
+  P1   HELD  L7/R9 ADMITS on the real graph
+       got: True
+  P2   HELD  the ratio-1 control is EXACTLY zero, not small
+       got: 0.0
+  P3   HELD  sigma is first order in the interval: every exponent in [0.90, 1.10]
+       got: [1.0008339010828915, 1.0020847531579018, 1.0019206140899286, 0.9996495310483684]
+  P4   HELD  the bound with ROCKET constants holds at every graded interval
+       got: True
+  P5   HELD  lambda_dot here exceeds CS-11's 11.94 K/s and lies in [20, 200] K/s
+       got: 32.200405036998085
+  P6   FAILED CS-11's OWN constants do NOT bound the rocket's defect
+       got: 18.69748521674964
+  P7   HELD  4x of clock ratio at a fixed interval moves sigma by less than 1.05x
+       got: 1.0000000003790381
+  P8   HELD  lambda_dot at 0.5 s and 5.0 s of burn differ by more than 2x
+       got: 2.9413370121692965
+  P9   HELD  the tightness is within an order of magnitude of CS-11's, i.e. in [1, 10]
+       got: [2.2782094084388103, 2.3000155791218764]
+  P10  HELD  s_seam is constant in the interval to better than 1.5x
+       got: 1.0020718320919617
+  P11  FAILED the build repo's rank-1 trace changes the defect by more than 1.2x
+       got: [1.1561215696211509, 1.1550941426851824]
+  P12  HELD  the two-way referent moves sigma by more than 1.5x at some interval
+       got: [0.10121901967062678, 0.1598688590175726]
+
+  10 of 12 held.
+  wall 358 s; Modern Standby events during the run: -1

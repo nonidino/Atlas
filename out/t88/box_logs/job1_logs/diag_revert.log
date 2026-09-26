@@ -1,0 +1,4 @@
+REVERTED to the pre-Tier-88 code: W339
+jmin: gas loses 627.084 J/m (conduction 597.100, work 29.985, inviscid 3.63e-11); shell gains 597.883 -- shell/conduction 1.00131, shell/total 0.95343
+jmax: gas loses 627.084 J/m (conduction 597.100, work 29.985, inviscid 3.48e-11); shell gains 597.883 -- shell/conduction 1.00131, shell/total 0.95343
+wrote out/w336/thermal_seam_diag_revert_W339.json

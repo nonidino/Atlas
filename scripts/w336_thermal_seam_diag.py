@@ -13,7 +13,12 @@ start settle:
 
 against the shell's Robin heat on each segment, h L (T_gas - mean T at t+dt).
 
-    python scripts/w336_thermal_seam_diag.py [--coarsen 4] [--warm 2]
+    python scripts/w336_thermal_seam_diag.py [--coarsen 4] [--warm 2] [--revert W339]
+
+Tier 88 (2026-09-26): W339 made the no-slip face's viscous energy flux the
+conduction alone, so this now reads zero work. ``--revert W339`` (or any of
+`w336_episode_residuals.FIXES`, or ``all``) puts the old code back for the whole
+run, warm-up included -- the control that the old reading was the work term.
 """
 from __future__ import annotations
 
@@ -42,8 +47,12 @@ def main(argv=None):
     ap.add_argument("--warm", type=int, default=2)
     ap.add_argument("--dt-macro", type=float, default=5.0e-3)
     ap.add_argument("--json", default=os.path.join(W.OUT, "thermal_seam_diag.json"))
+    ap.add_argument("--revert", default="")
     a = ap.parse_args(argv)
     M = W._mods()
+    reverted = W.revert(M, a.revert)
+    if reverted:
+        print("REVERTED to the pre-Tier-88 code: %s" % ",".join(reverted))
     gen = M["gen"]
     ep, p = W._episode(M, 0, a.coarsen, a.dt_macro, a.warm + 2)
     for _ in range(a.warm):
@@ -105,7 +114,8 @@ def main(argv=None):
     wall_s = time.perf_counter() - t0
 
     # the gas's side, per wall cell, with each cell's z extent
-    out = dict(coarsen=a.coarsen, warm=a.warm, t=float(ep.t), wall_s=wall_s, sides={})
+    out = dict(coarsen=a.coarsen, warm=a.warm, t=float(ep.t), wall_s=wall_s, sides={},
+               reverted=reverted, build_repo=W.build_repo_identity())
     for side in ("jmin", "jmax"):
         z_edges, parts = [], {"total_visc": [], "conduction": [], "inviscid": []}
         for ag in gen.ENGINE_AGENTS:

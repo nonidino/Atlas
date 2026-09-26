@@ -21,6 +21,11 @@ from atlas.cases import rocket_experts as RE
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "out", "w336")
+#: Tier 87's records as recorded. Tier 88 (2026-09-26) re-ran the audit on the
+#: fixed code into out/w336 and moved these aside; the pins below are the
+#: diagnosis, and tests/test_tier88_episode_fixes.py pins the fix.
+PRE = os.path.join(ROOT, "out", "w336_pre_w337")
+PRE_RECORD = os.path.join(ROOT, "out", "w321_pre_w337", "episode.npz")
 
 
 def _driver():
@@ -110,6 +115,7 @@ def test_the_ledger_does_not_change_the_numerics():
     C2 = M["C2"]
     assert not getattr(C2.Compressible2D, "_w336_installed", False)
     assert not hasattr(C2.FLUXES["hllc"], "__wrapped__")
+    assert C2.Compressible2D._inviscid_face_fluxes.__qualname__ == "Compressible2D._inviscid_face_fluxes"
 
 
 @needs_expert
@@ -132,6 +138,83 @@ def test_a_budget_with_a_side_left_out_does_not_close():
         assert res[0] == pytest.approx(float(W._sum_side(acc, "imin")[0]), rel=1e-9)
     finally:
         led.uninstall()
+
+
+def _combustor_strip():
+    """Tier 88: a 10 x 4 strip of burnt 3000 K gas at 8 MPa with the reaction
+    ON and a 900 K inlet_massflow face on imin -- the rocket's injector, which
+    no Riemann call computes any more (W337)."""
+    C2 = importlib.import_module("atlas_build_solvers.solvers.compressible2d")
+    grid = importlib.import_module("atlas_build_solvers.solvers.grid")
+    thermo = importlib.import_module("atlas_build_solvers.solvers.thermo")
+    z, y = np.linspace(0.0, 0.1, 11), np.linspace(-0.02, 0.02, 5)
+    Z, Y = np.meshgrid(z, y, indexing="ij")
+    blk = grid.Block("strip", np.stack([Z, Y], -1), np.zeros((10, 4), bool))
+    gas = C2.GasConfig(gamma=1.22, R=361.0, inviscid=False)
+    mdot = 376.87 / 0.08
+    s = C2.Compressible2D(blk, gas, reaction=C2.ReactionConfig(A=2.0e6, T_act=6000.0, q_rxn=3.0e6),
+                          bcs={"imin": C2.BC("inlet_massflow", {"mdot": mdot, "T": 900.0}),
+                               "imax": C2.BC("outflow", {"p_inf": 7.9e6}),
+                               "jmin": C2.BC("wall_noslip", {"T_wall": np.full(10, 400.0)}),
+                               "jmax": C2.BC("wall_noslip")})
+    W_ = np.zeros((10, 4, 5))
+    W_[..., 0] = 8.0e6 / (361.0 * 3000.0)
+    W_[..., 1] = mdot / W_[..., 0]
+    W_[..., 3] = 8.0e6
+    W_[..., 4] = 0.9
+    return s, thermo.prim_to_cons(W_, 1.22), mdot
+
+
+@needs_expert
+def test_the_ledger_reads_the_prescribed_injector_flux():
+    """Tier 88. The injector face's flux is prescribed after the Riemann call
+    (W337), so a ledger that only wrapped the Riemann functions would book the
+    wrong inflow. This one reads the arrays the residual differences: the
+    injector passes exactly mdot H t, and a burning, walled block's budget --
+    reaction, isothermal and adiabatic no-slip walls, outflow -- still closes."""
+    W = _driver()
+    M = W._mods()
+    led = W.Ledger(M)
+    led.install()
+    try:
+        s, U0, mdot = _combustor_strip()
+        U, n = s.advance(U0, 2.0e-5)
+        acc = led.acc_for(s)
+        assert n > 1
+        assert float(W._sum_side(acc, "imin")[0]) == pytest.approx(mdot * 0.04 * 2.0e-5, rel=1e-12)
+        res, scale, _d, _i = W.block_budget(s, acc, W._totals(s, U0), W._totals(s, U))
+        assert np.all(np.abs(res) <= 1e-12 * scale)
+        assert abs(acc["react"][3]) > 0.0, "the reaction ran"
+    finally:
+        led.uninstall()
+
+
+@needs_expert
+def test_revert_puts_each_old_behaviour_back_and_restore_undoes_it():
+    """The controls' machinery: each fix reverted shows its diagnosis, and
+    `restore_fixes` brings every fix back."""
+    W = _driver()
+    M = W._mods()
+    C2, TS, gen = M["C2"].Compressible2D, M["TS"].ThermoStruct2D, M["gen"]
+    fixed = (C2._inlet_face_flux, C2._isothermal_wall_conduction, TS._outer_robin,
+             gen.CoupledEpisode._wire_engine, gen.CoupledEpisode._wire_external)
+    s, U, mdot = _combustor_strip()
+    try:
+        Fi, _ = s._inviscid_face_fluxes(s.ghost(U, thermal=False))
+        assert np.allclose(Fi[0, :, 0] / s.block.a_i[0], mdot, rtol=1e-14)
+        assert W.revert(M, "W337") == ["W337"]
+        Fi, _ = s._inviscid_face_fluxes(s.ghost(U, thermal=False))
+        assert np.all(Fi[0, :, 0] / s.block.a_i[0] > 1.1 * mdot)       # the Riemann overshoot
+        assert W.revert(M, "all") == list(W.FIXES)
+        assert TS._outer_robin is W._old_outer_robin
+        assert gen.CoupledEpisode._wire_engine.__qualname__.startswith("_old_wiring")
+        with pytest.raises(ValueError):
+            W.revert(M, "W999")
+    finally:
+        W.restore_fixes()
+    now = (C2._inlet_face_flux, C2._isothermal_wall_conduction, TS._outer_robin,
+           gen.CoupledEpisode._wire_engine, gen.CoupledEpisode._wire_external)
+    assert now == fixed
 
 
 # ===========================================================================
@@ -207,9 +290,114 @@ def test_every_registered_prediction_can_hold_and_can_fail(tmp_path, good):
     assert all(v is good for v in held.values()), held
 
 
+def _write_records_t88(d, pre, good):
+    """Tier 88's synthetic records: `_write_records`' set, with the fields the
+    Tier 88 predictions read added -- built to hold each one, or to fail each
+    one."""
+    g = good
+    _write_records(d, good)
+    os.makedirs(pre, exist_ok=True)
+
+    def load(n):
+        with open(os.path.join(d, n), encoding="utf-8") as fh:
+            return json.load(fh)
+
+    def put(n, obj, where=d):
+        with open(os.path.join(where, n), "w", encoding="utf-8") as fh:
+            json.dump(obj, fh)
+
+    ideal = dict(u_e=2300.0, p_e=5.0e5, M_e=2.4, p_c=8.0e6)
+    mdot, A_e, p_inf = 376.87, 0.24, 2500.0
+    alpha = np.arctan((0.12 - 0.04) / (0.70 - 0.40))
+    F2 = (np.sin(alpha) / alpha * mdot * ideal["u_e"] + ideal["p_e"] * A_e) - p_inf * A_e
+
+    def fill(s, dt_ms):
+        early = s["t"] <= 0.06 + 1e-9
+        k = {10: 4.0, 5: 2.0, 2.5: 1.0}[dt_ms] if g else 2.0      # lag: shrinks with the step
+        s["seam_be_mass_rel"] = (2e-3 * k if early else 1e-3) if g else 0.03
+        s["seam_ab_mass_rel"] = 0.01 if early else 1e-3
+        rel = (1e-3 * k if early else 1e-3) if g else 0.01
+        s["thermal_engine"] = {"jmin": dict(rel=rel), "jmax": dict(rel=-rel)}
+        return s
+
+    au = load("audit.json")
+    au.update(ideal=ideal, mdot_declared=mdot, A_exit_z=A_e)
+    for s in au["steps"]:
+        fill(s, 5)
+        s["injector_mdot_over_declared"] = 1.0 + (1e-9 if g else 2e-6)
+        s["shell"] = {k: dict(energy_residual_over_stored=1e-12, q_rad_applied=3.0 + (1e-12 if g else 0.5),
+                              q_rad_ambient=3.0) for k in ("0", "1")}
+        s["chamber_p_mean"] = 8.0e6 * (1.01 if g else 1.10)
+        s.update(p_inf=p_inf, throat_mdot_e_over_declared=1.0, exit_mach_massavg=2.4,
+                 exit_u_massavg=2300.0, exit_p_areaavg=5.0e5,
+                 thrust_exit_face_mean=float(F2 * (1.005 if g else 0.9)))
+    put("audit.json", au)
+    for name, dt_ms in (("dt_10ms.json", 10), ("dt_2p5ms.json", 2.5)):
+        r = load(name)
+        r["steps"] = [fill(s, dt_ms) for s in r["steps"]]
+        put(name, r)
+    for c in (4, 1):
+        r = load("grid_engine_c%d.json" % c)
+        for s in r["steps"]:
+            s["injector_mdot_over_declared"] = 1.0 if g else 1.2
+        put("grid_engine_c%d.json" % c, r)
+    put("thermal_seam_diag.json", dict(sides={sd: dict(gas_conduction=600.0,
+                                                       gas_work=6e-11 if g else 30.0)
+                                              for sd in ("jmin", "jmax")}))
+    old = [dict(rigid=_rigid(0.005 * k), injector_mdot_over_declared=1.1772,
+                seam_be_mass_rel=-0.03, engine_heat_lost={"jmin": 626.2, "jmax": 626.2},
+                shell={kk: dict(q_rad_applied=4.0, q_rad_ambient=3.05) for kk in ("0", "1")})
+           for k in (1, 2)]
+    put("audit.json", dict(steps=old), where=pre)
+    ctl = json.loads(json.dumps(old))
+    if not g:
+        ctl[1]["rigid"][1] = np.nextafter(ctl[1]["rigid"][1], 1e9)      # one ulp of altitude
+    put("control_old.json", dict(steps=ctl))
+
+
+@pytest.mark.parametrize("good", [True, False])
+def test_every_tier88_prediction_can_hold_and_can_fail(tmp_path, good):
+    """Tier 88's predictions, registered before the fixed run, clause by clause:
+    synthetic records built to hold each, and built to fail each."""
+    W = _driver()
+    d, pre = str(tmp_path / "out"), str(tmp_path / "pre")
+    os.makedirs(d)
+    _write_records_t88(d, pre, good)
+    res = W.evaluate_t88(d, pre_dir=pre)
+    assert sorted(res) == sorted(W.PREDICTIONS_T88)
+    held = {k: res[k]["held"] for k in res}
+    assert all(v is good for v in held.values()), held
+
+
+def test_the_tier88_evaluator_reads_what_its_prose_says(tmp_path):
+    """Where a clause could be read two ways, the evaluator takes the prose's.
+    Q1 is EVERY step, not a mean; Q14's rigid state is bitwise, so one ulp of
+    altitude fails it while every other reading agrees to 1e-12."""
+    W = _driver()
+    d, pre = str(tmp_path / "out"), str(tmp_path / "pre")
+    os.makedirs(d)
+    _write_records_t88(d, pre, True)
+    with open(os.path.join(d, "audit.json"), encoding="utf-8") as fh:
+        au = json.load(fh)
+    au["steps"][3]["injector_mdot_over_declared"] = 1.0 + 5e-6       # one step off, the mean is not
+    with open(os.path.join(d, "audit.json"), "w", encoding="utf-8") as fh:
+        json.dump(au, fh)
+    res = W.evaluate_t88(d, pre_dir=pre)
+    assert res["Q1"]["held"] is False
+    assert res["Q14"]["held"] is True
+    with open(os.path.join(d, "control_old.json"), encoding="utf-8") as fh:
+        co = json.load(fh)
+    co["steps"][0]["rigid"][1] = float(np.nextafter(co["steps"][0]["rigid"][1], 1e9))
+    with open(os.path.join(d, "control_old.json"), "w", encoding="utf-8") as fh:
+        json.dump(co, fh)
+    res = W.evaluate_t88(d, pre_dir=pre)
+    assert res["Q14"]["held"] is False and res["Q14"]["got"]["worst_rel"] < 1e-12
+
+
 def test_with_nothing_measured_nothing_is_reported_held(tmp_path):
     W = _driver()
     assert W.evaluate(str(tmp_path), record=os.path.join(str(tmp_path), "none.npz")) == {}
+    assert W.evaluate_t88(str(tmp_path), pre_dir=str(tmp_path)) == {}
 
 
 def test_lateral_round_off_is_not_a_state_deviation(tmp_path):
@@ -229,14 +417,14 @@ def test_lateral_round_off_is_not_a_state_deviation(tmp_path):
 
 
 # ===========================================================================
-# 3. the records (out/w336, from the rented box)
+# 3. the records (out/w336_pre_w337: Tier 87's, from the rented box)
 # ===========================================================================
 
 
 def _rec(name):
-    path = os.path.join(OUT, name)
+    path = os.path.join(PRE, name)
     if not os.path.exists(path):
-        pytest.skip("out/w336/%s not present; run scripts/w336_episode_residuals.py" % name)
+        pytest.skip("out/w336_pre_w337/%s not present" % name)
     with open(path, encoding="utf-8") as fh:
         return json.load(fh)
 
@@ -246,7 +434,7 @@ def test_the_gates_hold_and_the_wall_gate_can_fail():
     ten orders of magnitude -- so a clean wall reading is a measurement."""
     W = _driver()
     _rec("audit.json")
-    res = W.evaluate()
+    res = W.evaluate(PRE, record=PRE_RECORD)
     for k in ("A1", "A2", "A3", "A4"):
         assert res[k]["held"] is True, (k, res[k])
     assert res["A4"]["got"]["flight_bitwise_steps"] == 29
@@ -277,16 +465,18 @@ def test_W339_the_thermal_seam_conserves_conduction_and_loses_the_wall_work():
 
 
 def test_W340_the_throat_floor_does_not_move_with_the_coupling_step():
-    """A lag shrinks with the step and a floor does not. e|f, handed over by an
-    overlap average, shrinks at second order; b|e, by point interpolation, sits
-    at 3% whatever the step."""
+    """A lag shrinks with the step and a floor does not. e|f shrinks at second
+    order; b|e sits at 3% whatever the step. Tier 87 read the floor as the point
+    interpolation between 20 and 24 cells; Tier 88 measured it with no lag at
+    all and found the ghost's depth instead (test_the_throat_floor_was_the_
+    ghosts_depth_not_the_interpolation)."""
     W = _driver()
-    t = W.tables()["coupling_step"]
+    t = W.tables(PRE, record=PRE_RECORD)["coupling_step"]
     be, ef = t["seam_be"], t["seam_ef"]
     assert be["dt5"] > 0.02 and be["dt2p5"] > 0.02
     assert abs(be["dt2p5"] / be["dt5"] - 1.0) < 0.1
     assert ef["dt10"] > ef["dt5"] > ef["dt2p5"] and ef["dt2p5"] < 2e-4
-    # and it halves with the grid, as an interpolation error should
+    # and it halves with the grid, as a first-order error should
     b4 = _rec("grid_engine_c4.json")["steps"][-1]["seam_be_mass_rel"]
     b2 = _rec("grid_engine_c2.json")["steps"][-1]["seam_be_mass_rel"]
     assert abs(b2) < 0.7 * abs(b4)
@@ -294,7 +484,7 @@ def test_W340_the_throat_floor_does_not_move_with_the_coupling_step():
 
 def test_W341_the_plume_seams_break_by_the_gas_constant():
     W = _driver()
-    t = W.tables()["coupling_step"]
+    t = W.tables(PRE, record=PRE_RECORD)["coupling_step"]
     for k in ("seam_df", "seam_gf"):
         assert all(0.15 < t[k][d] < 0.5 for d in ("dt10", "dt5", "dt2p5")), (k, t[k])
 
@@ -313,6 +503,24 @@ def test_W342_every_wall_flux_is_a_property_of_the_grid():
 
 def test_the_nozzle_is_right_given_its_inflow():
     W = _driver()
-    v = W.tables()["validation"]
+    v = W.tables(PRE, record=PRE_RECORD)["validation"]
     assert 0.98 < v["measured_over_planar"] < 1.0
     assert 1.12 < v["chamber_p_over_declared"] < 1.14
+
+
+def test_the_throat_floor_was_the_ghosts_depth_not_the_interpolation():
+    """Tier 88. The pre-fix run's engine at three instants, each side's face
+    flux evaluated at that same instant, so no lag: point interpolation (adc470b)
+    and the briefed overlap average both lose 3% of the mass flow at the throat;
+    the same overlap average two ghost layers deep loses under 1e-4."""
+    path = os.path.join(ROOT, "out", "w340_throat_diag.json")
+    if not os.path.exists(path):
+        pytest.skip("out/w340_throat_diag.json not present; run scripts/w340_throat_diag.py")
+    with open(path, encoding="utf-8") as fh:
+        rows = json.load(fh)["rows"]
+    assert [r["frame"] for r in rows] == [10, 20, 29]
+    for r in rows:
+        assert -0.032 < r["remap"]["be"] < -0.029
+        assert -0.032 < r["overlap"]["be"] < -0.029
+        assert abs(r["layers"]["be"]) < 1e-4
+        assert abs(r["layers"]["ab"]) <= abs(r["remap"]["ab"])

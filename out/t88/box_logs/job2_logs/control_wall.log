@@ -1,0 +1,2 @@
+W336 control_wall: case 0 (underexpanded_max), coarsen 4, dt_macro 0.005, 1 steps, OLD WALL (W332 reverted)
+  step  1 t=0.0050  77 s  tele 1.2e-14  wall 5.2e-02  inj 1.0000  exit 0.6738  ab -8.8e-01  be +4.2e-01  thrust exit 5.8407e+05 walls 1.2471e+06  

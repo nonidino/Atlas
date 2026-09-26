@@ -76,9 +76,17 @@ def provenance() -> dict:
                                   text=True, encoding="utf-8", timeout=60).stdout
         except (OSError, subprocess.SubprocessError):
             return ""
+    commit = git("rev-parse", "--short", "HEAD").strip()
+    ident = os.environ.get("ATLAS_BUILD_REPO_IDENTITY", "")
+    if not commit and ident:
+        # a rented machine gets the build repo without its history; the
+        # identity was read where the history is (scripts/box/make_payload.py)
+        c, _, h = ident.partition("+dirty:")
+        return dict(commit=c, branch="", dirty=bool(h), diff_sha256=h, untracked=[],
+                    identity=ident)
     diff = git("diff", "HEAD")
     untracked = git("ls-files", "--others", "--exclude-standard").split()
-    return dict(commit=git("rev-parse", "--short", "HEAD").strip(),
+    return dict(commit=commit,
                 branch=git("rev-parse", "--abbrev-ref", "HEAD").strip(),
                 dirty=bool(diff.strip() or untracked),
                 diff_sha256=hashlib.sha256(diff.encode("utf-8")).hexdigest()[:16] if diff else "",

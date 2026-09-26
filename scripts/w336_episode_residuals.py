@@ -36,12 +36,22 @@ reference scales -- and the heat-transfer model against its own grid.
 
 **Predictions, registered 2026-09-24 before any arm ran:** see `PREDICTIONS`.
 
+**Tier 88 (2026-09-26).** The four code defects this found (W337-W340) were
+fixed in the build repo and the audit re-run on the fixed code; the Tier 87
+records are kept in `out/w336_pre_w337`. `PREDICTIONS_T88` were registered
+before the fixed run. ``--revert W337,W338,W339,W340`` (or ``all``) puts any
+fix's old behaviour back on today's code (`revert`, checked bitwise against
+build repo adc470b), and stage ``control_old`` runs the first audited steps
+with all four reverted, to be read against the pre-fix audit.
+
     python scripts/w336_episode_residuals.py --stage audit
     python scripts/w336_episode_residuals.py --stage control_wall
     python scripts/w336_episode_residuals.py --stage dt --dt-macro 1e-2 --t-end 0.06
     python scripts/w336_episode_residuals.py --stage grid_engine --coarsen 2 --t-end 0.03
     python scripts/w336_episode_residuals.py --stage grid_external --coarsen 2 --t-end 0.03
     python scripts/w336_episode_residuals.py --stage report
+    python scripts/w336_episode_residuals.py --stage control_old
+    python scripts/w336_episode_residuals.py --stage grid_engine --revert W340 --json x.json
 """
 from __future__ import annotations
 
@@ -122,6 +132,75 @@ PREDICTIONS = {
     "P13": "the airframe drag at coarsen 4 is within 10% of coarsen 1",
 }
 
+#: **Tier 88 -- registered 2026-09-26 11:05 EDT, after the four fixes (W337-W340)
+#: were in the build repo and BEFORE the fixed episode was marched or audited.**
+#: What had been seen: the build repo's unit tests, and one 30 ms engine-alone
+#: smoke run at coarsen 4 (scratch, not a record) whose first four steps read
+#: the injector at 1.000000 and every block closing to 1e-13, the engine still
+#: in its start-up transient (throat 1.24 of the declared flow at 20 ms). Two
+#: 0.1 s engine-alone explorations (fixed, and fixed with W340 reverted) were
+#: started before this was written and had not reported a step past 20 ms.
+#: Q1-Q9 are the four fixes' definitions of done, made measurable; Q10-Q13
+#: are what the fixes should do to the episode; Q14 is the control. The
+#: 2026-09-24 predictions above are evaluated on the fixed run as well.
+#:
+#: **Written AFTER registration, 2026-09-26, and changing no prose or evaluator
+#: below.** (1) W340's implementation changed twice after this was registered.
+#: At 11:20, before any march, a frozen-instant test (scripts/w340_throat_diag.py)
+#: showed the briefed one-layer overlap average leaving the throat's floor
+#: where it was (-3.09% against interpolation's -3.04%); the handover became two
+#: ghost layers deep (-> 4e-5). At 12:20 the first fixed audit's coupling-step
+#: study, read part-way, showed e|f gone from a lag (1e-4) to a 2% floor: two
+#: layers are right only where each side's ghost is the other's cells, and e's
+#: exit is an outflow boundary. The one-way seams went back to one layer and
+#: every coupled stage was re-run (run_t88b.sh; the first build's records are
+#: out/w336_t88_twolayer). Q7-Q9 are read on the final build. (2) Q14 says
+#: "rigid state bitwise", and on the rented box the lateral components x and
+#: v_x -- round-off around zero, 1e-20 and 1e-17 -- differ from the pre-fix
+#: audit's box in the last bits, while y, theta, v_y, omega and m are bitwise
+#: and every reading agrees to 1.1e-13. It repeats A4's first mistake, above.
+#: It is left as registered and reads FAILED; the flight-component reading is
+#: recorded beside it by tests/test_tier88_episode_fixes.py.
+PREDICTIONS_T88 = {
+    # W337
+    "Q1": "the injector delivers the declared mdot to 1e-6 at every step of the "
+          "audited run",
+    "Q2": "the injector delivers the declared mdot to 1e-6 at every step of every "
+          "engine-alone grid run that exists (coarsen 4, 2, 1)",
+    # W339
+    "Q3": "the thermal-seam diagnostic reads no wall work: |work| under 1e-9 of "
+          "the conduction, on both sides",
+    "Q4": "the engine's thermal seam closes to 0.5% per side (the shell's gain "
+          "against the gas's loss), averaged over the last 10 audited steps",
+    "Q5": "what remains of the engine's thermal seam is a lag: its mean |rel| over "
+          "30-60 ms, both sides, shrinks with the coupling step, 10/5 ms and "
+          "5/2.5 ms both at least 1.5",
+    # W338
+    "Q6": "the radiation booked as applied equals the radiation against the "
+          "ambient to 1e-9 of the latter, every audited step, both panels",
+    # W340
+    "Q7": "the throat seam b|e's mean |mass created| over 30-60 ms shrinks with "
+          "the coupling step, 10/5 ms and 5/2.5 ms both at least 1.5",
+    "Q8": "the throat seam's mean |mass created| over 30-60 ms is below a|b's at "
+          "the episode's 5 ms coupling step",
+    "Q9": "the throat seam's mean |mass created| over the last 10 audited steps is "
+          "under 0.3% of mdot dt, a tenth of the old floor",
+    # what the fixes should do to the episode
+    "Q10": "the chamber's volume-mean pressure is within 3% of the declared 8 MPa, "
+           "averaged over the last 10 audited steps",
+    "Q11": "given its inflow, the nozzle's thrust stays within 2% of ideal planar "
+           "theory",
+    "Q12": "the vehicle's mass loss and the nozzle's mass outflow agree to 2%, "
+           "averaged over the last 10 audited steps",
+    "Q13": "the exit-plane and wall routes to the thrust agree to 0.5%, averaged "
+           "over the last 10 audited steps (they differed by 1.7%, the throat's "
+           "lost momentum)",
+    # the control
+    "Q14": "with all four fixes reverted on today's code, the first audited steps "
+           "reproduce the pre-fix audit: rigid state bitwise, and the injector, "
+           "throat seam, engine wall heat and radiation slip to 1e-12",
+}
+
 
 # ---------------------------------------------------------------------------
 # the build repo, as the episode runner loads it
@@ -138,6 +217,224 @@ def _mods():
                 C2=imp("atlas_build_solvers.solvers.compressible2d"),
                 TS=imp("atlas_build_solvers.solvers.thermostruct2d"),
                 thermo=imp("atlas_build_solvers.solvers.thermo"))
+
+
+# ---------------------------------------------------------------------------
+# Tier 88: the four fixes, and the old behaviour of each kept as a control
+# ---------------------------------------------------------------------------
+
+#: The build-repo fixes of 2026-09-26. `revert` puts any of them back to the
+#: code the Tier 86-87 records were made with (build repo adc470b), in this
+#: process only, so a stage can show that the old behaviour on today's code
+#: reads what the old records read.
+FIXES = ("W337", "W338", "W339", "W340")
+
+
+def _old_inlet_face_flux(self, Fi, Ue):
+    """Before W337: the injector face kept the Riemann flux between the inlet
+    ghost and the first cell."""
+    return None
+
+
+def _old_outer_robin(self, T, h_out, T_gas_out, radiate, T_inf):
+    """Before W338: h_rad added to h_out, the sum against the adjacent gas."""
+    a, b, _ = self._face("outer")
+    h_o = np.broadcast_to(np.asarray(h_out, dtype=float), a.shape)
+    T_g = np.broadcast_to(np.asarray(T_gas_out, dtype=float), a.shape)
+    if not radiate:
+        return h_o, T_g, np.zeros(a.shape)
+    Tw = 0.5 * (T[a] + T[b])
+    h_rad = self.mat.emissivity * SIGMA_SB * (Tw ** 2 + T_inf ** 2) * (Tw + T_inf)
+    return h_o + h_rad, T_g, h_rad
+
+
+def _old_wall_energy(NG):
+    def old(self, Fi, Fj, T, Qz, Qy, k):
+        """Before W339 (W301 alone): the face-averaged conduction replaced by the
+        one-sided wall term on isothermal faces, the rest of the average -- the
+        work -- kept; adiabatic no-slip faces untouched."""
+        blk = self.block
+        nz, ny = blk.shape
+        for side in ("imin", "imax", "jmin", "jmax"):
+            bc = self.bcs.get(side)
+            if bc is None or bc.kind != "wall_noslip" or "T_wall" not in bc.params:
+                continue
+            if side in ("jmin", "jmax"):
+                jc, jg, f = (NG, NG - 1, 0) if side == "jmin" else (ny + NG - 1, ny + NG, -1)
+                sl_c = (slice(NG, nz + NG), jc)
+                sl_g = (slice(NG, nz + NG), jg)
+                n, a, vol = blk.n_j[:, f], blk.a_j[:, f], blk.vol[:, 0 if f == 0 else -1]
+                target = (slice(None), f)
+            else:
+                ic, ig, f = (NG, NG - 1, 0) if side == "imin" else (nz + NG - 1, nz + NG, -1)
+                sl_c = (ic, slice(NG, ny + NG))
+                sl_g = (ig, slice(NG, ny + NG))
+                n, a, vol = blk.n_i[f], blk.a_i[f], blk.vol[0 if f == 0 else -1]
+                target = (f, slice(None))
+            avg = 0.5 * ((Qz[sl_c] + Qz[sl_g]) * n[..., 0] + (Qy[sl_c] + Qy[sl_g]) * n[..., 1]) * a
+            T_i = T[sl_c]
+            T_w = np.asarray(bc.params["T_wall"], dtype=float)
+            T_w = np.broadcast_to(T_w, T_i.shape) if T_w.ndim == 0 else T_w.reshape(T_i.shape)
+            dn = 0.5 * vol / np.maximum(a, 1e-30)
+            grad = (T_i - T_w) / dn if f == 0 else (T_w - T_i) / dn
+            wall = k[sl_c] * grad * a
+            fix = wall - avg
+            if bc.params.get("isothermal_mask") is not None:
+                fix = np.where(np.asarray(bc.params["isothermal_mask"], dtype=bool), fix, 0.0)
+            (Fj if side in ("jmin", "jmax") else Fi)[target + (3,)] += fix
+    return old
+
+
+def _old_wiring(gen):
+    """Before W340: every plane seam but e-f's core handed over by `_remap`,
+    point interpolation at the cell centroids. Build repo adc470b's
+    `_wire_engine`, `_wire_external` and `_d_outlet`, verbatim but for the
+    module prefix."""
+    BC, NG, thermo, atmosphere = gen.BC, gen.NG, gen.thermo, gen.atmosphere
+
+    def d_outlet(self, y, dst):
+        out = np.empty((y.size, 4))
+        for k, blk in enumerate(self.blocks["d"]):
+            sel = (y > 0) if blk.nodes[..., 1].mean() > 0 else (y <= 0)
+            if not sel.any():
+                continue
+            yc = blk.centroid[-1, :, 1]
+            order = np.argsort(yc)
+            st = gen._remap(self.U["d"][k][-1][order], yc[order], y[sel])
+            out[sel] = gen._as_gas(st, self.air_cfg, dst)
+        return out
+
+    def wire_engine(self):
+        geo = self.geo
+        Ua, Ub, Ue = self.U["a"][0], self.U["b"][0], self.U["e"][0]
+        ya = self.blocks["a"][0].centroid[-1, :, 1]
+        yb0 = self.blocks["b"][0].centroid[0, :, 1]
+        yb1 = self.blocks["b"][0].centroid[-1, :, 1]
+        ye0 = self.blocks["e"][0].centroid[0, :, 1]
+        mdot_flux = self.scales.mdot / (2.0 * geo.chamber_halfheight)
+        b_to_a = gen._remap(gen._face_state(Ub, "imin")[0], yb0, ya)
+        b_to_a = np.concatenate([b_to_a, gen._face_state(Ua, "imax")[0, :, 4:]], axis=-1)
+
+        def walls(agent):
+            return {s: BC("wall_noslip", {"T_wall": self._wall_T(agent, 0, s)})
+                    for s in ("jmin", "jmax")}
+
+        self.sol["a"][0].bcs = {
+            "imin": BC("inlet_massflow", {"mdot": mdot_flux, "T": gen.T_INJECT}),
+            "imax": BC("prescribed", {"state": b_to_a[None]}),
+            **walls("a"),
+        }
+        self.sol["b"][0].bcs = {
+            "imin": BC("prescribed", {"state": gen._remap(gen._face_state(Ua, "imax")[0, :, :4], ya, yb0)[None]}),
+            "imax": BC("prescribed", {"state": gen._remap(gen._face_state(Ue, "imin")[0], ye0, yb1)[None]}),
+            **walls("b"),
+        }
+        _, p_inf, _, _ = self._atm()
+        self.sol["e"][0].bcs = {
+            "imin": BC("prescribed", {"state": gen._remap(gen._face_state(Ub, "imax")[0], yb1, ye0)[None]}),
+            "imax": BC("outflow", {"p_inf": p_inf}),
+            **walls("e"),
+        }
+
+    def wire_external(self):
+        _, p_inf, _, _ = self._atm()
+        free = self._freestream()
+        for k, b in enumerate(self.blocks["d"]):
+            wall_side = self._d_wall_side(k)
+            far_side = "jmax" if wall_side == "jmin" else "jmin"
+            self.sol["d"][k].bcs = {
+                "imin": BC("freestream", {"prim": free}),
+                "imax": BC("outflow", {"p_inf": p_inf}),
+                wall_side: self._d_wall_bc(k, wall_side),
+                far_side: BC("freestream", {"prim": free}),
+            }
+        fb, eb = self.blocks["f"][0], self.blocks["e"][0]
+        yf = fb.centroid[0, :, 1]
+        yf_edges = fb.nodes[0, :, 1]
+        ye_edges = eb.nodes[-1, :, 1]
+        core = (yf_edges[:-1] >= ye_edges[0] - 1e-12) & (yf_edges[1:] <= ye_edges[-1] + 1e-12)
+        inlet = np.empty((yf.size, 4))
+        if core.any():
+            kk = np.flatnonzero(core)
+            edges = np.concatenate([yf_edges[kk], yf_edges[kk[-1] + 1:kk[-1] + 2]])
+            avg, cov = gen._cell_average(gen._face_state(self.U["e"][0], "imax")[0], ye_edges, edges)
+            if not np.allclose(cov, 1.0):
+                raise AssertionError("f's core inlet cells are not covered by e's exit")
+            inlet[core] = avg
+        if (~core).any():
+            inlet[~core] = d_outlet(self, yf[~core], self.gas_cfg)
+        Ug, Uf = self.U["g"][0], self.U["f"][0]
+        j0, j1 = self.sol["g"][0]._hole
+        zg = self.blocks["g"][0].centroid[:, 0, 0]
+        zf = fb.centroid[:, 0, 0]
+        g_lo = gen._as_gas(gen._remap(Ug[:, j0 - 1], zg, zf), self.air_cfg, self.gas_cfg)
+        g_hi = gen._as_gas(gen._remap(Ug[:, j1 + 1], zg, zf), self.air_cfg, self.gas_cfg)
+        self.sol["f"][0].bcs = {
+            "imin": BC("prescribed", {"state": inlet[None]}),
+            "imax": BC("outflow", {"p_inf": p_inf}),
+            "jmin": BC("prescribed", {"state": g_lo[:, None]}),
+            "jmax": BC("prescribed", {"state": g_hi[:, None]}),
+        }
+        gb = self.blocks["g"][0]
+        yg = gb.centroid[0, :, 1]
+        g_in = np.broadcast_to(thermo.prim_to_cons(free, atmosphere.GAMMA_AIR), (yg.size, 4)).copy()
+        live = ~gb.blanked[0]
+        g_in[live] = d_outlet(self, yg[live], self.air_cfg)
+        self.sol["g"][0].bcs = {
+            "imin": BC("prescribed", {"state": g_in[None]}),
+            "imax": BC("outflow", {"p_inf": p_inf}),
+            "jmin": BC("freestream", {"prim": free}),
+            "jmax": BC("freestream", {"prim": free}),
+        }
+        lo = np.stack([gen._remap(Uf[:, d], zf, zg) for d in range(NG)], axis=1)
+        hi = np.stack([gen._remap(Uf[:, -1 - d], zf, zg) for d in range(NG)], axis=1)
+        self.sol["g"][0].hole_state = (gen._as_gas(lo, self.gas_cfg, self.air_cfg),
+                                       gen._as_gas(hi, self.gas_cfg, self.air_cfg))
+
+    return wire_engine, wire_external
+
+
+def revert(M, which):
+    """Put the named fixes' old behaviour back on today's build repo (this
+    process only), and say which. Call it BEFORE a `Ledger` is installed: the
+    ledger wraps whatever the class holds at that moment."""
+    if isinstance(which, str):
+        which = which.split(",")
+    which = [w.strip() for w in (which or ()) if w and w.strip()]
+    if "all" in which:
+        which = list(FIXES)
+    unknown = [w for w in which if w not in FIXES]
+    if unknown:
+        raise ValueError("unknown fix %s; the fixes are %s" % (unknown, FIXES))
+    C2, TS, gen = M["C2"].Compressible2D, M["TS"].ThermoStruct2D, M["gen"]
+    for owner, names in ((C2, ("_inlet_face_flux", "_isothermal_wall_conduction")),
+                         (TS, ("_outer_robin",)),
+                         (gen.CoupledEpisode, ("_wire_engine", "_wire_external"))):
+        for nm in names:
+            _SAVED.setdefault((owner, nm), owner.__dict__.get(nm))
+    if "W337" in which:
+        assert hasattr(C2, "_inlet_face_flux"), "this build repo predates W337"
+        C2._inlet_face_flux = _old_inlet_face_flux
+    if "W338" in which:
+        assert hasattr(TS, "_outer_robin"), "this build repo predates W338"
+        TS._outer_robin = _old_outer_robin
+    if "W339" in which:
+        C2._isothermal_wall_conduction = _old_wall_energy(M["C2"].NG)
+    if "W340" in which:
+        assert hasattr(gen, "_hand_over"), "this build repo predates W340"
+        gen.CoupledEpisode._wire_engine, gen.CoupledEpisode._wire_external = _old_wiring(gen)
+    return list(which)
+
+
+_SAVED = {}
+
+
+def restore_fixes():
+    """Undo every `revert` in this process (tests; a stage never needs it)."""
+    for (owner, nm), fn in list(_SAVED.items()):
+        if fn is not None:
+            setattr(owner, nm, fn)
+    _SAVED.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -190,6 +487,21 @@ class Ledger:
         self.shell = {}
 
     # -- capture -------------------------------------------------------------
+    def _inviscid_faces(self, s, Fi, Fj, w):
+        """The face fluxes `_inviscid_face_fluxes` returns (times the face
+        length) -- the arrays `_inviscid_residual` differences, the injector's
+        prescribed flux (W337) included."""
+        nz, ny = s.block.shape
+        a = self.acc_for(s)["inv"]
+        a["imin"] += w * Fi[0]
+        a["imax"] -= w * Fi[nz]
+        a["jmin"] += w * Fj[:, 0]
+        a["jmax"] -= w * Fj[:, ny]
+        if s._hole is not None:
+            j0, j1 = s._hole
+            a["hole_lo"] -= w * Fj[:, j0]
+            a["hole_hi"] += w * Fj[:, j1 + 1]
+
     def _inviscid(self, s, raw, w):
         blk = s.block
         nz, ny = blk.shape
@@ -224,27 +536,41 @@ class Ledger:
 
     def _shell(self, ts, T, Tn, dt, h_in, T_gas_in, h_out, T_gas_out, radiate, T_inf):
         """The shell's Robin heat, exactly as `step_thermal` assembled it: per
-        face segment h L (T_gas - mean of the segment's two nodes at t+dt)."""
+        face segment h L (target - mean of the segment's two nodes at t+dt).
+
+        The outer face's (h, target) come from the solver's own
+        `_outer_robin` where it has one (W338, 2026-09-26), so what is booked
+        is what was applied, and a monkeypatch that restores the old target is
+        booked as the old target. Before W338 the radiation's target was the
+        adjacent gas's temperature, which is what the fallback books."""
         a_i, b_i, L_i = ts._face("inner")
         a_o, b_o, L_o = ts._face("outer")
         h_in = np.broadcast_to(np.asarray(h_in, dtype=float), L_i.shape)
         Tg_in = np.broadcast_to(np.asarray(T_gas_in, dtype=float), L_i.shape)
         h_o = np.broadcast_to(np.asarray(h_out, dtype=float), L_o.shape)
         Tg_o = np.broadcast_to(np.asarray(T_gas_out, dtype=float), L_o.shape)
-        if radiate:
-            Tw = 0.5 * (T[a_o] + T[b_o])
-            h_rad = ts.mat.emissivity * SIGMA_SB * (Tw ** 2 + T_inf ** 2) * (Tw + T_inf)
-        else:
-            h_rad = np.zeros_like(L_o)
         Tb_i = 0.5 * (Tn[a_i] + Tn[b_i])
         Tb_o = 0.5 * (Tn[a_o] + Tn[b_o])
+        if hasattr(ts, "_outer_robin"):
+            h_tot, target, h_rad = ts._outer_robin(T, h_out, T_gas_out, radiate, T_inf)
+            q_outer = dt * h_tot * L_o * (target - Tb_o)
+            q_conv = dt * h_o * L_o * (Tg_o - Tb_o)
+            q_rad = q_outer - q_conv                            # as applied
+        else:
+            if radiate:
+                Tw = 0.5 * (T[a_o] + T[b_o])
+                h_rad = ts.mat.emissivity * SIGMA_SB * (Tw ** 2 + T_inf ** 2) * (Tw + T_inf)
+            else:
+                h_rad = np.zeros_like(L_o)
+            q_conv = dt * h_o * L_o * (Tg_o - Tb_o)
+            q_rad = dt * h_rad * L_o * (Tg_o - Tb_o)            # as applied
         nodes = ts.mesh.nodes.reshape(-1, 2)
         rec = dict(
             dE=float(np.sum(ts.M_th.dot(Tn - T))),
             E_stored=float(np.sum(ts.M_th.dot(Tn))),
             q_in=dt * h_in * L_i * (Tg_in - Tb_i),
-            q_conv=dt * h_o * L_o * (Tg_o - Tb_o),
-            q_rad=dt * h_rad * L_o * (Tg_o - Tb_o),            # as applied
+            q_conv=q_conv,
+            q_rad=q_rad,
             q_rad_sky=dt * h_rad * L_o * (T_inf - Tb_o),        # against the ambient
             z_in=0.5 * (nodes[a_i, 0] + nodes[b_i, 0]),
             T_inner=Tn[a_i], T_outer=Tn[a_o])
@@ -257,8 +583,9 @@ class Ledger:
         if getattr(cls, "_w336_installed", False):
             return
         o_step, o_iwc, o_react = cls.step, cls._isothermal_wall_conduction, cls.react
+        o_iff = getattr(cls, "_inviscid_face_fluxes", None)
         self._originals = dict(step=o_step, iwc=o_iwc, react=o_react, fluxes=dict(C2.FLUXES),
-                               step_thermal=TS.ThermoStruct2D.step_thermal)
+                               iff=o_iff, step_thermal=TS.ThermoStruct2D.step_thermal)
 
         def step(s, U, dt):
             prev = led.active
@@ -291,9 +618,21 @@ class Ledger:
             wrapped.__wrapped__ = fn
             return wrapped
 
+        def iff(s, Ue):
+            Fi, Fj = o_iff(s, Ue)
+            if led.active is not None and led.active[0] is s:
+                led._inviscid_faces(s, Fi, Fj, led.active[1])
+            return Fi, Fj
+
         cls.step, cls._isothermal_wall_conduction, cls.react = step, iwc, react
-        for name, fn in list(C2.FLUXES.items()):
-            C2.FLUXES[name] = wrap(fn)
+        if o_iff is not None:
+            # the solver hands back the face fluxes it differences (W337 made
+            # the injector's a prescribed flux, which no Riemann call returns)
+            cls._inviscid_face_fluxes = iff
+        else:
+            # a solver from before W337: the Riemann calls ARE the face fluxes
+            for name, fn in list(C2.FLUXES.items()):
+                C2.FLUXES[name] = wrap(fn)
         o_st = TS.ThermoStruct2D.step_thermal
 
         def step_thermal(ts, T, dt, h_in, T_gas_in, h_out, T_gas_out, radiate=True,
@@ -313,6 +652,8 @@ class Ledger:
             return
         cls = self.C2.Compressible2D
         cls.step, cls._isothermal_wall_conduction, cls.react = o["step"], o["iwc"], o["react"]
+        if o.get("iff") is not None:
+            cls._inviscid_face_fluxes = o["iff"]
         self.C2.FLUXES.clear()
         self.C2.FLUXES.update(o["fluxes"])
         self.TS.ThermoStruct2D.step_thermal = o["step_thermal"]
@@ -660,6 +1001,7 @@ def stage_coupled(a, name, old_wall=False):
     """The coupled episode, stepped exactly as `CoupledEpisode.step_macro` steps
     it, with every macro step accounted for."""
     M = _mods()
+    reverted = revert(M, getattr(a, "revert", None))
     led = Ledger(M)
     led.install()
     if old_wall:
@@ -687,12 +1029,15 @@ def stage_coupled(a, name, old_wall=False):
                ideal=dict(u_e=float(ep.scales.u_exit), p_e=float(ep.scales.p_exit),
                           T_e=float(ep.scales.T_exit), M_e=float(ep.scales.M_exit),
                           rho_e=float(ep.scales.rho_exit), p_c=float(p.p_c), T_c=float(p.T_c)),
-               A_exit_z=sm.A_exit_z, machine=_machine(), steps=[], build_repo=build_repo_identity())
+               A_exit_z=sm.A_exit_z, machine=_machine(), steps=[], build_repo=build_repo_identity(),
+               reverted=reverted)
     path = os.path.join(OUT, a.json or ("%s.json" % name))
     t0 = time.perf_counter()
     print("W336 %s: case %d (%s), coarsen %d, dt_macro %g, %d steps%s"
           % (name, a.case, p.label, a.coarsen, a.dt_macro, n_steps,
              ", OLD WALL (W332 reverted)" if old_wall else ""), flush=True)
+    if reverted:
+        print("  REVERTED to the pre-Tier-88 code: %s" % ",".join(reverted), flush=True)
     for n in range(n_steps):
         led.reset()
         before = _all_totals(ep, M)
@@ -738,6 +1083,7 @@ def stage_grid(a, part):
     rigid state stays at t = 0, so the freestream and back pressure are fixed."""
     M = _mods()
     gen = M["gen"]
+    reverted = revert(M, getattr(a, "revert", None))
     led = Ledger(M)
     led.install()
     n_steps = int(round(a.t_end / a.dt_macro))
@@ -751,12 +1097,14 @@ def stage_grid(a, part):
                           rho_e=float(ep.scales.rho_exit), p_c=float(p.p_c), T_c=float(p.T_c)),
                A_exit_z=sm.A_exit_z,
                shapes={ag: [list(b.shape) for b in ep.blocks[ag]] for ag in gen.GAS_AGENTS},
-               machine=_machine(), steps=[])
+               machine=_machine(), steps=[], build_repo=build_repo_identity(), reverted=reverted)
     path = os.path.join(OUT, a.json or ("%s.json" % name))
     agents = gen.ENGINE_AGENTS if part == "engine" else ("d",)
     t0 = time.perf_counter()
     print("W336 %s: case %d, coarsen %d, dt_macro %g, %d steps"
           % (name, a.case, a.coarsen, a.dt_macro, n_steps), flush=True)
+    if reverted:
+        print("  REVERTED to the pre-Tier-88 code: %s" % ",".join(reverted), flush=True)
     for n in range(n_steps):
         led.reset()
         before = _all_totals(ep, M)
@@ -972,6 +1320,19 @@ def stage_report(a):
         print("  %-4s %-6s got %s" % (k, tag, json.dumps(r["got"])[:100]))
         if "claim" in r:
             print("        %s" % r["claim"])
+    t88 = evaluate_t88()
+    print("=" * 96)
+    print("Tier 88 -- predictions registered 2026-09-26 11:05 EDT, before the fixed run")
+    print("=" * 96)
+    for k in PREDICTIONS_T88:
+        if k not in t88:
+            print("  %-4s not measured" % k)
+            continue
+        r = t88[k]
+        tag = "HELD" if r["held"] else ("FAILED" if r["held"] is False else "--")
+        print("  %-4s %-6s got %s" % (k, tag, json.dumps(r["got"])[:100]))
+        print("        %s" % r["claim"])
+    res["tier88"] = t88
     # convergence tables
     for part, keys in (("engine", ("throat_mdot_e_over_declared", "chamber_p_mean", "exit_mach_massavg",
                                     "exit_p_areaavg", "thrust_exit_face_mean")),
@@ -995,7 +1356,116 @@ def stage_report(a):
     _persist(os.path.join(OUT, "evaluation.json"), res)
 
 
-def tables(out_dir=None):
+def validation(au):
+    """The engine against ideal quasi-1D theory at the flow the nozzle
+    actually receives (the last 10 audited steps' mean throat flow), with and
+    without the planar nozzle's divergence factor sin(a)/a."""
+    S = au["steps"][-10:]
+
+    def m(key):
+        return float(np.mean([x[key] for x in S]))
+    I = au["ideal"]
+    mdot = au["mdot_declared"]
+    A_e, p_inf = au["A_exit_z"], au["steps"][-1]["p_inf"]
+    r = m("throat_mdot_e_over_declared")
+    g = 0.12 / 0.04
+    alpha = float(np.arctan((0.12 - 0.04) / (0.70 - 0.40)))
+    lam = float(np.sin(alpha) / alpha)
+    F1 = r * (mdot * I["u_e"] + I["p_e"] * A_e) - p_inf * A_e
+    F2 = r * (lam * mdot * I["u_e"] + I["p_e"] * A_e) - p_inf * A_e
+    thrust = m("thrust_exit_face_mean")
+    return dict(
+        area_ratio=g, half_angle_deg=float(np.degrees(alpha)), planar_divergence=lam,
+        flow_ratio=r, ideal_thrust_quasi1d=float(F1), ideal_thrust_planar=float(F2),
+        measured=thrust, measured_over_quasi1d=thrust / F1, measured_over_planar=thrust / F2,
+        exit_M_over_ideal=m("exit_mach_massavg") / I["M_e"],
+        exit_u_over_ideal=m("exit_u_massavg") / I["u_e"],
+        exit_p_over_scaled_ideal=m("exit_p_areaavg") / (r * I["p_e"]),
+        chamber_p_over_declared=m("chamber_p_mean") / I["p_c"])
+
+
+PRE_T88 = os.path.join(ROOT, "out", "w336_pre_w337")
+
+
+def evaluate_t88(out_dir=None, pre_dir=None):
+    """Tier 88's registered predictions (`PREDICTIONS_T88`), from the stage
+    records. None = not measured. `pre_dir` holds the pre-fix audit Q14 reads
+    the control against."""
+    def ld(name, d=None):
+        return _load(name, d or out_dir)
+    pre_dir = pre_dir or PRE_T88
+    au = ld("audit.json")
+    res = {}
+
+    def put(name, got, ok):
+        res[name] = dict(claim=PREDICTIONS_T88[name], got=got,
+                         held=None if ok is None else bool(ok))
+
+    def win(run, f, lo=0.03, hi=0.06):
+        return float(np.mean([f(x) for x in run["steps"] if lo < x["t"] <= hi + 1e-9]))
+
+    S = au["steps"] if au else []
+    if S:
+        inj = max(abs(s["injector_mdot_over_declared"] - 1.0) for s in S)
+        put("Q1", inj, inj < 1e-6)
+        th = [_last(S, None, fn=lambda s, sd=sd: abs(s["thermal_engine"][sd]["rel"]))
+              for sd in ("jmin", "jmax")]
+        put("Q4", th, max(th) < 5e-3)
+        slip = max(abs(v["q_rad_applied"] - v["q_rad_ambient"]) / max(abs(v["q_rad_ambient"]), 1e-300)
+                   for s in S for v in s["shell"].values())
+        put("Q6", slip, slip < 1e-9)
+        be = _last(S, None, fn=lambda s: abs(s["seam_be_mass_rel"]))
+        put("Q9", be, be < 3e-3)
+        pc = _last(S, "chamber_p_mean") / au["ideal"]["p_c"]
+        put("Q10", pc, abs(pc - 1.0) < 0.03)
+        v = validation(au)["measured_over_planar"]
+        put("Q11", v, abs(v - 1.0) < 0.02)
+        vm = _last(S, None, fn=lambda s: abs(s["vehicle_mass_loss_over_exit"] - 1.0))
+        put("Q12", vm, vm < 0.02)
+        tr = _last(S, None, fn=lambda s: abs(s["thrust_routes_rel"]))
+        put("Q13", tr, tr < 5e-3)
+    ge = {c: ld("grid_engine_c%d.json" % c) for c in (4, 2, 1)}
+    ge = {c: r for c, r in ge.items() if r and r["steps"]}
+    if ge:
+        worst = {c: max(abs(s["injector_mdot_over_declared"] - 1.0) for s in r["steps"])
+                 for c, r in ge.items()}
+        put("Q2", dict(("c%d" % c, w) for c, w in worst.items()), max(worst.values()) < 1e-6)
+    dg = ld("thermal_seam_diag.json")
+    if dg and dg.get("sides"):
+        wk = max(abs(s["gas_work"]) / max(abs(s["gas_conduction"]), 1e-300) for s in dg["sides"].values())
+        put("Q3", wk, wk < 1e-9)
+    runs = {10.0: ld("dt_10ms.json"), 2.5: ld("dt_2p5ms.json")}
+    if S and all(runs.values()):
+        runs[5.0] = dict(au, steps=[s for s in S if s["t"] <= 0.06 + 1e-9])
+
+        def thermal(s):
+            return 0.5 * sum(abs(s["thermal_engine"][sd]["rel"]) for sd in ("jmin", "jmax"))
+        q = [win(runs[d], thermal) for d in (10.0, 5.0, 2.5)]
+        put("Q5", [q[0] / q[1], q[1] / q[2]], min(q[0] / q[1], q[1] / q[2]) >= 1.5)
+        q = [win(runs[d], lambda s: abs(s["seam_be_mass_rel"])) for d in (10.0, 5.0, 2.5)]
+        put("Q7", [q[0] / q[1], q[1] / q[2]], min(q[0] / q[1], q[1] / q[2]) >= 1.5)
+        ab5 = win(runs[5.0], lambda s: abs(s["seam_ab_mass_rel"]))
+        put("Q8", [q[1], ab5], q[1] < ab5)
+    co, pre = ld("control_old.json"), ld("audit.json", pre_dir)
+    if co and co["steps"] and pre and pre["steps"]:
+        n = min(len(co["steps"]), len(pre["steps"]))
+        dev, bitwise = 0.0, True
+
+        def rel(a, b):
+            return abs(a - b) / max(abs(b), 1e-300)
+        for c, p in zip(co["steps"][:n], pre["steps"][:n]):
+            bitwise = bitwise and c["rigid"] == p["rigid"]
+            vals = [(c["injector_mdot_over_declared"], p["injector_mdot_over_declared"]),
+                    (c["seam_be_mass_rel"], p["seam_be_mass_rel"])]
+            vals += [(c["engine_heat_lost"][sd], p["engine_heat_lost"][sd]) for sd in ("jmin", "jmax")]
+            vals += [(c["shell"][k]["q_rad_applied"] - c["shell"][k]["q_rad_ambient"],
+                      p["shell"][k]["q_rad_applied"] - p["shell"][k]["q_rad_ambient"]) for k in p["shell"]]
+            dev = max(dev, max(rel(x, y) for x, y in vals))
+        put("Q14", dict(steps=n, rigid_bitwise=bitwise, worst_rel=dev), bitwise and dev < 1e-12)
+    return res
+
+
+def tables(out_dir=None, record=None):
     """The numbers the write-up quotes, computed here rather than by hand: the
     audit's late-time account, the coupling-step study at 60 ms, and the engine
     against ideal quasi-1D theory at the flow the nozzle actually receives."""
@@ -1029,29 +1499,11 @@ def tables(out_dir=None):
             exit_p=m(lambda x: x["exit_p_areaavg"]),
             exit_u=m(lambda x: x["exit_u_massavg"]),
             vehicle_mass_over_exit=m(lambda x: x["vehicle_mass_loss_over_exit"]))
-        # the engine against ideal theory, at the flow the nozzle receives
-        I = au["ideal"]
-        mdot = au["mdot_declared"]
-        A_e, p_inf = au["A_exit_z"], au["steps"][-1]["p_inf"]
-        r = out["audit_late"]["throat_e"]
-        g = 0.12 / 0.04
-        alpha = float(np.arctan((0.12 - 0.04) / (0.70 - 0.40)))
-        lam = float(np.sin(alpha) / alpha)
-        F1 = r * (mdot * I["u_e"] + I["p_e"] * A_e) - p_inf * A_e
-        F2 = r * (lam * mdot * I["u_e"] + I["p_e"] * A_e) - p_inf * A_e
-        out["validation"] = dict(
-            area_ratio=g, half_angle_deg=float(np.degrees(alpha)), planar_divergence=lam,
-            flow_ratio=r, ideal_thrust_quasi1d=float(F1), ideal_thrust_planar=float(F2),
-            measured=out["audit_late"]["thrust_exit"],
-            measured_over_quasi1d=out["audit_late"]["thrust_exit"] / F1,
-            measured_over_planar=out["audit_late"]["thrust_exit"] / F2,
-            exit_M_over_ideal=out["audit_late"]["exit_M"] / I["M_e"],
-            exit_u_over_ideal=out["audit_late"]["exit_u"] / I["u_e"],
-            exit_p_over_scaled_ideal=out["audit_late"]["exit_p"] / (r * I["p_e"]),
-            chamber_p_over_declared=out["audit_late"]["chamber_p"] / I["p_c"])
+        out["validation"] = validation(au)
     runs = {10.0: ld("dt_10ms.json"), 5.0: au, 2.5: ld("dt_2p5ms.json")}
     if all(runs.values()):
-        rec = np.load(RECORD) if os.path.exists(RECORD) else None
+        record = record or RECORD
+        rec = np.load(record) if os.path.exists(record) else None
         v0 = float(rec["rigid"][0][4]) if rec is not None else None
 
         def at(run, t):
@@ -1060,7 +1512,7 @@ def tables(out_dir=None):
         def win(run, key, lo=0.04, hi=0.06):
             return float(np.mean([key(x) for x in run["steps"] if lo < x["t"] <= hi + 1e-9]))
         rows = {}
-        for name, f in (("dv_y_60ms", lambda r: at(r, 0.06)["rigid"][4] - v0),
+        for name, f in (("dv_y_60ms", lambda r: at(r, 0.06)["rigid"][4] - v0 if v0 is not None else None),
                         ("drag_60ms", lambda r: at(r, 0.06)["loads_body"][2]),
                         ("thrust_40_60_mean", lambda r: win(r, lambda x: x["thrust_exit_face_mean"])),
                         ("shell_Tmax_60ms", lambda r: at(r, 0.06)["shell"]["1"]["T_inner_engine_max"]),
@@ -1071,6 +1523,8 @@ def tables(out_dir=None):
                         ("seam_gf", lambda r: win(r, lambda x: abs(x["seam_gf_mass_over_outflows"]), 0.03)),
                         ("thermal", lambda r: win(r, lambda x: abs(x["thermal_engine"]["jmax"]["rel"]), 0.03))):
             q = [f(runs[d]) for d in (10.0, 5.0, 2.5)]
+            if any(v is None for v in q):                   # no record for v_y(0)
+                continue
             p_obs, rich = _order(*q)
             rows[name] = dict(dt10=q[0], dt5=q[1], dt2p5=q[2], order=p_obs, richardson=rich)
         out["coupling_step"] = rows
@@ -1080,13 +1534,17 @@ def tables(out_dir=None):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--stage", required=True,
-                    choices=("audit", "control_wall", "dt", "grid_engine", "grid_external", "report"))
+                    choices=("audit", "control_wall", "control_old", "dt", "grid_engine",
+                             "grid_external", "report"))
     ap.add_argument("--case", type=int, default=0)
     ap.add_argument("--coarsen", type=int, default=4)
     ap.add_argument("--dt-macro", type=float, default=5.0e-3)
     ap.add_argument("--t-end", type=float, default=None)
     ap.add_argument("--record", default=os.path.join(ROOT, "out", "w321", "episode.npz"))
     ap.add_argument("--json", default=None)
+    ap.add_argument("--revert", default="",
+                    help="put fixes' old behaviour back, comma-separated from %s, or 'all'"
+                         % ",".join(FIXES))
     a = ap.parse_args(argv)
     if a.stage == "audit":
         a.t_end = a.t_end or 29 * 5.0e-3
@@ -1094,6 +1552,13 @@ def main(argv=None):
     elif a.stage == "control_wall":
         a.t_end = a.t_end or a.dt_macro
         stage_coupled(a, "control_wall", old_wall=True)
+    elif a.stage == "control_old":
+        # Tier 88's control: every fix put back on today's code, for the first
+        # steps of the audited run, to be read against the pre-fix audit
+        a.t_end = a.t_end or 2 * a.dt_macro
+        a.revert = a.revert or "all"
+        a.json = a.json or "control_old.json"
+        stage_coupled(a, "control_old")
     elif a.stage == "dt":
         a.t_end = a.t_end or 0.06
         tag = ("%g" % (a.dt_macro * 1e3)).replace(".", "p")

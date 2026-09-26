@@ -1,0 +1,378 @@
+{
+  "script": "w310_rocket_r0_complete.py",
+  "date": "2026-09-17",
+  "build_repo_commit": "0a407b7",
+  "dt_scale": 0.001,
+  "setup": {
+    "agents": [
+      {
+        "agent": "a",
+        "cells": 3840,
+        "dt_probe": 1e-06,
+        "dt_config": 0.001,
+        "ports": [
+          "b:ADVEC"
+        ]
+      },
+      {
+        "agent": "b",
+        "cells": 8960,
+        "dt_probe": 1e-06,
+        "dt_config": 0.001,
+        "ports": [
+          "a:ADVEC",
+          "e:ADVEC",
+          "c:THERM"
+        ]
+      },
+      {
+        "agent": "e",
+        "cells": 11520,
+        "dt_probe": 1e-06,
+        "dt_config": 0.001,
+        "ports": [
+          "b:ADVEC",
+          "f:ADVEC"
+        ]
+      },
+      {
+        "agent": "c",
+        "cells": 1856,
+        "dt_probe": 0.05,
+        "dt_config": 0.05,
+        "ports": [
+          "b:THERM",
+          "d:THERM"
+        ]
+      },
+      {
+        "agent": "d",
+        "cells": 8832,
+        "dt_probe": 5e-06,
+        "dt_config": 0.005,
+        "ports": [
+          "c:THERM",
+          "g:ADVEC"
+        ]
+      },
+      {
+        "agent": "f",
+        "cells": 12160,
+        "dt_probe": 5e-06,
+        "dt_config": 0.005,
+        "ports": [
+          "e:ADVEC",
+          "g:ADVEC"
+        ]
+      },
+      {
+        "agent": "g",
+        "cells": 14592,
+        "dt_probe": 5e-06,
+        "dt_config": 0.005,
+        "ports": [
+          "d:ADVEC",
+          "f:ADVEC"
+        ]
+      }
+    ],
+    "dt_scale": 0.001,
+    "build_seconds": 0.44865620881319046,
+    "undeclared": {
+      "a-c": "the injector/combustion zone's lateral walls below the chamber window, 6 cells and 0.120000 m (0.121552 m of chords until Tier 86 put nodes on the kinks). Named by the build repo's own source until Tier 86, as the reason its coupler handed every gas agent ONE wall temperature; since Tier 86 the coupler exchanges across it by position and the config RECORDS it (`recorded_interfaces`) without declaring it",
+      "e-c": "the diverging nozzle's inner wall, z in [z_throat, z_exit]. `e` and `c` share it and no edge declares it; wall_b_c stops at the throat and wall_c_d is the outer wall. 15 cells and 0.310483 m (0.313893 m of chords until Tier 86), and W311 measured it as the hottest part of the engine. Exchanged and recorded since Tier 86, not declared",
+      "d-f": "the strip exit_halfheight < |y| <= plume_halfwidth at z = z_exit, named by contours.plane_d_g's own docstring. Until Tier 86 f's inlet there was handed the freestream, in the wrong gas model; it is now fed from d's outlet and recorded, not declared"
+    }
+  },
+  "nozzle": {
+    "b": {
+      "label": "chamber wall (DECLARED, b-c)",
+      "mean": 211.29531675322292,
+      "min": 165.09055392879557,
+      "max": 473.3161115659874
+    },
+    "e": {
+      "label": "nozzle wall  (UNDECLARED, e-c)",
+      "mean": 281.34691582257324,
+      "min": 171.25826148565992,
+      "max": 507.8871729115537
+    },
+    "nozzle_over_chamber": 1.3315340829402542
+  },
+  "seams": [
+    {
+      "seam": "a-b",
+      "port_type": "ADVEC",
+      "dim_M": 41,
+      "beta": 8.745195813526773e-07,
+      "kappa": 1.0051465169460971,
+      "omega": 0.0007070963855511888,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "excess_null": 0,
+      "passivity_defect": 0.0,
+      "is_empty": false,
+      "effort_normal": "a",
+      "one_sided": 0.00015411261001176737,
+      "solver_calls": 84,
+      "seconds": 3.673311211168766
+    },
+    {
+      "seam": "e-b",
+      "port_type": "ADVEC",
+      "dim_M": 41,
+      "beta": 6.792183491498858e-07,
+      "kappa": 1.2847061984999257,
+      "omega": 0.03673204784067671,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "excess_null": 0,
+      "passivity_defect": 0.0,
+      "is_empty": false,
+      "effort_normal": "b",
+      "one_sided": 0.23367217065300722,
+      "solver_calls": 84,
+      "seconds": 6.587463296949863
+    },
+    {
+      "seam": "b-c",
+      "port_type": "THERM",
+      "dim_M": 8,
+      "beta": 0.21930898218466593,
+      "kappa": 2.2524800966992853,
+      "omega": 0.308807693479667,
+      "sign_structure": "negative",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "excess_null": 0,
+      "passivity_defect": 0.49398911711744375,
+      "is_empty": false,
+      "effort_normal": "b",
+      "one_sided": 0.1711760716458154,
+      "solver_calls": 18,
+      "seconds": 0.6677590906620026
+    },
+    {
+      "seam": "c-d",
+      "port_type": "THERM",
+      "dim_M": 93,
+      "beta": 0.13747529297308259,
+      "kappa": 1.0566388403487452,
+      "omega": 0.008171568367833833,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "excess_null": 0,
+      "passivity_defect": 0.0,
+      "is_empty": false,
+      "effort_normal": "c",
+      "one_sided": 0.4740092634464905,
+      "solver_calls": 94,
+      "seconds": 4.929068863391876
+    },
+    {
+      "seam": "e-f",
+      "port_type": "ADVEC",
+      "dim_M": 41,
+      "beta": 6.271618268687703e-07,
+      "kappa": 1.1580980129344234,
+      "omega": 0.02158624610137522,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "excess_null": 0,
+      "passivity_defect": 0.0,
+      "is_empty": false,
+      "effort_normal": "e",
+      "one_sided": 0.1360624294291601,
+      "solver_calls": 84,
+      "seconds": 4.570066165179014
+    },
+    {
+      "seam": "d-g",
+      "port_type": "ADVEC",
+      "dim_M": 25,
+      "beta": 9.152948186653258e-17,
+      "kappa": 666086604318.8844,
+      "omega": 0.6144970850028777,
+      "sign_structure": "positive",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "excess_null": 0,
+      "passivity_defect": 0.0,
+      "is_empty": false,
+      "effort_normal": "d",
+      "one_sided": 9.414042095197193e-05,
+      "solver_calls": 52,
+      "seconds": 2.080248538404703
+    },
+    {
+      "seam": "g-f",
+      "port_type": "ADVEC",
+      "dim_M": 77,
+      "beta": 2.5782891534986087e-12,
+      "kappa": 33.786014412438455,
+      "omega": 0.7038823905706232,
+      "sign_structure": "mixed",
+      "null_dim": 0,
+      "expected_null_dim": 0,
+      "excess_null": 0,
+      "passivity_defect": 2.502642058245435e-11,
+      "is_empty": true,
+      "effort_normal": "f",
+      "one_sided": 0.0,
+      "solver_calls": 156,
+      "seconds": 4.08574490621686
+    }
+  ],
+  "total_solver_calls": 572,
+  "reach": [
+    {
+      "agent": "a",
+      "port": "b:ADVEC",
+      "kind": "plane",
+      "n": 80,
+      "nonzero": 5,
+      "exact_zeros": 75,
+      "tripped": false,
+      "peak": 6.210143510543276e-11
+    },
+    {
+      "agent": "b",
+      "port": "a:ADVEC",
+      "kind": "plane",
+      "n": 80,
+      "nonzero": 5,
+      "exact_zeros": 75,
+      "tripped": false,
+      "peak": 8.781382803135784e-07
+    },
+    {
+      "agent": "b",
+      "port": "e:ADVEC",
+      "kind": "plane",
+      "n": 80,
+      "nonzero": 8,
+      "exact_zeros": 72,
+      "tripped": false,
+      "peak": 3.1661784305470064e-11
+    },
+    {
+      "agent": "b",
+      "port": "c:THERM",
+      "kind": "wall",
+      "n": 112,
+      "nonzero": 10,
+      "exact_zeros": 102,
+      "tripped": false,
+      "peak": 0.19382233472902044
+    },
+    {
+      "agent": "e",
+      "port": "b:ADVEC",
+      "kind": "plane",
+      "n": 96,
+      "nonzero": 11,
+      "exact_zeros": 85,
+      "tripped": false,
+      "peak": 8.708422285508277e-07
+    },
+    {
+      "agent": "e",
+      "port": "f:ADVEC",
+      "kind": "plane",
+      "n": 96,
+      "nonzero": 5,
+      "exact_zeros": 91,
+      "tripped": false,
+      "peak": 4.675371201301459e-11
+    },
+    {
+      "agent": "d",
+      "port": "c:THERM",
+      "kind": "wall",
+      "n": 184,
+      "nonzero": 8,
+      "exact_zeros": 176,
+      "tripped": false,
+      "peak": 0.06244970678224263
+    },
+    {
+      "agent": "d",
+      "port": "g:ADVEC",
+      "kind": "plane",
+      "n": 48,
+      "nonzero": 5,
+      "exact_zeros": 43,
+      "tripped": false,
+      "peak": 2.7569058147491887e-12
+    },
+    {
+      "agent": "f",
+      "port": "e:ADVEC",
+      "kind": "plane",
+      "n": 80,
+      "nonzero": 3,
+      "exact_zeros": 77,
+      "tripped": false,
+      "peak": 7.260017866883572e-07
+    },
+    {
+      "agent": "f",
+      "port": "g:ADVEC",
+      "kind": "plane",
+      "n": 152,
+      "nonzero": 1,
+      "exact_zeros": 151,
+      "tripped": true,
+      "peak": 1.0578609679050405e-11
+    },
+    {
+      "agent": "g",
+      "port": "d:ADVEC",
+      "kind": "plane",
+      "n": 96,
+      "nonzero": 0,
+      "exact_zeros": 96,
+      "tripped": false,
+      "peak": 0.0
+    },
+    {
+      "agent": "g",
+      "port": "f:ADVEC",
+      "kind": "plane",
+      "n": 152,
+      "nonzero": 0,
+      "exact_zeros": 152,
+      "tripped": false,
+      "peak": 0.0
+    }
+  ],
+  "compile": {
+    "verdict": "refuse",
+    "refusals": {
+      "L2/InterfaceMotion": 3,
+      "L5/R6": 1
+    },
+    "decertifications": {
+      "L1/E3": 3,
+      "L2/C3/W57": 1,
+      "L4/operator-content": 2,
+      "L4/block-share": 2,
+      "L4/probe-base": 4,
+      "L4/E7/passivity": 1,
+      "L4/6.4(a)": 1,
+      "L5/eps_tol": 1,
+      "L7/R9/lag": 1,
+      "L7/R9/order": 1,
+      "L6/E6": 1,
+      "L9/E5": 1,
+      "L8/W56": 1
+    },
+    "seconds": 25.810767225921154,
+    "n_refusals": 4,
+    "n_decertifications": 20
+  }
+}

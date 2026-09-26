@@ -694,3 +694,41 @@ out/w321_seams_only/*
 !out/pre_w332/
 !out/w334/
 !out/w336/
+
+# Tier 88 -- W337-W340 fixed, the episode re-marched and re-audited, Tiers 76-85
+# re-derived twice on one box (fixed, and with the four fixes reverted). The
+# new march and audit (out/w321, out/w336 above), and every record they
+# replaced, kept under its own name:
+#
+# * out/w321_pre_w337, out/w336_pre_w337 -- Tier 86-87's march and audit, which
+#   tests/test_tier87 and scripts/w340_throat_diag.py read;
+# * out/w321_laptop -- the fixed march replicated on the laptop (the flight
+#   matches the box's record to one ulp);
+# * out/w321_t88_twolayer_*, out/w336_t88_twolayer -- the first fixed build,
+#   whose two-layer handover made e|f a floor (case study section 20.2);
+# * out/pre_w337 -- W334's Tier 76-85 records, replaced by out/t88's;
+#   out/t88, out/t88_revert -- the re-derivation and its attribution control;
+# * the Tier 86 gates re-read on the new march, and the frozen-instant seams.
+!out/w321/march.log
+!out/w321_pre_w337/
+out/w321_pre_w337/*
+!out/w321_pre_w337/episode.json
+!out/w321_pre_w337/episode.npz
+!out/w321_pre_w337/rocket-episode.html
+!out/w321_pre_w337/build_repo_at_launch.diff
+!out/w321_pre_w337/build_repo_at_launch.untracked_test_atlas_seams.py
+!out/w321_laptop/
+out/w321_laptop/*
+!out/w321_laptop/episode.json
+!out/w321_laptop/episode.npz
+!out/w321_laptop/march.log
+!out/w321_laptop/build_repo_at_launch.diff
+!out/w321_t88_twolayer_partial/
+!out/w321_t88_twolayer_box/
+!out/w336_pre_w337/
+!out/w336_t88_twolayer/
+!out/pre_w337/
+!out/t88/
+!out/t88_revert/
+!out/w323_seams_fixed_t88.json
+!out/w340_throat_diag.json

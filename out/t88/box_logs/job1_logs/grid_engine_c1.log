@@ -1,0 +1,7 @@
+W336 grid_engine_c1: case 0, coarsen 1, dt_macro 0.005, 6 steps
+  step 1 t=0.0050  1319 s  throat 0.53299  exit 0.68045  thrust 592365  p_c 8.1776e+06  M_e 2.3893  heat 4540.8
+  step 2 t=0.0100  1656 s  throat 0.58776  exit 0.58700  thrust 547773  p_c 9.0105e+06  M_e 2.3899  heat 4256.8
+  step 3 t=0.0150  2045 s  throat 1.18691  exit 1.16926  thrust 1.14998e+06  p_c 9.2635e+06  M_e 2.4204  heat 4730.3
+  step 4 t=0.0200  2088 s  throat 1.22006  exit 1.21899  thrust 1.19639e+06  p_c 8.5786e+06  M_e 2.4203  heat 4751.8
+  step 5 t=0.0250  1769 s  throat 1.05884  exit 1.06374  thrust 1.03816e+06  p_c 8.7292e+06  M_e 2.4104  heat 4746.5
+  step 6 t=0.0300  1510 s  throat 1.07652  exit 1.07595  thrust 1.05018e+06  p_c 8.3343e+06  M_e 2.4101  heat 4740.6

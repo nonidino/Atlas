@@ -2,6 +2,7 @@
 
 **Type:** Core Concept — Build Brief / pickup prompt (folder: `Atlas 0.1/case-study-rocket-ascent/`)
 **Status:** opened 2026-09-26, for a session that has **none** of the context the episode was built in: another person's Claude, on a clone of the two repositories. Written to be the only page it needs before starting, in the sense of [[cs7-scaling-ladder-pickup]]. Everything below is quoted from a record or marked as a choice.
+**Carried out 2026-09-26 as Tier 88** ([[case-study-rocket-bc-seam-atlas-0.1]] §20). W337–W340 are closed. W340's fix differs from §5 below: the overlap average alone left the floor, which was the ghost's depth, and two-way seams now take two ghost layers. The rest of this page is kept as the brief it was.
 **Related:** [[case-study-rocket-bc-seam-atlas-0.1]] (§18 Tier 86, §19 Tier 87) · [[gap-worklist]] (Tiers 86, 86-continued, 87) · [[rocket-episode-seam-audit]] · [[case-study-brake-thermal-atlas-0.1]]
 
 ---

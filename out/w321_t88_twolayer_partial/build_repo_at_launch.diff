@@ -1,0 +1,908 @@
+diff --git a/src/atlas/data/generate.py b/src/atlas/data/generate.py
+index d4aecd8..79c0006 100644
+--- a/src/atlas/data/generate.py
++++ b/src/atlas/data/generate.py
+@@ -36,8 +36,11 @@ each exchange does now, and what it did before:
+   lower panel's gas side is its last j edge, and it used to be loaded inside
+   out.
+ * Plane seams map by position (the old `_remap` normalised both spans to [0, 1]
+-  first); e-f maps conservatively; `d` feeds `g`'s inlet and the part of `f`'s
+-  inlet outside the nozzle exit (d-g is declared, d-f is not, both are real).
++  first), and every one hands over the neighbour's first two cell layers,
++  each an overlap average on the two faces' node edges (`_hand_over_layers`,
++  W340, 2026-09-26: one repeated cell-centre state lost 3% of the mass flow
++  at the throat); `d` feeds `g`'s inlet and the part of `f`'s inlet outside
++  the nozzle exit (d-g is declared, d-f is not, both are real).
+ * A state crossing between the plume gas and air is re-expressed for the
+   receiver at the same pressure, temperature and velocity (`_as_gas`). Passing
+   the conserved vector unchanged had the receiver read p' = (g'-1)/(g-1) p.
+@@ -129,6 +132,70 @@ def _cell_average(values, edges_src, edges_dst):
+     return avg.reshape((ed.size - 1,) + v.shape[1:]), tot / np.diff(ed)
+ 
+ 
++def _hand_over(values, edges_src, edges_dst) -> np.ndarray:
++    """A plane seam's handover: each destination face cell gets the
++    overlap-weighted average of the source cells' CONSERVED states on the two
++    faces' node edges (`_cell_average`), so the face integral of every
++    conserved quantity crosses the seam unchanged. A destination cell no source
++    cell overlaps takes the nearest source cell. Either edge array may run in
++    either direction.
++
++    W340. Plane seams between non-matching grids were handed over by
++    `_remap`, point interpolation at the cell centroids, which preserves no
++    integral. An average of states does not make the two sides' fluxes equal
++    -- each side still computes its own -- but it hands over what the source
++    holds. It was written for the rocket's throat, where 3% of the mass flow
++    vanished every step, and it did not remove that: the floor was the ghost's
++    depth, not the interpolation (`_hand_over_layers`)."""
++    es = np.asarray(edges_src, dtype=float)
++    ed = np.asarray(edges_dst, dtype=float)
++    v = np.asarray(values, dtype=float)
++    if es[-1] < es[0]:
++        es, v = es[::-1], v[::-1]
++    flip = ed[-1] < ed[0]
++    if flip:
++        ed = ed[::-1]
++    avg, cov = _cell_average(v, es, ed)
++    empty = cov <= 0.0
++    if empty.any():
++        cs = 0.5 * (es[:-1] + es[1:])
++        cd = 0.5 * (ed[:-1] + ed[1:])[empty]
++        avg[empty] = v[np.abs(cs[None, :] - cd[:, None]).argmin(axis=1)]
++    return avg[::-1] if flip else avg
++
++
++def _face_layers(U: np.ndarray, side: str, n: int = NG) -> np.ndarray:
++    """The first ``n`` cell layers in from a face, [n, n_face, nv], layer 0
++    against the face."""
++    if side == "imin":
++        return U[:n]
++    if side == "imax":
++        return U[::-1][:n]
++    if side == "jmin":
++        return np.swapaxes(U[:, :n], 0, 1)
++    return np.swapaxes(U[:, ::-1][:, :n], 0, 1)
++
++
++def _hand_over_layers(U: np.ndarray, side: str, edges_src, edges_dst) -> np.ndarray:
++    """`_hand_over` applied to each of the source face's first NG cell layers:
++    the receiver's ghost layers, [NG, n_dst, nv], layer 0 against the face.
++
++    W340, second half. One state repeated in both ghost layers hands the face
++    the neighbour's cell-CENTRE value, half a cell from the face, while the
++    neighbour's own flux uses its state reconstructed AT the face. Frozen at
++    one instant of the rocket's run (no lag at all), that made the throat's two
++    face fluxes differ by 3.1% of the mass flow with point interpolation and
++    3.1% with the overlap average alone -- and by 4e-5 with two layers."""
++    return np.stack([_hand_over(L, edges_src, edges_dst) for L in _face_layers(U, side)])
++
++
++def _face_edges(blk, side: str) -> np.ndarray:
++    """The coordinate along a face at its nodes, [n_face + 1]: y on an i face,
++    z on a j face (every block's z depends on i alone)."""
++    return {"imin": blk.nodes[0, :, 1], "imax": blk.nodes[-1, :, 1],
++            "jmin": blk.nodes[:, 0, 0], "jmax": blk.nodes[:, -1, 0]}[side]
++
++
+ def _as_gas(U: np.ndarray, src: GasConfig, dst: GasConfig) -> np.ndarray:
+     """A conserved state of one gas, re-expressed for a block that runs another.
+ 
+@@ -463,16 +530,19 @@ class CoupledEpisode:
+     def _wire_engine(self):
+         geo = self.geo
+         Ua, Ub, Ue = self.U["a"][0], self.U["b"][0], self.U["e"][0]
+-        ya = self.blocks["a"][0].centroid[-1, :, 1]
+-        yb0 = self.blocks["b"][0].centroid[0, :, 1]
+-        yb1 = self.blocks["b"][0].centroid[-1, :, 1]
+-        ye0 = self.blocks["e"][0].centroid[0, :, 1]
++        ya = _face_edges(self.blocks["a"][0], "imax")
++        yb0 = _face_edges(self.blocks["b"][0], "imin")
++        yb1 = _face_edges(self.blocks["b"][0], "imax")
++        ye0 = _face_edges(self.blocks["e"][0], "imin")
+ 
+         mdot_flux = self.scales.mdot / (2.0 * geo.chamber_halfheight)
++        # every plane seam hands over the neighbour's first two cell layers,
++        # each overlap-averaged onto the receiver's face cells (W340)
++        b_to_a = _hand_over_layers(Ub, "imin", yb0, ya)
+         # b carries no progress variable; hand `a` its own edge Y back, so the
+         # downstream boundary neither injects unburnt gas nor quenches the zone.
+-        b_to_a = _remap(_face_state(Ub, "imin")[0], yb0, ya)
+-        b_to_a = np.concatenate([b_to_a, _face_state(Ua, "imax")[0, :, 4:]], axis=-1)
++        Y_a = np.broadcast_to(_face_state(Ua, "imax")[0, :, 4:], b_to_a.shape[:2] + (Ua.shape[-1] - 4,))
++        b_to_a = np.concatenate([b_to_a, Y_a], axis=-1)
+ 
+         def walls(agent):
+             return {s: BC("wall_noslip", {"T_wall": self._wall_T(agent, 0, s)})
+@@ -480,34 +550,37 @@ class CoupledEpisode:
+ 
+         self.sol["a"][0].bcs = {
+             "imin": BC("inlet_massflow", {"mdot": mdot_flux, "T": T_INJECT}),
+-            "imax": BC("prescribed", {"state": b_to_a[None]}),
++            "imax": BC("prescribed", {"state": b_to_a}),
+             **walls("a"),
+         }
+         self.sol["b"][0].bcs = {
+-            "imin": BC("prescribed", {"state": _remap(_face_state(Ua, "imax")[0, :, :4], ya, yb0)[None]}),
+-            "imax": BC("prescribed", {"state": _remap(_face_state(Ue, "imin")[0], ye0, yb1)[None]}),
++            "imin": BC("prescribed", {"state": _hand_over_layers(Ua[..., :4], "imax", ya, yb0)}),
++            "imax": BC("prescribed", {"state": _hand_over_layers(Ue, "imin", ye0, yb1)}),
+             **walls("b"),
+         }
+         _, p_inf, _, _ = self._atm()
+         self.sol["e"][0].bcs = {
+-            "imin": BC("prescribed", {"state": _remap(_face_state(Ub, "imax")[0], yb1, ye0)[None]}),
++            "imin": BC("prescribed", {"state": _hand_over_layers(Ub, "imax", yb1, ye0)}),
+             "imax": BC("outflow", {"p_inf": p_inf}),
+             **walls("e"),
+         }
+ 
+-    def _d_outlet(self, y: np.ndarray, dst: GasConfig) -> np.ndarray:
+-        """`d`'s state at its outlet plane z = z_exit, at transverse positions y,
+-        in the receiver's gas model. Panel by sign; within a panel by position,
+-        clamped at the wall (the shell's 8 mm base is part of `d`'s first cell)."""
+-        out = np.empty((y.size, 4))
++    def _d_outlet(self, y_edges: np.ndarray, dst: GasConfig) -> np.ndarray:
++        """`d`'s first NG cell layers in from its outlet plane z = z_exit,
++        handed over onto the receiving face cells whose node edges are
++        ``y_edges`` (W340), in the receiver's gas model: [NG, n_cells, 4],
++        layer 0 against the plane. Panel by the sign of the cell's midpoint.
++        `d` starts at the shell's outer face, so a receiving cell over the
++        shell's 8 mm base averages over the part `d` covers."""
++        y_edges = np.asarray(y_edges, dtype=float)
++        mid = 0.5 * (y_edges[:-1] + y_edges[1:])
++        out = np.empty((NG, mid.size, 4))
+         for k, blk in enumerate(self.blocks["d"]):
+-            sel = (y > 0) if blk.nodes[..., 1].mean() > 0 else (y <= 0)
++            sel = (mid > 0) if blk.nodes[..., 1].mean() > 0 else (mid <= 0)
+             if not sel.any():
+                 continue
+-            yc = blk.centroid[-1, :, 1]
+-            order = np.argsort(yc)
+-            st = _remap(self.U["d"][k][-1][order], yc[order], y[sel])
+-            out[sel] = _as_gas(st, self.air_cfg, dst)
++            st = _hand_over_layers(self.U["d"][k], "imax", _face_edges(blk, "imax"), y_edges)
++            out[:, sel] = _as_gas(st[:, sel], self.air_cfg, dst)
+         return out
+ 
+     def _wire_external(self):
+@@ -533,50 +606,53 @@ class CoupledEpisode:
+         yf_edges = fb.nodes[0, :, 1]
+         ye_edges = eb.nodes[-1, :, 1]
+         core = (yf_edges[:-1] >= ye_edges[0] - 1e-12) & (yf_edges[1:] <= ye_edges[-1] + 1e-12)
+-        inlet = np.empty((yf.size, 4))
++        inlet = np.empty((NG, yf.size, 4))              # two layers deep (W340)
+         if core.any():
+             kk = np.flatnonzero(core)
+             edges = np.concatenate([yf_edges[kk], yf_edges[kk[-1] + 1:kk[-1] + 2]])
+-            avg, cov = _cell_average(_face_state(self.U["e"][0], "imax")[0], ye_edges, edges)
+-            if not np.allclose(cov, 1.0):
+-                raise AssertionError("f's core inlet cells are not covered by e's exit")
+-            inlet[core] = avg
++            for d, row in enumerate(_face_layers(self.U["e"][0], "imax")):
++                avg, cov = _cell_average(row, ye_edges, edges)
++                if not np.allclose(cov, 1.0):
++                    raise AssertionError("f's core inlet cells are not covered by e's exit")
++                inlet[d, core] = avg
+         if (~core).any():
+-            inlet[~core] = self._d_outlet(yf[~core], self.gas_cfg)
++            inlet[:, ~core] = self._d_outlet(yf_edges, self.gas_cfg)[:, ~core]
+ 
+         # the g-f shear layer, both directions, on the node lines |y| = plume
+         # half-width that both blocks now share: f sees g's cells just outboard
+-        # of the plume, g sees f's cells just inboard -- each in its own gas.
++        # of the plume, g sees f's cells just inboard -- each in its own gas,
++        # and each two layers deep.
+         Ug, Uf = self.U["g"][0], self.U["f"][0]
+         j0, j1 = self.sol["g"][0]._hole
+-        zg = self.blocks["g"][0].centroid[:, 0, 0]
+-        zf = fb.centroid[:, 0, 0]
+-        g_lo = _as_gas(_remap(Ug[:, j0 - 1], zg, zf), self.air_cfg, self.gas_cfg)
+-        g_hi = _as_gas(_remap(Ug[:, j1 + 1], zg, zf), self.air_cfg, self.gas_cfg)
++        zg = _face_edges(self.blocks["g"][0], "jmin")
++        zf = _face_edges(fb, "jmin")
++        g_lo = np.stack([_as_gas(_hand_over(Ug[:, j0 - 1 - d], zg, zf), self.air_cfg, self.gas_cfg)
++                         for d in range(NG)], axis=1)
++        g_hi = np.stack([_as_gas(_hand_over(Ug[:, j1 + 1 + d], zg, zf), self.air_cfg, self.gas_cfg)
++                         for d in range(NG)], axis=1)
+         self.sol["f"][0].bcs = {
+-            "imin": BC("prescribed", {"state": inlet[None]}),
++            "imin": BC("prescribed", {"state": inlet}),
+             "imax": BC("outflow", {"p_inf": p_inf}),
+-            "jmin": BC("prescribed", {"state": g_lo[:, None]}),
+-            "jmax": BC("prescribed", {"state": g_hi[:, None]}),
++            "jmin": BC("prescribed", {"state": g_lo}),
++            "jmax": BC("prescribed", {"state": g_hi}),
+         }
+ 
+         # g's inlet is d's outlet over the live band (d-g, declared); the hole's
+         # inlet cells are blanked and only need to be finite
+         gb = self.blocks["g"][0]
+-        yg = gb.centroid[0, :, 1]
+-        g_in = np.broadcast_to(thermo.prim_to_cons(free, atmosphere.GAMMA_AIR), (yg.size, 4)).copy()
+         live = ~gb.blanked[0]
+-        g_in[live] = self._d_outlet(yg[live], self.air_cfg)
++        g_in = np.broadcast_to(thermo.prim_to_cons(free, atmosphere.GAMMA_AIR), (NG, live.size, 4)).copy()
++        g_in[:, live] = self._d_outlet(_face_edges(gb, "imin"), self.air_cfg)[:, live]
+         self.sol["g"][0].bcs = {
+-            "imin": BC("prescribed", {"state": g_in[None]}),
++            "imin": BC("prescribed", {"state": g_in}),
+             "imax": BC("outflow", {"p_inf": p_inf}),
+             "jmin": BC("freestream", {"prim": free}),
+             "jmax": BC("freestream", {"prim": free}),
+         }
+         # the plume hole is the declared g-f interface, not a wall: each side of
+         # it sees f's own cells on that side, layer by layer
+-        lo = np.stack([_remap(Uf[:, d], zf, zg) for d in range(NG)], axis=1)
+-        hi = np.stack([_remap(Uf[:, -1 - d], zf, zg) for d in range(NG)], axis=1)
++        lo = np.stack([_hand_over(Uf[:, d], zf, zg) for d in range(NG)], axis=1)
++        hi = np.stack([_hand_over(Uf[:, -1 - d], zf, zg) for d in range(NG)], axis=1)
+         self.sol["g"][0].hole_state = (_as_gas(lo, self.gas_cfg, self.air_cfg),
+                                        _as_gas(hi, self.gas_cfg, self.air_cfg))
+ 
+diff --git a/src/atlas/solvers/compressible2d.py b/src/atlas/solvers/compressible2d.py
+index b5d2c83..eb7e78a 100644
+--- a/src/atlas/solvers/compressible2d.py
++++ b/src/atlas/solvers/compressible2d.py
+@@ -71,7 +71,11 @@ class ReactionConfig:
+ @dataclass
+ class BC:
+     """kind ∈ {wall_slip, wall_noslip, symmetry, inlet_massflow, freestream,
+-    outflow, prescribed, extrapolate}."""
++    outflow, prescribed, extrapolate}.
++
++    ``prescribed`` takes ``state``: one state per face cell, repeated in both
++    ghost layers ([1, n, nv] on an i side, [n, 1, nv] on a j side), or one per
++    ghost layer ([NG, n, nv] / [n, NG, nv], layer 0 against the face)."""
+     kind: str
+     params: dict = field(default_factory=dict)
+ 
+@@ -186,11 +190,28 @@ class Compressible2D:
+                 ghost = iso if m is None else np.where(m, iso, ghost)
+             ghost = ghost[::-1] if i_dir else ghost[:, ::-1]
+         else:
++            ghost = None
+             if k == "extrapolate":
+                 one = edge.copy()
+             elif k == "prescribed":
+-                one = np.broadcast_to(np.asarray(bc.params["state"], dtype=float),
+-                                      edge.shape).copy()
++                st = np.asarray(bc.params["state"], dtype=float)
++                ax = 0 if i_dir else 1
++                if g > 1 and st.ndim == edge.ndim and st.shape[ax] == g:
++                    # LAYERED (W340): one state per ghost layer, layer 0 against
++                    # the face -- the neighbour's first g cells -- so the face's
++                    # ghost side is reconstructed with a slope, as it would be
++                    # inside one block. A single state repeated in both layers
++                    # hands the face the neighbour's CELL-CENTRE value, half a
++                    # cell from the face; at the rocket's throat that alone made
++                    # the two sides' mass fluxes differ by 3%.
++                    shape = list(edge.shape)
++                    shape[ax] = g
++                    lay = np.broadcast_to(st, tuple(shape)).copy()
++                    if side in ("imin", "jmin"):
++                        lay = lay[::-1] if i_dir else lay[:, ::-1]
++                    ghost = lay
++                else:
++                    one = np.broadcast_to(st, edge.shape).copy()
+             elif k == "freestream":
+                 W = np.asarray(bc.params["prim"], dtype=float)      # (rho, u, v, p[, Y])
+                 one = np.broadcast_to(thermo.prim_to_cons(W, cfg.gamma), edge.shape).copy()
+@@ -217,7 +238,8 @@ class Compressible2D:
+                     one[..., 3] = p_new / (cfg.gamma - 1.0) + ke
+             else:
+                 raise KeyError(f"unknown BC kind {k!r}")
+-            ghost = np.repeat(one, g, axis=0 if i_dir else 1)
++            if ghost is None:
++                ghost = np.repeat(one, g, axis=0 if i_dir else 1)
+ 
+         if side == "imin":
+             Ue[:g, NG:ny + NG] = ghost
+@@ -276,7 +298,10 @@ class Compressible2D:
+         WR = (core - 0.5 * slope)[take(1, None)]
+         return thermo.prim_to_cons(WL, gamma), thermo.prim_to_cons(WR, gamma)
+ 
+-    def _inviscid_residual(self, Ue: np.ndarray) -> np.ndarray:
++    def _inviscid_face_fluxes(self, Ue: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
++        """The inviscid flux through every face, times the face's length:
++        (Fi [nz+1, ny, nv], Fj [nz, ny+1, nv]), along the index-oriented
++        normals. These are the arrays `_inviscid_residual` differences."""
+         blk, gamma = self.block, self.cfg.gamma
+         flux = FLUXES[self.cfg.riemann]
+         nz, ny = blk.shape
+@@ -289,8 +314,57 @@ class Compressible2D:
+         L, R = self._faces(Ue[NG:nz + NG, :], axis=1)               # [nz, ny+1, nv]
+         Fj = flux(L, R, blk.n_j, gamma) * blk.a_j[..., None]
+ 
++        self._inlet_face_flux(Fi, Ue)
++        return Fi, Fj
++
++    def _inviscid_residual(self, Ue: np.ndarray) -> np.ndarray:
++        blk = self.block
++        Fi, Fj = self._inviscid_face_fluxes(Ue)
+         return -((Fi[1:] - Fi[:-1]) + (Fj[:, 1:] - Fj[:, :-1])) / blk.vol[..., None]
+ 
++    def _inlet_face_flux(self, Fi: np.ndarray, Ue: np.ndarray) -> None:
++        """Prescribe the inviscid flux through every ``inlet_massflow`` face.
++
++        W337. `_fill_side` builds an inlet ghost at the injection temperature
++        with ``rho u = mdot`` and the cell's pressure, and the face flux used to
++        be the Riemann solution between that ghost and the first cell. Where
++        the cell holds the same gas that works (the nozzle test injects at the
++        chamber temperature). Against the burning gas in the rocket's combustor,
++        a 900 K ghost beside 3000 K products, the Riemann flux carried 1.177 of
++        the declared mass flow, and the chamber ran at 1.13 of its declared
++        pressure. The face now carries the injection's own flux, at the cell's
++        pressure (the one characteristic that leaves the domain there):
++
++            mass      mdot
++            momentum  (mdot u + p) n,      u = mdot / rho,  rho = p / (R T_inject)
++            energy    mdot (cp T_inject + u^2 / 2)
++            Y         0                    (unburnt)
++
++        with the signs of an inflow. The ghost stays as it was, for the viscous
++        operator and the first interior face's reconstruction."""
++        cfg, blk = self.cfg, self.block
++        nz, ny = blk.shape
++        for side in ("imin", "imax", "jmin", "jmax"):
++            bc = self.bcs.get(side)
++            if bc is None or bc.kind != "inlet_massflow":
++                continue
++            if side not in ("imin", "imax"):
++                raise NotImplementedError(
++                    "inlet_massflow is an i-face condition: its ghost carries the "
++                    "injection in the z momentum")
++            f, ic, s = (0, NG, 1.0) if side == "imin" else (nz, nz + NG - 1, -1.0)
++            mdot, T_in = float(bc.params["mdot"]), float(bc.params["T"])
++            p = thermo.pressure_from_cons(Ue[ic, NG:ny + NG], cfg.gamma)
++            rho = p / (cfg.R * T_in)
++            u = mdot / rho
++            n, a = blk.n_i[f], blk.a_i[f]
++            F = np.zeros((ny, self.nv))
++            F[:, 0] = s * mdot
++            F[:, 1] = (mdot * u + p) * n[:, 0]
++            F[:, 2] = (mdot * u + p) * n[:, 1]
++            F[:, 3] = s * mdot * (cfg.cp * T_in + 0.5 * u * u)
++            Fi[f] = F * a[:, None]
++
+     # -- gradients and viscous flux ----------------------------------------
+     def _grad(self, f: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+         """d/dz, d/dy of a cell-centred field defined on the GHOSTED array,
+@@ -356,8 +430,21 @@ class Compressible2D:
+         return ((Fi[1:] - Fi[:-1]) + (Fj[:, 1:] - Fj[:, :-1])) / blk.vol[..., None]
+ 
+     def _isothermal_wall_conduction(self, Fi, Fj, T, Qz, Qy, k) -> None:
+-        """Replace the conduction term on every ISOTHERMAL wall face with the
+-        one-sided flux from the wall temperature, ``k(T_i) (T_i - T_w)/dn``.
++        """Set the viscous ENERGY flux on every no-slip wall face to the wall's
++        conduction and nothing else: at isothermal stations the one-sided flux
++        from the wall temperature, ``k(T_i) (T_i - T_w)/dn``; at adiabatic
++        stations (no ``T_wall``, or outside ``isothermal_mask`` -- the forebody
++        slot) zero. The shear, the face's momentum, is left as it was.
++
++        W339. The face value this replaces was the average of the cell's and
++        the mirrored ghost's viscous energy flux, work term ``u.tau`` included.
++        A wall that does not move does no work, and that average is not zero.
++        The rocket's engine walls lost 29.6 J/m per side per 5 ms step to it,
++        4.7% of the heat the gas gave them, and no neighbour received it. W301
++        had replaced only the conduction part (``fix = wall - avg``) and kept
++        the work. ``Qz`` and ``Qy``, the conduction that average carried, are
++        no longer read; the signature stays for the instruments that wrap this
++        method.
+ 
+         W301. `_fill_side` builds the isothermal ghost as
+         ``T_g = max(2 T_w - T_i, 20 K)`` -- a correct positivity guard, since a
+@@ -377,21 +464,22 @@ class Compressible2D:
+         nz, ny = blk.shape
+         for side in ("imin", "imax", "jmin", "jmax"):
+             bc = self.bcs.get(side)
+-            if bc is None or bc.kind != "wall_noslip" or "T_wall" not in bc.params:
++            if bc is None or bc.kind != "wall_noslip":
+                 continue
+             if side in ("jmin", "jmax"):
+-                jc, jg, f = (NG, NG - 1, 0) if side == "jmin" else (ny + NG - 1, ny + NG, -1)
++                jc, f = (NG, 0) if side == "jmin" else (ny + NG - 1, -1)
+                 sl_c = (slice(NG, nz + NG), jc)
+-                sl_g = (slice(NG, nz + NG), jg)
+-                n, a, vol = blk.n_j[:, f], blk.a_j[:, f], blk.vol[:, 0 if f == 0 else -1]
++                a, vol = blk.a_j[:, f], blk.vol[:, 0 if f == 0 else -1]
+                 target = (slice(None), f)
+             else:
+-                ic, ig, f = (NG, NG - 1, 0) if side == "imin" else (nz + NG - 1, nz + NG, -1)
++                ic, f = (NG, 0) if side == "imin" else (nz + NG - 1, -1)
+                 sl_c = (ic, slice(NG, ny + NG))
+-                sl_g = (ig, slice(NG, ny + NG))
+-                n, a, vol = blk.n_i[f], blk.a_i[f], blk.vol[0 if f == 0 else -1]
++                a, vol = blk.a_i[f], blk.vol[0 if f == 0 else -1]
+                 target = (f, slice(None))
+-            avg = 0.5 * ((Qz[sl_c] + Qz[sl_g]) * n[..., 0] + (Qy[sl_c] + Qy[sl_g]) * n[..., 1]) * a
++            F = Fj if side in ("jmin", "jmax") else Fi
++            if "T_wall" not in bc.params:
++                F[target + (3,)] = 0.0                       # adiabatic: no heat, no work
++                continue
+             T_i = T[sl_c]
+             T_w = np.asarray(bc.params["T_wall"], dtype=float)
+             T_w = np.broadcast_to(T_w, T_i.shape) if T_w.ndim == 0 else T_w.reshape(T_i.shape)
+@@ -399,11 +487,10 @@ class Compressible2D:
+             # d T / d(+index) across the face: the cell is on the + side at a min face
+             grad = (T_i - T_w) / dn if f == 0 else (T_w - T_i) / dn
+             wall = k[sl_c] * grad * a
+-            fix = wall - avg
+             if bc.params.get("isothermal_mask") is not None:
+-                # adiabatic stations keep the mirror ghost's own conduction
+-                fix = np.where(np.asarray(bc.params["isothermal_mask"], dtype=bool), fix, 0.0)
+-            (Fj if side in ("jmin", "jmax") else Fi)[target + (3,)] += fix
++                # adiabatic stations (the forebody slot) conduct nothing
++                wall = np.where(np.asarray(bc.params["isothermal_mask"], dtype=bool), wall, 0.0)
++            F[target + (3,)] = wall
+ 
+     # -- source -------------------------------------------------------------
+     def react(self, U: np.ndarray, dt: float) -> np.ndarray:
+diff --git a/src/atlas/solvers/thermostruct2d.py b/src/atlas/solvers/thermostruct2d.py
+index 18c98c8..797f570 100644
+--- a/src/atlas/solvers/thermostruct2d.py
++++ b/src/atlas/solvers/thermostruct2d.py
+@@ -216,20 +216,43 @@ class ThermoStruct2D:
+         return K, f
+ 
+     # -- solves -------------------------------------------------------------
++    def _outer_robin(self, T: np.ndarray, h_out, T_gas_out, radiate: bool, T_inf: float):
++        """The outer face's Robin data: (h, target temperature, h_rad) per face
++        segment, for -k dT/dn = h (T - target).
++
++        Radiation is linearized about the current wall temperature, h_rad =
++        eps sigma (T^2 + Tinf^2)(T + Tinf), and exchanges with the AMBIENT. The
++        two exchanges share one Robin term: h = h_out + h_rad against
++
++            target = T_gas + h_rad / (h_out + h_rad) (T_inf - T_gas),
++
++        which is (h_out T_gas + h_rad T_inf)/(h_out + h_rad) written so that a
++        gas at the ambient temperature gives exactly the old assembly.
++
++        W338. h_rad used to be added to h_out and the sum handed to the Robin
++        term with the adjacent GAS's temperature as its target, so the skin
++        radiated to the air beside it: 0.95 J/m per 5 ms step per panel on the
++        rocket, 0.16% of the skin's engine-side heat."""
++        a, b, _ = self._face("outer")
++        h_o = np.broadcast_to(np.asarray(h_out, dtype=float), a.shape)
++        T_g = np.broadcast_to(np.asarray(T_gas_out, dtype=float), a.shape)
++        if not radiate:
++            return h_o, T_g, np.zeros(a.shape)
++        Tw = 0.5 * (T[a] + T[b])
++        h_rad = self.mat.emissivity * 5.670374419e-8 * (Tw ** 2 + T_inf ** 2) * (Tw + T_inf)
++        h = h_o + h_rad
++        target = T_g + h_rad / np.maximum(h, 1e-300) * (T_inf - T_g)
++        return h, target, h_rad
++
+     def step_thermal(self, T: np.ndarray, dt: float, h_in, T_gas_in, h_out, T_gas_out,
+                      radiate: bool = True, T_inf: float = 250.0) -> np.ndarray:
+         """Backward Euler: (M/dt + K + K_robin) T^{n+1} = M/dt T^n + f_robin.
+ 
+-        Radiation is linearized about the current wall temperature (h_rad =
+-        eps sigma (T^2 + Tinf^2)(T + Tinf)) and folded into the outer h."""
++        The outer face exchanges with the gas beside it and, when ``radiate``,
++        radiates to ``T_inf`` (`_outer_robin`)."""
+         Kb_i, fb_i = self._robin("inner", h_in, T_gas_in)
+-        h_o = np.asarray(h_out, dtype=float)
+-        if radiate:
+-            a, b, _ = self._face("outer")
+-            Tw = 0.5 * (T[a] + T[b])
+-            h_rad = self.mat.emissivity * 5.670374419e-8 * (Tw ** 2 + T_inf ** 2) * (Tw + T_inf)
+-            h_o = np.broadcast_to(h_o, a.shape) + h_rad
+-        Kb_o, fb_o = self._robin("outer", h_o, T_gas_out)
++        h_o, T_o, _h_rad = self._outer_robin(T, h_out, T_gas_out, radiate, T_inf)
++        Kb_o, fb_o = self._robin("outer", h_o, T_o)
+ 
+         A = self.M_th / dt + self.K_th + Kb_i + Kb_o
+         rhs = self.M_th.dot(T) / dt + fb_i + fb_o
+diff --git a/tests/test_atlas_seams.py b/tests/test_atlas_seams.py
+index 39e4c92..513a4d2 100644
+--- a/tests/test_atlas_seams.py
++++ b/tests/test_atlas_seams.py
+@@ -624,3 +624,407 @@ def test_W333_config_declares_the_slot_wall():
+     with pytest.raises(ValueError):
+         gen.CoupledEpisode(gen.EpisodeSpec(point=sweep.corner_cases()[0], n_macro=2,
+                                            dt_macro=1e-5, coarsen=4), bad)
++
++
++# ============================================================================
++# 2026-09-26: the four code defects the episode's conservation audit found
++# (research vault: `scripts/w336_episode_residuals.py`, case study section 19).
++# Each test pins the fix and keeps the diagnosis as its control: the old
++# behaviour, put back, reads what the audit read.
++# ============================================================================
++
++
++# --------------------------------------------------------- W337: the injector
++
++
++def _injector_block(nv: int = 5):
++    """A 6x4 combustor strip: burnt 3000 K products at 8 MPa moving at the
++    declared mass flux, an inlet_massflow face at 900 K on imin, the reaction
++    ON. That pair -- a cold, dense ghost beside the burning gas -- is the
++    rocket combustor's injector face."""
++    from atlas.solvers.compressible2d import ReactionConfig
++    nz, ny = 6, 4
++    z, y = np.linspace(0, 0.06, nz + 1), np.linspace(-0.02, 0.02, ny + 1)
++    Z, Y = np.meshgrid(z, y, indexing="ij")
++    blk = Block("inj", np.stack([Z, Y], -1), np.zeros((nz, ny), bool))
++    gas = GasConfig(gamma=1.22, R=361.0)
++    mdot = 376.87 / 0.08                                  # kg/(s m^2), the rocket's
++    s = Compressible2D(blk, gas, reaction=ReactionConfig(A=1.0e6, T_act=6000.0, q_rxn=3.0e6),
++                       bcs={"imin": BC("inlet_massflow", {"mdot": mdot, "T": 900.0}),
++                            "imax": BC("extrapolate"), "jmin": BC("wall_slip"),
++                            "jmax": BC("wall_slip")})
++    p, T = 8.0e6, 3000.0
++    W = np.zeros((nz, ny, nv))
++    W[..., 0] = p / (gas.R * T)
++    W[..., 1] = mdot / W[..., 0]
++    W[..., 3] = p
++    W[..., 4] = 1.0                                       # burnt
++    return s, thermo.prim_to_cons(W, gas.gamma), mdot
++
++
++def test_W337_the_injector_face_carries_the_declared_flux_with_the_reaction_on():
++    """The face flux is the injection's own: mdot, (mdot u + p) with u from the
++    injection density at the cell's pressure, mdot (cp T_inject + u^2/2), and
++    unburnt gas -- exactly, whatever burns beside it."""
++    s, U, mdot = _injector_block()
++    gas = s.cfg
++    Fi, _ = s._inviscid_face_fluxes(s.ghost(U, thermal=False))
++    F = Fi[0] / s.block.a_i[0][:, None]
++    p = thermo.pressure_from_cons(U[0], gas.gamma)
++    u = mdot / (p / (gas.R * 900.0))
++    np.testing.assert_allclose(F[:, 0], mdot, rtol=1e-14)
++    np.testing.assert_allclose(F[:, 1], mdot * u + p, rtol=1e-14)
++    np.testing.assert_array_equal(F[:, 2], 0.0)
++    np.testing.assert_allclose(F[:, 3], mdot * (gas.cp * 900.0 + 0.5 * u * u), rtol=1e-14)
++    np.testing.assert_array_equal(F[:, 4], 0.0)
++    # and it is what the residual differences: the first column's mass rate
++    # is the declared inflow minus the Riemann flux through its downstream face
++    r = s._inviscid_residual(s.ghost(U, thermal=False))
++    vol = s.block.vol[0]
++    np.testing.assert_allclose(r[0, :, 0] * vol, Fi[0, :, 0] - Fi[1, :, 0], rtol=1e-12)
++
++
++def test_W337_diagnosis_the_riemann_flux_against_burning_gas_overshoots():
++    """The control: the Riemann solution between the 900 K ghost and the 3000 K
++    cell, the face flux before W337, carries far more than was declared (1.46
++    here, 1.177 in the rocket's combustor)."""
++    s, U, mdot = _injector_block()
++    s._inlet_face_flux = lambda Fi, Ue: None               # the old face
++    Fi, _ = s._inviscid_face_fluxes(s.ghost(U, thermal=False))
++    ratio = Fi[0, :, 0] / s.block.a_i[0] / mdot
++    assert np.all(ratio > 1.3), ratio
++
++
++def test_W337_the_inlet_is_an_i_face_condition():
++    s, U, _ = _injector_block()
++    s.bcs["jmin"] = BC("inlet_massflow", {"mdot": 1.0, "T": 900.0})
++    with pytest.raises(NotImplementedError):
++        s._inviscid_face_fluxes(s.ghost(U, thermal=False))
++
++
++# ------------------------------------------------------ W338: the skin's radiation
++
++
++def _plate():
++    mesh = ShellMesh(np.stack(np.meshgrid(np.linspace(0, 0.2, 21),
++                                          np.linspace(0, 0.008, 5), indexing="ij"), -1))
++    return ThermoStruct2D(mesh, SolidMaterial())
++
++
++def _old_outer_robin(self, T, h_out, T_gas_out, radiate, T_inf):
++    """Before W338: h_rad folded into h_out, the sum against the GAS."""
++    a, b, _ = self._face("outer")
++    h_o = np.broadcast_to(np.asarray(h_out, dtype=float), a.shape)
++    T_g = np.broadcast_to(np.asarray(T_gas_out, dtype=float), a.shape)
++    if not radiate:
++        return h_o, T_g, np.zeros(a.shape)
++    Tw = 0.5 * (T[a] + T[b])
++    h_rad = self.mat.emissivity * 5.670374419e-8 * (Tw ** 2 + T_inf ** 2) * (Tw + T_inf)
++    return h_o + h_rad, T_g, h_rad
++
++
++def test_W338_with_no_convection_the_skin_radiates_to_the_ambient():
++    """h_out = 0 against 2000 K air: the only outer exchange is radiation, and
++    a 600 K skin must cool towards the 250 K ambient, by exactly the heat the
++    linearised radiation carries."""
++    ts = _plate()
++    n = ts.mesh.n_nodes
++    T0 = np.full(n, 600.0)
++    T1 = ts.step_thermal(T0, 10.0, 0.0, 600.0, 0.0, 2000.0, radiate=True, T_inf=250.0)
++    assert T1.mean() < T0.mean() - 1.0
++    a, b, L = ts._face("outer")
++    h, target, h_rad = ts._outer_robin(T0, 0.0, 2000.0, True, 250.0)
++    np.testing.assert_allclose(target, 250.0, rtol=1e-14)
++    np.testing.assert_array_equal(h, h_rad)
++    dE = float(np.sum(ts.M_th.dot(T1 - T0)))
++    q = 10.0 * float(np.sum(h_rad * L * (250.0 - 0.5 * (T1[a] + T1[b]))))
++    assert dE == pytest.approx(q, rel=1e-8)
++
++
++def test_W338_diagnosis_the_skin_used_to_radiate_to_the_air(monkeypatch):
++    """The control: with the old target the same skin HEATS, towards the air."""
++    monkeypatch.setattr(ThermoStruct2D, "_outer_robin", _old_outer_robin)
++    ts = _plate()
++    T0 = np.full(ts.mesh.n_nodes, 600.0)
++    T1 = ts.step_thermal(T0, 10.0, 0.0, 600.0, 0.0, 2000.0, radiate=True, T_inf=250.0)
++    assert T1.mean() > T0.mean() + 1.0
++
++
++def test_W338_air_at_the_ambient_is_the_old_assembly_bit_for_bit():
++    """Where the gas beside the skin IS at T_inf -- every vault case but the
++    episode passes T_gas_out = T_inf -- the two targets coincide and the step
++    is bitwise the one before W338; so is a step with radiation off."""
++    ts = _plate()
++    rng = np.random.default_rng(3)
++    T0 = 300.0 + 50.0 * rng.random(ts.mesh.n_nodes)
++    h_in, h_out = 400.0 + rng.random(20), 30.0 + rng.random(20)
++    for radiate in (True, False):
++        new = ts.step_thermal(T0, 0.5, h_in, 900.0, h_out, 250.0, radiate=radiate, T_inf=250.0)
++        with pytest.MonkeyPatch.context() as mp:
++            mp.setattr(ThermoStruct2D, "_outer_robin", _old_outer_robin)
++            old = ts.step_thermal(T0, 0.5, h_in, 900.0, h_out, 250.0, radiate=radiate, T_inf=250.0)
++        np.testing.assert_array_equal(new, old)
++
++
++# ---------------------------------------------- W339: work at a stationary wall
++
++
++class _WallSpy(Compressible2D):
++    def _isothermal_wall_conduction(self, Fi, Fj, T, Qz, Qy, k):
++        super()._isothermal_wall_conduction(Fi, Fj, T, Qz, Qy, k)
++        self.Fj = Fj.copy()
++
++
++def _old_wall_energy(self, Fi, Fj, T, Qz, Qy, k):
++    """Before W339 (W301 alone): replace the face-averaged CONDUCTION with the
++    one-sided wall term, and keep everything else the average carried."""
++    blk = self.block
++    nz, ny = blk.shape
++    for side in ("jmin", "jmax"):
++        bc = self.bcs.get(side)
++        if bc is None or bc.kind != "wall_noslip" or "T_wall" not in bc.params:
++            continue
++        jc, jg, f = (NG, NG - 1, 0) if side == "jmin" else (ny + NG - 1, ny + NG, -1)
++        sl_c, sl_g = (slice(NG, nz + NG), jc), (slice(NG, nz + NG), jg)
++        n, a, vol = blk.n_j[:, f], blk.a_j[:, f], blk.vol[:, 0 if f == 0 else -1]
++        avg = 0.5 * ((Qz[sl_c] + Qz[sl_g]) * n[..., 0] + (Qy[sl_c] + Qy[sl_g]) * n[..., 1]) * a
++        T_i = T[sl_c]
++        T_w = np.broadcast_to(np.asarray(bc.params["T_wall"], dtype=float), T_i.shape)
++        dn = 0.5 * vol / np.maximum(a, 1e-30)
++        grad = (T_i - T_w) / dn if f == 0 else (T_w - T_i) / dn
++        Fj[:, f, 3] += k[sl_c] * grad * a - avg
++    self.Fj = Fj.copy()
++
++
++def _sheared_wall(T_wall=288.0):
++    """2500 K gas at 5 MPa in a sheared layer along a 288 K no-slip wall at
++    jmin; an adiabatic no-slip wall at jmax."""
++    nz, ny = 6, 4
++    z, y = np.linspace(0, 0.06, nz + 1), np.linspace(0, 0.03, ny + 1)
++    Z, Y = np.meshgrid(z, y, indexing="ij")
++    blk = Block("w", np.stack([Z, Y], -1), np.zeros((nz, ny), bool))
++    gas = GasConfig(gamma=1.22, R=361.0)
++    s = _WallSpy(blk, gas, bcs={"jmin": BC("wall_noslip", {"T_wall": np.full(nz, T_wall)}),
++                                "jmax": BC("wall_noslip"), "imin": BC("extrapolate"),
++                                "imax": BC("extrapolate")})
++    W = np.zeros((nz, ny, 4))
++    W[..., 0] = 5.0e6 / (gas.R * 2500.0)
++    W[..., 1] = 800.0 * np.linspace(0.3, 1.0, ny)[None, :]
++    W[..., 3] = 5.0e6
++    return s, thermo.prim_to_cons(W, gas.gamma)
++
++
++def _conduction(s, T_gas=2500.0, T_wall=288.0):
++    cfg, blk = s.cfg, s.block
++    mu = thermo.sutherland(T_gas, cfg.mu_ref, cfg.T_mu_ref, cfg.sutherland_S)
++    dn = 0.5 * blk.vol[:, 0] / blk.a_j[:, 0]
++    return mu * cfg.cp / cfg.Pr * (T_gas - T_wall) / dn * blk.a_j[:, 0]
++
++
++def test_W339_a_no_slip_wall_face_carries_conduction_and_no_work():
++    """The viscous energy flux through a no-slip face is the wall's conduction:
++    exactly the one-sided term at an isothermal wall, exactly zero at an
++    adiabatic one. The shear is not touched."""
++    s, U = _sheared_wall()
++    s._viscous_residual(s.ghost(U))
++    np.testing.assert_allclose(s.Fj[:, 0, 3], _conduction(s), rtol=1e-13)
++    np.testing.assert_array_equal(s.Fj[:, -1, 3], 0.0)
++    assert np.all(np.abs(s.Fj[:, 0, 1]) > 0.0), "the wall still takes shear"
++
++
++def test_W339_diagnosis_the_face_average_did_work(monkeypatch):
++    """The control: the old face kept the average of u.tau between the cell and
++    its mirrored ghost, a flux a stationary wall cannot carry -- 0.32% of the
++    conduction here, 4.7% on the rocket's engine walls. The momentum is the
++    same either way."""
++    s, U = _sheared_wall()
++    s._viscous_residual(s.ghost(U))
++    shear = s.Fj[:, 0, 1].copy()
++    monkeypatch.setattr(_WallSpy, "_isothermal_wall_conduction", _old_wall_energy)
++    s._viscous_residual(s.ghost(U))
++    work = s.Fj[:, 0, 3] - _conduction(s)
++    assert np.all(np.abs(work) > 1e-3 * np.abs(_conduction(s))), work / _conduction(s)
++    np.testing.assert_array_equal(s.Fj[:, 0, 1], shear)
++
++
++def test_W339_adiabatic_stations_of_an_isothermal_wall_carry_nothing():
++    """Outside `isothermal_mask` (the forebody slot) the wall is adiabatic: no
++    conduction, no work."""
++    s, U = _sheared_wall()
++    nz = s.block.shape[0]
++    m = np.arange(nz) >= 3
++    s.bcs["jmin"] = BC("wall_noslip", {"T_wall": np.full(nz, 288.0), "no_slip_mask": m,
++                                       "isothermal_mask": m})
++    s._viscous_residual(s.ghost(U))
++    np.testing.assert_array_equal(s.Fj[~m, 0, 3], 0.0)
++    np.testing.assert_allclose(s.Fj[m, 0, 3], _conduction(s)[m], rtol=1e-13)
++
++
++# ------------------------------------------- W340: the plane seams' handover
++
++
++def test_W340_the_handover_preserves_every_conserved_face_integral(episode):
++    """At the throat (b's 20 cells against e's 24 at coarsen 4), in both
++    directions: the face integral of each conserved component crosses the seam
++    unchanged, to round-off."""
++    yb = gen._face_edges(episode.blocks["b"][0], "imax")
++    ye = gen._face_edges(episode.blocks["e"][0], "imin")
++    assert yb.size - 1 == 20 and ye.size - 1 == 24
++    for src, dst in ((yb, ye), (ye, yb)):
++        yc = 0.5 * (src[:-1] + src[1:])
++        v = np.stack([1.0 + 0.3 * np.cos(40.0 * yc), 500.0 * (1.0 - (yc / 0.04) ** 8),
++                      20.0 * yc, 3.0e6 + 1.0e5 * yc], axis=-1)
++        got = gen._hand_over(v, src, dst)
++        want = (v * np.diff(src)[:, None]).sum(0)
++        np.testing.assert_allclose((got * np.diff(dst)[:, None]).sum(0), want,
++                                   rtol=1e-13, atol=1e-13 * np.abs(want).max())
++
++
++def test_W340_diagnosis_point_interpolation_loses_the_integral(episode):
++    """The control: `_remap`, point interpolation at the centroids, loses 0.19%
++    of a boundary-layer momentum integral through the same throat."""
++    yb = gen._face_edges(episode.blocks["b"][0], "imax")
++    ye = gen._face_edges(episode.blocks["e"][0], "imin")
++    yc, yd = 0.5 * (yb[:-1] + yb[1:]), 0.5 * (ye[:-1] + ye[1:])
++    mom = 500.0 * (1.0 - (yc / 0.04) ** 8)
++    got = gen._remap(mom[:, None], yc, yd)[:, 0]
++    lost = (got * np.diff(ye)).sum() / (mom * np.diff(yb)).sum() - 1.0
++    assert lost < -1e-3
++
++
++def _split_channel():
++    """A 12 x 4 channel with a steep axial gradient -- gas accelerating from 300
++    to 900 m/s and expanding, like a throat -- and the same channel cut in two
++    at i = 6, each half a block of its own."""
++    nz, ny = 12, 4
++    z, y = np.linspace(0.0, 0.12, nz + 1), np.linspace(-0.02, 0.02, ny + 1)
++    Z, Y = np.meshgrid(z, y, indexing="ij")
++    nodes = np.stack([Z, Y], -1)
++    gas = GasConfig(gamma=1.22, R=361.0, inviscid=True)
++    s = np.linspace(0.0, 1.0, nz)[:, None]
++    W = np.zeros((nz, ny, 4))
++    W[..., 0] = 8.0 - 5.0 * s ** 2
++    W[..., 1] = 300.0 + 600.0 * s ** 2
++    W[..., 2] = 10.0 * np.linspace(-1.0, 1.0, ny)[None, :]
++    W[..., 3] = 6.0e6 - 4.0e6 * s ** 2
++    U = thermo.prim_to_cons(W, gas.gamma)
++    walls = {"jmin": BC("wall_slip"), "jmax": BC("wall_slip")}
++    whole = Compressible2D(Block("whole", nodes, np.zeros((nz, ny), bool)), gas,
++                           bcs={"imin": BC("extrapolate"), "imax": BC("extrapolate"), **walls})
++    left = Compressible2D(Block("left", nodes[:7], np.zeros((6, ny), bool)), gas,
++                          bcs={"imin": BC("extrapolate"), **walls})
++    right = Compressible2D(Block("right", nodes[6:], np.zeros((6, ny), bool)), gas,
++                           bcs={"imax": BC("extrapolate"), **walls})
++    return whole, left, right, U
++
++
++def test_W340_two_layers_make_the_seam_one_face():
++    """Handed over two layers deep, both halves of the cut channel compute the
++    whole channel's own flux through the cut, bit for bit: the seam is no
++    longer there. Handed one state repeated in both ghost layers -- the
++    neighbour's cell centre -- the two sides disagree about the mass crossing
++    by 2.8% here: the throat's 3% floor, with no lag and no grid mismatch in
++    it."""
++    whole, left, right, U = _split_channel()
++    UL, UR = U[:6], U[6:]
++    want = whole._inviscid_face_fluxes(whole.ghost(U))[0][6]
++    left.bcs["imax"] = BC("prescribed", {"state": gen._face_layers(UR, "imin")})
++    right.bcs["imin"] = BC("prescribed", {"state": gen._face_layers(UL, "imax")})
++    FL = left._inviscid_face_fluxes(left.ghost(UL))[0][-1]
++    FR = right._inviscid_face_fluxes(right.ghost(UR))[0][0]
++    np.testing.assert_array_equal(FL, want)
++    np.testing.assert_array_equal(FR, want)
++    # the diagnosis: one layer, the neighbour's face cell repeated
++    left.bcs["imax"] = BC("prescribed", {"state": UR[:1]})
++    right.bcs["imin"] = BC("prescribed", {"state": UL[-1:]})
++    FL = left._inviscid_face_fluxes(left.ghost(UL))[0][-1]
++    FR = right._inviscid_face_fluxes(right.ghost(UR))[0][0]
++    created = (FR[:, 0] - FL[:, 0]).sum() / want[:, 0].sum()
++    assert abs(created) > 1e-2, created
++
++
++def test_W340_a_layered_prescribed_state_fills_the_ghosts_in_order():
++    """Layer 0 sits against the face on every side; a single state still fills
++    both layers."""
++    nz, ny = 4, 3
++    z, y = np.linspace(0, 0.04, nz + 1), np.linspace(0, 0.03, ny + 1)
++    Z, Y = np.meshgrid(z, y, indexing="ij")
++    s = Compressible2D(Block("g", np.stack([Z, Y], -1), np.zeros((nz, ny), bool)),
++                       GasConfig(gamma=1.4, R=287.0), bcs={})
++    U = thermo.prim_to_cons(np.tile([1.0, 10.0, 0.0, 1.0e5], (nz, ny, 1)), 1.4)
++    li = np.stack([U[0] * (1 + d) for d in range(NG)])               # [NG, ny, 4]
++    lj = np.stack([U[:, 0] * (1 + d) for d in range(NG)], axis=1)    # [nz, NG, 4]
++    s.bcs = {"imin": BC("prescribed", {"state": li}), "imax": BC("prescribed", {"state": li}),
++             "jmin": BC("prescribed", {"state": lj}), "jmax": BC("prescribed", {"state": lj[:, :1]})}
++    Ue = s.ghost(U)
++    for d in range(NG):
++        np.testing.assert_array_equal(Ue[NG - 1 - d, NG:ny + NG], li[d])      # imin
++        np.testing.assert_array_equal(Ue[nz + NG + d, NG:ny + NG], li[d])     # imax
++        np.testing.assert_array_equal(Ue[NG:nz + NG, NG - 1 - d], lj[:, d])   # jmin
++        np.testing.assert_array_equal(Ue[NG:nz + NG, ny + NG + d], lj[:, 0])  # jmax: one state
++
++
++def test_W340_every_plane_seam_hands_over_by_overlap(episode):
++    """The coupler's own wiring: each receiving face's prescribed state has the
++    face integral of the cells it came from -- a|b and b|e both ways, d to g,
++    and the f|g hole both ways."""
++    ep = episode
++    rng = np.random.default_rng(7)
++    saved = {k: [U.copy() for U in v] for k, v in ep.U.items()}
++    try:
++        for k in ep.U:
++            ep.U[k] = [U * (1.0 + 0.1 * rng.random(U.shape[:2]))[..., None] for U in ep.U[k]]
++        ep._wire_engine()
++        ep._wire_external()
++
++        def integral(state, edges):
++            return (np.asarray(state)[..., :4] * np.abs(np.diff(edges))[:, None]).sum(0)
++
++        B = ep.blocks
++        Ua, Ub, Ue = ep.U["a"][0], ep.U["b"][0], ep.U["e"][0]
++        pairs = [   # (receiver's state, its face edges, source's layer d, source's face edges)
++            (ep.sol["b"][0].bcs["imin"].params["state"], gen._face_edges(B["b"][0], "imin"),
++             lambda d: Ua[-1 - d], gen._face_edges(B["a"][0], "imax")),
++            (ep.sol["a"][0].bcs["imax"].params["state"], gen._face_edges(B["a"][0], "imax"),
++             lambda d: Ub[d], gen._face_edges(B["b"][0], "imin")),
++            (ep.sol["e"][0].bcs["imin"].params["state"], gen._face_edges(B["e"][0], "imin"),
++             lambda d: Ub[-1 - d], gen._face_edges(B["b"][0], "imax")),
++            (ep.sol["b"][0].bcs["imax"].params["state"], gen._face_edges(B["b"][0], "imax"),
++             lambda d: Ue[d], gen._face_edges(B["e"][0], "imin")),
++        ]
++        for got, eg, src, es in pairs:
++            assert got.shape[0] == NG, "handed over two layers deep"
++            for d in range(NG):
++                np.testing.assert_allclose(integral(got[d], eg), integral(src(d), es), rtol=1e-13)
++        j0, j1 = ep.sol["g"][0]._hole
++        zg, zf = gen._face_edges(B["g"][0], "jmin"), gen._face_edges(B["f"][0], "jmin")
++        lo, _hi = ep.sol["g"][0].hole_state
++        f_lo = ep.sol["f"][0].bcs["jmin"].params["state"]
++        for d in range(NG):
++            # f|g, g's side: f's edge rows, on the shared node lines
++            back = gen._as_gas(lo[:, d], ep.air_cfg, ep.gas_cfg)
++            np.testing.assert_allclose(integral(back, zg), integral(ep.U["f"][0][:, d], zf), rtol=1e-12)
++            # f|g, f's side: g's cells outboard of the plume
++            got = gen._as_gas(f_lo[:, d], ep.gas_cfg, ep.air_cfg)
++            np.testing.assert_allclose(integral(got, zf), integral(ep.U["g"][0][:, j0 - 1 - d], zg),
++                                       rtol=1e-12)
++        # d to g: g's live inlet cells, which d covers completely
++        gb = B["g"][0]
++        live = ~gb.blanked[0]
++        yg = gen._face_edges(gb, "imin")
++        g_in = ep.sol["g"][0].bcs["imin"].params["state"]
++        for k, db in enumerate(B["d"]):
++            up = db.nodes[..., 1].mean() > 0
++            mid = 0.5 * (yg[:-1] + yg[1:])
++            sel = live & ((mid > 0) if up else (mid <= 0))
++            w = np.abs(np.diff(yg))
++            yd = gen._face_edges(db, "imax")
++            lo_, hi_ = min(yg[:-1][sel].min(), yg[1:][sel].min()), max(yg[:-1][sel].max(), yg[1:][sel].max())
++            # the part of d's outlet that g's live band covers on this side
++            ov = np.clip(np.minimum(np.maximum(yd[:-1], yd[1:]), hi_)
++                         - np.maximum(np.minimum(yd[:-1], yd[1:]), lo_), 0.0, None)
++            for d in range(NG):
++                np.testing.assert_allclose((g_in[d][sel] * w[sel][:, None]).sum(0),
++                                           (ep.U["d"][k][-1 - d] * ov[:, None]).sum(0), rtol=1e-12)
++    finally:
++        ep.U = saved
