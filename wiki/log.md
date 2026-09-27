@@ -6275,3 +6275,39 @@ Carried out from [[rocket-episode-pickup]] by a session with none of the earlier
 - scripts: `scripts/w336_episode_residuals.py` (the ledger reads the solver's face-flux arrays and the outer Robin data; `revert`, `control_old`, `PREDICTIONS_T88`), `scripts/w336_thermal_seam_diag.py`, `scripts/w321_rocket_episode.py` (provenance from the identity on a box), `scripts/w321_episode_viz_data.py`, the page template;
 - tests: `tests/test_tier87_episode_residuals.py` (the Tier 87 pins read the kept records);
 - wiki: [[case-study-rocket-bc-seam-atlas-0.1]] (§20), [[gap-worklist]] (W337–W340 closed, Tier 88 block, W343), [[index]].
+
+## [2026-09-26] tier 88 continued | W343 — the d–g seam made two-way, and the floor it leaves
+
+On the owner's decision, the same day. Full record in [[case-study-rocket-bc-seam-atlas-0.1]] §20.8 and the [[gap-worklist]]'s "Tier 88, continued" block.
+
+**The build repo, both branches** (`atlas-0.1-windfarm` at `98df350`, whose diff from `c1ccac6` hashes to the records' `bb2c392cf522a319`, and `atlas-0.1` at `462fff8`):
+- `d`'s outlet takes `g`'s two live cell layers where `g` lies across it (`coupled_state`, `coupled_mask`), and `g`'s inlet takes two of `d`'s.
+- `CoupledEpisode.D_G_TWO_WAY = False` is the one-way control, bit for bit `c1ccac6`'s.
+- 3 new tests. The suites pass: 92 on `atlas-0.1-windfarm`, 96 on `atlas-0.1`.
+
+**Registered before the run** (`PREDICTIONS_W343`, 17:37 EDT). The frozen-instant test had moved d\|g from $-1.9$…$-2.1\%$ to $-1.1$…$-1.2\%$.
+
+**What was measured:**
+- d\|g creates $1.133\%$ at 5 ms and $1.126\%$ at 2.5 ms, where it was $2.13\%$ and $2.08\%$ one way. That is half the loss, and still a floor. S1 and S2 held.
+- The flight does not move: velocity gained moves by $3\times10^{-6}$ relative. The drag reads $0.4\%$ higher from the plume's arrival at 30 ms, easing to $0.17\%$ by 145 ms (S3 held).
+- A1–A4 hold, and so do all 17 of Tier 86's gates (S5).
+- With W343 reverted on today's code, the first two audited steps are Tier 88's, bitwise (S6).
+- **S4 failed on its own wording.** It compared the throat with the declared flow; Tier 88's own throat is $1.00089$ of it, and every engine reading matches Tier 88's to $10^{-13}$.
+- The engine alone at coarsen 4 equals Tier 88's in every reading on a different box, so the finer engine grids carry over. The external flow alone gives the same drag to six figures at coarsen 4, 2 and 1.
+- **The two-way seam rings.** Step by step the residual alternates around its floor, and the swing decays. **[AI Inference]:** this is the Jacobi exchange's alternating mode. A Gauss–Seidel wiring would test it; not run.
+
+**New: W344.** The floor comes from the non-matching grids across the subsonic band: a `d` cell straddling the plume line, and $0.2$ m cells against $0.13$ m ones. **[AI Inference]:** exact conservation needs one of two changes: a flux computed once on the two grids' common refinement and applied to both sides, or a shared node line.
+
+**Compute.** A vast.ai instance with 128 threads at $\$0.211$/h. It ran 12 jobs in 40 minutes, and credit went from $\$7.29$ to $\$7.12$. All 41 files were hash-checked on download, the instance was destroyed, and the list read `[]`.
+
+**Records.** Tier 88's march and audit moved to `out/w321_t88` and `out/w336_t88`, with checksums verified. The new ones are `out/w321`, `out/w336`, `out/w323_seams_fixed_w343.json` and `out/w343/box_logs`.
+
+**The page** was rebuilt with the two-way seam's notes and republished to the same artifact.
+
+**Checks.** The vault tiers 14–16, 76–81, 87 and 88 with `test_tier88_w343` pass (251 tests), and the vault scan reads 256 files, 0 problems.
+
+**Changed:**
+- scripts: `scripts/w336_episode_residuals.py` (`PREDICTIONS_W343`, `evaluate_w343`, W343 in `revert`), `scripts/w321_episode_viz_data.py` (the gates default), the page template, and `scripts/box/run_w343.sh` (added);
+- tests: `tests/test_tier88_episode_fixes.py` (reads Tier 88's moved records), `tests/test_tier88_w343.py` (added);
+- `.gitignore`: the moved and new records;
+- wiki: [[case-study-rocket-bc-seam-atlas-0.1]] (§20.8, with pointers in §20.1, §20.6 and §20.7), [[gap-worklist]] (W343 closed, W344), [[index]].

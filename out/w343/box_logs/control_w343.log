@@ -1,0 +1,4 @@
+W336 control_old: case 0 (underexpanded_max), coarsen 4, dt_macro 0.005, 2 steps
+  REVERTED to the pre-Tier-88 code: W343
+  step  1 t=0.0050  68 s  tele 2.4e-14  wall 2.0e-17  inj 1.0000  exit 0.6892  ab -8.8e-01  be +4.5e-01  thrust exit 5.965e+05 walls 1.2601e+06  
+  step  2 t=0.0100  79 s  tele 3.9e-14  wall 2.5e-17  inj 1.0000  exit 0.5974  ab +2.0e-01  be -5.8e-01  thrust exit 5.54e+05 walls 1.1834e+06  

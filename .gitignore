@@ -732,3 +732,17 @@ out/w321_laptop/*
 !out/t88_revert/
 !out/w323_seams_fixed_t88.json
 !out/w340_throat_diag.json
+
+# Tier 88, continued -- W343: the d-g seam made two-way. The new march and
+# audit take out/w321 and out/w336 (above); Tier 88's, which the W343
+# predictions and tests/test_tier88_* compare against, are kept whole:
+!out/w321_t88/
+out/w321_t88/*
+!out/w321_t88/episode.json
+!out/w321_t88/episode.npz
+!out/w321_t88/march.log
+!out/w321_t88/rocket-episode.html
+!out/w321_t88/build_repo_at_launch.diff
+!out/w336_t88/
+!out/w323_seams_fixed_w343.json
+!out/w343/

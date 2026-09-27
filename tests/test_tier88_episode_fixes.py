@@ -20,10 +20,12 @@ import numpy as np
 import pytest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "out", "w336")
+#: Tier 88's own records. W343 (the two-way d-g seam) re-ran the coupled
+#: stages into out/w336 and out/w321 and moved these aside.
+OUT = os.path.join(ROOT, "out", "w336_t88")
 PRE = os.path.join(ROOT, "out", "w336_pre_w337")
 TWO = os.path.join(ROOT, "out", "w336_t88_twolayer")
-RECORD = os.path.join(ROOT, "out", "w321", "episode.npz")
+RECORD = os.path.join(ROOT, "out", "w321_t88", "episode.npz")
 PRE_RECORD = os.path.join(ROOT, "out", "w321_pre_w337", "episode.npz")
 
 
@@ -82,7 +84,7 @@ def test_all_four_reverted_reproduce_the_pre_fix_flight():
     bitwise", reads FAILED: A4's first mistake, repeated."""
     W = _driver()
     co, pre = _rec("control_old.json"), _rec("audit.json", PRE)
-    assert co["reverted"] == list(W.FIXES)
+    assert co["reverted"] == ["W337", "W338", "W339", "W340"]   # made before W343
     for c, p in zip(co["steps"], pre["steps"]):
         assert [c["rigid"][i] for i in (1, 2, 4, 5, 6)] == [p["rigid"][i] for i in (1, 2, 4, 5, 6)]
         assert max(abs(c["rigid"][i]) for i in (0, 3)) < 1e-15

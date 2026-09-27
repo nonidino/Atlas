@@ -1,0 +1,315 @@
+{
+ "A1": {
+  "claim": "every block's content changes by its boundary inflows to 1e-10 (mass, both momenta, energy), every macro step",
+  "got": 1.1979220634132586e-13,
+  "held": true
+ },
+ "A2": {
+  "claim": "engine and airframe walls pass mass at under 1e-12 of mdot dt, face by face, every step",
+  "got": 3.539703917526626e-17,
+  "held": true
+ },
+ "A3": {
+  "claim": "the shell's energy change equals its Robin heat input to 1e-9 of its stored energy, every step",
+  "got": 1.0908761661369436e-11,
+  "held": true
+ },
+ "A4": {
+  "claim": "the instrumented re-run reproduces out/w321's rigid states to 1e-9",
+  "got": {
+   "worst": 0.0,
+   "omega_abs": 0.0,
+   "steps": 29,
+   "flight_bitwise_steps": 29
+  },
+  "held": true
+ },
+ "P1": {
+  "claim": "the injector delivers the declared mdot to within 2%, averaged over the last 10 steps",
+  "got": 1.0000000000000067,
+  "held": true
+ },
+ "P2": {
+  "claim": "the a|b and b|e seams create under 1% of mdot dt in mass per step, averaged over the last 10 steps",
+  "got": [
+   0.0005515297775259218,
+   0.0003520349624623786
+  ],
+  "held": true
+ },
+ "P3": {
+  "claim": "the exit-plane and wall routes to the thrust agree to 2%, averaged over the last 10 steps",
+  "got": 0.0002471136139050392,
+  "held": true
+ },
+ "P4": {
+  "claim": "the loads' cell-centred exit thrust and the solver's own face flux at the same instant agree to 2%",
+  "got": 4.1443510515880705e-08,
+  "held": true
+ },
+ "P5": {
+  "claim": "the gas's heat loss at the engine walls and the shell's heat gain agree to 2% per side, averaged over the last 10 steps",
+  "got": [
+   0.00023705590986858134,
+   0.00023705590993142495
+  ],
+  "held": true
+ },
+ "P6": {
+  "claim": "the vehicle's mass loss and the nozzle's mass outflow agree to 2%",
+  "got": 0.0008958012079542498,
+  "held": true
+ },
+ "P7": {
+  "claim": "the outer face's radiation, applied against the adjacent gas temperature instead of the ambient, moves the outer heat input by under 5%",
+  "got": 5.155637909604299e-16,
+  "held": true
+ },
+ "control_wall": {
+  "got": 0.052192810034707784,
+  "note": "must FAIL A2's 1e-12 for the gate to have teeth"
+ },
+ "P8": {
+  "claim": "seam mass creation scales at least linearly with the coupling step: 10 ms over 5 ms and 5 ms over 2.5 ms both at least 1.5",
+  "got": [
+   3.1853472376602947,
+   9.40247320473906
+  ],
+  "held": true
+ },
+ "P9": {
+  "claim": "v_y at 60 ms moves by under 0.01% between the 5 ms and 2.5 ms coupling steps",
+  "got": 4.453499344316578e-06,
+  "held": true
+ },
+ "P10": {
+  "claim": "the engine's throat mdot is within 3% of the ideal choked flow at coarsen 1",
+  "got": 1.0765176990344587,
+  "held": false
+ },
+ "P11": {
+  "claim": "the engine's face thrust at coarsen 4 is within 5% of coarsen 1",
+  "got": 0.007063237420509405,
+  "held": true
+ },
+ "P12": {
+  "claim": "the engine walls' heat loss at coarsen 1 is more than twice coarsen 4's -- the conduction-limited h is a property of the grid",
+  "got": 3.975870498367176,
+  "held": true
+ },
+ "P13": {
+  "claim": "the airframe drag at coarsen 4 is within 10% of coarsen 1",
+  "got": 0.33422330764137187,
+  "held": false
+ },
+ "tier88": {
+  "Q1": {
+   "claim": "the injector delivers the declared mdot to 1e-6 at every step of the audited run",
+   "got": 6.972200594645983e-14,
+   "held": true
+  },
+  "Q4": {
+   "claim": "the engine's thermal seam closes to 0.5% per side (the shell's gain against the gas's loss), averaged over the last 10 audited steps",
+   "got": [
+    0.00023705590986858134,
+    0.00023705590993142495
+   ],
+   "held": true
+  },
+  "Q6": {
+   "claim": "the radiation booked as applied equals the radiation against the ambient to 1e-9 of the latter, every audited step, both panels",
+   "got": 6.168172395657333e-16,
+   "held": true
+  },
+  "Q9": {
+   "claim": "the throat seam's mean |mass created| over the last 10 audited steps is under 0.3% of mdot dt, a tenth of the old floor",
+   "got": 0.0003520349624623786,
+   "held": true
+  },
+  "Q10": {
+   "claim": "the chamber's volume-mean pressure is within 3% of the declared 8 MPa, averaged over the last 10 audited steps",
+   "got": 0.9798138639539968,
+   "held": true
+  },
+  "Q11": {
+   "claim": "given its inflow, the nozzle's thrust stays within 2% of ideal planar theory",
+   "got": 0.9917867577899626,
+   "held": true
+  },
+  "Q12": {
+   "claim": "the vehicle's mass loss and the nozzle's mass outflow agree to 2%, averaged over the last 10 audited steps",
+   "got": 0.0008958012079542498,
+   "held": true
+  },
+  "Q13": {
+   "claim": "the exit-plane and wall routes to the thrust agree to 0.5%, averaged over the last 10 audited steps (they differed by 1.7%, the throat's lost momentum)",
+   "got": 0.0002471136139050392,
+   "held": true
+  },
+  "Q2": {
+   "claim": "the injector delivers the declared mdot to 1e-6 at every step of every engine-alone grid run that exists (coarsen 4, 2, 1)",
+   "got": {
+    "c4": 9.037215420448774e-14,
+    "c2": 8.693046282814976e-14,
+    "c1": 2.9531932455029164e-14
+   },
+   "held": true
+  },
+  "Q3": {
+   "claim": "the thermal-seam diagnostic reads no wall work: |work| under 1e-9 of the conduction, on both sides",
+   "got": 0.0,
+   "held": true
+  },
+  "Q5": {
+   "claim": "what remains of the engine's thermal seam is a lag: its mean |rel| over 30-60 ms, both sides, shrinks with the coupling step, 10/5 ms and 5/2.5 ms both at least 1.5",
+   "got": [
+    1.235433624529697,
+    1.4419613149096104
+   ],
+   "held": false
+  },
+  "Q7": {
+   "claim": "the throat seam b|e's mean |mass created| over 30-60 ms shrinks with the coupling step, 10/5 ms and 5/2.5 ms both at least 1.5",
+   "got": [
+    5.839437875377405,
+    9.452547867659751
+   ],
+   "held": true
+  },
+  "Q8": {
+   "claim": "the throat seam's mean |mass created| over 30-60 ms is below a|b's at the episode's 5 ms coupling step",
+   "got": [
+    0.014093963548542763,
+    0.029298370398103814
+   ],
+   "held": true
+  },
+  "Q14": {
+   "claim": "with all four fixes reverted on today's code, the first audited steps reproduce the pre-fix audit: rigid state bitwise, and the injector, throat seam, engine wall heat and radiation slip to 1e-12",
+   "got": {
+    "steps": 2,
+    "rigid_bitwise": false,
+    "worst_rel": 1.0566157832392943e-13
+   },
+   "held": false
+  }
+ },
+ "tables": {
+  "audit_late": {
+   "injector": 1.0000000000000067,
+   "throat_b": 1.0006102560102097,
+   "throat_e": 1.0008903730166168,
+   "exit": 1.0008971420238448,
+   "seam": {
+    "seam_ab_mass_rel": 0.0005515297775259218,
+    "seam_be_mass_rel": 0.0002801170064073015,
+    "seam_ef_mass_rel": -6.673953399115591e-06,
+    "seam_df_mass_rel": -0.3760492903220415,
+    "seam_dg_mass_rel": -0.020862307392405712,
+    "seam_gf_mass_over_outflows": 0.22824913005298259,
+    "seam_be_zmom_rel": 0.0002025873170038564,
+    "seam_be_energy_rel": 0.00025917684623494975
+   },
+   "thrust_exit": 974576.9595467964,
+   "thrust_walls": 974336.1121803441,
+   "thrust_seam_term": 231.52857135770319,
+   "engine_heat_gas": 600.3490420287676,
+   "engine_heat_shell": 600.4913582889334,
+   "rad_slip_abs": 3.108624468950438e-16,
+   "airframe_gas_lost": -0.3537256823521753,
+   "chamber_p": 7838510.911631974,
+   "exit_M": 2.36241621296952,
+   "exit_p": 532855.3327875521,
+   "exit_u": 2246.218912107162,
+   "vehicle_mass_over_exit": 0.9991041987920456
+  },
+  "validation": {
+   "area_ratio": 3.0,
+   "half_angle_deg": 14.931417178137552,
+   "planar_divergence": 0.9887194389610255,
+   "flow_ratio": 1.0008903730166168,
+   "ideal_thrust_quasi1d": 992474.7292074928,
+   "ideal_thrust_planar": 982647.6829741955,
+   "measured": 974576.9595467964,
+   "measured_over_quasi1d": 0.9819665235456544,
+   "measured_over_planar": 0.9917867577899626,
+   "exit_M_over_ideal": 0.9761921249218395,
+   "exit_u_over_ideal": 0.9726085713774718,
+   "exit_p_over_scaled_ideal": 1.04889090293766,
+   "chamber_p_over_declared": 0.9798138639539968
+  },
+  "coupling_step": {
+   "dv_y_60ms": {
+    "dt10": 0.5337474887041935,
+    "dt5": 0.5798317912856419,
+    "dt2p5": 0.584485459203961,
+    "order": 3.307835247733276,
+    "richardson": 0.5850081792943019
+   },
+   "drag_60ms": {
+    "dt10": 849.4052788721257,
+    "dt5": 848.9507431483846,
+    "dt2p5": 849.0061111877009,
+    "order": null,
+    "richardson": null
+   },
+   "thrust_40_60_mean": {
+    "dt10": 1036156.9811404154,
+    "dt5": 999543.1390697696,
+    "dt2p5": 975855.4250489615,
+    "order": 0.6282501924438513,
+    "richardson": 932446.6182223391
+   },
+   "shell_Tmax_60ms": {
+    "dt10": 293.3809770941831,
+    "dt5": 293.47427109241073,
+    "dt2p5": 293.5269873614332,
+    "order": 0.8235360052028078,
+    "richardson": 293.5954733283438
+   },
+   "seam_ab": {
+    "dt10": 0.05591882651303456,
+    "dt5": 0.029298370398103814,
+    "dt2p5": 0.0031239687918456507,
+    "order": 0.024378735662099717,
+    "richardson": -1.5327854013084354
+   },
+   "seam_be": {
+    "dt10": 0.08230082455954915,
+    "dt5": 0.014093963548542763,
+    "dt2p5": 0.0014910227111108116,
+    "order": 2.436156449831633,
+    "richardson": -0.0013655046210627087
+   },
+   "seam_ef": {
+    "dt10": 0.0013636581310768555,
+    "dt5": 0.0005252322376429758,
+    "dt2p5": 0.0001726912628739344,
+    "order": 1.2498923255481869,
+    "richardson": -8.310004514325739e-05
+   },
+   "seam_df": {
+    "dt10": 0.3520307720017173,
+    "dt5": 0.3762994405664452,
+    "dt2p5": 0.3752136880241162,
+    "order": null,
+    "richardson": null
+   },
+   "seam_gf": {
+    "dt10": 0.28770496103361537,
+    "dt5": 0.22199287893894934,
+    "dt2p5": 0.22896073873007916,
+    "order": null,
+    "richardson": null
+   },
+   "thermal": {
+    "dt10": 0.0004661998002289818,
+    "dt5": 0.00037735722178690523,
+    "dt2p5": 0.00026169718831282543,
+    "order": -0.38056725541835806,
+    "richardson": null
+   }
+  }
+ },
+ "_report_time": "2026-09-26 15:33:16"
+}

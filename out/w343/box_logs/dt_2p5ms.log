@@ -1,0 +1,25 @@
+W336 dt_2p5ms: case 0 (underexpanded_max), coarsen 4, dt_macro 0.0025, 24 steps
+  step  1 t=0.0025  33 s  tele 4.4e-15  wall 2.4e-17  inj 1.0000  exit 0.8055  ab -8.6e-01  be +4.2e-01  thrust exit 6.6386e+05 walls 1.3587e+06  
+  step  2 t=0.0050  40 s  tele 2.8e-15  wall 2.3e-17  inj 1.0000  exit 0.5966  ab +2.0e-01  be -5.6e-01  thrust exit 5.5333e+05 walls 1.191e+06  
+  step  3 t=0.0075  41 s  tele 4.1e-14  wall 1.9e-17  inj 1.0000  exit 1.1942  ab +2.1e-01  be +3.4e-03  thrust exit 1.1702e+06 walls 1.0201e+06  
+  step  4 t=0.0100  41 s  tele 2.7e-14  wall 2.5e-17  inj 1.0000  exit 1.2637  ab +3.8e-02  be +2.0e-01  thrust exit 1.2336e+06 walls 1.1283e+06  
+  step  5 t=0.0125  41 s  tele 3.2e-15  wall 2.1e-17  inj 1.0000  exit 1.0695  ab +6.7e-02  be -1.4e-02  thrust exit 1.0376e+06 walls 1.0018e+06  
+  step  6 t=0.0150  41 s  tele 1.4e-14  wall 2.3e-17  inj 1.0000  exit 1.0730  ab +3.9e-02  be +2.1e-02  thrust exit 1.0423e+06 walls 1.0634e+06  
+  step  7 t=0.0175  42 s  tele 1.4e-14  wall 2.1e-17  inj 1.0000  exit 1.0532  ab +5.5e-02  be -6.2e-03  thrust exit 1.0236e+06 walls 9.9112e+05  
+  step  8 t=0.0200  41 s  tele 2.7e-14  wall 2.4e-17  inj 1.0000  exit 1.0620  ab +2.2e-02  be +3.0e-02  thrust exit 1.0323e+06 walls 1.0293e+06  
+  step  9 t=0.0225  41 s  tele 2.3e-14  wall 1.6e-17  inj 1.0000  exit 1.0327  ab +3.3e-02  be -3.8e-03  thrust exit 1.0043e+06 walls 9.8429e+05  
+  step 10 t=0.0250  42 s  tele 7.1e-15  wall 2.3e-17  inj 1.0000  exit 1.0368  ab +1.4e-02  be +1.8e-02  thrust exit 1.0085e+06 walls 1.0068e+06  
+  step 11 t=0.0275  42 s  tele 1.7e-14  wall 1.5e-17  inj 1.0000  exit 1.0195  ab +2.0e-02  be -2.4e-03  thrust exit 9.9197e+05 walls 9.7989e+05  
+  step 12 t=0.0300  41 s  tele 2.7e-14  wall 1.5e-17  inj 1.0000  exit 1.0219  ab +7.9e-03  be +1.1e-02  thrust exit 9.9444e+05 walls 9.932e+05  
+  step 13 t=0.0325  42 s  tele 3.6e-14  wall 1.5e-17  inj 1.0000  exit 1.0115  ab +1.1e-02  be -1.4e-03  thrust exit 9.8446e+05 walls 9.7735e+05  
+  step 14 t=0.0350  42 s  tele 9.7e-15  wall 1.4e-17  inj 1.0000  exit 1.0129  ab +4.7e-03  be +6.3e-03  thrust exit 9.8592e+05 walls 9.852e+05  
+  step 15 t=0.0375  42 s  tele 3.5e-14  wall 1.3e-17  inj 1.0000  exit 1.0068  ab +6.8e-03  be -8.2e-04  thrust exit 9.8006e+05 walls 9.7585e+05  
+  step 16 t=0.0400  42 s  tele 4.1e-14  wall 1.8e-17  inj 1.0000  exit 1.0076  ab +2.7e-03  be +3.7e-03  thrust exit 9.8092e+05 walls 9.8048e+05  
+  step 17 t=0.0425  42 s  tele 1.7e-14  wall 1.6e-17  inj 1.0000  exit 1.0040  ab +4.0e-03  be -4.7e-04  thrust exit 9.7746e+05 walls 9.7497e+05  
+  step 18 t=0.0450  42 s  tele 1.4e-14  wall 1.8e-17  inj 1.0000  exit 1.0045  ab +1.6e-03  be +2.2e-03  thrust exit 9.7796e+05 walls 9.7771e+05  
+  step 19 t=0.0475  42 s  tele 1.2e-14  wall 1.4e-17  inj 1.0000  exit 1.0024  ab +2.3e-03  be -2.8e-04  thrust exit 9.7592e+05 walls 9.7444e+05  
+  step 20 t=0.0500  42 s  tele 3.3e-14  wall 1.9e-17  inj 1.0000  exit 1.0026  ab +9.4e-04  be +1.3e-03  thrust exit 9.7622e+05 walls 9.7606e+05  
+  step 21 t=0.0525  42 s  tele 2.0e-14  wall 1.7e-17  inj 1.0000  exit 1.0014  ab +1.4e-03  be -1.6e-04  thrust exit 9.7502e+05 walls 9.7414e+05  
+  step 22 t=0.0550  42 s  tele 4.4e-14  wall 1.8e-17  inj 1.0000  exit 1.0016  ab +5.4e-04  be +7.7e-04  thrust exit 9.7519e+05 walls 9.7509e+05  
+  step 23 t=0.0575  42 s  tele 7.0e-15  wall 1.7e-17  inj 1.0000  exit 1.0008  ab +8.0e-04  be -8.8e-05  thrust exit 9.7448e+05 walls 9.7396e+05  
+  step 24 t=0.0600  42 s  tele 4.1e-14  wall 1.9e-17  inj 1.0000  exit 1.0009  ab +3.1e-04  be +4.6e-04  thrust exit 9.7459e+05 walls 9.7452e+05  

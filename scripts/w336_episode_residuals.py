@@ -201,6 +201,33 @@ PREDICTIONS_T88 = {
            "throat seam, engine wall heat and radiation slip to 1e-12",
 }
 
+#: **W343 -- registered 2026-09-26 17:37 EDT, after d-g was made two-way in the
+#: build repo and BEFORE any marched run of it.** What had been seen: the build
+#: repo's unit tests, and the frozen-instant test on three instants of the
+#: Tier 88 march, where two-way coupling moved d|g from -1.9..-2.1% to
+#: -1.1..-1.2%, the residue sitting in the two subsonic g cells beside the plume
+#: (a d cell straddling the plume line, and d's 0.2 m cell spanning two of g's
+#: 0.13 m ones). A 20 ms coupled smoke run had been started and had not
+#: reported a step. The Tier 88 records these compare against are
+#: out/w336_t88 and out/w321_t88.
+PREDICTIONS_W343 = {
+    "S1": "d|g's mean |mass created| over 30-60 ms at the 5 ms coupling step is "
+          "under 1.5% (it was 2.1% one-way)",
+    "S2": "what remains of d|g is a floor, not a lag: at 5 ms and at 2.5 ms both "
+          "between 0.3% and 1.5%, and within 30% of each other",
+    "S3": "the flight barely moves: the velocity gained over the run and the "
+          "last step's drag are each within 1% of Tier 88's",
+    "S4": "the engine does not see it: late in the run the chamber pressure is "
+          "within 1e-4 of Tier 88's (relative) and the throat flow within 1e-4 "
+          "of the declared flow (absolute)",
+    "S5": "the gates hold: A1-A4 on the new audit, and all 17 of Tier 86's gates "
+          "on the new march",
+    "S6": "with W343 reverted on today's code, the first two audited steps "
+          "reproduce Tier 88's audit: y, theta, v_y, omega and m to 1e-12 and "
+          "the injector, throat seam, d|g seam and engine wall heat to 1e-10 "
+          "(relative)",
+}
+
 
 # ---------------------------------------------------------------------------
 # the build repo, as the episode runner loads it
@@ -227,7 +254,7 @@ def _mods():
 #: code the Tier 86-87 records were made with (build repo adc470b), in this
 #: process only, so a stage can show that the old behaviour on today's code
 #: reads what the old records read.
-FIXES = ("W337", "W338", "W339", "W340")
+FIXES = ("W337", "W338", "W339", "W340", "W343")
 
 
 def _old_inlet_face_flux(self, Fi, Ue):
@@ -409,7 +436,7 @@ def revert(M, which):
     C2, TS, gen = M["C2"].Compressible2D, M["TS"].ThermoStruct2D, M["gen"]
     for owner, names in ((C2, ("_inlet_face_flux", "_isothermal_wall_conduction")),
                          (TS, ("_outer_robin",)),
-                         (gen.CoupledEpisode, ("_wire_engine", "_wire_external"))):
+                         (gen.CoupledEpisode, ("_wire_engine", "_wire_external", "D_G_TWO_WAY"))):
         for nm in names:
             _SAVED.setdefault((owner, nm), owner.__dict__.get(nm))
     if "W337" in which:
@@ -423,6 +450,11 @@ def revert(M, which):
     if "W340" in which:
         assert hasattr(gen, "_hand_over"), "this build repo predates W340"
         gen.CoupledEpisode._wire_engine, gen.CoupledEpisode._wire_external = _old_wiring(gen)
+    if "W343" in which:
+        # the one-way d-g seam of build repo c1ccac6: d an outflow, g handed
+        # one layer (under W340's revert the whole adc470b wiring is back)
+        assert hasattr(gen.CoupledEpisode, "D_G_TWO_WAY"), "this build repo predates W343"
+        gen.CoupledEpisode.D_G_TWO_WAY = False
     return list(which)
 
 
@@ -1333,6 +1365,19 @@ def stage_report(a):
         print("  %-4s %-6s got %s" % (k, tag, json.dumps(r["got"])[:100]))
         print("        %s" % r["claim"])
     res["tier88"] = t88
+    w343 = evaluate_w343()
+    print("=" * 96)
+    print("W343 -- predictions registered 2026-09-26 17:37 EDT, before the two-way run")
+    print("=" * 96)
+    for k in PREDICTIONS_W343:
+        if k not in w343:
+            print("  %-4s not measured" % k)
+            continue
+        r = w343[k]
+        tag = "HELD" if r["held"] else ("FAILED" if r["held"] is False else "--")
+        print("  %-4s %-6s got %s" % (k, tag, json.dumps(r["got"])[:100]))
+        print("        %s" % r["claim"])
+    res["w343"] = w343
     # convergence tables
     for part, keys in (("engine", ("throat_mdot_e_over_declared", "chamber_p_mean", "exit_mach_massavg",
                                     "exit_p_areaavg", "thrust_exit_face_mean")),
@@ -1462,6 +1507,70 @@ def evaluate_t88(out_dir=None, pre_dir=None):
                       p["shell"][k]["q_rad_applied"] - p["shell"][k]["q_rad_ambient"]) for k in p["shell"]]
             dev = max(dev, max(rel(x, y) for x, y in vals))
         put("Q14", dict(steps=n, rigid_bitwise=bitwise, worst_rel=dev), bitwise and dev < 1e-12)
+    return res
+
+
+T88_DIR = os.path.join(ROOT, "out", "w336_t88")
+T88_RECORD = os.path.join(ROOT, "out", "w321_t88", "episode.npz")
+W343_GATES = os.path.join(ROOT, "out", "w323_seams_fixed_w343.json")
+
+
+def evaluate_w343(out_dir=None, t88_dir=None, record=None, t88_record=None, gates=None):
+    """W343's registered predictions (`PREDICTIONS_W343`). None = not measured."""
+    out_dir = out_dir or OUT
+    t88_dir = t88_dir or T88_DIR
+    record, t88_record = record or RECORD, t88_record or T88_RECORD
+    gates = gates or W343_GATES
+    au, old = _load("audit.json", out_dir), _load("audit.json", t88_dir)
+    res = {}
+
+    def put(name, got, ok):
+        res[name] = dict(claim=PREDICTIONS_W343[name], got=got,
+                         held=None if ok is None else bool(ok))
+
+    def win(run, lo=0.03, hi=0.06):
+        return float(np.mean([abs(s["seam_dg_mass_rel"]) for s in run["steps"]
+                              if lo < s["t"] <= hi + 1e-9]))
+    S = au["steps"] if au else []
+    if S:
+        dg5 = win(dict(au, steps=[s for s in S if s["t"] <= 0.06 + 1e-9]))
+        put("S1", dg5, dg5 < 0.015)
+        d2 = _load("dt_2p5ms.json", out_dir)
+        if d2:
+            dg2 = win(d2)
+            ok = 0.003 < dg5 < 0.015 and 0.003 < dg2 < 0.015 and abs(dg5 / dg2 - 1.0) < 0.3
+            put("S2", [dg5, dg2], ok)
+    if os.path.exists(record) and os.path.exists(t88_record):
+        a, b = np.load(record), np.load(t88_record)
+        gain = [float(z["rigid"][-1][4] - z["rigid"][0][4]) for z in (a, b)]
+        drag = [float(z["loads_body"][-1][2]) for z in (a, b)]
+        rg, rd = abs(gain[0] / gain[1] - 1.0), abs(drag[0] / drag[1] - 1.0)
+        put("S3", dict(gain=gain, drag=drag), rg < 0.01 and rd < 0.01)
+    if S and old and old["steps"]:
+        pc = [_last(r["steps"], "chamber_p_mean") for r in (au, old)]
+        th = _last(S, "throat_mdot_e_over_declared")
+        put("S4", dict(chamber_p=pc, throat=th),
+            abs(pc[0] / pc[1] - 1.0) < 1e-4 and abs(th - 1.0) < 1e-4)
+    if S and os.path.exists(record) and os.path.exists(gates):
+        a = evaluate(out_dir, record=record)
+        with open(gates, encoding="utf-8") as fh:
+            g = json.load(fh)["gates"]
+        held = [a[k]["held"] for k in ("A1", "A2", "A3", "A4")]
+        npass = sum(1 for v in g.values() if v["passed"])
+        put("S5", dict(A=held, gates="%d of %d" % (npass, len(g))),
+            all(h is True for h in held) and npass == len(g) == 17)
+    co = _load("control_w343.json", out_dir)
+    if co and co["steps"] and old and old["steps"]:
+        n = min(len(co["steps"]), len(old["steps"]))
+        worst_f, worst_r = 0.0, 0.0
+        for c, p in zip(co["steps"][:n], old["steps"][:n]):
+            for i in (1, 2, 4, 5, 6):
+                worst_f = max(worst_f, abs(c["rigid"][i] - p["rigid"][i]) / max(abs(p["rigid"][i]), 1e-300))
+            vals = [(c[k], p[k]) for k in ("injector_mdot_over_declared", "seam_be_mass_rel",
+                                          "seam_dg_mass_rel")]
+            vals += [(c["engine_heat_lost"][sd], p["engine_heat_lost"][sd]) for sd in ("jmin", "jmax")]
+            worst_r = max(worst_r, max(abs(x - y) / max(abs(y), 1e-300) for x, y in vals))
+        put("S6", dict(steps=n, flight=worst_f, readings=worst_r), worst_f < 1e-12 and worst_r < 1e-10)
     return res
 
 

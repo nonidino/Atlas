@@ -1,0 +1,7 @@
+W336 grid_external_c1: case 0, coarsen 1, dt_macro 0.005, 6 steps
+  step 1 t=0.0050  247 s  drag 644.055 (p 524.9, shear 119.16)  heat 80.564  rate 1.55e+00
+  step 2 t=0.0100  243 s  drag 641.493 (p 522.36, shear 119.13)  heat 117.06  rate 2.04e-02
+  step 3 t=0.0150  244 s  drag 641.448 (p 522.32, shear 119.13)  heat 117.07  rate 1.41e-03
+  step 4 t=0.0200  244 s  drag 641.448 (p 522.32, shear 119.13)  heat 117.07  rate 5.50e-04
+  step 5 t=0.0250  243 s  drag 641.448 (p 522.32, shear 119.13)  heat 117.07  rate 2.38e-04
+  step 6 t=0.0300  244 s  drag 641.448 (p 522.32, shear 119.13)  heat 117.07  rate 1.40e-04
