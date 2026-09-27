@@ -6311,3 +6311,66 @@ On the owner's decision, the same day. Full record in [[case-study-rocket-bc-sea
 - tests: `tests/test_tier88_episode_fixes.py` (reads Tier 88's moved records), `tests/test_tier88_w343.py` (added);
 - `.gitignore`: the moved and new records;
 - wiki: [[case-study-rocket-bc-seam-atlas-0.1]] (§20.8, with pointers in §20.1, §20.6 and §20.7), [[gap-worklist]] (W343 closed, W344), [[index]].
+
+## [2026-09-26] note | Atlas 0.1 outcome — the record compiled against five proposal claims
+
+On the owner's request: compile what the framework and the proof-of-concept suite have established, as the evidence base for a funding proposal to build learned experts native to domain decomposition, and name what has not been done rather than fill it. **A synthesis; no new measurement.** New folder `concepts/Atlas 0.1/atlas-0.1-outcome/`, hub [[00-atlas-0.1-outcome]].
+
+**The verdicts, per claim:**
+- **C1, classical DD faster and more accurate than a full-domain solve (the rocket): not demonstrated, and partly contradicted.** The rocket has no full-domain run, and no single-solver monolith covers its families. Where a monolith exists (2-D incompressible flow), DD costs $-9.4\%$ / $-18.0\%$ in farm power and $0.93$–$1.31\times$ the monolith's step. The rocket's record is a correctness record (block conservation $1.2\times10^{-13}$, thrust $0.992$ of ideal) ([[outcome-c1-decomposition-vs-monolith]]).
+- **C2, learned experts couple and converge with classical ones: partly.** Stable composed marches and certified convergence to the classical answer inside defect correction; a biased answer and a 13-call contribution against a 69-call noise floor ([[outcome-c2-learned-experts-in-the-loop]]).
+- **C3, learned faster at scale: shown on one family**, with the $2\times$-coarse classical solver $9$–$17\times$ cheaper still and the car's learned column at $0.067\times$ off its native lead ([[outcome-c3-learned-speed-at-scale]]).
+- **C4, modular multiphysics: largely, with classical experts** ([[outcome-c4-modular-multiphysics]]).
+- **C5, a method for DD-native learned experts on non-rectangular geometry: not done.** The page collects the measured specification S1–S12 instead ([[outcome-c5-requirements-for-dd-native-experts]]).
+
+**Materials.** [[outcome-evidence-ledger]] (every quotable number with its conditions) and [[outcome-demos-and-artifacts]]. Local copies of the self-contained viewers in `interactive/` (`out/w321/rocket-episode.html`, `out/w100/scaling-ladder.html`, `out/w93/wake-array.html`) with each one's caveat: the scaling ladder's rollout panel shows a repair falsified at 120 steps, and the wake array's classical state sits on a diverging trajectory. Four figures in `figures/`. A new evidence board, `interactive/atlas-outcome-board.html`, published privately at claude.ai/artifact/VLuXJcetzkYuwFA2eChmw3. The published rocket episode page was checked against `out/w321/rocket-episode.html`: both name the W343 build.
+
+**Changed:** wiki: [[index]] (new section), [[00-atlas-0.1-overview]] (a row for the outcome hub).
+**Added:** wiki: the seven pages above; `atlas-0.1-outcome/interactive/` (4 HTML files, about 6.4 MB) and `atlas-0.1-outcome/figures/` (4 PNGs, about 1.2 MB).
+
+## [2026-09-27] tier 89 | W214 run, a coarse competitor across coupled seams, and decomposition by rotor count
+
+On the owner's request after the outcome folder: finish W214 and the old brief's Task 3 (the coarse competitor), and measure the target the owner set for C1, *when there are a large number of rotors, the decomposition works faster*. Measured 2026-09-26 between 21:15 and 23:53 EDT; written up 2026-09-27. Records: [[matched-shrink-and-coarse-competitor]] (W214, W345) and [[decomposition-speed-by-rotor-count]] (W346). Predictions were registered in each script before any arm ran.
+
+**W214 — the matched shrink.**
+- Matching the shrink to the slow-mode response gives $\alpha = 0.143$ at six windows and $-0.020$ at twelve, where the clean column under-responds. The six-window probe reproduces Tier 50's cache exactly.
+- Six windows: $82$ classical calls against the control's $99$ (reproduced), inside a $38$-call swing across an $\alpha$ scan. Twelve windows: $270$ against $222$ (Tier 48's $\alpha = 0$ arm, reproduced).
+- **Mechanism:** weakly shrunk iterations diverge within one or two outer iterations from the freestream start, and the linear rate at $w^\star$ ordered every pair backwards. G5 did not move. M2 and M6 failed as registered.
+- New row **W347**: a shrink scheduled on the residual.
+
+**W345 — the coarse competitor across coupled seams.** On CS-13 and CS-12 it **exists, stays correct and is not cheap**:
+- Every arm is inside its certificate, and the seam-frozen controls cost the same as the coupled arms.
+- Counting its own cost it is $1.11\times$ (CS-13) and $1.24\times$ (CS-12) dearer than the cold march. CS-13's coarse solve costs $0.96$ of a fine one: `step_thermal` is assembly-bound at 343 nodes.
+- CS-12's coarse wing was built from private copies of `ground_effect` and `wing_fsi` with the resolution constants halved in cells, each replacement asserted. The unpatched copy reproduces the module bit for bit. Settled load within $0.42\%$.
+- CS-14 has no field to coarsen.
+- **So G5's bar at these seams is the cold march, and the seam is not why.**
+- **Correction:** CS-12 settles (residual $2.9\times10^{-3} \to 1.3\times10^{-9}$ over 2000 steps). Its case page's "1.5% settled unsteadiness" was a transient; that page is annotated. Q6 and F4 failed as registered.
+
+**W346 — decomposition against the monolith, by rotor count.** On mains power (the owner plugged in when asked):
+- Threaded over cache-sized windows, and bit for bit the serial column (24 of 24 pairs), classical decomposition is $3.4$–$5.7\times$ faster than the undivided solver from 5 to 21 rotors, and $2.1$–$3.7\times$ at 36, across two independent timing draws.
+- Farm power within $2.3$–$8.3\%$.
+- Serially it is never faster ($0.95$–$1.25\times$), and local time stepping saves 5–8% of sub-steps. Below 5 rotors, threads lose $1.6\times$.
+- **Mechanism:** the monolith's cost per cell rises fourfold between 85k and 163k cells.
+- B2, B3, B4 and B6 failed as registered, each on part of that mechanism. The two draws disagree by up to 50% on one arm, and the range is quoted.
+
+**And the outcome folder is revised on all three** (C1's verdict now reads *demonstrated for one mechanism*). It gains [[outcome-c4-path-to-declarative-cases]], a plan for case studies without a Python module and a decomposition GUI compared with the full-domain solve; nothing on it is built. The evidence board was republished as version 2, with the rotor-count chart.
+
+**How it was run**
+- `python scripts/w214_matched_shrink.py --stages probe,arms,scan --rungs 6,12` (about 40 min, on battery and sharing the machine with W345; no quoted number is a wall time)
+- `python scripts/w345_coarse_competitor.py --stages repro,reference,bias,dc`, then `--stages powertrain,fsi`, then `--stages cost`
+- `python scripts/w345_fsi_long.py` (7 min)
+- `python scripts/w345_fsi_competitor.py --stages control,reference,bias,dc`, then `--stages cost`
+- `python scripts/w346_rotor_count_speed.py --control --rungs 2,6,12,24,48 --timing-only 80 --steps 40` (about 30 min), then `--rungs "" --timing-only "" --retime 12,24,48,80` (16 min). On mains, Balanced plan, the process holding a keep-awake request; the owner's phone-remote `server.py` processes were running throughout.
+- `python -m pytest tests/test_tier89_competitor_and_speed.py`: 9 passed.
+- `python scripts/run_suite.py`: **1950 passed, 0 failed, no missing logs**, 418 s, every log written after the run started (09:04:35).
+- `python scripts/vault_scan.py wiki`: 267 files, 0 problems.
+
+**Changed:**
+- wiki: [[gap-worklist]] (Tier 89 block: W214 closed; W345 and W346 opened and closed; W347 opened), [[case-study-wing-fsi-atlas-0.1]] (the settled-unsteadiness row annotated), [[index]], and the outcome folder: [[00-atlas-0.1-outcome]], [[outcome-c1-decomposition-vs-monolith]], [[outcome-c2-learned-experts-in-the-loop]], [[outcome-c3-learned-speed-at-scale]], [[outcome-c4-modular-multiphysics]], [[outcome-c5-requirements-for-dd-native-experts]], [[outcome-evidence-ledger]], [[outcome-demos-and-artifacts]], and `interactive/atlas-outcome-board.html`.
+- `.gitignore`: allowlist pairs for `out/w214`, `out/w345` and `out/w346`, each with what rebuilding costs.
+
+**Added:**
+- scripts: `scripts/w214_matched_shrink.py`, `scripts/w345_coarse_competitor.py`, `scripts/w345_fsi_competitor.py`, `scripts/w345_fsi_long.py`, `scripts/w346_rotor_count_speed.py`.
+- tests: `tests/test_tier89_competitor_and_speed.py`.
+- wiki: [[matched-shrink-and-coarse-competitor]], [[decomposition-speed-by-rotor-count]], [[outcome-c4-path-to-declarative-cases]].
+- records: `out/w214/w214.json`, `out/w345/w345.json`, `out/w345/fsi_long.json`, `out/w346/w346.json`, each with its `registered.txt`.

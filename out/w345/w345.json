@@ -1,0 +1,465 @@
+{
+ "what": "W345: a cheap correct coarse competitor across a coupled seam?",
+ "predictions": {
+  "Q1": "repro: the script's classical map reproduces LoopSolve.solve's block field and return temperature bit for bit over its first 50 steps",
+  "Q2": "the coarse competitor stays CORRECT across the coupled seam: defect correction with it returns a state inside its certificate, at every inner-march setting run",
+  "Q3": "the coarse competitor's OWN settled state (marched alone, prolonged) is within 1% of the fine one in the heat the block delivers -- a conduction block is the easy case for a coarse model",
+  "Q4": "the seam costs the competitor nothing it would not pay uncoupled: with the same settings, the coupled DC arm needs no more than 1.5x the classical calls of the uncoupled control",
+  "Q5": "the coarse competitor is NOT cheap on this block: a coarse call costs more than 0.25 of a classical call, because at 343 nodes the solve is overhead-bound rather than cell-bound",
+  "Q6": "the fsi_floor: CS-12's one-step residual does not fall below 1e-3 of the field's rms over 40 settled macro-steps (no isolated fixed point)"
+ },
+ "registered": "2026-09-26, before any arm ran",
+ "repro": {
+  "steps": 50,
+  "max_abs_diff": 0.0
+ },
+ "reference": {
+  "steps": 15884,
+  "final_residual": 1.4782716512782624e-10,
+  "cold_distance": 145.1773266187187,
+  "r_stop": 0.00013512594191912987,
+  "cold_calls": 7411,
+  "theta": {
+   "theta": 1073.5349214000803,
+   "theta_min": 1047.3217001726969,
+   "n": 794
+  },
+  "t_return": 341.2177709742069,
+  "q_block": 1787.2044516576716,
+  "wall_s": 13.307421445846558
+ },
+ "bias": {
+  "coupled": {
+   "t_return": 341.21777099060176,
+   "t_return_fine": 341.2177709742069,
+   "t_return_abs_err": 1.639483571125311e-08,
+   "q_block": 1787.204452387917,
+   "q_block_fine": 1787.2044516576716,
+   "q_block_rel_err": 4.0859642341477155e-10,
+   "field_rms_err": 1.3777527188082067e-07
+  },
+  "uncoupled": {
+   "q_block": 1787.2044526055006,
+   "q_block_rel_err": 5.303416702430564e-10,
+   "field_rms_err": 1.3249102065175092e-07
+  }
+ },
+ "dc": {
+  "uncoupled_reference": {
+   "r_stop": 0.0001691500030418733,
+   "cold_calls": 5928,
+   "theta": 858.8075286759214
+  },
+  "C_m40": {
+   "status": "fallback_converged",
+   "stop_reason": "max_outer",
+   "residual": 0.00013506990147048022,
+   "phi_calls": 5107,
+   "psi_calls": 2460,
+   "fallback_from": 59,
+   "settings": {
+    "k_max": 60,
+    "m_max": 40,
+    "inner_frac": 0.1,
+    "stall_ratio": 1.0,
+    "stall_patience": 2,
+    "fallback_steps": 100000
+   },
+   "final_error": 0.1449504551611087,
+   "certificate_bound": 0.14500225605862857,
+   "inside_certificate": true,
+   "wall_s": 9.497089385986328
+  },
+  "C0_m40": {
+   "status": "fallback_converged",
+   "stop_reason": "max_outer",
+   "residual": 0.00016905825260011368,
+   "phi_calls": 3649,
+   "psi_calls": 2460,
+   "fallback_from": 59,
+   "settings": {
+    "k_max": 60,
+    "m_max": 40,
+    "inner_frac": 0.1,
+    "stall_ratio": 1.0,
+    "stall_patience": 2,
+    "fallback_steps": 100000
+   },
+   "final_error": 0.14514671682019925,
+   "certificate_bound": 0.1451885001177733,
+   "inside_certificate": true,
+   "wall_s": 7.984966516494751
+  },
+  "C_m400": {
+   "status": "fallback_converged",
+   "stop_reason": "max_outer",
+   "residual": 0.00013095480497880667,
+   "phi_calls": 71,
+   "psi_calls": 9026,
+   "fallback_from": 59,
+   "settings": {
+    "k_max": 60,
+    "m_max": 400,
+    "inner_frac": 0.1,
+    "stall_ratio": 1.0,
+    "stall_patience": 2,
+    "fallback_steps": 100000
+   },
+   "final_error": 0.05996611327358087,
+   "certificate_bound": 0.14058455626988606,
+   "inside_certificate": true,
+   "wall_s": 8.670538663864136
+  },
+  "C0_m400": {
+   "status": "fallback_converged",
+   "stop_reason": "max_outer",
+   "residual": 0.0001414363666432921,
+   "phi_calls": 63,
+   "psi_calls": 7750,
+   "fallback_from": 59,
+   "settings": {
+    "k_max": 60,
+    "m_max": 400,
+    "inner_frac": 0.1,
+    "stall_ratio": 1.0,
+    "stall_patience": 2,
+    "fallback_steps": 100000
+   },
+   "final_error": 0.03234946619141043,
+   "certificate_bound": 0.12146661650182722,
+   "inside_certificate": true,
+   "wall_s": 7.030170202255249
+  },
+  "C_m4000": {
+   "status": "fallback_converged",
+   "stop_reason": "max_outer",
+   "residual": 0.00011967695389839691,
+   "phi_calls": 62,
+   "psi_calls": 9732,
+   "fallback_from": 59,
+   "settings": {
+    "k_max": 60,
+    "m_max": 4000,
+    "inner_frac": 0.1,
+    "stall_ratio": 1.0,
+    "stall_patience": 2,
+    "fallback_steps": 100000
+   },
+   "final_error": 0.028350851268262724,
+   "certificate_bound": 0.12847738929671657,
+   "inside_certificate": true,
+   "wall_s": 9.590253829956055
+  },
+  "C0_m4000": {
+   "status": "converged",
+   "stop_reason": "converged",
+   "residual": 0.0001597644467922383,
+   "phi_calls": 60,
+   "psi_calls": 13481,
+   "fallback_from": null,
+   "settings": {
+    "k_max": 60,
+    "m_max": 4000,
+    "inner_frac": 0.1,
+    "stall_ratio": 1.0,
+    "stall_patience": 2,
+    "fallback_steps": 100000
+   },
+   "final_error": 0.018183396863342898,
+   "certificate_bound": 0.13720690971991792,
+   "inside_certificate": true,
+   "wall_s": 14.863672018051147
+  },
+  "cold_calls_coupled": 7411
+ },
+ "evaluation": {
+  "Q1": {
+   "got": 0.0,
+   "verdict": "held"
+  },
+  "Q2": {
+   "got": {
+    "C_m40": true,
+    "C_m400": true,
+    "C_m4000": true
+   },
+   "verdict": "held"
+  },
+  "Q3": {
+   "got": 4.0859642341477155e-10,
+   "verdict": "held"
+  },
+  "Q4": {
+   "got": {
+    "C_m40": [
+     5107,
+     3649
+    ],
+    "C_m400": [
+     71,
+     63
+    ],
+    "C_m4000": [
+     62,
+     60
+    ]
+   },
+   "verdict": "held"
+  },
+  "Q5": {
+   "got": 1.2551425669572742,
+   "verdict": "held"
+  },
+  "Q6": {
+   "got": 0.0001997817924757552,
+   "verdict": "FAILED"
+  }
+ },
+ "powertrain": {
+  "seconds_per_solve": 0.0003349200001684949,
+  "note": "every agent is lumped: there is no field to restrict, so no coarse competitor exists and the cheapest classical alternative is this solve"
+ },
+ "fsi_floor": {
+  "spin_steps": 160,
+  "window": 40,
+  "relative_residuals": [
+   0.0004290300511951636,
+   0.0004211110290678757,
+   0.00041366711878212037,
+   0.0004066244543351946,
+   0.0003999146223069523,
+   0.00039347486753650926,
+   0.0003872482468824718,
+   0.00038118373419627403,
+   0.0003752362705346236,
+   0.00036936675432871856,
+   0.00036354196658609447,
+   0.0003577344284477908,
+   0.00035192219128559913,
+   0.00034608856302145,
+   0.0003402217775886036,
+   0.00033431461576002364,
+   0.00032836398639279635,
+   0.00032237048020183754,
+   0.00031633790570683703,
+   0.00031027281753687246,
+   0.0003041840468369348,
+   0.00029808224276372256,
+   0.0002919794314059054,
+   0.00028588859926232914,
+   0.00027982330575123694,
+   0.00027379732925727064,
+   0.00026782434917292885,
+   0.0002619176661124715,
+   0.00025608996122723494,
+   0.0002503530944915596,
+   0.00024471794202245395,
+   0.00023919427067657065,
+   0.00023379064836258565,
+   0.00022851438777476873,
+   0.00022337152091617173,
+   0.00021836680139038732,
+   0.0002135037313269592,
+   0.00020878460906938233,
+   0.00020421059537708696,
+   0.0001997817924757552
+  ],
+  "min_relative_residual": 0.0001997817924757552,
+  "max_relative_residual": 0.0004290300511951636,
+  "load_last_window_peak_to_peak": 0.012454199568134455,
+  "wall_s": 42.34254264831543,
+  "torch_threads": 16
+ },
+ "fsi_predictions": {
+  "F0": "loader control: an UNPATCHED private copy reproduces the real `wing_fsi` macro-step bit for bit",
+  "F1": "the coarse wing (cell Reynolds 7.8 where the fine one is 3.9) settles, and its settled load is within 10% of the fine wing's",
+  "F2": "the coarse competitor stays CORRECT across the two-way seam: defect correction with it returns a state inside its certificate at every inner-march setting",
+  "F3": "the seam costs the competitor nothing it would not pay frozen: the coupled arm needs no more than 1.5x the classical calls of the frozen control at the same settings",
+  "F4": "a coarse call costs at most 0.35 of a fine call (a quarter of the cells, plus torch overhead)"
+ },
+ "fsi_registered": "2026-09-26, before the coarse copy was first built",
+ "fsi": {
+  "loader_control": true,
+  "reference": {
+   "steps": 3495,
+   "final_residual": 6.883966976704992e-13,
+   "r_stop": 3.5445091068754265e-07,
+   "cold_calls": 901,
+   "cold_distance": 0.055086261283452696,
+   "theta": {
+    "theta": 152.27714306134598,
+    "theta_min": 82.15868233566462,
+    "n": 175
+   },
+   "load": 0.2080165931465005,
+   "tip": -0.026948520886189955,
+   "wall_s": 765.2847511768341
+  },
+  "bias": {
+   "coarse_steps": 2583,
+   "coarse_final_residual": 9.839826791565615e-13,
+   "load_coarse": 0.20888457206555744,
+   "load_fine": 0.2080165931465005,
+   "load_rel_err": 0.00417264270089088,
+   "tip_coarse": -0.026996456372347943,
+   "tip_fine": -0.026948520886189955,
+   "field_rms_err": 0.006819239415627729
+  },
+  "frozen_reference": {
+   "cold_calls": 901,
+   "r_stop": 3.4399584221045827e-07,
+   "theta": 152.67138150009373,
+   "distance_to_coupled_fluid": 1.0468984498556572e-10
+  },
+  "dc": {
+   "C_m40": {
+    "status": "fallback_converged",
+    "stop_reason": "max_outer",
+    "residual": 3.5245066619961273e-07,
+    "phi_calls": 745,
+    "psi_calls": 844,
+    "fallback_from": 59,
+    "settings": {
+     "k_max": 60,
+     "m_max": 40,
+     "inner_frac": 0.1,
+     "stall_ratio": 1.0,
+     "stall_patience": 2,
+     "fallback_steps": 20000
+    },
+    "final_error": 5.3374715895683074e-05,
+    "certificate_bound": 5.367018051894513e-05,
+    "inside_certificate": true,
+    "wall_s": 294.6251633167267
+   },
+   "C0_m40": {
+    "status": "fallback_converged",
+    "stop_reason": "max_outer",
+    "residual": 3.422370661834151e-07,
+    "phi_calls": 749,
+    "psi_calls": 829,
+    "fallback_from": 59,
+    "settings": {
+     "k_max": 60,
+     "m_max": 40,
+     "inner_frac": 0.1,
+     "stall_ratio": 1.0,
+     "stall_patience": 2,
+     "fallback_steps": 20000
+    },
+    "final_error": 5.187931988410566e-05,
+    "certificate_bound": 5.2249805694761e-05,
+    "inside_certificate": true,
+    "wall_s": 306.08574748039246
+   },
+   "C_m400": {
+    "status": "fallback_converged",
+    "stop_reason": "max_outer",
+    "residual": 3.536730918978687e-07,
+    "phi_calls": 745,
+    "psi_calls": 900,
+    "fallback_from": 59,
+    "settings": {
+     "k_max": 60,
+     "m_max": 400,
+     "inner_frac": 0.1,
+     "stall_ratio": 1.0,
+     "stall_patience": 2,
+     "fallback_steps": 20000
+    },
+    "final_error": 5.3563881180227725e-05,
+    "certificate_bound": 5.385632801188031e-05,
+    "inside_certificate": true,
+    "wall_s": 319.02078795433044
+   },
+   "C0_m400": {
+    "status": "fallback_converged",
+    "stop_reason": "max_outer",
+    "residual": 3.428982099196238e-07,
+    "phi_calls": 746,
+    "psi_calls": 890,
+    "fallback_from": 59,
+    "settings": {
+     "k_max": 60,
+     "m_max": 400,
+     "inner_frac": 0.1,
+     "stall_ratio": 1.0,
+     "stall_patience": 2,
+     "fallback_steps": 20000
+    },
+    "final_error": 5.19810213342077e-05,
+    "certificate_bound": 5.235074342233811e-05,
+    "inside_certificate": true,
+    "wall_s": 304.07667350769043
+   }
+  },
+  "cold_calls": 901,
+  "cost": {
+   "seconds_per_call": {
+    "Phi": 0.22110397999640555,
+    "C": 0.0983532400103286,
+    "Phi0": 0.2029900199966505,
+    "C0": 0.09744732000399381
+   },
+   "ratio_C": 0.4448279945568031,
+   "ratio_C0": 0.48005966010349554,
+   "torch_threads": 16
+  }
+ },
+ "fsi_evaluation": {
+  "F0": {
+   "got": true,
+   "verdict": "held"
+  },
+  "F1": {
+   "got": 0.00417264270089088,
+   "verdict": "held"
+  },
+  "F2": {
+   "got": {
+    "C_m40": true,
+    "C_m400": true
+   },
+   "verdict": "held"
+  },
+  "F3": {
+   "got": {
+    "C_m40": [
+     745,
+     749
+    ],
+    "C_m400": [
+     745,
+     746
+    ]
+   },
+   "verdict": "held"
+  },
+  "F4": {
+   "got": 0.4448279945568031,
+   "verdict": "FAILED"
+  }
+ },
+ "cost": {
+  "seconds_per_call": {
+   "Phi": 0.0006584749993635341,
+   "C": 0.0008264800009783358,
+   "Phi0": 0.0006571199977770448,
+   "C0": 0.0008877250016666949
+  },
+  "ratio_C": 1.2551425669572742,
+  "ratio_C0": 1.3509328656406108,
+  "repeats": 5,
+  "calls": 40,
+  "note": "min over repeats of the mean over calls; one process",
+  "breakdown_seconds": {
+   "fine_step": 0.0005991755001014099,
+   "coarse_step": 0.0005763145000673831,
+   "restrict": 1.39000010676682e-06,
+   "prolong": 0.00011400450021028518,
+   "fine_heat_in": 7.700499845668673e-06,
+   "closed": 1.8015003297477961e-06
+  },
+  "coarse_solve_over_fine_solve": 0.9618459031950445
+ }
+}

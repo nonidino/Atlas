@@ -1,0 +1,1732 @@
+{
+ "what": "W214: the shrink matched to the slow-mode response",
+ "predictions": {
+  "M1": "P at alpha* = 0.5 reproduces Tier 48's classical-call count exactly at both rungs (99 at N=6, 222 at N=12): the reproduction control",
+  "M2": "P at its matched alpha needs FEWER classical calls than P at 0.5 at both rungs -- the brief's prediction, that matching improves the rate",
+  "M3": "P at its matched alpha does NOT beat the best corrupted direction (71 at N=6, 138 at N=12) at either rung",
+  "M4": "G5 does not move: P at its matched alpha costs MORE classical-equivalents (phi + c_P psi) than the coarse classical arm C at alpha 0 at both rungs",
+  "M5": "matching recovers at least half of the 28-call gap the corruption found at N=6: P at its matched alpha needs at most 85 classical calls",
+  "M6": "the checkpoint is not the variable at the matched rule: at N=6, Z at its own matched alpha and P at its matched alpha differ by at most 13 calls (the learned content Tier 50 measured)",
+  "M7": "every arm at N=6 returns a state inside its own certificate (error <= Theta * residual)"
+ },
+ "registered": "2026-09-26, before any arm or the N=12 probe ran",
+ "probe": {
+  "N6": {
+   "bands": {
+    "F": {
+     "slow": {
+      "rayleigh": 0.47798838326974513,
+      "amplification": 1.2585384063788017
+     },
+     "mid": {
+      "rayleigh": 0.36964165145479666,
+      "amplification": 1.0675405892060545
+     },
+     "fast": {
+      "rayleigh": -0.006253908092244048,
+      "amplification": 0.8561297957386637
+     }
+    },
+    "P": {
+     "slow": {
+      "rayleigh": 0.5578218070649931,
+      "amplification": 1.0353890147945797
+     },
+     "mid": {
+      "rayleigh": 0.3585760351338904,
+      "amplification": 0.8609961338702113
+     },
+     "fast": {
+      "rayleigh": -0.005630381793335459,
+      "amplification": 0.49370712280517565
+     }
+    },
+    "Z": {
+     "slow": {
+      "rayleigh": 0.5623777402190923,
+      "amplification": 1.047760705054386
+     },
+     "mid": {
+      "rayleigh": 0.39033140224005497,
+      "amplification": 0.931571158854377
+     },
+     "fast": {
+      "rayleigh": -0.03153126593392538,
+      "amplification": 0.9604371044892798
+     }
+    }
+   },
+   "alpha_P": 0.14311635505125808,
+   "alpha_Z": 0.15005813871023865,
+   "wall_s": 8.627801656723022,
+   "theorem2": {
+    "P": {
+     "0.0000": {
+      "bands": {
+       "slow": 0.18054581856546273,
+       "mid": 0.01725164154603434,
+       "fast": 0.0006200352636489142
+      },
+      "max": 0.18054581856546273
+     },
+     "0.1431": {
+      "bands": {
+       "slow": 0.0,
+       "mid": 0.09005330422107025,
+       "fast": 0.0014224632281270536
+      },
+      "max": 0.09005330422107025
+     },
+     "0.5000": {
+      "bands": {
+       "slow": 0.2760788933191423,
+       "mid": 0.23193719351280281,
+       "fast": 0.003429063726589131
+      },
+      "max": 0.2760788933191423
+     }
+    },
+    "Z": {
+     "0.0000": {
+      "bands": {
+       "slow": 0.19283607052254612,
+       "mid": 0.03393606110151803,
+       "fast": 0.024504693824084697
+      },
+      "max": 0.19283607052254612
+     },
+     "0.1501": {
+      "bands": {
+       "slow": 0.0,
+       "mid": 0.05669010556410096,
+       "fast": 0.0200095830831604
+      },
+      "max": 0.05669010556410096
+     },
+     "0.5000": {
+      "bands": {
+       "slow": 0.27378473284100524,
+       "mid": 0.21678493396413928,
+       "fast": 0.009364094005558864
+      },
+      "max": 0.27378473284100524
+     }
+    }
+   },
+   "reproduces_tier50_probe": {
+    "F": 0.0,
+    "P": 0.0,
+    "Z": 0.0
+   }
+  },
+  "N12": {
+   "bands": {
+    "F": {
+     "slow": {
+      "rayleigh": 0.5147877826519885,
+      "amplification": 1.375869971605847
+     },
+     "mid": {
+      "rayleigh": 0.38580011951836957,
+      "amplification": 1.022935576926801
+     },
+     "fast": {
+      "rayleigh": 0.09726327586863237,
+      "amplification": 0.9202110559268112
+     }
+    },
+    "P": {
+     "slow": {
+      "rayleigh": 0.5048990171563357,
+      "amplification": 0.9662907262338608
+     },
+     "mid": {
+      "rayleigh": 0.37408670688233814,
+      "amplification": 0.8851739102597008
+     },
+     "fast": {
+      "rayleigh": 0.07871421183702802,
+      "amplification": 0.6729319312122204
+     }
+    },
+    "Z": {
+     "slow": {
+      "rayleigh": 0.5159345410103392,
+      "amplification": 0.9809050314850657
+     },
+     "mid": {
+      "rayleigh": 0.40096109596887547,
+      "amplification": 0.9227395528786584
+     },
+     "fast": {
+      "rayleigh": 0.09648793698319837,
+      "amplification": 0.9727392968679188
+     }
+    }
+   },
+   "alpha_P": -0.019585630313459168,
+   "alpha_Z": 0.0022226818853899877,
+   "wall_s": 29.129805088043213,
+   "theorem2": {
+    "P": {
+     "0.0000": {
+      "bands": {
+       "slow": 0.0199732293780871,
+       "mid": 0.018714113863418924,
+       "fast": 0.020133887084691562
+      },
+      "max": 0.020133887084691562
+     },
+     "-0.0196": {
+      "bands": {
+       "slow": 0.0,
+       "mid": 0.007091470957298636,
+       "fast": 0.018491443647423396
+      },
+      "max": 0.018491443647423396
+     },
+     "0.5000": {
+      "bands": {
+       "slow": 0.35093050848626484,
+       "mid": 0.24448630430481036,
+       "fast": 0.06027855960511223
+      },
+      "max": 0.35093050848626484
+     }
+    },
+    "Z": {
+     "0.0000": {
+      "bands": {
+       "slow": 0.0023690150516918955,
+       "mid": 0.025308834448785945,
+       "fast": 0.0008581389415490141
+      },
+      "max": 0.025308834448785945
+     },
+     "0.0022": {
+      "bands": {
+       "slow": 0.0,
+       "mid": 0.023785716330341534,
+       "fast": 0.0010952438018991377
+      },
+      "max": 0.023785716330341534
+     },
+     "0.5000": {
+      "bands": {
+       "slow": 0.3461040220175466,
+       "mid": 0.23178869640600647,
+       "fast": 0.05150406801136254
+      },
+      "max": 0.3461040220175466
+     }
+    }
+   }
+  }
+ },
+ "arms": {
+  "N6": {
+   "P_half": {
+    "status": "fallback_converged",
+    "stop_reason": "max_outer",
+    "residual": 8.674413553035978e-05,
+    "phi_calls": 99,
+    "psi_calls": 107,
+    "fallback_from": 24,
+    "rows": [
+     {
+      "k": 0,
+      "residual": 0.033186118465296774,
+      "phi_calls": 1,
+      "psi_calls": 0,
+      "error": 0.2386165930044138,
+      "inner_steps": 3
+     },
+     {
+      "k": 1,
+      "residual": 0.02402132368152487,
+      "phi_calls": 2,
+      "psi_calls": 4,
+      "error": 0.21937450591330357,
+      "inner_steps": 3
+     },
+     {
+      "k": 2,
+      "residual": 0.020077514273869192,
+      "phi_calls": 3,
+      "psi_calls": 8,
+      "error": 0.20311314409599454,
+      "inner_steps": 4
+     },
+     {
+      "k": 3,
+      "residual": 0.017813666622754493,
+      "phi_calls": 4,
+      "psi_calls": 13,
+      "error": 0.18660542477387293,
+      "inner_steps": 4
+     },
+     {
+      "k": 4,
+      "residual": 0.016360345241099705,
+      "phi_calls": 5,
+      "psi_calls": 18,
+      "error": 0.16989844611395827,
+      "inner_steps": 4
+     },
+     {
+      "k": 5,
+      "residual": 0.015320225733257649,
+      "phi_calls": 6,
+      "psi_calls": 23,
+      "error": 0.15289345175085597,
+      "inner_steps": 4
+     },
+     {
+      "k": 6,
+      "residual": 0.014496479078298409,
+      "phi_calls": 7,
+      "psi_calls": 28,
+      "error": 0.1356240227245292,
+      "inner_steps": 4
+     },
+     {
+      "k": 7,
+      "residual": 0.01375183537346099,
+      "phi_calls": 8,
+      "psi_calls": 33,
+      "error": 0.11842493748093894,
+      "inner_steps": 4
+     },
+     {
+      "k": 8,
+      "residual": 0.012990551347294927,
+      "phi_calls": 9,
+      "psi_calls": 38,
+      "error": 0.1018765246275546,
+      "inner_steps": 4
+     },
+     {
+      "k": 9,
+      "residual": 0.012129345312440568,
+      "phi_calls": 10,
+      "psi_calls": 43,
+      "error": 0.08670415640542857,
+      "inner_steps": 3
+     },
+     {
+      "k": 10,
+      "residual": 0.011169175015595108,
+      "phi_calls": 11,
+      "psi_calls": 47,
+      "error": 0.07404003672783314,
+      "inner_steps": 3
+     },
+     {
+      "k": 11,
+      "residual": 0.010084465697463355,
+      "phi_calls": 12,
+      "psi_calls": 51,
+      "error": 0.06406254595745595,
+      "inner_steps": 3
+     },
+     {
+      "k": 12,
+      "residual": 0.00884546127729304,
+      "phi_calls": 13,
+      "psi_calls": 55,
+      "error": 0.057179834080672995,
+      "inner_steps": 3
+     },
+     {
+      "k": 13,
+      "residual": 0.007581886241413933,
+      "phi_calls": 14,
+      "psi_calls": 59,
+      "error": 0.05318504595152867,
+      "inner_steps": 3
+     },
+     {
+      "k": 14,
+      "residual": 0.006565930403603236,
+      "phi_calls": 15,
+      "psi_calls": 63,
+      "error": 0.05122751358894872,
+      "inner_steps": 3
+     },
+     {
+      "k": 15,
+      "residual": 0.005981962940634873,
+      "phi_calls": 16,
+      "psi_calls": 67,
+      "error": 0.050297121687662864,
+      "inner_steps": 3
+     },
+     {
+      "k": 16,
+      "residual": 0.005690985492945767,
+      "phi_calls": 17,
+      "psi_calls": 71,
+      "error": 0.049638123453831604,
+      "inner_steps": 3
+     },
+     {
+      "k": 17,
+      "residual": 0.005455328076299317,
+      "phi_calls": 18,
+      "psi_calls": 75,
+      "error": 0.04876309257948647,
+      "inner_steps": 3
+     },
+     {
+      "k": 18,
+      "residual": 0.005265672457060287,
+      "phi_calls": 19,
+      "psi_calls": 79,
+      "error": 0.04738846348822684,
+      "inner_steps": 3
+     },
+     {
+      "k": 19,
+      "residual": 0.0051118659617159345,
+      "phi_calls": 20,
+      "psi_calls": 83,
+      "error": 0.04531112164915619,
+      "inner_steps": 3
+     },
+     {
+      "k": 20,
+      "residual": 0.004981536376306551,
+      "phi_calls": 21,
+      "psi_calls": 87,
+      "error": 0.04263571152458852,
+      "inner_steps": 3
+     },
+     {
+      "k": 21,
+      "residual": 0.004887046811278765,
+      "phi_calls": 22,
+      "psi_calls": 91,
+      "error": 0.03954617338575244,
+      "inner_steps": 3
+     },
+     {
+      "k": 22,
+      "residual": 0.004813197725278463,
+      "phi_calls": 23,
+      "psi_calls": 95,
+      "error": 0.03608878854205245,
+      "inner_steps": 3
+     },
+     {
+      "k": 23,
+      "residual": 0.004731413876534738,
+      "phi_calls": 24,
+      "psi_calls": 99,
+      "error": 0.03235220668470953,
+      "inner_steps": 3
+     },
+     {
+      "k": 24,
+      "residual": 0.0046141303983858115,
+      "phi_calls": 25,
+      "psi_calls": 103,
+      "error": 0.02845912156302733,
+      "inner_steps": 3
+     }
+    ],
+    "fallback_rows": [
+     {
+      "j": 0,
+      "phase": "fallback",
+      "residual": 0.0046141303983858115,
+      "phi_calls": 26,
+      "psi_calls": 107,
+      "error": 0.02845912156302733
+     },
+     {
+      "j": 25,
+      "phase": "fallback",
+      "residual": 0.002569920561771965,
+      "phi_calls": 51,
+      "psi_calls": 107,
+      "error": 0.006205708120951935
+     },
+     {
+      "j": 50,
+      "phase": "fallback",
+      "residual": 0.00037093255100111586,
+      "phi_calls": 76,
+      "psi_calls": 107,
+      "error": 0.0010410650891035159
+     },
+     {
+      "j": 73,
+      "phase": "fallback",
+      "residual": 8.674413553035978e-05,
+      "phi_calls": 99,
+      "psi_calls": 107,
+      "error": 0.00027938819141121803
+     }
+    ],
+    "operator": "P",
+    "alpha": 0.5,
+    "label": "control: alpha* = 0.5",
+    "wall_s": 74.66833472251892,
+    "final_error": 0.00027938819141121803,
+    "model_calls": {
+     "F": 99,
+     "P": 107,
+     "Z": 0,
+     "C": 0,
+     "E": 0,
+     "Pc": 0,
+     "Pw": 0
+    },
+    "certificate_bound": 0.0003184080688224101,
+    "inside_certificate": true,
+    "constant_it_would_have_needed": 3.22083089194467,
+    "pre_fallback_error": 0.024551205896485153,
+    "pre_fallback_error_structure": {
+     "x_uniform_share": 0.08584439742737018,
+     "lowest_modes_share": 0.10440361005821606,
+     "window_mean_share": 0.0017644739995794035
+    }
+   },
+   "P_match": {
+    "status": "fallback_converged",
+    "stop_reason": "stalled",
+    "residual": 8.801370228580348e-05,
+    "phi_calls": 82,
+    "psi_calls": 47,
+    "fallback_from": 4,
+    "rows": [
+     {
+      "k": 0,
+      "residual": 0.033186118465296774,
+      "phi_calls": 1,
+      "psi_calls": 0,
+      "error": 0.2386165930044138,
+      "inner_steps": 10
+     },
+     {
+      "k": 1,
+      "residual": 0.018012575000670487,
+      "phi_calls": 2,
+      "psi_calls": 11,
+      "error": 0.1850655833176741,
+      "inner_steps": 12
+     },
+     {
+      "k": 2,
+      "residual": 0.013681884971549284,
+      "phi_calls": 3,
+      "psi_calls": 24,
+      "error": 0.1332513454899862,
+      "inner_steps": 11
+     },
+     {
+      "k": 3,
+      "residual": 0.016696677939246486,
+      "phi_calls": 4,
+      "psi_calls": 36,
+      "error": 0.0946376641811627,
+      "inner_steps": 10
+     },
+     {
+      "k": 4,
+      "residual": 0.035806488104241384,
+      "phi_calls": 5,
+      "psi_calls": 47,
+      "error": 0.0787718770788279
+     }
+    ],
+    "fallback_rows": [
+     {
+      "j": 0,
+      "phase": "fallback",
+      "residual": 0.013681884971549284,
+      "phi_calls": 6,
+      "psi_calls": 47,
+      "error": 0.1332513454899862
+     },
+     {
+      "j": 25,
+      "phase": "fallback",
+      "residual": 0.006142750512500239,
+      "phi_calls": 31,
+      "psi_calls": 47,
+      "error": 0.04372655881391097
+     },
+     {
+      "j": 50,
+      "phase": "fallback",
+      "residual": 0.0024908899415141614,
+      "phi_calls": 56,
+      "psi_calls": 47,
+      "error": 0.009682079306077783
+     },
+     {
+      "j": 75,
+      "phase": "fallback",
+      "residual": 0.00011094513339172875,
+      "phi_calls": 81,
+      "psi_calls": 47,
+      "error": 0.0003302593414092051
+     },
+     {
+      "j": 76,
+      "phase": "fallback",
+      "residual": 8.801370228580348e-05,
+      "phi_calls": 82,
+      "psi_calls": 47,
+      "error": 0.0003226895717815667
+     }
+    ],
+    "operator": "P",
+    "alpha": 0.14311635505125808,
+    "label": "P at its matched alpha",
+    "wall_s": 37.3193154335022,
+    "final_error": 0.0003226895717815667,
+    "model_calls": {
+     "F": 82,
+     "P": 47,
+     "Z": 0,
+     "C": 0,
+     "E": 0,
+     "Pc": 0,
+     "Pw": 0
+    },
+    "certificate_bound": 0.00032306821439156486,
+    "inside_certificate": true,
+    "constant_it_would_have_needed": 3.666356071850146,
+    "pre_fallback_error": 0.0787718770788279,
+    "pre_fallback_error_structure": {
+     "x_uniform_share": 0.28851387766163383,
+     "lowest_modes_share": 0.49722897233758895,
+     "window_mean_share": 0.17598966715446143
+    }
+   },
+   "Z_match": {
+    "status": "fallback_converged",
+    "stop_reason": "stalled",
+    "residual": 9.001724868384967e-05,
+    "phi_calls": 126,
+    "psi_calls": 42,
+    "fallback_from": 3,
+    "rows": [
+     {
+      "k": 0,
+      "residual": 0.033186118465296774,
+      "phi_calls": 1,
+      "psi_calls": 0,
+      "error": 0.2386165930044138,
+      "inner_steps": 14
+     },
+     {
+      "k": 1,
+      "residual": 0.016451074257447986,
+      "phi_calls": 2,
+      "psi_calls": 15,
+      "error": 0.17368344632809368,
+      "inner_steps": 13
+     },
+     {
+      "k": 2,
+      "residual": 0.021365725944273103,
+      "phi_calls": 3,
+      "psi_calls": 29,
+      "error": 0.12549793242169147,
+      "inner_steps": 12
+     },
+     {
+      "k": 3,
+      "residual": 0.0679581590116995,
+      "phi_calls": 4,
+      "psi_calls": 42,
+      "error": 0.11376182714885044
+     }
+    ],
+    "fallback_rows": [
+     {
+      "j": 0,
+      "phase": "fallback",
+      "residual": 0.016451074257447986,
+      "phi_calls": 5,
+      "psi_calls": 42,
+      "error": 0.17368344632809368
+     },
+     {
+      "j": 25,
+      "phase": "fallback",
+      "residual": 0.007387079883796872,
+      "phi_calls": 30,
+      "psi_calls": 42,
+      "error": 0.04995715782241584
+     },
+     {
+      "j": 50,
+      "phase": "fallback",
+      "residual": 0.0054377439812440306,
+      "phi_calls": 55,
+      "psi_calls": 42,
+      "error": 0.0181246445871884
+     },
+     {
+      "j": 75,
+      "phase": "fallback",
+      "residual": 0.0010878718612167648,
+      "phi_calls": 80,
+      "psi_calls": 42,
+      "error": 0.0026305791919500323
+     },
+     {
+      "j": 100,
+      "phase": "fallback",
+      "residual": 0.00020333014754125113,
+      "phi_calls": 105,
+      "psi_calls": 42,
+      "error": 0.0005493185285096539
+     },
+     {
+      "j": 121,
+      "phase": "fallback",
+      "residual": 9.001724868384967e-05,
+      "phi_calls": 126,
+      "psi_calls": 42,
+      "error": 0.0002480886832666894
+     }
+    ],
+    "operator": "Z",
+    "alpha": 0.15005813871023865,
+    "label": "Z at its own matched alpha",
+    "wall_s": 30.400758981704712,
+    "final_error": 0.0002480886832666894,
+    "model_calls": {
+     "F": 126,
+     "P": 0,
+     "Z": 42,
+     "C": 0,
+     "E": 0,
+     "Pc": 0,
+     "Pw": 0
+    },
+    "certificate_bound": 0.00033042254832431475,
+    "inside_certificate": true,
+    "constant_it_would_have_needed": 2.7560127297158767,
+    "pre_fallback_error": 0.11376182714885044,
+    "pre_fallback_error_structure": {
+     "x_uniform_share": 0.3122183368266203,
+     "lowest_modes_share": 0.289964938487008,
+     "window_mean_share": 0.014895198867050402
+    }
+   },
+   "P_0.25": {
+    "status": "fallback_converged",
+    "stop_reason": "stalled",
+    "residual": 8.477534922635209e-05,
+    "phi_calls": 120,
+    "psi_calls": 48,
+    "fallback_from": 6,
+    "rows": [
+     {
+      "k": 0,
+      "residual": 0.033186118465296774,
+      "phi_calls": 1,
+      "psi_calls": 0,
+      "error": 0.2386165930044138,
+      "inner_steps": 6
+     },
+     {
+      "k": 1,
+      "residual": 0.020210682736085162,
+      "phi_calls": 2,
+      "psi_calls": 7,
+      "error": 0.2050480454257037,
+      "inner_steps": 7
+     },
+     {
+      "k": 2,
+      "residual": 0.014999711008408776,
+      "phi_calls": 3,
+      "psi_calls": 15,
+      "error": 0.17306616906844727,
+      "inner_steps": 8
+     },
+     {
+      "k": 3,
+      "residual": 0.012985018258511073,
+      "phi_calls": 4,
+      "psi_calls": 24,
+      "error": 0.14017155100079268,
+      "inner_steps": 7
+     },
+     {
+      "k": 4,
+      "residual": 0.012127999521195823,
+      "phi_calls": 5,
+      "psi_calls": 32,
+      "error": 0.11079559811533594,
+      "inner_steps": 7
+     },
+     {
+      "k": 5,
+      "residual": 0.012181331040414667,
+      "phi_calls": 6,
+      "psi_calls": 40,
+      "error": 0.0866283659984506,
+      "inner_steps": 7
+     },
+     {
+      "k": 6,
+      "residual": 0.014901364723141776,
+      "phi_calls": 7,
+      "psi_calls": 48,
+      "error": 0.06950911991036382
+     }
+    ],
+    "fallback_rows": [
+     {
+      "j": 0,
+      "phase": "fallback",
+      "residual": 0.012127999521195823,
+      "phi_calls": 8,
+      "psi_calls": 48,
+      "error": 0.11079559811533594
+     },
+     {
+      "j": 25,
+      "phase": "fallback",
+      "residual": 0.006494149426975061,
+      "phi_calls": 33,
+      "psi_calls": 48,
+      "error": 0.04227125560211939
+     },
+     {
+      "j": 50,
+      "phase": "fallback",
+      "residual": 0.003433187457441982,
+      "phi_calls": 58,
+      "psi_calls": 48,
+      "error": 0.011673571120173304
+     },
+     {
+      "j": 75,
+      "phase": "fallback",
+      "residual": 0.0004884826029777806,
+      "phi_calls": 83,
+      "psi_calls": 48,
+      "error": 0.0016692551086800434
+     },
+     {
+      "j": 100,
+      "phase": "fallback",
+      "residual": 0.00013628434884934985,
+      "phi_calls": 108,
+      "psi_calls": 48,
+      "error": 0.00032069855733908424
+     },
+     {
+      "j": 112,
+      "phase": "fallback",
+      "residual": 8.477534922635209e-05,
+      "phi_calls": 120,
+      "psi_calls": 48,
+      "error": 0.0002681752858702587
+     }
+    ],
+    "operator": "P",
+    "alpha": 0.25,
+    "label": "scan alpha=0.25",
+    "wall_s": 46.53150534629822,
+    "final_error": 0.0002681752858702587,
+    "model_calls": {
+     "F": 120,
+     "P": 48,
+     "Z": 0,
+     "C": 0,
+     "E": 0,
+     "Pc": 0,
+     "Pw": 0
+    },
+    "certificate_bound": 0.0003111813273124472,
+    "inside_certificate": true,
+    "constant_it_would_have_needed": 3.163363976882297,
+    "pre_fallback_error": 0.06950911991036382,
+    "pre_fallback_error_structure": {
+     "x_uniform_share": 0.2837312571298816,
+     "lowest_modes_share": 0.4092214002859346,
+     "window_mean_share": 0.04467525812292631
+    }
+   },
+   "P_0.35": {
+    "status": "fallback_converged",
+    "stop_reason": "stalled",
+    "residual": 8.628337357917932e-05,
+    "phi_calls": 84,
+    "psi_calls": 82,
+    "fallback_from": 14,
+    "rows": [
+     {
+      "k": 0,
+      "residual": 0.033186118465296774,
+      "phi_calls": 1,
+      "psi_calls": 0,
+      "error": 0.2386165930044138,
+      "inner_steps": 5
+     },
+     {
+      "k": 1,
+      "residual": 0.021813456975201668,
+      "phi_calls": 2,
+      "psi_calls": 6,
+      "error": 0.21233521709567724,
+      "inner_steps": 5
+     },
+     {
+      "k": 2,
+      "residual": 0.01709158216723877,
+      "phi_calls": 3,
+      "psi_calls": 12,
+      "error": 0.1892381041702945,
+      "inner_steps": 5
+     },
+     {
+      "k": 3,
+      "residual": 0.014891555110667348,
+      "phi_calls": 4,
+      "psi_calls": 18,
+      "error": 0.16604134739534704,
+      "inner_steps": 5
+     },
+     {
+      "k": 4,
+      "residual": 0.013525462775675663,
+      "phi_calls": 5,
+      "psi_calls": 24,
+      "error": 0.14254162915964888,
+      "inner_steps": 5
+     },
+     {
+      "k": 5,
+      "residual": 0.012536899452714953,
+      "phi_calls": 6,
+      "psi_calls": 30,
+      "error": 0.1196635942335878,
+      "inner_steps": 5
+     },
+     {
+      "k": 6,
+      "residual": 0.011619610163475791,
+      "phi_calls": 7,
+      "psi_calls": 36,
+      "error": 0.09858931124405299,
+      "inner_steps": 5
+     },
+     {
+      "k": 7,
+      "residual": 0.010522441895695287,
+      "phi_calls": 8,
+      "psi_calls": 42,
+      "error": 0.0805353600665239,
+      "inner_steps": 5
+     },
+     {
+      "k": 8,
+      "residual": 0.009297405141993374,
+      "phi_calls": 9,
+      "psi_calls": 48,
+      "error": 0.06654376328344606,
+      "inner_steps": 5
+     },
+     {
+      "k": 9,
+      "residual": 0.007924949766382323,
+      "phi_calls": 10,
+      "psi_calls": 54,
+      "error": 0.05707531029262452,
+      "inner_steps": 4
+     },
+     {
+      "k": 10,
+      "residual": 0.006607231705109733,
+      "phi_calls": 11,
+      "psi_calls": 59,
+      "error": 0.051732929719375084,
+      "inner_steps": 4
+     },
+     {
+      "k": 11,
+      "residual": 0.005733899772110072,
+      "phi_calls": 12,
+      "psi_calls": 64,
+      "error": 0.04885362177758342,
+      "inner_steps": 5
+     },
+     {
+      "k": 12,
+      "residual": 0.005308230266604295,
+      "phi_calls": 13,
+      "psi_calls": 70,
+      "error": 0.04697750622942233,
+      "inner_steps": 5
+     },
+     {
+      "k": 13,
+      "residual": 0.0055173663431992365,
+      "phi_calls": 14,
+      "psi_calls": 76,
+      "error": 0.04506946173916522,
+      "inner_steps": 5
+     },
+     {
+      "k": 14,
+      "residual": 0.005964639566006481,
+      "phi_calls": 15,
+      "psi_calls": 82,
+      "error": 0.0426906909358712
+     }
+    ],
+    "fallback_rows": [
+     {
+      "j": 0,
+      "phase": "fallback",
+      "residual": 0.005308230266604295,
+      "phi_calls": 16,
+      "psi_calls": 82,
+      "error": 0.04697750622942233
+     },
+     {
+      "j": 25,
+      "phase": "fallback",
+      "residual": 0.004628866603033615,
+      "phi_calls": 41,
+      "psi_calls": 82,
+      "error": 0.01608216658169467
+     },
+     {
+      "j": 50,
+      "phase": "fallback",
+      "residual": 0.0011847911582704815,
+      "phi_calls": 66,
+      "psi_calls": 82,
+      "error": 0.0024737412478528596
+     },
+     {
+      "j": 68,
+      "phase": "fallback",
+      "residual": 8.628337357917932e-05,
+      "phi_calls": 84,
+      "psi_calls": 82,
+      "error": 0.00021379437660099996
+     }
+    ],
+    "operator": "P",
+    "alpha": 0.35,
+    "label": "scan alpha=0.35",
+    "wall_s": 56.835601568222046,
+    "final_error": 0.00021379437660099996,
+    "model_calls": {
+     "F": 84,
+     "P": 82,
+     "Z": 0,
+     "C": 0,
+     "E": 0,
+     "Pc": 0,
+     "Pw": 0
+    },
+    "certificate_bound": 0.00031671676920699273,
+    "inside_certificate": true,
+    "constant_it_would_have_needed": 2.477816614400318,
+    "pre_fallback_error": 0.0426906909358712,
+    "pre_fallback_error_structure": {
+     "x_uniform_share": 0.19678176269269831,
+     "lowest_modes_share": 0.3542617965521619,
+     "window_mean_share": 0.01862516461690018
+    }
+   }
+  },
+  "N12": {
+   "P_half": {
+    "status": "fallback_converged",
+    "stop_reason": "max_outer",
+    "residual": 9.343960841249918e-05,
+    "phi_calls": 222,
+    "psi_calls": 123,
+    "fallback_from": 24,
+    "rows": [
+     {
+      "k": 0,
+      "residual": 0.030829441165934394,
+      "phi_calls": 1,
+      "psi_calls": 0,
+      "error": 0.2896063473047677,
+      "inner_steps": 3
+     },
+     {
+      "k": 1,
+      "residual": 0.022356728072807412,
+      "phi_calls": 2,
+      "psi_calls": 4,
+      "error": 0.2752903702413412,
+      "inner_steps": 3
+     },
+     {
+      "k": 2,
+      "residual": 0.018686809490037558,
+      "phi_calls": 3,
+      "psi_calls": 8,
+      "error": 0.26365155373174315,
+      "inner_steps": 4
+     },
+     {
+      "k": 3,
+      "residual": 0.016586678053636693,
+      "phi_calls": 4,
+      "psi_calls": 13,
+      "error": 0.2522510531367926,
+      "inner_steps": 4
+     },
+     {
+      "k": 4,
+      "residual": 0.015233849180131112,
+      "phi_calls": 5,
+      "psi_calls": 18,
+      "error": 0.24112150226182186,
+      "inner_steps": 4
+     },
+     {
+      "k": 5,
+      "residual": 0.014273312735716248,
+      "phi_calls": 6,
+      "psi_calls": 23,
+      "error": 0.23018206935145813,
+      "inner_steps": 4
+     },
+     {
+      "k": 6,
+      "residual": 0.013528720357771572,
+      "phi_calls": 7,
+      "psi_calls": 28,
+      "error": 0.21938353652575074,
+      "inner_steps": 4
+     },
+     {
+      "k": 7,
+      "residual": 0.012900485426882756,
+      "phi_calls": 8,
+      "psi_calls": 33,
+      "error": 0.2087573891796079,
+      "inner_steps": 4
+     },
+     {
+      "k": 8,
+      "residual": 0.012345007959919739,
+      "phi_calls": 9,
+      "psi_calls": 38,
+      "error": 0.1983654867599881,
+      "inner_steps": 4
+     },
+     {
+      "k": 9,
+      "residual": 0.011832684572566369,
+      "phi_calls": 10,
+      "psi_calls": 43,
+      "error": 0.1882628437792714,
+      "inner_steps": 4
+     },
+     {
+      "k": 10,
+      "residual": 0.011346154517461694,
+      "phi_calls": 11,
+      "psi_calls": 48,
+      "error": 0.17847434962943876,
+      "inner_steps": 4
+     },
+     {
+      "k": 11,
+      "residual": 0.010864200438901926,
+      "phi_calls": 12,
+      "psi_calls": 53,
+      "error": 0.16899605251922115,
+      "inner_steps": 4
+     },
+     {
+      "k": 12,
+      "residual": 0.010386612423735004,
+      "phi_calls": 13,
+      "psi_calls": 58,
+      "error": 0.15977559955674786,
+      "inner_steps": 4
+     },
+     {
+      "k": 13,
+      "residual": 0.009935998484940799,
+      "phi_calls": 14,
+      "psi_calls": 63,
+      "error": 0.15071421179660877,
+      "inner_steps": 4
+     },
+     {
+      "k": 14,
+      "residual": 0.009550986952903807,
+      "phi_calls": 15,
+      "psi_calls": 68,
+      "error": 0.14172573022669577,
+      "inner_steps": 4
+     },
+     {
+      "k": 15,
+      "residual": 0.009254956247900282,
+      "phi_calls": 16,
+      "psi_calls": 73,
+      "error": 0.13273611289310047,
+      "inner_steps": 4
+     },
+     {
+      "k": 16,
+      "residual": 0.009017403614957979,
+      "phi_calls": 17,
+      "psi_calls": 78,
+      "error": 0.12372630416666863,
+      "inner_steps": 4
+     },
+     {
+      "k": 17,
+      "residual": 0.00881250504593214,
+      "phi_calls": 18,
+      "psi_calls": 83,
+      "error": 0.11478564694644199,
+      "inner_steps": 4
+     },
+     {
+      "k": 18,
+      "residual": 0.008619422476721853,
+      "phi_calls": 19,
+      "psi_calls": 88,
+      "error": 0.10601077299693291,
+      "inner_steps": 4
+     },
+     {
+      "k": 19,
+      "residual": 0.00840248802522082,
+      "phi_calls": 20,
+      "psi_calls": 93,
+      "error": 0.09761455771037648,
+      "inner_steps": 4
+     },
+     {
+      "k": 20,
+      "residual": 0.008147837389845152,
+      "phi_calls": 21,
+      "psi_calls": 98,
+      "error": 0.08971790653651499,
+      "inner_steps": 4
+     },
+     {
+      "k": 21,
+      "residual": 0.007871723685608192,
+      "phi_calls": 22,
+      "psi_calls": 103,
+      "error": 0.08250502864051662,
+      "inner_steps": 4
+     },
+     {
+      "k": 22,
+      "residual": 0.00757353375212867,
+      "phi_calls": 23,
+      "psi_calls": 108,
+      "error": 0.07616613790590146,
+      "inner_steps": 4
+     },
+     {
+      "k": 23,
+      "residual": 0.00724175015648382,
+      "phi_calls": 24,
+      "psi_calls": 113,
+      "error": 0.07084460280506027,
+      "inner_steps": 4
+     },
+     {
+      "k": 24,
+      "residual": 0.00688717152206083,
+      "phi_calls": 25,
+      "psi_calls": 118,
+      "error": 0.06660397695703311,
+      "inner_steps": 4
+     }
+    ],
+    "fallback_rows": [
+     {
+      "j": 0,
+      "phase": "fallback",
+      "residual": 0.00688717152206083,
+      "phi_calls": 26,
+      "psi_calls": 123,
+      "error": 0.06660397695703311
+     },
+     {
+      "j": 25,
+      "phase": "fallback",
+      "residual": 0.008176498160728976,
+      "phi_calls": 51,
+      "psi_calls": 123,
+      "error": 0.037056413642368405
+     },
+     {
+      "j": 50,
+      "phase": "fallback",
+      "residual": 0.0075715336347241795,
+      "phi_calls": 76,
+      "psi_calls": 123,
+      "error": 0.02452744370792528
+     },
+     {
+      "j": 75,
+      "phase": "fallback",
+      "residual": 0.0017408011451196428,
+      "phi_calls": 101,
+      "psi_calls": 123,
+      "error": 0.006804183738367218
+     },
+     {
+      "j": 100,
+      "phase": "fallback",
+      "residual": 0.0005197810304883898,
+      "phi_calls": 126,
+      "psi_calls": 123,
+      "error": 0.0014197202903022976
+     },
+     {
+      "j": 125,
+      "phase": "fallback",
+      "residual": 0.000391950182517048,
+      "phi_calls": 151,
+      "psi_calls": 123,
+      "error": 0.0011225355323905765
+     },
+     {
+      "j": 150,
+      "phase": "fallback",
+      "residual": 0.0003520535249119748,
+      "phi_calls": 176,
+      "psi_calls": 123,
+      "error": 0.0011317933359629635
+     },
+     {
+      "j": 175,
+      "phase": "fallback",
+      "residual": 0.00019823972787223854,
+      "phi_calls": 201,
+      "psi_calls": 123,
+      "error": 0.0005732954776349181
+     },
+     {
+      "j": 196,
+      "phase": "fallback",
+      "residual": 9.343960841249918e-05,
+      "phi_calls": 222,
+      "psi_calls": 123,
+      "error": 0.00029256831850007435
+     }
+    ],
+    "operator": "P",
+    "alpha": 0.5,
+    "label": "control: alpha* = 0.5",
+    "wall_s": 668.0275566577911,
+    "final_error": 0.00029256831850007435,
+    "model_calls": {
+     "F": 222,
+     "P": 123,
+     "Z": 0,
+     "C": 0,
+     "E": 0,
+     "Pc": 0,
+     "Pw": 0
+    },
+    "certificate_bound": 0.0003125689957931195,
+    "inside_certificate": true,
+    "constant_it_would_have_needed": 3.1310952974941855,
+    "pre_fallback_error": 0.06339718516389313,
+    "pre_fallback_error_structure": {
+     "x_uniform_share": 0.2061503887704273,
+     "lowest_modes_share": 0.1450803599682759,
+     "window_mean_share": 0.028659227301577366
+    }
+   },
+   "P_match": {
+    "status": "fallback_converged",
+    "stop_reason": "stalled",
+    "residual": 9.72121329553328e-05,
+    "phi_calls": 270,
+    "psi_calls": 82,
+    "fallback_from": 2,
+    "rows": [
+     {
+      "k": 0,
+      "residual": 0.030829441165934394,
+      "phi_calls": 1,
+      "psi_calls": 0,
+      "error": 0.2896063473047677,
+      "inner_steps": 40
+     },
+     {
+      "k": 1,
+      "residual": 0.037056297156712374,
+      "phi_calls": 2,
+      "psi_calls": 41,
+      "error": 0.12490093652286106,
+      "inner_steps": 40
+     },
+     {
+      "k": 2,
+      "residual": 0.1294167403800551,
+      "phi_calls": 3,
+      "psi_calls": 82,
+      "error": 0.18533639062785282
+     }
+    ],
+    "fallback_rows": [
+     {
+      "j": 0,
+      "phase": "fallback",
+      "residual": 0.030829441165934394,
+      "phi_calls": 4,
+      "psi_calls": 82,
+      "error": 0.2896063473047677
+     },
+     {
+      "j": 25,
+      "phase": "fallback",
+      "residual": 0.01464784309359723,
+      "phi_calls": 29,
+      "psi_calls": 82,
+      "error": 0.15847389596174782
+     },
+     {
+      "j": 50,
+      "phase": "fallback",
+      "residual": 0.013260489107356022,
+      "phi_calls": 54,
+      "psi_calls": 82,
+      "error": 0.07955550983407687
+     },
+     {
+      "j": 75,
+      "phase": "fallback",
+      "residual": 0.020931623517018792,
+      "phi_calls": 79,
+      "psi_calls": 82,
+      "error": 0.06464525600044568
+     },
+     {
+      "j": 100,
+      "phase": "fallback",
+      "residual": 0.012356132705403875,
+      "phi_calls": 104,
+      "psi_calls": 82,
+      "error": 0.03890796697466298
+     },
+     {
+      "j": 125,
+      "phase": "fallback",
+      "residual": 0.0026838733138506337,
+      "phi_calls": 129,
+      "psi_calls": 82,
+      "error": 0.008714677533354974
+     },
+     {
+      "j": 150,
+      "phase": "fallback",
+      "residual": 0.0008051965572708227,
+      "phi_calls": 154,
+      "psi_calls": 82,
+      "error": 0.0022217684940413055
+     },
+     {
+      "j": 175,
+      "phase": "fallback",
+      "residual": 0.0007561899794885865,
+      "phi_calls": 179,
+      "psi_calls": 82,
+      "error": 0.0021852626415144677
+     },
+     {
+      "j": 200,
+      "phase": "fallback",
+      "residual": 0.0005494518007470203,
+      "phi_calls": 204,
+      "psi_calls": 82,
+      "error": 0.001896166443593281
+     },
+     {
+      "j": 225,
+      "phase": "fallback",
+      "residual": 0.0002940247084364633,
+      "phi_calls": 229,
+      "psi_calls": 82,
+      "error": 0.000822507125927412
+     },
+     {
+      "j": 250,
+      "phase": "fallback",
+      "residual": 0.00014063182403798805,
+      "phi_calls": 254,
+      "psi_calls": 82,
+      "error": 0.00042810753210743597
+     },
+     {
+      "j": 266,
+      "phase": "fallback",
+      "residual": 9.72121329553328e-05,
+      "phi_calls": 270,
+      "psi_calls": 82,
+      "error": 0.00030867680191241784
+     }
+    ],
+    "operator": "P",
+    "alpha": -0.019585630313459168,
+    "label": "P at its matched alpha",
+    "wall_s": 770.5220985412598,
+    "final_error": 0.00030867680191241784,
+    "model_calls": {
+     "F": 270,
+     "P": 82,
+     "Z": 0,
+     "C": 0,
+     "E": 0,
+     "Pc": 0,
+     "Pw": 0
+    },
+    "certificate_bound": 0.0003251886356652475,
+    "inside_certificate": true,
+    "constant_it_would_have_needed": 3.175290907918348,
+    "pre_fallback_error": 0.18533639062785282,
+    "pre_fallback_error_structure": {
+     "x_uniform_share": 0.763889736174396,
+     "lowest_modes_share": 0.47932967839838325,
+     "window_mean_share": 0.448427296505277
+    }
+   },
+   "Z_match": {
+    "status": "fallback_converged",
+    "stop_reason": "stalled",
+    "residual": 9.72121329553328e-05,
+    "phi_calls": 270,
+    "psi_calls": 82,
+    "fallback_from": 2,
+    "rows": [
+     {
+      "k": 0,
+      "residual": 0.030829441165934394,
+      "phi_calls": 1,
+      "psi_calls": 0,
+      "error": 0.2896063473047677,
+      "inner_steps": 40
+     },
+     {
+      "k": 1,
+      "residual": 0.0403303150537561,
+      "phi_calls": 2,
+      "psi_calls": 41,
+      "error": 0.11898231947910058,
+      "inner_steps": 40
+     },
+     {
+      "k": 2,
+      "residual": 0.32095021039913607,
+      "phi_calls": 3,
+      "psi_calls": 82,
+      "error": 0.42689893071162177
+     }
+    ],
+    "fallback_rows": [
+     {
+      "j": 0,
+      "phase": "fallback",
+      "residual": 0.030829441165934394,
+      "phi_calls": 4,
+      "psi_calls": 82,
+      "error": 0.2896063473047677
+     },
+     {
+      "j": 25,
+      "phase": "fallback",
+      "residual": 0.01464784309359723,
+      "phi_calls": 29,
+      "psi_calls": 82,
+      "error": 0.15847389596174782
+     },
+     {
+      "j": 50,
+      "phase": "fallback",
+      "residual": 0.013260489107356022,
+      "phi_calls": 54,
+      "psi_calls": 82,
+      "error": 0.07955550983407687
+     },
+     {
+      "j": 75,
+      "phase": "fallback",
+      "residual": 0.020931623517018792,
+      "phi_calls": 79,
+      "psi_calls": 82,
+      "error": 0.06464525600044568
+     },
+     {
+      "j": 100,
+      "phase": "fallback",
+      "residual": 0.012356132705403875,
+      "phi_calls": 104,
+      "psi_calls": 82,
+      "error": 0.03890796697466298
+     },
+     {
+      "j": 125,
+      "phase": "fallback",
+      "residual": 0.0026838733138506337,
+      "phi_calls": 129,
+      "psi_calls": 82,
+      "error": 0.008714677533354974
+     },
+     {
+      "j": 150,
+      "phase": "fallback",
+      "residual": 0.0008051965572708227,
+      "phi_calls": 154,
+      "psi_calls": 82,
+      "error": 0.0022217684940413055
+     },
+     {
+      "j": 175,
+      "phase": "fallback",
+      "residual": 0.0007561899794885865,
+      "phi_calls": 179,
+      "psi_calls": 82,
+      "error": 0.0021852626415144677
+     },
+     {
+      "j": 200,
+      "phase": "fallback",
+      "residual": 0.0005494518007470203,
+      "phi_calls": 204,
+      "psi_calls": 82,
+      "error": 0.001896166443593281
+     },
+     {
+      "j": 225,
+      "phase": "fallback",
+      "residual": 0.0002940247084364633,
+      "phi_calls": 229,
+      "psi_calls": 82,
+      "error": 0.000822507125927412
+     },
+     {
+      "j": 250,
+      "phase": "fallback",
+      "residual": 0.00014063182403798805,
+      "phi_calls": 254,
+      "psi_calls": 82,
+      "error": 0.00042810753210743597
+     },
+     {
+      "j": 266,
+      "phase": "fallback",
+      "residual": 9.72121329553328e-05,
+      "phi_calls": 270,
+      "psi_calls": 82,
+      "error": 0.00030867680191241784
+     }
+    ],
+    "operator": "Z",
+    "alpha": 0.0022226818853899877,
+    "label": "Z at its own matched alpha",
+    "wall_s": 636.0969669818878,
+    "final_error": 0.00030867680191241784,
+    "model_calls": {
+     "F": 270,
+     "P": 0,
+     "Z": 82,
+     "C": 0,
+     "E": 0,
+     "Pc": 0,
+     "Pw": 0
+    },
+    "certificate_bound": 0.0003251886356652475,
+    "inside_certificate": true,
+    "constant_it_would_have_needed": 3.175290907918348,
+    "pre_fallback_error": 0.42689893071162177,
+    "pre_fallback_error_structure": {
+     "x_uniform_share": 0.39124432272246273,
+     "lowest_modes_share": 0.012738512407614777,
+     "window_mean_share": 0.010891875709724868
+    }
+   }
+  }
+ },
+ "evaluation": {
+  "M1": {
+   "got": {
+    "N6": 99,
+    "N12": 222
+   },
+   "verdict": "held"
+  },
+  "M2": {
+   "got": {
+    "N6": [
+     82,
+     99
+    ],
+    "N12": [
+     270,
+     222
+    ]
+   },
+   "verdict": "FAILED"
+  },
+  "M3": {
+   "got": {
+    "6": 82,
+    "12": 270
+   },
+   "bar": {
+    "6": 71,
+    "12": 138
+   },
+   "verdict": "held"
+  },
+  "M4": {
+   "got": {
+    "6": 176.35376659042709,
+    "12": 294.2666109466564
+   },
+   "coarse": {
+    "6": 51.93505492171594,
+    "12": 38.121328809509016
+   },
+   "verdict": "held"
+  },
+  "M5": {
+   "got": 82,
+   "verdict": "held"
+  },
+  "M6": {
+   "got": {
+    "Z_match": 126,
+    "P_match": 82
+   },
+   "verdict": "FAILED"
+  },
+  "M7": {
+   "got": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "verdict": "held"
+  }
+ },
+ "elapsed_seconds": 2367.075555562973
+}

@@ -746,3 +746,26 @@ out/w321_t88/*
 !out/w336_t88/
 !out/w323_seams_fixed_w343.json
 !out/w343/
+# Tier 89, W214: the matched shrink.  JSON only (scripts/w214_matched_shrink.py);
+# rebuilding it costs about 40 minutes on the dev laptop, most of it the three
+# twelve-window arms, and needs Poseidon-T in the local cache.
+!out/w214/
+out/w214/*
+!out/w214/w214.json
+!out/w214/registered.txt
+# Tier 89, W345: the coarse competitor across coupled seams.  w345.json is both
+# scripts' record; fsi_long.json is CS-12's 2000-step march (7 minutes).  The
+# settled states (.npy) are ignored: CS-13's costs seconds, CS-12's 13 minutes.
+!out/w345/
+out/w345/*
+!out/w345/w345.json
+!out/w345/fsi_long.json
+!out/w345/registered.txt
+# Tier 89, W346: classical decomposition against the monolith by rotor count.
+# JSON only; the saved states (state_N*.npz, up to 17 MB) are ignored.  Rebuilding
+# costs about 1.5 hours on the dev laptop ON MAINS POWER -- a timing record taken
+# on battery is not this record.
+!out/w346/
+out/w346/*
+!out/w346/w346.json
+!out/w346/registered.txt

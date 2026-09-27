@@ -56,6 +56,7 @@ $$
 | **Active case study**    | [[case-study-wind-farm-wake-2d-atlas-0.1]] | **2D wind-farm wake** — the engineering scenario needing *no new experts and no new data*; the screen that eliminated wildfire/aircraft/car/battery/reentry, plus the phased plan |
 | ↳ its full specification | [[spec-wind-farm-wake-atlas-0.1]] | 8 agents, 15 typed edges, governing equations, the four conservation laws and the mechanism enforcing each, time stepping, gates W0–W10 |
 | Single-expert control    | [[case-study-rbc-decomposition-atlas-0.1]] | Domain-decomposed 2D Rayleigh–Bénard — one family, one frozen expert, monolithic gold standard; the cleanest isolation of communication-layer error |
+| **Outcome** *(2026-09-26)* | [[00-atlas-0.1-outcome]] | What 88 tiers established, held against five proposal claims; the evidence ledger, the interactive materials, and what is not done |
 
 ---
 

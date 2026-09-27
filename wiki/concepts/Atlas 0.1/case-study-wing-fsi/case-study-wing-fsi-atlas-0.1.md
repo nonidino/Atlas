@@ -77,6 +77,8 @@ It is the same premise R10 was missing, in the same shape, on the next rule down
 | spin-up | $120$ fixed-shape macro-steps; settled load $0.227255$ |
 | settled unsteadiness | **$1.503\%$ peak-to-peak over the last quarter** — the LEVEL every difference below is quoted against |
 
+> **Corrected 2026-09-26 (Tier 89, [[matched-shrink-and-coarse-competitor]] §3.1).** The 1.503% is the transient at 120 macro-steps, not a settled level. Marched 2000 steps under the case's own lagged coupling, the one-step residual falls geometrically from $2.9\times10^{-3}$ to $1.3\times10^{-9}$ of the field, and the load's peak-to-peak falls to $2.2\times10^{-6}$ in the last quarter. The composed map has an isolated fixed point, reached in 3495 steps (load $0.208017$, tip $-0.026949$). **Differences below that are called small "against the plate's own settled unsteadiness" were compared with a transient, and are not re-checked here.** Against a floor near $10^{-6}$ they may not be small. The gates that compare with fixed thresholds are unaffected.
+
 **The structure is `ThermoStruct2D.solve_mechanical`, the real solver, unmodified**, on a mesh of the plate itself, clamped at the leading edge and free at the trailing edge — a cantilevered flap, which is what an F1 front-wing element is. `T = T_ref` everywhere and `alpha = 0`, so the thermal load is identically zero and the solve is pure quasi-static elasticity: CS-9 measured the thermal-strain **bond**, and this case study needs the **elasticity**, so the coupling is switched off by a declared coefficient rather than by reaching into the solver.
 
 ### 3.1 The conjugate pair is NORMAL, and getting that wrong costs 12%

@@ -1,0 +1,389 @@
+<title>Atlas 0.1 Outcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#f3f6f7; --panel:#ffffff; --ink:#13202b; --ink-2:#4a5863; --ink-3:#6f7c86;
+  --rule:#d6dee3; --grid:#e6ecef; --accent:#0e6874;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --good:#1a7f4b; --good-bg:#e3f3ea; --warn:#9a6400; --warn-bg:#fbf0d9;
+  --bad:#b3372f; --bad-bg:#f9e4e1; --none:#56616b; --none-bg:#e7ebee;
+  --tip-bg:#13202b; --tip-ink:#f3f6f7;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0f171d; --panel:#16212a; --ink:#e8eef2; --ink-2:#b0bdc6; --ink-3:#8795a0;
+    --rule:#2a3843; --grid:#22303a; --accent:#4fb3bf;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --good:#5fcf94; --good-bg:#15352a; --warn:#e5b04a; --warn-bg:#3a2e12;
+    --bad:#f08a80; --bad-bg:#3d1c1a; --none:#aab5bd; --none-bg:#25313a;
+    --tip-bg:#e8eef2; --tip-ink:#0f171d;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0f171d; --panel:#16212a; --ink:#e8eef2; --ink-2:#b0bdc6; --ink-3:#8795a0;
+  --rule:#2a3843; --grid:#22303a; --accent:#4fb3bf;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --good:#5fcf94; --good-bg:#15352a; --warn:#e5b04a; --warn-bg:#3a2e12;
+  --bad:#f08a80; --bad-bg:#3d1c1a; --none:#aab5bd; --none-bg:#25313a;
+  --tip-bg:#e8eef2; --tip-ink:#0f171d;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:15px/1.55 var(--body);margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:28px 64px;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.01em;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,5vw,52px);line-height:1.02}
+h2{font-size:28px;line-height:1.1}
+h3{font-size:20px;line-height:1.15}
+p{margin:0;max-width:68ch}
+.eyebrow{font:500 12px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+code,.mono{font-family:var(--mono);font-size:.9em}
+header{display:flex;flex-direction:column;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:22px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;font:13px/1.4 var(--mono);color:var(--ink-2)}
+section{display:flex;flex-direction:column;gap:16px}
+.lead{font-size:17px;max-width:72ch}
+
+/* claims */
+.claims{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.claim{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.claim-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.cid{font:600 22px/1 var(--display);color:var(--ink-3)}
+.pill{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 var(--body);padding:5px 9px;border-radius:99px;white-space:nowrap}
+.pill svg{width:12px;height:12px}
+.p-good{color:var(--good);background:var(--good-bg)}
+.p-warn{color:var(--warn);background:var(--warn-bg)}
+.p-bad{color:var(--bad);background:var(--bad-bg)}
+.p-none{color:var(--none);background:var(--none-bg)}
+.claim ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.claim .gap{border-top:1px dashed var(--rule);padding-top:8px;font-size:13px;color:var(--ink-2)}
+.claim .gap b{color:var(--ink)}
+.src{font:12px/1.4 var(--mono);color:var(--ink-3)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.stat{background:var(--panel);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.stat .v{font:600 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:13px;color:var(--ink-2)}
+
+/* charts */
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;position:relative}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:3px;border-radius:2px;display:inline-block}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.chart svg{width:100%;max-width:640px;height:auto;display:block;overflow:visible}
+.chart text{fill:var(--ink-2);font:12px var(--mono)}
+.chart .axis{stroke:var(--rule)}
+.chart .gridl{stroke:var(--grid)}
+.chart .ref{stroke:var(--ink-3);stroke-dasharray:4 4}
+.chart .hit{fill:transparent;cursor:crosshair}
+.tip{position:absolute;pointer-events:none;background:var(--tip-bg);color:var(--tip-ink);font:12px/1.45 var(--mono);padding:7px 9px;border-radius:4px;white-space:nowrap;z-index:5;transform:translate(-50%,calc(-100% - 10px))}
+details{font-size:13px}
+summary{cursor:pointer;color:var(--accent);font-weight:500}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;width:100%}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--ink-2);font-size:12px}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+.caveat{font-size:13px;color:var(--ink-2);border-left:3px solid var(--rule);padding-left:10px}
+
+/* materials */
+.mat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.mat .card a{color:var(--accent);font-weight:600;text-decoration:none;word-break:break-word}
+.mat .card a:hover{text-decoration:underline}
+.gaps{counter-reset:g;display:flex;flex-direction:column;gap:10px;padding:0;margin:0;list-style:none}
+.gaps li{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 16px;display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start}
+.gaps .k{font:600 18px/1.2 var(--display);color:var(--ink-3)}
+footer{border-top:1px solid var(--rule);padding-top:14px}
+@media (prefers-reduced-motion:no-preference){.claim,.card{transition:border-color .15s}.claim:hover,.card:hover{border-color:var(--ink-3)}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Atlas 0.1 · outcome record · compiled 2026-09-26 · updated after Tier 89</span>
+  <h1>Atlas 0.1 Outcome</h1>
+  <p class="lead">What 89 tiers of the Atlas composition framework and its proof-of-concept suite have established, held against the five claims a proposal for domain-decomposition-native learned experts wants to make. Every number is quoted from the project wiki. Nothing here is a new measurement.</p>
+  <div class="meta"><span>framework: <code>atlas/</code>, 36 case modules</span><span>learned expert: Poseidon-T (frozen, 20.8M params, CC-BY-NC-4.0)</span><span>wiki: concepts/Atlas 0.1/atlas-0.1-outcome/</span></div>
+</header>
+
+<section aria-labelledby="h-claims">
+  <h2 id="h-claims">The five claims, on the record</h2>
+  <div class="claims" id="claims"></div>
+</section>
+
+<section aria-labelledby="h-rocket">
+  <h2 id="h-rocket">The rocket episode: a correct multi-solver coupled model</h2>
+  <p class="muted">Seven agents plus a trajectory, each a build-repo solver imported unmodified: reacting chamber and nozzle, plume, external air, a conducting and bending shell, and a rigid-body ODE. 29 macro-steps of 5 ms, launched at 25 km and Mach 3.5. This is a correctness record. No full-domain run exists to compare its speed or accuracy against.</p>
+  <div class="stats">
+    <div class="stat"><span class="v">1.2×10⁻¹³</span><span class="l">worst block content vs. boundary inflows, every step</span></div>
+    <div class="stat"><span class="v">0.992</span><span class="l">thrust over ideal planar nozzle theory, given the inflow</span></div>
+    <div class="stat"><span class="v">1.000000</span><span class="l">injector delivery over declared ṁ*, at every grid</span></div>
+    <div class="stat"><span class="v">17 / 17</span><span class="l">registered gates passed on the current march</span></div>
+    <div class="stat"><span class="v">bitwise</span><span class="l">altitude, attitude, ω, mass across Windows/MKL and Linux/OpenBLAS</span></div>
+    <div class="stat"><span class="v">23–38%</span><span class="l">mass created at the plume seams (W341, one gas model in the plume block)</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-dd">
+  <h2 id="h-dd">Classical decomposition against the full-domain solve, by rotor count</h2>
+  <div class="charts">
+    <div class="card">
+      <h3>Cost of one step, relative to the monolith</h3>
+      <p class="small muted">Wind farm, 1 to 36 rotors, same discretization, same laptop on mains power. Below the dashed line is faster than the undivided solve. The parallel column is bit for bit the serial one; its points are the slower of two timing draws from 5 rotors up.</p>
+      <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>decomposition, serial</span><span><i class="sw" style="background:var(--s3)"></i>decomposition, windows on several cores</span></div>
+      <div class="chart" id="c-dd"></div>
+      <details><summary>Data table</summary><div class="tbl" id="t-dd"></div></details>
+      <p class="src">decomposition-speed-by-rotor-count §4–§5</p>
+    </div>
+    <div class="card">
+      <h3>Why it turns at 5 rotors</h3>
+      <p class="small muted">The monolith's cost per cell rises fourfold once its working set leaves the cache. A serial decomposed column steps every window as one array and falls off the same cliff. Spread across cores, each thread's windows stay in cache.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>rotors</th><th class="num">cells</th><th class="num">monolith µs/cell</th><th class="num">farm power vs monolith</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="num">30,720</td><td class="num">1.35</td><td class="num">−4.3%</td></tr>
+          <tr><td>3</td><td class="num">84,480</td><td class="num">2.15</td><td class="num">−4.1%</td></tr>
+          <tr><td>5</td><td class="num">163,328</td><td class="num">8.79</td><td class="num">−2.3%</td></tr>
+          <tr><td>12</td><td class="num">319,232</td><td class="num">8.58</td><td class="num">−6.8%</td></tr>
+          <tr><td>21</td><td class="num">627,456</td><td class="num">8.75</td><td class="num">−8.3%</td></tr>
+          <tr><td>36</td><td class="num">1,036,032</td><td class="num">8.68</td><td class="num">not marched</td></tr>
+        </tbody></table></div>
+      <p class="src">decomposition-speed-by-rotor-count §3–§4</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-speed">
+  <h2 id="h-speed">Speed: where the learned expert wins, and what still beats it</h2>
+  <div class="charts">
+    <div class="card">
+      <h3>Cost per window per macro-step</h3>
+      <p class="small muted">Wake-array geometry, 128-cell windows, one process on the dev laptop. The classical window gets dearer as the graph grows (memory hierarchy); the batched checkpoint gets cheaper.</p>
+      <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>classical <code>WindowNS</code></span><span><i class="sw" style="background:var(--s2)"></i>learned Poseidon-T</span></div>
+      <div class="chart" id="c-agent"></div>
+      <details><summary>Data table</summary><div class="tbl" id="t-agent"></div></details>
+      <p class="src">learned-contribution-kill-tests §2.1</p>
+    </div>
+    <div class="card">
+      <h3>Cost of one composed step, relative to the monolith</h3>
+      <p class="small muted">Below the dashed line is cheaper than one undivided classical step. The learned column crosses it between 6 and 12 windows. A classical solver on a grid 2× coarser stays cheaper still, by 9–17×.</p>
+      <div class="legend"><span><i class="dot" style="background:var(--s2)"></i>learned composed column</span><span><i class="dot" style="background:var(--s1)"></i>classical composed column</span><span><i class="dot" style="background:var(--s3)"></i>2×-coarse classical monolith</span></div>
+      <div class="chart" id="c-mono"></div>
+      <details><summary>Data table</summary><div class="tbl" id="t-mono"></div></details>
+      <p class="src">learned-contribution-kill-tests §2.3</p>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="v">3.15× / 3.64×</span><span class="l">composed learned column faster than the undivided classical solver, K12 / K25 (dev box; 0.43×–3.4× on other machines)</span></div>
+    <div class="stat"><span class="v">8.0× / &gt;30.9×</span><span class="l">fewer rollouts than CMA-ES to the design tolerance, 36 / 75 variables</span></div>
+    <div class="stat"><span class="v">3–4.5</span><span class="l">forward passes per gradient through all 20.8M parameters</span></div>
+    <div class="stat"><span class="v">0.067×</span><span class="l">all-learned car speed at the step the coupling runs at, off the native lead</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-acc">
+  <h2 id="h-acc">Accuracy and convergence</h2>
+  <div class="charts">
+    <div class="card">
+      <h3>Learned one-step error against the step it is asked for</h3>
+      <p class="small muted">RaceLab porous car, per-window median error against the classical window on the same input. The error is smallest at the checkpoint's native lead and grows 4.3× as the step shrinks to half of it. The composition layer exchanges at 1/32 of native.</p>
+      <div class="legend"><span><i class="sw" style="background:var(--s2)"></i>Poseidon-T, per-window median error</span></div>
+      <div class="chart" id="c-lead"></div>
+      <details><summary>Data table</summary><div class="tbl" id="t-lead"></div></details>
+      <p class="src">case-study-racelab-switch-atlas-0.1 §0</p>
+    </div>
+    <div class="card">
+      <h3>Farm power against the undivided classical solver</h3>
+      <p class="small muted">Both decomposed columns fall short of the monolith. At the unoptimised layout the learned column happens to sit closer; the source page calls that a coincidence of one operating point. After optimisation the learned column's layout captures 71% of the classical column's verified gain.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>layout</th><th class="num">learned composed</th><th class="num">classical composed</th><th class="num">monolith</th></tr></thead>
+        <tbody>
+          <tr><td>K12, unoptimised</td><td class="num">2.4782 (−3.0%)</td><td class="num">2.3142 (−9.4%)</td><td class="num">2.5544</td></tr>
+          <tr><td>K25, unoptimised</td><td class="num">7.0997 (−9.6%)</td><td class="num">6.4379 (−18.0%)</td><td class="num">7.8536</td></tr>
+          <tr><td>K12, learned column's optimum</td><td class="num">7.0243</td><td class="num">7.2760</td><td class="num">9.3617 (+266%)</td></tr>
+          <tr><td>K12, classical column's optimum</td><td class="num">8.0062</td><td class="num">9.6080</td><td class="num">12.1120 (+374%)</td></tr>
+        </tbody></table></div>
+      <p class="src">poc1a-frozen-expert-results §7</p>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="v">6.2×10⁻⁹</span><span class="l">distance from the classical answer reached through defect correction by a deliberately wrong cheap map</span></div>
+    <div class="stat"><span class="v">+0.83 vs +0.69</span><span class="l">rank correlation with convergence cost: Jacobian fidelity vs. accuracy, over 20 cheap maps</span></div>
+    <div class="stat"><span class="v">13 vs 69</span><span class="l">classical calls the checkpoint's learned content saves, against the spread from 3% weight noise</span></div>
+    <div class="stat"><span class="v">1.0162 vs 0.404</span><span class="l">P₂/P₁ with the frozen checkpoint vs. the 2-D reference (a classical solver in the same graph: 0.7663)</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-geo">
+  <h2 id="h-geo">Why a new expert is needed: the body-fitted car</h2>
+  <div class="charts">
+    <div class="card">
+      <h3>Where a uniform 128×128 learned window can reach</h3>
+      <p class="small muted">Share of the body-fitted composite's 377,267 unknowns. The curved body grids hold the boundary layers, wheel clearances and cooling duct, and no uniform window can accept them.</p>
+      <div class="legend"><span><i class="dot" style="background:var(--s3)"></i>covered by a real 4-window tiling</span><span><i class="dot" style="background:var(--s1)"></i>reachable by some placement, not covered</span><span><i class="dot" style="background:var(--s2)"></i>background, unreachable</span><span><i class="dot" style="background:var(--ink-3)"></i>curved body grids, unreachable</span></div>
+      <div class="chart" id="c-geo"></div>
+      <p class="src">poc3-racelab-car-windows §0</p>
+    </div>
+    <div class="card">
+      <h3>The measured specification, in short</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>property</th><th>frozen checkpoint</th></tr></thead>
+        <tbody>
+          <tr><td>accepts the subdomain's geometry</td><td>uniform 128×128 only; ≤ 33.4% of the car</td></tr>
+          <tr><td>runs at the coupling's step</td><td>one native lead; refuses 0.025 against 0.1</td></tr>
+          <tr><td>takes interface data as input</td><td>no boundary channel; halo overwrite only</td></tr>
+          <tr><td>bounded domain of dependence</td><td>27–75% of seam norm beyond any radius</td></tr>
+          <tr><td>slow-mode Jacobian</td><td>ψ 0.5578 vs classical φ 0.4780</td></tr>
+          <tr><td>beats the coarse classical solver</td><td>no: 0.296 vs 0.032 of a monolith step</td></tr>
+          <tr><td>licence</td><td>CC-BY-NC-4.0</td></tr>
+        </tbody></table></div>
+      <p class="src">outcome-c5-requirements-for-dd-native-experts §2</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-gaps">
+  <h2 id="h-gaps">Not done</h2>
+  <ol class="gaps">
+    <li><span class="k">C1</span><span>The speedup is one family, one laptop, Python threads. No full-domain run of the rocket, and no equal-cost comparison, the only kind that could show decomposition winning on accuracy.</span></li>
+    <li><span class="k">C2</span><span>No learned expert admitted with a meaningful contribution. The matched shrink (W214) diverges early; a residual-scheduled shrink (W347) and a second donor (W120) are untested.</span></li>
+    <li><span class="k">C3</span><span>One family, one host class. At the coupled seams measured, the coarse classical competitor is correct but costs more than the cold march, so the bar there is the cold march.</span></li>
+    <li><span class="k">C4</span><span>Learned experts only in 2-D incompressible flow. No march spans the vehicle's 400× clock range; 3-D is a classical half-car box.</span></li>
+    <li><span class="k">C5</span><span>No architecture, no training data, no fine-tuning run, no new expert. Light adaptation was priced at 0.35 h per 2000 iterations and not run.</span></li>
+  </ol>
+</section>
+
+<section aria-labelledby="h-mat">
+  <h2 id="h-mat">Interactive materials</h2>
+  <div class="mat">
+    <div class="card"><h3>Rocket ascent episode</h3><p class="small muted">The current coupled march, field by field and step by step, with its seams and gates.</p><a href="https://claude.ai/artifact/FkMdFnycRPNobgAzH5Vj6s">claude.ai/artifact/FkMdFnycRPNobgAzH5Vj6s</a></div>
+    <div class="card"><h3>Scaling ladder</h3><p class="small muted">Composition error from 1 to 24 windows, classical and learned beside the monolith. Built at Tier 19; its rollout panel shows a repair later falsified at 120 steps.</p><a href="https://claude.ai/artifact/L8WARWRmwrqq8e92in4Ctt">claude.ai/artifact/L8WARWRmwrqq8e92in4Ctt</a></div>
+    <div class="card"><h3>Runnable demos</h3><p class="small muted">PoC 1a wind-farm design, PoC 2 front-wing certification and PoC 3 RaceLab run as local servers. Commands and branches are on the wiki page <code>outcome-demos-and-artifacts</code>.</p></div>
+  </div>
+</section>
+
+<footer class="src">Sources are wiki page names in <code>wiki/concepts/Atlas 0.1/</code>. Ratios, not wall-clock times, are the numbers that transfer between machines.</footer>
+</div>
+
+<script>
+(function(){
+  var claims=[
+    {id:"C1",t:"Classical decomposition is faster than the full-domain solve at many rotors",s:"good",sl:"Shown, one mechanism",
+     pts:["Run on several cores: 3.4–5.7× faster at 5–21 rotors, 2.1–3.7× at 36 (two timing draws)","Bit for bit the serial decomposition; farm power within 2.3–8.3% of the monolith","Run serially it is never faster (0.95–1.25×); the rocket has no full-domain run"],
+     gap:"Parallelism is the textbook reason decomposition exists; this reproduces a known effect."},
+    {id:"C2",t:"Learned experts couple and converge with classical ones",s:"warn",sl:"Partly demonstrated",
+     pts:["Stable composed march, 70/70 steps at 12 and 24 windows","Defect correction converges to the classical answer whatever the learned map does","But the frozen checkpoint is biased: array efficiency inverted"],
+     gap:"Learned content worth 13 classical calls against a 69-call noise floor; a matched shrink diverges early (W214)."},
+    {id:"C3",t:"Learned experts are faster in large graphs",s:"good",sl:"Shown on one case",
+     pts:["Per window: 4.90× dearer at N=1, 0.253× at N=24","Composed column 3.15–3.64× faster than the monolith (dev box)","Design gradients 8–30× fewer rollouts than CMA-ES"],
+     gap:"A 2×-coarse classical solver is 9–17× cheaper still; off-lead on the car, 0.067× speed."},
+    {id:"C4",t:"Modular multiphysics, experts swappable anywhere",s:"good",sl:"Largely demonstrated",
+     pts:["Graphs compiled from declarations, zero coupling code","Five ports: MECH, ROT, THERM, ELEC, ADVEC","18-agent, 5-family vehicle union marches; per-window classical/learned/certified switch"],
+     gap:"Only one of five families has a learned option; no march spans the vehicle's clocks."},
+    {id:"C5",t:"Method to build DD-native learned experts for complex geometry",s:"none",sl:"Not done",
+     pts:["No architecture, data, training or fine-tuning run","A measured specification exists: geometry, step, boundary input, Jacobian, cost","Classical teachers on body-fitted and curvilinear grids exist"],
+     gap:"This is the proposal's ask."}
+  ];
+  var icons={good:'<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.5 2.5L10 3.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+    warn:'<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 1.5a4.5 4.5 0 0 1 0 9z" fill="currentColor"/></svg>',
+    bad:'<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="2"/></svg>',
+    none:'<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 2"/></svg>'};
+  var box=document.getElementById("claims");
+  claims.forEach(function(c){
+    var d=document.createElement("article");d.className="claim";
+    d.innerHTML='<div class="claim-head"><span class="cid">'+c.id+'</span><span class="pill p-'+c.s+'">'+icons[c.s]+c.sl+'</span></div><h3>'+c.t+'</h3><ul>'+c.pts.map(function(p){return"<li>"+p+"</li>"}).join("")+'</ul><div class="gap"><b>Caveat.</b> '+c.gap+'</div>';
+    box.appendChild(d);
+  });
+
+  var NS="http://www.w3.org/2000/svg";
+  function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+  function fmt(v){return v>=100?v.toFixed(1):v>=1?v.toFixed(2):v>=0.1?v.toFixed(3):v.toFixed(4)}
+  function tipFor(card){var t=card.querySelector(".tip");if(!t){t=document.createElement("div");t.className="tip";t.hidden=true;card.appendChild(t)}return t}
+  function showTip(card,svg,x,y,html){var t=tipFor(card);t.innerHTML=html;t.hidden=false;
+    var r=svg.getBoundingClientRect(),cr=card.getBoundingClientRect(),vb=svg.viewBox.baseVal;
+    var px=r.left-cr.left+x*r.width/vb.width,py=r.top-cr.top+y*r.height/vb.height;
+    t.style.left=Math.min(Math.max(px,90),cr.width-90)+"px";t.style.top=py+"px"}
+  function hideTip(card){var t=card.querySelector(".tip");if(t)t.hidden=true}
+  function table(id,head,rows){document.getElementById(id).innerHTML="<table><thead><tr>"+head.map(function(h,i){return'<th class="'+(i?"num":"")+'">'+h+"</th>"}).join("")+"</tr></thead><tbody>"+rows.map(function(r){return"<tr>"+r.map(function(c,i){return'<td class="'+(i?"num":"")+'">'+c+"</td>"}).join("")+"</tr>"}).join("")+"</tbody></table>"}
+
+  // generic log-log line / dot chart
+  function logChart(id,o){
+    var host=document.getElementById(id),card=host.closest(".card");
+    var W=560,H=290,m={l:58,r:24,t:14,b:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+    var svg=el("svg",{viewBox:"0 0 "+W+" "+H,role:"img","aria-label":o.aria},host);
+    var lx=o.xlog!==false;
+    function X(v){var a=lx?Math.log10(o.x0):o.x0,b=lx?Math.log10(o.x1):o.x1,z=lx?Math.log10(v):v;return m.l+(z-a)/(b-a)*iw}
+    function Y(v){var a=Math.log10(o.y0),b=Math.log10(o.y1);return m.t+ih-(Math.log10(v)-a)/(b-a)*ih}
+    o.yt.forEach(function(v){el("line",{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),class:"gridl"},svg);var t=el("text",{x:m.l-8,y:Y(v)+4,"text-anchor":"end"},svg);t.textContent=o.yf?o.yf(v):v});
+    o.xt.forEach(function(v,i){var t=el("text",{x:X(v),y:H-m.b+18,"text-anchor":"middle"},svg);t.textContent=o.xl?o.xl[i]:v});
+    el("line",{x1:m.l,x2:W-m.r,y1:m.t+ih,y2:m.t+ih,class:"axis"},svg);
+    var xt=el("text",{x:m.l+iw/2,y:H-6,"text-anchor":"middle"},svg);xt.textContent=o.xlabel;
+    var yt=el("text",{x:14,y:m.t+ih/2,"text-anchor":"middle",transform:"rotate(-90 14 "+(m.t+ih/2)+")"},svg);yt.textContent=o.ylabel;
+    if(o.ref){el("line",{x1:m.l,x2:W-m.r,y1:Y(o.ref),y2:Y(o.ref),class:"ref"},svg);var rt=el("text",{x:W-m.r,y:Y(o.ref)+16,"text-anchor":"end"},svg);rt.textContent=o.refLabel}
+    if(o.band){el("rect",{x:X(o.band[0]),y:m.t,width:X(o.band[1])-X(o.band[0]),height:ih,fill:"var(--grid)"},svg);var bt=el("text",{x:(X(o.band[0])+X(o.band[1]))/2,y:m.t+14,"text-anchor":"middle"},svg);bt.textContent=o.bandLabel}
+    o.series.forEach(function(s){
+      if(o.lines!==false){var dd="";o.xs.forEach(function(x,i){dd+=(i?"L":"M")+X(x).toFixed(1)+" "+Y(s.v[i]).toFixed(1)});el("path",{d:dd,fill:"none",stroke:s.c,"stroke-width":2,"stroke-linejoin":"round"},svg)}
+      o.xs.forEach(function(x,i){el("circle",{cx:X(x)+(s.dx||0),cy:Y(s.v[i]),r:o.lines===false?6:4.5,fill:s.c,stroke:"var(--panel)","stroke-width":2},svg)});
+      if(s.label){var n=(s.li!=null?s.li:o.xs.length-1),lt=el("text",{x:X(o.xs[n])+(s.lx!=null?s.lx:-4),y:Y(s.v[n])+(s.ly||-10),"text-anchor":s.anchor||"end"},svg);lt.textContent=s.label}
+    });
+    o.xs.forEach(function(x,i){
+      var x0=i?(X(o.xs[i-1])+X(x))/2:m.l,x1=i<o.xs.length-1?(X(x)+X(o.xs[i+1]))/2:W-m.r;
+      var h=el("rect",{x:x0,y:m.t,width:x1-x0,height:ih,class:"hit"},svg);
+      h.addEventListener("mousemove",function(){showTip(card,svg,X(x),Math.min.apply(null,o.series.map(function(s){return Y(s.v[i])})),"<b>"+(o.tipx?o.tipx(i):x)+"</b><br>"+o.series.map(function(s){return s.name+": "+fmt(s.v[i])}).join("<br>"))});
+      h.addEventListener("mouseleave",function(){hideTip(card)});
+    });
+  }
+
+  var RO=[1,3,5,12,21,36],ser=[0.949,1.079,1.028,1.071,1.124,1.248],par=[1.569,0.778,0.286,0.247,0.230,0.467];
+  logChart("c-dd",{aria:"Decomposition cost relative to the monolith by rotor count",xs:RO,x0:0.8,x1:45,y0:0.15,y1:2.5,xt:RO,yt:[0.2,0.5,1,2],yf:function(v){return v+"×"},
+    xlabel:"rotors in the farm (log)",ylabel:"cost / monolith step (log)",ref:1,refLabel:"monolith = 1",
+    series:[{name:"serial",c:"var(--s1)",v:ser,label:"serial",ly:-10},{name:"parallel",c:"var(--s3)",v:par,label:"parallel",li:3,lx:0,ly:22,anchor:"middle"}],
+    tipx:function(i){return RO[i]+" rotors"+(par[i]<1?" · parallel "+(1/par[i]).toFixed(1)+"× faster":"")}});
+  table("t-dd",["rotors","serial / monolith","parallel / monolith","parallel speedup"],RO.map(function(n,i){return[n,ser[i],par[i],(1/par[i]).toFixed(2)+"×"]}));
+
+  var N=[1,2,6,12,24],cl=[81.5,88.8,125.5,329.1,340.8],le=[399.7,270.1,154.4,109.8,86.1];
+  logChart("c-agent",{aria:"Per-window cost against number of windows",xs:N,x0:0.8,x1:30,y0:50,y1:600,xt:N,yt:[50,100,200,400],
+    xlabel:"coupled windows N (log)",ylabel:"ms / window / step (log)",band:[6,12],bandLabel:"crossover",
+    series:[{name:"classical",c:"var(--s1)",v:cl,label:"classical",ly:-10},{name:"learned",c:"var(--s2)",v:le,label:"learned",ly:18}],
+    tipx:function(i){return"N = "+N[i]+" · learned/classical "+(le[i]/cl[i]).toFixed(3)}});
+  table("t-agent",["windows","classical ms","learned ms","learned / classical"],N.map(function(n,i){return[n,cl[i],le[i],(le[i]/cl[i]).toFixed(3)]}));
+
+  var Wn=[2,6,12],lc=[3.43,2.01,0.296],cc=[0.932,1.31,1.02],co=[0.197,0.132,0.0320];
+  logChart("c-mono",{aria:"Composed step cost relative to the monolith",xs:Wn,x0:1.6,x1:15,y0:0.02,y1:5,xt:Wn,yt:[0.03,0.1,0.3,1,3],yf:function(v){return v+"×"},
+    xlabel:"coupled windows (log)",ylabel:"cost / monolith step (log)",ref:1,refLabel:"monolith = 1",lines:false,
+    series:[{name:"learned",c:"var(--s2)",v:lc,dx:-9},{name:"classical composed",c:"var(--s1)",v:cc},{name:"2×-coarse classical",c:"var(--s3)",v:co,dx:9}],
+    tipx:function(i){return Wn[i]+" windows"}});
+  table("t-mono",["windows","learned","classical composed","2×-coarse classical"],Wn.map(function(n,i){return[n,lc[i],cc[i],co[i]]}));
+
+  var L=[0.125,0.25,0.5,1,2],Le=[0.3607,0.5615,0.7301,0.1708,0.2408],LL=["1/8","1/4","1/2","1","2"];
+  logChart("c-lead",{aria:"One-step error against lead time",xs:L,x0:0.1,x1:2.5,y0:0.1,y1:1,xt:L,xl:LL,yt:[0.1,0.2,0.4,0.8],
+    xlabel:"lead / checkpoint's native lead (log)",ylabel:"median one-step error (log)",
+    series:[{name:"median error",c:"var(--s2)",v:Le}],tipx:function(i){return"lead "+LL[i]+" × native"+(i===3?" (native)":"")}});
+  table("t-lead",["lead / native","median error"],L.map(function(v,i){return[LL[i],Le[i]]}));
+
+  // geometry bar: single 100% stacked bar
+  (function(){
+    var host=document.getElementById("c-geo"),card=host.closest(".card");
+    var W=560,H=120,x0=10,iw=540;
+    var segs=[{n:"covered by a real 4-window tiling",v:17.4,c:"var(--s3)"},{n:"reachable, not covered",v:16.0,c:"var(--s1)"},{n:"background, unreachable",v:5.6,c:"var(--s2)"},{n:"curved body grids, unreachable",v:61.0,c:"var(--ink-3)"}];
+    var svg=el("svg",{viewBox:"0 0 "+W+" "+H,role:"img","aria-label":"Share of unknowns a learned window can reach"},host);
+    var x=x0;
+    segs.forEach(function(s,i){var w=s.v/100*iw;var r=el("rect",{x:x+(i?1:0),y:20,width:Math.max(w-(i?2:0),1),height:40,fill:s.c,rx:i===0||i===segs.length-1?4:0},svg);
+      var t=el("text",{x:x+w/2,y:82,"text-anchor":"middle"},svg);t.textContent=s.v.toFixed(1)+"%";
+      (function(xx,ww){r.addEventListener("mousemove",function(){showTip(card,svg,xx+ww/2,20,"<b>"+s.n+"</b><br>"+s.v.toFixed(1)+"% of unknowns")});r.addEventListener("mouseleave",function(){hideTip(card)})})(x,w);
+      x+=w});
+    var c=el("line",{x1:x0+33.4/100*iw,x2:x0+33.4/100*iw,y1:12,y2:68,stroke:"var(--ink)","stroke-width":1.5},svg);
+    var t=el("text",{x:x0+33.4/100*iw+6,y:108},svg);t.textContent="ceiling 33.4%: the union of every admissible placement";
+  })();
+})();
+</script>
