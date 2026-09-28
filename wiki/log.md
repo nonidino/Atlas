@@ -6407,3 +6407,25 @@ The owner's screenshot showed dark, magenta-bordered inputs on a light page, wit
 - **My earlier verification missed it** because it ran with the OS in light mode. ***A page must be checked under both OS colour settings, not only the one the machine happens to have.***
 - **Fix:** the shell now uses Panel's Bootstrap template, which draws one light theme whatever the OS says, with `color-scheme: light` pinned for native controls. That also removes the Fast design's Google-font request, so the `OfflineFast` workaround is deleted. Verified under emulated OS dark mode: consistent colours, all 34 requests local, and the menus, dialog and geometry canvas working.
 - `tests/test_workbench_shell.py` pins the template, the light theme and the absence of outside resources: 16 passed.
+
+## [2026-09-28] note | The classical showcase library, planned, and a survey of existing editors
+
+On the owner's request: document the plan for a library of simple, fast classical cases that show Atlas's diversity and run live in under 2 minutes, and answer whether an existing 2-D editor could replace a hand-built geometry section. **Nothing is built.** Full plan: [[showcase-library-plan]].
+
+**The plan:**
+- Why the library was small: no general runner (nine bespoke rollout classes), and every case run as a research tier.
+- Four coupling styles: overlapping with one exchange, overlapping iterated to agreement, material interfaces, field joined to lumped parts.
+- Eight cases covering all five port types, each with a reference and two checks.
+- A build order: geometry, the general runner, the family interface, the cases, a gallery, the compile verdict.
+- The geometry section as four layers (domain, regions, windows, attachments and boundaries), with six decisions left to the owner.
+
+**The survey:** no surveyed tool knows windows, overlap ramps, seams or ports, so the Atlas-specific layer is written either way.
+- **Gmsh 4.15 is already installed.** Checked here: named physical groups, partitioning into subdomains, and a ghost-cell option. meshio could not read a partitioned file, so an importer would use Gmsh's own API. GPL.
+- draw.io's embed mode is officially online-only.
+- Excalidraw has no units.
+- tldraw needs a production licence key.
+- FloorspaceJS is building-specific.
+- DXF and SVG round-trips need other software installed.
+- **Recommendation [AI Inference]:** Bokeh in the page for grid rectangles, plus a Gmsh import path for curved shapes.
+
+**Added:** [[showcase-library-plan]]. **Changed:** [[index]], [[00-atlas-0.1-outcome]], [[outcome-c4-path-to-declarative-cases]].

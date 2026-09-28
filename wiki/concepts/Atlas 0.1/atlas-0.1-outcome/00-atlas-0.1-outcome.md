@@ -73,6 +73,7 @@ The full list, with what each item would take, is in each claim page's last sect
 | [[outcome-evidence-ledger]] | every quotable number, with source, conditions and caveat |
 | [[outcome-demos-and-artifacts]] | the interactive pages, runnable demos, figures and how to open each |
 | [[outcome-c4-path-to-declarative-cases]] | the plan for case studies without a Python module, and a decomposition GUI compared with the full-domain solve |
+| [[showcase-library-plan]] | the classical showcase library: coupling styles, eight fast cases, the build order, the geometry section, and the survey of existing editors |
 | *Tier 89 records* | [[decomposition-speed-by-rotor-count]] (C1, W346) · [[matched-shrink-and-coarse-competitor]] (C2, C3, C5; W214, W345) |
 | `interactive/` | local copies of the self-contained HTML viewers (rocket episode, scaling ladder, wake array) and the outcome evidence board |
 
