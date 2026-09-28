@@ -1,7 +1,7 @@
 # The classical showcase library: plan
 
 **Type:** Outcome page — **build plan** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
-**Status:** written 2026-09-28 on the owner's request; **nothing on this page is built**. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort are estimates, marked **[AI Inference]**.
+**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6); nothing else on this page is built. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort are estimates, marked **[AI Inference]**.
 **Hub:** [[00-atlas-0.1-outcome]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/`
 
 ---
@@ -112,6 +112,12 @@ The library changes what geometry must express. Windows alone are not enough, so
 4. **Overlap rule:** warn on the canvas and let Check refuse, or block the edit?
 5. **Layers:** all four now (case 2 needs regions), or windows only first?
 6. **Which cases first after the wind farm:** 2 and 3, then 5?
+
+> **Built, 2026-09-28** (`atlas/workbench/geometry.py`, `editor.py`, `gmsh_import.py`; schema `atlas-workbench/case@0.2`). The owner asked for the build without answering 1–5 one by one, so **the recommendation was taken in each**, and each is a small change: snapping 8 cells (selectable 1, 8, 16), a tiling generator plus hand editing, corner handles plus an editable table, warnings on the canvas with Check refusing, and all four layers. Decision 6 belongs to step 4 and stays open. Two rules were settled while building:
+> - **The overlap rule is a cell rule, not a window rule.** Every covered cell must have one window at full weight, with the weight built exactly as `wake_array.ArrayTiling.weights` builds it (a test checks the two agree cell for cell). Every measured tiling passes it, and touching windows and overlaps under twice the ramp fail it. It is not a pairwise overlap rule: a dense tiling of narrow windows passes it where one pair's overlap alone looks thin, because a third window covers that overlap at full weight (a test pins such a case).
+> - **Regions stack in list order**: a later region takes the cells it covers. So a plate with an insert is the plate and then the insert; the alternative (regions may not overlap) would have forced the plate to be cut around every insert.
+>
+> Built and checked in a served page: move, corner-resize, click-to-add a rotor, the tiling dialog, undo, and a Gmsh upload of a steel plate with a copper disc and an aluminium hexagon. 48 tests. What the section does not do yet: lumped attachments (case 5), and any family but the wind farm can be chosen, so regions and editable boundaries are ready for families that do not exist yet.
 
 ---
 

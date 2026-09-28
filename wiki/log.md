@@ -6429,3 +6429,31 @@ On the owner's request: document the plan for a library of simple, fast classica
 - **Recommendation [AI Inference]:** Bokeh in the page for grid rectangles, plus a Gmsh import path for curved shapes.
 
 **Added:** [[showcase-library-plan]]. **Changed:** [[index]], [[00-atlas-0.1-outcome]], [[outcome-c4-path-to-declarative-cases]].
+
+## [2026-09-28] build | The workbench's geometry section: the hybrid, built
+
+The owner chose the hybrid (Bokeh in the page, Gmsh for everything else), committed the plan, and asked for the build. The six geometry decisions were not answered one by one, so the plan's recommendation was taken in each. Record: [[showcase-library-plan]] §6.
+
+**Built** (`atlas/workbench/`):
+- **One canvas with four layers**: windows, material regions, rotors and boundaries. Tools: move and draw, resize by corner handles, and pan. Snapping, a tiling generator, and editable tables.
+- **Live warnings that are the check's own rules.** The overlap rule is a cell rule: every covered cell must have one window at full weight, with the weight built exactly as `wake_array.ArrayTiling.weights` builds it. A test checks the two agree cell for cell on the measured tiling.
+- **Regions stack in list order**, so a plate with an insert needs no cutting.
+- **The wind-farm family's boundary is shown fixed**, because the solver holds the inlet and laterals at the freestream and tapers the outflow.
+- **Gmsh import** by physical-group names, `.msh` only: a `.geo` file is a script.
+- **Case schema 0.2.** Files at 0.1 migrate on load.
+
+**Checked:**
+- 48 tests. The generator reproduces all three measured tilings (offsets and names). The Gmsh path is tested on real meshes in both file versions.
+- In a served page: a drag, a corner resize, click-to-add, the tiling dialog, undo, and a Gmsh upload of a plate with a copper disc and an aluminium hexagon.
+
+**Two of my own test predictions were wrong, and the code was right:**
+- Ten 21-cell windows in 64 cells do fit.
+- They also pass the full-weight rule: at a stride of about 5 cells, their full-weight middles tile the domain.
+
+That case also showed a pairwise "thin seam" warning firing where a third window covers the seam. Such warnings now appear only where the cell rule fails.
+
+**Also fixed:** the menus' dropdowns were narrower than their items, which spilled over the page. This dates from the shell.
+
+**Not built:** lumped attachments (case 5), the loader and the runner. Only the wind-farm family can be chosen, so regions and editable boundaries wait for a family that reads them.
+
+**Changed:** [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]].

@@ -69,7 +69,7 @@ def test_save_and_load_round_trip(tmp_path):
     path = s.save(str(tmp_path / "farm.json"))
     assert CaseSpec.load(path) == s
     assert json.loads(open(path, encoding="utf-8").read())["schema_id"] == \
-        "atlas-workbench/case@0.1"
+        "atlas-workbench/case@0.2"          # the geometry section's version
 
 
 def test_registry_has_one_family_ready_and_says_why_for_the_rest():

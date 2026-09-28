@@ -7,6 +7,8 @@
 > **2026-09-27: the shell of step 4 is built** — `atlas/workbench/` (`python -m atlas.workbench --open`). It has the menus, the six-step workflow, the case file of step 2 (`spec.py`, schema `atlas-workbench/case@0.1`), and a registry catalogue for step 1 (`registry.py`, not yet a factory). It is built on Panel and Bokeh (BSD-3, already installed), with no new download and no outside request. The geometry editor is being designed with the owner, and the loader (step 2's graph half) and the runner (step 3) are not built. `atlas/workbench/README.md` lists the open geometry decisions.
 >
 > **2026-09-28: extended to a library.** [[showcase-library-plan]] plans eight fast classical cases across all four coupling styles, the geometry section to fit them, and a survey of existing editors.
+>
+> **2026-09-28: the geometry section is built**, as the hybrid the owner chose: rectangles drawn on a Bokeh canvas (windows, material regions, rotors, boundaries), a tiling generator, and import from Gmsh by physical-group names. The case file is now `atlas-workbench/case@0.2`. The loader and the runner are still not built. Details: [[showcase-library-plan]] §6.
 
 ---
 

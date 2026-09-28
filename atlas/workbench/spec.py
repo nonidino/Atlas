@@ -12,9 +12,11 @@ Units, chosen so that nothing the grid has to agree with is a float:
     diameters D), because a rotor does not have to sit on a cell boundary;
   * ``domain.dx`` converts between them (the wind-farm family: 1/32 D).
 
-This is the shell's version of the schema (``atlas-workbench/case@0.1``).  The
-geometry rules beyond "inside the domain, covering it, uniquely named" are left
-for the geometry section, which is being designed with the owner.
+Schema ``atlas-workbench/case@0.2`` adds the geometry section's two new layers:
+material **regions** (rectangles drawn in the page, or polygons imported from
+Gmsh) and **boundaries** (conditions on segments of the domain's edges).  A 0.1
+file still loads: it gains the boundaries its family's solver fixes, and no
+regions.  The geometry rules themselves live in `geometry.py`.
 """
 
 from __future__ import annotations
@@ -23,12 +25,17 @@ import json
 import os
 import re
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Optional
 
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-SCHEMA_ID = "atlas-workbench/case@0.1"
+from . import geometry as geo
+from . import registry
+
+SCHEMA_ID = "atlas-workbench/case@0.2"
+#: every schema this version reads; older ones are migrated on load
+READABLE = ("atlas-workbench/case@0.1", SCHEMA_ID)
 
 
 class Domain(BaseModel):
@@ -49,6 +56,61 @@ class Window(BaseModel):
     y0: int = Field(ge=0)
     nx: int = Field(gt=0)
     ny: int = Field(gt=0)
+
+
+class Region(BaseModel):
+    """A piece of the domain made of one material.
+
+    A rectangle (``x0, y0, nx, ny`` in cells), or a polygon (``points`` in cells,
+    with optional ``holes``, usually imported from Gmsh), in which case the
+    rectangle is its bounding box and is derived, not edited.
+
+    **Regions stack in list order**: where two overlap, the later one takes the
+    cells.  So a plate with an insert is the plate, then the insert, with no need
+    to cut the plate around it.  A cell's centre decides which region it is in.
+    """
+    id: str
+    material: str = "material-1"
+    shape: Literal["rect", "polygon"] = "rect"
+    x0: int = Field(0, ge=0)
+    y0: int = Field(0, ge=0)
+    nx: int = Field(1, gt=0)
+    ny: int = Field(1, gt=0)
+    points: Optional[list[tuple[float, float]]] = None
+    holes: Optional[list[list[tuple[float, float]]]] = None
+
+    @model_validator(mode="after")
+    def _shape_matches(self):
+        if self.shape == "polygon":
+            if not self.points or len(self.points) < 3:
+                raise ValueError("a polygon region needs at least three points")
+            if any(len(h) < 3 for h in self.holes or []):
+                raise ValueError("a hole needs at least three points")
+            xs = [p[0] for p in self.points]
+            ys = [p[1] for p in self.points]
+            if min(xs) < 0 or min(ys) < 0:
+                raise ValueError("a polygon region has a point below zero")
+            x0, y0 = int(np.floor(min(xs))), int(np.floor(min(ys)))
+            self.x0, self.y0 = x0, y0
+            self.nx = max(1, int(np.ceil(max(xs))) - x0)
+            self.ny = max(1, int(np.ceil(max(ys))) - y0)
+        elif self.points is not None or self.holes is not None:
+            raise ValueError("a rectangular region has no points or holes")
+        return self
+
+
+class Boundary(BaseModel):
+    """A condition on a segment of one domain edge, in cells along the edge.
+
+    ``start`` and ``stop`` run left to right on the bottom and top edges, and
+    bottom to top on the left and right edges; ``stop = None`` means the end.
+    """
+    id: str
+    edge: Literal["left", "right", "bottom", "top"]
+    kind: str
+    start: int = Field(0, ge=0)
+    stop: Optional[int] = Field(None, gt=0)
+    value: Optional[float] = None
 
 
 class Device(BaseModel):
@@ -85,11 +147,33 @@ class CaseSpec(BaseModel):
     description: str = ""
     domain: Domain
     physics: Physics
+    regions: list[Region] = Field(default_factory=list)
     windows: list[Window] = Field(default_factory=list)
     devices: list[Device] = Field(default_factory=list)
+    boundaries: list[Boundary] = Field(default_factory=list)
     coupling: Coupling = Field(default_factory=Coupling)
     run: RunSettings = Field(default_factory=RunSettings)
     compare: Compare = Field(default_factory=Compare)
+
+    @field_validator("schema_id")
+    @classmethod
+    def _known_schema(cls, v: str) -> str:
+        if v not in READABLE:
+            raise ValueError(f"unknown case schema {v!r}; this workbench reads "
+                             f"{', '.join(READABLE)}")
+        return v
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate(cls, data):
+        """0.1 -> 0.2: the family's fixed boundaries, no regions."""
+        if isinstance(data, dict) and data.get("schema_id") == "atlas-workbench/case@0.1":
+            data = dict(data)
+            fam = (data.get("physics") or {}).get("family", "incompressible-2d")
+            data.setdefault("boundaries", [b.model_dump() for b in family_boundaries(fam)])
+            data.setdefault("regions", [])
+            data["schema_id"] = SCHEMA_ID
+        return data
 
     # -- persistence ---------------------------------------------------------
     def to_json(self) -> str:
@@ -125,6 +209,16 @@ class CaseSpec(BaseModel):
         return self.model_copy(deep=True)
 
 
+def family_boundaries(fid: str) -> list[Boundary]:
+    """The boundaries a family's solver fixes, as whole-edge segments."""
+    try:
+        fam = registry.family(fid)
+    except KeyError:
+        return []
+    return [Boundary(id=f"B-{b.edge}", edge=b.edge, kind=b.kind)
+            for b in fam.fixed_boundaries]
+
+
 # ---------------------------------------------------------------------------
 # checking a case
 # ---------------------------------------------------------------------------
@@ -140,10 +234,8 @@ class Issue:
 def check(spec: CaseSpec) -> list[Issue]:
     """What is wrong with a case, in the order a person would fix it.
 
-    Structural only, for the shell: names unique, windows inside the domain and
-    covering it, devices inside the domain.  The coupling rules a window layout
-    must satisfy (overlap against ramp, cross-points) belong to the geometry
-    section and are not decided here.
+    Errors stop a run; warnings are worth reading; info is context.  The window
+    rules are `geometry.analyse_windows`, the same computation the canvas draws.
     """
     out: list[Issue] = []
     d = spec.domain
@@ -173,11 +265,39 @@ def check(spec: CaseSpec) -> list[Issue]:
             out.append(Issue("error", "geometry",
                              f"{gap} of {d.nx * d.ny} cells lie in no window"))
 
+    ramp = spec.coupling.ramp_cells
+    if spec.windows:
+        an = geo.analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
+                                              for w in spec.windows], ramp)
+        n_ramp = int(an.ramp_only.sum())
+        if n_ramp:
+            names = ", ".join(sorted(an.ramp_only_in)[:8])
+            more = "" if len(an.ramp_only_in) <= 8 else f" and {len(an.ramp_only_in) - 8} more"
+            out.append(Issue("error", "geometry",
+                             f"{n_ramp} cells have no window at full weight (in {names}{more}): "
+                             f"where windows meet they must overlap by at least twice the "
+                             f"ramp ({2 * ramp} cells), as every measured tiling does"))
+        for a, b, t in an.thin_pairs:
+            what = "touch without overlapping" if t == 0 else f"overlap by only {t} cells"
+            out.append(Issue("warning", "geometry",
+                             f"windows {a} and {b} {what}; the ramp needs {2 * ramp}"))
+        for inner, outer in an.nested:
+            out.append(Issue("warning", "geometry",
+                             f"window {inner} lies entirely inside {outer}: it costs a solve "
+                             f"and covers nothing new"))
+        if an.cross_points:
+            out.append(Issue("info", "geometry",
+                             f"{len(an.cross_points)} cross-point(s), where three or more "
+                             f"windows overlap; the compiler's rules for them are L2/I2/G1"))
+
     wx, wy = d.nx * d.dx, d.ny * d.dx
     for v in spec.devices:
         if not (0.0 <= v.x <= wx and v.diameter / 2 <= v.y <= wy - v.diameter / 2):
             out.append(Issue("error", "geometry",
                              f"device {v.id} is not fully inside the domain"))
+
+    out += _check_regions(spec)
+    out += _check_boundaries(spec)
 
     if spec.physics.family != "incompressible-2d":
         out.append(Issue("error", "physics",
@@ -190,6 +310,102 @@ def check(spec: CaseSpec) -> list[Issue]:
         out.append(Issue("warning", "physics",
                          "an embedded pressure solve in every window is refused by "
                          "L2/R10 and is unstable composed (W100)"))
+    return out
+
+
+def _family(spec: CaseSpec):
+    try:
+        return registry.family(spec.physics.family)
+    except KeyError:
+        return None
+
+
+def _check_regions(spec: CaseSpec) -> list[Issue]:
+    out: list[Issue] = []
+    d = spec.domain
+    fam = _family(spec)
+    rids = [r.id for r in spec.regions]
+    for dup in sorted({i for i in rids if rids.count(i) > 1}):
+        out.append(Issue("error", "geometry", f"two regions are both called {dup!r}"))
+    if spec.regions and fam is not None and "regions" not in fam.layers:
+        out.append(Issue("warning", "geometry",
+                         f"the {fam.id} family does not read material regions, so its "
+                         f"solver would ignore the {len(spec.regions)} drawn here"))
+    for r in spec.regions:
+        if r.x0 + r.nx > d.nx or r.y0 + r.ny > d.ny:
+            out.append(Issue("error", "geometry", f"region {r.id} reaches past the domain"))
+    owner = geo.region_owner(spec.regions, d.nx, d.ny)
+    for k, r in enumerate(spec.regions):
+        drawn = int(geo.region_mask(r, d.nx, d.ny).sum())
+        kept = int((owner == k).sum())
+        if drawn == 0:
+            out.append(Issue("error", "geometry", f"region {r.id} contains no cell centre"))
+        elif kept == 0:
+            out.append(Issue("warning", "geometry",
+                             f"region {r.id} is entirely covered by regions listed after it"))
+        elif kept < drawn:
+            out.append(Issue("info", "geometry",
+                             f"regions listed after {r.id} take {drawn - kept} of its "
+                             f"{drawn} cells (later regions stack on top)"))
+    if fam is not None and "regions" in fam.layers:
+        free = int((owner < 0).sum())
+        if free:
+            out.append(Issue("error", "geometry",
+                             f"{free} cells belong to no region; every cell needs a material"))
+    return out
+
+
+def _check_boundaries(spec: CaseSpec) -> list[Issue]:
+    out: list[Issue] = []
+    d = spec.domain
+    fam = _family(spec)
+    bids = [b.id for b in spec.boundaries]
+    for dup in sorted({i for i in bids if bids.count(i) > 1}):
+        out.append(Issue("error", "geometry", f"two boundaries are both called {dup!r}"))
+    known = {k.id for k in registry.BOUNDARY_KINDS}
+    spans: dict[str, list[tuple[int, int, str]]] = {e: [] for e in geo.EDGES}
+    for b in spec.boundaries:
+        n = geo.edge_length(b.edge, d.nx, d.ny)
+        stop = n if b.stop is None else b.stop
+        if b.kind not in known:
+            out.append(Issue("error", "geometry", f"boundary {b.id}: unknown kind {b.kind!r}"))
+        elif fam is not None and b.kind not in fam.boundary_kinds:
+            out.append(Issue("error", "geometry",
+                             f"boundary {b.id}: the {fam.id} family cannot impose "
+                             f"{b.kind!r} (it can: {', '.join(fam.boundary_kinds) or 'none'})"))
+        elif registry.boundary_kind(b.kind).needs_value and b.value is None:
+            out.append(Issue("error", "geometry", f"boundary {b.id}: {b.kind} needs a value"))
+        if not (0 <= b.start < stop <= n):
+            out.append(Issue("error", "geometry",
+                             f"boundary {b.id} runs {b.start}..{stop} on the {b.edge} edge, "
+                             f"which is {n} cells long"))
+            continue
+        spans[b.edge].append((b.start, stop, b.id))
+    for edge, segs in spans.items():
+        segs.sort()
+        for (_s0, e0, i0), (s1, _e1, i1) in zip(segs, segs[1:]):
+            if s1 < e0:
+                out.append(Issue("error", "geometry",
+                                 f"boundaries {i0} and {i1} overlap on the {edge} edge"))
+        n = geo.edge_length(edge, d.nx, d.ny)
+        covered = np.zeros(n, dtype=bool)
+        for s0, e0, _ in segs:
+            covered[s0:e0] = True
+        gap = int((~covered).sum())
+        if gap and fam is not None and fam.boundary_kinds:
+            out.append(Issue("error", "geometry",
+                             f"{gap} of the {n} cells on the {edge} edge have no boundary "
+                             f"condition"))
+    if fam is not None and fam.fixed_boundaries:
+        want = sorted((f.edge, f.kind) for f in fam.fixed_boundaries)
+        have = sorted((b.edge, b.kind) for b in spec.boundaries
+                      if b.start == 0 and b.stop in (None, geo.edge_length(b.edge, d.nx, d.ny)))
+        if have != want or len(spec.boundaries) != len(want):
+            fixed = ", ".join(f"{f.edge} {f.kind}" for f in fam.fixed_boundaries)
+            out.append(Issue("error", "geometry",
+                             f"the {fam.id} solver fixes its outer boundary ({fixed}); a "
+                             f"case of this family cannot change it (Geometry, Boundaries: "
+                             f"use the family's)"))
     return out
 
 
@@ -230,6 +446,7 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
                  for n, (ox, oy) in zip(t.names, t.offsets)],
         devices=[Device(id=r.rotor_id, x=r.x_plane, y=r.y_centre, diameter=1.0)
                  for r in t.rotors],
+        boundaries=family_boundaries("incompressible-2d"),
         coupling=Coupling(ramp_cells=wa.RAMP, assembly="projected", elliptic="exposed"),
         run=RunSettings(macro_dt=wa.MACRO_DT, steps=40, threads=4),
     )
@@ -240,7 +457,8 @@ def blank_case(nx: int = 352, ny: int = 240) -> CaseSpec:
     from atlas.cases import wake_array as wa
     return CaseSpec(name="untitled", description="",
                     domain=Domain(nx=nx, ny=ny, dx=wa.DX),
-                    physics=Physics(family="incompressible-2d", nu=wa.NU_REF, u_inf=wa.U_INF))
+                    physics=Physics(family="incompressible-2d", nu=wa.NU_REF, u_inf=wa.U_INF),
+                    boundaries=family_boundaries("incompressible-2d"))
 
 
 def slug(name: str) -> str:
@@ -248,6 +466,6 @@ def slug(name: str) -> str:
     return s or "untitled"
 
 
-__all__ = ["SCHEMA_ID", "CaseSpec", "Domain", "Physics", "Window", "Device", "Coupling",
-           "RunSettings", "Compare", "Issue", "check", "summary", "EXAMPLES",
-           "example_case", "blank_case", "slug"]
+__all__ = ["SCHEMA_ID", "READABLE", "CaseSpec", "Domain", "Physics", "Region", "Window",
+           "Device", "Boundary", "Coupling", "RunSettings", "Compare", "Issue", "check",
+           "summary", "family_boundaries", "EXAMPLES", "example_case", "blank_case", "slug"]

@@ -1,12 +1,12 @@
-"""Atlas Workbench: the shell.
+"""Atlas Workbench.
 
-The menu and overall structure of the decomposition GUI, built on Panel and Bokeh
-(both BSD-3, both already installed, nothing downloaded).  What works now:
-cases (new, examples, open, save, save as, import, export), undo and redo, the
-case and physics forms, a read-only preview of the domain, its windows and its
-rotors, and the structural check.  What does not work yet says so where it
-would be, with the reason: the geometry editing tools (being designed with the
-owner), the Atlas compile of a case file, and the runner.
+The decomposition GUI, built on Panel and Bokeh (both BSD-3, both already
+installed, nothing downloaded).  What works: cases (new, examples, open, save,
+save as, import, export), undo and redo, the case and physics forms, the
+geometry section (`editor.py`: windows, regions, devices and boundaries drawn
+and edited on a canvas, a tiling generator, and import from Gmsh), and the
+check.  What does not work yet says so where it would be, with the reason: the
+Atlas compile of a case file, and the runner.
 
 Every action goes through `Workbench.dispatch`, so a test can drive the whole
 menu without a browser.
@@ -23,19 +23,22 @@ from typing import Callable
 
 import pandas as pd
 import panel as pn
-from bokeh.models import ColumnDataSource, HoverTool, LabelSet, Range1d, SingleIntervalTicker
-from bokeh.plotting import figure
 from pydantic import ValidationError
 
+from . import geometry as geo
 from . import registry
-from .spec import EXAMPLES, CaseSpec, blank_case, check, example_case, slug, summary
+from .editor import GeometryEditor
+from .gmsh_import import GmshImportError, read_msh_bytes
+from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, blank_case, check,
+                   example_case, slug, summary)
 
 #: Native form controls and scrollbars follow the page, not the OS dark-mode setting.
 LIGHT_CSS = ":root { color-scheme: light; }"
+MENU_CSS = ".bk-menu { width: max-content; min-width: 100%; }"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_CASES_DIR = os.path.join(ROOT, "out", "workbench", "cases")
-VERSION = "0.1 (shell)"
+VERSION = "0.2 (geometry)"
 
 #: The workflow, in order.  key -> title.
 STEPS: tuple[tuple[str, str], ...] = (
@@ -49,8 +52,6 @@ STEPS: tuple[tuple[str, str], ...] = (
 
 #: Why each unbuilt action is unavailable, shown wherever the action would be.
 NOT_BUILT = {
-    "geometry": ("The tools for drawing and editing windows and devices are being designed "
-                 "with you next. This preview draws the case as it stands."),
     "compile": ("Compiling a case with the Atlas compiler needs the case-to-graph loader "
                 "(plan step 2). Not built yet."),
     "run": ("The runner that marches a case file (plan step 3) is not built yet. The "
@@ -58,11 +59,6 @@ NOT_BUILT = {
     "results": "Results appear after a run, and the runner is not built yet.",
 }
 
-# colours chosen to read on both the light and the dark theme
-C_DOMAIN = "#64748b"
-C_WINDOW = "#2a9d8f"
-C_OVERLAP = "#e9a23b"
-C_ROTOR = "#d1495b"
 ACCENT = "#0e6874"
 HEADER = "#16303f"
 
@@ -78,6 +74,13 @@ class Workbench:
         self.history: list[str] = []
         self.future: list[str] = []
         self.view_opts = {"grid": False, "overlaps": True, "labels": True, "log": True}
+        #: the geometry section's layer, tool, snap and new-region material; kept
+        #: here so they survive the editor being rebuilt
+        self.geo_state = {"layer": "windows", "tool": "move", "snap": geo.DEFAULT_SNAP,
+                          "material": "material-1"}
+        self.geo_editor: GeometryEditor | None = None
+        self._issues_memo: tuple[str, list] | None = None
+        self._keep_view = False
         self.active = "case"
         self.log_lines: list[str] = []
         self._build()
@@ -92,6 +95,13 @@ class Workbench:
         del self.log_lines[200:]
         if hasattr(self, "log_pane"):
             self.log_pane.object = self._log_html()
+
+    def issues(self):
+        """`check(self.spec)`, computed once per version of the case."""
+        key = self.spec.to_json()
+        if self._issues_memo is None or self._issues_memo[0] != key:
+            self._issues_memo = (key, check(self.spec))
+        return self._issues_memo[1]
 
     def notify(self, kind: str, text: str) -> None:
         """A toast in the browser when there is one; always a log line."""
@@ -201,6 +211,10 @@ class Workbench:
             self._dialog_import()
         elif action == "file:export":
             self._dialog_export()
+        elif action == "file:import-gmsh":
+            self.dialog_gmsh()
+        elif action == "geometry:tiling":
+            self.dialog_tiling()
         elif action == "edit:undo":
             self.undo()
         elif action == "edit:redo":
@@ -216,7 +230,7 @@ class Workbench:
             self.log(f"view: {rest} {'on' if self.view_opts[rest] else 'off'}")
             self.log_card.visible = self.view_opts["log"]
             if self.active == "geometry":
-                self.show("geometry")
+                self.show("geometry", keep_view=True)
         elif action == "run:check":
             self.show("check")
         elif action == "run:compile":
@@ -239,9 +253,11 @@ class Workbench:
     # ------------------------------------------------------------------
     def _build(self) -> None:
         def menu(name, items):
+            #: the dropdown is as wide as the button unless told otherwise, and the
+            #: longer items then spill over the page
             m = pn.widgets.MenuButton(name=name, items=items, button_type="light",
                                       button_style="solid", width=88, margin=(0, 3),
-                                      align="center")
+                                      align="center", stylesheets=[MENU_CSS])
             m.on_click(lambda e: self.dispatch(e.new))
             return m
 
@@ -251,9 +267,12 @@ class Workbench:
                                        ("Open...", "file:open"), ("Save", "file:save"),
                                        ("Save as...", "file:save-as"), None,
                                        ("Import JSON...", "file:import"),
-                                       ("Export JSON...", "file:export")])
+                                       ("Export JSON...", "file:export"), None,
+                                       ("Import geometry from Gmsh (.msh)...",
+                                        "file:import-gmsh")])
         self.edit_menu = menu("Edit", [("Undo", "edit:undo"), ("Redo", "edit:redo"), None,
-                                       ("Revert to saved", "edit:revert")])
+                                       ("Generate a window tiling...", "geometry:tiling"),
+                                       None, ("Revert to saved", "edit:revert")])
         self.view_menu = menu("View", self._view_items())
         self.run_menu = menu("Run", [("Check case", "run:check"),
                                      ("Compile with Atlas (not built)", "run:compile"), None,
@@ -315,7 +334,7 @@ class Workbench:
                 (mark("log") + "Activity log", "view:log")]
 
     def _nav_options(self) -> dict[str, str]:
-        issues = check(self.spec)
+        issues = self.issues()
         out = {}
         for n, (key, title) in enumerate(STEPS, 1):
             errs = sum(1 for i in issues if i.step == key and i.severity == "error")
@@ -342,7 +361,7 @@ class Workbench:
             state = "unsaved changes" if self.dirty else "not saved yet"
             self.status.object = f"Case <b>{name}</b> &middot; {state}"
         self.nav.options = self._nav_options()
-        issues = check(self.spec)
+        issues = self.issues()
         n = summary(issues)
         lines = [f"**{n['error']}** errors, **{n['warning']}** warnings"]
         lines += [f"- {i.severity}: {html.escape(i.message)}" for i in issues[:6]]
@@ -350,9 +369,16 @@ class Workbench:
             lines.append(f"- ... and {len(issues) - 6} more (step 4)")
         self.issues_pane.object = "\n".join(lines)
         if rebuild:
-            self.show(self.active)
+            self.show(self.active, keep_view=True)
+        elif self.active == "geometry" and self.geo_editor is not None:
+            d = self.spec.domain
+            if self.geo_editor._domain == (d.nx, d.ny):
+                self.geo_editor.sync()
+            else:
+                self.show("geometry")                     # the canvas is the domain's size
 
-    def show(self, key: str) -> None:
+    def show(self, key: str, keep_view: bool = False) -> None:
+        self._keep_view = keep_view
         self.active = key
         if self.nav.value != key:
             #: moving the selector from code must not re-enter show() through
@@ -420,73 +446,16 @@ class Workbench:
             pn.Card(notes, title="Physics families", collapsed=True, sizing_mode="stretch_width"),
             sizing_mode="stretch_width")
 
-    def _geometry_figure(self):
-        s, d = self.spec, self.spec.domain
-        pad = max(4, int(0.02 * max(d.nx, d.ny)))
-        p = figure(x_range=Range1d(-pad, d.nx + pad), y_range=Range1d(-pad, d.ny + pad),
-                   match_aspect=True, sizing_mode="stretch_width", height=460,
-                   tools="pan,wheel_zoom,box_zoom,reset,save", toolbar_location="right")
-        p.xaxis.axis_label, p.yaxis.axis_label = "x (cells)", "y (cells)"
-        for g in (p.xgrid, p.ygrid):
-            g.visible = self.view_opts["grid"]
-            g.ticker = SingleIntervalTicker(interval=16)
-            g.grid_line_alpha = 0.35
-        p.rect(x=d.nx / 2, y=d.ny / 2, width=d.nx, height=d.ny, fill_alpha=0,
-               line_color=C_DOMAIN, line_width=2)
-        ws = s.windows
-        src = ColumnDataSource(dict(
-            x=[w.x0 + w.nx / 2 for w in ws], y=[w.y0 + w.ny / 2 for w in ws],
-            w=[w.nx for w in ws], h=[w.ny for w in ws], id=[w.id for w in ws],
-            box=[f"x {w.x0}..{w.x0 + w.nx}, y {w.y0}..{w.y0 + w.ny}" for w in ws]))
-        wr = p.rect("x", "y", "w", "h", source=src, fill_color=C_WINDOW, fill_alpha=0.07,
-                    line_color=C_WINDOW, line_width=1.5)
-        p.add_tools(HoverTool(renderers=[wr], tooltips=[("window", "@id"), ("cells", "@box")]))
-        if self.view_opts["overlaps"]:
-            ov = dict(x=[], y=[], w=[], h=[])
-            for i, a in enumerate(ws):
-                for b in ws[i + 1:]:
-                    x0, x1 = max(a.x0, b.x0), min(a.x0 + a.nx, b.x0 + b.nx)
-                    y0, y1 = max(a.y0, b.y0), min(a.y0 + a.ny, b.y0 + b.ny)
-                    if x1 > x0 and y1 > y0:
-                        ov["x"].append((x0 + x1) / 2)
-                        ov["y"].append((y0 + y1) / 2)
-                        ov["w"].append(x1 - x0)
-                        ov["h"].append(y1 - y0)
-            p.rect("x", "y", "w", "h", source=ColumnDataSource(ov), fill_color=C_OVERLAP,
-                   fill_alpha=0.22, line_alpha=0)
-        if s.devices:
-            dsrc = ColumnDataSource(dict(
-                x=[v.x / d.dx for v in s.devices],
-                y0=[(v.y - v.diameter / 2) / d.dx for v in s.devices],
-                y1=[(v.y + v.diameter / 2) / d.dx for v in s.devices],
-                id=[v.id for v in s.devices]))
-            dr = p.segment("x", "y0", "x", "y1", source=dsrc, line_color=C_ROTOR, line_width=4)
-            p.add_tools(HoverTool(renderers=[dr], tooltips=[("device", "@id")]))
-            if self.view_opts["labels"]:
-                p.add_layout(LabelSet(x="x", y="y1", text="id", source=dsrc, x_offset=4,
-                                      y_offset=2, text_font_size="11px", text_color=C_ROTOR))
-        return p
-
     def _view_geometry(self):
-        s, d = self.spec, self.spec.domain
-        wdf = pd.DataFrame([dict(window=w.id, x0=w.x0, y0=w.y0, width=w.nx, height=w.ny,
-                                 width_D=round(w.nx * d.dx, 4), height_D=round(w.ny * d.dx, 4))
-                            for w in s.windows])
-        ddf = pd.DataFrame([dict(device=v.id, kind=v.kind, x_D=v.x, y_D=v.y,
-                                 diameter_D=v.diameter, yaw_deg=v.yaw_deg) for v in s.devices])
-        tables = _wrap(
-            pn.Column("**Windows**", pn.widgets.Tabulator(wdf, disabled=True, show_index=False,
-                                                          height=220, layout="fit_data_table")),
-            pn.Column("**Devices**", pn.widgets.Tabulator(ddf, disabled=True, show_index=False,
-                                                          height=220, layout="fit_data_table")))
+        d = self.spec.domain
+        old = self.geo_editor
+        ranges = (old.ranges() if (self._keep_view and old is not None
+                                   and old._domain == (d.nx, d.ny)) else None)
+        self.geo_editor = GeometryEditor(self, ranges)
         return pn.Column(
-            self._title("2. Geometry", "The domain, the windows it is cut into, and the devices in it."),
-            pn.pane.Alert(NOT_BUILT["geometry"], alert_type="info", sizing_mode="stretch_width"),
-            pn.pane.Bokeh(self._geometry_figure(), sizing_mode="stretch_width"),
-            pn.pane.Markdown(f"Windows teal, overlaps amber, rotor disks red. "
-                             f"{len(s.windows)} windows, {len(s.devices)} devices. "
-                             "Toggle the grid, overlaps and labels in **View**."),
-            tables, sizing_mode="stretch_width")
+            self._title("2. Geometry", "Cut the domain into windows, lay out materials, place "
+                                       "the devices and set the boundaries."),
+            self.geo_editor.view(), sizing_mode="stretch_width")
 
     def _view_physics(self):
         s = self.spec
@@ -529,7 +498,7 @@ class Workbench:
             sizing_mode="stretch_width")
 
     def _view_check(self):
-        issues = check(self.spec)
+        issues = self.issues()
         n = summary(issues)
         df = pd.DataFrame([dict(severity=i.severity, step=i.step, issue=i.message)
                            for i in issues] or [dict(severity="", step="", issue="no issues")])
@@ -597,6 +566,108 @@ class Workbench:
         self.modal_body.objects = [*objs, close]
         self.tpl.open_modal()
 
+    def dialog_tiling(self) -> None:
+        d, ramp = self.spec.domain, self.spec.coupling.ramp_cells
+        cols = pn.widgets.IntInput(name="Columns", value=3, start=1, end=40, width=110)
+        rows = pn.widgets.IntInput(name="Rows", value=2, start=1, end=40, width=110)
+        ov = pn.widgets.IntInput(name="Overlap (cells)", value=2 * ramp, start=0, width=130)
+        note = pn.pane.Markdown(sizing_mode="stretch_width")
+        go = pn.widgets.Button(name="Replace the windows", button_type="primary", width=200)
+
+        def preview(_e=None):
+            try:
+                t = geo.tile(d.nx, d.ny, cols.value or 1, rows.value or 1, ov.value or 0)
+            except ValueError as exc:
+                note.object = f"**Does not fit:** {exc}."
+                go.disabled = True
+                return
+            _n, (_x, _y, w, h) = t[0]
+            short = "" if (ov.value or 0) >= 2 * ramp else (
+                f" **An overlap under {2 * ramp} cells (twice the ramp) leaves cells with no "
+                f"window at full weight, and the check will refuse it.**")
+            note.object = (f"{len(t)} windows of **{w} x {h}** cells on the "
+                           f"{d.nx} x {d.ny} domain, overlapping by at least {ov.value} cells, "
+                           f"spread so the first starts at 0 and the last ends at the edge."
+                           f"{short} This replaces the {len(self.spec.windows)} windows there "
+                           f"now (Undo brings them back).")
+            go.disabled = False
+        for wdg in (cols, rows, ov):
+            wdg.param.watch(preview, "value")
+        preview()
+
+        def do(_e):
+            t = geo.tile(d.nx, d.ny, cols.value, rows.value, ov.value)
+            self.tpl.close_modal()
+
+            def apply(c):
+                c.windows = [Window(id=n, x0=b[0], y0=b[1], nx=b[2], ny=b[3]) for n, b in t]
+            self.edit(apply, f"generated a {cols.value} x {rows.value} tiling, overlap "
+                             f"{ov.value}")
+        go.on_click(do)
+        self._dialog(pn.pane.Markdown("### Generate a window tiling"),
+                     pn.Row(cols, rows, ov), note, go)
+
+    def dialog_gmsh(self) -> None:
+        up = pn.widgets.FileInput(accept=".msh", multiple=False)
+        dx = pn.widgets.FloatInput(name="Cell size, in the file's length unit",
+                                   value=self.spec.domain.dx, start=1e-9, step=0.001,
+                                   format="0.000000", width=260)
+        go = pn.widgets.Button(name="Import", button_type="primary", width=110)
+        guide = pn.pane.Markdown(
+            "### Import geometry from Gmsh\n"
+            "Draw the geometry in Gmsh, name its **physical groups**, then *Mesh > 2D* and "
+            "*File > Save Mesh*. The names this reads:\n\n"
+            "| physical group | dimension | becomes |\n|---|---|---|\n"
+            "| `domain` | surface | the domain's extent (optional) |\n"
+            "| `region:<material>` | surface | a material region, holes kept |\n"
+            "| `window:<id>` | surface | a window (a rectangle on cell boundaries) |\n"
+            "| `bc:<kind>` or `bc:<kind>=<value>` | curve | a boundary on the domain's edge |\n\n"
+            "Layers the file defines replace the case's; the others are kept. Only `.msh` "
+            "is read: a `.geo` file is a script and could run commands.",
+            width=620)
+
+        def do(_e):
+            if not up.value:
+                self.notify("warning", "choose a .msh file first")
+                return
+            try:
+                g = read_msh_bytes(up.value, float(dx.value or 0), up.filename or "upload.msh")
+                regions = [Region(**r) for r in g.regions]
+                windows = [Window(**w) for w in g.windows]
+                bounds = [Boundary(**b) for b in g.boundaries]
+            except (GmshImportError, ValidationError, ValueError) as exc:
+                self.notify("error", f"could not import {up.filename}: {exc}")
+                return
+            self.tpl.close_modal()
+            self.apply_gmsh(g, float(dx.value), up.filename or "upload.msh",
+                            regions, windows, bounds)
+        go.on_click(do)
+        self._dialog(guide, up, dx, go)
+
+    def apply_gmsh(self, g, cell: float, filename: str, regions=None, windows=None,
+                   bounds=None) -> bool:
+        """Put an imported Gmsh geometry into the case; layers it lacks are kept."""
+        regions = [Region(**r) for r in g.regions] if regions is None else regions
+        windows = [Window(**w) for w in g.windows] if windows is None else windows
+        bounds = [Boundary(**b) for b in g.boundaries] if bounds is None else bounds
+
+        def apply(c):
+            c.domain.nx, c.domain.ny, c.domain.dx = g.nx, g.ny, cell
+            if regions:
+                c.regions = regions
+            if windows:
+                c.windows = windows
+            if bounds:
+                c.boundaries = bounds
+        what = (f"{g.nx} x {g.ny} cells, {len(regions)} regions, {len(windows)} windows, "
+                f"{len(bounds)} boundary segments")
+        ok = self.edit(apply, f"imported geometry from {filename}: {what}")
+        if ok and (g.notes or g.ignored):
+            extra = [f"- {n}" for n in g.notes] + [f"- ignored: {n}" for n in g.ignored]
+            self._dialog(pn.pane.Markdown(f"### Imported {html.escape(filename)}\n{what}.\n\n"
+                                          + "\n".join(extra), width=560))
+        return ok
+
     def _dialog_open(self) -> None:
         files = self.case_files()
         rel = {os.path.basename(f): f for f in files}
@@ -655,8 +726,8 @@ class Workbench:
         return pn.pane.Markdown(
             "### The workflow\n"
             "1. **Case**: name it, choose the physics family, size the domain.\n"
-            "2. **Geometry**: cut the domain into windows and place the devices "
-            "*(editing tools being designed together)*.\n"
+            "2. **Geometry**: cut the domain into windows, lay out material regions, place "
+            "the devices and set the boundaries, on a canvas or from Gmsh.\n"
             "3. **Physics & coupling**: the flow constants, and how windows are joined.\n"
             "4. **Check**: what is wrong before anything runs; later, the Atlas compiler's "
             "verdict per seam.\n"
@@ -670,7 +741,8 @@ class Workbench:
         return pn.pane.Markdown(
             f"### Atlas Workbench {VERSION}\n"
             "A tool to build a domain decomposition by hand, run it, and compare it with the "
-            "full-domain solve. This is the shell: the menus, the workflow and the case file.\n\n"
+            "full-domain solve. Built so far: the menus, the workflow, the case file and the "
+            "geometry section.\n\n"
             f"- Cases folder: `{os.path.relpath(self.cases_dir, ROOT)}`\n"
             "- Built on **Panel** and **Bokeh** (both BSD-3-Clause, already installed; "
             "nothing is downloaded and the page makes no outside requests).\n"
@@ -680,7 +752,9 @@ class Workbench:
         return pn.pane.Markdown(
             "### Where things are documented\n"
             "- The plan this builds: `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/"
-            "outcome-c4-path-to-declarative-cases.md`\n"
+            "outcome-c4-path-to-declarative-cases.md` and `showcase-library-plan.md`\n"
+            "- The geometry rules and the Gmsh naming convention: "
+            "`atlas/workbench/geometry.py`, `atlas/workbench/gmsh_import.py`\n"
             "- What the wind-farm family measured: `wiki/concepts/Atlas 0.1/common/"
             "decomposition-speed-by-rotor-count.md`\n"
             "- The case file's schema: `atlas/workbench/spec.py`\n"
