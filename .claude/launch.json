@@ -8,6 +8,12 @@
       "port": 8014
     },
     {
+      "name": "workbench",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "atlas.workbench", "--port", "8020"],
+      "port": 8020
+    },
+    {
       "name": "rocket-episode-page",
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8321", "--bind", "127.0.0.1", "--directory", "out/w321"],

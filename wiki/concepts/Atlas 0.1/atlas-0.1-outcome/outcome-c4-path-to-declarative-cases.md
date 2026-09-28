@@ -4,6 +4,8 @@
 **Status:** written 2026-09-26 on the owner's question: *how can a new case study be set up without a full Python module, and how hard is a GUI that lets a person draw the domain decomposition, run it, and compare it with the full-domain solve (classical only)?* This page reads the code as it stands and proposes; **nothing on it is built.** Estimates are marked **[AI Inference]**.
 **Hub:** [[00-atlas-0.1-outcome]] · **Parent claim:** [[outcome-c4-modular-multiphysics]]
 
+> **2026-09-27: the shell of step 4 is built** — `atlas/workbench/` (`python -m atlas.workbench --open`). It has the menus, the six-step workflow, the case file of step 2 (`spec.py`, schema `atlas-workbench/case@0.1`), and a registry catalogue for step 1 (`registry.py`, not yet a factory). It is built on Panel and Bokeh (BSD-3, already installed), with no new download and no outside request. The geometry editor is being designed with the owner, and the loader (step 2's graph half) and the runner (step 3) are not built. `atlas/workbench/README.md` lists the open geometry decisions.
+
 ---
 
 ## 1. What a case study is today, layer by layer

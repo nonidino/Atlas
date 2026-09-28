@@ -6374,3 +6374,36 @@ On the owner's request after the outcome folder: finish W214 and the old brief's
 - tests: `tests/test_tier89_competitor_and_speed.py`.
 - wiki: [[matched-shrink-and-coarse-competitor]], [[decomposition-speed-by-rotor-count]], [[outcome-c4-path-to-declarative-cases]].
 - records: `out/w214/w214.json`, `out/w345/w345.json`, `out/w345/fsi_long.json`, `out/w346/w346.json`, each with its `registered.txt`.
+
+## [2026-09-27] build | Atlas Workbench: the shell of the decomposition GUI
+
+On the owner's request: start the GUI from [[outcome-c4-path-to-declarative-cases]] with its menu and overall structure; the geometry section will be designed together.
+
+**The existing-tools survey came first, because the owner asked for reuse over custom code.**
+- No existing interactive editor draws a domain decomposition and compares it with the full domain. A GetDP + Gmsh domain-decomposition solver exists, with no such editor.
+- Trame (Kitware, Apache-2.0) is built for simulation GUIs, but it is not installed.
+- **Panel 1.5 and Bokeh 3.6 (BSD-3) were already installed**, and supply the menus, dialogs, tables, notifications and a rectangle-drawing canvas (`BoxEditTool`). Built on those, with nothing downloaded.
+
+**What exists (`atlas/workbench/`):**
+- A case file, `atlas-workbench/case@0.1` (`spec.py`), with a structural `check()` and three examples read from `scaling_ladder`'s real tilings.
+- A physics-family registry (`registry.py`) saying what each family is missing.
+- The app (`app.py`): menus (File, Edit, View, Run, Help), a six-step workflow with per-step status, a case bar, dialogs, an activity log, and undo and redo.
+- Every action goes through `Workbench.dispatch`. Unbuilt actions stay visible and say why.
+
+**Found while clicking every control in the served page:**
+- Panel's Fast design loads Open Sans from Google on every page, independently of the template's `font_url`. `OfflineFast` drops that one resource, and the page now makes no outside request.
+- The template's theme switch reloads the page, starting a new session that drops the open case, and its dark theme ignores the accent. So it is off: light theme only, recorded.
+- Fixed-width rows clipped at 1024 px and now wrap.
+
+**Checks:** `python -m pytest tests/test_workbench_shell.py`: 16 passed. Every menu item, dialog and step was clicked in the served page.
+
+**Added:** `atlas/workbench/` (`__init__.py`, `__main__.py`, `spec.py`, `registry.py`, `app.py`, `README.md`), `tests/test_workbench_shell.py`, and a `workbench` entry in `.claude/launch.json`.
+**Changed:** [[outcome-c4-path-to-declarative-cases]] (a status note).
+
+## [2026-09-28] fix | Workbench colours on a dark-mode PC
+
+The owner's screenshot showed dark, magenta-bordered inputs on a light page, with the sidebar's text invisible (white on light grey).
+- **Cause:** the Fast template's web components follow the operating system's dark-mode setting on their own, while the page around them stays light. Reproduced by emulating OS dark mode.
+- **My earlier verification missed it** because it ran with the OS in light mode. ***A page must be checked under both OS colour settings, not only the one the machine happens to have.***
+- **Fix:** the shell now uses Panel's Bootstrap template, which draws one light theme whatever the OS says, with `color-scheme: light` pinned for native controls. That also removes the Fast design's Google-font request, so the `OfflineFast` workaround is deleted. Verified under emulated OS dark mode: consistent colours, all 34 requests local, and the menus, dialog and geometry canvas working.
+- `tests/test_workbench_shell.py` pins the template, the light theme and the absence of outside resources: 16 passed.
