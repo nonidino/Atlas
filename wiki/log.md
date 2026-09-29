@@ -6667,3 +6667,19 @@ The workbench handoff named three unresolved links in [[index]]. A scan of the w
 - `scripts/vault_scan.py wiki`: 0 problems.
 
 **Changed:** [[index]], [[case-study-cooling-loop-atlas-0.1]], [[poc3-racelab-car-graph]], [[poc3-racelab-car-union]], [[poc3-racelab-traced-car]], [[gap-worklist]].
+
+## [2026-09-29] note | W348 opened: R10 refuses three iterated couplings, and their own compile records derive a direct Schur solve
+
+The owner chose to open a worklist row for the showcase's R10 finding, not to change the compiler. [[gap-worklist]] ends with a new section holding one row, **W348**.
+
+- **The finding the workbench handoff carried:** R10 refuses `wall-2`, `plate-insert` and `bracket-2` (two embedded agents of one governing family), while their iterated couplings agree with the full domain to $3.6\times10^{-9}$ or closer.
+- **What reading the three compile records added:** each derives `K_accelerator = direct-schur` for the interface, which the compiler says *"makes the solve-incompleteness term vanish"*. R10 runs in `_l2_decomposition` (`compiler.py:660`), before `_l5_l7_scheme` derives that scheme (`compiler.py:161`). R13 is the precedent for a rule placed after the scheme because its condition is about the scheme's iteration.
+- **Against the rule's own sources:** Tier 0's $99.8\%$ came from a window pressure solve with homogeneous Neumann data and a ring whose net flux did not balance, an inconsistent local problem ([[tier0-measurements]] §4.1). W168's figure has an embedded coupling reaching the exposed arrangement's tolerance in 466 sweeps against 7. W174 closed with R10's halo branch over-firing where the coupling converges; W348 is about the main branch.
+- **Definition of done**, one of two:
+  - R10's case for a cut embedded family moves after the scheme, and decertifies with W168's cost when the coupling supplies the elliptic solve's boundary data and solves or iterates the interface to a tolerance. The three workbench graphs are the positive cases, and Tier 0's and CS-S1's graphs keep their refusals as negative controls, measured rather than assumed.
+  - Or R10's message is narrowed to the class it was measured on, and names the three as known over-firing.
+
+  Either way the refusal set of every graph the suite compiles is diffed before and after.
+- **[AI Inference]:** as written, R10's named repair (expose the elliptic part to the composition layer) is the undivided solve for a problem that is entirely elliptic, so the rule refuses the domain decomposition of an elliptic problem as a class.
+
+**Changed:** [[gap-worklist]] (W348), [[showcase-gallery]] §4, [[showcase-library-plan]] §5, [[index]] (the gallery's entry), and `atlas/workbench/README.md`. No code changed.

@@ -146,7 +146,7 @@ Each port declares a real Fourier prolongation over its faces (up to 8 modes; on
 - `refuse` at R10: the two-layer wall, the insert and the bracket. Each of their seams is admitted;
 - refused before the compiler: the heated strip.
 
-No case can earn a plain `admit`: the master bound's constants are unmeasured on every graph (W56). R10 refuses two embedded agents of one physics that cut its region. It does not read that styles B and C iterate until the pieces agree, and the Run step measures them within $3.6\times10^{-9}$ of the full domain or closer. The page says so beside the refusal and does not change it.
+No case can earn a plain `admit`: the master bound's constants are unmeasured on every graph (W56). R10 refuses two embedded agents of one physics that cut its region. It does not read that styles B and C iterate until the pieces agree, and the Run step measures them within $3.6\times10^{-9}$ of the full domain or closer. The page says so beside the refusal and does not change it. The same compile records derive a direct Schur solve for the interface (`K_accelerator = direct-schur`), and R10, at L2, runs before that scheme exists. The question is open as W348 in the vault's gap worklist.
 
 ## The showcase gallery
 
@@ -236,5 +236,5 @@ four layers now.
 - **Plain Schwarz has no coarse level**, so it converges slowly on a bending structure (616 iterations on the bracket); a coarse space or a Krylov wrapper would be the remedy, and neither is built.
 - **The wind farm compiles only on a scaling-ladder rung.** Its graph is the vault's `scaling_ladder.build`, which declares a regular tiling. A drawn tiling that is not a rung runs, but is refused before the compiler, with that reason.
 - **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not.
-- **R10 refuses the iterated one-physics cases** (styles B and C: the wall, the insert, the bracket), because it does not read whether a coupling iterates. The refusal is shown as the compiler gave it.
+- **R10 refuses the iterated one-physics cases** (styles B and C: the wall, the insert, the bracket), because it does not read whether a coupling iterates. The refusal is shown as the compiler gave it. Open as W348 in the vault's gap worklist.
 - Bokeh gives each gesture to one tool, so moving and resizing are two tools, not one.
