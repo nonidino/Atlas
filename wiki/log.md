@@ -6588,3 +6588,56 @@ Showcase plan step 4, on the owner's request to implement the plan. Record: [[sh
 **Not built:** the optional Gray–Scott case and CS-13/CS-14 adapters; the gallery; the compile.
 
 **Added:** `atlas/workbench/fe.py`, `atlas/workbench/families/{plume,acoustics,elasticity,thermoelastic,cooling}.py`, `tests/test_workbench_cases.py`, `out/workbench/records/step-c/` (five run records). **Changed:** `app.py`, `editor.py`, `registry.py`, `runner.py`, `runview.py`, `spec.py`, `styles.py`, `families/conduction.py`, the workbench README, and `tests/test_workbench_shell.py`; [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]], [[index]].
+
+## [2026-09-29] build | The workbench's compile, its finished Results, and the showcase gallery
+
+Showcase plan steps 6 and 5, and the finished Run & compare and Results steps, on the owner's request to implement the plan and finish the workbench. The record is [[showcase-library-plan]] §5 ("Built, 2026-09-29: step 6, the compile, and step 5, the gallery"), and every figure is on [[showcase-gallery]].
+
+**Built** (`atlas/workbench/`):
+- **`compile.py`**, the graph half of the loader. A case becomes the Atlas compiler's `CaseGraph` through its family's `case_graph(spec)`:
+  - one agent per window or piece;
+  - a seam wherever a cut face of one opens into another, with a Fourier prolongation over its faces;
+  - the cross-points always declared (W162).
+
+  The compile runs in a background thread. It reads the verdict per seam, the worst decision about it, and writes `compile-<time>.json` beside the case file.
+- **A `case_graph` in every family.** An `FVAgent` for the finite-volume families (a window's Dirichlet-to-Neumann map through its own solve). The bracket's Schur complement. The sound's explicit update. The plate and the circuit meeting at each electrode. The wind farm through `scaling_ladder.build`: a tiling that is not a ladder rung is refused before the compiler. The heated strip is refused before the compiler by `PortAmendment`: its volumetric bond is not a port type.
+- **The Check step** has a live Compile button. It shows the verdict, the agents, seams and cross-points, a per-seam table with the rules, the graph-level decisions, and a note beside R10's refusal.
+- **Results:** every family's table carries the displayed field's rms difference from the full domain, and the record holds each arm's field difference. `NOT_BUILT` is gone.
+- **The gallery:** *File > Showcase gallery* lists every example, with its description, family, style and an *Open* button.
+
+**Measured in the served page** on 2026-09-29, 05:14–05:41 EDT, on AC power, with the owner's phone-remote server running. The records are in `out/workbench/records/step-f/`. Every example was opened, compiled and run. Every check that could be measured passed, and every run finished under 2 minutes.
+- **Compile verdicts:**
+  - `admit-uncertified`: the three farms (7.3 s, 45.3 s and 95.1 s), the plume, the plate on a circuit, the sound and the cooled block;
+  - `refuse` at R10: the wall, the insert and the bracket, with each of their seams admitted;
+  - refused before the compiler: the heated strip.
+- **Runs:** the farms took 29.1 s, 69.9 s and 70.0 s, the bracket 31.5 s and the plume 7.9 s; the rest took under 5 s each.
+- **Speed:** threads beat the full domain only at farm scale, $4.83\times$ at 12 rotors and $4.55\times$ at 21, both inside W346's ranges. Below 30,000 cells the full domain wins, by $1.4$–$490\times$.
+
+**Flagged, not hidden:**
+- **`farm-21`'s compile takes 95.1 s**, so its compile plus its 70.0 s run is 165 s. Each is under 2 minutes; together they are not.
+- **The farms' 12 and 6 macro-steps are step A's recalibration of the owner's 14 and 8.** Measured: 8 steps at 21 rotors took 122.1 s, 7 took 120.8 s, and 14 steps at 12 rotors took 112.6 s.
+
+**R10** refuses two embedded agents of one physics on a cut region, and does not read that styles B and C iterate until the pieces agree. The three refused cases agree with the full domain to within $3.6\times10^{-9}$. **[AI Inference]:** for these linear problems, the iteration's fixed point is the undivided solution. Whether R10 should read iteration is left to the compiler.
+
+**My own mistakes, caught before any judged number:**
+- The first `FVAgent` returned the flow *out* of the window, and the compiler read a passivity defect of 299 on the wall's seam. The flow into the window (the Steklov–Poincaré convention) is declared now, and a test checks it.
+- A compile job not yet started had no summary, and the Check view and the poll crashed on it.
+- The Check label was not refreshed when a compile finished with no run marching.
+- `NameError: wa` in the farm's graph builder, and a wrong import path for the tiling.
+- The gallery's text escaped the apostrophe in "W346's".
+
+**Found in the gallery pass and fixed before the records above:**
+- **Two farm rms columns disagreed.** The family's own column (u and v) was filled for the threaded arm only; the generic one (u alone) was filled for both. Every decomposed arm now carries the family's measures, labelled "(u and v)", and `farm-12` and `wake-array-3` were re-run.
+- **Stale labels.** After another case was opened, the Check and Results labels still described the last compile and run: "compiled: admit-uncertified" stood beside `farm-12`, and it was `farm-21`'s verdict. They now read "before a change", and the Results step says whose results it shows.
+
+**Checked:**
+- **The workbench's tests: 141 passed on the final tree.** The work is committed as three commits, one per step, split from one working tree. Each intermediate state was exported, tested and compared with its commit before the next was made: step D (the compile), 140 passed; step E (Run & compare and Results), 140 passed.
+- **Both OS colour schemes:** in the dark scheme the page stays one consistent light theme.
+- **The scanners:** `scripts/scan_control_chars.py` on every page touched shows no new flags against HEAD, and `scripts/vault_scan.py wiki` shows 0 problems.
+- **The full suite, `python scripts/run_suite.py`: 2091 passed, 0 failed, no missing logs.** That is Tier 89's 1950 plus the workbench's 141. Every log was written after the run started at 09:43:24.
+  - The laptop was on battery by then, with the machine held awake, and the system logged a Modern Standby window from 09:50:29 to 09:58:38 (events 506 and 507). Two groups finished inside it.
+  - So the run's 1216 s is not a speed figure. The page measurements above were all taken on AC power, earlier.
+
+**Not built:** the optional Gray–Scott case and the CS-13/CS-14 adapters, so no showcase case carries `ROT`.
+
+**Added:** `atlas/workbench/compile.py`, [[showcase-gallery]], `out/workbench/records/step-f/` (eleven compile and eleven run records). **Changed:** `app.py`, `runner.py`, `runview.py`, every family module, the workbench README, `tests/test_workbench_{cases,runner,shell}.py`; [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]], [[outcome-c4-modular-multiphysics]], [[00-atlas-0.1-outcome]], [[index]].

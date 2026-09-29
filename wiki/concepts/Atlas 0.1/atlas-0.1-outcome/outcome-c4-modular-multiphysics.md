@@ -6,6 +6,8 @@
 **Hub:** [[00-atlas-0.1-outcome]]
 **Sources:** [[atlas-implementation]] · [[end-to-end-architecture-spec]] · [[port-algebra-atlas-0.1]] · [[plug-in-composition-theorems]] · [[joining-seam-cost]] · [[case-study-vehicle-march-atlas-0.1]] · [[case-study-wing-fsi-atlas-0.1]] · [[case-study-cooling-loop-atlas-0.1]] · [[case-study-powertrain-atlas-0.1]] · [[poc2-frontwing-results]] · [[case-study-racelab-switch-atlas-0.1]] · [[poc3-racelab-dashboard]] · [[poc3-racelab-car-solids]] · [[case-study-rocket-bc-seam-atlas-0.1]]
 
+> **2026-09-29: a showcase, not an input to this audit.** The workbench now turns a drawn case file into a compiled graph for eight classical families. Across eleven examples that covers four port types and all four coupling styles, and each example is run against the full domain in the page ([[showcase-gallery]]). These are showcase runs, one pass each, not research records, so this page's verdict is unchanged. What they add to it is the same finding in new places: the heated strip's volumetric bond has no port type, and R10 refuses iterated one-physics cuts that the runs measure as agreeing with the full domain.
+
 ---
 
 ## 1. The claim, as three testable parts

@@ -44,7 +44,7 @@ MENU_CSS = ".bk-menu { width: max-content; min-width: 100%; }"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_CASES_DIR = os.path.join(ROOT, "out", "workbench", "cases")
-VERSION = "0.3 (runner)"
+VERSION = "0.4 (the showcase library)"
 #: How often the page reads a running case's progress, in milliseconds.
 POLL_MS = 400
 
@@ -269,6 +269,8 @@ class Workbench:
         elif group == "file" and rest.startswith("example:"):
             key = rest.split(":", 1)[1]
             self.set_spec(example_case(key), f"new case from the example {key!r}", path=None)
+        elif action == "file:gallery":
+            self._dialog_gallery()
         elif action == "file:open":
             self._dialog_open()
         elif action == "file:save":
@@ -509,7 +511,8 @@ class Workbench:
 
         examples = [(f"New from example: {ex.label}", f"file:example:{key}")
                     for key, ex in EXAMPLES.items()]
-        self.file_menu = menu("File", [("New blank case", "file:new"), *examples, None,
+        self.file_menu = menu("File", [("New blank case", "file:new"),
+                                       ("Showcase gallery...", "file:gallery"), *examples, None,
                                        ("Open...", "file:open"), ("Save", "file:save"),
                                        ("Save as...", "file:save-as"), None,
                                        ("Import JSON...", "file:import"),
@@ -1230,6 +1233,34 @@ class Workbench:
                                           + "\n".join(extra), width=560))
         return ok
 
+    def _dialog_gallery(self) -> None:
+        """Every showcase example, one line each, and a button that opens it."""
+        rows = []
+        for key, ex in EXAMPLES.items():
+            try:
+                fam = registry.family(ex.family).label
+            except KeyError:                               # pragma: no cover
+                fam = ex.family
+            go = pn.widgets.Button(name="Open", button_type="primary", width=80,
+                                   align="center")
+
+            def open_(_e, key=key):
+                self.tpl.close_modal()
+                self.dispatch(f"file:example:{key}")
+            go.on_click(open_)
+            esc = lambda t: html.escape(t, quote=False)                     # noqa: E731
+            rows.append(pn.Row(go, pn.pane.Markdown(
+                f"**{esc(ex.label)}**<br>{esc(ex.description)}<br>"
+                f"<small>{esc(fam)}; style {esc(ex.style)}</small>",
+                sizing_mode="stretch_width", margin=(0, 8)), sizing_mode="stretch_width"))
+        self._dialog(pn.pane.Markdown(
+            "### The showcase gallery\nOne case per coupling style and port type, each "
+            "run and compared on this laptop in under two minutes. These are showcases, not "
+            "research records: `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/"
+            "showcase-gallery.md` lists what each one measured."),
+            pn.Column(*rows, sizing_mode="stretch_width",
+                      styles={"max-height": "60vh", "overflow-y": "auto"}))
+
     def _dialog_open(self) -> None:
         files = self.case_files()
         rel = {os.path.basename(f): f for f in files}
@@ -1309,7 +1340,8 @@ class Workbench:
             "A tool to build a domain decomposition by hand, compile it with the Atlas "
             "compiler, run it, and compare it with the full-domain solve: the menus, the "
             "workflow, the case file, the geometry section, the runner with eight physics "
-            "families and every coupling style, and the compile.\n\n"
+            "families and every coupling style, the compile, and the showcase gallery "
+            "(**File > Showcase gallery**).\n\n"
             f"- Cases folder: `{os.path.relpath(self.cases_dir, ROOT)}`\n"
             "- Built on **Panel** and **Bokeh** (both BSD-3-Clause, already installed; "
             "nothing is downloaded and the page makes no outside requests).\n"

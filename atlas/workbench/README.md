@@ -1,18 +1,24 @@
 # Atlas Workbench
 
-Build a domain decomposition by hand, run it, and compare it with the full-domain
-solve. Built so far:
+Build a domain decomposition by hand, compile it with the Atlas compiler, run it,
+and compare it with the full-domain solve. Built:
 - the menus, the workflow, the case file and the **geometry section**;
 - the **runner**, with eight physics families, one per showcase case: the wind
   farm (style A), heat conduction in several materials (styles B and C), a
   resistive plate on a circuit (style D), a pollutant plume down a river (style A,
   explicit), sound through two media (style C, explicit), a loaded bracket (style
   B), a heated strip split by physics, and a heated block cooled by a channel
-  flow (style C at a seam between two physics).
+  flow (style C at a seam between two physics);
+- the **compile**: each family turns a case into the Atlas compiler's `CaseGraph`,
+  and the Check step shows the compiler's verdict per seam;
+- the **showcase gallery**: *File > Showcase gallery* lists every example, and
+  `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/showcase-gallery.md` records what
+  each one measured in the served page.
 
 The runner is plan step 3 of
-`wiki/concepts/Atlas 0.1/atlas-0.1-outcome/outcome-c4-path-to-declarative-cases.md`.
-The library of cases it runs is `showcase-library-plan.md` in the same folder.
+`wiki/concepts/Atlas 0.1/atlas-0.1-outcome/outcome-c4-path-to-declarative-cases.md`,
+and the compile is the graph half of its step 2. The library of cases is
+`showcase-library-plan.md` in the same folder.
 
 ```bash
 python -m atlas.workbench --open
@@ -48,8 +54,8 @@ both properties of the replacement.
 
 | part | where | what it does now |
 |---|---|---|
-| menus | header | **File** (new, eleven examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; run decomposed, full, or the ticked arms; stop; show the results; compile says why it is not built yet), **Help** |
-| workflow | sidebar | six steps, each labelled with its status (`ok`, `N errors`, `not built`), and a live case check |
+| menus | header | **File** (new, the showcase gallery, eleven examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; compile with the Atlas compiler; run decomposed, full, or the ticked arms; stop; show the results), **Help** |
+| workflow | sidebar | six steps, each labelled with its status (`ok`, `N errors`, the compile's verdict, the run's state; `before a change` once the open case is no longer the one compiled or run), and a live case check |
 | case bar | top of the workspace | which case is open, and whether and where it is saved |
 | workspace | main | the active step |
 | activity | bottom | a timestamped log of every action |
@@ -58,9 +64,9 @@ The six steps:
 1. **Case**: name, description, physics family, domain size. A family that cannot run yet is listed and disabled. Works.
 2. **Geometry**: the canvas and its five layers. Works; see below.
 3. **Physics & coupling**: the family's own parameters (from the registry), the run mode (steady or transient), the macro-step, the coupling style and its settings (ramp width; tolerance and iteration cap; first relaxation factor, Aitken, and which piece takes the Dirichlet side; none of these for a family whose exchange is explicit), and the materials table, editable or picked from the family's library. Works.
-4. **Check**: every rule, with where to fix it. Compile with the Atlas compiler is visible and disabled, with its reason.
+4. **Check**: every rule, with where to fix it, and **Compile with the Atlas compiler**: the verdict, the agents and seams, the declared cross-points, a per-seam table with the rules behind each verdict, and the decisions about the graph as a whole. See "The compile" below.
 5. **Run & compare**: works for all eight families; see below.
-6. **Results**: each arm's time per step and its ratio to the full domain, the family's metric, the field difference, and the sanity checks against their registered tolerances, from the run's record.
+6. **Results**: from the run's record, each arm's time per step and its ratio to the full domain, the family's metrics, the displayed field's rms difference from the full domain, and the sanity checks against their registered tolerances. If the open case is no longer the one that ran, the step says whose results these are.
 
 ## The runner
 
@@ -78,7 +84,7 @@ It runs in a background thread; the page reads its progress every 400 ms and dra
 
 **What the timer holds:** the family adapter's `step` and nothing else. Diagnostics, the bitwise comparison, the snapshot and the record are taken after it stops.
 
-**The record** goes beside the case file, in `<case>.results/<time>.json`: the case as it marched, every per-step time, the metrics, each check with its tolerance and registration date, and the machine's state before and after (power source, other Python processes; `machine.py`).
+**The record** goes beside the case file, in `<case>.results/<time>.json`: the case as it marched, every per-step time, the metrics, each check with its tolerance and registration date, each arm's field difference from the full domain (rms, largest, and rms relative to the full field's), and the machine's state before and after (power source, other Python processes; `machine.py`).
 
 **The family adapters** are in `families/`, one per family, named by the registry (`registry.Family.adapter`). Every check below was registered before its family's first run, and the record carries the date.
 
@@ -110,6 +116,41 @@ The solver-family interface was derived from two real families, the wind farm an
 `fe.py` is the structural families' core: Q1 elements with a material per element, the build repo's `ThermoStruct2D` element (2 x 2 Gauss points, its shape functions and plane-stress matrix). On one material its stiffness, conduction and mass matrices are that solver's own to 1e-12, and its thermal load gives that solver's clamped displacement to 1e-10; a test checks both when the build repo is present.
 
 **At showcase sizes the full domain is faster** for every family but the wind farm. On 4,000–29,600 cells a sparse direct solve, or one explicit step on the whole grid, beat every decomposed arm in the served page on AC power, by 1.5× (the sound's two pieces) to 520× (plain Schwarz on the bracket, serially, 616 iterations). The heated strip's three arms tie within the machine's noise, about 10%. These cases show the coupling, not a speedup, and the timing table gives the ratio either way.
+
+## The compile (`compile.py`)
+
+**Compile** (step 4, or *Run > Compile with the Atlas compiler*) puts the case as it stands to `atlas/compiler.py`, in a background thread. The case is copied first, so an edit made while it compiles cannot reach it. No run and no compile start while the other is active, because each would be timed with the other. The record goes beside the case file, in `<case>.results/compile-<time>.json`: every decision, the compiler's report, and the case as compiled.
+
+**A case becomes a graph through its family.** Every family module has a `case_graph(spec)`:
+- one agent per window or piece, each with a capability record;
+- a connection wherever a cut face of one window opens into another (across an overlap, or across a shared face in style C);
+- the cross-points, always declared (W162): named where three or more windows overlap, `()` where there are none.
+
+Each port declares a real Fourier prolongation over its faces (up to 8 modes; one on an electrode), and the compiler derives the seam's common space.
+
+**The responses are the families' own arithmetic.** The compiler's L4 probe perturbs each port's trace and reads the response, so every agent's `boundary_response` is a real local solve:
+
+| family | agent's response |
+|---|---|
+| conduction, the cooled block, the plume | `FVAgent`: a finite-volume window's Dirichlet-to-Neumann map through its own sparse solve, or, for an explicit step, the flux the step would send. It is the flow *into* the window: the first draft returned the flow out, and the compiler read a passivity defect of 299 on the wall |
+| the plate on a circuit | two agents meeting at each electrode, one number per electrode: the plate's current into itself from its own field solve, and the circuit's from nodal analysis, with the other electrodes held |
+| the bracket | a window's Schur complement: its reaction to prescribed displacements on its cut nodes |
+| the sound | the explicit update's velocity response to the interface pressure |
+| the wind farm | the vault's own graph for the tiling: `atlas/cases/scaling_ladder.py`'s `build`, with W346's exposed windows and the rotors as agents. A drawn tiling that is not one of that ladder's rungs is refused before the compiler, with that reason |
+| the heated strip | none: the whole temperature field crosses between two agents on one mesh, a volumetric bond, and `VOLUMETRIC` is not a port type. The package's `NamedHoleError: PortAmendment` refuses it before the compiler |
+
+**Each seam's verdict is the worst of the compiler's decisions about it.** The page shows every rule that is less than `admit`, and the case's verdict is the compiler's own.
+
+**What the examples compile to** (the gallery page has the times and the rules):
+- `admit-uncertified`: the three farms, the plume, the plate on a circuit, the sound and the cooled block;
+- `refuse` at R10: the two-layer wall, the insert and the bracket. Each of their seams is admitted;
+- refused before the compiler: the heated strip.
+
+No case can earn a plain `admit`: the master bound's constants are unmeasured on every graph (W56). R10 refuses two embedded agents of one physics that cut its region. It does not read that styles B and C iterate until the pieces agree, and the Run step measures them within $3.6\times10^{-9}$ of the full domain or closer. The page says so beside the refusal and does not change it.
+
+## The showcase gallery
+
+*File > Showcase gallery* lists every example with its description, family and style, and an **Open** button. Every example was opened, checked, compiled and run in the served page on 2026-09-29. `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/showcase-gallery.md` has a row per case: its style, port type, compile verdict, its two checks' measured values against their tolerances, and its runtime. The records are in `out/workbench/records/step-f/`. Every run finished under 2 minutes, the longest in 70 s. The 21-rotor farm's compile takes 95 s, so its compile plus its run is 165 s. Each row is labelled a showcase, not a research record.
 
 ## The geometry section
 
@@ -179,9 +220,10 @@ four layers now.
 | `families/elasticity.py` | a two-material bracket under load (style B on a structure) |
 | `families/thermoelastic.py` | a heated bimetal strip, conduction and elasticity split by physics |
 | `families/cooling.py` | a heated block cooled by a channel flow (style C at a seam between two physics) |
-| `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven through the data Bokeh's tools send, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record |
+| `compile.py` | the compile: a case's `CaseGraph` through its family's `case_graph`, the finite-volume window as an agent (`FVAgent`), seams from the geometry with Fourier prolongations, the declared cross-points, the verdict per seam, and the background job with its record |
+| `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven through the data Bokeh's tools send, every menu action (nothing is left unbuilt), and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
 | `tests/test_workbench_fv.py`, `tests/test_workbench_families.py` | the finite volumes against closed forms (a layered wall, a series circuit), one window equal to the full domain to the bit, styles B, C and D against the full domain, the unrelaxed Dirichlet–Neumann diverging exactly when $\rho>1$, both new families end to end, and the page's family, physics and materials controls |
-| `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page |
+| `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, the Check step's per-seam table, and the gallery opening every example |
 
 ## Known limitations
 
@@ -192,4 +234,7 @@ four layers now.
 - **The circuit is drawn, not dragged**: its parts are set in the table and the canvas draws the schematic.
 - **At showcase sizes the decomposed arms are slower than the full domain** for every family but the wind farm (above). This is measured and shown, not hidden.
 - **Plain Schwarz has no coarse level**, so it converges slowly on a bending structure (616 iterations on the bracket); a coarse space or a Krylov wrapper would be the remedy, and neither is built.
+- **The wind farm compiles only on a scaling-ladder rung.** Its graph is the vault's `scaling_ladder.build`, which declares a regular tiling. A drawn tiling that is not a rung runs, but is refused before the compiler, with that reason.
+- **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not.
+- **R10 refuses the iterated one-physics cases** (styles B and C: the wall, the insert, the bracket), because it does not read whether a coupling iterates. The refusal is shown as the compiler gave it.
 - Bokeh gives each gesture to one tool, so moving and resizing are two tools, not one.

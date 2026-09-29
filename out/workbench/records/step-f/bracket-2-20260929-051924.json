@@ -1,0 +1,351 @@
+{
+ "schema": "atlas-workbench/results@1",
+ "case_name": "bracket-2",
+ "case_path": null,
+ "family": "elasticity-2d",
+ "style": "B",
+ "committed_at": "2026-09-29T05:18:52-04:00",
+ "started": "2026-09-29T05:18:52-04:00",
+ "finished": "2026-09-29T05:19:24-04:00",
+ "wall_seconds": 31.469171285629272,
+ "build_seconds": 0.21477680001407862,
+ "arms": [
+  "serial",
+  "parallel",
+  "full"
+ ],
+ "arm_labels": {
+  "serial": "Decomposed, serial",
+  "parallel": "Decomposed, parallel",
+  "full": "Full domain"
+ },
+ "dropped_arms": {},
+ "step_label": "timed repeat",
+ "steps_requested": 5,
+ "steps_done": 5,
+ "stopped": false,
+ "threads": 2,
+ "timing": {
+  "serial": {
+   "seconds_per_step": [
+    2.727508099982515,
+    3.0506476999726146,
+    3.8317768999841064,
+    3.411036800011061,
+    3.2808341999771073
+   ],
+   "mean": 3.260360739985481,
+   "median": 3.2808341999771073,
+   "min": 2.727508099982515,
+   "speedup_vs_full": 0.0020504908869210317
+  },
+  "parallel": {
+   "seconds_per_step": [
+    2.019753300002776,
+    2.396494199987501,
+    3.3445264999754727,
+    3.453401800012216,
+    3.110322199994698
+   ],
+   "mean": 2.8648995999945326,
+   "median": 3.110322199994698,
+   "min": 2.019753300002776,
+   "speedup_vs_full": 0.0023335337773889523
+  },
+  "full": {
+   "seconds_per_step": [
+    0.0069747999077662826,
+    0.004157599993050098,
+    0.007174700032919645,
+    0.006970799993723631,
+    0.00814879999961704
+   ],
+   "mean": 0.00668533998541534,
+   "median": 0.0069747999077662826,
+   "min": 0.004157599993050098,
+   "speedup_vs_full": 1.0
+  }
+ },
+ "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+ "bitwise": {
+  "steps": 5,
+  "first_difference": null
+ },
+ "metrics": {
+  "serial": {
+   "max_displacement_mm": 0.7699125994894607,
+   "load_N": 5000.0,
+   "balance_max": 1.2837230520573272e-10,
+   "iterations_last": 616.0,
+   "all_converged": true,
+   "max_stress_MPa": 142.67207296901876
+  },
+  "parallel": {
+   "max_displacement_mm": 0.7699125994894607,
+   "load_N": 5000.0,
+   "balance_max": 1.2837230520573272e-10,
+   "iterations_last": 616.0,
+   "all_converged": true,
+   "max_stress_MPa": 142.67207296901876,
+   "displacement_vs_full": 3.655246339385804e-11,
+   "stress_vs_full_MPa": 9.036199344336637e-09
+  },
+  "full": {
+   "max_displacement_mm": 0.7699125995176023,
+   "load_N": 5000.0,
+   "balance_max": 2.093205873449809e-11,
+   "iterations_last": 1.0,
+   "all_converged": true,
+   "max_stress_MPa": 142.67207297805118
+  }
+ },
+ "field_difference": {
+  "serial": {
+   "rms": 1.943736951387826e-09,
+   "max": 9.036199344336637e-09,
+   "rms_relative": 4.754338936073096e-11
+  },
+  "parallel": {
+   "rms": 1.943736951387826e-09,
+   "max": 9.036199344336637e-09,
+   "rms_relative": 4.754338936073096e-11
+  }
+ },
+ "field_label": "von Mises stress (MPa)",
+ "checks": [
+  {
+   "key": "force",
+   "title": "Forces: the supports balance the loads",
+   "kind": "balance",
+   "tolerance": 1e-06,
+   "registered": "2026-09-29, before the elasticity family's first run",
+   "measure": "|sum of the support reactions + sum of the applied loads| over |sum of the applied loads|, as vectors, every repeat, worst arm",
+   "why": "the stiffness annihilates a rigid translation, so reactions plus loads are minus the net force of the residual at the free nodes: round-off for the direct solve, and for the decomposed arm the residual its iteration stops at -- at most about 4 E times the last update per degree of freedom, 8e-4 N/m for the example at an update of 1e-12 of its millimetre displacement, which summed over its 13,000 degrees of freedom with independent signs is 2e-7 of the load. With one sign everywhere it would be 2e-5 and this check would fail, and say so",
+   "value": 1.2837230520573272e-10,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "serial: 1.28e-10; parallel: 1.28e-10; full: 2.09e-11",
+   "extra": {}
+  },
+  {
+   "key": "reference",
+   "title": "Displacements agree with the full domain",
+   "kind": "reference",
+   "tolerance": 1e-06,
+   "registered": "2026-09-29, before the elasticity family's first run",
+   "measure": "max |u_decomposed - u_full| over max |u_full|, at the last repeat",
+   "why": "both solve the same stiffness; the converged Schwarz iterate is the direct solution to the iteration's tolerance over one minus its contraction factor",
+   "value": 3.655246339385804e-11,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "largest displacement 0.7699 mm",
+   "extra": {}
+  },
+  {
+   "key": "bitwise",
+   "title": "Threaded equals serial, bit for bit",
+   "kind": "control",
+   "tolerance": null,
+   "registered": "2026-09-29, before the elasticity family's first run",
+   "measure": "np.array_equal on the displacements after every repeat",
+   "why": "additive Schwarz solves every window from the same iterate and blends in window order, so the order the threads finish in cannot change a bit",
+   "value": null,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "equal after all 5 repeats",
+   "extra": {}
+  }
+ ],
+ "notes": [
+  "Steady: every repeat is the whole solve again from zero displacement. The load is 5000 N on a plate 10 mm thick (plane stress, so the displacements do not depend on the thickness).",
+  "Schwarz stops when the update is below 1e-12 of the iterate's largest displacement; 2 windows on the node grid, 13,120 free degrees of freedom."
+ ],
+ "problem": {
+  "style": "B",
+  "mode": "steady",
+  "elements": 6400,
+  "free_dofs": 13120,
+  "windows": 2,
+  "tolerance": 1e-12,
+  "max_iterations": 5000,
+  "thickness_m": 0.01,
+  "partition_of_unity": {
+   "identity_residual": 0.0,
+   "chi_min": 0.0038910505836575876,
+   "tolerance": 1e-10,
+   "holds": true
+  }
+ },
+ "machine": {
+  "time": "2026-09-29T05:18:52-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [
+   {
+    "pid": 31624,
+    "memory": "3,844 K",
+    "command": "\".venv\\Scripts\\python.exe\"  server.py"
+   },
+   {
+    "pid": 33492,
+    "memory": "23,532 K",
+    "command": "\"C:\\Users\\Nauni\\anaconda3\\python.exe\" server.py"
+   }
+  ],
+  "pid": 27608
+ },
+ "machine_after": {
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "time": "2026-09-29T05:19:24-04:00"
+ },
+ "case": {
+  "schema_id": "atlas-workbench/case@0.3",
+  "name": "bracket-2",
+  "description": "Steel-and-aluminium bracket under load (style B)",
+  "domain": {
+   "nx": 160,
+   "ny": 40,
+   "dx": 0.0025
+  },
+  "physics": {
+   "family": "elasticity-2d",
+   "params": {
+    "thickness": 0.01
+   }
+  },
+  "materials": {
+   "steel": {
+    "E": 200000000000.0,
+    "nu": 0.3,
+    "alpha": 1.2e-05,
+    "k": 45.0,
+    "rho": 7850.0,
+    "cp": 490.0
+   },
+   "aluminium": {
+    "E": 70000000000.0,
+    "nu": 0.33,
+    "alpha": 2.3e-05,
+    "k": 205.0,
+    "rho": 2700.0,
+    "cp": 900.0
+   }
+  },
+  "regions": [
+   {
+    "id": "root",
+    "material": "steel",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 96,
+    "ny": 40,
+    "points": null,
+    "holes": null
+   },
+   {
+    "id": "tip",
+    "material": "aluminium",
+    "shape": "rect",
+    "x0": 96,
+    "y0": 0,
+    "nx": 64,
+    "ny": 40,
+    "points": null,
+    "holes": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "clamp-side",
+    "x0": 0,
+    "y0": 0,
+    "nx": 96,
+    "ny": 40
+   },
+   {
+    "id": "tip-side",
+    "x0": 64,
+    "y0": 0,
+    "nx": 96,
+    "ny": 40
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "B-left",
+    "edge": "left",
+    "kind": "clamped",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-right",
+    "edge": "right",
+    "kind": "load-y",
+    "start": 0,
+    "stop": null,
+    "value": -5000000.0
+   },
+   {
+    "id": "B-bottom",
+    "edge": "bottom",
+    "kind": "free",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-top",
+    "edge": "top",
+    "kind": "free",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "B",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-12,
+   "max_iterations": 5000,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 1.0,
+   "steps": 5,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "steady"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ }
+}

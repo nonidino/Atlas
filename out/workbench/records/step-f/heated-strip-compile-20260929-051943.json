@@ -1,0 +1,142 @@
+{
+ "schema": "atlas-workbench/compile@1",
+ "case": {
+  "schema_id": "atlas-workbench/case@0.3",
+  "name": "heated-strip",
+  "description": "Heated bimetal strip (split by physics)",
+  "domain": {
+   "nx": 200,
+   "ny": 20,
+   "dx": 0.001
+  },
+  "physics": {
+   "family": "thermoelastic-2d",
+   "params": {
+    "T0": 300.0
+   }
+  },
+  "materials": {
+   "steel": {
+    "E": 200000000000.0,
+    "nu": 0.3,
+    "alpha": 1.2e-05,
+    "k": 45.0,
+    "rho": 7850.0,
+    "cp": 490.0
+   },
+   "copper": {
+    "E": 120000000000.0,
+    "nu": 0.34,
+    "alpha": 1.7e-05,
+    "k": 400.0,
+    "rho": 8960.0,
+    "cp": 385.0
+   }
+  },
+  "regions": [
+   {
+    "id": "steel",
+    "material": "steel",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 200,
+    "ny": 10,
+    "points": null,
+    "holes": null
+   },
+   {
+    "id": "copper",
+    "material": "copper",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 10,
+    "nx": 200,
+    "ny": 10,
+    "points": null,
+    "holes": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "plate",
+    "x0": 0,
+    "y0": 0,
+    "nx": 200,
+    "ny": 20
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "B-left",
+    "edge": "left",
+    "kind": "fixed-temperature",
+    "start": 0,
+    "stop": null,
+    "value": 400.0
+   },
+   {
+    "id": "B-right",
+    "edge": "right",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-bottom",
+    "edge": "bottom",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-top",
+    "edge": "top",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "split",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 500,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 5.0,
+   "steps": 60,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "transient"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ },
+ "family": "thermoelastic-2d",
+ "verdict": "refuse",
+ "seams": [],
+ "other": [],
+ "seconds": 0.01667679997626692,
+ "agents": 0,
+ "cross_points": null,
+ "refused_before": "NamedHoleError: PortAmendment is a named hole, not a rule (port type 'VOLUMETRIC' is not one of ['MECH', 'ROT', 'THERM', 'ELEC', 'ADVEC']; a sixth type enters only through the six-field amendment procedure, which has never been exercised). Gap O6 / G16: Five port types are closed for the cases considered. Completeness is unprovable in the abstract, so the target is a documented extension procedure, and that reframing is itself an open design question. Default today: refuse. See end-to-end-architecture-spec \u00a712.5.",
+ "when": "2026-09-29T05:19:43-04:00",
+ "report": ""
+}

@@ -558,6 +558,28 @@ def test_electrode_nodes_are_inside_the_canvas(wb):
         assert x0 + 2 <= x <= x1 - 2 and y0 + 2 <= y <= y1 - 2
 
 
+def test_the_gallery_lists_every_example_and_opens_it(wb):
+    import panel as pn
+    from atlas.workbench.spec import EXAMPLES
+    wb.dispatch("file:gallery")
+    text = _texts(wb.modal_body)
+    for ex in EXAMPLES.values():
+        assert ex.label in text and ex.description in text
+    assert "showcases, not research records" in text
+    buttons = []
+
+    def walk(o):
+        if isinstance(o, pn.widgets.Button) and o.name == "Open":
+            buttons.append(o)
+        for c in getattr(o, "objects", None) or []:
+            walk(c)
+    walk(wb.modal_body)
+    assert len(buttons) == len(EXAMPLES)
+    keys = list(EXAMPLES)
+    buttons[keys.index("cooled-block")].clicks += 1
+    assert wb.spec.name == "cooled-block"
+
+
 def test_the_check_step_shows_the_compile_per_seam(wb):
     wb.dispatch("file:example:plate-circuit")
     job = wb.start_compile(blocking=True)

@@ -16,6 +16,13 @@
 
 > **2026-09-29, later: eight families, one per showcase case.** Five more families: a plume down a river (style A with an explicit step), sound through two media (style C, explicit), a loaded bracket (style B on a structure), a heated strip split by physics, and a cooled block (style C at a seam between two physics). Every one of their checks passes on its example, each registered before its family's first run. The cooled block's reference check failed twice first, and that was mended in the method (a floating piece takes the Dirichlet side), not in the tolerance. The loader is still not built. Details: [[showcase-library-plan]] §5.
 
+> **2026-09-29, last: the loader's graph half is built, and every example compiles from the page.** It is built per family rather than through step 1's registry: each family's `case_graph(spec)` declares one agent per window or piece, derives a seam wherever two meet, and declares the cross-points (W162). `atlas/compiler.py` then judges it, and the Check step shows the verdict per seam.
+> - Seven examples come back `admit-uncertified`.
+> - The two-material conduction cases and the bracket are refused at R10, a proxy that does not read that their coupling iterates to agreement.
+> - The heated strip is refused before the compiler: its volumetric bond is not a port type.
+>
+> Every example also ran in the page in under 2 minutes. The 21-rotor farm's compile adds 95 s to its 70 s run. Details: [[showcase-gallery]] and [[showcase-library-plan]] §5.
+
 ---
 
 ## 1. What a case study is today, layer by layer

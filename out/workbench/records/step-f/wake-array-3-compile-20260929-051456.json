@@ -1,0 +1,389 @@
+{
+ "schema": "atlas-workbench/compile@1",
+ "case": {
+  "schema_id": "atlas-workbench/case@0.3",
+  "name": "wake-array-3",
+  "description": "Wake array: 3 rotors, 6 windows (CS-7, N = 6)",
+  "domain": {
+   "nx": 352,
+   "ny": 240,
+   "dx": 0.03125
+  },
+  "physics": {
+   "family": "incompressible-2d",
+   "params": {
+    "nu": 0.00392,
+    "u_inf": 1.0
+   }
+  },
+  "materials": {},
+  "regions": [],
+  "windows": [
+   {
+    "id": "F00",
+    "x0": 0,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128
+   },
+   {
+    "id": "F10",
+    "x0": 112,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128
+   },
+   {
+    "id": "F20",
+    "x0": 224,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128
+   },
+   {
+    "id": "F01",
+    "x0": 0,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128
+   },
+   {
+    "id": "F11",
+    "x0": 112,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128
+   },
+   {
+    "id": "F21",
+    "x0": 224,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128
+   }
+  ],
+  "devices": [
+   {
+    "id": "R1",
+    "kind": "actuator-disk",
+    "x": 3.75,
+    "y": 1.75,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   },
+   {
+    "id": "R2",
+    "kind": "actuator-disk",
+    "x": 7.25,
+    "y": 1.75,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   },
+   {
+    "id": "R3",
+    "kind": "actuator-disk",
+    "x": 7.25,
+    "y": 5.25,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   }
+  ],
+  "boundaries": [
+   {
+    "id": "B-left",
+    "edge": "left",
+    "kind": "inlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-right",
+    "edge": "right",
+    "kind": "outlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-bottom",
+    "edge": "bottom",
+    "kind": "freestream",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-top",
+    "edge": "top",
+    "kind": "freestream",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "A",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 500,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 0.2,
+   "steps": 40,
+   "threads": 4,
+   "start": "freestream",
+   "mode": "transient"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ },
+ "family": "incompressible-2d",
+ "verdict": "admit-uncertified",
+ "seams": [
+  {
+   "seam": "x0r0_bypass",
+   "between": [
+    "F00",
+    "F10"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "block-share",
+     "verdict": "admit-uncertified",
+     "subject": "x0r0_bypass",
+     "message": "a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F10 kappa 1254 against the assembled 1.09 (1150x). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F00 0.2154, F10 0.06657, assembled 0.234 Per-mode, read off alpha_star, the dominant side holds median 0.975 and max 1.000 of the response, with 25 of 25 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.1481 for F10."
+    }
+   ]
+  },
+  {
+   "seam": "R1_up",
+   "between": [
+    "R1",
+    "F10"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit",
+   "rules": []
+  },
+  {
+   "seam": "R1_down",
+   "between": [
+    "R1",
+    "F00"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "E7/passivity",
+     "verdict": "admit-uncertified",
+     "subject": "R1_down",
+     "message": "passivity defect 1.807e+00 on the assembled seam: the symmetric part has a negative mode, so the L <= 1 branch is unavailable and L falls back to fitted. The eigenvector names which interface mode is amplified. **W306: the spectrum is ONE-SIGNED NEGATIVE** (lambda_max = -1.776e+00 < 0), so every mode is damped and this is a global SIGN rather than an amplified mode -- S lam = chi is indifferent to it because chi flips with S. That makes it a DECLARATION inconsistency rather than a physical defect: the seam declares no effort_normal, so both blocks entered the sum with +1. The L <= 1 branch is still unavailable until the orientation is fixed, which is why this is still a decertification"
+    }
+   ]
+  },
+  {
+   "seam": "x1r0_bypass",
+   "between": [
+    "F10",
+    "F20"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "block-share",
+     "verdict": "admit-uncertified",
+     "subject": "x1r0_bypass",
+     "message": "a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F20 kappa 1254 against the assembled 1.09 (1150x). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F10 0.2154, F20 0.06657, assembled 0.234 Per-mode, read off alpha_star, the dominant side holds median 0.975 and max 1.000 of the response, with 25 of 25 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.1481 for F20."
+    }
+   ]
+  },
+  {
+   "seam": "R2_up",
+   "between": [
+    "R2",
+    "F20"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit",
+   "rules": []
+  },
+  {
+   "seam": "R2_down",
+   "between": [
+    "R2",
+    "F10"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "E7/passivity",
+     "verdict": "admit-uncertified",
+     "subject": "R2_down",
+     "message": "passivity defect 1.807e+00 on the assembled seam: the symmetric part has a negative mode, so the L <= 1 branch is unavailable and L falls back to fitted. The eigenvector names which interface mode is amplified. **W306: the spectrum is ONE-SIGNED NEGATIVE** (lambda_max = -1.776e+00 < 0), so every mode is damped and this is a global SIGN rather than an amplified mode -- S lam = chi is indifferent to it because chi flips with S. That makes it a DECLARATION inconsistency rather than a physical defect: the seam declares no effort_normal, so both blocks entered the sum with +1. The L <= 1 branch is still unavailable until the orientation is fixed, which is why this is still a decertification"
+    }
+   ]
+  },
+  {
+   "seam": "x0r1_full",
+   "between": [
+    "F01",
+    "F11"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "block-share",
+     "verdict": "admit-uncertified",
+     "subject": "x0r1_full",
+     "message": "a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F11 kappa 2010 against the assembled 1.089 (1845x). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F01 0.2154, F11 0.06598, assembled 0.2339 Per-mode, read off alpha_star, the dominant side holds median 0.981 and max 1.000 of the response, with 33 of 33 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.1487 for F11."
+    }
+   ]
+  },
+  {
+   "seam": "x1r1_bypass",
+   "between": [
+    "F11",
+    "F21"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "block-share",
+     "verdict": "admit-uncertified",
+     "subject": "x1r1_bypass",
+     "message": "a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F21 kappa 1254 against the assembled 1.09 (1150x). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F11 0.2154, F21 0.06657, assembled 0.234 Per-mode, read off alpha_star, the dominant side holds median 0.975 and max 1.000 of the response, with 25 of 25 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.1481 for F21."
+    }
+   ]
+  },
+  {
+   "seam": "R3_up",
+   "between": [
+    "R3",
+    "F21"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit",
+   "rules": []
+  },
+  {
+   "seam": "R3_down",
+   "between": [
+    "R3",
+    "F11"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "E7/passivity",
+     "verdict": "admit-uncertified",
+     "subject": "R3_down",
+     "message": "passivity defect 1.807e+00 on the assembled seam: the symmetric part has a negative mode, so the L <= 1 branch is unavailable and L falls back to fitted. The eigenvector names which interface mode is amplified. **W306: the spectrum is ONE-SIGNED NEGATIVE** (lambda_max = -1.776e+00 < 0), so every mode is damped and this is a global SIGN rather than an amplified mode -- S lam = chi is indifferent to it because chi flips with S. That makes it a DECLARATION inconsistency rather than a physical defect: the seam declares no effort_normal, so both blocks entered the sum with +1. The L <= 1 branch is still unavailable until the orientation is fixed, which is why this is still a decertification"
+    }
+   ]
+  },
+  {
+   "seam": "y0c0",
+   "between": [
+    "F00",
+    "F01"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit",
+   "rules": []
+  },
+  {
+   "seam": "y0c1",
+   "between": [
+    "F10",
+    "F11"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit",
+   "rules": []
+  },
+  {
+   "seam": "y0c2",
+   "between": [
+    "F20",
+    "F21"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit",
+   "rules": []
+  }
+ ],
+ "other": [
+  {
+   "layer": "L2",
+   "rule": "C2",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+  },
+  {
+   "layer": "L5",
+   "rule": "eps_tol",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit"
+  },
+  {
+   "layer": "L6",
+   "rule": "W49",
+   "verdict": "admit-uncertified",
+   "subject": "<assembly>",
+   "message": "Pi = 0.725 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants"
+  },
+  {
+   "layer": "L9",
+   "rule": "E5",
+   "verdict": "admit-uncertified",
+   "subject": "<run>",
+   "message": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate"
+  },
+  {
+   "layer": "L8",
+   "rule": "W56",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+  }
+ ],
+ "seconds": 7.332169299945235,
+ "agents": 9,
+ "cross_points": [
+  "x0y0",
+  "x1y0"
+ ],
+ "refused_before": null,
+ "when": "2026-09-29T05:14:56-04:00",
+ "report": "=== scaling-ladder-N6-3x2-reference_exposed ===\nverdict: admit-uncertified   depth: 0\n\nE1:holds E2:holds E3:holds E4:holds E5:unchecked E6:holds E7:fails\nclaim: UNTYPED -- L is unmeasured, so the predictability horizon is unknown, so no type is decidable. Every metric carries the UNTYPED tag\nunmeasured constants: L (W1), sigma (W3), tau (W3), C_mu (W3)\nnamed holes touched: AssemblyCertificate, InterfaceMotion\nslot measurements still owed: {'InterfaceMotion': ['operator_drift', 'unaccounted_power_fraction']}\n\ndecertifications (12 across 10 rules):\n  L2/C2  [<graph>]\n      L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference\n  L4/block-share  [x0r0_bypass]\n      a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F10 kappa 1254 against the assembled 1.09 (1150x). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F00 0.2154, F10 0.06657, assembled 0.234 Per-mode, read off alpha_star, the dominant side holds median 0.975 and max 1.000 of the response, with 25 of 25 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.1481 for F10.\n  L4/E7/passivity  [R1_down, R2_down, R3_down]\n      passivity defect 1.807e+00 on the assembled seam: the symmetric part has a negative mode, so the L <= 1 branch is unavailable and L falls back to fitted. The eigenvector names which interface mode is amplified. **W306: the spectrum is ONE-SIGNED NEGATIVE** (lambda_max = -1.776e+00 < 0), so every mode is damped and this is a global SIGN rather than an amplified mode -- S lam = chi is indifferent to it because chi flips with S. That makes it a DECLARATION inconsistency rather than a physical defect: the seam declares no effort_normal, so both blocks entered the sum with +1. The L <= 1 branch is still unavailable until the orientation is fixed, which is why this is still a decertification\n  L4/block-share  [x1r0_bypass]\n      a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F20 kappa 1254 against the assembled 1.09 (1150x). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F10 0.2154, F20 0.06657, assembled 0.234 Per-mode, read off alpha_star, the dominant side holds median 0.975 and max 1.000 of the response, with 25 of 25 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.1481 for F20.\n  L4/block-share  [x0r1_full]\n      a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F11 kappa 2010 against the assembled 1.089 (1845x). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F01 0.2154, F11 0.06598, assembled 0.2339 Per-mode, read off alpha_star, the dominant side holds median 0.981 and max 1.000 of the response, with 33 of 33 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.1487 for F11.\n  L4/block-share  [x1r1_bypass]\n      a block on this seam is far worse conditioned than the operator it assembles into, and every diagnostic downstream of L4 is taken on the sum: F21 kappa 1254 against the assembled 1.09 (1150x). The assembled numbers are not wrong and they are not sufficient: beta_i is what the substructuring branch inverts (W57) and Xi_i is the composability index, and neither is recoverable from the sum. The mechanism here is one-sidedness -- block norms F11 0.2154, F21 0.06657, assembled 0.234 Per-mode, read off alpha_star, the dominant side holds median 0.975 and max 1.000 of the response, with 25 of 25 modes above 0.90. Substitution of the weak side is invisible below beta_min = 0.1481 for F21.\n  L5/eps_tol  [<graph>]\n      the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit\n  L6/W49  [<assembly>]\n      Pi = 0.725 is measured, and C_mu is not declared on this graph, so master-error-bound 4.1's sigma <= C_mu * Pi * ||d_lambda|| has no value for its leading constant. 1.2 is what it measured on `reference.WindowNS` over 16 configurations and it is NOT a default for another expert -- W55 is open precisely because one solver is one solver. Declare C_mu on MeasuredConstants\n  L9/E5  [<run>]\n      UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate\n  L8/W56  [<graph>]\n      4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants\n\nscheme Sigma\n  D_decomposition        overlapping   <- as declared\n  D_decomposition_axes   ['overlapping']\n  Lambda_transmission    dirichlet   <- probing is the exception that makes R1 survivable: probed-DtN requires only bc_channel >= dirichlet, because the higher rung is built outside the expert\n  O_ordering             additive   <- multiplicative ordering is forbidden when any composition-layer guarantee depends on equivalent treatment of agents; a direct Schur solve satisfies this automatically, being order-free\n  K_accelerator          direct-schur   <- a direct Schur solve makes the solve-incompleteness term vanish, and is order-free so it satisfies R5 by construction rather than by discipline\n  C_levels               one   <- one level; a classical coarse solve would require an agent that can run at a different window size without changing its regime\n  W_window               1 (DEFAULTED)   <- W* would be about 1/ln(L) clamped by R3, and L is unmeasured (W1), so W* is UNCOMPUTABLE. W = 1 is the honest default and this is the compiler saying it is defaulting rather than choosing\n  eps_tol                None (DEFAULTED)   <- unset: the relative rule needs measured tau and sigma (W3)\n  overlap                0.5\n  exchange_interval      0.2   <- the exchange interval cannot go below max_i dt_native. The window is the one axis a frozen expert can move along: W can be increased, never decreased\n  multirate              False\n  flux_matching          single-clock"
+}

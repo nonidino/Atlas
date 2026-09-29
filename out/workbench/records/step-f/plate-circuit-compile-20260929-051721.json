@@ -1,0 +1,260 @@
+{
+ "schema": "atlas-workbench/compile@1",
+ "case": {
+  "schema_id": "atlas-workbench/case@0.3",
+  "name": "plate-circuit",
+  "description": "Resistive film on a battery and a resistor (style D)",
+  "domain": {
+   "nx": 160,
+   "ny": 80,
+   "dx": 0.00125
+  },
+  "physics": {
+   "family": "electric-2d",
+   "params": {
+    "thickness": 3e-05
+   }
+  },
+  "materials": {
+   "graphite": {
+    "sigma": 100000.0
+   }
+  },
+  "regions": [
+   {
+    "id": "film",
+    "material": "graphite",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 160,
+    "ny": 80,
+    "points": null,
+    "holes": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "plate",
+    "x0": 0,
+    "y0": 0,
+    "nx": 160,
+    "ny": 80
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "left-low",
+    "edge": "left",
+    "kind": "no-current",
+    "start": 0,
+    "stop": 30,
+    "value": null
+   },
+   {
+    "id": "E1",
+    "edge": "left",
+    "kind": "electrode",
+    "start": 30,
+    "stop": 50,
+    "value": null
+   },
+   {
+    "id": "left-high",
+    "edge": "left",
+    "kind": "no-current",
+    "start": 50,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "right-low",
+    "edge": "right",
+    "kind": "no-current",
+    "start": 0,
+    "stop": 50,
+    "value": null
+   },
+   {
+    "id": "E2",
+    "edge": "right",
+    "kind": "electrode",
+    "start": 50,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "bottom",
+    "edge": "bottom",
+    "kind": "no-current",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "top",
+    "edge": "top",
+    "kind": "no-current",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [
+   {
+    "id": "B1",
+    "kind": "battery",
+    "value": 12.0,
+    "internal": 0.5,
+    "a": "n1",
+    "b": "E2"
+   },
+   {
+    "id": "R1",
+    "kind": "resistor",
+    "value": 1.0,
+    "internal": 0.0,
+    "a": "n1",
+    "b": "E1"
+   }
+  ],
+  "coupling": {
+   "style": "D",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 200,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 1.0,
+   "steps": 5,
+   "threads": 1,
+   "start": "freestream",
+   "mode": "steady"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ },
+ "family": "electric-2d",
+ "verdict": "admit-uncertified",
+ "seams": [
+  {
+   "seam": "E1",
+   "between": [
+    "plate",
+    "circuit"
+   ],
+   "port_type": "ELEC",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L1",
+     "rule": "E3",
+     "verdict": "admit-uncertified",
+     "subject": "E1",
+     "message": "multiphysics seam: plate and circuit declare different governing families ('electric-conduction-2d' against 'lumped-circuit'), so they share no monolithic reference and E3 fails. **tau is NOT undefined here**: both sides declare lambda_ref, so a reference PAIR exists and tau is measurable against the tightly coupled trajectory -- see `multiphysics.seam_defect_split`, which attributes per agent and measures in interface power, the one unit both sides of the bond share. What is wrong is that it has not been RUN: this seam carries a measurable tau and no measurement. Declare the result on the graph's MeasuredConstants and this clears"
+    },
+    {
+     "layer": "L4",
+     "rule": "operator-content",
+     "verdict": "admit-uncertified",
+     "subject": "E1",
+     "message": "2 of 2 blocks on this seam have an identity defect below 0.001 (circuit 0.00e+00, plate 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor"
+    }
+   ]
+  },
+  {
+   "seam": "E2",
+   "between": [
+    "plate",
+    "circuit"
+   ],
+   "port_type": "ELEC",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L1",
+     "rule": "E3",
+     "verdict": "admit-uncertified",
+     "subject": "E2",
+     "message": "multiphysics seam: plate and circuit declare different governing families ('electric-conduction-2d' against 'lumped-circuit'), so they share no monolithic reference and E3 fails. **tau is NOT undefined here**: both sides declare lambda_ref, so a reference PAIR exists and tau is measurable against the tightly coupled trajectory -- see `multiphysics.seam_defect_split`, which attributes per agent and measures in interface power, the one unit both sides of the bond share. What is wrong is that it has not been RUN: this seam carries a measurable tau and no measurement. Declare the result on the graph's MeasuredConstants and this clears"
+    },
+    {
+     "layer": "L4",
+     "rule": "operator-content",
+     "verdict": "admit-uncertified",
+     "subject": "E2",
+     "message": "2 of 2 blocks on this seam have an identity defect below 0.001 (circuit 0.00e+00, plate 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor"
+    }
+   ]
+  }
+ ],
+ "other": [
+  {
+   "layer": "L1",
+   "rule": "E7",
+   "verdict": "admit-uncertified",
+   "subject": "plate",
+   "message": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself"
+  },
+  {
+   "layer": "L1",
+   "rule": "E7",
+   "verdict": "admit-uncertified",
+   "subject": "circuit",
+   "message": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself"
+  },
+  {
+   "layer": "L2",
+   "rule": "C3/W57",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+  },
+  {
+   "layer": "L5",
+   "rule": "eps_tol",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit"
+  },
+  {
+   "layer": "L6",
+   "rule": "E6",
+   "verdict": "admit-uncertified",
+   "subject": "<assembly>",
+   "message": "no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed"
+  },
+  {
+   "layer": "L9",
+   "rule": "E5",
+   "verdict": "admit-uncertified",
+   "subject": "<run>",
+   "message": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate"
+  },
+  {
+   "layer": "L8",
+   "rule": "W56",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "5 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+  }
+ ],
+ "seconds": 0.07993879995774478,
+ "agents": 2,
+ "cross_points": [],
+ "refused_before": null,
+ "when": "2026-09-29T05:17:21-04:00",
+ "report": "=== workbench-plate-circuit ===\nverdict: admit-uncertified   depth: 0\n\nE1:holds E2:holds E3:fails E4:holds E5:unchecked E6:unchecked E7:holds\nclaim: UNTYPED -- L is unmeasured, so the predictability horizon is unknown, so no type is decidable. Every metric carries the UNTYPED tag\nunmeasured constants: L (W1), sigma (W3), tau (W3), C_mu (W3), norm_A (W28)\nnamed holes touched: AssemblyCertificate, InterfaceMotion, SeamReference\nslot measurements still owed: {'InterfaceMotion': ['operator_drift', 'unaccounted_power_fraction'], 'SeamReference': ['one_sided_operator_surrogate']}\n\ndecertifications (11 across 8 rules):\n  L1/E7  [plate, circuit]\n      storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself\n  L1/E3  [E1, E2]\n      multiphysics seam: plate and circuit declare different governing families ('electric-conduction-2d' against 'lumped-circuit'), so they share no monolithic reference and E3 fails. **tau is NOT undefined here**: both sides declare lambda_ref, so a reference PAIR exists and tau is measurable against the tightly coupled trajectory -- see `multiphysics.seam_defect_split`, which attributes per agent and measures in interface power, the one unit both sides of the bond share. What is wrong is that it has not been RUN: this seam carries a measurable tau and no measurement. Declare the result on the graph's MeasuredConstants and this clears\n  L2/C3/W57  [<graph>]\n      substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch\n  L4/operator-content  [E1, E2]\n      2 of 2 blocks on this seam have an identity defect below 0.001 (circuit 0.00e+00, plate 0.00e+00): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor\n  L5/eps_tol  [<graph>]\n      the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit\n  L6/E6  [<assembly>]\n      no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be claimed\n  L9/E5  [<run>]\n      UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate\n  L8/W56  [<graph>]\n      5 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants\n\nscheme Sigma\n  D_decomposition        non-overlapping   <- probed-DtN requires the non-overlapping view, which INTRODUCES cross-points the overlapping scheme does not have\n  D_decomposition_axes   ['non-overlapping']\n  Lambda_transmission    probed-DtN   <- probing is the exception that makes R1 survivable: probed-DtN requires only bc_channel >= dirichlet, because the higher rung is built outside the expert\n  O_ordering             additive   <- multiplicative ordering is forbidden when any composition-layer guarantee depends on equivalent treatment of agents; a direct Schur solve satisfies this automatically, being order-free\n  K_accelerator          direct-schur   <- a direct Schur solve makes the solve-incompleteness term vanish, and is order-free so it satisfies R5 by construction rather than by discipline\n  C_levels               two(probed-schur)   <- two-level via a classical coarse solve requires an agent that can run at a different window size without changing its regime; via a probed Schur complement it requires nothing extra, since every call stays at the native size\n  W_window               1 (DEFAULTED)   <- W* would be about 1/ln(L) clamped by R3, and L is unmeasured (W1), so W* is UNCOMPUTABLE. W = 1 is the honest default and this is the compiler saying it is defaulting rather than choosing\n  eps_tol                None (DEFAULTED)   <- unset: the relative rule needs measured tau and sigma (W3)\n  overlap                None\n  exchange_interval      1.0   <- the exchange interval cannot go below max_i dt_native. The window is the one axis a frozen expert can move along: W can be increased, never decreased\n  multirate              False\n  flux_matching          single-clock"
+}

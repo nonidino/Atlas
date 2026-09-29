@@ -101,7 +101,7 @@ def wb(tmp_path, monkeypatch):
     return Workbench(cases_dir=str(tmp_path))
 
 
-ALL_ACTIONS = ["file:new", *[f"file:example:{k}" for k in EXAMPLES], "file:open",
+ALL_ACTIONS = ["file:new", "file:gallery", *[f"file:example:{k}" for k in EXAMPLES], "file:open",
                "file:save-as", "file:import", "file:export", "edit:undo", "edit:redo",
                "edit:revert", "view:grid", "view:overlaps", "view:labels", "view:log",
                "run:check", "run:compile", "run:decomposed", "run:full", "run:both",

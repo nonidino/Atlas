@@ -1,0 +1,199 @@
+{
+ "schema": "atlas-workbench/compile@1",
+ "case": {
+  "schema_id": "atlas-workbench/case@0.3",
+  "name": "plume-2",
+  "description": "Pollutant plume: a shallow reach into a deep one (style A)",
+  "domain": {
+   "nx": 480,
+   "ny": 60,
+   "dx": 5.0
+  },
+  "physics": {
+   "family": "transport-2d",
+   "params": {
+    "q": 1.0,
+    "release": 10.0,
+    "source_x": 200.0,
+    "source_y": 100.0
+   }
+  },
+  "materials": {
+   "shallow-fast": {
+    "depth": 1.25,
+    "mixing": 0.5
+   },
+   "deep-slow": {
+    "depth": 2.5,
+    "mixing": 2.0
+   }
+  },
+  "regions": [
+   {
+    "id": "upper",
+    "material": "shallow-fast",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 240,
+    "ny": 60,
+    "points": null,
+    "holes": null
+   },
+   {
+    "id": "lower",
+    "material": "deep-slow",
+    "shape": "rect",
+    "x0": 240,
+    "y0": 0,
+    "nx": 240,
+    "ny": 60,
+    "points": null,
+    "holes": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "upper",
+    "x0": 0,
+    "y0": 0,
+    "nx": 264,
+    "ny": 60
+   },
+   {
+    "id": "lower",
+    "x0": 216,
+    "y0": 0,
+    "nx": 264,
+    "ny": 60
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "B-left",
+    "edge": "left",
+    "kind": "river-inlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-right",
+    "edge": "right",
+    "kind": "river-outlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-bottom",
+    "edge": "bottom",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-top",
+    "edge": "top",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "A",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 500,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 2.0,
+   "steps": 6000,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "transient"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ },
+ "family": "transport-2d",
+ "verdict": "admit-uncertified",
+ "seams": [
+  {
+   "seam": "upper|lower",
+   "between": [
+    "upper",
+    "lower"
+   ],
+   "port_type": "ADVEC",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "operator-content",
+     "verdict": "admit-uncertified",
+     "subject": "upper|lower",
+     "message": "2 of 2 blocks on this seam have an identity defect below 0.001 (lower 2.45e-15, upper 2.62e-15): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor"
+    }
+   ]
+  }
+ ],
+ "other": [
+  {
+   "layer": "L2",
+   "rule": "C2",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+  },
+  {
+   "layer": "L5",
+   "rule": "eps_tol",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit"
+  },
+  {
+   "layer": "L6",
+   "rule": "W49",
+   "verdict": "admit-uncertified",
+   "subject": "<assembly>",
+   "message": "the decomposition is overlapping, so sigma is bounded by master-error-bound 4.1's product C_mu * Pi * ||d_lambda|| rather than 4's substructuring form -- and Pi, the weight the assembly gives to cells a stale artificial-boundary datum can have reached, is not declared. Declare `contaminated` on the partition of unity. Assuming the assembly is clean is what the halo rule already refuses to do"
+  },
+  {
+   "layer": "L9",
+   "rule": "E5",
+   "verdict": "admit-uncertified",
+   "subject": "<run>",
+   "message": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate"
+  },
+  {
+   "layer": "L8",
+   "rule": "W56",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+  }
+ ],
+ "seconds": 0.13778770004864782,
+ "agents": 2,
+ "cross_points": [],
+ "refused_before": null,
+ "when": "2026-09-29T05:38:56-04:00",
+ "report": "=== workbench-plume-2 ===\nverdict: admit-uncertified   depth: 0\n\nE1:holds E2:holds E3:holds E4:holds E5:unchecked E6:holds E7:holds\nclaim: UNTYPED -- L is unmeasured, so the predictability horizon is unknown, so no type is decidable. Every metric carries the UNTYPED tag\nunmeasured constants: L (W1), sigma (W3), tau (W3), C_mu (W3)\nnamed holes touched: AssemblyCertificate, InterfaceMotion, PortAmendment\nslot measurements still owed: {'InterfaceMotion': ['operator_drift', 'unaccounted_power_fraction']}\n\ndecertifications (6 across 6 rules):\n  L2/C2  [<graph>]\n      L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference\n  L4/operator-content  [upper|lower]\n      2 of 2 blocks on this seam have an identity defect below 0.001 (lower 2.45e-15, upper 2.62e-15): the probed block is a multiple of the identity, so it is the expert's BOUNDARY COEFFICIENT and not its operator. beta, kappa, the null count and the passivity defect are all well behaved on such a block and all four are then properties of that coefficient -- which means every bound carrying 1/beta is scaled by a declared constant rather than by a measured operator. The transverse physics is present and resolved (measured: an exponential tail over 5 cells) and sits 300x below. Widen the exchange interval or raise the coupling until omega ~= C Bi (k_max sqrt(alpha dt))^2 clears the floor\n  L5/eps_tol  [<graph>]\n      the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit\n  L6/W49  [<assembly>]\n      the decomposition is overlapping, so sigma is bounded by master-error-bound 4.1's product C_mu * Pi * ||d_lambda|| rather than 4's substructuring form -- and Pi, the weight the assembly gives to cells a stale artificial-boundary datum can have reached, is not declared. Declare `contaminated` on the partition of unity. Assuming the assembly is clean is what the halo rule already refuses to do\n  L9/E5  [<run>]\n      UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate\n  L8/W56  [<graph>]\n      4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants\n\nscheme Sigma\n  D_decomposition        overlapping   <- as declared\n  D_decomposition_axes   ['overlapping']\n  Lambda_transmission    dirichlet   <- probing is the exception that makes R1 survivable: probed-DtN requires only bc_channel >= dirichlet, because the higher rung is built outside the expert\n  O_ordering             additive   <- multiplicative ordering is forbidden when any composition-layer guarantee depends on equivalent treatment of agents; a direct Schur solve satisfies this automatically, being order-free\n  K_accelerator          direct-schur   <- a direct Schur solve makes the solve-incompleteness term vanish, and is order-free so it satisfies R5 by construction rather than by discipline\n  C_levels               one   <- one level; a classical coarse solve would require an agent that can run at a different window size without changing its regime\n  W_window               1 (DEFAULTED)   <- W* would be about 1/ln(L) clamped by R3, and L is unmeasured (W1), so W* is UNCOMPUTABLE. W = 1 is the honest default and this is the compiler saying it is defaulting rather than choosing\n  eps_tol                None (DEFAULTED)   <- unset: the relative rule needs measured tau and sigma (W3)\n  overlap                240.0\n  exchange_interval      2.0   <- the exchange interval cannot go below max_i dt_native. The window is the one axis a frozen expert can move along: W can be increased, never decreased\n  multirate              False\n  flux_matching          single-clock"
+}

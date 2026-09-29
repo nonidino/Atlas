@@ -1,7 +1,7 @@
 # The classical showcase library: plan
 
 **Type:** Outcome page — **build plan** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
-**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6), and so was **step 2, the general runner for style A** (the wind-farm family). **Step 3, the solver-family interface with styles B, C and D, was built on 2026-09-29**, with cases 2 and 5 as its two new families, and **step 4, cases 3, 4, 6, 7 and 8, the same day**. Details are in §5's "Built" notes. Steps 5 (the gallery) and 6 (the compile) are not built. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort in §4–§5's tables are estimates, marked **[AI Inference]**; measured numbers are in the "Built" notes, each with its record.
+**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6), and so was **step 2, the general runner for style A** (the wind-farm family). **Step 3, the solver-family interface with styles B, C and D, was built on 2026-09-29**, with cases 2 and 5 as its two new families, and **step 4, cases 3, 4, 6, 7 and 8, the same day**. **Steps 5 (the gallery) and 6 (the compile) were built the same day too**, and every example was compiled and run in the served page: [[showcase-gallery]]. Details are in §5's "Built" notes. Only the plan's optional items are not built: the Gray–Scott case and the CS-13/CS-14 adapters. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort in §4–§5's tables are estimates, marked **[AI Inference]**; measured numbers are in the "Built" notes, each with its record.
 **Hub:** [[00-atlas-0.1-outcome]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/`
 
 ---
@@ -38,9 +38,9 @@
 | style | used for | mathematics | status |
 |---|---|---|---|
 | **A. Overlapping windows, one exchange per step** (time-dependent) | wind farm, waves, plumes | blend by a partition of unity $\sum_i \chi_i = 1$, then the global operators; the Schwarz waveform relaxation run for one sweep ([[atlas-and-standard-dd-theory]]) | built (wake array; W346's harness, serial and threaded) |
-| **B. Overlapping windows, iterate until they agree** (steady problems) | heat, elasticity, groundwater | alternating or additive Schwarz: solve each window with its neighbours' latest trace until $\lVert u^{k+1}-u^{k}\rVert < \varepsilon$; the convergence curve is itself a display | new, small |
-| **C. Material interfaces without overlap** | copper against steel; air against water | Dirichlet–Neumann (or Robin) iteration: continuity of the field and of the normal flux, $u_1 = u_2$ and $k_1\,\partial_n u_1 = k_2\,\partial_n u_2$ on $\Gamma$ | new |
-| **D. Field joined to lumped parts** | circuits, coolant loops, rotors | the field's boundary integral is the lumped part's port variable (current, heat, torque), exchanged per step or solved tightly | built (CS-13 [[case-study-cooling-loop-atlas-0.1]], CS-14 [[case-study-powertrain-atlas-0.1]], actuator disks) |
+| **B. Overlapping windows, iterate until they agree** (steady problems) | heat, elasticity, groundwater | alternating or additive Schwarz: solve each window with its neighbours' latest trace until $\lVert u^{k+1}-u^{k}\rVert < \varepsilon$; the convergence curve is itself a display | planned as new and small; built in the workbench (step 3) |
+| **C. Material interfaces without overlap** | copper against steel; air against water | Dirichlet–Neumann (or Robin) iteration: continuity of the field and of the normal flux, $u_1 = u_2$ and $k_1\,\partial_n u_1 = k_2\,\partial_n u_2$ on $\Gamma$ | planned as new; built in the workbench (step 3), iterated and explicit |
+| **D. Field joined to lumped parts** | circuits, coolant loops, rotors | the field's boundary integral is the lumped part's port variable (current, heat, torque), exchanged per step or solved tightly | built (CS-13 [[case-study-cooling-loop-atlas-0.1]], CS-14 [[case-study-powertrain-atlas-0.1]], actuator disks); in the workbench, the plate on a circuit (step 3) |
 
 ---
 
@@ -152,6 +152,33 @@ All 2-D. Runtimes and code sizes are **[AI Inference]** estimates.
 >   Found in the served page and fixed: electrode nodes cut in half by the canvas's edge, add-part buttons offered to families that ignore a circuit, and the split's panels titled "Decomposed".
 > - **Not built:** the optional Gray–Scott case and CS-13/CS-14 adapters (both optional in this plan); the gallery (step 5); the compile (step 6).
 
+> **Built, 2026-09-29: step 6, the compile, and step 5, the gallery.** Code: `atlas/workbench/compile.py`, a `case_graph(spec)` in every family module, and the Check, Results and gallery views in `app.py` and `runview.py`. Tests: in `tests/test_workbench_cases.py`, `test_workbench_shell.py` and `test_workbench_runner.py`. Every example was opened, compiled and run in the served page, and the figures are on [[showcase-gallery]], with the records in `out/workbench/records/step-f/`.
+> - **The compile is the loader's graph half** ([[outcome-c4-path-to-declarative-cases]] step 2), built per family rather than through a registry of experts.
+>   - Each family turns a case into a `CaseGraph`: one agent per window or piece, a connection wherever a cut face of one opens into another, and the cross-points declared (W162: named, or `()` for none).
+>   - `atlas/compiler.py` compiles it in a background thread. The Check step shows the verdict per seam, the worst of the compiler's decisions about that seam, with its rules, and the record goes beside the case file.
+>   - Every agent's `boundary_response` is the family's own arithmetic: a window's Dirichlet-to-Neumann map through its own sparse solve, an explicit step's flux, or a structure's reaction.
+>   - **One sign was wrong on first contact.** The first draft returned the flow out of the window, and the compiler read a passivity defect of 299 on the wall's seam. The flow *into* the window (the Steklov–Poincaré convention) is what is now declared.
+> - **The verdicts, per example:**
+>   - `admit-uncertified`: the three farms, the plume, the circuit, the sound and the cooled block.
+>   - `refuse` at R10: the wall, the insert and the bracket. Each of their seams is admitted.
+>   - Refused before the compiler: the heated strip. Its temperature field is a volumetric bond, and `VOLUMETRIC` is not a port type (`PortAmendment`, as [[case-study-thermal-strain-atlas-0.1]] found).
+>   - No case can earn a plain `admit` while the master bound's constants are unmeasured (W56).
+> - **R10 is a conservative proxy.** It refuses two embedded agents of one family on a cut region, and it does not read whether the coupling iterates. The three refused cases iterate to agreement and are measured within $3.6\times10^{-9}$ of the full domain or closer. The page shows the refusal as it is, with a note. Whether R10 should read iteration is left to the compiler.
+> - **The farms compile through the vault's own graph** (`scaling_ladder.build`, W346's exposed windows): 13, 62 and 124 seams in 7.3 s, 45.3 s and 95.1 s. A drawn tiling that is not a ladder rung is refused before the compiler, with that reason.
+> - **Run & compare and Results, finished.**
+>   - The Results table carries each arm's seconds per step, $t_{\text{full}}/t_{\text{arm}}$, the family's metrics, the displayed field's rms difference from the full domain, and the checks against their registered tolerances.
+>   - The run's JSON record is saved beside the case file.
+>   - `NOT_BUILT` is gone: every menu item works, and a test says so.
+> - **The gallery:** *File > Showcase gallery* lists every example with its description, family and style, and an *Open* button.
+> - **In the gallery pass, every run finished under 2 minutes**, the longest in 70.0 s (`farm-21`, 6 macro-steps on 8 threads). **`farm-21`'s compile takes 95.1 s, so its compile plus its run is 165 s.** Each step is under 2 minutes, and the pair is not. This is flagged, not hidden.
+> - **Found while building it or in the served page, and fixed:**
+>   - two farm rms columns that disagreed, one filled for the threaded arm only;
+>   - the Check and Results labels still describing a case no longer open;
+>   - the Check label not refreshed when a compile finished with no run in progress;
+>   - a compile job with no summary yet crashing the view;
+>   - an apostrophe escaped in the gallery's text.
+> - **Not built:** the optional Gray–Scott case and the CS-13/CS-14 adapters, so no showcase case carries `ROT`.
+
 ---
 
 ## 6. The geometry section, planned to fit the library
@@ -228,6 +255,7 @@ The owner's question (2026-09-28): is there an existing 2-D visual editor or CAD
 
 ## See Also
 
+- [[showcase-gallery]] — every case compiled and run in the served page: the verdicts, the checks' measured values, the runtimes
 - [[outcome-c4-path-to-declarative-cases]] — the four-step path this extends
 - [[outcome-c4-modular-multiphysics]] — every graph built so far
 - [[decomposition-speed-by-rotor-count]] — case 1's measured answer
