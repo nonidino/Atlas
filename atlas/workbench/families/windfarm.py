@@ -361,7 +361,7 @@ class WindFarmRun:
 
     # -- what is read after the timer ---------------------------------------
 
-    def observe(self, arm: str, s: FarmState) -> dict[str, float]:
+    def observe(self, arm: str, s: FarmState, prev: FarmState | None = None) -> dict[str, float]:
         """Per-step diagnostics, computed OUTSIDE the timed step."""
         out = {"power": self.power(s.rec), "substeps": float(s.substeps),
                "mass": self.mass_measure(arm, s)}

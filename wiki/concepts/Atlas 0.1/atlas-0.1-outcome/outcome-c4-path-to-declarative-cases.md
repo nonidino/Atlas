@@ -12,6 +12,8 @@
 >
 > **2026-09-28: step 3's executor is built for the wind-farm family** (`atlas/workbench/runner.py`, `families/windfarm.py`): W346's march lifted onto any rectangles, run from the page decomposed (serially and on threads) and on the full domain in turns, with Stop, live fields and a record per run. On the example tilings its arms are W346's own columns to the bit, and W346's speed result reproduces live at 21 rotors (threaded 4.0–4.6× faster than the full domain, serial 0.90–0.91×). The loader (step 2's graph half) is still not built. Details: [[showcase-library-plan]] §5.
 
+> **2026-09-29: the executor runs three families and four coupling styles.** The interface every family fills (state, restriction, a step given boundary traces, the full-domain equivalent, assembly with a balance) was derived from the wind farm and heat conduction, as this page's step 1 asked. Heat conduction runs as overlapping windows iterated to agreement (style B) or as two materials meeting at an interface (style C, Dirichlet–Neumann). A resistive plate on a circuit is the first field joined to lumped parts (style D). The case file is now `atlas-workbench/case@0.3`, with lumped attachments. Every check was registered before its family's first run. At these sizes the full domain is faster than every decomposed arm of the new styles, and the page says so. The loader (step 2's graph half) is still not built. Details: [[showcase-library-plan]] §5.
+
 ---
 
 ## 1. What a case study is today, layer by layer

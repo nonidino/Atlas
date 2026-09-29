@@ -26,6 +26,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
+import numpy as np
 import pandas as pd
 import panel as pn
 from bokeh.models import (BoxEditTool, BoxZoomTool, ColumnDataSource, HoverTool, LabelSet,
@@ -358,7 +359,17 @@ class GeometryEditor:
 
     def _sync_warnings(self) -> None:
         s, d = self.wb.spec, self.wb.spec.domain
-        if s.windows:
+        pieces = s.coupling.style in ("C", "D")
+        if s.windows and pieces:
+            # styles C and D: pieces that meet along faces; an overlap is the error
+            # and there is no ramp to be at full weight in
+            count = np.zeros((d.ny, d.nx), dtype=np.int32)
+            for w in s.windows:
+                count[w.y0:w.y0 + w.ny, w.x0:w.x0 + w.nx] += 1
+            bad, gap = geo.mask_to_boxes(count > 1), geo.mask_to_boxes(count == 0)
+            ov, cps = [], []
+            n_bad, n_gap, n_thin = int((count > 1).sum()), int((count == 0).sum()), 0
+        elif s.windows:
             an = geo.analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
                                                   for w in s.windows], s.coupling.ramp_cells)
             bad, gap = geo.mask_to_boxes(an.ramp_only), geo.mask_to_boxes(an.uncovered)
@@ -381,7 +392,11 @@ class GeometryEditor:
                                        names=[", ".join(n) for n, _b in cps]))
         ramp = s.coupling.ramp_cells
         parts = []
-        if n_bad:
+        if n_bad and pieces:
+            parts.append(f"<span style='color:{C_BAD}'><b>{n_bad:,}</b> cells in more than "
+                         f"one window</span> (red hatching; style {s.coupling.style}'s "
+                         f"pieces meet along faces and do not overlap)")
+        elif n_bad:
             parts.append(f"<span style='color:{C_BAD}'><b>{n_bad:,}</b> cells with no window "
                          f"at full weight</span> (red hatching; overlap by at least "
                          f"{2 * ramp} cells where windows meet)")
@@ -390,10 +405,16 @@ class GeometryEditor:
                          f"window</span> (grey hatching)")
         if n_thin:
             parts.append(f"<b>{n_thin}</b> thin seam{'s' * (n_thin > 1)}")
-        parts.append(f"{len(cps)} cross-point{'s' * (len(cps) != 1)} (diamonds)")
+        if not pieces:
+            parts.append(f"{len(cps)} cross-point{'s' * (len(cps) != 1)} (diamonds)")
         ok = not (n_bad or n_gap)
-        lead = ("<b style='color:#15803d'>Windows cover the domain, and every cell has a "
-                "window at full weight.</b> " if ok else "")
+        lead = ""
+        if ok and pieces:
+            lead = ("<b style='color:#15803d'>The windows are pieces that tile the domain "
+                    f"without overlapping (style {s.coupling.style}).</b> ")
+        elif ok:
+            lead = ("<b style='color:#15803d'>Windows cover the domain, and every cell has a "
+                    "window at full weight.</b> ")
         self.summary.object = (f"<div style='font-size:13px'>{lead}"
                                + " &middot; ".join(parts) + "</div>")
         issues = [i for i in check(s) if i.step == "geometry"]
@@ -845,10 +866,12 @@ class GeometryEditor:
             btn("Move up the stack", lambda: self.restack(+1), width=160)
             btn("Move down the stack", lambda: self.restack(-1), width=170)
             if fam is not None and "regions" not in fam.layers:
+                readers = [f.label for f in registry.FAMILIES
+                           if "regions" in f.layers and f.status == "ready-to-wire"]
                 extra.append(pn.pane.Alert(
                     f"The **{fam.label}** family does not read material regions: its solver "
-                    f"would ignore them. They are for the conduction family (showcase case "
-                    f"2), which is planned.", alert_type="warning", sizing_mode="stretch_width"))
+                    f"would ignore them. The families that do: {'; '.join(readers)}.",
+                    alert_type="warning", sizing_mode="stretch_width"))
         elif key == "devices":
             btn("Add rotor", self.add_shape)
             btn("Delete selected", self.delete_selected)

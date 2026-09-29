@@ -136,7 +136,8 @@ class RunPanel:
         title, _, ylabel = series.get(self.series_key, "per-step metric").partition("|")
         self.series_fig = figure(title=title.strip(), width=440, height=250,
                                  tools="pan,wheel_zoom,reset,save", toolbar_location="above",
-                                 x_axis_label="macro-step", y_axis_label=ylabel.strip())
+                                 x_axis_label=run.step_label if run is not None else "step",
+                                 y_axis_label=ylabel.strip())
         self.series_fig.toolbar.logo = None
         self.series_fig.title.text_font_size = "12px"
         self.series_src = {}
@@ -149,6 +150,31 @@ class RunPanel:
         if arms:
             self.series_fig.legend.location = "top_right"
             self.series_fig.legend.label_text_font_size = "11px"
+        #: styles B, C and D iterate inside every step: their latest iteration
+        #: history, on a log scale (the plan's "the convergence curve is itself a
+        #: display")
+        self.conv_fig = None
+        self.conv_src = {}
+        style = run.spec.coupling.style if run is not None else ""
+        if run is not None and style in ("B", "C", "D"):
+            self.conv_fig = figure(title="Convergence in the last step (update over the "
+                                         "field's scale)",
+                                   width=440, height=250, y_axis_type="log",
+                                   tools="pan,wheel_zoom,reset,save", toolbar_location="above",
+                                   x_axis_label="iteration")
+            self.conv_fig.toolbar.logo = None
+            self.conv_fig.title.text_font_size = "12px"
+            for a in run.arms:
+                if a == "full":
+                    continue
+                s = ColumnDataSource(dict(it=[], value=[]))
+                self.conv_fig.line("it", "value", source=s, color=ARM_COLOURS[a],
+                                   line_width=2, legend_label=ARM_LABELS[a])
+                self.conv_fig.scatter("it", "value", source=s, color=ARM_COLOURS[a], size=4)
+                self.conv_src[a] = s
+            if self.conv_src:
+                self.conv_fig.legend.location = "top_right"
+                self.conv_fig.legend.label_text_font_size = "11px"
         self.table = table_pane(pd.DataFrame())
         self.progress = pn.indicators.Progress(value=0, max=100, width=260, active=False)
         self.status = pn.pane.HTML(sizing_mode="stretch_width", margin=(0, 10),
@@ -177,6 +203,9 @@ class RunPanel:
             self._draw_series(p)
             self.table.object = html_table(timing_frame(run, p))
             self._n_series = n
+            for a, src in self.conv_src.items():
+                vals = [max(v, 1e-18) for v in p.convergence.get(a, [])]
+                src.data = dict(it=list(range(1, len(vals) + 1)), value=vals)
 
     def _status_html(self, run: CaseRun, p) -> str:
         changed = run.committed_json != self.wb.spec.to_json()
@@ -184,9 +213,9 @@ class RunPanel:
                  "done": "Finished", "stopped": "Stopped", "failed": "Failed",
                  "created": "Waiting"}.get(p.status, p.status)
         arm = f" &middot; now: {html.escape(ARM_LABELS.get(p.arm, p.arm))}" if run.active else ""
-        out = (f"<b>{state}</b> {html.escape(run.label())} &middot; macro-step "
-               f"<b>{p.step}</b> of {p.steps}{arm}<br><span style='opacity:0.8'>"
-               f"{html.escape(p.message)}</span>")
+        out = (f"<b>{state}</b> {html.escape(run.label())} &middot; "
+               f"{html.escape(run.step_label)} <b>{p.step}</b> of {p.steps}{arm}<br>"
+               f"<span style='opacity:0.8'>{html.escape(p.message)}</span>")
         if p.error:
             out += f"<br><b style='color:#b91c1c'>{html.escape(p.error)}</b>"
         if changed:
@@ -237,30 +266,40 @@ class RunPanel:
         return pn.Column(
             pn.Row(self.progress, self.status, sizing_mode="stretch_width"),
             self.fields_view(),
-            pn.FlexBox(pn.Column(pn.pane.Markdown("**Time per macro-step, each arm** "
-                                                  "(the step alone; t_full / t_arm above 1 "
-                                                  "is faster than the full domain)",
-                                                  margin=(0, 10)), self.table,
-                                 width=520),
-                       pn.pane.Bokeh(self.series_fig),
-                       flex_wrap="wrap", gap="6px 16px", sizing_mode="stretch_width"),
+            pn.FlexBox(pn.Column(pn.pane.Markdown(
+                f"**Time per {html.escape(self.run.step_label)}, each arm** (the step "
+                "alone; t_full / t_arm above 1 is faster than the full domain)",
+                margin=(0, 10)), self.table, width=520),
+                *([pn.pane.Bokeh(self.conv_fig)] if self.conv_fig is not None else []),
+                # a steady run's repeats all give the same answer, and autoscaled to
+                # a round-off spread that plot drew two equal answers as two lines
+                *([] if self.run.step_label == "timed repeat"
+                  else [pn.pane.Bokeh(self.series_fig)]),
+                flex_wrap="wrap", gap="6px 16px", sizing_mode="stretch_width"),
             sizing_mode="stretch_width")
 
 
 def timing_frame(run: CaseRun, p) -> pd.DataFrame:
+    """The live table, in the run's own unit: macro-steps for a march, timed repeats
+    for a steady solve; and the work inside one -- the wind farm's sub-steps, or the
+    iterations of an iterated style."""
     rows = []
     full = p.seconds.get("full") or []
     t_full = float(np.mean(full)) if full else None
+    unit = run.step_label
+    work = "substeps" if any("substeps" in p.series.get(a, {}) for a in run.arms) \
+        else "iterations"
     for a in run.arms:
         s = p.seconds.get(a) or []
         mean = float(np.mean(s)) if s else None
-        subs = (p.series.get(a, {}).get("substeps") or [None])[-1]
-        rows.append({"arm": ARM_LABELS[a], "macro-steps": len(s),
-                     "mean s/step": fmt(mean, ".4g"),
-                     "median s/step": fmt(float(np.median(s)) if s else None, ".4g"),
+        w = (p.series.get(a, {}).get(work) or [None])[-1]
+        rows.append({"arm": ARM_LABELS[a], f"{unit}s": len(s),
+                     f"mean s per {unit}": fmt(mean, ".4g"),
+                     "median": fmt(float(np.median(s)) if s else None, ".4g"),
                      "t_full / t_arm": fmt(t_full / mean if (t_full and mean) else None,
                                            ".3g"),
-                     "sub-steps (last)": fmt(subs, ".0f")})
+                     ("sub-steps (last)" if work == "substeps" else "iterations (last)"):
+                         fmt(w, ".0f")})
     return pd.DataFrame(rows)
 
 
@@ -277,7 +316,8 @@ def results_frames(res: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame]:
         t = timing.get(a, {})
         m = metrics.get(a, {})
         row = {"arm": ARM_LABELS[a],
-               "seconds per macro-step": fmt(t.get("mean"), ".4g"),
+               f"seconds per {res.get('step_label', 'macro-step')}": fmt(t.get("mean"),
+                                                                          ".4g"),
                "median": fmt(t.get("median"), ".4g"),
                "t_full / t_arm (measured now)": fmt(t.get("speedup_vs_full"), ".3g")}
         for key, label, spec in METRIC_COLUMNS.get(res["family"], ()):
@@ -297,6 +337,16 @@ METRIC_COLUMNS: dict[str, tuple[tuple[str, str, str], ...]] = {
     "incompressible-2d": (("farm_power", "farm power (last 5 steps)", ".5g"),
                           ("farm_power_vs_full", "farm power vs full", "+.2%"),
                           ("rms_velocity_difference", "rms velocity difference", ".3g")),
+    "conduction-2d": (("heat_in", "heat in (W per m of depth)", ".7g"),
+                      ("heat_in_vs_full", "heat in vs full", "+.2e"),
+                      ("heat_in_vs_closed_form", "vs closed form", "+.2e"),
+                      ("max_temperature_difference_K", "max |T - T_full| (K)", ".3g"),
+                      ("iterations_last", "iterations (last step)", ".0f")),
+    "electric-2d": (("current_A", "circuit current (A)", ".7g"),
+                    ("current_vs_full", "current vs full", "+.2e"),
+                    ("plate_resistance_ohm", "plate resistance (ohm)", ".5g"),
+                    ("plate_heat_W", "heat in the plate (W)", ".5g"),
+                    ("iterations_last", "iterations", ".0f")),
 }
 
 
@@ -327,19 +377,22 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
     table, checks = results_frames(res)
     n_fail = sum(1 for c in res.get("checks", []) if c["passed"] is False)
     n_na = sum(1 for c in res.get("checks", []) if c["passed"] is None)
+    unit = res.get("step_label", "macro-step")
+    style = (res.get("case") or {}).get("coupling", {}).get("style") or res.get("style", "?")
     head = (f"**{html.escape(res['case_name'])}**, committed at {res['committed_at'][11:19]}, "
             f"finished {res['finished'][11:19]} after **{res['steps_done']}** of "
-            f"{res['steps_requested']} macro-steps"
+            f"{res['steps_requested']} {html.escape(unit)}s"
             + (" (**stopped by the user**)" if res.get("stopped") else "")
             + f", {res['threads']} thread{'s' * (res['threads'] != 1)}, style "
-            f"{res.get('style', '?')}. " + machine_line(res))
+            f"{html.escape(str(style))}. " + machine_line(res))
     verdict = (pn.pane.Alert(f"**{n_fail} check{'s' * (n_fail != 1)} failed.** Each failure "
                              "is shown against the tolerance registered before any run; "
                              "no tolerance is changed after the fact.", alert_type="danger",
                              sizing_mode="stretch_width") if n_fail else
                pn.pane.Alert("Every check that could be measured passed its registered "
-                             "tolerance." + (f" {n_na} could not be measured in this run "
-                                             "(an arm it needs did not run)." if n_na else ""),
+                             "tolerance." + (f" {n_na} {'was' if n_na == 1 else 'were'} not "
+                                             "measured in this run; the table says why for "
+                                             "each." if n_na else ""),
                              alert_type="success", sizing_mode="stretch_width"))
     notes = [f"- {n}" for n in res.get("notes", [])]
     pou = res.get("problem", {}).get("partition_of_unity")

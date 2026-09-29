@@ -69,11 +69,11 @@ def test_save_and_load_round_trip(tmp_path):
     path = s.save(str(tmp_path / "farm.json"))
     assert CaseSpec.load(path) == s
     assert json.loads(open(path, encoding="utf-8").read())["schema_id"] == \
-        "atlas-workbench/case@0.2"          # the geometry section's version
+        "atlas-workbench/case@0.3"          # any family's version
 
 
-def test_registry_has_one_family_ready_and_says_why_for_the_rest():
-    assert registry.available_ids() == ["incompressible-2d"]
+def test_registry_says_which_families_run_and_why_the_rest_do_not():
+    assert registry.available_ids() == ["incompressible-2d", "conduction-2d", "electric-2d"]
     for f in registry.FAMILIES:
         assert f.note, f.id
         for src in f.sources:

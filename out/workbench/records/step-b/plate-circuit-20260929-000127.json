@@ -1,0 +1,337 @@
+{
+ "schema": "atlas-workbench/results@1",
+ "case_name": "plate-circuit",
+ "case_path": null,
+ "family": "electric-2d",
+ "style": "D",
+ "committed_at": "2026-09-29T00:01:26-04:00",
+ "started": "2026-09-29T00:01:26-04:00",
+ "finished": "2026-09-29T00:01:27-04:00",
+ "wall_seconds": 0.6480989456176758,
+ "build_seconds": 0.049532299977727234,
+ "arms": [
+  "serial",
+  "full"
+ ],
+ "dropped_arms": {
+  "parallel": "style D joins one field to one circuit: the field solve and the circuit solve take turns, so there is nothing to run side by side"
+ },
+ "step_label": "timed repeat",
+ "steps_requested": 5,
+ "steps_done": 5,
+ "stopped": false,
+ "threads": 1,
+ "timing": {
+  "serial": {
+   "seconds_per_step": [
+    0.004532199935056269,
+    0.0053310999646782875,
+    0.0036351000890135765,
+    0.003285599988885224,
+    0.0037296999944373965
+   ],
+   "mean": 0.004102739994414151,
+   "median": 0.0037296999944373965,
+   "min": 0.003285599988885224,
+   "speedup_vs_full": 0.2807489672302079
+  },
+  "full": {
+   "seconds_per_step": [
+    0.0012897999258711934,
+    0.0011982000432908535,
+    0.00115130003541708,
+    0.0009663000237196684,
+    0.0011536000529304147
+   ],
+   "mean": 0.001151840016245842,
+   "median": 0.0011536000529304147,
+   "min": 0.0009663000237196684,
+   "speedup_vs_full": 1.0
+  }
+ },
+ "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+ "bitwise": {
+  "steps": 0,
+  "first_difference": null
+ },
+ "metrics": {
+  "serial": {
+   "current_A": 5.001791847008491,
+   "plate_heat_W": 22.494619642915822,
+   "power_delivered_W": 60.02150216410189,
+   "kirchhoff_max": 1.0006184879531853e-12,
+   "energy_max": 2.094166347458367e-13,
+   "iterations_last": 3.0,
+   "all_converged": true,
+   "electrode_potentials_V": {
+    "E1": 0.0,
+    "E2": -4.497312229487491
+   },
+   "plate_resistance_ohm": 0.8991402215542571,
+   "current_vs_full": 1.0654322853096275e-13
+  },
+  "full": {
+   "current_A": 5.001791847007958,
+   "plate_heat_W": 22.494619642921563,
+   "power_delivered_W": 60.021502164095494,
+   "kirchhoff_max": 1.433894283979207e-12,
+   "energy_max": 3.161966260068906e-13,
+   "iterations_last": 1.0,
+   "all_converged": true,
+   "electrode_potentials_V": {
+    "E1": 0.0,
+    "E2": -4.497312229488065
+   },
+   "plate_resistance_ohm": 0.8991402215544676
+  }
+ },
+ "checks": [
+  {
+   "key": "kirchhoff",
+   "title": "Kirchhoff: the currents at every node sum to zero",
+   "kind": "balance",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the electric family's first run",
+   "measure": "max over circuit nodes of |sum of the currents leaving the node|, the plate's electrode currents included, over the largest branch current",
+   "why": "the full system solves Kirchhoff's law at every node exactly, so it closes to round-off; style D closes to its iteration's floor, the node potentials moving by less than 1e-10 of the largest EMF between the last two iterations, which moves a branch current by that over the branch's resistance -- far below 1e-6 of the current for the showcase circuit",
+   "value": 1.433894283979207e-12,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "serial: 1e-12; full: 1.43e-12",
+   "extra": {}
+  },
+  {
+   "key": "energy",
+   "title": "Energy: power delivered = power dissipated",
+   "kind": "balance",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the electric family's first run",
+   "measure": "|sum of EMF x current over the batteries - (I^2 R over the resistors + I^2 r inside the batteries + the plate's Joule heat)| over the power delivered",
+   "why": "Tellegen's theorem makes it an identity of any solution that satisfies Kirchhoff's laws and the branch laws, so it closes where Kirchhoff does; the plate's heat is summed from the same faces its currents are",
+   "value": 3.161966260068906e-13,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "serial: 2.09e-13; full: 3.16e-13",
+   "extra": {}
+  },
+  {
+   "key": "reference",
+   "title": "Current agrees with the plate and circuit solved as one",
+   "kind": "reference",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the electric family's first run",
+   "measure": "max over branches |I_D - I_full| over the largest branch current",
+   "why": "both solve the same finite volumes and the same nodal equations; the style-D answer converges to the joint solve's",
+   "value": 1.0654322853096275e-13,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "largest branch current 5.00179 A",
+   "extra": {}
+  }
+ ],
+ "notes": [
+  "The circuit's ground is 'E1'. First relaxation factor 0.5, then Aitken's rule.",
+  "The plate's conductance between its two electrodes is 1.112 S, and the circuit's series resistance 1.5 ohm, so the unrelaxed iteration's factor G (r + R) is 1.67 (over 1: unrelaxed it would diverge; the relaxation carries it).",
+  "Steady: every 'step' is the whole solve again from zero potentials, repeated to time it."
+ ],
+ "problem": {
+  "style": "D",
+  "cells": 12800,
+  "thickness_m": 3e-05,
+  "electrodes": {
+   "E1": 20,
+   "E2": 30
+  },
+  "circuit_nodes": [
+   "E1",
+   "E2",
+   "n1"
+  ],
+  "ground": "E1",
+  "tolerance": 1e-10,
+  "relaxation0": 0.5,
+  "aitken": true
+ },
+ "machine": {
+  "time": "2026-09-29T00:01:26-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [
+   {
+    "pid": 31624,
+    "memory": "4,272 K",
+    "command": "\".venv\\Scripts\\python.exe\"  server.py"
+   },
+   {
+    "pid": 33492,
+    "memory": "66,860 K",
+    "command": "\"C:\\Users\\Nauni\\anaconda3\\python.exe\" server.py"
+   }
+  ],
+  "pid": 10196
+ },
+ "machine_after": {
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "time": "2026-09-29T00:01:27-04:00"
+ },
+ "case": {
+  "schema_id": "atlas-workbench/case@0.3",
+  "name": "plate-circuit",
+  "description": "Resistive film on a battery and a resistor (style D)",
+  "domain": {
+   "nx": 160,
+   "ny": 80,
+   "dx": 0.00125
+  },
+  "physics": {
+   "family": "electric-2d",
+   "params": {
+    "thickness": 3e-05
+   }
+  },
+  "materials": {
+   "graphite": {
+    "sigma": 100000.0
+   }
+  },
+  "regions": [
+   {
+    "id": "film",
+    "material": "graphite",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 160,
+    "ny": 80,
+    "points": null,
+    "holes": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "plate",
+    "x0": 0,
+    "y0": 0,
+    "nx": 160,
+    "ny": 80
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "left-low",
+    "edge": "left",
+    "kind": "no-current",
+    "start": 0,
+    "stop": 30,
+    "value": null
+   },
+   {
+    "id": "E1",
+    "edge": "left",
+    "kind": "electrode",
+    "start": 30,
+    "stop": 50,
+    "value": null
+   },
+   {
+    "id": "left-high",
+    "edge": "left",
+    "kind": "no-current",
+    "start": 50,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "right-low",
+    "edge": "right",
+    "kind": "no-current",
+    "start": 0,
+    "stop": 50,
+    "value": null
+   },
+   {
+    "id": "E2",
+    "edge": "right",
+    "kind": "electrode",
+    "start": 50,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "bottom",
+    "edge": "bottom",
+    "kind": "no-current",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "top",
+    "edge": "top",
+    "kind": "no-current",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [
+   {
+    "id": "B1",
+    "kind": "battery",
+    "value": 12.0,
+    "internal": 0.5,
+    "a": "n1",
+    "b": "E2"
+   },
+   {
+    "id": "R1",
+    "kind": "resistor",
+    "value": 1.0,
+    "internal": 0.0,
+    "a": "n1",
+    "b": "E1"
+   }
+  ],
+  "coupling": {
+   "style": "D",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 200,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 1.0,
+   "steps": 5,
+   "threads": 1,
+   "start": "freestream",
+   "mode": "steady"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ }
+}

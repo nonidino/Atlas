@@ -31,10 +31,11 @@ from . import geometry as geo
 from . import registry
 from .editor import GeometryEditor
 from .gmsh_import import GmshImportError, read_msh_bytes
-from .runner import ARM_LABELS, CaseRun, RunRefused, results_dir_for
+from .runner import (ARM_LABELS, CaseRun, RunRefused, adapter_for, arms_for,
+                     results_dir_for, step_label_for)
 from .runview import RunPanel, results_view
-from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, blank_case, check,
-                   example_case, slug, summary)
+from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, adapt_to_family,
+                   blank_case, check, example_case, slug, summary)
 
 #: Native form controls and scrollbars follow the page, not the OS dark-mode setting.
 LIGHT_CSS = ":root { color-scheme: light; }"
@@ -64,6 +65,29 @@ NOT_BUILT = {
 
 ACCENT = "#0e6874"
 HEADER = "#16303f"
+
+#: Each family's "why the defaults", under its Physics step.
+WHY = {
+    "incompressible-2d": (
+        "**Why the defaults.** The projected assembly with the pressure solve exposed is "
+        "the arrangement the measurements selected: every other combination leaves its "
+        "velocity band within 80 macro-steps at six windows (W100). The ramp is the "
+        "partition of unity's width; windows that meet must overlap by at least twice it."),
+    "conduction-2d": (
+        "**How it is coupled.** Style B iterates overlapping windows until the update is "
+        "below the tolerance; windows that meet must overlap by at least twice the ramp. "
+        "Style C couples exactly two windows that meet along a face, one given the "
+        "interface's temperatures (Dirichlet), the other the heat the first sends across "
+        "(Neumann). Its unrelaxed iteration contracts when the Dirichlet side conducts "
+        "less (the 1-D factor k_D L_N / (k_N L_D) under one); the first relaxation factor "
+        "and Aitken's rule carry it when it does not, and the run reports which."),
+    "electric-2d": (
+        "**How it is coupled.** Style D: the plate is given its electrodes' potentials and "
+        "returns their currents; the circuit is given those currents and returns the "
+        "potentials. Unrelaxed, one port contracts only if the plate's conductance times "
+        "the circuit's series resistance is under one, so the first relaxation factor and "
+        "Aitken's rule are stated, and the run reports that factor."),
+}
 
 
 class Workbench:
@@ -359,7 +383,7 @@ class Workbench:
             fails = [c["title"] for c in res.get("checks", []) if c["passed"] is False]
             what = "stopped" if run.status == "stopped" else "finished"
             self.notify("warning" if (fails or run.status == "stopped") else "success",
-                        f"run {what} after {p.step} macro-steps"
+                        f"run {what} after {p.step} {run.step_label}s"
                         + (f"; FAILED: {', '.join(fails)}" if fails else
                            "; every measured check passed")
                         + (f"; saved {os.path.relpath(run.record_path, ROOT)}"
@@ -556,24 +580,41 @@ class Workbench:
         desc = self._bind(pn.widgets.TextAreaInput(name="Description", value=s.description,
                                                    height=80),
                           lambda c, v: setattr(c, "description", v), "description")
-        fam = self._bind(pn.widgets.Select(name="Physics family", options=fams,
-                                           value=s.physics.family,
-                                           disabled_options=[f.id for f in registry.FAMILIES
-                                                             if f.status != "ready-to-wire"]),
-                         lambda c, v: setattr(c.physics, "family", v), "family")
+        #: labels as the options AND as the disabled list: in the served page Bokeh
+        #: renders a dict-valued Select with the labels as its values, so a
+        #: disabled list of family ids matched nothing and every planned family
+        #: stayed selectable (found in the page, 2026-09-28)
+        by_label = {label: fid for label, fid in fams.items()}
+        fam = pn.widgets.Select(name="Physics family", options=list(fams),
+                                value=registry.family(s.physics.family).label,
+                                disabled_options=[f.label for f in registry.FAMILIES
+                                                  if f.status != "ready-to-wire"])
+
+        def switch(e):
+            #: a family is more than a label: its parameters, style, run mode and
+            #: boundaries follow it (`spec.adapt_to_family`), and the step is
+            #: rebuilt because its units change
+            fid = by_label[e.new]
+            if self.edit(lambda c: adapt_to_family(c, fid), f"family = {fid}"):
+                self.show("case", keep_view=True)
+        fam.param.watch(switch, "value")
+        unit = self._unit()
         nx = self._bind(pn.widgets.IntInput(name="Domain width (cells)", value=s.domain.nx,
                                             start=1),
                         lambda c, v: setattr(c.domain, "nx", v), "domain.nx")
         ny = self._bind(pn.widgets.IntInput(name="Domain height (cells)", value=s.domain.ny,
                                             start=1),
                         lambda c, v: setattr(c.domain, "ny", v), "domain.ny")
-        dx = self._bind(pn.widgets.FloatInput(name="Cell size (D)", value=s.domain.dx,
-                                              start=1e-6, step=0.001, format="0.00000"),
+        dx = self._bind(pn.widgets.FloatInput(name=f"Cell size ({unit})", value=s.domain.dx,
+                                              start=1e-9, step=0.001, format="0.000000"),
                         lambda c, v: setattr(c.domain, "dx", v), "domain.dx")
         d = s.domain
-        size = pn.pane.Markdown(f"The domain is **{d.nx * d.dx:.3g} x {d.ny * d.dx:.3g} D** "
-                                f"({d.nx} x {d.ny} = {d.nx * d.ny:,} cells). It has "
-                                f"**{len(s.windows)} windows** and **{len(s.devices)} devices**.")
+        size = pn.pane.Markdown(f"The domain is **{d.nx * d.dx:.4g} x {d.ny * d.dx:.4g} "
+                                f"{unit}** ({d.nx} x {d.ny} = {d.nx * d.ny:,} cells). It has "
+                                f"**{len(s.windows)} windows**"
+                                + (f" and **{len(s.devices)} devices**" if s.devices else "")
+                                + (f" and **{len(s.attachments)} lumped parts**"
+                                   if s.attachments else "") + ".")
         notes = pn.pane.Markdown(
             "\n".join(f"- **{f.label}**: {'available' if f.status == 'ready-to-wire' else 'not yet'}. {f.note}"
                       for f in registry.FAMILIES), sizing_mode="stretch_width")
@@ -595,45 +636,172 @@ class Workbench:
                                        "the devices and set the boundaries."),
             self.geo_editor.view(), sizing_mode="stretch_width")
 
+    def _family(self):
+        try:
+            return registry.family(self.spec.physics.family)
+        except KeyError:
+            return None
+
+    def _unit(self) -> str:
+        fam = self._family()
+        return fam.length_unit if fam is not None else ""
+
     def _view_physics(self):
+        """Drawn from the registry: the family's parameters, its materials' properties,
+        the coupling style and its settings, and the run mode."""
         s = self.spec
-        nu = self._bind(pn.widgets.FloatInput(name="Viscosity nu", value=s.physics.nu,
-                                              start=1e-9, step=1e-4, format="0.00000"),
-                        lambda c, v: setattr(c.physics, "nu", v), "nu")
-        u = self._bind(pn.widgets.FloatInput(name="Freestream speed", value=s.physics.u_inf,
-                                             start=1e-6, step=0.1),
-                       lambda c, v: setattr(c.physics, "u_inf", v), "u_inf")
-        dt = self._bind(pn.widgets.FloatInput(name="Macro-step", value=s.run.macro_dt,
-                                              start=1e-6, step=0.05),
-                        lambda c, v: setattr(c.run, "macro_dt", v), "macro_dt")
-        ramp = self._bind(pn.widgets.IntInput(name="Ramp width (cells)",
-                                              value=s.coupling.ramp_cells, start=1),
-                          lambda c, v: setattr(c.coupling, "ramp_cells", v), "ramp_cells")
-        asm = self._bind(pn.widgets.Select(name="Assembly", value=s.coupling.assembly,
-                                           options={"blend, then one global projection": "projected",
-                                                    "blend only": "blend"}),
-                         lambda c, v: setattr(c.coupling, "assembly", v), "assembly")
-        ell = self._bind(pn.widgets.Select(name="Pressure solve", value=s.coupling.elliptic,
-                                           options={"exposed: once, on the assembled field": "exposed",
-                                                    "embedded: inside every window": "embedded"}),
-                         lambda c, v: setattr(c.coupling, "elliptic", v), "elliptic")
-        fam = registry.family(s.physics.family)
-        why = pn.pane.Markdown(
-            "**Why the defaults.** The projected assembly with the pressure solve exposed is "
-            "the arrangement the measurements selected: every other combination leaves its "
-            "velocity band within 80 macro-steps at six windows (W100). The ramp is the "
-            "partition of unity's width; windows that meet must overlap by at least twice it.",
+        fam = self._family()
+        if fam is None:
+            return pn.Column(self._title("3. Physics & coupling"),
+                             pn.pane.Alert(f"Unknown family {s.physics.family!r}.",
+                                           alert_type="danger"))
+        # -- the family's parameters
+        params = []
+        for p in fam.params:
+            w = pn.widgets.FloatInput(name=f"{p.label} ({p.unit})" if p.unit else p.label,
+                                      value=float(s.physics.get(p.name)), width=260)
+            self._bind(w, lambda c, v, name=p.name: c.physics.params.__setitem__(name,
+                                                                                 float(v)),
+                       f"physics.{p.name}")
+            params.append(w)
+            if p.help:
+                params.append(pn.pane.Markdown(f"<small>{p.help}</small>", width=260,
+                                               margin=(-8, 10, 4, 10)))
+        # -- the run
+        run = []
+        rebuild = (lambda e: self.show("physics", keep_view=True))        # noqa: E731
+        if len(fam.modes) > 1:
+            w = self._bind(pn.widgets.Select(name="Run mode", value=s.run.mode,
+                                             options=list(fam.modes), width=260),
+                           lambda c, v: setattr(c.run, "mode", v), "run.mode")
+            w.param.watch(rebuild, "value")
+            run.append(w)
+        if s.run.mode == "transient":
+            tunit = "D/U" if fam.id == "incompressible-2d" else "s"
+            run.append(self._bind(pn.widgets.FloatInput(name=f"Macro-step ({tunit})",
+                                                        value=s.run.macro_dt, start=1e-9,
+                                                        width=260),
+                                  lambda c, v: setattr(c.run, "macro_dt", v), "run.macro_dt"))
+        # -- the coupling
+        style = s.coupling.style
+        w = self._bind(pn.widgets.Select(
+            name="Coupling style", value=style if style in fam.styles else fam.styles[0],
+            width=460, options={f"{k}: {registry.STYLES[k]}": k for k in fam.styles}),
+            lambda c, v: setattr(c.coupling, "style", v), "coupling.style")
+        w.param.watch(rebuild, "value")
+        coupling = [w]
+        if style in ("A", "B"):
+            coupling.append(self._bind(pn.widgets.IntInput(
+                name="Ramp width (cells)", value=s.coupling.ramp_cells, start=1, width=200),
+                lambda c, v: setattr(c.coupling, "ramp_cells", v), "coupling.ramp_cells"))
+        if fam.id == "incompressible-2d":
+            coupling.append(self._bind(pn.widgets.Select(
+                name="Assembly", value=s.coupling.assembly, width=340,
+                options={"blend, then one global projection": "projected",
+                         "blend only": "blend"}),
+                lambda c, v: setattr(c.coupling, "assembly", v), "coupling.assembly"))
+            coupling.append(self._bind(pn.widgets.Select(
+                name="Pressure solve", value=s.coupling.elliptic, width=340,
+                options={"exposed: once, on the assembled field": "exposed",
+                         "embedded: inside every window": "embedded"}),
+                lambda c, v: setattr(c.coupling, "elliptic", v), "coupling.elliptic"))
+        if style in ("B", "C", "D"):
+            #: a choice, not a number box: Bokeh's number box has no exponent format,
+            #: and it showed 1e-10 as "+0.000" (seen in the page)
+            tols = [1e-6, 1e-8, 1e-10, 1e-12, 1e-13]
+            if s.coupling.tolerance not in tols:
+                tols.append(s.coupling.tolerance)
+            coupling.append(self._bind(pn.widgets.Select(
+                name="Tolerance (update over the field's scale)", width=260,
+                value=s.coupling.tolerance,
+                options={f"{t:.0e}": t for t in sorted(tols, reverse=True)}),
+                lambda c, v: setattr(c.coupling, "tolerance", float(v)), "coupling.tolerance"))
+            coupling.append(self._bind(pn.widgets.IntInput(
+                name="Most iterations", value=s.coupling.max_iterations, start=1, width=200),
+                lambda c, v: setattr(c.coupling, "max_iterations", v),
+                "coupling.max_iterations"))
+        if style in ("C", "D"):
+            coupling.append(self._bind(pn.widgets.FloatInput(
+                name="First relaxation factor", value=s.coupling.relaxation, start=1e-6,
+                end=2.0, step=0.05, width=200),
+                lambda c, v: setattr(c.coupling, "relaxation", v), "coupling.relaxation"))
+            coupling.append(self._bind(pn.widgets.Checkbox(
+                name="then Aitken's rule adapts it", value=s.coupling.aitken),
+                lambda c, v: setattr(c.coupling, "aitken", bool(v)), "coupling.aitken"))
+        if style == "C":
+            sides = {"auto: the lower conductivity": "auto"}
+            sides.update({w.id: w.id for w in s.windows})
+            coupling.append(self._bind(pn.widgets.Select(
+                name="Dirichlet side", value=(s.coupling.dirichlet_side
+                                              if s.coupling.dirichlet_side in sides.values()
+                                              else "auto"), options=sides, width=260),
+                lambda c, v: setattr(c.coupling, "dirichlet_side", v),
+                "coupling.dirichlet_side"))
+        body = [self._title("3. Physics & coupling", f"{fam.label}."),
+                _wrap(pn.Column("**Physics**", *params, *run, width=300),
+                      pn.Column("**Coupling**", *coupling, width=480))]
+        if "regions" in fam.layers:
+            body.append(self._materials_card(fam))
+        body.append(pn.pane.Markdown(WHY.get(fam.id, ""), sizing_mode="stretch_width"))
+        body.append(pn.Card(pn.pane.Markdown("\n".join([f"- {x}" for x in fam.solvers]
+                                                       + [f"\n{fam.note}"]
+                                                       + [f"\nSources: "
+                                                          f"{', '.join(fam.sources)}"])),
+                            title="What this family runs on", collapsed=True,
+                            sizing_mode="stretch_width"))
+        return pn.Column(*body, sizing_mode="stretch_width")
+
+    def _materials_card(self, fam):
+        """The materials the regions use, one row each, every property the family
+        reads as a column; editable, and a library to add from."""
+        s = self.spec
+        used = []
+        for r in s.regions:
+            if r.material not in used:
+                used.append(r.material)
+        names = used + [m for m in s.materials if m not in used]
+        cols = [f"{p.name} ({p.unit})" for p in fam.material_props]
+        rows = []
+        for m in names:
+            props = s.materials.get(m, {})
+            row = {"material": m, "used by regions": "yes" if m in used else "no"}
+            for p, c in zip(fam.material_props, cols):
+                row[c] = props.get(p.name, float("nan"))
+            rows.append(row)
+        df = pd.DataFrame(rows, columns=["material", "used by regions", *cols])
+        table = pn.widgets.Tabulator(df, show_index=False, layout="fit_data_stretch",
+                                     sizing_mode="stretch_width", height=60 + 34 * max(len(df), 1),
+                                     editors={"material": None, "used by regions": None})
+
+        def edited(e):
+            m = df.iloc[e.row]["material"]
+            prop = fam.material_props[cols.index(e.column)].name
+            try:
+                val = float(e.value)
+            except (TypeError, ValueError):
+                self.notify("error", f"not applied: {e.column} = {e.value!r} is not a number")
+                self.show("physics", keep_view=True)
+                return
+            self.edit(lambda c: c.materials.setdefault(m, {}).__setitem__(prop, val),
+                      f"material {m}: {prop} = {val:g}")
+        table.on_edit(edited)
+        lib = fam.material_library()
+        pick = pn.widgets.Select(name="", options=["add from the library..."] + sorted(lib),
+                                 width=240)
+
+        def add(e):
+            if e.new in lib:
+                name = e.new
+                self.edit(lambda c: c.materials.__setitem__(name, dict(lib[name])),
+                          f"material {name} added from the library")
+                self.show("physics", keep_view=True)
+        pick.param.watch(add, "value")
+        note = pn.pane.Markdown(
+            "<small>Library values are textbook round values at room temperature, for a "
+            "showcase, not a datasheet. A region's material is set in Geometry, Regions.</small>",
             sizing_mode="stretch_width")
-        return pn.Column(
-            self._title("3. Physics & coupling", f"{fam.label}."),
-            _wrap(pn.Column("**Flow**", nu, u, dt, width=320),
-                   pn.Column("**Coupling between windows**", ramp, asm, ell, width=360)),
-            why,
-            pn.Card(pn.pane.Markdown("\n".join([f"- {x}" for x in fam.solvers]
-                                               + [f"\n{fam.note}"]
-                                               + [f"\nSources: {', '.join(fam.sources)}"])),
-                    title="What this family runs on", collapsed=True, sizing_mode="stretch_width"),
-            sizing_mode="stretch_width")
+        return pn.Card(table, pn.Row(pick), note, title="Materials",
+                       collapsed=False, sizing_mode="stretch_width")
 
     def _view_check(self):
         issues = self.issues()
@@ -657,26 +825,42 @@ class Workbench:
     def _view_run(self):
         s = self.spec
         cpus = os.cpu_count() or 1
-        steps = self._bind(pn.widgets.IntInput(name="Macro-steps", value=s.run.steps, start=1,
-                                               width=150),
-                           lambda c, v: setattr(c.run, "steps", v), "run.steps")
-        threads = self._bind(pn.widgets.IntSlider(name="Threads (parallel arm)",
-                                                  value=min(s.run.threads, cpus),
-                                                  start=1, end=cpus, width=260),
-                             lambda c, v: setattr(c.run, "threads", v), "run.threads")
-        opts = {ARM_LABELS[a]: a for a in ("serial", "parallel", "full")}
-        arms = pn.widgets.CheckBoxGroup(options=opts, value=list(self.run_arms), inline=False)
-
-        def set_arms(e):
-            self.run_arms = [a for a in ("serial", "parallel", "full") if a in e.new]
-        arms.param.watch(set_arms, "value")
-        running = self.run is not None and self.run.active
-        n_err = sum(1 for i in self.issues() if i.severity == "error")
         try:
             fam = registry.family(s.physics.family)
         except KeyError:
             fam = None
         runnable = fam is not None and bool(fam.adapter)
+        #: what one step is, and which arms this case can run (an adapter says
+        #: why it cannot run an arm, and the page repeats it)
+        available, unavailable = ("serial", "parallel", "full"), {}
+        label = "macro-step"
+        if runnable:
+            mod = adapter_for(s.physics.family)
+            available, unavailable = arms_for(mod, s)
+            label = step_label_for(mod, s)
+        steps = self._bind(pn.widgets.IntInput(name=f"{label[0].upper()}{label[1:]}s",
+                                               value=s.run.steps, start=1, width=150),
+                           lambda c, v: setattr(c.run, "steps", v), "run.steps")
+        threads = self._bind(pn.widgets.IntSlider(name="Threads (parallel arm)",
+                                                  value=min(s.run.threads, cpus),
+                                                  start=1, end=cpus, width=260,
+                                                  disabled="parallel" not in available),
+                             lambda c, v: setattr(c.run, "threads", v), "run.threads")
+        opts = {ARM_LABELS[a]: a for a in available}
+        arms = pn.widgets.CheckBoxGroup(options=opts,
+                                        value=[a for a in self.run_arms if a in available],
+                                        inline=False)
+
+        def set_arms(e):
+            kept = [a for a in self.run_arms if a not in available]
+            self.run_arms = [a for a in ("serial", "parallel", "full") if a in e.new
+                             or a in kept]
+        arms.param.watch(set_arms, "value")
+        arm_notes = [pn.pane.Markdown(f"<small>No {ARM_LABELS[a].lower()} arm: {why}.</small>",
+                                      width=220, margin=(0, 10))
+                     for a, why in unavailable.items()]
+        running = self.run is not None and self.run.active
+        n_err = sum(1 for i in self.issues() if i.severity == "error")
         run_btn = pn.widgets.Button(name="Run and compare", button_type="primary", width=170,
                                     disabled=running or bool(n_err) or not runnable)
         run_btn.on_click(lambda e: self.dispatch("run:both"))
@@ -694,15 +878,15 @@ class Workbench:
             why.append("A run is marching. Edits you make now do not reach it: it marches "
                        "the copy committed when Run was pressed.")
         self.run_panel = RunPanel(self, self.run)
-        body = [self._title("5. Run & compare", "March the decomposition and the full-domain "
+        body = [self._title("5. Run & compare", "Run the decomposition and the full-domain "
                                                 "solve in turns, on this machine: every "
-                                                "macro-step each ticked arm takes one step, "
+                                                f"{label}, each ticked arm takes its turn, "
                                                 "in a rotating order.")]
         if why:
             body.append(pn.pane.Alert(" ".join(why), alert_type="warning",
                                       sizing_mode="stretch_width"))
         body.append(_wrap(pn.Column(steps, threads, width=280),
-                          pn.Column("**Arms**", arms, width=220),
+                          pn.Column("**Arms**", arms, *arm_notes, width=240),
                           pn.Column(run_btn, stop_btn, width=190)))
         if self.run is None:
             body.append(pn.pane.Markdown("*Nothing has run in this session yet. The fields, "

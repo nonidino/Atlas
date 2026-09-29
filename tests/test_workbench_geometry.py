@@ -225,13 +225,18 @@ def test_boundary_rules_on_a_family_that_takes_them():
 
 
 def test_version_0_1_files_load_and_unknown_ones_do_not():
-    d = json.loads(example_case("farm-12").to_json())
+    """A 0.1 file as the shell wrote it (physics with nu and u_inf, no regions,
+    no boundaries) loads as the same case, through both migrations."""
+    ref = example_case("farm-12")
+    d = json.loads(ref.to_json())
     d["schema_id"] = "atlas-workbench/case@0.1"
-    d.pop("regions")
-    d.pop("boundaries")
+    for key in ("regions", "boundaries", "materials", "attachments"):
+        d.pop(key)
+    d["physics"] = {"family": "incompressible-2d", **d["physics"]["params"]}
+    d["coupling"].pop("style")
     s = CaseSpec.model_validate(d)
-    assert s.schema_id == "atlas-workbench/case@0.2"
-    assert s == example_case("farm-12")
+    assert s.schema_id == "atlas-workbench/case@0.3"
+    assert s == ref
     d["schema_id"] = "atlas-workbench/case@9.9"
     with pytest.raises(ValueError):
         CaseSpec.model_validate(d)
@@ -242,7 +247,8 @@ def test_registry_families_name_valid_boundary_kinds():
     for f in registry.FAMILIES:
         assert set(f.boundary_kinds) <= known, f.id
         assert {b.kind for b in f.fixed_boundaries} <= set(f.boundary_kinds), f.id
-        assert set(f.layers) <= {"windows", "regions", "devices", "boundaries"}, f.id
+        assert set(f.layers) <= {"windows", "regions", "devices", "boundaries",
+                                 "attachments"}, f.id
 
 
 # ---------------------------------------------------------------------------

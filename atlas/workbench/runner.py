@@ -65,6 +65,21 @@ def adapter_for(family: str):
     return importlib.import_module(fam.adapter)
 
 
+def arms_for(module, spec) -> tuple[tuple[str, ...], dict[str, str]]:
+    """The arms a case can run, in the family's order, and why the others cannot
+    (an adapter says so through ``available_arms``; otherwise all of its ARMS)."""
+    if hasattr(module, "available_arms"):
+        return module.available_arms(spec)
+    return tuple(module.ARMS), {}
+
+
+def step_label_for(module, spec) -> str:
+    """What one step of a run is: a macro-step, or a timed repeat of a steady solve."""
+    if hasattr(module, "step_label"):
+        return module.step_label(spec)
+    return "macro-step"
+
+
 def downsample(f: np.ndarray, cells: int = DISPLAY_CELLS) -> tuple[np.ndarray, int]:
     s = max(1, int(math.ceil(max(f.shape) / cells)))
     return np.ascontiguousarray(f[::s, ::s], dtype=np.float32), s
@@ -86,6 +101,8 @@ class Progress:
     message: str
     error: str | None
     results: dict[str, Any] | None
+    #: per decomposed arm, the latest step's iteration history (styles B, C, D)
+    convergence: dict[str, list[float]] = field(default_factory=dict)
 
 
 @dataclass
@@ -112,11 +129,17 @@ class CaseRun:
         self.committed_json = self.spec.to_json()
         self.committed_at = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
         self.module = adapter_for(self.spec.physics.family)
-        order = self.module.ARMS
-        self.arms = tuple(a for a in order if a in self.arms)
+        order, why = arms_for(self.module, self.spec)
+        asked = tuple(self.arms)
+        self.arms = tuple(a for a in order if a in asked)
+        #: arms asked for that this case cannot run, with the reason
+        self.dropped = {a: why.get(a, "not an arm of this family") for a in asked
+                        if a not in self.arms}
         if not self.arms:
-            raise RunRefused("choose at least one arm to run")
+            raise RunRefused("none of the chosen arms can run this case"
+                             + ("".join(f"; {a}: {w}" for a, w in self.dropped.items())))
         self.steps = int(self.steps)
+        self.step_label = step_label_for(self.module, self.spec)
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
@@ -124,6 +147,7 @@ class CaseRun:
         self._arm = ""
         self._seconds: dict[str, list[float]] = {a: [] for a in self.arms}
         self._series: dict[str, dict[str, list[float]]] = {a: {} for a in self.arms}
+        self._convergence: dict[str, list[float]] = {}
         self._fields: dict[str, np.ndarray] = {}
         self._field_version = 0
         self._stride = 1
@@ -169,14 +193,15 @@ class CaseRun:
                             {a: {k: list(x) for k, x in d.items()}
                              for a, d in self._series.items()},
                             dict(self._fields), self._field_version, self._stride,
-                            self._message, self._error, self.results)
+                            self._message, self._error, self.results,
+                            {a: list(v) for a, v in self._convergence.items()})
 
     def label(self) -> str:
         s = self.spec
-        bits = [f"{len(s.windows)} windows"]
+        bits = [f"{len(s.windows)} window{'s' * (len(s.windows) != 1)}"]
         if s.devices:
             bits.append(f"{len(s.devices)} rotors")
-        bits.append(f"{self.steps} macro-steps")
+        bits.append(f"{self.steps} {self.step_label}{'s' * (self.steps != 1)}")
         return (f"{s.name} as committed at {self.committed_at[11:19]} ("
                 + ", ".join(bits) + f"; arms: {', '.join(self.arms)}; "
                 + f"{self.threads} thread{'s' * (self.threads != 1)})")
@@ -244,7 +269,7 @@ class CaseRun:
                 for a in self.arms:
                     if a == "serial" and same and "parallel" in states:
                         continue
-                    obs = problem.observe(a, states[a])
+                    obs = problem.observe(a, states[a], round_start[a])
                     history[a].append(obs)
                 if same and "parallel" in states:
                     history["serial"].append(dict(history["parallel"][-1],
@@ -252,8 +277,13 @@ class CaseRun:
                 with self._lock:
                     for a in self.arms:
                         for key, val in history[a][-1].items():
+                            if isinstance(val, bool):
+                                val = float(val)
                             if isinstance(val, (int, float)):
                                 self._series[a].setdefault(key, []).append(float(val))
+                            elif key == "convergence":
+                                #: the latest step's iteration history, for the page
+                                self._convergence[a] = [float(x) for x in val]
                 if done % self.snapshot_every == 0 or done == self.steps:
                     self._publish_fields(problem, states, done)
                 with self._lock:
@@ -271,10 +301,10 @@ class CaseRun:
             self.results = self._record(problem, before, build_s, done, stopped, metrics,
                                         checks, bitwise, started)
             self._publish_fields(problem, states, done)
+            unit = self.step_label + "s"
             self._set(status="stopped" if stopped else "done",
                       _message=(f"stopped by the user after {done} of {self.steps} "
-                                f"macro-steps" if stopped else
-                                f"finished {done} macro-steps"))
+                                f"{unit}" if stopped else f"finished {done} {unit}"))
         except Exception as exc:                          # the page says what broke
             self.error_trace = traceback.format_exc()
             self._set(status="failed", _error=f"{type(exc).__name__}: {exc}",
@@ -333,7 +363,7 @@ class CaseRun:
             "case_name": self.spec.name,
             "case_path": self.case_path,
             "family": self.spec.physics.family,
-            "style": getattr(self.module, "STYLE", ""),
+            "style": self.spec.coupling.style,
             "committed_at": self.committed_at,
             "started": datetime.datetime.fromtimestamp(started).astimezone().isoformat(
                 timespec="seconds"),
@@ -341,6 +371,8 @@ class CaseRun:
             "wall_seconds": time.time() - started,
             "build_seconds": build_s,
             "arms": list(self.arms),
+            "dropped_arms": dict(self.dropped),
+            "step_label": self.step_label,
             "steps_requested": self.steps,
             "steps_done": done,
             "stopped": stopped,

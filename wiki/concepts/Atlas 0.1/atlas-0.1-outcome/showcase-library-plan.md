@@ -1,7 +1,7 @@
 # The classical showcase library: plan
 
 **Type:** Outcome page — **build plan** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
-**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6), and so was **step 2, the general runner for style A** (the wind-farm family; §5's "Built" note). Steps 3–6 are not built. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort in §4–§5's tables are estimates, marked **[AI Inference]**; measured numbers are in the "Built" notes, each with its record.
+**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6), and so was **step 2, the general runner for style A** (the wind-farm family). **Step 3, the solver-family interface with styles B, C and D, was built on 2026-09-29**, with cases 2 and 5 as its two new families. Details are in §5's "Built" notes. Steps 4–6 are not built, apart from those two cases. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort in §4–§5's tables are estimates, marked **[AI Inference]**; measured numbers are in the "Built" notes, each with its record.
 **Hub:** [[00-atlas-0.1-outcome]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/`
 
 ---
@@ -101,6 +101,26 @@ All 2-D. Runtimes and code sizes are **[AI Inference]** estimates.
 > - The 3-rotor, 40-step run is **W346's accuracy row exactly**: full-domain farm power 1.3580 against W346's 1.358, $-4.07\%$ against $-4.1\%$, rms 0.0470 against 0.047. This is the same arithmetic, so it reproduces.
 > - **The step counts are the owner's decision, recalibrated on measurement.** W346 marched 40 macro-steps. With all three arms that is about 8 minutes at 21 rotors, against the 2-minute rule. The owner chose short marches, proposed as 14 and 8 macro-steps ("about 100 s each"). Measured, 8 steps at 21 rotors took 122.1 s. Then 7 took 120.8 s, because the laptop's cost per step rose about 15% between back-to-back runs while the ratios held. So the examples now run **12 and 6 macro-steps**, sized to the slowest step measured, with room for the compile. In so few macro-steps a wake has not reached the next rotor: 3.5 D at the freestream speed takes 17.5 steps, which the adapter computes from the case. So farm power covers the start-up only. The page says so, and W346's 40-step comparison remains the record for the developed wake.
 > - **Not built:** the solver-family interface and styles B–D (step 3), the other families (step 4), the gallery (step 5), the compile (step 6). A run of a family without an adapter is refused, with the registry's reason.
+
+> **Built, 2026-09-29: step 3, the solver-family interface and coupling styles B, C and D.** Code: `atlas/workbench/fv.py`, `styles.py`, `families/conduction.py`, `families/electric.py`; the case file `atlas-workbench/case@0.3`. Tests: `tests/test_workbench_fv.py`, `tests/test_workbench_families.py`.
+> - **The interface was derived from two real families, as §7 required.** The wind farm and conduction each fill the same five slots: the state, restriction, a step given boundary traces, the full-domain equivalent, and assembly with a balance. `styles.py` tabulates what fills each slot in each family. The two share no code at the solver level, and should not: the wind farm's step is W346's to the bit.
+> - **One finite-volume core** (`fv.py`) serves conduction and the electric potential, and will serve the plume and the cooled block. It has harmonic-mean faces, upwind advection, and any set of cells. It closes a face that leaves the set in one of three ways, and those three are what the styles differ in. The full domain is the same call on every cell, so a one-window decomposition is the full-domain system to the bit **by construction**, and a test checks it, steady and transient.
+> - **The three styles:**
+>   - **B:** restricted additive Schwarz iterated to a tolerance. Threads change no bit.
+>   - **C:** Dirichlet–Neumann with stated relaxation. The page shows the first factor, Aitken's rule if chosen, and the 1-D contraction factor $\rho = k_D L_N/(k_N L_D)$. A test shows the unrelaxed iteration diverging when $\rho = 14.8$, and the optimal factor $1/(1+\rho)$ rescuing it.
+>   - **D:** a field's boundary integral is a lumped part's port variable. The electrodes' currents drive a circuit solved by nodal analysis; ideal and Norton batteries are both allowed.
+> - **Case 2, the two-material plate**, is two examples.
+>   - The two-layer wall (steel, then copper; style C, steady). Its heat flow of 1744.186 W/m is within $4.3\times10^{-13}$ of the closed form $q = \Delta T/\sum_i L_i/k_i$ (the full domain: $8.6\times10^{-13}$). It takes 3 Dirichlet–Neumann iterations, at $\rho = 0.075$.
+>   - The copper insert in a steel plate (style B, transient, 40 steps of 120 s). The energy balance closes to $1.6\times10^{-8}$, the iteration's floor (the full domain: $5.2\times10^{-12}$). It is within $3.6\times10^{-7}$ K of the full domain, and threaded equals serial bit for bit over all 40 steps.
+> - **Case 5, current spreading in a resistive film** (style D): a 30 $\mu$m graphite film on a 12 V battery ($r = 0.5\,\Omega$ inside) and a resistor ($R = 1\,\Omega$).
+>   - It carries 5.001792 A, within $1.1\times10^{-13}$ of the film and circuit solved as one sparse system.
+>   - The film's resistance between its electrodes is $0.899\,\Omega$, and 22.495 W of the 60.022 W delivered is heat in the film.
+>   - Kirchhoff closes to $1.4\times10^{-12}$ and the energy balance to $3.2\times10^{-13}$.
+>   - The unrelaxed iteration's factor is $G(r+R) = 1.67$, where $G$ is the film's conductance: over 1, so without relaxation it would diverge. Aitken's rule converges in 3 iterations.
+>   - **Its control is round-off, not bits.** The partition is physical (a field against a lumped network), so its full-domain reference is different linear algebra on the same discretization.
+> - **What the showcase does not show: a speedup.** At these sizes (6,400–15,360 cells) the full domain's sparse direct solve beat every decomposed arm, measured in the page on AC power: 2.6× faster than Dirichlet–Neumann on the wall, 3.6× than style D, and 24–35× than Schwarz on the insert. These cases show the coupling, and the page says so with the ratio. Records: `out/workbench/records/step-b/`.
+> - **Found in the served page:** the family selector disabled none of the planned families. It had passed family ids to a list whose values in the page are labels; this dates from the shell and is now pinned by a test. Also found: the tolerance box displayed $10^{-10}$ as "+0.000", and a plot autoscaled two equal answers into two lines.
+> - **Not built yet:** the attachments' canvas and table layer (the circuit is set in the case file and drawn nowhere), cases 3, 4, 6, 7 and 8, the gallery, and the compile.
 
 ---
 

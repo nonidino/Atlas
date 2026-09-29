@@ -12,11 +12,26 @@ Units, chosen so that nothing the grid has to agree with is a float:
     diameters D), because a rotor does not have to sit on a cell boundary;
   * ``domain.dx`` converts between them (the wind-farm family: 1/32 D).
 
-Schema ``atlas-workbench/case@0.2`` adds the geometry section's two new layers:
+Schema ``atlas-workbench/case@0.2`` added the geometry section's two layers:
 material **regions** (rectangles drawn in the page, or polygons imported from
-Gmsh) and **boundaries** (conditions on segments of the domain's edges).  A 0.1
-file still loads: it gains the boundaries its family's solver fixes, and no
-regions.  The geometry rules themselves live in `geometry.py`.
+Gmsh) and **boundaries** (conditions on segments of the domain's edges).
+
+Schema ``atlas-workbench/case@0.3`` makes the case file hold any family, not
+only the wind farm:
+
+* ``physics.params`` holds the family's scalar parameters by the names its
+  registry entry declares (0.2 had the wind farm's ``nu`` and ``u_inf`` as
+  fields);
+* ``materials`` names each material's properties, which the regions refer to;
+* ``attachments`` are lumped parts -- batteries and resistors -- wired between
+  electrodes on the domain's edge and free circuit nodes (showcase case 5);
+* ``coupling.style`` is the showcase plan's coupling style (A, B, C, D), with
+  the iteration's tolerance, relaxation and Dirichlet side;
+* ``run.mode`` is steady or transient.
+
+Older files still load: a 0.1 file gains its family's fixed boundaries, and a
+0.2 file's ``nu`` and ``u_inf`` move into ``params`` and its style is its
+family's.  The geometry rules themselves live in `geometry.py`.
 """
 
 from __future__ import annotations
@@ -33,9 +48,9 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from . import geometry as geo
 from . import registry
 
-SCHEMA_ID = "atlas-workbench/case@0.2"
+SCHEMA_ID = "atlas-workbench/case@0.3"
 #: every schema this version reads; older ones are migrated on load
-READABLE = ("atlas-workbench/case@0.1", SCHEMA_ID)
+READABLE = ("atlas-workbench/case@0.1", "atlas-workbench/case@0.2", SCHEMA_ID)
 
 
 class Domain(BaseModel):
@@ -45,9 +60,25 @@ class Domain(BaseModel):
 
 
 class Physics(BaseModel):
+    """The family and its scalar parameters, by the names its registry entry declares."""
+
     family: str = "incompressible-2d"
-    nu: float = Field(gt=0, description="kinematic viscosity")
-    u_inf: float = Field(gt=0, description="freestream speed")
+    params: dict[str, float] = Field(default_factory=dict)
+
+    def get(self, name: str) -> float:
+        """A parameter, or the family's default when the case does not set it."""
+        if name in self.params:
+            return float(self.params[name])
+        return float(registry.family(self.family).param(name).default)
+
+    # the wind farm's two, read as they were in 0.2
+    @property
+    def nu(self) -> float:
+        return self.get("nu")
+
+    @property
+    def u_inf(self) -> float:
+        return self.get("u_inf")
 
 
 class Window(BaseModel):
@@ -122,17 +153,49 @@ class Device(BaseModel):
     yaw_deg: float = 0.0
 
 
+class Attachment(BaseModel):
+    """A lumped part wired between two circuit nodes (schema 0.3, showcase case 5).
+
+    A node is an **electrode** -- a boundary segment of kind ``electrode``, named
+    by its id -- or a free node of the circuit (any other name).  The node
+    ``ground`` is at 0 V; with no ground, the first electrode is.  A battery's
+    EMF drives current out of its ``a`` terminal through the external circuit
+    and back into ``b``: ``a`` is its positive terminal.
+    """
+    id: str
+    kind: Literal["battery", "resistor"]
+    value: float = Field(gt=0, description="EMF in V (battery), resistance in ohm")
+    internal: float = Field(0.0, ge=0, description="a battery's internal resistance, ohm")
+    a: str
+    b: str
+
+
 class Coupling(BaseModel):
+    #: the showcase plan's coupling style (A, B, C, D) -- see `registry.STYLES`
+    style: Literal["A", "B", "C", "D", "split"] = "A"
     ramp_cells: int = Field(8, ge=1, description="partition-of-unity ramp width")
     assembly: Literal["projected", "blend"] = "projected"
     elliptic: Literal["exposed", "embedded"] = "exposed"
+    #: styles B, C, D: iterate until the update (max norm, relative to the
+    #: field's scale) is below this
+    tolerance: float = Field(1e-10, gt=0, lt=1)
+    max_iterations: int = Field(500, ge=1)
+    #: styles C and D: the first relaxation factor, and whether Aitken's rule
+    #: adapts it from the second iteration on
+    relaxation: float = Field(0.5, gt=0, le=2)
+    aitken: bool = True
+    #: style C: which window is the Dirichlet side ("auto": the one with the
+    #: lower mean conductivity, the side the 1-D analysis says contracts)
+    dirichlet_side: str = "auto"
 
 
 class RunSettings(BaseModel):
     macro_dt: float = Field(0.2, gt=0)
+    #: macro-steps of a transient run; timed repeats of the solve of a steady one
     steps: int = Field(40, gt=0)
     threads: int = Field(4, ge=1)
     start: Literal["freestream"] = "freestream"
+    mode: Literal["transient", "steady"] = "transient"
 
 
 class Compare(BaseModel):
@@ -147,10 +210,13 @@ class CaseSpec(BaseModel):
     description: str = ""
     domain: Domain
     physics: Physics
+    #: material name -> {property: value}, SI; the regions refer to these names
+    materials: dict[str, dict[str, float]] = Field(default_factory=dict)
     regions: list[Region] = Field(default_factory=list)
     windows: list[Window] = Field(default_factory=list)
     devices: list[Device] = Field(default_factory=list)
     boundaries: list[Boundary] = Field(default_factory=list)
+    attachments: list[Attachment] = Field(default_factory=list)
     coupling: Coupling = Field(default_factory=Coupling)
     run: RunSettings = Field(default_factory=RunSettings)
     compare: Compare = Field(default_factory=Compare)
@@ -166,12 +232,34 @@ class CaseSpec(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def _migrate(cls, data):
-        """0.1 -> 0.2: the family's fixed boundaries, no regions."""
-        if isinstance(data, dict) and data.get("schema_id") == "atlas-workbench/case@0.1":
+        """0.1 -> 0.2 -> 0.3, one step at a time.
+
+        0.1 -> 0.2: the family's fixed boundaries, no regions.
+        0.2 -> 0.3: ``nu`` and ``u_inf`` move into ``physics.params``; the style
+        is the family's first; no materials, no attachments; a transient run.
+        """
+        if not isinstance(data, dict):
+            return data
+        if data.get("schema_id") == "atlas-workbench/case@0.1":
             data = dict(data)
             fam = (data.get("physics") or {}).get("family", "incompressible-2d")
             data.setdefault("boundaries", [b.model_dump() for b in family_boundaries(fam)])
             data.setdefault("regions", [])
+            data["schema_id"] = "atlas-workbench/case@0.2"
+        if data.get("schema_id") == "atlas-workbench/case@0.2":
+            data = dict(data)
+            ph = dict(data.get("physics") or {})
+            params = dict(ph.get("params") or {})
+            for key in ("nu", "u_inf"):
+                if key in ph:
+                    params[key] = ph.pop(key)
+            ph["params"] = params
+            data["physics"] = ph
+            cp = dict(data.get("coupling") or {})
+            cp.setdefault("style", _first_style(ph.get("family", "incompressible-2d")))
+            data["coupling"] = cp
+            data.setdefault("materials", {})
+            data.setdefault("attachments", [])
             data["schema_id"] = SCHEMA_ID
         return data
 
@@ -181,7 +269,8 @@ class CaseSpec(BaseModel):
 
     @classmethod
     def from_json(cls, text: str) -> "CaseSpec":
-        return cls.model_validate_json(text)
+        """Parsed to a dict first, so the migration always sees the old shape."""
+        return cls.model_validate(json.loads(text))
 
     def save(self, path: str) -> str:
         """Write atomically; OneDrive can hold a just-written file, so retry."""
@@ -209,14 +298,51 @@ class CaseSpec(BaseModel):
         return self.model_copy(deep=True)
 
 
+def _first_style(fid: str) -> str:
+    try:
+        fam = registry.family(fid)
+    except KeyError:
+        return "A"
+    return fam.styles[0] if fam.styles else "A"
+
+
 def family_boundaries(fid: str) -> list[Boundary]:
-    """The boundaries a family's solver fixes, as whole-edge segments."""
+    """The boundaries a family's solver fixes, as whole-edge segments; for a family
+    whose boundaries are editable, the ones a new case of it starts with."""
     try:
         fam = registry.family(fid)
     except KeyError:
         return []
-    return [Boundary(id=f"B-{b.edge}", edge=b.edge, kind=b.kind)
-            for b in fam.fixed_boundaries]
+    if fam.fixed_boundaries:
+        return [Boundary(id=f"B-{b.edge}", edge=b.edge, kind=b.kind)
+                for b in fam.fixed_boundaries]
+    return [Boundary(id=f"B-{edge}", edge=edge, kind=kind, value=value)
+            for edge, kind, value in fam.default_boundaries]
+
+
+def adapt_to_family(c: "CaseSpec", fid: str) -> None:
+    """Make a case fit a newly chosen family, keeping what still applies.
+
+    Parameters the family declares keep a value the case already has; the style
+    and the run mode fall back to the family's first if the case's is not one it
+    runs; boundaries are replaced when the family fixes its own or cannot impose
+    one the case has; region materials the case does not define are taken from
+    the family's showcase library when it has one of that name.
+    """
+    fam = registry.family(fid)
+    c.physics.family = fid
+    c.physics.params = {p.name: float(c.physics.params.get(p.name, p.default))
+                        for p in fam.params}
+    if c.coupling.style not in fam.styles and fam.styles:
+        c.coupling.style = fam.styles[0]
+    if c.run.mode not in fam.modes:
+        c.run.mode = fam.modes[0]
+    if fam.fixed_boundaries or any(b.kind not in fam.boundary_kinds for b in c.boundaries):
+        c.boundaries = family_boundaries(fid)
+    lib = fam.material_library()
+    for r in c.regions:
+        if r.material not in c.materials and r.material in lib:
+            c.materials[r.material] = dict(lib[r.material])
 
 
 # ---------------------------------------------------------------------------
@@ -266,7 +392,10 @@ def check(spec: CaseSpec) -> list[Issue]:
                              f"{gap} of {d.nx * d.ny} cells lie in no window"))
 
     ramp = spec.coupling.ramp_cells
-    if spec.windows:
+    style = spec.coupling.style
+    if spec.windows and style in ("C", "D"):
+        out += _check_pieces(spec)
+    elif spec.windows:
         an = geo.analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
                                               for w in spec.windows], ramp)
         n_ramp = int(an.ramp_only.sum())
@@ -310,18 +439,162 @@ def check(spec: CaseSpec) -> list[Issue]:
 
     out += _check_regions(spec)
     out += _check_boundaries(spec)
+    out += _check_physics(spec)
+    out += _check_attachments(spec)
+    return out
 
-    if spec.physics.family != "incompressible-2d":
+
+def _check_pieces(spec: CaseSpec) -> list[Issue]:
+    """Styles C and D cut the domain into pieces that do not overlap.
+
+    Style C couples exactly two pieces across one interface (Dirichlet-Neumann
+    is a two-piece method; more pieces would need cross-point rules this runner
+    does not have).  Style D joins ONE field to lumped parts, so its window is
+    the whole plate.
+    """
+    out: list[Issue] = []
+    d = spec.domain
+    count = np.zeros((d.ny, d.nx), dtype=np.int32)
+    for w in spec.windows:
+        count[w.y0:w.y0 + w.ny, w.x0:w.x0 + w.nx] += 1
+    over = int((count > 1).sum())
+    if over:
+        out.append(Issue("error", "geometry",
+                         f"{over} cells lie in more than one window; style "
+                         f"{spec.coupling.style} cuts the domain into pieces that meet "
+                         f"along faces and do not overlap"))
+    if spec.coupling.style == "C" and len(spec.windows) != 2:
+        out.append(Issue("error", "geometry",
+                         f"style C (Dirichlet-Neumann) couples exactly two pieces; this "
+                         f"case has {len(spec.windows)}"))
+    if spec.coupling.style == "C" and len(spec.windows) == 2 and not over:
+        a, b = spec.windows
+        touch_x = (a.x0 + a.nx == b.x0 or b.x0 + b.nx == a.x0) and not (
+            a.y0 + a.ny <= b.y0 or b.y0 + b.ny <= a.y0)
+        touch_y = (a.y0 + a.ny == b.y0 or b.y0 + b.ny == a.y0) and not (
+            a.x0 + a.nx <= b.x0 or b.x0 + b.nx <= a.x0)
+        if not (touch_x or touch_y):
+            out.append(Issue("error", "geometry",
+                             f"windows {a.id} and {b.id} do not meet along a face"))
+        side = spec.coupling.dirichlet_side
+        if side != "auto" and side not in (a.id, b.id):
+            out.append(Issue("error", "physics",
+                             f"the Dirichlet side {side!r} is not one of the two windows "
+                             f"({a.id}, {b.id})"))
+    if spec.coupling.style == "D" and len(spec.windows) != 1:
+        out.append(Issue("error", "geometry",
+                         f"style D joins one field to lumped parts, so the plate is one "
+                         f"window covering the domain; this case has "
+                         f"{len(spec.windows)}"))
+    return out
+
+
+def _check_physics(spec: CaseSpec) -> list[Issue]:
+    out: list[Issue] = []
+    fam = _family(spec)
+    if fam is None:
+        return [Issue("error", "case", f"unknown physics family {spec.physics.family!r}")]
+    if fam.status != "ready-to-wire":
+        out.append(Issue("error", "case",
+                         f"the {fam.label} family is not available yet: {fam.note}"))
+        return out
+    if spec.coupling.style not in fam.styles:
         out.append(Issue("error", "physics",
-                         f"physics family {spec.physics.family!r} is not available yet"))
-    if spec.coupling.assembly == "blend":
+                         f"the {fam.id} family runs style "
+                         f"{' or '.join(fam.styles)}, not {spec.coupling.style}"))
+    if spec.run.mode not in fam.modes:
+        out.append(Issue("error", "physics",
+                         f"the {fam.id} family runs {' or '.join(fam.modes)}, not "
+                         f"{spec.run.mode}"))
+    for p in fam.params:
+        why = p.problem(spec.physics.get(p.name))
+        if why:
+            out.append(Issue("error", "physics", why))
+    unknown = sorted(set(spec.physics.params) - {p.name for p in fam.params})
+    if unknown:
         out.append(Issue("warning", "physics",
-                         "a blend without the global projection leaves the band at "
-                         "macro-step 70-80 at six windows (W100)"))
-    if spec.coupling.elliptic == "embedded":
-        out.append(Issue("warning", "physics",
-                         "an embedded pressure solve in every window is refused by "
-                         "L2/R10 and is unstable composed (W100)"))
+                         f"the {fam.id} family does not read {', '.join(unknown)}"))
+    if "regions" in fam.layers:
+        used = sorted({r.material for r in spec.regions})
+        for m in used:
+            props = spec.materials.get(m)
+            if props is None:
+                out.append(Issue("error", "physics",
+                                 f"material {m!r} is used by a region and has no "
+                                 f"properties (Physics, Materials)"))
+                continue
+            for p in fam.material_props:
+                if p.name not in props:
+                    out.append(Issue("error", "physics",
+                                     f"material {m!r} has no {p.label.lower()} "
+                                     f"({p.name}, {p.unit})"))
+                    continue
+                why = p.problem(props[p.name])
+                if why:
+                    out.append(Issue("error", "physics", f"material {m!r}: {why}"))
+    if fam.id == "incompressible-2d":
+        if spec.coupling.assembly == "blend":
+            out.append(Issue("warning", "physics",
+                             "a blend without the global projection leaves the band at "
+                             "macro-step 70-80 at six windows (W100)"))
+        if spec.coupling.elliptic == "embedded":
+            out.append(Issue("warning", "physics",
+                             "an embedded pressure solve in every window is refused by "
+                             "L2/R10 and is unstable composed (W100)"))
+    return out
+
+
+def _check_attachments(spec: CaseSpec) -> list[Issue]:
+    """The circuit: parts, nodes, and that it closes through the plate."""
+    out: list[Issue] = []
+    fam = _family(spec)
+    reads = fam is not None and "attachments" in fam.layers
+    if spec.attachments and not reads:
+        return [Issue("warning", "geometry",
+                      f"the {fam.id if fam else '?'} family does not read lumped "
+                      f"attachments; the {len(spec.attachments)} here would be ignored")]
+    if not reads:
+        return out
+    aids = [a.id for a in spec.attachments]
+    for dup in sorted({i for i in aids if aids.count(i) > 1}):
+        out.append(Issue("error", "geometry", f"two attachments are both called {dup!r}"))
+    electrodes = [b.id for b in spec.boundaries if b.kind == "electrode"]
+    if not electrodes:
+        out.append(Issue("error", "geometry",
+                         "the plate has no electrode: mark at least one edge segment as "
+                         "an electrode for the circuit to attach to"))
+    if not any(a.kind == "battery" for a in spec.attachments):
+        out.append(Issue("error", "geometry", "the circuit has no battery to drive it"))
+    for a in spec.attachments:
+        if a.a == a.b:
+            out.append(Issue("error", "geometry",
+                             f"attachment {a.id} connects node {a.a!r} to itself"))
+    # connectivity: every electrode is joined to the rest through the plate, and
+    # every part must reach an electrode, or it carries no current
+    nodes = set(electrodes) | {n for a in spec.attachments for n in (a.a, a.b)}
+    parent = {n: n for n in nodes}
+
+    def find(n):
+        while parent[n] != n:
+            parent[n] = parent[parent[n]]
+            n = parent[n]
+        return n
+    for e in electrodes[1:]:
+        parent[find(e)] = find(electrodes[0])
+    for a in spec.attachments:
+        parent[find(a.a)] = find(a.b)
+    if electrodes:
+        root = find(electrodes[0])
+        lost = sorted({a.id for a in spec.attachments if find(a.a) != root})
+        if lost:
+            out.append(Issue("error", "geometry",
+                             f"attachments {', '.join(lost)} are not connected to the "
+                             f"plate's electrodes"))
+        unused = [e for e in electrodes if not any(e in (a.a, a.b) for a in spec.attachments)]
+        if unused and spec.attachments:
+            out.append(Issue("warning", "geometry",
+                             f"electrode {', '.join(unused)} has nothing wired to it and "
+                             f"carries no current"))
     return out
 
 
@@ -475,20 +748,111 @@ EXAMPLES: dict[str, Example] = {e.key: e for e in (
             "W346's 21-rotor farm: the decomposition run on threads against the full "
             "domain, live.", "incompressible-2d", "A",
             (("cols", 8), ("rows", 6), ("steps", 6), ("threads", 8))),
+    Example("wall-2", "Two-layer wall: steel and copper (style C, steady)",
+            "Heat through a steel layer and a copper layer, cut at the material "
+            "interface and joined by Dirichlet-Neumann; checked against the closed form "
+            "q = dT / sum L/k.", "conduction-2d", "C"),
+    Example("plate-insert", "Copper insert in a steel plate (style B, transient)",
+            "A steel plate with a copper insert warming from one side, on two overlapping "
+            "windows iterated to agreement every time step.", "conduction-2d", "B"),
+    Example("plate-circuit", "Resistive film on a battery and a resistor (style D)",
+            "Current spreading between two electrodes of a graphite film wired to a "
+            "battery and a resistor: the electrodes' currents are the circuit's.",
+            "electric-2d", "D"),
 )}
 
 
 def example_case(key: str = "wake-array-3") -> CaseSpec:
-    """A case built from `scaling_ladder`'s own tiling and rotor rule.
+    """A case built from `scaling_ladder`'s own tiling and rotor rule, or one of the
+    other families' showcase cases.
 
-    The windows, the rotors and every physical constant are read from the case
-    modules the measurements were taken on, so an example cannot drift from the
-    geometry the record describes.
+    The wind-farm examples' windows, rotors and physical constants are read from
+    the case modules the measurements were taken on, so an example cannot drift
+    from the geometry the record describes.
     """
     ex = EXAMPLES[key]
     if ex.family == "incompressible-2d":
         return _farm_example(ex)
-    raise KeyError(key)                                    # pragma: no cover
+    builder = {"wall-2": _wall_example, "plate-insert": _insert_example,
+               "plate-circuit": _circuit_example}.get(key)
+    if builder is None:                                    # pragma: no cover
+        raise KeyError(key)
+    return builder(ex)
+
+
+def _materials(fid: str, *names: str) -> dict[str, dict[str, float]]:
+    lib = registry.family(fid).material_library()
+    return {n: dict(lib[n]) for n in names}
+
+
+def _wall_example(ex: Example) -> CaseSpec:
+    """0.4 m x 0.1 m: 0.24 m of steel, then 0.16 m of copper, at 2.5 mm cells.
+    Hot on the left, cold on the right, insulated top and bottom; cut at the
+    interface, so the two pieces are the two materials."""
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=160, ny=40, dx=0.0025),
+        physics=Physics(family="conduction-2d", params={"T0": 300.0}),
+        materials=_materials("conduction-2d", "steel", "copper"),
+        regions=[Region(id="R1", material="steel", x0=0, y0=0, nx=96, ny=40),
+                 Region(id="R2", material="copper", x0=96, y0=0, nx=64, ny=40)],
+        windows=[Window(id="steel", x0=0, y0=0, nx=96, ny=40),
+                 Window(id="copper", x0=96, y0=0, nx=64, ny=40)],
+        boundaries=family_boundaries("conduction-2d"),
+        coupling=Coupling(style="C", tolerance=1e-10, max_iterations=200, relaxation=0.5,
+                          aitken=True, dirichlet_side="auto"),
+        run=RunSettings(mode="steady", steps=5, threads=1, macro_dt=1.0),
+    )
+
+
+def _insert_example(ex: Example) -> CaseSpec:
+    """0.4 m x 0.24 m of steel with a 0.12 m x 0.08 m copper insert, warming from
+    300 K with the left edge held at 400 K; two windows overlapping by 16 cells."""
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=160, ny=96, dx=0.0025),
+        physics=Physics(family="conduction-2d", params={"T0": 300.0}),
+        materials=_materials("conduction-2d", "steel", "copper"),
+        regions=[Region(id="plate", material="steel", x0=0, y0=0, nx=160, ny=96),
+                 Region(id="insert", material="copper", x0=56, y0=32, nx=48, ny=32)],
+        windows=[Window(id=n, x0=b[0], y0=b[1], nx=b[2], ny=b[3])
+                 for n, b in geo.tile(160, 96, 2, 1, 16)],
+        boundaries=family_boundaries("conduction-2d"),
+        coupling=Coupling(style="B", ramp_cells=8, tolerance=1e-10, max_iterations=500),
+        run=RunSettings(mode="transient", macro_dt=120.0, steps=40, threads=2),
+    )
+
+
+def _circuit_example(ex: Example) -> CaseSpec:
+    """A 0.2 m x 0.1 m graphite film, 30 um thick, at 1.25 mm cells.  Electrode E1
+    is the middle of the left edge, E2 the upper part of the right edge, so the
+    current spreads across the film diagonally.  A 12 V battery with 0.5 ohm
+    inside and a 1 ohm resistor close the loop: n1 is the battery's + terminal,
+    the resistor runs from n1 to E1, and the battery's - terminal is E2.  The film
+    is thin enough that its resistance is comparable to the circuit's, so the
+    plate matters and the style-D iteration needs its relaxation."""
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=160, ny=80, dx=0.00125),
+        physics=Physics(family="electric-2d", params={"thickness": 3.0e-5}),
+        materials=_materials("electric-2d", "graphite"),
+        regions=[Region(id="film", material="graphite", x0=0, y0=0, nx=160, ny=80)],
+        windows=[Window(id="plate", x0=0, y0=0, nx=160, ny=80)],
+        boundaries=[Boundary(id="left-low", edge="left", kind="no-current", start=0, stop=30),
+                    Boundary(id="E1", edge="left", kind="electrode", start=30, stop=50),
+                    Boundary(id="left-high", edge="left", kind="no-current", start=50),
+                    Boundary(id="right-low", edge="right", kind="no-current", start=0,
+                             stop=50),
+                    Boundary(id="E2", edge="right", kind="electrode", start=50),
+                    Boundary(id="bottom", edge="bottom", kind="no-current"),
+                    Boundary(id="top", edge="top", kind="no-current")],
+        attachments=[Attachment(id="B1", kind="battery", value=12.0, internal=0.5,
+                                a="n1", b="E2"),
+                     Attachment(id="R1", kind="resistor", value=1.0, a="n1", b="E1")],
+        coupling=Coupling(style="D", tolerance=1e-10, max_iterations=200, relaxation=0.5,
+                          aitken=True),
+        run=RunSettings(mode="steady", steps=5, threads=1, macro_dt=1.0),
+    )
 
 
 def _farm_example(ex: Example) -> CaseSpec:
@@ -500,7 +864,8 @@ def _farm_example(ex: Example) -> CaseSpec:
         name=ex.key,
         description=ex.label,
         domain=Domain(nx=t.nx, ny=t.ny, dx=wa.DX),
-        physics=Physics(family="incompressible-2d", nu=wa.NU_REF, u_inf=wa.U_INF),
+        physics=Physics(family="incompressible-2d",
+                        params={"nu": wa.NU_REF, "u_inf": wa.U_INF}),
         windows=[Window(id=n, x0=ox, y0=oy, nx=wa.N, ny=wa.N)
                  for n, (ox, oy) in zip(t.names, t.offsets)],
         devices=[Device(id=r.rotor_id, x=r.x_plane, y=r.y_centre, diameter=1.0)
@@ -517,7 +882,8 @@ def blank_case(nx: int = 352, ny: int = 240) -> CaseSpec:
     from atlas.cases import wake_array as wa
     return CaseSpec(name="untitled", description="",
                     domain=Domain(nx=nx, ny=ny, dx=wa.DX),
-                    physics=Physics(family="incompressible-2d", nu=wa.NU_REF, u_inf=wa.U_INF),
+                    physics=Physics(family="incompressible-2d",
+                                    params={"nu": wa.NU_REF, "u_inf": wa.U_INF}),
                     boundaries=family_boundaries("incompressible-2d"))
 
 
@@ -527,6 +893,6 @@ def slug(name: str) -> str:
 
 
 __all__ = ["SCHEMA_ID", "READABLE", "CaseSpec", "Domain", "Physics", "Region", "Window",
-           "Device", "Boundary", "Coupling", "RunSettings", "Compare", "Issue", "check",
-           "summary", "family_boundaries", "Example", "EXAMPLES", "example_case",
-           "blank_case", "slug"]
+           "Device", "Boundary", "Attachment", "Coupling", "RunSettings", "Compare",
+           "Issue", "check", "summary", "family_boundaries", "adapt_to_family", "Example",
+           "EXAMPLES", "example_case", "blank_case", "slug"]

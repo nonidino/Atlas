@@ -6487,3 +6487,55 @@ Showcase plan step 2, on the owner's request to implement the plan. Record: [[sh
 **Not built:** the solver-family interface and styles B–D, the other families, the gallery, the compile.
 
 **Added:** `atlas/workbench/{runner,runview,tiling,checks,machine}.py`, `atlas/workbench/families/{__init__,windfarm}.py`, `tests/test_workbench_runner.py`, `out/workbench/records/step-a/` (five run records, force-included in `.gitignore`). **Changed:** `app.py`, `spec.py`, `registry.py`, `geometry.py`, the workbench README and its two earlier test files; [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]], [[index]].
+
+## [2026-09-29] build | The workbench's coupling styles B, C and D: heat conduction and a plate on a circuit
+
+Showcase plan step 3, with cases 2 and 5 as its two new families, on the owner's request to implement the plan. Record: [[showcase-library-plan]] §5, "Built, 2026-09-29" note.
+
+**Built** (`atlas/workbench/`):
+- **The solver-family interface**, derived from the wind farm and conduction rather than designed ahead of them. It has five slots: the state, restriction, a step given boundary traces, the full-domain equivalent, and assembly with a balance. `styles.py` tabulates what fills each slot in each family.
+- **`fv.py`**: one finite-volume core. It has harmonic-mean faces, upwind advection, and any set of cells. A face that leaves the set is closed in one of three ways, and those three are what the styles differ in.
+- **`styles.py`**, the three styles:
+  - B, restricted additive Schwarz to a tolerance;
+  - C, Dirichlet–Neumann with a stated first factor and optional Aitken;
+  - D, a field's boundary integral as a lumped part's port variable.
+- **`families/conduction.py`** (styles B and C, steady or transient) and **`families/electric.py`** (style D, nodal analysis with ideal and Norton batteries).
+- **Case schema 0.3**:
+  - per-family parameters, a materials table and lumped attachments;
+  - the settings of styles B–D;
+  - files at 0.1 and 0.2 migrate on load.
+- **The Physics step is built from the registry**, with an editable materials table. Three new examples: a two-layer wall (C), a copper insert in a steel plate (B), and a graphite film on a battery and resistor (D).
+
+**Checked:**
+- 31 new tests. They cover:
+  - the finite volumes against two closed forms;
+  - one window equal to the full domain to the bit, steady and transient;
+  - each style against the full domain;
+  - the unrelaxed Dirichlet–Neumann iteration diverging at $\rho = 14.8$, with $1/(1+\rho)$ rescuing it;
+  - both families end to end, and the page's controls.
+
+  All 99 workbench tests pass.
+- **In the served page, on AC power:** all three new examples were opened, run and read back, with screenshots under the light scheme. The dark-scheme pass is left for the gallery. Records: `out/workbench/records/step-b/`.
+  - **The wall:** 1744.186 W/m, within $4.3\times10^{-13}$ of $q=\Delta T/\sum_i L_i/k_i$, in 3 iterations at $\rho = 0.075$.
+  - **The insert:** its balance closes to $1.6\times10^{-8}$, the iteration's floor; the full domain closes to $5.2\times10^{-12}$. It is within $3.6\times10^{-7}$ K of the full domain, and bitwise over all 40 steps.
+  - **The circuit:** 5.001792 A, within $1.1\times10^{-13}$ of the joint solve. Kirchhoff closes to $1.4\times10^{-12}$ and energy to $3.2\times10^{-13}$. The unrelaxed factor is 1.67, and it converges in 3 iterations.
+- **No speedup at these sizes:** the full domain's direct solve was 2.6×, 3.6× and 24–35× faster than the decomposed arms. The page shows the ratio, and says these cases show the coupling.
+
+**Found in the served page, all my own:**
+- **The family selector disabled none of the planned families.** It was given family ids, but its values in the page are labels. This dates from the shell, and a test now pins it.
+- The Physics view raised `KeyError: 'nu'` for any family but the wind farm.
+- The tolerance box showed $10^{-10}$ as "+0.000".
+- A steady run's series plot autoscaled two answers equal to round-off into two lines.
+- The timing table, activity log and Results header called every step a macro-step, a steady solve's timed repeats included. The record took its style from the family rather than the case, and conduction runs two.
+
+All five were fixed, and each is checked again in the page.
+
+**Correction to the previous entry:** `tests/test_workbench_runner.py` collects 16 tests, not 15.
+
+**Not built:**
+- the attachments' canvas and table layer (the circuit is set in the case file);
+- cases 3, 4, 6, 7 and 8;
+- the gallery;
+- the compile.
+
+**Added:** `atlas/workbench/{fv,styles}.py`, `atlas/workbench/families/{conduction,electric}.py`, `tests/test_workbench_{fv,families}.py`, `out/workbench/records/step-b/` (three run records). **Changed:** `app.py`, `spec.py`, `registry.py`, `runner.py`, `runview.py`, `editor.py`, `families/windfarm.py`, the workbench README, and two earlier test files; [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]], [[index]].
