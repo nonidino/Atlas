@@ -6683,3 +6683,9 @@ The owner chose to open a worklist row for the showcase's R10 finding, not to ch
 - **[AI Inference]:** as written, R10's named repair (expose the elliptic part to the composition layer) is the undivided solve for a problem that is entirely elliptic, so the rule refuses the domain decomposition of an elliptic problem as a class.
 
 **Changed:** [[gap-worklist]] (W348), [[showcase-gallery]] §4, [[showcase-library-plan]] §5, [[index]] (the gallery's entry), and `atlas/workbench/README.md`. No code changed.
+
+## [2026-09-29] note | farm-21's compile plus run, 165 s: accepted by the owner
+
+The workbench's last flag is closed. `farm-21`'s compile takes 95.1 s and its run 70.0 s, so the two together are 165 s against the plan's two-minute rule, while each alone is under it. The owner accepted it: the rule is per run ("each opens, runs and compares in under 2 minutes"), and the compile is its own step. The alternatives, caching the farm's compile (the first compile would still take 95 s) and shrinking the example (it would no longer be W346's 21-rotor farm), were not taken.
+
+**Changed:** [[showcase-gallery]] §5, [[showcase-library-plan]] §5, [[index]] (the gallery's entry), and `atlas/workbench/README.md`, where the flag stood. No code changed.

@@ -170,7 +170,7 @@ All 2-D. Runtimes and code sizes are **[AI Inference]** estimates.
 >   - The run's JSON record is saved beside the case file.
 >   - `NOT_BUILT` is gone: every menu item works, and a test says so.
 > - **The gallery:** *File > Showcase gallery* lists every example with its description, family and style, and an *Open* button.
-> - **In the gallery pass, every run finished under 2 minutes**, the longest in 70.0 s (`farm-21`, 6 macro-steps on 8 threads). **`farm-21`'s compile takes 95.1 s, so its compile plus its run is 165 s.** Each step is under 2 minutes, and the pair is not. This is flagged, not hidden.
+> - **In the gallery pass, every run finished under 2 minutes**, the longest in 70.0 s (`farm-21`, 6 macro-steps on 8 threads). **`farm-21`'s compile takes 95.1 s, so its compile plus its run is 165 s.** Each step is under 2 minutes, and the pair is not. **The owner accepted this on 2026-09-29**: the compile is its own step, and the rule is per run. Caching the farm's compile and shrinking the example were not taken.
 > - **Found while building it or in the served page, and fixed:**
 >   - two farm rms columns that disagreed, one filled for the threaded arm only;
 >   - the Check and Results labels still describing a case no longer open;
