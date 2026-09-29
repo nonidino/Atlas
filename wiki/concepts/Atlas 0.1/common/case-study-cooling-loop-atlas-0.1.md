@@ -16,7 +16,7 @@ A solid block is cooled by a **closed** liquid circuit — passage, hot line, ra
 
 **It is the first graph in this package in which information circulates.**
 
-[[spec-wind-farm-wake]] §5.1 raised path-dependence of message passing as a real concern — *"$I\to N\to F\to W$ and $I\to B^+\to\ldots\to W$ are two distinct paths between the same agents. Information can circulate"* — and then the wind-farm implementation log **withdrew** the one measurement that had been read as evidence for it: the mirror residual was the frozen operator's own asymmetry, reproduced with no graph, no ports and no agents anywhere in the loop. The log's own words are that sweep-order path dependence *"may still be present — nothing here rules it out. What is ruled out is that it is NEEDED."*
+[[spec-wind-farm-wake-atlas-0.1]] §5.1 raised path-dependence of message passing as a real concern — *"$I\to N\to F\to W$ and $I\to B^+\to\ldots\to W$ are two distinct paths between the same agents. Information can circulate"* — and then the wind-farm implementation log **withdrew** the one measurement that had been read as evidence for it: the mirror residual was the frozen operator's own asymmetry, reproduced with no graph, no ports and no agents anywhere in the loop. The log's own words are that sweep-order path dependence *"may still be present — nothing here rules it out. What is ruled out is that it is NEEDED."*
 
 So the concern has been open since 2026-08-23 with **no graph that can test it**, and the reason is specific. Every cyclic graph this package has built is an **overlapping tiling**, where the cycle is undirected and the scheme is **additive**. `front_wing`'s six fluid windows contain the 4-cycle $F00 - F10 - F11 - F01$, and it tests nothing: all six windows step from the same assembled field and are then blended, so no window's input is another window's output, there is no sweep, and there is no order for an answer to depend on.
 
@@ -115,6 +115,6 @@ Recorded because they are the case study's own first result, and because each is
 - [[gap-worklist]] — Tier 36 opens **W162** and **W163**; **W160** reproduces here
 - [[general-coupling-scheme]] §4.2 — solve the residual in the port's own variables
 - [[port-algebra-atlas-0.1]] — `ADVEC`'s passenger list, and `THERM`'s true bond
-- [[spec-wind-farm-wake]] §5.1 — the path-dependence concern this graph tests
+- [[spec-wind-farm-wake-atlas-0.1]] §5.1 — the path-dependence concern this graph tests
 - [[poc2-novelty-audit]] — the audit whose one surviving claim this exercises
 - [[case-study-thermal-strain-atlas-0.1]], [[tier0-measurements]] §14 — the film-coefficient result this reproduces

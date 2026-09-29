@@ -6641,3 +6641,29 @@ Showcase plan steps 6 and 5, and the finished Run & compare and Results steps, o
 **Not built:** the optional Gray–Scott case and the CS-13/CS-14 adapters, so no showcase case carries `ROT`.
 
 **Added:** `atlas/workbench/compile.py`, [[showcase-gallery]], `out/workbench/records/step-f/` (eleven compile and eleven run records). **Changed:** `app.py`, `runner.py`, `runview.py`, every family module, the workbench README, `tests/test_workbench_{cases,runner,shell}.py`; [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]], [[outcome-c4-modular-multiphysics]], [[00-atlas-0.1-outcome]], [[index]].
+
+## [2026-09-29] lint | Unresolved links: a vault-wide scan, five repointed, two memory-note names made text
+
+The workbench handoff named three unresolved links in [[index]]. A scan of the whole vault found 6 targets in 13 places. It skips fenced code and inline code, which Obsidian renders as neither links nor text to follow. Two of the handoff's three are inside backticks (`page-name`, an example, and `phase1-resume-prompt`, quoted in a sentence about it), so they were never links.
+
+**Repointed**, because the page exists under another name or the link meant a page that does:
+- `spec-wind-farm-wake` is [[spec-wind-farm-wake-atlas-0.1]]: in [[index]] and twice in [[case-study-cooling-loop-atlas-0.1]]. Its §5.1 is the path-dependence passage both of them cite.
+- `poc3-racelab-results` has never existed in git history. Its two descriptions name the porous column.
+  - In [[poc3-racelab-car-graph]] it is now [[case-study-racelab-graph-atlas-0.1]]: CS-19, the column's 26-agent graph and its gate, P1–P7.
+  - In [[poc3-racelab-car-union]] it is that page and [[poc3-racelab-outlet-and-start]]: Tier 59, the arms and the `out/racelab8` numbers the page's comparison table is taken against.
+
+**Made text:** two links named notes in the assistant's working memory, which lives outside the vault, so no reader could follow them.
+- In [[gap-worklist]], W289 cited the fingerprint lesson and W250. W250 is the vault's own record of that lesson, so the row now cites W250 alone and names the lesson in italics.
+- In [[poc3-racelab-traced-car]], the lesson's name, *positive controls need a horizon*, is italic text.
+
+**Left as they are:**
+- `phase1-resume-prompt`, from three Noether 1.1 implementation pages: it is W24's subject, and that row is open ("either write it or drop the references").
+- `pattern-recognizer-vs-solver` in [[00-noether-1.1-overview]]: a placeholder its own line calls "link seeded".
+- Two entries earlier in this log, because the log is append-only.
+
+**Checked:**
+- The link scan now reports 4 targets in 6 places, all in the list above.
+- `scripts/scan_control_chars.py` on the files touched: 88 flags before and after, all pre-existing typography.
+- `scripts/vault_scan.py wiki`: 0 problems.
+
+**Changed:** [[index]], [[case-study-cooling-loop-atlas-0.1]], [[poc3-racelab-car-graph]], [[poc3-racelab-car-union]], [[poc3-racelab-traced-car]], [[gap-worklist]].

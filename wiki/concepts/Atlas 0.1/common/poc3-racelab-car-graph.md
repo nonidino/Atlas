@@ -157,6 +157,6 @@ About two and a half minutes, nearly all of it the composite the `record` stage 
 
 - [[poc3-racelab-car-union]] — Tier 64, the march this declaration describes, and the power the bond reproduces.
 - [[case-study-vehicle-march-atlas-0.1]] — CS-18, the union's compile and the `L7/R9` table this reproduces.
-- [[poc3-racelab-results]] — the porous column's graph, its 26 agents and its gate.
+- [[case-study-racelab-graph-atlas-0.1]] — CS-19, Tier 51: the porous column's graph, its 26 agents and its gate (P1–P7).
 - [[atlas-implementation]] — the compiler whose R10 premise this tier narrows.
 - [[gap-worklist]] — W285, and the rows this tier annotates: W94, W268, W200, W229.

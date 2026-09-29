@@ -188,5 +188,6 @@ About $44$ minutes on the development laptop, on mains: the prefix $775$ s for $
 - [[poc3-racelab-duct-openings]] — Tier 63, the duct these devices sit in and the flow they see (W281).
 - [[poc3-racelab-car-solids]] — Tier 62, the solids, the grids and the march this tier extends.
 - [[case-study-vehicle-march-atlas-0.1]] — CS-18, the union's march, the seven decisions and the receiver balances reused here unchanged.
-- [[poc3-racelab-results]] — the porous column's own arms, its gate and the numbers compared against.
+- [[poc3-racelab-outlet-and-start]] — Tier 59, the porous column's own arms and the numbers compared against (`out/racelab8`).
+- [[case-study-racelab-graph-atlas-0.1]] — CS-19, the porous column's gate (P1–P7).
 - [[gap-worklist]] — W282, W283, W284 and the rows this tier annotates.

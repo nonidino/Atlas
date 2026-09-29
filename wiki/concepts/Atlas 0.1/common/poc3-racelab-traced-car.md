@@ -77,7 +77,7 @@ The first arms run was **declined at macro-step 552** — not by the powertrain,
 
 **The sizing probe had already said so.** It marched all $600$ macro-steps unenforced and recorded `outside_the_envelope_steps: 46`. The tier printed the $u_{\text{rotor}}$ band out of that result, ignored that field, and gated the arms on an **eighty-step** enforced verify against a **six-hundred-step** horizon.
 
-**Two recorded lessons at once.** [[positive-controls-need-a-horizon]] — march a repair as far as the failure it repairs. And the sharper one: **a gate that reads a different quantity from the one that predicts the failure is not a gate.** The number that would have stopped this was in the same dictionary the tier read its sizing out of.
+**Two recorded lessons at once.** *Positive controls need a horizon* — march a repair as far as the failure it repairs. And the sharper one: **a gate that reads a different quantity from the one that predicts the failure is not a gate.** The number that would have stopped this was in the same dictionary the tier read its sizing out of.
 
 Fixed in the script and not only in this run: `verify` now marches the **whole** horizon the arms will use, `arms` **refuses** to run at any horizon other than the verified one, and the probe's outside-count and first outside step are recorded and acted on.
 
