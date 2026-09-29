@@ -44,6 +44,17 @@ BOUNDARY_KINDS: tuple[BoundaryKind, ...] = (
     BoundaryKind("electrode", "electric",
                  "a terminal: the lumped circuit wired to it sets its potential, and the "
                  "current through it is the circuit's"),
+    BoundaryKind("river-inlet", "transport", "the river enters, carrying none of the pollutant"),
+    BoundaryKind("river-outlet", "transport", "the river leaves, carrying what it holds"),
+    BoundaryKind("bank", "transport", "a bank: no water and no pollutant cross it"),
+    BoundaryKind("rigid-wall", "acoustic", "a rigid wall: no velocity through it"),
+    BoundaryKind("clamped", "mechanical", "held fixed: no displacement"),
+    BoundaryKind("free", "mechanical", "free: no load"),
+    BoundaryKind("load-x", "mechanical", "a uniform traction along x", True, "Pa"),
+    BoundaryKind("load-y", "mechanical", "a uniform traction along y (negative is down)",
+                 True, "Pa"),
+    BoundaryKind("coolant-inlet", "heat", "the coolant enters at this temperature", True, "K"),
+    BoundaryKind("coolant-outlet", "heat", "the coolant leaves, carrying its heat"),
 )
 
 
@@ -136,6 +147,15 @@ class Family:
     length_unit: str = "m"
     #: the boundaries a new case of the family starts with (edge -> (kind, value))
     default_boundaries: tuple[tuple[str, str, float | None], ...] = ()
+    #: what the Physics step calls the regions' materials, and what it says of the
+    #: library's values
+    #: its coupling needs no iteration (an explicit exchange every step), so the
+    #: page offers no tolerance, relaxation or convergence curve for it
+    explicit_coupling: bool = False
+    materials_title: str = "Materials"
+    materials_note: str = ("Library values are textbook round values at room temperature, "
+                           "for a showcase, not a datasheet. A region's material is set in "
+                           "Geometry, Regions.")
 
     def param(self, name: str) -> Param:
         for p in self.params:
@@ -251,10 +271,219 @@ _ELECTRIC = Family(
                         ("bottom", "no-current", None), ("top", "no-current", None)),
 )
 
+_TRANSPORT = Family(
+    id="transport-2d",
+    label="2-D pollutant plume down a river (advection and mixing)",
+    status="ready-to-wire",
+    solvers=("explicit upwinded finite volumes per window (fv.py), one step per exchange",
+             "the same explicit finite volumes on the whole river (the full-domain reference)"),
+    has_full_domain=True,
+    note=("Runs: a pollutant released at an outfall, carried by a river whose reaches (the "
+          "regions) differ in depth and mixing, on overlapping windows with one exchange per "
+          "explicit step (style A), marched serially, on threads and on the whole river in "
+          "turns. For an explicit step that is the full-domain step, so the arms agree to "
+          "round-off."),
+    sources=("atlas/workbench/families/plume.py", "atlas/workbench/fv.py"),
+    layers=("regions", "windows", "boundaries"),
+    boundary_kinds=("river-inlet", "river-outlet", "bank"),
+    fixed_boundaries=(FixedBoundary("left", "river-inlet"),
+                      FixedBoundary("right", "river-outlet"),
+                      FixedBoundary("bottom", "bank"), FixedBoundary("top", "bank")),
+    fixed_boundaries_why=("The river runs along +x at the discharge the case sets, so its "
+                          "water enters on the left, leaves on the right, and does not cross "
+                          "the banks. A case of this family cannot turn the flow, so it "
+                          "cannot change these."),
+    adapter="atlas.workbench.families.plume",
+    styles=("A",),
+    params=(Param("q", "Discharge per metre of width", "m^2/s", 1.0, 0.0,
+                  help="uniform along the river, so the water runs at q / depth in each "
+                       "reach"),
+            Param("release", "Release at the outfall", "g/s", 10.0, 0.0),
+            Param("source_x", "Outfall, along the river", "m", 200.0, 0.0, strict=False),
+            Param("source_y", "Outfall, across the river", "m", 100.0, 0.0, strict=False)),
+    material_props=(Param("depth", "Depth", "m", 2.0, 0.0),
+                    Param("mixing", "Mixing coefficient", "m^2/s", 1.0, 0.0)),
+    #: round values chosen for a plume that visibly slows and widens at the seam
+    materials=(("shallow-fast", (("depth", 1.25), ("mixing", 0.5))),
+               ("deep-slow", (("depth", 2.5), ("mixing", 2.0))),
+               ("pool", (("depth", 4.0), ("mixing", 4.0)))),
+    modes=("transient",),
+    length_unit="m",
+    materials_title="Reaches (the regions' materials)",
+    materials_note=("Showcase reach types: a depth and a depth-averaged mixing coefficient "
+                    "each, round values chosen so the plume visibly slows and widens, not "
+                    "calibrated to a river. A region's reach is set in Geometry, Regions."),
+)
+
+_ACOUSTICS = Family(
+    id="acoustics-2d",
+    label="2-D sound through two media (linear acoustics)",
+    status="ready-to-wire",
+    solvers=("staggered-grid leapfrog per piece, trading the interface's pressures and "
+             "velocities every step (acoustics.py)",
+             "the same leapfrog on the whole domain (the full-domain reference)"),
+    has_full_domain=True,
+    note=("Runs: a plane pulse crossing from one medium into another, on two pieces that "
+          "meet at the interface and trade its pressures and velocities once a step "
+          "(style C with an explicit step, so nothing iterates), against the same leapfrog "
+          "on the whole domain: the two agree to the bit. The reflection is read against "
+          "(Z2 - Z1) / (Z2 + Z1)."),
+    sources=("atlas/workbench/families/acoustics.py",),
+    layers=("regions", "windows", "boundaries"),
+    boundary_kinds=("rigid-wall",),
+    fixed_boundaries=(FixedBoundary("left", "rigid-wall"), FixedBoundary("right", "rigid-wall"),
+                      FixedBoundary("bottom", "rigid-wall"), FixedBoundary("top", "rigid-wall")),
+    fixed_boundaries_why=("Every edge is a rigid wall, with no velocity through it, so the "
+                          "domain is closed and keeps its energy, which is the family's "
+                          "balance check. It has no open boundary to offer."),
+    adapter="atlas.workbench.families.acoustics",
+    styles=("C",),
+    params=(Param("amplitude", "Pulse amplitude", "Pa", 1.0, 0.0),
+            Param("pulse_x", "Pulse centre", "m", 0.7, 0.0,
+                  help="the pulse starts here in the first piece and runs towards +x"),
+            Param("pulse_width", "Pulse width (standard deviation)", "m", 0.1, 0.0)),
+    material_props=(Param("rho", "Density", "kg/m^3", 1.2, 0.0),
+                    Param("c", "Speed of sound", "m/s", 343.0, 0.0)),
+    #: room-temperature textbook values
+    materials=(("air", (("rho", 1.2), ("c", 343.0))),
+               ("water", (("rho", 1000.0), ("c", 1480.0))),
+               ("helium", (("rho", 0.166), ("c", 1007.0)))),
+    modes=("transient",),
+    length_unit="m",
+    explicit_coupling=True,
+    materials_title="Media (the regions' materials)",
+    materials_note=("Textbook round values at room temperature, for a showcase. A region's "
+                    "medium is set in Geometry, Regions."),
+)
+
+#: structural metals, textbook round values at room temperature: Young's modulus,
+#: Poisson's ratio, expansion, conductivity, density, specific heat
+_METALS = (("steel", (("E", 200e9), ("nu", 0.30), ("alpha", 12e-6), ("k", 45.0),
+                      ("rho", 7850.0), ("cp", 490.0))),
+           ("aluminium", (("E", 70e9), ("nu", 0.33), ("alpha", 23e-6), ("k", 205.0),
+                          ("rho", 2700.0), ("cp", 900.0))),
+           ("copper", (("E", 120e9), ("nu", 0.34), ("alpha", 17e-6), ("k", 400.0),
+                       ("rho", 8960.0), ("cp", 385.0))))
+
+_ELASTICITY = Family(
+    id="elasticity-2d",
+    label="2-D plane-stress elasticity in several materials (a loaded bracket)",
+    status="ready-to-wire",
+    solvers=("Q1 plane-stress elements per window, a sparse LU each (fe.py, the build "
+             "repo's ThermoStruct2D element with a material per element)",
+             "the same elements on the whole plate, solved directly (the full-domain "
+             "reference)"),
+    has_full_domain=True,
+    note=("Runs: a plate of several materials, clamped and loaded on its edges, on "
+          "overlapping windows iterated to agreement (style B, restricted additive Schwarz "
+          "on the stiffness), against the same elements solved directly. Steady: each "
+          "repeat is the whole solve. Checked: the supports balance the loads."),
+    sources=("atlas/workbench/families/elasticity.py", "atlas/workbench/fe.py",
+             "atlas/workbench/styles.py"),
+    layers=("regions", "windows", "boundaries"),
+    boundary_kinds=("clamped", "free", "load-x", "load-y"),
+    adapter="atlas.workbench.families.elasticity",
+    styles=("B",),
+    params=(Param("thickness", "Plate thickness", "m", 0.01, 0.0,
+                  help="plane stress: the displacements do not depend on it; the forces "
+                       "reported do"),),
+    material_props=(Param("E", "Young's modulus", "Pa", 200e9, 0.0),
+                    Param("nu", "Poisson's ratio", "", 0.3, -1.0, maximum=0.4999)),
+    materials=_METALS,
+    modes=("steady",),
+    length_unit="m",
+    default_boundaries=(("left", "clamped", None), ("right", "load-y", -5.0e6),
+                        ("bottom", "free", None), ("top", "free", None)),
+)
+
+_THERMOELASTIC = Family(
+    id="thermoelastic-2d",
+    label="2-D heated plate that expands (conduction, then thermal strain)",
+    status="ready-to-wire",
+    solvers=("Q1 backward-Euler conduction (fe.py): the conduction agent",
+             "Q1 quasi-static plane stress of a free body under thermal strain (fe.py): the "
+             "elasticity agent",
+             "the two in one object, stepped as the build repo's ThermoStruct2D steps them "
+             "(the unsplit reference)"),
+    has_full_domain=True,
+    note=("Runs: a plate warming from its edges and deforming as it warms, split by physics "
+          "rather than space: a conduction agent and an elasticity agent on one mesh, the "
+          "whole temperature field crossing between them, run synchronously and lagged by a "
+          "step (on two threads), against the unsplit solver."),
+    sources=("atlas/workbench/families/thermoelastic.py", "atlas/workbench/fe.py",
+             "atlas/cases/thermal_strain.py"),
+    layers=("regions", "windows", "boundaries"),
+    boundary_kinds=("fixed-temperature", "insulated", "heat-flux"),
+    adapter="atlas.workbench.families.thermoelastic",
+    styles=("split",),
+    params=(Param("T0", "Initial temperature", "K", 300.0, 0.0,
+                  help="the plate starts here, and is free of strain here"),),
+    material_props=(Param("E", "Young's modulus", "Pa", 200e9, 0.0),
+                    Param("nu", "Poisson's ratio", "", 0.3, -1.0, maximum=0.4999),
+                    Param("alpha", "Thermal expansion", "1/K", 12e-6, 0.0, strict=False),
+                    Param("k", "Conductivity", "W/(m K)", 45.0, 0.0),
+                    Param("rho", "Density", "kg/m^3", 7850.0, 0.0),
+                    Param("cp", "Specific heat", "J/(kg K)", 490.0, 0.0)),
+    materials=_METALS,
+    modes=("transient",),
+    length_unit="m",
+    default_boundaries=(("left", "fixed-temperature", 400.0),
+                        ("right", "insulated", None), ("bottom", "insulated", None),
+                        ("top", "insulated", None)),
+)
+
+_COOLING = Family(
+    id="conjugate-heat-2d",
+    label="2-D heated block cooled by channel flow (conjugate heat transfer)",
+    status="ready-to-wire",
+    solvers=("cell-centred finite volumes with the coolant's advection (fv.py): the channel",
+             "the same finite volumes without it: the block",
+             "both on every cell in one system (the full-domain reference)"),
+    has_full_domain=True,
+    note=("Runs: a block with a heat source cooled by a plug flow in a channel beside it, "
+          "the channel (advection and diffusion) and the block (conduction) as two pieces "
+          "meeting at the wall and coupled by Dirichlet-Neumann (style C at a seam between "
+          "two physics), against both on every cell solved directly. Steady. Checked: every "
+          "watt generated leaves in the coolant."),
+    sources=("atlas/workbench/families/cooling.py", "atlas/workbench/fv.py",
+             "atlas/workbench/styles.py"),
+    layers=("regions", "windows", "boundaries"),
+    boundary_kinds=("coolant-inlet", "coolant-outlet", "insulated", "fixed-temperature",
+                    "heat-flux"),
+    adapter="atlas.workbench.families.cooling",
+    styles=("C",),
+    params=(Param("u_coolant", "Coolant speed", "m/s", 0.01, 0.0,
+                  help="a plug flow along +x in the coolant's rows"),),
+    material_props=(Param("k", "Conductivity", "W/(m K)", 1.0, 0.0),
+                    Param("rho", "Density", "kg/m^3", 1000.0, 0.0),
+                    Param("cp", "Specific heat", "J/(kg K)", 1000.0, 0.0),
+                    Param("flows", "Flows as the coolant (1) or is solid (0)", "", 0.0, 0.0,
+                          strict=False, maximum=1.0),
+                    Param("heat", "Heat generated", "W/m^3", 0.0, 0.0, strict=False)),
+    materials=(("water", (("k", 0.6), ("rho", 1000.0), ("cp", 4180.0), ("flows", 1.0),
+                          ("heat", 0.0))),
+               ("copper", (("k", 400.0), ("rho", 8960.0), ("cp", 385.0), ("flows", 0.0),
+                           ("heat", 0.0))),
+               ("aluminium", (("k", 205.0), ("rho", 2700.0), ("cp", 900.0), ("flows", 0.0),
+                              ("heat", 0.0))),
+               #: silicon's conductivity, generating 10 W per cubic centimetre
+               ("chip", (("k", 150.0), ("rho", 2330.0), ("cp", 700.0), ("flows", 0.0),
+                         ("heat", 1.0e7)))),
+    modes=("steady",),
+    length_unit="m",
+    default_boundaries=(("left", "insulated", None), ("right", "insulated", None),
+                        ("bottom", "insulated", None), ("top", "insulated", None)),
+)
+
 FAMILIES: tuple[Family, ...] = (
     _WIND_FARM,
     _CONDUCTION,
     _ELECTRIC,
+    _TRANSPORT,
+    _ACOUSTICS,
+    _ELASTICITY,
+    _THERMOELASTIC,
+    _COOLING,
     Family(
         id="conduction-loop",
         label="Conduction block on a coolant loop (CS-13)",

@@ -395,6 +395,13 @@ def check(spec: CaseSpec) -> list[Issue]:
     style = spec.coupling.style
     if spec.windows and style in ("C", "D"):
         out += _check_pieces(spec)
+    elif spec.windows and style == "split":
+        whole = [w for w in spec.windows if (w.x0, w.y0, w.nx, w.ny) == (0, 0, d.nx, d.ny)]
+        if len(spec.windows) != 1 or not whole:
+            out.append(Issue("error", "geometry",
+                             "a split by physics shares the whole domain between its "
+                             "agents, so the case is one window covering the domain; this "
+                             f"one has {len(spec.windows)}"))
     elif spec.windows:
         an = geo.analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
                                               for w in spec.windows], ramp)
@@ -532,6 +539,26 @@ def _check_physics(spec: CaseSpec) -> list[Issue]:
                 why = p.problem(props[p.name])
                 if why:
                     out.append(Issue("error", "physics", f"material {m!r}: {why}"))
+    if fam.id == "transport-2d":
+        out += _check_transport(spec, materials_ok=not any(i.severity == "error"
+                                                           for i in out))
+    if fam.id == "acoustics-2d":
+        out += _check_acoustics(spec, materials_ok=not any(i.severity == "error"
+                                                           for i in out))
+    if fam.id == "conjugate-heat-2d":
+        out += _check_cooling(spec, materials_ok=not any(i.severity == "error" for i in out))
+    if (fam.id in ("conduction-2d", "conjugate-heat-2d") and spec.coupling.style == "C"
+            and spec.run.mode == "steady" and not any(i.severity == "error" for i in out)
+            and not any(i.severity == "error" for i in _check_pieces(spec))):
+        out += _check_floating(spec)
+    if fam.id == "elasticity-2d":
+        if not any(b.kind == "clamped" for b in spec.boundaries):
+            out.append(Issue("error", "geometry",
+                             "nothing holds the plate: clamp at least one edge segment (this "
+                             "family does not remove the rigid-body motions of a free body)"))
+        if not any(b.kind in ("load-x", "load-y") and b.value for b in spec.boundaries):
+            out.append(Issue("warning", "geometry",
+                             "no edge is loaded, so the plate will not move"))
     if fam.id == "incompressible-2d":
         if spec.coupling.assembly == "blend":
             out.append(Issue("warning", "physics",
@@ -541,6 +568,140 @@ def _check_physics(spec: CaseSpec) -> list[Issue]:
             out.append(Issue("warning", "physics",
                              "an embedded pressure solve in every window is refused by "
                              "L2/R10 and is unstable composed (W100)"))
+    return out
+
+
+def _check_transport(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
+    """The river: the outfall is in it, and the explicit step is under its limit."""
+    out: list[Issue] = []
+    d = spec.domain
+    sx, sy = spec.physics.get("source_x"), spec.physics.get("source_y")
+    lx, ly = d.nx * d.dx, d.ny * d.dx
+    if not (0.0 <= sx < lx and 0.0 <= sy < ly):
+        out.append(Issue("error", "physics",
+                         f"the outfall ({sx:g} m, {sy:g} m) is not in the river, which is "
+                         f"{lx:g} m x {ly:g} m"))
+    owner = geo.region_owner(spec.regions, d.nx, d.ny)
+    if materials_ok and spec.regions and not np.any(owner < 0):
+        from .families.plume import explicit_limit       # the family's own arithmetic
+        lim = explicit_limit(spec)
+        if spec.run.macro_dt > lim:
+            out.append(Issue("error", "physics",
+                             f"the macro-step {spec.run.macro_dt:g} s is over the explicit "
+                             f"step's stability limit here, {lim:.4g} s (min over the cells "
+                             f"of depth dx^2 over the cell's outflow and mixing "
+                             f"conductances); take at most that"))
+    return out
+
+
+def _check_acoustics(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
+    """Two pieces side by side, a step under the leapfrog's limit, and a pulse the
+    reflection can be read from."""
+    from .families import acoustics as ac                # the family's own arithmetic
+    out: list[Issue] = []
+    d = spec.domain
+    m = ac.cut_column(spec)
+    if spec.windows and m is None:
+        out.append(Issue("error", "geometry",
+                         "the acoustics family's pieces are two windows side by side, each "
+                         "the full height of the domain: the wave runs along x"))
+    owner = geo.region_owner(spec.regions, d.nx, d.ny)
+    if not (materials_ok and spec.regions and not np.any(owner < 0)):
+        return out
+    lim = ac.stable_dt(spec)
+    if spec.run.macro_dt > lim:
+        out.append(Issue("error", "physics",
+                         f"the macro-step {spec.run.macro_dt:.4g} s is over the leapfrog's "
+                         f"stability limit here, {lim:.4g} s (Gershgorin on the grid's "
+                         f"operator; dx / (c sqrt 2) in one medium); take at most that"))
+    if m is not None:
+        p = ac.pulse(spec)
+        if not 0.0 < p.x0 < m * d.dx:
+            out.append(Issue("error", "physics",
+                             f"the pulse starts at {p.x0:g} m, outside the first piece "
+                             f"(0 to {m * d.dx:g} m)"))
+        else:
+            r, why = ac.closed_form_reflection(spec)
+            if r is None:
+                out.append(Issue("warning", "physics",
+                                 f"the reflection will not be read against the textbook: "
+                                 f"{why}"))
+            elif ac.plateau(spec, spec.run.macro_dt) is None:
+                out.append(Issue("warning", "physics",
+                                 "the domain is too short for the reflected pulse to be "
+                                 "alone in the first medium, so the reflection will not be "
+                                 "read"))
+    return out
+
+
+def _check_floating(spec: CaseSpec) -> list[Issue]:
+    """A steady Dirichlet-Neumann piece given only a flow must have something of its
+    own that sets its temperature level (conduction.floating); the case's choice of
+    Dirichlet side must not leave the Neumann piece floating."""
+    from .families import conduction as cd
+    d = spec.domain
+    if spec.physics.family == "conjugate-heat-2d":
+        from .families import cooling as co
+        f = co.field_from_case(spec)
+    else:
+        f = cd.field_from_case(spec)
+    wins = spec.windows
+    fl = {w.id: cd.floating(f, cd.window_cells(d.nx, (w.x0, w.y0, w.nx, w.ny)))
+          for w in wins}
+    if all(fl.values()):
+        return [Issue("error", "physics",
+                      "both pieces float: nothing on the domain's edges sets a temperature "
+                      "(a fixed temperature, or a coolant that leaves), so no steady state "
+                      "exists")]
+    _d_id, n_id = cd.dirichlet_side(spec, f)
+    if fl[n_id]:
+        return [Issue("error", "physics",
+                      f"the Neumann side, {n_id}, floats: nothing of its own sets its "
+                      f"temperature level, so its solve is singular. Make it the Dirichlet "
+                      f"side (or choose auto)")]
+    return []
+
+
+def _check_cooling(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
+    """The coolant fills whole rows, enters on the left and leaves on the right of
+    exactly those rows, and the seam between the pieces does not cut its flow."""
+    from .families import cooling as co                  # the family's own arithmetic
+    out: list[Issue] = []
+    d = spec.domain
+    owner = geo.region_owner(spec.regions, d.nx, d.ny)
+    if not (materials_ok and spec.regions and not np.any(owner < 0)):
+        return out
+    rows, why = co.coolant_rows(spec)
+    if why:
+        return [Issue("error", "geometry", why)]
+    if rows.size == 0:
+        out.append(Issue("error", "physics",
+                         "no region's material flows (flows = 1), so nothing cools the block"))
+    for edge, kind in (("left", "coolant-inlet"), ("right", "coolant-outlet")):
+        kinds = np.full(d.ny, "", dtype=object)
+        for b in spec.boundaries:
+            if b.edge == edge:
+                kinds[b.start:(d.ny if b.stop is None else b.stop)] = b.kind
+        wrong = [j for j in rows if kinds[j] != kind]
+        if wrong:
+            out.append(Issue("error", "geometry",
+                             f"the coolant runs in rows {rows.min()}-{rows.max()}, so the "
+                             f"{edge} edge there must be a {kind}"))
+        stray = [j for j in range(d.ny) if kinds[j] == kind and j not in set(rows.tolist())]
+        if stray:
+            out.append(Issue("error", "geometry",
+                             f"a {kind} on the {edge} edge covers rows the coolant does not "
+                             f"run in"))
+    if not np.any(co.material_grid(spec, "heat") > 0.0):
+        out.append(Issue("warning", "physics", "no material generates heat, so nothing warms"))
+    if len(spec.windows) == 2 and rows.size:
+        flow_rows = set(rows.tolist())
+        for w in spec.windows:
+            inside = set(range(w.y0, w.y0 + w.ny)) & flow_rows
+            if inside and (w.x0 != 0 or w.x0 + w.nx != d.nx):
+                out.append(Issue("error", "geometry",
+                                 f"window {w.id} cuts the coolant's flow; make one window the "
+                                 f"channel and the other the block, meeting at the wall"))
     return out
 
 
@@ -759,6 +920,26 @@ EXAMPLES: dict[str, Example] = {e.key: e for e in (
             "Current spreading between two electrodes of a graphite film wired to a "
             "battery and a resistor: the electrodes' currents are the circuit's.",
             "electric-2d", "D"),
+    Example("plume-2", "Pollutant plume: a shallow reach into a deep one (style A)",
+            "A release carried down a river that slows and mixes faster where it deepens, "
+            "on two windows overlapping across the seam: one exchange per explicit step.",
+            "transport-2d", "A"),
+    Example("sound-air-water", "Sound from air into water (style C, explicit)",
+            "A pressure pulse in air hits water: almost all of it reflects, the pressure "
+            "that enters is doubled, and R is read against (Z2 - Z1) / (Z2 + Z1).",
+            "acoustics-2d", "C"),
+    Example("bracket-2", "Steel-and-aluminium bracket under load (style B)",
+            "A plate clamped on one edge and loaded on the other, steel near the clamp and "
+            "aluminium at the tip, on two overlapping windows iterated to agreement.",
+            "elasticity-2d", "B"),
+    Example("heated-strip", "Heated bimetal strip (split by physics)",
+            "A steel-and-copper strip heated at one end bends as it warms: conduction and "
+            "elasticity as two agents on one mesh, synchronous and lagged a step.",
+            "thermoelastic-2d", "split"),
+    Example("cooled-block", "Heated block cooled by a channel flow (style C, two physics)",
+            "A chip on a copper block under a water channel: the coolant's advection and "
+            "the block's conduction meet at the wall, and every watt leaves in the water.",
+            "conjugate-heat-2d", "C"),
 )}
 
 
@@ -774,7 +955,9 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
     if ex.family == "incompressible-2d":
         return _farm_example(ex)
     builder = {"wall-2": _wall_example, "plate-insert": _insert_example,
-               "plate-circuit": _circuit_example}.get(key)
+               "plate-circuit": _circuit_example, "plume-2": _plume_example,
+               "sound-air-water": _sound_example, "bracket-2": _bracket_example,
+               "heated-strip": _strip_example, "cooled-block": _block_example}.get(key)
     if builder is None:                                    # pragma: no cover
         raise KeyError(key)
     return builder(ex)
@@ -851,6 +1034,131 @@ def _circuit_example(ex: Example) -> CaseSpec:
                      Attachment(id="R1", kind="resistor", value=1.0, a="n1", b="E1")],
         coupling=Coupling(style="D", tolerance=1e-10, max_iterations=200, relaxation=0.5,
                           aitken=True),
+        run=RunSettings(mode="steady", steps=5, threads=1, macro_dt=1.0),
+    )
+
+
+def _plume_example(ex: Example) -> CaseSpec:
+    """A river 2.4 km long and 300 m wide at 5 m cells, carrying 1 m^2/s per metre of
+    width: a shallow reach (1.25 m, so 0.8 m/s) for the first 1.2 km, then a deep one
+    (2.5 m, so 0.4 m/s) that mixes four times as fast.  The outfall releases 10 g/s
+    200 m below the inlet, a third of the way across.  Two windows overlap by 48 cells
+    across the seam between the reaches.  6000 steps of 2 s: the water takes 4250 s
+    from the outfall to the outlet, so the run ends with the plume steady and the
+    outflow equal to the release (measured: to 8e-14, in 7 s of wall time
+    outside the page)."""
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=480, ny=60, dx=5.0),
+        physics=Physics(family="transport-2d",
+                        params={"q": 1.0, "release": 10.0, "source_x": 200.0,
+                                "source_y": 100.0}),
+        materials=_materials("transport-2d", "shallow-fast", "deep-slow"),
+        regions=[Region(id="upper", material="shallow-fast", x0=0, y0=0, nx=240, ny=60),
+                 Region(id="lower", material="deep-slow", x0=240, y0=0, nx=240, ny=60)],
+        windows=[Window(id="upper", x0=0, y0=0, nx=264, ny=60),
+                 Window(id="lower", x0=216, y0=0, nx=264, ny=60)],
+        boundaries=family_boundaries("transport-2d"),
+        coupling=Coupling(style="A", ramp_cells=8),
+        run=RunSettings(mode="transient", macro_dt=2.0, steps=6000, threads=2),
+    )
+
+
+def _sound_example(ex: Example) -> CaseSpec:
+    """1.4 m of air, then 6 m of water, 0.4 m tall, at 1 cm cells.  A Gaussian pulse
+    0.1 m wide starts in the middle of the air, seven widths clear of the wall and
+    of the water.  The water is long enough that what enters it cannot come back
+    before the air holds the reflected pulse alone (steps 1021 to 2027 at 4 us);
+    2000 steps of 4 us, against a stability limit of about 4.8 us."""
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=740, ny=40, dx=0.01),
+        physics=Physics(family="acoustics-2d",
+                        params={"amplitude": 1.0, "pulse_x": 0.7, "pulse_width": 0.1}),
+        materials=_materials("acoustics-2d", "air", "water"),
+        regions=[Region(id="air", material="air", x0=0, y0=0, nx=140, ny=40),
+                 Region(id="water", material="water", x0=140, y0=0, nx=600, ny=40)],
+        windows=[Window(id="air", x0=0, y0=0, nx=140, ny=40),
+                 Window(id="water", x0=140, y0=0, nx=600, ny=40)],
+        boundaries=family_boundaries("acoustics-2d"),
+        coupling=Coupling(style="C"),
+        run=RunSettings(mode="transient", macro_dt=4.0e-6, steps=2000, threads=1),
+    )
+
+
+def _bracket_example(ex: Example) -> CaseSpec:
+    """0.4 m x 0.1 m at 2.5 mm cells, 10 mm thick: 0.24 m of steel from the clamped
+    left edge, then 0.16 m of aluminium to the right edge, which carries a downward
+    shear traction of 5 MPa (5 kN on the plate).  Two windows overlap by 32 cells;
+    Schwarz stops at an update of 1e-12 of the largest displacement, the tolerance
+    the force check's registration assumes (elasticity.CHECKS)."""
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=160, ny=40, dx=0.0025),
+        physics=Physics(family="elasticity-2d", params={"thickness": 0.01}),
+        materials=_materials("elasticity-2d", "steel", "aluminium"),
+        regions=[Region(id="root", material="steel", x0=0, y0=0, nx=96, ny=40),
+                 Region(id="tip", material="aluminium", x0=96, y0=0, nx=64, ny=40)],
+        windows=[Window(id="clamp-side", x0=0, y0=0, nx=96, ny=40),
+                 Window(id="tip-side", x0=64, y0=0, nx=96, ny=40)],
+        boundaries=family_boundaries("elasticity-2d"),
+        coupling=Coupling(style="B", ramp_cells=8, tolerance=1e-12, max_iterations=5000),
+        run=RunSettings(mode="steady", steps=5, threads=2, macro_dt=1.0),
+    )
+
+
+def _strip_example(ex: Example) -> CaseSpec:
+    """A bimetal strip 0.2 m x 20 mm at 1 mm cells: 10 mm of steel under 10 mm of
+    copper, at 300 K, its left end held at 400 K from the start and every other edge
+    insulated.  Copper expands more than steel, so the strip bends as the heat runs
+    along it.  60 steps of 5 s."""
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=200, ny=20, dx=0.001),
+        physics=Physics(family="thermoelastic-2d", params={"T0": 300.0}),
+        materials=_materials("thermoelastic-2d", "steel", "copper"),
+        regions=[Region(id="steel", material="steel", x0=0, y0=0, nx=200, ny=10),
+                 Region(id="copper", material="copper", x0=0, y0=10, nx=200, ny=10)],
+        windows=[Window(id="plate", x0=0, y0=0, nx=200, ny=20)],
+        boundaries=family_boundaries("thermoelastic-2d"),
+        coupling=Coupling(style="split"),
+        run=RunSettings(mode="transient", macro_dt=5.0, steps=60, threads=2),
+    )
+
+
+def _block_example(ex: Example) -> CaseSpec:
+    """A copper block 0.2 m x 50 mm at 1 mm cells, a 40 mm x 5 mm chip in the middle of
+    its base generating 10 W/cm^3 (2 kW per metre of depth), and a 10 mm water channel
+    along its top at 1 cm/s entering at 300 K.  The water's mdot cp is 418 W/K per
+    metre, so its bulk temperature rises 4.8 K.  Every other edge is insulated, so
+    all the heat leaves in the water.
+
+    The block floats (nothing of its own sets its temperature level), so it takes
+    the Dirichlet side, and copper against water puts the 1-D factor at 132: Aitken
+    converged in 330 iterations when measured.  The first run of this example
+    allowed 200 and failed its reference check (unconverged; the block was then also
+    the Neumann side, since fixed) -- so it allows 2000, and the check still fails
+    any run that stops unconverged."""
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=200, ny=60, dx=0.001),
+        physics=Physics(family="conjugate-heat-2d", params={"u_coolant": 0.01}),
+        materials=_materials("conjugate-heat-2d", "copper", "chip", "water"),
+        regions=[Region(id="block", material="copper", x0=0, y0=0, nx=200, ny=50),
+                 Region(id="chip", material="chip", x0=80, y0=0, nx=40, ny=5),
+                 Region(id="channel", material="water", x0=0, y0=50, nx=200, ny=10)],
+        windows=[Window(id="block", x0=0, y0=0, nx=200, ny=50),
+                 Window(id="channel", x0=0, y0=50, nx=200, ny=10)],
+        boundaries=[Boundary(id="left-block", edge="left", kind="insulated", start=0, stop=50),
+                    Boundary(id="inlet", edge="left", kind="coolant-inlet", start=50,
+                             value=300.0),
+                    Boundary(id="right-block", edge="right", kind="insulated", start=0,
+                             stop=50),
+                    Boundary(id="outlet", edge="right", kind="coolant-outlet", start=50),
+                    Boundary(id="base", edge="bottom", kind="insulated"),
+                    Boundary(id="lid", edge="top", kind="insulated")],
+        coupling=Coupling(style="C", tolerance=1e-10, max_iterations=2000, relaxation=0.5,
+                          aitken=True, dirichlet_side="auto"),
         run=RunSettings(mode="steady", steps=5, threads=1, macro_dt=1.0),
     )
 

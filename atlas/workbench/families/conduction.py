@@ -179,7 +179,7 @@ class ConductionRun:
                                                thread_name_prefix="wb-cond")
         else:
             self.certificate = None
-            d_id, n_id = dirichlet_side(spec)
+            d_id, n_id = dirichlet_side(spec, self.f, self.m)
             box = dict(self.windows)
             self.d_id, self.n_id = d_id, n_id
             self.sd = fv.assemble(self.f, window_cells(self.nx, box[d_id]), "dirichlet",
@@ -364,17 +364,37 @@ def _mean_k(spec, box) -> float:
     return float(np.mean(ks)) if ks else 1.0
 
 
-def dirichlet_side(spec) -> tuple[str, str]:
-    """(Dirichlet window, Neumann window): the case's choice, or ``auto`` -- the
-    window with the lower mean conductivity is the Dirichlet side, the side
-    under which the 1-D iteration contracts without relaxation when the lengths
-    are comparable."""
+def floating(f: fv.Field, cells: np.ndarray, diag_add: np.ndarray | None = None) -> bool:
+    """Whether a piece given only a flow on its cut faces has nothing to set its level:
+    no fixed temperature, no outflow, no storage -- every row of its matrix sums to
+    zero, so the matrix is singular and a Neumann solve of it is meaningless."""
+    A = fv.assemble(f, cells, "neumann", diag_add=diag_add).A
+    rows = np.abs(np.asarray(A.sum(axis=1)).ravel())
+    return bool(float(rows.max()) <= 1e-12 * float(np.max(np.abs(A.diagonal()))))
+
+
+def dirichlet_side(spec, f: fv.Field | None = None,
+                   diag_add: np.ndarray | None = None) -> tuple[str, str]:
+    """(Dirichlet window, Neumann window): the case's choice, or ``auto``.
+
+    ``auto``: a piece that would FLOAT as the Neumann side (`floating`: nothing of
+    its own sets its level) takes the Dirichlet side, which the interface's values
+    pin.  Otherwise the window with the lower mean conductivity is the Dirichlet
+    side, the side under which the 1-D iteration contracts without relaxation when
+    the lengths are comparable.  The floating rule came from a failed run: the
+    cooled block's first run made the insulated block the Neumann side on the
+    conductivity rule alone, and the iteration ran out (2026-09-29)."""
     a, b = spec.windows[0], spec.windows[1]
     side = spec.coupling.dirichlet_side
     if side == a.id:
         return a.id, b.id
     if side == b.id:
         return b.id, a.id
+    if f is not None:
+        fa = floating(f, window_cells(f.nx, (a.x0, a.y0, a.nx, a.ny)), diag_add)
+        fb = floating(f, window_cells(f.nx, (b.x0, b.y0, b.nx, b.ny)), diag_add)
+        if fa != fb:
+            return (a.id, b.id) if fa else (b.id, a.id)
     ka = _mean_k(spec, (a.x0, a.y0, a.nx, a.ny))
     kb = _mean_k(spec, (b.x0, b.y0, b.nx, b.ny))
     return (a.id, b.id) if ka <= kb else (b.id, a.id)
@@ -434,4 +454,4 @@ def build(spec, arms=ARMS, threads: int = 2) -> ConductionRun:
 
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "ConductionRun", "CondState", "build",
            "field_from_case", "capacity", "available_arms", "step_label", "dirichlet_side",
-           "rho_1d", "closed_form_heat", "window_cells"]
+           "floating", "rho_1d", "closed_form_heat", "window_cells"]

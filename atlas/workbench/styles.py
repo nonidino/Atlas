@@ -87,10 +87,12 @@ class Iteration:
 
 def schwarz(systems: Sequence[LocalSystem], factors: Sequence[Factor],
             chi: Sequence[np.ndarray], u0: np.ndarray, tol: float, max_it: int,
-            scale: float, extra_b: Sequence[np.ndarray] | None = None,
+            scale: float | None, extra_b: Sequence[np.ndarray] | None = None,
             pool=None) -> Iteration:
     """``u <- sum_i R_i^T chi_i A_i^{-1} (b_i - C_i u)`` until the update is below
-    ``tol * scale`` (max norm), or ``max_it`` sweeps.
+    ``tol * scale`` (max norm), or ``max_it`` sweeps.  ``scale=None`` measures the
+    update against the new iterate's own largest entry, for a field with no
+    scale known in advance (a structure's displacement).
 
     ``extra_b[i]`` is added to window i's right-hand side (a backward-Euler
     ``cap dx^2 / dt * u_old`` restricted to it).  With ``pool`` the windows are
@@ -114,7 +116,8 @@ def schwarz(systems: Sequence[LocalSystem], factors: Sequence[Factor],
         new = np.zeros_like(u)
         for i in range(n):
             new[systems[i].idx] += chi[i] * vs[i]
-        upd = float(np.max(np.abs(new - u))) / scale
+        den = scale if scale is not None else max(float(np.max(np.abs(new))), 1e-300)
+        upd = float(np.max(np.abs(new - u))) / den
         hist.append(upd)
         u = new
         if upd <= tol:

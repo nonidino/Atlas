@@ -36,13 +36,14 @@ from bokeh.plotting import figure
 
 from . import geometry as geo
 from . import registry
-from .spec import Boundary, CaseSpec, Device, Region, Window, check, family_boundaries
+from .spec import (Attachment, Boundary, CaseSpec, Device, Region, Window, check,
+                   family_boundaries)
 
 if TYPE_CHECKING:                                             # pragma: no cover
     from .app import Workbench
 
 LAYERS = {"windows": "Windows", "regions": "Regions", "devices": "Devices",
-          "boundaries": "Boundaries"}
+          "boundaries": "Boundaries", "attachments": "Circuit"}
 TOOLS = {"move": "Move & draw", "resize": "Resize", "pan": "Pan & zoom"}
 
 C_DOMAIN = "#64748b"
@@ -57,13 +58,19 @@ C_HANDLE = "#0e6874"
 #: palette in order of first appearance.
 MATERIAL_COLOURS = {"steel": "#8d99ae", "copper": "#c8733a", "aluminium": "#b8c4d6",
                     "aluminum": "#b8c4d6", "air": "#bde0fe", "water": "#4895ef",
-                    "concrete": "#a8a29e", "wood": "#b08968"}
+                    "concrete": "#a8a29e", "wood": "#b08968", "graphite": "#4b5563",
+                    "shallow-fast": "#90e0ef", "deep-slow": "#0077b6", "pool": "#023e8a",
+                    "chip": "#374151"}
 PALETTE = ("#6d597a", "#90be6d", "#577590", "#f4a261", "#e76f51", "#43aa8b", "#f9c74f",
            "#277da1")
 BOUNDARY_COLOURS = {"inlet": "#1d4ed8", "freestream": "#0891b2", "outlet": "#7c3aed",
                     "wall": "#334155", "fixed-temperature": "#dc2626", "insulated": "#a16207",
                     "heat-flux": "#ea580c", "fixed-potential": "#16a34a",
-                    "no-current": "#6b7280"}
+                    "no-current": "#6b7280", "electrode": "#b45309",
+                    "river-inlet": "#1d4ed8", "river-outlet": "#7c3aed", "bank": "#4d7c0f",
+                    "rigid-wall": "#1f2937", "clamped": "#111827", "free": "#9ca3af",
+                    "load-x": "#be123c", "load-y": "#be123c", "coolant-inlet": "#1d4ed8",
+                    "coolant-outlet": "#7c3aed"}
 
 HELP = {
     ("windows", "move"): "Drag a window to move it. **Shift+drag** on empty space to draw a "
@@ -82,7 +89,17 @@ HELP = {
     ("boundaries", "move"): "Boundaries are set in the table below and drawn along the "
                             "domain's edges.",
     ("boundaries", "resize"): "Boundaries are set in the table below.",
+    ("attachments", "move"): "The circuit is set in the table below and drawn here as a "
+                             "schematic: each electrode is a node beside its edge segment, "
+                             "the circuit's other nodes sit below the domain, and each part "
+                             "runs between its two nodes. A battery's `a` is its + terminal.",
+    ("attachments", "resize"): "The circuit is set in the table below.",
 }
+
+#: the circuit schematic's colours: batteries, resistors, nodes
+C_BATTERY = "#b45309"
+C_RESISTOR = "#1d4ed8"
+C_NODE = "#111827"
 
 
 def _pan_help(layer: str) -> str:
@@ -150,6 +167,9 @@ class GeometryEditor:
         self.src_cross = ColumnDataSource(dict(x=[], y=[], names=[]))
         self.src_bc = ColumnDataSource(dict(x0=[], y0=[], x1=[], y1=[], kind=[], id=[],
                                             colour=[], lx=[], ly=[], angle=[], text=[]))
+        self.src_att = ColumnDataSource(dict(x0=[], y0=[], x1=[], y1=[], lx=[], ly=[],
+                                             text=[], colour=[], id=[]))
+        self.src_att_nodes = ColumnDataSource(dict(x=[], y=[], name=[]))
         self.src_win.on_change("data", self._on_windows)
         self.src_reg_edit.on_change("data", self._on_regions)
         self.src_handles.on_change("data", self._on_handles)
@@ -158,11 +178,26 @@ class GeometryEditor:
     # ------------------------------------------------------------------
     # the canvas
     # ------------------------------------------------------------------
+    def _circuit_shown(self) -> bool:
+        fam = _family(self.wb.spec)
+        return bool(self.wb.spec.attachments) or bool(fam and "attachments" in fam.layers)
+
+    def _circuit_y(self) -> float:
+        """Where the circuit's free nodes sit: a row below the domain."""
+        d = self.wb.spec.domain
+        pad = max(8, int(0.05 * max(d.nx, d.ny)))
+        return -(pad + 0.18 * d.ny)
+
     def _figure(self, ranges):
         d = self.wb.spec.domain
         pad = max(8, int(0.05 * max(d.nx, d.ny)))
         if ranges is None:
-            ranges = (-pad, d.nx + pad, -pad, d.ny + pad)
+            circuit = self._circuit_shown()
+            bottom = self._circuit_y() - pad if circuit else -pad
+            #: an electrode's node sits 2.5 boundary offsets outside its edge; the
+            #: sides widen so it is not cut in half by the canvas's edge (seen)
+            side = pad + (3.0 * max(3.0, 0.02 * max(d.nx, d.ny)) if circuit else 0.0)
+            ranges = (-side, d.nx + side, bottom, d.ny + pad)
         x0, x1, y0, y1 = ranges
         aspect = (x1 - x0) / max(y1 - y0, 1e-9)
         p = figure(x_range=Range1d(x0, x1), y_range=Range1d(y0, y1),
@@ -233,6 +268,25 @@ class GeometryEditor:
                               text_align="center", text_baseline="middle",
                               text_font_size="10px", text_color="colour",
                               background_fill_color="#ffffff", background_fill_alpha=0.8))
+
+        # the circuit: a schematic of nodes and parts, over the canvas
+        if self._circuit_shown():
+            editing_circuit = self.state["layer"] == "attachments"
+            att = p.segment("x0", "y0", "x1", "y1", source=self.src_att, line_color="colour",
+                            line_width=3 if editing_circuit else 2,
+                            line_alpha=0.9 if editing_circuit else 0.55, line_dash="solid")
+            p.add_tools(HoverTool(renderers=[att], visible=False,
+                                  tooltips=[("part", "@id"), ("", "@text")]))
+            p.add_layout(LabelSet(x="lx", y="ly", text="text", source=self.src_att,
+                                  text_align="center", text_baseline="middle",
+                                  text_font_size="10px", text_color="colour",
+                                  background_fill_color="#ffffff",
+                                  background_fill_alpha=0.85))
+            p.scatter("x", "y", source=self.src_att_nodes, size=8, fill_color="#ffffff",
+                      line_color=C_NODE, line_width=2)
+            p.add_layout(LabelSet(x="x", y="y", text="name", source=self.src_att_nodes,
+                                  x_offset=6, y_offset=6, text_font_size="10px",
+                                  text_color=C_NODE))
 
         # devices
         p.segment("x", "y0", "x", "y1", source=self.src_dev_seg, line_color=C_ROTOR,
@@ -335,6 +389,7 @@ class GeometryEditor:
                                          id=[v.id for v in s.devices]))
         self._sync_warnings()
         self._sync_boundaries()
+        self._sync_attachments()
         self._sync_tables()
 
     def _boxes(self) -> list[tuple[int, geo.Box]]:
@@ -451,6 +506,81 @@ class GeometryEditor:
             rows["text"].append(f"{b.kind}{val}")
         self._set(self.src_bc, rows)
 
+    def circuit_nodes(self) -> dict[str, tuple[float, float]]:
+        """Each circuit node's place on the canvas: an electrode just outside the
+        middle of its edge segment, any other node in a row below the domain."""
+        s, d = self.wb.spec, self.wb.spec.domain
+        off = max(3.0, 0.02 * max(d.nx, d.ny))
+        pos: dict[str, tuple[float, float]] = {}
+        for b in s.boundaries:
+            if b.kind != "electrode":
+                continue
+            n = geo.edge_length(b.edge, d.nx, d.ny)
+            x0, y0, x1, y1 = geo.edge_segment_xy(b.edge, b.start, n if b.stop is None
+                                                 else b.stop, d.nx, d.ny)
+            dx, dy = {"left": (-1, 0), "right": (1, 0), "bottom": (0, -1),
+                      "top": (0, 1)}[b.edge]
+            pos[b.id] = ((x0 + x1) / 2 + 2.5 * off * dx, (y0 + y1) / 2 + 2.5 * off * dy)
+        free = []
+        for a in s.attachments:
+            for n in (a.a, a.b):
+                if n not in pos and n not in free:
+                    free.append(n)
+        for k, n in enumerate(free):
+            pos[n] = (d.nx * (k + 1) / (len(free) + 1), self._circuit_y())
+        return pos
+
+    def _sync_attachments(self) -> None:
+        s = self.wb.spec
+        pos = self.circuit_nodes()
+        rows = {k: [] for k in ("x0", "y0", "x1", "y1", "lx", "ly", "text", "colour", "id")}
+        seen: dict[tuple[str, str], int] = {}
+        for a in s.attachments:
+            (xa, ya), (xb, yb) = pos[a.a], pos[a.b]
+            key = tuple(sorted((a.a, a.b)))
+            k = seen.get(key, 0)
+            seen[key] = k + 1
+            # parts between the same two nodes: labels stepped apart along the wire
+            t = 0.5 + 0.18 * k * (-1) ** k
+            rows["x0"].append(xa)
+            rows["y0"].append(ya)
+            rows["x1"].append(xb)
+            rows["y1"].append(yb)
+            rows["lx"].append(xa + t * (xb - xa))
+            rows["ly"].append(ya + t * (yb - ya))
+            if a.kind == "battery":
+                inner = f", {a.internal:g} ohm inside" if a.internal else ""
+                rows["text"].append(f"{a.id}: {a.value:g} V{inner} (+ at {a.a})")
+                rows["colour"].append(C_BATTERY)
+            else:
+                rows["text"].append(f"{a.id}: {a.value:g} ohm")
+                rows["colour"].append(C_RESISTOR)
+            rows["id"].append(a.id)
+        self._set(self.src_att, rows)
+        used = {n for a in s.attachments for n in (a.a, a.b)}
+        names = [n for n in pos if n in used or n in {b.id for b in s.boundaries
+                                                       if b.kind == "electrode"}]
+        self._set(self.src_att_nodes, dict(x=[pos[n][0] for n in names],
+                                           y=[pos[n][1] for n in names], name=names))
+
+    def add_part(self, kind: str) -> None:
+        """A battery or a resistor, wired between the first electrode and a new free
+        node, to be edited in the table."""
+        s = self.wb.spec
+        electrodes = [b.id for b in s.boundaries if b.kind == "electrode"]
+        taken = [a.id for a in s.attachments]
+        pid = _next_id("B" if kind == "battery" else "R", taken)
+        nodes = {n for a in s.attachments for n in (a.a, a.b)}
+        free = _next_id("n", nodes | set(electrodes))
+        new = Attachment(id=pid, kind=kind, value=12.0 if kind == "battery" else 1.0,
+                         a=free if kind == "battery" else (electrodes[0] if electrodes
+                                                           else "n1"),
+                         b=electrodes[0] if (kind == "battery" and electrodes) else free)
+
+        def apply(c):
+            c.attachments.append(new)
+        self.wb.edit(apply, f"added {kind} {pid}")
+
     # ------------------------------------------------------------------
     # canvas -> case
     # ------------------------------------------------------------------
@@ -539,6 +669,8 @@ class GeometryEditor:
                     r.x0, r.y0, r.nx, r.ny = b
                 out.append(r)
             c.regions = out + drawn
+            for r in drawn:
+                with_material(c, r.material)
         if not self.wb.edit(apply, label):
             self.sync()
 
@@ -638,6 +770,9 @@ class GeometryEditor:
             "boundaries": pn.widgets.Tabulator(pd.DataFrame(), show_index=False, height=200,
                                                layout="fit_data_table", selectable=True,
                                                sizing_mode="stretch_width"),
+            "attachments": pn.widgets.Tabulator(pd.DataFrame(), show_index=False, height=200,
+                                                layout="fit_data_table", selectable=True,
+                                                sizing_mode="stretch_width"),
         }
         for key, t in self.tables.items():
             t.on_edit(lambda e, key=key: self._on_table_edit(key, e))
@@ -671,7 +806,13 @@ class GeometryEditor:
                                  value="" if b.value is None else f"{b.value:g}")
                             for b in s.boundaries],
                            columns=["id", "edge", "start", "stop", "kind", "value"])
-        return {"windows": win, "regions": reg, "devices": dev, "boundaries": bnd}
+        att = pd.DataFrame([dict(id=a.id, kind=a.kind, value=a.value,
+                                 unit="V" if a.kind == "battery" else "ohm",
+                                 internal_ohm=a.internal, a=a.a, b=a.b)
+                            for a in s.attachments],
+                           columns=["id", "kind", "value", "unit", "internal_ohm", "a", "b"])
+        return {"windows": win, "regions": reg, "devices": dev, "boundaries": bnd,
+                "attachments": att}
 
     def _sync_tables(self) -> None:
         fam = _family(self.wb.spec)
@@ -686,6 +827,8 @@ class GeometryEditor:
                            if fixed else
                            {"edge": {"type": "list", "values": list(geo.EDGES)},
                             "kind": {"type": "list", "values": kinds}}),
+            "attachments": {"kind": {"type": "list", "values": ["battery", "resistor"]},
+                            "unit": None},
         }
         for key, df in self._table_frames().items():
             t = self.tables[key]
@@ -716,6 +859,8 @@ class GeometryEditor:
                 def apply(c):
                     setattr(c.regions[row], field,
                             str(val) if field in ("id", "material") else int(val))
+                    if field == "material":
+                        with_material(c, str(val))
                 label = f"region {reg.id}: {col} = {val}"
             elif key == "devices":
                 field = {"id": "id", "x_D": "x", "y_D": "y", "diameter_D": "diameter",
@@ -725,6 +870,17 @@ class GeometryEditor:
                 def apply(c):
                     setattr(c.devices[row], field, str(val) if field == "id" else float(val))
                 label = f"device {vid}: {col} = {val}"
+            elif key == "attachments":
+                field = {"id": "id", "kind": "kind", "value": "value",
+                         "internal_ohm": "internal", "a": "a", "b": "b"}[col]
+                pid = spec.attachments[row].id
+
+                def apply(c):
+                    setattr(c.attachments[row], field,
+                            float(val) if field in ("value", "internal") else str(val).strip())
+                    # pydantic does not validate on assignment: check the part as a whole
+                    Attachment.model_validate(c.attachments[row].model_dump())
+                label = f"part {pid}: {col} = {val}"
             else:
                 bid = spec.boundaries[row].id
                 d = spec.domain
@@ -810,6 +966,8 @@ class GeometryEditor:
 
         def apply(c):
             getattr(c, key).append(new)
+            if key == "regions":
+                with_material(c, new.material)
         self.wb.edit(apply, f"added {key[:-1]} {wid}")
 
     def restack(self, step: int) -> None:
@@ -857,9 +1015,16 @@ class GeometryEditor:
             btn("Add window", self.add_shape)
             btn("Delete selected", self.delete_selected)
         elif key == "regions":
-            mat = pn.widgets.TextInput(placeholder="material for new regions",
-                                       value=self.state["material"], width=190)
-            mat.param.watch(lambda e: self.state.update(material=e.new.strip()), "value")
+            names = material_names(s)
+            #: the shell's generic default names no material any family defines
+            if self.state["material"] in ("", "material-1") and names:
+                self.state["material"] = names[0]
+            mat = pn.widgets.AutocompleteInput(
+                placeholder="material for new regions", value=self.state["material"],
+                options=names, restrict=False, min_characters=0, case_sensitive=False,
+                width=190)
+            mat.param.watch(lambda e: self.state.update(material=(e.new or "").strip()),
+                            "value")
             buttons.append(mat)
             btn("Add region", self.add_shape)
             btn("Delete selected", self.delete_selected)
@@ -875,6 +1040,27 @@ class GeometryEditor:
         elif key == "devices":
             btn("Add rotor", self.add_shape)
             btn("Delete selected", self.delete_selected)
+        elif key == "attachments":
+            reads = fam is not None and "attachments" in fam.layers
+            btn("Add battery", lambda: self.add_part("battery"), "primary", 140).disabled = \
+                not reads
+            btn("Add resistor", lambda: self.add_part("resistor"), width=140).disabled = \
+                not reads
+            btn("Delete selected", self.delete_selected)
+            if not reads:
+                readers = [f.label for f in registry.FAMILIES
+                           if "attachments" in f.layers and f.status == "ready-to-wire"]
+                extra.append(pn.pane.Alert(
+                    f"The **{fam.label if fam else '?'}** family does not read lumped parts: "
+                    f"its solver would ignore a circuit. The families that do: "
+                    f"{'; '.join(readers)}.", alert_type="warning",
+                    sizing_mode="stretch_width"))
+            else:
+                extra.append(pn.pane.Markdown(
+                    "<small>A node named like an **electrode** boundary is that electrode; "
+                    "any other name is a free node of the circuit, and `ground` is 0 V "
+                    "(with no ground, the first electrode is). Mark electrodes on the "
+                    "Boundaries layer.</small>", sizing_mode="stretch_width"))
         else:
             if fam is not None and fam.fixed_boundaries:
                 btn("Use the family's boundaries", self.use_family_boundaries, "primary", 220)
@@ -910,6 +1096,26 @@ def _family(spec):
         return registry.family(spec.physics.family)
     except KeyError:
         return None
+
+
+def material_names(spec) -> list[str]:
+    """What a new region may be made of: the case's materials, then the family
+    library's others."""
+    fam = _family(spec)
+    lib = fam.material_library() if fam is not None else {}
+    return list(spec.materials) + [m for m in lib if m not in spec.materials]
+
+
+def with_material(c: CaseSpec, name: str) -> None:
+    """A region drawn in a material the case does not define yet takes the family
+    library's properties for it, in the same edit, when the library has that
+    name; any other name is left for the Physics step (and the check says so)."""
+    if name in c.materials:
+        return
+    fam = _family(c)
+    lib = fam.material_library() if fam is not None else {}
+    if name in lib:
+        c.materials[name] = dict(lib[name])
 
 
 def _describe(what: str, drawn, moved, gone) -> str | None:

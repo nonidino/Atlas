@@ -73,7 +73,9 @@ def test_save_and_load_round_trip(tmp_path):
 
 
 def test_registry_says_which_families_run_and_why_the_rest_do_not():
-    assert registry.available_ids() == ["incompressible-2d", "conduction-2d", "electric-2d"]
+    assert registry.available_ids() == ["incompressible-2d", "conduction-2d", "electric-2d",
+                                        "transport-2d", "acoustics-2d", "elasticity-2d",
+                                        "thermoelastic-2d", "conjugate-heat-2d"]
     for f in registry.FAMILIES:
         assert f.note, f.id
         for src in f.sources:

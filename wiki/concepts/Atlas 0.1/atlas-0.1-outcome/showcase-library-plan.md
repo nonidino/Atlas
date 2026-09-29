@@ -1,7 +1,7 @@
 # The classical showcase library: plan
 
 **Type:** Outcome page — **build plan** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
-**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6), and so was **step 2, the general runner for style A** (the wind-farm family). **Step 3, the solver-family interface with styles B, C and D, was built on 2026-09-29**, with cases 2 and 5 as its two new families. Details are in §5's "Built" notes. Steps 4–6 are not built, apart from those two cases. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort in §4–§5's tables are estimates, marked **[AI Inference]**; measured numbers are in the "Built" notes, each with its record.
+**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6), and so was **step 2, the general runner for style A** (the wind-farm family). **Step 3, the solver-family interface with styles B, C and D, was built on 2026-09-29**, with cases 2 and 5 as its two new families, and **step 4, cases 3, 4, 6, 7 and 8, the same day**. Details are in §5's "Built" notes. Steps 5 (the gallery) and 6 (the compile) are not built. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort in §4–§5's tables are estimates, marked **[AI Inference]**; measured numbers are in the "Built" notes, each with its record.
 **Hub:** [[00-atlas-0.1-outcome]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/`
 
 ---
@@ -121,6 +121,36 @@ All 2-D. Runtimes and code sizes are **[AI Inference]** estimates.
 > - **What the showcase does not show: a speedup.** At these sizes (6,400–15,360 cells) the full domain's sparse direct solve beat every decomposed arm, measured in the page on AC power: 2.6× faster than Dirichlet–Neumann on the wall, 3.6× than style D, and 24–35× than Schwarz on the insert. These cases show the coupling, and the page says so with the ratio. Records: `out/workbench/records/step-b/`.
 > - **Found in the served page:** the family selector disabled none of the planned families. It had passed family ids to a list whose values in the page are labels; this dates from the shell and is now pinned by a test. Also found: the tolerance box displayed $10^{-10}$ as "+0.000", and a plot autoscaled two equal answers into two lines.
 > - **Not built yet:** the attachments' canvas and table layer (the circuit is set in the case file and drawn nowhere), cases 3, 4, 6, 7 and 8, the gallery, and the compile.
+
+> **Built, 2026-09-29: step 4, cases 3, 4, 6, 7 and 8**, as five new families: `atlas/workbench/families/{plume,acoustics,elasticity,thermoelastic,cooling}.py`, and `fe.py` for the two structural ones. Tests: `tests/test_workbench_cases.py`. Every check below was registered in its family's module before that family's first run. The figures are from page runs on AC power, records in `out/workbench/records/step-c/`.
+>
+> | case | style | the checks, measured | wall time |
+> |---|---|---|---|
+> | 3, a pollutant plume down a river (a shallow reach into a deep one) | A with one explicit step per exchange | mass: $8.1\times10^{-14}$ (tolerance $10^{-9}$); the full domain: $8.8\times10^{-17}$ of the peak ($10^{-10}$); threaded equal to serial over 6,000 steps | 8.2 s |
+> | 4, sound from air into water | C, explicit | reflection: 0.999443938429 against the textbook $R=(Z_2-Z_1)/(Z_2+Z_1)=0.999443938429$, largest departure $3.1\times10^{-10}$ ($10^{-6}$); energy: $8.4\times10^{-16}$ ($10^{-10}$); the two pieces equal the full domain over 2,000 steps | 2.4 s |
+> | 6, a steel-and-aluminium bracket under a 5 kN load | B on a structure | forces: $1.3\times10^{-10}$ ($10^{-6}$); displacements: $3.7\times10^{-11}$ of the largest, 0.770 mm ($10^{-6}$); threaded equal to serial | 29.8 s |
+> | 7, a heated steel-and-copper strip | split by physics | heat: $9.9\times10^{-11}$ ($10^{-9}$); the synchronous split equals the unsplit solver over 60 steps; the lagged split equals the synchronous one a step late over 60 steps | 1.7 s |
+> | 8, a chip on a copper block under a water channel | C at a seam between two physics | energy: $7.0\times10^{-11}$ ($10^{-6}$), 2 kW per metre of depth generated and carried out; the full domain: $2.6\times10^{-10}$ of the 29.5 K rise ($10^{-6}$) | 1.8 s |
+>
+> - **What each shows that the others do not.**
+>   - **The plume** is style A where it is exact. One explicit step needs only the neighbours' old values, so each window takes the full-domain step on its own cells. The wind farm's windows march several sub-steps on one exchange and are not exact (W346: 2–8% in farm power). The page draws the plume on a log scale, three decades deep.
+>   - **The sound** is style C with nothing to iterate. Its measure is the reflected pulse's integral, the zero-wavenumber part, which the discrete interface reflects with the textbook $R$ exactly, whatever the dispersion does to the pulse's shape. With air on both sides, the positive control, it reads $R=0$ (a test). The pressure that enters the water is doubled ($T=1+R=1.9994$) while 0.111% of the energy does.
+>   - **The bracket** is the first structure. Its Schwarz windows are the nodes of their cells, and it converges slowly: plain Schwarz has no coarse level, so a bending mode takes 616 iterations to $10^{-12}$.
+>   - **The strip** is the split by physics. A conduction agent and an elasticity agent share one mesh, and the whole temperature field crosses between them (the bond [[case-study-thermal-strain-atlas-0.1]] found is not a port). Lagging elasticity a step costs $8.3\times10^{-3}$ of the stress at the last step, the same order as that case study's $7.1\times10^{-3}$ on its shell. Uniform heating, the positive control, stresses a bimetal and leaves a plain strip unstressed (a test).
+>   - **The cooled block** couples two physics at one seam: the coolant's advection and the block's conduction. Its bulk rise is the closed form of its balance, $P/(\dot m c_p) = 2000/418 = 4.785$ K.
+> - **`fe.py` is `ThermoStruct2D`'s element with a material per element.** On one material its stiffness, conduction and mass matrices are the build repo's own to $10^{-12}$, and its thermal load gives that solver's clamped displacement to $10^{-10}$ (a test, which skips without the build repo). The plan named `ThermoStruct2D.solve_mechanical` for case 6, but that solver holds one material for the whole mesh, and the bracket needs two.
+> - **Two failed runs, both of the cooled block's reference check**, before the pass above. The tolerance was not changed.
+>   - First run: 0.018 of the rise. The "auto" rule gave the Dirichlet side to the lower conductivity (the water), which left the block, insulated all round, as the Neumann side: a floating problem with a singular matrix.
+>   - Second run: $1.4\times10^{-3}$. The block was now the Dirichlet side, but 200 iterations were not enough: copper against water puts the 1-D factor at 132.
+>   - The fixes: a floating piece now takes the Dirichlet side, and the check refuses a case that makes it the Neumann side (a method fix, pinned by a test). The example allows 2,000 iterations; Aitken converged in 330.
+> - **No speedup at these sizes, except the wind farm's.** On 4,000–29,600 cells, one direct solve or one explicit step on the whole grid beat every decomposed arm: by 1.5× (the sound's two pieces) to 520× (the bracket's serial Schwarz). The strip's arms tie within about 10%.
+> - **Also built:**
+>   - **the circuit layer** for case 5: a schematic of the attachments on the Geometry canvas, and a table with *Add battery* and *Add resistor*;
+>   - **regions that feed materials**: a region drawn in a library material brings its properties in the same edit;
+>   - **arm names per family**.
+>
+>   Found in the served page and fixed: electrode nodes cut in half by the canvas's edge, add-part buttons offered to families that ignore a circuit, and the split's panels titled "Decomposed".
+> - **Not built:** the optional Gray–Scott case and CS-13/CS-14 adapters (both optional in this plan); the gallery (step 5); the compile (step 6).
 
 ---
 

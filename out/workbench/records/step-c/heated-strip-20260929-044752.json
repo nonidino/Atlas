@@ -1,0 +1,479 @@
+{
+ "schema": "atlas-workbench/results@1",
+ "case_name": "heated-strip",
+ "case_path": null,
+ "family": "thermoelastic-2d",
+ "style": "split",
+ "committed_at": "2026-09-29T04:47:51-04:00",
+ "started": "2026-09-29T04:47:51-04:00",
+ "finished": "2026-09-29T04:47:52-04:00",
+ "wall_seconds": 1.654832363128662,
+ "build_seconds": 0.055079099955037236,
+ "arms": [
+  "serial",
+  "parallel",
+  "full"
+ ],
+ "arm_labels": {
+  "serial": "Split, synchronous",
+  "parallel": "Split, lagged (two threads)",
+  "full": "Unsplit solver"
+ },
+ "dropped_arms": {},
+ "step_label": "macro-step",
+ "steps_requested": 60,
+ "steps_done": 60,
+ "stopped": false,
+ "threads": 2,
+ "timing": {
+  "serial": {
+   "seconds_per_step": [
+    0.0017479000380262733,
+    0.0034236001083627343,
+    0.002737400005571544,
+    0.0026717999717220664,
+    0.0018447000766173005,
+    0.0025531999999657273,
+    0.0021048999624326825,
+    0.003193399985320866,
+    0.0019670999608933926,
+    0.0029679000144824386,
+    0.002351099974475801,
+    0.0022724000737071037,
+    0.0022606999846175313,
+    0.0018649999983608723,
+    0.0024185999063774943,
+    0.0023765000514686108,
+    0.0040327999740839005,
+    0.002208300051279366,
+    0.0018185999942943454,
+    0.004042499931529164,
+    0.0017482999246567488,
+    0.0031333001097664237,
+    0.004282200010493398,
+    0.004275399958714843,
+    0.002742399927228689,
+    0.0028930000262334943,
+    0.002789899939671159,
+    0.004123099963180721,
+    0.0041492999298498034,
+    0.0026377999456599355,
+    0.00489079998806119,
+    0.0025764000602066517,
+    0.002666299929842353,
+    0.0048943000147119164,
+    0.0042078000260517,
+    0.0041226999601349235,
+    0.004103199928067625,
+    0.0036272999132052064,
+    0.0018146999645978212,
+    0.004643699969165027,
+    0.003265600069426,
+    0.0021827000891789794,
+    0.002641199971549213,
+    0.0026786000235006213,
+    0.0017998999683186412,
+    0.004092499963007867,
+    0.0022278999676927924,
+    0.00259569997433573,
+    0.0047085999976843596,
+    0.0030684000812470913,
+    0.004354899981990457,
+    0.0021436000242829323,
+    0.0032544999849051237,
+    0.0027535000117495656,
+    0.0018178999889642,
+    0.00368780002463609,
+    0.0017673000693321228,
+    0.0041476000333204865,
+    0.0025180999655276537,
+    0.0018217000178992748
+   ],
+   "mean": 0.0029784716626939673,
+   "median": 0.0027080000145360827,
+   "min": 0.0017479000380262733,
+   "speedup_vs_full": 1.0806655308715623
+  },
+  "parallel": {
+   "seconds_per_step": [
+    0.002095900010317564,
+    0.0022341000149026513,
+    0.0031917999731376767,
+    0.0023378999903798103,
+    0.00162390002515167,
+    0.0018751000752672553,
+    0.0035187999019399285,
+    0.0037625000113621354,
+    0.0031093000434339046,
+    0.004289999953471124,
+    0.002736099995672703,
+    0.004041600041091442,
+    0.0016991000156849623,
+    0.004334199940785766,
+    0.0021075999829918146,
+    0.004018499981611967,
+    0.0031504000071436167,
+    0.001903700060211122,
+    0.002441700082272291,
+    0.0022138000931590796,
+    0.00158400007057935,
+    0.0020111999474465847,
+    0.004738699994049966,
+    0.0030869999900460243,
+    0.00272050010971725,
+    0.003765600034967065,
+    0.004502999945543706,
+    0.00403320009354502,
+    0.002262699999846518,
+    0.00323569995816797,
+    0.0037507000379264355,
+    0.0022767999907955527,
+    0.002783500007353723,
+    0.004246499971486628,
+    0.002323599997907877,
+    0.00400029995944351,
+    0.004182299948297441,
+    0.0019584998954087496,
+    0.0016299999551847577,
+    0.0030010000336915255,
+    0.002378400065936148,
+    0.0017815000610426068,
+    0.0033207000233232975,
+    0.003478399943560362,
+    0.0017240999732166529,
+    0.004517999943345785,
+    0.0021548999939113855,
+    0.00306979997549206,
+    0.0037176000187173486,
+    0.004471699940040708,
+    0.0037348000332713127,
+    0.0016612999606877565,
+    0.0021776999346911907,
+    0.0016249999171122909,
+    0.0017452000174671412,
+    0.0018016999820247293,
+    0.0015685000689700246,
+    0.003529299981892109,
+    0.004172599990852177,
+    0.00160910002887249
+   ],
+   "mean": 0.002883684999930362,
+   "median": 0.002759800001513213,
+   "min": 0.0015685000689700246,
+   "speedup_vs_full": 1.1161869831929667
+  },
+  "full": {
+   "seconds_per_step": [
+    0.0016344999894499779,
+    0.004259699955582619,
+    0.002767199999652803,
+    0.0017995999660342932,
+    0.0017714001005515456,
+    0.0027305999537929893,
+    0.0038289999356493354,
+    0.0037730999756604433,
+    0.0020986999152228236,
+    0.0028966000536456704,
+    0.00250990001950413,
+    0.0024375999346375465,
+    0.002036399906501174,
+    0.0031862000469118357,
+    0.0026786000235006213,
+    0.004143500002101064,
+    0.004511900013312697,
+    0.002593100070953369,
+    0.0039097999688237906,
+    0.0037444999907165766,
+    0.0020027999999001622,
+    0.0018318999791517854,
+    0.005752699915319681,
+    0.00443450000602752,
+    0.007859400007873774,
+    0.002584500005468726,
+    0.002986400038935244,
+    0.0022249999456107616,
+    0.003785099950619042,
+    0.003997200052253902,
+    0.0026230000657960773,
+    0.002736099995672703,
+    0.0027400999097153544,
+    0.004459200077690184,
+    0.004347799927927554,
+    0.004125999985262752,
+    0.003103499999269843,
+    0.003644899930804968,
+    0.0020619999850168824,
+    0.0034534999867901206,
+    0.003766500041820109,
+    0.0025470000691711903,
+    0.0027507999911904335,
+    0.00249660003464669,
+    0.0020217999117448926,
+    0.003948400029912591,
+    0.002353499992750585,
+    0.0026129999896511436,
+    0.004243000061251223,
+    0.004263099981471896,
+    0.004404000006616116,
+    0.0026983999414369464,
+    0.003429100033827126,
+    0.0020309999817982316,
+    0.004173799999989569,
+    0.003338499926030636,
+    0.0021031000651419163,
+    0.003490300034172833,
+    0.004497299902141094,
+    0.0018872000509873033
+   ],
+   "mean": 0.003218731660551081,
+   "median": 0.0029415000462904572,
+   "min": 0.0016344999894499779,
+   "speedup_vs_full": 1.0
+  }
+ },
+ "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+ "bitwise": {
+  "steps": 60,
+  "first_difference": 1
+ },
+ "metrics": {
+  "serial": {
+   "max_stress_MPa": 39.86488604406166,
+   "mean_temperature_K": 373.41746098829645,
+   "balance_max": 9.947210336603891e-11
+  },
+  "parallel": {
+   "max_stress_MPa": 39.81853156208134,
+   "mean_temperature_K": 373.41746098829645,
+   "balance_max": 9.947210336603891e-11,
+   "lag_stress_error": 0.008313428046700098
+  },
+  "full": {
+   "max_stress_MPa": 39.86488604406166,
+   "mean_temperature_K": 373.41746098829645,
+   "balance_max": 9.947210336603891e-11
+  }
+ },
+ "checks": [
+  {
+   "key": "energy",
+   "title": "Heat: in through the edges = stored",
+   "kind": "balance",
+   "tolerance": 1e-09,
+   "registered": "2026-09-29, before the thermoelastic family's first run",
+   "measure": "|heat stored in the step - dt (flux through the edges + the heat the fixed-temperature edges supply)| over the larger of the two, every step, worst arm",
+   "why": "the conduction matrix annihilates a uniform temperature, so the heat the fixed edges supply is whatever the step stores beyond the given flux, and the balance is the free nodes' residual of one sparse direct solve: round-off",
+   "value": 9.947210336603891e-11,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "serial: 9.95e-11; parallel: 9.95e-11; full: 9.95e-11",
+   "extra": {}
+  },
+  {
+   "key": "reference",
+   "title": "The synchronous split is the unsplit solver, bit for bit",
+   "kind": "control",
+   "tolerance": null,
+   "registered": "2026-09-29, before the thermoelastic family's first run",
+   "measure": "np.array_equal on the temperature and the displacement after every step",
+   "why": "the split hands the whole temperature field across, and each agent does the arithmetic the unsplit solver does, in the same order",
+   "value": null,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "equal after all 60 steps",
+   "extra": {}
+  },
+  {
+   "key": "lag",
+   "title": "The lagged split is the synchronous one a step late, bit for bit",
+   "kind": "control",
+   "tolerance": null,
+   "registered": "2026-09-29, before the thermoelastic family's first run",
+   "measure": "np.array_equal between the lagged split's displacement after step k and the synchronous split's after step k - 1, every step",
+   "why": "the lagged elasticity agent solves from the temperature of the step before, which is the temperature the synchronous agent solved from then; the difference between the two splits is therefore exactly one step of change",
+   "value": null,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "equal, one step late, after all 60 steps",
+   "extra": {}
+  }
+ ],
+ "notes": [
+  "Backward-Euler conduction steps of 5 s; after each, the free plate's quasi-static displacement under its thermal strain (reference temperature 300 K, the initial one). The bond between the two agents is the whole temperature field.",
+  "The lagged split runs both agents at once, elasticity one step behind; its stress error is the stress's change over one step, first order in the step. The thermal-strain case study measured 7.1e-3 of the stress for one lagged macro-step on its own shell.",
+  "The synchronous split does the unsplit solver's arithmetic and one copy of the temperature field, so the ratio of their times measures this machine's run-to-run noise at this size, not a method."
+ ],
+ "problem": {
+  "style": "split",
+  "elements": 4000,
+  "nodes": 4221,
+  "dt_s": 5.0,
+  "T_ref_K": 300.0,
+  "fixed_temperature_nodes": 21
+ },
+ "machine": {
+  "time": "2026-09-29T04:47:51-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [
+   {
+    "pid": 31624,
+    "memory": "3,844 K",
+    "command": "\".venv\\Scripts\\python.exe\"  server.py"
+   },
+   {
+    "pid": 33492,
+    "memory": "23,572 K",
+    "command": "\"C:\\Users\\Nauni\\anaconda3\\python.exe\" server.py"
+   }
+  ],
+  "pid": 32560
+ },
+ "machine_after": {
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "time": "2026-09-29T04:47:52-04:00"
+ },
+ "case": {
+  "schema_id": "atlas-workbench/case@0.3",
+  "name": "heated-strip",
+  "description": "Heated bimetal strip (split by physics)",
+  "domain": {
+   "nx": 200,
+   "ny": 20,
+   "dx": 0.001
+  },
+  "physics": {
+   "family": "thermoelastic-2d",
+   "params": {
+    "T0": 300.0
+   }
+  },
+  "materials": {
+   "steel": {
+    "E": 200000000000.0,
+    "nu": 0.3,
+    "alpha": 1.2e-05,
+    "k": 45.0,
+    "rho": 7850.0,
+    "cp": 490.0
+   },
+   "copper": {
+    "E": 120000000000.0,
+    "nu": 0.34,
+    "alpha": 1.7e-05,
+    "k": 400.0,
+    "rho": 8960.0,
+    "cp": 385.0
+   }
+  },
+  "regions": [
+   {
+    "id": "steel",
+    "material": "steel",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 200,
+    "ny": 10,
+    "points": null,
+    "holes": null
+   },
+   {
+    "id": "copper",
+    "material": "copper",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 10,
+    "nx": 200,
+    "ny": 10,
+    "points": null,
+    "holes": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "plate",
+    "x0": 0,
+    "y0": 0,
+    "nx": 200,
+    "ny": 20
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "B-left",
+    "edge": "left",
+    "kind": "fixed-temperature",
+    "start": 0,
+    "stop": null,
+    "value": 400.0
+   },
+   {
+    "id": "B-right",
+    "edge": "right",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-bottom",
+    "edge": "bottom",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-top",
+    "edge": "top",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "split",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 500,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 5.0,
+   "steps": 60,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "transient"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ }
+}

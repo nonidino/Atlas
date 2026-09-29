@@ -14,6 +14,8 @@
 
 > **2026-09-29: the executor runs three families and four coupling styles.** The interface every family fills (state, restriction, a step given boundary traces, the full-domain equivalent, assembly with a balance) was derived from the wind farm and heat conduction, as this page's step 1 asked. Heat conduction runs as overlapping windows iterated to agreement (style B) or as two materials meeting at an interface (style C, Dirichlet–Neumann). A resistive plate on a circuit is the first field joined to lumped parts (style D). The case file is now `atlas-workbench/case@0.3`, with lumped attachments. Every check was registered before its family's first run. At these sizes the full domain is faster than every decomposed arm of the new styles, and the page says so. The loader (step 2's graph half) is still not built. Details: [[showcase-library-plan]] §5.
 
+> **2026-09-29, later: eight families, one per showcase case.** Five more families: a plume down a river (style A with an explicit step), sound through two media (style C, explicit), a loaded bracket (style B on a structure), a heated strip split by physics, and a cooled block (style C at a seam between two physics). Every one of their checks passes on its example, each registered before its family's first run. The cooled block's reference check failed twice first, and that was mended in the method (a floating piece takes the Dirichlet side), not in the tolerance. The loader is still not built. Details: [[showcase-library-plan]] §5.
+
 ---
 
 ## 1. What a case study is today, layer by layer

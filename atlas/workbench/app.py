@@ -31,8 +31,8 @@ from . import geometry as geo
 from . import registry
 from .editor import GeometryEditor
 from .gmsh_import import GmshImportError, read_msh_bytes
-from .runner import (ARM_LABELS, CaseRun, RunRefused, adapter_for, arms_for,
-                     results_dir_for, step_label_for)
+from .runner import (ARM_LABELS, CaseRun, RunRefused, adapter_for, arm_labels_for,
+                     arms_for, results_dir_for, step_label_for)
 from .runview import RunPanel, results_view
 from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, adapt_to_family,
                    blank_case, check, example_case, slug, summary)
@@ -87,6 +87,42 @@ WHY = {
         "potentials. Unrelaxed, one port contracts only if the plate's conductance times "
         "the circuit's series resistance is under one, so the first relaxation factor and "
         "Aitken's rule are stated, and the run reports that factor."),
+    "acoustics-2d": (
+        "**How it is coupled.** Style C with an explicit step: the two pieces meet at the "
+        "interface, the second sends the first its pressures beside it, the first updates "
+        "the interface's velocities and sends them back, and both step. An explicit step "
+        "needs only the neighbour's old values, so one exchange closes it and the pieces "
+        "are the full domain to the bit. The pieces are two windows side by side, each the "
+        "full height, and the macro-step must be under the leapfrog's stability limit, "
+        "which the check computes from the media."),
+    "elasticity-2d": (
+        "**How it is coupled.** Style B: every window is the nodes of its cells, solved with "
+        "its outside neighbours' latest displacements held, and the windows are blended by "
+        "the partition of unity until the update is below the tolerance of the largest "
+        "displacement. Windows that meet must overlap by at least twice the ramp. Plain "
+        "Schwarz with no coarse level converges slowly on a bending structure, and the run "
+        "reports how slowly."),
+    "conjugate-heat-2d": (
+        "**How it is coupled.** Style C at a seam between two physics: the channel (the "
+        "coolant's advection and diffusion) and the block (conduction) are two windows "
+        "meeting at the wall. The side that conducts less is given the wall's "
+        "temperatures, the other the heat taken through the wall, relaxed until they "
+        "agree. The coolant fills whole rows and enters on the left of exactly those rows; "
+        "no flow may cross the seam."),
+    "thermoelastic-2d": (
+        "**How it is coupled.** A split by physics: a conduction agent and an elasticity "
+        "agent on the same mesh, the whole temperature field crossing between them. The "
+        "synchronous split hands each new temperature across before elasticity solves; the "
+        "lagged split runs both at once, elasticity a step behind. The case is one window "
+        "covering the plate, which is free: its rigid-body motions are removed, not pinned."),
+    "transport-2d": (
+        "**How it is coupled.** Style A with an explicit step: every macro-step each window "
+        "is cut from the river's concentration, takes one step with its neighbours' values "
+        "on its cut faces, and the windows are blended by the partition of unity. A cell's "
+        "new value needs only its neighbours' old ones, so each window takes the full-domain "
+        "step on its own cells and the arms agree to round-off; windows that meet must "
+        "overlap by at least twice the ramp. The macro-step must be under the explicit "
+        "step's stability limit, which the check computes from the reaches."),
 }
 
 
@@ -525,7 +561,8 @@ class Workbench:
         self.nav.options = self._nav_options()
         issues = self.issues()
         n = summary(issues)
-        lines = [f"**{n['error']}** errors, **{n['warning']}** warnings"]
+        lines = [f"**{n['error']}** {_plural(n['error'], 'error')}, **{n['warning']}** "
+                 f"{_plural(n['warning'], 'warning')}"]
         lines += [f"- {i.severity}: {html.escape(i.message)}" for i in issues[:6]]
         if len(issues) > 6:
             lines.append(f"- ... and {len(issues) - 6} more (step 4)")
@@ -705,7 +742,12 @@ class Workbench:
                 options={"exposed: once, on the assembled field": "exposed",
                          "embedded: inside every window": "embedded"}),
                 lambda c, v: setattr(c.coupling, "elliptic", v), "coupling.elliptic"))
-        if style in ("B", "C", "D"):
+        iterates = style in ("B", "C", "D") and not fam.explicit_coupling
+        if fam.explicit_coupling:
+            coupling.append(pn.pane.Markdown(
+                "<small>An explicit exchange every step: nothing iterates, so there is no "
+                "tolerance or relaxation to set.</small>", width=460))
+        if iterates:
             #: a choice, not a number box: Bokeh's number box has no exponent format,
             #: and it showed 1e-10 as "+0.000" (seen in the page)
             tols = [1e-6, 1e-8, 1e-10, 1e-12, 1e-13]
@@ -720,7 +762,7 @@ class Workbench:
                 name="Most iterations", value=s.coupling.max_iterations, start=1, width=200),
                 lambda c, v: setattr(c.coupling, "max_iterations", v),
                 "coupling.max_iterations"))
-        if style in ("C", "D"):
+        if style in ("C", "D") and iterates:
             coupling.append(self._bind(pn.widgets.FloatInput(
                 name="First relaxation factor", value=s.coupling.relaxation, start=1e-6,
                 end=2.0, step=0.05, width=200),
@@ -728,8 +770,8 @@ class Workbench:
             coupling.append(self._bind(pn.widgets.Checkbox(
                 name="then Aitken's rule adapts it", value=s.coupling.aitken),
                 lambda c, v: setattr(c.coupling, "aitken", bool(v)), "coupling.aitken"))
-        if style == "C":
-            sides = {"auto: the lower conductivity": "auto"}
+        if style == "C" and iterates:
+            sides = {"auto: a floating piece, else the lower conductivity": "auto"}
             sides.update({w.id: w.id for w in s.windows})
             coupling.append(self._bind(pn.widgets.Select(
                 name="Dirichlet side", value=(s.coupling.dirichlet_side
@@ -760,7 +802,7 @@ class Workbench:
             if r.material not in used:
                 used.append(r.material)
         names = used + [m for m in s.materials if m not in used]
-        cols = [f"{p.name} ({p.unit})" for p in fam.material_props]
+        cols = [f"{p.name} ({p.unit})" if p.unit else p.name for p in fam.material_props]
         rows = []
         for m in names:
             props = s.materials.get(m, {})
@@ -796,11 +838,9 @@ class Workbench:
                           f"material {name} added from the library")
                 self.show("physics", keep_view=True)
         pick.param.watch(add, "value")
-        note = pn.pane.Markdown(
-            "<small>Library values are textbook round values at room temperature, for a "
-            "showcase, not a datasheet. A region's material is set in Geometry, Regions.</small>",
-            sizing_mode="stretch_width")
-        return pn.Card(table, pn.Row(pick), note, title="Materials",
+        note = pn.pane.Markdown(f"<small>{html.escape(fam.materials_note)}</small>",
+                                sizing_mode="stretch_width")
+        return pn.Card(table, pn.Row(pick), note, title=fam.materials_title,
                        collapsed=False, sizing_mode="stretch_width")
 
     def _view_check(self):
@@ -812,12 +852,13 @@ class Workbench:
         again.on_click(lambda e: self.show("check"))
         compile_btn = pn.widgets.Button(name="Compile with the Atlas compiler",
                                         button_type="default", disabled=True, width=260)
-        self.log(f"checked the case: {n['error']} errors, {n['warning']} warnings")
+        counts = (f"{n['error']} {_plural(n['error'], 'error')}, {n['warning']} "
+                  f"{_plural(n['warning'], 'warning')}")
+        self.log(f"checked the case: {counts}")
         return pn.Column(
             self._title("4. Check", "What is wrong with the case before anything runs."),
             pn.Row(again, compile_btn),
-            pn.pane.Markdown(f"**{n['error']} errors, {n['warning']} warnings.** "
-                             f"*Compile:* {NOT_BUILT['compile']}"),
+            pn.pane.Markdown(f"**{counts}.** *Compile:* {NOT_BUILT['compile']}"),
             pn.widgets.Tabulator(df, disabled=True, show_index=False, layout="fit_data_stretch",
                                  sizing_mode="stretch_width", height=260),
             sizing_mode="stretch_width")
@@ -834,10 +875,12 @@ class Workbench:
         #: why it cannot run an arm, and the page repeats it)
         available, unavailable = ("serial", "parallel", "full"), {}
         label = "macro-step"
+        names = dict(ARM_LABELS)
         if runnable:
             mod = adapter_for(s.physics.family)
             available, unavailable = arms_for(mod, s)
             label = step_label_for(mod, s)
+            names = arm_labels_for(mod)
         steps = self._bind(pn.widgets.IntInput(name=f"{label[0].upper()}{label[1:]}s",
                                                value=s.run.steps, start=1, width=150),
                            lambda c, v: setattr(c.run, "steps", v), "run.steps")
@@ -846,7 +889,7 @@ class Workbench:
                                                   start=1, end=cpus, width=260,
                                                   disabled="parallel" not in available),
                              lambda c, v: setattr(c.run, "threads", v), "run.threads")
-        opts = {ARM_LABELS[a]: a for a in available}
+        opts = {names[a]: a for a in available}
         arms = pn.widgets.CheckBoxGroup(options=opts,
                                         value=[a for a in self.run_arms if a in available],
                                         inline=False)
@@ -856,7 +899,7 @@ class Workbench:
             self.run_arms = [a for a in ("serial", "parallel", "full") if a in e.new
                              or a in kept]
         arms.param.watch(set_arms, "value")
-        arm_notes = [pn.pane.Markdown(f"<small>No {ARM_LABELS[a].lower()} arm: {why}.</small>",
+        arm_notes = [pn.pane.Markdown(f"<small>No {names[a].lower()} arm: {why}.</small>",
                                       width=220, margin=(0, 10))
                      for a, why in unavailable.items()]
         running = self.run is not None and self.run.active
@@ -1128,6 +1171,10 @@ class Workbench:
 def _wrap(*objs):
     """A row that wraps onto the next line instead of clipping at the edge."""
     return pn.FlexBox(*objs, flex_wrap="wrap", gap="8px 16px", sizing_mode="stretch_width")
+
+
+def _plural(n: int, word: str) -> str:
+    return word if n == 1 else word + "s"
 
 
 def create_app(cases_dir: str | None = None):

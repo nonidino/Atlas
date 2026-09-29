@@ -73,6 +73,13 @@ def arms_for(module, spec) -> tuple[tuple[str, ...], dict[str, str]]:
     return tuple(module.ARMS), {}
 
 
+def arm_labels_for(module) -> dict[str, str]:
+    """The arms' names on the page: the runner's, unless the family names its own
+    (a split by physics has no windows: its arms are a synchronous split, a
+    lagged split and the unsplit solver)."""
+    return {**ARM_LABELS, **dict(getattr(module, "ARM_LABELS", None) or {})}
+
+
 def step_label_for(module, spec) -> str:
     """What one step of a run is: a macro-step, or a timed repeat of a steady solve."""
     if hasattr(module, "step_label"):
@@ -140,6 +147,7 @@ class CaseRun:
                              + ("".join(f"; {a}: {w}" for a, w in self.dropped.items())))
         self.steps = int(self.steps)
         self.step_label = step_label_for(self.module, self.spec)
+        self.arm_labels = arm_labels_for(self.module)
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
@@ -371,6 +379,7 @@ class CaseRun:
             "wall_seconds": time.time() - started,
             "build_seconds": build_s,
             "arms": list(self.arms),
+            "arm_labels": {a: self.arm_labels[a] for a in ARM_LABELS},
             "dropped_arms": dict(self.dropped),
             "step_label": self.step_label,
             "steps_requested": self.steps,
@@ -452,4 +461,4 @@ def write_record(rec: dict, folder: str) -> str:
 
 
 __all__ = ["RESULTS_SCHEMA", "ARM_LABELS", "RunRefused", "CaseRun", "Progress",
-           "adapter_for", "downsample", "results_dir_for", "write_record"]
+           "adapter_for", "arm_labels_for", "downsample", "results_dir_for", "write_record"]

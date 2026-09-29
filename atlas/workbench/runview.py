@@ -15,10 +15,12 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import pandas as pd
 import panel as pn
-from bokeh.models import (ColorBar, ColumnDataSource, LinearColorMapper, Range1d)
+from bokeh.models import (ColorBar, ColumnDataSource, LinearColorMapper, LogColorMapper,
+                          Range1d)
 from bokeh.palettes import Viridis256
 from bokeh.plotting import figure
 
+from . import registry
 from .runner import ARM_LABELS, CaseRun
 
 if TYPE_CHECKING:                                             # pragma: no cover
@@ -107,11 +109,33 @@ class RunPanel:
         lx, ly = d.nx * d.dx, d.ny * d.dx
         self.extent = (lx, ly)
         self.xr, self.yr = Range1d(0, lx), Range1d(0, ly)
-        self.field_mapper = LinearColorMapper(palette=Viridis256, low=0.0, high=1.0)
+        #: a family whose field spans decades (a plume: the outfall's cell against
+        #: the mixed river) is drawn on a log scale over FIELD_DECADES below its peak;
+        #: display only -- the difference panel and every number stay linear
+        self.log_scale = bool(self.module is not None
+                              and getattr(self.module, "FIELD_SCALE", "linear") == "log")
+        self.decades = float(getattr(self.module, "FIELD_DECADES", 4.0)) if self.module else 4.0
+        self.field_mapper = (LogColorMapper(palette=Viridis256, low=1e-4, high=1.0)
+                             if self.log_scale else
+                             LinearColorMapper(palette=Viridis256, low=0.0, high=1.0))
         self.diff_mapper = LinearColorMapper(palette=DIVERGING, low=-1.0, high=1.0)
+        self.labels = run.arm_labels if run is not None else dict(ARM_LABELS)
         label = getattr(self.module, "FIELD_LABEL", "field") if self.module else "field"
-        titles = {"decomposed": f"Decomposed: {label}", "full": f"Full domain: {label}",
-                  "difference": "Decomposed minus full"}
+        if self.log_scale:                        # short: the figure is 300 px wide
+            label = label[:-1] + ", log)" if label.endswith(")") else label + " (log)"
+        #: what the three panels are called: a family may name its own per arm (a
+        #: split by physics has no "decomposed" arm: its panels are whichever split
+        #: is shown and the unsplit solver); the first panel shows the parallel arm
+        #: when it runs, else the serial one
+        custom = dict(getattr(self.module, "PANEL_NAMES", None) or {}) if self.module else {}
+        dec_arm = "parallel" if (run is not None and "parallel" in run.arms) else "serial"
+        dec_name = custom.get(dec_arm, "Decomposed")
+        full_name = custom.get("full", "Full domain")
+        self.difference_name = (custom.get(f"difference_{dec_arm}",
+                                           f"{dec_name} minus {full_name.lower()}")
+                                if custom else "Decomposed minus full")
+        titles = {"decomposed": f"{dec_name}: {label}", "full": f"{full_name}: {label}",
+                  "difference": self.difference_name}
         self.src = {k: ColumnDataSource(dict(image=[np.zeros((2, 2), np.float32)], x=[0.0],
                                              y=[0.0], dw=[lx], dh=[ly]))
                     for k in titles}
@@ -145,7 +169,7 @@ class RunPanel:
         for a in arms:
             s = ColumnDataSource(dict(step=[], value=[]))
             self.series_fig.line("step", "value", source=s, color=ARM_COLOURS[a],
-                                 line_width=2, legend_label=ARM_LABELS[a])
+                                 line_width=2, legend_label=self.labels[a])
             self.series_src[a] = s
         if arms:
             self.series_fig.legend.location = "top_right"
@@ -156,7 +180,13 @@ class RunPanel:
         self.conv_fig = None
         self.conv_src = {}
         style = run.spec.coupling.style if run is not None else ""
-        if run is not None and style in ("B", "C", "D"):
+        explicit = False
+        if run is not None:
+            try:
+                explicit = registry.family(run.spec.physics.family).explicit_coupling
+            except KeyError:
+                explicit = False
+        if run is not None and style in ("B", "C", "D") and not explicit:
             self.conv_fig = figure(title="Convergence in the last step (update over the "
                                          "field's scale)",
                                    width=440, height=250, y_axis_type="log",
@@ -169,7 +199,7 @@ class RunPanel:
                     continue
                 s = ColumnDataSource(dict(it=[], value=[]))
                 self.conv_fig.line("it", "value", source=s, color=ARM_COLOURS[a],
-                                   line_width=2, legend_label=ARM_LABELS[a])
+                                   line_width=2, legend_label=self.labels[a])
                 self.conv_fig.scatter("it", "value", source=s, color=ARM_COLOURS[a], size=4)
                 self.conv_src[a] = s
             if self.conv_src:
@@ -212,7 +242,8 @@ class RunPanel:
         state = {"starting": "Starting", "running": "Marching", "stopping": "Stopping",
                  "done": "Finished", "stopped": "Stopped", "failed": "Failed",
                  "created": "Waiting"}.get(p.status, p.status)
-        arm = f" &middot; now: {html.escape(ARM_LABELS.get(p.arm, p.arm))}" if run.active else ""
+        arm = (f" &middot; now: {html.escape(run.arm_labels.get(p.arm, p.arm))}"
+               if run.active else "")
         out = (f"<b>{state}</b> {html.escape(run.label())} &middot; "
                f"{html.escape(run.step_label)} <b>{p.step}</b> of {p.steps}{arm}<br>"
                f"<span style='opacity:0.8'>{html.escape(p.message)}</span>")
@@ -233,7 +264,14 @@ class RunPanel:
         if vals:
             lo = float(min(np.nanmin(f) for f in vals))
             hi = float(max(np.nanmax(f) for f in vals))
-            if hi - lo < 1e-12:
+            if self.log_scale:
+                hi = max(hi, 1e-300)
+                lo = hi * 10.0 ** (-self.decades)
+                #: the image is clipped to the scale's floor, so a zero (clean water)
+                #: is drawn as the floor's colour rather than as nothing
+                shown = {k: (np.clip(f, lo, hi) if (f is not None and k != "difference")
+                             else f) for k, f in shown.items()}
+            elif hi - lo < 1e-12:
                 hi = lo + 1e-12
             self.field_mapper.low, self.field_mapper.high = lo, hi
         if shown["difference"] is not None:
@@ -245,7 +283,7 @@ class RunPanel:
                 continue
             self.src[k].data = dict(image=[f], x=[0.0], y=[0.0], dw=[lx], dh=[ly])
         self.figs["difference"].title.text = (
-            "Decomposed minus full" + (
+            self.difference_name + (
                 f" (max |d| {fmt(float(np.nanmax(np.abs(shown['difference']))), '.2g')})"
                 if shown["difference"] is not None else ""))
 
@@ -287,19 +325,22 @@ def timing_frame(run: CaseRun, p) -> pd.DataFrame:
     full = p.seconds.get("full") or []
     t_full = float(np.mean(full)) if full else None
     unit = run.step_label
-    work = "substeps" if any("substeps" in p.series.get(a, {}) for a in run.arms) \
-        else "iterations"
+    #: the work inside one step: the wind farm's sub-steps, an iterated style's
+    #: iterations, or nothing (an explicit step does not iterate)
+    work = next((k for k in ("substeps", "iterations")
+                 if any(k in p.series.get(a, {}) for a in run.arms)), None)
     for a in run.arms:
         s = p.seconds.get(a) or []
         mean = float(np.mean(s)) if s else None
-        w = (p.series.get(a, {}).get(work) or [None])[-1]
-        rows.append({"arm": ARM_LABELS[a], f"{unit}s": len(s),
-                     f"mean s per {unit}": fmt(mean, ".4g"),
-                     "median": fmt(float(np.median(s)) if s else None, ".4g"),
-                     "t_full / t_arm": fmt(t_full / mean if (t_full and mean) else None,
-                                           ".3g"),
-                     ("sub-steps (last)" if work == "substeps" else "iterations (last)"):
-                         fmt(w, ".0f")})
+        row = {"arm": run.arm_labels[a], f"{unit}s": len(s),
+               f"mean s per {unit}": fmt(mean, ".4g"),
+               "median": fmt(float(np.median(s)) if s else None, ".4g"),
+               "t_full / t_arm": fmt(t_full / mean if (t_full and mean) else None, ".3g")}
+        if work is not None:
+            w = (p.series.get(a, {}).get(work) or [None])[-1]
+            row["sub-steps (last)" if work == "substeps" else "iterations (last)"] = \
+                fmt(w, ".0f")
+        rows.append(row)
     return pd.DataFrame(rows)
 
 
@@ -311,11 +352,12 @@ def timing_frame(run: CaseRun, p) -> pd.DataFrame:
 def results_frames(res: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame]:
     """The results table and the checks table, straight from a run's record."""
     timing, metrics = res["timing"], res.get("metrics", {})
+    labels = {**ARM_LABELS, **(res.get("arm_labels") or {})}
     rows = []
     for a in res["arms"]:
         t = timing.get(a, {})
         m = metrics.get(a, {})
-        row = {"arm": ARM_LABELS[a],
+        row = {"arm": labels[a],
                f"seconds per {res.get('step_label', 'macro-step')}": fmt(t.get("mean"),
                                                                           ".4g"),
                "median": fmt(t.get("median"), ".4g"),
@@ -347,6 +389,27 @@ METRIC_COLUMNS: dict[str, tuple[tuple[str, str, str], ...]] = {
                     ("plate_resistance_ohm", "plate resistance (ohm)", ".5g"),
                     ("plate_heat_W", "heat in the plate (W)", ".5g"),
                     ("iterations_last", "iterations", ".0f")),
+    "conjugate-heat-2d": (("carried_out_W", "heat the coolant carries out (W/m)", ".7g"),
+                          ("bulk_rise_K", "coolant's bulk rise (K)", ".5g"),
+                          ("max_temperature_K", "hottest point (K)", ".6g"),
+                          ("max_temperature_difference_K", "max |T - T_full| (K)", ".3g"),
+                          ("iterations_last", "iterations", ".0f")),
+    "thermoelastic-2d": (("max_stress_MPa", "largest von Mises stress (MPa)", ".6g"),
+                         ("mean_temperature_K", "mean temperature (K)", ".6g"),
+                         ("lag_stress_error", "lag error in stress", ".3g"),
+                         ("balance_max", "heat balance", ".2e")),
+    "elasticity-2d": (("max_displacement_mm", "largest displacement (mm)", ".6g"),
+                      ("displacement_vs_full", "displacement vs full", ".2e"),
+                      ("max_stress_MPa", "largest von Mises stress (MPa)", ".5g"),
+                      ("iterations_last", "iterations", ".0f")),
+    "acoustics-2d": (("reflection", "reflection R (measured)", ".9f"),
+                     ("reflection_vs_textbook", "R - textbook", "+.2e"),
+                     ("energy_second", "energy share in the second medium", ".4g"),
+                     ("energy_drift", "energy drift", ".2e")),
+    "transport-2d": (("mass_g", "pollutant in the river (g)", ".7g"),
+                     ("outflow_g_per_s", "leaving at the outlet (g/s)", ".4g"),
+                     ("mass_vs_full", "mass vs full", "+.2e"),
+                     ("max_concentration_difference", "max |c - c_full| (mg/L)", ".3g")),
 }
 
 

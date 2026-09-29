@@ -6539,3 +6539,52 @@ All five were fixed, and each is checked again in the page.
 - the compile.
 
 **Added:** `atlas/workbench/{fv,styles}.py`, `atlas/workbench/families/{conduction,electric}.py`, `tests/test_workbench_{fv,families}.py`, `out/workbench/records/step-b/` (three run records). **Changed:** `app.py`, `spec.py`, `registry.py`, `runner.py`, `runview.py`, `editor.py`, `families/windfarm.py`, the workbench README, and two earlier test files; [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]], [[index]].
+
+## [2026-09-29] build | The workbench's showcase cases 3, 4, 6, 7 and 8, and the circuit layer
+
+Showcase plan step 4, on the owner's request to implement the plan. Record: [[showcase-library-plan]] §5, "Built, 2026-09-29: step 4" note.
+
+**Built** (`atlas/workbench/`), five families, one per case, each with an example, a registry entry, check rules and three registered checks:
+- **`families/plume.py`**: a pollutant plume down a river of two reaches, style A with one explicit step per exchange. Exact to round-off, unlike the wind farm's sub-stepped style A.
+- **`families/acoustics.py`**: sound from air into water on a staggered grid, style C explicit. Its reflection is read from the reflected pulse's integral, the zero-wavenumber part the discrete interface reflects with the textbook $R$ exactly.
+- **`families/elasticity.py`**: a two-material bracket, style B on a structure (Schwarz on the stiffness, windows on the node grid).
+- **`families/thermoelastic.py`**: a heated bimetal strip, conduction and elasticity split by physics: synchronous, lagged a step on two threads, and unsplit.
+- **`families/cooling.py`**: a chip on a copper block under a water channel, style C at a seam between two physics.
+- **`fe.py`**: `ThermoStruct2D`'s Q1 element with a material per element. The build repo's solver holds one material, and the bracket needs two.
+- **The Geometry step's fifth layer, the circuit** (case 5's attachments): a schematic on the canvas, and a table with parts to add. Regions now bring a library material's properties with them. Families name their own arms and panels.
+
+**Checked:**
+- 25 tests in `tests/test_workbench_cases.py`. They cover every one-window or one-piece control, every registered check, and two positive controls: no interface reflects nothing, and a plain strip heated uniformly carries no stress. `fe.py` matches `ThermoStruct2D` to $10^{-12}$ in its matrices and $10^{-10}$ in a thermally loaded clamped displacement.
+- In the served page, on AC power, every new example was opened, stepped through and run; records in `out/workbench/records/step-c/`:
+  - the plume: mass $8.1\times10^{-14}$, the full domain $8.8\times10^{-17}$ of the peak, bitwise over 6,000 steps, 8.2 s;
+  - the sound: $R$ within $3.1\times10^{-10}$ of $(Z_2-Z_1)/(Z_2+Z_1)$, energy $8.4\times10^{-16}$, the pieces bitwise the full domain, 2.4 s;
+  - the bracket: forces $1.3\times10^{-10}$, displacements $3.7\times10^{-11}$, 616 Schwarz iterations, 29.8 s;
+  - the strip: heat $9.9\times10^{-11}$, both bitwise controls over 60 steps, a lag cost of $8.3\times10^{-3}$ of the stress, 1.7 s;
+  - the block: energy $7.0\times10^{-11}$, the full domain $2.6\times10^{-10}$ of the rise, 330 iterations, 1.8 s.
+- **No speedup at these sizes, except the wind farm's:** the full domain was 1.5× (the sound) to 520× (the bracket's serial Schwarz) faster.
+
+**Two failed runs, both of the cooled block's registered reference check; the tolerance was not changed:**
+- First, 0.018 of the rise. My "auto" Dirichlet side took the lower conductivity (the water) and left the block, insulated all round, as a floating Neumann piece with a singular matrix.
+- Then $1.4\times10^{-3}$, with the block on the Dirichlet side but only 200 iterations, against a 1-D factor of 132.
+- The fixes: a floating piece takes the Dirichlet side, and the check refuses the other choice (a method fix, with a test). The example allows 2,000 iterations; Aitken converged in 330.
+
+**Also my own, caught before any judged run:**
+- The sound's "seven widths clear" rule refused a pulse placed exactly seven widths out, because $7\times0.1$ is one unit in the last place over 0.7. It now has a relative slack of $10^{-9}$.
+- Four of my own test predictions were wrong, and the code was right:
+  - a missing `extra` key;
+  - a dropped arm the test never asked for;
+  - a shortened channel that left cells in no region, so the rule it meant to test was never reached;
+  - a label the page shows only as a table column.
+
+**Found in the served page and fixed:**
+- the plume's field drawn on a linear scale, where only the outfall's cell showed;
+- an empty "iterations" column for a style that does not iterate;
+- clipped panel titles;
+- electrode nodes cut in half by the canvas's edge;
+- add-part buttons offered to families that ignore a circuit;
+- the split's panels titled "Decomposed";
+- the sidebar's "1 errors".
+
+**Not built:** the optional Gray–Scott case and CS-13/CS-14 adapters; the gallery; the compile.
+
+**Added:** `atlas/workbench/fe.py`, `atlas/workbench/families/{plume,acoustics,elasticity,thermoelastic,cooling}.py`, `tests/test_workbench_cases.py`, `out/workbench/records/step-c/` (five run records). **Changed:** `app.py`, `editor.py`, `registry.py`, `runner.py`, `runview.py`, `spec.py`, `styles.py`, `families/conduction.py`, the workbench README, and `tests/test_workbench_shell.py`; [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]], [[index]].
