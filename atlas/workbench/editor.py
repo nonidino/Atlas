@@ -50,8 +50,8 @@ from bokeh.plotting import figure
 from . import geometry as geo
 from . import registry
 from . import shapes
-from .spec import (Attachment, Boundary, CaseSpec, Device, Outline, Region, Window, check,
-                   family_boundaries)
+from .spec import (Attachment, Boundary, CaseSpec, Device, Layout, Outline, Region, Window,
+                   check, family_boundaries)
 
 if TYPE_CHECKING:                                             # pragma: no cover
     from .app import Workbench
@@ -111,10 +111,12 @@ HELP = {
                         "are what the solver sees, and the dark line is the shape as drawn.",
     ("domain", "shape"): _DRAW + " It becomes the domain's outline, or a hole in it.",
     ("domain", "resize"): _RESHAPE,
-    ("windows", "move"): "Drag a window to move it. **Shift+drag** on empty space to draw a "
-                         "new one. Click a window, then **Backspace** (or *Delete selected*) "
-                         "to remove it; Esc clears the selection. Drawn (curved) windows move "
-                         "with Reshape's diamond.",
+    ("windows", "move"): "Tick **Windows follow the domain** (below) to have them generated "
+                         "from the domain's own shape and kept fitting it as it changes. Or "
+                         "make your own: drag a window to move it, **Shift+drag** on empty "
+                         "space to draw a rectangle, *Draw shape* for any other shape; click "
+                         "one, then **Backspace** (or *Delete selected*) to remove it. Drawn "
+                         "(curved) windows move with Reshape's diamond.",
     ("windows", "shape"): _DRAW + " It becomes a new window: it holds the domain's cells "
                           "whose centres it contains.",
     ("windows", "resize"): "Drag a **corner handle** to resize a rectangular window; the "
@@ -227,6 +229,8 @@ class GeometryEditor:
         self.src_dom_cells = ColumnDataSource(dict(left=[], right=[], bottom=[], top=[]))
         self.src_dom_line = ColumnDataSource(dict(xs=[], ys=[]))
         self.src_win_curve = ColumnDataSource(dict(xs=[], ys=[], id=[], cells=[]))
+        #: generated windows (schema 0.5): their cuts across the domain, smooth
+        self.src_win_gen = ColumnDataSource(dict(xs=[], ys=[]))
         self.src_win_lbl = ColumnDataSource(dict(x=[], y=[], id=[]))
         self.src_overlap_q = ColumnDataSource(dict(left=[], right=[], bottom=[], top=[]))
         self.src_bc_drawn = ColumnDataSource(dict(xs=[], ys=[], colour=[], id=[], text=[],
@@ -338,6 +342,10 @@ class GeometryEditor:
         if not quiet:
             p.add_tools(HoverTool(renderers=[wc], visible=False,
                                   tooltips=[("window", "@id"), ("cells", "@cells")]))
+        # windows generated from the geometry: where each one ends inside the domain
+        p.multi_line("xs", "ys", source=self.src_win_gen, line_color=C_WINDOW,
+                     line_width=2.2 if editing_windows else 1.5,
+                     line_alpha=1.0 if editing_windows else 0.75)
         if self.wb.view_opts["labels"]:
             p.add_layout(LabelSet(x="x", y="y", text="id", source=self.src_win_lbl,
                                   text_align="center", text_baseline="middle",
@@ -515,7 +523,20 @@ class GeometryEditor:
             lx.append(x)
             ly.append(y)
         self._set(self.src_win_curve, dict(xs=xs, ys=ys, id=[w.id for w in cw], cells=cells))
-        self._set(self.src_win_lbl, dict(x=lx, y=ly, id=[w.id for w in cw]))
+        # generated windows: their cuts across the domain as smooth curves (the
+        # domain's own outline draws the rest of each one's edge), and a label
+        gw = [w for w in s.windows if w.shape == "cells"]
+        gx, gy = [], []
+        for w in gw:
+            m = geo.window_mask(w, d.nx, d.ny) & act
+            for line in geo.inner_boundary(m, act):
+                gx.append(line[:, 0].tolist())
+                gy.append(line[:, 1].tolist())
+            x, y = _inside_point(m, None)
+            lx.append(x)
+            ly.append(y)
+        self._set(self.src_win_gen, dict(xs=gx, ys=gy))
+        self._set(self.src_win_lbl, dict(x=lx, y=ly, id=[w.id for w in cw] + [w.id for w in gw]))
         if d.outline is not None or d.holes:
             boxes = geo.mask_to_boxes(~act)                # the cells outside the domain
             self._set(self.src_dom_cells, dict(left=[b[0] for b in boxes],
@@ -1088,6 +1109,7 @@ class GeometryEditor:
             def apply(c):
                 c.domain.holes.append(o)
                 rebase_boundaries(c, f"hole{h}", len(o.points), None)
+                follow_the_domain(c)
             label = f"cut hole {h} in the domain"
         elif layer == "domain":
             def apply(c):
@@ -1096,6 +1118,7 @@ class GeometryEditor:
                     c.boundaries = [b for b in c.boundaries if b.drawn]
                 c.domain.outline = o
                 rebase_boundaries(c, "outline", len(o.points), None)
+                follow_the_domain(c)
             label = "drew the domain's outline"
         elif layer == "windows":
             wid = _next_id("F", [w.id for w in s.windows])
@@ -1326,6 +1349,27 @@ class GeometryEditor:
                              f"{shape_label(spec, ref)}: "
                              f"{'smooth' if smooth else 'a corner'} at vertex {k}")
 
+    def set_layout(self, follow: bool, cut: str, along: int, across: int) -> None:
+        """Windows that follow the domain (generated from its shape, `layout.py`), or
+        not (the windows there now stay, as the case's own)."""
+        if not follow:
+            if self.wb.spec.layout is None:
+                return
+
+            def apply(c):
+                c.layout = None
+            self.wb.edit(apply, "the windows no longer follow the domain; they stay as "
+                                "they are")
+            return
+        new = Layout(cut=cut, along=max(1, int(along or 1)), across=max(1, int(across or 1)))
+        what = ("one per material" if cut == "materials" else
+                f"{new.along} along" + (f" x {new.across} across" if new.across > 1 else ""))
+
+        def apply(c):
+            c.layout = new
+        if not self.wb.edit(apply, f"the windows follow the domain: {what}"):
+            self.sync()
+
     def reset_domain(self) -> None:
         s = self.wb.spec
         if s.domain.outline is None and not s.domain.holes:
@@ -1409,7 +1453,8 @@ class GeometryEditor:
             if plain:
                 return w.nx * w.ny
             return int((geo.window_mask(w, d.nx, d.ny) & act).sum())
-        win = pd.DataFrame([dict(id=w.id, shape="drawn" if w.shape == "curve" else "rectangle",
+        kind = {"rect": "rectangle", "curve": "drawn", "cells": "generated"}
+        win = pd.DataFrame([dict(id=w.id, shape=kind[w.shape],
                                  x0=w.x0, y0=w.y0, width=w.nx, height=w.ny, cells=n_cells(w))
                             for w in s.windows],
                            columns=["id", "shape", "x0", "y0", "width", "height", "cells"])
@@ -1497,6 +1542,12 @@ class GeometryEditor:
         drawn = None
         if key in ("windows", "regions") and 0 <= row < len(getattr(spec, key)):
             item = getattr(spec, key)[row]
+            if item.shape == "cells" and col in ("x0", "y0", "width", "height"):
+                self.wb.notify("info", f"window {item.id} is generated from the domain's shape; "
+                                       f"change how the windows follow it above the table, or "
+                                       f"untick 'Windows follow the domain' and draw your own")
+                self._sync_tables()
+                return
             if item.shape == "curve" and col in ("x0", "y0", "width", "height"):
                 drawn = (item, f"{key}:{row}")
         if drawn is not None:
@@ -1771,6 +1822,26 @@ class GeometryEditor:
                     + "; ".join(f.label for f in registry.FAMILIES if f.drawn_shapes) + ".",
                     alert_type="warning", sizing_mode="stretch_width"))
         elif key == "windows":
+            lay = s.layout
+            follow = pn.widgets.Checkbox(name="Windows follow the domain", value=lay is not None,
+                                         width=210)
+            cut = pn.widgets.Select(options={"cut along its length": "along",
+                                             "one per material": "materials"},
+                                    value=lay.cut if lay else "along", width=170)
+            n_along = pn.widgets.IntInput(name="along", value=lay.along if lay else
+                                          max(2, len(s.windows)), start=1, end=32, width=80)
+            n_across = pn.widgets.IntInput(name="across", value=lay.across if lay else 1,
+                                           start=1, end=8, width=80)
+
+            def relayout(_e=None):
+                self.set_layout(follow.value, cut.value, n_along.value, n_across.value)
+            for w in (follow, cut, n_along, n_across):
+                w.param.watch(relayout, "value")
+            extra.append(_row(follow, cut, n_along, n_across, pn.pane.Markdown(
+                "<small>Generated from the domain's shape: cut at level curves of its own "
+                "coordinates (along its length, and across it), or one piece per material, "
+                "and generated again whenever the domain changes. Editing a window by hand "
+                "makes the windows yours.</small>", width=420)))
             btn("Generate a tiling...", wb.dialog_tiling, "primary", 170)
             btn("Add window", self.add_shape)
             btn("Delete selected", self.delete_selected)
@@ -1991,6 +2062,24 @@ def rebase_boundaries(c: CaseSpec, ring: str, n_edges: int,
     c.boundaries = keep + new
 
 
+def follow_the_domain(c: CaseSpec) -> None:
+    """A domain that has just been drawn: rectangles do not fit it, so windows that
+    are all still rectangles give way to windows that follow it (`layout.py`) --
+    as many along it as there were (at least two), one per material for style C
+    when there are two materials, one window for D and the split.  Windows the
+    person has drawn are theirs and stay."""
+    if c.layout is not None or any(w.shape != "rect" for w in c.windows):
+        return
+    style = c.coupling.style
+    materials = {r.material for r in c.regions}
+    if style == "C":
+        c.layout = Layout(cut="materials") if len(materials) >= 2 else Layout(along=2)
+    elif style in ("D", "split"):
+        c.layout = Layout(along=1)
+    else:
+        c.layout = Layout(along=max(2, len(c.windows)))
+
+
 def drop_hole_boundaries(c: CaseSpec, h: int) -> None:
     """Hole ``h`` is gone: its boundaries go, and later holes' shift down by one."""
     out = []
@@ -2006,14 +2095,16 @@ def drop_hole_boundaries(c: CaseSpec, h: int) -> None:
     c.boundaries = out
 
 
-def _inside_point(mask: np.ndarray, outline: Outline) -> tuple[float, float]:
-    """Where to write a drawn shape's name: its cell furthest from its edge (inside
-    it even when it is not convex), or its vertices' mean when it holds no cell."""
+def _inside_point(mask: np.ndarray, outline: Outline | None) -> tuple[float, float]:
+    """Where to write a shape's name: its cell furthest from its edge (inside it even
+    when it is not convex), or its vertices' mean when it holds no cell."""
     if mask.any():
         from scipy.ndimage import distance_transform_edt
         d = distance_transform_edt(np.pad(mask, 1))[1:-1, 1:-1]
         j, i = np.unravel_index(int(np.argmax(d)), d.shape)
         return float(i + 0.5), float(j + 0.5)
+    if outline is None:
+        return float("nan"), float("nan")
     c = np.mean(np.asarray(outline.points, dtype=float), axis=0)
     return float(c[0]), float(c[1])
 

@@ -54,7 +54,7 @@ both properties of the replacement.
 
 | part | where | what it does now |
 |---|---|---|
-| menus | header | **File** (new, the showcase gallery, thirteen examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; compile with the Atlas compiler; run decomposed, full, or the ticked arms; stop; show the results), **Help** |
+| menus | header | **File** (new, the showcase gallery, fourteen examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; compile with the Atlas compiler; run decomposed, full, or the ticked arms; stop; show the results), **Help** |
 | workflow | sidebar | six steps, each labelled with its status (`ok`, `N errors`, the compile's verdict, the run's state; `before a change` once the open case is no longer the one compiled or run), and a live case check |
 | case bar | top of the workspace | which case is open, and whether and where it is saved |
 | workspace | main | the active step |
@@ -257,11 +257,63 @@ exact outline over it.
 - both compile with every seam admitted, and are refused at R10 alone, as their
   rectangular counterparts are (W348).
 
+## Windows that follow the domain (case file 0.5)
+
+The owner's next question, the same day: "it doesn't make sense for the windows
+themselves to be rectangles, does it? Why doesn't their shape itself ADAPT to the
+geometry of the curve smoothly?"
+
+They did not adapt because nothing generated a window from the geometry. A window
+was whatever was drawn, and *Generate a tiling* makes rectangles. Now a case can
+have a **layout** (`layout.py`): the windows are generated from the domain's own
+shape, and generated again whenever that shape changes.
+
+**The domain's own coordinates.**
+1. Its **Fiedler vector** (the Laplacian's first non-constant eigenvector on its
+   cells) runs from one extreme of the domain to the other. The boundary edges
+   where it is lowest and highest are the domain's two **ends**.
+2. The **along** coordinate is harmonic in the domain: 0 on one end, 1 on the
+   other, no flux through the walls. It is one `fv.assemble` solve with unit
+   conductivity. Its level curves cross from wall to wall and meet each wall at a
+   right angle.
+3. The **across** coordinate is harmonic between the two sides.
+
+Cutting at equal cell counts gives pieces that are rectangles in those
+coordinates, so they bend with the domain. On the quarter ring the along
+coordinate is the angle, to 0.0075 (the staircase), and the across coordinate is
+$\ln(r/r_i)/\ln(r_o/r_i)$, to 0.006. So the cuts fall at exactly 30 and 60
+degrees, and on the arc of equal areas $r=\sqrt{(r_i^2+r_o^2)/2}=76.2$.
+
+**One per material** is the other cut: its Dirichlet-Neumann interface is the
+material interface itself.
+
+For styles A and B each piece grows inside the domain, never across a gap, by
+the least reach that gives every cell a window at full weight. For C, D and the
+split the pieces meet along faces.
+
+**In the page** (Geometry, Windows): *Windows follow the domain*, how to cut
+(*along its length* or *one per material*), and how many pieces along and across.
+- Drawing a domain whose windows are still rectangles makes them give way to
+  generated ones.
+- Reshaping the domain generates the windows again (`Workbench.edit`).
+- Editing a window by hand makes the windows the case's own, with a note.
+
+A generated window is stored as its cells (`shape = "cells"`, runs along rows), so
+a record holds the windows it marched on. It is drawn as the smooth curves where it
+ends inside the domain: the 1/2 contour of its smoothed indicator, traced by a
+small marching-squares routine (`geometry.contour_lines`), so no new dependency.
+
+**The example**, `s-channel`: a steel channel drawn with splines, on four windows
+generated from its shape. It agrees with the full domain to $1.8\times10^{-9}$ of
+its span, threaded equals serial, and every seam is admitted. It is refused at R10
+alone (W348). Moving a vertex of its wall regenerates the windows to fit.
+
 ## Code
 
 | file | role |
 |---|---|
-| `spec.py` | the case file (`atlas-workbench/case@0.4`; 0.1, 0.2 and 0.3 files migrate on load), `check()` with each family's rules, and the thirteen examples: three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, and two drawn ones (the bend and the round insert) |
+| `spec.py` | the case file (`atlas-workbench/case@0.5`; 0.1 to 0.4 files migrate on load), `check()` with each family's rules, and the fourteen examples: three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), and one whose windows are generated from its shape (the S-channel) |
+| `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes |
 | `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
 | `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking; for drawn shapes, their cell masks, the distance ramp, the analysis on masks, and a drawn domain's boundary faces labelled by edge |
 | `editor.py` | the Geometry step: the canvas, its tools (Move & draw, Draw shape, Reshape, Pan & zoom), its tables (with a Domain table and an Edges table) |

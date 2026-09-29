@@ -45,6 +45,16 @@ The solvers see the cells whose centres a shape contains; nothing else about a
 0.3 file changes, and a case with no drawn shape runs on the same arithmetic as
 before (`geometry.is_plain`).
 
+Schema ``atlas-workbench/case@0.5`` (2026-09-29, the owner's next question: "why
+doesn't their shape itself ADAPT to the geometry of the curve smoothly?") adds
+**windows generated from the geometry** (`layout.py`):
+
+* ``layout``: how the windows follow the domain -- cut ``along`` it into
+  pieces (and ``across`` it) at level curves of its own harmonic coordinates, or
+  one piece per material -- and a fingerprint of what they were generated
+  from, so they are generated again whenever the geometry changes;
+* a generated window is ``shape = "cells"``: its cells, as runs along rows.
+
 Older files still load: a 0.1 file gains its family's fixed boundaries, and a
 0.2 file's ``nu`` and ``u_inf`` move into ``params`` and its style is its
 family's.  The geometry rules themselves live in `geometry.py`.
@@ -65,10 +75,10 @@ from . import geometry as geo
 from . import registry
 from . import shapes
 
-SCHEMA_ID = "atlas-workbench/case@0.4"
+SCHEMA_ID = "atlas-workbench/case@0.5"
 #: every schema this version reads; older ones are migrated on load
 READABLE = ("atlas-workbench/case@0.1", "atlas-workbench/case@0.2",
-            "atlas-workbench/case@0.3", SCHEMA_ID)
+            "atlas-workbench/case@0.3", "atlas-workbench/case@0.4", SCHEMA_ID)
 
 
 class Outline(BaseModel):
@@ -170,22 +180,39 @@ class Window(BaseModel):
     holds the cells of the domain whose centres it contains."""
 
     id: str
-    shape: Literal["rect", "curve"] = "rect"
+    shape: Literal["rect", "curve", "cells"] = "rect"
     x0: int = Field(0, ge=0)
     y0: int = Field(0, ge=0)
     nx: int = Field(1, gt=0)
     ny: int = Field(1, gt=0)
     outline: Optional[Outline] = None
     holes: list[Outline] = Field(default_factory=list)
+    #: schema 0.5: a generated window's cells (``shape = "cells"``), as runs
+    #: ``(row, first, stop)`` -- the cells ``first .. stop - 1`` of that row
+    runs: Optional[list[tuple[int, int, int]]] = None
 
     @model_validator(mode="after")
     def _shape_matches(self):
         if self.shape == "curve":
             if self.outline is None:
                 raise ValueError(f"window {self.id} is drawn but has no outline")
+            if self.runs is not None:
+                raise ValueError(f"window {self.id} is drawn: its cells are its outline's")
             self.x0, self.y0, self.nx, self.ny = _cell_box(self.outline)
-        elif self.outline is not None or self.holes:
-            raise ValueError(f"window {self.id} is a rectangle and has no outline or holes")
+        elif self.shape == "cells":
+            if not self.runs:
+                raise ValueError(f"window {self.id} is generated but holds no cells")
+            if self.outline is not None or self.holes:
+                raise ValueError(f"window {self.id} is generated: it has cells, not an "
+                                 f"outline")
+            if any(r < 0 or a < 0 or b <= a for r, a, b in self.runs):
+                raise ValueError(f"window {self.id}: a run of cells is empty or negative")
+            rows = [r for r, _a, _b in self.runs]
+            x0, x1 = min(a for _r, a, _b in self.runs), max(b for _r, _a, b in self.runs)
+            self.x0, self.y0, self.nx, self.ny = x0, min(rows), x1 - x0, max(rows) - min(rows) + 1
+        elif self.outline is not None or self.holes or self.runs is not None:
+            raise ValueError(f"window {self.id} is a rectangle and has no outline, holes or "
+                             f"cells")
         return self
 
 
@@ -318,6 +345,29 @@ class Coupling(BaseModel):
     dirichlet_side: str = "auto"
 
 
+class Layout(BaseModel):
+    """Windows generated from the geometry (schema 0.5, `layout.py`).
+
+    ``cut``: ``along`` cuts the domain into ``along`` pieces along its length at
+    level curves of its harmonic coordinate between its two ends, and each of
+    those into ``across`` pieces between its two sides; ``materials`` makes one
+    piece per material.  For styles A and B each piece grows into the domain
+    until every cell has a window at full weight; for C, D and the split the
+    pieces meet along faces.
+
+    ``source`` fingerprints what the windows were generated from (the domain,
+    the materials, the style, the ramp, these settings): an edit that changes it
+    generates them again, and an edit that does not leaves them as they are.
+    ``grown`` is how far each piece reached, in cells.
+    """
+
+    cut: Literal["along", "materials"] = "along"
+    along: int = Field(3, ge=1, le=32)
+    across: int = Field(1, ge=1, le=8)
+    source: str = ""
+    grown: int = 0
+
+
 class RunSettings(BaseModel):
     macro_dt: float = Field(0.2, gt=0)
     #: macro-steps of a transient run; timed repeats of the solve of a steady one
@@ -349,6 +399,9 @@ class CaseSpec(BaseModel):
     coupling: Coupling = Field(default_factory=Coupling)
     run: RunSettings = Field(default_factory=RunSettings)
     compare: Compare = Field(default_factory=Compare)
+    #: schema 0.5: when set, the windows are generated from the geometry and follow
+    #: it (`layout.py`); None when the windows are the case's own
+    layout: Optional[Layout] = None
 
     @field_validator("schema_id")
     @classmethod
@@ -368,6 +421,8 @@ class CaseSpec(BaseModel):
         is the family's first; no materials, no attachments; a transient run.
         0.3 -> 0.4: nothing to move -- every drawn shape is optional, so a 0.3
         case is a 0.4 case with none.
+        0.4 -> 0.5: nothing to move -- a 0.4 case's windows are its own (no
+        layout).
         """
         if not isinstance(data, dict):
             return data
@@ -394,6 +449,9 @@ class CaseSpec(BaseModel):
             data["schema_id"] = "atlas-workbench/case@0.3"
         if data.get("schema_id") == "atlas-workbench/case@0.3":
             data = dict(data)
+            data["schema_id"] = "atlas-workbench/case@0.4"
+        if data.get("schema_id") == "atlas-workbench/case@0.4":
+            data = dict(data)                      # 0.4 -> 0.5: the layout is optional
             data["schema_id"] = SCHEMA_ID
         return data
 
@@ -1197,6 +1255,11 @@ EXAMPLES: dict[str, Example] = {e.key: e for e in (
             "A copper disc in a steel plate, cut along the circle: the disc and the plate "
             "around it meet at a round interface, joined by Dirichlet-Neumann.",
             "conduction-2d", "C"),
+    Example("s-channel", "Heat along an S-shaped channel: windows that follow it (style B)",
+            "A steel channel drawn with splines, hot at one end and cold at the other. Its "
+            "four windows are generated from its own shape, cut across its length at level "
+            "curves of its harmonic coordinate, and follow it when it is reshaped.",
+            "conduction-2d", "B"),
 )}
 
 
@@ -1215,7 +1278,8 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
                "plate-circuit": _circuit_example, "plume-2": _plume_example,
                "sound-air-water": _sound_example, "bracket-2": _bracket_example,
                "heated-strip": _strip_example, "cooled-block": _block_example,
-               "bend-3": _bend_example, "insert-round": _round_insert_example}.get(key)
+               "bend-3": _bend_example, "insert-round": _round_insert_example,
+               "s-channel": _s_channel_example}.get(key)
     if builder is None:                                    # pragma: no cover
         raise KeyError(key)
     return builder(ex)
@@ -1319,6 +1383,43 @@ def _round_insert_example(ex: Example) -> CaseSpec:
                           aitken=True),
         run=RunSettings(mode="steady", steps=5, threads=2),
     )
+
+
+def _s_channel_example(ex: Example) -> CaseSpec:
+    """A channel 28 cells wide (14 cm at 5 mm) whose middle follows
+    ``y = 55 + 28 sin(2 pi (x - 10) / 180)`` from x = 10 to 190 cells: each wall is six
+    splines through seven points, and the two ends are straight.  Steel, the left end
+    held at 400 K and the right at 300 K, the walls insulated, steady.  The windows
+    are not drawn: the layout cuts the channel into four along its length
+    (`layout.py`), so they bend with it."""
+    import math
+
+    def mid(x: float) -> float:
+        return 55.0 + 28.0 * math.sin(2.0 * math.pi * (x - 10.0) / 180.0)
+    xs = [10.0, 40.0, 70.0, 100.0, 130.0, 160.0, 190.0]
+    n = len(xs)
+    pts = [(x, mid(x) - 14.0) for x in xs] + [(x, mid(x) + 14.0) for x in reversed(xs)]
+    # along the bottom wall, up the right end, back along the top wall, down the left end
+    kinds = ["spline"] * (n - 1) + ["line"] + ["spline"] * (n - 1) + ["line"]
+    right, left = n - 1, 2 * n - 1
+    bnds = [Boundary(id="hot", edge=f"outline:{left}", kind="fixed-temperature", value=400.0),
+            Boundary(id="cold", edge=f"outline:{right}", kind="fixed-temperature", value=300.0)]
+    bnds += [Boundary(id=f"wall{k}", edge=f"outline:{k}", kind="insulated")
+             for k in range(2 * n) if k not in (right, left)]
+    spec = CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=200, ny=110, dx=0.005,
+                      outline=Outline(points=pts, edges=kinds, bulge=[0.0] * len(pts))),
+        physics=Physics(family="conduction-2d", params={"T0": 300.0}),
+        materials=_materials("conduction-2d", "steel"),
+        regions=[Region(id="channel", material="steel", x0=0, y0=0, nx=200, ny=110)],
+        boundaries=bnds, layout=Layout(cut="along", along=4),
+        coupling=Coupling(style="B", ramp_cells=8, tolerance=1e-10, max_iterations=2000),
+        run=RunSettings(mode="steady", steps=5, threads=2),
+    )
+    from .layout import refresh
+    refresh(spec)                           # the windows, from the channel's own shape
+    return spec
 
 
 def _circuit_example(ex: Example) -> CaseSpec:

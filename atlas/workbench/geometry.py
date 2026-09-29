@@ -430,10 +430,36 @@ def domain_mask(domain) -> np.ndarray:
     return out
 
 
+def mask_to_runs(mask: np.ndarray) -> list[tuple[int, int, int]]:
+    """A cell set as runs ``(row, first, stop)`` along its rows, row by row."""
+    out: list[tuple[int, int, int]] = []
+    for j in range(mask.shape[0]):
+        row = mask[j].astype(np.int8)
+        if not row.any():
+            continue
+        d = np.diff(np.concatenate(([0], row, [0])))
+        for a, b in zip(np.nonzero(d == 1)[0].tolist(), np.nonzero(d == -1)[0].tolist()):
+            out.append((j, int(a), int(b)))
+    return out
+
+
+def runs_to_mask(runs, nx: int, ny: int) -> np.ndarray:
+    """`mask_to_runs`' inverse, clipped to the grid."""
+    m = np.zeros((ny, nx), dtype=bool)
+    for j, a, b in runs or ():
+        if 0 <= j < ny:
+            m[j, max(a, 0):min(b, nx)] = True
+    return m
+
+
 def window_mask(w, nx: int, ny: int) -> np.ndarray:
     """The cells a window is drawn over (before the domain's own mask).  Read-only."""
     if getattr(w, "shape", "rect") == "curve":
         return shape_mask(w.outline, w.holes, nx, ny)
+    if getattr(w, "shape", "rect") == "cells":
+        m = runs_to_mask(w.runs, nx, ny)
+        m.flags.writeable = False
+        return m
     m = np.zeros((ny, nx), dtype=bool)
     c = clip_box((w.x0, w.y0, w.nx, w.ny), nx, ny)
     if c is not None:
@@ -694,6 +720,103 @@ def drawn_edge_names(domain) -> list[str]:
     return [name for name, _poly in drawn_edges(domain)]
 
 
+# -- smooth outlines of cell sets (for drawing generated windows) -----------------
+
+# marching squares: for each of the 16 corner patterns of a square of four cell
+# centres (bit 1 lower-left, 2 lower-right, 4 upper-right, 8 upper-left, set where
+# the field is at or above the level), the pairs of square sides the contour joins
+# (0 bottom, 1 right, 2 top, 3 left).  5 and 10 are saddles, settled by the centre.
+_MS = {1: ((3, 0),), 2: ((0, 1),), 3: ((3, 1),), 4: ((1, 2),), 6: ((0, 2),),
+       7: ((3, 2),), 8: ((2, 3),), 9: ((0, 2),), 11: ((1, 2),), 12: ((1, 3),),
+       13: ((0, 1),), 14: ((3, 0),)}
+
+
+def contour_lines(field: np.ndarray, level: float) -> list[np.ndarray]:
+    """Polylines where a field sampled at the cell centres crosses ``level``, in the
+    grid's cell coordinates (a centre is at ``(i + 1/2, j + 1/2)``): marching
+    squares with linear interpolation, the segments chained end to end."""
+    f = np.asarray(field, dtype=float) - level
+    ny, nx = f.shape
+    if ny < 2 or nx < 2:
+        return []
+    bl, br, tr, tl = f[:-1, :-1], f[:-1, 1:], f[1:, 1:], f[1:, :-1]
+    code = ((bl >= 0) * 1 + (br >= 0) * 2 + (tr >= 0) * 4 + (tl >= 0) * 8).astype(np.int8)
+    jj, ii = np.nonzero((code != 0) & (code != 15))
+
+    def side(j, i, s):
+        """The crossing on side ``s`` of the square with lower-left centre (i, j)."""
+        a, b, pa, pb = {0: (bl, br, (0, 0), (1, 0)), 1: (br, tr, (1, 0), (1, 1)),
+                        2: (tl, tr, (0, 1), (1, 1)), 3: (bl, tl, (0, 0), (0, 1))}[s]
+        va, vb = a[j, i], b[j, i]
+        t = va / (va - vb) if va != vb else 0.5
+        return (i + 0.5 + pa[0] + t * (pb[0] - pa[0]), j + 0.5 + pa[1] + t * (pb[1] - pa[1]))
+    segs = []
+    for j, i in zip(jj.tolist(), ii.tolist()):
+        c = int(code[j, i])
+        if c in (5, 10):
+            centre = 0.25 * (bl[j, i] + br[j, i] + tr[j, i] + tl[j, i])
+            pairs = (((3, 2), (0, 1)) if (c == 5) == (centre >= 0) else ((3, 0), (1, 2)))
+        else:
+            pairs = _MS[c]
+        for s0, s1 in pairs:
+            segs.append((side(j, i, s0), side(j, i, s1)))
+    # chain the segments: each crossing is shared by the two squares either side of it
+    key = lambda p: (round(p[0], 9), round(p[1], 9))  # noqa: E731
+    ends: dict[tuple, list[int]] = {}
+    for n, (p, q) in enumerate(segs):
+        ends.setdefault(key(p), []).append(n)
+        ends.setdefault(key(q), []).append(n)
+    used = [False] * len(segs)
+    lines = []
+    for n in range(len(segs)):
+        if used[n]:
+            continue
+        used[n] = True
+        line = [segs[n][0], segs[n][1]]
+        for forward in (True, False):
+            while True:
+                tip = line[-1] if forward else line[0]
+                nxt = [m for m in ends.get(key(tip), ()) if not used[m]]
+                if not nxt:
+                    break
+                m = nxt[0]
+                used[m] = True
+                p, q = segs[m]
+                new = q if key(p) == key(tip) else p
+                if forward:
+                    line.append(new)
+                else:
+                    line.insert(0, new)
+        lines.append(np.asarray(line))
+    return lines
+
+
+def inner_boundary(mask: np.ndarray, active: np.ndarray, sigma: float = 0.9) -> list[np.ndarray]:
+    """A cell set's boundary INSIDE the domain, as smooth polylines: the 1/2 contour
+    of its indicator smoothed by a Gaussian of ``sigma`` cells, with the stretches
+    along the domain's own edges left out (the domain's outline draws those).  For a
+    generated window these are its cuts: smooth curves across the domain."""
+    from scipy.ndimage import gaussian_filter
+    f = gaussian_filter(np.asarray(mask, dtype=float), sigma, mode="constant")
+    inside = gaussian_filter(np.asarray(active, dtype=float), 1.2, mode="constant") > 0.97
+    ny, nx = f.shape
+    out = []
+    for line in contour_lines(f, 0.5):
+        i = np.clip(np.floor(line[:, 0]).astype(int), 0, nx - 1)
+        j = np.clip(np.floor(line[:, 1]).astype(int), 0, ny - 1)
+        keep = inside[j, i]
+        # split where the line runs along the domain's edge
+        start = None
+        for n in range(len(line) + 1):
+            if n < len(line) and keep[n]:
+                start = n if start is None else start
+            elif start is not None:
+                if n - start >= 2:
+                    out.append(line[start:n])
+                start = None
+    return out
+
+
 __all__ = ["Box", "SNAP_STEPS", "DEFAULT_SNAP", "snap_value", "snap_box", "corners",
            "resize_from_corner", "intersect", "clip_box", "tile", "WindowAnalysis",
            "analyse_windows", "mask_to_boxes", "region_mask", "region_owner",
@@ -702,4 +825,5 @@ __all__ = ["Box", "SNAP_STEPS", "DEFAULT_SNAP", "snap_value", "snap_box", "corne
            "window_mask", "is_plain", "window_masks", "touching", "faces_between",
            "ramp_weight", "analyse_masks", "analyse_case", "DIRECTIONS", "drawn_edges",
            "nearest_edge", "VoidFaces", "void_faces", "grid_edge_labels",
-           "drawn_edge_names"]
+           "drawn_edge_names", "mask_to_runs", "runs_to_mask", "contour_lines",
+           "inner_boundary"]

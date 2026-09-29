@@ -196,9 +196,32 @@ class Workbench:
         self.refresh(rebuild=True)
 
     def edit(self, apply: Callable[[CaseSpec], None], label: str) -> bool:
-        """Change one field.  Validated as a whole case; refused if invalid."""
+        """Change one field.  Validated as a whole case; refused if invalid.
+
+        When the windows follow the domain (``layout``), an edit that changes what
+        they follow -- the domain, the materials, the style, the ramp, the layout's
+        own settings -- generates them again here, before the case is validated,
+        so no view ever shows windows that no longer fit the geometry."""
         new = self.spec.copy_deep()
         apply(new)
+        taken = False
+        if (self.spec.layout is not None and new.layout is not None
+                and [w.model_dump() for w in new.windows]
+                != [w.model_dump() for w in self.spec.windows]):
+            # the windows were edited by hand: they are the case's own from now on,
+            # and stop following the domain (the layout would undo the edit)
+            new.layout = None
+            taken = True
+        if new.layout is not None:
+            from . import layout as lay
+            try:
+                if lay.refresh(new):
+                    label += (f"; the windows follow the domain: {len(new.windows)} "
+                              f"generated")
+            except lay.LayoutError as exc:
+                self.notify("error", f"not applied: the windows cannot follow this geometry: "
+                                     f"{exc}")
+                return False
         try:
             new = CaseSpec.model_validate(new.model_dump())
         except ValidationError as exc:
@@ -212,6 +235,10 @@ class Workbench:
         self.spec = new
         self.dirty = True
         self.log(label)
+        if taken:
+            self.notify("info", "the windows are the case's own now and no longer follow "
+                                "the domain (Geometry, Windows: tick 'Windows follow the "
+                                "domain' to hand them back)")
         self.refresh(rebuild=False)
         return True
 
@@ -1173,6 +1200,7 @@ class Workbench:
 
             def apply(c):
                 c.windows = [Window(id=n, x0=b[0], y0=b[1], nx=b[2], ny=b[3]) for n, b in t]
+                c.layout = None               # a tiling of rectangles is the case's own
             self.edit(apply, f"generated a {cols.value} x {rows.value} tiling, overlap "
                              f"{ov.value}")
         go.on_click(do)
