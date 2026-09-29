@@ -43,6 +43,7 @@ from typing import Any
 
 import numpy as np
 
+from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
 from ..tiling import RectangleTiling
 
@@ -164,6 +165,95 @@ def window_solver(nu: float, dx: float, nx: int, ny: int, exposed: bool):
     return cls(nu=nu, length=nx * dx, n=nx, ny=ny, cfl=CFL, transmission=TRANSMISSION)
 
 
+@lru_cache(maxsize=2)
+def penalized_class(exposed: bool):
+    """The window solver (exposed or not) with the solid held at rest: a drawn
+    domain's cells outside it (case file 0.4).
+
+    Brinkman penalization in its stiff limit: every sub-step, just before the
+    projection (the solver's ``_project``, once per sub-step), the velocity in the
+    solid is set to zero -- ``u <- chi u`` with ``chi`` 1 in the fluid and 0 in the
+    solid -- and the projection then makes the field divergence-free again.  So a
+    drawn edge is a no-slip wall, first order in the sub-step: the projection lets
+    a little velocity back into the solid, and the next sub-step removes it.  The
+    mask is ``fluid``, ``[B, ny, nx]`` or ``[1, ny, nx]``, set before each
+    ``step_batch``; with no mask the class is its base, to the bit."""
+    base = exposed_class() if exposed else _sl()._rect_class()
+
+    class PenalizedNS(base):
+        fluid = None
+
+        def _project(self, u, v):
+            if self.fluid is not None:
+                u, v = u * self.fluid, v * self.fluid
+            return super()._project(u, v)
+
+    return PenalizedNS
+
+
+def penalized_solver(nu: float, dx: float, nx: int, ny: int, exposed: bool):
+    return penalized_class(exposed)(nu=nu, length=nx * dx, n=nx, ny=ny, cfl=CFL,
+                                    transmission=TRANSMISSION)
+
+
+class MaskedBoxes:
+    """Windows of any shape on a domain of any shape (case file 0.4), for a batch
+    solver that marches rectangles: each window marches its bounding box, and the
+    windows are blended by `tiling.MaskTiling`'s partition of unity on their own
+    cells (zero weight on the rest of the box, which only gives the window room).
+
+    ``boxes`` keep the case's order, and that order is the order of every sum."""
+
+    def __init__(self, spec, ramp: int):
+        from ..tiling import MaskTiling
+        d = spec.domain
+        self.nx, self.ny = d.nx, d.ny
+        self.fluid = geo.domain_mask(d)
+        masks = geo.window_masks(spec)
+        self.mask_tiling = MaskTiling(self.fluid, masks, ramp)
+        self.names = [n for n, _m in masks]
+        self.boxes: list[tuple[int, int, int, int]] = []
+        #: where each window's weighted cells sit in its box, flat
+        self.sel: list[np.ndarray] = []
+        for (_n, m), idx in zip(masks, self.mask_tiling.idx):
+            ys, xs = np.nonzero(m)
+            x0, y0 = int(xs.min()), int(ys.min())
+            w, h = int(xs.max()) + 1 - x0, int(ys.max()) + 1 - y0
+            self.boxes.append((x0, y0, w, h))
+            j, i = idx // self.nx, idx % self.nx
+            self.sel.append((j - y0) * w + (i - x0))
+        self.chi = self.mask_tiling.chi
+
+    @property
+    def n_windows(self) -> int:
+        return len(self.boxes)
+
+    def shapes(self) -> dict[tuple[int, int], list[int]]:
+        out: dict[tuple[int, int], list[int]] = {}
+        for k, (_x0, _y0, w, h) in enumerate(self.boxes):
+            out.setdefault((h, w), []).append(k)
+        return out
+
+    def cut_one(self, f: np.ndarray, k: int) -> np.ndarray:
+        x0, y0, w, h = self.boxes[k]
+        return f[y0:y0 + h, x0:x0 + w]
+
+    def cut(self, f: np.ndarray, idx) -> np.ndarray:
+        return np.stack([self.cut_one(f, k) for k in idx])
+
+    def assemble(self, locals_) -> np.ndarray:
+        out = np.zeros(self.nx * self.ny)
+        for k, idx in enumerate(self.mask_tiling.idx):
+            out[idx] += self.chi[k] * np.asarray(locals_[k]).ravel()[self.sel[k]]
+        return out.reshape(self.ny, self.nx)
+
+    def certify(self):
+        return self.mask_tiling.certify()
+
+    def partition_of_unity(self):
+        return self.mask_tiling.partition_of_unity()
+
+
 def full_solver(nu: float, dx: float, nx: int, ny: int):
     """The undivided domain: `scaling_ladder.reference_monolith` (cached) at the
     measured cell, otherwise the same class built at this cell."""
@@ -223,9 +313,19 @@ class WindFarmRun:
         self.projected = spec.coupling.assembly == "projected"
         self.exposed = spec.coupling.elliptic == "exposed"
         self.threads = max(1, int(threads))
-        self.tiling = RectangleTiling(self.nx, self.ny,
-                                      [(w.id, (w.x0, w.y0, w.nx, w.ny)) for w in spec.windows],
-                                      spec.coupling.ramp_cells)
+        #: a drawn domain or drawn windows (case file 0.4): windows march their boxes
+        #: and blend by the mask partition of unity; a drawn domain's solid is held at
+        #: rest in every solver (`penalized_class`).  A plain case is W346's, to the bit.
+        self.plain = geo.is_plain(spec)
+        d = spec.domain
+        self.drawn = d.outline is not None or bool(d.holes)
+        self.fluid = geo.domain_mask(d) if self.drawn else None
+        if self.plain:
+            self.tiling = RectangleTiling(self.nx, self.ny,
+                                          [(w.id, (w.x0, w.y0, w.nx, w.ny))
+                                           for w in spec.windows], spec.coupling.ramp_cells)
+        else:
+            self.tiling = MaskedBoxes(spec, spec.coupling.ramp_cells)
         self.certificate = self.tiling.certify()
         self.rotors = [Rotor(v.id, float(v.x), float(v.y), float(v.diameter))
                        for v in spec.devices]
@@ -233,19 +333,30 @@ class WindFarmRun:
         self.y_c = (np.arange(self.ny) + 0.5) * self.dx
         self._disk = _load_disk()
 
+        make = ((lambda nx_, ny_: penalized_solver(self.nu, self.dx, nx_, ny_, self.exposed))
+                if self.drawn else
+                (lambda nx_, ny_: window_solver(self.nu, self.dx, nx_, ny_, self.exposed)))
         self.groups = self.tiling.shapes()
-        self.serial = {shape: window_solver(self.nu, self.dx, shape[1], shape[0], self.exposed)
-                       for shape in self.groups}
+        self.serial = {shape: make(shape[1], shape[0]) for shape in self.groups}
         self.chunks: list[tuple[tuple[int, int], np.ndarray]] = []
         for shape, idx in self.groups.items():
             for c in np.array_split(np.arange(len(idx)), self.threads):
                 if c.size:
                     self.chunks.append((shape, c))
-        self.chunk_solvers = [window_solver(self.nu, self.dx, shape[1], shape[0], self.exposed)
-                              for shape, _c in self.chunks]
+        self.chunk_solvers = [make(shape[1], shape[0]) for shape, _c in self.chunks]
+        #: each shape group's solid mask, window by window ([B, h, w]), for the
+        #: penalized solvers
+        self.solid_masks = ({shape: self.tiling.cut(self.fluid.astype(float), idx)
+                             for shape, idx in self.groups.items()} if self.drawn else {})
         self.pool = (ThreadPoolExecutor(max_workers=self.threads, thread_name_prefix="wb-farm")
                      if "parallel" in self.arms else None)
-        self.full = full_solver(self.nu, self.dx, self.nx, self.ny) if "full" in self.arms else None
+        self.full = None
+        if "full" in self.arms:
+            if self.drawn:
+                self.full = penalized_solver(self.nu, self.dx, self.nx, self.ny, exposed=False)
+                self.full.fluid = self.fluid.astype(float)[None]
+            else:
+                self.full = full_solver(self.nu, self.dx, self.nx, self.ny)
 
     # -- W346's shared pieces, transcribed ---------------------------------
 
@@ -280,11 +391,19 @@ class WindFarmRun:
         v[-b:, :] = 0.0
         u[:, -1] = U
         v[:, -1] = 0.0
+        if self.fluid is not None:
+            # a drawn domain: the band holds the freestream only where the fluid meets
+            # the grid's edges, and the solid is at rest
+            u *= self.fluid
+            v *= self.fluid
         return u, v
 
     def project(self, u: np.ndarray, v: np.ndarray):
         """One global Leray projection of the assembled field: `wake_array.project_assembled`
-        with the case's freestream (the same call when it is 1)."""
+        with the case's freestream (the same call when it is 1).  On a drawn domain the
+        solid is set to rest first, as every solver does before its projection."""
+        if self.fluid is not None:
+            u, v = u * self.fluid, v * self.fluid
         uf, vf = _wa().transport_and_project(u - self.u_inf, v, dt=0.0, u_inf=0.0,
                                              project=True)
         return self.u_inf + uf, vf
@@ -299,7 +418,10 @@ class WindFarmRun:
     # -- the arms -----------------------------------------------------------
 
     def initial(self, arm: str) -> FarmState:
-        return FarmState(np.full((self.ny, self.nx), self.u_inf), np.zeros((self.ny, self.nx)))
+        u = np.full((self.ny, self.nx), self.u_inf)
+        if self.fluid is not None:
+            u *= self.fluid                        # a drawn domain's solid starts at rest
+        return FarmState(u, np.zeros((self.ny, self.nx)))
 
     def step(self, arm: str, s: FarmState) -> FarmState:
         """One macro-step of one arm.  This is all the runner times."""
@@ -329,6 +451,8 @@ class WindFarmRun:
                 us, vs, fs = cut[shape]
                 sol = self.serial[shape]
                 sol.b = _Umax(getattr(sol.b, "_inner", sol.b), umax)
+                if self.drawn:
+                    sol.fluid = self.solid_masks[shape]
                 a, b = sol.step_batch(us, vs, self.dt, bc0=None, force=(fs, np.zeros_like(fs)))
                 subs = int(sol.last_substeps)
                 for j, k in enumerate(idx):
@@ -341,6 +465,8 @@ class WindFarmRun:
                 us, vs, fs = cut[shape]
                 sol = self.chunk_solvers[i]
                 sol.b = _Umax(getattr(sol.b, "_inner", sol.b), umax)
+                if self.drawn:
+                    sol.fluid = self.solid_masks[shape][pos]
                 a, b = sol.step_batch(us[pos], vs[pos], self.dt, bc0=None,
                                       force=(fs[pos], np.zeros_like(fs[pos])))
                 res[i] = (a, b, int(sol.last_substeps))
@@ -372,6 +498,8 @@ class WindFarmRun:
         if arm == "full":
             return float(s.solver_div) * self.dx / self.u_inf
         au, av = self.tiling.assemble(s.locals_[0]), self.tiling.assemble(s.locals_[1])
+        if self.fluid is not None:
+            au, av = au * self.fluid, av * self.fluid     # what the projection was given
         if self.projected:
             return spectral_divergence_after_projection(au, av, self.u_inf) / self.u_inf
         # nothing enforces incompressibility after a blend: measure the blend in the
@@ -382,8 +510,10 @@ class WindFarmRun:
         return bool(np.array_equal(a.u, b.u) and np.array_equal(a.v, b.v))
 
     def field(self, s: FarmState) -> np.ndarray:
-        """What the page draws: the streamwise velocity."""
-        return s.u
+        """What the page draws: the streamwise velocity (not drawn in a solid)."""
+        if self.fluid is None:
+            return s.u
+        return np.where(self.fluid, s.u, np.nan)
 
     def field_label(self) -> str:
         return "streamwise velocity u / U"
@@ -428,8 +558,9 @@ class WindFarmRun:
                 metrics[arm]["farm_power_vs_full"] = (pa - pf) / pf if pf else None
                 du = states[arm].u - states["full"].u
                 dv = states[arm].v - states["full"].v
+                sq = du * du + dv * dv
                 metrics[arm]["rms_velocity_difference"] = float(
-                    np.sqrt(np.mean(du * du + dv * dv)))
+                    np.sqrt(np.mean(sq if self.fluid is None else sq[self.fluid])))
             pd = metrics[dec]["farm_power"]
             rel = abs(pd - pf) / pf if pf else None
             checks.append(judge(CHECKS[1], rel, f"{dec} {pd:.4f} against full {pf:.4f}"))
@@ -469,7 +600,9 @@ class WindFarmRun:
 
     def describe(self) -> dict[str, Any]:
         return {"windows": self.tiling.n_windows, "rotors": len(self.rotors),
-                "cells": self.nx * self.ny, "shape_groups": len(self.groups),
+                "cells": (self.nx * self.ny if self.fluid is None
+                          else int(self.fluid.sum())), "shape_groups": len(self.groups),
+                "drawn": self.drawn,
                 "chunks": len(self.chunks), "threads": self.threads,
                 "assembly": "projected" if self.projected else "blend",
                 "elliptic": "exposed" if self.exposed else "embedded",

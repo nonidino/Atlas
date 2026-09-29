@@ -71,6 +71,9 @@ def fingerprint(spec) -> str:
                "across": lay.across}
     if lay.cut == "materials":
         payload["regions"] = [r.model_dump() for r in spec.regions]
+        # the cooled block cuts by physics: which materials flow
+        payload["materials"] = spec.materials
+        payload["family"] = spec.physics.family
     return hashlib.sha1(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
 
 
@@ -280,7 +283,15 @@ def pieces(spec) -> list[tuple[str, np.ndarray]]:
         return m
     if style in ("D", "split"):
         return [("whole", act.copy())]
-    if lay.cut == "materials":
+    if lay.cut == "materials" and spec.physics.family == "conjugate-heat-2d":
+        # the cooled block's pieces are its two physics, whatever the materials: the
+        # solid (copper and a chip, say) and the coolant that flows beside it
+        from .families.cooling import coolant_mask
+        wet = coolant_mask(spec)
+        out = [(name, m) for name, m in (("block", act & ~wet), ("channel", wet)) if m.any()]
+        if len(out) < 2:
+            raise LayoutError("cutting by physics needs a coolant and a solid in the domain")
+    elif lay.cut == "materials":
         owner = geo.region_owner(spec.regions, d.nx, d.ny)
         mats: list[str] = []
         for r in spec.regions:

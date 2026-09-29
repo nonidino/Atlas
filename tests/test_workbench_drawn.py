@@ -300,10 +300,24 @@ def test_the_check_refuses_what_a_drawn_case_gets_wrong():
     assert any("reaches past the 108 x 108 grid" in m for m in _errors(s))
 
 
-def test_a_family_that_runs_on_rectangles_refuses_a_drawn_window():
+def test_every_family_runs_on_drawn_shapes_and_the_refusal_remains(monkeypatch):
+    """The owner, 2026-09-29: "make the smooth domain/spline/other stuff available for
+    all cases".  Every family that runs declares drawn shapes; the check's refusal
+    stays for a family that would not."""
+    import dataclasses
+
+    from atlas.workbench import registry
+    for fid in registry.available_ids():
+        assert registry.family(fid).drawn_shapes, fid
     s = example_case("wake-array-3")
     s.windows.append(Window(id="C1", shape="curve", outline=Outline.of(S.circle(100, 100, 30))))
-    assert any("runs on rectangles only" in m for m in _errors(s))
+    assert not any("runs on rectangles only" in m for m in _errors(s))
+    fam = registry.family("incompressible-2d")
+    blocked = dataclasses.replace(fam, drawn_shapes=False, drawn_why="a test says so")
+    monkeypatch.setattr(registry, "FAMILIES", tuple(blocked if f.id == fam.id else f
+                                                    for f in registry.FAMILIES))
+    assert any("runs on rectangles only" in m and "a test says so" in m
+               for m in _errors(s))
 
 
 # ---------------------------------------------------------------------------

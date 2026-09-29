@@ -222,6 +222,11 @@ class Workbench:
                 self.notify("error", f"not applied: the windows cannot follow this geometry: "
                                      f"{exc}")
                 return False
+        # a family whose solver fixes its drawn edges' conditions (the wind farm, the
+        # sound family): they follow the geometry, like generated windows
+        from .spec import derive_boundaries
+        if derive_boundaries(new):
+            label += "; the drawn edges' conditions follow the geometry"
         try:
             new = CaseSpec.model_validate(new.model_dump())
         except ValidationError as exc:

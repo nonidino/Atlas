@@ -1,0 +1,609 @@
+{
+ "schema": "atlas-workbench/results@1",
+ "case_name": "farm-hill",
+ "case_path": null,
+ "family": "incompressible-2d",
+ "style": "A",
+ "committed_at": "2026-09-29T16:39:19-04:00",
+ "started": "2026-09-29T16:39:19-04:00",
+ "finished": "2026-09-29T16:40:04-04:00",
+ "wall_seconds": 44.62227988243103,
+ "build_seconds": 0.4196476999204606,
+ "arms": [
+  "serial",
+  "parallel",
+  "full"
+ ],
+ "arm_labels": {
+  "serial": "Decomposed, serial",
+  "parallel": "Decomposed, parallel",
+  "full": "Full domain"
+ },
+ "dropped_arms": {},
+ "step_label": "macro-step",
+ "steps_requested": 40,
+ "steps_done": 40,
+ "stopped": false,
+ "threads": 4,
+ "timing": {
+  "serial": {
+   "seconds_per_step": [
+    0.16801140003371984,
+    0.269753500004299,
+    0.2804416000144556,
+    0.2800498000578955,
+    0.2838123000692576,
+    0.3039250000147149,
+    0.29972949996590614,
+    0.28480519994627684,
+    0.25912170007359236,
+    0.1986758999992162,
+    0.29937520006205887,
+    0.2280340000288561,
+    0.2277098000049591,
+    0.22159860003739595,
+    0.23901239992119372,
+    0.2715107999974862,
+    0.24839769990649074,
+    0.24773499998264015,
+    0.24509810004383326,
+    0.24107939994428307,
+    0.2227327999426052,
+    0.1975586999906227,
+    0.25390929996501654,
+    0.22223459999077022,
+    0.2614405999192968,
+    0.2817813999718055,
+    0.2624262999743223,
+    0.2144619000609964,
+    0.2466050999937579,
+    0.23757100000511855,
+    0.22917139995843172,
+    0.25051929999608546,
+    0.24700710002798587,
+    0.23096359998453408,
+    0.2529811999993399,
+    0.246805900009349,
+    0.22253460006322712,
+    0.24399119999725372,
+    0.2363817000295967,
+    0.22374119993764907
+   ],
+   "mean": 0.24706739499815739,
+   "median": 0.24670550000155345,
+   "min": 0.16801140003371984,
+   "speedup_vs_full": 1.5658944900995662
+  },
+  "parallel": {
+   "seconds_per_step": [
+    0.2997654000064358,
+    0.46533279994037,
+    0.5143410000018775,
+    0.5031905999640003,
+    0.5344278999837115,
+    0.5085203999187797,
+    0.5192961000138894,
+    0.4932584000052884,
+    0.39204640011303127,
+    0.4673996999626979,
+    0.519444499979727,
+    0.39382019999902695,
+    0.40516660001594573,
+    0.4273774999892339,
+    0.5054934000363573,
+    0.40698169998358935,
+    0.4227258999599144,
+    0.37450739997439086,
+    0.38044790003914386,
+    0.41053390002343804,
+    0.40481760003603995,
+    0.361468099988997,
+    0.431203700019978,
+    0.39463269989937544,
+    0.41494749998673797,
+    0.4228531999979168,
+    0.4242986999452114,
+    0.3893901000265032,
+    0.5284233000129461,
+    0.4306222000159323,
+    0.4324397000018507,
+    0.4246906000189483,
+    0.5076911000069231,
+    0.41539750003721565,
+    0.45788220001850277,
+    0.42619350005406886,
+    0.37297469994518906,
+    0.4296218000818044,
+    0.4484416999621317,
+    0.4137103999964893
+   ],
+   "mean": 0.4368944499990903,
+   "median": 0.4254420500365086,
+   "min": 0.2997654000064358,
+   "speedup_vs_full": 0.8855261780314978
+  },
+  "full": {
+   "seconds_per_step": [
+    0.3346517999889329,
+    0.47666080005001277,
+    0.40356890007387847,
+    0.5424912999151275,
+    0.5288777999812737,
+    0.533151000039652,
+    0.5750333999749273,
+    0.5339848999865353,
+    0.40163410000968724,
+    0.447752199950628,
+    0.3774175000144169,
+    0.46885599999222904,
+    0.42215420003049076,
+    0.36392050003632903,
+    0.2560785999521613,
+    0.3281421000137925,
+    0.43818250007461756,
+    0.4211242999881506,
+    0.33778419997543097,
+    0.28885770007036626,
+    0.2917312999488786,
+    0.45701310003641993,
+    0.3706781000364572,
+    0.3778692000778392,
+    0.38799650000873953,
+    0.35902650002390146,
+    0.331522100022994,
+    0.32507289992645383,
+    0.32477820001076907,
+    0.272665600059554,
+    0.3629054999910295,
+    0.28299300000071526,
+    0.3120906000258401,
+    0.2995161000872031,
+    0.472892599995248,
+    0.3084482999984175,
+    0.346181400003843,
+    0.3583736999426037,
+    0.331145100062713,
+    0.42203530005645007
+   ],
+   "mean": 0.38688147251086774,
+   "median": 0.3672993000363931,
+   "min": 0.2560785999521613,
+   "speedup_vs_full": 1.0
+  }
+ },
+ "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+ "bitwise": {
+  "steps": 40,
+  "first_difference": null
+ },
+ "metrics": {
+  "serial": {
+   "farm_power": 2.000895254374446,
+   "farm_power_steps_averaged": 5,
+   "substeps_last": 26.0,
+   "mass_max": 1.1559070614839337e-17,
+   "farm_power_vs_full": -0.19576679975781427,
+   "rms_velocity_difference": 0.19912124671985773
+  },
+  "parallel": {
+   "farm_power": 2.000895254374446,
+   "farm_power_steps_averaged": 5,
+   "substeps_last": 26.0,
+   "mass_max": 1.1559070614839337e-17,
+   "farm_power_vs_full": -0.19576679975781427,
+   "rms_velocity_difference": 0.19912124671985773
+  },
+  "full": {
+   "farm_power": 2.487954058315298,
+   "farm_power_steps_averaged": 5,
+   "substeps_last": 32.0,
+   "mass_max": 2.220446049250313e-16
+  }
+ },
+ "field_difference": {
+  "serial": {
+   "rms": 0.1790780573808095,
+   "max": 1.6149968915333333,
+   "rms_relative": 0.16720183308533432
+  },
+  "parallel": {
+   "rms": 0.1790780573808095,
+   "max": 1.6149968915333333,
+   "rms_relative": 0.16720183308533432
+  }
+ },
+ "field_label": "streamwise velocity u / U",
+ "checks": [
+  {
+   "key": "mass",
+   "title": "Mass: incompressibility closes",
+   "kind": "balance",
+   "tolerance": 1e-09,
+   "registered": "2026-09-28, before the workbench runner's first march",
+   "measure": "the largest divergence, times dx / U, of the field each arm's own step produces every macro-step, before the freestream band is re-imposed, measured in the operator that enforced it: the full domain's own wide centred difference (the solver's last_div), and for a projected assembly the global projection's own spectral operator on the padded domain",
+   "why": "both are projections, so what is left is round-off: the full-domain solver's Neumann mean-mismatch vanishes because the band holds equal velocities on opposite faces of the ring, and a spectral projection leaves ~1e-15. 1e-9 leaves six orders for accumulation. An assembly that is only a blend has nothing enforcing incompressibility after it, and fails this (L6/C2, W100). The band itself -- (U, 0) re-imposed in 8-cell strips after every step, W93's outer boundary -- is not divergence-free at its inner edge, identically in every arm, and is not what this measures",
+   "value": 2.220446049250313e-16,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "serial: the parallel arm's state, bit for bit; parallel: 1.16e-17; full: 2.22e-16",
+   "extra": {}
+  },
+  {
+   "key": "power",
+   "title": "Farm power agrees with the full domain",
+   "kind": "reference",
+   "tolerance": 0.25,
+   "registered": "2026-09-26, W346's prediction B5, before W346 ran",
+   "measure": "|P_decomposed - P_full| / P_full, farm power averaged over the last five macro-steps (or all, if fewer)",
+   "why": "W346's own registered bound for the composed column against the monolith; it measured 2.3-8.3% at 40 macro-steps from 1 to 21 rotors",
+   "value": 0.19576679975781427,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "parallel 2.0009 against full 2.4880",
+   "extra": {}
+  },
+  {
+   "key": "bitwise",
+   "title": "Threaded equals serial, bit for bit",
+   "kind": "control",
+   "tolerance": null,
+   "registered": "2026-09-26, W346's prediction B1, before W346 ran",
+   "measure": "np.array_equal on both velocity components after every macro-step",
+   "why": "the threaded arm is the serial arm's arithmetic split across threads; any difference is a defect in the split, not a scheme difference",
+   "value": null,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "equal after all 40 macro-steps",
+   "extra": {}
+  }
+ ],
+ "notes": [],
+ "problem": {
+  "windows": 6,
+  "rotors": 3,
+  "cells": 77290,
+  "shape_groups": 4,
+  "drawn": true,
+  "chunks": 6,
+  "threads": 4,
+  "assembly": "projected",
+  "elliptic": "exposed",
+  "partition_of_unity": {
+   "identity_residual": 1.1102230246251565e-16,
+   "chi_min": 0.002070393374741201,
+   "tolerance": 1e-10,
+   "holds": true
+  }
+ },
+ "machine": {
+  "time": "2026-09-29T16:39:19-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": false,
+   "battery_percent": 97,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 25384
+ },
+ "machine_after": {
+  "power": {
+   "ac": false,
+   "battery_percent": 97,
+   "source": "GetSystemPowerStatus"
+  },
+  "time": "2026-09-29T16:40:04-04:00"
+ },
+ "case": {
+  "schema_id": "atlas-workbench/case@0.5",
+  "name": "farm-hill",
+  "description": "Wind farm over a hill (style A, drawn)",
+  "domain": {
+   "nx": 352,
+   "ny": 240,
+   "dx": 0.03125,
+   "outline": {
+    "points": [
+     [
+      0.0,
+      12.000902645739922
+     ],
+     [
+      44.0,
+      12.059873951825576
+     ],
+     [
+      88.0,
+      13.354723509745824
+     ],
+     [
+      132.0,
+      22.455759105901375
+     ],
+     [
+      176.0,
+      39.52660350481713
+     ],
+     [
+      220.0,
+      36.7196229999511
+     ],
+     [
+      264.0,
+      19.572219872900682
+     ],
+     [
+      308.0,
+      12.79121907017372
+     ],
+     [
+      352.0,
+      12.02820086526542
+     ],
+     [
+      352.0,
+      240.0
+     ],
+     [
+      0.0,
+      240.0
+     ]
+    ],
+    "edges": [
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "line",
+     "line",
+     "line"
+    ],
+    "bulge": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "holes": []
+  },
+  "physics": {
+   "family": "incompressible-2d",
+   "params": {
+    "nu": 0.00392,
+    "u_inf": 1.0
+   }
+  },
+  "materials": {},
+  "regions": [],
+  "windows": [
+   {
+    "id": "F00",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F10",
+    "shape": "rect",
+    "x0": 112,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F20",
+    "shape": "rect",
+    "x0": 224,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F01",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F11",
+    "shape": "rect",
+    "x0": 112,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F21",
+    "shape": "rect",
+    "x0": 224,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   }
+  ],
+  "devices": [
+   {
+    "id": "R1",
+    "kind": "actuator-disk",
+    "x": 3.75,
+    "y": 1.75,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   },
+   {
+    "id": "R2",
+    "kind": "actuator-disk",
+    "x": 7.25,
+    "y": 1.75,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   },
+   {
+    "id": "R3",
+    "kind": "actuator-disk",
+    "x": 7.25,
+    "y": 5.25,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   }
+  ],
+  "boundaries": [
+   {
+    "id": "B-outline-0",
+    "edge": "outline:0",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-1",
+    "edge": "outline:1",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-2",
+    "edge": "outline:2",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-3",
+    "edge": "outline:3",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-4",
+    "edge": "outline:4",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-5",
+    "edge": "outline:5",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-6",
+    "edge": "outline:6",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-7",
+    "edge": "outline:7",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-8",
+    "edge": "outline:8",
+    "kind": "outlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-9",
+    "edge": "outline:9",
+    "kind": "freestream",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-10",
+    "edge": "outline:10",
+    "kind": "inlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "A",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 500,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 0.2,
+   "steps": 40,
+   "threads": 4,
+   "start": "freestream",
+   "mode": "transient"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  },
+  "layout": null
+ }
+}

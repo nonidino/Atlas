@@ -308,11 +308,63 @@ generated from its shape. It agrees with the full domain to $1.8\times10^{-9}$ o
 its span, threaded equals serial, and every seam is admitted. It is refused at R10
 alone (W348). Moving a vertex of its wall regenerates the windows to fit.
 
+## Drawn shapes in every family
+
+The owner, the same day: "make the smooth domain/spline/other stuff available for
+all cases". Until then only conduction ran on a drawn domain; each other family
+refused one with its reason. Now all eight run on the cells a drawn shape contains,
+with nothing new in the case file (a 0.5 file loads unchanged). What each needed:
+
+| family | what a drawn domain needed |
+|---|---|
+| electric | electrodes on drawn edges: an electrode's faces are the boundary faces its edge holds (`geometry.boundary_faces`), and the plate is solved on the domain's cells |
+| transport | **a flow that follows the banks**: the potential flow from the inlets to the outlets (`flow.py`), divergence-free face by face and zero through every bank; the explicit limit read off the assembled diagonal |
+| acoustics | **rigid drawn walls**: a face to the void never opens, so the domain stays closed; two pieces of any shape, each owning its faces, so they equal the full domain to the bit |
+| elasticity | an element mask: the void carries no stiffness and its nodes leave the solve; clamps and loads on drawn edges; windows on the node grid by the mask partition of unity |
+| thermoelastic | the same mask for both agents; fixed temperatures and a heat flux on drawn edges; the free body's rigid-body modes on the domain's nodes |
+| conjugate heat | the coolant's flow solved through its own cells (`flow.py`), so a winding channel works; cut by physics (block and channel) |
+| wind farm | **the solid held at rest by penalization**: every sub-step, just before the projection, the velocity outside the domain is set to zero. Drawn windows march their bounding boxes and blend by the mask partition of unity |
+
+**The families that fix their outer boundary** keep doing so. On a drawn domain,
+each drawn edge takes the condition of the grid edge it lies along, and the
+family's default elsewhere (`spec.derived_kind`). So the wind farm's terrain is a
+wall and its top edge a freestream, and a river drawn from the grid's left edge to
+its right edge enters on the left and leaves on the right. For the wind farm and the
+sound these follow the geometry on every edit (`spec.derive_boundaries`); the river
+starts so, and any of its edges can be made an inlet or an outlet.
+
+**A flux or a traction on a drawn edge is per unit length of the edge as drawn.**
+Its staircase of faces is up to $\sqrt2$ longer than a slanted edge, so each face
+carries the value times the edge's true length over its faces' length
+(`geometry.staircase_scale`). The edge then carries its whole load and no more.
+
+**Seven examples, one per family** (`ring-film`, `river-bend`, `sound-lens`,
+`plate-hole`, `bimetal-arc`, `cooled-winding`, `farm-hill`). Each is clean, passes
+every registered check, and is pinned in `tests/test_workbench_drawn_families.py`.
+The records are in `out/workbench/records/step-i/`, made headless on battery power,
+so their times are not quoted. What they measured:
+
+| example | family | what it measured (registered tolerance) |
+|---|---|---|
+| `ring-film` | electric, D | Kirchhoff $5.4\times10^{-13}$, energy $9.6\times10^{-14}$, current against the joint solve $6.0\times10^{-14}$ ($10^{-6}$ each). The film's resistance, 0.5770 ohm, is +0.98% from the ring's continuum $\theta/(\sigma t\ln(r_o/r_i))$ = 0.5714 ohm: the staircase |
+| `river-bend` | transport, A | 2,000 explicit steps: mass $3.3\times10^{-14}$ ($10^{-9}$), concentration against the full river $1.8\times10^{-16}$ ($10^{-10}$), threaded equals serial. The solved flow's continuity residual is $1.4\times10^{-14}$ of the discharge, and no face of a bank carries any flow |
+| `sound-lens` | acoustics, C | 1,500 leapfrog steps: energy $4.2\times10^{-16}$ ($10^{-10}$), the two pieces equal the full domain bit for bit; no textbook reflection on a curved surface |
+| `plate-hole` | elasticity, B | forces $7.7\times10^{-12}$, displacements against the full plate $3.2\times10^{-12}$ ($10^{-6}$ each), threaded equals serial |
+| `bimetal-arc` | thermoelastic, split | 60 steps: heat $2.2\times10^{-10}$ ($10^{-9}$); the synchronous split is the unsplit solver bit for bit, and the lagged one is it a step late, bit for bit |
+| `cooled-winding` | conjugate heat, C | every watt leaves in the water, $4.7\times10^{-11}$ ($10^{-6}$); temperatures against the full domain $1.5\times10^{-9}$ of the rise ($10^{-6}$); the coolant's flow is continuous to $7.1\times10^{-14}$ |
+| `farm-hill` | wind farm, A | 40 macro-steps: mass $2.2\times10^{-16}$ ($10^{-9}$), threaded equals serial, and farm power **19.6%** from the full domain: inside W346's registered 25%, and well above the 2.3-8.3% the plain farms measured. The terrain's penalization runs inside every window's sub-steps as well as in the full domain's, and this is the first measurement of it |
+
+**Not built:** the potential flow has no viscosity and no inertia. It turns a bend
+without separating, which is right for a scalar's path and wrong for a separated
+flow. The wind farm's penalization is first order in the sub-step, because the
+projection lets a little velocity back into the solid each sub-step.
+
 ## Code
 
 | file | role |
 |---|---|
-| `spec.py` | the case file (`atlas-workbench/case@0.5`; 0.1 to 0.4 files migrate on load), `check()` with each family's rules, and the fourteen examples: three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), and one whose windows are generated from its shape (the S-channel) |
+| `spec.py` | the case file (`atlas-workbench/case@0.5`; 0.1 to 0.4 files migrate on load), `check()` with each family's rules, and the twenty-one examples: three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), one whose windows are generated from its shape (the S-channel), and one drawn example per other family |
+| `flow.py` | a flow that follows a drawn domain: the potential flow from its inlet faces to its outlet faces, for the river and the coolant |
 | `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes |
 | `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
 | `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking; for drawn shapes, their cell masks, the distance ramp, the analysis on masks, and a drawn domain's boundary faces labelled by edge |
@@ -351,7 +403,7 @@ alone (W348). Moving a vertex of its wall regenerates the windows to fit.
 - **At showcase sizes the decomposed arms are slower than the full domain** for every family but the wind farm (above). This is measured and shown, not hidden.
 - **Plain Schwarz has no coarse level**, so it converges slowly on a bending structure (616 iterations on the bracket); a coarse space or a Krylov wrapper would be the remedy, and neither is built.
 - **The wind farm compiles only on a scaling-ladder rung.** Its graph is the vault's `scaling_ladder.build`, which declares a regular tiling. A drawn tiling that is not a rung runs, but is refused before the compiler, with that reason.
-- **Drawn shapes run on one family so far: heat conduction.** The others refuse a drawn domain or window in the check, each with its reason (`registry.Family.drawn_why`): the wind farm's window solver marches rectangles; the plume's river flow is given per reach rather than solved; the sound's leapfrog runs two full-height pieces; the two structural families' elements cover the whole grid; the cooled block's coolant fills whole rows; the plate on a circuit reads its electrodes on the grid's four edges.
+- **A drawn river's or channel's flow is a potential flow** (`flow.py`), with no viscosity and no inertia: it carries a scalar the right way round a bend, and does not separate. **The wind farm's drawn walls are penalized**, first order in the sub-step. **A drawn sound case reads no textbook reflection**: that needs two uniform media at a straight cut. Its energy and the pieces' agreement are checked.
 - **A drawn curve is resolved to the grid's cells.** The solvers see the cells whose centres a shape contains, so a curve is a staircase at the cell size. The canvas draws both, and on the bend the staircase moves the ring's heat flow by -0.97% from its continuum value. Body-fitted grids would remove that; they are not built.
 - **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not. The owner accepted this on 2026-09-29: the compile is its own step, and the two-minute rule is per run.
 - **R10 refuses the iterated one-physics cases** (styles B and C: the wall, the insert, the bracket), because it does not read whether a coupling iterates. The refusal is shown as the compiler gave it. Open as W348 in the vault's gap worklist.

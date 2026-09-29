@@ -88,29 +88,33 @@ CHECKS: tuple[CheckSpec, ...] = (
 _KIND = {"fixed-temperature": fv.FIXED, "insulated": fv.NO_FLUX, "heat-flux": fv.FLUX}
 
 
-def field_from_case(spec, prop_k: str = "k", kinds: dict[str, int] | None = None) -> fv.Field:
-    """The case's grid, materials and boundaries as an `fv.Field` (no capacity).
+def boundary_arrays(spec, kinds: dict[str, int]):
+    """The case's boundary conditions as `fv.Field` takes them: ``bc`` (per grid
+    edge, the kind and value of each face along it) and ``void`` (a drawn domain's
+    faces to the void inside the grid, each with its condition; None for a domain
+    with no drawn shape).
 
-    A drawn domain (case file 0.4) adds its mask and the conditions on its faces
-    to the void, each face taking the condition of the drawn edge nearest it; so
-    do the grid's own edge faces when the domain has a drawn outline.  A face on
-    a drawn edge with no condition is closed (no flux), and the case's check has
-    already refused that case.
-    """
+    On a drawn domain (case file 0.4) each face takes the condition of the drawn
+    edge nearest it -- the grid's own edge faces too, when the domain has a drawn
+    outline.  A face on a drawn edge with no condition is closed (no flux); the
+    case's check has already refused that case.  **A flux on a drawn edge is per
+    unit length of the edge as drawn**: each of its staircase faces takes the flux
+    times the edge's true length over its faces' (`geometry.staircase_scale`), so
+    the edge carries its whole load and no more (a staircase along a diagonal is up
+    to sqrt 2 longer than the diagonal)."""
     d = spec.domain
-    owner = geo.region_owner(spec.regions, d.nx, d.ny)
-    k = np.zeros((d.ny, d.nx))
-    for i, r in enumerate(spec.regions):
-        k[owner == i] = float(spec.materials[r.material][prop_k])
-    kinds = kinds or _KIND
     bc = {}
     drawn = {b.edge: b for b in spec.boundaries if b.drawn}
+    scale: dict[str, float] = {}
+    if any(kinds.get(b.kind) == fv.FLUX for b in drawn.values()):
+        scale = geo.staircase_scale(d, geo.boundary_faces(d))
 
     def of(name: str) -> tuple[int, float]:
         b = drawn.get(name)
         if b is None:
             return fv.NO_FLUX, 0.0
-        return kinds[b.kind], (0.0 if b.value is None else float(b.value))
+        k, v = kinds[b.kind], (0.0 if b.value is None else float(b.value))
+        return k, (v * scale.get(name, 1.0) if k == fv.FLUX else v)
 
     labels = geo.grid_edge_labels(d) if d.outline is not None else None
     for e in fv.EDGES:
@@ -129,14 +133,28 @@ def field_from_case(spec, prop_k: str = "k", kinds: dict[str, int] | None = None
                 vv[b.start:stop] = 0.0 if b.value is None else float(b.value)
         bc[e] = (kd, vv)
     if d.outline is None and not d.holes:
-        return fv.Field(d.nx, d.ny, float(d.dx), k, bc=bc)
-    act = geo.domain_mask(d)
+        return bc, None
     vf = geo.void_faces(d)
     pairs = [of(name) for name in vf.edge]
     vk = np.array([p[0] for p in pairs], dtype=np.int8)
     vv = np.array([p[1] for p in pairs], dtype=float)
+    return bc, (vf.cell, vf.outside, vf.direction, vk, vv, vf.edge)
+
+
+def field_from_case(spec, prop_k: str = "k", kinds: dict[str, int] | None = None) -> fv.Field:
+    """The case's grid, materials and boundaries as an `fv.Field` (no capacity);
+    a drawn domain adds its mask and its faces to the void (`boundary_arrays`)."""
+    d = spec.domain
+    owner = geo.region_owner(spec.regions, d.nx, d.ny)
+    k = np.zeros((d.ny, d.nx))
+    for i, r in enumerate(spec.regions):
+        k[owner == i] = float(spec.materials[r.material][prop_k])
+    bc, void = boundary_arrays(spec, kinds or _KIND)
+    if void is None:
+        return fv.Field(d.nx, d.ny, float(d.dx), k, bc=bc)
+    act = geo.domain_mask(d)
     return fv.Field(d.nx, d.ny, float(d.dx), np.where(act, k, 0.0), bc=bc, active=act,
-                    void=(vf.cell, vf.outside, vf.direction, vk, vv, vf.edge))
+                    void=void)
 
 
 def capacity(spec) -> np.ndarray:
@@ -581,5 +599,6 @@ def _valid_everywhere(state=None, cond=None) -> bool:
 
 
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "ConductionRun", "CondState", "build",
-           "field_from_case", "capacity", "available_arms", "step_label", "dirichlet_side",
+           "field_from_case", "boundary_arrays", "capacity", "available_arms", "step_label",
+           "dirichlet_side",
            "floating", "rho_1d", "closed_form_heat", "window_cells", "cells_of"]

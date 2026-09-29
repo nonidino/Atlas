@@ -149,10 +149,16 @@ class Family:
     default_boundaries: tuple[tuple[str, str, float | None], ...] = ()
     #: schema 0.4: whether its adapter runs on drawn shapes (a drawn outline, holes,
     #: curved windows), and if not, why; and the condition a newly drawn edge
-    #: starts with
-    drawn_shapes: bool = False
-    drawn_why: str = "its adapter has not been taught drawn shapes yet"
+    #: starts with.  Every family that runs does (2026-09-29, the owner: "make the
+    #: smooth domain/spline/other stuff available for all cases").
+    drawn_shapes: bool = True
+    drawn_why: str = ""
     drawn_default: str = ""
+    #: when the solver fixes its outer boundary (`fixed_boundaries`), whether a
+    #: drawn domain's edges are fixed too: each takes the condition of the grid edge
+    #: it lies along, and `drawn_default` everywhere else (spec.derived_kind).
+    #: False: they start so, and the case may change them.
+    drawn_derived: bool = False
     #: what the Physics step calls the regions' materials, and what it says of the
     #: library's values
     #: its coupling needs no iteration (an explicit exchange every step), so the
@@ -178,9 +184,8 @@ class Family:
 
 _WIND_FARM = Family(
     id="incompressible-2d",
-    drawn_why=("W346's window solver (wake_array.WindowNS) marches rectangular windows, "
-               "batched by shape, and the global projection is built for the rectangle's "
-               "outer boundary"),
+    drawn_default="wall",
+    drawn_derived=True,
     label="2-D incompressible flow with actuator disks (wind farm)",
     status="ready-to-wire",
     solvers=("WindowNS, elliptic part exposed (one window)",
@@ -194,7 +199,7 @@ _WIND_FARM = Family(
     sources=("atlas/workbench/families/windfarm.py", "atlas/cases/scaling_ladder.py",
              "atlas/cases/wake_array.py", "scripts/w346_rotor_count_speed.py"),
     layers=("windows", "devices", "boundaries"),
-    boundary_kinds=("inlet", "freestream", "outlet"),
+    boundary_kinds=("inlet", "freestream", "outlet", "wall"),
     fixed_boundaries=(FixedBoundary("left", "inlet"), FixedBoundary("right", "outlet"),
                       FixedBoundary("bottom", "freestream"),
                       FixedBoundary("top", "freestream")),
@@ -245,15 +250,12 @@ _CONDUCTION = Family(
     default_boundaries=(("left", "fixed-temperature", 400.0),
                         ("right", "fixed-temperature", 300.0),
                         ("bottom", "insulated", None), ("top", "insulated", None)),
-    drawn_shapes=True,
-    drawn_why="",
     drawn_default="insulated",
 )
 
 _ELECTRIC = Family(
     id="electric-2d",
-    drawn_why=("its electrodes' currents are read on the grid's four edges; drawn edges "
-               "are not wired into it yet"),
+    drawn_default="no-current",
     label="2-D current spreading in a resistive plate on a lumped circuit",
     status="ready-to-wire",
     solvers=("cell-centred finite volumes for div(sigma grad phi) = 0 (fv.py)",
@@ -287,8 +289,7 @@ _ELECTRIC = Family(
 
 _TRANSPORT = Family(
     id="transport-2d",
-    drawn_why=("the river's flow is given per reach across the whole grid, not solved, so "
-               "a drawn bank would have no flow that follows it"),
+    drawn_default="bank",
     label="2-D pollutant plume down a river (advection and mixing)",
     status="ready-to-wire",
     solvers=("explicit upwinded finite volumes per window (fv.py), one step per exchange",
@@ -333,8 +334,8 @@ _TRANSPORT = Family(
 
 _ACOUSTICS = Family(
     id="acoustics-2d",
-    drawn_why=("the staggered-grid leapfrog runs on the whole rectangle, cut into two "
-               "full-height pieces side by side"),
+    drawn_default="rigid-wall",
+    drawn_derived=True,
     label="2-D sound through two media (linear acoustics)",
     status="ready-to-wire",
     solvers=("staggered-grid leapfrog per piece, trading the interface's pressures and "
@@ -385,8 +386,7 @@ _METALS = (("steel", (("E", 200e9), ("nu", 0.30), ("alpha", 12e-6), ("k", 45.0),
 
 _ELASTICITY = Family(
     id="elasticity-2d",
-    drawn_why=("fe.py's elements cover the whole grid; drawn shapes need an element "
-               "mask, not built yet"),
+    drawn_default="free",
     label="2-D plane-stress elasticity in several materials (a loaded bracket)",
     status="ready-to-wire",
     solvers=("Q1 plane-stress elements per window, a sparse LU each (fe.py, the build "
@@ -418,8 +418,7 @@ _ELASTICITY = Family(
 
 _THERMOELASTIC = Family(
     id="thermoelastic-2d",
-    drawn_why=("fe.py's elements cover the whole grid; drawn shapes need an element "
-               "mask, not built yet"),
+    drawn_default="insulated",
     label="2-D heated plate that expands (conduction, then thermal strain)",
     status="ready-to-wire",
     solvers=("Q1 backward-Euler conduction (fe.py): the conduction agent",
@@ -456,8 +455,7 @@ _THERMOELASTIC = Family(
 
 _COOLING = Family(
     id="conjugate-heat-2d",
-    drawn_why=("the coolant fills whole rows from the left edge to the right; a drawn "
-               "channel needs a flow field, not built yet"),
+    drawn_default="insulated",
     label="2-D heated block cooled by channel flow (conjugate heat transfer)",
     status="ready-to-wire",
     solvers=("cell-centred finite volumes with the coolant's advection (fv.py): the channel",

@@ -2040,10 +2040,8 @@ def rebase_boundaries(c: CaseSpec, ring: str, n_edges: int,
     """One boundary per edge of a drawn ring (``outline`` or ``hole<h>``) after an
     edit.  New edge ``j`` takes the condition old edge ``origin[j]`` had (an edge
     split in two gives both halves its condition); with no ``origin`` -- a new
-    ring -- every edge takes the family's default for a drawn edge."""
-    fam = _family(c)
-    kind = (fam.drawn_default if fam is not None and fam.drawn_default else
-            (fam.boundary_kinds[0] if fam is not None and fam.boundary_kinds else "insulated"))
+    ring -- every edge takes the family's own choice (`spec.derived_kind`)."""
+    from .spec import derived_kind
     prefix = ring + ":"
     old = {b.edge: b for b in c.boundaries if b.edge.startswith(prefix)}
     keep = [b for b in c.boundaries if not b.edge.startswith(prefix)]
@@ -2056,7 +2054,10 @@ def rebase_boundaries(c: CaseSpec, ring: str, n_edges: int,
         elif src is not None:
             b = src.model_copy(update={"edge": f"{ring}:{j}", "id": _next_id("B", taken)})
         else:
-            b = Boundary(id=_next_id("B", taken), edge=f"{ring}:{j}", kind=kind)
+            # the family's own choice: a river drawn to the grid's left edge enters
+            # there, a wind farm's inner edges are walls (`spec.derived_kind`)
+            b = Boundary(id=_next_id("B", taken), edge=f"{ring}:{j}",
+                         kind=derived_kind(c, f"{ring}:{j}"))
         taken.add(b.id)
         new.append(b)
     c.boundaries = keep + new

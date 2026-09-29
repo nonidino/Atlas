@@ -43,6 +43,7 @@ import numpy as np
 import scipy.sparse as sp
 
 from .. import fv, styles
+from .. import geometry as geo
 from ..checks import CheckSpec, judge
 from .conduction import field_from_case, window_cells
 
@@ -212,9 +213,14 @@ class ElectricRun:
         self.faces = electrode_faces(spec, self.f)
         e_ids = self.circuit.electrodes
         self.e_ids = e_ids
-        # the plate alone (electrodes as fixed potentials whose values change)
+        # the plate alone (electrodes as fixed potentials whose values change), on
+        # the domain's cells: every cell of the grid, or a drawn domain's (case
+        # file 0.4), whose rows are numbered by ``loc``
         self.plate = fv.assemble(self.f)
         self.plate_lu = styles.Factor(self.plate.A)
+        self.void = self.f.void_cells()
+        self.loc = np.full(self.f.n, -1, dtype=np.int64)
+        self.loc[self.plate.idx] = np.arange(self.plate.n)
         # the circuit alone
         self.M, self.rhs = self.circuit.matrix()
         self.M_lu = np.linalg.inv(self.M) if self.M.size else None
@@ -230,14 +236,23 @@ class ElectricRun:
         b = self.plate.b.copy()
         for e in self.e_ids:
             cells, g = self.faces[e]
-            np.add.at(b, cells, g * pot[e])
+            np.add.at(b, self.loc[cells], g * pot[e])
         return b
+
+    def _whole(self, phi_domain: np.ndarray) -> np.ndarray:
+        """The potential on the grid from the domain's rows: the same array when the
+        domain is the whole grid, zero outside a drawn one."""
+        if not self.void.size:
+            return phi_domain
+        phi = np.zeros(self.f.n)
+        phi[self.plate.idx] = phi_domain
+        return phi
 
     def plate_solve(self, x: np.ndarray):
         """Electrode potentials (``x``, in the order of ``e_ids``) -> the current INTO
         the plate through each electrode, in amperes, and the potential field."""
         pot = {e: float(v) for e, v in zip(self.e_ids, x)}
-        phi = self.plate_lu.solve(self._plate_rhs(pot))
+        phi = self._whole(self.plate_lu.solve(self._plate_rhs(pot)))
         cur = np.array([float(np.sum(self.faces[e][1] * (pot[e] - phi[self.faces[e][0]])))
                         * self.t for e in self.e_ids])
         return cur, phi
@@ -264,8 +279,8 @@ class ElectricRun:
         """The whole solve (steady): style D from zero potentials, or the joint system."""
         if arm == "full":
             y = self.joint_lu.solve(self.joint_rhs)
-            n = self.f.n
-            phi = y[:n]
+            n = self.plate.n
+            phi = self._whole(y[:n])
             x = y[n:]
             pot = self.circuit.potentials(x)
             return self._state(phi, pot, x, 1, True, [], [])
@@ -334,7 +349,11 @@ class ElectricRun:
         return bool(np.array_equal(a.phi, b.phi))
 
     def field(self, s: ElecState) -> np.ndarray:
-        return s.phi.reshape(self.ny, self.nx)
+        if not self.void.size:
+            return s.phi.reshape(self.ny, self.nx)
+        phi = s.phi.copy()
+        phi[self.void] = np.nan                   # outside the drawn domain: not drawn
+        return phi.reshape(self.ny, self.nx)
 
     def close(self) -> None:
         pass
@@ -400,7 +419,7 @@ class ElectricRun:
         return out
 
     def describe(self) -> dict[str, Any]:
-        return {"style": "D", "cells": self.f.n, "thickness_m": self.t,
+        return {"style": "D", "cells": int(self.plate.n), "thickness_m": self.t,
                 "electrodes": {e: int(self.faces[e][0].size) for e in self.e_ids},
                 "circuit_nodes": [self.circuit.ground] + self.circuit.nodes,
                 "ground": self.circuit.ground, "tolerance": self.tol,
@@ -415,10 +434,26 @@ class ElectricRun:
 
 def electrode_faces(spec, f: fv.Field) -> dict[str, tuple[np.ndarray, np.ndarray]]:
     """electrode id -> (the boundary cells its faces belong to, each face's half-cell
-    conductance ``2 sigma`` per unit depth)."""
+    conductance ``2 sigma`` per unit depth).
+
+    On a drawn domain (case file 0.4) an electrode may be a drawn edge: its faces
+    are the domain's boundary faces that edge holds (`geometry.boundary_faces`),
+    the grid's own edge faces and the faces to the void alike."""
     out: dict[str, tuple[list, list]] = {}
     nx, ny = f.nx, f.ny
     k = f.k.ravel()
+    d = spec.domain
+    if d.outline is not None or d.holes:
+        bf = geo.boundary_faces(d)
+        owner = geo.face_conditions(spec.boundaries, bf, nx, ny)
+        for i, b in enumerate(spec.boundaries):
+            if b.kind != "electrode":
+                continue
+            cells = bf.cell[owner == i]
+            c, g = out.setdefault(b.id, ([], []))
+            c.append(cells)
+            g.append(2.0 * k[cells])
+        return {e: (np.concatenate(c), np.concatenate(g)) for e, (c, g) in out.items()}
     for b in spec.boundaries:
         if b.kind != "electrode":
             continue
@@ -435,13 +470,13 @@ def electrode_faces(spec, f: fv.Field) -> dict[str, tuple[np.ndarray, np.ndarray
 def joint_system(run: ElectricRun):
     """The plate and the circuit as one sparse system, in amperes.
 
-    Unknowns: every cell's potential, then the circuit's (non-ground) node
-    potentials and ideal-source currents.  The plate's rows are its finite
-    volumes times the thickness, with each electrode face coupling its cell to
-    its node; each electrode node's row adds the current it sends into the
+    Unknowns: every domain cell's potential (the plate's rows), then the circuit's
+    (non-ground) node potentials and ideal-source currents.  The plate's rows are
+    its finite volumes times the thickness, with each electrode face coupling its
+    cell to its node; each electrode node's row adds the current it sends into the
     plate.  Built with the ground's potential fixed at zero.
     """
-    n = run.f.n
+    n = run.plate.n
     t = run.t
     A = run.plate.A * t
     b = run.plate.b * t
@@ -450,6 +485,7 @@ def joint_system(run: ElectricRun):
     rhs_c = run.rhs.copy()
     for e in run.e_ids:
         cells, g = run.faces[e]
+        cells = run.loc[cells]
         k = run.circuit.index(e)
         if k is None:                   # a grounded electrode: its faces are fixed at 0 V
             continue
@@ -568,10 +604,9 @@ def case_graph(spec):
     from ..compile import face_prolongation
     run = ElectricRun(spec, arms=("serial",))
     d = spec.domain
-    area = {b.id: ((d.ny if b.edge in ("left", "right") else d.nx)
-                   if b.stop is None else b.stop) - b.start
-            for b in spec.boundaries if b.kind == "electrode"}
-    area = {e: n * d.dx * run.t for e, n in area.items()}          # m^2
+    #: an electrode's faces, counted: its segment's length on a grid edge, and its
+    #: staircase on a drawn one
+    area = {e: int(run.faces[e][0].size) * d.dx * run.t for e in run.e_ids}   # m^2
     length = {e: a / run.t for e, a in area.items()}
     base = {e: 0.0 for e in run.e_ids}
     r_loop = sum(p.value if p.kind == "resistor" else p.internal for p in spec.attachments)

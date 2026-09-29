@@ -123,23 +123,41 @@ def stable_dt(spec) -> float:
     ``sum over its interior faces of (K_i + sqrt(K_i K_j)) / (rho_f dx^2)``.
 
     On one medium that is ``dx / (c sqrt 2)`` exactly; at an interface the
-    face's mean density can make it slightly tighter, and the bound says so.
+    face's mean density can make it slightly tighter, and the bound says so.  On a
+    drawn domain only the open faces -- both cells in the domain -- count.
     """
     d = spec.domain
     rho, c = media(spec)
-    K = rho * c * c
+    if d.outline is not None or d.holes:
+        rho, c, K, open_x, open_y = masked_media(spec)
+    else:
+        K = rho * c * c
+        open_x = open_y = 1.0
     rows = np.zeros((d.ny, d.nx))
     rf = 0.5 * (rho[:, :-1] + rho[:, 1:])
-    t_l = (K[:, :-1] + np.sqrt(K[:, :-1] * K[:, 1:])) / rf
-    t_r = (K[:, 1:] + np.sqrt(K[:, :-1] * K[:, 1:])) / rf
+    t_l = (K[:, :-1] + np.sqrt(K[:, :-1] * K[:, 1:])) / rf * open_x
+    t_r = (K[:, 1:] + np.sqrt(K[:, :-1] * K[:, 1:])) / rf * open_x
     rows[:, :-1] += t_l
     rows[:, 1:] += t_r
     rf = 0.5 * (rho[:-1, :] + rho[1:, :])
-    t_b = (K[:-1, :] + np.sqrt(K[:-1, :] * K[1:, :])) / rf
-    t_t = (K[1:, :] + np.sqrt(K[:-1, :] * K[1:, :])) / rf
+    t_b = (K[:-1, :] + np.sqrt(K[:-1, :] * K[1:, :])) / rf * open_y
+    t_t = (K[1:, :] + np.sqrt(K[:-1, :] * K[1:, :])) / rf * open_y
     rows[:-1, :] += t_b
     rows[1:, :] += t_t
     return float(2.0 * d.dx / np.sqrt(np.max(rows)))
+
+
+def masked_media(spec):
+    """A drawn domain's media (case file 0.4): ``(rho, c, K, open_x, open_y)`` with
+    the void outside the domain given ``K = 0`` (its pressure never moves) and
+    ``rho = 1`` (never read), and the faces open where both cells are in the
+    domain.  A face to the void is a rigid wall: its velocity stays zero."""
+    act = geo.domain_mask(spec.domain)
+    rho, c = media(spec)
+    rho = np.where(act, rho, 1.0)
+    c = np.where(act, c, 0.0)
+    return (rho, c, rho * c * c, (act[:, :-1] & act[:, 1:]).astype(float),
+            (act[:-1, :] & act[1:, :]).astype(float))
 
 
 def cut_column(spec) -> int | None:
@@ -234,6 +252,7 @@ class AcousticsRun:
 
     def __init__(self, spec, arms=ARMS, threads: int = 1):
         self.spec = spec
+        self.arms_asked = tuple(arms)
         d = spec.domain
         self.nx, self.ny, self.dx = d.nx, d.ny, float(d.dx)
         self.dt = float(spec.run.macro_dt)
@@ -241,6 +260,12 @@ class AcousticsRun:
         if self.dt > self.limit:                          # the case check refuses it first
             raise ValueError(f"the macro-step {self.dt:.4g} s is over the leapfrog's "
                              f"stability limit {self.limit:.4g} s")
+        #: a drawn domain or drawn pieces (case file 0.4): the same leapfrog on the
+        #: whole grid with the void's faces shut, pieces as masks (`_init_masked`)
+        self.plain = geo.is_plain(spec)
+        if not self.plain:
+            self._init_masked(spec)
+            return
         self.m = cut_column(spec)
         if self.m is None:
             raise ValueError("the acoustics family's pieces are two windows side by side, "
@@ -270,12 +295,74 @@ class AcousticsRun:
         self.vx0 = vx0
         self.incident = float(np.sum(self.p0[:, :self.m]))
 
+    def _init_masked(self, spec) -> None:
+        """Any domain, any two pieces.  The void's pressure never moves (``K = 0``)
+        and its faces never open (their update is multiplied by zero), so a drawn
+        edge is a rigid wall.  The pieces are the two windows' cells: the first
+        owns its own faces and the faces it shares with the second, the second its
+        own; each holds whole-grid arrays and touches only what it owns, updated
+        by the same expressions as the full domain -- so they are it, to the bit."""
+        d = spec.domain
+        act = geo.domain_mask(d)
+        self.act = act
+        self.m = None
+        rho, c, K, open_x, open_y = masked_media(spec)
+        self.rho, self.c, self.K = rho, c, K
+        self.K_safe = np.where(act, K, 1.0)             # for the energy's p^2 / K
+        rho_fx = 0.5 * (rho[:, :-1] + rho[:, 1:])
+        rho_fy = 0.5 * (rho[:-1, :] + rho[1:, :])
+        self.ax = self.dt / (rho_fx * self.dx) * open_x
+        self.ay = self.dt / (rho_fy * self.dx) * open_y
+        self.bk = self.dt * K / self.dx
+        self.rho_fx, self.rho_fy = rho_fx, rho_fy
+        self.arms = tuple(a for a in ARMS if a in self.arms_asked)
+        self.R, self.R_why = None, ("a drawn domain or pieces: the textbook reflection needs "
+                                    "two uniform media meeting at a straight cut")
+        self.window = None
+        masks = [m for _n, m in geo.window_masks(spec)]
+        if len(masks) != 2:
+            raise ValueError("style C couples exactly two pieces")
+        mA, mB = masks
+        self.mA, self.mB = mA, mB
+        ox, oy = open_x > 0, open_y > 0
+        ownA_x = ox & (mA[:, :-1] | mA[:, 1:])
+        ownA_y = oy & (mA[:-1, :] | mA[1:, :])
+        self.axA, self.ayA = self.ax * ownA_x, self.ay * ownA_y
+        self.axB = self.ax * (ox & mB[:, :-1] & mB[:, 1:])
+        self.ayB = self.ay * (oy & mB[:-1, :] & mB[1:, :])
+        self.iface_x = ox & ((mA[:, :-1] & mB[:, 1:]) | (mB[:, :-1] & mA[:, 1:]))
+        self.iface_y = oy & ((mA[:-1, :] & mB[1:, :]) | (mB[:-1, :] & mA[1:, :]))
+        self.ownA_x, self.ownA_y = ownA_x, ownA_y
+        self.bkA, self.bkB = self.bk * mA, self.bk * mB
+        p = pulse(spec)
+        self.pulse = p
+        # the first medium: the piece's commonest (rho, c)
+        pairs, counts = np.unique(np.column_stack([rho[mA], c[mA]]), axis=0,
+                                  return_counts=True)
+        rho1, c1 = (float(v) for v in pairs[int(np.argmax(counts))])
+        x = (np.arange(self.nx) + 0.5) * self.dx
+        xf = np.arange(self.nx + 1) * self.dx
+
+        def f(s):
+            return p.amplitude * np.exp(-0.5 * ((s - p.x0) / p.width) ** 2)
+        self.p0 = np.tile(f(x), (self.ny, 1)) * act
+        vx0 = np.tile(f(xf + 0.5 * c1 * self.dt) / (rho1 * c1), (self.ny, 1))
+        vx0[:, 1:-1] *= open_x
+        vx0[:, 0] = vx0[:, -1] = 0.0                      # rigid walls
+        self.vx0 = vx0
+        self.incident = float(np.sum(self.p0[mA]))
+        self.cells = int(act.sum())
+
     # -- the arms -------------------------------------------------------------
 
     def initial(self, arm: str) -> Wave:
         p, vx, vy = self.p0.copy(), self.vx0.copy(), np.zeros((self.ny + 1, self.nx))
         if arm == "full":
             return Wave(p, vx, vy)
+        if not self.plain:
+            a = (p.copy(), vx.copy(), vy.copy())
+            b = (p.copy(), vx.copy(), vy.copy())
+            return Wave(p, vx, vy, pieces=(a, b))
         m = self.m
         left = (p[:, :m].copy(), vx[:, :m + 1].copy(), vy[:, :m].copy())
         right = (p[:, m:].copy(), vx[:, m:].copy(), vy[:, m:].copy())
@@ -311,8 +398,35 @@ class AcousticsRun:
         vy = np.concatenate([vyl, vyr], axis=1)
         return Wave(p, vx, vy, pieces=((pl, vxl, vyl), (pr, vxr, vyr)))
 
+    def _pieces_masked(self, s: Wave) -> Wave:
+        """The two pieces of any shape (_init_masked): the same four moves."""
+        (pA, vxA, vyA), (pB, vxB, vyB) = s.pieces
+        pA, vxA, vyA = pA.copy(), vxA.copy(), vyA.copy()
+        pB, vxB, vyB = pB.copy(), vxB.copy(), vyB.copy()
+        # 1. the second piece's pressures, to the first (it reads those beside the
+        #    interface; its own faces never reach further into the second piece)
+        seen = np.where(self.mB, pB, pA)
+        # 2. the first piece's faces, the interface's included
+        vxA[:, 1:-1] -= self.axA * (seen[:, 1:] - seen[:, :-1])
+        vyA[1:-1, :] -= self.ayA * (seen[1:, :] - seen[:-1, :])
+        # 3. the interface velocities, to the second piece; its own faces
+        vxB[:, 1:-1] = np.where(self.iface_x, vxA[:, 1:-1], vxB[:, 1:-1])
+        vyB[1:-1, :] = np.where(self.iface_y, vyA[1:-1, :], vyB[1:-1, :])
+        vxB[:, 1:-1] -= self.axB * (pB[:, 1:] - pB[:, :-1])
+        vyB[1:-1, :] -= self.ayB * (pB[1:, :] - pB[:-1, :])
+        # 4. the pressures
+        pA -= self.bkA * ((vxA[:, 1:] - vxA[:, :-1]) + (vyA[1:, :] - vyA[:-1, :]))
+        pB -= self.bkB * ((vxB[:, 1:] - vxB[:, :-1]) + (vyB[1:, :] - vyB[:-1, :]))
+        p = np.where(self.mA, pA, pB)
+        vx, vy = vxB.copy(), vyB.copy()
+        vx[:, 1:-1] = np.where(self.ownA_x, vxA[:, 1:-1], vxB[:, 1:-1])
+        vy[1:-1, :] = np.where(self.ownA_y, vyA[1:-1, :], vyB[1:-1, :])
+        return Wave(p, vx, vy, pieces=((pA, vxA, vyA), (pB, vxB, vyB)))
+
     def step(self, arm: str, s: Wave) -> Wave:
-        return self._full(s) if arm == "full" else self._pieces(s)
+        if arm == "full":
+            return self._full(s)
+        return self._pieces(s) if self.plain else self._pieces_masked(s)
 
     # -- instruments ---------------------------------------------------------
 
@@ -322,6 +436,12 @@ class AcousticsRun:
         area = self.dx * self.dx
         kin_x = 0.5 * self.rho_fx * s.vx[:, 1:-1] ** 2
         kin_y = 0.5 * self.rho_fy * s.vy[1:-1, :] ** 2
+        if not self.plain:
+            pot = 0.5 * p_old * s.p / self.K_safe      # the void holds no pressure
+            total = (float(np.sum(kin_x)) + float(np.sum(kin_y)) + float(np.sum(pot))) * area
+            second = (float(np.sum(kin_x[self.axB > 0])) + float(np.sum(kin_y[self.ayB > 0]))
+                      + float(np.sum(pot[self.mB]))) * area
+            return total, second
         pot = 0.5 * p_old * s.p / self.K
         m = self.m
         total = (float(np.sum(kin_x)) + float(np.sum(kin_y)) + float(np.sum(pot))) * area
@@ -332,15 +452,19 @@ class AcousticsRun:
     def observe(self, arm: str, s: Wave, prev: Wave | None = None) -> dict:
         p_old = prev.p if prev is not None else self.p0
         total, second = self._energies(p_old, s)
+        first = (float(np.sum(s.p[:, :self.m])) if self.plain
+                 else float(np.sum(s.p[self.mA])))
         return {"energy": total, "energy_second": second / total if total else 0.0,
-                "reflected": float(np.sum(s.p[:, :self.m])) / self.incident}
+                "reflected": first / self.incident}
 
     def bitwise_equal(self, a: Wave, b: Wave) -> bool:
         return bool(np.array_equal(a.p, b.p) and np.array_equal(a.vx, b.vx)
                     and np.array_equal(a.vy, b.vy))
 
     def field(self, s: Wave) -> np.ndarray:
-        return s.p
+        if self.plain or self.act.all():
+            return s.p
+        return np.where(self.act, s.p, np.nan)          # the void: not drawn
 
     def close(self) -> None:
         pass
@@ -399,10 +523,16 @@ class AcousticsRun:
     def notes(self, done: int) -> list[str]:
         rho, c = self.rho, self.c
         m = self.m
-        z1, z2 = float(rho[0, 0] * c[0, 0]), float(rho[0, -1] * c[0, -1])
         out = [f"Leapfrog step {self.dt:.4g} s against the stability limit {self.limit:.4g} "
                f"s (Gershgorin on the grid's own operator). The pieces trade the pressures "
                f"beside the interface and its velocities once a step; nothing iterates."]
+        if not self.plain:
+            out.append("A drawn domain or pieces: every face to the void is a rigid wall "
+                       "(its velocity stays zero), so the domain is closed and keeps its "
+                       "energy. The reflection is not read: the textbook reflection needs "
+                       "two uniform media meeting at a straight cut.")
+            return out
+        z1, z2 = float(rho[0, 0] * c[0, 0]), float(rho[0, -1] * c[0, -1])
         if self.R is not None:
             t = 2.0 * z2 / (z1 + z2)
             out.append(f"Impedances Z = rho c: {z1:.4g} and {z2:.4g} Pa s/m. Textbook "
@@ -420,7 +550,8 @@ class AcousticsRun:
         return out
 
     def describe(self) -> dict[str, Any]:
-        return {"style": "C", "explicit": True, "cells": self.nx * self.ny,
+        return {"style": "C", "explicit": True,
+                "cells": self.nx * self.ny if self.plain else self.cells,
                 "cut_column": self.m, "dt_s": self.dt, "stable_dt_s": self.limit,
                 "textbook_R": self.R, "plateau_steps": list(self.window) if self.window
                 else None, "pulse": vars(self.pulse)}
@@ -451,17 +582,23 @@ def case_graph(spec):
     from atlas.ports import PortType, ResponseHalf
 
     from ..compile import face_prolongation, modes_for
-    m = cut_column(spec)
-    if m is None:
-        from ..compile import CompileRefused
-        raise CompileRefused("the acoustics family's pieces are two windows side by side")
     d = spec.domain
-    rho, c = media(spec)
     dt = float(spec.run.macro_dt)
-    rho_f = 0.5 * (rho[:, m - 1] + rho[:, m])                  # the interface faces' density
-    left, right = sorted(spec.windows, key=lambda w: w.x0)
     amp = float(spec.physics.get("amplitude"))
-    z1 = float(rho[0, 0] * c[0, 0])
+    if geo.is_plain(spec):
+        m = cut_column(spec)
+        if m is None:
+            from ..compile import CompileRefused
+            raise CompileRefused("the acoustics family's pieces are two windows side by "
+                                 "side")
+        rho, c = media(spec)
+        rho_f = 0.5 * (rho[:, m - 1] + rho[:, m])              # the interface faces' density
+        left, right = sorted(spec.windows, key=lambda w: w.x0)
+        z1 = float(rho[0, 0] * c[0, 0])
+    else:
+        rho_f, z1 = _interface_faces(spec)
+        left, right = spec.windows
+    n_faces = int(rho_f.size)
     scales = {"stress": amp, "velocity": amp / z1, "power_area": amp * amp / z1}
     port = "interface:MECH"
 
@@ -473,12 +610,12 @@ def case_graph(spec):
         return ExpertCapabilities(
             expert_id=name, ports=[port_decl(
                 name=port, port_type=PortType.MECH,
-                geometry=f"the {d.ny} interface faces, from the {'first' if sign > 0 else 'second'} "
-                         f"piece's side",
+                geometry=f"the {n_faces} interface faces, from the "
+                         f"{'first' if sign > 0 else 'second'} piece's side",
                 direction=Direction.BIDIRECTIONAL, nondim=dict(scales),
-                effective_resolution=modes_for(d.ny), motion_class=MotionClass.STATIC,
+                effective_resolution=modes_for(n_faces), motion_class=MotionClass.STATIC,
                 response_half=ResponseHalf.FLOW,
-                prolongation=face_prolongation(name, port, d.ny, d.dx),
+                prolongation=face_prolongation(name, port, n_faces, d.dx),
                 note="the normal velocity into the piece after one velocity update")],
             bc_channel=BCChannel.DIRICHLET, bc_time_varying=True,
             elliptic_subsolve=EllipticSubsolve.NONE,
@@ -489,7 +626,7 @@ def case_graph(spec):
             lambda_ref="the same leapfrog on the whole domain, the full-domain arm",
             claim_types=frozenset({ClaimType.TRAJECTORY}),
             weight_hash="workbench/acoustics-leapfrog", boundary_response=respond,
-            probe_base=lambda _p: np.zeros(d.ny),
+            probe_base=lambda _p: np.zeros(n_faces),
             reproducibility_floor=float(np.finfo(float).eps), deterministic=True,
             note="atlas/workbench/families/acoustics.py: staggered-grid leapfrog")
     return CaseGraph(
@@ -506,5 +643,48 @@ def case_graph(spec):
         note=f"the workbench case {spec.name!r}: style C, explicit")
 
 
+def _interface_faces(spec) -> tuple[np.ndarray, float]:
+    """Two pieces of any shape (case file 0.4): the density of each face between
+    them, in order along the interface (`compile.curve_order`), and the first
+    piece's impedance ``rho c`` (its commonest medium)."""
+    from ..compile import CutFaces, curve_order
+    d = spec.domain
+    rho, c, _K, ox, oy = masked_media(spec)
+    (_na, mA), (_nb, mB) = geo.window_masks(spec)
+    nx = d.nx
+    rows_in, outs, dens = [], [], []
+    for axis in (1, 0):
+        if axis == 1:
+            open_ = ox > 0
+            a, b = mA[:, :-1], mB[:, 1:]
+            a2, b2 = mB[:, :-1], mA[:, 1:]
+            jj, ii = np.nonzero(open_ & ((a & b) | (a2 & b2)))
+            left_in_a = mA[jj, ii]
+            cin = np.where(left_in_a, jj * nx + ii, jj * nx + ii + 1)
+            cout = np.where(left_in_a, jj * nx + ii + 1, jj * nx + ii)
+            rf = 0.5 * (rho[jj, ii] + rho[jj, ii + 1])
+        else:
+            open_ = oy > 0
+            a, b = mA[:-1, :], mB[1:, :]
+            a2, b2 = mB[:-1, :], mA[1:, :]
+            jj, ii = np.nonzero(open_ & ((a & b) | (a2 & b2)))
+            low_in_a = mA[jj, ii]
+            cin = np.where(low_in_a, jj * nx + ii, (jj + 1) * nx + ii)
+            cout = np.where(low_in_a, (jj + 1) * nx + ii, jj * nx + ii)
+            rf = 0.5 * (rho[jj, ii] + rho[jj + 1, ii])
+        rows_in.append(cin)
+        outs.append(cout)
+        dens.append(rf)
+    cin, cout, rf = np.concatenate(rows_in), np.concatenate(outs), np.concatenate(dens)
+    idx_a = np.flatnonzero(mA.ravel())
+    pos = np.full(mA.size, -1, dtype=np.int64)
+    pos[idx_a] = np.arange(idx_a.size)
+    order = curve_order(CutFaces(idx_a, pos[cin], cout), np.arange(cin.size), nx)
+    pairs, counts = np.unique(np.column_stack([rho[mA], c[mA]]), axis=0, return_counts=True)
+    rho1, c1 = (float(v) for v in pairs[int(np.argmax(counts))])
+    return rf[order], rho1 * c1
+
+
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "AcousticsRun", "Wave", "build", "media",
-           "stable_dt", "cut_column", "closed_form_reflection", "plateau", "available_arms"]
+           "masked_media", "stable_dt", "cut_column", "closed_form_reflection", "plateau",
+           "available_arms"]

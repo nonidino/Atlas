@@ -43,7 +43,7 @@ import numpy as np
 from .. import fv, styles
 from .. import geometry as geo
 from ..checks import CheckSpec, judge
-from .conduction import dirichlet_side, rho_1d, window_cells
+from .conduction import cells_of, dirichlet_side, rho_1d, window_cells
 
 FAMILY = "conjugate-heat-2d"
 STYLE = "C"
@@ -100,12 +100,75 @@ def coolant_rows(spec) -> tuple[np.ndarray, str | None]:
     return rows, None
 
 
+def is_plug(spec) -> bool:
+    """The coolant fills whole rows of an undrawn domain: the plug flow along x this
+    family was built with, kept to the bit.  Anything else -- a drawn domain, a
+    drawn or winding channel -- carries the coolant on a solved flow (`coolant_flow`)."""
+    d = spec.domain
+    if d.outline is not None or d.holes:
+        return False
+    rows, why = coolant_rows(spec)
+    return why is None
+
+
+def coolant_mask(spec) -> np.ndarray:
+    """The cells the coolant flows in: a material with ``flows = 1``, in the domain."""
+    return (material_grid(spec, "flows") > 0.5) & geo.domain_mask(spec.domain)
+
+
+def coolant_flow(spec):
+    """The coolant's flow through its own cells (case file 0.4): the potential flow
+    from its inlet faces to its outlet faces (`flow.py`), the inlets' mean speed the
+    case's ``u_coolant`` over their width as drawn.  No coolant enters the block."""
+    from .. import flow as fl
+    d = spec.domain
+    carrier = coolant_mask(spec)
+    bf, kinds = fl.case_faces(spec, "coolant-inlet", "coolant-outlet")
+    on = carrier.ravel()[bf.cell]
+    scale = geo.staircase_scale(d, bf)
+    width = float(sum(scale.get(n, 1.0) for n, k, o in zip(bf.edge.tolist(), kinds.tolist(),
+                                                           on.tolist()) if k == "in" and o))
+    return fl.potential_flow(carrier, bf, kinds,
+                             spec.physics.get("u_coolant") * width * d.dx, float(d.dx))
+
+
+def _face_capacity(rc: np.ndarray, carrier: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """rho cp on every x-face ``(ny, nx + 1)`` and y-face ``(ny + 1, nx)``: the mean of
+    two coolant cells, or the one coolant cell's on a face it shares with anything
+    else (a flow never crosses such a face but an inlet or an outlet)."""
+    ny, nx = rc.shape
+    c = np.where(carrier, rc, 0.0)
+    rx = np.zeros((ny, nx + 1))
+    both = carrier[:, :-1] & carrier[:, 1:]
+    rx[:, 1:-1] = np.where(both, 0.5 * (c[:, :-1] + c[:, 1:]), c[:, :-1] + c[:, 1:])
+    rx[:, 0], rx[:, -1] = c[:, 0], c[:, -1]
+    ry = np.zeros((ny + 1, nx))
+    both = carrier[:-1, :] & carrier[1:, :]
+    ry[1:-1, :] = np.where(both, 0.5 * (c[:-1, :] + c[1:, :]), c[:-1, :] + c[1:, :])
+    ry[0, :], ry[-1, :] = c[0, :], c[-1, :]
+    return rx, ry
+
+
 def field_from_case(spec) -> fv.Field:
     """The block and its coolant as one `fv.Field`: ``k`` and the source per cell,
-    ``rho cp u`` through the x-faces of the coolant's rows."""
+    ``rho cp u`` through the x-faces of the coolant's rows.  A coolant that is not
+    whole rows, or a drawn domain, carries ``rho cp`` on the solved flow of
+    `coolant_flow` instead, each boundary face its edge's condition."""
     d = spec.domain
     k = material_grid(spec, "k")
     src = material_grid(spec, "heat")
+    if not is_plug(spec):
+        from .conduction import boundary_arrays
+        act = geo.domain_mask(d)
+        drawn = d.outline is not None or bool(d.holes)
+        carrier = coolant_mask(spec)
+        fl = coolant_flow(spec)
+        rx, ry = _face_capacity(material_grid(spec, "rho") * material_grid(spec, "cp"),
+                                carrier)
+        bc, void = boundary_arrays(spec, _KIND)
+        return fv.Field(d.nx, d.ny, float(d.dx), np.where(act, k, 0.0),
+                        source=np.where(act, src, 0.0), fx=fl.fx * rx, fy=fl.fy * ry, bc=bc,
+                        active=act if drawn else None, void=void)
     rows, _why = coolant_rows(spec)
     fx = np.zeros((d.ny, d.nx + 1))
     if rows.size:
@@ -159,39 +222,58 @@ class CoolingRun:
         self.arms = tuple(a for a in ARMS if a in arms)
         self.full_sys = fv.assemble(self.f)
         self.full_lu = styles.Factor(self.full_sys.A) if "full" in self.arms else None
+        #: a drawn domain's cells outside it: never solved, held at the inlet's value
+        self.void = self.f.void_cells()
+        self.plug = is_plug(spec)
         d_id, n_id = dirichlet_side(spec, self.f)
-        box = {w.id: (w.x0, w.y0, w.nx, w.ny) for w in spec.windows}
         self.d_id, self.n_id = d_id, n_id
-        self.sd = fv.assemble(self.f, window_cells(self.nx, box[d_id]), "dirichlet")
-        self.sn = fv.assemble(self.f, window_cells(self.nx, box[n_id]), "neumann")
+        wins = {w.id: w for w in spec.windows}
+        self.sd = fv.assemble(self.f, cells_of(spec, wins[d_id]), "dirichlet")
+        self.sn = fv.assemble(self.f, cells_of(spec, wins[n_id]), "neumann")
         self.fd, self.fn = styles.Factor(self.sd.A), styles.Factor(self.sn.A)
         self.pairing = styles.pair_faces(self.sd, self.sn)
         self.rho_1d = rho_1d(spec, d_id, n_id)
-        rows, _why = coolant_rows(spec)
-        rc = material_grid(spec, "rho") * material_grid(spec, "cp")
-        self.mdot_cp = float(spec.physics.get("u_coolant") * np.sum(rc[rows, 0])
-                             * self.f.dx)
+        if self.plug:
+            rows, _why = coolant_rows(spec)
+            rc = material_grid(spec, "rho") * material_grid(spec, "cp")
+            self.mdot_cp = float(spec.physics.get("u_coolant") * np.sum(rc[rows, 0])
+                                 * self.f.dx)
+        else:
+            # the heat capacity the inlets bring in per kelvin: rho cp times the flow in
+            _c, kind, _v, _g, fin = fv.boundary_faces(self.f)
+            self.mdot_cp = float(np.sum(np.maximum(fin[kind == fv.INLET], 0.0)))
 
     def initial(self, arm: str) -> CoolState:
         return CoolState(np.full(self.f.n, self.T_in if self.T_in is not None else 0.0))
 
     def step(self, arm: str, s: CoolState) -> CoolState:
         """The whole steady solve again (a timed repeat)."""
+        start = self.T_in if self.T_in is not None else 0.0
         if arm == "full":
-            return CoolState(self.full_lu.solve(self.full_sys.b), 1, True)
-        lam0 = np.full(self.sd.face_rows.size, self.T_in if self.T_in is not None else 0.0)
+            if not self.void.size:
+                return CoolState(self.full_lu.solve(self.full_sys.b), 1, True)
+            u = np.full(self.f.n, start)
+            u[self.full_sys.idx] = self.full_lu.solve(self.full_sys.b)
+            return CoolState(u, 1, True)
+        lam0 = np.full(self.sd.face_rows.size, start)
         it = styles.dirichlet_neumann(self.sd, self.fd, self.sn, self.fn, lam0, self.tol,
                                       self.max_it, self.scale,
                                       theta0=self.spec.coupling.relaxation,
-                                      aitken=self.spec.coupling.aitken, pairing=self.pairing)
-        return CoolState(it.u, it.iterations, it.converged, it.history, it.relaxation)
+                                      aitken=self.spec.coupling.aitken, pairing=self.pairing,
+                                      n_total=self.f.n if self.void.size else None)
+        u = it.u
+        if self.void.size:
+            u[self.void] = start
+        return CoolState(u, it.iterations, it.converged, it.history, it.relaxation)
 
     def observe(self, arm: str, s: CoolState, prev: CoolState | None = None) -> dict:
         q = fv.boundary_inflow(self.f, s.u)
         net = float(sum(q.values())) + self.power
+        hottest = (float(np.max(s.u)) if not self.void.size
+                   else float(np.max(s.u[self.full_sys.idx])))
         return {"balance": abs(net) / max(abs(self.power), 1e-300),
                 "carried_out_W": -float(sum(q.values())),
-                "max_temperature": float(np.max(s.u)),
+                "max_temperature": hottest,
                 "iterations": float(s.iterations), "converged": float(s.converged),
                 "convergence": list(s.history), "relaxation": list(s.relaxation)}
 
@@ -199,7 +281,11 @@ class CoolingRun:
         return bool(np.array_equal(a.u, b.u))
 
     def field(self, s: CoolState) -> np.ndarray:
-        return s.u.reshape(self.ny, self.nx)
+        if not self.void.size:
+            return s.u.reshape(self.ny, self.nx)
+        u = s.u.copy()
+        u[self.void] = np.nan                     # outside the drawn domain: not drawn
+        return u.reshape(self.ny, self.nx)
 
     def close(self) -> None:
         pass
@@ -265,9 +351,13 @@ def case_graph(spec):
     from ..compile import fv_graph
     d = spec.domain
     f = field_from_case(spec)
-    rows, _why = coolant_rows(spec)
-    fluid = {w.id for w in spec.windows
-             if set(range(w.y0, w.y0 + w.ny)) & set(rows.tolist())}
+    if is_plug(spec):
+        rows, _why = coolant_rows(spec)
+        fluid = {w.id for w in spec.windows
+                 if set(range(w.y0, w.y0 + w.ny)) & set(rows.tolist())}
+    else:
+        wet = coolant_mask(spec).ravel()
+        fluid = {w.id for w in spec.windows if wet[cells_of(spec, w)].any()}
     T_in = inlet_temperature(spec) or 300.0
     k_max = max(float(m["k"]) for m in spec.materials.values())
     power = max(fv.total_source(f), 1e-30) / (d.nx * d.dx)       # W/m^2 through the wall

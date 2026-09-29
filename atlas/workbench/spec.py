@@ -512,14 +512,72 @@ def family_boundaries(fid: str) -> list[Boundary]:
             for edge, kind, value in fam.default_boundaries]
 
 
+def derived_kind(spec: "CaseSpec", name: str) -> str:
+    """The condition a family gives the drawn edge ``name`` of its own accord: the
+    kind the family's solver fixes on the grid edge the drawn edge lies along
+    (`geometry.along_grid_edge`), or its ``drawn_default``.  A river drawn from the
+    grid's left edge to its right edge enters on the left and leaves on the right;
+    a wind farm's drawn edges away from the grid's edges are walls."""
+    fam = registry.family(spec.physics.family)
+    e = geo.along_grid_edge(spec.domain, name)
+    for f in fam.fixed_boundaries:
+        if f.edge == e:
+            return f.kind
+    if fam.drawn_default:
+        return fam.drawn_default
+    return fam.boundary_kinds[0] if fam.boundary_kinds else "insulated"
+
+
+def default_boundaries(c: "CaseSpec", fid: str | None = None) -> list[Boundary]:
+    """A family's boundaries for the case's domain: `family_boundaries` on the grid's
+    edges (when the domain has no drawn outline), and one per drawn edge, of its
+    `derived_kind`."""
+    fid = fid or c.physics.family
+    d = c.domain
+    out = [] if d.outline is not None else family_boundaries(fid)
+    if d.outline is not None or d.holes:
+        probe = c.model_copy(update={"physics": c.physics.model_copy(update={"family": fid})})
+        taken = {b.id for b in out}
+        for name in geo.drawn_edge_names(d):
+            bid = "B-" + name.replace(":", "-")
+            k = 2
+            while bid in taken:
+                bid, k = f"B-{name.replace(':', '-')}-{k}", k + 1
+            taken.add(bid)
+            out.append(Boundary(id=bid, edge=name, kind=derived_kind(probe, name)))
+    return out
+
+
+def derive_boundaries(c: "CaseSpec") -> bool:
+    """For a family whose solver fixes its drawn edges' conditions (``drawn_derived``),
+    give every drawn edge its `derived_kind`; True when anything changed.  Called on
+    every edit, so moving a vertex off the grid's edge turns an inlet into a wall."""
+    try:
+        fam = registry.family(c.physics.family)
+    except KeyError:
+        return False
+    d = c.domain
+    if not fam.drawn_derived or (d.outline is None and not d.holes):
+        return False
+    changed = False
+    for b in c.boundaries:
+        if b.drawn:
+            want = derived_kind(c, b.edge)
+            if b.kind != want:
+                b.kind, b.value = want, None
+                changed = True
+    return changed
+
+
 def adapt_to_family(c: "CaseSpec", fid: str) -> None:
     """Make a case fit a newly chosen family, keeping what still applies.
 
     Parameters the family declares keep a value the case already has; the style
     and the run mode fall back to the family's first if the case's is not one it
     runs; boundaries are replaced when the family fixes its own or cannot impose
-    one the case has; region materials the case does not define are taken from
-    the family's showcase library when it has one of that name.
+    one the case has (on a drawn domain, by one per drawn edge); region materials
+    the case does not define are taken from the family's showcase library when it
+    has one of that name.
     """
     fam = registry.family(fid)
     c.physics.family = fid
@@ -530,7 +588,7 @@ def adapt_to_family(c: "CaseSpec", fid: str) -> None:
     if c.run.mode not in fam.modes:
         c.run.mode = fam.modes[0]
     if fam.fixed_boundaries or any(b.kind not in fam.boundary_kinds for b in c.boundaries):
-        c.boundaries = family_boundaries(fid)
+        c.boundaries = default_boundaries(c, fid)
     lib = fam.material_library()
     for r in c.regions:
         if r.material not in c.materials and r.material in lib:
@@ -651,6 +709,22 @@ def check(spec: CaseSpec) -> list[Issue]:
                              f"device {v.id} is yawed {v.yaw_deg:g} degrees; the actuator "
                              f"disk here has no yaw model (disk.ActuatorDisk), so set it "
                              f"to 0"))
+    if spec.physics.family == "incompressible-2d" and (d.outline is not None or d.holes):
+        # a drawn domain: the fluid is its cells, the rest a solid held at rest
+        act = geo.domain_mask(d)
+        for v in spec.devices:
+            j0 = int(np.floor((v.y - v.diameter / 2) / d.dx))
+            j1 = int(np.ceil((v.y + v.diameter / 2) / d.dx))
+            i = int(np.floor(v.x / d.dx))
+            if 0 <= i < d.nx and not act[max(j0, 0):min(j1, d.ny), i].all():
+                out.append(Issue("error", "geometry",
+                                 f"device {v.id}'s disk reaches into the solid, outside the "
+                                 f"drawn domain"))
+        if d.outline is not None and not any(
+                geo.along_grid_edge(d, n) == "left" for n in geo.drawn_edge_names(d)):
+            out.append(Issue("error", "geometry",
+                             "the flow enters on the grid's left edge, and no edge of the "
+                             "drawn domain runs along it: draw the domain to reach it"))
     if spec.physics.family == "incompressible-2d":
         re_cell = d.dx * spec.physics.u_inf / spec.physics.nu
         if re_cell > 8.0:
@@ -860,12 +934,34 @@ def _check_transport(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
     d = spec.domain
     sx, sy = spec.physics.get("source_x"), spec.physics.get("source_y")
     lx, ly = d.nx * d.dx, d.ny * d.dx
+    drawn = d.outline is not None or bool(d.holes)
     if not (0.0 <= sx < lx and 0.0 <= sy < ly):
         out.append(Issue("error", "physics",
                          f"the outfall ({sx:g} m, {sy:g} m) is not in the river, which is "
                          f"{lx:g} m x {ly:g} m"))
+    elif drawn and not geo.domain_mask(d)[int(sy // d.dx), int(sx // d.dx)]:
+        out.append(Issue("error", "physics",
+                         f"the outfall ({sx:g} m, {sy:g} m) is on dry ground, outside the "
+                         f"drawn river"))
+    if drawn:
+        # a drawn river's flow is solved from its inlets to its outlets (flow.py)
+        kinds = {b.kind for b in spec.boundaries if b.drawn or d.outline is None}
+        for kind, what in (("river-inlet", "enters"), ("river-outlet", "leaves")):
+            if kind not in kinds:
+                out.append(Issue("error", "geometry",
+                                 f"nothing marks where the river {what}: give one of its "
+                                 f"edges the condition {kind}"))
+        if any(i.severity == "error" for i in out) or any(
+                i.severity == "error" for i in _check_boundaries(spec)):
+            return out
+        from .families.plume import river_flow
+        from .flow import FlowError
+        try:
+            river_flow(spec)
+        except FlowError as exc:
+            return out + [Issue("error", "geometry", f"the river's flow: {exc}")]
     owner = geo.region_owner(spec.regions, d.nx, d.ny)
-    if materials_ok and spec.regions and not np.any(owner < 0):
+    if materials_ok and spec.regions and not np.any((owner < 0) & geo.domain_mask(d)):
         from .families.plume import explicit_limit       # the family's own arithmetic
         lim = explicit_limit(spec)
         if spec.run.macro_dt > lim:
@@ -883,13 +979,20 @@ def _check_acoustics(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
     from .families import acoustics as ac                # the family's own arithmetic
     out: list[Issue] = []
     d = spec.domain
-    m = ac.cut_column(spec)
-    if spec.windows and m is None:
+    plain = geo.is_plain(spec)
+    m = ac.cut_column(spec) if plain else None
+    if spec.windows and plain and m is None:
         out.append(Issue("error", "geometry",
-                         "the acoustics family's pieces are two windows side by side, each "
-                         "the full height of the domain: the wave runs along x"))
+                         "the acoustics family's pieces on a rectangle are two windows side "
+                         "by side, each the full height of the domain: the wave runs along x "
+                         "(draw the pieces, or the domain, for any other cut)"))
+    if not plain:
+        out.append(Issue("info", "physics",
+                         "a drawn domain or pieces: the reflection is not read against the "
+                         "textbook (that needs two uniform media meeting at a straight cut); "
+                         "the energy and the pieces' agreement with the full domain are"))
     owner = geo.region_owner(spec.regions, d.nx, d.ny)
-    if not (materials_ok and spec.regions and not np.any(owner < 0)):
+    if not (materials_ok and spec.regions and not np.any((owner < 0) & geo.domain_mask(d))):
         return out
     lim = ac.stable_dt(spec)
     if spec.run.macro_dt > lim:
@@ -951,8 +1054,11 @@ def _check_cooling(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
     out: list[Issue] = []
     d = spec.domain
     owner = geo.region_owner(spec.regions, d.nx, d.ny)
-    if not (materials_ok and spec.regions and not np.any(owner < 0)):
+    if not (materials_ok and spec.regions
+            and not np.any((owner < 0) & geo.domain_mask(d))):
         return out
+    if not co.is_plug(spec):
+        return _check_coolant_flow(spec)
     rows, why = co.coolant_rows(spec)
     if why:
         return [Issue("error", "geometry", why)]
@@ -984,6 +1090,44 @@ def _check_cooling(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
                 out.append(Issue("error", "geometry",
                                  f"window {w.id} cuts the coolant's flow; make one window the "
                                  f"channel and the other the block, meeting at the wall"))
+    return out
+
+
+def _check_coolant_flow(spec: CaseSpec) -> list[Issue]:
+    """A coolant that is not whole rows, or a drawn domain (case file 0.4): its flow is
+    solved through its own cells from its inlets to its outlets (`flow.py`).  The
+    inlets and outlets must be on the coolant, the flow must be solvable, and the
+    coolant must lie in one piece: no flow may cross the seam."""
+    from .families import cooling as co
+    from .flow import FlowError, case_faces
+    out: list[Issue] = []
+    carrier = co.coolant_mask(spec)
+    if not carrier.any():
+        return [Issue("error", "physics",
+                      "no region's material flows (flows = 1), so nothing cools the block")]
+    bf, kinds = case_faces(spec, "coolant-inlet", "coolant-outlet")
+    on = carrier.ravel()[bf.cell]
+    if np.any((kinds != "") & ~on):
+        out.append(Issue("error", "geometry",
+                         "a coolant inlet or outlet lies on the block's cells: the coolant "
+                         "enters and leaves through the edges of its own cells"))
+    if not np.any(co.material_grid(spec, "heat") > 0.0):
+        out.append(Issue("warning", "physics", "no material generates heat, so nothing warms"))
+    if spec.windows and len(spec.windows) == 2:
+        holders = [(w.id, m) for w, (_wid, m) in zip(spec.windows, geo.window_masks(spec))
+                   if (m & carrier).any()]
+        if len(holders) != 1 or (carrier & ~holders[0][1]).any():
+            out.append(Issue("error", "geometry",
+                             "the coolant runs across the seam between the two windows; make "
+                             "one window the channel and the other the block (Windows: one "
+                             "piece per material)"))
+    if any(i.severity == "error" for i in out) or any(
+            i.severity == "error" for i in _check_boundaries(spec)):
+        return out
+    try:
+        co.coolant_flow(spec)
+    except FlowError as exc:
+        out.append(Issue("error", "geometry", f"the coolant's flow: {exc}"))
     return out
 
 
@@ -1060,7 +1204,9 @@ def _check_regions(spec: CaseSpec) -> list[Issue]:
                          f"the {fam.id} family does not read material regions, so its "
                          f"solver would ignore the {len(spec.regions)} drawn here"))
     for r in spec.regions:
-        if r.x0 + r.nx > d.nx or r.y0 + r.ny > d.ny:
+        # a drawn region may reach past the grid: it holds the cells whose centres
+        # it contains (case file 0.4), like a drawn window
+        if r.shape != "curve" and (r.x0 + r.nx > d.nx or r.y0 + r.ny > d.ny):
             out.append(Issue("error", "geometry", f"region {r.id} reaches past the domain"))
     owner = geo.region_owner(spec.regions, d.nx, d.ny)
     for k, r in enumerate(spec.regions):
@@ -1149,16 +1295,30 @@ def _check_boundaries(spec: CaseSpec) -> list[Issue]:
             out.append(Issue("error", "geometry",
                              f"{gap} of the {n} cells on the {edge} edge have no boundary "
                              f"condition"))
-    if fam is not None and fam.fixed_boundaries:
+    if fam is not None and fam.fixed_boundaries and d.outline is None:
+        # the grid's own edges; a drawn outline replaces them (below)
+        grid_b = [b for b in spec.boundaries if not b.drawn]
         want = sorted((f.edge, f.kind) for f in fam.fixed_boundaries)
-        have = sorted((b.edge, b.kind) for b in spec.boundaries
+        have = sorted((b.edge, b.kind) for b in grid_b
                       if b.start == 0 and b.stop in (None, geo.edge_length(b.edge, d.nx, d.ny)))
-        if have != want or len(spec.boundaries) != len(want):
+        if have != want or len(grid_b) != len(want):
             fixed = ", ".join(f"{f.edge} {f.kind}" for f in fam.fixed_boundaries)
             out.append(Issue("error", "geometry",
                              f"the {fam.id} solver fixes its outer boundary ({fixed}); a "
                              f"case of this family cannot change it (Geometry, Boundaries: "
                              f"use the family's)"))
+    if fam is not None and fam.drawn_derived and drawn:
+        for b in spec.boundaries:
+            if not (b.drawn and b.edge in on_drawn):
+                continue
+            want_kind = derived_kind(spec, b.edge)
+            if b.kind != want_kind:
+                along = geo.along_grid_edge(d, b.edge)
+                where = (f"it lies along the grid's {along} edge" if along else
+                         "it is not along one of the grid's edges")
+                out.append(Issue("error", "geometry",
+                                 f"boundary {b.id} on {b.edge}: the {fam.id} solver fixes it "
+                                 f"as {want_kind}, since {where}"))
     return out
 
 
@@ -1260,6 +1420,36 @@ EXAMPLES: dict[str, Example] = {e.key: e for e in (
             "four windows are generated from its own shape, cut across its length at level "
             "curves of its harmonic coordinate, and follow it when it is reshaped.",
             "conduction-2d", "B"),
+    # -- drawn shapes in every other family (2026-09-29, the owner: "make the smooth
+    #    domain/spline/other stuff available for all cases")
+    Example("ring-film", "Current round a curved film (style D, drawn)",
+            "A quarter ring of graphite film with an electrode on each straight end, wired "
+            "to a battery and a resistor: the current turns the corner, and the film's "
+            "resistance is read against theta / (sigma t ln(ro / ri)).", "electric-2d", "D"),
+    Example("river-bend", "A plume round a winding river (style A, drawn)",
+            "A river drawn with splines, shallow then deep, its flow solved from its inlet to "
+            "its outlet so no water crosses a bank; a release carried round the bends on two "
+            "windows that follow the river.", "transport-2d", "A"),
+    Example("sound-lens", "Sound on a curved water surface (style C, drawn)",
+            "A pressure pulse runs along a round-ended air duct and meets a curved water "
+            "surface; the pieces are the two media, and the rigid drawn walls keep the "
+            "energy to round-off.", "acoustics-2d", "C"),
+    Example("plate-hole", "A plate with a hole in tension (style B, drawn)",
+            "A steel plate clamped at one end and pulled at the other, a round hole in its "
+            "middle concentrating the stress round it; two windows cut along it.",
+            "elasticity-2d", "B"),
+    Example("bimetal-arc", "A curved bimetal strip heated at one end (split, drawn)",
+            "A quarter ring of steel inside copper, one end held hot: conduction and "
+            "elasticity on the ring's own cells, split by physics.", "thermoelastic-2d",
+            "split"),
+    Example("cooled-winding", "A block cooled by a winding channel (style C, drawn)",
+            "A copper block with a chip at its base and a water channel drawn as a winding "
+            "band across it; the coolant's flow is solved through the channel, and the pieces "
+            "are its two physics.", "conjugate-heat-2d", "C"),
+    Example("farm-hill", "Wind farm over a hill (style A, drawn)",
+            "The three-rotor array over terrain drawn with splines: the ground is a no-slip "
+            "wall held by penalization, the grid's edges keep their inlet, outlet and "
+            "freestream.", "incompressible-2d", "A", (("steps", 40), ("threads", 4))),
 )}
 
 
@@ -1272,6 +1462,8 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
     from the geometry the record describes.
     """
     ex = EXAMPLES[key]
+    if key == "farm-hill":
+        return _farm_hill_example(ex)
     if ex.family == "incompressible-2d":
         return _farm_example(ex)
     builder = {"wall-2": _wall_example, "plate-insert": _insert_example,
@@ -1279,7 +1471,10 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
                "sound-air-water": _sound_example, "bracket-2": _bracket_example,
                "heated-strip": _strip_example, "cooled-block": _block_example,
                "bend-3": _bend_example, "insert-round": _round_insert_example,
-               "s-channel": _s_channel_example}.get(key)
+               "s-channel": _s_channel_example, "ring-film": _ring_film_example,
+               "river-bend": _river_bend_example, "sound-lens": _sound_lens_example,
+               "plate-hole": _plate_hole_example, "bimetal-arc": _bimetal_arc_example,
+               "cooled-winding": _cooled_winding_example}.get(key)
     if builder is None:                                    # pragma: no cover
         raise KeyError(key)
     return builder(ex)
@@ -1419,6 +1614,238 @@ def _s_channel_example(ex: Example) -> CaseSpec:
     )
     from .layout import refresh
     refresh(spec)                           # the windows, from the channel's own shape
+    return spec
+
+
+def _band(xs: list[float], mid, half: float) -> Outline:
+    """A band of half-width ``half`` round the curve ``y = mid(x)`` from ``xs[0]`` to
+    ``xs[-1]``: each side a spline through the points over ``xs``, the two ends
+    straight."""
+    n = len(xs)
+    pts = [(x, mid(x) - half) for x in xs] + [(x, mid(x) + half) for x in reversed(xs)]
+    kinds = ["spline"] * (n - 1) + ["line"] + ["spline"] * (n - 1) + ["line"]
+    return Outline(points=pts, edges=kinds, bulge=[0.0] * len(pts))
+
+
+def _ring_film_example(ex: Example) -> CaseSpec:
+    """A quarter ring of graphite film, radii 50 mm and 125 mm (40 and 100 cells of
+    1.25 mm), 30 um thick.  Electrode E1 is the straight end along x, E2 the one
+    along y, the arcs carry no current; the same 12 V battery (0.5 ohm inside) and 1
+    ohm resistor as the flat film close the loop.  The current runs round the ring,
+    so the film's resistance is ``theta / (sigma t ln(ro / ri))``: 0.571 ohm."""
+    import math
+    ring = Outline.of(shapes.annulus_sector(4.0, 4.0, 40.0, 100.0, 0.0, math.pi / 2))
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=108, ny=108, dx=0.00125, outline=ring),
+        physics=Physics(family="electric-2d", params={"thickness": 3.0e-5}),
+        materials=_materials("electric-2d", "graphite"),
+        regions=[Region(id="film", material="graphite", x0=0, y0=0, nx=108, ny=108)],
+        windows=[Window(id="plate", shape="curve", outline=ring)],
+        boundaries=[Boundary(id="E1", edge="outline:0", kind="electrode"),
+                    Boundary(id="outer", edge="outline:1", kind="no-current"),
+                    Boundary(id="E2", edge="outline:2", kind="electrode"),
+                    Boundary(id="inner", edge="outline:3", kind="no-current")],
+        attachments=[Attachment(id="B1", kind="battery", value=12.0, internal=0.5,
+                                a="n1", b="E2"),
+                     Attachment(id="R1", kind="resistor", value=1.0, a="n1", b="E1")],
+        coupling=Coupling(style="D", tolerance=1e-10, max_iterations=200, relaxation=0.5,
+                          aitken=True),
+        run=RunSettings(mode="steady", steps=5, threads=1, macro_dt=1.0),
+    )
+
+
+def _river_bend_example(ex: Example) -> CaseSpec:
+    """A river 1.2 km long and 200 m wide at 5 m cells, winding once each way:
+    its middle follows ``y = 50 + 22 sin(2 pi x / 240)`` cells, each bank a spline,
+    its two ends straight on the grid's left and right edges -- so it enters on the
+    left and leaves on the right (`derived_kind`).  Shallow and fast (1.25 m) for the
+    first 600 m, then deep and slow (2.5 m).  The outfall releases 10 g/s 150 m below
+    the inlet, in the middle of the river.  The two windows are generated along the
+    river (`layout.py`), so they bend with it.  Steps of 1.5 s, under the explicit
+    limit the check computes for the solved flow (1.53 s: the water runs fastest on
+    the inside of the bends); 2000 of them, 3000 s, longer than the water takes from
+    the inlet to the outlet."""
+    import math
+
+    def mid(x: float) -> float:
+        return 50.0 + 22.0 * math.sin(2.0 * math.pi * x / 240.0)
+    river = _band([0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240.0], mid, 20.0)
+    spec = CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=240, ny=100, dx=5.0, outline=river),
+        physics=Physics(family="transport-2d",
+                        params={"q": 1.0, "release": 10.0, "source_x": 150.0,
+                                "source_y": 5.0 * mid(30.0)}),
+        materials=_materials("transport-2d", "shallow-fast", "deep-slow"),
+        regions=[Region(id="upper", material="shallow-fast", x0=0, y0=0, nx=120, ny=100),
+                 Region(id="lower", material="deep-slow", x0=120, y0=0, nx=120, ny=100)],
+        layout=Layout(cut="along", along=2),
+        coupling=Coupling(style="A", ramp_cells=8),
+        run=RunSettings(mode="transient", macro_dt=1.5, steps=2000, threads=2),
+    )
+    spec.boundaries = default_boundaries(spec)
+    from .layout import refresh
+    refresh(spec)
+    return spec
+
+
+def _sound_lens_example(ex: Example) -> CaseSpec:
+    """A duct of air 3 m long and 0.8 m tall with round ends, at 1 cm cells, drawn as
+    two straight sides and two semicircles; water fills the grid right of a circle of
+    radius 1.1 m, so the water's surface is a shallow curve across the duct.  A
+    Gaussian pulse 0.1 m wide starts 1 m in; the pieces are the two media
+    (`layout.py`, one per material).  Steps of 4 us, under the leapfrog's limit of
+    about 4.8 us (water's sound speed, on the open faces)."""
+    duct = Outline(points=[(60.0, 20.0), (240.0, 20.0), (240.0, 100.0), (60.0, 100.0)],
+                   edges=["line", "arc", "line", "arc"], bulge=[0.0, 1.0, 0.0, 1.0])
+    spec = CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=300, ny=120, dx=0.01, outline=duct),
+        physics=Physics(family="acoustics-2d",
+                        params={"amplitude": 1.0, "pulse_x": 1.0, "pulse_width": 0.1}),
+        materials=_materials("acoustics-2d", "air", "water"),
+        regions=[Region(id="air", material="air", x0=0, y0=0, nx=300, ny=120),
+                 Region(id="water", material="water", shape="curve",
+                        outline=Outline.of(shapes.circle(300.0, 60.0, 110.0)))],
+        layout=Layout(cut="materials"),
+        coupling=Coupling(style="C"),
+        run=RunSettings(mode="transient", macro_dt=4.0e-6, steps=1500, threads=1),
+    )
+    spec.boundaries = default_boundaries(spec)
+    from .layout import refresh
+    refresh(spec)
+    return spec
+
+
+def _plate_hole_example(ex: Example) -> CaseSpec:
+    """A steel plate 0.4 m x 0.2 m at 2.5 mm cells, 10 mm thick, with a round hole of
+    radius 30 mm (12 cells) in its middle: clamped on the left, pulled on the right by
+    10 MPa.  Far from the hole the stress is the pull; at the hole's top and bottom
+    it rises to about three times that (Kirsch's plate, less for a finite width).
+    Two windows generated along the plate, iterated to 1e-12 of the largest
+    displacement, the tolerance the force check's registration assumes."""
+    spec = CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=160, ny=80, dx=0.0025,
+                      holes=[Outline.of(shapes.circle(80.0, 40.0, 12.0))]),
+        physics=Physics(family="elasticity-2d", params={"thickness": 0.01}),
+        materials=_materials("elasticity-2d", "steel"),
+        regions=[Region(id="plate", material="steel", x0=0, y0=0, nx=160, ny=80)],
+        layout=Layout(cut="along", along=2),
+        coupling=Coupling(style="B", ramp_cells=8, tolerance=1e-12, max_iterations=5000),
+        run=RunSettings(mode="steady", steps=5, threads=2, macro_dt=1.0),
+    )
+    spec.boundaries = [Boundary(id="clamp", edge="left", kind="clamped"),
+                       Boundary(id="pull", edge="right", kind="load-x", value=1.0e7),
+                       Boundary(id="bottom", edge="bottom", kind="free"),
+                       Boundary(id="top", edge="top", kind="free")]
+    spec.boundaries += [Boundary(id=f"hole-{k}", edge=f"hole0:{k}", kind="free")
+                        for k in range(4)]
+    from .layout import refresh
+    refresh(spec)
+    return spec
+
+
+def _bimetal_arc_example(ex: Example) -> CaseSpec:
+    """A quarter ring of radii 60 mm and 100 mm at 1 mm cells: steel inside, copper
+    outside the 80 mm arc.  At 300 K, its end along x held at 400 K from the start,
+    every other edge insulated; copper expands more than steel, so the arc opens as
+    the heat runs round it.  One window, the ring (a split by physics); 60 steps of
+    5 s."""
+    import math
+    ring = Outline.of(shapes.annulus_sector(4.0, 4.0, 60.0, 100.0, 0.0, math.pi / 2))
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=108, ny=108, dx=0.001, outline=ring),
+        physics=Physics(family="thermoelastic-2d", params={"T0": 300.0}),
+        materials=_materials("thermoelastic-2d", "steel", "copper"),
+        regions=[Region(id="steel", material="steel", x0=0, y0=0, nx=108, ny=108),
+                 Region(id="copper", material="copper", shape="curve",
+                        outline=Outline.of(shapes.annulus_sector(4.0, 4.0, 80.0, 110.0,
+                                                                 -0.1, 1.7)))],
+        windows=[Window(id="plate", shape="curve", outline=ring)],
+        boundaries=[Boundary(id="hot", edge="outline:0", kind="fixed-temperature",
+                             value=400.0),
+                    Boundary(id="outer", edge="outline:1", kind="insulated"),
+                    Boundary(id="end", edge="outline:2", kind="insulated"),
+                    Boundary(id="inner", edge="outline:3", kind="insulated")],
+        coupling=Coupling(style="split"),
+        run=RunSettings(mode="transient", macro_dt=5.0, steps=60, threads=2),
+    )
+
+
+def _cooled_winding_example(ex: Example) -> CaseSpec:
+    """The cooled block's copper and chip (0.2 m x 60 mm at 1 mm cells, the chip
+    40 mm x 5 mm in the middle of the base generating 10 W/cm^3), the block drawn
+    with rounded corners (radius 6 mm), and the water drawn as a winding channel
+    10 mm wide whose middle follows ``y = 40 + 8 sin(pi x / 100)`` cells.  The
+    block's left and right edges each have a vertex at either side of the channel,
+    so the stretch between them -- read off the channel's cells -- takes the
+    coolant's inlet (1 cm/s from 300 K) or outlet; every other edge is insulated.
+    The coolant's flow is solved through the channel (`flow.py`); the pieces are
+    the block and the channel (`layout.py`, cut by physics)."""
+    import math
+
+    def mid(x: float) -> float:
+        return 40.0 + 8.0 * math.sin(math.pi * x / 100.0)
+    channel = _band([0.0, 25.0, 50.0, 75.0, 100.0, 125.0, 150.0, 175.0, 200.0], mid, 5.0)
+    water = Region(id="channel", material="water", shape="curve", outline=channel)
+    wet = geo.region_mask(water, 200, 60)
+    rows_l, rows_r = np.flatnonzero(wet[:, 0]), np.flatnonzero(wet[:, -1])
+    lo_l, hi_l = float(rows_l.min()), float(rows_l.max() + 1)
+    lo_r, hi_r = float(rows_r.min()), float(rows_r.max() + 1)
+    q = math.tan(math.pi / 8)                     # a quarter circle's bulge
+    r_ = 6.0
+    pts = [(r_, 0.0), (200.0 - r_, 0.0), (200.0, r_), (200.0, lo_r), (200.0, hi_r),
+           (200.0, 60.0 - r_), (200.0 - r_, 60.0), (r_, 60.0), (0.0, 60.0 - r_), (0.0, hi_l),
+           (0.0, lo_l), (0.0, r_)]
+    kinds = ["line", "arc", "line", "line", "line", "arc", "line", "arc", "line", "line",
+             "line", "arc"]
+    bulge = [q if k == "arc" else 0.0 for k in kinds]
+    block = Outline(points=pts, edges=kinds, bulge=bulge)
+    spec = CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=200, ny=60, dx=0.001, outline=block),
+        physics=Physics(family="conjugate-heat-2d", params={"u_coolant": 0.01}),
+        materials=_materials("conjugate-heat-2d", "copper", "chip", "water"),
+        regions=[Region(id="block", material="copper", x0=0, y0=0, nx=200, ny=60),
+                 Region(id="chip", material="chip", x0=80, y0=0, nx=40, ny=5), water],
+        layout=Layout(cut="materials"),
+        coupling=Coupling(style="C", tolerance=1e-10, max_iterations=2000, relaxation=0.5,
+                          aitken=True, dirichlet_side="auto"),
+        run=RunSettings(mode="steady", steps=5, threads=1, macro_dt=1.0),
+    )
+    spec.boundaries = [Boundary(id=f"wall{k}", edge=f"outline:{k}", kind="insulated")
+                       for k in range(len(pts))]
+    spec.boundaries[3] = Boundary(id="outlet", edge="outline:3", kind="coolant-outlet")
+    spec.boundaries[9] = Boundary(id="inlet", edge="outline:9", kind="coolant-inlet",
+                                  value=300.0)
+    from .layout import refresh
+    refresh(spec)
+    return spec
+
+
+def _farm_hill_example(ex: Example) -> CaseSpec:
+    """The three-rotor array (`wake-array-3`: its grid, rotors, six windows and
+    constants) over a hill: the domain's bottom is terrain drawn as splines through
+    nine points, ``y = 12 + 30 exp(-((x - 194) / 60)^2)`` cells, rising 30 cells (0.94
+    D) under the middle of the array; its other three edges are the grid's.  The
+    terrain is a no-slip wall (the solid below it is held at rest every sub-step);
+    the grid's edges keep the solver's inlet, outlet and freestream
+    (`derived_kind`).  40 macro-steps, W346's march."""
+    import math
+    spec = _farm_example(EXAMPLES["wake-array-3"])
+    spec.name, spec.description = ex.key, ex.label
+    d = spec.domain
+    xs = [d.nx * k / 8.0 for k in range(9)]
+    pts = [(x, 12.0 + 30.0 * math.exp(-((x - 0.55 * d.nx) / 60.0) ** 2)) for x in xs]
+    pts += [(float(d.nx), float(d.ny)), (0.0, float(d.ny))]
+    kinds = ["spline"] * 8 + ["line"] * 3
+    d.outline = Outline(points=pts, edges=kinds, bulge=[0.0] * len(pts))
+    spec.boundaries = default_boundaries(spec)
+    spec.run.steps = ex.param("steps")
+    spec.run.threads = ex.param("threads")
     return spec
 
 

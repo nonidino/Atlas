@@ -341,7 +341,10 @@ def test_block_geometry_rules():
     s = example_case("cooled-block")
     s.regions[0].ny = 60                           # copper under the whole domain ...
     s.regions[2].nx = 150                          # ... so the channel ends in copper
-    assert any("must fill whole rows" in m for m in _errors(s))
+    # a coolant that is not whole rows has its flow solved (case file 0.4, flow.py);
+    # this one's outlet is on the copper, so it has nowhere to go
+    assert any("a coolant inlet or outlet lies on the block's cells" in m
+               for m in _errors(s))
     s = example_case("cooled-block")
     s.boundaries[1].start = 40                     # the inlet over block rows too
     s.boundaries[0].stop = 40

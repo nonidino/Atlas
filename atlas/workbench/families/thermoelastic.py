@@ -44,7 +44,9 @@ import scipy.sparse as sp
 
 from .. import fe, styles
 from ..checks import CheckSpec, exact, judge
-from .elasticity import element_props
+from .. import geometry as geo
+from ..fe import rigid_modes_on
+from .elasticity import active_elements, element_props, inactive_nodes
 
 FAMILY = "thermoelastic-2d"
 STYLE = "split"
@@ -110,33 +112,70 @@ class ThermoelasticRun:
             spec, "E", "nu", "alpha", "k", "rho", "cp")
         self.T0 = float(spec.physics.get("T0"))
         self.dt = float(spec.run.macro_dt)
+        #: a drawn domain (case file 0.4): its cells are the elements; the nodes no
+        #: element touches leave both solves (held at T0, and at rest)
+        self.active = active_elements(spec)
+        if self.active is not None:
+            self.E = np.where(self.active, self.E, 0.0)
+            k = np.where(self.active, k, 0.0)
+            rho = np.where(self.active, rho, 0.0)
+        self.off = inactive_nodes(spec)
         # -- conduction: backward Euler with the fixed-temperature nodes eliminated
         Kth, Mth = fe.assemble_thermal(g, k, rho * cp)
         self.Kth, self.Mth = Kth, Mth
         fixed_T: dict[int, float] = {}
         self.flux = np.zeros(g.n_nodes)
-        for b in spec.boundaries:
-            nodes = g.edge_nodes(b.edge, b.start, b.stop)
-            if b.kind == "fixed-temperature":
-                for n in nodes.tolist():
-                    fixed_T[n] = float(b.value)
-            elif b.kind == "heat-flux":
-                q = float(b.value) * 0.5 * g.dx
-                np.add.at(self.flux, nodes[:-1], q)
-                np.add.at(self.flux, nodes[1:], q)
+        if self.active is None:
+            for b in spec.boundaries:
+                nodes = g.edge_nodes(b.edge, b.start, b.stop)
+                if b.kind == "fixed-temperature":
+                    for n in nodes.tolist():
+                        fixed_T[n] = float(b.value)
+                elif b.kind == "heat-flux":
+                    q = float(b.value) * 0.5 * g.dx
+                    np.add.at(self.flux, nodes[:-1], q)
+                    np.add.at(self.flux, nodes[1:], q)
+        else:
+            # every boundary face its edge's condition; a flux per unit length of the
+            # edge as drawn (`geometry.staircase_scale`)
+            bf = geo.boundary_faces(d)
+            owner = geo.face_conditions(spec.boundaries, bf, d.nx, d.ny)
+            na, nb = bf.nodes(d.nx)
+            scale = geo.staircase_scale(d, bf)
+            for i, b in enumerate(spec.boundaries):
+                sel = owner == i
+                if not sel.any():
+                    continue
+                if b.kind == "fixed-temperature":
+                    for n in np.concatenate([na[sel], nb[sel]]).tolist():
+                        fixed_T[n] = float(b.value)
+                elif b.kind == "heat-flux":
+                    q = float(b.value) * 0.5 * g.dx * np.array(
+                        [scale.get(e, 1.0) for e in bf.edge[sel]])
+                    np.add.at(self.flux, na[sel], q)
+                    np.add.at(self.flux, nb[sel], q)
         self.fixed = np.array(sorted(fixed_T), dtype=np.int64)
         self.T_fixed = np.array([fixed_T[n] for n in self.fixed.tolist()])
-        self.free = np.setdiff1d(np.arange(g.n_nodes), self.fixed)
+        self.free = np.setdiff1d(np.arange(g.n_nodes), np.union1d(self.fixed, self.off))
         A = (Mth / self.dt + Kth).tocsr()
         self.A = A
         self.A_ff = A[self.free][:, self.free]
         self.A_fd = A[self.free][:, self.fixed]
         self.th_lu = styles.Factor(self.A_ff)
         # -- elasticity: a free body, the rigid-body motions removed by a bordered system
+        #    (over the domain's own nodes when it is drawn)
         self.K = fe.assemble_elastic(g, self.E, self.nu)
         self.G = fe.thermal_load_matrix(g, self.E, self.nu, self.alpha)
-        V = sp.csc_matrix(fe.rigid_modes(g))
-        self.me_lu = styles.Factor(sp.bmat([[self.K, V], [V.T, None]], format="csc"))
+        if self.active is None:
+            self.dofs = None
+            V = sp.csc_matrix(fe.rigid_modes(g))
+            self.me_lu = styles.Factor(sp.bmat([[self.K, V], [V.T, None]], format="csc"))
+        else:
+            on = np.setdiff1d(np.arange(g.n_nodes), self.off)
+            self.dofs = np.stack([2 * on, 2 * on + 1], axis=1).ravel()
+            V = sp.csc_matrix(rigid_modes_on(g, on))
+            Ka = self.K[self.dofs][:, self.dofs]
+            self.me_lu = styles.Factor(sp.bmat([[Ka, V], [V.T, None]], format="csc"))
         self.alpha_e = self.alpha
         self.arms = tuple(a for a in ARMS if a in arms)
         self.pool = (ThreadPoolExecutor(max_workers=2, thread_name_prefix="wb-thermo")
@@ -153,14 +192,21 @@ class ThermoelasticRun:
         out = np.empty_like(T)
         out[self.fixed] = self.T_fixed
         out[self.free] = self.th_lu.solve(rhs[self.free] - self.A_fd @ self.T_fixed)
+        if self.off.size:
+            out[self.off] = T[self.off]              # off the drawn domain: untouched
         return out
 
     def _mech(self, T: np.ndarray) -> np.ndarray:
         """The free body's displacement under the thermal strain of ``T``: the
         elasticity agent's own solve."""
         f = self.G @ (T - self.T0)
-        sol = self.me_lu.solve(np.concatenate([f, np.zeros(3)]))
-        return sol[: f.size]
+        if self.dofs is None:
+            sol = self.me_lu.solve(np.concatenate([f, np.zeros(3)]))
+            return sol[: f.size]
+        sol = self.me_lu.solve(np.concatenate([f[self.dofs], np.zeros(3)]))
+        u = np.zeros(f.size)
+        u[self.dofs] = sol[: self.dofs.size]
+        return u
 
     # -- the arms -------------------------------------------------------------
 
@@ -200,13 +246,18 @@ class ThermoelasticRun:
         return fe.element_stress(self.g, s.u, self.E, self.nu, eps0=self.alpha_e * dT)
 
     def field(self, s: ThermoState) -> np.ndarray:
-        return (fe.von_mises(self.stress(s)) / 1e6).reshape(self.g.ny, self.g.nx)
+        vm = fe.von_mises(self.stress(s)) / 1e6
+        if self.active is not None:
+            vm = np.where(self.active, vm, np.nan)    # outside the drawn domain: none
+        return vm.reshape(self.g.ny, self.g.nx)
 
     def observe(self, arm: str, s: ThermoState, prev: ThermoState | None = None) -> dict:
         T_old = prev.T if prev is not None else self.initial(arm).T
+        mean_T = (float(np.mean(s.T)) if self.active is None
+                  else float(np.mean(np.delete(s.T, self.off))))
         return {"balance": self.heat_balance(T_old, s.T),
-                "max_stress": float(np.max(self.field(s))),
-                "mean_temperature": float(np.mean(s.T))}
+                "max_stress": float(np.nanmax(self.field(s))),
+                "mean_temperature": mean_T}
 
     def bitwise_equal(self, a: ThermoState, b: ThermoState) -> bool:
         return bool(np.array_equal(a.T, b.T) and np.array_equal(a.u, b.u)
@@ -255,7 +306,7 @@ class ThermoelasticRun:
             s_ref = self.field(states[ref])
             s_lag = self.field(states["parallel"])
             metrics["parallel"]["lag_stress_error"] = float(
-                np.max(np.abs(s_lag - s_ref)) / np.max(np.abs(s_ref)))
+                np.nanmax(np.abs(s_lag - s_ref)) / np.nanmax(np.abs(s_ref)))
         else:
             checks.append(exact(CHECKS[2], None, "needs both splits"))
         return metrics, checks

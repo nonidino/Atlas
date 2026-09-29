@@ -720,6 +720,151 @@ def drawn_edge_names(domain) -> list[str]:
     return [name for name, _poly in drawn_edges(domain)]
 
 
+# -- every face of the domain's boundary, for the families that are not fv.py's -----
+
+
+@dataclass
+class BoundaryFaces:
+    """Every face on a domain's boundary, labelled.
+
+    The grid's own edge faces of domain cells come first -- left, right, bottom,
+    top, each in order along it -- then a drawn domain's faces to the void inside
+    the grid (`void_faces`).  ``cell`` is the domain cell's flat index,
+    ``direction`` indexes `DIRECTIONS` (from the cell outward), ``edge`` names the
+    edge the face belongs to: a grid edge (``left`` ...) on a domain with no drawn
+    outline, else the drawn edge nearest it; ``along`` is a grid-edge face's place
+    along its edge in cells (-1 for a face to the void)."""
+
+    cell: np.ndarray
+    direction: np.ndarray
+    edge: np.ndarray
+    along: np.ndarray
+
+    @property
+    def n(self) -> int:
+        return int(self.cell.size)
+
+    def nodes(self, nx: int) -> tuple[np.ndarray, np.ndarray]:
+        """The two corner nodes of each face on the node grid ``(ny + 1) x (nx + 1)``,
+        node ``(i, j)`` being ``j (nx + 1) + i``: a finite-element family's view."""
+        i, j = self.cell % nx, self.cell // nx
+        d = self.direction
+        # right (+x): (i+1, j), (i+1, j+1); left: (i, j), (i, j+1);
+        # top (+y): (i, j+1), (i+1, j+1); bottom: (i, j), (i+1, j)
+        ia = np.where(d == 0, i + 1, i)
+        ja = np.where(d == 2, j + 1, j)
+        ib = np.where((d == 0) | (d == 2) | (d == 3), i + 1, i)
+        jb = np.where((d == 0) | (d == 1) | (d == 2), j + 1, j)
+        return ja * (nx + 1) + ia, jb * (nx + 1) + ib
+
+
+#: DIRECTIONS index of each grid edge's outward direction
+_EDGE_DIRECTION = {"left": 1, "right": 0, "bottom": 3, "top": 2}
+
+
+def boundary_faces(domain) -> BoundaryFaces:
+    """Every face of the domain's boundary, labelled (`BoundaryFaces`)."""
+    act = domain_mask(domain)
+    ny, nx = act.shape
+    labels = grid_edge_labels(domain) if getattr(domain, "outline", None) is not None \
+        else None
+    cells, dirs, names, along = [], [], [], []
+    for e in EDGES:
+        n = ny if e in ("left", "right") else nx
+        k = np.arange(n)
+        c = {"left": k * nx, "right": k * nx + nx - 1, "bottom": k,
+             "top": (ny - 1) * nx + k}[e]
+        on = act.ravel()[c]
+        cells.append(c[on])
+        dirs.append(np.full(int(on.sum()), _EDGE_DIRECTION[e], dtype=np.int8))
+        names.append(labels[e][on] if labels is not None
+                     else np.full(int(on.sum()), e, dtype=object))
+        along.append(k[on])
+    drawn = getattr(domain, "outline", None) is not None or bool(getattr(domain, "holes", None))
+    if drawn:
+        vf = void_faces(domain)
+        cells.append(vf.cell)
+        dirs.append(vf.direction.astype(np.int8))
+        names.append(vf.edge.astype(object))
+        along.append(np.full(vf.n, -1, dtype=np.int64))
+    return BoundaryFaces(np.concatenate(cells).astype(np.int64), np.concatenate(dirs),
+                         np.concatenate(names).astype(object),
+                         np.concatenate(along).astype(np.int64))
+
+
+def face_conditions(boundaries, bf: BoundaryFaces, nx: int, ny: int) -> np.ndarray:
+    """For each face of ``bf``, the index of the boundary (in ``boundaries``) that
+    holds on it, or -1: a drawn edge's by its name, a grid edge's by the segment
+    ``start <= along < stop`` it falls in."""
+    out = np.full(bf.n, -1, dtype=np.int64)
+    by_name = {}
+    for k, b in enumerate(boundaries):
+        if b.edge not in EDGES:
+            by_name.setdefault(b.edge, k)
+    for k, b in enumerate(boundaries):
+        if b.edge in EDGES:
+            stop = edge_length(b.edge, nx, ny) if b.stop is None else b.stop
+            sel = (bf.edge == b.edge) & (bf.along >= b.start) & (bf.along < stop) & (out < 0)
+            out[sel] = k
+    for name, k in by_name.items():
+        out[(bf.edge == name) & (out < 0)] = k
+    return out
+
+
+def edge_lengths(domain) -> dict[str, float]:
+    """Each drawn edge's true length, in cells (the curve itself, not its staircase)."""
+    return {name: float(np.sum(np.hypot(*np.diff(poly, axis=0).T)))
+            for name, poly in drawn_edges(domain, step=0.25)}
+
+
+def staircase_scale(domain, bf: BoundaryFaces) -> dict[str, float]:
+    """For each drawn edge, its true length over the length of the cell faces the
+    solver sees on it: a flux or a traction given per unit length of the drawn edge
+    is applied on each face times this, so the edge carries its whole load and no
+    more (a staircase along a diagonal is up to sqrt(2) longer than the diagonal)."""
+    true = edge_lengths(domain)
+    out = {}
+    for name, length in true.items():
+        n = int(np.sum(bf.edge == name))
+        out[name] = length / n if n else 1.0
+    return out
+
+
+def along_grid_edge(domain, name: str, tol: float = 0.5) -> str | None:
+    """The grid edge a drawn edge lies along (every point of it within ``tol`` cells
+    of that edge), or None: how a family whose solver fixes its grid edges' conditions
+    gives a drawn edge the condition of the grid edge it runs along."""
+    nx, ny = domain.nx, domain.ny
+    for e_name, poly in drawn_edges(domain, step=1.0):
+        if e_name != name:
+            continue
+        x, y = poly[:, 0], poly[:, 1]
+        for e, v in (("left", np.abs(x)), ("right", np.abs(x - nx)), ("bottom", np.abs(y)),
+                     ("top", np.abs(y - ny))):
+            if float(np.max(v)) <= tol:
+                return e
+        return None
+    return None
+
+
+def node_mask(cells: np.ndarray) -> np.ndarray:
+    """The nodes of a set of cells -- their corners, on the ``(ny + 1) x (nx + 1)``
+    node grid a finite-element family's unknowns live on."""
+    cells = np.asarray(cells, dtype=bool)
+    ny, nx = cells.shape
+    out = np.zeros((ny + 1, nx + 1), dtype=bool)
+    out[:-1, :-1] |= cells
+    out[:-1, 1:] |= cells
+    out[1:, :-1] |= cells
+    out[1:, 1:] |= cells
+    return out
+
+
+def node_masks(spec) -> list[tuple[str, np.ndarray]]:
+    """Each window's nodes: the corners of its cells inside the domain."""
+    return [(wid, node_mask(m)) for wid, m in window_masks(spec)]
+
+
 # -- smooth outlines of cell sets (for drawing generated windows) -----------------
 
 # marching squares: for each of the 16 corner patterns of a square of four cell
@@ -826,4 +971,6 @@ __all__ = ["Box", "SNAP_STEPS", "DEFAULT_SNAP", "snap_value", "snap_box", "corne
            "ramp_weight", "analyse_masks", "analyse_case", "DIRECTIONS", "drawn_edges",
            "nearest_edge", "VoidFaces", "void_faces", "grid_edge_labels",
            "drawn_edge_names", "mask_to_runs", "runs_to_mask", "contour_lines",
-           "inner_boundary"]
+           "inner_boundary", "BoundaryFaces", "boundary_faces", "face_conditions",
+           "edge_lengths", "staircase_scale", "along_grid_edge", "node_mask",
+           "node_masks"]

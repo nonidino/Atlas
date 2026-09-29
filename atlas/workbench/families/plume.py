@@ -53,7 +53,7 @@ import numpy as np
 from .. import fv
 from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
-from ..tiling import RectangleTiling
+from ..tiling import MaskTiling, RectangleTiling
 from .conduction import window_cells
 
 FAMILY = "transport-2d"
@@ -126,15 +126,48 @@ def outfall_cell(spec) -> tuple[int, int]:
     return min(max(i, 0), d.nx - 1), min(max(j, 0), d.ny - 1)
 
 
+def is_drawn(spec) -> bool:
+    d = spec.domain
+    return d.outline is not None or bool(d.holes)
+
+
+def river_flow(spec):
+    """A drawn river's flow (case file 0.4): the potential flow from its inlet edges
+    to its outlet edges (`flow.py`), carrying ``q`` per metre of the inlets' width
+    -- their width as drawn, not their staircase's.  No water crosses a bank."""
+    from .. import flow as fl
+    d = spec.domain
+    bf, kinds = fl.case_faces(spec, "river-inlet", "river-outlet")
+    scale = geo.staircase_scale(d, bf)
+    width = float(sum(scale.get(n, 1.0) for n, k in zip(bf.edge.tolist(), kinds.tolist())
+                      if k == "in")) * d.dx
+    return fl.potential_flow(geo.domain_mask(d), bf, kinds, spec.physics.get("q") * width,
+                             float(d.dx))
+
+
 def field_from_case(spec) -> tuple[fv.Field, np.ndarray]:
     """The river as an `fv.Field` -- ``k = h D``, ``F = q`` through every x-face,
-    the release in the outfall's cell -- and its capacity ``h`` per cell."""
+    the release in the outfall's cell -- and its capacity ``h`` per cell.
+
+    A drawn river (case file 0.4) is its cells, with the solved flow of
+    `river_flow` in place of the uniform one and each face the condition of its
+    edge: an inlet, an outlet or a bank."""
     d = spec.domain
     h, mix = reach_properties(spec)
     q = spec.physics.get("q")
     src = np.zeros((d.ny, d.nx))
     i, j = outfall_cell(spec)
     src[j, i] = spec.physics.get("release") / (d.dx * d.dx)
+    if is_drawn(spec):
+        from .conduction import boundary_arrays
+        act = geo.domain_mask(d)
+        h = np.where(act, h, 0.0)
+        bc, void = boundary_arrays(spec, _KIND)
+        fl = river_flow(spec)
+        f = fv.Field(d.nx, d.ny, float(d.dx), h * np.where(act, mix, 0.0), cap=h,
+                     source=np.where(act, src, 0.0), fx=fl.fx, fy=fl.fy, bc=bc,
+                     active=act, void=void)
+        return f, h
     bc = {}
     for e in fv.EDGES:
         n = geo.edge_length(e, d.nx, d.ny)
@@ -155,9 +188,14 @@ def explicit_limit(spec) -> float:
     ``A_ii`` without assembling: the harmonic-mean conductance of each of the
     cell's interior faces, plus ``q dx`` for the one face the water leaves by
     (its +x face, interior or the outlet); the inlet and the banks add nothing.
-    A test checks it against the assembled diagonal.
+    A test checks it against the assembled diagonal.  A drawn river's flow varies
+    from face to face, so its limit is read off the assembled diagonal itself.
     """
     d = spec.domain
+    if is_drawn(spec):
+        f, h = field_from_case(spec)
+        s = fv.assemble(f)
+        return float(np.min(h.ravel()[s.idx] * d.dx * d.dx / s.A.diagonal()))
     h, mix = reach_properties(spec)
     k = h * mix
     diag = np.full((d.ny, d.nx), spec.physics.get("q") * d.dx)
@@ -195,16 +233,36 @@ class PlumeRun:
         self.h = h.ravel()
         self.q = float(spec.physics.get("q"))
         self.release = float(spec.physics.get("release"))
+        #: a drawn river (case file 0.4): its cells only, the rest of the grid dry
+        self.drawn = is_drawn(spec)
+        self.void = self.f.void_cells()
         #: dt / (h dx^2): what turns a cell's net inflow into its change of concentration
-        self.coef = self.dt / (self.h * self.dx * self.dx)
+        if self.drawn:
+            self.coef = np.zeros(self.f.n)
+            wet = self.f.cells()
+            self.coef[wet] = self.dt / (self.h[wet] * self.dx * self.dx)
+        else:
+            self.coef = self.dt / (self.h * self.dx * self.dx)
         self.arms = tuple(a for a in ARMS if a in arms)
         self.threads = max(1, int(threads))
         self.full_sys = fv.assemble(self.f)
         self.windows = [(w.id, (w.x0, w.y0, w.nx, w.ny)) for w in spec.windows]
-        self.tiling = RectangleTiling(self.nx, self.ny, self.windows, spec.coupling.ramp_cells)
+        if self.drawn or not geo.is_plain(spec):
+            from .conduction import cells_of
+            self.tiling = MaskTiling(geo.domain_mask(spec.domain), geo.window_masks(spec),
+                                     spec.coupling.ramp_cells)
+            self.systems = [fv.assemble(self.f, cells_of(spec, w)) for w in spec.windows]
+        else:
+            self.tiling = RectangleTiling(self.nx, self.ny, self.windows,
+                                          spec.coupling.ramp_cells)
+            self.systems = [fv.assemble(self.f, window_cells(self.nx, b))
+                            for _n, b in self.windows]
         self.certificate = self.tiling.certify()
-        self.systems = [fv.assemble(self.f, window_cells(self.nx, b)) for _n, b in self.windows]
         self.coefs = [self.coef[s.idx] for s in self.systems]
+        #: the outlet faces, for what leaves the river (a drawn outlet can be any edge)
+        bc_cell, bc_kind, _v, _g, bc_in = fv.boundary_faces(self.f)
+        out = bc_kind == fv.OUTLET
+        self._out_cells, self._out_in = bc_cell[out], bc_in[out]
         self.pool = None
         if "parallel" in self.arms:
             self.pool = ThreadPoolExecutor(max_workers=min(self.threads, len(self.systems)),
@@ -221,14 +279,22 @@ class PlumeRun:
         s = self.systems[k]
         uw = u[s.idx]
         r = s.b if s.C is None else s.b - s.C @ u
+        new = uw + self.coefs[k] * (r - s.A @ uw)
+        if isinstance(self.tiling, MaskTiling):
+            return new                            # a window of any shape: its own cells
         _x0, _y0, w, h = self.windows[k][1]
-        return (uw + self.coefs[k] * (r - s.A @ uw)).reshape(h, w)
+        return new.reshape(h, w)
 
     def step(self, arm: str, s: PlumeState) -> PlumeState:
         u = s.u
         if arm == "full":
             sys_ = self.full_sys
-            return PlumeState(u + self.coef * (sys_.b - sys_.A @ u))
+            if not self.void.size:
+                return PlumeState(u + self.coef * (sys_.b - sys_.A @ u))
+            new = u.copy()                        # the dry grid outside a drawn river
+            ui = u[sys_.idx]
+            new[sys_.idx] = ui + self.coef[sys_.idx] * (sys_.b - sys_.A @ ui)
+            return PlumeState(new)
         n = len(self.systems)
         if arm == "parallel" and self.pool is not None:
             locals_ = list(self.pool.map(self._window, range(n), [u] * n))
@@ -247,14 +313,23 @@ class PlumeRun:
         flows = fv.boundary_inflow(self.f, u0)
         into = self.release + float(sum(flows.values()))
         scale = max(self.dt * self.release, abs(held), 1e-300)
-        return {"mass": float(np.sum(self.h * u)) * area, "outflow": 0.0 - flows["right"],
+        if self.drawn:
+            # every outlet face, wherever the drawn outlet is
+            out = -float(np.sum(np.minimum(self._out_in, 0.0) * u0[self._out_cells]))
+        else:
+            out = 0.0 - flows["right"]
+        return {"mass": float(np.sum(self.h * u)) * area, "outflow": out,
                 "balance": abs(held - self.dt * into) / scale}
 
     def bitwise_equal(self, a: PlumeState, b: PlumeState) -> bool:
         return bool(np.array_equal(a.u, b.u))
 
     def field(self, s: PlumeState) -> np.ndarray:
-        return s.u.reshape(self.ny, self.nx)
+        if not self.void.size:
+            return s.u.reshape(self.ny, self.nx)
+        u = s.u.copy()
+        u[self.void] = np.nan                     # the dry grid: not drawn
+        return u.reshape(self.ny, self.nx)
 
     def close(self) -> None:
         if self.pool is not None:
@@ -296,46 +371,79 @@ class PlumeRun:
             checks.append(exact(CHECKS[2], None, "needs both decomposed arms"))
         return metrics, checks
 
-    def arrival_seconds(self) -> float:
+    def arrival_seconds(self) -> float | None:
         """How long the water takes from the outfall to the outlet along its row:
-        the sum of ``dx / u`` over the cells, ``u = q / h``."""
+        the sum of ``dx / u`` over the cells, ``u = q / h``.  None for a drawn river,
+        whose water does not run along a row."""
+        if self.drawn:
+            return None
         i, j = outfall_cell(self.spec)
         h_row = self.h.reshape(self.ny, self.nx)[j, i:]
         return float(np.sum(self.dx * h_row / self.q))
+
+    def speeds(self) -> np.ndarray:
+        """The water's speed in each cell, from the flow through its four faces (the
+        mean of each axis's two faces, over the depth); zero off the river."""
+        fx, fy = self.f.fx, self.f.fy
+        vx = 0.5 * (fx[:, :-1] + fx[:, 1:])
+        vy = 0.5 * (fy[:-1, :] + fy[1:, :])
+        h = self.h.reshape(self.ny, self.nx)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            return np.where(h > 0, np.hypot(vx, vy) / np.where(h > 0, h, 1.0), 0.0)
 
     def notes(self, done: int) -> list[str]:
         out = [f"One explicit step of {self.dt:g} s per macro-step, one exchange, no "
                f"iteration: the stability limit here is {self.limit:.4g} s (min h dx^2 / "
                f"A_ii over the cells). Each window takes the full-domain step on its own "
                f"cells, so the decomposed river is the full-domain river to round-off."]
+        if self.drawn:
+            out.append("The river is drawn, so its flow is solved: the potential flow from "
+                       "its inlets to its outlets (atlas/workbench/flow.py), carrying the "
+                       "discharge per metre of the inlets' width. No water crosses a bank. "
+                       "It is a potential flow: it has no viscosity and turns corners "
+                       "without separating.")
         seen = []
-        for r in self.spec.regions:
+        speed = self.speeds() if self.drawn else None
+        owner = geo.region_owner(self.spec.regions, self.nx, self.ny)
+        for k, r in enumerate(self.spec.regions):
             if r.material in seen:
                 continue
             seen.append(r.material)
             m = self.spec.materials[r.material]
-            u = self.q / float(m["depth"])
+            if self.drawn:
+                ks = [i for i, x in enumerate(self.spec.regions) if x.material == r.material]
+                here = np.isin(owner, ks) & (self.h.reshape(self.ny, self.nx) > 0)
+                if not here.any():
+                    continue
+                u = float(np.mean(speed[here]))
+                how = f"so the water runs at {u:.3g} m/s on average"
+            else:
+                u = self.q / float(m["depth"])
+                how = f"so the water runs at {u:.3g} m/s"
             pe = u * self.dx / float(m["mixing"])
-            out.append(f"Reach {r.material}: depth {float(m['depth']):g} m, so the water runs "
-                       f"at {u:.3g} m/s; mixing {float(m['mixing']):g} m^2/s; cell Peclet "
-                       f"number u dx / D = {pe:.3g}, so what runs upstream across a face is "
-                       f"1/(1 + Pe) = {1.0 / (1.0 + pe):.2g} of what runs down. Upwinding adds "
+            out.append(f"Reach {r.material}: depth {float(m['depth']):g} m, {how}; mixing "
+                       f"{float(m['mixing']):g} m^2/s; cell Peclet number u dx / D = "
+                       f"{pe:.3g}, so what runs upstream across a face is 1/(1 + Pe) = "
+                       f"{1.0 / (1.0 + pe):.2g} of what runs down. Upwinding adds "
                        f"{u * self.dx * (1.0 - u * self.dt / self.dx) / 2.0:.3g} m^2/s of "
                        f"mixing along the flow.")
         t_arr = self.arrival_seconds()
         t_run = done * self.dt
-        out.append(f"The water takes {t_arr:.0f} s from the outfall to the outlet (macro-step "
-                   f"{int(np.ceil(t_arr / self.dt))}); this run covered {t_run:.0f} s"
-                   + (", so the plume has reached the outlet." if t_run >= t_arr else
-                      ", so the plume has not reached the outlet yet and nothing has left."))
+        if t_arr is not None:
+            out.append(f"The water takes {t_arr:.0f} s from the outfall to the outlet "
+                       f"(macro-step {int(np.ceil(t_arr / self.dt))}); this run covered "
+                       f"{t_run:.0f} s"
+                       + (", so the plume has reached the outlet." if t_run >= t_arr else
+                          ", so the plume has not reached the outlet yet and nothing has "
+                          "left."))
         return out
 
     def describe(self) -> dict[str, Any]:
         i, j = outfall_cell(self.spec)
-        return {"style": "A", "cells": self.f.n, "windows": len(self.windows),
+        return {"style": "A", "cells": int(self.f.cells().size), "windows": len(self.windows),
                 "dt_s": self.dt, "explicit_limit_s": self.limit, "q_m2_per_s": self.q,
                 "release_g_per_s": self.release, "outfall_cell": [i, j],
-                "arrival_s": self.arrival_seconds(),
+                "arrival_s": self.arrival_seconds(), "drawn": self.drawn,
                 "partition_of_unity": self.certificate.as_dict()}
 
 
@@ -358,8 +466,11 @@ def case_graph(spec):
     f, h = field_from_case(spec)
     q = float(spec.physics.get("q"))
     release = float(spec.physics.get("release"))
-    width = d.ny * d.dx
-    c_mixed = release / (q * width)                  # g/m^3 once mixed across the river
+    if is_drawn(spec):
+        c_mixed = release / river_flow(spec).inflow   # the drawn inlets' discharge
+    else:
+        width = d.ny * d.dx
+        c_mixed = release / (q * width)              # g/m^3 once mixed across the river
     u = q / float(np.min(h))
     flux = c_mixed * u                               # g/(m^2 s), the pollutant's flux
     water = 1000.0 * u                               # kg/(m^2 s), the river's mass flux

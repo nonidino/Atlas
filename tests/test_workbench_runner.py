@@ -57,8 +57,8 @@ def _small(key="wake-array-3", steps=2, **run):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("key", [k for k, e in EXAMPLES.items()
-                                 if e.family == "incompressible-2d"])
+@pytest.mark.parametrize("key", [k for k, e in EXAMPLES.items()      # the ladder's rungs
+                                 if e.family == "incompressible-2d" and "cols" in dict(e.params)])
 def test_rectangle_tiling_is_array_tiling_to_the_bit(key):
     from atlas.cases import scaling_ladder as sl
     ex = EXAMPLES[key]

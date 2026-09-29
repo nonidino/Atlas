@@ -41,7 +41,9 @@ def _msgs(spec, severity=None):
 # ---------------------------------------------------------------------------
 
 
-FARM_EXAMPLES = [k for k, e in EXAMPLES.items() if e.family == "incompressible-2d"]
+#: the measured tilings: the scaling ladder's rungs (a drawn farm, such as the hill, is not one)
+FARM_EXAMPLES = [k for k, e in EXAMPLES.items()
+                 if e.family == "incompressible-2d" and "cols" in dict(e.params)]
 
 
 @pytest.mark.parametrize("key", FARM_EXAMPLES)
@@ -202,10 +204,14 @@ def test_the_wind_farm_family_boundary_is_fixed():
     assert [(b.edge, b.kind) for b in s.boundaries] == [
         ("left", "inlet"), ("right", "outlet"), ("bottom", "freestream"), ("top", "freestream")]
     assert _msgs(s, "error") == []
+    # a wall is a kind the family imposes -- on a drawn edge, by penalization (case
+    # file 0.4) -- but not on the grid's own edges, which its solver fixes
     s.boundaries[0].kind = "wall"
     errors = _msgs(s, "error")
-    assert any("cannot impose 'wall'" in m for m in errors)
+    assert not any("cannot impose 'wall'" in m for m in errors)
     assert any("fixes its outer boundary" in m for m in errors)
+    s.boundaries[0].kind = "clamped"
+    assert any("cannot impose 'clamped'" in m for m in _msgs(s, "error"))
 
 
 def test_boundary_rules_on_a_family_that_takes_them():

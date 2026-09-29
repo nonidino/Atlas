@@ -205,6 +205,20 @@ def rigid_modes(g: QuadGrid) -> np.ndarray:
     return q
 
 
+def rigid_modes_on(g: QuadGrid, nodes: np.ndarray) -> np.ndarray:
+    """`rigid_modes` over a set of nodes only -- a drawn domain's (case file 0.4) --
+    ``[2 len(nodes), 3]``, their degrees of freedom interleaved node by node."""
+    p = g.coords()[np.asarray(nodes)]
+    V = np.zeros((2 * len(p), 3))
+    V[0::2, 0] = 1.0
+    V[1::2, 1] = 1.0
+    c = p.mean(0)
+    V[0::2, 2] = -(p[:, 1] - c[1])
+    V[1::2, 2] = p[:, 0] - c[0]
+    q, _ = np.linalg.qr(V)
+    return q
+
+
 def element_stress(g: QuadGrid, u: np.ndarray, E: np.ndarray, nu: np.ndarray,
                    eps0: np.ndarray | None = None) -> np.ndarray:
     """(sigma_xx, sigma_yy, sigma_xy) [n_elem, 3] at each element's centre,

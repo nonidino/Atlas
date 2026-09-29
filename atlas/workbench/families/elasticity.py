@@ -39,7 +39,7 @@ from .. import fe, styles
 from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
 from ..fv import LocalSystem
-from ..tiling import RectangleTiling
+from ..tiling import MaskTiling, RectangleTiling
 
 FAMILY = "elasticity-2d"
 STYLE = "B"
@@ -93,10 +93,55 @@ def element_props(spec, *names: str) -> list[np.ndarray]:
     return out
 
 
+def is_drawn(spec) -> bool:
+    d = spec.domain
+    return d.outline is not None or bool(d.holes)
+
+
+def active_elements(spec) -> np.ndarray | None:
+    """A drawn domain's elements (its cells), flat; None for the whole grid."""
+    return geo.domain_mask(spec.domain).ravel() if is_drawn(spec) else None
+
+
+def inactive_nodes(spec) -> np.ndarray:
+    """The nodes no element of a drawn domain touches: they carry no stiffness, so
+    they are taken out of the solve (their displacement is zero)."""
+    if not is_drawn(spec):
+        return np.zeros(0, dtype=np.int64)
+    return np.flatnonzero(~geo.node_mask(geo.domain_mask(spec.domain)).ravel())
+
+
 def supports_and_loads(spec, g: fe.QuadGrid) -> tuple[np.ndarray, np.ndarray]:
-    """(the clamped degrees of freedom, the nodal load vector per metre of thickness)."""
+    """(the clamped degrees of freedom, the nodal load vector per metre of thickness).
+
+    On a drawn domain (case file 0.4) every boundary face takes its edge's
+    condition (`geometry.boundary_faces`): a clamped face holds both its nodes,
+    and a traction loads each face's nodes with half its share -- per unit length
+    of the edge as drawn, so the edge carries its whole load and no more
+    (`geometry.staircase_scale`)."""
     fixed: set[int] = set()
     f = np.zeros(2 * g.n_nodes)
+    if is_drawn(spec):
+        d = spec.domain
+        bf = geo.boundary_faces(d)
+        owner = geo.face_conditions(spec.boundaries, bf, d.nx, d.ny)
+        na, nb = bf.nodes(d.nx)
+        scale = geo.staircase_scale(d, bf)
+        for i, b in enumerate(spec.boundaries):
+            sel = owner == i
+            if not sel.any():
+                continue
+            if b.kind == "clamped":
+                for n in (na[sel], nb[sel]):
+                    fixed.update((2 * n).tolist())
+                    fixed.update((2 * n + 1).tolist())
+            elif b.kind in ("load-x", "load-y"):
+                t = float(b.value or 0.0)
+                half = 0.5 * g.dx * np.array([scale.get(e, 1.0) for e in bf.edge[sel]])
+                comp = 0 if b.kind == "load-x" else 1
+                np.add.at(f, 2 * na[sel] + comp, t * half)
+                np.add.at(f, 2 * nb[sel] + comp, t * half)
+        return np.array(sorted(fixed), dtype=np.int64), f
     for b in spec.boundaries:
         if b.kind == "clamped":
             nodes = g.edge_nodes(b.edge, b.start, b.stop)
@@ -130,10 +175,17 @@ class ElasticityRun:
         d = spec.domain
         self.g = fe.QuadGrid(d.nx, d.ny, float(d.dx))
         self.E, self.nu = element_props(spec, "E", "nu")
+        #: a drawn domain (case file 0.4): its cells are the elements; the rest of the
+        #: grid carries nothing, and the nodes it alone touches leave the solve
+        self.active = active_elements(spec)
+        if self.active is not None:
+            self.E = np.where(self.active, self.E, 0.0)
         self.K = fe.assemble_elastic(self.g, self.E, self.nu)
         self.fixed, self.f = supports_and_loads(spec, self.g)
         n = 2 * self.g.n_nodes
-        self.free = np.setdiff1d(np.arange(n), self.fixed)
+        off = inactive_nodes(spec)
+        self.off = np.sort(np.concatenate([2 * off, 2 * off + 1]))
+        self.free = np.setdiff1d(np.arange(n), np.union1d(self.fixed, self.off))
         loc = np.full(n, -1, dtype=np.int64)
         loc[self.free] = np.arange(self.free.size)
         self.loc = loc
@@ -145,15 +197,27 @@ class ElasticityRun:
         self.arms = tuple(a for a in ARMS if a in arms)
         self.threads = max(1, int(threads))
         self.full_lu = styles.Factor(Kff) if "full" in self.arms else None
-        # the windows, on the node grid
+        # the windows, on the node grid: rectangles of nodes, or -- a drawn domain or
+        # drawn windows (case file 0.4) -- each window's cells' nodes, weighted by the
+        # mask partition of unity over the domain's nodes
         self.windows = [(w.id, node_box(w)) for w in spec.windows]
-        self.tiling = RectangleTiling(d.nx + 1, d.ny + 1, self.windows,
-                                      spec.coupling.ramp_cells)
+        self.plain = geo.is_plain(spec)
+        if self.plain:
+            self.tiling = RectangleTiling(d.nx + 1, d.ny + 1, self.windows,
+                                          spec.coupling.ramp_cells)
+            node_sets = []
+            for _name, (x0, y0, w, h) in self.windows:
+                jj, ii = np.meshgrid(np.arange(y0, y0 + h), np.arange(x0, x0 + w),
+                                     indexing="ij")
+                node_sets.append((jj * (d.nx + 1) + ii).ravel())
+        else:
+            self.tiling = MaskTiling(geo.node_mask(geo.domain_mask(d)), geo.node_masks(spec),
+                                     spec.coupling.ramp_cells)
+            node_sets = list(self.tiling.idx)
+        self.node_sets = node_sets
         self.certificate = self.tiling.certify()
         self.systems, self.chi = [], []
-        for (_name, (x0, y0, w, h)), chi in zip(self.windows, self.tiling.chi):
-            jj, ii = np.meshgrid(np.arange(y0, y0 + h), np.arange(x0, x0 + w), indexing="ij")
-            nodes = (jj * (d.nx + 1) + ii).ravel()
+        for nodes, chi in zip(node_sets, self.tiling.chi):
             dofs = np.stack([2 * nodes, 2 * nodes + 1], axis=1).ravel()
             keep = loc[dofs] >= 0
             idx = loc[dofs[keep]]
@@ -225,7 +289,10 @@ class ElasticityRun:
         return fe.element_stress(self.g, s.u, self.E, self.nu)
 
     def field(self, s: ElasState) -> np.ndarray:
-        return (fe.von_mises(self.stress(s)) / 1e6).reshape(self.g.ny, self.g.nx)
+        vm = fe.von_mises(self.stress(s)) / 1e6
+        if self.active is not None:
+            vm = np.where(self.active, vm, np.nan)    # outside the drawn domain: none
+        return vm.reshape(self.g.ny, self.g.nx)
 
     def close(self) -> None:
         if self.pool is not None:
@@ -244,7 +311,7 @@ class ElasticityRun:
                             "balance_max": max(r["balance"] for r in rows),
                             "iterations_last": rows[-1]["iterations"],
                             "all_converged": all(r["converged"] for r in rows),
-                            "max_stress_MPa": float(np.max(self.field(states[arm])))}
+                            "max_stress_MPa": float(np.nanmax(self.field(states[arm])))}
         checks = [judge(CHECKS[0], max((m["balance_max"] for m in metrics.values()),
                                        default=None),
                         "; ".join(f"{a}: {m['balance_max']:.3g}" for a, m in metrics.items()))]
@@ -254,7 +321,7 @@ class ElasticityRun:
             uf = states["full"].u
             dev = float(np.max(np.abs(states[dec].u - uf))) / float(np.max(np.abs(uf)))
             metrics[dec]["displacement_vs_full"] = dev
-            metrics[dec]["stress_vs_full_MPa"] = float(np.max(np.abs(
+            metrics[dec]["stress_vs_full_MPa"] = float(np.nanmax(np.abs(
                 self.field(states[dec]) - self.field(states["full"]))))
             checks.append(judge(CHECKS[1], dev, f"largest displacement "
                                                 f"{1e3 * float(np.max(np.abs(uf))):.4g} mm"))
@@ -302,12 +369,24 @@ class FEWindowAgent:
 
     def __init__(self, run: "ElasticityRun", k: int, name: str):
         d = run.spec.domain
-        x0, y0, w, h = run.windows[k][1]
-        jj, ii = np.meshgrid(np.arange(y0, y0 + h), np.arange(x0, x0 + w), indexing="ij")
-        self.nodes = (jj * (d.nx + 1) + ii).ravel()
-        on_edge = ((ii == x0) & (x0 > 0)) | ((ii == x0 + w - 1) & (x0 + w - 1 < d.nx)) | \
-                  ((jj == y0) & (y0 > 0)) | ((jj == y0 + h - 1) & (y0 + h - 1 < d.ny))
-        self.boundary = self.nodes[on_edge.ravel()]
+        if run.plain:
+            x0, y0, w, h = run.windows[k][1]
+            jj, ii = np.meshgrid(np.arange(y0, y0 + h), np.arange(x0, x0 + w), indexing="ij")
+            self.nodes = (jj * (d.nx + 1) + ii).ravel()
+            on_edge = ((ii == x0) & (x0 > 0)) | ((ii == x0 + w - 1) & (x0 + w - 1 < d.nx)) | \
+                      ((jj == y0) & (y0 > 0)) | ((jj == y0 + h - 1) & (y0 + h - 1 < d.ny))
+            self.boundary = self.nodes[on_edge.ravel()]
+        else:
+            # a window of any shape: its nodes with a neighbour in the domain outside it
+            self.nodes = run.node_sets[k]
+            act = geo.node_mask(geo.domain_mask(d))
+            win = np.zeros_like(act)
+            win.flat[self.nodes] = True
+            out = act & ~win
+            near = np.zeros_like(act)
+            for di, dj in geo.DIRECTIONS:
+                near |= geo._neighbour(out, di, dj)
+            self.boundary = np.flatnonzero((win & near).ravel())
         dofs = np.stack([2 * self.nodes, 2 * self.nodes + 1], axis=1).ravel()
         bdofs = set(np.stack([2 * self.boundary, 2 * self.boundary + 1], axis=1).ravel()
                     .tolist())
@@ -361,14 +440,21 @@ def case_graph(spec):
     d = spec.domain
     agents = {n: FEWindowAgent(run, k, n) for k, (n, _b) in enumerate(run.windows)}
     boxes = dict(run.windows)
+    members = {n: run.node_sets[k] for k, (n, _b) in enumerate(run.windows)}
     traction = max([abs(float(b.value)) for b in spec.boundaries
                     if b.kind in ("load-x", "load-y") and b.value] + [1.0])
     E_max = float(np.max(run.E))
     u_scale = traction * max(d.nx, d.ny) * d.dx / E_max        # m, a displacement's size
     scales = {"stress": traction, "velocity": u_scale, "power_area": traction * u_scale}
 
-    def inside(box, nodes):
-        x0, y0, w, h = box
+    def inside(other, nodes):
+        if not run.plain:
+            # nodes of a window of any shape, in order along the seam
+            from ..compile import walk_order
+            hit = nodes[np.isin(nodes, members[other])]
+            xy = np.column_stack([hit % (d.nx + 1), hit // (d.nx + 1)]).astype(float)
+            return hit[walk_order(xy)]
+        x0, y0, w, h = boxes[other]
         i, j = nodes % (d.nx + 1), nodes // (d.nx + 1)
         return nodes[(i >= x0) & (i < x0 + w) & (j >= y0) & (j < y0 + h)]
 
@@ -377,8 +463,8 @@ def case_graph(spec):
     names = list(agents)
     for a_i, na in enumerate(names):
         for nb in names[a_i + 1:]:
-            pa = inside(boxes[nb], agents[na].boundary)
-            pb = inside(boxes[na], agents[nb].boundary)
+            pa = inside(nb, agents[na].boundary)
+            pb = inside(na, agents[nb].boundary)
             if not (pa.size and pb.size):
                 continue
             sid = f"{na}|{nb}"
@@ -435,6 +521,14 @@ def case_graph(spec):
 def _overlap_cells(spec) -> int:
     from .. import geometry as geo_
     d = spec.domain
+    if not geo_.is_plain(spec):
+        # windows of any shape: an overlap's width is twice its deepest cell's
+        # distance to its edge (compile.fv_graph's rule)
+        from scipy.ndimage import distance_transform_edt
+        masks = dict(geo_.window_masks(spec))
+        widths = [int(2 * distance_transform_edt(masks[a] & masks[b]).max())
+                  for a, b, _box in geo_.analyse_case(spec).overlaps]
+        return int(min(widths, default=0))
     ov = geo_.analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
                                            for w in spec.windows],
                               spec.coupling.ramp_cells).overlaps

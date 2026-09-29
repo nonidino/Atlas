@@ -145,6 +145,31 @@ def curve_order(sys_: fv.LocalSystem, faces: np.ndarray, nx: int) -> np.ndarray:
     return faces[np.asarray(order)]
 
 
+def walk_order(xy: np.ndarray) -> np.ndarray:
+    """An order along a chain of points (a seam's nodes, say): `curve_order`'s walk --
+    start at an end (fewest others within one and a half spacings; lowest y then x
+    among ties), then step to the nearest point not yet visited."""
+    xy = np.asarray(xy, dtype=float).reshape(-1, 2)
+    n = len(xy)
+    if n <= 2:
+        return np.lexsort((xy[:, 0], xy[:, 1])) if n else np.zeros(0, dtype=np.int64)
+    dist = np.hypot(xy[:, None, 0] - xy[None, :, 0], xy[:, None, 1] - xy[None, :, 1])
+    rank = np.empty(n, dtype=np.int64)
+    rank[np.lexsort((xy[:, 0], xy[:, 1]))] = np.arange(n)
+    near = (dist < 1.5).sum(axis=1) - 1
+    cur = int(np.lexsort((rank, near))[0])
+    seen = np.zeros(n, dtype=bool)
+    order = [cur]
+    seen[cur] = True
+    for _ in range(n - 1):
+        d = np.where(seen, np.inf, dist[cur])
+        best = np.flatnonzero(d == d.min())
+        cur = int(best[np.argmin(rank[best])])
+        seen[cur] = True
+        order.append(cur)
+    return np.asarray(order)
+
+
 def face_seams(windows: list[tuple[str, tuple]], systems: dict[str, fv.LocalSystem],
                nx: int, order=cell_order) -> list[FaceSeam]:
     """Every pair of windows one of whose cut faces opens into the other, in window
@@ -574,5 +599,6 @@ class CompileJob:
 
 
 __all__ = ["M_MODES", "CompileRefused", "modes_for", "fourier_basis", "face_prolongation",
-           "FaceSeam", "face_seams", "cross_points", "FVAgent", "fv_graph", "SeamVerdict",
+           "FaceSeam", "face_seams", "walk_order", "curve_order", "CutFaces", "cross_points",
+           "FVAgent", "fv_graph", "SeamVerdict",
            "CompileSummary", "summarize", "case_graph", "compile_case", "CompileJob"]

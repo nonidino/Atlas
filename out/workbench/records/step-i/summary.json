@@ -1,0 +1,262 @@
+{
+ "ring-film": {
+  "status": "done",
+  "error": null,
+  "wall_s": 0.5,
+  "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-i\\ring-film\\20260929-163835.json",
+  "checks": [
+   [
+    "Kirchhoff: the currents at every node sum to zero",
+    "pass",
+    5.363645158038879e-13
+   ],
+   [
+    "Energy: power delivered = power dissipated",
+    "pass",
+    9.587637423035009e-14
+   ],
+   [
+    "Current agrees with the plate and circuit solved as one",
+    "pass",
+    5.964730069702165e-14
+   ]
+  ],
+  "power": {
+   "ac": false,
+   "battery_percent": 98,
+   "source": "GetSystemPowerStatus"
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 3.8955850961994967e-13,
+    "max": 5.515587986337778e-13,
+    "rms_relative": 2.0233179418165048e-13
+   }
+  }
+ },
+ "river-bend": {
+  "status": "done",
+  "error": null,
+  "wall_s": 4.8,
+  "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-i\\river-bend\\20260929-163840.json",
+  "checks": [
+   [
+    "Mass: released = held + carried out",
+    "pass",
+    3.25212079488324e-14
+   ],
+   [
+    "Concentration agrees with the full domain",
+    "pass",
+    1.8366332550751618e-16
+   ],
+   [
+    "Threaded equals serial, bit for bit",
+    "pass",
+    null
+   ]
+  ],
+  "power": {
+   "ac": false,
+   "battery_percent": 98,
+   "source": "GetSystemPowerStatus"
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 7.454158018594513e-17,
+    "max": 2.3592239273284576e-16,
+    "rms_relative": 1.1642528174646577e-15
+   },
+   "parallel": {
+    "rms": 7.454158018594513e-17,
+    "max": 2.3592239273284576e-16,
+    "rms_relative": 1.1642528174646577e-15
+   }
+  }
+ },
+ "sound-lens": {
+  "status": "done",
+  "error": null,
+  "wall_s": 5.1,
+  "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-i\\sound-lens\\20260929-163845.json",
+  "checks": [
+   [
+    "Energy: the closed domain keeps it",
+    "pass",
+    4.216820195141765e-16
+   ],
+   [
+    "Reflection = (Z2 - Z1) / (Z2 + Z1)",
+    "not measured",
+    null
+   ],
+   [
+    "The two pieces equal the full domain, bit for bit",
+    "pass",
+    null
+   ]
+  ],
+  "power": {
+   "ac": false,
+   "battery_percent": 98,
+   "source": "GetSystemPowerStatus"
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 0.0,
+    "max": 0.0,
+    "rms_relative": 0.0
+   }
+  }
+ },
+ "plate-hole": {
+  "status": "done",
+  "error": null,
+  "wall_s": 28.2,
+  "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-i\\plate-hole\\20260929-163913.json",
+  "checks": [
+   [
+    "Forces: the supports balance the loads",
+    "pass",
+    7.675001178695262e-12
+   ],
+   [
+    "Displacements agree with the full domain",
+    "pass",
+    3.1847393106418297e-12
+   ],
+   [
+    "Threaded equals serial, bit for bit",
+    "pass",
+    null
+   ]
+  ],
+  "power": {
+   "ac": false,
+   "battery_percent": 98,
+   "source": "GetSystemPowerStatus"
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 4.516062543878549e-11,
+    "max": 1.9193180378351826e-10,
+    "rms_relative": 4.214984490781894e-12
+   },
+   "parallel": {
+    "rms": 4.516062543878549e-11,
+    "max": 1.9193180378351826e-10,
+    "rms_relative": 4.214984490781894e-12
+   }
+  }
+ },
+ "bimetal-arc": {
+  "status": "done",
+  "error": null,
+  "wall_s": 3.3,
+  "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-i\\bimetal-arc\\20260929-163917.json",
+  "checks": [
+   [
+    "Heat: in through the edges = stored",
+    "pass",
+    2.164027513975369e-10
+   ],
+   [
+    "The synchronous split is the unsplit solver, bit for bit",
+    "pass",
+    null
+   ],
+   [
+    "The lagged split is the synchronous one a step late, bit for bit",
+    "pass",
+    null
+   ]
+  ],
+  "power": {
+   "ac": false,
+   "battery_percent": 97,
+   "source": "GetSystemPowerStatus"
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 0.0,
+    "max": 0.0,
+    "rms_relative": 0.0
+   },
+   "parallel": {
+    "rms": 0.054338732404521514,
+    "max": 0.2503566516129965,
+    "rms_relative": 0.0030828665497156745
+   }
+  }
+ },
+ "cooled-winding": {
+  "status": "done",
+  "error": null,
+  "wall_s": 2.2,
+  "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-i\\cooled-winding\\20260929-163919.json",
+  "checks": [
+   [
+    "Heat generated = heat the coolant carries out",
+    "pass",
+    4.7119101509451866e-11
+   ],
+   [
+    "Temperatures agree with the full domain",
+    "pass",
+    1.5254265289946958e-09
+   ]
+  ],
+  "power": {
+   "ac": false,
+   "battery_percent": 97,
+   "source": "GetSystemPowerStatus"
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 2.0880016267288917e-08,
+    "max": 2.7464466256788e-08,
+    "rms_relative": 6.755519569907986e-11
+   }
+  }
+ },
+ "farm-hill": {
+  "status": "done",
+  "error": null,
+  "wall_s": 44.6,
+  "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-i\\farm-hill\\20260929-164004.json",
+  "checks": [
+   [
+    "Mass: incompressibility closes",
+    "pass",
+    2.220446049250313e-16
+   ],
+   [
+    "Farm power agrees with the full domain",
+    "pass",
+    0.19576679975781427
+   ],
+   [
+    "Threaded equals serial, bit for bit",
+    "pass",
+    null
+   ]
+  ],
+  "power": {
+   "ac": false,
+   "battery_percent": 97,
+   "source": "GetSystemPowerStatus"
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 0.1790780573808095,
+    "max": 1.6149968915333333,
+    "rms_relative": 0.16720183308533432
+   },
+   "parallel": {
+    "rms": 0.1790780573808095,
+    "max": 1.6149968915333333,
+    "rms_relative": 0.16720183308533432
+   }
+  }
+ }
+}
