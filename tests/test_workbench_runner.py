@@ -188,6 +188,12 @@ def test_a_run_records_its_machine_times_and_checks(tmp_path):
     assert set(checks) == {"mass", "power", "bitwise"}
     assert all(c["passed"] for c in checks.values()), checks
     assert rec["bitwise"] == {"steps": 2, "first_difference": None}
+    # every decomposed arm is measured against the full domain, not only the one
+    # the power check reads (the gallery pass found the serial row blank); the two
+    # are one state to the bit, so one number
+    m = rec["metrics"]
+    for key in ("farm_power_vs_full", "rms_velocity_difference"):
+        assert m["parallel"][key] is not None and m["serial"][key] == m["parallel"][key]
     # the start-up note: two steps is well short of a wake reaching the next rotor
     assert any("start-up only" in n for n in rec["notes"])
 
@@ -255,11 +261,29 @@ def test_the_page_runs_a_case_and_shows_its_results(wb, tmp_path):
         run.results)
     assert list(table["arm"]) == ["Decomposed, serial", "Decomposed, parallel", "Full domain"]
     assert set(checks["verdict"]) == {"pass"}
+    # every family's results carry the displayed field's rms difference from the
+    # full domain, from the record, and the two decomposed arms are bitwise one
+    fd = run.results["field_difference"]
+    assert set(fd) == {"serial", "parallel"} and fd["serial"] == fd["parallel"]
+    col = [c for c in table.columns if c.startswith("rms difference vs full")]
+    assert col and list(table[col[0]])[2] == "-" and fd["serial"]["rms"] > 0.0
     # the fields reached the panel: three images of the domain's shape, downsampled
     p = run.progress()
     assert set(p.fields) == {"serial", "parallel", "full", "difference"}
     img = wb.run_panel.src["difference"].data["image"][0]
     assert img.shape == p.fields["difference"].shape
+    # another case opened: the last run's results are not its results, and both the
+    # nav and the Results step say so
+    from atlas.workbench.runview import results_view
+
+    def alerts():
+        return " ".join(o.object for o in results_view(wb, run.results).objects
+                        if isinstance(o, pn.pane.Alert))
+    assert "the case open now differs" not in alerts()
+    wb.dispatch("file:example:plate-circuit")
+    assert any(lbl.startswith("6. Results") and "done, before a change" in lbl
+               for lbl in wb.nav.options)
+    assert "the case open now differs" in alerts()
 
 
 def test_a_finished_run_rebuilds_its_step(wb):

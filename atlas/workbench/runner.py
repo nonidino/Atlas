@@ -306,8 +306,9 @@ class CaseRun:
             stopped = self._stop.is_set() and done < self.steps
             self._set(_message="comparing")
             metrics, checks = problem.compare(states, history, bitwise) if done else ({}, [])
+            diff = field_differences(problem, states) if done else {}
             self.results = self._record(problem, before, build_s, done, stopped, metrics,
-                                        checks, bitwise, started)
+                                        checks, bitwise, started, diff)
             self._publish_fields(problem, states, done)
             unit = self.step_label + "s"
             self._set(status="stopped" if stopped else "done",
@@ -354,7 +355,7 @@ class CaseRun:
     # -- the record -------------------------------------------------------------
 
     def _record(self, problem, before, build_s, done, stopped, metrics, checks, bitwise,
-                started) -> dict[str, Any]:
+                started, field_difference=None) -> dict[str, Any]:
         timing: dict[str, Any] = {}
         for a in self.arms:
             s = self._seconds[a][:done]
@@ -392,6 +393,9 @@ class CaseRun:
                             "workbench server process"),
             "bitwise": bitwise,
             "metrics": metrics,
+            #: every arm's final field against the full domain's (rms, largest)
+            "field_difference": field_difference or {},
+            "field_label": getattr(self.module, "FIELD_LABEL", "field"),
             "checks": [c.as_dict() for c in checks],
             "notes": problem.notes(done) if hasattr(problem, "notes") else [],
             "problem": problem.describe(),
@@ -435,6 +439,25 @@ def _jsonable(x):
     if isinstance(x, float) and (math.isnan(x) or math.isinf(x)):
         return None
     return x
+
+
+def field_differences(problem, states) -> dict[str, dict[str, float]]:
+    """Each other arm's final field against the full domain's: the rms and the largest
+    difference, and the rms over the full field's own rms (the family's displayed
+    field, `FIELD_LABEL`).  Empty when the full domain did not run."""
+    if "full" not in states:
+        return {}
+    ref = np.asarray(problem.field(states["full"]), dtype=float)
+    scale = float(np.sqrt(np.mean(ref * ref)))
+    out = {}
+    for a, s in states.items():
+        if a == "full":
+            continue
+        dlt = np.asarray(problem.field(s), dtype=float) - ref
+        rms = float(np.sqrt(np.mean(dlt * dlt)))
+        out[a] = {"rms": rms, "max": float(np.max(np.abs(dlt))),
+                  "rms_relative": rms / scale if scale > 0.0 else None}
+    return out
 
 
 def write_record(rec: dict, folder: str, prefix: str = "") -> str:

@@ -420,12 +420,18 @@ class WindFarmRun:
             (f"{a}: the parallel arm's state, bit for bit" if a == "serial" and shared
              else f"{a}: {v:.3g}") for a, v in masses.items())))
         if dec and "full" in metrics:
-            pf, pd = metrics["full"]["farm_power"], metrics[dec]["farm_power"]
+            pf = metrics["full"]["farm_power"]
+            # every decomposed arm against the full domain (both components of the
+            # velocity, the measure outcome C1 quotes); the check reads `dec`
+            for arm in (a for a in ("serial", "parallel") if a in metrics and a in states):
+                pa = metrics[arm]["farm_power"]
+                metrics[arm]["farm_power_vs_full"] = (pa - pf) / pf if pf else None
+                du = states[arm].u - states["full"].u
+                dv = states[arm].v - states["full"].v
+                metrics[arm]["rms_velocity_difference"] = float(
+                    np.sqrt(np.mean(du * du + dv * dv)))
+            pd = metrics[dec]["farm_power"]
             rel = abs(pd - pf) / pf if pf else None
-            metrics[dec]["farm_power_vs_full"] = (pd - pf) / pf if pf else None
-            du = states[dec].u - states["full"].u
-            dv = states[dec].v - states["full"].v
-            metrics[dec]["rms_velocity_difference"] = float(np.sqrt(np.mean(du * du + dv * dv)))
             checks.append(judge(CHECKS[1], rel, f"{dec} {pd:.4f} against full {pf:.4f}"))
         else:
             checks.append(judge(CHECKS[1], None, "needs a decomposed arm and the full domain"))

@@ -604,6 +604,10 @@ class Workbench:
                                 if c["passed"] is False)
                     mark = (f"{fails} check{'s' * (fails > 1)} failed" if fails
                             else ("stopped" if r.status == "stopped" else "done"))
+                    #: the last run is of the case as committed: once the open case
+                    #: differs (an edit, another example), its results are not this one's
+                    if r.committed_json != self.spec.to_json():
+                        mark += ", before a change"
             elif errs:
                 mark = f"{errs} error{'s' * (errs > 1)}"
             elif warns:

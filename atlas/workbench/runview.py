@@ -9,6 +9,7 @@ showing, `RunPanel.update` is called by the page's periodic callback.
 from __future__ import annotations
 
 import html
+import json
 import os
 from typing import TYPE_CHECKING, Any
 
@@ -364,6 +365,11 @@ def results_frames(res: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame]:
                "t_full / t_arm (measured now)": fmt(t.get("speedup_vs_full"), ".3g")}
         for key, label, spec in METRIC_COLUMNS.get(res["family"], ()):
             row[label] = fmt(m.get(key), spec)
+        #: every family: the displayed field's rms difference from the full domain
+        fd = (res.get("field_difference") or {}).get(a)
+        col = f"rms difference vs full, {res.get('field_label', 'field')}"
+        row[col] = ("-" if a == "full" else fmt(fd["rms"], ".3g") if fd
+                    else "no full domain" if "full" not in res["arms"] else "-")
         rows.append(row)
     checks = pd.DataFrame([{"check": c["title"], "measured": fmt(c["value"], ".3g"),
                             "tolerance": ("exact" if c["tolerance"] is None
@@ -378,7 +384,8 @@ def results_frames(res: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame]:
 METRIC_COLUMNS: dict[str, tuple[tuple[str, str, str], ...]] = {
     "incompressible-2d": (("farm_power", "farm power (last 5 steps)", ".5g"),
                           ("farm_power_vs_full", "farm power vs full", "+.2%"),
-                          ("rms_velocity_difference", "rms velocity difference", ".3g")),
+                          ("rms_velocity_difference", "rms velocity difference (u and v)",
+                           ".3g")),
     "conduction-2d": (("heat_in", "heat in (W per m of depth)", ".7g"),
                       ("heat_in_vs_full", "heat in vs full", "+.2e"),
                       ("heat_in_vs_closed_form", "vs closed form", "+.2e"),
@@ -457,6 +464,9 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
                                              "measured in this run; the table says why for "
                                              "each." if n_na else ""),
                              alert_type="success", sizing_mode="stretch_width"))
+    #: the last run is of the case as it committed it; once the open case differs
+    #: (an edit, another example), these are not the open case's results
+    stale = res.get("case") is not None and res["case"] != json.loads(wb.spec.to_json())
     notes = [f"- {n}" for n in res.get("notes", [])]
     pou = res.get("problem", {}).get("partition_of_unity")
     if pou:
@@ -468,8 +478,14 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
     if rec:
         notes.append(f"- Record: `{html.escape(os.path.relpath(rec, wb_root()))}` "
                      f"(the case as it marched, every per-step time, the machine's state).")
+    changed = ([pn.pane.Alert(f"These are the results of **{html.escape(res['case_name'])}** "
+                              "as the run committed it; the case open now differs. Run it "
+                              "again (**5. Run & compare**) for its own results.",
+                              alert_type="warning", sizing_mode="stretch_width")]
+               if stale else [])
     return pn.Column(
         pn.pane.Markdown(head, sizing_mode="stretch_width", margin=(0, 10)),
+        *changed,
         verdict,
         pn.pane.Markdown("**Speed and accuracy, each arm against the full domain** "
                          "(t_full / t_arm above 1 is faster than the full domain)",
