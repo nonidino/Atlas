@@ -437,10 +437,10 @@ def _jsonable(x):
     return x
 
 
-def write_record(rec: dict, folder: str) -> str:
+def write_record(rec: dict, folder: str, prefix: str = "") -> str:
     """Atomically, with OneDrive's retry (it can hold a just-written file)."""
     os.makedirs(folder, exist_ok=True)
-    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    stamp = prefix + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     path = os.path.join(folder, f"{stamp}.json")
     n = 1
     while os.path.exists(path):

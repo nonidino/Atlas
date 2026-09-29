@@ -254,6 +254,38 @@ class CoolingRun:
                 "interface_faces": int(self.sd.face_rows.size)}
 
 
+def case_graph(spec):
+    """The case for the compiler (`compile.py`): the channel and the block as two
+    agents of DIFFERENT governing families -- the coolant's advection and
+    diffusion, the block's conduction -- meeting at one THERM seam.  Each solves
+    its own piece directly (steady), which is an embedded elliptic solve and is
+    declared so; each is the only agent of its family, which is what R10 reads.
+    The response is the entropy flux ``q_n / T`` into the piece through the wall's
+    faces after its solve, linearized about the inlet temperature."""
+    from ..compile import fv_graph
+    d = spec.domain
+    f = field_from_case(spec)
+    rows, _why = coolant_rows(spec)
+    fluid = {w.id for w in spec.windows
+             if set(range(w.y0, w.y0 + w.ny)) & set(rows.tolist())}
+    T_in = inlet_temperature(spec) or 300.0
+    k_max = max(float(m["k"]) for m in spec.materials.values())
+    power = max(fv.total_source(f), 1e-30) / (d.nx * d.dx)       # W/m^2 through the wall
+    graph, _agents = fv_graph(
+        spec, f, family=FAMILY, port_type="THERM",
+        scales={"temperature": T_in, "entropy_flux": power / T_in, "power_area": power},
+        implicit=True, base=T_in, per_effort=True,
+        lambda_ref="the same finite volumes on every cell (fv.assemble), the full-domain arm",
+        response_note="the piece's entropy flux q_n / T into it through the wall's faces "
+                      "after its own solve",
+        validity=lambda state=None, cond=None: True,
+        families={w.id: ("coolant-advection-diffusion-2d" if w.id in fluid
+                         else "solid-conduction-2d") for w in spec.windows})
+    graph.note += (f"; the wall's conductivity contrast is {k_max:g} W/(m K) at most, "
+                   f"and the coolant crosses no seam")
+    return graph
+
+
 def step_label(spec) -> str:
     return "timed repeat"
 

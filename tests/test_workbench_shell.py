@@ -93,9 +93,11 @@ def wb(tmp_path, monkeypatch):
     are about the dispatcher, and a real march here would be a 30-second background
     thread timing itself against the rest of the suite (runs are tested in
     `test_workbench_runner.py`)."""
+    from atlas.workbench import compile as compile_
     from atlas.workbench import runner
     from atlas.workbench.app import Workbench
     monkeypatch.setattr(runner.CaseRun, "start", lambda self: None)
+    monkeypatch.setattr(compile_.CompileJob, "start", lambda self: None)
     return Workbench(cases_dir=str(tmp_path))
 
 
@@ -125,11 +127,16 @@ def test_every_menu_item_is_an_action_the_dispatcher_knows(wb):
     assert not any("unknown action" in line for line in wb.log_lines)
 
 
-def test_unbuilt_actions_say_why(wb):
-    from atlas.workbench.app import NOT_BUILT
-    assert set(NOT_BUILT) == {"compile"}          # the runner and results are built
-    wb.dispatch("run:compile")
-    assert NOT_BUILT["compile"] in wb.log_lines[0]
+def test_nothing_is_left_unbuilt(wb):
+    """Every NOT_BUILT went once its action worked; the compile was the last."""
+    import atlas.workbench.app as app
+    assert not hasattr(app, "NOT_BUILT")
+    items = [it[0] for it in wb.run_menu.items if it is not None]
+    assert "Compile with the Atlas compiler" in items
+    assert not any("not built" in i for i in items)
+    wb.dispatch("run:compile")                     # started (the fixture does not march it)
+    assert wb.compile_job is not None
+    assert any("compile started" in line for line in wb.log_lines[:3])
 
 
 def test_a_case_with_errors_does_not_run(wb):

@@ -290,6 +290,157 @@ def step_label(spec) -> str:
     return "timed repeat"
 
 
+class FEWindowAgent:
+    """One window of the bracket as the compiler's agent: its own stiffness with the
+    nodes on its artificial boundary held (both components), and the reaction that
+    holds them -- the window's Schur complement, a traction per unit length.
+
+    Quasi-static, so a velocity trace is a displacement increment over a nominal
+    second, as `thermal_strain.ElasticityAgent.respond` reads one; the response is
+    the EFFORT half, positive semidefinite in the held displacement (each side
+    against its own outward normal)."""
+
+    def __init__(self, run: "ElasticityRun", k: int, name: str):
+        d = run.spec.domain
+        x0, y0, w, h = run.windows[k][1]
+        jj, ii = np.meshgrid(np.arange(y0, y0 + h), np.arange(x0, x0 + w), indexing="ij")
+        self.nodes = (jj * (d.nx + 1) + ii).ravel()
+        on_edge = ((ii == x0) & (x0 > 0)) | ((ii == x0 + w - 1) & (x0 + w - 1 < d.nx)) | \
+                  ((jj == y0) & (y0 > 0)) | ((jj == y0 + h - 1) & (y0 + h - 1 < d.ny))
+        self.boundary = self.nodes[on_edge.ravel()]
+        dofs = np.stack([2 * self.nodes, 2 * self.nodes + 1], axis=1).ravel()
+        bdofs = set(np.stack([2 * self.boundary, 2 * self.boundary + 1], axis=1).ravel()
+                    .tolist())
+        fixed = set(run.fixed.tolist())
+        self.I = np.array([x for x in dofs.tolist() if x not in bdofs and x not in fixed])
+        self.B = np.array(sorted(x for x in bdofs if x not in fixed))
+        K = run.K.tocsr()
+        self.K_II = K[self.I][:, self.I]
+        self.K_IB = K[self.I][:, self.B]
+        self.K_BI = K[self.B][:, self.I]
+        self.K_BB = K[self.B][:, self.B]
+        self.lu = styles.Factor(self.K_II)
+        self.dx = d.dx
+        self.name = name
+        self.ports: dict[str, np.ndarray] = {}      # port -> its nodes, ordered
+        self.pos = {int(x): i for i, x in enumerate(self.B.tolist())}
+
+    def port_dofs(self, port: str) -> np.ndarray:
+        n = self.ports[port]
+        return np.concatenate([2 * n, 2 * n + 1])    # all x components, then all y
+
+    def respond(self, port: str, trace: np.ndarray) -> np.ndarray:
+        dofs = self.port_dofs(port)
+        uB = np.zeros(self.B.size)
+        keep = [i for i, x in enumerate(dofs.tolist()) if x in self.pos]
+        for i in keep:
+            uB[self.pos[int(dofs[i])]] = float(np.ravel(trace)[i])
+        uI = self.lu.solve(-(self.K_IB @ uB))
+        react = self.K_BI @ uI + self.K_BB @ uB
+        out = np.zeros(dofs.size)
+        for i in keep:
+            out[i] = react[self.pos[int(dofs[i])]] / self.dx
+        return out
+
+
+def case_graph(spec):
+    """The case for the compiler (`compile.py`): one agent per window, MECH seams
+    where a window's artificial boundary lies inside another, each port the
+    boundary's nodes (both displacement components), a Fourier basis per
+    component.  A window's solve is direct over the window: an embedded elliptic
+    solve, and two windows share the family -- R10 has something to say."""
+    from atlas.capability import (BCChannel, ClaimType, Direction, EllipticSubsolve,
+                                  ExpertCapabilities, MotionClass, TimeDiscretization,
+                                  port_decl)
+    from atlas.graph import Agent, CaseGraph, Connection, Decomposition
+    from atlas.ports import PortType, ResponseHalf
+    from atlas.transfer import Prolongation
+
+    from ..compile import cross_points, fourier_basis, modes_for
+    run = ElasticityRun(spec, arms=("serial",))
+    d = spec.domain
+    agents = {n: FEWindowAgent(run, k, n) for k, (n, _b) in enumerate(run.windows)}
+    boxes = dict(run.windows)
+    traction = max([abs(float(b.value)) for b in spec.boundaries
+                    if b.kind in ("load-x", "load-y") and b.value] + [1.0])
+    E_max = float(np.max(run.E))
+    u_scale = traction * max(d.nx, d.ny) * d.dx / E_max        # m, a displacement's size
+    scales = {"stress": traction, "velocity": u_scale, "power_area": traction * u_scale}
+
+    def inside(box, nodes):
+        x0, y0, w, h = box
+        i, j = nodes % (d.nx + 1), nodes // (d.nx + 1)
+        return nodes[(i >= x0) & (i < x0 + w) & (j >= y0) & (j < y0 + h)]
+
+    ports: dict[str, list] = {n: [] for n in agents}
+    conns = []
+    names = list(agents)
+    for a_i, na in enumerate(names):
+        for nb in names[a_i + 1:]:
+            pa = inside(boxes[nb], agents[na].boundary)
+            pb = inside(boxes[na], agents[nb].boundary)
+            if not (pa.size and pb.size):
+                continue
+            sid = f"{na}|{nb}"
+            for side, nodes_ in ((na, pa), (nb, pb)):
+                pname = f"{sid}:MECH"
+                agents[side].ports[pname] = nodes_
+                m = modes_for(nodes_.size)
+                F = fourier_basis(nodes_.size, d.dx, m)
+                P = np.block([[F, np.zeros_like(F)], [np.zeros_like(F), F]])
+                ports[side].append(port_decl(
+                    name=pname, port_type=PortType.MECH,
+                    geometry=f"{nodes_.size} nodes of {side}'s artificial boundary inside "
+                             f"{nb if side == na else na}, both components",
+                    direction=Direction.BIDIRECTIONAL, nondim=dict(scales),
+                    effective_resolution=2 * m, motion_class=MotionClass.STATIC,
+                    response_half=ResponseHalf.EFFORT,
+                    prolongation=Prolongation(
+                        agent_id=side, port_name=pname, matrix=P,
+                        gram_V=d.dx * np.eye(2 * nodes_.size),
+                        label=f"{m}-mode real Fourier basis per component"),
+                    note="the reaction traction holding these nodes, per unit length"))
+            conns.append(Connection(
+                seam_id=sid, a=(na, f"{sid}:MECH"), b=(nb, f"{sid}:MECH"),
+                port_type=PortType.MECH, derive_space=True, geometrically_coincident=False,
+                expected_null_dim=0, cut_axis=Decomposition.OVERLAPPING,
+                note="across an overlap: each window's artificial boundary inside the other"))
+    caps = {}
+    for n, a in agents.items():
+        caps[n] = ExpertCapabilities(
+            expert_id=n, ports=ports[n], bc_channel=BCChannel.DIRICHLET,
+            bc_time_varying=False, elliptic_subsolve=EllipticSubsolve.EMBEDDED,
+            time_discretization=TimeDiscretization.IMPLICIT, stencil_radius=1,
+            substeps_per_macro_step=1, dt_native=1.0,
+            validity=lambda state=None, cond=None: True,
+            governing_family="plane-stress-elasticity-2d",
+            lambda_ref="the same elements on the whole plate solved directly, the "
+                       "full-domain arm",
+            claim_types=frozenset({ClaimType.TRAJECTORY}),
+            weight_hash="workbench-fe/plane-stress", boundary_response=a.respond,
+            probe_base=lambda port, a=a: np.zeros(2 * a.ports[port].size),
+            reproducibility_floor=float(np.finfo(float).eps), deterministic=True,
+            note="atlas/workbench/fe.py: Q1 plane stress, a material per element")
+    tiling_pou = run.tiling.partition_of_unity()
+    return CaseGraph(
+        name=f"workbench-{spec.name}",
+        agents=[Agent(n, caps[n], domain=f"window {n}") for n in agents],
+        connections=conns, decomposition=Decomposition.OVERLAPPING,
+        overlap=_overlap_cells(spec) * d.dx, overlap_cells=_overlap_cells(spec),
+        partition_of_unity=tiling_pou,
+        cross_points=cross_points(spec), macro_dt=1.0,
+        note=f"the workbench case {spec.name!r}: plane stress, style B")
+
+
+def _overlap_cells(spec) -> int:
+    from .. import geometry as geo_
+    d = spec.domain
+    ov = geo_.analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
+                                           for w in spec.windows],
+                              spec.coupling.ramp_cells).overlaps
+    return int(min((min(b[2], b[3]) for _a, _b, b in ov), default=0))
+
+
 def build(spec, arms=ARMS, threads: int = 2) -> ElasticityRun:
     return ElasticityRun(spec, arms=arms, threads=threads)
 

@@ -354,6 +354,69 @@ def test_block_geometry_rules():
     assert {c.key: c.tolerance for c in co.CHECKS} == {"energy": 1e-6, "reference": 1e-6}
 
 
+# ---------------------------------------------------------------------------
+# step D: the compile
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("key, verdict", [
+    ("wall-2", "refuse"), ("plate-insert", "refuse"), ("bracket-2", "refuse"),
+    ("cooled-block", "admit-uncertified"), ("plume-2", "admit-uncertified"),
+    ("plate-circuit", "admit-uncertified"), ("sound-air-water", "admit-uncertified")])
+def test_every_family_compiles_to_the_compilers_verdict(key, verdict):
+    """The verdicts are the compiler's, pinned so a change in them is seen: the
+    iterated styles of one physics refuse at R10 (the rule's documented proxy
+    does not read an iteration), and the rest are admitted uncertified, every
+    seam probed through the families' own solves."""
+    from atlas.workbench.compile import compile_case
+    s = compile_case(example_case(key))
+    assert s.refused_before is None and s.verdict == verdict, (s.verdict, s.other[:3])
+    assert s.seams and all(sv.verdict in ("admit", "admit-uncertified") for sv in s.seams)
+    assert s.cross_points == ()                          # W162: declared, not detected
+    if verdict == "refuse":
+        assert any(r["rule"] == "R10" and r["verdict"] == "refuse" for r in s.other)
+
+
+def test_the_split_is_refused_by_the_port_vocabulary():
+    from atlas.workbench.compile import compile_case
+    s = compile_case(example_case("heated-strip"))
+    assert s.verdict == "refuse" and s.refused_before.startswith("NamedHoleError")
+    assert "PortAmendment" in s.refused_before and "VOLUMETRIC" in s.refused_before
+
+
+def test_the_wind_farm_compiles_through_its_own_graph():
+    """wake_array's graph, at the example's rung: the cross-points it declares, and
+    a verdict per seam the compiler decided."""
+    from atlas.workbench.compile import compile_case
+    s = compile_case(example_case("wake-array-3"))
+    assert s.refused_before is None and s.verdict == "admit-uncertified"
+    assert s.cross_points == ("x0y0", "x1y0") and len(s.seams) == 13 and s.agents == 9
+    moved = example_case("wake-array-3")
+    moved.windows[0].x0 += 8                               # no longer a ladder rung
+    s = compile_case(moved)
+    assert s.refused_before and "not one" in s.refused_before
+
+
+def test_a_seam_is_a_real_response(tmp_path):
+    """The probed blocks are the families' own solves: an FV window's response to
+    its face temperatures rises with them (the Steklov-Poincare sign the first
+    draft had backwards), and the compile writes its record beside the case."""
+    from atlas.workbench import compile as C
+    from atlas.workbench.families import conduction as cd
+    s = example_case("wall-2")
+    f = cd.field_from_case(s)
+    agent = C.FVAgent("steel", f, cd.window_cells(160, (0, 0, 96, 40)), implicit=True,
+                      base=350.0, per_effort=True)
+    faces = np.arange(agent.cut.face_rows.size)
+    agent.ports["p"] = faces
+    lo = agent.respond("p", np.full(faces.size, 340.0))
+    hi = agent.respond("p", np.full(faces.size, 360.0))
+    assert np.all(hi > lo)
+    job = C.CompileJob(s, results_dir=str(tmp_path)).run_blocking()
+    assert job.status == "done" and job.record_path.endswith(".json")
+    assert os.path.basename(job.record_path).startswith("compile-")
+
+
 @pytest.fixture()
 def wb(tmp_path):
     import panel as pn
@@ -493,6 +556,26 @@ def test_electrode_nodes_are_inside_the_canvas(wb):
     x0, x1, y0, y1 = ed.ranges()
     for x, y in ed.circuit_nodes().values():
         assert x0 + 2 <= x <= x1 - 2 and y0 + 2 <= y <= y1 - 2
+
+
+def test_the_check_step_shows_the_compile_per_seam(wb):
+    wb.dispatch("file:example:plate-circuit")
+    job = wb.start_compile(blocking=True)
+    assert job is not None and job.status == "done"
+    text = _texts(wb.workspace.objects[0])
+    assert "The Atlas compiler" in text and "admit-uncertified" in text
+    assert "Per seam" in text and "E1" in text and "E2" in text
+    assert any("compiled in" in line for line in wb.log_lines[:3])
+    assert "compiled: admit-uncertified" in "".join(wb.nav.options)
+    wb.dispatch("file:example:wall-2")
+    # the last compile is plate-circuit's: the nav must not lend its verdict to the
+    # case now open (the gallery pass found farm-21's shown beside farm-12)
+    nav = "".join(wb.nav.options)
+    assert "compiled before a change" in nav and "admit-uncertified" not in nav
+    wb.start_compile(blocking=True)
+    assert "compiled: refuse" in "".join(wb.nav.options)
+    text = _texts(wb.workspace.objects[0])
+    assert "R10 reads each window's declaration" in text        # the note on the proxy
 
 
 def test_a_region_drawn_in_a_library_material_brings_its_properties(wb):

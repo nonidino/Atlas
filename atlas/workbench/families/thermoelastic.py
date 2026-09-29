@@ -284,5 +284,23 @@ def build(spec, arms=ARMS, threads: int = 2) -> ThermoelasticRun:
     return ThermoelasticRun(spec, arms=arms, threads=threads)
 
 
+def case_graph(spec):
+    """The case for the compiler: refused before it, by the port vocabulary itself.
+
+    The split's two agents share the whole domain and exchange the whole
+    temperature field, a VOLUMETRIC bond.  The thermal-strain case study
+    ([[case-study-thermal-strain-atlas-0.1]]) asked the package for that bond and
+    it refused -- a sixth port type enters only through the six-field amendment
+    procedure -- and this asks the same question of the same function
+    (`ports.spec_for`), so the refusal is the package's, word for word, rather
+    than a sentence written here.  The two routes the closed vocabulary does
+    offer are both wrong in that study's measurement: as a surface MECH traction
+    by 1279x in stress, and as a GlobalField exact but refused at
+    L3/global-field since W117."""
+    from atlas.ports import spec_for
+    spec_for("VOLUMETRIC")            # raises holes.NamedHoleError (PORT_AMENDMENT)
+    raise AssertionError("the port vocabulary accepted a volumetric bond")  # pragma: no cover
+
+
 __all__ = ["FAMILY", "STYLE", "ARMS", "ARM_LABELS", "CHECKS", "ThermoelasticRun",
            "ThermoState", "build"]

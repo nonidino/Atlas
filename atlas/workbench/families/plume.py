@@ -343,5 +343,41 @@ def build(spec, arms=ARMS, threads: int = 2) -> PlumeRun:
     return PlumeRun(spec, arms=arms, threads=threads)
 
 
+def case_graph(spec):
+    """The case for the compiler (`compile.py`): one agent per window, ADVEC seams
+    carrying the pollutant as a passenger of the river's mass flux.
+
+    A window's step is one explicit step -- no solve of any kind, a one-cell
+    stencil, one sub-step per exchange -- so it declares no elliptic solve and an
+    explicit time discretization.  Its response to the concentration on one
+    port's faces is the pollutant flux its step would send INTO it through them:
+    diffusion from that outside value and the upwinded advection, at the probe
+    state (a river at the release's fully mixed concentration)."""
+    from ..compile import fv_graph
+    d = spec.domain
+    f, h = field_from_case(spec)
+    q = float(spec.physics.get("q"))
+    release = float(spec.physics.get("release"))
+    width = d.ny * d.dx
+    c_mixed = release / (q * width)                  # g/m^3 once mixed across the river
+    u = q / float(np.min(h))
+    flux = c_mixed * u                               # g/(m^2 s), the pollutant's flux
+    water = 1000.0 * u                               # kg/(m^2 s), the river's mass flux
+    enthalpy = 4180.0 * 300.0                        # J/kg, the water's, a scale only
+    graph, _agents = fv_graph(
+        spec, f, family=FAMILY, port_type="ADVEC",
+        scales={"enthalpy": enthalpy, "mass_flux": water, "power_area": enthalpy * water,
+                "pollutant_effort": c_mixed, "pollutant_flow": flux,
+                "pollutant_power": c_mixed * flux},
+        implicit=False, base=c_mixed, per_effort=False, passengers=("pollutant",),
+        state=np.full(f.n, c_mixed),
+        lambda_ref="the same explicit finite volumes on every cell, the full-domain arm",
+        response_note="the pollutant flux the window's explicit step sends into it "
+                      "through these faces, the trace the outside concentration",
+        validity=lambda state=None, cond=None: float(spec.run.macro_dt)
+        <= explicit_limit(spec))
+    return graph
+
+
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "PlumeRun", "PlumeState", "build",
            "field_from_case", "reach_properties", "outfall_cell", "explicit_limit"]

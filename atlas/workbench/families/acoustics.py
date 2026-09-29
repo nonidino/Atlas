@@ -435,5 +435,76 @@ def build(spec, arms=ARMS, threads: int = 1) -> AcousticsRun:
     return AcousticsRun(spec, arms=arms, threads=threads)
 
 
+def case_graph(spec):
+    """The case for the compiler (`compile.py`): the two pieces as two agents meeting
+    at the interface's faces, one MECH seam.
+
+    A piece's step is explicit -- no solve, a one-cell stencil, one leapfrog step
+    per exchange -- so it declares no elliptic solve.  Its response to the
+    pressure on the far side of each interface face (the effort) is the normal
+    velocity into it there after one velocity update from rest (the flow), the
+    face's own density: the half of the explicit exchange each piece does."""
+    from atlas.capability import (BCChannel, ClaimType, Direction, EllipticSubsolve,
+                                  ExpertCapabilities, MotionClass, TimeDiscretization,
+                                  port_decl)
+    from atlas.graph import Agent, CaseGraph, Connection, Decomposition
+    from atlas.ports import PortType, ResponseHalf
+
+    from ..compile import face_prolongation, modes_for
+    m = cut_column(spec)
+    if m is None:
+        from ..compile import CompileRefused
+        raise CompileRefused("the acoustics family's pieces are two windows side by side")
+    d = spec.domain
+    rho, c = media(spec)
+    dt = float(spec.run.macro_dt)
+    rho_f = 0.5 * (rho[:, m - 1] + rho[:, m])                  # the interface faces' density
+    left, right = sorted(spec.windows, key=lambda w: w.x0)
+    amp = float(spec.physics.get("amplitude"))
+    z1 = float(rho[0, 0] * c[0, 0])
+    scales = {"stress": amp, "velocity": amp / z1, "power_area": amp * amp / z1}
+    port = "interface:MECH"
+
+    def piece(name, sign):
+        def respond(_port, trace):
+            # from rest, the inside pressure is zero: the velocity into the piece is
+            # dt / (rho_f dx) times the pressure pushing in from the far side
+            return dt / (rho_f * d.dx) * np.asarray(trace, dtype=float).ravel()
+        return ExpertCapabilities(
+            expert_id=name, ports=[port_decl(
+                name=port, port_type=PortType.MECH,
+                geometry=f"the {d.ny} interface faces, from the {'first' if sign > 0 else 'second'} "
+                         f"piece's side",
+                direction=Direction.BIDIRECTIONAL, nondim=dict(scales),
+                effective_resolution=modes_for(d.ny), motion_class=MotionClass.STATIC,
+                response_half=ResponseHalf.FLOW,
+                prolongation=face_prolongation(name, port, d.ny, d.dx),
+                note="the normal velocity into the piece after one velocity update")],
+            bc_channel=BCChannel.DIRICHLET, bc_time_varying=True,
+            elliptic_subsolve=EllipticSubsolve.NONE,
+            time_discretization=TimeDiscretization.EXPLICIT, stencil_radius=1,
+            substeps_per_macro_step=1, dt_native=dt,
+            validity=lambda state=None, cond=None: dt <= stable_dt(spec),
+            governing_family="linear-acoustics-2d",
+            lambda_ref="the same leapfrog on the whole domain, the full-domain arm",
+            claim_types=frozenset({ClaimType.TRAJECTORY}),
+            weight_hash="workbench/acoustics-leapfrog", boundary_response=respond,
+            probe_base=lambda _p: np.zeros(d.ny),
+            reproducibility_floor=float(np.finfo(float).eps), deterministic=True,
+            note="atlas/workbench/families/acoustics.py: staggered-grid leapfrog")
+    return CaseGraph(
+        name=f"workbench-{spec.name}",
+        agents=[Agent(left.id, piece(left.id, 1), domain=f"piece {left.id}"),
+                Agent(right.id, piece(right.id, -1), domain=f"piece {right.id}")],
+        connections=[Connection(
+            seam_id="interface", a=(left.id, port), b=(right.id, port),
+            port_type=PortType.MECH, derive_space=True, geometrically_coincident=True,
+            expected_null_dim=0, cut_axis=Decomposition.NON_OVERLAPPING,
+            note="the explicit Dirichlet-Neumann exchange: pressures one way, the "
+                 "interface velocities the other")],
+        decomposition=Decomposition.NON_OVERLAPPING, cross_points=(), macro_dt=dt,
+        note=f"the workbench case {spec.name!r}: style C, explicit")
+
+
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "AcousticsRun", "Wave", "build", "media",
            "stable_dt", "cut_column", "closed_form_reflection", "plateau", "available_arms"]

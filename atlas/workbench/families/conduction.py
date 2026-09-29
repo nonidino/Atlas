@@ -452,6 +452,50 @@ def build(spec, arms=ARMS, threads: int = 2) -> ConductionRun:
     return ConductionRun(spec, arms=arms, threads=threads)
 
 
+def case_graph(spec):
+    """The case for the compiler (`compile.py`): one agent per window, each its own
+    finite volumes, THERM seams derived from the geometry.
+
+    A window's step is a sparse direct solve over the window -- steady, or one
+    backward-Euler step from the initial temperature -- so it declares an
+    EMBEDDED elliptic solve, which is true.  Its response to the temperatures on
+    one port's faces is the entropy flux ``q_n / T`` through them after that
+    solve.  The probe linearizes about the case's own temperature level (W74:
+    a temperature has an absolute origin)."""
+    from ..compile import fv_graph
+    d = spec.domain
+    f = field_from_case(spec)
+    transient = spec.run.mode == "transient"
+    T0 = float(spec.physics.get("T0"))
+    fixed = [float(b.value) for b in spec.boundaries
+             if b.kind == "fixed-temperature" and b.value is not None]
+    base = T0 if (transient or not fixed) else float(np.mean(fixed))
+    scale = max([abs(T0)] + [abs(v) for v in fixed])
+    span = (max(fixed) - min(fixed)) if len(fixed) >= 2 else max(
+        [abs(v - T0) for v in fixed] + [1.0])
+    k_max = max(float(m["k"]) for m in spec.materials.values())
+    power = k_max * span / (max(d.nx, d.ny) * d.dx)          # W/m^2, a flux's size
+    m = (capacity(spec) * d.dx * d.dx / float(spec.run.macro_dt)).ravel() \
+        if transient else None
+    graph, _agents = fv_graph(
+        spec, f, family=FAMILY, port_type="THERM",
+        scales={"temperature": scale, "entropy_flux": power / scale, "power_area": power},
+        implicit=True, base=base, per_effort=True,
+        lambda_ref="the same finite volumes on every cell (fv.assemble), the full-domain arm",
+        diag_add=m, extra=None if m is None else m * T0,
+        response_note="the window's entropy flux q_n / T into it through these faces "
+                      "after its own solve, every other cut face at the probe base",
+        validity=_valid_everywhere)
+    return graph
+
+
+def _valid_everywhere(state=None, cond=None) -> bool:
+    """Linear conduction with positive conductivities: a direct solve of it holds for
+    every temperature field, and the case's own check has already refused a
+    conductivity that is not positive."""
+    return True
+
+
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "ConductionRun", "CondState", "build",
            "field_from_case", "capacity", "available_arms", "step_label", "dirichlet_side",
            "floating", "rho_1d", "closed_form_heat", "window_cells"]

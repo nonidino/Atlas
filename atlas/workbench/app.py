@@ -31,6 +31,7 @@ from . import geometry as geo
 from . import registry
 from .editor import GeometryEditor
 from .gmsh_import import GmshImportError, read_msh_bytes
+from .compile import CompileJob
 from .runner import (ARM_LABELS, CaseRun, RunRefused, adapter_for, arm_labels_for,
                      arms_for, results_dir_for, step_label_for)
 from .runview import RunPanel, results_view
@@ -57,11 +58,6 @@ STEPS: tuple[tuple[str, str], ...] = (
     ("results", "Results"),
 )
 
-#: Why each unbuilt action is unavailable, shown wherever the action would be.
-NOT_BUILT = {
-    "compile": ("Compiling a case with the Atlas compiler needs the case-to-graph loader "
-                "(plan step 2). Not built yet."),
-}
 
 ACCENT = "#0e6874"
 HEADER = "#16303f"
@@ -155,6 +151,9 @@ class Workbench:
         self._run_buttons: tuple | None = None
         self._poll_cb = None
         self._reported: CaseRun | None = None
+        #: the compile running now, or the last one; its summary is the Check step's
+        self.compile_job: CompileJob | None = None
+        self._compile_reported: CompileJob | None = None
         self._build()
         self.log("opened the example case 'wake-array-3'")
 
@@ -306,7 +305,7 @@ class Workbench:
         elif action == "run:check":
             self.show("check")
         elif action == "run:compile":
-            self.notify("warning", NOT_BUILT["compile"])
+            self.start_compile()
         elif action == "run:both":
             self.start_run(self.run_arms)
         elif action == "run:decomposed":
@@ -339,6 +338,10 @@ class Workbench:
         if self.run is not None and self.run.active:
             self.notify("warning", "a run is already marching; Stop it first (Run > Stop)")
             return None
+        if self.compile_job is not None and self.compile_job.active:
+            self.notify("warning", "a compile is running; a run beside it would time the "
+                                   "compile too, so wait for it")
+            return None
         errors = [i for i in self.issues() if i.severity == "error"]
         if errors:
             self.notify("error", f"the case has {len(errors)} error"
@@ -368,6 +371,38 @@ class Workbench:
             self._start_polling()
         return run
 
+    def start_compile(self, blocking: bool = False) -> CompileJob | None:
+        """Compile the case as it stands now with the Atlas compiler, in a background
+        thread: the case's graph from its family, the compiler's verdict per seam."""
+        if self.compile_job is not None and self.compile_job.active:
+            self.notify("info", "a compile is already running")
+            return None
+        if self.run is not None and self.run.active:
+            self.notify("warning", "a run is marching; a compile beside it would be timed "
+                                   "with it, so compile after it")
+            return None
+        errors = [i for i in self.issues() if i.severity == "error"]
+        if errors:
+            self.notify("error", f"the case has {len(errors)} "
+                                 f"{_plural(len(errors), 'error')} and cannot be compiled; "
+                                 f"step 4 lists them: {errors[0].message}")
+            self.show("check")
+            return None
+        job = CompileJob(self.spec, results_dir=results_dir_for(self.path, self.cases_dir,
+                                                                 self.spec.name))
+        self.compile_job = job
+        self._compile_reported = None
+        self.log(f"compile started: {self.spec.name} ({len(self.spec.windows)} windows)")
+        if blocking:
+            job.run_blocking()
+            self.poll()
+            self.show("check")
+        else:
+            job.start()
+            self.show("check")
+            self._start_polling()
+        return job
+
     def stop_run(self) -> None:
         if self.run is None or not self.run.active:
             self.notify("info", "nothing is running")
@@ -390,9 +425,13 @@ class Workbench:
             self._poll_cb = None
 
     def poll(self) -> None:
-        """Read the run's progress into the page; report once when it ends."""
+        """Read the run's progress into the page; report once when it ends.  The same
+        for a compile."""
+        self._poll_compile()
         run = self.run
         if run is None:
+            if not (self.compile_job is not None and self.compile_job.active):
+                self._stop_polling()
             return
         if self.run_panel is not None and self.active == "run" and self.run_panel.run is run:
             self.run_panel.update()
@@ -400,17 +439,12 @@ class Workbench:
                 run_btn, stop_btn, blocked = self._run_buttons
                 run_btn.disabled = run.active or blocked
                 stop_btn.disabled = not run.active
-        label = self._nav_options()
-        if list(label) != list(self.nav.options):
-            self._syncing_nav = True
-            try:
-                self.nav.options = label
-            finally:
-                self._syncing_nav = False
+        self._refresh_nav()
         if run.active or self._reported is run:
             return
         self._reported = run
-        self._stop_polling()
+        if not (self.compile_job is not None and self.compile_job.active):
+            self._stop_polling()
         p = run.progress()
         if run.status == "failed":
             self.notify("error", f"the run failed: {p.error}")
@@ -428,6 +462,37 @@ class Workbench:
         #: finished run's step is a different view, so it is rebuilt
         if self.active in ("run", "results"):
             self.show(self.active, keep_view=True)
+
+    def _refresh_nav(self) -> None:
+        label = self._nav_options()
+        if list(label) != list(self.nav.options):
+            self._syncing_nav = True
+            try:
+                self.nav.options = label
+            finally:
+                self._syncing_nav = False
+
+    def _poll_compile(self) -> None:
+        job = self.compile_job
+        if (job is None or job.active or job.status == "created"
+                or self._compile_reported is job):
+            return
+        self._compile_reported = job
+        self._refresh_nav()
+        if job.status == "failed":
+            self.notify("error", f"the compile failed: {job.error}")
+        else:
+            s = job.summary
+            self.notify("success" if s.verdict == "admit" else "warning",
+                        f"compiled in {s.seconds:.1f} s: {s.verdict}"
+                        + (f" ({len(s.seams)} {_plural(len(s.seams), 'seam')})"
+                           if s.seams else "")
+                        + (f"; saved {os.path.relpath(job.record_path, ROOT)}"
+                           if job.record_path else ""))
+        if not (self.run is not None and self.run.active):
+            self._stop_polling()
+        if self.active == "check":
+            self.show("check", keep_view=True)
 
     # ------------------------------------------------------------------
     # layout
@@ -456,7 +521,7 @@ class Workbench:
                                        None, ("Revert to saved", "edit:revert")])
         self.view_menu = menu("View", self._view_items())
         self.run_menu = menu("Run", [("Check case", "run:check"),
-                                     ("Compile with Atlas (not built)", "run:compile"), None,
+                                     ("Compile with the Atlas compiler", "run:compile"), None,
                                      ("Run decomposed (serial and parallel)", "run:decomposed"),
                                      ("Run full domain", "run:full"),
                                      ("Run the ticked arms and compare", "run:both"),
@@ -543,8 +608,16 @@ class Workbench:
                 mark = f"{errs} error{'s' * (errs > 1)}"
             elif warns:
                 mark = f"{warns} warning{'s' * (warns > 1)}"
+            elif key == "check":
+                job = self.compile_job
+                mark = ("" if job is None else "compiling" if (job.active or
+                                                                job.status == "created")
+                        else "compiled before a change"
+                        if job.committed_json != self.spec.to_json()
+                        else "compile failed" if job.status == "failed"
+                        else f"compiled: {job.summary.verdict}")
             else:
-                mark = "ok" if key != "check" else ""
+                mark = "ok"
             out[f"{n}. {title}" + (f"  ({mark})" if mark else "")] = key
         return out
 
@@ -850,18 +923,100 @@ class Workbench:
                            for i in issues] or [dict(severity="", step="", issue="no issues")])
         again = pn.widgets.Button(name="Check again", button_type="primary", width=140)
         again.on_click(lambda e: self.show("check"))
+        job = self.compile_job
+        busy = (job is not None and job.active) or (self.run is not None and self.run.active)
         compile_btn = pn.widgets.Button(name="Compile with the Atlas compiler",
-                                        button_type="default", disabled=True, width=260)
+                                        button_type="primary", width=260,
+                                        disabled=bool(n["error"]) or busy)
+        compile_btn.on_click(lambda e: self.dispatch("run:compile"))
         counts = (f"{n['error']} {_plural(n['error'], 'error')}, {n['warning']} "
                   f"{_plural(n['warning'], 'warning')}")
         self.log(f"checked the case: {counts}")
         return pn.Column(
-            self._title("4. Check", "What is wrong with the case before anything runs."),
+            self._title("4. Check", "What is wrong with the case before anything runs, and "
+                                    "what the Atlas compiler says about its seams."),
             pn.Row(again, compile_btn),
-            pn.pane.Markdown(f"**{counts}.** *Compile:* {NOT_BUILT['compile']}"),
+            pn.pane.Markdown(f"**{counts}.**"),
             pn.widgets.Tabulator(df, disabled=True, show_index=False, layout="fit_data_stretch",
-                                 sizing_mode="stretch_width", height=260),
+                                 sizing_mode="stretch_width", height=220),
+            self._compile_view(),
             sizing_mode="stretch_width")
+
+    def _compile_view(self):
+        """The last compile's verdict per seam, straight from the compiler's record."""
+        from .runview import html_table, table_pane
+        job = self.compile_job
+        head = pn.pane.Markdown("### The Atlas compiler", margin=(8, 10, 0, 10))
+        if job is None:
+            return pn.Column(head, pn.pane.Markdown(
+                "*Not compiled in this session.* **Compile** builds the case's graph from "
+                "its family (one agent per window or piece, a seam wherever two meet, the "
+                "cross-points declared) and runs `atlas/compiler.py` on it; each seam's "
+                "verdict is the worst of the compiler's decisions about it.",
+                margin=(0, 10)), sizing_mode="stretch_width")
+        if job.active or job.status == "created":
+            return pn.Column(head, pn.pane.Alert(
+                f"Compiling {html.escape(job.spec.name)}, started "
+                f"{datetime.datetime.fromtimestamp(job.started).strftime('%H:%M:%S')}. The "
+                "compiler probes every seam through its agents' own solves; the 21-rotor "
+                "farm takes about a minute and a half.", alert_type="info"),
+                sizing_mode="stretch_width")
+        if job.status == "failed":
+            return pn.Column(head, pn.pane.Alert(f"The compile failed: {html.escape(job.error)}",
+                                                 alert_type="danger"),
+                             sizing_mode="stretch_width")
+        s = job.summary
+        colour = {"admit": "success", "admit-uncertified": "warning", "refuse": "danger"}
+        changed = job.committed_json != self.spec.to_json()
+        lead = (f"**{html.escape(s.case)}**, compiled at {s.when[11:19]} in {s.seconds:.2f} s: "
+                f"**{s.verdict}**.")
+        body = [head, pn.pane.Alert(lead + (" The case has changed since; compile again for "
+                                            "the new version." if changed else ""),
+                                    alert_type=colour.get(s.verdict, "info"))]
+        if s.refused_before:
+            body.append(pn.pane.Markdown(
+                f"**Refused before the compiler**, by the package's own vocabulary: "
+                f"{html.escape(s.refused_before)}", sizing_mode="stretch_width",
+                margin=(0, 10)))
+        else:
+            cps = ("none (declared, W162)" if not s.cross_points
+                   else ", ".join(s.cross_points) + " (declared, W162)")
+            body.append(pn.pane.Markdown(
+                f"{s.agents} agents, {len(s.seams)} {_plural(len(s.seams), 'seam')}; "
+                f"cross-points: {html.escape(cps)}.", margin=(0, 10)))
+            def cut(msg: str, n: int) -> str:            # the record keeps it whole
+                return msg if len(msg) <= n else msg[:n].rstrip() + "..."
+            rows = [{"seam": sv.seam, "between": " and ".join(sv.between),
+                     "port": sv.port_type, "verdict": sv.verdict,
+                     "rules": "; ".join(f"{r['layer']}/{r['rule']} ({r['verdict']}): "
+                                        f"{cut(r['message'], 220)}" for r in sv.rules)
+                     or "every decision about it admits"} for sv in s.seams]
+            body.append(pn.pane.Markdown("**Per seam**", margin=(4, 10, 0, 10)))
+            body.append(table_pane(pd.DataFrame(rows), wrap=("rules",)))
+            if s.other:
+                other = [{"layer": r["layer"], "rule": r["rule"], "verdict": r["verdict"],
+                          "about": r["subject"], "message": cut(r["message"], 300)}
+                         for r in s.other]
+                body.append(pn.pane.Markdown("**About the graph, its agents and the run**",
+                                             margin=(4, 10, 0, 10)))
+                body.append(table_pane(pd.DataFrame(other), wrap=("message",)))
+            r10 = [r for r in s.other if r["rule"] == "R10" and r["verdict"] == "refuse"]
+            if r10 and self.spec.coupling.style in ("B", "C"):
+                body.append(pn.pane.Markdown(
+                    f"<small>R10 reads each window's declaration that it solves its own "
+                    f"piece of one physics directly, and refuses: one exchange of such "
+                    f"pieces changes the operator. This case's style "
+                    f"{self.spec.coupling.style} iterates the pieces until they agree, "
+                    f"which R10 does not read; the Run step's reference check measures "
+                    f"how close the iterated pieces come to the full domain. The refusal "
+                    f"is the compiler's verdict and is shown as it is.</small>",
+                    sizing_mode="stretch_width", margin=(0, 10)))
+        if job.record_path:
+            body.append(pn.pane.Markdown(
+                f"<small>Record: `{html.escape(os.path.relpath(job.record_path, ROOT))}` "
+                f"(every decision, the compiler's report, the case as compiled).</small>",
+                margin=(0, 10)))
+        return pn.Column(*body, sizing_mode="stretch_width")
 
     def _view_run(self):
         s = self.spec
@@ -1131,9 +1286,10 @@ class Workbench:
             "1. **Case**: name it, choose the physics family, size the domain.\n"
             "2. **Geometry**: cut the domain into windows, lay out material regions, place "
             "the devices and set the boundaries, on a canvas or from Gmsh.\n"
-            "3. **Physics & coupling**: the flow constants, and how windows are joined.\n"
-            "4. **Check**: what is wrong before anything runs; later, the Atlas compiler's "
-            "verdict per seam *(the compile is not built yet)*.\n"
+            "3. **Physics & coupling**: the family's parameters and materials, and how "
+            "windows are joined.\n"
+            "4. **Check**: what is wrong before anything runs; **Compile** puts the case's "
+            "graph to the Atlas compiler and shows its verdict per seam, with the rules.\n"
             "5. **Run & compare**: march the decomposition (serially and on threads) and the "
             "full-domain solve in turns, with the fields, the difference and the time per "
             "step live. **Run > Stop** stops after the arm-step in progress.\n"
@@ -1146,13 +1302,15 @@ class Workbench:
     def _about(self):
         return pn.pane.Markdown(
             f"### Atlas Workbench {VERSION}\n"
-            "A tool to build a domain decomposition by hand, run it, and compare it with the "
-            "full-domain solve. Built so far: the menus, the workflow, the case file, the "
-            "geometry section, and the runner for the wind-farm family.\n\n"
+            "A tool to build a domain decomposition by hand, compile it with the Atlas "
+            "compiler, run it, and compare it with the full-domain solve: the menus, the "
+            "workflow, the case file, the geometry section, the runner with eight physics "
+            "families and every coupling style, and the compile.\n\n"
             f"- Cases folder: `{os.path.relpath(self.cases_dir, ROOT)}`\n"
             "- Built on **Panel** and **Bokeh** (both BSD-3-Clause, already installed; "
             "nothing is downloaded and the page makes no outside requests).\n"
-            "- Unbuilt actions stay visible and say why.", width=560)
+            "- Every number the page shows is measured on this machine and kept in a "
+            "record beside the case file.", width=560)
 
     def _docs(self):
         return pn.pane.Markdown(
@@ -1225,5 +1383,4 @@ def serve(port: int = 8020, open_browser: bool = False, cases_dir: str | None = 
              websocket_origin=[f"127.0.0.1:{port}", f"localhost:{port}"])
 
 
-__all__ = ["Workbench", "create_app", "case_from_url", "serve", "STEPS",
-           "NOT_BUILT"]
+__all__ = ["Workbench", "create_app", "case_from_url", "serve", "STEPS"]

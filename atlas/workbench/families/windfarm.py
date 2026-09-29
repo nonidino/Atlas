@@ -538,6 +538,63 @@ def build(spec, arms=ARMS, threads: int = 4) -> WindFarmRun:
     return WindFarmRun(spec, arms=arms, threads=threads)
 
 
+def ladder_rung(spec):
+    """The scaling ladder's rung whose tiling and rotors this case is, or None."""
+    from atlas.cases import scaling_ladder as sl
+    wa = _wa()
+    d = spec.domain
+    wins = [(w.x0, w.y0, w.nx, w.ny) for w in spec.windows]
+    for cols in range(1, 13):
+        for rows in range(1, 9):
+            try:
+                r = sl.rung(cols, rows)
+            except Exception:                       # not a rung the ladder builds
+                continue
+            t = r.tiling
+            if (t.nx, t.ny) != (d.nx, d.ny) or len(t.offsets) != len(wins):
+                continue
+            if [(ox, oy, wa.N, wa.N) for ox, oy in t.offsets] != wins:
+                continue
+            rot = sorted((round(x.x_plane, 9), round(x.y_centre, 9)) for x in t.rotors)
+            dev = sorted((round(v.x, 9), round(v.y, 9)) for v in spec.devices)
+            if rot == dev:
+                return r
+    return None
+
+
+def case_graph(spec):
+    """The case for the compiler: `wake_array`'s own graph, which is what W346's
+    arithmetic was compiled as -- fluid windows with the reference `WindowNS`
+    whose pressure solve is EXPOSED (the workbench's arrangement; an embedded
+    choice is declared as embedded, and R10 answers it), the actuator disks as
+    lumped agents, the projected assembly when the case asks for it, and its own
+    cross-points declared (W162).  The probe linearizes about the freestream.
+
+    That graph declares a regular tiling of one window size (`ArrayTiling`, a
+    scaling-ladder rung), so a case whose windows are not one is refused with
+    that reason rather than compiled as something else."""
+    from atlas.capability import EllipticSubsolve
+    from atlas.cases import scaling_ladder as sl
+
+    from ..compile import CompileRefused
+    r = ladder_rung(spec)
+    if r is None:
+        raise CompileRefused(
+            "the wind-farm family's graph is wake_array's, which declares a regular "
+            "tiling of 128-cell windows and its rotors (a scaling-ladder rung); these "
+            "windows or rotors are not one, and an irregular tiling has no declared graph "
+            "yet")
+    t = r.tiling
+    u = np.full((t.ny, t.nx), float(spec.physics.u_inf))
+    exposed = spec.coupling.elliptic == "exposed"
+    graph, _experts = sl.build(
+        u, np.zeros_like(u), r, kind="reference_exposed" if exposed else "reference",
+        dt=float(spec.run.macro_dt), nu=float(spec.physics.nu),
+        elliptic=EllipticSubsolve.EXPOSED if exposed else EllipticSubsolve.EMBEDDED,
+        assembly_projection=spec.coupling.assembly == "projected")
+    return graph
+
+
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "WindFarmRun", "FarmState", "Rotor",
            "build", "window_solver", "full_solver", "exposed_class",
            "wide_divergence_max", "spectral_divergence_after_projection"]

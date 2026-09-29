@@ -483,6 +483,165 @@ def plate_heat(run: ElectricRun, phi: np.ndarray, pot: dict[str, float]) -> floa
     return heat * run.t
 
 
+def circuit_dtn(spec, held: dict[str, float]) -> dict[str, float]:
+    """The circuit alone with every electrode held at a potential: the current INTO
+    the circuit at each electrode (A), from the plate's side.
+
+    Modified nodal analysis over the free nodes and the ideal batteries' currents,
+    the electrodes known: no ground is needed, because the held electrodes fix the
+    level.  Positive into the circuit, so a passive network's response rises with
+    the potential it is held at (the Steklov-Poincare convention the compiler's
+    probe reads)."""
+    parts = list(spec.attachments)
+    free = []
+    for p in parts:
+        for n in (p.a, p.b):
+            if n not in held and n not in free:
+                free.append(n)
+    ideal = [p for p in parts if p.kind == "battery" and p.internal == 0.0]
+    nf, ni = len(free), len(ideal)
+    M = np.zeros((nf + ni, nf + ni))
+    r = np.zeros(nf + ni)
+
+    def conductance(a, b, g, source=0.0):
+        """g between a and b, and a current ``source`` pushed from b to a through
+        it (a Norton battery's E g)."""
+        for x, s in ((a, 1.0), (b, -1.0)):
+            if x in held:
+                continue
+            i = free.index(x)
+            for y, t in ((a, 1.0), (b, -1.0)):
+                if y in held:
+                    r[i] -= s * t * g * held[y]
+                else:
+                    M[i, free.index(y)] += s * t * g
+            r[i] += s * source
+    for p in parts:
+        if p.kind == "resistor":
+            conductance(p.a, p.b, 1.0 / p.value)
+        elif p.internal > 0.0:
+            conductance(p.a, p.b, 1.0 / p.internal, p.value / p.internal)
+    for k, p in enumerate(ideal):
+        row = nf + k
+        for x, s in ((p.a, 1.0), (p.b, -1.0)):
+            if x in held:
+                r[row] -= s * held[x]
+            else:
+                M[free.index(x), row] += s
+                M[row, free.index(x)] += s
+        r[row] += p.value
+    sol = np.linalg.solve(M, r) if M.size else np.zeros(0)
+    pot = dict(held)
+    pot.update({n: float(sol[i]) for i, n in enumerate(free)})
+    into = {e: 0.0 for e in held}
+    for p in parts:
+        if p.kind == "resistor":
+            i_ab = (pot[p.a] - pot[p.b]) / p.value
+        elif p.internal > 0.0:
+            i_ab = (pot[p.a] - pot[p.b] - p.value) / p.internal
+        else:
+            i_ab = float(sol[nf + ideal.index(p)])
+        # a current i_ab leaves a into the part and arrives at b
+        if p.a in into:
+            into[p.a] += i_ab
+        if p.b in into:
+            into[p.b] -= i_ab
+    return into
+
+
+def case_graph(spec):
+    """The case for the compiler (`compile.py`): the plate and the circuit as two
+    agents meeting at every electrode, an ELEC seam each, lumped (one value per
+    electrode: its potential and the current through it).
+
+    The plate solves its whole field directly (an embedded elliptic solve, and it
+    is the only agent of its physics); the circuit is algebra (no stencil, no
+    solve over a field).  Each responds to an electrode's potential with the
+    current into itself there, the others held at the probe base, per unit of
+    the electrode's area."""
+    from atlas.capability import (BCChannel, ClaimType, Direction, EllipticSubsolve,
+                                  ExpertCapabilities, MotionClass, TimeDiscretization,
+                                  port_decl)
+    from atlas.graph import Agent, CaseGraph, Connection, Decomposition
+    from atlas.ports import PortType, ResponseHalf
+
+    from ..compile import face_prolongation
+    run = ElectricRun(spec, arms=("serial",))
+    d = spec.domain
+    area = {b.id: ((d.ny if b.edge in ("left", "right") else d.nx)
+                   if b.stop is None else b.stop) - b.start
+            for b in spec.boundaries if b.kind == "electrode"}
+    area = {e: n * d.dx * run.t for e, n in area.items()}          # m^2
+    length = {e: a / run.t for e, a in area.items()}
+    base = {e: 0.0 for e in run.e_ids}
+    r_loop = sum(p.value if p.kind == "resistor" else p.internal for p in spec.attachments)
+    i_scale = run.emf / max(r_loop, 1e-9)
+    j_scale = i_scale / max(min(area.values()), 1e-30)
+    scales = {"potential": run.emf, "current_density": j_scale,
+              "power_area": run.emf * j_scale}
+
+    def plate_respond(port, trace):
+        e = port.split(":")[0]
+        x = np.array([float(np.ravel(trace)[0]) if k == e else base[k] for k in run.e_ids])
+        cur, _phi = run.plate_solve(x)
+        return np.array([cur[run.e_ids.index(e)] / area[e]])
+
+    def circuit_respond(port, trace):
+        e = port.split(":")[0]
+        held = {k: (float(np.ravel(trace)[0]) if k == e else base[k]) for k in run.e_ids}
+        return np.array([circuit_dtn(spec, held)[e] / area[e]])
+
+    def ports(agent):
+        return [port_decl(
+            name=f"{e}:ELEC", port_type=PortType.ELEC,
+            geometry=f"electrode {e}, {length[e]:.4g} m of edge, lumped",
+            direction=Direction.BIDIRECTIONAL, nondim=dict(scales), effective_resolution=1,
+            motion_class=MotionClass.STATIC, response_half=ResponseHalf.FLOW,
+            prolongation=face_prolongation(agent, f"{e}:ELEC", 1, length[e]),
+            note="the current density into this side through the electrode")
+            for e in run.e_ids]
+
+    def valid(state=None, cond=None):
+        return True
+
+    common = dict(bc_channel=BCChannel.DIRICHLET, bc_time_varying=True,
+                  time_discretization=TimeDiscretization.IMPLICIT,
+                  substeps_per_macro_step=1, dt_native=1.0, validity=valid,
+                  claim_types=frozenset({ClaimType.TRAJECTORY}),
+                  reproducibility_floor=float(np.finfo(float).eps), deterministic=True)
+    plate = ExpertCapabilities(
+        expert_id="plate", ports=ports("plate"),
+        elliptic_subsolve=EllipticSubsolve.EMBEDDED, stencil_radius=1,
+        governing_family="electric-conduction-2d",
+        lambda_ref="the plate and the circuit as one sparse system, the full-domain arm",
+        weight_hash="workbench-fv/electric-plate", boundary_response=plate_respond,
+        probe_base=lambda port: np.zeros(1),
+        note="atlas/workbench/fv.py: div(sigma grad phi) = 0 on the plate", **common)
+    circuit = ExpertCapabilities(
+        expert_id="circuit", ports=ports("circuit"),
+        elliptic_subsolve=EllipticSubsolve.NONE, stencil_radius=0,
+        governing_family="lumped-circuit",
+        lambda_ref="itself: nodal analysis is exact for its parts",
+        weight_hash="workbench/electric-circuit", boundary_response=circuit_respond,
+        probe_base=lambda port: np.zeros(1),
+        note="modified nodal analysis of the case's batteries and resistors", **common)
+    conns = [Connection(
+        seam_id=e, a=("plate", f"{e}:ELEC"), b=("circuit", f"{e}:ELEC"),
+        port_type=PortType.ELEC, derive_space=True, geometrically_coincident=True,
+        expected_null_dim=0, cut_axis=Decomposition.NON_OVERLAPPING,
+        note="field to lumped: the electrode's potential and the current through it")
+        for e in run.e_ids]
+    return CaseGraph(
+        name=f"workbench-{spec.name}",
+        agents=[Agent("plate", plate, domain="the plate"),
+                Agent("circuit", circuit, domain="the lumped circuit", role="circuit")],
+        connections=conns, decomposition=Decomposition.NON_OVERLAPPING,
+        # W162: a circuit has no geometric cross-points, and the adjacency proxy is
+        # wrong on one (cooling_loop's first refusal); declared none
+        cross_points=(), macro_dt=1.0,
+        note=f"the workbench case {spec.name!r}: a field joined to lumped parts (style D)")
+
+
 def build(spec, arms=ARMS, threads: int = 1) -> ElectricRun:
     return ElectricRun(spec, arms=arms, threads=threads)
 
