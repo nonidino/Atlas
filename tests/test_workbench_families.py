@@ -162,14 +162,14 @@ def test_a_version_0_2_file_migrates():
                         {"id": "B-bottom", "edge": "bottom", "kind": "freestream"},
                         {"id": "B-top", "edge": "top", "kind": "freestream"}]}
     s = CaseSpec.model_validate(d)
-    assert s.schema_id == "atlas-workbench/case@0.3"
+    assert s.schema_id == "atlas-workbench/case@0.4"
     assert s.physics.params == {"nu": 0.004, "u_inf": 1.0} and s.physics.nu == 0.004
     assert s.coupling.style == "A" and s.run.mode == "transient"
     assert s.materials == {} and s.attachments == []
     d.pop("boundaries")
     d["schema_id"] = "atlas-workbench/case@0.1"
     s1 = CaseSpec.from_json(__import__("json").dumps(d))
-    assert s1.schema_id == "atlas-workbench/case@0.3" and len(s1.boundaries) == 4
+    assert s1.schema_id == "atlas-workbench/case@0.4" and len(s1.boundaries) == 4
 
 
 def test_style_c_and_d_geometry_rules():

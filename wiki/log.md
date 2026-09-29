@@ -6705,3 +6705,69 @@ On the owner's request, the link scan used in today's lint is now a standing too
   32 passed in that file. My first draft of the control expected the dead link on line 6; it is on line 7, since the fence takes lines 4 to 6. The scanner was right.
 
 **Added:** `scripts/link_scan.py`. **Changed:** `tests/test_tier14_locality_and_scope.py`.
+
+## [2026-09-29] build | The workbench's drawn geometry: irregular domains, and windows that are not rectangles
+
+The owner's verdict on the geometry section: "all of the windows are STILL SQUARES. I want to be able to draw nonregular geometry edges, and then have NONRECTANGULAR windows. THAT is the point." The owner then decided two things:
+- **the cells inside the shape**, rather than body-fitted triangles;
+- **shapes drawn with polygon edges, arcs and splines**.
+
+The record is [[showcase-library-plan]] §6 ("Built, 2026-09-29: drawn shapes"), with the rows on [[showcase-gallery]].
+
+**Where the rectangle lived.** It was not in the numerics: `fv.assemble` already solved on any set of cells, and styles B and C work cell by cell and face by face. The box was imposed above them, in three places:
+- the case file (a window was `x0, y0, nx, ny`, and the domain a full grid with conditions on four edges);
+- the tiling's per-axis weights;
+- the canvas's box tools.
+
+**Built:**
+- **`shapes.py`**: vertices joined by lines, circular arcs (stored by the bulge $b=\tan(\theta/4)$) or centripetal Catmull-Rom splines, and the edits the canvas makes. A probe against closed forms came first: a circle of four arcs on its radius to $6\times10^{-14}$, a ring sector's area to $10^{-4}$, and a split edge that does not move the curve.
+- **The case file 0.4**: a drawn outline and holes on the domain, drawn windows (with holes) and regions, and boundaries on drawn edges. 0.3 files load unchanged.
+- **Underneath**:
+  - a domain mask in `fv.py`, whose faces to the void take the condition of the nearest drawn edge;
+  - `tiling.MaskTiling`, a partition of unity that ramps with the Euclidean distance from a window's artificial faces, certified;
+  - curved seams ordered along themselves for the compiler's Fourier ports.
+- **The canvas**: a Domain layer, and two tools.
+  - *Draw shape*: click the vertices, double-click to close; or a ready-made circle, ellipse or hexagon.
+  - *Reshape*: squares move vertices, circles bend edges into arcs, diamonds move shapes. A double click adds a vertex on an edge or smooths the curve through a vertex.
+
+  An Edges table sets any edge's kind and bulge, and the boundaries follow a split edge.
+- **Two examples**:
+  - `bend-3`: a quarter ring drawn with arcs, on three ring-sector windows (style B);
+  - `insert-round`: a round copper insert, Dirichlet-Neumann across its circle (style C).
+
+**Measured:**
+- **One window over a drawn domain equals the full domain bit for bit**, steady and transient.
+- **The bend**: within $3.07\times10^{-10}$ of the full domain's span; energy closes to $1.24\times10^{-9}$; threaded equals serial.
+- **The round insert**: within $1.01\times10^{-10}$; energy closes to $9.86\times10^{-12}$; 55 Dirichlet-Neumann iterations across 200 interface faces.
+- **Both compile** to R10 alone, with every seam admitted (W348).
+- **The staircase** moves the bend's heat flow by $-0.97\%$ from the ring's continuum $k\,\Delta T\ln(r_o/r_i)/\theta$. That is information, not a check.
+- **Conditions**: the records (`out/workbench/records/step-g/`) were taken headless through the `Workbench` object and on battery, so their times are not speed figures.
+
+**Checked in the served page, with real mouse events**:
+- clicking four vertices and double-clicking closed a smooth window;
+- dragging its diamond moved it by a snap step;
+- dragging one of its edge circles bent that edge into an arc.
+
+After that, the page stopped drawing for screenshots: the app window was behind another. So the last three fixes were checked in code, not on screen:
+- the void's dotted fill;
+- the handles' readable tooltips;
+- the regions' and windows' tooltips turned off while drawing and reshaping.
+
+**Every earlier case keeps its arithmetic to the bit** (`geometry.is_plain`). All 141 earlier workbench tests pass unchanged, except the four that named the schema's version. With the 26 new ones and the two new examples, 169 workbench tests pass, and 201 with the vault's file.
+
+**Only heat conduction runs on drawn shapes so far.** Every other family refuses them in the check with its reason:
+- the wind farm's window solver is rectangular;
+- the plume's flow is given per reach;
+- the sound runs two full-height pieces;
+- the structural families' elements cover the whole grid;
+- the coolant fills whole rows;
+- the circuit reads the grid's edges.
+
+**My own mistakes, caught before anything was committed:**
+- the bulge sign in `circle` and `annulus_sector`, backwards from the module's own convention (caught by the probe);
+- a figure-of-eight reported as "no area" instead of "crosses itself";
+- the box tool's handler, which would have deleted every drawn window on the next rectangle move;
+- `field_differences` taking means over a field that is NaN outside the domain;
+- a test that expected the wrong bounding box.
+
+**Added:** `atlas/workbench/shapes.py`, `tests/test_workbench_drawn.py`, `out/workbench/records/step-g/`. **Changed:** `spec.py`, `geometry.py`, `fv.py`, `tiling.py`, `styles.py`, `compile.py`, `editor.py`, `app.py`, `runner.py`, `registry.py`, `families/conduction.py`, the workbench README, `tests/test_workbench_{shell,geometry,families}.py` (the schema's version); [[showcase-library-plan]], [[showcase-gallery]], [[index]].

@@ -448,12 +448,18 @@ def field_differences(problem, states) -> dict[str, dict[str, float]]:
     if "full" not in states:
         return {}
     ref = np.asarray(problem.field(states["full"]), dtype=float)
-    scale = float(np.sqrt(np.mean(ref * ref)))
+    #: a drawn domain's field is NaN outside it; the statistics are the domain's
+    ok = np.isfinite(ref)
+    whole = bool(ok.all())
+    r = ref if whole else ref[ok]
+    scale = float(np.sqrt(np.mean(r * r)))
     out = {}
     for a, s in states.items():
         if a == "full":
             continue
         dlt = np.asarray(problem.field(s), dtype=float) - ref
+        if not whole:
+            dlt = dlt[ok]
         rms = float(np.sqrt(np.mean(dlt * dlt)))
         out[a] = {"rms": rms, "max": float(np.max(np.abs(dlt))),
                   "rms_relative": rms / scale if scale > 0.0 else None}

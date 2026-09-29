@@ -48,6 +48,10 @@ Measured 2026-09-29, 05:14–05:41 EDT, in the served page on AC power (§5). Ev
 | `bracket-2`: steel and aluminium under a 5 kN load | B, on a structure | `MECH` | **refuse**, R10 (0.33 s); its one seam admitted | forces $1.28\times10^{-10}$ ($10^{-6}$) | full domain $3.66\times10^{-11}$ of the largest displacement, 0.770 mm ($10^{-6}$) | 31.5 s (5 timed repeats) | showcase, not research record |
 | `heated-strip`: a steel-and-copper strip, heated | split by physics | none: the bond is volumetric | **refused before the compiler** by the port vocabulary (0.02 s) | heat in = heat stored, $9.95\times10^{-11}$ ($10^{-9}$) | the unsplit solver, equal bit for bit over 60 steps (exact) | 1.5 s (60 steps) | showcase, not research record |
 | `cooled-block`: a chip on a copper block under a water channel | C, at a seam between two physics | `THERM` | admit-uncertified (0.08 s) | energy $6.95\times10^{-11}$ ($10^{-6}$), 2 kW per metre of depth made and carried out | full domain $2.56\times10^{-10}$ of the 29.5 K rise ($10^{-6}$) | 1.8 s (5 timed repeats) | showcase, not research record |
+| `bend-3`: a quarter ring of steel drawn with arcs, on three curved windows | B, drawn | `THERM` | **refuse**, R10 (0.17 s); its two seams admitted | energy $1.24\times10^{-9}$ ($10^{-6}$) | full domain $3.07\times10^{-10}$ of the 100 K span ($10^{-6}$) | 1.98 s (5 timed repeats) | showcase, not research record |
+| `insert-round`: a round copper insert in a steel plate, cut along the circle | C, drawn | `THERM` | **refuse**, R10 (0.14 s); its one seam admitted | energy $9.86\times10^{-12}$ ($10^{-6}$) | full domain $1.01\times10^{-10}$ of the 100 K span ($10^{-6}$) | 1.85 s (5 timed repeats) | showcase, not research record |
+
+**The last two rows are drawn geometry** (case file 0.4, added 2026-09-29 on the owner's request: irregular domains and windows that are not rectangles; see [[showcase-library-plan]] §6). They were not taken in the page pass above. They were compiled and run at 11:59 EDT through the workbench's own `Workbench` object, the code the page drives, headless and **on battery**, because the served page could not be drawn for screenshots at the time. So their wall times are not speed figures. Their checks are the conduction family's, registered on 2026-09-28 before its first run, and unchanged. The bend's staircase moves its heat flow by $-0.97\%$ from the ring's continuum value $k\,\Delta T\ln(r_o/r_i)/\theta$: information, not a check.
 
 **The third check, bit for bit, where a case has one:**
 - Threaded equals serial in the three farms (over 40, 12 and 6 macro-steps), the insert (40 steps), the plume (6,000) and the bracket (5 repeats).
@@ -76,6 +80,8 @@ $s = t_{\text{full}}/t_{\text{arm}}$, measured in the same runs.
 | `bracket-2` | 6,400 | 0.00205 | 0.00233 (2) |
 | `heated-strip` | 4,000 | synchronous split 1.15 | lagged split 1.08 (2) |
 | `cooled-block` | 12,000 | 0.00475 | — |
+| `bend-3` (on battery) | 6,601 of a 108 x 108 grid | 0.0179 | 0.0200 (2) |
+| `insert-round` (on battery) | 16,000 | 0.0276 | — |
 
 - **Threads pay only at farm scale.** At 12 and 21 rotors the threaded arm is $4.83\times$ and $4.55\times$ faster than the full domain. Both fall inside W346's measured ranges ($4.0$–$5.7\times$ and $4.3$–$4.7\times$, [[decomposition-speed-by-rotor-count]] §5). The serial arm stays below 1, as W346 found. W346 timed the developed wake at step 40, and these runs time the start-up. So this is a live reproduction of the ratio, not a new measurement of it.
 - **Below about 30,000 cells, one direct solve or one explicit step on the whole grid beats every spatially decomposed arm.** The margin runs from $1.4\times$ (the sound's two pieces) to about $490\times$ (the bracket's serial Schwarz, 616 iterations to $10^{-12}$). The heated strip is split by physics, not space, and its three arms tie within the noise of a 3 ms step.
@@ -96,7 +102,7 @@ $s = t_{\text{full}}/t_{\text{arm}}$, measured in the same runs.
 | the plume, the sound, the circuit | L4 operator-content | each probed block is a multiple of the identity. An explicit step, or a one-number electrode port, answers a trace with a boundary coefficient, not an operator, so every bound carrying $1/\beta$ is a property of that coefficient |
 | the cooled block, the circuit | L1 E3 | the seam joins two governing families (a coolant and a solid; a film and a lumped circuit), so there is no single monolith in the compiler's sense. Both sides declare a $\lambda_{\text{ref}}$, so $\tau$ is measurable against the tightly coupled pair |
 
-**The three refusals are one rule: R10.** The wall, the insert and the bracket each have two agents that declare an embedded elliptic sub-solve and share one governing family. R10 reads that as the family's region cut in two, each agent solving a global problem on its own piece, "the decomposition changes the operator". Each of their seams is admitted; the refusal is on the graph. The runs measure how far the iterated pieces are from the full domain: $2.69\times10^{-13}$, $3.58\times10^{-9}$ and $3.66\times10^{-11}$ of their scales, all far inside $10^{-6}$. The same three compile records derive `K_accelerator = direct-schur` for the interface, a scheme the compiler itself says *"makes the solve-incompleteness term vanish"*. R10 cannot read it: it runs at L2, before the scheme is derived.
+**The three refusals are one rule: R10**, and so are the two drawn examples', the bend and the round insert, whose pieces are curved. The wall, the insert and the bracket each have two agents that declare an embedded elliptic sub-solve and share one governing family. R10 reads that as the family's region cut in two, each agent solving a global problem on its own piece, "the decomposition changes the operator". Each of their seams is admitted; the refusal is on the graph. The runs measure how far the iterated pieces are from the full domain: $2.69\times10^{-13}$, $3.58\times10^{-9}$ and $3.66\times10^{-11}$ of their scales, all far inside $10^{-6}$. The same three compile records derive `K_accelerator = direct-schur` for the interface, a scheme the compiler itself says *"makes the solve-incompleteness term vanish"*. R10 cannot read it: it runs at L2, before the scheme is derived.
 
 **[AI Inference]:** R10's reason fits a fixed number of exchanges, as in style A. Styles B and C iterate until the pieces agree. For these linear problems the fixed point of that iteration is the undivided solution, and the measured agreement is consistent with that. R10 does not read whether a scheme iterates. Whether it should is a question for the compiler, not the workbench, and it is open as **W348** in [[gap-worklist]]. The Check step shows the refusal as the compiler gave it, with a note saying so.
 
@@ -138,6 +144,8 @@ $s = t_{\text{full}}/t_{\text{arm}}$, measured in the same runs.
 | `bracket-2` | `20260929-051848` | `20260929-051924` |
 | `heated-strip` | `20260929-051943` | `20260929-051949` |
 | `cooled-block` | `20260929-052009` | `20260929-052016` |
+
+The two drawn examples' records are in `out/workbench/records/step-g/`: `bend-3` (compile `20260929-115906`, run `20260929-115908`) and `insert-round` (compile `20260929-115909`, run `20260929-115911`).
 
 A run record holds the case as it marched, every per-step time, the metrics, each check with its tolerance and registration date, the field differences, and the machine's state before and after. A compile record holds every decision, the compiler's report, and the case as compiled.
 

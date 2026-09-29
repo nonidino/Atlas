@@ -54,7 +54,7 @@ both properties of the replacement.
 
 | part | where | what it does now |
 |---|---|---|
-| menus | header | **File** (new, the showcase gallery, eleven examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; compile with the Atlas compiler; run decomposed, full, or the ticked arms; stop; show the results), **Help** |
+| menus | header | **File** (new, the showcase gallery, thirteen examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; compile with the Atlas compiler; run decomposed, full, or the ticked arms; stop; show the results), **Help** |
 | workflow | sidebar | six steps, each labelled with its status (`ok`, `N errors`, the compile's verdict, the run's state; `before a change` once the open case is no longer the one compiled or run), and a live case check |
 | case bar | top of the workspace | which case is open, and whether and where it is saved |
 | workspace | main | the active step |
@@ -62,7 +62,7 @@ both properties of the replacement.
 
 The six steps:
 1. **Case**: name, description, physics family, domain size. A family that cannot run yet is listed and disabled. Works.
-2. **Geometry**: the canvas and its five layers. Works; see below.
+2. **Geometry**: the canvas and its six layers, with drawn shapes on the Domain, Windows and Regions layers (lines, arcs and splines). Works; see below.
 3. **Physics & coupling**: the family's own parameters (from the registry), the run mode (steady or transient), the macro-step, the coupling style and its settings (ramp width; tolerance and iteration cap; first relaxation factor, Aitken, and which piece takes the Dirichlet side; none of these for a family whose exchange is explicit), and the materials table, editable or picked from the family's library. Works.
 4. **Check**: every rule, with where to fix it, and **Compile with the Atlas compiler**: the verdict, the agents and seams, the declared cross-points, a per-seam table with the rules behind each verdict, and the decisions about the graph as a whole. See "The compile" below.
 5. **Run & compare**: works for all eight families; see below.
@@ -155,13 +155,16 @@ No case can earn a plain `admit`: the master bound's constants are unmeasured on
 ## The geometry section
 
 The hybrid the owner chose on 2026-09-28: rectangles on the grid are drawn in the
-page; anything else comes from Gmsh.
+page; anything else comes from Gmsh. **Superseded in part on 2026-09-29**: any
+shape with straight, arc or spline edges is now drawn in the page too (see
+"Drawn shapes" below), and Gmsh stays the path for a mesh made elsewhere.
 
-**One canvas, five layers, one editable at a time.**
+**One canvas, six layers, one editable at a time.**
 
 | layer | on the canvas | in the table |
 |---|---|---|
-| **Windows** | Move & draw: drag to move, Shift+drag to draw, click then Backspace to delete. Resize: drag a corner handle. *Generate a tiling* fills the domain with rows x columns at a chosen overlap | id, position, size |
+| **Domain** | the whole grid until an outline is drawn (Draw shape), with holes cut in it; Reshape moves its vertices and bends its edges; *Reset to the whole grid* | the outline and each hole: vertices, edges by kind, cells |
+| **Windows** | Move & draw: drag to move, Shift+drag to draw, click then Backspace to delete. Reshape: drag a corner handle, or a drawn window's handles. Draw shape: a window of any shape. *Generate a tiling* fills the domain with rows x columns at a chosen overlap | id, shape, position, size, cells; the Edges table for drawn ones |
 | **Regions** (materials) | the same, for rectangles; imported polygons (with holes) are shown but not moved. Regions **stack in list order**: a later one takes the cells it covers, so a plate with an insert needs no cutting | id, material, stacking order |
 | **Devices** (rotors) | click to add, drag to move, click then Backspace to delete | id, position, diameter, yaw |
 | **Boundaries** | drawn along the domain's edges, coloured by kind | edge, segment, kind, value. Read-only when the family's solver fixes its boundary (the wind farm, the river and the acoustics do) |
@@ -194,13 +197,74 @@ snapping 8 cells (selectable); a tiling generator plus hand editing; corner
 handles plus an editable table; warn on the canvas and let the check refuse; all
 four layers now.
 
+## Drawn shapes: irregular domains and windows of any shape (case file 0.4)
+
+The owner's request of 2026-09-29: draw irregular geometry edges, and have windows
+that are not rectangles. The owner chose **the cells inside the shape**: the grid
+stays Cartesian, every shape is drawn exactly, and a solver gets the cells whose
+centres the shape contains. So every existing solver and check carries over, and
+a curve is a staircase at the cell size.
+
+**A shape is vertices and edges** (`shapes.py`). Each edge is a straight `line`, a
+circular `arc` or a `spline`:
+- an arc is stored by its bulge $b=\tan(\theta/4)$, so it keeps its shape when an
+  end moves ($|b|=1$ is a semicircle);
+- a spline is a centripetal Catmull-Rom segment, so a run of spline edges is one
+  smooth curve through its vertices.
+
+One kind of shape serves the domain's outline, holes cut in the domain, material
+regions, and windows (which may have holes too).
+
+**On the canvas** (Domain, Windows and Regions layers):
+
+| tool | what it does |
+|---|---|
+| **Draw shape** | click to place vertices, double-click (or *Close shape*) to close. Edges start straight or smooth. *Circle*, *Ellipse* and *Hexagon* add a ready-made shape. On the Domain layer the shape is the outline or a hole |
+| **Reshape** | drag a **square** to move a vertex, a **circle** to bend its edge into an arc (back onto the line to straighten it), a **diamond** to move the whole shape. Double-click a circle to add a vertex, a square to smooth the curve through it (again for a corner). Backspace on a square removes the vertex; on a diamond, the shape |
+
+The **Edges** table sets any edge's kind or bulge. What lies outside a drawn domain
+is drawn pale and dotted, stepped as the solver sees the domain's cells, with the
+exact outline over it.
+
+**What changes underneath:**
+- `fv.Field` takes the domain's mask. A face between the domain and the void is a
+  boundary face, and it takes the condition of the **drawn edge nearest it**
+  (`geometry.void_faces`). A boundary names its edge as `outline:<k>` or
+  `hole<h>:<k>`, and when an edge is split both halves keep its condition.
+- A drawn window holds the domain's cells whose centres it contains. Its
+  partition-of-unity weight ramps with the distance from its artificial faces
+  (`geometry.ramp_weight`: $(\mathrm{clip}((d-\tfrac12)/r,0,1))^2$, the rectangles'
+  profile with Euclidean distance) and is certified like the rectangles'
+  (`tiling.MaskTiling`).
+- A curved seam's faces are ordered along the seam for the compiler's Fourier
+  ports (`compile.curve_order`).
+- **A case with no drawn shape runs on exactly the arithmetic it did before**
+  (`geometry.is_plain`): the same analysis, `RectangleTiling`, face order and sums,
+  and all 141 earlier tests pass unchanged.
+
+**Checked** (`tests/test_workbench_drawn.py`, and the records in
+`out/workbench/records/step-g/`):
+- one window over a drawn domain equals the full domain bit for bit, steady and
+  transient;
+- **the bend** (`bend-3`: a quarter ring drawn with arcs, three ring-sector windows,
+  style B) agrees with the full domain to $3.07\times10^{-10}$ of its span, closes
+  its energy to $1.24\times10^{-9}$, and threaded equals serial bit for bit. Its
+  staircase moves the heat flow by -0.97% from the ring's continuum
+  $k\,\Delta T\ln(r_o/r_i)/\theta$;
+- **the round insert** (`insert-round`: Dirichlet-Neumann across a circle of cell
+  faces, style C) agrees to $1.01\times10^{-10}$ and closes to
+  $9.86\times10^{-12}$;
+- both compile with every seam admitted, and are refused at R10 alone, as their
+  rectangular counterparts are (W348).
+
 ## Code
 
 | file | role |
 |---|---|
-| `spec.py` | the case file (`atlas-workbench/case@0.3`; 0.1 and 0.2 files migrate on load), `check()` with each family's rules, and the eleven examples: three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, and one or two per other family |
-| `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking |
-| `editor.py` | the Geometry step: the canvas, its tools, its tables |
+| `spec.py` | the case file (`atlas-workbench/case@0.4`; 0.1, 0.2 and 0.3 files migrate on load), `check()` with each family's rules, and the thirteen examples: three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, and two drawn ones (the bend and the round insert) |
+| `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
+| `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking; for drawn shapes, their cell masks, the distance ramp, the analysis on masks, and a drawn domain's boundary faces labelled by edge |
+| `editor.py` | the Geometry step: the canvas, its tools (Move & draw, Draw shape, Reshape, Pan & zoom), its tables (with a Domain table and an Edges table) |
 | `gmsh_import.py` | `.msh` to case geometry, by physical-group names |
 | `registry.py` | the physics families: what each runs on, which layers it reads, which boundaries it can impose, and what is missing before the workbench can run it |
 | `app.py` | the GUI. Every menu item and button goes through `Workbench.dispatch(action)` |
@@ -235,6 +299,8 @@ four layers now.
 - **At showcase sizes the decomposed arms are slower than the full domain** for every family but the wind farm (above). This is measured and shown, not hidden.
 - **Plain Schwarz has no coarse level**, so it converges slowly on a bending structure (616 iterations on the bracket); a coarse space or a Krylov wrapper would be the remedy, and neither is built.
 - **The wind farm compiles only on a scaling-ladder rung.** Its graph is the vault's `scaling_ladder.build`, which declares a regular tiling. A drawn tiling that is not a rung runs, but is refused before the compiler, with that reason.
+- **Drawn shapes run on one family so far: heat conduction.** The others refuse a drawn domain or window in the check, each with its reason (`registry.Family.drawn_why`): the wind farm's window solver marches rectangles; the plume's river flow is given per reach rather than solved; the sound's leapfrog runs two full-height pieces; the two structural families' elements cover the whole grid; the cooled block's coolant fills whole rows; the plate on a circuit reads its electrodes on the grid's four edges.
+- **A drawn curve is resolved to the grid's cells.** The solvers see the cells whose centres a shape contains, so a curve is a staircase at the cell size. The canvas draws both, and on the bend the staircase moves the ring's heat flow by -0.97% from its continuum value. Body-fitted grids would remove that; they are not built.
 - **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not. The owner accepted this on 2026-09-29: the compile is its own step, and the two-minute rule is per run.
 - **R10 refuses the iterated one-physics cases** (styles B and C: the wall, the insert, the bracket), because it does not read whether a coupling iterates. The refusal is shown as the compiler gave it. Open as W348 in the vault's gap worklist.
 - Bokeh gives each gesture to one tool, so moving and resizing are two tools, not one.

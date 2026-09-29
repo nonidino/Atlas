@@ -726,8 +726,15 @@ class Workbench:
                                               start=1e-9, step=0.001, format="0.000000"),
                         lambda c, v: setattr(c.domain, "dx", v), "domain.dx")
         d = s.domain
-        size = pn.pane.Markdown(f"The domain is **{d.nx * d.dx:.4g} x {d.ny * d.dx:.4g} "
-                                f"{unit}** ({d.nx} x {d.ny} = {d.nx * d.ny:,} cells). It has "
+        cells = f"{d.nx} x {d.ny} = {d.nx * d.ny:,} cells"
+        what = "domain"
+        if d.outline is not None or d.holes:
+            #: a drawn domain holds only the cells whose centres its outline contains
+            what = "grid"
+            cells += (f"; the drawn domain holds {int(geo.domain_mask(d).sum()):,} of them "
+                      f"(Geometry, Domain)")
+        size = pn.pane.Markdown(f"The {what} is **{d.nx * d.dx:.4g} x {d.ny * d.dx:.4g} "
+                                f"{unit}** ({cells}). It has "
                                 f"**{len(s.windows)} windows**"
                                 + (f" and **{len(s.devices)} devices**" if s.devices else "")
                                 + (f" and **{len(s.attachments)} lumped parts**"

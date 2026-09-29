@@ -38,6 +38,14 @@ coupling styles differ in:
 **The full domain is the same call on every cell.**  So a one-window
 decomposition is the full-domain system to the bit, by construction, and the
 tests check it rather than assume it.
+
+**A drawn domain** (case file 0.4) is a mask of the grid's cells, ``active``:
+faces between two domain cells are interior, and a face between a domain cell
+and a grid cell outside the domain is a boundary face like the grid's own edge
+faces -- through the domain cell's half-cell, with its own condition from
+``void``.  The full domain is then the same call on every domain cell, so the
+one-window control holds unchanged.  With ``active`` left None, nothing here
+changes by a bit.
 """
 
 from __future__ import annotations
@@ -75,6 +83,11 @@ class Field:
     fx: np.ndarray | None = None
     fy: np.ndarray | None = None
     bc: dict[str, tuple[np.ndarray, np.ndarray]] = field(default_factory=dict)
+    #: a drawn domain: which cells are in it (None: all of the grid) ...
+    active: np.ndarray | None = None
+    #: ... and its faces to the void inside the grid: ``(cell, outside, direction,
+    #: kinds, values, labels)``, ``direction`` indexing `geometry.DIRECTIONS`
+    void: tuple | None = None
 
     def __post_init__(self):
         shape = (self.ny, self.nx)
@@ -92,6 +105,14 @@ class Field:
             kinds, vals = self.bc[e]
             self.bc[e] = (np.asarray(kinds, dtype=np.int8).reshape(n),
                           np.asarray(vals, dtype=float).reshape(n))
+        if self.active is not None:
+            self.active = np.asarray(self.active, dtype=bool)
+            if self.active.shape != shape:
+                raise ValueError(f"the domain mask is {self.active.shape}, the grid is {shape}")
+            if self.void is None:
+                z = np.zeros(0, dtype=np.int64)
+                self.void = (z, z, np.zeros(0, dtype=np.int8), np.zeros(0, dtype=np.int8),
+                             np.zeros(0), np.zeros(0, dtype=object))
 
     @property
     def n(self) -> int:
@@ -99,6 +120,18 @@ class Field:
 
     def flat(self, j, i):
         return np.asarray(j) * self.nx + np.asarray(i)
+
+    def cells(self) -> np.ndarray:
+        """The domain's cells, as ascending flat indices."""
+        if self.active is None:
+            return np.arange(self.n)
+        return np.flatnonzero(self.active.ravel())
+
+    def void_cells(self) -> np.ndarray:
+        """The grid's cells outside the domain (empty unless it is drawn)."""
+        if self.active is None:
+            return np.zeros(0, dtype=np.int64)
+        return np.flatnonzero(~self.active.ravel())
 
 
 def harmonic(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -120,15 +153,43 @@ def interior_faces(f: Field):
     Py = (jj * nx + ii).ravel()
     Gy = harmonic(f.k[:-1, :], f.k[1:, :]).ravel()
     Fy = (f.fy[1:-1, :].ravel() * dx) if f.fy is not None else np.zeros(Py.size)
-    return (np.concatenate([P, Py]), np.concatenate([P + 1, Py + nx]),
-            np.concatenate([Gx, Gy]), np.concatenate([Fx, Fy]))
+    P, Q = np.concatenate([P, Py]), np.concatenate([P + 1, Py + nx])
+    G, F = np.concatenate([Gx, Gy]), np.concatenate([Fx, Fy])
+    if f.active is not None:
+        a = f.active.ravel()
+        both = a[P] & a[Q]
+        P, Q, G, F = P[both], Q[both], G[both], F[both]
+    return P, Q, G, F
 
 
-def boundary_faces(f: Field):
+def _void_inflow(f: Field, cell: np.ndarray, direction: np.ndarray) -> np.ndarray:
+    """The advective flow INTO the domain through each void face (per unit depth)."""
+    out = np.zeros(cell.size)
+    if f.fx is None and f.fy is None:
+        return out
+    j, i = cell // f.nx, cell % f.nx
+    for k, (di, dj) in enumerate(((1, 0), (-1, 0), (0, 1), (0, -1))):
+        s = direction == k
+        if not np.any(s):
+            continue
+        if di and f.fx is not None:
+            face = i[s] + (1 if di > 0 else 0)
+            out[s] = -di * f.fx[j[s], face] * f.dx
+        if dj and f.fy is not None:
+            face = j[s] + (1 if dj > 0 else 0)
+            out[s] = -dj * f.fy[face, i[s]] * f.dx
+    return out
+
+
+def boundary_faces(f: Field, labels: bool = False):
     """Every domain-boundary face: (cell, kind, value, G_half, F_in) where
-    ``F_in`` is the advective flow INTO the domain through it."""
+    ``F_in`` is the advective flow INTO the domain through it.  The grid's edge
+    faces come first, edge by edge, then a drawn domain's faces to the void.
+    With ``labels``, a sixth array names each face's edge (``left`` ... or a drawn
+    edge's name)."""
     nx, ny, dx = f.nx, f.ny, f.dx
-    cells, kinds, vals, g, fin = [], [], [], [], []
+    cells, kinds, vals, g, fin, names = [], [], [], [], [], []
+    a = f.active.ravel() if f.active is not None else None
     for e in EDGES:
         kd, vv = f.bc[e]
         if e == "left":
@@ -143,13 +204,26 @@ def boundary_faces(f: Field):
         else:
             c = (ny - 1) * nx + np.arange(nx)
             flow = -f.fy[-1, :] * dx if f.fy is not None else np.zeros(nx)
+        if a is not None:
+            on = a[c]
+            c, kd, vv, flow = c[on], kd[on], vv[on], flow[on]
         cells.append(c)
         kinds.append(kd)
         vals.append(vv)
         g.append(2.0 * f.k.ravel()[c])
         fin.append(flow)
-    return (np.concatenate(cells), np.concatenate(kinds), np.concatenate(vals),
-            np.concatenate(g), np.concatenate(fin))
+        names.append(np.full(c.size, e, dtype=object))
+    if f.active is not None and f.void is not None and len(f.void[0]):
+        vc, _vo, vd, vk, vv, vl = f.void
+        cells.append(np.asarray(vc, dtype=np.int64))
+        kinds.append(np.asarray(vk, dtype=np.int8))
+        vals.append(np.asarray(vv, dtype=float))
+        g.append(2.0 * f.k.ravel()[vc])
+        fin.append(_void_inflow(f, np.asarray(vc), np.asarray(vd)))
+        names.append(np.asarray(vl, dtype=object))
+    out = (np.concatenate(cells), np.concatenate(kinds), np.concatenate(vals),
+           np.concatenate(g), np.concatenate(fin))
+    return out + (np.concatenate(names),) if labels else out
 
 
 @dataclass
@@ -194,7 +268,7 @@ def assemble(f: Field, cells: np.ndarray | None = None,
     """
     N = f.n
     if cells is None:
-        cells = np.arange(N)
+        cells = f.cells()
     cells = np.asarray(np.unique(cells), dtype=np.int64)
     inside = np.zeros(N, dtype=bool)
     inside[cells] = True
@@ -298,13 +372,8 @@ def boundary_inflow(f: Field, u: np.ndarray) -> dict[str, float]:
     """
     u = np.asarray(u, dtype=float).ravel()
     out = {}
-    bc_cell, bc_kind, bc_val, bc_g, bc_in = boundary_faces(f)
-    lens = {e: (f.ny if e in ("left", "right") else f.nx) for e in EDGES}
-    start = 0
-    for e in EDGES:
-        sl = slice(start, start + lens[e])
-        start += lens[e]
-        c, kd, v, g, fin = bc_cell[sl], bc_kind[sl], bc_val[sl], bc_g[sl], bc_in[sl]
+
+    def flows(c, kd, v, g, fin):
         q = np.zeros(c.size)
         fx_ = kd == FIXED
         q[fx_] = g[fx_] * (v[fx_] - u[c[fx_]]) + np.where(fin[fx_] > 0.0, fin[fx_] * v[fx_],
@@ -315,7 +384,27 @@ def boundary_inflow(f: Field, u: np.ndarray) -> dict[str, float]:
         q[il] = np.where(fin[il] > 0.0, fin[il] * v[il], fin[il] * u[c[il]])
         ol = kd == OUTLET
         q[ol] = np.minimum(fin[ol], 0.0) * u[c[ol]]
-        out[e] = float(np.sum(q))
+        return q
+
+    if f.active is None:
+        bc_cell, bc_kind, bc_val, bc_g, bc_in = boundary_faces(f)
+        lens = {e: (f.ny if e in ("left", "right") else f.nx) for e in EDGES}
+        start = 0
+        for e in EDGES:
+            sl = slice(start, start + lens[e])
+            start += lens[e]
+            out[e] = float(np.sum(flows(bc_cell[sl], bc_kind[sl], bc_val[sl], bc_g[sl],
+                                        bc_in[sl])))
+        return out
+    # a drawn domain: the grid's edges (their domain cells only), then each drawn
+    # edge's faces to the void, grouped by the edge's name
+    bc_cell, bc_kind, bc_val, bc_g, bc_in, names = boundary_faces(f, labels=True)
+    q = flows(bc_cell, bc_kind, bc_val, bc_g, bc_in)
+    for e in EDGES:
+        out[e] = float(np.sum(q[names == e]))
+    for name in dict.fromkeys(names.tolist()):
+        if name not in out:
+            out[str(name)] = float(np.sum(q[names == name]))
     return out
 
 
@@ -337,6 +426,10 @@ def face_flows(f: Field, u: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     if f.fy is not None:
         fy = f.fy[1:-1, :] * f.dx
         qy = qy + np.where(fy > 0.0, fy * u[:-1, :], fy * u[1:, :])
+    if f.active is not None:
+        a = f.active
+        qx = np.where(a[:, :-1] & a[:, 1:], qx, 0.0)
+        qy = np.where(a[:-1, :] & a[1:, :], qy, 0.0)
     return qx, qy
 
 

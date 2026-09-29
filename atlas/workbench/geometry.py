@@ -20,11 +20,14 @@ measurement covers such a blend, so the check refuses it.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Iterable, Sequence
 
 import numpy as np
+
+from . import shapes
 
 Box = tuple[int, int, int, int]
 
@@ -159,6 +162,8 @@ class WindowAnalysis:
     nested: list[tuple[str, str]] = field(default_factory=list)       # (inner, outer)
     cross_points: list[tuple[tuple[str, ...], Box]] = field(default_factory=list)
     overlaps: list[tuple[str, str, Box]] = field(default_factory=list)
+    #: cells in two or more windows (`analyse_masks` only; rectangles draw boxes)
+    overlap_mask: np.ndarray | None = None
 
 
 def _axis_full(n: int, lo_face: bool, hi_face: bool, ramp: int) -> np.ndarray:
@@ -322,8 +327,10 @@ def _ring(points) -> Ring:
 
 
 def region_mask(region, nx: int, ny: int) -> np.ndarray:
-    """The cells a region is drawn over: its rectangle, or the cell centres inside
-    its polygon and outside its holes.  Read-only."""
+    """The cells a region is drawn over: its rectangle, the cell centres inside its
+    polygon and outside its holes, or inside its drawn shape.  Read-only."""
+    if getattr(region, "shape", "rect") == "curve":
+        return shape_mask(region.outline, (), nx, ny)
     if getattr(region, "points", None):
         rings = (_ring(region.points),) + tuple(_ring(h) for h in (region.holes or []))
         return _polygon_mask(rings, nx, ny)
@@ -359,6 +366,10 @@ def polygon_area(points: Iterable[Sequence[float]]) -> float:
 
 EDGES = ("left", "right", "bottom", "top")
 
+#: a drawn edge's name: ``outline:<k>`` (edge k of the domain's outline) or
+#: ``hole<h>:<k>`` (edge k of hole h)
+DRAWN_EDGE = re.compile(r"^(outline|hole(\d+)):(\d+)$")
+
 
 def edge_length(edge: str, nx: int, ny: int) -> int:
     return ny if edge in ("left", "right") else nx
@@ -376,8 +387,319 @@ def edge_segment_xy(edge: str, start: float, stop: float, nx: int,
     return start, float(ny), stop, float(ny)
 
 
+# ---------------------------------------------------------------------------
+# drawn shapes (case file 0.4): the domain's outline and holes, curved windows
+# and regions -- all resolved to the cells whose centres they contain
+# ---------------------------------------------------------------------------
+
+
+def outline_ring(o, step: float = shapes.STEP) -> np.ndarray:
+    """A drawn shape (anything with ``points``, ``edges``, ``bulge``) as a polygon."""
+    return shapes.sample(o.points, o.edges, o.bulge, step)
+
+
+def shape_mask(outline, holes, nx: int, ny: int) -> np.ndarray:
+    """Cells whose centres lie inside ``outline`` and outside every one of ``holes``.
+
+    Each ring is rasterized on its own and the holes subtracted, rather than all
+    rings together by the even-odd rule, so a hole that pokes out of the outline
+    removes cells instead of adding them.  Read-only."""
+    out = np.array(_polygon_mask((_ring(outline_ring(outline)),), nx, ny))
+    for h in holes or ():
+        out &= ~_polygon_mask((_ring(outline_ring(h)),), nx, ny)
+    out.flags.writeable = False
+    return out
+
+
+def domain_mask(domain) -> np.ndarray:
+    """The domain's cells: the whole grid, or inside its drawn outline, less its
+    holes.  Read-only."""
+    nx, ny = domain.nx, domain.ny
+    outline = getattr(domain, "outline", None)
+    holes = getattr(domain, "holes", None) or []
+    if outline is None and not holes:
+        out = np.ones((ny, nx), dtype=bool)
+        out.flags.writeable = False
+        return out
+    if outline is not None:
+        return shape_mask(outline, holes, nx, ny)
+    out = np.ones((ny, nx), dtype=bool)
+    for h in holes:
+        out &= ~_polygon_mask((_ring(outline_ring(h)),), nx, ny)
+    out.flags.writeable = False
+    return out
+
+
+def window_mask(w, nx: int, ny: int) -> np.ndarray:
+    """The cells a window is drawn over (before the domain's own mask).  Read-only."""
+    if getattr(w, "shape", "rect") == "curve":
+        return shape_mask(w.outline, w.holes, nx, ny)
+    m = np.zeros((ny, nx), dtype=bool)
+    c = clip_box((w.x0, w.y0, w.nx, w.ny), nx, ny)
+    if c is not None:
+        x0, y0, ww, hh = c
+        m[y0:y0 + hh, x0:x0 + ww] = True
+    m.flags.writeable = False
+    return m
+
+
+def is_plain(spec) -> bool:
+    """A rectangle of a domain with no holes, cut into rectangles: the geometry the
+    workbench had before 0.4, which keeps its own arithmetic (`analyse_windows`,
+    `tiling.RectangleTiling`) so every earlier case runs to the bit as it did."""
+    d = spec.domain
+    return (getattr(d, "outline", None) is None and not getattr(d, "holes", None)
+            and all(getattr(w, "shape", "rect") == "rect" for w in spec.windows))
+
+
+def window_masks(spec) -> list[tuple[str, np.ndarray]]:
+    """Each window's cells inside the domain, in the case's order."""
+    d = spec.domain
+    act = domain_mask(d)
+    return [(w.id, window_mask(w, d.nx, d.ny) & act) for w in spec.windows]
+
+
+def _neighbour(mask: np.ndarray, dx: int, dy: int) -> np.ndarray:
+    """``out[j, i] = mask[j + dy, i + dx]``, False past the grid."""
+    out = np.zeros_like(mask)
+    ny, nx = mask.shape
+    out[max(0, -dy):ny - max(0, dy), max(0, -dx):nx - max(0, dx)] = \
+        mask[max(0, dy):ny - max(0, -dy), max(0, dx):nx - max(0, -dx)]
+    return out
+
+
+def touching(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """Cells of ``a`` that share a face with a cell of ``b``."""
+    near = (_neighbour(b, 1, 0) | _neighbour(b, -1, 0) | _neighbour(b, 0, 1)
+            | _neighbour(b, 0, -1))
+    return a & near
+
+
+def faces_between(a: np.ndarray, b: np.ndarray) -> int:
+    """How many faces a cell of ``a`` shares with a cell of ``b``."""
+    return int(sum(int((a & _neighbour(b, dx, dy)).sum())
+                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))))
+
+
+def ramp_weight(mask: np.ndarray, active: np.ndarray, ramp: int) -> np.ndarray:
+    """A drawn window's raw partition-of-unity weight on the whole grid.
+
+    Zero outside the window; inside it, ``(clip((d - 1/2) / ramp, 0, 1))**2`` where
+    ``d`` is the distance from the cell's centre to the centre of the nearest
+    cell of the domain OUTSIDE the window.  So the weight rises from its
+    artificial faces -- the faces to cells of the domain it does not hold -- over
+    ``ramp`` cells, exactly as a rectangle's does across one face (``d - 1/2`` is
+    the distance to the face).  A face on the domain's own boundary is not
+    artificial and has no ramp.  The rectangles' own rule, ``min(wy, wx)**2``,
+    is kept for rectangles (`tiling.RectangleTiling`); this one differs from it
+    only near a window's corners, where the distance is Euclidean.
+    """
+    m = mask & active
+    ext = active & ~mask
+    if not ext.any():
+        return m.astype(float)
+    from scipy.ndimage import distance_transform_edt
+    d = distance_transform_edt(~ext)
+    w = np.clip((d - 0.5) / max(int(ramp), 1), 0.0, 1.0) ** 2
+    return np.where(m, w, 0.0)
+
+
+def _bbox(mask: np.ndarray) -> Box:
+    ys, xs = np.nonzero(mask)
+    return (int(xs.min()), int(ys.min()), int(xs.max() - xs.min() + 1),
+            int(ys.max() - ys.min() + 1))
+
+
+def analyse_masks(active: np.ndarray, windows: Sequence[tuple[str, np.ndarray]],
+                  ramp: int) -> WindowAnalysis:
+    """`analyse_windows` for windows of any shape on a domain of any shape.
+
+    The same rule -- every cell of the domain has some window at full weight --
+    with the weights of `ramp_weight`.  Overlaps and cross-points are reported
+    with their bounding boxes, as before, and ``overlap_mask`` holds the cells
+    in two or more windows, which is what the canvas draws for a curved case.
+    """
+    active = np.asarray(active, dtype=bool)
+    masks = [(wid, np.asarray(m, dtype=bool) & active) for wid, m in windows]
+    count = np.zeros(active.shape, dtype=np.int32)
+    full = np.zeros(active.shape, dtype=bool)
+    for _wid, m in masks:
+        count += m
+        full |= ramp_weight(m, active, ramp) >= 1.0
+    uncovered = active & (count == 0)
+    ramp_only = active & (count > 0) & ~full
+    ramp_only_in = {}
+    for wid, m in masks:
+        k = int((ramp_only & m).sum())
+        if k:
+            ramp_only_in[wid] = k
+    thin, nested, overlaps = [], [], []
+    need = 2 * max(int(ramp), 1)
+    r = max(int(ramp), 1)
+    from scipy.ndimage import binary_dilation, distance_transform_edt
+    for i, (ia, a) in enumerate(masks):
+        for ib, b in masks[i + 1:]:
+            ov = a & b
+            if ov.any():
+                overlaps.append((ia, ib, _bbox(ov)))
+            if a.any() and not (a & ~b).any():
+                nested.append((ia, ib))
+                continue
+            if b.any() and not (b & ~a).any():
+                nested.append((ib, ia))
+                continue
+            contact = ov | touching(a, b)
+            if not contact.any():
+                continue
+            zone = binary_dilation(contact, iterations=r)
+            if (zone & ramp_only).any():
+                thick = int(2 * distance_transform_edt(ov).max()) if ov.any() else 0
+                if thick < need:
+                    thin.append((ia, ib, thick))
+    cps: list[tuple[tuple[str, ...], Box]] = []
+    ys, xs = np.nonzero(count >= 3)
+    if len(ys):
+        member = np.column_stack([m[ys, xs] for _wid, m in masks])
+        keys, inv = np.unique(member, axis=0, return_inverse=True)
+        inv = np.asarray(inv).reshape(-1)
+        for g in range(len(keys)):
+            sel = inv == g
+            gx, gy = xs[sel], ys[sel]
+            names = tuple(masks[k][0] for k in np.nonzero(keys[g])[0])
+            cps.append((names, (int(gx.min()), int(gy.min()),
+                                int(gx.max() - gx.min() + 1), int(gy.max() - gy.min() + 1))))
+        cps.sort(key=lambda t: (t[1][1], t[1][0]))
+    return WindowAnalysis(count, full, uncovered, ramp_only, ramp_only_in, thin, nested, cps,
+                          overlaps, overlap_mask=count >= 2)
+
+
+def analyse_case(spec) -> WindowAnalysis:
+    """The window analysis for a case, on the arithmetic its geometry calls for."""
+    d = spec.domain
+    ramp = spec.coupling.ramp_cells
+    if is_plain(spec):
+        return analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
+                                            for w in spec.windows], ramp)
+    return analyse_masks(domain_mask(d), window_masks(spec), ramp)
+
+
+# -- the boundary of a drawn domain ----------------------------------------------
+
+#: the four face directions: (di, dj) from a cell to its neighbour
+DIRECTIONS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+
+def drawn_edges(domain, step: float = 1.0) -> list[tuple[str, np.ndarray]]:
+    """Every drawn edge of the domain, named, as a polyline with both end points."""
+    out: list[tuple[str, np.ndarray]] = []
+    o = getattr(domain, "outline", None)
+    if o is not None:
+        for k, poly in enumerate(shapes.edges_sampled(o.points, o.edges, o.bulge, step)):
+            out.append((f"outline:{k}", poly))
+    for h, hole in enumerate(getattr(domain, "holes", None) or []):
+        for k, poly in enumerate(shapes.edges_sampled(hole.points, hole.edges, hole.bulge,
+                                                      step)):
+            out.append((f"hole{h}:{k}", poly))
+    return out
+
+
+def nearest_edge(pts: np.ndarray, edges: list[tuple[str, np.ndarray]]) -> np.ndarray:
+    """For each point, the name of the drawn edge nearest it."""
+    pts = np.asarray(pts, dtype=float).reshape(-1, 2)
+    if not len(pts) or not edges:
+        return np.array([""] * len(pts), dtype=object)
+    names, a_all, b_all = [], [], []
+    for name, poly in edges:
+        names += [name] * (len(poly) - 1)
+        a_all.append(poly[:-1])
+        b_all.append(poly[1:])
+    a = np.concatenate(a_all)
+    ab = np.concatenate(b_all) - a
+    L2 = np.maximum(np.einsum("ij,ij->i", ab, ab), 1e-300)
+    names = np.array(names, dtype=object)
+    best = np.empty(len(pts), dtype=object)
+    for s in range(0, len(pts), 512):
+        p = pts[s:s + 512]
+        ap = p[:, None, :] - a[None, :, :]
+        t = np.clip(np.einsum("pij,ij->pi", ap, ab) / L2[None, :], 0.0, 1.0)
+        near = a[None, :, :] + t[:, :, None] * ab[None, :, :]
+        dist = np.hypot(p[:, None, 0] - near[:, :, 0], p[:, None, 1] - near[:, :, 1])
+        best[s:s + 512] = names[np.argmin(dist, axis=1)]
+    return best
+
+
+@dataclass
+class VoidFaces:
+    """The faces between a domain cell and a cell of the grid outside the domain.
+
+    ``cell`` and ``outside`` are flat indices ``j nx + i``, ``direction`` indexes
+    `DIRECTIONS` (from the cell to the outside one), and ``edge`` names the drawn
+    edge each face belongs to (the nearest one)."""
+
+    cell: np.ndarray
+    outside: np.ndarray
+    direction: np.ndarray
+    edge: np.ndarray
+
+    @property
+    def n(self) -> int:
+        return int(self.cell.size)
+
+
+def void_faces(domain) -> VoidFaces:
+    """Every face between the domain and the void inside the grid, labelled."""
+    act = domain_mask(domain)
+    ny, nx = act.shape
+    cells, outs, dirs = [], [], []
+    for k, (di, dj) in enumerate(DIRECTIONS):
+        nb_in_grid = np.zeros_like(act)
+        nb_in_grid[max(0, -dj):ny - max(0, dj), max(0, -di):nx - max(0, di)] = True
+        sel = act & nb_in_grid & ~_neighbour(act, di, dj)
+        jj, ii = np.nonzero(sel)
+        cells.append(jj * nx + ii)
+        outs.append((jj + dj) * nx + (ii + di))
+        dirs.append(np.full(jj.size, k, dtype=np.int8))
+    cell = np.concatenate(cells).astype(np.int64)
+    out = np.concatenate(outs).astype(np.int64)
+    direc = np.concatenate(dirs)
+    order = np.lexsort((direc, cell))
+    cell, out, direc = cell[order], out[order], direc[order]
+    ci, cj = cell % nx, cell // nx
+    d = np.asarray(DIRECTIONS)[direc]
+    mid = np.column_stack([ci + 0.5 + 0.5 * d[:, 0], cj + 0.5 + 0.5 * d[:, 1]])
+    return VoidFaces(cell, out, direc, nearest_edge(mid, drawn_edges(domain)))
+
+
+def grid_edge_labels(domain) -> dict[str, np.ndarray]:
+    """For a domain with a drawn outline, the drawn edge each grid-edge face of a
+    domain cell belongs to ('' where the cell is not in the domain), per grid
+    edge -- left and right bottom to top, bottom and top left to right."""
+    act = domain_mask(domain)
+    ny, nx = act.shape
+    edges = drawn_edges(domain)
+    out = {}
+    spec_ = {"left": (np.zeros(ny), np.arange(ny) + 0.5, act[:, 0]),
+             "right": (np.full(ny, float(nx)), np.arange(ny) + 0.5, act[:, -1]),
+             "bottom": (np.arange(nx) + 0.5, np.zeros(nx), act[0, :]),
+             "top": (np.arange(nx) + 0.5, np.full(nx, float(ny)), act[-1, :])}
+    for e, (x, y, on) in spec_.items():
+        lab = np.array([""] * len(x), dtype=object)
+        if on.any():
+            lab[on] = nearest_edge(np.column_stack([x[on], y[on]]), edges)
+        out[e] = lab
+    return out
+
+
+def drawn_edge_names(domain) -> list[str]:
+    return [name for name, _poly in drawn_edges(domain)]
+
+
 __all__ = ["Box", "SNAP_STEPS", "DEFAULT_SNAP", "snap_value", "snap_box", "corners",
            "resize_from_corner", "intersect", "clip_box", "tile", "WindowAnalysis",
            "analyse_windows", "mask_to_boxes", "region_mask", "region_owner",
-           "polygon_area", "EDGES",
-           "edge_length", "edge_segment_xy"]
+           "polygon_area", "EDGES", "DRAWN_EDGE",
+           "edge_length", "edge_segment_xy", "outline_ring", "shape_mask", "domain_mask",
+           "window_mask", "is_plain", "window_masks", "touching", "faces_between",
+           "ramp_weight", "analyse_masks", "analyse_case", "DIRECTIONS", "drawn_edges",
+           "nearest_edge", "VoidFaces", "void_faces", "grid_edge_labels",
+           "drawn_edge_names"]

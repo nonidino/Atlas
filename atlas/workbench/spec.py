@@ -29,6 +29,22 @@ only the wind farm:
   the iteration's tolerance, relaxation and Dirichlet side;
 * ``run.mode`` is steady or transient.
 
+Schema ``atlas-workbench/case@0.4`` (2026-09-29, the owner's request: "draw
+nonregular geometry edges, and then have NONRECTANGULAR windows") adds **drawn
+shapes** (`Outline`: vertices in cells joined by straight lines, circular arcs
+or splines; `shapes.py`):
+
+* ``domain.outline`` and ``domain.holes``: the domain is the cells inside its
+  outline (the whole grid when there is none) and outside its holes;
+* a window or a region may be a drawn shape (``shape = "curve"``), in which case
+  its rectangle is its bounding box, derived;
+* a boundary may sit on a drawn edge: ``edge = "outline:<k>"`` or
+  ``"hole<h>:<k>"``, the whole of that edge.
+
+The solvers see the cells whose centres a shape contains; nothing else about a
+0.3 file changes, and a case with no drawn shape runs on the same arithmetic as
+before (`geometry.is_plain`).
+
 Older files still load: a 0.1 file gains its family's fixed boundaries, and a
 0.2 file's ``nu`` and ``u_inf`` move into ``params`` and its style is its
 family's.  The geometry rules themselves live in `geometry.py`.
@@ -47,16 +63,82 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from . import geometry as geo
 from . import registry
+from . import shapes
 
-SCHEMA_ID = "atlas-workbench/case@0.3"
+SCHEMA_ID = "atlas-workbench/case@0.4"
 #: every schema this version reads; older ones are migrated on load
-READABLE = ("atlas-workbench/case@0.1", "atlas-workbench/case@0.2", SCHEMA_ID)
+READABLE = ("atlas-workbench/case@0.1", "atlas-workbench/case@0.2",
+            "atlas-workbench/case@0.3", SCHEMA_ID)
+
+
+class Outline(BaseModel):
+    """A closed shape drawn in the page (`shapes.py`), in cells.
+
+    ``points`` are its vertices; edge ``k`` runs from point ``k`` to point
+    ``k + 1``, and the last edge closes the shape.  ``edges`` says whether each
+    edge is a straight ``line``, a circular ``arc`` or a ``spline`` (all lines
+    when omitted), and ``bulge`` gives each arc's bulge ``tan(theta / 4)``,
+    positive when it bows to the right of the edge's direction (0 when omitted).
+    """
+
+    points: list[tuple[float, float]]
+    edges: Optional[list[Literal["line", "arc", "spline"]]] = None
+    bulge: Optional[list[float]] = None
+
+    @model_validator(mode="after")
+    def _consistent(self):
+        n = len(self.points)
+        if n < 2:
+            raise ValueError("a drawn shape needs at least two vertices")
+        if self.edges is not None and len(self.edges) != n:
+            raise ValueError(f"a drawn shape with {n} vertices has {n} edges, "
+                             f"not {len(self.edges)}")
+        if self.bulge is not None and len(self.bulge) != n:
+            raise ValueError(f"a drawn shape with {n} vertices has {n} bulges, "
+                             f"not {len(self.bulge)}")
+        return self
+
+    def kinds(self) -> list[str]:
+        return list(self.edges) if self.edges is not None else ["line"] * len(self.points)
+
+    def bulges(self) -> list[float]:
+        return ([float(b) for b in self.bulge] if self.bulge is not None
+                else [0.0] * len(self.points))
+
+    def ring(self, step: float = shapes.STEP) -> np.ndarray:
+        return shapes.sample(self.points, self.edges, self.bulge, step)
+
+    def bbox(self) -> tuple[float, float, float, float]:
+        r = self.ring()
+        return (float(r[:, 0].min()), float(r[:, 1].min()), float(r[:, 0].max()),
+                float(r[:, 1].max()))
+
+    def problems(self) -> list[str]:
+        return shapes.problems(self.points, self.edges, self.bulge)
+
+    @classmethod
+    def of(cls, shape) -> "Outline":
+        """From a `shapes` triple ``(points, kinds, bulges)``."""
+        pts, ks, bs = shape[:3]
+        return cls(points=[tuple(map(float, p)) for p in pts], edges=list(ks),
+                   bulge=[float(b) for b in bs])
+
+
+def _cell_box(o: Outline) -> tuple[int, int, int, int]:
+    """The bounding box of a drawn shape in whole cells, clipped at zero."""
+    x0, y0, x1, y1 = o.bbox()
+    bx, by = max(0, int(np.floor(x0))), max(0, int(np.floor(y0)))
+    return bx, by, max(1, int(np.ceil(x1)) - bx), max(1, int(np.ceil(y1)) - by)
 
 
 class Domain(BaseModel):
     nx: int = Field(gt=0, description="cells along x")
     ny: int = Field(gt=0, description="cells along y")
     dx: float = Field(gt=0, description="cell size in the physics' length unit")
+    #: schema 0.4: the domain's drawn outline, in cells (None: the whole grid),
+    #: and holes cut in it.  The domain is the cells whose centres are inside.
+    outline: Optional[Outline] = None
+    holes: list[Outline] = Field(default_factory=list)
 
 
 class Physics(BaseModel):
@@ -82,19 +164,38 @@ class Physics(BaseModel):
 
 
 class Window(BaseModel):
+    """A window: a rectangle of cells (``x0, y0, nx, ny``), or -- schema 0.4 -- a
+    drawn shape (``shape = "curve"``: an ``outline`` and optional ``holes``), in
+    which case its rectangle is its bounding box, derived, not edited.  A window
+    holds the cells of the domain whose centres it contains."""
+
     id: str
-    x0: int = Field(ge=0)
-    y0: int = Field(ge=0)
-    nx: int = Field(gt=0)
-    ny: int = Field(gt=0)
+    shape: Literal["rect", "curve"] = "rect"
+    x0: int = Field(0, ge=0)
+    y0: int = Field(0, ge=0)
+    nx: int = Field(1, gt=0)
+    ny: int = Field(1, gt=0)
+    outline: Optional[Outline] = None
+    holes: list[Outline] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _shape_matches(self):
+        if self.shape == "curve":
+            if self.outline is None:
+                raise ValueError(f"window {self.id} is drawn but has no outline")
+            self.x0, self.y0, self.nx, self.ny = _cell_box(self.outline)
+        elif self.outline is not None or self.holes:
+            raise ValueError(f"window {self.id} is a rectangle and has no outline or holes")
+        return self
 
 
 class Region(BaseModel):
     """A piece of the domain made of one material.
 
-    A rectangle (``x0, y0, nx, ny`` in cells), or a polygon (``points`` in cells,
-    with optional ``holes``, usually imported from Gmsh), in which case the
-    rectangle is its bounding box and is derived, not edited.
+    A rectangle (``x0, y0, nx, ny`` in cells), a polygon (``points`` in cells,
+    with optional ``holes``, usually imported from Gmsh), or -- schema 0.4 -- a
+    drawn shape (``shape = "curve"``, its ``outline``); for the last two the
+    rectangle is the bounding box and is derived, not edited.
 
     **Regions stack in list order**: where two overlap, the later one takes the
     cells.  So a plate with an insert is the plate, then the insert, with no need
@@ -102,16 +203,27 @@ class Region(BaseModel):
     """
     id: str
     material: str = "material-1"
-    shape: Literal["rect", "polygon"] = "rect"
+    shape: Literal["rect", "polygon", "curve"] = "rect"
     x0: int = Field(0, ge=0)
     y0: int = Field(0, ge=0)
     nx: int = Field(1, gt=0)
     ny: int = Field(1, gt=0)
     points: Optional[list[tuple[float, float]]] = None
     holes: Optional[list[list[tuple[float, float]]]] = None
+    outline: Optional[Outline] = None
 
     @model_validator(mode="after")
     def _shape_matches(self):
+        if self.shape == "curve":
+            if self.outline is None:
+                raise ValueError(f"region {self.id} is drawn but has no outline")
+            if self.points is not None or self.holes is not None:
+                raise ValueError(f"region {self.id} is drawn: its shape is its outline, "
+                                 f"not points and holes")
+            self.x0, self.y0, self.nx, self.ny = _cell_box(self.outline)
+            return self
+        if self.outline is not None:
+            raise ValueError(f"region {self.id} has an outline but is not drawn")
         if self.shape == "polygon":
             if not self.points or len(self.points) < 3:
                 raise ValueError("a polygon region needs at least three points")
@@ -135,13 +247,30 @@ class Boundary(BaseModel):
 
     ``start`` and ``stop`` run left to right on the bottom and top edges, and
     bottom to top on the left and right edges; ``stop = None`` means the end.
+
+    Schema 0.4: on a domain with drawn shapes, ``edge`` may name a drawn edge --
+    ``outline:<k>`` or ``hole<h>:<k>`` -- and the condition holds on the whole of
+    it (``start`` and ``stop`` are not used).  Each face of the domain's boundary
+    belongs to the drawn edge nearest it.
     """
     id: str
-    edge: Literal["left", "right", "bottom", "top"]
+    edge: str
     kind: str
     start: int = Field(0, ge=0)
     stop: Optional[int] = Field(None, gt=0)
     value: Optional[float] = None
+
+    @field_validator("edge")
+    @classmethod
+    def _known_edge(cls, v: str) -> str:
+        if v in geo.EDGES or geo.DRAWN_EDGE.match(v):
+            return v
+        raise ValueError(f"unknown edge {v!r}: left, right, bottom, top, outline:<k> or "
+                         f"hole<h>:<k>")
+
+    @property
+    def drawn(self) -> bool:
+        return self.edge not in geo.EDGES
 
 
 class Device(BaseModel):
@@ -232,11 +361,13 @@ class CaseSpec(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def _migrate(cls, data):
-        """0.1 -> 0.2 -> 0.3, one step at a time.
+        """0.1 -> 0.2 -> 0.3 -> 0.4, one step at a time.
 
         0.1 -> 0.2: the family's fixed boundaries, no regions.
         0.2 -> 0.3: ``nu`` and ``u_inf`` move into ``physics.params``; the style
         is the family's first; no materials, no attachments; a transient run.
+        0.3 -> 0.4: nothing to move -- every drawn shape is optional, so a 0.3
+        case is a 0.4 case with none.
         """
         if not isinstance(data, dict):
             return data
@@ -260,6 +391,9 @@ class CaseSpec(BaseModel):
             data["coupling"] = cp
             data.setdefault("materials", {})
             data.setdefault("attachments", [])
+            data["schema_id"] = "atlas-workbench/case@0.3"
+        if data.get("schema_id") == "atlas-workbench/case@0.3":
+            data = dict(data)
             data["schema_id"] = SCHEMA_ID
         return data
 
@@ -375,36 +509,59 @@ def check(spec: CaseSpec) -> list[Issue]:
     for dup in sorted({i for i in dids if dids.count(i) > 1}):
         out.append(Issue("error", "geometry", f"two devices are both called {dup!r}"))
 
+    plain = geo.is_plain(spec)
+    if not plain:
+        out += _check_drawn(spec)
     if not spec.windows:
         out.append(Issue("error", "geometry", "the domain is not cut into any windows yet"))
-    covered = np.zeros((d.ny, d.nx), dtype=bool)
-    for w in spec.windows:
-        if w.x0 + w.nx > d.nx or w.y0 + w.ny > d.ny:
-            out.append(Issue("error", "geometry",
-                             f"window {w.id} reaches past the domain "
-                             f"(x {w.x0}..{w.x0 + w.nx}, y {w.y0}..{w.y0 + w.ny} "
-                             f"against {d.nx} x {d.ny} cells)"))
-        covered[w.y0:w.y0 + w.ny, w.x0:w.x0 + w.nx] = True
-    if spec.windows:
-        gap = int((~covered).sum())
-        if gap:
-            out.append(Issue("error", "geometry",
-                             f"{gap} of {d.nx * d.ny} cells lie in no window"))
+    if plain:
+        covered = np.zeros((d.ny, d.nx), dtype=bool)
+        for w in spec.windows:
+            if w.x0 + w.nx > d.nx or w.y0 + w.ny > d.ny:
+                out.append(Issue("error", "geometry",
+                                 f"window {w.id} reaches past the domain "
+                                 f"(x {w.x0}..{w.x0 + w.nx}, y {w.y0}..{w.y0 + w.ny} "
+                                 f"against {d.nx} x {d.ny} cells)"))
+            covered[w.y0:w.y0 + w.ny, w.x0:w.x0 + w.nx] = True
+        if spec.windows:
+            gap = int((~covered).sum())
+            if gap:
+                out.append(Issue("error", "geometry",
+                                 f"{gap} of {d.nx * d.ny} cells lie in no window"))
+    else:
+        act = geo.domain_mask(d)
+        covered = np.zeros_like(act)
+        for wid, m in geo.window_masks(spec):
+            if not m.any():
+                out.append(Issue("error", "geometry",
+                                 f"window {wid} holds no cell of the domain: no cell centre "
+                                 f"lies inside both"))
+            covered |= m
+        if spec.windows:
+            gap = int((act & ~covered).sum())
+            if gap:
+                out.append(Issue("error", "geometry",
+                                 f"{gap} of the domain's {int(act.sum())} cells lie in no "
+                                 f"window"))
 
     ramp = spec.coupling.ramp_cells
     style = spec.coupling.style
     if spec.windows and style in ("C", "D"):
         out += _check_pieces(spec)
     elif spec.windows and style == "split":
-        whole = [w for w in spec.windows if (w.x0, w.y0, w.nx, w.ny) == (0, 0, d.nx, d.ny)]
+        if plain:
+            whole = [w for w in spec.windows
+                     if (w.x0, w.y0, w.nx, w.ny) == (0, 0, d.nx, d.ny)]
+        else:
+            act = geo.domain_mask(d)
+            whole = [wid for wid, m in geo.window_masks(spec) if np.array_equal(m, act)]
         if len(spec.windows) != 1 or not whole:
             out.append(Issue("error", "geometry",
                              "a split by physics shares the whole domain between its "
                              "agents, so the case is one window covering the domain; this "
                              f"one has {len(spec.windows)}"))
     elif spec.windows:
-        an = geo.analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
-                                              for w in spec.windows], ramp)
+        an = geo.analyse_case(spec)
         n_ramp = int(an.ramp_only.sum())
         if n_ramp:
             names = ", ".join(sorted(an.ramp_only_in)[:8])
@@ -461,9 +618,15 @@ def _check_pieces(spec: CaseSpec) -> list[Issue]:
     """
     out: list[Issue] = []
     d = spec.domain
+    plain = geo.is_plain(spec)
     count = np.zeros((d.ny, d.nx), dtype=np.int32)
-    for w in spec.windows:
-        count[w.y0:w.y0 + w.ny, w.x0:w.x0 + w.nx] += 1
+    if plain:
+        for w in spec.windows:
+            count[w.y0:w.y0 + w.ny, w.x0:w.x0 + w.nx] += 1
+    else:
+        masks = dict(geo.window_masks(spec))
+        for m in masks.values():
+            count += m
     over = int((count > 1).sum())
     if over:
         out.append(Issue("error", "geometry",
@@ -476,11 +639,15 @@ def _check_pieces(spec: CaseSpec) -> list[Issue]:
                          f"case has {len(spec.windows)}"))
     if spec.coupling.style == "C" and len(spec.windows) == 2 and not over:
         a, b = spec.windows
-        touch_x = (a.x0 + a.nx == b.x0 or b.x0 + b.nx == a.x0) and not (
-            a.y0 + a.ny <= b.y0 or b.y0 + b.ny <= a.y0)
-        touch_y = (a.y0 + a.ny == b.y0 or b.y0 + b.ny == a.y0) and not (
-            a.x0 + a.nx <= b.x0 or b.x0 + b.nx <= a.x0)
-        if not (touch_x or touch_y):
+        if plain:
+            touch_x = (a.x0 + a.nx == b.x0 or b.x0 + b.nx == a.x0) and not (
+                a.y0 + a.ny <= b.y0 or b.y0 + b.ny <= a.y0)
+            touch_y = (a.y0 + a.ny == b.y0 or b.y0 + b.ny == a.y0) and not (
+                a.x0 + a.nx <= b.x0 or b.x0 + b.nx <= a.x0)
+            meet = touch_x or touch_y
+        else:
+            meet = geo.faces_between(masks[a.id], masks[b.id]) > 0
+        if not meet:
             out.append(Issue("error", "geometry",
                              f"windows {a.id} and {b.id} do not meet along a face"))
         side = spec.coupling.dirichlet_side
@@ -493,6 +660,64 @@ def _check_pieces(spec: CaseSpec) -> list[Issue]:
                          f"style D joins one field to lumped parts, so the plate is one "
                          f"window covering the domain; this case has "
                          f"{len(spec.windows)}"))
+    return out
+
+
+def drawn_shapes(spec: CaseSpec) -> list[tuple[str, Outline]]:
+    """Every drawn shape in the case, named the way the check names it."""
+    d = spec.domain
+    out: list[tuple[str, Outline]] = []
+    if d.outline is not None:
+        out.append(("the domain's outline", d.outline))
+    for h, o in enumerate(d.holes):
+        out.append((f"hole {h}", o))
+    for w in spec.windows:
+        if w.shape == "curve":
+            out.append((f"window {w.id}", w.outline))
+            for h, o in enumerate(w.holes):
+                out.append((f"window {w.id}'s hole {h}", o))
+    for r in spec.regions:
+        if r.shape == "curve":
+            out.append((f"region {r.id}", r.outline))
+    return out
+
+
+def _check_drawn(spec: CaseSpec) -> list[Issue]:
+    """Drawn shapes: each one well formed and on the grid, the holes inside the
+    outline, and a family whose solvers can run on them."""
+    out: list[Issue] = []
+    d = spec.domain
+    fam = _family(spec)
+    if fam is not None and not fam.drawn_shapes:
+        out.append(Issue("error", "geometry",
+                         f"the {fam.label} family runs on rectangles only, so its domain "
+                         f"and windows cannot be drawn shapes: {fam.drawn_why}"))
+    for name, o in drawn_shapes(spec):
+        why = o.problems()
+        for p in why:
+            out.append(Issue("error", "geometry", f"{name}: {p}"))
+        if why:
+            continue
+        # a window or a region may reach past the grid: it holds only the domain's
+        # cells whose centres it contains.  The domain itself may not: the part
+        # past the grid would silently not be in it.
+        if not (name == "the domain's outline" or name.startswith("hole ")):
+            continue
+        x0, y0, x1, y1 = o.bbox()
+        if x0 < -1e-9 or y0 < -1e-9 or x1 > d.nx + 1e-9 or y1 > d.ny + 1e-9:
+            out.append(Issue("error", "geometry",
+                             f"{name} reaches past the {d.nx} x {d.ny} grid; draw it inside, "
+                             f"or make the grid bigger (Case)"))
+    if d.outline is not None and not d.outline.problems():
+        ring = d.outline.ring()
+        for h, o in enumerate(d.holes):
+            if not o.problems() and not np.all(shapes.contains(ring, o.ring(step=1.0))):
+                out.append(Issue("error", "geometry",
+                                 f"hole {h} is not inside the domain's outline"))
+    if not any(i.severity == "error" for i in out):
+        act = geo.domain_mask(d)
+        if not act.any():
+            out.append(Issue("error", "geometry", "the domain contains no cell centre"))
     return out
 
 
@@ -646,8 +871,7 @@ def _check_floating(spec: CaseSpec) -> list[Issue]:
     else:
         f = cd.field_from_case(spec)
     wins = spec.windows
-    fl = {w.id: cd.floating(f, cd.window_cells(d.nx, (w.x0, w.y0, w.nx, w.ny)))
-          for w in wins}
+    fl = {w.id: cd.floating(f, cd.cells_of(spec, w)) for w in wins}
     if all(fl.values()):
         return [Issue("error", "physics",
                       "both pieces float: nothing on the domain's edges sets a temperature "
@@ -794,7 +1018,7 @@ def _check_regions(spec: CaseSpec) -> list[Issue]:
                              f"regions listed after {r.id} take {drawn - kept} of its "
                              f"{drawn} cells (later regions stack on top)"))
     if fam is not None and "regions" in fam.layers:
-        free = int((owner < 0).sum())
+        free = int(((owner < 0) & geo.domain_mask(d)).sum())
         if free:
             out.append(Issue("error", "geometry",
                              f"{free} cells belong to no region; every cell needs a material"))
@@ -810,9 +1034,9 @@ def _check_boundaries(spec: CaseSpec) -> list[Issue]:
         out.append(Issue("error", "geometry", f"two boundaries are both called {dup!r}"))
     known = {k.id for k in registry.BOUNDARY_KINDS}
     spans: dict[str, list[tuple[int, int, str]]] = {e: [] for e in geo.EDGES}
+    drawn = geo.drawn_edge_names(d) if (d.outline is not None or d.holes) else []
+    on_drawn: dict[str, list[str]] = {e: [] for e in drawn}
     for b in spec.boundaries:
-        n = geo.edge_length(b.edge, d.nx, d.ny)
-        stop = n if b.stop is None else b.stop
         if b.kind not in known:
             out.append(Issue("error", "geometry", f"boundary {b.id}: unknown kind {b.kind!r}"))
         elif fam is not None and b.kind not in fam.boundary_kinds:
@@ -821,13 +1045,38 @@ def _check_boundaries(spec: CaseSpec) -> list[Issue]:
                              f"{b.kind!r} (it can: {', '.join(fam.boundary_kinds) or 'none'})"))
         elif registry.boundary_kind(b.kind).needs_value and b.value is None:
             out.append(Issue("error", "geometry", f"boundary {b.id}: {b.kind} needs a value"))
+        if b.drawn:
+            if b.edge not in on_drawn:
+                out.append(Issue("error", "geometry",
+                                 f"boundary {b.id} is on {b.edge}, an edge the domain does "
+                                 f"not have"))
+            else:
+                on_drawn[b.edge].append(b.id)
+            continue
+        if d.outline is not None:
+            out.append(Issue("error", "geometry",
+                             f"boundary {b.id} is on the grid's {b.edge} edge, but the domain "
+                             f"has a drawn outline: its boundaries are on the outline's edges"))
+            continue
+        n = geo.edge_length(b.edge, d.nx, d.ny)
+        stop = n if b.stop is None else b.stop
         if not (0 <= b.start < stop <= n):
             out.append(Issue("error", "geometry",
                              f"boundary {b.id} runs {b.start}..{stop} on the {b.edge} edge, "
                              f"which is {n} cells long"))
             continue
         spans[b.edge].append((b.start, stop, b.id))
+    for edge, ids in on_drawn.items():
+        if len(ids) > 1:
+            out.append(Issue("error", "geometry",
+                             f"boundaries {', '.join(ids)} are all on {edge}; a drawn edge "
+                             f"takes one condition (add a vertex to split it)"))
+        elif not ids and fam is not None and fam.boundary_kinds:
+            out.append(Issue("error", "geometry", f"the drawn edge {edge} has no boundary "
+                                                  f"condition"))
     for edge, segs in spans.items():
+        if d.outline is not None:
+            break                       # a drawn outline: the grid's edges are not used
         segs.sort()
         for (_s0, e0, i0), (s1, _e1, i1) in zip(segs, segs[1:]):
             if s1 < e0:
@@ -940,6 +1189,14 @@ EXAMPLES: dict[str, Example] = {e.key: e for e in (
             "A chip on a copper block under a water channel: the coolant's advection and "
             "the block's conduction meet at the wall, and every watt leaves in the water.",
             "conjugate-heat-2d", "C"),
+    Example("bend-3", "Heat round a pipe bend: three curved windows (style B, drawn)",
+            "A quarter ring of steel drawn with arcs, hot at one end and cold at the other, "
+            "cut into three curved windows that overlap along the bend and iterate to "
+            "agreement.", "conduction-2d", "B"),
+    Example("insert-round", "Round copper insert in a steel plate (style C, drawn)",
+            "A copper disc in a steel plate, cut along the circle: the disc and the plate "
+            "around it meet at a round interface, joined by Dirichlet-Neumann.",
+            "conduction-2d", "C"),
 )}
 
 
@@ -957,7 +1214,8 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
     builder = {"wall-2": _wall_example, "plate-insert": _insert_example,
                "plate-circuit": _circuit_example, "plume-2": _plume_example,
                "sound-air-water": _sound_example, "bracket-2": _bracket_example,
-               "heated-strip": _strip_example, "cooled-block": _block_example}.get(key)
+               "heated-strip": _strip_example, "cooled-block": _block_example,
+               "bend-3": _bend_example, "insert-round": _round_insert_example}.get(key)
     if builder is None:                                    # pragma: no cover
         raise KeyError(key)
     return builder(ex)
@@ -1003,6 +1261,63 @@ def _insert_example(ex: Example) -> CaseSpec:
         boundaries=family_boundaries("conduction-2d"),
         coupling=Coupling(style="B", ramp_cells=8, tolerance=1e-10, max_iterations=500),
         run=RunSettings(mode="transient", macro_dt=120.0, steps=40, threads=2),
+    )
+
+
+def _bend_example(ex: Example) -> CaseSpec:
+    """A quarter ring, radii 0.2 m and 0.5 m (40 and 100 cells of 5 mm), drawn with
+    two arcs and two straight ends: the radial end along x held at 400 K, the one
+    along y at 300 K, the arcs insulated.  Three windows, each a ring sector
+    reaching past the ring (only the ring's cells count), overlapping their
+    neighbours by 26 degrees -- 18 cells at the inner radius, over the 16 two
+    ramps need -- and nothing else, so there is no cross-point."""
+    import math
+    c, deg = (4.0, 4.0), math.pi / 180.0
+
+    def sector(r0: float, r1: float, a0: float, a1: float) -> Outline:
+        return Outline.of(shapes.annulus_sector(c[0], c[1], r0, r1, a0 * deg, a1 * deg))
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=108, ny=108, dx=0.005, outline=sector(40.0, 100.0, 0.0, 90.0)),
+        physics=Physics(family="conduction-2d", params={"T0": 300.0}),
+        materials=_materials("conduction-2d", "steel"),
+        regions=[Region(id="ring", material="steel", x0=0, y0=0, nx=108, ny=108)],
+        windows=[Window(id="W1", shape="curve", outline=sector(34.0, 106.0, -5.0, 44.0)),
+                 Window(id="W2", shape="curve", outline=sector(34.0, 106.0, 18.0, 72.0)),
+                 Window(id="W3", shape="curve", outline=sector(34.0, 106.0, 46.0, 95.0))],
+        boundaries=[Boundary(id="hot", edge="outline:0", kind="fixed-temperature",
+                             value=400.0),
+                    Boundary(id="outer", edge="outline:1", kind="insulated"),
+                    Boundary(id="cold", edge="outline:2", kind="fixed-temperature",
+                             value=300.0),
+                    Boundary(id="inner", edge="outline:3", kind="insulated")],
+        coupling=Coupling(style="B", ramp_cells=8, tolerance=1e-10, max_iterations=2000),
+        run=RunSettings(mode="steady", steps=5, threads=2),
+    )
+
+
+def _round_insert_example(ex: Example) -> CaseSpec:
+    """0.4 m x 0.25 m of steel with a copper disc 0.125 m across (a radius of 25
+    cells of 2.5 mm), held at 400 K on the left and 300 K on the right.  The two
+    pieces are the disc and the plate with the disc as its hole, so the interface
+    is the circle's staircase of cell faces; the disc has no edge of its own that
+    sets its temperature, so it is the Dirichlet side (`conduction.dirichlet_side`)."""
+    disc = Outline.of(shapes.circle(80.0, 50.0, 25.0))
+    return CaseSpec(
+        name=ex.key, description=ex.label,
+        domain=Domain(nx=160, ny=100, dx=0.0025),
+        physics=Physics(family="conduction-2d", params={"T0": 300.0}),
+        materials=_materials("conduction-2d", "steel", "copper"),
+        regions=[Region(id="plate", material="steel", x0=0, y0=0, nx=160, ny=100),
+                 Region(id="insert", material="copper", shape="curve", outline=disc)],
+        windows=[Window(id="plate", shape="curve",
+                        outline=Outline.of(shapes.rectangle(0.0, 0.0, 160.0, 100.0)),
+                        holes=[disc]),
+                 Window(id="insert", shape="curve", outline=disc)],
+        boundaries=family_boundaries("conduction-2d"),
+        coupling=Coupling(style="C", tolerance=1e-10, max_iterations=2000, relaxation=0.5,
+                          aitken=True),
+        run=RunSettings(mode="steady", steps=5, threads=2),
     )
 
 

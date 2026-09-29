@@ -1,0 +1,462 @@
+{
+ "schema": "atlas-workbench/results@1",
+ "case_name": "insert-round",
+ "case_path": null,
+ "family": "conduction-2d",
+ "style": "C",
+ "committed_at": "2026-09-29T11:59:09-04:00",
+ "started": "2026-09-29T11:59:09-04:00",
+ "finished": "2026-09-29T11:59:11-04:00",
+ "wall_seconds": 1.8523485660552979,
+ "build_seconds": 0.16072399995755404,
+ "arms": [
+  "serial",
+  "full"
+ ],
+ "arm_labels": {
+  "serial": "Decomposed, serial",
+  "parallel": "Decomposed, parallel",
+  "full": "Full domain"
+ },
+ "dropped_arms": {
+  "parallel": "Dirichlet-Neumann is sequential by construction: the Neumann piece needs the heat the Dirichlet piece sends"
+ },
+ "step_label": "timed repeat",
+ "steps_requested": 5,
+ "steps_done": 5,
+ "stopped": false,
+ "threads": 2,
+ "timing": {
+  "serial": {
+   "seconds_per_step": [
+    0.1554422000190243,
+    0.16125670005567372,
+    0.14904339995700866,
+    0.157379399985075,
+    0.13089100003708154
+   ],
+   "mean": 0.15080254001077265,
+   "median": 0.1554422000190243,
+   "min": 0.13089100003708154,
+   "speedup_vs_full": 0.027564920240192414
+  },
+  "full": {
+   "seconds_per_step": [
+    0.003774199984036386,
+    0.005488399998284876,
+    0.004605800029821694,
+    0.003017699928022921,
+    0.0038981999969109893
+   ],
+   "mean": 0.004156859987415373,
+   "median": 0.0038981999969109893,
+   "min": 0.003017699928022921,
+   "speedup_vs_full": 1.0
+  }
+ },
+ "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+ "bitwise": {
+  "steps": 0,
+  "first_difference": null
+ },
+ "metrics": {
+  "serial": {
+   "heat_in": 3385.782652076598,
+   "balance_max": 7.96772264161271e-12,
+   "iterations_last": 55.0,
+   "iterations_max": 55.0,
+   "all_converged": true,
+   "max_temperature_difference_K": 1.0083965662488481e-08,
+   "heat_in_vs_full": 8.849876314165515e-12
+  },
+  "full": {
+   "heat_in": 3385.782652046634,
+   "balance_max": 9.86231151249268e-12,
+   "iterations_last": 1.0,
+   "iterations_max": 1.0,
+   "all_converged": true
+  }
+ },
+ "field_difference": {
+  "serial": {
+   "rms": 3.1287232304250704e-09,
+   "max": 1.0083965662488481e-08,
+   "rms_relative": 8.91390500423523e-12
+  }
+ },
+ "field_label": "temperature (K)",
+ "checks": [
+  {
+   "key": "balance",
+   "title": "Energy: heat in = heat stored",
+   "kind": "balance",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the conduction family's first run",
+   "measure": "|heat into the domain through its edges - heat stored| over the heat through the plate, every step, worst arm (steady: stored = 0)",
+   "why": "the full domain closes to the direct solver's round-off. A decomposed arm closes to its iteration's floor: the solve stops when the update is below 1e-10 of the temperature scale, and a heat flow is a temperature difference over a half-cell, so its relative error is that times T/dT, with the material contrast, well under 1e-6",
+   "value": 9.86231151249268e-12,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "serial: 7.97e-12; full: 9.86e-12",
+   "extra": {}
+  },
+  {
+   "key": "reference",
+   "title": "Temperatures agree with the full domain",
+   "kind": "reference",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the conduction family's first run",
+   "measure": "max |T_decomposed - T_full| over the temperature span of the fixed boundaries, at the last step",
+   "why": "both solve the same finite volumes; the converged decomposition IS the full-domain solution up to the iteration's tolerance (Dirichlet-Neumann's converged face flow is the harmonic-mean face exactly)",
+   "value": 1.0083965662488481e-10,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "max |dT| = 1.01e-08 K over a span of 100 K",
+   "extra": {}
+  },
+  {
+   "key": "closed_form",
+   "title": "Heat flow = dT / sum(L/k) (a layered wall)",
+   "kind": "reference",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the conduction family's first run",
+   "measure": "|Q - Q_closed| / Q_closed for every arm, where Q_closed = dT H / sum_i L_i / k_i; only for a steady wall of layers across x with fixed temperatures left and right and insulated top and bottom",
+   "why": "harmonic-mean faces add the half-cells' resistances in series, so the discrete heat flow through layers on cell faces is the closed form to round-off; a decomposed arm adds its iteration floor",
+   "value": null,
+   "passed": null,
+   "verdict": "not measured",
+   "detail": "not a steady wall of layers across x, so there is no closed form",
+   "extra": {}
+  },
+  {
+   "key": "bitwise",
+   "title": "Threaded equals serial, bit for bit (style B)",
+   "kind": "control",
+   "tolerance": null,
+   "registered": "2026-09-28, before the conduction family's first run",
+   "measure": "np.array_equal on the temperature after every step",
+   "why": "additive Schwarz solves every window from the same iterate and blends in window order, so the order the threads finish in cannot change a bit",
+   "value": null,
+   "passed": null,
+   "verdict": "not measured",
+   "detail": "style C has no threaded arm",
+   "extra": {}
+  }
+ ],
+ "notes": [
+  "Dirichlet side: insert; Neumann side: plate. The 1-D contraction factor rho = k_D L_N / (k_N L_D) = 63.1 (over 1: unrelaxed it would diverge; the relaxation carries it). First relaxation factor 0.5, then Aitken's rule.",
+  "Steady: every 'step' is the whole solve again from the initial temperature, repeated to time it; the answer is the same each time."
+ ],
+ "problem": {
+  "style": "C",
+  "mode": "steady",
+  "cells": 16000,
+  "windows": 2,
+  "tolerance": 1e-10,
+  "max_iterations": 2000,
+  "scale_K": 400.0,
+  "dirichlet": "insert",
+  "neumann": "plate",
+  "rho_1d": 63.08591992802519,
+  "relaxation0": 0.5,
+  "aitken": true,
+  "interface_faces": 200
+ },
+ "machine": {
+  "time": "2026-09-29T11:59:09-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": false,
+   "battery_percent": 75,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [
+   {
+    "pid": 2384,
+    "memory": "186,824 K",
+    "command": "C:\\Users\\Nauni\\anaconda3\\python.exe -m atlas.workbench --port 8020"
+   }
+  ],
+  "pid": 22604
+ },
+ "machine_after": {
+  "power": {
+   "ac": false,
+   "battery_percent": 75,
+   "source": "GetSystemPowerStatus"
+  },
+  "time": "2026-09-29T11:59:11-04:00"
+ },
+ "case": {
+  "schema_id": "atlas-workbench/case@0.4",
+  "name": "insert-round",
+  "description": "Round copper insert in a steel plate (style C, drawn)",
+  "domain": {
+   "nx": 160,
+   "ny": 100,
+   "dx": 0.0025,
+   "outline": null,
+   "holes": []
+  },
+  "physics": {
+   "family": "conduction-2d",
+   "params": {
+    "T0": 300.0
+   }
+  },
+  "materials": {
+   "steel": {
+    "k": 45.0,
+    "rho": 7850.0,
+    "cp": 490.0
+   },
+   "copper": {
+    "k": 400.0,
+    "rho": 8960.0,
+    "cp": 385.0
+   }
+  },
+  "regions": [
+   {
+    "id": "plate",
+    "material": "steel",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 160,
+    "ny": 100,
+    "points": null,
+    "holes": null,
+    "outline": null
+   },
+   {
+    "id": "insert",
+    "material": "copper",
+    "shape": "curve",
+    "x0": 55,
+    "y0": 25,
+    "nx": 50,
+    "ny": 50,
+    "points": null,
+    "holes": null,
+    "outline": {
+     "points": [
+      [
+       105.0,
+       50.0
+      ],
+      [
+       80.0,
+       75.0
+      ],
+      [
+       55.0,
+       50.0
+      ],
+      [
+       80.0,
+       25.0
+      ]
+     ],
+     "edges": [
+      "arc",
+      "arc",
+      "arc",
+      "arc"
+     ],
+     "bulge": [
+      0.41421356237309503,
+      0.41421356237309503,
+      0.41421356237309503,
+      0.41421356237309503
+     ]
+    }
+   }
+  ],
+  "windows": [
+   {
+    "id": "plate",
+    "shape": "curve",
+    "x0": 0,
+    "y0": 0,
+    "nx": 160,
+    "ny": 100,
+    "outline": {
+     "points": [
+      [
+       0.0,
+       0.0
+      ],
+      [
+       160.0,
+       0.0
+      ],
+      [
+       160.0,
+       100.0
+      ],
+      [
+       0.0,
+       100.0
+      ]
+     ],
+     "edges": [
+      "line",
+      "line",
+      "line",
+      "line"
+     ],
+     "bulge": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "holes": [
+     {
+      "points": [
+       [
+        105.0,
+        50.0
+       ],
+       [
+        80.0,
+        75.0
+       ],
+       [
+        55.0,
+        50.0
+       ],
+       [
+        80.0,
+        25.0
+       ]
+      ],
+      "edges": [
+       "arc",
+       "arc",
+       "arc",
+       "arc"
+      ],
+      "bulge": [
+       0.41421356237309503,
+       0.41421356237309503,
+       0.41421356237309503,
+       0.41421356237309503
+      ]
+     }
+    ]
+   },
+   {
+    "id": "insert",
+    "shape": "curve",
+    "x0": 55,
+    "y0": 25,
+    "nx": 50,
+    "ny": 50,
+    "outline": {
+     "points": [
+      [
+       105.0,
+       50.0
+      ],
+      [
+       80.0,
+       75.0
+      ],
+      [
+       55.0,
+       50.0
+      ],
+      [
+       80.0,
+       25.0
+      ]
+     ],
+     "edges": [
+      "arc",
+      "arc",
+      "arc",
+      "arc"
+     ],
+     "bulge": [
+      0.41421356237309503,
+      0.41421356237309503,
+      0.41421356237309503,
+      0.41421356237309503
+     ]
+    },
+    "holes": []
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "B-left",
+    "edge": "left",
+    "kind": "fixed-temperature",
+    "start": 0,
+    "stop": null,
+    "value": 400.0
+   },
+   {
+    "id": "B-right",
+    "edge": "right",
+    "kind": "fixed-temperature",
+    "start": 0,
+    "stop": null,
+    "value": 300.0
+   },
+   {
+    "id": "B-bottom",
+    "edge": "bottom",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-top",
+    "edge": "top",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "C",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 2000,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 0.2,
+   "steps": 5,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "steady"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ }
+}

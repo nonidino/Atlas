@@ -235,7 +235,7 @@ def test_version_0_1_files_load_and_unknown_ones_do_not():
     d["physics"] = {"family": "incompressible-2d", **d["physics"]["params"]}
     d["coupling"].pop("style")
     s = CaseSpec.model_validate(d)
-    assert s.schema_id == "atlas-workbench/case@0.3"
+    assert s.schema_id == "atlas-workbench/case@0.4"
     assert s == ref
     d["schema_id"] = "atlas-workbench/case@9.9"
     with pytest.raises(ValueError):

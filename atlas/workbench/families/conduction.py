@@ -38,7 +38,7 @@ import numpy as np
 from .. import fv, styles
 from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
-from ..tiling import RectangleTiling
+from ..tiling import MaskTiling, RectangleTiling
 
 FAMILY = "conduction-2d"
 STYLE = "B or C"
@@ -89,7 +89,14 @@ _KIND = {"fixed-temperature": fv.FIXED, "insulated": fv.NO_FLUX, "heat-flux": fv
 
 
 def field_from_case(spec, prop_k: str = "k", kinds: dict[str, int] | None = None) -> fv.Field:
-    """The case's grid, materials and boundaries as an `fv.Field` (no capacity)."""
+    """The case's grid, materials and boundaries as an `fv.Field` (no capacity).
+
+    A drawn domain (case file 0.4) adds its mask and the conditions on its faces
+    to the void, each face taking the condition of the drawn edge nearest it; so
+    do the grid's own edge faces when the domain has a drawn outline.  A face on
+    a drawn edge with no condition is closed (no flux), and the case's check has
+    already refused that case.
+    """
     d = spec.domain
     owner = geo.region_owner(spec.regions, d.nx, d.ny)
     k = np.zeros((d.ny, d.nx))
@@ -97,17 +104,39 @@ def field_from_case(spec, prop_k: str = "k", kinds: dict[str, int] | None = None
         k[owner == i] = float(spec.materials[r.material][prop_k])
     kinds = kinds or _KIND
     bc = {}
+    drawn = {b.edge: b for b in spec.boundaries if b.drawn}
+
+    def of(name: str) -> tuple[int, float]:
+        b = drawn.get(name)
+        if b is None:
+            return fv.NO_FLUX, 0.0
+        return kinds[b.kind], (0.0 if b.value is None else float(b.value))
+
+    labels = geo.grid_edge_labels(d) if d.outline is not None else None
     for e in fv.EDGES:
         n = geo.edge_length(e, d.nx, d.ny)
         kd, vv = np.zeros(n, dtype=np.int8), np.zeros(n)
-        for b in spec.boundaries:
-            if b.edge != e:
-                continue
-            stop = n if b.stop is None else b.stop
-            kd[b.start:stop] = kinds[b.kind]
-            vv[b.start:stop] = 0.0 if b.value is None else float(b.value)
+        if labels is not None:
+            for j, name in enumerate(labels[e]):
+                if name:
+                    kd[j], vv[j] = of(name)
+        else:
+            for b in spec.boundaries:
+                if b.edge != e:
+                    continue
+                stop = n if b.stop is None else b.stop
+                kd[b.start:stop] = kinds[b.kind]
+                vv[b.start:stop] = 0.0 if b.value is None else float(b.value)
         bc[e] = (kd, vv)
-    return fv.Field(d.nx, d.ny, float(d.dx), k, bc=bc)
+    if d.outline is None and not d.holes:
+        return fv.Field(d.nx, d.ny, float(d.dx), k, bc=bc)
+    act = geo.domain_mask(d)
+    vf = geo.void_faces(d)
+    pairs = [of(name) for name in vf.edge]
+    vk = np.array([p[0] for p in pairs], dtype=np.int8)
+    vv = np.array([p[1] for p in pairs], dtype=float)
+    return fv.Field(d.nx, d.ny, float(d.dx), np.where(act, k, 0.0), bc=bc, active=act,
+                    void=(vf.cell, vf.outside, vf.direction, vk, vv, vf.edge))
 
 
 def capacity(spec) -> np.ndarray:
@@ -117,6 +146,8 @@ def capacity(spec) -> np.ndarray:
     for i, r in enumerate(spec.regions):
         m = spec.materials[r.material]
         cap[owner == i] = float(m["rho"]) * float(m["cp"])
+    if d.outline is not None or d.holes:
+        cap = np.where(geo.domain_mask(d), cap, 0.0)
     return cap
 
 
@@ -124,6 +155,16 @@ def window_cells(nx: int, box) -> np.ndarray:
     x0, y0, w, h = box
     jj, ii = np.meshgrid(np.arange(y0, y0 + h), np.arange(x0, x0 + w), indexing="ij")
     return (jj * nx + ii).ravel()
+
+
+def cells_of(spec, w) -> np.ndarray:
+    """A window's cells in the domain, as flat indices: its rectangle's, on a case
+    with no drawn shape (exactly as before 0.4), or the domain's cells whose
+    centres it contains."""
+    d = spec.domain
+    if geo.is_plain(spec):
+        return window_cells(d.nx, (w.x0, w.y0, w.nx, w.ny))
+    return np.flatnonzero((geo.window_mask(w, d.nx, d.ny) & geo.domain_mask(d)).ravel())
 
 
 @dataclass
@@ -164,15 +205,24 @@ class ConductionRun:
         # the full domain: the same assembly on every cell, factorized once
         self.full_sys = fv.assemble(self.f, diag_add=self.m)
         self.full_lu = styles.Factor(self.full_sys.A) if "full" in self.arms else None
+        #: a drawn domain's cells outside it: never solved, held at the start value
+        self.void = self.f.void_cells()
+        self.plain = geo.is_plain(spec)
         self.windows = [(w.id, (w.x0, w.y0, w.nx, w.ny)) for w in spec.windows]
+        cells = {w.id: cells_of(spec, w) for w in spec.windows}
         if self.style == "B":
-            self.tiling = RectangleTiling(self.nx, self.ny, self.windows,
-                                          spec.coupling.ramp_cells)
+            if self.plain:
+                self.tiling = RectangleTiling(self.nx, self.ny, self.windows,
+                                              spec.coupling.ramp_cells)
+                self.chi = [c.ravel() for c in self.tiling.chi]
+            else:
+                self.tiling = MaskTiling(geo.domain_mask(spec.domain), geo.window_masks(spec),
+                                         spec.coupling.ramp_cells)
+                self.chi = list(self.tiling.chi)
             self.certificate = self.tiling.certify()
-            self.systems = [fv.assemble(self.f, window_cells(self.nx, b), diag_add=self.m)
-                            for _n, b in self.windows]
+            self.systems = [fv.assemble(self.f, cells[w.id], diag_add=self.m)
+                            for w in spec.windows]
             self.factors = [styles.Factor(s.A) for s in self.systems]
-            self.chi = [c.ravel() for c in self.tiling.chi]
             if "parallel" in self.arms:
                 self.pool = ThreadPoolExecutor(max_workers=min(self.threads,
                                                                len(self.systems)),
@@ -180,12 +230,9 @@ class ConductionRun:
         else:
             self.certificate = None
             d_id, n_id = dirichlet_side(spec, self.f, self.m)
-            box = dict(self.windows)
             self.d_id, self.n_id = d_id, n_id
-            self.sd = fv.assemble(self.f, window_cells(self.nx, box[d_id]), "dirichlet",
-                                  diag_add=self.m)
-            self.sn = fv.assemble(self.f, window_cells(self.nx, box[n_id]), "neumann",
-                                  diag_add=self.m)
+            self.sd = fv.assemble(self.f, cells[d_id], "dirichlet", diag_add=self.m)
+            self.sn = fv.assemble(self.f, cells[n_id], "neumann", diag_add=self.m)
             self.fd, self.fn = styles.Factor(self.sd.A), styles.Factor(self.sn.A)
             self.pairing = styles.pair_faces(self.sd, self.sn)
             self.rho_1d = rho_1d(spec, d_id, n_id)
@@ -203,13 +250,20 @@ class ConductionRun:
         u_old = s.u if self.transient else np.full(self.f.n, self.T0)
         extra = self._rhs_extra(u_old)
         if arm == "full":
-            b = self.full_sys.b if extra is None else self.full_sys.b + extra
-            return CondState(self.full_lu.solve(b), 1, True)
+            if not self.void.size:
+                b = self.full_sys.b if extra is None else self.full_sys.b + extra
+                return CondState(self.full_lu.solve(b), 1, True)
+            idx = self.full_sys.idx
+            b = self.full_sys.b if extra is None else self.full_sys.b + extra[idx]
+            u = u_old.copy()
+            u[idx] = self.full_lu.solve(b)
+            return CondState(u, 1, True)
         if self.style == "B":
             eb = None if extra is None else [extra[sys_.idx] for sys_ in self.systems]
             it = styles.schwarz(self.systems, self.factors, self.chi, u_old, self.tol,
                                 self.max_it, self.scale, extra_b=eb,
-                                pool=self.pool if arm == "parallel" else None)
+                                pool=self.pool if arm == "parallel" else None,
+                                keep=self.void if self.void.size else None)
             return CondState(it.u, it.iterations, it.converged, it.history)
         lam0 = (s.lam if (self.transient and s.lam is not None)
                 else np.full(self.sd.face_rows.size, float(np.mean(u_old))))
@@ -219,8 +273,12 @@ class ConductionRun:
                                       self.max_it, self.scale,
                                       theta0=self.spec.coupling.relaxation,
                                       aitken=self.spec.coupling.aitken, extra_bd=ed,
-                                      extra_bn=en, pairing=self.pairing)
-        return CondState(it.u, it.iterations, it.converged, it.history, it.relaxation,
+                                      extra_bn=en, pairing=self.pairing,
+                                      n_total=self.f.n if self.void.size else None)
+        u = it.u
+        if self.void.size:
+            u[self.void] = u_old[self.void]
+        return CondState(u, it.iterations, it.converged, it.history, it.relaxation,
                          it.extra["lam"])
 
     # -- instruments ---------------------------------------------------------
@@ -247,7 +305,11 @@ class ConductionRun:
         return bool(np.array_equal(a.u, b.u))
 
     def field(self, s: CondState) -> np.ndarray:
-        return s.u.reshape(self.ny, self.nx)
+        if not self.void.size:
+            return s.u.reshape(self.ny, self.nx)
+        u = s.u.copy()
+        u[self.void] = np.nan                     # outside the drawn domain: not drawn
+        return u.reshape(self.ny, self.nx)
 
     def close(self) -> None:
         if self.pool is not None:
@@ -322,7 +384,7 @@ class ConductionRun:
         return out
 
     def describe(self) -> dict[str, Any]:
-        out = {"style": self.style, "mode": self.mode, "cells": self.f.n,
+        out = {"style": self.style, "mode": self.mode, "cells": int(self.f.cells().size),
                "windows": len(self.windows), "tolerance": self.tol,
                "max_iterations": self.max_it, "scale_K": self.scale}
         if self.certificate is not None:
@@ -364,6 +426,13 @@ def _mean_k(spec, box) -> float:
     return float(np.mean(ks)) if ks else 1.0
 
 
+def _mean_k_cells(spec, cells: np.ndarray) -> float:
+    d = spec.domain
+    owner = geo.region_owner(spec.regions, d.nx, d.ny).ravel()[cells]
+    ks = [float(spec.materials[spec.regions[i].material]["k"]) for i in owner if i >= 0]
+    return float(np.mean(ks)) if ks else 1.0
+
+
 def floating(f: fv.Field, cells: np.ndarray, diag_add: np.ndarray | None = None) -> bool:
     """Whether a piece given only a flow on its cut faces has nothing to set its level:
     no fixed temperature, no outflow, no storage -- every row of its matrix sums to
@@ -391,25 +460,38 @@ def dirichlet_side(spec, f: fv.Field | None = None,
     if side == b.id:
         return b.id, a.id
     if f is not None:
-        fa = floating(f, window_cells(f.nx, (a.x0, a.y0, a.nx, a.ny)), diag_add)
-        fb = floating(f, window_cells(f.nx, (b.x0, b.y0, b.nx, b.ny)), diag_add)
+        fa = floating(f, cells_of(spec, a), diag_add)
+        fb = floating(f, cells_of(spec, b), diag_add)
         if fa != fb:
             return (a.id, b.id) if fa else (b.id, a.id)
-    ka = _mean_k(spec, (a.x0, a.y0, a.nx, a.ny))
-    kb = _mean_k(spec, (b.x0, b.y0, b.nx, b.ny))
+    if geo.is_plain(spec):
+        ka = _mean_k(spec, (a.x0, a.y0, a.nx, a.ny))
+        kb = _mean_k(spec, (b.x0, b.y0, b.nx, b.ny))
+    else:
+        ka, kb = _mean_k_cells(spec, cells_of(spec, a)), _mean_k_cells(spec, cells_of(spec, b))
     return (a.id, b.id) if ka <= kb else (b.id, a.id)
 
 
 def rho_1d(spec, d_id: str, n_id: str) -> float:
     """``k_D L_N / (k_N L_D)``: the 1-D Dirichlet-Neumann contraction factor, with
-    each piece's mean conductivity and its length normal to the interface."""
+    each piece's mean conductivity and its length normal to the interface.
+
+    For drawn pieces a piece's length normal to the interface is its mean
+    thickness, its area over the interface's length -- the same number for two
+    rectangles side by side, and an estimate otherwise (the page says so)."""
     w = {x.id: x for x in spec.windows}
     a, b = w[d_id], w[n_id]
-    along_x = a.x0 + a.nx == b.x0 or b.x0 + b.nx == a.x0
-    la, lb = (a.nx, b.nx) if along_x else (a.ny, b.ny)
-    ka = _mean_k(spec, (a.x0, a.y0, a.nx, a.ny))
-    kb = _mean_k(spec, (b.x0, b.y0, b.nx, b.ny))
-    return (ka * lb) / (kb * la)
+    if geo.is_plain(spec):
+        along_x = a.x0 + a.nx == b.x0 or b.x0 + b.nx == a.x0
+        la, lb = (a.nx, b.nx) if along_x else (a.ny, b.ny)
+        ka = _mean_k(spec, (a.x0, a.y0, a.nx, a.ny))
+        kb = _mean_k(spec, (b.x0, b.y0, b.nx, b.ny))
+        return (ka * lb) / (kb * la)
+    masks = dict(geo.window_masks(spec))
+    faces = max(geo.faces_between(masks[a.id], masks[b.id]), 1)
+    la, lb = masks[a.id].sum() / faces, masks[b.id].sum() / faces
+    ka, kb = _mean_k_cells(spec, cells_of(spec, a)), _mean_k_cells(spec, cells_of(spec, b))
+    return float((ka * lb) / (kb * la))
 
 
 def closed_form_heat(spec) -> float | None:
@@ -423,6 +505,8 @@ def closed_form_heat(spec) -> float | None:
     if spec.run.mode != "steady":
         return None
     d = spec.domain
+    if d.outline is not None or d.holes or any(b.drawn for b in spec.boundaries):
+        return None                     # a drawn domain is not a wall of layers
     by_edge: dict[str, list] = {e: [] for e in fv.EDGES}
     for b in spec.boundaries:
         by_edge[b.edge].append(b)
@@ -498,4 +582,4 @@ def _valid_everywhere(state=None, cond=None) -> bool:
 
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "ConductionRun", "CondState", "build",
            "field_from_case", "capacity", "available_arms", "step_label", "dirichlet_side",
-           "floating", "rho_1d", "closed_form_heat", "window_cells"]
+           "floating", "rho_1d", "closed_form_heat", "window_cells", "cells_of"]

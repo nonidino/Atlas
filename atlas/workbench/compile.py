@@ -112,11 +112,45 @@ def cell_order(sys_: fv.LocalSystem, faces: np.ndarray, nx: int) -> np.ndarray:
     return faces[np.lexsort((cells % nx, cells // nx))]
 
 
+def curve_order(sys_: fv.LocalSystem, faces: np.ndarray, nx: int) -> np.ndarray:
+    """Faces ordered ALONG a seam of any shape, so a port's Fourier modes vary along
+    the seam rather than across it (row-then-column order would interleave the
+    two ends of a curved seam).
+
+    A walk over the faces' midpoints: start at an end of the seam -- the face with
+    the fewest others within a cell and a half, the lowest row then column among
+    ties, which on a closed seam is just the lowest -- then step to the nearest
+    face not yet visited, again lowest row then column among ties.
+    """
+    if faces.size <= 2:
+        return cell_order(sys_, faces, nx)
+    inside = sys_.idx[sys_.face_rows[faces]]
+    outside = sys_.face_outside[faces]
+    mid = 0.5 * (np.column_stack([inside % nx, inside // nx])
+                 + np.column_stack([outside % nx, outside // nx])).astype(float)
+    dist = np.hypot(mid[:, None, 0] - mid[None, :, 0], mid[:, None, 1] - mid[None, :, 1])
+    rank = np.empty(faces.size, dtype=np.int64)
+    rank[np.lexsort((inside % nx, inside // nx))] = np.arange(faces.size)
+    near = (dist < 1.5).sum(axis=1) - 1
+    cur = int(np.lexsort((rank, near))[0])
+    seen = np.zeros(faces.size, dtype=bool)
+    order = [cur]
+    seen[cur] = True
+    for _ in range(faces.size - 1):
+        d = np.where(seen, np.inf, dist[cur])
+        best = np.flatnonzero(d == d.min())
+        cur = int(best[np.argmin(rank[best])])
+        seen[cur] = True
+        order.append(cur)
+    return faces[np.asarray(order)]
+
+
 def face_seams(windows: list[tuple[str, tuple]], systems: dict[str, fv.LocalSystem],
-               nx: int) -> list[FaceSeam]:
+               nx: int, order=cell_order) -> list[FaceSeam]:
     """Every pair of windows one of whose cut faces opens into the other, in window
     order.  Across an overlap each side's port is its own ring inside the other;
-    across a shared face the two ports are the same faces seen from each side."""
+    across a shared face the two ports are the same faces seen from each side.
+    ``order`` puts a port's faces in sequence along the seam."""
     cells = {n: set(systems[n].idx.tolist()) for n, _b in windows}
     out = []
     for i, (na, _ba) in enumerate(windows):
@@ -128,15 +162,13 @@ def face_seams(windows: list[tuple[str, tuple]], systems: dict[str, fv.LocalSyst
                           dtype=np.int64)
             if fa.size and fb.size:
                 out.append(FaceSeam(f"{na}|{nb}", na, nb,
-                                    {na: cell_order(sa, fa, nx), nb: cell_order(sb, fb, nx)}))
+                                    {na: order(sa, fa, nx), nb: order(sb, fb, nx)}))
     return out
 
 
 def cross_points(spec) -> tuple[str, ...]:
     """W162: the geometric cross-points, named, or ``()`` when there are none."""
-    d = spec.domain
-    an = geo.analyse_windows(d.nx, d.ny, [(w.id, (w.x0, w.y0, w.nx, w.ny))
-                                          for w in spec.windows], spec.coupling.ramp_cells)
+    an = geo.analyse_case(spec)
     return tuple("+".join(names) for names, _box in an.cross_points)
 
 
@@ -295,12 +327,14 @@ def fv_graph(spec, f: fv.Field, *, family: str, port_type: str, scales: dict[str
     style = spec.coupling.style
     overlapping = style in ("A", "B")
     windows = [(w.id, (w.x0, w.y0, w.nx, w.ny)) for w in spec.windows]
-    from .families.conduction import window_cells
-    agents_fv = {n: FVAgent(n, f, window_cells(d.nx, b), implicit=implicit, base=base,
-                            diag_add=diag_add, extra=extra, state=state,
-                            per_effort=per_effort)
-                 for n, b in windows}
-    seams = face_seams(windows, {n: a.cut for n, a in agents_fv.items()}, d.nx)
+    from .families.conduction import cells_of
+    plain = geo.is_plain(spec)
+    agents_fv = {w.id: FVAgent(w.id, f, cells_of(spec, w), implicit=implicit, base=base,
+                               diag_add=diag_add, extra=extra, state=state,
+                               per_effort=per_effort)
+                 for w in spec.windows}
+    seams = face_seams(windows, {n: a.cut for n, a in agents_fv.items()}, d.nx,
+                       order=cell_order if plain else curve_order)
     if not seams:
         raise CompileRefused("no two windows meet or overlap, so there is no seam to "
                              "compile: one window is not a composition")
@@ -350,11 +384,24 @@ def fv_graph(spec, f: fv.Field, *, family: str, port_type: str, scales: dict[str
             note="atlas/workbench/fv.py: the window's own finite volumes")
         agents.append(Agent(n, caps, domain=f"window {n}"))
     kw: dict[str, Any] = {}
-    if overlapping:
+    if overlapping and plain:
         from .tiling import RectangleTiling
         tiling = RectangleTiling(d.nx, d.ny, windows, spec.coupling.ramp_cells)
         ov = geo.analyse_windows(d.nx, d.ny, windows, spec.coupling.ramp_cells).overlaps
         cells_ov = min((min(b[2], b[3]) for _a, _b, b in ov), default=0)
+        kw = dict(overlap=cells_ov * d.dx, overlap_cells=int(cells_ov),
+                  partition_of_unity=tiling.partition_of_unity())
+    elif overlapping:
+        # drawn windows: an overlap's width is twice the deepest cell's distance to
+        # its edge (a bounding box's short side says nothing about a curved one)
+        from scipy.ndimage import distance_transform_edt
+
+        from .tiling import MaskTiling
+        masks = dict(geo.window_masks(spec))
+        tiling = MaskTiling(geo.domain_mask(d), list(masks.items()), spec.coupling.ramp_cells)
+        widths = [int(2 * distance_transform_edt(masks[a] & masks[b]).max())
+                  for a, b, _box in geo.analyse_case(spec).overlaps]
+        cells_ov = min(widths, default=0)
         kw = dict(overlap=cells_ov * d.dx, overlap_cells=int(cells_ov),
                   partition_of_unity=tiling.partition_of_unity())
     graph = CaseGraph(

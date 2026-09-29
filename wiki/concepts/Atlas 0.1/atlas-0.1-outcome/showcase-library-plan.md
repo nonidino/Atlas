@@ -217,6 +217,24 @@ The library changes what geometry must express. Windows alone are not enough, so
 >
 > Built and checked in a served page: move, corner-resize, click-to-add a rotor, the tiling dialog, undo, and a Gmsh upload of a steel plate with a copper disc and an aluminium hexagon. 48 tests. What the section does not do yet: lumped attachments (case 5), and any family but the wind farm can be chosen, so regions and editable boundaries are ready for families that do not exist yet.
 
+> **Built, 2026-09-29: drawn shapes, irregular domains and windows that are not rectangles.** The owner's verdict on the section as built: "all of the windows are STILL SQUARES. I want to be able to draw nonregular geometry edges, and then have NONRECTANGULAR windows. THAT is the point." Two decisions, the owner's:
+> - **Cells inside the shape, not body-fitted triangles.** The grid stays Cartesian and a solver gets the cells whose centres a shape contains, so every solver and check carries over. The other option, meshing each drawn outline with Gmsh, would have needed a new triangle solver per family.
+> - **Shapes drawn with polygon edges, arcs and splines**, on the domain's outline, holes in it, material regions, and windows.
+>
+> Code: `atlas/workbench/shapes.py` (new), the case file `atlas-workbench/case@0.4`, drawn masks and boundaries in `geometry.py`, a domain mask in `fv.py`, `tiling.MaskTiling`, the Draw shape and Reshape tools in `editor.py`, and `tests/test_workbench_drawn.py` (26 tests). The details are in `atlas/workbench/README.md`, "Drawn shapes".
+> - **Drawing.** Click vertices and double-click to close, with straight or smooth (spline) edges, or add a ready-made circle, ellipse or hexagon.
+> - **Reshaping**, with handles on the canvas: squares move vertices; circles bend an edge into a circular arc, stored by its bulge $b=\tan(\theta/4)$; diamonds move the whole shape. A double click adds a vertex on an edge, or makes the curve smooth through a vertex.
+> - **Checked in the served page with real mouse events**: placing vertices, closing a smooth window with a double click, moving it by its diamond, and bending one of its edges into an arc.
+> - **Boundaries follow the drawing.** A drawn edge carries its own condition (`outline:<k>`, `hole<h>:<k>`), each boundary face takes the condition of the drawn edge nearest it, and splitting an edge gives both halves its condition.
+> - **A drawn window's weight** ramps with the Euclidean distance from its artificial faces (`geometry.ramp_weight`). The partition of unity is certified at $1.1\times10^{-16}$ on the bend.
+> - **Every earlier case keeps its arithmetic to the bit** (`geometry.is_plain`): all 141 earlier workbench tests pass unchanged.
+> - **Measured**, in two new examples and their records (`out/workbench/records/step-g/`, headless and on battery; [[showcase-gallery]]):
+>   - one window over a drawn domain equals the full domain bit for bit;
+>   - the bend (three ring-sector windows, style B) agrees with the full domain to $3.07\times10^{-10}$ of its span, and threaded equals serial;
+>   - the round insert (Dirichlet-Neumann across a circle) agrees to $1.01\times10^{-10}$;
+>   - both are refused at R10 alone, with every seam admitted (W348).
+> - **Only heat conduction runs on drawn shapes so far.** Every other family refuses them in the check, each naming its reason (`registry.Family.drawn_why`). A curve is a staircase at the cell size: on the bend it moves the heat flow by $-0.97\%$ from the continuum value.
+
 ---
 
 ## 7. What this plan does not decide

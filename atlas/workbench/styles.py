@@ -88,7 +88,7 @@ class Iteration:
 def schwarz(systems: Sequence[LocalSystem], factors: Sequence[Factor],
             chi: Sequence[np.ndarray], u0: np.ndarray, tol: float, max_it: int,
             scale: float | None, extra_b: Sequence[np.ndarray] | None = None,
-            pool=None) -> Iteration:
+            pool=None, keep: np.ndarray | None = None) -> Iteration:
     """``u <- sum_i R_i^T chi_i A_i^{-1} (b_i - C_i u)`` until the update is below
     ``tol * scale`` (max norm), or ``max_it`` sweeps.  ``scale=None`` measures the
     update against the new iterate's own largest entry, for a field with no
@@ -98,6 +98,9 @@ def schwarz(systems: Sequence[LocalSystem], factors: Sequence[Factor],
     ``cap dx^2 / dt * u_old`` restricted to it).  With ``pool`` the windows are
     solved on threads; the blend is always summed in window order afterwards,
     so the iterate does not depend on which thread finished first.
+
+    ``keep``: cells no window holds -- a drawn domain's cells outside it -- carried
+    through unchanged, so they neither read as an update nor lose their value.
     """
     u = np.array(u0, dtype=float)
     hist: list[float] = []
@@ -116,6 +119,8 @@ def schwarz(systems: Sequence[LocalSystem], factors: Sequence[Factor],
         new = np.zeros_like(u)
         for i in range(n):
             new[systems[i].idx] += chi[i] * vs[i]
+        if keep is not None:
+            new[keep] = u[keep]
         den = scale if scale is not None else max(float(np.max(np.abs(new))), 1e-300)
         upd = float(np.max(np.abs(new - u))) / den
         hist.append(upd)
@@ -162,7 +167,8 @@ def dirichlet_neumann(sd: LocalSystem, fd: Factor, sn: LocalSystem, fn: Factor,
                       theta0: float = 0.5, aitken: bool = True,
                       extra_bd: np.ndarray | None = None,
                       extra_bn: np.ndarray | None = None,
-                      pairing: np.ndarray | None = None) -> Iteration:
+                      pairing: np.ndarray | None = None,
+                      n_total: int | None = None) -> Iteration:
     """Dirichlet-Neumann across one non-overlapping interface.
 
     The Dirichlet piece is solved with the interface's face values ``lam``; the
@@ -195,19 +201,23 @@ def dirichlet_neumann(sd: LocalSystem, fd: Factor, sn: LocalSystem, fn: Factor,
         hist.append(res)
         if res <= tol:
             thetas.append(0.0)
-            return Iteration(_union(sd, ud, sn, un), it, True, hist, thetas,
+            return Iteration(_union(sd, ud, sn, un, n_total), it, True, hist, thetas,
                              {"lam": lam, "flow": q})
         if aitken and r_old is not None:
             theta = _aitken(theta, r_old, r)
         thetas.append(theta)
         lam = lam + theta * r
         r_old = r
-    return Iteration(_union(sd, ud, sn, un), max_it, False, hist, thetas,
+    return Iteration(_union(sd, ud, sn, un, n_total), max_it, False, hist, thetas,
                      {"lam": lam, "flow": q})
 
 
-def _union(sa: LocalSystem, ua: np.ndarray, sb: LocalSystem, ub: np.ndarray) -> np.ndarray:
-    n = int(max(sa.idx.max(), sb.idx.max())) + 1
+def _union(sa: LocalSystem, ua: np.ndarray, sb: LocalSystem, ub: np.ndarray,
+           n: int | None = None) -> np.ndarray:
+    """The two pieces as one field; NaN where neither is (a drawn domain's void,
+    when ``n`` is the whole grid's length)."""
+    if n is None:
+        n = int(max(sa.idx.max(), sb.idx.max())) + 1
     u = np.full(n, np.nan)
     u[sa.idx] = ua
     u[sb.idx] = ub

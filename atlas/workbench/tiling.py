@@ -148,4 +148,65 @@ class RectangleTiling:
         return Certificate(identity_residual=pou.identity_residual(), chi_min=pou.chi_min())
 
 
-__all__ = ["Box", "axis_weight", "Certificate", "RectangleTiling"]
+class MaskTiling:
+    """Windows of any shape on a domain of any shape (case file 0.4).
+
+    The same partition of unity as `RectangleTiling` -- each window's raw weight
+    ramps from 0 at its artificial faces to 1 over ``ramp`` cells and is squared,
+    the raw weights are summed window by window in list order, and every window
+    is divided by that sum -- with the distance to the window's artificial
+    boundary in place of the per-axis distance (`geometry.ramp_weight`).  A face
+    on the domain's own boundary, drawn or the grid's, is not artificial.
+
+    Each window's weights are held on its own cells: ``idx[k]`` are the flat
+    indices of window k's cells in the domain, ascending -- the order
+    `fv.assemble` numbers a set's cells in -- and ``chi[k]`` the weights there.
+    The certificate is taken over the domain's cells only; a cell of the grid
+    outside the domain is in no window and needs no weight.
+    """
+
+    def __init__(self, active: np.ndarray, windows: Sequence[tuple[str, np.ndarray]],
+                 ramp: int):
+        from .geometry import ramp_weight
+        self.active = np.asarray(active, dtype=bool)
+        self.ny, self.nx = self.active.shape
+        self.ramp = int(ramp)
+        self.names = [str(n) for n, _ in windows]
+        masks = [np.asarray(m, dtype=bool) & self.active for _, m in windows]
+        self.idx: list[np.ndarray] = [np.flatnonzero(m.ravel()) for m in masks]
+        raw = [ramp_weight(m, self.active, self.ramp) for m in masks]
+        tot = np.zeros((self.ny, self.nx))
+        for r in raw:
+            tot += r
+        tot = np.where(tot <= 0.0, 1.0, tot)
+        #: chi_k on window k's own cells, aligned with idx[k]
+        self.chi: list[np.ndarray] = [(r / tot).ravel()[i] for r, i in zip(raw, self.idx)]
+
+    @property
+    def n_windows(self) -> int:
+        return len(self.idx)
+
+    def assemble(self, locals_: Sequence[np.ndarray]) -> np.ndarray:
+        """``sum_k R_k^T chi_k u_k`` on the grid, in window order (0 off the domain)."""
+        out = np.zeros(self.nx * self.ny)
+        for i, c, u in zip(self.idx, self.chi, locals_):
+            out[i] += c * u
+        return out.reshape(self.ny, self.nx)
+
+    def partition_of_unity(self) -> GridPartitionOfUnity:
+        cells = np.flatnonzero(self.active.ravel())
+        pos = np.full(self.nx * self.ny, -1, dtype=np.int64)
+        pos[cells] = np.arange(cells.size)
+        return GridPartitionOfUnity(
+            int(cells.size), {n: pos[i] for n, i in zip(self.names, self.idx)},
+            {n: c for n, c in zip(self.names, self.chi)}, ramp_cells=self.ramp,
+            profile=f"clip((d - 1/2) / {self.ramp}, 0, 1)^2 with d the distance to the "
+                    f"window's artificial boundary, normalized over the domain's cells "
+                    f"(atlas/workbench/tiling.py MaskTiling, windows of any shape)")
+
+    def certify(self) -> Certificate:
+        pou = self.partition_of_unity()
+        return Certificate(identity_residual=pou.identity_residual(), chi_min=pou.chi_min())
+
+
+__all__ = ["Box", "axis_weight", "Certificate", "RectangleTiling", "MaskTiling"]

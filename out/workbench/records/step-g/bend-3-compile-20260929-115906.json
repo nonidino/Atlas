@@ -1,0 +1,343 @@
+{
+ "schema": "atlas-workbench/compile@1",
+ "case": {
+  "schema_id": "atlas-workbench/case@0.4",
+  "name": "bend-3",
+  "description": "Heat round a pipe bend: three curved windows (style B, drawn)",
+  "domain": {
+   "nx": 108,
+   "ny": 108,
+   "dx": 0.005,
+   "outline": {
+    "points": [
+     [
+      44.0,
+      4.0
+     ],
+     [
+      104.0,
+      4.0
+     ],
+     [
+      4.000000000000006,
+      104.0
+     ],
+     [
+      4.000000000000003,
+      44.0
+     ]
+    ],
+    "edges": [
+     "line",
+     "arc",
+     "line",
+     "arc"
+    ],
+    "bulge": [
+     0.0,
+     0.41421356237309503,
+     0.0,
+     -0.41421356237309503
+    ]
+   },
+   "holes": []
+  },
+  "physics": {
+   "family": "conduction-2d",
+   "params": {
+    "T0": 300.0
+   }
+  },
+  "materials": {
+   "steel": {
+    "k": 45.0,
+    "rho": 7850.0,
+    "cp": 490.0
+   }
+  },
+  "regions": [
+   {
+    "id": "ring",
+    "material": "steel",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 108,
+    "ny": 108,
+    "points": null,
+    "holes": null,
+    "outline": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "W1",
+    "shape": "curve",
+    "x0": 28,
+    "y0": 0,
+    "nx": 82,
+    "ny": 78,
+    "outline": {
+     "points": [
+      [
+       37.87061973511935,
+       1.0367047465796224
+      ],
+      [
+       109.59663799772503,
+       -5.238508731251766
+      ],
+      [
+       80.25001883589702,
+       77.6337872686537
+      ],
+      [
+       28.457553211514142,
+       27.618384595605907
+      ]
+     ],
+     "edges": [
+      "line",
+      "arc",
+      "line",
+      "arc"
+     ],
+     "bulge": [
+      0.0,
+      0.21712128354619611,
+      0.0,
+      -0.21712128354619611
+     ]
+    },
+    "holes": []
+   },
+   {
+    "id": "W2",
+    "shape": "curve",
+    "x0": 14,
+    "y0": 14,
+    "nx": 91,
+    "ny": 91,
+    "outline": {
+     "points": [
+      [
+       36.33592155403522,
+       14.506577808748212
+      ],
+      [
+       104.81199072728627,
+       36.75580140374442
+      ],
+      [
+       36.75580140374443,
+       104.81199072728627
+      ],
+      [
+       14.506577808748213,
+       36.33592155403522
+      ]
+     ],
+     "edges": [
+      "line",
+      "arc",
+      "line",
+      "arc"
+     ],
+     "bulge": [
+      0.0,
+      0.24007875908011603,
+      0.0,
+      -0.24007875908011603
+     ]
+    },
+    "holes": []
+   },
+   {
+    "id": "W3",
+    "shape": "curve",
+    "x0": 0,
+    "y0": 28,
+    "nx": 78,
+    "ny": 82,
+    "outline": {
+     "points": [
+      [
+       27.618384595605907,
+       28.457553211514142
+      ],
+      [
+       77.6337872686537,
+       80.25001883589702
+      ],
+      [
+       -5.238508731251773,
+       109.59663799772503
+      ],
+      [
+       1.0367047465796202,
+       37.87061973511935
+      ]
+     ],
+     "edges": [
+      "line",
+      "arc",
+      "line",
+      "arc"
+     ],
+     "bulge": [
+      0.0,
+      0.21712128354619614,
+      0.0,
+      -0.21712128354619614
+     ]
+    },
+    "holes": []
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "hot",
+    "edge": "outline:0",
+    "kind": "fixed-temperature",
+    "start": 0,
+    "stop": null,
+    "value": 400.0
+   },
+   {
+    "id": "outer",
+    "edge": "outline:1",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "cold",
+    "edge": "outline:2",
+    "kind": "fixed-temperature",
+    "start": 0,
+    "stop": null,
+    "value": 300.0
+   },
+   {
+    "id": "inner",
+    "edge": "outline:3",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "B",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 2000,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 0.2,
+   "steps": 5,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "steady"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  }
+ },
+ "family": "conduction-2d",
+ "verdict": "refuse",
+ "seams": [
+  {
+   "seam": "W1|W2",
+   "between": [
+    "W1",
+    "W2"
+   ],
+   "port_type": "THERM",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "probe-base",
+     "verdict": "admit-uncertified",
+     "subject": "W1|W2",
+     "message": "the two sides of this seam were linearized about DIFFERENT interface states: the bases differ by 12.5 on M, 6% of the base norm. The seam operator is a sum of per-side Jacobians and that sum is a Jacobian only if the terms share a linearization point, so beta and kappa here are not statements about the interface map at any state. Measured on thermal_seam: sweeping a COMMON base over the physically admissible interval gives beta in [0.4200, 1.7689] and the mismatched probe reports 0.3757 -- below the entire range, so it is not merely the wrong point but no point at all. Pass assemble_seam a seam_base, or run probe.base_sensitivity: an affine response makes the base free and this decertification goes away"
+    }
+   ]
+  },
+  {
+   "seam": "W2|W3",
+   "between": [
+    "W2",
+    "W3"
+   ],
+   "port_type": "THERM",
+   "verdict": "admit-uncertified",
+   "rules": [
+    {
+     "layer": "L4",
+     "rule": "probe-base",
+     "verdict": "admit-uncertified",
+     "subject": "W2|W3",
+     "message": "the two sides of this seam were linearized about DIFFERENT interface states: the bases differ by 12.5 on M, 6% of the base norm. The seam operator is a sum of per-side Jacobians and that sum is a Jacobian only if the terms share a linearization point, so beta and kappa here are not statements about the interface map at any state. Measured on thermal_seam: sweeping a COMMON base over the physically admissible interval gives beta in [0.4200, 1.7689] and the mismatched probe reports 0.3757 -- below the entire range, so it is not merely the wrong point but no point at all. Pass assemble_seam a seam_base, or run probe.base_sensitivity: an affine response makes the base free and this decertification goes away"
+    }
+   ]
+  }
+ ],
+ "other": [
+  {
+   "layer": "L2",
+   "rule": "R10",
+   "verdict": "refuse",
+   "subject": "W1, W2, W3",
+   "message": "3 agents declare elliptic_subsolve=embedded and the graph decomposes the domain: each shares its governing_family with at least one other agent, so the family's region has been cut and each agent solves a global problem on its own piece of it. The decomposition changes the operator rather than restricting it. The resulting error does not decay with distance from the cut and no coupling scheme removes it -- measured at 99.8% of the total defect, mislabelled as agent infidelity. Declare elliptic_subsolve=exposed and run that solve in the composition layer, which is what probed-dtn-coupling 2.1 assumes when it says the elliptic part stays global. **What taking that repair is worth, measured on one graph at one state (W168, CS-S1 2026-09-09): 149x in coupling sweeps.** The same four windows over the same field need 74.81 sweeps per decade of interface residual with the pressure solve embedded and 0.50 with it exposed -- 466 sweeps against 7 to the same tolerance, 59.8 seconds against 0.62. A control with the projection dropped runs at 0.49, so the gain is the EXPOSURE and not the projection. This rule is not bookkeeping: it is the largest measured effect in this package, and it is a refusal rather than a decertification because the error it names is silent"
+  },
+  {
+   "layer": "L2",
+   "rule": "C3/W57",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+  },
+  {
+   "layer": "L5",
+   "rule": "eps_tol",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit"
+  },
+  {
+   "layer": "L9",
+   "rule": "E5",
+   "verdict": "admit-uncertified",
+   "subject": "<run>",
+   "message": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate"
+  },
+  {
+   "layer": "L8",
+   "rule": "W56",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+  }
+ ],
+ "seconds": 0.17291409999597818,
+ "agents": 3,
+ "cross_points": [],
+ "refused_before": null,
+ "when": "2026-09-29T11:59:06-04:00",
+ "report": "=== workbench-bend-3 ===\nverdict: refuse   depth: 0\n\nE1:holds E2:holds E3:holds E4:holds E5:unchecked E6:holds E7:holds\nclaim: UNTYPED -- L is unmeasured, so the predictability horizon is unknown, so no type is decidable. Every metric carries the UNTYPED tag\nunmeasured constants: L (W1), sigma (W3), tau (W3), C_mu (W3)\nnamed holes touched: AssemblyCertificate, InterfaceMotion\nslot measurements still owed: {'InterfaceMotion': ['operator_drift', 'unaccounted_power_fraction']}\n\nrefusals (1 across 1 rules):\n  L2/R10  [W1, W2, W3]\n      3 agents declare elliptic_subsolve=embedded and the graph decomposes the domain: each shares its governing_family with at least one other agent, so the family's region has been cut and each agent solves a global problem on its own piece of it. The decomposition changes the operator rather than restricting it. The resulting error does not decay with distance from the cut and no coupling scheme removes it -- measured at 99.8% of the total defect, mislabelled as agent infidelity. Declare elliptic_subsolve=exposed and run that solve in the composition layer, which is what probed-dtn-coupling 2.1 assumes when it says the elliptic part stays global. **What taking that repair is worth, measured on one graph at one state (W168, CS-S1 2026-09-09): 149x in coupling sweeps.** The same four windows over the same field need 74.81 sweeps per decade of interface residual with the pressure solve embedded and 0.50 with it exposed -- 466 sweeps against 7 to the same tolerance, 59.8 seconds against 0.62. A control with the projection dropped runs at 0.49, so the gain is the EXPOSURE and not the projection. This rule is not bookkeeping: it is the largest measured effect in this package, and it is a refusal rather than a decertification because the error it names is silent\n\ndecertifications (6 across 5 rules):\n  L2/C3/W57  [<graph>]\n      substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch\n  L4/probe-base  [W1|W2, W2|W3]\n      the two sides of this seam were linearized about DIFFERENT interface states: the bases differ by 12.5 on M, 6% of the base norm. The seam operator is a sum of per-side Jacobians and that sum is a Jacobian only if the terms share a linearization point, so beta and kappa here are not statements about the interface map at any state. Measured on thermal_seam: sweeping a COMMON base over the physically admissible interval gives beta in [0.4200, 1.7689] and the mismatched probe reports 0.3757 -- below the entire range, so it is not merely the wrong point but no point at all. Pass assemble_seam a seam_base, or run probe.base_sensitivity: an affine response makes the base free and this decertification goes away\n  L5/eps_tol  [<graph>]\n      the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit\n  L9/E5  [<run>]\n      UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate\n  L8/W56  [<graph>]\n      4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants\n\nscheme Sigma\n  D_decomposition        non-overlapping   <- probed-DtN requires the non-overlapping view, which INTRODUCES cross-points the overlapping scheme does not have\n  D_decomposition_axes   ['non-overlapping']\n  Lambda_transmission    probed-DtN   <- probing is the exception that makes R1 survivable: probed-DtN requires only bc_channel >= dirichlet, because the higher rung is built outside the expert\n  O_ordering             additive   <- multiplicative ordering is forbidden when any composition-layer guarantee depends on equivalent treatment of agents; a direct Schur solve satisfies this automatically, being order-free\n  K_accelerator          direct-schur   <- a direct Schur solve makes the solve-incompleteness term vanish, and is order-free so it satisfies R5 by construction rather than by discipline\n  C_levels               two(probed-schur)   <- two-level via a classical coarse solve requires an agent that can run at a different window size without changing its regime; via a probed Schur complement it requires nothing extra, since every call stays at the native size\n  W_window               1 (DEFAULTED)   <- W* would be about 1/ln(L) clamped by R3, and L is unmeasured (W1), so W* is UNCOMPUTABLE. W = 1 is the honest default and this is the compiler saying it is defaulting rather than choosing\n  eps_tol                None (DEFAULTED)   <- unset: the relative rule needs measured tau and sigma (W3)\n  overlap                None\n  exchange_interval      0.2   <- the exchange interval cannot go below max_i dt_native. The window is the one axis a frozen expert can move along: W can be increased, never decreased\n  multirate              False\n  flux_matching          single-clock"
+}

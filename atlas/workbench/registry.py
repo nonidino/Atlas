@@ -147,6 +147,12 @@ class Family:
     length_unit: str = "m"
     #: the boundaries a new case of the family starts with (edge -> (kind, value))
     default_boundaries: tuple[tuple[str, str, float | None], ...] = ()
+    #: schema 0.4: whether its adapter runs on drawn shapes (a drawn outline, holes,
+    #: curved windows), and if not, why; and the condition a newly drawn edge
+    #: starts with
+    drawn_shapes: bool = False
+    drawn_why: str = "its adapter has not been taught drawn shapes yet"
+    drawn_default: str = ""
     #: what the Physics step calls the regions' materials, and what it says of the
     #: library's values
     #: its coupling needs no iteration (an explicit exchange every step), so the
@@ -172,6 +178,9 @@ class Family:
 
 _WIND_FARM = Family(
     id="incompressible-2d",
+    drawn_why=("W346's window solver (wake_array.WindowNS) marches rectangular windows, "
+               "batched by shape, and the global projection is built for the rectangle's "
+               "outer boundary"),
     label="2-D incompressible flow with actuator disks (wind farm)",
     status="ready-to-wire",
     solvers=("WindowNS, elliptic part exposed (one window)",
@@ -236,10 +245,15 @@ _CONDUCTION = Family(
     default_boundaries=(("left", "fixed-temperature", 400.0),
                         ("right", "fixed-temperature", 300.0),
                         ("bottom", "insulated", None), ("top", "insulated", None)),
+    drawn_shapes=True,
+    drawn_why="",
+    drawn_default="insulated",
 )
 
 _ELECTRIC = Family(
     id="electric-2d",
+    drawn_why=("its electrodes' currents are read on the grid's four edges; drawn edges "
+               "are not wired into it yet"),
     label="2-D current spreading in a resistive plate on a lumped circuit",
     status="ready-to-wire",
     solvers=("cell-centred finite volumes for div(sigma grad phi) = 0 (fv.py)",
@@ -273,6 +287,8 @@ _ELECTRIC = Family(
 
 _TRANSPORT = Family(
     id="transport-2d",
+    drawn_why=("the river's flow is given per reach across the whole grid, not solved, so "
+               "a drawn bank would have no flow that follows it"),
     label="2-D pollutant plume down a river (advection and mixing)",
     status="ready-to-wire",
     solvers=("explicit upwinded finite volumes per window (fv.py), one step per exchange",
@@ -317,6 +333,8 @@ _TRANSPORT = Family(
 
 _ACOUSTICS = Family(
     id="acoustics-2d",
+    drawn_why=("the staggered-grid leapfrog runs on the whole rectangle, cut into two "
+               "full-height pieces side by side"),
     label="2-D sound through two media (linear acoustics)",
     status="ready-to-wire",
     solvers=("staggered-grid leapfrog per piece, trading the interface's pressures and "
@@ -367,6 +385,8 @@ _METALS = (("steel", (("E", 200e9), ("nu", 0.30), ("alpha", 12e-6), ("k", 45.0),
 
 _ELASTICITY = Family(
     id="elasticity-2d",
+    drawn_why=("fe.py's elements cover the whole grid; drawn shapes need an element "
+               "mask, not built yet"),
     label="2-D plane-stress elasticity in several materials (a loaded bracket)",
     status="ready-to-wire",
     solvers=("Q1 plane-stress elements per window, a sparse LU each (fe.py, the build "
@@ -398,6 +418,8 @@ _ELASTICITY = Family(
 
 _THERMOELASTIC = Family(
     id="thermoelastic-2d",
+    drawn_why=("fe.py's elements cover the whole grid; drawn shapes need an element "
+               "mask, not built yet"),
     label="2-D heated plate that expands (conduction, then thermal strain)",
     status="ready-to-wire",
     solvers=("Q1 backward-Euler conduction (fe.py): the conduction agent",
@@ -434,6 +456,8 @@ _THERMOELASTIC = Family(
 
 _COOLING = Family(
     id="conjugate-heat-2d",
+    drawn_why=("the coolant fills whole rows from the left edge to the right; a drawn "
+               "channel needs a flow field, not built yet"),
     label="2-D heated block cooled by channel flow (conjugate heat transfer)",
     status="ready-to-wire",
     solvers=("cell-centred finite volumes with the coolant's advection (fv.py): the channel",
