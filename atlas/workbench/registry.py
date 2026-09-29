@@ -1,10 +1,12 @@
 """Which physics families the workbench knows, and how far each is wired.
 
 Step 1 of [[outcome-c4-path-to-declarative-cases]]: Python written once per
-solver, never per case.  In the shell this is a catalogue, not yet a factory: it
-names each family, the solvers and devices it would use (all of which exist in
-`atlas/cases/`), and **what is missing before the workbench can run it**, so that
-the GUI can show an unavailable option with its reason instead of hiding it.
+solver, never per case.  Each family names the solvers and devices it uses,
+**what is missing before the workbench can run it** (so the GUI can show an
+unavailable option with its reason instead of hiding it), and, once it runs, the
+adapter module that marches a case of it (``adapter``; see `families/`).  That
+field is what makes this a factory rather than a catalogue: the runner asks
+the registry for a family's adapter and never names one itself.
 """
 
 from __future__ import annotations
@@ -67,6 +69,11 @@ class Family:
     #: of this family may not change it
     fixed_boundaries: tuple[FixedBoundary, ...] = ()
     fixed_boundaries_why: str = ""
+    #: the module that runs a case of this family (``build(spec, arms, threads)``);
+    #: empty until it runs
+    adapter: str = ""
+    #: the showcase plan's coupling styles its adapter runs (A, B, C, D, split)
+    styles: tuple[str, ...] = ()
 
 
 FAMILIES: tuple[Family, ...] = (
@@ -78,12 +85,12 @@ FAMILIES: tuple[Family, ...] = (
                  "RectangularNS on the undivided domain (the full-domain reference)"),
         devices=("actuator-disk",),
         has_full_domain=True,
-        note=("Every piece exists and is tested: CS-7's tilings, the projected assembly, "
-              "W346's serial and threaded columns and its timing harness. The workbench "
-              "runner that drives them from a case file is plan step 3 and is not "
-              "built yet."),
-        sources=("atlas/cases/scaling_ladder.py", "atlas/cases/wake_array.py",
-                 "scripts/w346_rotor_count_speed.py"),
+        note=("Runs: overlapping windows of any size, one exchange per macro-step "
+              "(style A), marched serially, on threads and on the undivided domain in "
+              "turns. The march is W346's, lifted: on the example tilings the serial "
+              "and full-domain arms are W346's own columns to the bit."),
+        sources=("atlas/workbench/families/windfarm.py", "atlas/cases/scaling_ladder.py",
+                 "atlas/cases/wake_array.py", "scripts/w346_rotor_count_speed.py"),
         layers=("windows", "devices", "boundaries"),
         boundary_kinds=("inlet", "freestream", "outlet"),
         fixed_boundaries=(FixedBoundary("left", "inlet"), FixedBoundary("right", "outlet"),
@@ -95,6 +102,8 @@ FAMILIES: tuple[Family, ...] = (
                               "`wake_array._extend`). The projection is built for this "
                               "outer boundary and does not travel to another, so a case "
                               "of this family cannot change it."),
+        adapter="atlas.workbench.families.windfarm",
+        styles=("A",),
     ),
     Family(
         id="conduction-2d",

@@ -86,8 +86,14 @@ def test_registry_has_one_family_ready_and_says_why_for_the_rest():
 
 
 @pytest.fixture()
-def wb(tmp_path):
+def wb(tmp_path, monkeypatch):
+    """A workbench whose Run creates the run but does not march it: the menu tests
+    are about the dispatcher, and a real march here would be a 30-second background
+    thread timing itself against the rest of the suite (runs are tested in
+    `test_workbench_runner.py`)."""
+    from atlas.workbench import runner
     from atlas.workbench.app import Workbench
+    monkeypatch.setattr(runner.CaseRun, "start", lambda self: None)
     return Workbench(cases_dir=str(tmp_path))
 
 
@@ -95,7 +101,7 @@ ALL_ACTIONS = ["file:new", *[f"file:example:{k}" for k in EXAMPLES], "file:open"
                "file:save-as", "file:import", "file:export", "edit:undo", "edit:redo",
                "edit:revert", "view:grid", "view:overlaps", "view:labels", "view:log",
                "run:check", "run:compile", "run:decomposed", "run:full", "run:both",
-               "run:stop", "help:guide", "help:about", "help:docs"]
+               "run:stop", "run:results", "help:guide", "help:about", "help:docs"]
 
 
 def test_every_menu_action_runs(wb):
@@ -119,10 +125,16 @@ def test_every_menu_item_is_an_action_the_dispatcher_knows(wb):
 
 def test_unbuilt_actions_say_why(wb):
     from atlas.workbench.app import NOT_BUILT
+    assert set(NOT_BUILT) == {"compile"}          # the runner and results are built
     wb.dispatch("run:compile")
     assert NOT_BUILT["compile"] in wb.log_lines[0]
+
+
+def test_a_case_with_errors_does_not_run(wb):
+    wb.dispatch("file:new")                        # a blank case: no windows
     wb.dispatch("run:both")
-    assert NOT_BUILT["run"] in wb.log_lines[0]
+    assert wb.run is None and wb.active == "check"
+    assert any("cannot run" in line for line in wb.log_lines[:3])
 
 
 def test_edits_are_validated_undone_and_redone(wb):

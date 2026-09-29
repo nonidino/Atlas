@@ -1,7 +1,7 @@
 # The classical showcase library: plan
 
 **Type:** Outcome page — **build plan** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
-**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6); nothing else on this page is built. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort are estimates, marked **[AI Inference]**.
+**Status:** written 2026-09-28 on the owner's request. **Step 1 (the geometry section) was built the same day** (§6), and so was **step 2, the general runner for style A** (the wind-farm family; §5's "Built" note). Steps 3–6 are not built. It extends [[outcome-c4-path-to-declarative-cases]] from one physics family to a library, and plans the workbench's geometry section to fit it. Runtimes and effort in §4–§5's tables are estimates, marked **[AI Inference]**; measured numbers are in the "Built" notes, each with its record.
 **Hub:** [[00-atlas-0.1-outcome]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/`
 
 ---
@@ -80,6 +80,27 @@ All 2-D. Runtimes and code sizes are **[AI Inference]** estimates.
 - The general runner is where heterogeneous cases will expose design gaps. Keep a per-family adapter rather than one universal stepper.
 - Cross-points (three or more windows meeting) break naive blending. The compiler has rules for them (`L2/I2/G1`), and those rules have been wrong once, on a circuit ([[case-study-cooling-loop-atlas-0.1]]).
 - Keep every showcase case to one clock.
+
+> **Built, 2026-09-28: step 2, the general runner for style A, for the wind-farm family** (`atlas/workbench/runner.py`, `families/windfarm.py`, `tiling.py`, `runview.py`, `checks.py`, `machine.py`; `tests/test_workbench_runner.py`). A person can open a wind-farm case, press **Run**, and watch it march decomposed (serially and on threads) and on the full domain in turns: the fields, their difference, each arm's time per step and the farm power are drawn live, **Run > Stop** ends it at a whole macro-step, and the Results step shows each check against a tolerance registered before any run. Each run's record is saved beside the case file.
+> - **It is W346's march, lifted, not re-derived.** On the six-window example the serial, threaded and full-domain arms equal W346's own `E`, `Ep4` and `F` to the bit (a test). Windows may be any rectangles. The partition of unity (`tiling.RectangleTiling`) is `ArrayTiling.weights` to the bit on the three measured tilings, and is certified by `GridPartitionOfUnity`'s identity residual ($1.1\times10^{-16}$ on every example).
+> - **One window equals the full domain to the bit where the discretization is the same**: the elliptic part inside the window, and the blend alone. The measured arrangement (exposed windows, one global projection) is not the full domain's discretization even at one window, because it moves the projection out of the window. A test pins both.
+> - **The three checks, registered before the first march:**
+>   - incompressibility closes to $10^{-9}$ in the operator that enforced it;
+>   - farm power within 25% of the full domain (W346's own B5);
+>   - threaded equal to serial, bit for bit (W346's B1).
+> - **W346's result, reproduced in the page on this laptop**, on AC power, with the owner's phone-remote server running. Records: `out/workbench/records/step-a/`. Speed is $t_{\text{full}}/t_{\text{arm}}$, so above 1 is faster than the full domain.
+>
+> | rotors | macro-steps | serial | threaded | farm power vs full | rms velocity difference | wall time |
+> |---|---|---|---|---|---|---|
+> | 3 | 40 | 0.854 | 1.298 (4 threads) | $-4.07\%$ | 0.0470 | 46.6 s |
+> | 12 | 14 | 0.937 | 3.955 (4) | $-8.27\%$ | 0.0401 | 112.6 s |
+> | 21 | 8 | 0.898 | 4.622 (8) | $-6.30\%$ | 0.0328 | 122.1 s |
+> | 21 | 7 | 0.907 | 4.015 (8) | $-5.32\%$ | 0.0309 | 120.8 s |
+>
+> - **At 21 rotors the threaded decomposition beats the full domain and the serial one does not**, in both runs. Threaded equalled serial bit for bit at every step of every run.
+> - The 3-rotor, 40-step run is **W346's accuracy row exactly**: full-domain farm power 1.3580 against W346's 1.358, $-4.07\%$ against $-4.1\%$, rms 0.0470 against 0.047. This is the same arithmetic, so it reproduces.
+> - **The step counts are the owner's decision, recalibrated on measurement.** W346 marched 40 macro-steps. With all three arms that is about 8 minutes at 21 rotors, against the 2-minute rule. The owner chose short marches, proposed as 14 and 8 macro-steps ("about 100 s each"). Measured, 8 steps at 21 rotors took 122.1 s. Then 7 took 120.8 s, because the laptop's cost per step rose about 15% between back-to-back runs while the ratios held. So the examples now run **12 and 6 macro-steps**, sized to the slowest step measured, with room for the compile. In so few macro-steps a wake has not reached the next rotor: 3.5 D at the freestream speed takes 17.5 steps, which the adapter computes from the case. So farm power covers the start-up only. The page says so, and W346's 40-step comparison remains the record for the developed wake.
+> - **Not built:** the solver-family interface and styles B–D (step 3), the other families (step 4), the gallery (step 5), the compile (step 6). A run of a family without an adapter is refused, with the registry's reason.
 
 ---
 

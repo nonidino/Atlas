@@ -769,3 +769,12 @@ out/w345/*
 out/w346/*
 !out/w346/w346.json
 !out/w346/registered.txt
+# The Atlas Workbench's run records.  The runner writes one JSON per run beside
+# each case file (out/workbench/cases/<case>.results/), and those stay local;
+# the ones a wiki page quotes are copied into out/workbench/records/, which is
+# committed.  Each is the case as it marched, every per-step time, each check
+# with its registered tolerance, and the machine's state (power, other Python
+# processes).  Small: 10-20 KB a run.
+!out/workbench/
+out/workbench/*
+!out/workbench/records/

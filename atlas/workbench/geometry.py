@@ -162,15 +162,11 @@ class WindowAnalysis:
 
 
 def _axis_full(n: int, lo_face: bool, hi_face: bool, ramp: int) -> np.ndarray:
-    """Cells along one axis of a window at weight 1 (`ArrayTiling.weights`)."""
-    r = max(int(ramp), 1)
-    idx = np.arange(n) + 0.5
-    w = np.ones(n)
-    if lo_face:
-        w = np.minimum(w, np.clip(idx / r, 0.0, 1.0))
-    if hi_face:
-        w = np.minimum(w, np.clip((n - idx) / r, 0.0, 1.0))
-    return w >= 1.0
+    """Cells along one axis of a window at weight 1: the runner's own ramp
+    (`tiling.axis_weight`, which is `ArrayTiling.weights`'), so the rule the
+    canvas draws and the weights a run blends with cannot come apart."""
+    from .tiling import axis_weight
+    return axis_weight(n, lo_face, hi_face, ramp) >= 1.0
 
 
 def analyse_windows(nx: int, ny: int, windows: Sequence[tuple[str, Box]],

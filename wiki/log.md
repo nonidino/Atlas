@@ -6457,3 +6457,33 @@ That case also showed a pairwise "thin seam" warning firing where a third window
 **Not built:** lumped attachments (case 5), the loader and the runner. Only the wind-farm family can be chosen, so regions and editable boundaries wait for a family that reads them.
 
 **Changed:** [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]].
+
+## [2026-09-28] build | The workbench runner: style A for the wind-farm family
+
+Showcase plan step 2, on the owner's request to implement the plan. Record: [[showcase-library-plan]] §5, "Built" note.
+
+**Built** (`atlas/workbench/`):
+- **`runner.py`**: a committed case marched in a background thread, arms taking turns each macro-step in a rotating order. Only the adapter's `step` is timed. The page is streamed, **Run > Stop** keeps whole macro-steps, one run at a time per server, and each run's record is written beside the case file.
+- **`families/windfarm.py`**: W346's march lifted onto any rectangles, with the serial, threaded and full-domain arms.
+- **`tiling.py`**: the partition of unity for arbitrary boxes, certified by `GridPartitionOfUnity`.
+- **`machine.py`**: the power source and other Python processes, recorded with every run.
+- **`checks.py`**, and the Run & compare and Results steps (`runview.py`).
+- The registry now names each family's adapter: a factory, not only a catalogue.
+
+**Checked:**
+- 15 new tests. The arms equal W346's own `E`, `Ep4` and `F` bit for bit. One window equals the full domain bit for bit where the scheme is the same. Serial equals threaded on two window shapes. The record, Stop, one run at a time, and the registered tolerances are pinned.
+- In the served page: runs of all three examples, and Stop at step 7 of 40.
+- **W346's result reproduced live at 21 rotors**: threaded 4.62× and 4.02× faster than the full domain, serial 0.90× and 0.91×, over two runs. The 3-rotor, 40-step run reproduces W346's accuracy row exactly (farm power 1.3580, $-4.07\%$, rms 0.0470).
+
+**Two of my own mistakes, caught before any judged run:**
+- The incompressibility instrument read the blend after the band had overwritten it in place, so it measured W93's band edge instead of the scheme. It now re-blends the windows' outputs, outside the timer.
+- The page was built a moment before the run's thread started, so Stop stayed disabled while the case marched. A run is now active from the moment Run is pressed, and the poll switches the buttons.
+- Seen in screenshots: the results tables hid their last columns behind a scrollbar at 1280 px, and the Run step kept its "a run is marching" notice after the run ended. The tables are now plain wrapping HTML, and the step is rebuilt when a run ends (a test pins it).
+
+**The laptop went on battery at 21:26:18** (Kernel-Power event 105; battery status 1, 1.4 of 3.8 GHz). That was after every record quoted above, all taken on AC. A page check run later on battery was 2.5× slower per step with the same ratios, and its Results header flagged it: "on battery", in bold. No battery timing is quoted anywhere. Checked under the OS dark scheme too: the page stays one consistent light theme.
+
+**The owner's decision:** short marches for the two big farms, all three arms over the whole run. Measured in the page, the proposed counts took 122.1 s (8 steps, 21 rotors) and 112.6 s (14 steps, 12 rotors). The per-step cost then rose about 15% between back-to-back runs (7 steps: 120.8 s). So the counts are **6 and 12**, sized to the slowest step measured that day.
+
+**Not built:** the solver-family interface and styles B–D, the other families, the gallery, the compile.
+
+**Added:** `atlas/workbench/{runner,runview,tiling,checks,machine}.py`, `atlas/workbench/families/{__init__,windfarm}.py`, `tests/test_workbench_runner.py`, `out/workbench/records/step-a/` (five run records, force-included in `.gitignore`). **Changed:** `app.py`, `spec.py`, `registry.py`, `geometry.py`, the workbench README and its two earlier test files; [[showcase-library-plan]], [[outcome-c4-path-to-declarative-cases]], [[index]].

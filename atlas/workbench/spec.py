@@ -295,6 +295,18 @@ def check(spec: CaseSpec) -> list[Issue]:
         if not (0.0 <= v.x <= wx and v.diameter / 2 <= v.y <= wy - v.diameter / 2):
             out.append(Issue("error", "geometry",
                              f"device {v.id} is not fully inside the domain"))
+        if v.yaw_deg != 0.0:
+            out.append(Issue("error", "geometry",
+                             f"device {v.id} is yawed {v.yaw_deg:g} degrees; the actuator "
+                             f"disk here has no yaw model (disk.ActuatorDisk), so set it "
+                             f"to 0"))
+    if spec.physics.family == "incompressible-2d":
+        re_cell = d.dx * spec.physics.u_inf / spec.physics.nu
+        if re_cell > 8.0:
+            out.append(Issue("warning", "physics",
+                             f"the cell Reynolds number dx U / nu is {re_cell:.3g}; the "
+                             f"window solver's own validity predicate asks for at most 8 "
+                             f"(wake_array.FluidWindow.reference_validity)"))
 
     out += _check_regions(spec)
     out += _check_boundaries(spec)
@@ -417,12 +429,53 @@ def summary(issues: list[Issue]) -> dict[str, int]:
 # examples, taken from the real tilings rather than retyped
 # ---------------------------------------------------------------------------
 
-#: key -> (label, window columns, window rows)
-EXAMPLES = {
-    "wake-array-3": ("Wake array: 3 rotors, 6 windows (CS-7, N = 6)", 3, 2),
-    "farm-12": ("Wind farm: 12 rotors, 24 windows (CS-7, N = 24)", 6, 4),
-    "farm-21": ("Wind farm: 21 rotors, 48 windows (W346)", 8, 6),
-}
+
+@dataclass(frozen=True)
+class Example:
+    """One entry of File > New from example."""
+
+    key: str
+    label: str
+    description: str
+    family: str
+    style: str
+    #: family-specific numbers the builder reads (for the wind farm: the tiling's
+    #: columns and rows, the macro-steps and the threads)
+    params: tuple[tuple[str, object], ...] = ()
+
+    def param(self, name: str):
+        return dict(self.params)[name]
+
+
+#: **The wind-farm examples' step counts are the owner's decision (2026-09-28).**
+#: W346 marched 40 macro-steps; with all three arms taking turns that is about
+#: 8 minutes at 21 rotors and 4.5 at 12 on this laptop, against the showcase's
+#: 2-minute rule.  The owner chose short marches (proposed as 14 and 8
+#: macro-steps, "about 100 s each"), with all three arms over the whole run, so
+#: the speed and the serial/threaded control cover the run and the farm-power
+#: comparison covers the start-up only (the first wake needs about 17 steps to
+#: reach the next row).  **Recalibrated the same day on measured runs in the
+#: page**: 8 steps at 21 rotors took 122.1 s of wall time and 14 at 12 rotors
+#: 112.6 s; 7 at 21 rotors then took 120.8 s, because the laptop's per-step cost
+#: rose about 15% between back-to-back runs (the ratios did not move).  So the
+#: counts are sized to the SLOWEST per-step cost measured that day, with room
+#: for the compile: 6 steps at 21 rotors (16.8 s a step, about 104 s) and 12 at
+#: 12 rotors.  The thread counts are the best measured on this laptop before
+#: the choice (4, 4, 8).
+EXAMPLES: dict[str, Example] = {e.key: e for e in (
+    Example("wake-array-3", "Wake array: 3 rotors, 6 windows (CS-7, N = 6)",
+            "Three actuator disks in an L on six overlapping windows; the case every "
+            "wind-farm measurement started from.", "incompressible-2d", "A",
+            (("cols", 3), ("rows", 2), ("steps", 40), ("threads", 4))),
+    Example("farm-12", "Wind farm: 12 rotors, 24 windows (CS-7, N = 24)",
+            "Twelve rotors on 24 windows, where the full-domain solve has left the "
+            "cache and threads start to pay.", "incompressible-2d", "A",
+            (("cols", 6), ("rows", 4), ("steps", 12), ("threads", 4))),
+    Example("farm-21", "Wind farm: 21 rotors, 48 windows (W346)",
+            "W346's 21-rotor farm: the decomposition run on threads against the full "
+            "domain, live.", "incompressible-2d", "A",
+            (("cols", 8), ("rows", 6), ("steps", 6), ("threads", 8))),
+)}
 
 
 def example_case(key: str = "wake-array-3") -> CaseSpec:
@@ -432,14 +485,20 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
     modules the measurements were taken on, so an example cannot drift from the
     geometry the record describes.
     """
+    ex = EXAMPLES[key]
+    if ex.family == "incompressible-2d":
+        return _farm_example(ex)
+    raise KeyError(key)                                    # pragma: no cover
+
+
+def _farm_example(ex: Example) -> CaseSpec:
     from atlas.cases import scaling_ladder as sl          # light: no torch, no build repo
     from atlas.cases import wake_array as wa
 
-    label, cols, rows = EXAMPLES[key]
-    t = sl.rung(cols, rows).tiling
+    t = sl.rung(ex.param("cols"), ex.param("rows")).tiling
     return CaseSpec(
-        name=key,
-        description=label,
+        name=ex.key,
+        description=ex.label,
         domain=Domain(nx=t.nx, ny=t.ny, dx=wa.DX),
         physics=Physics(family="incompressible-2d", nu=wa.NU_REF, u_inf=wa.U_INF),
         windows=[Window(id=n, x0=ox, y0=oy, nx=wa.N, ny=wa.N)
@@ -448,7 +507,8 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
                  for r in t.rotors],
         boundaries=family_boundaries("incompressible-2d"),
         coupling=Coupling(ramp_cells=wa.RAMP, assembly="projected", elliptic="exposed"),
-        run=RunSettings(macro_dt=wa.MACRO_DT, steps=40, threads=4),
+        run=RunSettings(macro_dt=wa.MACRO_DT, steps=ex.param("steps"),
+                        threads=ex.param("threads")),
     )
 
 
@@ -468,4 +528,5 @@ def slug(name: str) -> str:
 
 __all__ = ["SCHEMA_ID", "READABLE", "CaseSpec", "Domain", "Physics", "Region", "Window",
            "Device", "Boundary", "Coupling", "RunSettings", "Compare", "Issue", "check",
-           "summary", "family_boundaries", "EXAMPLES", "example_case", "blank_case", "slug"]
+           "summary", "family_boundaries", "Example", "EXAMPLES", "example_case",
+           "blank_case", "slug"]

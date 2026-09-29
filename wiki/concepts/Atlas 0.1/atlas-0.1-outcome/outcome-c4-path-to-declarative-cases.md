@@ -9,6 +9,8 @@
 > **2026-09-28: extended to a library.** [[showcase-library-plan]] plans eight fast classical cases across all four coupling styles, the geometry section to fit them, and a survey of existing editors.
 >
 > **2026-09-28: the geometry section is built**, as the hybrid the owner chose: rectangles drawn on a Bokeh canvas (windows, material regions, rotors, boundaries), a tiling generator, and import from Gmsh by physical-group names. The case file is now `atlas-workbench/case@0.2`. The loader and the runner are still not built. Details: [[showcase-library-plan]] §6.
+>
+> **2026-09-28: step 3's executor is built for the wind-farm family** (`atlas/workbench/runner.py`, `families/windfarm.py`): W346's march lifted onto any rectangles, run from the page decomposed (serially and on threads) and on the full domain in turns, with Stop, live fields and a record per run. On the example tilings its arms are W346's own columns to the bit, and W346's speed result reproduces live at 21 rotors (threaded 4.0–4.6× faster than the full domain, serial 0.90–0.91×). The loader (step 2's graph half) is still not built. Details: [[showcase-library-plan]] §5.
 
 ---
 

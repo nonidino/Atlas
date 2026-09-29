@@ -4,9 +4,11 @@ The decomposition GUI, built on Panel and Bokeh (both BSD-3, both already
 installed, nothing downloaded).  What works: cases (new, examples, open, save,
 save as, import, export), undo and redo, the case and physics forms, the
 geometry section (`editor.py`: windows, regions, devices and boundaries drawn
-and edited on a canvas, a tiling generator, and import from Gmsh), and the
-check.  What does not work yet says so where it would be, with the reason: the
-Atlas compile of a case file, and the runner.
+and edited on a canvas, a tiling generator, and import from Gmsh), the check,
+and the runner (`runner.py`, `runview.py`): a committed case marched decomposed
+(serially and on threads) and on the full domain in turns, in a background
+thread, streamed to the page, stoppable, and recorded beside the case file.
+What does not work yet says so where it would be, with the reason.
 
 Every action goes through `Workbench.dispatch`, so a test can drive the whole
 menu without a browser.
@@ -29,6 +31,8 @@ from . import geometry as geo
 from . import registry
 from .editor import GeometryEditor
 from .gmsh_import import GmshImportError, read_msh_bytes
+from .runner import ARM_LABELS, CaseRun, RunRefused, results_dir_for
+from .runview import RunPanel, results_view
 from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, blank_case, check,
                    example_case, slug, summary)
 
@@ -38,7 +42,9 @@ MENU_CSS = ".bk-menu { width: max-content; min-width: 100%; }"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_CASES_DIR = os.path.join(ROOT, "out", "workbench", "cases")
-VERSION = "0.2 (geometry)"
+VERSION = "0.3 (runner)"
+#: How often the page reads a running case's progress, in milliseconds.
+POLL_MS = 400
 
 #: The workflow, in order.  key -> title.
 STEPS: tuple[tuple[str, str], ...] = (
@@ -54,9 +60,6 @@ STEPS: tuple[tuple[str, str], ...] = (
 NOT_BUILT = {
     "compile": ("Compiling a case with the Atlas compiler needs the case-to-graph loader "
                 "(plan step 2). Not built yet."),
-    "run": ("The runner that marches a case file (plan step 3) is not built yet. The "
-            "measurements it will reproduce are in W346."),
-    "results": "Results appear after a run, and the runner is not built yet.",
 }
 
 ACCENT = "#0e6874"
@@ -83,6 +86,15 @@ class Workbench:
         self._keep_view = False
         self.active = "case"
         self.log_lines: list[str] = []
+        #: the run marching now, or the last one; its record is the Results step
+        self.run: CaseRun | None = None
+        #: the arms the Run step has ticked (a run choice, not part of the case)
+        self.run_arms: list[str] = ["serial", "parallel", "full"]
+        self.run_panel: RunPanel | None = None
+        #: the Run step's (run, stop, blocked) buttons, so the poll can switch them
+        self._run_buttons: tuple | None = None
+        self._poll_cb = None
+        self._reported: CaseRun | None = None
         self._build()
         self.log("opened the example case 'wake-array-3'")
 
@@ -235,10 +247,16 @@ class Workbench:
             self.show("check")
         elif action == "run:compile":
             self.notify("warning", NOT_BUILT["compile"])
-        elif action in ("run:decomposed", "run:full", "run:both"):
-            self.notify("warning", NOT_BUILT["run"])
+        elif action == "run:both":
+            self.start_run(self.run_arms)
+        elif action == "run:decomposed":
+            self.start_run(["serial", "parallel"])
+        elif action == "run:full":
+            self.start_run(["full"])
         elif action == "run:stop":
-            self.notify("info", "nothing is running")
+            self.stop_run()
+        elif action == "run:results":
+            self.show("results")
         elif action == "help:guide":
             self._dialog(self._guide())
         elif action == "help:about":
@@ -247,6 +265,109 @@ class Workbench:
             self._dialog(self._docs())
         else:
             self.notify("error", f"unknown action {action!r}")
+
+    # ------------------------------------------------------------------
+    # running
+    # ------------------------------------------------------------------
+    def start_run(self, arms, blocking: bool = False) -> CaseRun | None:
+        """March the case as it stands now, in turns, in a background thread.
+
+        The case is copied here -- the commit -- so an edit made while it marches
+        does not reach the run, and the page says which version is marching.
+        ``blocking`` runs it in the calling thread (for tests and scripts).
+        """
+        if self.run is not None and self.run.active:
+            self.notify("warning", "a run is already marching; Stop it first (Run > Stop)")
+            return None
+        errors = [i for i in self.issues() if i.severity == "error"]
+        if errors:
+            self.notify("error", f"the case has {len(errors)} error"
+                                 f"{'s' * (len(errors) > 1)} and cannot run; step 4 lists "
+                                 f"them: {errors[0].message}")
+            self.show("check")
+            return None
+        try:
+            run = CaseRun(self.spec, arms=tuple(arms), steps=self.spec.run.steps,
+                          threads=self.spec.run.threads,
+                          results_dir=results_dir_for(self.path, self.cases_dir,
+                                                      self.spec.name),
+                          case_path=self.path)
+        except (RunRefused, KeyError) as exc:
+            self.notify("error", f"cannot run: {exc}")
+            return None
+        self.run = run
+        self._reported = None
+        self.log(f"run started: {run.label()}")
+        if blocking:
+            self.show("run")
+            run.run_blocking()
+            self.poll()
+        else:
+            run.start()                    # active from here, so the view shows Stop live
+            self.show("run")
+            self._start_polling()
+        return run
+
+    def stop_run(self) -> None:
+        if self.run is None or not self.run.active:
+            self.notify("info", "nothing is running")
+            return
+        self.run.stop()
+        self.log("stop requested; the run stops after the arm-step in progress")
+        self.poll()
+
+    def _start_polling(self) -> None:
+        if self._poll_cb is not None or pn.state.curdoc is None:
+            return
+        self._poll_cb = pn.state.add_periodic_callback(self.poll, period=POLL_MS)
+
+    def _stop_polling(self) -> None:
+        if self._poll_cb is not None:
+            try:
+                self._poll_cb.stop()
+            except Exception:                                  # pragma: no cover
+                pass
+            self._poll_cb = None
+
+    def poll(self) -> None:
+        """Read the run's progress into the page; report once when it ends."""
+        run = self.run
+        if run is None:
+            return
+        if self.run_panel is not None and self.active == "run" and self.run_panel.run is run:
+            self.run_panel.update()
+            if self._run_buttons is not None:
+                run_btn, stop_btn, blocked = self._run_buttons
+                run_btn.disabled = run.active or blocked
+                stop_btn.disabled = not run.active
+        label = self._nav_options()
+        if list(label) != list(self.nav.options):
+            self._syncing_nav = True
+            try:
+                self.nav.options = label
+            finally:
+                self._syncing_nav = False
+        if run.active or self._reported is run:
+            return
+        self._reported = run
+        self._stop_polling()
+        p = run.progress()
+        if run.status == "failed":
+            self.notify("error", f"the run failed: {p.error}")
+        else:
+            res = run.results or {}
+            fails = [c["title"] for c in res.get("checks", []) if c["passed"] is False]
+            what = "stopped" if run.status == "stopped" else "finished"
+            self.notify("warning" if (fails or run.status == "stopped") else "success",
+                        f"run {what} after {p.step} macro-steps"
+                        + (f"; FAILED: {', '.join(fails)}" if fails else
+                           "; every measured check passed")
+                        + (f"; saved {os.path.relpath(run.record_path, ROOT)}"
+                           if run.record_path else ""))
+        #: the step was built while the run marched (its notice, its buttons); the
+        #: finished run's step is a different view, so it is rebuilt
+        if self.active in ("run", "results"):
+            self.show(self.active, keep_view=True)
 
     # ------------------------------------------------------------------
     # layout
@@ -261,8 +382,8 @@ class Workbench:
             m.on_click(lambda e: self.dispatch(e.new))
             return m
 
-        examples = [(f"New from example: {label}", f"file:example:{key}")
-                    for key, (label, _c, _r) in EXAMPLES.items()]
+        examples = [(f"New from example: {ex.label}", f"file:example:{key}")
+                    for key, ex in EXAMPLES.items()]
         self.file_menu = menu("File", [("New blank case", "file:new"), *examples, None,
                                        ("Open...", "file:open"), ("Save", "file:save"),
                                        ("Save as...", "file:save-as"), None,
@@ -276,10 +397,11 @@ class Workbench:
         self.view_menu = menu("View", self._view_items())
         self.run_menu = menu("Run", [("Check case", "run:check"),
                                      ("Compile with Atlas (not built)", "run:compile"), None,
-                                     ("Run decomposed (not built)", "run:decomposed"),
-                                     ("Run full domain (not built)", "run:full"),
-                                     ("Run both and compare (not built)", "run:both"),
-                                     ("Stop", "run:stop")])
+                                     ("Run decomposed (serial and parallel)", "run:decomposed"),
+                                     ("Run full domain", "run:full"),
+                                     ("Run the ticked arms and compare", "run:both"),
+                                     ("Stop", "run:stop"), None,
+                                     ("Show the results", "run:results")])
         self.help_menu = menu("Help", [("Workflow guide", "help:guide"),
                                        ("Where things are documented", "help:docs"), None,
                                        ("About the workbench", "help:about")])
@@ -336,11 +458,27 @@ class Workbench:
     def _nav_options(self) -> dict[str, str]:
         issues = self.issues()
         out = {}
+        total_errs = sum(1 for i in issues if i.severity == "error")
         for n, (key, title) in enumerate(STEPS, 1):
             errs = sum(1 for i in issues if i.step == key and i.severity == "error")
             warns = sum(1 for i in issues if i.step == key and i.severity == "warning")
-            if key in ("run", "results"):
-                mark = "not built"
+            if key == "run":
+                r = self.run
+                if r is not None and r.active:
+                    mark = f"running {r.progress().step}/{r.steps}"
+                else:
+                    mark = "blocked by errors" if total_errs else "ready"
+            elif key == "results":
+                r = self.run
+                if r is None or r.active:
+                    mark = "no run yet" if r is None else "after the run"
+                elif r.status == "failed":
+                    mark = "run failed"
+                else:
+                    fails = sum(1 for c in (r.results or {}).get("checks", [])
+                                if c["passed"] is False)
+                    mark = (f"{fails} check{'s' * (fails > 1)} failed" if fails
+                            else ("stopped" if r.status == "stopped" else "done"))
             elif errs:
                 mark = f"{errs} error{'s' * (errs > 1)}"
             elif warns:
@@ -518,44 +656,82 @@ class Workbench:
 
     def _view_run(self):
         s = self.spec
-        steps = self._bind(pn.widgets.IntInput(name="Macro-steps", value=s.run.steps, start=1),
+        cpus = os.cpu_count() or 1
+        steps = self._bind(pn.widgets.IntInput(name="Macro-steps", value=s.run.steps, start=1,
+                                               width=150),
                            lambda c, v: setattr(c.run, "steps", v), "run.steps")
-        threads = self._bind(pn.widgets.IntSlider(name="Threads for the windows",
-                                                  value=min(s.run.threads, os.cpu_count() or 1),
-                                                  start=1, end=os.cpu_count() or 1),
+        threads = self._bind(pn.widgets.IntSlider(name="Threads (parallel arm)",
+                                                  value=min(s.run.threads, cpus),
+                                                  start=1, end=cpus, width=260),
                              lambda c, v: setattr(c.run, "threads", v), "run.threads")
-        arms = pn.widgets.CheckBoxGroup(options=["Decomposed, serial", "Decomposed, parallel",
-                                                 "Full domain"],
-                                        value=["Decomposed, parallel", "Full domain"],
-                                        inline=False, disabled=True)
-        run_btn = pn.widgets.Button(name="Run and compare", button_type="primary",
-                                    disabled=True, width=180)
-        stop_btn = pn.widgets.Button(name="Stop", disabled=True, width=90)
-        panes = [pn.Card(pn.pane.Markdown("*appears here during a run*"), title=t,
-                         width=240, height=220, collapsible=False)
-                 for t in ("Decomposed field", "Full-domain field", "Difference")]
-        return pn.Column(
-            self._title("5. Run & compare", "March the decomposition and the full-domain "
-                                            "solve in turns, on this machine."),
-            pn.pane.Alert(NOT_BUILT["run"], alert_type="warning", sizing_mode="stretch_width"),
-            _wrap(pn.Column(steps, threads, width=320), pn.Column("**Arms**", arms, width=230),
-                   pn.Column(run_btn, stop_btn,
-                             pn.indicators.Progress(value=0, max=100, width=180, active=False))),
-            _wrap(*panes),
-            sizing_mode="stretch_width")
+        opts = {ARM_LABELS[a]: a for a in ("serial", "parallel", "full")}
+        arms = pn.widgets.CheckBoxGroup(options=opts, value=list(self.run_arms), inline=False)
+
+        def set_arms(e):
+            self.run_arms = [a for a in ("serial", "parallel", "full") if a in e.new]
+        arms.param.watch(set_arms, "value")
+        running = self.run is not None and self.run.active
+        n_err = sum(1 for i in self.issues() if i.severity == "error")
+        try:
+            fam = registry.family(s.physics.family)
+        except KeyError:
+            fam = None
+        runnable = fam is not None and bool(fam.adapter)
+        run_btn = pn.widgets.Button(name="Run and compare", button_type="primary", width=170,
+                                    disabled=running or bool(n_err) or not runnable)
+        run_btn.on_click(lambda e: self.dispatch("run:both"))
+        stop_btn = pn.widgets.Button(name="Stop", button_type="danger", width=90,
+                                     disabled=not running)
+        stop_btn.on_click(lambda e: self.dispatch("run:stop"))
+        self._run_buttons = (run_btn, stop_btn, bool(n_err) or not runnable)
+        why = []
+        if not runnable:
+            why.append(f"The {fam.label if fam else s.physics.family} family has no runner "
+                       f"yet. {fam.note if fam else ''}")
+        if n_err:
+            why.append(f"The case has {n_err} error{'s' * (n_err > 1)}; step 4 lists them.")
+        if running:
+            why.append("A run is marching. Edits you make now do not reach it: it marches "
+                       "the copy committed when Run was pressed.")
+        self.run_panel = RunPanel(self, self.run)
+        body = [self._title("5. Run & compare", "March the decomposition and the full-domain "
+                                                "solve in turns, on this machine: every "
+                                                "macro-step each ticked arm takes one step, "
+                                                "in a rotating order.")]
+        if why:
+            body.append(pn.pane.Alert(" ".join(why), alert_type="warning",
+                                      sizing_mode="stretch_width"))
+        body.append(_wrap(pn.Column(steps, threads, width=280),
+                          pn.Column("**Arms**", arms, width=220),
+                          pn.Column(run_btn, stop_btn, width=190)))
+        if self.run is None:
+            body.append(pn.pane.Markdown("*Nothing has run in this session yet. The fields, "
+                                         "the time per step of each arm, and the family's "
+                                         "own metric appear here while it marches.*",
+                                         margin=(0, 10)))
+        else:
+            body.append(self.run_panel.live_view())
+            if not self.run.active:
+                goto = pn.widgets.Button(name="Show the results", button_type="primary",
+                                         width=170)
+                goto.on_click(lambda e: self.dispatch("run:results"))
+                body.append(goto)
+        return pn.Column(*body, sizing_mode="stretch_width")
 
     def _view_results(self):
-        cols = ["arm", "seconds per step", "vs full domain", "farm power",
-                "farm power vs full domain", "rms velocity difference"]
-        return pn.Column(
-            self._title("6. Results", "Speed and accuracy of each arm against the full domain."),
-            pn.pane.Alert(NOT_BUILT["results"], alert_type="info", sizing_mode="stretch_width"),
-            pn.widgets.Tabulator(pd.DataFrame(columns=cols), disabled=True, show_index=False,
-                                 sizing_mode="stretch_width", height=160),
-            pn.pane.Markdown("For this family, the measured answer is on the wiki page "
-                             "`decomposition-speed-by-rotor-count`: 3.4-5.7x faster from 5 to "
-                             "21 rotors in parallel, farm power within 2.3-8.3%."),
-            sizing_mode="stretch_width")
+        res = None if self.run is None or self.run.active else self.run.results
+        body = [self._title("6. Results", "Speed and accuracy of each arm against the full "
+                                          "domain, and the case's sanity checks, from the "
+                                          "last run's record.")]
+        if self.run is not None and self.run.active:
+            body.append(pn.pane.Alert("A run is marching; its results appear here when it "
+                                      "ends.", alert_type="info", sizing_mode="stretch_width"))
+        elif self.run is not None and self.run.status == "failed":
+            body.append(pn.pane.Alert(f"The last run failed: {html.escape(self.run.progress().error or '')}",
+                                      alert_type="danger", sizing_mode="stretch_width"))
+        else:
+            body.append(results_view(self, res))
+        return pn.Column(*body, sizing_mode="stretch_width")
 
     # ------------------------------------------------------------------
     # dialogs
@@ -730,10 +906,13 @@ class Workbench:
             "the devices and set the boundaries, on a canvas or from Gmsh.\n"
             "3. **Physics & coupling**: the flow constants, and how windows are joined.\n"
             "4. **Check**: what is wrong before anything runs; later, the Atlas compiler's "
-            "verdict per seam.\n"
-            "5. **Run & compare**: march the decomposition and the full-domain solve in turns "
-            "*(not built)*.\n"
-            "6. **Results**: speed, farm power and the field difference *(not built)*.\n\n"
+            "verdict per seam *(the compile is not built yet)*.\n"
+            "5. **Run & compare**: march the decomposition (serially and on threads) and the "
+            "full-domain solve in turns, with the fields, the difference and the time per "
+            "step live. **Run > Stop** stops after the arm-step in progress.\n"
+            "6. **Results**: each arm's time per step and its ratio to the full domain, the "
+            "family's own metric, the field difference, and the sanity checks against their "
+            "registered tolerances. Saved beside the case file as JSON.\n\n"
             "Every change can be undone (**Edit > Undo**). A case is one JSON file; "
             "**File > Save** writes it to the cases folder.", width=560)
 
@@ -741,8 +920,8 @@ class Workbench:
         return pn.pane.Markdown(
             f"### Atlas Workbench {VERSION}\n"
             "A tool to build a domain decomposition by hand, run it, and compare it with the "
-            "full-domain solve. Built so far: the menus, the workflow, the case file and the "
-            "geometry section.\n\n"
+            "full-domain solve. Built so far: the menus, the workflow, the case file, the "
+            "geometry section, and the runner for the wind-farm family.\n\n"
             f"- Cases folder: `{os.path.relpath(self.cases_dir, ROOT)}`\n"
             "- Built on **Panel** and **Bokeh** (both BSD-3-Clause, already installed; "
             "nothing is downloaded and the page makes no outside requests).\n"
@@ -799,6 +978,16 @@ def case_from_url(value: str, cases_dir: str) -> str | None:
 
 def serve(port: int = 8020, open_browser: bool = False, cases_dir: str | None = None):
     pn.extension("tabulator", notifications=True)
+    #: every request in the server's log, so a check of the served page can see the
+    #: GET it made reach THIS server (a reused server once served old code)
+    import logging
+    acc = logging.getLogger("tornado.access")
+    acc.setLevel(logging.INFO)
+    if not acc.handlers:
+        h = logging.StreamHandler()
+        h.setFormatter(logging.Formatter("%(message)s"))
+        acc.addHandler(h)
+        acc.propagate = False
     print(f"Atlas Workbench on http://127.0.0.1:{port}/  (Ctrl-C to stop)", flush=True)
     pn.serve({"/": lambda: create_app(cases_dir)}, port=port, address="127.0.0.1",
              show=open_browser, title="Atlas Workbench",

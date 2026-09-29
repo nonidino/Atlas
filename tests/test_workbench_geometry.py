@@ -41,11 +41,14 @@ def _msgs(spec, severity=None):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("key", list(EXAMPLES))
+FARM_EXAMPLES = [k for k, e in EXAMPLES.items() if e.family == "incompressible-2d"]
+
+
+@pytest.mark.parametrize("key", FARM_EXAMPLES)
 def test_the_generator_reproduces_the_measured_tilings(key):
     """Same offsets, sizes and names as `scaling_ladder.rung(...).tiling`."""
     from atlas.cases import scaling_ladder as sl
-    _label, cols, rows = EXAMPLES[key]
+    cols, rows = EXAMPLES[key].param("cols"), EXAMPLES[key].param("rows")
     t = sl.rung(cols, rows).tiling
     got = geo.tile(t.nx, t.ny, cols, rows, 16)
     assert [n for n, _ in got] == list(t.names)
@@ -53,10 +56,10 @@ def test_the_generator_reproduces_the_measured_tilings(key):
     assert {(b[2], b[3]) for _, b in got} == {(128, 128)}
 
 
-@pytest.mark.parametrize("key", list(EXAMPLES))
+@pytest.mark.parametrize("key", FARM_EXAMPLES)
 def test_measured_tilings_have_a_full_weight_window_everywhere(key):
     s = example_case(key)
-    _label, cols, rows = EXAMPLES[key]
+    cols, rows = EXAMPLES[key].param("cols"), EXAMPLES[key].param("rows")
     an = geo.analyse_windows(s.domain.nx, s.domain.ny,
                              [(w.id, (w.x0, w.y0, w.nx, w.ny)) for w in s.windows], 8)
     assert int(an.uncovered.sum()) == 0 and int(an.ramp_only.sum()) == 0

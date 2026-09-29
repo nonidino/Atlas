@@ -1,10 +1,11 @@
 # Atlas Workbench
 
 Build a domain decomposition by hand, run it, and compare it with the full-domain
-solve. Built so far: the menus, the workflow, the case file, and the **geometry
-section**. The runner is plan step 3 of
+solve. Built so far: the menus, the workflow, the case file, the **geometry
+section**, and the **runner** for the wind-farm family (style A). The runner is
+plan step 3 of
 `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/outcome-c4-path-to-declarative-cases.md`;
-the library of cases it will run is `showcase-library-plan.md` in the same folder.
+the library of cases it runs is `showcase-library-plan.md` in the same folder.
 
 ```bash
 python -m atlas.workbench --open
@@ -40,7 +41,7 @@ both properties of the replacement.
 
 | part | where | what it does now |
 |---|---|---|
-| menus | header | **File** (new, three examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; compile and run show why they are not built yet), **Help** |
+| menus | header | **File** (new, three examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; run decomposed, full, or the ticked arms; stop; show the results; compile says why it is not built yet), **Help** |
 | workflow | sidebar | six steps, each labelled with its status (`ok`, `N errors`, `not built`), and a live case check |
 | case bar | top of the workspace | which case is open, and whether and where it is saved |
 | workspace | main | the active step |
@@ -51,8 +52,26 @@ The six steps:
 2. **Geometry**: the canvas and the four layers. Works; see below.
 3. **Physics & coupling**: viscosity, freestream, macro-step, ramp width, assembly, pressure solve. Works.
 4. **Check**: every rule, with where to fix it. Compile with the Atlas compiler is visible and disabled, with its reason.
-5. **Run & compare**: settings, arms, and three field panels. Disabled, with its reason.
-6. **Results**: the table a run will fill. Placeholder.
+5. **Run & compare**: works for the wind-farm family; see below.
+6. **Results**: each arm's time per step and its ratio to the full domain, the family's metric, the field difference, and the sanity checks against their registered tolerances, from the run's record.
+
+## The runner
+
+`runner.py` marches a **committed** case: Run copies the case, so an edit made while it marches cannot reach it, and the page names the version that is marching. Every macro-step each ticked arm takes one step, in an order that rotates by one arm per step:
+
+| arm | what runs |
+|---|---|
+| Decomposed, serial | the windows stepped as one batch per window shape (W346's `E`) |
+| Decomposed, parallel | the same windows split across threads, every chunk at the whole tiling's sub-step count, so it is **bit for bit** the serial arm (checked every step; W346's `Ep`) |
+| Full domain | the same discretization on the undivided domain (W346's `F`) |
+
+It runs in a background thread; the page reads its progress every 400 ms and draws the fields, their difference, the time per step and the farm power. **Run > Stop** stops after the arm-step in progress and keeps whole macro-steps only. One run at a time per server, because two runs on one machine would time each other.
+
+**What the timer holds:** the family adapter's `step` and nothing else. Diagnostics, the bitwise comparison, the snapshot and the record are taken after it stops.
+
+**The record** goes beside the case file, in `<case>.results/<time>.json`: the case as it marched, every per-step time, the metrics, each check with its tolerance and registration date, and the machine's state before and after (power source, other Python processes; `machine.py`).
+
+**The family adapters** are in `families/`, one per family, named by the registry (`registry.Family.adapter`). The wind farm's is `families/windfarm.py`: W346's march, lifted, on any rectangles (`tiling.RectangleTiling`, whose weights are `ArrayTiling.weights` to the bit on the measured tilings). Its three checks, registered before any run: incompressibility closes to 1e-9 in each arm's enforcing operator, farm power within 25% of the full domain (W346's B5), and threaded equal to serial bit for bit (W346's B1).
 
 ## The geometry section
 
@@ -105,13 +124,20 @@ four layers now.
 | `gmsh_import.py` | `.msh` to case geometry, by physical-group names |
 | `registry.py` | the physics families: what each runs on, which layers it reads, which boundaries it can impose, and what is missing before the workbench can run it |
 | `app.py` | the GUI. Every menu item and button goes through `Workbench.dispatch(action)` |
-| `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py` | 48 tests, including the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, and the canvas driven through the data Bokeh's tools send |
+| `tiling.py` | any rectangles as a partition of unity, certified by `GridPartitionOfUnity` |
+| `runner.py` | the run: arms in turns, the timer, Stop, the snapshots, the record |
+| `runview.py` | the Run & compare and Results steps |
+| `checks.py` | a check as data: what is measured, its tolerance, when it was registered |
+| `machine.py` | the machine's state beside every timing, and the keep-awake request |
+| `families/windfarm.py` | the wind-farm family's adapter (style A) |
+| `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven through the data Bokeh's tools send, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record |
 
 ## Known limitations
 
 - **Light theme only, whatever the OS is set to.** Panel's theme switches reload the page, which starts a new session and drops the open case.
 - Undo covers case edits, not view or tool changes.
 - **Regions are only read by the planned conduction family** (showcase case 2). The wind-farm family ignores them, and the check says so.
-- **Only the wind-farm family can be chosen**, so boundaries are fixed in practice; the editable boundary table and its rules are there for the families that come next.
+- **Only the wind-farm family can be chosen and run**, so boundaries are fixed in practice; the editable boundary table and its rules are there for the families that come next.
+- Timings are taken inside the workbench server process, which also serves the page; the page's updates share the process with every arm alike.
 - Lumped attachments (a circuit wired to an edge, showcase case 5) are not in the schema yet.
 - Bokeh gives each gesture to one tool, so moving and resizing are two tools, not one.
