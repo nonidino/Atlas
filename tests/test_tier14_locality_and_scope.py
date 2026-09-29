@@ -409,6 +409,61 @@ def test_the_vault_itself_is_clean():
     assert "0 problems" in r.stdout
 
 
+def test_every_vault_link_resolves_or_is_pinned():
+    """The link half of the standing verification (2026-09-29).
+
+    `vault_scan` reads bytes and never looks at links, so it passed a vault with
+    13 dead ones.  Every dead link left on purpose is pinned in
+    `link_scan.KNOWN` with its count; anything else fails, and so does a pin
+    that no longer matches.
+    """
+    r = subprocess.run(
+        [sys.executable, os.path.join(_ROOT, "scripts", "link_scan.py"),
+         os.path.join(_ROOT, "wiki")],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stdout[-3000:]
+    assert " 0 new, 0 stale" in r.stdout, r.stdout[-3000:]
+    # the scan has to have read something for "0 new" to mean anything
+    n_links = int(r.stdout.strip().splitlines()[-1].split(" files, ")[1].split(" links")[0])
+    assert n_links > 1000, r.stdout[-500:]
+
+
+def test_the_link_scanner_flags_a_dead_link_and_nothing_else(tmp_path):
+    """Positive and negative controls in one vault: only `[[missing]]` is dead."""
+    import link_scan
+
+    sub = tmp_path / "concepts" / "deep"
+    sub.mkdir(parents=True)
+    (sub / "present.md").write_text("# Present\n", encoding="utf-8")
+    (tmp_path / "figure.png").write_bytes(b"")
+    (tmp_path / "page.md").write_text(
+        "See [[present]], [[present|an alias]], [[present#A heading]] and ![[figure.png]].\n"
+        "| a | [[present\\|in a table]] |\n"
+        "Quoted, not linked: `[[quoted-dead]]`.\n"
+        "```\n[[fenced-dead]]\n```\n"
+        "And one that is really dead: [[missing]].\n",
+        encoding="utf-8",
+    )
+    n_files, n_links, dead, new, stale = link_scan.check(str(tmp_path), known={})
+    assert dead == [("page.md", 7, "missing")], dead   # the fence is lines 4-6
+    assert new == dead and stale == []
+    assert n_files == 2 and n_links == 6, (n_files, n_links)
+
+
+def test_a_link_pin_goes_stale_when_its_link_is_fixed(tmp_path):
+    """A pin must not outlive what it excuses, in either direction."""
+    import link_scan
+
+    (tmp_path / "page.md").write_text("[[gone]] and [[gone]]\n", encoding="utf-8")
+    exact = {("page.md", "gone"): (2, "test")}
+    assert link_scan.check(str(tmp_path), known=exact)[3:] == ([], [])
+    fewer = {("page.md", "gone"): (1, "test")}
+    assert link_scan.check(str(tmp_path), known=fewer)[4] == [(("page.md", "gone"), 1, 2)]
+    (tmp_path / "gone.md").write_text("# Now it exists\n", encoding="utf-8")
+    assert link_scan.check(str(tmp_path), known=exact)[4] == [(("page.md", "gone"), 2, 0)]
+
+
 # ---------------------------------------------------------------------------
 # W70 -- the scope statement is a statement, so it has to say the true thing
 # ---------------------------------------------------------------------------

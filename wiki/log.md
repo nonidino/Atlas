@@ -6689,3 +6689,19 @@ The owner chose to open a worklist row for the showcase's R10 finding, not to ch
 The workbench's last flag is closed. `farm-21`'s compile takes 95.1 s and its run 70.0 s, so the two together are 165 s against the plan's two-minute rule, while each alone is under it. The owner accepted it: the rule is per run ("each opens, runs and compares in under 2 minutes"), and the compile is its own step. The alternatives, caching the farm's compile (the first compile would still take 95 s) and shrinking the example (it would no longer be W346's 21-rotor farm), were not taken.
 
 **Changed:** [[showcase-gallery]] §5, [[showcase-library-plan]] §5, [[index]] (the gallery's entry), and `atlas/workbench/README.md`, where the flag stood. No code changed.
+
+## [2026-09-29] build | The vault's link check: `scripts/link_scan.py`, enforced by the suite
+
+On the owner's request, the link scan used in today's lint is now a standing tool beside `vault_scan.py`, which reads bytes and never looks at links.
+
+- **What it checks:** every `[[link]]` outside fenced code and inline code must name a file in the vault, resolved by basename as Obsidian resolves this vault's bare links. The target is read before any alias (`|`, or `\|` in a table) or heading (`#`). Math is not skipped, so a commutator written as a double bracket would fail loudly, which is the safe direction.
+- **The dead links left on purpose are pinned** in `link_scan.KNOWN`, each with its count in its file and its reason: W24's `phase1-resume-prompt` (three occurrences), the seeded `pattern-recognizer-vs-solver`, and two old entries in this log. A dead link with no pin fails. So does a pin whose count no longer matches, so fixing W24 forces its pin out.
+- **Measured on the vault:** 269 files, 9,661 links, 6 dead, all pinned; 0 new, 0 stale.
+- **Tests,** in `tests/test_tier14_locality_and_scope.py` beside `test_the_vault_itself_is_clean`:
+  - the vault's links, run as a subprocess, which also asserts that more than 1,000 links were read, so a scan that reads nothing cannot pass;
+  - a positive and negative control: an alias, a heading, an embed, a table's escaped pipe and a link in a subfolder resolve, a quoted link and a fenced link are skipped, and only the one really dead link is flagged;
+  - a pin going stale both ways, one occurrence too many and the link fixed.
+
+  32 passed in that file. My first draft of the control expected the dead link on line 6; it is on line 7, since the fence takes lines 4 to 6. The scanner was right.
+
+**Added:** `scripts/link_scan.py`. **Changed:** `tests/test_tier14_locality_and_scope.py`.
