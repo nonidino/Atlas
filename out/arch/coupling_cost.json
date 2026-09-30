@@ -1,0 +1,1518 @@
+{
+ "probe": "arch_coupling_cost",
+ "tol": 1e-08,
+ "max_it": 4000,
+ "p_multiplier": 0.5,
+ "host": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+ "cpus": 4,
+ "results": [
+  {
+   "pieces": [
+    4,
+    1
+   ],
+   "n": 32,
+   "cells": 4096,
+   "Fo_piece": null,
+   "p_star": 0.5553603672697958,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.009732193999980154,
+    "solve_s": 0.00048498199998903146,
+    "total_s": 0.010217175999969186
+   },
+   "setup": {
+    "RAS_factor_s": 0.019533193000029314,
+    "ORAS_factor_s": 0.055381098999987444,
+    "OSM_factor_s": 0.023939179000080912,
+    "coarse_s": 0.002875782999922194,
+    "substructure_factor_s": 0.03140623300009793
+   },
+   "RAS-Rich": {
+    "iterations": 43,
+    "converged": true,
+    "final_residual": 5.871029075433675e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.018742449000001216,
+    "time_per_iteration_s": 0.0004358709069767725
+   },
+   "RAS-GMRES": {
+    "iterations": 16,
+    "converged": true,
+    "final_residual": 2.864560162130789e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.021189954999954352,
+    "time_per_iteration_s": 0.001324372187497147
+   },
+   "OSM-Rich": {
+    "iterations": 63,
+    "converged": true,
+    "final_residual": 9.725504822731307e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.03472087200009355,
+    "time_per_iteration_s": 0.0005511249523824373
+   },
+   "OSM-AA": {
+    "iterations": 34,
+    "converged": true,
+    "final_residual": 7.82470935345987e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.022169126999983746,
+    "time_per_iteration_s": 0.0006520331470583454
+   },
+   "OSM-GMRES": {
+    "iterations": 32,
+    "converged": true,
+    "final_residual": 1.0065666650464678e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.01874484899997242,
+    "time_per_iteration_s": 0.0005857765312491381
+   },
+   "ORAS-GMRES": {
+    "iterations": 33,
+    "converged": true,
+    "final_residual": 5.7909158153468995e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.030003109999938715,
+    "time_per_iteration_s": 0.0009091851515132944
+   },
+   "2L-GMRES": {
+    "iterations": 33,
+    "converged": true,
+    "final_residual": 9.56865439191533e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.026210153000079117,
+    "time_per_iteration_s": 0.0007942470606084581
+   },
+   "Schur": {
+    "form_port_matrices_s": 0.044584533000033844,
+    "interface_factor_solve_s": 0.0009461920000148893,
+    "reconstruct_s": 0.0005266770000389442,
+    "interface_unknowns": 96,
+    "local_solves_total": 200,
+    "local_solves_per_piece": 50.0,
+    "error_rel": 2.7254367904427117e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.00323035400003846,
+    "interface_factor_solve_s": 0.0002901299999393814,
+    "reconstruct_s": 0.0005755209999733779,
+    "interface_unknowns": 12,
+    "local_solves_total": 32,
+    "local_solves_per_piece": 8.0,
+    "error_rel": 0.04143609620769498
+   },
+   "Port-8": {
+    "form_port_matrices_s": 0.005557834000001094,
+    "interface_factor_solve_s": 0.00045414099997742596,
+    "reconstruct_s": 0.00045944400005737407,
+    "interface_unknowns": 24,
+    "local_solves_total": 56,
+    "local_solves_per_piece": 14.0,
+    "error_rel": 0.009897408044669835
+   },
+   "Port-16": {
+    "form_port_matrices_s": 0.012325797000016792,
+    "interface_factor_solve_s": 0.0005128059999606194,
+    "reconstruct_s": 0.0005945100000417369,
+    "interface_unknowns": 48,
+    "local_solves_total": 104,
+    "local_solves_per_piece": 26.0,
+    "error_rel": 0.0013538266354019978
+   },
+   "case_wall_s": 0.39054104900003495
+  },
+  {
+   "pieces": [
+    8,
+    1
+   ],
+   "n": 32,
+   "cells": 8192,
+   "Fo_piece": null,
+   "p_star": 0.5553603672697958,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.017876202000024932,
+    "solve_s": 0.0011221779999459613,
+    "total_s": 0.018998379999970894
+   },
+   "setup": {
+    "RAS_factor_s": 0.06000730699997803,
+    "ORAS_factor_s": 0.11258578999991187,
+    "OSM_factor_s": 0.042205753000075674,
+    "coarse_s": 0.005463466000037442,
+    "substructure_factor_s": 0.05210655300004419
+   },
+   "RAS-Rich": {
+    "iterations": 47,
+    "converged": true,
+    "final_residual": 8.971856270147321e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.0390120139999226,
+    "time_per_iteration_s": 0.000830042851062183
+   },
+   "RAS-GMRES": {
+    "iterations": 20,
+    "converged": true,
+    "final_residual": 7.406592901677034e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.047866072000033455,
+    "time_per_iteration_s": 0.0023933036000016727
+   },
+   "OSM-Rich": {
+    "iterations": 71,
+    "converged": true,
+    "final_residual": 9.836733215585573e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.07357932700006131,
+    "time_per_iteration_s": 0.0010363285492966381
+   },
+   "OSM-AA": {
+    "iterations": 37,
+    "converged": true,
+    "final_residual": 6.6992802199276306e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.0505582680000316,
+    "time_per_iteration_s": 0.0013664396756765298
+   },
+   "OSM-GMRES": {
+    "iterations": 35,
+    "converged": true,
+    "final_residual": 7.825055242128886e-10,
+    "iterations_extrapolated": null,
+    "time_s": 0.03664015700007894,
+    "time_per_iteration_s": 0.001046861628573684
+   },
+   "ORAS-GMRES": {
+    "iterations": 43,
+    "converged": true,
+    "final_residual": 7.773912712416798e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.07564162400001351,
+    "time_per_iteration_s": 0.001759107534884035
+   },
+   "2L-GMRES": {
+    "iterations": 44,
+    "converged": true,
+    "final_residual": 7.206119580013302e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.060049198000001525,
+    "time_per_iteration_s": 0.0013647545000000346
+   },
+   "Schur": {
+    "form_port_matrices_s": 0.40887373800001114,
+    "interface_factor_solve_s": 0.0024961889999985942,
+    "reconstruct_s": 0.005155331999958435,
+    "interface_unknowns": 224,
+    "local_solves_total": 464,
+    "local_solves_per_piece": 58.0,
+    "error_rel": 2.6762416629576986e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.010341483000047447,
+    "interface_factor_solve_s": 0.00032905699993079907,
+    "reconstruct_s": 0.005159692999995968,
+    "interface_unknowns": 28,
+    "local_solves_total": 72,
+    "local_solves_per_piece": 9.0,
+    "error_rel": 0.05632822100578731
+   },
+   "Port-8": {
+    "form_port_matrices_s": 0.048017142999924545,
+    "interface_factor_solve_s": 0.00046567399999730696,
+    "reconstruct_s": 0.0012215230000265365,
+    "interface_unknowns": 56,
+    "local_solves_total": 128,
+    "local_solves_per_piece": 16.0,
+    "error_rel": 0.008566145527435431
+   },
+   "Port-16": {
+    "form_port_matrices_s": 0.2379240300000447,
+    "interface_factor_solve_s": 0.0007861630000434161,
+    "reconstruct_s": 0.001143416999980218,
+    "interface_unknowns": 112,
+    "local_solves_total": 240,
+    "local_solves_per_piece": 30.0,
+    "error_rel": 0.0011002037743100491
+   },
+   "case_wall_s": 1.4084086499999557
+  },
+  {
+   "pieces": [
+    16,
+    1
+   ],
+   "n": 32,
+   "cells": 16384,
+   "Fo_piece": null,
+   "p_star": 0.5553603672697958,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.06755602700002328,
+    "solve_s": 0.002592855999978383,
+    "total_s": 0.07014888300000166
+   },
+   "setup": {
+    "RAS_factor_s": 0.07901569499995276,
+    "ORAS_factor_s": 0.17706987999997637,
+    "OSM_factor_s": 0.09796453800004201,
+    "coarse_s": 0.04359931800001959,
+    "substructure_factor_s": 0.10317738099990947
+   },
+   "RAS-Rich": {
+    "iterations": 66,
+    "converged": true,
+    "final_residual": 8.846737223825073e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.1092919449999954,
+    "time_per_iteration_s": 0.001655938560605991
+   },
+   "RAS-GMRES": {
+    "iterations": 25,
+    "converged": true,
+    "final_residual": 9.073536226097831e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.14562954000007267,
+    "time_per_iteration_s": 0.005825181600002906
+   },
+   "OSM-Rich": {
+    "iterations": 159,
+    "converged": true,
+    "final_residual": 9.43803221170214e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.32682917099998576,
+    "time_per_iteration_s": 0.002055529377358401
+   },
+   "OSM-AA": {
+    "iterations": 68,
+    "converged": true,
+    "final_residual": 8.206713386513085e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.17301861199996438,
+    "time_per_iteration_s": 0.0025443913529406524
+   },
+   "OSM-GMRES": {
+    "iterations": 47,
+    "converged": true,
+    "final_residual": 3.141387061689671e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.09467353399998046,
+    "time_per_iteration_s": 0.002014330510637882
+   },
+   "ORAS-GMRES": {
+    "iterations": 52,
+    "converged": true,
+    "final_residual": 6.664670631614672e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.21526738900001874,
+    "time_per_iteration_s": 0.004139757480769591
+   },
+   "2L-GMRES": {
+    "iterations": 53,
+    "converged": true,
+    "final_residual": 8.776858443757812e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.19944120499997098,
+    "time_per_iteration_s": 0.003763041603773037
+   },
+   "Schur": {
+    "form_port_matrices_s": 1.0376184570000078,
+    "interface_factor_solve_s": 0.011571292999974503,
+    "reconstruct_s": 0.0028352409999570227,
+    "interface_unknowns": 480,
+    "local_solves_total": 992,
+    "local_solves_per_piece": 62.0,
+    "error_rel": 2.2500004863520612e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.018721959999993487,
+    "interface_factor_solve_s": 0.0005988999999999578,
+    "reconstruct_s": 0.004392594000023564,
+    "interface_unknowns": 60,
+    "local_solves_total": 152,
+    "local_solves_per_piece": 9.5,
+    "error_rel": 0.058897739672828554
+   },
+   "Port-8": {
+    "form_port_matrices_s": 0.05430975199999466,
+    "interface_factor_solve_s": 0.0008525240000381018,
+    "reconstruct_s": 0.004399867999950402,
+    "interface_unknowns": 120,
+    "local_solves_total": 272,
+    "local_solves_per_piece": 17.0,
+    "error_rel": 0.010509316670711815
+   },
+   "Port-16": {
+    "form_port_matrices_s": 0.6422794180000437,
+    "interface_factor_solve_s": 0.0012086199999430391,
+    "reconstruct_s": 0.006628356000078384,
+    "interface_unknowns": 240,
+    "local_solves_total": 512,
+    "local_solves_per_piece": 32.0,
+    "error_rel": 0.0012420202742421235
+   },
+   "case_wall_s": 3.6599126259999366
+  },
+  {
+   "pieces": [
+    2,
+    2
+   ],
+   "n": 32,
+   "cells": 4096,
+   "Fo_piece": null,
+   "p_star": 0.5553603672697958,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.0311331569999993,
+    "solve_s": 0.001037829999972928,
+    "total_s": 0.03217098699997223
+   },
+   "setup": {
+    "RAS_factor_s": 0.03788354999994681,
+    "ORAS_factor_s": 0.05265112799997951,
+    "OSM_factor_s": 0.018582147999950394,
+    "coarse_s": 0.0022697599999901286,
+    "substructure_factor_s": 0.024838283000008232
+   },
+   "RAS-Rich": {
+    "iterations": 118,
+    "converged": true,
+    "final_residual": 8.68929983454077e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.05264451599998665,
+    "time_per_iteration_s": 0.0004461399661015818
+   },
+   "RAS-GMRES": {
+    "iterations": 21,
+    "converged": true,
+    "final_residual": 4.828185647207802e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.013267732999906912,
+    "time_per_iteration_s": 0.0006317968095193768
+   },
+   "OSM-Rich": {
+    "iterations": 87,
+    "converged": true,
+    "final_residual": 9.712797757594393e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.04664533499999379,
+    "time_per_iteration_s": 0.0005361532758619976
+   },
+   "OSM-AA": {
+    "iterations": 39,
+    "converged": true,
+    "final_residual": 8.623943886606643e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.024199313000053735,
+    "time_per_iteration_s": 0.0006204952051295829
+   },
+   "OSM-GMRES": {
+    "iterations": 37,
+    "converged": true,
+    "final_residual": 1.469022226310176e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.020618671000079303,
+    "time_per_iteration_s": 0.0005572613783805217
+   },
+   "ORAS-GMRES": {
+    "iterations": 41,
+    "converged": true,
+    "final_residual": 9.23222506459075e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.034324397999967005,
+    "time_per_iteration_s": 0.0008371804390235855
+   },
+   "2L-GMRES": {
+    "iterations": 39,
+    "converged": true,
+    "final_residual": 8.830915149544951e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.029388037000103395,
+    "time_per_iteration_s": 0.0007535394102590614
+   },
+   "Schur": {
+    "form_port_matrices_s": 0.041980044999945676,
+    "interface_factor_solve_s": 0.0019439470000861547,
+    "reconstruct_s": 0.0008447520000345321,
+    "interface_unknowns": 128,
+    "local_solves_total": 264,
+    "local_solves_per_piece": 66.0,
+    "error_rel": 4.1219117026930745e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.005056678999949327,
+    "interface_factor_solve_s": 0.0004733989999294863,
+    "reconstruct_s": 0.0009500809999281046,
+    "interface_unknowns": 16,
+    "local_solves_total": 40,
+    "local_solves_per_piece": 10.0,
+    "error_rel": 0.026109960239837523
+   },
+   "Port-8": {
+    "form_port_matrices_s": 0.019259957999906874,
+    "interface_factor_solve_s": 0.0004530359999534994,
+    "reconstruct_s": 0.0008445419999816295,
+    "interface_unknowns": 32,
+    "local_solves_total": 72,
+    "local_solves_per_piece": 18.0,
+    "error_rel": 0.006259243294254103
+   },
+   "Port-16": {
+    "form_port_matrices_s": 0.10560517200008235,
+    "interface_factor_solve_s": 0.0005307310000262078,
+    "reconstruct_s": 0.0007086990000289006,
+    "interface_unknowns": 64,
+    "local_solves_total": 136,
+    "local_solves_per_piece": 34.0,
+    "error_rel": 0.0006323472329952052
+   },
+   "case_wall_s": 0.5732250390000218
+  },
+  {
+   "pieces": [
+    4,
+    4
+   ],
+   "n": 32,
+   "cells": 16384,
+   "Fo_piece": null,
+   "p_star": 0.5553603672697958,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.09370022300004166,
+    "solve_s": 0.003641239999979007,
+    "total_s": 0.09734146300002067
+   },
+   "setup": {
+    "RAS_factor_s": 0.11322364300008303,
+    "ORAS_factor_s": 0.2099672130000272,
+    "OSM_factor_s": 0.09369065199996385,
+    "coarse_s": 0.019909858000005443,
+    "substructure_factor_s": 0.0901998189999631
+   },
+   "RAS-Rich": {
+    "iterations": 433,
+    "converged": true,
+    "final_residual": 9.975447137393633e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.8240544420000333,
+    "time_per_iteration_s": 0.0019031280415705157
+   },
+   "RAS-GMRES": {
+    "iterations": 42,
+    "converged": true,
+    "final_residual": 6.215440506365153e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.24188670899991394,
+    "time_per_iteration_s": 0.005759207357140808
+   },
+   "OSM-Rich": {
+    "iterations": 296,
+    "converged": true,
+    "final_residual": 9.911649041716732e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.6575680429999693,
+    "time_per_iteration_s": 0.00222151365878368
+   },
+   "OSM-AA": {
+    "iterations": 94,
+    "converged": true,
+    "final_residual": 7.786122062118526e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.23849076799990598,
+    "time_per_iteration_s": 0.002537135829786234
+   },
+   "OSM-GMRES": {
+    "iterations": 53,
+    "converged": true,
+    "final_residual": 1.0998302404467947e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.10725718499998038,
+    "time_per_iteration_s": 0.002023720471697743
+   },
+   "ORAS-GMRES": {
+    "iterations": 94,
+    "converged": true,
+    "final_residual": 7.439436947054152e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.4677917389999493,
+    "time_per_iteration_s": 0.004976507861701588
+   },
+   "2L-GMRES": {
+    "iterations": 58,
+    "converged": true,
+    "final_residual": 6.506578279881082e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.1941106630000604,
+    "time_per_iteration_s": 0.0033467355689665588
+   },
+   "Schur": {
+    "form_port_matrices_s": 0.8444002030000775,
+    "interface_factor_solve_s": 0.04954979900003309,
+    "reconstruct_s": 0.004248831000040809,
+    "interface_unknowns": 768,
+    "local_solves_total": 1568,
+    "local_solves_per_piece": 98.0,
+    "error_rel": 5.620946038578171e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.04150722399992901,
+    "interface_factor_solve_s": 0.0009260049999966213,
+    "reconstruct_s": 0.002718071999993299,
+    "interface_unknowns": 96,
+    "local_solves_total": 224,
+    "local_solves_per_piece": 14.0,
+    "error_rel": 0.015495815221893893
+   },
+   "Port-8": {
+    "form_port_matrices_s": 0.22995710099996813,
+    "interface_factor_solve_s": 0.0011515250000684318,
+    "reconstruct_s": 0.007173969000064062,
+    "interface_unknowns": 192,
+    "local_solves_total": 416,
+    "local_solves_per_piece": 26.0,
+    "error_rel": 0.002935734782993296
+   },
+   "Port-16": {
+    "form_port_matrices_s": 0.6150969569999916,
+    "interface_factor_solve_s": 0.003535316000011335,
+    "reconstruct_s": 0.0034391100000448205,
+    "interface_unknowns": 384,
+    "local_solves_total": 800,
+    "local_solves_per_piece": 50.0,
+    "error_rel": 0.0002594343114580608
+   },
+   "case_wall_s": 5.182744330999981
+  },
+  {
+   "pieces": [
+    8,
+    8
+   ],
+   "n": 32,
+   "cells": 65536,
+   "Fo_piece": null,
+   "p_star": 0.5553603672697958,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.7951714280000033,
+    "solve_s": 0.012009107000039876,
+    "total_s": 0.8071805350000432
+   },
+   "setup": {
+    "RAS_factor_s": 0.47652280600004815,
+    "ORAS_factor_s": 0.94452021099994,
+    "OSM_factor_s": 0.5652660730000889,
+    "coarse_s": 0.5075901389999444,
+    "substructure_factor_s": 0.40669073500009745
+   },
+   "RAS-Rich": {
+    "iterations": 1864,
+    "converged": true,
+    "final_residual": 9.913387429079679e-09,
+    "iterations_extrapolated": null,
+    "time_s": 21.84474052799999,
+    "time_per_iteration_s": 0.011719281399141624
+   },
+   "RAS-GMRES": {
+    "iterations": 81,
+    "converged": true,
+    "final_residual": 8.46453913847392e-09,
+    "iterations_extrapolated": null,
+    "time_s": 2.3995805449999352,
+    "time_per_iteration_s": 0.029624451172838708
+   },
+   "OSM-Rich": {
+    "iterations": 1124,
+    "converged": true,
+    "final_residual": 9.987551845668383e-09,
+    "iterations_extrapolated": null,
+    "time_s": 13.975268074000041,
+    "time_per_iteration_s": 0.012433512521352351
+   },
+   "OSM-AA": {
+    "iterations": 152,
+    "converged": true,
+    "final_residual": 9.588295329933173e-09,
+    "iterations_extrapolated": null,
+    "time_s": 2.0848750969998946,
+    "time_per_iteration_s": 0.013716283532894044
+   },
+   "OSM-GMRES": {
+    "iterations": 83,
+    "converged": true,
+    "final_residual": 7.766841426110274e-10,
+    "iterations_extrapolated": null,
+    "time_s": 0.9949184229999446,
+    "time_per_iteration_s": 0.011986968951806561
+   },
+   "ORAS-GMRES": {
+    "iterations": 188,
+    "converged": true,
+    "final_residual": 9.18860719432906e-09,
+    "iterations_extrapolated": null,
+    "time_s": 7.7068922240000575,
+    "time_per_iteration_s": 0.04099410757446839
+   },
+   "2L-GMRES": {
+    "iterations": 70,
+    "converged": true,
+    "final_residual": 8.358457184860717e-09,
+    "iterations_extrapolated": null,
+    "time_s": 2.0835630599999604,
+    "time_per_iteration_s": 0.029765186571428005
+   },
+   "Schur": {
+    "form_port_matrices_s": 3.2224312700000155,
+    "interface_factor_solve_s": 0.40465263100008997,
+    "reconstruct_s": 0.00971264700001484,
+    "interface_unknowns": 3584,
+    "local_solves_total": 7296,
+    "local_solves_per_piece": 114.0,
+    "error_rel": 1.7856504234150922e-14
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.09215862899998228,
+    "interface_factor_solve_s": 0.002067776999979287,
+    "reconstruct_s": 0.013798431999930472,
+    "interface_unknowns": 448,
+    "local_solves_total": 1024,
+    "local_solves_per_piece": 16.0,
+    "error_rel": 0.013548581146629924
+   },
+   "Port-8": {
+    "form_port_matrices_s": 2.117517545000055,
+    "interface_factor_solve_s": 0.014269378999983928,
+    "reconstruct_s": 0.038050984999927095,
+    "interface_unknowns": 896,
+    "local_solves_total": 1920,
+    "local_solves_per_piece": 30.0,
+    "error_rel": 0.002190109373780444
+   },
+   "Port-16": {
+    "form_port_matrices_s": 5.162820066999984,
+    "interface_factor_solve_s": 0.07181645499997558,
+    "reconstruct_s": 0.03148788099997546,
+    "interface_unknowns": 1792,
+    "local_solves_total": 3712,
+    "local_solves_per_piece": 58.0,
+    "error_rel": 0.00016869686388666522
+   },
+   "case_wall_s": 66.445126362
+  },
+  {
+   "pieces": [
+    4,
+    4
+   ],
+   "n": 64,
+   "cells": 65536,
+   "Fo_piece": null,
+   "p_star": 0.39269908169872414,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.3906111510000301,
+    "solve_s": 0.012649552999960179,
+    "total_s": 0.40326070399999026
+   },
+   "setup": {
+    "RAS_factor_s": 0.34531327299998793,
+    "ORAS_factor_s": 0.7635284730000649,
+    "OSM_factor_s": 0.27063949900002626,
+    "coarse_s": 0.08917827400000533,
+    "substructure_factor_s": 0.3325583060000099
+   },
+   "RAS-Rich": {
+    "iterations": 1013,
+    "converged": true,
+    "final_residual": 9.9490784730055e-09,
+    "iterations_extrapolated": null,
+    "time_s": 13.789248300000054,
+    "time_per_iteration_s": 0.013612288548864811
+   },
+   "RAS-GMRES": {
+    "iterations": 65,
+    "converged": true,
+    "final_residual": 7.963373242271344e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.5513352200000554,
+    "time_per_iteration_s": 0.023866695692308544
+   },
+   "OSM-Rich": {
+    "iterations": 425,
+    "converged": true,
+    "final_residual": 9.848869523386314e-09,
+    "iterations_extrapolated": null,
+    "time_s": 4.974040939999895,
+    "time_per_iteration_s": 0.011703625741176223
+   },
+   "OSM-AA": {
+    "iterations": 115,
+    "converged": true,
+    "final_residual": 9.417850705938216e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.4932414219999828,
+    "time_per_iteration_s": 0.012984708017391154
+   },
+   "OSM-GMRES": {
+    "iterations": 64,
+    "converged": true,
+    "final_residual": 6.470887610731406e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.6298765809999622,
+    "time_per_iteration_s": 0.00984182157812441
+   },
+   "ORAS-GMRES": {
+    "iterations": 135,
+    "converged": true,
+    "final_residual": 7.193050012121147e-09,
+    "iterations_extrapolated": null,
+    "time_s": 3.830190850000008,
+    "time_per_iteration_s": 0.028371784074074133
+   },
+   "2L-GMRES": {
+    "iterations": 83,
+    "converged": true,
+    "final_residual": 8.218076846246471e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.7218775309999046,
+    "time_per_iteration_s": 0.020745512421685597
+   },
+   "Schur": {
+    "form_port_matrices_s": 2.5286911709999913,
+    "interface_factor_solve_s": 0.15978694700004326,
+    "reconstruct_s": 0.01017069600004561,
+    "interface_unknowns": 1536,
+    "local_solves_total": 3104,
+    "local_solves_per_piece": 194.0,
+    "error_rel": 2.7333246816598016e-14
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.36807439599999725,
+    "interface_factor_solve_s": 0.0006451250000054642,
+    "reconstruct_s": 0.023501043999999638,
+    "interface_unknowns": 96,
+    "local_solves_total": 224,
+    "local_solves_per_piece": 14.0,
+    "error_rel": 0.02028969345608746
+   },
+   "Port-8": {
+    "form_port_matrices_s": 1.1526315730000078,
+    "interface_factor_solve_s": 0.0011813030000666913,
+    "reconstruct_s": 0.027834566000024097,
+    "interface_unknowns": 192,
+    "local_solves_total": 416,
+    "local_solves_per_piece": 26.0,
+    "error_rel": 0.0043959538139815785
+   },
+   "Port-16": {
+    "form_port_matrices_s": 0.7496165320000046,
+    "interface_factor_solve_s": 0.0033381389999931343,
+    "reconstruct_s": 0.011419323000041004,
+    "interface_unknowns": 384,
+    "local_solves_total": 800,
+    "local_solves_per_piece": 50.0,
+    "error_rel": 0.0005785261158816655
+   },
+   "case_wall_s": 35.30193091000001
+  },
+  {
+   "pieces": [
+    4,
+    4
+   ],
+   "n": 32,
+   "cells": 16384,
+   "Fo_piece": 1.0,
+   "p_star": 0.5689369289813582,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.05306285199992544,
+    "solve_s": 0.002701376999993954,
+    "total_s": 0.055764228999919396
+   },
+   "setup": {
+    "RAS_factor_s": 0.08750550100000964,
+    "ORAS_factor_s": 0.18122095000001082,
+    "OSM_factor_s": 0.04709558900003685,
+    "coarse_s": 0.019249252999998134,
+    "substructure_factor_s": 0.08121550400005617
+   },
+   "RAS-Rich": {
+    "iterations": 288,
+    "converged": true,
+    "final_residual": 9.979371170852492e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.7326887790000001,
+    "time_per_iteration_s": 0.002544058260416667
+   },
+   "RAS-GMRES": {
+    "iterations": 39,
+    "converged": true,
+    "final_residual": 7.465914128947312e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.15349837200005823,
+    "time_per_iteration_s": 0.003935855692309185
+   },
+   "OSM-Rich": {
+    "iterations": 193,
+    "converged": true,
+    "final_residual": 9.719363684434952e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.5388685179999584,
+    "time_per_iteration_s": 0.002792064860103411
+   },
+   "OSM-AA": {
+    "iterations": 70,
+    "converged": true,
+    "final_residual": 9.312928555520468e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.2004102089999833,
+    "time_per_iteration_s": 0.002863002985714047
+   },
+   "OSM-GMRES": {
+    "iterations": 60,
+    "converged": true,
+    "final_residual": 3.730187182933196e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.15922642900000028,
+    "time_per_iteration_s": 0.0026537738166666713
+   },
+   "ORAS-GMRES": {
+    "iterations": 87,
+    "converged": true,
+    "final_residual": 8.579957591794844e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.3922966400000405,
+    "time_per_iteration_s": 0.004509156781609661
+   },
+   "2L-GMRES": {
+    "iterations": 57,
+    "converged": true,
+    "final_residual": 8.070817758328032e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.21517745999994986,
+    "time_per_iteration_s": 0.0037750431578938573
+   },
+   "Schur": {
+    "form_port_matrices_s": 0.47391840599993884,
+    "interface_factor_solve_s": 0.01563134100001662,
+    "reconstruct_s": 0.002829215000019758,
+    "interface_unknowns": 768,
+    "local_solves_total": 1568,
+    "local_solves_per_piece": 98.0,
+    "error_rel": 3.755762318390611e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.031655848000013975,
+    "interface_factor_solve_s": 0.000624098999992384,
+    "reconstruct_s": 0.002568317000054776,
+    "interface_unknowns": 96,
+    "local_solves_total": 224,
+    "local_solves_per_piece": 14.0,
+    "error_rel": 0.013132715281252368
+   },
+   "Port-8": {
+    "form_port_matrices_s": 0.11372404700000516,
+    "interface_factor_solve_s": 0.0011044780000020182,
+    "reconstruct_s": 0.007093771000086235,
+    "interface_unknowns": 192,
+    "local_solves_total": 416,
+    "local_solves_per_piece": 26.0,
+    "error_rel": 0.0017965907127240938
+   },
+   "Port-16": {
+    "form_port_matrices_s": 0.7511264789999359,
+    "interface_factor_solve_s": 0.004885076000050503,
+    "reconstruct_s": 0.003581442999916362,
+    "interface_unknowns": 384,
+    "local_solves_total": 800,
+    "local_solves_per_piece": 50.0,
+    "error_rel": 0.0002228271353503874
+   },
+   "case_wall_s": 4.305900664000092
+  },
+  {
+   "pieces": [
+    4,
+    4
+   ],
+   "n": 32,
+   "cells": 16384,
+   "Fo_piece": 0.1,
+   "p_star": 0.661690087882934,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.06921840500001508,
+    "solve_s": 0.003120281999940744,
+    "total_s": 0.07233868699995583
+   },
+   "setup": {
+    "RAS_factor_s": 0.1045621639999581,
+    "ORAS_factor_s": 0.1750823099999934,
+    "OSM_factor_s": 0.047951252999951066,
+    "coarse_s": 0.017600068999968244,
+    "substructure_factor_s": 0.07470469000008961
+   },
+   "RAS-Rich": {
+    "iterations": 81,
+    "converged": true,
+    "final_residual": 9.18288383276766e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.18677242100000058,
+    "time_per_iteration_s": 0.0023058323580246983
+   },
+   "RAS-GMRES": {
+    "iterations": 26,
+    "converged": true,
+    "final_residual": 9.832995785837781e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.09111624999991363,
+    "time_per_iteration_s": 0.003504471153842832
+   },
+   "OSM-Rich": {
+    "iterations": 135,
+    "converged": true,
+    "final_residual": 9.718489833780733e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.33014873999991323,
+    "time_per_iteration_s": 0.0024455462222215795
+   },
+   "OSM-AA": {
+    "iterations": 60,
+    "converged": true,
+    "final_residual": 8.344346034256674e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.19157532700000957,
+    "time_per_iteration_s": 0.003192922116666826
+   },
+   "OSM-GMRES": {
+    "iterations": 50,
+    "converged": true,
+    "final_residual": 1.5062318459028132e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.14382850300000882,
+    "time_per_iteration_s": 0.0028765700600001764
+   },
+   "ORAS-GMRES": {
+    "iterations": 57,
+    "converged": true,
+    "final_residual": 8.397326126036256e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.21229216300002918,
+    "time_per_iteration_s": 0.003724423912281214
+   },
+   "2L-GMRES": {
+    "iterations": 48,
+    "converged": true,
+    "final_residual": 6.049816304648357e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.16732277899996006,
+    "time_per_iteration_s": 0.003485891229165835
+   },
+   "Schur": {
+    "form_port_matrices_s": 1.1592975600000273,
+    "interface_factor_solve_s": 0.014513667999949575,
+    "reconstruct_s": 0.0023534380000000965,
+    "interface_unknowns": 768,
+    "local_solves_total": 1568,
+    "local_solves_per_piece": 98.0,
+    "error_rel": 2.3398593993897686e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.032614660000035656,
+    "interface_factor_solve_s": 0.0006198749999839492,
+    "reconstruct_s": 0.0023966789999576577,
+    "interface_unknowns": 96,
+    "local_solves_total": 224,
+    "local_solves_per_piece": 14.0,
+    "error_rel": 0.01491044504321142
+   },
+   "Port-8": {
+    "form_port_matrices_s": 0.113669863000041,
+    "interface_factor_solve_s": 0.0010030999999344203,
+    "reconstruct_s": 0.0027961250000316795,
+    "interface_unknowns": 192,
+    "local_solves_total": 416,
+    "local_solves_per_piece": 26.0,
+    "error_rel": 0.002832067103812555
+   },
+   "Port-16": {
+    "form_port_matrices_s": 1.2391986689999612,
+    "interface_factor_solve_s": 0.00339481900005012,
+    "reconstruct_s": 0.003158553999924152,
+    "interface_unknowns": 384,
+    "local_solves_total": 800,
+    "local_solves_per_piece": 50.0,
+    "error_rel": 0.00039077546338972947
+   },
+   "case_wall_s": 4.422604799999931
+  },
+  {
+   "pieces": [
+    4,
+    4
+   ],
+   "n": 32,
+   "cells": 16384,
+   "Fo_piece": 0.01,
+   "p_star": 1.0169236671712836,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.055895276000001104,
+    "solve_s": 0.0026560249999647567,
+    "total_s": 0.05855130099996586
+   },
+   "setup": {
+    "RAS_factor_s": 0.0861693940000805,
+    "ORAS_factor_s": 0.18725040900005752,
+    "OSM_factor_s": 0.04501410900002156,
+    "coarse_s": 0.01753738800005067,
+    "substructure_factor_s": 0.07156504500005667
+   },
+   "RAS-Rich": {
+    "iterations": 22,
+    "converged": true,
+    "final_residual": 9.457079694629922e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.0460877169999776,
+    "time_per_iteration_s": 0.002094896227271709
+   },
+   "RAS-GMRES": {
+    "iterations": 13,
+    "converged": true,
+    "final_residual": 5.0805714145219315e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.033429072999979326,
+    "time_per_iteration_s": 0.0025714671538445634
+   },
+   "OSM-Rich": {
+    "iterations": 51,
+    "converged": true,
+    "final_residual": 9.660031051491153e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.10985379300007025,
+    "time_per_iteration_s": 0.002153995941177848
+   },
+   "OSM-AA": {
+    "iterations": 30,
+    "converged": true,
+    "final_residual": 9.31942915878851e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.07951019799997994,
+    "time_per_iteration_s": 0.0026503399333326644
+   },
+   "OSM-GMRES": {
+    "iterations": 34,
+    "converged": true,
+    "final_residual": 2.512126559371041e-10,
+    "iterations_extrapolated": null,
+    "time_s": 0.07491596800002753,
+    "time_per_iteration_s": 0.0022034108235302217
+   },
+   "ORAS-GMRES": {
+    "iterations": 33,
+    "converged": true,
+    "final_residual": 9.290503623718748e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.10569309400000293,
+    "time_per_iteration_s": 0.003202821030303119
+   },
+   "2L-GMRES": {
+    "iterations": 33,
+    "converged": true,
+    "final_residual": 9.223415969116882e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.11833139200007281,
+    "time_per_iteration_s": 0.003585799757577964
+   },
+   "Schur": {
+    "form_port_matrices_s": 0.9388126380000585,
+    "interface_factor_solve_s": 0.029834526999934496,
+    "reconstruct_s": 0.006534476000069844,
+    "interface_unknowns": 768,
+    "local_solves_total": 1568,
+    "local_solves_per_piece": 98.0,
+    "error_rel": 6.861034217688031e-16
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.05029383399994458,
+    "interface_factor_solve_s": 0.0007641359999297492,
+    "reconstruct_s": 0.002604872000006253,
+    "interface_unknowns": 96,
+    "local_solves_total": 224,
+    "local_solves_per_piece": 14.0,
+    "error_rel": 0.025313324450502814
+   },
+   "Port-8": {
+    "form_port_matrices_s": 0.17587344200001098,
+    "interface_factor_solve_s": 0.0011139859999502733,
+    "reconstruct_s": 0.002990694999994048,
+    "interface_unknowns": 192,
+    "local_solves_total": 416,
+    "local_solves_per_piece": 26.0,
+    "error_rel": 0.007681677317571349
+   },
+   "Port-16": {
+    "form_port_matrices_s": 0.6191804169999386,
+    "interface_factor_solve_s": 0.0032787940000389426,
+    "reconstruct_s": 0.0034805110000206696,
+    "interface_unknowns": 384,
+    "local_solves_total": 800,
+    "local_solves_per_piece": 50.0,
+    "error_rel": 0.001081078996777232
+   },
+   "case_wall_s": 2.903887601000065
+  },
+  {
+   "pieces": [
+    8,
+    8
+   ],
+   "n": 32,
+   "cells": 65536,
+   "Fo_piece": 1.0,
+   "p_star": 0.5689369289813582,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.39864882800009127,
+    "solve_s": 0.013709517000052074,
+    "total_s": 0.41235834500014334
+   },
+   "setup": {
+    "RAS_factor_s": 0.4040649080000094,
+    "ORAS_factor_s": 0.7964474529999279,
+    "OSM_factor_s": 0.48550880599998436,
+    "coarse_s": 0.6043816600000582,
+    "substructure_factor_s": 0.3931162139999742
+   },
+   "RAS-Rich": {
+    "iterations": 441,
+    "converged": true,
+    "final_residual": 9.970287173431414e-09,
+    "iterations_extrapolated": null,
+    "time_s": 5.08607602699999,
+    "time_per_iteration_s": 0.01153305221541948
+   },
+   "RAS-GMRES": {
+    "iterations": 58,
+    "converged": true,
+    "final_residual": 7.027996147249655e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.1753662869999744,
+    "time_per_iteration_s": 0.020264935982758178
+   },
+   "OSM-Rich": {
+    "iterations": 283,
+    "converged": true,
+    "final_residual": 9.736643113611348e-09,
+    "iterations_extrapolated": null,
+    "time_s": 3.7581400929999518,
+    "time_per_iteration_s": 0.013279646971731278
+   },
+   "OSM-AA": {
+    "iterations": 88,
+    "converged": true,
+    "final_residual": 5.863751424372059e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.2216889799999535,
+    "time_per_iteration_s": 0.01388282931818129
+   },
+   "OSM-GMRES": {
+    "iterations": 61,
+    "converged": true,
+    "final_residual": 8.969221399421449e-10,
+    "iterations_extrapolated": null,
+    "time_s": 0.764508329000023,
+    "time_per_iteration_s": 0.012532923426229884
+   },
+   "ORAS-GMRES": {
+    "iterations": 138,
+    "converged": true,
+    "final_residual": 9.039198127814047e-09,
+    "iterations_extrapolated": null,
+    "time_s": 3.917195076999974,
+    "time_per_iteration_s": 0.02838547157246358
+   },
+   "2L-GMRES": {
+    "iterations": 65,
+    "converged": true,
+    "final_residual": 7.494109689809599e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.449515230999964,
+    "time_per_iteration_s": 0.02230023432307637
+   },
+   "Schur": {
+    "form_port_matrices_s": 4.809513129999914,
+    "interface_factor_solve_s": 0.42315175299995644,
+    "reconstruct_s": 0.010046938999948907,
+    "interface_unknowns": 3584,
+    "local_solves_total": 7296,
+    "local_solves_per_piece": 114.0,
+    "error_rel": 6.3689340968288225e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.10118977000001905,
+    "interface_factor_solve_s": 0.0019528200000422657,
+    "reconstruct_s": 0.014629828000011003,
+    "interface_unknowns": 448,
+    "local_solves_total": 1024,
+    "local_solves_per_piece": 16.0,
+    "error_rel": 0.006575658470642775
+   },
+   "Port-8": {
+    "form_port_matrices_s": 2.3979079240000374,
+    "interface_factor_solve_s": 0.006880673000068782,
+    "reconstruct_s": 0.018716378000021905,
+    "interface_unknowns": 896,
+    "local_solves_total": 1920,
+    "local_solves_per_piece": 30.0,
+    "error_rel": 0.001126016846374687
+   },
+   "Port-16": {
+    "form_port_matrices_s": 4.575432790000036,
+    "interface_factor_solve_s": 0.033627333999902476,
+    "reconstruct_s": 0.02903457700006129,
+    "interface_unknowns": 1792,
+    "local_solves_total": 3712,
+    "local_solves_per_piece": 58.0,
+    "error_rel": 0.00012907166925288642
+   },
+   "case_wall_s": 33.33899127399991
+  },
+  {
+   "pieces": [
+    8,
+    8
+   ],
+   "n": 32,
+   "cells": 65536,
+   "Fo_piece": 0.1,
+   "p_star": 0.661690087882934,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.3296026579999989,
+    "solve_s": 0.01394174799997927,
+    "total_s": 0.34354440599997815
+   },
+   "setup": {
+    "RAS_factor_s": 0.3538138110000091,
+    "ORAS_factor_s": 0.7219575990000067,
+    "OSM_factor_s": 0.21573129299997618,
+    "coarse_s": 1.068200164000018,
+    "substructure_factor_s": 0.3084177460000319
+   },
+   "RAS-Rich": {
+    "iterations": 84,
+    "converged": true,
+    "final_residual": 9.963050333153722e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.0608029239999723,
+    "time_per_iteration_s": 0.012628606238094909
+   },
+   "RAS-GMRES": {
+    "iterations": 29,
+    "converged": true,
+    "final_residual": 6.799895927690728e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.49807432500006144,
+    "time_per_iteration_s": 0.017174976724140048
+   },
+   "OSM-Rich": {
+    "iterations": 107,
+    "converged": true,
+    "final_residual": 9.887962396124009e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.4182254769999645,
+    "time_per_iteration_s": 0.013254443710280043
+   },
+   "OSM-AA": {
+    "iterations": 54,
+    "converged": true,
+    "final_residual": 9.028771767889182e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.6852726130000519,
+    "time_per_iteration_s": 0.012690233574075036
+   },
+   "OSM-GMRES": {
+    "iterations": 47,
+    "converged": true,
+    "final_residual": 1.988228732259935e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.6136817419999261,
+    "time_per_iteration_s": 0.01305705834042396
+   },
+   "ORAS-GMRES": {
+    "iterations": 69,
+    "converged": true,
+    "final_residual": 9.663850301672624e-09,
+    "iterations_extrapolated": null,
+    "time_s": 1.1780223060000026,
+    "time_per_iteration_s": 0.0170727870434783
+   },
+   "2L-GMRES": {
+    "iterations": 55,
+    "converged": true,
+    "final_residual": 6.932341564991672e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.8820970159999888,
+    "time_per_iteration_s": 0.01603812756363616
+   },
+   "Schur": {
+    "form_port_matrices_s": 2.409918666000067,
+    "interface_factor_solve_s": 0.43720407000000705,
+    "reconstruct_s": 0.008760192000067946,
+    "interface_unknowns": 3584,
+    "local_solves_total": 7296,
+    "local_solves_per_piece": 114.0,
+    "error_rel": 2.2686499098278977e-15
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.08816326300006949,
+    "interface_factor_solve_s": 0.0020052520000035656,
+    "reconstruct_s": 0.012319848000061029,
+    "interface_unknowns": 448,
+    "local_solves_total": 1024,
+    "local_solves_per_piece": 16.0,
+    "error_rel": 0.010487647429780986
+   },
+   "Port-8": {
+    "form_port_matrices_s": 1.8866690129999597,
+    "interface_factor_solve_s": 0.006268512000019655,
+    "reconstruct_s": 0.018792225999959555,
+    "interface_unknowns": 896,
+    "local_solves_total": 1920,
+    "local_solves_per_piece": 30.0,
+    "error_rel": 0.002321412733372424
+   },
+   "Port-16": {
+    "form_port_matrices_s": 3.229975063999973,
+    "interface_factor_solve_s": 0.04960204899998644,
+    "reconstruct_s": 0.03393969699993704,
+    "interface_unknowns": 1792,
+    "local_solves_total": 3712,
+    "local_solves_per_piece": 58.0,
+    "error_rel": 0.0003256181861678152
+   },
+   "case_wall_s": 17.98237872499999
+  },
+  {
+   "pieces": [
+    8,
+    8
+   ],
+   "n": 32,
+   "cells": 65536,
+   "Fo_piece": 0.01,
+   "p_star": 1.0169236671712836,
+   "p_multiplier": 0.5,
+   "monolithic": {
+    "factor_s": 0.33715082699995946,
+    "solve_s": 0.013330535000022792,
+    "total_s": 0.35048136199998225
+   },
+   "setup": {
+    "RAS_factor_s": 0.3509157169999071,
+    "ORAS_factor_s": 0.8146862520000013,
+    "OSM_factor_s": 0.26036349900005007,
+    "coarse_s": 1.372664423999936,
+    "substructure_factor_s": 0.34144523999998455
+   },
+   "RAS-Rich": {
+    "iterations": 27,
+    "converged": true,
+    "final_residual": 5.556254705430459e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.3394728649999479,
+    "time_per_iteration_s": 0.012573069074072143
+   },
+   "RAS-GMRES": {
+    "iterations": 15,
+    "converged": true,
+    "final_residual": 6.1804213754286165e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.30281807900007607,
+    "time_per_iteration_s": 0.020187871933338406
+   },
+   "OSM-Rich": {
+    "iterations": 69,
+    "converged": true,
+    "final_residual": 8.897721911154336e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.904796246999922,
+    "time_per_iteration_s": 0.013112989086955391
+   },
+   "OSM-AA": {
+    "iterations": 36,
+    "converged": true,
+    "final_residual": 7.077024582722134e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.4769520619998957,
+    "time_per_iteration_s": 0.013248668388885991
+   },
+   "OSM-GMRES": {
+    "iterations": 40,
+    "converged": true,
+    "final_residual": 3.9579534109079645e-10,
+    "iterations_extrapolated": null,
+    "time_s": 0.44002501700003904,
+    "time_per_iteration_s": 0.011000625425000975
+   },
+   "ORAS-GMRES": {
+    "iterations": 37,
+    "converged": true,
+    "final_residual": 8.85848739713902e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.6058523880000166,
+    "time_per_iteration_s": 0.016374388864865315
+   },
+   "2L-GMRES": {
+    "iterations": 37,
+    "converged": true,
+    "final_residual": 9.756424287056127e-09,
+    "iterations_extrapolated": null,
+    "time_s": 0.5657665530000031,
+    "time_per_iteration_s": 0.015290987918919002
+   },
+   "Schur": {
+    "form_port_matrices_s": 2.8906991470000776,
+    "interface_factor_solve_s": 0.4778674570000021,
+    "reconstruct_s": 0.00926121800000601,
+    "interface_unknowns": 3584,
+    "local_solves_total": 7296,
+    "local_solves_per_piece": 114.0,
+    "error_rel": 7.665849502322929e-16
+   },
+   "Port-4": {
+    "form_port_matrices_s": 0.08574557400004323,
+    "interface_factor_solve_s": 0.0023443939999197028,
+    "reconstruct_s": 0.013362935999907677,
+    "interface_unknowns": 448,
+    "local_solves_total": 1024,
+    "local_solves_per_piece": 16.0,
+    "error_rel": 0.024087168335477045
+   },
+   "Port-8": {
+    "form_port_matrices_s": 1.9617599429999473,
+    "interface_factor_solve_s": 0.014353024999991248,
+    "reconstruct_s": 0.03322472000002108,
+    "interface_unknowns": 896,
+    "local_solves_total": 1920,
+    "local_solves_per_piece": 30.0,
+    "error_rel": 0.006344109501694041
+   },
+   "Port-16": {
+    "form_port_matrices_s": 5.819739458999948,
+    "interface_factor_solve_s": 0.06419967500005441,
+    "reconstruct_s": 0.04133161400000063,
+    "interface_unknowns": 1792,
+    "local_solves_total": 3712,
+    "local_solves_per_piece": 58.0,
+    "error_rel": 0.0007431547891372555
+   },
+   "case_wall_s": 18.998763392
+  }
+ ]
+}
