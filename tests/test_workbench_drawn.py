@@ -295,8 +295,15 @@ def test_the_check_refuses_what_a_drawn_case_gets_wrong():
     s.boundaries.append(Boundary(id="grid", edge="left", kind="insulated"))
     assert any("on the grid's left edge" in m for m in _errors(s))
     s = base.copy_deep()
-    s.domain.holes = [Outline.of(S.circle(5.0, 100.0, 3.0))]    # outside the ring
-    assert any("hole 0 is not inside" in m for m in _errors(s))
+    s.domain.holes = [Outline.of(S.circle(5.0, 100.0, 3.0))]    # across the ring's end
+    s.boundaries += [Boundary(id=f"h{k}", edge=f"hole0:{k}", kind="insulated")
+                     for k in range(4)]
+    # it was refused as "not inside the domain's outline"; since 2026-09-30 a hole may
+    # cross the outline (the owner: "Holes should be allowed to intersect the
+    # boundary's edge"), and this one bites a few cells out of the ring's cold end
+    assert _errors(s) == []
+    removed = int(geo.domain_mask(base.domain).sum() - geo.domain_mask(s.domain).sum())
+    assert 0 < removed < 40
     s = base.copy_deep()
     s.domain.outline = Outline.of(S.circle(54.0, 54.0, 60.0))    # past the grid
     s.boundaries = []

@@ -51,9 +51,13 @@ def _side(c: CaseSpec, which: str) -> int | None:
     if d.outline is not None:
         o = d.outline
         rings = shapes.edges_sampled(o.points, o.kinds(), o.bulges())
+        #: an edge a hole took whole bounds nothing: never an end
+        live = set(geo.boundary_faces(d).edge.tolist()) if d.holes else None
         best, score = None, None
         for i, b in enumerate(c.boundaries):
             if not b.edge.startswith("outline:"):
+                continue
+            if live is not None and b.edge not in live:
                 continue
             k = int(b.edge.split(":")[1])
             if k >= len(rings):
@@ -336,6 +340,44 @@ def _two_media(c: CaseSpec) -> bool:
     return len({c.regions[k].material for k in ks.tolist() if k >= 0}) >= 2
 
 
+def _swallowed(c: CaseSpec) -> str | None:
+    """A condition on an edge a hole took whole, moved to the nearest edge that still
+    bounds the domain and carries only the family's default.  The two boundaries swap
+    edges, so the condition keeps its id: an electrode stays wired to its circuit."""
+    fam = _family(c)
+    if fam is None or fam.drawn_derived or not fam.boundary_kinds:
+        return None
+    d = c.domain
+    live = set(geo.boundary_faces(d).edge.tolist())
+    parts: dict[str, list[np.ndarray]] = {}
+    for name, poly in geo.live_edges(d):
+        parts.setdefault(name, []).append(poly)
+    full = dict(geo.drawn_edges(d))
+    done = []
+    for b in c.boundaries:
+        if not b.drawn or b.edge in live or b.kind == fam.drawn_default or b.edge not in full:
+            continue
+        src = full[b.edge]
+        best, dist = None, None
+        for other in c.boundaries:
+            if (not other.drawn or other.edge not in live or other.kind != fam.drawn_default
+                    or other.edge not in parts):
+                continue
+            pts = np.concatenate(parts[other.edge])
+            dd = float(np.min(np.hypot(pts[:, None, 0] - src[None, :, 0],
+                                       pts[:, None, 1] - src[None, :, 1])))
+            if dist is None or dd < dist:
+                best, dist = other, dd
+        if best is None:
+            continue
+        gone = b.edge
+        b.edge, best.edge = best.edge, gone
+        live.discard(b.edge)                      # taken: the next moves elsewhere
+        done.append(f"the {b.kind} {b.id} moved from {gone}, which the hole removed, to "
+                    f"{b.edge}")
+    return "; ".join(done) + " (Boundaries)" if done else None
+
+
 #: key -> (the button's label, the repair)
 FIXES: dict[str, tuple[str, Callable[[CaseSpec], str | None]]] = {
     "windows": ("Cut the windows automatically", _windows),
@@ -349,7 +391,13 @@ FIXES: dict[str, tuple[str, Callable[[CaseSpec], str | None]]] = {
     "temperatures": ("Hold the ends at the family's temperatures", _temperatures),
     "outfall": ("Move it into the water", _outfall),
     "time-step": ("Use a stable macro-step", _time_step),
+    "swallowed": ("Move it to the nearest edge left", _swallowed),
 }
+
+
+#: repairs that move something the person set rather than give what is missing: the
+#: problems list offers them, and a newly drawn shape never makes them unasked
+ASKED_ONLY = frozenset({"swallowed"})
 
 
 def fix_label(key: str) -> str:
@@ -408,7 +456,8 @@ def fill_defaults(c: CaseSpec, rounds: int = 4) -> list[str]:
     for _ in range(rounds):
         keys = []
         for i in check(c):
-            if i.fix and i.fix in FIXES and i.fix not in tried and i.fix not in keys:
+            if (i.fix and i.fix in FIXES and i.fix not in ASKED_ONLY and i.fix not in tried
+                    and i.fix not in keys):
                 keys.append(i.fix)
         if not keys:
             break
@@ -420,4 +469,5 @@ def fill_defaults(c: CaseSpec, rounds: int = 4) -> list[str]:
     return done
 
 
-__all__ = ["FIXES", "fix_label", "apply_fix", "fill_defaults", "new_case", "new_case_from"]
+__all__ = ["FIXES", "ASKED_ONLY", "fix_label", "apply_fix", "fill_defaults", "new_case",
+           "new_case_from"]

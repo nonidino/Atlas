@@ -199,6 +199,31 @@ The layout's rule did not show: the page cuts one piece across by default, so `a
 
 In the served page, drag a circle hole across the outline's edge and on past the grid's. The case stays ready, with a problem only if an edge carrying a condition was swallowed, and its Fix clears it. Run, compile and the checks all behave.
 
+**Built on 2026-09-30 (the demo chat), as §3.4 designed.** The pieces:
+- the two refusals are gone;
+- `geometry.live_edges` is the filtered nearest-edge set, and it hands back `drawn_edges`' own arrays wherever nothing is cut;
+- a condition left on a swallowed edge is a problem with a Fix, *Move it to the nearest edge left*, which is never made unasked;
+- a hole that cuts the domain in two is refused;
+- `layout.topological_holes` reads holes from the mask;
+- the heat through each piece of a cut edge goes into the conduction record.
+
+**Walked in the served page at $1090\times620$, with real pointer events.** A circle hole drawn inside a heat-conduction outline was dragged by its diamond to $(344, 120)$: across the outline's edge at 336 cells and past the grid's at 352.
+- The case stayed *Ready to run*.
+- The run closed energy to $4.5\times10^{-12}$ and agreed with the full domain to $8.4\times10^{-11}$ (tolerance $10^{-6}$ each).
+- The cold edge's two pieces each carried $-1444.13$ W/m.
+- The compile read `refuse` at R10, the W348 refusal of §5.
+
+A river whose whole inlet end a hole took showed *"the river-inlet B4 is on outline:3, an edge the hole removed"*. Its Fix moved the inlet onto the hole's arc. That raised the flow's speed near it, so the next problem was the time step, which has its own Fix. The river then ran every check.
+
+**Checks (§3.5), in `tests/test_workbench_holes.py`:**
+- the one-window control on a crossing hole is bit for bit for the river, the plate, the channel and the farm;
+- the split and the sound's pieces match their references to the bit;
+- the circuit and the cooled block pass their own checks;
+- the plate balances to $10^{-6}$;
+- the wall reports both pieces of its cut edge.
+
+271 workbench tests pass. One old test changed, because it pinned the refusal the owner lifted.
+
 ---
 
 ## 4. Hosting: who can actually interact with it

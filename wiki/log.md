@@ -6960,3 +6960,18 @@ Walked in the served page at $1090\times620$:
 - A cooled block drawn without its water was refused, because its windows are cut one per physics. A newly drawn domain is now never refused for its windows' sake.
 
 246 workbench tests pass. **Changed:** `atlas/workbench/` (`app.py`, `spec.py`, `starter.py`, `runner.py`, `runview.py`, `compile.py`, `inspector.py`, three families' graph names, the README), six test files, [[demo-finish-plan]].
+
+## [2026-09-30] build | Demo step 3: holes may cross the outline and reach past the grid
+
+Item 1.3 of [[demo-finish-plan]]. **Both refusals are lifted: a hole is any closed shape that does not cross itself, anywhere.** A hole only removes cells, so no solver changed. What changed is the bookkeeping that refers back to the drawing:
+- every face takes the condition of the nearest edge that still bounds the domain (`geometry.live_edges`, which is the old arithmetic to the bit where nothing is cut);
+- a condition left on an edge a hole took whole is a problem, with a Fix that moves it;
+- a hole that cuts the domain in two is refused;
+- the layout reads holes from the mask;
+- the heat through each piece of a cut edge is reported.
+
+**In the served page:**
+- A hole was dragged by its diamond across a heat-conduction outline's edge and past the grid. The case stayed ready, and the run closed energy to $4.5\times10^{-12}$ and agreed with the full domain to $8.4\times10^{-11}$.
+- A river whose inlet end a hole took showed the problem, and its Fix cleared it.
+
+The one-window control holds bit for bit on a crossing hole wherever the discretization is identical; the iterated families pass their own checks. 271 workbench tests pass. **Added:** `tests/test_workbench_holes.py`. **Changed:** `geometry.py`, `spec.py`, `starter.py`, `layout.py`, `fv.py`, `families/conduction.py`, the README, one test that pinned the lifted refusal, [[demo-finish-plan]].

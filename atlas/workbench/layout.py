@@ -226,6 +226,19 @@ def ends(domain) -> tuple[str, str]:
     return start, end
 
 
+def topological_holes(act: np.ndarray) -> int:
+    """How many holes the domain's cells enclose: pieces of the void (8-connected, the
+    right partner of cells joined by faces) that reach neither the grid's border nor,
+    through it, the outline's outside.  A drawn hole that crosses the outline is a
+    notch, not a hole (2026-09-30: holes may cross the outline)."""
+    from scipy.ndimage import label
+    lab, n = label(~np.asarray(act, dtype=bool), structure=np.ones((3, 3), dtype=bool))
+    if not n:
+        return 0
+    border = set(np.concatenate([lab[0, :], lab[-1, :], lab[:, 0], lab[:, -1]]).tolist())
+    return sum(1 for k in range(1, n + 1) if k not in border)
+
+
 def coordinates(domain, across: bool = False):
     """(along, across or None, start, end): the domain's own coordinates."""
     act = geo.domain_mask(domain)
@@ -238,14 +251,17 @@ def coordinates(domain, across: bool = False):
     along = harmonic(domain, {start: 0.0, end: 1.0})
     if not across:
         return along, None, start, end
-    if domain.holes:
+    if topological_holes(act):
         raise LayoutError("cutting across needs a domain without holes: a hole leaves "
                           "no single pair of sides")
     ring = _ring(domain)
     s, t = ring.index(start), ring.index(end)
     n = len(ring)
-    one = [ring[(s + k) % n] for k in range(1, (t - s) % n)]
-    two = [ring[(t + k) % n] for k in range(1, (s - t) % n)]
+    # a side's edges that a hole took whole bound nothing, so they fix nothing
+    grid, vf = _labels(domain, act)
+    live = _edge_cells(domain, act, grid, vf)
+    one = [ring[(s + k) % n] for k in range(1, (t - s) % n) if ring[(s + k) % n] in live]
+    two = [ring[(t + k) % n] for k in range(1, (s - t) % n) if ring[(t + k) % n] in live]
     if not one or not two:
         raise LayoutError(f"cutting across needs an edge on each side between the domain's "
                           f"two ends ({start}, {end}); one side has none")

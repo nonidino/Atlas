@@ -157,6 +157,50 @@ def field_from_case(spec, prop_k: str = "k", kinds: dict[str, int] | None = None
                     void=void)
 
 
+def heat_through_pieces(spec, f: fv.Field, u: np.ndarray) -> dict[str, float]:
+    """The heat INTO the domain through each connected piece of each edge, in W per
+    metre of depth, keyed ``outline:1`` or, for an edge cut in pieces, ``outline:1 (1
+    of 2)``.  A hole across an edge leaves it in pieces (2026-09-30: holes may cross
+    the outline), and each piece is reported.
+
+    `fv.boundary_face_inflow` and `geometry.boundary_faces` list the same faces in the
+    same order (the grid's edges, then the faces to the void), so each face's flow is
+    `boundary_inflow`'s own and its label is the geometry's.  Faces of one edge are
+    one piece when their midpoints are within 1.5 cells (a staircase's neighbours are
+    1 or 0.71 apart; a cut leaves at least a cell out)."""
+    from scipy.spatial import cKDTree
+    d = spec.domain
+    q = fv.boundary_face_inflow(f, u)
+    bf = geo.boundary_faces(d)
+    if q.size != bf.n:                                    # pragma: no cover
+        raise RuntimeError("the field's boundary faces and the geometry's disagree")
+    step = np.asarray(geo.DIRECTIONS, dtype=float)[bf.direction]
+    mid = np.column_stack([bf.cell % d.nx + 0.5 + 0.5 * step[:, 0],
+                           bf.cell // d.nx + 0.5 + 0.5 * step[:, 1]])
+    out: dict[str, float] = {}
+    for name in dict.fromkeys(bf.edge.tolist()):
+        sel = np.flatnonzero(bf.edge == name)
+        parent = list(range(sel.size))
+
+        def find(i):
+            while parent[i] != i:
+                parent[i] = parent[parent[i]]
+                i = parent[i]
+            return i
+        for a, b in cKDTree(mid[sel]).query_pairs(r=1.5):
+            parent[find(a)] = find(b)
+        roots = [find(i) for i in range(sel.size)]
+        groups = {}
+        for i, r in enumerate(roots):
+            groups.setdefault(r, []).append(i)
+        pieces = sorted(groups.values(), key=lambda g: (float(mid[sel[g], 0].min()),
+                                                        float(mid[sel[g], 1].min())))
+        for p, g in enumerate(pieces):
+            key = name if len(pieces) == 1 else f"{name} ({p + 1} of {len(pieces)})"
+            out[key] = float(np.sum(q[sel[g]]))
+    return out
+
+
 def capacity(spec) -> np.ndarray:
     d = spec.domain
     owner = geo.region_owner(spec.regions, d.nx, d.ny)
@@ -383,6 +427,13 @@ class ConductionRun:
         else:
             checks.append(exact(CHECKS[3], None, "style C has no threaded arm" if
                                 self.style == "C" else "needs both decomposed arms"))
+        if self.spec.domain.holes:
+            # a hole across an edge leaves it in pieces: the heat through each
+            for arm in metrics:
+                metrics[arm]["heat_through_edges"] = heat_through_pieces(self.spec, self.f,
+                                                                         states[arm].u)
+            self._pieces = metrics.get("full", metrics[next(iter(metrics))]).get(
+                "heat_through_edges") if metrics else None
         return metrics, checks
 
     def notes(self, done: int) -> list[str]:
@@ -399,6 +450,12 @@ class ConductionRun:
         if not self.transient:
             out.append("Steady: every 'step' is the whole solve again from the initial "
                        "temperature, repeated to time it; the answer is the same each time.")
+        pieces = getattr(self, "_pieces", None)
+        if pieces:
+            out.append("Heat into the domain through each piece of each edge (W per metre "
+                       "of depth; an edge a hole cuts is in pieces): "
+                       + ", ".join(f"{k} {v:+.6g}" for k, v in pieces.items()
+                                   if abs(v) > 0.0) + ".")
         return out
 
     def describe(self) -> dict[str, Any]:

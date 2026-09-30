@@ -629,6 +629,52 @@ def drawn_edges(domain, step: float = 1.0) -> list[tuple[str, np.ndarray]]:
     return out
 
 
+def live_edges(domain, step: float = 1.0) -> list[tuple[str, np.ndarray]]:
+    """`drawn_edges`, less what no longer bounds the domain: the outline's parts inside
+    a hole, and a hole's parts outside the outline, past the grid or inside another
+    hole.  Since 2026-09-30 a hole may cross the outline and reach past the grid (the
+    owner: "Holes should be allowed to intersect the boundary's edge"), and a face
+    near the crossing took its condition from the part of the outline the hole had
+    removed.
+
+    Each edge comes back as the runs of its polyline that remain, under its own
+    name (a segment is kept or dropped by its midpoint); an edge the holes swallow
+    whole is absent.  **An edge nothing crosses comes back as the very array
+    `drawn_edges` gives**, so a domain whose holes lie inside its outline and on the
+    grid labels every face as before, to the bit."""
+    edges = drawn_edges(domain, step)
+    holes = [outline_ring(h) for h in (getattr(domain, "holes", None) or [])]
+    if not holes:
+        return edges
+    o = getattr(domain, "outline", None)
+    ring = outline_ring(o) if o is not None else None
+    nx, ny = domain.nx, domain.ny
+    out: list[tuple[str, np.ndarray]] = []
+    for name, poly in edges:
+        mid = 0.5 * (poly[:-1] + poly[1:])
+        keep = np.ones(len(mid), dtype=bool)
+        mine = int(name[4:].split(":")[0]) if name.startswith("hole") else None
+        if mine is not None:
+            keep &= ((mid[:, 0] >= 0.0) & (mid[:, 0] <= nx) & (mid[:, 1] >= 0.0)
+                     & (mid[:, 1] <= ny))
+            if ring is not None:
+                keep &= shapes.contains(ring, mid)
+        for k, h in enumerate(holes):
+            if k != mine:
+                keep &= ~shapes.contains(h, mid)
+        if keep.all():
+            out.append((name, poly))
+            continue
+        idx = np.flatnonzero(keep)
+        if not idx.size:
+            continue                                     # swallowed whole
+        cut = np.flatnonzero(np.diff(idx) > 1)
+        for a, b in zip(np.concatenate([[idx[0]], idx[cut + 1]]),
+                        np.concatenate([idx[cut], [idx[-1]]])):
+            out.append((name, poly[a:b + 2]))
+    return out
+
+
 def nearest_edge(pts: np.ndarray, edges: list[tuple[str, np.ndarray]]) -> np.ndarray:
     """For each point, the name of the drawn edge nearest it."""
     pts = np.asarray(pts, dtype=float).reshape(-1, 2)
@@ -693,7 +739,7 @@ def void_faces(domain) -> VoidFaces:
     ci, cj = cell % nx, cell // nx
     d = np.asarray(DIRECTIONS)[direc]
     mid = np.column_stack([ci + 0.5 + 0.5 * d[:, 0], cj + 0.5 + 0.5 * d[:, 1]])
-    return VoidFaces(cell, out, direc, nearest_edge(mid, drawn_edges(domain)))
+    return VoidFaces(cell, out, direc, nearest_edge(mid, live_edges(domain)))
 
 
 def grid_edge_labels(domain) -> dict[str, np.ndarray]:
@@ -702,7 +748,7 @@ def grid_edge_labels(domain) -> dict[str, np.ndarray]:
     edge -- left and right bottom to top, bottom and top left to right."""
     act = domain_mask(domain)
     ny, nx = act.shape
-    edges = drawn_edges(domain)
+    edges = live_edges(domain)
     out = {}
     spec_ = {"left": (np.zeros(ny), np.arange(ny) + 0.5, act[:, 0]),
              "right": (np.full(ny, float(nx)), np.arange(ny) + 0.5, act[:, -1]),
@@ -812,9 +858,13 @@ def face_conditions(boundaries, bf: BoundaryFaces, nx: int, ny: int) -> np.ndarr
 
 
 def edge_lengths(domain) -> dict[str, float]:
-    """Each drawn edge's true length, in cells (the curve itself, not its staircase)."""
-    return {name: float(np.sum(np.hypot(*np.diff(poly, axis=0).T)))
-            for name, poly in drawn_edges(domain, step=0.25)}
+    """Each drawn edge's true length, in cells (the curve itself, not its staircase),
+    over the parts that still bound the domain (`live_edges`): a flux on a hole's edge
+    half past the grid is per unit length of the half that bounds something."""
+    out: dict[str, float] = {}
+    for name, poly in live_edges(domain, step=0.25):
+        out[name] = out.get(name, 0.0) + float(np.sum(np.hypot(*np.diff(poly, axis=0).T)))
+    return out
 
 
 def staircase_scale(domain, bf: BoundaryFaces) -> dict[str, float]:
@@ -969,7 +1019,7 @@ __all__ = ["Box", "SNAP_STEPS", "DEFAULT_SNAP", "snap_value", "snap_box", "corne
            "edge_length", "edge_segment_xy", "outline_ring", "shape_mask", "domain_mask",
            "window_mask", "is_plain", "window_masks", "touching", "faces_between",
            "ramp_weight", "analyse_masks", "analyse_case", "DIRECTIONS", "drawn_edges",
-           "nearest_edge", "VoidFaces", "void_faces", "grid_edge_labels",
+           "live_edges", "nearest_edge", "VoidFaces", "void_faces", "grid_edge_labels",
            "drawn_edge_names", "mask_to_runs", "runs_to_mask", "contour_lines",
            "inner_boundary", "BoundaryFaces", "boundary_faces", "face_conditions",
            "edge_lengths", "staircase_scale", "along_grid_edge", "node_mask",

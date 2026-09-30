@@ -378,6 +378,41 @@ sees the domain's cells, with the exact outline over it.
 - both compile with every seam admitted, and are refused at R10 alone, as their
   rectangular counterparts are (W348).
 
+## Holes anywhere (2026-09-30)
+
+The owner: "Holes should be allowed to intersect the boundary's edge. Also, they
+should also be allowed to extend beyond the geometry's edge, as long as the geometry
+itself is a closed shape." Two rules refused both; they are lifted. **A hole is any
+closed shape that does not cross itself, anywhere**: across the outline (a notch) or
+past the grid (it removes only the grid's cells).
+
+The domain is its cells, and a hole only removes cells, so no solver changed. What
+changed is the bookkeeping that refers back to the drawing:
+- **each face takes the condition of the nearest edge that still bounds the domain**
+  (`geometry.live_edges`): the outline's parts inside a hole, and a hole's parts
+  outside the outline, past the grid or inside another hole, are no one's edge. Where
+  nothing is cut, `live_edges` returns `drawn_edges`' own arrays, so every earlier
+  case labels its faces to the bit (a test checks every drawn example);
+- **a condition on an edge a hole took whole is a problem** ("the river-inlet B4 is on
+  outline:3, an edge the hole removed: ... it does nothing"), with a Fix that moves it,
+  id and all, to the nearest edge left. A newly drawn shape never makes that move
+  unasked (`starter.ASKED_ONLY`): it moves the person's own choice;
+- **a hole that cuts the domain in two is refused**, with the reason;
+- **cutting across reads holes from the mask** (`layout.topological_holes`): a hole
+  that bites the outline is a notch, and the layout may cut across it;
+- **the heat through each piece of an edge** a hole cuts is reported by the conduction
+  family (`heat_through_pieces`), in the record and the run's notes.
+
+Checked (`tests/test_workbench_holes.py`): the one-window control on a domain with a
+crossing hole, bit for bit, for the river, the plate, the channel and the farm; the
+split and the sound's pieces equal their references to the bit; the circuit and the
+cooled block pass their own checks. A plate pulled on what a hole leaves of its edge
+balances to $10^{-6}$, and a wall whose cold edge a hole cuts reports both pieces.
+In the served page, a circle hole dragged across an outline's edge and past the grid
+left the case ready; its run closed energy to $4.5\times10^{-12}$ and agreed with the
+full domain to $8.4\times10^{-11}$, and a river whose whole inlet a hole took showed
+the problem, and its Fix cleared it.
+
 ## Windows that follow the domain (case file 0.5)
 
 The owner's next question, the same day: "it doesn't make sense for the windows
@@ -505,7 +540,7 @@ projection lets a little velocity back into the solid each sub-step.
 | `flow.py` | a flow that follows a drawn domain: the potential flow from its inlet faces to its outlet faces, for the river and the coolant |
 | `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes |
 | `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
-| `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking; for drawn shapes, their cell masks, the distance ramp, the analysis on masks, and a drawn domain's boundary faces labelled by edge |
+| `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking; for drawn shapes, their cell masks, the distance ramp, the analysis on masks, and a drawn domain's boundary faces labelled by the nearest edge that still bounds it (`live_edges`) |
 | `editor.py` | the Model tab's canvas: its layers, the five tools, what a click selects on each layer (`hit`), the selected shape's handles, and the edits they make |
 | `inspector.py` | the Model tab's rail and inspector: the layer buttons, the active layer's list, and the panel for what is selected (or the layer's settings) |
 | `gmsh_import.py` | `.msh` to case geometry, by physical-group names |

@@ -911,8 +911,18 @@ def drawn_shapes(spec: CaseSpec) -> list[tuple[str, Outline]]:
 
 
 def _check_drawn(spec: CaseSpec) -> list[Issue]:
-    """Drawn shapes: each one well formed and on the grid, the holes inside the
-    outline, and a family whose solvers can run on them."""
+    """Drawn shapes: each one well formed, the outline on the grid, holes that leave
+    one connected domain, and a family whose solvers can run on them.
+
+    **A hole may cross the outline and reach past the grid** (2026-09-30, the owner:
+    "Holes should be allowed to intersect the boundary's edge. Also, they should also
+    be allowed to extend beyond the geometry's edge, as long as the geometry itself
+    is a closed shape").  The domain is its cells, and a hole only removes cells: one
+    that crosses the outline removes the outline's, one past the grid removes cells
+    that were never there.  The solvers never see the drawing, only the mask; the
+    faces near a crossing take the condition of the nearest edge that still bounds
+    the domain (`geometry.live_edges`).  What stays refused: a hole that cuts the
+    domain in two."""
     out: list[Issue] = []
     d = spec.domain
     fam = _family(spec)
@@ -926,26 +936,30 @@ def _check_drawn(spec: CaseSpec) -> list[Issue]:
             out.append(Issue("error", "geometry", f"{name}: {p}"))
         if why:
             continue
-        # a window or a region may reach past the grid: it holds only the domain's
-        # cells whose centres it contains.  The domain itself may not: the part
-        # past the grid would silently not be in it.
-        if not (name == "the domain's outline" or name.startswith("hole ")):
+        # a window, a region or a hole may reach past the grid: each holds (or
+        # removes) only cells of the grid.  The outline may not: the part past the
+        # grid would silently not be in the domain.
+        if name != "the domain's outline":
             continue
         x0, y0, x1, y1 = o.bbox()
         if x0 < -1e-9 or y0 < -1e-9 or x1 > d.nx + 1e-9 or y1 > d.ny + 1e-9:
             out.append(Issue("error", "geometry",
                              f"{name} reaches past the {d.nx} x {d.ny} grid; draw it inside, "
                              f"or make the grid bigger (Model, Physics)"))
-    if d.outline is not None and not d.outline.problems():
-        ring = d.outline.ring()
-        for h, o in enumerate(d.holes):
-            if not o.problems() and not np.all(shapes.contains(ring, o.ring(step=1.0))):
-                out.append(Issue("error", "geometry",
-                                 f"hole {h} is not inside the domain's outline"))
     if not any(i.severity == "error" for i in out):
         act = geo.domain_mask(d)
         if not act.any():
             out.append(Issue("error", "geometry", "the domain contains no cell centre"))
+        elif d.holes:
+            from scipy.ndimage import label
+            whole = geo.domain_mask(d.model_copy(update={"holes": []}))
+            n_with, n_without = label(act)[1], label(whole)[1]
+            if n_with > n_without:
+                s = "s" if len(d.holes) > 1 else ""
+                out.append(Issue("error", "geometry",
+                                 f"the hole{s} cut{'' if s else 's'} the domain into {n_with} "
+                                 f"separate pieces; a case is one connected domain (Shape: "
+                                 f"move or shrink the hole{s})"))
     return out
 
 
@@ -1401,6 +1415,20 @@ def _check_boundaries(spec: CaseSpec) -> list[Issue]:
         elif not ids and fam is not None and fam.boundary_kinds:
             out.append(Issue("error", "geometry", f"the drawn edge {edge} has no boundary "
                                                   f"condition"))
+    if drawn and fam is not None and fam.boundary_kinds and not fam.drawn_derived:
+        # a condition the person set on an edge that bounds nothing any more (a hole
+        # took all of it) would silently do nothing (2026-09-30: holes may cross the
+        # outline); the family's own default there is nothing to lose
+        live = set(geo.boundary_faces(d).edge.tolist())
+        for b in spec.boundaries:
+            if (b.drawn and b.edge in on_drawn and b.edge not in live
+                    and b.kind != fam.drawn_default):
+                where = ("an edge the hole removed" if d.holes else
+                         "an edge no face of the domain lies on")
+                out.append(Issue("error", "geometry",
+                                 f"the {b.kind} {b.id} is on {b.edge}, {where}: nothing of it "
+                                 f"bounds the domain, so it does nothing (Boundaries)",
+                                 fix="swallowed"))
     for edge, segs in spans.items():
         if d.outline is not None:
             break                       # a drawn outline: the grid's edges are not used

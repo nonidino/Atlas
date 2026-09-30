@@ -363,6 +363,30 @@ def assemble(f: Field, cells: np.ndarray | None = None,
 # ---------------------------------------------------------------------------
 
 
+def _face_inflow(f: Field, u: np.ndarray, c, kd, v, g, fin) -> np.ndarray:
+    """The flow INTO the domain through each of the faces ``c`` (their kinds, values,
+    half-cell conductances and advective inflows), for the global state ``u``."""
+    q = np.zeros(c.size)
+    fx_ = kd == FIXED
+    q[fx_] = g[fx_] * (v[fx_] - u[c[fx_]]) + np.where(fin[fx_] > 0.0, fin[fx_] * v[fx_],
+                                                      fin[fx_] * u[c[fx_]])
+    fl = kd == FLUX
+    q[fl] = v[fl] * f.dx
+    il = kd == INLET
+    q[il] = np.where(fin[il] > 0.0, fin[il] * v[il], fin[il] * u[c[il]])
+    ol = kd == OUTLET
+    q[ol] = np.minimum(fin[ol], 0.0) * u[c[ol]]
+    return q
+
+
+def boundary_face_inflow(f: Field, u: np.ndarray) -> np.ndarray:
+    """The flow INTO the domain through every boundary face, in `boundary_faces`'
+    order (the grid's edges, then the faces to the void): what `boundary_inflow`
+    sums by edge, face by face."""
+    u = np.asarray(u, dtype=float).ravel()
+    return _face_inflow(f, u, *boundary_faces(f))
+
+
 def boundary_inflow(f: Field, u: np.ndarray) -> dict[str, float]:
     """The flow INTO the domain through each edge, for the global state ``u``.
 
@@ -374,17 +398,7 @@ def boundary_inflow(f: Field, u: np.ndarray) -> dict[str, float]:
     out = {}
 
     def flows(c, kd, v, g, fin):
-        q = np.zeros(c.size)
-        fx_ = kd == FIXED
-        q[fx_] = g[fx_] * (v[fx_] - u[c[fx_]]) + np.where(fin[fx_] > 0.0, fin[fx_] * v[fx_],
-                                                          fin[fx_] * u[c[fx_]])
-        fl = kd == FLUX
-        q[fl] = v[fl] * f.dx
-        il = kd == INLET
-        q[il] = np.where(fin[il] > 0.0, fin[il] * v[il], fin[il] * u[c[il]])
-        ol = kd == OUTLET
-        q[ol] = np.minimum(fin[ol], 0.0) * u[c[ol]]
-        return q
+        return _face_inflow(f, u, c, kd, v, g, fin)
 
     if f.active is None:
         bc_cell, bc_kind, bc_val, bc_g, bc_in = boundary_faces(f)
@@ -435,4 +449,4 @@ def face_flows(f: Field, u: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 __all__ = ["NO_FLUX", "FIXED", "FLUX", "INLET", "OUTLET", "KIND_CODES", "EDGES", "Field",
            "harmonic", "interior_faces", "boundary_faces", "LocalSystem", "assemble",
-           "boundary_inflow", "total_source", "face_flows"]
+           "boundary_inflow", "boundary_face_inflow", "total_source", "face_flows"]
