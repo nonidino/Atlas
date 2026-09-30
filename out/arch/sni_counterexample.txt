@@ -1,0 +1,29 @@
+arch_sni_counterexample -- SNI Theorem 1, one subdomain, R = I, t = 1
+tau = 0.5, c = 1.0, k = 10.0
+hypothesis (a): classical map contracts, rho = 1 - tau = 0.5
+hypothesis (b): max |S~ - S| on [-5, 5] = 1.000000 <= c = 1.0
+learned map's slope at its only fixed point u = 0: -4.5
+SNI's distance bound c' = tau t c / (1 - rho) = 1.0
+
+   n     classical u^n        learned u~^n     |u~^n - u^n|   <= c'
+   0   1.000000000000e+00   1.000000000000e+00  0.000000   True
+   1   5.000000000000e-01   2.061153692168e-09  0.500000   True
+   2   2.500000000000e-01  -9.275191614755e-09  0.250000   True
+   3   1.250000000000e-01   4.173836226640e-08  0.125000   True
+   4   6.250000000000e-02  -1.878226301988e-07  0.062500   True
+   5   3.125000000000e-02   8.452018358934e-07  0.031249   True
+   6   1.562500000000e-02  -3.803408261420e-06  0.015629   True
+   7   7.812500000000e-03   1.711533716722e-05  0.007795   True
+   8   3.906250000000e-03  -7.701901641687e-05  0.003983   True
+   9   1.953125000000e-03   3.465854977307e-04  0.001607   True
+  10   9.765625000000e-04  -1.559627801093e-03  0.002536   True
+  20   9.536743164062e-07  -3.329094644202e-01  0.332910   True
+  30   9.313225746155e-10  -3.324715241170e-01  0.332472   True
+  40   9.094947017729e-13  -3.324712724420e-01  0.332471   True
+
+after 1040 steps the learned iterates alternate between -0.332471272297 and 0.332471272297
+successive difference |u~^(n+1) - u~^n| = 0.664942544595 (does not tend to 0)
+
+verdict: both hypotheses hold, the distance bound holds at every n, and the
+learned iteration does not converge.  A Lipschitz bound Lip(F~) < 1 on the learned
+map is the missing hypothesis (T1 of the formal-proofs plan).
