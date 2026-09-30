@@ -1,7 +1,7 @@
 # Finishing the demo workbench — the header, the branching river, and holes that cross the edge
 
 **Type:** Concept page — **plan, with the decisions made and the ones left to the owner** (folder: `Atlas 0.1/atlas-0.1-proposal/demo/`)
-**Status:** written 2026-09-30, before any code. Read from `atlas/workbench/` at commit `fc9a182` (`spec.py`, `layout.py`, `flow.py`, `families/plume.py`, `app.py`, `registry.py`, `starter.py`) and its README. **Nothing here has been run**: the planning session's container had no numpy, and installs need the owner's approval. Every diagnosis below is read from the code and marked as a hypothesis until the next chat reproduces it in the served page.
+**Status:** written 2026-09-30, before any code. Read from `atlas/workbench/` at commit `fc9a182` (`spec.py`, `layout.py`, `flow.py`, `families/plume.py`, `app.py`, `registry.py`, `starter.py`) and its README. **Nothing here has been run**: the planning session's container had no numpy, and installs need the owner's approval. Every diagnosis below is read from the code and marked as a hypothesis until the next chat reproduces it in the served page. **Reproduced on 2026-09-30 by the demo chat**: §2.2 and §3.2 say which hypotheses held.
 **Hub:** [[00-proposal-workstreams]] · **Sibling plans:** [[demo-fast-examples-plan]] (item 1.4) · [[demo-learned-case-plan]] (item 1.5)
 **Built on:** [[showcase-library-plan]] · [[showcase-gallery]] · [[outcome-c4-path-to-declarative-cases]] · `atlas/workbench/README.md`
 
@@ -81,6 +81,21 @@ Until now the workbench was built for the owner, who knows what a style, a seam 
 | H2 | **the starting values** (`starter.py`) | the starter marks the leftmost edge the inlet and the rightmost the outlet. A fork has a second outlet the starter does not know about. Its branch carries no flow (a dead end in the potential problem), and nothing tells the visitor why the plume will not go down it | `starter.py:136–146`, `:317–318` |
 | H3 | **the compile** | a window whose seam with its neighbour is two separate curves (a band that spans both branches) may break `compile.curve_order`, which orders one seam's faces along one curve | `compile.curve_order`; not read in full |
 
+**Reproduced on 2026-09-30 (the demo chat), headless and in the served page. The hypotheses, corrected.** I drew a Y: the stem from the left, two branches to the right, straight edges (and again with smooth ones). It runs. With both branch ends marked as outlets, the served page ran it for 6,000 steps:
+- mass closed to $7.3\times10^{-14}$ ($10^{-9}$);
+- the full river agreed to $1.2\times10^{-15}$ of the peak ($10^{-10}$);
+- threaded equalled serial;
+- the compile read `admit-uncertified`.
+
+At 2, 3, 4 and 6 automatic windows every window was one connected piece. So:
+- **H1 held, in a milder form than written.** There was no `LayoutError` and no window in two parts. But the Fiedler ends of a Y are its two branch tips, so the stem is the dead end: the along coordinate there lies between $0.497$ and $0.503$. The two windows therefore split the stem lengthwise. All 126 faces between them in the stem lie along the flow, and none cross it.
+- **H2 held.** The starter marks one branch's end as the outlet: the rightmost edge, the first of the two tied ends. The other stays a bank. The case then reads *Ready to run*, and nothing says the second branch carries no water.
+- **H3 did not show.** The compile admitted the Y, uncertified.
+- **A fourth way, found in the probe.** A river split into two outlets by an island, drawn as a hole that reaches the river's downstream end, is refused by the hole rule: *"hole 0 is not inside the domain's outline"* (§3.2).
+- **Which of these the owner met is not known.** The page writes a record only when a run starts. The owner's two river records from that morning (`out/workbench/cases/new-river-plume.results/20260930-120218.json` and `-120733.json`) are single channels. The build below removes all four.
+
+The served page's run is `out/workbench/records/demo-repro/fork-y-two-outlets-20260930-161125.json`.
+
 ### 2.3 The design
 
 **1. For a family that carries a flow, the windows follow the flow, not the Fiedler vector.** The river and the coolant already solve a potential $\phi$ from the inlets ($\phi=1$) to the outlets ($\phi=0$). Its level sets cross every branch from bank to bank, and it decreases monotonically along every streamline, because a harmonic function has no interior extrema. So $1-\phi$ is the natural `along` coordinate of a network of channels of any topology: a fork, a braid, a delta.
@@ -128,6 +143,16 @@ Two rules in `spec._check_drawn` (`spec.py:901–936`):
 - *"hole {h} reaches past the grid"*: a hole is held to the grid like the outline.
 
 And one in `layout.coordinates` (`layout.py:241–243`): *"cutting across needs a domain without holes"*.
+
+**Reproduced on 2026-09-30 in the served page, exactly as written.** I cut a circle hole across the end of a drawn river's branch and on past the grid's right edge: centre $(344, 184)$ cells, radius 22. It made two errors, neither with a Fix:
+- *"hole 0 is not inside the domain's outline"*;
+- *"hole 0 reaches past the 352 x 240 grid; draw it inside, or make the grid bigger (Model, Physics)"*.
+
+Headless, each rule fires on its own:
+- a hole past the grid, on the whole grid, gives the second error alone;
+- a hole across an inset outline, inside the grid, gives the first alone.
+
+The layout's rule did not show: the page cuts one piece across by default, so `across` is 1.
 
 ### 3.3 Why lifting them is mostly safe
 

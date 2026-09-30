@@ -6929,3 +6929,15 @@ The owner answered the nine decisions of [[00-proposal-workstreams]] §5, the sa
 **The three chats run at the same time in one folder.** A separate worktree would lack the run records under `out/` that git does not track. So each chat owns its paths, commits only them, appends to the shared pages at the end of a step, and the demo times nothing while the others run. The demo chat owns the W348 compiler change and cites T3, which the proofs chat checks first.
 
 **Changed:** [[00-proposal-workstreams]], the three demo pages, [[proposal-website-plan]], [[vision-scenarios-and-image-prompts]], [[chart-operator-architecture]] §9, [[formal-proofs-plan]] §4, [[gap-worklist]] (W349, W352–W354), [[index]].
+
+## [2026-09-30] build | Demo step 1: the forked river and the crossing hole, reproduced
+
+The demo chat's first step. It reproduced the owner's two scenarios headlessly, through the `Workbench` object the page drives, then in the served page, before changing any code. [[demo-finish-plan]] §2.2 and §3.2 now say what held.
+
+- **The fork runs.** A Y with both branch ends marked as outlets ran 6,000 steps in the served page. Mass closed to $7.3\times10^{-14}$, the full river agreed to $1.2\times10^{-15}$ of the peak, threaded equalled serial, and the compile read `admit-uncertified`. What is wrong is quieter:
+  - the starter marks only one branch's end as the outlet, and nothing warns that the other carries no water (H2 held);
+  - the Fiedler ends of a Y are its branch tips, so the automatic windows split the stem lengthwise, along the flow (H1, in a milder form);
+  - a river split into two outlets by an island is refused by the hole rule.
+- **Both hole rules fire exactly as the plan said**, and neither offers a Fix.
+
+**Added:** `out/workbench/records/demo-repro/` (the served page's fork run). **Changed:** [[demo-finish-plan]].
