@@ -2,7 +2,8 @@
 
 **Type:** Concept page — **scenario design and image-generation brief** (folder: `Atlas 0.1/atlas-0.1-proposal/website/`)
 **Status:** written 2026-09-30. **Everything on this page is vision, not result.** The *today* line under each scenario says what exists in the vault toward it, from its measured pages. The prompts are a first draft for the owner to run in an image generator. The website chat refines them once the first images come back.
-**Hub:** [[00-proposal-workstreams]] · **Used by:** [[proposal-website-plan]] §1, section 7 · **The end goal they illustrate:** [[f1-pathmap-and-end-goal]] · [[physics-foundation-models]]
+**Revised 2026-09-30:** the owner chose the headline *"A full world. Decomposed and simulated by experts."* (O7). The hero is now a whole world cut into charts, and its prompts (H1–H3) are in [[website-outline]] section 1, with the prompts for the architecture section (M1, M2). This page keeps the three scenarios.
+**Hub:** [[00-proposal-workstreams]] · **Used by:** [[proposal-website-plan]] §1, section 7 · [[website-outline]] section 7 · **The end goal they illustrate:** [[f1-pathmap-and-end-goal]] · [[physics-foundation-models]]
 
 ---
 

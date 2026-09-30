@@ -99,6 +99,21 @@ T1 + T8 + T9 + T4 + T22 for the first, T5 for the second. All are Tier A or B.
 - **The blueprint:** `leanblueprint` (Massot's tool, used by the PFR and Fermat's Last Theorem projects) renders a web page per theorem: the plain-language statement, the paper proof, the Lean declaration, and a **dependency graph coloured by status**. The graph is itself the website's picture of "mathematically secure". It is a Python package, so again the owner is asked first.
 - **Continuous integration:** a GitHub Action builds the Lean project and the blueprint on every push, and fails on any `sorry`.
 - **Each blueprint page links back** to the vault page whose result it formalises, and the vault page links forward.
+- **Decided (O5 and O9, the owner, 2026-09-30):** the install is approved; the project stays private while it is built and goes public when the website links to it.
+
+### 4.1 The owner's concern: "Lean can take a long time to verify"
+
+**Where Lean's time actually goes, and how this project keeps it short.** Estimates, **[AI Inference]**, to be replaced by the proofs chat's own timings:
+
+| where the time goes | how long it takes | what the project does |
+|---|---|---|
+| **compiling Mathlib itself** | many hours on a laptop, if built from source | **never done.** `lake exe cache get` downloads Mathlib already compiled: a one-time download of a few gigabytes, minutes on a good connection. If the cache for the pinned Mathlib version is missing, the chat stops and pins a version that has one, rather than building from source |
+| **the first `import Mathlib`** in a session | tens of seconds, loading compiled files | **import only the Mathlib files each theorem needs**, never the whole library, so every file loads faster |
+| **checking this project's own proofs** | seconds to minutes per file for statements of this size | files kept small, one topic each, so `lake build` re-checks only what changed |
+| **slow tactics**: broad `simp`, `nlinarith`, `decide` on large terms, `aesop` | occasionally minutes for one line | a style rule: a tactic call over ten seconds is replaced by an explicit proof step, and `set_option maxHeartbeats` is never raised to hide it |
+| **continuous integration** | the same cache, on GitHub's runners | the Mathlib cache is fetched, not built, on every run |
+
+**Every `lake build` is timed and written to the proof record, so the owner can see it.** Target: a full build of the project, with Mathlib cached, **under five minutes** on the owner's laptop. If a file breaks that target, it is split or its slow step is rewritten.
 
 ---
 

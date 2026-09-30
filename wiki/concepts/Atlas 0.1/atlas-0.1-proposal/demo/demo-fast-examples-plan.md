@@ -93,7 +93,7 @@ Two physics on two threads can at most halve the time: $s_X\le$ the number of ph
 
 **What this adds up to, stated plainly.** Four families have a mechanism that can plausibly clear $s\ge3$: the wind farm (already measured), the plume, the sound and transient conduction. Two can reach it only if threaded substructuring pays at a size the two-minute rule allows. **Two cannot reach it by construction**: the heated structure, and the cooled block without a spatial cut too.
 
-**Owner decision needed (O3):** what the Fast example button does for a family whose ceiling is below the bar. **Recommendation:** load that family's fastest honest configuration, and let the card say what limits it, for example *"a split by physics can at most halve the time; this one takes 0.61 of it"*. Hiding the button for those families would hide a true statement of the method's limits, and this vault's record is that the limits are what make the rest believable.
+**Decided (O3, the owner, 2026-09-30):** for a family whose ceiling is below the bar, the Fast example loads its **fastest honest setup**, and the result card **names what limits it**, for example *"a split by physics can at most halve the time; this one takes 0.61 of it"*. **And the demo says the larger truth plainly:** at the end of the day these are classical solvers, and decomposition becomes much more beneficial as domains get more complicated and three-dimensional, and with neural operators as the experts. §5 gives the line every card carries. The website carries the same passage ([[website-outline]] section 3).
 
 ---
 
@@ -132,6 +132,17 @@ The Fast example loads a complete case: geometry, materials, boundaries, windows
 | X | *"A split by physics can at most halve the time; this one takes 0.61 of it."* |
 
 The numbers in these lines are placeholders for the format, not predictions.
+
+**Every speed card also carries one fixed line (O3)**, below the mechanism's:
+
+> *These are classical solvers, cut into pieces. The gain grows as the shape gets more complicated, in three dimensions, and when the pieces are learned experts, which is what Atlas is built for.*
+
+**[AI Inference], why the claim is fair and how it is bounded:**
+- In three dimensions a direct solve's factorization grows as $O(N^2)$ against two dimensions' $O(N^{3/2})$, and an explicit step's working set leaves cache sooner, so substructuring and parallel pieces have more to win.
+- A complicated shape has more contrast between its pieces, for local time steps to exploit.
+- Learned experts are the proposal's own claim ([[chart-operator-architecture]]).
+
+The line says *grows*, not a number, because no three-dimensional ratio has been measured in the workbench.
 
 ---
 

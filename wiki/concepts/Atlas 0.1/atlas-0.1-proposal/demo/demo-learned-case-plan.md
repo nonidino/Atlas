@@ -117,10 +117,12 @@ Measured over the demo's 12 macro-steps and over W346's 40, on the **held-out** 
 
 ## 8. Build order and what to ask the owner
 
-1. Confirm that torch is installed in the owner's Python (the vault ran Poseidon-T, so it probably is) and **ask** before anything is installed.
+**Approved in advance (O6, the owner, 2026-09-30): torch, the long data-generation run and the GPU rental, yes to each.** Each is still **announced** before it starts, with its expected time or cost, and the long-run and rental rules still hold: save state as it goes, stay under \$0.70 an hour, and destroy the instance.
+
+1. Confirm that torch is installed in the owner's Python (the vault ran Poseidon-T, so it probably is).
 2. Step 0 (§4): time the random network. Report. **Stop here if G1's budget cannot be met.**
 3. Register §5 and the G6 split in code.
-4. **Ask** before the data generation (a long run) and before the GPU rental.
+4. **Announce** the data generation (a long run) and the GPU rental, with their expected time and cost. Both are approved (O6).
 5. Generate, train, and evaluate on the held-out layout, once.
 6. Build the page's case and cards, and record the run like every gallery row.
 7. [[showcase-gallery]], [[outcome-c2-learned-experts-in-the-loop]] and [[outcome-c3-learned-speed-at-scale]] get what it measured, **whatever it measured**.

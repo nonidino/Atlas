@@ -50,37 +50,49 @@
 
 ---
 
-## 4. The recommended order of chats
+## 4. The chats
 
-The owner planned one chat per workstream. **Seven are recommended**, because the demo and the proofs each contain parts of very different kinds:
+**Revised 2026-09-30 on the owner's plan: three chats run at the same time, and the website follows.** The first draft recommended seven chats in sequence, with the rows kept below for the order *inside* each chat. The owner's plan groups them:
 
-| chat | work | needs from the owner | plan |
-|---|---|---|---|
-| **A** | demo 1.1–1.3: the header, the fork, the holes; reproduce first | O1 | [[demo-finish-plan]] |
-| **B** | proofs, steps 1–3 (T1, T7, T4, T3, T5, T10, T11), then the W348 compiler change | O5 (the Lean download) | [[formal-proofs-plan]] §5; [[gap-worklist]] W348 |
-| **C** | demo 1.4: the micro-benchmarks, then the fast example per type; on AC power | O3 | [[demo-fast-examples-plan]] |
-| **D** | the architecture document: read the prior art in full, check the conformal-chart claim, write the proposal | O8 | [[chart-operator-architecture]] §9 |
-| **E** | demo 1.5: price the network, register the gate, generate, train, evaluate | O6 | [[demo-learned-case-plan]] |
-| **F** | proofs, steps 4–5: the headline theorem, the blueprint, public | O9 | [[formal-proofs-plan]] §5 |
-| **G** | the website | O4, O7, the images | [[proposal-website-plan]] §6 |
+| chat | covers the first draft's | its prompt |
+|---|---|---|
+| **Demo** | A (1.1–1.3), C (1.4), E (1.5), the one-command installer (O2), and **the W348 compiler change**, which the demo owns because its fast examples need it | [[proposal-chat-prompts]] §1 |
+| **Architecture** | D: brainstorm with the owner **first**, confirm, then write the arXiv-style HTML document (O8) | [[proposal-chat-prompts]] §2 |
+| **Proofs** | B and F: the Lean project, T3 early so the demo can cite it, then the headline theorem and the blueprint | [[proposal-chat-prompts]] §3 |
+| **Website** | G, after the three: its content arrives from them | written later, from [[website-outline]] |
 
-**A, B and D are independent** and can run in any order. C waits for B's W348 change, E for D, and G for everything.
+**Running three at once in one working folder.** They share the `atlas-0.1` checkout, because the demo needs untracked run records under `out/` that a separate worktree would not have. So each chat **owns its paths and touches no other's**:
+- **commits:** `git commit -F <file> -- <its paths>`; never `git add -A`, `git commit -a`, `stash`, `reset`, `checkout` or a branch switch;
+- **the shared pages:** [[log]], [[index]], [[gap-worklist]] and this hub are edited only at the end of a step, by re-reading them first and appending, never rewriting another chat's text;
+- **timings:** before any timed run the demo chat asks the owner to confirm the other two are idle, because a Lean build or a probe script on the same laptop would slow the arms it times.
+
+The prompts spell out each chat's paths.
+
+| draft chat | work | plan |
+|---|---|---|
+| A | demo 1.1–1.3: the header, the fork, the holes; reproduce first | [[demo-finish-plan]] |
+| B | proofs, steps 1–3 (T1, T7, T4, T3, T5, T10, T11) | [[formal-proofs-plan]] §5 |
+| C | demo 1.4: the micro-benchmarks, then the fast example per type; on AC power | [[demo-fast-examples-plan]] |
+| D | the architecture document: read the prior art in full, check the conformal-chart claim, write the proposal | [[chart-operator-architecture]] §9 |
+| E | demo 1.5: price the network, register the gate, generate, train, evaluate | [[demo-learned-case-plan]] |
+| F | proofs, steps 4–5: the headline theorem, the blueprint | [[formal-proofs-plan]] §5 |
+| G | the website | [[proposal-website-plan]] §6 · [[website-outline]] |
 
 ---
 
-## 5. Decisions left to the owner
+## 5. The owner's decisions (made 2026-09-30)
 
-| # | decision | the recommendation | where |
-|---|---|---|---|
-| **O1** | once the examples list leaves the UI, are the other examples still reachable? | a small *More examples* list under *Fast example*, one line each saying what it shows, with no names | [[demo-finish-plan]] §1.3 |
-| **O2** | how strangers reach the demo | recorded replays on the website plus a one-command local install; a hosted instance only if labelled as not for speed | [[demo-finish-plan]] §4 |
-| **O3** | what *Fast example* shows for a family that cannot reach the bar | its fastest honest configuration, with the limit named on the card | [[demo-fast-examples-plan]] §3 |
-| **O4** | the website's hosting, repository and domain | a static host; the site in its own public repository once public | [[proposal-website-plan]] §3 |
-| **O5** | installing Lean 4, Mathlib's cache (several GB) and `leanblueprint` | yes, for chat B | [[formal-proofs-plan]] §4 |
-| **O6** | for the learned case: torch (probably already installed), a long data-generation run, a GPU rental under the \$0.70/h cap | yes, each after Step 0's price | [[demo-learned-case-plan]] §8 |
-| **O7** | the website's headline | *Physics, assembled.* or *Every piece an expert. Every seam a guarantee.* | [[proposal-website-plan]] §5 |
-| **O8** | the architecture document's form | a paper-style PDF and an HTML version of it, both linked from the site | [[chart-operator-architecture]] §9 |
-| **O9** | are the proofs and the site public? | yes when linked; until then, private | [[formal-proofs-plan]] §4 |
+| # | decision | **the owner's answer** | what changed | where |
+|---|---|---|---|---|
+| **O1** | once the examples list leaves the UI, are the other examples still reachable? | **a small *More examples* list under *Fast example*, one line each saying what it shows, with no names** | as recommended | [[demo-finish-plan]] §1.3 |
+| **O2** | how strangers reach the demo | **a one-command local install, which installs every package it needs and works on Windows and on a Mac**, reusing the proofs of concept's bundle code where it helps | the recorded replays are no longer the demo's way in: the website shows statistics, real screenshots and an install page | [[demo-finish-plan]] §4 · [[website-outline]] §3 |
+| **O3** | what *Fast example* shows for a family that cannot reach the bar | **its fastest honest setup, with the result card naming what limits it. And say that, at the end of the day, this is still classical: it becomes much more beneficial as domains get more complicated and three-dimensional, and with neural operators** | a line on every card and a passage on the website | [[demo-fast-examples-plan]] §3, §5 · [[website-outline]] section 3 |
+| **O4** | the website's hosting | **GitHub Pages, to keep it free** | on the free plan Pages publishes from a public repository, so the site's repository goes public at launch (O9) | [[proposal-website-plan]] §3 |
+| **O5** | installing Lean 4, Mathlib's cache and `leanblueprint` | **yes. The owner's one concern: Lean can take a long time to verify** | an answer to the concern: Mathlib is downloaded prebuilt, never compiled; the project's own files are kept small and timed | [[formal-proofs-plan]] §4.1 |
+| **O6** | for the learned case: torch, a long data-generation run, a GPU rental under the \$0.70/h cap | **yes to each** | approved in advance; each is still announced before it starts, with its expected time or cost | [[demo-learned-case-plan]] §8 |
+| **O7** | the website's headline | **"A full world. Decomposed and simulated by experts."** | the hero, and a new hero image: a whole world cut into charts | [[website-outline]] section 1 |
+| **O8** | the architecture document's form | **an HTML page in arXiv's HTML style** | no PDF | [[chart-operator-architecture]] §9 |
+| **O9** | are the proofs and the site public? | **private while they are built, public once the website links to them** | as recommended | [[formal-proofs-plan]] §4 |
 
 ---
 
@@ -104,6 +116,8 @@ The owner planned one chat per workstream. **Seven are recommended**, because th
 | `website/` [[proposal-website-plan]] | the story, the sections, the design language, the build, the claims pipeline, the honesty rules |
 | `website/` [[website-evidence-and-citations]] | every number the site may show, with its source and status |
 | `website/` [[vision-scenarios-and-image-prompts]] | the three scenarios, their agent graphs, the style bible and the prompts |
+| `website/` [[website-outline]] | the site section by section after O1–O9: topics, the statistics to hit by id, the written and visual style, and the AI image prompts, the hero's *world as an atlas* among them; the install page |
+| [[proposal-chat-prompts]] | the three prompts for the chats that run at the same time: the demo, the architecture (brainstorm first), the proofs |
 | `expert-architecture/` [[chart-operator-architecture]] | the chart operator: charts, pull-back, operator, wave coupling, the contraction contract, the Expert Card |
 | `expert-architecture/` [[chart-operator-training-and-cost]] | sources, stages, the loss, fine-tuning against training from scratch, the cost model, the gate |
 | `expert-architecture/` [[dd-neural-prior-art-2026]] | what is published (2021–2026) and what is left to claim |

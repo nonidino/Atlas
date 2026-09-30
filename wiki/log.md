@@ -6899,3 +6899,33 @@ The owner's brief: four big tasks to finish the proposal, each probably its own 
 **Seven chats are recommended in place of four**, in the order the hub gives, with nine decisions left to the owner (O1–O9).
 
 **Added:** the ten pages and the hub. **Changed:** [[gap-worklist]] (W349–W354), [[00-atlas-0.1-outcome]] (a pointer to what comes next), [[index]].
+
+## [2026-09-30] note | The owner's decisions O1–O9, the website's outline, and three chats to run at once
+
+The owner answered the nine decisions of [[00-proposal-workstreams]] §5, the same day:
+
+| # | the decision |
+|---|---|
+| O1 | *More examples* under the Fast example button, one line each, no names |
+| O2 | **a one-command local install for Windows and macOS**, installing everything it needs and reusing the proofs of concept's bundle code |
+| O3 | the fastest honest setup, with its limit named, **and the plain statement that this is still classical**: the gain grows with complicated domains, three dimensions and neural operators |
+| O4 | GitHub Pages, free |
+| O5 | Lean approved, with a concern that verification is slow |
+| O6 | yes to torch, the long run and the GPU |
+| O7 | the headline **"A full world. Decomposed and simulated by experts."** |
+| O8 | the architecture document as an arXiv-style HTML page |
+| O9 | private while built, public once the site links to it |
+
+**Carried into the plans:**
+- [[demo-finish-plan]] §4.1 specifies the installer from PoC 3's bundle and its lessons.
+- [[demo-fast-examples-plan]] §5 gives the fixed line every speed card carries.
+- [[formal-proofs-plan]] §4.1 answers the time concern: Mathlib from its prebuilt cache, never compiled; small imports; every build timed, with a five-minute target.
+- [[proposal-website-plan]] drops the replays and moves to GitHub Pages from a repository made public at launch.
+
+**Added:**
+- [[website-outline]]: the site section by section, with the topics, the statistics to hit by id, the written and visual style, and the AI image prompts. The hero is a planet cut into glowing charts, the atlas of the name.
+- [[proposal-chat-prompts]]: the prompts for the demo, the architecture (brainstorm and confirm with the owner first) and the proofs.
+
+**The three chats run at the same time in one folder.** A separate worktree would lack the run records under `out/` that git does not track. So each chat owns its paths, commits only them, appends to the shared pages at the end of a step, and the demo times nothing while the others run. The demo chat owns the W348 compiler change and cites T3, which the proofs chat checks first.
+
+**Changed:** [[00-proposal-workstreams]], the three demo pages, [[proposal-website-plan]], [[vision-scenarios-and-image-prompts]], [[chart-operator-architecture]] §9, [[formal-proofs-plan]] §4, [[gap-worklist]] (W349, W352–W354), [[index]].

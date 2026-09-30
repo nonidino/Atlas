@@ -2,6 +2,14 @@
 
 **Type:** Concept page — **plan: story, structure, design language, build, and honesty rules** (folder: `Atlas 0.1/atlas-0.1-proposal/website/`)
 **Status:** written 2026-09-30. **The three reference sites could not be opened from the planning session** (its network blocked `simscale.com`, `antigravity.google` and `googlebook.google`). §2's design notes come from search results describing them and from general knowledge of the genre. **The website chat should open all three on the owner's machine before designing.**
+**Revised 2026-09-30 with the owner's decisions** ([[00-proposal-workstreams]] §5):
+- **O2:** the demo is a local install, so there are no replays;
+- **O4:** GitHub Pages;
+- **O7:** the headline, *"A full world. Decomposed and simulated by experts."*;
+- **O8:** the architecture document is an arXiv-style HTML page;
+- **O9:** everything is public at launch.
+
+**The section-by-section outline, with the statistics, the style and the image prompts, is [[website-outline]].**
 **Hub:** [[00-proposal-workstreams]] · **Content sources:** [[website-evidence-and-citations]] · [[vision-scenarios-and-image-prompts]] · [[chart-operator-architecture]] · [[formal-proofs-plan]] · [[demo-finish-plan]]
 
 ---
@@ -27,9 +35,9 @@ The owner, 2026-09-30:
 
 | # | section | what it shows | source |
 |---|---|---|---|
-| 1 | **Hero** | one headline, one line under it, two pill buttons (*Try the demo*, *Read the architecture*), and a full-bleed image. Recommended: the car of scenario 1 in its "assembled" variant, captioned **Vision** | [[vision-scenarios-and-image-prompts]] |
+| 1 | **Hero** | **"A full world. Decomposed and simulated by experts."** (O7), one line under it, two pill buttons (*Try the demo*, *Read the architecture*), and a full-bleed image of **a whole world cut into charts**, captioned **Illustration** | [[website-outline]] section 1 |
 | 2 | **How it works, in three moves**: *Cut. Solve. Stitch.* | a scroll-driven animation built from a **real workbench geometry**: the S-channel, cut into its four generated windows, then the seams exchanging, then the assembled field. No stock diagram | the workbench's `s-channel` example and its record |
-| 3 | **Working today** | a band of four or five big numbers, each with a one-line caption and a link to its record; below it, **replays** of recorded runs the visitor can scrub | [[website-evidence-and-citations]] §1 |
+| 3 | **Working today** | a band of four or five big numbers, each with a one-line caption and a link to its record; the passage O3 asks for (today is classical; the gain grows with complexity, three dimensions and learned experts); the **install card** (O2) | [[website-evidence-and-citations]] §1 · [[website-outline]] section 3 |
 | 4 | **The science agrees** | cards of published results: classical decomposition at scale, and neural operators and neural DD, each clearly marked **published by others** | [[website-evidence-and-citations]] §2–§3 |
 | 5 | **The missing piece** | plainly: learned experts today are not built for this; the measured reasons (S1–S12, drawn as a checklist); and the chart operator that answers them, in three pictures, *charts for geometry, waves for agreement, operators for physics* | [[outcome-c5-requirements-for-dd-native-experts]] · [[chart-operator-architecture]] |
 | 6 | **Mathematically secure** | the headline theorem in one sentence, the blueprint's dependency graph with its nodes coloured by status, and a link to the Lean project | [[formal-proofs-plan]] §3–§4 |
@@ -65,10 +73,8 @@ The owner, 2026-09-30:
 | framework | a static site: **Astro**, with plain components and no client framework except where a section needs one | fast, no server, easy to host; the numbers are data at build time |
 | animation | CSS scroll-driven animations where they suffice; **GSAP ScrollTrigger** for the explainer (its licence terms to be checked) | the genre's scroll storytelling |
 | charts | Observable Plot or D3, from JSON built out of the records | one palette; every mark from data |
-| replays | a small canvas player over **downsampled field snapshots saved with a run** | see below |
-| hosting | Cloudflare Pages, Netlify or GitHub Pages; a domain if the owner wants one | **owner decision (O4)**: the hosting account, and whether this repository or a separate public one holds the site |
-
-**The replays need one change to the workbench.** Today the runner publishes each snapshot to the page in memory, and a record keeps metrics, checks and field differences, not the fields (`runner.py`). **The demo chat should add an optional export: downsampled field snapshots every $k$ steps, saved beside the record.** The website then plays real runs, not re-creations.
+| real screenshots and renders | captured from the served workbench and from records | O2 made the local install the demo's way in, so there are no replays |
+| hosting | **GitHub Pages (O4)**. On the free plan Pages publishes from a **public** repository: the site lives in its own repository, private while built and previewed locally, made public at launch (O9) | free |
 
 ### 3.1 The claims pipeline: no number typed by hand
 
@@ -100,14 +106,14 @@ The owner, 2026-09-30:
 | **Every piece an expert. Every seam a guarantee.** | A framework for simulations built from cooperating solvers, and the learned experts designed for it. |
 | **Solve anything, one chart at a time.** | The atlas of a manifold, applied to physics. |
 
-**[AI Inference]:** the first is the most product-like; the third says the most. The owner chooses.
+**Decided (O7, the owner, 2026-09-30): "A full world. Decomposed and simulated by experts."**, none of the four above.
 
 ---
 
 ## 6. Build order for the website chat
 
 1. Open the three reference sites and two or three others the owner likes. Capture screenshots into the site's design notes.
-2. Settle O4 (hosting) and the headline (§5).
+2. Build from [[website-outline]]. O4 and O7 are settled.
 3. Build the claims pipeline and its test first, with today's records ([[website-evidence-and-citations]] §1).
 4. Build the skeleton with every section, using placeholder images labelled as placeholders.
 5. Write the image prompts' final versions and hand them to the owner ([[vision-scenarios-and-image-prompts]]). The owner generates the images, and the chat places them with their overlays.

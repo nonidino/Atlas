@@ -294,7 +294,15 @@ The values are placeholders showing the format. **The compiler's new rules read 
 2. Check §2.2's conformal claim on the workbench's own pieces: compute $J$, the metric's anisotropy and $\min J$ on `s-channel` and `bend-3`.
 3. Choose the first family and its reference solver (the recommendation is 2-D diffusion, [[chart-operator-training-and-cost]] §2).
 4. Choose how §4.4's bound is certified: penalty plus certification, or the linear-plus-correction architecture.
-5. Decide how the proposal document is published: a paper-style PDF, an HTML page, or both. The website links to it ([[proposal-website-plan]]).
+5. **Decided (O8, the owner, 2026-09-30): the proposal document is an HTML page in arXiv's HTML style**, not a PDF. That means:
+   - a single column, with a title block and an abstract;
+   - a table of contents in a side rail;
+   - numbered sections, equations, figures and tables;
+   - typeset mathematics;
+   - a numbered reference list.
+   
+   The website links to it ([[website-outline]] section 5), and it goes public with the site (O9).
+6. **This page is version 0, not the settled design.** The owner's instruction for the architecture chat is to **brainstorm with the owner first, and confirm the design before documenting it** ([[proposal-chat-prompts]] §2). Every choice above is an input to that conversation, and the confirmed design replaces this version.
 
 ---
 

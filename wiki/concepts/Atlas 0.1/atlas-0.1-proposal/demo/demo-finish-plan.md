@@ -43,7 +43,7 @@ Until now the workbench was built for the owner, who knows what a style, a seam 
 | D5 | *Case > New case...* becomes *Case > Start over*: a new case of the **current** type | with D1, choosing a type already starts a new case; resetting without changing type still needs a home |
 | D6 | *Case > Examples...* **leaves the UI.** The header gains **Fast example** (item 1.4) and, for the wind farm only, **Learned experts** (item 1.5). `EXAMPLES` stays in `spec.py`: the tests pin every example's verdict, and [[showcase-gallery]] cites them | the gallery lists names and descriptions, which is what D4 removes |
 
-**Owner decision needed (O1):** D6 removes 19 hand-built examples from the visitor's reach, among them the drawn ones (`bend-3`, `s-channel`, `ring-film` and the rest), which are the best evidence that irregular geometry works. **The recommendation is to keep them reachable through Fast example's neighbours:** a small *More examples* list under the Fast example button, one line per example that says what it shows, with no name. For example, *"Heat round a bend on three curved windows"*. Removing them entirely is one line of code either way.
+**Decided (O1, the owner, 2026-09-30): a small *More examples* list under the Fast example button**, one line per example saying what it shows, with no name. For example, *"Heat round a bend on three curved windows"*. The list shows the current type's examples. It keeps the drawn examples (`bend-3`, `s-channel`, `ring-film` and the rest) within a visitor's reach, since they are the best evidence that irregular geometry works.
 
 ### 1.4 What changes, file by file
 
@@ -169,7 +169,49 @@ In the served page, drag a circle hole across the outline's edge and on past the
 | **C. a hosted instance** | the full workbench in a browser tab | **not comparable**: a small cloud machine has few cores, and threads are the wind farm's whole speed-up ([[decomposition-speed-by-rotor-count]]) | a free tier with few CPUs, or a paid machine by the hour | one run at a time per server, by design (`runner.py`), so it does not serve a crowd |
 | **D. in the browser, compiled to WebAssembly** (`panel convert`) | the workbench with no server | none: WebAssembly in a browser has no threads for the parallel arm | free | numpy and scipy run under Pyodide; the threaded arm and the timings do not |
 
-**Recommendation: A + B, with C as an optional extra.** The website carries recorded runs, every number traceable to its record. *Try it* offers the local install. A hosted instance, if the owner wants one, is labelled "for trying the interface: speeds here are not the demo's". **[AI Inference]:** a free hosted tier's core count would turn the wind farm's $4.8\times$ into something much smaller, and a visitor who saw that would reasonably distrust the rest.
+The first draft recommended A + B.
+
+**Decided (O2, the owner, 2026-09-30): B, a one-command local install that installs every package it needs and works on Windows and on a Mac**, reusing the proofs of concept's bundle code where it helps. The website links to it from every *Try the demo* ([[website-outline]] §3). It shows statistics and real screenshots, not replays.
+
+### 4.1 The installer
+
+**The precedent, to reuse, not rewrite.** PoC 3's bundle ([[poc3-racelab-bundle]]) installs, self-tests and serves on a fresh clone. It had four rounds of verification, and each of the first three passed every check it had while hiding a defect a later check found. Its parts:
+- `scripts/build_racelab_bundle.py`, the builder, with `w146_build_frontwing_bundle.py` and `w112_build_bundle.py` before it;
+- the launcher templates in `atlas/demo_racelab/bundle/`: `run.sh`, `run.cmd`, `run.py`, `requirements.txt`, `constraints.txt`, `conftest.py`, `gitattributes`;
+- `scripts/verify_racelab_bundle.py` and `scripts/verify_racelab_offline.py`, which check a fresh clone.
+
+Its lessons carry over directly:
+
+| lesson (PoC 3) | what the workbench installer does |
+|---|---|
+| the launchers **set** the paths, never default them; the self-test asserts where each solver was loaded from (a pre-set variable would silently test another copy) | the same: the build repository's solvers the workbench needs (the wind farm's `WindowNS` through `atlas/cases/window_ns.py`, and whatever else a family imports) are **vendored** under `vendor/`, and `run.py` points at them |
+| top-level packages in `requirements.txt`, **everything they pull in** pinned in `constraints.txt`, generated from verified installs | the same, from a verified Windows install and a verified macOS install |
+| macOS ships bash 3.2: no array expansion under `set -u` | the same `run.sh` discipline |
+| **torch on macOS means Apple silicon** (the pinned wheel had no `x86_64` build) | torch is needed only by the learned case (§1.5), so it is an **optional** step: if it fails to install, the other seven types and the classical arms still run, and the page says why the learned case is unavailable |
+| a WebSocket library must be pinned, or the page never receives a frame | Panel serves through Bokeh's Tornado server, which has its own WebSocket; **the self-test opens the served page anyway**, since "nothing short of opening the page could have found it" |
+| `run.sh` must be `100755` in the git index, and line endings are set by `.gitattributes` | the same |
+
+**What it installs:** Python packages in a fresh virtual environment (`.venv`), pinned: Panel 1.5, Bokeh 3.6, numpy, scipy, pydantic and whatever the workbench imports, torch CPU-only for the learned case, and **Gmsh from PyPI, optional**. Gmsh is GPL: it is installed on the visitor's machine from PyPI, not redistributed, and only the *Import geometry from Gmsh* item needs it. The installer creates no system-wide state.
+
+**One command per system:**
+- Windows: `run.cmd` in a fresh clone;
+- macOS: `./run.sh`.
+
+Each creates the environment, installs, self-tests, then serves `python -m atlas.workbench --open`. A second run skips straight to serving.
+
+**What must not be in it:**
+- NeuberNet, in any form: the builder refuses, as PoC 3's did;
+- Poseidon's weights: the learned case uses the owner's own weights (§1.5);
+- anything under `out/` except the records the tests read.
+
+**How it ships:** a branch or a GitHub release built from a commit, like PoC 3's orphan branch, with the builder never editing a source file. It stays private until the website launches (O9).
+
+**Verification** on a **fresh clone**, on Windows (the owner's laptop) and on **macOS**:
+- the self-test passes;
+- the page opens and a run finishes;
+- the classical arms still run with torch absent.
+
+**The owner may have no Mac.** In that case the demo chat asks before using a GitHub Actions `macos-latest` runner: it uses the account's minutes, and macOS minutes count at a multiple on a private repository.
 
 ---
 
@@ -178,6 +220,8 @@ In the served page, drag a circle hole across the outline's edge and on past the
 Every style-B and style-C example compiles to **`refuse`** at `L2/R10`, though each seam is admitted and each agrees with the full domain to $3.6\times10^{-9}$ or better ([[showcase-gallery]] §4; [[gap-worklist]] W348). In the owner's own library that is an honest note. **On a fast example shown to a stranger, a red "refuse" beside a correct, faster answer reads as a failure.**
 
 Several fast examples in [[demo-fast-examples-plan]] are steady elliptic problems solved by substructuring, which is exactly R10's refused class. **So W348 should be settled before those examples are recorded.** The mathematical fact it needs, that the fixed point of an iterated or directly-solved linear coupling is the undivided discrete solution, is theorem **T3** in [[formal-proofs-plan]], and it is one of the cheapest there to machine-check. The recommended order is to prove T3, then change R10 by W348's option (a), then record the fast examples.
+
+**Revised 2026-09-30, when the chats were planned to run at the same time** ([[00-proposal-workstreams]] §4): **the demo chat owns the R10 change**, because its fast examples need it and the compiler is code it already tests. It cites T3 by its classical source, the fixed-point consistency of restricted additive Schwarz (Frommer & Szyld, *SIAM J. Numer. Anal.* 39, 2001), and switches to the Lean theorem's name when the proofs chat has checked it.
 
 ---
 
@@ -191,7 +235,9 @@ Several fast examples in [[demo-fast-examples-plan]] are steady elliptic problem
 6. The newcomer's first scenario in the served page at $1090\times620$, for all eight types.
 7. The README, [[showcase-gallery]] for `river-fork`, [[index]] and [[log]].
 
-**What the next chat asks the owner first:** O1 (keep *More examples* or not) and O2 (hosting).
+8. The installer (§4.1), verified on a fresh clone on Windows and on macOS.
+
+**O1 and O2 are decided** (§1.3, §4). The chat's own prompt is [[proposal-chat-prompts]] §1.
 
 ---
 
