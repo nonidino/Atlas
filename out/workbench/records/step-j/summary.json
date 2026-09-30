@@ -1,0 +1,983 @@
+{
+ "s-channel": {
+  "power_before": {
+   "battery_status": "2",
+   "ac": true
+  },
+  "style": "B",
+  "family": "conduction-2d",
+  "compile": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.11,
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\s-channel\\compile-20260929-213314.json",
+   "verdict": "refuse",
+   "seconds": 0.102,
+   "agents": 4,
+   "seams": [
+    {
+     "seam": "F00|F10",
+     "between": [
+      "F00",
+      "F10"
+     ],
+     "port": "THERM",
+     "verdict": "admit",
+     "rules": []
+    },
+    {
+     "seam": "F10|F20",
+     "between": [
+      "F10",
+      "F20"
+     ],
+     "port": "THERM",
+     "verdict": "admit",
+     "rules": []
+    },
+    {
+     "seam": "F20|F30",
+     "between": [
+      "F20",
+      "F30"
+     ],
+     "port": "THERM",
+     "verdict": "admit",
+     "rules": []
+    }
+   ],
+   "cross_points": [],
+   "refused_before": null,
+   "other": [
+    "L2/R10 refuse: 4 agents declare elliptic_subsolve=embedded and the graph decomposes the domain: each shares its governing_family with at least one other agent, so the family's",
+    "L2/C3/W57 admit-uncertified: substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound",
+    "L5/eps_tol admit-uncertified: the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging t",
+    "L9/E5 admit-uncertified: UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is ",
+    "L8/W56 admit-uncertified: 4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measu"
+   ]
+  },
+  "run": {
+   "status": "done",
+   "error": null,
+   "wall_s": 1.2,
+   "steps": 5,
+   "step_label": "timed repeat",
+   "arms": [
+    "serial",
+    "parallel",
+    "full"
+   ],
+   "dropped": {},
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\s-channel\\20260929-213316.json",
+   "checks": [
+    {
+     "key": "balance",
+     "kind": "balance",
+     "title": "Energy: heat in = heat stored",
+     "verdict": "pass",
+     "value": 1.1347330535157881e-08,
+     "tolerance": 1e-06,
+     "passed": true
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "title": "Temperatures agree with the full domain",
+     "verdict": "pass",
+     "value": 1.799209599084861e-09,
+     "tolerance": 1e-06,
+     "passed": true
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "title": "Heat flow = dT / sum(L/k) (a layered wall)",
+     "verdict": "not measured",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "title": "Threaded equals serial, bit for bit (style B)",
+     "verdict": "pass",
+     "value": null,
+     "tolerance": null,
+     "passed": true
+    }
+   ],
+   "speedup_vs_full": {
+    "serial": 0.004875625274325062,
+    "parallel": 0.0048493346324972215,
+    "full": 1.0
+   },
+   "machine": {
+    "time": "2026-09-29T21:33:14-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 25188
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-29T21:33:16-04:00"
+   },
+   "field_difference": {
+    "serial": {
+     "rms": 1.1883009277839101e-07,
+     "max": 1.799209599084861e-07,
+     "rms_relative": 3.3824977854649673e-10
+    },
+    "parallel": {
+     "rms": 1.1883009277839101e-07,
+     "max": 1.799209599084861e-07,
+     "rms_relative": 3.3824977854649673e-10
+    }
+   }
+  }
+ },
+ "ring-film": {
+  "power_before": {
+   "battery_status": "2",
+   "ac": true
+  },
+  "style": "D",
+  "family": "electric-2d",
+  "compile": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.05,
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\ring-film\\compile-20260929-213316.json",
+   "verdict": "admit-uncertified",
+   "seconds": 0.051,
+   "agents": 2,
+   "seams": [
+    {
+     "seam": "E1",
+     "between": [
+      "plate",
+      "circuit"
+     ],
+     "port": "ELEC",
+     "verdict": "admit-uncertified",
+     "rules": [
+      "L1/E3 admit-uncertified",
+      "L4/operator-content admit-uncertified"
+     ]
+    },
+    {
+     "seam": "E2",
+     "between": [
+      "plate",
+      "circuit"
+     ],
+     "port": "ELEC",
+     "verdict": "admit-uncertified",
+     "rules": [
+      "L1/E3 admit-uncertified",
+      "L4/operator-content admit-uncertified"
+     ]
+    }
+   ],
+   "cross_points": [],
+   "refused_before": null,
+   "other": [
+    "L1/E7 admit-uncertified: storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route t",
+    "L1/E7 admit-uncertified: storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route t",
+    "L2/C3/W57 admit-uncertified: substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound",
+    "L5/eps_tol admit-uncertified: the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging t",
+    "L6/E6 admit-uncertified: no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be clai",
+    "L9/E5 admit-uncertified: UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is ",
+    "L8/W56 admit-uncertified: 5 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constan"
+   ]
+  },
+  "run": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.2,
+   "steps": 5,
+   "step_label": "timed repeat",
+   "arms": [
+    "serial",
+    "full"
+   ],
+   "dropped": {
+    "parallel": "style D joins one field to one circuit: the field solve and the circuit solve take turns, so there is nothing to run side by side"
+   },
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\ring-film\\20260929-213316.json",
+   "checks": [
+    {
+     "key": "kirchhoff",
+     "kind": "balance",
+     "title": "Kirchhoff: the currents at every node sum to zero",
+     "verdict": "pass",
+     "value": 5.363645158038879e-13,
+     "tolerance": 1e-06,
+     "passed": true
+    },
+    {
+     "key": "energy",
+     "kind": "balance",
+     "title": "Energy: power delivered = power dissipated",
+     "verdict": "pass",
+     "value": 9.587637423035009e-14,
+     "tolerance": 1e-06,
+     "passed": true
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "title": "Current agrees with the plate and circuit solved as one",
+     "verdict": "pass",
+     "value": 5.964730069702165e-14,
+     "tolerance": 1e-06,
+     "passed": true
+    }
+   ],
+   "speedup_vs_full": {
+    "serial": 0.22197385669990968,
+    "full": 1.0
+   },
+   "machine": {
+    "time": "2026-09-29T21:33:16-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 25188
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-29T21:33:16-04:00"
+   },
+   "field_difference": {
+    "serial": {
+     "rms": 3.8955850961994967e-13,
+     "max": 5.515587986337778e-13,
+     "rms_relative": 2.0233179418165048e-13
+    }
+   }
+  }
+ },
+ "river-bend": {
+  "power_before": {
+   "battery_status": "2",
+   "ac": true
+  },
+  "style": "A",
+  "family": "transport-2d",
+  "compile": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.25,
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\river-bend\\compile-20260929-213656.json",
+   "verdict": "admit-uncertified",
+   "seconds": 0.241,
+   "agents": 2,
+   "seams": [
+    {
+     "seam": "F00|F10",
+     "between": [
+      "F00",
+      "F10"
+     ],
+     "port": "ADVEC",
+     "verdict": "admit",
+     "rules": []
+    }
+   ],
+   "cross_points": [],
+   "refused_before": null,
+   "other": [
+    "L2/C2 admit-uncertified: L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value",
+    "L5/eps_tol admit-uncertified: the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging t",
+    "L6/W49 admit-uncertified: the decomposition is overlapping, so sigma is bounded by master-error-bound 4.1's product C_mu * Pi * ||d_lambda|| rather than 4's substructuring form -- and Pi",
+    "L9/E5 admit-uncertified: UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is ",
+    "L8/W56 admit-uncertified: 4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measu"
+   ]
+  },
+  "run": {
+   "status": "done",
+   "error": null,
+   "wall_s": 3.6,
+   "steps": 2000,
+   "step_label": "macro-step",
+   "arms": [
+    "serial",
+    "parallel",
+    "full"
+   ],
+   "dropped": {},
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\river-bend\\20260929-213700.json",
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "title": "Mass: released = held + carried out",
+     "verdict": "pass",
+     "value": 3.25212079488324e-14,
+     "tolerance": 1e-09,
+     "passed": true
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "title": "Concentration agrees with the full domain",
+     "verdict": "pass",
+     "value": 1.8366332550751618e-16,
+     "tolerance": 1e-10,
+     "passed": true
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "title": "Threaded equals serial, bit for bit",
+     "verdict": "pass",
+     "value": null,
+     "tolerance": null,
+     "passed": true
+    }
+   ],
+   "speedup_vs_full": {
+    "serial": 0.7448601166226212,
+    "parallel": 0.3125586632442481,
+    "full": 1.0
+   },
+   "machine": {
+    "time": "2026-09-29T21:36:56-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 8200
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-29T21:37:00-04:00"
+   },
+   "field_difference": {
+    "serial": {
+     "rms": 7.454158018594513e-17,
+     "max": 2.3592239273284576e-16,
+     "rms_relative": 1.1642528174646577e-15
+    },
+    "parallel": {
+     "rms": 7.454158018594513e-17,
+     "max": 2.3592239273284576e-16,
+     "rms_relative": 1.1642528174646577e-15
+    }
+   }
+  }
+ },
+ "sound-lens": {
+  "power_before": {
+   "battery_status": "2",
+   "ac": true
+  },
+  "style": "C",
+  "family": "acoustics-2d",
+  "compile": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.02,
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\sound-lens\\compile-20260929-213321.json",
+   "verdict": "admit-uncertified",
+   "seconds": 0.015,
+   "agents": 2,
+   "seams": [
+    {
+     "seam": "interface",
+     "between": [
+      "air",
+      "water"
+     ],
+     "port": "MECH",
+     "verdict": "admit-uncertified",
+     "rules": [
+      "L4/operator-content admit-uncertified"
+     ]
+    }
+   ],
+   "cross_points": [],
+   "refused_before": null,
+   "other": [
+    "L1/E7 admit-uncertified: storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route t",
+    "L1/E7 admit-uncertified: storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route t",
+    "L2/C3/W57 admit-uncertified: substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound",
+    "L5/eps_tol admit-uncertified: the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging t",
+    "L6/E6 admit-uncertified: no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be clai",
+    "L9/E5 admit-uncertified: UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is ",
+    "L8/W56 admit-uncertified: 5 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constan"
+   ]
+  },
+  "run": {
+   "status": "done",
+   "error": null,
+   "wall_s": 3.4,
+   "steps": 1500,
+   "step_label": "macro-step",
+   "arms": [
+    "serial",
+    "full"
+   ],
+   "dropped": {
+    "parallel": "the second piece needs the interface velocities the first computes in the same step"
+   },
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\sound-lens\\20260929-213324.json",
+   "checks": [
+    {
+     "key": "energy",
+     "kind": "balance",
+     "title": "Energy: the closed domain keeps it",
+     "verdict": "pass",
+     "value": 4.216820195141765e-16,
+     "tolerance": 1e-10,
+     "passed": true
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "title": "Reflection = (Z2 - Z1) / (Z2 + Z1)",
+     "verdict": "not measured",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "title": "The two pieces equal the full domain, bit for bit",
+     "verdict": "pass",
+     "value": null,
+     "tolerance": null,
+     "passed": true
+    }
+   ],
+   "speedup_vs_full": {
+    "serial": 0.4185891112152142,
+    "full": 1.0
+   },
+   "machine": {
+    "time": "2026-09-29T21:33:21-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 25188
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-29T21:33:24-04:00"
+   },
+   "field_difference": {
+    "serial": {
+     "rms": 0.0,
+     "max": 0.0,
+     "rms_relative": 0.0
+    }
+   }
+  }
+ },
+ "plate-hole": {
+  "power_before": {
+   "battery_status": "2",
+   "ac": true
+  },
+  "style": "B",
+  "family": "elasticity-2d",
+  "compile": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.83,
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\plate-hole\\compile-20260929-213326.json",
+   "verdict": "refuse",
+   "seconds": 0.817,
+   "agents": 2,
+   "seams": [
+    {
+     "seam": "F00|F10",
+     "between": [
+      "F00",
+      "F10"
+     ],
+     "port": "MECH",
+     "verdict": "admit",
+     "rules": []
+    }
+   ],
+   "cross_points": [],
+   "refused_before": null,
+   "other": [
+    "L1/E7 admit-uncertified: storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route t",
+    "L1/E7 admit-uncertified: storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route t",
+    "L2/R10 refuse: 2 agents declare elliptic_subsolve=embedded and the graph decomposes the domain: each shares its governing_family with at least one other agent, so the family's",
+    "L2/C3/W57 admit-uncertified: substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound",
+    "L5/eps_tol admit-uncertified: the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging t",
+    "L9/E5 admit-uncertified: UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is ",
+    "L8/W56 admit-uncertified: 4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measu"
+   ]
+  },
+  "run": {
+   "status": "done",
+   "error": null,
+   "wall_s": 24.6,
+   "steps": 5,
+   "step_label": "timed repeat",
+   "arms": [
+    "serial",
+    "parallel",
+    "full"
+   ],
+   "dropped": {},
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\plate-hole\\20260929-213350.json",
+   "checks": [
+    {
+     "key": "force",
+     "kind": "balance",
+     "title": "Forces: the supports balance the loads",
+     "verdict": "pass",
+     "value": 7.675001178695262e-12,
+     "tolerance": 1e-06,
+     "passed": true
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "title": "Displacements agree with the full domain",
+     "verdict": "pass",
+     "value": 3.1847393106418297e-12,
+     "tolerance": 1e-06,
+     "passed": true
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "title": "Threaded equals serial, bit for bit",
+     "verdict": "pass",
+     "value": null,
+     "tolerance": null,
+     "passed": true
+    }
+   ],
+   "speedup_vs_full": {
+    "serial": 0.005864632067429512,
+    "parallel": 0.007595182894763688,
+    "full": 1.0
+   },
+   "machine": {
+    "time": "2026-09-29T21:33:26-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 25188
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-29T21:33:50-04:00"
+   },
+   "field_difference": {
+    "serial": {
+     "rms": 4.516062543878549e-11,
+     "max": 1.9193180378351826e-10,
+     "rms_relative": 4.214984490781894e-12
+    },
+    "parallel": {
+     "rms": 4.516062543878549e-11,
+     "max": 1.9193180378351826e-10,
+     "rms_relative": 4.214984490781894e-12
+    }
+   }
+  }
+ },
+ "bimetal-arc": {
+  "power_before": {
+   "battery_status": "2",
+   "ac": true
+  },
+  "style": "split",
+  "family": "thermoelastic-2d",
+  "compile": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.02,
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\bimetal-arc\\compile-20260929-213351.json",
+   "verdict": "refuse",
+   "seconds": 0.002,
+   "agents": 0,
+   "seams": [],
+   "cross_points": [],
+   "refused_before": "NamedHoleError: PortAmendment is a named hole, not a rule (port type 'VOLUMETRIC' is not one of ['MECH', 'ROT', 'THERM', 'ELEC', 'ADVEC']; a sixth type enters only through the six-field amendment procedure, which has never been exercised). Gap O6 / G16: Five port types are closed for the cases considered. Completeness is unprovable in the abstract, so the target is a documented extension procedure, and that reframing is itself an open design question. Default today: refuse. See end-to-end-architecture-spec \u00a712.5.",
+   "other": []
+  },
+  "run": {
+   "status": "done",
+   "error": null,
+   "wall_s": 2.9,
+   "steps": 60,
+   "step_label": "macro-step",
+   "arms": [
+    "serial",
+    "parallel",
+    "full"
+   ],
+   "dropped": {},
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\bimetal-arc\\20260929-213353.json",
+   "checks": [
+    {
+     "key": "energy",
+     "kind": "balance",
+     "title": "Heat: in through the edges = stored",
+     "verdict": "pass",
+     "value": 2.164027513975369e-10,
+     "tolerance": 1e-09,
+     "passed": true
+    },
+    {
+     "key": "reference",
+     "kind": "control",
+     "title": "The synchronous split is the unsplit solver, bit for bit",
+     "verdict": "pass",
+     "value": null,
+     "tolerance": null,
+     "passed": true
+    },
+    {
+     "key": "lag",
+     "kind": "control",
+     "title": "The lagged split is the synchronous one a step late, bit for bit",
+     "verdict": "pass",
+     "value": null,
+     "tolerance": null,
+     "passed": true
+    }
+   ],
+   "speedup_vs_full": {
+    "serial": 1.023604014457908,
+    "parallel": 1.4145270983965508,
+    "full": 1.0
+   },
+   "machine": {
+    "time": "2026-09-29T21:33:51-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 25188
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-29T21:33:53-04:00"
+   },
+   "field_difference": {
+    "serial": {
+     "rms": 0.0,
+     "max": 0.0,
+     "rms_relative": 0.0
+    },
+    "parallel": {
+     "rms": 0.054338732404521514,
+     "max": 0.2503566516129965,
+     "rms_relative": 0.0030828665497156745
+    }
+   }
+  }
+ },
+ "cooled-winding": {
+  "power_before": {
+   "battery_status": "2",
+   "ac": true
+  },
+  "style": "C",
+  "family": "conjugate-heat-2d",
+  "compile": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.12,
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\cooled-winding\\compile-20260929-213354.json",
+   "verdict": "admit-uncertified",
+   "seconds": 0.111,
+   "agents": 2,
+   "seams": [
+    {
+     "seam": "block|channel",
+     "between": [
+      "block",
+      "channel"
+     ],
+     "port": "THERM",
+     "verdict": "admit-uncertified",
+     "rules": [
+      "L1/E3 admit-uncertified"
+     ]
+    }
+   ],
+   "cross_points": [],
+   "refused_before": null,
+   "other": [
+    "L2/C3/W57 admit-uncertified: substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound",
+    "L5/eps_tol admit-uncertified: the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging t",
+    "L6/E6 admit-uncertified: no assembly declared, so the partition-of-unity identity cannot be checked and ||A|| is not computed. L is not computable without ||A||, so no bound can be clai",
+    "L9/E5 admit-uncertified: UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is ",
+    "L8/W56 admit-uncertified: 5 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3), norm_A (W28)). The verdict cannot be `admit`: a bound quoted with a constan"
+   ]
+  },
+  "run": {
+   "status": "done",
+   "error": null,
+   "wall_s": 1.9,
+   "steps": 5,
+   "step_label": "timed repeat",
+   "arms": [
+    "serial",
+    "full"
+   ],
+   "dropped": {
+    "parallel": "Dirichlet-Neumann is sequential by construction: the block needs the heat the coolant takes through the wall"
+   },
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\cooled-winding\\20260929-213356.json",
+   "checks": [
+    {
+     "key": "energy",
+     "kind": "balance",
+     "title": "Heat generated = heat the coolant carries out",
+     "verdict": "pass",
+     "value": 4.7119101509451866e-11,
+     "tolerance": 1e-06,
+     "passed": true
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "title": "Temperatures agree with the full domain",
+     "verdict": "pass",
+     "value": 1.5254265289946958e-09,
+     "tolerance": 1e-06,
+     "passed": true
+    }
+   ],
+   "speedup_vs_full": {
+    "serial": 0.0034368484808057456,
+    "full": 1.0
+   },
+   "machine": {
+    "time": "2026-09-29T21:33:54-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 25188
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-29T21:33:56-04:00"
+   },
+   "field_difference": {
+    "serial": {
+     "rms": 2.0880016267288917e-08,
+     "max": 2.7464466256788e-08,
+     "rms_relative": 6.755519569907986e-11
+    }
+   }
+  }
+ },
+ "farm-hill": {
+  "power_before": {
+   "battery_status": "2",
+   "ac": true
+  },
+  "style": "A",
+  "family": "incompressible-2d",
+  "compile": {
+   "status": "done",
+   "error": null,
+   "wall_s": 0.02,
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\farm-hill\\compile-20260930-014634.json",
+   "verdict": "refuse",
+   "seconds": 0.016,
+   "agents": 0,
+   "seams": [],
+   "cross_points": [],
+   "refused_before": "CompileRefused: the wind-farm family's graph is wake_array's, a full rectangle of fluid; a drawn domain's solid, held at rest by penalization, is not in it, and a drawn farm has no declared graph yet",
+   "other": []
+  },
+  "run": {
+   "status": "done",
+   "error": null,
+   "wall_s": 101.3,
+   "steps": 40,
+   "step_label": "macro-step",
+   "arms": [
+    "serial",
+    "parallel",
+    "full"
+   ],
+   "dropped": {},
+   "record": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\step-j\\farm-hill\\20260930-014815.json",
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "title": "Mass: incompressibility closes",
+     "verdict": "pass",
+     "value": 2.220446049250313e-16,
+     "tolerance": 1e-09,
+     "passed": true
+    },
+    {
+     "key": "power",
+     "kind": "reference",
+     "title": "Farm power agrees with the full domain",
+     "verdict": "pass",
+     "value": 0.1969865956851131,
+     "tolerance": 0.25,
+     "passed": true
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "title": "Threaded equals serial, bit for bit",
+     "verdict": "pass",
+     "value": null,
+     "tolerance": null,
+     "passed": true
+    }
+   ],
+   "speedup_vs_full": {
+    "serial": 0.9951884899205595,
+    "parallel": 1.1049297598416485,
+    "full": 1.0
+   },
+   "machine": {
+    "time": "2026-09-30T01:46:34-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 29596
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T01:48:15-04:00"
+   },
+   "field_difference": {
+    "serial": {
+     "rms": 0.17949451692520998,
+     "max": 1.6151944982939423,
+     "rms_relative": 0.16759067357337676
+    },
+    "parallel": {
+     "rms": 0.17949451692520998,
+     "max": 1.6151944982939423,
+     "rms_relative": 0.16759067357337676
+    }
+   }
+  }
+ }
+}

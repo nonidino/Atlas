@@ -1,0 +1,1116 @@
+{
+ "schema": "atlas-workbench/compile@1",
+ "case": {
+  "schema_id": "atlas-workbench/case@0.5",
+  "name": "plate-hole",
+  "description": "A plate with a hole in tension (style B, drawn)",
+  "domain": {
+   "nx": 160,
+   "ny": 80,
+   "dx": 0.0025,
+   "outline": null,
+   "holes": [
+    {
+     "points": [
+      [
+       92.0,
+       40.0
+      ],
+      [
+       80.0,
+       52.0
+      ],
+      [
+       68.0,
+       40.0
+      ],
+      [
+       80.0,
+       28.0
+      ]
+     ],
+     "edges": [
+      "arc",
+      "arc",
+      "arc",
+      "arc"
+     ],
+     "bulge": [
+      0.41421356237309503,
+      0.41421356237309503,
+      0.41421356237309503,
+      0.41421356237309503
+     ]
+    }
+   ]
+  },
+  "physics": {
+   "family": "elasticity-2d",
+   "params": {
+    "thickness": 0.01
+   }
+  },
+  "materials": {
+   "steel": {
+    "E": 200000000000.0,
+    "nu": 0.3,
+    "alpha": 1.2e-05,
+    "k": 45.0,
+    "rho": 7850.0,
+    "cp": 490.0
+   }
+  },
+  "regions": [
+   {
+    "id": "plate",
+    "material": "steel",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 160,
+    "ny": 80,
+    "points": null,
+    "holes": null,
+    "outline": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "F00",
+    "shape": "cells",
+    "x0": 0,
+    "y0": 0,
+    "nx": 88,
+    "ny": 80,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      0,
+      0,
+      88
+     ],
+     [
+      1,
+      0,
+      88
+     ],
+     [
+      2,
+      0,
+      88
+     ],
+     [
+      3,
+      0,
+      88
+     ],
+     [
+      4,
+      0,
+      88
+     ],
+     [
+      5,
+      0,
+      88
+     ],
+     [
+      6,
+      0,
+      88
+     ],
+     [
+      7,
+      0,
+      88
+     ],
+     [
+      8,
+      0,
+      88
+     ],
+     [
+      9,
+      0,
+      88
+     ],
+     [
+      10,
+      0,
+      88
+     ],
+     [
+      11,
+      0,
+      88
+     ],
+     [
+      12,
+      0,
+      88
+     ],
+     [
+      13,
+      0,
+      88
+     ],
+     [
+      14,
+      0,
+      88
+     ],
+     [
+      15,
+      0,
+      88
+     ],
+     [
+      16,
+      0,
+      88
+     ],
+     [
+      17,
+      0,
+      88
+     ],
+     [
+      18,
+      0,
+      88
+     ],
+     [
+      19,
+      0,
+      88
+     ],
+     [
+      20,
+      0,
+      88
+     ],
+     [
+      21,
+      0,
+      88
+     ],
+     [
+      22,
+      0,
+      88
+     ],
+     [
+      23,
+      0,
+      88
+     ],
+     [
+      24,
+      0,
+      88
+     ],
+     [
+      25,
+      0,
+      88
+     ],
+     [
+      26,
+      0,
+      88
+     ],
+     [
+      27,
+      0,
+      88
+     ],
+     [
+      28,
+      0,
+      77
+     ],
+     [
+      28,
+      83,
+      88
+     ],
+     [
+      29,
+      0,
+      74
+     ],
+     [
+      29,
+      86,
+      88
+     ],
+     [
+      30,
+      0,
+      73
+     ],
+     [
+      31,
+      0,
+      72
+     ],
+     [
+      32,
+      0,
+      71
+     ],
+     [
+      33,
+      0,
+      70
+     ],
+     [
+      34,
+      0,
+      69
+     ],
+     [
+      35,
+      0,
+      69
+     ],
+     [
+      36,
+      0,
+      69
+     ],
+     [
+      37,
+      0,
+      68
+     ],
+     [
+      38,
+      0,
+      68
+     ],
+     [
+      39,
+      0,
+      68
+     ],
+     [
+      40,
+      0,
+      68
+     ],
+     [
+      41,
+      0,
+      68
+     ],
+     [
+      42,
+      0,
+      68
+     ],
+     [
+      43,
+      0,
+      69
+     ],
+     [
+      44,
+      0,
+      69
+     ],
+     [
+      45,
+      0,
+      69
+     ],
+     [
+      46,
+      0,
+      70
+     ],
+     [
+      47,
+      0,
+      71
+     ],
+     [
+      48,
+      0,
+      72
+     ],
+     [
+      49,
+      0,
+      73
+     ],
+     [
+      50,
+      0,
+      74
+     ],
+     [
+      50,
+      86,
+      88
+     ],
+     [
+      51,
+      0,
+      77
+     ],
+     [
+      51,
+      83,
+      88
+     ],
+     [
+      52,
+      0,
+      88
+     ],
+     [
+      53,
+      0,
+      88
+     ],
+     [
+      54,
+      0,
+      88
+     ],
+     [
+      55,
+      0,
+      88
+     ],
+     [
+      56,
+      0,
+      88
+     ],
+     [
+      57,
+      0,
+      88
+     ],
+     [
+      58,
+      0,
+      88
+     ],
+     [
+      59,
+      0,
+      88
+     ],
+     [
+      60,
+      0,
+      88
+     ],
+     [
+      61,
+      0,
+      88
+     ],
+     [
+      62,
+      0,
+      88
+     ],
+     [
+      63,
+      0,
+      88
+     ],
+     [
+      64,
+      0,
+      88
+     ],
+     [
+      65,
+      0,
+      88
+     ],
+     [
+      66,
+      0,
+      88
+     ],
+     [
+      67,
+      0,
+      88
+     ],
+     [
+      68,
+      0,
+      88
+     ],
+     [
+      69,
+      0,
+      88
+     ],
+     [
+      70,
+      0,
+      88
+     ],
+     [
+      71,
+      0,
+      88
+     ],
+     [
+      72,
+      0,
+      88
+     ],
+     [
+      73,
+      0,
+      88
+     ],
+     [
+      74,
+      0,
+      88
+     ],
+     [
+      75,
+      0,
+      88
+     ],
+     [
+      76,
+      0,
+      88
+     ],
+     [
+      77,
+      0,
+      88
+     ],
+     [
+      78,
+      0,
+      88
+     ],
+     [
+      79,
+      0,
+      88
+     ]
+    ]
+   },
+   {
+    "id": "F10",
+    "shape": "cells",
+    "x0": 72,
+    "y0": 0,
+    "nx": 88,
+    "ny": 80,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      0,
+      72,
+      160
+     ],
+     [
+      1,
+      72,
+      160
+     ],
+     [
+      2,
+      72,
+      160
+     ],
+     [
+      3,
+      72,
+      160
+     ],
+     [
+      4,
+      72,
+      160
+     ],
+     [
+      5,
+      72,
+      160
+     ],
+     [
+      6,
+      72,
+      160
+     ],
+     [
+      7,
+      72,
+      160
+     ],
+     [
+      8,
+      72,
+      160
+     ],
+     [
+      9,
+      72,
+      160
+     ],
+     [
+      10,
+      72,
+      160
+     ],
+     [
+      11,
+      72,
+      160
+     ],
+     [
+      12,
+      72,
+      160
+     ],
+     [
+      13,
+      72,
+      160
+     ],
+     [
+      14,
+      72,
+      160
+     ],
+     [
+      15,
+      72,
+      160
+     ],
+     [
+      16,
+      72,
+      160
+     ],
+     [
+      17,
+      72,
+      160
+     ],
+     [
+      18,
+      72,
+      160
+     ],
+     [
+      19,
+      72,
+      160
+     ],
+     [
+      20,
+      72,
+      160
+     ],
+     [
+      21,
+      72,
+      160
+     ],
+     [
+      22,
+      72,
+      160
+     ],
+     [
+      23,
+      72,
+      160
+     ],
+     [
+      24,
+      72,
+      160
+     ],
+     [
+      25,
+      72,
+      160
+     ],
+     [
+      26,
+      72,
+      160
+     ],
+     [
+      27,
+      72,
+      160
+     ],
+     [
+      28,
+      72,
+      77
+     ],
+     [
+      28,
+      83,
+      160
+     ],
+     [
+      29,
+      72,
+      74
+     ],
+     [
+      29,
+      86,
+      160
+     ],
+     [
+      30,
+      87,
+      160
+     ],
+     [
+      31,
+      88,
+      160
+     ],
+     [
+      32,
+      89,
+      160
+     ],
+     [
+      33,
+      90,
+      160
+     ],
+     [
+      34,
+      91,
+      160
+     ],
+     [
+      35,
+      91,
+      160
+     ],
+     [
+      36,
+      91,
+      160
+     ],
+     [
+      37,
+      92,
+      160
+     ],
+     [
+      38,
+      92,
+      160
+     ],
+     [
+      39,
+      92,
+      160
+     ],
+     [
+      40,
+      92,
+      160
+     ],
+     [
+      41,
+      92,
+      160
+     ],
+     [
+      42,
+      92,
+      160
+     ],
+     [
+      43,
+      91,
+      160
+     ],
+     [
+      44,
+      91,
+      160
+     ],
+     [
+      45,
+      91,
+      160
+     ],
+     [
+      46,
+      90,
+      160
+     ],
+     [
+      47,
+      89,
+      160
+     ],
+     [
+      48,
+      88,
+      160
+     ],
+     [
+      49,
+      87,
+      160
+     ],
+     [
+      50,
+      72,
+      74
+     ],
+     [
+      50,
+      86,
+      160
+     ],
+     [
+      51,
+      72,
+      77
+     ],
+     [
+      51,
+      83,
+      160
+     ],
+     [
+      52,
+      72,
+      160
+     ],
+     [
+      53,
+      72,
+      160
+     ],
+     [
+      54,
+      72,
+      160
+     ],
+     [
+      55,
+      72,
+      160
+     ],
+     [
+      56,
+      72,
+      160
+     ],
+     [
+      57,
+      72,
+      160
+     ],
+     [
+      58,
+      72,
+      160
+     ],
+     [
+      59,
+      72,
+      160
+     ],
+     [
+      60,
+      72,
+      160
+     ],
+     [
+      61,
+      72,
+      160
+     ],
+     [
+      62,
+      72,
+      160
+     ],
+     [
+      63,
+      72,
+      160
+     ],
+     [
+      64,
+      72,
+      160
+     ],
+     [
+      65,
+      72,
+      160
+     ],
+     [
+      66,
+      72,
+      160
+     ],
+     [
+      67,
+      72,
+      160
+     ],
+     [
+      68,
+      72,
+      160
+     ],
+     [
+      69,
+      72,
+      160
+     ],
+     [
+      70,
+      72,
+      160
+     ],
+     [
+      71,
+      72,
+      160
+     ],
+     [
+      72,
+      72,
+      160
+     ],
+     [
+      73,
+      72,
+      160
+     ],
+     [
+      74,
+      72,
+      160
+     ],
+     [
+      75,
+      72,
+      160
+     ],
+     [
+      76,
+      72,
+      160
+     ],
+     [
+      77,
+      72,
+      160
+     ],
+     [
+      78,
+      72,
+      160
+     ],
+     [
+      79,
+      72,
+      160
+     ]
+    ]
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "clamp",
+    "edge": "left",
+    "kind": "clamped",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "pull",
+    "edge": "right",
+    "kind": "load-x",
+    "start": 0,
+    "stop": null,
+    "value": 10000000.0
+   },
+   {
+    "id": "bottom",
+    "edge": "bottom",
+    "kind": "free",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "top",
+    "edge": "top",
+    "kind": "free",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "hole-0",
+    "edge": "hole0:0",
+    "kind": "free",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "hole-1",
+    "edge": "hole0:1",
+    "kind": "free",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "hole-2",
+    "edge": "hole0:2",
+    "kind": "free",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "hole-3",
+    "edge": "hole0:3",
+    "kind": "free",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "B",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-12,
+   "max_iterations": 5000,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 1.0,
+   "steps": 5,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "steady"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  },
+  "layout": {
+   "cut": "along",
+   "along": 2,
+   "across": 1,
+   "source": "a87e2ddfb92b3591",
+   "grown": 8
+  }
+ },
+ "family": "elasticity-2d",
+ "verdict": "refuse",
+ "seams": [
+  {
+   "seam": "F00|F10",
+   "between": [
+    "F00",
+    "F10"
+   ],
+   "port_type": "MECH",
+   "verdict": "admit",
+   "rules": []
+  }
+ ],
+ "other": [
+  {
+   "layer": "L1",
+   "rule": "E7",
+   "verdict": "admit-uncertified",
+   "subject": "F00",
+   "message": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself"
+  },
+  {
+   "layer": "L1",
+   "rule": "E7",
+   "verdict": "admit-uncertified",
+   "subject": "F10",
+   "message": "storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself"
+  },
+  {
+   "layer": "L2",
+   "rule": "R10",
+   "verdict": "refuse",
+   "subject": "F00, F10",
+   "message": "2 agents declare elliptic_subsolve=embedded and the graph decomposes the domain: each shares its governing_family with at least one other agent, so the family's region has been cut and each agent solves a global problem on its own piece of it. The decomposition changes the operator rather than restricting it. The resulting error does not decay with distance from the cut and no coupling scheme removes it -- measured at 99.8% of the total defect, mislabelled as agent infidelity. Declare elliptic_subsolve=exposed and run that solve in the composition layer, which is what probed-dtn-coupling 2.1 assumes when it says the elliptic part stays global. **What taking that repair is worth, measured on one graph at one state (W168, CS-S1 2026-09-09): 149x in coupling sweeps.** The same four windows over the same field need 74.81 sweeps per decade of interface residual with the pressure solve embedded and 0.50 with it exposed -- 466 sweeps against 7 to the same tolerance, 59.8 seconds against 0.62. A control with the projection dropped runs at 0.49, so the gain is the EXPOSURE and not the projection. This rule is not bookkeeping: it is the largest measured effect in this package, and it is a refusal rather than a decertification because the error it names is silent"
+  },
+  {
+   "layer": "L2",
+   "rule": "C3/W57",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch"
+  },
+  {
+   "layer": "L5",
+   "rule": "eps_tol",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit"
+  },
+  {
+   "layer": "L9",
+   "rule": "E5",
+   "verdict": "admit-uncertified",
+   "subject": "<run>",
+   "message": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate"
+  },
+  {
+   "layer": "L8",
+   "rule": "W56",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+  }
+ ],
+ "seconds": 0.8169190000044182,
+ "agents": 2,
+ "cross_points": [],
+ "refused_before": null,
+ "when": "2026-09-29T21:33:25-04:00",
+ "report": "=== workbench-plate-hole ===\nverdict: refuse   depth: 0\n\nE1:holds E2:holds E3:holds E4:holds E5:unchecked E6:holds E7:holds\nclaim: UNTYPED -- L is unmeasured, so the predictability horizon is unknown, so no type is decidable. Every metric carries the UNTYPED tag\nunmeasured constants: L (W1), sigma (W3), tau (W3), C_mu (W3)\nnamed holes touched: AssemblyCertificate, InterfaceMotion\nslot measurements still owed: {'InterfaceMotion': ['operator_drift', 'unaccounted_power_fraction']}\n\nrefusals (1 across 1 rules):\n  L2/R10  [F00, F10]\n      2 agents declare elliptic_subsolve=embedded and the graph decomposes the domain: each shares its governing_family with at least one other agent, so the family's region has been cut and each agent solves a global problem on its own piece of it. The decomposition changes the operator rather than restricting it. The resulting error does not decay with distance from the cut and no coupling scheme removes it -- measured at 99.8% of the total defect, mislabelled as agent infidelity. Declare elliptic_subsolve=exposed and run that solve in the composition layer, which is what probed-dtn-coupling 2.1 assumes when it says the elliptic part stays global. **What taking that repair is worth, measured on one graph at one state (W168, CS-S1 2026-09-09): 149x in coupling sweeps.** The same four windows over the same field need 74.81 sweeps per decade of interface residual with the pressure solve embedded and 0.50 with it exposed -- 466 sweeps against 7 to the same tolerance, 59.8 seconds against 0.62. A control with the projection dropped runs at 0.49, so the gain is the EXPOSURE and not the projection. This rule is not bookkeeping: it is the largest measured effect in this package, and it is a refusal rather than a decertification because the error it names is silent\n\ndecertifications (6 across 5 rules):\n  L1/E7  [F00, F10]\n      storage: none, so the L <= 1 branch of the master bound is unavailable and L must be fitted (W1). A declared storage function is not only the structural route to L <= 1; it is the only certificate that survives an expert swap without re-earning, which makes it the enabling condition of plug-in itself\n  L2/C3/W57  [<graph>]\n      substructuring: the cut criterion L2/C3 = ||S_M a* - chi_M|| / beta is derived (master-error-bound 4's factorization, stopped before the operator-mismatch bound) and measured to rank cut placements at +0.579 to +1.000 over 11 configurations, tight to a factor of 1.7. Its VALUE is not declared on this graph, so the placement is unranked here. Note section 4's own product form ranks NEGATIVE in 9 of 11 and must not be used as a criterion; and the retired Q, rank -0.853, was that form's shape imported onto the overlapping branch\n  L5/eps_tol  [<graph>]\n      the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit\n  L9/E5  [<run>]\n      UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate\n  L8/W56  [<graph>]\n      4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants\n\nscheme Sigma\n  D_decomposition        non-overlapping   <- probed-DtN requires the non-overlapping view, which INTRODUCES cross-points the overlapping scheme does not have\n  D_decomposition_axes   ['non-overlapping']\n  Lambda_transmission    probed-DtN   <- probing is the exception that makes R1 survivable: probed-DtN requires only bc_channel >= dirichlet, because the higher rung is built outside the expert\n  O_ordering             additive   <- multiplicative ordering is forbidden when any composition-layer guarantee depends on equivalent treatment of agents; a direct Schur solve satisfies this automatically, being order-free\n  K_accelerator          direct-schur   <- a direct Schur solve makes the solve-incompleteness term vanish, and is order-free so it satisfies R5 by construction rather than by discipline\n  C_levels               two(probed-schur)   <- two-level via a classical coarse solve requires an agent that can run at a different window size without changing its regime; via a probed Schur complement it requires nothing extra, since every call stays at the native size\n  W_window               1   <- R3: an agent at this interface cannot vary its ring within a macro-step\n  eps_tol                None (DEFAULTED)   <- unset: the relative rule needs measured tau and sigma (W3)\n  overlap                None\n  exchange_interval      1.0   <- the exchange interval cannot go below max_i dt_native. The window is the one axis a frozen expert can move along: W can be increased, never decreased\n  multirate              False\n  flux_matching          single-clock"
+}

@@ -1,0 +1,1269 @@
+{
+ "schema": "atlas-workbench/compile@1",
+ "case": {
+  "schema_id": "atlas-workbench/case@0.5",
+  "name": "river-bend",
+  "description": "A plume round a winding river (style A, drawn)",
+  "domain": {
+   "nx": 240,
+   "ny": 100,
+   "dx": 5.0,
+   "outline": {
+    "points": [
+     [
+      0.0,
+      30.0
+     ],
+     [
+      30.0,
+      45.55634918610404
+     ],
+     [
+      60.0,
+      52.0
+     ],
+     [
+      90.0,
+      45.55634918610404
+     ],
+     [
+      120.0,
+      30.000000000000014
+     ],
+     [
+      150.0,
+      14.443650813895957
+     ],
+     [
+      180.0,
+      8.0
+     ],
+     [
+      210.0,
+      14.44365081389595
+     ],
+     [
+      240.0,
+      29.99999999999997
+     ],
+     [
+      240.0,
+      69.99999999999997
+     ],
+     [
+      210.0,
+      54.44365081389595
+     ],
+     [
+      180.0,
+      48.0
+     ],
+     [
+      150.0,
+      54.44365081389596
+     ],
+     [
+      120.0,
+      70.00000000000001
+     ],
+     [
+      90.0,
+      85.55634918610404
+     ],
+     [
+      60.0,
+      92.0
+     ],
+     [
+      30.0,
+      85.55634918610404
+     ],
+     [
+      0.0,
+      70.0
+     ]
+    ],
+    "edges": [
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "line",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "line"
+    ],
+    "bulge": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "holes": []
+  },
+  "physics": {
+   "family": "transport-2d",
+   "params": {
+    "q": 1.0,
+    "release": 10.0,
+    "source_x": 150.0,
+    "source_y": 327.78174593052023
+   }
+  },
+  "materials": {
+   "shallow-fast": {
+    "depth": 1.25,
+    "mixing": 0.5
+   },
+   "deep-slow": {
+    "depth": 2.5,
+    "mixing": 2.0
+   }
+  },
+  "regions": [
+   {
+    "id": "upper",
+    "material": "shallow-fast",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 120,
+    "ny": 100,
+    "points": null,
+    "holes": null,
+    "outline": null
+   },
+   {
+    "id": "lower",
+    "material": "deep-slow",
+    "shape": "rect",
+    "x0": 120,
+    "y0": 0,
+    "nx": 120,
+    "ny": 100,
+    "points": null,
+    "holes": null,
+    "outline": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "F00",
+    "shape": "cells",
+    "x0": 0,
+    "y0": 30,
+    "nx": 136,
+    "ny": 62,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      30,
+      0,
+      5
+     ],
+     [
+      31,
+      0,
+      7
+     ],
+     [
+      31,
+      117,
+      120
+     ],
+     [
+      32,
+      0,
+      9
+     ],
+     [
+      32,
+      115,
+      121
+     ],
+     [
+      33,
+      0,
+      11
+     ],
+     [
+      33,
+      114,
+      121
+     ],
+     [
+      34,
+      0,
+      12
+     ],
+     [
+      34,
+      112,
+      122
+     ],
+     [
+      35,
+      0,
+      14
+     ],
+     [
+      35,
+      110,
+      123
+     ],
+     [
+      36,
+      0,
+      15
+     ],
+     [
+      36,
+      108,
+      123
+     ],
+     [
+      37,
+      0,
+      16
+     ],
+     [
+      37,
+      107,
+      124
+     ],
+     [
+      38,
+      0,
+      18
+     ],
+     [
+      38,
+      105,
+      124
+     ],
+     [
+      39,
+      0,
+      19
+     ],
+     [
+      39,
+      103,
+      125
+     ],
+     [
+      40,
+      0,
+      21
+     ],
+     [
+      40,
+      101,
+      125
+     ],
+     [
+      41,
+      0,
+      22
+     ],
+     [
+      41,
+      99,
+      126
+     ],
+     [
+      42,
+      0,
+      24
+     ],
+     [
+      42,
+      97,
+      126
+     ],
+     [
+      43,
+      0,
+      26
+     ],
+     [
+      43,
+      95,
+      127
+     ],
+     [
+      44,
+      0,
+      28
+     ],
+     [
+      44,
+      93,
+      127
+     ],
+     [
+      45,
+      0,
+      30
+     ],
+     [
+      45,
+      90,
+      128
+     ],
+     [
+      46,
+      0,
+      33
+     ],
+     [
+      46,
+      87,
+      128
+     ],
+     [
+      47,
+      0,
+      36
+     ],
+     [
+      47,
+      84,
+      129
+     ],
+     [
+      48,
+      0,
+      39
+     ],
+     [
+      48,
+      81,
+      129
+     ],
+     [
+      49,
+      0,
+      43
+     ],
+     [
+      49,
+      77,
+      130
+     ],
+     [
+      50,
+      0,
+      47
+     ],
+     [
+      50,
+      73,
+      130
+     ],
+     [
+      51,
+      0,
+      53
+     ],
+     [
+      51,
+      67,
+      131
+     ],
+     [
+      52,
+      0,
+      131
+     ],
+     [
+      53,
+      0,
+      132
+     ],
+     [
+      54,
+      0,
+      132
+     ],
+     [
+      55,
+      0,
+      133
+     ],
+     [
+      56,
+      0,
+      133
+     ],
+     [
+      57,
+      0,
+      134
+     ],
+     [
+      58,
+      0,
+      135
+     ],
+     [
+      59,
+      0,
+      135
+     ],
+     [
+      60,
+      0,
+      136
+     ],
+     [
+      61,
+      0,
+      135
+     ],
+     [
+      62,
+      0,
+      133
+     ],
+     [
+      63,
+      0,
+      132
+     ],
+     [
+      64,
+      0,
+      130
+     ],
+     [
+      65,
+      0,
+      128
+     ],
+     [
+      66,
+      0,
+      126
+     ],
+     [
+      67,
+      0,
+      125
+     ],
+     [
+      68,
+      0,
+      123
+     ],
+     [
+      69,
+      0,
+      121
+     ],
+     [
+      70,
+      0,
+      119
+     ],
+     [
+      71,
+      1,
+      117
+     ],
+     [
+      72,
+      2,
+      115
+     ],
+     [
+      73,
+      3,
+      114
+     ],
+     [
+      74,
+      4,
+      112
+     ],
+     [
+      75,
+      5,
+      110
+     ],
+     [
+      76,
+      7,
+      108
+     ],
+     [
+      77,
+      9,
+      107
+     ],
+     [
+      78,
+      11,
+      105
+     ],
+     [
+      79,
+      13,
+      103
+     ],
+     [
+      80,
+      15,
+      101
+     ],
+     [
+      81,
+      18,
+      99
+     ],
+     [
+      82,
+      21,
+      97
+     ],
+     [
+      83,
+      24,
+      95
+     ],
+     [
+      84,
+      27,
+      93
+     ],
+     [
+      85,
+      30,
+      90
+     ],
+     [
+      86,
+      33,
+      87
+     ],
+     [
+      87,
+      36,
+      84
+     ],
+     [
+      88,
+      39,
+      81
+     ],
+     [
+      89,
+      43,
+      77
+     ],
+     [
+      90,
+      47,
+      73
+     ],
+     [
+      91,
+      53,
+      67
+     ]
+    ]
+   },
+   {
+    "id": "F10",
+    "shape": "cells",
+    "x0": 104,
+    "y0": 8,
+    "nx": 136,
+    "ny": 62,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      8,
+      173,
+      187
+     ],
+     [
+      9,
+      167,
+      193
+     ],
+     [
+      10,
+      163,
+      197
+     ],
+     [
+      11,
+      159,
+      201
+     ],
+     [
+      12,
+      156,
+      204
+     ],
+     [
+      13,
+      153,
+      207
+     ],
+     [
+      14,
+      150,
+      210
+     ],
+     [
+      15,
+      147,
+      213
+     ],
+     [
+      16,
+      145,
+      216
+     ],
+     [
+      17,
+      143,
+      219
+     ],
+     [
+      18,
+      141,
+      222
+     ],
+     [
+      19,
+      139,
+      225
+     ],
+     [
+      20,
+      137,
+      227
+     ],
+     [
+      21,
+      135,
+      229
+     ],
+     [
+      22,
+      133,
+      231
+     ],
+     [
+      23,
+      132,
+      233
+     ],
+     [
+      24,
+      130,
+      235
+     ],
+     [
+      25,
+      128,
+      236
+     ],
+     [
+      26,
+      126,
+      237
+     ],
+     [
+      27,
+      125,
+      238
+     ],
+     [
+      28,
+      123,
+      239
+     ],
+     [
+      29,
+      121,
+      240
+     ],
+     [
+      30,
+      119,
+      240
+     ],
+     [
+      31,
+      117,
+      240
+     ],
+     [
+      32,
+      115,
+      240
+     ],
+     [
+      33,
+      114,
+      240
+     ],
+     [
+      34,
+      112,
+      240
+     ],
+     [
+      35,
+      110,
+      240
+     ],
+     [
+      36,
+      108,
+      240
+     ],
+     [
+      37,
+      107,
+      240
+     ],
+     [
+      38,
+      105,
+      240
+     ],
+     [
+      39,
+      104,
+      240
+     ],
+     [
+      40,
+      105,
+      240
+     ],
+     [
+      41,
+      105,
+      240
+     ],
+     [
+      42,
+      106,
+      240
+     ],
+     [
+      43,
+      107,
+      240
+     ],
+     [
+      44,
+      107,
+      240
+     ],
+     [
+      45,
+      108,
+      240
+     ],
+     [
+      46,
+      108,
+      240
+     ],
+     [
+      47,
+      109,
+      240
+     ],
+     [
+      48,
+      109,
+      173
+     ],
+     [
+      48,
+      187,
+      240
+     ],
+     [
+      49,
+      110,
+      167
+     ],
+     [
+      49,
+      193,
+      240
+     ],
+     [
+      50,
+      110,
+      163
+     ],
+     [
+      50,
+      197,
+      240
+     ],
+     [
+      51,
+      111,
+      159
+     ],
+     [
+      51,
+      201,
+      240
+     ],
+     [
+      52,
+      111,
+      156
+     ],
+     [
+      52,
+      204,
+      240
+     ],
+     [
+      53,
+      112,
+      153
+     ],
+     [
+      53,
+      207,
+      240
+     ],
+     [
+      54,
+      112,
+      150
+     ],
+     [
+      54,
+      210,
+      240
+     ],
+     [
+      55,
+      113,
+      147
+     ],
+     [
+      55,
+      212,
+      240
+     ],
+     [
+      56,
+      113,
+      145
+     ],
+     [
+      56,
+      214,
+      240
+     ],
+     [
+      57,
+      114,
+      143
+     ],
+     [
+      57,
+      216,
+      240
+     ],
+     [
+      58,
+      114,
+      141
+     ],
+     [
+      58,
+      218,
+      240
+     ],
+     [
+      59,
+      115,
+      139
+     ],
+     [
+      59,
+      219,
+      240
+     ],
+     [
+      60,
+      115,
+      137
+     ],
+     [
+      60,
+      221,
+      240
+     ],
+     [
+      61,
+      116,
+      135
+     ],
+     [
+      61,
+      222,
+      240
+     ],
+     [
+      62,
+      116,
+      133
+     ],
+     [
+      62,
+      224,
+      240
+     ],
+     [
+      63,
+      117,
+      132
+     ],
+     [
+      63,
+      225,
+      240
+     ],
+     [
+      64,
+      117,
+      130
+     ],
+     [
+      64,
+      226,
+      240
+     ],
+     [
+      65,
+      118,
+      128
+     ],
+     [
+      65,
+      228,
+      240
+     ],
+     [
+      66,
+      119,
+      126
+     ],
+     [
+      66,
+      229,
+      240
+     ],
+     [
+      67,
+      119,
+      125
+     ],
+     [
+      67,
+      231,
+      240
+     ],
+     [
+      68,
+      120,
+      123
+     ],
+     [
+      68,
+      233,
+      240
+     ],
+     [
+      69,
+      235,
+      240
+     ]
+    ]
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "B-outline-0",
+    "edge": "outline:0",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-1",
+    "edge": "outline:1",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-2",
+    "edge": "outline:2",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-3",
+    "edge": "outline:3",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-4",
+    "edge": "outline:4",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-5",
+    "edge": "outline:5",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-6",
+    "edge": "outline:6",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-7",
+    "edge": "outline:7",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-8",
+    "edge": "outline:8",
+    "kind": "river-outlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-9",
+    "edge": "outline:9",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-10",
+    "edge": "outline:10",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-11",
+    "edge": "outline:11",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-12",
+    "edge": "outline:12",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-13",
+    "edge": "outline:13",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-14",
+    "edge": "outline:14",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-15",
+    "edge": "outline:15",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-16",
+    "edge": "outline:16",
+    "kind": "bank",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-17",
+    "edge": "outline:17",
+    "kind": "river-inlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "A",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 500,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 1.5,
+   "steps": 2000,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "transient"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  },
+  "layout": {
+   "cut": "along",
+   "along": 2,
+   "across": 1,
+   "source": "05b954f9d75c8b80",
+   "grown": 8
+  }
+ },
+ "family": "transport-2d",
+ "verdict": "admit-uncertified",
+ "seams": [
+  {
+   "seam": "F00|F10",
+   "between": [
+    "F00",
+    "F10"
+   ],
+   "port_type": "ADVEC",
+   "verdict": "admit",
+   "rules": []
+  }
+ ],
+ "other": [
+  {
+   "layer": "L2",
+   "rule": "C2",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference"
+  },
+  {
+   "layer": "L5",
+   "rule": "eps_tol",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit"
+  },
+  {
+   "layer": "L6",
+   "rule": "W49",
+   "verdict": "admit-uncertified",
+   "subject": "<assembly>",
+   "message": "the decomposition is overlapping, so sigma is bounded by master-error-bound 4.1's product C_mu * Pi * ||d_lambda|| rather than 4's substructuring form -- and Pi, the weight the assembly gives to cells a stale artificial-boundary datum can have reached, is not declared. Declare `contaminated` on the partition of unity. Assuming the assembly is clean is what the halo rule already refuses to do"
+  },
+  {
+   "layer": "L9",
+   "rule": "E5",
+   "verdict": "admit-uncertified",
+   "subject": "<run>",
+   "message": "UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate"
+  },
+  {
+   "layer": "L8",
+   "rule": "W56",
+   "verdict": "admit-uncertified",
+   "subject": "<graph>",
+   "message": "4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants"
+  }
+ ],
+ "seconds": 0.24060869996901602,
+ "agents": 2,
+ "cross_points": [],
+ "refused_before": null,
+ "when": "2026-09-29T21:36:56-04:00",
+ "report": "=== workbench-river-bend ===\nverdict: admit-uncertified   depth: 0\n\nE1:holds E2:holds E3:holds E4:holds E5:unchecked E6:holds E7:holds\nclaim: UNTYPED -- L is unmeasured, so the predictability horizon is unknown, so no type is decidable. Every metric carries the UNTYPED tag\nunmeasured constants: L (W1), sigma (W3), tau (W3), C_mu (W3)\nnamed holes touched: AssemblyCertificate, InterfaceMotion, PortAmendment\nslot measurements still owed: {'InterfaceMotion': ['operator_drift', 'unaccounted_power_fraction']}\n\ndecertifications (5 across 5 rules):\n  L2/C2  [<graph>]\n      L2/C2 applies -- overlapping axis, convex partition of unity -- but the graph declares no measured cut_defect_bound, so the criterion is a theorem with no value in it. Measure ||sum_i chi_i |E_i R_i u - R_i E u||| over one exchange interval and declare it on MeasuredConstants. This is a missing measurement, not an unearned inference\n  L5/eps_tol  [<graph>]\n      the interface tolerance must be set relative to the dominant terms and refused if tighter than the smaller of the agent and transmission defects -- converging the interface far below them spends compute to shrink the negligible term and removes the only alarm the run has. tau and sigma are unmeasured (W3), so the rule cannot be applied and no tolerance is set. Declare them on the graph's MeasuredConstants and this becomes an admit\n  L6/W49  [<assembly>]\n      the decomposition is overlapping, so sigma is bounded by master-error-bound 4.1's product C_mu * Pi * ||d_lambda|| rather than 4's substructuring form -- and Pi, the weight the assembly gives to cells a stale artificial-boundary datum can have reached, is not declared. Declare `contaminated` on the partition of unity. Assuming the assembly is clean is what the halo rule already refuses to do\n  L9/E5  [<run>]\n      UNTYPED: L has never been measured (W1, one paired rollout), so the horizon is unknown, so no claim type is decidable and every metric carries the tag. This is the state of every result currently in the vault, and the appearance is accurate\n  L8/W56  [<graph>]\n      4 bound constants unmeasured on this graph (L (W1), sigma (W3), tau (W3), C_mu (W3)). The verdict cannot be `admit`: a bound quoted with a constant nobody measured is the silent-wrongness class, and `holes.Unmeasured` exists so that using one raises rather than returning a plausible number. Declare them on MeasuredConstants\n\nscheme Sigma\n  D_decomposition        overlapping   <- as declared\n  D_decomposition_axes   ['overlapping']\n  Lambda_transmission    dirichlet   <- probing is the exception that makes R1 survivable: probed-DtN requires only bc_channel >= dirichlet, because the higher rung is built outside the expert\n  O_ordering             additive   <- multiplicative ordering is forbidden when any composition-layer guarantee depends on equivalent treatment of agents; a direct Schur solve satisfies this automatically, being order-free\n  K_accelerator          direct-schur   <- a direct Schur solve makes the solve-incompleteness term vanish, and is order-free so it satisfies R5 by construction rather than by discipline\n  C_levels               one   <- one level; a classical coarse solve would require an agent that can run at a different window size without changing its regime\n  W_window               1 (DEFAULTED)   <- W* would be about 1/ln(L) clamped by R3, and L is unmeasured (W1), so W* is UNCOMPUTABLE. W = 1 is the honest default and this is the compiler saying it is defaulting rather than choosing\n  eps_tol                None (DEFAULTED)   <- unset: the relative rule needs measured tau and sigma (W3)\n  overlap                85.0\n  exchange_interval      1.5   <- the exchange interval cannot go below max_i dt_native. The window is the one axis a frozen expert can move along: W can be increased, never decreased\n  multirate              False\n  flux_matching          single-clock"
+}

@@ -1,0 +1,319 @@
+{
+ "schema": "atlas-workbench/compile@1",
+ "case": {
+  "schema_id": "atlas-workbench/case@0.5",
+  "name": "farm-hill",
+  "description": "Wind farm over a hill (style A, drawn)",
+  "domain": {
+   "nx": 352,
+   "ny": 240,
+   "dx": 0.03125,
+   "outline": {
+    "points": [
+     [
+      0.0,
+      12.000902645739922
+     ],
+     [
+      44.0,
+      12.059873951825576
+     ],
+     [
+      88.0,
+      13.354723509745824
+     ],
+     [
+      132.0,
+      22.455759105901375
+     ],
+     [
+      176.0,
+      39.52660350481713
+     ],
+     [
+      220.0,
+      36.7196229999511
+     ],
+     [
+      264.0,
+      19.572219872900682
+     ],
+     [
+      308.0,
+      12.79121907017372
+     ],
+     [
+      352.0,
+      12.02820086526542
+     ],
+     [
+      352.0,
+      240.0
+     ],
+     [
+      0.0,
+      240.0
+     ]
+    ],
+    "edges": [
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "line",
+     "line",
+     "line"
+    ],
+    "bulge": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "holes": []
+  },
+  "physics": {
+   "family": "incompressible-2d",
+   "params": {
+    "nu": 0.00392,
+    "u_inf": 1.0
+   }
+  },
+  "materials": {},
+  "regions": [],
+  "windows": [
+   {
+    "id": "F00",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F10",
+    "shape": "rect",
+    "x0": 112,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F20",
+    "shape": "rect",
+    "x0": 224,
+    "y0": 0,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F01",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F11",
+    "shape": "rect",
+    "x0": 112,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   },
+   {
+    "id": "F21",
+    "shape": "rect",
+    "x0": 224,
+    "y0": 112,
+    "nx": 128,
+    "ny": 128,
+    "outline": null,
+    "holes": [],
+    "runs": null
+   }
+  ],
+  "devices": [
+   {
+    "id": "R1",
+    "kind": "actuator-disk",
+    "x": 3.75,
+    "y": 1.75,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   },
+   {
+    "id": "R2",
+    "kind": "actuator-disk",
+    "x": 7.25,
+    "y": 1.75,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   },
+   {
+    "id": "R3",
+    "kind": "actuator-disk",
+    "x": 7.25,
+    "y": 5.25,
+    "diameter": 1.0,
+    "yaw_deg": 0.0
+   }
+  ],
+  "boundaries": [
+   {
+    "id": "B-outline-0",
+    "edge": "outline:0",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-1",
+    "edge": "outline:1",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-2",
+    "edge": "outline:2",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-3",
+    "edge": "outline:3",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-4",
+    "edge": "outline:4",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-5",
+    "edge": "outline:5",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-6",
+    "edge": "outline:6",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-7",
+    "edge": "outline:7",
+    "kind": "wall",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-8",
+    "edge": "outline:8",
+    "kind": "outlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-9",
+    "edge": "outline:9",
+    "kind": "freestream",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "B-outline-10",
+    "edge": "outline:10",
+    "kind": "inlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "A",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 500,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 0.2,
+   "steps": 40,
+   "threads": 4,
+   "start": "freestream",
+   "mode": "transient"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  },
+  "layout": null
+ },
+ "family": "incompressible-2d",
+ "verdict": "refuse",
+ "seams": [],
+ "other": [],
+ "seconds": 0.0158738000318408,
+ "agents": 0,
+ "cross_points": null,
+ "refused_before": "CompileRefused: the wind-farm family's graph is wake_array's, a full rectangle of fluid; a drawn domain's solid, held at rest by penalization, is not in it, and a drawn farm has no declared graph yet",
+ "when": "2026-09-30T01:46:34-04:00",
+ "report": ""
+}

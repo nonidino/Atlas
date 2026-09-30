@@ -6771,3 +6771,80 @@ After that, the page stopped drawing for screenshots: the app window was behind 
 - a test that expected the wrong bounding box.
 
 **Added:** `atlas/workbench/shapes.py`, `tests/test_workbench_drawn.py`, `out/workbench/records/step-g/`. **Changed:** `spec.py`, `geometry.py`, `fv.py`, `tiling.py`, `styles.py`, `compile.py`, `editor.py`, `app.py`, `runner.py`, `registry.py`, `families/conduction.py`, the workbench README, `tests/test_workbench_{shell,geometry,families}.py` (the schema's version); [[showcase-library-plan]], [[showcase-gallery]], [[index]].
+
+## [2026-09-29] build | The workbench's windows follow the domain: generated from its shape (case file 0.5)
+
+The owner's question, on the drawn windows: "it doesn't make sense for the windows themselves to be rectangles, does it? Why doesn't their shape itself ADAPT to the geometry of the curve smoothly?" They did not adapt because nothing generated a window from the geometry: a window was whatever was drawn, and the tiling generator made rectangles. The record is [[showcase-library-plan]] §6 ("Built, 2026-09-29: windows that follow the domain").
+
+**Built** (`atlas/workbench/layout.py`; the case file `atlas-workbench/case@0.5`, whose `layout` says how the windows are cut):
+- **The domain's ends** from its Fiedler vector, the Laplacian's first non-constant eigenvector on its cells.
+- **Its own coordinates**: the along coordinate harmonic in the domain, 0 on one end and 1 on the other with no flux through the walls; the across coordinate harmonic between the two sides. Each is one `fv.assemble` solve at unit conductivity.
+- **Cuts at equal cell counts** in those coordinates, or **one piece per material**. For styles A and B each piece then grows inside the domain, never across a gap, by the least reach that gives every cell a window at full weight.
+- **Generated again on every edit** that changes what they follow (`Workbench.edit`); editing a window by hand makes the windows the case's own, with a note.
+- A generated window is stored as its cells, so a record holds the windows it marched on, and it is drawn as the smooth curve where it ends inside the domain (a small marching-squares routine, no new dependency).
+
+**Measured:** on the quarter ring the along coordinate is the angle to $0.0075$ and the across coordinate is $\ln(r/r_i)/\ln(r_o/r_i)$ to $0.006$, the staircase's size, so the cuts fall at $30°$ and $60°$ and on the arc of equal areas. The example `s-channel`, a steel channel drawn with splines on four generated windows, agrees with the full domain to $1.8\times10^{-9}$ of its span; threaded equals serial; every seam is admitted, and R10 refuses it alone (W348).
+
+**Added:** `atlas/workbench/layout.py`, `tests/test_workbench_layout.py`. **Changed:** `spec.py`, `geometry.py`, `editor.py`, `app.py`, the workbench README, and three test files (the schema's version).
+
+## [2026-09-29] build | The workbench's drawn shapes in every family
+
+The owner: "make the smooth domain/spline/other stuff available for all cases". Until then only heat conduction ran on a drawn domain, and every other family refused one in the check. The record is [[showcase-library-plan]] §6 ("Built, 2026-09-29: drawn shapes in every family"), with a row per example on [[showcase-gallery]].
+
+**What each family needed:**
+- **the river and the coolant**: a flow that follows the banks, the potential flow from the inlet faces to the outlet faces (`flow.py`, new), divergence-free face by face and zero through every bank;
+- **the sound**: rigid drawn walls, a face to the void never opening, and two pieces of any shape that equal the full domain bit for bit;
+- **the bracket and the heated strip**: an element mask, the void carrying no stiffness and its nodes leaving the solve; clamps, loads, fixed temperatures and fluxes on drawn edges;
+- **the wind farm**: the solid held at rest by penalization in its stiff limit, the velocity outside the domain set to zero just before every projection; drawn windows march their bounding boxes and blend by the mask partition of unity;
+- **the circuit**: electrodes on drawn edges.
+
+**Two rules for every family.** A family that fixes its outer boundary keeps doing so: each drawn edge takes the condition of the grid edge it lies along, and the family's default elsewhere (`spec.derived_kind`). A flux or a traction on a slanted edge carries the edge's true length, not its staircase's (`geometry.staircase_scale`).
+
+**Seven examples**, one per family: `ring-film`, `river-bend`, `sound-lens`, `plate-hole`, `bimetal-arc`, `cooled-winding`, `farm-hill`. Each is clean and passes every registered check. `ring-film`'s resistance is $+0.98\%$ from the ring's continuum $\theta/(\sigma t\ln(r_o/r_i))$, the staircase. The terrain under `farm-hill` moved its farm power $19.6\%$ from the full domain, inside W346's registered $25\%$ and well above the $2.3$–$8.3\%$ the plain farms measured. (The next day's entry finds a defect in the drawn farm's windows, fixes it, and places that departure in the hill.)
+
+**Not built:** the potential flow has no viscosity and no inertia, right for a scalar's path round a bend and wrong for a separated flow; the penalization is first order in the sub-step.
+
+**Added:** `atlas/workbench/flow.py`, `tests/test_workbench_drawn_families.py`, `out/workbench/records/step-i/` (headless, on battery: no times quoted). **Changed:** `registry.py`, `spec.py`, `geometry.py`, `fe.py`, `compile.py`, `layout.py`, `editor.py`, `app.py`, every family module, the workbench README, and four test files.
+
+## [2026-09-29] build | The workbench rebuilt: one screen to model, one to run
+
+The owner: "go through the entire UI to make it much more simple and intuitive. This is way too complicated of a UI currently. plan it out in claude design first, and then implement." The record is [[showcase-library-plan]] §6 ("Rebuilt, 2026-09-29").
+
+**Planned first**, as seven screens on a Claude Design canvas.
+
+**Built** (`app.py`, `editor.py`, `runview.py` rebuilt; `inspector.py` new): the six workflow steps, five menus and the editing tables became two tabs, one header and one rule: pick a layer, click on the canvas, edit what is selected in the inspector.
+- **The header**: the case's name, the tabs, the physics family (only the families that run), Undo and Redo, one **Case** menu, the **status chip** and **Run**. The chip's list gives each problem a *Show me* button to the layer that fixes it.
+- **Model**: the layer rail, one canvas with five tools (each adds one shape, then hands back to Select), and the inspector.
+- **Run & results**: Run and the compiler's verdict at the top; four cards over the details and the fields.
+
+**Checked in the served page with real mouse clicks**, and fixed where it was wrong:
+- the Case menu, listing the twenty-one examples as well as its own items, ran off the page: the examples are in its gallery alone;
+- a fresh example read "unsaved changes";
+- the result cards sat under the plots, then stacked one per line;
+- the Rectangle tool stayed armed while Draw handed back;
+- a finished compile rebuilt the tab at its top, its verdict out of sight at the bottom;
+- a name typed and then *Add* clicked reached the server after the click: a new material is now added when its name arrives;
+- a material no region used was listed nowhere.
+
+**Rewriting the tests found more**: a refused value stayed in its field as if applied; after *Cut a hole* the next outline drawn was another hole; undo dropped the selection; the Windows inspector said "full weight" for pieces that tile; a compile of one case was shown as the next case's; a drawn window's edge could be bent but not typed.
+
+**Tests:** the 27 page tests the rebuild broke are rewritten for the new page through `tests/workbench_ui.py` (a click, a canvas tap, a widget found by its label), with new ones for what the page and the rewrite found. 216 workbench tests pass, and the full suite, 2,169 tests, on AC power.
+
+**Added:** `atlas/workbench/inspector.py`, `tests/workbench_ui.py`. **Changed:** `app.py`, `editor.py`, `runview.py`, `spec.py`, `registry.py`, the workbench README, eight test files; [[showcase-library-plan]], [[showcase-gallery]], [[index]].
+
+## [2026-09-30] build | The gallery's eight new rows, and three defects they found
+
+The S-channel and the seven drawn examples had no rows on [[showcase-gallery]]: the drawn families' records (`step-i`) were made on battery, with no compile. Each was compiled and run again with the workbench's own `CompileJob` and `CaseRun`, headless, on AC power, into `out/workbench/records/step-j/`. The rows are on [[showcase-gallery]] §2, their speed ratios in §3, their verdicts in §4.
+
+**Measured:** every check passes. Five compile as their rectangles do: the film, the sound and the winding admitted uncertified on the same rules, the S-channel and the plate with a hole refused at R10 alone with every seam admitted (W348). The drawn arc is refused before the compiler, its bond volumetric like the heated strip's. Every spatially decomposed arm is slower than the full domain, from $1.3\times$ (the drawn river's serial windows) to $291\times$ (the winding).
+
+**Three defects found by recording them, and fixed** (commit `a4db66a`):
+- **A drawn farm's windows did not hold their ground.** `MaskedBoxes` boxed each window on its fluid cells alone, because `geometry.window_masks` cuts a window to the domain. So a window over the terrain had its box's edge where the solid began, and one window over the whole drawn farm, in the arrangement where one window is the full domain's arithmetic, missed its full domain by $0.61\,U$ after one macro-step. The standing rule says that control must be bit for bit. A window's box is now the window as drawn, with the solid in it held at rest by the penalization, as in the full domain; the control is bit for bit.
+- **The drawn river did not compile**: `plume.case_graph` divided by the river's shallowest depth, zero past a drawn river's banks.
+- **A drawn farm compiled as the plain farm**, admitted uncertified: its graph is the scaling-ladder rung's, a full rectangle of fluid, with no terrain in it. It is now refused before the compiler with that reason, as an irregular tiling already was.
+
+**The drawn farm passes and does not agree as the plain farms do.** Its farm power is $19.7\%$ from the full domain (it was $19.6\%$ before the fix), inside the registered $25\%$, against $2.3$–$8.3\%$ for the plain farms; its velocity differs by $0.20\,U$ rms against the plain three-rotor farm's $0.047\,U$; its windows take 26 sub-steps a macro-step against the full domain's 32. A second control, also bit for bit, is a drawn farm that is the whole rectangle: it is the plain farm, both arms, in both arrangements. With the one-window control, that places the departure in the hill under style A's one exchange per macro-step, not in the drawn machinery. Where along the seams it concentrates was not measured.
+
+**Conditions:** seven rows ran at 21:33–21:37 EDT on 2026-09-29. `farm-hill` was run again after the fix at 01:48 EDT on 2026-09-30. The machine was running slower then: the full domain's unchanged step took 0.85 s against 0.30 s four hours before, while the owner's screensaver was running. So its wall time, 101 s, is recorded but is not a speed figure, and its speed ratios are not quoted.
+
+**Added:** `out/workbench/records/step-j/`. **Changed:** `families/windfarm.py`, `families/plume.py`, the workbench README, `tests/test_workbench_drawn_families.py` (the two farm controls, and every drawn example's compile pinned); [[showcase-gallery]], [[showcase-library-plan]], [[index]].

@@ -1,0 +1,1225 @@
+{
+ "schema": "atlas-workbench/results@1",
+ "case_name": "cooled-winding",
+ "case_path": null,
+ "family": "conjugate-heat-2d",
+ "style": "C",
+ "committed_at": "2026-09-29T21:33:54-04:00",
+ "started": "2026-09-29T21:33:54-04:00",
+ "finished": "2026-09-29T21:33:56-04:00",
+ "wall_seconds": 1.8717496395111084,
+ "build_seconds": 0.12538470001891255,
+ "arms": [
+  "serial",
+  "full"
+ ],
+ "arm_labels": {
+  "serial": "Decomposed, serial",
+  "parallel": "Decomposed, parallel",
+  "full": "Full domain"
+ },
+ "dropped_arms": {},
+ "step_label": "timed repeat",
+ "steps_requested": 5,
+ "steps_done": 5,
+ "stopped": false,
+ "threads": 1,
+ "timing": {
+  "serial": {
+   "seconds_per_step": [
+    0.3040789000224322,
+    0.3088117999723181,
+    0.3008246999233961,
+    0.3290324999252334,
+    0.3200209999922663
+   ],
+   "mean": 0.31255377996712924,
+   "median": 0.3088117999723181,
+   "min": 0.3008246999233961,
+   "speedup_vs_full": 0.0034368484808057456
+  },
+  "full": {
+   "seconds_per_step": [
+    0.0011386999394744635,
+    0.0008853999897837639,
+    0.0011147999903187156,
+    0.0010303000453859568,
+    0.0012017999542877078
+   ],
+   "mean": 0.0010741999838501215,
+   "median": 0.0011147999903187156,
+   "min": 0.0008853999897837639,
+   "speedup_vs_full": 1.0
+  }
+ },
+ "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+ "bitwise": {
+  "steps": 0,
+  "first_difference": null
+ },
+ "metrics": {
+  "serial": {
+   "power_W": 2000.0,
+   "carried_out_W": 2000.0000000599248,
+   "max_temperature_K": 318.00445035730115,
+   "balance_max": 2.996239345520735e-11,
+   "iterations_last": 382.0,
+   "all_converged": true,
+   "bulk_rise_K": 4.3497172685078835,
+   "max_temperature_difference_K": 2.7464466256788e-08
+  },
+  "full": {
+   "power_W": 2000.0,
+   "carried_out_W": 2000.0000000942382,
+   "max_temperature_K": 318.0044503846986,
+   "balance_max": 4.7119101509451866e-11,
+   "iterations_last": 1.0,
+   "all_converged": true,
+   "bulk_rise_K": 4.34971726858251
+  }
+ },
+ "field_difference": {
+  "serial": {
+   "rms": 2.0880016267288917e-08,
+   "max": 2.7464466256788e-08,
+   "rms_relative": 6.755519569907986e-11
+  }
+ },
+ "field_label": "temperature (K)",
+ "checks": [
+  {
+   "key": "energy",
+   "title": "Heat generated = heat the coolant carries out",
+   "kind": "balance",
+   "tolerance": 1e-06,
+   "registered": "2026-09-29, before the cooled-block family's first run",
+   "measure": "|heat generated + heat into the domain through its edges (the coolant's advection in and out, and any conduction)| over the heat generated, every repeat, worst arm",
+   "why": "the full domain closes to the direct solver's round-off. The Dirichlet-Neumann pair closes to its iteration's floor: the wall temperature moves by less than 1e-10 of the temperature scale between the last iterations, and the wall's heat flow is that over a half-cell times the conductivity, far under 1e-6 of the power",
+   "value": 4.7119101509451866e-11,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "serial: 3e-11; full: 4.71e-11 (power 2000 W per metre of depth)",
+   "extra": {}
+  },
+  {
+   "key": "reference",
+   "title": "Temperatures agree with the full domain",
+   "kind": "reference",
+   "tolerance": 1e-06,
+   "registered": "2026-09-29, before the cooled-block family's first run",
+   "measure": "max |T_decomposed - T_full| over the full domain's rise above the inlet, at the last repeat",
+   "why": "both solve the same finite volumes; the converged Dirichlet-Neumann pair is the full-domain solution to the iteration's tolerance (its converged wall flow is the harmonic-mean face exactly)",
+   "value": 1.5254265289946958e-09,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "max |dT| = 2.75e-08 K against a rise of 18 K",
+   "extra": {}
+  }
+ ],
+ "notes": [
+  "Dirichlet side: block; Neumann side: channel. The 1-D contraction factor rho = k_D L_N / (k_N L_D) = 139 (over 1: unrelaxed it would diverge; the relaxation carries it). First relaxation factor 0.5, then Aitken's rule.",
+  "The block generates 2000 W per metre of depth; the coolant carries mdot cp = 459.8 W/K per metre, so its bulk temperature rises 4.35 K.",
+  "Steady: every repeat is the whole solve again, repeated to time it."
+ ],
+ "problem": {
+  "style": "C",
+  "mode": "steady",
+  "cells": 12000,
+  "power_W": 2000.0,
+  "mdot_cp_W_per_K": 459.8,
+  "dirichlet": "block",
+  "neumann": "channel",
+  "rho_1d": 138.62532158535285,
+  "tolerance": 1e-10,
+  "relaxation0": 0.5,
+  "aitken": true,
+  "interface_faces": 466
+ },
+ "machine": {
+  "time": "2026-09-29T21:33:54-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 25188
+ },
+ "machine_after": {
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "time": "2026-09-29T21:33:56-04:00"
+ },
+ "case": {
+  "schema_id": "atlas-workbench/case@0.5",
+  "name": "cooled-winding",
+  "description": "A block cooled by a winding channel (style C, drawn)",
+  "domain": {
+   "nx": 200,
+   "ny": 60,
+   "dx": 0.001,
+   "outline": {
+    "points": [
+     [
+      6.0,
+      0.0
+     ],
+     [
+      194.0,
+      0.0
+     ],
+     [
+      200.0,
+      6.0
+     ],
+     [
+      200.0,
+      34.0
+     ],
+     [
+      200.0,
+      45.0
+     ],
+     [
+      200.0,
+      54.0
+     ],
+     [
+      194.0,
+      60.0
+     ],
+     [
+      6.0,
+      60.0
+     ],
+     [
+      0.0,
+      54.0
+     ],
+     [
+      0.0,
+      46.0
+     ],
+     [
+      0.0,
+      35.0
+     ],
+     [
+      0.0,
+      6.0
+     ]
+    ],
+    "edges": [
+     "line",
+     "arc",
+     "line",
+     "line",
+     "line",
+     "arc",
+     "line",
+     "arc",
+     "line",
+     "line",
+     "line",
+     "arc"
+    ],
+    "bulge": [
+     0.0,
+     0.41421356237309503,
+     0.0,
+     0.0,
+     0.0,
+     0.41421356237309503,
+     0.0,
+     0.41421356237309503,
+     0.0,
+     0.0,
+     0.0,
+     0.41421356237309503
+    ]
+   },
+   "holes": []
+  },
+  "physics": {
+   "family": "conjugate-heat-2d",
+   "params": {
+    "u_coolant": 0.01
+   }
+  },
+  "materials": {
+   "copper": {
+    "k": 400.0,
+    "rho": 8960.0,
+    "cp": 385.0,
+    "flows": 0.0,
+    "heat": 0.0
+   },
+   "chip": {
+    "k": 150.0,
+    "rho": 2330.0,
+    "cp": 700.0,
+    "flows": 0.0,
+    "heat": 10000000.0
+   },
+   "water": {
+    "k": 0.6,
+    "rho": 1000.0,
+    "cp": 4180.0,
+    "flows": 1.0,
+    "heat": 0.0
+   }
+  },
+  "regions": [
+   {
+    "id": "block",
+    "material": "copper",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 200,
+    "ny": 60,
+    "points": null,
+    "holes": null,
+    "outline": null
+   },
+   {
+    "id": "chip",
+    "material": "chip",
+    "shape": "rect",
+    "x0": 80,
+    "y0": 0,
+    "nx": 40,
+    "ny": 5,
+    "points": null,
+    "holes": null,
+    "outline": null
+   },
+   {
+    "id": "channel",
+    "material": "water",
+    "shape": "curve",
+    "x0": 0,
+    "y0": 27,
+    "nx": 200,
+    "ny": 26,
+    "points": null,
+    "holes": null,
+    "outline": {
+     "points": [
+      [
+       0.0,
+       35.0
+      ],
+      [
+       25.0,
+       40.65685424949238
+      ],
+      [
+       50.0,
+       43.0
+      ],
+      [
+       75.0,
+       40.65685424949238
+      ],
+      [
+       100.0,
+       35.0
+      ],
+      [
+       125.0,
+       29.343145750507624
+      ],
+      [
+       150.0,
+       27.0
+      ],
+      [
+       175.0,
+       29.343145750507617
+      ],
+      [
+       200.0,
+       35.0
+      ],
+      [
+       200.0,
+       45.0
+      ],
+      [
+       175.0,
+       39.34314575050762
+      ],
+      [
+       150.0,
+       37.0
+      ],
+      [
+       125.0,
+       39.343145750507624
+      ],
+      [
+       100.0,
+       45.0
+      ],
+      [
+       75.0,
+       50.65685424949238
+      ],
+      [
+       50.0,
+       53.0
+      ],
+      [
+       25.0,
+       50.65685424949238
+      ],
+      [
+       0.0,
+       45.0
+      ]
+     ],
+     "edges": [
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "line",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "spline",
+      "line"
+     ],
+     "bulge": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   }
+  ],
+  "windows": [
+   {
+    "id": "block",
+    "shape": "cells",
+    "x0": 0,
+    "y0": 0,
+    "nx": 200,
+    "ny": 60,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      0,
+      4,
+      196
+     ],
+     [
+      1,
+      2,
+      198
+     ],
+     [
+      2,
+      1,
+      199
+     ],
+     [
+      3,
+      1,
+      199
+     ],
+     [
+      4,
+      0,
+      200
+     ],
+     [
+      5,
+      0,
+      200
+     ],
+     [
+      6,
+      0,
+      200
+     ],
+     [
+      7,
+      0,
+      200
+     ],
+     [
+      8,
+      0,
+      200
+     ],
+     [
+      9,
+      0,
+      200
+     ],
+     [
+      10,
+      0,
+      200
+     ],
+     [
+      11,
+      0,
+      200
+     ],
+     [
+      12,
+      0,
+      200
+     ],
+     [
+      13,
+      0,
+      200
+     ],
+     [
+      14,
+      0,
+      200
+     ],
+     [
+      15,
+      0,
+      200
+     ],
+     [
+      16,
+      0,
+      200
+     ],
+     [
+      17,
+      0,
+      200
+     ],
+     [
+      18,
+      0,
+      200
+     ],
+     [
+      19,
+      0,
+      200
+     ],
+     [
+      20,
+      0,
+      200
+     ],
+     [
+      21,
+      0,
+      200
+     ],
+     [
+      22,
+      0,
+      200
+     ],
+     [
+      23,
+      0,
+      200
+     ],
+     [
+      24,
+      0,
+      200
+     ],
+     [
+      25,
+      0,
+      200
+     ],
+     [
+      26,
+      0,
+      200
+     ],
+     [
+      27,
+      0,
+      139
+     ],
+     [
+      27,
+      161,
+      200
+     ],
+     [
+      28,
+      0,
+      131
+     ],
+     [
+      28,
+      169,
+      200
+     ],
+     [
+      29,
+      0,
+      124
+     ],
+     [
+      29,
+      176,
+      200
+     ],
+     [
+      30,
+      0,
+      119
+     ],
+     [
+      30,
+      184,
+      200
+     ],
+     [
+      31,
+      0,
+      114
+     ],
+     [
+      31,
+      191,
+      200
+     ],
+     [
+      32,
+      0,
+      110
+     ],
+     [
+      32,
+      196,
+      200
+     ],
+     [
+      33,
+      0,
+      106
+     ],
+     [
+      33,
+      198,
+      200
+     ],
+     [
+      34,
+      0,
+      1
+     ],
+     [
+      34,
+      3,
+      102
+     ],
+     [
+      35,
+      8,
+      98
+     ],
+     [
+      36,
+      11,
+      94
+     ],
+     [
+      37,
+      14,
+      90
+     ],
+     [
+      37,
+      139,
+      161
+     ],
+     [
+      38,
+      17,
+      86
+     ],
+     [
+      38,
+      131,
+      169
+     ],
+     [
+      39,
+      20,
+      81
+     ],
+     [
+      39,
+      124,
+      176
+     ],
+     [
+      40,
+      24,
+      76
+     ],
+     [
+      40,
+      119,
+      180
+     ],
+     [
+      41,
+      31,
+      69
+     ],
+     [
+      41,
+      114,
+      183
+     ],
+     [
+      42,
+      39,
+      61
+     ],
+     [
+      42,
+      110,
+      186
+     ],
+     [
+      43,
+      106,
+      189
+     ],
+     [
+      44,
+      102,
+      192
+     ],
+     [
+      45,
+      98,
+      197
+     ],
+     [
+      45,
+      199,
+      200
+     ],
+     [
+      46,
+      0,
+      2
+     ],
+     [
+      46,
+      94,
+      200
+     ],
+     [
+      47,
+      0,
+      4
+     ],
+     [
+      47,
+      90,
+      200
+     ],
+     [
+      48,
+      0,
+      9
+     ],
+     [
+      48,
+      86,
+      200
+     ],
+     [
+      49,
+      0,
+      16
+     ],
+     [
+      49,
+      81,
+      200
+     ],
+     [
+      50,
+      0,
+      24
+     ],
+     [
+      50,
+      76,
+      200
+     ],
+     [
+      51,
+      0,
+      31
+     ],
+     [
+      51,
+      69,
+      200
+     ],
+     [
+      52,
+      0,
+      39
+     ],
+     [
+      52,
+      61,
+      200
+     ],
+     [
+      53,
+      0,
+      200
+     ],
+     [
+      54,
+      0,
+      200
+     ],
+     [
+      55,
+      0,
+      200
+     ],
+     [
+      56,
+      1,
+      199
+     ],
+     [
+      57,
+      1,
+      199
+     ],
+     [
+      58,
+      2,
+      198
+     ],
+     [
+      59,
+      4,
+      196
+     ]
+    ]
+   },
+   {
+    "id": "channel",
+    "shape": "cells",
+    "x0": 0,
+    "y0": 27,
+    "nx": 200,
+    "ny": 26,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      27,
+      139,
+      161
+     ],
+     [
+      28,
+      131,
+      169
+     ],
+     [
+      29,
+      124,
+      176
+     ],
+     [
+      30,
+      119,
+      184
+     ],
+     [
+      31,
+      114,
+      191
+     ],
+     [
+      32,
+      110,
+      196
+     ],
+     [
+      33,
+      106,
+      198
+     ],
+     [
+      34,
+      1,
+      3
+     ],
+     [
+      34,
+      102,
+      200
+     ],
+     [
+      35,
+      0,
+      8
+     ],
+     [
+      35,
+      98,
+      200
+     ],
+     [
+      36,
+      0,
+      11
+     ],
+     [
+      36,
+      94,
+      200
+     ],
+     [
+      37,
+      0,
+      14
+     ],
+     [
+      37,
+      90,
+      139
+     ],
+     [
+      37,
+      161,
+      200
+     ],
+     [
+      38,
+      0,
+      17
+     ],
+     [
+      38,
+      86,
+      131
+     ],
+     [
+      38,
+      169,
+      200
+     ],
+     [
+      39,
+      0,
+      20
+     ],
+     [
+      39,
+      81,
+      124
+     ],
+     [
+      39,
+      176,
+      200
+     ],
+     [
+      40,
+      0,
+      24
+     ],
+     [
+      40,
+      76,
+      119
+     ],
+     [
+      40,
+      180,
+      200
+     ],
+     [
+      41,
+      0,
+      31
+     ],
+     [
+      41,
+      69,
+      114
+     ],
+     [
+      41,
+      183,
+      200
+     ],
+     [
+      42,
+      0,
+      39
+     ],
+     [
+      42,
+      61,
+      110
+     ],
+     [
+      42,
+      186,
+      200
+     ],
+     [
+      43,
+      0,
+      106
+     ],
+     [
+      43,
+      189,
+      200
+     ],
+     [
+      44,
+      0,
+      102
+     ],
+     [
+      44,
+      192,
+      200
+     ],
+     [
+      45,
+      0,
+      98
+     ],
+     [
+      45,
+      197,
+      199
+     ],
+     [
+      46,
+      2,
+      94
+     ],
+     [
+      47,
+      4,
+      90
+     ],
+     [
+      48,
+      9,
+      86
+     ],
+     [
+      49,
+      16,
+      81
+     ],
+     [
+      50,
+      24,
+      76
+     ],
+     [
+      51,
+      31,
+      69
+     ],
+     [
+      52,
+      39,
+      61
+     ]
+    ]
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "wall0",
+    "edge": "outline:0",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall1",
+    "edge": "outline:1",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall2",
+    "edge": "outline:2",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "outlet",
+    "edge": "outline:3",
+    "kind": "coolant-outlet",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall4",
+    "edge": "outline:4",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall5",
+    "edge": "outline:5",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall6",
+    "edge": "outline:6",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall7",
+    "edge": "outline:7",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall8",
+    "edge": "outline:8",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "inlet",
+    "edge": "outline:9",
+    "kind": "coolant-inlet",
+    "start": 0,
+    "stop": null,
+    "value": 300.0
+   },
+   {
+    "id": "wall10",
+    "edge": "outline:10",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall11",
+    "edge": "outline:11",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "C",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 2000,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 1.0,
+   "steps": 5,
+   "threads": 1,
+   "start": "freestream",
+   "mode": "steady"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  },
+  "layout": {
+   "cut": "materials",
+   "along": 3,
+   "across": 1,
+   "source": "62baba6d701e3f9a",
+   "grown": 0
+  }
+ }
+}

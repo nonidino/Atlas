@@ -1,0 +1,1652 @@
+{
+ "schema": "atlas-workbench/results@1",
+ "case_name": "s-channel",
+ "case_path": null,
+ "family": "conduction-2d",
+ "style": "B",
+ "committed_at": "2026-09-29T21:33:14-04:00",
+ "started": "2026-09-29T21:33:14-04:00",
+ "finished": "2026-09-29T21:33:16-04:00",
+ "wall_seconds": 1.1778314113616943,
+ "build_seconds": 0.06362469994928688,
+ "arms": [
+  "serial",
+  "parallel",
+  "full"
+ ],
+ "arm_labels": {
+  "serial": "Decomposed, serial",
+  "parallel": "Decomposed, parallel",
+  "full": "Full domain"
+ },
+ "dropped_arms": {},
+ "step_label": "timed repeat",
+ "steps_requested": 5,
+ "steps_done": 5,
+ "stopped": false,
+ "threads": 2,
+ "timing": {
+  "serial": {
+   "seconds_per_step": [
+    0.0883904000511393,
+    0.08925810002256185,
+    0.0848083000164479,
+    0.0878919999813661,
+    0.08785139990504831
+   ],
+   "mean": 0.0876400399953127,
+   "median": 0.0878919999813661,
+   "min": 0.0848083000164479,
+   "speedup_vs_full": 0.004875625274325062
+  },
+  "parallel": {
+   "seconds_per_step": [
+    0.08710900007281452,
+    0.08977359998971224,
+    0.0889026999939233,
+    0.0875759000191465,
+    0.0872146999463439
+   ],
+   "mean": 0.08811518000438809,
+   "median": 0.0875759000191465,
+   "min": 0.08710900007281452,
+   "speedup_vs_full": 0.0048493346324972215
+  },
+  "full": {
+   "seconds_per_step": [
+    0.0004355000564828515,
+    0.0004154000198468566,
+    0.0004368999507278204,
+    0.0004059999482706189,
+    0.00044269999489188194
+   ],
+   "mean": 0.00042729999404400587,
+   "median": 0.0004355000564828515,
+   "min": 0.0004059999482706189,
+   "speedup_vs_full": 1.0
+  }
+ },
+ "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+ "bitwise": {
+  "steps": 5,
+  "first_difference": null
+ },
+ "metrics": {
+  "serial": {
+   "heat_in": 507.21347688461947,
+   "balance_max": 1.1347330535157881e-08,
+   "iterations_last": 187.0,
+   "iterations_max": 187.0,
+   "all_converged": true
+  },
+  "parallel": {
+   "heat_in": 507.21347688461947,
+   "balance_max": 1.1347330535157881e-08,
+   "iterations_last": 187.0,
+   "iterations_max": 187.0,
+   "all_converged": true,
+   "max_temperature_difference_K": 1.799209599084861e-07,
+   "heat_in_vs_full": 5.376653964650847e-09
+  },
+  "full": {
+   "heat_in": 507.21347415750813,
+   "balance_max": 4.92211481666055e-12,
+   "iterations_last": 1.0,
+   "iterations_max": 1.0,
+   "all_converged": true
+  }
+ },
+ "field_difference": {
+  "serial": {
+   "rms": 1.1883009277839101e-07,
+   "max": 1.799209599084861e-07,
+   "rms_relative": 3.3824977854649673e-10
+  },
+  "parallel": {
+   "rms": 1.1883009277839101e-07,
+   "max": 1.799209599084861e-07,
+   "rms_relative": 3.3824977854649673e-10
+  }
+ },
+ "field_label": "temperature (K)",
+ "checks": [
+  {
+   "key": "balance",
+   "title": "Energy: heat in = heat stored",
+   "kind": "balance",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the conduction family's first run",
+   "measure": "|heat into the domain through its edges - heat stored| over the heat through the plate, every step, worst arm (steady: stored = 0)",
+   "why": "the full domain closes to the direct solver's round-off. A decomposed arm closes to its iteration's floor: the solve stops when the update is below 1e-10 of the temperature scale, and a heat flow is a temperature difference over a half-cell, so its relative error is that times T/dT, with the material contrast, well under 1e-6",
+   "value": 1.1347330535157881e-08,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "serial: 1.13e-08; parallel: 1.13e-08; full: 4.92e-12",
+   "extra": {}
+  },
+  {
+   "key": "reference",
+   "title": "Temperatures agree with the full domain",
+   "kind": "reference",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the conduction family's first run",
+   "measure": "max |T_decomposed - T_full| over the temperature span of the fixed boundaries, at the last step",
+   "why": "both solve the same finite volumes; the converged decomposition IS the full-domain solution up to the iteration's tolerance (Dirichlet-Neumann's converged face flow is the harmonic-mean face exactly)",
+   "value": 1.799209599084861e-09,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "max |dT| = 1.8e-07 K over a span of 100 K",
+   "extra": {}
+  },
+  {
+   "key": "closed_form",
+   "title": "Heat flow = dT / sum(L/k) (a layered wall)",
+   "kind": "reference",
+   "tolerance": 1e-06,
+   "registered": "2026-09-28, before the conduction family's first run",
+   "measure": "|Q - Q_closed| / Q_closed for every arm, where Q_closed = dT H / sum_i L_i / k_i; only for a steady wall of layers across x with fixed temperatures left and right and insulated top and bottom",
+   "why": "harmonic-mean faces add the half-cells' resistances in series, so the discrete heat flow through layers on cell faces is the closed form to round-off; a decomposed arm adds its iteration floor",
+   "value": null,
+   "passed": null,
+   "verdict": "not measured",
+   "detail": "not a steady wall of layers across x, so there is no closed form",
+   "extra": {}
+  },
+  {
+   "key": "bitwise",
+   "title": "Threaded equals serial, bit for bit (style B)",
+   "kind": "control",
+   "tolerance": null,
+   "registered": "2026-09-28, before the conduction family's first run",
+   "measure": "np.array_equal on the temperature after every step",
+   "why": "additive Schwarz solves every window from the same iterate and blends in window order, so the order the threads finish in cannot change a bit",
+   "value": null,
+   "passed": true,
+   "verdict": "pass",
+   "detail": "equal after all 5 steps",
+   "extra": {}
+  }
+ ],
+ "notes": [
+  "Steady: every 'step' is the whole solve again from the initial temperature, repeated to time it; the answer is the same each time."
+ ],
+ "problem": {
+  "style": "B",
+  "mode": "steady",
+  "cells": 5208,
+  "windows": 4,
+  "tolerance": 1e-10,
+  "max_iterations": 2000,
+  "scale_K": 400.0,
+  "partition_of_unity": {
+   "identity_residual": 1.1102230246251565e-16,
+   "chi_min": 0.0038910505836575876,
+   "tolerance": 1e-10,
+   "holds": true
+  }
+ },
+ "machine": {
+  "time": "2026-09-29T21:33:14-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 25188
+ },
+ "machine_after": {
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "time": "2026-09-29T21:33:16-04:00"
+ },
+ "case": {
+  "schema_id": "atlas-workbench/case@0.5",
+  "name": "s-channel",
+  "description": "Heat along an S-shaped channel: windows that follow it (style B)",
+  "domain": {
+   "nx": 200,
+   "ny": 110,
+   "dx": 0.005,
+   "outline": {
+    "points": [
+     [
+      10.0,
+      41.0
+     ],
+     [
+      40.0,
+      65.24871130596428
+     ],
+     [
+      70.0,
+      65.24871130596429
+     ],
+     [
+      100.0,
+      41.0
+     ],
+     [
+      130.0,
+      16.751288694035722
+     ],
+     [
+      160.0,
+      16.75128869403572
+     ],
+     [
+      190.0,
+      40.99999999999999
+     ],
+     [
+      190.0,
+      69.0
+     ],
+     [
+      160.0,
+      44.75128869403572
+     ],
+     [
+      130.0,
+      44.75128869403572
+     ],
+     [
+      100.0,
+      69.0
+     ],
+     [
+      70.0,
+      93.24871130596429
+     ],
+     [
+      40.0,
+      93.24871130596428
+     ],
+     [
+      10.0,
+      69.0
+     ]
+    ],
+    "edges": [
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "line",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "spline",
+     "line"
+    ],
+    "bulge": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "holes": []
+  },
+  "physics": {
+   "family": "conduction-2d",
+   "params": {
+    "T0": 300.0
+   }
+  },
+  "materials": {
+   "steel": {
+    "k": 45.0,
+    "rho": 7850.0,
+    "cp": 490.0
+   }
+  },
+  "regions": [
+   {
+    "id": "channel",
+    "material": "steel",
+    "shape": "rect",
+    "x0": 0,
+    "y0": 0,
+    "nx": 200,
+    "ny": 110,
+    "points": null,
+    "holes": null,
+    "outline": null
+   }
+  ],
+  "windows": [
+   {
+    "id": "F00",
+    "shape": "cells",
+    "x0": 10,
+    "y0": 41,
+    "nx": 52,
+    "ny": 55,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      41,
+      10,
+      13
+     ],
+     [
+      42,
+      10,
+      14
+     ],
+     [
+      43,
+      10,
+      15
+     ],
+     [
+      44,
+      10,
+      16
+     ],
+     [
+      45,
+      10,
+      17
+     ],
+     [
+      46,
+      10,
+      18
+     ],
+     [
+      47,
+      10,
+      19
+     ],
+     [
+      48,
+      10,
+      20
+     ],
+     [
+      49,
+      10,
+      21
+     ],
+     [
+      50,
+      10,
+      22
+     ],
+     [
+      51,
+      10,
+      23
+     ],
+     [
+      52,
+      10,
+      24
+     ],
+     [
+      53,
+      10,
+      25
+     ],
+     [
+      54,
+      10,
+      26
+     ],
+     [
+      55,
+      10,
+      27
+     ],
+     [
+      56,
+      10,
+      28
+     ],
+     [
+      57,
+      10,
+      29
+     ],
+     [
+      58,
+      10,
+      30
+     ],
+     [
+      59,
+      10,
+      31
+     ],
+     [
+      60,
+      10,
+      33
+     ],
+     [
+      61,
+      10,
+      34
+     ],
+     [
+      62,
+      10,
+      35
+     ],
+     [
+      63,
+      10,
+      37
+     ],
+     [
+      64,
+      10,
+      38
+     ],
+     [
+      65,
+      10,
+      41
+     ],
+     [
+      66,
+      10,
+      44
+     ],
+     [
+      67,
+      10,
+      50
+     ],
+     [
+      67,
+      60,
+      62
+     ],
+     [
+      68,
+      10,
+      62
+     ],
+     [
+      69,
+      10,
+      62
+     ],
+     [
+      70,
+      11,
+      62
+     ],
+     [
+      71,
+      11,
+      62
+     ],
+     [
+      72,
+      12,
+      62
+     ],
+     [
+      73,
+      13,
+      62
+     ],
+     [
+      74,
+      14,
+      62
+     ],
+     [
+      75,
+      14,
+      62
+     ],
+     [
+      76,
+      15,
+      62
+     ],
+     [
+      77,
+      16,
+      62
+     ],
+     [
+      78,
+      17,
+      62
+     ],
+     [
+      79,
+      18,
+      62
+     ],
+     [
+      80,
+      19,
+      62
+     ],
+     [
+      81,
+      20,
+      62
+     ],
+     [
+      82,
+      22,
+      62
+     ],
+     [
+      83,
+      23,
+      62
+     ],
+     [
+      84,
+      24,
+      62
+     ],
+     [
+      85,
+      26,
+      62
+     ],
+     [
+      86,
+      27,
+      61
+     ],
+     [
+      87,
+      29,
+      61
+     ],
+     [
+      88,
+      30,
+      61
+     ],
+     [
+      89,
+      32,
+      61
+     ],
+     [
+      90,
+      34,
+      61
+     ],
+     [
+      91,
+      36,
+      61
+     ],
+     [
+      92,
+      38,
+      61
+     ],
+     [
+      93,
+      41,
+      61
+     ],
+     [
+      94,
+      44,
+      61
+     ],
+     [
+      95,
+      50,
+      60
+     ]
+    ]
+   },
+   {
+    "id": "F10",
+    "shape": "cells",
+    "x0": 45,
+    "y0": 42,
+    "nx": 68,
+    "ny": 54,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      42,
+      98,
+      100
+     ],
+     [
+      43,
+      97,
+      101
+     ],
+     [
+      44,
+      96,
+      102
+     ],
+     [
+      45,
+      95,
+      103
+     ],
+     [
+      46,
+      94,
+      104
+     ],
+     [
+      47,
+      93,
+      105
+     ],
+     [
+      48,
+      92,
+      106
+     ],
+     [
+      49,
+      91,
+      107
+     ],
+     [
+      50,
+      90,
+      108
+     ],
+     [
+      51,
+      89,
+      108
+     ],
+     [
+      52,
+      88,
+      109
+     ],
+     [
+      53,
+      87,
+      110
+     ],
+     [
+      54,
+      86,
+      111
+     ],
+     [
+      55,
+      84,
+      112
+     ],
+     [
+      56,
+      83,
+      113
+     ],
+     [
+      57,
+      82,
+      112
+     ],
+     [
+      58,
+      81,
+      111
+     ],
+     [
+      59,
+      80,
+      110
+     ],
+     [
+      60,
+      78,
+      109
+     ],
+     [
+      61,
+      77,
+      108
+     ],
+     [
+      62,
+      76,
+      107
+     ],
+     [
+      63,
+      74,
+      106
+     ],
+     [
+      64,
+      72,
+      105
+     ],
+     [
+      65,
+      69,
+      104
+     ],
+     [
+      66,
+      66,
+      103
+     ],
+     [
+      67,
+      46,
+      50
+     ],
+     [
+      67,
+      60,
+      102
+     ],
+     [
+      68,
+      46,
+      101
+     ],
+     [
+      69,
+      46,
+      99
+     ],
+     [
+      70,
+      46,
+      98
+     ],
+     [
+      71,
+      46,
+      97
+     ],
+     [
+      72,
+      46,
+      96
+     ],
+     [
+      73,
+      46,
+      95
+     ],
+     [
+      74,
+      46,
+      94
+     ],
+     [
+      75,
+      46,
+      93
+     ],
+     [
+      76,
+      46,
+      92
+     ],
+     [
+      77,
+      46,
+      91
+     ],
+     [
+      78,
+      45,
+      90
+     ],
+     [
+      79,
+      45,
+      89
+     ],
+     [
+      80,
+      45,
+      88
+     ],
+     [
+      81,
+      45,
+      87
+     ],
+     [
+      82,
+      45,
+      86
+     ],
+     [
+      83,
+      45,
+      84
+     ],
+     [
+      84,
+      45,
+      83
+     ],
+     [
+      85,
+      45,
+      82
+     ],
+     [
+      86,
+      45,
+      81
+     ],
+     [
+      87,
+      45,
+      80
+     ],
+     [
+      88,
+      45,
+      78
+     ],
+     [
+      89,
+      45,
+      77
+     ],
+     [
+      90,
+      45,
+      76
+     ],
+     [
+      91,
+      45,
+      74
+     ],
+     [
+      92,
+      45,
+      72
+     ],
+     [
+      93,
+      45,
+      69
+     ],
+     [
+      94,
+      45,
+      66
+     ],
+     [
+      95,
+      50,
+      60
+     ]
+    ]
+   },
+   {
+    "id": "F20",
+    "shape": "cells",
+    "x0": 87,
+    "y0": 14,
+    "nx": 68,
+    "ny": 54,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      14,
+      140,
+      150
+     ],
+     [
+      15,
+      134,
+      155
+     ],
+     [
+      16,
+      131,
+      155
+     ],
+     [
+      17,
+      128,
+      155
+     ],
+     [
+      18,
+      126,
+      155
+     ],
+     [
+      19,
+      124,
+      155
+     ],
+     [
+      20,
+      123,
+      155
+     ],
+     [
+      21,
+      122,
+      155
+     ],
+     [
+      22,
+      120,
+      155
+     ],
+     [
+      23,
+      119,
+      155
+     ],
+     [
+      24,
+      118,
+      155
+     ],
+     [
+      25,
+      117,
+      155
+     ],
+     [
+      26,
+      116,
+      155
+     ],
+     [
+      27,
+      114,
+      155
+     ],
+     [
+      28,
+      113,
+      155
+     ],
+     [
+      29,
+      112,
+      155
+     ],
+     [
+      30,
+      111,
+      155
+     ],
+     [
+      31,
+      110,
+      155
+     ],
+     [
+      32,
+      109,
+      154
+     ],
+     [
+      33,
+      108,
+      154
+     ],
+     [
+      34,
+      107,
+      154
+     ],
+     [
+      35,
+      106,
+      154
+     ],
+     [
+      36,
+      105,
+      154
+     ],
+     [
+      37,
+      104,
+      154
+     ],
+     [
+      38,
+      103,
+      154
+     ],
+     [
+      39,
+      102,
+      154
+     ],
+     [
+      40,
+      101,
+      154
+     ],
+     [
+      41,
+      99,
+      154
+     ],
+     [
+      42,
+      98,
+      140
+     ],
+     [
+      42,
+      150,
+      154
+     ],
+     [
+      43,
+      97,
+      134
+     ],
+     [
+      44,
+      96,
+      131
+     ],
+     [
+      45,
+      95,
+      128
+     ],
+     [
+      46,
+      94,
+      126
+     ],
+     [
+      47,
+      93,
+      124
+     ],
+     [
+      48,
+      92,
+      123
+     ],
+     [
+      49,
+      91,
+      122
+     ],
+     [
+      50,
+      90,
+      120
+     ],
+     [
+      51,
+      89,
+      119
+     ],
+     [
+      52,
+      88,
+      118
+     ],
+     [
+      53,
+      87,
+      117
+     ],
+     [
+      54,
+      88,
+      116
+     ],
+     [
+      55,
+      89,
+      114
+     ],
+     [
+      56,
+      90,
+      113
+     ],
+     [
+      57,
+      91,
+      112
+     ],
+     [
+      58,
+      92,
+      111
+     ],
+     [
+      59,
+      92,
+      110
+     ],
+     [
+      60,
+      93,
+      109
+     ],
+     [
+      61,
+      94,
+      108
+     ],
+     [
+      62,
+      95,
+      107
+     ],
+     [
+      63,
+      96,
+      106
+     ],
+     [
+      64,
+      97,
+      105
+     ],
+     [
+      65,
+      98,
+      104
+     ],
+     [
+      66,
+      99,
+      103
+     ],
+     [
+      67,
+      100,
+      102
+     ]
+    ]
+   },
+   {
+    "id": "F30",
+    "shape": "cells",
+    "x0": 138,
+    "y0": 14,
+    "nx": 52,
+    "ny": 55,
+    "outline": null,
+    "holes": [],
+    "runs": [
+     [
+      14,
+      140,
+      150
+     ],
+     [
+      15,
+      139,
+      156
+     ],
+     [
+      16,
+      139,
+      159
+     ],
+     [
+      17,
+      139,
+      162
+     ],
+     [
+      18,
+      139,
+      164
+     ],
+     [
+      19,
+      139,
+      166
+     ],
+     [
+      20,
+      139,
+      168
+     ],
+     [
+      21,
+      139,
+      170
+     ],
+     [
+      22,
+      139,
+      171
+     ],
+     [
+      23,
+      139,
+      173
+     ],
+     [
+      24,
+      138,
+      174
+     ],
+     [
+      25,
+      138,
+      176
+     ],
+     [
+      26,
+      138,
+      177
+     ],
+     [
+      27,
+      138,
+      178
+     ],
+     [
+      28,
+      138,
+      180
+     ],
+     [
+      29,
+      138,
+      181
+     ],
+     [
+      30,
+      138,
+      182
+     ],
+     [
+      31,
+      138,
+      183
+     ],
+     [
+      32,
+      138,
+      184
+     ],
+     [
+      33,
+      138,
+      185
+     ],
+     [
+      34,
+      138,
+      186
+     ],
+     [
+      35,
+      138,
+      186
+     ],
+     [
+      36,
+      138,
+      187
+     ],
+     [
+      37,
+      138,
+      188
+     ],
+     [
+      38,
+      138,
+      189
+     ],
+     [
+      39,
+      138,
+      189
+     ],
+     [
+      40,
+      138,
+      190
+     ],
+     [
+      41,
+      138,
+      190
+     ],
+     [
+      42,
+      138,
+      140
+     ],
+     [
+      42,
+      150,
+      190
+     ],
+     [
+      43,
+      156,
+      190
+     ],
+     [
+      44,
+      159,
+      190
+     ],
+     [
+      45,
+      162,
+      190
+     ],
+     [
+      46,
+      163,
+      190
+     ],
+     [
+      47,
+      165,
+      190
+     ],
+     [
+      48,
+      166,
+      190
+     ],
+     [
+      49,
+      167,
+      190
+     ],
+     [
+      50,
+      169,
+      190
+     ],
+     [
+      51,
+      170,
+      190
+     ],
+     [
+      52,
+      171,
+      190
+     ],
+     [
+      53,
+      172,
+      190
+     ],
+     [
+      54,
+      173,
+      190
+     ],
+     [
+      55,
+      174,
+      190
+     ],
+     [
+      56,
+      175,
+      190
+     ],
+     [
+      57,
+      176,
+      190
+     ],
+     [
+      58,
+      177,
+      190
+     ],
+     [
+      59,
+      178,
+      190
+     ],
+     [
+      60,
+      179,
+      190
+     ],
+     [
+      61,
+      180,
+      190
+     ],
+     [
+      62,
+      181,
+      190
+     ],
+     [
+      63,
+      182,
+      190
+     ],
+     [
+      64,
+      183,
+      190
+     ],
+     [
+      65,
+      184,
+      190
+     ],
+     [
+      66,
+      185,
+      190
+     ],
+     [
+      67,
+      186,
+      190
+     ],
+     [
+      68,
+      187,
+      190
+     ]
+    ]
+   }
+  ],
+  "devices": [],
+  "boundaries": [
+   {
+    "id": "hot",
+    "edge": "outline:13",
+    "kind": "fixed-temperature",
+    "start": 0,
+    "stop": null,
+    "value": 400.0
+   },
+   {
+    "id": "cold",
+    "edge": "outline:6",
+    "kind": "fixed-temperature",
+    "start": 0,
+    "stop": null,
+    "value": 300.0
+   },
+   {
+    "id": "wall0",
+    "edge": "outline:0",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall1",
+    "edge": "outline:1",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall2",
+    "edge": "outline:2",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall3",
+    "edge": "outline:3",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall4",
+    "edge": "outline:4",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall5",
+    "edge": "outline:5",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall7",
+    "edge": "outline:7",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall8",
+    "edge": "outline:8",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall9",
+    "edge": "outline:9",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall10",
+    "edge": "outline:10",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall11",
+    "edge": "outline:11",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   },
+   {
+    "id": "wall12",
+    "edge": "outline:12",
+    "kind": "insulated",
+    "start": 0,
+    "stop": null,
+    "value": null
+   }
+  ],
+  "attachments": [],
+  "coupling": {
+   "style": "B",
+   "ramp_cells": 8,
+   "assembly": "projected",
+   "elliptic": "exposed",
+   "tolerance": 1e-10,
+   "max_iterations": 2000,
+   "relaxation": 0.5,
+   "aitken": true,
+   "dirichlet_side": "auto"
+  },
+  "run": {
+   "macro_dt": 0.2,
+   "steps": 5,
+   "threads": 2,
+   "start": "freestream",
+   "mode": "steady"
+  },
+  "compare": {
+   "full_domain": true,
+   "metrics": [
+    "farm_power",
+    "rms_velocity",
+    "time_per_step"
+   ]
+  },
+  "layout": {
+   "cut": "along",
+   "along": 4,
+   "across": 1,
+   "source": "aca6c1e791a7f3c0",
+   "grown": 8
+  }
+ }
+}

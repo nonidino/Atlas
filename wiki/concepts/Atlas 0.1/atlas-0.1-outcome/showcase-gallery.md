@@ -1,8 +1,8 @@
 # The showcase gallery
 
 **Type:** Outcome page — **gallery of measured showcase runs** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
-**Status:** written 2026-09-29 from one pass through the served workbench on this laptop. Every example was opened from *File > New from example*, checked, compiled with the Atlas compiler, and run decomposed and on the full domain. Every number below is read from that pass's records in `out/workbench/records/step-f/` (§6). **Every row is a showcase, not a research record** ([[showcase-library-plan]] §2): one pass, checks registered before the family's first run, and a record file. There are no predictions, audits or follow-up tiers.
-**Hub:** [[00-atlas-0.1-outcome]] · **Plan:** [[showcase-library-plan]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/` (`python -m atlas.workbench --open`, then *File > Showcase gallery*)
+**Status:** written 2026-09-29 from one pass through the served workbench on this laptop; two drawn rows added that day, and eight more on 2026-09-29 and 30, compiled and run headless (§2). Every example was opened from *File > New from example*, checked, compiled with the Atlas compiler, and run decomposed and on the full domain. Every number below is read from that pass's records in `out/workbench/records/step-f/` (§6). **Every row is a showcase, not a research record** ([[showcase-library-plan]] §2): one pass, checks registered before the family's first run, and a record file. There are no predictions, audits or follow-up tiers.
+**Hub:** [[00-atlas-0.1-outcome]] · **Plan:** [[showcase-library-plan]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/` (`python -m atlas.workbench --open`, then *Case > Examples...*; before the page's rebuild on 2026-09-29 the same list was *File > Showcase gallery*)
 
 ---
 
@@ -27,7 +27,7 @@ $$
 \frac{\max_i \lvert u^{\text{arm}}_i - u^{\text{full}}_i \rvert}{\text{a stated scale}},
 $$
 
-where the scale is the temperature span, the peak concentration, the largest displacement, or the heating's rise. The Results step also shows the rms difference of the displayed field, $\big(\tfrac{1}{n}\sum_i (u^{\text{arm}}_i-u^{\text{full}}_i)^2\big)^{1/2}$, in the field's own units. Every tolerance was registered in its family's module before that family's first run, and none was changed afterwards.
+where the scale is the temperature span, the peak concentration, the largest displacement, or the heating's rise. The results' details also show the rms difference of the displayed field, $\big(\tfrac{1}{n}\sum_i (u^{\text{arm}}_i-u^{\text{full}}_i)^2\big)^{1/2}$, in the field's own units. Every tolerance was registered in its family's module before that family's first run, and none was changed afterwards.
 
 ---
 
@@ -52,6 +52,30 @@ Measured 2026-09-29, 05:14–05:41 EDT, in the served page on AC power (§5). Ev
 | `insert-round`: a round copper insert in a steel plate, cut along the circle | C, drawn | `THERM` | **refuse**, R10 (0.14 s); its one seam admitted | energy $9.86\times10^{-12}$ ($10^{-6}$) | full domain $1.01\times10^{-10}$ of the 100 K span ($10^{-6}$) | 1.85 s (5 timed repeats) | showcase, not research record |
 
 **The last two rows are drawn geometry** (case file 0.4, added 2026-09-29 on the owner's request: irregular domains and windows that are not rectangles; see [[showcase-library-plan]] §6). They were not taken in the page pass above. They were compiled and run at 11:59 EDT through the workbench's own `Workbench` object, the code the page drives, headless and **on battery**, because the served page could not be drawn for screenshots at the time. So their wall times are not speed figures. Their checks are the conduction family's, registered on 2026-09-28 before its first run, and unchanged. The bend's staircase moves its heat flow by $-0.97\%$ from the ring's continuum value $k\,\Delta T\ln(r_o/r_i)/\theta$: information, not a check.
+
+**Eight more rows, added 2026-09-29 and 30**: the S-channel, on windows generated from its shape (case file 0.5), and one drawn example for each family that had none ([[showcase-library-plan]] §6). Each was compiled and run with the workbench's own `CompileJob` and `CaseRun`, the code the page drives, headless, on AC power, with no other Python process running. Seven ran at 21:33–21:37 EDT on 2026-09-29. `farm-hill` was run again at 01:48 EDT on 2026-09-30, after the fix below. The machine was running slower then: the full domain's unchanged step took 0.85 s against 0.30 s four hours before, while the owner's screensaver was running. So that row's wall time is not a speed figure. The records are in `out/workbench/records/step-j/` (§6).
+
+| case | style | port type | compile (time) | balance check (tolerance) | reference check (tolerance) | run: wall time (steps) | label |
+|---|---|---|---|---|---|---|---|
+| `s-channel`: a steel channel drawn with splines, on four windows generated from its shape | B, windows that follow the shape | `THERM` | **refuse**, R10 (0.10 s); its three seams admitted | energy $1.13\times10^{-8}$ ($10^{-6}$) | full domain $1.80\times10^{-9}$ of the 100 K span ($10^{-6}$) | 1.2 s (5 timed repeats) | showcase, not research record |
+| `ring-film`: a quarter ring of graphite film on a battery and a resistor | D, drawn | `ELEC` | admit-uncertified (0.05 s; 2 seams, one per electrode) | Kirchhoff $5.36\times10^{-13}$, energy $9.59\times10^{-14}$ ($10^{-6}$ each) | the film and circuit as one sparse solve: $5.96\times10^{-14}$ of the largest branch current, 5.78 A ($10^{-6}$) | 0.2 s (5 timed repeats) | showcase, not research record |
+| `river-bend`: a plume round a winding river, its flow solved along the banks | A, drawn, one explicit step per exchange | `ADVEC` | admit-uncertified (0.24 s) | mass $3.25\times10^{-14}$ ($10^{-9}$) | full domain $1.84\times10^{-16}$ of the 1.285 mg/L peak ($10^{-10}$) | 3.6 s (2,000 steps) | showcase, not research record |
+| `sound-lens`: a pulse in a round-ended air duct meeting a curved water surface | C, drawn, explicit | `MECH` | admit-uncertified (0.02 s) | energy $4.22\times10^{-16}$ ($10^{-10}$) | *not measured*: a curved surface has no textbook reflection; the two pieces equal the full domain bit for bit over 1,500 steps | 3.4 s (1,500 steps) | showcase, not research record |
+| `plate-hole`: a steel plate with a round hole, clamped and pulled | B, drawn, on a structure | `MECH` | **refuse**, R10 (0.82 s); its one seam admitted | forces $7.68\times10^{-12}$ ($10^{-6}$) | full domain $3.18\times10^{-12}$ of the largest displacement, 0.0225 mm ($10^{-6}$) | 24.6 s (5 timed repeats) | showcase, not research record |
+| `bimetal-arc`: a quarter ring of steel inside copper, one end held hot | split by physics, drawn | none: the bond is volumetric | **refused before the compiler** by the port vocabulary (0.00 s) | heat in = heat stored, $2.16\times10^{-10}$ ($10^{-9}$) | the unsplit solver, equal bit for bit over 60 steps (exact) | 2.8 s (60 steps) | showcase, not research record |
+| `cooled-winding`: a copper block cooled by a winding water channel | C, drawn, at a seam between two physics | `THERM` | admit-uncertified (0.11 s) | energy $4.71\times10^{-11}$ ($10^{-6}$), 2 kW per metre of depth made and carried out | full domain $1.53\times10^{-9}$ of the 18 K rise ($10^{-6}$) | 1.9 s (5 timed repeats) | showcase, not research record |
+| `farm-hill`: the three-rotor array over terrain drawn with splines | A, drawn | none compiled | **refused before the compiler**: a drawn farm has no declared graph (0.02 s) | incompressibility $2.22\times10^{-16}$ ($10^{-9}$) | farm power $-19.7\%$ against the full domain ($25\%$) | 101.3 s (40 macro-steps), on the slower machine: not a speed figure | showcase, not research record |
+
+**`farm-hill` passes, and does not agree the way the plain farms do.** Its farm power is $19.7\%$ from the full domain, inside the $25\%$ registered for the farms, where the plain farms measured $2.3$–$8.3\%$. Its velocity differs from the full domain's by $0.20\,U$ rms, against $0.047\,U$ for the plain three-rotor farm on the same windows, and its windows take 26 sub-steps a macro-step against the full domain's 32. Two controls hold bit for bit, and they place the departure in the hill, not in the drawn machinery:
+- one window over the drawn farm is its full domain, in the arrangement where one window is the full domain's arithmetic;
+- a drawn farm that is the whole rectangle is the plain farm, both arms, in both arrangements.
+
+**[AI Inference]:** the terrain turns the flow, and style A exchanges once per macro-step, so seams that a turned flow crosses may carry a larger lag than seams along a flat wake. Where the lag concentrates was not measured; the per-seam difference, windows that follow the terrain, or an iterated coupling would be the tests of it, and none was run.
+
+**Found while recording these rows, and fixed before them** (2026-09-30):
+- **A drawn farm's windows did not hold their ground.** Each window marched the box of its fluid cells alone, so a window over the terrain had its box's edge where the solid began, and one window over the whole drawn farm missed its full domain by $0.61\,U$ after one macro-step. A window's box is now the window as drawn, with the solid in it held at rest. `farm-hill`'s power moved by $0.1$ point, $19.6\%$ to $19.7\%$: the departure above was the hill's all along.
+- **The drawn river did not compile**: the compile's velocity scale divided by the river's shallowest depth, which is zero past a drawn river's banks.
+- **A drawn farm compiled as the plain farm.** The wind farm's graph is the scaling-ladder rung's, a full rectangle of fluid, and the terrain was nowhere in it. A drawn farm is now refused before the compiler with that reason, as an irregular tiling already was.
 
 **The third check, bit for bit, where a case has one:**
 - Threaded equals serial in the three farms (over 40, 12 and 6 macro-steps), the insert (40 steps), the plume (6,000) and the bracket (5 repeats).
@@ -82,9 +106,17 @@ $s = t_{\text{full}}/t_{\text{arm}}$, measured in the same runs.
 | `cooled-block` | 12,000 | 0.00475 | — |
 | `bend-3` (on battery) | 6,601 of a 108 x 108 grid | 0.0179 | 0.0200 (2) |
 | `insert-round` (on battery) | 16,000 | 0.0276 | — |
+| `s-channel` | 5,208 of a 200 x 110 grid | 0.00488 | 0.00485 (2) |
+| `ring-film` | 6,601 of a 108 x 108 grid | 0.222 | — (style D is one piece) |
+| `river-bend` | 9,774 of a 240 x 100 grid | 0.745 | 0.313 (2) |
+| `sound-lens` | 19,424 of a 300 x 120 grid | 0.419 | — (style C is sequential) |
+| `plate-hole` | 12,352 of a 160 x 80 grid | 0.00586 | 0.00760 (2) |
+| `bimetal-arc` | 5,031 of a 108 x 108 grid | synchronous split 1.02 | lagged split 1.41 (2) |
+| `cooled-winding` | 11,968 of a 200 x 60 grid | 0.00344 | — |
+| `farm-hill` | 77,290 of a 352 x 240 grid | not quoted (the slower machine, §2) | not quoted |
 
 - **Threads pay only at farm scale.** At 12 and 21 rotors the threaded arm is $4.83\times$ and $4.55\times$ faster than the full domain. Both fall inside W346's measured ranges ($4.0$–$5.7\times$ and $4.3$–$4.7\times$, [[decomposition-speed-by-rotor-count]] §5). The serial arm stays below 1, as W346 found. W346 timed the developed wake at step 40, and these runs time the start-up. So this is a live reproduction of the ratio, not a new measurement of it.
-- **Below about 30,000 cells, one direct solve or one explicit step on the whole grid beats every spatially decomposed arm.** The margin runs from $1.4\times$ (the sound's two pieces) to about $490\times$ (the bracket's serial Schwarz, 616 iterations to $10^{-12}$). The heated strip is split by physics, not space, and its three arms tie within the noise of a 3 ms step.
+- **Below about 30,000 cells, one direct solve or one explicit step on the whole grid beats every spatially decomposed arm.** The margin runs from $1.3\times$ (the drawn river's serial windows) to about $490\times$ (the bracket's serial Schwarz, 616 iterations to $10^{-12}$). The eight rows added on 2026-09-29 and 30 keep the rule: every spatial arm is below 1. The heated strip is split by physics, not space, and its three arms tie within the noise of a 3 ms step. The drawn arc's lagged split ran $1.41\times$ faster than its unsplit solver, in one run of 60 steps (means of 5.0 ms against 7.1 ms); that was not investigated.
 - **[AI Inference]:** at these sizes the per-window bookkeeping and the iteration count cost more than the smaller solves save. A coarse space for Schwarz, or larger grids, would move the crossover, but neither was measured here.
 - **Quote a ratio with its record, not as a constant.** The same 40-step `wake-array-3` march took 46.6 s in step A's record and 29.1 s here, and its threaded ratio moved from 1.30 to 1.08. At 21 rotors the ratios held across sessions: serial 0.90 in all three runs, threaded 4.0–4.6 ([[showcase-library-plan]] §5).
 
@@ -102,9 +134,11 @@ $s = t_{\text{full}}/t_{\text{arm}}$, measured in the same runs.
 | the plume, the sound, the circuit | L4 operator-content | each probed block is a multiple of the identity. An explicit step, or a one-number electrode port, answers a trace with a boundary coefficient, not an operator, so every bound carrying $1/\beta$ is a property of that coefficient |
 | the cooled block, the circuit | L1 E3 | the seam joins two governing families (a coolant and a solid; a film and a lumped circuit), so there is no single monolith in the compiler's sense. Both sides declare a $\lambda_{\text{ref}}$, so $\tau$ is measurable against the tightly coupled pair |
 
+**The eight rows added on 2026-09-29 and 30 follow their rectangular counterparts.** The S-channel and the plate with a hole are refused at R10 alone, every seam admitted (below). The drawn arc is refused before the compiler, as the heated strip is, and the drawn farm because it has no declared graph (§2). The film, the sound and the winding are admitted uncertified on the same rules as their rectangles, above. The one difference: the drawn river's seam is admitted outright, where the plain river's reads L4 operator-content. **[AI Inference]:** the drawn river's solved flow varies along its seam, so the probed block is not a multiple of the identity, as it is for the plain river's uniform flow.
+
 **The three refusals are one rule: R10**, and so are the two drawn examples', the bend and the round insert, whose pieces are curved. The wall, the insert and the bracket each have two agents that declare an embedded elliptic sub-solve and share one governing family. R10 reads that as the family's region cut in two, each agent solving a global problem on its own piece, "the decomposition changes the operator". Each of their seams is admitted; the refusal is on the graph. The runs measure how far the iterated pieces are from the full domain: $2.69\times10^{-13}$, $3.58\times10^{-9}$ and $3.66\times10^{-11}$ of their scales, all far inside $10^{-6}$. The same three compile records derive `K_accelerator = direct-schur` for the interface, a scheme the compiler itself says *"makes the solve-incompleteness term vanish"*. R10 cannot read it: it runs at L2, before the scheme is derived.
 
-**[AI Inference]:** R10's reason fits a fixed number of exchanges, as in style A. Styles B and C iterate until the pieces agree. For these linear problems the fixed point of that iteration is the undivided solution, and the measured agreement is consistent with that. R10 does not read whether a scheme iterates. Whether it should is a question for the compiler, not the workbench, and it is open as **W348** in [[gap-worklist]]. The Check step shows the refusal as the compiler gave it, with a note saying so.
+**[AI Inference]:** R10's reason fits a fixed number of exchanges, as in style A. Styles B and C iterate until the pieces agree. For these linear problems the fixed point of that iteration is the undivided solution, and the measured agreement is consistent with that. R10 does not read whether a scheme iterates. Whether it should is a question for the compiler, not the workbench, and it is open as **W348** in [[gap-worklist]]. The page shows the refusal as the compiler gave it, with a note saying so (the Check step then; the Run & results tab since the rebuild).
 
 **The heated strip never reaches the compiler.** Its two agents share one mesh, and the whole temperature field crosses between them. The port algebra has no bond for that: `VOLUMETRIC` is not one of the five port types, and a sixth enters only through the amendment procedure, which has never been exercised (`NamedHoleError: PortAmendment`, gap O6/G16). This is the finding of [[case-study-thermal-strain-atlas-0.1]], and the same gap as W94's disk ([[case-study-wake-array-atlas-0.1]] §3). The page shows it as a refusal before the compiler, with the package's own message.
 
@@ -147,11 +181,24 @@ $s = t_{\text{full}}/t_{\text{arm}}$, measured in the same runs.
 
 The two drawn examples' records are in `out/workbench/records/step-g/`: `bend-3` (compile `20260929-115906`, run `20260929-115908`) and `insert-round` (compile `20260929-115909`, run `20260929-115911`).
 
+The eight rows added on 2026-09-29 and 30 are in `out/workbench/records/step-j/<case>/`, named `compile-<time>.json` and `<time>.json`, with `summary.json` beside them:
+
+| case | compile | run |
+|---|---|---|
+| `s-channel` | `20260929-213314` | `20260929-213316` |
+| `ring-film` | `20260929-213316` | `20260929-213316` |
+| `river-bend` | `20260929-213656` | `20260929-213700` |
+| `sound-lens` | `20260929-213321` | `20260929-213324` |
+| `plate-hole` | `20260929-213326` | `20260929-213350` |
+| `bimetal-arc` | `20260929-213351` | `20260929-213353` |
+| `cooled-winding` | `20260929-213354` | `20260929-213356` |
+| `farm-hill` | `20260930-014634` | `20260930-014815` |
+
 A run record holds the case as it marched, every per-step time, the metrics, each check with its tolerance and registration date, the field differences, and the machine's state before and after. A compile record holds every decision, the compiler's report, and the case as compiled.
 
 **Found in this pass, and fixed before the records above:**
 - **The farm's Results table had two rms columns that disagreed.** The family's own column (both velocity components) was filled for the threaded arm only. The new generic column (the streamwise component alone) was filled for both arms. Now every decomposed arm carries the family's measures, and the column is labelled "(u and v)". `farm-12` and `wake-array-3` were re-run so their records carry both arms.
-- **Stale labels.** After another case was opened, the Check and Results labels still described the last compile and run in the session: "compiled: admit-uncertified" stood beside `farm-12` when `farm-21` was the case compiled. They now read "before a change", and the Results step says whose results it shows.
+- **Stale labels.** After another case was opened, the Check and Results labels still described the last compile and run in the session: "compiled: admit-uncertified" stood beside `farm-12` when `farm-21` was the case compiled. They now read "before a change", and the Results step says whose results it shows. The rebuilt page keeps the rule: its Run & results tab says whose results it shows, and a compile of another case reads "not compiled since this case was opened", naming the case that was.
 
 ---
 
