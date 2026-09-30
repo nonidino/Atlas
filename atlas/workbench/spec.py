@@ -569,20 +569,82 @@ def derive_boundaries(c: "CaseSpec") -> bool:
     return changed
 
 
-def adapt_to_family(c: "CaseSpec", fid: str) -> None:
-    """Make a case fit a newly chosen family, keeping what still applies.
+@dataclass(frozen=True)
+class FamilySetup:
+    """What a family's first example runs with: the scale its parameters' defaults
+    belong to, the coupling it converges with, and how many windows it is cut into."""
+    example: str
+    dx: float
+    macro_dt: float
+    steps: int
+    mode: str
+    coupling: dict
+    windows: int
 
-    Parameters the family declares keep a value the case already has; the style
-    and the run mode fall back to the family's first if the case's is not one it
-    runs; boundaries are replaced when the family fixes its own or cannot impose
+
+_SETUPS: dict[str, FamilySetup | None] = {}
+
+
+def family_setup(fid: str) -> FamilySetup | None:
+    """The family's first example's setup (`FamilySetup`), or None without one."""
+    if fid not in _SETUPS:
+        _SETUPS[fid] = None
+        for key, ex in EXAMPLES.items():
+            if ex.family == fid:
+                s = example_case(key)
+                _SETUPS[fid] = FamilySetup(key, float(s.domain.dx), float(s.run.macro_dt),
+                                           int(s.run.steps), s.run.mode,
+                                           s.coupling.model_dump(), len(s.windows))
+                break
+    return _SETUPS[fid]
+
+
+def adapt_to_family(c: "CaseSpec", fid: str) -> list[str]:
+    """Make a case fit a newly chosen family, keeping its shape; returns what changed
+    that the person should be told.
+
+    A family actually changed starts from its first example's setup
+    (`family_setup`): its cell size, macro-step, step count and mode, the coupling
+    it converges with, and automatic windows as many as it has (the wind farm keeps
+    its rectangles, the tiling its graph compiles).  The owner's first scenario
+    (2026-09-30) is why: a wind farm's cell of 0.03125 rotor diameters kept as metres
+    made a river 11 m long with its outfall's default outside it, and the farm's six
+    windows and 500 iterations left a drawn plate's Schwarz unconverged.
+
+    Rotors, circuit parts and material regions the family does not read are removed
+    (the farm's rotors, checked by a river, were errors no one could see the point
+    of).  Parameters the family declares keep a value the case already has; the
+    style and the run mode fall back to the family's first if the case's is not one
+    it runs; boundaries are replaced when the family fixes its own or cannot impose
     one the case has (on a drawn domain, by one per drawn edge); region materials
-    the case does not define are taken from the family's showcase library when it
-    has one of that name.
-    """
+    the case does not define are taken from the family's showcase library."""
     fam = registry.family(fid)
+    changed = c.physics.family != fid
+    notes: list[str] = []
+    for layer, what in (("devices", "rotor"), ("attachments", "circuit part"),
+                        ("regions", "material region")):
+        items = getattr(c, layer)
+        if changed and items and layer not in fam.layers:
+            notes.append(f"the {len(items)} {what}{'s' * (len(items) != 1)} removed, which "
+                         f"this physics does not read")
+            setattr(c, layer, [])
     c.physics.family = fid
     c.physics.params = {p.name: float(c.physics.params.get(p.name, p.default))
                         for p in fam.params}
+    setup = family_setup(fid) if changed else None
+    if setup is not None:
+        c.domain.dx, c.run.macro_dt, c.run.steps = setup.dx, setup.macro_dt, setup.steps
+        if setup.mode in fam.modes:
+            c.run.mode = setup.mode
+        c.coupling = Coupling(**setup.coupling)
+        unit = fam.length_unit or "cells"
+        notes.append(f"the {setup.example} example's scale: cells of {setup.dx:g} {unit}, "
+                     f"{setup.steps:,} steps of {setup.macro_dt:g}"
+                     + (" s" if unit == "m" else ""))
+        if fid != "incompressible-2d":
+            c.layout = Layout(cut="along", along=setup.windows, across=1)
+            notes.append(f"{setup.windows} window{'s' * (setup.windows != 1)}, cut "
+                         f"automatically from the shape")
     if c.coupling.style not in fam.styles and fam.styles:
         c.coupling.style = fam.styles[0]
     if c.run.mode not in fam.modes:
@@ -593,6 +655,7 @@ def adapt_to_family(c: "CaseSpec", fid: str) -> None:
     for r in c.regions:
         if r.material not in c.materials and r.material in lib:
             c.materials[r.material] = dict(lib[r.material])
+    return notes
 
 
 # ---------------------------------------------------------------------------
@@ -605,6 +668,9 @@ class Issue:
     severity: Literal["error", "warning", "info"]
     step: str          # which workflow step fixes it: "case", "geometry", ...
     message: str
+    #: a repair the page can make in one click (a key of `starter.FIXES`), and that
+    #: a newly drawn shape or newly chosen physics gets without asking
+    fix: str | None = None
 
 
 def check(spec: CaseSpec) -> list[Issue]:
@@ -629,7 +695,8 @@ def check(spec: CaseSpec) -> list[Issue]:
     if not plain:
         out += _check_drawn(spec)
     if not spec.windows:
-        out.append(Issue("error", "geometry", "the domain is not cut into any windows yet"))
+        out.append(Issue("error", "geometry", "the domain is not cut into any windows yet "
+                         "(Windows)", fix="windows"))
     if plain:
         covered = np.zeros((d.ny, d.nx), dtype=bool)
         for w in spec.windows:
@@ -643,7 +710,8 @@ def check(spec: CaseSpec) -> list[Issue]:
             gap = int((~covered).sum())
             if gap:
                 out.append(Issue("error", "geometry",
-                                 f"{gap} of {d.nx * d.ny} cells lie in no window"))
+                                 f"{gap} of {d.nx * d.ny} cells lie in no window (Windows)",
+                                 fix="windows"))
     else:
         act = geo.domain_mask(d)
         covered = np.zeros_like(act)
@@ -658,7 +726,7 @@ def check(spec: CaseSpec) -> list[Issue]:
             if gap:
                 out.append(Issue("error", "geometry",
                                  f"{gap} of the domain's {int(act.sum())} cells lie in no "
-                                 f"window"))
+                                 f"window (Windows)", fix="windows"))
 
     ramp = spec.coupling.ramp_cells
     style = spec.coupling.style
@@ -675,7 +743,7 @@ def check(spec: CaseSpec) -> list[Issue]:
             out.append(Issue("error", "geometry",
                              "a split by physics shares the whole domain between its "
                              "agents, so the case is one window covering the domain; this "
-                             f"one has {len(spec.windows)}"))
+                             f"one has {len(spec.windows)} (Windows)", fix="windows"))
     elif spec.windows:
         an = geo.analyse_case(spec)
         n_ramp = int(an.ramp_only.sum())
@@ -685,7 +753,8 @@ def check(spec: CaseSpec) -> list[Issue]:
             out.append(Issue("error", "geometry",
                              f"{n_ramp} cells have no window at full weight (in {names}{more}): "
                              f"where windows meet they must overlap by at least twice the "
-                             f"ramp ({2 * ramp} cells), as every measured tiling does"))
+                             f"ramp ({2 * ramp} cells), as every measured tiling does "
+                             f"(Windows)", fix="windows"))
         for a, b, t in an.thin_pairs:
             what = "touch without overlapping" if t == 0 else f"overlap by only {t} cells"
             out.append(Issue("warning", "geometry",
@@ -718,20 +787,22 @@ def check(spec: CaseSpec) -> list[Issue]:
             i = int(np.floor(v.x / d.dx))
             if 0 <= i < d.nx and not act[max(j0, 0):min(j1, d.ny), i].all():
                 out.append(Issue("error", "geometry",
-                                 f"device {v.id}'s disk reaches into the solid, outside the "
-                                 f"drawn domain"))
+                                 f"rotor {v.id}'s disk reaches outside the drawn domain, into "
+                                 f"the solid: move it into the air (Rotors)"))
         if d.outline is not None:
             along = {geo.along_grid_edge(d, n) for n in geo.drawn_edge_names(d)}
             if "left" not in along:
                 out.append(Issue("error", "geometry",
                                  "the flow enters on the grid's left edge, and no edge of the "
-                                 "drawn domain runs along it: draw the domain to reach it"))
+                                 "drawn domain runs along it: draw the shape so one of its "
+                                 "edges lies along the grid's left edge (Shape)"))
             if "right" not in along:
                 # the page's first drawn farm reached the right edge at one vertex only,
                 # and the check said nothing (2026-09-29)
                 out.append(Issue("error", "geometry",
                                  "the flow leaves on the grid's right edge, and no edge of the "
-                                 "drawn domain runs along it: draw the domain to reach it"))
+                                 "drawn domain runs along it: draw the shape so one of its "
+                                 "edges lies along the grid's right edge (Shape)"))
     if spec.physics.family == "incompressible-2d":
         re_cell = d.dx * spec.physics.u_inf / spec.physics.nu
         if re_cell > 8.0:
@@ -740,10 +811,15 @@ def check(spec: CaseSpec) -> list[Issue]:
                              f"window solver's own validity predicate asks for at most 8 "
                              f"(wake_array.FluidWindow.reference_validity)"))
 
-    out += _check_regions(spec)
-    out += _check_boundaries(spec)
-    out += _check_physics(spec)
-    out += _check_attachments(spec)
+    for part in (_check_regions, _check_boundaries, _check_physics, _check_attachments):
+        try:
+            out += part(spec)
+        except Exception as exc:
+            # a check must never take the page down: it runs on every edit, and one
+            # that raised left a newly drawn block unusable (2026-09-30)
+            out.append(Issue("error", "physics",
+                             f"the case could not be checked ({part.__name__[1:]}): "
+                             f"{type(exc).__name__}: {exc}"))
     return out
 
 
@@ -771,11 +847,11 @@ def _check_pieces(spec: CaseSpec) -> list[Issue]:
         out.append(Issue("error", "geometry",
                          f"{over} cells lie in more than one window; style "
                          f"{spec.coupling.style} cuts the domain into pieces that meet "
-                         f"along faces and do not overlap"))
+                         f"along faces and do not overlap (Windows)", fix="windows"))
     if spec.coupling.style == "C" and len(spec.windows) != 2:
         out.append(Issue("error", "geometry",
                          f"style C (Dirichlet-Neumann) couples exactly two pieces; this "
-                         f"case has {len(spec.windows)}"))
+                         f"case has {len(spec.windows)} (Windows)", fix="windows"))
     if spec.coupling.style == "C" and len(spec.windows) == 2 and not over:
         a, b = spec.windows
         if plain:
@@ -788,7 +864,8 @@ def _check_pieces(spec: CaseSpec) -> list[Issue]:
             meet = geo.faces_between(masks[a.id], masks[b.id]) > 0
         if not meet:
             out.append(Issue("error", "geometry",
-                             f"windows {a.id} and {b.id} do not meet along a face"))
+                             f"windows {a.id} and {b.id} do not meet along a face "
+                             f"(Windows)", fix="windows"))
         side = spec.coupling.dirichlet_side
         if side != "auto" and side not in (a.id, b.id):
             out.append(Issue("error", "physics",
@@ -798,7 +875,7 @@ def _check_pieces(spec: CaseSpec) -> list[Issue]:
         out.append(Issue("error", "geometry",
                          f"style D joins one field to lumped parts, so the plate is one "
                          f"window covering the domain; this case has "
-                         f"{len(spec.windows)}"))
+                         f"{len(spec.windows)} (Windows)", fix="windows"))
     return out
 
 
@@ -919,10 +996,19 @@ def _check_physics(spec: CaseSpec) -> list[Issue]:
         if not any(b.kind == "clamped" for b in spec.boundaries):
             out.append(Issue("error", "geometry",
                              "nothing holds the plate: clamp at least one edge segment (this "
-                             "family does not remove the rigid-body motions of a free body)"))
+                             "family does not remove the rigid-body motions of a free body) "
+                             "(Boundaries)", fix="clamp"))
         if not any(b.kind in ("load-x", "load-y") and b.value for b in spec.boundaries):
             out.append(Issue("warning", "geometry",
-                             "no edge is loaded, so the plate will not move"))
+                             "no edge is loaded, so the plate will not move (Boundaries)",
+                             fix="load"))
+    if fam.id in ("conduction-2d", "thermoelastic-2d") and not any(
+            b.kind in ("fixed-temperature", "heat-flux") for b in spec.boundaries):
+        # a new shape's edges start insulated: nothing would warm or cool it
+        out.append(Issue("warning", "geometry",
+                         "every edge is insulated, so nothing heats or cools the domain: "
+                         "hold an edge at a temperature, or give it a heat flux "
+                         "(Boundaries)", fix="temperatures"))
     if fam.id == "incompressible-2d":
         if spec.coupling.assembly == "blend":
             out.append(Issue("warning", "physics",
@@ -944,20 +1030,24 @@ def _check_transport(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
     drawn = d.outline is not None or bool(d.holes)
     if not (0.0 <= sx < lx and 0.0 <= sy < ly):
         out.append(Issue("error", "physics",
-                         f"the outfall ({sx:g} m, {sy:g} m) is not in the river, which is "
-                         f"{lx:g} m x {ly:g} m"))
+                         f"the outfall, where the pollutant is released, is at ({sx:g} m, "
+                         f"{sy:g} m): not in the river, outside the grid's {lx:g} m x "
+                         f"{ly:g} m (Physics)", fix="outfall"))
     elif drawn and not geo.domain_mask(d)[int(sy // d.dx), int(sx // d.dx)]:
         out.append(Issue("error", "physics",
-                         f"the outfall ({sx:g} m, {sy:g} m) is on dry ground, outside the "
-                         f"drawn river"))
+                         f"the outfall, where the pollutant is released, is at ({sx:g} m, "
+                         f"{sy:g} m): on dry ground, outside the drawn river (Physics)",
+                         fix="outfall"))
     if drawn:
         # a drawn river's flow is solved from its inlets to its outlets (flow.py)
         kinds = {b.kind for b in spec.boundaries if b.drawn or d.outline is None}
-        for kind, what in (("river-inlet", "enters"), ("river-outlet", "leaves")):
+        for kind, what, fix in (("river-inlet", "no inlet: mark the edge where the water "
+                                 "comes in", "river-inlet"),
+                                ("river-outlet", "no outlet: mark the edge where the water "
+                                 "leaves", "river-outlet")):
             if kind not in kinds:
                 out.append(Issue("error", "geometry",
-                                 f"nothing marks where the river {what}: give one of its "
-                                 f"edges the condition {kind}"))
+                                 f"the river has {what} as {kind} (Boundaries)", fix=fix))
         if any(i.severity == "error" for i in out) or any(
                 i.severity == "error" for i in _check_boundaries(spec)):
             return out
@@ -976,7 +1066,7 @@ def _check_transport(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
                              f"the macro-step {spec.run.macro_dt:g} s is over the explicit "
                              f"step's stability limit here, {lim:.4g} s (min over the cells "
                              f"of depth dx^2 over the cell's outflow and mixing "
-                             f"conductances); take at most that"))
+                             f"conductances); take at most that (Physics)", fix="time-step"))
     return out
 
 
@@ -1006,7 +1096,8 @@ def _check_acoustics(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
         out.append(Issue("error", "physics",
                          f"the macro-step {spec.run.macro_dt:.4g} s is over the leapfrog's "
                          f"stability limit here, {lim:.4g} s (Gershgorin on the grid's "
-                         f"operator; dx / (c sqrt 2) in one medium); take at most that"))
+                         f"operator; dx / (c sqrt 2) in one medium); take at most that "
+                         f"(Physics)", fix="time-step"))
     if m is not None:
         p = ac.pulse(spec)
         if not 0.0 < p.x0 < m * d.dx:
@@ -1032,19 +1123,26 @@ def _check_floating(spec: CaseSpec) -> list[Issue]:
     own that sets its temperature level (conduction.floating); the case's choice of
     Dirichlet side must not leave the Neumann piece floating."""
     from .families import conduction as cd
+    from .flow import FlowError
     d = spec.domain
-    if spec.physics.family == "conjugate-heat-2d":
-        from .families import cooling as co
-        f = co.field_from_case(spec)
-    else:
-        f = cd.field_from_case(spec)
+    try:
+        if spec.physics.family == "conjugate-heat-2d":
+            from .families import cooling as co
+            f = co.field_from_case(spec)
+        else:
+            f = cd.field_from_case(spec)
+    except (FlowError, ValueError):
+        # the coolant's flow is not solvable yet (no inlet, no channel): the checks
+        # of the coolant say why; this one needs the field (seen: the check crashed
+        # on a newly drawn block, 2026-09-30)
+        return []
     wins = spec.windows
     fl = {w.id: cd.floating(f, cd.cells_of(spec, w)) for w in wins}
     if all(fl.values()):
         return [Issue("error", "physics",
                       "both pieces float: nothing on the domain's edges sets a temperature "
                       "(a fixed temperature, or a coolant that leaves), so no steady state "
-                      "exists")]
+                      "exists (Boundaries)", fix="temperatures")]
     _d_id, n_id = cd.dirichlet_side(spec, f)
     if fl[n_id]:
         return [Issue("error", "physics",
@@ -1052,6 +1150,12 @@ def _check_floating(spec: CaseSpec) -> list[Issue]:
                       f"temperature level, so its solve is singular. Make it the Dirichlet "
                       f"side (or choose auto)")]
     return []
+
+
+#: what a newly drawn block lacks, and where to add it
+_NO_COOLANT = ("nothing cools the block: no material flows. Draw the channel as a "
+               "region made of water (Materials), then mark where the water enters "
+               "and leaves: coolant-inlet and coolant-outlet (Boundaries)")
 
 
 def _check_cooling(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
@@ -1070,8 +1174,7 @@ def _check_cooling(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
     if why:
         return [Issue("error", "geometry", why)]
     if rows.size == 0:
-        out.append(Issue("error", "physics",
-                         "no region's material flows (flows = 1), so nothing cools the block"))
+        out.append(Issue("error", "physics", _NO_COOLANT))
     for edge, kind in (("left", "coolant-inlet"), ("right", "coolant-outlet")):
         kinds = np.full(d.ny, "", dtype=object)
         for b in spec.boundaries:
@@ -1110,8 +1213,7 @@ def _check_coolant_flow(spec: CaseSpec) -> list[Issue]:
     out: list[Issue] = []
     carrier = co.coolant_mask(spec)
     if not carrier.any():
-        return [Issue("error", "physics",
-                      "no region's material flows (flows = 1), so nothing cools the block")]
+        return [Issue("error", "physics", _NO_COOLANT)]
     bf, kinds = case_faces(spec, "coolant-inlet", "coolant-outlet")
     on = carrier.ravel()[bf.cell]
     if np.any((kinds != "") & ~on):
@@ -1155,10 +1257,11 @@ def _check_attachments(spec: CaseSpec) -> list[Issue]:
     electrodes = [b.id for b in spec.boundaries if b.kind == "electrode"]
     if not electrodes:
         out.append(Issue("error", "geometry",
-                         "the plate has no electrode: mark at least one edge segment as "
-                         "an electrode for the circuit to attach to"))
+                         "the plate has no electrode: mark the edges where the circuit "
+                         "attaches as electrodes (Boundaries)", fix="electrodes"))
     if not any(a.kind == "battery" for a in spec.attachments):
-        out.append(Issue("error", "geometry", "the circuit has no battery to drive it"))
+        out.append(Issue("error", "geometry",
+                         "the circuit has no battery to drive it (Circuit)", fix="circuit"))
     for a in spec.attachments:
         if a.a == a.b:
             out.append(Issue("error", "geometry",
@@ -1232,7 +1335,8 @@ def _check_regions(spec: CaseSpec) -> list[Issue]:
         free = int(((owner < 0) & geo.domain_mask(d)).sum())
         if free:
             out.append(Issue("error", "geometry",
-                             f"{free} cells belong to no region; every cell needs a material"))
+                             f"{free:,} cells of the domain have no material yet: every cell "
+                             f"needs one (Materials)", fix="materials"))
     return out
 
 

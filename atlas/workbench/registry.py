@@ -549,5 +549,18 @@ def available_ids() -> list[str]:
     return [f.id for f in FAMILIES if f.status == "ready-to-wire"]
 
 
+#: a few words for what each family simulates, where the page has room for no more
+#: (the header, the rail); the label says it in full
+SHORT = {"incompressible-2d": "wind farm", "conduction-2d": "heat conduction",
+         "electric-2d": "current in a plate", "transport-2d": "river plume",
+         "acoustics-2d": "sound", "elasticity-2d": "loaded structure",
+         "thermoelastic-2d": "heated structure", "conjugate-heat-2d": "cooled block"}
+
+
+def short_label(fid: str) -> str:
+    return SHORT.get(fid, fid)
+
+
 __all__ = ["BoundaryKind", "BOUNDARY_KINDS", "boundary_kind", "FixedBoundary", "Param",
-           "STYLES", "Family", "FAMILIES", "family", "available_ids"]
+           "STYLES", "Family", "FAMILIES", "family", "available_ids", "SHORT",
+           "short_label"]

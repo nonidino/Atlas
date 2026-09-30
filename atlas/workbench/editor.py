@@ -38,10 +38,29 @@ from typing import TYPE_CHECKING
 import numpy as np
 import panel as pn
 from bokeh.events import DoubleTap, Tap
-from bokeh.models import (BoxZoomTool, ColumnDataSource, HoverTool, LabelSet, PanTool,
-                          PointDrawTool, Range1d, ResetTool, SaveTool, SingleIntervalTicker,
-                          WheelZoomTool)
+from bokeh.models import (BoxZoomTool, ColumnDataSource, CustomJS, HoverTool, LabelSet,
+                          PanTool, PointDrawTool, Range1d, ResetTool, SaveTool,
+                          SingleIntervalTicker, WheelZoomTool)
 from bokeh.plotting import figure
+
+#: square cells whatever size the canvas is given: the view widens in one direction
+#: until a cell is as tall as it is wide.  Scaling the whole plot to an aspect ratio
+#: made cells 20% taller than wide, because the axes take fixed pixels (seen at
+#: 1,090 x 620).  A change of 0.5% or less is left alone, so the callback that the
+#: change itself triggers ends there.
+SQUARE_JS = """
+const w = p.inner_width, h = p.inner_height;
+if (!(w > 0 && h > 0)) { return; }
+const sx = (xr.end - xr.start) / w, sy = (yr.end - yr.start) / h;
+if (Math.abs(sx - sy) <= 0.005 * Math.max(sx, sy)) { return; }
+if (sx > sy) {
+    const c = 0.5 * (yr.start + yr.end), half = 0.5 * sx * h;
+    yr.setv({start: c - half, end: c + half});
+} else {
+    const c = 0.5 * (xr.start + xr.end), half = 0.5 * sy * w;
+    xr.setv({start: c - half, end: c + half});
+}
+"""
 
 from . import geometry as geo
 from . import registry
@@ -170,11 +189,17 @@ class GeometryEditor:
         self._auto_select()
         self._build_sources()
         self.fig = self._figure(ranges)
-        self.fig_pane = pn.pane.Bokeh(self.fig, sizing_mode="stretch_width")
-        self.hint = pn.pane.HTML(sizing_mode="stretch_width", margin=(0, 8),
-                                 styles={"font-size": "13px", "color": "#334155"})
-        self.summary = pn.pane.HTML(sizing_mode="stretch_width", margin=(0, 8),
-                                    styles={"font-size": "12px", "color": "#475569"})
+        self.fig_pane = pn.pane.Bokeh(self.fig, sizing_mode="stretch_both")
+        #: fixed heights: the hint changes with every click while drawing ("2 points
+        #: placed..."), and when it wrapped to another line the canvas resized under
+        #: the pointer, so the next click landed somewhere else (seen: 8 clicks made
+        #: a 3-vertex outline, 2026-09-30)
+        self.hint = pn.pane.HTML(sizing_mode="stretch_width", margin=(0, 8), height=38,
+                                 styles={"font-size": "13px", "color": "#334155",
+                                         "line-height": "1.4", "overflow": "hidden"})
+        self.summary = pn.pane.HTML(sizing_mode="stretch_width", margin=(0, 8), height=34,
+                                    styles={"font-size": "11px", "color": "#475569",
+                                            "line-height": "1.4", "overflow": "hidden"})
         self.rail_items = pn.Column(sizing_mode="stretch_width", margin=0)
         self.inspector = pn.Column(sizing_mode="stretch_width", margin=0)
         self.sync()
@@ -308,10 +333,18 @@ class GeometryEditor:
         aspect = (x1 - x0) / max(y1 - y0, 1e-9)
         p = figure(x_range=Range1d(x0, x1), y_range=Range1d(y0, y1),
                    width=1000, height=max(240, int(1000 / aspect)),
-                   # square cells, and no taller than about 560 px on a laptop
-                   sizing_mode="scale_width", max_width=int(560 * aspect) + 60,
+                   # all the room the window leaves, cells kept square by SQUARE_JS:
+                   # scaled to the width alone, the page ran past a laptop's screen
+                   # (the owner's, 2026-09-30)
+                   sizing_mode="stretch_both",
                    tools=[], toolbar_location=None, output_backend="canvas",
                    background_fill_color="#e9edf1", border_fill_color="#e9edf1")
+        square = CustomJS(args=dict(p=p, xr=p.x_range, yr=p.y_range), code=SQUARE_JS)
+        for attr in ("inner_width", "inner_height"):
+            p.js_on_change(attr, square)
+        for r in (p.x_range, p.y_range):                  # Fit, a box zoom
+            r.js_on_change("start", square)
+            r.js_on_change("end", square)
         p.xaxis.axis_label, p.yaxis.axis_label = "x (cells)", "y (cells)"
         for ax in (p.xaxis, p.yaxis):
             ax.axis_label_text_font_size = "11px"
@@ -1359,7 +1392,9 @@ class GeometryEditor:
                 c.regions.append(Region(id=rid, material=mat, shape="curve", outline=o))
                 with_material(c, mat)
             label, then = f"drew region {rid} ({mat})", f"regions:{len(s.regions)}"
-        if self.wb.edit(apply, label):
+        #: a drawn domain (or hole) is a new shape: what it now lacks to run -- a
+        #: material, an inlet, a clamp -- is filled in and said (`starter`)
+        if self.wb.edit(apply, label, defaults=(layer == "domain")):
             self._done_drawing(then)
         else:
             self.sync()
@@ -1569,7 +1604,7 @@ class GeometryEditor:
             if not c.boundaries:
                 c.boundaries = family_boundaries(fid)
         self.state["selected"], self.state["sub"] = None, None
-        self.wb.edit(apply, "the domain is the whole grid again")
+        self.wb.edit(apply, "the domain is the whole grid again", defaults=True)
 
     def add_part(self, kind: str) -> None:
         """A battery or a resistor, wired between the first electrode and a new free

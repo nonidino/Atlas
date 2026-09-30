@@ -322,7 +322,10 @@ def test_switching_family_adapts_the_case():
     s = blank_case(100, 80)
     adapt_to_family(s, "conduction-2d")
     assert s.physics.family == "conduction-2d" and set(s.physics.params) == {"T0"}
-    assert s.coupling.style == "B" and s.run.mode == "transient"     # both modes run
+    # a family changed starts from its first example's setup (the wall: style C,
+    # steady, cells of 2.5 mm, two windows cut automatically)
+    assert s.coupling.style == "C" and s.run.mode == "steady"
+    assert s.domain.dx == 0.0025 and s.layout is not None and s.layout.along == 2
     assert [(b.edge, b.kind) for b in s.boundaries] == [
         ("left", "fixed-temperature"), ("right", "fixed-temperature"),
         ("bottom", "insulated"), ("top", "insulated")]

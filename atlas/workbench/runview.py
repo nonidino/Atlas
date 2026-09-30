@@ -552,10 +552,10 @@ def run_controls(wb: "Workbench", run_btn, stop_btn, steps, threads, arms, label
     """The top of the Run tab: Run and Stop, what runs, and the settings folded away."""
     run = wb.run
     if run is not None and run.active:
-        p = run.progress()
-        state = (f"<b>Marching</b>: {html.escape(run.step_label)} {p.step} of {p.steps}"
-                 + (f" &middot; now {html.escape(run.arm_labels.get(p.arm, p.arm))}"
-                    if p.arm else ""))
+        # no step count here: this line is built once, and read "0 of 6000" while
+        # the run was at 842 (seen); the live count is in the progress row below
+        state = (f"<b>Marching</b> {run.steps:,} {html.escape(run.step_label)}s: the "
+                 f"progress is below, and Stop ends the run at a whole step")
     elif run is not None:
         state = f"<b>Last run</b>: {html.escape(run.label())}"
     else:

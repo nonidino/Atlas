@@ -154,7 +154,7 @@ def test_nothing_is_left_unbuilt(wb):
 
 def test_a_case_with_errors_does_not_run(wb):
     """Run on a case that cannot run lists its problems, where they are."""
-    wb.dispatch("file:new")                        # a blank case: no windows
+    wb.set_spec(blank_case(), "blank")             # a blank case: no windows
     click(wb.run_btn)
     assert wb.run is None and wb.active == "model"
     assert any("cannot run" in line for line in wb.log_lines[:3])

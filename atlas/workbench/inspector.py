@@ -64,16 +64,23 @@ SECTION = ("font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-trans
 # ---------------------------------------------------------------------------
 
 
+#: the height the Model tab has: the window's, less the header and the margins.  The
+#: canvas scales into what the toolbar and the footer leave of it, and the rail and
+#: the inspector scroll within it, so the whole tab fits the screen (the owner had to
+#: scroll a laptop's page, 2026-09-30)
+TAB_HEIGHT = "calc(100vh - 92px)"
+
+
 def model_layout(ed: "GeometryEditor"):
+    panel_styles = {"background": "#ffffff", "border-radius": "10px",
+                    "border": "1px solid #e2e8f0", "max-height": TAB_HEIGHT,
+                    "overflow-y": "auto"}
     rail = pn.Column(_label("Layers"), ed.layer_col, _divider(), ed.rail_items,
-                     width=236, margin=(8, 4, 8, 8),
-                     styles={"background": "#ffffff", "border-radius": "10px",
-                             "border": "1px solid #e2e8f0"})
+                     width=220, margin=(8, 4, 8, 8), styles=panel_styles)
     center = pn.Column(toolbar(ed), ed.fig_pane, footer(ed), sizing_mode="stretch_width",
-                       margin=(8, 4, 8, 4))
-    side = pn.Column(ed.inspector, width=330, margin=(8, 8, 8, 4),
-                     styles={"background": "#ffffff", "border-radius": "10px",
-                             "border": "1px solid #e2e8f0"})
+                       margin=(8, 4, 8, 4),
+                       styles={"height": TAB_HEIGHT, "min-height": "380px"})
+    side = pn.Column(ed.inspector, width=310, margin=(8, 8, 8, 4), styles=panel_styles)
     return pn.Row(rail, center, side, sizing_mode="stretch_width")
 
 
@@ -106,7 +113,7 @@ def _layer_count(ed: "GeometryEditor", key: str) -> str:
         return (f"  · {len(s.windows)} auto" if s.layout is not None
                 else f"  · {len(s.windows)}")
     if key == "physics":
-        return f"  · {s.run.mode}"
+        return f"  · {registry.short_label(s.physics.family)}"
     if key == "devices":
         return f"  · {len(s.devices)}"
     if key == "attachments":
@@ -132,27 +139,35 @@ def toolbar(ed: "GeometryEditor"):
                                         button_type="primary", button_style="outline",
                                         stylesheets=[TOOL_CSS], margin=(0, 8, 0, 0))
     tools.param.watch(lambda e: ed._switch(tool=e.new), "value")
-    items: list = [tools]
+    options: list = []
     if tool in ("draw", "rect", "circle") and layer in DRAWABLE:
         if layer == "domain":
             as_ = pn.widgets.RadioButtonGroup(options={"Outline": "outline", "Hole": "hole"},
                                               value=st.get("draw_as", "outline"),
                                               button_type="light", margin=(0, 8, 0, 0))
             as_.param.watch(lambda e: _set_state(ed, draw_as=e.new), "value")
-            items.append(as_)
+            options.append(as_)
         if tool == "draw":
             edges = pn.widgets.RadioButtonGroup(options={"Straight": "line",
                                                          "Smooth": "spline"},
                                                 value=st.get("draw_edges", "line"),
                                                 button_type="light", margin=(0, 8, 0, 0))
             edges.param.watch(lambda e: _set_state(ed, draw_edges=e.new), "value")
-            items.append(edges)
-            items += [_button("Finish", ed.close_shape, "primary", 80),
-                      _button("Undo point", ed.undo_vertex, width=100),
-                      _button("Cancel", ed.cancel_shape, width=80)]
-    fit = _button("Fit", ed.fit, width=60)
-    return pn.Row(*items, pn.layout.HSpacer(), fit, sizing_mode="stretch_width",
-                  margin=(0, 0, 6, 0))
+            options.append(edges)
+            options += [_button("Finish", ed.close_shape, "primary", 70),
+                        _button("↶ Point", ed.undo_vertex, width=72),
+                        _button("✕", ed.cancel_shape, width=40)]
+            options[-2].description = "Take back the last point"
+            options[-1].description = "Cancel this shape"
+    # Undo and Redo beside the edits they undo (the header had no room for them); a
+    # drawing tool's options get a row of their own, and Fit sits with the view's
+    # controls under the canvas, so no row runs under the inspector on a laptop
+    # (seen at 1,090 px)
+    rows = [pn.Row(tools, pn.layout.HSpacer(), ed.wb.undo_btn, ed.wb.redo_btn,
+                   sizing_mode="stretch_width", margin=0)]
+    if options:
+        rows.append(pn.Row(*options, sizing_mode="stretch_width", margin=(6, 0, 0, 0)))
+    return pn.Column(*rows, sizing_mode="stretch_width", margin=(0, 0, 6, 0))
 
 
 def footer(ed: "GeometryEditor"):
@@ -172,9 +187,12 @@ def footer(ed: "GeometryEditor"):
             wb.view_opts[k] = k in e.new
         wb.show("model", keep_view=True)
     view.param.watch(set_view, "value")
-    ed.summary.min_width = 300
+    fit = _button("Fit", ed.fit, width=52)
+    fit.margin = (0, 8, 0, 0)
+    # the summary takes what width is left and wraps; at 300 px wide it ran under the
+    # inspector on a laptop (seen at 1,090 px)
     return pn.Column(pn.Row(ed.hint, sizing_mode="stretch_width"),
-                     pn.Row(snap, view, pn.layout.HSpacer(), ed.summary,
+                     pn.Row(snap, view, fit, ed.summary,
                             sizing_mode="stretch_width", align="center"),
                      sizing_mode="stretch_width", margin=(4, 0, 0, 0))
 
@@ -862,7 +880,12 @@ def _physics_settings(ed: "GeometryEditor") -> list:
     wb = ed.wb
     s = wb.spec
     fam = _family(s)
-    out = [_head("Physics", fam.label if fam else s.physics.family, "")]
+    # the physics is chosen here, with its settings; choosing another starts from its
+    # example's scale and fills in what the shape then lacks (`spec.adapt_to_family`)
+    out = [_head("Physics", registry.short_label(s.physics.family).capitalize(), ""),
+           wb.family_sel,
+           _note("Choosing another starts from its example's scale and settings, and "
+                 "keeps your shape.")]
     if fam is None:
         return out
     for p in fam.params:
@@ -898,9 +921,9 @@ def _physics_settings(ed: "GeometryEditor") -> list:
     # the grid
     d = s.domain
     out.append(_label("Grid"))
-    gx = pn.widgets.IntInput(name="Width (cells)", value=d.nx, start=1, width=86)
-    gy = pn.widgets.IntInput(name="Height (cells)", value=d.ny, start=1, width=86)
-    gd = pn.widgets.FloatInput(name=f"Cell ({_unit(s)})", value=d.dx, start=1e-12, width=86)
+    gx = pn.widgets.IntInput(name="Width (cells)", value=d.nx, start=1, width=80)
+    gy = pn.widgets.IntInput(name="Height (cells)", value=d.ny, start=1, width=80)
+    gd = pn.widgets.FloatInput(name=f"Cell ({_unit(s)})", value=d.dx, start=1e-12, width=80)
     gx.param.watch(lambda e: wb.edit(lambda c: setattr(c.domain, "nx", int(e.new)),
                                      f"domain.nx = {e.new}"), "value")
     gy.param.watch(lambda e: wb.edit(lambda c: setattr(c.domain, "ny", int(e.new)),

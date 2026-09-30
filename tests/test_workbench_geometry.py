@@ -230,7 +230,7 @@ def test_boundary_rules_on_a_family_that_takes_them():
     assert any("cold: fixed-temperature needs a value" in m for m in errors)
     assert any("a and b overlap on the bottom edge" in m for m in errors)
     assert any("10 of the 100 cells on the top edge" in m for m in errors)
-    assert any("8000 cells belong to no region" in m for m in errors)
+    assert any("8,000 cells of the domain have no material yet" in m for m in errors)
     assert not any("cannot impose" in m for m in errors)
 
 

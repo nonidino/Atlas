@@ -4,6 +4,9 @@ Build a domain decomposition by hand, compile it with the Atlas compiler, run it
 and compare it with the full-domain solve. Built:
 - **one screen to model and one to run** (rebuilt on 2026-09-29, planned first on a
   Claude Design canvas), the case file and the **geometry section**;
+- **starting values**: a drawn shape or a newly chosen physics is ready to run, with
+  every assumption said, and the problems list fixes what has a default in one click
+  (2026-09-30);
 - the **runner**, with eight physics families, one per showcase case: the wind
   farm (style A), heat conduction in several materials (styles B and C), a
   resistive plate on a circuit (style D), a pollutant plume down a river (style A,
@@ -62,9 +65,9 @@ in the inspector.**
 
 | part | what it holds |
 |---|---|
-| **header** | the case's name (click to rename, with its description) and whether it is saved; the two tabs; the physics family (only families that run are offered; choosing one adapts the case, `spec.adapt_to_family`); Undo and Redo; **Case** (new, *Examples...*, open, save, save as, rename, revert, import and export JSON, import geometry from Gmsh, this session's history); the **status chip**; **Run**; **?** (how it works, where things are documented, about) |
-| **status chip** | *Ready to run*, *Ready · N warnings*, *N problems* or *Marching k of n*. Click it for every problem, each with a **Show me** button that opens the layer where it is fixed (`app.layer_for`) |
-| **Model** tab | a **layer rail** on the left, the **canvas** with its tools in the middle, the **inspector** on the right |
+| **header** | the case's name (click to rename, with its description), what it simulates and whether it is saved; the two tabs; the **status chip**; **Run**; **Case** (*New case...*, *Examples...*, open, save, save as, rename, revert, import and export JSON, import geometry from Gmsh, this session's history); **?** (how it works, where things are documented, about). What it simulates is chosen in the Physics layer, and Undo and Redo sit in the canvas's toolbar, so the header fits a laptop |
+| **status chip** | *Ready to run*, *Ready · N warnings*, *N problems* or *Marching k of n*. Click it for every problem in plain words, each with a **Show me** button that opens the layer where it is fixed (`app.layer_for`) and, where the workbench has a default for it, a **Fix** button (below) |
+| **Model** tab | a **layer rail** on the left, the **canvas** with its tools in the middle, the **inspector** on the right. It takes the window's height, and the canvas keeps its cells square at any size |
 | **Run & results** tab | Run and Stop with the settings folded away, the Atlas compiler's verdict, and once a run ends four **cards** (speed, agreement, balance, checks) over the details and the fields |
 
 **The layers** are the ones the family reads: Shape, Materials, Boundaries,
@@ -100,6 +103,74 @@ against their tolerances, and how many checks passed. The details (every arm, ev
 check, the notes, the record's path) are folded under them, and the fields, the
 time per step and the convergence below. If the open case is not the one that ran,
 or not the one compiled, the tab says so rather than lend it the verdict.
+
+## Starting values and one-click fixes (`starter.py`)
+
+The owner's first scenario, 2026-09-30: the river chosen, a smooth blob drawn as the
+river, and four problems. "These four problems don't make sense. I just drew the
+geometry and filled in some of the other settings." They were:
+- 13,539 cells with no material;
+- the outfall outside the river. It stood at the river's default place, (200 m,
+  100 m), but the grid had kept the wind farm's cell size, so the river was 11 m ×
+  7.5 m;
+- no inlet;
+- no outlet.
+
+The page also ran past a laptop's screen, so Run needed a scroll.
+
+**A case runs the moment its shape is drawn.** Drawing the domain, or choosing the
+physics, gives the case what it lacks (`fill_defaults`), and only that. A repair
+runs only for a thing the check finds missing:
+
+| missing | what it gets |
+|---|---|
+| a material | one region over the whole grid, first in the stack, so any region drawn later lies on top. Its material is a solid one the case already has, or else the first solid in the family's library |
+| a river's inlet, outlet | the outline's leftmost edge (by the mean $x$ of its drawn points) and its rightmost |
+| the outfall in the water | the domain's cell nearest a point a fifth of the way from the inlet to the outlet |
+| a plate's electrodes, circuit | E1 on the leftmost edge and E2 on the rightmost; a 12 V battery (0.5 ohm inside) and a 1 ohm resistor through the plate, the showcase circuit's values |
+| a structure's clamp, load | the leftmost edge clamped; the rightmost loaded with the family's value on a rectangle (-5 MPa, $y$) |
+| a held temperature | the family's own, as on a rectangle: 400 K on the leftmost edge, and 300 K on the rightmost for conduction (the heated strip has a hot end only) |
+| a stable time step | 90% of the explicit limit, rounded down to two figures (the river and the sound) |
+| windows | the automatic layout along the shape: one for a field on a circuit or a split, two for Dirichlet-Neumann, two to six for the overlapping styles; the wind farm on the whole grid gets the scaling ladder's 3 × 2 rectangles, the tiling its compile recognises |
+
+Each assumption is listed in one notification and in the log. Each can be changed in
+the layer it names, and one Undo takes them all back.
+
+**A change of physics takes its example's scale.** The case adopts the setup of the
+family's first example: the cell size, the time step, the steps, the mode, the
+coupling and the number of windows (`spec.family_setup`, `spec.adapt_to_family`). So
+a river is cut in cells of 5 m, not the farm's 0.03125 D. What the new physics does
+not read is removed and named (rotors, circuit parts, regions for the wind farm), and
+the drawn shape is kept.
+
+**The problems list fixes what has a default.** The check marks each problem it has
+a repair for (`Issue.fix`). The list shows a button for it beside **Show me**, such
+as *Make the rightmost edge the outlet*, and *Fix the N that can be fixed* repairs all
+of them in one edit. Each problem says what is wrong in plain words, and where it is
+fixed.
+
+**Case > New case...** asks what the case simulates, and each physics starts ready to
+run on the whole grid. The cooled block starts from its example, because its channel
+must be drawn.
+
+**Two things only the person can decide**, which the problems say plainly:
+- a wind farm's air must reach the grid's left and right edges, where the flow
+  enters and leaves;
+- a cooled block needs its channel.
+
+**The check never raises.** A newly drawn cooled block made the conjugate-heat check
+raise, which left the case unusable. Each part of the check now reports its failure
+as a problem: "the case could not be checked (...)".
+
+**It fits a laptop.** The Model tab takes the window's height, and a long list in the
+rail or the inspector scrolls inside itself. Checked in the served page at 1,090 × 620
+CSS pixels on both tabs, and at 1,090 × 520 on the Model tab: nothing runs past the
+window, and Run is at the top.
+
+The canvas stretches into the space it is given and widens one of its ranges so
+that its cells stay square (`editor.SQUARE_JS`). The hint and the summary under it
+have fixed heights: a hint that grew a line as points were placed made the canvas
+shrink under the pointer, and eight clicks drew a three-vertex outline.
 
 ## The runner
 
@@ -424,7 +495,8 @@ projection lets a little velocity back into the solid each sub-step.
 | `editor.py` | the Model tab's canvas: its layers, the five tools, what a click selects on each layer (`hit`), the selected shape's handles, and the edits they make |
 | `inspector.py` | the Model tab's rail and inspector: the layer buttons, the active layer's list, and the panel for what is selected (or the layer's settings) |
 | `gmsh_import.py` | `.msh` to case geometry, by physical-group names |
-| `registry.py` | the physics families: what each runs on, which layers it reads, which boundaries it can impose, and what is missing before the workbench can run it |
+| `registry.py` | the physics families: what each runs on, which layers it reads, which boundaries it can impose, its short name, and what is missing before the workbench can run it |
+| `starter.py` | what a new shape or a new physics starts with: the repairs keyed by the check's problems (`FIXES`, `apply_fix`), `fill_defaults`, and *New case...* (`new_case`) |
 | `app.py` | the GUI: the header, the two tabs and the dialogs (the problems list, the examples, open, save, Gmsh). Every menu item and button goes through `Workbench.dispatch(action)`, every edit through `Workbench.edit` |
 | `tiling.py` | any rectangles as a partition of unity, certified by `GridPartitionOfUnity` |
 | `runner.py` | the run: arms in turns, the timer, Stop, the snapshots, the record |
@@ -445,6 +517,7 @@ projection lets a little velocity back into the solid each sub-step.
 | `compile.py` | the compile: a case's `CaseGraph` through its family's `case_graph`, the finite-volume window as an agent (`FVAgent`), seams from the geometry with Fourier prolongations, the declared cross-points, the verdict per seam, and the background job with its record |
 | `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven as the page drives it (a click is a Tap at `_on_tap`, a handle's drag the data Bokeh's `PointDrawTool` sends, a field a widget; helpers in `tests/workbench_ui.py`), every header control and menu action (nothing is left unbuilt), the status chip's list and its *Show me*, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
 | `tests/test_workbench_fv.py`, `tests/test_workbench_families.py` | the finite volumes against closed forms (a layered wall, a series circuit), one window equal to the full domain to the bit, styles B, C and D against the full domain, the unrelaxed Dirichlet–Neumann diverging exactly when $\rho>1$, both new families end to end, and the page's family, physics and materials controls |
+| `tests/test_workbench_starter.py` | the owner's first scenario in every family (ready to run once the shape is drawn, or the one thing only the person can decide said plainly), a change of physics taking its example's setup, defaults that fill only what is missing, the Fix buttons one by one and all at once, *New case...*, a check that never raises, the canvas holding still while a shape is drawn, and the header fitting a laptop |
 | `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, the Run & results tab's per-seam table, and the gallery opening every example |
 
 ## Known limitations
@@ -461,5 +534,7 @@ projection lets a little velocity back into the solid each sub-step.
 - **A drawn curve is resolved to the grid's cells.** The solvers see the cells whose centres a shape contains, so a curve is a staircase at the cell size. The canvas draws both, and on the bend the staircase moves the ring's heat flow by -0.97% from its continuum value. Body-fitted grids would remove that; they are not built.
 - **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not. The owner accepted this on 2026-09-29: the compile is its own step, and the two-minute rule is per run.
 - **R10 refuses the iterated one-physics cases** (styles B and C: the wall, the insert, the bracket), because it does not read whether a coupling iterates. The refusal is shown as the compiler gave it. Open as W348 in the vault's gap worklist.
+- **The starting values are stated guesses.** A river's inlet is the shape's leftmost edge and its outlet its rightmost, and so for a plate's electrodes, a structure's clamp and load, and a hot and a cold end. A river that runs another way needs its edges set by hand. Every guess is listed when it is made.
+- **Two things have no default**: a wind farm's air must reach the grid's left and right edges, and a cooled block needs its channel drawn. The problems list says so.
 - **A tool adds one shape**, then hands back to Select; there is no key that keeps it armed, so placing five rotors is five presses of *Place rotors*.
 - **A finished run or compile rebuilds the Run & results tab**, and the page scrolls back to its top; that is why Run and the compile's verdict are placed there.

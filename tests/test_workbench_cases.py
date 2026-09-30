@@ -97,7 +97,7 @@ def test_plume_check_refuses_an_unstable_step_and_a_lost_outfall():
         pl.build(s)
     s = example_case("plume-2")
     s.physics.params["source_x"] = 2500.0
-    assert any("is not in the river" in m for m in _errors(s))
+    assert any("not in the river" in m for m in _errors(s))
 
 
 # ---------------------------------------------------------------------------
@@ -532,16 +532,22 @@ def test_the_circuit_layer_draws_and_edits_the_attachments(wb):
 
 
 def test_the_circuit_layer_says_when_a_family_ignores_it(wb):
-    """A family that reads no circuit has no Circuit layer; a circuit left from
-    another family shows, says it is ignored, and offers no part to add (seen before
-    the rebuild: the Add buttons were live)."""
+    """A family that reads no circuit has no Circuit layer, and a change of physics
+    removes the circuit (and says so); a circuit that arrives anyway, from a file
+    written by hand, shows, says it is ignored, and offers no part to add (seen
+    before the rebuild: the Add buttons were live)."""
     import panel as pn
     from atlas.workbench.editor import layers_for
     from atlas.workbench.spec import adapt_to_family
     wb.dispatch("file:example:wall-2")
     assert "attachments" not in layers_for(wb.spec)
     wb.dispatch("file:example:plate-circuit")
-    wb.edit(lambda c: adapt_to_family(c, "conduction-2d"), "physics = conduction-2d")
+    parts = list(wb.spec.attachments)
+    notes = []
+    wb.edit(lambda c: notes.extend(adapt_to_family(c, "conduction-2d")),
+            "physics = conduction-2d")
+    assert wb.spec.attachments == [] and any("2 circuit parts removed" in n for n in notes)
+    wb.edit(lambda c: setattr(c, "attachments", parts), "a circuit written by hand")
     assert wb.spec.attachments and "attachments" in layers_for(wb.spec)
     wb.geo_editor._switch(layer="attachments")
     ed = wb.geo_editor

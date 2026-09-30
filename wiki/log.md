@@ -6848,3 +6848,38 @@ The S-channel and the seven drawn examples had no rows on [[showcase-gallery]]: 
 **Conditions:** seven rows ran at 21:33–21:37 EDT on 2026-09-29. `farm-hill` was run again after the fix at 01:48 EDT on 2026-09-30. The machine was running slower then: the full domain's unchanged step took 0.85 s against 0.30 s four hours before, while the owner's screensaver was running. So its wall time, 101 s, is recorded but is not a speed figure, and its speed ratios are not quoted.
 
 **Added:** `out/workbench/records/step-j/`. **Changed:** `families/windfarm.py`, `families/plume.py`, the workbench README, `tests/test_workbench_drawn_families.py` (the two farm controls, and every drawn example's compile pinned); [[showcase-gallery]], [[showcase-library-plan]], [[index]].
+
+## [2026-09-30] build | The workbench's starting values: a drawn shape is ready to run
+
+The owner, after choosing the river and drawing a smooth blob as its domain: "Now the menu looks better, but the process is still unintuitive. The full view doesn't fit on my screen- I have to scroll to reach the run button. Also, these four problems don't make sense. I just drew the geometry and filled in some of the other settings." The four were:
+- 13,539 cells with no material;
+- the outfall outside the river: it stood at the river's default 200 m, in a grid still cut at the wind farm's cell size, so the river was 11 m × 7.5 m;
+- no inlet;
+- no outlet.
+
+Each was a true error, and none was something the person could be expected to know to do. The record is [[showcase-library-plan]] §6 ("Starting values, 2026-09-30").
+
+**Built** (`atlas/workbench/starter.py`, new; `spec.py`, `app.py`, `editor.py`, `inspector.py`, `registry.py`, `runview.py`):
+- **Starting values.** Drawing the domain, or choosing the physics, gives the case what the check finds missing and nothing else: a material under every cell, a river's inlet and outlet on its leftmost and rightmost edges, its outfall in the water, a plate's electrodes and circuit, a clamp and a load, the family's temperatures, a macro-step under the stability limit, and windows cut from the shape. Every assumption is listed in one notification, and one Undo takes them back.
+- **A change of physics takes its first example's setup**: the cell size, the step, the steps, the mode, the coupling and the window count. It removes what the new physics does not read (rotors, circuit parts) and says so.
+- **The problems list fixes what has a default.** Each problem the check can repair carries its key (`Issue.fix`), and the list shows a button for it (*Make the rightmost edge the outlet*) and *Fix the N that can be fixed*. The messages were rewritten to say what is wrong and where it is fixed.
+- **Case > New case...** starts each physics ready to run on the whole grid.
+- **The page fits a laptop.** The physics chooser moved into the Physics layer, and Undo and Redo into the canvas's toolbar. The canvas stretches into its space and keeps its cells square.
+
+**With the owner's blob drawn**, six of the eight families have nothing left that stops the run. The other two say plainly what only the person can decide: a wind farm's air must reach the grid's left and right edges, and a cooled block needs its channel.
+
+**Found while building, and fixed:**
+- **The check raised on a newly drawn cooled block.** One of its rules builds the block's field, which solves the coolant's flow, and with no inlet or no channel that solve raised. The case could not be checked, so it could not be repaired either. That rule now leaves the coolant to the rules that report it, and each part of the check reports any failure of its own as a problem.
+- **Eight clicks drew a three-vertex outline.** The hint under the canvas grew a line as points were placed, the canvas shrank under the pointer, and the next clicks landed elsewhere. The hint and the summary now have fixed heights.
+- **The canvas's cells were about 20% off square** once it was sized to the window; one of its ranges now widens to keep them square.
+- **Notifications covered Run and the Case menu**; they now sit at the bottom right.
+
+**Checked in the served page at $1090\times620$ CSS pixels**:
+- *New case...* then *River plume* is ready to run;
+- an outline of eight smooth points, drawn by eight clicks and a double-click, is still ready;
+- the outlet set to a bank reads "1 problem stops the run" with *Make the rightmost edge the outlet*, and the button makes the case ready again;
+- nothing runs past the window on either tab, and the Model tab fits at $1090\times520$ too.
+
+**Tests:** 16 new (`tests/test_workbench_starter.py`); five older test files updated for the new messages, the physics switch's setup and *New case...*. The 242 workbench tests pass, and so does the full suite, 2,195 tests, run on battery.
+
+**Added:** `atlas/workbench/starter.py`, `tests/test_workbench_starter.py`. **Changed:** `app.py`, `editor.py`, `inspector.py`, `registry.py`, `runview.py`, `spec.py`, the workbench README, five test files; [[showcase-library-plan]], [[index]].

@@ -43,7 +43,7 @@ from .runner import (ARM_LABELS, CaseRun, RunRefused, adapter_for, arm_labels_fo
                      arms_for, results_dir_for, step_label_for)
 from .runview import RunPanel, results_view
 from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, adapt_to_family,
-                   blank_case, check, example_case, slug, summary)
+                   check, example_case, slug, summary)
 
 #: Native form controls and scrollbars follow the page, not the OS dark-mode setting.
 LIGHT_CSS = ":root { color-scheme: light; }"
@@ -64,15 +64,10 @@ TABS_CSS = """
 .bk-btn-group .bk-btn.bk-active { background: #2a4a5c !important; color: #ffffff !important;
                                   font-weight: 600; }
 """
-SELECT_CSS = """
-select.bk-input { background-color: #1f3d4e !important; color: #e6eef2 !important;
-                  border: 1px solid #3b5a6b !important; border-radius: 16px !important;
-                  font-size: 13px; }
-option { background: #ffffff; color: #0f172a; }
-"""
 PAGE_CSS = """
 body { background: #f4f6f8; }
 #main { background: #f4f6f8; }
+.title { font-size: 1.25rem !important; }
 """
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -207,12 +202,13 @@ class Workbench:
             self._issues_memo = (key, check(self.spec))
         return self._issues_memo[1]
 
-    def notify(self, kind: str, text: str) -> None:
+    def notify(self, kind: str, text: str, duration: int | None = None) -> None:
         """A toast in the browser when there is one; always a log line."""
         self.log(text)
         note = pn.state.notifications
         if note is not None:
-            getattr(note, kind)(text, duration=6000 if kind != "success" else 3000)
+            getattr(note, kind)(text, duration=duration or (6000 if kind != "success"
+                                                            else 3000))
 
     def set_spec(self, spec: CaseSpec, label: str, *, record: bool = True,
                  path: str | None | object = ..., dirty: bool = True) -> None:
@@ -234,14 +230,20 @@ class Workbench:
         self.log(label)
         self.refresh(rebuild=True)
 
-    def edit(self, apply: Callable[[CaseSpec], None], label: str) -> bool:
+    def edit(self, apply: Callable[[CaseSpec], None], label: str,
+             defaults: bool = False, say: list[str] | None = None) -> bool:
         """Change the case.  Validated as a whole case; refused if invalid.
 
         When the windows follow the domain (``layout``), an edit that changes what
         they follow -- the domain, the materials, the style, the ramp, the layout's
         own settings -- generates them again here, before the case is validated,
         so no view ever shows windows that no longer fit the geometry.  A family
-        whose solver fixes its drawn edges' conditions has them derived here too."""
+        whose solver fixes its drawn edges' conditions has them derived here too.
+
+        ``defaults``: the edit draws the domain or chooses the physics, so what the
+        case now lacks to run is filled in (`starter.fill_defaults`), each thing
+        said in the log and a note, and all of it undone with the edit.  ``say``:
+        what else the note says first (filled in by ``apply``, read after it)."""
         new = self.spec.copy_deep()
         apply(new)
         taken = False
@@ -266,6 +268,12 @@ class Workbench:
         from .spec import derive_boundaries
         if derive_boundaries(new):
             label += "; the drawn edges' conditions follow the geometry"
+        filled: list[str] = []
+        if defaults:
+            from .starter import fill_defaults
+            filled = fill_defaults(new)
+            if filled:
+                label += "; to start: " + "; ".join(filled)
         try:
             new = CaseSpec.model_validate(new.model_dump())
         except ValidationError as exc:
@@ -285,6 +293,16 @@ class Workbench:
         if taken:
             self.notify("info", "the windows are your own now and no longer follow the "
                                 "shape (Model, Windows: choose Automatic to hand them back)")
+        if filled or say:
+            # what was assumed is said where the person is looking, not only logged,
+            # in one note (two at once were too much to read, seen)
+            parts = ["; ".join(say)] if say else []
+            if filled:
+                parts.append(("to start, it was given " if say else
+                              "to start, the case was given ") + "; ".join(filled))
+            text = ". ".join(t[:1].upper() + t[1:] for t in parts)
+            self.notify("info", text + ". Change any of it in its layer; Undo takes it "
+                        "all back.", duration=min(20000, 6000 + 40 * len(text)))
         self.refresh(rebuild=False)
         return True
 
@@ -340,7 +358,19 @@ class Workbench:
         #: a fresh case has nothing of the person's to lose: "not saved yet", not
         #: "unsaved changes"
         if action == "file:new":
-            self.set_spec(blank_case(), "new blank case", path=None, dirty=False)
+            self._dialog_new()
+        elif group == "file" and rest.startswith("new:"):
+            # a new case of one physics, ready to run on the whole grid (a blank case
+            # was a wind farm with no windows, an error from its first moment)
+            from .starter import new_case
+            fid = rest.split(":", 1)[1]
+            self.set_spec(new_case(fid), f"new {registry.short_label(fid)} case", path=None,
+                          dirty=False)
+            self.geo_state["layer"], self.geo_state["tool"] = "domain", "select"
+            self.show("model")
+            self.notify("info", f"A new {registry.short_label(fid)} case on the whole grid, "
+                                f"ready to run. Draw its shape (Shape: Draw the outline), "
+                                f"or press Run.")
         elif group == "file" and rest.startswith("example:"):
             key = rest.split(":", 1)[1]
             self.set_spec(example_case(key), f"new case from the example {key!r}", path=None,
@@ -572,8 +602,14 @@ class Workbench:
                                           stylesheets=[HEADER_CSS], margin=(0, 4),
                                           align="center")
         self.name_btn.on_click(lambda _e: self.dispatch("file:rename"))
-        self.save_state = pn.pane.HTML("", margin=(0, 8), align="center",
-                                       styles={"font-size": "12px", "color": "#9fb3bf"})
+        #: what the case simulates, over whether it is saved: two short lines, so the
+        #: header fits a laptop screen at 125% (the owner's: about 1,090 px, seen)
+        self.family_note = pn.pane.HTML("", margin=(0, 8, 0, 8),
+                                        styles={"font-size": "12px", "color": "#e6eef2",
+                                                "line-height": "1.2"})
+        self.save_state = pn.pane.HTML("", margin=(0, 8, 0, 8),
+                                       styles={"font-size": "11px", "color": "#9fb3bf",
+                                               "line-height": "1.2"})
         self.tabs = pn.widgets.RadioButtonGroup(options={t: k for k, t in TABS},
                                                 value="model", button_type="light",
                                                 stylesheets=[TABS_CSS], margin=(0, 12),
@@ -583,26 +619,28 @@ class Workbench:
                               "value")
         fams = [f for f in registry.FAMILIES if f.status == "ready-to-wire"]
         self._fam_by_label = {f.label: f.id for f in fams}
-        self.family_sel = pn.widgets.Select(options=[f.label for f in fams],
-                                            value=self._family_label(), width=250,
-                                            stylesheets=[SELECT_CSS], margin=(0, 6),
-                                            align="center")
+        #: the physics is chosen in the Physics layer's inspector, where its settings
+        #: are: in the header it took 250 px the header did not have
+        self.family_sel = pn.widgets.Select(name="What it simulates",
+                                            options=[f.label for f in fams],
+                                            value=self._family_label(),
+                                            sizing_mode="stretch_width", margin=(4, 8))
         self._syncing_family = False
         self.family_sel.param.watch(self._on_family, "value")
+        #: Undo and Redo sit in the canvas's toolbar, beside the edits they undo
         self.undo_btn = pn.widgets.Button(name="↶", button_type="light",
-                                          description="Undo", stylesheets=[HEADER_CSS],
-                                          width=40, margin=(0, 2), align="center")
+                                          description="Undo the last change", width=40,
+                                          margin=(0, 2))
         self.undo_btn.on_click(lambda _e: self.dispatch("edit:undo"))
         self.redo_btn = pn.widgets.Button(name="↷", button_type="light",
-                                          description="Redo", stylesheets=[HEADER_CSS],
-                                          width=40, margin=(0, 2), align="center")
+                                          description="Redo", width=40, margin=(0, 2))
         self.redo_btn.on_click(lambda _e: self.dispatch("edit:redo"))
         #: the examples are in the gallery (Examples...), one line each with what it
         #: shows; listed here too they ran the menu off the page (seen)
         self.case_menu = pn.widgets.MenuButton(
             name="Case", button_type="light", width=78, stylesheets=[HEADER_CSS, MENU_CSS],
             margin=(0, 4), align="center",
-            items=[("New blank case", "file:new"), ("Examples...", "file:gallery"), None,
+            items=[("New case...", "file:new"), ("Examples...", "file:gallery"), None,
                    ("Open...", "file:open"), ("Save", "file:save"),
                    ("Save as...", "file:save-as"), ("Rename...", "file:rename"),
                    ("Revert to saved", "edit:revert"), None,
@@ -610,7 +648,7 @@ class Workbench:
                    ("Import geometry from Gmsh (.msh)...", "file:import-gmsh"), None,
                    ("History of this session", "view:history")])
         self.case_menu.on_click(lambda e: self.dispatch(e.new))
-        self.status_btn = pn.widgets.Button(name="", width=158, margin=(0, 6), align="center")
+        self.status_btn = pn.widgets.Button(name="", width=140, margin=(0, 6), align="center")
         self.status_btn.on_click(lambda _e: self.dispatch("run:check"))
         self.run_btn = pn.widgets.Button(name="▶ Run", button_type="light", width=84,
                                          margin=(0, 4), align="center",
@@ -637,9 +675,11 @@ class Workbench:
         #: outside the local server.  No sidebar: the Model tab has its own rail.
         self.tpl = pn.template.BootstrapTemplate(
             title="Atlas Workbench",
-            header=[pn.Row(self.name_btn, self.save_state, self.tabs, pn.layout.HSpacer(),
-                           self.family_sel, self.undo_btn, self.redo_btn, self.case_menu,
-                           self.status_btn, self.run_btn, self.help_menu,
+            header=[pn.Row(self.name_btn,
+                           pn.Column(self.family_note, self.save_state, margin=0,
+                                     align="center"),
+                           self.tabs, pn.layout.HSpacer(), self.status_btn, self.run_btn,
+                           self.case_menu, self.help_menu,
                            align="center", sizing_mode="stretch_width", margin=(0, 8))],
             main=[self.workspace],
             modal=[self.modal_body],
@@ -662,7 +702,12 @@ class Workbench:
         fid = self._fam_by_label.get(e.new)
         if fid is None or fid == self.spec.physics.family:
             return
-        if self.edit(lambda c: adapt_to_family(c, fid), f"physics = {fid}"):
+        notes: list[str] = []
+
+        def apply(c):
+            notes.append(f"now {registry.short_label(fid)}, from its example")
+            notes.extend(adapt_to_family(c, fid))
+        if self.edit(apply, f"physics = {fid}", defaults=True, say=notes):
             self.show(self.active, keep_view=True)
         else:
             self._refresh_header()
@@ -680,6 +725,7 @@ class Workbench:
         else:
             state = "unsaved changes" if self.dirty else "not saved yet"
         self.save_state.object = html.escape(state)
+        self.family_note.object = html.escape(registry.short_label(self.spec.physics.family))
         label = self._family_label()
         if self.family_sel.value != label:
             self._syncing_family = True
@@ -846,7 +892,9 @@ class Workbench:
         self.tpl.open_modal()
 
     def _dialog_problems(self) -> None:
-        """The status chip's list: each problem, and a button to where it is fixed."""
+        """The status chip's list: each problem, a button to where it is fixed, and,
+        where the repair is plain (`starter.FIXES`), a button that makes it."""
+        from .starter import fix_label
         issues = self.issues()
         n = summary(issues)
         rows = []
@@ -862,18 +910,52 @@ class Workbench:
                 self.geo_state["tool"] = "select"
                 self.show("model")
             go.on_click(goto)
+            buttons = [go]
+            if i.fix:
+                fx = pn.widgets.Button(name=fix_label(i.fix), button_type="primary",
+                                       align="center", margin=(4, 4))
+                fx.on_click(lambda _e, key=i.fix: self.fix([key]))
+                buttons.insert(0, fx)
             rows.append(pn.Row(pn.pane.HTML(
                 f"<div style='font-size:13px;line-height:1.4'><b style='color:"
                 f"{colour[i.severity]}'>{i.severity}</b> &middot; {html.escape(i.message)}"
-                f"</div>", sizing_mode="stretch_width"), go, sizing_mode="stretch_width"))
+                f"</div>", sizing_mode="stretch_width"), *buttons,
+                sizing_mode="stretch_width"))
         head = (f"### {n['error']} {_plural(n['error'], 'problem')} "
                 f"{'stops' if n['error'] == 1 else 'stop'} the run"
                 if n["error"] else "### Ready to run")
         sub = (f"{n['warning']} {_plural(n['warning'], 'warning')}, {n['info']} "
                f"{_plural(n['info'], 'note')}.")
-        self._dialog(pn.pane.Markdown(head + "\n" + sub),
-                     pn.Column(*rows, sizing_mode="stretch_width",
-                               styles={"max-height": "60vh", "overflow-y": "auto"}))
+        keys = list(dict.fromkeys(i.fix for i in issues if i.fix))
+        top: list = [pn.pane.Markdown(head + "\n" + sub)]
+        if len(keys) > 1:
+            fix_all = pn.widgets.Button(name=f"Fix the {len(keys)} that can be fixed",
+                                        button_type="primary", margin=(0, 10, 8, 10))
+            fix_all.on_click(lambda _e: self.fix(keys))
+            top.append(fix_all)
+        self._dialog(*top, pn.Column(*rows, sizing_mode="stretch_width",
+                                     styles={"max-height": "60vh", "overflow-y": "auto"}))
+
+    def fix(self, keys: list[str]) -> bool:
+        """Make the plain repairs ``keys`` (`starter.apply_fix`), as one edit, and say
+        what was done; the problems list comes back while any problem stays."""
+        from .starter import apply_fix
+        done: list[str] = []
+
+        def apply(c):
+            for key in keys:
+                r = apply_fix(c, key)
+                if r:
+                    done.append(r)
+        self.tpl.close_modal()
+        ok = self.edit(apply, "fixed: " + ", ".join(keys))
+        if ok and done:
+            self.notify("success", "Done: " + "; ".join(done) + ".")
+        elif ok:
+            self.notify("info", "nothing needed doing: the case already had it")
+        if any(i.severity == "error" for i in self.issues()):
+            self._dialog_problems()
+        return ok
 
     def _dialog_rename(self) -> None:
         name = pn.widgets.TextInput(name="Name", value=self.spec.name, width=320)
@@ -1022,6 +1104,31 @@ class Workbench:
             pn.Column(*rows, sizing_mode="stretch_width",
                       styles={"max-height": "60vh", "overflow-y": "auto"}))
 
+    def _dialog_new(self) -> None:
+        """What the new case simulates: one button per physics that runs."""
+        rows = []
+        for f in registry.FAMILIES:
+            if f.status != "ready-to-wire":
+                continue
+            go = pn.widgets.Button(name="Start", button_type="primary", width=80,
+                                   align="center")
+
+            def start(_e, fid=f.id):
+                self.tpl.close_modal()
+                self.dispatch(f"file:new:{fid}")
+            go.on_click(start)
+            rows.append(pn.Row(go, pn.pane.HTML(
+                f"<div style='font-size:14px;font-weight:600'>"
+                f"{html.escape(registry.short_label(f.id).capitalize())}</div>"
+                f"<div style='font-size:12px;color:#475569'>{html.escape(f.label)}</div>",
+                sizing_mode="stretch_width", margin=(0, 8)), sizing_mode="stretch_width"))
+        self._dialog(pn.pane.Markdown(
+            "### New case: what does it simulate?\nIt starts on the whole grid, with that "
+            "physics' usual scale and settings and everything it needs to run; then draw "
+            "its shape. *Examples...* has finished cases to start from instead."),
+            pn.Column(*rows, sizing_mode="stretch_width",
+                      styles={"max-height": "60vh", "overflow-y": "auto"}))
+
     def _dialog_open(self) -> None:
         files = self.case_files()
         rel = {os.path.basename(f): f for f in files}
@@ -1135,6 +1242,10 @@ def _plural(n: int, word: str) -> str:
 def create_app(cases_dir: str | None = None):
     """One session.  ``?case=<file>.json`` opens that saved case on load."""
     pn.extension("tabulator", notifications=True)
+    if pn.state.notifications is not None:
+        # bottom right: at the top right the notes covered Run and the Case menu
+        # (seen on a laptop, 2026-09-30)
+        pn.state.notifications.position = "bottom-right"
     wb = Workbench(cases_dir)
     wanted = (pn.state.session_args or {}).get("case", [b""])[0]
     wanted = wanted.decode("utf-8") if isinstance(wanted, bytes) else str(wanted)

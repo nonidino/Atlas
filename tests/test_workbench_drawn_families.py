@@ -181,7 +181,7 @@ def test_a_river_without_an_outlet_says_so():
     s = example_case("river-bend")
     s.boundaries = [b.model_copy(update={"kind": "bank"}) if b.kind == "river-outlet" else b
                     for b in s.boundaries]
-    assert any("nothing marks where the river leaves" in m for m in _errors(s))
+    assert any("the river has no outlet" in m for m in _errors(s))
 
 
 # ---------------------------------------------------------------------------
