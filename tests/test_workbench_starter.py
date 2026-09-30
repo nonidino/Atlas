@@ -8,8 +8,9 @@ wind farm's cell size, and no inlet or outlet.  These tests pin:
 
 * the scenario itself, for every family: the case is ready to run the moment the
   shape is drawn, or says plainly the one thing only the person can decide;
-* a change of physics takes its example's scale and settings, and removes what the
-  new physics does not read, saying so;
+* a new kind chosen in the header starts a new case with its example's scale and
+  settings, and one Undo brings the old case back (2026-09-30: "When the simulation
+  type changes, the full geometry should reset");
 * the starting values fill only what is missing (`starter.fill_defaults`);
 * the problems list's Fix buttons, one by one and all at once;
 * the check never raises (it did, on a newly drawn cooled block);
@@ -50,11 +51,15 @@ def wb(tmp_path, monkeypatch):
 
 
 def _scenario(wb, fid):
-    """The page's default case, the physics chosen in the Physics layer, the blob
-    drawn as the domain's outline."""
-    wb.family_sel.value = registry.family(fid).label
+    """The page's default case, the kind chosen in the header (a new case of it, since
+    2026-09-30), the blob drawn as the domain's outline."""
+    wb.type_sel.value = fid
     wb.geo_editor._switch(layer="domain", tool="draw")
-    wb.geo_editor.add_drawn(Outline(points=BLOB, edges=["spline"] * 8, bulge=[0.0] * 8))
+    # the blob was drawn on the 352 x 240 grid every new case has; a kind that starts
+    # from its example (the cooled block: 200 x 60) gets it scaled to its own grid
+    d = wb.spec.domain
+    pts = [(x * d.nx / 352.0, y * d.ny / 240.0) for x, y in BLOB]
+    wb.geo_editor.add_drawn(Outline(points=pts, edges=["spline"] * 8, bulge=[0.0] * 8))
     return [i.message for i in wb.issues() if i.severity == "error"]
 
 
@@ -106,17 +111,22 @@ def test_what_only_the_person_can_decide_is_said_plainly(wb, fid, only):
     assert not any("have no material yet" in e for e in errors)
 
 
-def test_a_change_of_physics_takes_its_examples_setup_and_says_what_went(wb):
-    wb.family_sel.value = registry.family("elasticity-2d").label
+def test_a_new_type_starts_from_its_examples_setup_and_undo_restores_the_old(wb):
+    """Choosing a kind in the header starts a new case of it with its first example's
+    scale and settings (`spec.adapt_to_family` on a blank case), and nothing of the
+    old case: the owner's "When the simulation type changes, the full geometry should
+    reset".  One Undo brings the old case back, bit for bit."""
+    before = wb.spec.model_dump()
+    wb.type_sel.value = "elasticity-2d"
     s = wb.spec
     ex = example_case("bracket-2")
     assert (s.domain.dx, s.run.steps, s.coupling.tolerance, s.coupling.max_iterations) == (
         ex.domain.dx, ex.run.steps, ex.coupling.tolerance, ex.coupling.max_iterations)
     assert s.layout is not None and s.layout.along == len(ex.windows)
-    assert not s.devices
-    assert any("the 3 rotors removed" in line for line in wb.log_lines[:6])
+    assert not s.devices and s.domain.outline is None
+    assert any("Undo" in line and "wind farm" in line for line in wb.log_lines[:3])
     wb.undo()
-    assert wb.spec.physics.family == "incompressible-2d" and len(wb.spec.devices) == 3
+    assert wb.spec.model_dump() == before and len(wb.spec.devices) == 3
 
 
 def test_starting_values_fill_only_what_is_missing():
@@ -134,8 +144,21 @@ def test_starting_values_fill_only_what_is_missing():
     assert apply_fix(s, "river-outlet") is None               # nothing more to do
 
 
+def test_the_windows_fix_cuts_dirichlet_neumann_at_the_interface():
+    """A style-C case with two media gets its two pieces at the interface it already
+    has, and a newly drawn domain is never refused for its windows' sake: the cooled
+    block, which now starts from its example, had its drawing refused when drawn
+    without its water (its windows are one per physics; 2026-09-30)."""
+    s = example_case("wall-2")
+    s.windows = []
+    assert "one per material" in apply_fix(s, "windows")
+    assert s.layout.cut == "materials" and sorted(w.id for w in s.windows) == ["copper",
+                                                                               "steel"]
+    assert not [i for i in check(s) if i.severity == "error"]
+
+
 def test_the_problems_list_fixes_one_or_all(wb):
-    wb.family_sel.value = registry.family("transport-2d").label
+    wb.type_sel.value = "transport-2d"
     wb.geo_editor._switch(layer="domain", tool="draw")
     wb.geo_editor.add_drawn(Outline(points=BLOB, edges=["line"] * 8, bulge=[0.0] * 8))
     # take the inlet and the outlet away again, and put the outfall on dry ground
@@ -157,18 +180,20 @@ def test_the_problems_list_fixes_one_or_all(wb):
     assert not any(b.kind in ("river-inlet", "river-outlet") for b in wb.spec.boundaries)
 
 
-def test_a_new_case_asks_what_it_simulates_and_is_ready_to_run(wb):
-    """Case > New case... lists the physics that run; each starts ready on the whole
-    grid (a blank case was a wind farm with no windows, an error from the start), and
-    the cooled block, which needs its channel, from its own example."""
-    wb.dispatch("file:new")
-    starts = widgets(wb.modal_body, pn.widgets.Button, name="Start")
-    assert len(starts) == len(registry.available_ids())
+def test_every_type_from_the_header_is_ready_to_run(wb):
+    """Done-when of item 1.1: each of the eight kinds picked from the header is ready to
+    run on the whole grid (a blank case was a wind farm with no windows, an error from
+    the start), the cooled block, which needs its channel, from its own example; and
+    Case > Start over is a new case of the same kind."""
+    assert list(wb.type_sel.options.values()) == registry.available_ids()
     for fid in registry.available_ids():
-        wb.dispatch(f"file:new:{fid}")
+        wb.type_sel.value = fid
         assert wb.spec.physics.family == fid and wb.save_state.object == "not saved yet"
         assert [i.message for i in wb.issues() if i.severity == "error"] == [], fid
-    wb.dispatch("file:new:incompressible-2d")
+    wb.type_sel.value = "incompressible-2d"
+    wb.edit(lambda c: setattr(c.run, "steps", 3), "steps")
+    wb.dispatch("file:start-over")
+    assert wb.spec.run.steps != 3 and wb.spec.physics.family == "incompressible-2d"
     assert [(w.x0, w.y0, w.nx) for w in wb.spec.windows] == [
         (w.x0, w.y0, w.nx) for w in example_case("wake-array-3").windows]   # the rung
 
@@ -195,15 +220,17 @@ def test_the_canvas_holds_still_while_a_shape_is_drawn(wb):
     assert ed.fig.sizing_mode == "stretch_both"
 
 
-def test_the_header_fits_a_laptop(wb):
-    """The physics is chosen in the Physics layer, Undo and Redo sit in the canvas's
-    toolbar, and the header keeps the name, the tabs, the status, Run, Case and help
-    (it ran past a laptop's 1,090 px, seen)."""
+def test_the_header_holds_what_it_simulates_and_fits_a_laptop(wb):
+    """The header's first control is what the case simulates, the one place it is
+    chosen (the Physics layer only says so); Undo and Redo sit in the canvas's toolbar;
+    the header holds no name (it ran past a laptop's 1,090 px, seen; the page's fit is
+    measured in the served page)."""
     header = wb.tpl.header[0]
-    assert wb.family_sel not in list(pn.panel(header).select(pn.widgets.Select))
+    selects = list(pn.panel(header).select(pn.widgets.Select))
+    assert selects == [wb.type_sel] and wb.type_sel.value == "incompressible-2d"
     assert wb.undo_btn not in list(pn.panel(header).select(pn.widgets.Button))
-    assert wb.family_note.object == "wind farm"
+    assert wb.examples_menu in list(pn.panel(header).select(pn.widgets.MenuButton))
     wb.geo_editor._switch(layer="physics")
-    assert wb.family_sel in widgets(wb.geo_editor.inspector, pn.widgets.Select)
+    assert not widgets(wb.geo_editor.inspector, pn.widgets.Select, name="What it simulates")
+    assert "chosen in the header" in texts(wb.geo_editor.inspector)
     assert wb.undo_btn in widgets(wb.workspace, pn.widgets.Button)
-    assert "What it simulates" in texts(wb.geo_editor.inspector)

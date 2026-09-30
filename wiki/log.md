@@ -6941,3 +6941,22 @@ The demo chat's first step. It reproduced the owner's two scenarios headlessly, 
 - **Both hole rules fire exactly as the plan said**, and neither offers a Fix.
 
 **Added:** `out/workbench/records/demo-repro/` (the served page's fork run). **Changed:** [[demo-finish-plan]].
+
+## [2026-09-30] build | Demo step 2: the header chooses what a case simulates; a case has no name
+
+Item 1.1 of [[demo-finish-plan]], as the owner decided (D1–D6, O1).
+
+- **The header's first control is the kind of simulation.** Choosing another starts a new case of it, ready to run on the whole grid, with no confirmation. One Undo brings the old case back, with its file.
+- **The case file is `case@0.6`: no name, no description.** Older files lose theirs on load.
+- **The menus changed.** *Case > New case...* became *Start over*. The 21-example gallery and *Rename...* left the page. *More examples* lists the chosen kind's examples, one line each saying what it shows.
+
+Walked in the served page at $1090\times620$:
+- all eight kinds read *Ready to run*;
+- an outline survived a type switch and one Undo;
+- the header fits (its last control ends at 1,079 px).
+
+**Found on the way:**
+- Undo kept only the case's content, so a type switch would have lost the file a saved case belonged to.
+- A cooled block drawn without its water was refused, because its windows are cut one per physics. A newly drawn domain is now never refused for its windows' sake.
+
+246 workbench tests pass. **Changed:** `atlas/workbench/` (`app.py`, `spec.py`, `starter.py`, `runner.py`, `runview.py`, `compile.py`, `inspector.py`, three families' graph names, the README), six test files, [[demo-finish-plan]].

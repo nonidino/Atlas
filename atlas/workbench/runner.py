@@ -126,6 +126,9 @@ class CaseRun:
     #: publish the fields this often, in macro-steps (and always at the end)
     snapshot_every: int = 1
     on_finish: Callable[["CaseRun"], None] | None = None
+    #: what the record calls the case: the workbench's key for it (a case file has
+    #: no name since case@0.6), else its kind
+    case_label: str = ""
 
     status: str = field(default="created", init=False)
     committed_at: str = field(default="", init=False)
@@ -210,7 +213,8 @@ class CaseRun:
         if s.devices:
             bits.append(f"{len(s.devices)} rotors")
         bits.append(f"{self.steps} {self.step_label}{'s' * (self.steps != 1)}")
-        return (f"{s.name} as committed at {self.committed_at[11:19]} ("
+        return (f"the {registry.short_label(s.physics.family)} case as committed at "
+                f"{self.committed_at[11:19]} ("
                 + ", ".join(bits) + f"; arms: {', '.join(self.arms)}; "
                 + f"{self.threads} thread{'s' * (self.threads != 1)})")
 
@@ -369,7 +373,7 @@ class CaseRun:
                     timing[a]["speedup_vs_full"] = timing["full"]["mean"] / timing[a]["mean"]
         rec = {
             "schema": RESULTS_SCHEMA,
-            "case_name": self.spec.name,
+            "case_name": self.case_label or registry.short_label(self.spec.physics.family),
             "case_path": self.case_path,
             "family": self.spec.physics.family,
             "style": self.spec.coupling.style,
@@ -417,7 +421,8 @@ class CaseRun:
 
 
 def results_dir_for(case_path: str | None, cases_dir: str, name: str) -> str:
-    """``<case>.results/`` beside a saved case; beside where it would be saved otherwise."""
+    """``<case>.results/`` beside a saved case; beside where it would be saved otherwise
+    (``name`` is the workbench's key for the case: `app.Workbench.case_key`)."""
     from .spec import slug
     if case_path:
         stem = os.path.splitext(os.path.abspath(case_path))[0]

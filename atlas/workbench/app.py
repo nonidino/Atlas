@@ -7,10 +7,13 @@ installed, nothing downloaded).
 UI to make it much more simple and intuitive... plan it out in claude design
 first"; the plan is seven screens on a Claude Design canvas).  The page has:
 
-* a header: the case's name, the two tabs, the physics, Undo and Redo, one **Case**
-  menu (new, examples, open, save, import, export, Gmsh, history), a **status chip**
-  that says whether the case can run and lists its problems, each linked to where
-  it is fixed, and **Run**;
+* a header: **what the case simulates** (choosing another starts a new case of it,
+  and one Undo brings the old one back), the two tabs, **More examples** (the chosen
+  kind's examples, one line each saying what it shows), a **status chip** that says
+  whether the case can run and lists its problems, each linked to where it is fixed,
+  **Run**, and one **Case** menu (start over, open, save, import, export, Gmsh,
+  history).  A case has no name (case@0.6, 2026-09-30, the owner: "There's no need
+  to have names and descriptions for the individual cases");
 * **Model** (`editor.py`, `inspector.py`): a layer rail, one canvas with five tools,
   and an inspector for what is selected;
 * **Run & results** (`runview.py`): Run and the Atlas compiler's verdict at the top;
@@ -29,6 +32,7 @@ import glob
 import html
 import io
 import os
+from dataclasses import dataclass
 from typing import Callable
 
 import panel as pn
@@ -42,8 +46,8 @@ from .gmsh_import import GmshImportError, read_msh_bytes
 from .runner import (ARM_LABELS, CaseRun, RunRefused, adapter_for, arm_labels_for,
                      arms_for, results_dir_for, step_label_for)
 from .runview import RunPanel, results_view
-from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, adapt_to_family,
-                   check, example_case, slug, summary)
+from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, check, example_case, slug,
+                   summary)
 
 #: Native form controls and scrollbars follow the page, not the OS dark-mode setting.
 LIGHT_CSS = ":root { color-scheme: light; }"
@@ -58,8 +62,14 @@ HEADER_CSS = """
 .bk-btn-light:hover { background: #22404f !important; color: #ffffff !important; }
 .bk-btn-light:disabled { color: #6f8796 !important; border-color: #2c4654 !important; }
 """
+#: the header's type selector, in the header's colours; its options open plain
+TYPE_CSS = """
+select.bk-input { background-color: #22404f !important; color: #ffffff !important;
+                  border-color: #3b5a6b !important; font-size: 14px; font-weight: 600; }
+select.bk-input option { color: #0f172a; background-color: #ffffff; }
+"""
 TABS_CSS = """
-.bk-btn-group .bk-btn { font-size: 14px; padding: 6px 16px; background: transparent !important;
+.bk-btn-group .bk-btn { font-size: 14px; padding: 6px 12px; background: transparent !important;
                         color: #c9d6de !important; border-color: transparent !important; }
 .bk-btn-group .bk-btn.bk-active { background: #2a4a5c !important; color: #ffffff !important;
                                   font-weight: 600; }
@@ -72,7 +82,7 @@ body { background: #f4f6f8; }
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_CASES_DIR = os.path.join(ROOT, "out", "workbench", "cases")
-VERSION = "0.5 (one screen to model, one to run)"
+VERSION = "0.6 (a case is what it simulates: no names)"
 #: How often the page reads a running case's progress, in milliseconds.
 POLL_MS = 400
 
@@ -147,6 +157,25 @@ def layer_for(issue) -> str:
     return "physics"
 
 
+def new_key(fid: str) -> str:
+    """The workbench's key for a new case of the kind ``fid``: its kind and the moment
+    it was started (a case has no name since case@0.6; a file and a record folder
+    need one)."""
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return slug(f"{registry.short_label(fid)}-{stamp}")
+
+
+@dataclass(frozen=True)
+class _Version:
+    """One step of Undo: the case, and which file it belongs to.  A switch of type
+    replaces the whole case, so Undo must bring back its file and key too: an undo
+    that kept the new case's (no file) left a saved case reading as never saved."""
+    json: str
+    path: str | None
+    key: str
+    dirty: bool
+
+
 class Workbench:
     """One browser session's state, views and actions."""
 
@@ -154,9 +183,12 @@ class Workbench:
         self.cases_dir = cases_dir or DEFAULT_CASES_DIR
         self.spec: CaseSpec = spec if spec is not None else example_case("wake-array-3")
         self.path: str | None = None
+        #: what the case's file and records are called (`new_key`): the saved file's
+        #: name, the example's key, or its kind and the time it was started
+        self.case_key = "wake-array-3" if spec is None else new_key(spec.physics.family)
         self.dirty = False
-        self.history: list[str] = []
-        self.future: list[str] = []
+        self.history: list[_Version] = []
+        self.future: list[_Version] = []
         self.view_opts = {"grid": False, "overlaps": True, "labels": True, "log": False}
         #: the Model tab's layer, tool, snap, new-region material and selection;
         #: kept here so they survive the editor being rebuilt
@@ -185,7 +217,8 @@ class Workbench:
         self.case_serial = 0
         self.compiled_serial: int | None = None
         self._build()
-        self.log(f"opened the example case {self.spec.name!r}")
+        self.log(f"opened the example: {EXAMPLES['wake-array-3'].shows}" if spec is None
+                 else f"opened a {registry.short_label(self.spec.physics.family)} case")
 
     # ------------------------------------------------------------------
     # state
@@ -210,11 +243,16 @@ class Workbench:
             getattr(note, kind)(text, duration=duration or (6000 if kind != "success"
                                                             else 3000))
 
+    def _version(self) -> _Version:
+        return _Version(self.spec.to_json(), self.path, self.case_key, self.dirty)
+
     def set_spec(self, spec: CaseSpec, label: str, *, record: bool = True,
-                 path: str | None | object = ..., dirty: bool = True) -> None:
-        """Replace the whole case (new, open, undo): every view is rebuilt."""
+                 path: str | None | object = ..., dirty: bool = True,
+                 key: str | None = None) -> None:
+        """Replace the whole case (a new type, start over, an example, open, undo):
+        every view is rebuilt.  ``key`` is the new case's `case_key`."""
         if record:
-            self.history.append(self.spec.to_json())
+            self.history.append(self._version())
             del self.history[:-100]
             self.future.clear()
             self.case_serial += 1
@@ -225,6 +263,8 @@ class Workbench:
         self.spec = spec
         if path is not ...:
             self.path = path
+        if key is not None:
+            self.case_key = key
         self.dirty = dirty
         self.geo_state["pending"] = []
         self.log(label)
@@ -254,6 +294,7 @@ class Workbench:
             # and stop following the domain (the layout would undo the edit)
             new.layout = None
             taken = True
+        recut: list[str] = []
         if new.layout is not None:
             from . import layout as lay
             try:
@@ -261,10 +302,19 @@ class Workbench:
                     label += (f"; the windows follow the domain: {len(new.windows)} "
                               f"generated")
             except lay.LayoutError as exc:
-                self.notify("error", f"not applied: the windows cannot follow this geometry: "
-                                     f"{exc}")
-                self.refresh(rebuild=False)
-                return False
+                if not defaults:
+                    self.notify("error", f"not applied: the windows cannot follow this "
+                                         f"geometry: {exc}")
+                    self.refresh(rebuild=False)
+                    return False
+                # a newly drawn shape is never refused for the windows' sake: they
+                # are cut again from it below (`starter.fill_defaults`).  A cooled
+                # block drawn without its water could not be cut one piece per
+                # physics, and the drawing was refused (2026-09-30)
+                new.windows, new.layout = [], None
+                recut.append(f"the windows could not be cut as before ({exc}), so they "
+                             f"were cut again from the new shape")
+                say = (say or []) + recut
         from .spec import derive_boundaries
         if derive_boundaries(new):
             label += "; the drawn edges' conditions follow the geometry"
@@ -284,7 +334,7 @@ class Workbench:
             #: its field, reading as applied
             self.refresh(rebuild=False)
             return False
-        self.history.append(self.spec.to_json())
+        self.history.append(self._version())
         del self.history[:-100]
         self.future.clear()
         self.spec = new
@@ -306,19 +356,23 @@ class Workbench:
         self.refresh(rebuild=False)
         return True
 
+    def _restore(self, v: _Version, label: str) -> None:
+        self.set_spec(CaseSpec.from_json(v.json), label, record=False, path=v.path,
+                      dirty=v.dirty, key=v.key)
+
     def undo(self) -> None:
         if not self.history:
             self.notify("info", "nothing to undo")
             return
-        self.future.append(self.spec.to_json())
-        self.set_spec(CaseSpec.from_json(self.history.pop()), "undo", record=False)
+        self.future.append(self._version())
+        self._restore(self.history.pop(), "undo")
 
     def redo(self) -> None:
         if not self.future:
             self.notify("info", "nothing to redo")
             return
-        self.history.append(self.spec.to_json())
-        self.set_spec(CaseSpec.from_json(self.future.pop()), "redo", record=False)
+        self.history.append(self._version())
+        self._restore(self.future.pop(), "redo")
 
     # ------------------------------------------------------------------
     # files
@@ -330,6 +384,7 @@ class Workbench:
     def save_to(self, path: str) -> None:
         self.spec.save(path)
         self.path = path
+        self.case_key = os.path.splitext(os.path.basename(path))[0]
         self.dirty = False
         self.notify("success", f"saved {os.path.relpath(path, ROOT)}")
         self.refresh(rebuild=False)
@@ -340,7 +395,8 @@ class Workbench:
         except (OSError, ValidationError, ValueError) as exc:
             self.notify("error", f"could not open {os.path.basename(path)}: {exc}")
             return
-        self.set_spec(spec, f"opened {os.path.relpath(path, ROOT)}", path=path, dirty=False)
+        self.set_spec(spec, f"opened {os.path.relpath(path, ROOT)}", path=path, dirty=False,
+                      key=os.path.splitext(os.path.basename(path))[0])
 
     def import_text(self, text: str, name: str = "imported file") -> None:
         try:
@@ -348,7 +404,38 @@ class Workbench:
         except (ValidationError, ValueError) as exc:
             self.notify("error", f"{name} is not a workbench case: {exc}")
             return
-        self.set_spec(spec, f"imported {name}", path=None)
+        stem = slug(os.path.splitext(os.path.basename(name))[0])
+        self.set_spec(spec, f"imported {name}", path=None,
+                      key=stem if stem != "untitled" else new_key(spec.physics.family))
+
+    def start_new(self, fid: str, over: bool = False) -> None:
+        """A new case of the kind ``fid``, ready to run (`starter.new_case`), in place of
+        the open one: one Undo brings that back (the owner's D2 and D3, 2026-09-30:
+        "When the simulation type changes, the full geometry should reset").  No
+        confirmation: it is the most-used control, and Undo is one click."""
+        from .starter import new_case_from
+        if fid not in registry.available_ids():
+            self.notify("error", f"no kind of simulation called {fid!r} runs here")
+            return
+        old = registry.short_label(self.spec.physics.family)
+        new = registry.short_label(fid)
+        case, example, filled = new_case_from(fid)
+        label = f"{'started over: ' if over else ''}a new {new} case"
+        if filled:
+            label += "; to start: " + "; ".join(filled)
+        self.set_spec(case, label, path=None, dirty=False, key=new_key(fid))
+        self.geo_state["layer"], self.geo_state["tool"] = "domain", "select"
+        self.show("model")
+        first = f"Started over: a new {new} case" if over else f"Started a new {new} case"
+        where = ("It is ready to run on the whole grid: draw its shape (Shape, Draw the "
+                 "outline), or press Run." if example is None else
+                 f"It starts from an example ({EXAMPLES[example].shows.lower()}), since a "
+                 f"{new} case needs more than the bare grid.")
+        #: every assumption said where the person is looking (the starter's rule)
+        given = (f" To start, it was given {'; '.join(filled)}." if filled else "")
+        text = (f"{first}. Undo (↶, above the canvas) brings back the {old} case"
+                f"{' as it was' if over else ''}. {where}{given}")
+        self.notify("info", text, duration=min(20000, 6000 + 40 * len(text)))
 
     # ------------------------------------------------------------------
     # the one entry point every menu item and button goes through
@@ -357,26 +444,22 @@ class Workbench:
         group, _, rest = action.partition(":")
         #: a fresh case has nothing of the person's to lose: "not saved yet", not
         #: "unsaved changes"
-        if action == "file:new":
-            self._dialog_new()
-        elif group == "file" and rest.startswith("new:"):
-            # a new case of one physics, ready to run on the whole grid (a blank case
-            # was a wind farm with no windows, an error from its first moment)
-            from .starter import new_case
+        if group == "case" and rest.startswith("type:"):
+            # the header's type selector: another kind starts a new case of it
             fid = rest.split(":", 1)[1]
-            self.set_spec(new_case(fid), f"new {registry.short_label(fid)} case", path=None,
-                          dirty=False)
-            self.geo_state["layer"], self.geo_state["tool"] = "domain", "select"
-            self.show("model")
-            self.notify("info", f"A new {registry.short_label(fid)} case on the whole grid, "
-                                f"ready to run. Draw its shape (Shape: Draw the outline), "
-                                f"or press Run.")
+            if fid != self.spec.physics.family:
+                self.start_new(fid)
+        elif action == "file:start-over":
+            self.start_new(self.spec.physics.family, over=True)
         elif group == "file" and rest.startswith("example:"):
             key = rest.split(":", 1)[1]
-            self.set_spec(example_case(key), f"new case from the example {key!r}", path=None,
-                          dirty=False)
-        elif action == "file:gallery":
-            self._dialog_gallery()
+            if key not in EXAMPLES:
+                self.notify("error", f"no example {key!r}")
+                return
+            self.set_spec(example_case(key), f"opened the example: {EXAMPLES[key].shows}",
+                          path=None, dirty=False, key=key)
+            self.notify("info", f"{EXAMPLES[key].shows}. Undo (↶) brings back the case "
+                                f"before it.")
         elif action == "file:open":
             self._dialog_open()
         elif action == "file:save":
@@ -392,8 +475,6 @@ class Workbench:
             self._dialog_export()
         elif action == "file:import-gmsh":
             self.dialog_gmsh()
-        elif action == "file:rename":
-            self._dialog_rename()
         elif action == "geometry:tiling":
             self.dialog_tiling()
         elif action == "edit:undo":
@@ -464,8 +545,8 @@ class Workbench:
             run = CaseRun(self.spec, arms=tuple(arms), steps=self.spec.run.steps,
                           threads=self.spec.run.threads,
                           results_dir=results_dir_for(self.path, self.cases_dir,
-                                                      self.spec.name),
-                          case_path=self.path)
+                                                      self.case_key),
+                          case_path=self.path, case_label=self.case_key)
         except (RunRefused, KeyError) as exc:
             self.notify("error", f"cannot run: {exc}")
             return None
@@ -500,11 +581,13 @@ class Workbench:
             self._dialog_problems()
             return None
         job = CompileJob(self.spec, results_dir=results_dir_for(self.path, self.cases_dir,
-                                                                 self.spec.name))
+                                                                 self.case_key),
+                         case_label=self.case_key)
         self.compile_job = job
         self.compiled_serial = self.case_serial
         self._compile_reported = None
-        self.log(f"compile started: {self.spec.name} ({len(self.spec.windows)} windows)")
+        self.log(f"compile started: the {registry.short_label(self.spec.physics.family)} "
+                 f"case ({len(self.spec.windows)} windows)")
         if blocking:
             job.run_blocking()
             self.poll()
@@ -598,18 +681,23 @@ class Workbench:
     # the page
     # ------------------------------------------------------------------
     def _build(self) -> None:
-        self.name_btn = pn.widgets.Button(name=self.spec.name, button_type="light",
-                                          stylesheets=[HEADER_CSS], margin=(0, 4),
-                                          align="center")
-        self.name_btn.on_click(lambda _e: self.dispatch("file:rename"))
-        #: what the case simulates, over whether it is saved: two short lines, so the
-        #: header fits a laptop screen at 125% (the owner's: about 1,090 px, seen)
-        self.family_note = pn.pane.HTML("", margin=(0, 8, 0, 8),
-                                        styles={"font-size": "12px", "color": "#e6eef2",
-                                                "line-height": "1.2"})
-        self.save_state = pn.pane.HTML("", margin=(0, 8, 0, 8),
+        fams = [f for f in registry.FAMILIES if f.status == "ready-to-wire"]
+        #: what the case simulates, the header's first control (the owner, 2026-09-30:
+        #: "the header should have an option to change the type of simulation
+        #: itself"): another kind starts a new case of it, and one Undo brings this
+        #: one back.  It replaced the case's name, which a case no longer has
+        self.type_sel = pn.widgets.Select(
+            options={registry.short_label(f.id).capitalize(): f.id for f in fams},
+            value=self.spec.physics.family, width=160, height=30, margin=(0, 4, 0, 8),
+            stylesheets=[TYPE_CSS])
+        self._syncing_type = False
+        self.type_sel.param.watch(self._on_type, "value")
+        #: whether the case is saved, one short line under the selector, so the
+        #: header fits a laptop screen at 125% (the owner's: about 1,090 px, seen;
+        #: beside the selector it pushed Case and ? off the page, 2026-09-30)
+        self.save_state = pn.pane.HTML("", margin=(0, 8, 0, 12),
                                        styles={"font-size": "11px", "color": "#9fb3bf",
-                                               "line-height": "1.2"})
+                                               "line-height": "1.1", "white-space": "nowrap"})
         self.tabs = pn.widgets.RadioButtonGroup(options={t: k for k, t in TABS},
                                                 value="model", button_type="light",
                                                 stylesheets=[TABS_CSS], margin=(0, 12),
@@ -617,16 +705,6 @@ class Workbench:
         self._syncing_tabs = False
         self.tabs.param.watch(lambda e: None if self._syncing_tabs else self.show(e.new),
                               "value")
-        fams = [f for f in registry.FAMILIES if f.status == "ready-to-wire"]
-        self._fam_by_label = {f.label: f.id for f in fams}
-        #: the physics is chosen in the Physics layer's inspector, where its settings
-        #: are: in the header it took 250 px the header did not have
-        self.family_sel = pn.widgets.Select(name="What it simulates",
-                                            options=[f.label for f in fams],
-                                            value=self._family_label(),
-                                            sizing_mode="stretch_width", margin=(4, 8))
-        self._syncing_family = False
-        self.family_sel.param.watch(self._on_family, "value")
         #: Undo and Redo sit in the canvas's toolbar, beside the edits they undo
         self.undo_btn = pn.widgets.Button(name="↶", button_type="light",
                                           description="Undo the last change", width=40,
@@ -635,15 +713,21 @@ class Workbench:
         self.redo_btn = pn.widgets.Button(name="↷", button_type="light",
                                           description="Redo", width=40, margin=(0, 2))
         self.redo_btn.on_click(lambda _e: self.dispatch("edit:redo"))
-        #: the examples are in the gallery (Examples...), one line each with what it
-        #: shows; listed here too they ran the menu off the page (seen)
+        #: the chosen kind's examples, one line each saying what it shows and no name
+        #: (the owner's O1, 2026-09-30); the gallery of all 21 left the page with the
+        #: names it listed
+        self.examples_menu = pn.widgets.MenuButton(
+            name="More examples", button_type="light", width=128,
+            stylesheets=[HEADER_CSS, MENU_CSS], margin=(0, 4), align="center",
+            items=self._example_items())
+        self.examples_menu.on_click(lambda e: self.dispatch(e.new))
+        #: Start over is a new case of the same kind; a new kind is the type selector
         self.case_menu = pn.widgets.MenuButton(
             name="Case", button_type="light", width=78, stylesheets=[HEADER_CSS, MENU_CSS],
             margin=(0, 4), align="center",
-            items=[("New case...", "file:new"), ("Examples...", "file:gallery"), None,
+            items=[("Start over", "file:start-over"), None,
                    ("Open...", "file:open"), ("Save", "file:save"),
-                   ("Save as...", "file:save-as"), ("Rename...", "file:rename"),
-                   ("Revert to saved", "edit:revert"), None,
+                   ("Save as...", "file:save-as"), ("Revert to saved", "edit:revert"), None,
                    ("Import JSON...", "file:import"), ("Export JSON...", "file:export"),
                    ("Import geometry from Gmsh (.msh)...", "file:import-gmsh"), None,
                    ("History of this session", "view:history")])
@@ -675,10 +759,10 @@ class Workbench:
         #: outside the local server.  No sidebar: the Model tab has its own rail.
         self.tpl = pn.template.BootstrapTemplate(
             title="Atlas Workbench",
-            header=[pn.Row(self.name_btn,
-                           pn.Column(self.family_note, self.save_state, margin=0,
+            header=[pn.Row(pn.Column(self.type_sel, self.save_state, margin=0,
                                      align="center"),
-                           self.tabs, pn.layout.HSpacer(), self.status_btn, self.run_btn,
+                           self.tabs, pn.layout.HSpacer(),
+                           self.examples_menu, self.status_btn, self.run_btn,
                            self.case_menu, self.help_menu,
                            align="center", sizing_mode="stretch_width", margin=(0, 8))],
             main=[self.workspace],
@@ -688,29 +772,18 @@ class Workbench:
         )
         self.refresh(rebuild=True)
 
-    def _family_label(self) -> str:
-        try:
-            return registry.family(self.spec.physics.family).label
-        except KeyError:                                   # pragma: no cover
-            return self.spec.physics.family
+    def _example_items(self) -> list[tuple[str, str]]:
+        """The open kind's examples for *More examples*: what each shows, and its
+        action."""
+        fid = self.spec.physics.family
+        return [(ex.shows, f"file:example:{k}") for k, ex in EXAMPLES.items()
+                if ex.family == fid]
 
-    def _on_family(self, e) -> None:
-        """A family is more than a label: its parameters, style, run mode and
-        boundaries follow it (`spec.adapt_to_family`)."""
-        if self._syncing_family:
+    def _on_type(self, e) -> None:
+        """The header's type selector: another kind starts a new case of it."""
+        if self._syncing_type:
             return
-        fid = self._fam_by_label.get(e.new)
-        if fid is None or fid == self.spec.physics.family:
-            return
-        notes: list[str] = []
-
-        def apply(c):
-            notes.append(f"now {registry.short_label(fid)}, from its example")
-            notes.extend(adapt_to_family(c, fid))
-        if self.edit(apply, f"physics = {fid}", defaults=True, say=notes):
-            self.show(self.active, keep_view=True)
-        else:
-            self._refresh_header()
+        self.dispatch(f"case:type:{e.new}")
 
     def _run_or_stop(self) -> None:
         if self.run is not None and self.run.active:
@@ -719,20 +792,24 @@ class Workbench:
             self.dispatch("run:both")
 
     def _refresh_header(self) -> None:
-        self.name_btn.name = f"{self.spec.name} ✎"
         if self.path:
             state = "unsaved changes" if self.dirty else "saved"
         else:
             state = "unsaved changes" if self.dirty else "not saved yet"
         self.save_state.object = html.escape(state)
-        self.family_note.object = html.escape(registry.short_label(self.spec.physics.family))
-        label = self._family_label()
-        if self.family_sel.value != label:
-            self._syncing_family = True
+        fid = self.spec.physics.family
+        if self.type_sel.value != fid:
+            #: moving the selector from code (an undo, an opened file) must not start
+            #: a new case through its watcher
+            self._syncing_type = True
             try:
-                self.family_sel.value = label
+                self.type_sel.value = fid
             finally:
-                self._syncing_family = False
+                self._syncing_type = False
+        items = self._example_items()
+        if [tuple(i) for i in (self.examples_menu.items or [])] != items:
+            self.examples_menu.items = items
+        self.examples_menu.disabled = not items
         n = summary(self.issues())
         running = self.run is not None and self.run.active
         if running:
@@ -957,22 +1034,6 @@ class Workbench:
             self._dialog_problems()
         return ok
 
-    def _dialog_rename(self) -> None:
-        name = pn.widgets.TextInput(name="Name", value=self.spec.name, width=320)
-        desc = pn.widgets.TextAreaInput(name="Description", value=self.spec.description,
-                                        width=420, height=90)
-        go = pn.widgets.Button(name="Apply", button_type="primary", width=90)
-
-        def do(_e):
-            self.tpl.close_modal()
-
-            def apply(c):
-                c.name = name.value.strip() or c.name
-                c.description = desc.value
-            self.edit(apply, f"renamed {name.value!r}")
-        go.on_click(do)
-        self._dialog(pn.pane.Markdown("### The case"), name, desc, go)
-
     def dialog_tiling(self) -> None:
         d, ramp = self.spec.domain, self.spec.coupling.ramp_cells
         cols = pn.widgets.IntInput(name="Columns", value=3, start=1, end=40, width=110)
@@ -1076,59 +1137,6 @@ class Workbench:
                                           + "\n".join(extra), width=560))
         return ok
 
-    def _dialog_gallery(self) -> None:
-        """Every showcase example, one line each, and a button that opens it."""
-        rows = []
-        for key, ex in EXAMPLES.items():
-            try:
-                fam = registry.family(ex.family).label
-            except KeyError:                               # pragma: no cover
-                fam = ex.family
-            go = pn.widgets.Button(name="Open", button_type="primary", width=80,
-                                   align="center")
-
-            def open_(_e, key=key):
-                self.tpl.close_modal()
-                self.dispatch(f"file:example:{key}")
-            go.on_click(open_)
-            esc = lambda t: html.escape(t, quote=False)                     # noqa: E731
-            rows.append(pn.Row(go, pn.pane.Markdown(
-                f"**{esc(ex.label)}**<br>{esc(ex.description)}<br>"
-                f"<small>{esc(fam)}; style {esc(ex.style)}</small>",
-                sizing_mode="stretch_width", margin=(0, 8)), sizing_mode="stretch_width"))
-        self._dialog(pn.pane.Markdown(
-            "### Examples\nOne case per coupling style and physics, and one drawn case per "
-            "family, each run and compared on this laptop in under two minutes. These are "
-            "showcases, not research records: `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/"
-            "showcase-gallery.md` lists what each one measured."),
-            pn.Column(*rows, sizing_mode="stretch_width",
-                      styles={"max-height": "60vh", "overflow-y": "auto"}))
-
-    def _dialog_new(self) -> None:
-        """What the new case simulates: one button per physics that runs."""
-        rows = []
-        for f in registry.FAMILIES:
-            if f.status != "ready-to-wire":
-                continue
-            go = pn.widgets.Button(name="Start", button_type="primary", width=80,
-                                   align="center")
-
-            def start(_e, fid=f.id):
-                self.tpl.close_modal()
-                self.dispatch(f"file:new:{fid}")
-            go.on_click(start)
-            rows.append(pn.Row(go, pn.pane.HTML(
-                f"<div style='font-size:14px;font-weight:600'>"
-                f"{html.escape(registry.short_label(f.id).capitalize())}</div>"
-                f"<div style='font-size:12px;color:#475569'>{html.escape(f.label)}</div>",
-                sizing_mode="stretch_width", margin=(0, 8)), sizing_mode="stretch_width"))
-        self._dialog(pn.pane.Markdown(
-            "### New case: what does it simulate?\nIt starts on the whole grid, with that "
-            "physics' usual scale and settings and everything it needs to run; then draw "
-            "its shape. *Examples...* has finished cases to start from instead."),
-            pn.Column(*rows, sizing_mode="stretch_width",
-                      styles={"max-height": "60vh", "overflow-y": "auto"}))
-
     def _dialog_open(self) -> None:
         files = self.case_files()
         rel = {os.path.basename(f): f for f in files}
@@ -1147,7 +1155,7 @@ class Workbench:
         self._dialog(pn.pane.Markdown("### Open a case"), pick, go)
 
     def _dialog_save_as(self) -> None:
-        name = pn.widgets.TextInput(name="File name", value=slug(self.spec.name), width=300)
+        name = pn.widgets.TextInput(name="File name", value=slug(self.case_key), width=300)
         warn = pn.pane.Markdown("")
         go = pn.widgets.Button(name="Save", button_type="primary", width=90)
         target = lambda: os.path.join(self.cases_dir, slug(name.value) + ".json")    # noqa: E731
@@ -1178,7 +1186,7 @@ class Workbench:
 
     def _dialog_export(self) -> None:
         dl = pn.widgets.FileDownload(callback=lambda: io.StringIO(self.spec.to_json()),
-                                     filename=slug(self.spec.name) + ".json",
+                                     filename=slug(self.case_key) + ".json",
                                      button_type="primary", width=220,
                                      label="Download the case as JSON")
         self._dialog(pn.pane.Markdown("### Export the case"), dl)
@@ -1194,6 +1202,10 @@ class Workbench:
     def _guide(self):
         return pn.pane.Markdown(
             "### How it works\n"
+            "**What it simulates** is the header's first control. Choosing another starts "
+            "a new case of it, ready to run on the whole grid, and one Undo brings back the "
+            "one before. *More examples* opens a finished case of the same kind, and "
+            "*Case > Start over* a new one.\n\n"
             "**Model.** Pick a layer on the left, then click on the canvas:\n"
             "- **Shape**: draw the domain's outline and holes (lines, arcs, smooth "
             "curves); the grid is the domain until you do.\n"
@@ -1201,7 +1213,7 @@ class Workbench:
             "- **Boundaries**: click an edge to set its condition.\n"
             "- **Windows**: *Automatic* cuts the shape for you and follows it; *My own* "
             "lets you draw them. Choose how they are joined here too.\n"
-            "- **Physics**: the family's numbers, the time, the grid.\n\n"
+            "- **Physics**: its numbers, the time, the grid.\n\n"
             "Five tools: **Select** (click a shape to reshape it with its handles), "
             "**Draw** (click points, double-click to finish), **Rectangle** and "
             "**Circle** (two clicks each) and **Pan**. A tool adds one shape, then hands "

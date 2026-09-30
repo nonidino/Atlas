@@ -509,13 +509,13 @@ def case_graph(spec):
             note="atlas/workbench/fe.py: Q1 plane stress, a material per element")
     tiling_pou = run.tiling.partition_of_unity()
     return CaseGraph(
-        name=f"workbench-{spec.name}",
+        name=f"workbench-{spec.physics.family}",
         agents=[Agent(n, caps[n], domain=f"window {n}") for n in agents],
         connections=conns, decomposition=Decomposition.OVERLAPPING,
         overlap=_overlap_cells(spec) * d.dx, overlap_cells=_overlap_cells(spec),
         partition_of_unity=tiling_pou,
         cross_points=cross_points(spec), macro_dt=1.0,
-        note=f"the workbench case {spec.name!r}: plane stress, style B")
+        note="a workbench case: plane stress, style B")
 
 
 def _overlap_cells(spec) -> int:

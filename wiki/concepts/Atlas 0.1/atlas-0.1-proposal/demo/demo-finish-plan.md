@@ -61,6 +61,24 @@ Until now the workbench was built for the owner, who knows what a style, a seam 
 - Draw a shape, switch type, press Undo: the shape is back.
 - No control anywhere shows a case name or a description.
 
+**Built on 2026-09-30 (the demo chat), and walked in the served page at $1090\times620$.** D1–D6 and O1 are as decided:
+- the header's type selector;
+- a new case per type, with one Undo;
+- `case@0.6`, with no name or description;
+- *Case > Start over*;
+- *More examples*, one line each, from `spec.SHOWS`.
+
+Checked in the page:
+- all eight types picked from the header read *Ready to run*;
+- a drawn outline, a switch to the river, then Undo: the outline is back;
+- the header's last control ends at 1,079 px of 1,090;
+- a fresh load at $1090\times520$ puts nothing past the window.
+
+What the plan did not foresee:
+- **Undo must bring back the case's file, not only its content.** Undo's history held the case's JSON alone, so undoing a type switch would have left a saved case reading as never saved. Each Undo step now carries the case, its file and its key (`app._Version`). The key replaces the name where a file needs one: the file's name, the example's key, or the kind and the moment it was started (`app.new_key`).
+- **The cooled block starts from its example, and a shape drawn without its water was refused outright.** Its windows are cut one per physics, and that cut needs water in the domain. A newly drawn domain is now never refused for its windows' sake: they are cut again from the new shape, and the note says why. The windows fix for Dirichlet–Neumann also cuts one piece per material, or per coolant and block, when the domain has two media.
+- The header was 100 px too wide at first: *Case* and *?* ran past 1,090 px. The save state now sits under the selector.
+
 ---
 
 ## 2. Item 1.2 — a river that forks into two outlets

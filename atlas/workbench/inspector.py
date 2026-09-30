@@ -880,12 +880,11 @@ def _physics_settings(ed: "GeometryEditor") -> list:
     wb = ed.wb
     s = wb.spec
     fam = _family(s)
-    # the physics is chosen here, with its settings; choosing another starts from its
-    # example's scale and fills in what the shape then lacks (`spec.adapt_to_family`)
+    # what it simulates is chosen in the header, the one place to choose it (the
+    # owner's D1, 2026-09-30); here are its settings
     out = [_head("Physics", registry.short_label(s.physics.family).capitalize(), ""),
-           wb.family_sel,
-           _note("Choosing another starts from its example's scale and settings, and "
-                 "keeps your shape.")]
+           _note("What it simulates is chosen in the header. Choosing another starts a "
+                 "new case of it, and one Undo brings this one back.")]
     if fam is None:
         return out
     for p in fam.params:

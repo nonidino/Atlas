@@ -186,7 +186,8 @@ def test_a_run_records_its_machine_times_and_checks(tmp_path):
     assert "speedup_vs_full" in rec["timing"]["parallel"]
     assert rec["machine"]["cpu_count"] == os.cpu_count()
     assert "power" in rec["machine"] and "other_python_processes" in rec["machine"]
-    assert CaseSpec.model_validate(rec["case"]).name == "wake-array-3"
+    assert CaseSpec.model_validate(rec["case"]) == _small(steps=2)
+    assert rec["case_name"] == "wind farm"   # no key given: its kind (a case has no name)
     checks = {c["key"]: c for c in rec["checks"]}
     assert set(checks) == {"mass", "power", "bitwise"}
     assert all(c["passed"] for c in checks.values()), checks
@@ -308,8 +309,9 @@ def test_a_finished_run_rebuilds_its_step(wb):
 def test_the_page_says_which_configuration_is_marching(wb):
     run = wb.start_run(["full"], blocking=True)
     html = wb.run_panel.status.object
-    assert "wake-array-3 as committed at" in html and "2 macro-steps" in html
-    wb.edit(lambda c: setattr(c, "name", "edited"), "rename")
+    assert "the wind farm case as committed at" in html and "2 macro-steps" in html
+    wb.edit(lambda c: setattr(c.run, "threads", 3), "threads")
     wb.run_panel.update()
     assert "has changed since this run was committed" in wb.run_panel.status.object
-    assert run.spec.name == "wake-array-3"          # the edit did not reach the run
+    assert run.spec.run.threads != 3                # the edit did not reach the run
+    assert run.results["case_name"] == "wake-array-3"  # the record's key, not a name shown

@@ -502,7 +502,9 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
     table, checks = results_frames(res)
     unit = res.get("step_label", "macro-step")
     style = (res.get("case") or {}).get("coupling", {}).get("style") or res.get("style", "?")
-    head = (f"**{html.escape(res['case_name'])}**, as it was at {res['committed_at'][11:19]}: "
+    #: which case: its kind, not a name (a case has none since case@0.6)
+    kind = html.escape(registry.short_label(res.get("family", "")))
+    head = (f"**The {kind} case**, as it was at {res['committed_at'][11:19]}: "
             f"finished at {res['finished'][11:19]} after **{res['steps_done']}** of "
             f"{res['steps_requested']} {html.escape(unit)}s"
             + (" (**stopped**)" if res.get("stopped") else "")
@@ -522,9 +524,9 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
     if rec:
         notes.append(f"- Record: `{html.escape(os.path.relpath(rec, wb_root()))}` "
                      f"(the case as it marched, every per-step time, the machine's state).")
-    changed = ([pn.pane.Alert(f"These are the results of **{html.escape(res['case_name'])}** "
-                              "as the run took it; the case open now differs. Run it again "
-                              "for its own results.",
+    changed = ([pn.pane.Alert(f"These are the results of **the {kind} case** as the run took "
+                              "it; the case open now differs. Run it again for its own "
+                              "results.",
                               alert_type="warning", sizing_mode="stretch_width")]
                if stale else [])
     details = pn.Card(
@@ -595,14 +597,15 @@ def compile_view(wb: "Workbench"):
         text = ("<b>Atlas compiler</b>: "
                 + ("not compiled in this session" if job is None else
                    f"not compiled since this case was opened (the last compile was of "
-                   f"{html.escape(job.spec.name)})")
+                   f"the {html.escape(registry.short_label(job.spec.physics.family))} "
+                   f"case open before it)")
                 + ". Compiling builds the case's graph from its family (an agent per "
                 "window or piece, a seam wherever two meet) and gives each seam the "
                 "compiler's verdict.")
         body: list = []
     elif job.active or job.status == "created":
-        text = (f"<b>Atlas compiler</b>: compiling {html.escape(job.spec.name)} (it probes "
-                f"every seam through its agents' own solves).")
+        text = ("<b>Atlas compiler</b>: compiling the case (it probes every seam through "
+                "its agents' own solves).")
         body = []
     elif job.status == "failed":
         text = f"<b>Atlas compiler</b>: the compile failed: {html.escape(job.error or '')}"

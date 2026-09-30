@@ -55,9 +55,18 @@ doesn't their shape itself ADAPT to the geometry of the curve smoothly?") adds
   from, so they are generated again whenever the geometry changes;
 * a generated window is ``shape = "cells"``: its cells, as runs along rows.
 
+Schema ``atlas-workbench/case@0.6`` (2026-09-30, the owner: "There's no need to
+have names and descriptions for the individual cases, remove that. Instead, the
+header should have an option to change the type of simulation itself") drops the
+case's ``name`` and ``description``.  A case is its kind of simulation and its
+contents; a file needs a name, and a case does not.  What the page calls a case in
+a record or a file name is the workbench's own key for it (`app.Workbench.case_key`):
+the saved file's name, the example's key, or the kind and the time it was started.
+
 Older files still load: a 0.1 file gains its family's fixed boundaries, and a
 0.2 file's ``nu`` and ``u_inf`` move into ``params`` and its style is its
-family's.  The geometry rules themselves live in `geometry.py`.
+family's; a 0.1 to 0.5 file loses its name and description.  The geometry rules
+themselves live in `geometry.py`.
 """
 
 from __future__ import annotations
@@ -75,10 +84,11 @@ from . import geometry as geo
 from . import registry
 from . import shapes
 
-SCHEMA_ID = "atlas-workbench/case@0.5"
+SCHEMA_ID = "atlas-workbench/case@0.6"
 #: every schema this version reads; older ones are migrated on load
 READABLE = ("atlas-workbench/case@0.1", "atlas-workbench/case@0.2",
-            "atlas-workbench/case@0.3", "atlas-workbench/case@0.4", SCHEMA_ID)
+            "atlas-workbench/case@0.3", "atlas-workbench/case@0.4",
+            "atlas-workbench/case@0.5", SCHEMA_ID)
 
 
 class Outline(BaseModel):
@@ -385,8 +395,6 @@ class Compare(BaseModel):
 
 class CaseSpec(BaseModel):
     schema_id: str = SCHEMA_ID
-    name: str = "untitled"
-    description: str = ""
     domain: Domain
     physics: Physics
     #: material name -> {property: value}, SI; the regions refer to these names
@@ -414,7 +422,7 @@ class CaseSpec(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def _migrate(cls, data):
-        """0.1 -> 0.2 -> 0.3 -> 0.4, one step at a time.
+        """0.1 -> 0.2 -> 0.3 -> 0.4 -> 0.5 -> 0.6, one step at a time.
 
         0.1 -> 0.2: the family's fixed boundaries, no regions.
         0.2 -> 0.3: ``nu`` and ``u_inf`` move into ``physics.params``; the style
@@ -423,6 +431,7 @@ class CaseSpec(BaseModel):
         case is a 0.4 case with none.
         0.4 -> 0.5: nothing to move -- a 0.4 case's windows are its own (no
         layout).
+        0.5 -> 0.6: the name and the description are dropped.
         """
         if not isinstance(data, dict):
             return data
@@ -452,6 +461,11 @@ class CaseSpec(BaseModel):
             data["schema_id"] = "atlas-workbench/case@0.4"
         if data.get("schema_id") == "atlas-workbench/case@0.4":
             data = dict(data)                      # 0.4 -> 0.5: the layout is optional
+            data["schema_id"] = "atlas-workbench/case@0.5"
+        if data.get("schema_id") == "atlas-workbench/case@0.5":
+            data = dict(data)                      # 0.5 -> 0.6: a case has no name
+            data.pop("name", None)
+            data.pop("description", None)
             data["schema_id"] = SCHEMA_ID
         return data
 
@@ -638,7 +652,7 @@ def adapt_to_family(c: "CaseSpec", fid: str) -> list[str]:
             c.run.mode = setup.mode
         c.coupling = Coupling(**setup.coupling)
         unit = fam.length_unit or "cells"
-        notes.append(f"the {setup.example} example's scale: cells of {setup.dx:g} {unit}, "
+        notes.append(f"its example's scale: cells of {setup.dx:g} {unit}, "
                      f"{setup.steps:,} steps of {setup.macro_dt:g}"
                      + (" s" if unit == "m" else ""))
         if fid != "incompressible-2d":
@@ -681,8 +695,6 @@ def check(spec: CaseSpec) -> list[Issue]:
     """
     out: list[Issue] = []
     d = spec.domain
-    if not spec.name.strip():
-        out.append(Issue("warning", "case", "the case has no name"))
 
     ids = [w.id for w in spec.windows]
     for dup in sorted({i for i in ids if ids.count(i) > 1}):
@@ -1229,7 +1241,7 @@ def _check_coolant_flow(spec: CaseSpec) -> list[Issue]:
             out.append(Issue("error", "geometry",
                              "the coolant runs across the seam between the two windows; make "
                              "one window the channel and the other the block (Windows: one "
-                             "piece per material)"))
+                             "piece per material)", fix="windows"))
     if any(i.severity == "error" for i in out) or any(
             i.severity == "error" for i in _check_boundaries(spec)):
         return out
@@ -1444,7 +1456,8 @@ def summary(issues: list[Issue]) -> dict[str, int]:
 
 @dataclass(frozen=True)
 class Example:
-    """One entry of File > New from example."""
+    """One example case: what the *More examples* list opens (`shows`), and the
+    library's own label and description, which the page does not show."""
 
     key: str
     label: str
@@ -1457,6 +1470,40 @@ class Example:
 
     def param(self, name: str):
         return dict(self.params)[name]
+
+    @property
+    def shows(self) -> str:
+        """What it shows, in one line and with no name (`SHOWS`)."""
+        return SHOWS[self.key]
+
+
+#: What each example shows, in one line and with no name: the header's *More
+#: examples* list, which shows the chosen type's (the owner's decision O1,
+#: 2026-09-30).  The label and the description above are the library's own notes;
+#: the page shows neither.
+SHOWS: dict[str, str] = {
+    "wake-array-3": "Wind behind three turbines, on six overlapping windows",
+    "farm-12": "Twelve turbines on 24 windows, where threads start to pay",
+    "farm-21": "Twenty-one turbines on 48 windows, on threads",
+    "wall-2": "Heat through a steel layer and a copper layer, cut at the interface",
+    "plate-insert": "A copper insert warming inside a steel plate",
+    "plate-circuit": "Current spreading through a film wired to a battery",
+    "plume-2": "A plume carried from a shallow reach into a deep one",
+    "sound-air-water": "A sound pulse crossing from air into water",
+    "bracket-2": "A steel and aluminium bracket bending under a load",
+    "heated-strip": "A bimetal strip heated at one end, split by physics",
+    "cooled-block": "A chip's heat carried away by a water channel",
+    "bend-3": "Heat round a bend on three curved windows",
+    "insert-round": "A round copper insert, joined along its circle",
+    "s-channel": "Heat along an S-shaped channel, on windows that follow it",
+    "ring-film": "Current turning the corner of a curved film",
+    "river-bend": "A plume round a winding river, its flow solved along the banks",
+    "sound-lens": "Sound meeting a curved water surface",
+    "plate-hole": "A plate with a round hole, pulled from one end",
+    "bimetal-arc": "A curved bimetal strip heated at one end",
+    "cooled-winding": "A block cooled by a winding water channel",
+    "farm-hill": "Three turbines over a hill",
+}
 
 
 #: **The wind-farm examples' step counts are the owner's decision (2026-09-28).**
@@ -1601,7 +1648,6 @@ def _wall_example(ex: Example) -> CaseSpec:
     Hot on the left, cold on the right, insulated top and bottom; cut at the
     interface, so the two pieces are the two materials."""
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=160, ny=40, dx=0.0025),
         physics=Physics(family="conduction-2d", params={"T0": 300.0}),
         materials=_materials("conduction-2d", "steel", "copper"),
@@ -1620,7 +1666,6 @@ def _insert_example(ex: Example) -> CaseSpec:
     """0.4 m x 0.24 m of steel with a 0.12 m x 0.08 m copper insert, warming from
     300 K with the left edge held at 400 K; two windows overlapping by 16 cells."""
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=160, ny=96, dx=0.0025),
         physics=Physics(family="conduction-2d", params={"T0": 300.0}),
         materials=_materials("conduction-2d", "steel", "copper"),
@@ -1647,7 +1692,6 @@ def _bend_example(ex: Example) -> CaseSpec:
     def sector(r0: float, r1: float, a0: float, a1: float) -> Outline:
         return Outline.of(shapes.annulus_sector(c[0], c[1], r0, r1, a0 * deg, a1 * deg))
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=108, ny=108, dx=0.005, outline=sector(40.0, 100.0, 0.0, 90.0)),
         physics=Physics(family="conduction-2d", params={"T0": 300.0}),
         materials=_materials("conduction-2d", "steel"),
@@ -1674,7 +1718,6 @@ def _round_insert_example(ex: Example) -> CaseSpec:
     sets its temperature, so it is the Dirichlet side (`conduction.dirichlet_side`)."""
     disc = Outline.of(shapes.circle(80.0, 50.0, 25.0))
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=160, ny=100, dx=0.0025),
         physics=Physics(family="conduction-2d", params={"T0": 300.0}),
         materials=_materials("conduction-2d", "steel", "copper"),
@@ -1713,7 +1756,6 @@ def _s_channel_example(ex: Example) -> CaseSpec:
     bnds += [Boundary(id=f"wall{k}", edge=f"outline:{k}", kind="insulated")
              for k in range(2 * n) if k not in (right, left)]
     spec = CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=200, ny=110, dx=0.005,
                       outline=Outline(points=pts, edges=kinds, bulge=[0.0] * len(pts))),
         physics=Physics(family="conduction-2d", params={"T0": 300.0}),
@@ -1747,7 +1789,6 @@ def _ring_film_example(ex: Example) -> CaseSpec:
     import math
     ring = Outline.of(shapes.annulus_sector(4.0, 4.0, 40.0, 100.0, 0.0, math.pi / 2))
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=108, ny=108, dx=0.00125, outline=ring),
         physics=Physics(family="electric-2d", params={"thickness": 3.0e-5}),
         materials=_materials("electric-2d", "graphite"),
@@ -1783,7 +1824,6 @@ def _river_bend_example(ex: Example) -> CaseSpec:
         return 50.0 + 22.0 * math.sin(2.0 * math.pi * x / 240.0)
     river = _band([0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240.0], mid, 20.0)
     spec = CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=240, ny=100, dx=5.0, outline=river),
         physics=Physics(family="transport-2d",
                         params={"q": 1.0, "release": 10.0, "source_x": 150.0,
@@ -1811,7 +1851,6 @@ def _sound_lens_example(ex: Example) -> CaseSpec:
     duct = Outline(points=[(60.0, 20.0), (240.0, 20.0), (240.0, 100.0), (60.0, 100.0)],
                    edges=["line", "arc", "line", "arc"], bulge=[0.0, 1.0, 0.0, 1.0])
     spec = CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=300, ny=120, dx=0.01, outline=duct),
         physics=Physics(family="acoustics-2d",
                         params={"amplitude": 1.0, "pulse_x": 1.0, "pulse_width": 0.1}),
@@ -1837,7 +1876,6 @@ def _plate_hole_example(ex: Example) -> CaseSpec:
     Two windows generated along the plate, iterated to 1e-12 of the largest
     displacement, the tolerance the force check's registration assumes."""
     spec = CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=160, ny=80, dx=0.0025,
                       holes=[Outline.of(shapes.circle(80.0, 40.0, 12.0))]),
         physics=Physics(family="elasticity-2d", params={"thickness": 0.01}),
@@ -1867,7 +1905,6 @@ def _bimetal_arc_example(ex: Example) -> CaseSpec:
     import math
     ring = Outline.of(shapes.annulus_sector(4.0, 4.0, 60.0, 100.0, 0.0, math.pi / 2))
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=108, ny=108, dx=0.001, outline=ring),
         physics=Physics(family="thermoelastic-2d", params={"T0": 300.0}),
         materials=_materials("thermoelastic-2d", "steel", "copper"),
@@ -1916,7 +1953,6 @@ def _cooled_winding_example(ex: Example) -> CaseSpec:
     bulge = [q if k == "arc" else 0.0 for k in kinds]
     block = Outline(points=pts, edges=kinds, bulge=bulge)
     spec = CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=200, ny=60, dx=0.001, outline=block),
         physics=Physics(family="conjugate-heat-2d", params={"u_coolant": 0.01}),
         materials=_materials("conjugate-heat-2d", "copper", "chip", "water"),
@@ -1947,7 +1983,6 @@ def _farm_hill_example(ex: Example) -> CaseSpec:
     (`derived_kind`).  40 macro-steps, W346's march."""
     import math
     spec = _farm_example(EXAMPLES["wake-array-3"])
-    spec.name, spec.description = ex.key, ex.label
     d = spec.domain
     xs = [d.nx * k / 8.0 for k in range(9)]
     pts = [(x, 12.0 + 30.0 * math.exp(-((x - 0.55 * d.nx) / 60.0) ** 2)) for x in xs]
@@ -1969,7 +2004,6 @@ def _circuit_example(ex: Example) -> CaseSpec:
     is thin enough that its resistance is comparable to the circuit's, so the
     plate matters and the style-D iteration needs its relaxation."""
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=160, ny=80, dx=0.00125),
         physics=Physics(family="electric-2d", params={"thickness": 3.0e-5}),
         materials=_materials("electric-2d", "graphite"),
@@ -2002,7 +2036,6 @@ def _plume_example(ex: Example) -> CaseSpec:
     outflow equal to the release (measured: to 8e-14, in 7 s of wall time
     outside the page)."""
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=480, ny=60, dx=5.0),
         physics=Physics(family="transport-2d",
                         params={"q": 1.0, "release": 10.0, "source_x": 200.0,
@@ -2025,7 +2058,6 @@ def _sound_example(ex: Example) -> CaseSpec:
     before the air holds the reflected pulse alone (steps 1021 to 2027 at 4 us);
     2000 steps of 4 us, against a stability limit of about 4.8 us."""
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=740, ny=40, dx=0.01),
         physics=Physics(family="acoustics-2d",
                         params={"amplitude": 1.0, "pulse_x": 0.7, "pulse_width": 0.1}),
@@ -2047,7 +2079,6 @@ def _bracket_example(ex: Example) -> CaseSpec:
     Schwarz stops at an update of 1e-12 of the largest displacement, the tolerance
     the force check's registration assumes (elasticity.CHECKS)."""
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=160, ny=40, dx=0.0025),
         physics=Physics(family="elasticity-2d", params={"thickness": 0.01}),
         materials=_materials("elasticity-2d", "steel", "aluminium"),
@@ -2067,7 +2098,6 @@ def _strip_example(ex: Example) -> CaseSpec:
     insulated.  Copper expands more than steel, so the strip bends as the heat runs
     along it.  60 steps of 5 s."""
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=200, ny=20, dx=0.001),
         physics=Physics(family="thermoelastic-2d", params={"T0": 300.0}),
         materials=_materials("thermoelastic-2d", "steel", "copper"),
@@ -2094,7 +2124,6 @@ def _block_example(ex: Example) -> CaseSpec:
     the Neumann side, since fixed) -- so it allows 2000, and the check still fails
     any run that stops unconverged."""
     return CaseSpec(
-        name=ex.key, description=ex.label,
         domain=Domain(nx=200, ny=60, dx=0.001),
         physics=Physics(family="conjugate-heat-2d", params={"u_coolant": 0.01}),
         materials=_materials("conjugate-heat-2d", "copper", "chip", "water"),
@@ -2123,8 +2152,6 @@ def _farm_example(ex: Example) -> CaseSpec:
 
     t = sl.rung(ex.param("cols"), ex.param("rows")).tiling
     return CaseSpec(
-        name=ex.key,
-        description=ex.label,
         domain=Domain(nx=t.nx, ny=t.ny, dx=wa.DX),
         physics=Physics(family="incompressible-2d",
                         params={"nu": wa.NU_REF, "u_inf": wa.U_INF}),
@@ -2142,8 +2169,7 @@ def _farm_example(ex: Example) -> CaseSpec:
 def blank_case(nx: int = 352, ny: int = 240) -> CaseSpec:
     """An empty domain in the wind-farm family's units, with no windows yet."""
     from atlas.cases import wake_array as wa
-    return CaseSpec(name="untitled", description="",
-                    domain=Domain(nx=nx, ny=ny, dx=wa.DX),
+    return CaseSpec(domain=Domain(nx=nx, ny=ny, dx=wa.DX),
                     physics=Physics(family="incompressible-2d",
                                     params={"nu": wa.NU_REF, "u_inf": wa.U_INF}),
                     boundaries=family_boundaries("incompressible-2d"))

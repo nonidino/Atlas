@@ -245,7 +245,7 @@ def test_version_0_1_files_load_and_unknown_ones_do_not():
     d["physics"] = {"family": "incompressible-2d", **d["physics"]["params"]}
     d["coupling"].pop("style")
     s = CaseSpec.model_validate(d)
-    assert s.schema_id == "atlas-workbench/case@0.5"
+    assert s.schema_id == "atlas-workbench/case@0.6"
     assert s == ref
     d["schema_id"] = "atlas-workbench/case@9.9"
     with pytest.raises(ValueError):
@@ -501,6 +501,6 @@ def test_the_tiling_dialog_and_the_gmsh_path(wb, tmp_path):
 def test_undo_keeps_the_view(wb):
     ed = wb.geo_editor
     ed.fig.x_range.start, ed.fig.x_range.end = 40.0, 200.0
-    wb.edit(lambda c: setattr(c, "name", "x"), "rename")
+    wb.edit(lambda c: setattr(c.run, "steps", 7), "steps")
     wb.undo()
     assert wb.geo_editor.ranges()[:2] == (40.0, 200.0)

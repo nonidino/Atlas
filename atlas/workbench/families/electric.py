@@ -667,14 +667,14 @@ def case_graph(spec):
         note="field to lumped: the electrode's potential and the current through it")
         for e in run.e_ids]
     return CaseGraph(
-        name=f"workbench-{spec.name}",
+        name=f"workbench-{spec.physics.family}",
         agents=[Agent("plate", plate, domain="the plate"),
                 Agent("circuit", circuit, domain="the lumped circuit", role="circuit")],
         connections=conns, decomposition=Decomposition.NON_OVERLAPPING,
         # W162: a circuit has no geometric cross-points, and the adjacency proxy is
         # wrong on one (cooling_loop's first refusal); declared none
         cross_points=(), macro_dt=1.0,
-        note=f"the workbench case {spec.name!r}: a field joined to lumped parts (style D)")
+        note="a workbench case: a field joined to lumped parts (style D)")
 
 
 def build(spec, arms=ARMS, threads: int = 1) -> ElectricRun:

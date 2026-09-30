@@ -7,6 +7,10 @@ and compare it with the full-domain solve. Built:
 - **starting values**: a drawn shape or a newly chosen physics is ready to run, with
   every assumption said, and the problems list fixes what has a default in one click
   (2026-09-30);
+- **a case is what it simulates** (case file 0.6, 2026-09-30): the header's first
+  control chooses the kind of simulation, and another kind starts a new case of it
+  (one Undo brings the old one back); a case has no name or description; *More
+  examples* lists the chosen kind's examples, one line each saying what it shows;
 - the **runner**, with eight physics families, one per showcase case: the wind
   farm (style A), heat conduction in several materials (styles B and C), a
   resistive plate on a circuit (style D), a pollutant plume down a river (style A,
@@ -15,7 +19,7 @@ and compare it with the full-domain solve. Built:
   flow (style C at a seam between two physics);
 - the **compile**: each family turns a case into the Atlas compiler's `CaseGraph`,
   and the Run & results tab shows the compiler's verdict per seam;
-- the **showcase gallery**: *Case > Examples...* lists every example, and
+- the **showcase gallery**: every example is in its kind's *More examples* list, and
   `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/showcase-gallery.md` records what
   each one measured in the served page.
 
@@ -65,7 +69,7 @@ in the inspector.**
 
 | part | what it holds |
 |---|---|
-| **header** | the case's name (click to rename, with its description), what it simulates and whether it is saved; the two tabs; the **status chip**; **Run**; **Case** (*New case...*, *Examples...*, open, save, save as, rename, revert, import and export JSON, import geometry from Gmsh, this session's history); **?** (how it works, where things are documented, about). What it simulates is chosen in the Physics layer, and Undo and Redo sit in the canvas's toolbar, so the header fits a laptop |
+| **header** | **what it simulates** (a selector of the eight kinds: another kind starts a new case of it) and whether it is saved; the two tabs; **More examples** (the chosen kind's examples, one line each saying what it shows); the **status chip**; **Run**; **Case** (*Start over*, open, save, save as, revert, import and export JSON, import geometry from Gmsh, this session's history); **?** (how it works, where things are documented, about). Undo and Redo sit in the canvas's toolbar, so the header fits a laptop |
 | **status chip** | *Ready to run*, *Ready · N warnings*, *N problems* or *Marching k of n*. Click it for every problem in plain words, each with a **Show me** button that opens the layer where it is fixed (`app.layer_for`) and, where the workbench has a default for it, a **Fix** button (below) |
 | **Model** tab | a **layer rail** on the left, the **canvas** with its tools in the middle, the **inspector** on the right. It takes the window's height, and the canvas keeps its cells square at any size |
 | **Run & results** tab | Run and Stop with the settings folded away, the Atlas compiler's verdict, and once a run ends four **cards** (speed, agreement, balance, checks) over the details and the fields |
@@ -136,12 +140,13 @@ runs only for a thing the check finds missing:
 Each assumption is listed in one notification and in the log. Each can be changed in
 the layer it names, and one Undo takes them all back.
 
-**A change of physics takes its example's scale.** The case adopts the setup of the
-family's first example: the cell size, the time step, the steps, the mode, the
-coupling and the number of windows (`spec.family_setup`, `spec.adapt_to_family`). So
-a river is cut in cells of 5 m, not the farm's 0.03125 D. What the new physics does
-not read is removed and named (rotors, circuit parts, regions for the wind farm), and
-the drawn shape is kept.
+**A new kind of simulation starts a new case, at its example's scale.** The new case
+takes the setup of the kind's first example: the cell size, the time step, the steps,
+the mode, the coupling and the number of windows (`spec.family_setup`,
+`spec.adapt_to_family` on a blank case). So a river is cut in cells of 5 m, not the
+farm's 0.03125 D. Until 2026-09-30 a change of physics kept the drawn shape; the
+owner's rule since then is "When the simulation type changes, the full geometry
+should reset", so nothing of the old case is kept, and one Undo brings it all back.
 
 **The problems list fixes what has a default.** The check marks each problem it has
 a repair for (`Issue.fix`). The list shows a button for it beside **Show me**, such
@@ -149,9 +154,18 @@ as *Make the rightmost edge the outlet*, and *Fix the N that can be fixed* repai
 of them in one edit. Each problem says what is wrong in plain words, and where it is
 fixed.
 
-**Case > New case...** asks what the case simulates, and each physics starts ready to
-run on the whole grid. The cooled block starts from its example, because its channel
-must be drawn.
+**The header's type selector** starts a new case of the chosen kind, ready to run on
+the whole grid, with no confirmation: one Undo brings the old case back, with its
+file (`starter.new_case_from`, `Workbench.start_new`; Undo restores the case, its
+file path and its key). The note says what it was given to start. The cooled block
+starts from its example, because its channel must be drawn. **Case > Start over** is
+a new case of the same kind.
+
+**A newly drawn domain is never refused for its windows' sake.** If its windows cannot
+be cut the way they were (a cooled block drawn without its water cannot be cut one
+piece per physics), they are cut again from the new shape, and the note says why. For
+Dirichlet-Neumann, the windows fix cuts one piece per material (or the coolant and the
+block) when the domain has two media, and along the shape otherwise.
 
 **Two things only the person can decide**, which the problems say plainly:
 - a wind farm's air must reach the grid's left and right edges, where the flow
@@ -254,7 +268,7 @@ No case can earn a plain `admit`: the master bound's constants are unmeasured on
 
 ## The showcase gallery
 
-*Case > Examples...* lists every example with its description, family and style, and an **Open** button (the Case menu does not list them too: twenty-one ran it off the page). Every example was opened, checked, compiled and run in the served page on 2026-09-29. `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/showcase-gallery.md` has a row per case: its style, port type, compile verdict, its two checks' measured values against their tolerances, and its runtime. The records are in `out/workbench/records/step-f/`. Every run finished under 2 minutes, the longest in 70 s. The 21-rotor farm's compile takes 95 s, so its compile plus its run is 165 s, which the owner accepted on 2026-09-29, since the compile is its own step. Each row is labelled a showcase, not a research record.
+Each kind's examples are in the header's **More examples** list, one line each saying what it shows and no name (the owner's decision O1, 2026-09-30; until then *Case > Examples...* listed all twenty-one with their names and descriptions). Every example was opened, checked, compiled and run in the served page on 2026-09-29. `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/showcase-gallery.md` has a row per case: its style, port type, compile verdict, its two checks' measured values against their tolerances, and its runtime. The records are in `out/workbench/records/step-f/`. Every run finished under 2 minutes, the longest in 70 s. The 21-rotor farm's compile takes 95 s, so its compile plus its run is 165 s, which the owner accepted on 2026-09-29, since the compile is its own step. Each row is labelled a showcase, not a research record.
 
 ## The geometry section
 
@@ -487,7 +501,7 @@ projection lets a little velocity back into the solid each sub-step.
 
 | file | role |
 |---|---|
-| `spec.py` | the case file (`atlas-workbench/case@0.5`; 0.1 to 0.4 files migrate on load), `check()` with each family's rules, and the twenty-one examples: three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), one whose windows are generated from its shape (the S-channel), and one drawn example per other family |
+| `spec.py` | the case file (`atlas-workbench/case@0.6`, with no name or description; 0.1 to 0.5 files migrate on load), `check()` with each family's rules, and the twenty-one examples, each with the one line *More examples* shows (`SHOWS`): three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), one whose windows are generated from its shape (the S-channel), and one drawn example per other family |
 | `flow.py` | a flow that follows a drawn domain: the potential flow from its inlet faces to its outlet faces, for the river and the coolant |
 | `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes |
 | `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
@@ -496,8 +510,8 @@ projection lets a little velocity back into the solid each sub-step.
 | `inspector.py` | the Model tab's rail and inspector: the layer buttons, the active layer's list, and the panel for what is selected (or the layer's settings) |
 | `gmsh_import.py` | `.msh` to case geometry, by physical-group names |
 | `registry.py` | the physics families: what each runs on, which layers it reads, which boundaries it can impose, its short name, and what is missing before the workbench can run it |
-| `starter.py` | what a new shape or a new physics starts with: the repairs keyed by the check's problems (`FIXES`, `apply_fix`), `fill_defaults`, and *New case...* (`new_case`) |
-| `app.py` | the GUI: the header, the two tabs and the dialogs (the problems list, the examples, open, save, Gmsh). Every menu item and button goes through `Workbench.dispatch(action)`, every edit through `Workbench.edit` |
+| `starter.py` | what a new shape or a new kind starts with: the repairs keyed by the check's problems (`FIXES`, `apply_fix`), `fill_defaults`, and the header's new case of a kind (`new_case`, `new_case_from`) |
+| `app.py` | the GUI: the header (the type selector, *More examples*), the two tabs and the dialogs (the problems list, open, save, Gmsh). Every menu item and button goes through `Workbench.dispatch(action)`, every edit through `Workbench.edit`; Undo restores the case with its file and key (`_Version`) |
 | `tiling.py` | any rectangles as a partition of unity, certified by `GridPartitionOfUnity` |
 | `runner.py` | the run: arms in turns, the timer, Stop, the snapshots, the record |
 | `runview.py` | the Run & results tab: the controls, the compile card, the four cards, the live fields, timings and convergence |
@@ -517,7 +531,7 @@ projection lets a little velocity back into the solid each sub-step.
 | `compile.py` | the compile: a case's `CaseGraph` through its family's `case_graph`, the finite-volume window as an agent (`FVAgent`), seams from the geometry with Fourier prolongations, the declared cross-points, the verdict per seam, and the background job with its record |
 | `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven as the page drives it (a click is a Tap at `_on_tap`, a handle's drag the data Bokeh's `PointDrawTool` sends, a field a widget; helpers in `tests/workbench_ui.py`), every header control and menu action (nothing is left unbuilt), the status chip's list and its *Show me*, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
 | `tests/test_workbench_fv.py`, `tests/test_workbench_families.py` | the finite volumes against closed forms (a layered wall, a series circuit), one window equal to the full domain to the bit, styles B, C and D against the full domain, the unrelaxed Dirichlet–Neumann diverging exactly when $\rho>1$, both new families end to end, and the page's family, physics and materials controls |
-| `tests/test_workbench_starter.py` | the owner's first scenario in every family (ready to run once the shape is drawn, or the one thing only the person can decide said plainly), a change of physics taking its example's setup, defaults that fill only what is missing, the Fix buttons one by one and all at once, *New case...*, a check that never raises, the canvas holding still while a shape is drawn, and the header fitting a laptop |
+| `tests/test_workbench_starter.py` | the owner's first scenario in every family (ready to run once the shape is drawn, or the one thing only the person can decide said plainly), a new kind starting from its example's setup and one Undo restoring the old case, defaults that fill only what is missing, the Fix buttons one by one and all at once, every kind from the header ready to run and *Start over*, the windows fix at a Dirichlet-Neumann interface, a check that never raises, the canvas holding still while a shape is drawn, and the header holding what it simulates. `tests/test_workbench_shell.py` also pins case@0.6 (no name; an older file loses its own), *More examples*, the type switch and its one Undo with the file, and that no control shows a case name |
 | `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, the Run & results tab's per-seam table, and the gallery opening every example |
 
 ## Known limitations

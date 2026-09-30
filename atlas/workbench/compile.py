@@ -42,7 +42,7 @@ from typing import Any, Callable
 
 import numpy as np
 
-from . import fv, styles
+from . import fv, registry, styles
 from . import geometry as geo
 
 #: modes each port's prolongation carries (fewer on a short interface)
@@ -430,12 +430,12 @@ def fv_graph(spec, f: fv.Field, *, family: str, port_type: str, scales: dict[str
         kw = dict(overlap=cells_ov * d.dx, overlap_cells=int(cells_ov),
                   partition_of_unity=tiling.partition_of_unity())
     graph = CaseGraph(
-        name=name or f"workbench-{spec.name}",
+        name=name or f"workbench-{family}",
         agents=agents, connections=conns,
         decomposition=Decomposition.OVERLAPPING if overlapping
         else Decomposition.NON_OVERLAPPING,
         cross_points=cross_points(spec), macro_dt=float(spec.run.macro_dt),
-        note=f"the workbench case {spec.name!r}, family {family}, style {style}", **kw)
+        note=f"a workbench case, family {family}, style {style}", **kw)
     return graph, agents_fv
 
 
@@ -499,7 +499,8 @@ def summarize(spec, graph, result, seconds: float) -> CompileSummary:
         seams.append(SeamVerdict(c.seam_id, c.agents, c.port_type.value, worst.value,
                                  [_row(d) for d in ds if d.verdict is not ADMIT]))
     return CompileSummary(
-        case=spec.name, family=spec.physics.family, verdict=result.verdict.value,
+        case=registry.short_label(spec.physics.family), family=spec.physics.family,
+        verdict=result.verdict.value,
         seams=seams, other=other, seconds=seconds, agents=len(graph.agents),
         cross_points=graph.cross_points, report=result.report(),
         when=datetime.datetime.now().astimezone().isoformat(timespec="seconds"))
@@ -525,7 +526,8 @@ def compile_case(spec) -> CompileSummary:
         built = case_graph(spec)
         graph = built[0] if isinstance(built, tuple) else built
     except (CompileRefused, NamedHoleError) as exc:
-        return CompileSummary(case=spec.name, family=spec.physics.family, verdict="refuse",
+        return CompileSummary(case=registry.short_label(spec.physics.family),
+                              family=spec.physics.family, verdict="refuse",
                               seams=[], other=[], seconds=time.perf_counter() - t0,
                               agents=0, cross_points=None,
                               refused_before=f"{type(exc).__name__}: {exc}",
@@ -542,11 +544,15 @@ class CompileJob:
     it; the record goes beside the case file, ``compile-<time>.json``."""
 
     def __init__(self, spec, results_dir: str | None = None,
-                 on_finish: Callable[["CompileJob"], None] | None = None):
+                 on_finish: Callable[["CompileJob"], None] | None = None,
+                 case_label: str = ""):
         import threading
         self.spec = spec.copy_deep()
         self.committed_json = self.spec.to_json()
         self.results_dir = results_dir
+        #: what the record calls the case (the workbench's key for it; case@0.6 has
+        #: no name), else its kind
+        self.case_label = case_label
         self.on_finish = on_finish
         self.status = "created"
         self.summary: CompileSummary | None = None
@@ -579,6 +585,8 @@ class CompileJob:
         self.status = "compiling"
         try:
             self.summary = compile_case(self.spec)
+            if self.case_label:
+                self.summary.case = self.case_label
             if self.results_dir:
                 from .runner import write_record
                 rec = {"schema": "atlas-workbench/compile@1", **self.summary.as_dict(),

@@ -71,8 +71,23 @@ def test_save_and_load_round_trip(tmp_path):
     s = example_case("farm-12")
     path = s.save(str(tmp_path / "farm.json"))
     assert CaseSpec.load(path) == s
-    assert json.loads(open(path, encoding="utf-8").read())["schema_id"] == \
-        "atlas-workbench/case@0.5"          # any family's version, drawn shapes or not
+    saved = json.loads(open(path, encoding="utf-8").read())
+    assert saved["schema_id"] == "atlas-workbench/case@0.6"   # any family, drawn or not
+    assert "name" not in saved and "description" not in saved
+
+
+def test_a_case_has_no_name_and_an_older_file_loses_its_own():
+    """The owner, 2026-09-30: "There's no need to have names and descriptions for the
+    individual cases, remove that."  case@0.6 has neither, and a 0.5 file that has
+    them loads without them (a stray name in a 0.6 file is ignored, not kept)."""
+    assert "name" not in CaseSpec.model_fields and "description" not in CaseSpec.model_fields
+    old = json.loads(example_case("s-channel").to_json())
+    old.update(schema_id="atlas-workbench/case@0.5", name="my channel",
+               description="the one I drew")
+    s = CaseSpec.from_json(json.dumps(old))
+    assert s.schema_id == "atlas-workbench/case@0.6"
+    assert s == example_case("s-channel")
+    assert "my channel" not in s.to_json() and "the one I drew" not in s.to_json()
 
 
 def test_registry_says_which_families_run_and_why_the_rest_do_not():
@@ -104,7 +119,8 @@ def wb(tmp_path, monkeypatch):
     return Workbench(cases_dir=str(tmp_path))
 
 
-ALL_ACTIONS = ["file:new", "file:gallery", *[f"file:example:{k}" for k in EXAMPLES], "file:open",
+ALL_ACTIONS = ["file:start-over", "case:type:conduction-2d",
+               *[f"file:example:{k}" for k in EXAMPLES], "file:open",
                "file:save-as", "file:import", "file:export", "edit:undo", "edit:redo",
                "edit:revert", "view:grid", "view:overlaps", "view:labels", "view:log",
                "run:check", "run:compile", "run:decomposed", "run:full", "run:both",
@@ -122,23 +138,83 @@ def test_every_menu_action_runs(wb):
 def test_every_header_control_reaches_the_dispatcher(wb):
     """A control nobody handles would be a control that does nothing: the Case and ?
     menus' items and the header's buttons all go through `dispatch`."""
-    items = [it[1] for m in (wb.case_menu, wb.help_menu) for it in m.items if it is not None]
-    assert {"file:new", "file:gallery", "file:open", "file:save", "file:save-as",
+    items = [it[1] for m in (wb.case_menu, wb.help_menu, wb.examples_menu)
+             for it in m.items if it is not None]
+    assert {"file:start-over", "file:open", "file:save", "file:save-as",
             "file:import", "file:export", "file:import-gmsh", "edit:revert",
             "view:history", "help:guide", "help:about", "help:docs"} <= set(items)
+    assert not {"file:new", "file:gallery", "file:rename"} & set(items)
     for action in items:
         wb.dispatch(action)
-    for button in (wb.name_btn, wb.status_btn, wb.undo_btn, wb.redo_btn, wb.run_btn):
+    for button in (wb.status_btn, wb.undo_btn, wb.redo_btn, wb.run_btn):
         click(button)
+    wb.type_sel.value = "electric-2d"
+    assert wb.spec.physics.family == "electric-2d"
     assert not any("unknown action" in line for line in wb.log_lines)
 
 
-def test_the_examples_are_in_the_gallery_not_the_menu(wb):
-    """Listed in the Case menu as well, the examples ran it off the page (seen)."""
-    items = [it[1] for it in wb.case_menu.items if it is not None]
-    assert not any(a.startswith("file:example:") for a in items)
-    wb.dispatch("file:gallery")
-    assert len(widgets(wb.modal_body, pn.widgets.Button, name="Open")) == len(EXAMPLES)
+def test_more_examples_lists_the_types_own_with_no_names(wb):
+    """The owner's O1 (2026-09-30): under the header's example button, the chosen
+    kind's examples, one line each saying what it shows, with no name; the gallery of
+    all 21, with their names and descriptions, left the page."""
+    for fid in registry.available_ids():
+        wb.dispatch(f"case:type:{fid}")
+        items = wb.examples_menu.items
+        mine = [k for k, ex in EXAMPLES.items() if ex.family == fid]
+        assert [tuple(i) for i in items] == [(EXAMPLES[k].shows, f"file:example:{k}")
+                                             for k in mine], fid
+        for label, _action in items:
+            assert not any(k in label or EXAMPLES[k].label in label for k in EXAMPLES)
+    wb.dispatch("case:type:conduction-2d")
+    before = wb.spec.model_dump()
+    wb.dispatch("file:example:bend-3")
+    assert wb.spec == example_case("bend-3") and wb.case_key == "bend-3"
+    assert wb.path is None and wb.save_state.object == "not saved yet"
+    wb.undo()
+    assert wb.spec.model_dump() == before
+
+
+def test_the_type_selector_starts_a_new_case_and_one_undo_restores_the_old(wb, tmp_path):
+    """D1-D3 of the demo plan: the header's first control is what the case simulates;
+    another kind starts a new case of it (the geometry resets), with no confirmation,
+    and one Undo brings the old case back, bit for bit, with its file."""
+    from atlas.workbench.spec import Outline
+    from atlas.workbench.starter import new_case
+    wb.dispatch("case:type:conduction-2d")
+    wb.geo_editor._switch(layer="domain", tool="draw")
+    wb.geo_editor.add_drawn(Outline(points=[(40, 40), (200, 60), (180, 200)],
+                                    edges=["line"] * 3, bulge=[0.0] * 3))
+    path = str(tmp_path / "mine.json")
+    wb.save_to(path)
+    before, key = wb.spec.model_dump(), wb.case_key
+    assert wb.spec.domain.outline is not None and key == "mine"
+    wb.type_sel.value = "transport-2d"                    # the header's selector
+    s = wb.spec
+    assert s.physics.family == "transport-2d" and s.domain.outline is None
+    assert s.model_dump() == new_case("transport-2d").model_dump()
+    assert wb.path is None and wb.case_key.startswith("river-plume-")
+    assert "Undo" in wb.log_lines[0] and "heat conduction" in wb.log_lines[0]
+    wb.undo()                                             # one Undo
+    assert wb.spec.model_dump() == before
+    assert wb.path == path and wb.case_key == "mine" and not wb.dirty
+    assert wb.type_sel.value == "conduction-2d"           # the selector follows, no new case
+    assert wb.spec.model_dump() == before
+    wb.redo()
+    assert wb.spec.physics.family == "transport-2d" and wb.path is None
+    wb.dispatch("file:start-over")                        # a new case of the same kind
+    assert wb.spec.physics.family == "transport-2d" and wb.path is None
+    assert "Started over" in wb.log_lines[0]
+
+
+def test_no_control_shows_a_case_name(wb):
+    """Done-when of item 1.1: no control anywhere shows a case name or a description.
+    Every example is opened; the header and the Model tab hold none of the example
+    keys, labels or descriptions."""
+    for key, ex in EXAMPLES.items():
+        wb.dispatch(f"file:example:{key}")
+        shown = texts(wb.tpl.header[0]) + "\n" + texts(wb.workspace)
+        assert key not in shown.split(), key
+        assert ex.label not in shown and ex.description not in shown, key
 
 
 def test_nothing_is_left_unbuilt(wb):
@@ -167,28 +243,30 @@ def test_a_case_with_errors_does_not_run(wb):
 def test_edits_are_validated_undone_and_redone(wb):
     assert wb.edit(lambda s: setattr(s.domain, "nx", -5), "bad") is False
     assert wb.spec.domain.nx == 352
-    assert wb.edit(lambda s: setattr(s, "name", "renamed"), "rename") is True
-    assert wb.dirty and wb.spec.name == "renamed"
+    assert wb.edit(lambda s: setattr(s.run, "steps", 7), "steps") is True
+    assert wb.dirty and wb.spec.run.steps == 7
     wb.dispatch("edit:undo")
-    assert wb.spec.name == "wake-array-3"
+    assert wb.spec.run.steps == 40
     wb.dispatch("edit:redo")
-    assert wb.spec.name == "renamed"
+    assert wb.spec.run.steps == 7
 
 
 def test_save_open_and_the_case_bar(wb, tmp_path):
     path = str(tmp_path / "mine.json")
     assert wb.save_state.object == "not saved yet"
-    wb.edit(lambda s: setattr(s, "name", "mine"), "rename")
-    assert wb.save_state.object == "unsaved changes" and wb.name_btn.name.startswith("mine")
+    wb.edit(lambda s: setattr(s.run, "steps", 7), "steps")
+    assert wb.save_state.object == "unsaved changes"
     wb.save_to(path)
-    assert not wb.dirty and wb.save_state.object == "saved"
+    assert not wb.dirty and wb.save_state.object == "saved" and wb.case_key == "mine"
     wb.dispatch("file:example:farm-12")
-    assert wb.spec.name == "farm-12" and wb.path is None
+    assert wb.spec == example_case("farm-12") and wb.path is None
+    assert wb.case_key == "farm-12"                  # its records' folder, not a name shown
     # a fresh example has nothing of the person's to lose (seen: it read "unsaved
     # changes" the moment it opened)
     assert wb.save_state.object == "not saved yet"
     wb.open_path(path)
-    assert wb.spec.name == "mine" and wb.path == path and not wb.dirty
+    assert wb.spec.run.steps == 7 and wb.path == path and not wb.dirty
+    assert wb.case_key == "mine"
 
 
 def test_the_status_chip_lists_the_problems_and_where_each_is_fixed(wb):

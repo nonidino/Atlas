@@ -569,26 +569,22 @@ def test_electrode_nodes_are_inside_the_canvas(wb):
         assert x0 + 2 <= x <= x1 - 2 and y0 + 2 <= y <= y1 - 2
 
 
-def test_the_gallery_lists_every_example_and_opens_it(wb):
-    import panel as pn
-    from atlas.workbench.spec import EXAMPLES
-    wb.dispatch("file:gallery")
-    text = _texts(wb.modal_body)
-    for ex in EXAMPLES.values():
-        assert ex.label in text and ex.description in text
-    assert "showcases, not research records" in text
-    buttons = []
-
-    def walk(o):
-        if isinstance(o, pn.widgets.Button) and o.name == "Open":
-            buttons.append(o)
-        for c in getattr(o, "objects", None) or []:
-            walk(c)
-    walk(wb.modal_body)
-    assert len(buttons) == len(EXAMPLES)
-    keys = list(EXAMPLES)
-    buttons[keys.index("cooled-block")].clicks += 1
-    assert wb.spec.name == "cooled-block"
+def test_more_examples_reaches_every_example(wb):
+    """The gallery of all 21 left the page with the names it listed (the owner's D4 and
+    O1, 2026-09-30); every example stays within reach from its kind's *More examples*
+    list, one line saying what it shows, and opens the case it names."""
+    from atlas.workbench.spec import EXAMPLES, example_case
+    reached = []
+    for fid in registry.available_ids():
+        wb.type_sel.value = fid
+        for label, action in wb.examples_menu.items:
+            key = action.split(":", 2)[2]
+            assert label == EXAMPLES[key].shows and EXAMPLES[key].family == fid
+            reached.append(key)
+    assert sorted(reached) == sorted(EXAMPLES)
+    wb.type_sel.value = "conjugate-heat-2d"
+    wb.examples_menu.clicked = "file:example:cooled-block"
+    assert wb.spec == example_case("cooled-block")
 
 
 def test_the_run_tab_shows_the_compile_per_seam(wb):
@@ -605,8 +601,8 @@ def test_the_run_tab_shows_the_compile_per_seam(wb):
     wb.show("run")
     text = _texts(wb.workspace.objects[0])
     assert "admit-uncertified" not in text
-    assert "not compiled since this case was opened (the last compile was of " \
-           "plate-circuit)" in text
+    assert "not compiled since this case was opened (the last compile was of the " \
+           "current in a plate case open before it)" in text
     wb.start_compile(blocking=True)
     text = _texts(wb.workspace.objects[0])
     assert "refuse" in text

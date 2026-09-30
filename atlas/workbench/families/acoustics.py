@@ -630,7 +630,7 @@ def case_graph(spec):
             reproducibility_floor=float(np.finfo(float).eps), deterministic=True,
             note="atlas/workbench/families/acoustics.py: staggered-grid leapfrog")
     return CaseGraph(
-        name=f"workbench-{spec.name}",
+        name=f"workbench-{spec.physics.family}",
         agents=[Agent(left.id, piece(left.id, 1), domain=f"piece {left.id}"),
                 Agent(right.id, piece(right.id, -1), domain=f"piece {right.id}")],
         connections=[Connection(
@@ -640,7 +640,7 @@ def case_graph(spec):
             note="the explicit Dirichlet-Neumann exchange: pressures one way, the "
                  "interface velocities the other")],
         decomposition=Decomposition.NON_OVERLAPPING, cross_points=(), macro_dt=dt,
-        note=f"the workbench case {spec.name!r}: style C, explicit")
+        note="a workbench case: style C, explicit")
 
 
 def _interface_faces(spec) -> tuple[np.ndarray, float]:

@@ -166,14 +166,15 @@ def test_a_version_0_2_file_migrates():
                         {"id": "B-bottom", "edge": "bottom", "kind": "freestream"},
                         {"id": "B-top", "edge": "top", "kind": "freestream"}]}
     s = CaseSpec.model_validate(d)
-    assert s.schema_id == "atlas-workbench/case@0.5"
+    assert s.schema_id == "atlas-workbench/case@0.6"
+    assert "old" not in s.to_json()                       # its name is dropped (0.6)
     assert s.physics.params == {"nu": 0.004, "u_inf": 1.0} and s.physics.nu == 0.004
     assert s.coupling.style == "A" and s.run.mode == "transient"
     assert s.materials == {} and s.attachments == []
     d.pop("boundaries")
     d["schema_id"] = "atlas-workbench/case@0.1"
     s1 = CaseSpec.from_json(__import__("json").dumps(d))
-    assert s1.schema_id == "atlas-workbench/case@0.5" and len(s1.boundaries) == 4
+    assert s1.schema_id == "atlas-workbench/case@0.6" and len(s1.boundaries) == 4
 
 
 def test_style_c_and_d_geometry_rules():
@@ -244,20 +245,21 @@ def test_the_physics_step_is_the_familys(wb):
 
 
 def test_only_the_families_that_run_are_offered(wb):
-    """The header's physics menu lists the families that run, by label, and choosing
-    one adapts the case (`spec.adapt_to_family`).  A planned family is not offered at
-    all: disabled options in a dict-valued Select disabled nothing in the page (seen
-    in the served page, before the rebuild)."""
-    sel = wb.family_sel
-    ready = [f.label for f in registry.FAMILIES if f.status == "ready-to-wire"]
-    planned = [f.label for f in registry.FAMILIES if f.status != "ready-to-wire"]
-    assert list(sel.options) == ready and not set(planned) & set(sel.options)
-    assert sel.value == registry.family(wb.spec.physics.family).label
-    sel.value = registry.family("conduction-2d").label
+    """The header's type selector lists the families that run, by their short names,
+    and choosing one starts a new case of it (`starter.new_case`).  A planned family
+    is not offered at all: disabled options in a dict-valued Select disabled nothing in
+    the page (seen in the served page, before the rebuild)."""
+    sel = wb.type_sel
+    ready = [f.id for f in registry.FAMILIES if f.status == "ready-to-wire"]
+    planned = [f.id for f in registry.FAMILIES if f.status != "ready-to-wire"]
+    assert list(sel.options.values()) == ready and not set(planned) & set(sel.options.values())
+    assert list(sel.options) == [registry.short_label(f).capitalize() for f in ready]
+    assert sel.value == wb.spec.physics.family
+    sel.value = "conduction-2d"
     assert wb.spec.physics.family == "conduction-2d" and wb.spec.coupling.style in ("B", "C")
     wb.undo()
     assert wb.spec.physics.family == "incompressible-2d"
-    assert sel.value == registry.family("incompressible-2d").label
+    assert sel.value == "incompressible-2d"
 
 
 def test_the_material_inspector_edits_the_case(wb):

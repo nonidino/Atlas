@@ -300,14 +300,40 @@ def _windows(c: CaseSpec) -> str | None:
     style = c.coupling.style
     n = {"D": 1, "split": 1, "C": 2}.get(style, max(2, min(len(c.windows) or 2, 6)))
     before = (c.layout, list(c.windows))
-    c.layout = Layout(cut="along", along=n, across=1)
-    try:
-        lay.refresh(c)
-    except lay.LayoutError:
-        c.layout, c.windows = before
-        return None
-    k = len(c.windows)
-    return f"{k} window{'s' * (k != 1)} cut automatically from the shape (Windows)"
+    tries = [Layout(cut="along", along=n, across=1)]
+    if style == "C" and _two_media(c):
+        # Dirichlet-Neumann across the interface the materials (or the coolant and
+        # the block) already have, as a newly drawn domain's windows are
+        tries.insert(0, Layout(cut="materials"))
+    for layout in tries:
+        c.layout = layout
+        try:
+            lay.refresh(c)
+        except lay.LayoutError:
+            continue
+        k = len(c.windows)
+        how = ("one per material" if layout.cut == "materials" else
+               "cut automatically from the shape")
+        return f"{k} window{'s' * (k != 1)} {how} (Windows)"
+    c.layout, c.windows = before
+    return None
+
+
+def _two_media(c: CaseSpec) -> bool:
+    """Whether the domain holds two media a style-C cut can follow: two materials, or,
+    for the cooled block, coolant beside solid."""
+    d = c.domain
+    act = geo.domain_mask(d)
+    if c.physics.family == "conjugate-heat-2d":
+        from .families.cooling import coolant_mask
+        try:
+            wet = coolant_mask(c)
+        except Exception:                                # the check says why
+            return False
+        return bool(wet.any() and (act & ~wet).any())
+    owner = geo.region_owner(c.regions, d.nx, d.ny)
+    ks = np.unique(owner[act])
+    return len({c.regions[k].material for k in ks.tolist() if k >= 0}) >= 2
 
 
 #: key -> (the button's label, the repair)
@@ -349,23 +375,27 @@ def new_case(fid: str) -> CaseSpec:
     whole grid, the physics' example's setup (`spec.adapt_to_family`), and what it
     then lacks filled in.  A blank case was a wind farm cut into no windows, an error
     from its first moment."""
+    return new_case_from(fid)[0]
+
+
+def new_case_from(fid: str) -> tuple[CaseSpec, str | None, list[str]]:
+    """`new_case`; the example it had to start from instead of the whole grid (None when
+    it did not); and what it was given to start (`fill_defaults`), for the page to say."""
     from . import layout as lay
     from .spec import EXAMPLES, adapt_to_family, blank_case, example_case
     c = blank_case()
-    c.name = "new " + registry.short_label(fid)
     if fid != c.physics.family:
         adapt_to_family(c, fid)
     if c.layout is not None:
         lay.refresh(c)
-    fill_defaults(c)
+    filled = fill_defaults(c)
     if any(i.severity == "error" for i in check(c)):
         # a physics whose whole grid cannot run as it stands (a cooled block needs its
         # channel drawn) starts from its first example instead
         key = next((k for k, ex in EXAMPLES.items() if ex.family == fid), None)
         if key is not None:
-            c = example_case(key)
-            c.name = "new " + registry.short_label(fid)
-    return c
+            return example_case(key), key, []
+    return c, None, filled
 
 
 def fill_defaults(c: CaseSpec, rounds: int = 4) -> list[str]:
@@ -390,4 +420,4 @@ def fill_defaults(c: CaseSpec, rounds: int = 4) -> list[str]:
     return done
 
 
-__all__ = ["FIXES", "fix_label", "apply_fix", "fill_defaults", "new_case"]
+__all__ = ["FIXES", "fix_label", "apply_fix", "fill_defaults", "new_case", "new_case_from"]
