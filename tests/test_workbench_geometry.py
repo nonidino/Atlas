@@ -1,13 +1,14 @@
 """The Atlas Workbench geometry section: its rules, its editor and its Gmsh import.
 
 The rules are tested as plain functions (`geometry.py`), against the real tilings
-the measurements were taken on.  The canvas is tested by writing to its Bokeh
-sources exactly as Bokeh's `BoxEditTool` and `PointDrawTool` do (a drawn shape
-is a new row whose other columns hold the tool's `empty_value`; a deleted one is
-a row gone; a drag is changed coordinates), which is the data the browser sends.
-The gestures themselves were also driven in a served page (move, corner-resize,
-click-to-add, the tiling dialog and a Gmsh upload), per the project's rule that
-a socket cannot see an undrawn page.
+the measurements were taken on.  The canvas is tested the way the page drives it
+(since 2026-09-29's rebuild): a click is a Tap event at `_on_tap`, which selects
+or draws with the active tool; the selected shape's handles are Bokeh sources a
+`PointDrawTool` drags (a drag is changed coordinates, a Backspace a row gone),
+which is the data the browser sends; the inspector's fields are widgets.  The
+gestures themselves were also driven in a served page (select, drag, draw a
+rectangle and a circle, the tiling dialog), per the project's rule that a socket
+cannot see an undrawn page.
 """
 
 from __future__ import annotations
@@ -30,6 +31,9 @@ from atlas.workbench import geometry as geo                               # noqa
 from atlas.workbench import registry                                      # noqa: E402
 from atlas.workbench.spec import (EXAMPLES, Boundary, CaseSpec, Region,     # noqa: E402
                                   Window, blank_case, check, example_case)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from workbench_ui import click, tap, widget, widgets                     # noqa: E402
 
 
 def _msgs(spec, severity=None):
@@ -348,38 +352,47 @@ def _data(src):
 
 
 def test_every_layer_and_tool_builds(wb):
-    from atlas.workbench.editor import LAYERS, TOOLS
+    from atlas.workbench.editor import LAYERS, TOOLS, layers_for
     for layer in LAYERS:
         for tool in TOOLS:
             wb.geo_editor._switch(layer=layer, tool=tool)
-            assert wb.active == "geometry" and wb.geo_editor.state["layer"] == layer
+            # a layer the family does not read is not in the rail: the Shape one opens
+            want = layer if layer in layers_for(wb.spec) else "domain"
+            assert wb.active == "model" and wb.geo_editor.state["layer"] == want
     wb.geo_editor._switch(snap=1)
-    assert "Snapping to **1** cell." in wb.geo_editor.help.object
+    assert wb.geo_editor._snap() == 1
 
 
-def test_drag_draw_and_delete_windows(wb):
+def test_select_move_draw_and_delete_windows(wb):
     ed = wb.geo_editor
-    d = _data(ed.src_win)
-    d["x"][1] += 13                                               # F10, +13 cells
-    d["y"][1] += 5
-    ed.src_win.data = d
+    ed._switch(layer="windows")
+    ed = wb.geo_editor
+    tap(ed, 176.0, 40.0)                                          # inside F10 alone
+    assert ed.selected == "windows:1"
+    d = _data(ed.src_move)                                        # its diamond, dragged
+    d["x"][0] += 13                                               # +13 cells: 16 snapped
+    d["y"][0] += 5
+    ed.src_move.data = d
     assert (wb.spec.windows[1].x0, wb.spec.windows[1].y0) == (128, 8)
-    assert wb.log_lines[0].endswith("moved window F10")
+    assert wb.log_lines[0].endswith("F10: moved to (128, 8)")
     assert any("no window at full weight" in m for m in _msgs(wb.spec, "error"))
     ed = wb.geo_editor
-    d = _data(ed.src_win)
-    for k, v in dict(x=100.3, y=60.2, w=50.4, h=33.3, id="").items():
-        d[k].append(v)
-    ed.src_win.data = d
+    ed._switch(tool="rect")
+    tap(wb.geo_editor, 72.3, 40.2)                                # two corners
+    tap(wb.geo_editor, 120.4, 72.1)
     assert wb.spec.windows[-1] == Window(id="F7", x0=72, y0=40, nx=48, ny=32)
+    ed = wb.geo_editor                                            # handed back to Select
+    assert ed.state["tool"] == "select" and ed.selected == "windows:6"
     n = len(wb.spec.windows)
-    d = _data(ed.src_win)
-    for k, v in dict(x=10, y=10, w=0.5, h=0.2, id="").items():   # a click, not a box
-        d[k].append(v)
-    ed.src_win.data = d
-    assert len(wb.spec.windows) == n and len(ed.src_win.data["x"]) == n
-    d = {k: v[:-1] for k, v in _data(ed.src_win).items()}       # Backspace on F7
-    ed.src_win.data = d
+    ed._switch(tool="rect")
+    tap(wb.geo_editor, 10.0, 10.0)                                # a click, not a box
+    tap(wb.geo_editor, 10.4, 10.2)
+    assert len(wb.spec.windows) == n and "two different corners" in wb.log_lines[0]
+    wb.geo_editor._switch(tool="select")
+    ed = wb.geo_editor
+    ed.select("windows:6")
+    d = {k: v[:-1] for k, v in _data(ed.src_move).items()}       # Backspace on F7
+    ed.src_move.data = d
     assert [w.id for w in wb.spec.windows][-1] == "F21"
     for _ in range(3):
         wb.undo()
@@ -387,8 +400,9 @@ def test_drag_draw_and_delete_windows(wb):
 
 
 def test_resize_by_a_corner_handle(wb):
-    wb.geo_editor._switch(tool="resize")
+    wb.geo_editor._switch(layer="windows")
     ed = wb.geo_editor
+    ed.select("windows:0")
     h = _data(ed.src_handles)
     i = [j for j, (o, c) in enumerate(zip(h["owner"], h["corner"])) if o == 0 and c == 2][0]
     h["x"][i] += 20
@@ -396,56 +410,83 @@ def test_resize_by_a_corner_handle(wb):
     ed.src_handles.data = h
     assert wb.spec.windows[0] == Window(id="F00", x0=0, y0=0, nx=144, ny=96)
     assert wb.log_lines[0].endswith("resized F00")
+    ed = wb.geo_editor                                            # and from the inspector
+    widget(ed.inspector, "x", pn.widgets.IntInput).value = 16
+    assert wb.spec.windows[0].x0 == 16
 
 
-def test_devices_regions_and_tables(wb):
-    wb.geo_editor._switch(layer="devices", tool="move")
-    ed = wb.geo_editor
-    d = _data(ed.src_dev)
-    d["x"].append(200.2)
-    d["y"].append(100.7)
-    d["id"].append("")
-    ed.src_dev.data = d
+def test_rotors_are_placed_moved_and_deleted(wb):
+    wb.geo_editor._switch(layer="devices", tool="draw")
+    tap(wb.geo_editor, 200.2, 100.7)
     assert wb.spec.devices[-1].id == "R4"
     assert (wb.spec.devices[-1].x, wb.spec.devices[-1].y) == (6.25, 3.25)   # snapped, in D
+    ed = wb.geo_editor
+    assert ed.state["tool"] == "select" and ed.selected == "devices:3"
+    d = _data(ed.src_dev)
+    d["x"][3] += 16
+    ed.src_dev.data = d
+    assert wb.spec.devices[3].x == 6.75
+    ed = wb.geo_editor
+    ed.select("devices:3")
+    click(widget(ed.inspector, "Delete", pn.widgets.Button))
+    assert [v.id for v in wb.spec.devices] == ["R1", "R2", "R3"]
+
+
+def test_regions_are_drawn_and_edited_in_the_inspector(wb):
+    wb.dispatch("file:example:wall-2")
+    wb.geo_editor._switch(layer="regions", tool="rect")
     wb.geo_state["material"] = "copper"
-    wb.geo_editor._switch(layer="regions")
+    tap(wb.geo_editor, 64.2, 8.3)
+    tap(wb.geo_editor, 96.4, 24.1)
+    k = len(wb.spec.regions) - 1
+    r = wb.spec.regions[k]
+    assert (r.material, r.shape, r.x0, r.y0, r.nx, r.ny) == ("copper", "rect", 64, 8, 32, 16)
     ed = wb.geo_editor
-    r = _data(ed.src_reg_edit)
-    for k, v in dict(x=64, y=64, w=64, h=64, id="").items():
-        r[k].append(v)
-    ed.src_reg_edit.data = r
-    assert wb.spec.regions == [Region(id="R1", material="copper", x0=32, y0=32, nx=64, ny=64)]
-    assert any("does not read material regions" in m for m in _msgs(wb.spec, "warning"))
-    ed = wb.geo_editor
-    ed._on_table_edit("regions", SimpleNamespace(row=0, column="material", value="steel"))
-    assert wb.spec.regions[0].material == "steel"
+    assert ed.selected == f"regions:{k}"
+    widget(ed.inspector, "Made of", pn.widgets.Select).value = "steel"
+    assert wb.spec.regions[k].material == "steel"
     before = wb.spec
-    ed._on_table_edit("regions", SimpleNamespace(row=0, column="width", value=-3))
+    widget(wb.geo_editor.inspector, "width", pn.widgets.IntInput).value = -3
     assert wb.spec == before and "not applied" in wb.log_lines[0]
-    ed._on_table_edit("windows", SimpleNamespace(row=0, column="x0", value=16))
-    assert wb.spec.windows[0].x0 == 16
-    ed.tables["regions"].selection = [0]
-    ed.delete_selected()
-    assert wb.spec.regions == []
+    # the field shows the case again (seen: a refused width stayed, reading as applied)
+    assert widget(wb.geo_editor.inspector, "width", pn.widgets.IntInput).value == 32
+    widget(wb.geo_editor.inspector, "x", pn.widgets.IntInput).value = 16
+    assert wb.spec.regions[k].x0 == 16
+    click(widget(wb.geo_editor.inspector, "Delete", pn.widgets.Button))
+    assert len(wb.spec.regions) == k
 
 
-def test_polygon_regions_are_not_moved_from_the_table(wb):
+def test_regions_a_family_ignores_are_shown_and_warned_of(wb):
+    """The wind farm reads no regions, so its rail has no Materials layer until a
+    region is there (from a file, or a family changed): then it shows, to delete."""
+    from atlas.workbench.editor import layers_for
+    assert "regions" not in layers_for(wb.spec)
+    wb.edit(lambda c: c.regions.append(Region(id="R1", material="copper", x0=32, y0=32,
+                                              nx=64, ny=64)), "a region")
+    assert "regions" in layers_for(wb.spec)
+    assert any("does not read material regions" in m for m in _msgs(wb.spec, "warning"))
+
+
+def test_imported_polygon_regions_are_not_moved_here(wb):
     wb.edit(lambda c: c.regions.append(Region(id="P", shape="polygon",
                                               points=[(10, 10), (60, 10), (35, 50)])), "add")
     wb.geo_editor._switch(layer="regions")
+    ed = wb.geo_editor
+    ed.select("regions:0")
+    assert ed._handle_rows["move"] == [] and ed._boxes() == []      # nothing to drag
+    assert widgets(ed.inspector, pn.widgets.IntInput, name="x") == []  # nor to type
     before = wb.spec
-    wb.geo_editor._on_table_edit("regions", SimpleNamespace(row=0, column="x0", value=0))
-    assert wb.spec == before and "imported polygon" in wb.log_lines[0]
+    ed.translate_shape("regions:0", 8.0, 0.0)
+    assert wb.spec == before and "is not drawn here" in wb.log_lines[0]
 
 
 def test_the_tiling_dialog_and_the_gmsh_path(wb, tmp_path):
     from atlas.workbench.gmsh_import import read_msh
-    wb.dialog_tiling()
-    cols, rows, ov = wb.modal_body.objects[1].objects
-    cols.value, rows.value = 4, 3
-    go = wb.modal_body.objects[3]
-    go.clicks += 1
+    wb.geo_editor._switch(layer="windows")
+    click(widget(wb.geo_editor.inspector, "Lay a grid of rectangles...", pn.widgets.Button))
+    widget(wb.modal_body, "Columns").value = 4
+    widget(wb.modal_body, "Rows").value = 3
+    click(widget(wb.modal_body, "Replace the windows", pn.widgets.Button))
     assert len(wb.spec.windows) == 12 and _msgs(wb.spec, "error") == []
     g = read_msh(_plate_msh(tmp_path / "p.msh"), 1 / 32)
     assert wb.apply_gmsh(g, 1 / 32, "p.msh")

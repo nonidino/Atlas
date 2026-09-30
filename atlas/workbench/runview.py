@@ -301,9 +301,10 @@ class RunPanel:
         return pn.FlexBox(*[pn.pane.Bokeh(f) for f in self.figs.values()],
                           flex_wrap="wrap", gap="6px 10px", sizing_mode="stretch_width")
 
-    def live_view(self):
+    def live_view(self, progress: bool = True):
         return pn.Column(
-            pn.Row(self.progress, self.status, sizing_mode="stretch_width"),
+            *([pn.Row(self.progress, self.status, sizing_mode="stretch_width")]
+              if progress else []),
             self.fields_view(),
             pn.FlexBox(pn.Column(pn.pane.Markdown(
                 f"**Time per {html.escape(self.run.step_label)}, each arm** (the step "
@@ -438,32 +439,75 @@ def machine_line(res: dict[str, Any]) -> str:
             + (", ".join(names) if names else "none") + ".")
 
 
+CARD_STYLE = {"background": "#ffffff", "border": "1px solid #e2e8f0", "border-radius": "12px",
+              "padding": "4px 6px"}
+
+
+def _card(title: str, value: str, detail: str, verdict: str | None = None,
+          good: bool | None = None) -> pn.pane.HTML:
+    """One result card: what it is, the measured value, and what that means."""
+    colour = {True: "#15803d", False: "#b91c1c", None: "#5b6b7c"}[good]
+    tag = (f"<span style='float:right;font-size:12px;font-weight:700;color:{colour}'>"
+           f"{html.escape(verdict)}</span>" if verdict else "")
+    return pn.pane.HTML(
+        f"<div style='font-size:12px;font-weight:600;letter-spacing:0.4px;text-transform:"
+        f"uppercase;color:#5b6b7c'>{html.escape(title)}{tag}</div>"
+        f"<div style='font-size:24px;font-weight:700;color:#0f172a;margin:6px 0 4px 0;"
+        f"font-family:ui-monospace,Consolas,monospace'>{html.escape(value)}</div>"
+        f"<div style='font-size:13px;color:#334155;line-height:1.4'>{html.escape(detail)}</div>",
+        styles=CARD_STYLE, sizing_mode="stretch_width", margin=(0, 6), min_width=220)
+
+
+def summary_cards(res: dict[str, Any]) -> list:
+    """Speed, agreement, the balance and the checks, from a run's record: the four
+    numbers a person reads first (the tables are folded under Details)."""
+    checks = res.get("checks", [])
+    timing = res.get("timing", {})
+    labels = {**ARM_LABELS, **(res.get("arm_labels") or {})}
+    cards = []
+    ratios = {a: t.get("speedup_vs_full") for a, t in timing.items()
+              if a != "full" and t.get("speedup_vs_full")}
+    if ratios:
+        best = max(ratios, key=lambda a: ratios[a])
+        cards.append(_card("Speed", f"{ratios[best]:.3g}×",
+                           f"the whole domain's time divided by the {labels[best].lower()} "
+                           f"arm's; above 1 is faster than the whole domain"))
+    else:
+        cards.append(_card("Speed", "-", "needs a decomposed arm and the whole domain"))
+    by_kind = {k: [c for c in checks if c.get("kind") == k] for k in ("reference", "balance")}
+    for kind, title in (("reference", "Agreement"), ("balance", "Balance")):
+        cs = [c for c in by_kind[kind] if c["passed"] is not None] or by_kind[kind]
+        if cs:
+            c = cs[0]
+            cards.append(_card(title, fmt(c["value"], ".2e"),
+                               f"{c['title']}; limit {fmt(c['tolerance'], '.0e')}",
+                               c["verdict"], c["passed"]))
+    n_pass = sum(1 for c in checks if c["passed"] is True)
+    n_fail = sum(1 for c in checks if c["passed"] is False)
+    n_na = sum(1 for c in checks if c["passed"] is None)
+    detail = (f"{n_fail} failed against the tolerance registered before any run"
+              if n_fail else "every check that could be measured passed")
+    if n_na:
+        detail += f"; {n_na} not measured (Details says why)"
+    cards.append(_card("Checks", f"{n_pass} of {len(checks)} passed", detail,
+                       "FAIL" if n_fail else "pass", not n_fail))
+    return cards
+
+
 def results_view(wb: "Workbench", res: dict[str, Any] | None):
     if res is None:
-        return pn.pane.Alert("No run has finished in this session yet. Run the case from "
-                             "**5. Run & compare** (or the Run menu); its results appear here "
-                             "and are saved beside the case file.", alert_type="info",
-                             sizing_mode="stretch_width")
+        return pn.pane.Alert("No run has finished in this session yet. Press **Run**: the "
+                             "results appear here and are saved beside the case file.",
+                             alert_type="info", sizing_mode="stretch_width")
     table, checks = results_frames(res)
-    n_fail = sum(1 for c in res.get("checks", []) if c["passed"] is False)
-    n_na = sum(1 for c in res.get("checks", []) if c["passed"] is None)
     unit = res.get("step_label", "macro-step")
     style = (res.get("case") or {}).get("coupling", {}).get("style") or res.get("style", "?")
-    head = (f"**{html.escape(res['case_name'])}**, committed at {res['committed_at'][11:19]}, "
-            f"finished {res['finished'][11:19]} after **{res['steps_done']}** of "
+    head = (f"**{html.escape(res['case_name'])}**, as it was at {res['committed_at'][11:19]}: "
+            f"finished at {res['finished'][11:19]} after **{res['steps_done']}** of "
             f"{res['steps_requested']} {html.escape(unit)}s"
-            + (" (**stopped by the user**)" if res.get("stopped") else "")
+            + (" (**stopped**)" if res.get("stopped") else "")
             + f", {res['threads']} thread{'s' * (res['threads'] != 1)}, style "
             f"{html.escape(str(style))}. " + machine_line(res))
-    verdict = (pn.pane.Alert(f"**{n_fail} check{'s' * (n_fail != 1)} failed.** Each failure "
-                             "is shown against the tolerance registered before any run; "
-                             "no tolerance is changed after the fact.", alert_type="danger",
-                             sizing_mode="stretch_width") if n_fail else
-               pn.pane.Alert("Every check that could be measured passed its registered "
-                             "tolerance." + (f" {n_na} {'was' if n_na == 1 else 'were'} not "
-                                             "measured in this run; the table says why for "
-                                             "each." if n_na else ""),
-                             alert_type="success", sizing_mode="stretch_width"))
     #: the last run is of the case as it committed it; once the open case differs
     #: (an edit, another example), these are not the open case's results
     stale = res.get("case") is not None and res["case"] != json.loads(wb.spec.to_json())
@@ -479,23 +523,150 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
         notes.append(f"- Record: `{html.escape(os.path.relpath(rec, wb_root()))}` "
                      f"(the case as it marched, every per-step time, the machine's state).")
     changed = ([pn.pane.Alert(f"These are the results of **{html.escape(res['case_name'])}** "
-                              "as the run committed it; the case open now differs. Run it "
-                              "again (**5. Run & compare**) for its own results.",
+                              "as the run took it; the case open now differs. Run it again "
+                              "for its own results.",
                               alert_type="warning", sizing_mode="stretch_width")]
                if stale else [])
-    return pn.Column(
-        pn.pane.Markdown(head, sizing_mode="stretch_width", margin=(0, 10)),
-        *changed,
-        verdict,
-        pn.pane.Markdown("**Speed and accuracy, each arm against the full domain** "
-                         "(t_full / t_arm above 1 is faster than the full domain)",
-                         margin=(4, 10, 0, 10)),
+    details = pn.Card(
+        pn.pane.Markdown("**Each arm against the whole domain** (t_full / t_arm above 1 is "
+                         "faster than the whole domain)", margin=(4, 10, 0, 10)),
         table_pane(table),
-        pn.pane.Markdown("**Sanity checks, each against the tolerance registered before any "
-                         "run**", margin=(8, 10, 0, 10)),
+        pn.pane.Markdown("**Every check, against the tolerance registered before any run**",
+                         margin=(8, 10, 0, 10)),
         table_pane(checks, wrap=("detail", "registered")),
         pn.pane.Markdown("\n".join(notes), sizing_mode="stretch_width", margin=(6, 10)),
+        title="Details: every arm, every check, the notes and the record", collapsed=True,
+        sizing_mode="stretch_width", margin=(10, 6))
+    return pn.Column(
+        pn.pane.Markdown(head, sizing_mode="stretch_width", margin=(12, 10, 4, 10)),
+        *changed,
+        #: a Row shares the width among the cards; in a wrapping FlexBox each
+        #: stretch_width card took a whole line (seen)
+        pn.Row(*summary_cards(res), sizing_mode="stretch_width"),
+        details,
         sizing_mode="stretch_width")
+
+
+def run_controls(wb: "Workbench", run_btn, stop_btn, steps, threads, arms, label: str,
+                 arm_notes: list[str], why: list[str]):
+    """The top of the Run tab: Run and Stop, what runs, and the settings folded away."""
+    run = wb.run
+    if run is not None and run.active:
+        p = run.progress()
+        state = (f"<b>Marching</b>: {html.escape(run.step_label)} {p.step} of {p.steps}"
+                 + (f" &middot; now {html.escape(run.arm_labels.get(p.arm, p.arm))}"
+                    if p.arm else ""))
+    elif run is not None:
+        state = f"<b>Last run</b>: {html.escape(run.label())}"
+    else:
+        state = ("Runs the windows one after another, on threads, and the whole domain at "
+                 "once, in turns, and compares them.")
+    settings = pn.Card(pn.Row(steps, threads, sizing_mode="stretch_width"),
+                       pn.pane.Markdown("**Arms**", margin=(4, 10, 0, 10)), arms,
+                       *[pn.pane.HTML(f"<small>{html.escape(n)}</small>", margin=(0, 10))
+                         for n in arm_notes],
+                       title=f"Settings: {wb.spec.run.steps} {label}s, "
+                             f"{wb.spec.run.threads} threads", collapsed=True,
+                       sizing_mode="stretch_width", margin=(6, 6))
+    out = [pn.Row(run_btn, stop_btn,
+                  pn.pane.HTML(state, sizing_mode="stretch_width", margin=(8, 12),
+                               styles={"font-size": "14px"}),
+                  sizing_mode="stretch_width")]
+    if why:
+        out.append(pn.pane.Alert(" ".join(why), alert_type="warning",
+                                 sizing_mode="stretch_width"))
+    out.append(settings)
+    return pn.Column(*out, sizing_mode="stretch_width", styles=CARD_STYLE, margin=(0, 0, 10, 0))
+
+
+def compile_view(wb: "Workbench"):
+    """The Atlas compiler's verdict on the case, per seam, with a button to compile."""
+    job = wb.compile_job
+    busy = (job is not None and job.active) or (wb.run is not None and wb.run.active)
+    n_err = sum(1 for i in wb.issues() if i.severity == "error")
+    btn = pn.widgets.Button(name="Compile", button_type="primary", button_style="outline",
+                            width=110, disabled=bool(n_err) or busy)
+    btn.on_click(lambda e: wb.dispatch("run:compile"))
+    #: a compile of the case open before this one is not this case's verdict (the
+    #: gallery pass found farm-21's shown beside farm-12)
+    other = (job is not None and not job.active and job.status != "created"
+             and getattr(wb, "compiled_serial", None) != getattr(wb, "case_serial", None))
+    if job is None or other:
+        text = ("<b>Atlas compiler</b>: "
+                + ("not compiled in this session" if job is None else
+                   f"not compiled since this case was opened (the last compile was of "
+                   f"{html.escape(job.spec.name)})")
+                + ". Compiling builds the case's graph from its family (an agent per "
+                "window or piece, a seam wherever two meet) and gives each seam the "
+                "compiler's verdict.")
+        body: list = []
+    elif job.active or job.status == "created":
+        text = (f"<b>Atlas compiler</b>: compiling {html.escape(job.spec.name)} (it probes "
+                f"every seam through its agents' own solves).")
+        body = []
+    elif job.status == "failed":
+        text = f"<b>Atlas compiler</b>: the compile failed: {html.escape(job.error or '')}"
+        body = []
+    else:
+        s = job.summary
+        changed = job.committed_json != wb.spec.to_json()
+        colour = {"admit": "#15803d", "admit-uncertified": "#b45309", "refuse": "#b91c1c"}
+        text = (f"<b>Atlas compiler</b>: <b style='color:{colour.get(s.verdict, '#0f172a')}'>"
+                f"{html.escape(s.verdict)}</b>, {len(s.seams)} "
+                f"seam{'s' * (len(s.seams) != 1)} in {s.seconds:.2f} s"
+                + (" (the case has changed since; compile again)" if changed else ""))
+        body = [_compile_details(wb, job)]
+    head = pn.Row(btn, pn.pane.HTML(text, sizing_mode="stretch_width", margin=(8, 12),
+                                    styles={"font-size": "14px"}),
+                  sizing_mode="stretch_width")
+    return pn.Column(head, *body, sizing_mode="stretch_width", styles=CARD_STYLE,
+                     margin=(10, 0, 20, 0))
+
+
+def _compile_details(wb: "Workbench", job) -> pn.Card:
+    s = job.summary
+
+    def cut(msg: str, n: int) -> str:                  # the record keeps it whole
+        return msg if len(msg) <= n else msg[:n].rstrip() + "..."
+    body: list = []
+    if s.refused_before:
+        body.append(pn.pane.Markdown(f"**Refused before the compiler**, by the package's own "
+                                     f"vocabulary: {html.escape(s.refused_before)}",
+                                     sizing_mode="stretch_width", margin=(0, 10)))
+    else:
+        cps = ("none (declared, W162)" if not s.cross_points
+               else ", ".join(s.cross_points) + " (declared, W162)")
+        body.append(pn.pane.Markdown(f"{s.agents} agents, {len(s.seams)} seams; cross-points: "
+                                     f"{html.escape(cps)}.", margin=(0, 10)))
+        rows = [{"seam": sv.seam, "between": " and ".join(sv.between), "port": sv.port_type,
+                 "verdict": sv.verdict,
+                 "rules": "; ".join(f"{r['layer']}/{r['rule']} ({r['verdict']}): "
+                                    f"{cut(r['message'], 220)}" for r in sv.rules)
+                 or "every decision about it admits"} for sv in s.seams]
+        body.append(table_pane(pd.DataFrame(rows), wrap=("rules",)))
+        if s.other:
+            other = [{"layer": r["layer"], "rule": r["rule"], "verdict": r["verdict"],
+                      "about": r["subject"], "message": cut(r["message"], 300)}
+                     for r in s.other]
+            body.append(pn.pane.Markdown("**About the graph, its agents and the run**",
+                                         margin=(4, 10, 0, 10)))
+            body.append(table_pane(pd.DataFrame(other), wrap=("message",)))
+        r10 = [r for r in s.other if r["rule"] == "R10" and r["verdict"] == "refuse"]
+        if r10 and job.spec.coupling.style in ("B", "C"):
+            body.append(pn.pane.Markdown(
+                f"<small>R10 reads each window's declaration that it solves its own piece of "
+                f"one physics directly, and refuses: one exchange of such pieces changes the "
+                f"operator. This case's style {job.spec.coupling.style} iterates the pieces "
+                f"until they agree, which R10 does not read (W348); the run's agreement "
+                f"check measures how close they come. The refusal is shown as the compiler "
+                f"gave it.</small>", sizing_mode="stretch_width", margin=(0, 10)))
+    if job.record_path:
+        body.append(pn.pane.Markdown(
+            f"<small>Record: `{html.escape(os.path.relpath(job.record_path, wb_root()))}` "
+            f"(every decision, the compiler's report, the case as compiled).</small>",
+            margin=(0, 10)))
+    return pn.Card(*body, title="Every seam and rule", collapsed=True,
+                   sizing_mode="stretch_width", margin=(6, 6))
 
 
 def wb_root() -> str:
@@ -503,4 +674,4 @@ def wb_root() -> str:
 
 
 __all__ = ["RunPanel", "results_view", "results_frames", "timing_frame", "machine_line",
-           "METRIC_COLUMNS", "DIVERGING"]
+           "METRIC_COLUMNS", "DIVERGING", "summary_cards", "run_controls", "compile_view"]

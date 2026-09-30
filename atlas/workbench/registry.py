@@ -159,15 +159,15 @@ class Family:
     #: it lies along, and `drawn_default` everywhere else (spec.derived_kind).
     #: False: they start so, and the case may change them.
     drawn_derived: bool = False
-    #: what the Physics step calls the regions' materials, and what it says of the
-    #: library's values
     #: its coupling needs no iteration (an explicit exchange every step), so the
     #: page offers no tolerance, relaxation or convergence curve for it
     explicit_coupling: bool = False
+    #: what the Materials layer calls the regions' materials, and what it says of
+    #: the library's values
     materials_title: str = "Materials"
     materials_note: str = ("Library values are textbook round values at room temperature, "
                            "for a showcase, not a datasheet. A region's material is set in "
-                           "Geometry, Regions.")
+                           "Model, Materials.")
 
     def param(self, name: str) -> Param:
         for p in self.params:
@@ -329,7 +329,7 @@ _TRANSPORT = Family(
     materials_title="Reaches (the regions' materials)",
     materials_note=("Showcase reach types: a depth and a depth-averaged mixing coefficient "
                     "each, round values chosen so the plume visibly slows and widens, not "
-                    "calibrated to a river. A region's reach is set in Geometry, Regions."),
+                    "calibrated to a river. A region's reach is set in Model, Materials."),
 )
 
 _ACOUSTICS = Family(
@@ -372,7 +372,7 @@ _ACOUSTICS = Family(
     explicit_coupling=True,
     materials_title="Media (the regions' materials)",
     materials_note=("Textbook round values at room temperature, for a showcase. A region's "
-                    "medium is set in Geometry, Regions."),
+                    "medium is set in Model, Materials."),
 )
 
 #: structural metals, textbook round values at room temperature: Young's modulus,

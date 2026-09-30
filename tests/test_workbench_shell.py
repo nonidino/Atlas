@@ -24,6 +24,9 @@ from atlas.workbench import registry                                    # noqa: 
 from atlas.workbench.spec import (EXAMPLES, CaseSpec, Window, blank_case,  # noqa: E402
                                   check, example_case)
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from workbench_ui import click, texts, widget, widgets                  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # the case file
@@ -116,34 +119,49 @@ def test_every_menu_action_runs(wb):
         assert wb.workspace.objects
 
 
-def test_every_menu_item_is_an_action_the_dispatcher_knows(wb):
-    """A menu item nobody handles would be a control that does nothing."""
-    items = []
-    for m in (wb.file_menu, wb.edit_menu, wb.view_menu, wb.run_menu, wb.help_menu):
-        items += [it[1] for it in m.items if it is not None]
-    assert items
+def test_every_header_control_reaches_the_dispatcher(wb):
+    """A control nobody handles would be a control that does nothing: the Case and ?
+    menus' items and the header's buttons all go through `dispatch`."""
+    items = [it[1] for m in (wb.case_menu, wb.help_menu) for it in m.items if it is not None]
+    assert {"file:new", "file:gallery", "file:open", "file:save", "file:save-as",
+            "file:import", "file:export", "file:import-gmsh", "edit:revert",
+            "view:history", "help:guide", "help:about", "help:docs"} <= set(items)
     for action in items:
         wb.dispatch(action)
+    for button in (wb.name_btn, wb.status_btn, wb.undo_btn, wb.redo_btn, wb.run_btn):
+        click(button)
     assert not any("unknown action" in line for line in wb.log_lines)
 
 
+def test_the_examples_are_in_the_gallery_not_the_menu(wb):
+    """Listed in the Case menu as well, the examples ran it off the page (seen)."""
+    items = [it[1] for it in wb.case_menu.items if it is not None]
+    assert not any(a.startswith("file:example:") for a in items)
+    wb.dispatch("file:gallery")
+    assert len(widgets(wb.modal_body, pn.widgets.Button, name="Open")) == len(EXAMPLES)
+
+
 def test_nothing_is_left_unbuilt(wb):
-    """Every NOT_BUILT went once its action worked; the compile was the last."""
+    """Every NOT_BUILT went once its action worked; the compile was the last, and
+    is a button on the Run & results tab."""
     import atlas.workbench.app as app
     assert not hasattr(app, "NOT_BUILT")
-    items = [it[0] for it in wb.run_menu.items if it is not None]
-    assert "Compile with the Atlas compiler" in items
-    assert not any("not built" in i for i in items)
-    wb.dispatch("run:compile")                     # started (the fixture does not march it)
-    assert wb.compile_job is not None
+    wb.show("run")
+    click(widget(wb.workspace, "Compile", pn.widgets.Button))
+    assert wb.compile_job is not None              # started (the fixture does not march it)
     assert any("compile started" in line for line in wb.log_lines[:3])
 
 
 def test_a_case_with_errors_does_not_run(wb):
+    """Run on a case that cannot run lists its problems, where they are."""
     wb.dispatch("file:new")                        # a blank case: no windows
-    wb.dispatch("run:both")
-    assert wb.run is None and wb.active == "check"
+    click(wb.run_btn)
+    assert wb.run is None and wb.active == "model"
     assert any("cannot run" in line for line in wb.log_lines[:3])
+    assert "stop the run" in texts(wb.modal_body) or "stops the run" in texts(wb.modal_body)
+    assert widgets(wb.modal_body, pn.widgets.Button, name="Show me")
+    wb.show("run")                                 # and the tab's own Run is off
+    assert widget(wb.workspace, "▶ Run and compare", pn.widgets.Button).disabled
 
 
 def test_edits_are_validated_undone_and_redone(wb):
@@ -159,20 +177,34 @@ def test_edits_are_validated_undone_and_redone(wb):
 
 def test_save_open_and_the_case_bar(wb, tmp_path):
     path = str(tmp_path / "mine.json")
+    assert wb.save_state.object == "not saved yet"
     wb.edit(lambda s: setattr(s, "name", "mine"), "rename")
+    assert wb.save_state.object == "unsaved changes" and wb.name_btn.name.startswith("mine")
     wb.save_to(path)
-    assert not wb.dirty and "saved" in wb.status.object
+    assert not wb.dirty and wb.save_state.object == "saved"
     wb.dispatch("file:example:farm-12")
     assert wb.spec.name == "farm-12" and wb.path is None
+    # a fresh example has nothing of the person's to lose (seen: it read "unsaved
+    # changes" the moment it opened)
+    assert wb.save_state.object == "not saved yet"
     wb.open_path(path)
     assert wb.spec.name == "mine" and wb.path == path and not wb.dirty
 
 
-def test_nav_shows_errors_where_they_are_fixed(wb):
+def test_the_status_chip_lists_the_problems_and_where_each_is_fixed(wb):
+    """The six steps' error counts became one chip in the header: it says whether
+    the case can run, and its list sends each problem to the layer that fixes it."""
+    assert wb.status_btn.name == "✓ Ready to run"
     wb.set_spec(blank_case(), "blank")
-    labels = list(wb.nav.options)
-    assert any(lbl.startswith("2. Geometry") and "error" in lbl for lbl in labels)
-    assert wb.nav.options[labels[1]] == "geometry"
+    assert wb.status_btn.name.startswith("⚠") and "problem" in wb.status_btn.name
+    click(wb.status_btn)
+    shows = widgets(wb.modal_body, pn.widgets.Button, name="Show me")
+    issues = wb.issues()
+    assert len(shows) == len(issues)
+    k = next(i for i, x in enumerate(issues) if "not cut into any windows" in x.message)
+    click(shows[k])
+    assert wb.active == "model" and wb.geo_state["layer"] == "windows"
+    assert wb.geo_state["tool"] == "select" and wb.geo_state["selected"] is None
 
 
 def test_import_refuses_what_is_not_a_case(wb):

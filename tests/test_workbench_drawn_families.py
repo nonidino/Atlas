@@ -257,6 +257,23 @@ def test_a_farm_domain_that_misses_the_inlet_is_refused():
     assert any("no edge of the drawn domain runs along it" in m for m in _errors(s))
 
 
+def test_a_farm_domain_that_misses_the_outlet_is_refused():
+    """The page's first drawn farm touched the grid's right edge at one vertex: the
+    flow had nowhere to leave, and the check said nothing (2026-09-29)."""
+    s = example_case("farm-hill")
+    d = s.domain
+    pts = list(d.outline.points)
+    right = [k for k, p in enumerate(pts) if p[0] == d.nx]
+    assert len(right) == 2
+    pts[right[0]] = (d.nx - 24.0, pts[right[0]][1])               # one vertex left on it
+    d.outline = Outline(points=pts, edges=d.outline.edges, bulge=d.outline.bulge)
+    derive_boundaries(s)
+    msgs = _errors(s)
+    assert any("the flow leaves on the grid's right edge" in m for m in msgs)
+    assert not any("the flow enters on the grid's left edge" in m for m in msgs)
+    assert not any("the flow leaves" in m for m in _errors(example_case("farm-hill")))
+
+
 def test_derived_conditions_follow_the_geometry():
     """A family whose solver fixes its edges (the wind farm): a drawn edge along the
     grid's edge takes that edge's condition, and moving it off turns it into a wall."""

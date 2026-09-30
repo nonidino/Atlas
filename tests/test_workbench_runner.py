@@ -43,6 +43,9 @@ from atlas.workbench.spec import (EXAMPLES, CaseSpec, Window, check,     # noqa:
                                   example_case)
 from atlas.workbench.tiling import RectangleTiling                      # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from workbench_ui import texts                                          # noqa: E402
+
 
 def _small(key="wake-array-3", steps=2, **run):
     s = example_case(key)
@@ -253,14 +256,19 @@ def test_the_page_runs_a_case_and_shows_its_results(wb, tmp_path):
     assert run is not None and run.status == "done"
     assert wb.active == "run" and wb.run_panel.run is run
     assert run.record_path.startswith(str(tmp_path))
-    labels = list(wb.nav.options)
-    assert any(lbl.startswith("6. Results") and "done" in lbl for lbl in labels)
-    wb.show("results")
-    assert wb.workspace.objects
+    assert wb.status_btn.name == "✓ Ready to run" and wb.run_btn.name == "▶ Run"
     table, checks = __import__("atlas.workbench.runview", fromlist=["x"]).results_frames(
         run.results)
     assert list(table["arm"]) == ["Decomposed, serial", "Decomposed, parallel", "Full domain"]
     assert set(checks["verdict"]) == {"pass"}
+    # Run and the compiler at the top (a finished run rebuilds the tab at its top),
+    # then the four cards, over the details and the fields
+    body = wb.workspace.objects[0].objects
+    assert "Atlas compiler" in texts(body[1])
+    cards = texts(body[2])
+    assert "Speed" in cards and f"{len(checks)} of {len(checks)} passed" in cards
+    wb.show("results")                             # the old step's key: the same tab
+    assert wb.active == "run" and wb.workspace.objects
     # every family's results carry the displayed field's rms difference from the
     # full domain, from the record, and the two decomposed arms are bitwise one
     fd = run.results["field_difference"]
@@ -272,8 +280,8 @@ def test_the_page_runs_a_case_and_shows_its_results(wb, tmp_path):
     assert set(p.fields) == {"serial", "parallel", "full", "difference"}
     img = wb.run_panel.src["difference"].data["image"][0]
     assert img.shape == p.fields["difference"].shape
-    # another case opened: the last run's results are not its results, and both the
-    # nav and the Results step say so
+    # another case opened: the last run's results are not its results, and the Run
+    # & results tab says so
     from atlas.workbench.runview import results_view
 
     def alerts():
@@ -281,9 +289,9 @@ def test_the_page_runs_a_case_and_shows_its_results(wb, tmp_path):
                         if isinstance(o, pn.pane.Alert))
     assert "the case open now differs" not in alerts()
     wb.dispatch("file:example:plate-circuit")
-    assert any(lbl.startswith("6. Results") and "done, before a change" in lbl
-               for lbl in wb.nav.options)
     assert "the case open now differs" in alerts()
+    wb.show("run")
+    assert "the case open now differs" in texts(wb.workspace.objects[0])
 
 
 def test_a_finished_run_rebuilds_its_step(wb):

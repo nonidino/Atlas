@@ -38,6 +38,10 @@ from atlas.workbench.families import electric as el                      # noqa:
 from atlas.workbench.spec import (Attachment, CaseSpec, Window,           # noqa: E402
                                   adapt_to_family, blank_case, check, example_case)
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from workbench_ui import texts as _texts                               # noqa: E402
+from workbench_ui import walk as _walk                                 # noqa: E402
+
 
 def _errors(spec):
     return [i.message for i in check(spec) if i.severity == "error"]
@@ -206,37 +210,24 @@ def wb(tmp_path):
     return Workbench(cases_dir=str(tmp_path))
 
 
-def _texts(layout) -> str:
-    """Every label, text, title and option a layout holds, walked through its
-    children (a repr of a Panel layout shows neither widget names nor text)."""
-    out: list[str] = []
-
-    def walk(o):
-        for attr in ("name", "object", "title"):
-            v = getattr(o, attr, None)
-            if isinstance(v, str):
-                out.append(v)
-        opts = getattr(o, "options", None)
-        if isinstance(opts, dict):
-            out.extend(str(k) for k in opts)
-        for c in getattr(o, "objects", None) or []:
-            walk(c)
-    walk(layout)
-    return "\n".join(out)
-
-
 @pytest.mark.parametrize("key", ["wall-2", "plate-insert", "plate-circuit"])
-def test_every_step_draws_for_the_new_families(wb, key):
+def test_every_tab_and_layer_draws_for_the_new_families(wb, key):
+    from atlas.workbench.editor import layers_for
     wb.dispatch(f"file:example:{key}")
+    # the six steps' keys still open the tab that holds what they held
     for step in ("case", "geometry", "physics", "check", "run", "results"):
         wb.show(step)
         assert wb.workspace.objects
-    wb.show("geometry")
-    lead = wb.geo_editor.summary.object
-    if key in ("wall-2", "plate-circuit"):
-        assert "tile the domain without overlapping" in lead
+    for layer in layers_for(wb.spec):
+        wb.geo_editor._switch(layer=layer)
+        assert wb.active == "model" and wb.geo_editor.state["layer"] == layer
+        assert wb.geo_editor.inspector.objects
+    wb.geo_editor._switch(layer="windows")
+    lead = _texts(wb.geo_editor.inspector)
+    if key in ("wall-2", "plate-circuit"):                  # pieces: styles C and D
+        assert "The pieces tile the domain without overlapping." in lead
     else:
-        assert "every cell has a window at full weight" in lead
+        assert "Every cell has a window at full weight." in lead
 
 
 def test_the_physics_step_is_the_familys(wb):
@@ -252,60 +243,55 @@ def test_the_physics_step_is_the_familys(wb):
     assert "Materials" not in text
 
 
-def test_planned_families_are_disabled_on_the_case_step(wb):
-    """The disabled list must name the Select's own option values: in the page a
-    dict-valued Select renders labels as values, and a list of family ids there
-    disabled nothing (seen in the served page)."""
-    import panel as pn
-    wb.show("case")
-    found = []
-
-    def walk(o):
-        if isinstance(o, pn.widgets.Select) and o.name == "Physics family":
-            found.append(o)
-        for c in getattr(o, "objects", None) or []:
-            walk(c)
-    walk(wb.workspace.objects[0])
-    sel = found[0]
+def test_only_the_families_that_run_are_offered(wb):
+    """The header's physics menu lists the families that run, by label, and choosing
+    one adapts the case (`spec.adapt_to_family`).  A planned family is not offered at
+    all: disabled options in a dict-valued Select disabled nothing in the page (seen
+    in the served page, before the rebuild)."""
+    sel = wb.family_sel
+    ready = [f.label for f in registry.FAMILIES if f.status == "ready-to-wire"]
     planned = [f.label for f in registry.FAMILIES if f.status != "ready-to-wire"]
-    assert sel.disabled_options == planned and set(planned) <= set(sel.options)
+    assert list(sel.options) == ready and not set(planned) & set(sel.options)
     assert sel.value == registry.family(wb.spec.physics.family).label
+    sel.value = registry.family("conduction-2d").label
+    assert wb.spec.physics.family == "conduction-2d" and wb.spec.coupling.style in ("B", "C")
+    wb.undo()
+    assert wb.spec.physics.family == "incompressible-2d"
+    assert sel.value == registry.family("incompressible-2d").label
 
 
-def test_the_materials_table_edits_the_case(wb):
-    """A cell edited in the Materials table is an edit to the case (undoable), a
-    value that is not a number is refused, and the library adds a material."""
+def test_the_material_inspector_edits_the_case(wb):
+    """A material's field is an edit to the case (undoable); a value the family
+    refuses is the check's error; the library adds a material, and a new one can be
+    named."""
     import panel as pn
-    from types import SimpleNamespace
     wb.dispatch("file:example:wall-2")
-    wb.show("physics")
-    found = []
-
-    def walk(o):
-        if isinstance(o, pn.widgets.Tabulator):
-            found.append(o)
-        if isinstance(o, pn.widgets.Select) and o.name == "":
-            found.append(o)
-        for c in getattr(o, "objects", None) or []:
-            walk(c)
-    walk(wb.workspace.objects[0])
-    table = next(o for o in found if isinstance(o, pn.widgets.Tabulator))
-    before = wb.spec.materials["copper"]["k"]
-    for cb in table._on_edit_callbacks:
-        cb(SimpleNamespace(row=1, column="k (W/(m K))", value="390"))
-    assert wb.spec.materials["copper"]["k"] == 390.0 and before == 400.0
+    wb.geo_editor._switch(layer="regions")
+    wb.geo_editor.select("material:copper")
+    k = [w for w in _walk(wb.geo_editor.inspector)
+         if isinstance(w, pn.widgets.FloatInput) and w.name == "Conductivity, W/(m K)"][0]
+    assert k.value == 400.0
+    k.value = 390.0
+    assert wb.spec.materials["copper"]["k"] == 390.0
     wb.undo()
     assert wb.spec.materials["copper"]["k"] == 400.0
-    wb.show("physics")
-    found.clear()
-    walk(wb.workspace.objects[0])
-    table = next(o for o in found if isinstance(o, pn.widgets.Tabulator))
-    for cb in table._on_edit_callbacks:
-        cb(SimpleNamespace(row=0, column="k (W/(m K))", value="lots"))
-    assert wb.spec.materials["steel"]["k"] == 45.0 and "is not a number" in wb.log_lines[0]
-    pick = next(o for o in found if isinstance(o, pn.widgets.Select))
+    wb.geo_editor.select("material:steel")
+    k = [w for w in _walk(wb.geo_editor.inspector)
+         if isinstance(w, pn.widgets.FloatInput) and w.name == "Conductivity, W/(m K)"][0]
+    k.value = -5.0
+    assert any("steel" in i.message for i in wb.issues() if i.severity == "error")
+    wb.undo()
+    pick = [w for w in _walk(wb.geo_editor.inspector) if isinstance(w, pn.widgets.Select)
+            and w.name == "Add a material from the library"][0]
     pick.value = "aluminium"
     assert wb.spec.materials["aluminium"]["k"] == 205.0
+    assert wb.geo_editor.selected == "material:aluminium"
+    name = [w for w in _walk(wb.geo_editor.inspector) if isinstance(w, pn.widgets.TextInput)
+            and w.name.startswith("Or a new material")][0]
+    name.value = "my-alloy"                          # the name arrives: Enter, or blur
+    fam = registry.family("conduction-2d")
+    assert wb.spec.materials["my-alloy"] == {p.name: p.default for p in fam.material_props}
+    assert wb.geo_editor.selected == "material:my-alloy"
 
 
 def test_a_style_c_case_offers_no_threaded_arm(wb):

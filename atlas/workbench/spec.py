@@ -720,11 +720,18 @@ def check(spec: CaseSpec) -> list[Issue]:
                 out.append(Issue("error", "geometry",
                                  f"device {v.id}'s disk reaches into the solid, outside the "
                                  f"drawn domain"))
-        if d.outline is not None and not any(
-                geo.along_grid_edge(d, n) == "left" for n in geo.drawn_edge_names(d)):
-            out.append(Issue("error", "geometry",
-                             "the flow enters on the grid's left edge, and no edge of the "
-                             "drawn domain runs along it: draw the domain to reach it"))
+        if d.outline is not None:
+            along = {geo.along_grid_edge(d, n) for n in geo.drawn_edge_names(d)}
+            if "left" not in along:
+                out.append(Issue("error", "geometry",
+                                 "the flow enters on the grid's left edge, and no edge of the "
+                                 "drawn domain runs along it: draw the domain to reach it"))
+            if "right" not in along:
+                # the page's first drawn farm reached the right edge at one vertex only,
+                # and the check said nothing (2026-09-29)
+                out.append(Issue("error", "geometry",
+                                 "the flow leaves on the grid's right edge, and no edge of the "
+                                 "drawn domain runs along it: draw the domain to reach it"))
     if spec.physics.family == "incompressible-2d":
         re_cell = d.dx * spec.physics.u_inf / spec.physics.nu
         if re_cell > 8.0:
@@ -839,7 +846,7 @@ def _check_drawn(spec: CaseSpec) -> list[Issue]:
         if x0 < -1e-9 or y0 < -1e-9 or x1 > d.nx + 1e-9 or y1 > d.ny + 1e-9:
             out.append(Issue("error", "geometry",
                              f"{name} reaches past the {d.nx} x {d.ny} grid; draw it inside, "
-                             f"or make the grid bigger (Case)"))
+                             f"or make the grid bigger (Model, Physics)"))
     if d.outline is not None and not d.outline.problems():
         ring = d.outline.ring()
         for h, o in enumerate(d.holes):
@@ -885,7 +892,7 @@ def _check_physics(spec: CaseSpec) -> list[Issue]:
             if props is None:
                 out.append(Issue("error", "physics",
                                  f"material {m!r} is used by a region and has no "
-                                 f"properties (Physics, Materials)"))
+                                 f"properties (Model, Materials)"))
                 continue
             for p in fam.material_props:
                 if p.name not in props:
@@ -1305,7 +1312,7 @@ def _check_boundaries(spec: CaseSpec) -> list[Issue]:
             fixed = ", ".join(f"{f.edge} {f.kind}" for f in fam.fixed_boundaries)
             out.append(Issue("error", "geometry",
                              f"the {fam.id} solver fixes its outer boundary ({fixed}); a "
-                             f"case of this family cannot change it (Geometry, Boundaries: "
+                             f"case of this family cannot change it (Model, Boundaries: "
                              f"use the family's)"))
     if fam is not None and fam.drawn_derived and drawn:
         for b in spec.boundaries:

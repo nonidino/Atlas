@@ -32,6 +32,9 @@ from atlas.workbench import layout as L  # noqa: E402
 from atlas.workbench.families import conduction as cd  # noqa: E402
 from atlas.workbench.spec import CaseSpec, Layout, Outline, check, example_case  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from workbench_ui import walk  # noqa: E402
+
 
 def _polar(mask, c=(4.0, 4.0)):
     jj, ii = np.nonzero(mask)
@@ -194,12 +197,12 @@ def test_reshaping_the_domain_regenerates_the_windows(wb):
 
 def test_editing_a_window_by_hand_makes_the_windows_the_cases_own(wb):
     ed = wb.geo_editor
-    ed._switch(layer="windows", tool="move")
+    ed._switch(layer="windows")
     ed = wb.geo_editor
-    ed.tables["windows"].selection = [0]
+    ed.select("windows:0")
     ed.delete_selected()
     assert wb.spec.layout is None and len(wb.spec.windows) == 3
-    assert "no longer follow the domain" in wb.log_lines[0]
+    assert "no longer follow the shape" in wb.log_lines[0]
     wb.geo_editor.set_layout(True, "along", 3, 2)
     assert wb.spec.layout is not None and len(wb.spec.windows) == 6
     ed = wb.geo_editor
@@ -219,11 +222,18 @@ def test_drawing_a_domain_makes_the_rectangles_give_way(wb):
                                          for m in _errors(wb.spec))
 
 
-def test_a_generated_window_cannot_be_resized_in_the_table(wb):
-    from types import SimpleNamespace
+def test_a_generated_window_is_not_resized_or_moved_by_hand(wb):
+    """It follows the shape: no corners, no diamond, no place to type; a move asked
+    for in code is refused."""
+    import panel as pn
     ed = wb.geo_editor
     ed._switch(layer="windows")
     ed = wb.geo_editor
+    ed.select("windows:0")
+    assert wb.spec.windows[0].shape == "cells"
+    assert ed._boxes() == [] and ed._handle_rows["move"] == []
+    assert not [w for w in walk(ed.inspector) if isinstance(w, pn.widgets.IntInput)]
     before = [w.runs for w in wb.spec.windows]
-    ed._on_table_edit("windows", SimpleNamespace(row=0, column="width", value=5))
+    ed.translate_shape("windows:0", 8.0, 0.0)
     assert [w.runs for w in wb.spec.windows] == before and wb.spec.layout is not None
+    assert "is not drawn here" in wb.log_lines[0]

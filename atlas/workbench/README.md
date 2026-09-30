@@ -2,7 +2,8 @@
 
 Build a domain decomposition by hand, compile it with the Atlas compiler, run it,
 and compare it with the full-domain solve. Built:
-- the menus, the workflow, the case file and the **geometry section**;
+- **one screen to model and one to run** (rebuilt on 2026-09-29, planned first on a
+  Claude Design canvas), the case file and the **geometry section**;
 - the **runner**, with eight physics families, one per showcase case: the wind
   farm (style A), heat conduction in several materials (styles B and C), a
   resistive plate on a circuit (style D), a pollutant plume down a river (style A,
@@ -10,8 +11,8 @@ and compare it with the full-domain solve. Built:
   B), a heated strip split by physics, and a heated block cooled by a channel
   flow (style C at a seam between two physics);
 - the **compile**: each family turns a case into the Atlas compiler's `CaseGraph`,
-  and the Check step shows the compiler's verdict per seam;
-- the **showcase gallery**: *File > Showcase gallery* lists every example, and
+  and the Run & results tab shows the compiler's verdict per seam;
+- the **showcase gallery**: *Case > Examples...* lists every example, and
   `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/showcase-gallery.md` records what
   each one measured in the served page.
 
@@ -34,8 +35,8 @@ accepted).
 **Panel 1.5** and **Bokeh 3.6**, both BSD-3-Clause, were already in the Python
 environment. No existing tool draws a domain decomposition and compares it with the
 full domain, so none was reused whole. What these two libraries supply is the
-part of a GUI that is hardest to hand-write well: menus, dialogs, tables,
-notifications, and a canvas whose `BoxEditTool` and `PointDrawTool` draw, drag
+part of a GUI that is hardest to hand-write well: menus, dialogs, form widgets,
+notifications, and a canvas whose Tap events and `PointDrawTool` select, drag
 and delete shapes.
 
 **Gmsh 4.15** (GPL-2+, already installed) is the geometry path for anything that
@@ -52,21 +53,53 @@ both properties of the replacement.
 
 ## Layout
 
-| part | where | what it does now |
-|---|---|---|
-| menus | header | **File** (new, the showcase gallery, fourteen examples, open, save, save as, import and export JSON, import geometry from Gmsh), **Edit** (undo, redo, generate a window tiling, revert), **View** (grid, overlaps, labels, activity log), **Run** (check; compile with the Atlas compiler; run decomposed, full, or the ticked arms; stop; show the results), **Help** |
-| workflow | sidebar | six steps, each labelled with its status (`ok`, `N errors`, the compile's verdict, the run's state; `before a change` once the open case is no longer the one compiled or run), and a live case check |
-| case bar | top of the workspace | which case is open, and whether and where it is saved |
-| workspace | main | the active step |
-| activity | bottom | a timestamped log of every action |
+The owner, 2026-09-29: "go through the entire UI to make it much more simple and
+intuitive. This is way too complicated of a UI currently. plan it out in claude
+design first, and then implement." Seven screens were drawn on a Claude Design
+canvas first. The six-step workflow, its menus and tables became two tabs, one
+header, and one rule: **pick a layer, click on the canvas, edit what is selected
+in the inspector.**
 
-The six steps:
-1. **Case**: name, description, physics family, domain size. A family that cannot run yet is listed and disabled. Works.
-2. **Geometry**: the canvas and its six layers, with drawn shapes on the Domain, Windows and Regions layers (lines, arcs and splines). Works; see below.
-3. **Physics & coupling**: the family's own parameters (from the registry), the run mode (steady or transient), the macro-step, the coupling style and its settings (ramp width; tolerance and iteration cap; first relaxation factor, Aitken, and which piece takes the Dirichlet side; none of these for a family whose exchange is explicit), and the materials table, editable or picked from the family's library. Works.
-4. **Check**: every rule, with where to fix it, and **Compile with the Atlas compiler**: the verdict, the agents and seams, the declared cross-points, a per-seam table with the rules behind each verdict, and the decisions about the graph as a whole. See "The compile" below.
-5. **Run & compare**: works for all eight families; see below.
-6. **Results**: from the run's record, each arm's time per step and its ratio to the full domain, the family's metrics, the displayed field's rms difference from the full domain, and the sanity checks against their registered tolerances. If the open case is no longer the one that ran, the step says whose results these are.
+| part | what it holds |
+|---|---|
+| **header** | the case's name (click to rename, with its description) and whether it is saved; the two tabs; the physics family (only families that run are offered; choosing one adapts the case, `spec.adapt_to_family`); Undo and Redo; **Case** (new, *Examples...*, open, save, save as, rename, revert, import and export JSON, import geometry from Gmsh, this session's history); the **status chip**; **Run**; **?** (how it works, where things are documented, about) |
+| **status chip** | *Ready to run*, *Ready · N warnings*, *N problems* or *Marching k of n*. Click it for every problem, each with a **Show me** button that opens the layer where it is fixed (`app.layer_for`) |
+| **Model** tab | a **layer rail** on the left, the **canvas** with its tools in the middle, the **inspector** on the right |
+| **Run & results** tab | Run and Stop with the settings folded away, the Atlas compiler's verdict, and once a run ends four **cards** (speed, agreement, balance, checks) over the details and the fields |
+
+**The layers** are the ones the family reads: Shape, Materials, Boundaries,
+Windows, Physics, and Rotors or Circuit for the families that have them. Each is
+labelled with its state (*the grid* or *drawn*, the count of materials, windows or
+rotors, *auto* when the windows follow the shape). Below the layers the rail lists
+the active layer's items; a click selects one.
+
+**The tools**, one set on every drawing layer:
+- **Select**: a click selects what is under it on the active layer; the selected
+  shape gets its handles (below);
+- **Draw**: click to place points, double-click (or *Finish*) to close; edges start
+  straight or smooth;
+- **Rectangle**, **Circle**: two clicks each (two corners; the centre, then a point
+  on the circle);
+- **Pan**.
+
+A tool adds one shape, then hands back to Select with the new shape selected. The
+hint under the canvas says what a click does now.
+
+**The inspector** edits what is selected: a shape's edges (straight, arc with its
+bulge, or smooth), a region's material and stacking, a material's properties (or a
+new one, from the library or by name), a window's name and place, a boundary's
+condition and span, a rotor's position and diameter, a circuit part's value and
+nodes. With nothing selected it holds the layer's settings: how the windows are cut
+(*Automatic* or *My own*) and joined, and the physics, the time and the grid. An
+edit the case refuses is not applied, and every field goes back to the case.
+
+**Run & results.** Run marches the arms in turns. The compile card sits under the
+controls, because a finished run or compile rebuilds the tab at its top. The cards
+are read first: the speed ratio, the agreement with the full domain and the balance
+against their tolerances, and how many checks passed. The details (every arm, every
+check, the notes, the record's path) are folded under them, and the fields, the
+time per step and the convergence below. If the open case is not the one that ran,
+or not the one compiled, the tab says so rather than lend it the verdict.
 
 ## The runner
 
@@ -78,9 +111,9 @@ The six steps:
 | Decomposed, parallel | the same windows split across threads, every chunk at the whole tiling's sub-step count, so it is **bit for bit** the serial arm (checked every step; W346's `Ep`) |
 | Full domain | the same discretization on the undivided domain (W346's `F`) |
 
-The other families have the same three arms where their style allows them. A style-C case has no parallel arm: Dirichlet–Neumann is sequential by construction, explicit or iterated. The Run step names every arm it drops, and why. A steady case repeats the same solve from the initial state, so its "macro-step" is a **timed repeat**, and the page says so. A family may name its own arms: the heated strip's are the synchronous split, the lagged split (on two threads) and the unsplit solver.
+The other families have the same three arms where their style allows them. A style-C case has no parallel arm: Dirichlet–Neumann is sequential by construction, explicit or iterated. The Run & results tab names every arm it drops, and why. A steady case repeats the same solve from the initial state, so its "macro-step" is a **timed repeat**, and the page says so. A family may name its own arms: the heated strip's are the synchronous split, the lagged split (on two threads) and the unsplit solver.
 
-It runs in a background thread; the page reads its progress every 400 ms and draws the fields, their difference, the time per step, the family's series (farm power; outflow; the energy's share in the second medium; the largest stress), and, for an iterated style, the iteration's convergence curve. A field that spans decades (the plume) is drawn on a log scale, for display only. **Run > Stop** stops after the arm-step in progress and keeps whole macro-steps only. One run at a time per server, because two runs on one machine would time each other.
+It runs in a background thread; the page reads its progress every 400 ms and draws the fields, their difference, the time per step, the family's series (farm power; outflow; the energy's share in the second medium; the largest stress), and, for an iterated style, the iteration's convergence curve. A field that spans decades (the plume) is drawn on a log scale, for display only. **Stop** (on the Run & results tab, or the header's Run while a run marches) stops after the arm-step in progress and keeps whole macro-steps only. One run at a time per server, because two runs on one machine would time each other.
 
 **What the timer holds:** the family adapter's `step` and nothing else. Diagnostics, the bitwise comparison, the snapshot and the record are taken after it stops.
 
@@ -119,7 +152,7 @@ The solver-family interface was derived from two real families, the wind farm an
 
 ## The compile (`compile.py`)
 
-**Compile** (step 4, or *Run > Compile with the Atlas compiler*) puts the case as it stands to `atlas/compiler.py`, in a background thread. The case is copied first, so an edit made while it compiles cannot reach it. No run and no compile start while the other is active, because each would be timed with the other. The record goes beside the case file, in `<case>.results/compile-<time>.json`: every decision, the compiler's report, and the case as compiled.
+**Compile** (on the Run & results tab) puts the case as it stands to `atlas/compiler.py`, in a background thread. The case is copied first, so an edit made while it compiles cannot reach it. No run and no compile start while the other is active, because each would be timed with the other. The record goes beside the case file, in `<case>.results/compile-<time>.json`: every decision, the compiler's report, and the case as compiled.
 
 **A case becomes a graph through its family.** Every family module has a `case_graph(spec)`:
 - one agent per window or piece, each with a capability record;
@@ -150,7 +183,7 @@ No case can earn a plain `admit`: the master bound's constants are unmeasured on
 
 ## The showcase gallery
 
-*File > Showcase gallery* lists every example with its description, family and style, and an **Open** button. Every example was opened, checked, compiled and run in the served page on 2026-09-29. `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/showcase-gallery.md` has a row per case: its style, port type, compile verdict, its two checks' measured values against their tolerances, and its runtime. The records are in `out/workbench/records/step-f/`. Every run finished under 2 minutes, the longest in 70 s. The 21-rotor farm's compile takes 95 s, so its compile plus its run is 165 s, which the owner accepted on 2026-09-29, since the compile is its own step. Each row is labelled a showcase, not a research record.
+*Case > Examples...* lists every example with its description, family and style, and an **Open** button (the Case menu does not list them too: twenty-one ran it off the page). Every example was opened, checked, compiled and run in the served page on 2026-09-29. `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/showcase-gallery.md` has a row per case: its style, port type, compile verdict, its two checks' measured values against their tolerances, and its runtime. The records are in `out/workbench/records/step-f/`. Every run finished under 2 minutes, the longest in 70 s. The 21-rotor farm's compile takes 95 s, so its compile plus its run is 165 s, which the owner accepted on 2026-09-29, since the compile is its own step. Each row is labelled a showcase, not a research record.
 
 ## The geometry section
 
@@ -159,16 +192,23 @@ page; anything else comes from Gmsh. **Superseded in part on 2026-09-29**: any
 shape with straight, arc or spline edges is now drawn in the page too (see
 "Drawn shapes" below), and Gmsh stays the path for a mesh made elsewhere.
 
-**One canvas, six layers, one editable at a time.**
+**One canvas, a layer at a time** (the Model tab, since 2026-09-29's rebuild; the
+tables of the six-step page went into the inspector).
 
-| layer | on the canvas | in the table |
+| layer | on the canvas | in the rail and the inspector |
 |---|---|---|
-| **Domain** | the whole grid until an outline is drawn (Draw shape), with holes cut in it; Reshape moves its vertices and bends its edges; *Reset to the whole grid* | the outline and each hole: vertices, edges by kind, cells |
-| **Windows** | Move & draw: drag to move, Shift+drag to draw, click then Backspace to delete. Reshape: drag a corner handle, or a drawn window's handles. Draw shape: a window of any shape. *Generate a tiling* fills the domain with rows x columns at a chosen overlap | id, shape, position, size, cells; the Edges table for drawn ones |
-| **Regions** (materials) | the same, for rectangles; imported polygons (with holes) are shown but not moved. Regions **stack in list order**: a later one takes the cells it covers, so a plate with an insert needs no cutting | id, material, stacking order |
-| **Devices** (rotors) | click to add, drag to move, click then Backspace to delete | id, position, diameter, yaw |
-| **Boundaries** | drawn along the domain's edges, coloured by kind | edge, segment, kind, value. Read-only when the family's solver fixes its boundary (the wind farm, the river and the acoustics do) |
-| **Circuit** (lumped parts) | a schematic: each electrode is a node beside its edge segment, the circuit's other nodes sit in a row below the domain, and each battery or resistor runs between its two nodes | id, kind, value, a battery's internal resistance, its two nodes; *Add battery*, *Add resistor*. Offered only to a family that reads a circuit |
+| **Shape** | the whole grid until an outline is drawn, with holes cut in it (*Draw the outline*, *Cut a hole*, *Use the whole grid*); the outline is selected on arrival, its handles ready | the outline's edges, each with its kind and the condition on it; a selected edge drawn straight, as an arc or smooth |
+| **Materials** | regions drawn with any tool, in the material chosen in the rail; imported polygons (with holes) are shown but not moved. Regions **stack in list order**: a later one takes the cells it covers, so a plate with an insert needs no cutting | the materials in use and the regions; a region's material, stacking and place; a material's properties, one from the library, or a new one by name. Offered to a family that reads regions, or while a case holds some |
+| **Boundaries** | drawn along the domain's edges, coloured by kind; a click selects an edge | its condition, value and span, and *Split it in two*. Fixed when the family's solver fixes its boundary (the wind farm, the river and the acoustics do), with the reason |
+| **Windows** | drawn with any tool, or generated from the shape (*Automatic*); the live warnings below | how they are cut and joined, the blend width; a window's name and place; *Lay a grid of rectangles...* |
+| **Rotors** | *Place rotors* adds one per click; drag to move | position and diameter |
+| **Circuit** (lumped parts) | a schematic: each electrode is a node beside its edge segment, the circuit's other nodes sit in a row below the domain, and each battery or resistor runs between its two nodes | a part's value, a battery's internal resistance, its two nodes; *Add a battery*, *Add a resistor*. For a family that reads no circuit, a circuit left in the case is shown with that said, and nothing can be added |
+
+**The selected shape's handles**: a **square** per vertex (drag to move it,
+double-click to smooth the curve through it or make it a corner again, Backspace to
+remove it), a **circle** per edge (click to select the edge, drag to bend it into an
+arc, double-click to add a vertex), a **diamond** to move the whole shape (Backspace
+deletes it), and on a rectangle four corners to resize it.
 
 Every edit snaps to the chosen step (1, 8 or 16 cells; 8 by default), goes
 through the same validation, undo and save as any other edit, and is drawn back
@@ -185,7 +225,7 @@ from the case, so the canvas never shows a shape the case does not hold.
 - **diamonds**: cross-points, where three or more windows overlap (information; the
   compiler's rules for them are L2/I2/G1).
 
-**Gmsh.** *File > Import geometry from Gmsh (.msh)*. Name physical groups
+**Gmsh.** *Case > Import geometry from Gmsh (.msh)...*. Name physical groups
 `domain`, `region:<material>`, `window:<id>`, and `bc:<kind>` or `bc:<kind>=<value>`
 (on edge curves); mesh in 2-D; save the mesh. Layers the file defines replace the
 case's; the others are kept. Only `.msh` is read, because a `.geo` file is a
@@ -215,16 +255,12 @@ circular `arc` or a `spline`:
 One kind of shape serves the domain's outline, holes cut in the domain, material
 regions, and windows (which may have holes too).
 
-**On the canvas** (Domain, Windows and Regions layers):
-
-| tool | what it does |
-|---|---|
-| **Draw shape** | click to place vertices, double-click (or *Close shape*) to close. Edges start straight or smooth. *Circle*, *Ellipse* and *Hexagon* add a ready-made shape. On the Domain layer the shape is the outline or a hole |
-| **Reshape** | drag a **square** to move a vertex, a **circle** to bend its edge into an arc (back onto the line to straighten it), a **diamond** to move the whole shape. Double-click a circle to add a vertex, a square to smooth the curve through it (again for a corner). Backspace on a square removes the vertex; on a diamond, the shape |
-
-The **Edges** table sets any edge's kind or bulge. What lies outside a drawn domain
-is drawn pale and dotted, stepped as the solver sees the domain's cells, with the
-exact outline over it.
+**On the canvas** (the Shape, Materials and Windows layers): **Draw**, **Rectangle**
+and **Circle** add a shape (on the Shape layer, the outline or a hole), and
+**Select** reshapes the selected one with its handles, as "The geometry section"
+above describes. A selected edge's kind and bulge are also set in the inspector.
+What lies outside a drawn domain is drawn pale and dotted, stepped as the solver
+sees the domain's cells, with the exact outline over it.
 
 **What changes underneath:**
 - `fv.Field` takes the domain's mask. A face between the domain and the void is a
@@ -264,7 +300,7 @@ themselves to be rectangles, does it? Why doesn't their shape itself ADAPT to th
 geometry of the curve smoothly?"
 
 They did not adapt because nothing generated a window from the geometry. A window
-was whatever was drawn, and *Generate a tiling* makes rectangles. Now a case can
+was whatever was drawn, and a generated tiling was rectangles. Now a case can
 have a **layout** (`layout.py`): the windows are generated from the domain's own
 shape, and generated again whenever that shape changes.
 
@@ -291,8 +327,9 @@ For styles A and B each piece grows inside the domain, never across a gap, by
 the least reach that gives every cell a window at full weight. For C, D and the
 split the pieces meet along faces.
 
-**In the page** (Geometry, Windows): *Windows follow the domain*, how to cut
-(*along its length* or *one per material*), and how many pieces along and across.
+**In the page** (Model, Windows, nothing selected): *Automatic* or *My own*, how to
+cut (*along the shape's length* or *one piece per material*), and how many pieces
+along and across.
 - Drawing a domain whose windows are still rectangles makes them give way to
   generated ones.
 - Reshaping the domain generates the windows again (`Workbench.edit`).
@@ -368,13 +405,14 @@ projection lets a little velocity back into the solid each sub-step.
 | `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes |
 | `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
 | `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking; for drawn shapes, their cell masks, the distance ramp, the analysis on masks, and a drawn domain's boundary faces labelled by edge |
-| `editor.py` | the Geometry step: the canvas, its tools (Move & draw, Draw shape, Reshape, Pan & zoom), its tables (with a Domain table and an Edges table) |
+| `editor.py` | the Model tab's canvas: its layers, the five tools, what a click selects on each layer (`hit`), the selected shape's handles, and the edits they make |
+| `inspector.py` | the Model tab's rail and inspector: the layer buttons, the active layer's list, and the panel for what is selected (or the layer's settings) |
 | `gmsh_import.py` | `.msh` to case geometry, by physical-group names |
 | `registry.py` | the physics families: what each runs on, which layers it reads, which boundaries it can impose, and what is missing before the workbench can run it |
-| `app.py` | the GUI. Every menu item and button goes through `Workbench.dispatch(action)` |
+| `app.py` | the GUI: the header, the two tabs and the dialogs (the problems list, the examples, open, save, Gmsh). Every menu item and button goes through `Workbench.dispatch(action)`, every edit through `Workbench.edit` |
 | `tiling.py` | any rectangles as a partition of unity, certified by `GridPartitionOfUnity` |
 | `runner.py` | the run: arms in turns, the timer, Stop, the snapshots, the record |
-| `runview.py` | the Run & compare and Results steps |
+| `runview.py` | the Run & results tab: the controls, the compile card, the four cards, the live fields, timings and convergence |
 | `checks.py` | a check as data: what is measured, its tolerance, when it was registered |
 | `machine.py` | the machine's state beside every timing, and the keep-awake request |
 | `families/windfarm.py` | the wind-farm family's adapter (style A) |
@@ -389,9 +427,9 @@ projection lets a little velocity back into the solid each sub-step.
 | `families/thermoelastic.py` | a heated bimetal strip, conduction and elasticity split by physics |
 | `families/cooling.py` | a heated block cooled by a channel flow (style C at a seam between two physics) |
 | `compile.py` | the compile: a case's `CaseGraph` through its family's `case_graph`, the finite-volume window as an agent (`FVAgent`), seams from the geometry with Fourier prolongations, the declared cross-points, the verdict per seam, and the background job with its record |
-| `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven through the data Bokeh's tools send, every menu action (nothing is left unbuilt), and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
+| `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven as the page drives it (a click is a Tap at `_on_tap`, a handle's drag the data Bokeh's `PointDrawTool` sends, a field a widget; helpers in `tests/workbench_ui.py`), every header control and menu action (nothing is left unbuilt), the status chip's list and its *Show me*, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
 | `tests/test_workbench_fv.py`, `tests/test_workbench_families.py` | the finite volumes against closed forms (a layered wall, a series circuit), one window equal to the full domain to the bit, styles B, C and D against the full domain, the unrelaxed Dirichlet–Neumann diverging exactly when $\rho>1$, both new families end to end, and the page's family, physics and materials controls |
-| `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, the Check step's per-seam table, and the gallery opening every example |
+| `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, the Run & results tab's per-seam table, and the gallery opening every example |
 
 ## Known limitations
 
@@ -399,7 +437,7 @@ projection lets a little velocity back into the solid each sub-step.
 - Undo covers case edits, not view or tool changes.
 - **Regions are read by every family but the wind farm**, which ignores them, and the check says so.
 - Timings are taken inside the workbench server process, which also serves the page; the page's updates share the process with every arm alike.
-- **The circuit is drawn, not dragged**: its parts are set in the table and the canvas draws the schematic.
+- **The circuit is drawn, not dragged**: its parts are set in the inspector and the canvas draws the schematic.
 - **At showcase sizes the decomposed arms are slower than the full domain** for every family but the wind farm (above). This is measured and shown, not hidden.
 - **Plain Schwarz has no coarse level**, so it converges slowly on a bending structure (616 iterations on the bracket); a coarse space or a Krylov wrapper would be the remedy, and neither is built.
 - **The wind farm compiles only on a scaling-ladder rung.** Its graph is the vault's `scaling_ladder.build`, which declares a regular tiling. A drawn tiling that is not a rung runs, but is refused before the compiler, with that reason.
@@ -407,4 +445,5 @@ projection lets a little velocity back into the solid each sub-step.
 - **A drawn curve is resolved to the grid's cells.** The solvers see the cells whose centres a shape contains, so a curve is a staircase at the cell size. The canvas draws both, and on the bend the staircase moves the ring's heat flow by -0.97% from its continuum value. Body-fitted grids would remove that; they are not built.
 - **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not. The owner accepted this on 2026-09-29: the compile is its own step, and the two-minute rule is per run.
 - **R10 refuses the iterated one-physics cases** (styles B and C: the wall, the insert, the bracket), because it does not read whether a coupling iterates. The refusal is shown as the compiler gave it. Open as W348 in the vault's gap worklist.
-- Bokeh gives each gesture to one tool, so moving and resizing are two tools, not one.
+- **A tool adds one shape**, then hands back to Select; there is no key that keeps it armed, so placing five rotors is five presses of *Place rotors*.
+- **A finished run or compile rebuilds the Run & results tab**, and the page scrolls back to its top; that is why Run and the compile's verdict are placed there.

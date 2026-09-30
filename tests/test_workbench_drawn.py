@@ -36,6 +36,9 @@ from atlas.workbench.spec import (Boundary, CaseSpec, Outline, Window, check,  #
                                   example_case)
 from atlas.workbench.tiling import MaskTiling  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from workbench_ui import walk  # noqa: E402
+
 DEG = math.pi / 180.0
 
 
@@ -383,22 +386,76 @@ def test_reshape_bends_splits_and_smooths_and_the_boundaries_follow(wb):
     assert k[0] == "spline" and k[1] == "spline"
 
 
-def test_drawn_windows_keep_their_place_when_the_box_tool_moves_a_rectangle(wb):
+def test_drawn_windows_keep_their_place_when_a_rectangle_moves(wb):
     ed = wb.geo_editor
-    ed._switch(layer="windows", tool="shape")
+    ed._switch(layer="windows", tool="draw")
     ed = wb.geo_editor
     for x, y in [(8, 8), (72, 8), (72, 40), (8, 40)]:
         ed._on_tap(SimpleNamespace(x=x, y=y))
     ed.close_shape()
     assert [w.shape for w in wb.spec.windows] == ["rect", "rect", "curve"]
-    ed._switch(tool="move")
-    ed = wb.geo_editor
-    data = dict(ed.src_win.data)                              # the rectangles only
-    assert len(data["x"]) == 2
-    xs = list(data["x"])
-    xs[0] += 8
-    ed._on_windows("data", data, dict(data, x=xs))
+    ed = wb.geo_editor                                        # handed back to Select
+    assert ed.state["tool"] == "select" and ed.selected == "windows:2"
+    drawn = wb.spec.windows[2].outline
+    ed.select("windows:1")                                    # F10, x0 72 of 160
+    data = dict(ed.src_move.data)                             # its diamond alone
+    assert data["ref"] == ["windows:1"]
+    ed._on_move("data", data, dict(data, x=[data["x"][0] - 8]))
+    assert wb.spec.windows[1].x0 == 64
     assert [w.shape for w in wb.spec.windows] == ["rect", "rect", "curve"]
+    assert wb.spec.windows[2].outline == drawn
+
+
+def test_circle_and_rectangle_are_two_clicks_and_hand_back_to_select(wb):
+    """Every tool adds one shape, then hands back to Select with it selected (seen:
+    Rectangle stayed armed after its region while Draw had handed back); the hint
+    under the canvas names the handles the shape has."""
+    ed = wb.geo_editor
+    ed._switch(layer="regions", tool="circle")
+    wb.geo_state["material"] = "copper"
+    ed = wb.geo_editor
+    ed._on_tap(SimpleNamespace(x=40.2, y=48.3))                  # the centre, snapped
+    assert "a point on the circle" in ed.hint.object
+    ed._on_tap(SimpleNamespace(x=52.0, y=48.3))                  # a point on it
+    r = wb.spec.regions[-1]
+    assert r.shape == "curve" and r.outline.kinds() == ["arc"] * 4 and r.material == "copper"
+    ed = wb.geo_editor
+    assert ed.state["tool"] == "select" and ed.selected == f"regions:{len(wb.spec.regions) - 1}"
+    assert "a <b>circle</b> to bend its edge" in ed.hint.object
+    ed._switch(tool="rect")
+    wb.geo_editor._on_tap(SimpleNamespace(x=100.0, y=16.0))
+    wb.geo_editor._on_tap(SimpleNamespace(x=120.0, y=40.0))
+    ed = wb.geo_editor
+    r = wb.spec.regions[-1]
+    assert (r.shape, r.x0, r.y0, r.nx, r.ny) == ("rect", 96, 16, 24, 24)
+    assert ed.state["tool"] == "select"
+    # a rectangle has corners and a centre, no edges to bend (seen: the curve hint)
+    assert "Drag a <b>corner</b> to resize it" in ed.hint.object
+
+
+def test_draw_the_outline_after_cut_a_hole_draws_an_outline(wb):
+    """After Cut a hole the next shape drawn was still a hole, so Draw the outline
+    cut a second one."""
+    import panel as pn
+
+    def rail_button(name):
+        return [b for b in walk(wb.geo_editor.rail_items)
+                if isinstance(b, pn.widgets.Button) and b.name == name][0]
+
+    def draw(pts):
+        for x, y in pts:
+            wb.geo_editor._on_tap(SimpleNamespace(x=x, y=y))
+        wb.geo_editor.close_shape()
+    wb.geo_editor._switch(layer="domain")
+    rail_button("Cut a hole").clicks += 1
+    assert wb.geo_editor.state["tool"] == "draw" and wb.geo_editor.state["draw_as"] == "hole"
+    draw([(64, 32), (96, 32), (96, 64), (64, 64)])
+    assert len(wb.spec.domain.holes) == 1 and wb.spec.domain.outline is None
+    assert wb.geo_editor.state["tool"] == "select"
+    rail_button("Draw the outline").clicks += 1
+    assert wb.geo_editor.state["draw_as"] == "outline"
+    draw([(0, 0), (160, 0), (160, 96), (0, 96)])
+    assert len(wb.spec.domain.holes) == 1 and wb.spec.domain.outline is not None
 
 
 def test_a_hole_is_cut_deleted_and_restored(wb):
@@ -423,14 +480,26 @@ def test_a_hole_is_cut_deleted_and_restored(wb):
     assert sorted(b.edge for b in wb.spec.boundaries) == ["bottom", "left", "right", "top"]
 
 
-def test_the_edges_table_sets_an_arc(wb):
+def test_the_inspector_sets_an_edge_to_an_arc(wb):
+    """A click on an edge's circle selects the edge; the inspector draws it straight,
+    as an arc of a typed bulge, or smooth."""
+    import panel as pn
     wb.dispatch("file:example:bend-3")
     ed = wb.geo_editor
     ed._switch(layer="windows")
     ed = wb.geo_editor
-    df = ed.tables["edges"].value
-    assert set(df["kind"]) == {"line", "arc"}
-    row = int(df.index[(df["ref"] == "windows:0") & (df["edge"] == 0)][0])
-    ed._on_table_edit("edges", SimpleNamespace(row=row, column="bulge", value="0.25"))
+    assert {k for w in wb.spec.windows for k in w.outline.kinds()} == {"line", "arc"}
+    ed.select("windows:0")
+    row = [r for r in ed._handle_rows["edge"] if r[0] == "windows:0" and r[1] == 0][0]
+    ed._on_tap(SimpleNamespace(x=row[2], y=row[3]))           # edge 0's circle
+    assert ed.state["sub"] == 0
+    kind = [w for w in walk(ed.inspector) if isinstance(w, pn.widgets.RadioButtonGroup)
+            and set(w.options) == {"Straight", "Arc", "Smooth"}][0]
+    assert kind.value == "line"
+    kind.value = "arc"
+    assert wb.spec.windows[0].outline.kinds()[0] == "arc"
+    bulge = [w for w in walk(wb.geo_editor.inspector)
+             if isinstance(w, pn.widgets.FloatInput) and w.name.startswith("Bulge")][0]
+    bulge.value = 0.25
     o = wb.spec.windows[0].outline
     assert o.kinds()[0] == "arc" and o.bulges()[0] == 0.25
