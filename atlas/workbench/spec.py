@@ -376,6 +376,10 @@ class Layout(BaseModel):
     across: int = Field(1, ge=1, le=8)
     source: str = ""
     grown: int = 0
+    #: case@0.6: how the pieces were cut, for the page to say (`layout.pieces`): along
+    #: the shape between its two ends, along a river's own flow, or by bisection when
+    #: the shape branches and nothing flows through all of it
+    how: str = ""
 
 
 class RunSettings(BaseModel):
@@ -1077,12 +1081,23 @@ def _check_transport(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
         if any(i.severity == "error" for i in out) or any(
                 i.severity == "error" for i in _check_boundaries(spec)):
             return out
-        from .families.plume import river_flow
+        from .families.plume import dead_branches, river_flow
         from .flow import FlowError
         try:
-            river_flow(spec)
+            fl = river_flow(spec)
         except FlowError as exc:
             return out + [Issue("error", "geometry", f"the river's flow: {exc}")]
+        dead = dead_branches(spec, fl)
+        if dead:
+            # a fork with one outlet: the other branch is a dead end of the flow
+            # (2026-09-30, the owner's forked river)
+            one = len(dead) == 1
+            out.append(Issue("warning", "geometry",
+                             f"{'a branch' if one else f'{len(dead)} branches'} of the "
+                             f"river carr{'ies' if one else 'y'} no water: nothing lets "
+                             f"{'it' if one else 'them'} out, so the pollutant cannot go "
+                             f"down {'it' if one else 'them'} (Boundaries: make the end of "
+                             f"the branch an outlet)", fix="dead-branch"))
     owner = geo.region_owner(spec.regions, d.nx, d.ny)
     if materials_ok and spec.regions and not np.any((owner < 0) & geo.domain_mask(d)):
         from .families.plume import explicit_limit       # the family's own arithmetic
@@ -1526,6 +1541,7 @@ SHOWS: dict[str, str] = {
     "s-channel": "Heat along an S-shaped channel, on windows that follow it",
     "ring-film": "Current turning the corner of a curved film",
     "river-bend": "A plume round a winding river, its flow solved along the banks",
+    "river-fork": "A river that forks into two branches, each with its own outlet",
     "sound-lens": "Sound meeting a curved water surface",
     "plate-hole": "A plate with a round hole, pulled from one end",
     "bimetal-arc": "A curved bimetal strip heated at one end",
@@ -1616,6 +1632,10 @@ EXAMPLES: dict[str, Example] = {e.key: e for e in (
             "A river drawn with splines, shallow then deep, its flow solved from its inlet to "
             "its outlet so no water crosses a bank; a release carried round the bends on two "
             "windows that follow the river.", "transport-2d", "A"),
+    Example("river-fork", "A river that forks into two outlets (style A, drawn)",
+            "A river drawn with splines whose stem forks into two branches of different "
+            "widths, each leaving by its own outlet; the windows follow the river's own "
+            "flow, each band across both branches two windows.", "transport-2d", "A"),
     Example("sound-lens", "Sound on a curved water surface (style C, drawn)",
             "A pressure pulse runs along a round-ended air duct and meets a curved water "
             "surface; the pieces are the two media, and the rigid drawn walls keep the "
@@ -1658,7 +1678,8 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
                "heated-strip": _strip_example, "cooled-block": _block_example,
                "bend-3": _bend_example, "insert-round": _round_insert_example,
                "s-channel": _s_channel_example, "ring-film": _ring_film_example,
-               "river-bend": _river_bend_example, "sound-lens": _sound_lens_example,
+               "river-bend": _river_bend_example, "river-fork": _river_fork_example,
+               "sound-lens": _sound_lens_example,
                "plate-hole": _plate_hole_example, "bimetal-arc": _bimetal_arc_example,
                "cooled-winding": _cooled_winding_example}.get(key)
     if builder is None:                                    # pragma: no cover
@@ -1862,6 +1883,46 @@ def _river_bend_example(ex: Example) -> CaseSpec:
         layout=Layout(cut="along", along=2),
         coupling=Coupling(style="A", ramp_cells=8),
         run=RunSettings(mode="transient", macro_dt=1.5, steps=2000, threads=2),
+    )
+    spec.boundaries = default_boundaries(spec)
+    from .layout import refresh
+    refresh(spec)
+    return spec
+
+
+def _river_fork_example(ex: Example) -> CaseSpec:
+    """A river 1.6 km long at 5 m cells that forks (2026-09-30, the owner: "it doesn't
+    let me have a geometry with a bifurcation, and two outlets").  Its stem enters on
+    the grid's left edge, 200 m wide; at about 850 m it forks round the land between
+    two branches, the lower 160 m wide at its mouth and the upper 120 m, each leaving
+    by its own outlet on the grid's right edge -- so the inlet and both outlets follow
+    from the grid's edges (`derived_kind`).  Every bank is a spline.  Shallow and fast
+    upstream (1.25 m), deep and slow in the branches (2.5 m).  The outfall releases
+    10 g/s 200 m below the inlet, in the middle of the stem.
+
+    The windows follow the river's own flow (`layout.pieces_and_how`): four bands from
+    the inlet to the outlets, and a band across both branches is two windows.  A
+    potential flow splits by the branches' shapes alone, and the run reports each
+    outlet's share.  Steps of 2.1 s, 90% of the explicit limit the check computes for
+    the solved flow (2.37 s); 2000 of them, 4200 s, longer than the water takes from
+    the outfall to either outlet."""
+    pts = [(0.0, 80.0), (60.0, 80.0), (120.0, 74.0), (180.0, 56.0), (240.0, 36.0),
+           (320.0, 24.0), (320.0, 56.0), (250.0, 68.0), (200.0, 86.0), (170.0, 100.0),
+           (200.0, 116.0), (250.0, 136.0), (320.0, 148.0), (320.0, 172.0), (240.0, 162.0),
+           (180.0, 144.0), (120.0, 126.0), (60.0, 120.0), (0.0, 120.0)]
+    kinds = ["spline"] * 5 + ["line"] + ["spline"] * 6 + ["line"] + ["spline"] * 5 + ["line"]
+    spec = CaseSpec(
+        domain=Domain(nx=320, ny=200, dx=5.0,
+                      outline=Outline(points=pts, edges=kinds, bulge=[0.0] * len(pts))),
+        physics=Physics(family="transport-2d",
+                        params={"q": 1.0, "release": 10.0, "source_x": 200.0,
+                                "source_y": 500.0}),
+        materials=_materials("transport-2d", "shallow-fast", "deep-slow"),
+        regions=[Region(id="stem", material="shallow-fast", x0=0, y0=0, nx=160, ny=200),
+                 Region(id="branches", material="deep-slow", x0=160, y0=0, nx=160, ny=200)],
+        layout=Layout(cut="along", along=4),
+        coupling=Coupling(style="A", ramp_cells=8),
+        run=RunSettings(mode="transient", macro_dt=2.1, steps=2000, threads=2),
     )
     spec.boundaries = default_boundaries(spec)
     from .layout import refresh

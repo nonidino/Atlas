@@ -413,6 +413,57 @@ left the case ready; its run closed energy to $4.5\times10^{-12}$ and agreed wit
 full domain to $8.4\times10^{-11}$, and a river whose whole inlet a hole took showed
 the problem, and its Fix cleared it.
 
+## A river that forks (2026-09-30)
+
+The owner: "In the stream pollutant case, it doesn't let me have a geometry with a
+bifurcation, and two outlets." Reproduced first: a Y ran, but it had three quieter
+faults.
+- The starter gave it one outlet, and nothing said the other branch carried no water.
+- The automatic windows ran between the Y's two branch tips, so they split its stem
+  lengthwise.
+- An island that split a river into two outlets was refused as a hole outside the
+  outline (fixed by "Holes anywhere", above).
+
+**A shape branches when the coordinate between its two ends leaves a dead region**
+(`layout.dead_regions`): cells where it changes by under a thousandth of its mean. Into
+a branch that neither end is in, a harmonic coordinate decays like $e^{-\pi x/w}$, so
+past about $2.2\,w$ it is dead. A convex corner is not: no drawn example, no rectangle
+and no L has a single slow cell (a test runs every example). The plan's rule, local
+maxima of the distance round the boundary, would have called a rectangle's four corners
+four ends.
+
+**A branched river's windows follow its own flow**: the along coordinate is $1-\phi$,
+$\phi$ the river's potential (1 on its inlets, 0 on its outlets), cut into bands at
+equal cell counts, and **each connected piece of a band is a window**, so a band across
+both branches is two windows. Any other branched shape is cut by **recursive spectral
+bisection** (Pothen, Simon and Liou, 1990). A shape with two ends is cut as before, to the
+bit. The Windows layer says which cut it took (`Layout.how`).
+
+**A branch that carries no water is a warning with a Fix**, *Make the end of this branch
+an outlet*: the bank beside its dead water farthest from the inlets along the river's
+own paths. A newly drawn fork gets it at once, said in the note, as every starting value
+is. **The outfall of a drawn river goes mid-river a fifth of the way down its flow**: it
+had gone to the middle of its cells, which on a Y is the fork, and a release on the
+dividing streamline went down one branch alone (the served page measured 100% and 0%).
+The starting values now run in a fixed order, a river's ends first.
+
+**The run reports each outlet's share** of the water and of the pollutant leaving, in a
+line over the cards and in the record. A potential flow splits by the channels' shapes
+alone, which is a stated guess. **A fourth check**, registered before the fork's first
+run: the flow's continuity, every cell's flows summing to $10^{-12}$ of the discharge.
+
+**The example `river-fork`**: a Y drawn with splines, its stem entering on the grid's
+left edge and two branches of different widths leaving by two outlets on its right, on
+six windows along its flow. In the served page it compiled `admit-uncertified` (six
+agents, five seams, one from the fork to each branch) and ran 2,000 steps with every
+check passing: mass $2.7\times10^{-14}$, the full river $2.1\times10^{-16}$ of the peak,
+threaded equal to serial, continuity $2.2\times10^{-14}$. The wider branch took 53.6% of
+the water and 57.3% of the pollutant. **The owner's scenario, walked in the page**:
+river plume chosen, a smooth Y drawn with its stem on the left, Run. It was ready at
+once with two outlets, and the plume left by both (54.0% and 46.0%), every check
+passing. Records: `out/workbench/records/demo-fork/`. `tests/test_workbench_fork.py`
+pins all of it, the one-window control bit for bit among it.
+
 ## Windows that follow the domain (case file 0.5)
 
 The owner's next question, the same day: "it doesn't make sense for the windows
@@ -536,9 +587,9 @@ projection lets a little velocity back into the solid each sub-step.
 
 | file | role |
 |---|---|
-| `spec.py` | the case file (`atlas-workbench/case@0.6`, with no name or description; 0.1 to 0.5 files migrate on load), `check()` with each family's rules, and the twenty-one examples, each with the one line *More examples* shows (`SHOWS`): three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), one whose windows are generated from its shape (the S-channel), and one drawn example per other family |
+| `spec.py` | the case file (`atlas-workbench/case@0.6`, with no name or description; 0.1 to 0.5 files migrate on load), `check()` with each family's rules, and the twenty-two examples, each with the one line *More examples* shows (`SHOWS`): three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), one whose windows are generated from its shape (the S-channel), one drawn example per other family, and the forked river |
 | `flow.py` | a flow that follows a drawn domain: the potential flow from its inlet faces to its outlet faces, for the river and the coolant |
-| `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes |
+| `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes; for a shape that branches (`dead_regions`), a river's own flow with each connected band a window, or recursive spectral bisection (`bisect`); holes read from the mask (`topological_holes`) |
 | `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
 | `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking; for drawn shapes, their cell masks, the distance ramp, the analysis on masks, and a drawn domain's boundary faces labelled by the nearest edge that still bounds it (`live_edges`) |
 | `editor.py` | the Model tab's canvas: its layers, the five tools, what a click selects on each layer (`hit`), the selected shape's handles, and the edits they make |

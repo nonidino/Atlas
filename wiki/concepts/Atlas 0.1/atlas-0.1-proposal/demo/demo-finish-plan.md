@@ -146,6 +146,30 @@ $$\text{along}(x) \;=\; 1-\phi(x),\qquad \nabla^2\phi = 0,\quad \phi\big|_{\text
 
 The owner's scenario, walked in the served page: choose *river plume*, draw a Y with the stem on the left, press the Fix the problems list offers, press Run. The plume goes down both branches; both outlets show their share; every check passes.
 
+**Built on 2026-09-30 (the demo chat).** Two parts of the design above were corrected on the way.
+
+- **When to switch (point 4).** The rule of counting local maxima of the graph distance round the boundary calls a rectangle's four corners four ends, so it would have re-cut every rectangle and every example. The switch is instead: **the harmonic coordinate between the two ends leaves a dead region**, cells where it changes by under $10^{-3}$ of its mean (`layout.dead_regions`).
+  - Into a branch that neither end is in, the coordinate decays like $e^{-\pi x/w}$, so past about $2.2\,w$ it is dead.
+  - Not one drawn example, rectangle or L has a single slow cell. The Y's stem has 2,464, and a T with a stub one width deep has none. So every earlier case keeps its windows.
+  - The same measure on a river's potential is the dead-branch test of point 5.
+- **The Fix of point 5 is made at once for a newly drawn fork**, as every starting value is, and said in the note. It stays in the problems list for a branch that loses its outlet later. So the walk needs no press of a Fix.
+
+**Walked in the served page at $1090\times620$:**
+- the river chosen, a smooth Y drawn with its stem on the left;
+- ready at once, with inlet, outlet, second outlet, outfall and step each said in the note;
+- Run: 6,000 steps, every check passing;
+- the line over the cards: *"B3 takes 50.0% of the water and 54.0% of the pollutant; B6 takes 50.0% of the water and 46.0% of the pollutant."*
+
+**The first walk found a fifth fault.** The starter placed the outfall before the river had its ends, at the middle of its cells, which on a Y is the fork. The release sat on the dividing streamline and went down one branch alone: 100% and 0%. The starting values now run in a fixed order, a river's ends first. A drawn river's outfall goes mid-river, a fifth of the way down its flow.
+
+**`river-fork`**, compiled and run in the page:
+- `admit-uncertified`, with six agents and five seams: one from the fork to each branch, so H3 did not show;
+- 2,000 steps: mass $2.7\times10^{-14}$, the full river $2.1\times10^{-16}$ of the peak, threaded equal to serial, continuity $2.2\times10^{-14}$ (registered at $10^{-12}$ before its first run);
+- the wider branch took 53.6% of the water and 57.3% of the pollutant;
+- the one-window control is bit for bit (`tests/test_workbench_fork.py`).
+
+Records: `out/workbench/records/demo-fork/`.
+
 ---
 
 ## 3. Item 1.3 — holes that cross the domain's edge, or reach past it

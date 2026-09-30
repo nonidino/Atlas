@@ -57,6 +57,16 @@ class LayoutError(ValueError):
     """The windows cannot follow this geometry, and why."""
 
 
+#: the families whose windows can follow a solved flow, and the boundary kinds the
+#: flow runs between (a river from its inlets to its outlets)
+FLOWING = {"transport-2d": ("river-inlet", "river-outlet")}
+
+#: a cell whose along-coordinate changes by less than this share of the domain's mean
+#: change is one the coordinate does not reach: the end of a branch that neither of
+#: the two ends is in (and, for a river's flow, a branch with no water in it)
+DEAD = 1e-3
+
+
 # ---------------------------------------------------------------------------
 # what the windows are generated from
 # ---------------------------------------------------------------------------
@@ -74,6 +84,12 @@ def fingerprint(spec) -> str:
         # the cooled block cuts by physics: which materials flow
         payload["materials"] = spec.materials
         payload["family"] = spec.physics.family
+    elif spec.physics.family in FLOWING:
+        # a branched river's windows follow its flow, which runs from its inlets to
+        # its outlets: moving an outlet moves them
+        payload["family"] = spec.physics.family
+        payload["ends"] = sorted((b.edge, b.kind) for b in spec.boundaries
+                                 if b.kind in FLOWING[spec.physics.family])
     return hashlib.sha1(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
 
 
@@ -85,10 +101,11 @@ def refresh(spec) -> bool:
     key = fingerprint(spec)
     if key == spec.layout.source and spec.windows:
         return False
-    windows, grown = generate(spec)
+    windows, grown, how = generate_with_how(spec)
     spec.windows = windows
     spec.layout.source = key
     spec.layout.grown = grown
+    spec.layout.how = how
     return True
 
 
@@ -285,20 +302,130 @@ def _cut(cells: np.ndarray, values: np.ndarray, parts: int) -> list[np.ndarray]:
     return [cells[order[bounds[k]:bounds[k + 1]]] for k in range(parts)]
 
 
+def cell_speed(values: np.ndarray, act: np.ndarray) -> np.ndarray:
+    """How fast a field on the domain's cells changes, per cell: the length of its
+    gradient from its faces' differences (each face's difference shared by its two
+    cells, faces to the void counting nothing), 0 off the domain."""
+    act = np.asarray(act, dtype=bool)
+    v = np.where(act, np.nan_to_num(np.asarray(values, dtype=float)), 0.0)
+    dxf = np.where(act[:, :-1] & act[:, 1:], v[:, 1:] - v[:, :-1], 0.0)
+    dyf = np.where(act[:-1, :] & act[1:, :], v[1:, :] - v[:-1, :], 0.0)
+    gx, gy = np.zeros(act.shape), np.zeros(act.shape)
+    gx[:, :-1] += 0.5 * dxf
+    gx[:, 1:] += 0.5 * dxf
+    gy[:-1, :] += 0.5 * dyf
+    gy[1:, :] += 0.5 * dyf
+    return np.where(act, np.hypot(gx, gy), 0.0)
+
+
+def dead_regions(speed: np.ndarray, act: np.ndarray, level: float = DEAD,
+                 min_cells: int = 16) -> list[np.ndarray]:
+    """The connected pieces of the domain where ``speed`` is under ``level`` of its
+    mean over the domain, each of at least ``min_cells`` cells: where a harmonic
+    coordinate does not reach.
+
+    A branch that neither end is in is one: into it the coordinate decays like
+    ``exp(-pi x / w)`` for a width ``w``, so past about ``2.2 w`` it changes by less
+    than a thousandth of its mean.  A convex corner is not: the change there falls
+    only linearly, and a cell or two at most is under the level (a rectangle, a ring,
+    an L and every drawn example have none, and a test says so)."""
+    from scipy.ndimage import label
+    act = np.asarray(act, dtype=bool)
+    if not act.any():
+        return []
+    mean = float(np.mean(speed[act]))
+    if mean <= 0.0:
+        return []
+    lab, n = label(act & (speed < level * mean))
+    sizes = np.bincount(lab.ravel(), minlength=n + 1)
+    return [lab == k for k in range(1, n + 1) if sizes[k] >= min_cells]
+
+
+def geodesic(act: np.ndarray, sources: np.ndarray) -> np.ndarray:
+    """Each cell's distance, in faces crossed, from the nearest of the ``sources``
+    (a mask), through the domain's cells only (inf off the domain or unreached)."""
+    from scipy.sparse.csgraph import dijkstra
+    idx, lap = _laplacian(act)
+    adj = sp.diags(lap.diagonal()) - lap
+    src = np.flatnonzero(np.asarray(sources, dtype=bool).ravel()[idx])
+    out = np.full(act.shape, np.inf)
+    if src.size:
+        dist = dijkstra(sp.csr_matrix(adj), directed=False, indices=src, unweighted=True,
+                        min_only=True)
+        out.flat[idx] = dist
+    return out
+
+
+def bisect(act: np.ndarray, parts: int) -> list[np.ndarray]:
+    """``parts`` pieces of the domain by recursive spectral bisection (Pothen, Simon &
+    Liou, 1990): the largest piece is split at the median of its own Fiedler vector
+    until there are enough.  It needs no notion of two ends, so it serves a shape that
+    branches.  Deterministic: the eigensolver's fixed start, ties by cell index; the
+    half nearer the grid's left stays first."""
+    out = [np.asarray(act, dtype=bool).copy()]
+    while len(out) < parts:
+        k = max(range(len(out)), key=lambda i: (int(out[i].sum()), -i))
+        m = out[k]
+        cells = np.flatnonzero(m.ravel())
+        if cells.size < 2:
+            raise LayoutError(f"{parts} pieces from {int(act.sum())} cells")
+        f = fiedler(m).ravel()[cells]
+        halves = []
+        for part in _cut(cells, f, 2):
+            h = np.zeros(act.shape, dtype=bool)
+            h.flat[part] = True
+            halves.append(h)
+        out[k:k + 1] = halves
+    return out
+
+
+def _flow_along(spec, act: np.ndarray) -> np.ndarray | None:
+    """``1 - phi`` for a family that carries a flow, ``phi`` its solved potential (1 on
+    its inlets, 0 on its outlets): its level curves cross every branch from bank to
+    bank, and it falls along every streamline.  None when the family carries no flow,
+    the flow cannot be solved yet, or it leaves a branch with no water in it."""
+    if spec.physics.family not in FLOWING:
+        return None
+    from .families.plume import river_flow
+    from .flow import FlowError
+    try:
+        fl = river_flow(spec)
+    except (FlowError, ValueError, KeyError, IndexError):
+        return None
+    phi = np.where(act, fl.phi, np.nan)
+    if not np.all(np.isfinite(phi[act])) or dead_regions(cell_speed(phi, act), act):
+        return None
+    return 1.0 - phi
+
+
 def pieces(spec) -> list[tuple[str, np.ndarray]]:
     """The layout's pieces: disjoint cell sets that together are the domain."""
+    return pieces_and_how(spec)[0]
+
+
+def pieces_and_how(spec) -> tuple[list[tuple[str, np.ndarray]], str]:
+    """The layout's pieces, and how they were cut, in words for the page.
+
+    Cut along: between the domain's two ends, as since case file 0.5, unless the
+    coordinate between them leaves a dead region (`dead_regions`): then the shape
+    branches.  **A branched river is cut along its own flow** (`_flow_along`), each
+    band between two cuts a window per connected piece of it, so a band across both
+    branches of a fork is two windows.  **Any other branched shape is cut by
+    recursive spectral bisection** (`bisect`).  The owner's forked river, 2026-09-30:
+    a Y's two ends are its branch tips, and the old cut split its stem lengthwise."""
     d = spec.domain
     act = geo.domain_mask(d)
     lay = spec.layout
     style = spec.coupling.style
     shape = act.shape
+    how = ""
 
     def mask_of(cells):
         m = np.zeros(shape, dtype=bool)
         m.flat[cells] = True
         return m
     if style in ("D", "split"):
-        return [("whole", act.copy())]
+        return [("whole", act.copy())], "one piece: the whole domain"
     if lay.cut == "materials" and spec.physics.family == "conjugate-heat-2d":
         # the cooled block's pieces are its two physics, whatever the materials: the
         # solid (copper and a chip, say) and the coolant that flows beside it
@@ -307,6 +434,7 @@ def pieces(spec) -> list[tuple[str, np.ndarray]]:
         out = [(name, m) for name, m in (("block", act & ~wet), ("channel", wet)) if m.any()]
         if len(out) < 2:
             raise LayoutError("cutting by physics needs a coolant and a solid in the domain")
+        how = "one piece per physics: the block, and the channel the coolant flows in"
     elif lay.cut == "materials":
         owner = geo.region_owner(spec.regions, d.nx, d.ny)
         mats: list[str] = []
@@ -322,20 +450,40 @@ def pieces(spec) -> list[tuple[str, np.ndarray]]:
         if len(out) < 2:
             raise LayoutError("cutting by material needs at least two materials in the "
                               "domain")
+        how = "one piece per material: the interfaces are the materials' own"
     else:
-        along, across, _s, _e = coordinates(d, across=lay.across > 1)
+        along, across, s_end, e_end = coordinates(d, across=lay.across > 1)
         cells = np.flatnonzero(act.ravel())
-        cols = _cut(cells, along.ravel()[cells], lay.along)
         wide = lay.along > 10 or lay.across > 10
         out = []
-        for c, col in enumerate(cols):
-            rows = _cut(col, across.ravel()[col], lay.across) if across is not None else [col]
-            for r, piece in enumerate(rows):
-                out.append((f"F{c:02d}{r:02d}" if wide else f"F{c}{r}", mask_of(piece)))
+        dead = (dead_regions(cell_speed(along, act), act) if across is None and lay.along > 1
+                else [])
+        flow = _flow_along(spec, act) if dead else None
+        if dead and flow is not None:
+            # a branched river: bands along its own flow, each connected piece a window
+            from scipy.ndimage import label
+            for c, col in enumerate(_cut(cells, flow.ravel()[cells], lay.along)):
+                lab, n = label(mask_of(col))
+                for r in range(n):
+                    out.append((f"F{c:02d}{r:02d}" if wide else f"F{c}{r}", lab == r + 1))
+            how = ("along the river's own flow, from its inlet to its outlets: the shape "
+                   "branches, so a band across two branches is two windows")
+        elif dead:
+            out = [(f"F{c:02d}00" if wide else f"F{c}0", m)
+                   for c, m in enumerate(bisect(act, lay.along))]
+            how = ("by recursive spectral bisection: the shape branches, and the length "
+                   f"between its two ends ({s_end}, {e_end}) does not reach every branch")
+        else:
+            for c, col in enumerate(_cut(cells, along.ravel()[cells], lay.along)):
+                rows = (_cut(col, across.ravel()[col], lay.across) if across is not None
+                        else [col])
+                for r, piece in enumerate(rows):
+                    out.append((f"F{c:02d}{r:02d}" if wide else f"F{c}{r}", mask_of(piece)))
+            how = f"along the shape's length, between its two ends ({s_end}, {e_end})"
     if style == "C" and len(out) != 2:
         raise LayoutError(f"style C couples exactly two pieces, and this layout makes "
                           f"{len(out)}: cut along into 2, or by material with two materials")
-    return out
+    return out, how
 
 
 _CROSS = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=bool)
@@ -369,18 +517,26 @@ def grow(parts: list[tuple[str, np.ndarray]], act: np.ndarray,
 
 def generate(spec):
     """The layout's windows, as `spec.Window`s of cells, and the reach they grew by."""
+    windows, reach, _how = generate_with_how(spec)
+    return windows, reach
+
+
+def generate_with_how(spec):
+    """`generate`, and how the pieces were cut (`pieces_and_how`)."""
     from .spec import Window
     act = geo.domain_mask(spec.domain)
     if not act.any():
         raise LayoutError("the domain holds no cell")
-    parts = pieces(spec)
+    parts, how = pieces_and_how(spec)
     if spec.coupling.style in ("A", "B"):
         wins, reach = grow(parts, act, spec.coupling.ramp_cells)
     else:
         wins, reach = parts, 0
-    return [Window(id=name, shape="cells", runs=geo.mask_to_runs(m & act))
-            for name, m in wins], reach
+    return ([Window(id=name, shape="cells", runs=geo.mask_to_runs(m & act))
+             for name, m in wins], reach, how)
 
 
-__all__ = ["LayoutError", "fingerprint", "refresh", "fiedler", "harmonic", "ends",
-           "coordinates", "pieces", "grow", "generate"]
+__all__ = ["LayoutError", "FLOWING", "DEAD", "fingerprint", "refresh", "fiedler", "harmonic",
+           "ends", "topological_holes", "coordinates", "cell_speed", "dead_regions",
+           "geodesic", "bisect", "pieces", "pieces_and_how", "grow", "generate",
+           "generate_with_how"]

@@ -233,6 +233,29 @@ def _outfall(c: CaseSpec) -> str | None:
     ys, xs = np.nonzero(act)
     if xs.size == 0:
         return None
+    if d.outline is not None or d.holes:
+        # a drawn river: mid-river, a fifth of the way down its own flow.  A forked
+        # river's outfall had gone to the middle of its cells, which is its fork, and
+        # a release on the dividing streamline went down one branch alone (the served
+        # page, 2026-09-30)
+        from .families.plume import river_flow
+        from .flow import FlowError
+        try:
+            phi = np.where(act, river_flow(c).phi, np.nan)
+        except (FlowError, ValueError, KeyError, IndexError):
+            phi = None
+        if phi is not None:
+            band = act & np.isfinite(phi) & (np.abs(np.nan_to_num(phi) - 0.8) <= 0.02)
+            if band.any():
+                from scipy.ndimage import distance_transform_edt
+                depth = np.where(band, distance_transform_edt(np.pad(act, 1))[1:-1, 1:-1],
+                                 -1.0)
+                j, i = np.unravel_index(int(np.argmax(depth)), act.shape)
+                x, y = (i + 0.5) * d.dx, (j + 0.5) * d.dx
+                c.physics.params["source_x"], c.physics.params["source_y"] = (float(x),
+                                                                              float(y))
+                return (f"the outfall at ({x:g} m, {y:g} m), mid-river a fifth of the way "
+                        f"down its flow (Physics)")
     tx, ty = float(xs.mean()) + 0.5, float(ys.mean()) + 0.5
     ends = [_side(c, "left"), _side(c, "right")]
     kinds = {b.kind: n for n, b in enumerate(c.boundaries)}
@@ -340,6 +363,48 @@ def _two_media(c: CaseSpec) -> bool:
     return len({c.regions[k].material for k in ks.tolist() if k >= 0}) >= 2
 
 
+def _dead_branch(c: CaseSpec) -> str | None:
+    """Each branch of a drawn river that carries no water gets an outlet at its end:
+    of the banks beside the branch's dead water, the one farthest from the inlets
+    along the river's own paths (`layout.geodesic`).  A forked river drawn with its
+    stem on the left gets its inlet on the stem and its outlet on one branch's end
+    (`_river_outlet`); this is the other branch's (2026-09-30, the owner's fork)."""
+    d = c.domain
+    if c.physics.family != "transport-2d" or (d.outline is None and not d.holes):
+        return None
+    from . import layout as lay
+    from .families.plume import dead_branches
+    from .flow import FlowError
+    try:
+        dead = dead_branches(c)
+    except (FlowError, ValueError, KeyError, IndexError):
+        return None
+    if not dead:
+        return None
+    act = geo.domain_mask(d)
+    bf = geo.boundary_faces(d)
+    owner = geo.face_conditions(c.boundaries, bf, d.nx, d.ny)
+    inlet = np.zeros(act.shape, dtype=bool)
+    for f in np.flatnonzero(owner >= 0):
+        if c.boundaries[int(owner[f])].kind == "river-inlet":
+            inlet.flat[bf.cell[f]] = True
+    dist = lay.geodesic(act, inlet)
+    done = []
+    for region in dead:
+        far: dict[int, list[float]] = {}
+        for f in np.flatnonzero(region.ravel()[bf.cell] & (owner >= 0)):
+            b = int(owner[f])
+            if c.boundaries[b].kind == "bank" and c.boundaries[b].drawn:
+                far.setdefault(b, []).append(float(dist.flat[bf.cell[f]]))
+        if not far:
+            continue
+        b = max(far, key=lambda k: (float(np.mean(far[k])), -k))
+        c.boundaries[b].kind, c.boundaries[b].value = "river-outlet", None
+        done.append(f"an outlet on {c.boundaries[b].edge}, the end of a branch that carried "
+                    f"no water")
+    return "; ".join(done) + " (Boundaries)" if done else None
+
+
 def _swallowed(c: CaseSpec) -> str | None:
     """A condition on an edge a hole took whole, moved to the nearest edge that still
     bounds the domain and carries only the family's default.  The two boundaries swap
@@ -378,12 +443,15 @@ def _swallowed(c: CaseSpec) -> str | None:
     return "; ".join(done) + " (Boundaries)" if done else None
 
 
-#: key -> (the button's label, the repair)
+#: key -> (the button's label, the repair).  **In the order a newly drawn shape gets
+#: them** (`fill_defaults`): a river's ends and its second outlet before its outfall
+#: and its time step, which are computed from its flow
 FIXES: dict[str, tuple[str, Callable[[CaseSpec], str | None]]] = {
     "windows": ("Cut the windows automatically", _windows),
     "materials": ("Fill every cell with a material", _materials),
     "river-inlet": ("Make the leftmost edge the inlet", _river_inlet),
     "river-outlet": ("Make the rightmost edge the outlet", _river_outlet),
+    "dead-branch": ("Make the end of this branch an outlet", _dead_branch),
     "electrodes": ("Make the leftmost and rightmost edges electrodes", _electrodes),
     "circuit": ("Wire a battery and a resistor", _circuit),
     "clamp": ("Clamp the leftmost edge", _clamp),
@@ -461,6 +529,10 @@ def fill_defaults(c: CaseSpec, rounds: int = 4) -> list[str]:
                 keys.append(i.fix)
         if not keys:
             break
+        # in `FIXES`' order, not the check's: a river's ends before its outfall, which
+        # is placed from them (the outfall went to a fork's middle, 2026-09-30)
+        order = list(FIXES)
+        keys.sort(key=order.index)
         for key in keys:
             tried.add(key)
             r = apply_fix(c, key)

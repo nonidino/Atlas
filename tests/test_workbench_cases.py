@@ -657,4 +657,4 @@ def test_plume_boundaries_are_the_familys():
     fam = registry.family("transport-2d")
     assert fam.adapter == "atlas.workbench.families.plume" and fam.styles == ("A",)
     assert {c.key: c.tolerance for c in pl.CHECKS} == {
-        "mass": 1e-9, "reference": 1e-10, "bitwise": None}
+        "mass": 1e-9, "reference": 1e-10, "bitwise": None, "continuity": 1e-12}

@@ -529,6 +529,21 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
                               "results.",
                               alert_type="warning", sizing_mode="stretch_width")]
                if stale else [])
+    #: a river that leaves by several outlets: each one's share, where it is read first
+    #: (the owner's forked river, 2026-09-30)
+    metrics = res.get("metrics") or {}
+    outlets = (metrics.get("full") or next(iter(metrics.values()), {}) or {}).get("outlets")
+    if outlets and len(outlets) > 1:
+        parts = []
+        for bid, s in outlets.items():
+            w = s.get("water_share")
+            p = s.get("pollutant_share")
+            parts.append(f"**{html.escape(str(bid))}** takes "
+                         f"{'-' if w is None else f'{100.0 * w:.1f}%'} of the water and "
+                         f"{'none yet' if p is None else f'{100.0 * p:.1f}%'} of the pollutant")
+        changed.append(pn.pane.Markdown(f"The river leaves by {len(outlets)} outlets: "
+                                        + "; ".join(parts) + ".", sizing_mode="stretch_width",
+                                        margin=(0, 10, 4, 10)))
     details = pn.Card(
         pn.pane.Markdown("**Each arm against the whole domain** (t_full / t_arm above 1 is "
                          "faster than the whole domain)", margin=(4, 10, 0, 10)),

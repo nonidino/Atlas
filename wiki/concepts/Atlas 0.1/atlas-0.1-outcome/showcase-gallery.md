@@ -2,7 +2,7 @@
 
 **Type:** Outcome page — **gallery of measured showcase runs** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
 **Status:** written 2026-09-29 from one pass through the served workbench on this laptop; two drawn rows added that day, and eight more on 2026-09-29 and 30, compiled and run headless (§2). Every example was opened from *File > New from example*, checked, compiled with the Atlas compiler, and run decomposed and on the full domain. Every number below is read from that pass's records in `out/workbench/records/step-f/` (§6). **Every row is a showcase, not a research record** ([[showcase-library-plan]] §2): one pass, checks registered before the family's first run, and a record file. There are no predictions, audits or follow-up tiers.
-**Hub:** [[00-atlas-0.1-outcome]] · **Plan:** [[showcase-library-plan]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/` (`python -m atlas.workbench --open`, then *Case > Examples...*; before the page's rebuild on 2026-09-29 the same list was *File > Showcase gallery*)
+**Hub:** [[00-atlas-0.1-outcome]] · **Plan:** [[showcase-library-plan]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/` (`python -m atlas.workbench --open`, then the header's *More examples*, which lists the chosen kind's examples; from 2026-09-29 to 30 the whole list was *Case > Examples...*, and before that *File > Showcase gallery*) · **Updated 2026-09-30 by the demo chat:** the forked river's row (§2); the demo's plans are in [[demo-finish-plan]]
 
 ---
 
@@ -76,6 +76,14 @@ Measured 2026-09-29, 05:14–05:41 EDT, in the served page on AC power (§5). Ev
 - **A drawn farm's windows did not hold their ground.** Each window marched the box of its fluid cells alone, so a window over the terrain had its box's edge where the solid began, and one window over the whole drawn farm missed its full domain by $0.61\,U$ after one macro-step. A window's box is now the window as drawn, with the solid in it held at rest. `farm-hill`'s power moved by $0.1$ point, $19.6\%$ to $19.7\%$: the departure above was the hill's all along.
 - **The drawn river did not compile**: the compile's velocity scale divided by the river's shallowest depth, which is zero past a drawn river's banks.
 - **A drawn farm compiled as the plain farm.** The wind farm's graph is the scaling-ladder rung's, a full rectangle of fluid, and the terrain was nowhere in it. A drawn farm is now refused before the compiler with that reason, as an irregular tiling already was.
+
+**One more row, added 2026-09-30 by the demo chat**: the forked river, the owner's request of that day ([[demo-finish-plan]] §2). It was compiled and run in the served page on AC power, with no other Python process at its start. **Its times are not quoted.** Two other chats shared the laptop that afternoon, and the owner was not asked to idle them for this run.
+
+| case | style | port type | compile (time) | balance check (tolerance) | reference check (tolerance) | run: wall time (steps) | label |
+|---|---|---|---|---|---|---|---|
+| `river-fork`: a river that forks into two branches, each with its own outlet, on six windows along its own flow | A, drawn, one explicit step per exchange | `ADVEC` | admit-uncertified (6 agents, 5 seams, one from the fork to each branch) | mass $2.72\times10^{-14}$ ($10^{-9}$); the flow's continuity $2.25\times10^{-14}$ of the discharge ($10^{-12}$, registered before its first run) | full domain $2.10\times10^{-16}$ of the peak ($10^{-10}$) | not quoted (2,000 steps) | showcase, not research record |
+
+The wider branch takes 53.6% of the water and, at the run's end, 57.3% of the pollutant leaving. A potential flow splits by the branches' shapes alone, which is a stated guess.
 
 **The third check, bit for bit, where a case has one:**
 - Threaded equals serial in the three farms (over 40, 12 and 6 macro-steps), the insert (40 steps), the plume (6,000) and the bracket (5 repeats).
@@ -193,6 +201,10 @@ The eight rows added on 2026-09-29 and 30 are in `out/workbench/records/step-j/<
 | `bimetal-arc` | `20260929-213351` | `20260929-213353` |
 | `cooled-winding` | `20260929-213354` | `20260929-213356` |
 | `farm-hill` | `20260930-014634` | `20260930-014815` |
+
+The forked river's are in `out/workbench/records/demo-fork/`:
+- `river-fork-compile-20260930-172156.json` and `river-fork-20260930-172211.json`;
+- `drawn-y-20260930-172123.json`, the owner's scenario walked in the page (a smooth Y drawn with its stem on the left, then Run).
 
 A run record holds the case as it marched, every per-step time, the metrics, each check with its tolerance and registration date, the field differences, and the machine's state before and after. A compile record holds every decision, the compiler's report, and the case as compiled.
 

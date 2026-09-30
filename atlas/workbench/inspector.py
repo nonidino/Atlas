@@ -629,6 +629,9 @@ def _windows_settings(ed: "GeometryEditor") -> list:
                          "coordinates, or one piece per material, and cut again whenever the "
                          "shape or the materials change. Editing a window by hand switches to "
                          "My own."))
+        if lay.how:
+            #: which cut it took, and why (a branched shape is cut another way)
+            out.append(_note(f"<b>Cut {html.escape(lay.how, quote=False)}.</b>"))
     else:
         out.append(_button("Lay a grid of rectangles...", wb.dialog_tiling, width=None,
                            stretch=True))

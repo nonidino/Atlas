@@ -6975,3 +6975,22 @@ Item 1.3 of [[demo-finish-plan]]. **Both refusals are lifted: a hole is any clos
 - A river whose inlet end a hole took showed the problem, and its Fix cleared it.
 
 The one-window control holds bit for bit on a crossing hole wherever the discretization is identical; the iterated families pass their own checks. 271 workbench tests pass. **Added:** `tests/test_workbench_holes.py`. **Changed:** `geometry.py`, `spec.py`, `starter.py`, `layout.py`, `fv.py`, `families/conduction.py`, the README, one test that pinned the lifted refusal, [[demo-finish-plan]].
+
+## [2026-09-30] build | Demo step 4: a river that forks into two outlets
+
+Item 1.2 of [[demo-finish-plan]].
+- **A shape branches when the coordinate between its two ends leaves a dead region** (`layout.dead_regions`). This corrects the plan's rule, which would have called a rectangle's corners ends. No drawn example has a single slow cell, so their windows do not move.
+- **A branched river is cut along its own flow**, each connected band a window. Any other branched shape is cut by recursive spectral bisection.
+- **A branch that carries no water is a warning with a Fix.** A newly drawn fork gets its second outlet at once.
+- **The run shows each outlet's share**, and a continuity check was registered before the fork's first run.
+
+**The page walk found a fifth fault.** The outfall had been placed at a Y's fork, so the plume went down one branch alone (100% and 0%). The starting values now run in a fixed order, and a drawn river's outfall goes mid-river.
+
+**Walked in the served page:** a smooth Y drawn with its stem on the left was ready at once, and its plume left by both outlets (54.0% and 46.0%), every check passing.
+
+**The example `river-fork`** compiled `admit-uncertified` over five seams, one from the fork to each branch, and ran every check:
+- mass $2.7\times10^{-14}$;
+- the full river $2.1\times10^{-16}$ of the peak;
+- continuity $2.2\times10^{-14}$.
+
+Its gallery row is in [[showcase-gallery]], its times not quoted. 294 workbench tests pass. **Added:** `tests/test_workbench_fork.py`, `out/workbench/records/demo-fork/`. **Changed:** `layout.py`, `spec.py` (the example, `Layout.how`), `starter.py`, `families/plume.py`, `app.py`, `runview.py`, `inspector.py`, the README, [[demo-finish-plan]], [[showcase-gallery]].

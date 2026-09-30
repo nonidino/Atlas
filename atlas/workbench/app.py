@@ -324,6 +324,14 @@ class Workbench:
             filled = fill_defaults(new)
             if filled:
                 label += "; to start: " + "; ".join(filled)
+                if new.layout is not None:
+                    # what was filled in can move what the windows follow (a forked
+                    # river's second outlet moves its flow), so they follow it again
+                    from . import layout as lay
+                    try:
+                        lay.refresh(new)
+                    except lay.LayoutError:
+                        pass                                 # the check says why
         try:
             new = CaseSpec.model_validate(new.model_dump())
         except ValidationError as exc:

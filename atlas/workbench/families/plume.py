@@ -95,6 +95,15 @@ CHECKS: tuple[CheckSpec, ...] = (
         why=("each window's step reads only the previous step's field, and the blend adds "
              "the windows in their order, so the order the threads finish in cannot "
              "change a bit")),
+    CheckSpec(
+        key="continuity", title="The river's flow is continuous, cell by cell", kind="balance",
+        tolerance=1e-12, registered=("2026-09-30, before the forked river's first run "
+                                     "(demo-finish-plan section 2.4)"),
+        measure=("the largest |sum of a cell's flows| over the river's discharge "
+                 "(flow.py's residual), for a drawn river's solved flow"),
+        why=("the potential flow is one sparse direct solve, and each cell's flows are its "
+             "own potential's differences, so they sum to the solve's round-off; a fork "
+             "adds outlets, not arithmetic. River-bend measured 1.4e-14")),
 )
 
 _KIND = {"river-inlet": fv.INLET, "river-outlet": fv.OUTLET, "bank": fv.NO_FLUX}
@@ -143,6 +152,18 @@ def river_flow(spec):
                       if k == "in")) * d.dx
     return fl.potential_flow(geo.domain_mask(d), bf, kinds, spec.physics.get("q") * width,
                              float(d.dx))
+
+
+def dead_branches(spec, fl=None) -> list[np.ndarray]:
+    """The parts of a drawn river where no water runs (`layout.dead_regions` of its
+    potential): the far end of a branch that nothing lets out.  A potential flow
+    decays into such a branch like ``exp(-pi x / w)``, so what it carries there is
+    under a thousandth of the river's mean, and the pollutant only creeps in by
+    mixing (2026-09-30: a forked river with one outlet)."""
+    from .. import layout as lay
+    fl = river_flow(spec) if fl is None else fl
+    act = geo.domain_mask(spec.domain)
+    return lay.dead_regions(lay.cell_speed(np.where(act, fl.phi, np.nan), act), act)
 
 
 def field_from_case(spec) -> tuple[fv.Field, np.ndarray]:
@@ -263,6 +284,17 @@ class PlumeRun:
         bc_cell, bc_kind, _v, _g, bc_in = fv.boundary_faces(self.f)
         out = bc_kind == fv.OUTLET
         self._out_cells, self._out_in = bc_cell[out], bc_in[out]
+        #: a drawn river: which outlet each outlet face is (its boundary's index), for
+        #: each outlet's share, and its flow's continuity residual.  `fv.boundary_faces`
+        #: and `geometry.boundary_faces` list the same faces in the same order
+        self._out_owner = None
+        self.flow_residual = None
+        if self.drawn:
+            bf = geo.boundary_faces(spec.domain)
+            owner = geo.face_conditions(spec.boundaries, bf, self.nx, self.ny)
+            if owner.size == out.size:
+                self._out_owner = owner[out]
+            self.flow_residual = float(river_flow(spec).residual)
         self.pool = None
         if "parallel" in self.arms:
             self.pool = ThreadPoolExecutor(max_workers=min(self.threads, len(self.systems)),
@@ -369,7 +401,43 @@ class PlumeRun:
                                 else f"first differs after step {bitwise['first_difference']}"))
         else:
             checks.append(exact(CHECKS[2], None, "needs both decomposed arms"))
+        if self.flow_residual is None:
+            checks.append(judge(CHECKS[3], None, "the plain river's flow is uniform along x, "
+                                                 "so it is continuous by construction"))
+        else:
+            checks.append(judge(CHECKS[3], self.flow_residual,
+                                f"largest |sum of a cell's flows| = {self.flow_residual:.3g} "
+                                f"of the discharge"))
+        #: a drawn river with several outlets: each one's share (2026-09-30, the fork)
+        self._shares = None
+        for arm in metrics:
+            shares = self.outlet_shares(states[arm].u)
+            if shares:
+                metrics[arm]["outlets"] = shares
+                if arm == "full" or self._shares is None:
+                    self._shares = shares
         return metrics, checks
+
+    def outlet_shares(self, u: np.ndarray) -> dict[str, dict[str, float]] | None:
+        """Each outlet's share of the water leaving and of the pollutant leaving, for
+        the concentration ``u``: by boundary id, the water's share from the solved flow
+        (a potential flow splits by the channels' shapes alone), the pollutant's in g/s
+        and as a share.  None for a plain river, which has one outlet."""
+        if self._out_owner is None or not self._out_in.size:
+            return None
+        water = -np.minimum(self._out_in, 0.0)                # what leaves, face by face
+        poll = water * u[self._out_cells]
+        total_w, total_p = float(np.sum(water)), float(np.sum(poll))
+        out = {}
+        for b in dict.fromkeys(self._out_owner.tolist()):
+            sel = self._out_owner == b
+            bid = self.spec.boundaries[b].id if b >= 0 else "?"
+            w, p = float(np.sum(water[sel])), float(np.sum(poll[sel]))
+            out[bid] = {"edge": self.spec.boundaries[b].edge if b >= 0 else "",
+                        "water_share": w / total_w if total_w > 0 else None,
+                        "pollutant_g_per_s": p,
+                        "pollutant_share": p / total_p if total_p > 0 else None}
+        return out
 
     def arrival_seconds(self) -> float | None:
         """How long the water takes from the outfall to the outlet along its row:
@@ -427,6 +495,18 @@ class PlumeRun:
                        f"{1.0 / (1.0 + pe):.2g} of what runs down. Upwinding adds "
                        f"{u * self.dx * (1.0 - u * self.dt / self.dx) / 2.0:.3g} m^2/s of "
                        f"mixing along the flow.")
+        shares = getattr(self, "_shares", None)
+        if shares and len(shares) > 1:
+            parts = []
+            for bid, s in shares.items():
+                pw = "-" if s["water_share"] is None else f"{100.0 * s['water_share']:.1f}%"
+                pp = ("nothing yet" if s["pollutant_share"] is None else
+                      f"{100.0 * s['pollutant_share']:.1f}%")
+                parts.append(f"outlet {bid} ({s['edge']}) takes {pw} of the water and {pp} "
+                             f"of the pollutant leaving ({s['pollutant_g_per_s']:.4g} g/s)")
+            out.append("The river leaves by " + str(len(shares)) + " outlets: "
+                       + "; ".join(parts) + ". A potential flow splits by the channels' "
+                       "shapes alone, which is a stated guess, as the inlet on the left is.")
         t_arr = self.arrival_seconds()
         t_run = done * self.dt
         if t_arr is not None:
@@ -493,4 +573,5 @@ def case_graph(spec):
 
 
 __all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "PlumeRun", "PlumeState", "build",
-           "field_from_case", "reach_properties", "outfall_cell", "explicit_limit"]
+           "field_from_case", "reach_properties", "outfall_cell", "explicit_limit",
+           "river_flow", "dead_branches"]
