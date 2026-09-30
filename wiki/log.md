@@ -6883,3 +6883,19 @@ Each was a true error, and none was something the person could be expected to kn
 **Tests:** 16 new (`tests/test_workbench_starter.py`); five older test files updated for the new messages, the physics switch's setup and *New case...*. The 242 workbench tests pass, and so does the full suite, 2,195 tests, run on battery.
 
 **Added:** `atlas/workbench/starter.py`, `tests/test_workbench_starter.py`. **Changed:** `app.py`, `editor.py`, `inspector.py`, `registry.py`, `runview.py`, `spec.py`, the workbench README, five test files; [[showcase-library-plan]], [[index]].
+
+## [2026-09-30] note | The proposal's four workstreams, planned: the demo, the website, the chart operator, the formal proofs
+
+The owner's brief: four big tasks to finish the proposal, each probably its own chat, and this session *"to iron out everything — decide specifics, outline architecture and documentation/plan in the wiki, so that future chats can figure everything out on top of it."* A new folder, `concepts/Atlas 0.1/atlas-0.1-proposal/`, with a hub, [[00-proposal-workstreams]], and ten pages.
+
+**Nothing was built, run or measured, and no number here is new.** The session ran in a cloud container on branch `claude/optimistic-fermat-wg1oup`, without numpy, so the workbench was read from its source, not run. Its network blocked arXiv and the three reference websites, so every literature entry is from search summaries, marked for a full read.
+
+**The verdicts:**
+- **The demo.** Items 1.1–1.3 (the header, a forked river, holes across the edge) are engineering ([[demo-finish-plan]]). The fork's likely failure is the automatic windows, which run between the Fiedler vector's two ends when a fork has three; the flow already takes two outlets. That is a hypothesis to reproduce. **Item 1.4 runs into the record**: below about 30,000 cells the undivided solve wins in every family but the wind farm. Four genuine mechanisms are named, and two families cannot reach "much faster" by construction ([[demo-fast-examples-plan]]). **Item 1.5 is a research result**: a small expert trained for the 12-rotor farm's windows, measured against a truth run and the coarse classical competitor, with a gate drafted to register before any data exist ([[demo-learned-case-plan]]).
+- **The website** comes last, since its best content does not exist yet. The plan has a claims pipeline in which no number is typed by hand, the honesty rules, the evidence register, and first-draft image prompts for the three vision scenarios ([[proposal-website-plan]], [[website-evidence-and-citations]], [[vision-scenarios-and-image-prompts]]).
+- **The architecture: the chart operator.** Topology goes to the decomposition, geometry to a classical injective chart with its metric passed in (the owner's generalised Jacobian), physics to the operator, and agreement to wave variables through the typed ports. **A contraction contract makes convergence checkable, however the expert was trained** ([[chart-operator-architecture]], [[chart-operator-training-and-cost]]). **The prior art is close**: neural Schwarz on any geometry (Mosaic Flows, SNI at ICLR 2026, L-DDM, NEST) and diffeomorphic reference-domain operators (DIMON, DNO) are published, so the novelty moves to the port contract, the certificate and training for the iteration count ([[dd-neural-prior-art-2026]]).
+- **The proofs.** The core the proposal needs is finite-dimensional and machine-checkable in Lean in weeks. **Fixed-point consistency (T3) settles W348.** The continuous PDE theory is cited, not formalised, and no formal domain decomposition theory was found anywhere ([[formal-proofs-plan]]).
+
+**Seven chats are recommended in place of four**, in the order the hub gives, with nine decisions left to the owner (O1–O9).
+
+**Added:** the ten pages and the hub. **Changed:** [[gap-worklist]] (W349–W354), [[00-atlas-0.1-outcome]] (a pointer to what comes next), [[index]].

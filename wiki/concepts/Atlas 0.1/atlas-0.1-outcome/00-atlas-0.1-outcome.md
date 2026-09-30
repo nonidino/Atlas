@@ -82,6 +82,7 @@ The full list, with what each item would take, is in each claim page's last sect
 
 ## See Also
 
+- [[00-proposal-workstreams]] — **what comes next** (2026-09-30): the plan for turning these claims into a proposal, in four workstreams (the demo, the website, the learned-expert architecture, the formal proofs)
 - [[00-atlas-0.1-overview]] — the architecture this folder reports the outcome of
 - [[f1-pathmap-and-end-goal]] — the end goal, Claims A and B, and the rung status these verdicts sit against
 - [[case-study-ladder-to-f1]] — the tier-by-tier record
