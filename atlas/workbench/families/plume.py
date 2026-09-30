@@ -471,7 +471,9 @@ def case_graph(spec):
     else:
         width = d.ny * d.dx
         c_mixed = release / (q * width)              # g/m^3 once mixed across the river
-    u = q / float(np.min(h))
+    #: the shallowest water on the river's own cells: a drawn river's depth is zero
+    #: past its banks, and the compile divided by it (seen: river-bend's compile)
+    u = q / float(np.min(h[h > 0]))
     flux = c_mixed * u                               # g/(m^2 s), the pollutant's flux
     water = 1000.0 * u                               # kg/(m^2 s), the river's mass flux
     enthalpy = 4180.0 * 300.0                        # J/kg, the water's, a scale only

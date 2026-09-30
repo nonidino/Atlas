@@ -360,7 +360,7 @@ with nothing new in the case file (a 0.5 file loads unchanged). What each needed
 | elasticity | an element mask: the void carries no stiffness and its nodes leave the solve; clamps and loads on drawn edges; windows on the node grid by the mask partition of unity |
 | thermoelastic | the same mask for both agents; fixed temperatures and a heat flux on drawn edges; the free body's rigid-body modes on the domain's nodes |
 | conjugate heat | the coolant's flow solved through its own cells (`flow.py`), so a winding channel works; cut by physics (block and channel) |
-| wind farm | **the solid held at rest by penalization**: every sub-step, just before the projection, the velocity outside the domain is set to zero. Drawn windows march their bounding boxes and blend by the mask partition of unity |
+| wind farm | **the solid held at rest by penalization**: every sub-step, just before the projection, the velocity outside the domain is set to zero. Each window marches its box, the window as drawn with the solid in it held at rest, and the windows blend by the mask partition of unity |
 
 **The families that fix their outer boundary** keep doing so. On a drawn domain,
 each drawn edge takes the condition of the grid edge it lies along, and the
@@ -379,7 +379,10 @@ carries the value times the edge's true length over its faces' length
 `plate-hole`, `bimetal-arc`, `cooled-winding`, `farm-hill`). Each is clean, passes
 every registered check, and is pinned in `tests/test_workbench_drawn_families.py`.
 The records are in `out/workbench/records/step-i/`, made headless on battery power,
-so their times are not quoted. What they measured:
+so their times are not quoted. Each was compiled and run again on AC power on
+2026-09-29 and 30, with the gallery's columns (`out/workbench/records/step-j/`, and
+`showcase-gallery.md` in the vault); every compile is pinned in the same tests. What
+they measured:
 
 | example | family | what it measured (registered tolerance) |
 |---|---|---|
@@ -389,12 +392,25 @@ so their times are not quoted. What they measured:
 | `plate-hole` | elasticity, B | forces $7.7\times10^{-12}$, displacements against the full plate $3.2\times10^{-12}$ ($10^{-6}$ each), threaded equals serial |
 | `bimetal-arc` | thermoelastic, split | 60 steps: heat $2.2\times10^{-10}$ ($10^{-9}$); the synchronous split is the unsplit solver bit for bit, and the lagged one is it a step late, bit for bit |
 | `cooled-winding` | conjugate heat, C | every watt leaves in the water, $4.7\times10^{-11}$ ($10^{-6}$); temperatures against the full domain $1.5\times10^{-9}$ of the rise ($10^{-6}$); the coolant's flow is continuous to $7.1\times10^{-14}$ |
-| `farm-hill` | wind farm, A | 40 macro-steps: mass $2.2\times10^{-16}$ ($10^{-9}$), threaded equals serial, and farm power **19.6%** from the full domain: inside W346's registered 25%, and well above the 2.3-8.3% the plain farms measured. The terrain's penalization runs inside every window's sub-steps as well as in the full domain's, and this is the first measurement of it |
+| `farm-hill` | wind farm, A | 40 macro-steps: mass $2.2\times10^{-16}$ ($10^{-9}$), threaded equals serial, and farm power **19.7%** from the full domain: inside W346's registered 25%, and well above the 2.3-8.3% the plain farms measured. Its velocity differs from the full domain's by 0.20 U rms, against 0.047 U for the plain three-rotor farm, and its windows take 26 sub-steps a macro-step against the full domain's 32. Both controls hold bit for bit: one window over the drawn farm is its full domain, and a drawn farm that is the whole rectangle is the plain farm, both arms, both arrangements. So the departure is the hill's, under one exchange per macro-step, not the drawn machinery's |
 
 **Not built:** the potential flow has no viscosity and no inertia. It turns a bend
 without separating, which is right for a scalar's path and wrong for a separated
 flow. The wind farm's penalization is first order in the sub-step, because the
 projection lets a little velocity back into the solid each sub-step.
+
+**Fixed on 2026-09-30, found by recording the examples for the gallery:**
+- **A drawn farm's windows did not hold their ground.** Each window marched the box
+  of its fluid cells alone, so a window over the terrain had its box's edge where
+  the solid began, and one window over the whole drawn farm was not its full domain
+  (0.61 U after one macro-step). A window's box is now the window as drawn, and the
+  penalization holds the solid in it at rest, as the full domain's does. The example
+  moved by 0.1 point of farm power: its departure was the hill's all along.
+- **The drawn river did not compile**: the compile's velocity scale divided by the
+  river's shallowest depth, which is zero past a drawn river's banks.
+- **A drawn farm compiled as the plain one.** Its graph is the scaling-ladder rung's,
+  a full rectangle of fluid, so the terrain was nowhere in it. A drawn farm is now
+  refused before the compiler, with that reason.
 
 ## Code
 
@@ -440,7 +456,7 @@ projection lets a little velocity back into the solid each sub-step.
 - **The circuit is drawn, not dragged**: its parts are set in the inspector and the canvas draws the schematic.
 - **At showcase sizes the decomposed arms are slower than the full domain** for every family but the wind farm (above). This is measured and shown, not hidden.
 - **Plain Schwarz has no coarse level**, so it converges slowly on a bending structure (616 iterations on the bracket); a coarse space or a Krylov wrapper would be the remedy, and neither is built.
-- **The wind farm compiles only on a scaling-ladder rung.** Its graph is the vault's `scaling_ladder.build`, which declares a regular tiling. A drawn tiling that is not a rung runs, but is refused before the compiler, with that reason.
+- **The wind farm compiles only on a scaling-ladder rung, on the full rectangle.** Its graph is the vault's `scaling_ladder.build`, which declares a regular tiling of fluid. A drawn tiling that is not a rung, or a drawn domain, runs, but is refused before the compiler, with that reason.
 - **A drawn river's or channel's flow is a potential flow** (`flow.py`), with no viscosity and no inertia: it carries a scalar the right way round a bend, and does not separate. **The wind farm's drawn walls are penalized**, first order in the sub-step. **A drawn sound case reads no textbook reflection**: that needs two uniform media at a straight cut. Its energy and the pieces' agreement are checked.
 - **A drawn curve is resolved to the grid's cells.** The solvers see the cells whose centres a shape contains, so a curve is a staircase at the cell size. The canvas draws both, and on the bend the staircase moves the ring's heat flow by -0.97% from its continuum value. Body-fitted grids would remove that; they are not built.
 - **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not. The owner accepted this on 2026-09-29: the compile is its own step, and the two-minute rule is per run.

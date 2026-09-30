@@ -246,6 +246,56 @@ def test_the_farm_over_a_hill_keeps_its_ground_at_rest():
         assert np.all(st[a].u[solid] == 0.0) and np.all(st[a].v[solid] == 0.0)
 
 
+def test_one_window_over_a_drawn_farm_is_its_full_domain_to_the_bit():
+    """The N = 1 control on a drawn domain, in the arrangement where one window is the
+    full-domain solver's arithmetic (embedded, blended).  A window's box is the window
+    as drawn, solid included; boxed on its fluid cells alone, a window over the ground
+    never held it, and this control failed by 0.61 U after one macro-step."""
+    from atlas.workbench.families import windfarm as wf
+    s = example_case("farm-hill")
+    d = s.domain
+    s.windows = [Window(id="W", x0=0, y0=0, nx=d.nx, ny=d.ny)]
+    s.layout = None
+    s.coupling.elliptic, s.coupling.assembly = "embedded", "blend"
+    run = wf.build(s, arms=("serial", "full"), threads=1)
+    try:
+        a, b = run.initial("serial"), run.initial("full")
+        for _ in range(2):
+            a, b = run.step("serial", a), run.step("full", b)
+            assert np.array_equal(a.u, b.u) and np.array_equal(a.v, b.v)
+    finally:
+        run.close()
+
+
+@pytest.mark.parametrize("elliptic, assembly", [("embedded", "blend"),
+                                                 ("exposed", "projected")])
+def test_a_drawn_farm_that_is_the_whole_rectangle_is_the_plain_farm_to_the_bit(elliptic,
+                                                                                 assembly):
+    """The drawn machinery -- boxes blended by the mask partition of unity, penalized
+    solvers -- adds nothing where there is no solid: both arms are the plain farm's,
+    bit for bit.  So what six windows depart by over the hill is the hill's."""
+    from atlas.workbench.families import windfarm as wf
+    p = example_case("wake-array-3")
+    p.coupling.elliptic, p.coupling.assembly = elliptic, assembly
+    r = p.copy_deep()
+    r.domain.outline = Outline.of(S.rectangle(0.0, 0.0, float(r.domain.nx),
+                                              float(r.domain.ny)))
+    derive_boundaries(r)
+    runs = [wf.build(x, arms=("serial", "full"), threads=1) for x in (p, r)]
+    try:
+        assert runs[0].plain and not runs[1].plain
+        arms = ("serial", "full")
+        st = [[run.initial(a) for a in arms] for run in runs]
+        for _ in range(2):
+            st = [[run.step(a, x) for a, x in zip(arms, xs)] for run, xs in zip(runs, st)]
+            for k in range(2):
+                assert np.array_equal(st[0][k].u, st[1][k].u)
+                assert np.array_equal(st[0][k].v, st[1][k].v)
+    finally:
+        for run in runs:
+            run.close()
+
+
 def test_a_farm_domain_that_misses_the_inlet_is_refused():
     s = example_case("farm-hill")
     d = s.domain
@@ -272,6 +322,35 @@ def test_a_farm_domain_that_misses_the_outlet_is_refused():
     assert any("the flow leaves on the grid's right edge" in m for m in msgs)
     assert not any("the flow enters on the grid's left edge" in m for m in msgs)
     assert not any("the flow leaves" in m for m in _errors(example_case("farm-hill")))
+
+
+@pytest.mark.parametrize("key, verdict", [
+    ("ring-film", "admit-uncertified"), ("river-bend", "admit-uncertified"),
+    ("sound-lens", "admit-uncertified"), ("cooled-winding", "admit-uncertified"),
+    ("plate-hole", "refuse"), ("s-channel", "refuse")])
+def test_every_drawn_example_compiles_to_the_compilers_verdict(key, verdict):
+    """Every seam probed through the family's own arithmetic on the drawn cells (the
+    river's compile divided by its zero depth past the banks until this test); the
+    iterated one-physics pieces refuse at R10 alone, as their rectangles do (W348)."""
+    from atlas.workbench.compile import compile_case
+    s = compile_case(example_case(key))
+    assert s.refused_before is None and s.verdict == verdict, (s.verdict, s.other[:3])
+    assert s.seams and all(sv.verdict in ("admit", "admit-uncertified") for sv in s.seams)
+    if verdict == "refuse":
+        assert [r["rule"] for r in s.other if r["verdict"] == "refuse"] == ["R10"]
+
+
+def test_the_split_and_the_drawn_farm_are_refused_before_the_compiler():
+    """The heated arc's bond is volumetric, as the strip's is; and the wind farm's
+    graph is the rung's full rectangle of fluid, so a drawn farm is refused with that
+    reason rather than judged as the plain farm (it was, until this test)."""
+    from atlas.workbench.compile import compile_case
+    s = compile_case(example_case("bimetal-arc"))
+    assert s.verdict == "refuse" and s.refused_before.startswith("NamedHoleError")
+    assert "VOLUMETRIC" in s.refused_before
+    s = compile_case(example_case("farm-hill"))
+    assert s.verdict == "refuse" and s.refused_before.startswith("CompileRefused")
+    assert "a drawn farm has no declared graph yet" in s.refused_before
 
 
 def test_derived_conditions_follow_the_geometry():

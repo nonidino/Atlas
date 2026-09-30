@@ -215,7 +215,13 @@ class MaskedBoxes:
         self.boxes: list[tuple[int, int, int, int]] = []
         #: where each window's weighted cells sit in its box, flat
         self.sel: list[np.ndarray] = []
-        for (_n, m), idx in zip(masks, self.mask_tiling.idx):
+        #: a window's box is the window AS DRAWN, solid included, and the penalization
+        #: holds that solid at rest inside it, as the full domain's does.  Boxed on its
+        #: fluid cells alone, a window over the ground never held the ground: its
+        #: box's edge stood where the solid began, and one window over the whole
+        #: drawn farm was not the full domain (max |dv| 0.61 U after one macro-step)
+        drawn = [geo.window_mask(w, d.nx, d.ny) for w in spec.windows]
+        for m, idx in zip(drawn, self.mask_tiling.idx):
             ys, xs = np.nonzero(m)
             x0, y0 = int(xs.min()), int(ys.min())
             w, h = int(xs.max()) + 1 - x0, int(ys.max()) + 1 - y0
@@ -716,6 +722,14 @@ def case_graph(spec):
     from atlas.cases import scaling_ladder as sl
 
     from ..compile import CompileRefused
+    d = spec.domain
+    if d.outline is not None or d.holes:
+        # the rung's graph is its full rectangle of fluid; compiled, a drawn farm was
+        # judged as the plain one, its terrain nowhere in the graph (seen: farm-hill)
+        raise CompileRefused(
+            "the wind-farm family's graph is wake_array's, a full rectangle of fluid; a "
+            "drawn domain's solid, held at rest by penalization, is not in it, and a "
+            "drawn farm has no declared graph yet")
     r = ladder_rung(spec)
     if r is None:
         raise CompileRefused(
