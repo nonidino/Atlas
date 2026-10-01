@@ -3,86 +3,86 @@
   {
    "exit": 0,
    "file": "AtlasProofs/Certificate.lean",
-   "seconds": 4.34,
+   "seconds": 3.95,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/DefectCorrection.lean",
-   "seconds": 2.99,
+   "seconds": 2.63,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/DefectCorrectionShrink.lean",
-   "seconds": 3.37,
+   "seconds": 3.46,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/DirichletNeumann.lean",
-   "seconds": 2.7,
+   "seconds": 2.61,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/MasterBound.lean",
-   "seconds": 3.48,
+   "seconds": 2.63,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/Passivity.lean",
-   "seconds": 3.23,
+   "seconds": 3.03,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/PerturbedContraction.lean",
-   "seconds": 3.01,
+   "seconds": 2.85,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/Schur.lean",
-   "seconds": 2.28,
+   "seconds": 2.59,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/Schwarz.lean",
-   "seconds": 2.22,
+   "seconds": 2.82,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/SchwarzConvergence.lean",
-   "seconds": 2.69,
+   "seconds": 3.17,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/SchwarzCounterexample.lean",
-   "seconds": 2.73,
+   "seconds": 9.19,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/SymmetryAveraging.lean",
-   "seconds": 2.27,
+   "seconds": 2.14,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/TransmissionBound.lean",
-   "seconds": 3.38,
+   "seconds": 3.22,
    "slow_steps": []
   }
  ],
  "lean": "leanprover/lean4:v4.34.1",
  "mathlib": "v4.34.1",
- "seconds_total": 38.69,
+ "seconds_total": 44.29,
  "slow_ms": 10000,
  "slow_steps_total": 0,
- "when": "2026-10-01T21:22:00+00:00"
+ "when": "2026-10-01T21:38:30+00:00"
 }

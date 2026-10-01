@@ -3,6 +3,7 @@ import Mathlib.Algebra.Module.LinearMap.Defs
 import Mathlib.Algebra.Module.LinearMap.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Data.Fintype.Basic
+import Mathlib.Tactic.Abel
 
 /-!
 # T3c — Restricted additive Schwarz: which fixed points are the undivided solution
@@ -74,37 +75,67 @@ def sweep (b u : V) : V :=
 def precond (r : V) : V :=
   ∑ i, S.Eχ i (S.solve i (S.R i r))
 
+/-- Window `i`'s solution is the window's solve of the residual plus the window's own
+values: `w_i(b, u) = B_i R_i (b - A u) + R_i u`, because `B_i (R_i A E_i) = I`. -/
+private theorem window_eq (b u : V) (i : ι) :
+    S.window b u i = S.solve i (S.R i (b - S.A u)) + S.R i u := by
+  have h : S.R i b - S.R i (S.A (u - S.E i (S.R i u)))
+      = S.R i (b - S.A u) + S.R i (S.A (S.E i (S.R i u))) := by
+    simp only [map_sub]
+    abel
+  rw [window, h, map_add, S.solve_local]
+
 /-- **T3c (the sweep in residual form).** `sweep b u = u + M (b - A u)`. -/
 theorem sweep_eq (b u : V) : S.sweep b u = u + S.precond (b - S.A u) := by
-  sorry
+  -- Blend the windows' solutions; the partition of unity returns `u`.
+  simp only [sweep, precond, window_eq, map_add, Finset.sum_add_distrib, S.pou]
+  exact add_comm _ _
 
 /-- **T3c (consistency).** The undivided solution is a fixed point of the sweep. -/
 theorem solution_isFixedPt {b u : V} (h : S.A u = b) : S.sweep b u = u := by
-  sorry
+  rw [sweep_eq, h, sub_self]
+  simp [precond]
 
 /-- **T3c (what a fixed point is).** `u` is a fixed point exactly when the preconditioner
 sends its residual to zero. -/
 theorem isFixedPt_iff (b u : V) : S.sweep b u = u ↔ S.precond (b - S.A u) = 0 := by
-  sorry
+  rw [sweep_eq, add_eq_left]
 
 /-- **T3c (agreement).** If every window's solution agrees with `u` on the whole window, then
 `u` is the undivided solution. -/
 theorem solves_of_windows_agree {b u : V} (h : ∀ i, S.window b u i = S.R i u) :
     S.A u = b := by
-  sorry
+  -- Every window's solve sends the residual to zero, so every window sees a zero residual.
+  have hR : ∀ i, S.R i (b - S.A u) = 0 := fun i => by
+    have h0 : S.solve i (S.R i (b - S.A u)) = 0 := by
+      have hi := h i
+      rwa [window_eq, add_eq_right] at hi
+    have hloc := S.local_solve i (S.R i (b - S.A u))
+    rw [h0, map_zero, map_zero, map_zero] at hloc
+    exact hloc.symm
+  -- The partition of unity puts the residual back together: it is zero.
+  have hres : b - S.A u = 0 := by
+    rw [← S.pou (b - S.A u)]
+    simp [hR]
+  exact (sub_eq_zero.mp hres).symm
 
 /-- **T3c (stationary blend, with the hypothesis it needs).** If the preconditioner sends no
 non-zero residual to zero, every fixed point of the sweep is the undivided solution. -/
 theorem fixedPt_solves_of_precond {b u : V} (hM : ∀ r, S.precond r = 0 → r = 0)
-    (hfix : S.sweep b u = u) : S.A u = b := by
-  sorry
+    (hfix : S.sweep b u = u) : S.A u = b :=
+  (sub_eq_zero.mp (hM _ ((S.isFixedPt_iff b u).mp hfix))).symm
 
 /-- **T3c (the same hypothesis, read off the sweep).** Suppose `A` is onto, and the sweep
 with zero right-hand side has no fixed point but zero. Then for every right-hand side, every
 fixed point of the sweep is the undivided solution. -/
 theorem fixedPt_solves {b u : V} (hA : Function.Surjective S.A)
     (h0 : ∀ e, S.sweep 0 e = e → e = 0) (hfix : S.sweep b u = u) : S.A u = b := by
-  sorry
+  refine S.fixedPt_solves_of_precond (fun r hr => ?_) hfix
+  -- Write `r = A e`. Then `-e` is a fixed point of the zero-right-hand-side sweep.
+  obtain ⟨e, rfl⟩ := hA r
+  have hfix0 : S.sweep 0 (-e) = -e := by
+    rw [sweep_eq, zero_sub, map_neg, neg_neg, hr, add_zero]
+  rw [neg_eq_zero.mp (h0 _ hfix0), map_zero]
 
 end Schwarz
 

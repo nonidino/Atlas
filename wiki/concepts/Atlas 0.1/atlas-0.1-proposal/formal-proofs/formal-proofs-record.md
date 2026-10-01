@@ -107,20 +107,20 @@ One row per theorem. **Build time** is the file's own time in the full build tha
 | T4, attained | the scalar recursion attains the geometric sum | `Atlas.master_bound_attained` | same | **checked** | 2.0 s, cloud container | the same three |
 | T4e | $\lVert\lambda^\dagger-\lambda^\star\rVert\le\lVert\Lambda-\tilde\Lambda\rVert\,\lVert\lambda^\star\rVert/\beta$ | `Atlas.trace_perturbation` | `AtlasProofs/TransmissionBound.lean` | **checked** | 2.3 s, cloud container | the same three |
 | T4e | $\sigma\le\frac{C_\mu}{\beta}\lVert\Lambda-\tilde\Lambda\rVert\,\lVert\lambda^\star\rVert$ | `Atlas.transmission_bound` | same | **checked** | 2.3 s, cloud container | the same three |
-| **T3a** | the undivided block system and the Schur system have the same solutions | `Atlas.schur_iff` | `AtlasProofs/Schur.lean` | approved | — | — |
-| **T3b** | a fixed point of Dirichlet–Neumann solves the undivided system | `Atlas.TwoPieces.dn_fixedPoint_solves` | `AtlasProofs/DirichletNeumann.lean` | approved | — | — |
-| T3b, converse | the undivided solution is a fixed point | `Atlas.TwoPieces.dn_solution_isFixedPt` | same | approved | — | — |
-| T3b, face form | the same for the finite-volume form `styles.dirichlet_neumann` runs | `Atlas.FacePair.solves_of_fixedPoint` | same | approved | — | — |
-| T3c | the Schwarz sweep is $u\mapsto u+M(f-Au)$ | `Atlas.Schwarz.sweep_eq` | `AtlasProofs/Schwarz.lean` | approved | — | — |
-| **T3c** | the undivided solution is a fixed point of the sweep | `Atlas.Schwarz.solution_isFixedPt` | same | approved | — | — |
-| T3c | $u$ is a fixed point iff $M(f-Au)=0$ | `Atlas.Schwarz.isFixedPt_iff` | same | approved | — | — |
-| **T3c** | if every window agrees with $u$, then $Au=f$ | `Atlas.Schwarz.solves_of_windows_agree` | same | approved | — | — |
-| **T3c** | if $M$ is one-to-one, every fixed point solves $Au=f$ | `Atlas.Schwarz.fixedPt_solves_of_precond` | same | approved | — | — |
-| T3c | the same hypothesis read off the sweep | `Atlas.Schwarz.fixedPt_solves` | same | approved | — | — |
-| **T3c** | a convergent sweep has one fixed point, the solution | `Atlas.Schwarz.fixedPt_eq_solution` | `AtlasProofs/SchwarzConvergence.lean` | approved | — | — |
-| **T3c** | a convergent sweep converges to the solution | `Atlas.Schwarz.tendsto_solution` | same | approved | — | — |
-| **T3d** | error $\le$ update $/(1-\rho)$ | `Atlas.Schwarz.error_le_update` | same | approved | — | — |
-| **T3c, finding** | a Schwarz sweep with a fixed point that is not the solution | `Atlas.Schwarz.exists_spurious_fixedPt` | `AtlasProofs/SchwarzCounterexample.lean` | approved | — | — |
+| **T3a** | the undivided block system and the Schur system have the same solutions | `Atlas.schur_iff` | `AtlasProofs/Schur.lean` | **checked** | 1.9 s, cloud container | the same three |
+| **T3b** | a fixed point of Dirichlet–Neumann solves the undivided system | `Atlas.TwoPieces.dn_fixedPoint_solves` | `AtlasProofs/DirichletNeumann.lean` | **checked** | 2.0 s, cloud container | `propext`, `Quot.sound` |
+| T3b, converse | the undivided solution is a fixed point | `Atlas.TwoPieces.dn_solution_isFixedPt` | same | **checked** | 2.0 s, cloud container | `propext`, `Quot.sound` |
+| T3b, face form | the same for the finite-volume form `styles.dirichlet_neumann` runs | `Atlas.FacePair.solves_of_fixedPoint` | same | **checked** | 2.0 s, cloud container | the same three |
+| T3c | the Schwarz sweep is $u\mapsto u+M(f-Au)$ | `Atlas.Schwarz.sweep_eq` | `AtlasProofs/Schwarz.lean` | **checked** | 2.1 s, cloud container | the same three |
+| **T3c** | the undivided solution is a fixed point of the sweep | `Atlas.Schwarz.solution_isFixedPt` | same | **checked** | 2.1 s, cloud container | the same three |
+| T3c | $u$ is a fixed point iff $M(f-Au)=0$ | `Atlas.Schwarz.isFixedPt_iff` | same | **checked** | 2.1 s, cloud container | the same three |
+| **T3c** | if every window agrees with $u$, then $Au=f$ | `Atlas.Schwarz.solves_of_windows_agree` | same | **checked** | 2.1 s, cloud container | the same three |
+| **T3c** | if $M$ is one-to-one, every fixed point solves $Au=f$ | `Atlas.Schwarz.fixedPt_solves_of_precond` | same | **checked** | 2.1 s, cloud container | the same three |
+| T3c | the same hypothesis read off the sweep | `Atlas.Schwarz.fixedPt_solves` | same | **checked** | 2.1 s, cloud container | the same three |
+| **T3c** | a convergent sweep has one fixed point, the solution | `Atlas.Schwarz.fixedPt_eq_solution` | `AtlasProofs/SchwarzConvergence.lean` | **checked** | 2.2 s, cloud container | the same three |
+| **T3c** | a convergent sweep converges to the solution | `Atlas.Schwarz.tendsto_solution` | same | **checked** | 2.2 s, cloud container | the same three |
+| **T3d** | error $\le$ update $/(1-\rho)$ | `Atlas.Schwarz.error_le_update` | same | **checked** | 2.2 s, cloud container | the same three |
+| **T3c, finding** | a Schwarz sweep with a fixed point that is not the solution | `Atlas.Schwarz.exists_spurious_fixedPt` | `AtlasProofs/SchwarzCounterexample.lean` | **checked** | 7.9 s, cloud container | the same three |
 | **T5, Theorem 1** | any limit of defect correction is a fixed point of the classical map | `Atlas.DefectCorrection.limit_isFixedPt` | `AtlasProofs/DefectCorrection.lean` | approved | — | — |
 | T5, Theorem 1, inexact | the same when each step is solved only approximately, the leftover tending to zero | `Atlas.DefectCorrection.limit_isFixedPt_of_inexact` | same | approved | — | — |
 | **T5, Corollary 1** | a constant cheap map makes the iteration the classical march | `Atlas.DefectCorrection.step_of_const` | same | approved | — | — |
@@ -323,6 +323,30 @@ The record-keeping after verification (this section, the blueprint, the plans, t
 **Findings:** none. Every batch-1 statement is proved as written.
 
 **Notes for anyone writing Lean against this Mathlib** (`v4.34.1`): `ContinuousLinearMap.mul_apply`, `one_apply` and `sub_apply` are deprecated, in favour of the general `mul_apply_eq_comp`, `one_apply_eq_self` and `sub_apply`; from `h : b ≤ c`, `add_le_add_left h a` proves `b + a ≤ c + a` and `add_le_add_right h a` proves `a + b ≤ a + c`, the reverse of older Mathlib (checked with `#check`), so `add_le_add le_rfl h` is the unambiguous form; and plasTeX finds the blueprint's `\input` files through `kpsewhich`, so it needs a TeX installation or a stand-in for it.
+
+### 5A.3 Batch 2: T3 (T3a, T3b, T3c, T3d and the counterexample) — checked
+
+**What is checked:** all 21 declarations of `lean/decls-batch-2.txt`, the 14 theorems and the 7 definitions they rest on; no statement changed. **T3's status line** in [[formal-proofs-plan]] §6 was committed alone first (`bd7ddfe`), before this batch's own commit, as the demo chat's compiler rule requires. Added, all private: `window_eq` in `Schwarz.lean` (a window's solution is $B_iR_i(f-Au)+R_iu$, since $B_i(R_iAE_i)=I$); `sweep_sub_solution` in `SchwarzConvergence.lean` ($G_f(u)-u^\star=G_0(u-u^\star)$ when $Au^\star=f$); and `threeUnknowns`, the counterexample's sweep, built with `Matrix.toLin'` from the matrices of §5.1 example 1. **Imports added:** `Mathlib.Tactic.Abel` in `Schur.lean`, `DirichletNeumann.lean` and `Schwarz.lean`, whose imports did not reach the `abel` tactic; and `AtlasProofs.Certificate` in `SchwarzConvergence.lean`, since T3d applies T7, the one import between project files the instructions allow. The import chain keeps its depth: `SchwarzConvergence` was already one level above `Schwarz`.
+
+| check | result |
+|---|---|
+| `lean_build.py` (21:37) | success, 14.6 s; 16 `sorry` warnings, **none in a batch-2 file** (all 16 are in batch 3) |
+| `lean_build.py --clean` (21:39) | success, 16.9 s. Batch-2 files: `Schur` 1.9 s, `DirichletNeumann` 2.0 s, `Schwarz` 2.1 s, `SchwarzConvergence` 2.2 s, `SchwarzCounterexample` 7.9 s |
+| `lean_axioms.py --names lean/decls-batch-2.txt` | **21 declarations, 0 failing**: `TwoPieces`, its two definitions and its two theorems rest on `propext` and `Quot.sound` only, the rest on those and `Classical.choice`; 4.1 s |
+| `lean_build.py --profile` | 13 files, 44.3 s in all, **no step of ten seconds or more**. The counterexample file takes 9.2 s alone; with the profiler's threshold lowered to 0.5 s, its largest steps are three `simp` calls of about 1 s each, the matrix arithmetic |
+| blueprint | `\leanok` in the 14 proofs of `consistency.tex`, each Lean proof following its paper proof. Builds without a warning; the dependency graph shows 31 nodes fully proved |
+
+**The counterexample, in the kernel.** With the windows and window inverses of §5.1, $A$ is invertible (its inverse is $\tfrac12\begin{pmatrix}1&1&-1\\1&-1&1\\-1&1&1\end{pmatrix}$), the sweep with $f=0$ returns $u=(1,-1,-1)$ unchanged, and $Au=(0,0,-2)\ne0$. §5.1's finding is now machine-checked.
+
+**The measured rate.** 14 theorems; **135 lines of proof text** (169 lines added in all, counting comments, docstrings and the 4 import lines), against the plan's 360.
+
+| window | time | theorems per hour | proof lines per hour |
+|---|---|---|---|
+| first proof edit (21:31:08) to the batch verified, the profile being the last check (21:38:30) | 7 min 22 s | 114 | about 1,100 |
+
+**Batch 1's record-keeping**, promised in §5A.2: from batch 1 verified (21:22:00) to its commit pushed (21:31:00), 9 minutes, for the record, the blueprint and its build, the two plans, the log, the three scans and the commit.
+
+**Findings:** none. Every batch-2 statement is proved as written.
 
 ---
 

@@ -1,13 +1,13 @@
 {
- "when": "2026-10-01T21:21:16+00:00",
- "declarations": 18,
+ "when": "2026-10-01T21:37:42+00:00",
+ "declarations": 21,
  "failing": 0,
  "with_sorry": 0,
- "seconds": 3.96,
+ "seconds": 4.07,
  "lean_exit": 0,
  "rows": [
   {
-   "name": "Atlas.perturbed_contraction",
+   "name": "Atlas.schur_iff",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -16,7 +16,47 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.perturbed_contraction_uniform",
+   "name": "Atlas.TwoPieces",
+   "axioms": [
+    "propext",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.TwoPieces.Solves",
+   "axioms": [
+    "propext",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.TwoPieces.dnStep",
+   "axioms": [
+    "propext",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.TwoPieces.dn_fixedPoint_solves",
+   "axioms": [
+    "propext",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.TwoPieces.dn_solution_isFixedPt",
+   "axioms": [
+    "propext",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.FacePair.solves_of_fixedPoint",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -25,7 +65,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.perturbed_contraction_sharp",
+   "name": "Atlas.Schwarz",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -34,7 +74,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.certificate",
+   "name": "Atlas.Schwarz.window",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -43,7 +83,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.certificate_of_contraction",
+   "name": "Atlas.Schwarz.sweep",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -52,7 +92,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.certificate_constant_is_opNorm",
+   "name": "Atlas.Schwarz.precond",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -61,7 +101,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.certificate_two_mode_example",
+   "name": "Atlas.Schwarz.sweep_eq",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -70,7 +110,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.error_recursion",
+   "name": "Atlas.Schwarz.solution_isFixedPt",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -79,7 +119,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.defect_split",
+   "name": "Atlas.Schwarz.isFixedPt_iff",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -88,7 +128,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.accumulation",
+   "name": "Atlas.Schwarz.solves_of_windows_agree",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -97,7 +137,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.master_bound",
+   "name": "Atlas.Schwarz.fixedPt_solves_of_precond",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -106,7 +146,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.master_bound_three_terms",
+   "name": "Atlas.Schwarz.fixedPt_solves",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -115,7 +155,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.master_bound_contractive",
+   "name": "Atlas.Schwarz.fixedPt_eq_solution",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -124,7 +164,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.master_bound_nonexpansive",
+   "name": "Atlas.Schwarz.tendsto_solution",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -133,7 +173,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.master_bound_expansive",
+   "name": "Atlas.Schwarz.exists_spurious_fixedPt",
    "axioms": [
     "propext",
     "Classical.choice",
@@ -142,25 +182,7 @@
    "verdict": "ok"
   },
   {
-   "name": "Atlas.master_bound_attained",
-   "axioms": [
-    "propext",
-    "Classical.choice",
-    "Quot.sound"
-   ],
-   "verdict": "ok"
-  },
-  {
-   "name": "Atlas.trace_perturbation",
-   "axioms": [
-    "propext",
-    "Classical.choice",
-    "Quot.sound"
-   ],
-   "verdict": "ok"
-  },
-  {
-   "name": "Atlas.transmission_bound",
+   "name": "Atlas.Schwarz.error_le_update",
    "axioms": [
     "propext",
     "Classical.choice",

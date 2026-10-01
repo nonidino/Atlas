@@ -1,5 +1,6 @@
 import Mathlib.Algebra.Field.Defs
 import Mathlib.Algebra.Module.LinearMap.Defs
+import Mathlib.Tactic.Abel
 
 /-!
 # T3b — Every fixed point of Dirichlet–Neumann is the undivided solution
@@ -88,7 +89,22 @@ theorem dn_fixedPoint_solves {solveD : VΓ → V₁} {solveN : VΓ → V₂ × V
     (hD : P.ExactD solveD) (hN : P.ExactN solveN) {θ : 𝕜} (hθ : θ ≠ 0) {lam : VΓ}
     (hfix : P.dnStep solveD solveN θ lam = lam) :
     P.Solves (solveD lam) (solveN (P.flux (solveD lam) lam)).1 lam := by
-  sorry
+  set q := P.flux (solveD lam) lam with hq
+  -- `θ ≠ 0`: the Neumann solve returned the interface values it was given.
+  have hmu : (solveN q).2 = lam := by
+    have h : θ • ((solveN q).2 - lam) = 0 := add_eq_left.mp hfix
+    have h' : (solveN q).2 - lam = 0 := by
+      rw [← one_smul 𝕜 ((solveN q).2 - lam), ← inv_mul_cancel₀ hθ, mul_smul, h, smul_zero]
+    exact sub_eq_zero.mp h'
+  obtain ⟨hN₁, hN₂⟩ := hN q
+  rw [hmu] at hN₁ hN₂
+  refine ⟨hD lam, hN₁, ?_⟩
+  -- The Neumann solve's interface equation, with the flux written out, is the undivided one.
+  have hq' : q = P.AΓ₁ (solveD lam) + P.AΓΓ₁ lam - P.fΓ₁ := rfl
+  calc P.AΓ₁ (solveD lam) + P.AΓ₂ (solveN q).1 + (P.AΓΓ₁ lam + P.AΓΓ₂ lam)
+      = (P.AΓ₂ (solveN q).1 + P.AΓΓ₂ lam) + (P.AΓ₁ (solveD lam) + P.AΓΓ₁ lam) := by abel
+    _ = (P.fΓ₂ - q) + (P.AΓ₁ (solveD lam) + P.AΓΓ₁ lam) := by rw [hN₂]
+    _ = P.fΓ₁ + P.fΓ₂ := by rw [hq']; abel
 
 /-- **T3b, converse.** If each piece's equations determine its solution and the solves return
 it, the undivided solution's interface values are a fixed point of the sweep, for every `θ`. -/
@@ -98,7 +114,19 @@ theorem dn_solution_isFixedPt {solveD : VΓ → V₁} {solveN : VΓ → V₂ × 
       solveN q = (u₂, mu))
     (θ : 𝕜) {u₁ : V₁} {u₂ : V₂} {lam : VΓ} (h : P.Solves u₁ u₂ lam) :
     P.dnStep solveD solveN θ lam = lam := by
-  sorry
+  obtain ⟨h₁, h₂, h₃⟩ := h
+  -- The Dirichlet solve returns `u₁`.
+  have hd : solveD lam = u₁ := hD lam u₁ h₁
+  -- `(u₂, lam)` satisfies piece 2's equations with the flux `q(u₁, lam)`, so the Neumann
+  -- solve returns it.
+  have hn : solveN (P.flux u₁ lam) = (u₂, lam) := by
+    refine hN _ u₂ lam h₂ ?_
+    rw [eq_sub_iff_add_eq]
+    calc P.AΓ₂ u₂ + P.AΓΓ₂ lam + P.flux u₁ lam
+        = P.AΓ₁ u₁ + P.AΓ₂ u₂ + (P.AΓΓ₁ lam + P.AΓΓ₂ lam) - P.fΓ₁ := by unfold flux; abel
+      _ = P.fΓ₂ := by rw [h₃]; abel
+  -- So the update is zero.
+  simp [dnStep, hd, hn]
 
 end TwoPieces
 
@@ -148,7 +176,17 @@ theorem solves_of_fixedPoint {uD : VD} {uN : VN} {lam q : F}
     q = P.h (P.PD uD - P.PN uN) ∧
       P.KD uD + P.QD (P.h (P.PD uD - P.PN uN)) = P.bD ∧
       P.KN uN - P.QN (P.h (P.PD uD - P.PN uN)) = P.bN := by
-  sorry
+  -- `rD q = PD uD - lam` and `rN q = lam - PN uN`; added, `(rD + rN) q = PD uD - PN uN`.
+  have hsum : P.rD q + P.rN q = P.PD uD - P.PN uN := by
+    rw [hq, P.rD_gD, ← hq, ← hfix]
+    abel
+  -- So `q = h (PD uD - PN uN)`, the undivided grid's flow through the cut faces.
+  have hqh : q = P.h (P.PD uD - P.PN uN) := by rw [← hsum, P.series]
+  refine ⟨hqh, ?_, ?_⟩
+  · -- the `D` set's equations, `KD uD + QD q = bD`
+    rw [← hqh, hq, map_sub, map_sub, ← add_sub_assoc, hD, add_sub_cancel_right]
+  · -- the `N` set's equations, `KN uN - QN q = bN`
+    rw [← hqh, hN, add_sub_cancel_right]
 
 end FacePair
 

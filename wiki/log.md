@@ -7140,3 +7140,14 @@ The chat that proves batches 1 to 3, on its own branch `claude/atlas-proofs-batc
 - **No finding.** The rows of batches 2 and 3 now read *approved*.
 
 **Changed:** the four batch-1 files under `lean/AtlasProofs/`; `lean/blueprint/src/chapters/contraction.tex` and `master-bound.tex` (`\leanok` in 18 proofs, and a one-line proof for the two-mode example, which had none); [[formal-proofs-record]] (§3's cells, §5A); [[formal-proofs-plan]] (§6, the block of batches 1 to 3); [[formal-proofs-implementation-plan]] (§6.2). **Added:** `lean/decls-batch-1.txt`, `out/lean/builds-batches-1-3.jsonl`, `out/lean/axioms-batches-1-3.json`, `out/lean/profile-batches-1-3.json`.
+
+## [2026-10-01] build | Proofs batch 2 checked: T3, its finding's counterexample included, in a cloud container
+
+The same chat, branch and container as batch 1's entry. **T3's status line** in [[formal-proofs-plan]] §6 reads *checked* and was committed alone first (`bd7ddfe`), as the demo chat's compiler rule requires.
+
+- **Checked:** the 14 theorems of batch 2 and the 7 definitions they rest on, every statement as written: T3a (a direct Schur solve gives the undivided solution), T3b (every fixed point of Dirichlet–Neumann solves the undivided system, in block form and in the face form `styles.dirichlet_neumann` runs, and conversely), T3c (the restricted additive Schwarz sweep in residual form; agreement of every window gives the solution; a stationary blend needs $M$ one-to-one; a convergent sweep has one fixed point, the solution, and converges to it), T3d (the error is at most the update over $1-\rho$, by T7), and the counterexample of [[formal-proofs-record]] §5.1: $A$ invertible over $\mathbb Q$, the sweep fixes $u=(1,-1,-1)$, and $Au=(0,0,-2)\ne0$. **The finding is now machine-checked.**
+- The build 14.6 s with no `sorry` in a batch-2 file; a clean re-check of all 13 files 16.9 s; the axiom check 21 of 21 on the standard axioms only; the profile no step of ten seconds or more (the counterexample's largest step, a `simp` on the matrices, about 1 s).
+- **Rate:** 135 lines of proof in 7 min 22 s from the first proof edit to the batch verified; the estimate was 3.25 to 5 hours. Batch 1's record-keeping took 9 minutes.
+- **No finding.** Imports added: `Mathlib.Tactic.Abel` in three files, and `AtlasProofs.Certificate` in `SchwarzConvergence.lean` for T3d.
+
+**Changed:** the five batch-2 files under `lean/AtlasProofs/`; `lean/blueprint/src/chapters/consistency.tex` (`\leanok` in 14 proofs); [[formal-proofs-record]] (§3's cells, §5A.3); [[formal-proofs-plan]] (§6, T3's line, in its own commit); [[formal-proofs-implementation-plan]] (§6.2, batch 2's measurement). **Added:** `lean/decls-batch-2.txt`. **Updated:** `out/lean/builds-batches-1-3.jsonl`, `axioms-batches-1-3.json`, `profile-batches-1-3.json`.
