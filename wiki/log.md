@@ -6929,3 +6929,20 @@ The owner answered the nine decisions of [[00-proposal-workstreams]] §5, the sa
 **The three chats run at the same time in one folder.** A separate worktree would lack the run records under `out/` that git does not track. So each chat owns its paths, commits only them, appends to the shared pages at the end of a step, and the demo times nothing while the others run. The demo chat owns the W348 compiler change and cites T3, which the proofs chat checks first.
 
 **Changed:** [[00-proposal-workstreams]], the three demo pages, [[proposal-website-plan]], [[vision-scenarios-and-image-prompts]], [[chart-operator-architecture]] §9, [[formal-proofs-plan]] §4, [[gap-worklist]] (W349, W352–W354), [[index]].
+
+## [2026-10-01] note | The chart operator: the prior art read in full, three probes, and the owner's first eleven design decisions
+
+The architecture chat (task 3), in a cloud container with open network, from 2026-09-30.
+
+**Read in full:** the fifteen papers [[dd-neural-prior-art-2026]] named and seven more (SNAP-DDM, Mao and Fan's multilevel Maxwell solver, DD-DeepONet, the non-overlapping hybrid FE–neural operator, learned AGDSW coarse spaces, wave-domain Douglas–Rachford coupling of port-Hamiltonian subsystems, Robin–Robin coupling of operator-inference ROMs). The record is `out/arch/prior-art-reading.md`. **N1, N4, N5 and N6 stand; N2 and N3 narrow.** Robin transmission and coarse spaces with learned subdomain solvers are published. **SNI's convergence theorem (ICLR 2026) needs one more hypothesis**: a one-subdomain counterexample meets both of its hypotheses and cycles for ever (`scripts/arch_sni_counterexample.py`).
+
+**Three probes**, all headless, classical, not timings of the workbench:
+- `scripts/arch_chart_maps.py`: cutting the layout at equal along/across values gives every piece modulus about one (0.98–1.07, measured), and at a 68 and 148 degree corner the conformal chart's $J$ ratio is 291 where Winslow's is 3.2 and transfinite interpolation's 4.1, at the price of shear.
+- `scripts/arch_coupling_cost.py`: rounds of local solves per coupling strategy with exact local solves. Steady 8 × 8 pieces: traditional Schwarz 1,864, version 0's wave exchange 1,124, with GMRES 83, with a coarse space 70, the superelement none. A monolithic direct solve beats every decomposition at these 2-D sizes.
+- The first session's `scripts/arch_chart_probe.py` (the layout's pair is conformal) stands.
+
+**The owner's decisions** (A2, B2, C1 on 2026-09-30; eleven in all by 2026-10-01): 2-D first with a named 3-D path; a chart rule; the unit square with topology owned by the decomposition; geometry as anisotropy, the fields $(\log J,\mu,\log\kappa)$; equal-value cuts; an exact discrete chart certificate and an envelope; charts of the smooth outline; **a three-tier coupling stack** (superelement, tangent, black box); GMRES or Anderson in tier 2 with a coarse space from 16 pieces; ordered sweeps in tier 2 only; reuse, warm start and energy-safe early termination in time. Under discussion: the expert's output format, the backbone and its size, the training route, the first family and gate, the name.
+
+**Added:** [[chart-operator-design-decisions]] (the running record, with a draft theorem T24 for the proofs chat), [[coupling-cost-and-complexity]] (the measured cost model).
+
+**Changed:** [[chart-operator-architecture]] (a status line pointing to the decisions; version 1 waits for the owner's confirmation), [[dd-neural-prior-art-2026]] (a status line: read in full, N2 and N3 narrowed), [[index]].

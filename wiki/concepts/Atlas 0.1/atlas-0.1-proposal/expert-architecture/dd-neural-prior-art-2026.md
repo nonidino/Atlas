@@ -2,6 +2,7 @@
 
 **Type:** Concept page — **positioning audit** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
 **Status:** written 2026-09-30 from web searches made that day. **arXiv, the three reference websites and most publishers were blocked by the planning session's network**, so every entry below is from a search result's summary, not from the paper. **Each row is marked for the architecture chat to read in full before the proposal cites it.** The vault's earlier audit, [[prior-art-and-novelty-atlas-0.1]], predates every 2025–2026 entry here.
+**Read in full, 2026-09-30:** the architecture chat read every paper below and seven more from arXiv. The paper-by-paper record is `out/arch/prior-art-reading.md`. **Before citing §3: N1, N4, N5 and N6 stand; N2 and N3 narrow**, and several further mechanisms are published (Robin transmission and coarse spaces with learned subdomain solvers, learned local Dirichlet-to-Neumann maps). The summary is [[chart-operator-design-decisions]] §1; this page is rewritten with the verdicts once the design is confirmed.
 **Hub:** [[00-proposal-workstreams]] · **Used by:** [[chart-operator-architecture]] · [[website-evidence-and-citations]]
 
 ---

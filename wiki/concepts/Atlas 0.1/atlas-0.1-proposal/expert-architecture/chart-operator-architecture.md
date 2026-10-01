@@ -2,6 +2,7 @@
 
 **Type:** Concept page — **architecture proposal, version 0** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
 **Status:** written 2026-09-30. **A design, not a build**: nothing here is implemented, trained or measured. Where the page states a theorem, it is a classical one with its source, or a statement that [[formal-proofs-plan]] schedules for proof. Everything else that goes beyond the vault's record is marked **[AI Inference]**.
+**Superseded in part, 2026-10-01:** the owner has decided the chart layer, the operator's input, the cut rule, the chart certificate and the coupling stack; the decisions, their evidence and what they change here are in [[chart-operator-design-decisions]], with the measured coupling costs in [[coupling-cost-and-complexity]]. This page is rewritten as version 1 once the owner confirms the whole design.
 **Hub:** [[00-proposal-workstreams]] · **Companions:** [[chart-operator-training-and-cost]] · [[dd-neural-prior-art-2026]]
 **Answers to:** [[outcome-c5-requirements-for-dd-native-experts]] (S1–S12) · **Built on:** [[port-algebra-atlas-0.1]] · [[atlas-and-standard-dd-theory]] · [[composition-error-theory]] · [[probed-dtn-coupling]] · [[defect-correction-learned-operator]] · [[master-error-bound]]
 
