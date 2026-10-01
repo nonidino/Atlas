@@ -1,6 +1,6 @@
 # Physics Foundation Model Wiki — Index
 
-**Last Updated:** 2026-09-30
+**Last Updated:** 2026-10-01
 **Sources Ingested:** 36 documents
 
 > 🧭 New here? Read **[[00-start-here]]** for the guided reading path.
@@ -257,6 +257,7 @@ The heart of the project: what a PFM is, the goal, the interface, and the archit
 | The chart operator: training and cost | [[chart-operator-training-and-cost]] | The vault's own solvers as the primary data source (with Jacobian samples no public set has); public datasets with licences to verify; stages 0–3; **from scratch first, fine-tuning as a controlled comparison at Stage 2** (a chart makes any piece a uniform grid, which foundation models accept, but their inference cost fights S7); a cost model with every estimate labelled; the gate E1–E6, with the **iteration count** as its headline |
 | Prior art, 2021–2026 | [[dd-neural-prior-art-2026]] | **Neural Schwarz on any geometry is published** (Mosaic Flows, SNI at ICLR 2026, L-DDM, NEST), as are diffeomorphic reference-domain operators (DIMON, DNO, Geo-FNO) and learned DD components (learned interface conditions, coarse spaces, HINTS). What is left to claim, N1–N6, each to be confirmed against the full papers: the multiphysics port contract, a certificate independent of training quality, training for the iteration count |
 | ★★★ **Formal proofs** *(task 4)* | [[formal-proofs-plan]] | The inventory T1–T23 by the owner's items, with novelty and Lean tier. **The core is finite-dimensional and machine-checkable in weeks**: perturbed contraction, the wave-variable Cayley bound $\lVert S\rVert^2\le1-4Zc/(1+ZM)^2$, the master bound, defect correction's consistency, and **fixed-point consistency, which settles W348**. The headline theorem for the website; a Lean project with a blueprint; what is cited rather than formalised; no formal DD theory found anywhere |
+| Formal proofs: the record | [[formal-proofs-record]] | **What is machine-checked, what each statement says in plain words, and what a build costs.** Lean 4.34.1 on Mathlib `v4.34.1` from its prebuilt cache, built outside OneDrive; every `lake` run timed (on battery: about 26 s per file before its first proof, files built side by side). One row per theorem with its Lean name, file, status, build time and axioms. **Started 2026-10-01: the statements of steps 1 and 2 are drafted and typecheck, none is proved yet.** A finding: **T3 for restricted additive Schwarz is false as the plan wrote it** (a three-unknown counterexample, and a positive definite one in exact arithmetic, both run through the workbench's own driver); it holds for a sweep that converges from every start |
 
 ## Adjusted Attention Mechanisms — `concepts/adjusted-attention-mechanism/`
 How tokens interact. The complement to the tokenizer folder: symmetric (reciprocal + conservative) attention as the core, plus large-context variants.

@@ -1,0 +1,27 @@
+% The web version of the blueprint (plasTeX reads this file).
+\documentclass{report}
+
+\usepackage{amssymb, amsthm, amsmath}
+\usepackage{hyperref}
+% nonreducedgraph: the dependency graph keeps exactly the edges declared with
+% \uses.  The default would prune implied edges with Graphviz's `tred`
+% program, which the Windows wheel of pygraphviz does not ship; the \uses
+% lists in this blueprint are kept minimal by hand instead.
+\usepackage[showmore, dep_graph, nonreducedgraph]{blueprint}
+
+\input{macros/common}
+\input{macros/web}
+
+% The project is private while it is built (the owner's decision O9). These
+% three addresses are filled in when the repository goes public.
+\home{https://github.com/nonidino/Atlas}
+\github{https://github.com/nonidino/Atlas}
+\dochome{https://github.com/nonidino/Atlas/tree/atlas-0.1/lean}
+
+\title{Atlas: the machine-checked mathematics}
+\author{The Atlas project}
+
+\begin{document}
+\maketitle
+\input{content}
+\end{document}

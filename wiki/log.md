@@ -7007,3 +7007,19 @@ Its gallery row is in [[showcase-gallery]], its times not quoted. 294 workbench 
 - **W189's 40 artifacts** are byte-identical, HEAD's compiler against the working tree's.
 
 The seven examples that refused now compile `admit-uncertified`. The full suite: 2262 passed, 0 failed (on battery). **Added:** `scripts/w348_census.py`, `w348_census_plugin.py`, `w348_census_pairing.py`, `w348_controls.py`, `w348_byte_control.py`, `tests/test_w348_r10_after_scheme.py`, `out/workbench/records/w348/`. **Changed:** `atlas/capability.py`, `atlas/compiler.py`, the workbench's `compile.py`, `families/elasticity.py` and `runview.py`, three test files' pinned verdicts, the README, [[demo-finish-plan]], [[showcase-gallery]], [[gap-worklist]].
+
+## [2026-10-01] build | Proofs set-up: Lean 4 on Mathlib's cache, timed; the statements of steps 1 and 2 drafted; T3 for Schwarz is false as written
+
+[[gap-worklist]] W353; the record is [[formal-proofs-record]], the plan [[formal-proofs-plan]] (§6 holds the status lines). **Nothing is proved yet**: every theorem below is a Lean statement that typechecks with a `sorry` for its proof, awaiting the owner's OK.
+
+- **Installed:** elan 4.2.4, Lean 4.34.1, Mathlib `v4.34.1` from its prebuilt cache (never compiled here), `leanblueprint` 0.0.20. 13.2 GB of disk. The dependency graph needed no separate Graphviz.
+- **The build runs outside OneDrive**, in `C:\Users\Nauni\.cache\atlas-lean`, mirrored from `lean/` by `scripts/lean_build.py`, which times every `lake` run into `out/lean/builds.jsonl`.
+- **Timed, on battery at 1.4 GHz:** the one-time download 698 s; a file costs about 26 s before its first proof (10 s loading Mathlib's compiled files, 16 s running their start-up code); the nine statement files built in 81.6 s. Files that do not import each other build side by side, so the rule is a short import chain.
+- **Mathlib's names confirmed** against the installed version. T1's distance bound is already a Mathlib lemma; Krasnoselskii–Mann is not in Mathlib.
+- **Drafted, in Lean and in the blueprint:** T1 (with the defect needed only at the classical answer), T7 (with W208's lesson as the hypothesis, and the operator norm as the least certifying constant), T4 (recursion, three-term split, accumulation, three regimes), T3 (direct Schur, Dirichlet–Neumann in block form and in the workbench's face form, restricted additive Schwarz).
+- **A finding: T3 for restricted additive Schwarz is false as the plan wrote it.** A three-unknown problem with exact window solves and a partition of unity has a fixed point that is not the solution, and the workbench's own `styles.schwarz` reports it `converged` after one sweep (`scripts/lean_t3_counterexample.py`). A symmetric positive definite example with three windows does the same in exact rational arithmetic, though its sweep does not converge. What holds: a sweep that converges from every start has one fixed point, the undivided solution; and stopping on the update leaves an error of the update over $1-\rho$.
+- **An instrument that was wrong:** the build script's first `sorry` count read 0 on a log holding 32. Fixed and recounted; the claim "no `sorry`" rests on `scripts/lean_axioms.py`, which asks the kernel and whose positive control saw all 32.
+
+**Not found:** the theorem drafts T24–T26 and the "tier 2" scoping the owner announced. No "For the proofs chat" heading was in [[chart-operator-architecture]] when this was written.
+
+**Added:** `lean/` (the project, nine statement files, the blueprint), `scripts/lean_build.py`, `scripts/lean_axioms.py`, `scripts/lean_t3_counterexample.py`, `out/lean/builds.jsonl`, `out/lean/t3_counterexample.json`, `out/lean/axioms.json`, [[formal-proofs-record]]. **Changed:** [[formal-proofs-plan]], [[index]], [[gap-worklist]].

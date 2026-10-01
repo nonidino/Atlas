@@ -1,0 +1,558 @@
+{
+ "runs": [
+  {
+   "name": "example 1: indefinite A, overlapping windows",
+   "A": [
+    [
+     1.0,
+     1.0,
+     0.0
+    ],
+    [
+     1.0,
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     1.0,
+     1.0
+    ]
+   ],
+   "windows": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "weights": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     0.0,
+     1.0
+    ]
+   ],
+   "partition_of_unity_defect": 0.0,
+   "det_A": -2.0,
+   "det_windows": [
+    -1.0,
+    -1.0
+   ],
+   "start": [
+    1.0,
+    -1.0,
+    -1.0
+   ],
+   "returned": [
+    1.0,
+    -1.0,
+    -1.0
+   ],
+   "converged": true,
+   "sweeps": 1,
+   "last_update": 0.0,
+   "residual_of_returned": [
+    0.0,
+    0.0,
+    2.0
+   ],
+   "error_of_returned": 1.0,
+   "det_preconditioner": 0.0,
+   "eig_modulus_of_error_propagation": [
+    0.0,
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "name": "control 1: the same A, started at the solution",
+   "A": [
+    [
+     1.0,
+     1.0,
+     0.0
+    ],
+    [
+     1.0,
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     1.0,
+     1.0
+    ]
+   ],
+   "windows": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "weights": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     0.0,
+     1.0
+    ]
+   ],
+   "partition_of_unity_defect": 0.0,
+   "det_A": -2.0,
+   "det_windows": [
+    -1.0,
+    -1.0
+   ],
+   "start": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "returned": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "converged": true,
+   "sweeps": 1,
+   "last_update": 0.0,
+   "residual_of_returned": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "error_of_returned": 0.0,
+   "det_preconditioner": 0.0,
+   "eig_modulus_of_error_propagation": [
+    0.0,
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "name": "control 2: positive definite A, the same windows and weights",
+   "A": [
+    [
+     2.0,
+     -1.0,
+     0.0
+    ],
+    [
+     -1.0,
+     2.0,
+     -1.0
+    ],
+    [
+     0.0,
+     -1.0,
+     2.0
+    ]
+   ],
+   "windows": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "weights": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     0.0,
+     1.0
+    ]
+   ],
+   "partition_of_unity_defect": 0.0,
+   "det_A": 4.0,
+   "det_windows": [
+    2.9999999999999996,
+    2.9999999999999996
+   ],
+   "start": [
+    1.0,
+    -1.0,
+    -1.0
+   ],
+   "returned": [
+    4.371242174656976e-14,
+    8.742484349313952e-14,
+    -4.371242174656976e-14
+   ],
+   "converged": true,
+   "sweeps": 28,
+   "last_update": 3.496993739725581e-13,
+   "residual_of_returned": [
+    0.0,
+    -1.7484968698627904e-13,
+    1.7484968698627904e-13
+   ],
+   "error_of_returned": 8.742484349313952e-14,
+   "det_preconditioner": 0.2222222222222222,
+   "eig_modulus_of_error_propagation": [
+    0.0,
+    0.3333333333333333,
+    0.3333333333333333
+   ]
+  },
+  {
+   "name": "control 3: the same indefinite A, no overlap, one sweep",
+   "A": [
+    [
+     1.0,
+     1.0,
+     0.0
+    ],
+    [
+     1.0,
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     1.0,
+     1.0
+    ]
+   ],
+   "windows": [
+    [
+     0,
+     1
+    ],
+    [
+     2
+    ]
+   ],
+   "weights": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0
+    ]
+   ],
+   "partition_of_unity_defect": 0.0,
+   "det_A": -2.0,
+   "det_windows": [
+    -1.0,
+    1.0
+   ],
+   "start": [
+    1.0,
+    -1.0,
+    -1.0
+   ],
+   "returned": [
+    1.0,
+    -1.0,
+    1.0
+   ],
+   "converged": false,
+   "sweeps": 1,
+   "last_update": 2.0,
+   "residual_of_returned": [
+    0.0,
+    -2.0,
+    0.0
+   ],
+   "error_of_returned": 1.0,
+   "det_preconditioner": -1.0,
+   "eig_modulus_of_error_propagation": [
+    0.0,
+    1.0,
+    1.0
+   ]
+  }
+ ],
+ "positive_definite_example": {
+  "exact": {
+   "A": [
+    [
+     "1",
+     "1/4",
+     "0",
+     "0",
+     "0",
+     "0"
+    ],
+    [
+     "1/4",
+     "1",
+     "1/2",
+     "0",
+     "0",
+     "0"
+    ],
+    [
+     "0",
+     "1/2",
+     "1",
+     "5/12",
+     "3/4",
+     "0"
+    ],
+    [
+     "0",
+     "0",
+     "5/12",
+     "1",
+     "3/4",
+     "0"
+    ],
+    [
+     "0",
+     "0",
+     "3/4",
+     "3/4",
+     "1",
+     "1/4"
+    ],
+    [
+     "0",
+     "0",
+     "0",
+     "0",
+     "1/4",
+     "1"
+    ]
+   ],
+   "symmetric": true,
+   "leading_principal_minors": [
+    "1",
+    "15/16",
+    "11/16",
+    "403/768",
+    "77/1536",
+    "71/4096"
+   ],
+   "positive_definite": true,
+   "windows": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     1,
+     2,
+     3,
+     4
+    ],
+    [
+     3,
+     4,
+     5
+    ]
+   ],
+   "owner_of_each_unknown": [
+    0,
+    1,
+    0,
+    1,
+    2,
+    2
+   ],
+   "each_unknown_owned_once": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "window_determinants": [
+    "11/16",
+    "35/576",
+    "3/8"
+   ],
+   "det_preconditioner": "0",
+   "kernel_dimension": 1,
+   "residual_sent_to_zero": [
+    "-3",
+    "-12",
+    "-6",
+    "8",
+    "6",
+    "0"
+   ],
+   "u": [
+    "640/71",
+    "-1708/71",
+    "4800/71",
+    "1632/71",
+    "-5600/71",
+    "1400/71"
+   ],
+   "A_u": [
+    "3",
+    "12",
+    "6",
+    "-8",
+    "-6",
+    "0"
+   ],
+   "sweep_leaves_u_fixed": true
+  },
+  "driver": {
+   "name": "example 2: positive definite A, three windows",
+   "A": [
+    [
+     1.0,
+     0.25,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.25,
+     1.0,
+     0.5,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.5,
+     1.0,
+     0.4166666666666667,
+     0.75,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.4166666666666667,
+     1.0,
+     0.75,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.75,
+     0.75,
+     1.0,
+     0.25
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.25,
+     1.0
+    ]
+   ],
+   "windows": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     1,
+     2,
+     3,
+     4
+    ],
+    [
+     3,
+     4,
+     5
+    ]
+   ],
+   "weights": [
+    [
+     1.0,
+     0.0,
+     1.0
+    ],
+    [
+     1.0,
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     1.0
+    ]
+   ],
+   "partition_of_unity_defect": 0.0,
+   "det_A": 0.017333984375000028,
+   "det_windows": [
+    0.6875,
+    0.06076388888888889,
+    0.375
+   ],
+   "start": [
+    9.014084507042254,
+    -24.056338028169016,
+    67.6056338028169,
+    22.985915492957748,
+    -78.87323943661971,
+    19.718309859154928
+   ],
+   "returned": [
+    9.01408450704225,
+    -24.05633802816901,
+    67.60563380281688,
+    22.98591549295774,
+    -78.8732394366197,
+    19.718309859154928
+   ],
+   "converged": true,
+   "sweeps": 1,
+   "last_update": 1.801733365677397e-16,
+   "residual_of_returned": [
+    -2.9999999999999982,
+    -11.999999999999996,
+    -6.0,
+    7.999999999999993,
+    6.0,
+    -3.552713678800501e-15
+   ],
+   "error_of_returned": 78.8732394366197,
+   "det_preconditioner": -1.5502750598402209e-15,
+   "eig_modulus_of_error_propagation": [
+    1.3322676267765822e-16,
+    2.4640477793959758e-09,
+    2.464048020333471e-09,
+    0.14842466444032326,
+    1.0,
+    1.148424664440322
+   ]
+  },
+  "scale": 78.87323943661971
+ },
+ "verdict": {
+  "example_1_spurious_fixed_point": true,
+  "control_1_stays_at_solution": true,
+  "control_2_reaches_solution": true,
+  "control_3_not_a_fixed_point": true,
+  "example_2_positive_definite_exact": true,
+  "example_2_driver_reports_converged": true
+ }
+}

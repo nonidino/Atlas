@@ -1,0 +1,36 @@
+% The content of the blueprint, shared by the web and the print version.
+% One chapter per theme, one section per theorem (so the web version has a
+% page per theorem).
+
+\chapter*{How to read this}
+
+Atlas couples solvers, classical or learned, through typed ports, and its
+proposal makes claims about convergence and error.  This blueprint lists the
+mathematical statements those claims rest on.  Each statement appears three
+times:
+
+\begin{itemize}
+  \item \textbf{in plain words}, so a reader can judge whether it says what
+    the proposal needs;
+  \item \textbf{as mathematics}, with a proof on paper;
+  \item \textbf{as a Lean 4 declaration}, checked by the Lean kernel against
+    Mathlib.  A statement counts as machine-checked only when it has no
+    \texttt{sorry} and \texttt{\#print axioms} shows nothing beyond Lean's
+    three standard axioms (\texttt{propext}, \texttt{Classical.choice},
+    \texttt{Quot.sound}).
+\end{itemize}
+
+A machine check guarantees that the proof proves the statement.  It does not
+guarantee that the statement is the one that was meant, which is why the plain
+words are here.
+
+Everything in this blueprint is either a statement about metric and normed
+spaces that holds in any dimension, or finite-dimensional linear algebra.  The
+continuous theory of partial differential equations (Sobolev spaces, traces) is
+cited by the proposal, not formalised here.
+
+The labels T1, T3, \dots{} are those of the project's formal-proofs plan.
+
+\input{chapters/contraction}
+\input{chapters/master-bound}
+\input{chapters/consistency}

@@ -1,7 +1,7 @@
 # Formal proofs — what can be proved, what can be machine-checked in Lean, and in what order
 
 **Type:** Concept page — **theorem inventory and formalisation plan** (folder: `Atlas 0.1/atlas-0.1-proposal/formal-proofs/`)
-**Status:** written 2026-09-30. **No Lean has been written or installed.** Every effort estimate is **[AI Inference]**. The Mathlib declaration names quoted here are from memory, to be confirmed against the current Mathlib documentation before use. The statements marked *ours* are new combinations of known results, and are proved here only in sketch.
+**Status:** written 2026-09-30. Every effort estimate is **[AI Inference]**. The statements marked *ours* are new combinations of known results, and are proved here only in sketch. **Updated 2026-10-01 by the proofs chat:** Lean 4.34.1 and Mathlib `v4.34.1` are installed and timed; the Mathlib names quoted below are confirmed against that version, with the corrections in [[formal-proofs-record]] §2; the statements of steps 1 and 2 are written in Lean and typecheck, **none is proved yet**; and **T3's statement for restricted additive Schwarz is false as written below** ([[formal-proofs-record]] §5.1). §6 holds one status line per theorem.
 **Hub:** [[00-proposal-workstreams]] · **Formalises results from:** [[master-error-bound]] · [[defect-correction-learned-operator]] · [[composition-error-theory]] · [[temporal-error-accumulation]] · [[symmetry-averaging-atlas-0.1]] · [[atlas-and-standard-dd-theory]] · [[chart-operator-architecture]] §4
 **Prior formal work:** [[dd-neural-prior-art-2026]] §1.6
 
@@ -34,10 +34,10 @@ Tiers of Lean effort: **A** days · **B** weeks · **C** months · **D** not now
 
 | # | statement | novelty | Lean |
 |---|---|---|---|
-| **T1** | **Perturbed contraction.** On a complete metric space, let $T$ have a fixed point $a^\star$, let $\tilde T$ be a $\rho$-contraction, $\rho<1$, and let $d(\tilde T a,Ta)\le\delta$ for all $a$. Then $\tilde T$ has a unique fixed point $\tilde a^\star$, $d(\tilde T^k a_0,\tilde a^\star)\le\rho^k d(a_0,\tilde a^\star)$, and $d(\tilde a^\star,a^\star)\le\delta/(1-\rho)$ | known (Banach plus one line) | **A.** `ContractingWith.fixedPoint`, `ContractingWith.dist_fixedPoint_le`, `ContractingWith.apriori_dist_iterate_fixedPoint_le` |
+| **T1** | **Perturbed contraction.** On a complete metric space, let $T$ have a fixed point $a^\star$, let $\tilde T$ be a $\rho$-contraction, $\rho<1$, and let $d(\tilde T a,Ta)\le\delta$ for all $a$. Then $\tilde T$ has a unique fixed point $\tilde a^\star$, $d(\tilde T^k a_0,\tilde a^\star)\le\rho^k d(a_0,\tilde a^\star)$, and $d(\tilde a^\star,a^\star)\le\delta/(1-\rho)$ | known (Banach plus one line) | **A.** `ContractingWith.fixedPoint`, `ContractingWith.dist_fixedPoint_le`, `ContractingWith.apriori_dist_iterate_fixedPoint_le`. **Confirmed 2026-10-01; and the distance bound is itself a Mathlib lemma**, `ContractingWith.dist_fixedPoint_fixedPoint_of_dist_le'`. The defect is needed only at $a^\star$, not for all $a$ |
 | **T8** | **Wave variables make a passive agent non-expansive.** For a linear $\Lambda$ on a real inner-product space with $\langle\Lambda e,e\rangle\ge0$ and $Z>0$, $S=(I-Z\Lambda)(I+Z\Lambda)^{-1}$ exists and $\lVert S\rVert\le1$. If moreover $\langle\Lambda e,e\rangle\ge c\lVert e\rVert^2$ and $\lVert\Lambda\rVert\le M$, then $\lVert S\rVert^2\le1-\dfrac{4Zc}{(1+ZM)^2}$. *Proof:* with $y=(I+Z\Lambda)e$, $\lVert(I-Z\Lambda)e\rVert^2=\lVert y\rVert^2-4Z\langle\Lambda e,e\rangle$, and $\lVert y\rVert\le(1+ZM)\lVert e\rVert$ | known (the Cayley transform of an accretive operator) | **B**, finite dimensions first |
 | **T9** | **The contraction contract** ([[chart-operator-architecture]] §4.4). With $\Pi$ an isometry that swaps each side's outgoing wave to its neighbour, and each learned scattering map $\tilde S_i$ a $\rho$-contraction on the fine space with defect $\delta$ from $S_i$, the two-level wave-variable iteration converges geometrically to within $\delta/(1-\rho)$ of the classical decomposition's answer. A corollary of T1 once the coarse correction is folded into the map | **ours**, as a statement about arbitrary certified experts. The exact-solver case is classical: Lions 1990; Després 1991; Collino, Ghanemi & Joly 2000 | **B** |
-| **T9′** | **Non-expansive is enough without a rate.** If $\operatorname{Lip}(\Pi\tilde S)\le1$ in finite dimensions and a fixed point exists, the averaged iteration $a\leftarrow(1-\omega)a+\omega\,\Pi\tilde S(a)$ converges to one (Krasnoselskii–Mann) | known | **B** |
+| **T9′** | **Non-expansive is enough without a rate.** If $\operatorname{Lip}(\Pi\tilde S)\le1$ in finite dimensions and a fixed point exists, the averaged iteration $a\leftarrow(1-\omega)a+\omega\,\Pi\tilde S(a)$ converges to one (Krasnoselskii–Mann) | known | **B**. Not in Mathlib `v4.34.1` (searched 2026-10-01), so it is proved from scratch |
 | **T5** | **Defect correction** ([[defect-correction-learned-operator]] §2): **Theorem 1**, any limit of the iteration is a fixed point of the classical map $\Phi$, whatever the learned $\Psi$; **Corollary 1**, a constant $\Psi$ makes it the classical march; **Corollary 2**, shrinking toward the null element shifts $J_\Psi$'s spectrum to $\alpha+(1-\alpha)\sigma(J_\Psi)$ | known (Stetter 1978); the corollaries are this vault's | **A** (Theorem 1 is a continuity argument; Corollary 2 uses the spectral mapping for affine maps) |
 | **T6** | **Defect correction's local rate** (Stetter's Theorem 2): $e_{k+1}=(I-J_\Psi^{-1}J_\Phi)e_k+o(\lVert e_k\rVert)$, so the rate is the spectral radius of $I-J_\Psi^{-1}J_\Phi$ | known | **C**: Ostrowski's local-convergence theorem through Fréchet derivatives and the spectral radius; Mathlib has the pieces (`HasFDerivAt`, `spectralRadius`, Gelfand's formula) but, as far as known, not Ostrowski |
 
@@ -53,7 +53,7 @@ Tiers of Lean effort: **A** days · **B** weeks · **C** months · **D** not now
 
 | # | statement | novelty | Lean | why it matters here |
 |---|---|---|---|---|
-| **T3** | **Fixed-point consistency.** For a linear discrete problem $Au=f$, every fixed point of restricted additive Schwarz or Dirichlet–Neumann built from exact local solves, with a partition of unity, solves $Au=f$; so does a direct Schur solve of the interface. For RAS: Frommer & Szyld, *SIAM J. Numer. Anal.* 39, 2001 | known | **A–B**, finite-dimensional linear algebra | **it settles W348**: the compiler can admit iterated one-physics couplings citing a checked theorem, and the demo's fast examples stop showing a red `refuse` ([[demo-finish-plan]] §5) |
+| **T3** | **Fixed-point consistency.** For a linear discrete problem $Au=f$, every fixed point of restricted additive Schwarz or Dirichlet–Neumann built from exact local solves, with a partition of unity, solves $Au=f$; so does a direct Schur solve of the interface. For RAS: Frommer & Szyld, *SIAM J. Numer. Anal.* 39, 2001. **Corrected 2026-10-01: the restricted-additive-Schwarz part is false as written.** It holds when the sweep converges from every start, or when every window agrees with the blend; a three-unknown counterexample and a positive definite one are in [[formal-proofs-record]] §5.1. The Dirichlet–Neumann and Schur parts stand without any further hypothesis | known | **A–B**, finite-dimensional linear algebra | **it settles W348**: the compiler can admit iterated one-physics couplings citing a checked theorem, and the demo's fast examples stop showing a red `refuse` ([[demo-finish-plan]] §5) |
 | **T12** | **Schwarz as alternating projections.** Alternating Schwarz with exact solves is a product of orthogonal projections in the energy inner product (Lions 1988). In finite dimensions $(P_2P_1)^n\to P_{V_1\cap V_2}$ (von Neumann), with rate set by the angle between the subspaces. The sharp rate of successive subspace correction is the **Xu–Zikatanov identity** (*J. Amer. Math. Soc.* 15, 2002) | known | **B** in finite dimensions; **C** for Xu–Zikatanov in Hilbert space | no formalisation of either was found; the natural first chapter of a formal DD library |
 | **T13** | **Additive Schwarz's condition number from a stable decomposition** (the abstract Schwarz theory; Toselli & Widlund, *Domain Decomposition Methods*, Springer 2005, Ch. 2): $\kappa(P_{\text{ad}})\le C_0^2\,\omega\,(\rho(\mathcal E)+1)$, with $C_0$ the decomposition's stability constant, $\omega$ the local solvers' bound and $\rho(\mathcal E)\le N_c$, the number of colours | known | **B** | why a coarse space makes iteration counts independent of the number of windows |
 | **T14** | **RAS converges for M-matrices in weighted max norms** (Frommer & Szyld 2001) | known | **C**: M-matrix theory is thin in Mathlib | the workbench's style B is RAS |
@@ -100,6 +100,7 @@ T1 + T8 + T9 + T4 + T22 for the first, T5 for the second. All are Tier A or B.
 - **Continuous integration:** a GitHub Action builds the Lean project and the blueprint on every push, and fails on any `sorry`.
 - **Each blueprint page links back** to the vault page whose result it formalises, and the vault page links forward.
 - **Decided (O5 and O9, the owner, 2026-09-30):** the install is approved; the project stays private while it is built and goes public when the website links to it.
+- **Built 2026-10-01.** The sources are in `lean/`. **The build runs outside OneDrive**, in `C:\Users\Nauni\.cache\atlas-lean`, through `scripts/lean_build.py`: built in place, OneDrive would upload the unpacked Mathlib cache, several gigabytes in tens of thousands of files. The install took 13.2 GB of disk. `leanblueprint` needed no separate Graphviz install. Details: [[formal-proofs-record]] §1.
 
 ### 4.1 The owner's concern: "Lean can take a long time to verify"
 
@@ -114,6 +115,13 @@ T1 + T8 + T9 + T4 + T22 for the first, T5 for the second. All are Tier A or B.
 | **continuous integration** | the same cache, on GitHub's runners | the Mathlib cache is fetched, not built, on every run |
 
 **Every `lake build` is timed and written to the proof record, so the owner can see it.** Target: a full build of the project, with Mathlib cached, **under five minutes** on the owner's laptop. If a file breaks that target, it is split or its slow step is rewritten.
+
+**Measured 2026-10-01, on battery** ([[formal-proofs-record]] §1.1), in place of the table's estimates:
+
+- the one-time download and unpacking took 698 s;
+- **a file costs about 26 s before its first proof is looked at** (10 s loading Mathlib's compiled files, 16 s running their start-up code), where the table guessed "tens of seconds" for a whole session. That cost is per file, and files that do not import each other are built at the same time;
+- so the full build's time is set by the **longest chain of files that import each other**, and the rule added to the table's is: **keep that chain short**;
+- the nine statement files of steps 1 and 2 built in 81.6 s.
 
 ---
 
@@ -134,8 +142,24 @@ T1 + T8 + T9 + T4 + T22 for the first, T5 for the second. All are Tier A or B.
 
 ---
 
+## 6. Status
+
+One line per theorem, kept by the proofs chat. *drafted*: the Lean statement exists and typechecks, its proof is a `sorry`. *approved*: the owner has accepted the statement. *checked*: no `sorry`, only Lean's three standard axioms, build timed. Statements, files and times are in [[formal-proofs-record]].
+
+- **Set-up: done, 2026-10-01.** Lean 4.34.1, Mathlib `v4.34.1` from its cache, `leanblueprint`; names confirmed.
+- **T1: drafted**, `Atlas.perturbed_contraction`, `lean/AtlasProofs/PerturbedContraction.lean`, 2026-10-01. Awaiting the owner's OK.
+- **T7: drafted**, `Atlas.certificate` and `Atlas.certificate_constant_is_opNorm`, `lean/AtlasProofs/Certificate.lean`, 2026-10-01. Awaiting the owner's OK.
+- **T4: drafted**, `Atlas.master_bound` and its regimes, `lean/AtlasProofs/MasterBound.lean`, 2026-10-01. Awaiting the owner's OK.
+- **T3: drafted, with a finding**, 2026-10-01. Direct Schur (`Atlas.schur_iff`, `lean/AtlasProofs/Schur.lean`) and Dirichlet–Neumann (`Atlas.TwoPieces.dn_fixedPoint_solves`, `lean/AtlasProofs/DirichletNeumann.lean`) stand as planned. Restricted additive Schwarz needs a hypothesis (`Atlas.Schwarz.fixedPt_eq_solution`, `lean/AtlasProofs/SchwarzConvergence.lean`), and the counterexample is `Atlas.Schwarz.exists_spurious_fixedPt`. Awaiting the owner's OK. **Not yet checked: the compiler must go on citing the classical source.**
+- **T5, T10, T11** (step 3): not started.
+- **T8, T9, T9′, T22, T2** (step 4): not started.
+- **T24–T26, the scoping of T1, T8, T9 and T22 to "tier 2", and the SNI counterexample beside T1:** announced by the owner on 2026-10-01 as just added by the architecture chat. **Their text was not in the vault when this line was written** (no "For the proofs chat" heading in [[chart-operator-architecture]] yet), so nothing has been drafted from them.
+
+---
+
 ## See Also
 
+- [[formal-proofs-record]] — what is checked, each statement in plain words and in Lean, the build times, and the findings
 - [[master-error-bound]] · [[defect-correction-learned-operator]] · [[temporal-error-accumulation]] · [[composition-error-theory]] — the vault's results being formalised
 - [[chart-operator-architecture]] — §4, where T8–T9 come from
 - [[atlas-and-standard-dd-theory]] — the classical theory T3 and T12–T17 belong to

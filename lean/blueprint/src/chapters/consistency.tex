@@ -1,0 +1,342 @@
+\chapter{Decomposition does not change the answer}
+
+A linear discrete problem $Au=f$ is cut into pieces.  Each piece is solved
+exactly, given data on the cut.  The question of this chapter: when the pieces
+have been made to agree, is the assembled field the solution of the undivided
+problem?
+
+For a direct interface solve and for Dirichlet--Neumann the answer is yes, with
+no further hypothesis.  For restricted additive Schwarz it is yes under one
+hypothesis, and false without it.
+
+\section{T3a: a direct Schur interface solve}
+
+\paragraph{In plain words.}
+Split the unknowns into those inside the pieces and those on the interface.
+Substructuring solves a smaller system for the interface unknowns alone, then
+each piece solves for its interior with that interface data.  The result is
+the undivided solution: nothing is lost and nothing is added by the cut.
+
+\begin{theorem}[T3a, direct Schur solve]\label{thm:T3a}
+  \lean{Atlas.schur_iff}
+  \leanok
+  Let $V_I,V_\Gamma$ be vector spaces over a field, and
+  $A_{II}:V_I\to V_I$, $A_{I\Gamma}:V_\Gamma\to V_I$,
+  $A_{\Gamma I}:V_I\to V_\Gamma$, $A_{\Gamma\Gamma}:V_\Gamma\to V_\Gamma$ linear,
+  with $A_{II}$ invertible.  For all $f_I,u_I\in V_I$ and
+  $f_\Gamma,u_\Gamma\in V_\Gamma$,
+  \[
+    \begin{cases}A_{II}u_I+A_{I\Gamma}u_\Gamma=f_I\\
+    A_{\Gamma I}u_I+A_{\Gamma\Gamma}u_\Gamma=f_\Gamma\end{cases}
+    \iff
+    \begin{cases}u_I=A_{II}^{-1}(f_I-A_{I\Gamma}u_\Gamma)\\
+    \bigl(A_{\Gamma\Gamma}-A_{\Gamma I}A_{II}^{-1}A_{I\Gamma}\bigr)u_\Gamma
+      =f_\Gamma-A_{\Gamma I}A_{II}^{-1}f_I .\end{cases}
+  \]
+\end{theorem}
+
+\begin{proof}
+  The first equation on the left is equivalent to the first on the right
+  because $A_{II}$ is invertible.  Substituting it into the second equation on
+  the left gives the second on the right, and conversely.
+\end{proof}
+
+\section{T3b: Dirichlet--Neumann}
+
+\paragraph{In plain words.}
+Two pieces meet along an interface and do not overlap.  One sweep: piece 1 is
+solved with the interface values given; the flux it then sends through the
+interface is handed to piece 2, which returns its own interface values; the
+interface values move toward those by a relaxation factor $\theta$.  If a sweep
+returns the interface values it was given, the two pieces' solutions side by
+side solve the undivided problem.  The solves must be exact.  Convergence of
+the iteration is not assumed.
+
+\begin{definition}[Two pieces in block form]\label{def:two-pieces}
+  \lean{Atlas.TwoPieces, Atlas.TwoPieces.Solves, Atlas.TwoPieces.dnStep}
+  \leanok
+  The unknowns are $(u_1,u_2,\lambda)\in V_1\times V_2\times V_\Gamma$.  The
+  undivided system is
+  \begin{align*}
+    A_{11}u_1+A_{1\Gamma}\lambda&=f_1,\\
+    A_{22}u_2+A_{2\Gamma}\lambda&=f_2,\\
+    A_{\Gamma1}u_1+A_{\Gamma2}u_2
+      +\bigl(A^{(1)}_{\Gamma\Gamma}+A^{(2)}_{\Gamma\Gamma}\bigr)\lambda
+      &=f^{(1)}_\Gamma+f^{(2)}_\Gamma ,
+  \end{align*}
+  where each piece contributes its own share of the interface block and of the
+  interface right-hand side.  The flux piece 1 sends is
+  $q(u_1,\lambda)=A_{\Gamma1}u_1+A^{(1)}_{\Gamma\Gamma}\lambda-f^{(1)}_\Gamma$.
+  A Dirichlet solve $D$ is exact if $A_{11}D(\lambda)+A_{1\Gamma}\lambda=f_1$
+  for all $\lambda$.  A Neumann solve $N$, returning a pair
+  $(u_2,\tilde\lambda)$, is exact if
+  $A_{22}u_2+A_{2\Gamma}\tilde\lambda=f_2$ and
+  $A_{\Gamma2}u_2+A^{(2)}_{\Gamma\Gamma}\tilde\lambda=f^{(2)}_\Gamma-q$ for all
+  $q$.  One sweep is
+  $\lambda\mapsto\lambda+\theta\,(\tilde\lambda-\lambda)$ with
+  $(u_2,\tilde\lambda)=N\bigl(q(D(\lambda),\lambda)\bigr)$.
+\end{definition}
+
+\begin{theorem}[T3b, Dirichlet--Neumann, block form]\label{thm:T3b}
+  \lean{Atlas.TwoPieces.dn_fixedPoint_solves}
+  \leanok
+  \uses{def:two-pieces}
+  With exact solves and $\theta\ne0$, if $\lambda$ is a fixed point of the
+  sweep then $\bigl(D(\lambda),u_2,\lambda\bigr)$ solves the undivided system,
+  where $u_2$ is the interior the Neumann solve returned.
+\end{theorem}
+
+\begin{proof}
+  \uses{def:two-pieces}
+  $\theta\ne0$ gives $\tilde\lambda=\lambda$.  The two interior equations are
+  the exactness of the solves.  The Neumann solve's interface equation,
+  $A_{\Gamma2}u_2+A^{(2)}_{\Gamma\Gamma}\lambda=f^{(2)}_\Gamma-q$, with $q$
+  written out, is the interface equation of the undivided system.
+\end{proof}
+
+\begin{theorem}[T3b, converse]\label{thm:T3b-converse}
+  \lean{Atlas.TwoPieces.dn_solution_isFixedPt}
+  \leanok
+  \uses{def:two-pieces}
+  If each piece's equations determine its solution and the solves return it,
+  then for every solution $(u_1,u_2,\lambda)$ of the undivided system and every
+  $\theta$, $\lambda$ is a fixed point of the sweep.
+\end{theorem}
+
+\begin{proof}
+  \uses{def:two-pieces}
+  The Dirichlet solve returns $u_1$.  The pair $(u_2,\lambda)$ satisfies the
+  Neumann piece's equations with the flux $q(u_1,\lambda)$, so the Neumann solve
+  returns it, and the update is zero.
+\end{proof}
+
+\begin{theorem}[T3b, the face form the workbench implements]\label{thm:T3b-face}
+  \lean{Atlas.FacePair.solves_of_fixedPoint}
+  \leanok
+  Two sets of finite-volume cells, $D$ and $N$, meet along faces.  $K_D,K_N$ are
+  each set's operator with the cut faces left out; $P_D,P_N$ read the cell value
+  beside each cut face; $Q_D,Q_N$ put a per-face flow into those cells'
+  equations; $g_D$ is the $D$ side's half-cell conductance, $r_D=g_D^{-1}$ and
+  $r_N$ the two half-cell resistances, and $h=(r_D+r_N)^{-1}$ the undivided
+  grid's face conductance (the harmonic mean).  Suppose
+  \begin{enumerate}
+    \item $K_Du_D+Q_Dg_DP_Du_D=b_D+Q_Dg_D\lambda$ (the $D$ set solved with face
+      values $\lambda$);
+    \item $q=g_D(P_Du_D-\lambda)$ (the flow it sends);
+    \item $K_Nu_N=b_N+Q_Nq$ (the $N$ set solved with that flow);
+    \item $P_Nu_N+r_Nq=\lambda$ (the $N$ set's face values reproduce
+      $\lambda$).
+  \end{enumerate}
+  Then $q=h\,(P_Du_D-P_Nu_N)$, and $(u_D,u_N)$ solves the undivided system
+  \[
+    K_Du_D+Q_Dh(P_Du_D-P_Nu_N)=b_D,\qquad
+    K_Nu_N-Q_Nh(P_Du_D-P_Nu_N)=b_N .
+  \]
+\end{theorem}
+
+\begin{proof}
+  From 2, $r_Dq=P_Du_D-\lambda$; from 4, $r_Nq=\lambda-P_Nu_N$.  Adding,
+  $(r_D+r_N)q=P_Du_D-P_Nu_N$, so $q=h(P_Du_D-P_Nu_N)$.  Then 1 reads
+  $K_Du_D+Q_Dq=b_D$ and 3 reads $K_Nu_N-Q_Nq=b_N$.
+\end{proof}
+
+\section{T3c: restricted additive Schwarz}
+
+\paragraph{In plain words.}
+The domain is covered by overlapping windows.  One sweep solves every window
+exactly, with the current iterate held outside it, and blends the windows'
+solutions with weights that sum to one.
+
+\begin{itemize}
+  \item The undivided solution is always a fixed point of the sweep.
+  \item If, at $u$, every window's own solution agrees with $u$ on the whole
+    window, then $u$ is the undivided solution.
+  \item If only the \emph{blend} is unchanged, more is needed.  The sweep is
+    $u\mapsto u+M(f-Au)$, with $M$ the blended sum of the window solves, and a
+    fixed point is the undivided solution exactly when $M$ sends no non-zero
+    residual to zero.  That holds whenever the sweep converges from every
+    start.
+  \item Without that hypothesis the claim is false
+    (Theorem~\ref{thm:T3c-counterexample}).
+\end{itemize}
+
+\begin{definition}[A Schwarz sweep]\label{def:schwarz}
+  \lean{Atlas.Schwarz, Atlas.Schwarz.window, Atlas.Schwarz.sweep, Atlas.Schwarz.precond}
+  \leanok
+  $A:V\to V$ is linear.  For each window $i$ of a finite family:
+  $R_i:V\to W_i$ reads the window's unknowns; $E_i:W_i\to V$ pads with zeros;
+  $E^\chi_i:W_i\to V$ multiplies by the window's weights, then pads;
+  $B_i:W_i\to W_i$ is the inverse of the window's operator $R_iAE_i$.  The
+  weights are a partition of unity: $\sum_iE^\chi_iR_i=I$.  The window's
+  solution, the sweep and the preconditioner are
+  \[
+    w_i(f,u)=B_i\bigl(R_if-R_iA(u-E_iR_iu)\bigr),\qquad
+    G_f(u)=\sum_iE^\chi_i\,w_i(f,u),\qquad
+    M=\sum_iE^\chi_iB_iR_i .
+  \]
+\end{definition}
+
+\begin{lemma}[The sweep in residual form]\label{lem:T3c-sweep}
+  \lean{Atlas.Schwarz.sweep_eq}
+  \leanok
+  \uses{def:schwarz}
+  $G_f(u)=u+M(f-Au)$.
+\end{lemma}
+
+\begin{proof}
+  \uses{def:schwarz}
+  $w_i(f,u)=B_iR_i(f-Au)+B_i(R_iAE_i)R_iu=B_iR_i(f-Au)+R_iu$.  Blend, and use
+  the partition of unity.
+\end{proof}
+
+\begin{theorem}[T3c, consistency]\label{thm:T3c-consistency}
+  \lean{Atlas.Schwarz.solution_isFixedPt}
+  \leanok
+  \uses{lem:T3c-sweep}
+  If $Au=f$ then $G_f(u)=u$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T3c-sweep}
+  $M0=0$.
+\end{proof}
+
+\begin{lemma}[What a fixed point is]\label{lem:T3c-iff}
+  \lean{Atlas.Schwarz.isFixedPt_iff}
+  \leanok
+  \uses{lem:T3c-sweep}
+  $G_f(u)=u\iff M(f-Au)=0$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:T3c-sweep}
+  Lemma~\ref{lem:T3c-sweep}.
+\end{proof}
+
+\begin{theorem}[T3c, agreement]\label{thm:T3c-agree}
+  \lean{Atlas.Schwarz.solves_of_windows_agree}
+  \leanok
+  \uses{def:schwarz}
+  If $w_i(f,u)=R_iu$ for every window $i$, then $Au=f$.
+\end{theorem}
+
+\begin{proof}
+  \uses{def:schwarz}
+  As in Lemma~\ref{lem:T3c-sweep}, $w_i(f,u)=R_iu+B_iR_i(f-Au)$, so
+  $B_iR_i(f-Au)=0$ and, $B_i$ being invertible, $R_i(f-Au)=0$ for every $i$.
+  By the partition of unity $f-Au=\sum_iE^\chi_iR_i(f-Au)=0$.
+\end{proof}
+
+\begin{theorem}[T3c, a stationary blend]\label{thm:T3c-precond}
+  \lean{Atlas.Schwarz.fixedPt_solves_of_precond}
+  \leanok
+  \uses{lem:T3c-iff}
+  If $Mr=0$ implies $r=0$, then every fixed point of $G_f$ solves $Au=f$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T3c-iff}
+  Lemma~\ref{lem:T3c-iff}.
+\end{proof}
+
+\begin{corollary}[The same hypothesis, read off the sweep]\label{cor:T3c-homogeneous}
+  \lean{Atlas.Schwarz.fixedPt_solves}
+  \leanok
+  \uses{thm:T3c-precond, lem:T3c-sweep}
+  If $A$ is onto and the sweep with zero right-hand side has no fixed point but
+  $0$, then for every $f$ every fixed point of $G_f$ solves $Au=f$.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T3c-precond, lem:T3c-sweep}
+  Let $Mr=0$ and write $r=Ae$.  Then $G_0(-e)=-e+M(Ae)=-e$, so $e=0$ and
+  $r=0$.
+\end{proof}
+
+\begin{theorem}[T3c, a convergent sweep has one fixed point]\label{thm:T3c-unique}
+  \lean{Atlas.Schwarz.fixedPt_eq_solution}
+  \leanok
+  \uses{lem:T3c-sweep}
+  Let $V$ be a real normed space, and suppose $G_0^{\,k}(e)\to0$ for every
+  $e\in V$.  If $Au^\star=f$ and $G_f(u)=u$, then $u=u^\star$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T3c-sweep}
+  $G_f(u)-G_f(u^\star)=G_0(u-u^\star)$, so $e=u-u^\star$ is a fixed point of
+  $G_0$.  Then $e=G_0^{\,k}(e)\to0$.
+\end{proof}
+
+\begin{theorem}[T3c, a convergent sweep converges to the solution]\label{thm:T3c-tendsto}
+  \lean{Atlas.Schwarz.tendsto_solution}
+  \leanok
+  \uses{lem:T3c-sweep, thm:T3c-consistency}
+  Under the same hypothesis, if $Au^\star=f$ then $G_f^{\,k}(u_0)\to u^\star$
+  for every $u_0\in V$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T3c-sweep, thm:T3c-consistency}
+  $G_f^{\,k}(u_0)-u^\star=G_0^{\,k}(u_0-u^\star)$.
+\end{proof}
+
+\begin{theorem}[T3c, the counterexample]\label{thm:T3c-counterexample}
+  \lean{Atlas.Schwarz.exists_spurious_fixedPt}
+  \leanok
+  \uses{def:schwarz}
+  There is a Schwarz sweep over $\Q$ with exact window solves, a partition of
+  unity and an invertible $A$, and a pair $f,u$ with $G_f(u)=u$ and $Au\ne f$.
+\end{theorem}
+
+\begin{proof}
+  \uses{def:schwarz}
+  Three unknowns, windows $\{1,2\}$ and $\{2,3\}$, the shared unknown given
+  entirely to the first window:
+  \[
+    A=\begin{pmatrix}1&1&0\\1&0&1\\0&1&1\end{pmatrix},\qquad f=0,\qquad
+    u=(1,-1,-1).
+  \]
+  $\det A=-2$ and both window matrices have determinant $-1$.  Window 1 returns
+  $(1,-1)$, which is $u$ on $\{1,2\}$.  Window 2 returns $(1,-1)$ on $\{2,3\}$:
+  it disagrees with $u$ at the shared unknown, and the blend discards that
+  value.  So $G_0(u)=u$, while $Au=(0,0,-2)$.
+\end{proof}
+
+\begin{remark}[Positive definite matrices]
+  What fails in the counterexample is that $A$ has a zero on its diagonal at
+  the shared unknown: the problem restricted to the overlap is singular.  For
+  \emph{two} windows and a symmetric positive definite $A$ this cannot happen,
+  and every fixed point is the solution (a paper proof, not yet formalised).
+  With \emph{three} windows positive definiteness is not enough: the project's
+  script \texttt{scripts/lean\_t3\_counterexample.py} exhibits, in exact
+  rational arithmetic, a symmetric positive definite $6\times6$ matrix and three
+  windows with a spurious fixed point.  On that example the sweep does not
+  converge, so Theorem~\ref{thm:T3c-unique} is not contradicted.  For
+  M-matrices the sweep always converges (Frommer and Szyld, \emph{SIAM J.
+  Numer. Anal.} 39, 2001).
+\end{remark}
+
+\section{T3d: what stopping on the update leaves}
+
+\paragraph{In plain words.}
+A sweep is stopped when its update is small.  The update is not the error.  If
+the zero-right-hand-side sweep shrinks a norm by $\rho<1$ every time, the error
+is at most the update divided by $1-\rho$.  For a slowly converging sweep,
+$\rho$ near one, that is many times the tolerance.
+
+\begin{theorem}[T3d, stopping on the update]\label{thm:T3d}
+  \lean{Atlas.Schwarz.error_le_update}
+  \leanok
+  \uses{thm:T7, lem:T3c-sweep}
+  Let $V$ be a real normed space and $\norm{G_0(e)}\le\rho\norm{e}$ for all
+  $e$, with $\rho<1$.  If $Au^\star=f$ then for every $u\in V$
+  \[
+    \norm{u-u^\star}\le\frac{\norm{G_f(u)-u}}{1-\rho}.
+  \]
+\end{theorem}
+
+\begin{proof}
+  \uses{thm:T7, lem:T3c-sweep}
+  $G_f(u)-G_f(u^\star)=G_0(u-u^\star)$ and $G_f(u^\star)=u^\star$, so $G_f$
+  contracts the pair $(u,u^\star)$ by $\rho$; apply Theorem~\ref{thm:T7}.
+\end{proof}

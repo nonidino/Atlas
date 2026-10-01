@@ -1,0 +1,161 @@
+\chapter{Contractions: convergence and certificates}
+
+A coupled iteration is a map $T$ on the data exchanged at the interfaces: one
+sweep sends the current interface data $a$ to $T(a)$, and the coupled answer is
+a point the sweep leaves unchanged, $T(a^\star)=a^\star$.  The two statements of
+this chapter are the two questions one can ask of such a map.  How far is the
+answer of a learned iteration from the classical one (T1)?  And how far is the
+state I am holding from the answer (T7)?  They are the same inequality read two
+ways.
+
+\section{T1: a perturbed contraction}
+
+\paragraph{In plain words.}
+Replace the classical coupling map by a learned one.  If the learned map shrinks
+every distance by a factor $\rho<1$, and at the classical answer it differs from
+the classical map by at most $\delta$, then the learned iteration has exactly
+one answer, it reaches that answer geometrically from any starting guess, and
+that answer is within $\delta/(1-\rho)$ of the classical one.  Nothing is
+assumed about how the learned map was trained.  The classical map need not be a
+contraction; it only needs to have an answer.
+
+\begin{theorem}[T1, perturbed contraction]\label{thm:T1}
+  \lean{Atlas.perturbed_contraction}
+  \leanok
+  Let $(X,d)$ be a complete metric space and $T_c,T_l:X\to X$.  Suppose
+  \begin{enumerate}
+    \item $T_c(a_c)=a_c$ for some $a_c\in X$;
+    \item $d(T_l x,T_l y)\le\rho\,d(x,y)$ for all $x,y\in X$, with $0\le\rho<1$;
+    \item $d(T_l a_c,\,T_c a_c)\le\delta$.
+  \end{enumerate}
+  Then there is a point $a_l\in X$ such that
+  \begin{enumerate}
+    \item $T_l(a_l)=a_l$, and $a_l$ is the only fixed point of $T_l$;
+    \item $d(T_l^{\,k}x_0,\,a_l)\le\rho^{k}\,d(x_0,a_l)$ for every $x_0\in X$ and every $k\in\N$;
+    \item $d(a_l,a_c)\le\dfrac{\delta}{1-\rho}$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  Existence and uniqueness of $a_l$ are Banach's fixed-point theorem
+  (Mathlib: \texttt{ContractingWith.fixedPoint}).  For the rate,
+  $T_l^{\,k}a_l=a_l$, so
+  $d(T_l^{\,k}x_0,a_l)=d(T_l^{\,k}x_0,T_l^{\,k}a_l)\le\rho^k d(x_0,a_l)$ by
+  applying hypothesis 2 $k$ times.  For the distance, the triangle inequality
+  gives
+  \[
+    d(a_l,a_c)\le d(T_la_l,T_la_c)+d(T_la_c,a_c)\le\rho\,d(a_l,a_c)+\delta,
+  \]
+  using $T_ca_c=a_c$ in hypothesis 3, and $1-\rho>0$.
+\end{proof}
+
+\begin{corollary}[T1 with the defect bounded everywhere]\label{cor:T1-uniform}
+  \lean{Atlas.perturbed_contraction_uniform}
+  \leanok
+  \uses{thm:T1}
+  The conclusion of Theorem~\ref{thm:T1} holds if hypothesis 3 is replaced by
+  $d(T_lx,T_cx)\le\delta$ for all $x\in X$.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T1}
+  Take $x=a_c$.
+\end{proof}
+
+\begin{proposition}[T1 is sharp]\label{prop:T1-sharp}
+  \lean{Atlas.perturbed_contraction_sharp}
+  \leanok
+  For every $\rho\in[0,1)$ and $\delta\ge0$ there are maps $T_c,T_l:\R\to\R$
+  satisfying the hypotheses of Corollary~\ref{cor:T1-uniform} whose fixed points
+  are exactly $\delta/(1-\rho)$ apart.
+\end{proposition}
+
+\begin{proof}
+  $T_c(x)=\rho x$ and $T_l(x)=\rho x+\delta$, with fixed points $0$ and
+  $\delta/(1-\rho)$.
+\end{proof}
+
+\section{T7: the a-posteriori certificate}
+
+\paragraph{In plain words.}
+A solver hands back a state $w$.  Its residual, how far one more classical step
+moves it, can be computed.  Its error, how far it is from the settled state
+$w^\star$, cannot, because $w^\star$ is unknown.  The certificate bounds the
+second by the first: if the step brings $w$ closer to $w^\star$ by a factor
+$L<1$, the error is at most the residual divided by $1-L$.
+
+\paragraph{What the constant must be.}
+The factor $L$ must hold \emph{at the state being certified}.  A constant read
+off one approach to $w^\star$ says nothing about a state that approaches from
+another direction.  For a linear step this is exact: the smallest constant that
+certifies every state is an operator norm, a supremum over all directions
+(Theorem~\ref{thm:T7-opnorm}).  The project met this the hard way: a constant
+read off one march under-bounded two of seven solver arms on its largest test.
+
+\begin{theorem}[T7, the certificate]\label{thm:T7}
+  \lean{Atlas.certificate}
+  \leanok
+  Let $(X,d)$ be a metric space, $\Phi:X\to X$, and $w,w^\star\in X$ with
+  $\Phi(w^\star)=w^\star$.  If $d(\Phi w,\Phi w^\star)\le L\,d(w,w^\star)$ with
+  $L<1$, then
+  \[
+    d(w,w^\star)\le\frac{d(w,\Phi w)}{1-L}.
+  \]
+\end{theorem}
+
+\begin{proof}
+  $d(w,w^\star)\le d(w,\Phi w)+d(\Phi w,\Phi w^\star)\le d(w,\Phi w)+L\,d(w,w^\star)$,
+  and $1-L>0$.
+\end{proof}
+
+\begin{corollary}[T7, Banach's form]\label{cor:T7-banach}
+  \lean{Atlas.certificate_of_contraction}
+  \leanok
+  \uses{thm:T7}
+  Let $X$ be a non-empty complete metric space and
+  $d(\Phi x,\Phi y)\le L\,d(x,y)$ for all $x,y$, with $0\le L<1$.  Then $\Phi$
+  has a unique fixed point $w^\star$, and
+  $d(w,w^\star)\le d(w,\Phi w)/(1-L)$ for every $w\in X$.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T7}
+  Banach's theorem gives $w^\star$; Theorem~\ref{thm:T7} applies to every $w$.
+  (Mathlib: \texttt{ContractingWith.dist\_fixedPoint\_le}.)
+\end{proof}
+
+\begin{theorem}[T7 for a linear step: the constant is an operator norm]\label{thm:T7-opnorm}
+  \lean{Atlas.certificate_constant_is_opNorm}
+  \leanok
+  Let $E$ be a real normed space, $A:E\to E$ bounded and linear, $b\in E$, and
+  $\Phi(w)=Aw+b$.  Suppose $I-A$ has a bounded inverse $B$, and
+  $\Phi(w^\star)=w^\star$.  Then
+  \begin{enumerate}
+    \item $\norm{w-w^\star}\le\norm{B}\,\norm{\Phi(w)-w}$ for every $w\in E$;
+    \item if $C\ge0$ and $\norm{w-w^\star}\le C\,\norm{\Phi(w)-w}$ for every
+      $w\in E$, then $\norm{B}\le C$.
+  \end{enumerate}
+  So $\norm{(I-A)^{-1}}$ is the least constant that certifies every state.
+\end{theorem}
+
+\begin{proof}
+  $\Phi(w)-w=(A-I)(w-w^\star)$, so $w-w^\star=-B(\Phi(w)-w)$, which gives 1.
+  For 2, given $x\in E$ let $w=w^\star+Bx$.  Then
+  $\Phi(w)-w=(A-I)Bx=-x$, and the hypothesis reads $\norm{Bx}\le C\norm{x}$.
+  This holds for every $x$, so $\norm{B}\le C$.
+\end{proof}
+
+\begin{example}[The two-mode example]\label{ex:T7-two-mode}
+  \lean{Atlas.certificate_two_mode_example}
+  \leanok
+  For $\Phi(x,y)=(0.6\,x,\ 0.95\,y)$ on $\R^2$ with the maximum norm, whose
+  settled state is $0$: the error of $(1,0)$ is $2.5$ times its residual, and
+  the error of $(0,1)$ is $20$ times its residual.  A constant of $2.5$, read
+  off a march that stays in the fast mode, under-bounds the slow mode by a
+  factor of eight.
+\end{example}
+
+\begin{remark}
+  T1's distance bound is T7 applied to the learned map at the classical answer:
+  the residual of $a_c$ under $T_l$ is at most $\delta$.
+\end{remark}

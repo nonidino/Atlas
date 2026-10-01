@@ -1,0 +1,19 @@
+% Macros used only by the printed version.
+%
+% Dummy versions of the macros plasTeX provides for the web version (the
+% dependency graph, the links to Lean), so the pdf compiler ignores them.
+\newcommand{\lean}[1]{}
+\newcommand{\discussion}[1]{}
+\newcommand{\leanok}{}
+\newcommand{\mathlibok}{}
+\newcommand{\notready}{}
+% Check that the arguments of \uses and \proves are real labels, by invisible
+% references: LaTeX warns if a label is undefined and prints nothing.
+\ExplSyntaxOn
+\NewDocumentCommand{\uses}{m}
+ {\clist_map_inline:nn{#1}{\vphantom{\ref{##1}}}%
+  \ignorespaces}
+\NewDocumentCommand{\proves}{m}
+ {\clist_map_inline:nn{#1}{\vphantom{\ref{##1}}}%
+  \ignorespaces}
+\ExplSyntaxOff

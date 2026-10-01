@@ -1,0 +1,10 @@
+# Lake's build output and the unpacked Mathlib cache (several gigabytes).
+# On the owner's machine the build runs outside OneDrive (scripts/lean_build.py),
+# so this folder normally does not exist here at all; the rule is for anyone
+# who runs `lake build` in place.
+.lake/
+
+# leanblueprint's generated pages, and plasTeX's auxiliary file.
+blueprint/web/
+blueprint/print/
+*.paux

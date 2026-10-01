@@ -1,0 +1,223 @@
+\chapter{The master error bound}
+
+A simulation marches $u^{n+1}=\Phi(u^n)$, where $\Phi$ is one whole coupled
+macro-step.  The true solution sampled at the same instants is $u^{n,\star}$.
+This chapter bounds the error $e^n=u^n-u^{n,\star}$ after $N$ steps.
+
+The law is the same for a single monolithic network and for a coupled system.
+What a decomposition changes is the constants: the one-step defect gains two
+terms from the coupling, and the stability constant $L$ factors over the parts.
+
+\section{T4: recursion, split, accumulation, regimes}
+
+\paragraph{In plain words.}
+\begin{itemize}
+  \item \emph{Recursion.}  The new error is the old error carried through one
+    step, plus the one-step defect: what a single step does wrong when it starts
+    from the true solution.
+  \item \emph{Three-term split.}  With a coupling, the defect is a sum of three
+    parts: the experts being wrong even when handed the true interface data
+    ($\tau$), the interface problem being posed with the wrong operator
+    ($\sigma$), and the interface solve being stopped early ($\gamma$).
+    Iterating the coupling reduces $\gamma$ and nothing else.
+  \item \emph{Accumulation.}  If one step magnifies a difference by at most $L$,
+    the error after $N$ steps is at most $L^N$ times the initial error, plus
+    every defect magnified by the steps that follow it.
+  \item \emph{Three regimes.}  With every defect at most $\delta$: the error
+    stays below $\delta/(1-L)$ for all time when $L<1$; it grows at most
+    linearly, $N\delta$, when $L=1$; the bound grows exponentially when $L>1$.
+\end{itemize}
+
+\begin{lemma}[T4a, the exact error recursion]\label{lem:T4-recursion}
+  \lean{Atlas.error_recursion}
+  \leanok
+  Let $E$ be a normed space, $\Phi:E\to E$, and $u,u^\star:\N\to E$ with
+  $u^{n+1}=\Phi(u^n)$.  Then for every $n$
+  \[
+    u^{n+1}-u^{n+1,\star}
+      =\bigl[\Phi(u^n)-\Phi(u^{n,\star})\bigr]
+      +\bigl[\Phi(u^{n,\star})-u^{n+1,\star}\bigr].
+  \]
+  The second bracket is the one-step defect $d^{n+1}$.
+\end{lemma}
+
+\begin{proof}
+  Add and subtract $\Phi(u^{n,\star})$.
+\end{proof}
+
+\begin{lemma}[T4b, the three-term split]\label{lem:T4-split}
+  \lean{Atlas.defect_split}
+  \leanok
+  Let $\Phi_\mu:E\to E$ be the composed step forced to use the interface datum
+  $\mu$, and $\mathcal S:E\to E$ the exact evolution.  For any three data
+  $\lambda^\star$, $\lambda^\dagger$, $\lambda^{(k)}$ and any state $v$,
+  \[
+    \Phi_{\lambda^{(k)}}(v)-\mathcal S(v)
+    =\underbrace{\Phi_{\lambda^\star}(v)-\mathcal S(v)}_{\tau}
+    +\underbrace{\Phi_{\lambda^\dagger}(v)-\Phi_{\lambda^\star}(v)}_{\sigma}
+    +\underbrace{\Phi_{\lambda^{(k)}}(v)-\Phi_{\lambda^\dagger}(v)}_{\gamma}.
+  \]
+\end{lemma}
+
+\begin{proof}
+  The sum telescopes.
+\end{proof}
+
+\begin{lemma}[T4c, accumulation]\label{lem:T4-accumulation}
+  \lean{Atlas.accumulation}
+  \leanok
+  Let $L\ge0$ and $e,d:\N\to\R$ with $e_{n+1}\le L\,e_n+d_{n+1}$ for all $n$.
+  Then for every $N$
+  \[
+    e_N\le L^N e_0+\sum_{n=1}^{N}L^{N-n}d_n .
+  \]
+\end{lemma}
+
+\begin{proof}
+  Induction on $N$.  The step multiplies the bound for $N$ by $L\ge0$ and adds
+  $d_{N+1}$.
+\end{proof}
+
+\begin{theorem}[T4, the master bound]\label{thm:T4}
+  \lean{Atlas.master_bound}
+  \leanok
+  \uses{lem:T4-recursion, lem:T4-accumulation}
+  Let $u^{n+1}=\Phi(u^n)$, and suppose
+  $\norm{\Phi(u^n)-\Phi(u^{n,\star})}\le L\,\norm{u^n-u^{n,\star}}$ for every
+  $n$, with $L\ge0$.  Then for every $N$
+  \[
+    \norm{u^N-u^{N,\star}}\le L^N\norm{u^0-u^{0,\star}}
+      +\sum_{n=1}^{N}L^{N-n}\,\norm{\Phi(u^{n-1,\star})-u^{n,\star}} .
+  \]
+  The stability hypothesis is needed only along the two trajectories.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T4-recursion, lem:T4-accumulation}
+  Take norms in Lemma~\ref{lem:T4-recursion} and apply
+  Lemma~\ref{lem:T4-accumulation} to $e_n=\norm{u^n-u^{n,\star}}$.
+\end{proof}
+
+\begin{corollary}[T4 with the three terms named]\label{cor:T4-three}
+  \lean{Atlas.master_bound_three_terms}
+  \leanok
+  \uses{thm:T4, lem:T4-split}
+  Let the composed step be $\Phi(v)=\Phi_{\lambda^{(k)}(v)}(v)$, where
+  $\lambda^{(k)}(v)$ is the datum the interface solver returns at the state $v$.
+  Under the hypotheses of Theorem~\ref{thm:T4}, for any sequences of data
+  $\lambda^{\star}_n$, $\lambda^{\dagger}_n$,
+  \[
+    \norm{u^N-u^{N,\star}}\le L^N\norm{u^0-u^{0,\star}}
+      +\sum_{n=1}^{N}L^{N-n}\bigl(\tau^n+\sigma^n+\gamma^n\bigr),
+  \]
+  with $\tau^n$, $\sigma^n$, $\gamma^n$ the norms of the three terms of
+  Lemma~\ref{lem:T4-split} at $v=u^{n-1,\star}$ and
+  $\mathcal S(u^{n-1,\star})=u^{n,\star}$.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T4, lem:T4-split}
+  Lemma~\ref{lem:T4-split} and the triangle inequality bound each defect by
+  $\tau^n+\sigma^n+\gamma^n$; the weights $L^{N-n}$ are non-negative.
+\end{proof}
+
+\begin{corollary}[T4, the contractive regime]\label{cor:T4-contractive}
+  \lean{Atlas.master_bound_contractive}
+  \leanok
+  \uses{thm:T4}
+  If moreover $0\le L<1$ and every one-step defect has norm at most $\delta$,
+  then $\norm{u^N-u^{N,\star}}\le L^N\norm{u^0-u^{0,\star}}+\delta/(1-L)$ for
+  every $N$.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T4}
+  $\sum_{n=1}^{N}L^{N-n}=(1-L^N)/(1-L)\le1/(1-L)$.
+\end{proof}
+
+\begin{corollary}[T4, the non-expansive regime]\label{cor:T4-nonexpansive}
+  \lean{Atlas.master_bound_nonexpansive}
+  \leanok
+  \uses{thm:T4}
+  If $L=1$ and every one-step defect has norm at most $\delta$, then
+  $\norm{u^N-u^{N,\star}}\le\norm{u^0-u^{0,\star}}+N\delta$.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T4}
+  Every weight is $1$.
+\end{proof}
+
+\begin{corollary}[T4, the expansive regime]\label{cor:T4-expansive}
+  \lean{Atlas.master_bound_expansive}
+  \leanok
+  \uses{thm:T4}
+  If $L>1$ and every one-step defect has norm at most $\delta$, then
+  $\norm{u^N-u^{N,\star}}\le L^N\norm{u^0-u^{0,\star}}
+  +\dfrac{L^N-1}{L-1}\,\delta$.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T4}
+  The geometric sum.
+\end{proof}
+
+\begin{proposition}[The regimes are attained]\label{prop:T4-attained}
+  \lean{Atlas.master_bound_attained}
+  \leanok
+  For every $L,\delta\in\R$ and every $N$ there are real sequences with
+  $u^{n+1}=L\,u^n$, a one-step defect equal to $\delta$ at every step and no
+  initial error, whose error after $N$ steps is exactly
+  $\sum_{i<N}L^i\,\delta$.
+\end{proposition}
+
+\begin{proof}
+  $u^n=0$ and $u^{n+1,\star}=L\,u^{n,\star}-\delta$ with $u^{0,\star}=0$.
+\end{proof}
+
+\section{T4e: the transmission term}
+
+\paragraph{In plain words.}
+The term $\sigma$ comes from solving the interface problem with an approximate
+operator $\tilde\Lambda$ in place of the exact one $\Lambda$.  Iterating does
+not reduce it.  It is bounded by how wrong the operator is, amplified by
+$1/\beta$, where $\beta$ is the smallest stretch of $\tilde\Lambda$ (its
+smallest singular value).  An ill-conditioned interface makes the same operator
+error cost more.
+
+\begin{lemma}[T4e, the trace perturbation]\label{lem:T4e-trace}
+  \lean{Atlas.trace_perturbation}
+  \leanok
+  Let $M,F$ be real normed spaces and $\Lambda,\tilde\Lambda:M\to F$ bounded and
+  linear, with $\beta\norm{x}\le\norm{\tilde\Lambda x}$ for all $x$ and some
+  $\beta>0$.  If $\Lambda\lambda^\star=\chi$ and
+  $\tilde\Lambda\lambda^\dagger=\chi$, then
+  \[
+    \norm{\lambda^\dagger-\lambda^\star}
+      \le\frac{\norm{\Lambda-\tilde\Lambda}\,\norm{\lambda^\star}}{\beta}.
+  \]
+\end{lemma}
+
+\begin{proof}
+  $\tilde\Lambda(\lambda^\dagger-\lambda^\star)=\chi-\tilde\Lambda\lambda^\star
+  =(\Lambda-\tilde\Lambda)\lambda^\star$, so
+  $\beta\norm{\lambda^\dagger-\lambda^\star}
+  \le\norm{\Lambda-\tilde\Lambda}\norm{\lambda^\star}$.
+\end{proof}
+
+\begin{corollary}[T4e, the transmission term]\label{cor:T4e-sigma}
+  \lean{Atlas.transmission_bound}
+  \leanok
+  \uses{lem:T4e-trace}
+  If moreover $\norm{\Phi_\mu(v)-\Phi_{\mu'}(v)}\le C_\mu\norm{\mu-\mu'}$ for all
+  data $\mu,\mu'$, then
+  \[
+    \norm{\Phi_{\lambda^\dagger}(v)-\Phi_{\lambda^\star}(v)}
+      \le\frac{C_\mu}{\beta}\,\norm{\Lambda-\tilde\Lambda}\,\norm{\lambda^\star}.
+  \]
+\end{corollary}
+
+\begin{proof}
+  \uses{lem:T4e-trace}
+  Compose the Lipschitz bound with Lemma~\ref{lem:T4e-trace}.
+\end{proof}
