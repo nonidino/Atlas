@@ -159,6 +159,9 @@ def compile_scheme(
     _l3_global_fields(ctx)
     _l4_transmission(ctx)
     scheme = _l5_l7_scheme(ctx)
+    # R10's case for pieces whose coupling supplies their elliptic solve's boundary
+    # data (W348): after the scheme, as R13, because it is about the scheme.
+    _r10_scheme(ctx, scheme)
     # R13 -- a directed cycle is a fixed-point problem, not a list of seams.
     # After the scheme, because the condition is about the scheme's iteration.
     _r13_directed_cycle(ctx, scheme)
@@ -240,6 +243,9 @@ class _Context:
     refused_claims: list[str] = field(default_factory=list)
     tau_undefined_seams: list[str] = field(default_factory=list)
     admissible_seams: set[str] = field(default_factory=set)
+    #: W348: cut embedded agents whose coupling supplies their elliptic solve's
+    #: boundary data; R10 decides them after the scheme (`_r10_scheme`).
+    r10_deferred: list[str] = field(default_factory=list)
     transmission: Transmission | None = None
     decomposition: Decomposition | None = None
 
@@ -1674,6 +1680,14 @@ def _r10_elliptic(ctx: _Context) -> None:
     all"*. The cleared agents are named in an admission rather than dropped, on
     W136's discipline -- a rule that quietly stops looking at an agent is the
     same failure in the direction that does not announce itself.
+
+    **W348, 2026-09-30: a cut piece whose coupling supplies its elliptic solve's
+    boundary data is decided after the scheme.**  It declares
+    ``elliptic_data_from_ports``, and whether the cut changes its operator then
+    depends on whether the scheme closes the interface problem, which is not
+    known here; `_r10_scheme` decides it, as R13 was placed after the scheme for
+    the same reason.  Every graph R10 was measured on declares nothing of the
+    kind and is refused here exactly as before.
     """
     rec, graph = ctx.record, ctx.graph
     if len(graph.agents) < 2:
@@ -1682,6 +1696,11 @@ def _r10_elliptic(ctx: _Context) -> None:
     embedded, sole = [], []
     for a in graph.agents:
         if a.capabilities.elliptic_subsolve is not EllipticSubsolve.EMBEDDED:
+            continue
+        if a.agent_id in cut and a.capabilities.elliptic_data_from_ports:
+            # W348: the coupling supplies this piece's boundary data, so whether
+            # the cut changes the operator depends on the scheme; decided there.
+            ctx.r10_deferred.append(a.agent_id)
             continue
         (embedded if a.agent_id in cut else sole).append(a.agent_id)
     incompressible_none = [a for a in graph.agents
@@ -1791,6 +1810,98 @@ def _r10_elliptic(ctx: _Context) -> None:
             subject=", ".join(lumped), quantity="tau",
             r10_premise="lumped: stencil_radius=0, no spatial operator",
         )
+
+
+def _r10_scheme(ctx: _Context, scheme) -> None:
+    """R10's case for a cut piece whose coupling supplies its elliptic solve's data.
+
+    **W348, 2026-09-30.**  R10 refuses a cut agent that embeds a global elliptic
+    solve because the cut changes the operator: the piece closes its local
+    problem with data of its own, and no coupling removes the difference.  It
+    was measured where that is true -- Tier 0's four windows, whose pressure
+    Poisson problem took homogeneous Neumann data on the cut, and CS-S1 -- and
+    both keep their refusal at L2, because neither declares
+    ``elliptic_data_from_ports``.
+
+    A piece that declares it takes every datum on its artificial boundary from
+    the coupling.  The cut then restricts the operator instead of changing it,
+    IF the scheme closes the interface problem: for a linear problem the
+    solution of the substructured system, which a direct Schur solve computes,
+    and every fixed point of restricted additive Schwarz or Dirichlet-Neumann
+    built from exact local solves, is the undivided discrete solution (for RAS,
+    Frommer & Szyld, SIAM J. Numer. Anal. 39, 2001; theorem T3 of the formal
+    proofs plan, not yet machine-checked).  So R10 reads the scheme, as R13
+    does, and has three outcomes:
+
+      * ``direct-schur`` -- the interface system is solved in one shot: decertify;
+      * a sweeping accelerator with a stated ``eps_tol`` -- what is left is the
+        iteration's truncation, bounded by the tolerance: decertify;
+      * anything else -- no tolerance to iterate to, so the pieces solve with
+        data their neighbours have not settled and R10's error stands: refuse.
+
+    **Decertified, not admitted**, for the reasons the message names: the port
+    declaration cannot be checked here, the theorem is about a LINEAR problem and
+    linearity is declared rather than probed, and keeping the solve embedded has a
+    measured cost (W168: 149x in coupling sweeps on CS-S1) that is a cost, not an
+    error.  Found on the workbench: `wall-2`, `plate-insert` and `bracket-2`
+    agreed with the full domain to 3.6e-9 or better while R10 refused them, in
+    compile records whose own scheme was already ``direct-schur``.
+    """
+    ids = ctx.r10_deferred
+    if not ids:
+        return
+    rec = ctx.record
+    acc = getattr(scheme, "accelerator", None)
+    eps = getattr(scheme, "eps_tol", None)
+    who = (f"{len(ids)} agents declare elliptic_subsolve=embedded on a cut region "
+           "(each shares its governing_family with another agent), and each declares "
+           "elliptic_data_from_ports: every datum its embedded solve uses on its "
+           "artificial boundary arrives through its ports, so the piece closes its "
+           "local problem with its neighbours' values and not with data of its own "
+           "(Tier 0's windows closed theirs with homogeneous Neumann data: R10's 99.8%)")
+    cost = ("**Decertified, not admitted**: the port declaration cannot be checked "
+            "here, and the theorem is about a LINEAR problem, which is declared, not "
+            "probed. What keeping the solve embedded costs is a cost, not an error: "
+            "measured on one graph at one state (W168, CS-S1 2026-09-09), 149x in "
+            "coupling sweeps -- 466 against 7 to one tolerance, 59.8 s against 0.62 -- "
+            "against exposing it. W348, 2026-09-30")
+    if acc is Accelerator.DIRECT_SCHUR:
+        rec.decertify(
+            "L5", "R10",
+            who + ". This scheme solves the interface system directly "
+            "(accelerator=direct-schur): for a linear problem the solution of the "
+            "substructured system, each piece with the interface data it is given, "
+            "IS the undivided discrete solution, so the cut restricts the operator "
+            "instead of changing it and R10's error does not arise. " + cost,
+            subject=", ".join(ids), quantity="tau", accelerator=acc.value,
+            r10_premise="ports: the interface solved directly",
+        )
+        return
+    if acc in SWEEPING_ACCELERATORS and eps is not None and eps > 0:
+        rec.decertify(
+            "L5", "R10",
+            who + f". This scheme iterates the coupling (accelerator={acc.value}) to "
+            f"a stated tolerance, eps_tol = {eps:.4g}: every fixed point of an "
+            "iterated linear coupling built from exact local solves -- restricted "
+            "additive Schwarz, Dirichlet-Neumann -- is the undivided discrete "
+            "solution (for RAS, Frommer & Szyld, SIAM J. Numer. Anal. 39, 2001), so "
+            "what is left is the iteration's truncation, bounded by the tolerance, "
+            "and not R10's error. " + cost,
+            subject=", ".join(ids), quantity="tau", accelerator=acc.value,
+            eps_tol=float(eps), r10_premise="ports: iterated to a stated tolerance",
+        )
+        return
+    rec.refuse(
+        "L5", "R10",
+        who + ". But this scheme neither solves the interface directly nor iterates "
+        f"it to a stated tolerance (accelerator={acc.value if acc else 'none'}, "
+        f"eps_tol={'undefined' if eps is None else f'{eps:.4g}'}), so each piece "
+        "solves with data its neighbours have not settled, and the cut changes the "
+        "operator: " + RULES["R10"] + ". Solve the interface directly, or state the "
+        "tolerance the coupling is iterated to",
+        subject=", ".join(ids), quantity="tau",
+        accelerator=acc.value if acc else None,
+    )
 
 
 #: Accelerators that reach the interface solution by ITERATING on it, so a

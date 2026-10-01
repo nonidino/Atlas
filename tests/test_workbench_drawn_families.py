@@ -327,17 +327,20 @@ def test_a_farm_domain_that_misses_the_outlet_is_refused():
 @pytest.mark.parametrize("key, verdict", [
     ("ring-film", "admit-uncertified"), ("river-bend", "admit-uncertified"),
     ("sound-lens", "admit-uncertified"), ("cooled-winding", "admit-uncertified"),
-    ("plate-hole", "refuse"), ("s-channel", "refuse")])
+    ("plate-hole", "admit-uncertified"), ("s-channel", "admit-uncertified")])
 def test_every_drawn_example_compiles_to_the_compilers_verdict(key, verdict):
     """Every seam probed through the family's own arithmetic on the drawn cells (the
     river's compile divided by its zero depth past the banks until this test); the
-    iterated one-physics pieces refuse at R10 alone, as their rectangles do (W348)."""
+    iterated one-physics pieces are decertified by R10 after the scheme, as their
+    rectangles are (W348, 2026-09-30; refused at L2 before)."""
     from atlas.workbench.compile import compile_case
     s = compile_case(example_case(key))
     assert s.refused_before is None and s.verdict == verdict, (s.verdict, s.other[:3])
     assert s.seams and all(sv.verdict in ("admit", "admit-uncertified") for sv in s.seams)
-    if verdict == "refuse":
-        assert [r["rule"] for r in s.other if r["verdict"] == "refuse"] == ["R10"]
+    assert not any(r["verdict"] == "refuse" for r in s.other)
+    if key in ("plate-hole", "s-channel"):
+        assert [(r["layer"], r["verdict"]) for r in s.other if r["rule"] == "R10"] == [
+            ("L5", "admit-uncertified")]                  # W348
 
 
 def test_the_split_and_the_drawn_farm_are_refused_before_the_compiler():

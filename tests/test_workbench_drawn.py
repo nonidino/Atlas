@@ -254,12 +254,16 @@ def test_the_runner_measures_a_drawn_case_on_the_domain_only():
 
 @pytest.mark.parametrize("key", ["bend-3", "insert-round"])
 def test_the_drawn_examples_compile_to_r10_as_their_rectangles_do(key):
-    """Iterated one-physics pieces refuse at R10 whatever their shape (W348); every
-    seam is admitted, and the bend declares no cross-point (only neighbours overlap)."""
+    """Iterated one-physics pieces are decertified by R10 after the scheme whatever
+    their shape, as their rectangles are (W348, 2026-09-30; refused at L2 before);
+    every seam is admitted, and the bend declares no cross-point (only neighbours
+    overlap)."""
     from atlas.workbench.compile import compile_case
     s = compile_case(example_case(key))
-    assert s.refused_before is None and s.verdict == "refuse"
-    assert [r["rule"] for r in s.other if r["verdict"] == "refuse"] == ["R10"]
+    assert s.refused_before is None and s.verdict == "admit-uncertified"
+    assert [(r["layer"], r["verdict"]) for r in s.other if r["rule"] == "R10"] == [
+        ("L5", "admit-uncertified")]
+    assert not any(r["verdict"] == "refuse" for r in s.other)
     assert s.seams and all(sv.verdict in ("admit", "admit-uncertified") for sv in s.seams)
     assert s.cross_points == ()
 

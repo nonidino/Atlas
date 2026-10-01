@@ -315,6 +315,24 @@ Several fast examples in [[demo-fast-examples-plan]] are steady elliptic problem
 
 **Revised 2026-09-30, when the chats were planned to run at the same time** ([[00-proposal-workstreams]] §4): **the demo chat owns the R10 change**, because its fast examples need it and the compiler is code it already tests. It cites T3 by its classical source, the fixed-point consistency of restricted additive Schwarz (Frommer & Szyld, *SIAM J. Numer. Anal.* 39, 2001), and switches to the Lean theorem's name when the proofs chat has checked it.
 
+**Done, 2026-09-30 (the demo chat's step 5): option (a).**
+- **A piece now declares where its embedded solve's boundary data comes from** (`ExpertCapabilities.elliptic_data_from_ports`, false by default and written to a record only when true). The workbench's style-B and style-C pieces declare it: each is re-solved with its neighbours' values on its cut until the interface agrees. Tier 0's windows could not have: their pressure Poisson problem took homogeneous Neumann data on the cut.
+- **R10 decides a cut piece that declares it after the scheme** (`compiler._r10_scheme`), as R13 is decided:
+  - a `direct-schur` scheme decertifies;
+  - a sweeping accelerator with a stated $\varepsilon_{\text{tol}}$ decertifies, citing Frommer & Szyld (2001);
+  - a scheme with neither refuses, with R10's own sentence.
+
+  The decertification names W168's cost, $149\times$ in coupling sweeps, as a cost and not an error. [[formal-proofs-plan]] shows no Lean written yet, so the classical source is cited.
+- **The negative controls, measured** (`scripts/w348_controls.py`, `out/workbench/records/w348/`):
+  - Tier 0's four windows as built, and CS-S1 with the pressure solve embedded, still refuse at `L2/R10`; neither declares the flag;
+  - `wall-2` with the declaration withdrawn is refused at L2 as before (a test).
+- **The census** (`scripts/w348_census.py`, a pytest plugin over the full suite): 307 compiles before, 311 after (the 4 more are the new test's).
+  - **Only the intended rows moved**: the workbench's 9 compiles of its iterated conduction and elasticity graphs, each from `L2/R10` refuse to `L5/R10` decertify, and nothing else.
+  - Four front-wing compiles were credited to different tests, because a compile shared within a process belongs to the test that runs it first and the new test file regrouped the suite. Paired by graph, their verdicts and decisions are identical (`out/workbench/records/w348/census/`).
+  - The suite after the change: 2262 passed, 0 failed (on battery, 2703 s).
+- **The W189 byte control** (`scripts/w348_byte_control.py`): HEAD's compiler against the working tree's, with the same hash seed; all 40 artifacts are identical.
+- **The seven examples that refused now compile `admit-uncertified`**, with R10 at L5: the wall, the insert, the bracket, the bend, the round insert, the S-channel and the plate with a hole.
+
 ---
 
 ## 6. Build order for the next chat
@@ -330,6 +348,24 @@ Several fast examples in [[demo-fast-examples-plan]] are steady elliptic problem
 8. The installer (§4.1), verified on a fresh clone on Windows and on macOS.
 
 **O1 and O2 are decided** (§1.3, §4). The chat's own prompt is [[proposal-chat-prompts]] §1.
+
+### 6.1 The demo chat's eight steps (2026-09-30)
+
+The chat's prompt turned the order above into eight steps, each one commit, with a report to the owner after each.
+
+| step | what it does | done when | state |
+|---|---|---|---|
+| 1. Reproduce | the forked river and the crossing hole, in the served page; §2.2 and §3.2 corrected | both recorded | done, `0588c3c` |
+| 2. The header (item 1.1) | a simulation-type selector replaces the case's name, and a new type starts a new case that one Undo restores; name and description leave the case file (`case@0.6`, with a migration); *Case > Start over*; the Examples dialog leaves the page | §1.5 | done, `31ee474` |
+| 3. Holes (item 1.3) | holes may cross the outline and reach past the grid | §3.6 | done, `5c9f8b3` |
+| 4. The fork (item 1.2) | the flow as the along coordinate, each connected band a window, spectral bisection for other branched shapes, the dead-branch warning and its Fix, the example `river-fork` | §2.5 | done, `2dec7e9` |
+| 5. W348 | R10's case for a cut embedded family moves after `_l5_l7_scheme`. Where the coupling supplies the elliptic solve's boundary data and is solved directly (`direct-schur`) or iterated to a stated tolerance, the graph is decertified with W168's cost instead of refused. It cites Frommer & Szyld (2001), and T3's Lean name once [[formal-proofs-plan]] shows it checked | Tier 0's four windows and CS-S1 still refuse, measured; the refusal set of every graph the suite compiles, diffed before and after, moves only in the intended rows; the W189 byte control holds; the pinned verdicts are updated | done (§5) |
+| 6. Fast examples (item 1.4) | micro-benchmarks first: does P (parallel pieces) scale on threads, does scipy's `splu` release the GIL, and where does each family's core leave cache. Then the bars are registered in each family module before the first timed run; a sweep; a confirmation run from a fresh start; the header's *Fast example* button, with *More examples* under it (O1); each card's mechanism line and O3's fixed line; a [[showcase-gallery]] section | [[demo-fast-examples-plan]]'s gates | |
+| 7. The installer (O2) | `run.cmd` (Windows) and `run.sh` (macOS): a `.venv`; pinned requirements and constraints; torch CPU-only and optional; Gmsh optional, from PyPI; the build repository's solvers vendored, with `run.py` setting their paths; a self-test that asserts where each solver was loaded from and opens the served page. The builder refuses NeuberNet and Poseidon's weights | §4.1, on a fresh clone on Windows | |
+| 8. The learned case (item 1.5) | a random network's step is timed first (step 0); G1–G6 and the held-out split are registered before any data exists. Then the data is generated, a GPU rented, the network trained and the GPU destroyed, each announced with its expected time or cost (O6). It is evaluated once, built into a read-only case, and its weights are added to the installer | [[demo-learned-case-plan]] §5's gate, reported whatever it shows | |
+| End | [[gap-worklist]] W348–W351, the plan pages' status lines, [[showcase-gallery]], the workbench README, [[index]] and [[log]]; a short report per step | | |
+
+**The owner's answers, 2026-09-30.** The other two chats are not idle, but they are writing documentation and theory, with nothing running on the demo. Every timed record says so. No Mac is available, so `run.sh` is the chat's best guess. It follows the RaceLab bundle's macOS discipline (bash 3.2, `100755` in the index) and is **not verified on macOS**.
 
 ---
 

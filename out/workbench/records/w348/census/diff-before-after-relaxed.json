@@ -1,0 +1,313 @@
+{
+ "summary": {
+  "before": "before",
+  "after": "after",
+  "relaxed": true,
+  "compiles": [
+   307,
+   311
+  ],
+  "refusing": [
+   120,
+   114
+  ],
+  "moved": 9,
+  "only_before": 2,
+  "only_after": 6,
+  "graphs_moved": {
+   "workbench-conduction-2d": [
+    [
+     "refuse",
+     "admit-uncertified"
+    ]
+   ],
+   "workbench-elasticity-2d": [
+    [
+     "refuse",
+     "admit-uncertified"
+    ]
+   ]
+  },
+  "decisions_went": {
+   "L2/R10/refuse": 9
+  },
+  "decisions_came": {
+   "L5/R10/admit-uncertified": 9
+  },
+  "before_started": "2026-09-30 17:31:27",
+  "before_finished": "2026-09-30 17:40:02 exit 0 (515 s)",
+  "after_started": "2026-09-30 20:59:39",
+  "after_finished": "2026-09-30 21:44:42 exit 0 (2703 s)"
+ },
+ "moved": [
+  {
+   "test": "tests/test_workbench_cases.py::test_a_seam_is_a_real_response",
+   "graph": "workbench-conduction-2d",
+   "call": 0,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "steel, copper"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "steel, copper"
+    ]
+   ]
+  },
+  {
+   "test": "tests/test_workbench_cases.py::test_every_family_compiles_to_the_compilers_verdict",
+   "graph": "workbench-conduction-2d",
+   "call": 0,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "steel, copper"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "steel, copper"
+    ]
+   ]
+  },
+  {
+   "test": "tests/test_workbench_cases.py::test_every_family_compiles_to_the_compilers_verdict",
+   "graph": "workbench-conduction-2d",
+   "call": 1,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "F00, F10"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "F00, F10"
+    ]
+   ]
+  },
+  {
+   "test": "tests/test_workbench_cases.py::test_every_family_compiles_to_the_compilers_verdict",
+   "graph": "workbench-elasticity-2d",
+   "call": 0,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "clamp-side, tip-side"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "clamp-side, tip-side"
+    ]
+   ]
+  },
+  {
+   "test": "tests/test_workbench_cases.py::test_the_run_tab_shows_the_compile_per_seam",
+   "graph": "workbench-conduction-2d",
+   "call": 0,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "steel, copper"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "steel, copper"
+    ]
+   ]
+  },
+  {
+   "test": "tests/test_workbench_drawn.py::test_the_drawn_examples_compile_to_r10_as_their_rectangles_do",
+   "graph": "workbench-conduction-2d",
+   "call": 0,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "W1, W2, W3"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "W1, W2, W3"
+    ]
+   ]
+  },
+  {
+   "test": "tests/test_workbench_drawn.py::test_the_drawn_examples_compile_to_r10_as_their_rectangles_do",
+   "graph": "workbench-conduction-2d",
+   "call": 1,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "plate, insert"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "plate, insert"
+    ]
+   ]
+  },
+  {
+   "test": "tests/test_workbench_drawn_families.py::test_every_drawn_example_compiles_to_the_compilers_verdict",
+   "graph": "workbench-conduction-2d",
+   "call": 0,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "F00, F10, F20, F30"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "F00, F10, F20, F30"
+    ]
+   ]
+  },
+  {
+   "test": "tests/test_workbench_drawn_families.py::test_every_drawn_example_compiles_to_the_compilers_verdict",
+   "graph": "workbench-elasticity-2d",
+   "call": 0,
+   "verdict": [
+    "refuse",
+    "admit-uncertified"
+   ],
+   "went": [
+    [
+     "L2",
+     "R10",
+     "refuse",
+     "F00, F10"
+    ]
+   ],
+   "came": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified",
+     "F00, F10"
+    ]
+   ]
+  }
+ ],
+ "only_before": [
+  [
+   "tests/test_tier30_front_wing.py::test_the_envelope_check_is_bitwise_neutral_where_it_does_not_fire",
+   "front-wing-3x2-riding",
+   0
+  ],
+  [
+   "tests/test_tier30_front_wing.py::test_the_oriented_seam_operator_is_the_schemes_own_jacobian",
+   "front-wing-3x2-fixed-shape",
+   1
+  ]
+ ],
+ "only_after": [
+  [
+   "tests/test_tier30_front_wing.py::test_run_and_objective_decline_at_the_SAME_design_and_the_SAME_step",
+   "front-wing-3x2-riding",
+   0
+  ],
+  [
+   "tests/test_tier30_front_wing.py::test_the_envelope_check_is_bitwise_neutral_where_it_does_not_fire",
+   "front-wing-3x2-fixed-shape",
+   0
+  ],
+  [
+   "tests/test_w348_r10_after_scheme.py::test_a_sweeping_scheme_follows_its_tolerance",
+   "workbench-conduction-2d",
+   0
+  ],
+  [
+   "tests/test_w348_r10_after_scheme.py::test_tier0s_four_windows_as_built_still_refuse_at_L2",
+   "window-ns-2x2-as-built",
+   0
+  ],
+  [
+   "tests/test_w348_r10_after_scheme.py::test_wall2_is_decertified_after_the_scheme",
+   "workbench-conduction-2d",
+   0
+  ],
+  [
+   "tests/test_w348_r10_after_scheme.py::test_withdrawn_the_declaration_is_refused_at_L2_as_before",
+   "workbench-conduction-2d",
+   0
+  ]
+ ]
+}

@@ -339,6 +339,15 @@ class ExpertCapabilities:
     bc_time_varying: bool = False
     #: R10. See EllipticSubsolve: an embedded global sub-solve is not decomposable.
     elliptic_subsolve: EllipticSubsolve = EllipticSubsolve.NONE
+    #: **W348, 2026-09-30.**  True when every datum the embedded elliptic solve
+    #: uses on this agent's artificial boundary arrives through its ports, and the
+    #: composition re-solves the agent with it until the interface agrees: a
+    #: converged coupling then closes the local problem with the neighbours'
+    #: values, not with data of the agent's own.  Tier 0's windows did not -- their
+    #: pressure Poisson problem took homogeneous Neumann data on the cut whatever
+    #: the neighbours held, which is R10's 99.8%.  The default keeps R10's
+    #: refusal; True moves the agent's case after the scheme (`_r10_scheme`).
+    elliptic_data_from_ports: bool = False
     #: R2b / W46. Probed-DtN needs an implicit macro-step; see TimeDiscretization.
     time_discretization: TimeDiscretization = TimeDiscretization.UNKNOWN
     #: Cells the agent's stencil reaches per internal sub-step. With
@@ -573,7 +582,7 @@ class ExpertCapabilities:
         return missing
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        out = {
             "expert_id": self.expert_id,
             "weight_hash": self.weight_hash,
             "bc_channel": self.bc_channel.value,
@@ -598,6 +607,11 @@ class ExpertCapabilities:
             "probe_class": self.probe_class(),
             "ports": [p.as_dict() for p in self.ports],
         }
+        if self.elliptic_data_from_ports:
+            # W348: written only when declared, so every record from before it
+            # is byte-identical (the W189 control)
+            out["elliptic_data_from_ports"] = True
+        return out
 
 
 def zero_response(_port: str, trace: np.ndarray) -> np.ndarray:

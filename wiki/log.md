@@ -6994,3 +6994,16 @@ Item 1.2 of [[demo-finish-plan]].
 - continuity $2.2\times10^{-14}$.
 
 Its gallery row is in [[showcase-gallery]], its times not quoted. 294 workbench tests pass. **Added:** `tests/test_workbench_fork.py`, `out/workbench/records/demo-fork/`. **Changed:** `layout.py`, `spec.py` (the example, `Layout.how`), `starter.py`, `families/plume.py`, `app.py`, `runview.py`, `inspector.py`, the README, [[demo-finish-plan]], [[showcase-gallery]].
+
+## [2026-09-30] build | Demo step 5: W348 closed, R10 decides a piece its coupling feeds after the scheme
+
+[[gap-worklist]] W348, option (a); [[demo-finish-plan]] §5 has the record.
+- **A piece declares where its embedded solve's boundary data comes from** (`elliptic_data_from_ports`). The workbench's style-B and style-C pieces declare it.
+- **R10 decides such a cut piece after the scheme** (`compiler._r10_scheme`), as R13 is decided. `direct-schur`, or a sweep to a stated tolerance, decertifies with W168's cost, citing Frommer & Szyld (2001); a scheme with neither refuses. T3 in [[formal-proofs-plan]] is not yet machine-checked.
+
+**Measured, not assumed:**
+- **The negative controls:** Tier 0's four windows as built, and CS-S1 with the pressure solve embedded, still refuse at `L2/R10`.
+- **The census of every compile the suite makes**, 307 before and 311 after: only the workbench's 9 iterated conduction and elasticity compiles moved, from `L2/R10` refuse to `L5/R10` decertify. Four front-wing compiles were credited to other tests; paired by graph, their decisions are identical.
+- **W189's 40 artifacts** are byte-identical, HEAD's compiler against the working tree's.
+
+The seven examples that refused now compile `admit-uncertified`. The full suite: 2262 passed, 0 failed (on battery). **Added:** `scripts/w348_census.py`, `w348_census_plugin.py`, `w348_census_pairing.py`, `w348_controls.py`, `w348_byte_control.py`, `tests/test_w348_r10_after_scheme.py`, `out/workbench/records/w348/`. **Changed:** `atlas/capability.py`, `atlas/compiler.py`, the workbench's `compile.py`, `families/elasticity.py` and `runview.py`, three test files' pinned verdicts, the README, [[demo-finish-plan]], [[showcase-gallery]], [[gap-worklist]].

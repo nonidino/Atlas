@@ -397,6 +397,9 @@ def fv_graph(spec, f: fv.Field, *, family: str, port_type: str, scales: dict[str
             expert_id=n, ports=ports[n],
             bc_channel=BCChannel.DIRICHLET, bc_time_varying=True,
             elliptic_subsolve=EllipticSubsolve.EMBEDDED if implicit else EllipticSubsolve.NONE,
+            # W348: styles B and C re-solve each window with its neighbours' values
+            # on its cut faces until they agree; the window has no data of its own
+            elliptic_data_from_ports=bool(implicit) and style in ("B", "C"),
             time_discretization=(TimeDiscretization.IMPLICIT if implicit
                                  else TimeDiscretization.EXPLICIT),
             stencil_radius=1, substeps_per_macro_step=1,

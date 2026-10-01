@@ -260,11 +260,10 @@ Each port declares a real Fourier prolongation over its faces (up to 8 modes; on
 **Each seam's verdict is the worst of the compiler's decisions about it.** The page shows every rule that is less than `admit`, and the case's verdict is the compiler's own.
 
 **What the examples compile to** (the gallery page has the times and the rules):
-- `admit-uncertified`: the three farms, the plume, the plate on a circuit, the sound and the cooled block;
-- `refuse` at R10: the two-layer wall, the insert and the bracket. Each of their seams is admitted;
+- `admit-uncertified`: the three farms, the plume, the plate on a circuit, the sound, the cooled block, and, since W348 (2026-09-30), the two-layer wall, the insert and the bracket;
 - refused before the compiler: the heated strip.
 
-No case can earn a plain `admit`: the master bound's constants are unmeasured on every graph (W56). R10 refuses two embedded agents of one physics that cut its region. It does not read that styles B and C iterate until the pieces agree, and the Run step measures them within $3.6\times10^{-9}$ of the full domain or closer. The page says so beside the refusal and does not change it. The same compile records derive a direct Schur solve for the interface (`K_accelerator = direct-schur`), and R10, at L2, runs before that scheme exists. The question is open as W348 in the vault's gap worklist.
+No case can earn a plain `admit`: the master bound's constants are unmeasured on every graph (W56). **Until W348, R10 refused the wall, the insert and the bracket at L2**: two embedded agents of one physics cut its region, and the rule ran before the scheme existed. Their pieces take every datum on their cut from the coupling (`elliptic_data_from_ports`), and the compiled scheme solves the interface directly (`K_accelerator = direct-schur`). For a linear problem that is the undivided solution, so R10 now decides them after the scheme, at L5, and decertifies with the cost of keeping each solve inside its piece (W168's $149\times$ in sweeps) instead of refusing. The graphs R10 was measured on, Tier 0's four windows and CS-S1, still refuse at L2 (`scripts/w348_controls.py`). The Run step measures the pieces within $3.6\times10^{-9}$ of the full domain or closer.
 
 ## The showcase gallery
 
@@ -375,8 +374,8 @@ sees the domain's cells, with the exact outline over it.
 - **the round insert** (`insert-round`: Dirichlet-Neumann across a circle of cell
   faces, style C) agrees to $1.01\times10^{-10}$ and closes to
   $9.86\times10^{-12}$;
-- both compile with every seam admitted, and are refused at R10 alone, as their
-  rectangular counterparts are (W348).
+- both compile with every seam admitted, and R10 decertifies them after the scheme,
+  as it does their rectangular counterparts (W348).
 
 ## Holes anywhere (2026-09-30)
 
@@ -513,8 +512,8 @@ small marching-squares routine (`geometry.contour_lines`), so no new dependency.
 
 **The example**, `s-channel`: a steel channel drawn with splines, on four windows
 generated from its shape. It agrees with the full domain to $1.8\times10^{-9}$ of
-its span, threaded equals serial, and every seam is admitted. It is refused at R10
-alone (W348). Moving a vertex of its wall regenerates the windows to fit.
+its span, threaded equals serial, and every seam is admitted. R10 decertifies it
+after the scheme (W348). Moving a vertex of its wall regenerates the windows to fit.
 
 ## Drawn shapes in every family
 
@@ -617,6 +616,7 @@ projection lets a little velocity back into the solid each sub-step.
 | `compile.py` | the compile: a case's `CaseGraph` through its family's `case_graph`, the finite-volume window as an agent (`FVAgent`), seams from the geometry with Fourier prolongations, the declared cross-points, the verdict per seam, and the background job with its record |
 | `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven as the page drives it (a click is a Tap at `_on_tap`, a handle's drag the data Bokeh's `PointDrawTool` sends, a field a widget; helpers in `tests/workbench_ui.py`), every header control and menu action (nothing is left unbuilt), the status chip's list and its *Show me*, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
 | `tests/test_workbench_fv.py`, `tests/test_workbench_families.py` | the finite volumes against closed forms (a layered wall, a series circuit), one window equal to the full domain to the bit, styles B, C and D against the full domain, the unrelaxed Dirichlet–Neumann diverging exactly when $\rho>1$, both new families end to end, and the page's family, physics and materials controls |
+| `tests/test_w348_r10_after_scheme.py` | R10 after the scheme (W348): its three outcomes, `wall-2` decertified, the same graph refused at L2 with the declaration withdrawn, and Tier 0's four windows still refused |
 | `tests/test_workbench_starter.py` | the owner's first scenario in every family (ready to run once the shape is drawn, or the one thing only the person can decide said plainly), a new kind starting from its example's setup and one Undo restoring the old case, defaults that fill only what is missing, the Fix buttons one by one and all at once, every kind from the header ready to run and *Start over*, the windows fix at a Dirichlet-Neumann interface, a check that never raises, the canvas holding still while a shape is drawn, and the header holding what it simulates. `tests/test_workbench_shell.py` also pins case@0.6 (no name; an older file loses its own), *More examples*, the type switch and its one Undo with the file, and that no control shows a case name |
 | `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, the Run & results tab's per-seam table, and the gallery opening every example |
 
@@ -633,7 +633,7 @@ projection lets a little velocity back into the solid each sub-step.
 - **A drawn river's or channel's flow is a potential flow** (`flow.py`), with no viscosity and no inertia: it carries a scalar the right way round a bend, and does not separate. **The wind farm's drawn walls are penalized**, first order in the sub-step. **A drawn sound case reads no textbook reflection**: that needs two uniform media at a straight cut. Its energy and the pieces' agreement are checked.
 - **A drawn curve is resolved to the grid's cells.** The solvers see the cells whose centres a shape contains, so a curve is a staircase at the cell size. The canvas draws both, and on the bend the staircase moves the ring's heat flow by -0.97% from its continuum value. Body-fitted grids would remove that; they are not built.
 - **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not. The owner accepted this on 2026-09-29: the compile is its own step, and the two-minute rule is per run.
-- **R10 refuses the iterated one-physics cases** (styles B and C: the wall, the insert, the bracket), because it does not read whether a coupling iterates. The refusal is shown as the compiler gave it. Open as W348 in the vault's gap worklist.
+- **R10 decertifies the iterated one-physics cases rather than admitting them** (styles B and C: the wall, the insert, the bracket; W348). The pieces' declaration that the coupling supplies their boundary data cannot be checked by the compiler, and the fact it rests on, that the interface solution of a linear problem is the undivided one (T3 in the vault's formal-proofs plan), is cited from Frommer & Szyld (2001), not yet machine-checked.
 - **The starting values are stated guesses.** A river's inlet is the shape's leftmost edge and its outlet its rightmost, and so for a plate's electrodes, a structure's clamp and load, and a hot and a cold end. A river that runs another way needs its edges set by hand. Every guess is listed when it is made.
 - **Two things have no default**: a wind farm's air must reach the grid's left and right edges, and a cooled block needs its channel drawn. The problems list says so.
 - **A tool adds one shape**, then hands back to Select; there is no key that keeps it armed, so placing five rotors is five presses of *Place rotors*.

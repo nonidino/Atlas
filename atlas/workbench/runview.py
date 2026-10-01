@@ -669,15 +669,16 @@ def _compile_details(wb: "Workbench", job) -> pn.Card:
             body.append(pn.pane.Markdown("**About the graph, its agents and the run**",
                                          margin=(4, 10, 0, 10)))
             body.append(table_pane(pd.DataFrame(other), wrap=("message",)))
-        r10 = [r for r in s.other if r["rule"] == "R10" and r["verdict"] == "refuse"]
-        if r10 and job.spec.coupling.style in ("B", "C"):
+        if any(r["rule"] == "R10" and r["layer"] == "L5" and r["verdict"] ==
+               "admit-uncertified" and "direct-schur" in r["message"] for r in s.other):
             body.append(pn.pane.Markdown(
-                f"<small>R10 reads each window's declaration that it solves its own piece of "
-                f"one physics directly, and refuses: one exchange of such pieces changes the "
-                f"operator. This case's style {job.spec.coupling.style} iterates the pieces "
-                f"until they agree, which R10 does not read (W348); the run's agreement "
-                f"check measures how close they come. The refusal is shown as the compiler "
-                f"gave it.</small>", sizing_mode="stretch_width", margin=(0, 10)))
+                "<small>R10 decertifies instead of refusing (W348): each window solves its "
+                "piece of one physics directly, with its neighbours' values on its cut, "
+                "and the compiled scheme solves the interface directly, so together the "
+                "pieces are the whole-domain solution. Keeping each solve inside its "
+                "piece costs sweeps, not accuracy; the run's agreement check measures how "
+                "close the pieces come.</small>", sizing_mode="stretch_width",
+                margin=(0, 10)))
     if job.record_path:
         body.append(pn.pane.Markdown(
             f"<small>Record: `{html.escape(os.path.relpath(job.record_path, wb_root()))}` "

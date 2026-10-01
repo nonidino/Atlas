@@ -367,21 +367,26 @@ def test_block_geometry_rules():
 
 
 @pytest.mark.parametrize("key, verdict", [
-    ("wall-2", "refuse"), ("plate-insert", "refuse"), ("bracket-2", "refuse"),
+    ("wall-2", "admit-uncertified"), ("plate-insert", "admit-uncertified"),
+    ("bracket-2", "admit-uncertified"),
     ("cooled-block", "admit-uncertified"), ("plume-2", "admit-uncertified"),
     ("plate-circuit", "admit-uncertified"), ("sound-air-water", "admit-uncertified")])
 def test_every_family_compiles_to_the_compilers_verdict(key, verdict):
-    """The verdicts are the compiler's, pinned so a change in them is seen: the
-    iterated styles of one physics refuse at R10 (the rule's documented proxy
-    does not read an iteration), and the rest are admitted uncertified, every
-    seam probed through the families' own solves."""
+    """The verdicts are the compiler's, pinned so a change in them is seen: every
+    family is admitted uncertified, every seam probed through the families' own
+    solves.  The iterated styles of one physics were refused at L2/R10 until W348
+    (2026-09-30): their pieces take their boundary data from the coupling and the
+    scheme solves the interface directly, so R10 decertifies them after the
+    scheme, at L5."""
     from atlas.workbench.compile import compile_case
     s = compile_case(example_case(key))
     assert s.refused_before is None and s.verdict == verdict, (s.verdict, s.other[:3])
     assert s.seams and all(sv.verdict in ("admit", "admit-uncertified") for sv in s.seams)
     assert s.cross_points == ()                          # W162: declared, not detected
-    if verdict == "refuse":
-        assert any(r["rule"] == "R10" and r["verdict"] == "refuse" for r in s.other)
+    r10 = [(r["layer"], r["verdict"]) for r in s.other if r["rule"] == "R10"]
+    if key in ("wall-2", "plate-insert", "bracket-2"):
+        assert r10 == [("L5", "admit-uncertified")]      # W348
+    assert not any(r["verdict"] == "refuse" for r in s.other)
 
 
 def test_the_split_is_refused_by_the_port_vocabulary():
@@ -605,8 +610,8 @@ def test_the_run_tab_shows_the_compile_per_seam(wb):
            "current in a plate case open before it)" in text
     wb.start_compile(blocking=True)
     text = _texts(wb.workspace.objects[0])
-    assert "refuse" in text
-    assert "R10 reads each window's declaration" in text        # the note on the proxy
+    assert "admit-uncertified" in text
+    assert "R10 decertifies instead of refusing (W348)" in text    # the note on R10
     wb.edit(lambda c: setattr(c.run, "steps", c.run.steps + 1), "one more step")
     wb.show("run")
     assert "the case has changed since; compile again" in _texts(wb.workspace.objects[0])

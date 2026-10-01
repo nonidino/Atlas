@@ -1,0 +1,285 @@
+{
+ "when": "2026-09-30T20:41:49-04:00",
+ "script": "scripts/w348_controls.py",
+ "tier0_as_built": {
+  "graph": "window-ns-2x2-as-built",
+  "agents": 4,
+  "verdict": "refuse",
+  "accelerator": "direct-schur",
+  "eps_tol": 2.2532e-05,
+  "r10": [
+   [
+    "L2",
+    "R10",
+    "refuse",
+    "W00, W10, W01, W11"
+   ],
+   [
+    "L2",
+    "R10/halo",
+    "admit",
+    "<graph>"
+   ]
+  ],
+  "refusals": [
+   "L2/R10"
+  ],
+  "declares_ports": []
+ },
+ "cs_s1_embedded": {
+  "graph": "neural-interface-2x2",
+  "agents": 4,
+  "verdict": "refuse",
+  "accelerator": "richardson",
+  "eps_tol": null,
+  "r10": [
+   [
+    "L2",
+    "R10",
+    "refuse",
+    "C00, C10, C01, C11"
+   ],
+   [
+    "L2",
+    "R10/halo",
+    "admit",
+    "<graph>"
+   ]
+  ],
+  "refusals": [
+   "L2/R10"
+  ],
+  "declares_ports": []
+ },
+ "workbench": {
+  "wake-array-3": {
+   "family": "incompressible-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "farm-12": {
+   "family": "incompressible-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "farm-21": {
+   "family": "incompressible-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "wall-2": {
+   "family": "conduction-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified"
+    ]
+   ]
+  },
+  "plate-insert": {
+   "family": "conduction-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified"
+    ]
+   ]
+  },
+  "plate-circuit": {
+   "family": "electric-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "plume-2": {
+   "family": "transport-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "sound-air-water": {
+   "family": "acoustics-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "bracket-2": {
+   "family": "elasticity-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified"
+    ]
+   ]
+  },
+  "heated-strip": {
+   "family": "thermoelastic-2d",
+   "verdict": "refuse",
+   "refused_before": "NamedHoleError: PortAmendment is a named hole, not a rule (port type 'VOLUMETRIC' is not one of ['MECH', 'ROT', 'THERM', 'ELEC', 'ADVEC']; a sixth type enters only through the six-field amendment procedure, which has never been exercised). Gap O6 / G16: Five port types are closed for the cases considered. Completeness is unprovable in the abstract, so the target is a documented extension procedure, and that reframing is itself an open design question. Default today: refuse. See end-to-end-architecture-spec \u00a712.5.",
+   "r10": []
+  },
+  "cooled-block": {
+   "family": "conjugate-heat-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "bend-3": {
+   "family": "conduction-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified"
+    ]
+   ]
+  },
+  "insert-round": {
+   "family": "conduction-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified"
+    ]
+   ]
+  },
+  "s-channel": {
+   "family": "conduction-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified"
+    ]
+   ]
+  },
+  "ring-film": {
+   "family": "electric-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "river-bend": {
+   "family": "transport-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "river-fork": {
+   "family": "transport-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "sound-lens": {
+   "family": "acoustics-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "plate-hole": {
+   "family": "elasticity-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": [
+    [
+     "L5",
+     "R10",
+     "admit-uncertified"
+    ]
+   ]
+  },
+  "bimetal-arc": {
+   "family": "thermoelastic-2d",
+   "verdict": "refuse",
+   "refused_before": "NamedHoleError: PortAmendment is a named hole, not a rule (port type 'VOLUMETRIC' is not one of ['MECH', 'ROT', 'THERM', 'ELEC', 'ADVEC']; a sixth type enters only through the six-field amendment procedure, which has never been exercised). Gap O6 / G16: Five port types are closed for the cases considered. Completeness is unprovable in the abstract, so the target is a documented extension procedure, and that reframing is itself an open design question. Default today: refuse. See end-to-end-architecture-spec \u00a712.5.",
+   "r10": []
+  },
+  "cooled-winding": {
+   "family": "conjugate-heat-2d",
+   "verdict": "admit-uncertified",
+   "refused_before": null,
+   "r10": []
+  },
+  "farm-hill": {
+   "family": "incompressible-2d",
+   "verdict": "refuse",
+   "refused_before": "CompileRefused: the wind-farm family's graph is wake_array's, a full rectangle of fluid; a drawn domain's solid, held at rest by penalization, is not in it, and a drawn farm has no declared graph yet",
+   "r10": []
+  }
+ },
+ "wall2_direct": {
+  "graph": "workbench-conduction-2d",
+  "agents": 2,
+  "verdict": "admit-uncertified",
+  "accelerator": "direct-schur",
+  "eps_tol": null,
+  "r10": [
+   [
+    "L2",
+    "R10/halo",
+    "admit",
+    "<graph>"
+   ],
+   [
+    "L5",
+    "R10",
+    "admit-uncertified",
+    "steel, copper"
+   ]
+  ],
+  "refusals": [],
+  "declares_ports": [
+   "copper",
+   "steel"
+  ]
+ },
+ "wall2_sweeping": {
+  "graph": "workbench-conduction-2d",
+  "agents": 2,
+  "verdict": "refuse",
+  "accelerator": "krylov",
+  "eps_tol": null,
+  "r10": [
+   [
+    "L2",
+    "R10/halo",
+    "admit",
+    "<graph>"
+   ],
+   [
+    "L5",
+    "R10",
+    "refuse",
+    "steel, copper"
+   ]
+  ],
+  "refusals": [
+   "L5/R10"
+  ],
+  "declares_ports": [
+   "copper",
+   "steel"
+  ]
+ },
+ "seconds": 197.0
+}

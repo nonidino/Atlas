@@ -496,6 +496,9 @@ def case_graph(spec):
         caps[n] = ExpertCapabilities(
             expert_id=n, ports=ports[n], bc_channel=BCChannel.DIRICHLET,
             bc_time_varying=False, elliptic_subsolve=EllipticSubsolve.EMBEDDED,
+            # W348: Schwarz re-solves each window with its neighbours' displacements
+            # on its artificial boundary until they agree
+            elliptic_data_from_ports=True,
             time_discretization=TimeDiscretization.IMPLICIT, stencil_radius=1,
             substeps_per_macro_step=1, dt_native=1.0,
             validity=lambda state=None, cond=None: True,
