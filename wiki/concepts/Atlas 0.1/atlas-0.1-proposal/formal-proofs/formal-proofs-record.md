@@ -282,6 +282,12 @@ $\det A=-2$ and both window matrices have determinant $-1$, so every solve is ex
 
 ---
 
+## 5A. Batches 1 to 3: the proofs
+
+*Kept by the chat that proves batches 1 to 3. Nothing here yet.* It will hold: the build that checked each batch (time, power state, machine), the axiom check's result, the measured authoring rate that replaces the estimates of [[formal-proofs-implementation-plan]] §6.2, and any statement that had to change.
+
+---
+
 ## 6. How to reproduce
 
 ```
@@ -297,8 +303,15 @@ The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blue
 
 ---
 
+## 7. Batches 4 to 6: statements, record and findings
+
+*Kept by the chat that states and proves batches 4 to 6 (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements). Nothing here yet.* It will hold its own table, one row per theorem as in §3, the statements in plain words and LaTeX as in §4, and its findings.
+
+---
+
 ## See Also
 
+- [[formal-proofs-implementation-plan]] — which statements are machine-checked, by what route, in what order
 - [[formal-proofs-plan]] — the inventory T1–T23 and the order of work
 - [[master-error-bound]] · [[temporal-error-accumulation]] — T4's source
 - [[defect-correction-learned-operator]] — T5's and T7's source, and W208

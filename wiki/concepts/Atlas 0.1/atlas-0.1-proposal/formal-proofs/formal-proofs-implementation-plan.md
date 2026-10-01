@@ -2,7 +2,7 @@
 
 **Type:** Concept page — **implementation plan** (folder: `Atlas 0.1/atlas-0.1-proposal/formal-proofs/`)
 **Status:** written 2026-10-01 at the owner's request, after the set-up was timed and the statements of steps 1 to 3 were drafted. **Nothing is proved yet.** Every effort figure on this page is an **estimate**, marked **[AI Inference]**, and §6.2 says how each will be replaced by a measured one. Every build time is measured, on the machine and power state named beside it.
-**Hub:** [[00-proposal-workstreams]] · **Inventory:** [[formal-proofs-plan]] · **Record:** [[formal-proofs-record]] · **Design the theorems serve:** [[chart-operator-architecture]] (version 1 is on `origin/atlas-0.1`, commit `02da03d`, **not yet merged into the local branch**; this page read it from the remote)
+**Hub:** [[00-proposal-workstreams]] · **Inventory:** [[formal-proofs-plan]] · **Record:** [[formal-proofs-record]] · **Design the theorems serve:** [[chart-operator-architecture]] (version 1; when this page was written it was only on `origin/atlas-0.1` and was read from the remote, and it was merged into the local branch the same day, merge commit `eb75132`) · [[chart-operator-design-decisions]] · [[coupling-cost-and-complexity]]
 
 ---
 
@@ -223,7 +223,8 @@ Each sentence carries its scope on the page that shows it: finite-dimensional, l
 | T25's hypotheses do not match the proposal document's | the instantiation of the abstract optimality lemma needs something the document does not state | the document lists them (conforming sides, boundary data in the port span, $\lVert\cdot\rVert_M$ a norm on $U_0$); each becomes a named hypothesis, and any addition is reported to the owner for the architecture document |
 | T9′ takes longer than estimated | batch 6 overruns | it is the only from-scratch analysis proof; it can be moved after the headline without blocking it, since the headline uses T9a |
 | the Schwarz counterexample is slow to check | `--profile` lists a step over ten seconds | the matrices are $3\times3$; computed entry by entry rather than by one large `simp` |
-| the local branch and `origin/atlas-0.1` have diverged | the design's version 1 and its T24–T26 are not in the local tree; three shared pages will conflict on merge | **the owner's decision.** This plan links to nothing that exists only on the remote |
+| the local branch and `origin/atlas-0.1` had diverged | the design's version 1 and its T24–T26 were not in the local tree | **merged 2026-10-01 at the owner's request** (`eb75132`): two conflicts, in the gap-worklist and the log, each resolved by keeping both sides' text |
+| two chats prove different batches at the same time | their branches both touch the record, the status lines and the build log | each chat owns named files and named blocks; `ATLAS_LEAN_TAG` gives each its own record files; the full build and the full axiom check are run once, after the branches are merged |
 | timings rot | a later build on another power state is compared with these | every recorded time carries its power state; the calibration rule of §6.2 |
 | Mathlib moves | a later bump renames a lemma | the version is pinned by tag and manifest; a bump is its own commit with its own timed build |
 

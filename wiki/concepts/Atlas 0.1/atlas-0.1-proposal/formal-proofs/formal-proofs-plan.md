@@ -147,6 +147,11 @@ T1 + T8 + T9 + T4 + T22 for the first, T5 for the second. All are Tier A or B.
 One line per theorem, kept by the proofs chat. *drafted*: the Lean statement exists and typechecks, its proof is a `sorry`. *approved*: the owner has accepted the statement. *checked*: no `sorry`, only Lean's three standard axioms, build timed. Statements, files and times are in [[formal-proofs-record]].
 
 - **Set-up: done, 2026-10-01.** Lean 4.34.1, Mathlib `v4.34.1` from its cache, `leanblueprint`; names confirmed.
+- **The implementation plan** (which statements are machine-checked, by what route, in what order, with effort estimates and measured build times) is [[formal-proofs-implementation-plan]], written 2026-10-01.
+- **Two chats from 2026-10-01**, working at the same time on separate branches: one proves batches 1 to 3, the other states and proves batches 4 to 6. Each edits only its own block below.
+
+**Batches 1 to 3** (T1, T7, T4, T3, T5, T10, T11). These lines belong to the chat that proves them.
+
 - **T1: drafted**, `Atlas.perturbed_contraction`, `lean/AtlasProofs/PerturbedContraction.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T7: drafted**, `Atlas.certificate` and `Atlas.certificate_constant_is_opNorm`, `lean/AtlasProofs/Certificate.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T4: drafted**, `Atlas.master_bound` and its regimes, `lean/AtlasProofs/MasterBound.lean`, 2026-10-01. Awaiting the owner's OK.
@@ -154,9 +159,17 @@ One line per theorem, kept by the proofs chat. *drafted*: the Lean statement exi
 - **T5: drafted**, `Atlas.DefectCorrection.limit_isFixedPt` (Theorem 1), `step_of_const` (Corollary 1), `shrink_hasEigenvalue_iff` (Corollary 2), `lean/AtlasProofs/DefectCorrection.lean` and `DefectCorrectionShrink.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T10: drafted**, `Atlas.average_equivariant`, `lean/AtlasProofs/SymmetryAveraging.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T11: drafted**, `Atlas.interconnection_passive` and `Atlas.interconnection_nonexpansive`, `lean/AtlasProofs/Passivity.lean`, 2026-10-01. Awaiting the owner's OK.
-- **T8, T9, T9′, T22, T2** (step 4): not started.
-- **T24–T26, the scoping of T1, T8, T9 and T22 to "tier 2", and the SNI counterexample beside T1:** announced by the owner on 2026-10-01 as just added by the architecture chat. **Their text was not in the vault when this line was written** (no "For the proofs chat" heading in [[chart-operator-architecture]] yet), so nothing has been drafted from them. → **Found later the same day on `origin/atlas-0.1`** (commit `02da03d`, the design's version 1, §7 "For the proofs chat"), **not merged into the local branch**. Read from the remote and planned in [[formal-proofs-implementation-plan]] §2.2 and §3.2: T24 (perturbation of the interface solve), T25 (the Gram superelement and its energy optimality), T26 (the label-free objective), all tier 0; T1, T8, T9, T9′ and T22's incomplete-solve term scoped to tier 2. Not yet stated in Lean.
-- **The implementation plan** (which statements are machine-checked, by what route, in what order, with effort estimates and measured build times) is [[formal-proofs-implementation-plan]], written 2026-10-01.
+
+**Batches 4 to 6** (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements). These lines belong to the chat that states and proves them.
+
+- **T25, T24, T26** (batch 4, tier 0): not stated yet.
+- **T8, T9, the SNI remark** (batch 5, tier 2): not stated yet. T9's two-level form needs restating ([[formal-proofs-implementation-plan]] §2.3).
+- **T9′, T22, T2, the headline statements** (batch 6): not stated yet.
+
+**History of this section.**
+
+- *(superseded by the lines above)* T8, T9, T9′, T22, T2 (step 4): not started.
+- **T24–T26, the scoping of T1, T8, T9 and T22 to "tier 2", and the SNI counterexample beside T1:** announced by the owner on 2026-10-01 as just added by the architecture chat. **Their text was not in the vault when this line was written** (no "For the proofs chat" heading in [[chart-operator-architecture]] yet), so nothing has been drafted from them. → **Found later the same day on `origin/atlas-0.1`** (commit `02da03d`, the design's version 1, §7 "For the proofs chat"), **not merged into the local branch**. Read from the remote and planned in [[formal-proofs-implementation-plan]] §2.2 and §3.2: T24 (perturbation of the interface solve), T25 (the Gram superelement and its energy optimality), T26 (the label-free objective), all tier 0; T1, T8, T9, T9′ and T22's incomplete-solve term scoped to tier 2. Not yet stated in Lean. → **Merged into the local branch later that day** (merge commit `eb75132`), so [[chart-operator-architecture]] is now version 1 here, with [[chart-operator-design-decisions]] and [[coupling-cost-and-complexity]] beside it.
 
 ---
 

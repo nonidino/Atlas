@@ -12,11 +12,18 @@ or a name Lean does not know.  The check is the kernel's own, so it does not
 depend on how a build log words its warnings.
 
 Run a normal build first (``python scripts/lean_build.py``): the check reads
-the built project.  Writes ``out/lean/axioms.json``.
+the built project.  Writes ``out/lean/axioms.json`` (``axioms-<tag>.json`` when
+ATLAS_LEAN_TAG is set, see lean_build.py).
 
     python scripts/lean_axioms.py
+    python scripts/lean_axioms.py --names lean/decls-batches-1-3.txt
     python scripts/lean_axioms.py --expect-sorry   # the positive control: at
         least one declaration MUST fail on sorryAx, or the instrument is blind
+
+A theorem that USES another theorem whose proof is still a `sorry` shows
+`sorryAx` too.  So a chat that proves one batch while another batch is still
+open checks its own names with ``--names``, and the full check is run once the
+branches are merged.
 """
 from __future__ import annotations
 
@@ -114,7 +121,7 @@ def main(argv: list[str]) -> int:
     }
     out.update(lb._pins())
     os.makedirs(lb.OUT, exist_ok=True)
-    with open(os.path.join(lb.OUT, "axioms.json"), "w", encoding="utf-8", newline="\n") as fh:
+    with open(lb.AXIOMS, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(out, fh, indent=1)
         fh.write("\n")
 

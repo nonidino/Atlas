@@ -49,7 +49,15 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(REPO, "lean")
 OUT = os.path.join(REPO, "out", "lean")
 LOGS = os.path.join(OUT, "logs")
-RECORD = os.path.join(OUT, "builds.jsonl")
+#: Two chats may prove different batches at the same time, on different clones.
+#: Each sets ATLAS_LEAN_TAG (say "batches-1-3"), and then writes its own record
+#: files (builds-<tag>.jsonl, profile-<tag>.json, axioms-<tag>.json), so their
+#: branches never both append to one file and merge without a conflict.
+TAG = os.environ.get("ATLAS_LEAN_TAG", "").strip()
+_SUFFIX = ("-" + TAG) if TAG else ""
+RECORD = os.path.join(OUT, "builds%s.jsonl" % _SUFFIX)
+PROFILE = os.path.join(OUT, "profile%s.json" % _SUFFIX)
+AXIOMS = os.path.join(OUT, "axioms%s.json" % _SUFFIX)
 HOME = os.path.expanduser("~")
 BUILD = os.environ.get("ATLAS_LEAN_BUILD_DIR", os.path.join(HOME, ".cache", "atlas-lean"))
 ELAN_BIN = os.path.join(HOME, ".elan", "bin")
@@ -299,7 +307,7 @@ def profile(build: str) -> int:
     }
     out.update(power())
     out.update(_pins())
-    with open(os.path.join(OUT, "profile.json"), "w", encoding="utf-8", newline="\n") as fh:
+    with open(PROFILE, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(out, fh, indent=1, sort_keys=True)
         fh.write("\n")
     _say("")
