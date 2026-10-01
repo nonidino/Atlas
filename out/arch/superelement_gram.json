@@ -1,0 +1,139 @@
+{
+ "probe": "arch_superelement_gram",
+ "results": [
+  {
+   "Fo_piece": null,
+   "pieces": [
+    4,
+    4
+   ],
+   "n": 32,
+   "modes_per_edge": 16,
+   "interface_unknowns": 384,
+   "truncation_floor_rel_L2": 0.0002547813147695461,
+   "assembled_min_eig_exact": 0.01833138399894535,
+   "pieces_min_eig_exact": -4.45808498555054e-16,
+   "rows": [
+    {
+     "eps": 0.3,
+     "gram_port_rel_err_mean": 0.08081426800148189,
+     "direct_port_rel_err_mean": 0.29999999999999993,
+     "gram_identity_residual_max": 1.7849973946944115e-15,
+     "gram_piece_min_eig_over_max": 0.0036504750960132245,
+     "direct_piece_min_eig_over_max": -0.06305624365316329,
+     "direct_pieces_indefinite": 16,
+     "gram_assembled_min_eig": 0.058527487296074134,
+     "direct_assembled_min_eig": -0.262564870070168,
+     "gram_solution_rel_L2": 0.6451187803658271,
+     "direct_solution_rel_L2": 1.5341066744721863
+    },
+    {
+     "eps": 0.1,
+     "gram_port_rel_err_mean": 0.008983604592551868,
+     "direct_port_rel_err_mean": 0.1,
+     "gram_identity_residual_max": 1.7296883932075542e-15,
+     "gram_piece_min_eig_over_max": 0.00039545606616649777,
+     "direct_piece_min_eig_over_max": -0.008452847965669223,
+     "direct_pieces_indefinite": 12,
+     "gram_assembled_min_eig": 0.022675008097501274,
+     "direct_assembled_min_eig": -0.012872422459769982,
+     "gram_solution_rel_L2": 0.17847519115894153,
+     "direct_solution_rel_L2": 13.824198620142711
+    },
+    {
+     "eps": 0.03,
+     "gram_port_rel_err_mean": 0.0008081412648769584,
+     "direct_port_rel_err_mean": 0.03,
+     "gram_identity_residual_max": 1.9960875779179138e-15,
+     "gram_piece_min_eig_over_max": 3.7424804999194846e-05,
+     "direct_piece_min_eig_over_max": -0.0017065219494607163,
+     "direct_pieces_indefinite": 3,
+     "gram_assembled_min_eig": 0.018724665275700703,
+     "direct_assembled_min_eig": 0.011084766343125567,
+     "gram_solution_rel_L2": 0.020010298943808104,
+     "direct_solution_rel_L2": 0.5753528969469551
+    },
+    {
+     "eps": 0.01,
+     "gram_port_rel_err_mean": 8.987435184691205e-05,
+     "direct_port_rel_err_mean": 0.010000000000000002,
+     "gram_identity_residual_max": 1.6979386827052716e-15,
+     "gram_piece_min_eig_over_max": 4.013439929978227e-06,
+     "direct_piece_min_eig_over_max": -0.0008621900997665263,
+     "direct_pieces_indefinite": 3,
+     "gram_assembled_min_eig": 0.0183767980828978,
+     "direct_assembled_min_eig": 0.01693017949134641,
+     "gram_solution_rel_L2": 0.0026897895303401734,
+     "direct_solution_rel_L2": 0.09178167466738517
+    }
+   ]
+  },
+  {
+   "Fo_piece": 0.1,
+   "pieces": [
+    4,
+    4
+   ],
+   "n": 32,
+   "modes_per_edge": 16,
+   "interface_unknowns": 384,
+   "truncation_floor_rel_L2": 0.0003368009910780919,
+   "assembled_min_eig_exact": 0.10659199298421863,
+   "pieces_min_eig_exact": 0.04425292194805938,
+   "rows": [
+    {
+     "eps": 0.3,
+     "gram_port_rel_err_mean": 0.07740564610252654,
+     "direct_port_rel_err_mean": 0.3,
+     "gram_identity_residual_max": 1.9029697540261018e-15,
+     "gram_piece_min_eig_over_max": 0.010315439467634616,
+     "direct_piece_min_eig_over_max": -0.05050729299327102,
+     "direct_pieces_indefinite": 16,
+     "gram_assembled_min_eig": 0.14786764977013303,
+     "direct_assembled_min_eig": -0.2818728890395204,
+     "gram_solution_rel_L2": 0.18308758899182834,
+     "direct_solution_rel_L2": 1.9063346985492757
+    },
+    {
+     "eps": 0.1,
+     "gram_port_rel_err_mean": 0.008603269415679883,
+     "direct_port_rel_err_mean": 0.1,
+     "gram_identity_residual_max": 1.788965601750128e-15,
+     "gram_piece_min_eig_over_max": 0.007230189085082051,
+     "direct_piece_min_eig_over_max": -0.004110318884199636,
+     "direct_pieces_indefinite": 5,
+     "gram_assembled_min_eig": 0.11133032423377254,
+     "direct_assembled_min_eig": 0.05861091894080518,
+     "gram_solution_rel_L2": 0.029758761266474386,
+     "direct_solution_rel_L2": 0.5234490590718031
+    },
+    {
+     "eps": 0.03,
+     "gram_port_rel_err_mean": 0.0007743321731160224,
+     "direct_port_rel_err_mean": 0.03,
+     "gram_identity_residual_max": 1.86786228942764e-15,
+     "gram_piece_min_eig_over_max": 0.006841685778315973,
+     "direct_piece_min_eig_over_max": 0.005639016953546568,
+     "direct_pieces_indefinite": 0,
+     "gram_assembled_min_eig": 0.10702981258044765,
+     "direct_assembled_min_eig": 0.098243691880713,
+     "gram_solution_rel_L2": 0.0043615686717238845,
+     "direct_solution_rel_L2": 0.05829219428595988
+    },
+    {
+     "eps": 0.01,
+     "gram_port_rel_err_mean": 8.600347025632728e-05,
+     "direct_port_rel_err_mean": 0.009999999999999998,
+     "gram_identity_residual_max": 1.8642404294425313e-15,
+     "gram_piece_min_eig_over_max": 0.00680767564145871,
+     "direct_piece_min_eig_over_max": 0.006983465360363842,
+     "direct_pieces_indefinite": 0,
+     "gram_assembled_min_eig": 0.10664195954799198,
+     "direct_assembled_min_eig": 0.10719917337193498,
+     "gram_solution_rel_L2": 0.001235631816052147,
+     "direct_solution_rel_L2": 0.019275848607539926
+    }
+   ]
+  }
+ ]
+}
