@@ -26,7 +26,13 @@ theorem trace_perturbation (Λ Λt : M →L[ℝ] F) (χ : F) (lamStar lamDag : M
     (hβ : 0 < β) (hΛt : ∀ x, β * ‖x‖ ≤ ‖Λt x‖)
     (hstar : Λ lamStar = χ) (hdag : Λt lamDag = χ) :
     ‖lamDag - lamStar‖ ≤ ‖Λ - Λt‖ * ‖lamStar‖ / β := by
-  sorry
+  -- `Λt (lamDag - lamStar) = χ - Λt lamStar = (Λ - Λt) lamStar`
+  have key : Λt (lamDag - lamStar) = (Λ - Λt) lamStar := by
+    rw [map_sub, hdag, sub_apply, hstar]
+  rw [le_div_iff₀ hβ, mul_comm]
+  calc β * ‖lamDag - lamStar‖ ≤ ‖Λt (lamDag - lamStar)‖ := hΛt _
+    _ = ‖(Λ - Λt) lamStar‖ := by rw [key]
+    _ ≤ ‖Λ - Λt‖ * ‖lamStar‖ := (Λ - Λt).le_opNorm lamStar
 
 /-- **T4e (the transmission term).** `Φ lam v` is the composed step forced to use the
 interface datum `lam`; it is `Cμ`-Lipschitz in `lam` at the state `v`. -/
@@ -37,6 +43,10 @@ theorem transmission_bound {E : Type*} [SeminormedAddCommGroup E]
     (Φ : M → E → E) (v : E) (hCμ : 0 ≤ Cμ)
     (hΦ : ∀ lam lam', ‖Φ lam v - Φ lam' v‖ ≤ Cμ * ‖lam - lam'‖) :
     ‖Φ lamDag v - Φ lamStar v‖ ≤ Cμ / β * (‖Λ - Λt‖ * ‖lamStar‖) := by
-  sorry
+  -- The Lipschitz bound in the datum, composed with the trace perturbation.
+  calc ‖Φ lamDag v - Φ lamStar v‖ ≤ Cμ * ‖lamDag - lamStar‖ := hΦ _ _
+    _ ≤ Cμ * (‖Λ - Λt‖ * ‖lamStar‖ / β) := mul_le_mul_of_nonneg_left
+        (trace_perturbation Λ Λt χ lamStar lamDag hβ hΛt hstar hdag) hCμ
+    _ = Cμ / β * (‖Λ - Λt‖ * ‖lamStar‖) := by ring
 
 end Atlas

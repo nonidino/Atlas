@@ -89,54 +89,54 @@ One row per theorem. **Build time** is the file's own time in the full build tha
 
 | # | statement, in one line | Lean name | file | status | build time | axioms |
 |---|---|---|---|---|---|---|
-| **T1** | a contraction that differs from a map by $\delta$ at that map's fixed point has a unique fixed point within $\delta/(1-\rho)$ of it, reached at rate $\rho$ | `Atlas.perturbed_contraction` | `AtlasProofs/PerturbedContraction.lean` | drafted | — | — |
-| T1, uniform | the same with the defect bounded everywhere | `Atlas.perturbed_contraction_uniform` | same | drafted | — | — |
-| T1, sharp | $\delta/(1-\rho)$ is attained | `Atlas.perturbed_contraction_sharp` | same | drafted | — | — |
-| **T7** | error $\le$ residual $/(1-L)$, when the step contracts *this* state toward the fixed point | `Atlas.certificate` | `AtlasProofs/Certificate.lean` | drafted | — | — |
-| T7, Banach | the same for every state, under a global contraction | `Atlas.certificate_of_contraction` | same | drafted | — | — |
-| **T7, W208** | for a linear step the least certifying constant is $\lVert(I-A)^{-1}\rVert$ | `Atlas.certificate_constant_is_opNorm` | same | drafted | — | — |
-| T7, example | $\operatorname{diag}(0.6,\,0.95)$: the ratio is $2.5$ on one mode and $20$ on the other | `Atlas.certificate_two_mode_example` | same | drafted | — | — |
-| **T4a** | the exact error recursion | `Atlas.error_recursion` | `AtlasProofs/MasterBound.lean` | drafted | — | — |
-| **T4b** | the defect is $\tau+\sigma+\gamma$ | `Atlas.defect_split` | same | drafted | — | — |
-| **T4c** | discrete Gronwall | `Atlas.accumulation` | same | drafted | — | — |
-| **T4** | the master bound | `Atlas.master_bound` | same | drafted | — | — |
-| T4, three terms | the master bound with $\tau$, $\sigma$, $\gamma$ named | `Atlas.master_bound_three_terms` | same | drafted | — | — |
-| **T4, $L<1$** | bounded by $\delta/(1-L)$ for all time | `Atlas.master_bound_contractive` | same | drafted | — | — |
-| **T4, $L=1$** | at most $N\delta$ | `Atlas.master_bound_nonexpansive` | same | drafted | — | — |
-| **T4, $L>1$** | at most $\frac{L^N-1}{L-1}\delta$ | `Atlas.master_bound_expansive` | same | drafted | — | — |
-| T4, attained | the scalar recursion attains the geometric sum | `Atlas.master_bound_attained` | same | drafted | — | — |
-| T4e | $\lVert\lambda^\dagger-\lambda^\star\rVert\le\lVert\Lambda-\tilde\Lambda\rVert\,\lVert\lambda^\star\rVert/\beta$ | `Atlas.trace_perturbation` | `AtlasProofs/TransmissionBound.lean` | drafted | — | — |
-| T4e | $\sigma\le\frac{C_\mu}{\beta}\lVert\Lambda-\tilde\Lambda\rVert\,\lVert\lambda^\star\rVert$ | `Atlas.transmission_bound` | same | drafted | — | — |
-| **T3a** | the undivided block system and the Schur system have the same solutions | `Atlas.schur_iff` | `AtlasProofs/Schur.lean` | drafted | — | — |
-| **T3b** | a fixed point of Dirichlet–Neumann solves the undivided system | `Atlas.TwoPieces.dn_fixedPoint_solves` | `AtlasProofs/DirichletNeumann.lean` | drafted | — | — |
-| T3b, converse | the undivided solution is a fixed point | `Atlas.TwoPieces.dn_solution_isFixedPt` | same | drafted | — | — |
-| T3b, face form | the same for the finite-volume form `styles.dirichlet_neumann` runs | `Atlas.FacePair.solves_of_fixedPoint` | same | drafted | — | — |
-| T3c | the Schwarz sweep is $u\mapsto u+M(f-Au)$ | `Atlas.Schwarz.sweep_eq` | `AtlasProofs/Schwarz.lean` | drafted | — | — |
-| **T3c** | the undivided solution is a fixed point of the sweep | `Atlas.Schwarz.solution_isFixedPt` | same | drafted | — | — |
-| T3c | $u$ is a fixed point iff $M(f-Au)=0$ | `Atlas.Schwarz.isFixedPt_iff` | same | drafted | — | — |
-| **T3c** | if every window agrees with $u$, then $Au=f$ | `Atlas.Schwarz.solves_of_windows_agree` | same | drafted | — | — |
-| **T3c** | if $M$ is one-to-one, every fixed point solves $Au=f$ | `Atlas.Schwarz.fixedPt_solves_of_precond` | same | drafted | — | — |
-| T3c | the same hypothesis read off the sweep | `Atlas.Schwarz.fixedPt_solves` | same | drafted | — | — |
-| **T3c** | a convergent sweep has one fixed point, the solution | `Atlas.Schwarz.fixedPt_eq_solution` | `AtlasProofs/SchwarzConvergence.lean` | drafted | — | — |
-| **T3c** | a convergent sweep converges to the solution | `Atlas.Schwarz.tendsto_solution` | same | drafted | — | — |
-| **T3d** | error $\le$ update $/(1-\rho)$ | `Atlas.Schwarz.error_le_update` | same | drafted | — | — |
-| **T3c, finding** | a Schwarz sweep with a fixed point that is not the solution | `Atlas.Schwarz.exists_spurious_fixedPt` | `AtlasProofs/SchwarzCounterexample.lean` | drafted | — | — |
-| **T5, Theorem 1** | any limit of defect correction is a fixed point of the classical map | `Atlas.DefectCorrection.limit_isFixedPt` | `AtlasProofs/DefectCorrection.lean` | drafted | — | — |
-| T5, Theorem 1, inexact | the same when each step is solved only approximately, the leftover tending to zero | `Atlas.DefectCorrection.limit_isFixedPt_of_inexact` | same | drafted | — | — |
-| **T5, Corollary 1** | a constant cheap map makes the iteration the classical march | `Atlas.DefectCorrection.step_of_const` | same | drafted | — | — |
-| T5 | the inner march's fixed points are the successors | `Atlas.DefectCorrection.isStep_iff` | same | drafted | — | — |
-| T5, Corollary 1 | with a constant cheap map the inner march returns $\Phi(w)$ at every stage | `Atlas.DefectCorrection.innerMarch_of_const` | same | drafted | — | — |
-| T5, Corollary 2 | $J_{\Psi_\alpha}=\alpha I+(1-\alpha)J_\Psi$, as a derivative | `Atlas.DefectCorrection.shrink_hasFDerivAt` | `AtlasProofs/DefectCorrectionShrink.lean` | drafted | — | — |
-| T5, Corollary 2 | an eigenvalue $\mu$ becomes $\alpha+(1-\alpha)\mu$ | `Atlas.DefectCorrection.shrink_hasEigenvalue` | same | drafted | — | — |
-| **T5, Corollary 2** | and those are all the eigenvalues, for $\alpha\ne1$ | `Atlas.DefectCorrection.shrink_hasEigenvalue_iff` | same | drafted | — | — |
-| T5, Corollary 2 | the real part is at least $\alpha$ | `Atlas.DefectCorrection.shrink_re` | same | drafted | — | — |
-| **T10** | the group average of any map is exactly equivariant | `Atlas.average_equivariant` | `AtlasProofs/SymmetryAveraging.lean` | drafted | — | — |
-| T10 | averaging returns an equivariant map unchanged | `Atlas.average_of_equivariant` | same | drafted | — | — |
-| T10, example | averaging over $\{\mathrm{id},M_x,M_y\}$, not a group, is not equivariant | `Atlas.average_over_non_group_not_equivariant` | same | drafted | — | — |
-| T11 | the connection rule conserves power | `Atlas.port_rule_power` | `AtlasProofs/Passivity.lean` | drafted | — | — |
-| T11 | the junction: connected port powers sum to zero | `Atlas.junction_power_eq_zero` | same | drafted | — | — |
-| **T11** | passive agents joined by the rule make a passive system | `Atlas.interconnection_passive` | same | drafted | — | — |
-| **T11, error form** | incrementally passive agents make a non-expansive step | `Atlas.interconnection_nonexpansive` | same | drafted | — | — |
+| **T1** | a contraction that differs from a map by $\delta$ at that map's fixed point has a unique fixed point within $\delta/(1-\rho)$ of it, reached at rate $\rho$ | `Atlas.perturbed_contraction` | `AtlasProofs/PerturbedContraction.lean` | **checked** | 3.2 s, cloud container | `propext`, `Classical.choice`, `Quot.sound` |
+| T1, uniform | the same with the defect bounded everywhere | `Atlas.perturbed_contraction_uniform` | same | **checked** | 3.2 s, cloud container | the same three |
+| T1, sharp | $\delta/(1-\rho)$ is attained | `Atlas.perturbed_contraction_sharp` | same | **checked** | 3.2 s, cloud container | the same three |
+| **T7** | error $\le$ residual $/(1-L)$, when the step contracts *this* state toward the fixed point | `Atlas.certificate` | `AtlasProofs/Certificate.lean` | **checked** | 2.8 s, cloud container | the same three |
+| T7, Banach | the same for every state, under a global contraction | `Atlas.certificate_of_contraction` | same | **checked** | 2.8 s, cloud container | the same three |
+| **T7, W208** | for a linear step the least certifying constant is $\lVert(I-A)^{-1}\rVert$ | `Atlas.certificate_constant_is_opNorm` | same | **checked** | 2.8 s, cloud container | the same three |
+| T7, example | $\operatorname{diag}(0.6,\,0.95)$: the ratio is $2.5$ on one mode and $20$ on the other | `Atlas.certificate_two_mode_example` | same | **checked** | 2.8 s, cloud container | the same three |
+| **T4a** | the exact error recursion | `Atlas.error_recursion` | `AtlasProofs/MasterBound.lean` | **checked** | 2.0 s, cloud container | the same three |
+| **T4b** | the defect is $\tau+\sigma+\gamma$ | `Atlas.defect_split` | same | **checked** | 2.0 s, cloud container | the same three |
+| **T4c** | discrete Gronwall | `Atlas.accumulation` | same | **checked** | 2.0 s, cloud container | the same three |
+| **T4** | the master bound | `Atlas.master_bound` | same | **checked** | 2.0 s, cloud container | the same three |
+| T4, three terms | the master bound with $\tau$, $\sigma$, $\gamma$ named | `Atlas.master_bound_three_terms` | same | **checked** | 2.0 s, cloud container | the same three |
+| **T4, $L<1$** | bounded by $\delta/(1-L)$ for all time | `Atlas.master_bound_contractive` | same | **checked** | 2.0 s, cloud container | the same three |
+| **T4, $L=1$** | at most $N\delta$ | `Atlas.master_bound_nonexpansive` | same | **checked** | 2.0 s, cloud container | the same three |
+| **T4, $L>1$** | at most $\frac{L^N-1}{L-1}\delta$ | `Atlas.master_bound_expansive` | same | **checked** | 2.0 s, cloud container | the same three |
+| T4, attained | the scalar recursion attains the geometric sum | `Atlas.master_bound_attained` | same | **checked** | 2.0 s, cloud container | the same three |
+| T4e | $\lVert\lambda^\dagger-\lambda^\star\rVert\le\lVert\Lambda-\tilde\Lambda\rVert\,\lVert\lambda^\star\rVert/\beta$ | `Atlas.trace_perturbation` | `AtlasProofs/TransmissionBound.lean` | **checked** | 2.3 s, cloud container | the same three |
+| T4e | $\sigma\le\frac{C_\mu}{\beta}\lVert\Lambda-\tilde\Lambda\rVert\,\lVert\lambda^\star\rVert$ | `Atlas.transmission_bound` | same | **checked** | 2.3 s, cloud container | the same three |
+| **T3a** | the undivided block system and the Schur system have the same solutions | `Atlas.schur_iff` | `AtlasProofs/Schur.lean` | approved | — | — |
+| **T3b** | a fixed point of Dirichlet–Neumann solves the undivided system | `Atlas.TwoPieces.dn_fixedPoint_solves` | `AtlasProofs/DirichletNeumann.lean` | approved | — | — |
+| T3b, converse | the undivided solution is a fixed point | `Atlas.TwoPieces.dn_solution_isFixedPt` | same | approved | — | — |
+| T3b, face form | the same for the finite-volume form `styles.dirichlet_neumann` runs | `Atlas.FacePair.solves_of_fixedPoint` | same | approved | — | — |
+| T3c | the Schwarz sweep is $u\mapsto u+M(f-Au)$ | `Atlas.Schwarz.sweep_eq` | `AtlasProofs/Schwarz.lean` | approved | — | — |
+| **T3c** | the undivided solution is a fixed point of the sweep | `Atlas.Schwarz.solution_isFixedPt` | same | approved | — | — |
+| T3c | $u$ is a fixed point iff $M(f-Au)=0$ | `Atlas.Schwarz.isFixedPt_iff` | same | approved | — | — |
+| **T3c** | if every window agrees with $u$, then $Au=f$ | `Atlas.Schwarz.solves_of_windows_agree` | same | approved | — | — |
+| **T3c** | if $M$ is one-to-one, every fixed point solves $Au=f$ | `Atlas.Schwarz.fixedPt_solves_of_precond` | same | approved | — | — |
+| T3c | the same hypothesis read off the sweep | `Atlas.Schwarz.fixedPt_solves` | same | approved | — | — |
+| **T3c** | a convergent sweep has one fixed point, the solution | `Atlas.Schwarz.fixedPt_eq_solution` | `AtlasProofs/SchwarzConvergence.lean` | approved | — | — |
+| **T3c** | a convergent sweep converges to the solution | `Atlas.Schwarz.tendsto_solution` | same | approved | — | — |
+| **T3d** | error $\le$ update $/(1-\rho)$ | `Atlas.Schwarz.error_le_update` | same | approved | — | — |
+| **T3c, finding** | a Schwarz sweep with a fixed point that is not the solution | `Atlas.Schwarz.exists_spurious_fixedPt` | `AtlasProofs/SchwarzCounterexample.lean` | approved | — | — |
+| **T5, Theorem 1** | any limit of defect correction is a fixed point of the classical map | `Atlas.DefectCorrection.limit_isFixedPt` | `AtlasProofs/DefectCorrection.lean` | approved | — | — |
+| T5, Theorem 1, inexact | the same when each step is solved only approximately, the leftover tending to zero | `Atlas.DefectCorrection.limit_isFixedPt_of_inexact` | same | approved | — | — |
+| **T5, Corollary 1** | a constant cheap map makes the iteration the classical march | `Atlas.DefectCorrection.step_of_const` | same | approved | — | — |
+| T5 | the inner march's fixed points are the successors | `Atlas.DefectCorrection.isStep_iff` | same | approved | — | — |
+| T5, Corollary 1 | with a constant cheap map the inner march returns $\Phi(w)$ at every stage | `Atlas.DefectCorrection.innerMarch_of_const` | same | approved | — | — |
+| T5, Corollary 2 | $J_{\Psi_\alpha}=\alpha I+(1-\alpha)J_\Psi$, as a derivative | `Atlas.DefectCorrection.shrink_hasFDerivAt` | `AtlasProofs/DefectCorrectionShrink.lean` | approved | — | — |
+| T5, Corollary 2 | an eigenvalue $\mu$ becomes $\alpha+(1-\alpha)\mu$ | `Atlas.DefectCorrection.shrink_hasEigenvalue` | same | approved | — | — |
+| **T5, Corollary 2** | and those are all the eigenvalues, for $\alpha\ne1$ | `Atlas.DefectCorrection.shrink_hasEigenvalue_iff` | same | approved | — | — |
+| T5, Corollary 2 | the real part is at least $\alpha$ | `Atlas.DefectCorrection.shrink_re` | same | approved | — | — |
+| **T10** | the group average of any map is exactly equivariant | `Atlas.average_equivariant` | `AtlasProofs/SymmetryAveraging.lean` | approved | — | — |
+| T10 | averaging returns an equivariant map unchanged | `Atlas.average_of_equivariant` | same | approved | — | — |
+| T10, example | averaging over $\{\mathrm{id},M_x,M_y\}$, not a group, is not equivariant | `Atlas.average_over_non_group_not_equivariant` | same | approved | — | — |
+| T11 | the connection rule conserves power | `Atlas.port_rule_power` | `AtlasProofs/Passivity.lean` | approved | — | — |
+| T11 | the junction: connected port powers sum to zero | `Atlas.junction_power_eq_zero` | same | approved | — | — |
+| **T11** | passive agents joined by the rule make a passive system | `Atlas.interconnection_passive` | same | approved | — | — |
+| **T11, error form** | incrementally passive agents make a non-expansive step | `Atlas.interconnection_nonexpansive` | same | approved | — | — |
 
 ---
 
@@ -284,7 +284,45 @@ $\det A=-2$ and both window matrices have determinant $-1$, so every solve is ex
 
 ## 5A. Batches 1 to 3: the proofs
 
-*Kept by the chat that proves batches 1 to 3. Nothing here yet.* It will hold: the build that checked each batch (time, power state, machine), the axiom check's result, the measured authoring rate that replaces the estimates of [[formal-proofs-implementation-plan]] §6.2, and any statement that had to change.
+*Kept by the chat that proves batches 1 to 3.* It holds the build that checked each batch, the axiom check's result, the measured authoring rate that replaces the estimates of [[formal-proofs-implementation-plan]] §6.2, and any statement that had to change. **Every time in this section was measured in a cloud container**, not on the owner's laptop: a Linux container with 4 virtual processors and 15 GB of memory, no battery and so no power state. Its build times are not comparable with §1.1's laptop times without that fact. The record lines are in `out/lean/builds-batches-1-3.jsonl`, `axioms-batches-1-3.json` and `profile-batches-1-3.json` (`ATLAS_LEAN_TAG=batches-1-3`). Clock times are UTC, from the container's clock.
+
+### 5A.1 The set-up in the cloud container
+
+| step | what happened | wall time |
+|---|---|---|
+| branch | the session's branch fast-forwarded to `428e4aa` (21:03:18) | — |
+| elan | 4.2.4, the official `elan-init.sh` | — |
+| `lake update` | the toolchain `v4.34.1` from `releases.lean-lang.org`; Mathlib and its eight dependencies cloned from `github.com` at the manifest's revisions (the manifest did not change); the cache, 8908 files, from `cache.mathlib.org` | 153.6 s |
+| `lake exe cache get` | nothing left to fetch | 12.2 s |
+| first build | the 13 statement files: 2263 jobs, 48 `sorry` warnings, **no Mathlib module compiled** | 17.2 s |
+| positive control | `lean_axioms.py --expect-sorry` on the 58 names: all 48 theorems fail on `sorryAx`, the 10 definitions pass: **seen** | 3.1 s |
+
+**Disk:** 30 GB free before; afterwards the toolchain (`~/.elan`) holds 3.0 GB and the build folder 7.7 GB, and 19 GB are free.
+
+### 5A.2 Batch 1: T1, T7, T4, T4e — checked
+
+**What is checked:** all 18 declarations of `lean/decls-batch-1.txt`, exactly as stated; no statement changed. Two private helper lemmas were added in `MasterBound.lean` (`sum_pow_reflect`: the weights $L^{N-(i+1)}$, $i<N$, are $L^0,\dots,L^{N-1}$ reversed; `sum_defects_le`: with every defect at most $\delta$ the accumulated defects are at most $\delta\sum_{i<N}L^i$). Every proof follows the blueprint's paper proof.
+
+| check | result |
+|---|---|
+| `lean_build.py` (incremental, 21:20:53) | success, 7.6 s; 30 `sorry` warnings, **none in a batch-1 file** (all 30 are in batches 2 and 3) |
+| `lean_build.py --clean` (every project file re-checked, 21:23:53) | success, 13.0 s. Batch-1 files: `PerturbedContraction` 3.2 s, `Certificate` 2.8 s, `MasterBound` 2.0 s, `TransmissionBound` 2.3 s |
+| `lean_axioms.py --names lean/decls-batch-1.txt` | **18 declarations, 0 failing**, each resting on `propext`, `Classical.choice` and `Quot.sound` only; 4.0 s |
+| `lean_build.py --profile` | 13 files, 38.7 s in all (each file alone, one after another), **no step of ten seconds or more**; the batch-1 files take 3.0 to 4.3 s each |
+| blueprint | `\leanok` in all 18 proof environments of `contraction.tex` and `master-bound.tex`. The two-mode example had no proof environment, and leanblueprint shows a node as proved only through its proof's `\leanok`, so a one-line proof (the arithmetic) was added. Built with plasTeX 3.1 and leanblueprint 0.0.20: no warning, and the dependency graph shows the 17 batch-1 nodes as fully proved (examples are not drawn in the graph) |
+
+**The measured rate.** 18 declarations; **150 lines of proof text** (172 lines added in all, counting comments and the helpers' docstrings), against the plan's 370.
+
+| window | time | declarations per hour | proof lines per hour |
+|---|---|---|---|
+| first proof edit (21:15:49) to the batch verified, the profile being the last check (21:22:00) | 6 min 11 s | 175 | about 1,450 |
+| from the fast-forward (21:03:18) to the batch verified, including reading the plan, the record, the 13 files and the blueprint, the set-up's downloads, and paper drafts of all 48 proofs made while Mathlib downloaded | 18 min 42 s | 58 | about 480 |
+
+The record-keeping after verification (this section, the blueprint, the plans, the log, the three scans, the commit) is in neither window; its time is recorded with batch 2. The build loop here is 3 to 4 s per file, against 12 to 15 s on mains on the laptop (§1.1). **[AI Inference]:** batch 1 was the easiest of the three: Mathlib already has Banach's theorem with its estimates, and the rest is algebra. The rate is a property of this chat on this machine; the other chat's rate on the laptop is its own to measure.
+
+**Findings:** none. Every batch-1 statement is proved as written.
+
+**Notes for anyone writing Lean against this Mathlib** (`v4.34.1`): `ContinuousLinearMap.mul_apply`, `one_apply` and `sub_apply` are deprecated, in favour of the general `mul_apply_eq_comp`, `one_apply_eq_self` and `sub_apply`; from `h : b ≤ c`, `add_le_add_left h a` proves `b + a ≤ c + a` and `add_le_add_right h a` proves `a + b ≤ a + c`, the reverse of older Mathlib (checked with `#check`), so `add_le_add le_rfl h` is the unambiguous form; and plasTeX finds the blueprint's `\input` files through `kpsewhich`, so it needs a TeX installation or a stand-in for it.
 
 ---
 

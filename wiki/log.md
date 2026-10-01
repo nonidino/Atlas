@@ -7129,3 +7129,14 @@ At the owner's request, `origin/atlas-0.1` (the architecture chat's twelve commi
 - After the merge: the vault scan reads 0 problems over 286 files, the link scan 0 new and 0 stale.
 
 **Prepared for two chats proving different batches at the same time** ([[formal-proofs-implementation-plan]] §3): one proves batches 1 to 3, the other states and proves batches 4 to 6. `ATLAS_LEAN_TAG` gives each its own build, profile and axiom record files; `lean/decls-batches-1-3.txt` lists the first chat's declarations; [[formal-proofs-plan]] §6 and [[formal-proofs-record]] (§5A and §7) each have one block per chat, so their branches merge without touching the same lines. **Still nothing proved.** **Changed:** `scripts/lean_build.py`, `scripts/lean_axioms.py`, [[formal-proofs-plan]], [[formal-proofs-record]], [[formal-proofs-implementation-plan]]. **Added:** `lean/decls-batches-1-3.txt`.
+
+## [2026-10-01] build | Proofs batch 1 checked: T1, T7, T4 and T4e, in a cloud container
+
+The chat that proves batches 1 to 3, on its own branch `claude/atlas-proofs-batches-1-3-ztrott` from `428e4aa`, in a cloud container (Linux, 4 virtual processors, 15 GB), not on the laptop. The owner approved the statements of batches 1 to 3, T3's restatement included, before any proof.
+
+- **Set-up:** elan 4.2.4 by the official script; `lake update` 153.6 s (the toolchain from `releases.lean-lang.org`, Mathlib `v4.34.1` and its dependencies cloned, its cache of 8908 files from `cache.mathlib.org`); the first build 17.2 s, 48 `sorry` warnings, no Mathlib module compiled; the axiom check's positive control saw all 48.
+- **Checked:** the 18 declarations of batch 1, every statement as written: T1 (perturbed contraction), T7 (the certificate, its constant an operator norm), T4 (the master bound, its recursion, split, accumulation, three regimes and attained example) and T4e (the transmission term). The build 7.6 s with no `sorry` in a batch-1 file; a clean re-check of all 13 files 13.0 s; the axiom check 18 of 18 on `propext`, `Classical.choice` and `Quot.sound` only; the profile no step of ten seconds or more.
+- **Rate:** 150 lines of proof, 6 min 11 s from the first proof edit to the batch verified, 18 min 42 s counting the reading and the set-up; the estimate was 2.5 to 4.5 hours. [[formal-proofs-implementation-plan]] §6.2 is rewritten from it, the old estimate kept beside it.
+- **No finding.** The rows of batches 2 and 3 now read *approved*.
+
+**Changed:** the four batch-1 files under `lean/AtlasProofs/`; `lean/blueprint/src/chapters/contraction.tex` and `master-bound.tex` (`\leanok` in 18 proofs, and a one-line proof for the two-mode example, which had none); [[formal-proofs-record]] (§3's cells, §5A); [[formal-proofs-plan]] (§6, the block of batches 1 to 3); [[formal-proofs-implementation-plan]] (§6.2). **Added:** `lean/decls-batch-1.txt`, `out/lean/builds-batches-1-3.jsonl`, `out/lean/axioms-batches-1-3.json`, `out/lean/profile-batches-1-3.json`.

@@ -34,7 +34,27 @@ theorem perturbed_contraction {Tc Tl : X → X} {ρ δ : ℝ} {ac : X}
     ∃ al : X, Tl al = al ∧ (∀ b, Tl b = b → b = al) ∧
       (∀ (x₀ : X) (k : ℕ), dist (Tl^[k] x₀) al ≤ ρ ^ k * dist x₀ al) ∧
       dist al ac ≤ δ / (1 - ρ) := by
-  sorry
+  have : Nonempty X := ⟨ac⟩
+  -- `Tl` is a contraction in Mathlib's sense, with `ρ` as a non-negative real constant.
+  have hKρ : ((Real.toNNReal ρ : NNReal) : ℝ) = ρ := Real.coe_toNNReal ρ hρ₀
+  have hK : ContractingWith (Real.toNNReal ρ) Tl :=
+    ⟨by rw [← NNReal.coe_lt_coe, hKρ, NNReal.coe_one]; exact hρ₁,
+      LipschitzWith.of_dist_le_mul fun x y => by rw [hKρ]; exact hTl x y⟩
+  -- Banach's fixed-point theorem gives the answer and its uniqueness.
+  set al := ContractingWith.fixedPoint Tl hK
+  have hal : Tl al = al := ContractingWith.fixedPoint_isFixedPt hK
+  refine ⟨al, hal, fun b hb => ContractingWith.fixedPoint_unique hK hb, fun x₀ k => ?_, ?_⟩
+  · -- The rate: `Tl^[k]` fixes `al` and is `ρ ^ k`-Lipschitz.
+    have hk := (hK.2.iterate k).dist_le_mul x₀ al
+    rw [NNReal.coe_pow, hKρ, Function.iterate_fixed hal] at hk
+    exact hk
+  · -- The distance: `d(al, ac) ≤ d(Tl al, Tl ac) + d(Tl ac, Tc ac) ≤ ρ d(al, ac) + δ`.
+    have h : dist al ac ≤ ρ * dist al ac + δ :=
+      calc dist al ac = dist (Tl al) (Tc ac) := by rw [hal, hac]
+        _ ≤ dist (Tl al) (Tl ac) + dist (Tl ac) (Tc ac) := dist_triangle _ _ _
+        _ ≤ ρ * dist al ac + δ := add_le_add (hTl al ac) hδ
+    rw [le_div_iff₀ (sub_pos.mpr hρ₁)]
+    linarith
 
 /-- **T1, with the defect bounded everywhere** (the form the plan states): the same conclusion
 when `dist (Tl x) (Tc x) ≤ δ` for every `x`. -/
@@ -45,8 +65,8 @@ theorem perturbed_contraction_uniform {Tc Tl : X → X} {ρ δ : ℝ} {ac : X}
     (hδ : ∀ x, dist (Tl x) (Tc x) ≤ δ) :
     ∃ al : X, Tl al = al ∧ (∀ b, Tl b = b → b = al) ∧
       (∀ (x₀ : X) (k : ℕ), dist (Tl^[k] x₀) al ≤ ρ ^ k * dist x₀ al) ∧
-      dist al ac ≤ δ / (1 - ρ) := by
-  sorry
+      dist al ac ≤ δ / (1 - ρ) :=
+  perturbed_contraction hρ₀ hρ₁ hTl hac (hδ ac)
 
 /-- **T1 is sharp.** For every `ρ ∈ [0, 1)` and `δ ≥ 0` there are maps on the real line that
 meet T1's hypotheses and whose answers are exactly `δ / (1 - ρ)` apart, so the bound cannot be
@@ -55,6 +75,17 @@ theorem perturbed_contraction_sharp {ρ δ : ℝ} (hρ₀ : 0 ≤ ρ) (hρ₁ : 
     ∃ (Tc Tl : ℝ → ℝ) (ac al : ℝ),
       (∀ x y, dist (Tl x) (Tl y) ≤ ρ * dist x y) ∧ Tc ac = ac ∧
       (∀ x, dist (Tl x) (Tc x) ≤ δ) ∧ Tl al = al ∧ dist al ac = δ / (1 - ρ) := by
-  sorry
+  have h1ρ : 1 - ρ ≠ 0 := (sub_pos.mpr hρ₁).ne'
+  refine ⟨fun x => ρ * x, fun x => ρ * x + δ, 0, δ / (1 - ρ), fun x y => ?_, mul_zero ρ,
+    fun x => ?_, ?_, ?_⟩
+  · -- `|(ρ x + δ) - (ρ y + δ)| = ρ |x - y|`
+    rw [Real.dist_eq, Real.dist_eq, show ρ * x + δ - (ρ * y + δ) = ρ * (x - y) by ring, abs_mul,
+      abs_of_nonneg hρ₀]
+  · -- `|(ρ x + δ) - ρ x| = δ`
+    rw [Real.dist_eq, show ρ * x + δ - ρ * x = δ by ring, abs_of_nonneg hδ₀]
+  · -- `ρ δ / (1 - ρ) + δ = δ / (1 - ρ)`
+    field_simp
+    ring
+  · rw [Real.dist_eq, sub_zero, abs_of_nonneg (div_nonneg hδ₀ (sub_pos.mpr hρ₁).le)]
 
 end Atlas

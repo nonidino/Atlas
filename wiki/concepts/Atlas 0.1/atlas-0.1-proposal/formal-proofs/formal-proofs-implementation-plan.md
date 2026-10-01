@@ -169,21 +169,35 @@ Files that do not import each other are checked at the same time, so the total i
 
 **In continuous integration, [AI Inference]:** fetching Mathlib's cache on a fresh runner is the larger part, a few minutes; the build itself is the cold figure above.
 
-### 6.2 Authoring effort (estimated, and how it will be measured)
+### 6.2 Authoring effort (measured on batch 1, and the rest rescaled)
 
-| scope | effort, hours of chat working time, **[AI Inference]** |
-|---|---|
-| batches 1 to 3 (stated) | 9–13 |
-| batches 4 to 6 (to state, approve, prove) | 15–27 |
-| batch 7 (blueprint, CI, record) | 2–3 |
-| **the proposal's scope** | **26–43** |
-| §4's later items, if all were done | 50–100, most of it T13, T14 and T6 |
+**Measured on batch 1** (T1, T7, T4, T4e; 18 declarations; [[formal-proofs-record]] §5A.2), by the chat proving batches 1 to 3, **in a cloud container** (Linux, 4 virtual processors), not on the laptop:
 
-**The basis, stated so it can be judged.** The set-up, the three statement batches and the finding took one evening's session. The estimates assume a hundred to a hundred and fifty lines of finished proof per hour, with a build loop of fifteen seconds on mains. No proof has been written in this project yet, so that rate is a guess.
+| quantity | the guess of 2026-10-01, before any proof | measured on batch 1 |
+|---|---|---|
+| lines of finished proof | 370 for batch 1 | **150** (172 lines added, counting comments and docstrings) |
+| proof lines per hour | 100–150 | **about 1,450** from the first proof edit to the batch verified (6 min 11 s); **about 480** counting the reading, the set-up and paper drafts of all 48 proofs (18 min 42 s) |
+| declarations per hour | about 4 to 7 (18 in 2.5–4.5 h) | **175**, or **58** with the same two windows |
+| build seconds per file | 12 to 15 on mains, warm, on the laptop (§6.1) | **2.0 to 3.2** per batch-1 file in a full re-check (13.0 s for all 13 files); 3 to 4 s to check one file alone |
 
-**The calibration rule.** When batch 1 is Lean-verified, this table is rewritten from the measured rate (lines and declarations per hour, build seconds per file), the guess is kept beside it, and every later estimate is scaled. If batch 1 takes more than twice its estimate, the owner is told before batch 2 starts.
+Both windows end at the batch verified (build, axiom check, profile). The record-keeping that follows (the record, the blueprint, the plans, the log, the scans, the commit) is not in them and is measured with batch 2.
 
-**Elapsed time** depends on the owner's approvals, one round per batch. **[AI Inference]:** four to eight working days for the proposal's scope if each round is answered within a day.
+**The table, rescaled.** The old estimate stays beside each line. The rescaled figures are **[AI Inference]**: one batch, the easiest, measured once.
+
+| scope | effort, hours of chat working time: the estimate of 2026-10-01 | rescaled from batch 1, **[AI Inference]** |
+|---|---|---|
+| batch 1 (stated) | 2.5–4.5 | **measured: 0.1 to proof, 0.3 with reading and set-up** |
+| batches 2 and 3 (stated) | 6.5–8.5 | 1–2, the record-keeping of each batch included |
+| batches 4 to 6 (to state, approve, prove) | 15–27 | 2–5, if the other chat's rate is like this one's; its own batch-4 measurement replaces this |
+| batch 7 (blueprint, CI, record) | 2–3 | 0.5–1.5 |
+| **the proposal's scope** | **26–43** | **4–10** |
+| §4's later items, if all were done | 50–100, most of it T13, T14 and T6 | 10–40; the least certain line, since T13, T14 and T6 build theory Mathlib does not have |
+
+**Why the guess was high, [AI Inference]:** it assumed a hundred to a hundred and fifty lines per hour and a fifteen-second build loop, and it over-counted the lines by a factor of about two and a half. Batch 1 needed no theory Mathlib lacks: Banach's theorem and its estimates are there, and the rest is algebra. Where a batch must build theory from scratch (T9′ in batch 6; T13, T14, T6 later), the batch-1 rate should not be assumed. Batches 2 and 3 are measured with their commits, and this table is updated with them.
+
+**The calibration rule** (applied above). When batch 1 is Lean-verified, this table is rewritten from the measured rate (lines and declarations per hour, build seconds per file), the guess is kept beside it, and every later estimate is scaled. If batch 1 takes more than twice its estimate, the owner is told before batch 2 starts. **Batch 1 took far less than its estimate**, so batch 2 started without a stop.
+
+**Elapsed time** depends on the owner's approvals, one round per batch. **[AI Inference]:** at the measured rate, authoring no longer sets the elapsed time; the approval rounds do. The earlier figure was four to eight working days for the proposal's scope if each round is answered within a day. With authoring this fast, the elapsed time is about as many working days as there are approval rounds left: batches 4, 5 and 6, and the CI workflow, so about four.
 
 ---
 

@@ -1,0 +1,174 @@
+{
+ "when": "2026-10-01T21:21:16+00:00",
+ "declarations": 18,
+ "failing": 0,
+ "with_sorry": 0,
+ "seconds": 3.96,
+ "lean_exit": 0,
+ "rows": [
+  {
+   "name": "Atlas.perturbed_contraction",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.perturbed_contraction_uniform",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.perturbed_contraction_sharp",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.certificate",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.certificate_of_contraction",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.certificate_constant_is_opNorm",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.certificate_two_mode_example",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.error_recursion",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.defect_split",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.accumulation",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.master_bound",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.master_bound_three_terms",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.master_bound_contractive",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.master_bound_nonexpansive",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.master_bound_expansive",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.master_bound_attained",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.trace_perturbation",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.transmission_bound",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  }
+ ],
+ "lean": "leanprover/lean4:v4.34.1",
+ "mathlib": "v4.34.1"
+}
