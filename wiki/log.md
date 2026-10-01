@@ -7074,3 +7074,15 @@ The owner's O2, built to [[demo-finish-plan]] §4.1 from PoC 3's bundle code. A 
 - **Not on macOS:** there is no Mac.
 
 **Added:** `atlas/workbench/bundle/` (the templates), `scripts/build_workbench_bundle.py`, `scripts/verify_workbench_bundle.py`, `scripts/verify_workbench_pins.py`, `tests/test_workbench_installer.py`, `out/workbench/records/installer/`. **Changed:** `app.py` (Help), `gmsh_import.py`, two test files, the workbench README, `.gitignore`, [[demo-finish-plan]], [[gap-worklist]], [[index]].
+
+## [2026-10-01] build | Proofs: the implementation plan, the mains timings, and the blueprint seen in a browser
+
+[[formal-proofs-implementation-plan]], written at the owner's request; W353. **Still nothing proved**, and the owner's OK on the statements of batches 1 to 3 is still pending.
+
+- **The plan:** about seventy statements to machine-check for the proposal, in six batches, each with its Lean route, size, effort estimate and place in the import chain; what is left for later with the reason and an estimate; what is cited, proved on paper or certified numerically, and why. Every effort figure is an estimate labelled as one, with a rule for replacing it by the measured rate after batch 1.
+- **The architecture's version 1 was found on `origin/atlas-0.1`** (commit `02da03d`), not merged into the local branch, and read from the remote: three coupling tiers, the new tier-0 theorems T24 to T26 (the Gram superelement, its energy optimality, the perturbation of the interface solve, the label-free objective), T1, T8, T9 and T22's incomplete-solve term scoped to tier 2, and the SNI counterexample as a remark beside T1.
+- **An expected finding, [AI Inference] until checked:** T9's two-level form, as version 0 worded it, asks only that each learned map contract on the fine space. A two-dimensional linear example has that property and diverges under an exact coarse solve, so T9 is planned on the composite sweep.
+- **Measured on mains:** a full re-check of all 13 statement files takes 136.5 s on the first load of the day and 34.0 s once the files are cached; a first-level file costs 12 to 15 s against 26 to 30 s on battery.
+- **The blueprint was opened in a browser** through a new `lean-blueprint` entry in `.claude/launch.json` (the owner's OK): mathematics typeset, the dependency graph drawn, the console clean.
+
+**Not done:** the index row for the new page, because [[index]] and [[gap-worklist]] hold another chat's uncommitted edits; it is added once those are committed. **Added:** [[formal-proofs-implementation-plan]]. **Changed:** [[formal-proofs-plan]], [[formal-proofs-record]], `.claude/launch.json`, `out/lean/builds.jsonl`.

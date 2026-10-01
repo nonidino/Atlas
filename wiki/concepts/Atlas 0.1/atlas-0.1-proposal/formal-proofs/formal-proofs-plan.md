@@ -155,12 +155,14 @@ One line per theorem, kept by the proofs chat. *drafted*: the Lean statement exi
 - **T10: drafted**, `Atlas.average_equivariant`, `lean/AtlasProofs/SymmetryAveraging.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T11: drafted**, `Atlas.interconnection_passive` and `Atlas.interconnection_nonexpansive`, `lean/AtlasProofs/Passivity.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T8, T9, T9′, T22, T2** (step 4): not started.
-- **T24–T26, the scoping of T1, T8, T9 and T22 to "tier 2", and the SNI counterexample beside T1:** announced by the owner on 2026-10-01 as just added by the architecture chat. **Their text was not in the vault when this line was written** (no "For the proofs chat" heading in [[chart-operator-architecture]] yet), so nothing has been drafted from them.
+- **T24–T26, the scoping of T1, T8, T9 and T22 to "tier 2", and the SNI counterexample beside T1:** announced by the owner on 2026-10-01 as just added by the architecture chat. **Their text was not in the vault when this line was written** (no "For the proofs chat" heading in [[chart-operator-architecture]] yet), so nothing has been drafted from them. → **Found later the same day on `origin/atlas-0.1`** (commit `02da03d`, the design's version 1, §7 "For the proofs chat"), **not merged into the local branch**. Read from the remote and planned in [[formal-proofs-implementation-plan]] §2.2 and §3.2: T24 (perturbation of the interface solve), T25 (the Gram superelement and its energy optimality), T26 (the label-free objective), all tier 0; T1, T8, T9, T9′ and T22's incomplete-solve term scoped to tier 2. Not yet stated in Lean.
+- **The implementation plan** (which statements are machine-checked, by what route, in what order, with effort estimates and measured build times) is [[formal-proofs-implementation-plan]], written 2026-10-01.
 
 ---
 
 ## See Also
 
+- [[formal-proofs-implementation-plan]] — which statements are machine-checked, by what Lean route, in what order, and how long it takes
 - [[formal-proofs-record]] — what is checked, each statement in plain words and in Lean, the build times, and the findings
 - [[master-error-bound]] · [[defect-correction-learned-operator]] · [[temporal-error-accumulation]] · [[composition-error-theory]] — the vault's results being formalised
 - [[chart-operator-architecture]] — §4, where T8–T9 come from

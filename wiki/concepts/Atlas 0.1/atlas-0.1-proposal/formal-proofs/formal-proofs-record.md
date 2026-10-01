@@ -40,7 +40,7 @@ A machine check guarantees that the proof proves the statement. It does not guar
 
 Every `lake` run goes through `scripts/lean_build.py`, which appends one line to `out/lean/builds.jsonl`: the command, the wall time, the exit code, the number of jobs, the errors, the `sorry` warnings, and **whether the laptop was on battery**.
 
-**Every time below was measured on battery, with the processor held at 1.4 GHz of its 3.8 GHz.** **[AI Inference]:** the same builds on mains should be several times faster; that is not measured here, and no time on this page should be compared with one taken on mains.
+**Every time below was measured on battery, with the processor held at 1.4 GHz of its 3.8 GHz, except the last row, taken on mains.** Measured on the same 13 files: a first-level file costs 26 to 30 s on battery and 12 to 15 s on mains once the files are cached, about half. A time on battery and a time on mains are not comparable without that factor, and a first load of the day is four times slower again.
 
 | run | what it did | wall time | note |
 |---|---|---|---|
@@ -52,6 +52,7 @@ Every `lake` run goes through `scripts/lean_build.py`, which appends one line to
 | statements | the nine statement files of steps 1 and 2, each proof a `sorry` | 81.6 s for five new files and the root (four replayed) | 17 to 30 s per file |
 | statements | the four statement files of step 3 added | 102.6 s for the four new files and the root (nine replayed) | 28 to 43 s per file; the slowest imports the calculus library |
 | axiom check | `#print axioms` on 39 declarations, then on 58 | 75.0 s, then 32.4 s | the second run was faster though it checked more. **[AI Inference]:** the operating system had the files cached by then |
+| **full re-check, on mains** (2026-10-01, 16:24) | every project file re-checked: 13 statement files and the root | **136.5 s cold** (the first load of the day: 36 to 64 s per file, eleven at once), then **34.0 s warm** (12 to 15 s per first-level file, 10 s per file one level up) | **the only rows on this page not taken on battery** |
 
 **What the numbers say about the owner's concern.** On this machine a Lean file costs about **26 seconds before its first proof is looked at**: the price of loading Mathlib's compiled files and running their start-up code. It is paid once per file, and files that do not import each other are built at the same time. So the cost of a full build is set by **how many files stand in a chain**, not by how many there are, and the project keeps that chain short. Proof checking itself has cost nothing measurable so far, and the rule stands: a tactic call over ten seconds is replaced by an explicit step (`python scripts/lean_build.py --profile` lists every such call).
 
@@ -292,7 +293,7 @@ python scripts/lean_axioms.py                  # what each theorem rests on
 python scripts/lean_t3_counterexample.py       # section 5.1, through the workbench's driver
 ```
 
-The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blueprint/src`.
+The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blueprint/src`, and served locally by the `lean-blueprint` entry of `.claude/launch.json` (port 8353). **Checked in a browser 2026-10-01:** a theorem page typesets its mathematics, the dependency graph draws, and the console is clean. Not checked: the print version, and the links from a statement to its Lean source, which go live with the public repository.
 
 ---
 
