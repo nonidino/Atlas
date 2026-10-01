@@ -169,32 +169,33 @@ Files that do not import each other are checked at the same time, so the total i
 
 **In continuous integration, [AI Inference]:** fetching Mathlib's cache on a fresh runner is the larger part, a few minutes; the build itself is the cold figure above.
 
-### 6.2 Authoring effort (measured on batches 1 and 2, and the rest rescaled)
+### 6.2 Authoring effort (measured on batches 1 to 3, and the rest rescaled)
 
-**Measured** by the chat proving batches 1 to 3, **in a cloud container** (Linux, 4 virtual processors), not on the laptop ([[formal-proofs-record]] §5A.2 and §5A.3):
+**Measured** by the chat that proved batches 1 to 3, **in a cloud container** (Linux, 4 virtual processors), not on the laptop ([[formal-proofs-record]] §5A). Each window runs from the batch's first proof edit to the batch verified (build, axiom check, profile). The guesses of 2026-10-01 stand beside the measurements.
 
-| quantity | the guess of 2026-10-01, before any proof | measured on batch 1 (T1, T7, T4, T4e; 18 theorems) | measured on batch 2 (T3; 14 theorems) |
-|---|---|---|---|
-| lines of finished proof | 370 for batch 1, 360 for batch 2 | **150** (172 lines added, counting comments and docstrings) | **135** (169 added, counting comments, docstrings and 4 imports) |
-| proof lines per hour | 100–150 | **about 1,450** from the first proof edit to the batch verified (6 min 11 s); **about 480** counting the reading, the set-up and paper drafts of all 48 proofs (18 min 42 s) | **about 1,100** (7 min 22 s) |
-| theorems per hour | about 4 to 7 for batch 1 (18 in 2.5–4.5 h), about 3 to 4 for batch 2 (14 in 3.25–5 h) | **175**, or **58** with the same two windows | **114** |
-| build seconds per file | 12 to 15 on mains, warm, on the laptop (§6.1) | **2.0 to 3.2** per batch-1 file in a full re-check (13.0 s for all 13 files); 3 to 4 s to check one file alone | **1.9 to 2.2**, and **7.9** for the counterexample's matrix arithmetic (16.9 s for all 13 files) |
+| batch | lines of proof: guessed, **measured** | first proof edit to verified | theorems per hour: guessed, **measured** | proof lines per hour, **measured** (guessed: 100–150) | build seconds per file in a full re-check (the laptop on mains, warm: 12–15) |
+|---|---|---|---|---|---|
+| 1: T1, T7, T4, T4e (18 theorems) | 370, **150** | 6 min 11 s | 4–7, **175** | about 1,450 | 2.0–3.2 |
+| 2: T3 (14 theorems) | 360, **135** | 7 min 22 s | 3–4, **114** | about 1,100 | 1.9–2.2; the counterexample's matrix arithmetic 7.9 |
+| 3: T5, T10, T11 (16 theorems) | 310, **108** | 8 min 5 s | 4–6, **119** | about 800 | 1.5–2.8 |
+| **1 to 3** (48 theorems) | about 1,040, **393** | **21 min 38 s** | 4–5, **133** | about 1,090 | the whole project, 13 files: 16.7 s |
 
-The windows end at the batch verified (build, axiom check, profile). The record-keeping that follows (the record, the blueprint, the plans, the log, the scans, the commit) is not in them: **for batch 1 it took 9 minutes**.
+Lines of proof exclude comments, docstrings and the import lines added. Counting the reading, the set-up and paper drafts of all 48 proofs made while Mathlib downloaded, batch 1 took 18 min 42 s (58 theorems and about 480 lines per hour). The record-keeping after each batch (the record, the blueprint and its build, the plans, the log, the three scans, the commit) took **9 minutes for batch 1 and 3.5 for batch 2**. The whole session, from the branch's fast-forward to the final axiom check over all 58 declarations, took **47 min 26 s**.
 
-**The table, rescaled.** The old estimate stays beside each line. The rescaled figures are **[AI Inference]**: two batches measured, the easiest of the plan.
+**The table, rescaled.** The old estimate stays beside each line. The rescaled figures are **[AI Inference]**: three batches measured, all of them statements whose proofs needed no theory that Mathlib lacks.
 
-| scope | effort, hours of chat working time: the estimate of 2026-10-01 | measured, or rescaled from batches 1 and 2 (**[AI Inference]** where not measured) |
+| scope | effort, hours of chat working time: the estimate of 2026-10-01 | measured, or rescaled from batches 1 to 3 (**[AI Inference]** where not measured) |
 |---|---|---|
-| batch 1 (stated) | 2.5–4.5 | **measured: 0.1 to proof, 0.3 with reading and set-up, and 0.15 of record-keeping** |
-| batch 2 (stated) | 3.25–5 | **measured: 0.12 to proof** |
-| batch 3 (stated) | 2.75–3.75 | 0.3–0.6, record-keeping included |
+| batch 1 (stated) | 2.5–4.5 | **measured: 0.1 to proof, 0.3 with the reading and the set-up, and 0.15 of record-keeping** |
+| batch 2 (stated) | 3.25–5 | **measured: 0.12 to proof and 0.06 of record-keeping** |
+| batch 3 (stated) | 2.75–3.75 | **measured: 0.13 to proof** |
+| **batches 1 to 3** | **9–13** | **measured: 0.36 to proof; 0.79 for the whole session to the final check** |
 | batches 4 to 6 (to state, approve, prove) | 15–27 | 2–5, if the other chat's rate is like this one's; its own batch-4 measurement replaces this |
 | batch 7 (blueprint, CI, record) | 2–3 | 0.5–1.5 |
-| **the proposal's scope** | **26–43** | **4–10** |
+| **the proposal's scope** | **26–43** | **about 4–8** |
 | §4's later items, if all were done | 50–100, most of it T13, T14 and T6 | 10–40; the least certain line, since T13, T14 and T6 build theory Mathlib does not have |
 
-**Why the guess was high, [AI Inference]:** it assumed a hundred to a hundred and fifty lines per hour and a fifteen-second build loop, and it over-counted the lines by a factor of about two and a half. Batch 1 needed no theory Mathlib lacks: Banach's theorem and its estimates are there, and the rest is algebra. Batch 2 confirmed it at a similar rate, with explicit $3\times3$ rational matrices in place of analysis. Where a batch must build theory from scratch (T9′ in batch 6; T13, T14, T6 later), this rate should not be assumed. Batch 3 is measured with its commit, and this table is updated with it.
+**Why the guess was high, [AI Inference]:** it assumed a hundred to a hundred and fifty lines per hour and a fifteen-second build loop, and it over-counted the lines by a factor of about two and a half. Batch 1 needed no theory Mathlib lacks: Banach's theorem and its estimates are there, and the rest is algebra. Batch 2 kept a similar rate with explicit $3\times3$ rational matrices, and batch 3 with derivatives, eigenvalues and group averages. The rate fell a little from batch to batch, as more of the work went into finding the Mathlib import that held a lemma. Where a batch must build theory from scratch (T9′ in batch 6; T13, T14, T6 later), this rate should not be assumed.
 
 **The calibration rule** (applied above). When batch 1 is Lean-verified, this table is rewritten from the measured rate (lines and declarations per hour, build seconds per file), the guess is kept beside it, and every later estimate is scaled. If batch 1 takes more than twice its estimate, the owner is told before batch 2 starts. **Batch 1 took far less than its estimate**, so batch 2 started without a stop.
 

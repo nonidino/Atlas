@@ -36,7 +36,7 @@ and the opposite flow, the power into `B` is minus the power into `A`. -/
 theorem port_rule_power {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
     {eA fA eB fB : F} (he : eB = eA) (hf : fB = -fA) :
     inner ℝ eB fB = -inner ℝ eA fA := by
-  sorry
+  rw [he, hf, inner_neg_right]
 
 variable {ι Port : Type*} [Fintype ι] [Fintype Port] [DecidableEq ι]
 
@@ -46,7 +46,10 @@ partner's, the powers sum to zero. -/
 theorem junction_power_eq_zero (power : Port → ℝ) (partner : Equiv.Perm Port)
     (h : ∀ p, power (partner p) = -power p) :
     ∑ p, power p = 0 := by
-  sorry
+  -- Summing over the partners runs over every port again: `∑ p = ∑ p ∘ π = -∑ p`.
+  have hsum : ∑ p, power p = ∑ p, power (partner p) := (Equiv.sum_comp partner power).symm
+  simp only [h, Finset.sum_neg_distrib] at hsum
+  linarith
 
 /-- **T11 (passivity composes).** Agent `i` owns the ports `p` with `owner p = i`, stores
 `H i` before the step and `H' i` after it, and receives `ext i` through its open ports. If
@@ -57,7 +60,17 @@ theorem interconnection_passive (owner : Port → ι) (power : Port → ℝ)
     (H H' ext : ι → ℝ)
     (hpassive : ∀ i, H' i ≤ H i + ∑ p ∈ univ.filter (fun p => owner p = i), power p + ext i) :
     ∑ i, H' i ≤ ∑ i, H i + ∑ i, ext i := by
-  sorry
+  -- Sum the agents' inequalities; the port powers, summed agent by agent, are the sum over all
+  -- ports, which the junction makes zero.
+  have hports : ∑ i, ∑ p ∈ univ.filter (fun p => owner p = i), power p = 0 := by
+    rw [Finset.sum_fiberwise univ owner power]
+    exact junction_power_eq_zero power partner hjunction
+  calc ∑ i, H' i
+      ≤ ∑ i, (H i + ∑ p ∈ univ.filter (fun p => owner p = i), power p + ext i) :=
+        Finset.sum_le_sum fun i _ => hpassive i
+    _ = ∑ i, H i + ∑ i, ∑ p ∈ univ.filter (fun p => owner p = i), power p + ∑ i, ext i := by
+        rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
+    _ = ∑ i, H i + ∑ i, ext i := by rw [hports, add_zero]
 
 /-- **T11 (incremental passivity gives a non-expansive step).** `u i, v i` are agent `i`'s
 states in two runs before a step and `u' i, v' i` after it; `dpower p` is the power pairing
@@ -71,6 +84,11 @@ theorem interconnection_nonexpansive {X : ι → Type*} [∀ i, SeminormedAddCom
     (hpassive : ∀ i, ‖u' i - v' i‖ ^ 2 ≤
       ‖u i - v i‖ ^ 2 + 2 * ∑ p ∈ univ.filter (fun p => owner p = i), dpower p) :
     ∑ i, ‖u' i - v' i‖ ^ 2 ≤ ∑ i, ‖u i - v i‖ ^ 2 := by
-  sorry
+  -- Passivity composes, with storage `‖u i - v i‖ ^ 2`, port powers `2 Δp` and no external term.
+  have h := interconnection_passive owner (fun p => 2 * dpower p) partner
+    (fun p => by rw [hjunction, mul_neg]) (fun i => ‖u i - v i‖ ^ 2)
+    (fun i => ‖u' i - v' i‖ ^ 2) (fun _ => 0)
+    (fun i => by rw [add_zero, ← Finset.mul_sum]; exact hpassive i)
+  simpa using h
 
 end Atlas

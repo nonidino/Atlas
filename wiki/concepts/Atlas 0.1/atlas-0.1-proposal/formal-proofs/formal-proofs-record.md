@@ -121,22 +121,22 @@ One row per theorem. **Build time** is the file's own time in the full build tha
 | **T3c** | a convergent sweep converges to the solution | `Atlas.Schwarz.tendsto_solution` | same | **checked** | 2.2 s, cloud container | the same three |
 | **T3d** | error $\le$ update $/(1-\rho)$ | `Atlas.Schwarz.error_le_update` | same | **checked** | 2.2 s, cloud container | the same three |
 | **T3c, finding** | a Schwarz sweep with a fixed point that is not the solution | `Atlas.Schwarz.exists_spurious_fixedPt` | `AtlasProofs/SchwarzCounterexample.lean` | **checked** | 7.9 s, cloud container | the same three |
-| **T5, Theorem 1** | any limit of defect correction is a fixed point of the classical map | `Atlas.DefectCorrection.limit_isFixedPt` | `AtlasProofs/DefectCorrection.lean` | approved | — | — |
-| T5, Theorem 1, inexact | the same when each step is solved only approximately, the leftover tending to zero | `Atlas.DefectCorrection.limit_isFixedPt_of_inexact` | same | approved | — | — |
-| **T5, Corollary 1** | a constant cheap map makes the iteration the classical march | `Atlas.DefectCorrection.step_of_const` | same | approved | — | — |
-| T5 | the inner march's fixed points are the successors | `Atlas.DefectCorrection.isStep_iff` | same | approved | — | — |
-| T5, Corollary 1 | with a constant cheap map the inner march returns $\Phi(w)$ at every stage | `Atlas.DefectCorrection.innerMarch_of_const` | same | approved | — | — |
-| T5, Corollary 2 | $J_{\Psi_\alpha}=\alpha I+(1-\alpha)J_\Psi$, as a derivative | `Atlas.DefectCorrection.shrink_hasFDerivAt` | `AtlasProofs/DefectCorrectionShrink.lean` | approved | — | — |
-| T5, Corollary 2 | an eigenvalue $\mu$ becomes $\alpha+(1-\alpha)\mu$ | `Atlas.DefectCorrection.shrink_hasEigenvalue` | same | approved | — | — |
-| **T5, Corollary 2** | and those are all the eigenvalues, for $\alpha\ne1$ | `Atlas.DefectCorrection.shrink_hasEigenvalue_iff` | same | approved | — | — |
-| T5, Corollary 2 | the real part is at least $\alpha$ | `Atlas.DefectCorrection.shrink_re` | same | approved | — | — |
-| **T10** | the group average of any map is exactly equivariant | `Atlas.average_equivariant` | `AtlasProofs/SymmetryAveraging.lean` | approved | — | — |
-| T10 | averaging returns an equivariant map unchanged | `Atlas.average_of_equivariant` | same | approved | — | — |
-| T10, example | averaging over $\{\mathrm{id},M_x,M_y\}$, not a group, is not equivariant | `Atlas.average_over_non_group_not_equivariant` | same | approved | — | — |
-| T11 | the connection rule conserves power | `Atlas.port_rule_power` | `AtlasProofs/Passivity.lean` | approved | — | — |
-| T11 | the junction: connected port powers sum to zero | `Atlas.junction_power_eq_zero` | same | approved | — | — |
-| **T11** | passive agents joined by the rule make a passive system | `Atlas.interconnection_passive` | same | approved | — | — |
-| **T11, error form** | incrementally passive agents make a non-expansive step | `Atlas.interconnection_nonexpansive` | same | approved | — | — |
+| **T5, Theorem 1** | any limit of defect correction is a fixed point of the classical map | `Atlas.DefectCorrection.limit_isFixedPt` | `AtlasProofs/DefectCorrection.lean` | **checked** | 2.1 s, cloud container | the same three |
+| T5, Theorem 1, inexact | the same when each step is solved only approximately, the leftover tending to zero | `Atlas.DefectCorrection.limit_isFixedPt_of_inexact` | same | **checked** | 2.1 s, cloud container | the same three |
+| **T5, Corollary 1** | a constant cheap map makes the iteration the classical march | `Atlas.DefectCorrection.step_of_const` | same | **checked** | 2.1 s, cloud container | the same three |
+| T5 | the inner march's fixed points are the successors | `Atlas.DefectCorrection.isStep_iff` | same | **checked** | 2.1 s, cloud container | the same three |
+| T5, Corollary 1 | with a constant cheap map the inner march returns $\Phi(w)$ at every stage | `Atlas.DefectCorrection.innerMarch_of_const` | same | **checked** | 2.1 s, cloud container | the same three |
+| T5, Corollary 2 | $J_{\Psi_\alpha}=\alpha I+(1-\alpha)J_\Psi$, as a derivative | `Atlas.DefectCorrection.shrink_hasFDerivAt` | `AtlasProofs/DefectCorrectionShrink.lean` | **checked** | 2.8 s, cloud container | the same three |
+| T5, Corollary 2 | an eigenvalue $\mu$ becomes $\alpha+(1-\alpha)\mu$ | `Atlas.DefectCorrection.shrink_hasEigenvalue` | same | **checked** | 2.8 s, cloud container | the same three |
+| **T5, Corollary 2** | and those are all the eigenvalues, for $\alpha\ne1$ | `Atlas.DefectCorrection.shrink_hasEigenvalue_iff` | same | **checked** | 2.8 s, cloud container | the same three |
+| T5, Corollary 2 | the real part is at least $\alpha$ | `Atlas.DefectCorrection.shrink_re` | same | **checked** (its hypothesis $0\le\alpha$ is not needed, §5.2) | 2.8 s, cloud container | the same three |
+| **T10** | the group average of any map is exactly equivariant | `Atlas.average_equivariant` | `AtlasProofs/SymmetryAveraging.lean` | **checked** | 1.5 s, cloud container | the same three |
+| T10 | averaging returns an equivariant map unchanged | `Atlas.average_of_equivariant` | same | **checked** (its `SMulCommClass` hypothesis is not needed, §5.2) | 1.5 s, cloud container | the same three |
+| T10, example | averaging over $\{\mathrm{id},M_x,M_y\}$, not a group, is not equivariant | `Atlas.average_over_non_group_not_equivariant` | same | **checked** | 1.5 s, cloud container | the same three |
+| T11 | the connection rule conserves power | `Atlas.port_rule_power` | `AtlasProofs/Passivity.lean` | **checked** | 2.4 s, cloud container | the same three |
+| T11 | the junction: connected port powers sum to zero | `Atlas.junction_power_eq_zero` | same | **checked** | 2.4 s, cloud container | the same three |
+| **T11** | passive agents joined by the rule make a passive system | `Atlas.interconnection_passive` | same | **checked** | 2.4 s, cloud container | the same three |
+| **T11, error form** | incrementally passive agents make a non-expansive step | `Atlas.interconnection_nonexpansive` | same | **checked** | 2.4 s, cloud container | the same three |
 
 ---
 
@@ -279,6 +279,8 @@ $\det A=-2$ and both window matrices have determinant $-1$, so every solve is ex
 - **T4's stability hypothesis is needed only along the two trajectories**, not globally.
 - **T5's Theorem 1 needs both maps continuous at the limit.** [[defect-correction-learned-operator]] §2.1 states it with "$G_\Psi$ is continuous" and uses the continuity of $G_\Phi$ in its proof. The classical step is continuous in every use on that page, so nothing it concludes changes.
 - **T10 needs nothing of the action on the inputs** beyond its being a group action; linearity is needed only on the outputs.
+- **T5 Corollary 2's real-part bound does not need $\alpha\ge0$** (found in batch 3 by Lean's unused-variable linter). $\operatorname{Re}\bigl(\alpha+(1-\alpha)\mu\bigr)=\alpha+(1-\alpha)\operatorname{Re}\mu\ge\alpha$ uses only $\alpha\le1$ and $\operatorname{Re}\mu\ge0$. `Atlas.DefectCorrection.shrink_re` is true as written and was **not changed**; its hypothesis $0\le\alpha$ only narrows it, and the blueprint's "for $0\le\alpha\le1$" could read "for $\alpha\le1$".
+- **T10's "averaging leaves a symmetric map alone" does not need the group's action to commute with the scalars** (found in batch 3 by the linter for section variables). `Atlas.average_of_equivariant` carries the hypothesis `SMulCommClass` only because it is a section variable shared with `Atlas.average_equivariant`, which does use it: there $h$ must pass through $\frac1{\lvert G\rvert}$. True as written; **not changed**.
 
 ---
 
@@ -347,6 +349,40 @@ The record-keeping after verification (this section, the blueprint, the plans, t
 **Batch 1's record-keeping**, promised in §5A.2: from batch 1 verified (21:22:00) to its commit pushed (21:31:00), 9 minutes, for the record, the blueprint and its build, the two plans, the log, the three scans and the commit.
 
 **Findings:** none. Every batch-2 statement is proved as written.
+
+### 5A.4 Batch 3: T5, T10, T11 — checked
+
+**What is checked:** all 19 declarations of `lean/decls-batch-3.txt`, the 16 theorems and the 3 definitions they rest on; no statement changed, no helper lemma needed. **Imports added**, each for what the proofs use and the statement files did not reach: `Mathlib.Analysis.Normed.Group.Uniform` in `DefectCorrection.lean` (that a normed group is a topological group, for the limits of differences, and `squeeze_zero_norm` for the inexact form); `Mathlib.Algebra.BigOperators.GroupWithZero.Action` (`Finset.smul_sum`), `Mathlib.Algebra.Module.NatInt` (`Nat.cast_smul_eq_nsmul`) and `Mathlib.Tactic.NormNum.Eq` (so that `norm_num` decides $-\tfrac13\ne\tfrac13$) in `SymmetryAveraging.lean`.
+
+| check | result |
+|---|---|
+| `lean_build.py` (21:48) | success, 7.7 s; **no `sorry` left in the project** |
+| `lean_build.py --clean` (21:50) | success, 16.7 s, 0 errors, 0 `sorry`. Batch-3 files: `DefectCorrection` 2.1 s, `DefectCorrectionShrink` 2.8 s, `SymmetryAveraging` 1.5 s, `Passivity` 2.4 s. Two warnings, both the unused hypotheses of §5.2's last two entries |
+| `lean_axioms.py --names lean/decls-batch-3.txt` | **19 declarations, 0 failing**, each on `propext`, `Classical.choice` and `Quot.sound` only; 3.9 s |
+| `lean_build.py --profile` | 13 files, 45.9 s in all, **no step of ten seconds or more** |
+| blueprint | `\leanok` in the 9 proofs of `defect-correction.tex` and the 7 of `structure.tex`, one of them a one-line proof added to the non-group example, which had none. Builds without a warning; the dependency graph shows **all 46 theorem nodes fully proved** and the 4 definitions defined (the two examples are not drawn) |
+
+**Two statements checked in Lean as the blueprint reads them**, since a parse could have made them say something else: the passivity hypothesis is $H_i'\le\bigl(H_i+\sum_{x\text{ of }i}p(x)\bigr)+\mathrm{ext}_i$, the open-port term outside the sum over ports (printed with `pp.parens`); and the two hypotheses of §5.2 that the proofs do not use are in the signatures as the linter reports.
+
+**The measured rate.** 16 theorems; **108 lines of proof text** (131 lines added in all, counting comments, docstrings and the 4 import lines), against the plan's 310.
+
+| window | time | theorems per hour | proof lines per hour |
+|---|---|---|---|
+| first proof edit (21:42:07) to the batch verified, the profile being the last check (21:50:12) | 8 min 5 s | 119 | about 800 |
+
+**Batch 2's record-keeping**, T3's own commit included: from verified (21:38:30) to its commit pushed (21:42:00), 3.5 minutes.
+
+**Findings:** no statement was false or short of a hypothesis. Two smaller findings, **hypotheses stronger than needed**, are recorded in §5.2: T5 Corollary 2's real-part bound does not use $0\le\alpha$, and T10's idempotence does not use `SMulCommClass`.
+
+### 5A.5 Batches 1 to 3 together
+
+| check | result |
+|---|---|
+| the full re-check, every project file (21:50) | `lake build` success, 16.7 s, 0 errors, **0 `sorry`**; files 1.5 to 2.8 s each, the counterexample 8.4 s |
+| `lean_axioms.py --names lean/decls-batches-1-3.txt`, the list left as it was (21:50:44) | **58 declarations, 0 failing**: all 48 theorems and the 10 definitions rest on `propext`, `Classical.choice` and `Quot.sound` only; 4.1 s |
+| the profile | no step of ten seconds or more in any file |
+
+**The rate over the three batches:** 48 theorems and 393 lines of proof, against the plan's estimate of about 1,040 lines and 9 to 13 hours. From the first proof edit to the batch verified: 6 min 11 s, 7 min 22 s and 8 min 5 s, **21 min 38 s in all**. The whole session, from the fast-forward (21:03:18) to the final axiom check (21:50:44), took **47 min 26 s**, including the reading, the set-up and the record-keeping of batches 1 and 2. **[AI Inference]:** these statements needed no theory that Mathlib lacks; the rate is not a forecast for proofs that must build theory first (T9′, T13, T14, T6).
 
 ---
 
