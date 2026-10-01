@@ -168,7 +168,11 @@ One line per theorem, kept by the proofs chat. *drafted*: the Lean statement exi
 - **T8: checked**, `Atlas.wave_bound`, `Atlas.cayley_transform` and, for tier 0, `Atlas.Piece.gram_cayley_nonexpansive`, `lean/AtlasProofs/Cayley.lean`, 2026-10-01 (approved by the owner the same day).
 - **T9: proved in two parts, with a finding**, 2026-10-01; **the two contracts wait on T1** (they quote `Atlas.perturbed_contraction`, still a `sorry` on this branch), and the example and the consistency lemmas are checked. T9a, one level: `Atlas.contraction_contract`, `lean/AtlasProofs/ContractionContract.lean`. T9b, two levels: `Atlas.two_level_contract`, whose hypothesis is a contraction of the **composite** two-level round, and `Atlas.two_level_fine_contraction_diverges`, the example showing that contracting the fine space is not enough, `lean/AtlasProofs/TwoLevel.lean`. Approved by the owner 2026-10-01.
 - **The SNI remark beside T1: checked**, `Atlas.sni_counterexample`, `lean/AtlasProofs/SniCounterexample.lean`, 2026-10-01 (approved by the owner the same day).
-- **T9′, T22, T2, the headline statements** (batch 6): not stated yet.
+- **T9′: checked**, `Atlas.krasnoselskii_mann`, `lean/AtlasProofs/KrasnoselskiiMann.lean`, 2026-10-01 (approved by the owner the same day). Proved from scratch; no `sorry`, three standard axioms only.
+- **T22: proved, once per tier; waits on T1, T4 and T4c**, 2026-10-01. Tier 2: `Atlas.tier2_step_defect` and `Atlas.learned_master_bound_tier2`. Tier 0: `Atlas.learned_master_bound_tier0` and, with T25's bound as the estimate, `Atlas.learned_master_bound_tier0_superelement`. `lean/AtlasProofs/LearnedMasterBound.lean`. Their own proofs are complete; they quote theorems of batches 1 to 3.
+- **T2: proved as a conditional theorem; waits on T1**, `Atlas.existence_conditional` and `Atlas.existence_of_learned_coupling`, `lean/AtlasProofs/Existence.lean`, 2026-10-01. The approximation theorem is a hypothesis.
+- **The headline statements**, `lean/AtlasProofs/Headline.lean`, 2026-10-01: `Atlas.tier0_headline` is **checked**; `Atlas.tier2_headline` (waits on T1 and T4) and `Atlas.defect_correction_headline` (waits on T5) are proved.
+- **Batches 4 to 6 together:** 57 theorems, 46 checked on this branch, 11 proved and waiting on the merge with the branch of batches 1 to 3, listed by name in [[formal-proofs-record]] §7.10.
 
 **History of this section.**
 

@@ -20,3 +20,7 @@ import AtlasProofs.Cayley
 import AtlasProofs.ContractionContract
 import AtlasProofs.TwoLevel
 import AtlasProofs.SniCounterexample
+import AtlasProofs.KrasnoselskiiMann
+import AtlasProofs.LearnedMasterBound
+import AtlasProofs.Existence
+import AtlasProofs.Headline

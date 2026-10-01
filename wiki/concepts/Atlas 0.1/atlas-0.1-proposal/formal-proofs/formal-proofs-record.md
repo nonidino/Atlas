@@ -307,7 +307,7 @@ The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blue
 
 *Kept by the chat that states and proves batches 4 to 6 (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements).* Status words as in §0. Builds of this chat are recorded in `out/lean/builds-batches-4-6.jsonl`, its axiom checks in `out/lean/axioms-batches-4-6.json`, and its declarations are listed in `lean/decls-batches-4-6.txt`.
 
-**Where this stands (2026-10-01).** The owner approved the statements of batches 4 and 5 on 2026-10-01. **Batch 4 (tier 0) is checked**: 28 theorems in five Lean files, no `sorry`, each resting on Lean's three standard axioms only (§7.1 to §7.3). **Batch 5 (tier 2) is proved**: 14 theorems in four files with no `sorry` of their own; 12 are checked, and 2 (`contraction_contract`, `two_level_contract`) quote T1 and wait on the other chat's proof of it (§7.4 to §7.6). Batch 6 is not stated yet.
+**Where this stands (2026-10-01).** The owner approved the statements of batches 4 and 5 on 2026-10-01. **Batch 4 (tier 0) is checked**: 28 theorems in five Lean files, no `sorry`, each resting on Lean's three standard axioms only (§7.1 to §7.3). **Batch 5 (tier 2) is proved**: 14 theorems in four files with no `sorry` of their own; 12 are checked, and 2 (`contraction_contract`, `two_level_contract`) quote T1 and wait on the other chat's proof of it (§7.4 to §7.6). **Batch 6 is proved** (approved by the owner 2026-10-01): 15 theorems in four files with no `sorry` of their own; 6 are checked, and 9 quote theorems of batches 1 to 3 and wait on the other chat (§7.7 to §7.9). **All three batches: 57 theorems, 46 checked, 11 waiting on the merge, listed by name in §7.10.**
 
 ### 7.1 The record, batch 4
 
@@ -536,6 +536,115 @@ $T(u)=\tfrac12u$ is a contraction with factor $\tfrac12$ and fixed point $0$. $\
 3. **T9a's exchange need only be non-expansive.** An isometry, which the document assumes, is a special case.
 4. **T8's norm bound needs a non-zero space.** On the zero space every $c$ satisfies the accretivity hypothesis and $1-4Zc/(1+ZM)^2$ can be negative, so `cayley_transform` carries `Nontrivial E`. The pointwise bounds need no such hypothesis.
 5. **T8's bound does not use linearity.** It is stated for any effort and flow, which is the form a nonlinear expert's increments satisfy.
+
+### 7.7 The record, batch 6
+
+| # | statement, in one line | Lean name | file | status | build time | axioms |
+|---|---|---|---|---|---|---|
+| T9′ | for $\omega\ne0$ the averaged sweep has the fixed points of $T$ | `Atlas.averaged_fixedPt_iff` | `AtlasProofs/KrasnoselskiiMann.lean` | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T9′ | $\lVert(1-\omega)a+\omega b\rVert^2=(1-\omega)\lVert a\rVert^2+\omega\lVert b\rVert^2-\omega(1-\omega)\lVert a-b\rVert^2$ | `Atlas.norm_sq_convex_combination` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T9′ | one averaged step: $\lVert x'-p\rVert^2\le\lVert x-p\rVert^2-\omega(1-\omega)\lVert x-Tx\rVert^2$ | `Atlas.averaged_step` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T9′ | the residuals $\lVert x_n-Tx_n\rVert$ tend to zero | `Atlas.averaged_residual_tendsto_zero` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T9′** | Krasnoselskii–Mann: the averaged iteration converges to a fixed point | `Atlas.krasnoselskii_mann` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T22, tier 2** | one step: $\sigma\le C_\mu\delta/(1-\rho)$ and $\gamma\le C_\mu\rho^k d(\lambda^{(0)},\lambda^\dagger)$ | `Atlas.tier2_step_defect` | `AtlasProofs/LearnedMasterBound.lean` | **proved here; waits on T1** | 12 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| **T22, tier 2** | the master bound with those two terms added to every step | `Atlas.learned_master_bound_tier2` | same | **proved here; waits on T1 and T4** | 12 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` and `Atlas.master_bound_three_terms` only |
+| **T22, tier 0** | the master bound in the energy size, defects $\tau^n+g^n$, no incomplete-solve term | `Atlas.learned_master_bound_tier0` | same | **proved here; waits on T4c** | 12 s | the three standard ones, and `sorryAx` through `Atlas.accumulation` only |
+| **T22, tier 0** | the same with $g^n$ supplied by T25's error bound | `Atlas.learned_master_bound_tier0_superelement` | same | **proved here; waits on T4c** | 12 s | the three standard ones, and `sorryAx` through `Atlas.accumulation` only |
+| **T2** | a map within $\eta$ of the classical sweep on a ball contracts there at $\rho+\eta$; its answer is within $\eta/(1-\rho-\eta)$ | `Atlas.existence_conditional` | `AtlasProofs/Existence.lean` | **proved here; waits on T1** | 15 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| T2 | the same with the closeness stated through a derivative | `Atlas.existence_conditional_c1` | same | **proved here; waits on T1** | 15 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| **T2** | if a class of maps contains such a map, it contains one with those properties | `Atlas.existence_of_learned_coupling` | same | **proved here; waits on T1** | 15 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| **headline, tier 0** | solvable for every output, and energy-optimal | `Atlas.tier0_headline` | `AtlasProofs/Headline.lean` | checked | 11 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **headline, tier 2** | certified experts: geometric convergence near the classical answer, and the master bound with that term | `Atlas.tier2_headline` | same | **proved here; waits on T1 and T4** | 11 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` and `Atlas.master_bound_three_terms` only |
+| **headline, defect correction** | two cheap maps, one answer | `Atlas.defect_correction_headline` | same | **proved here; waits on T5** | 11 s | the three standard ones, and `sorryAx` through `Atlas.DefectCorrection.limit_isFixedPt` only |
+
+**The build that checked batch 6 (2026-10-01, on battery).** `python scripts/lean_build.py --clean`: **79.3 s**, 27 files, no error; the four batch-6 files took 11 to 21 s each and gave no warning. The 48 `sorry` warnings left are all in the thirteen files of batches 1 to 3. **The axiom check** on this chat's 84 names (16 s): 73 depend on the three standard axioms only; the other 11 are the theorems of §7.10.
+
+**The profile (on battery, after the batch-6 proofs).** `python scripts/lean_build.py --profile`: 26 files, 434.2 s one after another, **0 steps at or over ten seconds**, exit 0.
+
+**Which of these wait on the other chat, as the axiom check found them.** `tier2_step_defect`, `learned_master_bound_tier2`, the three statements of T2 and `tier2_headline` quote T1 (`Atlas.perturbed_contraction`). `learned_master_bound_tier2` and `tier2_headline` also quote T4 (`Atlas.master_bound_three_terms`); the two tier-0 statements of T22 quote T4c (`Atlas.accumulation`); `defect_correction_headline` quotes T5 (`Atlas.DefectCorrection.limit_isFixedPt`). That is nine of the fifteen, the nine predicted before the proofs were written. T9′ (five statements) and `tier0_headline` quote nothing of batches 1 to 3 and are checked.
+
+**What proving added, and what it changed.** Three helper lemmas: `tendsto_sub_succ_of_antitone` (a decreasing non-negative sequence has differences tending to zero), `perturbed_contraction_on` (T1 on a closed set the map sends into itself, which T2 is an instance of) and, in batch 5's `ContractionContract.lean`, `waveSweep_defect` (the defect of the sweep is at most the experts' defects combined in $\ell^2$), which the tier-2 headline needs and which `contraction_contract`'s own proof now quotes. The four files grew from 432 lines to 676. All 20 approved declarations compared are word for word what the owner approved. Two statements of T2 were then **generalised** by one line each (an `omit` of the `NormedSpace` hypothesis): `existence_conditional` and `existence_of_learned_coupling` use only the norm and completeness, not the vector-space structure over the reals. No `sorry`, no new axiom, no `maxHeartbeats`.
+
+**The first build of the proofs passed.** Fifteen proofs in four files, no error; two linter remarks, both fixed (a `haveI` that should be `have`, and the unused hypothesis above). T9′, the from-scratch analysis proof the plan flagged as the risk, is about 115 lines of proof in a 195-line file that builds in 21 s.
+
+### 7.8 The statements, batch 6
+
+**T9′, Krasnoselskii–Mann.** *In plain words:* T1 and T9 need a sweep that shortens every distance by a factor below one. A passive coupling gives less: a sweep that lengthens nothing (T8 with $c=0$, T11). Iterating such a sweep need not settle: a rotation of the plane lengthens nothing and never converges. Averaging each sweep with the current iterate does settle, on a fixed point of the sweep, whenever there is one. No rate is claimed.
+
+Let $E$ be a finite-dimensional real inner-product space, $\lVert Tx-Ty\rVert\le\lVert x-y\rVert$ for all $x,y$, $T(p)=p$ for some $p$, and $0<\omega<1$. With
+
+$$x_{n+1}=(1-\omega)\,x_n+\omega\,T(x_n),$$
+
+for every $x_0$ there is a $q$ with $T(q)=q$ and $x_n\to q$. The three steps are stated separately, in any real inner-product space:
+
+$$\lVert(1-\omega)a+\omega b\rVert^2=(1-\omega)\lVert a\rVert^2+\omega\lVert b\rVert^2-\omega(1-\omega)\lVert a-b\rVert^2;$$
+
+$$\lVert x_{n+1}-p\rVert^2\le\lVert x_n-p\rVert^2-\omega(1-\omega)\lVert x_n-T(x_n)\rVert^2\quad\text{for every fixed point }p;\qquad\lVert x_n-T(x_n)\rVert\to0 .$$
+
+Finite dimension is used once: a bounded sequence has a convergent subsequence.
+
+**T22, the master bound with learned experts, once per tier.** *In plain words:* the master bound adds up what each step does wrong. T4 names three parts of a coupled step's defect: $\tau$ (the experts are wrong even with the right interface data), $\sigma$ (the interface problem is posed with the wrong operator) and $\gamma$ (the interface solve is stopped early). Learned experts change $\sigma$ and $\gamma$, and differently at each tier.
+
+*Tier 2.* At a state $v$, the classical interface sweep $T_c$ has the answer $\lambda^\star$; the learned sweep $T_l$ is a $\rho$-contraction, $\rho<1$, within $\delta$ of $T_c$ at $\lambda^\star$; the step $\Phi(\lambda,v)$ is $C_\mu$-Lipschitz in $\lambda$; the host runs $k$ sweeps from $\lambda^{(0)}$. Then $T_l$ has a fixed point $\lambda^\dagger$ and
+
+$$\underbrace{\lVert\Phi(\lambda^\dagger,v)-\Phi(\lambda^\star,v)\rVert}_{\sigma}\le\frac{C_\mu\,\delta}{1-\rho},\qquad\underbrace{\lVert\Phi(T_l^{\,k}\lambda^{(0)},v)-\Phi(\lambda^\dagger,v)\rVert}_{\gamma}\le C_\mu\,\rho^k\,d(\lambda^{(0)},\lambda^\dagger).$$
+
+Over $N$ steps, if these hold along the true trajectory, the starting guess is within $D$ of the learned answer, and a step magnifies the difference of two trajectories by at most $L$:
+
+$$\lVert u^N-u^{N,\star}\rVert\le L^N\lVert u^0-u^{0,\star}\rVert+\sum_{n=1}^{N}L^{N-n}\Bigl(\lVert\tau^n\rVert+\frac{C_\mu\,\delta}{1-\rho}+C_\mu\,\rho^k\,D\Bigr).$$
+
+*Tier 0.* There is no iteration, so there is no $\gamma$. In the energy size: if $u^{n,\text{ex}}$ is the undivided discrete step from the true state and $\tilde u^n$ the tier-0 step from it, with $\lVert u^{n,\text{ex}}-u^{n+1,\star}\rVert_M\le\tau^n$ and Galerkin error $\lVert u^{n,\text{ex}}-\tilde u^n\rVert_M\le g^n$, then
+
+$$\lVert u^N-u^{N,\star}\rVert_M\le L^N\lVert u^0-u^{0,\star}\rVert_M+\sum_{n=0}^{N-1}L^{N-1-n}\bigl(\tau^n+g^n\bigr),$$
+
+and a second statement puts T25's bound in place of $g^n$: the error of any reference field plus the energy of the network's field errors, step by step.
+
+**T2, existence, as a conditional theorem.** *In plain words:* "can a learned coupling do as well as the classical one?" If a network can match the classical interface map and its derivative to within $\eta$ near the classical answer, then yes: its iteration contracts at the classical rate plus $\eta$, and its answer is within $\eta/(1-\rho-\eta)$ of the classical one. **The "if" is assumed, not proved**: it is the universal approximation theorem in $C^1$, which the proposal cites. And nothing here says that a *trained* network meets it.
+
+Let $B$ be the closed ball of radius $r$ around $a_c$ in a real Banach space, $T_c(a_c)=a_c$, $\lVert T_cx-T_cy\rVert\le\rho\lVert x-y\rVert$ on $B$. Let $\lVert T_la_c-T_ca_c\rVert\le\eta$ and $\lVert(T_l-T_c)x-(T_l-T_c)y\rVert\le\eta\lVert x-y\rVert$ on $B$ (true if $T_l-T_c$ has a derivative of norm at most $\eta$ on $B$). If $\rho+\eta<1$ and $\eta\le(1-\rho-\eta)\,r$, then $T_l$ has exactly one fixed point $a_l$ in $B$; iterates from any $x_0\in B$ stay in $B$ with $\lVert T_l^{\,k}x_0-a_l\rVert\le(\rho+\eta)^k\lVert x_0-a_l\rVert$; and
+
+$$\lVert a_l-a_c\rVert\le\frac{\eta}{1-\rho-\eta}.$$
+
+The third statement is the existence form: if a class of maps (the networks of an architecture) contains one within $\eta$ in that sense, it contains one with these properties.
+
+**The headline statements.** Each is one theorem that only combines others.
+
+- **Tier 0** (`tier0_headline`). *Whatever a learned superelement returns, the coupled system is solvable, and its answer is the best its modes can represent in the energy norm.* Under the document's three assumptions, independent port patterns and every free coordinate read by some piece: for any network output, $\tilde{\mathsf S}c=\tilde\chi$ has exactly one solution, and $\lVert u-w(c)\rVert_M\le\lVert u-w(c')\rVert_M$ for all $c'$.
+- **Tier 2** (`tier2_headline`). *If every learned expert's scattering map is certified to contract by $\rho<1$ and differs from the classical one by at most $\delta$, the coupled iteration converges geometrically from any start to a point within $\delta/(1-\rho)$ of the classical answer; over $N$ steps the error obeys the master bound with that term added.* The interface sweep of each step is the wave sweep of T9a, and $\delta=\bigl(\sum_i\delta_i^2\bigr)^{1/2}$.
+- **Defect correction** (`defect_correction_headline`). *Inside defect correction, a learned expert can change how many classical steps the answer takes. It cannot change the answer.* Two runs with different cheap maps $\Psi_1$, $\Psi_2$ that converge, to $a_1$ and $a_2$, give $\Phi(a_1)=a_1$ and $\Phi(a_2)=a_2$; if $\Phi$ has at most one fixed point, $a_1=a_2$.
+
+### 7.9 Findings, batch 6 (before the proofs)
+
+1. **The tier-2 headline's $\delta$ is the combined defect** $\bigl(\sum_i\delta_i^2\bigr)^{1/2}$, as in §7.6 item 2. The sentence is true as written only with that reading.
+2. **The tier-2 headline has no coarse space in it.** It is the one-level contract (T9a) inside the master bound. With a coarse space the hypothesis must be the contraction of the composite round (T9b), and `learned_master_bound_tier2` applies to it unchanged, because it is stated for any interface sweep, not only for the wave sweep.
+3. **T2 needs room in the ball**: $\eta\le(1-\rho-\eta)\,r$, so that the learned map sends the ball into itself. The plan's one-line statement did not say so. It is not a restriction as $\eta\to0$.
+4. **T2's rate is $\rho+\eta$, and its hypothesis is closeness of values at one point and of increments on the ball.** Closeness of values everywhere on the ball is not needed.
+5. **T22 at tier 0 measures in the energy size**, the norm in which T25's bound holds. Its stability constant $L$ is therefore the tier-0 step's Lipschitz constant in that size, a hypothesis that has to be established for the time scheme in use; nothing here proves it.
+6. **The defect-correction headline needs the classical problem to have at most one answer** to conclude that two runs agree. Without it, each run still ends on *a* fixed point of the classical map, which is T5's own statement.
+
+**After the proofs:** none of the six changed, and proving found nothing further. No statement of batch 6 turned out false or short of a hypothesis.
+
+### 7.10 What waits on the merge with the other chat's branch
+
+Eleven theorems of this chat are proved in their own files and quote a theorem of batches 1 to 3 whose proof is a `sorry` on this branch. The kernel reports `sorryAx` for each, through the name in the last column and through nothing else. They become *checked* when the other branch is merged and that theorem is proved; nothing in this chat's files has to change.
+
+| theorem | file | quotes |
+|---|---|---|
+| `Atlas.contraction_contract` (T9a) | `ContractionContract.lean` | T1, `Atlas.perturbed_contraction` |
+| `Atlas.two_level_contract` (T9b) | `TwoLevel.lean` | T1 |
+| `Atlas.tier2_step_defect` (T22) | `LearnedMasterBound.lean` | T1 |
+| `Atlas.learned_master_bound_tier2` (T22) | same | T1; T4, `Atlas.master_bound_three_terms` |
+| `Atlas.learned_master_bound_tier0` (T22) | same | T4c, `Atlas.accumulation` |
+| `Atlas.learned_master_bound_tier0_superelement` (T22) | same | T4c |
+| `Atlas.existence_conditional` (T2) | `Existence.lean` | T1 |
+| `Atlas.existence_conditional_c1` (T2) | same | T1 |
+| `Atlas.existence_of_learned_coupling` (T2) | same | T1 |
+| `Atlas.tier2_headline` | `Headline.lean` | T1, T4 |
+| `Atlas.defect_correction_headline` | same | T5, `Atlas.DefectCorrection.limit_isFixedPt` |
+
+**If the other chat changes the statement of T1, T4, T4c or T5**, these eleven are where it would show: the merged build would fail in the file named, and the fix is there. The statements quoted are those of commit `428e4aa`.
+
+**The count.** Batches 4 to 6: 57 theorems the owner approved (28, 14, 15), 27 helper lemmas (22, 2, 3) beside the three facts of §7.1 proved before the first OK, and 27 definitions and structures listed in the blueprint. 46 theorems are checked on this branch; 11 wait. The whole project builds clean in 79.3 s on battery (27 files, four levels of imports), with 48 `sorry` left, all in the thirteen files of batches 1 to 3.
 
 ---
 

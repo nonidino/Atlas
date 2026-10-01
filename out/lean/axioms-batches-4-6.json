@@ -1,9 +1,9 @@
 {
- "when": "2026-10-01T18:51:56-04:00",
- "declarations": 68,
- "failing": 2,
- "with_sorry": 2,
- "seconds": 16.58,
+ "when": "2026-10-01T19:09:31-04:00",
+ "declarations": 84,
+ "failing": 11,
+ "with_sorry": 11,
+ "seconds": 16.14,
  "lean_exit": 0,
  "rows": [
   {
@@ -619,6 +619,159 @@
     "Quot.sound"
    ],
    "verdict": "ok"
+  },
+  {
+   "name": "Atlas.averaged",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.averaged_fixedPt_iff",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.norm_sq_convex_combination",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.averaged_step",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.averaged_residual_tendsto_zero",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.krasnoselskii_mann",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.tier2_step_defect",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.learned_master_bound_tier2",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.learned_master_bound_tier0",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.learned_master_bound_tier0_superelement",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.existence_conditional",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.existence_conditional_c1",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.existence_of_learned_coupling",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.tier0_headline",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.tier2_headline",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.defect_correction_headline",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
   }
  ],
  "lean": "leanprover/lean4:v4.34.1",

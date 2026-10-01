@@ -1,144 +1,168 @@
 {
- "charge_percent": 87,
+ "charge_percent": 80,
  "files": [
   {
    "exit": 0,
    "file": "AtlasProofs/Cayley.lean",
-   "seconds": 18.72,
+   "seconds": 19.64,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/Certificate.lean",
-   "seconds": 18.31,
+   "seconds": 16.19,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/ContractionContract.lean",
-   "seconds": 15.63,
+   "seconds": 17.23,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/DefectCorrection.lean",
-   "seconds": 13.07,
+   "seconds": 14.48,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/DefectCorrectionShrink.lean",
-   "seconds": 15.72,
+   "seconds": 17.43,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/DirichletNeumann.lean",
-   "seconds": 11.12,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/EnergyOptimality.lean",
-   "seconds": 15.19,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/GramPort.lean",
-   "seconds": 15.35,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/InterfacePerturbation.lean",
-   "seconds": 15.45,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/LabelFree.lean",
-   "seconds": 14.53,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/MasterBound.lean",
-   "seconds": 12.43,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/Passivity.lean",
-   "seconds": 14.36,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/PerturbedContraction.lean",
-   "seconds": 13.32,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/Schur.lean",
-   "seconds": 10.8,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/Schwarz.lean",
-   "seconds": 11.38,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/SchwarzConvergence.lean",
-   "seconds": 13.67,
-   "slow_steps": []
-  },
-  {
-   "exit": 0,
-   "file": "AtlasProofs/SchwarzCounterexample.lean",
    "seconds": 12.71,
    "slow_steps": []
   },
   {
    "exit": 0,
+   "file": "AtlasProofs/EnergyOptimality.lean",
+   "seconds": 18.66,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Existence.lean",
+   "seconds": 20.07,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/GramPort.lean",
+   "seconds": 19.1,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Headline.lean",
+   "seconds": 16.51,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/InterfacePerturbation.lean",
+   "seconds": 16.88,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/KrasnoselskiiMann.lean",
+   "seconds": 19.74,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/LabelFree.lean",
+   "seconds": 16.83,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/LearnedMasterBound.lean",
+   "seconds": 18.72,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/MasterBound.lean",
+   "seconds": 15.14,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Passivity.lean",
+   "seconds": 17.52,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/PerturbedContraction.lean",
+   "seconds": 14.83,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Schur.lean",
+   "seconds": 11.31,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Schwarz.lean",
+   "seconds": 12.23,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/SchwarzConvergence.lean",
+   "seconds": 14.23,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/SchwarzCounterexample.lean",
+   "seconds": 15.7,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
    "file": "AtlasProofs/SniCounterexample.lean",
-   "seconds": 17.02,
+   "seconds": 22.56,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/Superelement.lean",
-   "seconds": 15.93,
+   "seconds": 21.46,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/SymmetryAveraging.lean",
-   "seconds": 8.58,
+   "seconds": 12.46,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/TransmissionBound.lean",
-   "seconds": 11.1,
+   "seconds": 16.09,
    "slow_steps": []
   },
   {
    "exit": 0,
    "file": "AtlasProofs/TwoLevel.lean",
-   "seconds": 12.84,
+   "seconds": 16.52,
    "slow_steps": []
   }
  ],
  "lean": "leanprover/lean4:v4.34.1",
  "mathlib": "v4.34.1",
  "power": "battery",
- "seconds_total": 307.23,
+ "seconds_total": 434.24,
  "slow_ms": 10000,
  "slow_steps_total": 0,
- "when": "2026-10-01T18:57:13-04:00"
+ "when": "2026-10-01T19:17:10-04:00"
 }

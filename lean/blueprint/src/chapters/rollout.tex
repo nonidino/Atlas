@@ -1,0 +1,283 @@
+\chapter{The learned rollout and the headline statements}
+
+This chapter completes the tier-2 theory with the case that has no rate (T9'),
+puts the learned experts into the master error bound, once per coupling tier
+(T22), states what the approximation theorem would give if it is assumed (T2),
+and ends with the three sentences the proposal can say, each as one theorem
+that quotes the others.
+
+\section{T9': non-expansive is enough without a rate}
+
+\paragraph{In plain words.}
+A passive coupling gives a sweep that lengthens no distance, but not one that
+shortens every distance.  Iterating such a map need not converge: a rotation
+never settles.  Averaging each sweep with the current iterate does converge,
+to a fixed point of the sweep, whenever the sweep has one.  No rate is claimed.
+
+\begin{definition}[The averaged sweep]\label{def:averaged}
+  \lean{Atlas.averaged, Atlas.averaged_fixedPt_iff}
+  \leanok
+  For $T:E\to E$ and a real $\omega$, $T_\omega(x)=(1-\omega)\,x+\omega\,T(x)$.
+  For $\omega\ne0$ it has the same fixed points as $T$.
+\end{definition}
+
+\begin{lemma}[T9', the identity]\label{lem:T9p-identity}
+  \lean{Atlas.norm_sq_convex_combination}
+  \leanok
+  In a real inner-product space, for all $a,b$ and all real $\omega$,
+  \[
+    \norm{(1-\omega)a+\omega b}^2
+      =(1-\omega)\norm{a}^2+\omega\norm{b}^2-\omega(1-\omega)\norm{a-b}^2 .
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Expand both sides.
+\end{proof}
+
+\begin{lemma}[T9', one averaged step]\label{lem:T9p-step}
+  \lean{Atlas.averaged_step}
+  \leanok
+  \uses{def:averaged, lem:T9p-identity}
+  Let $\norm{Tx-Ty}\le\norm{x-y}$ for all $x,y$, let $T(p)=p$ and
+  $\omega\ge0$.  Then for every $x$,
+  \[
+    \norm{T_\omega(x)-p}^2\le\norm{x-p}^2-\omega(1-\omega)\norm{x-T(x)}^2 .
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:T9p-identity}
+  Lemma~\ref{lem:T9p-identity} with $a=x-p$ and $b=T(x)-p$, and
+  $\norm{T(x)-p}=\norm{T(x)-T(p)}\le\norm{x-p}$.
+\end{proof}
+
+\begin{lemma}[T9', the residuals tend to zero]\label{lem:T9p-residual}
+  \lean{Atlas.averaged_residual_tendsto_zero}
+  \leanok
+  \uses{lem:T9p-step}
+  Under the hypotheses of Lemma~\ref{lem:T9p-step} with $0<\omega<1$, the
+  iterates $x_{n+1}=T_\omega(x_n)$ satisfy $\norm{x_n-T(x_n)}\to0$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:T9p-step}
+  The numbers $\norm{x_n-p}^2$ decrease and are bounded below, so they
+  converge, and their successive differences tend to zero; those differences
+  bound $\omega(1-\omega)\norm{x_n-T(x_n)}^2$ from above.
+\end{proof}
+
+\begin{theorem}[T9', Krasnoselskii--Mann in finite dimensions]\label{thm:T9p}
+  \lean{Atlas.krasnoselskii_mann}
+  \leanok
+  \uses{lem:T9p-step, lem:T9p-residual}
+  Let $E$ be a finite-dimensional real inner-product space, $T:E\to E$ with
+  $\norm{Tx-Ty}\le\norm{x-y}$ for all $x,y$ and a fixed point, and
+  $0<\omega<1$.  For every $x_0$ the iterates $x_{n+1}=T_\omega(x_n)$ converge
+  to a fixed point of $T$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:T9p-step, lem:T9p-residual}
+  By Lemma~\ref{lem:T9p-step} the iterates stay in a closed ball around a
+  fixed point, which is compact, so a subsequence converges to some $q$.  $T$
+  is continuous and the residuals tend to zero
+  (Lemma~\ref{lem:T9p-residual}), so $T(q)=q$.  By
+  Lemma~\ref{lem:T9p-step} with $p=q$, $\norm{x_n-q}$ decreases; it tends to
+  zero along the subsequence, hence altogether.
+\end{proof}
+
+\section{T22: the master bound with learned experts}
+
+\paragraph{In plain words.}
+The master bound (T4) adds up one-step defects.  For a coupled step it names
+three: $\tau$, the experts being wrong even with the right interface data;
+$\sigma$, the interface problem being posed with the wrong operator; $\gamma$,
+the interface solve being stopped early.  At tier 2 the learned experts put
+$C_\mu\,\delta/(1-\rho)$ into $\sigma$ and $C_\mu\,\rho^k$ times the initial
+interface error into $\gamma$.  At tier 0 there is no iteration, so there is no
+$\gamma$, and the learned part of the defect is the Galerkin error that T25
+bounds.
+
+\begin{lemma}[T22, tier 2, one step]\label{lem:T22-step}
+  \lean{Atlas.tier2_step_defect}
+  \leanok
+  \uses{thm:T1}
+  Let $\Lambda$ be a complete metric space of interface data, and let the step
+  $\Phi(\lambda,v)$ satisfy
+  $\norm{\Phi(\lambda,v)-\Phi(\lambda',v)}\le C_\mu\,d(\lambda,\lambda')$ at
+  the state $v$.  Let $T_c(\lambda^\star)=\lambda^\star$, let $T_l$ be a
+  $\rho$-contraction with $0\le\rho<1$, and
+  $d(T_l\lambda^\star,T_c\lambda^\star)\le\delta$.  Then $T_l$ has a fixed
+  point $\lambda^\dagger$, and for every $\lambda^{(0)}$ and $k$,
+  \[
+    \norm{\Phi(\lambda^\dagger,v)-\Phi(\lambda^\star,v)}\le\frac{C_\mu\,\delta}{1-\rho},
+    \qquad
+    \norm{\Phi(T_l^{\,k}\lambda^{(0)},v)-\Phi(\lambda^\dagger,v)}
+      \le C_\mu\,\rho^k\,d(\lambda^{(0)},\lambda^\dagger).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T1}
+  Theorem~\ref{thm:T1} gives $\lambda^\dagger$, its distance to
+  $\lambda^\star$ and the rate; then the Lipschitz bound of the step.
+\end{proof}
+
+\begin{theorem}[T22, tier 2]\label{thm:T22-tier2}
+  \lean{Atlas.learned_master_bound_tier2}
+  \leanok
+  \uses{lem:T22-step, cor:T4-three}
+  Let the step use the datum returned by $k$ learned sweeps,
+  $u^{n+1}=\Phi\bigl(T_l(u^n)^k\lambda^{(0)}(u^n),\,u^n\bigr)$, and magnify
+  the difference between the computed and the true trajectory by at most
+  $L\ge0$.  Along the true trajectory $u^{n,\star}$ let the hypotheses of
+  Lemma~\ref{lem:T22-step} hold with constants $C_\mu,\rho,\delta$, and let
+  the starting guess be within $D$ of the learned fixed point.  Then
+  \[
+    \norm{u^N-u^{N,\star}}\le L^N\norm{u^0-u^{0,\star}}
+      +\sum_{n=1}^{N}L^{N-n}\Bigl(\norm{\tau^n}
+        +\frac{C_\mu\,\delta}{1-\rho}+C_\mu\,\rho^k\,D\Bigr),
+  \]
+  with $\tau^n=\Phi(\lambda^{n-1,\star},u^{n-1,\star})-u^{n,\star}$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:T22-step, cor:T4-three}
+  T4 with the three terms named, and Lemma~\ref{lem:T22-step} at every step.
+\end{proof}
+
+\begin{theorem}[T22, tier 0]\label{thm:T22-tier0}
+  \lean{Atlas.learned_master_bound_tier0, Atlas.learned_master_bound_tier0_superelement}
+  \leanok
+  \uses{lem:T4-accumulation, lem:energy-triangle, thm:T25-bound}
+  In the energy size $\norm{\cdot}_m$ of a quadratic energy: let
+  $u^{n,\mathrm{ex}}$ be the undivided discrete step from the true state
+  $u^{n,\star}$, and $\tilde u^n$ the tier-0 step from it.  If
+  $\norm{u^{n+1}-\tilde u^n}_m\le L\norm{u^n-u^{n,\star}}_m$,
+  $\norm{u^{n,\mathrm{ex}}-u^{n+1,\star}}_m\le\tau^n$ and
+  $\norm{u^{n,\mathrm{ex}}-\tilde u^n}_m\le g^n$, then
+  \[
+    \norm{u^N-u^{N,\star}}_m\le L^N\norm{u^0-u^{0,\star}}_m
+      +\sum_{n=0}^{N-1}L^{N-1-n}\bigl(\tau^n+g^n\bigr).
+  \]
+  There is no incomplete-solve term.  For the tier-0 solve of
+  Definition~\ref{def:superelement}, under assumptions 1 and 2, $g^n$ may be
+  taken as the bound of Theorem~\ref{thm:T25-bound}: the error of any reference
+  field plus the energy of the network's field errors.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:T4-accumulation, lem:energy-triangle, thm:T25-bound}
+  $u^{n+1}-u^{n+1,\star}=(u^{n+1}-\tilde u^n)+(\tilde u^n-u^{n,\mathrm{ex}})
+  +(u^{n,\mathrm{ex}}-u^{n+1,\star})$, the triangle inequality of the energy
+  size, and the discrete Gronwall inequality.
+\end{proof}
+
+\section{T2: existence, as a conditional theorem}
+
+\paragraph{In plain words.}
+Can a learned coupling do as well as the classical one?  If a network can
+approximate the classical interface map and its derivative to within $\eta$ on
+a ball around the classical answer, then its iteration contracts at the
+classical rate plus $\eta$ and its answer is within $\eta/(1-\rho-\eta)$ of
+the classical one.  The ``if'' is the universal approximation theorem in
+$C^1$, which is cited and not proved here.  Whether a trained network meets
+it is measured, one network at a time.
+
+\begin{theorem}[T2, conditional]\label{thm:T2}
+  \lean{Atlas.existence_conditional, Atlas.existence_conditional_c1,
+    Atlas.existence_of_learned_coupling}
+  \leanok
+  \uses{thm:T1}
+  Let $E$ be a real Banach space, $B$ the closed ball of radius $r\ge0$
+  around $a_c$, $T_c(a_c)=a_c$ and
+  $\norm{T_cx-T_cy}\le\rho\norm{x-y}$ on $B$.  Let $T_l$ satisfy
+  $\norm{T_la_c-T_ca_c}\le\eta$ and
+  $\norm{(T_l-T_c)x-(T_l-T_c)y}\le\eta\norm{x-y}$ on $B$ (which holds if
+  $T_l-T_c$ has a derivative of norm at most $\eta$ on $B$).  If
+  $\rho+\eta<1$ and $\eta\le(1-\rho-\eta)\,r$, then $T_l$ has exactly one
+  fixed point $a_l$ in $B$; from every $x_0\in B$ the iterates stay in $B$ and
+  $\norm{T_l^{\,k}x_0-a_l}\le(\rho+\eta)^k\norm{x_0-a_l}$; and
+  \[
+    \norm{a_l-a_c}\le\frac{\eta}{1-\rho-\eta}.
+  \]
+  Consequently, if a class of maps contains one such $T_l$, it contains a map
+  with these three properties.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T1}
+  $T_l=T_c+(T_l-T_c)$ is $(\rho+\eta)$-Lipschitz on $B$, and
+  $\norm{T_lx-a_c}\le(\rho+\eta)r+\eta\le r$, so $T_l$ maps $B$ into itself.
+  $B$ is complete; Theorem~\ref{thm:T1} on $B$.  The derivative form is the
+  mean value inequality on the convex set $B$.
+\end{proof}
+
+\section{The headline statements}
+
+\begin{theorem}[Headline, tier 0]\label{thm:headline-tier0}
+  \lean{Atlas.tier0_headline}
+  \leanok
+  \uses{thm:T25-optimal, thm:T25-solvable}
+  \emph{Whatever a learned superelement returns, the coupled system is
+  solvable, and its answer is the best its modes can represent in the energy
+  norm.}  Under the three assumptions of Definition~\ref{def:assumptions},
+  with independent port patterns and every free coordinate read by some piece:
+  for any fields the network returned, $\tilde{\mathsf S}c=\tilde\chi$ has
+  exactly one solution $c$, and
+  $\norm{u-w(c)}_M\le\norm{u-w(c')}_M$ for every $c'$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T25-optimal, thm:T25-solvable}
+  Theorems~\ref{thm:T25-solvable} and~\ref{thm:T25-optimal}.
+\end{proof}
+
+\begin{theorem}[Headline, tier 2]\label{thm:headline-tier2}
+  \lean{Atlas.tier2_headline}
+  \leanok
+  \uses{thm:T9a, thm:T22-tier2}
+  \emph{If every learned expert's scattering map is certified to contract by
+  $\rho<1$ and differs from the classical one by at most $\delta$, the coupled
+  iteration converges geometrically from any start to a point within
+  $\delta/(1-\rho)$ of the classical answer; over $N$ steps the error obeys
+  the master bound with that term added.}  Here the interface sweep of a step
+  is the wave sweep of Definition~\ref{def:wave-sweep}, and
+  $\delta=\bigl(\sum_i\delta_i^2\bigr)^{1/2}$ combines the experts' defects at
+  the classical answer.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T9a, thm:T22-tier2}
+  Theorem~\ref{thm:T9a} at every step, and Theorem~\ref{thm:T22-tier2} with
+  the wave sweeps as the interface maps.
+\end{proof}
+
+\begin{theorem}[Headline, defect correction]\label{thm:headline-dc}
+  \lean{Atlas.defect_correction_headline}
+  \leanok
+  \uses{thm:T5}
+  \emph{Inside defect correction, a learned expert can change how many
+  classical steps the answer takes.  It cannot change the answer.}  Run defect
+  correction with two cheap maps $\Psi_1,\Psi_2$.  If both runs converge, to
+  $a_1$ and $a_2$, and the maps are continuous there, then
+  $\Phi(a_1)=a_1$ and $\Phi(a_2)=a_2$; if $\Phi$ has at most one fixed point,
+  $a_1=a_2$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T5}
+  Theorem 1 of T5, twice.
+\end{proof}
