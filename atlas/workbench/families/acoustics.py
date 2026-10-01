@@ -30,6 +30,14 @@ on the undivided domain, so the two pieces ARE the full domain, bit for bit
 (the check), and the lesson is the contrast with the iterated style C of
 conduction.
 
+**Style A, on threads (demo item 1.4).**  Windows side by side, each the full
+height, take ``run.exchange_every`` leapfrog steps between exchanges.  Each steps
+its own columns and a halo that many columns deep, read from the global field at
+the exchange: what the halo's open edge gets wrong moves a column a step, so the
+window's own columns come out by the same expressions, element by element, as
+the undivided domain's -- the full domain, bit for bit, and the windows can run
+at once.  The reflection is read at the media's own cut, wherever the windows are.
+
 **What is measured against the textbook.**  A plane pulse runs along x in the
 first medium, hits the interface, and splits.  At normal incidence the
 reflected pressure is ``R = (Z2 - Z1) / (Z2 + Z1)`` of the incident, with
@@ -58,10 +66,18 @@ import numpy as np
 
 from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
+from ..fast import FastBars
 
 FAMILY = "acoustics-2d"
 STYLE = "C"
 ARMS = ("serial", "full")
+#: **The Fast example's bars** (demo item 1.4), one per mechanism this family may
+#: use, in the order they are tried (`fast.py`; demo-fast-examples-plan section 3).
+#: Registered 2026-09-30, before the first timed run, and never loosened.
+FAST: tuple[FastBars, ...] = (
+    FastBars("P", 3.0, 1e-9, "pressure against the full domain, over the pulse's amplitude"),
+    FastBars("M", 3.0, 1e-3, "pressure against the full domain, over the pulse's amplitude; the energy check keeps its own 1e-10"),
+)
 FIELD_LABEL = "pressure (Pa)"
 LENGTH_UNIT = "m"
 SERIES = {"energy_second": "Share of the energy in the second medium | fraction"}
@@ -160,10 +176,28 @@ def masked_media(spec):
             (act[:-1, :] & act[1:, :]).astype(float))
 
 
+def media_column(spec) -> int | None:
+    """The column where the second medium starts, when the two media meet at a
+    straight vertical cut, each uniform; None otherwise."""
+    rho, c = media(spec)
+    first = (rho == rho[:, :1]) & (c == c[:, :1])
+    cols = np.flatnonzero(~first.all(axis=0))
+    if not cols.size:
+        return None
+    m = int(cols[0])
+    if not first[:, :m].all() or (first[:, m:]).any():
+        return None
+    right = (rho[:, m:] == rho[0, m]) & (c[:, m:] == c[0, m])
+    return m if right.all() else None
+
+
 def cut_column(spec) -> int | None:
     """The column where the second piece starts, for two windows side by side
-    over the full height; None for any other layout."""
+    over the full height; None for any other layout.  Style A's windows are not
+    the media, so there it is where the second medium starts (`media_column`)."""
     d = spec.domain
+    if spec.coupling.style == "A":
+        return media_column(spec)
     if len(spec.windows) != 2:
         return None
     a, b = sorted(spec.windows, key=lambda w: w.x0)
@@ -245,6 +279,9 @@ class Wave:
     vy: np.ndarray                # (ny + 1, nx)
     pieces: tuple | None = None   # the decomposed arm's (left, right) arrays
     energy: float | None = None
+    #: several leapfrog steps per macro-step: the pressure before the last of them,
+    #: which the conserved energy pairs with ``p`` (None: the previous state's)
+    p_prev: np.ndarray | None = None
 
 
 class AcousticsRun:
@@ -255,11 +292,17 @@ class AcousticsRun:
         self.arms_asked = tuple(arms)
         d = spec.domain
         self.nx, self.ny, self.dx = d.nx, d.ny, float(d.dx)
-        self.dt = float(spec.run.macro_dt)
+        self.style = spec.coupling.style
+        #: leapfrog steps per macro-step (style A: the windows exchange once a
+        #: macro-step); ``dt`` is the leapfrog's own step
+        self.sub = max(1, int(getattr(spec.run, "exchange_every", 1)))
+        self.macro_dt = float(spec.run.macro_dt)
+        self.dt = self.macro_dt / self.sub
         self.limit = stable_dt(spec)
         if self.dt > self.limit:                          # the case check refuses it first
-            raise ValueError(f"the macro-step {self.dt:.4g} s is over the leapfrog's "
+            raise ValueError(f"the step {self.dt:.4g} s is over the leapfrog's "
                              f"stability limit {self.limit:.4g} s")
+        self.pool = None
         #: a drawn domain or drawn pieces (case file 0.4): the same leapfrog on the
         #: whole grid with the void's faces shut, pieces as masks (`_init_masked`)
         self.plain = geo.is_plain(spec)
@@ -267,7 +310,9 @@ class AcousticsRun:
             self._init_masked(spec)
             return
         self.m = cut_column(spec)
-        if self.m is None:
+        if self.style == "A":
+            self._init_windows(spec, threads)
+        elif self.m is None:
             raise ValueError("the acoustics family's pieces are two windows side by side, "
                              "each the full height")
         self.rho, self.c = media(spec)
@@ -278,9 +323,14 @@ class AcousticsRun:
         self.ay = self.dt / (rho_fy * self.dx)
         self.bk = self.dt * self.K / self.dx
         self.rho_fx, self.rho_fy = rho_fx, rho_fy
-        self.arms = tuple(a for a in ARMS if a in arms)
+        self.arms = tuple(a for a in available_arms(spec)[0] if a in arms)
+        if self.style == "A" and "parallel" in self.arms:
+            from concurrent.futures import ThreadPoolExecutor
+            self.pool = ThreadPoolExecutor(max_workers=min(max(1, int(threads)),
+                                                           len(self.own)),
+                                           thread_name_prefix="wb-sound")
         self.R, self.R_why = closed_form_reflection(spec)
-        self.window = plateau(spec, self.dt)
+        self.window = plateau(spec, self.macro_dt)       # in macro-steps
         p = pulse(spec)
         self.pulse = p
         x = (np.arange(self.nx) + 0.5) * self.dx
@@ -353,11 +403,67 @@ class AcousticsRun:
         self.incident = float(np.sum(self.p0[mA]))
         self.cells = int(act.sum())
 
+    def _init_windows(self, spec, threads: int) -> None:
+        """Style A: each window's own columns, from its left edge to the next one's
+        (a partition of the columns, whatever the windows' overlaps)."""
+        ws = sorted(spec.windows, key=lambda w: w.x0)
+        if not ws or any(w.y0 != 0 or w.ny != self.ny for w in ws) or ws[0].x0 != 0:
+            raise ValueError("style A's windows are side by side, each the full height, "
+                             "the first at the left edge")
+        starts = [w.x0 for w in ws] + [self.nx]
+        if any(b <= a for a, b in zip(starts, starts[1:])):
+            raise ValueError("style A's windows must start at different columns")
+        self.own = list(zip(starts[:-1], starts[1:]))
+
+    def _window_steps(self, w: int, s: Wave, out: tuple) -> None:
+        """Window ``w``'s ``sub`` leapfrog steps on its columns and a halo that deep,
+        by `_full`'s expressions on the same coefficients; its own columns (and
+        faces) into ``out``.  Safe from any thread: windows own disjoint columns."""
+        o0, o1 = self.own[w]
+        k = self.sub
+        e0, e1 = max(0, o0 - k), min(self.nx, o1 + k)
+        p = s.p[:, e0:e1].copy()
+        vx = s.vx[:, e0:e1 + 1].copy()
+        vy = s.vy[:, e0:e1].copy()
+        ax, ay, bk = self.ax[:, e0:e1 - 1], self.ay[:, e0:e1], self.bk[:, e0:e1]
+        p_prev = p
+        for _ in range(k):
+            vx[:, 1:-1] -= ax * (p[:, 1:] - p[:, :-1])
+            vy[1:-1, :] -= ay * (p[1:, :] - p[:-1, :])
+            p_prev = p.copy()
+            p -= bk * ((vx[:, 1:] - vx[:, :-1]) + (vy[1:, :] - vy[:-1, :]))
+        P, VX, VY, PP = out
+        a, b = o0 - e0, o1 - e0
+        P[:, o0:o1] = p[:, a:b]
+        PP[:, o0:o1] = p_prev[:, a:b]
+        VX[:, o0:o1] = vx[:, a:b]
+        VY[:, o0:o1] = vy[:, a:b]
+        if o1 == self.nx:
+            VX[:, o1] = vx[:, b]                     # the right wall's face
+
+    def _windows(self, s: Wave, threaded: bool) -> Wave:
+        out = (np.empty_like(s.p), np.empty_like(s.vx), np.empty_like(s.vy),
+               np.empty_like(s.p))
+        n = len(self.own)
+        if threaded and self.pool is not None:
+            list(self.pool.map(lambda w: self._window_steps(w, s, out), range(n)))
+        else:
+            for w in range(n):
+                self._window_steps(w, s, out)
+        return Wave(out[0], out[1], out[2], p_prev=out[3])
+
+    def _full_steps(self, s: Wave) -> Wave:
+        prev = s.p
+        for _ in range(self.sub):
+            prev = s.p
+            s = self._full(s)
+        return Wave(s.p, s.vx, s.vy, p_prev=prev)
+
     # -- the arms -------------------------------------------------------------
 
     def initial(self, arm: str) -> Wave:
         p, vx, vy = self.p0.copy(), self.vx0.copy(), np.zeros((self.ny + 1, self.nx))
-        if arm == "full":
+        if arm == "full" or self.style == "A":
             return Wave(p, vx, vy)
         if not self.plain:
             a = (p.copy(), vx.copy(), vy.copy())
@@ -424,6 +530,10 @@ class AcousticsRun:
         return Wave(p, vx, vy, pieces=((pA, vxA, vyA), (pB, vxB, vyB)))
 
     def step(self, arm: str, s: Wave) -> Wave:
+        if self.style == "A":
+            if arm == "full":
+                return self._full_steps(s) if self.sub > 1 else self._full(s)
+            return self._windows(s, arm == "parallel")
         if arm == "full":
             return self._full(s)
         return self._pieces(s) if self.plain else self._pieces_masked(s)
@@ -451,6 +561,8 @@ class AcousticsRun:
 
     def observe(self, arm: str, s: Wave, prev: Wave | None = None) -> dict:
         p_old = prev.p if prev is not None else self.p0
+        if s.p_prev is not None:
+            p_old = s.p_prev                      # the step before the last
         total, second = self._energies(p_old, s)
         first = (float(np.sum(s.p[:, :self.m])) if self.plain
                  else float(np.sum(s.p[self.mA])))
@@ -467,7 +579,9 @@ class AcousticsRun:
         return np.where(self.act, s.p, np.nan)          # the void: not drawn
 
     def close(self) -> None:
-        pass
+        if self.pool is not None:
+            self.pool.shutdown(wait=True)
+            self.pool = None
 
     # -- the end of a run ---------------------------------------------------
 
@@ -511,10 +625,11 @@ class AcousticsRun:
                                     f"R measured {float(np.mean(vals)):.12f} (mean over steps "
                                     f"{first}-{min(last, len(rows))}; largest departure "
                                     f"{err:.2g}), textbook {self.R:.12f}", textbook=self.R))
-        if "serial" in states and "full" in states and history.get("serial"):
+        dec = "parallel" if "parallel" in states else "serial"
+        if dec in states and "full" in states and history.get(dec):
             ok = bitwise.get("first_difference") is None and self.bitwise_equal(
-                states["serial"], states["full"])
-            checks.append(exact(CHECKS[2], ok, f"equal after all {len(history['serial'])} "
+                states[dec], states["full"])
+            checks.append(exact(CHECKS[2], ok, f"equal after all {len(history[dec])} "
                                                f"steps" if ok else "differs"))
         else:
             checks.append(exact(CHECKS[2], None, "needs the pieces and the full domain"))
@@ -526,6 +641,13 @@ class AcousticsRun:
         out = [f"Leapfrog step {self.dt:.4g} s against the stability limit {self.limit:.4g} "
                f"s (Gershgorin on the grid's own operator). The pieces trade the pressures "
                f"beside the interface and its velocities once a step; nothing iterates."]
+        if self.style == "A":
+            out = [f"Leapfrog step {self.dt:.4g} s against the stability limit "
+                   f"{self.limit:.4g} s; {self.sub} steps per macro-step. {len(self.own)} "
+                   f"windows side by side each step their own columns and a halo "
+                   f"{self.sub} columns deep, read once a macro-step; the error at the "
+                   f"halo's open edge moves a column a step, so their own columns are "
+                   f"the full domain's, bit for bit."]
         if not self.plain:
             out.append("A drawn domain or pieces: every face to the void is a rigid wall "
                        "(its velocity stays zero), so the domain is closed and keeps its "
@@ -550,7 +672,8 @@ class AcousticsRun:
         return out
 
     def describe(self) -> dict[str, Any]:
-        return {"style": "C", "explicit": True,
+        return {"style": self.style, "explicit": True, "exchange_every": self.sub,
+                "windows": len(getattr(self, "own", ())) or 2,
                 "cells": self.nx * self.ny if self.plain else self.cells,
                 "cut_column": self.m, "dt_s": self.dt, "stable_dt_s": self.limit,
                 "textbook_R": self.R, "plateau_steps": list(self.window) if self.window
@@ -558,6 +681,8 @@ class AcousticsRun:
 
 
 def available_arms(spec) -> tuple[tuple[str, ...], dict[str, str]]:
+    if spec.coupling.style == "A":
+        return ("serial", "parallel", "full"), {}
     return ARMS, {"parallel": "the second piece needs the interface velocities the first "
                               "computes in the same step"}
 
@@ -585,6 +710,12 @@ def case_graph(spec):
     d = spec.domain
     dt = float(spec.run.macro_dt)
     amp = float(spec.physics.get("amplitude"))
+    if spec.coupling.style == "A":
+        from ..compile import CompileRefused
+        raise CompileRefused(
+            "style A's windows each step a halo as deep as their steps between exchanges "
+            "(demo item 1.4); the graph that declares that, N windows and the halo they "
+            "read, is not written yet, and this family's graph is the two pieces of style C")
     if geo.is_plain(spec):
         m = cut_column(spec)
         if m is None:

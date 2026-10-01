@@ -299,9 +299,10 @@ def _time_step(c: CaseSpec) -> str | None:
             return None
     except Exception:                                    # the check says why
         return None
-    if not (lim > 0.0) or c.run.macro_dt <= lim:
+    k = max(1, int(getattr(c.run, "exchange_every", 1)))
+    if not (lim > 0.0) or c.run.macro_dt / k <= lim:
         return None
-    c.run.macro_dt = _round_down(0.9 * lim)
+    c.run.macro_dt = _round_down(0.9 * lim * k)
     return (f"a macro-step of {c.run.macro_dt:g} s, under the stability limit "
             f"{lim:.3g} s (Physics)")
 

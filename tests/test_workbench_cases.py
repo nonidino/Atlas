@@ -576,9 +576,11 @@ def test_electrode_nodes_are_inside_the_canvas(wb):
 
 def test_more_examples_reaches_every_example(wb):
     """The gallery of all 21 left the page with the names it listed (the owner's D4 and
-    O1, 2026-09-30); every example stays within reach from its kind's *More examples*
-    list, one line saying what it shows, and opens the case it names."""
-    from atlas.workbench.spec import EXAMPLES, example_case
+    O1, 2026-09-30); every example stays within reach: its kind's Fast example from the
+    *Fast example* button (demo item 1.4), every other one from the *More examples*
+    list under it, one line saying what it shows, opening the case it names."""
+    from atlas.workbench.app import FAST_LABEL
+    from atlas.workbench.spec import EXAMPLES, FAST_EXAMPLES, example_case
     reached = []
     for fid in registry.available_ids():
         wb.type_sel.value = fid
@@ -586,10 +588,13 @@ def test_more_examples_reaches_every_example(wb):
             key = action.split(":", 2)[2]
             assert label == EXAMPLES[key].shows and EXAMPLES[key].family == fid
             reached.append(key)
+        wb.examples_menu.clicked = FAST_LABEL
+        assert wb.case_key == FAST_EXAMPLES[fid] and wb.spec.physics.family == fid
+        reached.append(wb.case_key)
     assert sorted(reached) == sorted(EXAMPLES)
     wb.type_sel.value = "conjugate-heat-2d"
-    wb.examples_menu.clicked = "file:example:cooled-block"
-    assert wb.spec == example_case("cooled-block")
+    wb.examples_menu.clicked = "file:example:cooled-winding"
+    assert wb.spec == example_case("cooled-winding")
 
 
 def test_the_run_tab_shows_the_compile_per_seam(wb):

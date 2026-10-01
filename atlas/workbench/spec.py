@@ -338,7 +338,7 @@ class Attachment(BaseModel):
 
 class Coupling(BaseModel):
     #: the showcase plan's coupling style (A, B, C, D) -- see `registry.STYLES`
-    style: Literal["A", "B", "C", "D", "split"] = "A"
+    style: Literal["A", "B", "C", "D", "split", "M"] = "A"
     ramp_cells: int = Field(8, ge=1, description="partition-of-unity ramp width")
     assembly: Literal["projected", "blend"] = "projected"
     elliptic: Literal["exposed", "embedded"] = "exposed"
@@ -387,6 +387,11 @@ class RunSettings(BaseModel):
     #: macro-steps of a transient run; timed repeats of the solve of a steady one
     steps: int = Field(40, gt=0)
     threads: int = Field(4, ge=1)
+    #: explicit steps per macro-step (the river, demo item 1.4): each arm takes this
+    #: many steps of ``macro_dt / exchange_every``, and the windows exchange once per
+    #: macro-step, each computing on a halo as deep as its steps so its own cells
+    #: stay exact.  1: a step per exchange, as before it existed
+    exchange_every: int = Field(1, ge=1, le=64)
     start: Literal["freestream"] = "freestream"
     mode: Literal["transient", "steady"] = "transient"
 
@@ -746,7 +751,12 @@ def check(spec: CaseSpec) -> list[Issue]:
 
     ramp = spec.coupling.ramp_cells
     style = spec.coupling.style
-    if spec.windows and style in ("C", "D"):
+    if style == "M" and spec.run.mode != "transient":
+        out.append(Issue("error", "physics",
+                         "style M steps each piece at its own explicit time step, and a "
+                         "steady case has no time step: make the run transient (Run "
+                         "settings) or join the pieces another way"))
+    if spec.windows and style in ("C", "D", "M"):
         out += _check_pieces(spec)
     elif spec.windows and style == "split":
         if plain:
@@ -1102,9 +1112,13 @@ def _check_transport(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
     if materials_ok and spec.regions and not np.any((owner < 0) & geo.domain_mask(d)):
         from .families.plume import explicit_limit       # the family's own arithmetic
         lim = explicit_limit(spec)
-        if spec.run.macro_dt > lim:
+        k = spec.run.exchange_every
+        if spec.run.macro_dt / k > lim:
+            what = (f"the macro-step {spec.run.macro_dt:g} s" if k == 1 else
+                    f"the step {spec.run.macro_dt / k:g} s (the macro-step over its {k} "
+                    f"steps)")
             out.append(Issue("error", "physics",
-                             f"the macro-step {spec.run.macro_dt:g} s is over the explicit "
+                             f"{what} is over the explicit "
                              f"step's stability limit here, {lim:.4g} s (min over the cells "
                              f"of depth dx^2 over the cell's outflow and mixing "
                              f"conductances); take at most that (Physics)", fix="time-step"))
@@ -1119,7 +1133,22 @@ def _check_acoustics(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
     d = spec.domain
     plain = geo.is_plain(spec)
     m = ac.cut_column(spec) if plain else None
-    if spec.windows and plain and m is None:
+    if spec.coupling.style == "A":
+        # windows side by side on threads (demo item 1.4): the reflection is read at
+        # the media's own cut, wherever the windows are
+        ws = sorted(spec.windows, key=lambda w: w.x0)
+        starts = [w.x0 for w in ws]
+        if not plain or not ws or starts[0] != 0 or len(set(starts)) != len(starts) or any(
+                w.y0 != 0 or w.ny != d.ny for w in ws):
+            out.append(Issue("error", "geometry",
+                             "style A's windows are rectangles side by side on a "
+                             "rectangle, each the full height, the first at the left edge "
+                             "(Windows)", fix="windows"))
+        if plain and m is None:
+            out.append(Issue("info", "physics",
+                             "the reflection is not read against the textbook: the media "
+                             "do not meet at a straight cut"))
+    elif spec.windows and plain and m is None:
         out.append(Issue("error", "geometry",
                          "the acoustics family's pieces on a rectangle are two windows side "
                          "by side, each the full height of the domain: the wave runs along x "
@@ -1133,9 +1162,11 @@ def _check_acoustics(spec: CaseSpec, materials_ok: bool) -> list[Issue]:
     if not (materials_ok and spec.regions and not np.any((owner < 0) & geo.domain_mask(d))):
         return out
     lim = ac.stable_dt(spec)
-    if spec.run.macro_dt > lim:
+    k = spec.run.exchange_every
+    if spec.run.macro_dt / k > lim:
         out.append(Issue("error", "physics",
-                         f"the macro-step {spec.run.macro_dt:.4g} s is over the leapfrog's "
+                         f"the leapfrog step {spec.run.macro_dt / k:.4g} s is over the "
+                         f"leapfrog's "
                          f"stability limit here, {lim:.4g} s (Gershgorin on the grid's "
                          f"operator; dx / (c sqrt 2) in one medium); take at most that "
                          f"(Physics)", fix="time-step"))
@@ -1547,6 +1578,11 @@ SHOWS: dict[str, str] = {
     "bimetal-arc": "A curved bimetal strip heated at one end",
     "cooled-winding": "A block cooled by a winding water channel",
     "farm-hill": "Three turbines over a hill",
+    "fast-heat": "A copper spreader in a steel plate, each stepping at its own pace",
+    "fast-farm": "Five turbines on twelve windows, the windows run at once on threads",
+    "fast-river": "A long river's plume on six windows, run at once on threads",
+    "fast-sound": "A sound pulse from air into water on four windows, run at once on "
+                  "threads",
 }
 
 
@@ -1656,7 +1692,50 @@ EXAMPLES: dict[str, Example] = {e.key: e for e in (
             "The three-rotor array over terrain drawn with splines: the ground is a no-slip "
             "wall held by penalization, the grid's edges keep their inlet, outlet and "
             "freestream.", "incompressible-2d", "A", (("steps", 40), ("threads", 4))),
+    Example("fast-farm", "Wind farm: 5 rotors, 12 windows (the Fast example)",
+            "The scaling ladder's 5-rotor rung, W346's smallest farm: the twelve "
+            "windows step at once on threads against the undivided domain.",
+            "incompressible-2d", "A",
+            (("cols", 4), ("rows", 3), ("steps", 30), ("threads", 4),
+             ("arms", "parallel full"))),
+    Example("fast-sound", "Air into water on four windows (style A, the Fast example)",
+            "sound-air-water's air and water, ten times as tall, cut into windows "
+            "side by side that step at once on threads, several leapfrog steps "
+            "between exchanges on a halo that deep: the full domain, bit for bit.",
+            "acoustics-2d", "A",
+            (("ny", 400), ("windows", 4), ("exchange", 16), ("steps", 130),
+             ("threads", 4))),
+    Example("fast-river", "A long river on six windows (style A, the Fast example)",
+            "plume-2's two reaches, four times as long and at half the cell size, "
+            "cut into six overlapping windows that step at once on threads, 24 "
+            "explicit steps between exchanges on a halo 24 cells deep.",
+            "transport-2d", "A",
+            (("nx", 3840), ("ny", 120), ("windows", 6), ("exchange", 24),
+             ("steps", 200), ("threads", 6))),
+    Example("fast-heat", "A copper spreader in a steel plate (style M, the Fast example)",
+            "A steel plate with a copper heat spreader on a tenth of its area, warming "
+            "from one hot edge; the pieces are the two materials, and the copper "
+            "sub-cycles at its own stable step while the steel takes the macro-step "
+            "whole.", "conduction-2d", "M", (("nx", 640), ("ny", 384), ("steps", 1000))),
 )}
+
+
+#: **The Fast example per simulation type** (demo item 1.4; the header's *Fast
+#: example*): a complete case for each kind, chosen by a sweep and measured by a
+#: confirmation run from a fresh start, its bars registered in its family module
+#: (``FAST``, `fast.py`).  Four reach the bar by a mechanism (sweeps of 2026-09-30,
+#: `out/workbench/records/fast/`); the other four cannot, and load their fastest
+#: honest setup, an existing example whose card says what limits it (O3).
+FAST_EXAMPLES: dict[str, str] = {
+    "incompressible-2d": "fast-farm",        # P: windows on threads
+    "conduction-2d": "fast-heat",            # M: each piece its own step
+    "transport-2d": "fast-river",            # P: windows on threads, a halo
+    "acoustics-2d": "fast-sound",            # P: windows on threads, a halo
+    "elasticity-2d": "plate-hole",           # O3: one direct solve wins
+    "electric-2d": "plate-circuit",          # O3: one sparse system wins
+    "thermoelastic-2d": "bimetal-arc",       # X: at most half the time
+    "conjugate-heat-2d": "cooled-block",     # O3: one system wins
+}
 
 
 def example_case(key: str = "wake-array-3") -> CaseSpec:
@@ -1681,7 +1760,10 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
                "river-bend": _river_bend_example, "river-fork": _river_fork_example,
                "sound-lens": _sound_lens_example,
                "plate-hole": _plate_hole_example, "bimetal-arc": _bimetal_arc_example,
-               "cooled-winding": _cooled_winding_example}.get(key)
+               "cooled-winding": _cooled_winding_example,
+               "fast-heat": _fast_heat_example,
+               "fast-river": _fast_river_example,
+               "fast-sound": _fast_sound_example}.get(key)
     if builder is None:                                    # pragma: no cover
         raise KeyError(key)
     return builder(ex)
@@ -2062,6 +2144,98 @@ def _cooled_winding_example(ex: Example) -> CaseSpec:
     return spec
 
 
+def _fast_sound_example(ex: Example) -> CaseSpec:
+    """The sound family's Fast example (demo item 1.4, P): sound-air-water's 1.4 m of
+    air and 6 m of water at 1 cm cells and its pulse, ``ny`` cells tall (a plane wave,
+    so the textbook reflection still holds), cut into windows side by side
+    overlapping by 16 columns.  Each takes ``exchange`` leapfrog steps of 4 us
+    between exchanges (`run.exchange_every`), on a halo that deep."""
+    ny, n, k = int(ex.param("ny")), int(ex.param("windows")), int(ex.param("exchange"))
+    return CaseSpec(
+        domain=Domain(nx=740, ny=ny, dx=0.01),
+        physics=Physics(family="acoustics-2d",
+                        params={"amplitude": 1.0, "pulse_x": 0.7, "pulse_width": 0.1}),
+        materials=_materials("acoustics-2d", "air", "water"),
+        regions=[Region(id="air", material="air", x0=0, y0=0, nx=140, ny=ny),
+                 Region(id="water", material="water", x0=140, y0=0, nx=600, ny=ny)],
+        windows=[Window(id=w, x0=b[0], y0=b[1], nx=b[2], ny=b[3])
+                 for w, b in geo.tile(740, ny, n, 1, 16)],
+        boundaries=family_boundaries("acoustics-2d"),
+        coupling=Coupling(style="A", ramp_cells=8),
+        run=RunSettings(mode="transient", macro_dt=4.0e-6 * k, steps=int(ex.param("steps")),
+                        threads=int(ex.param("threads")), exchange_every=k),
+    )
+
+
+def _fast_river_example(ex: Example) -> CaseSpec:
+    """The river's Fast example (demo item 1.4, P): plume-2's two reaches, a shallow
+    fast one for the first half and a deep slow one after, at 2.5 m cells and
+    ``nx`` long, carrying 1 m^2/s per metre of width; the outfall releases 10 g/s
+    200 m below the inlet, a third of the way across.  The windows are a regular
+    tiling along its length overlapping by the larger of 16 cells (twice the ramp) and
+    the steps between exchanges, so the graph declares the halo they need.  The windows
+    exchange once per macro-step and take ``exchange`` explicit steps between, each
+    on a halo that deep (`run.exchange_every`), so they stay in cache; each step is
+    0.9 of the family's own explicit limit (`plume.explicit_limit`)."""
+    from .families.plume import explicit_limit
+    nx, ny, n = int(ex.param("nx")), int(ex.param("ny")), int(ex.param("windows"))
+    dx, half = 2.5, nx // 2
+    spec = CaseSpec(
+        domain=Domain(nx=nx, ny=ny, dx=dx),
+        physics=Physics(family="transport-2d",
+                        params={"q": 1.0, "release": 10.0, "source_x": 200.0,
+                                "source_y": ny * dx / 3.0}),
+        materials=_materials("transport-2d", "shallow-fast", "deep-slow"),
+        regions=[Region(id="upper", material="shallow-fast", x0=0, y0=0, nx=half,
+                        ny=ny),
+                 Region(id="lower", material="deep-slow", x0=half, y0=0,
+                        nx=nx - half, ny=ny)],
+        windows=[Window(id=k, x0=b[0], y0=b[1], nx=b[2], ny=b[3])
+                 for k, b in geo.tile(nx, ny, n, 1, max(16, int(ex.param("exchange"))))],
+        boundaries=family_boundaries("transport-2d"),
+        coupling=Coupling(style="A", ramp_cells=8),
+        run=RunSettings(mode="transient", macro_dt=1.0, steps=int(ex.param("steps")),
+                        threads=int(ex.param("threads")),
+                        exchange_every=int(ex.param("exchange"))),
+    )
+    spec.run.macro_dt = 0.9 * explicit_limit(spec) * spec.run.exchange_every
+    return spec
+
+
+def _fast_heat_example(ex: Example) -> CaseSpec:
+    """The conduction family's Fast example (demo item 1.4, style M): a steel plate
+    0.4 m x 0.24 m with a copper heat spreader on a tenth of its area (0.3 of its
+    length by a third of its height) against its hot edge, warming from 300 K with
+    the left edge held at 400 K, the right at 300 K, top and bottom insulated.  The
+    heat enters through the copper and spreads along it into the steel.  The pieces
+    are the two materials.  The macro-step is the steel piece's own stable explicit
+    step (`conduction.piece_limits`, times 0.999), so the steel takes it whole and
+    the copper, whose limit is about a ninth of it, sub-cycles.
+
+    An explicit step moves heat about a cell, so a run of a few thousand steps on
+    this grid shows the spreader's own transient, near the hot edge; that is why the
+    copper is against it."""
+    from . import layout
+    from .families.conduction import piece_limits
+    nx, ny = int(ex.param("nx")), int(ex.param("ny"))
+    spec = CaseSpec(
+        domain=Domain(nx=nx, ny=ny, dx=0.4 / nx),
+        physics=Physics(family="conduction-2d", params={"T0": 300.0}),
+        materials=_materials("conduction-2d", "steel", "copper"),
+        regions=[Region(id="plate", material="steel", x0=0, y0=0, nx=nx, ny=ny),
+                 Region(id="spreader", material="copper", x0=0,
+                        y0=ny // 3, nx=round(0.3 * nx), ny=ny // 3)],
+        boundaries=family_boundaries("conduction-2d"),
+        coupling=Coupling(style="M"),
+        layout=Layout(cut="materials"),
+        run=RunSettings(mode="transient", macro_dt=1.0, steps=int(ex.param("steps")),
+                        threads=1),
+    )
+    layout.refresh(spec)
+    spec.run.macro_dt = 0.999 * piece_limits(spec)["steel"]
+    return spec
+
+
 def _farm_hill_example(ex: Example) -> CaseSpec:
     """The three-rotor array (`wake-array-3`: its grid, rotors, six windows and
     constants) over a hill: the domain's bottom is terrain drawn as splines through
@@ -2272,4 +2446,4 @@ def slug(name: str) -> str:
 __all__ = ["SCHEMA_ID", "READABLE", "CaseSpec", "Domain", "Physics", "Region", "Window",
            "Device", "Boundary", "Attachment", "Coupling", "RunSettings", "Compare",
            "Issue", "check", "summary", "family_boundaries", "adapt_to_family", "Example",
-           "EXAMPLES", "example_case", "blank_case", "slug"]
+           "EXAMPLES", "FAST_EXAMPLES", "example_case", "blank_case", "slug"]

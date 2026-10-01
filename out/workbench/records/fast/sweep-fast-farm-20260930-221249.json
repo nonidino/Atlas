@@ -1,0 +1,477 @@
+{
+ "command": "sweep",
+ "example": "fast-farm",
+ "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+ "when": "2026-09-30T22:12:49-04:00",
+ "machine": {
+  "time": "2026-09-30T22:12:49-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 86,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 29100
+ },
+ "runs": [
+  {
+   "example": "fast-farm",
+   "overrides": {
+    "threads": 4,
+    "steps": 10
+   },
+   "family": "incompressible-2d",
+   "style": "A",
+   "cells": 163328,
+   "windows": 12,
+   "threads": 4,
+   "steps": 10,
+   "macro_dt": 0.2,
+   "wall_seconds": 41.35003049997613,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 0.9496801076867278,
+    "parallel": 4.650281544972761
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 1.876737720007077,
+    "parallel": 0.3832672200165689,
+    "full": 1.782300480036065
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.8111597291370352e-16,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: the parallel arm's state, bit for bit; parallel: 4.09e-18; full: 1.81e-16"
+    },
+    {
+     "key": "power",
+     "kind": "reference",
+     "value": 0.04952778218862648,
+     "tolerance": 0.25,
+     "passed": true,
+     "detail": "parallel 2.9854 against full 3.1410"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 10 macro-steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 4.650281544972761,
+     "fast": true,
+     "agreement_bar": 0.03,
+     "agreement": 0.04952778218862648,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "The farm-power comparison covers the start-up only: at the freestream speed a wake needs at least 17.5 macro-steps to reach the next rotor downstream, and this run marched 10. For the developed wake, W346's 40-step comparison (decomposition-speed-by-rotor-count section 3) remains the record."
+   ],
+   "describe": {
+    "windows": 12,
+    "rotors": 5,
+    "cells": 163328,
+    "shape_groups": 1,
+    "drawn": false,
+    "chunks": 4,
+    "threads": 4,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "partition_of_unity": {
+     "identity_residual": 1.1102230246251565e-16,
+     "chi_min": 0.002070393374741201,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:12:49-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 86,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 29100
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 86,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:13:31-04:00"
+   }
+  },
+  {
+   "example": "fast-farm",
+   "overrides": {
+    "threads": 8,
+    "steps": 10
+   },
+   "family": "incompressible-2d",
+   "style": "A",
+   "cells": 163328,
+   "windows": 12,
+   "threads": 8,
+   "steps": 10,
+   "macro_dt": 0.2,
+   "wall_seconds": 41.39252909994684,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 0.9358155786110371,
+    "parallel": 3.6845842520011063
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 1.855618660035543,
+    "parallel": 0.47129248003475366,
+    "full": 1.7365168500225991
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.8111597291370352e-16,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: the parallel arm's state, bit for bit; parallel: 4.09e-18; full: 1.81e-16"
+    },
+    {
+     "key": "power",
+     "kind": "reference",
+     "value": 0.04952778218862648,
+     "tolerance": 0.25,
+     "passed": true,
+     "detail": "parallel 2.9854 against full 3.1410"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 10 macro-steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 3.6845842520011063,
+     "fast": true,
+     "agreement_bar": 0.03,
+     "agreement": 0.04952778218862648,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "The farm-power comparison covers the start-up only: at the freestream speed a wake needs at least 17.5 macro-steps to reach the next rotor downstream, and this run marched 10. For the developed wake, W346's 40-step comparison (decomposition-speed-by-rotor-count section 3) remains the record."
+   ],
+   "describe": {
+    "windows": 12,
+    "rotors": 5,
+    "cells": 163328,
+    "shape_groups": 1,
+    "drawn": false,
+    "chunks": 8,
+    "threads": 8,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "partition_of_unity": {
+     "identity_residual": 1.1102230246251565e-16,
+     "chi_min": 0.002070393374741201,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:13:31-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 86,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 29100
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 87,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:14:12-04:00"
+   }
+  },
+  {
+   "example": "fast-farm",
+   "overrides": {
+    "threads": 12,
+    "steps": 10
+   },
+   "family": "incompressible-2d",
+   "style": "A",
+   "cells": 163328,
+   "windows": 12,
+   "threads": 12,
+   "steps": 10,
+   "macro_dt": 0.2,
+   "wall_seconds": 40.51389629999176,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 0.9907752873202051,
+    "parallel": 2.6500757068998793
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 1.6823786799795926,
+    "parallel": 0.628985509998165,
+    "full": 1.6668592200381682
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.8111597291370352e-16,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: the parallel arm's state, bit for bit; parallel: 4.09e-18; full: 1.81e-16"
+    },
+    {
+     "key": "power",
+     "kind": "reference",
+     "value": 0.04952778218862648,
+     "tolerance": 0.25,
+     "passed": true,
+     "detail": "parallel 2.9854 against full 3.1410"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 10 macro-steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 2.6500757068998793,
+     "fast": false,
+     "agreement_bar": 0.03,
+     "agreement": 0.04952778218862648,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "The farm-power comparison covers the start-up only: at the freestream speed a wake needs at least 17.5 macro-steps to reach the next rotor downstream, and this run marched 10. For the developed wake, W346's 40-step comparison (decomposition-speed-by-rotor-count section 3) remains the record."
+   ],
+   "describe": {
+    "windows": 12,
+    "rotors": 5,
+    "cells": 163328,
+    "shape_groups": 1,
+    "drawn": false,
+    "chunks": 12,
+    "threads": 12,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "partition_of_unity": {
+     "identity_residual": 1.1102230246251565e-16,
+     "chi_min": 0.002070393374741201,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:14:12-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 87,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 29100
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 87,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:14:53-04:00"
+   }
+  },
+  {
+   "example": "fast-farm",
+   "overrides": {
+    "threads": 16,
+    "steps": 10
+   },
+   "family": "incompressible-2d",
+   "style": "A",
+   "cells": 163328,
+   "windows": 12,
+   "threads": 16,
+   "steps": 10,
+   "macro_dt": 0.2,
+   "wall_seconds": 44.735721099888906,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 0.9662888081558291,
+    "parallel": 2.656375274661607
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 1.8833513899939134,
+    "parallel": 0.6850919699994847,
+    "full": 1.8198613699758426
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.8111597291370352e-16,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: the parallel arm's state, bit for bit; parallel: 4.09e-18; full: 1.81e-16"
+    },
+    {
+     "key": "power",
+     "kind": "reference",
+     "value": 0.04952778218862648,
+     "tolerance": 0.25,
+     "passed": true,
+     "detail": "parallel 2.9854 against full 3.1410"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 10 macro-steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 2.656375274661607,
+     "fast": false,
+     "agreement_bar": 0.03,
+     "agreement": 0.04952778218862648,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "The farm-power comparison covers the start-up only: at the freestream speed a wake needs at least 17.5 macro-steps to reach the next rotor downstream, and this run marched 10. For the developed wake, W346's 40-step comparison (decomposition-speed-by-rotor-count section 3) remains the record."
+   ],
+   "describe": {
+    "windows": 12,
+    "rotors": 5,
+    "cells": 163328,
+    "shape_groups": 1,
+    "drawn": false,
+    "chunks": 12,
+    "threads": 16,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "partition_of_unity": {
+     "identity_residual": 1.1102230246251565e-16,
+     "chi_min": 0.002070393374741201,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:14:53-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 87,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 29100
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 88,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:15:37-04:00"
+   }
+  }
+ ]
+}

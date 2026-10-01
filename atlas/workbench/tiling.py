@@ -129,6 +129,37 @@ class RectangleTiling:
             out[y0:y0 + h, x0:x0 + w] += self.chi[k] * locals_[k]
         return out
 
+    # -- the same blend, its larger part on threads (demo item 1.4) -------------
+
+    def _owned(self) -> list[tuple[np.ndarray, np.ndarray]]:
+        """Per window, (its cells no other window covers and its weight is exactly 1
+        on, the rest of its box), as masks of its box; computed once.  On an owned
+        cell `assemble`'s sum is ``0 + 1 u_k``, which is ``u_k``."""
+        if getattr(self, "_owned_masks", None) is None:
+            count = np.zeros((self.ny, self.nx), dtype=np.int32)
+            for x0, y0, w, h in self.boxes:
+                count[y0:y0 + h, x0:x0 + w] += 1
+            out = []
+            for k, (x0, y0, w, h) in enumerate(self.boxes):
+                own = (count[y0:y0 + h, x0:x0 + w] == 1) & (self.chi[k] == 1.0)
+                out.append((own, ~own))
+            self._owned_masks = out
+        return self._owned_masks
+
+    def write_own(self, out: np.ndarray, k: int, local: np.ndarray) -> None:
+        """Window ``k``'s owned cells into ``out`` (ny, nx) as they are.  Different
+        windows' owned cells are disjoint, so this is safe from any thread."""
+        x0, y0, w, h = self.boxes[k]
+        np.copyto(out[y0:y0 + h, x0:x0 + w], local, where=self._owned()[k][0])
+
+    def add_shared(self, out: np.ndarray, locals_: Sequence[np.ndarray]) -> None:
+        """The cells more than one window covers, blended in window order: with
+        `write_own` on a zeroed ``out``, `assemble`'s value on every cell."""
+        for k, (x0, y0, w, h) in enumerate(self.boxes):
+            shared = self._owned()[k][1]
+            sub = out[y0:y0 + h, x0:x0 + w]
+            sub[shared] += self.chi[k][shared] * locals_[k][shared]
+
     # -- the certificate ---------------------------------------------------
 
     def partition_of_unity(self) -> GridPartitionOfUnity:

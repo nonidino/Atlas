@@ -1,0 +1,128 @@
+{
+ "command": "confirm",
+ "example": "bimetal-arc",
+ "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+ "when": "2026-09-30T23:09:12-04:00",
+ "machine": {
+  "time": "2026-09-30T23:09:12-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 19400
+ },
+ "runs": [
+  {
+   "example": "bimetal-arc",
+   "overrides": {},
+   "family": "thermoelastic-2d",
+   "style": "split",
+   "cells": 11664,
+   "windows": 1,
+   "threads": 2,
+   "steps": 60,
+   "macro_dt": 5.0,
+   "wall_seconds": 2.8384074999485165,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.039678283561751,
+    "parallel": 1.1658458517308912
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.0073597766847039265,
+    "parallel": 0.0065633033557484545,
+    "full": 0.007651799990950773
+   },
+   "checks": [
+    {
+     "key": "energy",
+     "kind": "balance",
+     "value": 2.164027513975369e-10,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: 2.16e-10; parallel: 2.16e-10; full: 2.16e-10"
+    },
+    {
+     "key": "reference",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 60 steps"
+    },
+    {
+     "key": "lag",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal, one step late, after all 60 steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "X",
+     "speed_bar": 3.0,
+     "speedup": 1.1658458517308912,
+     "fast": false,
+     "agreement_bar": null,
+     "agreement": null,
+     "close": null,
+     "ceiling": "a split by physics can at most halve the time: s <= 2 with two physics",
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Backward-Euler conduction steps of 5 s; after each, the free plate's quasi-static displacement under its thermal strain (reference temperature 300 K, the initial one). The bond between the two agents is the whole temperature field.",
+    "The lagged split runs both agents at once, elasticity one step behind; its stress error is the stress's change over one step, first order in the step. The thermal-strain case study measured 7.1e-3 of the stress for one lagged macro-step on its own shell.",
+    "The synchronous split does the unsplit solver's arithmetic and one copy of the temperature field, so the ratio of their times measures this machine's run-to-run noise at this size, not a method."
+   ],
+   "describe": {
+    "style": "split",
+    "elements": 11664,
+    "nodes": 11881,
+    "dt_s": 5.0,
+    "T_ref_K": 300.0,
+    "fixed_temperature_nodes": 41
+   },
+   "machine_before": {
+    "time": "2026-09-30T23:09:12-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 19400
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T23:09:15-04:00"
+   }
+  }
+ ]
+}

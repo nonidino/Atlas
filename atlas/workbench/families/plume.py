@@ -53,12 +53,20 @@ import numpy as np
 from .. import fv
 from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
+from ..fast import FastBars
 from ..tiling import MaskTiling, RectangleTiling
 from .conduction import window_cells
 
 FAMILY = "transport-2d"
 STYLE = "A"
 ARMS = ("serial", "parallel", "full")
+#: **The Fast example's bars** (demo item 1.4), one per mechanism this family may
+#: use, in the order they are tried (`fast.py`; demo-fast-examples-plan section 3).
+#: Registered 2026-09-30, before the first timed run, and never loosened.
+FAST: tuple[FastBars, ...] = (
+    FastBars("P", 3.0, 1e-9, "concentration against the full domain, over the peak"),
+    FastBars("M", 3.0, 1e-3, "concentration against the full domain, over the peak; the mass balance keeps its own 1e-9"),
+)
 FIELD_LABEL = "concentration (mg/L)"
 #: the outfall's cell is some fifty times the mixed river: drawn on a log scale
 FIELD_SCALE = "log"
@@ -234,9 +242,23 @@ def explicit_limit(spec) -> float:
 # ---------------------------------------------------------------------------
 
 
+#: With several steps per exchange (``run.exchange_every``), every arm sets a
+#: concentration under this (g/m^3) to zero once a macro-step (a value above it cannot
+#: fall ~280 decades to a subnormal within one macro-step's steps).  The plume's far tail
+#: decays into subnormal floats, whose arithmetic is many times slower: a 300-macro-step
+#: march of the long river went from 80 to 269 ms a step as 4,268 cells turned
+#: subnormal (seen, 2026-09-30), unevenly among the windows.  Flushing them is what
+#: hardware flush-to-zero would do; numpy has no switch for it.
+FLUSH = 1e-30
+
+
 @dataclass
 class PlumeState:
     u: np.ndarray                 # concentration per cell, flat, g/m^3 (= mg/L)
+    #: several explicit steps per macro-step (``run.exchange_every``): the pollutant
+    #: that entered through the boundary over the macro-step, g per metre of depth,
+    #: summed step by step (None: one step, read from the old field as before)
+    q_in: float | None = None
 
 
 class PlumeRun:
@@ -247,9 +269,13 @@ class PlumeRun:
         self.f, h = field_from_case(spec)
         self.nx, self.ny, self.dx = self.f.nx, self.f.ny, self.f.dx
         self.dt = float(spec.run.macro_dt)
+        #: explicit steps per macro-step (demo item 1.4); the windows exchange once
+        #: per macro-step on a halo this deep, so each one's own cells stay exact
+        self.sub = max(1, int(getattr(spec.run, "exchange_every", 1)))
+        self.dts = self.dt / self.sub
         self.limit = explicit_limit(spec)
-        if self.dt > self.limit:                          # the case check refuses it first
-            raise ValueError(f"the macro-step {self.dt:g} s is over the explicit step's "
+        if self.dts > self.limit:                         # the case check refuses it first
+            raise ValueError(f"the step {self.dts:g} s is over the explicit step's "
                              f"stability limit {self.limit:.4g} s")
         self.h = h.ravel()
         self.q = float(spec.physics.get("q"))
@@ -261,9 +287,9 @@ class PlumeRun:
         if self.drawn:
             self.coef = np.zeros(self.f.n)
             wet = self.f.cells()
-            self.coef[wet] = self.dt / (self.h[wet] * self.dx * self.dx)
+            self.coef[wet] = self.dts / (self.h[wet] * self.dx * self.dx)
         else:
-            self.coef = self.dt / (self.h * self.dx * self.dx)
+            self.coef = self.dts / (self.h * self.dx * self.dx)
         self.arms = tuple(a for a in ARMS if a in arms)
         self.threads = max(1, int(threads))
         self.full_sys = fv.assemble(self.f)
@@ -278,8 +304,21 @@ class PlumeRun:
                                           spec.coupling.ramp_cells)
             self.systems = [fv.assemble(self.f, window_cells(self.nx, b))
                             for _n, b in self.windows]
+        self._halo_boxes = None
+        if self.sub > 1:
+            self._init_halo(spec)
         self.certificate = self.tiling.certify()
         self.coefs = [self.coef[s.idx] for s in self.systems]
+        #: per window, the rows its cut faces reach (`C`'s nonzero rows) as a matrix of
+        #: their own: `C @ u` walked all of a window's rows for a few dozen entries,
+        #: a third of a window's step on a long river (demo item 1.4)
+        self._ring = []
+        for s in self.systems:
+            if s.C is None:
+                self._ring.append(None)
+            else:
+                rows = np.flatnonzero(np.diff(s.C.indptr))
+                self._ring.append((rows, s.C[rows]))
         #: the outlet faces, for what leaves the river (a drawn outlet can be any edge)
         bc_cell, bc_kind, _v, _g, bc_in = fv.boundary_faces(self.f)
         out = bc_kind == fv.OUTLET
@@ -300,6 +339,94 @@ class PlumeRun:
             self.pool = ThreadPoolExecutor(max_workers=min(self.threads, len(self.systems)),
                                            thread_name_prefix="wb-plume")
 
+    def _init_halo(self, spec) -> None:
+        """``exchange_every`` steps per exchange (demo item 1.4).  Each window computes
+        on its own cells and every cell within that many steps of them (its halo), read
+        from the global field at the exchange.  The explicit stencil reaches one cell a
+        step, so what the halo's open edge gets wrong reaches no deeper than the steps,
+        and the window's own cells come out as the full domain's.  The ledger: each
+        boundary face is answered for by the first window holding its cell."""
+        from scipy import ndimage
+        k, n = self.sub, self.f.n
+        own_cells, ext_cells = [], []
+        if isinstance(self.tiling, RectangleTiling):
+            boxes = []
+            for _n, (x0, y0, w, h) in self.windows:
+                ex0, ey0 = max(0, x0 - k), max(0, y0 - k)
+                ex1, ey1 = min(self.nx, x0 + w + k), min(self.ny, y0 + h + k)
+                ext = (ex0, ey0, ex1 - ex0, ey1 - ey0)
+                boxes.append((ext, (x0 - ex0, y0 - ey0, w, h)))
+                own_cells.append(window_cells(self.nx, (x0, y0, w, h)))
+                ext_cells.append(window_cells(self.nx, ext))
+            self._halo_boxes = boxes
+        else:
+            from .conduction import cells_of
+            act = geo.domain_mask(spec.domain)
+            cross = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=bool)
+            for w in spec.windows:
+                own = cells_of(spec, w)
+                m = np.zeros(n, dtype=bool)
+                m[own] = True
+                m = ndimage.binary_dilation(m.reshape(self.ny, self.nx), structure=cross,
+                                            iterations=k) & act
+                own_cells.append(own)
+                ext_cells.append(np.flatnonzero(m.ravel()))
+        self.systems = [fv.assemble(self.f, e) for e in ext_cells]
+        self._own_pos = [np.searchsorted(e, o) for e, o in zip(ext_cells, own_cells)]
+        bc = fv.boundary_faces(self.f)
+        taken = np.zeros(n, dtype=bool)
+        self._bf = []
+        for e, o in zip(ext_cells, own_cells):
+            mine = np.zeros(n, dtype=bool)
+            mine[o] = True
+            mine &= ~taken
+            taken |= mine
+            sel = mine[bc[0]]
+            c, a, b = fv.face_inflow_affine(self.f, bc[0][sel], *(x[sel] for x in bc[1:]))
+            self._bf.append((np.searchsorted(e, c), a, b))
+        self._bf_all = fv.face_inflow_affine(self.f, *bc)
+
+    def _window_halo(self, k: int, u: np.ndarray) -> tuple[np.ndarray, float]:
+        """Window ``k``'s ``exchange_every`` steps on its cells and its halo, from the
+        global field ``u``: its own cells (as `_window` returns them), and what entered
+        through the boundary faces it answers for, step by step."""
+        s = self.systems[k]
+        if self._halo_boxes is not None:
+            (ex0, ey0, ew, eh), (ox, oy, w, h) = self._halo_boxes[k]
+            ue = u.reshape(self.ny, self.nx)[ey0:ey0 + eh, ex0:ex0 + ew].ravel()
+        else:
+            ue = u[s.idx]
+        ring = self._ring[k]
+        if ring is None:
+            r = s.b
+        else:
+            rows, c_rows = ring
+            r = s.b.copy()
+            r[rows] = s.b[rows] - c_rows @ u
+        c, (pos, a, b) = self.coefs[k], self._bf[k]
+        q = 0.0
+        for _ in range(self.sub):
+            if pos.size or b:
+                q += self.dts * (float(a @ ue[pos]) + b)
+            t = s.A @ ue
+            np.subtract(r, t, out=t)
+            np.multiply(c, t, out=t)
+            np.add(ue, t, out=t)
+            ue = t
+        ue[np.abs(ue) < FLUSH] = 0.0                      # once a macro-step, every arm
+        if self._halo_boxes is not None:
+            return ue.reshape(eh, ew)[oy:oy + h, ox:ox + w], q
+        return ue[self._own_pos[k]], q
+
+    def _full_once(self, u: np.ndarray) -> np.ndarray:
+        sys_ = self.full_sys
+        if not self.void.size:
+            return u + self.coef * (sys_.b - sys_.A @ u)
+        new = u.copy()                            # the dry grid outside a drawn river
+        ui = u[sys_.idx]
+        new[sys_.idx] = ui + self.coef[sys_.idx] * (sys_.b - sys_.A @ ui)
+        return new
+
     # -- the arms -------------------------------------------------------------
 
     def initial(self, arm: str) -> PlumeState:
@@ -309,30 +436,69 @@ class PlumeRun:
         """Window ``k``'s one explicit step from the global field ``u``: its own cells
         from ``u``, and its cut faces closed by ``u``'s values outside it."""
         s = self.systems[k]
-        uw = u[s.idx]
-        r = s.b if s.C is None else s.b - s.C @ u
-        new = uw + self.coefs[k] * (r - s.A @ uw)
-        if isinstance(self.tiling, MaskTiling):
+        rect = not isinstance(self.tiling, MaskTiling)
+        if rect:
+            # a rectangle's cells in `window_cells`' order: a slice, not a gather
+            x0, y0, w, h = self.windows[k][1]
+            uw = u.reshape(self.ny, self.nx)[y0:y0 + h, x0:x0 + w].ravel()
+        else:
+            uw = u[s.idx]
+        ring = self._ring[k]
+        if ring is None:
+            r = s.b
+        else:
+            # `b - C u` on the rows the cut faces reach; every other row's is `b - 0`
+            rows, c_rows = ring
+            r = s.b.copy()
+            r[rows] = s.b[rows] - c_rows @ u
+        # `uw + coef (r - A uw)`, the same operations in the same order, in place
+        new = s.A @ uw
+        np.subtract(r, new, out=new)
+        np.multiply(self.coefs[k], new, out=new)
+        np.add(uw, new, out=new)
+        if not rect:
             return new                            # a window of any shape: its own cells
-        _x0, _y0, w, h = self.windows[k][1]
         return new.reshape(h, w)
 
     def step(self, arm: str, s: PlumeState) -> PlumeState:
         u = s.u
         if arm == "full":
-            sys_ = self.full_sys
-            if not self.void.size:
-                return PlumeState(u + self.coef * (sys_.b - sys_.A @ u))
-            new = u.copy()                        # the dry grid outside a drawn river
-            ui = u[sys_.idx]
-            new[sys_.idx] = ui + self.coef[sys_.idx] * (sys_.b - sys_.A @ ui)
-            return PlumeState(new)
+            if self.sub == 1:
+                return PlumeState(self._full_once(u))
+            q = 0.0
+            c, a, b = self._bf_all
+            for _ in range(self.sub):
+                q += self.dts * (float(a @ u[c]) + b)
+                u = self._full_once(u)
+            u[np.abs(u) < FLUSH] = 0.0                    # once a macro-step, every arm
+            return PlumeState(u, q_in=q)
         n = len(self.systems)
-        if arm == "parallel" and self.pool is not None:
-            locals_ = list(self.pool.map(self._window, range(n), [u] * n))
+        if self.sub > 1:
+            win = self._window_halo
         else:
-            locals_ = [self._window(k, u) for k in range(n)]
-        return PlumeState(self.tiling.assemble(locals_).ravel())
+            def win(k, u_):
+                return self._window(k, u_), 0.0
+        threaded = arm == "parallel" and self.pool is not None
+        if isinstance(self.tiling, RectangleTiling):
+            # each window writes the cells it alone covers from its own thread, and
+            # the overlaps are blended in window order after: `assemble`'s value on
+            # every cell, its larger part no longer serial (demo item 1.4)
+            out = np.zeros((self.ny, self.nx))
+
+            def one(k):
+                loc, q_ = win(k, u)
+                self.tiling.write_own(out, k, loc)
+                return loc, q_
+            res = list(self.pool.map(one, range(n))) if threaded else [one(k)
+                                                                        for k in range(n)]
+            self.tiling.add_shared(out, [r_[0] for r_ in res])
+            field_ = out.ravel()
+        else:
+            res = (list(self.pool.map(win, range(n), [u] * n)) if threaded
+                   else [win(k, u) for k in range(n)])
+            field_ = self.tiling.assemble([r_[0] for r_ in res]).ravel()
+        return PlumeState(field_, q_in=None if self.sub == 1 else
+                          float(sum(r_[1] for r_ in res)))
 
     # -- instruments ---------------------------------------------------------
 
@@ -345,6 +511,9 @@ class PlumeRun:
         flows = fv.boundary_inflow(self.f, u0)
         into = self.release + float(sum(flows.values()))
         scale = max(self.dt * self.release, abs(held), 1e-300)
+        if s.q_in is not None:
+            # several steps per macro-step: what entered, summed step by step
+            into = self.release + s.q_in / self.dt
         if self.drawn:
             # every outlet face, wherever the drawn outlet is
             out = -float(np.sum(np.minimum(self._out_in, 0.0) * u0[self._out_cells]))
@@ -460,10 +629,19 @@ class PlumeRun:
             return np.where(h > 0, np.hypot(vx, vy) / np.where(h > 0, h, 1.0), 0.0)
 
     def notes(self, done: int) -> list[str]:
-        out = [f"One explicit step of {self.dt:g} s per macro-step, one exchange, no "
-               f"iteration: the stability limit here is {self.limit:.4g} s (min h dx^2 / "
-               f"A_ii over the cells). Each window takes the full-domain step on its own "
-               f"cells, so the decomposed river is the full-domain river to round-off."]
+        if self.sub == 1:
+            out = [f"One explicit step of {self.dt:g} s per macro-step, one exchange, no "
+                   f"iteration: the stability limit here is {self.limit:.4g} s (min h "
+                   f"dx^2 / A_ii over the cells). Each window takes the full-domain step "
+                   f"on its own cells, so the decomposed river is the full-domain river "
+                   f"to round-off."]
+        else:
+            out = [f"{self.sub} explicit steps of {self.dts:g} s per macro-step and one "
+                   f"exchange: the stability limit here is {self.limit:.4g} s. Each "
+                   f"window steps its own cells and a halo {self.sub} cells deep read "
+                   f"from the exchange, and the stencil reaches a cell a step, so its own "
+                   f"cells are the full domain's to round-off and stay in the "
+                   f"processor's cache for all {self.sub} steps."]
         if self.drawn:
             out.append("The river is drawn, so its flow is solved: the potential flow from "
                        "its inlets to its outlets (atlas/workbench/flow.py), carrying the "
@@ -521,7 +699,8 @@ class PlumeRun:
     def describe(self) -> dict[str, Any]:
         i, j = outfall_cell(self.spec)
         return {"style": "A", "cells": int(self.f.cells().size), "windows": len(self.windows),
-                "dt_s": self.dt, "explicit_limit_s": self.limit, "q_m2_per_s": self.q,
+                "dt_s": self.dt, "exchange_every": self.sub, "step_s": self.dts,
+                "explicit_limit_s": self.limit, "q_m2_per_s": self.q,
                 "release_g_per_s": self.release, "outfall_cell": [i, j],
                 "arrival_s": self.arrival_seconds(), "drawn": self.drawn,
                 "partition_of_unity": self.certificate.as_dict()}
@@ -567,8 +746,9 @@ def case_graph(spec):
         lambda_ref="the same explicit finite volumes on every cell, the full-domain arm",
         response_note="the pollutant flux the window's explicit step sends into it "
                       "through these faces, the trace the outside concentration",
+        substeps=int(spec.run.exchange_every),
         validity=lambda state=None, cond=None: float(spec.run.macro_dt)
-        <= explicit_limit(spec))
+        / int(spec.run.exchange_every) <= explicit_limit(spec))
     return graph
 
 

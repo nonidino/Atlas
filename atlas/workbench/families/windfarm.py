@@ -45,11 +45,18 @@ import numpy as np
 
 from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
+from ..fast import FastBars
 from ..tiling import RectangleTiling
 
 FAMILY = "incompressible-2d"
 STYLE = "A"
 ARMS = ("serial", "parallel", "full")
+#: **The Fast example's bars** (demo item 1.4), one per mechanism this family may
+#: use, in the order they are tried (`fast.py`; demo-fast-examples-plan section 3).
+#: Registered 2026-09-30, before the first timed run, and never loosened.
+FAST: tuple[FastBars, ...] = (
+    FastBars("P", 3.0, 0.03, "farm power against the full domain, relative"),
+)
 #: what the page draws and plots
 FIELD_LABEL = "streamwise velocity u / U"
 LENGTH_UNIT = "D"

@@ -1,0 +1,136 @@
+{
+ "command": "sweep",
+ "example": "fast-farm",
+ "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+ "when": "2026-09-30T23:18:33-04:00",
+ "machine": {
+  "time": "2026-09-30T23:18:33-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 1780
+ },
+ "runs": [
+  {
+   "example": "fast-farm",
+   "overrides": {
+    "threads": 4,
+    "steps": 24
+   },
+   "family": "incompressible-2d",
+   "style": "A",
+   "cells": 163328,
+   "windows": 12,
+   "threads": 4,
+   "steps": 24,
+   "macro_dt": 0.2,
+   "wall_seconds": 74.91336659993976,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 0.9509713987076589,
+    "parallel": 4.6198398989729625
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 1.424119591654744,
+    "parallel": 0.29314803751185536,
+    "full": 1.354297000002892
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.8111597291370352e-16,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: the parallel arm's state, bit for bit; parallel: 4.09e-18; full: 1.81e-16"
+    },
+    {
+     "key": "power",
+     "kind": "reference",
+     "value": 0.07361095050714436,
+     "tolerance": 0.25,
+     "passed": true,
+     "detail": "parallel 2.0697 against full 2.2342"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 24 macro-steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 4.6198398989729625,
+     "fast": true,
+     "agreement_bar": 0.03,
+     "agreement": 0.07361095050714436,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [],
+   "describe": {
+    "windows": 12,
+    "rotors": 5,
+    "cells": 163328,
+    "shape_groups": 1,
+    "drawn": false,
+    "chunks": 4,
+    "threads": 4,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "partition_of_unity": {
+     "identity_residual": 1.1102230246251565e-16,
+     "chi_min": 0.002070393374741201,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T23:18:33-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 1780
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T23:19:48-04:00"
+   }
+  }
+ ]
+}

@@ -334,7 +334,7 @@ def fv_graph(spec, f: fv.Field, *, family: str, port_type: str, scales: dict[str
              state: np.ndarray | None = None, passengers: tuple[str, ...] = (),
              response_note: str = "", name: str | None = None,
              validity: Callable[..., bool] | None = None,
-             families: dict[str, str] | None = None):
+             families: dict[str, str] | None = None, substeps: int = 1):
     """The case's windows as `FVAgent`s, its seams from the geometry, and the graph.
 
     ``validity`` is the family's own predicate for where its arithmetic holds
@@ -402,7 +402,7 @@ def fv_graph(spec, f: fv.Field, *, family: str, port_type: str, scales: dict[str
             elliptic_data_from_ports=bool(implicit) and style in ("B", "C"),
             time_discretization=(TimeDiscretization.IMPLICIT if implicit
                                  else TimeDiscretization.EXPLICIT),
-            stencil_radius=1, substeps_per_macro_step=1,
+            stencil_radius=1, substeps_per_macro_step=int(substeps),
             dt_native=float(spec.run.macro_dt), storage=a.storage, validity=validity,
             governing_family=(families or {}).get(n, family), lambda_ref=lambda_ref,
             claim_types=frozenset({ClaimType.TRAJECTORY}),

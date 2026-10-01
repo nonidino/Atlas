@@ -147,7 +147,9 @@ def test_an_ideal_battery_is_a_voltage_source():
 
 def test_the_registered_tolerances():
     assert {c.key: c.tolerance for c in cd.CHECKS} == {
-        "balance": 1e-6, "reference": 1e-6, "closed_form": 1e-6, "bitwise": None}
+        "balance": 1e-6, "reference": 1e-6, "closed_form": 1e-6, "bitwise": None,
+        # style M's own agreement, registered before its first run (demo item 1.4)
+        "reference_multirate": 1e-3}
     assert {c.key: c.tolerance for c in el.CHECKS} == {
         "kirchhoff": 1e-6, "energy": 1e-6, "reference": 1e-6}
     for fam in ("conduction-2d", "electric-2d"):

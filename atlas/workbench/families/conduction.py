@@ -20,6 +20,14 @@ Two ways to decompose it:
        that says whether the unrelaxed iteration would converge.  Sequential by
        construction (the Neumann piece needs the Dirichlet piece's heat), so it
        has no threaded arm.
+``M``  pieces that meet along faces, each at its own stable **explicit** step
+       (multirate, `styles.TwoRate`; demo item 1.4): the pieces whose own limit
+       allows the macro-step take it whole, the others sub-cycle, and the faces
+       between them are refluxed so the energy balance closes to round-off.  The
+       full domain is the same explicit update at the most restrictive cell's step,
+       everywhere; with equal steps the arm is the full domain to the bit.  Its
+       agreement with the full domain is the interface's time interpolation, judged
+       on its own registered check (1e-3 of the span).
 
 **Steady** runs solve once per timed repeat, from the case's initial
 temperature; **transient** runs take backward-Euler steps of ``run.macro_dt``
@@ -38,11 +46,20 @@ import numpy as np
 from .. import fv, styles
 from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
+from ..fast import FastBars
 from ..tiling import MaskTiling, RectangleTiling
 
 FAMILY = "conduction-2d"
 STYLE = "B or C"
 ARMS = ("serial", "parallel", "full")
+#: **The Fast example's bars** (demo item 1.4), one per mechanism this family may
+#: use, in the order they are tried (`fast.py`; demo-fast-examples-plan section 3).
+#: Registered 2026-09-30, before the first timed run, and never loosened.
+FAST: tuple[FastBars, ...] = (
+    FastBars("M", 3.0, 1e-3, "temperature against the full domain, over the span; the energy balance keeps its own 1e-6"),
+    FastBars("P", 3.0, 1e-9, "temperature against the full domain, over the span"),
+    FastBars("S", 3.0, 1e-9, "temperature against the full domain, over the span"),
+)
 FIELD_LABEL = "temperature (K)"
 LENGTH_UNIT = "m"
 SERIES = {"heat_in": "Heat into the plate per step | W per metre of depth"}
@@ -83,6 +100,19 @@ CHECKS: tuple[CheckSpec, ...] = (
         measure="np.array_equal on the temperature after every step",
         why=("additive Schwarz solves every window from the same iterate and blends in "
              "window order, so the order the threads finish in cannot change a bit")),
+    CheckSpec(
+        key="reference_multirate", title="Temperatures agree with the full domain (style M)",
+        kind="reference", tolerance=1e-3,
+        registered=("2026-09-30, before style M's first run (demo-fast-examples-plan "
+                    "section 1)"),
+        measure=("max |T_multirate - T_full| over the temperature span of the fixed "
+                 "boundaries, at the last step; both explicit, the full domain at the most "
+                 "restrictive cell's step everywhere"),
+        why=("the pieces take different steps and each fast piece reads its slow "
+             "neighbours interpolated in time, so the arm is not the full domain's "
+             "arithmetic: it agrees to that interpolation's error, first order in the "
+             "macro-step. The energy balance does not loosen: refluxing makes what one side "
+             "of a face lost what the other gained")),
 )
 
 _KIND = {"fixed-temperature": fv.FIXED, "insulated": fv.NO_FLUX, "heat-flux": fv.FLUX}
@@ -237,6 +267,9 @@ class CondState:
     history: list[float] = field(default_factory=list)
     relaxation: list[float] = field(default_factory=list)
     lam: np.ndarray | None = None          # style C: the interface's face values
+    #: style M: the heat that entered through the boundary over the macro-step (J
+    #: per metre of depth), summed the way each cell took its steps
+    q_in: float | None = None
 
 
 class ConductionRun:
@@ -258,21 +291,27 @@ class ConductionRun:
         self.max_it = int(spec.coupling.max_iterations)
         self.dt = float(spec.run.macro_dt)
         self.transient = self.mode == "transient"
-        self.m = (capacity(spec) * self.dx * self.dx / self.dt).ravel() if self.transient \
-            else None
+        #: style M steps explicitly: no backward-Euler term on the diagonal
+        self.explicit = self.style == "M"
+        self.m = (capacity(spec) * self.dx * self.dx / self.dt).ravel() if (
+            self.transient and not self.explicit) else None
         allowed = available_arms(spec)[0]
         self.arms = tuple(a for a in ARMS if a in arms and a in allowed)
         self.threads = max(1, int(threads))
         self.pool = None
         # the full domain: the same assembly on every cell, factorized once
         self.full_sys = fv.assemble(self.f, diag_add=self.m)
-        self.full_lu = styles.Factor(self.full_sys.A) if "full" in self.arms else None
+        self.full_lu = styles.Factor(self.full_sys.A) if (
+            "full" in self.arms and not self.explicit) else None
         #: a drawn domain's cells outside it: never solved, held at the start value
         self.void = self.f.void_cells()
         self.plain = geo.is_plain(spec)
         self.windows = [(w.id, (w.x0, w.y0, w.nx, w.ny)) for w in spec.windows]
         cells = {w.id: cells_of(spec, w) for w in spec.windows}
-        if self.style == "B":
+        if self.style == "M":
+            self.certificate = None
+            self._init_multirate(spec, cells)
+        elif self.style == "B":
             if self.plain:
                 self.tiling = RectangleTiling(self.nx, self.ny, self.windows,
                                               spec.coupling.ramp_cells)
@@ -299,6 +338,51 @@ class ConductionRun:
             self.pairing = styles.pair_faces(self.sd, self.sn)
             self.rho_1d = rho_1d(spec, d_id, n_id)
 
+    def _init_multirate(self, spec, cells: dict[str, np.ndarray]) -> None:
+        """Style M: each piece's stable explicit step, the two rates, and the driver.
+
+        A cell's limit is ``cap / A_ii``: under it the explicit update makes every
+        new value a positive combination of the old ones, so it makes no new extremum.
+        A piece's limit is its cells' least.  A piece whose limit takes the macro-step
+        whole is slow; the others sub-cycle at the most restrictive piece's rate."""
+        if not self.transient:
+            raise ValueError("style M steps each piece at its own explicit time step, and "
+                             "a steady case has no time step")
+        sys_ = self.full_sys
+        idx = sys_.idx
+        loc = np.full(self.f.n, -1, dtype=np.int64)
+        loc[idx] = np.arange(idx.size)
+        self.idx_m = idx
+        self.cap_full = capacity(spec).ravel() * self.dx * self.dx
+        cap = self.cap_full[idx]
+        diag = sys_.A.diagonal()
+        limit = np.where(diag > 0.0, cap / np.where(diag > 0.0, diag, 1.0), np.inf)
+        owner = np.full(idx.size, -1, dtype=np.int64)
+        self.piece_limit: dict[str, float] = {}
+        for k, w in enumerate(spec.windows):
+            lc = loc[cells[w.id]]
+            lc = lc[lc >= 0]
+            if np.any(owner[lc] >= 0):
+                raise ValueError("style M's pieces must not overlap")
+            owner[lc] = k
+            self.piece_limit[w.id] = float(np.min(limit[lc])) if lc.size else float("inf")
+        if np.any(owner < 0):
+            raise ValueError("style M: every cell of the domain must lie in a piece")
+        steps = {wid: max(1, int(np.ceil(self.dt / lim))) for wid, lim in
+                 self.piece_limit.items()}
+        #: sub-steps per macro-step of the pieces that cannot take it whole
+        self.rate = max(steps.values())
+        self.fast_ids = [w.id for w in spec.windows if steps[w.id] > 1]
+        self.slow_ids = [w.id for w in spec.windows if steps[w.id] == 1]
+        fast_k = [k for k, w in enumerate(spec.windows) if steps[w.id] > 1]
+        fast = np.flatnonzero(np.isin(owner, fast_k))
+        P, Q, G, F = fv.interior_faces(self.f)
+        bc = fv.boundary_faces(self.f)
+        self.bfaces_m = (loc[bc[0]],) + tuple(bc[1:])
+        self.multirate = styles.TwoRate(self.f, sys_.A, sys_.b, cap, fast, self.rate,
+                                        self.dt, (loc[P], loc[Q], G, F), self.bfaces_m)
+        self.cap_m = cap
+
     # -- the arms -------------------------------------------------------------
 
     def initial(self, arm: str) -> CondState:
@@ -309,6 +393,21 @@ class ConductionRun:
 
     def step(self, arm: str, s: CondState) -> CondState:
         """One time step (transient) or one solve from the start (steady)."""
+        if self.style == "M":
+            idx = self.idx_m
+            whole = idx.size == self.f.n          # a plain domain: no copy either way
+            src = s.u if whole else s.u[idx]
+            if arm == "full":
+                ui, q = styles.full_steps(self.f, self.full_sys.A, self.full_sys.b,
+                                          self.cap_m, self.rate, self.dt, src,
+                                          self.bfaces_m)
+            else:
+                ui, q = self.multirate.step(src)
+            if whole:
+                return CondState(ui, 1, True, q_in=q)
+            u = s.u.copy()                        # a drawn domain's void stays as it was
+            u[idx] = ui
+            return CondState(u, 1, True, q_in=q)
         u_old = s.u if self.transient else np.full(self.f.n, self.T0)
         extra = self._rhs_extra(u_old)
         if arm == "full":
@@ -347,6 +446,15 @@ class ConductionRun:
 
     def heat(self, s: CondState, u_old: np.ndarray) -> dict[str, float]:
         q = fv.boundary_inflow(self.f, s.u)
+        if s.q_in is not None:
+            # style M: what entered over the macro-step, as each cell took its steps,
+            # against what was stored, both as a mean rate over the step
+            into = s.q_in / self.dt + fv.total_source(self.f)
+            stored = float(np.sum(self.cap_full * (s.u - u_old))) / self.dt
+            through = 0.5 * sum(abs(v) for v in q.values())
+            scale = max(through, abs(stored), 1e-300)
+            return {"heat_in": float(sum(v for v in q.values() if v > 0.0)),
+                    "balance": abs(into - stored) / scale, "through": through}
         into = float(sum(q.values())) + fv.total_source(self.f)
         stored = float(np.sum(self.m * (s.u - u_old))) if self.m is not None else 0.0
         through = 0.5 * sum(abs(v) for v in q.values())
@@ -396,17 +504,18 @@ class ConductionRun:
             f"{a}: {m['balance_max']:.3g}" for a, m in metrics.items())))
         dec = "parallel" if "parallel" in metrics else ("serial" if "serial" in metrics
                                                         else None)
+        # style M is judged on its own agreement check, registered before its first run
+        ref = CHECKS[4] if self.style == "M" else CHECKS[1]
         if dec and "full" in metrics:
             dev = float(np.max(np.abs(states[dec].u - states["full"].u))) / self.span
             metrics[dec]["max_temperature_difference_K"] = dev * self.span
             metrics[dec]["heat_in_vs_full"] = ((metrics[dec]["heat_in"]
                                                 - metrics["full"]["heat_in"])
                                                / metrics["full"]["heat_in"])
-            checks.append(judge(CHECKS[1], dev, f"max |dT| = {dev * self.span:.3g} K over a "
-                                                f"span of {self.span:g} K"))
+            checks.append(judge(ref, dev, f"max |dT| = {dev * self.span:.3g} K over a "
+                                          f"span of {self.span:g} K"))
         else:
-            checks.append(judge(CHECKS[1], None, "needs a decomposed arm and the full "
-                                                 "domain"))
+            checks.append(judge(ref, None, "needs a decomposed arm and the full domain"))
         q_closed = closed_form_heat(self.spec)
         if q_closed is None:
             checks.append(judge(CHECKS[2], None, "not a steady wall of layers across x, so "
@@ -425,8 +534,8 @@ class ConductionRun:
                                 if ok else f"first differs after step "
                                            f"{bitwise['first_difference']}"))
         else:
-            checks.append(exact(CHECKS[3], None, "style C has no threaded arm" if
-                                self.style == "C" else "needs both decomposed arms"))
+            checks.append(exact(CHECKS[3], None, f"style {self.style} has no threaded arm"
+                                if self.style in ("C", "M") else "needs both decomposed arms"))
         if self.spec.domain.holes:
             # a hole across an edge leaves it in pieces: the heat through each
             for arm in metrics:
@@ -447,6 +556,13 @@ class ConductionRun:
                        + f". First relaxation factor {self.spec.coupling.relaxation:g}, "
                        + ("then Aitken's rule." if self.spec.coupling.aitken else
                           "held fixed."))
+        if self.style == "M":
+            fast = ", ".join(self.fast_ids) or "none"
+            slow = ", ".join(self.slow_ids) or "none"
+            out.append(f"Multirate: the macro-step is {self.dt:g} s. Pieces taking it whole: "
+                       f"{slow}. Pieces taking {self.rate} steps of {self.dt / self.rate:.4g} "
+                       f"s: {fast}. The full domain takes {self.rate} steps everywhere, its "
+                       f"most restrictive cell's.")
         if not self.transient:
             out.append("Steady: every 'step' is the whole solve again from the initial "
                        "temperature, repeated to time it; the answer is the same each time.")
@@ -464,6 +580,11 @@ class ConductionRun:
                "max_iterations": self.max_it, "scale_K": self.scale}
         if self.certificate is not None:
             out["partition_of_unity"] = self.certificate.as_dict()
+        if self.style == "M":
+            out.update({"rate": self.rate, "fast_pieces": self.fast_ids,
+                        "slow_pieces": self.slow_ids, "piece_limit_s": self.piece_limit,
+                        "fast_cells": int(self.multirate.fast.size),
+                        "interface_faces": int(self.multirate.fs.size)})
         if self.style == "C":
             out.update({"dirichlet": self.d_id, "neumann": self.n_id,
                         "rho_1d": self.rho_1d, "relaxation0": self.spec.coupling.relaxation,
@@ -475,6 +596,25 @@ class ConductionRun:
 # ---------------------------------------------------------------------------
 # helpers the page and the checks share
 # ---------------------------------------------------------------------------
+
+
+def piece_limits(spec) -> dict[str, float]:
+    """Each piece's stable explicit step for style M: its cells' least ``cap / A_ii``
+    (the bound under which the explicit update makes no new extremum), as
+    `ConductionRun` computes it, without building the run."""
+    f = field_from_case(spec)
+    sys_ = fv.assemble(f)
+    cap = (capacity(spec).ravel() * f.dx * f.dx)[sys_.idx]
+    diag = sys_.A.diagonal()
+    limit = np.where(diag > 0.0, cap / np.where(diag > 0.0, diag, 1.0), np.inf)
+    loc = np.full(f.n, -1, dtype=np.int64)
+    loc[sys_.idx] = np.arange(sys_.idx.size)
+    out = {}
+    for w in spec.windows:
+        lc = loc[cells_of(spec, w)]
+        lc = lc[lc >= 0]
+        out[w.id] = float(np.min(limit[lc])) if lc.size else float("inf")
+    return out
 
 
 def step_label(spec) -> str:
@@ -489,6 +629,10 @@ def available_arms(spec) -> tuple[tuple[str, ...], dict[str, str]]:
         return ("serial", "full"), {"parallel": "Dirichlet-Neumann is sequential by "
                                                 "construction: the Neumann piece needs the "
                                                 "heat the Dirichlet piece sends"}
+    if spec.coupling.style == "M":
+        return ("serial", "full"), {"parallel": "multirate's gain is fewer cell-steps, "
+                                                "not threads: the fast pieces sub-cycle "
+                                                "after the slow ones have stepped"}
     return ARMS, {}
 
 
@@ -634,12 +778,14 @@ def case_graph(spec):
         [abs(v - T0) for v in fixed] + [1.0])
     k_max = max(float(m["k"]) for m in spec.materials.values())
     power = k_max * span / (max(d.nx, d.ny) * d.dx)          # W/m^2, a flux's size
+    # style M steps explicitly: no backward-Euler term, and the window's response is
+    # the flow its explicit step sends through the faces (as the river's)
     m = (capacity(spec) * d.dx * d.dx / float(spec.run.macro_dt)).ravel() \
-        if transient else None
+        if (transient and spec.coupling.style != "M") else None
     graph, _agents = fv_graph(
         spec, f, family=FAMILY, port_type="THERM",
         scales={"temperature": scale, "entropy_flux": power / scale, "power_area": power},
-        implicit=True, base=base, per_effort=True,
+        implicit=spec.coupling.style != "M", base=base, per_effort=True,
         lambda_ref="the same finite volumes on every cell (fv.assemble), the full-domain arm",
         diag_add=m, extra=None if m is None else m * T0,
         response_note="the window's entropy flux q_n / T into it through these faces "

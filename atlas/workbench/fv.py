@@ -379,6 +379,28 @@ def _face_inflow(f: Field, u: np.ndarray, c, kd, v, g, fin) -> np.ndarray:
     return q
 
 
+def face_inflow_affine(f: Field, c, kd, v, g, fin) -> tuple[np.ndarray, np.ndarray, float]:
+    """`_face_inflow` as the affine map it is: ``sum_faces q = a . u[c] + b``, the faces
+    that carry nothing (a bank, ``a = 0`` and no constant) dropped.  Returns ``(c, a,
+    b)`` with ``b`` the summed constant: a ledger that costs one gather and one dot
+    product a step (demo item 1.4: the river's windows summed it step by step)."""
+    c = np.asarray(c)
+    a = np.zeros(c.size)
+    b = np.zeros(c.size)
+    fx_ = kd == FIXED
+    a[fx_] = -g[fx_] + np.where(fin[fx_] > 0.0, 0.0, fin[fx_])
+    b[fx_] = g[fx_] * v[fx_] + np.where(fin[fx_] > 0.0, fin[fx_] * v[fx_], 0.0)
+    fl = kd == FLUX
+    b[fl] = v[fl] * f.dx
+    il = kd == INLET
+    a[il] = np.where(fin[il] > 0.0, 0.0, fin[il])
+    b[il] = np.where(fin[il] > 0.0, fin[il] * v[il], 0.0)
+    ol = kd == OUTLET
+    a[ol] = np.minimum(fin[ol], 0.0)
+    keep = a != 0.0
+    return c[keep], a[keep], float(np.sum(b))
+
+
 def boundary_face_inflow(f: Field, u: np.ndarray) -> np.ndarray:
     """The flow INTO the domain through every boundary face, in `boundary_faces`'
     order (the grid's edges, then the faces to the void): what `boundary_inflow`
@@ -449,4 +471,5 @@ def face_flows(f: Field, u: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 __all__ = ["NO_FLUX", "FIXED", "FLUX", "INLET", "OUTLET", "KIND_CODES", "EDGES", "Field",
            "harmonic", "interior_faces", "boundary_faces", "LocalSystem", "assemble",
-           "boundary_inflow", "boundary_face_inflow", "total_source", "face_flows"]
+           "boundary_inflow", "boundary_face_inflow", "face_inflow_affine", "total_source",
+           "face_flows"]

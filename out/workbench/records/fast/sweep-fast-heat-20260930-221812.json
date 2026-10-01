@@ -1,0 +1,466 @@
+{
+ "command": "sweep",
+ "example": "fast-heat",
+ "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+ "when": "2026-09-30T22:18:12-04:00",
+ "machine": {
+  "time": "2026-09-30T22:18:12-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 89,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 23516
+ },
+ "runs": [
+  {
+   "example": "fast-heat",
+   "overrides": {
+    "nx": 320,
+    "ny": 192,
+    "steps": 200
+   },
+   "family": "conduction-2d",
+   "style": "M",
+   "cells": 61440,
+   "windows": 2,
+   "threads": 1,
+   "steps": 200,
+   "macro_dt": 0.023013307594476746,
+   "wall_seconds": 1.2826827000826597,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.8046086492933646
+   },
+   "fastest_arm": "serial",
+   "mean_step_s": {
+    "serial": 0.0015593729983083904,
+    "full": 0.0028140580002218485
+   },
+   "checks": [
+    {
+     "key": "balance",
+     "kind": "balance",
+     "value": 1.480437396182524e-13,
+     "tolerance": 1e-06,
+     "passed": true,
+     "detail": "serial: 3.81e-14; full: 1.48e-13"
+    },
+    {
+     "key": "reference_multirate",
+     "kind": "reference",
+     "value": 0.0006130160782083749,
+     "tolerance": 0.001,
+     "passed": true,
+     "detail": "max |dT| = 0.0613 K over a span of 100 K"
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null,
+     "detail": "not a steady wall of layers across x, so there is no closed form"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": null,
+     "detail": "style M has no threaded arm"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 1.8046086492933646,
+     "fast": false,
+     "agreement_bar": 0.001,
+     "agreement": 0.0006130160782083749,
+     "close": true,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 1.8046086492933646,
+     "fast": false,
+     "agreement_bar": 1e-09,
+     "agreement": 0.0006130160782083749,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "S",
+     "speed_bar": 3.0,
+     "speedup": 1.8046086492933646,
+     "fast": false,
+     "agreement_bar": 1e-09,
+     "agreement": 0.0006130160782083749,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Multirate: the macro-step is 0.0230133 s. Pieces taking it whole: steel. Pieces taking 9 steps of 0.002557 s: copper. The full domain takes 9 steps everywhere, its most restrictive cell's."
+   ],
+   "describe": {
+    "style": "M",
+    "mode": "transient",
+    "cells": 61440,
+    "windows": 2,
+    "tolerance": 1e-10,
+    "max_iterations": 500,
+    "scale_K": 400.0,
+    "rate": 9,
+    "fast_pieces": [
+     "copper"
+    ],
+    "slow_pieces": [
+     "steel"
+    ],
+    "piece_limit_s": {
+     "steel": 0.023036343938415162,
+     "copper": 0.002695
+    },
+    "fast_cells": 6144,
+    "interface_faces": 256
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:18:12-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 89,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 23516
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 89,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:18:14-04:00"
+   }
+  },
+  {
+   "example": "fast-heat",
+   "overrides": {
+    "nx": 640,
+    "ny": 384,
+    "steps": 200
+   },
+   "family": "conduction-2d",
+   "style": "M",
+   "cells": 245760,
+   "windows": 2,
+   "threads": 1,
+   "steps": 200,
+   "macro_dt": 0.0057533268986191865,
+   "wall_seconds": 13.208999800030142,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 3.2386960957051363
+   },
+   "fastest_arm": "serial",
+   "mean_step_s": {
+    "serial": 0.01361560198944062,
+    "full": 0.04409679700387642
+   },
+   "checks": [
+    {
+     "key": "balance",
+     "kind": "balance",
+     "value": 1.8131519707946114e-13,
+     "tolerance": 1e-06,
+     "passed": true,
+     "detail": "serial: 8.88e-14; full: 1.81e-13"
+    },
+    {
+     "key": "reference_multirate",
+     "kind": "reference",
+     "value": 0.0006130160782134908,
+     "tolerance": 0.001,
+     "passed": true,
+     "detail": "max |dT| = 0.0613 K over a span of 100 K"
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null,
+     "detail": "not a steady wall of layers across x, so there is no closed form"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": null,
+     "detail": "style M has no threaded arm"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 3.2386960957051363,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": 0.0006130160782134908,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    },
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 3.2386960957051363,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 0.0006130160782134908,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "S",
+     "speed_bar": 3.0,
+     "speedup": 3.2386960957051363,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 0.0006130160782134908,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Multirate: the macro-step is 0.00575333 s. Pieces taking it whole: steel. Pieces taking 9 steps of 0.0006393 s: copper. The full domain takes 9 steps everywhere, its most restrictive cell's."
+   ],
+   "describe": {
+    "style": "M",
+    "mode": "transient",
+    "cells": 245760,
+    "windows": 2,
+    "tolerance": 1e-10,
+    "max_iterations": 500,
+    "scale_K": 400.0,
+    "rate": 9,
+    "fast_pieces": [
+     "copper"
+    ],
+    "slow_pieces": [
+     "steel"
+    ],
+    "piece_limit_s": {
+     "steel": 0.005759085984603791,
+     "copper": 0.00067375
+    },
+    "fast_cells": 24576,
+    "interface_faces": 512
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:18:14-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 89,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 23516
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 89,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:18:27-04:00"
+   }
+  },
+  {
+   "example": "fast-heat",
+   "overrides": {
+    "nx": 960,
+    "ny": 576,
+    "steps": 100
+   },
+   "family": "conduction-2d",
+   "style": "M",
+   "cells": 552960,
+   "windows": 2,
+   "threads": 1,
+   "steps": 100,
+   "macro_dt": 0.002557034177164083,
+   "wall_seconds": 15.578964699991047,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 2.9822552264738165
+   },
+   "fastest_arm": "serial",
+   "mean_step_s": {
+    "serial": 0.03348952299915254,
+    "full": 0.09987430499633775
+   },
+   "checks": [
+    {
+     "key": "balance",
+     "kind": "balance",
+     "value": 1.2480314438247475e-13,
+     "tolerance": 1e-06,
+     "passed": true,
+     "detail": "serial: 6.11e-14; full: 1.25e-13"
+    },
+    {
+     "key": "reference_multirate",
+     "kind": "reference",
+     "value": 0.0012357277160901959,
+     "tolerance": 0.001,
+     "passed": false,
+     "detail": "max |dT| = 0.124 K over a span of 100 K"
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null,
+     "detail": "not a steady wall of layers across x, so there is no closed form"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": null,
+     "detail": "style M has no threaded arm"
+    }
+   ],
+   "all_checks_pass": false,
+   "bars": [
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 2.9822552264738165,
+     "fast": false,
+     "agreement_bar": 0.001,
+     "agreement": 0.0012357277160901959,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 2.9822552264738165,
+     "fast": false,
+     "agreement_bar": 1e-09,
+     "agreement": 0.0012357277160901959,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "S",
+     "speed_bar": 3.0,
+     "speedup": 2.9822552264738165,
+     "fast": false,
+     "agreement_bar": 1e-09,
+     "agreement": 0.0012357277160901959,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Multirate: the macro-step is 0.00255703 s. Pieces taking it whole: steel. Pieces taking 9 steps of 0.0002841 s: copper. The full domain takes 9 steps everywhere, its most restrictive cell's."
+   ],
+   "describe": {
+    "style": "M",
+    "mode": "transient",
+    "cells": 552960,
+    "windows": 2,
+    "tolerance": 1e-10,
+    "max_iterations": 500,
+    "scale_K": 400.0,
+    "rate": 9,
+    "fast_pieces": [
+     "copper"
+    ],
+    "slow_pieces": [
+     "steel"
+    ],
+    "piece_limit_s": {
+     "steel": 0.002559593770935018,
+     "copper": 0.0002994444444444445
+    },
+    "fast_cells": 55296,
+    "interface_faces": 768
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:18:27-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 89,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 23516
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 89,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:18:43-04:00"
+   }
+  }
+ ]
+}

@@ -1,0 +1,168 @@
+{
+ "command": "confirm",
+ "example": "fast-heat",
+ "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+ "when": "2026-09-30T23:05:00-04:00",
+ "machine": {
+  "time": "2026-09-30T23:05:00-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 25920
+ },
+ "runs": [
+  {
+   "example": "fast-heat",
+   "overrides": {},
+   "family": "conduction-2d",
+   "style": "M",
+   "cells": 245760,
+   "windows": 2,
+   "threads": 1,
+   "steps": 1000,
+   "macro_dt": 0.0057533268986191865,
+   "wall_seconds": 57.9024049998261,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 5.4005113906859785
+   },
+   "fastest_arm": "serial",
+   "mean_step_s": {
+    "serial": 0.00784133009519428,
+    "full": 0.042347192497225475
+   },
+   "checks": [
+    {
+     "key": "balance",
+     "kind": "balance",
+     "value": 8.33248270997523e-13,
+     "tolerance": 1e-06,
+     "passed": true,
+     "detail": "serial: 9.23e-14; full: 8.33e-13"
+    },
+    {
+     "key": "reference_multirate",
+     "kind": "reference",
+     "value": 0.00012244406099284788,
+     "tolerance": 0.001,
+     "passed": true,
+     "detail": "max |dT| = 0.0122 K over a span of 100 K"
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null,
+     "detail": "not a steady wall of layers across x, so there is no closed form"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": null,
+     "detail": "style M has no threaded arm"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 5.4005113906859785,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": 0.00012244406099284788,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    },
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 5.4005113906859785,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 0.00012244406099284788,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "S",
+     "speed_bar": 3.0,
+     "speedup": 5.4005113906859785,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 0.00012244406099284788,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Multirate: the macro-step is 0.00575333 s. Pieces taking it whole: steel. Pieces taking 9 steps of 0.0006393 s: copper. The full domain takes 9 steps everywhere, its most restrictive cell's."
+   ],
+   "describe": {
+    "style": "M",
+    "mode": "transient",
+    "cells": 245760,
+    "windows": 2,
+    "tolerance": 1e-10,
+    "max_iterations": 500,
+    "scale_K": 400.0,
+    "rate": 9,
+    "fast_pieces": [
+     "copper"
+    ],
+    "slow_pieces": [
+     "steel"
+    ],
+    "piece_limit_s": {
+     "steel": 0.005759085984603791,
+     "copper": 0.00067375
+    },
+    "fast_cells": 24576,
+    "interface_faces": 512
+   },
+   "machine_before": {
+    "time": "2026-09-30T23:05:01-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 25920
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 100,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T23:05:58-04:00"
+   }
+  }
+ ]
+}

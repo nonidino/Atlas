@@ -753,7 +753,7 @@ class GeometryEditor:
     # -- warnings, boundaries, the circuit --------------------------------------
     def _sync_warnings(self) -> None:
         s, d = self.wb.spec, self.wb.spec.domain
-        pieces = s.coupling.style in ("C", "D", "split")
+        pieces = s.coupling.style in ("C", "D", "split", "M")
         plain = geo.is_plain(s)
         act = geo.domain_mask(d)
         ov_cells: list[geo.Box] = []
@@ -1902,7 +1902,7 @@ def follow_the_domain(c: CaseSpec) -> None:
         return
     style = c.coupling.style
     materials = {r.material for r in c.regions}
-    if style == "C":
+    if style in ("C", "M"):
         c.layout = Layout(cut="materials") if len(materials) >= 2 else Layout(along=2)
     elif style in ("D", "split"):
         c.layout = Layout(along=1)

@@ -494,6 +494,68 @@ def summary_cards(res: dict[str, Any]) -> list:
     return cards
 
 
+def fast_card(res: dict[str, Any]):
+    """The Fast example's speed card (demo item 1.4; `demo-fast-examples-plan` §5):
+    the mechanism, in one line with this run's own numbers; the run against the bars
+    the family registered before its first timed run (`fast.py`); what limits a family
+    that cannot reach them (O3); and the fixed line every card carries.  None for a
+    case that is not its kind's Fast example."""
+    from . import fast
+    from .runner import adapter_for
+    from .spec import FAST_EXAMPLES
+    fid = res.get("family", "")
+    if not fid or FAST_EXAMPLES.get(fid) != res.get("case_name"):
+        return None
+    module = adapter_for(fid)
+    bars_all = getattr(module, "FAST", ())
+    if not bars_all:
+        return None
+    style = (res.get("case") or {}).get("coupling", {}).get("style")
+    mech = "M" if style == "M" else ("X" if fid == "thermoelastic-2d" else "P")
+    bars = next((b for b in bars_all if b.mechanism == mech), bars_all[0])
+    timing = res.get("timing", {})
+    ratios = {a: t.get("speedup_vs_full") for a, t in timing.items()
+              if a != "full" and t.get("speedup_vs_full")}
+    best = max(ratios, key=lambda a: ratios[a]) if ratios else None
+    speed = ratios.get(best) if best else None
+    j = fast.judge(bars, speed, fast.agreement(res.get("checks", [])))
+    prob = res.get("problem") or {}
+    limit = getattr(module, "FAST_LIMIT", None)
+    try:
+        if limit:
+            line = limit
+        elif mech == "M":
+            line = fast.mechanism_line("M", slow=", ".join(prob.get("slow_pieces", [])),
+                                       fast=", ".join(prob.get("fast_pieces", [])),
+                                       ratio=prob.get("rate", 1))
+        elif mech == "X":
+            line = fast.mechanism_line("X", fraction=1.0 / speed if speed else float("nan"))
+        else:
+            n = prob.get("windows") or len((res.get("case") or {}).get("windows", []))
+            line = fast.mechanism_line("P", pieces=n, threads=res.get("threads", 1))
+    except (KeyError, TypeError, ZeroDivisionError):
+        line = fast.MECHANISMS.get(mech, "")
+    if j["met"]:
+        verdict = (f"It meets both bars this kind registered before its first timed run: "
+                   f"at least {bars.speed:g}× faster, and within {bars.agreement:.0e} of the "
+                   f"whole domain ({bars.agreement_of}).")
+    else:
+        verdict = (f"It is below the {bars.speed:g}× bar this kind registered before its "
+                   f"first timed run" + (f": {bars.ceiling}." if bars.ceiling else "."))
+    value = "-" if speed is None else f"{speed:.3g}×"
+    return pn.pane.HTML(
+        f"<div style='font-size:12px;font-weight:600;letter-spacing:0.4px;text-transform:"
+        f"uppercase;color:#5b6b7c'>Fast example · {html.escape(fast.MECHANISMS[mech])}</div>"
+        f"<div style='font-size:24px;font-weight:700;color:#0f172a;margin:6px 0 4px 0;"
+        f"font-family:ui-monospace,Consolas,monospace'>{html.escape(value)}</div>"
+        f"<div style='font-size:14px;color:#0f172a;line-height:1.45'>{html.escape(line)}</div>"
+        f"<div style='font-size:13px;color:#334155;line-height:1.4;margin-top:4px'>"
+        f"{html.escape(verdict)} Measured in this run, on this machine.</div>"
+        f"<div style='font-size:13px;color:#5b6b7c;line-height:1.4;margin-top:6px;"
+        f"font-style:italic'>{html.escape(fast.FIXED_LINE)}</div>",
+        styles=CARD_STYLE, sizing_mode="stretch_width", margin=(4, 6))
+
+
 def results_view(wb: "Workbench", res: dict[str, Any] | None):
     if res is None:
         return pn.pane.Alert("No run has finished in this session yet. Press **Run**: the "
@@ -554,9 +616,12 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
         pn.pane.Markdown("\n".join(notes), sizing_mode="stretch_width", margin=(6, 10)),
         title="Details: every arm, every check, the notes and the record", collapsed=True,
         sizing_mode="stretch_width", margin=(10, 6))
+    #: the Fast example's speed card comes first (demo item 1.4)
+    speed_card = fast_card(res)
     return pn.Column(
         pn.pane.Markdown(head, sizing_mode="stretch_width", margin=(12, 10, 4, 10)),
         *changed,
+        *([speed_card] if speed_card is not None else []),
         #: a Row shares the width among the cards; in a wrapping FlexBox each
         #: stretch_width card took a whole line (seen)
         pn.Row(*summary_cards(res), sizing_mode="stretch_width"),

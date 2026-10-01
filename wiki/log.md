@@ -7033,3 +7033,25 @@ The seven examples that refused now compile `admit-uncertified`. The full suite:
 - **T11, passive interconnection:** the connection rule conserves power pairwise, the connected ports' powers sum to zero over any graph, passive agents make a passive system, and incrementally passive agents make a non-expansive step ([[master-error-bound]] §6.1's theorem, in one step's energy balance).
 
 The four new files built in 102.6 s on battery; the axiom check's positive control saw all 48 `sorry`. **Added:** `lean/AtlasProofs/DefectCorrection.lean`, `DefectCorrectionShrink.lean`, `SymmetryAveraging.lean`, `Passivity.lean`, two blueprint chapters. **Changed:** [[formal-proofs-record]], [[formal-proofs-plan]], [[index]].
+
+## [2026-10-01] build | Demo step 6: a Fast example per simulation type
+
+Item 1.4 of [[demo-finish-plan]], built to [[demo-fast-examples-plan]] (its §6 records where the build departs from the plan). The header's *Fast example* opens the chosen kind's case; its arrow lists the kind's other examples (O1). Each family registered its bars in its module before its first timed run. A sweep chose each configuration and a confirmation run from a fresh start measured it, on AC power. The other two chats were writing documentation and theory.
+
+**Four of eight kinds meet both bars** ([[showcase-gallery]] §8):
+- the wind farm, 4.62× (P), farm power within 1.84%;
+- conduction, 5.58×, by a new style M: each piece at its own explicit step, refluxed so the balance closes to round-off, and the full domain to the bit with equal steps;
+- the river, 5.85×, and the sound, 4.67× (P): the windows take several steps per exchange on a halo as deep, so they stay in cache, and their cells are the full domain's (the sound's bit for bit).
+
+**The other four** load their fastest honest setup, and the card says what limits them (O3). The structure, the plate and the cooled block are one direct solve, which beats their iterated pieces (0.004–0.275×). The heated structure's split by physics can at most halve the time (1.17×).
+
+**What the sweeps found:**
+- With one exchange a step, the river's windows are memory-bound (0.84–1.02×).
+- Multirate would change explicit upwind's numerical diffusion by percents.
+- Subnormal floats in the plume's tail slowed a long march 3.4×; every arm now flushes them under $10^{-30}$ g/m$^3$.
+- The farm needs 28 macro-steps for 3%, so its example runs two arms.
+- The first confirmations (river 2.74×, sound 2.93×, the farm over two minutes) are superseded and kept.
+
+**Step 0** (`scripts/fast_step0.py`): numpy windows scale to 3.6–3.8× from $256^2$ cells, the river's sparse step to 4–9×, and SuperLU releases the GIL up to 16,384 unknowns.
+
+**Added:** `atlas/workbench/fast.py`, `scripts/fast_step0.py`, `scripts/fast_examples.py`, `tests/test_workbench_fast.py`, `out/workbench/records/fast/`. **Changed:** `styles.py` (`TwoRate`), `tiling.py`, `fv.py`, `spec.py` (four examples, `FAST_EXAMPLES`, `run.exchange_every`, style M), `app.py` (the button), `runview.py` (the card), every family module (`FAST`), the conduction, river and sound families, three test files, the README, [[demo-fast-examples-plan]], [[demo-finish-plan]], [[showcase-gallery]], [[gap-worklist]].

@@ -38,12 +38,27 @@ import scipy.sparse as sp
 from .. import fe, styles
 from .. import geometry as geo
 from ..checks import CheckSpec, exact, judge
+from ..fast import FastBars
 from ..fv import LocalSystem
 from ..tiling import MaskTiling, RectangleTiling
 
 FAMILY = "elasticity-2d"
 STYLE = "B"
 ARMS = ("serial", "parallel", "full")
+#: **The Fast example's bars** (demo item 1.4), one per mechanism this family may
+#: use, in the order they are tried (`fast.py`; demo-fast-examples-plan section 3).
+#: Registered 2026-09-30, before the first timed run, and never loosened.
+FAST: tuple[FastBars, ...] = (
+    FastBars("S", 3.0, 1e-9, "displacement against the full domain, over the largest"),
+    FastBars("P", 3.0, 1e-9, "displacement against the full domain, over the largest"),
+)
+#: O3 (the owner, 2026-09-30): this family's Fast example is its fastest honest
+#: setup, and its card says what limits it.
+FAST_LIMIT = (
+    "A steady structure is one direct solve here, factored once and reused; the "
+    "pieces iterate until they agree (plain Schwarz, with no coarse level), so the "
+    "whole is faster. Factoring the pieces at once and solving their interface "
+    "directly (substructuring) is what could win, and it is not built.")
 FIELD_LABEL = "von Mises stress (MPa)"
 LENGTH_UNIT = "m"
 SERIES: dict[str, str] = {}

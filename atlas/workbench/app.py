@@ -8,8 +8,9 @@ UI to make it much more simple and intuitive... plan it out in claude design
 first"; the plan is seven screens on a Claude Design canvas).  The page has:
 
 * a header: **what the case simulates** (choosing another starts a new case of it,
-  and one Undo brings the old one back), the two tabs, **More examples** (the chosen
-  kind's examples, one line each saying what it shows), a **status chip** that says
+  and one Undo brings the old one back), the two tabs, **Fast example** (the chosen
+  kind's fast example, demo item 1.4; its arrow lists the kind's *More examples*, one
+  line each saying what it shows), a **status chip** that says
   whether the case can run and lists its problems, each linked to where it is fixed,
   **Run**, and one **Case** menu (start over, open, save, import, export, Gmsh,
   history).  A case has no name (case@0.6, 2026-09-30, the owner: "There's no need
@@ -46,8 +47,11 @@ from .gmsh_import import GmshImportError, read_msh_bytes
 from .runner import (ARM_LABELS, CaseRun, RunRefused, adapter_for, arm_labels_for,
                      arms_for, results_dir_for, step_label_for)
 from .runview import RunPanel, results_view
-from .spec import (EXAMPLES, Boundary, CaseSpec, Region, Window, check, example_case, slug,
-                   summary)
+from .spec import (EXAMPLES, FAST_EXAMPLES, Boundary, CaseSpec, Region, Window, check,
+                   example_case, slug, summary)
+
+#: the header's split button: its own part opens the kind's fast example
+FAST_LABEL = "Fast example"
 
 #: Native form controls and scrollbars follow the page, not the OS dark-mode setting.
 LIGHT_CSS = ":root { color-scheme: light; }"
@@ -459,6 +463,14 @@ class Workbench:
                 self.start_new(fid)
         elif action == "file:start-over":
             self.start_new(self.spec.physics.family, over=True)
+        elif action == "file:fast":
+            fid = self.spec.physics.family
+            key = FAST_EXAMPLES.get(fid)
+            if key is None:
+                self.notify("info", f"there is no fast example of a "
+                                    f"{registry.short_label(fid)} case yet")
+                return
+            self.dispatch(f"file:example:{key}")
         elif group == "file" and rest.startswith("example:"):
             key = rest.split(":", 1)[1]
             if key not in EXAMPLES:
@@ -466,8 +478,18 @@ class Workbench:
                 return
             self.set_spec(example_case(key), f"opened the example: {EXAMPLES[key].shows}",
                           path=None, dirty=False, key=key)
+            arms = dict(EXAMPLES[key].params).get("arms")
+            if arms:
+                # a Fast example that declares the arms its comparison needs (the
+                # farm: two minutes for every arm would not reach its accuracy)
+                self.run_arms = [a for a in ("serial", "parallel", "full")
+                                 if a in str(arms).split()]
+                self.log(f"run arms set by the example: {', '.join(self.run_arms)}")
             self.notify("info", f"{EXAMPLES[key].shows}. Undo (↶) brings back the case "
-                                f"before it.")
+                                f"before it."
+                        + (f" It runs the threaded windows and the whole domain; the "
+                           f"serial arm, the threads' bit-for-bit control, is in Run "
+                           f"settings." if arms else ""))
         elif action == "file:open":
             self._dialog_open()
         elif action == "file:save":
@@ -721,14 +743,17 @@ class Workbench:
         self.redo_btn = pn.widgets.Button(name="↷", button_type="light",
                                           description="Redo", width=40, margin=(0, 2))
         self.redo_btn.on_click(lambda _e: self.dispatch("edit:redo"))
-        #: the chosen kind's examples, one line each saying what it shows and no name
-        #: (the owner's O1, 2026-09-30); the gallery of all 21 left the page with the
-        #: names it listed
+        #: **Fast example** (demo item 1.4): the button opens the chosen kind's fast
+        #: example, and its arrow the kind's *More examples*, one line each saying what
+        #: it shows and no name (the owner's O1, 2026-09-30); the gallery of all 21 left
+        #: the page with the names it listed
         self.examples_menu = pn.widgets.MenuButton(
-            name="More examples", button_type="light", width=128,
+            name=FAST_LABEL, button_type="light", width=132, split=True,
             stylesheets=[HEADER_CSS, MENU_CSS], margin=(0, 4), align="center",
             items=self._example_items())
-        self.examples_menu.on_click(lambda e: self.dispatch(e.new))
+        # the split button's own part reports its name; a menu item, its action
+        self.examples_menu.on_click(
+            lambda e: self.dispatch("file:fast" if e.new == FAST_LABEL else e.new))
         #: Start over is a new case of the same kind; a new kind is the type selector
         self.case_menu = pn.widgets.MenuButton(
             name="Case", button_type="light", width=78, stylesheets=[HEADER_CSS, MENU_CSS],
@@ -784,8 +809,9 @@ class Workbench:
         """The open kind's examples for *More examples*: what each shows, and its
         action."""
         fid = self.spec.physics.family
+        fast = set(FAST_EXAMPLES.values())                 # the button's own part opens it
         return [(ex.shows, f"file:example:{k}") for k, ex in EXAMPLES.items()
-                if ex.family == fid]
+                if ex.family == fid and k not in fast]
 
     def _on_type(self, e) -> None:
         """The header's type selector: another kind starts a new case of it."""
@@ -817,7 +843,6 @@ class Workbench:
         items = self._example_items()
         if [tuple(i) for i in (self.examples_menu.items or [])] != items:
             self.examples_menu.items = items
-        self.examples_menu.disabled = not items
         n = summary(self.issues())
         running = self.run is not None and self.run.active
         if running:
@@ -1212,8 +1237,9 @@ class Workbench:
             "### How it works\n"
             "**What it simulates** is the header's first control. Choosing another starts "
             "a new case of it, ready to run on the whole grid, and one Undo brings back the "
-            "one before. *More examples* opens a finished case of the same kind, and "
-            "*Case > Start over* a new one.\n\n"
+            "one before. *Fast example* opens a finished case of the same kind chosen to "
+            "show the pieces running faster than the whole; its arrow lists *More "
+            "examples*, and *Case > Start over* starts a new one.\n\n"
             "**Model.** Pick a layer on the left, then click on the canvas:\n"
             "- **Shape**: draw the domain's outline and holes (lines, arcs, smooth "
             "curves); the grid is the domain until you do.\n"

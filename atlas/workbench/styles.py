@@ -266,5 +266,131 @@ def field_lumped(field_solve: Callable[[np.ndarray], tuple[np.ndarray, object]],
                      {"efforts": x, "flows": flows})
 
 
+# ---------------------------------------------------------------------------
+# style M
+# ---------------------------------------------------------------------------
+
+
+class TwoRate:
+    """Style M: one explicit finite-volume update at two rates, refluxed.
+
+    The update is ``u <- u + dt / c (b - A u)``, with ``A u = b`` the system
+    `fv.assemble` builds on every cell and ``c`` a cell's capacity times its area.
+    The **slow** cells take one step of the macro-step ``dt``.  The **fast** cells
+    take ``m`` steps of ``dt / m``, reading their slow neighbours linearly
+    interpolated in time between the macro-step's two ends.  Then every face between
+    the two sets is **refluxed** (Berger & Colella, *J. Comput. Phys.* 82, 1989): the
+    slow cell had taken one flux over ``dt``, from the values at the start, and is
+    given instead the sum of the ``m`` fluxes the fast cell took.  What one side lost
+    the other gained, so the balance closes to round-off.  What moves is the
+    agreement with the full domain: the interface is interpolated in time.
+
+    **The rows are the full matrix's own** (``A[rows]``).  With ``m = 1`` both sets
+    read the same values at the same instant, every reflux is ``x - x = 0``, and the
+    step is the full domain's (`full_steps`) to the bit: the N = 1 control.  A step
+    costs one product with the slow rows and ``m`` with the fast rows, and touches
+    only the slow cells next to the fast ones (the halo) and the faces between.
+
+    ``faces`` are the interior faces ``(P, Q, G, F)`` in the system's numbering, as
+    `fv.interior_faces` gives them (``F`` the advective flow from P to Q).
+    ``bfaces`` are the boundary faces ``(cell, kind, value, g, inflow)`` in the same
+    numbering, for the ledger: each step returns the heat (or mass) that entered
+    through them over the macro-step, summed the way each cell took its steps.
+    """
+
+    def __init__(self, f, A, b: np.ndarray, cap: np.ndarray, fast: np.ndarray, m: int,
+                 dt: float, faces, bfaces):
+        from . import fv
+        self._inflow = lambda u, bf: fv._face_inflow(f, u, *bf)   # noqa: E731
+        A = A.tocsr()
+        n = A.shape[0]
+        self.n, self.m, self.dt = n, int(m), float(dt)
+        if self.m < 1:
+            raise ValueError("a piece takes at least one step per macro-step")
+        is_fast = np.zeros(n, dtype=bool)
+        is_fast[np.asarray(fast, dtype=np.int64)] = True
+        self.fast, self.slow = np.flatnonzero(is_fast), np.flatnonzero(~is_fast)
+        self.A_f, self.A_s = A[self.fast], A[self.slow]
+        self.b_f, self.b_s = b[self.fast], b[self.slow]
+        self.c_f = (self.dt / self.m) / cap[self.fast]
+        self.c_s = self.dt / cap[self.slow]
+        self.cap_s = cap[self.slow]
+        pos = np.full(n, -1, dtype=np.int64)
+        pos[self.slow] = np.arange(self.slow.size)
+        # the halo: the slow cells a fast row reads
+        cols = np.unique(self.A_f.indices)
+        self.halo = cols[~is_fast[cols]]
+        self.halo_pos = pos[self.halo]
+        # the faces between the sets, seen from the slow side: what the slow cell
+        # gains per unit of the fast cell's value, and loses per unit of its own
+        P, Q, G, F = (np.asarray(x) for x in faces)
+        a = ~is_fast[P] & is_fast[Q]
+        c = is_fast[P] & ~is_fast[Q]
+        self.fs = np.concatenate([Q[a], P[c]])
+        self.ss = np.concatenate([P[a], Q[c]])
+        self.in_s = np.concatenate([G[a] + np.maximum(-F[a], 0.0),
+                                    G[c] + np.maximum(F[c], 0.0)])
+        self.out_s = np.concatenate([G[a] + np.maximum(F[a], 0.0),
+                                     G[c] + np.maximum(-F[c], 0.0)])
+        self.ss_pos = pos[self.ss]
+        cell = np.asarray(bfaces[0])
+        on_fast = is_fast[cell]
+        self.bf_fast = tuple(np.asarray(x)[on_fast] for x in bfaces)
+        self.bf_slow = tuple(np.asarray(x)[~on_fast] for x in bfaces)
+        # the slow step is taken on every row, a fast row's coefficient zero, which
+        # spares gathering and scattering the slow cells (most of the domain)
+        self.A, self.b = A, np.asarray(b, dtype=float)
+        self.c_slow_all = np.zeros(n)
+        self.c_slow_all[self.slow] = self.dt / cap[self.slow]
+        #: the fast rows read only fast and halo cells, so only those are ever set
+        self._w = np.zeros(n)
+        self.ss_u, self.ss_inv = np.unique(self.ss, return_inverse=True)
+        self.cap_ss_u = cap[self.ss_u]
+
+    def step(self, u: np.ndarray) -> tuple[np.ndarray, float]:
+        """One macro-step: the new state, and what entered through the boundary."""
+        u = np.asarray(u, dtype=float)
+        dts = self.dt / self.m
+        # the slow cells' one step (a fast row is left as it was, and replaced below)
+        out = u + self.c_slow_all * (self.b - self.A @ u)
+        q_in = self.dt * float(np.sum(self._inflow(u, self.bf_slow)))
+        w = self._w
+        uf = u[self.fast]
+        uh0 = u[self.halo]
+        w[self.fast] = uf
+        w[self.halo] = uh0
+        dh = out[self.halo] - uh0
+        acc = np.zeros(self.fs.size)
+        for k in range(self.m):
+            if k:
+                w[self.halo] = uh0 + (k / self.m) * dh
+                w[self.fast] = uf
+            acc += self.in_s * w[self.fs] - self.out_s * w[self.ss]
+            q_in += dts * float(np.sum(self._inflow(w, self.bf_fast)))
+            uf = uf + self.c_f * (self.b_f - self.A_f @ w)
+        coarse = self.in_s * u[self.fs] - self.out_s * u[self.ss]
+        corr = dts * acc - self.dt * coarse
+        out[self.ss_u] += np.bincount(self.ss_inv, weights=corr,
+                                      minlength=self.ss_u.size) / self.cap_ss_u
+        out[self.fast] = uf
+        return out, q_in
+
+
+def full_steps(f, A, b: np.ndarray, cap: np.ndarray, m: int, dt: float, u: np.ndarray,
+               bfaces) -> tuple[np.ndarray, float]:
+    """The full domain's macro-step for style M: ``m`` explicit steps of ``dt / m`` on
+    every cell (the most restrictive cell's step, everywhere), and what entered
+    through the boundary.  The arithmetic `TwoRate` reproduces at ``m = 1``."""
+    from . import fv
+    u = np.asarray(u, dtype=float)
+    dts = dt / m
+    c = dts / cap
+    q_in = 0.0
+    for _k in range(int(m)):
+        q_in += dts * float(np.sum(fv._face_inflow(f, u, *bfaces)))
+        u = u + c * (b - A @ u)
+    return u, q_in
+
+
 __all__ = ["Factor", "Iteration", "schwarz", "pair_faces", "dirichlet_neumann",
-           "field_lumped"]
+           "field_lumped", "TwoRate", "full_steps"]

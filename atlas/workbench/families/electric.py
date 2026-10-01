@@ -45,11 +45,26 @@ import scipy.sparse as sp
 from .. import fv, styles
 from .. import geometry as geo
 from ..checks import CheckSpec, judge
+from ..fast import FastBars
 from .conduction import field_from_case, window_cells
 
 FAMILY = "electric-2d"
 STYLE = "D"
 ARMS = ("serial", "full")
+#: **The Fast example's bars** (demo item 1.4), one per mechanism this family may
+#: use, in the order they are tried (`fast.py`; demo-fast-examples-plan section 3).
+#: Registered 2026-09-30, before the first timed run, and never loosened.
+FAST: tuple[FastBars, ...] = (
+    FastBars("S", 3.0, 1e-9, "the electrode currents against the plate and circuit solved as one, over the largest"),
+    FastBars("P", 3.0, 1e-9, "the electrode currents against the plate and circuit solved as one, over the largest"),
+)
+#: O3 (the owner, 2026-09-30): this family's Fast example is its fastest honest
+#: setup, and its card says what limits it.
+FAST_LIMIT = (
+    "The film and its circuit are one sparse system here, factored once and reused; "
+    "the two trade currents until they agree, so the whole is faster. Cutting the "
+    "film into pieces factored at once (substructuring) is what could win, and it "
+    "is not built.")
 FIELD_LABEL = "potential (V)"
 LENGTH_UNIT = "m"
 SERIES = {"current": "Circuit current per repeat | A"}

@@ -44,6 +44,7 @@ import scipy.sparse as sp
 
 from .. import fe, styles
 from ..checks import CheckSpec, exact, judge
+from ..fast import FastBars
 from .. import geometry as geo
 from ..fe import rigid_modes_on
 from .elasticity import active_elements, element_props, inactive_nodes
@@ -51,6 +52,12 @@ from .elasticity import active_elements, element_props, inactive_nodes
 FAMILY = "thermoelastic-2d"
 STYLE = "split"
 ARMS = ("serial", "parallel", "full")
+#: **The Fast example's bars** (demo item 1.4), one per mechanism this family may
+#: use, in the order they are tried (`fast.py`; demo-fast-examples-plan section 3).
+#: Registered 2026-09-30, before the first timed run, and never loosened.
+FAST: tuple[FastBars, ...] = (
+    FastBars("X", 3.0, None, "the family's own controls: the lagged split is the synchronous one a step late, bit for bit", ceiling="a split by physics can at most halve the time: s <= 2 with two physics"),
+)
 ARM_LABELS = {"serial": "Split, synchronous", "parallel": "Split, lagged (two threads)",
               "full": "Unsplit solver"}
 #: the page draws the lagged split (the arm that differs) against the unsplit solver,

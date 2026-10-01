@@ -1,8 +1,8 @@
 # The showcase gallery
 
 **Type:** Outcome page — **gallery of measured showcase runs** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
-**Status:** written 2026-09-29 from one pass through the served workbench on this laptop; two drawn rows added that day, and eight more on 2026-09-29 and 30, compiled and run headless (§2). Every example was opened from *File > New from example*, checked, compiled with the Atlas compiler, and run decomposed and on the full domain. Every number below is read from that pass's records in `out/workbench/records/step-f/` (§6). **Every row is a showcase, not a research record** ([[showcase-library-plan]] §2): one pass, checks registered before the family's first run, and a record file. There are no predictions, audits or follow-up tiers.
-**Hub:** [[00-atlas-0.1-outcome]] · **Plan:** [[showcase-library-plan]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/` (`python -m atlas.workbench --open`, then the header's *More examples*, which lists the chosen kind's examples; from 2026-09-29 to 30 the whole list was *Case > Examples...*, and before that *File > Showcase gallery*) · **Updated 2026-09-30 by the demo chat:** the forked river's row (§2); the demo's plans are in [[demo-finish-plan]]
+**Status:** written 2026-09-29 from one pass through the served workbench on this laptop; two drawn rows added that day, and eight more on 2026-09-29 and 30, compiled and run headless (§2). Every example was opened from *File > New from example*, checked, compiled with the Atlas compiler, and run decomposed and on the full domain. Every number below is read from that pass's records in `out/workbench/records/step-f/` (§6). **Every row is a showcase, not a research record** ([[showcase-library-plan]] §2): one pass, checks registered before the family's first run, and a record file. There are no predictions, audits or follow-up tiers. **§8, the Fast examples**, was added 2026-10-01: one per kind, swept, then confirmed from a fresh start.
+**Hub:** [[00-atlas-0.1-outcome]] · **Plan:** [[showcase-library-plan]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/` (`python -m atlas.workbench --open`, then the header's *Fast example*, whose arrow lists the chosen kind's other examples (*More examples* until 2026-10-01); from 2026-09-29 to 30 the whole list was *Case > Examples...*, and before that *File > Showcase gallery*) · **Updated 2026-09-30 by the demo chat:** the forked river's row (§2); the demo's plans are in [[demo-finish-plan]]
 
 ---
 
@@ -220,7 +220,51 @@ A run record holds the case as it marched, every per-step time, the metrics, eac
 
 - **The optional Gray–Scott case, and the CS-13 and CS-14 adapters.** Both were optional in the plan and were not built, so `ROT` has no showcase case.
 - **The rocket and the vehicle union.** They stay research records ([[showcase-library-plan]] §4).
-- **A speedup below farm scale.** None was measured (§3).
+- **A speedup below farm scale.** None was measured in the showcase pass (§3). The Fast examples of §8 are larger cases built for it.
+
+---
+
+## 8. The Fast examples (demo item 1.4, 2026-09-30 to 10-01)
+
+**What they are.** The header's *Fast example* opens, for the chosen kind, one complete case chosen to show the pieces running faster than the whole; its arrow lists the kind's other examples ([[demo-fast-examples-plan]]). Each kind registered its bars in its family module before its first timed run (`FAST`, `atlas/workbench/fast.py`):
+- the fastest decomposed arm at $s=t_{\text{full}}/t_{\text{arm}}\ge3$;
+- agreement with the full domain within $10^{-9}$ of the field's scale where the arm is the same algebra, $10^{-3}$ for multirate, and 3% in farm power for the wind farm.
+
+**Selection is not measurement.** A sweep chose each configuration (`scripts/fast_examples.py sweep`), and a confirmation run from a fresh start measured it (`confirm`). Every timed run was on AC power with no other Python process running. The other two chats were writing documentation and theory, with nothing on the demo (the owner, 2026-09-30).
+
+**Step 0, the micro-benchmarks** (`scripts/fast_step0.py`; each rule registered in the script before the first run):
+- **P scales on large windows.** A numpy five-point update reached 3.56–3.81× on 8–16 threads at windows of $256^2$ and $512^2$ cells, and at most 1.53× at $128^2$. The river's sparse step reached 4.2–8.9×.
+- **SuperLU releases the GIL.** Its factorization ran 3.1–3.7× faster on 4 threads for pieces of up to 16,384 unknowns, and only 1.2× at 65,536.
+- **Where the explicit update leaves cache.** Its cost per cell rose from 8.4 to 19.7 ns between $256^2$ and $512^2$ cells; the registered rule (1.5 times the smallest size's cost) puts the cliff at $1024^2$.
+
+**The table**, from the confirmation runs (`out/workbench/records/fast/confirm-*.json`):
+
+| kind | example | mechanism | grid cells | $s$ | agreement with the full domain (bar) | wall | bars |
+|---|---|---|---|---|---|---|---|
+| wind farm | `fast-farm`: 5 rotors on 12 windows, 4 threads, 30 macro-steps | P | 163,328 | **4.62** | farm power 1.84% (3%) | 48.9 s | met |
+| heat conduction | `fast-heat`: a copper spreader in a steel plate, style M | M | 245,760 | **5.58** | $1.22\times10^{-4}$ of the span ($10^{-3}$) | 35.3 s | met |
+| river plume | `fast-river`: 6 windows, 6 threads, 24 steps per exchange | P | 460,800 | **5.85** | $4.7\times10^{-17}$ of the peak ($10^{-9}$) | 42.4 s | met |
+| sound | `fast-sound`: 4 windows, 4 threads, 16 steps per exchange | P | 296,000 | **4.67** | the full domain bit for bit ($10^{-9}$) | 26.6 s | met |
+| loaded structure | `plate-hole` | O3 | 12,800 | 0.008 | $3.2\times10^{-12}$ | 19.3 s | below |
+| current in a plate | `plate-circuit` | O3 | 12,800 | 0.275 | $1.1\times10^{-13}$ | 0.2 s | below |
+| heated structure | `bimetal-arc` | X: at most 2 | 11,664 | 1.17 | the split's own controls | 2.8 s | below, by construction |
+| cooled block | `cooled-block` | O3 | 12,000 | 0.004 | $2.6\times10^{-10}$ | 1.5 s | below |
+
+**What the sweeps found:**
+- **One exchange a step is memory-bound.** With one step per exchange, the river's windows ran 0.84–1.02× the full domain on 4–16 threads. Each window's sparse matrix streams from memory every step, as the whole domain's does, so the threads share one memory bus. Several steps per exchange on a halo as deep (`run.exchange_every`) keep a window in a core's cache across its steps, and the windows' own cells stay the full domain's: the river's to $10^{-16}$, the sound's bit for bit.
+- **Multirate does not suit the river.** Explicit upwind advection adds a numerical diffusion $\tfrac{u\,\Delta x}{2}(1-\mathrm{CFL})$ that depends on the step. Here it is about as large as the physical mixing, so a reach stepping five times longer would differ from the full domain by percents, not $10^{-3}$. Conduction has no such term: its multirate arm agrees to $1.2\times10^{-4}$ after 1000 steps, and the time interpolation's error falls roughly as the inverse of the number of steps.
+- **Subnormal floats.** The river's first confirmation measured 2.74×, not the sweep's 4.35×. Its plume's far tail had decayed into subnormal floats (4,268 cells by macro-step 300), whose arithmetic is many times slower, and they sat unevenly among the windows. Every arm now sets a concentration under $10^{-30}$ g/m$^3$ to zero once a macro-step, and the river measured 5.85×.
+- **The farm needs 28 macro-steps** for its power to come within 3%: 8.8% at step 22, as the first wake reaches the next row, and 1.84% at 30. All three arms take about 4 s a step, so its example runs the threaded windows and the whole domain. The serial arm, the threads' bit-for-bit control, stays in Run settings and in the tests.
+- **Four to six threads** were best, the laptop's six performance cores; 12–16 were slower.
+- **The first confirmations are superseded and kept:** the farm 4.25× in 131.6 s (all three arms at 28 steps, over two minutes), the river 2.74× (the subnormals), the sound 2.93×, and conduction 5.40×. Each configuration changed for the reasons above, and each was confirmed again.
+
+**What limits the other four (O3).** A steady structure, a film on its circuit, and a block with its coolant are each one direct solve here, factored once and reused. Their pieces iterate until they agree, so the whole is faster, by 3.6× to 250×. Substructuring would factor the pieces at once and solve their interface directly; it is what could win, and it is not built. The heated structure is split by physics, which can at most halve the time; it measured 1.17×.
+
+**The compile.** Five of the eight compile `admit-uncertified`.
+- `fast-river` was first refused at `L2/R10/halo`: each window takes 24 steps per exchange, and the windows overlapped by only 16 cells. The compiler was right about the declaration, so the windows now overlap by as many cells as their steps, and the graph is admitted.
+- `fast-sound`'s style A has no declared graph yet, so it is refused before the compiler, as `bimetal-arc` is by the port vocabulary (§4).
+
+**[AI Inference]:** the four ratios belong to these 2-D cases on this laptop. Every card's fixed line says what the plan expects to grow them: complicated shapes, three dimensions, and learned experts. No 3-D ratio has been measured in the workbench.
 
 ---
 

@@ -1,0 +1,196 @@
+{
+ "script": "scripts/fast_step0.py",
+ "quick": false,
+ "rules": {
+  "p_scales": "speed-up >= 3 at some T",
+  "gil_released": "splu factor speed-up at T=4 >= 2; serialised if < 1.3",
+  "cache_cliff": "first size with cost per cell >= 1.5 x the smallest size's"
+ },
+ "repeats": 5,
+ "threads": [
+  1,
+  2,
+  4,
+  8,
+  12,
+  16
+ ],
+ "cpu": {
+  "name": "Intel(R) Core(TM) Ultra 7 155H",
+  "cores": 16,
+  "logical": 22,
+  "max_mhz": 3800,
+  "l2_kb": 18432,
+  "l3_kb": 24576
+ },
+ "machine_before": {
+  "time": "2026-09-30T22:07:29-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 83,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 14728
+ },
+ "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+ "keep_awake": true,
+ "only": [
+  "q2",
+  "q3"
+ ],
+ "q2_splu": [
+  {
+   "cells_per_window": 65536,
+   "windows": 12,
+   "factor_seconds": {
+    "1": 5.400241600116715,
+    "2": 4.288452300010249,
+    "4": 4.666021500015631,
+    "8": 5.580030800076202
+   },
+   "solve_seconds": {
+    "1": 0.2588325999677181,
+    "2": 0.09311520005576313,
+    "4": 0.14906940003857017,
+    "8": 0.05415869993157685
+   },
+   "factor_speedup": {
+    "1": 1.0,
+    "2": 1.2592518751121025,
+    "4": 1.1573546328705566,
+    "8": 0.9677798911151115
+   },
+   "solve_speedup": {
+    "1": 1.0,
+    "2": 2.7797029895517937,
+    "4": 1.7363228127351948,
+    "8": 4.77915090825154
+   }
+  }
+ ],
+ "q3_cache": {
+  "implicit_fv": [
+   {
+    "cells": 1024,
+    "seconds": 0.003242200007662177,
+    "per_cell": 3.166210944982595e-06
+   },
+   {
+    "cells": 4096,
+    "seconds": 0.01427679997868836,
+    "per_cell": 3.4855468697969627e-06
+   },
+   {
+    "cells": 16384,
+    "seconds": 0.08211850002408028,
+    "per_cell": 5.0121154799853684e-06
+   },
+   {
+    "cells": 65536,
+    "seconds": 0.45211119996383786,
+    "per_cell": 6.8986694330419596e-06
+   },
+   {
+    "cells": 262144,
+    "seconds": 4.181360299931839,
+    "per_cell": 1.5950623702742917e-05
+   }
+  ],
+  "explicit": [
+   {
+    "cells": 4096,
+    "steps": 4882,
+    "seconds": 0.26440240000374615,
+    "per_cell_step": 1.3222320194267634e-08
+   },
+   {
+    "cells": 16384,
+    "steps": 1220,
+    "seconds": 0.16991059994325042,
+    "per_cell_step": 8.500426242678303e-09
+   },
+   {
+    "cells": 65536,
+    "steps": 305,
+    "seconds": 0.167482600081712,
+    "per_cell_step": 8.378956282904553e-09
+   },
+   {
+    "cells": 262144,
+    "steps": 76,
+    "seconds": 0.39324200013652444,
+    "per_cell_step": 1.9738147140127706e-08
+   },
+   {
+    "cells": 1048576,
+    "steps": 19,
+    "seconds": 0.4392017999198288,
+    "per_cell_step": 2.2045025068575646e-08
+   },
+   {
+    "cells": 4194304,
+    "steps": 4,
+    "seconds": 0.3897061999887228,
+    "per_cell_step": 2.322829961709516e-08
+   }
+  ],
+  "fe": [
+   {
+    "elements": 256,
+    "dofs": 544,
+    "seconds": 0.0012459999416023493,
+    "per_element": 4.867187271884177e-06
+   },
+   {
+    "elements": 1024,
+    "dofs": 2112,
+    "seconds": 0.01688320003449917,
+    "per_element": 1.6487500033690594e-05
+   },
+   {
+    "elements": 4096,
+    "dofs": 8320,
+    "seconds": 0.17463700007647276,
+    "per_element": 4.263598634679511e-05
+   },
+   {
+    "elements": 16384,
+    "dofs": 33024,
+    "seconds": 0.699159599840641,
+    "per_element": 4.2673315419961e-05
+   },
+   {
+    "elements": 65536,
+    "dofs": 131584,
+    "seconds": 9.867520600091666,
+    "per_element": 0.00015056641540667215
+   }
+  ]
+ },
+ "seconds": 166.14829449984245,
+ "machine_after": {
+  "time": "2026-09-30T22:10:15-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 84,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 14728
+ }
+}

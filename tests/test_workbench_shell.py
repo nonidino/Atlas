@@ -160,7 +160,10 @@ def test_more_examples_lists_the_types_own_with_no_names(wb):
     for fid in registry.available_ids():
         wb.dispatch(f"case:type:{fid}")
         items = wb.examples_menu.items
-        mine = [k for k, ex in EXAMPLES.items() if ex.family == fid]
+        # the kind's Fast example is the button's own part, not a line under it
+        from atlas.workbench.spec import FAST_EXAMPLES
+        mine = [k for k, ex in EXAMPLES.items() if ex.family == fid
+                and k != FAST_EXAMPLES.get(fid)]
         assert [tuple(i) for i in items] == [(EXAMPLES[k].shows, f"file:example:{k}")
                                              for k in mine], fid
         for label, _action in items:

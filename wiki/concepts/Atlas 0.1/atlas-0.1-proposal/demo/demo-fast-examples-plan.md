@@ -1,7 +1,7 @@
 # One fast example per simulation type — where decomposition can honestly win, and by how much
 
 **Type:** Concept page — **plan and feasibility analysis, with a registration protocol** (folder: `Atlas 0.1/atlas-0.1-proposal/demo/`)
-**Status:** written 2026-09-30. **No run was made for this page**, and it quotes no new timing. Every ceiling below is arithmetic from a stated model, labelled **[AI Inference]**, and is there to decide what to try first, not to be quoted. Every measured number is from a named page.
+**Status:** written 2026-09-30. **No run was made for this page**, and it quotes no new timing. Every ceiling below is arithmetic from a stated model, labelled **[AI Inference]**, and is there to decide what to try first, not to be quoted. Every measured number is from a named page. **Built 2026-09-30 to 10-01 by the demo chat (step 6):** §6 says what was built and where it departs from this plan; the measured table is [[showcase-gallery]] §8.
 **Hub:** [[00-proposal-workstreams]] · **Siblings:** [[demo-finish-plan]] · [[demo-learned-case-plan]]
 **Built on:** [[showcase-gallery]] §3 · [[decomposition-speed-by-rotor-count]] · [[outcome-c1-decomposition-vs-monolith]] · [[atlas-and-standard-dd-theory]]
 
@@ -143,6 +143,36 @@ The numbers in these lines are placeholders for the format, not predictions.
 - Learned experts are the proposal's own claim ([[chart-operator-architecture]]).
 
 The line says *grows*, not a number, because no three-dimensional ratio has been measured in the workbench.
+
+---
+
+## 6. Built (2026-09-30 to 10-01)
+
+**Four kinds meet both bars and four do not**, measured by confirmation runs from a fresh start ([[showcase-gallery]] §8):
+
+| kind | mechanism | $s$ |
+|---|---|---|
+| the wind farm | P | 4.62 |
+| heat conduction | M | 5.58 |
+| the river | P, with several steps per exchange on a halo | 5.85 |
+| sound | P, with several steps per exchange on a halo | 4.67 |
+| the heated structure | X | 1.17, against its ceiling of 2 |
+| the structure, the plate on its circuit, the cooled block | O3 | 0.004–0.275 |
+
+**What was built:**
+- **Bars:** `FAST` in each family module, registered before the first timed run, with `fast.py`'s judge and the card's lines.
+- **M, style M** (`styles.TwoRate`, conduction): two rates of one explicit update, refluxed (Berger & Colella, 1989) so the balance closes to round-off. With equal steps it is the full domain to the bit (a test).
+- **Several steps per exchange** (`run.exchange_every`): the river's windows, and the sound's new style A, each step on a halo as deep as their steps between exchanges. The windows' own cells are the full domain's: the river's to $10^{-16}$, the sound's bit for bit.
+- **The header's *Fast example*:** a split button whose arrow lists the kind's other examples (O1). Its card shows the mechanism, the bars, what limits an O3 kind, and the fixed line.
+
+**Where the build departs from §3 and §4, and why:**
+- **The river is P, not M.** Its P with one exchange a step measured 0.84–1.02×, because it is memory-bound. Its M would change the explicit upwind scheme's numerical diffusion, $\tfrac{u\,\Delta x}{2}(1-\mathrm{CFL})$, by percents, far past $10^{-3}$. Several steps per exchange made P work.
+- **Sound is P, not M.** The same halo exchange applies, it is exact to the bit, and it leaves the leapfrog's energy untouched; M would have needed Diaz–Grote local time stepping to keep that energy.
+- **S was not built.** The structure, the plate and the cooled block load their fastest honest setup, an existing example, and the card names what limits it (O3).
+- **The farm's example runs two arms.** Its power needs 28 macro-steps to come within 3%, and three arms would take over two minutes. It runs the threaded windows and the whole domain.
+- **Every arm of the river flushes subnormal floats** (under $10^{-30}$ g/m$^3$) once a macro-step. They had slowed a long march 3.4×, unevenly among the windows.
+
+**Open:** a declared graph for sound's style A (refused before the compiler today); S for the structure and the plate.
 
 ---
 

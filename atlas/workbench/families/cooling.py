@@ -43,11 +43,25 @@ import numpy as np
 from .. import fv, styles
 from .. import geometry as geo
 from ..checks import CheckSpec, judge
+from ..fast import FastBars
 from .conduction import cells_of, dirichlet_side, rho_1d, window_cells
 
 FAMILY = "conjugate-heat-2d"
 STYLE = "C"
 ARMS = ("serial", "full")
+#: **The Fast example's bars** (demo item 1.4), one per mechanism this family may
+#: use, in the order they are tried (`fast.py`; demo-fast-examples-plan section 3).
+#: Registered 2026-09-30, before the first timed run, and never loosened.
+FAST: tuple[FastBars, ...] = (
+    FastBars("S", 3.0, 1e-9, "temperature against the full domain, over the span"),
+    FastBars("X", 3.0, 1e-6, "temperature against the full domain, over the span", ceiling="a split by physics can at most halve the time: s <= 2 with two physics"),
+)
+#: O3 (the owner, 2026-09-30): this family's Fast example is its fastest honest
+#: setup, and its card says what limits it.
+FAST_LIMIT = (
+    "The block and its coolant are one system here, factored once and reused; the "
+    "two pieces trade temperatures and heat until they agree, so the whole is "
+    "faster. A split by physics could at most halve the time, even run at once.")
 FIELD_LABEL = "temperature (K)"
 LENGTH_UNIT = "m"
 SERIES: dict[str, str] = {}

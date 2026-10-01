@@ -1,0 +1,738 @@
+{
+ "command": "sweep",
+ "example": "fast-river",
+ "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+ "when": "2026-09-30T22:45:08-04:00",
+ "machine": {
+  "time": "2026-09-30T22:45:08-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 98,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 24880
+ },
+ "runs": [
+  {
+   "example": "fast-river",
+   "overrides": {
+    "threads": 6,
+    "windows": 6,
+    "steps": 100
+   },
+   "family": "transport-2d",
+   "style": "A",
+   "cells": 460800,
+   "windows": 6,
+   "threads": 6,
+   "steps": 100,
+   "macro_dt": 5.0,
+   "wall_seconds": 15.250269999960437,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.5382279932152818,
+    "parallel": 3.566067906167784
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.04134366899495944,
+    "parallel": 0.017833644973579796,
+    "full": 0.06359598899027333
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.3216094885137864e-14,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: 1.32e-14; parallel: 1.32e-14; full: 1.32e-14"
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "value": 9.359078970148079e-179,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "max |dc| = 2.47e-178 mg/L against a peak of 2.637 mg/L"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 100 steps"
+    },
+    {
+     "key": "continuity",
+     "kind": "balance",
+     "value": null,
+     "tolerance": 1e-12,
+     "passed": null,
+     "detail": "the plain river's flow is uniform along x, so it is continuous by construction"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 3.566067906167784,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 9.359078970148079e-179,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 3.566067906167784,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": 9.359078970148079e-179,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "8 explicit steps of 0.625 s per macro-step and one exchange: the stability limit here is 0.6944 s. Each window steps its own cells and a halo 8 cells deep read from the exchange, and the stencil reaches a cell a step, so its own cells are the full domain's to round-off and stay in the processor's cache for all 8 steps.",
+    "Reach shallow-fast: depth 1.25 m, so the water runs at 0.8 m/s; mixing 0.5 m^2/s; cell Peclet number u dx / D = 4, so what runs upstream across a face is 1/(1 + Pe) = 0.2 of what runs down. Upwinding adds -0.6 m^2/s of mixing along the flow.",
+    "Reach deep-slow: depth 2.5 m, so the water runs at 0.4 m/s; mixing 2 m^2/s; cell Peclet number u dx / D = 0.5, so what runs upstream across a face is 1/(1 + Pe) = 0.67 of what runs down. Upwinding adds 0.1 m^2/s of mixing along the flow.",
+    "The water takes 17750 s from the outfall to the outlet (macro-step 3550); this run covered 500 s, so the plume has not reached the outlet yet and nothing has left."
+   ],
+   "describe": {
+    "style": "A",
+    "cells": 460800,
+    "windows": 6,
+    "dt_s": 5.0,
+    "exchange_every": 8,
+    "step_s": 0.625,
+    "explicit_limit_s": 0.6944444444444444,
+    "q_m2_per_s": 1.0,
+    "release_g_per_s": 10.0,
+    "outfall_cell": [
+     80,
+     40
+    ],
+    "arrival_s": 17750.0,
+    "drawn": false,
+    "partition_of_unity": {
+     "identity_residual": 0.0,
+     "chi_min": 0.0038910505836575876,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:45:09-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 24880
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:45:24-04:00"
+   }
+  },
+  {
+   "example": "fast-river",
+   "overrides": {
+    "threads": 8,
+    "windows": 8,
+    "steps": 100
+   },
+   "family": "transport-2d",
+   "style": "A",
+   "cells": 460800,
+   "windows": 8,
+   "threads": 8,
+   "steps": 100,
+   "macro_dt": 5.0,
+   "wall_seconds": 18.387357899919152,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.406778690096279,
+    "parallel": 3.584169755244349
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.049390637977048756,
+    "parallel": 0.019385716007091106,
+    "full": 0.06948169699637219
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.3216094885137864e-14,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: 1.32e-14; parallel: 1.32e-14; full: 1.32e-14"
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "value": 5.2404869787540046e-77,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "max |dc| = 1.38e-76 mg/L against a peak of 2.637 mg/L"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 100 steps"
+    },
+    {
+     "key": "continuity",
+     "kind": "balance",
+     "value": null,
+     "tolerance": 1e-12,
+     "passed": null,
+     "detail": "the plain river's flow is uniform along x, so it is continuous by construction"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 3.584169755244349,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 5.2404869787540046e-77,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 3.584169755244349,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": 5.2404869787540046e-77,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "8 explicit steps of 0.625 s per macro-step and one exchange: the stability limit here is 0.6944 s. Each window steps its own cells and a halo 8 cells deep read from the exchange, and the stencil reaches a cell a step, so its own cells are the full domain's to round-off and stay in the processor's cache for all 8 steps.",
+    "Reach shallow-fast: depth 1.25 m, so the water runs at 0.8 m/s; mixing 0.5 m^2/s; cell Peclet number u dx / D = 4, so what runs upstream across a face is 1/(1 + Pe) = 0.2 of what runs down. Upwinding adds -0.6 m^2/s of mixing along the flow.",
+    "Reach deep-slow: depth 2.5 m, so the water runs at 0.4 m/s; mixing 2 m^2/s; cell Peclet number u dx / D = 0.5, so what runs upstream across a face is 1/(1 + Pe) = 0.67 of what runs down. Upwinding adds 0.1 m^2/s of mixing along the flow.",
+    "The water takes 17750 s from the outfall to the outlet (macro-step 3550); this run covered 500 s, so the plume has not reached the outlet yet and nothing has left."
+   ],
+   "describe": {
+    "style": "A",
+    "cells": 460800,
+    "windows": 8,
+    "dt_s": 5.0,
+    "exchange_every": 8,
+    "step_s": 0.625,
+    "explicit_limit_s": 0.6944444444444444,
+    "q_m2_per_s": 1.0,
+    "release_g_per_s": 10.0,
+    "outfall_cell": [
+     80,
+     40
+    ],
+    "arrival_s": 17750.0,
+    "drawn": false,
+    "partition_of_unity": {
+     "identity_residual": 0.0,
+     "chi_min": 0.0038910505836575876,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:45:24-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 24880
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:45:42-04:00"
+   }
+  },
+  {
+   "example": "fast-river",
+   "overrides": {
+    "threads": 6,
+    "windows": 12,
+    "exchange": 16,
+    "steps": 50
+   },
+   "family": "transport-2d",
+   "style": "A",
+   "cells": 460800,
+   "windows": 12,
+   "threads": 6,
+   "steps": 50,
+   "macro_dt": 10.0,
+   "wall_seconds": 16.63875939999707,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.6208901302399905,
+    "parallel": 3.7883065998872865
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.08017297999467701,
+    "parallel": 0.03430334598291665,
+    "full": 0.12995159198530018
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.2789769243681804e-14,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: 1.28e-14; parallel: 1.28e-14; full: 1.28e-14"
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "value": 1.56855916541138e-25,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "max |dc| = 4.14e-25 mg/L against a peak of 2.637 mg/L"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 50 steps"
+    },
+    {
+     "key": "continuity",
+     "kind": "balance",
+     "value": null,
+     "tolerance": 1e-12,
+     "passed": null,
+     "detail": "the plain river's flow is uniform along x, so it is continuous by construction"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 3.7883065998872865,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 1.56855916541138e-25,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 3.7883065998872865,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": 1.56855916541138e-25,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "16 explicit steps of 0.625 s per macro-step and one exchange: the stability limit here is 0.6944 s. Each window steps its own cells and a halo 16 cells deep read from the exchange, and the stencil reaches a cell a step, so its own cells are the full domain's to round-off and stay in the processor's cache for all 16 steps.",
+    "Reach shallow-fast: depth 1.25 m, so the water runs at 0.8 m/s; mixing 0.5 m^2/s; cell Peclet number u dx / D = 4, so what runs upstream across a face is 1/(1 + Pe) = 0.2 of what runs down. Upwinding adds -2.2 m^2/s of mixing along the flow.",
+    "Reach deep-slow: depth 2.5 m, so the water runs at 0.4 m/s; mixing 2 m^2/s; cell Peclet number u dx / D = 0.5, so what runs upstream across a face is 1/(1 + Pe) = 0.67 of what runs down. Upwinding adds -0.3 m^2/s of mixing along the flow.",
+    "The water takes 17750 s from the outfall to the outlet (macro-step 1775); this run covered 500 s, so the plume has not reached the outlet yet and nothing has left."
+   ],
+   "describe": {
+    "style": "A",
+    "cells": 460800,
+    "windows": 12,
+    "dt_s": 10.0,
+    "exchange_every": 16,
+    "step_s": 0.625,
+    "explicit_limit_s": 0.6944444444444444,
+    "q_m2_per_s": 1.0,
+    "release_g_per_s": 10.0,
+    "outfall_cell": [
+     80,
+     40
+    ],
+    "arrival_s": 17750.0,
+    "drawn": false,
+    "partition_of_unity": {
+     "identity_residual": 0.0,
+     "chi_min": 0.0038910505836575876,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:45:42-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 24880
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:45:59-04:00"
+   }
+  },
+  {
+   "example": "fast-river",
+   "overrides": {
+    "threads": 6,
+    "windows": 6,
+    "exchange": 16,
+    "steps": 50
+   },
+   "family": "transport-2d",
+   "style": "A",
+   "cells": 460800,
+   "windows": 6,
+   "threads": 6,
+   "steps": 50,
+   "macro_dt": 10.0,
+   "wall_seconds": 16.013015100033954,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.5829402927866796,
+    "parallel": 4.345512441142707
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.08719066197052598,
+    "parallel": 0.031760951983742416,
+    "full": 0.1380176119878888
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.2789769243681804e-14,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: 1.28e-14; parallel: 1.28e-14; full: 1.28e-14"
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "value": 9.359078970148079e-179,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "max |dc| = 2.47e-178 mg/L against a peak of 2.637 mg/L"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 50 steps"
+    },
+    {
+     "key": "continuity",
+     "kind": "balance",
+     "value": null,
+     "tolerance": 1e-12,
+     "passed": null,
+     "detail": "the plain river's flow is uniform along x, so it is continuous by construction"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 4.345512441142707,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 9.359078970148079e-179,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 4.345512441142707,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": 9.359078970148079e-179,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "16 explicit steps of 0.625 s per macro-step and one exchange: the stability limit here is 0.6944 s. Each window steps its own cells and a halo 16 cells deep read from the exchange, and the stencil reaches a cell a step, so its own cells are the full domain's to round-off and stay in the processor's cache for all 16 steps.",
+    "Reach shallow-fast: depth 1.25 m, so the water runs at 0.8 m/s; mixing 0.5 m^2/s; cell Peclet number u dx / D = 4, so what runs upstream across a face is 1/(1 + Pe) = 0.2 of what runs down. Upwinding adds -2.2 m^2/s of mixing along the flow.",
+    "Reach deep-slow: depth 2.5 m, so the water runs at 0.4 m/s; mixing 2 m^2/s; cell Peclet number u dx / D = 0.5, so what runs upstream across a face is 1/(1 + Pe) = 0.67 of what runs down. Upwinding adds -0.3 m^2/s of mixing along the flow.",
+    "The water takes 17750 s from the outfall to the outlet (macro-step 1775); this run covered 500 s, so the plume has not reached the outlet yet and nothing has left."
+   ],
+   "describe": {
+    "style": "A",
+    "cells": 460800,
+    "windows": 6,
+    "dt_s": 10.0,
+    "exchange_every": 16,
+    "step_s": 0.625,
+    "explicit_limit_s": 0.6944444444444444,
+    "q_m2_per_s": 1.0,
+    "release_g_per_s": 10.0,
+    "outfall_cell": [
+     80,
+     40
+    ],
+    "arrival_s": 17750.0,
+    "drawn": false,
+    "partition_of_unity": {
+     "identity_residual": 0.0,
+     "chi_min": 0.0038910505836575876,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:45:59-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 24880
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:46:15-04:00"
+   }
+  },
+  {
+   "example": "fast-river",
+   "overrides": {
+    "threads": 8,
+    "windows": 8,
+    "exchange": 16,
+    "steps": 50
+   },
+   "family": "transport-2d",
+   "style": "A",
+   "cells": 460800,
+   "windows": 8,
+   "threads": 8,
+   "steps": 50,
+   "macro_dt": 10.0,
+   "wall_seconds": 17.49736150004901,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.536090287287131,
+    "parallel": 4.332430252578427
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.09542586997151375,
+    "parallel": 0.03383384000975639,
+    "full": 0.14658275201916696
+   },
+   "checks": [
+    {
+     "key": "mass",
+     "kind": "balance",
+     "value": 1.2789769243681804e-14,
+     "tolerance": 1e-09,
+     "passed": true,
+     "detail": "serial: 1.28e-14; parallel: 1.28e-14; full: 1.28e-14"
+    },
+    {
+     "key": "reference",
+     "kind": "reference",
+     "value": 5.2404869787540046e-77,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "max |dc| = 1.38e-76 mg/L against a peak of 2.637 mg/L"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 50 steps"
+    },
+    {
+     "key": "continuity",
+     "kind": "balance",
+     "value": null,
+     "tolerance": 1e-12,
+     "passed": null,
+     "detail": "the plain river's flow is uniform along x, so it is continuous by construction"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 4.332430252578427,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": 5.2404869787540046e-77,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 4.332430252578427,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": 5.2404869787540046e-77,
+     "close": true,
+     "ceiling": null,
+     "met": true
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "16 explicit steps of 0.625 s per macro-step and one exchange: the stability limit here is 0.6944 s. Each window steps its own cells and a halo 16 cells deep read from the exchange, and the stencil reaches a cell a step, so its own cells are the full domain's to round-off and stay in the processor's cache for all 16 steps.",
+    "Reach shallow-fast: depth 1.25 m, so the water runs at 0.8 m/s; mixing 0.5 m^2/s; cell Peclet number u dx / D = 4, so what runs upstream across a face is 1/(1 + Pe) = 0.2 of what runs down. Upwinding adds -2.2 m^2/s of mixing along the flow.",
+    "Reach deep-slow: depth 2.5 m, so the water runs at 0.4 m/s; mixing 2 m^2/s; cell Peclet number u dx / D = 0.5, so what runs upstream across a face is 1/(1 + Pe) = 0.67 of what runs down. Upwinding adds -0.3 m^2/s of mixing along the flow.",
+    "The water takes 17750 s from the outfall to the outlet (macro-step 1775); this run covered 500 s, so the plume has not reached the outlet yet and nothing has left."
+   ],
+   "describe": {
+    "style": "A",
+    "cells": 460800,
+    "windows": 8,
+    "dt_s": 10.0,
+    "exchange_every": 16,
+    "step_s": 0.625,
+    "explicit_limit_s": 0.6944444444444444,
+    "q_m2_per_s": 1.0,
+    "release_g_per_s": 10.0,
+    "outfall_cell": [
+     80,
+     40
+    ],
+    "arrival_s": 17750.0,
+    "drawn": false,
+    "partition_of_unity": {
+     "identity_residual": 0.0,
+     "chi_min": 0.0038910505836575876,
+     "tolerance": 1e-10,
+     "holds": true
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:46:15-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 24880
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 98,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:46:33-04:00"
+   }
+  }
+ ]
+}

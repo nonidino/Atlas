@@ -109,6 +109,8 @@ STYLES = {
     "C": "two pieces meeting at an interface, no overlap (Dirichlet-Neumann)",
     "D": "a field joined to lumped parts through its boundary integrals",
     "split": "one domain split by physics rather than by space",
+    "M": "pieces meeting at faces, each at its own stable explicit time step "
+         "(multirate)",
 }
 
 
@@ -235,7 +237,7 @@ _CONDUCTION = Family(
     layers=("regions", "windows", "boundaries"),
     boundary_kinds=("fixed-temperature", "insulated", "heat-flux"),
     adapter="atlas.workbench.families.conduction",
-    styles=("B", "C"),
+    styles=("B", "C", "M"),
     params=(Param("T0", "Initial temperature", "K", 300.0, 0.0,
                   help="the whole plate starts here (and it is the first guess of a "
                        "steady solve)"),),
@@ -356,7 +358,7 @@ _ACOUSTICS = Family(
                           "domain is closed and keeps its energy, which is the family's "
                           "balance check. It has no open boundary to offer."),
     adapter="atlas.workbench.families.acoustics",
-    styles=("C",),
+    styles=("C", "A"),
     params=(Param("amplitude", "Pulse amplitude", "Pa", 1.0, 0.0),
             Param("pulse_x", "Pulse centre", "m", 0.7, 0.0,
                   help="the pulse starts here in the first piece and runs towards +x"),

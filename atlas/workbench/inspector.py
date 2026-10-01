@@ -662,7 +662,7 @@ def _windows_settings(ed: "GeometryEditor") -> list:
         #: the rule the check applies: pieces (C, D, the split) tile the domain,
         #: overlapping windows (A, B) give every cell one at full weight
         good = ("The pieces tile the domain without overlapping."
-                if s.coupling.style in ("C", "D", "split")
+                if s.coupling.style in ("C", "D", "split", "M")
                 else "Every cell has a window at full weight.")
         out.append(_note(f"<b style='color:#15803d'>✓ {good}</b>"))
     elif geo_errors:

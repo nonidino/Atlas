@@ -1,0 +1,545 @@
+{
+ "command": "sweep",
+ "example": "fast-sound",
+ "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+ "when": "2026-09-30T22:51:34-04:00",
+ "machine": {
+  "time": "2026-09-30T22:51:34-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 99,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 3600
+ },
+ "runs": [
+  {
+   "example": "fast-sound",
+   "overrides": {
+    "threads": 6,
+    "steps": 60
+   },
+   "family": "acoustics-2d",
+   "style": "A",
+   "cells": 296000,
+   "windows": 6,
+   "threads": 6,
+   "steps": 60,
+   "macro_dt": 3.2e-05,
+   "wall_seconds": 11.853711099829525,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.6941313091992691,
+    "parallel": 2.730114288251639
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.04944229502386103,
+    "parallel": 0.030680671633065988,
+    "full": 0.0837617399985902
+   },
+   "checks": [
+    {
+     "key": "energy",
+     "kind": "balance",
+     "value": 5.060184234163931e-16,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "serial: 5.06e-16; parallel: 5.06e-16; full: 5.06e-16"
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null,
+     "detail": "the run ended at step 60, before the reflected pulse was alone in the first medium (steps 128 to 253)"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 60 steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 2.730114288251639,
+     "fast": false,
+     "agreement_bar": 1e-09,
+     "agreement": null,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 2.730114288251639,
+     "fast": false,
+     "agreement_bar": 0.001,
+     "agreement": null,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Leapfrog step 4e-06 s against the stability limit 4.774e-06 s; 8 steps per macro-step. 6 windows side by side each step their own columns and a halo 8 columns deep, read once a macro-step; the error at the halo's open edge moves a column a step, so their own columns are the full domain's, bit for bit.",
+    "Impedances Z = rho c: 411.6 and 1.48e+06 Pa s/m. Textbook reflection R = 0.999444, transmission T = 1 + R = 1.999444 (the transmitted pressure is 2 times the incident), energy transmitted 1 - R^2 = 0.001112 at zero wavenumber. The energy share the page plots is carried by the pulse's whole spectrum, whose discrete reflection departs from R at order (k dx)^2, so it is close to that and not equal; the reflection check reads the zero-wavenumber part, where the scheme is exact.",
+    "The reflected pulse is alone in the first medium from step 128 to step 253; the reflection is read there."
+   ],
+   "describe": {
+    "style": "A",
+    "explicit": true,
+    "exchange_every": 8,
+    "windows": 6,
+    "cells": 296000,
+    "cut_column": 140,
+    "dt_s": 4e-06,
+    "stable_dt_s": 4.773680629112226e-06,
+    "textbook_R": 0.9994439384290151,
+    "plateau_steps": [
+     128,
+     253
+    ],
+    "pulse": {
+     "amplitude": 1.0,
+     "x0": 0.7,
+     "width": 0.1
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:51:34-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 99,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 3600
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 99,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:51:46-04:00"
+   }
+  },
+  {
+   "example": "fast-sound",
+   "overrides": {
+    "threads": 6,
+    "exchange": 16,
+    "steps": 30
+   },
+   "family": "acoustics-2d",
+   "style": "A",
+   "cells": 296000,
+   "windows": 6,
+   "threads": 6,
+   "steps": 30,
+   "macro_dt": 6.4e-05,
+   "wall_seconds": 11.265686499886215,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.806621717567076,
+    "parallel": 3.483719583713089
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.09946039333784332,
+    "parallel": 0.05157915335148573,
+    "full": 0.17968730664191146
+   },
+   "checks": [
+    {
+     "key": "energy",
+     "kind": "balance",
+     "value": 5.060184234163931e-16,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "serial: 5.06e-16; parallel: 5.06e-16; full: 5.06e-16"
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null,
+     "detail": "the run ended at step 30, before the reflected pulse was alone in the first medium (steps 64 to 126)"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 30 steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 3.483719583713089,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": null,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 3.483719583713089,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": null,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Leapfrog step 4e-06 s against the stability limit 4.774e-06 s; 16 steps per macro-step. 6 windows side by side each step their own columns and a halo 16 columns deep, read once a macro-step; the error at the halo's open edge moves a column a step, so their own columns are the full domain's, bit for bit.",
+    "Impedances Z = rho c: 411.6 and 1.48e+06 Pa s/m. Textbook reflection R = 0.999444, transmission T = 1 + R = 1.999444 (the transmitted pressure is 2 times the incident), energy transmitted 1 - R^2 = 0.001112 at zero wavenumber. The energy share the page plots is carried by the pulse's whole spectrum, whose discrete reflection departs from R at order (k dx)^2, so it is close to that and not equal; the reflection check reads the zero-wavenumber part, where the scheme is exact.",
+    "The reflected pulse is alone in the first medium from step 64 to step 126; the reflection is read there."
+   ],
+   "describe": {
+    "style": "A",
+    "explicit": true,
+    "exchange_every": 16,
+    "windows": 6,
+    "cells": 296000,
+    "cut_column": 140,
+    "dt_s": 4e-06,
+    "stable_dt_s": 4.773680629112226e-06,
+    "textbook_R": 0.9994439384290151,
+    "plateau_steps": [
+     64,
+     126
+    ],
+    "pulse": {
+     "amplitude": 1.0,
+     "x0": 0.7,
+     "width": 0.1
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:51:46-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 99,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 3600
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 99,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:51:57-04:00"
+   }
+  },
+  {
+   "example": "fast-sound",
+   "overrides": {
+    "threads": 4,
+    "windows": 4,
+    "steps": 60
+   },
+   "family": "acoustics-2d",
+   "style": "A",
+   "cells": 296000,
+   "windows": 4,
+   "threads": 4,
+   "steps": 60,
+   "macro_dt": 3.2e-05,
+   "wall_seconds": 11.163513000123203,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.9685452083840953,
+    "parallel": 3.622034963782395
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.04368740833597258,
+    "parallel": 0.023743735001577684,
+    "full": 0.08600063834649821
+   },
+   "checks": [
+    {
+     "key": "energy",
+     "kind": "balance",
+     "value": 5.060184234163931e-16,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "serial: 5.06e-16; parallel: 5.06e-16; full: 5.06e-16"
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null,
+     "detail": "the run ended at step 60, before the reflected pulse was alone in the first medium (steps 128 to 253)"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 60 steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 3.622034963782395,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": null,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 3.622034963782395,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": null,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Leapfrog step 4e-06 s against the stability limit 4.774e-06 s; 8 steps per macro-step. 4 windows side by side each step their own columns and a halo 8 columns deep, read once a macro-step; the error at the halo's open edge moves a column a step, so their own columns are the full domain's, bit for bit.",
+    "Impedances Z = rho c: 411.6 and 1.48e+06 Pa s/m. Textbook reflection R = 0.999444, transmission T = 1 + R = 1.999444 (the transmitted pressure is 2 times the incident), energy transmitted 1 - R^2 = 0.001112 at zero wavenumber. The energy share the page plots is carried by the pulse's whole spectrum, whose discrete reflection departs from R at order (k dx)^2, so it is close to that and not equal; the reflection check reads the zero-wavenumber part, where the scheme is exact.",
+    "The reflected pulse is alone in the first medium from step 128 to step 253; the reflection is read there."
+   ],
+   "describe": {
+    "style": "A",
+    "explicit": true,
+    "exchange_every": 8,
+    "windows": 4,
+    "cells": 296000,
+    "cut_column": 140,
+    "dt_s": 4e-06,
+    "stable_dt_s": 4.773680629112226e-06,
+    "textbook_R": 0.9994439384290151,
+    "plateau_steps": [
+     128,
+     253
+    ],
+    "pulse": {
+     "amplitude": 1.0,
+     "x0": 0.7,
+     "width": 0.1
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:51:57-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 99,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 3600
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 99,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:52:08-04:00"
+   }
+  },
+  {
+   "example": "fast-sound",
+   "overrides": {
+    "threads": 8,
+    "windows": 8,
+    "ny": 800,
+    "steps": 30
+   },
+   "family": "acoustics-2d",
+   "style": "A",
+   "cells": 592000,
+   "windows": 8,
+   "threads": 8,
+   "steps": 30,
+   "macro_dt": 3.2e-05,
+   "wall_seconds": 13.185368499951437,
+   "two_minutes": true,
+   "speedup": {
+    "serial": 1.7250752034948262,
+    "parallel": 3.332805432463529
+   },
+   "fastest_arm": "parallel",
+   "mean_step_s": {
+    "serial": 0.11028418335287521,
+    "parallel": 0.057083593355491756,
+    "full": 0.19024851003972193
+   },
+   "checks": [
+    {
+     "key": "energy",
+     "kind": "balance",
+     "value": 1.855400885860107e-15,
+     "tolerance": 1e-10,
+     "passed": true,
+     "detail": "serial: 1.86e-15; parallel: 1.86e-15; full: 1.86e-15"
+    },
+    {
+     "key": "closed_form",
+     "kind": "reference",
+     "value": null,
+     "tolerance": 1e-06,
+     "passed": null,
+     "detail": "the run ended at step 30, before the reflected pulse was alone in the first medium (steps 128 to 253)"
+    },
+    {
+     "key": "bitwise",
+     "kind": "control",
+     "value": null,
+     "tolerance": null,
+     "passed": true,
+     "detail": "equal after all 30 steps"
+    }
+   ],
+   "all_checks_pass": true,
+   "bars": [
+    {
+     "mechanism": "P",
+     "speed_bar": 3.0,
+     "speedup": 3.332805432463529,
+     "fast": true,
+     "agreement_bar": 1e-09,
+     "agreement": null,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    },
+    {
+     "mechanism": "M",
+     "speed_bar": 3.0,
+     "speedup": 3.332805432463529,
+     "fast": true,
+     "agreement_bar": 0.001,
+     "agreement": null,
+     "close": false,
+     "ceiling": null,
+     "met": false
+    }
+   ],
+   "status": "done",
+   "error": null,
+   "notes": [
+    "Leapfrog step 4e-06 s against the stability limit 4.774e-06 s; 8 steps per macro-step. 8 windows side by side each step their own columns and a halo 8 columns deep, read once a macro-step; the error at the halo's open edge moves a column a step, so their own columns are the full domain's, bit for bit.",
+    "Impedances Z = rho c: 411.6 and 1.48e+06 Pa s/m. Textbook reflection R = 0.999444, transmission T = 1 + R = 1.999444 (the transmitted pressure is 2 times the incident), energy transmitted 1 - R^2 = 0.001112 at zero wavenumber. The energy share the page plots is carried by the pulse's whole spectrum, whose discrete reflection departs from R at order (k dx)^2, so it is close to that and not equal; the reflection check reads the zero-wavenumber part, where the scheme is exact.",
+    "The reflected pulse is alone in the first medium from step 128 to step 253; the reflection is read there."
+   ],
+   "describe": {
+    "style": "A",
+    "explicit": true,
+    "exchange_every": 8,
+    "windows": 8,
+    "cells": 592000,
+    "cut_column": 140,
+    "dt_s": 4e-06,
+    "stable_dt_s": 4.773680629112226e-06,
+    "textbook_R": 0.9994439384290151,
+    "plateau_steps": [
+     128,
+     253
+    ],
+    "pulse": {
+     "amplitude": 1.0,
+     "x0": 0.7,
+     "width": 0.1
+    }
+   },
+   "machine_before": {
+    "time": "2026-09-30T22:52:08-04:00",
+    "host": "champ",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "cpu_count": 22,
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "power": {
+     "ac": true,
+     "battery_percent": 99,
+     "source": "GetSystemPowerStatus"
+    },
+    "other_python_processes": [],
+    "pid": 3600
+   },
+   "machine_after": {
+    "power": {
+     "ac": true,
+     "battery_percent": 99,
+     "source": "GetSystemPowerStatus"
+    },
+    "time": "2026-09-30T22:52:21-04:00"
+   }
+  }
+ ]
+}
