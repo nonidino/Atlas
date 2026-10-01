@@ -1,7 +1,7 @@
 # Finishing the demo workbench — the header, the branching river, and holes that cross the edge
 
 **Type:** Concept page — **plan, with the decisions made and the ones left to the owner** (folder: `Atlas 0.1/atlas-0.1-proposal/demo/`)
-**Status:** written 2026-09-30, before any code. Read from `atlas/workbench/` at commit `fc9a182` (`spec.py`, `layout.py`, `flow.py`, `families/plume.py`, `app.py`, `registry.py`, `starter.py`) and its README. **Nothing here has been run**: the planning session's container had no numpy, and installs need the owner's approval. Every diagnosis below is read from the code and marked as a hypothesis until the next chat reproduces it in the served page. **Reproduced on 2026-09-30 by the demo chat**: §2.2 and §3.2 say which hypotheses held.
+**Status:** written 2026-09-30, before any code. Read from `atlas/workbench/` at commit `fc9a182` (`spec.py`, `layout.py`, `flow.py`, `families/plume.py`, `app.py`, `registry.py`, `starter.py`) and its README. **Nothing here has been run**: the planning session's container had no numpy, and installs need the owner's approval. Every diagnosis below is read from the code and marked as a hypothesis until the next chat reproduces it in the served page. **Reproduced on 2026-09-30 by the demo chat**: §2.2 and §3.2 say which hypotheses held. **Steps 1–7 of §6.1 done by 2026-10-01**: the one-command install (§4.1) is verified on fresh clones on Windows and Linux and in the served page, not on macOS.
 **Hub:** [[00-proposal-workstreams]] · **Sibling plans:** [[demo-fast-examples-plan]] (item 1.4) · [[demo-learned-case-plan]] (item 1.5)
 **Built on:** [[showcase-library-plan]] · [[showcase-gallery]] · [[outcome-c4-path-to-declarative-cases]] · `atlas/workbench/README.md`
 
@@ -305,6 +305,58 @@ Each creates the environment, installs, self-tests, then serves `python -m atlas
 
 **The owner may have no Mac.** In that case the demo chat asks before using a GitHub Actions `macos-latest` runner: it uses the account's minutes, and macOS minutes count at a multiple on a private repository.
 
+**Done, 2026-10-01 (the demo chat's step 7): `8d14565`, then `f008c51` and `6232415`.** Three commits, because the branch is built from a commit and each round of verification on a fresh clone found something that changed what ships.
+- **What a stranger runs.** `.\run.cmd` on Windows or `./run.sh` on macOS and Linux, in a clone of the branch `atlas-workbench`. `scripts/build_workbench_bundle.py` makes that branch from a commit, in `out/workbench-bundle`, and never pushes it (O9). The launcher:
+  - finds Python 3.10, 3.11 or 3.12 and builds `.venv`;
+  - installs the pins, then two optional steps that may fail without stopping anything: torch, CPU-only, and Gmsh from PyPI;
+  - runs the self-test once, then serves the page on the first free port from 8020 and opens a browser. A second run goes straight to the page.
+- **What the branch carries:** 135 files, 4.3 MB.
+  - `atlas/`, without the three proofs of concept's demo packages, which nothing else imports;
+  - the one build-repository package the workbench loads, the wind farm's `WindowNS`, at `vendor/src/atlas/cases/windfarm/`, with that repository's MIT licence;
+  - every workbench test, and the three scripts they import, found by reading their imports.
+
+  The builder refuses NeuberNet (no file and no use; its name appears in prose 4 times), Poseidon's weights and any binary file (none), a vendored scOT, and `out/`.
+- **The self-test** (`run.py --check`, 27–34 s on AC here):
+  - every package imports;
+  - the solver is loaded from `vendor/`, asserted by its path;
+  - each of the eight types compiles through the page's own compile and marches every arm through the page's own runner, finite inside the domain, with every exact control the type registers holding;
+  - the page is served on a free port and fetched with its 25 scripts and stylesheets, none from the network. Its document is pulled over the WebSocket: 281 models, with the *Fast example* and *Run* buttons.
+- **What verification found, in order:**
+  1. **A split by physics differs by design.** The runner's generic "threaded equals serial" flag is false for the heated structure: its serial and threaded arms are a synchronous and a lagged split. The self-test asks each type for its own exact controls instead.
+  2. **The first clean install served HTTP 500 on every page load, while all eight types ran.** It resolved param 2.4.2. From param 2.3.0, with Panel 1.5.2, a widget's `name` is constant, and the header relabels its buttons by setting it. Measured: 2.1.1, 2.2.0 and 2.2.1 allow it; 2.3.0, 2.4.0 and 2.4.2 raise.
+     - So `constraints.txt` pins every package that install pulled in at the development environment's version, where the whole suite passed.
+     - `scripts/verify_workbench_pins.py` resolves those pins with pip's own resolver, binary wheels only, for Windows, Apple-silicon and Intel macOS, and Linux, on Python 3.10, 3.11 and 3.12. Each resolves to 42 packages with nothing unpinned; torch adds 10 (none on Intel macOS) and Gmsh 1.
+  3. **Help named wiki pages the install does not carry.** It now names them only where they are.
+  4. **Behind a proxy, the self-test called a working page broken.** With pip pointed at a closed proxy, the optional installs failed as designed. But the self-test's fetch of `http://127.0.0.1:…` went to the proxy too, because urllib honours `HTTP_PROXY` for loopback unless `NO_PROXY` names it, so the launcher would have refused to serve. The page is now fetched with no proxy (`f008c51`, pinned by a test).
+  5. **On Linux, Gmsh installs and will not load.** On Ubuntu without a desktop its import raises `OSError: libGLU.so.1: cannot open shared object file`. `pytest.importorskip` skips only an `ImportError`, so four Gmsh tests failed instead of skipping; and `gmsh_import.read_msh` caught only `ImportError`, so the import dialog would have met a raw `OSError`. It now says Gmsh is installed but will not load, and why; a test simulates the failure, and the tests skip with the reason (`6232415`). The branch's README names `libglu1-mesa`.
+- **Verified on a fresh clone of the build from `6232415`, Windows 11, Python 3.12.7, on AC** (`out/workbench/records/installer/verify_windows-amd64_release3.json`; the earlier builds' records are beside it):
+  - **Static checks:** `run.sh` `100755` and LF, `run.cmd` CRLF; all 134 copied files identical by blob hash to `6232415` and the build repository's `98df350`.
+  - **The launcher:** exit 0 in 227 s.
+  - **The bundle's tests:** 319 passed, 2 skipped. One skip is the `fe.py` cross-check against the unvendored ThermoStruct2D; the other is the installer's own test, whose templates live here.
+  - **Without torch:** exit 3, all eight types ran.
+  - **With no network:** exit 0, and no connection left the machine.
+  - **With both optional installs failing behind a closed proxy:** exit 3; both failures said so, no stamp was written, and all eight types ran.
+  - **Size:** `.venv` is 2.0 GB with torch and Gmsh, 613 MB once both are removed. Its deepest path is 141 characters, under Windows' 260.
+- **Verified on a fresh clone of the same build on Linux**, Ubuntu under WSL 2 on the same laptop, Python 3.10.21 (`verify_linux-x86_64_release3.json`):
+  - **Static checks:** the same; all 134 copied files identical by blob hash.
+  - **The launcher:** `./run.sh` built `.venv`, installed everything, and its self-test passed every type and the page, exiting 3 in 54 s. The 3 is because Gmsh installed and will not load (`libGLU.so.1`).
+  - **The bundle's tests:** 315 passed, 6 skipped: the two above and the four Gmsh tests, each with its reason. Before `6232415` those four failed (`verify_linux-x86_64_release.json`).
+  - **Without torch:** exit 3. **With no network:** exit 3, and no connection left the machine. **With both optional installs failing behind a closed proxy:** exit 3, each failure said so, and all eight types ran.
+  - **Size:** `.venv` is 1.4 GB.
+- **In the served page** (the clone's own `run.cmd` at 1090×620, on the `8d14565` build; the `f008c51` build was served the same way and its page loaded; the later commits changed no page code but the Gmsh dialog's error):
+  - the header fits: no horizontal overflow, and its last control ends at 1081 px;
+  - *Sound*, then *Fast example*, then *Run*: 130 macro-steps in 32 s. The card read 5.55× for parallel pieces in cache, with both bars met; the field *decomposed minus full* was 0 (on AC; the run's record is `walk-windows-fast-sound-20261001-041539.json`);
+  - *Help* said this copy does not carry the wiki.
+- **Not verified on macOS**: there is no Mac (the owner's answer). What stands in for it:
+  - `run.sh` follows bash 3.2's rules, pinned by a test, and `bash -n` parses it;
+  - the resolver installs every pin for both kinds of Mac;
+  - `run.sh` ran end to end on Linux (above).
+- **Open:**
+  - Bokeh's client logs `reference … isn't known` while the page rebuilds after a type switch, an example or a run. It does so in the development page as much as in the installed one, and the page still draws everything.
+  - Whether calling Gmsh's API from distributed code needs more than installing Gmsh from PyPI is the owner's to settle before publishing (O9).
+  - Atlas has no licence yet.
+  - The learned case's weights will be the first binary file the builder allows (step 8).
+
 ---
 
 ## 5. W348 is a demo problem now
@@ -361,7 +413,7 @@ The chat's prompt turned the order above into eight steps, each one commit, with
 | 4. The fork (item 1.2) | the flow as the along coordinate, each connected band a window, spectral bisection for other branched shapes, the dead-branch warning and its Fix, the example `river-fork` | §2.5 | done, `2dec7e9` |
 | 5. W348 | R10's case for a cut embedded family moves after `_l5_l7_scheme`. Where the coupling supplies the elliptic solve's boundary data and is solved directly (`direct-schur`) or iterated to a stated tolerance, the graph is decertified with W168's cost instead of refused. It cites Frommer & Szyld (2001), and T3's Lean name once [[formal-proofs-plan]] shows it checked | Tier 0's four windows and CS-S1 still refuse, measured; the refusal set of every graph the suite compiles, diffed before and after, moves only in the intended rows; the W189 byte control holds; the pinned verdicts are updated | done, `f4c7b5b` (§5) |
 | 6. Fast examples (item 1.4) | micro-benchmarks first: does P (parallel pieces) scale on threads, does scipy's `splu` release the GIL, and where does each family's core leave cache. Then the bars are registered in each family module before the first timed run; a sweep; a confirmation run from a fresh start; the header's *Fast example* button, with *More examples* under it (O1); each card's mechanism line and O3's fixed line; a [[showcase-gallery]] section | [[demo-fast-examples-plan]]'s gates | done: four of eight meet both bars ([[showcase-gallery]] §8) |
-| 7. The installer (O2) | `run.cmd` (Windows) and `run.sh` (macOS): a `.venv`; pinned requirements and constraints; torch CPU-only and optional; Gmsh optional, from PyPI; the build repository's solvers vendored, with `run.py` setting their paths; a self-test that asserts where each solver was loaded from and opens the served page. The builder refuses NeuberNet and Poseidon's weights | §4.1, on a fresh clone on Windows | |
+| 7. The installer (O2) | `run.cmd` (Windows) and `run.sh` (macOS): a `.venv`; pinned requirements and constraints; torch CPU-only and optional; Gmsh optional, from PyPI; the build repository's solvers vendored, with `run.py` setting their paths; a self-test that asserts where each solver was loaded from and opens the served page. The builder refuses NeuberNet and Poseidon's weights | §4.1, on a fresh clone on Windows | done, `8d14565`, `f008c51` and `6232415`: verified on fresh clones on Windows and Linux, and in the served page; not on macOS (§4.1) |
 | 8. The learned case (item 1.5) | a random network's step is timed first (step 0); G1–G6 and the held-out split are registered before any data exists. Then the data is generated, a GPU rented, the network trained and the GPU destroyed, each announced with its expected time or cost (O6). It is evaluated once, built into a read-only case, and its weights are added to the installer | [[demo-learned-case-plan]] §5's gate, reported whatever it shows | |
 | End | [[gap-worklist]] W348–W351, the plan pages' status lines, [[showcase-gallery]], the workbench README, [[index]] and [[log]]; a short report per step | | |
 

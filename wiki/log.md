@@ -7055,3 +7055,22 @@ Item 1.4 of [[demo-finish-plan]], built to [[demo-fast-examples-plan]] (its §6 
 **Step 0** (`scripts/fast_step0.py`): numpy windows scale to 3.6–3.8× from $256^2$ cells, the river's sparse step to 4–9×, and SuperLU releases the GIL up to 16,384 unknowns.
 
 **Added:** `atlas/workbench/fast.py`, `scripts/fast_step0.py`, `scripts/fast_examples.py`, `tests/test_workbench_fast.py`, `out/workbench/records/fast/`. **Changed:** `styles.py` (`TwoRate`), `tiling.py`, `fv.py`, `spec.py` (four examples, `FAST_EXAMPLES`, `run.exchange_every`, style M), `app.py` (the button), `runview.py` (the card), every family module (`FAST`), the conduction, river and sound families, three test files, the README, [[demo-fast-examples-plan]], [[demo-finish-plan]], [[showcase-gallery]], [[gap-worklist]].
+
+## [2026-10-01] build | Demo step 7: a one-command install of the workbench
+
+The owner's O2, built to [[demo-finish-plan]] §4.1 from PoC 3's bundle code. A stranger runs `.\run.cmd` on Windows or `./run.sh` on macOS and Linux in a clone of the branch `atlas-workbench`. The launcher finds Python 3.10–3.12, builds `.venv`, installs the pins, then torch (CPU-only) and Gmsh as optional steps, runs a self-test once and serves the page. `scripts/build_workbench_bundle.py` makes the branch from a commit and never pushes it: it stays private until the website launches (O9).
+
+**What verification on fresh clones found**, each fixed before the next round:
+- **The first clean install answered HTTP 500 on every page load**, while every type ran. From param 2.3.0, with Panel 1.5.2, a widget's `name` is constant, and the header relabels its buttons by setting it. So the constraints pin the versions the suite passed with, and pip's own resolver installs exactly those, binary wheels only, for Windows, both kinds of Mac and Linux, on Python 3.10–3.12.
+- **Behind a closed proxy, the self-test's fetch of its own page went to the proxy**, and a working page was called broken; it now goes direct.
+- **On Linux, Gmsh installs and will not load** (`libGLU.so.1`). Four tests failed instead of skipping, and the import dialog would have met a raw `OSError`; both now say why.
+- **A split by physics runs two arms that differ by design**, so the self-test asks each type for its own exact controls.
+- **Help named wiki pages the install does not carry.**
+
+**Verified** on the build from `6232415`:
+- **Windows 11, Python 3.12.7:** every copied file identical by blob hash; the self-test passed; the bundle's tests 319 passed and 2 skipped; it passed without torch, with no network, and with both optional installs failing.
+- **Ubuntu under WSL, Python 3.10.21:** the same checks; the tests 315 passed and 6 skipped, Gmsh's four among the skips.
+- **In the served page at 1090×620:** the sound's Fast example ran to its card, 5.55× and bit for bit.
+- **Not on macOS:** there is no Mac.
+
+**Added:** `atlas/workbench/bundle/` (the templates), `scripts/build_workbench_bundle.py`, `scripts/verify_workbench_bundle.py`, `scripts/verify_workbench_pins.py`, `tests/test_workbench_installer.py`, `out/workbench/records/installer/`. **Changed:** `app.py` (Help), `gmsh_import.py`, two test files, the workbench README, `.gitignore`, [[demo-finish-plan]], [[gap-worklist]], [[index]].
