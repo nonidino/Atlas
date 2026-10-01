@@ -55,6 +55,11 @@ def main() -> None:
 
     html = re.sub(r"<!--FIG ([\w-]+)-->.*?<!--/FIG \1-->", inline, html, flags=re.S)
 
+    # 0. every numbered display equation sits in a horizontally scrolling block, so that a
+    #    wide equation scrolls on a narrow screen instead of widening the page
+    html = re.sub(r'(?<!<div class="eqwrap">)(\\begin\{equation\}.*?\\end\{equation\})',
+                  r'<div class="eqwrap">\1</div>', html, flags=re.S)
+
     # 1. sections
     app_start = html.find('<section class="appendix"')
     toc = []
@@ -182,6 +187,7 @@ def main() -> None:
         return f'<span class="cite" data-keys="{m.group(1)}">[{inner}]</span>'
 
     html = re.sub(r'<span class="cite" data-keys="([^"]+)">.*?</span>', cite, html, flags=re.S)
+    refs_m = re.search(r"<!--REFS-->(.*?)<!--/REFS-->", html, re.S)   # offsets moved
     uncited = [k for k in entries if k not in num]
     items = []
     for k in order:
