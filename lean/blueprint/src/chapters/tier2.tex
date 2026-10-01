@@ -1,0 +1,235 @@
+\chapter{Tier 2: black-box experts and the contraction contract}
+
+At tier 2 an expert exposes only its boundary response.  The host exchanges
+wave variables between neighbouring sides and iterates.  Nothing is automatic
+for a learned black box, so the guarantee is conditional: it holds when a
+contraction factor has been \emph{certified} for the experts.  This chapter
+states what follows from such a certificate (T8, T9a, T9b), and two examples
+that show which hypothesis the certificate must be about.
+
+\section{T8: wave variables and the Cayley transform}
+
+\paragraph{In plain words.}
+On a side, the effort $e$ (a temperature) and the flow $f$ (a flux into the
+piece) are combined into an incoming wave $e+Zf$ and an outgoing wave $e-Zf$,
+for an impedance $Z>0$.  The squared size of the outgoing wave is that of the
+incoming one minus four times $Z$ times the power the piece absorbs.  So a
+piece that never generates power does not amplify waves, and a piece that
+absorbs a definite share of what it is given shrinks them by a definite factor.
+
+\begin{lemma}[T8, the wave identity]\label{lem:T8-identity}
+  \lean{Atlas.wave_identity}
+  \leanok
+  In a real inner-product space, for all $e,f$ and all real $Z$,
+  \[
+    \norm{e-Zf}^2=\norm{e+Zf}^2-4Z\,\langle f,e\rangle .
+  \]
+\end{lemma}
+
+\begin{proof}
+  Expand both squares.
+\end{proof}
+
+\begin{theorem}[T8, the bound for any effort and flow]\label{thm:T8}
+  \lean{Atlas.wave_bound, Atlas.cayley_bound}
+  \leanok
+  \uses{lem:T8-identity}
+  Let $Z>0$, $c\ge0$, and let $e,f$ satisfy
+  $\langle f,e\rangle\ge c\norm{e}^2$ and $\norm{f}\le M\norm{e}$.  Then
+  \[
+    \norm{e-Zf}^2\le\Bigl(1-\frac{4Zc}{(1+ZM)^2}\Bigr)\norm{e+Zf}^2 .
+  \]
+  In particular, for a bounded linear $\Lambda$ with
+  $\langle\Lambda e,e\rangle\ge c\norm{e}^2$ for all $e$ and
+  $\norm{\Lambda}\le M$, this holds with $f=\Lambda e$ for every $e$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T8-identity}
+  With $y=e+Zf$: $\norm{e-Zf}^2=\norm{y}^2-4Z\langle f,e\rangle
+  \le\norm{y}^2-4Zc\norm{e}^2$, and $\norm{y}\le(1+ZM)\norm{e}$.
+\end{proof}
+
+\begin{theorem}[T8, the scattering map]\label{thm:T8-cayley}
+  \lean{Atlas.cayley_transform, Atlas.cayley_nonexpansive}
+  \leanok
+  \uses{thm:T8}
+  Let $E$ be a finite-dimensional real inner-product space, not the zero
+  space, and $\Lambda$ as in Theorem~\ref{thm:T8}.  Then $I+Z\Lambda$ is
+  invertible and $\mathcal S=(I-Z\Lambda)(I+Z\Lambda)^{-1}$ satisfies
+  \[
+    \norm{\mathcal S}^2\le1-\frac{4Zc}{(1+ZM)^2}.
+  \]
+  If only $\langle\Lambda e,e\rangle\ge0$ for all $e$, then $I+Z\Lambda$ is
+  invertible and $\norm{\mathcal S}\le1$ (on any finite-dimensional space).
+\end{theorem}
+
+\begin{proof}
+  \uses{thm:T8}
+  $\langle(I+Z\Lambda)e,e\rangle\ge\norm{e}^2$, so $I+Z\Lambda$ is injective,
+  hence invertible in finite dimensions.  Every $y$ is $(I+Z\Lambda)e$ for one
+  $e$, and $\mathcal Sy=(I-Z\Lambda)e$; Theorem~\ref{thm:T8}.
+\end{proof}
+
+\begin{corollary}[T8 at tier 0]\label{cor:T8-gram}
+  \lean{Atlas.cayley_matrix_nonexpansive, Atlas.Piece.gram_cayley_nonexpansive}
+  \leanok
+  \uses{thm:T8, thm:T25-i}
+  For a positive semidefinite real matrix $L$ and $Z>0$, $1+ZL$ is invertible
+  and $\mathsf S=(1-ZL)(1+ZL)^{-1}$ satisfies $|\mathsf Sa|^2\le|a|^2$ for
+  every $a$.  In particular this holds for the Gram port matrix
+  $\tilde\Lambda$ of any network output: a tier-0 expert also serves at
+  tier 2, with no certificate.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T8, thm:T25-i}
+  The case $c=0$, with Theorem~\ref{thm:T25-i}.
+\end{proof}
+
+\section{T9a: the contraction contract, one level}
+
+\paragraph{In plain words.}
+One sweep applies every expert's scattering map to its incoming wave, hands
+each outgoing wave to the neighbouring side, and adds the sources.  If every
+expert's map shrinks distances by a certified factor $\rho<1$, and the
+hand-over does not lengthen anything, the whole sweep shrinks distances by
+$\rho$.  Then T1 applies: one answer, geometric convergence from any start,
+and a distance to the classical answer set by how far each learned map is from
+the classical one \emph{at the classical answer}.
+
+\begin{definition}[The wave sweep]\label{def:wave-sweep}
+  \lean{Atlas.waveSweep}
+  \leanok
+  Pieces $i$ in a finite set, with wave spaces $W_i$ (normed).  The global wave
+  vector $a=(a_i)_i$ is measured in the $\ell^2$ product,
+  $d(a,a')^2=\sum_id(a_i,a'_i)^2$.  For maps $S_i:W_i\to W_i$, an exchange
+  $\Pi$ on the product and a vector $g$,
+  \[
+    T(a)=\Pi\bigl((S_i(a_i))_i\bigr)+g .
+  \]
+\end{definition}
+
+\begin{theorem}[T9a, the sweep contracts]\label{thm:T9a-lip}
+  \lean{Atlas.waveSweep_lipschitz}
+  \leanok
+  \uses{def:wave-sweep}
+  If $d(S_ix,S_iy)\le\rho\,d(x,y)$ for every $i$, $x$, $y$, with $\rho\ge0$,
+  and $d(\Pi x,\Pi y)\le d(x,y)$, then $d(Ta,Ta')\le\rho\,d(a,a')$.
+\end{theorem}
+
+\begin{proof}
+  $d(Ta,Ta')^2\le\sum_id(S_ia_i,S_ia'_i)^2\le\rho^2\sum_id(a_i,a'_i)^2$.
+\end{proof}
+
+\begin{theorem}[T9a, the contraction contract]\label{thm:T9a}
+  \lean{Atlas.contraction_contract}
+  \leanok
+  \uses{thm:T9a-lip, thm:T1}
+  Let the $W_i$ be complete, $S_i$ the learned maps and $S^c_i$ the classical
+  ones, with the same $\Pi$ and $g$, and let $a_c$ be a fixed point of the
+  classical sweep.  If the hypotheses of Theorem~\ref{thm:T9a-lip} hold with
+  $\rho<1$, and $d\bigl(S_i(a_{c,i}),S^c_i(a_{c,i})\bigr)\le\delta_i$ for every
+  $i$, then the learned sweep has a unique fixed point $a_l$,
+  $d(T^ka_0,a_l)\le\rho^kd(a_0,a_l)$ for every $a_0$ and $k$, and
+  \[
+    d(a_l,a_c)\le\frac{\bigl(\sum_i\delta_i^2\bigr)^{1/2}}{1-\rho}.
+  \]
+\end{theorem}
+
+\begin{proof}
+  \uses{thm:T9a-lip, thm:T1}
+  Theorem~\ref{thm:T1} with the contraction of Theorem~\ref{thm:T9a-lip}; the
+  defect at $a_c$ is at most $\bigl(\sum_i\delta_i^2\bigr)^{1/2}$ because
+  $\Pi$ does not lengthen distances.
+\end{proof}
+
+\section{T9b: two levels}
+
+\paragraph{In plain words.}
+With a coarse space, a round is a sweep followed by a coarse solve: a
+correction inside the coarse space that leaves no coarse residual.  The first
+version of the design asked that each learned map contract on the
+\emph{fine} space only, because the coarse space is solved exactly.  That is
+not enough (Example~\ref{ex:T9b-diverges}).  What has to be certified is a
+contraction factor of the \emph{composite} round.  Given that, the conclusion
+is T1's, and the answer is a fixed point of the plain sweep: the coarse solve
+changes how the answer is reached, not what it is.
+
+\begin{lemma}[T9b, consistency of the coarse solve]\label{lem:T9b-consistency}
+  \lean{Atlas.twoLevel_fixedPt_isFixedPt, Atlas.fixedPt_isFixedPt_twoLevel}
+  \leanok
+  Let $T$ be the sweep, $C$ the coarse solve and $P_0$ a linear map.  If
+  $P_0(Cb-b)=Cb-b$ and $P_0\bigl(Cb-T(Cb)\bigr)=0$ for every $b$, then
+  $C(Ta)=a$ implies $Ta=a$.  Conversely, if $Cb=b$ whenever
+  $P_0(b-Tb)=0$, then $Ta=a$ implies $C(Ta)=a$.
+\end{lemma}
+
+\begin{proof}
+  Let $b=Ta$ and $a=Cb$.  Then $a-b$ is fixed by $P_0$, and
+  $P_0(a-Ta)=0$; but $a-Ta=a-b$, so $a-b=0$.  The converse is immediate.
+\end{proof}
+
+\begin{theorem}[T9b, the two-level contract]\label{thm:T9b}
+  \lean{Atlas.two_level_contract}
+  \leanok
+  \uses{lem:T9b-consistency, thm:T1}
+  On a complete normed space, let $T_l,C_l$ be the learned sweep and coarse
+  solve, satisfying the hypotheses of Lemma~\ref{lem:T9b-consistency}, and
+  $T_c,C_c$ the classical ones, with $C_c(T_ca_c)=a_c$.  If
+  $d\bigl(C_lT_lx,C_lT_ly\bigr)\le\rho\,d(x,y)$ for all $x,y$ with
+  $0\le\rho<1$, and $d\bigl(C_lT_la_c,C_cT_ca_c\bigr)\le\delta$, then there is
+  a unique $a_l$ with $C_l(T_la_l)=a_l$; it satisfies $T_la_l=a_l$;
+  $d\bigl((C_lT_l)^ka_0,a_l\bigr)\le\rho^kd(a_0,a_l)$; and
+  $d(a_l,a_c)\le\delta/(1-\rho)$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T9b-consistency, thm:T1}
+  Theorem~\ref{thm:T1} for the composite maps, then
+  Lemma~\ref{lem:T9b-consistency}.
+\end{proof}
+
+\begin{example}[Contracting the fine space is not enough]\label{ex:T9b-diverges}
+  \lean{Atlas.two_level_fine_contraction_diverges}
+  \leanok
+  On $\R^2$ with coarse space the first axis and fine space the second, let
+  \[
+    G=\begin{pmatrix}0&\tfrac12\\10&0\end{pmatrix},\qquad
+    C(x,y)=\bigl(\tfrac12y,\ y\bigr).
+  \]
+  Then $G$ contracts the fine space by $\tfrac12$; $C$ changes only the coarse
+  component and leaves no coarse residual, $\bigl(Ce-G(Ce)\bigr)_1=0$; the only
+  fixed point of $G$ is $0$; and
+  $(CG)^k(1,2)=\bigl(5^k,\ 2\cdot5^k\bigr)$ for every $k$.
+\end{example}
+
+\begin{proof}
+  $CG(x,y)=(5x,10x)$.
+\end{proof}
+
+\section{A remark beside T1: accuracy is not a substitute}
+
+\paragraph{In plain words.}
+T1 asks that the learned map contract.  It cannot be replaced by ``the
+classical map contracts and the learned map is uniformly close to it''.  The
+example below satisfies both of those, and its learned iteration alternates
+between two points for ever.
+
+\begin{example}[The SNI counterexample]\label{ex:sni}
+  \lean{Atlas.sni_counterexample}
+  \leanok
+  \uses{thm:T1}
+  Let $T(u)=\tfrac12u$ and $\tilde T(u)=\tfrac12\bigl(u-\tanh10u\bigr)$ on $\R$.
+  Then $T$ is a contraction with factor $\tfrac12$ and fixed point $0$;
+  $|\tilde T(u)-T(u)|\le\tfrac12$ for every $u$; and there is an
+  $x\in[0.3,\,0.34]$ with $\tilde T(x)=-x$ and $\tilde T(-x)=x$, so that
+  $\tilde T^k(x)=(-1)^kx$ for every $k$.
+\end{example}
+
+\begin{proof}
+  $\tilde T(x)=-x$ means $\tanh10x=3x$.  The function $\tanh10x-3x$ is
+  continuous, positive at $0.3$ (since $e^6>19$ gives $\tanh3>0.9$) and
+  negative at $0.34$ (since $\tanh<1<1.02$); the intermediate value theorem
+  gives $x$.  $\tilde T$ is odd.
+\end{proof}

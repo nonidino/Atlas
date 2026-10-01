@@ -1,0 +1,508 @@
+\chapter{Tier 0: the learned superelement}
+
+At tier 0 a learned expert is not asked for a port matrix.  It returns
+\emph{fields}: for each pattern of boundary values, an interior field to go
+with it.  The host computes the port matrix itself, as the energy Gram matrix
+of those fields, assembles one interface system, and solves it once.  There is
+no iteration.
+
+The statements of this chapter hold for \emph{every} output of the network,
+however wrong.  They are the tier-0 guarantee of the architecture document
+(its Theorems 5 and 6, Proposition 7 and Corollary 11): the learned system is
+never indefinite, it is solvable whenever the classical one is, its answer is
+the best its modes can represent, and its sensitivity is governed by the
+classical problem's own constant.
+
+Everything is finite-dimensional linear algebra.  The statements are written
+for real vector spaces and bilinear forms, so that nothing depends on a choice
+of basis for the fields; with coordinates they are the matrix statements of the
+document.
+
+\section{T25 (i) to (iii): the Gram port matrix}
+
+\paragraph{In plain words.}
+A piece of the domain has unknowns inside it and unknowns on its boundary
+faces, and an energy that is never negative.  A port mode is a pattern of
+boundary values; its exact constraint mode is the interior field the physics
+pairs with it, and the exact port matrix is the energy Gram matrix of those
+pairs.  Put any other interior fields in place of the exact ones.  Then the
+Gram matrix is still symmetric and positive semidefinite; it exceeds the exact
+one by exactly the Gram matrix of the field errors in the interior energy; and
+after assembly over all pieces the learned interface matrix dominates the exact
+one, so it inherits every lower bound the exact one has.  An error in the
+fields can make a piece stiffer, never softer, and never indefinite.
+
+\begin{definition}[The energy of a piece]\label{def:piece}
+  \lean{Atlas.Piece, Atlas.Piece.M, Atlas.Piece.IsExactMode}
+  \leanok
+  Let $U$ (cell values) and $F$ (face values) be real vector spaces.  A
+  \emph{piece} is three bilinear forms, written with matrices as
+  $a(u,v)=u^\top A_Iv$ on $U$, $b(u,\mu)=u^\top B\mu$ on $U\times F$ and
+  $d(\lambda,\mu)=\lambda^\top D\mu$ on $F$, with $a$ and $d$ symmetric and
+  \[
+    a(u,u)-2\,b(u,\lambda)+d(\lambda,\lambda)\ \ge\ 0
+    \qquad\text{for all }u\in U,\ \lambda\in F .
+  \]
+  Its energy form on pairs is
+  \[
+    M\bigl((u,\lambda),(v,\mu)\bigr)=a(u,v)-b(u,\mu)-b(v,\lambda)+d(\lambda,\mu),
+    \qquad M=\begin{pmatrix}A_I&-B\\-B^\top&D\end{pmatrix}.
+  \]
+  An interior field $h\in U$ is the \emph{exact constraint mode} of the
+  boundary pattern $q\in F$ if $a(v,h)=b(v,q)$ for every $v\in U$, that is,
+  $A_Ih=Bq$.
+\end{definition}
+
+\begin{definition}[The Gram port matrix]\label{def:gram}
+  \lean{Atlas.Piece.gram}
+  \leanok
+  \uses{def:piece}
+  For interior fields $h_k\in U$ and boundary patterns $q_k\in F$, indexed by a
+  finite set, the Gram port matrix has entries
+  \[
+    \Lambda[h]_{kl}=M\bigl((h_k,q_k),(h_l,q_l)\bigr).
+  \]
+  With the exact constraint modes $H_k$ it is the exact port matrix
+  $\Lambda=\Lambda[H]$; with a network's fields $\hat H_k$ it is the matrix
+  $\tilde\Lambda=\Lambda[\hat H]$ the host computes.
+\end{definition}
+
+\begin{theorem}[T25 (i), positive semidefinite for every output]\label{thm:T25-i}
+  \lean{Atlas.Piece.gram_posSemidef}
+  \leanok
+  \uses{def:gram}
+  For any fields $h_k$ and patterns $q_k$, $\Lambda[h]$ is symmetric and
+  $x^\top\Lambda[h]\,x\ge0$ for every $x$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  $\Lambda[h]$ is symmetric because $M$ is.  With
+  $w=\bigl(\sum_kx_kh_k,\ \sum_kx_kq_k\bigr)$, bilinearity gives
+  $x^\top\Lambda[h]\,x=M(w,w)\ge0$.
+\end{proof}
+
+\begin{proposition}[T25 (i), the definite case]\label{prop:T25-i-def}
+  \lean{Atlas.Piece.gram_posDef}
+  \leanok
+  \uses{def:gram}
+  If $M(w,w)=0$ only for $w=0$, and the patterns $q_k$ are linearly
+  independent, then $\Lambda[h]$ is positive definite for any fields $h_k$.
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T25-i}
+  If $x^\top\Lambda[h]\,x=0$ then $w=0$ in the proof of
+  Theorem~\ref{thm:T25-i}; its face part is $\sum_kx_kq_k=0$, so $x=0$.
+\end{proof}
+
+\begin{theorem}[T25 (ii), the error identity]\label{thm:T25-ii}
+  \lean{Atlas.Piece.gram_sub_gram, Atlas.Piece.quadratic_gram_sub}
+  \leanok
+  \uses{def:gram}
+  Let $H_k$ be the exact constraint modes of the patterns $q_k$, let $h_k$ be
+  any fields, and $E_k=h_k-H_k$.  Then
+  \[
+    \Lambda[h]_{kl}-\Lambda[H]_{kl}=a(E_k,E_l)\qquad\text{for all }k,l,
+  \]
+  and so, for every coordinate vector $x$,
+  \[
+    x^\top\bigl(\Lambda[h]-\Lambda[H]\bigr)x
+      =a\Bigl(\sum_kx_kE_k,\ \sum_kx_kE_k\Bigr).
+  \]
+  In matrices: $\tilde\Lambda-\Lambda=E^\top A_IE$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  Write $(h_k,q_k)=(H_k,q_k)+(E_k,0)$ and expand $M$ in both arguments.  The
+  cross terms are $M\bigl((E_k,0),(H_l,q_l)\bigr)=a(E_k,H_l)-b(E_k,q_l)=0$ by
+  the definition of $H_l$, and the same with $k$ and $l$ exchanged.  The last
+  term is $M\bigl((E_k,0),(E_l,0)\bigr)=a(E_k,E_l)$.
+\end{proof}
+
+\begin{corollary}[T25 (ii), consequences]\label{cor:T25-ii}
+  \lean{Atlas.Piece.gram_sub_gram_posSemidef, Atlas.Piece.trace_gram_sub,
+    Atlas.Piece.quadratic_gram_sub_le}
+  \leanok
+  \uses{thm:T25-ii}
+  With the notation of Theorem~\ref{thm:T25-ii}:
+  \begin{enumerate}
+    \item $\Lambda[h]-\Lambda[H]$ is positive semidefinite;
+    \item $\operatorname{tr}\Lambda[h]-\operatorname{tr}\Lambda[H]=\sum_ka(E_k,E_k)$;
+    \item if $s:U\to\R$ is any measure of size with $a(u,u)\le\alpha\,s(u)^2$
+      for all $u$, $\alpha\ge0$, and
+      $s\bigl(\sum_kx_kE_k\bigr)^2\le\varepsilon^2\,|x|^2$ for all $x$, then
+      $x^\top\bigl(\Lambda[h]-\Lambda[H]\bigr)x\le\alpha\,\varepsilon^2\,|x|^2$.
+      With Euclidean norms this is
+      $\norm{\tilde\Lambda-\Lambda}_2\le\norm{A_I}_2\norm{E}_2^2$: the error of
+      the port matrix is quadratic in the error of the fields.
+  \end{enumerate}
+\end{corollary}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T25-ii}
+  The interior energy $a(u,u)=M\bigl((u,0),(u,0)\bigr)$ is non-negative, which
+  gives 1 from the quadratic form of Theorem~\ref{thm:T25-ii}.  Item 2 is the
+  diagonal of the identity.  Item 3 is the quadratic form with the two bounds.
+\end{proof}
+
+\begin{definition}[Assembly]\label{def:assemble}
+  \lean{Atlas.assemble}
+  \leanok
+  For pieces $i$ in a finite set, port matrices $L_i$ and matrices $R_i$ that
+  read piece $i$'s port coordinates off the global coordinate vector, the
+  assembled interface matrix is $\sum_iR_i^\top L_iR_i$.
+\end{definition}
+
+\begin{theorem}[T25 (iii), the assembled matrix]\label{thm:T25-iii}
+  \lean{Atlas.assemble_gram_sub_posSemidef, Atlas.assemble_gram_coercive,
+    Atlas.assemble_gram_posDef, Atlas.assemble_gram_existsUnique}
+  \leanok
+  \uses{def:assemble, cor:T25-ii}
+  Let $\mathsf S=\sum_iR_i^\top\Lambda_i[H_i]R_i$ be assembled from the exact
+  constraint modes of every piece and
+  $\tilde{\mathsf S}=\sum_iR_i^\top\Lambda_i[h_i]R_i$ from any fields.  Then
+  \begin{enumerate}
+    \item $\tilde{\mathsf S}-\mathsf S$ is positive semidefinite;
+    \item if $\beta\,|c|^2\le c^\top\mathsf Sc$ for all $c$, then
+      $\beta\,|c|^2\le c^\top\tilde{\mathsf S}c$ for all $c$ (with the largest
+      such $\beta$: $\lambda_{\min}(\tilde{\mathsf S})\ge\lambda_{\min}(\mathsf S)$);
+    \item if $\mathsf S$ is positive definite, so is $\tilde{\mathsf S}$, and
+      $\tilde{\mathsf S}c=\chi$ has exactly one solution for every $\chi$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{cor:T25-ii}
+  $\tilde{\mathsf S}-\mathsf S=\sum_iR_i^\top(\Lambda_i[h_i]-\Lambda_i[H_i])R_i$
+  is a sum of matrices $R^\top PR$ with $P$ positive semidefinite by
+  Corollary~\ref{cor:T25-ii}.  Then
+  $c^\top\tilde{\mathsf S}c=c^\top\mathsf Sc+c^\top(\tilde{\mathsf S}-\mathsf S)c
+  \ge c^\top\mathsf Sc$, which gives 2 and the definiteness in 3.  A positive
+  definite matrix is invertible.
+\end{proof}
+
+\section{T25: energy optimality}
+
+\paragraph{In plain words.}
+The undivided discrete solution is the admissible field of least total energy.
+The host's interface system, formed from the network's fields alone, says
+exactly that the rebuilt field has the least energy among the fields that can
+be rebuilt from the network's modes.  For a symmetric problem, least energy
+over a smaller set is the same as closest to the true minimiser in the energy
+size.  So the coupled answer is the best approximation of the undivided
+solution that the network's modes can represent: the coupling adds no error of
+its own.  Its error is at most the truncation error of the classical
+superelement plus the energy of the network's field errors.
+
+\begin{definition}[A quadratic energy]\label{def:quad}
+  \lean{Atlas.QuadEnergy, Atlas.QuadEnergy.energy, Atlas.QuadEnergy.norm}
+  \leanok
+  On a real vector space $X$, let $m$ be a symmetric bilinear form with
+  $m(w,w)\ge0$ and $\ell$ a linear functional.  The energy is
+  $\mathcal E(w)=\tfrac12m(w,w)-\ell(w)$ and the energy size is
+  $\norm{w}_m=\sqrt{m(w,w)}$, a seminorm.
+\end{definition}
+
+\begin{lemma}[Minimisers are the stationary points]\label{lem:stationary}
+  \lean{Atlas.QuadEnergy.stationary_of_isMin, Atlas.QuadEnergy.isMin_of_stationary,
+    Atlas.QuadEnergy.energy_eq_add}
+  \leanok
+  \uses{def:quad}
+  Let $U_0\subseteq X$ be a subspace and $u\in X$.  Then
+  $\mathcal E(u)\le\mathcal E(u+v)$ for all $v\in U_0$ if and only if
+  $m(u,v)=\ell(v)$ for all $v\in U_0$.  In that case, for every $w$ with
+  $w-u\in U_0$,
+  \[
+    \mathcal E(w)=\mathcal E(u)+\tfrac12\norm{w-u}_m^2 .
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  $\mathcal E(u+tv)-\mathcal E(u)=t\,\bigl(m(u,v)-\ell(v)\bigr)+\tfrac12t^2m(v,v)$.
+  If this is non-negative for all real $t$, the coefficient of $t$ is zero.
+  Conversely, if that coefficient is zero the difference is
+  $\tfrac12t^2m(v,v)\ge0$; $t=1$ and $v=w-u$ give the identity.
+\end{proof}
+
+\begin{lemma}[The abstract lemma: C\'ea with constant one]\label{lem:cea}
+  \lean{Atlas.QuadEnergy.closest_iff_isMin}
+  \leanok
+  \uses{lem:stationary}
+  Let $u$ have the least energy in $u+U_0$, let $W\subseteq u+U_0$ be any set
+  and $\tilde u\in W$.  Then $\tilde u$ has the least energy in $W$ if and only
+  if $\norm{u-\tilde u}_m\le\norm{u-w}_m$ for every $w\in W$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:stationary}
+  On $W$, $\mathcal E(w)=\mathcal E(u)+\tfrac12\norm{w-u}_m^2$ by
+  Lemma~\ref{lem:stationary}, and $t\mapsto\sqrt t$ is increasing.
+\end{proof}
+
+\begin{lemma}[The Galerkin system]\label{lem:galerkin}
+  \lean{Atlas.QuadEnergy.galerkin_iff_isMin}
+  \leanok
+  \uses{lem:stationary}
+  For $w_0\in X$, finitely many trial directions $t_a\in X$ and coordinates
+  $c$, write $w(c)=w_0+\sum_ac_at_a$.  Then $w(c)$ has the least energy among
+  all $w(c')$ if and only if $m\bigl(w(c),t_a\bigr)=\ell(t_a)$ for every $a$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:stationary}
+  Lemma~\ref{lem:stationary} with $U_0$ the span of the $t_a$ and $u=w(c)$.
+\end{proof}
+
+\begin{lemma}[The energy size obeys the triangle inequality]\label{lem:energy-triangle}
+  \lean{Atlas.QuadEnergy.norm_add_le}
+  \leanok
+  \uses{def:quad}
+  $\norm{x+y}_m\le\norm{x}_m+\norm{y}_m$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  The Cauchy--Schwarz inequality $m(x,y)^2\le m(x,x)\,m(y,y)$ for a positive
+  semidefinite symmetric form (Mathlib:
+  \texttt{LinearMap.BilinForm.apply\_sq\_le\_of\_symm}).
+\end{proof}
+
+\begin{definition}[The tier-0 solve]\label{def:superelement}
+  \lean{Atlas.Superelement, Atlas.Superelement.Admissible, Atlas.Superelement.U0,
+    Atlas.Superelement.quad, Atlas.Superelement.IsSolution,
+    Atlas.Superelement.coord, Atlas.Superelement.field,
+    Atlas.Superelement.portMatrix, Atlas.Superelement.portLoad,
+    Atlas.Superelement.hostMatrix, Atlas.Superelement.hostRhs,
+    Atlas.Superelement.fieldError}
+  \leanok
+  \uses{def:gram, def:assemble, def:quad}
+  Pieces $i=1,\dots,P$, each with an energy $M_i$ on $U\times F$
+  (Definition~\ref{def:piece}), a source $f_i$, port patterns $q_{i,k}\in F$, a
+  matrix $R_i$ reading its port coordinates off the free global coordinates
+  $c$, and fixed coordinates $r_i$.  A \emph{global field} $w$ gives every
+  piece a pair $w_i\in U\times F$.  Let $\Gamma_0$ be a subspace of families of
+  face values (those on which neighbours agree and which vanish on the
+  prescribed boundary) and $g$ a family carrying the prescribed boundary
+  values.  The field $w$ is \emph{admissible} if its face values minus $g$ lie
+  in $\Gamma_0$; $U_0$ is the space of fields with face values in $\Gamma_0$.
+  The global energy is
+  \[
+    \mathcal E(w)=\sum_{i=1}^P\Bigl(\tfrac12M_i(w_i,w_i)-f_i(w_{I,i})\Bigr),
+    \qquad\norm{w}_M^2=\sum_{i=1}^PM_i(w_i,w_i),
+  \]
+  and the \emph{undivided solution} $u$ is an admissible field of least energy
+  among admissible fields.  From fields $h_{i,k}$ and $\hat u_{p,i}$ the host
+  forms
+  \begin{gather*}
+    \tilde\Lambda_i=\Lambda_i[h_i],\qquad
+    \tilde b_{i,k}=f_i(h_{i,k})-M_i\bigl((h_{i,k},q_{i,k}),(\hat u_{p,i},0)\bigr),\\
+    \tilde{\mathsf S}=\sum_iR_i^\top\tilde\Lambda_iR_i,\qquad
+    \tilde\chi=\sum_iR_i^\top\bigl(\tilde b_i-\tilde\Lambda_ir_i\bigr),
+  \end{gather*}
+  and for coordinates $c$ rebuilds, with $x_i=r_i+R_ic$,
+  \[
+    w(c)_i=\Bigl(\hat u_{p,i}+\sum_kx_{i,k}h_{i,k},\ \ \sum_kx_{i,k}q_{i,k}\Bigr).
+  \]
+\end{definition}
+
+\begin{definition}[The three assumptions]\label{def:assumptions}
+  \lean{Atlas.Superelement.Conforming, Atlas.Superelement.BoundaryDataInPortSpan,
+    Atlas.Superelement.EnergyNormIsNorm}
+  \leanok
+  \uses{def:superelement}
+  \begin{enumerate}
+    \item \emph{Conforming shared sides:} for every $c$, the family
+      $\bigl(\sum_k(R_ic)_kq_{i,k}\bigr)_i$ lies in $\Gamma_0$.
+    \item \emph{Boundary data in the port span:} the family
+      $\bigl(\sum_kr_{i,k}q_{i,k}\bigr)_i-g$ lies in $\Gamma_0$.
+    \item \emph{The energy size is a norm on $U_0$:} $w\in U_0$ and
+      $\norm{w}_M=0$ imply $w=0$.
+  \end{enumerate}
+\end{definition}
+
+\begin{theorem}[The host's system is the Galerkin system]\label{thm:T25-galerkin}
+  \lean{Atlas.Superelement.hostSystem_iff_isMin}
+  \leanok
+  \uses{def:superelement, lem:galerkin}
+  For any fields $h,\hat u_p$ and any $c$:
+  $\tilde{\mathsf S}c=\tilde\chi$ if and only if
+  $\mathcal E(w(c))\le\mathcal E(w(c'))$ for every $c'$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:galerkin}
+  The trial directions are
+  $t_a=\bigl(\sum_k(R_i)_{ka}(h_{i,k},q_{i,k})\bigr)_i$.  Expanding
+  $m(w(c),t_a)=\ell(t_a)$ by bilinearity gives row $a$ of
+  $\tilde{\mathsf S}c=\tilde\chi$; then Lemma~\ref{lem:galerkin}.
+\end{proof}
+
+\begin{theorem}[T25, energy optimality]\label{thm:T25-optimal}
+  \lean{Atlas.Superelement.field_admissible, Atlas.Superelement.energy_optimal}
+  \leanok
+  \uses{thm:T25-galerkin, lem:cea, def:assumptions}
+  Assume 1 and 2 of Definition~\ref{def:assumptions}.  Then every rebuilt
+  field $w(c)$ is admissible.  If $u$ is the undivided solution and
+  $\tilde{\mathsf S}c=\tilde\chi$, then
+  \[
+    \norm{u-w(c)}_M\le\norm{u-w(c')}_M\qquad\text{for every }c' .
+  \]
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T25-galerkin, lem:cea}
+  The face values of $w(c)$ minus $g$ are the sum of the two families of
+  assumptions 1 and 2.  By Theorem~\ref{thm:T25-galerkin}, $w(c)$ has the least
+  energy among the rebuilt fields; Lemma~\ref{lem:cea} with $W$ the set of
+  rebuilt fields.
+\end{proof}
+
+\begin{theorem}[T25, the error bound]\label{thm:T25-bound}
+  \lean{Atlas.Superelement.energy_error_bound}
+  \leanok
+  \uses{thm:T25-optimal, lem:energy-triangle}
+  Under the hypotheses of Theorem~\ref{thm:T25-optimal}, for any reference
+  fields $H_{i,k}$, $u_{p,i}$ and any coordinates $c^\star$, with
+  $x_i^\star=r_i+R_ic^\star$ and $w^{\mathrm{ref}}$ the field rebuilt from the
+  reference fields at $c^\star$,
+  \[
+    \norm{u-w(c)}_M\ \le\ \norm{u-w^{\mathrm{ref}}}_M
+      +\Bigl(\sum_{i=1}^Pa_i(d_i,d_i)\Bigr)^{1/2},
+    \qquad d_i=(\hat u_{p,i}-u_{p,i})+\sum_kx^\star_{i,k}\,(h_{i,k}-H_{i,k}).
+  \]
+  With the exact modes and the classical superelement's coordinates,
+  $w^{\mathrm{ref}}=u_m$ and this is the document's bound: truncation error
+  plus field errors.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{thm:T25-optimal, lem:energy-triangle}
+  Let $w^\star$ be the field rebuilt from the network's fields at $c^\star$.
+  By Theorem~\ref{thm:T25-optimal} and the triangle inequality,
+  $\norm{u-w(c)}_M\le\norm{u-w^\star}_M
+  \le\norm{u-w^{\mathrm{ref}}}_M+\norm{w^{\mathrm{ref}}-w^\star}_M$.  The field
+  $w^\star-w^{\mathrm{ref}}$ has cell values $d_i$ and zero face values on piece
+  $i$, and $M_i\bigl((d,0),(d,0)\bigr)=a_i(d,d)$.
+\end{proof}
+
+\begin{theorem}[Solvable for every output; one solution]\label{thm:T25-solvable}
+  \lean{Atlas.Superelement.solution_unique, Atlas.Superelement.hostMatrix_posDef,
+    Atlas.Superelement.hostSystem_existsUnique}
+  \leanok
+  \uses{def:assumptions, lem:stationary}
+  Assume 3 of Definition~\ref{def:assumptions}.  Then the undivided solution
+  is unique.  Assume also 1, that each piece's patterns $q_{i,k}$ are linearly
+  independent, and that $R_ic=0$ for every $i$ only for $c=0$.  Then
+  $\tilde{\mathsf S}$ is positive definite for every choice of the fields $h$,
+  and $\tilde{\mathsf S}c=\tilde\chi$ has exactly one solution.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:stationary}
+  Two solutions $u,u'$ have equal energy, so $\norm{u'-u}_M=0$ by
+  Lemma~\ref{lem:stationary}, and $u'-u\in U_0$.  For the matrix,
+  $c^\top\tilde{\mathsf S}c=\norm{t(c)}_M^2$ with
+  $t(c)_i=\sum_k(R_ic)_k(h_{i,k},q_{i,k})$, which lies in $U_0$ by assumption
+  1.  If it vanishes then $t(c)=0$; its face values $\sum_k(R_ic)_kq_{i,k}$
+  vanish, so $R_ic=0$ for every $i$, so $c=0$.
+\end{proof}
+
+\section{T24: perturbation of the interface solve}
+
+\paragraph{In plain words.}
+The exact interface system is $\mathsf Sc=\chi$ and the host solves a learned
+one, $\tilde{\mathsf S}\tilde c=\tilde\chi$.  The two answers differ by at most
+the error of the matrix times the size of the exact answer, plus the error of
+the load, all divided by the smallest stretch $\beta$ of the learned matrix.
+For the Gram construction that constant need not be measured on the learned
+matrix: by T25 (iii) the exact problem's own constant serves.
+
+\begin{proposition}[T24]\label{prop:T24}
+  \lean{Atlas.interface_perturbation}
+  \leanok
+  Let $\mathsf S,\tilde{\mathsf S}$ be bounded linear maps between real normed
+  spaces with $\beta\norm{x}\le\norm{\tilde{\mathsf S}x}$ for all $x$ and some
+  $\beta>0$.  If $\mathsf Sc=\chi$ and $\tilde{\mathsf S}\tilde c=\tilde\chi$,
+  \[
+    \norm{\tilde c-c}\le
+      \frac{\norm{\mathsf S-\tilde{\mathsf S}}\,\norm{c}+\norm{\chi-\tilde\chi}}{\beta}.
+  \]
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  $\tilde{\mathsf S}(\tilde c-c)=(\tilde\chi-\chi)+(\mathsf S-\tilde{\mathsf S})c$;
+  take norms and use the lower bound.
+\end{proof}
+
+\begin{corollary}[T24 with the exact problem's constant]\label{cor:T24-dominates}
+  \lean{Atlas.interface_perturbation_of_dominates}
+  \leanok
+  \uses{prop:T24}
+  On a real inner-product space, if
+  $\beta\norm{x}^2\le\langle\mathsf Sx,x\rangle\le\langle\tilde{\mathsf S}x,x\rangle$
+  for all $x$ and some $\beta>0$, the bound of Proposition~\ref{prop:T24} holds
+  with this $\beta$.
+\end{corollary}
+
+\begin{proof}
+  \leanok
+  \uses{prop:T24}
+  $\beta\norm{x}^2\le\langle\tilde{\mathsf S}x,x\rangle
+  \le\norm{\tilde{\mathsf S}x}\,\norm{x}$ by Cauchy--Schwarz.
+\end{proof}
+
+\section{T26: the label-free objective}
+
+\paragraph{In plain words.}
+The supervised loss compares the network's fields with exact ones, which a
+classical solver must first compute.  The label-free objective needs only the
+network's own output and the piece's energy.  The two differ by a number fixed
+by the piece and its source, so between any two outputs of the network they
+change by the same amount: the same gradients and the same minimisers, with no
+solved examples.
+
+\begin{definition}[The two objectives]\label{def:objectives}
+  \lean{Atlas.Piece.labelFree, Atlas.Piece.supervised}
+  \leanok
+  \uses{def:gram}
+  For returned fields $h_k$ and $\hat u_p$, a source $f$, exact modes $H_k$ and
+  the exact particular field $u_p$ (with $a(v,u_p)=f(v)$ for all $v$):
+  \[
+    \mathcal L_{\mathrm{en}}=\operatorname{tr}\Lambda[h]+a(\hat u_p,\hat u_p)-2f(\hat u_p),
+    \qquad
+    \mathcal L_{\mathrm{sup}}=\sum_ka(h_k-H_k,h_k-H_k)+a(\hat u_p-u_p,\hat u_p-u_p).
+  \]
+\end{definition}
+
+\begin{theorem}[T26]\label{thm:T26}
+  \lean{Atlas.Piece.labelFree_eq_supervised_add_const,
+    Atlas.Piece.labelFree_sub_eq_supervised_sub}
+  \leanok
+  \uses{def:objectives, cor:T25-ii}
+  $\mathcal L_{\mathrm{en}}=\mathcal L_{\mathrm{sup}}
+  +\bigl(\operatorname{tr}\Lambda[H]-a(u_p,u_p)\bigr)$.  The bracket does not
+  involve the network's output, so for any two outputs
+  $\mathcal L_{\mathrm{en}}-\mathcal L_{\mathrm{en}}'
+  =\mathcal L_{\mathrm{sup}}-\mathcal L_{\mathrm{sup}}'$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{cor:T25-ii}
+  The trace identity of Corollary~\ref{cor:T25-ii}, and
+  $a(\hat u_p-u_p,\hat u_p-u_p)=a(\hat u_p,\hat u_p)-2f(\hat u_p)+a(u_p,u_p)$,
+  using $a(\hat u_p,u_p)=f(\hat u_p)$.
+\end{proof}

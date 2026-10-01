@@ -305,7 +305,229 @@ The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blue
 
 ## 7. Batches 4 to 6: statements, record and findings
 
-*Kept by the chat that states and proves batches 4 to 6 (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements). Nothing here yet.* It will hold its own table, one row per theorem as in §3, the statements in plain words and LaTeX as in §4, and its findings.
+*Kept by the chat that states and proves batches 4 to 6 (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements).* Status words as in §0. Builds of this chat are recorded in `out/lean/builds-batches-4-6.jsonl`, its axiom checks in `out/lean/axioms-batches-4-6.json`, and its declarations are listed in `lean/decls-batches-4-6.txt`.
+
+**Where this stands (2026-10-01).** The owner approved the statements of batches 4 and 5 on 2026-10-01. **Batch 4 (tier 0) is checked**: 28 theorems in five Lean files, no `sorry`, each resting on Lean's three standard axioms only (§7.1 to §7.3). Batch 5 (tier 2) is **approved**: 14 theorems and one definition in four files, proofs not yet checked (§7.4 to §7.6). Batch 6 is not stated yet.
+
+### 7.1 The record, batch 4
+
+| # | statement, in one line | Lean name | file | status | build time | axioms |
+|---|---|---|---|---|---|---|
+| **T25 (i)** | the Gram port matrix is symmetric positive semidefinite, for any fields | `Atlas.Piece.gram_posSemidef` | `AtlasProofs/GramPort.lean` | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 (i) | positive definite when the energy is and the port patterns are independent | `Atlas.Piece.gram_posDef` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T25 (ii)** | $\tilde\Lambda-\Lambda$ is the Gram matrix of the field errors in the $A_I$ inner product | `Atlas.Piece.gram_sub_gram` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 (ii) | the same as a quadratic form: $x^\top(\tilde\Lambda-\Lambda)x=\lVert Ex\rVert_{A_I}^2$ | `Atlas.Piece.quadratic_gram_sub` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 (ii) | $\tilde\Lambda-\Lambda\succeq0$ | `Atlas.Piece.gram_sub_gram_posSemidef` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 (ii) | $\operatorname{tr}\tilde\Lambda-\operatorname{tr}\Lambda=\sum_k\lVert E_k\rVert_{A_I}^2$ | `Atlas.Piece.trace_gram_sub` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 (ii) | $x^\top(\tilde\Lambda-\Lambda)x\le\alpha\,\varepsilon^2\lvert x\rvert^2$: quadratic in the field error | `Atlas.Piece.quadratic_gram_sub_le` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T25 (iii)** | $\tilde{\mathsf S}-\mathsf S\succeq0$ | `Atlas.assemble_gram_sub_posSemidef` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T25 (iii)** | every lower bound $\beta\lvert c\rvert^2\le c^\top\mathsf Sc$ holds for $\tilde{\mathsf S}$ | `Atlas.assemble_gram_coercive` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 (iii) | $\mathsf S$ positive definite implies $\tilde{\mathsf S}$ positive definite | `Atlas.assemble_gram_posDef` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 (iii) | then $\tilde{\mathsf S}c=\chi$ has exactly one solution | `Atlas.assemble_gram_existsUnique` | same | checked | 23 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25, lemma | a minimiser over $u+U_0$ is stationary | `Atlas.QuadEnergy.stationary_of_isMin` | `AtlasProofs/EnergyOptimality.lean` | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25, lemma | a stationary point is a minimiser | `Atlas.QuadEnergy.isMin_of_stationary` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25, lemma | $\mathcal E(w)=\mathcal E(u)+\tfrac12\lVert w-u\rVert_m^2$ | `Atlas.QuadEnergy.energy_eq_add` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T25, the abstract lemma** | least energy over a subset is closest to the minimiser in the energy size | `Atlas.QuadEnergy.closest_iff_isMin` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25, lemma | the Galerkin system characterises the least-energy trial field | `Atlas.QuadEnergy.galerkin_iff_isMin` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25, lemma | the energy size obeys the triangle inequality | `Atlas.QuadEnergy.norm_add_le` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T25** | the host's system $\tilde{\mathsf S}c=\tilde\chi$ is the Galerkin system of the learned trial set | `Atlas.Superelement.hostSystem_iff_isMin` | `AtlasProofs/Superelement.lean` | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 | the trial set lies in the admissible set | `Atlas.Superelement.field_admissible` | same | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T25, energy optimality** | the rebuilt field is the energy-closest trial field to the undivided solution | `Atlas.Superelement.energy_optimal` | same | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T25, the bound** | error $\le$ reference error $+$ energy of the field errors | `Atlas.Superelement.energy_error_bound` | same | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 | the undivided solution is unique when the energy size is a norm on $U_0$ | `Atlas.Superelement.solution_unique` | same | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T25** | $\tilde{\mathsf S}$ is positive definite for every network output | `Atlas.Superelement.hostMatrix_posDef` | same | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T25 | the host's system has exactly one solution | `Atlas.Superelement.hostSystem_existsUnique` | same | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T24** | $\lVert\tilde c-c\rVert\le(\lVert\mathsf S-\tilde{\mathsf S}\rVert\lVert c\rVert+\lVert\chi-\tilde\chi\rVert)/\beta$ | `Atlas.interface_perturbation` | `AtlasProofs/InterfacePerturbation.lean` | checked | 22 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T24** | the same with $\beta$ the exact problem's coercivity constant | `Atlas.interface_perturbation_of_dominates` | same | checked | 22 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T26** | $\mathcal L_{\text{en}}=\mathcal L_{\text{sup}}+\text{a constant}$ | `Atlas.Piece.labelFree_eq_supervised_add_const` | `AtlasProofs/LabelFree.lean` | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T26 | between two outputs the two objectives change by the same amount | `Atlas.Piece.labelFree_sub_eq_supervised_sub` | same | checked | 16 s | `propext`, `Classical.choice`, `Quot.sound` |
+
+**The build that checked batch 4 (2026-10-01, 18:43, on battery).** `python scripts/lean_build.py --clean`: every project file re-checked, **56.0 s**, 23 files, no error; the five batch-4 files took 16 to 23 s each, and none gave a warning. The 62 `sorry` warnings of that build are all in other files: 48 in the thirteen files of batches 1 to 3, which the other chat is proving, and 14 in batch 5, not yet proved at that moment. **The axiom check** on this chat's 68 names (17 s): the 28 batch-4 theorems and the 26 definitions depend on `propext`, `Classical.choice` and `Quot.sound` only. **No batch-4 theorem uses a theorem of batches 1 to 3**, so none waits on the other chat. No `sorry`, no new axiom and no `maxHeartbeats` in the five files.
+
+**The profile (on battery).** `python scripts/lean_build.py --profile`: 22 files, 549.7 s one after another. **No tactic or elaboration step reached ten seconds.** The script's count was 10 all the same, and it returned a failure: every one of the ten lines is `import took 10.1 s` to `12.5 s`, the time to load Mathlib's compiled files at the battery's clock speed, and five of the ten are in files of batches 1 to 3 that hold statements only. So the rule "a tactic call over ten seconds is replaced" is met, and the script's own verdict is not: it needs a run on mains, where loading takes about half as long (§1.1), to read zero. **Not yet run on mains.**
+
+**What proving added, and what it changed.** 22 helper lemmas and one helper definition (`Atlas.Superelement.modeField`); the five files grew from 633 lines to 1,080. A script (`stmt_check.py`, this chat's scratch) compared every approved declaration with the proved file: all 56 (theorems, definitions and structures) are word for word what the owner approved. Three were then **generalised** by one line each (`omit [Fintype …] in`), because Lean's linter reported an unused hypothesis: `gram_sub_gram` needs no finiteness of the index set, `field_admissible` none of the set of pieces, `solution_unique` none of the port and coordinate sets. Each still implies its approved form. One route changed: the tier-0 Galerkin statement is proved from a new lemma for any affine parametrisation (`Atlas.QuadEnergy.isMin_iff_of_affine`), not from the coordinate form `galerkin_iff_isMin`, which is proved and stands on its own.
+
+**Measured authoring, batch 4.** From the build log's own clock: the statements' first build was at 17:08 and their last at 17:14; the first proof build at 18:19 and the clean build at 18:43. About 450 lines of proof and helper text in the 25 minutes between the last two, against the plan's estimate of 4.5 to 8 hours for the batch. **[AI Inference]:** the estimates of [[formal-proofs-implementation-plan]] §6.2 were too high by roughly a factor of ten for linear-algebra statements of this kind; one batch is thin evidence, and the from-scratch analysis proof of batch 6 (T9′) is the one that may not follow it.
+
+**Builds of the statements (before the proofs, on mains).** The five new files, with every proof a `sorry`: 101.2 s for the first build (65 to 67 s per first-level file, three at once), 42.5 s for the rebuild of two changed files and the two that import them, 2.9 s with nothing changed. The axiom check on the 53 names: 18.0 s; it knows all 53, passes the 25 definitions and sees a `sorry` in each of the 28 theorems, which is its positive control.
+
+**Proved before the owner's OK, and why.** Three one-line facts about the definitions themselves: the energy form's formula (`Atlas.Piece.M_apply`), its symmetry (`M_symm`) and its sign (`M_self_nonneg`). The definition of the global energy `Atlas.Superelement.quad` cannot be written without the last two. They are not claims of the proposal.
+
+**A check made before asking for the OK.** `b4_numeric_check.py` (a scratch script of this chat, not in the repository) builds random pieces and evaluates the identities and inequalities below in floating point: T25 (ii) and its trace to $6\times10^{-14}$, T26 to $6\times10^{-14}$, and no violation of T25 (i), (iii), the Galerkin statement, the optimality or the bound in 200 random trials each. That is a guard against a wrong sign in a statement. It is not a proof.
+
+### 7.2 The statements, batch 4 (tier 0)
+
+**The setting.** A *piece* of the domain has cell values $u\in U$ and boundary-face values $\lambda\in F$. Its discrete energy is
+
+$$\begin{pmatrix}u\\ \lambda\end{pmatrix}^{\!\top}\!M\begin{pmatrix}u\\ \lambda\end{pmatrix}=u^\top A_Iu-2\,u^\top B\lambda+\lambda^\top D\lambda\ \ge0,\qquad M=\begin{pmatrix}A_I&-B\\-B^\top&D\end{pmatrix},$$
+
+with $A_I$ and $D$ symmetric. In Lean the three blocks are bilinear forms on real vector spaces of any dimension (`Atlas.Piece`), so nothing depends on a basis. A *port mode* is a pattern $q_k\in F$ of boundary values. Its *exact constraint mode* is the interior field $H_k$ with $A_IH_k=Bq_k$. For any interior fields $h_k$, the *Gram port matrix* is
+
+$$\Lambda[h]_{kl}=\begin{pmatrix}h_k\\ q_k\end{pmatrix}^{\!\top}\!M\begin{pmatrix}h_l\\ q_l\end{pmatrix}.$$
+
+The exact port matrix is $\Lambda=\Lambda[H]$. The host computes $\tilde\Lambda=\Lambda[\hat H]$ from the fields $\hat H_k$ a network returned.
+
+**T25 (i) to (iii), the Gram port matrix.** *In plain words:* the host never asks the network for a port matrix. It asks for fields and measures their energy. Then, whatever the network returned, the port matrix is symmetric and never indefinite; it is stiffer than the exact one by exactly the energy of the field errors; and after assembly the learned interface matrix is at least as "stiff" as the exact one, so it is solvable whenever the classical one is.
+
+For **any** fields $\hat H_k$, with $E_k=\hat H_k-H_k$:
+
+$$\text{(i)}\quad\tilde\Lambda=\tilde\Lambda^\top,\qquad x^\top\tilde\Lambda x\ \ge0\ \text{ for all }x;$$
+
+$$\text{(ii)}\quad\tilde\Lambda_{kl}-\Lambda_{kl}=E_k^\top A_IE_l,\qquad\text{so}\qquad x^\top(\tilde\Lambda-\Lambda)x=\Bigl\lVert\sum_kx_kE_k\Bigr\rVert_{A_I}^2\ge0,\qquad\operatorname{tr}\tilde\Lambda-\operatorname{tr}\Lambda=\sum_k\lVert E_k\rVert_{A_I}^2;$$
+
+$$\text{(iii)}\quad\tilde{\mathsf S}=\sum_iR_i^\top\tilde\Lambda_iR_i,\quad\mathsf S=\sum_iR_i^\top\Lambda_iR_i:\qquad c^\top\tilde{\mathsf S}c\ \ge\ c^\top\mathsf Sc\ \text{ for all }c .$$
+
+From (iii): if $\beta\lvert c\rvert^2\le c^\top\mathsf Sc$ for all $c$, then $\beta\lvert c\rvert^2\le c^\top\tilde{\mathsf S}c$ for all $c$ (the smallest eigenvalue does not decrease); if $\mathsf S$ is positive definite, so is $\tilde{\mathsf S}$, and $\tilde{\mathsf S}c=\chi$ has exactly one solution for every $\chi$. From (ii): if $u^\top A_Iu\le\alpha\,s(u)^2$ for a measure of size $s$, and $s\bigl(\sum_kx_kE_k\bigr)^2\le\varepsilon^2\lvert x\rvert^2$, then $x^\top(\tilde\Lambda-\Lambda)x\le\alpha\varepsilon^2\lvert x\rvert^2$, which with Euclidean norms is the document's $\lVert\tilde\Lambda-\Lambda\rVert_2\le\lVert A_I\rVert_2\lVert E\rVert_2^2$: a 1% field error gives a port-matrix error of order $10^{-4}$. And if $M$ is positive definite and the $q_k$ are linearly independent, $\tilde\Lambda$ is positive definite.
+
+*Why (ii) holds:* $(\hat H_k,q_k)=(H_k,q_k)+(E_k,0)$, and the cross terms are $E_k^\top(A_IH_l-Bq_l)=0$ by the definition of $H_l$.
+
+**T25, energy optimality: the abstract lemma.** *In plain words:* a symmetric linear problem is "find the admissible field of least energy". If you minimise the same energy over a smaller set of fields, what you get is the field of that set closest to the true solution, with distance measured by the energy itself. No constant appears.
+
+Let $m$ be a symmetric bilinear form with $m(w,w)\ge0$ on a real vector space, $\ell$ linear, $\mathcal E(w)=\tfrac12m(w,w)-\ell(w)$ and $\lVert w\rVert_m=\sqrt{m(w,w)}$. Let $u$ have the least energy in the affine set $u+U_0$. Then $m(u,v)=\ell(v)$ for all $v\in U_0$ (and conversely), and for every $w\in u+U_0$
+
+$$\mathcal E(w)=\mathcal E(u)+\tfrac12\lVert w-u\rVert_m^2 .$$
+
+So for **any** set $W\subseteq u+U_0$ and $\tilde u\in W$:
+
+$$\mathcal E(\tilde u)\le\mathcal E(w)\ \ \forall w\in W\qquad\Longleftrightarrow\qquad\lVert u-\tilde u\rVert_m\le\lVert u-w\rVert_m\ \ \forall w\in W .$$
+
+For a trial set $w(c)=w_0+\sum_ac_at_a$ with finitely many coordinates, $w(c)$ has the least energy among the $w(c')$ exactly when $m(w(c),t_a)=\ell(t_a)$ for every $a$: the Galerkin system. The energy size obeys the triangle inequality. $m$ need not be definite, and no dimension need be finite.
+
+**T25, energy optimality: the tier-0 solve.** *In plain words:* the undivided discrete solution $u$ is the admissible field of least total energy. The host, knowing only what the network returned, forms a matrix and a right-hand side, solves once, and rebuilds a field on every piece. That linear system says exactly "the rebuilt field has the least energy among everything that can be rebuilt from the network's modes". By the lemma, the rebuilt field is then the best approximation of $u$ those modes can give. The coupling adds no error of its own.
+
+A global field gives every piece $i$ a pair $w_i=(w_{I,i},w_{F,i})$. It is *admissible* when its face values differ from the prescribed ones $g$ by a family in $\Gamma_0$, the families on which neighbouring pieces agree and which vanish on the prescribed boundary. $U_0$ is the space of fields with face values in $\Gamma_0$. With
+
+$$\mathcal E(w)=\sum_i\Bigl(\tfrac12w_i^\top M_iw_i-f_i^\top w_{I,i}\Bigr),\qquad\lVert w\rVert_M^2=\sum_iw_i^\top M_iw_i,$$
+
+the host forms, from fields $\hat H_{i,k}$ and $\hat u_{p,i}$ (with $\tilde V_i$ the pairs $(\hat H_{i,k},q_{i,k})$),
+
+$$\tilde\Lambda_i=\tilde V_i^\top M_i\tilde V_i,\qquad\tilde b_i=\hat H_i^\top f_i-\tilde V_i^\top M_i\begin{pmatrix}\hat u_{p,i}\\0\end{pmatrix},\qquad\tilde{\mathsf S}=\sum_iR_i^\top\tilde\Lambda_iR_i,\qquad\tilde\chi=\sum_iR_i^\top\bigl(\tilde b_i-\tilde\Lambda_ir_i\bigr),$$
+
+where $r_i$ holds piece $i$'s port coordinates fixed by the boundary data and $R_ic$ those read off the free coordinates $c$. The rebuilt field is
+
+$$w(c)_i=\begin{pmatrix}\hat u_{p,i}\\0\end{pmatrix}+\tilde V_i\,(r_i+R_ic).$$
+
+The document's three assumptions are named hypotheses:
+
+1. **conforming shared sides** (`Conforming`): for every $c$, the face values $\bigl(Q_iR_ic\bigr)_i$ lie in $\Gamma_0$;
+2. **boundary data in the port span** (`BoundaryDataInPortSpan`): $\bigl(Q_ir_i\bigr)_i-g\in\Gamma_0$;
+3. **the energy size is a norm on $U_0$** (`EnergyNormIsNorm`): $w\in U_0$ and $\lVert w\rVert_M=0$ imply $w=0$.
+
+Then, for **any** $\hat H$, $\hat u_p$:
+
+- *(Galerkin; no assumption)* $\tilde{\mathsf S}c=\tilde\chi\iff\mathcal E(w(c))\le\mathcal E(w(c'))$ for all $c'$.
+- *(energy optimality; assumptions 1 and 2)* every $w(c)$ is admissible, and if $u$ is the undivided solution and $\tilde{\mathsf S}c=\tilde\chi$,
+$$\lVert u-w(c)\rVert_M\le\lVert u-w(c')\rVert_M\qquad\text{for all }c' .$$
+- *(the bound; assumptions 1 and 2)* for any reference fields $H$, $u_p$ and any coordinates $c^\star$, with $w^{\text{ref}}$ rebuilt from the reference fields at $c^\star$,
+$$\lVert u-w(c)\rVert_M\le\lVert u-w^{\text{ref}}\rVert_M+\Bigl(\sum_i\bigl\lVert(\hat u_{p,i}-u_{p,i})+E_i\,(r_i+R_ic^\star)\bigr\rVert_{A_{I,i}}^2\Bigr)^{1/2}.$$
+With the exact modes and the classical superelement's coordinates, $w^{\text{ref}}=u_m$: truncation error plus the network's field errors.
+- *(one answer; assumptions 1 and 3)* if moreover each piece's patterns $q_{i,k}$ are linearly independent and $R_ic=0$ for all $i$ only for $c=0$, then $\tilde{\mathsf S}$ is positive definite and $\tilde{\mathsf S}c=\tilde\chi$ has exactly one solution. Under assumption 3 the undivided solution is unique.
+
+**Not covered,** as the document says: non-matching parametrisations of a shared side (the mortar case), which fail assumption 1.
+
+**T24, perturbation of the interface solve.** *In plain words:* the exact interface system and the learned one differ in their matrix and in their load. Their answers differ by at most those two errors, divided by the smallest stretch $\beta$ of the learned matrix. And for the Gram construction $\beta$ can be taken from the classical problem, because of T25 (iii).
+
+If $\mathsf Sc=\chi$, $\tilde{\mathsf S}\tilde c=\tilde\chi$ and $\beta\lVert x\rVert\le\lVert\tilde{\mathsf S}x\rVert$ for all $x$ with $\beta>0$,
+
+$$\lVert\tilde c-c\rVert\le\frac{\lVert\mathsf S-\tilde{\mathsf S}\rVert\,\lVert c\rVert+\lVert\chi-\tilde\chi\rVert}{\beta}.$$
+
+The same bound holds if instead $\beta\lVert x\rVert^2\le\langle\mathsf Sx,x\rangle\le\langle\tilde{\mathsf S}x,x\rangle$ for all $x$: the constant of the **exact** matrix, and domination, which is T25 (iii).
+
+**T26, the label-free objective.** *In plain words:* training against exact fields needs a classical solve per example. Minimising the energy of the network's own fields needs none, and it is the same training problem: the two objectives differ by a number that the network cannot influence.
+
+With $A_IH_k=Bq_k$ and $A_Iu_p=f$, for any $\hat H$, $\hat u_p$:
+
+$$\underbrace{\operatorname{tr}\tilde\Lambda+\hat u_p^\top A_I\hat u_p-2f^\top\hat u_p}_{\mathcal L_{\text{en}}}=\underbrace{\sum_k\lVert\hat H_k-H_k\rVert_{A_I}^2+\lVert\hat u_p-u_p\rVert_{A_I}^2}_{\mathcal L_{\text{sup}}}+\underbrace{\operatorname{tr}\Lambda-u_p^\top A_Iu_p}_{\text{no network output in it}} .$$
+
+So between any two outputs the two objectives change by the same amount: the same gradients and the same minimisers. The identity is exact over the reals; in floating point the two differ, which the architecture document registers as comparison C2.
+
+### 7.3 Findings, batch 4
+
+None of these changes a claim of the architecture document. Each is a place where the formal statement is more precise than the prose.
+
+1. **Energy optimality uses two of the three assumptions.** The identity $\lVert u-\tilde u\rVert_M=\min_{\tilde W}\lVert u-w\rVert_M$ needs conforming sides and boundary data in the port span. It does **not** need the energy size to be a norm on $U_0$. That assumption is what makes the undivided solution and the interface solution *unique*, and it is used for exactly that (`solution_unique`, `hostMatrix_posDef`).
+2. **The error bound is more general than the document's.** It holds for any reference fields and any coordinates $c^\star$: neither the exactness of $H$ and $u_p$ nor $\mathsf Sc^\star=\chi$ is used. The document's inequality is the case that gives the first term its name, truncation error.
+3. **Two facts the document's set-up implies are hypotheses of the solvability statement:** each piece's port patterns are linearly independent (the document's "$Q_i$ has orthonormal columns"), and every free coordinate is read by at least one piece ($R_ic=0$ for all $i$ only for $c=0$; the document's "$R_i$ selects the coordinates of piece $i$"). The document's own route to solvability, "$\mathsf S$ positive definite implies $\tilde{\mathsf S}$ positive definite", is stated as it stands (`assemble_gram_posDef`) and needs neither.
+4. **The fixed coordinates are written out.** The document says "with the contribution of the fixed coordinates moved to the right-hand side". The Lean statement fixes what that is: $\tilde\chi=\sum_iR_i^\top(\tilde b_i-\tilde\Lambda_ir_i)$.
+5. **T25 (i) and (ii) need neither $A_I$ positive definite nor orthonormal port patterns.** The exact modes are given, with $A_IH_k=Bq_k$ as the hypothesis. $A_I\succ0$ is what makes them exist.
+6. **T24 needs no symmetry.** $\beta$ is any lower bound $\beta\lVert x\rVert\le\lVert\tilde{\mathsf S}x\rVert$; for a symmetric positive definite matrix the best one is $\lambda_{\min}(\tilde{\mathsf S})$, the document's constant.
+7. **The existence of the undivided solution is a hypothesis** (`IsSolution`), as in the document ("we assume that the problem is well posed"). **[AI Inference]:** under assumption 3 in finite dimensions it exists by the finite-dimensional Lax–Milgram argument; that is not stated in Lean and nothing here depends on it.
+
+### 7.4 The record, batch 5
+
+| # | statement, in one line | Lean name | file | status | build time | axioms |
+|---|---|---|---|---|---|---|
+| T8 | $\lVert e-Zf\rVert^2=\lVert e+Zf\rVert^2-4Z\langle f,e\rangle$ | `Atlas.wave_identity` | `AtlasProofs/Cayley.lean` | drafted | — | — |
+| **T8** | the bound, for any effort $e$ and flow $f$ | `Atlas.wave_bound` | same | drafted | — | — |
+| **T8** | the Cayley bound for a linear $\Lambda$ | `Atlas.cayley_bound` | same | drafted | — | — |
+| **T8** | in finite dimensions $I+Z\Lambda$ is invertible and $\lVert\mathcal S\rVert^2\le1-\frac{4Zc}{(1+ZM)^2}$ | `Atlas.cayley_transform` | same | drafted | — | — |
+| T8, $c=0$ | a passive $\Lambda$ has $\lVert\mathcal S\rVert\le1$ | `Atlas.cayley_nonexpansive` | same | drafted | — | — |
+| T8, matrices | a positive semidefinite matrix has a non-expansive scattering matrix | `Atlas.cayley_matrix_nonexpansive` | same | drafted | — | — |
+| **T8 at tier 0** | the Gram port matrix of any network output has a non-expansive scattering matrix, for every $Z>0$ | `Atlas.Piece.gram_cayley_nonexpansive` | same | drafted | — | — |
+| **T9a** | $\rho$-Lipschitz experts and a non-expansive exchange give a $\rho$-Lipschitz sweep in the $\ell^2$ product | `Atlas.waveSweep_lipschitz` | `AtlasProofs/ContractionContract.lean` | drafted | — | — |
+| **T9a** | the contract: one answer, rate $\rho$, within $\bigl(\sum_i\delta_i^2\bigr)^{1/2}/(1-\rho)$ of the classical one | `Atlas.contraction_contract` | same | drafted | — | — |
+| T9b | a fixed point of the two-level iteration is a fixed point of the sweep | `Atlas.twoLevel_fixedPt_isFixedPt` | `AtlasProofs/TwoLevel.lean` | drafted | — | — |
+| T9b | the converse | `Atlas.fixedPt_isFixedPt_twoLevel` | same | drafted | — | — |
+| **T9b** | the contract, from a contraction of the composite two-level map | `Atlas.two_level_contract` | same | drafted | — | — |
+| **T9b, finding** | a sweep that contracts the fine space, with an exact coarse solve, whose two-level iterates diverge | `Atlas.two_level_fine_contraction_diverges` | same | drafted | — | — |
+| **the SNI remark** | a contraction, a map within $\tfrac12$ of it everywhere, and a two-cycle of that map | `Atlas.sni_counterexample` | `AtlasProofs/SniCounterexample.lean` | drafted | — | — |
+
+**Builds so far (statements only, on mains).** The four new files with `sorry` proofs: 36.1 s (12 to 17 s per file, four at once, then the root). The axiom check on this chat's 68 names: 13.3 s; it knows all 68, passes the 26 definitions and sees a `sorry` in each of the 42 theorems.
+
+**`contraction_contract` and `two_level_contract` use T1** (`Atlas.perturbed_contraction`), which the other chat is proving. Until the branches are merged the axiom check will show `sorryAx` for these two even when their own proofs are complete.
+
+### 7.5 The statements, batch 5 (tier 2)
+
+**T8, wave variables and the Cayley transform.** *In plain words:* on a side, the boundary values $e$ and the flux $f$ into the piece are combined into an incoming wave $e+Zf$ and an outgoing wave $e-Zf$. The outgoing wave's squared size is the incoming one's minus $4Z$ times the power the piece absorbs. So a piece that never generates power does not amplify waves, and one that absorbs a definite share shrinks them by a definite factor.
+
+In any real inner-product space, for all $e$, $f$ and $Z$:
+
+$$\lVert e-Zf\rVert^2=\lVert e+Zf\rVert^2-4Z\,\langle f,e\rangle .$$
+
+If $Z>0$, $c\ge0$, $\langle f,e\rangle\ge c\lVert e\rVert^2$ and $\lVert f\rVert\le M\lVert e\rVert$:
+
+$$\lVert e-Zf\rVert^2\le\Bigl(1-\frac{4Zc}{(1+ZM)^2}\Bigr)\lVert e+Zf\rVert^2 .$$
+
+This is stated for **any** pair $e,f$, so it also covers the difference of two states of a nonlinear piece. For a bounded linear $\Lambda$ with $\langle\Lambda e,e\rangle\ge c\lVert e\rVert^2$ and $\lVert\Lambda\rVert\le M$ it holds with $f=\Lambda e$. In finite dimensions (and not the zero space), $I+Z\Lambda$ is invertible and
+
+$$\mathcal S=(I-Z\Lambda)(I+Z\Lambda)^{-1},\qquad\lVert\mathcal S\rVert^2\le1-\frac{4Zc}{(1+ZM)^2}.$$
+
+With only $\langle\Lambda e,e\rangle\ge0$: $\lVert\mathcal S\rVert\le1$. **At tier 0:** for the Gram port matrix $\tilde\Lambda$ of *any* network output and any $Z>0$, $1+Z\tilde\Lambda$ is invertible and $\lvert\mathsf Sa\rvert^2\le\lvert a\rvert^2$ for every $a$, because $\tilde\Lambda$ is positive semidefinite by T25 (i). A tier-0 expert serves at tier 2 with no certificate.
+
+**T9a, the contraction contract, one level.** *In plain words:* one sweep applies every expert's scattering map, hands each outgoing wave to the neighbouring side, and adds the sources. If every expert's map shrinks distances by a certified $\rho<1$ and the hand-over lengthens nothing, the whole sweep shrinks distances by $\rho$. Then there is one answer, the iteration reaches it geometrically from any start, and it lies within a stated distance of the classical answer.
+
+Pieces $i$ with complete normed wave spaces $W_i$; the global wave vector is measured in the $\ell^2$ product, $d(a,a')^2=\sum_id(a_i,a'_i)^2$. The sweep is $T(a)=\Pi\bigl((S_i(a_i))_i\bigr)+g$. If $d(S_ix,S_iy)\le\rho\,d(x,y)$ for all $i$ and $d(\Pi x,\Pi y)\le d(x,y)$, then
+
+$$d(Ta,Ta')\le\rho\,d(a,a') .$$
+
+If moreover $\rho<1$, $a_c$ is a fixed point of the classical sweep (the same $\Pi$ and $g$, classical maps $S^c_i$), and $d\bigl(S_i(a_{c,i}),S^c_i(a_{c,i})\bigr)\le\delta_i$, then the learned sweep has a unique fixed point $a_l$, $d(T^ka_0,a_l)\le\rho^k\,d(a_0,a_l)$, and
+
+$$d(a_l,a_c)\le\frac{\bigl(\sum_i\delta_i^2\bigr)^{1/2}}{1-\rho}.$$
+
+The maps $S_i$ may be nonlinear. The defect is needed only at the classical answer.
+
+**T9b, two levels.** *In plain words:* with a coarse space, one round is a sweep followed by a coarse solve, a correction inside the coarse space that leaves no coarse residual. What must be certified is a contraction factor of that **whole round**. Then the conclusion is T1's, and the answer reached is a fixed point of the plain sweep: the coarse solve changes how the answer is reached, not what it is.
+
+Let $T$ be the sweep, $C$ the coarse solve, $P_0$ linear, with $P_0(Cb-b)=Cb-b$ and $P_0\bigl(Cb-T(Cb)\bigr)=0$ for all $b$. Then $C(Ta)=a\Rightarrow Ta=a$. If the learned round satisfies $d(C_lT_lx,C_lT_ly)\le\rho\,d(x,y)$ with $\rho<1$, and $d(C_lT_la_c,C_cT_ca_c)\le\delta$ at the classical two-level answer $a_c$, then there is a unique $a_l$ with $C_lT_la_l=a_l$; $T_la_l=a_l$; $d\bigl((C_lT_l)^ka_0,a_l\bigr)\le\rho^kd(a_0,a_l)$; and $d(a_l,a_c)\le\delta/(1-\rho)$.
+
+**The example that forces this (the expected finding).** On $\mathbb R^2$, coarse space the first axis, fine space the second:
+
+$$G=\begin{pmatrix}0&\tfrac12\\10&0\end{pmatrix},\qquad C(x,y)=\bigl(\tfrac12y,\ y\bigr).$$
+
+$G$ contracts the fine space by $\tfrac12$. $C$ changes only the coarse component and leaves no coarse residual. $0$ is the only fixed point of $G$. And $(CG)^k(1,2)=(5^k,\ 2\cdot5^k)$.
+
+**The SNI remark beside T1.** *In plain words:* T1 needs the **learned** map to contract. "The classical map contracts and the learned map is close to it" is not enough.
+
+$T(u)=\tfrac12u$ is a contraction with factor $\tfrac12$ and fixed point $0$. $\tilde T(u)=\tfrac12(u-\tanh10u)$ satisfies $\lvert\tilde T(u)-T(u)\rvert\le\tfrac12$ for all $u$. There is an $x\in[0.3,\,0.34]$ with $\tilde T(x)=-x$ and $\tilde T(-x)=x$, so $\tilde T^k(x)=(-1)^kx$: the learned iteration alternates for ever. ($x$ solves $\tanh10x=3x$; numerically $0.332471$.)
+
+### 7.6 Findings, batch 5
+
+1. **T9b: contracting the fine space is not enough (the expected finding of [[formal-proofs-implementation-plan]] §2.3, now a Lean statement).** Version 0's hypothesis, "each learned map contracts on the fine space, and the coarse space is solved exactly", admits the example above. T9b is stated with a contraction of the composite round as its hypothesis. **For the architecture chat's card:** a tier-2 convergence claim needs a certified contraction factor of the composite two-level sweep. The sentence in the architecture document's §5.3, "the contraction hypothesis is needed only on the complement of the coarse space", is not supported by T9b as stated here. One honest limit of the example: its plain sweep $G$ does not converge either ($G^2=5I$), so it shows that a fine-space bound plus an exact coarse solve does not *produce* convergence, not that a coarse solve *destroys* it.
+2. **T9a's distance is in the $\ell^2$ product.** If each of $n$ experts is within $\delta$ of its classical map at the classical answer, the bound is $\sqrt n\,\delta/(1-\rho)$, not $\delta/(1-\rho)$. The headline sentence of [[formal-proofs-plan]] §3 says "differs from the classical one by at most $\delta$": it is right if $\delta$ means the defect of the whole sweep, and it needs the $\sqrt n$ if $\delta$ is per expert.
+3. **T9a's exchange need only be non-expansive.** An isometry, which the document assumes, is a special case.
+4. **T8's norm bound needs a non-zero space.** On the zero space every $c$ satisfies the accretivity hypothesis and $1-4Zc/(1+ZM)^2$ can be negative, so `cayley_transform` carries `Nontrivial E`. The pointwise bounds need no such hypothesis.
+5. **T8's bound does not use linearity.** It is stated for any effort and flow, which is the form a nonlinear expert's increments satisfy.
 
 ---
 

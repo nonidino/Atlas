@@ -162,8 +162,12 @@ One line per theorem, kept by the proofs chat. *drafted*: the Lean statement exi
 
 **Batches 4 to 6** (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements). These lines belong to the chat that states and proves them.
 
-- **T25, T24, T26** (batch 4, tier 0): not stated yet.
-- **T8, T9, the SNI remark** (batch 5, tier 2): not stated yet. T9's two-level form needs restating ([[formal-proofs-implementation-plan]] §2.3).
+- **T25: checked**, 2026-10-01 (approved by the owner the same day). The Gram port matrix (`Atlas.Piece.gram_posSemidef`, `gram_sub_gram`, `Atlas.assemble_gram_coercive`, `lean/AtlasProofs/GramPort.lean`); the abstract optimality lemma (`Atlas.QuadEnergy.closest_iff_isMin`, `lean/AtlasProofs/EnergyOptimality.lean`); the tier-0 solve (`Atlas.Superelement.hostSystem_iff_isMin`, `energy_optimal`, `energy_error_bound`, `hostMatrix_posDef`, `lean/AtlasProofs/Superelement.lean`). No `sorry`, three standard axioms only, clean build 56.0 s on battery.
+- **T24: checked**, `Atlas.interface_perturbation` and `Atlas.interface_perturbation_of_dominates`, `lean/AtlasProofs/InterfacePerturbation.lean`, 2026-10-01.
+- **T26: checked**, `Atlas.Piece.labelFree_eq_supervised_add_const`, `lean/AtlasProofs/LabelFree.lean`, 2026-10-01.
+- **T8: drafted**, `Atlas.wave_bound`, `Atlas.cayley_transform` and, for tier 0, `Atlas.Piece.gram_cayley_nonexpansive`, `lean/AtlasProofs/Cayley.lean`, 2026-10-01. **Approved** by the owner 2026-10-01; proof not yet checked.
+- **T9: drafted in two parts, with a finding**, 2026-10-01. T9a, one level: `Atlas.contraction_contract`, `lean/AtlasProofs/ContractionContract.lean`. T9b, two levels: `Atlas.two_level_contract`, whose hypothesis is a contraction of the **composite** two-level round, and `Atlas.two_level_fine_contraction_diverges`, the example showing that contracting the fine space is not enough, `lean/AtlasProofs/TwoLevel.lean`. **Approved** by the owner 2026-10-01; proofs not yet checked.
+- **The SNI remark beside T1: drafted**, `Atlas.sni_counterexample`, `lean/AtlasProofs/SniCounterexample.lean`, 2026-10-01. **Approved** by the owner 2026-10-01; proof not yet checked.
 - **T9′, T22, T2, the headline statements** (batch 6): not stated yet.
 
 **History of this section.**

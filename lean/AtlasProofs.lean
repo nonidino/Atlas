@@ -11,3 +11,12 @@ import AtlasProofs.DefectCorrection
 import AtlasProofs.DefectCorrectionShrink
 import AtlasProofs.SymmetryAveraging
 import AtlasProofs.Passivity
+import AtlasProofs.GramPort
+import AtlasProofs.EnergyOptimality
+import AtlasProofs.Superelement
+import AtlasProofs.InterfacePerturbation
+import AtlasProofs.LabelFree
+import AtlasProofs.Cayley
+import AtlasProofs.ContractionContract
+import AtlasProofs.TwoLevel
+import AtlasProofs.SniCounterexample
