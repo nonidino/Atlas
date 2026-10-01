@@ -145,8 +145,10 @@ class LearnedFarmRun(FarmRun):
         t = self.tiling
         fx, rec = self.forcing(s.u)
         x = self.window_inputs(s, fx)
+        dev = next(self.net.parameters()).device          # the CPU here, a GPU in training
         with torch.inference_mode():
-            y = self.net(torch.from_numpy(x.astype(np.float32))).numpy().astype(np.float64)
+            y = self.net(torch.from_numpy(x.astype(np.float32)).to(dev)).cpu().numpy()
+        y = y.astype(np.float64)
         out_u = [t.cut_one(s.u, k) + y[k, 0] for k in range(t.n_windows)]
         out_v = [t.cut_one(s.v, k) + y[k, 1] for k in range(t.n_windows)]
         au, av = t.assemble(out_u), t.assemble(out_v)
