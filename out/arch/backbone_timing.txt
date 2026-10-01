@@ -1,0 +1,15 @@
+arch_backbone_timing -- forward cost of the candidate U-shaped trunks (untrained)
+==================================================================================
+torch 2.14.1+cpu, 4 threads, float32, inference mode; container CPU, a proxy for the owner's laptop
+outputs: 64 port-mode corrections + 1 particular field; inputs: 6 fields, 2 scalars
+
+ size    params   n   GFLOP/piece | ms/piece batch 1 | ms/piece batch 16
+ small    0.49M   32     0.086   |        2.82      |        1.33
+ small    0.49M   64     0.346   |        5.99      |        3.78
+ small    0.49M  128     1.384   |       16.55      |       15.50
+ medium   1.95M   32     0.338   |        6.47      |        2.70
+ medium   1.95M   64     1.352   |       16.88      |        7.67
+ medium   1.95M  128     5.410   |       35.98      |       40.98
+ large    6.17M   32     1.257   |       15.95      |        6.35
+ large    6.17M   64     5.026   |       30.45      |       25.31
+ large    6.17M  128    20.105   |       76.98      |      132.43

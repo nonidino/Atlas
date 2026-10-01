@@ -2,6 +2,7 @@
 
 **Type:** Concept page — **positioning audit** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
 **Status:** written 2026-09-30 from web searches made that day. **arXiv, the three reference websites and most publishers were blocked by the planning session's network**, so every entry below is from a search result's summary, not from the paper. **Each row is marked for the architecture chat to read in full before the proposal cites it.** The vault's earlier audit, [[prior-art-and-novelty-atlas-0.1]], predates every 2025–2026 entry here.
+**Read in full, 2026-09-30:** the architecture chat read every paper below and seven more from arXiv. The paper-by-paper record is `out/arch/prior-art-reading.md`. **Before citing §3: N1, N4, N5 and N6 stand; N2 and N3 narrow**, and several further mechanisms are published (Robin transmission and coarse spaces with learned subdomain solvers, learned local Dirichlet-to-Neumann maps). The summary is [[chart-operator-design-decisions]] §1; this page is rewritten with the verdicts once the design is confirmed.
 **Hub:** [[00-proposal-workstreams]] · **Used by:** [[chart-operator-architecture]] · [[website-evidence-and-citations]]
 
 ---
@@ -88,6 +89,20 @@
 | N4 | **Charts with the metric passed explicitly**: the decomposition makes every piece a topological square, a classical injective map charts it, and the operator receives the **pulled-back coefficients** $J\,DF^{-1}\kappa\,DF^{-\top}$ rather than a shape code | DIMON and DNO map whole domains; NEST and SNI learn local pieces without a chart. **Incremental**, and should be presented as a design choice, not as the novelty | [[chart-operator-architecture]] §2–§3 |
 | N5 | **A measured specification of failure**: 89 tiers recording, as numbers, why a frozen foundation model fails in each DD slot | no published work reports what a DD-native expert must satisfy from the failures of one that is not | [[outcome-c5-requirements-for-dd-native-experts]] |
 | N6 | **Machine-checked convergence and error theorems** for coupling with learned experts | no formalised DD theory was found | [[formal-proofs-plan]] |
+
+### 3.1 The verdicts after reading in full, as the proposal states them (2026-10-01)
+
+The full reading (2026-09-30) and the confirmed design ([[chart-operator-architecture]] version 1) change the claims to the following; this is Table 13 of the proposal document, `proposal/architecture/index.html`. A claim marked "not found" was not found in the works read; that is not proof of absence.
+
+| # | the claim, as now stated | verdict | the closest published work |
+|---|---|---|---|
+| N1 | one interface contract for learned subdomain solvers across kinds of physics, typed ports admitted or refused by the host | **stands**: not found | every learned-DD paper read couples one family with its own code; wave coordinates on port-Hamiltonian ports are classical and recent (Wei et al., arXiv 2603.16424) and are cited |
+| N2 | a coupling guarantee independent of training quality | **narrowed and re-founded**: at tier 0, positivity, unique solvability and energy optimality **by construction** (the Gram, [[chart-operator-architecture]] §3.6); at tier 2, a certified contraction of the learned map itself at network speed | HINTS and Mao & Fan (arXiv 2509.03622) iterate a classical residual around the network; SNI's theorem claims convergence from accuracy alone and that step fails (counterexample, `scripts/arch_sni_counterexample.py`) |
+| N3 | training aimed at the coupled result, not at isolated accuracy | **narrowed**: at tier 0 the energy-norm objective is the one that controls the coupled error, with a label-free form of identical gradient | iteration-aware training for interface conditions (Taghibakhshi et al., NeurIPS 2022) and preconditioners (Mao & Fan) |
+| N4 | a classical, certified chart per piece of a decomposition, the pulled-back coefficient passed to the network | **stands as a design choice**, not the novelty | DNO's harmonic reference map; DIMON's shape code; Geo-FNO's learned map |
+| N5 | a measured specification of failure (S1–S12) | **stands**; one network only | none found |
+| N6 | machine-checked theorems | **stands as not found; not yet done here** | TorchLean formalises networks and bound propagation in Lean, not decomposition |
+| N7 | per-chart constraint modes whose host-computed energy Gram certifies the coupling | **new in version 1**: not found | Craig–Bampton constraint modes, MsFEM, static condensation with port reduction (Huynh, Knezevic & Patera 2013); learned multiscale bases (Wang et al., *J. Comput. Phys.* 2020); learned local DtN maps (Boutilier, Brenner & Miguez, arXiv 2405.04433; PPDNO, arXiv 2606.25952); networks returning local stiffness matrices (Kroepfl, Maier & Peterseim 2022) |
 
 ---
 

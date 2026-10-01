@@ -7086,3 +7086,36 @@ The owner's O2, built to [[demo-finish-plan]] §4.1 from PoC 3's bundle code. A 
 - **The blueprint was opened in a browser** through a new `lean-blueprint` entry in `.claude/launch.json` (the owner's OK): mathematics typeset, the dependency graph drawn, the console clean.
 
 **Not done:** the index row for the new page, because [[index]] and [[gap-worklist]] hold another chat's uncommitted edits; it is added once those are committed. **Added:** [[formal-proofs-implementation-plan]]. **Changed:** [[formal-proofs-plan]], [[formal-proofs-record]], `.claude/launch.json`, `out/lean/builds.jsonl`.
+
+## [2026-10-01] note | The chart operator: the prior art read in full, three probes, and the owner's first eleven design decisions
+
+The architecture chat (task 3), in a cloud container with open network, from 2026-09-30.
+
+**Read in full:** the fifteen papers [[dd-neural-prior-art-2026]] named and seven more (SNAP-DDM, Mao and Fan's multilevel Maxwell solver, DD-DeepONet, the non-overlapping hybrid FE–neural operator, learned AGDSW coarse spaces, wave-domain Douglas–Rachford coupling of port-Hamiltonian subsystems, Robin–Robin coupling of operator-inference ROMs). The record is `out/arch/prior-art-reading.md`. **N1, N4, N5 and N6 stand; N2 and N3 narrow.** Robin transmission and coarse spaces with learned subdomain solvers are published. **SNI's convergence theorem (ICLR 2026) needs one more hypothesis**: a one-subdomain counterexample meets both of its hypotheses and cycles for ever (`scripts/arch_sni_counterexample.py`).
+
+**Three probes**, all headless, classical, not timings of the workbench:
+- `scripts/arch_chart_maps.py`: cutting the layout at equal along/across values gives every piece modulus about one (0.98–1.07, measured), and at a 68 and 148 degree corner the conformal chart's $J$ ratio is 291 where Winslow's is 3.2 and transfinite interpolation's 4.1, at the price of shear.
+- `scripts/arch_coupling_cost.py`: rounds of local solves per coupling strategy with exact local solves. Steady 8 × 8 pieces: traditional Schwarz 1,864, version 0's wave exchange 1,124, with GMRES 83, with a coarse space 70, the superelement none. A monolithic direct solve beats every decomposition at these 2-D sizes.
+- The first session's `scripts/arch_chart_probe.py` (the layout's pair is conformal) stands.
+
+**The owner's decisions** (A2, B2, C1 on 2026-09-30; eleven in all by 2026-10-01): 2-D first with a named 3-D path; a chart rule; the unit square with topology owned by the decomposition; geometry as anisotropy, the fields $(\log J,\mu,\log\kappa)$; equal-value cuts; an exact discrete chart certificate and an envelope; charts of the smooth outline; **a three-tier coupling stack** (superelement, tangent, black box); GMRES or Anderson in tier 2 with a coarse space from 16 pieces; ordered sweeps in tier 2 only; reuse, warm start and energy-safe early termination in time. Under discussion: the expert's output format, the backbone and its size, the training route, the first family and gate, the name.
+
+**Added:** [[chart-operator-design-decisions]] (the running record, with a draft theorem T24 for the proofs chat), [[coupling-cost-and-complexity]] (the measured cost model).
+
+**Changed:** [[chart-operator-architecture]] (a status line pointing to the decisions; version 1 waits for the owner's confirmation), [[dd-neural-prior-art-2026]] (a status line: read in full, N2 and N3 narrowed), [[index]].
+
+## [2026-10-01] note | The chart operator, version 1: the design confirmed, the proposal document written, the wiki rewritten
+
+The architecture chat, phase 3 of [[proposal-chat-prompts]] §2. **No network was trained and no data generated**; the one learned measurement is the forward cost of untrained backbones. Nothing was published (O9).
+
+**The owner's decisions:** the output format 6a–6e and the backbone 10a–10b as recommended; then **"Yes to the design and defaults"** for 11–19, the author line *Naunidh Singh*, the title left to the chat, MathJax from a CDN.
+
+**Measured** (`scripts/arch_superelement_gram.py`, `scripts/arch_backbone_timing.py`): the port matrix formed as an **energy Gram** of the expert's constraint modes stays PSD and errs by about $0.9\,\varepsilon^2$, where a direct matrix head turns indefinite; coupled error at $\varepsilon=0.01$ 0.27% against 9.2% (steady). Forward cost per piece at $n=64$: 0.49 M parameters 6.0 ms alone / 3.8 ms batched, 1.95 M 16.9 / 7.7 ms, 6.2 M 30 / 25 ms, against 0.85 ms for a classical local solve and 68 ms to recompute a port matrix classically.
+
+**Proved on paper** (not machine-checked): the Gram is PSD for every network output, its error is $E^\top A_IE$, the assembled system can only gain stiffness, and the coupled answer is Céa-optimal over the learned modes; corollary, **a label-free training objective with the same gradients as supervised energy-norm training**; a corner bound $K\ge\max(\tan\frac\alpha2,\cot\frac\alpha2)$ and an exact discrete chart certificate.
+
+**Two refinements found while writing, reported to the owner:** step-doubling consistency does not hold for the backward-Euler step the tier-0 networks learn, so that penalty is kept for flow networks only; cosine port modes jump at the square's corners (finite but $\log n$-growing discrete energy), registered as comparison C6.
+
+**Added:** `proposal/architecture/index.html` — *Chart Operators: Learned Superelements for Domain Decomposition on Curved Geometry*, the arXiv-style document (11 sections, 3 appendices, 11 numbered statements with proofs, 13 tables, 7 SVG figures from the workbench's s-channel and the probe outputs, 59 references with DOIs or arXiv ids checked against Crossref and arXiv); `scripts/arch_paper_figures.py`, `scripts/arch_paper_build.py`.
+
+**Changed:** [[chart-operator-architecture]] rewritten as **version 1** (what changed from version 0 and why; §7 *For the proofs chat*: T24–T26, T1/T8/T9 now tier 2 only, T22's $\rho^k$ term tier 2 only); [[chart-operator-design-decisions]] closed (11–20 decided); [[chart-operator-training-and-cost]] (the energy-norm and label-free objectives, measured cost components, gates E1–E6, SE1–SE3, comparisons C1–C6); [[dd-neural-prior-art-2026]] §3.1 (verdicts N1–N7); [[gap-worklist]] W352 done for the proposal, build items open; [[index]].

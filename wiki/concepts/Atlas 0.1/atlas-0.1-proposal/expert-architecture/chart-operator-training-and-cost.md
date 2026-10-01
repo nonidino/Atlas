@@ -2,6 +2,7 @@
 
 **Type:** Concept page — **training plan and cost model** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
 **Status:** written 2026-09-30. **No cost on this page is measured.** Each estimate is **[AI Inference]**, shown with the arithmetic and assumptions behind it, so that the first measurement can replace it line by line. The vault's rule is that a number is not reported until it is measured. These are planning figures for deciding what to measure first, and none should reach the website.
+**Updated 2026-10-01 for the confirmed design** ([[chart-operator-architecture]] version 1; decisions 15–18 of [[chart-operator-design-decisions]]): the network now returns constraint modes, so §3's objective is the energy-norm error of the modes, with a label-free objective that has the same gradients; the step-doubling term applies to flow networks only; §5 gains **measured** cost components (classical solves and untrained forward passes); §6's gate is replaced by gates E1–E6, SE1–SE3 and comparisons C1–C6. Estimates stay labelled.
 **Hub:** [[00-proposal-workstreams]] · **Architecture:** [[chart-operator-architecture]] · **Prior art:** [[dd-neural-prior-art-2026]]
 **Earlier plans this replaces for learned experts:** [[impl-atlas-0.1-phase2-experts]] and [[impl-atlas-0.1-compute-and-training-budget]], written 2026-08-09 for the rocket before any of S1–S12 was measured, and not executed
 
@@ -57,24 +58,33 @@
 
 | stage | family and scope | what it proves | gate |
 |---|---|---|---|
-| **0** | 2-D **diffusion**, steady and transient, random charts, THERM ports | geometry through the metric; the lifting; wave-variable DD convergence with learned experts; the contraction certificate | §6, on the workbench's own drawn examples: `bend-3`, `s-channel`, `insert-round` |
+| **0** | 2-D **diffusion**, steady and transient, random charts, THERM ports | geometry through the chart; the constraint-mode output; the tier-0 Gram coupling; the forward cost against the classical alternatives (version 0 listed the lifting, wave-variable convergence and the contraction certificate; those now belong to tier 2) | §6, on the workbench's own drawn examples: `bend-3`, `s-channel`, `insert-round` |
 | **1** | 2-D **advection–diffusion** (ADVEC), **plane elasticity** (MECH), **current** (ELEC) | the contract across port types; a multiphysics seam (the cooled block's) with two learned experts | §6, per family, plus the cooled block's seam |
 | **2** | 2-D **incompressible flow** windows | a nonlinear family; the demo's learned case generalised from rectangles to charts ([[demo-learned-case-plan]]); **the fine-tuning comparison** (§4) | §6, on the wind farm and the cylinder |
 | **3** | **three dimensions** (hexahedral charts where they exist, a point-based fallback elsewhere; [[chart-operator-architecture]] §2.5); compressible and reacting families | the vision's scale: a car, a fire front, a plume on regolith ([[vision-scenarios-and-image-prompts]]) | set after Stage 2 |
 
 ---
 
-## 3. The loss and the data it needs
+## 3. The objective and the data it needs
 
-From [[chart-operator-architecture]] §5, with what each term costs to supply:
+*Version 0's table (state, outgoing waves, a response term, step consistency, a Lipschitz penalty) is superseded by the constraint-mode output; it remains the plan for tier-2 experts, which exchange waves.*
 
-| term | needs, per sample | extra data cost |
+**Intuition.** At tier 0 the coupled error is controlled by the energy of the network's field errors (Theorem 1 of [[chart-operator-architecture]] §3.6), so the loss measures exactly that.
+
+**The supervised objective** (the document's equation 32):
+$$\mathcal L_{\text{sup}}(\theta)=\mathbb E\Bigl[\sum_{k=1}^{4m}\lVert\hat H_k(\theta)-H_k\rVert_{A_I}^2+\lVert\hat u_p(\theta)-u_p\rVert_{A_I}^2\Bigr],$$
+over random charts, coefficients, sources, Fourier numbers and the eight symmetries of the square.
+
+**The label-free objective** (the document's Corollary 11):
+$$\mathcal L_{\text{en}}(\theta)=\operatorname{tr}\tilde\Lambda(\theta)+\hat u_p^\top A_I\hat u_p-2f^\top\hat u_p=\mathcal L_{\text{sup}}\text{'s summand}+\underbrace{\operatorname{tr}\Lambda-u_p^\top A_Iu_p}_{\text{independent of }\theta}.$$
+*Proof:* $\operatorname{tr}\tilde\Lambda-\operatorname{tr}\Lambda=\sum_k\lVert E_k\rVert^2_{A_I}$ by the Gram identity, and completing the square for the particular field. **The two have the same gradients**, so training needs the energy matrix $M$ of each example, not its solution; labelled examples are still needed for validation, because $\mathcal L_{\text{en}}$'s value carries the unknown constant. It is the discrete Ritz principle (Deep Ritz: E & Yu, *Commun. Math. Stat.* 6, 2018). In floating point the gradient involves the cancellation $A_I\hat H-BQ$, so which trains better is comparison C2.
+
+| term | needs, per example | extra data cost |
 |---|---|---|
-| state | the solved field | the solve |
-| outgoing waves | the side traces and fluxes | none: read off the solve |
-| **response to interface data** | $D_aS\,v$ for $m$ random low-band directions $v$ | $m$ JVPs. For a linear family with a stored factorization, $2m$ triangular solves; for flow, $m$ extra marches or one adjoint |
-| step consistency | the expert's own two half steps | none: a training-time cost |
-| Lipschitz penalty | a power iteration on the expert's Jacobian | none: a training-time cost |
+| modes and particular field, supervised | $H=A_I^{-1}BQ$ and $u_p=A_I^{-1}f$ | one sparse factorisation of $A_I$ and $4m+1$ pairs of triangular solves |
+| the same, label-free | the matrix $M$ | assembly only |
+| step doubling | two steps of $\Delta t$ against one of $2\Delta t$ | **flow networks only** (Stage 2): the tier-0 networks approximate the backward-Euler step, and $(I+2\Delta t\,L)^{-1}\ne(I+\Delta t\,L)^{-2}$, so the penalty would pull them off their target |
+| tier-2 response and Lipschitz terms | as version 0 | for experts used at tier 2 only |
 
 ---
 
@@ -111,6 +121,16 @@ $$C_{\text{train}}=\frac{E\,N_s\,t_{\text{fb}}}{B}\quad\text{GPU-seconds},$$
 
 with $E$ epochs, batch $B$ and $t_{\text{fb}}$ the forward-and-backward time of one batch, including the Jacobian term's extra passes. **Each of $t_{\text{solve}}$, $t_{\text{JVP}}$ and $t_{\text{fb}}$ is one timing to take before a stage starts.**
 
+**Measured components (2026-10-01).** In the cloud container (4 cores; ratios matter, not seconds):
+
+| component | value | script |
+|---|---|---|
+| one sparse factorisation of a $64^2$ piece | about 21 ms | `scripts/arch_coupling_cost.py` (4 × 4 pieces, $n=64$) |
+| one pair of triangular solves at $n=64$ | about 0.94 ms (47 ms for 50) | same |
+| forward pass of the 0.49 M / 1.95 M / 6.2 M network at $n=64$, batch of 16 | 3.8 / 7.7 / 25 ms per piece | `scripts/arch_backbone_timing.py` |
+
+**From these, [AI Inference]:** one labelled example at $n=64$ costs about $21+65\times0.94\approx82$ ms, so $10^5$ examples need about 2.3 core-hours, and none with the label-free objective. Training the 1.95 M network on the container's CPU, with a forward-and-backward pass taken as three forward passes, would need about $3\times7.7$ ms per example, roughly 64 hours for 100 passes over $10^5$ examples; hence Stage 0 on a rented GPU.
+
 **Planning estimates, [AI Inference], each assumption named:**
 
 | stage | assumptions | data | training | at the \$0.70/h cap |
@@ -126,25 +146,38 @@ with $E$ epochs, batch $B$ and $t_{\text{fb}}$ the forward-and-backward time of 
 
 ## 6. The gate each stage must pass
 
-**Registered in code before the stage's first training run.**
+**Registered in code before the stage's first training run**, with numerical bars, so the results cannot shape the criteria (decision 18; the document's Tables 11–12). Benchmarks: the workbench's s-channel, bend-3 and insert-round, excluded from training.
 
-| # | measure | bar (draft) |
+| # | measure | bar |
 |---|---|---|
-| E1 | one chart's accuracy on held-out shapes, **reported by modulus bin and by input frequency** | registered per family |
-| E2 | the scattering map's Lipschitz constant on the fine space, **certified** and estimated | certified $<1$ in the envelope, or the seam is admitted uncertified |
-| E3 | **Schwarz iterations to tolerance** on held-out domains (the workbench's drawn examples), against the same scheme with classical local solves at the same impedance | no more than $1.5\times$ the classical count |
-| E4 | the assembled answer against the full domain | registered per family; for a linear family, within E1's error times the bound of [[chart-operator-architecture]] §4.4 |
-| E5 | wall time against the classical decomposition, the full domain, and **the coarse classical competitor** (S7) | faster than the classical decomposition; the coarse comparison reported whatever it says |
-| E6 | the S1–S12 checklist of [[outcome-c5-requirements-for-dd-native-experts]], row by row | each row answered, or named as not met |
+| E1 | energy-norm error of the modes and particular field on held-out pieces, **by $\sup\lvert\mu\rvert$ bin and by input frequency** | registered per family |
+| E2 | tier 2 only: the learned scattering map's contraction factor on the fine space, certified and estimated | certified below one in the envelope, or the seam admitted without a convergence claim |
+| E3 | tier 0: coupled error against the classical superelement **with the same port modes** (isolates the network); tier 2: rounds to tolerance against classical local solves at the same transmission condition | tier 0: within Theorem 2's bound evaluated with the measured field errors; tier 2: at most $1.5\times$ the classical count |
+| E4 | the coupled answer against the full-domain classical solution on the benchmarks | registered per family |
+| E5 | wall time against the classical superelement with stored modes, the classical decomposition, a monolithic direct solve and a coarse classical solver, **on the owner's laptop and one GPU** | reported whatever it says; "faster" claimed only where measured faster |
+| E6 | S1–S12 of [[outcome-c5-requirements-for-dd-native-experts]], row by row | each answered, or named as not met |
+| SE1 | $\lambda_{\min}(\tilde{\mathsf S})\ge\lambda_{\min}(\mathsf S)$ and the Gram identity on every case | to rounding (an implementation test) |
+| SE2 | network calls per piece per linear solve | one |
+| SE3 | 16-mode truncation error on the benchmarks | below the network's E1 error |
 
-**[AI Inference]:** E3 is the measure no published work in [[dd-neural-prior-art-2026]] §1.1 reports against a like-for-like classical local solver. Making it the headline is how the proposal's claim N3 is tested rather than asserted.
+| # | registered comparison (Stage 0) | question |
+|---|---|---|
+| C1 | general charts against near-conformal pieces only | how much harder the general input class is |
+| C2 | label-free against supervised objective, equal compute | whether the exact equivalence survives floating point |
+| C3 | principal part plus correction against direct prediction of the modes | whether the principal part helps |
+| C4 | U-shaped convolutional trunk against the sine–cosine spectral operator | which backbone suits the square |
+| C5 | 0.3, 1 and 3 M parameters | accuracy per $\lvert\mu\rvert$ bin against forward cost (S7) |
+| C6 | cosine port modes against sines plus corner functions | the corner effect of [[chart-operator-architecture]] §3.3 |
+
+**[AI Inference]:** E3 at tier 0, against the classical superelement with the same modes, isolates exactly what the network adds; no published work in [[dd-neural-prior-art-2026]] reports that comparison.
 
 ---
 
 ## 7. Risks
 
 1. **The cost bar S7.** In linear families a classical local solve with a stored factorization is a pair of triangular solves, cheaper than any network. **[AI Inference]:** a learned expert pays in linear families only where it replaces something expensive: a global coupling iteration (fewer Schwarz sweeps, E3), or a factorization that cannot be stored (a changing geometry or coefficient in a design loop). Stage 0 must measure this, not assume it.
-2. **Loose certificates** ([[chart-operator-architecture]] §4.4).
+2. **Loose certificates**, now a tier-2 risk only ([[chart-operator-architecture]] §3.7); tier 0 is certified by construction.
+   - **Measured since (2026-10-01):** on a fixed 2-D geometry a monolithic direct solve and stored classical modes beat any network; the learned superelement is 4–9 times cheaper than recomputing a port matrix classically, which pays only when geometry or material change ([[chart-operator-architecture]] §5).
 3. **The chart envelope** excludes pieces the layout makes. The layout then has to cut again, which is a compiler rule to write.
 4. **Negative transfer** in the fine-tuning arm.
 5. **Three dimensions** ([[chart-operator-architecture]] §2.5).

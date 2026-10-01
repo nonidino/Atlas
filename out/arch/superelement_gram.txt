@@ -1,0 +1,20 @@
+arch_superelement_gram -- the port matrix as a direct output or as an energy Gram
+====================================================================================
+
+4 x 4 pieces of 32^2 cells, steady; 16 cosine modes per edge, 384 interface unknowns
+exact superelement: truncation floor 2.55e-04 (rel L2), assembled min eig 1.833e-02, pieces' min eig -4.458e-16
+    eps | port matrix rel. error  | Gram identity | piece min eig / max     | assembled min eig      | solution rel. L2 error
+        |   Gram       direct     |   residual    |   Gram      direct (#<0) |   Gram       direct    |   Gram       direct
+   0.30 |  8.08e-02   3.00e-01  |    1.8e-15    |  3.65e-03 -6.31e-02 (16) |  5.85e-02  -2.63e-01 |  6.45e-01   1.53e+00
+   0.10 |  8.98e-03   1.00e-01  |    1.7e-15    |  3.95e-04 -8.45e-03 (12) |  2.27e-02  -1.29e-02 |  1.78e-01   1.38e+01
+   0.03 |  8.08e-04   3.00e-02  |    2.0e-15    |  3.74e-05 -1.71e-03 ( 3) |  1.87e-02   1.11e-02 |  2.00e-02   5.75e-01
+   0.01 |  8.99e-05   1.00e-02  |    1.7e-15    |  4.01e-06 -8.62e-04 ( 3) |  1.84e-02   1.69e-02 |  2.69e-03   9.18e-02
+
+4 x 4 pieces of 32^2 cells, Fo = 0.1; 16 cosine modes per edge, 384 interface unknowns
+exact superelement: truncation floor 3.37e-04 (rel L2), assembled min eig 1.066e-01, pieces' min eig 4.425e-02
+    eps | port matrix rel. error  | Gram identity | piece min eig / max     | assembled min eig      | solution rel. L2 error
+        |   Gram       direct     |   residual    |   Gram      direct (#<0) |   Gram       direct    |   Gram       direct
+   0.30 |  7.74e-02   3.00e-01  |    1.9e-15    |  1.03e-02 -5.05e-02 (16) |  1.48e-01  -2.82e-01 |  1.83e-01   1.91e+00
+   0.10 |  8.60e-03   1.00e-01  |    1.8e-15    |  7.23e-03 -4.11e-03 ( 5) |  1.11e-01   5.86e-02 |  2.98e-02   5.23e-01
+   0.03 |  7.74e-04   3.00e-02  |    1.9e-15    |  6.84e-03  5.64e-03 ( 0) |  1.07e-01   9.82e-02 |  4.36e-03   5.83e-02
+   0.01 |  8.60e-05   1.00e-02  |    1.9e-15    |  6.81e-03  6.98e-03 ( 0) |  1.07e-01   1.07e-01 |  1.24e-03   1.93e-02
