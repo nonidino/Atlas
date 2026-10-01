@@ -1,0 +1,171 @@
+{
+ "what": "demo-learned-case-plan section 4, step 0: a random network priced before any data exists",
+ "case": "farm-12",
+ "cells": 319232,
+ "windows": 24,
+ "rotors": 12,
+ "macro_dt": 0.2,
+ "threads": 4,
+ "warm_macro_steps": 10,
+ "rounds": 5,
+ "substeps": [
+  21,
+  21,
+  21,
+  21,
+  21
+ ],
+ "medians_s": {
+  "t_Ep": 1.3121155999997427,
+  "t_win": 1.0429297999999108,
+  "t_F": 6.075373800000307,
+  "t_rest": 0.26918579999983194
+ },
+ "t_Ep_all": [
+  0.6631776000012906,
+  1.3121155999997427,
+  1.2864164999991772,
+  1.3920973999993294,
+  1.4253678000004584
+ ],
+ "t_win_all": [
+  0.5015392999994219,
+  1.0429297999999108,
+  0.9930219999987457,
+  1.0719853999999032,
+  1.0797540999992634
+ ],
+ "t_F_all": [
+  3.400316600000224,
+  3.284991299999092,
+  6.265436499999851,
+  7.692644999999175,
+  6.075373800000307
+ ],
+ "budget": {
+  "Ep_over_L_at_least": 1.5,
+  "F_over_L_at_least": 3.0,
+  "source": "demo-learned-case-plan section 4 (registered); G1 of section 5"
+ },
+ "networks": [
+  {
+   "width": 8,
+   "depth": 3,
+   "parameters": 155890,
+   "t_net": 0.22994619999917632,
+   "t_net_all": [
+    0.24427160000050208,
+    0.22994619999917632,
+    0.23007899999902293,
+    0.22275300000001153,
+    0.2233101000001625
+   ],
+   "t_L": 0.49913199999900826,
+   "Ep_over_L": 2.6287947877562443,
+   "F_over_L": 12.171877980198381,
+   "meets_budget": true
+  },
+  {
+   "width": 12,
+   "depth": 3,
+   "parameters": 350186,
+   "t_net": 0.4008544999996957,
+   "t_net_all": [
+    0.40116200000011304,
+    0.4008544999996957,
+    0.3821724000008544,
+    0.40059219999966444,
+    0.4074426000006497
+   ],
+   "t_L": 0.6700402999995276,
+   "Ep_over_L": 1.958263704437879,
+   "F_over_L": 9.067176705646794,
+   "meets_budget": true
+  },
+  {
+   "width": 16,
+   "depth": 3,
+   "parameters": 622050,
+   "t_net": 0.5625347000004695,
+   "t_net_all": [
+    0.5625347000004695,
+    0.5598148999997647,
+    0.5631236000008357,
+    0.563683200000014,
+    0.5490346000005957
+   ],
+   "t_L": 0.8317205000003014,
+   "Ep_over_L": 1.5775919915395462,
+   "F_over_L": 7.304585855462388,
+   "meets_budget": true
+  },
+  {
+   "width": 24,
+   "depth": 3,
+   "parameters": 1398482,
+   "t_net": 1.0547146999997494,
+   "t_net_all": [
+    1.0715114000013273,
+    1.0478724999993574,
+    1.0532356000003347,
+    1.0613647999998648,
+    1.0547146999997494
+   ],
+   "t_L": 1.3239004999995814,
+   "Ep_over_L": 0.9910983491585339,
+   "F_over_L": 4.5889957742309395,
+   "meets_budget": false
+  },
+  {
+   "width": 32,
+   "depth": 3,
+   "parameters": 2485186,
+   "t_net": 1.7676298000005772,
+   "t_net_all": [
+    1.752285500000653,
+    1.8101038999993762,
+    1.787276999999449,
+    1.7606218000000808,
+    1.7676298000005772
+   ],
+   "t_L": 2.036815600000409,
+   "Ep_over_L": 0.6441995043633204,
+   "F_over_L": 2.982780473597652,
+   "meets_budget": false
+  }
+ ],
+ "torch_threads_scan": {
+  "1": 1.8582644000016444,
+  "2": 1.027330399998391,
+  "4": 0.5897038000002794,
+  "8": 0.34740679999958957
+ },
+ "torch": "2.7.1+cpu",
+ "numpy": "1.26.4",
+ "machine_before": {
+  "time": "2026-10-01T14:26:41-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": false,
+   "battery_percent": 89,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 15364
+ },
+ "machine_after": {
+  "power": {
+   "ac": false,
+   "battery_percent": 89,
+   "source": "GetSystemPowerStatus"
+  }
+ },
+ "note": "on AC; the owner's phone-remote server.py running (two processes, left alone); the other two chats on documentation and theory only, nothing running on the demo (the owner, 2026-10-01)",
+ "at": "2026-10-01T14:28:15-04:00"
+}

@@ -781,3 +781,9 @@ out/workbench/*
 # The one-command install's verification logs stay local: each record in
 # out/workbench/records/installer/ keeps the tail of every log it ran.
 out/workbench/records/installer/logs/
+# The learned case (demo item 1.5): its registration, step 0, the truth run (on
+# the D/16 grid it is compared on), the training log, the gate's records and the
+# weights are committed. The training data is not: tens of GB, generated on the
+# rented box from the registered seeds, and reproducible from them.
+!out/learned-case/
+out/learned-case/data/

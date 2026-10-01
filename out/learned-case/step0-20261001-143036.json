@@ -1,0 +1,171 @@
+{
+ "what": "demo-learned-case-plan section 4, step 0: a random network priced before any data exists",
+ "case": "farm-12",
+ "cells": 319232,
+ "windows": 24,
+ "rotors": 12,
+ "macro_dt": 0.2,
+ "threads": 4,
+ "warm_macro_steps": 10,
+ "rounds": 5,
+ "substeps": [
+  21,
+  21,
+  21,
+  21,
+  21
+ ],
+ "medians_s": {
+  "t_Ep": 1.336450099999638,
+  "t_win": 1.0427199999994627,
+  "t_F": 5.918973499999993,
+  "t_rest": 0.2937301000001753
+ },
+ "t_Ep_all": [
+  1.336450099999638,
+  1.4378541999994923,
+  1.3212821999986772,
+  1.3179870999993,
+  1.3764854000000923
+ ],
+ "t_win_all": [
+  1.0427199999994627,
+  1.1260825999997905,
+  1.0320845999995072,
+  1.0340702000012243,
+  1.0887485000002926
+ ],
+ "t_F_all": [
+  6.109205499999007,
+  6.044005200001266,
+  5.918973499999993,
+  5.790471199999956,
+  5.825886799999353
+ ],
+ "budget": {
+  "Ep_over_L_at_least": 1.5,
+  "F_over_L_at_least": 3.0,
+  "source": "demo-learned-case-plan section 4 (registered); G1 of section 5"
+ },
+ "networks": [
+  {
+   "width": 8,
+   "depth": 3,
+   "parameters": 155890,
+   "t_net": 0.220964099999037,
+   "t_net_all": [
+    0.220964099999037,
+    0.22934840000016266,
+    0.22177150000061374,
+    0.21632639999916137,
+    0.21464409999862255
+   ],
+   "t_L": 0.5146941999992123,
+   "Ep_over_L": 2.596590558047251,
+   "F_over_L": 11.499980959585423,
+   "meets_budget": true
+  },
+  {
+   "width": 12,
+   "depth": 3,
+   "parameters": 350186,
+   "t_net": 0.3987575999999535,
+   "t_net_all": [
+    0.3967518999997992,
+    0.3985589000003529,
+    0.40018140000029234,
+    0.3987575999999535,
+    0.4157549999999901
+   ],
+   "t_L": 0.6924877000001288,
+   "Ep_over_L": 1.9299261199865203,
+   "F_over_L": 8.547405968364336,
+   "meets_budget": true
+  },
+  {
+   "width": 16,
+   "depth": 3,
+   "parameters": 622050,
+   "t_net": 0.5530355000009877,
+   "t_net_all": [
+    0.5520298999999795,
+    0.5575267000003805,
+    0.5516728999991756,
+    0.5530355000009877,
+    0.5726689000002807
+   ],
+   "t_L": 0.846765600001163,
+   "Ep_over_L": 1.5782999451061812,
+   "F_over_L": 6.990096787105975,
+   "meets_budget": true
+  },
+  {
+   "width": 20,
+   "depth": 3,
+   "parameters": 971482,
+   "t_net": 0.8714237000003777,
+   "t_net_all": [
+    0.8711530000000494,
+    0.8625130000000354,
+    0.8880433000012999,
+    0.8715410999993765,
+    0.8714237000003777
+   ],
+   "t_L": 1.165153800000553,
+   "Ep_over_L": 1.147016042001497,
+   "F_over_L": 5.079993302169365,
+   "meets_budget": false
+  },
+  {
+   "width": 24,
+   "depth": 3,
+   "parameters": 1398482,
+   "t_net": 1.0672706000004837,
+   "t_net_all": [
+    1.0809128000000783,
+    1.0770740999996633,
+    1.02459269999963,
+    1.0159307999983866,
+    1.0672706000004837
+   ],
+   "t_L": 1.361000700000659,
+   "Ep_over_L": 0.9819613612241279,
+   "F_over_L": 4.348986374508938,
+   "meets_budget": false
+  }
+ ],
+ "torch_threads_scan": {
+  "1": 1.6990898999993078,
+  "2": 0.9367389999988518,
+  "4": 0.5624666999992769,
+  "8": 0.3318469999994704
+ },
+ "torch": "2.7.1+cpu",
+ "numpy": "1.26.4",
+ "machine_before": {
+  "time": "2026-10-01T14:28:58-04:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": false,
+   "battery_percent": 88,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [],
+  "pid": 13892
+ },
+ "machine_after": {
+  "power": {
+   "ac": false,
+   "battery_percent": 88,
+   "source": "GetSystemPowerStatus"
+  }
+ },
+ "note": "ON BATTERY (88%), no other Python process; the other two chats on documentation and theory only, nothing running on the demo (the owner, 2026-10-01). Supersedes step0-20261001-142815, whose note said 'on AC' while its own measured power field says battery",
+ "at": "2026-10-01T14:30:36-04:00"
+}
