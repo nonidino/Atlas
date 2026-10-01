@@ -71,7 +71,7 @@ REQUIRED = [
 #: Installed by the launchers when they can be.  Without them every other part
 #: of the workbench runs, and the self-test exits 3 instead of 0.
 OPTIONAL = [
-    ("torch", "the learned case (CPU-only); nothing else uses it"),
+    ("torch", "the learned case, CPU-only; nothing else needs it"),
     ("gmsh", "File > Import geometry from Gmsh"),
 ]
 
@@ -303,6 +303,12 @@ def _page() -> bool:
 
     print("\n  the page  (this folder's own server, on a free local port, fetched as a "
           "browser would)")
+    # Direct, never through a proxy. urllib honours HTTP_PROXY even for 127.0.0.1
+    # unless NO_PROXY names it, so on a machine behind a proxy every fetch of the
+    # page went to the proxy and the self-test called a working page broken (found
+    # by running the launcher with pip pointed at a closed proxy: the server
+    # listened and never saw a request). A browser goes direct to localhost.
+    direct = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     port = _free_port(8040)
     base = "http://127.0.0.1:%d" % port
     logdir = os.path.join(HERE, "out", "workbench")
@@ -334,8 +340,7 @@ def _page() -> bool:
               % (port, time.perf_counter() - t0))
 
         t1 = time.perf_counter()
-        html = urllib.request.urlopen(base + "/", timeout=120).read().decode(
-            "utf-8", "replace")
+        html = direct.open(base + "/", timeout=120).read().decode("utf-8", "replace")
         if "<title>Atlas Workbench</title>" not in html:
             print("    [!]  %s/ answered, but not with the workbench's page" % base)
             return False
@@ -349,7 +354,7 @@ def _page() -> bool:
         for u in local:
             full = u if u.startswith(base) else base + (u if u.startswith("/") else "/" + u)
             try:
-                with urllib.request.urlopen(full, timeout=60) as r:
+                with direct.open(full, timeout=60) as r:
                     if r.status != 200 or not r.read():
                         failed.append(u)
             except Exception:

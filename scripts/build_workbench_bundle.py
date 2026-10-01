@@ -395,18 +395,21 @@ def main(argv=None) -> int:
     ap.add_argument("--allow-dirty", action="store_true",
                     help="build even if copied paths have uncommitted changes (recorded in "
                          "SOURCE_COMMITS as DIRTY)")
-    ap.add_argument("--report", default=os.path.join(RECORDS, "build.json"),
-                    help="where the build report is written")
+    ap.add_argument("--report", default=None,
+                    help="where the build report is written (default: "
+                         "out/workbench/records/installer/build-<commit>.json, so each "
+                         "build keeps its own)")
     ap.add_argument("-m", "--message",
                     default="Atlas Workbench: one-command install (Windows, macOS, Linux)")
     args = ap.parse_args(argv)
     rep = build(os.path.abspath(args.out), args.build_repo, args.allow_dirty)
     if args.commit:
         rep["commit"] = commit(os.path.abspath(args.out), args.message)
-    if args.report:
-        os.makedirs(os.path.dirname(os.path.abspath(args.report)), exist_ok=True)
-        with open(args.report, "w", encoding="utf-8") as fh:
-            json.dump(rep, fh, indent=1)
+    report = args.report or os.path.join(RECORDS, "build-%s.json" % rep["atlas_commit"][:7])
+    os.makedirs(os.path.dirname(os.path.abspath(report)), exist_ok=True)
+    with open(report, "w", encoding="utf-8") as fh:
+        json.dump(rep, fh, indent=1)
+    print("  report: %s" % report)
     return 0
 
 

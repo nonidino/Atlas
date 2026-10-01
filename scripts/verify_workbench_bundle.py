@@ -397,10 +397,14 @@ def main(argv=None) -> int:
 
     # 6. the tests --------------------------------------------------------------------
     if args.tests:
-        t = run_logged([vpy, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider"], clone,
-                       clean_env(), os.path.join(logs, "tests_%s%s.log" % (plat, tag)))
-        m = re.findall(r"=+ (.*?) in ([\d.]+)s", t["tail"])
+        t = run_logged([vpy, "-m", "pytest", "tests", "-q", "-rs", "-p", "no:cacheprovider"],
+                       clone, clean_env(), os.path.join(logs, "tests_%s%s.log" % (plat, tag)))
+        # `-q` prints the summary bare ("318 passed, 2 skipped in 234.27s"), and
+        # without -q inside a rule of "=": both are read
+        m = re.findall(r"^=*\s*(\d+ (?:passed|failed|errors?|skipped)[^\n]*?) in ([\d.]+)s",
+                       _read(t["log"]), re.M)
         t["summary"] = m[-1][0] if m else None
+        t["skipped_because"] = re.findall(r"^SKIPPED \[\d+\] ([^\n]+)", _read(t["log"]), re.M)
         out["tests"] = t
         print("  tests: exit %s, %s (%.0f s)" % (t["exit_code"], t["summary"], t["wall_s"]))
         ok = ok and t["exit_code"] == 0

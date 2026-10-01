@@ -224,6 +224,17 @@ def test_every_package_the_workbench_imports_is_pinned_or_optional():
 # ---------------------------------------------------------------------------
 
 
+def test_the_self_test_fetches_its_own_page_directly_not_through_a_proxy():
+    """urllib sends even a request for 127.0.0.1 to HTTP_PROXY unless NO_PROXY names
+    it: with pip pointed at a closed proxy the self-test called a working page broken
+    (the server listened and never saw a request).  Every fetch of the page goes
+    through an opener with no proxy; `verify_workbench_bundle --optional-fails` runs
+    the launcher behind a closed proxy and is the behavioural check."""
+    text = _text("run.py")
+    assert "urllib.request.urlopen(" not in text
+    assert "ProxyHandler({})" in text and text.count("direct.open(") == 2
+
+
 def test_the_self_test_marches_one_example_of_every_type():
     from atlas.workbench import registry
     from atlas.workbench.spec import EXAMPLES
