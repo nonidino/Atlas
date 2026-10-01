@@ -10,8 +10,8 @@
 
 | | items |
 |---|---|
-| **decided** | (a) scope; (b) the chart rule; (c) the reference domain and topology; 1 the operator's input; 2 the cut rule; 3 the chart certificate and envelope; 4 the geometry source; 5 the coupling stack; 7 the tier-2 accelerator; 8 ordered sweeps; 9 the transient policy |
-| **under discussion** | 6 the expert's output format; 10 the backbone and its size; 17 the training route; 18 the first family and its gate; 19 the name |
+| **decided** | (a) scope; (b) the chart rule; (c) the reference domain and topology; 1 the operator's input; 2 the cut rule; 3 the chart certificate and envelope; 4 the geometry source; 5 the coupling stack; 6 the expert's output format; 7 the tier-2 accelerator; 8 ordered sweeps; 9 the transient policy; 10 the backbone and its size |
+| **under discussion** | 17 the training route; 18 the first family and its gate; 19 the name |
 | **not yet answered** | 11 interface data and lifting; 12 the conservation head; 13 certification; 14 time; 15 the training objective; 16 the Expert Card; 20 the proposal's author line |
 
 ---
@@ -42,6 +42,8 @@
 | 7 | **Tier 2's accelerator**: GMRES when the expert gives Jacobian–vector products, Anderson otherwise; a coarse space whenever there are 16 or more pieces | as recommended, 2026-10-01 | §3.9 |
 | 8 | **Ordered (multiplicative) sweeps along channels are allowed in tier 2 only**; rule R5's additive ordering is kept wherever symmetry averaging is used | as recommended, 2026-10-01 | §3.10 |
 | 9 | **The transient policy**: reuse port matrices at a fixed step, warm-start from the previous step, terminate early only where the coupling is energy-safe | as recommended, 2026-10-01 | §3.11 |
+| 6 | **The output format F3**: every expert answers the all-Dirichlet problem on the unit square by returning one **constraint mode** per port mode (an exact analytic principal part plus a bubble-multiplied learned correction) and a particular field; the host forms the port matrix as their **energy Gram**. 16 cosine port modes per side (about 20 inside the expert); D4 symmetry by augmentation at Stage 0; the label-free energy objective registered as a Stage 0 comparison. The wave map (F1) stays in the standard for tier-2 donors | 6a–6e as recommended, 2026-10-01 | §3.12 |
+| 10 | **The backbone**: a U-shaped convolutional operator with explicit odd/even boundary extension, anti-aliased resampling and FiLM conditioning; the sine-spectral operator as the registered ablation; **1 M parameters by default, with a {0.3 M, 1 M, 3 M} sweep** in the Stage 0 gate; $n=64$, trained on 32, 64 and 128 | 10a–10b as recommended, 2026-10-01 | §3.13 |
 
 ---
 
@@ -123,7 +125,7 @@ The workbench holds the domain as a cell mask. Charting the staircase would hand
 
 | tier | when | how | rounds | certificate |
 |---|---|---|---|---|
-| **0, superelement** | linear physics; the expert supplies its port data | assemble the pieces' port matrices through the port algebra's connections; one direct (2-D) or preconditioned-CG (3-D) interface solve | **0** | the port matrices' symmetry and positivity (by construction, pending decision 6); the interface solve's error bound in §5 |
+| **0, superelement** | linear physics; the expert supplies its port data | assemble the pieces' port matrices through the port algebra's connections; one direct (2-D) or preconditioned-CG (3-D) interface solve | **0** | the port matrices' symmetry and positivity (by construction: the energy Gram of decision 6, §3.12); the interface solve's error bound in §5 |
 | **1, tangent** | nonlinear or implicit | Newton–Schur with the expert's tangent port matrices, or mode-matched impedance plus Anderson | a few Newton steps | local: tangent coercivity, a trust region |
 | **2, black box** | the expert exposes waves only (a donor, a classical code, a fallback) | optimized Robin waves, a coarse space, GMRES or Anderson; Douglas–Rachford where energy safety matters | $O(1)$ in the number of pieces with a coarse space | a Lipschitz or firm-non-expansiveness bound (T1, T8, T9) |
 
@@ -147,14 +149,59 @@ A chain of pieces along a channel can be solved exactly in two ordered sweeps (b
 
 **Measured** context: small steps localise the coupling physically; at $\mathrm{Fo}=0.01$ every scheme needs only 13–40 rounds.
 
+### 3.12 The output format (decision 6)
+
+**One canonical question for every expert.** Given values on all four sides of the unit square, what is inside, and what flux leaves each side? The all-Dirichlet Dirichlet-to-Neumann map holds all of a piece's linear boundary behaviour, so whether a side is a wall, an inlet, a Robin condition or a seam is the **host's** business (a linear constraint on side values and fluxes), as are impedances and neighbours. No expert can develop its own quirks about boundaries.
+
+**The answer: constraint modes and an energy Gram.** The expert returns, for each port mode $k$, the field $\hat H_k$ with that mode as its exact trace, and a particular field $\hat u_p$ with zero trace:
+$$\hat H_k=\hat H_k^{(0)}+\beta\odot N_{\theta,k}(\log J,\mu,\log\kappa,\mathrm{Fo}),\qquad \beta=16\,\xi(1-\xi)\,\eta(1-\eta),$$
+with $\hat H_k^{(0)}$ the exact response of a plain unit square (cosine-times-sinh series, shifted for a time step) and $N_{\theta,k}$ the learned correction. The host forms
+$$\Lambda_{jk}=v_j^{\top}M\,v_k,\qquad v_k=(\hat H_k,\ e_k),\qquad b_k=\hat H_k^{\top}f-v_k^{\top}M(\hat u_p,0),$$
+with $M$ the piece's own discrete energy form on the reference grid.
+
+**What it guarantees, by construction.** $\Lambda$ is symmetric and positive semidefinite whatever the network returns. Because the exact modes are energy-orthogonal to every trace-free perturbation (the Dirichlet principle),
+$$\Lambda_{\text{learned}}-\Lambda_{\text{true}}=E^{\top}A\,E\ \succeq0,\qquad E=\hat H-\hat H_{\text{true}},$$
+so **the learned piece is never softer than the true one, and its port error is quadratic in its field error**. The coupled answer is a Ritz–Galerkin solution in the span of the learned modes, the energy-best by Céa's lemma: coupling cannot amplify an expert's error. And $\operatorname{tr}\Lambda_{\text{learned}}-\operatorname{tr}\Lambda_{\text{true}}=\sum_k\lVert E_k\rVert_A^2$, so minimising the modes' own energy minimises their error with no labels (**[AI Inference]**, registered as a Stage 0 comparison against supervised training).
+
+**Measured** (`scripts/arch_superelement_gram.py`, `out/arch/superelement_gram.txt`; 4 × 4 pieces of $32^2$ cells, 16 modes per side; exact modes and matrices perturbed by the same relative amount $\varepsilon$):
+
+| $\varepsilon$ | port error, Gram | port error, direct head | direct pieces indefinite | solution error, Gram | solution error, direct |
+|---|---|---|---|---|---|
+| 0.30 | 8.1 % | 30 % | 16 of 16 | 64 % | 153 % (assembled indefinite) |
+| 0.10 | 0.90 % | 10 % | 12 | 18 % | 1,380 % (assembled indefinite) |
+| 0.03 | 0.081 % | 3 % | 3 | 2.0 % | 58 % |
+| 0.01 | 0.009 % | 1 % | 3 | 0.27 % | 9.2 % |
+
+Steady; at $\mathrm{Fo}=0.1$ the same pattern (0.12 % against 1.9 % at $\varepsilon=0.01$). The identity holds to $2\times10^{-15}$. The direct head was given its best case (exact fields and loads), and its steady interior pieces turn indefinite at any $\varepsilon$ because their true port matrix is singular (a uniform temperature carries no flux).
+
+**Prior art.** Constraint modes are classical: Craig–Bampton component mode synthesis (*AIAA J.* 6, 1968), multiscale finite elements (Hou & Wu, *J. Comput. Phys.* 134, 1997), static condensation with ports (Huynh, Knezevic & Patera, 2013). Networks predicting multiscale basis functions are published (Wang, Cheung, Chung, Efendiev & Wang, *Deep multiscale model learning*, *J. Comput. Phys.* 2020; CNN-predicted reduced bases, arXiv 2406.16328); so is the principal-part split for DtN maps (PPDNO, arXiv 2606.25952). **Not found [AI Inference]:** per-chart constraint modes with exact traces whose host-computed energy Gram serves as the **coupling certificate** (positive by construction, error from above, Céa-optimal coupling), with typed multiphysics ports.
+
+**Details decided:** 16 cosine port modes per side, about 20 reference modes inside the expert to absorb the side's reparametrisation to physical arc length (a mortar projection the host performs); the square's D4 symmetry by data augmentation at Stage 0 (group-equivariant convolutions or rotated passes as later options; a 90 degree rotation sends $\mu\to-\mu$); at a fixed step the modes are formed once and reused; tier 1 uses the same format with tangent modes; vector physics adds per-component modes and $\theta$. The host's Gram costs about $2(4m)^2n^2\approx34$ MFLOP per piece at $m=16$, $n=64$ (an operation count, not a measurement), a tenth of the smallest backbone's forward pass.
+
+### 3.13 The backbone and its size (decision 10)
+
+**What it must learn:** fields on the $n\times n$ square to $4m$ correction fields and a particular field; an elliptic extension, so a piece-wide receptive field. Tier 0 needs no certified Lipschitz constant of the network (the Gram does the certifying), which frees the choice.
+
+**The trunk:** a U-shaped convolutional operator in the manner of the Convolutional Neural Operator (Raonic et al., NeurIPS 2023), with explicit odd (for the zero-trace corrections) and even (for inputs) boundary extension in place of the periodic one, anti-aliased resampling, and FiLM conditioning on the Fourier number and parameters. **The registered ablation:** a spectral operator in the sine and cosine bases, whose sine series vanish on the boundary exactly as the corrections must. A U-Net with a spectral bottleneck is the Stage 1 fallback; a transformer appears only in the Stage 2 fine-tuning comparison; graph and point operators stay the 3-D fallback.
+
+**Measured forward cost** (`scripts/arch_backbone_timing.py`, `out/arch/backbone_timing.txt`; untrained, so cost only; torch 2.14.1 on the container's CPU, 4 threads, float32 — a proxy for the owner's laptop):
+
+| size | parameters | GFLOP per piece, $n=64$ | ms per piece, alone | ms per piece, batched by 16 | × a classical local solve (0.85 ms) |
+|---|---|---|---|---|---|
+| small | 0.49 M | 0.35 | 6.0 | 3.8 | 4–7 |
+| medium | 1.95 M | 1.35 | 16.9 | 7.7 | 9–20 |
+| large | 6.2 M | 5.0 | 30 | 25 | 30–36 |
+
+**The S7 arithmetic for 2-D diffusion on a CPU.** Recomputing one piece's port matrix classically at $n=64$ (4 × 4 pieces, 16 modes per side) was **measured** in the coupling probe at about 21 ms of factorisation plus 47 ms of local solves, about 68 ms per piece; a 1–2 M-parameter expert costs 8–17 ms. **So on a CPU the learned superelement is 4–9 times cheaper than recomputing classically, and only when geometry or material changes**; on a fixed geometry the stored classical modes are cheaper still. The decisive cases remain a GPU, three dimensions, and expensive local physics ([[coupling-cost-and-complexity]] §6).
+
+**Size:** 1 M parameters by default; the sweep {0.3 M, 1 M, 3 M} is registered in the Stage 0 gate against accuracy per $|\mu|$ bin and the S7 bar measured on the owner's laptop and a GPU. Reference grid $n=64$, trained on a mixture of 32, 64 and 128; float32 training, float64-capable inference for the probes (S10).
+
 ---
 
 ## 4. The open decisions
 
 | # | question | the current proposal | status |
 |---|---|---|---|
-| 6 | the expert's output format | a superelement whose port matrix is symmetric and positive by construction, 16 cosine modes per side | under discussion: outlined in the conversation of 2026-10-01 |
-| 10 | the backbone and its size | a U-shaped convolutional operator with an explicit extension, 1–3 M parameters by default, a registered size sweep | under discussion |
 | 11 | interface data and lifting | Robin or wave modal coefficients; Dirichlet imposed exactly by lifting | not yet answered |
 | 12 | the conservation head | fluxes on faces, exact discrete conservation, required for conservation-law families | not yet answered |
 | 13 | certification | tier 0 by construction and eigenvalues; tiers 1–2 by bound propagation, with a linear-plus-correction fallback | not yet answered |
@@ -175,7 +222,11 @@ The decided coupling stack changes what the headline theorem of [[formal-proofs-
 > **T24 (draft) — the superelement interface solve.** Let each piece $i$ supply a symmetric positive semidefinite port matrix $\tilde\Lambda_i$ and a load $\tilde b_i$, and let the assembled interface matrix $\tilde{\mathsf S}=\sum_iR_i^{\top}\tilde\Lambda_iR_i$ be positive definite on the free port space, with smallest eigenvalue $\tilde\beta>0$. Then the interface system $\tilde{\mathsf S}\tilde\lambda=\tilde\chi$ has a unique solution, and against the exact system $\mathsf S\lambda=\chi$
 > $$\lVert\tilde\lambda-\lambda\rVert\ \le\ \frac{1}{\tilde\beta}\Bigl(\lVert\mathsf S-\tilde{\mathsf S}\rVert\,\lVert\lambda\rVert+\lVert\chi-\tilde\chi\rVert\Bigr).$$
 
-It is the master bound's transmission term ([[master-error-bound]] §4) with its inf-sup constant **guaranteed** rather than measured. If decision 6 adopts the energy-Gram construction under discussion, a stronger statement (Céa's lemma: the coupled answer is the energy-best approximation in the experts' span) replaces it; that waits for the decision.
+It is the master bound's transmission term ([[master-error-bound]] §4) with its inf-sup constant **guaranteed** rather than measured. Decision 6 adopted the energy-Gram construction (§3.12), which allows a stronger companion, also **ours** and also Tier A:
+
+> **T25 (draft) — the Gram superelement is a Ritz–Galerkin method.** Let $A$ be symmetric positive definite on the global grid, let each piece's learned constraint modes $\hat H_{i,k}$ carry the exact port traces, and assemble $\tilde{\mathsf S}$ from the Grams $\Lambda_i=V_i^{\top}A_iV_i$. Then (i) every $\Lambda_i$ is symmetric positive semidefinite; (ii) $\Lambda_i-\Lambda_i^{\text{true}}=E_i^{\top}A_iE_i\succeq0$ with $E_i=\hat H_i-\hat H_i^{\text{true}}$; (iii) the coupled field $\tilde u$ satisfies $\lVert u-\tilde u\rVert_A=\min_{w\in W}\lVert u-w\rVert_A$ over the span $W$ of the learned modes and particular fields (Céa's lemma with constant 1).
+
+Item (ii) is checked numerically to $2\times10^{-15}$ by `scripts/arch_superelement_gram.py`; that is a test, not a proof.
 
 **One more item for the proofs chat:** the SNI counterexample (§1, item 2) is a clean, checkable example that T1's Lipschitz hypothesis cannot be weakened to "the classical map contracts and the learned one is close". It may be worth formalising as a remark beside T1.
 
@@ -186,7 +237,7 @@ It is the master bound's transmission term ([[master-error-bound]] §4) with its
 ## 6. What this page does not do
 
 1. It does not replace version 0. The wiki's design pages are rewritten once the owner confirms the whole design.
-2. Nothing learned was trained or timed. The probes use classical solves only.
+2. Nothing learned was trained. The probes use classical solves; the one learned measurement is the forward cost of untrained backbones (§3.13), which says nothing about accuracy.
 3. The block layout for forks and rings (§3.3), the smooth-outline chart (§3.7) and every tier are designs, not builds.
 
 ---
