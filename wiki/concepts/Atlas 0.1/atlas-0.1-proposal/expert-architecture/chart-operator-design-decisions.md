@@ -1,7 +1,8 @@
 # The chart operator's design conversation — the decisions as they are made
 
 **Type:** Concept page — **running decision record** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** opened 2026-10-01 by the architecture chat, during the design conversation with the owner (phase 2 of [[proposal-chat-prompts]] §2). **It records what the owner has decided, why, and on what evidence; it is not the design document.** [[chart-operator-architecture]] stays at version 0 until the owner confirms the whole design, and is then rewritten as version 1 from this page. Every number here is measured by a named probe; anything beyond the record is marked **[AI Inference]**.
+**Status:** opened 2026-10-01 by the architecture chat, during the design conversation with the owner (phase 2 of [[proposal-chat-prompts]] §2). **It records what the owner has decided, why, and on what evidence; it is not the design document.** Every number here is measured by a named probe; anything beyond the record is marked **[AI Inference]**.
+**Closed 2026-10-01:** the owner confirmed the whole design and the defaults for 11–19 ("Yes to the design and defaults"), gave the author line, and chose MathJax. [[chart-operator-architecture]] is now **version 1**, and the document is `proposal/architecture/index.html` (private until launch, O9). Two refinements made while writing it are recorded in §4.
 **Hub:** [[00-proposal-workstreams]] · **Feeds:** [[chart-operator-architecture]] · [[chart-operator-training-and-cost]] · [[dd-neural-prior-art-2026]] · **Measured inputs:** [[coupling-cost-and-complexity]]
 
 ---
@@ -10,9 +11,9 @@
 
 | | items |
 |---|---|
-| **decided** | (a) scope; (b) the chart rule; (c) the reference domain and topology; 1 the operator's input; 2 the cut rule; 3 the chart certificate and envelope; 4 the geometry source; 5 the coupling stack; 6 the expert's output format; 7 the tier-2 accelerator; 8 ordered sweeps; 9 the transient policy; 10 the backbone and its size |
-| **under discussion** | 17 the training route; 18 the first family and its gate; 19 the name |
-| **not yet answered** | 11 interface data and lifting; 12 the conservation head; 13 certification; 14 time; 15 the training objective; 16 the Expert Card; 20 the proposal's author line |
+| **decided** | (a) scope; (b) the chart rule; (c) the reference domain and topology; 1 the operator's input; 2 the cut rule; 3 the chart certificate and envelope; 4 the geometry source; 5 the coupling stack; 6 the expert's output format; 7 the tier-2 accelerator; 8 ordered sweeps; 9 the transient policy; 10 the backbone and its size; **11–19 as the defaults of §4 (2026-10-01)**; 20 the author line, Naunidh Singh |
+| **under discussion** | none |
+| **not yet answered** | none |
 
 ---
 
@@ -198,24 +199,26 @@ Steady; at $\mathrm{Fo}=0.1$ the same pattern (0.12 % against 1.9 % at $\varepsi
 
 ---
 
-## 4. The open decisions
+## 4. The remaining decisions, as decided
 
-| # | question | the current proposal | status |
+The owner accepted the defaults below on 2026-10-01. Items 11 and 15 were revised before that answer, to follow decision 6.
+
+| # | question | decided | note |
 |---|---|---|---|
-| 11 | interface data and lifting | Robin or wave modal coefficients; Dirichlet imposed exactly by lifting | not yet answered |
-| 12 | the conservation head | fluxes on faces, exact discrete conservation, required for conservation-law families | not yet answered |
-| 13 | certification | tier 0 by construction and eigenvalues; tiers 1–2 by bound propagation, with a linear-plus-correction fallback | not yet answered |
-| 14 | time | the step as the Fourier number; a step-doubling consistency loss; a declared range | not yet answered |
-| 15 | the training objective | state, port data (the response term, supervised directly), step consistency; optionally an iteration-aware loss | not yet answered |
-| 16 | the Expert Card | envelope, Fourier range, port modes, certificates, precision, licence; compiler rules including the tier | not yet answered |
-| 17 | the training route | from scratch for Stages 0–1; a controlled fine-tuning comparison at Stage 2 (DPOT, Walrus or GPhyT; Poseidon excluded by its licence) | under discussion |
-| 18 | the first family and its gate | 2-D diffusion (`THERM`); E1–E6 plus superelement rows; the expert's forward time measured first | under discussion |
-| 19 | the name | to choose | under discussion |
-| 20 | the proposal's author line | to ask | not yet answered |
+| 11 | interface data and lifting | tier 0: the cosine trace coefficients, Dirichlet exact through the modes; Robin or wave coefficients at tier 2 only | revised from "Robin/wave everywhere" by decision 6 |
+| 12 | the conservation head | face fluxes with exact discrete conservation; required for conservation-law families, optional for diffusion | |
+| 13 | certification | tier 0 by construction plus the assembled smallest eigenvalue (gate SE1); tiers 1–2 by bound propagation, with a linear-plus-correction fallback | |
+| 14 | time | the step as the Fourier number, a declared range, refusal outside it | **refined while writing:** the step-doubling penalty applies only to networks approximating the exact evolution (Stage 2's flow); tier-0 networks approximate the backward-Euler step, for which $(I+2\Delta t\,L)^{-1}\ne(I+\Delta t\,L)^{-2}$ |
+| 15 | the training objective | energy-norm error of the modes and particular field; the label-free energy objective as comparison C2 | revised by decision 6 (the port matrix is derived, not supervised); **while writing:** the label-free objective was shown to have exactly the same gradients (Corollary 11 of the document) |
+| 16 | the Expert Card | envelope, Fourier range, port modes, certificates, precision, licence, tiers; host rules | the document's Appendix A |
+| 17 | the training route | from scratch for Stages 0–1; a controlled fine-tuning comparison at Stage 2 (DPOT, Walrus or GPhyT; Poseidon excluded by its licence) | |
+| 18 | the first family and its gate | 2-D diffusion (`THERM`); gates E1–E6 and SE1–SE3, comparisons C1–C6; the forward time on the owner's laptop and a GPU measured first | [[chart-operator-training-and-cost]] §6 |
+| 19 | the name | "the chart operator" | an atlas is a set of charts |
+| 20 | the author line | Naunidh Singh | the title was left to the architecture chat: *Chart Operators: Learned Superelements for Domain Decomposition on Curved Geometry* |
 
 ---
 
-## 5. For the proofs chat — a draft, to be finalised in version 1
+## 5. For the proofs chat — the first draft (finalised in [[chart-operator-architecture]] §7, which adds T26)
 
 The decided coupling stack changes what the headline theorem of [[formal-proofs-plan]] §3 must cover. **Tiers 1 and 2 keep T1, T8, T9 and T9′ as stated.** Tier 0 has no iteration, so its guarantee is a statement about one linear solve. A draft, **ours**, Tier A in Lean (finite-dimensional linear algebra):
 
@@ -236,7 +239,7 @@ Item (ii) is checked numerically to $2\times10^{-15}$ by `scripts/arch_superelem
 
 ## 6. What this page does not do
 
-1. It does not replace version 0. The wiki's design pages are rewritten once the owner confirms the whole design.
+1. It is not the design document: [[chart-operator-architecture]] (version 1) and `proposal/architecture/index.html` are.
 2. Nothing learned was trained. The probes use classical solves; the one learned measurement is the forward cost of untrained backbones (§3.13), which says nothing about accuracy.
 3. The block layout for forks and rings (§3.3), the smooth-outline chart (§3.7) and every tier are designs, not builds.
 
