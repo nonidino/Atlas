@@ -307,7 +307,7 @@ The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blue
 
 *Kept by the chat that states and proves batches 4 to 6 (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements).* Status words as in §0. Builds of this chat are recorded in `out/lean/builds-batches-4-6.jsonl`, its axiom checks in `out/lean/axioms-batches-4-6.json`, and its declarations are listed in `lean/decls-batches-4-6.txt`.
 
-**Where this stands (2026-10-01).** The owner approved the statements of batches 4 and 5 on 2026-10-01. **Batch 4 (tier 0) is checked**: 28 theorems in five Lean files, no `sorry`, each resting on Lean's three standard axioms only (§7.1 to §7.3). Batch 5 (tier 2) is **approved**: 14 theorems and one definition in four files, proofs not yet checked (§7.4 to §7.6). Batch 6 is not stated yet.
+**Where this stands (2026-10-01).** The owner approved the statements of batches 4 and 5 on 2026-10-01. **Batch 4 (tier 0) is checked**: 28 theorems in five Lean files, no `sorry`, each resting on Lean's three standard axioms only (§7.1 to §7.3). **Batch 5 (tier 2) is proved**: 14 theorems in four files with no `sorry` of their own; 12 are checked, and 2 (`contraction_contract`, `two_level_contract`) quote T1 and wait on the other chat's proof of it (§7.4 to §7.6). Batch 6 is not stated yet.
 
 ### 7.1 The record, batch 4
 
@@ -344,7 +344,7 @@ The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blue
 
 **The build that checked batch 4 (2026-10-01, 18:43, on battery).** `python scripts/lean_build.py --clean`: every project file re-checked, **56.0 s**, 23 files, no error; the five batch-4 files took 16 to 23 s each, and none gave a warning. The 62 `sorry` warnings of that build are all in other files: 48 in the thirteen files of batches 1 to 3, which the other chat is proving, and 14 in batch 5, not yet proved at that moment. **The axiom check** on this chat's 68 names (17 s): the 28 batch-4 theorems and the 26 definitions depend on `propext`, `Classical.choice` and `Quot.sound` only. **No batch-4 theorem uses a theorem of batches 1 to 3**, so none waits on the other chat. No `sorry`, no new axiom and no `maxHeartbeats` in the five files.
 
-**The profile (on battery).** `python scripts/lean_build.py --profile`: 22 files, 549.7 s one after another. **No tactic or elaboration step reached ten seconds.** The script's count was 10 all the same, and it returned a failure: every one of the ten lines is `import took 10.1 s` to `12.5 s`, the time to load Mathlib's compiled files at the battery's clock speed, and five of the ten are in files of batches 1 to 3 that hold statements only. So the rule "a tactic call over ten seconds is replaced" is met, and the script's own verdict is not: it needs a run on mains, where loading takes about half as long (§1.1), to read zero. **Not yet run on mains.**
+**The profile (on battery).** `python scripts/lean_build.py --profile`: 22 files, 549.7 s one after another. **No tactic or elaboration step reached ten seconds.** The script's count was 10 all the same, and it returned a failure: every one of the ten lines is `import took 10.1 s` to `12.5 s`, the time to load Mathlib's compiled files at the battery's clock speed, and five of the ten are in files of batches 1 to 3 that hold statements only. So the rule "a tactic call over ten seconds is replaced" is met, and the script's own verdict is not: it needs a run in which loading is faster to read zero. **The second run, half an hour later and still on battery, read zero** (§7.4): the same files loaded in under ten seconds each. So the count depends on the machine's state at the moment, and what it is meant to catch, a slow tactic, has not occurred.
 
 **What proving added, and what it changed.** 22 helper lemmas and one helper definition (`Atlas.Superelement.modeField`); the five files grew from 633 lines to 1,080. A script (`stmt_check.py`, this chat's scratch) compared every approved declaration with the proved file: all 56 (theorems, definitions and structures) are word for word what the owner approved. Three were then **generalised** by one line each (`omit [Fintype …] in`), because Lean's linter reported an unused hypothesis: `gram_sub_gram` needs no finiteness of the index set, `field_admissible` none of the set of pieces, `solution_unique` none of the port and coordinate sets. Each still implies its approved form. One route changed: the tier-0 Galerkin statement is proved from a new lemma for any affine parametrisation (`Atlas.QuadEnergy.isMin_iff_of_affine`), not from the coordinate form `galerkin_iff_isMin`, which is proved and stands on its own.
 
@@ -458,24 +458,32 @@ None of these changes a claim of the architecture document. Each is a place wher
 
 | # | statement, in one line | Lean name | file | status | build time | axioms |
 |---|---|---|---|---|---|---|
-| T8 | $\lVert e-Zf\rVert^2=\lVert e+Zf\rVert^2-4Z\langle f,e\rangle$ | `Atlas.wave_identity` | `AtlasProofs/Cayley.lean` | drafted | — | — |
-| **T8** | the bound, for any effort $e$ and flow $f$ | `Atlas.wave_bound` | same | drafted | — | — |
-| **T8** | the Cayley bound for a linear $\Lambda$ | `Atlas.cayley_bound` | same | drafted | — | — |
-| **T8** | in finite dimensions $I+Z\Lambda$ is invertible and $\lVert\mathcal S\rVert^2\le1-\frac{4Zc}{(1+ZM)^2}$ | `Atlas.cayley_transform` | same | drafted | — | — |
-| T8, $c=0$ | a passive $\Lambda$ has $\lVert\mathcal S\rVert\le1$ | `Atlas.cayley_nonexpansive` | same | drafted | — | — |
-| T8, matrices | a positive semidefinite matrix has a non-expansive scattering matrix | `Atlas.cayley_matrix_nonexpansive` | same | drafted | — | — |
-| **T8 at tier 0** | the Gram port matrix of any network output has a non-expansive scattering matrix, for every $Z>0$ | `Atlas.Piece.gram_cayley_nonexpansive` | same | drafted | — | — |
-| **T9a** | $\rho$-Lipschitz experts and a non-expansive exchange give a $\rho$-Lipschitz sweep in the $\ell^2$ product | `Atlas.waveSweep_lipschitz` | `AtlasProofs/ContractionContract.lean` | drafted | — | — |
-| **T9a** | the contract: one answer, rate $\rho$, within $\bigl(\sum_i\delta_i^2\bigr)^{1/2}/(1-\rho)$ of the classical one | `Atlas.contraction_contract` | same | drafted | — | — |
-| T9b | a fixed point of the two-level iteration is a fixed point of the sweep | `Atlas.twoLevel_fixedPt_isFixedPt` | `AtlasProofs/TwoLevel.lean` | drafted | — | — |
-| T9b | the converse | `Atlas.fixedPt_isFixedPt_twoLevel` | same | drafted | — | — |
-| **T9b** | the contract, from a contraction of the composite two-level map | `Atlas.two_level_contract` | same | drafted | — | — |
-| **T9b, finding** | a sweep that contracts the fine space, with an exact coarse solve, whose two-level iterates diverge | `Atlas.two_level_fine_contraction_diverges` | same | drafted | — | — |
-| **the SNI remark** | a contraction, a map within $\tfrac12$ of it everywhere, and a two-cycle of that map | `Atlas.sni_counterexample` | `AtlasProofs/SniCounterexample.lean` | drafted | — | — |
+| T8 | $\lVert e-Zf\rVert^2=\lVert e+Zf\rVert^2-4Z\langle f,e\rangle$ | `Atlas.wave_identity` | `AtlasProofs/Cayley.lean` | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T8** | the bound, for any effort $e$ and flow $f$ | `Atlas.wave_bound` | same | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T8** | the Cayley bound for a linear $\Lambda$ | `Atlas.cayley_bound` | same | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T8** | in finite dimensions $I+Z\Lambda$ is invertible and $\lVert\mathcal S\rVert^2\le1-\frac{4Zc}{(1+ZM)^2}$ | `Atlas.cayley_transform` | same | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T8, $c=0$ | a passive $\Lambda$ has $\lVert\mathcal S\rVert\le1$ | `Atlas.cayley_nonexpansive` | same | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T8, matrices | a positive semidefinite matrix has a non-expansive scattering matrix | `Atlas.cayley_matrix_nonexpansive` | same | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T8 at tier 0** | the Gram port matrix of any network output has a non-expansive scattering matrix, for every $Z>0$ | `Atlas.Piece.gram_cayley_nonexpansive` | same | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T9a** | $\rho$-Lipschitz experts and a non-expansive exchange give a $\rho$-Lipschitz sweep in the $\ell^2$ product | `Atlas.waveSweep_lipschitz` | `AtlasProofs/ContractionContract.lean` | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T9a** | the contract: one answer, rate $\rho$, within $\bigl(\sum_i\delta_i^2\bigr)^{1/2}/(1-\rho)$ of the classical one | `Atlas.contraction_contract` | same | **proved here; waits on T1** | 14 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| T9b | a fixed point of the two-level iteration is a fixed point of the sweep | `Atlas.twoLevel_fixedPt_isFixedPt` | `AtlasProofs/TwoLevel.lean` | checked | 13 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T9b | the converse | `Atlas.fixedPt_isFixedPt_twoLevel` | same | checked | 13 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T9b** | the contract, from a contraction of the composite two-level map | `Atlas.two_level_contract` | same | **proved here; waits on T1** | 13 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| **T9b, finding** | a sweep that contracts the fine space, with an exact coarse solve, whose two-level iterates diverge | `Atlas.two_level_fine_contraction_diverges` | same | checked | 13 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **the SNI remark** | a contraction, a map within $\tfrac12$ of it everywhere, and a two-cycle of that map | `Atlas.sni_counterexample` | `AtlasProofs/SniCounterexample.lean` | checked | 22 s | `propext`, `Classical.choice`, `Quot.sound` |
 
-**Builds so far (statements only, on mains).** The four new files with `sorry` proofs: 36.1 s (12 to 17 s per file, four at once, then the root). The axiom check on this chat's 68 names: 13.3 s; it knows all 68, passes the 26 definitions and sees a `sorry` in each of the 42 theorems.
+**The build that checked batch 5 (2026-10-01, 19:00, on battery).** `python scripts/lean_build.py --clean`: **51.6 s**, 23 files, no error; the four batch-5 files took 13 to 22 s each and gave no warning. The 48 `sorry` warnings left are all in the thirteen files of batches 1 to 3. **The axiom check** on this chat's 68 names (17 s): 66 depend on the three standard axioms only.
 
-**`contraction_contract` and `two_level_contract` use T1** (`Atlas.perturbed_contraction`), which the other chat is proving. Until the branches are merged the axiom check will show `sorryAx` for these two even when their own proofs are complete.
+**The profile (on battery, after the batch-5 proofs).** `python scripts/lean_build.py --profile`: 22 files, 307.2 s one after another (9 to 17 s each), **0 steps at or over ten seconds**, exit 0. The run before it, for batch 4, took 549.7 s on the same files and listed ten `import` lines (§7.1): both runs report battery power, so the difference is the machine's load or clock speed at the time, which this chat did not measure.
+
+**Two theorems wait on the other chat.** `Atlas.contraction_contract` (T9a) and `Atlas.two_level_contract` (T9b) quote T1, `Atlas.perturbed_contraction`, whose proof is still a `sorry` in this tree. Their own proofs are complete: `ContractionContract.lean` and `TwoLevel.lean` give no `sorry` warning in the build log, and the `sorryAx` the kernel reports for these two arrives through that one name. They become *checked* when the branches are merged and T1 is proved. Nothing else in batch 5 uses a theorem of batches 1 to 3.
+
+**What proving added, and what it changed.** Two helper lemmas in `Cayley.lean` (`cayley_inverse`, `cayley_inverse_apply`); the four files grew from 328 lines to 586. All 15 approved declarations are word for word what the owner approved. No `sorry`, no new axiom, no `maxHeartbeats`.
+
+**The first build of the proofs failed, and how.** Eleven errors, all in `Cayley.lean` and none about the mathematics: two `linarith` hint lists broken across lines at a column that ends the tactic block; the tactic `push_neg`, deprecated in this Mathlib; and a missing import for the instance that says the reals are a star-ordered ring, which "the identity matrix is positive definite" needs. `TwoLevel.lean`, `SniCounterexample.lean` and `ContractionContract.lean` compiled as first written.
+
+**Builds of the statements (before the proofs, on mains).** The four new files with `sorry` proofs: 36.1 s (12 to 17 s per file, four at once, then the root). The axiom check on this chat's 68 names: 13.3 s; it knew all 68, passed the 26 definitions and saw a `sorry` in each of the 42 theorems.
 
 ### 7.5 The statements, batch 5 (tier 2)
 

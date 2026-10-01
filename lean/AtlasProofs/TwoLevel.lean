@@ -47,14 +47,19 @@ fixed point of the two-level iteration `C ∘ T` is a fixed point of `T`. -/
 theorem twoLevel_fixedPt_isFixedPt (T C : V → V) (P₀ : V →ₗ[ℝ] V)
     (hC₁ : ∀ b, P₀ (C b - b) = C b - b) (hC₂ : ∀ b, P₀ (C b - T (C b)) = 0)
     {a : V} (ha : C (T a) = a) : T a = a := by
-  sorry
+  have h1 := hC₁ (T a)
+  have h2 := hC₂ (T a)
+  rw [ha] at h1 h2
+  rw [h2] at h1
+  exact (sub_eq_zero.mp h1.symm).symm
 
 /-- **T9b (consistency, converse).** If the coarse solve leaves alone every state that has
 no coarse residual, a fixed point of the sweep is a fixed point of the two-level
 iteration. -/
 theorem fixedPt_isFixedPt_twoLevel (T C : V → V) (P₀ : V →ₗ[ℝ] V)
     (hC₃ : ∀ b, P₀ (b - T b) = 0 → C b = b) {a : V} (ha : T a = a) : C (T a) = a := by
-  sorry
+  rw [ha]
+  exact hC₃ a (by rw [ha, sub_self, map_zero])
 
 end Consistency
 
@@ -74,7 +79,10 @@ theorem two_level_contract {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V
     ∃ al : V, Cl (Tl al) = al ∧ Tl al = al ∧ (∀ b, Cl (Tl b) = b → b = al) ∧
       (∀ (a₀ : V) (k : ℕ), dist ((fun a => Cl (Tl a))^[k] a₀) al ≤ ρ ^ k * dist a₀ al) ∧
       dist al ac ≤ δ / (1 - ρ) := by
-  sorry
+  obtain ⟨al, hfix, huniq, hrate, hdist⟩ :=
+    perturbed_contraction (Tc := fun a => Cc (Tc a)) (Tl := fun a => Cl (Tl a))
+      hρ₀ hρ₁ hcomp hac hδ
+  exact ⟨al, hfix, twoLevel_fixedPt_isFixedPt Tl Cl P₀ hC₁ hC₂ hfix, huniq, hrate, hdist⟩
 
 /-- **The finding: contracting the fine space is not enough.** On the plane, with coarse
 space the first axis and fine space the second, take the sweep `G (x, y) = (y / 2, 10 x)`
@@ -93,6 +101,33 @@ theorem two_level_fine_contraction_diverges :
       (∀ e, (C e).2 = e.2 ∧ (C e - G (C e)).1 = 0) ∧
       (∀ e, G e = e → e = 0) ∧
       ∀ k : ℕ, (fun e => C (G e))^[k] (1, 2) = ((5 : ℝ) ^ k, 2 * (5 : ℝ) ^ k) := by
-  sorry
+  intro G C
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro y y'
+    have h1 : G (0, y) - G (0, y') = ((y - y') / 2, 0) := by
+      simp only [G, Prod.mk_sub_mk, mul_zero, sub_self, Prod.mk.injEq, and_true]
+      ring
+    have h2 : ((0 : ℝ), y) - ((0 : ℝ), y') = (0, y - y') := by
+      simp only [Prod.mk_sub_mk, sub_self]
+    rw [h1, h2, Prod.norm_def, Prod.norm_def]
+    simp only [norm_zero, Real.norm_eq_abs]
+    rw [max_eq_left (abs_nonneg _), max_eq_right (abs_nonneg _), abs_div, abs_two]
+    linarith
+  · intro e
+    refine ⟨rfl, ?_⟩
+    simp only [G, C, Prod.fst_sub, sub_self]
+  · intro e he
+    have h1 : e.2 / 2 = e.1 := congrArg Prod.fst he
+    have h2 : 10 * e.1 = e.2 := congrArg Prod.snd he
+    have hx : e.1 = 0 := by linarith
+    have hy : e.2 = 0 := by linarith
+    exact Prod.ext hx hy
+  · intro k
+    induction k with
+    | zero => simp
+    | succ n ih =>
+      rw [Function.iterate_succ_apply', ih]
+      simp only [G, C, Prod.mk.injEq]
+      constructor <;> ring
 
 end Atlas

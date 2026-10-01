@@ -45,7 +45,22 @@ theorem waveSweep_lipschitz {S : ∀ i, W i → W i} {Ex : PiLp 2 W → PiLp 2 W
     (hρ : 0 ≤ ρ) (hS : ∀ i (x y : W i), dist (S i x) (S i y) ≤ ρ * dist x y)
     (hEx : ∀ x y, dist (Ex x) (Ex y) ≤ dist x y) (g a a' : PiLp 2 W) :
     dist (waveSweep S Ex g a) (waveSweep S Ex g a') ≤ ρ * dist a a' := by
-  sorry
+  unfold waveSweep
+  rw [dist_add_right]
+  refine (hEx _ _).trans ?_
+  rw [PiLp.dist_eq_of_L2, PiLp.dist_eq_of_L2]
+  have h1 : ∑ i, dist (S i (a i)) (S i (a' i)) ^ 2 ≤ ρ ^ 2 * ∑ i, dist (a i) (a' i) ^ 2 := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_le_sum fun i _ => ?_
+    have h := hS i (a i) (a' i)
+    have h0 : (0 : ℝ) ≤ dist (S i (a i)) (S i (a' i)) := dist_nonneg
+    calc dist (S i (a i)) (S i (a' i)) ^ 2 ≤ (ρ * dist (a i) (a' i)) ^ 2 :=
+          sq_le_sq' (by linarith) h
+      _ = ρ ^ 2 * dist (a i) (a' i) ^ 2 := mul_pow _ _ _
+  calc Real.sqrt (∑ i, dist (S i (a i)) (S i (a' i)) ^ 2)
+      ≤ Real.sqrt (ρ ^ 2 * ∑ i, dist (a i) (a' i) ^ 2) := Real.sqrt_le_sqrt h1
+    _ = ρ * Real.sqrt (∑ i, dist (a i) (a' i) ^ 2) := by
+        rw [Real.sqrt_mul (sq_nonneg ρ), Real.sqrt_sq hρ]
 
 /-- **T9a (the contraction contract).** `S i` are the learned scattering maps and `Sc i` the
 classical ones, with the same exchange and data. `ac` is the classical answer. If every
@@ -64,6 +79,17 @@ theorem contraction_contract [∀ i, CompleteSpace (W i)] {S Sc : ∀ i, W i →
       (∀ (a₀ : PiLp 2 W) (k : ℕ),
         dist ((waveSweep S Ex g)^[k] a₀) al ≤ ρ ^ k * dist a₀ al) ∧
       dist al ac ≤ Real.sqrt (∑ i, δ i ^ 2) / (1 - ρ) := by
-  sorry
+  have hlip : ∀ a a', dist (waveSweep S Ex g a) (waveSweep S Ex g a') ≤ ρ * dist a a' :=
+    fun a a' => waveSweep_lipschitz hρ₀ hS hEx g a a'
+  have hdef : dist (waveSweep S Ex g ac) (waveSweep Sc Ex g ac)
+      ≤ Real.sqrt (∑ i, δ i ^ 2) := by
+    unfold waveSweep
+    rw [dist_add_right]
+    refine (hEx _ _).trans ?_
+    rw [PiLp.dist_eq_of_L2]
+    refine Real.sqrt_le_sqrt (Finset.sum_le_sum fun i _ => ?_)
+    have h0 : (0 : ℝ) ≤ dist (S i (ac i)) (Sc i (ac i)) := dist_nonneg
+    exact sq_le_sq' (by linarith [hδ i]) (hδ i)
+  exact perturbed_contraction hρ₀ hρ₁ hlip hac hdef
 
 end Atlas

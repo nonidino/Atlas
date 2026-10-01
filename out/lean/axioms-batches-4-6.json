@@ -1,9 +1,9 @@
 {
- "when": "2026-10-01T18:45:01-04:00",
+ "when": "2026-10-01T18:51:56-04:00",
  "declarations": 68,
- "failing": 14,
- "with_sorry": 14,
- "seconds": 16.7,
+ "failing": 2,
+ "with_sorry": 2,
+ "seconds": 16.58,
  "lean_exit": 0,
  "rows": [
   {
@@ -487,71 +487,64 @@
    "name": "Atlas.wave_identity",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.wave_bound",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.cayley_bound",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.cayley_transform",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.cayley_nonexpansive",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.cayley_matrix_nonexpansive",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.Piece.gram_cayley_nonexpansive",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.waveSweep",
@@ -566,11 +559,10 @@
    "name": "Atlas.waveSweep_lipschitz",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.contraction_contract",
@@ -586,21 +578,19 @@
    "name": "Atlas.twoLevel_fixedPt_isFixedPt",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.fixedPt_isFixedPt_twoLevel",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.two_level_contract",
@@ -616,21 +606,19 @@
    "name": "Atlas.two_level_fine_contraction_diverges",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   },
   {
    "name": "Atlas.sni_counterexample",
    "axioms": [
     "propext",
-    "sorryAx",
     "Classical.choice",
     "Quot.sound"
    ],
-   "verdict": "FAIL: sorry"
+   "verdict": "ok"
   }
  ],
  "lean": "leanprover/lean4:v4.34.1",
