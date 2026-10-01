@@ -998,7 +998,10 @@ def _check_physics(spec: CaseSpec) -> list[Issue]:
         why = p.problem(spec.physics.get(p.name))
         if why:
             out.append(Issue("error", "physics", why))
-    unknown = sorted(set(spec.physics.params) - {p.name for p in fam.params})
+    #: the learned case's marker (demo item 1.5, `learned_case.MARKER`) is read by the
+    #: runner, not by the family's physics
+    unknown = sorted(set(spec.physics.params) - {p.name for p in fam.params}
+                     - {"learned_case"})
     if unknown:
         out.append(Issue("warning", "physics",
                          f"the {fam.id} family does not read {', '.join(unknown)}"))
@@ -1583,6 +1586,8 @@ SHOWS: dict[str, str] = {
     "fast-river": "A long river's plume on six windows, run at once on threads",
     "fast-sound": "A sound pulse from air into water on four windows, run at once on "
                   "threads",
+    "learned-farm": "Learned experts: a network trained for this farm steps every window "
+                    "(a fixed case)",
 }
 
 
@@ -1712,6 +1717,14 @@ EXAMPLES: dict[str, Example] = {e.key: e for e in (
             "transport-2d", "A",
             (("nx", 3840), ("ny", 120), ("windows", 6), ("exchange", 24),
              ("steps", 200), ("threads", 6))),
+    Example("learned-farm", "Wind farm with learned window experts (demo item 1.5)",
+            "farm-12 as the learned case's gate evaluated it, held out of training: every "
+            "window stepped by a small network trained for the slot, beside the classical "
+            "decomposition, the full domain and a classical decomposition on a grid twice "
+            "as coarse, each measured against a truth at twice the resolution. Fixed: its "
+            "experts were trained for this farm.", "incompressible-2d", "A",
+            (("cols", 6), ("rows", 4), ("steps", 12), ("threads", 4),
+             ("arms", "parallel full learned coarse"))),
     Example("fast-heat", "A copper spreader in a steel plate (style M, the Fast example)",
             "A steel plate with a copper heat spreader on a tenth of its area, warming "
             "from one hot edge; the pieces are the two materials, and the copper "
@@ -1749,6 +1762,10 @@ def example_case(key: str = "wake-array-3") -> CaseSpec:
     ex = EXAMPLES[key]
     if key == "farm-hill":
         return _farm_hill_example(ex)
+    if key == "learned-farm":
+        s = _farm_example(ex)
+        s.physics.params["learned_case"] = 1.0         # `learned_case.MARKER`
+        return s
     if ex.family == "incompressible-2d":
         return _farm_example(ex)
     builder = {"wall-2": _wall_example, "plate-insert": _insert_example,

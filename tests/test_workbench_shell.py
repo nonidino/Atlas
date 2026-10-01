@@ -182,6 +182,9 @@ def test_more_examples_lists_the_types_own_with_no_names(wb):
         from atlas.workbench.spec import FAST_EXAMPLES
         mine = [k for k, ex in EXAMPLES.items() if ex.family == fid
                 and k != FAST_EXAMPLES.get(fid)]
+        # the learned case first, where the farm's examples are (demo item 1.5)
+        mine = [k for k in mine if k == "learned-farm"] + [k for k in mine
+                                                           if k != "learned-farm"]
         assert [tuple(i) for i in items] == [(EXAMPLES[k].shows, f"file:example:{k}")
                                              for k in mine], fid
         for label, _action in items:

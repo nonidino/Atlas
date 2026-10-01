@@ -7,5 +7,7 @@ __pycache__/
 
 # What the workbench writes while it runs: the cases you save and every run's
 # record (out/workbench/cases/), and the self-test's server log. This folder
-# ships nothing under out/.
-out/
+# ships nothing under out/ but the learned case's files, which its page reads:
+# the trained weights, the stored truth and the registered evaluation's record.
+out/*
+!out/learned-case/

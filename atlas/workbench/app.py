@@ -40,6 +40,7 @@ import panel as pn
 from pydantic import ValidationError
 
 from . import geometry as geo
+from . import learned_case
 from . import registry
 from .compile import CompileJob
 from .editor import GeometryEditor
@@ -274,6 +275,12 @@ class Workbench:
         self.log(label)
         self.refresh(rebuild=True)
 
+    @property
+    def read_only(self) -> bool:
+        """The learned case is fixed: its experts were trained for this farm (demo
+        item 1.5).  Read from the case's key, so Undo back to it restores it."""
+        return self.case_key == learned_case.KEY
+
     def edit(self, apply: Callable[[CaseSpec], None], label: str,
              defaults: bool = False, say: list[str] | None = None) -> bool:
         """Change the case.  Validated as a whole case; refused if invalid.
@@ -288,6 +295,10 @@ class Workbench:
         case now lacks to run is filled in (`starter.fill_defaults`), each thing
         said in the log and a note, and all of it undone with the edit.  ``say``:
         what else the note says first (filled in by ``apply``, read after it)."""
+        if self.read_only:
+            self.notify("info", learned_case.READ_ONLY + " Choose another example, or a "
+                                "kind in the header, to edit a case.")
+            return False
         new = self.spec.copy_deep()
         apply(new)
         taken = False
@@ -482,14 +493,21 @@ class Workbench:
             if arms:
                 # a Fast example that declares the arms its comparison needs (the
                 # farm: two minutes for every arm would not reach its accuracy)
-                self.run_arms = [a for a in ("serial", "parallel", "full")
+                self.run_arms = [a for a in ("serial", "parallel", "full", "learned", "coarse")
                                  if a in str(arms).split()]
                 self.log(f"run arms set by the example: {', '.join(self.run_arms)}")
+            if key == learned_case.KEY:
+                tail = (" Run marches four arms in turns: the classical windows, the "
+                        "whole domain, the same windows stepped by the network, and "
+                        "classical windows on a grid twice as coarse, each measured "
+                        "against a truth at twice the resolution.")
+            elif arms:
+                tail = (" It runs the threaded windows and the whole domain; the serial "
+                        "arm, the threads' bit-for-bit control, is in Run settings.")
+            else:
+                tail = ""
             self.notify("info", f"{EXAMPLES[key].shows}. Undo (↶) brings back the case "
-                                f"before it."
-                        + (f" It runs the threaded windows and the whole domain; the "
-                           f"serial arm, the threads' bit-for-bit control, is in Run "
-                           f"settings." if arms else ""))
+                                f"before it." + tail)
         elif action == "file:open":
             self._dialog_open()
         elif action == "file:save":
@@ -810,8 +828,12 @@ class Workbench:
         action."""
         fid = self.spec.physics.family
         fast = set(FAST_EXAMPLES.values())                 # the button's own part opens it
-        return [(ex.shows, f"file:example:{k}") for k, ex in EXAMPLES.items()
-                if ex.family == fid and k not in fast]
+        items = [(ex.shows, f"file:example:{k}") for k, ex in EXAMPLES.items()
+                 if ex.family == fid and k not in fast]
+        #: the learned case first, where the farm's examples are (demo item 1.5): the
+        #: header has no width left for a button of its own at 1090 px
+        first = [i for i in items if i[1] == f"file:example:{learned_case.KEY}"]
+        return first + [i for i in items if i not in first]
 
     def _on_type(self, e) -> None:
         """The header's type selector: another kind starts a new case of it."""
@@ -905,6 +927,12 @@ class Workbench:
         ranges = (old.ranges() if (self._keep_view and old is not None
                                    and old._domain == (d.nx, d.ny)) else None)
         self.geo_editor = GeometryEditor(self, ranges)
+        if self.read_only:
+            return pn.Column(
+                pn.pane.Alert(learned_case.READ_ONLY + " Run & results marches it.",
+                              alert_type="info", sizing_mode="stretch_width",
+                              margin=(0, 8, 4, 8)),
+                self.geo_editor.view(), sizing_mode="stretch_width")
         return self.geo_editor.view()
 
     def _view_run(self):
@@ -932,15 +960,17 @@ class Workbench:
                                                   start=1, end=cpus, width=240,
                                                   disabled="parallel" not in available),
                              lambda c, v: setattr(c.run, "threads", v), "run.threads")
-        opts = {names[a]: a for a in available}
+        opts = {names.get(a, a): a for a in available}
         arms = pn.widgets.CheckBoxGroup(options=opts,
                                         value=[a for a in self.run_arms if a in available],
-                                        inline=False)
+                                        inline=False, disabled=self.read_only)
+        if self.read_only:
+            steps.disabled = threads.disabled = True
 
         def set_arms(e):
             kept = [a for a in self.run_arms if a not in available]
-            self.run_arms = [a for a in ("serial", "parallel", "full") if a in e.new
-                             or a in kept]
+            self.run_arms = [a for a in ("serial", "parallel", "full", "learned", "coarse")
+                             if a in e.new or a in kept]
         arms.param.watch(set_arms, "value")
         running = self.run is not None and self.run.active
         n_err = sum(1 for i in self.issues() if i.severity == "error")

@@ -140,6 +140,92 @@ def test_the_scaled_cases_keep_the_physics_where_it_is():
         LA.scaled_spec(s, 0.3)
 
 
+# ---------------------------------------------------------------------------
+# the case in the page
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def wb(tmp_path, monkeypatch):
+    pytest.importorskip("panel")
+    from atlas.workbench import compile as compile_
+    from atlas.workbench import runner
+    from atlas.workbench.app import Workbench
+    monkeypatch.setattr(runner.CaseRun, "start", lambda self: None)
+    monkeypatch.setattr(compile_.CompileJob, "start", lambda self: None)
+    return Workbench(cases_dir=str(tmp_path))
+
+
+def test_the_learned_case_is_first_under_the_farms_examples_and_fixed(wb):
+    from atlas.workbench import learned_case as LC
+    wb.dispatch("case:type:incompressible-2d")
+    items = wb._example_items()
+    assert items[0][1] == "file:example:%s" % LC.KEY
+    wb.dispatch("file:example:%s" % LC.KEY)
+    assert wb.read_only and wb.case_key == LC.KEY
+    before = wb.spec.to_json()
+    assert wb.edit(lambda c: setattr(c.run, "steps", 3), "an edit") is False
+    assert wb.spec.to_json() == before
+    assert any(LC.READ_ONLY in line for line in wb.log_lines)
+    assert set(wb.run_arms) == {"parallel", "full", "learned", "coarse"}
+    wb.dispatch("case:type:conduction-2d")                 # another kind: editable again
+    assert not wb.read_only
+    assert not any(i[1].endswith(LC.KEY) for i in wb._example_items())
+    wb.dispatch("edit:undo")                               # Undo restores the fixed case
+    assert wb.read_only
+
+
+def test_the_learned_case_marches_four_arms_and_measures_them_against_the_truth(
+        tmp_path, monkeypatch):
+    """A zero network and a truth that is the full domain's own fields, at a horizon
+    of 2 macro-steps: the full domain's error is then exactly zero, and every arm
+    is measured, checked and drawn."""
+    pytest.importorskip("torch")
+    from atlas.workbench import learned_case as LC
+    from atlas.workbench import runner
+    from atlas.workbench.learned_net import WindowUNet, save_window_net
+    from atlas.workbench.runview import learned_card
+    from atlas.workbench.spec import example_case
+    net = WindowUNet(width=G.NET_WIDTH, depth=G.NET_DEPTH)
+    for p in net.parameters():
+        p.data.zero_()
+    weights = str(tmp_path / "w.pt")
+    save_window_net(net, weights)
+    monkeypatch.setattr(LC, "WEIGHTS", weights)
+    monkeypatch.setattr(G, "HORIZONS", (2, 40))
+    spec = example_case(LC.KEY)
+    spec.run.steps = 2
+    from atlas.workbench import learned_arms as LA
+    f = LA.FarmRun(spec, arms=("full",), threads=1)
+    s, power = f.initial("full"), []
+    for _ in range(2):
+        s = f.step("full", s)
+        power.append(f.power(s.rec))
+    truth = tmp_path / "truth.npz"
+    # the stored truth lives on the D/16 grid it is compared on
+    np.savez(truth, power=np.array(power + [power[-1]] * 38),
+             u2=G.block_mean(s.u, 2), v2=G.block_mean(s.v, 2))
+    monkeypatch.setattr(LC, "TRUTH", str(truth))
+    r = runner.CaseRun(spec, arms=LC.ARMS, steps=2, threads=2).run_blocking()
+    assert r.status == "done", r.progress().error
+    assert r.arms == LC.ARMS
+    e = r.results["metrics"]["errors_vs_truth"]
+    assert set(e) == set(LC.ARMS)
+    assert e["full"]["V"] == pytest.approx(0.0, abs=1e-12)
+    assert e["full"]["P"] == pytest.approx(0.0, abs=1e-12)
+    by = {c["key"]: c for c in r.results["checks"]}
+    assert by["mass"]["passed"] is True
+    assert by["competitor"]["passed"] in (True, False)
+    assert r.results["arm_labels"]["learned"] == LC.ARM_LABELS["learned"]
+    import html as html_
+    page = learned_card(r.results).object
+    assert html_.escape(LC.CAVEAT) in page and "Velocity" in page and "Farm power" in page
+    # the headline speed is the learned arm's, not the coarse competitor's
+    from atlas.workbench.runview import summary_cards
+    speed = summary_cards(r.results)[0].object
+    assert html_.escape(LC.ARM_LABELS["learned"].lower()) in speed
+
+
 def test_a_learned_step_with_a_zero_network_is_the_projected_blend():
     torch = pytest.importorskip("torch")
     from atlas.workbench import learned_arms as LA

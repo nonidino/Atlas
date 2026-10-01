@@ -27,7 +27,15 @@ from .runner import ARM_LABELS, CaseRun
 if TYPE_CHECKING:                                             # pragma: no cover
     from .app import Workbench
 
-ARM_COLOURS = {"serial": "#6b7280", "parallel": "#0e6874", "full": "#b45309"}
+#: an arm's colour in every plot; the learned case adds two arms (demo item 1.5),
+#: and an arm not named here is drawn grey rather than breaking the panel (the
+#: learned arm's KeyError stopped the Run view from drawing, found in the page)
+ARM_COLOURS = {"serial": "#6b7280", "parallel": "#0e6874", "full": "#b45309",
+               "learned": "#7c3aed", "coarse": "#2563eb"}
+
+
+def arm_colour(arm: str) -> str:
+    return ARM_COLOURS.get(arm, "#9ca3af")
 
 
 def _diverging(n: int = 101) -> tuple[str, ...]:
@@ -169,7 +177,7 @@ class RunPanel:
         arms = run.arms if run is not None else ()
         for a in arms:
             s = ColumnDataSource(dict(step=[], value=[]))
-            self.series_fig.line("step", "value", source=s, color=ARM_COLOURS[a],
+            self.series_fig.line("step", "value", source=s, color=arm_colour(a),
                                  line_width=2, legend_label=self.labels[a])
             self.series_src[a] = s
         if arms:
@@ -199,9 +207,9 @@ class RunPanel:
                 if a == "full":
                     continue
                 s = ColumnDataSource(dict(it=[], value=[]))
-                self.conv_fig.line("it", "value", source=s, color=ARM_COLOURS[a],
+                self.conv_fig.line("it", "value", source=s, color=arm_colour(a),
                                    line_width=2, legend_label=self.labels[a])
-                self.conv_fig.scatter("it", "value", source=s, color=ARM_COLOURS[a], size=4)
+                self.conv_fig.scatter("it", "value", source=s, color=arm_colour(a), size=4)
                 self.conv_src[a] = s
             if self.conv_src:
                 self.conv_fig.legend.location = "top_right"
@@ -468,7 +476,9 @@ def summary_cards(res: dict[str, Any]) -> list:
     ratios = {a: t.get("speedup_vs_full") for a, t in timing.items()
               if a != "full" and t.get("speedup_vs_full")}
     if ratios:
-        best = max(ratios, key=lambda a: ratios[a])
+        #: the learned case is about its learned arm, not its coarse competitor (whose
+        #: own ratio is in Details and whose accuracy the learned card sets beside it)
+        best = "learned" if "learned" in ratios else max(ratios, key=lambda a: ratios[a])
         cards.append(_card("Speed", f"{ratios[best]:.3g}×",
                            f"the whole domain's time divided by the {labels[best].lower()} "
                            f"arm's; above 1 is faster than the whole domain"))
@@ -492,6 +502,89 @@ def summary_cards(res: dict[str, Any]) -> list:
     cards.append(_card("Checks", f"{n_pass} of {len(checks)} passed", detail,
                        "FAIL" if n_fail else "pass", not n_fail))
     return cards
+
+
+def _bars(rows: list[tuple[str, float | None]], top: float) -> str:
+    """Horizontal bars, one per (label, value), scaled to ``top``."""
+    out = []
+    for label, v in rows:
+        w = 0 if v is None or top <= 0 else max(1, int(round(240 * min(1.0, v / top))))
+        val = "not measured" if v is None else f"{100 * v:.2f}%"
+        out.append(
+            f"<div style='display:flex;align-items:center;margin:1px 0'>"
+            f"<span style='width:230px;font-size:12px;color:#334155'>{html.escape(label)}</span>"
+            f"<span style='display:inline-block;height:10px;width:{w}px;background:#2563eb;"
+            f"border-radius:2px;margin-right:6px'></span>"
+            f"<span style='font-size:12px;font-family:ui-monospace,Consolas,monospace'>{val}"
+            f"</span></div>")
+    return "".join(out)
+
+
+def learned_card(res: dict[str, Any]):
+    """The learned case's card (demo item 1.5): this run's speed and its four arms
+    against the truth, the registered evaluation's verdict beside them, and the
+    caveat every learned case carries.  None for any other case."""
+    from . import learned_case as LC
+    from . import learned_gate as G
+    params = ((res.get("case") or {}).get("physics") or {}).get("params") or {}
+    if not params.get(LC.MARKER):
+        return None
+    labels = {**ARM_LABELS, **(res.get("arm_labels") or {})}
+    timing = res.get("timing") or {}
+    mean = {a: (t or {}).get("mean") for a, t in timing.items()}
+    lines = []
+    if mean.get("learned"):
+        bits = [f"the {name}'s took <b>{mean[a] / mean['learned']:.2f}&times;</b> the "
+                f"learned arm's" for a, name in (("parallel", "classical decomposition"),
+                                                 ("full", "full domain")) if mean.get(a)]
+        if bits:
+            lines.append("Speed this run, per macro-step: " + ", and ".join(bits) + ".")
+    metrics = res.get("metrics") or {}
+    errs = metrics.get("errors_vs_truth") or {}
+    order = [a for a in ("full", "parallel", "learned", "coarse") if a in errs]
+    body = ""
+    if errs:
+        for m, title in (("P", "Farm power, against the truth"),
+                         ("V", "Velocity (rms over the domain), against the truth")):
+            rows = [(labels.get(a, a), errs[a][m]) for a in order]
+            top = max((v for _l, v in rows if v is not None), default=0.0)
+            body += (f"<div style='font-size:13px;font-weight:600;margin:8px 0 2px 0'>"
+                     f"{title}</div>" + _bars(rows, top))
+    else:
+        body = ("<div style='font-size:13px'>Not measured against the truth: "
+                f"{html.escape(str(metrics.get('not_measured') or 'no learned arm ran'))}"
+                "</div>")
+    for c in res.get("checks") or []:
+        if c.get("key") in ("competitor", "mass"):
+            mark = {True: "&#10003;", False: "&#10007;", None: "&ndash;"}[c.get("passed")]
+            lines.append(f"{mark} {html.escape(c.get('title', ''))}: "
+                         f"{html.escape(str(c.get('detail') or fmt(c.get('value'), '.1e')))}")
+    gate = LC.gate_record()
+    if gate is None:
+        reg = ("The registered evaluation (40 macro-steps on AC, evaluated once) has not "
+               "run yet.")
+    else:
+        v = gate.get("verdict") or {}
+        parts = []
+        for g in G.GATE:
+            p = (v.get(g.key) or {}).get("passed")
+            parts.append(f"{g.key} {g.title}: "
+                         + {True: "pass", False: "<b>FAIL</b>", None: "not judged"}[p])
+        reg = (f"The registered evaluation ({gate.get('steps')} macro-steps, evaluated once "
+               f"on {str(gate.get('at', ''))[:10]}; {html.escape(gate.get('path', ''))}): "
+               + "; ".join(parts) + ". "
+               + ("<b>Every bar met.</b>" if v.get("all") else
+                  "<b>Not every bar was met</b>, and this card says so."))
+    return pn.pane.HTML(
+        "<div style='font-size:12px;font-weight:600;letter-spacing:0.4px;"
+        "text-transform:uppercase;color:#5b6b7c'>Learned experts &middot; a network in every "
+        "window, the blend and the projection classical</div>"
+        + "".join(f"<div style='font-size:13px;margin:4px 0'>{line}</div>" for line in lines)
+        + body
+        + f"<div style='font-size:13px;margin:8px 0 2px 0'>{reg}</div>"
+        + f"<div style='font-size:12px;color:#5b6b7c;font-style:italic;margin-top:6px'>"
+          f"{html.escape(LC.CAVEAT)}</div>",
+        styles=CARD_STYLE, sizing_mode="stretch_width", margin=(6, 6))
 
 
 def fast_card(res: dict[str, Any]):
@@ -616,11 +709,14 @@ def results_view(wb: "Workbench", res: dict[str, Any] | None):
         pn.pane.Markdown("\n".join(notes), sizing_mode="stretch_width", margin=(6, 10)),
         title="Details: every arm, every check, the notes and the record", collapsed=True,
         sizing_mode="stretch_width", margin=(10, 6))
-    #: the Fast example's speed card comes first (demo item 1.4)
+    #: the Fast example's speed card comes first (demo item 1.4), and the learned
+    #: case's card (item 1.5)
     speed_card = fast_card(res)
+    learned = learned_card(res)
     return pn.Column(
         pn.pane.Markdown(head, sizing_mode="stretch_width", margin=(12, 10, 4, 10)),
         *changed,
+        *([learned] if learned is not None else []),
         *([speed_card] if speed_card is not None else []),
         #: a Row shares the width among the cards; in a wrapping FlexBox each
         #: stretch_width card took a whole line (seen)

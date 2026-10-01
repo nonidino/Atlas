@@ -686,7 +686,23 @@ def spectral_divergence_after_projection(au: np.ndarray, av: np.ndarray,
     return float(np.abs(after).max()) * wa.DX
 
 
-def build(spec, arms=ARMS, threads: int = 4) -> WindFarmRun:
+#: the learned case's two arms (demo item 1.5, `learned_case`); every other farm
+#: keeps the runner's own names for its three
+from ..learned_case import ARM_LABELS                                  # noqa: E402
+
+
+def available_arms(spec) -> tuple[tuple[str, ...], dict[str, str]]:
+    """The arms a farm case can run: the three, or the learned case's four."""
+    from .. import learned_case
+    if learned_case.is_learned(spec):
+        return learned_case.available_arms(spec)
+    return ARMS, {}
+
+
+def build(spec, arms=ARMS, threads: int = 4):
+    from .. import learned_case
+    if learned_case.is_learned(spec):
+        return learned_case.LearnedCase(spec, arms=arms, threads=threads)
     return WindFarmRun(spec, arms=arms, threads=threads)
 
 
@@ -755,6 +771,6 @@ def case_graph(spec):
     return graph
 
 
-__all__ = ["FAMILY", "STYLE", "ARMS", "CHECKS", "WindFarmRun", "FarmState", "Rotor",
-           "build", "window_solver", "full_solver", "exposed_class",
+__all__ = ["FAMILY", "STYLE", "ARMS", "ARM_LABELS", "CHECKS", "WindFarmRun", "FarmState",
+           "Rotor", "available_arms", "build", "window_solver", "full_solver", "exposed_class",
            "wide_divergence_max", "spectral_divergence_after_projection"]

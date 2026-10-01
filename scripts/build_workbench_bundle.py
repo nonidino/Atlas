@@ -31,9 +31,10 @@ anything.  `scripts/verify_workbench_bundle.py` checks it on a fresh clone.
 **What must NOT be in it, and this script refuses to finish if it is:**
 NeuberNet in any form (no file of it, no path into its cache, no import of it;
 its name in prose is counted and reported, not refused -- PoC 3's rule);
-Poseidon's weights, and with them every other weight or field file: no binary
-file is allowed at all until the learned case (demo step 8) registers its own
-weights in `BINARY_ALLOWED`; a vendored `scOT`; and anything under ``out/``.
+Poseidon's weights, and with them every other weight or field file: the only
+binary files allowed are the learned case's own weights and stored truth, by exact
+path (`BINARY_ALLOWED`, demo step 8); a vendored `scOT`; and anything under
+``out/`` but the learned case's files the page reads (`LEARNED_FILES`).
 
 **This script does not push.**  It builds a directory, and with ``--commit``
 it makes the local orphan branch inside that directory.  The branch stays
@@ -94,11 +95,34 @@ LAUNCHERS = {
 }
 OPTIONAL_TEMPLATES = ("constraints.txt",)
 
-#: The only binary files the bundle may carry, by exact path pattern.  None yet:
-#: the learned case (demo step 8) adds its weights here, by name.
-BINARY_ALLOWED: tuple = ()
+#: The only binary files the bundle may carry, by exact path pattern: the learned
+#: case's trained weights (the owner's: trained from scratch on the vault's own
+#: data, no Poseidon anywhere in the chain) and its stored truth (demo step 8).
+BINARY_ALLOWED: tuple = (
+    re.compile(r"^out/learned-case/window-net\.pt$"),
+    re.compile(r"^out/learned-case/truth-farm-12\.npz$"),
+)
+#: What of out/ the bundle carries: the learned case's files the page reads, by
+#: name (``learned_case``: the weights, the truth, the registered evaluation's
+#: record), and the records that say where each came from.  Nothing else of out/.
+LEARNED_FILES = ("window-net.pt", "truth-farm-12.npz", "truth-farm-12.json",
+                 "registered.txt", "training-log.json")
+LEARNED_GATE = "gate-*.json"                 # the evaluations, smoke tests excluded
 
 _POSEIDON = re.compile(r"poseidon", re.IGNORECASE)
+
+
+def learned_files() -> list[str]:
+    """The learned case's files the bundle carries: `LEARNED_FILES` (each required)
+    and every gate record that is not a smoke test."""
+    d = os.path.join(ROOT, "out", "learned-case")
+    missing = [f for f in LEARNED_FILES if not os.path.isfile(os.path.join(d, f))]
+    if missing:
+        raise SystemExit("the learned case is missing %s in %s" % (missing, d))
+    import glob as _glob
+    gates = sorted(os.path.basename(p) for p in _glob.glob(os.path.join(d, LEARNED_GATE))
+                   if not p.endswith("-smoke.json"))
+    return list(LEARNED_FILES) + gates
 
 
 def tests_to_carry() -> list[str]:
@@ -186,9 +210,10 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
     scripts = script_closure([os.path.join(ROOT, "tests", t) for t in tests])
     templates = ["atlas/workbench/bundle/" + t for t in LAUNCHERS
                  if os.path.isfile(os.path.join(TEMPLATES, t))]
+    learned = ["out/learned-case/" + f for f in learned_files()]
     dirty = (_dirty(ROOT, ["atlas"], _copied_from_atlas)
              + _dirty(ROOT, ["tests/" + t for t in tests] + ["scripts/" + s for s in scripts]
-                      + templates))
+                      + templates + learned))
     vendor_rel = "/".join(VENDOR_PACKAGE)
     dirty_build = _dirty(build_repo, [vendor_rel, "LICENSE"])
     if (dirty or dirty_build) and not allow_dirty:
@@ -245,6 +270,12 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
     for s in scripts:
         shutil.copyfile(os.path.join(SCRIPTS, s), os.path.join(out, "scripts", s))
 
+    # 3b. the learned case's files, by name -----------------------------------------
+    os.makedirs(os.path.join(out, "out", "learned-case"))
+    for f in learned_files():
+        shutil.copyfile(os.path.join(ROOT, "out", "learned-case", f),
+                        os.path.join(out, "out", "learned-case", f))
+
     # 4. the launchers and the paperwork ----------------------------------------------
     for t, d in LAUNCHERS.items():
         s = os.path.join(TEMPLATES, t)
@@ -299,8 +330,12 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
                         % data["unexpected"])
     if scot:
         problems.append("scOT is vendored, and it has no licence: %s" % scot)
-    if os.path.exists(os.path.join(out, "out")):
-        problems.append("out/ is in the bundle; it ships nothing there")
+    shipped = {"out/learned-case/" + f for f in learned_files()}
+    stray = sorted(rel for _full, rel in B._walk(os.path.join(out, "out"))
+                   if "out/" + rel not in shipped) if os.path.isdir(os.path.join(out, "out")) \
+        else []
+    if stray:
+        problems.append("out/ carries files the bundle does not ship: %s" % stray)
     report = {
         "out": out, "branch": BRANCH, "built": dt.datetime.now().isoformat(timespec="seconds"),
         "atlas_commit": B._commit_of(ROOT), "dirty": dirty,

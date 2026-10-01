@@ -109,9 +109,15 @@ which case the launcher does not start the server.
 
 ### Optional parts
 
-- **torch** (CPU-only) is for the learned case, which is not in this version
-  yet. On a Mac it needs Apple silicon: torch 2.7.1 publishes no Intel-macOS
-  wheel. Without it, everything else runs.
+- **torch** (CPU-only) is for the learned case: the wind farm with a small
+  network, trained by this project from its own simulations, stepping every
+  window. It is the first item under the arrow beside *Fast example* when the
+  kind is the wind farm, and it is fixed (its experts were trained for that
+  farm). Its weights are in this folder (`out/learned-case/window-net.pt`, about
+  1.4 MB), with the record of the evaluation registered before they were
+  trained; its card shows that verdict, whatever it was. On a Mac torch needs
+  Apple silicon: torch 2.7.1 publishes no Intel-macOS wheel. Without torch,
+  everything else runs and the learned arm is not offered.
 - **Gmsh** is for *File → Import geometry from Gmsh*. It is GPL-licensed, so it
   is installed on your machine from PyPI and is not part of this branch.
   On Linux it may install and still not load, because its library needs the

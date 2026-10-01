@@ -62,8 +62,11 @@ python scripts/verify_workbench_bundle.py --clone <a new folder> --launch --test
   self-test asserts the solver was loaded from there. The one test that compares
   `fe.py` with the build repository's ThermoStruct2D skips there and says why.
 - **The builder refuses** NeuberNet in any form, Poseidon's weights or any model
-  cache, any binary file at all (the learned case will register its own weights by
-  name), a vendored scOT, and anything under `out/`.
+  cache, a vendored scOT, and any binary file but two, allowed by exact path
+  (`BINARY_ALLOWED`): the learned case's trained weights and its stored truth. Of
+  `out/` it carries only the learned case's files the page reads, with the records
+  that say where they came from (`LEARNED_FILES`: the registration, the training
+  log, the gate's evaluation), and refuses anything else there.
 - **The pins are the development environment's, not a clean resolution's.** The
   first clean install, with `requirements.txt` alone, resolved param 2.4.2, and
   every page load failed with HTTP 500: from param 2.3.0, with Panel 1.5.2, a
@@ -83,9 +86,12 @@ python scripts/verify_workbench_bundle.py --clone <a new folder> --launch --test
   step or two of every arm through `runner.CaseRun`, finite inside the domain and
   with every exact control the type registers holding (a split by physics runs a
   synchronous and a lagged split, which differ by design, so "threaded equals
-  serial" is the type's own control, not the runner's); and the page, served by
-  the folder's own server on a free port, fetched with every script and stylesheet
-  it names and its document pulled over the WebSocket by Bokeh's own client.
+  serial" is the type's own control, not the runner's); the learned case, whose
+  weights load and step the farm once, finite and divergence-free, with the
+  registered evaluation's verdict printed (without torch it is reported absent,
+  which is optional); and the page, served by the folder's own server on a free
+  port, fetched with every script and stylesheet it names and its document pulled
+  over the WebSocket by Bokeh's own client.
 - **`run.sh` has not run on a Mac** (the owner has none). It follows the PoC 3
   bundle's macOS rules, bash 3.2 and `100755` in the index, and has run on Linux.
 
@@ -344,6 +350,41 @@ A sweep chose each configuration and a confirmation run from a fresh start measu
 The structure, the plate on its circuit and the cooled block are one direct solve here, factored once and reused, so their pieces lose (0.004–0.275×). The heated structure's split by physics can at most halve the time (1.17×). Each of the four loads its fastest honest setup, and its card says what limits it (O3).
 
 **The card** comes first in Run & results: the mechanism in one line with the run's own numbers, the run against the bars, and the fixed line every card carries. The farm's example runs the threaded windows and the whole domain, because its power needs 28 macro-steps to come within 3% and three arms would take over two minutes; opening it sets Run settings so, and says so. The gallery's §8 has the table, the step-0 micro-benchmarks and what the sweeps found.
+
+## The learned case (demo item 1.5, 2026-10-01)
+
+One fixed case in which a trained network steps every window: `farm-12`, twelve rotors on 24 windows of $128^2$ cells, the layout held out of training. It is the first line under the wind farm's *Fast example* arrow (the plan asked for a header button; at 1090 px the header has no width left). It opens **read-only**: a banner says why, an edit is refused with a note, Run settings' arms, steps and threads are fixed, and one Undo restores the case before it.
+
+**The arms** (`learned_case.py`), marched in turns as every run is:
+- **Ep**, the classical decomposition on 4 threads;
+- **F**, the whole domain;
+- **L**, the same windows each stepped by the network. The blend, the one global projection and the band stay classical, so incompressibility is the projection's, to round-off;
+- **Cc**, the classical decomposition on a grid twice as coarse: the cheaper competitor.
+
+Each is measured against **T**, the whole domain at twice the resolution (cells of $D/64$), run once and stored (`out/learned-case/truth-farm-12.npz`). The measures are farm power and the rms velocity on the grid of $D/16$.
+
+**The network** (`learned_net.WindowUNet`, 350,186 parameters) is a small U-Net. It maps a window's $(u-U,\,v,\,f)$ to its change over one macro-step and holds its edge ring.
+- **Data:** 100 random layouts of 8 to 16 rotors, run by the workbench's own solver: 120,000 window samples, 24,000 of them ring perturbations for a Jacobian term.
+- **Training:** a rented RTX 4090 (vast.ai), about \$0.35 for the data and the training.
+- **Selection:** the weights chosen by 40-macro-step rollouts on 3 of the 10 validation layouts.
+
+**The gate was registered before any data existed** (`learned_gate.py`, `out/learned-case/registered.txt`) and evaluated once on AC (`scripts/learned_evaluate.py`; `out/learned-case/gate-20261001-154054.json`, 40 macro-steps). Errors are against T at 12 and 40 macro-steps:
+
+| bar | measured | |
+|---|---|---|
+| G1 speed: $t_{Ep}/t_L\ge1.5$ and $t_F/t_L\ge3$ | 1.52 and 7.45 | pass |
+| G2 accuracy: $e_L\le1.1\max(e_F,e_{Ep})$ | L 7.50%, 6.50% in power and 3.82%, 5.06% in velocity; Ep 7.53%, 6.48% and 3.81%, 5.04% | pass |
+| G3 divergence $\le10^{-9}$ | $5.9\times10^{-18}$ | pass |
+| G4 energy within 10% of Ep's | 0.63% at worst | pass |
+| G5 Cc's error above L's in one measure | Cc 3.63%, 3.02% in power and 3.15%, 4.96% in velocity: closer in both, at both horizons | **fail** |
+| G6 held out | 110 layouts, every one a registered seed, none near the held-out rotors | pass |
+
+**What that says.**
+- **L matches the classical decomposition and is 1.5 times faster than it.**
+- **L is not as accurate as the whole domain:** F's power is within 0.51% of T. G2's bar was the worse of the two classical arms, as the plan drafted it.
+- **The coarse classical decomposition is closer to T than L in every measure, in about a third of L's time.**
+
+The card shows all of it, with the registered outcome text, *"a classical solver on a grid twice as coarse matches it"*. **The installer** carries the weights and the truth, its only binary files. Its self-test steps the case once. Without torch, the learned arm is not offered and the page says why.
 
 ## The geometry section
 
@@ -662,7 +703,7 @@ projection lets a little velocity back into the solid each sub-step.
 
 | file | role |
 |---|---|
-| `spec.py` | the case file (`atlas-workbench/case@0.6`, with no name or description; 0.1 to 0.5 files migrate on load), `check()` with each family's rules, and the twenty-two examples, each with the one line *More examples* shows (`SHOWS`): three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), one whose windows are generated from its shape (the S-channel), one drawn example per other family, and the forked river |
+| `spec.py` | the case file (`atlas-workbench/case@0.6`, with no name or description; 0.1 to 0.5 files migrate on load), `check()` with each family's rules, and the twenty-seven examples, each with the one line *More examples* shows (`SHOWS`): three farms read from `atlas/cases/scaling_ladder.py`'s real tilings, one or two per other family, two drawn ones (the bend and the round insert), one whose windows are generated from its shape (the S-channel), one drawn example per other family, the forked river, the four Fast examples built for speed (`FAST_EXAMPLES` names each kind's), and the learned case |
 | `flow.py` | a flow that follows a drawn domain: the potential flow from its inlet faces to its outlet faces, for the river and the coolant |
 | `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes; for a shape that branches (`dead_regions`), a river's own flow with each connected band a window, or recursive spectral bisection (`bisect`); holes read from the mask (`topological_holes`) |
 | `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
@@ -682,6 +723,10 @@ projection lets a little velocity back into the solid each sub-step.
 | `fv.py` | the finite-volume core: harmonic-mean faces, upwind advection, any set of cells, three ways to close a cut face |
 | `styles.py` | styles B, C and D as drivers: restricted additive Schwarz, Dirichlet–Neumann with Aitken, a field on a lumped network; style M's two-rate explicit step, refluxed (`TwoRate`) |
 | `fast.py` | the Fast example's bars (`FastBars`, registered in each family's `FAST`), the run's agreement read from its checks, the judgement, the card's mechanism lines and the fixed line (O3) |
+| `learned_gate.py` | the learned case's gate, registered before any data: G1–G6 and their judgement, the held-out split (`TRAIN_SEEDS`, `VALIDATION_SEEDS`, `held_out_ok`), the truth's resolution and the two measures |
+| `learned_net.py` | the window network (`WindowUNet`), its saving and loading |
+| `learned_arms.py` | the learned case's arms outside the runner: the classical decomposition and the whole domain (`FarmRun`), the network in every window (`LearnedFarmRun`), the grid twice as coarse (`scaled_spec`) |
+| `learned_case.py` | the learned case in the page: the runner's adapter for its four arms, its checks against the truth, the caveat, and the gate record the card reads |
 | `families/conduction.py` | heat conduction in several materials (styles B and C, steady or transient) |
 | `families/electric.py` | a resistive plate on a battery-and-resistor circuit (style D) |
 | `fe.py` | Q1 finite elements with a material per element: plane-stress stiffness, conduction and mass, the thermal load, rigid-body modes, stresses |
@@ -697,6 +742,8 @@ projection lets a little velocity back into the solid each sub-step.
 | `scripts/build_workbench_bundle.py`, `scripts/verify_workbench_bundle.py` | the builder (the branch `atlas-workbench` in `out/workbench-bundle`, never pushed by the script) and the check of a fresh clone: mode, line endings, every file against its commit by blob hash, the scans, the launcher, the tests, the self-test without torch and with no network; records in `out/workbench/records/installer/` |
 | `tests/test_workbench_installer.py` | the templates and the builder without installing anything: `run.sh` for bash 3.2 (and `bash -n`), `run.cmd`'s jumps, the two launchers' pins and flags, every third-party import at any depth pinned or optional, one self-test example per type, the builder's script closure and its refusals |
 | `tests/test_workbench_fast.py` | the Fast examples: every family's bars registered, every kind's example ready to run, style M's N = 1 control to the bit and its balance and agreement, the river's and the sound's halo exchange against the full domain (the sound to the bit), the river's leaner step against the code it replaced, the header's button and the card |
+| `scripts/learned_*.py`, `scripts/learned_box_run.sh` | the learned case's steps: step 0's timing of a random network, the registration, the data, the truth, the training, the rented box's runner and payload, and the one evaluation; records in `out/learned-case/` |
+| `tests/test_workbench_learned.py` | the registration against the gate module, the split never the held-out layout, the judgement, the velocity measure's grid, the farm run with defaults the workbench's to the bit, the scaled cases, the case read-only and first in the menu, a four-arm march with a zero network against a synthetic truth, and a zero network's step equal to the projected blend |
 | `tests/test_w348_r10_after_scheme.py` | R10 after the scheme (W348): its three outcomes, `wall-2` decertified, the same graph refused at L2 with the declaration withdrawn, and Tier 0's four windows still refused |
 | `tests/test_workbench_starter.py` | the owner's first scenario in every family (ready to run once the shape is drawn, or the one thing only the person can decide said plainly), a new kind starting from its example's setup and one Undo restoring the old case, defaults that fill only what is missing, the Fix buttons one by one and all at once, every kind from the header ready to run and *Start over*, the windows fix at a Dirichlet-Neumann interface, a check that never raises, the canvas holding still while a shape is drawn, and the header holding what it simulates. `tests/test_workbench_shell.py` also pins case@0.6 (no name; an older file loses its own), *More examples*, the type switch and its one Undo with the file, and that no control shows a case name |
 | `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, the Run & results tab's per-seam table, and the gallery opening every example |
@@ -716,6 +763,7 @@ projection lets a little velocity back into the solid each sub-step.
 - **The 21-rotor farm's compile takes about 95 s** (124 seams, each probed through its agents' solves), so its compile plus its run is about 165 s. Each is under 2 minutes, but together they are not. The owner accepted this on 2026-09-29: the compile is its own step, and the two-minute rule is per run.
 - **Sound's style A has no declared graph yet.** Its windows step a halo as deep as their steps between exchanges, which no graph here declares, so its compile is refused before the compiler, with that reason (the run is the full domain to the bit).
 - **R10 decertifies the iterated one-physics cases rather than admitting them** (styles B and C: the wall, the insert, the bracket; W348). The pieces' declaration that the coupling supplies their boundary data cannot be checked by the compiler, and the fact it rests on, that the interface solution of a linear problem is the undivided one (T3 in the vault's formal-proofs plan), is cited from Frommer & Szyld (2001), not yet machine-checked.
+- **The learned case is one fixed case**, trained for its farm's family of layouts on rectangular windows, and on it a classical solver on a grid twice as coarse is closer to the truth (G5 failed). Experts that work on any shape are what the proposal builds.
 - **The starting values are stated guesses.** A river's inlet is the shape's leftmost edge and its outlet its rightmost, and so for a plate's electrodes, a structure's clamp and load, and a hot and a cold end. A river that runs another way needs its edges set by hand. Every guess is listed when it is made.
 - **Two things have no default**: a wind farm's air must reach the grid's left and right edges, and a cooled block needs its channel drawn. The problems list says so.
 - **A tool adds one shape**, then hands back to Select; there is no key that keeps it armed, so placing five rotors is five presses of *Place rotors*.

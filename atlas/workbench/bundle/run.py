@@ -29,7 +29,11 @@ asserts the solver was loaded from here.
      own runner; the fields are finite inside the domain, and every exact
      control the type registers (its "bit for bit" identities, such as threaded
      equals serial) holds;
-  4. **the page**: this folder's own server is started on a free port, the
+  4. **the learned case** (the wind farm with a trained network in every window):
+     its weights load and one learned macro-step runs, finite and
+     divergence-free, and the registered evaluation's verdict is printed; without
+     torch it is reported absent, which is optional;
+  5. **the page**: this folder's own server is started on a free port, the
      page is fetched as a browser would fetch it, every script and stylesheet
      it names is fetched from the same server, and its document is pulled over
      the page's WebSocket with Bokeh's own client.  A self-test that drove only
@@ -269,6 +273,51 @@ def _types(threads: int) -> bool:
     return ok
 
 
+def _learned(threads: int) -> str:
+    """The learned case (demo item 1.5) through the page's own adapter: the trained
+    weights load and one learned macro-step of farm-12 runs.  Returns "ok",
+    "absent" (torch or the weights are not here: optional) or "broken"."""
+    import hashlib
+    import time
+    print("\n  the learned case  (the wind farm with a trained network in every window; "
+          "a fixed case)")
+    try:
+        import numpy as np
+        from atlas.workbench import learned_case as LC
+        from atlas.workbench.spec import example_case
+        spec = example_case(LC.KEY)
+        arms, why = LC.available_arms(spec)
+        if "learned" not in arms:
+            print("    absent   %s" % why.get("learned"))
+            return "absent"
+        t0 = time.perf_counter()
+        case = LC.LearnedCase(spec, arms=("learned",), threads=threads)
+        s = case.step("learned", case.initial("learned"))
+        mass = case.observe("learned", s)["mass"]
+        case.close()
+        took = time.perf_counter() - t0
+        if not (np.all(np.isfinite(s.u)) and np.all(np.isfinite(s.v)) and mass <= 1e-9):
+            print("    [!]  the learned step is not finite, or not divergence-free (%.1e)" % mass)
+            return "broken"
+        sha = hashlib.sha256(open(LC.WEIGHTS, "rb").read()).hexdigest()[:12]
+        print("    ok   the trained weights (sha256 %s...) load and step farm-12: %.1f s, "
+              "divergence %.1e" % (sha, took, mass))
+        gate = LC.gate_record()
+        if gate is None:
+            print("    note the registered evaluation is not in this copy")
+        else:
+            v = gate.get("verdict") or {}
+            failed = [k for k in ("G1", "G2", "G3", "G4", "G5", "G6")
+                      if (v.get(k) or {}).get("passed") is not True]
+            print("    the registered evaluation (%s): %s"
+                  % (str(gate.get("at", ""))[:10], "every bar met" if v.get("all") else
+                     "not every bar met (%s); the page's card says so" % ", ".join(failed)))
+        return "ok"
+    except Exception as exc:
+        print("    [!]  %s" % _short(exc))
+        return "broken"
+
+
 def _free_port(start: int = 8020, count: int = 20) -> int:
     """The first port from `start` that nothing answers on and this process can bind."""
     import socket
@@ -419,9 +468,10 @@ def check() -> int:
         return BROKEN
     threads = max(1, min(2, os.cpu_count() or 1))
     types_ok = _types(threads)
+    learned = _learned(threads)
     page_ok = _page()
     took = time.perf_counter() - t0
-    if not (types_ok and page_ok):
+    if not (types_ok and page_ok) or learned == "broken":
         print("\n  BROKEN -- see the [!] lines above. (%.0f s)" % took)
         return BROKEN
     if absent:

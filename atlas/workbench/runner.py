@@ -384,7 +384,8 @@ class CaseRun:
             "wall_seconds": time.time() - started,
             "build_seconds": build_s,
             "arms": list(self.arms),
-            "arm_labels": {a: self.arm_labels[a] for a in ARM_LABELS},
+            "arm_labels": {a: self.arm_labels.get(a, a)
+                           for a in dict.fromkeys((*ARM_LABELS, *self.arms))},
             "dropped_arms": dict(self.dropped),
             "step_label": self.step_label,
             "steps_requested": self.steps,

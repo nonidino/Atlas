@@ -300,12 +300,23 @@ def test_the_builder_refuses_weights_neubernet_and_model_caches(tmp_path):
     assert W.scan_poseidon(str(bad))["paths"]
     assert W.B.scan_unlicensed_checkpoint(str(bad))["uses"]
 
+    # the learned case's own weights and truth are allowed by exact path, nothing beside
+    ok = tmp_path / "ok" / "out" / "learned-case"
+    ok.mkdir(parents=True)
+    (ok / "window-net.pt").write_bytes(b"\x00w")
+    (ok / "truth-farm-12.npz").write_bytes(b"\x00t")
+    (ok / "other.pt").write_bytes(b"\x00o")
+    found = W.scan_data(str(tmp_path / "ok"))
+    assert {r["file"] for r in found["allowed"]} == {"out/learned-case/window-net.pt",
+                                                     "out/learned-case/truth-farm-12.npz"}
+    assert {r["file"] for r in found["unexpected"]} == {"out/learned-case/other.pt"}
+
 
 def test_the_branch_keeps_its_line_endings_and_ignores_what_it_makes():
     attrs = _text("gitattributes")
     assert "*.sh text eol=lf" in attrs and "*.cmd text eol=crlf" in attrs
     ignore = _text("gitignore").splitlines()
-    assert ".venv/" in ignore and "out/" in ignore
+    assert ".venv/" in ignore and "out/*" in ignore and "!out/learned-case/" in ignore
     W = _builder()
     assert W.LAUNCHERS["gitattributes"] == ".gitattributes"
     assert W.LAUNCHERS["gitignore"] == ".gitignore"

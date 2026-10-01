@@ -131,7 +131,7 @@ def identity(clone: str, build_repo: str, sc: dict) -> dict:
                 tally("vendor", br[src][1] == blob, path)
             else:
                 unmatched.append(path)
-        elif path.split("/", 1)[0] in ("atlas", "tests", "scripts") and path in up:
+        elif path.split("/", 1)[0] in ("atlas", "tests", "scripts", "out") and path in up:
             tally(path.split("/", 1)[0], up[path][1] == blob, path)
         elif path in GENERATED:
             continue
