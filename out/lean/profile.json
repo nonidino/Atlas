@@ -1,0 +1,168 @@
+{
+ "charge_percent": 74,
+ "files": [
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Cayley.lean",
+   "seconds": 19.49,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Certificate.lean",
+   "seconds": 16.26,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/ContractionContract.lean",
+   "seconds": 18.17,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/DefectCorrection.lean",
+   "seconds": 14.58,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/DefectCorrectionShrink.lean",
+   "seconds": 17.44,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/DirichletNeumann.lean",
+   "seconds": 12.1,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/EnergyOptimality.lean",
+   "seconds": 18.74,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Existence.lean",
+   "seconds": 20.65,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/GramPort.lean",
+   "seconds": 20.2,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Headline.lean",
+   "seconds": 18.42,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/InterfacePerturbation.lean",
+   "seconds": 17.94,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/KrasnoselskiiMann.lean",
+   "seconds": 18.54,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/LabelFree.lean",
+   "seconds": 16.82,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/LearnedMasterBound.lean",
+   "seconds": 17.36,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/MasterBound.lean",
+   "seconds": 14.82,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Passivity.lean",
+   "seconds": 17.12,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/PerturbedContraction.lean",
+   "seconds": 15.94,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Schur.lean",
+   "seconds": 11.57,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Schwarz.lean",
+   "seconds": 12.68,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/SchwarzConvergence.lean",
+   "seconds": 15.32,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/SchwarzCounterexample.lean",
+   "seconds": 24.22,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/SniCounterexample.lean",
+   "seconds": 22.52,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/Superelement.lean",
+   "seconds": 21.73,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/SymmetryAveraging.lean",
+   "seconds": 13.06,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/TransmissionBound.lean",
+   "seconds": 15.66,
+   "slow_steps": []
+  },
+  {
+   "exit": 0,
+   "file": "AtlasProofs/TwoLevel.lean",
+   "seconds": 15.9,
+   "slow_steps": []
+  }
+ ],
+ "lean": "leanprover/lean4:v4.34.1",
+ "mathlib": "v4.34.1",
+ "power": "battery",
+ "seconds_total": 447.25,
+ "slow_ms": 10000,
+ "slow_steps_total": 0,
+ "when": "2026-10-01T19:37:14-04:00"
+}

@@ -1,7 +1,7 @@
 # Formal proofs — the record: what is checked, what it says, and what a build costs
 
 **Type:** Concept page — **proof record** (folder: `Atlas 0.1/atlas-0.1-proposal/formal-proofs/`)
-**Status:** started 2026-10-01. **The set-up is done and timed. The statements of steps 1, 2 and 3 are written in Lean and in the blueprint, and they typecheck. Nothing is proved yet: every theorem below still holds a `sorry`, and the owner has not yet approved the statements.** One statement of the plan turned out false as written (T3 for restricted additive Schwarz, §5.1).
+**Status:** started 2026-10-01. **Integrated 2026-10-01: batches 1 to 6 are proved and merged, and the whole project is checked.** 105 theorems in 26 Lean files, **no `sorry`**; the axiom check on all 142 declarations of the blueprint finds nothing beyond `propext`, `Classical.choice` and `Quot.sound` (§7.11). Batches 1 to 3 were proved by one chat in a cloud container (§5A), batches 4 to 6 by another on the laptop (§7), and the owner approved every statement before it was proved. One statement of the plan turned out false as written (T3 for restricted additive Schwarz, §5.1), and one hypothesis of the design's first version turned out insufficient (T9's two-level form, §7.6). *(This line was rewritten at the integration; it had said "nothing is proved yet".)*
 **Hub:** [[00-proposal-workstreams]] · **Plan:** [[formal-proofs-plan]] · **Formalises results from:** [[master-error-bound]] · [[defect-correction-learned-operator]] · [[temporal-error-accumulation]] · [[composition-error-theory]] · [[atlas-and-standard-dd-theory]]
 **Code:** `lean/` (the Lean project and its blueprint) · `scripts/lean_build.py` · `scripts/lean_axioms.py` · `scripts/lean_t3_counterexample.py` · `out/lean/`
 
@@ -405,7 +405,7 @@ The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blue
 
 *Kept by the chat that states and proves batches 4 to 6 (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements).* Status words as in §0. Builds of this chat are recorded in `out/lean/builds-batches-4-6.jsonl`, its axiom checks in `out/lean/axioms-batches-4-6.json`, and its declarations are listed in `lean/decls-batches-4-6.txt`.
 
-**Where this stands (2026-10-01).** The owner approved the statements of batches 4 and 5 on 2026-10-01. **Batch 4 (tier 0) is checked**: 28 theorems in five Lean files, no `sorry`, each resting on Lean's three standard axioms only (§7.1 to §7.3). **Batch 5 (tier 2) is proved**: 14 theorems in four files with no `sorry` of their own; 12 are checked, and 2 (`contraction_contract`, `two_level_contract`) quote T1 and wait on the other chat's proof of it (§7.4 to §7.6). **Batch 6 is proved** (approved by the owner 2026-10-01): 15 theorems in four files with no `sorry` of their own; 6 are checked, and 9 quote theorems of batches 1 to 3 and wait on the other chat (§7.7 to §7.9). **All three batches: 57 theorems, 46 checked, 11 waiting on the merge, listed by name in §7.10.**
+**Where this stands (2026-10-01).** The owner approved the statements of batches 4 and 5 on 2026-10-01. **Batch 4 (tier 0) is checked**: 28 theorems in five Lean files, no `sorry`, each resting on Lean's three standard axioms only (§7.1 to §7.3). **Batch 5 (tier 2) is proved**: 14 theorems in four files with no `sorry` of their own; 12 are checked, and 2 (`contraction_contract`, `two_level_contract`) quote T1 and wait on the other chat's proof of it (§7.4 to §7.6). **Batch 6 is proved** (approved by the owner 2026-10-01): 15 theorems in four files with no `sorry` of their own; 6 are checked, and 9 quote theorems of batches 1 to 3 and wait on the other chat (§7.7 to §7.9). **All three batches: 57 theorems, 46 checked before the merge and the other 11 at it (§7.10, §7.11). Nothing waits any more.**
 
 ### 7.1 The record, batch 4
 
@@ -564,10 +564,10 @@ None of these changes a claim of the architecture document. Each is a place wher
 | T8, matrices | a positive semidefinite matrix has a non-expansive scattering matrix | `Atlas.cayley_matrix_nonexpansive` | same | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
 | **T8 at tier 0** | the Gram port matrix of any network output has a non-expansive scattering matrix, for every $Z>0$ | `Atlas.Piece.gram_cayley_nonexpansive` | same | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
 | **T9a** | $\rho$-Lipschitz experts and a non-expansive exchange give a $\rho$-Lipschitz sweep in the $\ell^2$ product | `Atlas.waveSweep_lipschitz` | `AtlasProofs/ContractionContract.lean` | checked | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
-| **T9a** | the contract: one answer, rate $\rho$, within $\bigl(\sum_i\delta_i^2\bigr)^{1/2}/(1-\rho)$ of the classical one | `Atlas.contraction_contract` | same | **proved here; waits on T1** | 14 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| **T9a** | the contract: one answer, rate $\rho$, within $\bigl(\sum_i\delta_i^2\bigr)^{1/2}/(1-\rho)$ of the classical one | `Atlas.contraction_contract` | same | checked (at the merge) | 14 s | `propext`, `Classical.choice`, `Quot.sound` |
 | T9b | a fixed point of the two-level iteration is a fixed point of the sweep | `Atlas.twoLevel_fixedPt_isFixedPt` | `AtlasProofs/TwoLevel.lean` | checked | 13 s | `propext`, `Classical.choice`, `Quot.sound` |
 | T9b | the converse | `Atlas.fixedPt_isFixedPt_twoLevel` | same | checked | 13 s | `propext`, `Classical.choice`, `Quot.sound` |
-| **T9b** | the contract, from a contraction of the composite two-level map | `Atlas.two_level_contract` | same | **proved here; waits on T1** | 13 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| **T9b** | the contract, from a contraction of the composite two-level map | `Atlas.two_level_contract` | same | checked (at the merge) | 13 s | `propext`, `Classical.choice`, `Quot.sound` |
 | **T9b, finding** | a sweep that contracts the fine space, with an exact coarse solve, whose two-level iterates diverge | `Atlas.two_level_fine_contraction_diverges` | same | checked | 13 s | `propext`, `Classical.choice`, `Quot.sound` |
 | **the SNI remark** | a contraction, a map within $\tfrac12$ of it everywhere, and a two-cycle of that map | `Atlas.sni_counterexample` | `AtlasProofs/SniCounterexample.lean` | checked | 22 s | `propext`, `Classical.choice`, `Quot.sound` |
 
@@ -644,16 +644,16 @@ $T(u)=\tfrac12u$ is a contraction with factor $\tfrac12$ and fixed point $0$. $\
 | T9′ | one averaged step: $\lVert x'-p\rVert^2\le\lVert x-p\rVert^2-\omega(1-\omega)\lVert x-Tx\rVert^2$ | `Atlas.averaged_step` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
 | T9′ | the residuals $\lVert x_n-Tx_n\rVert$ tend to zero | `Atlas.averaged_residual_tendsto_zero` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
 | **T9′** | Krasnoselskii–Mann: the averaged iteration converges to a fixed point | `Atlas.krasnoselskii_mann` | same | checked | 21 s | `propext`, `Classical.choice`, `Quot.sound` |
-| **T22, tier 2** | one step: $\sigma\le C_\mu\delta/(1-\rho)$ and $\gamma\le C_\mu\rho^k d(\lambda^{(0)},\lambda^\dagger)$ | `Atlas.tier2_step_defect` | `AtlasProofs/LearnedMasterBound.lean` | **proved here; waits on T1** | 12 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
-| **T22, tier 2** | the master bound with those two terms added to every step | `Atlas.learned_master_bound_tier2` | same | **proved here; waits on T1 and T4** | 12 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` and `Atlas.master_bound_three_terms` only |
-| **T22, tier 0** | the master bound in the energy size, defects $\tau^n+g^n$, no incomplete-solve term | `Atlas.learned_master_bound_tier0` | same | **proved here; waits on T4c** | 12 s | the three standard ones, and `sorryAx` through `Atlas.accumulation` only |
-| **T22, tier 0** | the same with $g^n$ supplied by T25's error bound | `Atlas.learned_master_bound_tier0_superelement` | same | **proved here; waits on T4c** | 12 s | the three standard ones, and `sorryAx` through `Atlas.accumulation` only |
-| **T2** | a map within $\eta$ of the classical sweep on a ball contracts there at $\rho+\eta$; its answer is within $\eta/(1-\rho-\eta)$ | `Atlas.existence_conditional` | `AtlasProofs/Existence.lean` | **proved here; waits on T1** | 15 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
-| T2 | the same with the closeness stated through a derivative | `Atlas.existence_conditional_c1` | same | **proved here; waits on T1** | 15 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
-| **T2** | if a class of maps contains such a map, it contains one with those properties | `Atlas.existence_of_learned_coupling` | same | **proved here; waits on T1** | 15 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` only |
+| **T22, tier 2** | one step: $\sigma\le C_\mu\delta/(1-\rho)$ and $\gamma\le C_\mu\rho^k d(\lambda^{(0)},\lambda^\dagger)$ | `Atlas.tier2_step_defect` | `AtlasProofs/LearnedMasterBound.lean` | checked (at the merge) | 12 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T22, tier 2** | the master bound with those two terms added to every step | `Atlas.learned_master_bound_tier2` | same | checked (at the merge) | 12 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T22, tier 0** | the master bound in the energy size, defects $\tau^n+g^n$, no incomplete-solve term | `Atlas.learned_master_bound_tier0` | same | checked (at the merge) | 12 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T22, tier 0** | the same with $g^n$ supplied by T25's error bound | `Atlas.learned_master_bound_tier0_superelement` | same | checked (at the merge) | 12 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T2** | a map within $\eta$ of the classical sweep on a ball contracts there at $\rho+\eta$; its answer is within $\eta/(1-\rho-\eta)$ | `Atlas.existence_conditional` | `AtlasProofs/Existence.lean` | checked (at the merge) | 15 s | `propext`, `Classical.choice`, `Quot.sound` |
+| T2 | the same with the closeness stated through a derivative | `Atlas.existence_conditional_c1` | same | checked (at the merge) | 15 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **T2** | if a class of maps contains such a map, it contains one with those properties | `Atlas.existence_of_learned_coupling` | same | checked (at the merge) | 15 s | `propext`, `Classical.choice`, `Quot.sound` |
 | **headline, tier 0** | solvable for every output, and energy-optimal | `Atlas.tier0_headline` | `AtlasProofs/Headline.lean` | checked | 11 s | `propext`, `Classical.choice`, `Quot.sound` |
-| **headline, tier 2** | certified experts: geometric convergence near the classical answer, and the master bound with that term | `Atlas.tier2_headline` | same | **proved here; waits on T1 and T4** | 11 s | the three standard ones, and `sorryAx` through `Atlas.perturbed_contraction` and `Atlas.master_bound_three_terms` only |
-| **headline, defect correction** | two cheap maps, one answer | `Atlas.defect_correction_headline` | same | **proved here; waits on T5** | 11 s | the three standard ones, and `sorryAx` through `Atlas.DefectCorrection.limit_isFixedPt` only |
+| **headline, tier 2** | certified experts: geometric convergence near the classical answer, and the master bound with that term | `Atlas.tier2_headline` | same | checked (at the merge) | 11 s | `propext`, `Classical.choice`, `Quot.sound` |
+| **headline, defect correction** | two cheap maps, one answer | `Atlas.defect_correction_headline` | same | checked (at the merge) | 11 s | `propext`, `Classical.choice`, `Quot.sound` |
 
 **The build that checked batch 6 (2026-10-01, on battery).** `python scripts/lean_build.py --clean`: **79.3 s**, 27 files, no error; the four batch-6 files took 11 to 21 s each and gave no warning. The 48 `sorry` warnings left are all in the thirteen files of batches 1 to 3. **The axiom check** on this chat's 84 names (16 s): 73 depend on the three standard axioms only; the other 11 are the theorems of §7.10.
 
@@ -722,7 +722,9 @@ The third statement is the existence form: if a class of maps (the networks of a
 
 **After the proofs:** none of the six changed, and proving found nothing further. No statement of batch 6 turned out false or short of a hypothesis.
 
-### 7.10 What waits on the merge with the other chat's branch
+### 7.10 What waited on the merge with the other chat's branch
+
+**Settled at the integration (§7.11): all eleven are checked.** The text below is kept as it was written before the merge.
 
 Eleven theorems of this chat are proved in their own files and quote a theorem of batches 1 to 3 whose proof is a `sorry` on this branch. The kernel reports `sorryAx` for each, through the name in the last column and through nothing else. They become *checked* when the other branch is merged and that theorem is proved; nothing in this chat's files has to change.
 
@@ -743,6 +745,35 @@ Eleven theorems of this chat are proved in their own files and quote a theorem o
 **If the other chat changes the statement of T1, T4, T4c or T5**, these eleven are where it would show: the merged build would fail in the file named, and the fix is there. The statements quoted are those of commit `428e4aa`.
 
 **The count.** Batches 4 to 6: 57 theorems the owner approved (28, 14, 15), 27 helper lemmas (22, 2, 3) beside the three facts of §7.1 proved before the first OK, and 27 definitions and structures listed in the blueprint. 46 theorems are checked on this branch; 11 wait. The whole project builds clean in 79.3 s on battery (27 files, four levels of imports), with 48 `sorry` left, all in the thirteen files of batches 1 to 3.
+
+### 7.11 The integration: both branches merged, the whole project checked
+
+**The merge (2026-10-01, on the owner's word).** `origin/claude/atlas-proofs-batches-1-3-ztrott` (four commits, `484b5d0` to `4e8b045`) was merged into `atlas-0.1` as commit `c830510`. One conflict, at the end of [[log]], where both branches had appended entries: both sides are kept, the three local entries first. This page, [[formal-proofs-plan]] and [[formal-proofs-implementation-plan]] merged by themselves, each chat having edited only its own block. The incoming branch changed none of the six pages that hold another chat's uncommitted edits.
+
+**The three checks, with `ATLAS_LEAN_TAG` unset, on the laptop, on battery:**
+
+| check | result |
+|---|---|
+| `python scripts/lean_build.py --clean` (19:26) | success, **137.9 s**, 27 files, 0 errors, **0 `sorry`**; first-level files 27 to 38 s each, sixteen at once; second level 24 to 37 s; third 27 s; the headline file 24 s |
+| `python scripts/lean_axioms.py`, every declaration the blueprint names | **142 declarations, 0 failing**, 19.1 s. Each rests on `propext`, `Classical.choice`, `Quot.sound` or a subset of them; no `sorryAx`, no other axiom |
+| `python scripts/lean_build.py --profile` | 26 files, 447.2 s one after another, **0 steps at or over ten seconds**, exit 0 |
+
+**No theorem failed.** The eleven theorems of §7.10 compiled against the other chat's proved statements without a change to any file: T1, T4, T4c and T5 were proved as they had been stated at `428e4aa`.
+
+**The build time, read against the earlier ones.** 137.9 s is longer than the 79.3 s of the same 27 files twenty minutes before with 48 `sorry` in them. **[AI Inference]:** the proofs of batches 1 to 3 are short (393 lines, 16.7 s for all thirteen files in the cloud container), so they do not explain a minute; every first-level file took about twice as long as in the earlier build, including files that did not change, which points at the laptop's state on battery. It was not measured separately. The owner's five-minute target holds with margin either way.
+
+**Two linter remarks in the merged build, both in files of batches 1 to 3 and neither an error:** an unused section variable in `Atlas.average_of_equivariant` (`SymmetryAveraging.lean`) and an unreferenced variable name in `DefectCorrectionShrink.lean`. They are the other chat's files and were left as they are.
+
+**What the project now holds.**
+
+| | batches 1 to 3 | batches 4 to 6 | together |
+|---|---|---|---|
+| Lean files | 13 | 13 | 26, and the root |
+| theorems the owner approved | 48 | 57 | **105** |
+| declarations named in the blueprint | 58 | 84 | 142 |
+| checked: no `sorry`, standard axioms only | all | all | **all** |
+
+**Still open after the integration.** The row for [[formal-proofs-implementation-plan]] in [[index]] and the W353 status in [[gap-worklist]]: both pages still hold another chat's uncommitted edits. Batch 7 of the plan (the `checkdecls` step, continuous integration, the public blueprint) is not started. Nothing was pushed.
 
 ---
 

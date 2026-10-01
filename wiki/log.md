@@ -7206,3 +7206,17 @@ The same chat, branch and container as batch 1's entry.
 - Imports added: `Mathlib.Analysis.Normed.Group.Uniform` in `DefectCorrection.lean`; `Mathlib.Algebra.BigOperators.GroupWithZero.Action`, `Mathlib.Algebra.Module.NatInt` and `Mathlib.Tactic.NormNum.Eq` in `SymmetryAveraging.lean`.
 
 **Changed:** the four batch-3 files under `lean/AtlasProofs/`; `lean/blueprint/src/chapters/defect-correction.tex` and `structure.tex` (`\leanok` in 16 proofs, and a one-line proof for the non-group example, which had none); [[formal-proofs-record]] (§3's cells, §5.2, §5A.4, §5A.5); [[formal-proofs-plan]] (§6, the lines of T5, T10 and T11); [[formal-proofs-implementation-plan]] (§6.2). **Added:** `lean/decls-batch-3.txt`. **Updated:** `out/lean/builds-batches-1-3.jsonl`, `axioms-batches-1-3.json` (now the check over all 58 names), `profile-batches-1-3.json`.
+
+## [2026-10-01] build | Formal proofs integrated: both branches merged, 105 theorems, no `sorry`, standard axioms only
+
+**The two proofs chats' work is one tree, and all of it is checked.** On the owner's word the branch of batches 1 to 3 (`origin/claude/atlas-proofs-batches-1-3-ztrott`, four commits) was merged into `atlas-0.1` as `c830510`. The only conflict was the end of this log, where both branches had appended: both sides are kept, the three entries of batches 4 to 6 first, then the three of batches 1 to 3 (which is why those sit just above this entry, out of clock order). The three formal-proofs pages merged by themselves.
+
+**The three checks, with `ATLAS_LEAN_TAG` unset, on the laptop, on battery** ([[formal-proofs-record]] §7.11):
+
+- `python scripts/lean_build.py --clean`: success, **137.9 s**, 27 files, 0 errors, **0 `sorry`**;
+- `python scripts/lean_axioms.py`: **142 declarations, 0 failing**; nothing beyond `propext`, `Classical.choice`, `Quot.sound`;
+- `python scripts/lean_build.py --profile`: 26 files, 447.2 s, **0 steps at or over ten seconds**.
+
+**No theorem failed at the merge.** The eleven theorems of batches 4 to 6 that quoted T1, T4, T4c or T5 compiled against the proved statements with no change to any file. The project now holds **105 theorems the owner approved** (48 and 57) in 26 Lean files and four levels of imports.
+
+**Honest notes.** The merged build took 137.9 s against 79.3 s twenty minutes earlier on the same 27 files; every first-level file was about twice as slow, changed or not, so it reads as the laptop's state on battery, **[AI Inference]**, not measured. Two linter remarks remain in files of batches 1 to 3 (an unused section variable, an unreferenced variable name), neither an error; they were left alone. **Three status lines outside either chat's block were rewritten at the integration**, because after the merge they still said "nothing is proved yet": the header lines of [[formal-proofs-record]], [[formal-proofs-plan]] and [[formal-proofs-implementation-plan]]. **Still not written:** the row for [[formal-proofs-implementation-plan]] in [[index]] and the W353 status in [[gap-worklist]]; both pages hold another chat's uncommitted edits. Nothing was pushed. **Changed:** the three formal-proofs pages, `out/lean/builds.jsonl`, `out/lean/axioms.json`, `out/lean/profile.json`.
