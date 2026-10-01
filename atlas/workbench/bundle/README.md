@@ -76,6 +76,10 @@ does not carry the executable bit, so on macOS or Linux run `bash run.sh`.
   CPU-only wheel.
 - **Network at install time only.** After that the page needs none: every
   script and stylesheet it loads is served by its own server.
+- **Disk:** `.venv` took 2.0 GB on Windows with torch and Gmsh (1.4 GB on
+  Linux), most of it torch; on Windows it was 0.6 GB once both were removed.
+  If you clone into a deep folder on Windows, mind the 260-character path
+  limit: the deepest path in `.venv` is 141 characters below this folder.
 
 ### Is it working?
 
@@ -110,8 +114,11 @@ which case the launcher does not start the server.
   wheel. Without it, everything else runs.
 - **Gmsh** is for *File → Import geometry from Gmsh*. It is GPL-licensed, so it
   is installed on your machine from PyPI and is not part of this branch.
-  On Linux it may install and still not load (it needs the system's OpenGL and
-  X libraries); the self-test then reports it absent, and everything else runs.
+  On Linux it may install and still not load, because its library needs the
+  system's OpenGL: on Ubuntu without a desktop the self-test reported
+  `libGLU.so.1: cannot open shared object file`, which Debian and Ubuntu ship
+  as `libglu1-mesa`. The self-test then reports Gmsh absent, the import dialog
+  says why, and everything else runs.
 
 If an optional install fails, the launcher says so, starts the page anyway,
 and tries again next time (or pass `--no-torch` / `--no-gmsh`).

@@ -1,0 +1,105 @@
+{
+ "at": "2026-10-01T04:37:49",
+ "platform": "windows-amd64",
+ "verifier_python": "3.12.7",
+ "note": "built from f008c51; the same clone after its served-page check; on AC; the owner's phone-remote server.py running (left alone)",
+ "bundle": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench-bundle",
+ "clone": "C:\\Users\\Nauni\\wbv2",
+ "head": "cdd9076d4c5a41b38ee26051f9c1b8014397da1e",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "files_in_branch": 135,
+ "deepest_path_in_branch": {
+  "path": "vendor/src/atlas/cases/windfarm/reference.py",
+  "chars": 44
+ },
+ "source_commits": {
+  "atlas": "f008c51fa9f2c7a193e526ebbee8ec7d8b4fe3c3",
+  "build_repo": "98df3506aedd6f3edf2733257451f3c94f74b987",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 134,
+  "different": [],
+  "not_from_either_repo": [],
+  "by_group": {
+   "launchers": [
+    9,
+    0
+   ],
+   "atlas": [
+    95,
+    0
+   ],
+   "scripts": [
+    3,
+    0
+   ],
+   "tests": [
+    15,
+    0
+   ],
+   "vendor": [
+    12,
+    0
+   ]
+  },
+  "workbench_tests_upstream": 14,
+  "workbench_tests_carried": 14,
+  "every_workbench_test_is_carried": true
+ },
+ "scan_neubernet": {
+  "named": [],
+  "uses": [],
+  "prose_mentions": 4
+ },
+ "scan_poseidon": {
+  "paths": [],
+  "prose_mentions": 214
+ },
+ "scan_data": {
+  "allowed": [],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "static_checks_pass": true,
+ "self_test_examples": [
+  "wake-array-3",
+  "fast-heat",
+  "plate-circuit",
+  "plume-2",
+  "fast-sound",
+  "plate-hole",
+  "bimetal-arc",
+  "cooled-block"
+ ],
+ "optional_fails": {
+  "argv": [
+   "cmd",
+   "/c",
+   "C:\\Users\\Nauni\\wbv2\\run.cmd",
+   "--check"
+  ],
+  "exit_code": 3,
+  "wall_s": 88.5,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\optional_fails_windows-amd64_release-2.log",
+  "tail": "ion could be made because the target machine actively refused it'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x0000026A75B92090>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x0000026A79445C40>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x0000026A794461E0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x0000026A79446360>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))': /simple/gmsh/\nERROR: Could not find a version that satisfies the requirement gmsh==4.15.0 (from versions: none)\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: C:\\Users\\Nauni\\wbv2\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\nERROR: No matching distribution found for gmsh==4.15.0\n\n    Gmsh could not be installed. Only File > Import geometry from Gmsh\n    needs it. The next .\\run.cmd tries again, or pass --no-gmsh.\n\nAtlas Workbench self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    absent   torch                  the learned case, CPU-only; nothing else needs it (optional): ModuleNotFoundError: No module named 'torch'\n    absent   gmsh                   File > Import geometry from Gmsh (optional): ModuleNotFoundError: No module named 'gmsh'\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             7.2 s   2 steps of serial, parallel, full   1.8 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             0.9 s   2 steps of serial, full           0.8 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.6 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.6 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   1.1 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.5 s   1 step of serial, parallel, full   3.9 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.8 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.0 s   2 steps of serial, full           1.2 s\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 1.8 s\n    ok   http://127.0.0.1:8040/ answered with the page in 0.5 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.7 s)\n\n  PARTIAL -- every type ran, the solver came from vendor/, and the page answers;\n  absent and optional: torch (the learned case, CPU-only; nothing else needs it); gmsh (File > Import geometry from Gmsh). (25 s)\n",
+  "uninstall_exit_code": 0,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  },
+  "said_torch_failed": true,
+  "said_gmsh_failed": true,
+  "stamps_written": []
+ },
+ "passes": true
+}

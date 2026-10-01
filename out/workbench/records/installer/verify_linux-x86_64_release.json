@@ -1,0 +1,256 @@
+{
+ "at": "2026-10-01T04:39:50",
+ "platform": "linux-x86_64",
+ "verifier_python": "3.10.21",
+ "note": "built from f008c51; Ubuntu under WSL 2 on the same laptop, on AC; the Windows full suite running at the same time; the other two chats on documentation and theory only",
+ "bundle": "/mnt/c/Users/Nauni/OneDrive/Desktop/Foundation_Model/out/workbench-bundle",
+ "clone_exit_code": 0,
+ "clone_s": 2.5,
+ "clone": "/home/nauni/wbv-linux",
+ "head": "cdd9076d4c5a41b38ee26051f9c1b8014397da1e",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "run_sh_is_executable_on_disk": true,
+ "files_in_branch": 135,
+ "deepest_path_in_branch": {
+  "path": "vendor/src/atlas/cases/windfarm/reference.py",
+  "chars": 44
+ },
+ "source_commits": {
+  "atlas": "f008c51fa9f2c7a193e526ebbee8ec7d8b4fe3c3",
+  "build_repo": "98df3506aedd6f3edf2733257451f3c94f74b987",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 134,
+  "different": [],
+  "not_from_either_repo": [],
+  "by_group": {
+   "launchers": [
+    9,
+    0
+   ],
+   "atlas": [
+    95,
+    0
+   ],
+   "scripts": [
+    3,
+    0
+   ],
+   "tests": [
+    15,
+    0
+   ],
+   "vendor": [
+    12,
+    0
+   ]
+  },
+  "workbench_tests_upstream": 14,
+  "workbench_tests_carried": 14,
+  "every_workbench_test_is_carried": true
+ },
+ "scan_neubernet": {
+  "named": [],
+  "uses": [],
+  "prose_mentions": 4
+ },
+ "scan_poseidon": {
+  "paths": [],
+  "prose_mentions": 214
+ },
+ "scan_data": {
+  "allowed": [],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "static_checks_pass": true,
+ "self_test_examples": [
+  "wake-array-3",
+  "fast-heat",
+  "plate-circuit",
+  "plume-2",
+  "fast-sound",
+  "plate-hole",
+  "bimetal-arc",
+  "cooled-block"
+ ],
+ "launch_check": {
+  "argv": [
+   "bash",
+   "-c",
+   "cd '/home/nauni/wbv-linux' && ./run.sh --check"
+  ],
+  "exit_code": 3,
+  "wall_s": 61.1,
+  "log": "/mnt/c/Users/Nauni/OneDrive/Desktop/Foundation_Model/out/workbench/records/installer/logs/launch_check_linux-x86_64_release.log",
+  "tail": "orch==2.7.1)\n  Downloading filelock-3.13.1-py3-none-any.whl.metadata (2.8 kB)\nRequirement already satisfied: typing-extensions>=4.10.0 in ./.venv/lib/python3.10/site-packages (from torch==2.7.1) (4.15.0)\nCollecting sympy>=1.13.3 (from torch==2.7.1)\n  Using cached sympy-1.14.0-py3-none-any.whl.metadata (12 kB)\nCollecting networkx (from torch==2.7.1)\n  Downloading networkx-3.3-py3-none-any.whl.metadata (5.1 kB)\nRequirement already satisfied: jinja2 in ./.venv/lib/python3.10/site-packages (from torch==2.7.1) (3.1.4)\nCollecting fsspec (from torch==2.7.1)\n  Downloading fsspec-2024.6.1-py3-none-any.whl.metadata (11 kB)\nCollecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch==2.7.1)\n  Using cached mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)\nRequirement already satisfied: MarkupSafe>=2.0 in ./.venv/lib/python3.10/site-packages (from jinja2->torch==2.7.1) (2.1.3)\nUsing cached https://download-r2.pytorch.org/whl/cpu/torch-2.7.1%2Bcpu-cp310-cp310-manylinux_2_28_x86_64.whl (175.9 MB)\nUsing cached sympy-1.14.0-py3-none-any.whl (6.3 MB)\nDownloading filelock-3.13.1-py3-none-any.whl (11 kB)\nDownloading fsspec-2024.6.1-py3-none-any.whl (177 kB)\nDownloading networkx-3.3-py3-none-any.whl (1.7 MB)\n   \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501 1.7/1.7 MB 18.1 MB/s eta 0:00:00\nUsing cached mpmath-1.3.0-py3-none-any.whl (536 kB)\nInstalling collected packages: mpmath, sympy, networkx, fsspec, filelock, torch\nSuccessfully installed filelock-3.13.1 fsspec-2024.6.1 mpmath-1.3.0 networkx-3.3 sympy-1.14.0 torch-2.7.1+cpu\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: /home/nauni/wbv-linux/.venv/bin/python -m pip install --upgrade pip\n==> installing Gmsh (optional: File > Import geometry from Gmsh)\nCollecting gmsh==4.15.0\n  Downloading gmsh-4.15.0-py2.py3-none-manylinux_2_24_x86_64.whl.metadata (1.7 kB)\nDownloading gmsh-4.15.0-py2.py3-none-manylinux_2_24_x86_64.whl (40.0 MB)\n   \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501 40.0/40.0 MB 20.0 MB/s eta 0:00:00\nInstalling collected packages: gmsh\nSuccessfully installed gmsh-4.15.0\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: /home/nauni/wbv-linux/.venv/bin/python -m pip install --upgrade pip\nAtlas Workbench self-test  (Python 3.10.21 on Linux x86_64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    ok       torch     2.7.1+cpu    the learned case, CPU-only; nothing else needs it (optional)\n    absent   gmsh                   File > Import geometry from Gmsh (optional): OSError: libGLU.so.1: cannot open shared object file: No such file ...\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor/src/atlas/cases/windfarm/reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             9.1 s   2 steps of serial, parallel, full   0.8 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             1.0 s   2 steps of serial, full           0.2 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.1 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.0 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.2 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.6 s   1 step of serial, parallel, full   4.3 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.3 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.1 s   2 steps of serial, full           0.6 s\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 1.2 s\n    ok   http://127.0.0.1:8040/ answered with the page in 0.4 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.7 s)\n\n  PARTIAL -- every type ran, the solver came from vendor/, and the page answers;\n  absent and optional: gmsh (File > Import geometry from Gmsh). (22 s)\n",
+  "python_given": "/home/nauni/mm-py310/bin/python",
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  }
+ },
+ "tests": {
+  "argv": [
+   "/home/nauni/wbv-linux/.venv/bin/python",
+   "-m",
+   "pytest",
+   "tests",
+   "-q",
+   "-rs",
+   "-p",
+   "no:cacheprovider"
+  ],
+  "exit_code": 1,
+  "wall_s": 220.2,
+  "log": "/mnt/c/Users/Nauni/OneDrive/Desktop/Foundation_Model/out/workbench/records/installer/logs/tests_linux-x86_64_release.log",
+  "tail": "USE_ERRNO\n        if use_last_error:\n            flags |= _FUNCFLAG_USE_LASTERROR\n        if _sys.platform.startswith(\"aix\"):\n            \"\"\"When the name contains \".a(\" and ends with \")\",\n               e.g., \"libFOO.a(libFOO.so)\" - this is taken to be an\n               archive(member) syntax for dlopen(), and the mode is adjusted.\n               Otherwise, name is presented to dlopen() as a file argument.\n            \"\"\"\n            if name and name.endswith(\")\") and \".a(\" in name:\n                mode |= ( _os.RTLD_MEMBER | _os.RTLD_NOW )\n        if _os.name == \"nt\":\n            if winmode is not None:\n                mode = winmode\n            else:\n                import nt\n                mode = nt._LOAD_LIBRARY_SEARCH_DEFAULT_DIRS\n                if '/' in name or '\\\\' in name:\n                    self._name = nt._getfullpathname(self._name)\n                    mode |= nt._LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR\n    \n        class _FuncPtr(_CFuncPtr):\n            _flags_ = flags\n            _restype_ = self._func_restype_\n        self._FuncPtr = _FuncPtr\n    \n        if handle is None:\n>           self._handle = _dlopen(self._name, mode)\nE           OSError: libGLU.so.1: cannot open shared object file: No such file or directory\n\n../mm-py310/lib/python3.10/ctypes/__init__.py:374: OSError\n___________________ test_the_tiling_dialog_and_the_gmsh_path ___________________\n\nwb = <atlas.workbench.app.Workbench object at 0x7fb41be19360>\ntmp_path = PosixPath('/tmp/pytest-of-nauni/pytest-0/test_the_tiling_dialog_and_the0')\n\n    def test_the_tiling_dialog_and_the_gmsh_path(wb, tmp_path):\n        from atlas.workbench.gmsh_import import read_msh\n        wb.geo_editor._switch(layer=\"windows\")\n        click(widget(wb.geo_editor.inspector, \"Lay a grid of rectangles...\", pn.widgets.Button))\n        widget(wb.modal_body, \"Columns\").value = 4\n        widget(wb.modal_body, \"Rows\").value = 3\n        click(widget(wb.modal_body, \"Replace the windows\", pn.widgets.Button))\n        assert len(wb.spec.windows) == 12 and _msgs(wb.spec, \"error\") == []\n>       g = read_msh(_plate_msh(tmp_path / \"p.msh\"), 1 / 32)\n\ntests/test_workbench_geometry.py:491: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests/test_workbench_geometry.py:270: in _plate_msh\n    gmsh = pytest.importorskip(\"gmsh\")\n.venv/lib/python3.10/site-packages/gmsh.py:92: in <module>\n    lib = CDLL(libpath)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = <CDLL '/home/nauni/wbv-linux/.venv/lib/libgmsh.so.4.15', handle 0 at 0x7fb41b9d35e0>\nname = '/home/nauni/wbv-linux/.venv/lib/libgmsh.so.4.15', mode = 0\nhandle = None, use_errno = False, use_last_error = False, winmode = None\n\n    def __init__(self, name, mode=DEFAULT_MODE, handle=None,\n                 use_errno=False,\n                 use_last_error=False,\n                 winmode=None):\n        self._name = name\n        flags = self._func_flags_\n        if use_errno:\n            flags |= _FUNCFLAG_USE_ERRNO\n        if use_last_error:\n            flags |= _FUNCFLAG_USE_LASTERROR\n        if _sys.platform.startswith(\"aix\"):\n            \"\"\"When the name contains \".a(\" and ends with \")\",\n               e.g., \"libFOO.a(libFOO.so)\" - this is taken to be an\n               archive(member) syntax for dlopen(), and the mode is adjusted.\n               Otherwise, name is presented to dlopen() as a file argument.\n            \"\"\"\n            if name and name.endswith(\")\") and \".a(\" in name:\n                mode |= ( _os.RTLD_MEMBER | _os.RTLD_NOW )\n        if _os.name == \"nt\":\n            if winmode is not None:\n                mode = winmode\n            else:\n                import nt\n                mode = nt._LOAD_LIBRARY_SEARCH_DEFAULT_DIRS\n                if '/' in name or '\\\\' in name:\n                    self._name = nt._getfullpathname(self._name)\n                    mode |= nt._LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR\n    \n        class _FuncPtr(_CFuncPtr):\n            _flags_ = flags\n            _restype_ = self._func_restype_\n        self._FuncPtr = _FuncPtr\n    \n        if handle is None:\n>           self._handle = _dlopen(self._name, mode)\nE           OSError: libGLU.so.1: cannot open shared object file: No such file or directory\n\n../mm-py310/lib/python3.10/ctypes/__init__.py:374: OSError\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_workbench_installer.py:42: the launcher templates and the builder live upstream, in atlas-0.1; this copy of the workbench carries the launchers they make, not them\nSKIPPED [1] tests/test_workbench_cases.py:168: the build repo's ThermoStruct2D is not available: the expert is not where this case study expects it: '/home/nauni/wbv-linux/vendor/src/atlas/__init__.py' does not exist. thermostruct2d lives in the build repo (github.com/nonidino/physics-foundation-model, src/atlas/solvers/); set ATLAS_BUILD_REPO to the checkout.\n4 failed, 314 passed, 2 skipped in 219.78s (0:03:39)\n",
+  "summary": "4 failed, 314 passed, 2 skipped",
+  "skipped_because": [
+   "tests/test_workbench_installer.py:42: the launcher templates and the builder live upstream, in atlas-0.1; this copy of the workbench carries the launchers they make, not them",
+   "tests/test_workbench_cases.py:168: the build repo's ThermoStruct2D is not available: the expert is not where this case study expects it: '/home/nauni/wbv-linux/vendor/src/atlas/__init__.py' does not exist. thermostruct2d lives in the build repo (github.com/nonidino/physics-foundation-model, src/atlas/solvers/); set ATLAS_BUILD_REPO to the checkout."
+  ]
+ },
+ "no_torch": {
+  "argv": [
+   "/home/nauni/wbv-linux/.venv/bin/python",
+   "-c",
+   "\nimport importlib.abc, runpy, sys\nclass Block(importlib.abc.MetaPathFinder):\n    def find_spec(self, name, path=None, target=None):\n        if name == \"torch\" or name.startswith(\"torch.\"):\n            raise ImportError(\"torch is blocked by verify_workbench_bundle --no-torch\")\n        return None\nsys.meta_path.insert(0, Block())\nsys.argv = [\"run.py\", \"--check\"]\ntry:\n    runpy.run_path(\"run.py\", run_name=\"__main__\")\nexcept SystemExit as exc:\n    code = exc.code if isinstance(exc.code, int) else 1\n    print(\"\\nTORCH_IMPORTED\", \"torch\" in sys.modules)\n    sys.exit(code)\n"
+  ],
+  "exit_code": 3,
+  "wall_s": 21.1,
+  "log": "/mnt/c/Users/Nauni/OneDrive/Desktop/Foundation_Model/out/workbench/records/installer/logs/no_torch_linux-x86_64_release.log",
+  "tail": "Atlas Workbench self-test  (Python 3.10.21 on Linux x86_64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    absent   torch                  the learned case, CPU-only; nothing else needs it (optional): ImportError: torch is blocked by verify_workbench_bundle --no-torch\n    absent   gmsh                   File > Import geometry from Gmsh (optional): OSError: libGLU.so.1: cannot open shared object file: No such file ...\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor/src/atlas/cases/windfarm/reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             8.9 s   2 steps of serial, parallel, full   0.8 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             0.9 s   2 steps of serial, full           0.1 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.1 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.0 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.2 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.6 s   1 step of serial, parallel, full   4.4 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.3 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.1 s   2 steps of serial, full           0.6 s\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 1.2 s\n    ok   http://127.0.0.1:8040/ answered with the page in 0.4 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.7 s)\n\n  PARTIAL -- every type ran, the solver came from vendor/, and the page answers;\n  absent and optional: torch (the learned case, CPU-only; nothing else needs it); gmsh (File > Import geometry from Gmsh). (21 s)\n\nTORCH_IMPORTED False\n",
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  },
+  "torch_imported": false,
+  "said_torch_absent": true
+ },
+ "offline": {
+  "argv": [
+   "/home/nauni/wbv-linux/.venv/bin/python",
+   "-c",
+   "\nimport json, os, runpy, socket, sys\nattempts, loopback = [], []\nLOCAL = (\"127.0.0.1\", \"localhost\", \"::1\")\n_connect, _connect_ex, _create = (socket.socket.connect, socket.socket.connect_ex,\n                                  socket.create_connection)\ndef _host(address):\n    return address[0] if isinstance(address, tuple) and address else str(address)\ndef guard(real, self_or_addr, address, *a, **k):\n    if _host(address) in LOCAL:\n        loopback.append(repr(address)[:100])\n        return real(self_or_addr, address, *a, **k)\n    attempts.append(repr(address)[:200])\n    raise OSError(\"network disabled by verify_workbench_bundle --offline\")\nsocket.socket.connect = lambda self, address: guard(_connect, self, address)\nsocket.socket.connect_ex = lambda self, address: guard(_connect_ex, self, address)\nsocket.create_connection = lambda address, *a, **k: (\n    loopback.append(repr(address)[:100]) or _create(address, *a, **k)\n    if _host(address) in LOCAL else guard(None, None, address))\nsys.argv = [\"run.py\", \"--check\"]\ncode = 0\ntry:\n    runpy.run_path(\"run.py\", run_name=\"__main__\")\nexcept SystemExit as exc:\n    code = exc.code if isinstance(exc.code, int) else 1\nwith open(os.environ[\"ATTEMPTS_OUT\"], \"w\") as fh:\n    json.dump({\"exit_code\": code, \"connection_attempts\": attempts,\n               \"loopback_connections\": len(loopback)}, fh)\nsys.exit(code)\n"
+  ],
+  "exit_code": 3,
+  "wall_s": 22.5,
+  "log": "/mnt/c/Users/Nauni/OneDrive/Desktop/Foundation_Model/out/workbench/records/installer/logs/offline_linux-x86_64_release.log",
+  "tail": "Atlas Workbench self-test  (Python 3.10.21 on Linux x86_64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    ok       torch     2.7.1+cpu    the learned case, CPU-only; nothing else needs it (optional)\n    absent   gmsh                   File > Import geometry from Gmsh (optional): OSError: libGLU.so.1: cannot open shared object file: No such file ...\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor/src/atlas/cases/windfarm/reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             9.0 s   2 steps of serial, parallel, full   0.8 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             1.0 s   2 steps of serial, full           0.2 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.1 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.0 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.3 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.7 s   1 step of serial, parallel, full   4.4 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.3 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.1 s   2 steps of serial, full           0.7 s\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8041 after 1.2 s\n    ok   http://127.0.0.1:8041/ answered with the page in 0.4 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.7 s)\n\n  PARTIAL -- every type ran, the solver came from vendor/, and the page answers;\n  absent and optional: gmsh (File > Import geometry from Gmsh). (22 s)\n",
+  "connection_attempts": [],
+  "loopback_connections": 67,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  }
+ },
+ "pip_freeze_all": [
+  "Jinja2==3.1.4",
+  "Markdown==3.4.1",
+  "MarkupSafe==2.1.3",
+  "PyYAML==6.0.1",
+  "annotated-types==0.6.0",
+  "bleach==4.1.0",
+  "bokeh==3.6.0",
+  "certifi==2025.10.5",
+  "charset-normalizer==3.3.2",
+  "contourpy==1.2.0",
+  "exceptiongroup==1.3.1",
+  "filelock==3.13.1",
+  "fsspec==2024.6.1",
+  "gmsh==4.15.0",
+  "idna==3.7",
+  "iniconfig==1.1.1",
+  "linkify-it-py==2.0.0",
+  "markdown-it-py==2.2.0",
+  "mdit-py-plugins==0.3.0",
+  "mdurl==0.1.0",
+  "mpmath==1.3.0",
+  "networkx==3.3",
+  "numpy==1.26.4",
+  "packaging==24.1",
+  "pandas==2.2.2",
+  "panel==1.5.2",
+  "param==2.1.1",
+  "pillow==12.2.0",
+  "pip==24.3.1",
+  "pluggy==1.0.0",
+  "pydantic==2.12.5",
+  "pydantic_core==2.41.5",
+  "pytest==7.4.4",
+  "python-dateutil==2.9.0.post0",
+  "pytz==2024.1",
+  "pyviz_comms==3.0.2",
+  "requests==2.33.0",
+  "scipy==1.13.1",
+  "setuptools==79.0.1",
+  "six==1.16.0",
+  "sympy==1.14.0",
+  "tomli==2.4.1",
+  "torch==2.7.1+cpu",
+  "tornado==6.4.1",
+  "tqdm==4.66.5",
+  "typing-inspection==0.4.2",
+  "typing_extensions==4.15.0",
+  "tzdata==2023.3",
+  "uc-micro-py==1.0.1",
+  "urllib3==2.7.0",
+  "webencodings==0.5.1",
+  "xyzservices==2022.9.0"
+ ],
+ "venv_python": "3.10.21 | packaged by conda-forge | (main, Aug 21 2026, 22:42:31) [GCC 14.4.0]",
+ "venv_mb": 1385.2,
+ "deepest_path_in_venv": {
+  "path": ".venv/lib/python3.10/site-packages/torch/include/ATen/ops/_fake_quantize_per_tensor_affine_cachemask_tensor_qparams_compositeexplicitautograd_dispatch.h",
+  "chars": 152
+ },
+ "optional_fails": {
+  "argv": [
+   "bash",
+   "-c",
+   "cd '/home/nauni/wbv-linux' && ./run.sh --check"
+  ],
+  "exit_code": 3,
+  "wall_s": 43.2,
+  "log": "/mnt/c/Users/Nauni/OneDrive/Desktop/Foundation_Model/out/workbench/records/installer/logs/optional_fails_linux-x86_64_release.log",
+  "tail": "try from Gmsh)\nWARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f5bb8989390>: Failed to establish a new connection: [Errno 111] Connection refused'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f5bb8989660>: Failed to establish a new connection: [Errno 111] Connection refused'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f5bb89896f0>: Failed to establish a new connection: [Errno 111] Connection refused'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f5bb89898d0>: Failed to establish a new connection: [Errno 111] Connection refused'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f5bb8989960>: Failed to establish a new connection: [Errno 111] Connection refused'))': /simple/gmsh/\nERROR: Could not find a version that satisfies the requirement gmsh==4.15.0 (from versions: none)\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: /home/nauni/wbv-linux/.venv/bin/python -m pip install --upgrade pip\nERROR: No matching distribution found for gmsh==4.15.0\n    Gmsh could not be installed. Only File > Import geometry from Gmsh\n    needs it. The next ./run.sh tries again, or pass --no-gmsh.\nAtlas Workbench self-test  (Python 3.10.21 on Linux x86_64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    absent   torch                  the learned case, CPU-only; nothing else needs it (optional): ModuleNotFoundError: No module named 'torch'\n    absent   gmsh                   File > Import geometry from Gmsh (optional): ModuleNotFoundError: No module named 'gmsh'\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor/src/atlas/cases/windfarm/reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             8.1 s   2 steps of serial, parallel, full   0.8 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             0.9 s   2 steps of serial, full           0.1 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.1 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.0 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.2 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.7 s   1 step of serial, parallel, full   4.3 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.2 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.1 s   2 steps of serial, full           0.6 s\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 1.2 s\n    ok   http://127.0.0.1:8040/ answered with the page in 0.4 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.7 s)\n\n  PARTIAL -- every type ran, the solver came from vendor/, and the page answers;\n  absent and optional: torch (the learned case, CPU-only; nothing else needs it); gmsh (File > Import geometry from Gmsh). (20 s)\n",
+  "uninstall_exit_code": 0,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  },
+  "said_torch_failed": true,
+  "said_gmsh_failed": true,
+  "stamps_written": []
+ },
+ "passes": false
+}

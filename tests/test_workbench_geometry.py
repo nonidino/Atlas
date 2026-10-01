@@ -266,8 +266,38 @@ def test_registry_families_name_valid_boundary_kinds():
 # ---------------------------------------------------------------------------
 
 
+def _gmsh():
+    """Gmsh, or a skip that says why.  `importorskip` skips only an ImportError, and
+    on a Linux machine without the system's OpenGL the wheel is installed and its
+    import raises OSError (libGLU.so.1): four tests failed there instead of skipping
+    (the one-command install on Ubuntu, demo step 7)."""
+    try:
+        import gmsh
+    except (ImportError, OSError) as exc:
+        pytest.skip(f"Gmsh cannot be loaded here: {exc}")
+    return gmsh
+
+
+def test_an_installed_gmsh_that_will_not_load_is_said_so(monkeypatch):
+    """The import dialog's error, not a raw OSError, when Gmsh's library will not load."""
+    import importlib.abc
+
+    from atlas.workbench.gmsh_import import GmshImportError, read_msh
+
+    class Unloadable(importlib.abc.MetaPathFinder):
+        def find_spec(self, name, path=None, target=None):
+            if name == "gmsh":
+                raise OSError("libGLU.so.1: cannot open shared object file")
+            return None
+
+    monkeypatch.delitem(sys.modules, "gmsh", raising=False)
+    monkeypatch.setattr(sys, "meta_path", [Unloadable(), *sys.meta_path])
+    with pytest.raises(GmshImportError, match="will not load here.*libGLU"):
+        read_msh("plate.msh", 1 / 32)
+
+
 def _plate_msh(path, *, window_ok=True, bc_on_edge=True, version=4.1):
-    gmsh = pytest.importorskip("gmsh")
+    gmsh = _gmsh()
     gmsh.initialize(readConfigFiles=False, interruptible=False)
     try:
         gmsh.option.setNumber("General.Terminal", 0)

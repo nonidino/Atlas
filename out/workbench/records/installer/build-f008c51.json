@@ -1,0 +1,94 @@
+{
+ "out": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench-bundle",
+ "branch": "atlas-workbench",
+ "built": "2026-10-01T04:27:27",
+ "atlas_commit": "f008c51fa9f2c7a193e526ebbee8ec7d8b4fe3c3",
+ "dirty": [],
+ "build_repo": "C:\\Users\\Nauni\\physics-foundation-model",
+ "build_repo_commit": "98df3506aedd6f3edf2733257451f3c94f74b987",
+ "build_repo_dirty": [],
+ "vendored": "vendor/src/atlas/cases/windfarm",
+ "excluded_from_atlas": {
+  "demo": "PoC 1's dashboard; nothing outside it imports it",
+  "demo_frontwing": "PoC 2's dashboard; nothing outside it imports it",
+  "demo_racelab": "PoC 3's dashboard and its own bundle templates"
+ },
+ "tests": [
+  "test_workbench_cases.py",
+  "test_workbench_drawn.py",
+  "test_workbench_drawn_families.py",
+  "test_workbench_families.py",
+  "test_workbench_fast.py",
+  "test_workbench_fork.py",
+  "test_workbench_fv.py",
+  "test_workbench_geometry.py",
+  "test_workbench_holes.py",
+  "test_workbench_installer.py",
+  "test_workbench_layout.py",
+  "test_workbench_runner.py",
+  "test_workbench_shell.py",
+  "test_workbench_starter.py",
+  "workbench_ui.py"
+ ],
+ "scripts": [
+  "w100_scaling_ladder.py",
+  "w202_kill_tests.py",
+  "w346_rotor_count_speed.py"
+ ],
+ "sizes_mb": {
+  "total": 4.306916,
+  "atlas": 3.55158,
+  "vendor": 0.310498,
+  "tests": 0.232511,
+  "scripts": 0.16405
+ },
+ "files": 135,
+ "scan_neubernet": {
+  "files_or_dirs_named_for_it": [],
+  "uses": [],
+  "prose_mentions_by_file": {
+   "atlas/cases/racelab_switch.py": 1,
+   "atlas/workbench/README.md": 1,
+   "tests/test_workbench_installer.py": 2
+  },
+  "prose_mentions_total": 4
+ },
+ "scan_poseidon": {
+  "paths": [],
+  "prose_mentions_by_file": {
+   "atlas/capability.py": 2,
+   "atlas/CASE-STUDY-GUIDE.md": 5,
+   "atlas/composition.py": 1,
+   "atlas/conformance.py": 3,
+   "atlas/probe.py": 2,
+   "atlas/README.md": 9,
+   "atlas/cases/car_windows.py": 7,
+   "atlas/cases/neural_interface.py": 16,
+   "atlas/cases/poseidon.py": 17,
+   "atlas/cases/racelab.py": 1,
+   "atlas/cases/racelab3d.py": 2,
+   "atlas/cases/racelab_switch.py": 4,
+   "atlas/cases/reuse_probe.py": 3,
+   "atlas/cases/scaling_ladder.py": 4,
+   "atlas/cases/wake_array.py": 21,
+   "atlas/cases/wind_farm_design.py": 16,
+   "atlas/cases/__init__.py": 3,
+   "atlas/workbench/README.md": 1,
+   "atlas/workbench/registry.py": 3,
+   "scripts/w100_scaling_ladder.py": 53,
+   "scripts/w202_kill_tests.py": 27,
+   "scripts/w346_rotor_count_speed.py": 1,
+   "tests/test_workbench_installer.py": 7,
+   "vendor/src/atlas/cases/windfarm/adapters.py": 4,
+   "vendor/src/atlas/cases/windfarm/probe.py": 2
+  },
+  "prose_mentions_total": 214
+ },
+ "scan_data": {
+  "allowed": [],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "problems": [],
+ "commit": "cdd9076d4c5a41b38ee26051f9c1b8014397da1e"
+}

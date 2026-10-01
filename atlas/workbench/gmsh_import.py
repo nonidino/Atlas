@@ -159,6 +159,14 @@ def read_msh(path: str, dx: float) -> GmshGeometry:
         import gmsh                                       # GPL-2+; called, not copied
     except ImportError as exc:                            # pragma: no cover
         raise GmshImportError("Gmsh's Python module is not installed") from exc
+    except OSError as exc:
+        # Installed but its library will not load: on a Linux machine without the
+        # system's OpenGL, the wheel's import fails with "libGLU.so.1: cannot open
+        # shared object file" (found by the one-command install on Ubuntu, demo
+        # step 7). The page says so, instead of a click that does nothing.
+        raise GmshImportError(f"Gmsh is installed but its library will not load here "
+                              f"({exc}); on Linux it needs the system's OpenGL "
+                              f"libraries") from exc
     with _LOCK:
         gmsh.initialize(readConfigFiles=False, interruptible=False)
         try:
