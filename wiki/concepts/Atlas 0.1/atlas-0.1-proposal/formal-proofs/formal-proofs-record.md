@@ -34,7 +34,7 @@ A machine check guarantees that the proof proves the statement. It does not guar
 
 **Why the build is not in `lean/.lake`.** The repository lies inside OneDrive. Lake's `.lake` folder holds the unpacked Mathlib cache: several gigabytes in tens of thousands of files. Built in place, OneDrive would upload all of it, and it holds freshly written files for a moment, which breaks a build that writes thousands. So `scripts/lean_build.py` mirrors the sources into the build folder and runs `lake` there. Anywhere else (continuous integration, a clone outside OneDrive) plain `lake build` in `lean/` works: nothing in the project depends on the script.
 
-**Disk.** 384.6 GB were free on `C:` before the install and 371.4 GB after it: **13.2 GB** used, by the Lean toolchain, the Mathlib sources, and its cache both packed and unpacked.
+**Disk.** Measured folder by folder after the install: the Lean toolchain (`.elan`) **3.1 GB**; the build folder **7.5 GB in 144,362 files** (the Mathlib sources and its unpacked cache); Mathlib's packed cache (`.cache\mathlib`) **0.45 GB**. **11.1 GB in all.** Free space on `C:` fell from 384.6 GB to 371.4 GB over the same hour, 13.2 GB; the 2.1 GB between the two figures is not attributed here (two other chats were writing to the disk, and 144,362 small files each round up to a whole cluster). The file count is the reason the build is kept out of OneDrive.
 
 ### 1.1 Timings
 

@@ -100,7 +100,7 @@ T1 + T8 + T9 + T4 + T22 for the first, T5 for the second. All are Tier A or B.
 - **Continuous integration:** a GitHub Action builds the Lean project and the blueprint on every push, and fails on any `sorry`.
 - **Each blueprint page links back** to the vault page whose result it formalises, and the vault page links forward.
 - **Decided (O5 and O9, the owner, 2026-09-30):** the install is approved; the project stays private while it is built and goes public when the website links to it.
-- **Built 2026-10-01.** The sources are in `lean/`. **The build runs outside OneDrive**, in `C:\Users\Nauni\.cache\atlas-lean`, through `scripts/lean_build.py`: built in place, OneDrive would upload the unpacked Mathlib cache, several gigabytes in tens of thousands of files. The install took 13.2 GB of disk. `leanblueprint` needed no separate Graphviz install. Details: [[formal-proofs-record]] §1.
+- **Built 2026-10-01.** The sources are in `lean/`. **The build runs outside OneDrive**, in `C:\Users\Nauni\.cache\atlas-lean`, through `scripts/lean_build.py`: built in place, OneDrive would upload the unpacked Mathlib cache: the build folder measures 7.5 GB in 144,362 files. The install measures 11.1 GB of disk in all. `leanblueprint` needed no separate Graphviz install. Details: [[formal-proofs-record]] §1.
 
 ### 4.1 The owner's concern: "Lean can take a long time to verify"
 
