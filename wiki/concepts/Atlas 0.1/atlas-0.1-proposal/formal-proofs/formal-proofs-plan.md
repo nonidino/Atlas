@@ -152,13 +152,13 @@ One line per theorem, kept by the proofs chat. *drafted*: the Lean statement exi
 
 **Batches 1 to 3** (T1, T7, T4, T3, T5, T10, T11). These lines belong to the chat that proves them.
 
-- **T1: drafted**, `Atlas.perturbed_contraction`, `lean/AtlasProofs/PerturbedContraction.lean`, 2026-10-01. Awaiting the owner's OK.
-- **T7: drafted**, `Atlas.certificate` and `Atlas.certificate_constant_is_opNorm`, `lean/AtlasProofs/Certificate.lean`, 2026-10-01. Awaiting the owner's OK.
-- **T4: drafted**, `Atlas.master_bound` and its regimes, `lean/AtlasProofs/MasterBound.lean`, 2026-10-01. Awaiting the owner's OK.
-- **T3: drafted, with a finding**, 2026-10-01. Direct Schur (`Atlas.schur_iff`, `lean/AtlasProofs/Schur.lean`) and Dirichlet–Neumann (`Atlas.TwoPieces.dn_fixedPoint_solves`, `lean/AtlasProofs/DirichletNeumann.lean`) stand as planned. Restricted additive Schwarz needs a hypothesis (`Atlas.Schwarz.fixedPt_eq_solution`, `lean/AtlasProofs/SchwarzConvergence.lean`), and the counterexample is `Atlas.Schwarz.exists_spurious_fixedPt`. Awaiting the owner's OK. **Not yet checked: the compiler must go on citing the classical source.**
-- **T5: drafted**, `Atlas.DefectCorrection.limit_isFixedPt` (Theorem 1), `step_of_const` (Corollary 1), `shrink_hasEigenvalue_iff` (Corollary 2), `lean/AtlasProofs/DefectCorrection.lean` and `DefectCorrectionShrink.lean`, 2026-10-01. Awaiting the owner's OK.
-- **T10: drafted**, `Atlas.average_equivariant`, `lean/AtlasProofs/SymmetryAveraging.lean`, 2026-10-01. Awaiting the owner's OK.
-- **T11: drafted**, `Atlas.interconnection_passive` and `Atlas.interconnection_nonexpansive`, `lean/AtlasProofs/Passivity.lean`, 2026-10-01. Awaiting the owner's OK.
+- **T1: checked**, `Atlas.perturbed_contraction`, `Atlas.perturbed_contraction_uniform` and `Atlas.perturbed_contraction_sharp`, `lean/AtlasProofs/PerturbedContraction.lean`, 2026-10-01.
+- **T7: checked**, `Atlas.certificate`, `Atlas.certificate_of_contraction`, `Atlas.certificate_constant_is_opNorm` and `Atlas.certificate_two_mode_example`, `lean/AtlasProofs/Certificate.lean`, 2026-10-01.
+- **T4: checked**, `Atlas.master_bound` with its recursion, split, accumulation, three regimes and attained example, `lean/AtlasProofs/MasterBound.lean`; T4e, `Atlas.trace_perturbation` and `Atlas.transmission_bound`, `lean/AtlasProofs/TransmissionBound.lean`, 2026-10-01.
+- **T3: checked**, `Atlas.schur_iff`, `Atlas.TwoPieces.dn_fixedPoint_solves`, `Atlas.TwoPieces.dn_solution_isFixedPt`, `Atlas.FacePair.solves_of_fixedPoint`, `Atlas.Schwarz.sweep_eq`, `Atlas.Schwarz.solution_isFixedPt`, `Atlas.Schwarz.isFixedPt_iff`, `Atlas.Schwarz.solves_of_windows_agree`, `Atlas.Schwarz.fixedPt_solves_of_precond`, `Atlas.Schwarz.fixedPt_solves`, `Atlas.Schwarz.fixedPt_eq_solution`, `Atlas.Schwarz.tendsto_solution`, `Atlas.Schwarz.error_le_update` and the counterexample `Atlas.Schwarz.exists_spurious_fixedPt`, `lean/AtlasProofs/Schur.lean`, `lean/AtlasProofs/DirichletNeumann.lean`, `lean/AtlasProofs/Schwarz.lean`, `lean/AtlasProofs/SchwarzConvergence.lean` and `lean/AtlasProofs/SchwarzCounterexample.lean`, 2026-10-01.
+- **T5: checked**, `Atlas.DefectCorrection.limit_isFixedPt` and `limit_isFixedPt_of_inexact` (Theorem 1), `step_of_const`, `isStep_iff` and `innerMarch_of_const` (Corollary 1), `shrink_hasFDerivAt`, `shrink_hasEigenvalue`, `shrink_hasEigenvalue_iff` and `shrink_re` (Corollary 2), `lean/AtlasProofs/DefectCorrection.lean` and `lean/AtlasProofs/DefectCorrectionShrink.lean`, 2026-10-01.
+- **T10: checked**, `Atlas.average_equivariant`, `Atlas.average_of_equivariant` and `Atlas.average_over_non_group_not_equivariant`, `lean/AtlasProofs/SymmetryAveraging.lean`, 2026-10-01.
+- **T11: checked**, `Atlas.port_rule_power`, `Atlas.junction_power_eq_zero`, `Atlas.interconnection_passive` and `Atlas.interconnection_nonexpansive`, `lean/AtlasProofs/Passivity.lean`, 2026-10-01.
 
 **Batches 4 to 6** (tier 0: T25, T24, T26; tier 2: T8, T9, the SNI remark, T9′, T22, T2; the headline statements). These lines belong to the chat that states and proves them.
 

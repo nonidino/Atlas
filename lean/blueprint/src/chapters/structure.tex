@@ -33,6 +33,7 @@ that is not a group does not work.
 
 \begin{proof}
   \uses{def:average}
+  \leanok
   $\tilde E(hu)=\frac1{|G|}\sum_gg^{-1}E(ghu)$.  Substitute $g'=gh$, which runs
   over $G$ as $g$ does; then $g^{-1}=h\,g'^{-1}$, and $h$ comes out of the sum
   because the action on $W$ is linear.
@@ -48,6 +49,7 @@ that is not a group does not work.
 
 \begin{proof}
   \uses{def:average}
+  \leanok
   Every term of the sum is $E(u)$.
 \end{proof}
 
@@ -60,6 +62,13 @@ that is not a group does not work.
   $u=(0,1)$, the average at $M_xu=u$ is $(-\tfrac13,0)$, and $M_x$ of the
   average at $u$ is $(\tfrac13,0)$.
 \end{example}
+
+\begin{proof}
+  \leanok
+  $E(u)=(1,0)$, $M_xE(M_xu)=M_x(1,0)=(-1,0)$ and $M_yE(M_yu)=M_y(-1,0)=(-1,0)$,
+  so the average at $u=M_xu$ is $\tfrac13(-1,0)$, and $M_x$ of it is
+  $(\tfrac13,0)\ne(-\tfrac13,0)$.
+\end{proof}
 
 \section{T11: passive agents joined by the port rule}
 
@@ -81,6 +90,7 @@ the distance between two runs: the constant $L\le1$ of the master bound.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   Linearity of the inner product in its second argument.
 \end{proof}
 
@@ -93,6 +103,7 @@ the distance between two runs: the constant $L\le1$ of the master bound.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   $\sum_xp(x)=\sum_xp(\pi(x))=-\sum_xp(x)$.
 \end{proof}
 
@@ -112,6 +123,7 @@ the distance between two runs: the constant $L\le1$ of the master bound.
 
 \begin{proof}
   \uses{lem:T11-junction}
+  \leanok
   Sum the agents' inequalities.  The port powers, summed over agents, are the
   sum over all ports, which is zero by Lemma~\ref{lem:T11-junction}.
 \end{proof}
@@ -132,6 +144,7 @@ the distance between two runs: the constant $L\le1$ of the master bound.
 
 \begin{proof}
   \uses{thm:T11}
+  \leanok
   Theorem~\ref{thm:T11} with $H_i=\norm{u_i-v_i}^2$, the powers $2\Delta p$, and
   no external term.
 \end{proof}

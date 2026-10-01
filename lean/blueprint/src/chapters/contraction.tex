@@ -37,6 +37,7 @@ contraction; it only needs to have an answer.
 \end{theorem}
 
 \begin{proof}
+  \leanok
   Existence and uniqueness of $a_l$ are Banach's fixed-point theorem
   (Mathlib: \texttt{ContractingWith.fixedPoint}).  For the rate,
   $T_l^{\,k}a_l=a_l$, so
@@ -59,6 +60,7 @@ contraction; it only needs to have an answer.
 
 \begin{proof}
   \uses{thm:T1}
+  \leanok
   Take $x=a_c$.
 \end{proof}
 
@@ -71,6 +73,7 @@ contraction; it only needs to have an answer.
 \end{proposition}
 
 \begin{proof}
+  \leanok
   $T_c(x)=\rho x$ and $T_l(x)=\rho x+\delta$, with fixed points $0$ and
   $\delta/(1-\rho)$.
 \end{proof}
@@ -104,6 +107,7 @@ read off one march under-bounded two of seven solver arms on its largest test.
 \end{theorem}
 
 \begin{proof}
+  \leanok
   $d(w,w^\star)\le d(w,\Phi w)+d(\Phi w,\Phi w^\star)\le d(w,\Phi w)+L\,d(w,w^\star)$,
   and $1-L>0$.
 \end{proof}
@@ -120,6 +124,7 @@ read off one march under-bounded two of seven solver arms on its largest test.
 
 \begin{proof}
   \uses{thm:T7}
+  \leanok
   Banach's theorem gives $w^\star$; Theorem~\ref{thm:T7} applies to every $w$.
   (Mathlib: \texttt{ContractingWith.dist\_fixedPoint\_le}.)
 \end{proof}
@@ -139,6 +144,7 @@ read off one march under-bounded two of seven solver arms on its largest test.
 \end{theorem}
 
 \begin{proof}
+  \leanok
   $\Phi(w)-w=(A-I)(w-w^\star)$, so $w-w^\star=-B(\Phi(w)-w)$, which gives 1.
   For 2, given $x\in E$ let $w=w^\star+Bx$.  Then
   $\Phi(w)-w=(A-I)Bx=-x$, and the hypothesis reads $\norm{Bx}\le C\norm{x}$.
@@ -154,6 +160,13 @@ read off one march under-bounded two of seven solver arms on its largest test.
   off a march that stays in the fast mode, under-bounds the slow mode by a
   factor of eight.
 \end{example}
+
+\begin{proof}
+  \leanok
+  $\Phi(1,0)-(1,0)=(-0.4,\,0)$ and $\Phi(0,1)-(0,1)=(0,\,-0.05)$, whose maximum
+  norms are $0.4$ and $0.05$, while $\norm{(1,0)}=\norm{(0,1)}=1$; and
+  $2.5\cdot0.4=20\cdot0.05=1$.
+\end{proof}
 
 \begin{remark}
   T1's distance bound is T7 applied to the learned map at the classical answer:

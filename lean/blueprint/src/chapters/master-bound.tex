@@ -42,6 +42,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   Add and subtract $\Phi(u^{n,\star})$.
 \end{proof}
 
@@ -60,6 +61,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   The sum telescopes.
 \end{proof}
 
@@ -74,6 +76,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   Induction on $N$.  The step multiplies the bound for $N$ by $L\ge0$ and adds
   $d_{N+1}$.
 \end{proof}
@@ -94,6 +97,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 
 \begin{proof}
   \uses{lem:T4-recursion, lem:T4-accumulation}
+  \leanok
   Take norms in Lemma~\ref{lem:T4-recursion} and apply
   Lemma~\ref{lem:T4-accumulation} to $e_n=\norm{u^n-u^{n,\star}}$.
 \end{proof}
@@ -117,6 +121,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 
 \begin{proof}
   \uses{thm:T4, lem:T4-split}
+  \leanok
   Lemma~\ref{lem:T4-split} and the triangle inequality bound each defect by
   $\tau^n+\sigma^n+\gamma^n$; the weights $L^{N-n}$ are non-negative.
 \end{proof}
@@ -132,6 +137,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 
 \begin{proof}
   \uses{thm:T4}
+  \leanok
   $\sum_{n=1}^{N}L^{N-n}=(1-L^N)/(1-L)\le1/(1-L)$.
 \end{proof}
 
@@ -145,6 +151,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 
 \begin{proof}
   \uses{thm:T4}
+  \leanok
   Every weight is $1$.
 \end{proof}
 
@@ -159,6 +166,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 
 \begin{proof}
   \uses{thm:T4}
+  \leanok
   The geometric sum.
 \end{proof}
 
@@ -172,6 +180,7 @@ terms from the coupling, and the stability constant $L$ factors over the parts.
 \end{proposition}
 
 \begin{proof}
+  \leanok
   $u^n=0$ and $u^{n+1,\star}=L\,u^{n,\star}-\delta$ with $u^{0,\star}=0$.
 \end{proof}
 
@@ -199,6 +208,7 @@ error cost more.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   $\tilde\Lambda(\lambda^\dagger-\lambda^\star)=\chi-\tilde\Lambda\lambda^\star
   =(\Lambda-\tilde\Lambda)\lambda^\star$, so
   $\beta\norm{\lambda^\dagger-\lambda^\star}
@@ -219,5 +229,6 @@ error cost more.
 
 \begin{proof}
   \uses{lem:T4e-trace}
+  \leanok
   Compose the Lipschitz bound with Lemma~\ref{lem:T4e-trace}.
 \end{proof}

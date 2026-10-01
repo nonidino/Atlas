@@ -36,6 +36,7 @@ the undivided solution: nothing is lost and nothing is added by the cut.
 \end{theorem}
 
 \begin{proof}
+  \leanok
   The first equation on the left is equivalent to the first on the right
   because $A_{II}$ is invertible.  Substituting it into the second equation on
   the left gives the second on the right, and conversely.
@@ -88,6 +89,7 @@ the iteration is not assumed.
 
 \begin{proof}
   \uses{def:two-pieces}
+  \leanok
   $\theta\ne0$ gives $\tilde\lambda=\lambda$.  The two interior equations are
   the exactness of the solves.  The Neumann solve's interface equation,
   $A_{\Gamma2}u_2+A^{(2)}_{\Gamma\Gamma}\lambda=f^{(2)}_\Gamma-q$, with $q$
@@ -105,6 +107,7 @@ the iteration is not assumed.
 
 \begin{proof}
   \uses{def:two-pieces}
+  \leanok
   The Dirichlet solve returns $u_1$.  The pair $(u_2,\lambda)$ satisfies the
   Neumann piece's equations with the flux $q(u_1,\lambda)$, so the Neumann solve
   returns it, and the update is zero.
@@ -135,6 +138,7 @@ the iteration is not assumed.
 \end{theorem}
 
 \begin{proof}
+  \leanok
   From 2, $r_Dq=P_Du_D-\lambda$; from 4, $r_Nq=\lambda-P_Nu_N$.  Adding,
   $(r_D+r_N)q=P_Du_D-P_Nu_N$, so $q=h(P_Du_D-P_Nu_N)$.  Then 1 reads
   $K_Du_D+Q_Dq=b_D$ and 3 reads $K_Nu_N-Q_Nq=b_N$.
@@ -185,6 +189,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{def:schwarz}
+  \leanok
   $w_i(f,u)=B_iR_i(f-Au)+B_i(R_iAE_i)R_iu=B_iR_i(f-Au)+R_iu$.  Blend, and use
   the partition of unity.
 \end{proof}
@@ -198,6 +203,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{lem:T3c-sweep}
+  \leanok
   $M0=0$.
 \end{proof}
 
@@ -210,6 +216,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{lem:T3c-sweep}
+  \leanok
   Lemma~\ref{lem:T3c-sweep}.
 \end{proof}
 
@@ -222,6 +229,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{def:schwarz}
+  \leanok
   As in Lemma~\ref{lem:T3c-sweep}, $w_i(f,u)=R_iu+B_iR_i(f-Au)$, so
   $B_iR_i(f-Au)=0$ and, $B_i$ being invertible, $R_i(f-Au)=0$ for every $i$.
   By the partition of unity $f-Au=\sum_iE^\chi_iR_i(f-Au)=0$.
@@ -236,6 +244,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{lem:T3c-iff}
+  \leanok
   Lemma~\ref{lem:T3c-iff}.
 \end{proof}
 
@@ -249,6 +258,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{thm:T3c-precond, lem:T3c-sweep}
+  \leanok
   Let $Mr=0$ and write $r=Ae$.  Then $G_0(-e)=-e+M(Ae)=-e$, so $e=0$ and
   $r=0$.
 \end{proof}
@@ -263,6 +273,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{lem:T3c-sweep}
+  \leanok
   $G_f(u)-G_f(u^\star)=G_0(u-u^\star)$, so $e=u-u^\star$ is a fixed point of
   $G_0$.  Then $e=G_0^{\,k}(e)\to0$.
 \end{proof}
@@ -277,6 +288,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{lem:T3c-sweep, thm:T3c-consistency}
+  \leanok
   $G_f^{\,k}(u_0)-u^\star=G_0^{\,k}(u_0-u^\star)$.
 \end{proof}
 
@@ -290,6 +302,7 @@ solutions with weights that sum to one.
 
 \begin{proof}
   \uses{def:schwarz}
+  \leanok
   Three unknowns, windows $\{1,2\}$ and $\{2,3\}$, the shared unknown given
   entirely to the first window:
   \[
@@ -337,6 +350,7 @@ $\rho$ near one, that is many times the tolerance.
 
 \begin{proof}
   \uses{thm:T7, lem:T3c-sweep}
+  \leanok
   $G_f(u)-G_f(u^\star)=G_0(u-u^\star)$ and $G_f(u^\star)=u^\star$, so $G_f$
   contracts the pair $(u,u^\star)$ by $\rho$; apply Theorem~\ref{thm:T7}.
 \end{proof}

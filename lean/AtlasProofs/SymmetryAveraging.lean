@@ -4,6 +4,9 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Group.Action.Defs
 import Mathlib.Data.Fintype.Card
 import Mathlib.Basic.Real.Basic
+import Mathlib.Algebra.BigOperators.GroupWithZero.Action
+import Mathlib.Algebra.Module.NatInt
+import Mathlib.Tactic.NormNum.Eq
 
 /-!
 # T10 — Symmetry averaging: an exact invariance for any map
@@ -43,14 +46,30 @@ noncomputable def average (E : V → W) (u : V) : W :=
 /-- **T10 (symmetry averaging).** The group average of any map is exactly equivariant. -/
 theorem average_equivariant (E : V → W) (h : G) (u : V) :
     average G 𝕜 E (h • u) = h • average G 𝕜 E u := by
-  sorry
+  -- Substitute `g' = g h`, which runs over `G` as `g` does; then `g⁻¹ = h g'⁻¹`, and `h` comes
+  -- out of the sum because it acts linearly on the outputs.
+  have hsum : ∑ g : G, g⁻¹ • E (g • h • u) = h • ∑ g : G, g⁻¹ • E (g • u) := by
+    calc ∑ g : G, g⁻¹ • E (g • h • u)
+        = ∑ g : G, (g * h⁻¹)⁻¹ • E ((g * h⁻¹) • h • u) :=
+          (Equiv.sum_comp (Equiv.mulRight h⁻¹) fun g => g⁻¹ • E (g • h • u)).symm
+      _ = ∑ g : G, h • (g⁻¹ • E (g • u)) := by
+          refine Finset.sum_congr rfl fun g _ => ?_
+          rw [smul_smul (g * h⁻¹) h u, inv_mul_cancel_right, mul_inv_rev, inv_inv, mul_smul]
+      _ = h • ∑ g : G, g⁻¹ • E (g • u) := Finset.smul_sum.symm
+  unfold average
+  rw [hsum]
+  exact (smul_comm h _ _).symm
 
 /-- **T10 (averaging changes nothing that was already symmetric).** If `E` is equivariant
 and `|G|` is invertible in the scalars, the average of `E` is `E`. -/
 theorem average_of_equivariant (E : V → W) (hE : ∀ (g : G) (u : V), E (g • u) = g • E u)
     (hG : (Fintype.card G : 𝕜) ≠ 0) (u : V) :
     average G 𝕜 E u = E u := by
-  sorry
+  -- Every term of the sum is `E u`, so the sum is `|G| • E u`.
+  have hterm : ∀ g : G, g⁻¹ • E (g • u) = E u := fun g => by rw [hE, inv_smul_smul]
+  unfold average
+  simp only [hterm, Finset.sum_const, Finset.card_univ]
+  rw [← Nat.cast_smul_eq_nsmul 𝕜, smul_smul, inv_mul_cancel₀ hG, one_smul]
 
 end Average
 
@@ -64,6 +83,11 @@ theorem average_over_non_group_not_equivariant :
       let avg : (ℝ × ℝ → ℝ × ℝ) → ℝ × ℝ → ℝ × ℝ :=
         fun E u => (3 : ℝ)⁻¹ • (E u + Mx (E (Mx u)) + My (E (My u)))
       avg E (Mx u) ≠ Mx (avg E u) := by
-  sorry
+  -- `E (x, y) = (x + y, 0)` and `u = (0, 1)`: the average at `Mx u = u` is `(-1/3, 0)`, while
+  -- `Mx` of the average at `u` is `(1/3, 0)`.
+  refine ⟨fun p => (p.1 + p.2, 0), (0, 1), ?_⟩
+  intro Mx My avg
+  simp only [avg, Mx, My, Prod.smul_mk, Prod.mk_add_mk, ne_eq, Prod.mk.injEq]
+  norm_num
 
 end Atlas

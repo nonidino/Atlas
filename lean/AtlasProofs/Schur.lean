@@ -1,5 +1,6 @@
 import Mathlib.Algebra.Field.Defs
 import Mathlib.Algebra.Module.LinearMap.Defs
+import Mathlib.Tactic.Abel
 
 /-!
 # T3a — A direct Schur interface solve gives the undivided solution
@@ -39,6 +40,20 @@ theorem schur_iff
     (AII uI + AIΓ uΓ = fI ∧ AΓI uI + AΓΓ uΓ = fΓ) ↔
       (uI = solveI (fI - AIΓ uΓ) ∧
         AΓΓ uΓ - AΓI (solveI (AIΓ uΓ)) = fΓ - AΓI (solveI fI)) := by
-  sorry
+  constructor
+  · rintro ⟨h1, h2⟩
+    -- The pieces' own equations give `uI`, because `AII` is invertible.
+    have huI : uI = solveI (fI - AIΓ uΓ) := by rw [← h1, add_sub_cancel_right, hleft]
+    refine ⟨huI, ?_⟩
+    -- Substituted into the interface's equations, they give the Schur system.
+    rw [← h2, huI]
+    simp only [map_sub]
+    abel
+  · rintro ⟨h1, h2⟩
+    refine ⟨by rw [h1, hright, sub_add_cancel], ?_⟩
+    -- Conversely, the Schur system with that `uI` is the interface's equations.
+    rw [h1, ← eq_sub_iff_add_eq.mp h2]
+    simp only [map_sub]
+    abel
 
 end Atlas
