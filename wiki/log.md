@@ -7023,3 +7023,13 @@ The seven examples that refused now compile `admit-uncertified`. The full suite:
 **Not found:** the theorem drafts T24–T26 and the "tier 2" scoping the owner announced. No "For the proofs chat" heading was in [[chart-operator-architecture]] when this was written.
 
 **Added:** `lean/` (the project, nine statement files, the blueprint), `scripts/lean_build.py`, `scripts/lean_axioms.py`, `scripts/lean_t3_counterexample.py`, `out/lean/builds.jsonl`, `out/lean/t3_counterexample.json`, `out/lean/axioms.json`, [[formal-proofs-record]]. **Changed:** [[formal-proofs-plan]], [[index]], [[gap-worklist]].
+
+## [2026-10-01] build | Proofs: the statements of step 3 drafted (T5, T10, T11), none proved
+
+[[formal-proofs-record]] §4.3; W353. Four more Lean files that typecheck with a `sorry` for each proof, and two blueprint chapters. Still awaiting the owner's OK on every statement.
+
+- **T5, defect correction:** Theorem 1 (any limit is a fixed point of the classical map), also for inexact inner solves, which is what the code runs; Corollary 1 (a constant cheap map gives the classical march); Corollary 2 (the shrunk map's eigenvalues are $\alpha+(1-\alpha)\mu$, with real part at least $\alpha$). A precision: Theorem 1 needs **both** maps continuous at the limit, where [[defect-correction-learned-operator]] §2.1 names only $G_\Psi$.
+- **T10, symmetry averaging:** the group average of any map is exactly equivariant; it returns an equivariant map unchanged; and averaging over $\{\mathrm{id},M_x,M_y\}$, not a group, is not equivariant.
+- **T11, passive interconnection:** the connection rule conserves power pairwise, the connected ports' powers sum to zero over any graph, passive agents make a passive system, and incrementally passive agents make a non-expansive step ([[master-error-bound]] §6.1's theorem, in one step's energy balance).
+
+The four new files built in 102.6 s on battery; the axiom check's positive control saw all 48 `sorry`. **Added:** `lean/AtlasProofs/DefectCorrection.lean`, `DefectCorrectionShrink.lean`, `SymmetryAveraging.lean`, `Passivity.lean`, two blueprint chapters. **Changed:** [[formal-proofs-record]], [[formal-proofs-plan]], [[index]].

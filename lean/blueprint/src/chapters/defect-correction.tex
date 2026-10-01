@@ -1,0 +1,161 @@
+\chapter{Defect correction: the rate, never the answer}
+
+Every other slot for a learned expert asks it to be part of the answer, and so
+owes it a certificate.  Defect correction puts it somewhere else.  $\Phi$ is the
+classical step, whose settled states are its fixed points.  $\Psi$ is any other
+map on the same states: a learned operator, a coarse solver, anything cheap.
+With $G_\Phi=I-\Phi$ and $G_\Psi=I-\Psi$, the next iterate $w'$ is defined by
+\[
+  G_\Psi(w')=G_\Psi(w)-G_\Phi(w),\qquad\text{that is,}\qquad
+  w'-\Psi(w')=\Phi(w)-\Psi(w)
+\]
+(Stetter, \emph{Numer. Math.} 29, 1978).  The cheap map enters only through a
+difference, and the classical map supplies the defect.
+
+\section{T5: Theorem 1 and Corollary 1}
+
+\paragraph{In plain words.}
+If the iterates settle anywhere, they settle on a fixed point of the classical
+map.  Nothing about the accuracy of the cheap map enters, only that both maps
+are continuous at the limit.  A wrong cheap map can cost classical calls; it
+cannot change what is returned.  And if the cheap map is constant, the
+iteration is the classical march itself.
+
+\begin{definition}[A defect-correction step]\label{def:dec-step}
+  \lean{Atlas.DefectCorrection.IsStep, Atlas.DefectCorrection.innerMarch}
+  \leanok
+  Let $E$ be a normed space and $\Phi,\Psi:E\to E$.  The point $w'$ is a
+  successor of $w$ if $w'-\Psi(w')=(w-\Psi(w))-(w-\Phi(w))$.  The \emph{inner
+  march} that solves for it is $x^{(0)}=\Phi(w)$,
+  $x^{(m+1)}=\Phi(w)+[\Psi(x^{(m)})-\Psi(w)]$.
+\end{definition}
+
+\begin{theorem}[T5, Theorem 1: consistency, whatever $\Psi$ is]\label{thm:T5}
+  \lean{Atlas.DefectCorrection.limit_isFixedPt}
+  \leanok
+  \uses{def:dec-step}
+  Let $w_{k+1}$ be a successor of $w_k$ for every $k$, and $w_k\to\bar w$.  If
+  $\Phi$ and $\Psi$ are continuous at $\bar w$, then $\Phi(\bar w)=\bar w$.
+\end{theorem}
+
+\begin{proof}
+  \uses{def:dec-step}
+  $w_k-\Phi(w_k)=\bigl(w_k-\Psi(w_k)\bigr)-\bigl(w_{k+1}-\Psi(w_{k+1})\bigr)$.
+  The right side tends to $(\bar w-\Psi(\bar w))-(\bar w-\Psi(\bar w))=0$ and the
+  left to $\bar w-\Phi(\bar w)$.
+\end{proof}
+
+\begin{theorem}[T5, Theorem 1 with inexact inner solves]\label{thm:T5-inexact}
+  \lean{Atlas.DefectCorrection.limit_isFixedPt_of_inexact}
+  \leanok
+  \uses{def:dec-step}
+  Suppose instead that each step misses the defining equation by at most
+  $\varepsilon_k$,
+  \[
+    \norm{\bigl(w_{k+1}-\Psi(w_{k+1})\bigr)
+      -\bigl((w_k-\Psi(w_k))-(w_k-\Phi(w_k))\bigr)}\le\varepsilon_k ,
+  \]
+  with $\varepsilon_k\to0$.  If $w_k\to\bar w$ and $\Phi$, $\Psi$ are continuous
+  at $\bar w$, then $\Phi(\bar w)=\bar w$.
+\end{theorem}
+
+\begin{proof}
+  \uses{def:dec-step}
+  As for Theorem~\ref{thm:T5}: the left side of the same identity now differs
+  from the right by at most $\varepsilon_k\to0$.
+\end{proof}
+
+\begin{corollary}[T5, Corollary 1: the null element]\label{cor:T5-const}
+  \lean{Atlas.DefectCorrection.step_of_const}
+  \leanok
+  \uses{def:dec-step}
+  If $\Psi$ is constant and $w'$ is a successor of $w$, then $w'=\Phi(w)$.
+\end{corollary}
+
+\begin{proof}
+  \uses{def:dec-step}
+  $w'-c=(w-c)-(w-\Phi(w))$.
+\end{proof}
+
+\begin{lemma}[The inner march solves for the successor]\label{lem:T5-inner}
+  \lean{Atlas.DefectCorrection.isStep_iff}
+  \leanok
+  \uses{def:dec-step}
+  $x$ is a successor of $w$ if and only if $x=\Phi(w)+[\Psi(x)-\Psi(w)]$.
+\end{lemma}
+
+\begin{proof}
+  \uses{def:dec-step}
+  Rearrangement.
+\end{proof}
+
+\begin{corollary}[T5, Corollary 1 for the inner march]\label{cor:T5-inner-const}
+  \lean{Atlas.DefectCorrection.innerMarch_of_const}
+  \leanok
+  \uses{def:dec-step}
+  If $\Psi$ is constant, $x^{(m)}=\Phi(w)$ for every $m$.
+\end{corollary}
+
+\begin{proof}
+  \uses{def:dec-step}
+  Induction on $m$; the bracket is zero.
+\end{proof}
+
+\section{T5: Corollary 2, shrinking toward the null element}
+
+\paragraph{In plain words.}
+The iteration's rate is set by $J_\Psi^{-1}J_\Phi$, with $J_\Psi=I-D\Psi$ the
+derivative of $G_\Psi$ at the settled state.  A cheap map that is nearly
+singular on some mode makes the iteration diverge.  Replace $\Psi$ by
+$(1-\alpha)\Psi$.  Its $J$ is $\alpha I+(1-\alpha)J_\Psi$, whose eigenvalues are
+those of $J_\Psi$ moved toward $1$; wherever $J_\Psi$'s eigenvalue has
+non-negative real part, the new one has real part at least $\alpha$.
+
+\begin{lemma}[The shrunk Jacobian]\label{lem:T5-shrink-deriv}
+  \lean{Atlas.DefectCorrection.shrink_hasFDerivAt}
+  \leanok
+  If $\Psi$ has Fr\'echet derivative $D$ at $w$, then
+  $x\mapsto x-(1-\alpha)\Psi(x)$ has derivative
+  $\alpha I+(1-\alpha)(I-D)$ at $w$.
+\end{lemma}
+
+\begin{proof}
+  Linearity of the derivative, and
+  $I-(1-\alpha)D=\alpha I+(1-\alpha)(I-D)$.
+\end{proof}
+
+\begin{theorem}[T5, Corollary 2: the eigenvalues]\label{thm:T5-shrink}
+  \lean{Atlas.DefectCorrection.shrink_hasEigenvalue_iff}
+  \leanok
+  \uses{lem:T5-shrink-eig}
+  Let $J$ be a linear map on a vector space over a field, and $\alpha\ne1$.
+  Then $\nu$ is an eigenvalue of $\alpha I+(1-\alpha)J$ if and only if
+  $\nu=\alpha+(1-\alpha)\mu$ for an eigenvalue $\mu$ of $J$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T5-shrink-eig}
+  Lemma~\ref{lem:T5-shrink-eig} gives one direction.  For the other,
+  $(\alpha I+(1-\alpha)J)v=\nu v$ gives $Jv=\frac{\nu-\alpha}{1-\alpha}v$.
+\end{proof}
+
+\begin{lemma}[Eigenvalues move with the shrink]\label{lem:T5-shrink-eig}
+  \lean{Atlas.DefectCorrection.shrink_hasEigenvalue}
+  \leanok
+  If $Jv=\mu v$ then $(\alpha I+(1-\alpha)J)v=(\alpha+(1-\alpha)\mu)v$.
+\end{lemma}
+
+\begin{proof}
+  Direct.
+\end{proof}
+
+\begin{lemma}[The real part]\label{lem:T5-shrink-re}
+  \lean{Atlas.DefectCorrection.shrink_re}
+  \leanok
+  For $0\le\alpha\le1$ and complex $\mu$ with $\operatorname{Re}\mu\ge0$,
+  $\operatorname{Re}\bigl(\alpha+(1-\alpha)\mu\bigr)\ge\alpha$.
+\end{lemma}
+
+\begin{proof}
+  $\operatorname{Re}(\alpha+(1-\alpha)\mu)=\alpha+(1-\alpha)\operatorname{Re}\mu$.
+\end{proof}

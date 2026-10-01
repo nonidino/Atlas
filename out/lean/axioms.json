@@ -1,9 +1,9 @@
 {
- "when": "2026-10-01T00:45:02-04:00",
- "declarations": 39,
- "failing": 32,
- "with_sorry": 32,
- "seconds": 74.96,
+ "when": "2026-10-01T00:59:28-04:00",
+ "declarations": 58,
+ "failing": 48,
+ "with_sorry": 48,
+ "seconds": 32.37,
  "lean_exit": 0,
  "rows": [
   {
@@ -374,6 +374,193 @@
   },
   {
    "name": "Atlas.Schwarz.error_le_update",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.IsStep",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.DefectCorrection.innerMarch",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.DefectCorrection.limit_isFixedPt",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.limit_isFixedPt_of_inexact",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.step_of_const",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.isStep_iff",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.innerMarch_of_const",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.shrink_hasFDerivAt",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.shrink_hasEigenvalue_iff",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.shrink_hasEigenvalue",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.DefectCorrection.shrink_re",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.average",
+   "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "Atlas.average_equivariant",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.average_of_equivariant",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.average_over_non_group_not_equivariant",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.port_rule_power",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.junction_power_eq_zero",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.interconnection_passive",
+   "axioms": [
+    "propext",
+    "sorryAx",
+    "Classical.choice",
+    "Quot.sound"
+   ],
+   "verdict": "FAIL: sorry"
+  },
+  {
+   "name": "Atlas.interconnection_nonexpansive",
    "axioms": [
     "propext",
     "sorryAx",

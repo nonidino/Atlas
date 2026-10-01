@@ -1,7 +1,7 @@
 # Formal proofs — what can be proved, what can be machine-checked in Lean, and in what order
 
 **Type:** Concept page — **theorem inventory and formalisation plan** (folder: `Atlas 0.1/atlas-0.1-proposal/formal-proofs/`)
-**Status:** written 2026-09-30. Every effort estimate is **[AI Inference]**. The statements marked *ours* are new combinations of known results, and are proved here only in sketch. **Updated 2026-10-01 by the proofs chat:** Lean 4.34.1 and Mathlib `v4.34.1` are installed and timed; the Mathlib names quoted below are confirmed against that version, with the corrections in [[formal-proofs-record]] §2; the statements of steps 1 and 2 are written in Lean and typecheck, **none is proved yet**; and **T3's statement for restricted additive Schwarz is false as written below** ([[formal-proofs-record]] §5.1). §6 holds one status line per theorem.
+**Status:** written 2026-09-30. Every effort estimate is **[AI Inference]**. The statements marked *ours* are new combinations of known results, and are proved here only in sketch. **Updated 2026-10-01 by the proofs chat:** Lean 4.34.1 and Mathlib `v4.34.1` are installed and timed; the Mathlib names quoted below are confirmed against that version, with the corrections in [[formal-proofs-record]] §2; the statements of steps 1, 2 and 3 are written in Lean and typecheck, **none is proved yet**; and **T3's statement for restricted additive Schwarz is false as written below** ([[formal-proofs-record]] §5.1). §6 holds one status line per theorem.
 **Hub:** [[00-proposal-workstreams]] · **Formalises results from:** [[master-error-bound]] · [[defect-correction-learned-operator]] · [[composition-error-theory]] · [[temporal-error-accumulation]] · [[symmetry-averaging-atlas-0.1]] · [[atlas-and-standard-dd-theory]] · [[chart-operator-architecture]] §4
 **Prior formal work:** [[dd-neural-prior-art-2026]] §1.6
 
@@ -151,7 +151,9 @@ One line per theorem, kept by the proofs chat. *drafted*: the Lean statement exi
 - **T7: drafted**, `Atlas.certificate` and `Atlas.certificate_constant_is_opNorm`, `lean/AtlasProofs/Certificate.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T4: drafted**, `Atlas.master_bound` and its regimes, `lean/AtlasProofs/MasterBound.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T3: drafted, with a finding**, 2026-10-01. Direct Schur (`Atlas.schur_iff`, `lean/AtlasProofs/Schur.lean`) and Dirichlet–Neumann (`Atlas.TwoPieces.dn_fixedPoint_solves`, `lean/AtlasProofs/DirichletNeumann.lean`) stand as planned. Restricted additive Schwarz needs a hypothesis (`Atlas.Schwarz.fixedPt_eq_solution`, `lean/AtlasProofs/SchwarzConvergence.lean`), and the counterexample is `Atlas.Schwarz.exists_spurious_fixedPt`. Awaiting the owner's OK. **Not yet checked: the compiler must go on citing the classical source.**
-- **T5, T10, T11** (step 3): not started.
+- **T5: drafted**, `Atlas.DefectCorrection.limit_isFixedPt` (Theorem 1), `step_of_const` (Corollary 1), `shrink_hasEigenvalue_iff` (Corollary 2), `lean/AtlasProofs/DefectCorrection.lean` and `DefectCorrectionShrink.lean`, 2026-10-01. Awaiting the owner's OK.
+- **T10: drafted**, `Atlas.average_equivariant`, `lean/AtlasProofs/SymmetryAveraging.lean`, 2026-10-01. Awaiting the owner's OK.
+- **T11: drafted**, `Atlas.interconnection_passive` and `Atlas.interconnection_nonexpansive`, `lean/AtlasProofs/Passivity.lean`, 2026-10-01. Awaiting the owner's OK.
 - **T8, T9, T9′, T22, T2** (step 4): not started.
 - **T24–T26, the scoping of T1, T8, T9 and T22 to "tier 2", and the SNI counterexample beside T1:** announced by the owner on 2026-10-01 as just added by the architecture chat. **Their text was not in the vault when this line was written** (no "For the proofs chat" heading in [[chart-operator-architecture]] yet), so nothing has been drafted from them.
 

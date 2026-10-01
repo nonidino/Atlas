@@ -1,0 +1,137 @@
+\chapter{Guarantees the composition layer supplies}
+
+Two properties that no single expert has to possess, because the way experts
+are called and connected creates them: an exact symmetry, and passivity.
+
+\section{T10: symmetry averaging}
+
+\paragraph{In plain words.}
+A frozen expert does not respect a symmetry.  Call it once for every element of
+the symmetry group, undo each transformation, and average.  The averaged map
+respects the symmetry exactly, whatever the expert is: nonlinear, learned,
+discontinuous.  The proof uses only that multiplying every group element by a
+fixed one runs through the whole group again, which is why a set of operations
+that is not a group does not work.
+
+\begin{definition}[The group average]\label{def:average}
+  \lean{Atlas.average}
+  \leanok
+  Let $G$ be a finite group acting on a set $V$ and acting linearly on a vector
+  space $W$.  For any map $E:V\to W$,
+  \[
+    \tilde E(u)=\frac1{|G|}\sum_{g\in G}g^{-1}\,E(g\,u).
+  \]
+\end{definition}
+
+\begin{theorem}[T10, symmetry averaging]\label{thm:T10}
+  \lean{Atlas.average_equivariant}
+  \leanok
+  \uses{def:average}
+  For every map $E$, every $h\in G$ and every $u\in V$,
+  $\tilde E(h\,u)=h\,\tilde E(u)$.
+\end{theorem}
+
+\begin{proof}
+  \uses{def:average}
+  $\tilde E(hu)=\frac1{|G|}\sum_gg^{-1}E(ghu)$.  Substitute $g'=gh$, which runs
+  over $G$ as $g$ does; then $g^{-1}=h\,g'^{-1}$, and $h$ comes out of the sum
+  because the action on $W$ is linear.
+\end{proof}
+
+\begin{proposition}[Averaging leaves a symmetric map alone]\label{prop:T10-idem}
+  \lean{Atlas.average_of_equivariant}
+  \leanok
+  \uses{def:average}
+  If $E(gu)=gE(u)$ for all $g,u$, and $|G|$ is invertible in the scalars, then
+  $\tilde E=E$.
+\end{proposition}
+
+\begin{proof}
+  \uses{def:average}
+  Every term of the sum is $E(u)$.
+\end{proof}
+
+\begin{example}[A set that is not a group]\label{ex:T10-nongroup}
+  \lean{Atlas.average_over_non_group_not_equivariant}
+  \leanok
+  Let $M_x(x,y)=(-x,y)$ and $M_y(x,y)=(x,-y)$ on $\R^2$.  The set
+  $\{\mathrm{id},M_x,M_y\}$ is not a group: $M_xM_y$ is missing.  The same
+  average over this set is not $M_x$-equivariant: for $E(x,y)=(x+y,0)$ and
+  $u=(0,1)$, the average at $M_xu=u$ is $(-\tfrac13,0)$, and $M_x$ of the
+  average at $u$ is $(\tfrac13,0)$.
+\end{example}
+
+\section{T11: passive agents joined by the port rule}
+
+\paragraph{In plain words.}
+A port carries an effort and a flow whose inner product is power.  The port
+algebra joins two ports by one rule: equal efforts, opposite flows.  Then the
+power entering one port is exactly the power leaving its partner, so over all
+connected ports the powers cancel, whatever the graph.  If every agent is
+passive (its stored energy grows by no more than what entered through its
+ports), the whole system is passive with respect to its open ports.  And if
+every agent is \emph{incrementally} passive, one coupled step does not increase
+the distance between two runs: the constant $L\le1$ of the master bound.
+
+\begin{lemma}[The connection rule conserves power]\label{lem:T11-rule}
+  \lean{Atlas.port_rule_power}
+  \leanok
+  In a real inner-product space, if $e_B=e_A$ and $f_B=-f_A$ then
+  $\langle e_B,f_B\rangle=-\langle e_A,f_A\rangle$.
+\end{lemma}
+
+\begin{proof}
+  Linearity of the inner product in its second argument.
+\end{proof}
+
+\begin{lemma}[The junction]\label{lem:T11-junction}
+  \lean{Atlas.junction_power_eq_zero}
+  \leanok
+  Let $P$ be a finite set of ports, $\pi:P\to P$ a bijection pairing each port
+  with its partner, and $p:P\to\R$ with $p(\pi(x))=-p(x)$ for all $x$.  Then
+  $\sum_{x\in P}p(x)=0$.
+\end{lemma}
+
+\begin{proof}
+  $\sum_xp(x)=\sum_xp(\pi(x))=-\sum_xp(x)$.
+\end{proof}
+
+\begin{theorem}[T11, passivity composes]\label{thm:T11}
+  \lean{Atlas.interconnection_passive}
+  \leanok
+  \uses{lem:T11-junction}
+  Let each port belong to one of finitely many agents.  Agent $i$ stores $H_i$
+  before a step and $H_i'$ after it, receives the power of its own connected
+  ports and $\mathrm{ext}_i$ through its open ports, and is passive:
+  $H_i'\le H_i+\sum_{x\text{ of }i}p(x)+\mathrm{ext}_i$.  If the connected ports
+  obey $p(\pi(x))=-p(x)$, then
+  \[
+    \sum_iH_i'\le\sum_iH_i+\sum_i\mathrm{ext}_i .
+  \]
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:T11-junction}
+  Sum the agents' inequalities.  The port powers, summed over agents, are the
+  sum over all ports, which is zero by Lemma~\ref{lem:T11-junction}.
+\end{proof}
+
+\begin{corollary}[T11, incremental passivity gives a non-expansive step]\label{cor:T11-nonexpansive}
+  \lean{Atlas.interconnection_nonexpansive}
+  \leanok
+  \uses{thm:T11}
+  Let $u_i,v_i$ be agent $i$'s states in two runs before a step and $u_i',v_i'$
+  after it, and let $\Delta p(x)$ be the power pairing of the differences of
+  the two runs' efforts and flows at port $x$.  If
+  $\norm{u_i'-v_i'}^2\le\norm{u_i-v_i}^2+2\sum_{x\text{ of }i}\Delta p(x)$ for
+  every agent and $\Delta p(\pi(x))=-\Delta p(x)$, then
+  \[
+    \sum_i\norm{u_i'-v_i'}^2\le\sum_i\norm{u_i-v_i}^2 .
+  \]
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:T11}
+  Theorem~\ref{thm:T11} with $H_i=\norm{u_i-v_i}^2$, the powers $2\Delta p$, and
+  no external term.
+\end{proof}

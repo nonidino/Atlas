@@ -1,7 +1,7 @@
 # Formal proofs — the record: what is checked, what it says, and what a build costs
 
 **Type:** Concept page — **proof record** (folder: `Atlas 0.1/atlas-0.1-proposal/formal-proofs/`)
-**Status:** started 2026-10-01. **The set-up is done and timed. The statements of steps 1 and 2 are written in Lean and in the blueprint, and they typecheck. Nothing is proved yet: every theorem below still holds a `sorry`, and the owner has not yet approved the statements.** One statement of the plan turned out false as written (T3 for restricted additive Schwarz, §5.1).
+**Status:** started 2026-10-01. **The set-up is done and timed. The statements of steps 1, 2 and 3 are written in Lean and in the blueprint, and they typecheck. Nothing is proved yet: every theorem below still holds a `sorry`, and the owner has not yet approved the statements.** One statement of the plan turned out false as written (T3 for restricted additive Schwarz, §5.1).
 **Hub:** [[00-proposal-workstreams]] · **Plan:** [[formal-proofs-plan]] · **Formalises results from:** [[master-error-bound]] · [[defect-correction-learned-operator]] · [[temporal-error-accumulation]] · [[composition-error-theory]] · [[atlas-and-standard-dd-theory]]
 **Code:** `lean/` (the Lean project and its blueprint) · `scripts/lean_build.py` · `scripts/lean_axioms.py` · `scripts/lean_t3_counterexample.py` · `out/lean/`
 
@@ -50,7 +50,8 @@ Every `lake` run goes through `scripts/lean_build.py`, which appends one line to
 | second build | the same file with one comment added | 54.3 s | warm |
 | one file alone | `lake env lean` on that file, profiler on | 28 to 29 s | **10 s loading the imported modules, 15.8 s running their initialisers, under 1 s for everything else** |
 | statements | the nine statement files of steps 1 and 2, each proof a `sorry` | 81.6 s for five new files and the root (four replayed) | 17 to 30 s per file |
-| axiom check | `#print axioms` on 39 declarations | 75.0 s | |
+| statements | the four statement files of step 3 added | 102.6 s for the four new files and the root (nine replayed) | 28 to 43 s per file; the slowest imports the calculus library |
+| axiom check | `#print axioms` on 39 declarations, then on 58 | 75.0 s, then 32.4 s | the second run was faster though it checked more. **[AI Inference]:** the operating system had the files cached by then |
 
 **What the numbers say about the owner's concern.** On this machine a Lean file costs about **26 seconds before its first proof is looked at**: the price of loading Mathlib's compiled files and running their start-up code. It is paid once per file, and files that do not import each other are built at the same time. So the cost of a full build is set by **how many files stand in a chain**, not by how many there are, and the project keeps that chain short. Proof checking itself has cost nothing measurable so far, and the rule stands: a tactic call over ten seconds is replaced by an explicit step (`python scripts/lean_build.py --profile` lists every such call).
 
@@ -119,6 +120,22 @@ One row per theorem. **Build time** is the file's own time in the full build tha
 | **T3c** | a convergent sweep converges to the solution | `Atlas.Schwarz.tendsto_solution` | same | drafted | — | — |
 | **T3d** | error $\le$ update $/(1-\rho)$ | `Atlas.Schwarz.error_le_update` | same | drafted | — | — |
 | **T3c, finding** | a Schwarz sweep with a fixed point that is not the solution | `Atlas.Schwarz.exists_spurious_fixedPt` | `AtlasProofs/SchwarzCounterexample.lean` | drafted | — | — |
+| **T5, Theorem 1** | any limit of defect correction is a fixed point of the classical map | `Atlas.DefectCorrection.limit_isFixedPt` | `AtlasProofs/DefectCorrection.lean` | drafted | — | — |
+| T5, Theorem 1, inexact | the same when each step is solved only approximately, the leftover tending to zero | `Atlas.DefectCorrection.limit_isFixedPt_of_inexact` | same | drafted | — | — |
+| **T5, Corollary 1** | a constant cheap map makes the iteration the classical march | `Atlas.DefectCorrection.step_of_const` | same | drafted | — | — |
+| T5 | the inner march's fixed points are the successors | `Atlas.DefectCorrection.isStep_iff` | same | drafted | — | — |
+| T5, Corollary 1 | with a constant cheap map the inner march returns $\Phi(w)$ at every stage | `Atlas.DefectCorrection.innerMarch_of_const` | same | drafted | — | — |
+| T5, Corollary 2 | $J_{\Psi_\alpha}=\alpha I+(1-\alpha)J_\Psi$, as a derivative | `Atlas.DefectCorrection.shrink_hasFDerivAt` | `AtlasProofs/DefectCorrectionShrink.lean` | drafted | — | — |
+| T5, Corollary 2 | an eigenvalue $\mu$ becomes $\alpha+(1-\alpha)\mu$ | `Atlas.DefectCorrection.shrink_hasEigenvalue` | same | drafted | — | — |
+| **T5, Corollary 2** | and those are all the eigenvalues, for $\alpha\ne1$ | `Atlas.DefectCorrection.shrink_hasEigenvalue_iff` | same | drafted | — | — |
+| T5, Corollary 2 | the real part is at least $\alpha$ | `Atlas.DefectCorrection.shrink_re` | same | drafted | — | — |
+| **T10** | the group average of any map is exactly equivariant | `Atlas.average_equivariant` | `AtlasProofs/SymmetryAveraging.lean` | drafted | — | — |
+| T10 | averaging returns an equivariant map unchanged | `Atlas.average_of_equivariant` | same | drafted | — | — |
+| T10, example | averaging over $\{\mathrm{id},M_x,M_y\}$, not a group, is not equivariant | `Atlas.average_over_non_group_not_equivariant` | same | drafted | — | — |
+| T11 | the connection rule conserves power | `Atlas.port_rule_power` | `AtlasProofs/Passivity.lean` | drafted | — | — |
+| T11 | the junction: connected port powers sum to zero | `Atlas.junction_power_eq_zero` | same | drafted | — | — |
+| **T11** | passive agents joined by the rule make a passive system | `Atlas.interconnection_passive` | same | drafted | — | — |
+| **T11, error form** | incrementally passive agents make a non-expansive step | `Atlas.interconnection_nonexpansive` | same | drafted | — | — |
 
 ---
 
@@ -194,6 +211,42 @@ $$\lVert u-u^\star\rVert\le\frac{\lVert G_f(u)-u\rVert}{1-\rho}.$$
 
 The tolerance bounds the update. The error is larger by $1/(1-\rho)$, which is $33$ for a sweep contracting at $0.97$.
 
+### 4.3 Step 3 — T5, T10, T11
+
+**T5, defect correction.** *In plain words:* $\Phi$ is the classical step and $\Psi$ any cheap map, a learned operator for instance. Defect correction defines the next iterate $w'$ by $w'-\Psi(w')=\Phi(w)-\Psi(w)$, so the cheap map enters only through a difference. **If the iterates settle anywhere, they settle on a fixed point of the classical map**, whatever $\Psi$ is. A wrong cheap map can cost classical calls; it cannot change what is returned.
+
+**Theorem 1.** Let $w_{k+1}-\Psi(w_{k+1})=(w_k-\Psi(w_k))-(w_k-\Phi(w_k))$ for every $k$, and $w_k\to\bar w$. If $\Phi$ and $\Psi$ are continuous at $\bar w$, then
+
+$$\Phi(\bar w)=\bar w .$$
+
+Two points of precision against [[defect-correction-learned-operator]] §2.1. **Both maps must be continuous at the limit**: the page's statement names $G_\Psi$ and its proof also uses $G_\Phi$. And the statement is also drafted for **inexact inner solves**, which is what the code runs: if each step misses the defining equation by $\varepsilon_k$ and $\varepsilon_k\to0$, the conclusion is the same.
+
+**Corollary 1.** If $\Psi$ is constant, the successor of $w$ is $\Phi(w)$, and the inner march $x^{(m+1)}=\Phi(w)+[\Psi(x^{(m)})-\Psi(w)]$ equals $\Phi(w)$ at every stage: the iteration is the classical march. (The page's "bit for bit" is a statement about floating-point arithmetic; the Lean statement is the exact one over real vector spaces.)
+
+**Corollary 2.** For $\Psi_\alpha=(1-\alpha)\Psi$, the map $G_{\Psi_\alpha}=I-\Psi_\alpha$ has derivative $\alpha I+(1-\alpha)J_\Psi$ wherever $\Psi$ has derivative $D\Psi$ and $J_\Psi=I-D\Psi$. For $\alpha\ne1$,
+
+$$\nu\text{ is an eigenvalue of }\alpha I+(1-\alpha)J\iff\nu=\alpha+(1-\alpha)\mu\text{ for an eigenvalue }\mu\text{ of }J,$$
+
+and for $0\le\alpha\le1$ and $\operatorname{Re}\mu\ge0$, $\operatorname{Re}\bigl(\alpha+(1-\alpha)\mu\bigr)\ge\alpha$. So the shrunk map is no closer to singular than $\alpha$ on any mode where the original was not on the wrong side of zero.
+
+**T10, symmetry averaging.** *In plain words:* call the expert once per element of the symmetry group, undo each transformation, and average. The result respects the symmetry exactly, whatever the expert is.
+
+For a finite group $G$ acting on the inputs, and linearly on the outputs, and **any** map $E$,
+
+$$\tilde E(u)=\frac1{\lvert G\rvert}\sum_{g\in G}g^{-1}E(g\,u)\qquad\Longrightarrow\qquad\tilde E(h\,u)=h\,\tilde E(u)\ \text{ for all }h\in G .$$
+
+If $E$ was already equivariant, $\tilde E=E$. And for the set $\{\mathrm{id},M_x,M_y\}$ of [[symmetry-averaging-atlas-0.1]] §2.1, which is not a group, the same average is not equivariant: with $E(x,y)=(x+y,0)$ and $u=(0,1)$ it gives $(-\tfrac13,0)$ at $M_xu=u$, while $M_x$ of the average at $u$ is $(\tfrac13,0)$.
+
+**T11, passive interconnection.** *In plain words:* a port carries an effort and a flow whose inner product is power. The port algebra joins two ports by equal efforts and opposite flows. Then what enters one port leaves its partner, the connected ports' powers cancel over any graph, and if every agent is passive the whole system is passive with respect to its open ports.
+
+With $p(x)$ the power entering through port $x$, and $\pi$ pairing each connected port with its partner:
+
+$$e_B=e_A,\ f_B=-f_A\ \Longrightarrow\ \langle e_B,f_B\rangle=-\langle e_A,f_A\rangle;\qquad p(\pi(x))=-p(x)\ \Longrightarrow\ \sum_xp(x)=0;$$
+
+$$H_i'\le H_i+\sum_{x\text{ of }i}p(x)+\mathrm{ext}_i\ \text{ for every agent }i\qquad\Longrightarrow\qquad\sum_iH_i'\le\sum_iH_i+\sum_i\mathrm{ext}_i .$$
+
+**The error form** is the theorem of [[master-error-bound]] §6.1: if every agent is incrementally passive, $\lVert u_i'-v_i'\rVert^2\le\lVert u_i-v_i\rVert^2+2\sum_{x\text{ of }i}\Delta p(x)$ for two runs with the same external forcing, then $\sum_i\lVert u_i'-v_i'\rVert^2\le\sum_i\lVert u_i-v_i\rVert^2$. That is $L\le1$ in the product norm, the hypothesis of T4's linear regime. **The statement is discrete in time** (one step's energy balance), which is what a code can check; the continuous-time form with derivatives of the storage is not drafted.
+
 ---
 
 ## 5. Findings
@@ -223,6 +276,8 @@ $\det A=-2$ and both window matrices have determinant $-1$, so every solve is ex
 - **T1's distance bound is already in Mathlib** (§2). T1 here is stated with the defect at one point only.
 - **T1 and T7 are one inequality.** T1's bound is T7 at the classical answer.
 - **T4's stability hypothesis is needed only along the two trajectories**, not globally.
+- **T5's Theorem 1 needs both maps continuous at the limit.** [[defect-correction-learned-operator]] §2.1 states it with "$G_\Psi$ is continuous" and uses the continuity of $G_\Phi$ in its proof. The classical step is continuous in every use on that page, so nothing it concludes changes.
+- **T10 needs nothing of the action on the inputs** beyond its being a group action; linearity is needed only on the outputs.
 
 ---
 
@@ -245,7 +300,9 @@ The blueprint's pages are made by `plastex -c plastex.cfg web.tex` in `lean/blue
 
 - [[formal-proofs-plan]] — the inventory T1–T23 and the order of work
 - [[master-error-bound]] · [[temporal-error-accumulation]] — T4's source
-- [[defect-correction-learned-operator]] — T7's source, and W208
+- [[defect-correction-learned-operator]] — T5's and T7's source, and W208
+- [[symmetry-averaging-atlas-0.1]] — T10's source
+- [[port-algebra-atlas-0.1]] — T11's connection rule
 - [[atlas-and-standard-dd-theory]] — the classical theory T3 belongs to
 - [[demo-finish-plan]] — §5, the compiler rule that cites T3
 - [[gap-worklist]] — W353 (this work), W348 (R10), W208 (the certificate's constant)

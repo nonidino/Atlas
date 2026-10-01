@@ -7,3 +7,7 @@ import AtlasProofs.DirichletNeumann
 import AtlasProofs.Schwarz
 import AtlasProofs.SchwarzConvergence
 import AtlasProofs.SchwarzCounterexample
+import AtlasProofs.DefectCorrection
+import AtlasProofs.DefectCorrectionShrink
+import AtlasProofs.SymmetryAveraging
+import AtlasProofs.Passivity
