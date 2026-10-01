@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Chart Operators</title>
+<meta name="description" content="Chart operators: learned superelements for domain decomposition on curved geometry. A research proposal (private draft).">
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #5b5b5b;
+  --rule: #d6d6d6;
+  --accent: #1f4e8c;
+  --panel: #f6f6f4;
+  --note-bg: #fff8e1;
+  --note-rule: #e0c36a;
+  --fig-line: #1a1a1a;
+  --fig-a: #1f4e8c;
+  --fig-b: #b0413e;
+  --fig-c: #3a7d44;
+  --fig-d: #8a6d1d;
+  --fig-grid: #c9c9c9;
+  --fig-fill: #eef2f8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17181a;
+    --fg: #e6e6e3;
+    --muted: #a3a3a0;
+    --rule: #3a3b3e;
+    --accent: #8fb4e8;
+    --panel: #212226;
+    --note-bg: #2e2a1c;
+    --note-rule: #8a7535;
+    --fig-line: #e6e6e3;
+    --fig-a: #8fb4e8;
+    --fig-b: #e8908c;
+    --fig-c: #8fd19a;
+    --fig-d: #d9bd72;
+    --fig-grid: #4a4b4f;
+    --fig-fill: #23293a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17181a;
+  --fg: #e6e6e3;
+  --muted: #a3a3a0;
+  --rule: #3a3b3e;
+  --accent: #8fb4e8;
+  --panel: #212226;
+  --note-bg: #2e2a1c;
+  --note-rule: #8a7535;
+  --fig-line: #e6e6e3;
+  --fig-a: #8fb4e8;
+  --fig-b: #e8908c;
+  --fig-c: #8fd19a;
+  --fig-d: #d9bd72;
+  --fig-grid: #4a4b4f;
+  --fig-fill: #23293a;
+}
+* { box-sizing: border-box; }
+html { font-size: 17px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Latin Modern Roman", "CMU Serif", "STIX Two Text", Georgia, "Times New Roman", serif;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.page { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+@media (min-width: 1180px) {
+  .page { margin-left: calc(17rem + max(0px, (100vw - 17rem - 46rem) / 2)); }
+}
+/* title block */
+.ltx_title { font-size: 1.75rem; line-height: 1.25; text-align: center; margin: 0 0 1.2rem; font-weight: bold; }
+.ltx_authors { text-align: center; margin-bottom: 0.4rem; font-size: 1.05rem; }
+.ltx_dates { text-align: center; color: var(--muted); font-size: 0.92rem; margin-bottom: 0.3rem; }
+.status { text-align: center; color: var(--muted); font-size: 0.88rem; font-style: italic; margin: 0 auto 1.8rem; max-width: 36rem; }
+.abstract { margin: 0 1.5rem 2rem; }
+.abstract h6 { text-align: center; font-size: 1rem; margin: 0 0 0.5rem; }
+.abstract p { font-size: 0.95rem; text-align: justify; hyphens: auto; }
+/* sections */
+h2 { font-size: 1.35rem; margin: 2.4rem 0 0.8rem; line-height: 1.3; }
+h3 { font-size: 1.1rem; margin: 1.8rem 0 0.6rem; line-height: 1.3; }
+h4 { font-size: 1rem; margin: 1.3rem 0 0.4rem; font-style: italic; font-weight: normal; }
+.secnum { margin-right: 0.7em; }
+p { margin: 0 0 0.9rem; text-align: justify; hyphens: auto; }
+p.noindent, li p { text-align: left; }
+ul, ol { padding-left: 1.6rem; }
+li { margin-bottom: 0.3rem; }
+/* table of contents */
+nav.toc { font-size: 0.86rem; line-height: 1.35; }
+nav.toc .toc-title { font-weight: bold; margin-bottom: 0.5rem; }
+nav.toc ol { list-style: none; padding-left: 0; margin: 0; }
+nav.toc ol.toc-sub { padding-left: 1.6em; margin: 0.15rem 0 0.35rem; }
+nav.toc li { margin: 0.18rem 0; }
+nav.toc a { color: var(--fg); display: block; padding-left: 2.1em; text-indent: -2.1em; }
+nav.toc a:hover { color: var(--accent); }
+nav.toc a.active { color: var(--accent); font-weight: bold; }
+nav.toc .tocnum { display: inline-block; min-width: 2.1em; color: var(--muted); }
+.toc-rail { display: none; }
+.toc-inline { margin: 0 0 2rem; border: 1px solid var(--rule); border-radius: 4px; padding: 0.6rem 0.9rem; background: var(--panel); }
+.toc-inline summary { cursor: pointer; font-weight: bold; font-size: 0.95rem; }
+@media (min-width: 1180px) {
+  .toc-rail {
+    display: block; position: fixed; top: 0; left: 0; bottom: 0; width: 17rem;
+    overflow-y: auto; padding: 2rem 1rem 2rem 1.4rem; border-right: 1px solid var(--rule); background: var(--panel);
+  }
+  .toc-inline { display: none; }
+}
+/* statements */
+.thm { margin: 1.1rem 0; }
+.thm .thmnum { font-weight: bold; }
+.thm .thmtitle { font-weight: normal; }
+.thm[data-kind="Theorem"] > p, .thm[data-kind="Proposition"] > p, .thm[data-kind="Lemma"] > p, .thm[data-kind="Corollary"] > p { font-style: italic; }
+.thm[data-kind="Theorem"] > p .upright, .thm[data-kind="Proposition"] > p .upright { font-style: normal; }
+.proof { margin: 0.6rem 0 1.2rem; }
+.proof .proofhead { font-style: italic; }
+.qed { float: right; }
+/* figures and tables */
+figure { margin: 1.6rem 0; }
+figure.fig svg { display: block; width: 100%; height: auto; max-width: 44rem; margin: 0 auto; }
+figcaption { font-size: 0.9rem; margin-top: 0.6rem; text-align: justify; }
+figure.tab figcaption { margin: 0 0 0.5rem; }
+.fignum, .tabnum { font-weight: bold; margin-right: 0.3em; }
+.tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.ltx { border-collapse: collapse; margin: 0 auto; font-size: 0.86rem; line-height: 1.35; }
+table.ltx th, table.ltx td { padding: 0.28rem 0.55rem; vertical-align: top; text-align: left; }
+table.ltx thead th { border-top: 1.5px solid var(--fg); border-bottom: 1px solid var(--fg); }
+table.ltx tbody tr:last-child td { border-bottom: 1.5px solid var(--fg); }
+table.ltx td.num, table.ltx th.num { text-align: right; white-space: nowrap; }
+/* notes, labels */
+.outline-note { background: var(--note-bg); border-left: 3px solid var(--note-rule); padding: 0.5rem 0.8rem; font-size: 0.9rem; font-family: system-ui, sans-serif; text-align: left; }
+.label { font-family: system-ui, sans-serif; font-size: 0.72rem; letter-spacing: 0.03em; text-transform: uppercase; border: 1px solid var(--rule); border-radius: 3px; padding: 0 0.3em; color: var(--muted); white-space: nowrap; }
+.label.measured { border-color: var(--fig-c); color: var(--fig-c); }
+.label.estimate { border-color: var(--fig-d); color: var(--fig-d); }
+.label.proved { border-color: var(--fig-a); color: var(--fig-a); }
+.label.open { border-color: var(--fig-b); color: var(--fig-b); }
+.defn-term { font-style: italic; }
+pre, code { font-family: "Latin Modern Mono", "CMU Typewriter Text", Menlo, Consolas, monospace; font-size: 0.85rem; }
+pre { background: var(--panel); border: 1px solid var(--rule); padding: 0.8rem 1rem; overflow-x: auto; line-height: 1.4; }
+/* references */
+ol.refs { list-style: none; padding-left: 0; font-size: 0.9rem; }
+ol.refs li { padding-left: 2.6em; text-indent: -2.6em; margin-bottom: 0.45rem; text-align: left; }
+ol.refs .refnum { display: inline-block; min-width: 2.6em; text-indent: 0; }
+ol.refs li.uncited { color: var(--muted); }
+.cite { white-space: nowrap; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+footer { margin-top: 3rem; border-top: 1px solid var(--rule); padding-top: 0.8rem; font-size: 0.82rem; color: var(--muted); }
+@media print { .toc-rail, .toc-inline { display: none; } .page { margin: 0 auto; } }
+</style>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    tags: 'ams',
+    processEscapes: true,
+    macros: {
+      R: '\\mathbb{R}',
+      tr: '\\operatorname{tr}',
+      Lip: '\\operatorname{Lip}',
+      Fo: '\\mathrm{Fo}',
+      sq: '\\hat\\Omega'
+    }
+  },
+  chtml: { displayAlign: 'center' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+</head>
+<body>
+<nav class="toc toc-rail" aria-label="Contents">
+<div class="toc-title">Contents</div>
+<div class="toc-body"></div>
+</nav>
+<main class="page">
+<article>
+
+<h1 class="ltx_title">Chart Operators: Learned Superelements for Domain Decomposition on Curved Geometry</h1>
+<div class="ltx_authors">Naunidh Singh</div>
+<div class="ltx_dates">Draft of 1 October 2026</div>
+<p class="status">Research proposal. No network has been trained. Every number is either measured by a named script on classical solvers or untrained networks, or labelled as an estimate.</p>
+
+<div class="abstract">
+<h6>Abstract</h6>
+<p class="outline-note">Outline. One paragraph: the problem (learned local solvers inside a domain decomposition on non-rectangular geometry); the evidence that current learned solvers fail there (S1&ndash;S12); the design (topology to the decomposition, geometry to a classical certified chart, physics to a learned operator on the unit square that returns constraint modes, agreement to an energy Gram assembled by the host); the guarantee (symmetric positive semidefinite port matrices by construction, error quadratic and one-sided, Galerkin-optimal coupling); the measurements (coupling rounds, Gram against direct prediction, forward cost); the evaluation protocol.</p>
+</div>
+
+<details class="toc toc-inline"><summary>Contents</summary>
+<div class="toc-body">
+<!--TOC-->
+<ol class="toc-list">
+<li><a href="#sec-intro"><span class="tocnum">1</span>Introduction</a>
+<ol class="toc-sub">
+<li><a href="#sec-contrib"><span class="tocnum">1.1</span>Contributions</a></li>
+</ol></li>
+<li><a href="#sec-background"><span class="tocnum">2</span>Background</a>
+<ol class="toc-sub">
+<li><a href="#sec-bg-model"><span class="tocnum">2.1</span>The model problem and its energy</a></li>
+<li><a href="#sec-bg-dd"><span class="tocnum">2.2</span>Domain decomposition</a></li>
+<li><a href="#sec-bg-iter"><span class="tocnum">2.3</span>Iterative coupling: Schwarz methods and their acceleration</a></li>
+<li><a href="#sec-bg-super"><span class="tocnum">2.4</span>Substructuring with reduced interfaces</a></li>
+<li><a href="#sec-bg-maps"><span class="tocnum">2.5</span>Maps between domains</a></li>
+<li><a href="#sec-bg-no"><span class="tocnum">2.6</span>Neural operators</a></li>
+</ol></li>
+<li><a href="#sec-record"><span class="tocnum">3</span>What the record shows</a>
+</li>
+<li><a href="#sec-arch"><span class="tocnum">4</span>Architecture</a>
+<ol class="toc-sub">
+<li><a href="#sec-arch-topology"><span class="tocnum">4.1</span>Topology: decomposition into four-sided pieces</a></li>
+<li><a href="#sec-arch-geometry"><span class="tocnum">4.2</span>Geometry: certified charts</a></li>
+<li><a href="#sec-arch-output"><span class="tocnum">4.3</span>The expert's output: constraint modes</a></li>
+<li><a href="#sec-arch-backbone"><span class="tocnum">4.4</span>The backbone</a></li>
+<li><a href="#sec-arch-ports"><span class="tocnum">4.5</span>Ports, conservation and time</a></li>
+</ol></li>
+<li><a href="#sec-coupling"><span class="tocnum">5</span>Coupling and its guarantee</a>
+<ol class="toc-sub">
+<li><a href="#sec-coupling-gram"><span class="tocnum">5.1</span>The energy Gram</a></li>
+<li><a href="#sec-coupling-tiers"><span class="tocnum">5.2</span>Three tiers of coupling</a></li>
+<li><a href="#sec-coupling-tier2"><span class="tocnum">5.3</span>Iterative coupling with certified contraction</a></li>
+</ol></li>
+<li><a href="#sec-training"><span class="tocnum">6</span>Training</a>
+</li>
+<li><a href="#sec-cost"><span class="tocnum">7</span>Cost and training time</a>
+</li>
+<li><a href="#sec-eval"><span class="tocnum">8</span>Evaluation protocol and gates</a>
+</li>
+<li><a href="#sec-related"><span class="tocnum">9</span>Related work and what is new</a>
+</li>
+<li><a href="#sec-limits"><span class="tocnum">10</span>Limitations</a>
+</li>
+<li><a href="#sec-roadmap"><span class="tocnum">11</span>Roadmap</a>
+</li>
+<li><a href="#sec-refs"><span class="tocnum"></span>References</a>
+</li>
+<li><a href="#app-card"><span class="tocnum">A</span>The Expert Card specification</a>
+</li>
+<li><a href="#app-derivations"><span class="tocnum">B</span>Derivations</a>
+</li>
+<li><a href="#app-repro"><span class="tocnum">C</span>Reproducibility</a>
+</li>
+</ol>
+<!--/TOC-->
+</div>
+</details>
+
+<section id="s-intro">
+<h2 id="sec-intro"><span class="secnum">1</span>Introduction</h2>
+<p class="outline-note">Outline. The setting: a large simulation is split into subdomains that are solved separately and made to agree on their shared boundaries. The opportunity: replace the local solver by a trained network. The obstacle: such networks accept only rectangular grids, ignore the data their neighbours send, and change how fast the subdomains reach agreement. The idea, in four separations. Contributions (numbered, each with its status). Organisation of the paper.</p>
+<h3 id="sec-contrib"><span class="secnum">1.1</span>Contributions</h3>
+<p class="outline-note">Outline. (i) the chart rule with a discrete injectivity certificate and an envelope; (ii) the constraint-mode output with an analytic principal part; (iii) the host-side energy Gram and its three properties (Theorem, proved here); (iv) the measured cost of coupling strategies and of candidate backbones; (v) a pre-registered evaluation protocol; (vi) a counterexample to a published convergence step.</p>
+</section>
+
+<section id="s-background">
+<h2 id="sec-background"><span class="secnum">2</span>Background</h2>
+<p class="outline-note">Outline. Written for a reader who knows linear algebra, multivariable calculus, real analysis and elliptic PDEs, and has not studied domain decomposition or machine learning. Every term used later is defined here.</p>
+<h3 id="sec-bg-model"><span class="secnum">2.1</span>The model problem and its energy</h3>
+<p class="outline-note">Outline. Steady and implicit-step diffusion; weak form; energy inner product and energy norm; the discrete system $A u = f$ with $A$ symmetric positive definite; the Dirichlet principle (the solution minimises energy among functions with the same boundary values).</p>
+<h3 id="sec-bg-dd"><span class="secnum">2.2</span>Domain decomposition</h3>
+<p class="outline-note">Outline. Non-overlapping partition into subdomains; interface; the two transmission conditions (continuity of the solution and of the flux); the Dirichlet-to-Neumann map of a subdomain and its symmetry and positivity; the interface (Schur complement) equation; elimination of interior unknowns (static condensation).</p>
+<h3 id="sec-bg-iter"><span class="secnum">2.3</span>Iterative coupling: Schwarz methods and their acceleration</h3>
+<p class="outline-note">Outline. The alternating Schwarz method (each subdomain solved with its neighbours' latest values as boundary data); additive and multiplicative variants; Robin transmission conditions and optimised Schwarz methods; why the number of iterations grows with the number of subdomains, and the coarse space that removes this growth; Krylov acceleration (GMRES) and Anderson acceleration, defined.</p>
+<h3 id="sec-bg-super"><span class="secnum">2.4</span>Substructuring with reduced interfaces</h3>
+<p class="outline-note">Outline. Constraint modes (the response to one interface mode with all others held at zero); port matrices; component mode synthesis and multiscale basis functions; the cost trade-off between iteration and assembly.</p>
+<h3 id="sec-bg-maps"><span class="secnum">2.5</span>Maps between domains</h3>
+<p class="outline-note">Outline. Charts onto the unit square; the Jacobian matrix and determinant; the pull-back of the diffusion equation; the Beltrami coefficient and dilatation; conformal, harmonic (Winslow) and transfinite maps; the injectivity theorem for harmonic maps onto convex domains.</p>
+<h3 id="sec-bg-no"><span class="secnum">2.6</span>Neural operators</h3>
+<p class="outline-note">Outline. A network as a parametrised map between function spaces sampled on grids; training by minimising a loss over samples; convolutional and spectral architectures; the U-shaped multiscale layout; feature-wise linear modulation (FiLM) for scalar inputs; what "resolution-consistent" means.</p>
+</section>
+
+<section id="s-record">
+<h2 id="sec-record"><span class="secnum">3</span>What the record shows</h2>
+<p class="outline-note">Outline. The measurement campaign on a frozen pretrained network (Poseidon-T) used as a local solver inside the project's coupled solvers. Table of S1&ndash;S12 with the measured failure and its consequence. The requirements they imply, and which section of this paper answers each.</p>
+</section>
+
+<section id="s-arch">
+<h2 id="sec-arch"><span class="secnum">4</span>Architecture</h2>
+<p class="outline-note">Outline. Overview figure: domain, decomposition, charts, operator on the square, assembly.</p>
+<h3 id="sec-arch-topology"><span class="secnum">4.1</span>Topology: decomposition into four-sided pieces</h3>
+<p class="outline-note">Outline. Every piece a topological quadrilateral; the along/across harmonic coordinates; equal-value cuts and the conformal modulus; measured moduli on the s-channel and bend-3; figure of the s-channel decomposition.</p>
+<h3 id="sec-arch-geometry"><span class="secnum">4.2</span>Geometry: certified charts</h3>
+<p class="outline-note">Outline. Geometry as anisotropy (the pull-back identity); the input fields $(\log J, \operatorname{Re}\mu, \operatorname{Im}\mu, \log\kappa)$; the corner trade-off (proposition); the chart rule; the discrete certificate (proposition); the envelope; figure comparing the three charts on the s-channel end piece; table of measured chart statistics.</p>
+<h3 id="sec-arch-output"><span class="secnum">4.3</span>The expert's output: constraint modes</h3>
+<p class="outline-note">Outline. The canonical all-Dirichlet question; port modes (16 cosines per side); constraint modes and the particular field; the analytic principal part on the square; the bubble-multiplied correction; exact traces whatever the network returns; figure of principal parts.</p>
+<h3 id="sec-arch-backbone"><span class="secnum">4.4</span>The backbone</h3>
+<p class="outline-note">Outline. U-shaped convolutional operator, odd/even extension, anti-aliased resampling, FiLM; the spectral ablation; size 1M with a {0.3M, 1M, 3M} sweep; reference grid 64, trained on 32/64/128.</p>
+<h3 id="sec-arch-ports"><span class="secnum">4.5</span>Ports, conservation and time</h3>
+<p class="outline-note">Outline. Interface data as cosine trace coefficients (tier 0) and Robin/wave coefficients (tier 2); the mortar projection from physical arc length; the conservative face-flux head; the time step entering as the Fourier number, with a declared range.</p>
+</section>
+
+<section id="s-coupling">
+<h2 id="sec-coupling"><span class="secnum">5</span>Coupling and its guarantee</h2>
+<p class="outline-note">Outline. The host assembles each piece's energy Gram and solves one interface system. Theorem (Gram properties), with proof; Theorem (Galerkin optimality), with proof; Proposition (perturbation of the interface solve), with proof. The three-tier coupling stack. Tier 2: wave variables, the Cayley transform, the contraction condition, and the counterexample showing it cannot be weakened. Status of each statement: proved here on paper; none is machine-checked yet.</p>
+<h3 id="sec-coupling-gram"><span class="secnum">5.1</span>The energy Gram</h3>
+<h3 id="sec-coupling-tiers"><span class="secnum">5.2</span>Three tiers of coupling</h3>
+<h3 id="sec-coupling-tier2"><span class="secnum">5.3</span>Iterative coupling with certified contraction</h3>
+</section>
+
+<section id="s-training">
+<h2 id="sec-training"><span class="secnum">6</span>Training</h2>
+<p class="outline-note">Outline. Data from the project's own classical solver in chart coordinates on random charts; the objective (supervised modes and particular field, step consistency); the label-free energy objective and its identity; symmetry augmentation; stages 0&ndash;3; training from scratch, with a controlled fine-tuning comparison at Stage 2.</p>
+</section>
+
+<section id="s-cost">
+<h2 id="sec-cost"><span class="secnum">7</span>Cost and training time</h2>
+<p class="outline-note">Outline. Measured: rounds and wall-time ratios of the coupling strategies; port truncation error; forward cost of the backbones; the comparison with a classical recomputation of the port matrix. Estimated (labelled): data generation and training cost per stage.</p>
+</section>
+
+<section id="s-eval">
+<h2 id="sec-eval"><span class="secnum">8</span>Evaluation protocol and gates</h2>
+<p class="outline-note">Outline. Gates E1&ndash;E6 plus the superelement rows, registered in code before any training; the registered comparisons (input class, energy objective, backbone ablation, size sweep); the benchmark geometries.</p>
+</section>
+
+<section id="s-related">
+<h2 id="sec-related"><span class="secnum">9</span>Related work and what is new</h2>
+<p class="outline-note">Outline. Learned local solvers in domain decomposition; learned interface conditions and preconditioners; geometry-aware neural operators; learned Dirichlet-to-Neumann maps and local stiffness matrices; classical component methods. A table of claims N1&ndash;N6 with their verdicts after reading the literature in full.</p>
+</section>
+
+<section id="s-limits">
+<h2 id="sec-limits"><span class="secnum">10</span>Limitations</h2>
+<p class="outline-note">Outline. Cost against classical solvers in 2-D; three dimensions; nonlinear and hyperbolic families; cross-points; untested learnability of the general input class; nothing trained.</p>
+</section>
+
+<section id="s-roadmap">
+<h2 id="sec-roadmap"><span class="secnum">11</span>Roadmap</h2>
+<p class="outline-note">Outline. Build items in order, each with its gate; what is needed for the proofs.</p>
+</section>
+
+<section id="s-refs">
+<h2 id="sec-refs" class="unnumbered">References</h2>
+<ol class="refs">
+<!--REFS-->
+
+<!--/REFS-->
+</ol>
+</section>
+
+<section class="appendix" id="s-appendix">
+<h2 id="app-card"><span class="secnum">A</span>The Expert Card specification</h2>
+<p class="outline-note">Outline. The manifest every expert ships, field by field, and the compiler rules that read it.</p>
+<h2 id="app-derivations"><span class="secnum">B</span>Derivations</h2>
+<p class="outline-note">Outline. The pull-back identity; the Beltrami form of the metric; the corner bound; the principal part on the square.</p>
+<h2 id="app-repro"><span class="secnum">C</span>Reproducibility</h2>
+<p class="outline-note">Outline. Each script, what it measures, its output file, and how to run it.</p>
+</section>
+
+</article>
+<footer>Private draft. Not for distribution before the project website launches.</footer>
+</main>
+<script>
+(function () {
+  var inline = document.querySelector('.toc-inline .toc-body');
+  var rail = document.querySelector('.toc-rail .toc-body');
+  if (inline && rail) { rail.innerHTML = inline.innerHTML; }
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc-rail a'));
+  var targets = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+  function update() {
+    var y = window.scrollY + 120, current = -1;
+    for (var i = 0; i < targets.length; i++) { if (targets[i] && targets[i].offsetTop <= y) { current = i; } }
+    links.forEach(function (a, i) { a.classList.toggle('active', i === current); });
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+</body>
+</html>
