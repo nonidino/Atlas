@@ -37,6 +37,58 @@ are saved to `out/workbench/cases/` by default. Add `?case=<file>.json` to the
 URL to open a saved case on load (only a file name inside the cases folder is
 accepted).
 
+## On another machine: the one-command install (demo step 7)
+
+A stranger installs the workbench with one command, `.\run.cmd` on Windows or
+`./run.sh` on macOS and Linux, from a branch built out of a commit of this
+repository (the owner's O2, 2026-09-30). It is the PoC 3 bundle's design, reused:
+
+```bash
+python scripts/build_workbench_bundle.py --commit       # out/workbench-bundle, branch atlas-workbench
+python scripts/verify_workbench_bundle.py --clone <a new folder> --launch --tests --no-torch --offline --freeze
+```
+
+- **The templates** are in `atlas/workbench/bundle/`: the two launchers, `run.py`
+  (what they run, and the self-test), `requirements.txt` and `constraints.txt`,
+  `conftest.py`, the branch's `README.md`, `.gitignore` and `.gitattributes`. The
+  builder copies them and never edits a source file; it imports PoC 3's scans
+  rather than copying them.
+- **The branch carries** `atlas/` without the three proofs of concept's demo
+  packages, which nothing else imports; the one package of the build repository the
+  workbench loads, the wind farm's `reference.WindowNS`, at
+  `vendor/src/atlas/cases/windfarm/` with that repository's MIT licence; every
+  workbench test, with the scripts they import, found by reading their imports.
+  `run.py` and `conftest.py` **set** `ATLAS_BUILD_REPO` to `vendor/`, and the
+  self-test asserts the solver was loaded from there. The one test that compares
+  `fe.py` with the build repository's ThermoStruct2D skips there and says why.
+- **The builder refuses** NeuberNet in any form, Poseidon's weights or any model
+  cache, any binary file at all (the learned case will register its own weights by
+  name), a vendored scOT, and anything under `out/`.
+- **The pins are the development environment's, not a clean resolution's.** The
+  first clean install, with `requirements.txt` alone, resolved param 2.4.2, and
+  every page load failed with HTTP 500: from param 2.3.0, with Panel 1.5.2, a
+  widget's `name` is constant, and the header relabels its buttons by setting it
+  (measured: 2.1.1 to 2.2.1 allow it, 2.3.0 to 2.4.2 do not). Every type had run;
+  the self-test found it by opening the page. So `constraints.txt` pins each
+  package that install pulled in at the version the suite passed with here, each
+  checked on PyPI for wheels on every platform and Python the launchers accept.
+- **The launchers** accept Python 3.10, 3.11 or 3.12, the range every pinned package
+  publishes wheels for on Windows, both kinds of Mac and Linux. They build `.venv`,
+  install the pins, then two optional steps that may fail without stopping
+  anything: torch, CPU-only (no Intel-macOS wheel exists), and Gmsh from PyPI (GPL,
+  so installed on the visitor's machine, never shipped). The self-test runs once;
+  later runs go straight to the page, on the first free port from 8020.
+- **The self-test** (`run.py --check`): every package imports; the solver came from
+  `vendor/`; each of the eight types compiles through `compile_case` and marches a
+  step or two of every arm through `runner.CaseRun`, finite inside the domain and
+  with every exact control the type registers holding (a split by physics runs a
+  synchronous and a lagged split, which differ by design, so "threaded equals
+  serial" is the type's own control, not the runner's); and the page, served by
+  the folder's own server on a free port, fetched with every script and stylesheet
+  it names and its document pulled over the WebSocket by Bokeh's own client.
+- **`run.sh` has not run on a Mac** (the owner has none). It follows the PoC 3
+  bundle's macOS rules, bash 3.2 and `100755` in the index, and has run on Linux.
+
 ## Built on what was already installed
 
 **Panel 1.5** and **Bokeh 3.6**, both BSD-3-Clause, were already in the Python
@@ -50,6 +102,10 @@ and delete shapes.
 is not a rectangle on the grid. The workbench *calls* its Python API to read a
 `.msh` file; nothing of Gmsh is copied into this code. Its linking exception does
 not cover this code, which matters only if the workbench is ever distributed.
+The one-command install (below) is that distribution: it installs Gmsh on the
+visitor's machine from PyPI, as an optional step, and ships nothing of it.
+**Whether that suffices for code that calls Gmsh's API is the owner's question to
+settle before the branch is published (O9).**
 
 **Nothing is downloaded, and the page makes no outside request.** The page uses
 Panel's **Bootstrap** template. The Fast template was tried first and dropped for two
@@ -637,6 +693,9 @@ projection lets a little velocity back into the solid each sub-step.
 | `compile.py` | the compile: a case's `CaseGraph` through its family's `case_graph`, the finite-volume window as an agent (`FVAgent`), seams from the geometry with Fourier prolongations, the declared cross-points, the verdict per seam, and the background job with its record |
 | `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven as the page drives it (a click is a Tap at `_on_tap`, a handle's drag the data Bokeh's `PointDrawTool` sends, a field a widget; helpers in `tests/workbench_ui.py`), every header control and menu action (nothing is left unbuilt), the status chip's list and its *Show me*, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
 | `tests/test_workbench_fv.py`, `tests/test_workbench_families.py` | the finite volumes against closed forms (a layered wall, a series circuit), one window equal to the full domain to the bit, styles B, C and D against the full domain, the unrelaxed Dirichlet–Neumann diverging exactly when $\rho>1$, both new families end to end, and the page's family, physics and materials controls |
+| `bundle/` | the one-command install's templates: `run.cmd`, `run.sh`, `run.py` (the launcher proper and its self-test), the pins, `conftest.py`, the branch's README and its git rules (demo step 7) |
+| `scripts/build_workbench_bundle.py`, `scripts/verify_workbench_bundle.py` | the builder (the branch `atlas-workbench` in `out/workbench-bundle`, never pushed by the script) and the check of a fresh clone: mode, line endings, every file against its commit by blob hash, the scans, the launcher, the tests, the self-test without torch and with no network; records in `out/workbench/records/installer/` |
+| `tests/test_workbench_installer.py` | the templates and the builder without installing anything: `run.sh` for bash 3.2 (and `bash -n`), `run.cmd`'s jumps, the two launchers' pins and flags, every third-party import at any depth pinned or optional, one self-test example per type, the builder's script closure and its refusals |
 | `tests/test_workbench_fast.py` | the Fast examples: every family's bars registered, every kind's example ready to run, style M's N = 1 control to the bit and its balance and agreement, the river's and the sound's halo exchange against the full domain (the sound to the bit), the river's leaner step against the code it replaced, the header's button and the card |
 | `tests/test_w348_r10_after_scheme.py` | R10 after the scheme (W348): its three outcomes, `wall-2` decertified, the same graph refused at L2 with the declaration withdrawn, and Tier 0's four windows still refused |
 | `tests/test_workbench_starter.py` | the owner's first scenario in every family (ready to run once the shape is drawn, or the one thing only the person can decide said plainly), a new kind starting from its example's setup and one Undo restoring the old case, defaults that fill only what is missing, the Fix buttons one by one and all at once, every kind from the header ready to run and *Start over*, the windows fix at a Dirichlet-Neumann interface, a check that never raises, the canvas holding still while a shape is drawn, and the header holding what it simulates. `tests/test_workbench_shell.py` also pins case@0.6 (no name; an older file loses its own), *More examples*, the type switch and its one Undo with the file, and that no control shows a case name |

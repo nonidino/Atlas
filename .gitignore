@@ -778,3 +778,6 @@ out/w346/*
 !out/workbench/
 out/workbench/*
 !out/workbench/records/
+# The one-command install's verification logs stay local: each record in
+# out/workbench/records/installer/ keeps the tail of every log it ran.
+out/workbench/records/installer/logs/

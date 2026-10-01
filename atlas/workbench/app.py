@@ -1265,19 +1265,27 @@ class Workbench:
             "compiler, run it, and compare it with the full-domain solve, in eight physics "
             "families on drawn shapes.\n\n"
             f"- Cases folder: `{os.path.relpath(self.cases_dir, ROOT)}`\n"
-            "- Built on **Panel** and **Bokeh** (both BSD-3-Clause, already installed; "
-            "nothing is downloaded and the page makes no outside requests).\n"
+            "- Built on **Panel** and **Bokeh** (both BSD-3-Clause). The page makes no "
+            "outside requests: every script it loads comes from this server.\n"
             "- Every number the page shows is measured on this machine and kept in a "
             "record beside the case file.", width=560)
 
     def _docs(self):
+        #: the one-command install carries the code and its README, not the wiki
+        #: (demo step 7), so the wiki's pages are named only where they are
+        if os.path.isdir(os.path.join(ROOT, "wiki")):
+            wiki = ("- The plan it builds: `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/"
+                    "outcome-c4-path-to-declarative-cases.md` and `showcase-library-plan.md`\n"
+                    "- What each example measured: `showcase-gallery.md`\n")
+        else:
+            wiki = ("- The design notes, and what each example measured on the machine it "
+                    "was built on, are in the project's wiki, which this copy does not "
+                    "carry.\n")
         return pn.pane.Markdown(
             "### Where things are documented\n"
             "- The workbench: `atlas/workbench/README.md`\n"
-            "- The plan it builds: `wiki/concepts/Atlas 0.1/atlas-0.1-outcome/"
-            "outcome-c4-path-to-declarative-cases.md` and `showcase-library-plan.md`\n"
-            "- What each example measured: `showcase-gallery.md`\n"
-            "- The case file's schema: `atlas/workbench/spec.py`\n"
+            + wiki
+            + "- The case file's schema: `atlas/workbench/spec.py`\n"
             "- The physics families: `atlas/workbench/registry.py`", width=620)
 
 

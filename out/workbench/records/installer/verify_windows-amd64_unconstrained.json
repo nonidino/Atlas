@@ -1,0 +1,183 @@
+{
+ "at": "2026-10-01T03:21:07",
+ "platform": "windows-amd64",
+ "verifier_python": "3.12.7",
+ "note": "scratch build (templates uncommitted), install WITHOUT constraints.txt, to generate it; on battery; other chats on docs/theory only; owner's phone-remote server.py not running",
+ "bundle": "C:\\Users\\Nauni\\AppData\\Local\\Temp\\claude\\C--Users-Nauni-OneDrive-Desktop-Foundation-Model\\9c8ee443-32c3-4639-a04f-641f94080670\\scratchpad\\wb-scratch",
+ "clone_exit_code": 0,
+ "clone_s": 0.8,
+ "clone": "C:\\Users\\Nauni\\wbv0",
+ "head": "b7277a221616e93b8c326381a601a18dc3bb42ad",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "files_in_branch": 133,
+ "deepest_path_in_branch": {
+  "path": "vendor/src/atlas/cases/windfarm/reference.py",
+  "chars": 44
+ },
+ "source_commits": {
+  "atlas": "4891209cf4ae4eacde2944c28960c46bcb08e0a2",
+  "build_repo": "98df3506aedd6f3edf2733257451f3c94f74b987",
+  "dirty": true
+ },
+ "identity": {
+  "identical": 124,
+  "different": [],
+  "not_from_either_repo": [
+   ".gitattributes",
+   ".gitignore",
+   "README.md",
+   "conftest.py",
+   "requirements.txt",
+   "run.cmd",
+   "run.py",
+   "run.sh"
+  ],
+  "by_group": {
+   "atlas": [
+    95,
+    0
+   ],
+   "scripts": [
+    3,
+    0
+   ],
+   "tests": [
+    14,
+    0
+   ],
+   "vendor": [
+    12,
+    0
+   ]
+  },
+  "workbench_tests_upstream": 13,
+  "workbench_tests_carried": 13,
+  "every_workbench_test_is_carried": true
+ },
+ "scan_neubernet": {
+  "named": [],
+  "uses": [],
+  "prose_mentions": 1
+ },
+ "scan_poseidon": {
+  "paths": [],
+  "prose_mentions": 206
+ },
+ "scan_data": {
+  "allowed": [],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "static_checks_pass": false,
+ "self_test_examples": [
+  "wake-array-3",
+  "fast-heat",
+  "plate-circuit",
+  "plume-2",
+  "fast-sound",
+  "plate-hole",
+  "bimetal-arc",
+  "cooled-block"
+ ],
+ "launch_check": {
+  "argv": [
+   "cmd",
+   "/c",
+   "C:\\Users\\Nauni\\wbv0\\run.cmd",
+   "--check"
+  ],
+  "exit_code": 1,
+  "wall_s": 498.6,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\launch_check_windows-amd64_unconstrained.log",
+  "tail": "cpu, https://pypi.org/simple\nCollecting torch==2.7.1\n  Using cached https://download-r2.pytorch.org/whl/cpu/torch-2.7.1%2Bcpu-cp312-cp312-win_amd64.whl.metadata (27 kB)\nCollecting filelock (from torch==2.7.1)\n  Downloading filelock-4.0.8-py3-none-any.whl.metadata (2.0 kB)\nRequirement already satisfied: typing-extensions>=4.10.0 in c:\\users\\nauni\\wbv0\\.venv\\lib\\site-packages (from torch==2.7.1) (4.16.0)\nCollecting sympy>=1.13.3 (from torch==2.7.1)\n  Using cached sympy-1.14.0-py3-none-any.whl.metadata (12 kB)\nCollecting networkx (from torch==2.7.1)\n  Downloading networkx-3.7-py3-none-any.whl.metadata (6.7 kB)\nRequirement already satisfied: jinja2 in c:\\users\\nauni\\wbv0\\.venv\\lib\\site-packages (from torch==2.7.1) (3.1.6)\nCollecting fsspec (from torch==2.7.1)\n  Downloading fsspec-2026.9.0-py3-none-any.whl.metadata (10 kB)\nCollecting setuptools (from torch==2.7.1)\n  Using cached setuptools-84.0.0-py3-none-any.whl.metadata (6.6 kB)\nCollecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch==2.7.1)\n  Using cached mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)\nRequirement already satisfied: MarkupSafe>=2.0 in c:\\users\\nauni\\wbv0\\.venv\\lib\\site-packages (from jinja2->torch==2.7.1) (3.0.3)\nUsing cached https://download-r2.pytorch.org/whl/cpu/torch-2.7.1%2Bcpu-cp312-cp312-win_amd64.whl (216.0 MB)\nUsing cached sympy-1.14.0-py3-none-any.whl (6.3 MB)\nDownloading filelock-4.0.8-py3-none-any.whl (109 kB)\nDownloading fsspec-2026.9.0-py3-none-any.whl (221 kB)\nDownloading networkx-3.7-py3-none-any.whl (2.1 MB)\n   ---------------------------------------- 2.1/2.1 MB 10.9 MB/s eta 0:00:00\nUsing cached setuptools-84.0.0-py3-none-any.whl (818 kB)\nUsing cached mpmath-1.3.0-py3-none-any.whl (536 kB)\nInstalling collected packages: mpmath, sympy, setuptools, networkx, fsspec, filelock, torch\nSuccessfully installed filelock-4.0.8 fsspec-2026.9.0 mpmath-1.3.0 networkx-3.7 setuptools-84.0.0 sympy-1.14.0 torch-2.7.1+cpu\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: C:\\Users\\Nauni\\wbv0\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\n==> installing Gmsh (optional: File > Import geometry from Gmsh)\nCollecting gmsh==4.15.0\n  Using cached gmsh-4.15.0-py2.py3-none-win_amd64.whl.metadata (1.7 kB)\nUsing cached gmsh-4.15.0-py2.py3-none-win_amd64.whl (42.2 MB)\nInstalling collected packages: gmsh\nSuccessfully installed gmsh-4.15.0\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: C:\\Users\\Nauni\\wbv0\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\nAtlas Workbench self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    ok       torch     2.7.1+cpu    the learned case (CPU-only); nothing else uses it (optional)\n    ok       gmsh      4.15.0       File > Import geometry from Gmsh (optional)\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified            27.5 s   2 steps of serial, parallel, full   4.2 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             2.8 s   2 steps of serial, full           1.5 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.2 s   2 steps of serial, full           1.2 s\n    ok   river plume        plume-2        compile admit-uncertified             0.2 s   2 steps of serial, parallel, full   1.1 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   2.4 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             1.8 s   1 step of serial, parallel, full  12.3 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   1.6 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.1 s   2 steps of serial, full           3.1 s\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 3.9 s\n    [!]  HTTPError: HTTP Error 500: Internal Server Error\n    the server's own output is in out\\workbench\\selftest-server.log\n\n  BROKEN -- see the [!] lines above. (86 s)\n",
+  "python_given": null,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  }
+ },
+ "tests": {
+  "argv": [
+   "C:\\Users\\Nauni\\wbv0\\.venv\\Scripts\\python.exe",
+   "-m",
+   "pytest",
+   "tests",
+   "-q",
+   "-p",
+   "no:cacheprovider"
+  ],
+  "exit_code": 1,
+  "wall_s": 405.2,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\tests_windows-amd64_unconstrained.log",
+  "tail": "l-2]\nERROR tests/test_workbench_families.py::test_every_tab_and_layer_draws_for_the_new_families[plate-insert]\nERROR tests/test_workbench_families.py::test_every_tab_and_layer_draws_for_the_new_families[plate-circuit]\nERROR tests/test_workbench_families.py::test_the_physics_step_is_the_familys\nERROR tests/test_workbench_families.py::test_only_the_families_that_run_are_offered\nERROR tests/test_workbench_families.py::test_the_material_inspector_edits_the_case\nERROR tests/test_workbench_families.py::test_a_style_c_case_offers_no_threaded_arm\nERROR tests/test_workbench_families.py::test_a_new_family_runs_through_the_page[wall-2-heat in (W per m of depth)]\nERROR tests/test_workbench_families.py::test_a_new_family_runs_through_the_page[plate-circuit-circuit current (A)]\nERROR tests/test_workbench_fast.py::test_the_header_has_fast_example_with_more_examples_under_it\nERROR tests/test_workbench_fork.py::test_the_owners_fork_drawn_in_the_page_gets_both_outlets_and_follows_its_flow\nERROR tests/test_workbench_fork.py::test_the_owners_fork_sends_the_plume_down_both_branches\nERROR tests/test_workbench_geometry.py::test_every_layer_and_tool_builds - Ty...\nERROR tests/test_workbench_geometry.py::test_select_move_draw_and_delete_windows\nERROR tests/test_workbench_geometry.py::test_resize_by_a_corner_handle - Type...\nERROR tests/test_workbench_geometry.py::test_rotors_are_placed_moved_and_deleted\nERROR tests/test_workbench_geometry.py::test_regions_are_drawn_and_edited_in_the_inspector\nERROR tests/test_workbench_geometry.py::test_regions_a_family_ignores_are_shown_and_warned_of\nERROR tests/test_workbench_geometry.py::test_imported_polygon_regions_are_not_moved_here\nERROR tests/test_workbench_geometry.py::test_the_tiling_dialog_and_the_gmsh_path\nERROR tests/test_workbench_geometry.py::test_undo_keeps_the_view - TypeError:...\nERROR tests/test_workbench_holes.py::test_in_the_page_a_hole_dragged_across_the_edge_and_past_the_grid_stays_ready\nERROR tests/test_workbench_layout.py::test_reshaping_the_domain_regenerates_the_windows\nERROR tests/test_workbench_layout.py::test_editing_a_window_by_hand_makes_the_windows_the_cases_own\nERROR tests/test_workbench_layout.py::test_drawing_a_domain_makes_the_rectangles_give_way\nERROR tests/test_workbench_layout.py::test_a_generated_window_is_not_resized_or_moved_by_hand\nERROR tests/test_workbench_runner.py::test_the_page_runs_a_case_and_shows_its_results\nERROR tests/test_workbench_runner.py::test_a_finished_run_rebuilds_its_step\nERROR tests/test_workbench_runner.py::test_the_page_says_which_configuration_is_marching\nERROR tests/test_workbench_shell.py::test_every_menu_action_runs - TypeError:...\nERROR tests/test_workbench_shell.py::test_every_header_control_reaches_the_dispatcher\nERROR tests/test_workbench_shell.py::test_more_examples_lists_the_types_own_with_no_names\nERROR tests/test_workbench_shell.py::test_the_type_selector_starts_a_new_case_and_one_undo_restores_the_old\nERROR tests/test_workbench_shell.py::test_no_control_shows_a_case_name - Type...\nERROR tests/test_workbench_shell.py::test_nothing_is_left_unbuilt - TypeError...\nERROR tests/test_workbench_shell.py::test_a_case_with_errors_does_not_run - T...\nERROR tests/test_workbench_shell.py::test_edits_are_validated_undone_and_redone\nERROR tests/test_workbench_shell.py::test_save_open_and_the_case_bar - TypeEr...\nERROR tests/test_workbench_shell.py::test_the_status_chip_lists_the_problems_and_where_each_is_fixed\nERROR tests/test_workbench_shell.py::test_import_refuses_what_is_not_a_case\nERROR tests/test_workbench_shell.py::test_one_light_theme_and_no_outside_request\nERROR tests/test_workbench_starter.py::test_the_first_scenario_is_ready_to_run[conduction-2d]\nERROR tests/test_workbench_starter.py::test_the_first_scenario_is_ready_to_run[electric-2d]\nERROR tests/test_workbench_starter.py::test_the_first_scenario_is_ready_to_run[transport-2d]\nERROR tests/test_workbench_starter.py::test_the_first_scenario_is_ready_to_run[acoustics-2d]\nERROR tests/test_workbench_starter.py::test_the_first_scenario_is_ready_to_run[elasticity-2d]\nERROR tests/test_workbench_starter.py::test_the_first_scenario_is_ready_to_run[thermoelastic-2d]\nERROR tests/test_workbench_starter.py::test_the_owners_river - TypeError: Con...\nERROR tests/test_workbench_starter.py::test_what_only_the_person_can_decide_is_said_plainly[incompressible-2d-only0]\nERROR tests/test_workbench_starter.py::test_what_only_the_person_can_decide_is_said_plainly[conjugate-heat-2d-only1]\nERROR tests/test_workbench_starter.py::test_a_new_type_starts_from_its_examples_setup_and_undo_restores_the_old\nERROR tests/test_workbench_starter.py::test_the_problems_list_fixes_one_or_all\nERROR tests/test_workbench_starter.py::test_every_type_from_the_header_is_ready_to_run\nERROR tests/test_workbench_starter.py::test_the_canvas_holds_still_while_a_shape_is_drawn\nERROR tests/test_workbench_starter.py::test_the_header_holds_what_it_simulates_and_fits_a_laptop\n246 passed, 1 skipped, 71 errors in 403.45s (0:06:43)\n",
+  "summary": null
+ },
+ "pip_freeze_all": [
+  "Jinja2==3.1.6",
+  "Markdown==3.11",
+  "MarkupSafe==3.0.3",
+  "PyYAML==6.0.3",
+  "annotated-types==0.8.0",
+  "bleach==6.4.0",
+  "bokeh==3.6.0",
+  "certifi==2026.7.22",
+  "charset-normalizer==3.5.2",
+  "colorama==0.4.6",
+  "contourpy==1.3.3",
+  "filelock==4.0.8",
+  "fsspec==2026.9.0",
+  "gmsh==4.15.0",
+  "idna==3.20",
+  "iniconfig==2.3.0",
+  "linkify-it-py==2.2.0",
+  "markdown-it-py==4.2.0",
+  "mdit-py-plugins==0.6.1",
+  "mdurl==0.1.2",
+  "mpmath==1.3.0",
+  "networkx==3.7",
+  "numpy==1.26.4",
+  "packaging==26.3",
+  "pandas==2.2.2",
+  "panel==1.5.2",
+  "param==2.4.2",
+  "pillow==12.3.0",
+  "pip==24.3.1",
+  "pluggy==1.6.0",
+  "pydantic==2.12.5",
+  "pydantic_core==2.41.5",
+  "pytest==8.3.3",
+  "python-dateutil==2.9.0.post0",
+  "pytz==2026.4",
+  "pyviz_comms==3.0.6",
+  "requests==2.34.2",
+  "scipy==1.13.1",
+  "setuptools==84.0.0",
+  "six==1.17.0",
+  "sympy==1.14.0",
+  "torch==2.7.1+cpu",
+  "tornado==6.5.10",
+  "tqdm==4.70.1",
+  "typing-inspection==0.4.4",
+  "typing_extensions==4.16.0",
+  "tzdata==2026.4",
+  "urllib3==2.8.0",
+  "webencodings==0.6.1",
+  "xyzservices==2026.9.1"
+ ],
+ "venv_python": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]",
+ "venv_mb": 2004.5,
+ "deepest_path_in_venv": {
+  "path": ".venv/Lib/site-packages/torch/include/ATen/ops/_fake_quantize_per_tensor_affine_cachemask_tensor_qparams_compositeexplicitautograd_dispatch.h",
+  "chars": 141
+ },
+ "passes": false
+}

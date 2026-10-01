@@ -1,0 +1,11 @@
+# Everything run.sh / run.cmd creates. Deleting .venv undoes the whole install.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log
+
+# What the workbench writes while it runs: the cases you save and every run's
+# record (out/workbench/cases/), and the self-test's server log. This folder
+# ships nothing under out/.
+out/

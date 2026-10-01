@@ -1,0 +1,80 @@
+# Everything the pinned packages in requirements.txt pull in, pinned too, at
+# the version the workbench was VERIFIED with: the development environment in
+# which its whole suite passed (Windows 11, Python 3.12.7, 2026-10-01).
+#
+# Not at whatever a clean install resolves. The first clean install of this
+# branch, with requirements.txt alone, resolved param 2.4.2, and every page load
+# failed with HTTP 500: from param 2.3.0, with Panel 1.5.2, a widget's `name`
+# is a constant parameter, and the workbench relabels its buttons by setting it.
+# Measured on that install: param 2.1.1, 2.2.0 and 2.2.1 allow it; 2.3.0, 2.4.0
+# and 2.4.2 raise "Constant parameter 'name' cannot be modified". The self-test
+# found it by opening the page; every one of the eight types had run.
+#
+# So each name below is a package the clean install pulled in (its pip freeze
+# --all, out/workbench/records/installer/verify_windows-amd64_unconstrained.json),
+# or one the older versions here pull in instead (uc-micro-py, for
+# linkify-it-py 2.0.0), and each version is the development environment's.
+# Every one was checked on PyPI: wheels for CPython 3.10, 3.11 and 3.12 on
+# Windows, macOS (Apple silicon and Intel) and Linux x86-64, or a pure-Python
+# wheel, and none requires a Python newer than 3.10. And pip's own resolver,
+# run with --dry-run for each of those platforms and Pythons, installs these
+# versions and nothing unpinned, torch and Gmsh included
+# (out/workbench/records/installer/resolve_matrix.json).
+#
+# Python 3.10 needs two more that 3.12 does not (pytest's backports), pinned at
+# the versions PoC 3's bundle verified on Ubuntu with Python 3.10; a constraint
+# installs nothing that no requirement asks for, so they are inert elsewhere.
+# colorama is Windows-only, and inert elsewhere for the same reason.
+#
+# Not here: pip, torch (with its +cpu label) and gmsh, which the launchers pin.
+
+annotated-types==0.6.0
+bleach==4.1.0
+bokeh==3.6.0
+certifi==2025.10.5
+charset-normalizer==3.3.2
+colorama==0.4.6
+contourpy==1.2.0
+exceptiongroup==1.3.1
+filelock==3.13.1
+fsspec==2024.6.1
+idna==3.7
+iniconfig==1.1.1
+Jinja2==3.1.4
+linkify-it-py==2.0.0
+Markdown==3.4.1
+markdown-it-py==2.2.0
+MarkupSafe==2.1.3
+mdit-py-plugins==0.3.0
+mdurl==0.1.0
+mpmath==1.3.0
+networkx==3.3
+numpy==1.26.4
+packaging==24.1
+pandas==2.2.2
+panel==1.5.2
+param==2.1.1
+pillow==12.2.0
+pluggy==1.0.0
+pydantic==2.12.5
+pydantic_core==2.41.5
+pytest==7.4.4
+python-dateutil==2.9.0.post0
+pytz==2024.1
+pyviz_comms==3.0.2
+PyYAML==6.0.1
+requests==2.33.0
+scipy==1.13.1
+setuptools==75.1.0
+six==1.16.0
+sympy==1.14.0
+tomli==2.4.1
+tornado==6.4.1
+tqdm==4.66.5
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+tzdata==2023.3
+uc-micro-py==1.0.1
+urllib3==2.7.0
+webencodings==0.5.1
+xyzservices==2022.9.0

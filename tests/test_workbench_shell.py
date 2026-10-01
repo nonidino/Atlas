@@ -153,6 +153,24 @@ def test_every_header_control_reaches_the_dispatcher(wb):
     assert not any("unknown action" in line for line in wb.log_lines)
 
 
+def test_help_names_the_wiki_only_where_it_is(wb, monkeypatch, tmp_path):
+    """The one-command install carries the code and its README, not the wiki (demo
+    step 7): *Where things are documented* names the wiki's pages only where they
+    are, and says plainly where they are not; *About* claims nothing about what was
+    installed beforehand."""
+    from atlas.workbench import app
+    here = wb._docs().object
+    if os.path.isdir(os.path.join(app.ROOT, "wiki")):
+        assert "showcase-gallery.md" in here
+    else:                                            # this test, inside the install
+        assert "does not carry" in here
+    monkeypatch.setattr(app, "ROOT", str(tmp_path))  # a copy with no wiki beside it
+    there = wb._docs().object
+    assert "does not carry" in there and "showcase-gallery.md" not in there
+    assert "`atlas/workbench/README.md`" in there
+    assert "already installed" not in wb._about().object
+
+
 def test_more_examples_lists_the_types_own_with_no_names(wb):
     """The owner's O1 (2026-09-30): under the header's example button, the chosen
     kind's examples, one line each saying what it shows, with no name; the gallery of
