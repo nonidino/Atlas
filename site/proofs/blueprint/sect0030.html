@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Atlas: the machine-checked mathematics: T9’: non-expansive is enough without a rate</title>
+<link rel="next" href="sect0031.html" title="T22: the master bound with learned experts" />
+<link rel="prev" href="sect0029.html" title="The learned rollout and the headline statements" />
+<link rel="up" href="sect0029.html" title="The learned rollout and the headline statements" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Atlas: the machine-checked mathematics</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref"></span> <span class="toc_entry">How to read this</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">1</span> <span class="toc_entry">Contractions: convergence and certificates</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0003.html"><span class="toc_ref">1.1</span> <span class="toc_entry">T1: a perturbed contraction</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0003.html#a0000000035"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">1.2</span> <span class="toc_entry">T7: the a-posteriori certificate</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0004.html#a0000000036"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000037"><span class="toc_ref"></span> <span class="toc_entry">What the constant must be.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0005.html"><span class="toc_ref">2</span> <span class="toc_entry">The master error bound</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0006.html"><span class="toc_ref">2.1</span> <span class="toc_entry">T4: recursion, split, accumulation, regimes</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0006.html#a0000000038"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0007.html"><span class="toc_ref">2.2</span> <span class="toc_entry">T4e: the transmission term</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0007.html#a0000000039"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0008.html"><span class="toc_ref">3</span> <span class="toc_entry">Decomposition does not change the answer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0009.html"><span class="toc_ref">3.1</span> <span class="toc_entry">T3a: a direct Schur interface solve</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0009.html#a0000000040"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0010.html"><span class="toc_ref">3.2</span> <span class="toc_entry">T3b: Dirichlet–Neumann</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0010.html#a0000000041"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0011.html"><span class="toc_ref">3.3</span> <span class="toc_entry">T3c: restricted additive Schwarz</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0011.html#a0000000042"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0012.html"><span class="toc_ref">3.4</span> <span class="toc_entry">T3d: what stopping on the update leaves</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0012.html#a0000000043"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0013.html"><span class="toc_ref">4</span> <span class="toc_entry">Defect correction: the rate, never the answer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0014.html"><span class="toc_ref">4.1</span> <span class="toc_entry">T5: Theorem 1 and Corollary 1</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0014.html#a0000000044"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0015.html"><span class="toc_ref">4.2</span> <span class="toc_entry">T5: Corollary 2, shrinking toward the null element</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0015.html#a0000000045"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0016.html"><span class="toc_ref">5</span> <span class="toc_entry">Guarantees the composition layer supplies</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0017.html"><span class="toc_ref">5.1</span> <span class="toc_entry">T10: symmetry averaging</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0017.html#a0000000046"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0018.html"><span class="toc_ref">5.2</span> <span class="toc_entry">T11: passive agents joined by the port rule</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0018.html#a0000000047"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0019.html"><span class="toc_ref">6</span> <span class="toc_entry">Tier 0: the learned superelement</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0020.html"><span class="toc_ref">6.1</span> <span class="toc_entry">T25 (i) to (iii): the Gram port matrix</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0020.html#a0000000048"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0021.html"><span class="toc_ref">6.2</span> <span class="toc_entry">T25: energy optimality</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0021.html#a0000000049"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0022.html"><span class="toc_ref">6.3</span> <span class="toc_entry">T24: perturbation of the interface solve</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0022.html#a0000000050"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0023.html"><span class="toc_ref">6.4</span> <span class="toc_entry">T26: the label-free objective</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0023.html#a0000000051"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0024.html"><span class="toc_ref">7</span> <span class="toc_entry">Tier 2: black-box experts and the contraction contract</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0025.html"><span class="toc_ref">7.1</span> <span class="toc_entry">T8: wave variables and the Cayley transform</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0025.html#a0000000052"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0026.html"><span class="toc_ref">7.2</span> <span class="toc_entry">T9a: the contraction contract, one level</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0026.html#a0000000053"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0027.html"><span class="toc_ref">7.3</span> <span class="toc_entry">T9b: two levels</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0027.html#a0000000054"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0028.html"><span class="toc_ref">7.4</span> <span class="toc_entry">A remark beside T1: accuracy is not a substitute</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0028.html#a0000000055"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active">
+  <a href="sect0029.html"><span class="toc_ref">8</span> <span class="toc_entry">The learned rollout and the headline statements</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class=" active current">
+  <a href="sect0030.html"><span class="toc_ref">8.1</span> <span class="toc_entry">T9’: non-expansive is enough without a rate</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-2 active">
+     <li class="">
+  <a href="sect0030.html#a0000000056"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0031.html"><span class="toc_ref">8.2</span> <span class="toc_entry">T22: the master bound with learned experts</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0031.html#a0000000057"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0032.html"><span class="toc_ref">8.3</span> <span class="toc_entry">T2: existence, as a conditional theorem</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0032.html#a0000000058"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0033.html"><span class="toc_ref">8.4</span> <span class="toc_entry">The headline statements</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000031">8.1 T9’: non-expansive is enough without a rate</h1>
+<h4 id="a0000000056">In plain words.</h4>
+<p> A passive coupling gives a sweep that lengthens no distance, but not one that shortens every distance. Iterating such a map need not converge: a rotation never settles. Averaging each sweep with the current iterate does converge, to a fixed point of the sweep, whenever the sweep has one. No rate is claimed. </p>
+<div class="definition_thmwrapper theorem-style-definition" id="def:averaged">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">89</span>
+    <span class="definition_thmtitle">The averaged sweep</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0030.html#def:averaged">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.averaged" class="lean_decl">Atlas.averaged</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.averaged_fixedPt_iff" class="lean_decl">Atlas.averaged_fixedPt_iff</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  For \(T:E\to E\) and a real \(\omega \), \(T_\omega (x)=(1-\omega )\, x+\omega \, T(x)\). For \(\omega \ne 0\) it has the same fixed points as \(T\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:T9p-identity">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">90</span>
+    <span class="lemma_thmtitle">T9’, the identity</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0030.html#lem:T9p-identity">#</a>
+    
+    <a class="icon proof" href="sect0030.html#a0000000174"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.norm_sq_convex_combination" class="lean_decl">Atlas.norm_sq_convex_combination</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>  In a real inner-product space, for all \(a,b\) and all real \(\omega \), </p>
+<div class="displaymath" id="a0000000175">
+  \[  \lVert (1-\omega )a+\omega b\rVert ^2 =(1-\omega )\lVert a\rVert ^2+\omega \lVert b\rVert ^2-\omega (1-\omega )\lVert a-b\rVert ^2 .  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000174">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Expand both sides. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:T9p-step">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">91</span>
+    <span class="lemma_thmtitle">T9’, one averaged step</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0030.html#lem:T9p-step">#</a>
+    
+    <a class="icon proof" href="sect0030.html#a0000000176"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0030.html#def:averaged">Definition 89</a></li>
+          
+          <li><a href="sect0030.html#lem:T9p-identity">Lemma 90</a></li>
+          
+          <li><a href="sect0030.html#lem:T9p-identity">Lemma 90</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.averaged_step" class="lean_decl">Atlas.averaged_step</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   Let \(\lVert Tx-Ty\rVert \le \lVert x-y\rVert \) for all \(x,y\), let \(T(p)=p\) and \(\omega \ge 0\). Then for every \(x\), </p>
+<div class="displaymath" id="a0000000177">
+  \[  \lVert T_\omega (x)-p\rVert ^2\le \lVert x-p\rVert ^2-\omega (1-\omega )\lVert x-T(x)\rVert ^2 .  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000176">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Lemma&#160;<a href="sect0030.html#lem:T9p-identity">90</a> with \(a=x-p\) and \(b=T(x)-p\), and \(\lVert T(x)-p\rVert =\lVert T(x)-T(p)\rVert \le \lVert x-p\rVert \). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:T9p-residual">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">92</span>
+    <span class="lemma_thmtitle">T9’, the residuals tend to zero</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0030.html#lem:T9p-residual">#</a>
+    
+    <a class="icon proof" href="sect0030.html#a0000000178"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0030.html#lem:T9p-step">Lemma 91</a></li>
+          
+          <li><a href="sect0030.html#lem:T9p-step">Lemma 91</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.averaged_residual_tendsto_zero" class="lean_decl">Atlas.averaged_residual_tendsto_zero</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   Under the hypotheses of Lemma&#160;<a href="sect0030.html#lem:T9p-step">91</a> with \(0{\lt}\omega {\lt}1\), the iterates \(x_{n+1}=T_\omega (x_n)\) satisfy \(\lVert x_n-T(x_n)\rVert \to 0\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000178">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> The numbers \(\lVert x_n-p\rVert ^2\) decrease and are bounded below, so they converge, and their successive differences tend to zero; those differences bound \(\omega (1-\omega )\lVert x_n-T(x_n)\rVert ^2\) from above. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:T9p">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">93</span>
+    <span class="theorem_thmtitle">T9’, Krasnoselskii–Mann in finite dimensions</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0030.html#thm:T9p">#</a>
+    
+    <a class="icon proof" href="sect0030.html#a0000000179"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0030.html#lem:T9p-step">Lemma 91</a></li>
+          
+          <li><a href="sect0030.html#lem:T9p-residual">Lemma 92</a></li>
+          
+          <li><a href="sect0030.html#lem:T9p-step">Lemma 91</a></li>
+          
+          <li><a href="sect0030.html#lem:T9p-residual">Lemma 92</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.krasnoselskii_mann" class="lean_decl">Atlas.krasnoselskii_mann</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>   Let \(E\) be a finite-dimensional real inner-product space, \(T:E\to E\) with \(\lVert Tx-Ty\rVert \le \lVert x-y\rVert \) for all \(x,y\) and a fixed point, and \(0{\lt}\omega {\lt}1\). For every \(x_0\) the iterates \(x_{n+1}=T_\omega (x_n)\) converge to a fixed point of \(T\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000179">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> By Lemma&#160;<a href="sect0030.html#lem:T9p-step">91</a> the iterates stay in a closed ball around a fixed point, which is compact, so a subsequence converges to some \(q\). \(T\) is continuous and the residuals tend to zero (Lemma&#160;<a href="sect0030.html#lem:T9p-residual">92</a>), so \(T(q)=q\). By Lemma&#160;<a href="sect0030.html#lem:T9p-step">91</a> with \(p=q\), \(\lVert x_n-q\rVert \) decreases; it tends to zero along the subsequence, hence altogether. </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0029.html" title="The learned rollout and the headline statements"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="sect0029.html" title="The learned rollout and the headline statements"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0031.html" title="T22: the master bound with learned experts"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

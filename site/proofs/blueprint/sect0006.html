@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Atlas: the machine-checked mathematics: T4: recursion, split, accumulation, regimes</title>
+<link rel="next" href="sect0007.html" title="T4e: the transmission term" />
+<link rel="prev" href="sect0005.html" title="The master error bound" />
+<link rel="up" href="sect0005.html" title="The master error bound" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Atlas: the machine-checked mathematics</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref"></span> <span class="toc_entry">How to read this</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">1</span> <span class="toc_entry">Contractions: convergence and certificates</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0003.html"><span class="toc_ref">1.1</span> <span class="toc_entry">T1: a perturbed contraction</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0003.html#a0000000035"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">1.2</span> <span class="toc_entry">T7: the a-posteriori certificate</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0004.html#a0000000036"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000037"><span class="toc_ref"></span> <span class="toc_entry">What the constant must be.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active">
+  <a href="sect0005.html"><span class="toc_ref">2</span> <span class="toc_entry">The master error bound</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class=" active current">
+  <a href="sect0006.html"><span class="toc_ref">2.1</span> <span class="toc_entry">T4: recursion, split, accumulation, regimes</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-2 active">
+     <li class="">
+  <a href="sect0006.html#a0000000038"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0007.html"><span class="toc_ref">2.2</span> <span class="toc_entry">T4e: the transmission term</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0007.html#a0000000039"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0008.html"><span class="toc_ref">3</span> <span class="toc_entry">Decomposition does not change the answer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0009.html"><span class="toc_ref">3.1</span> <span class="toc_entry">T3a: a direct Schur interface solve</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0009.html#a0000000040"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0010.html"><span class="toc_ref">3.2</span> <span class="toc_entry">T3b: Dirichlet–Neumann</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0010.html#a0000000041"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0011.html"><span class="toc_ref">3.3</span> <span class="toc_entry">T3c: restricted additive Schwarz</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0011.html#a0000000042"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0012.html"><span class="toc_ref">3.4</span> <span class="toc_entry">T3d: what stopping on the update leaves</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0012.html#a0000000043"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0013.html"><span class="toc_ref">4</span> <span class="toc_entry">Defect correction: the rate, never the answer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0014.html"><span class="toc_ref">4.1</span> <span class="toc_entry">T5: Theorem 1 and Corollary 1</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0014.html#a0000000044"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0015.html"><span class="toc_ref">4.2</span> <span class="toc_entry">T5: Corollary 2, shrinking toward the null element</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0015.html#a0000000045"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0016.html"><span class="toc_ref">5</span> <span class="toc_entry">Guarantees the composition layer supplies</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0017.html"><span class="toc_ref">5.1</span> <span class="toc_entry">T10: symmetry averaging</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0017.html#a0000000046"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0018.html"><span class="toc_ref">5.2</span> <span class="toc_entry">T11: passive agents joined by the port rule</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0018.html#a0000000047"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0019.html"><span class="toc_ref">6</span> <span class="toc_entry">Tier 0: the learned superelement</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0020.html"><span class="toc_ref">6.1</span> <span class="toc_entry">T25 (i) to (iii): the Gram port matrix</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0020.html#a0000000048"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0021.html"><span class="toc_ref">6.2</span> <span class="toc_entry">T25: energy optimality</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0021.html#a0000000049"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0022.html"><span class="toc_ref">6.3</span> <span class="toc_entry">T24: perturbation of the interface solve</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0022.html#a0000000050"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0023.html"><span class="toc_ref">6.4</span> <span class="toc_entry">T26: the label-free objective</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0023.html#a0000000051"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0024.html"><span class="toc_ref">7</span> <span class="toc_entry">Tier 2: black-box experts and the contraction contract</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0025.html"><span class="toc_ref">7.1</span> <span class="toc_entry">T8: wave variables and the Cayley transform</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0025.html#a0000000052"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0026.html"><span class="toc_ref">7.2</span> <span class="toc_entry">T9a: the contraction contract, one level</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0026.html#a0000000053"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0027.html"><span class="toc_ref">7.3</span> <span class="toc_entry">T9b: two levels</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0027.html#a0000000054"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0028.html"><span class="toc_ref">7.4</span> <span class="toc_entry">A remark beside T1: accuracy is not a substitute</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0028.html#a0000000055"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0029.html"><span class="toc_ref">8</span> <span class="toc_entry">The learned rollout and the headline statements</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0030.html"><span class="toc_ref">8.1</span> <span class="toc_entry">T9’: non-expansive is enough without a rate</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0030.html#a0000000056"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0031.html"><span class="toc_ref">8.2</span> <span class="toc_entry">T22: the master bound with learned experts</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0031.html#a0000000057"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0032.html"><span class="toc_ref">8.3</span> <span class="toc_entry">T2: existence, as a conditional theorem</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0032.html#a0000000058"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0033.html"><span class="toc_ref">8.4</span> <span class="toc_entry">The headline statements</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000007">2.1 T4: recursion, split, accumulation, regimes</h1>
+<h4 id="a0000000038">In plain words.</h4>
+<ul class="itemize">
+  <li><p><em>Recursion.</em> The new error is the old error carried through one step, plus the one-step defect: what a single step does wrong when it starts from the true solution. </p>
+</li>
+  <li><p><em>Three-term split.</em> With a coupling, the defect is a sum of three parts: the experts being wrong even when handed the true interface data (\(\tau \)), the interface problem being posed with the wrong operator (\(\sigma \)), and the interface solve being stopped early (\(\gamma \)). Iterating the coupling reduces \(\gamma \) and nothing else. </p>
+</li>
+  <li><p><em>Accumulation.</em> If one step magnifies a difference by at most \(L\), the error after \(N\) steps is at most \(L^N\) times the initial error, plus every defect magnified by the steps that follow it. </p>
+</li>
+  <li><p><em>Three regimes.</em> With every defect at most \(\delta \): the error stays below \(\delta /(1-L)\) for all time when \(L{\lt}1\); it grows at most linearly, \(N\delta \), when \(L=1\); the bound grows exponentially when \(L{\gt}1\). </p>
+</li>
+</ul>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:T4-recursion">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">9</span>
+    <span class="lemma_thmtitle">T4a, the exact error recursion</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#lem:T4-recursion">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000069"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.error_recursion" class="lean_decl">Atlas.error_recursion</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>  Let \(E\) be a normed space, \(\Phi :E\to E\), and \(u,u^\star :\mathbb {N}\to E\) with \(u^{n+1}=\Phi (u^n)\). Then for every \(n\) </p>
+<div class="displaymath" id="a0000000070">
+  \[  u^{n+1}-u^{n+1,\star } =\bigl[\Phi (u^n)-\Phi (u^{n,\star })\bigr] +\bigl[\Phi (u^{n,\star })-u^{n+1,\star }\bigr].  \]
+</div>
+<p> The second bracket is the one-step defect \(d^{n+1}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000069">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Add and subtract \(\Phi (u^{n,\star })\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:T4-split">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">10</span>
+    <span class="lemma_thmtitle">T4b, the three-term split</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#lem:T4-split">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000071"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.defect_split" class="lean_decl">Atlas.defect_split</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>  Let \(\Phi _\mu :E\to E\) be the composed step forced to use the interface datum \(\mu \), and \(\mathcal S:E\to E\) the exact evolution. For any three data \(\lambda ^\star \), \(\lambda ^\dagger \), \(\lambda ^{(k)}\) and any state \(v\), </p>
+<div class="displaymath" id="a0000000072">
+  \[  \Phi _{\lambda ^{(k)}}(v)-\mathcal S(v) =\underbrace{\Phi _{\lambda ^\star }(v)-\mathcal S(v)}_{\tau } +\underbrace{\Phi _{\lambda ^\dagger }(v)-\Phi _{\lambda ^\star }(v)}_{\sigma } +\underbrace{\Phi _{\lambda ^{(k)}}(v)-\Phi _{\lambda ^\dagger }(v)}_{\gamma }.  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000071">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The sum telescopes. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:T4-accumulation">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">11</span>
+    <span class="lemma_thmtitle">T4c, accumulation</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#lem:T4-accumulation">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000073"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.accumulation" class="lean_decl">Atlas.accumulation</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>  Let \(L\ge 0\) and \(e,d:\mathbb {N}\to \mathbb {R}\) with \(e_{n+1}\le L\, e_n+d_{n+1}\) for all \(n\). Then for every \(N\) </p>
+<div class="displaymath" id="a0000000074">
+  \[  e_N\le L^N e_0+\sum _{n=1}^{N}L^{N-n}d_n .  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000073">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Induction on \(N\). The step multiplies the bound for \(N\) by \(L\ge 0\) and adds \(d_{N+1}\). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:T4">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">12</span>
+    <span class="theorem_thmtitle">T4, the master bound</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#thm:T4">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000075"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#lem:T4-recursion">Lemma 9</a></li>
+          
+          <li><a href="sect0006.html#lem:T4-accumulation">Lemma 11</a></li>
+          
+          <li><a href="sect0006.html#lem:T4-recursion">Lemma 9</a></li>
+          
+          <li><a href="sect0006.html#lem:T4-accumulation">Lemma 11</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound" class="lean_decl">Atlas.master_bound</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>   Let \(u^{n+1}=\Phi (u^n)\), and suppose \(\lVert \Phi (u^n)-\Phi (u^{n,\star })\rVert \le L\, \lVert u^n-u^{n,\star }\rVert \) for every \(n\), with \(L\ge 0\). Then for every \(N\) </p>
+<div class="displaymath" id="a0000000076">
+  \[  \lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert  +\sum _{n=1}^{N}L^{N-n}\, \lVert \Phi (u^{n-1,\star })-u^{n,\star }\rVert  .  \]
+</div>
+<p> The stability hypothesis is needed only along the two trajectories. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000075">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Take norms in Lemma&#160;<a href="sect0006.html#lem:T4-recursion">9</a> and apply Lemma&#160;<a href="sect0006.html#lem:T4-accumulation">11</a> to \(e_n=\lVert u^n-u^{n,\star }\rVert \). </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:T4-three">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">13</span>
+    <span class="corollary_thmtitle">T4 with the three terms named</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#cor:T4-three">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000077"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#thm:T4">Theorem 12</a></li>
+          
+          <li><a href="sect0006.html#lem:T4-split">Lemma 10</a></li>
+          
+          <li><a href="sect0006.html#thm:T4">Theorem 12</a></li>
+          
+          <li><a href="sect0006.html#lem:T4-split">Lemma 10</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_three_terms" class="lean_decl">Atlas.master_bound_three_terms</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p>   Let the composed step be \(\Phi (v)=\Phi _{\lambda ^{(k)}(v)}(v)\), where \(\lambda ^{(k)}(v)\) is the datum the interface solver returns at the state \(v\). Under the hypotheses of Theorem&#160;<a href="sect0006.html#thm:T4">12</a>, for any sequences of data \(\lambda ^{\star }_n\), \(\lambda ^{\dagger }_n\), </p>
+<div class="displaymath" id="a0000000078">
+  \[  \lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert  +\sum _{n=1}^{N}L^{N-n}\bigl(\tau ^n+\sigma ^n+\gamma ^n\bigr),  \]
+</div>
+<p> with \(\tau ^n\), \(\sigma ^n\), \(\gamma ^n\) the norms of the three terms of Lemma&#160;<a href="sect0006.html#lem:T4-split">10</a> at \(v=u^{n-1,\star }\) and \(\mathcal S(u^{n-1,\star })=u^{n,\star }\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000077">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Lemma&#160;<a href="sect0006.html#lem:T4-split">10</a> and the triangle inequality bound each defect by \(\tau ^n+\sigma ^n+\gamma ^n\); the weights \(L^{N-n}\) are non-negative. </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:T4-contractive">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">14</span>
+    <span class="corollary_thmtitle">T4, the contractive regime</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#cor:T4-contractive">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000079"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#thm:T4">Theorem 12</a></li>
+          
+          <li><a href="sect0006.html#thm:T4">Theorem 12</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_contractive" class="lean_decl">Atlas.master_bound_contractive</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p>   If moreover \(0\le L{\lt}1\) and every one-step defect has norm at most \(\delta \), then \(\lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert +\delta /(1-L)\) for every \(N\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000079">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> \(\sum _{n=1}^{N}L^{N-n}=(1-L^N)/(1-L)\le 1/(1-L)\). </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:T4-nonexpansive">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">15</span>
+    <span class="corollary_thmtitle">T4, the non-expansive regime</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#cor:T4-nonexpansive">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000080"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#thm:T4">Theorem 12</a></li>
+          
+          <li><a href="sect0006.html#thm:T4">Theorem 12</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_nonexpansive" class="lean_decl">Atlas.master_bound_nonexpansive</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p>   If \(L=1\) and every one-step defect has norm at most \(\delta \), then \(\lVert u^N-u^{N,\star }\rVert \le \lVert u^0-u^{0,\star }\rVert +N\delta \). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000080">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Every weight is \(1\). </p>
+
+  </div>
+</div>
+<div class="corollary_thmwrapper theorem-style-plain" id="cor:T4-expansive">
+  <div class="corollary_thmheading">
+    <span class="corollary_thmcaption">
+    Corollary
+    </span>
+    <span class="corollary_thmlabel">16</span>
+    <span class="corollary_thmtitle">T4, the expansive regime</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#cor:T4-expansive">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000081"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0006.html#thm:T4">Theorem 12</a></li>
+          
+          <li><a href="sect0006.html#thm:T4">Theorem 12</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_expansive" class="lean_decl">Atlas.master_bound_expansive</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="corollary_thmcontent">
+  <p>   If \(L{\gt}1\) and every one-step defect has norm at most \(\delta \), then \(\lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert  +\dfrac {L^N-1}{L-1}\, \delta \). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000081">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> The geometric sum. </p>
+
+  </div>
+</div>
+<div class="proposition_thmwrapper theorem-style-plain" id="prop:T4-attained">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">17</span>
+    <span class="proposition_thmtitle">The regimes are attained</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0006.html#prop:T4-attained">#</a>
+    
+    <a class="icon proof" href="sect0006.html#a0000000082"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_attained" class="lean_decl">Atlas.master_bound_attained</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  For every \(L,\delta \in \mathbb {R}\) and every \(N\) there are real sequences with \(u^{n+1}=L\, u^n\), a one-step defect equal to \(\delta \) at every step and no initial error, whose error after \(N\) steps is exactly \(\sum _{i{\lt}N}L^i\, \delta \). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000082">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>\(u^n=0\) and \(u^{n+1,\star }=L\, u^{n,\star }-\delta \) with \(u^{0,\star }=0\). </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0005.html" title="The master error bound"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="sect0005.html" title="The master error bound"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0007.html" title="T4e: the transmission term"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

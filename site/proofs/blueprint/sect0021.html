@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Atlas: the machine-checked mathematics: T25: energy optimality</title>
+<link rel="next" href="sect0022.html" title="T24: perturbation of the interface solve" />
+<link rel="prev" href="sect0020.html" title="T25 (i) to (iii): the Gram port matrix" />
+<link rel="up" href="sect0019.html" title="Tier 0: the learned superelement" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Atlas: the machine-checked mathematics</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref"></span> <span class="toc_entry">How to read this</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">1</span> <span class="toc_entry">Contractions: convergence and certificates</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0003.html"><span class="toc_ref">1.1</span> <span class="toc_entry">T1: a perturbed contraction</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0003.html#a0000000035"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">1.2</span> <span class="toc_entry">T7: the a-posteriori certificate</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0004.html#a0000000036"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000037"><span class="toc_ref"></span> <span class="toc_entry">What the constant must be.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0005.html"><span class="toc_ref">2</span> <span class="toc_entry">The master error bound</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0006.html"><span class="toc_ref">2.1</span> <span class="toc_entry">T4: recursion, split, accumulation, regimes</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0006.html#a0000000038"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0007.html"><span class="toc_ref">2.2</span> <span class="toc_entry">T4e: the transmission term</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0007.html#a0000000039"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0008.html"><span class="toc_ref">3</span> <span class="toc_entry">Decomposition does not change the answer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0009.html"><span class="toc_ref">3.1</span> <span class="toc_entry">T3a: a direct Schur interface solve</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0009.html#a0000000040"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0010.html"><span class="toc_ref">3.2</span> <span class="toc_entry">T3b: Dirichlet–Neumann</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0010.html#a0000000041"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0011.html"><span class="toc_ref">3.3</span> <span class="toc_entry">T3c: restricted additive Schwarz</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0011.html#a0000000042"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0012.html"><span class="toc_ref">3.4</span> <span class="toc_entry">T3d: what stopping on the update leaves</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0012.html#a0000000043"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0013.html"><span class="toc_ref">4</span> <span class="toc_entry">Defect correction: the rate, never the answer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0014.html"><span class="toc_ref">4.1</span> <span class="toc_entry">T5: Theorem 1 and Corollary 1</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0014.html#a0000000044"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0015.html"><span class="toc_ref">4.2</span> <span class="toc_entry">T5: Corollary 2, shrinking toward the null element</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0015.html#a0000000045"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0016.html"><span class="toc_ref">5</span> <span class="toc_entry">Guarantees the composition layer supplies</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0017.html"><span class="toc_ref">5.1</span> <span class="toc_entry">T10: symmetry averaging</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0017.html#a0000000046"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0018.html"><span class="toc_ref">5.2</span> <span class="toc_entry">T11: passive agents joined by the port rule</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0018.html#a0000000047"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active">
+  <a href="sect0019.html"><span class="toc_ref">6</span> <span class="toc_entry">Tier 0: the learned superelement</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="sect0020.html"><span class="toc_ref">6.1</span> <span class="toc_entry">T25 (i) to (iii): the Gram port matrix</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0020.html#a0000000048"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="sect0021.html"><span class="toc_ref">6.2</span> <span class="toc_entry">T25: energy optimality</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-2 active">
+     <li class="">
+  <a href="sect0021.html#a0000000049"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0022.html"><span class="toc_ref">6.3</span> <span class="toc_entry">T24: perturbation of the interface solve</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0022.html#a0000000050"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0023.html"><span class="toc_ref">6.4</span> <span class="toc_entry">T26: the label-free objective</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0023.html#a0000000051"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0024.html"><span class="toc_ref">7</span> <span class="toc_entry">Tier 2: black-box experts and the contraction contract</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0025.html"><span class="toc_ref">7.1</span> <span class="toc_entry">T8: wave variables and the Cayley transform</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0025.html#a0000000052"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0026.html"><span class="toc_ref">7.2</span> <span class="toc_entry">T9a: the contraction contract, one level</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0026.html#a0000000053"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0027.html"><span class="toc_ref">7.3</span> <span class="toc_entry">T9b: two levels</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0027.html#a0000000054"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0028.html"><span class="toc_ref">7.4</span> <span class="toc_entry">A remark beside T1: accuracy is not a substitute</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0028.html#a0000000055"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0029.html"><span class="toc_ref">8</span> <span class="toc_entry">The learned rollout and the headline statements</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0030.html"><span class="toc_ref">8.1</span> <span class="toc_entry">T9’: non-expansive is enough without a rate</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0030.html#a0000000056"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0031.html"><span class="toc_ref">8.2</span> <span class="toc_entry">T22: the master bound with learned experts</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0031.html#a0000000057"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0032.html"><span class="toc_ref">8.3</span> <span class="toc_entry">T2: existence, as a conditional theorem</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0032.html#a0000000058"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0033.html"><span class="toc_ref">8.4</span> <span class="toc_entry">The headline statements</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000022">6.2 T25: energy optimality</h1>
+<h4 id="a0000000049">In plain words.</h4>
+<p> The undivided discrete solution is the admissible field of least total energy. The host’s interface system, formed from the network’s fields alone, says exactly that the rebuilt field has the least energy among the fields that can be rebuilt from the network’s modes. For a symmetric problem, least energy over a smaller set is the same as closest to the true minimiser in the energy size. So the coupled answer is the best approximation of the undivided solution that the network’s modes can represent: the coupling adds no error of its own. Its error is at most the truncation error of the classical superelement plus the energy of the network’s field errors. </p>
+<div class="definition_thmwrapper theorem-style-definition" id="def:quad">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">63</span>
+    <span class="definition_thmtitle">A quadratic energy</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#def:quad">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy" class="lean_decl">Atlas.QuadEnergy</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.energy" class="lean_decl">Atlas.QuadEnergy.energy</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.norm" class="lean_decl">Atlas.QuadEnergy.norm</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  On a real vector space \(X\), let \(m\) be a symmetric bilinear form with \(m(w,w)\ge 0\) and \(\ell \) a linear functional. The energy is \(\mathcal E(w)=\tfrac 12m(w,w)-\ell (w)\) and the energy size is \(\lVert w\rVert _m=\sqrt{m(w,w)}\), a seminorm. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:stationary">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">64</span>
+    <span class="lemma_thmtitle">Minimisers are the stationary points</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#lem:stationary">#</a>
+    
+    <a class="icon proof" href="sect0021.html#a0000000139"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#def:quad">Definition 63</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.stationary_of_isMin" class="lean_decl">Atlas.QuadEnergy.stationary_of_isMin</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.isMin_of_stationary" class="lean_decl">Atlas.QuadEnergy.isMin_of_stationary</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.energy_eq_add" class="lean_decl">Atlas.QuadEnergy.energy_eq_add</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   Let \(U_0\subseteq X\) be a subspace and \(u\in X\). Then \(\mathcal E(u)\le \mathcal E(u+v)\) for all \(v\in U_0\) if and only if \(m(u,v)=\ell (v)\) for all \(v\in U_0\). In that case, for every \(w\) with \(w-u\in U_0\), </p>
+<div class="displaymath" id="a0000000140">
+  \[  \mathcal E(w)=\mathcal E(u)+\tfrac 12\lVert w-u\rVert _m^2 .  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000139">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>\(\mathcal E(u+tv)-\mathcal E(u)=t\, \bigl(m(u,v)-\ell (v)\bigr)+\tfrac 12t^2m(v,v)\). If this is non-negative for all real \(t\), the coefficient of \(t\) is zero. Conversely, if that coefficient is zero the difference is \(\tfrac 12t^2m(v,v)\ge 0\); \(t=1\) and \(v=w-u\) give the identity. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:cea">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">65</span>
+    <span class="lemma_thmtitle">The abstract lemma: Céa with constant one</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#lem:cea">#</a>
+    
+    <a class="icon proof" href="sect0021.html#a0000000141"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#lem:stationary">Lemma 64</a></li>
+          
+          <li><a href="sect0021.html#lem:stationary">Lemma 64</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.closest_iff_isMin" class="lean_decl">Atlas.QuadEnergy.closest_iff_isMin</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   Let \(u\) have the least energy in \(u+U_0\), let \(W\subseteq u+U_0\) be any set and \(\tilde u\in W\). Then \(\tilde u\) has the least energy in \(W\) if and only if \(\lVert u-\tilde u\rVert _m\le \lVert u-w\rVert _m\) for every \(w\in W\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000141">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> On \(W\), \(\mathcal E(w)=\mathcal E(u)+\tfrac 12\lVert w-u\rVert _m^2\) by Lemma&#160;<a href="sect0021.html#lem:stationary">64</a>, and \(t\mapsto \sqrt t\) is increasing. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:galerkin">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">66</span>
+    <span class="lemma_thmtitle">The Galerkin system</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#lem:galerkin">#</a>
+    
+    <a class="icon proof" href="sect0021.html#a0000000142"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#lem:stationary">Lemma 64</a></li>
+          
+          <li><a href="sect0021.html#lem:stationary">Lemma 64</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.galerkin_iff_isMin" class="lean_decl">Atlas.QuadEnergy.galerkin_iff_isMin</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   For \(w_0\in X\), finitely many trial directions \(t_a\in X\) and coordinates \(c\), write \(w(c)=w_0+\sum _ac_at_a\). Then \(w(c)\) has the least energy among all \(w(c')\) if and only if \(m\bigl(w(c),t_a\bigr)=\ell (t_a)\) for every \(a\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000142">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Lemma&#160;<a href="sect0021.html#lem:stationary">64</a> with \(U_0\) the span of the \(t_a\) and \(u=w(c)\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:energy-triangle">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">67</span>
+    <span class="lemma_thmtitle">The energy size obeys the triangle inequality</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#lem:energy-triangle">#</a>
+    
+    <a class="icon proof" href="sect0021.html#a0000000143"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#def:quad">Definition 63</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.norm_add_le" class="lean_decl">Atlas.QuadEnergy.norm_add_le</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   \(\lVert x+y\rVert _m\le \lVert x\rVert _m+\lVert y\rVert _m\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000143">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>The Cauchy–Schwarz inequality \(m(x,y)^2\le m(x,x)\, m(y,y)\) for a positive semidefinite symmetric form (Mathlib: <span class="ttfamily">LinearMap.BilinForm.apply_sq_le_of_symm</span>). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:superelement">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">68</span>
+    <span class="definition_thmtitle">The tier-0 solve</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#def:superelement">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0020.html#def:gram">Definition 56</a></li>
+          
+          <li><a href="sect0020.html#def:assemble">Definition 61</a></li>
+          
+          <li><a href="sect0021.html#def:quad">Definition 63</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement" class="lean_decl">Atlas.Superelement</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.Admissible" class="lean_decl">Atlas.Superelement.Admissible</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.U0" class="lean_decl">Atlas.Superelement.U0</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.quad" class="lean_decl">Atlas.Superelement.quad</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.IsSolution" class="lean_decl">Atlas.Superelement.IsSolution</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.coord" class="lean_decl">Atlas.Superelement.coord</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.field" class="lean_decl">Atlas.Superelement.field</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.portMatrix" class="lean_decl">Atlas.Superelement.portMatrix</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.portLoad" class="lean_decl">Atlas.Superelement.portLoad</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostMatrix" class="lean_decl">Atlas.Superelement.hostMatrix</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostRhs" class="lean_decl">Atlas.Superelement.hostRhs</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.fieldError" class="lean_decl">Atlas.Superelement.fieldError</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>   Pieces \(i=1,\dots ,P\), each with an energy \(M_i\) on \(U\times F\) (Definition&#160;<a href="sect0020.html#def:piece">55</a>), a source \(f_i\), port patterns \(q_{i,k}\in F\), a matrix \(R_i\) reading its port coordinates off the free global coordinates \(c\), and fixed coordinates \(r_i\). A <em>global field</em> \(w\) gives every piece a pair \(w_i\in U\times F\). Let \(\Gamma _0\) be a subspace of families of face values (those on which neighbours agree and which vanish on the prescribed boundary) and \(g\) a family carrying the prescribed boundary values. The field \(w\) is <em>admissible</em> if its face values minus \(g\) lie in \(\Gamma _0\); \(U_0\) is the space of fields with face values in \(\Gamma _0\). The global energy is </p>
+<div class="displaymath" id="a0000000144">
+  \[  \mathcal E(w)=\sum _{i=1}^P\Bigl(\tfrac 12M_i(w_i,w_i)-f_i(w_{I,i})\Bigr), \qquad \lVert w\rVert _M^2=\sum _{i=1}^PM_i(w_i,w_i),  \]
+</div>
+<p> and the <em>undivided solution</em> \(u\) is an admissible field of least energy among admissible fields. From fields \(h_{i,k}\) and \(\hat u_{p,i}\) the host forms </p>
+<div class="displaymath" id="a0000000145">
+  \begin{gather*}  \tilde\Lambda _i=\Lambda _i[h_i],\qquad \tilde b_{i,k}=f_i(h_{i,k})-M_i\bigl((h_{i,k},q_{i,k}),(\hat u_{p,i},0)\bigr),\\ \tilde{\mathsf S}=\sum _iR_i^\top \tilde\Lambda _iR_i,\qquad \tilde\chi =\sum _iR_i^\top \bigl(\tilde b_i-\tilde\Lambda _ir_i\bigr), \end{gather*}
+</div>
+<p> and for coordinates \(c\) rebuilds, with \(x_i=r_i+R_ic\), </p>
+<div class="displaymath" id="a0000000146">
+  \[  w(c)_i=\Bigl(\hat u_{p,i}+\sum _kx_{i,k}h_{i,k},\  \  \sum _kx_{i,k}q_{i,k}\Bigr).  \]
+</div>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:assumptions">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">69</span>
+    <span class="definition_thmtitle">The three assumptions</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#def:assumptions">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#def:superelement">Definition 68</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.Conforming" class="lean_decl">Atlas.Superelement.Conforming</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.BoundaryDataInPortSpan" class="lean_decl">Atlas.Superelement.BoundaryDataInPortSpan</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.EnergyNormIsNorm" class="lean_decl">Atlas.Superelement.EnergyNormIsNorm</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  
+<ol class="enumerate">
+  <li><p><em>Conforming shared sides:</em> for every \(c\), the family \(\bigl(\sum _k(R_ic)_kq_{i,k}\bigr)_i\) lies in \(\Gamma _0\). </p>
+</li>
+  <li><p><em>Boundary data in the port span:</em> the family \(\bigl(\sum _kr_{i,k}q_{i,k}\bigr)_i-g\) lies in \(\Gamma _0\). </p>
+</li>
+  <li><p><em>The energy size is a norm on \(U_0\):</em> \(w\in U_0\) and \(\lVert w\rVert _M=0\) imply \(w=0\). </p>
+</li>
+</ol>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:T25-galerkin">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">70</span>
+    <span class="theorem_thmtitle">The host’s system is the Galerkin system</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#thm:T25-galerkin">#</a>
+    
+    <a class="icon proof" href="sect0021.html#a0000000147"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#def:superelement">Definition 68</a></li>
+          
+          <li><a href="sect0021.html#lem:galerkin">Lemma 66</a></li>
+          
+          <li><a href="sect0021.html#lem:galerkin">Lemma 66</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostSystem_iff_isMin" class="lean_decl">Atlas.Superelement.hostSystem_iff_isMin</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>   For any fields \(h,\hat u_p\) and any \(c\): \(\tilde{\mathsf S}c=\tilde\chi \) if and only if \(\mathcal E(w(c))\le \mathcal E(w(c'))\) for every \(c'\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000147">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> The trial directions are \(t_a=\bigl(\sum _k(R_i)_{ka}(h_{i,k},q_{i,k})\bigr)_i\). Expanding \(m(w(c),t_a)=\ell (t_a)\) by bilinearity gives row \(a\) of \(\tilde{\mathsf S}c=\tilde\chi \); then Lemma&#160;<a href="sect0021.html#lem:galerkin">66</a>. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:T25-optimal">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">71</span>
+    <span class="theorem_thmtitle">T25, energy optimality</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#thm:T25-optimal">#</a>
+    
+    <a class="icon proof" href="sect0021.html#a0000000148"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#thm:T25-galerkin">Theorem 70</a></li>
+          
+          <li><a href="sect0021.html#lem:cea">Lemma 65</a></li>
+          
+          <li><a href="sect0021.html#def:assumptions">Definition 69</a></li>
+          
+          <li><a href="sect0021.html#thm:T25-galerkin">Theorem 70</a></li>
+          
+          <li><a href="sect0021.html#lem:cea">Lemma 65</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.field_admissible" class="lean_decl">Atlas.Superelement.field_admissible</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.energy_optimal" class="lean_decl">Atlas.Superelement.energy_optimal</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>   Assume 1 and 2 of Definition&#160;<a href="sect0021.html#def:assumptions">69</a>. Then every rebuilt field \(w(c)\) is admissible. If \(u\) is the undivided solution and \(\tilde{\mathsf S}c=\tilde\chi \), then </p>
+<div class="displaymath" id="a0000000149">
+  \[  \lVert u-w(c)\rVert _M\le \lVert u-w(c')\rVert _M\qquad \text{for every }c' .  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000148">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> The face values of \(w(c)\) minus \(g\) are the sum of the two families of assumptions 1 and 2. By Theorem&#160;<a href="sect0021.html#thm:T25-galerkin">70</a>, \(w(c)\) has the least energy among the rebuilt fields; Lemma&#160;<a href="sect0021.html#lem:cea">65</a> with \(W\) the set of rebuilt fields. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:T25-bound">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">72</span>
+    <span class="theorem_thmtitle">T25, the error bound</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#thm:T25-bound">#</a>
+    
+    <a class="icon proof" href="sect0021.html#a0000000150"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#thm:T25-optimal">Theorem 71</a></li>
+          
+          <li><a href="sect0021.html#lem:energy-triangle">Lemma 67</a></li>
+          
+          <li><a href="sect0021.html#thm:T25-optimal">Theorem 71</a></li>
+          
+          <li><a href="sect0021.html#lem:energy-triangle">Lemma 67</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.energy_error_bound" class="lean_decl">Atlas.Superelement.energy_error_bound</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>   Under the hypotheses of Theorem&#160;<a href="sect0021.html#thm:T25-optimal">71</a>, for any reference fields \(H_{i,k}\), \(u_{p,i}\) and any coordinates \(c^\star \), with \(x_i^\star =r_i+R_ic^\star \) and \(w^{\mathrm{ref}}\) the field rebuilt from the reference fields at \(c^\star \), </p>
+<div class="displaymath" id="a0000000151">
+  \[  \lVert u-w(c)\rVert _M\  \le \  \lVert u-w^{\mathrm{ref}}\rVert _M +\Bigl(\sum _{i=1}^Pa_i(d_i,d_i)\Bigr)^{1/2}, \qquad d_i=(\hat u_{p,i}-u_{p,i})+\sum _kx^\star _{i,k}\, (h_{i,k}-H_{i,k}).  \]
+</div>
+<p> With the exact modes and the classical superelement’s coordinates, \(w^{\mathrm{ref}}=u_m\) and this is the document’s bound: truncation error plus field errors. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000150">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Let \(w^\star \) be the field rebuilt from the network’s fields at \(c^\star \). By Theorem&#160;<a href="sect0021.html#thm:T25-optimal">71</a> and the triangle inequality, \(\lVert u-w(c)\rVert _M\le \lVert u-w^\star \rVert _M \le \lVert u-w^{\mathrm{ref}}\rVert _M+\lVert w^{\mathrm{ref}}-w^\star \rVert _M\). The field \(w^\star -w^{\mathrm{ref}}\) has cell values \(d_i\) and zero face values on piece \(i\), and \(M_i\bigl((d,0),(d,0)\bigr)=a_i(d,d)\). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:T25-solvable">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">73</span>
+    <span class="theorem_thmtitle">Solvable for every output; one solution</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0021.html#thm:T25-solvable">#</a>
+    
+    <a class="icon proof" href="sect0021.html#a0000000152"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0021.html#def:assumptions">Definition 69</a></li>
+          
+          <li><a href="sect0021.html#lem:stationary">Lemma 64</a></li>
+          
+          <li><a href="sect0021.html#lem:stationary">Lemma 64</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.solution_unique" class="lean_decl">Atlas.Superelement.solution_unique</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostMatrix_posDef" class="lean_decl">Atlas.Superelement.hostMatrix_posDef</a></li>
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostSystem_existsUnique" class="lean_decl">Atlas.Superelement.hostSystem_existsUnique</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>   Assume 3 of Definition&#160;<a href="sect0021.html#def:assumptions">69</a>. Then the undivided solution is unique. Assume also 1, that each piece’s patterns \(q_{i,k}\) are linearly independent, and that \(R_ic=0\) for every \(i\) only for \(c=0\). Then \(\tilde{\mathsf S}\) is positive definite for every choice of the fields \(h\), and \(\tilde{\mathsf S}c=\tilde\chi \) has exactly one solution. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000152">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Two solutions \(u,u'\) have equal energy, so \(\lVert u'-u\rVert _M=0\) by Lemma&#160;<a href="sect0021.html#lem:stationary">64</a>, and \(u'-u\in U_0\). For the matrix, \(c^\top \tilde{\mathsf S}c=\lVert t(c)\rVert _M^2\) with \(t(c)_i=\sum _k(R_ic)_k(h_{i,k},q_{i,k})\), which lies in \(U_0\) by assumption 1. If it vanishes then \(t(c)=0\); its face values \(\sum _k(R_ic)_kq_{i,k}\) vanish, so \(R_ic=0\) for every \(i\), so \(c=0\). </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0020.html" title="T25 (i) to (iii): the Gram port matrix"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="sect0019.html" title="Tier 0: the learned superelement"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0022.html" title="T24: perturbation of the interface solve"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

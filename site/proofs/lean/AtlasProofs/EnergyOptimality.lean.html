@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AtlasProofs/EnergyOptimality.lean — Atlas proofs</title><link rel="stylesheet" href="../../../assets/css/site.css">
+<style>pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}</style>
+</head><body><main class="section tight"><div class="wrap">
+<p class="small"><a href="../../../index.html">Atlas</a> · <a href="../../../proofs/blueprint/index.html">the blueprint</a> · <a href="../index.html">all files</a></p>
+<h1 class="h3">AtlasProofs/EnergyOptimality.lean</h1>
+<p class="small"><a href="EnergyOptimality.lean">Plain text</a></p><pre>import Mathlib.Analysis.Real.Sqrt
+import Mathlib.LinearAlgebra.BilinearMap
+import Mathlib.LinearAlgebra.Span.Defs
+import Mathlib.LinearAlgebra.Finsupp.LinearCombination
+import Mathlib.LinearAlgebra.SesquilinearForm.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Data.Fintype.Basic
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Positivity
+import Mathlib.Tactic.Abel
+
+/-!
+# T25, energy optimality — the abstract lemma
+
+A symmetric linear problem can be written as &quot;minimise the quadratic energy
+
+    E(w) = ½ m(w, w) - l(w)&quot;
+
+over an admissible set, where `m` is a symmetric bilinear form that is never negative on the
+diagonal and `l` is linear. The **energy size** of a field is `√ m(w, w)`. It is a seminorm:
+it can be zero on a non-zero field.
+
+**Plain statement.**
+
+* (stationarity) `u` minimises `E` over the affine set `u + U₀` exactly when
+  `m(u, v) = l(v)` for every direction `v` in `U₀`.
+* (the energy measures distance from the solution) For such a `u` and any `w` in `u + U₀`,
+  `E(w) = E(u) + ½ m(w - u, w - u)`.
+* (**the lemma**) Let `W` be *any* set of fields inside `u + U₀`, and `ut` one of them. Then
+  `ut` has the least energy in `W` exactly when `ut` is a point of `W` closest to `u` in the
+  energy size. Minimising the energy over a smaller set finds that set&#x27;s best approximation
+  of the true minimiser, with constant one (Céa&#x27;s lemma for a symmetric problem).
+* (Galerkin) For a trial set `w₀ + ∑ b, c b • t b` given by finitely many coordinates `c`, the
+  coordinates of a least-energy field are exactly the solutions of the linear system
+  `m(w₀ + ∑ b, c b • t b, t a) = l(t a)` for every `a`.
+* (triangle inequality) The energy size obeys `|x + y| ≤ |x| + |y|`.
+
+No dimension is assumed finite, and `m` need not be definite.
+-/
+
+namespace Atlas
+
+/-- **A quadratic energy** `E(w) = ½ m(w, w) - l(w)`: `m` bilinear, symmetric, and never
+negative on the diagonal; `l` linear. -/
+structure QuadEnergy (X : Type*) [AddCommGroup X] [Module ℝ X] where
+  m : X →ₗ[ℝ] X →ₗ[ℝ] ℝ
+  l : X →ₗ[ℝ] ℝ
+  m_symm : ∀ v w, m v w = m w v
+  m_nonneg : ∀ w, 0 ≤ m w w
+
+namespace QuadEnergy
+
+variable {X : Type*} [AddCommGroup X] [Module ℝ X] (Q : QuadEnergy X)
+
+/-- The energy `E(w) = ½ m(w, w) - l(w)`. -/
+noncomputable def energy (w : X) : ℝ := 1 / 2 * Q.m w w - Q.l w
+
+/-- The energy size `√ m(w, w)` of a field: a seminorm. -/
+noncomputable def norm (w : X) : ℝ := Real.sqrt (Q.m w w)
+
+/-- `E(u + v) = E(u) + (m(u, v) - l(v)) + ½ m(v, v)`. -/
+theorem energy_add (u v : X) :
+    Q.energy (u + v) = Q.energy u + (Q.m u v - Q.l v) + 1 / 2 * Q.m v v := by
+  simp only [energy, map_add, LinearMap.add_apply]
+  rw [Q.m_symm v u]
+  ring
+
+/-- The energy size of `x - y` is that of `y - x`. -/
+theorem m_sub_comm (x y : X) : Q.m (x - y) (x - y) = Q.m (y - x) (y - x) := by
+  have h : x - y = -(y - x) := by abel
+  rw [h, map_neg, map_neg, LinearMap.neg_apply, neg_neg]
+
+/-- A quadratic `t A + ½ t² B` with `B ≥ 0` that is never negative has `A = 0`. -/
+theorem eq_zero_of_quadratic_nonneg {A B : ℝ} (hB : 0 ≤ B)
+    (h : ∀ t : ℝ, 0 ≤ t * A + 1 / 2 * t ^ 2 * B) : A = 0 := by
+  have hpos : 0 &lt; B + 1 := by linarith
+  have h1 := h (-A / (B + 1))
+  have h2 : -A / (B + 1) * A + 1 / 2 * (-A / (B + 1)) ^ 2 * B
+      = -(A ^ 2 * (B + 2)) / (2 * (B + 1) ^ 2) := by
+    field_simp
+    ring
+  rw [h2] at h1
+  have hden : 0 &lt; 2 * (B + 1) ^ 2 := by positivity
+  have h3 : 0 ≤ -(A ^ 2 * (B + 2)) := by
+    have h := mul_nonneg h1 hden.le
+    rwa [div_mul_cancel₀ _ hden.ne&#x27;] at h
+  have h4 : A ^ 2 ≤ 0 := by nlinarith [sq_nonneg A, mul_nonneg (sq_nonneg A) hB]
+  have h5 : A ^ 2 = 0 := le_antisymm h4 (sq_nonneg A)
+  simpa using h5
+
+variable {U₀ : Submodule ℝ X} {u : X}
+
+/-- **A minimiser is stationary.** If `u` has the least energy in `u + U₀`, then
+`m(u, v) = l(v)` for every `v` in `U₀`. -/
+theorem stationary_of_isMin (hmin : ∀ v ∈ U₀, Q.energy u ≤ Q.energy (u + v)) :
+    ∀ v ∈ U₀, Q.m u v = Q.l v := by
+  intro v hv
+  have key : ∀ t : ℝ, 0 ≤ t * (Q.m u v - Q.l v) + 1 / 2 * t ^ 2 * Q.m v v := by
+    intro t
+    have h := hmin (t • v) (U₀.smul_mem t hv)
+    rw [Q.energy_add] at h
+    simp only [map_smul, LinearMap.smul_apply, smul_eq_mul] at h
+    linarith
+  have h0 := eq_zero_of_quadratic_nonneg (Q.m_nonneg v) key
+  linarith
+
+/-- **A stationary point is a minimiser.** The converse; it uses `m(v, v) ≥ 0`. -/
+theorem isMin_of_stationary (hstat : ∀ v ∈ U₀, Q.m u v = Q.l v) :
+    ∀ v ∈ U₀, Q.energy u ≤ Q.energy (u + v) := by
+  intro v hv
+  rw [Q.energy_add, hstat v hv]
+  have h := Q.m_nonneg v
+  linarith
+
+/-- **The energy measures the distance from the minimiser.** If `u` has the least energy in
+`u + U₀` and `w` lies in `u + U₀`, then `E(w) = E(u) + ½ m(w - u, w - u)`. -/
+theorem energy_eq_add (hmin : ∀ v ∈ U₀, Q.energy u ≤ Q.energy (u + v)) {w : X}
+    (hw : w - u ∈ U₀) :
+    Q.energy w = Q.energy u + 1 / 2 * Q.m (w - u) (w - u) := by
+  have hstat := Q.stationary_of_isMin hmin (w - u) hw
+  have hw&#x27; : u + (w - u) = w := by abel
+  have h := Q.energy_add u (w - u)
+  rw [hw&#x27;, hstat] at h
+  linarith
+
+/-- **T25, the abstract lemma (Céa with constant one).** `u` has the least energy in
+`u + U₀`; `W` is any set of fields inside `u + U₀`; `ut` is in `W`. Then `ut` has the least
+energy in `W` if and only if no field of `W` is closer to `u` in the energy size. -/
+theorem closest_iff_isMin (hmin : ∀ v ∈ U₀, Q.energy u ≤ Q.energy (u + v)) {W : Set X}
+    (hW : ∀ w ∈ W, w - u ∈ U₀) {ut : X} (hut : ut ∈ W) :
+    (∀ w ∈ W, Q.energy ut ≤ Q.energy w) ↔ ∀ w ∈ W, Q.norm (u - ut) ≤ Q.norm (u - w) := by
+  have hE : ∀ w ∈ W, Q.energy w = Q.energy u + 1 / 2 * Q.m (u - w) (u - w) := by
+    intro w hw
+    rw [Q.energy_eq_add hmin (hW w hw), Q.m_sub_comm u w]
+  unfold QuadEnergy.norm
+  constructor
+  · intro h w hw
+    have h1 := h w hw
+    rw [hE ut hut, hE w hw] at h1
+    exact Real.sqrt_le_sqrt (by linarith)
+  · intro h w hw
+    have h1 := (Real.sqrt_le_sqrt_iff (Q.m_nonneg _)).mp (h w hw)
+    rw [hE ut hut, hE w hw]
+    linarith
+
+/-- **The Galerkin system.** For the trial fields `w₀ + ∑ b, c b • t b`, the field with
+coordinates `c` has the least energy among them if and only if `c` solves the linear system
+`m(w₀ + ∑ b, c b • t b, t a) = l(t a)`, one equation per trial direction `t a`. -/
+theorem galerkin_iff_isMin {γ : Type*} [Fintype γ] (w₀ : X) (t : γ → X) (c : γ → ℝ) :
+    (∀ a, Q.m (w₀ + ∑ b, c b • t b) (t a) = Q.l (t a)) ↔
+      ∀ c&#x27; : γ → ℝ, Q.energy (w₀ + ∑ b, c b • t b) ≤ Q.energy (w₀ + ∑ b, c&#x27; b • t b) := by
+  constructor
+  · intro hgal c&#x27;
+    have hsplit : w₀ + ∑ b, c&#x27; b • t b
+        = (w₀ + ∑ b, c b • t b) + ∑ b, (c&#x27; b - c b) • t b := by
+      simp only [sub_smul, Finset.sum_sub_distrib]
+      abel
+    have hlin : Q.m (w₀ + ∑ b, c b • t b) (∑ b, (c&#x27; b - c b) • t b)
+        = Q.l (∑ b, (c&#x27; b - c b) • t b) := by
+      simp only [map_sum, map_smul, smul_eq_mul, hgal]
+    rw [hsplit, Q.energy_add (w₀ + ∑ b, c b • t b) (∑ b, (c&#x27; b - c b) • t b), hlin]
+    have h := Q.m_nonneg (∑ b, (c&#x27; b - c b) • t b)
+    linarith
+  · intro hmin a
+    have hmin&#x27; : ∀ v ∈ Submodule.span ℝ (Set.range t),
+        Q.energy (w₀ + ∑ b, c b • t b) ≤ Q.energy (w₀ + ∑ b, c b • t b + v) := by
+      intro v hv
+      obtain ⟨d, rfl⟩ := (Submodule.mem_span_range_iff_exists_fun ℝ).mp hv
+      have h := hmin (c + d)
+      have hsplit : w₀ + ∑ b, (c + d) b • t b
+          = w₀ + ∑ b, c b • t b + ∑ b, d b • t b := by
+        simp only [Pi.add_apply, add_smul, Finset.sum_add_distrib]
+        abel
+      rwa [hsplit] at h
+    exact Q.stationary_of_isMin hmin&#x27; (t a) (Submodule.subset_span ⟨a, rfl⟩)
+
+/-- **The Galerkin condition for any affine parametrisation.** If the trial fields `w c`
+depend affinely on coordinates `c` in a vector space, with directions `T d`, then `w c` has
+the least energy among them if and only if `m(w c, T d) = l(T d)` for every direction. -/
+theorem isMin_iff_of_affine {C : Type*} [AddCommGroup C] [Module ℝ C] (w T : C → X)
+    (hw : ∀ (c d : C) (s : ℝ), w (c + s • d) = w c + s • T d) (c : C) :
+    (∀ d, Q.m (w c) (T d) = Q.l (T d)) ↔ ∀ c&#x27;, Q.energy (w c) ≤ Q.energy (w c&#x27;) := by
+  constructor
+  · intro hgal c&#x27;
+    have hc : c + (1 : ℝ) • (c&#x27; - c) = c&#x27; := by
+      rw [one_smul]
+      abel
+    have h1 := hw c (c&#x27; - c) 1
+    rw [hc, one_smul] at h1
+    rw [h1, Q.energy_add (w c) (T (c&#x27; - c)), hgal]
+    have h := Q.m_nonneg (T (c&#x27; - c))
+    linarith
+  · intro hmin d
+    have key : ∀ t : ℝ,
+        0 ≤ t * (Q.m (w c) (T d) - Q.l (T d)) + 1 / 2 * t ^ 2 * Q.m (T d) (T d) := by
+      intro t
+      have h := hmin (c + t • d)
+      rw [hw, Q.energy_add] at h
+      simp only [map_smul, LinearMap.smul_apply, smul_eq_mul] at h
+      linarith
+    have h0 := eq_zero_of_quadratic_nonneg (Q.m_nonneg (T d)) key
+    linarith
+
+/-- **The energy size obeys the triangle inequality** (from the Cauchy–Schwarz inequality
+for a positive semidefinite symmetric form). -/
+theorem norm_add_le (x y : X) : Q.norm (x + y) ≤ Q.norm x + Q.norm y := by
+  unfold QuadEnergy.norm
+  have hsymm : LinearMap.IsSymm Q.m := ⟨fun x y =&gt; Q.m_symm x y⟩
+  have hcs := LinearMap.BilinForm.apply_sq_le_of_symm Q.m Q.m_nonneg hsymm x y
+  have hxx := Q.m_nonneg x
+  have hyy := Q.m_nonneg y
+  have hxy : Q.m x y ≤ Real.sqrt (Q.m x x) * Real.sqrt (Q.m y y) := by
+    rw [← Real.sqrt_mul hxx]
+    exact Real.le_sqrt_of_sq_le hcs
+  have hexp : Q.m (x + y) (x + y) = Q.m x x + 2 * Q.m x y + Q.m y y := by
+    simp only [map_add, LinearMap.add_apply]
+    rw [Q.m_symm y x]
+    ring
+  rw [Real.sqrt_le_left (by positivity), hexp, add_sq, Real.sq_sqrt hxx, Real.sq_sqrt hyy]
+  linarith
+
+end QuadEnergy
+
+end Atlas
+</pre>
+</div></main></body></html>

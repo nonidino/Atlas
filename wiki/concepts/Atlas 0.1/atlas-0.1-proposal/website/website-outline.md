@@ -2,7 +2,15 @@
 
 **Type:** Concept page — **content outline and style guide for the proposal website** (folder: `Atlas 0.1/atlas-0.1-proposal/website/`)
 **Status:** written 2026-09-30, after the owner's decisions O1–O9 ([[00-proposal-workstreams]] §5). **An outline, not copy**: the draft lines are there to fix the voice, and the website chat rewrites them. Every statistic is named by its id in [[website-evidence-and-citations]]; **a number marked S or U there is not shown until it is verified**, and a number from a run that does not exist yet is shown only when its record does.
-**Hub:** [[00-proposal-workstreams]] · **Plan:** [[proposal-website-plan]] · **Evidence:** [[website-evidence-and-citations]] · **Scenario images:** [[vision-scenarios-and-image-prompts]]
+**Revised 2026-10-02 with the owner's yes to the website chat's proposal (W354 step 1); the site in `site/` follows this outline with these changes:**
+- **the learned case opens section 5**, not section 3, shown with all four arms and the sentence that the coarse solver won G5. Section 3 then stays all classical, so O3's passage stays true;
+- **section 5 follows the architecture's version 1**: *charts for geometry, superelements for agreement, operators for physics* replaces "waves for agreement" ([[chart-operator-architecture]] §1);
+- **section 3's stat band** shows the demo's Fast examples (A11) in place of A1, and drops A7 and A10, which have no run record; A2 stays;
+- **section 6** shows the three headline theorems (tier 0 first), the counts read from the Lean records, and the T3 finding; "a first" is reworded ([[website-evidence-and-citations]] §3.2);
+- **the install page has three tabs**: Windows and Linux verified, macOS marked not verified;
+- **an evidence page** lists every number with its record or quotation, and **cleaned copies of the cited records** are published with the site; the literature cards carry a claim, a number and a citation, with the quotation on the evidence page;
+- a top bar with section links and a black *Try the demo* pill; the typeface is Inter ([[website-design-notes]] §6).
+**Hub:** [[00-proposal-workstreams]] · **Plan:** [[proposal-website-plan]] · **Evidence:** [[website-evidence-and-citations]] · **Scenario images:** [[vision-scenarios-and-image-prompts]] · **Design notes:** [[website-design-notes]]
 
 ---
 

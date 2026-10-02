@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Atlas: the machine-checked mathematics: T9a: the contraction contract, one level</title>
+<link rel="next" href="sect0027.html" title="T9b: two levels" />
+<link rel="prev" href="sect0025.html" title="T8: wave variables and the Cayley transform" />
+<link rel="up" href="sect0024.html" title="Tier 2: black-box experts and the contraction contract" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Atlas: the machine-checked mathematics</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref"></span> <span class="toc_entry">How to read this</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">1</span> <span class="toc_entry">Contractions: convergence and certificates</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0003.html"><span class="toc_ref">1.1</span> <span class="toc_entry">T1: a perturbed contraction</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0003.html#a0000000035"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0004.html"><span class="toc_ref">1.2</span> <span class="toc_entry">T7: the a-posteriori certificate</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0004.html#a0000000036"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+<li class="">
+  <a href="sect0004.html#a0000000037"><span class="toc_ref"></span> <span class="toc_entry">What the constant must be.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0005.html"><span class="toc_ref">2</span> <span class="toc_entry">The master error bound</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0006.html"><span class="toc_ref">2.1</span> <span class="toc_entry">T4: recursion, split, accumulation, regimes</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0006.html#a0000000038"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0007.html"><span class="toc_ref">2.2</span> <span class="toc_entry">T4e: the transmission term</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0007.html#a0000000039"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0008.html"><span class="toc_ref">3</span> <span class="toc_entry">Decomposition does not change the answer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0009.html"><span class="toc_ref">3.1</span> <span class="toc_entry">T3a: a direct Schur interface solve</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0009.html#a0000000040"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0010.html"><span class="toc_ref">3.2</span> <span class="toc_entry">T3b: Dirichlet–Neumann</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0010.html#a0000000041"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0011.html"><span class="toc_ref">3.3</span> <span class="toc_entry">T3c: restricted additive Schwarz</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0011.html#a0000000042"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0012.html"><span class="toc_ref">3.4</span> <span class="toc_entry">T3d: what stopping on the update leaves</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0012.html#a0000000043"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0013.html"><span class="toc_ref">4</span> <span class="toc_entry">Defect correction: the rate, never the answer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0014.html"><span class="toc_ref">4.1</span> <span class="toc_entry">T5: Theorem 1 and Corollary 1</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0014.html#a0000000044"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0015.html"><span class="toc_ref">4.2</span> <span class="toc_entry">T5: Corollary 2, shrinking toward the null element</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0015.html#a0000000045"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0016.html"><span class="toc_ref">5</span> <span class="toc_entry">Guarantees the composition layer supplies</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0017.html"><span class="toc_ref">5.1</span> <span class="toc_entry">T10: symmetry averaging</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0017.html#a0000000046"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0018.html"><span class="toc_ref">5.2</span> <span class="toc_entry">T11: passive agents joined by the port rule</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0018.html#a0000000047"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0019.html"><span class="toc_ref">6</span> <span class="toc_entry">Tier 0: the learned superelement</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0020.html"><span class="toc_ref">6.1</span> <span class="toc_entry">T25 (i) to (iii): the Gram port matrix</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0020.html#a0000000048"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0021.html"><span class="toc_ref">6.2</span> <span class="toc_entry">T25: energy optimality</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0021.html#a0000000049"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0022.html"><span class="toc_ref">6.3</span> <span class="toc_entry">T24: perturbation of the interface solve</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0022.html#a0000000050"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0023.html"><span class="toc_ref">6.4</span> <span class="toc_entry">T26: the label-free objective</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0023.html#a0000000051"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active">
+  <a href="sect0024.html"><span class="toc_ref">7</span> <span class="toc_entry">Tier 2: black-box experts and the contraction contract</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="sect0025.html"><span class="toc_ref">7.1</span> <span class="toc_entry">T8: wave variables and the Cayley transform</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0025.html#a0000000052"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="sect0026.html"><span class="toc_ref">7.2</span> <span class="toc_entry">T9a: the contraction contract, one level</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-2 active">
+     <li class="">
+  <a href="sect0026.html#a0000000053"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0027.html"><span class="toc_ref">7.3</span> <span class="toc_entry">T9b: two levels</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0027.html#a0000000054"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0028.html"><span class="toc_ref">7.4</span> <span class="toc_entry">A remark beside T1: accuracy is not a substitute</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0028.html#a0000000055"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0029.html"><span class="toc_ref">8</span> <span class="toc_entry">The learned rollout and the headline statements</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="sect0030.html"><span class="toc_ref">8.1</span> <span class="toc_entry">T9’: non-expansive is enough without a rate</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0030.html#a0000000056"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0031.html"><span class="toc_ref">8.2</span> <span class="toc_entry">T22: the master bound with learned experts</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0031.html#a0000000057"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0032.html"><span class="toc_ref">8.3</span> <span class="toc_entry">T2: existence, as a conditional theorem</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-2">
+     <li class="">
+  <a href="sect0032.html#a0000000058"><span class="toc_ref"></span> <span class="toc_entry">In plain words.</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="sect0033.html"><span class="toc_ref">8.4</span> <span class="toc_entry">The headline statements</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000027">7.2 T9a: the contraction contract, one level</h1>
+<h4 id="a0000000053">In plain words.</h4>
+<p> One sweep applies every expert’s scattering map to its incoming wave, hands each outgoing wave to the neighbouring side, and adds the sources. If every expert’s map shrinks distances by a certified factor \(\rho {\lt}1\), and the hand-over does not lengthen anything, the whole sweep shrinks distances by \(\rho \). Then T1 applies: one answer, geometric convergence from any start, and a distance to the classical answer set by how far each learned map is from the classical one <em>at the classical answer</em>. </p>
+<div class="definition_thmwrapper theorem-style-definition" id="def:wave-sweep">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">82</span>
+    <span class="definition_thmtitle">The wave sweep</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0026.html#def:wave-sweep">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.waveSweep" class="lean_decl">Atlas.waveSweep</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Pieces \(i\) in a finite set, with wave spaces \(W_i\) (normed). The global wave vector \(a=(a_i)_i\) is measured in the \(\ell ^2\) product, \(d(a,a')^2=\sum _id(a_i,a'_i)^2\). For maps \(S_i:W_i\to W_i\), an exchange \(\Pi \) on the product and a vector \(g\), </p>
+<div class="displaymath" id="a0000000165">
+  \[  T(a)=\Pi \bigl((S_i(a_i))_i\bigr)+g .  \]
+</div>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:T9a-lip">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">83</span>
+    <span class="theorem_thmtitle">T9a, the sweep contracts</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0026.html#thm:T9a-lip">#</a>
+    
+    <a class="icon proof" href="sect0026.html#a0000000166"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0026.html#def:wave-sweep">Definition 82</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.waveSweep_lipschitz" class="lean_decl">Atlas.waveSweep_lipschitz</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>   If \(d(S_ix,S_iy)\le \rho \, d(x,y)\) for every \(i\), \(x\), \(y\), with \(\rho \ge 0\), and \(d(\Pi x,\Pi y)\le d(x,y)\), then \(d(Ta,Ta')\le \rho \, d(a,a')\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000166">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>\(d(Ta,Ta')^2\le \sum _id(S_ia_i,S_ia'_i)^2\le \rho ^2\sum _id(a_i,a'_i)^2\). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:T9a">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">84</span>
+    <span class="theorem_thmtitle">T9a, the contraction contract</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0026.html#thm:T9a">#</a>
+    
+    <a class="icon proof" href="sect0026.html#a0000000167"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0026.html#thm:T9a-lip">Theorem 83</a></li>
+          
+          <li><a href="sect0003.html#thm:T1">Theorem 1</a></li>
+          
+          <li><a href="sect0026.html#thm:T9a-lip">Theorem 83</a></li>
+          
+          <li><a href="sect0003.html#thm:T1">Theorem 1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.contraction_contract" class="lean_decl">Atlas.contraction_contract</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>   Let the \(W_i\) be complete, \(S_i\) the learned maps and \(S^c_i\) the classical ones, with the same \(\Pi \) and \(g\), and let \(a_c\) be a fixed point of the classical sweep. If the hypotheses of Theorem&#160;<a href="sect0026.html#thm:T9a-lip">83</a> hold with \(\rho {\lt}1\), and \(d\bigl(S_i(a_{c,i}),S^c_i(a_{c,i})\bigr)\le \delta _i\) for every \(i\), then the learned sweep has a unique fixed point \(a_l\), \(d(T^ka_0,a_l)\le \rho ^kd(a_0,a_l)\) for every \(a_0\) and \(k\), and </p>
+<div class="displaymath" id="a0000000168">
+  \[  d(a_l,a_c)\le \frac{\bigl(\sum _i\delta _i^2\bigr)^{1/2}}{1-\rho }.  \]
+</div>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000167">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Theorem&#160;<a href="sect0003.html#thm:T1">1</a> with the contraction of Theorem&#160;<a href="sect0026.html#thm:T9a-lip">83</a>; the defect at \(a_c\) is at most \(\bigl(\sum _i\delta _i^2\bigr)^{1/2}\) because \(\Pi \) does not lengthen distances. </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0025.html" title="T8: wave variables and the Cayley transform"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="sect0024.html" title="Tier 2: black-box experts and the contraction contract"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0027.html" title="T9b: two levels"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

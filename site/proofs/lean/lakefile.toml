@@ -1,0 +1,20 @@
+# The machine-checked mathematics behind the Atlas proposal.
+#
+# Mathlib is pinned to a tagged release so that `lake exe cache get` always finds
+# prebuilt files: Mathlib is never compiled from source here.  The toolchain in
+# `lean-toolchain` is the one that release was built with.
+name = "AtlasProofs"
+version = "0.1.0"
+defaultTargets = ["AtlasProofs"]
+
+[leanOptions]
+autoImplicit = false
+relaxedAutoImplicit = false
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.34.1"
+
+[[lean_lib]]
+name = "AtlasProofs"

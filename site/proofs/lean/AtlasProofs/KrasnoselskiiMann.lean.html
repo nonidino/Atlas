@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AtlasProofs/KrasnoselskiiMann.lean — Atlas proofs</title><link rel="stylesheet" href="../../../assets/css/site.css">
+<style>pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}</style>
+</head><body><main class="section tight"><div class="wrap">
+<p class="small"><a href="../../../index.html">Atlas</a> · <a href="../../../proofs/blueprint/index.html">the blueprint</a> · <a href="../index.html">all files</a></p>
+<h1 class="h3">AtlasProofs/KrasnoselskiiMann.lean</h1>
+<p class="small"><a href="KrasnoselskiiMann.lean">Plain text</a></p><pre>import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Mathlib.Topology.MetricSpace.Sequences
+import Mathlib.Topology.Order.MonotoneConvergence
+
+/-!
+# T9′ — Non-expansive is enough without a rate (Krasnoselskii–Mann)
+
+T1 and T9 need a contraction factor `ρ &lt; 1`. A passive coupling gives less: a sweep `T` that
+does not lengthen any distance (`ρ = 1`; T8 with `c = 0`, T11). Plain iteration of such a map
+need not converge: a rotation never settles. **Averaging** each sweep with the current
+iterate does:
+
+    x  ↦  (1 - ω) x + ω T x,        0 &lt; ω &lt; 1.
+
+**Plain statement.** In a finite-dimensional space with a Euclidean norm, if `T` lengthens no
+distance and has at least one fixed point, the averaged iteration converges, from every
+start, to a fixed point of `T`. No rate is claimed.
+
+Along the way:
+
+* (the identity) `|(1 - ω) a + ω b|² = (1 - ω) |a|² + ω |b|² - ω (1 - ω) |a - b|²`;
+* (one step) an averaged step brings the iterate no further from *any* fixed point `p`, and
+  the squared distance drops by at least `ω (1 - ω) |x - T x|²`;
+* (the residual) so the residuals `|x_n - T x_n|` tend to zero.
+
+The first three hold in any real inner-product space. Convergence is proved in finite
+dimensions, where a bounded sequence has a convergent subsequence. The statement is the
+theorem of Krasnoselskii (1955) and Mann (1953); it is not in Mathlib, so it is proved here
+from scratch.
+-/
+
+namespace Atlas
+
+open Filter
+
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+
+/-- **The averaged sweep** `x ↦ (1 - ω) x + ω T x`. -/
+def averaged (T : E → E) (ω : ℝ) (x : E) : E := (1 - ω) • x + ω • T x
+
+/-- For `ω ≠ 0` the averaged sweep has the same fixed points as `T`. -/
+theorem averaged_fixedPt_iff (T : E → E) {ω : ℝ} (hω : ω ≠ 0) (x : E) :
+    averaged T ω x = x ↔ T x = x := by
+  unfold averaged
+  constructor
+  · intro h
+    have h1 : ω • (T x - x) = 0 := by
+      have h2 : (1 - ω) • x + ω • T x - x = 0 := sub_eq_zero.mpr h
+      rw [← h2, smul_sub, sub_smul, one_smul]
+      abel
+    rcases smul_eq_zero.mp h1 with h2 | h2
+    · exact absurd h2 hω
+    · exact sub_eq_zero.mp h2
+  · intro h
+    rw [h, ← add_smul, sub_add_cancel, one_smul]
+
+/-- **T9′ (the identity).**
+`|(1 - ω) a + ω b|² = (1 - ω) |a|² + ω |b|² - ω (1 - ω) |a - b|²`. -/
+theorem norm_sq_convex_combination (a b : E) (ω : ℝ) :
+    ‖(1 - ω) • a + ω • b‖ ^ 2
+      = (1 - ω) * ‖a‖ ^ 2 + ω * ‖b‖ ^ 2 - ω * (1 - ω) * ‖a - b‖ ^ 2 := by
+  rw [norm_add_sq_real, norm_sub_sq_real, norm_smul, norm_smul, real_inner_smul_left,
+    real_inner_smul_right]
+  simp only [Real.norm_eq_abs, mul_pow, sq_abs]
+  ring
+
+/-- **T9′ (one averaged step).** If `T` is non-expansive and `p` is a fixed point of `T`,
+then for `ω ≥ 0` one averaged step satisfies
+`|x&#x27; - p|² ≤ |x - p|² - ω (1 - ω) |x - T x|²`. For `0 &lt; ω &lt; 1` the last term is a gain. -/
+theorem averaged_step {T : E → E} (hT : ∀ x y, ‖T x - T y‖ ≤ ‖x - y‖) {p : E} (hp : T p = p)
+    {ω : ℝ} (hω₀ : 0 ≤ ω) (x : E) :
+    ‖averaged T ω x - p‖ ^ 2 ≤ ‖x - p‖ ^ 2 - ω * (1 - ω) * ‖x - T x‖ ^ 2 := by
+  have h1 : averaged T ω x - p = (1 - ω) • (x - p) + ω • (T x - p) := by
+    unfold averaged
+    simp only [smul_sub, sub_smul, one_smul]
+    abel
+  have h2 : (x - p) - (T x - p) = x - T x := by abel
+  have h3 : ‖T x - p‖ ≤ ‖x - p‖ := by
+    have h := hT x p
+    rwa [hp] at h
+  have h0 : 0 ≤ ‖T x - p‖ := norm_nonneg _
+  have hlow : -‖x - p‖ ≤ ‖T x - p‖ := by linarith [norm_nonneg (x - p)]
+  have h4 : ‖T x - p‖ ^ 2 ≤ ‖x - p‖ ^ 2 := sq_le_sq&#x27; hlow h3
+  have h5 := mul_le_mul_of_nonneg_left h4 hω₀
+  rw [h1, norm_sq_convex_combination, h2]
+  linarith
+
+/-- A decreasing sequence of non-negative reals has successive differences tending to
+zero. -/
+theorem tendsto_sub_succ_of_antitone {a : ℕ → ℝ} (hanti : Antitone a) (h0 : ∀ n, 0 ≤ a n) :
+    Tendsto (fun n =&gt; a n - a (n + 1)) atTop (nhds 0) := by
+  have hbdd : BddBelow (Set.range a) := ⟨0, by rintro _ ⟨n, rfl⟩; exact h0 n⟩
+  have hlim := tendsto_atTop_ciInf hanti hbdd
+  have hlim&#x27; := hlim.comp (tendsto_add_atTop_nat 1)
+  have h : Tendsto (fun n =&gt; a n - a (n + 1)) atTop (nhds ((⨅ i, a i) - ⨅ i, a i)) :=
+    hlim.sub hlim&#x27;
+  rwa [sub_self] at h
+
+/-- **T9′ (the residuals tend to zero).** For `0 &lt; ω &lt; 1`, a non-expansive `T` with a fixed
+point: along the averaged iteration, `|x_n - T x_n| → 0`. -/
+theorem averaged_residual_tendsto_zero {T : E → E} (hT : ∀ x y, ‖T x - T y‖ ≤ ‖x - y‖)
+    {p : E} (hp : T p = p) {ω : ℝ} (hω₀ : 0 &lt; ω) (hω₁ : ω &lt; 1) (x₀ : E) :
+    Tendsto (fun n =&gt; ‖(averaged T ω)^[n] x₀ - T ((averaged T ω)^[n] x₀)‖) atTop (nhds 0) := by
+  have hxs : ∀ n, (averaged T ω)^[n + 1] x₀ = averaged T ω ((averaged T ω)^[n] x₀) :=
+    fun n =&gt; Function.iterate_succ_apply&#x27; _ _ _
+  have hc : 0 &lt; ω * (1 - ω) := mul_pos hω₀ (by linarith)
+  have hstep : ∀ n, ‖(averaged T ω)^[n + 1] x₀ - p‖ ^ 2
+      ≤ ‖(averaged T ω)^[n] x₀ - p‖ ^ 2
+        - ω * (1 - ω) * ‖(averaged T ω)^[n] x₀ - T ((averaged T ω)^[n] x₀)‖ ^ 2 := by
+    intro n
+    rw [hxs]
+    exact averaged_step hT hp hω₀.le _
+  have hanti : Antitone (fun n =&gt; ‖(averaged T ω)^[n] x₀ - p‖ ^ 2) := by
+    refine antitone_nat_of_succ_le fun n =&gt; ?_
+    have h1 := hstep n
+    have h2 : 0 ≤ ω * (1 - ω) * ‖(averaged T ω)^[n] x₀ - T ((averaged T ω)^[n] x₀)‖ ^ 2 :=
+      mul_nonneg hc.le (sq_nonneg _)
+    linarith
+  have hdiff : Tendsto (fun n =&gt; ‖(averaged T ω)^[n] x₀ - p‖ ^ 2
+      - ‖(averaged T ω)^[n + 1] x₀ - p‖ ^ 2) atTop (nhds 0) :=
+    tendsto_sub_succ_of_antitone hanti fun n =&gt; sq_nonneg _
+  have hdiv : Tendsto (fun n =&gt; (‖(averaged T ω)^[n] x₀ - p‖ ^ 2
+      - ‖(averaged T ω)^[n + 1] x₀ - p‖ ^ 2) / (ω * (1 - ω))) atTop (nhds 0) := by
+    have h := hdiff.div_const (ω * (1 - ω))
+    rwa [zero_div] at h
+  have hsq : Tendsto (fun n =&gt; ‖(averaged T ω)^[n] x₀ - T ((averaged T ω)^[n] x₀)‖ ^ 2)
+      atTop (nhds 0) := by
+    refine squeeze_zero (fun n =&gt; sq_nonneg _) (fun n =&gt; ?_) hdiv
+    rw [le_div_iff₀ hc]
+    have h1 := hstep n
+    linarith
+  have hsqrt := (Real.continuous_sqrt.tendsto 0).comp hsq
+  rw [Real.sqrt_zero] at hsqrt
+  refine hsqrt.congr fun n =&gt; ?_
+  exact Real.sqrt_sq (norm_nonneg _)
+
+/-- **T9′ (Krasnoselskii–Mann, finite dimensions).** If `T` is non-expansive and has a
+fixed point, then for every `0 &lt; ω &lt; 1` and every start `x₀` the averaged iteration
+converges to a fixed point of `T`. -/
+theorem krasnoselskii_mann [FiniteDimensional ℝ E] {T : E → E}
+    (hT : ∀ x y, ‖T x - T y‖ ≤ ‖x - y‖) {p : E} (hp : T p = p) {ω : ℝ}
+    (hω₀ : 0 &lt; ω) (hω₁ : ω &lt; 1) (x₀ : E) :
+    ∃ q : E, T q = q ∧ Tendsto (fun n =&gt; (averaged T ω)^[n] x₀) atTop (nhds q) := by
+  have hxs : ∀ n, (averaged T ω)^[n + 1] x₀ = averaged T ω ((averaged T ω)^[n] x₀) :=
+    fun n =&gt; Function.iterate_succ_apply&#x27; _ _ _
+  -- every step brings the iterate no further from any fixed point
+  have hdist : ∀ q, T q = q → ∀ n,
+      ‖(averaged T ω)^[n + 1] x₀ - q‖ ≤ ‖(averaged T ω)^[n] x₀ - q‖ := by
+    intro q hq n
+    have h := averaged_step hT hq hω₀.le ((averaged T ω)^[n] x₀)
+    rw [← hxs] at h
+    have h2 : 0 ≤ ω * (1 - ω) * ‖(averaged T ω)^[n] x₀ - T ((averaged T ω)^[n] x₀)‖ ^ 2 :=
+      mul_nonneg (mul_nonneg hω₀.le (by linarith)) (sq_nonneg _)
+    have h3 : ‖(averaged T ω)^[n + 1] x₀ - q‖ ^ 2 ≤ ‖(averaged T ω)^[n] x₀ - q‖ ^ 2 := by
+      linarith
+    exact (abs_le_of_sq_le_sq&#x27; h3 (norm_nonneg _)).2
+  -- so the iterates stay in a closed ball, which is compact
+  have hball : ∀ n, (averaged T ω)^[n] x₀ ∈ Metric.closedBall p ‖x₀ - p‖ := by
+    intro n
+    induction n with
+    | zero =&gt; simp [Metric.mem_closedBall, dist_eq_norm]
+    | succ n ih =&gt;
+      rw [Metric.mem_closedBall, dist_eq_norm] at ih ⊢
+      exact (hdist p hp n).trans ih
+  obtain ⟨q, -, φ, hφ, hq⟩ := (isCompact_closedBall p ‖x₀ - p‖).tendsto_subseq hball
+  -- the limit of the subsequence is a fixed point, because the residuals tend to zero
+  have hTcont : Continuous T := by
+    have hL : LipschitzWith 1 T := LipschitzWith.of_dist_le_mul fun a b =&gt; by
+      simpa [dist_eq_norm] using hT a b
+    exact hL.continuous
+  have hres := averaged_residual_tendsto_zero hT hp hω₀ hω₁ x₀
+  have hTq : T q = q := by
+    have h1 : Tendsto (fun n =&gt; ‖(averaged T ω)^[φ n] x₀ - T ((averaged T ω)^[φ n] x₀)‖)
+        atTop (nhds ‖q - T q‖) :=
+      (hq.sub ((hTcont.tendsto q).comp hq)).norm
+    have h2 : Tendsto (fun n =&gt; ‖(averaged T ω)^[φ n] x₀ - T ((averaged T ω)^[φ n] x₀)‖)
+        atTop (nhds 0) :=
+      hres.comp hφ.tendsto_atTop
+    have h3 := tendsto_nhds_unique h1 h2
+    exact (sub_eq_zero.mp (norm_eq_zero.mp h3)).symm
+  refine ⟨q, hTq, ?_⟩
+  -- the distance to that fixed point decreases, and tends to zero along the subsequence
+  have hanti : Antitone (fun n =&gt; ‖(averaged T ω)^[n] x₀ - q‖) :=
+    antitone_nat_of_succ_le (hdist q hTq)
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  obtain ⟨N, hN⟩ := (Metric.tendsto_atTop.mp hq) ε hε
+  refine ⟨φ N, fun n hn =&gt; ?_⟩
+  have h1 := hN N le_rfl
+  rw [Function.comp_apply, dist_eq_norm] at h1
+  rw [dist_eq_norm]
+  exact lt_of_le_of_lt (hanti hn) h1
+
+end Atlas
+</pre>
+</div></main></body></html>

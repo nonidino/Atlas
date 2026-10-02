@@ -1,0 +1,142 @@
+import Mathlib.Algebra.Field.Defs
+import Mathlib.Algebra.Module.LinearMap.Defs
+import Mathlib.Algebra.Module.LinearMap.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Data.Fintype.Basic
+import Mathlib.Tactic.Abel
+
+/-!
+# T3c — Restricted additive Schwarz: which fixed points are the undivided solution
+
+The undivided problem is `A u = b`. It is covered by overlapping **windows**. One sweep of
+restricted additive Schwarz, as the workbench's `styles.schwarz` runs it:
+
+1. every window is solved exactly, with the current iterate held on the cells outside it;
+2. the windows' solutions are blended by a partition of unity (weights that sum to one).
+
+**Plain statement.**
+
+* The undivided solution is always a fixed point of the sweep.
+* The sweep is `u ↦ u + M (b - A u)`, where `M` is the blended sum of the window solves. So `u`
+  is a fixed point exactly when `M` sends the residual `b - A u` to zero.
+* If, at `u`, every window's own solution **agrees** with `u` on the whole window, then `u`
+  solves `A u = b`. No further hypothesis.
+* If only the **blend** is stationary, `u` solves `A u = b` provided `M` sends no non-zero
+  residual to zero. That holds whenever the sweep with zero right-hand side has no fixed point
+  but zero, and in particular whenever the sweep converges from every start
+  (`SchwarzConvergence.lean`).
+* Without that hypothesis the claim is **false**: `SchwarzCounterexample.lean` gives a
+  three-unknown problem whose sweep has a fixed point that is not the solution.
+
+Pure linear algebra over any field.
+-/
+
+namespace Atlas
+
+open Finset
+
+/-- The data of a restricted additive Schwarz sweep for `A u = b` on the space `V`, with
+windows indexed by `ι` and window `i`'s unknowns living in `W i`.
+
+* `R i` reads window `i`'s unknowns off a global vector;
+* `E i` pads a window vector with zeros;
+* `Eχ i` multiplies a window vector by the window's weights, then pads;
+* `solve i` is the window's exact solve: the inverse of the window's own operator
+  `R i ∘ A ∘ E i`;
+* `pou`: the weights are a partition of unity. -/
+structure Schwarz (𝕜 : Type*) (V : Type*) {ι : Type*} (W : ι → Type*) [Field 𝕜]
+    [AddCommGroup V] [Module 𝕜 V] [Fintype ι]
+    [∀ i, AddCommGroup (W i)] [∀ i, Module 𝕜 (W i)] where
+  A : V →ₗ[𝕜] V
+  R : ∀ i, V →ₗ[𝕜] W i
+  E : ∀ i, W i →ₗ[𝕜] V
+  Eχ : ∀ i, W i →ₗ[𝕜] V
+  solve : ∀ i, W i →ₗ[𝕜] W i
+  solve_local : ∀ i w, solve i (R i (A (E i w))) = w
+  local_solve : ∀ i w, R i (A (E i (solve i w))) = w
+  pou : ∀ v, ∑ i, Eχ i (R i v) = v
+
+namespace Schwarz
+
+variable {𝕜 : Type*} {V : Type*} {ι : Type*} {W : ι → Type*} [Field 𝕜]
+  [AddCommGroup V] [Module 𝕜 V] [Fintype ι]
+  [∀ i, AddCommGroup (W i)] [∀ i, Module 𝕜 (W i)] (S : Schwarz 𝕜 V W)
+
+/-- Window `i`'s solution, with the iterate `u` held on the cells outside the window:
+`A_i⁻¹ (b_i - C_i u)`, where `C_i u = R_i A (u - E_i R_i u)` is the coupling to the outside. -/
+def window (b u : V) (i : ι) : W i :=
+  S.solve i (S.R i b - S.R i (S.A (u - S.E i (S.R i u))))
+
+/-- One sweep: every window solved from the same iterate, then blended. -/
+def sweep (b u : V) : V :=
+  ∑ i, S.Eχ i (S.window b u i)
+
+/-- The blended sum of the window solves: the restricted additive Schwarz preconditioner. -/
+def precond (r : V) : V :=
+  ∑ i, S.Eχ i (S.solve i (S.R i r))
+
+/-- Window `i`'s solution is the window's solve of the residual plus the window's own
+values: `w_i(b, u) = B_i R_i (b - A u) + R_i u`, because `B_i (R_i A E_i) = I`. -/
+private theorem window_eq (b u : V) (i : ι) :
+    S.window b u i = S.solve i (S.R i (b - S.A u)) + S.R i u := by
+  have h : S.R i b - S.R i (S.A (u - S.E i (S.R i u)))
+      = S.R i (b - S.A u) + S.R i (S.A (S.E i (S.R i u))) := by
+    simp only [map_sub]
+    abel
+  rw [window, h, map_add, S.solve_local]
+
+/-- **T3c (the sweep in residual form).** `sweep b u = u + M (b - A u)`. -/
+theorem sweep_eq (b u : V) : S.sweep b u = u + S.precond (b - S.A u) := by
+  -- Blend the windows' solutions; the partition of unity returns `u`.
+  simp only [sweep, precond, window_eq, map_add, Finset.sum_add_distrib, S.pou]
+  exact add_comm _ _
+
+/-- **T3c (consistency).** The undivided solution is a fixed point of the sweep. -/
+theorem solution_isFixedPt {b u : V} (h : S.A u = b) : S.sweep b u = u := by
+  rw [sweep_eq, h, sub_self]
+  simp [precond]
+
+/-- **T3c (what a fixed point is).** `u` is a fixed point exactly when the preconditioner
+sends its residual to zero. -/
+theorem isFixedPt_iff (b u : V) : S.sweep b u = u ↔ S.precond (b - S.A u) = 0 := by
+  rw [sweep_eq, add_eq_left]
+
+/-- **T3c (agreement).** If every window's solution agrees with `u` on the whole window, then
+`u` is the undivided solution. -/
+theorem solves_of_windows_agree {b u : V} (h : ∀ i, S.window b u i = S.R i u) :
+    S.A u = b := by
+  -- Every window's solve sends the residual to zero, so every window sees a zero residual.
+  have hR : ∀ i, S.R i (b - S.A u) = 0 := fun i => by
+    have h0 : S.solve i (S.R i (b - S.A u)) = 0 := by
+      have hi := h i
+      rwa [window_eq, add_eq_right] at hi
+    have hloc := S.local_solve i (S.R i (b - S.A u))
+    rw [h0, map_zero, map_zero, map_zero] at hloc
+    exact hloc.symm
+  -- The partition of unity puts the residual back together: it is zero.
+  have hres : b - S.A u = 0 := by
+    rw [← S.pou (b - S.A u)]
+    simp [hR]
+  exact (sub_eq_zero.mp hres).symm
+
+/-- **T3c (stationary blend, with the hypothesis it needs).** If the preconditioner sends no
+non-zero residual to zero, every fixed point of the sweep is the undivided solution. -/
+theorem fixedPt_solves_of_precond {b u : V} (hM : ∀ r, S.precond r = 0 → r = 0)
+    (hfix : S.sweep b u = u) : S.A u = b :=
+  (sub_eq_zero.mp (hM _ ((S.isFixedPt_iff b u).mp hfix))).symm
+
+/-- **T3c (the same hypothesis, read off the sweep).** Suppose `A` is onto, and the sweep
+with zero right-hand side has no fixed point but zero. Then for every right-hand side, every
+fixed point of the sweep is the undivided solution. -/
+theorem fixedPt_solves {b u : V} (hA : Function.Surjective S.A)
+    (h0 : ∀ e, S.sweep 0 e = e → e = 0) (hfix : S.sweep b u = u) : S.A u = b := by
+  refine S.fixedPt_solves_of_precond (fun r hr => ?_) hfix
+  -- Write `r = A e`. Then `-e` is a fixed point of the zero-right-hand-side sweep.
+  obtain ⟨e, rfl⟩ := hA r
+  have hfix0 : S.sweep 0 (-e) = -e := by
+    rw [sweep_eq, zero_sub, map_neg, neg_neg, hr, add_zero]
+  rw [neg_eq_zero.mp (h0 _ hfix0), map_zero]
+
+end Schwarz
+
+end Atlas

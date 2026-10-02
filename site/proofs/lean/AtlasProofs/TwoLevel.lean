@@ -1,0 +1,133 @@
+import AtlasProofs.PerturbedContraction
+import Mathlib.Analysis.Normed.Module.Basic
+import Mathlib.Analysis.Normed.Group.Constructions
+
+/-!
+# T9b — The contraction contract with a coarse space, and why the fine space is not enough
+
+With a coarse space, one round of the coupled iteration is a sweep `T` followed by a
+**coarse solve** `C`: a correction inside the coarse space `V₀` that makes the coarse part of
+the residual vanish. The two-level iteration is `a ↦ C (T a)`.
+
+**The finding.** The first version of the design asked only that each learned map contract
+on the *fine* space (the complement of `V₀`), on the grounds that the coarse space is solved
+exactly. That is not enough. `two_level_fine_contraction_diverges` below is a sweep on the
+plane that contracts the fine space by `1/2`, has exactly one answer, is followed by an exact
+coarse solve, and whose two-level iterates grow like `5 ^ k`. The fine-space bound says
+nothing about how the coarse component feeds the fine one: the entry `10` of
+
+    G = ⎡ 0   1/2 ⎤
+        ⎣ 10   0  ⎦ .
+
+**Plain statement of T9b.**
+
+* (consistency) If the coarse solve only corrects inside `V₀` and leaves no coarse residual,
+  every fixed point of the two-level iteration is a fixed point of the sweep: the coarse solve
+  changes how the answer is reached, not what it is.
+* (the contract) If the **composite** two-level map of the learned experts shrinks distances
+  by a certified `ρ < 1`, and differs from the classical two-level map by at most `δ` at the
+  classical answer, then the learned two-level iteration has one answer, reaches it
+  geometrically at rate `ρ`, that answer is within `δ / (1 - ρ)` of the classical one, and it
+  is a fixed point of the learned sweep.
+
+So what a tier-2 expert card must certify is a contraction factor of the composite two-level
+sweep, not of each expert on the fine space.
+-/
+
+namespace Atlas
+
+section Consistency
+
+variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+
+/-- **T9b (consistency).** `T` is the sweep, `C` the coarse solve, `P₀` a linear map that
+fixes the coarse space. If the coarse correction lies in the coarse space
+(`P₀ (C b - b) = C b - b`) and leaves no coarse residual (`P₀ (C b - T (C b)) = 0`), then a
+fixed point of the two-level iteration `C ∘ T` is a fixed point of `T`. -/
+theorem twoLevel_fixedPt_isFixedPt (T C : V → V) (P₀ : V →ₗ[ℝ] V)
+    (hC₁ : ∀ b, P₀ (C b - b) = C b - b) (hC₂ : ∀ b, P₀ (C b - T (C b)) = 0)
+    {a : V} (ha : C (T a) = a) : T a = a := by
+  have h1 := hC₁ (T a)
+  have h2 := hC₂ (T a)
+  rw [ha] at h1 h2
+  rw [h2] at h1
+  exact (sub_eq_zero.mp h1.symm).symm
+
+/-- **T9b (consistency, converse).** If the coarse solve leaves alone every state that has
+no coarse residual, a fixed point of the sweep is a fixed point of the two-level
+iteration. -/
+theorem fixedPt_isFixedPt_twoLevel (T C : V → V) (P₀ : V →ₗ[ℝ] V)
+    (hC₃ : ∀ b, P₀ (b - T b) = 0 → C b = b) {a : V} (ha : T a = a) : C (T a) = a := by
+  rw [ha]
+  exact hC₃ a (by rw [ha, sub_self, map_zero])
+
+end Consistency
+
+/-- **T9b (the two-level contraction contract).** `Tl, Cl` are the learned sweep and its
+coarse solve, `Tc, Cc` the classical ones, and `ac` the classical two-level answer. If the
+composite `Cl ∘ Tl` is a `ρ`-contraction, `ρ < 1`, and differs from `Cc ∘ Tc` by at most `δ`
+at `ac`, then there is a unique `al` with `Cl (Tl al) = al`; it is a fixed point of the
+learned sweep `Tl`; every two-level orbit converges to it at rate `ρ`; and
+`dist al ac ≤ δ / (1 - ρ)`. -/
+theorem two_level_contract {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    [CompleteSpace V] {Tl Cl Tc Cc : V → V} {P₀ : V →ₗ[ℝ] V} {ρ δ : ℝ} {ac : V}
+    (hρ₀ : 0 ≤ ρ) (hρ₁ : ρ < 1)
+    (hcomp : ∀ x y, dist (Cl (Tl x)) (Cl (Tl y)) ≤ ρ * dist x y)
+    (hC₁ : ∀ b, P₀ (Cl b - b) = Cl b - b) (hC₂ : ∀ b, P₀ (Cl b - Tl (Cl b)) = 0)
+    (hac : Cc (Tc ac) = ac)
+    (hδ : dist (Cl (Tl ac)) (Cc (Tc ac)) ≤ δ) :
+    ∃ al : V, Cl (Tl al) = al ∧ Tl al = al ∧ (∀ b, Cl (Tl b) = b → b = al) ∧
+      (∀ (a₀ : V) (k : ℕ), dist ((fun a => Cl (Tl a))^[k] a₀) al ≤ ρ ^ k * dist a₀ al) ∧
+      dist al ac ≤ δ / (1 - ρ) := by
+  obtain ⟨al, hfix, huniq, hrate, hdist⟩ :=
+    perturbed_contraction (Tc := fun a => Cc (Tc a)) (Tl := fun a => Cl (Tl a))
+      hρ₀ hρ₁ hcomp hac hδ
+  exact ⟨al, hfix, twoLevel_fixedPt_isFixedPt Tl Cl P₀ hC₁ hC₂ hfix, huniq, hrate, hdist⟩
+
+/-- **The finding: contracting the fine space is not enough.** On the plane, with coarse
+space the first axis and fine space the second, take the sweep `G (x, y) = (y / 2, 10 x)`
+(written for the error, so the answer is `0`) and the coarse solve `C (x, y) = (y / 2, y)`.
+Then:
+
+* `G` contracts the fine space by `1/2`;
+* `C` changes only the coarse component and leaves no coarse residual: it is an exact coarse
+  solve;
+* `0` is the only fixed point of `G`: the problem has exactly one answer;
+* the two-level iterates from `(1, 2)` are `(5 ^ k, 2 * 5 ^ k)`: they diverge. -/
+theorem two_level_fine_contraction_diverges :
+    let G : ℝ × ℝ → ℝ × ℝ := fun e => (e.2 / 2, 10 * e.1)
+    let C : ℝ × ℝ → ℝ × ℝ := fun e => (e.2 / 2, e.2)
+    (∀ y y' : ℝ, ‖G (0, y) - G (0, y')‖ ≤ 1 / 2 * ‖((0 : ℝ), y) - ((0 : ℝ), y')‖) ∧
+      (∀ e, (C e).2 = e.2 ∧ (C e - G (C e)).1 = 0) ∧
+      (∀ e, G e = e → e = 0) ∧
+      ∀ k : ℕ, (fun e => C (G e))^[k] (1, 2) = ((5 : ℝ) ^ k, 2 * (5 : ℝ) ^ k) := by
+  intro G C
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro y y'
+    have h1 : G (0, y) - G (0, y') = ((y - y') / 2, 0) := by
+      simp only [G, Prod.mk_sub_mk, mul_zero, sub_self, Prod.mk.injEq, and_true]
+      ring
+    have h2 : ((0 : ℝ), y) - ((0 : ℝ), y') = (0, y - y') := by
+      simp only [Prod.mk_sub_mk, sub_self]
+    rw [h1, h2, Prod.norm_def, Prod.norm_def]
+    simp only [norm_zero, Real.norm_eq_abs]
+    rw [max_eq_left (abs_nonneg _), max_eq_right (abs_nonneg _), abs_div, abs_two]
+    linarith
+  · intro e
+    refine ⟨rfl, ?_⟩
+    simp only [G, C, Prod.fst_sub, sub_self]
+  · intro e he
+    have h1 : e.2 / 2 = e.1 := congrArg Prod.fst he
+    have h2 : 10 * e.1 = e.2 := congrArg Prod.snd he
+    have hx : e.1 = 0 := by linarith
+    have hy : e.2 = 0 := by linarith
+    exact Prod.ext hx hy
+  · intro k
+    induction k with
+    | zero => simp
+    | succ n ih =>
+      rw [Function.iterate_succ_apply', ih]
+      simp only [G, C, Prod.mk.injEq]
+      constructor <;> ring
+
+end Atlas

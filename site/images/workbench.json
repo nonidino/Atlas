@@ -1,0 +1,11 @@
+{
+ "kind": "screenshot",
+ "files": {"desktop": "workbench.webp"},
+ "width": 1600,
+ "height": 1000,
+ "alt": "The Atlas workbench after a run of the heat-conduction Fast example: the speed, agreement, balance and checks cards above the decomposed and full-domain temperature fields and their difference.",
+ "made_by": "scripts/site_images.js from a Playwright screenshot of the workbench served by python -m atlas.workbench (this repository's atlas/workbench at the site build), 1440x900 at 2x",
+ "machine": "the website chat's cloud container, 4 logical cores; the speed in the picture is that machine's, not the laptop's",
+ "date": "2026-10-02",
+ "generator": null
+}

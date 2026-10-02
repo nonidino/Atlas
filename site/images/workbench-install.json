@@ -1,0 +1,10 @@
+{
+ "kind": "screenshot",
+ "files": {"desktop": "workbench.webp"},
+ "width": 1600,
+ "height": 1000,
+ "alt": "The Atlas workbench after a run of the heat-conduction Fast example: the speed, agreement, balance and checks cards above the decomposed and full-domain temperature fields and their difference.",
+ "made_by": "the same file as workbench.json",
+ "date": "2026-10-02",
+ "generator": null
+}

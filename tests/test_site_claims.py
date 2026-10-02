@@ -14,8 +14,10 @@ What it checks:
 5. **Every number on the site's own pages** (``index.html``, ``install.html``,
    ``evidence.html``, their SVG included) sits in an element that names its source:
    ``data-claim`` (a claim, whose text must equal the claim's display), ``data-lit``
-   (a literature value), ``data-lit-ref`` (a citation, generated from the file), or
-   ``data-axis`` (a chart's tick mark, which states no result). The only other digits
+   (a literature value), ``data-lit-ref`` (a citation, generated from the file),
+   ``data-field`` (provenance text such as a machine or a quotation, equal to that
+   field in one of the two files), or ``data-axis`` (a chart's tick mark, which
+   states no result). The only other digits
    allowed are identifiers (G5, T3, S1, H1, C1...), "2-D" and "3-D", and the stage
    names, listed in `LABELS` below.
 
@@ -40,13 +42,16 @@ PAGES = ("index.html", "install.html", "evidence.html")
 #: digits that are names, not results. Each pattern is matched against the token that
 #: contains the digit; anything else with a digit must carry its source.
 LABELS = [
-    r"[A-Z]{1,2}\d{1,2}[a-z]?",      # G5, T3, S12, C1, A11, N7, L2, H1, W354, O3
+    r"[A-Z]{1,2}\d{1,3}[a-z]?(?:-[a-z][\w-]*)?",   # G5, T3, S12, C1, N7, H1, W354, T22-step
     r"S1–S12",
+    r"[A-Za-z][A-Za-z_]*\d*(?:[-_.][A-Za-z\d_]+)+",  # Lean and blueprint names: tier0_headline, T22-tier0
     r"[23]-D",                       # 2-D, 3-D
     r"Stage", r"[0-3]",              # only as a stage name: checked in context below
     r"©?",
 ]
-FORBIDDEN = re.compile(r"neuber|poseidon|nauni|\bchamp\b|[a-z]:\\+users|/home/|onedrive", re.I)
+FORBIDDEN = re.compile(r"neuber|poseidon|\bnauni\b|\bchamp\b|[a-z]:\\+users|/home/(?!web_user)|onedrive", re.I)
+FORBIDDEN_TEXT = re.compile(r"neuber|poseidon[\w-]*\.(?:pt|bin|safetensors|ckpt)|poseidon[\w-]*/|\bnauni\b|\bchamp\b"
+                            r"|[a-z]:\\+users|/home/(?!web_user)|onedrive", re.I)
 
 
 def claims_file() -> dict:
@@ -124,7 +129,9 @@ def test_nothing_private_or_forbidden_reaches_the_site():
                 bad.append(rel + " (path)")
             if f.endswith((".html", ".json", ".js", ".css", ".txt", ".md", ".lean", ".svg", ".xml")):
                 with open(p, encoding="utf-8", errors="replace") as fh:
-                    m = FORBIDDEN.search(fh.read())
+                    # the architecture document discusses Poseidon's licence by name (row
+                    # S12); its weights, or any path to them, may not appear anywhere
+                    m = FORBIDDEN_TEXT.search(fh.read())
                 if m:
                     bad.append(f"{rel}: {m.group(0)!r}")
     assert not bad, bad
@@ -140,6 +147,15 @@ def test_literature_values_are_in_their_quotes():
         assert e["read_on"] and e["quote"] and e["citation"] and (e["url"] or e["doi"])
         for v in e["values"]:
             assert v["fragment"] in e["quote"], (e["id"], v["key"])
+        # the card's sentence repeats only numbers that are the entry's verified values
+        allowed = " ".join(v["display"] for v in e["values"])
+        for tok in re.findall(r"\d[\d,.]*", e["claim"]):
+            if not re.fullmatch(r"[23]", tok) or not re.search(tok + r"-D", e["claim"]):
+                assert tok in allowed, (e["id"], tok)
+        # a display version of the quote may drop markup, never words
+        if "quote_display" in e:
+            strip = lambda s: re.sub(r"[^a-z0-9]", "", re.sub(r"\\[a-z]+|[${}]", "", s.lower()).replace("×", ""))
+            assert strip(e["quote_display"]) == strip(e["quote"]), e["id"]
 
 
 # -- 5: every number on the site's pages -----------------------------------------------
@@ -148,7 +164,7 @@ class Page(HTMLParser):
     """Collects the text of a page, attributing each text run to the nearest
     enclosing element that carries a source attribute."""
 
-    SOURCES = ("data-claim", "data-lit", "data-lit-ref", "data-axis")
+    SOURCES = ("data-claim", "data-lit", "data-lit-ref", "data-field", "data-axis")
     VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source",
             "track", "wbr", "path", "circle", "rect", "line", "polyline", "polygon", "stop", "use"}
 
@@ -206,9 +222,7 @@ class Page(HTMLParser):
             self.free.append(data)
 
     def handle_data(self, data):
-        if self.skip:
-            return
-        self._text(data)
+        self._text(data)          # skips code unless it sits in a sourced element
 
 
 def parse(page: str) -> Page:
@@ -222,6 +236,8 @@ def parse(page: str) -> Page:
 def label_ok(token: str, context: str) -> bool:
     if re.fullmatch(r"[0-3]", token):
         return bool(re.search(r"Stage\s+" + token + r"\b", context))
+    if re.fullmatch(r"[1-3][a-e]", token):                 # an image prompt's id: "prompt 1a"
+        return bool(re.search(r"prompt\s+" + token + r"\b", context))
     return any(re.fullmatch(pat, token) for pat in LABELS)
 
 
@@ -248,6 +264,17 @@ def test_every_number_on_the_pages_has_a_source():
             elif attr == "data-lit-ref":
                 if key not in lit or text != norm(lit[key]["citation"]):
                     problems.append(f"{page}: citation {key} is not the file's")
+            elif attr == "data-field":
+                # "claim:<id>:<field>" or "lit:<id>:<field>": provenance text (a machine,
+                # a sentence, a quotation) that must be the file's own words
+                src, _, rest = key.partition(":")
+                eid, _, fld = rest.rpartition(":")
+                table = claims if src == "claim" else lit
+                want = table.get(eid, {}).get(fld)
+                if isinstance(want, list):
+                    want = ", ".join(want)
+                if want is None or text != norm(str(want)):
+                    problems.append(f"{page}: field {key} shows {text!r}, the file says {want!r}")
             elif attr == "data-axis":
                 if not re.fullmatch(r"[\d.,]+×?|10[−-]?\d+|", text.replace(" ", "")):
                     problems.append(f"{page}: axis label {text!r} is not a tick")

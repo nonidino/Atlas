@@ -1,0 +1,120 @@
+import AtlasProofs.Superelement
+import AtlasProofs.ContractionContract
+import AtlasProofs.LearnedMasterBound
+import AtlasProofs.DefectCorrection
+
+/-!
+# The headline statements
+
+The three sentences the proposal's website can say about learned experts, each as one Lean
+theorem. Every one is a composition of theorems proved elsewhere in this project: it adds no
+mathematics, it fixes exactly which hypotheses the sentence rests on.
+
+* **Tier 0.** *Whatever a learned superelement returns, the coupled system is solvable, and
+  its answer is the best its modes can represent in the energy norm.*
+  (`tier0_headline`: T25.)
+* **Tier 2.** *If every learned expert's scattering map is certified to contract by `ρ < 1`
+  and differs from the classical one by at most `δ`, the coupled iteration converges
+  geometrically from any start to a point within `δ / (1 - ρ)` of the classical answer; over
+  `N` steps the error obeys the master bound with that term added.*
+  (`tier2_headline`: T1, T9a, T4, T22. Here `δ` is `√(∑ i, δ i ^ 2)`, the experts' defects
+  combined over the pieces.)
+* **Defect correction.** *Inside defect correction, a learned expert can change how many
+  classical steps the answer takes. It cannot change the answer.*
+  (`defect_correction_headline`: T5.)
+
+Each sentence carries its scope: finite-dimensional or metric statements, exact local solves
+where stated, and for tier 2 a certificate that must actually be computed for the expert.
+-/
+
+namespace Atlas
+
+open Finset Matrix Filter Topology
+
+/-- **Headline, tier 0.** Under the document's three assumptions, with independent port
+patterns and every free coordinate read by some piece: for *any* fields `h, up` a network
+returned, the host's interface system has exactly one solution `c`, and the field rebuilt
+from it is the closest to the undivided solution `u`, in the energy size, among all fields
+the network's modes can represent. -/
+theorem tier0_headline {π ι γ U F : Type*} [Fintype π] [Fintype ι] [Fintype γ]
+    [AddCommGroup U] [Module ℝ U] [AddCommGroup F] [Module ℝ F]
+    (S : Superelement π ι γ U F)
+    (hconf : S.Conforming) (hbd : S.BoundaryDataInPortSpan) (hnorm : S.EnergyNormIsNorm)
+    (hq : ∀ i, LinearIndependent ℝ (S.q i))
+    (hR : ∀ c : γ → ℝ, (∀ i, S.R i *ᵥ c = 0) → c = 0)
+    {u : π → U × F} (hu : S.IsSolution u) (h : π → ι → U) (up : π → U) :
+    ∃ c : γ → ℝ, S.hostMatrix h *ᵥ c = S.hostRhs h up ∧
+      (∀ c₂ : γ → ℝ, S.hostMatrix h *ᵥ c₂ = S.hostRhs h up → c₂ = c) ∧
+      ∀ c' : γ → ℝ, S.quad.norm (u - S.field h up c) ≤ S.quad.norm (u - S.field h up c') := by
+  obtain ⟨c, hc, huniq⟩ := S.hostSystem_existsUnique hconf hnorm hq hR h up
+  exact ⟨c, hc, fun c₂ hc₂ => huniq c₂ hc₂,
+    fun c' => S.energy_optimal hconf hbd hu h up hc c'⟩
+
+/-- **Headline, tier 2.** The interface datum of a step is the fixed point of a wave sweep
+over the experts, whose scattering maps `S v i` (learned) and `Sc v i` (classical) depend on
+the state `v`. Along the true trajectory `ustar`: every learned map is `ρ`-Lipschitz with
+`ρ < 1`; the exchange is non-expansive; at the classical answer `lamStar n` the learned map
+of expert `i` differs from the classical one by at most `δ i`. The step is `Cμ`-Lipschitz in
+its interface datum, uses `k` learned sweeps from a start within `D` of the learned answer,
+and magnifies the difference of two trajectories by at most `L`. Then:
+
+* at every step the learned sweep has exactly one fixed point, reached geometrically at rate
+  `ρ` from any start, within `√(∑ i, δ i ^ 2) / (1 - ρ)` of the classical answer;
+* after `N` steps the error is at most the master bound with
+  `Cμ √(∑ i, δ i ^ 2) / (1 - ρ)` and `Cμ ρ ^ k D` added to each step's defect. -/
+theorem tier2_headline {ι : Type*} [Fintype ι] {W : ι → Type*}
+    [∀ i, NormedAddCommGroup (W i)] [∀ i, CompleteSpace (W i)]
+    {E : Type*} [SeminormedAddCommGroup E]
+    {Φ : PiLp 2 W → E → E} {L Cμ ρ D : ℝ} {δ : ι → ℝ}
+    (hL : 0 ≤ L) (hCμ : 0 ≤ Cμ) (hρ₀ : 0 ≤ ρ) (hρ₁ : ρ < 1)
+    (S Sc : E → ∀ i, W i → W i) (Ex : PiLp 2 W → PiLp 2 W) (g lam0 : E → PiLp 2 W) (k : ℕ)
+    {u ustar : ℕ → E} (lamStar : ℕ → PiLp 2 W)
+    (hS : ∀ n i (x y : W i), dist (S (ustar n) i x) (S (ustar n) i y) ≤ ρ * dist x y)
+    (hEx : ∀ x y, dist (Ex x) (Ex y) ≤ dist x y)
+    (hstar : ∀ n, waveSweep (Sc (ustar n)) Ex (g (ustar n)) (lamStar n) = lamStar n)
+    (hδ : ∀ n i, dist (S (ustar n) i (lamStar n i)) (Sc (ustar n) i (lamStar n i)) ≤ δ i)
+    (hu : ∀ n, u (n + 1)
+      = Φ ((waveSweep (S (u n)) Ex (g (u n)))^[k] (lam0 (u n))) (u n))
+    (hstep : ∀ n, ‖Φ ((waveSweep (S (u n)) Ex (g (u n)))^[k] (lam0 (u n))) (u n)
+        - Φ ((waveSweep (S (ustar n)) Ex (g (ustar n)))^[k] (lam0 (ustar n))) (ustar n)‖
+      ≤ L * ‖u n - ustar n‖)
+    (hΦ : ∀ n lam lam', ‖Φ lam (ustar n) - Φ lam' (ustar n)‖ ≤ Cμ * dist lam lam')
+    (hD : ∀ n lam, waveSweep (S (ustar n)) Ex (g (ustar n)) lam = lam →
+      dist (lam0 (ustar n)) lam ≤ D) :
+    (∀ n, ∃ al : PiLp 2 W, waveSweep (S (ustar n)) Ex (g (ustar n)) al = al ∧
+        (∀ b, waveSweep (S (ustar n)) Ex (g (ustar n)) b = b → b = al) ∧
+        (∀ (a₀ : PiLp 2 W) (j : ℕ),
+          dist ((waveSweep (S (ustar n)) Ex (g (ustar n)))^[j] a₀) al ≤ ρ ^ j * dist a₀ al) ∧
+        dist al (lamStar n) ≤ Real.sqrt (∑ i, δ i ^ 2) / (1 - ρ)) ∧
+      ∀ N : ℕ, ‖u N - ustar N‖ ≤ L ^ N * ‖u 0 - ustar 0‖
+        + ∑ i ∈ range N, L ^ (N - (i + 1)) *
+            (‖Φ (lamStar i) (ustar i) - ustar (i + 1)‖
+              + Cμ * (Real.sqrt (∑ i, δ i ^ 2) / (1 - ρ)) + Cμ * (ρ ^ k * D)) := by
+  refine ⟨fun n => contraction_contract hρ₀ hρ₁ (hS n) hEx (hstar n) (hδ n), fun N => ?_⟩
+  exact learned_master_bound_tier2 (Φ := Φ) hL hCμ hρ₀ hρ₁
+    (fun v => waveSweep (Sc v) Ex (g v)) (fun v => waveSweep (S v) Ex (g v)) lam0 k lamStar
+    hu hstep hΦ
+    (fun n x y => waveSweep_lipschitz hρ₀ (hS n) hEx (g (ustar n)) x y)
+    hstar
+    (fun n => waveSweep_defect hEx (g (ustar n)) (lamStar n) (hδ n))
+    hD N
+
+/-- **Headline, defect correction.** Run defect correction with two different cheap maps
+`Ψ₁` and `Ψ₂` (a learned expert and any other, the classical march included). If both runs
+settle, each limit is a fixed point of the classical map `Φ`. So if the classical problem
+has only one answer, the two runs settle on the same state: the cheap map can change the
+path and its cost, not the answer. -/
+theorem defect_correction_headline {E : Type*} [NormedAddCommGroup E]
+    {Φ Ψ₁ Ψ₂ : E → E} {w₁ w₂ : ℕ → E} {a₁ a₂ : E}
+    (h₁ : ∀ k, DefectCorrection.IsStep Φ Ψ₁ (w₁ k) (w₁ (k + 1)))
+    (h₂ : ∀ k, DefectCorrection.IsStep Φ Ψ₂ (w₂ k) (w₂ (k + 1)))
+    (hΦ₁ : ContinuousAt Φ a₁) (hΦ₂ : ContinuousAt Φ a₂)
+    (hΨ₁ : ContinuousAt Ψ₁ a₁) (hΨ₂ : ContinuousAt Ψ₂ a₂)
+    (hlim₁ : Tendsto w₁ atTop (𝓝 a₁)) (hlim₂ : Tendsto w₂ atTop (𝓝 a₂))
+    (huniq : ∀ x y, Φ x = x → Φ y = y → x = y) :
+    Φ a₁ = a₁ ∧ Φ a₂ = a₂ ∧ a₁ = a₂ := by
+  have hfix₁ := DefectCorrection.limit_isFixedPt h₁ hΦ₁ hΨ₁ hlim₁
+  have hfix₂ := DefectCorrection.limit_isFixedPt h₂ hΦ₂ hΨ₂ hlim₂
+  exact ⟨hfix₁, hfix₂, huniq a₁ a₂ hfix₁ hfix₂⟩
+
+end Atlas

@@ -1,0 +1,200 @@
+import Mathlib.Analysis.Normed.Group.Basic
+import Mathlib.Algebra.Field.GeomSum
+
+/-!
+# T4 — The master error bound
+
+A simulation marches `u (n+1) = step (u n)`. The true solution, sampled at the same instants,
+is `ustar n`. The **error** is `u n - ustar n`.
+
+**Plain statement.**
+
+* (recursion) The new error is the old error carried through one step, plus the **one-step
+  defect**: what a single step does wrong when started from the true solution.
+* (three-term split) With a coupling, the defect is a sum of three named parts: the experts
+  being wrong even with the true interface data (`τ`), the interface problem being posed with
+  the wrong operator (`σ`), and the interface solve being stopped early (`γ`).
+* (accumulation) If one step magnifies a difference by at most `L`, the error after `N` steps
+  is at most `L ^ N` times the initial error, plus the defects, each magnified by the steps
+  that follow it.
+* (three regimes) With every defect at most `δ`: the error stays below `δ / (1 - L)` for all
+  time when `L < 1`; it grows at most linearly, `N δ`, when `L = 1`; and the bound grows
+  exponentially when `L > 1`.
+
+A monolithic network obeys the same law. What a decomposition changes is the constants.
+
+The state space is any normed vector space (finite-dimensional or not).
+-/
+
+namespace Atlas
+
+open Finset
+
+variable {E : Type*} [SeminormedAddCommGroup E]
+
+/-- **T4a (the exact error recursion).** An identity: the new error is the propagated old
+error plus the one-step defect `step (ustar n) - ustar (n + 1)`. -/
+theorem error_recursion (step : E → E) (u ustar : ℕ → E)
+    (hu : ∀ n, u (n + 1) = step (u n)) (n : ℕ) :
+    u (n + 1) - ustar (n + 1) =
+      (step (u n) - step (ustar n)) + (step (ustar n) - ustar (n + 1)) := by
+  rw [hu n, sub_add_sub_cancel]
+
+/-- **T4b (the three-term split).** `Φ lam v` is the composed step forced to use the interface
+datum `lam`, and `exact v` is the true evolution. For any three data `lamStar` (the true
+solution's trace), `lamDag` (the root of the interface problem actually posed) and `lamK` (what
+the solver returned), the defect is `τ + σ + γ`, exactly. -/
+theorem defect_split {Λ : Type*} (Φ : Λ → E → E) (exact : E → E)
+    (lamStar lamDag lamK : Λ) (v : E) :
+    Φ lamK v - exact v =
+      (Φ lamStar v - exact v) + (Φ lamDag v - Φ lamStar v) + (Φ lamK v - Φ lamDag v) := by
+  abel
+
+/-- **T4c (accumulation; a discrete Gronwall inequality).** If `e (n+1) ≤ L * e n + d (n+1)`
+at every step, with `L ≥ 0`, then `e N ≤ L ^ N * e 0 + ∑ n = 1..N, L ^ (N - n) * d n`.
+(The sum is written over `i = n - 1`.) -/
+theorem accumulation {L : ℝ} (hL : 0 ≤ L) {e d : ℕ → ℝ}
+    (h : ∀ n, e (n + 1) ≤ L * e n + d (n + 1)) (N : ℕ) :
+    e N ≤ L ^ N * e 0 + ∑ i ∈ range N, L ^ (N - (i + 1)) * d (i + 1) := by
+  induction N with
+  | zero => simp
+  | succ N ih =>
+    -- One more step multiplies every old weight by `L`; the newest defect has weight `1`.
+    have hw : ∑ i ∈ range N, L ^ (N + 1 - (i + 1)) * d (i + 1)
+        = L * ∑ i ∈ range N, L ^ (N - (i + 1)) * d (i + 1) := by
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl fun i hi => ?_
+      have hiN := Finset.mem_range.mp hi
+      rw [show N + 1 - (i + 1) = N - (i + 1) + 1 by omega, pow_succ', mul_assoc]
+    rw [Finset.sum_range_succ, hw, Nat.sub_self, pow_zero, one_mul]
+    calc e (N + 1) ≤ L * e N + d (N + 1) := h N
+      _ ≤ L * (L ^ N * e 0 + ∑ i ∈ range N, L ^ (N - (i + 1)) * d (i + 1)) + d (N + 1) :=
+          add_le_add (mul_le_mul_of_nonneg_left ih hL) le_rfl
+      _ = L ^ (N + 1) * e 0
+            + (L * ∑ i ∈ range N, L ^ (N - (i + 1)) * d (i + 1) + d (N + 1)) := by
+          ring
+
+/-- **T4 (the master bound).** If the step magnifies the difference between the computed and
+the true trajectory by at most `L` at every instant, then the error after `N` steps is at most
+`L ^ N` times the initial error plus the accumulated one-step defects.
+The stability hypothesis is needed only along the two trajectories. -/
+theorem master_bound {step : E → E} {L : ℝ} (hL : 0 ≤ L) {u ustar : ℕ → E}
+    (hu : ∀ n, u (n + 1) = step (u n))
+    (hstep : ∀ n, ‖step (u n) - step (ustar n)‖ ≤ L * ‖u n - ustar n‖) (N : ℕ) :
+    ‖u N - ustar N‖ ≤ L ^ N * ‖u 0 - ustar 0‖
+      + ∑ i ∈ range N, L ^ (N - (i + 1)) * ‖step (ustar i) - ustar (i + 1)‖ := by
+  -- Norms of the recursion: `e (n+1) ≤ L e n + d (n+1)`, with `d (n+1)` the one-step defect.
+  have hrec : ∀ n, ‖u (n + 1) - ustar (n + 1)‖
+      ≤ L * ‖u n - ustar n‖ + ‖step (ustar n) - ustar (n + 1)‖ := fun n => by
+    rw [error_recursion step u ustar hu n]
+    exact (norm_add_le _ _).trans (add_le_add (hstep n) le_rfl)
+  have h := accumulation (e := fun n => ‖u n - ustar n‖)
+    (d := fun n => ‖step (ustar (n - 1)) - ustar n‖) hL (fun n => by
+      show ‖u (n + 1) - ustar (n + 1)‖
+        ≤ L * ‖u n - ustar n‖ + ‖step (ustar (n + 1 - 1)) - ustar (n + 1)‖
+      rw [Nat.add_sub_cancel]
+      exact hrec n) N
+  simpa only [Nat.add_sub_cancel] using h
+
+/-- **T4 with the three terms named** (the boxed bound of the master-error-bound page).
+The composed step uses the datum `lamK v` its interface solver returns at state `v`. At step
+`n`, `lamStar n` is the true trace and `lamDag n` the root of the posed interface problem. -/
+theorem master_bound_three_terms {Λ : Type*} {Φ : Λ → E → E} {lamK : E → Λ} {L : ℝ}
+    (hL : 0 ≤ L) {u ustar : ℕ → E} (lamStar lamDag : ℕ → Λ)
+    (hu : ∀ n, u (n + 1) = Φ (lamK (u n)) (u n))
+    (hstep : ∀ n, ‖Φ (lamK (u n)) (u n) - Φ (lamK (ustar n)) (ustar n)‖ ≤ L * ‖u n - ustar n‖)
+    (N : ℕ) :
+    ‖u N - ustar N‖ ≤ L ^ N * ‖u 0 - ustar 0‖
+      + ∑ i ∈ range N, L ^ (N - (i + 1)) *
+          (‖Φ (lamStar i) (ustar i) - ustar (i + 1)‖
+            + ‖Φ (lamDag i) (ustar i) - Φ (lamStar i) (ustar i)‖
+            + ‖Φ (lamK (ustar i)) (ustar i) - Φ (lamDag i) (ustar i)‖) := by
+  -- The master bound for the composed step, then each defect split into `τ + σ + γ`.
+  refine (master_bound (step := fun v => Φ (lamK v) v) hL hu hstep N).trans
+    (add_le_add le_rfl (Finset.sum_le_sum fun i _ =>
+      mul_le_mul_of_nonneg_left ?_ (pow_nonneg hL _)))
+  rw [defect_split Φ (fun _ => ustar (i + 1)) (lamStar i) (lamDag i) (lamK (ustar i)) (ustar i)]
+  exact norm_add₃_le
+
+/-- The weights `L ^ (N - (i + 1))`, `i < N`, are the powers `L ^ 0, …, L ^ (N - 1)` in
+reverse order. -/
+private theorem sum_pow_reflect (L : ℝ) (N : ℕ) :
+    ∑ i ∈ range N, L ^ (N - (i + 1)) = ∑ i ∈ range N, L ^ i := by
+  rw [← Finset.sum_range_reflect (fun i => L ^ i) N]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  show L ^ (N - (i + 1)) = L ^ (N - 1 - i)
+  rw [Nat.sub_sub, Nat.add_comm 1 i]
+
+/-- With every one-step defect at most `δ`, the accumulated defects are at most
+`(∑ i < N, L ^ i) * δ`. -/
+private theorem sum_defects_le {step : E → E} {L δ : ℝ} (hL : 0 ≤ L) {ustar : ℕ → E}
+    (hd : ∀ n, ‖step (ustar n) - ustar (n + 1)‖ ≤ δ) (N : ℕ) :
+    ∑ i ∈ range N, L ^ (N - (i + 1)) * ‖step (ustar i) - ustar (i + 1)‖
+      ≤ (∑ i ∈ range N, L ^ i) * δ := by
+  rw [← sum_pow_reflect, Finset.sum_mul]
+  exact Finset.sum_le_sum fun i _ => mul_le_mul_of_nonneg_left (hd i) (pow_nonneg hL _)
+
+section Regimes
+
+variable {step : E → E} {L δ : ℝ} {u ustar : ℕ → E}
+
+/-- **T4, contractive regime (`L < 1`): bounded for all time.** -/
+theorem master_bound_contractive (hL₀ : 0 ≤ L) (hL₁ : L < 1)
+    (hu : ∀ n, u (n + 1) = step (u n))
+    (hstep : ∀ n, ‖step (u n) - step (ustar n)‖ ≤ L * ‖u n - ustar n‖)
+    (hd : ∀ n, ‖step (ustar n) - ustar (n + 1)‖ ≤ δ) (N : ℕ) :
+    ‖u N - ustar N‖ ≤ L ^ N * ‖u 0 - ustar 0‖ + δ / (1 - L) := by
+  have hδ : 0 ≤ δ := (norm_nonneg _).trans (hd 0)
+  -- `(∑ i < N, L ^ i) (1 - L) = 1 - L ^ N ≤ 1`
+  have hS : (∑ i ∈ range N, L ^ i) * δ ≤ δ / (1 - L) := by
+    rw [le_div_iff₀ (sub_pos.mpr hL₁), mul_right_comm, geom_sum_mul_neg]
+    calc (1 - L ^ N) * δ = δ - L ^ N * δ := by ring
+      _ ≤ δ := sub_le_self _ (mul_nonneg (pow_nonneg hL₀ N) hδ)
+  exact (master_bound hL₀ hu hstep N).trans
+    (add_le_add le_rfl ((sum_defects_le hL₀ hd N).trans hS))
+
+/-- **T4, non-expansive regime (`L = 1`): at most linear growth.** -/
+theorem master_bound_nonexpansive
+    (hu : ∀ n, u (n + 1) = step (u n))
+    (hstep : ∀ n, ‖step (u n) - step (ustar n)‖ ≤ ‖u n - ustar n‖)
+    (hd : ∀ n, ‖step (ustar n) - ustar (n + 1)‖ ≤ δ) (N : ℕ) :
+    ‖u N - ustar N‖ ≤ ‖u 0 - ustar 0‖ + N * δ := by
+  -- Every weight is `1 ^ k = 1`.
+  have h := master_bound zero_le_one hu (fun n => (hstep n).trans_eq (one_mul _).symm) N
+  simp only [one_pow, one_mul] at h
+  refine h.trans (add_le_add le_rfl ?_)
+  calc ∑ i ∈ range N, ‖step (ustar i) - ustar (i + 1)‖ ≤ ∑ _i ∈ range N, δ :=
+        Finset.sum_le_sum fun i _ => hd i
+    _ = N * δ := by rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+
+/-- **T4, expansive regime (`L > 1`): the bound grows exponentially.** -/
+theorem master_bound_expansive (hL : 1 < L)
+    (hu : ∀ n, u (n + 1) = step (u n))
+    (hstep : ∀ n, ‖step (u n) - step (ustar n)‖ ≤ L * ‖u n - ustar n‖)
+    (hd : ∀ n, ‖step (ustar n) - ustar (n + 1)‖ ≤ δ) (N : ℕ) :
+    ‖u N - ustar N‖ ≤ L ^ N * ‖u 0 - ustar 0‖ + (L ^ N - 1) / (L - 1) * δ := by
+  have hL₀ : 0 ≤ L := zero_le_one.trans hL.le
+  -- the geometric sum `∑ i < N, L ^ i = (L ^ N - 1) / (L - 1)`
+  rw [← geom_sum_eq hL.ne' N]
+  exact (master_bound hL₀ hu hstep N).trans (add_le_add le_rfl (sum_defects_le hL₀ hd N))
+
+end Regimes
+
+/-- **The three regimes are attained**, so they are not artefacts of the proof. For the scalar
+step `x ↦ L x` with a defect of exactly `δ` every step and no initial error, the error after
+`N` steps is exactly `∑ i < N, L ^ i * δ`: the geometric sum whose three behaviours the regimes
+describe. -/
+theorem master_bound_attained (L δ : ℝ) (N : ℕ) :
+    ∃ u ustar : ℕ → ℝ, (∀ n, u (n + 1) = L * u n) ∧ (∀ n, L * ustar n - ustar (n + 1) = δ) ∧
+      u 0 - ustar 0 = 0 ∧ u N - ustar N = ∑ i ∈ range N, L ^ i * δ := by
+  -- `u = 0` and `ustar n = -∑ i < n, L ^ i δ`, so that `ustar (n + 1) = L ustar n - δ`.
+  refine ⟨fun _ => 0, fun n => -∑ i ∈ range n, L ^ i * δ, fun n => (mul_zero L).symm,
+    fun n => ?_, by simp, by simp⟩
+  have hs : ∑ i ∈ range (n + 1), L ^ i * δ = L * ∑ i ∈ range n, L ^ i * δ + δ := by
+    rw [Finset.sum_range_succ', Finset.mul_sum, pow_zero, one_mul]
+    exact congrArg (· + δ) (Finset.sum_congr rfl fun i _ => by ring)
+  show L * -∑ i ∈ range n, L ^ i * δ - -∑ i ∈ range (n + 1), L ^ i * δ = δ
+  rw [hs]
+  ring
+
+end Atlas

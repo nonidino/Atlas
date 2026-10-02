@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AtlasProofs/Passivity.lean — Atlas proofs</title><link rel="stylesheet" href="../../../assets/css/site.css">
+<style>pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}</style>
+</head><body><main class="section tight"><div class="wrap">
+<p class="small"><a href="../../../index.html">Atlas</a> · <a href="../../../proofs/blueprint/index.html">the blueprint</a> · <a href="../index.html">all files</a></p>
+<h1 class="h3">AtlasProofs/Passivity.lean</h1>
+<p class="small"><a href="Passivity.lean">Plain text</a></p><pre>import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+
+/-!
+# T11 — Passive agents joined by the port rule make a passive system
+
+A **port** carries an effort `e` and a flow `f` whose inner product is power. The port
+algebra connects two ports `A` and `B` by one rule: `e_B = e_A` and `f_B = - f_A`. An agent is
+**passive** over a step if its stored energy grows by no more than the energy that entered
+through its ports.
+
+**Plain statement.**
+
+* (the rule conserves power) Under the connection rule, the power entering one port is
+  exactly the power leaving its partner.
+* (the junction) So over all connected ports the powers sum to zero, for any graph of
+  connections.
+* (composition) If every agent is passive, the whole system is passive with respect to its
+  open ports, with stored energy the sum of the agents&#x27; stored energies. No analysis of the
+  graph is needed.
+* (the error version) If every agent is *incrementally* passive (the same inequality for the
+  difference of two runs, with the squared distance as storage) and the two runs get the same
+  external forcing, one coupled step does not increase the distance between the runs. That
+  is the constant `L ≤ 1` of the master bound&#x27;s linear regime.
+
+Efforts and flows live in real inner-product spaces of any dimension; the bookkeeping is over
+finitely many agents and ports.
+-/
+
+namespace Atlas
+
+open Finset
+
+/-- **T11 (the connection rule conserves power).** If port `B` has the effort of port `A`
+and the opposite flow, the power into `B` is minus the power into `A`. -/
+theorem port_rule_power {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
+    {eA fA eB fB : F} (he : eB = eA) (hf : fB = -fA) :
+    inner ℝ eB fB = -inner ℝ eA fA := by
+  rw [he, hf, inner_neg_right]
+
+variable {ι Port : Type*} [Fintype ι] [Fintype Port] [DecidableEq ι]
+
+/-- **T11 (the junction).** `power p` is the power entering through port `p`, and `partner`
+pairs every connected port with the one it is joined to. If each port&#x27;s power is minus its
+partner&#x27;s, the powers sum to zero. -/
+theorem junction_power_eq_zero (power : Port → ℝ) (partner : Equiv.Perm Port)
+    (h : ∀ p, power (partner p) = -power p) :
+    ∑ p, power p = 0 := by
+  -- Summing over the partners runs over every port again: `∑ p = ∑ p ∘ π = -∑ p`.
+  have hsum : ∑ p, power p = ∑ p, power (partner p) := (Equiv.sum_comp partner power).symm
+  simp only [h, Finset.sum_neg_distrib] at hsum
+  linarith
+
+/-- **T11 (passivity composes).** Agent `i` owns the ports `p` with `owner p = i`, stores
+`H i` before the step and `H&#x27; i` after it, and receives `ext i` through its open ports. If
+every agent is passive and the connected ports obey the junction rule, the whole system is
+passive: its total storage grows by at most what entered through the open ports. -/
+theorem interconnection_passive (owner : Port → ι) (power : Port → ℝ)
+    (partner : Equiv.Perm Port) (hjunction : ∀ p, power (partner p) = -power p)
+    (H H&#x27; ext : ι → ℝ)
+    (hpassive : ∀ i, H&#x27; i ≤ H i + ∑ p ∈ univ.filter (fun p =&gt; owner p = i), power p + ext i) :
+    ∑ i, H&#x27; i ≤ ∑ i, H i + ∑ i, ext i := by
+  -- Sum the agents&#x27; inequalities; the port powers, summed agent by agent, are the sum over all
+  -- ports, which the junction makes zero.
+  have hports : ∑ i, ∑ p ∈ univ.filter (fun p =&gt; owner p = i), power p = 0 := by
+    rw [Finset.sum_fiberwise univ owner power]
+    exact junction_power_eq_zero power partner hjunction
+  calc ∑ i, H&#x27; i
+      ≤ ∑ i, (H i + ∑ p ∈ univ.filter (fun p =&gt; owner p = i), power p + ext i) :=
+        Finset.sum_le_sum fun i _ =&gt; hpassive i
+    _ = ∑ i, H i + ∑ i, ∑ p ∈ univ.filter (fun p =&gt; owner p = i), power p + ∑ i, ext i := by
+        rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
+    _ = ∑ i, H i + ∑ i, ext i := by rw [hports, add_zero]
+
+/-- **T11 (incremental passivity gives a non-expansive step).** `u i, v i` are agent `i`&#x27;s
+states in two runs before a step and `u&#x27; i, v&#x27; i` after it; `dpower p` is the power pairing
+of the *differences* of the two runs&#x27; efforts and flows at port `p`. If every agent is
+incrementally passive with storage half the squared distance, and the differences obey the
+junction rule, then the step does not increase the total squared distance between the runs. -/
+theorem interconnection_nonexpansive {X : ι → Type*} [∀ i, SeminormedAddCommGroup (X i)]
+    (owner : Port → ι) (dpower : Port → ℝ)
+    (partner : Equiv.Perm Port) (hjunction : ∀ p, dpower (partner p) = -dpower p)
+    (u v u&#x27; v&#x27; : ∀ i, X i)
+    (hpassive : ∀ i, ‖u&#x27; i - v&#x27; i‖ ^ 2 ≤
+      ‖u i - v i‖ ^ 2 + 2 * ∑ p ∈ univ.filter (fun p =&gt; owner p = i), dpower p) :
+    ∑ i, ‖u&#x27; i - v&#x27; i‖ ^ 2 ≤ ∑ i, ‖u i - v i‖ ^ 2 := by
+  -- Passivity composes, with storage `‖u i - v i‖ ^ 2`, port powers `2 Δp` and no external term.
+  have h := interconnection_passive owner (fun p =&gt; 2 * dpower p) partner
+    (fun p =&gt; by rw [hjunction, mul_neg]) (fun i =&gt; ‖u i - v i‖ ^ 2)
+    (fun i =&gt; ‖u&#x27; i - v&#x27; i‖ ^ 2) (fun _ =&gt; 0)
+    (fun i =&gt; by rw [add_zero, ← Finset.mul_sum]; exact hpassive i)
+  simpa using h
+
+end Atlas
+</pre>
+</div></main></body></html>

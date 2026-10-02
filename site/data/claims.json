@@ -795,6 +795,50 @@
    "vault": ""
   },
   {
+   "id": "machine.os",
+   "value": "Windows 11",
+   "kind": "text",
+   "nd": 2,
+   "display": "Windows 11",
+   "display_html": "Windows 11",
+   "units": "",
+   "sentence": "the operating system of the laptop every timed workbench claim ran on",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "pointer": null,
+   "derived": "machine.platform, its first two fields",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "machine.cpus",
+   "value": 22,
+   "kind": "int",
+   "nd": 2,
+   "display": "22",
+   "display_html": "22",
+   "units": "logical processors",
+   "sentence": "the laptop's logical processors",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "pointer": "machine.cpu_count",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
    "id": "fast.met",
    "value": 4,
    "kind": "int",
@@ -1269,6 +1313,50 @@
    "vault": ""
   },
   {
+   "id": "w346.rmin",
+   "value": 5,
+   "kind": "int",
+   "nd": 2,
+   "display": "5",
+   "display_html": "5",
+   "units": "",
+   "sentence": "the smallest farm in the range, in rotors",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "min rungs[].n_rotors at or above the first rung where decomposition wins",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.rmax",
+   "value": 21,
+   "kind": "int",
+   "nd": 2,
+   "display": "21",
+   "display_html": "21",
+   "units": "",
+   "sentence": "the largest farm in the range, in rotors",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max rungs[].n_rotors with an accuracy record",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
    "id": "lc.ep_over_l",
    "value": 1.5238157366696221,
    "kind": "ratio",
@@ -1611,6 +1699,28 @@
     "out/learned-case/gate-20261001-154054.json"
    ],
    "pointer": "steps",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.h",
+   "value": 12,
+   "kind": "int",
+   "nd": 2,
+   "display": "12",
+   "display_html": "12",
+   "units": "",
+   "sentence": "the macro-step at which the errors shown are read",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "verdict.G2.comparisons[0].h",
    "derived": "",
    "public": [
     "records/learned-case/gate-20261001-154054.json"
@@ -2080,6 +2190,50 @@
    "date": "",
    "machine": "",
    "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "inst.python",
+   "value": "Python 3.10, 3.11 or 3.12",
+   "kind": "text",
+   "nd": 2,
+   "display": "Python 3.10, 3.11 or 3.12",
+   "display_html": "Python 3.10, 3.11 or 3.12",
+   "units": "",
+   "sentence": "the Pythons the launcher accepts",
+   "source": [
+    "atlas/workbench/bundle/README.md"
+   ],
+   "pointer": null,
+   "derived": "the README's Requirements, first item",
+   "public": [
+    "https://github.com/nonidino/atlas-workbench/blob/atlas-workbench/README.md"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "inst.disk",
+   "value": "2.0 GB",
+   "kind": "text",
+   "nd": 2,
+   "display": "2.0 GB",
+   "display_html": "2.0 GB",
+   "units": "",
+   "sentence": "the private environment's size on Windows with every optional part",
+   "source": [
+    "atlas/workbench/bundle/README.md"
+   ],
+   "pointer": null,
+   "derived": "the README's Requirements, 'Disk'",
+   "public": [
+    "https://github.com/nonidino/atlas-workbench/blob/atlas-workbench/README.md"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "measured by the demo's chat on the owner's laptop",
    "vault": ""
   }
  ],

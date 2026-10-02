@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Try the demo — Atlas</title>
+<meta name="description" content="Install the Atlas workbench with one command and run it on your own laptop.">
+<meta name="theme-color" content="#121317">
+<link rel="icon" href="assets/img/mark.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/inter-latin-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="assets/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Atlas, home"><img src="assets/img/mark.svg" alt="" width="26" height="26"> Atlas</a>
+    <nav aria-label="Pages"><ul><li><a href="index.html#today">Results</a></li><li><a href="architecture/index.html">Architecture</a></li><li><a href="proofs/blueprint/index.html">Proofs</a></li><li><a href="evidence.html">Evidence</a></li></ul></nav>
+    <a class="pill" href="#install">Install</a>
+  </div>
+</header>
+
+<main id="main">
+<section class="page-head">
+  <div class="wrap narrow">
+    <p class="eyebrow">Try the demo</p>
+    <h1 class="display">One command. Your laptop.</h1>
+    <p class="lede">The workbench is the demo: choose a kind of physics, draw the domain, cut it into pieces, and run the pieces against the undivided domain. It shows whether they agree, which was faster on your machine, and what the compiler says about joining the pieces.</p>
+    <!-- gen:launch-banner -->
+<p class="banner"><strong>Before launch.</strong> The demo's repository becomes public on the day this site does. Until then the commands below will not find it.</p>
+<!-- /gen:launch-banner -->
+  </div>
+</section>
+
+<section class="section tight" id="install" aria-labelledby="install-title">
+  <div class="wrap narrow light-tabs">
+    <h2 id="install-title" class="h3">Install and run</h2>
+    <p>Open a terminal, paste the three lines for your system, and press Enter. The script builds a private Python environment inside the folder it creates, installs every package at a pinned version, runs a self-test once, and opens the workbench in your browser. Later runs go straight to the page.</p>
+    <div class="tabs" role="tablist" aria-label="Your operating system">
+      <button role="tab" id="tab-win" data-os="win" aria-controls="panel-win" aria-selected="true">Windows<span class="badge ok">verified</span></button>
+      <button role="tab" id="tab-mac" data-os="mac" aria-controls="panel-mac" aria-selected="false">macOS<span class="badge no">not verified yet</span></button>
+      <button role="tab" id="tab-linux" data-os="linux" aria-controls="panel-linux" aria-selected="false">Linux<span class="badge ok">verified</span></button>
+    </div>
+    <div role="tabpanel" id="panel-win" aria-labelledby="tab-win">
+      <p class="small">In PowerShell, which Windows opens by default.</p>
+      <div class="cmd"><button class="copy" type="button">Copy</button><!-- gen:cmd-win -->
+<pre>git clone --branch atlas-workbench --single-branch https://github.com/nonidino/atlas-workbench.git atlas-workbench
+cd atlas-workbench
+.\run.cmd</pre>
+<!-- /gen:cmd-win --></div>
+      <p class="small muted">The <code>.\</code> matters: PowerShell does not run programs from the current folder without it.</p>
+    </div>
+    <div role="tabpanel" id="panel-mac" aria-labelledby="tab-mac" hidden>
+      <p class="banner"><strong>Not verified on a Mac yet.</strong> No Mac was available to test it. The script is written for the shell macOS ships, and every pinned package publishes macOS wheels, so it is expected to work. If it does not, tell us what it printed.</p>
+      <div class="cmd"><button class="copy" type="button">Copy</button><!-- gen:cmd-mac -->
+<pre>git clone --branch atlas-workbench --single-branch https://github.com/nonidino/atlas-workbench.git atlas-workbench
+cd atlas-workbench
+./run.sh</pre>
+<!-- /gen:cmd-mac --></div>
+      <p class="small muted">The learned example needs Apple silicon: its library publishes no wheel for Intel Macs. Everything else runs on both.</p>
+    </div>
+    <div role="tabpanel" id="panel-linux" aria-labelledby="tab-linux" hidden>
+      <div class="cmd"><button class="copy" type="button">Copy</button><!-- gen:cmd-linux -->
+<pre>git clone --branch atlas-workbench --single-branch https://github.com/nonidino/atlas-workbench.git atlas-workbench
+cd atlas-workbench
+./run.sh</pre>
+<!-- /gen:cmd-linux --></div>
+      <p class="small muted">On Debian and Ubuntu the system Python ships without its <code>venv</code> module; the script says so and names the package to install.</p>
+    </div>
+    <p class="small">No <code>git</code>? Download the branch as a zip from the repository page, unpack it, and run the same script inside it.</p>
+
+    <h2 class="h3" style="margin-top:56px">What it needs</h2>
+    <dl class="facts">
+      <dt>Python</dt><dd><span data-claim="inst.python">Python 3.10, 3.11 or 3.12</span>. The script checks the version before installing anything.</dd>
+      <dt>A graphics card</dt><dd>Not needed. Everything runs on the processor.</dd>
+      <dt>Disk</dt><dd>About <span data-claim="inst.disk">2.0 GB</span> with every optional part, most of it the library the learned example uses. You can skip that part.</dd>
+      <dt>Network</dt><dd>Only while installing. The page itself needs none.</dd>
+      <dt>How long</dt><dd>On the laptop the results were measured on, a fresh copy's install and self-test took <span data-claim="inst.win.s">229 s</span> (<span data-field="claim:inst.win.s:caveat">pip&#x27;s download cache was already warm, so a first download takes longer</span>).</dd>
+    </dl>
+
+    <h2 class="h3" style="margin-top:56px" id="see">What you will see</h2>
+    <!-- img:workbench-install -->
+<img src="images/workbench.webp" alt="The Atlas workbench after a run of the heat-conduction Fast example: the speed, agreement, balance and checks cards above the decomposed and full-domain temperature fields and their difference." width="1600" height="1000" loading="lazy" decoding="async">
+<!-- /img:workbench-install -->
+    <p class="fine" style="margin-top:12px">A real screenshot, taken on a small cloud machine while this site was built. The speed it shows is that machine's; on yours it will differ, and the page says which was faster on your machine.</p>
+    <p style="margin-top:20px">The workbench opens in your browser. Its header picks the kind of simulation; <strong>Fast example</strong> opens the case built to show that kind's best honest speed, and says what limits it when there is none. <strong>Compile</strong> asks the compiler about every seam. <strong>Run</strong> races the pieces against the whole domain and shows whether they agree, and which was faster on your machine.</p>
+
+    <h2 class="h3" style="margin-top:56px">Options</h2>
+    <div class="table-wrap"><table class="ev">
+      <tbody>
+        <tr><td><code>--check</code></td><td>Run the self-test alone.</td></tr>
+        <tr><td><code>--no-open</code></td><td>Serve the page without opening a browser.</td></tr>
+        <tr><td><code>--reinstall</code></td><td>Delete the private environment and build it again.</td></tr>
+        <tr><td><code>--no-torch</code></td><td>Skip the library the learned example uses, the largest download.</td></tr>
+        <tr><td><code>--no-gmsh</code></td><td>Skip Gmsh, used only to import geometry from Gmsh.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 class="h3" style="margin-top:40px">Uninstall</h2>
+    <p>Delete the folder. Nothing is installed outside it.</p>
+
+    <h2 class="h3" style="margin-top:40px">Licences</h2>
+    <p class="small">Gmsh is licensed under the GPL, so it is never shipped with the demo: the script installs it from the Python Package Index on your machine, as an optional part. The learned example's network was trained by this project from its own simulations.</p>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="cols">
+      <div><p class="big-line">A full world. Decomposed and simulated by experts.</p></div>
+      <div><ul><li><a href="index.html">Home</a></li><li><a href="architecture/index.html">Read the architecture</a></li><li><a href="proofs/blueprint/index.html">The proofs</a></li></ul></div>
+      <div><ul><li><a href="evidence.html">The evidence</a></li><li><a data-config="issues" href="https://github.com/nonidino/atlas-proposal/issues">Contact</a></li></ul></div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

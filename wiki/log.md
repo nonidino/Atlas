@@ -7294,3 +7294,17 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 **"A first", searched again (§3.2):** no machine-checked theory of domain decomposition was found, but machine-checked proofs of related iterations exist (Jacobi in Rocq; Krasnoselskii–Mann in Lean 4). The site says *"we found no earlier"*, not *"a first"*.
 
 **Changed:** [[website-evidence-and-citations]].
+
+## [2026-10-02] build | Website steps 3 and 4: the claims pipeline, and the site's skeleton
+
+**Step 3, the claims pipeline** (commit of its own): `scripts/site_claims.py` reads the run records and writes `site/data/claims.json`, and publishes each cited record to `site/records/` with the computer's name, process ids, local paths, log excerpts and the installer's scans removed. `site/data/literature.json` holds the nine verified published results. `tests/test_site_claims.py` fails if a claim differs from its record, if anything private or forbidden reaches `site/`, or if **any number on the site's pages** is not attributed to one of the two files. Three negative controls were run and caught: a number typed into the copy, a stamped number edited by hand, and a claim edited in the JSON.
+
+**Step 4, the skeleton** (`site/`, plain HTML, CSS and a little JavaScript; no npm, no framework):
+- `index.html`, every section of [[website-outline]] with the changes the owner accepted (its status line); `install.html` with three tabs, macOS marked not verified; `evidence.html`, every number with its record or quotation.
+- `scripts/site_build.py` writes every number, the two charts (the Fast examples on a log scale against a $1\times$ line; the learned case's four arms, time against error), the literature cards, the proofs' dependency graph and the evidence tables into the pages, from the two files.
+- **"How it works" is drawn from the real S-channel**: `scripts/site_export_schannel.py` builds the workbench's own example and solves it decomposed and whole; the export agrees with the record ($1.8\times10^{-9}$ of the span).
+- **The blueprint is built** into `site/proofs/blueprint/` by `scripts/site_blueprint.py` (leanblueprint 0.0.20 on plasTeX 3.1, installed with the owner's yes), from a copy of its sources with the public addresses and two workarounds for a machine without TeX; `lean/` is not edited. The architecture page is copied unchanged into `site/architecture/`, and the Lean sources into `site/proofs/lean/` as readable pages.
+- **A real screenshot of the workbench**, run in the cloud container with the workbench's pinned packages (installed with the owner's yes): the heat-conduction Fast example. **The wind farm's Fast example could not run there**: its solver is vendored only in the install branch, and this checkout looks for it on the laptop. The screenshot's caption says the speed in it is the cloud machine's.
+- The chart colours were validated with the dataviz skill's checker (cyan $\#008cbf$ and orange $\#e0632f$ on white).
+
+**Changed:** [[website-outline]] (status: the accepted changes).

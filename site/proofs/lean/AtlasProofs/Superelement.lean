@@ -1,0 +1,407 @@
+import AtlasProofs.GramPort
+import AtlasProofs.EnergyOptimality
+import Mathlib.LinearAlgebra.Pi
+
+/-!
+# T25, energy optimality — the coupled tier-0 solve is the best its modes allow
+
+The domain is cut into pieces. Piece `i` has cell values and face values, the energy of
+`GramPort.lean`, and a source `f i`. A **global field** gives every piece its cell values and
+its face values. It is **admissible** when neighbouring pieces give a shared face the same
+value and faces on the physical boundary carry the prescribed values. The **undivided
+discrete solution** `u` is the admissible field of least total energy
+
+    E(w) = ∑ i, ( ½ (w i)ᵀ M_i (w i) - f_i · (cell values of w i) ).
+
+The host knows, for every piece, port patterns `q i k`, the fields `h i k` a network returned
+for them, and a field `up i` the network returned for the source. From these alone it forms
+
+    Λt_i = Gram of (h i k, q i k) in M_i,        bt_i = h_iᵀ f_i - Vt_iᵀ M_i (up i, 0),
+    St = ∑ i, R_iᵀ Λt_i R_i,                     χt = ∑ i, R_iᵀ (bt_i - Λt_i r_i),
+
+solves `St c = χt` for the free port coordinates `c`, and rebuilds each piece as
+`(up i, 0) + ∑ k, (r i + R_i c) k • (h i k, q i k)`. Here `r i` holds the coordinates that
+the boundary data fix, and `R_i c` those the solve determines.
+
+**Plain statement.** For *any* fields the network returned:
+
+* (Galerkin) `St c = χt` says exactly that the rebuilt field has the least energy among all
+  fields that can be rebuilt from the network's modes.
+* (**energy optimality**, the document's Theorem 6) Under two assumptions, the rebuilt field
+  is the closest, in the energy size, to the undivided solution `u` among all fields the
+  network's modes can represent. The coupling adds no error of its own.
+* (the error bound) Its distance to `u` is at most the distance from `u` to the field rebuilt
+  from any reference modes at any coordinates, plus the `A_I` energy of the field errors
+  weighted by those coordinates. With the exact modes at the classical superelement's
+  coordinates this is: truncation error plus field errors.
+* (solvability) Under the third assumption, with independent port patterns, `St` is positive
+  definite for every network output, so `c` exists and is unique.
+
+**The document's three assumptions, as named hypotheses.**
+
+* `Conforming` (shared sides are parametrised identically): port coordinates give face
+  values on which neighbouring pieces agree.
+* `BoundaryDataInPortSpan`: the fixed coordinates reproduce the prescribed boundary values.
+* `EnergyNormIsNorm` (the problem is well posed): an admissible difference of zero energy is
+  zero.
+
+The mortar case, where two charts parametrise a shared side differently, fails `Conforming`
+and is not covered.
+-/
+
+namespace Atlas
+
+open Matrix
+
+/-- One piece's share of the Galerkin equations. With port coordinates `x` for the trial
+field and `y` for a test direction, the energy pairing minus the load is
+`yᵀ (Λt x) - yᵀ bt`, with `Λt` the Gram port matrix and `bt` the port load. -/
+theorem Piece.pair_identity {U F ι : Type*} [AddCommGroup U] [Module ℝ U] [AddCommGroup F]
+    [Module ℝ F] [Fintype ι] (P : Piece U F) (f : U →ₗ[ℝ] ℝ) (h : ι → U) (q : ι → F)
+    (up : U) (x y : ι → ℝ) :
+    P.M ((up, 0) + ∑ k, x k • ((h k, q k) : U × F)) (∑ l, y l • ((h l, q l) : U × F))
+        - f (∑ l, y l • ((h l, q l) : U × F)).1
+      = y ⬝ᵥ (P.gram h q *ᵥ x) - y ⬝ᵥ (fun l => f (h l) - P.M (h l, q l) (up, 0)) := by
+  have h1 : y ⬝ᵥ (fun l => f (h l) - P.M (h l, q l) (up, 0))
+      = f (∑ l, y l • ((h l, q l) : U × F)).1
+        - P.M (∑ l, y l • ((h l, q l) : U × F)) (up, 0) := by
+    simp only [dotProduct, mul_sub, Finset.sum_sub_distrib, Prod.fst_sum, Prod.smul_fst,
+      map_sum, map_smul, smul_eq_mul, LinearMap.sum_apply, LinearMap.smul_apply]
+  rw [h1, P.dotProduct_gram_mulVec, LinearMap.map_add₂, P.M_symm (up, 0),
+    P.M_symm (∑ k, x k • ((h k, q k) : U × F))]
+  ring
+
+/-- **The data of a tier-0 solve**: pieces `π`, port modes `ι` per piece, free global port
+coordinates `γ`, cell values in `U`, face values in `F`.
+
+* `piece i`: the energy of piece `i`;
+* `f i`: its source, as the functional `v ↦ f_i · v` on cell values;
+* `q i k`: the boundary pattern of port mode `k` of piece `i`;
+* `R i`: reads piece `i`'s port coordinates off the free global coordinates (a selection
+  with orientation, in the document);
+* `r i`: piece `i`'s coordinates fixed by prescribed boundary values;
+* `conf`: the families of face values, one per piece, on which neighbours agree and which
+  vanish on the prescribed boundary;
+* `g`: a family of face values carrying the prescribed boundary values. -/
+structure Superelement (π ι γ U F : Type*) [AddCommGroup U] [Module ℝ U]
+    [AddCommGroup F] [Module ℝ F] where
+  piece : π → Piece U F
+  f : π → U →ₗ[ℝ] ℝ
+  q : π → ι → F
+  R : π → Matrix ι γ ℝ
+  r : π → ι → ℝ
+  conf : Submodule ℝ (π → F)
+  g : π → F
+
+namespace Superelement
+
+variable {π ι γ U F : Type*} [Fintype π] [Fintype ι] [Fintype γ]
+  [AddCommGroup U] [Module ℝ U] [AddCommGroup F] [Module ℝ F] (S : Superelement π ι γ U F)
+
+/-- A global field is **admissible** (the document's set `U`): its face values differ from
+the prescribed ones by a conforming family that vanishes on the prescribed boundary. -/
+def Admissible (w : π → U × F) : Prop := (fun i => (w i).2) - S.g ∈ S.conf
+
+/-- The admissible differences (the document's space `U₀`): global fields whose face values
+are conforming and vanish on the prescribed boundary. -/
+def U0 : Submodule ℝ (π → U × F) :=
+  S.conf.comap (LinearMap.pi fun i => LinearMap.snd ℝ U F ∘ₗ LinearMap.proj i)
+
+/-- The global energy `E(w) = ∑ i, (½ (w i)ᵀ M_i (w i) - f_i · (cells of w i))`. -/
+def quad : QuadEnergy (π → U × F) where
+  m := ∑ i, (S.piece i).M.compl₁₂ (LinearMap.proj i) (LinearMap.proj i)
+  l := ∑ i, S.f i ∘ₗ LinearMap.fst ℝ U F ∘ₗ LinearMap.proj i
+  m_symm v w := by
+    simp only [LinearMap.sum_apply, LinearMap.compl₁₂_apply, LinearMap.proj_apply]
+    exact Finset.sum_congr rfl fun i _ => (S.piece i).M_symm _ _
+  m_nonneg w := by
+    simp only [LinearMap.sum_apply, LinearMap.compl₁₂_apply, LinearMap.proj_apply]
+    exact Finset.sum_nonneg fun i _ => (S.piece i).M_self_nonneg _
+
+/-- `u` is the **undivided discrete solution**: admissible, and of least energy among the
+admissible fields. -/
+def IsSolution (u : π → U × F) : Prop :=
+  S.Admissible u ∧ ∀ w, S.Admissible w → S.quad.energy u ≤ S.quad.energy w
+
+/-- Piece `i`'s port coordinates: the fixed ones plus those read off the free vector `c`. -/
+def coord (c : γ → ℝ) (i : π) : ι → ℝ := S.r i + S.R i *ᵥ c
+
+/-- **The rebuilt field** from modes `h`, particular fields `up` and free coordinates `c`:
+on piece `i`, cell values `up i + ∑ k, x k • h i k` and face values `∑ k, x k • q i k`, with
+`x` the piece's port coordinates. -/
+def field (h : π → ι → U) (up : π → U) (c : γ → ℝ) : π → U × F :=
+  fun i => (up i + ∑ k, S.coord c i k • h i k, ∑ k, S.coord c i k • S.q i k)
+
+/-- The host's port matrix of piece `i`: the energy Gram of the returned fields. -/
+def portMatrix (h : π → ι → U) (i : π) : Matrix ι ι ℝ := (S.piece i).gram (h i) (S.q i)
+
+/-- The host's port load of piece `i`: `bt_i = h_iᵀ f_i - Vt_iᵀ M_i (up i, 0)`. -/
+def portLoad (h : π → ι → U) (up : π → U) (i : π) : ι → ℝ :=
+  fun k => S.f i (h i k) - (S.piece i).M (h i k, S.q i k) (up i, 0)
+
+/-- The host's interface matrix `St = ∑ i, R_iᵀ Λt_i R_i`. -/
+def hostMatrix (h : π → ι → U) : Matrix γ γ ℝ := assemble S.R (S.portMatrix h)
+
+/-- The host's right-hand side `χt = ∑ i, R_iᵀ (bt_i - Λt_i r_i)`: the port loads, with the
+contribution of the fixed coordinates moved to the right. -/
+def hostRhs (h : π → ι → U) (up : π → U) : γ → ℝ :=
+  ∑ i, (S.R i)ᵀ *ᵥ (S.portLoad h up i - S.portMatrix h i *ᵥ S.r i)
+
+/-- **Assumption: conforming shared sides.** Whatever the free coordinates, the face values
+they give are ones on which neighbouring pieces agree, and they vanish on the prescribed
+boundary. -/
+def Conforming : Prop :=
+  ∀ c : γ → ℝ, (fun i => ∑ k, (S.R i *ᵥ c) k • S.q i k) ∈ S.conf
+
+/-- **Assumption: the boundary data lie in the port span.** The fixed coordinates reproduce
+the prescribed boundary values. -/
+def BoundaryDataInPortSpan : Prop :=
+  (fun i => ∑ k, S.r i k • S.q i k) - S.g ∈ S.conf
+
+/-- **Assumption: the energy size is a norm on `U₀`** (the problem is well posed). -/
+def EnergyNormIsNorm : Prop := ∀ w ∈ S.U0, S.quad.m w w = 0 → w = 0
+
+/-- The error, on piece `i`, of the field rebuilt from `h, up` against the one rebuilt from
+reference modes `hex, upx`, both at the coordinates `c`:
+`(up i - upx i) + ∑ k, x k • (h i k - hex i k)`. -/
+def fieldError (h : π → ι → U) (up : π → U) (hex : π → ι → U) (upx : π → U) (c : γ → ℝ)
+    (i : π) : U :=
+  (up i - upx i) + ∑ k, S.coord c i k • (h i k - hex i k)
+
+omit [Fintype ι] [Fintype γ] in
+/-- The global energy form is the sum of the pieces' energy forms. -/
+theorem quad_m_apply (w w' : π → U × F) :
+    S.quad.m w w' = ∑ i, (S.piece i).M (w i) (w' i) := by
+  simp only [quad, LinearMap.sum_apply, LinearMap.compl₁₂_apply, LinearMap.proj_apply]
+
+omit [Fintype ι] [Fintype γ] in
+/-- The global load is the sum of the pieces' sources on their cell values. -/
+theorem quad_l_apply (w : π → U × F) : S.quad.l w = ∑ i, S.f i (w i).1 := by
+  simp only [quad, LinearMap.sum_apply, LinearMap.comp_apply, LinearMap.proj_apply,
+    LinearMap.fst_apply]
+
+omit [Fintype π] in
+/-- The rebuilt field on piece `i`, as the particular field plus a combination of the pairs
+(mode, port pattern). -/
+theorem field_apply (h : π → ι → U) (up : π → U) (c : γ → ℝ) (i : π) :
+    S.field h up c i = (up i, 0) + ∑ k, S.coord c i k • ((h i k, S.q i k) : U × F) := by
+  rw [Piece.sum_smul_pair]
+  simp only [field, Prod.mk_add_mk, zero_add]
+
+/-- The field with port coordinates `x i` on piece `i` and no particular part:
+`∑ k, x i k • (h i k, q i k)`. -/
+def modeField (h : π → ι → U) (x : π → ι → ℝ) : π → U × F :=
+  fun i => ∑ k, x i k • ((h i k, S.q i k) : U × F)
+
+omit [Fintype π] in
+/-- The rebuilt field is affine in the free coordinates. -/
+theorem field_add_smul (h : π → ι → U) (up : π → U) (c d : γ → ℝ) (s : ℝ) :
+    S.field h up (c + s • d)
+      = S.field h up c + s • S.modeField h (fun i => S.R i *ᵥ d) := by
+  funext i
+  have hx : S.coord (c + s • d) i = S.coord c i + s • (S.R i *ᵥ d) := by
+    simp only [coord, mulVec_add, mulVec_smul, add_assoc]
+  simp only [Pi.add_apply, Pi.smul_apply, field_apply, modeField]
+  rw [hx]
+  simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, add_smul, mul_smul,
+    Finset.sum_add_distrib, Finset.smul_sum, add_assoc]
+
+omit [Fintype ι] [Fintype γ] in
+/-- A solution has the least energy along every admissible difference. -/
+theorem isMin_of_isSolution {u : π → U × F} (hu : S.IsSolution u) :
+    ∀ v ∈ S.U0, S.quad.energy u ≤ S.quad.energy (u + v) := by
+  intro v hv
+  refine hu.2 _ ?_
+  have h1 : (fun i => ((u + v) i).2) - S.g
+      = ((fun i => (u i).2) - S.g) + (fun i => (v i).2) := by
+    funext i
+    simp only [Pi.add_apply, Pi.sub_apply, Prod.snd_add]
+    abel
+  show (fun i => ((u + v) i).2) - S.g ∈ S.conf
+  rw [h1]
+  exact S.conf.add_mem hu.1 hv
+
+omit [Fintype π] [Fintype ι] [Fintype γ] in
+/-- The difference of two admissible fields is an admissible difference. -/
+theorem admissible_sub_mem_U0 {w u : π → U × F} (hw : S.Admissible w)
+    (hu : S.Admissible u) : w - u ∈ S.U0 := by
+  have h1 : (fun i => ((w - u) i).2)
+      = ((fun i => (w i).2) - S.g) - ((fun i => (u i).2) - S.g) := by
+    funext i
+    simp only [Pi.sub_apply, Prod.snd_sub]
+    abel
+  show (fun i => ((w - u) i).2) ∈ S.conf
+  rw [h1]
+  exact S.conf.sub_mem hw hu
+
+/-- The Galerkin residual against a direction `d` of the free coordinates is the host's
+residual `St c - χt` paired with `d`. -/
+theorem galerkin_residual (h : π → ι → U) (up : π → U) (c d : γ → ℝ) :
+    S.quad.m (S.field h up c) (S.modeField h fun i => S.R i *ᵥ d)
+        - S.quad.l (S.modeField h fun i => S.R i *ᵥ d)
+      = d ⬝ᵥ (S.hostMatrix h *ᵥ c - S.hostRhs h up) := by
+  rw [quad_m_apply, quad_l_apply, ← Finset.sum_sub_distrib, dotProduct_sub, hostMatrix,
+    dotProduct_assemble_mulVec, hostRhs, dotProduct_sum, ← Finset.sum_sub_distrib]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  have hL := (S.piece i).pair_identity (S.f i) (h i) (S.q i) (up i) (S.coord c i)
+    (S.R i *ᵥ d)
+  rw [field_apply]
+  simp only [modeField]
+  rw [hL, dotProduct_mulVec d, vecMul_transpose, dotProduct_sub, coord, mulVec_add,
+    dotProduct_add]
+  have hb : S.portLoad h up i
+      = fun l => S.f i (h i l) - (S.piece i).M (h i l, S.q i l) (up i, 0) := rfl
+  rw [hb]
+  simp only [portMatrix]
+  ring
+
+/-- **The host's system is the Galerkin system of the learned trial set.** `St c = χt` holds
+if and only if the field rebuilt from `c` has the least energy among all rebuilt fields. No
+assumption on the network's output, and none of the three assumptions. -/
+theorem hostSystem_iff_isMin (h : π → ι → U) (up : π → U) (c : γ → ℝ) :
+    S.hostMatrix h *ᵥ c = S.hostRhs h up ↔
+      ∀ c' : γ → ℝ, S.quad.energy (S.field h up c) ≤ S.quad.energy (S.field h up c') := by
+  refine Iff.trans ?_ (S.quad.isMin_iff_of_affine (fun c => S.field h up c)
+    (fun d => S.modeField h fun i => S.R i *ᵥ d) (fun c d s => S.field_add_smul h up c d s) c)
+  constructor
+  · intro hsys d
+    have hk := S.galerkin_residual h up c d
+    rw [hsys, sub_self, dotProduct_zero] at hk
+    exact sub_eq_zero.mp hk
+  · intro hgal
+    have hk := S.galerkin_residual h up c (S.hostMatrix h *ᵥ c - S.hostRhs h up)
+    have hg : S.quad.m (S.field h up c)
+          (S.modeField h fun i => S.R i *ᵥ (S.hostMatrix h *ᵥ c - S.hostRhs h up))
+        = S.quad.l (S.modeField h fun i => S.R i *ᵥ (S.hostMatrix h *ᵥ c - S.hostRhs h up)) :=
+      hgal _
+    rw [hg, sub_self] at hk
+    exact sub_eq_zero.mp (dotProduct_self_eq_zero.mp hk.symm)
+
+omit [Fintype π] in
+/-- **The trial set lies in the admissible set**, under the two conformity assumptions. -/
+theorem field_admissible (hconf : S.Conforming) (hbd : S.BoundaryDataInPortSpan)
+    (h : π → ι → U) (up : π → U) (c : γ → ℝ) : S.Admissible (S.field h up c) := by
+  have h1 : (fun i => (S.field h up c i).2) - S.g
+      = ((fun i => ∑ k, S.r i k • S.q i k) - S.g)
+        + (fun i => ∑ k, (S.R i *ᵥ c) k • S.q i k) := by
+    funext i
+    simp only [field, coord, Pi.sub_apply, Pi.add_apply, add_smul, Finset.sum_add_distrib]
+    abel
+  show (fun i => (S.field h up c i).2) - S.g ∈ S.conf
+  rw [h1]
+  exact S.conf.add_mem hbd (hconf c)
+
+/-- **T25, energy optimality (the document's Theorem 6: Céa's lemma with constant one).**
+`u` is the undivided discrete solution and `c` solves the host's system. Then the rebuilt
+field is at least as close to `u`, in the energy size, as the field rebuilt from any other
+coordinates `c'`: it is the best approximation of `u` the network's modes can represent. -/
+theorem energy_optimal (hconf : S.Conforming) (hbd : S.BoundaryDataInPortSpan)
+    {u : π → U × F} (hu : S.IsSolution u) (h : π → ι → U) (up : π → U) {c : γ → ℝ}
+    (hc : S.hostMatrix h *ᵥ c = S.hostRhs h up) (c' : γ → ℝ) :
+    S.quad.norm (u - S.field h up c) ≤ S.quad.norm (u - S.field h up c') := by
+  have hmin := S.isMin_of_isSolution hu
+  have hW : ∀ w ∈ Set.range (S.field h up), w - u ∈ S.U0 := by
+    rintro w ⟨c'', rfl⟩
+    exact S.admissible_sub_mem_U0 (S.field_admissible hconf hbd h up c'') hu.1
+  have hE : ∀ w ∈ Set.range (S.field h up),
+      S.quad.energy (S.field h up c) ≤ S.quad.energy w := by
+    rintro w ⟨c'', rfl⟩
+    exact (S.hostSystem_iff_isMin h up c).mp hc c''
+  exact (S.quad.closest_iff_isMin hmin hW ⟨c, rfl⟩).mp hE _ ⟨c', rfl⟩
+
+/-- **T25, the error bound (the document's inequality after Theorem 6).** For any reference
+modes `hex, upx` and any coordinates `cstar`, the error of the learned solve is at most the
+error of the reference field at `cstar`, plus the `A_I` energy of the field errors weighted
+by `cstar`. With `hex, upx` the exact modes and `cstar` the classical superelement's
+coordinates: truncation error plus the network's field errors. -/
+theorem energy_error_bound (hconf : S.Conforming) (hbd : S.BoundaryDataInPortSpan)
+    {u : π → U × F} (hu : S.IsSolution u) (h : π → ι → U) (up : π → U) {c : γ → ℝ}
+    (hc : S.hostMatrix h *ᵥ c = S.hostRhs h up)
+    (hex : π → ι → U) (upx : π → U) (cstar : γ → ℝ) :
+    S.quad.norm (u - S.field h up c) ≤ S.quad.norm (u - S.field hex upx cstar)
+      + Real.sqrt (∑ i, (S.piece i).a (S.fieldError h up hex upx cstar i)
+          (S.fieldError h up hex upx cstar i)) := by
+  have h1 := S.energy_optimal hconf hbd hu h up hc cstar
+  have hsplit : u - S.field h up cstar
+      = (u - S.field hex upx cstar) + (S.field hex upx cstar - S.field h up cstar) := by
+    abel
+  have h2 := S.quad.norm_add_le (u - S.field hex upx cstar)
+    (S.field hex upx cstar - S.field h up cstar)
+  rw [← hsplit] at h2
+  have h3 : S.quad.norm (S.field hex upx cstar - S.field h up cstar)
+      = Real.sqrt (∑ i, (S.piece i).a (S.fieldError h up hex upx cstar i)
+          (S.fieldError h up hex upx cstar i)) := by
+    unfold QuadEnergy.norm
+    rw [quad_m_apply]
+    congr 1
+    refine Finset.sum_congr rfl fun i _ => ?_
+    have hd : (S.field hex upx cstar - S.field h up cstar) i
+        = (-(S.fieldError h up hex upx cstar i), 0) := by
+      simp only [Pi.sub_apply, field, Prod.mk_sub_mk, sub_self]
+      congr 1
+      simp only [fieldError, smul_sub, Finset.sum_sub_distrib]
+      abel
+    rw [hd, Piece.M_cell, map_neg, map_neg, LinearMap.neg_apply, neg_neg]
+  rw [h3] at h2
+  linarith
+
+omit [Fintype ι] [Fintype γ] in
+/-- **The undivided solution is unique** when the energy size is a norm on `U₀`. -/
+theorem solution_unique (hnorm : S.EnergyNormIsNorm) {u u' : π → U × F}
+    (hu : S.IsSolution u) (hu' : S.IsSolution u') : u = u' := by
+  have hmin := S.isMin_of_isSolution hu
+  have hmem := S.admissible_sub_mem_U0 hu'.1 hu.1
+  have h1 := S.quad.energy_eq_add hmin hmem
+  have h2 := hu'.2 u hu.1
+  have h3 := S.quad.m_nonneg (u' - u)
+  have h4 : S.quad.m (u' - u) (u' - u) = 0 := by linarith
+  have h5 := hnorm _ hmem h4
+  exact (sub_eq_zero.mp h5).symm
+
+/-- **Solvable for every network output.** If shared sides conform, the energy size is a
+norm on `U₀`, each piece's port patterns are linearly independent, and every free coordinate
+is read by some piece, then the host's interface matrix is positive definite, whatever
+fields `h` the network returned. -/
+theorem hostMatrix_posDef (hconf : S.Conforming) (hnorm : S.EnergyNormIsNorm)
+    (hq : ∀ i, LinearIndependent ℝ (S.q i))
+    (hR : ∀ c : γ → ℝ, (∀ i, S.R i *ᵥ c = 0) → c = 0) (h : π → ι → U) :
+    (S.hostMatrix h).PosDef := by
+  have hpsd : (S.hostMatrix h).PosSemidef :=
+    assemble_posSemidef S.R fun i => (S.piece i).gram_posSemidef (h i) (S.q i)
+  refine PosDef.of_dotProduct_mulVec_pos hpsd.1 fun x hx => ?_
+  have hquad : x ⬝ᵥ (S.hostMatrix h *ᵥ x)
+      = S.quad.m (S.modeField h fun i => S.R i *ᵥ x) (S.modeField h fun i => S.R i *ᵥ x) := by
+    rw [hostMatrix, dotProduct_assemble_mulVec, quad_m_apply]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    exact (S.piece i).dotProduct_gram_mulVec (h i) (S.q i) _ _
+  have hfaces : (fun i => (S.modeField h (fun i => S.R i *ᵥ x) i).2)
+      = fun i => ∑ k, (S.R i *ᵥ x) k • S.q i k := by
+    funext i
+    simp only [modeField, Piece.sum_smul_pair]
+  rw [star_trivial, hquad]
+  refine lt_of_le_of_ne (S.quad.m_nonneg _) fun h0 => hx ?_
+  have hmem : (S.modeField h fun i => S.R i *ᵥ x) ∈ S.U0 := by
+    show (fun i => (S.modeField h (fun i => S.R i *ᵥ x) i).2) ∈ S.conf
+    rw [hfaces]
+    exact hconf x
+  have hz := hnorm _ hmem h0.symm
+  apply hR
+  intro i
+  have hzi : ∑ k, (S.R i *ᵥ x) k • S.q i k = 0 := by
+    have h1 := congrFun hfaces i
+    simp only [hz, Pi.zero_apply, Prod.snd_zero] at h1
+    exact h1.symm
+  funext k
+  exact Fintype.linearIndependent_iff.mp (hq i) _ hzi k
+
+/-- **Exactly one answer.** Under the same hypotheses the host's system has exactly one
+solution, for every network output. -/
+theorem hostSystem_existsUnique (hconf : S.Conforming) (hnorm : S.EnergyNormIsNorm)
+    (hq : ∀ i, LinearIndependent ℝ (S.q i))
+    (hR : ∀ c : γ → ℝ, (∀ i, S.R i *ᵥ c = 0) → c = 0) (h : π → ι → U) (up : π → U) :
+    ∃! c : γ → ℝ, S.hostMatrix h *ᵥ c = S.hostRhs h up :=
+  existsUnique_mulVec_of_posDef (S.hostMatrix_posDef hconf hnorm hq hR h) _
+
+end Superelement
+
+end Atlas

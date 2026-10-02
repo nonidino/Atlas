@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AtlasProofs/GramPort.lean — Atlas proofs</title><link rel="stylesheet" href="../../../assets/css/site.css">
+<style>pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}</style>
+</head><body><main class="section tight"><div class="wrap">
+<p class="small"><a href="../../../index.html">Atlas</a> · <a href="../../../proofs/blueprint/index.html">the blueprint</a> · <a href="../index.html">all files</a></p>
+<h1 class="h3">AtlasProofs/GramPort.lean</h1>
+<p class="small"><a href="GramPort.lean">Plain text</a></p><pre>import Mathlib.Basic.Real.Basic
+import Mathlib.LinearAlgebra.BilinearMap
+import Mathlib.LinearAlgebra.Prod
+import Mathlib.LinearAlgebra.LinearIndependent.Defs
+import Mathlib.LinearAlgebra.Matrix.Trace
+import Mathlib.LinearAlgebra.Matrix.PosDef
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+
+/-!
+# T25 (i) to (iii) — The Gram port matrix of a learned superelement
+
+A **piece** of the domain has unknowns inside it (its cell values, a vector `u`) and unknowns
+on its boundary faces (a vector `lam`). Its discrete energy is
+
+    (u, lam)ᵀ M (u, lam),      M = ⎡ A_I  -B ⎤ ,
+                                   ⎣ -Bᵀ   D ⎦
+
+and it is never negative. A **port mode** is a pattern `q k` of boundary values. Its **exact
+constraint mode** `H k` is the interior field the physics pairs with it: `A_I (H k) = B (q k)`.
+The exact **port matrix** is `Λ k l = (H k, q k)ᵀ M (H l, q l)`.
+
+A network returns some other interior fields `h k`. The host does not ask the network for the
+port matrix. It computes the **Gram matrix** of the network&#x27;s fields in the piece&#x27;s energy,
+`Λt k l = (h k, q k)ᵀ M (h l, q l)`.
+
+**Plain statement.** For *any* fields `h k`, however wrong:
+
+* (i) `Λt` is symmetric and positive semidefinite: no output can make a piece indefinite. If
+  the energy is positive definite and the port patterns are independent, `Λt` is positive
+  definite.
+* (ii) `Λt - Λ` is exactly the Gram matrix of the errors `h k - H k` in the `A_I` inner
+  product. So the learned piece is stiffer than the exact one, never softer; the excess is the
+  energy of the field errors; and the error of the port matrix is *quadratic* in the error of
+  the fields.
+* (iii) Assembled over all pieces, `St - S` is positive semidefinite. Every lower bound `β` on
+  the exact interface matrix, `β |c|² ≤ cᵀ S c`, holds for the learned one. If `S` is positive
+  definite, so is `St`, and `St c = χ` has exactly one solution for every right-hand side.
+
+The spaces are real vector spaces of any dimension; the energy enters through its three
+blocks as bilinear forms, so nothing depends on a choice of basis for the fields. `A_I`
+positive definite is what makes the exact modes exist; here they are given, with the equation
+that defines them as a hypothesis.
+-/
+
+namespace Atlas
+
+open Matrix
+
+/-- **The discrete energy of one piece**, in its three blocks: `a u v = uᵀ A_I v` on cell
+values, `b u lam = uᵀ B lam` coupling cells to faces, `d lam mu = lamᵀ D mu` on face values.
+`A_I` and `D` are symmetric, and the energy `uᵀ A_I u - 2 uᵀ B lam + lamᵀ D lam` is never
+negative. -/
+structure Piece (U F : Type*) [AddCommGroup U] [Module ℝ U] [AddCommGroup F] [Module ℝ F] where
+  a : U →ₗ[ℝ] U →ₗ[ℝ] ℝ
+  b : U →ₗ[ℝ] F →ₗ[ℝ] ℝ
+  d : F →ₗ[ℝ] F →ₗ[ℝ] ℝ
+  a_symm : ∀ u v, a u v = a v u
+  d_symm : ∀ lam mu, d lam mu = d mu lam
+  energy_nonneg : ∀ u lam, 0 ≤ a u u - 2 * b u lam + d lam lam
+
+namespace Piece
+
+variable {U F : Type*} [AddCommGroup U] [Module ℝ U] [AddCommGroup F] [Module ℝ F]
+  (P : Piece U F)
+
+/-- The energy matrix `M = [[A_I, -B], [-Bᵀ, D]]`, as a bilinear form on pairs
+(cell values, face values). -/
+def M : (U × F) →ₗ[ℝ] (U × F) →ₗ[ℝ] ℝ :=
+  P.a.compl₁₂ (LinearMap.fst ℝ U F) (LinearMap.fst ℝ U F)
+    - P.b.compl₁₂ (LinearMap.fst ℝ U F) (LinearMap.snd ℝ U F)
+    - (P.b.compl₁₂ (LinearMap.fst ℝ U F) (LinearMap.snd ℝ U F)).flip
+    + P.d.compl₁₂ (LinearMap.snd ℝ U F) (LinearMap.snd ℝ U F)
+
+/-- `(u, lam)ᵀ M (v, mu) = uᵀ A_I v - uᵀ B mu - vᵀ B lam + lamᵀ D mu`. -/
+theorem M_apply (x y : U × F) :
+    P.M x y = P.a x.1 y.1 - P.b x.1 y.2 - P.b y.1 x.2 + P.d x.2 y.2 := rfl
+
+/-- The energy matrix is symmetric. -/
+theorem M_symm (x y : U × F) : P.M x y = P.M y x := by
+  rw [M_apply, M_apply, P.a_symm x.1 y.1, P.d_symm x.2 y.2]
+  ring
+
+/-- The energy `xᵀ M x` is never negative. -/
+theorem M_self_nonneg (x : U × F) : 0 ≤ P.M x x := by
+  have h := P.energy_nonneg x.1 x.2
+  rw [M_apply]
+  linarith
+
+/-- `h` is the **exact constraint mode** of the boundary pattern `q`: `A_I h = B q`, written
+against every interior field `v`. -/
+def IsExactMode (h : U) (q : F) : Prop := ∀ v, P.a v h = P.b v q
+
+/-- **The Gram port matrix** of the interior fields `h k` paired with the boundary patterns
+`q k`: entry `(k, l)` is `(h k, q k)ᵀ M (h l, q l)`. With the exact constraint modes it is the
+exact port matrix; with a network&#x27;s fields it is what the host computes. -/
+def gram {ι : Type*} (h : ι → U) (q : ι → F) : Matrix ι ι ℝ :=
+  Matrix.of fun k l =&gt; P.M (h k, q k) (h l, q l)
+
+theorem gram_apply {ι : Type*} (h : ι → U) (q : ι → F) (k l : ι) :
+    P.gram h q k l = P.M (h k, q k) (h l, q l) := rfl
+
+/-- The interior energy `uᵀ A_I u` is never negative. -/
+theorem a_self_nonneg (u : U) : 0 ≤ P.a u u := by
+  have h := P.energy_nonneg u 0
+  simpa using h
+
+/-- On interior fields the energy matrix is `A_I`. -/
+theorem M_cell (u v : U) : P.M (u, 0) (v, 0) = P.a u v := by
+  simp [M_apply]
+
+/-- The Gram port matrix is symmetric. -/
+theorem gram_isHermitian {ι : Type*} (h : ι → U) (q : ι → F) : (P.gram h q).IsHermitian := by
+  ext k l
+  simp only [conjTranspose_apply, gram_apply, star_trivial]
+  exact P.M_symm _ _
+
+variable {ι : Type*} [Fintype ι]
+
+/-- A combination of pairs is the pair of the combinations. -/
+theorem sum_smul_pair (x : ι → ℝ) (h : ι → U) (q : ι → F) :
+    ∑ k, x k • ((h k, q k) : U × F) = (∑ k, x k • h k, ∑ k, x k • q k) := by
+  ext &lt;;&gt; simp [Prod.fst_sum, Prod.snd_sum]
+
+/-- The Gram port matrix as a bilinear form on port coordinates: `yᵀ Λ x` is the energy
+pairing of the two combined fields. -/
+theorem dotProduct_gram_mulVec (h : ι → U) (q : ι → F) (x y : ι → ℝ) :
+    y ⬝ᵥ (P.gram h q *ᵥ x) = P.M (∑ l, y l • (h l, q l)) (∑ k, x k • (h k, q k)) := by
+  simp only [dotProduct, mulVec, gram_apply, map_sum, map_smul, LinearMap.sum_apply,
+    LinearMap.smul_apply, smul_eq_mul, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun k _ =&gt; Finset.sum_congr rfl fun l _ =&gt; ?_
+  ring
+
+/-- **T25 (i).** The Gram port matrix is symmetric positive semidefinite, for any fields. -/
+theorem gram_posSemidef (h : ι → U) (q : ι → F) : (P.gram h q).PosSemidef := by
+  refine PosSemidef.of_dotProduct_mulVec_nonneg (P.gram_isHermitian h q) fun x =&gt; ?_
+  rw [star_trivial, P.dotProduct_gram_mulVec]
+  exact P.M_self_nonneg _
+
+/-- **T25 (i), the definite case.** If the piece&#x27;s energy is positive definite and the port
+patterns are linearly independent, the Gram port matrix is positive definite, for any
+fields. -/
+theorem gram_posDef (h : ι → U) {q : ι → F} (hq : LinearIndependent ℝ q)
+    (hM : ∀ x : U × F, P.M x x = 0 → x = 0) : (P.gram h q).PosDef := by
+  refine PosDef.of_dotProduct_mulVec_pos (P.gram_isHermitian h q) fun x hx =&gt; ?_
+  rw [star_trivial, P.dotProduct_gram_mulVec]
+  refine lt_of_le_of_ne (P.M_self_nonneg _) fun h0 =&gt; hx ?_
+  have hz := hM _ h0.symm
+  rw [sum_smul_pair] at hz
+  have hq0 : ∑ k, x k • q k = 0 := congrArg Prod.snd hz
+  funext k
+  exact Fintype.linearIndependent_iff.mp hq x hq0 k
+
+omit [Fintype ι] in
+/-- **T25 (ii), the error identity.** The learned port matrix minus the exact one is the Gram
+matrix of the field errors `h k - hex k` in the `A_I` inner product. The cross terms vanish
+because `A_I (hex k) = B (q k)`. -/
+theorem gram_sub_gram (h hex : ι → U) (q : ι → F)
+    (hex_def : ∀ k, P.IsExactMode (hex k) (q k)) :
+    P.gram h q - P.gram hex q = Matrix.of fun k l =&gt; P.a (h k - hex k) (h l - hex l) := by
+  ext k l
+  simp only [Matrix.sub_apply, gram_apply, of_apply, M_apply]
+  rw [← hex_def l (h k), ← hex_def k (h l), ← hex_def l (hex k), ← hex_def k (hex l)]
+  simp only [map_sub, LinearMap.sub_apply]
+  rw [P.a_symm (h l) (hex k), P.a_symm (hex l) (hex k)]
+  ring
+
+/-- **T25 (ii), the same identity as a quadratic form.** For port coordinates `x`, the excess
+stiffness `xᵀ (Λt - Λ) x` is the `A_I` energy of the field error `∑ k, x k • (h k - hex k)`. -/
+theorem quadratic_gram_sub (h hex : ι → U) (q : ι → F)
+    (hex_def : ∀ k, P.IsExactMode (hex k) (q k)) (x : ι → ℝ) :
+    x ⬝ᵥ ((P.gram h q - P.gram hex q) *ᵥ x)
+      = P.a (∑ k, x k • (h k - hex k)) (∑ k, x k • (h k - hex k)) := by
+  rw [P.gram_sub_gram h hex q hex_def]
+  simp only [dotProduct, mulVec, of_apply, map_sum, map_smul, LinearMap.sum_apply,
+    LinearMap.smul_apply, smul_eq_mul, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun k _ =&gt; Finset.sum_congr rfl fun l _ =&gt; ?_
+  rw [P.a_symm (h l - hex l) (h k - hex k)]
+  ring
+
+/-- **T25 (ii): the learned piece is never softer than the exact one.** -/
+theorem gram_sub_gram_posSemidef (h hex : ι → U) (q : ι → F)
+    (hex_def : ∀ k, P.IsExactMode (hex k) (q k)) :
+    (P.gram h q - P.gram hex q).PosSemidef := by
+  refine PosSemidef.of_dotProduct_mulVec_nonneg
+    ((P.gram_isHermitian h q).sub (P.gram_isHermitian hex q)) fun x =&gt; ?_
+  rw [star_trivial, P.quadratic_gram_sub h hex q hex_def]
+  exact P.a_self_nonneg _
+
+/-- **T25 (ii), the trace.** The traces differ by the summed `A_I` energies of the mode
+errors. This is what the label-free objective (T26) uses. -/
+theorem trace_gram_sub (h hex : ι → U) (q : ι → F)
+    (hex_def : ∀ k, P.IsExactMode (hex k) (q k)) :
+    (P.gram h q).trace - (P.gram hex q).trace = ∑ k, P.a (h k - hex k) (h k - hex k) := by
+  rw [← trace_sub, P.gram_sub_gram h hex q hex_def]
+  rfl
+
+/-- **T25 (ii), the error of the port matrix is quadratic in the error of the fields.**
+`size` is any measure of an interior field (the Euclidean norm, say). If `A_I` is bounded by
+`α` in it, and the error modes send port coordinates `x` to a field of size at most `ε |x|`,
+then `xᵀ (Λt - Λ) x ≤ α ε² |x|²`. In matrix norms: `‖Λt - Λ‖ ≤ ‖A_I‖ ‖E‖²`. -/
+theorem quadratic_gram_sub_le (h hex : ι → U) (q : ι → F)
+    (hex_def : ∀ k, P.IsExactMode (hex k) (q k)) {size : U → ℝ} {α ε : ℝ} (hα₀ : 0 ≤ α)
+    (hα : ∀ u, P.a u u ≤ α * size u ^ 2)
+    (hε : ∀ x : ι → ℝ, size (∑ k, x k • (h k - hex k)) ^ 2 ≤ ε ^ 2 * (x ⬝ᵥ x))
+    (x : ι → ℝ) :
+    x ⬝ᵥ ((P.gram h q - P.gram hex q) *ᵥ x) ≤ α * ε ^ 2 * (x ⬝ᵥ x) := by
+  rw [P.quadratic_gram_sub h hex q hex_def]
+  calc P.a (∑ k, x k • (h k - hex k)) (∑ k, x k • (h k - hex k))
+      ≤ α * size (∑ k, x k • (h k - hex k)) ^ 2 := hα _
+    _ ≤ α * (ε ^ 2 * (x ⬝ᵥ x)) := mul_le_mul_of_nonneg_left (hε x) hα₀
+    _ = α * ε ^ 2 * (x ⬝ᵥ x) := by ring
+
+end Piece
+
+section Assembly
+
+variable {U F : Type*} [AddCommGroup U] [Module ℝ U] [AddCommGroup F] [Module ℝ F]
+  {π ι γ : Type*} [Fintype π] [Fintype ι] [Fintype γ]
+
+/-- **The assembled interface matrix** `∑ i, R iᵀ * L i * R i`: piece `i`&#x27;s port matrix `L i`
+placed on the global port coordinates by `R i`, which reads piece `i`&#x27;s coordinates off the
+global vector. -/
+def assemble (R : π → Matrix ι γ ℝ) (L : π → Matrix ι ι ℝ) : Matrix γ γ ℝ :=
+  ∑ i, (R i)ᵀ * L i * R i
+
+/-- The assembled matrix as a bilinear form: `dᵀ S c = ∑ i, (R i d)ᵀ L i (R i c)`. -/
+theorem dotProduct_assemble_mulVec (R : π → Matrix ι γ ℝ) (L : π → Matrix ι ι ℝ)
+    (c d : γ → ℝ) :
+    d ⬝ᵥ (assemble R L *ᵥ c) = ∑ i, (R i *ᵥ d) ⬝ᵥ (L i *ᵥ (R i *ᵥ c)) := by
+  rw [assemble, sum_mulVec, dotProduct_sum]
+  refine Finset.sum_congr rfl fun i _ =&gt; ?_
+  rw [← mulVec_mulVec, ← mulVec_mulVec, dotProduct_mulVec, vecMul_transpose]
+
+omit [Fintype γ] in
+/-- Assembly is linear in the port matrices. -/
+theorem assemble_sub (R : π → Matrix ι γ ℝ) (L L&#x27; : π → Matrix ι ι ℝ) :
+    assemble R L - assemble R L&#x27; = assemble R (fun i =&gt; L i - L&#x27; i) := by
+  simp only [assemble, ← Finset.sum_sub_distrib, Matrix.mul_sub, Matrix.sub_mul]
+
+/-- Assembling positive semidefinite port matrices gives a positive semidefinite matrix. -/
+theorem assemble_posSemidef (R : π → Matrix ι γ ℝ) {L : π → Matrix ι ι ℝ}
+    (hL : ∀ i, (L i).PosSemidef) : (assemble R L).PosSemidef := by
+  refine posSemidef_sum _ fun i _ =&gt; ?_
+  have h := (hL i).conjTranspose_mul_mul_same (R i)
+  rwa [conjTranspose_eq_transpose_of_trivial] at h
+
+/-- A positive definite system has exactly one solution. -/
+theorem existsUnique_mulVec_of_posDef {A : Matrix γ γ ℝ} (hA : A.PosDef) (χ : γ → ℝ) :
+    ∃! c : γ → ℝ, A *ᵥ c = χ := by
+  classical
+  have hdet : IsUnit A.det := (isUnit_iff_isUnit_det A).mp hA.isUnit
+  refine ⟨A⁻¹ *ᵥ χ, ?_, fun c hc =&gt; ?_⟩
+  · show A *ᵥ (A⁻¹ *ᵥ χ) = χ
+    rw [mulVec_mulVec, mul_nonsing_inv A hdet, one_mulVec]
+  · rw [← hc, mulVec_mulVec, nonsing_inv_mul A hdet, one_mulVec]
+
+variable (P : π → Piece U F) (R : π → Matrix ι γ ℝ) (h hex : π → ι → U) (q : π → ι → F)
+
+/-- **T25 (iii).** The assembled learned interface matrix dominates the exact one: their
+difference is positive semidefinite. -/
+theorem assemble_gram_sub_posSemidef
+    (hex_def : ∀ i k, (P i).IsExactMode (hex i k) (q i k)) :
+    (assemble R (fun i =&gt; (P i).gram (h i) (q i))
+      - assemble R (fun i =&gt; (P i).gram (hex i) (q i))).PosSemidef := by
+  rw [assemble_sub]
+  exact assemble_posSemidef R fun i =&gt;
+    (P i).gram_sub_gram_posSemidef (h i) (hex i) (q i) (hex_def i)
+
+/-- **T25 (iii), the coercivity constant is inherited.** Any `β` with `β |c|² ≤ cᵀ S c` for
+the exact assembled matrix `S` satisfies the same for the learned one. (With the largest such
+`β`: the smallest eigenvalue does not decrease.) -/
+theorem assemble_gram_coercive
+    (hex_def : ∀ i k, (P i).IsExactMode (hex i k) (q i k)) {β : ℝ}
+    (hS : ∀ c : γ → ℝ,
+      β * (c ⬝ᵥ c) ≤ c ⬝ᵥ (assemble R (fun i =&gt; (P i).gram (hex i) (q i)) *ᵥ c))
+    (c : γ → ℝ) :
+    β * (c ⬝ᵥ c) ≤ c ⬝ᵥ (assemble R (fun i =&gt; (P i).gram (h i) (q i)) *ᵥ c) := by
+  have hd := (assemble_gram_sub_posSemidef P R h hex q hex_def).dotProduct_mulVec_nonneg c
+  rw [star_trivial, sub_mulVec, dotProduct_sub] at hd
+  linarith [hS c]
+
+/-- **T25 (iii), definiteness.** If the exact assembled matrix is positive definite, so is
+the learned one, whatever the network returned. -/
+theorem assemble_gram_posDef
+    (hex_def : ∀ i k, (P i).IsExactMode (hex i k) (q i k))
+    (hS : (assemble R (fun i =&gt; (P i).gram (hex i) (q i))).PosDef) :
+    (assemble R (fun i =&gt; (P i).gram (h i) (q i))).PosDef := by
+  have hpsd : (assemble R (fun i =&gt; (P i).gram (h i) (q i))).PosSemidef :=
+    assemble_posSemidef R fun i =&gt; (P i).gram_posSemidef (h i) (q i)
+  refine PosDef.of_dotProduct_mulVec_pos hpsd.1 fun x hx =&gt; ?_
+  have h1 := hS.dotProduct_mulVec_pos hx
+  have hd := (assemble_gram_sub_posSemidef P R h hex q hex_def).dotProduct_mulVec_nonneg x
+  rw [sub_mulVec, dotProduct_sub] at hd
+  linarith
+
+/-- **T25 (iii), solvability.** If the exact assembled matrix is positive definite, the
+learned interface system has exactly one solution for every right-hand side. -/
+theorem assemble_gram_existsUnique
+    (hex_def : ∀ i k, (P i).IsExactMode (hex i k) (q i k))
+    (hS : (assemble R (fun i =&gt; (P i).gram (hex i) (q i))).PosDef) (χ : γ → ℝ) :
+    ∃! c : γ → ℝ, assemble R (fun i =&gt; (P i).gram (h i) (q i)) *ᵥ c = χ :=
+  existsUnique_mulVec_of_posDef (assemble_gram_posDef P R h hex q hex_def hS) χ
+
+end Assembly
+
+end Atlas
+</pre>
+</div></main></body></html>

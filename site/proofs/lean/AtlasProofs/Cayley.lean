@@ -1,0 +1,241 @@
+import AtlasProofs.GramPort
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.Normed.Operator.Basic
+import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Mathlib.Algebra.Order.Star.Real
+
+/-!
+# T8 — Wave variables: a passive piece does not amplify waves
+
+On a side of a piece, `e` is the vector of boundary values (the effort: a temperature) and
+`f` the flux into the piece (the flow). For an impedance `Z > 0` the incoming and outgoing
+waves are, up to the common factor `1 / (2 √Z)`,
+
+    a = e + Z f,        b = e - Z f.
+
+A source-free linear piece has `f = Λ e`, and maps incoming to outgoing waves by its
+**scattering map**, the Cayley transform `S = (I - Z Λ)(I + Z Λ)⁻¹`.
+
+**Plain statement.**
+
+* (the identity) `|b|² = |a|² - 4 Z ⟨f, e⟩`: the outgoing wave is the incoming one minus the
+  power the piece absorbs.
+* (the bound) If the piece absorbs at least `c |e|²` (`c ≥ 0`) and its flux is at most
+  `M |e|`, then `|b|² ≤ (1 - 4 Z c / (1 + Z M)²) |a|²`. This needs no linearity: it holds for
+  any pair `e, f`, so also for the *difference* of two states of a nonlinear piece.
+* (the scattering map) For a linear `Λ` on a finite-dimensional space with those two
+  properties, `I + Z Λ` is invertible and `‖S‖² ≤ 1 - 4 Z c / (1 + Z M)²`.
+* (`c = 0`) A piece that only never generates power, `⟨Λ e, e⟩ ≥ 0`, has `‖S‖ ≤ 1`.
+* (tier 0 serves at tier 2) The Gram port matrix of T25 is positive semidefinite for every
+  network output, so its scattering matrix is non-expansive for every impedance.
+
+The identity and the bound hold in any real inner-product space. Invertibility is stated in
+finite dimensions.
+-/
+
+namespace Atlas
+
+open Matrix
+
+section Waves
+
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+
+/-- **T8 (the wave identity).** `|e - Z f|² = |e + Z f|² - 4 Z ⟨f, e⟩`. -/
+theorem wave_identity (e f : E) (Z : ℝ) :
+    ‖e - Z • f‖ ^ 2 = ‖e + Z • f‖ ^ 2 - 4 * Z * inner ℝ f e := by
+  rw [norm_sub_sq_real, norm_add_sq_real, real_inner_smul_right, real_inner_comm e f]
+  ring
+
+/-- **T8 (the bound, for any effort and flow).** If `⟨f, e⟩ ≥ c |e|²` with `c ≥ 0` and
+`|f| ≤ M |e|`, then the outgoing wave is smaller than the incoming one by the factor
+`1 - 4 Z c / (1 + Z M)²`, in squared norm. -/
+theorem wave_bound {e f : E} {Z c M : ℝ} (hZ : 0 < Z) (hc : 0 ≤ c)
+    (hacc : c * ‖e‖ ^ 2 ≤ inner ℝ f e) (hf : ‖f‖ ≤ M * ‖e‖) :
+    ‖e - Z • f‖ ^ 2 ≤ (1 - 4 * Z * c / (1 + Z * M) ^ 2) * ‖e + Z • f‖ ^ 2 := by
+  by_cases he : e = 0
+  · have hf0 : f = 0 := by
+      rw [he, norm_zero, mul_zero] at hf
+      exact norm_le_zero_iff.mp hf
+    simp [he, hf0]
+  have hepos : 0 < ‖e‖ := norm_pos_iff.mpr he
+  have hM : 0 ≤ M := by
+    by_contra hneg
+    rw [not_le] at hneg
+    have h1 : M * ‖e‖ < 0 := mul_neg_of_neg_of_pos hneg hepos
+    linarith [norm_nonneg f]
+  have hK : 0 < 1 + Z * M := by positivity
+  have hy : ‖e + Z • f‖ ≤ (1 + Z * M) * ‖e‖ :=
+    calc ‖e + Z • f‖ ≤ ‖e‖ + ‖Z • f‖ := norm_add_le _ _
+      _ = ‖e‖ + Z * ‖f‖ := by rw [norm_smul, Real.norm_eq_abs, abs_of_pos hZ]
+      _ ≤ ‖e‖ + Z * (M * ‖e‖) := by
+          have h1 := mul_le_mul_of_nonneg_left hf hZ.le
+          linarith
+      _ = (1 + Z * M) * ‖e‖ := by ring
+  have hy2 : ‖e + Z • f‖ ^ 2 ≤ (1 + Z * M) ^ 2 * ‖e‖ ^ 2 := by
+    have h0 : 0 ≤ ‖e + Z • f‖ := norm_nonneg _
+    have hlow : -((1 + Z * M) * ‖e‖) ≤ ‖e + Z • f‖ := by linarith
+    have h1 : ‖e + Z • f‖ ^ 2 ≤ ((1 + Z * M) * ‖e‖) ^ 2 := sq_le_sq' hlow hy
+    rwa [mul_pow] at h1
+  have h4 : 0 ≤ 4 * Z * c := by positivity
+  have h1 : 4 * Z * c / (1 + Z * M) ^ 2 * ‖e + Z • f‖ ^ 2 ≤ 4 * Z * c * ‖e‖ ^ 2 := by
+    rw [div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
+    have h5 := mul_le_mul_of_nonneg_left hy2 h4
+    linarith
+  have h2 : 4 * Z * c * ‖e‖ ^ 2 ≤ 4 * Z * inner ℝ f e := by
+    have h5 := mul_le_mul_of_nonneg_left hacc (by positivity : (0 : ℝ) ≤ 4 * Z)
+    linarith
+  have h3 : (1 - 4 * Z * c / (1 + Z * M) ^ 2) * ‖e + Z • f‖ ^ 2
+      = ‖e + Z • f‖ ^ 2 - 4 * Z * c / (1 + Z * M) ^ 2 * ‖e + Z • f‖ ^ 2 := by ring
+  rw [wave_identity, h3]
+  linarith
+
+/-- **T8 (the Cayley bound).** For a bounded linear `Λ` with `⟨Λ e, e⟩ ≥ c |e|²`, `c ≥ 0`,
+and `‖Λ‖ ≤ M`, and any `Z > 0`:
+`|(I - Z Λ) e|² ≤ (1 - 4 Z c / (1 + Z M)²) |(I + Z Λ) e|²` for every `e`. -/
+theorem cayley_bound (Λ : E →L[ℝ] E) {Z c M : ℝ} (hZ : 0 < Z) (hc : 0 ≤ c)
+    (hacc : ∀ e, c * ‖e‖ ^ 2 ≤ inner ℝ (Λ e) e) (hM : ‖Λ‖ ≤ M) (e : E) :
+    ‖e - Z • Λ e‖ ^ 2 ≤ (1 - 4 * Z * c / (1 + Z * M) ^ 2) * ‖e + Z • Λ e‖ ^ 2 := by
+  refine wave_bound hZ hc (hacc e) ?_
+  exact (Λ.le_opNorm e).trans (mul_le_mul_of_nonneg_right hM (norm_nonneg e))
+
+/-- For a passive `Λ` on a finite-dimensional space, `I + Z Λ` is invertible. -/
+theorem cayley_inverse [FiniteDimensional ℝ E] (Λ : E →L[ℝ] E) {Z : ℝ} (hZ : 0 < Z)
+    (hpos : ∀ e, 0 ≤ inner ℝ (Λ e) e) :
+    ∃ B : E →L[ℝ] E, B * (1 + Z • Λ) = 1 ∧ (1 + Z • Λ) * B = 1 := by
+  have hinj : Function.Injective ((1 + Z • Λ : E →L[ℝ] E) : E →ₗ[ℝ] E) := by
+    rw [← LinearMap.ker_eq_bot, LinearMap.ker_eq_bot']
+    intro e he
+    have he' : e + Z • Λ e = 0 := he
+    have h1 : inner ℝ (e + Z • Λ e) e = ‖e‖ ^ 2 + Z * inner ℝ (Λ e) e := by
+      rw [inner_add_left, real_inner_smul_left, real_inner_self_eq_norm_sq]
+    rw [he', inner_zero_left] at h1
+    have h2 := mul_nonneg hZ.le (hpos e)
+    have h3 : ‖e‖ ^ 2 = 0 := le_antisymm (by linarith) (sq_nonneg _)
+    exact norm_eq_zero.mp (by simpa using h3)
+  have hsurj := LinearMap.injective_iff_surjective.mp hinj
+  let A : E ≃ₗ[ℝ] E := LinearEquiv.ofBijective _ ⟨hinj, hsurj⟩
+  refine ⟨LinearMap.toContinuousLinearMap (A.symm : E →ₗ[ℝ] E), ?_, ?_⟩
+  · ext e
+    show A.symm (A e) = e
+    exact A.symm_apply_apply e
+  · ext y
+    show A (A.symm y) = y
+    exact A.apply_symm_apply y
+
+/-- With `B` the inverse of `I + Z Λ`: every `y` is `(I + Z Λ) (B y)`. -/
+theorem cayley_inverse_apply {Λ B : E →L[ℝ] E} {Z : ℝ} (hAB : (1 + Z • Λ) * B = 1) (y : E) :
+    B y + Z • Λ (B y) = y := by
+  have h := congrArg (fun T : E →L[ℝ] E => T y) hAB
+  exact h
+
+/-- **T8 (the scattering map exists and contracts).** In finite dimensions, under the
+hypotheses of `cayley_bound`, `I + Z Λ` has an inverse `B`, and the scattering map
+`S = (I - Z Λ) B` satisfies `‖S‖² ≤ 1 - 4 Z c / (1 + Z M)²`.
+
+The space must contain a non-zero vector: on the zero space every `c` satisfies the
+hypothesis, and the right-hand side can then be negative. -/
+theorem cayley_transform [FiniteDimensional ℝ E] [Nontrivial E] (Λ : E →L[ℝ] E)
+    {Z c M : ℝ} (hZ : 0 < Z)
+    (hc : 0 ≤ c) (hacc : ∀ e, c * ‖e‖ ^ 2 ≤ inner ℝ (Λ e) e) (hM : ‖Λ‖ ≤ M) :
+    ∃ B : E →L[ℝ] E, B * (1 + Z • Λ) = 1 ∧ (1 + Z • Λ) * B = 1 ∧
+      ‖(1 - Z • Λ) * B‖ ^ 2 ≤ 1 - 4 * Z * c / (1 + Z * M) ^ 2 := by
+  obtain ⟨B, hBA, hAB⟩ := cayley_inverse Λ hZ
+    (fun e => le_trans (mul_nonneg hc (sq_nonneg _)) (hacc e))
+  refine ⟨B, hBA, hAB, ?_⟩
+  have hpt : ∀ y, ‖((1 - Z • Λ) * B) y‖ ^ 2
+      ≤ (1 - 4 * Z * c / (1 + Z * M) ^ 2) * ‖y‖ ^ 2 := by
+    intro y
+    have h := cayley_bound Λ hZ hc hacc hM (B y)
+    rw [cayley_inverse_apply hAB y] at h
+    exact h
+  have hκ0 : 0 ≤ 1 - 4 * Z * c / (1 + Z * M) ^ 2 := by
+    obtain ⟨y, hy⟩ := exists_ne (0 : E)
+    have h := hpt y
+    have hypos : 0 < ‖y‖ ^ 2 := pow_pos (norm_pos_iff.mpr hy) 2
+    by_contra hneg
+    rw [not_le] at hneg
+    have h1 : (1 - 4 * Z * c / (1 + Z * M) ^ 2) * ‖y‖ ^ 2 < 0 :=
+      mul_neg_of_neg_of_pos hneg hypos
+    linarith [sq_nonneg ‖((1 - Z • Λ) * B) y‖]
+  have hnorm : ‖(1 - Z • Λ) * B‖ ≤ Real.sqrt (1 - 4 * Z * c / (1 + Z * M) ^ 2) := by
+    refine ContinuousLinearMap.opNorm_le_bound _ (Real.sqrt_nonneg _) fun y => ?_
+    have h2 : ‖((1 - Z • Λ) * B) y‖ ^ 2
+        ≤ (Real.sqrt (1 - 4 * Z * c / (1 + Z * M) ^ 2) * ‖y‖) ^ 2 := by
+      rw [mul_pow, Real.sq_sqrt hκ0]
+      exact hpt y
+    exact (abs_le_of_sq_le_sq' h2 (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg y))).2
+  have h0 : 0 ≤ ‖(1 - Z • Λ) * B‖ := norm_nonneg _
+  have hs0 : 0 ≤ Real.sqrt (1 - 4 * Z * c / (1 + Z * M) ^ 2) := Real.sqrt_nonneg _
+  have hlow : -Real.sqrt (1 - 4 * Z * c / (1 + Z * M) ^ 2) ≤ ‖(1 - Z • Λ) * B‖ := by
+    linarith
+  calc ‖(1 - Z • Λ) * B‖ ^ 2
+      ≤ Real.sqrt (1 - 4 * Z * c / (1 + Z * M) ^ 2) ^ 2 := sq_le_sq' hlow hnorm
+    _ = 1 - 4 * Z * c / (1 + Z * M) ^ 2 := Real.sq_sqrt hκ0
+
+/-- **T8 with `c = 0`: a passive piece is non-expansive.** If `⟨Λ e, e⟩ ≥ 0` for every `e`,
+then in finite dimensions `I + Z Λ` is invertible and the scattering map has norm at most
+one, for every impedance `Z > 0`. -/
+theorem cayley_nonexpansive [FiniteDimensional ℝ E] (Λ : E →L[ℝ] E) {Z : ℝ} (hZ : 0 < Z)
+    (hpos : ∀ e, 0 ≤ inner ℝ (Λ e) e) :
+    ∃ B : E →L[ℝ] E, B * (1 + Z • Λ) = 1 ∧ (1 + Z • Λ) * B = 1 ∧
+      ‖(1 - Z • Λ) * B‖ ≤ 1 := by
+  obtain ⟨B, hBA, hAB⟩ := cayley_inverse Λ hZ hpos
+  refine ⟨B, hBA, hAB, ?_⟩
+  refine ContinuousLinearMap.opNorm_le_bound _ zero_le_one fun y => ?_
+  have h := wave_identity (B y) (Λ (B y)) Z
+  rw [cayley_inverse_apply hAB y] at h
+  have h1 := mul_nonneg hZ.le (hpos (B y))
+  have h2 : ‖((1 - Z • Λ) * B) y‖ ^ 2 ≤ ‖y‖ ^ 2 := by
+    have h3 : ‖((1 - Z • Λ) * B) y‖ ^ 2 = ‖y‖ ^ 2 - 4 * Z * inner ℝ (Λ (B y)) (B y) := h
+    linarith
+  rw [one_mul]
+  exact (abs_le_of_sq_le_sq' h2 (norm_nonneg y)).2
+
+end Waves
+
+section Matrices
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
+/-- **T8 for a positive semidefinite matrix.** If `L` is positive semidefinite and `Z > 0`,
+then `1 + Z L` has an inverse `B`, and the scattering matrix `S = (1 - Z L) B` does not
+lengthen any vector: `|S a|² ≤ |a|²`. -/
+theorem cayley_matrix_nonexpansive {L : Matrix ι ι ℝ} (hL : L.PosSemidef) {Z : ℝ}
+    (hZ : 0 < Z) :
+    ∃ B : Matrix ι ι ℝ, B * (1 + Z • L) = 1 ∧ (1 + Z • L) * B = 1 ∧
+      ∀ a : ι → ℝ, (((1 - Z • L) * B) *ᵥ a) ⬝ᵥ (((1 - Z • L) * B) *ᵥ a) ≤ a ⬝ᵥ a := by
+  have hA : (1 + Z • L).PosDef := PosDef.one.add_posSemidef (hL.smul hZ.le)
+  have hdet : IsUnit (1 + Z • L).det := (isUnit_iff_isUnit_det _).mp hA.isUnit
+  refine ⟨(1 + Z • L)⁻¹, nonsing_inv_mul _ hdet, mul_nonsing_inv _ hdet, fun a => ?_⟩
+  obtain ⟨e, he⟩ : ∃ e : ι → ℝ, (1 + Z • L)⁻¹ *ᵥ a = e := ⟨_, rfl⟩
+  have ha : e + Z • (L *ᵥ e) = a := by
+    have h1 : ((1 + Z • L) * (1 + Z • L)⁻¹) *ᵥ a = a := by
+      rw [mul_nonsing_inv _ hdet, one_mulVec]
+    rw [← mulVec_mulVec, he, add_mulVec, one_mulVec, smul_mulVec] at h1
+    exact h1
+  have hS : ((1 - Z • L) * (1 + Z • L)⁻¹) *ᵥ a = e - Z • (L *ᵥ e) := by
+    rw [← mulVec_mulVec, he, sub_mulVec, one_mulVec, smul_mulVec]
+  have hnn := hL.dotProduct_mulVec_nonneg e
+  rw [star_trivial] at hnn
+  have h1 := mul_nonneg hZ.le hnn
+  rw [hS, ← ha]
+  simp only [sub_dotProduct, dotProduct_sub, add_dotProduct, dotProduct_add, smul_dotProduct,
+    dotProduct_smul, smul_eq_mul]
+  rw [dotProduct_comm (L *ᵥ e) e]
+  linarith
+
+/-- **T8 at tier 0: a learned superelement also serves at tier 2.** For *any* fields `h` a
+network returned, the scattering matrix formed from the Gram port matrix is non-expansive,
+for every impedance `Z > 0`. No certificate of the network is needed. -/
+theorem Piece.gram_cayley_nonexpansive {U F : Type*} [AddCommGroup U] [Module ℝ U]
+    [AddCommGroup F] [Module ℝ F] (P : Piece U F) (h : ι → U) (q : ι → F) {Z : ℝ}
+    (hZ : 0 < Z) :
+    ∃ B : Matrix ι ι ℝ, B * (1 + Z • P.gram h q) = 1 ∧ (1 + Z • P.gram h q) * B = 1 ∧
+      ∀ a : ι → ℝ, (((1 - Z • P.gram h q) * B) *ᵥ a) ⬝ᵥ (((1 - Z • P.gram h q) * B) *ᵥ a)
+        ≤ a ⬝ᵥ a :=
+  cayley_matrix_nonexpansive (P.gram_posSemidef h q) hZ
+
+end Matrices
+
+end Atlas

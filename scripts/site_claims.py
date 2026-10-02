@@ -169,9 +169,17 @@ CLAIMS: list[dict] = []
 PUBLISHED: dict[str, dict] = {}
 
 
+def site_config() -> dict:
+    with open(os.path.join(SITE, "data", "site.json"), encoding="utf-8") as fh:
+        return json.load(fh)
+
+
 def cite(rel: str) -> str:
     if rel.startswith("lean/"):
         return "proofs/" + rel                       # the Lean sources, copied whole (site_build.py)
+    if rel.startswith("atlas/workbench/bundle/"):      # published as the demo's own repository
+        c = site_config()
+        return f"{c['workbench_repo']}/blob/{c['workbench_branch']}/{rel.rsplit('/', 1)[1]}"
     if rel not in PUBLISHED:
         PUBLISHED[rel] = publish(rel)
     return PUBLISHED[rel]["public"]
@@ -250,6 +258,12 @@ def fast_claims() -> None:
                 pointer="runs[0].bars[0].agreement", date=when)
         if bar["met"]:
             met.append((k, s))
+    m = load(f"{REC}/fast/{FAST['farm'][1]}")["machine"]
+    os_name = "Windows " + re.match(r"Windows-(\d+)", m["platform"]).group(1)
+    add("machine.os", os_name, "text", sentence="the operating system of the laptop every timed workbench claim ran on",
+        source=f"{REC}/fast/{FAST['farm'][1]}", derived="machine.platform, its first two fields")
+    add("machine.cpus", m["cpu_count"], "int", units="logical processors", sentence="the laptop's logical processors",
+        source=f"{REC}/fast/{FAST['farm'][1]}", pointer="machine.cpu_count")
     lo, hi = min(s for _, s in met), max(s for _, s in met)
     add("fast.met", len(met), "int", sentence="kinds of physics whose Fast example meets both bars",
         source=[f"{REC}/fast/{FAST[k][1]}" for k in FAST], derived="count of runs[0].bars[0].met", units="of 8")
@@ -313,9 +327,10 @@ def schannel_claims() -> None:
 def w346_claims() -> None:
     rel = "out/w346/w346.json"
     d = load(rel)
-    vals, power = [], []
+    vals, power, rotors = [], [], []
     for k, r in d["rungs"].items():
         if 5 <= r["n_rotors"] <= 21:
+            rotors.append(r["n_rotors"])
             vals.append(max(1 / v for a, v in r["cost"]["ratio"].items() if a.startswith("Ep")))
             vals.append(max(1 / v for a, v in r["cost_replicate"]["ratio_min"].items() if a.startswith("Ep")))
             power.append(abs(r["accuracy"]["E"]["power_rel_diff"]))
@@ -326,6 +341,10 @@ def w346_claims() -> None:
     add("w346.plo", min(power), "pct", nd=1, sentence="farm power differs from the undivided solve's by, at least", source=rel,
         derived="min |accuracy.E.power_rel_diff| over the same rungs")
     add("w346.phi", max(power), "pct", nd=1, sentence="and at most", source=rel, derived="max of the same")
+    add("w346.rmin", min(rotors), "int", sentence="the smallest farm in the range, in rotors", source=rel,
+        derived="min rungs[].n_rotors at or above the first rung where decomposition wins")
+    add("w346.rmax", max(rotors), "int", sentence="the largest farm in the range, in rotors", source=rel,
+        derived="max rungs[].n_rotors with an accuracy record")
 
 
 def learned_claims() -> None:
@@ -346,6 +365,8 @@ def learned_claims() -> None:
     passed = sum(1 for k in ("G1", "G2", "G3", "G4", "G5", "G6") if v[k]["passed"])
     add("lc.passed", passed, "int", sentence="bars of the registered gate passed", source=rel, derived="count of verdict.G*.passed", units="of 6")
     add("lc.steps", g["steps"], "int", sentence="macro-steps evaluated", source=rel, pointer="steps")
+    add("lc.h", v["G2"]["comparisons"][0]["h"], "int", sentence="the macro-step at which the errors shown are read",
+        source=rel, pointer="verdict.G2.comparisons[0].h")
     add("lc.g3", v["G3"]["max"], "sci", nd=1, sentence="the largest divergence (mass conservation) of the learned arm", source=rel,
         pointer="verdict.G3.max")
     tl = "out/learned-case/training-log.json"
@@ -424,6 +445,15 @@ def installer_claims() -> None:
         caveat="exit code 3: everything ran, and the optional Gmsh would not load (libGLU)")
     add("inst.examples", len(rw["self_test_examples"]), "int", sentence="kinds the self-test runs", source=w,
         derived="len(self_test_examples)")
+    readme = "atlas/workbench/bundle/README.md"
+    with open(os.path.join(ROOT, readme), encoding="utf-8") as fh:
+        txt = fh.read()
+    py = re.search(r"\*\*Python (3\.\d+, 3\.\d+ or 3\.\d+)\.\*\*", txt).group(1)
+    add("inst.python", "Python " + py, "text", sentence="the Pythons the launcher accepts", source=readme,
+        derived="the README's Requirements, first item")
+    disk = re.search(r"`\.venv` took ([\d.]+ GB) on Windows", txt).group(1)
+    add("inst.disk", disk, "text", sentence="the private environment's size on Windows with every optional part",
+        source=readme, derived="the README's Requirements, 'Disk'", caveat="measured by the demo's chat on the owner's laptop")
 
 
 def build() -> dict:

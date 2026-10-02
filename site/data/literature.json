@@ -57,6 +57,7 @@
     {"key": "data", "display": "500", "fragment": "five hundred", "label": "training shapes"}
    ],
    "quote": "We successfully trained GINO to predict the pressure on car surfaces using only five hundred data points. The cost-accuracy experiments show a $26,000 \\times$ speed-up compared to optimized GPU-based computational fluid dynamics (CFD) simulators on computing the drag coefficient.",
+   "quote_display": "We successfully trained GINO to predict the pressure on car surfaces using only five hundred data points. The cost-accuracy experiments show a 26,000× speed-up compared to optimized GPU-based computational fluid dynamics (CFD) simulators on computing the drag coefficient.",
    "location": "abstract",
    "citation": "Z. Li et al., Geometry-Informed Neural Operator for Large-Scale 3D PDEs, arXiv:2309.00583, 2023",
    "url": "https://arxiv.org/abs/2309.00583",
@@ -102,6 +103,7 @@
    "claim": "Neural operators solving the pieces of a Schwarz iteration generalise to new geometries, with a convergence analysis.",
    "values": [],
    "quote": "we devise an iterative scheme \\textit{Schwarz Neural Inference} (SNI). This scheme allows for partitioning of the problem domain into smaller subdomains, on which local problems can be solved with neural operators, and stitching local solutions to construct a global solution. Additionally, we provide a theoretical analysis of the convergence rate and error bound.",
+   "quote_display": "we devise an iterative scheme Schwarz Neural Inference (SNI). This scheme allows for partitioning of the problem domain into smaller subdomains, on which local problems can be solved with neural operators, and stitching local solutions to construct a global solution. Additionally, we provide a theoretical analysis of the convergence rate and error bound.",
    "location": "abstract",
    "citation": "J. Huang, K. Zhang, Y. Wu, Z. Cheng, Operator learning with domain decomposition for geometry generalization in PDE solving, ICLR 2026, arXiv:2504.00510",
    "url": "https://arxiv.org/abs/2504.00510",
@@ -116,6 +118,7 @@
    "claim": "A solver learned on 3 × 3 × 3 voxel patches, tiled with Schwarz iteration, solved large 3-D solids far beyond its training scale.",
    "values": [{"key": "patch", "display": "3 × 3 × 3", "fragment": "3 \\times 3 \\times 3", "label": "voxel training patches"}],
    "quote": "NEST learns a neural operator on minimal voxel patches ($3 \\times 3 \\times 3$) with diverse local geometries and boundary/interface data. At inference time, an unseen voxelized domain is tiled into overlapping patches, the learned local solver is applied patchwise, and global consistency is enforced through iterative Schwarz coupling with partition-of-unity assembly.",
+   "quote_display": "NEST learns a neural operator on minimal voxel patches (3 × 3 × 3) with diverse local geometries and boundary/interface data. At inference time, an unseen voxelized domain is tiled into overlapping patches, the learned local solver is applied patchwise, and global consistency is enforced through iterative Schwarz coupling with partition-of-unity assembly.",
    "location": "abstract",
    "citation": "P. Secchi, D. S. Balint, M. Maurizi, Neural-Schwarz Tiling for geometry-universal PDE solving at scale, arXiv:2605.12343, 2026",
    "url": "https://arxiv.org/abs/2605.12343",

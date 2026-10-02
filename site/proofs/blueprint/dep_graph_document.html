@@ -1,0 +1,3390 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dependency graph</title>
+  <meta name="generator" content="plasTeX" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles/theme-white.css" />
+  <link rel="stylesheet" href="styles/dep_graph.css" />
+  
+  <script type="text/x-mathjax-config">
+  
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">  </script>
+
+
+<link rel="stylesheet" href="styles/extra_styles.css" />
+
+</head>
+
+<body>
+<header>
+  <a class="toc" href="index.html">Home</a>
+  <h1 id="doc_title">Dependencies</h1>
+</header>
+<div class="wrapper">
+<div class="content">
+  <div id="Legend">
+    <span id="legend_title" class="title">Legend
+    <div class="btn">
+       <div class="bar"></div>
+       <div class="bar"></div>
+       <div class="bar"></div>
+    </div></span> 
+    <dl class="legend">
+      
+      <dt>Boxes</dt><dd>definitions</dd>
+      
+      <dt>Ellipses</dt><dd>theorems and lemmas</dd>
+      
+      <dt>Blue border</dt><dd>the <em>statement</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      
+      <dt>Orange border</dt><dd>the <em>statement</em> of this result is not ready to be formalized; the blueprint needs more work</dd>
+      
+      <dt>Blue background</dt><dd>the <em>proof</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      
+      <dt>Green border</dt><dd>the <em>statement</em> of this result is formalized</dd>
+      
+      <dt>Green background</dt><dd>the <em>proof</em> of this result is formalized</dd>
+      
+      <dt>Dark green background</dt><dd>the <em>proof</em> of this result and all its ancestors are formalized</dd>
+      
+      <dt>Dark green border</dt><dd>this is in Mathlib</dd>
+      
+    </dl>
+  </div>
+    <div id="graph"></div>
+<div id="statements">
+
+    
+    <div class="dep-modal-container" id="cor:T1-uniform_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T1-uniform" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">2</span><span class="corollary_thmtitle">T1 with the defect bounded everywhere</span></div>
+    <div class="thm_thmcontent"><p>   The conclusion of Theorem&#160;<a href="sect0003.html#thm:T1">1</a> holds if hypothesis 3 is replaced by \(d(T_lx,T_cx)\le \delta \) for all \(x\in X\). </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#cor:T1-uniform">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.perturbed_contraction_uniform">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T11-nonexpansive_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T11-nonexpansive" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">54</span><span class="corollary_thmtitle">T11, incremental passivity gives a non-expansive step</span></div>
+    <div class="thm_thmcontent"><p>   Let \(u_i,v_i\) be agent \(i\)’s states in two runs before a step and \(u_i',v_i'\) after it, and let \(\Delta p(x)\) be the power pairing of the differences of the two runs’ efforts and flows at port \(x\). If \(\lVert u_i'-v_i'\rVert ^2\le \lVert u_i-v_i\rVert ^2+2\sum _{x\text{ of }i}\Delta p(x)\) for every agent and \(\Delta p(\pi (x))=-\Delta p(x)\), then </p>
+<div class="displaymath" id="a0000000128">
+  \[  \sum _i\lVert u_i'-v_i'\rVert ^2\le \sum _i\lVert u_i-v_i\rVert ^2 .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0018.html#cor:T11-nonexpansive">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.interconnection_nonexpansive">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T24-dominates_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T24-dominates" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">75</span><span class="corollary_thmtitle">T24 with the exact problem’s constant</span></div>
+    <div class="thm_thmcontent"><p>   On a real inner-product space, if \(\beta \lVert x\rVert ^2\le \langle \mathsf Sx,x\rangle \le \langle \tilde{\mathsf S}x,x\rangle \) for all \(x\) and some \(\beta {\gt}0\), the bound of Proposition&#160;<a href="sect0022.html#prop:T24">74</a> holds with this \(\beta \). </p>
+</div>
+
+    <a class="latex_link" href="sect0022.html#cor:T24-dominates">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.interface_perturbation_of_dominates">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T25-ii_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T25-ii" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">60</span><span class="corollary_thmtitle">T25 (ii), consequences</span></div>
+    <div class="thm_thmcontent"><p>   With the notation of Theorem&#160;<a href="sect0020.html#thm:T25-ii">59</a>: </p>
+<ol class="enumerate">
+  <li><p>\(\Lambda [h]-\Lambda [H]\) is positive semidefinite; </p>
+</li>
+  <li><p>\(\operatorname {tr}\Lambda [h]-\operatorname {tr}\Lambda [H]=\sum _ka(E_k,E_k)\); </p>
+</li>
+  <li><p>if \(s:U\to \mathbb {R}\) is any measure of size with \(a(u,u)\le \alpha \, s(u)^2\) for all \(u\), \(\alpha \ge 0\), and \(s\bigl(\sum _kx_kE_k\bigr)^2\le \varepsilon ^2\, |x|^2\) for all \(x\), then \(x^\top \bigl(\Lambda [h]-\Lambda [H]\bigr)x\le \alpha \, \varepsilon ^2\, |x|^2\). With Euclidean norms this is \(\lVert \tilde\Lambda -\Lambda \rVert _2\le \lVert A_I\rVert _2\lVert E\rVert _2^2\): the error of the port matrix is quadratic in the error of the fields. </p>
+</li>
+</ol>
+</div>
+
+    <a class="latex_link" href="sect0020.html#cor:T25-ii">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.gram_sub_gram_posSemidef" class="lean_decl">Atlas.Piece.gram_sub_gram_posSemidef</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.trace_gram_sub" class="lean_decl">Atlas.Piece.trace_gram_sub</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.quadratic_gram_sub_le" class="lean_decl">Atlas.Piece.quadratic_gram_sub_le</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T3c-homogeneous_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T3c-homogeneous" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">31</span><span class="corollary_thmtitle">The same hypothesis, read off the sweep</span></div>
+    <div class="thm_thmcontent"><p>   If \(A\) is onto and the sweep with zero right-hand side has no fixed point but \(0\), then for every \(f\) every fixed point of \(G_f\) solves \(Au=f\). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#cor:T3c-homogeneous">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.fixedPt_solves">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T4-contractive_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T4-contractive" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">14</span><span class="corollary_thmtitle">T4, the contractive regime</span></div>
+    <div class="thm_thmcontent"><p>   If moreover \(0\le L{\lt}1\) and every one-step defect has norm at most \(\delta \), then \(\lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert +\delta /(1-L)\) for every \(N\). </p>
+</div>
+
+    <a class="latex_link" href="sect0006.html#cor:T4-contractive">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_contractive">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T4-expansive_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T4-expansive" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">16</span><span class="corollary_thmtitle">T4, the expansive regime</span></div>
+    <div class="thm_thmcontent"><p>   If \(L{\gt}1\) and every one-step defect has norm at most \(\delta \), then \(\lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert  +\dfrac {L^N-1}{L-1}\, \delta \). </p>
+</div>
+
+    <a class="latex_link" href="sect0006.html#cor:T4-expansive">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_expansive">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T4-nonexpansive_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T4-nonexpansive" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">15</span><span class="corollary_thmtitle">T4, the non-expansive regime</span></div>
+    <div class="thm_thmcontent"><p>   If \(L=1\) and every one-step defect has norm at most \(\delta \), then \(\lVert u^N-u^{N,\star }\rVert \le \lVert u^0-u^{0,\star }\rVert +N\delta \). </p>
+</div>
+
+    <a class="latex_link" href="sect0006.html#cor:T4-nonexpansive">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_nonexpansive">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T4-three_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T4-three" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">13</span><span class="corollary_thmtitle">T4 with the three terms named</span></div>
+    <div class="thm_thmcontent"><p>   Let the composed step be \(\Phi (v)=\Phi _{\lambda ^{(k)}(v)}(v)\), where \(\lambda ^{(k)}(v)\) is the datum the interface solver returns at the state \(v\). Under the hypotheses of Theorem&#160;<a href="sect0006.html#thm:T4">12</a>, for any sequences of data \(\lambda ^{\star }_n\), \(\lambda ^{\dagger }_n\), </p>
+<div class="displaymath" id="a0000000078">
+  \[  \lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert  +\sum _{n=1}^{N}L^{N-n}\bigl(\tau ^n+\sigma ^n+\gamma ^n\bigr),  \]
+</div>
+<p> with \(\tau ^n\), \(\sigma ^n\), \(\gamma ^n\) the norms of the three terms of Lemma&#160;<a href="sect0006.html#lem:T4-split">10</a> at \(v=u^{n-1,\star }\) and \(\mathcal S(u^{n-1,\star })=u^{n,\star }\). </p>
+</div>
+
+    <a class="latex_link" href="sect0006.html#cor:T4-three">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_three_terms">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T4e-sigma_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T4e-sigma" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">19</span><span class="corollary_thmtitle">T4e, the transmission term</span></div>
+    <div class="thm_thmcontent"><p>   If moreover \(\lVert \Phi _\mu (v)-\Phi _{\mu '}(v)\rVert \le C_\mu \lVert \mu -\mu '\rVert \) for all data \(\mu ,\mu '\), then </p>
+<div class="displaymath" id="a0000000086">
+  \[  \lVert \Phi _{\lambda ^\dagger }(v)-\Phi _{\lambda ^\star }(v)\rVert  \le \frac{C_\mu }{\beta }\, \lVert \Lambda -\tilde\Lambda \rVert \, \lVert \lambda ^\star \rVert .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0007.html#cor:T4e-sigma">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.transmission_bound">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T5-const_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T5-const" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">40</span><span class="corollary_thmtitle">T5, Corollary 1: the null element</span></div>
+    <div class="thm_thmcontent"><p>   If \(\Psi \) is constant and \(w'\) is a successor of \(w\), then \(w'=\Phi (w)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0014.html#cor:T5-const">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.step_of_const">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T5-inner-const_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T5-inner-const" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">42</span><span class="corollary_thmtitle">T5, Corollary 1 for the inner march</span></div>
+    <div class="thm_thmcontent"><p>   If \(\Psi \) is constant, \(x^{(m)}=\Phi (w)\) for every \(m\). </p>
+</div>
+
+    <a class="latex_link" href="sect0014.html#cor:T5-inner-const">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.innerMarch_of_const">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T7-banach_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T7-banach" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">5</span><span class="corollary_thmtitle">T7, Banach’s form</span></div>
+    <div class="thm_thmcontent"><p>   Let \(X\) be a non-empty complete metric space and \(d(\Phi x,\Phi y)\le L\, d(x,y)\) for all \(x,y\), with \(0\le L{\lt}1\). Then \(\Phi \) has a unique fixed point \(w^\star \), and \(d(w,w^\star )\le d(w,\Phi w)/(1-L)\) for every \(w\in X\). </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#cor:T7-banach">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.certificate_of_contraction">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="cor:T8-gram_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="cor:T8-gram" style="display: none">
+    <div class="thm_thmheading">
+      <span class="corollary_thmcaption">
+      Corollary
+      </span>
+      <span class="corollary_thmlabel">81</span><span class="corollary_thmtitle">T8 at tier 0</span></div>
+    <div class="thm_thmcontent"><p>   For a positive semidefinite real matrix \(L\) and \(Z{\gt}0\), \(1+ZL\) is invertible and \(\mathsf S=(1-ZL)(1+ZL)^{-1}\) satisfies \(|\mathsf Sa|^2\le |a|^2\) for every \(a\). In particular this holds for the Gram port matrix \(\tilde\Lambda \) of any network output: a tier-0 expert also serves at tier 2, with no certificate. </p>
+</div>
+
+    <a class="latex_link" href="sect0025.html#cor:T8-gram">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.cayley_matrix_nonexpansive" class="lean_decl">Atlas.cayley_matrix_nonexpansive</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.gram_cayley_nonexpansive" class="lean_decl">Atlas.Piece.gram_cayley_nonexpansive</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:assemble_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:assemble" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">61</span><span class="definition_thmtitle">Assembly</span></div>
+    <div class="thm_thmcontent"><p>  For pieces \(i\) in a finite set, port matrices \(L_i\) and matrices \(R_i\) that read piece \(i\)’s port coordinates off the global coordinate vector, the assembled interface matrix is \(\sum _iR_i^\top L_iR_i\). </p>
+</div>
+
+    <a class="latex_link" href="sect0020.html#def:assemble">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.assemble">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:assumptions_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:assumptions" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">69</span><span class="definition_thmtitle">The three assumptions</span></div>
+    <div class="thm_thmcontent">
+<ol class="enumerate">
+  <li><p><em>Conforming shared sides:</em> for every \(c\), the family \(\bigl(\sum _k(R_ic)_kq_{i,k}\bigr)_i\) lies in \(\Gamma _0\). </p>
+</li>
+  <li><p><em>Boundary data in the port span:</em> the family \(\bigl(\sum _kr_{i,k}q_{i,k}\bigr)_i-g\) lies in \(\Gamma _0\). </p>
+</li>
+  <li><p><em>The energy size is a norm on \(U_0\):</em> \(w\in U_0\) and \(\lVert w\rVert _M=0\) imply \(w=0\). </p>
+</li>
+</ol>
+</div>
+
+    <a class="latex_link" href="sect0021.html#def:assumptions">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.Conforming" class="lean_decl">Atlas.Superelement.Conforming</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.BoundaryDataInPortSpan" class="lean_decl">Atlas.Superelement.BoundaryDataInPortSpan</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.EnergyNormIsNorm" class="lean_decl">Atlas.Superelement.EnergyNormIsNorm</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:average_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:average" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">47</span><span class="definition_thmtitle">The group average</span></div>
+    <div class="thm_thmcontent"><p>  Let \(G\) be a finite group acting on a set \(V\) and acting linearly on a vector space \(W\). For any map \(E:V\to W\), </p>
+<div class="displaymath" id="a0000000119">
+  \[  \tilde E(u)=\frac1{|G|}\sum _{g\in G}g^{-1}\, E(g\, u).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0017.html#def:average">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.average">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:averaged_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:averaged" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">89</span><span class="definition_thmtitle">The averaged sweep</span></div>
+    <div class="thm_thmcontent"><p>  For \(T:E\to E\) and a real \(\omega \), \(T_\omega (x)=(1-\omega )\, x+\omega \, T(x)\). For \(\omega \ne 0\) it has the same fixed points as \(T\). </p>
+</div>
+
+    <a class="latex_link" href="sect0030.html#def:averaged">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.averaged" class="lean_decl">Atlas.averaged</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.averaged_fixedPt_iff" class="lean_decl">Atlas.averaged_fixedPt_iff</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:dec-step_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:dec-step" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">37</span><span class="definition_thmtitle">A defect-correction step</span></div>
+    <div class="thm_thmcontent"><p>  Let \(E\) be a normed space and \(\Phi ,\Psi :E\to E\). The point \(w'\) is a successor of \(w\) if \(w'-\Psi (w')=(w-\Psi (w))-(w-\Phi (w))\). The <em>inner march</em> that solves for it is \(x^{(0)}=\Phi (w)\), \(x^{(m+1)}=\Phi (w)+[\Psi (x^{(m)})-\Psi (w)]\). </p>
+</div>
+
+    <a class="latex_link" href="sect0014.html#def:dec-step">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.IsStep" class="lean_decl">Atlas.DefectCorrection.IsStep</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.innerMarch" class="lean_decl">Atlas.DefectCorrection.innerMarch</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:gram_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:gram" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">56</span><span class="definition_thmtitle">The Gram port matrix</span></div>
+    <div class="thm_thmcontent"><p>   For interior fields \(h_k\in U\) and boundary patterns \(q_k\in F\), indexed by a finite set, the Gram port matrix has entries </p>
+<div class="displaymath" id="a0000000131">
+  \[  \Lambda [h]_{kl}=M\bigl((h_k,q_k),(h_l,q_l)\bigr).  \]
+</div>
+<p> With the exact constraint modes \(H_k\) it is the exact port matrix \(\Lambda =\Lambda [H]\); with a network’s fields \(\hat H_k\) it is the matrix \(\tilde\Lambda =\Lambda [\hat H]\) the host computes. </p>
+</div>
+
+    <a class="latex_link" href="sect0020.html#def:gram">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.gram">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:objectives_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:objectives" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">76</span><span class="definition_thmtitle">The two objectives</span></div>
+    <div class="thm_thmcontent"><p>   For returned fields \(h_k\) and \(\hat u_p\), a source \(f\), exact modes \(H_k\) and the exact particular field \(u_p\) (with \(a(v,u_p)=f(v)\) for all \(v\)): </p>
+<div class="displaymath" id="a0000000156">
+  \[  \mathcal L_{\mathrm{en}}=\operatorname {tr}\Lambda [h]+a(\hat u_p,\hat u_p)-2f(\hat u_p), \qquad \mathcal L_{\mathrm{sup}}=\sum _ka(h_k-H_k,h_k-H_k)+a(\hat u_p-u_p,\hat u_p-u_p).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0023.html#def:objectives">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.labelFree" class="lean_decl">Atlas.Piece.labelFree</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.supervised" class="lean_decl">Atlas.Piece.supervised</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:piece_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:piece" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">55</span><span class="definition_thmtitle">The energy of a piece</span></div>
+    <div class="thm_thmcontent"><p>  Let \(U\) (cell values) and \(F\) (face values) be real vector spaces. A <em>piece</em> is three bilinear forms, written with matrices as \(a(u,v)=u^\top A_Iv\) on \(U\), \(b(u,\mu )=u^\top B\mu \) on \(U\times F\) and \(d(\lambda ,\mu )=\lambda ^\top D\mu \) on \(F\), with \(a\) and \(d\) symmetric and </p>
+<div class="displaymath" id="a0000000129">
+  \[  a(u,u)-2\, b(u,\lambda )+d(\lambda ,\lambda )\  \ge \  0 \qquad \text{for all }u\in U,\  \lambda \in F .  \]
+</div>
+<p> Its energy form on pairs is </p>
+<div class="displaymath" id="a0000000130">
+  \[  M\bigl((u,\lambda ),(v,\mu )\bigr)=a(u,v)-b(u,\mu )-b(v,\lambda )+d(\lambda ,\mu ), \qquad M=\begin{pmatrix} A_I
+
+& -B
+
+\\ -B^\top 
+
+& D
+
+\end{pmatrix}.  \]
+</div>
+<p> An interior field \(h\in U\) is the <em>exact constraint mode</em> of the boundary pattern \(q\in F\) if \(a(v,h)=b(v,q)\) for every \(v\in U\), that is, \(A_Ih=Bq\). </p>
+</div>
+
+    <a class="latex_link" href="sect0020.html#def:piece">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece" class="lean_decl">Atlas.Piece</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.M" class="lean_decl">Atlas.Piece.M</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.IsExactMode" class="lean_decl">Atlas.Piece.IsExactMode</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:quad_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:quad" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">63</span><span class="definition_thmtitle">A quadratic energy</span></div>
+    <div class="thm_thmcontent"><p>  On a real vector space \(X\), let \(m\) be a symmetric bilinear form with \(m(w,w)\ge 0\) and \(\ell \) a linear functional. The energy is \(\mathcal E(w)=\tfrac 12m(w,w)-\ell (w)\) and the energy size is \(\lVert w\rVert _m=\sqrt{m(w,w)}\), a seminorm. </p>
+</div>
+
+    <a class="latex_link" href="sect0021.html#def:quad">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy" class="lean_decl">Atlas.QuadEnergy</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.energy" class="lean_decl">Atlas.QuadEnergy.energy</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.norm" class="lean_decl">Atlas.QuadEnergy.norm</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:schwarz_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:schwarz" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">25</span><span class="definition_thmtitle">A Schwarz sweep</span></div>
+    <div class="thm_thmcontent"><p>  \(A:V\to V\) is linear. For each window \(i\) of a finite family: \(R_i:V\to W_i\) reads the window’s unknowns; \(E_i:W_i\to V\) pads with zeros; \(E^\chi _i:W_i\to V\) multiplies by the window’s weights, then pads; \(B_i:W_i\to W_i\) is the inverse of the window’s operator \(R_iAE_i\). The weights are a partition of unity: \(\sum _iE^\chi _iR_i=I\). The window’s solution, the sweep and the preconditioner are </p>
+<div class="displaymath" id="a0000000094">
+  \[  w_i(f,u)=B_i\bigl(R_if-R_iA(u-E_iR_iu)\bigr),\qquad G_f(u)=\sum _iE^\chi _i\, w_i(f,u),\qquad M=\sum _iE^\chi _iB_iR_i .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0011.html#def:schwarz">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz" class="lean_decl">Atlas.Schwarz</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.window" class="lean_decl">Atlas.Schwarz.window</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.sweep" class="lean_decl">Atlas.Schwarz.sweep</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.precond" class="lean_decl">Atlas.Schwarz.precond</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:superelement_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:superelement" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">68</span><span class="definition_thmtitle">The tier-0 solve</span></div>
+    <div class="thm_thmcontent"><p>   Pieces \(i=1,\dots ,P\), each with an energy \(M_i\) on \(U\times F\) (Definition&#160;<a href="sect0020.html#def:piece">55</a>), a source \(f_i\), port patterns \(q_{i,k}\in F\), a matrix \(R_i\) reading its port coordinates off the free global coordinates \(c\), and fixed coordinates \(r_i\). A <em>global field</em> \(w\) gives every piece a pair \(w_i\in U\times F\). Let \(\Gamma _0\) be a subspace of families of face values (those on which neighbours agree and which vanish on the prescribed boundary) and \(g\) a family carrying the prescribed boundary values. The field \(w\) is <em>admissible</em> if its face values minus \(g\) lie in \(\Gamma _0\); \(U_0\) is the space of fields with face values in \(\Gamma _0\). The global energy is </p>
+<div class="displaymath" id="a0000000144">
+  \[  \mathcal E(w)=\sum _{i=1}^P\Bigl(\tfrac 12M_i(w_i,w_i)-f_i(w_{I,i})\Bigr), \qquad \lVert w\rVert _M^2=\sum _{i=1}^PM_i(w_i,w_i),  \]
+</div>
+<p> and the <em>undivided solution</em> \(u\) is an admissible field of least energy among admissible fields. From fields \(h_{i,k}\) and \(\hat u_{p,i}\) the host forms </p>
+<div class="displaymath" id="a0000000145">
+  \begin{gather*}  \tilde\Lambda _i=\Lambda _i[h_i],\qquad \tilde b_{i,k}=f_i(h_{i,k})-M_i\bigl((h_{i,k},q_{i,k}),(\hat u_{p,i},0)\bigr),\\ \tilde{\mathsf S}=\sum _iR_i^\top \tilde\Lambda _iR_i,\qquad \tilde\chi =\sum _iR_i^\top \bigl(\tilde b_i-\tilde\Lambda _ir_i\bigr), \end{gather*}
+</div>
+<p> and for coordinates \(c\) rebuilds, with \(x_i=r_i+R_ic\), </p>
+<div class="displaymath" id="a0000000146">
+  \[  w(c)_i=\Bigl(\hat u_{p,i}+\sum _kx_{i,k}h_{i,k},\  \  \sum _kx_{i,k}q_{i,k}\Bigr).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0021.html#def:superelement">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement" class="lean_decl">Atlas.Superelement</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.Admissible" class="lean_decl">Atlas.Superelement.Admissible</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.U0" class="lean_decl">Atlas.Superelement.U0</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.quad" class="lean_decl">Atlas.Superelement.quad</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.IsSolution" class="lean_decl">Atlas.Superelement.IsSolution</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.coord" class="lean_decl">Atlas.Superelement.coord</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.field" class="lean_decl">Atlas.Superelement.field</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.portMatrix" class="lean_decl">Atlas.Superelement.portMatrix</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.portLoad" class="lean_decl">Atlas.Superelement.portLoad</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostMatrix" class="lean_decl">Atlas.Superelement.hostMatrix</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostRhs" class="lean_decl">Atlas.Superelement.hostRhs</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.fieldError" class="lean_decl">Atlas.Superelement.fieldError</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:two-pieces_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:two-pieces" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">21</span><span class="definition_thmtitle">Two pieces in block form</span></div>
+    <div class="thm_thmcontent"><p>  The unknowns are \((u_1,u_2,\lambda )\in V_1\times V_2\times V_\Gamma \). The undivided system is </p>
+<div class="displaymath" id="a0000000089">
+  \begin{align*}  A_{11}u_1+A_{1\Gamma }\lambda & =f_1,\\ A_{22}u_2+A_{2\Gamma }\lambda & =f_2,\\ A_{\Gamma 1}u_1+A_{\Gamma 2}u_2 +\bigl(A^{(1)}_{\Gamma \Gamma }+A^{(2)}_{\Gamma \Gamma }\bigr)\lambda & =f^{(1)}_\Gamma +f^{(2)}_\Gamma , \end{align*}
+</div>
+<p> where each piece contributes its own share of the interface block and of the interface right-hand side. The flux piece 1 sends is \(q(u_1,\lambda )=A_{\Gamma 1}u_1+A^{(1)}_{\Gamma \Gamma }\lambda -f^{(1)}_\Gamma \). A Dirichlet solve \(D\) is exact if \(A_{11}D(\lambda )+A_{1\Gamma }\lambda =f_1\) for all \(\lambda \). A Neumann solve \(N\), returning a pair \((u_2,\tilde\lambda )\), is exact if \(A_{22}u_2+A_{2\Gamma }\tilde\lambda =f_2\) and \(A_{\Gamma 2}u_2+A^{(2)}_{\Gamma \Gamma }\tilde\lambda =f^{(2)}_\Gamma -q\) for all \(q\). One sweep is \(\lambda \mapsto \lambda +\theta \, (\tilde\lambda -\lambda )\) with \((u_2,\tilde\lambda )=N\bigl(q(D(\lambda ),\lambda )\bigr)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0010.html#def:two-pieces">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.TwoPieces" class="lean_decl">Atlas.TwoPieces</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.TwoPieces.Solves" class="lean_decl">Atlas.TwoPieces.Solves</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.TwoPieces.dnStep" class="lean_decl">Atlas.TwoPieces.dnStep</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:wave-sweep_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:wave-sweep" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">82</span><span class="definition_thmtitle">The wave sweep</span></div>
+    <div class="thm_thmcontent"><p>  Pieces \(i\) in a finite set, with wave spaces \(W_i\) (normed). The global wave vector \(a=(a_i)_i\) is measured in the \(\ell ^2\) product, \(d(a,a')^2=\sum _id(a_i,a'_i)^2\). For maps \(S_i:W_i\to W_i\), an exchange \(\Pi \) on the product and a vector \(g\), </p>
+<div class="displaymath" id="a0000000165">
+  \[  T(a)=\Pi \bigl((S_i(a_i))_i\bigr)+g .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0026.html#def:wave-sweep">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.waveSweep">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:cea_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:cea" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">65</span><span class="lemma_thmtitle">The abstract lemma: Céa with constant one</span></div>
+    <div class="thm_thmcontent"><p>   Let \(u\) have the least energy in \(u+U_0\), let \(W\subseteq u+U_0\) be any set and \(\tilde u\in W\). Then \(\tilde u\) has the least energy in \(W\) if and only if \(\lVert u-\tilde u\rVert _m\le \lVert u-w\rVert _m\) for every \(w\in W\). </p>
+</div>
+
+    <a class="latex_link" href="sect0021.html#lem:cea">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.closest_iff_isMin">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:energy-triangle_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:energy-triangle" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">67</span><span class="lemma_thmtitle">The energy size obeys the triangle inequality</span></div>
+    <div class="thm_thmcontent"><p>   \(\lVert x+y\rVert _m\le \lVert x\rVert _m+\lVert y\rVert _m\). </p>
+</div>
+
+    <a class="latex_link" href="sect0021.html#lem:energy-triangle">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.norm_add_le">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:galerkin_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:galerkin" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">66</span><span class="lemma_thmtitle">The Galerkin system</span></div>
+    <div class="thm_thmcontent"><p>   For \(w_0\in X\), finitely many trial directions \(t_a\in X\) and coordinates \(c\), write \(w(c)=w_0+\sum _ac_at_a\). Then \(w(c)\) has the least energy among all \(w(c')\) if and only if \(m\bigl(w(c),t_a\bigr)=\ell (t_a)\) for every \(a\). </p>
+</div>
+
+    <a class="latex_link" href="sect0021.html#lem:galerkin">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.galerkin_iff_isMin">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:stationary_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:stationary" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">64</span><span class="lemma_thmtitle">Minimisers are the stationary points</span></div>
+    <div class="thm_thmcontent"><p>   Let \(U_0\subseteq X\) be a subspace and \(u\in X\). Then \(\mathcal E(u)\le \mathcal E(u+v)\) for all \(v\in U_0\) if and only if \(m(u,v)=\ell (v)\) for all \(v\in U_0\). In that case, for every \(w\) with \(w-u\in U_0\), </p>
+<div class="displaymath" id="a0000000140">
+  \[  \mathcal E(w)=\mathcal E(u)+\tfrac 12\lVert w-u\rVert _m^2 .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0021.html#lem:stationary">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.stationary_of_isMin" class="lean_decl">Atlas.QuadEnergy.stationary_of_isMin</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.isMin_of_stationary" class="lean_decl">Atlas.QuadEnergy.isMin_of_stationary</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.QuadEnergy.energy_eq_add" class="lean_decl">Atlas.QuadEnergy.energy_eq_add</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T11-junction_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T11-junction" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">52</span><span class="lemma_thmtitle">The junction</span></div>
+    <div class="thm_thmcontent"><p>  Let \(P\) be a finite set of ports, \(\pi :P\to P\) a bijection pairing each port with its partner, and \(p:P\to \mathbb {R}\) with \(p(\pi (x))=-p(x)\) for all \(x\). Then \(\sum _{x\in P}p(x)=0\). </p>
+</div>
+
+    <a class="latex_link" href="sect0018.html#lem:T11-junction">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.junction_power_eq_zero">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T11-rule_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T11-rule" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">51</span><span class="lemma_thmtitle">The connection rule conserves power</span></div>
+    <div class="thm_thmcontent"><p>  In a real inner-product space, if \(e_B=e_A\) and \(f_B=-f_A\) then \(\langle e_B,f_B\rangle =-\langle e_A,f_A\rangle \). </p>
+</div>
+
+    <a class="latex_link" href="sect0018.html#lem:T11-rule">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.port_rule_power">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T22-step_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T22-step" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">94</span><span class="lemma_thmtitle">T22, tier 2, one step</span></div>
+    <div class="thm_thmcontent"><p>   Let \(\Lambda \) be a complete metric space of interface data, and let the step \(\Phi (\lambda ,v)\) satisfy \(\lVert \Phi (\lambda ,v)-\Phi (\lambda ',v)\rVert \le C_\mu \, d(\lambda ,\lambda ')\) at the state \(v\). Let \(T_c(\lambda ^\star )=\lambda ^\star \), let \(T_l\) be a \(\rho \)-contraction with \(0\le \rho {\lt}1\), and \(d(T_l\lambda ^\star ,T_c\lambda ^\star )\le \delta \). Then \(T_l\) has a fixed point \(\lambda ^\dagger \), and for every \(\lambda ^{(0)}\) and \(k\), </p>
+<div class="displaymath" id="a0000000181">
+  \[  \lVert \Phi (\lambda ^\dagger ,v)-\Phi (\lambda ^\star ,v)\rVert \le \frac{C_\mu \, \delta }{1-\rho }, \qquad \lVert \Phi (T_l^{\, k}\lambda ^{(0)},v)-\Phi (\lambda ^\dagger ,v)\rVert  \le C_\mu \, \rho ^k\, d(\lambda ^{(0)},\lambda ^\dagger ).  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0031.html#lem:T22-step">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.tier2_step_defect">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T3c-iff_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T3c-iff" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">28</span><span class="lemma_thmtitle">What a fixed point is</span></div>
+    <div class="thm_thmcontent"><p>   \(G_f(u)=u\iff M(f-Au)=0\). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#lem:T3c-iff">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.isFixedPt_iff">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T3c-sweep_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T3c-sweep" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">26</span><span class="lemma_thmtitle">The sweep in residual form</span></div>
+    <div class="thm_thmcontent"><p>   \(G_f(u)=u+M(f-Au)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#lem:T3c-sweep">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.sweep_eq">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T4-accumulation_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T4-accumulation" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">11</span><span class="lemma_thmtitle">T4c, accumulation</span></div>
+    <div class="thm_thmcontent"><p>  Let \(L\ge 0\) and \(e,d:\mathbb {N}\to \mathbb {R}\) with \(e_{n+1}\le L\, e_n+d_{n+1}\) for all \(n\). Then for every \(N\) </p>
+<div class="displaymath" id="a0000000074">
+  \[  e_N\le L^N e_0+\sum _{n=1}^{N}L^{N-n}d_n .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0006.html#lem:T4-accumulation">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.accumulation">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T4-recursion_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T4-recursion" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">9</span><span class="lemma_thmtitle">T4a, the exact error recursion</span></div>
+    <div class="thm_thmcontent"><p>  Let \(E\) be a normed space, \(\Phi :E\to E\), and \(u,u^\star :\mathbb {N}\to E\) with \(u^{n+1}=\Phi (u^n)\). Then for every \(n\) </p>
+<div class="displaymath" id="a0000000070">
+  \[  u^{n+1}-u^{n+1,\star } =\bigl[\Phi (u^n)-\Phi (u^{n,\star })\bigr] +\bigl[\Phi (u^{n,\star })-u^{n+1,\star }\bigr].  \]
+</div>
+<p> The second bracket is the one-step defect \(d^{n+1}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0006.html#lem:T4-recursion">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.error_recursion">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T4-split_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T4-split" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">10</span><span class="lemma_thmtitle">T4b, the three-term split</span></div>
+    <div class="thm_thmcontent"><p>  Let \(\Phi _\mu :E\to E\) be the composed step forced to use the interface datum \(\mu \), and \(\mathcal S:E\to E\) the exact evolution. For any three data \(\lambda ^\star \), \(\lambda ^\dagger \), \(\lambda ^{(k)}\) and any state \(v\), </p>
+<div class="displaymath" id="a0000000072">
+  \[  \Phi _{\lambda ^{(k)}}(v)-\mathcal S(v) =\underbrace{\Phi _{\lambda ^\star }(v)-\mathcal S(v)}_{\tau } +\underbrace{\Phi _{\lambda ^\dagger }(v)-\Phi _{\lambda ^\star }(v)}_{\sigma } +\underbrace{\Phi _{\lambda ^{(k)}}(v)-\Phi _{\lambda ^\dagger }(v)}_{\gamma }.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0006.html#lem:T4-split">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.defect_split">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T4e-trace_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T4e-trace" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">18</span><span class="lemma_thmtitle">T4e, the trace perturbation</span></div>
+    <div class="thm_thmcontent"><p>  Let \(M,F\) be real normed spaces and \(\Lambda ,\tilde\Lambda :M\to F\) bounded and linear, with \(\beta \lVert x\rVert \le \lVert \tilde\Lambda x\rVert \) for all \(x\) and some \(\beta {\gt}0\). If \(\Lambda \lambda ^\star =\chi \) and \(\tilde\Lambda \lambda ^\dagger =\chi \), then </p>
+<div class="displaymath" id="a0000000084">
+  \[  \lVert \lambda ^\dagger -\lambda ^\star \rVert  \le \frac{\lVert \Lambda -\tilde\Lambda \rVert \, \lVert \lambda ^\star \rVert }{\beta }.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0007.html#lem:T4e-trace">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.trace_perturbation">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T5-inner_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T5-inner" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">41</span><span class="lemma_thmtitle">The inner march solves for the successor</span></div>
+    <div class="thm_thmcontent"><p>   \(x\) is a successor of \(w\) if and only if \(x=\Phi (w)+[\Psi (x)-\Psi (w)]\). </p>
+</div>
+
+    <a class="latex_link" href="sect0014.html#lem:T5-inner">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.isStep_iff">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T5-shrink-deriv_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T5-shrink-deriv" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">43</span><span class="lemma_thmtitle">The shrunk Jacobian</span></div>
+    <div class="thm_thmcontent"><p>  If \(\Psi \) has Fréchet derivative \(D\) at \(w\), then \(x\mapsto x-(1-\alpha )\Psi (x)\) has derivative \(\alpha I+(1-\alpha )(I-D)\) at \(w\). </p>
+</div>
+
+    <a class="latex_link" href="sect0015.html#lem:T5-shrink-deriv">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.shrink_hasFDerivAt">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T5-shrink-eig_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T5-shrink-eig" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">45</span><span class="lemma_thmtitle">Eigenvalues move with the shrink</span></div>
+    <div class="thm_thmcontent"><p>  If \(Jv=\mu v\) then \((\alpha I+(1-\alpha )J)v=(\alpha +(1-\alpha )\mu )v\). </p>
+</div>
+
+    <a class="latex_link" href="sect0015.html#lem:T5-shrink-eig">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.shrink_hasEigenvalue">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T5-shrink-re_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T5-shrink-re" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">46</span><span class="lemma_thmtitle">The real part</span></div>
+    <div class="thm_thmcontent"><p>  For \(0\le \alpha \le 1\) and complex \(\mu \) with \(\operatorname {Re}\mu \ge 0\), \(\operatorname {Re}\bigl(\alpha +(1-\alpha )\mu \bigr)\ge \alpha \). </p>
+</div>
+
+    <a class="latex_link" href="sect0015.html#lem:T5-shrink-re">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.shrink_re">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T8-identity_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T8-identity" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">78</span><span class="lemma_thmtitle">T8, the wave identity</span></div>
+    <div class="thm_thmcontent"><p>  In a real inner-product space, for all \(e,f\) and all real \(Z\), </p>
+<div class="displaymath" id="a0000000159">
+  \[  \lVert e-Zf\rVert ^2=\lVert e+Zf\rVert ^2-4Z\, \langle f,e\rangle .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0025.html#lem:T8-identity">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.wave_identity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T9b-consistency_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T9b-consistency" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">85</span><span class="lemma_thmtitle">T9b, consistency of the coarse solve</span></div>
+    <div class="thm_thmcontent"><p>  Let \(T\) be the sweep, \(C\) the coarse solve and \(P_0\) a linear map. If \(P_0(Cb-b)=Cb-b\) and \(P_0\bigl(Cb-T(Cb)\bigr)=0\) for every \(b\), then \(C(Ta)=a\) implies \(Ta=a\). Conversely, if \(Cb=b\) whenever \(P_0(b-Tb)=0\), then \(Ta=a\) implies \(C(Ta)=a\). </p>
+</div>
+
+    <a class="latex_link" href="sect0027.html#lem:T9b-consistency">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.twoLevel_fixedPt_isFixedPt" class="lean_decl">Atlas.twoLevel_fixedPt_isFixedPt</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.fixedPt_isFixedPt_twoLevel" class="lean_decl">Atlas.fixedPt_isFixedPt_twoLevel</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T9p-identity_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T9p-identity" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">90</span><span class="lemma_thmtitle">T9’, the identity</span></div>
+    <div class="thm_thmcontent"><p>  In a real inner-product space, for all \(a,b\) and all real \(\omega \), </p>
+<div class="displaymath" id="a0000000175">
+  \[  \lVert (1-\omega )a+\omega b\rVert ^2 =(1-\omega )\lVert a\rVert ^2+\omega \lVert b\rVert ^2-\omega (1-\omega )\lVert a-b\rVert ^2 .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0030.html#lem:T9p-identity">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.norm_sq_convex_combination">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T9p-residual_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T9p-residual" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">92</span><span class="lemma_thmtitle">T9’, the residuals tend to zero</span></div>
+    <div class="thm_thmcontent"><p>   Under the hypotheses of Lemma&#160;<a href="sect0030.html#lem:T9p-step">91</a> with \(0{\lt}\omega {\lt}1\), the iterates \(x_{n+1}=T_\omega (x_n)\) satisfy \(\lVert x_n-T(x_n)\rVert \to 0\). </p>
+</div>
+
+    <a class="latex_link" href="sect0030.html#lem:T9p-residual">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.averaged_residual_tendsto_zero">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:T9p-step_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:T9p-step" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">91</span><span class="lemma_thmtitle">T9’, one averaged step</span></div>
+    <div class="thm_thmcontent"><p>   Let \(\lVert Tx-Ty\rVert \le \lVert x-y\rVert \) for all \(x,y\), let \(T(p)=p\) and \(\omega \ge 0\). Then for every \(x\), </p>
+<div class="displaymath" id="a0000000177">
+  \[  \lVert T_\omega (x)-p\rVert ^2\le \lVert x-p\rVert ^2-\omega (1-\omega )\lVert x-T(x)\rVert ^2 .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0030.html#lem:T9p-step">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.averaged_step">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:T1-sharp_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:T1-sharp" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">3</span><span class="proposition_thmtitle">T1 is sharp</span></div>
+    <div class="thm_thmcontent"><p>  For every \(\rho \in [0,1)\) and \(\delta \ge 0\) there are maps \(T_c,T_l:\mathbb {R}\to \mathbb {R}\) satisfying the hypotheses of Corollary&#160;<a href="sect0003.html#cor:T1-uniform">2</a> whose fixed points are exactly \(\delta /(1-\rho )\) apart. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#prop:T1-sharp">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.perturbed_contraction_sharp">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:T10-idem_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:T10-idem" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">49</span><span class="proposition_thmtitle">Averaging leaves a symmetric map alone</span></div>
+    <div class="thm_thmcontent"><p>   If \(E(gu)=gE(u)\) for all \(g,u\), and \(|G|\) is invertible in the scalars, then \(\tilde E=E\). </p>
+</div>
+
+    <a class="latex_link" href="sect0017.html#prop:T10-idem">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.average_of_equivariant">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:T24_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:T24" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">74</span><span class="proposition_thmtitle">T24</span></div>
+    <div class="thm_thmcontent"><p>  Let \(\mathsf S,\tilde{\mathsf S}\) be bounded linear maps between real normed spaces with \(\beta \lVert x\rVert \le \lVert \tilde{\mathsf S}x\rVert \) for all \(x\) and some \(\beta {\gt}0\). If \(\mathsf Sc=\chi \) and \(\tilde{\mathsf S}\tilde c=\tilde\chi \), </p>
+<div class="displaymath" id="a0000000154">
+  \[  \lVert \tilde c-c\rVert \le \frac{\lVert \mathsf S-\tilde{\mathsf S}\rVert \, \lVert c\rVert +\lVert \chi -\tilde\chi \rVert }{\beta }.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0022.html#prop:T24">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.interface_perturbation">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:T25-i-def_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:T25-i-def" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">58</span><span class="proposition_thmtitle">T25 (i), the definite case</span></div>
+    <div class="thm_thmcontent"><p>   If \(M(w,w)=0\) only for \(w=0\), and the patterns \(q_k\) are linearly independent, then \(\Lambda [h]\) is positive definite for any fields \(h_k\). </p>
+</div>
+
+    <a class="latex_link" href="sect0020.html#prop:T25-i-def">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.gram_posDef">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="prop:T4-attained_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="prop:T4-attained" style="display: none">
+    <div class="thm_thmheading">
+      <span class="proposition_thmcaption">
+      Proposition
+      </span>
+      <span class="proposition_thmlabel">17</span><span class="proposition_thmtitle">The regimes are attained</span></div>
+    <div class="thm_thmcontent"><p>  For every \(L,\delta \in \mathbb {R}\) and every \(N\) there are real sequences with \(u^{n+1}=L\, u^n\), a one-step defect equal to \(\delta \) at every step and no initial error, whose error after \(N\) steps is exactly \(\sum _{i{\lt}N}L^i\, \delta \). </p>
+</div>
+
+    <a class="latex_link" href="sect0006.html#prop:T4-attained">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound_attained">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:headline-dc_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:headline-dc" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">100</span><span class="theorem_thmtitle">Headline, defect correction</span></div>
+    <div class="thm_thmcontent"><p>   <em>Inside defect correction, a learned expert can change how many classical steps the answer takes. It cannot change the answer.</em> Run defect correction with two cheap maps \(\Psi _1,\Psi _2\). If both runs converge, to \(a_1\) and \(a_2\), and the maps are continuous there, then \(\Phi (a_1)=a_1\) and \(\Phi (a_2)=a_2\); if \(\Phi \) has at most one fixed point, \(a_1=a_2\). </p>
+</div>
+
+    <a class="latex_link" href="sect0033.html#thm:headline-dc">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.defect_correction_headline">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:headline-tier0_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:headline-tier0" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">98</span><span class="theorem_thmtitle">Headline, tier 0</span></div>
+    <div class="thm_thmcontent"><p>   <em>Whatever a learned superelement returns, the coupled system is solvable, and its answer is the best its modes can represent in the energy norm.</em> Under the three assumptions of Definition&#160;<a href="sect0021.html#def:assumptions">69</a>, with independent port patterns and every free coordinate read by some piece: for any fields the network returned, \(\tilde{\mathsf S}c=\tilde\chi \) has exactly one solution \(c\), and \(\lVert u-w(c)\rVert _M\le \lVert u-w(c')\rVert _M\) for every \(c'\). </p>
+</div>
+
+    <a class="latex_link" href="sect0033.html#thm:headline-tier0">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.tier0_headline">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:headline-tier2_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:headline-tier2" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">99</span><span class="theorem_thmtitle">Headline, tier 2</span></div>
+    <div class="thm_thmcontent"><p>   <em>If every learned expert’s scattering map is certified to contract by \(\rho {\lt}1\) and differs from the classical one by at most \(\delta \), the coupled iteration converges geometrically from any start to a point within \(\delta /(1-\rho )\) of the classical answer; over \(N\) steps the error obeys the master bound with that term added.</em> Here the interface sweep of a step is the wave sweep of Definition&#160;<a href="sect0026.html#def:wave-sweep">82</a>, and \(\delta =\bigl(\sum _i\delta _i^2\bigr)^{1/2}\) combines the experts’ defects at the classical answer. </p>
+</div>
+
+    <a class="latex_link" href="sect0033.html#thm:headline-tier2">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.tier2_headline">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T1_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T1" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">1</span><span class="theorem_thmtitle">T1, perturbed contraction</span></div>
+    <div class="thm_thmcontent"><p>  Let \((X,d)\) be a complete metric space and \(T_c,T_l:X\to X\). Suppose </p>
+<ol class="enumerate">
+  <li><p>\(T_c(a_c)=a_c\) for some \(a_c\in X\); </p>
+</li>
+  <li><p>\(d(T_l x,T_l y)\le \rho \, d(x,y)\) for all \(x,y\in X\), with \(0\le \rho {\lt}1\); </p>
+</li>
+  <li><p>\(d(T_l a_c,\, T_c a_c)\le \delta \). </p>
+</li>
+</ol>
+<p> Then there is a point \(a_l\in X\) such that </p>
+<ol class="enumerate">
+  <li><p>\(T_l(a_l)=a_l\), and \(a_l\) is the only fixed point of \(T_l\); </p>
+</li>
+  <li><p>\(d(T_l^{\, k}x_0,\, a_l)\le \rho ^{k}\, d(x_0,a_l)\) for every \(x_0\in X\) and every \(k\in \mathbb {N}\); </p>
+</li>
+  <li><p>\(d(a_l,a_c)\le \dfrac {\delta }{1-\rho }\). </p>
+</li>
+</ol>
+</div>
+
+    <a class="latex_link" href="sect0003.html#thm:T1">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.perturbed_contraction">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T10_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T10" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">48</span><span class="theorem_thmtitle">T10, symmetry averaging</span></div>
+    <div class="thm_thmcontent"><p>   For every map \(E\), every \(h\in G\) and every \(u\in V\), \(\tilde E(h\, u)=h\, \tilde E(u)\). </p>
+</div>
+
+    <a class="latex_link" href="sect0017.html#thm:T10">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.average_equivariant">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T11_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T11" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">53</span><span class="theorem_thmtitle">T11, passivity composes</span></div>
+    <div class="thm_thmcontent"><p>   Let each port belong to one of finitely many agents. Agent \(i\) stores \(H_i\) before a step and \(H_i'\) after it, receives the power of its own connected ports and \(\mathrm{ext}_i\) through its open ports, and is passive: \(H_i'\le H_i+\sum _{x\text{ of }i}p(x)+\mathrm{ext}_i\). If the connected ports obey \(p(\pi (x))=-p(x)\), then </p>
+<div class="displaymath" id="a0000000126">
+  \[  \sum _iH_i'\le \sum _iH_i+\sum _i\mathrm{ext}_i .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0018.html#thm:T11">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.interconnection_passive">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T2_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T2" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">97</span><span class="theorem_thmtitle">T2, conditional</span></div>
+    <div class="thm_thmcontent"><p>   Let \(E\) be a real Banach space, \(B\) the closed ball of radius \(r\ge 0\) around \(a_c\), \(T_c(a_c)=a_c\) and \(\lVert T_cx-T_cy\rVert \le \rho \lVert x-y\rVert \) on \(B\). Let \(T_l\) satisfy \(\lVert T_la_c-T_ca_c\rVert \le \eta \) and \(\lVert (T_l-T_c)x-(T_l-T_c)y\rVert \le \eta \lVert x-y\rVert \) on \(B\) (which holds if \(T_l-T_c\) has a derivative of norm at most \(\eta \) on \(B\)). If \(\rho +\eta {\lt}1\) and \(\eta \le (1-\rho -\eta )\, r\), then \(T_l\) has exactly one fixed point \(a_l\) in \(B\); from every \(x_0\in B\) the iterates stay in \(B\) and \(\lVert T_l^{\, k}x_0-a_l\rVert \le (\rho +\eta )^k\lVert x_0-a_l\rVert \); and </p>
+<div class="displaymath" id="a0000000187">
+  \[  \lVert a_l-a_c\rVert \le \frac{\eta }{1-\rho -\eta }.  \]
+</div>
+<p> Consequently, if a class of maps contains one such \(T_l\), it contains a map with these three properties. </p>
+</div>
+
+    <a class="latex_link" href="sect0032.html#thm:T2">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.existence_conditional" class="lean_decl">Atlas.existence_conditional</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.existence_conditional_c1" class="lean_decl">Atlas.existence_conditional_c1</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.existence_of_learned_coupling" class="lean_decl">Atlas.existence_of_learned_coupling</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T22-tier0_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T22-tier0" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">96</span><span class="theorem_thmtitle">T22, tier 0</span></div>
+    <div class="thm_thmcontent"><p>   In the energy size \(\lVert \cdot \rVert _m\) of a quadratic energy: let \(u^{n,\mathrm{ex}}\) be the undivided discrete step from the true state \(u^{n,\star }\), and \(\tilde u^n\) the tier-0 step from it. If \(\lVert u^{n+1}-\tilde u^n\rVert _m\le L\lVert u^n-u^{n,\star }\rVert _m\), \(\lVert u^{n,\mathrm{ex}}-u^{n+1,\star }\rVert _m\le \tau ^n\) and \(\lVert u^{n,\mathrm{ex}}-\tilde u^n\rVert _m\le g^n\), then </p>
+<div class="displaymath" id="a0000000185">
+  \[  \lVert u^N-u^{N,\star }\rVert _m\le L^N\lVert u^0-u^{0,\star }\rVert _m +\sum _{n=0}^{N-1}L^{N-1-n}\bigl(\tau ^n+g^n\bigr).  \]
+</div>
+<p> There is no incomplete-solve term. For the tier-0 solve of Definition&#160;<a href="sect0021.html#def:superelement">68</a>, under assumptions 1 and 2, \(g^n\) may be taken as the bound of Theorem&#160;<a href="sect0021.html#thm:T25-bound">72</a>: the error of any reference field plus the energy of the network’s field errors. </p>
+</div>
+
+    <a class="latex_link" href="sect0031.html#thm:T22-tier0">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.learned_master_bound_tier0" class="lean_decl">Atlas.learned_master_bound_tier0</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.learned_master_bound_tier0_superelement" class="lean_decl">Atlas.learned_master_bound_tier0_superelement</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T22-tier2_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T22-tier2" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">95</span><span class="theorem_thmtitle">T22, tier 2</span></div>
+    <div class="thm_thmcontent"><p>   Let the step use the datum returned by \(k\) learned sweeps, \(u^{n+1}=\Phi \bigl(T_l(u^n)^k\lambda ^{(0)}(u^n),\, u^n\bigr)\), and magnify the difference between the computed and the true trajectory by at most \(L\ge 0\). Along the true trajectory \(u^{n,\star }\) let the hypotheses of Lemma&#160;<a href="sect0031.html#lem:T22-step">94</a> hold with constants \(C_\mu ,\rho ,\delta \), and let the starting guess be within \(D\) of the learned fixed point. Then </p>
+<div class="displaymath" id="a0000000183">
+  \[  \lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert  +\sum _{n=1}^{N}L^{N-n}\Bigl(\lVert \tau ^n\rVert  +\frac{C_\mu \, \delta }{1-\rho }+C_\mu \, \rho ^k\, D\Bigr),  \]
+</div>
+<p> with \(\tau ^n=\Phi (\lambda ^{n-1,\star },u^{n-1,\star })-u^{n,\star }\). </p>
+</div>
+
+    <a class="latex_link" href="sect0031.html#thm:T22-tier2">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.learned_master_bound_tier2">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T25-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T25-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">72</span><span class="theorem_thmtitle">T25, the error bound</span></div>
+    <div class="thm_thmcontent"><p>   Under the hypotheses of Theorem&#160;<a href="sect0021.html#thm:T25-optimal">71</a>, for any reference fields \(H_{i,k}\), \(u_{p,i}\) and any coordinates \(c^\star \), with \(x_i^\star =r_i+R_ic^\star \) and \(w^{\mathrm{ref}}\) the field rebuilt from the reference fields at \(c^\star \), </p>
+<div class="displaymath" id="a0000000151">
+  \[  \lVert u-w(c)\rVert _M\  \le \  \lVert u-w^{\mathrm{ref}}\rVert _M +\Bigl(\sum _{i=1}^Pa_i(d_i,d_i)\Bigr)^{1/2}, \qquad d_i=(\hat u_{p,i}-u_{p,i})+\sum _kx^\star _{i,k}\, (h_{i,k}-H_{i,k}).  \]
+</div>
+<p> With the exact modes and the classical superelement’s coordinates, \(w^{\mathrm{ref}}=u_m\) and this is the document’s bound: truncation error plus field errors. </p>
+</div>
+
+    <a class="latex_link" href="sect0021.html#thm:T25-bound">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.energy_error_bound">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T25-galerkin_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T25-galerkin" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">70</span><span class="theorem_thmtitle">The host’s system is the Galerkin system</span></div>
+    <div class="thm_thmcontent"><p>   For any fields \(h,\hat u_p\) and any \(c\): \(\tilde{\mathsf S}c=\tilde\chi \) if and only if \(\mathcal E(w(c))\le \mathcal E(w(c'))\) for every \(c'\). </p>
+</div>
+
+    <a class="latex_link" href="sect0021.html#thm:T25-galerkin">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostSystem_iff_isMin">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T25-i_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T25-i" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">57</span><span class="theorem_thmtitle">T25 (i), positive semidefinite for every output</span></div>
+    <div class="thm_thmcontent"><p>   For any fields \(h_k\) and patterns \(q_k\), \(\Lambda [h]\) is symmetric and \(x^\top \Lambda [h]\, x\ge 0\) for every \(x\). </p>
+</div>
+
+    <a class="latex_link" href="sect0020.html#thm:T25-i">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.gram_posSemidef">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T25-ii_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T25-ii" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">59</span><span class="theorem_thmtitle">T25 (ii), the error identity</span></div>
+    <div class="thm_thmcontent"><p>   Let \(H_k\) be the exact constraint modes of the patterns \(q_k\), let \(h_k\) be any fields, and \(E_k=h_k-H_k\). Then </p>
+<div class="displaymath" id="a0000000135">
+  \[  \Lambda [h]_{kl}-\Lambda [H]_{kl}=a(E_k,E_l)\qquad \text{for all }k,l,  \]
+</div>
+<p> and so, for every coordinate vector \(x\), </p>
+<div class="displaymath" id="a0000000136">
+  \[  x^\top \bigl(\Lambda [h]-\Lambda [H]\bigr)x =a\Bigl(\sum _kx_kE_k,\  \sum _kx_kE_k\Bigr).  \]
+</div>
+<p> In matrices: \(\tilde\Lambda -\Lambda =E^\top A_IE\). </p>
+</div>
+
+    <a class="latex_link" href="sect0020.html#thm:T25-ii">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.gram_sub_gram" class="lean_decl">Atlas.Piece.gram_sub_gram</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.quadratic_gram_sub" class="lean_decl">Atlas.Piece.quadratic_gram_sub</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T25-iii_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T25-iii" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">62</span><span class="theorem_thmtitle">T25 (iii), the assembled matrix</span></div>
+    <div class="thm_thmcontent"><p>   Let \(\mathsf S=\sum _iR_i^\top \Lambda _i[H_i]R_i\) be assembled from the exact constraint modes of every piece and \(\tilde{\mathsf S}=\sum _iR_i^\top \Lambda _i[h_i]R_i\) from any fields. Then </p>
+<ol class="enumerate">
+  <li><p>\(\tilde{\mathsf S}-\mathsf S\) is positive semidefinite; </p>
+</li>
+  <li><p>if \(\beta \, |c|^2\le c^\top \mathsf Sc\) for all \(c\), then \(\beta \, |c|^2\le c^\top \tilde{\mathsf S}c\) for all \(c\) (with the largest such \(\beta \): \(\lambda _{\min }(\tilde{\mathsf S})\ge \lambda _{\min }(\mathsf S)\)); </p>
+</li>
+  <li><p>if \(\mathsf S\) is positive definite, so is \(\tilde{\mathsf S}\), and \(\tilde{\mathsf S}c=\chi \) has exactly one solution for every \(\chi \). </p>
+</li>
+</ol>
+</div>
+
+    <a class="latex_link" href="sect0020.html#thm:T25-iii">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.assemble_gram_sub_posSemidef" class="lean_decl">Atlas.assemble_gram_sub_posSemidef</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.assemble_gram_coercive" class="lean_decl">Atlas.assemble_gram_coercive</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.assemble_gram_posDef" class="lean_decl">Atlas.assemble_gram_posDef</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.assemble_gram_existsUnique" class="lean_decl">Atlas.assemble_gram_existsUnique</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T25-optimal_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T25-optimal" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">71</span><span class="theorem_thmtitle">T25, energy optimality</span></div>
+    <div class="thm_thmcontent"><p>   Assume 1 and 2 of Definition&#160;<a href="sect0021.html#def:assumptions">69</a>. Then every rebuilt field \(w(c)\) is admissible. If \(u\) is the undivided solution and \(\tilde{\mathsf S}c=\tilde\chi \), then </p>
+<div class="displaymath" id="a0000000149">
+  \[  \lVert u-w(c)\rVert _M\le \lVert u-w(c')\rVert _M\qquad \text{for every }c' .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0021.html#thm:T25-optimal">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.field_admissible" class="lean_decl">Atlas.Superelement.field_admissible</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.energy_optimal" class="lean_decl">Atlas.Superelement.energy_optimal</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T25-solvable_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T25-solvable" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">73</span><span class="theorem_thmtitle">Solvable for every output; one solution</span></div>
+    <div class="thm_thmcontent"><p>   Assume 3 of Definition&#160;<a href="sect0021.html#def:assumptions">69</a>. Then the undivided solution is unique. Assume also 1, that each piece’s patterns \(q_{i,k}\) are linearly independent, and that \(R_ic=0\) for every \(i\) only for \(c=0\). Then \(\tilde{\mathsf S}\) is positive definite for every choice of the fields \(h\), and \(\tilde{\mathsf S}c=\tilde\chi \) has exactly one solution. </p>
+</div>
+
+    <a class="latex_link" href="sect0021.html#thm:T25-solvable">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.solution_unique" class="lean_decl">Atlas.Superelement.solution_unique</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostMatrix_posDef" class="lean_decl">Atlas.Superelement.hostMatrix_posDef</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Superelement.hostSystem_existsUnique" class="lean_decl">Atlas.Superelement.hostSystem_existsUnique</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T26_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T26" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">77</span><span class="theorem_thmtitle">T26</span></div>
+    <div class="thm_thmcontent"><p>   \(\mathcal L_{\mathrm{en}}=\mathcal L_{\mathrm{sup}} +\bigl(\operatorname {tr}\Lambda [H]-a(u_p,u_p)\bigr)\). The bracket does not involve the network’s output, so for any two outputs \(\mathcal L_{\mathrm{en}}-\mathcal L_{\mathrm{en}}' =\mathcal L_{\mathrm{sup}}-\mathcal L_{\mathrm{sup}}'\). </p>
+</div>
+
+    <a class="latex_link" href="sect0023.html#thm:T26">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.labelFree_eq_supervised_add_const" class="lean_decl">Atlas.Piece.labelFree_eq_supervised_add_const</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Piece.labelFree_sub_eq_supervised_sub" class="lean_decl">Atlas.Piece.labelFree_sub_eq_supervised_sub</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3a_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3a" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">20</span><span class="theorem_thmtitle">T3a, direct Schur solve</span></div>
+    <div class="thm_thmcontent"><p>  Let \(V_I,V_\Gamma \) be vector spaces over a field, and \(A_{II}:V_I\to V_I\), \(A_{I\Gamma }:V_\Gamma \to V_I\), \(A_{\Gamma I}:V_I\to V_\Gamma \), \(A_{\Gamma \Gamma }:V_\Gamma \to V_\Gamma \) linear, with \(A_{II}\) invertible. For all \(f_I,u_I\in V_I\) and \(f_\Gamma ,u_\Gamma \in V_\Gamma \), </p>
+<div class="displaymath" id="a0000000088">
+  \[  \begin{cases} A_{II}u_I+A_{I\Gamma }u_\Gamma =f_I\\ A_{\Gamma I}u_I+A_{\Gamma \Gamma }u_\Gamma =f_\Gamma \end{cases} \iff \begin{cases} u_I=A_{II}^{-1}(f_I-A_{I\Gamma }u_\Gamma )\\ \bigl(A_{\Gamma \Gamma }-A_{\Gamma I}A_{II}^{-1}A_{I\Gamma }\bigr)u_\Gamma =f_\Gamma -A_{\Gamma I}A_{II}^{-1}f_I .\end{cases}  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0009.html#thm:T3a">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.schur_iff">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3b_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3b" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">22</span><span class="theorem_thmtitle">T3b, Dirichlet–Neumann, block form</span></div>
+    <div class="thm_thmcontent"><p>   With exact solves and \(\theta \ne 0\), if \(\lambda \) is a fixed point of the sweep then \(\bigl(D(\lambda ),u_2,\lambda \bigr)\) solves the undivided system, where \(u_2\) is the interior the Neumann solve returned. </p>
+</div>
+
+    <a class="latex_link" href="sect0010.html#thm:T3b">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.TwoPieces.dn_fixedPoint_solves">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3b-converse_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3b-converse" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">23</span><span class="theorem_thmtitle">T3b, converse</span></div>
+    <div class="thm_thmcontent"><p>   If each piece’s equations determine its solution and the solves return it, then for every solution \((u_1,u_2,\lambda )\) of the undivided system and every \(\theta \), \(\lambda \) is a fixed point of the sweep. </p>
+</div>
+
+    <a class="latex_link" href="sect0010.html#thm:T3b-converse">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.TwoPieces.dn_solution_isFixedPt">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3b-face_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3b-face" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">24</span><span class="theorem_thmtitle">T3b, the face form the workbench implements</span></div>
+    <div class="thm_thmcontent"><p>  Two sets of finite-volume cells, \(D\) and \(N\), meet along faces. \(K_D,K_N\) are each set’s operator with the cut faces left out; \(P_D,P_N\) read the cell value beside each cut face; \(Q_D,Q_N\) put a per-face flow into those cells’ equations; \(g_D\) is the \(D\) side’s half-cell conductance, \(r_D=g_D^{-1}\) and \(r_N\) the two half-cell resistances, and \(h=(r_D+r_N)^{-1}\) the undivided grid’s face conductance (the harmonic mean). Suppose </p>
+<ol class="enumerate">
+  <li><p>\(K_Du_D+Q_Dg_DP_Du_D=b_D+Q_Dg_D\lambda \) (the \(D\) set solved with face values \(\lambda \)); </p>
+</li>
+  <li><p>\(q=g_D(P_Du_D-\lambda )\) (the flow it sends); </p>
+</li>
+  <li><p>\(K_Nu_N=b_N+Q_Nq\) (the \(N\) set solved with that flow); </p>
+</li>
+  <li><p>\(P_Nu_N+r_Nq=\lambda \) (the \(N\) set’s face values reproduce \(\lambda \)). </p>
+</li>
+</ol>
+<p> Then \(q=h\, (P_Du_D-P_Nu_N)\), and \((u_D,u_N)\) solves the undivided system </p>
+<div class="displaymath" id="a0000000093">
+  \[  K_Du_D+Q_Dh(P_Du_D-P_Nu_N)=b_D,\qquad K_Nu_N-Q_Nh(P_Du_D-P_Nu_N)=b_N .  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0010.html#thm:T3b-face">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.FacePair.solves_of_fixedPoint">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3c-agree_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3c-agree" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">29</span><span class="theorem_thmtitle">T3c, agreement</span></div>
+    <div class="thm_thmcontent"><p>   If \(w_i(f,u)=R_iu\) for every window \(i\), then \(Au=f\). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#thm:T3c-agree">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.solves_of_windows_agree">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3c-consistency_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3c-consistency" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">27</span><span class="theorem_thmtitle">T3c, consistency</span></div>
+    <div class="thm_thmcontent"><p>   If \(Au=f\) then \(G_f(u)=u\). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#thm:T3c-consistency">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.solution_isFixedPt">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3c-counterexample_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3c-counterexample" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">34</span><span class="theorem_thmtitle">T3c, the counterexample</span></div>
+    <div class="thm_thmcontent"><p>   There is a Schwarz sweep over \(\mathbb {Q}\) with exact window solves, a partition of unity and an invertible \(A\), and a pair \(f,u\) with \(G_f(u)=u\) and \(Au\ne f\). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#thm:T3c-counterexample">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.exists_spurious_fixedPt">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3c-precond_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3c-precond" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">30</span><span class="theorem_thmtitle">T3c, a stationary blend</span></div>
+    <div class="thm_thmcontent"><p>   If \(Mr=0\) implies \(r=0\), then every fixed point of \(G_f\) solves \(Au=f\). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#thm:T3c-precond">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.fixedPt_solves_of_precond">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3c-tendsto_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3c-tendsto" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">33</span><span class="theorem_thmtitle">T3c, a convergent sweep converges to the solution</span></div>
+    <div class="thm_thmcontent"><p>   Under the same hypothesis, if \(Au^\star =f\) then \(G_f^{\, k}(u_0)\to u^\star \) for every \(u_0\in V\). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#thm:T3c-tendsto">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.tendsto_solution">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3c-unique_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3c-unique" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">32</span><span class="theorem_thmtitle">T3c, a convergent sweep has one fixed point</span></div>
+    <div class="thm_thmcontent"><p>   Let \(V\) be a real normed space, and suppose \(G_0^{\, k}(e)\to 0\) for every \(e\in V\). If \(Au^\star =f\) and \(G_f(u)=u\), then \(u=u^\star \). </p>
+</div>
+
+    <a class="latex_link" href="sect0011.html#thm:T3c-unique">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.fixedPt_eq_solution">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T3d_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T3d" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">36</span><span class="theorem_thmtitle">T3d, stopping on the update</span></div>
+    <div class="thm_thmcontent"><p>   Let \(V\) be a real normed space and \(\lVert G_0(e)\rVert \le \rho \lVert e\rVert \) for all \(e\), with \(\rho {\lt}1\). If \(Au^\star =f\) then for every \(u\in V\) </p>
+<div class="displaymath" id="a0000000107">
+  \[  \lVert u-u^\star \rVert \le \frac{\lVert G_f(u)-u\rVert }{1-\rho }.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0012.html#thm:T3d">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.Schwarz.error_le_update">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T4_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T4" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">12</span><span class="theorem_thmtitle">T4, the master bound</span></div>
+    <div class="thm_thmcontent"><p>   Let \(u^{n+1}=\Phi (u^n)\), and suppose \(\lVert \Phi (u^n)-\Phi (u^{n,\star })\rVert \le L\, \lVert u^n-u^{n,\star }\rVert \) for every \(n\), with \(L\ge 0\). Then for every \(N\) </p>
+<div class="displaymath" id="a0000000076">
+  \[  \lVert u^N-u^{N,\star }\rVert \le L^N\lVert u^0-u^{0,\star }\rVert  +\sum _{n=1}^{N}L^{N-n}\, \lVert \Phi (u^{n-1,\star })-u^{n,\star }\rVert  .  \]
+</div>
+<p> The stability hypothesis is needed only along the two trajectories. </p>
+</div>
+
+    <a class="latex_link" href="sect0006.html#thm:T4">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.master_bound">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T5_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T5" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">38</span><span class="theorem_thmtitle">T5, Theorem 1: consistency, whatever \(\Psi \) is</span></div>
+    <div class="thm_thmcontent"><p>   Let \(w_{k+1}\) be a successor of \(w_k\) for every \(k\), and \(w_k\to \bar w\). If \(\Phi \) and \(\Psi \) are continuous at \(\bar w\), then \(\Phi (\bar w)=\bar w\). </p>
+</div>
+
+    <a class="latex_link" href="sect0014.html#thm:T5">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.limit_isFixedPt">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T5-inexact_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T5-inexact" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">39</span><span class="theorem_thmtitle">T5, Theorem 1 with inexact inner solves</span></div>
+    <div class="thm_thmcontent"><p>   Suppose instead that each step misses the defining equation by at most \(\varepsilon _k\), </p>
+<div class="displaymath" id="a0000000111">
+  \[  \lVert \bigl(w_{k+1}-\Psi (w_{k+1})\bigr) -\bigl((w_k-\Psi (w_k))-(w_k-\Phi (w_k))\bigr)\rVert \le \varepsilon _k ,  \]
+</div>
+<p> with \(\varepsilon _k\to 0\). If \(w_k\to \bar w\) and \(\Phi \), \(\Psi \) are continuous at \(\bar w\), then \(\Phi (\bar w)=\bar w\). </p>
+</div>
+
+    <a class="latex_link" href="sect0014.html#thm:T5-inexact">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.limit_isFixedPt_of_inexact">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T5-shrink_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T5-shrink" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">44</span><span class="theorem_thmtitle">T5, Corollary 2: the eigenvalues</span></div>
+    <div class="thm_thmcontent"><p>   Let \(J\) be a linear map on a vector space over a field, and \(\alpha \ne 1\). Then \(\nu \) is an eigenvalue of \(\alpha I+(1-\alpha )J\) if and only if \(\nu =\alpha +(1-\alpha )\mu \) for an eigenvalue \(\mu \) of \(J\). </p>
+</div>
+
+    <a class="latex_link" href="sect0015.html#thm:T5-shrink">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.DefectCorrection.shrink_hasEigenvalue_iff">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T7_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T7" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">4</span><span class="theorem_thmtitle">T7, the certificate</span></div>
+    <div class="thm_thmcontent"><p>  Let \((X,d)\) be a metric space, \(\Phi :X\to X\), and \(w,w^\star \in X\) with \(\Phi (w^\star )=w^\star \). If \(d(\Phi w,\Phi w^\star )\le L\, d(w,w^\star )\) with \(L{\lt}1\), then </p>
+<div class="displaymath" id="a0000000064">
+  \[  d(w,w^\star )\le \frac{d(w,\Phi w)}{1-L}.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:T7">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.certificate">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T7-opnorm_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T7-opnorm" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">6</span><span class="theorem_thmtitle">T7 for a linear step: the constant is an operator norm</span></div>
+    <div class="thm_thmcontent"><p>  Let \(E\) be a real normed space, \(A:E\to E\) bounded and linear, \(b\in E\), and \(\Phi (w)=Aw+b\). Suppose \(I-A\) has a bounded inverse \(B\), and \(\Phi (w^\star )=w^\star \). Then </p>
+<ol class="enumerate">
+  <li><p>\(\lVert w-w^\star \rVert \le \lVert B\rVert \, \lVert \Phi (w)-w\rVert \) for every \(w\in E\); </p>
+</li>
+  <li><p>if \(C\ge 0\) and \(\lVert w-w^\star \rVert \le C\, \lVert \Phi (w)-w\rVert \) for every \(w\in E\), then \(\lVert B\rVert \le C\). </p>
+</li>
+</ol>
+<p> So \(\lVert (I-A)^{-1}\rVert \) is the least constant that certifies every state. </p>
+</div>
+
+    <a class="latex_link" href="sect0004.html#thm:T7-opnorm">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.certificate_constant_is_opNorm">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T8_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T8" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">79</span><span class="theorem_thmtitle">T8, the bound for any effort and flow</span></div>
+    <div class="thm_thmcontent"><p>   Let \(Z{\gt}0\), \(c\ge 0\), and let \(e,f\) satisfy \(\langle f,e\rangle \ge c\lVert e\rVert ^2\) and \(\lVert f\rVert \le M\lVert e\rVert \). Then </p>
+<div class="displaymath" id="a0000000161">
+  \[  \lVert e-Zf\rVert ^2\le \Bigl(1-\frac{4Zc}{(1+ZM)^2}\Bigr)\lVert e+Zf\rVert ^2 .  \]
+</div>
+<p> In particular, for a bounded linear \(\Lambda \) with \(\langle \Lambda e,e\rangle \ge c\lVert e\rVert ^2\) for all \(e\) and \(\lVert \Lambda \rVert \le M\), this holds with \(f=\Lambda e\) for every \(e\). </p>
+</div>
+
+    <a class="latex_link" href="sect0025.html#thm:T8">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.wave_bound" class="lean_decl">Atlas.wave_bound</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.cayley_bound" class="lean_decl">Atlas.cayley_bound</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T8-cayley_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T8-cayley" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">80</span><span class="theorem_thmtitle">T8, the scattering map</span></div>
+    <div class="thm_thmcontent"><p>   Let \(E\) be a finite-dimensional real inner-product space, not the zero space, and \(\Lambda \) as in Theorem&#160;<a href="sect0025.html#thm:T8">79</a>. Then \(I+Z\Lambda \) is invertible and \(\mathcal S=(I-Z\Lambda )(I+Z\Lambda )^{-1}\) satisfies </p>
+<div class="displaymath" id="a0000000163">
+  \[  \lVert \mathcal S\rVert ^2\le 1-\frac{4Zc}{(1+ZM)^2}.  \]
+</div>
+<p> If only \(\langle \Lambda e,e\rangle \ge 0\) for all \(e\), then \(I+Z\Lambda \) is invertible and \(\lVert \mathcal S\rVert \le 1\) (on any finite-dimensional space). </p>
+</div>
+
+    <a class="latex_link" href="sect0025.html#thm:T8-cayley">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.cayley_transform" class="lean_decl">Atlas.cayley_transform</a></li>
+        
+           <li><a href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.cayley_nonexpansive" class="lean_decl">Atlas.cayley_nonexpansive</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T9a_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T9a" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">84</span><span class="theorem_thmtitle">T9a, the contraction contract</span></div>
+    <div class="thm_thmcontent"><p>   Let the \(W_i\) be complete, \(S_i\) the learned maps and \(S^c_i\) the classical ones, with the same \(\Pi \) and \(g\), and let \(a_c\) be a fixed point of the classical sweep. If the hypotheses of Theorem&#160;<a href="sect0026.html#thm:T9a-lip">83</a> hold with \(\rho {\lt}1\), and \(d\bigl(S_i(a_{c,i}),S^c_i(a_{c,i})\bigr)\le \delta _i\) for every \(i\), then the learned sweep has a unique fixed point \(a_l\), \(d(T^ka_0,a_l)\le \rho ^kd(a_0,a_l)\) for every \(a_0\) and \(k\), and </p>
+<div class="displaymath" id="a0000000168">
+  \[  d(a_l,a_c)\le \frac{\bigl(\sum _i\delta _i^2\bigr)^{1/2}}{1-\rho }.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="sect0026.html#thm:T9a">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.contraction_contract">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T9a-lip_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T9a-lip" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">83</span><span class="theorem_thmtitle">T9a, the sweep contracts</span></div>
+    <div class="thm_thmcontent"><p>   If \(d(S_ix,S_iy)\le \rho \, d(x,y)\) for every \(i\), \(x\), \(y\), with \(\rho \ge 0\), and \(d(\Pi x,\Pi y)\le d(x,y)\), then \(d(Ta,Ta')\le \rho \, d(a,a')\). </p>
+</div>
+
+    <a class="latex_link" href="sect0026.html#thm:T9a-lip">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.waveSweep_lipschitz">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T9b_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T9b" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">86</span><span class="theorem_thmtitle">T9b, the two-level contract</span></div>
+    <div class="thm_thmcontent"><p>   On a complete normed space, let \(T_l,C_l\) be the learned sweep and coarse solve, satisfying the hypotheses of Lemma&#160;<a href="sect0027.html#lem:T9b-consistency">85</a>, and \(T_c,C_c\) the classical ones, with \(C_c(T_ca_c)=a_c\). If \(d\bigl(C_lT_lx,C_lT_ly\bigr)\le \rho \, d(x,y)\) for all \(x,y\) with \(0\le \rho {\lt}1\), and \(d\bigl(C_lT_la_c,C_cT_ca_c\bigr)\le \delta \), then there is a unique \(a_l\) with \(C_l(T_la_l)=a_l\); it satisfies \(T_la_l=a_l\); \(d\bigl((C_lT_l)^ka_0,a_l\bigr)\le \rho ^kd(a_0,a_l)\); and \(d(a_l,a_c)\le \delta /(1-\rho )\). </p>
+</div>
+
+    <a class="latex_link" href="sect0027.html#thm:T9b">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.two_level_contract">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:T9p_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:T9p" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">93</span><span class="theorem_thmtitle">T9’, Krasnoselskii–Mann in finite dimensions</span></div>
+    <div class="thm_thmcontent"><p>   Let \(E\) be a finite-dimensional real inner-product space, \(T:E\to E\) with \(\lVert Tx-Ty\rVert \le \lVert x-y\rVert \) for all \(x,y\) and a fixed point, and \(0{\lt}\omega {\lt}1\). For every \(x_0\) the iterates \(x_{n+1}=T_\omega (x_n)\) converge to a fixed point of \(T\). </p>
+</div>
+
+    <a class="latex_link" href="sect0030.html#thm:T9p">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://github.com/nonidino/atlas-proposal/tree/main/proofs/lean/find/#doc/Atlas.krasnoselskii_mann">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+</div>
+</div> <!-- content -->
+</div> <!-- wrapper -->
+<script src="js/jquery.min.js" type="text/javascript"></script>
+
+<script src="js/d3.min.js"></script>
+<script src="js/hpcc.min.js"></script>
+<script src="js/d3-graphviz.js"></script>
+
+<script type="text/javascript">
+const graphContainer = d3.select("#graph");
+const width = graphContainer.node().clientWidth;
+const height = graphContainer.node().clientHeight;
+
+
+graphContainer.graphviz({useWorker: true})
+    .width(width)
+    .height(height)
+    .fit(true)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"prop:T4-attained"	[color=green,		fillcolor="#1CAC78",		label="T4-attained",		shape=ellipse,		style=filled];	"lem:T3c-sweep"	[color=green,		fillcolor="#1CAC78",		label="T3c-sweep",		shape=ellipse,		style=filled];	"thm:T3c-tendsto"	[color=green,		fillcolor="#1CAC78",		label="T3c-tendsto",		shape=ellipse,		style=filled];	"lem:T3c-sweep" -> "thm:T3c-tendsto"	[style=dashed];	"thm:T3c-consistency"	[color=green,		fillcolor="#1CAC78",		label="T3c-consistency",		shape=ellipse,		style=filled];	"lem:T3c-sweep" -> "thm:T3c-consistency"	[style=dashed];	"cor:T3c-homogeneous"	[color=green,		fillcolor="#1CAC78",		label="T3c-homogeneous",		shape=ellipse,		style=filled];	"lem:T3c-sweep" -> "cor:T3c-homogeneous"	[style=dashed];	"thm:T3d"	[color=green,		fillcolor="#1CAC78",		label=T3d,		shape=ellipse,		style=filled];	"lem:T3c-sweep" -> "thm:T3d"	[style=dashed];	"lem:T3c-iff"	[color=green,		fillcolor="#1CAC78",		label="T3c-iff",		shape=ellipse,		style=filled];	"lem:T3c-sweep" -> "lem:T3c-iff"	[style=dashed];	"thm:T3c-unique"	[color=green,		fillcolor="#1CAC78",		label="T3c-unique",		shape=ellipse,		style=filled];	"lem:T3c-sweep" -> "thm:T3c-unique"	[style=dashed];	"def:quad"	[color=green,		fillcolor="#B0ECA3",		label=quad,		shape=box,		style=filled];	"lem:stationary"	[color=green,		fillcolor="#1CAC78",		label=stationary,		shape=ellipse,		style=filled];	"def:quad" -> "lem:stationary"	[style=dashed];	"def:superelement"	[color=green,		fillcolor="#B0ECA3",		label=superelement,		shape=box,		style=filled];	"def:quad" -> "def:superelement"	[style=dashed];	"lem:energy-triangle"	[color=green,		fillcolor="#1CAC78",		label="energy-triangle",		shape=ellipse,		style=filled];	"def:quad" -> "lem:energy-triangle"	[style=dashed];	"thm:T11"	[color=green,		fillcolor="#1CAC78",		label=T11,		shape=ellipse,		style=filled];	"cor:T11-nonexpansive"	[color=green,		fillcolor="#1CAC78",		label="T11-nonexpansive",		shape=ellipse,		style=filled];	"thm:T11" -> "cor:T11-nonexpansive"	[style=dashed];	"lem:cea"	[color=green,		fillcolor="#1CAC78",		label=cea,		shape=ellipse,		style=filled];	"thm:T25-optimal"	[color=green,		fillcolor="#1CAC78",		label="T25-optimal",		shape=ellipse,		style=filled];	"lem:cea" -> "thm:T25-optimal"	[style=dashed];	"thm:T3a"	[color=green,		fillcolor="#1CAC78",		label=T3a,		shape=ellipse,		style=filled];	"cor:T4-nonexpansive"	[color=green,		fillcolor="#1CAC78",		label="T4-nonexpansive",		shape=ellipse,		style=filled];	"thm:T25-ii"	[color=green,		fillcolor="#1CAC78",		label="T25-ii",		shape=ellipse,		style=filled];	"cor:T25-ii"	[color=green,		fillcolor="#1CAC78",		label="T25-ii",		shape=ellipse,		style=filled];	"thm:T25-ii" -> "cor:T25-ii"	[style=dashed];	"thm:T26"	[color=green,		fillcolor="#1CAC78",		label=T26,		shape=ellipse,		style=filled];	"lem:T4-recursion"	[color=green,		fillcolor="#1CAC78",		label="T4-recursion",		shape=ellipse,		style=filled];	"thm:T4"	[color=green,		fillcolor="#1CAC78",		label=T4,		shape=ellipse,		style=filled];	"lem:T4-recursion" -> "thm:T4"	[style=dashed];	"def:two-pieces"	[color=green,		fillcolor="#B0ECA3",		label="two-pieces",		shape=box,		style=filled];	"thm:T3b-converse"	[color=green,		fillcolor="#1CAC78",		label="T3b-converse",		shape=ellipse,		style=filled];	"def:two-pieces" -> "thm:T3b-converse"	[style=dashed];	"thm:T3b"	[color=green,		fillcolor="#1CAC78",		label=T3b,		shape=ellipse,		style=filled];	"def:two-pieces" -> "thm:T3b"	[style=dashed];	"prop:T10-idem"	[color=green,		fillcolor="#1CAC78",		label="T10-idem",		shape=ellipse,		style=filled];	"prop:T24"	[color=green,		fillcolor="#1CAC78",		label=T24,		shape=ellipse,		style=filled];	"cor:T24-dominates"	[color=green,		fillcolor="#1CAC78",		label="T24-dominates",		shape=ellipse,		style=filled];	"prop:T24" -> "cor:T24-dominates"	[style=dashed];	"thm:T3b-face"	[color=green,		fillcolor="#1CAC78",		label="T3b-face",		shape=ellipse,		style=filled];	"lem:T11-junction"	[color=green,		fillcolor="#1CAC78",		label="T11-junction",		shape=ellipse,		style=filled];	"lem:T11-junction" -> "thm:T11"	[style=dashed];	"thm:T25-iii"	[color=green,		fillcolor="#1CAC78",		label="T25-iii",		shape=ellipse,		style=filled];	"thm:T25-solvable"	[color=green,		fillcolor="#1CAC78",		label="T25-solvable",		shape=ellipse,		style=filled];	"thm:headline-tier0"	[color=green,		fillcolor="#1CAC78",		label="headline-tier0",		shape=ellipse,		style=filled];	"thm:T25-solvable" -> "thm:headline-tier0"	[style=dashed];	"cor:T4-contractive"	[color=green,		fillcolor="#1CAC78",		label="T4-contractive",		shape=ellipse,		style=filled];	"lem:T5-shrink-re"	[color=green,		fillcolor="#1CAC78",		label="T5-shrink-re",		shape=ellipse,		style=filled];	"cor:T4-three"	[color=green,		fillcolor="#1CAC78",		label="T4-three",		shape=ellipse,		style=filled];	"thm:T22-tier2"	[color=green,		fillcolor="#1CAC78",		label="T22-tier2",		shape=ellipse,		style=filled];	"cor:T4-three" -> "thm:T22-tier2"	[style=dashed];	"thm:T7-opnorm"	[color=green,		fillcolor="#1CAC78",		label="T7-opnorm",		shape=ellipse,		style=filled];	"cor:T4e-sigma"	[color=green,		fillcolor="#1CAC78",		label="T4e-sigma",		shape=ellipse,		style=filled];	"lem:T4-split"	[color=green,		fillcolor="#1CAC78",		label="T4-split",		shape=ellipse,		style=filled];	"lem:T4-split" -> "cor:T4-three"	[style=dashed];	"def:average"	[color=green,		fillcolor="#B0ECA3",		label=average,		shape=box,		style=filled];	"def:average" -> "prop:T10-idem"	[style=dashed];	"thm:T10"	[color=green,		fillcolor="#1CAC78",		label=T10,		shape=ellipse,		style=filled];	"def:average" -> "thm:T10"	[style=dashed];	"def:wave-sweep"	[color=green,		fillcolor="#B0ECA3",		label="wave-sweep",		shape=box,		style=filled];	"thm:T9a-lip"	[color=green,		fillcolor="#1CAC78",		label="T9a-lip",		shape=ellipse,		style=filled];	"def:wave-sweep" -> "thm:T9a-lip"	[style=dashed];	"lem:T5-shrink-deriv"	[color=green,		fillcolor="#1CAC78",		label="T5-shrink-deriv",		shape=ellipse,		style=filled];	"lem:stationary" -> "lem:cea"	[style=dashed];	"lem:stationary" -> "thm:T25-solvable"	[style=dashed];	"lem:galerkin"	[color=green,		fillcolor="#1CAC78",		label=galerkin,		shape=ellipse,		style=filled];	"lem:stationary" -> "lem:galerkin"	[style=dashed];	"thm:T5-inexact"	[color=green,		fillcolor="#1CAC78",		label="T5-inexact",		shape=ellipse,		style=filled];	"thm:T3c-consistency" -> "thm:T3c-tendsto"	[style=dashed];	"cor:T4-expansive"	[color=green,		fillcolor="#1CAC78",		label="T4-expansive",		shape=ellipse,		style=filled];	"def:averaged"	[color=green,		fillcolor="#B0ECA3",		label=averaged,		shape=box,		style=filled];	"lem:T9p-step"	[color=green,		fillcolor="#1CAC78",		label="T9p-step",		shape=ellipse,		style=filled];	"def:averaged" -> "lem:T9p-step"	[style=dashed];	"thm:headline-dc"	[color=green,		fillcolor="#1CAC78",		label="headline-dc",		shape=ellipse,		style=filled];	"thm:T3c-agree"	[color=green,		fillcolor="#1CAC78",		label="T3c-agree",		shape=ellipse,		style=filled];	"thm:T3c-precond"	[color=green,		fillcolor="#1CAC78",		label="T3c-precond",		shape=ellipse,		style=filled];	"thm:T3c-precond" -> "cor:T3c-homogeneous"	[style=dashed];	"def:dec-step"	[color=green,		fillcolor="#B0ECA3",		label="dec-step",		shape=box,		style=filled];	"def:dec-step" -> "thm:T5-inexact"	[style=dashed];	"thm:T5"	[color=green,		fillcolor="#1CAC78",		label=T5,		shape=ellipse,		style=filled];	"def:dec-step" -> "thm:T5"	[style=dashed];	"cor:T5-const"	[color=green,		fillcolor="#1CAC78",		label="T5-const",		shape=ellipse,		style=filled];	"def:dec-step" -> "cor:T5-const"	[style=dashed];	"lem:T5-inner"	[color=green,		fillcolor="#1CAC78",		label="T5-inner",		shape=ellipse,		style=filled];	"def:dec-step" -> "lem:T5-inner"	[style=dashed];	"cor:T5-inner-const"	[color=green,		fillcolor="#1CAC78",		label="T5-inner-const",		shape=ellipse,		style=filled];	"def:dec-step" -> "cor:T5-inner-const"	[style=dashed];	"def:gram"	[color=green,		fillcolor="#B0ECA3",		label=gram,		shape=box,		style=filled];	"def:gram" -> "thm:T25-ii"	[style=dashed];	"def:gram" -> "def:superelement"	[style=dashed];	"prop:T25-i-def"	[color=green,		fillcolor="#1CAC78",		label="T25-i-def",		shape=ellipse,		style=filled];	"def:gram" -> "prop:T25-i-def"	[style=dashed];	"thm:T25-i"	[color=green,		fillcolor="#1CAC78",		label="T25-i",		shape=ellipse,		style=filled];	"def:gram" -> "thm:T25-i"	[style=dashed];	"def:objectives"	[color=green,		fillcolor="#B0ECA3",		label=objectives,		shape=box,		style=filled];	"def:gram" -> "def:objectives"	[style=dashed];	"def:assemble"	[color=green,		fillcolor="#B0ECA3",		label=assemble,		shape=box,		style=filled];	"def:assemble" -> "thm:T25-iii"	[style=dashed];	"def:assemble" -> "def:superelement"	[style=dashed];	"thm:T25-galerkin"	[color=green,		fillcolor="#1CAC78",		label="T25-galerkin",		shape=ellipse,		style=filled];	"def:superelement" -> "thm:T25-galerkin"	[style=dashed];	"def:assumptions"	[color=green,		fillcolor="#B0ECA3",		label=assumptions,		shape=box,		style=filled];	"def:superelement" -> "def:assumptions"	[style=dashed];	"thm:T1"	[color=green,		fillcolor="#1CAC78",		label=T1,		shape=ellipse,		style=filled];	"thm:T9a"	[color=green,		fillcolor="#1CAC78",		label=T9a,		shape=ellipse,		style=filled];	"thm:T1" -> "thm:T9a"	[style=dashed];	"cor:T1-uniform"	[color=green,		fillcolor="#1CAC78",		label="T1-uniform",		shape=ellipse,		style=filled];	"thm:T1" -> "cor:T1-uniform"	[style=dashed];	"thm:T2"	[color=green,		fillcolor="#1CAC78",		label=T2,		shape=ellipse,		style=filled];	"thm:T1" -> "thm:T2"	[style=dashed];	"thm:T9b"	[color=green,		fillcolor="#1CAC78",		label=T9b,		shape=ellipse,		style=filled];	"thm:T1" -> "thm:T9b"	[style=dashed];	"lem:T22-step"	[color=green,		fillcolor="#1CAC78",		label="T22-step",		shape=ellipse,		style=filled];	"thm:T1" -> "lem:T22-step"	[style=dashed];	"thm:T7"	[color=green,		fillcolor="#1CAC78",		label=T7,		shape=ellipse,		style=filled];	"thm:T7" -> "thm:T3d"	[style=dashed];	"cor:T7-banach"	[color=green,		fillcolor="#1CAC78",		label="T7-banach",		shape=ellipse,		style=filled];	"thm:T7" -> "cor:T7-banach"	[style=dashed];	"cor:T8-gram"	[color=green,		fillcolor="#1CAC78",		label="T8-gram",		shape=ellipse,		style=filled];	"thm:T25-galerkin" -> "thm:T25-optimal"	[style=dashed];	"thm:headline-tier2"	[color=green,		fillcolor="#1CAC78",		label="headline-tier2",		shape=ellipse,		style=filled];	"thm:T9a" -> "thm:headline-tier2"	[style=dashed];	"lem:T9p-identity"	[color=green,		fillcolor="#1CAC78",		label="T9p-identity",		shape=ellipse,		style=filled];	"lem:T9p-identity" -> "lem:T9p-step"	[style=dashed];	"thm:T22-tier2" -> "thm:headline-tier2"	[style=dashed];	"def:assumptions" -> "thm:T25-solvable"	[style=dashed];	"def:assumptions" -> "thm:T25-optimal"	[style=dashed];	"lem:T11-rule"	[color=green,		fillcolor="#1CAC78",		label="T11-rule",		shape=ellipse,		style=filled];	"thm:T3c-counterexample"	[color=green,		fillcolor="#1CAC78",		label="T3c-counterexample",		shape=ellipse,		style=filled];	"thm:T5" -> "thm:headline-dc"	[style=dashed];	"cor:T25-ii" -> "thm:T26"	[style=dashed];	"cor:T25-ii" -> "thm:T25-iii"	[style=dashed];	"lem:T9b-consistency"	[color=green,		fillcolor="#1CAC78",		label="T9b-consistency",		shape=ellipse,		style=filled];	"lem:T9b-consistency" -> "thm:T9b"	[style=dashed];	"thm:T8"	[color=green,		fillcolor="#1CAC78",		label=T8,		shape=ellipse,		style=filled];	"thm:T8" -> "cor:T8-gram"	[style=dashed];	"thm:T8-cayley"	[color=green,		fillcolor="#1CAC78",		label="T8-cayley",		shape=ellipse,		style=filled];	"thm:T8" -> "thm:T8-cayley"	[style=dashed];	"lem:T3c-iff" -> "thm:T3c-precond"	[style=dashed];	"thm:T4" -> "cor:T4-nonexpansive"	[style=dashed];	"thm:T4" -> "cor:T4-contractive"	[style=dashed];	"thm:T4" -> "cor:T4-three"	[style=dashed];	"thm:T4" -> "cor:T4-expansive"	[style=dashed];	"thm:T25-bound"	[color=green,		fillcolor="#1CAC78",		label="T25-bound",		shape=ellipse,		style=filled];	"thm:T22-tier0"	[color=green,		fillcolor="#1CAC78",		label="T22-tier0",		shape=ellipse,		style=filled];	"thm:T25-bound" -> "thm:T22-tier0"	[style=dashed];	"lem:T5-shrink-eig"	[color=green,		fillcolor="#1CAC78",		label="T5-shrink-eig",		shape=ellipse,		style=filled];	"thm:T5-shrink"	[color=green,		fillcolor="#1CAC78",		label="T5-shrink",		shape=ellipse,		style=filled];	"lem:T5-shrink-eig" -> "thm:T5-shrink"	[style=dashed];	"thm:T25-i" -> "cor:T8-gram"	[style=dashed];	"thm:T25-i" -> "prop:T25-i-def";	"lem:T4e-trace"	[color=green,		fillcolor="#1CAC78",		label="T4e-trace",		shape=ellipse,		style=filled];	"lem:T4e-trace" -> "cor:T4e-sigma"	[style=dashed];	"def:piece"	[color=green,		fillcolor="#B0ECA3",		label=piece,		shape=box,		style=filled];	"def:piece" -> "def:gram"	[style=dashed];	"def:schwarz"	[color=green,		fillcolor="#B0ECA3",		label=schwarz,		shape=box,		style=filled];	"def:schwarz" -> "lem:T3c-sweep"	[style=dashed];	"def:schwarz" -> "thm:T3c-agree"	[style=dashed];	"def:schwarz" -> "thm:T3c-counterexample"	[style=dashed];	"lem:T9p-residual"	[color=green,		fillcolor="#1CAC78",		label="T9p-residual",		shape=ellipse,		style=filled];	"lem:T9p-step" -> "lem:T9p-residual"	[style=dashed];	"thm:T9p"	[color=green,		fillcolor="#1CAC78",		label=T9p,		shape=ellipse,		style=filled];	"lem:T9p-step" -> "thm:T9p"	[style=dashed];	"lem:T9p-residual" -> "thm:T9p"	[style=dashed];	"lem:energy-triangle" -> "thm:T25-bound"	[style=dashed];	"lem:energy-triangle" -> "thm:T22-tier0"	[style=dashed];	"prop:T1-sharp"	[color=green,		fillcolor="#1CAC78",		label="T1-sharp",		shape=ellipse,		style=filled];	"thm:T25-optimal" -> "thm:headline-tier0"	[style=dashed];	"thm:T25-optimal" -> "thm:T25-bound"	[style=dashed];	"def:objectives" -> "thm:T26"	[style=dashed];	"thm:T9a-lip" -> "thm:T9a"	[style=dashed];	"lem:T4-accumulation"	[color=green,		fillcolor="#1CAC78",		label="T4-accumulation",		shape=ellipse,		style=filled];	"lem:T4-accumulation" -> "thm:T4"	[style=dashed];	"lem:T4-accumulation" -> "thm:T22-tier0"	[style=dashed];	"lem:T22-step" -> "thm:T22-tier2"	[style=dashed];	"lem:T8-identity"	[color=green,		fillcolor="#1CAC78",		label="T8-identity",		shape=ellipse,		style=filled];	"lem:T8-identity" -> "thm:T8"	[style=dashed];	"lem:galerkin" -> "thm:T25-galerkin"	[style=dashed];}`)
+    .on("end", interactive);
+
+latexLabelEscaper = function(label) {
+  return label.replace(/\./g, '\\.').replace(/:/g, '\\:')
+}
+
+clickNode = function() {
+  $("#statements div").hide()
+  var node_id = $('text', this).text();
+  $('.thm').hide();
+  $('#'+latexLabelEscaper(node_id)).show().children().show();
+}
+function interactive() {
+    $("span#legend_title").on("click", function () {
+           $(this).siblings('dl').toggle();
+        })
+
+    d3.selectAll('.node')
+        .attr('pointer-events', 'fill')
+        .on('click', function () {
+           var title = d3.select(this).selectAll('title').text().trim();
+           $('#statements > div').hide()
+           $('.thm').hide();
+           $('#'+latexLabelEscaper(title)+'_modal').show().children().show().children().show();
+           $('#statements').show()
+        });
+
+    d3.selectAll('.dep-closebtn').on('click', function() {
+        var modal =
+            d3.select(this).node().parentNode.parentNode.parentNode ;
+        d3.select(modal).style('display', 'none');
+    });
+}
+
+</script>
+
+</body>
+</html>

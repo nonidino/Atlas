@@ -1,0 +1,9 @@
+{
+ "note": "Addresses the site links to. The repositories are created by the owner at launch (wiki: website-launch-checklist); if a name changes, change it here and run python scripts/site_build.py.",
+ "launched": false,
+ "pages_url": "https://nonidino.github.io/atlas-proposal/",
+ "public_repo": "https://github.com/nonidino/atlas-proposal",
+ "issues": "https://github.com/nonidino/atlas-proposal/issues",
+ "workbench_repo": "https://github.com/nonidino/atlas-workbench",
+ "workbench_branch": "atlas-workbench"
+}

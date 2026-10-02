@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AtlasProofs/Existence.lean — Atlas proofs</title><link rel="stylesheet" href="../../../assets/css/site.css">
+<style>pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}</style>
+</head><body><main class="section tight"><div class="wrap">
+<p class="small"><a href="../../../index.html">Atlas</a> · <a href="../../../proofs/blueprint/index.html">the blueprint</a> · <a href="../index.html">all files</a></p>
+<h1 class="h3">AtlasProofs/Existence.lean</h1>
+<p class="small"><a href="Existence.lean">Plain text</a></p><pre>import AtlasProofs.PerturbedContraction
+import Mathlib.Analysis.Normed.Module.Basic
+import Mathlib.Analysis.Calculus.MeanValue
+
+/-!
+# T2 — Existence, as a conditional theorem
+
+Can a learned coupling do as well as the classical one? T2 answers: **if** a network can
+approximate the classical interface map well enough, then yes, and with nearly the classical
+rate.
+
+The &quot;if&quot; is a hypothesis here. That a neural network can approximate a smooth map and its
+derivative on a compact set is the universal approximation theorem in `C¹` (Hornik 1991; for
+operators, Kovachki, Lanthaler and Mishra 2021). It is cited by the proposal and is **not**
+proved in this project. Nothing below says that a *trained* network meets the hypothesis:
+that is measured and certified for one network at a time.
+
+**Plain statement.** The classical sweep `Tc` has the answer `ac` and contracts by `ρ` on a
+closed ball of radius `r` around it. Let a learned sweep `Tl` be within `η` of `Tc` in the
+`C¹` sense on that ball: its value at `ac` is off by at most `η`, and the difference
+`Tl - Tc` changes by at most `η` times the distance between two points (which is what a
+derivative within `η` gives). If `ρ + η &lt; 1` and `η ≤ (1 - ρ - η) r`, then
+
+* `Tl` maps the ball into itself and contracts on it by `ρ + η`;
+* it has exactly one fixed point `al` in the ball, reached from any start in the ball at rate
+  `ρ + η`;
+* `‖al - ac‖ ≤ η / (1 - ρ - η)`.
+
+So as `η → 0` the learned iteration converges at nearly the classical rate to nearly the
+classical answer. The space is any real Banach space; the interface discretised, it is
+finite-dimensional.
+-/
+
+namespace Atlas
+
+open Metric
+
+/-- **T1 on a closed set that the learned map sends into itself.** `Tl` contracts by `ρ &lt; 1`
+on the closed set `K`, maps `K` into `K`, and moves the point `ac` of `K` by at most `δ`. Then
+`Tl` has exactly one fixed point in `K`, reached at rate `ρ` from every start in `K`, within
+`δ / (1 - ρ)` of `ac`. -/
+theorem perturbed_contraction_on {X : Type*} [MetricSpace X] [CompleteSpace X] {K : Set X}
+    (hK : IsClosed K) {Tl : X → X} {ρ δ : ℝ} {ac : X} (hρ₀ : 0 ≤ ρ) (hρ₁ : ρ &lt; 1)
+    (hac : ac ∈ K) (hmaps : ∀ x ∈ K, Tl x ∈ K)
+    (hTl : ∀ x ∈ K, ∀ y ∈ K, dist (Tl x) (Tl y) ≤ ρ * dist x y)
+    (hδ : dist (Tl ac) ac ≤ δ) :
+    ∃ al ∈ K, Tl al = al ∧ (∀ b ∈ K, Tl b = b → b = al) ∧
+      (∀ x₀ ∈ K, ∀ k : ℕ, Tl^[k] x₀ ∈ K ∧ dist (Tl^[k] x₀) al ≤ ρ ^ k * dist x₀ al) ∧
+      dist al ac ≤ δ / (1 - ρ) := by
+  have : CompleteSpace K := hK.completeSpace_coe
+  let Tl&#x27; : K → K := fun x =&gt; ⟨Tl x, hmaps x x.2⟩
+  have hiter : ∀ (x : K) (k : ℕ), ((Tl&#x27;^[k] x : K) : X) = Tl^[k] (x : X) := by
+    intro x k
+    induction k with
+    | zero =&gt; rfl
+    | succ n ih =&gt;
+      rw [Function.iterate_succ_apply&#x27;, Function.iterate_succ_apply&#x27;, ← ih]
+  obtain ⟨al, hfix, huniq, hrate, hdist⟩ :=
+    perturbed_contraction (Tc := fun _ : K =&gt; (⟨ac, hac⟩ : K)) (Tl := Tl&#x27;) (ac := ⟨ac, hac⟩)
+      hρ₀ hρ₁ (fun x y =&gt; hTl x x.2 y y.2) rfl hδ
+  refine ⟨al, al.2, congrArg Subtype.val hfix, ?_, ?_, hdist⟩
+  · intro b hb hTb
+    exact congrArg Subtype.val (huniq ⟨b, hb⟩ (Subtype.ext hTb))
+  · intro x₀ hx₀ k
+    have hk := hiter ⟨x₀, hx₀⟩ k
+    have hr : dist ((Tl&#x27;^[k] ⟨x₀, hx₀⟩ : K) : X) (al : X) ≤ ρ ^ k * dist x₀ (al : X) :=
+      hrate ⟨x₀, hx₀⟩ k
+    rw [hk] at hr
+    refine ⟨?_, hr⟩
+    have hmem : ((Tl&#x27;^[k] ⟨x₀, hx₀⟩ : K) : X) ∈ K := (Tl&#x27;^[k] ⟨x₀, hx₀⟩).2
+    rwa [hk] at hmem
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+
+omit [NormedSpace ℝ E] in
+/-- **T2 (the conditional statement, for a given learned map).** `hval` and `hlip` are what
+a network within `η` of `Tc` in `C¹` on the ball provides; they are hypotheses. -/
+theorem existence_conditional {Tc Tl : E → E} {ac : E} {r ρ η : ℝ}
+    (hr : 0 ≤ r) (hρ₀ : 0 ≤ ρ) (hη₀ : 0 ≤ η) (hρη : ρ + η &lt; 1)
+    (hac : Tc ac = ac)
+    (hTc : ∀ x ∈ closedBall ac r, ∀ y ∈ closedBall ac r, ‖Tc x - Tc y‖ ≤ ρ * ‖x - y‖)
+    (hval : ‖Tl ac - Tc ac‖ ≤ η)
+    (hlip : ∀ x ∈ closedBall ac r, ∀ y ∈ closedBall ac r,
+      ‖(Tl x - Tc x) - (Tl y - Tc y)‖ ≤ η * ‖x - y‖)
+    (hroom : η ≤ (1 - ρ - η) * r) :
+    ∃ al ∈ closedBall ac r, Tl al = al ∧
+      (∀ b ∈ closedBall ac r, Tl b = b → b = al) ∧
+      (∀ x₀ ∈ closedBall ac r, ∀ k : ℕ,
+        Tl^[k] x₀ ∈ closedBall ac r ∧ ‖Tl^[k] x₀ - al‖ ≤ (ρ + η) ^ k * ‖x₀ - al‖) ∧
+      ‖al - ac‖ ≤ η / (1 - ρ - η) := by
+  have hac_mem : ac ∈ closedBall ac r := mem_closedBall_self hr
+  have hTl : ∀ x ∈ closedBall ac r, ∀ y ∈ closedBall ac r,
+      ‖Tl x - Tl y‖ ≤ (ρ + η) * ‖x - y‖ := by
+    intro x hx y hy
+    have h1 : Tl x - Tl y = (Tc x - Tc y) + ((Tl x - Tc x) - (Tl y - Tc y)) := by abel
+    have h2 := norm_add_le (Tc x - Tc y) ((Tl x - Tc x) - (Tl y - Tc y))
+    have h3 := hTc x hx y hy
+    have h4 := hlip x hx y hy
+    rw [h1]
+    linarith
+  have hmaps : ∀ x ∈ closedBall ac r, Tl x ∈ closedBall ac r := by
+    intro x hx
+    have hx&#x27; : ‖x - ac‖ ≤ r := by rwa [mem_closedBall, dist_eq_norm] at hx
+    have h1 : Tl x - ac = (Tl x - Tl ac) + (Tl ac - Tc ac) := by
+      rw [hac]
+      abel
+    have h2 := norm_add_le (Tl x - Tl ac) (Tl ac - Tc ac)
+    have h3 := hTl x hx ac hac_mem
+    have h4 : (ρ + η) * ‖x - ac‖ ≤ (ρ + η) * r :=
+      mul_le_mul_of_nonneg_left hx&#x27; (by linarith)
+    rw [mem_closedBall, dist_eq_norm, h1]
+    linarith
+  have hval&#x27; : dist (Tl ac) ac ≤ η := by
+    rw [dist_eq_norm]
+    rwa [hac] at hval
+  have hsub : 1 - (ρ + η) = 1 - ρ - η := by ring
+  obtain ⟨al, hal, hfix, huniq, hrate, hdist⟩ :=
+    perturbed_contraction_on isClosed_closedBall (ρ := ρ + η) (δ := η) (by linarith) hρη
+      hac_mem hmaps
+      (fun x hx y hy =&gt; by
+        rw [dist_eq_norm, dist_eq_norm]
+        exact hTl x hx y hy)
+      hval&#x27;
+  refine ⟨al, hal, hfix, huniq, fun x₀ hx₀ k =&gt; ?_, ?_⟩
+  · have h := hrate x₀ hx₀ k
+    rw [dist_eq_norm, dist_eq_norm] at h
+    exact h
+  · rw [dist_eq_norm, hsub] at hdist
+    exact hdist
+
+/-- **T2, with the closeness stated through derivatives.** If `Tl - Tc` has, at every point
+of the ball, a derivative of norm at most `η`, then `hlip` holds (the mean value inequality
+on a convex set), and so does the conclusion of `existence_conditional`. -/
+theorem existence_conditional_c1 {Tc Tl : E → E} {ac : E} {r ρ η : ℝ}
+    (hr : 0 ≤ r) (hρ₀ : 0 ≤ ρ) (hη₀ : 0 ≤ η) (hρη : ρ + η &lt; 1)
+    (hac : Tc ac = ac)
+    (hTc : ∀ x ∈ closedBall ac r, ∀ y ∈ closedBall ac r, ‖Tc x - Tc y‖ ≤ ρ * ‖x - y‖)
+    (hval : ‖Tl ac - Tc ac‖ ≤ η)
+    {D : E → E →L[ℝ] E}
+    (hD : ∀ x ∈ closedBall ac r,
+      HasFDerivWithinAt (fun x =&gt; Tl x - Tc x) (D x) (closedBall ac r) x)
+    (hDη : ∀ x ∈ closedBall ac r, ‖D x‖ ≤ η)
+    (hroom : η ≤ (1 - ρ - η) * r) :
+    ∃ al ∈ closedBall ac r, Tl al = al ∧
+      (∀ b ∈ closedBall ac r, Tl b = b → b = al) ∧
+      (∀ x₀ ∈ closedBall ac r, ∀ k : ℕ,
+        Tl^[k] x₀ ∈ closedBall ac r ∧ ‖Tl^[k] x₀ - al‖ ≤ (ρ + η) ^ k * ‖x₀ - al‖) ∧
+      ‖al - ac‖ ≤ η / (1 - ρ - η) := by
+  refine existence_conditional hr hρ₀ hη₀ hρη hac hTc hval (fun x hx y hy =&gt; ?_) hroom
+  exact Convex.norm_image_sub_le_of_norm_hasFDerivWithin_le hD hDη (convex_closedBall ac r)
+    hy hx
+
+omit [NormedSpace ℝ E] in
+/-- **T2 (existence).** `Net` is a class of maps (the networks of some architecture). **If**
+the class contains a map within `η` of the classical sweep in the sense above (the
+approximation theorem, a hypothesis), **then** it contains a map whose iteration has exactly
+one answer in the ball, reaches it at rate `ρ + η` from any start in the ball, and whose
+answer is within `η / (1 - ρ - η)` of the classical one. -/
+theorem existence_of_learned_coupling (Net : Set (E → E)) {Tc : E → E} {ac : E} {r ρ η : ℝ}
+    (hr : 0 ≤ r) (hρ₀ : 0 ≤ ρ) (hη₀ : 0 ≤ η) (hρη : ρ + η &lt; 1)
+    (hac : Tc ac = ac)
+    (hTc : ∀ x ∈ closedBall ac r, ∀ y ∈ closedBall ac r, ‖Tc x - Tc y‖ ≤ ρ * ‖x - y‖)
+    (hroom : η ≤ (1 - ρ - η) * r)
+    (happrox : ∃ Tl ∈ Net, ‖Tl ac - Tc ac‖ ≤ η ∧
+      ∀ x ∈ closedBall ac r, ∀ y ∈ closedBall ac r,
+        ‖(Tl x - Tc x) - (Tl y - Tc y)‖ ≤ η * ‖x - y‖) :
+    ∃ Tl ∈ Net, ∃ al ∈ closedBall ac r, Tl al = al ∧
+      (∀ b ∈ closedBall ac r, Tl b = b → b = al) ∧
+      (∀ x₀ ∈ closedBall ac r, ∀ k : ℕ,
+        Tl^[k] x₀ ∈ closedBall ac r ∧ ‖Tl^[k] x₀ - al‖ ≤ (ρ + η) ^ k * ‖x₀ - al‖) ∧
+      ‖al - ac‖ ≤ η / (1 - ρ - η) := by
+  obtain ⟨Tl, hTl, hval, hlip⟩ := happrox
+  exact ⟨Tl, hTl, existence_conditional hr hρ₀ hη₀ hρη hac hTc hval hlip hroom⟩
+
+end Atlas
+</pre>
+</div></main></body></html>

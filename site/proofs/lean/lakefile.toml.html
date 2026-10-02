@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lakefile.toml — Atlas proofs</title><link rel="stylesheet" href="../../assets/css/site.css">
+<style>pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}</style>
+</head><body><main class="section tight"><div class="wrap">
+<p class="small"><a href="../../index.html">Atlas</a> · <a href="../../proofs/blueprint/index.html">the blueprint</a> · <a href="index.html">all files</a></p>
+<h1 class="h3">lakefile.toml</h1>
+<p class="small"><a href="lakefile.toml">Plain text</a></p><pre># The machine-checked mathematics behind the Atlas proposal.
+#
+# Mathlib is pinned to a tagged release so that `lake exe cache get` always finds
+# prebuilt files: Mathlib is never compiled from source here.  The toolchain in
+# `lean-toolchain` is the one that release was built with.
+name = &quot;AtlasProofs&quot;
+version = &quot;0.1.0&quot;
+defaultTargets = [&quot;AtlasProofs&quot;]
+
+[leanOptions]
+autoImplicit = false
+relaxedAutoImplicit = false
+
+[[require]]
+name = &quot;mathlib&quot;
+scope = &quot;leanprover-community&quot;
+rev = &quot;v4.34.1&quot;
+
+[[lean_lib]]
+name = &quot;AtlasProofs&quot;
+</pre>
+</div></main></body></html>

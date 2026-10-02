@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AtlasProofs/PerturbedContraction.lean — Atlas proofs</title><link rel="stylesheet" href="../../../assets/css/site.css">
+<style>pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}</style>
+</head><body><main class="section tight"><div class="wrap">
+<p class="small"><a href="../../../index.html">Atlas</a> · <a href="../../../proofs/blueprint/index.html">the blueprint</a> · <a href="../index.html">all files</a></p>
+<h1 class="h3">AtlasProofs/PerturbedContraction.lean</h1>
+<p class="small"><a href="PerturbedContraction.lean">Plain text</a></p><pre>import Mathlib.Topology.MetricSpace.Contracting
+
+/-!
+# T1 — Perturbed contraction
+
+A coupled iteration built from learned experts is a map `Tl` on the interface data.
+The classical decomposition is another map `Tc`, with answer `ac` (`Tc ac = ac`).
+
+**Plain statement.** If the learned map shrinks every distance by a factor `ρ &lt; 1`, and at
+the classical answer it differs from the classical map by at most `δ`, then:
+
+* the learned iteration has exactly one answer `al`;
+* from any start it reaches `al` geometrically: the distance shrinks by `ρ` every sweep;
+* `al` is within `δ / (1 - ρ)` of the classical answer.
+
+Nothing is assumed about how the learned map was trained, and the classical map need not
+be a contraction: it only needs to have the answer `ac`.
+
+The space is any complete metric space (finite-dimensional vectors with any norm are one).
+-/
+
+namespace Atlas
+
+variable {X : Type*} [MetricSpace X] [CompleteSpace X]
+
+/-- **T1 (perturbed contraction).** `Tl` is a `ρ`-contraction, `ac` is a fixed point of `Tc`,
+and the two maps differ by at most `δ` at `ac`. Then `Tl` has a unique fixed point `al`, every
+orbit of `Tl` converges to it at rate `ρ`, and `dist al ac ≤ δ / (1 - ρ)`. -/
+theorem perturbed_contraction {Tc Tl : X → X} {ρ δ : ℝ} {ac : X}
+    (hρ₀ : 0 ≤ ρ) (hρ₁ : ρ &lt; 1)
+    (hTl : ∀ x y, dist (Tl x) (Tl y) ≤ ρ * dist x y)
+    (hac : Tc ac = ac)
+    (hδ : dist (Tl ac) (Tc ac) ≤ δ) :
+    ∃ al : X, Tl al = al ∧ (∀ b, Tl b = b → b = al) ∧
+      (∀ (x₀ : X) (k : ℕ), dist (Tl^[k] x₀) al ≤ ρ ^ k * dist x₀ al) ∧
+      dist al ac ≤ δ / (1 - ρ) := by
+  have : Nonempty X := ⟨ac⟩
+  -- `Tl` is a contraction in Mathlib&#x27;s sense, with `ρ` as a non-negative real constant.
+  have hKρ : ((Real.toNNReal ρ : NNReal) : ℝ) = ρ := Real.coe_toNNReal ρ hρ₀
+  have hK : ContractingWith (Real.toNNReal ρ) Tl :=
+    ⟨by rw [← NNReal.coe_lt_coe, hKρ, NNReal.coe_one]; exact hρ₁,
+      LipschitzWith.of_dist_le_mul fun x y =&gt; by rw [hKρ]; exact hTl x y⟩
+  -- Banach&#x27;s fixed-point theorem gives the answer and its uniqueness.
+  set al := ContractingWith.fixedPoint Tl hK
+  have hal : Tl al = al := ContractingWith.fixedPoint_isFixedPt hK
+  refine ⟨al, hal, fun b hb =&gt; ContractingWith.fixedPoint_unique hK hb, fun x₀ k =&gt; ?_, ?_⟩
+  · -- The rate: `Tl^[k]` fixes `al` and is `ρ ^ k`-Lipschitz.
+    have hk := (hK.2.iterate k).dist_le_mul x₀ al
+    rw [NNReal.coe_pow, hKρ, Function.iterate_fixed hal] at hk
+    exact hk
+  · -- The distance: `d(al, ac) ≤ d(Tl al, Tl ac) + d(Tl ac, Tc ac) ≤ ρ d(al, ac) + δ`.
+    have h : dist al ac ≤ ρ * dist al ac + δ :=
+      calc dist al ac = dist (Tl al) (Tc ac) := by rw [hal, hac]
+        _ ≤ dist (Tl al) (Tl ac) + dist (Tl ac) (Tc ac) := dist_triangle _ _ _
+        _ ≤ ρ * dist al ac + δ := add_le_add (hTl al ac) hδ
+    rw [le_div_iff₀ (sub_pos.mpr hρ₁)]
+    linarith
+
+/-- **T1, with the defect bounded everywhere** (the form the plan states): the same conclusion
+when `dist (Tl x) (Tc x) ≤ δ` for every `x`. -/
+theorem perturbed_contraction_uniform {Tc Tl : X → X} {ρ δ : ℝ} {ac : X}
+    (hρ₀ : 0 ≤ ρ) (hρ₁ : ρ &lt; 1)
+    (hTl : ∀ x y, dist (Tl x) (Tl y) ≤ ρ * dist x y)
+    (hac : Tc ac = ac)
+    (hδ : ∀ x, dist (Tl x) (Tc x) ≤ δ) :
+    ∃ al : X, Tl al = al ∧ (∀ b, Tl b = b → b = al) ∧
+      (∀ (x₀ : X) (k : ℕ), dist (Tl^[k] x₀) al ≤ ρ ^ k * dist x₀ al) ∧
+      dist al ac ≤ δ / (1 - ρ) :=
+  perturbed_contraction hρ₀ hρ₁ hTl hac (hδ ac)
+
+/-- **T1 is sharp.** For every `ρ ∈ [0, 1)` and `δ ≥ 0` there are maps on the real line that
+meet T1&#x27;s hypotheses and whose answers are exactly `δ / (1 - ρ)` apart, so the bound cannot be
+improved. (`Tc x = ρ x`, `Tl x = ρ x + δ`.) -/
+theorem perturbed_contraction_sharp {ρ δ : ℝ} (hρ₀ : 0 ≤ ρ) (hρ₁ : ρ &lt; 1) (hδ₀ : 0 ≤ δ) :
+    ∃ (Tc Tl : ℝ → ℝ) (ac al : ℝ),
+      (∀ x y, dist (Tl x) (Tl y) ≤ ρ * dist x y) ∧ Tc ac = ac ∧
+      (∀ x, dist (Tl x) (Tc x) ≤ δ) ∧ Tl al = al ∧ dist al ac = δ / (1 - ρ) := by
+  have h1ρ : 1 - ρ ≠ 0 := (sub_pos.mpr hρ₁).ne&#x27;
+  refine ⟨fun x =&gt; ρ * x, fun x =&gt; ρ * x + δ, 0, δ / (1 - ρ), fun x y =&gt; ?_, mul_zero ρ,
+    fun x =&gt; ?_, ?_, ?_⟩
+  · -- `|(ρ x + δ) - (ρ y + δ)| = ρ |x - y|`
+    rw [Real.dist_eq, Real.dist_eq, show ρ * x + δ - (ρ * y + δ) = ρ * (x - y) by ring, abs_mul,
+      abs_of_nonneg hρ₀]
+  · -- `|(ρ x + δ) - ρ x| = δ`
+    rw [Real.dist_eq, show ρ * x + δ - ρ * x = δ by ring, abs_of_nonneg hδ₀]
+  · -- `ρ δ / (1 - ρ) + δ = δ / (1 - ρ)`
+    field_simp
+    ring
+  · rw [Real.dist_eq, sub_zero, abs_of_nonneg (div_nonneg hδ₀ (sub_pos.mpr hρ₁).le)]
+
+end Atlas
+</pre>
+</div></main></body></html>
