@@ -43,7 +43,7 @@ def main(plastex: str = "plastex") -> int:
             t = fh.read()
         t = re.sub(r"\\home\{[^}]*\}", lambda m: "\\home{%s}" % cfg["pages_url"], t)
         t = re.sub(r"\\github\{[^}]*\}", lambda m: "\\github{%s}" % cfg["public_repo"], t)
-        t = re.sub(r"\\dochome\{[^}]*\}", lambda m: "\\dochome{%s/tree/main/proofs/lean}" % cfg["public_repo"], t)
+        t = re.sub(r"\\dochome\{[^}]*\}", lambda m: "\\dochome{%s/tree/%s/lean}" % (cfg["public_repo"], cfg["source_branch"]), t)
         for name in ("common", "web"):
             shutil.copy(os.path.join(src, "macros", name + ".tex"), os.path.join(src, f"macros-{name}.tex"))
             t = t.replace("\\input{macros/%s}" % name, "\\input{macros-%s.tex}" % name)

@@ -18,7 +18,13 @@
 
 ---
 
-## 1. The launch, in order
+## 1. The launch, as done (2026-10-02)
+
+**The owner made `nonidino/Atlas` itself public and enabled Pages**, instead of a separate site repository. So the site is published from this repository: the workflow `.github/workflows/pages.yml` uploads `site/` to Pages on every push to `atlas-0.1` that changes it, at `https://nonidino.github.io/Atlas/`. `site/data/site.json` points every link there. The owner's settings: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Images are uploaded to `incoming/images/` (its README says how). The demo's branch `atlas-workbench` still has to be pushed to this repository from the laptop (step 5 below); then `"launched": true` in `site/data/site.json` removes the install page's banner.
+
+**What being public now exposes** beyond the plan's site-only release (O9): the whole vault, the raw source documents in `raw/`, and the full run records, which carry the laptop's name and the user's folder paths. No Poseidon or NeuberNet weights are tracked. The owner may want to weigh `raw/` (other people's papers) in particular.
+
+## 1a. The launch as first planned, for a separate site repository
 
 | # | step | how | check |
 |---|---|---|---|

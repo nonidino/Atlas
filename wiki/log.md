@@ -7322,3 +7322,13 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 **Step 9:** [[website-launch-checklist]], the owner's steps in order; none is done. W354 in [[gap-worklist]] is *built, awaiting the owner's images and launch*.
 
 **Added:** [[website-image-prompts]], [[website-launch-checklist]]. **Changed:** [[proposal-website-plan]], [[vision-scenarios-and-image-prompts]] (status lines), [[00-proposal-workstreams]] (workstream 2), [[gap-worklist]] (W354), [[index]].
+
+## [2026-10-02] build | Website launch: published from nonidino/Atlas; the architecture page's proof status brought up to date
+
+**The owner made `nonidino/Atlas` public and enabled Pages**, and allowed the website chat to fix the architecture page.
+- **The architecture page** (`proposal/architecture/index.html`): its four passages that said the finite-dimensional theorems "have not been machine-checked" now name the Lean theorems that check them (`Atlas.Piece.gram_posSemidef`, `Atlas.Superelement.hostSystem_existsUnique`, `Atlas.Superelement.energy_optimal`, `Atlas.interface_perturbation`, `Atlas.Piece.labelFree_eq_supervised_add_const`, `Atlas.cayley_bound`, `Atlas.contraction_contract`, `Atlas.two_level_contract`, and the headlines), with the two hypotheses the formal tier-0 statement makes explicit, T9a's $\ell^2$ defect, and T9b's whole-round hypothesis with its diverging example ([[formal-proofs-record]] §7.6, §7.11). Novelty row N6 reads "done here". Copied into the site.
+- **Publishing:** `.github/workflows/pages.yml` uploads `site/` to Pages on each push to `atlas-0.1` that changes it; the owner sets Pages' source to *GitHub Actions*. `site/data/site.json` now points at `nonidino/Atlas` and `https://nonidino.github.io/Atlas/`; the blueprint was rebuilt with those addresses.
+- **Images** are uploaded to `incoming/images/`.
+- **Still open:** pushing the demo's branch `atlas-workbench` from the laptop; the owner's images. [[website-launch-checklist]] §1 records that the whole repository, not only the site, is now public.
+
+**Changed:** [[website-launch-checklist]].
