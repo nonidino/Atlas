@@ -1,0 +1,19 @@
+{
+ "kind": "illustration",
+ "generator": "not stated by the owner (to be filled in)",
+ "date": "2026-10-02",
+ "negative_prompt": "text, letters, numbers, captions, labels, logos, watermarks, signatures, sponsor decals, team liveries, brand names, national flags, agency insignia, UI overlays, HUD, diagrams, charts, grid lines, people's faces, people in distress, burning buildings, cartoon style, illustration style, low resolution, oversaturated colours, extra wheels, distorted geometry",
+ "checked": "no readable text, logos, liveries or insignia; the palette and the calm areas as briefed",
+ "files": {
+  "desktop": "1a-wide.webp",
+  "mobile": "1a-phone.webp"
+ },
+ "width": 1672,
+ "height": 941,
+ "alt": "Illustration: an unbranded open-wheel race car in a dark studio, glowing cyan streamlines of air wrapping its wings and wheels, its brake discs glowing orange.",
+ "prompt": "An unbranded modern open-wheel single-seater race car in a dark, minimalist wind-tunnel studio, three-quarter front view from a low camera, matte carbon-fibre bodywork with satin white accents, slick tyres, a polished dark floor reflecting the car. Translucent glowing streamlines of air flow over the front wing, curl into vortices at the wing tips, wrap around the front wheels and pour through the sidepods, coloured from cool cyan in slow air to pale white in fast air. A faint orange glow and heat shimmer at the brake discs. Cinematic volumetric light from above, photoreal, ultra-detailed, 35 mm lens, shallow depth of field, the car centred and filling the middle 60% of the width, dark calm floor along the bottom.",
+ "source": [
+  "incoming/images/1a-wide.png and 1a-phone.png, uploaded in commit 7ada48a"
+ ],
+ "eager": false
+}

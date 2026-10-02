@@ -111,17 +111,6 @@
     });
   });
 
-  // vision: on a phone the frame is taller than the plate's graph, so fit the graph
-  // inside the frame rather than cropping it (until each crop has its own placement)
-  var narrow = window.matchMedia && window.matchMedia("(max-width: 900px)");
-  function fitOverlays() {
-    $$(".scenario .overlay").forEach(function (s) {
-      s.setAttribute("preserveAspectRatio", narrow && narrow.matches ? "xMidYMid meet" : "xMidYMid slice");
-    });
-  }
-  fitOverlays();
-  if (narrow && narrow.addEventListener) narrow.addEventListener("change", fitOverlays);
-
   // vision: show the port types on tap
   $$(".ports-btn").forEach(function (b) {
     b.addEventListener("click", function () {

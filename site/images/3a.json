@@ -1,0 +1,19 @@
+{
+ "kind": "illustration",
+ "generator": "not stated by the owner (to be filled in)",
+ "date": "2026-10-02",
+ "negative_prompt": "text, letters, numbers, captions, labels, logos, watermarks, signatures, sponsor decals, team liveries, brand names, national flags, agency insignia, UI overlays, HUD, diagrams, charts, grid lines, people's faces, people in distress, burning buildings, cartoon style, illustration style, low resolution, oversaturated colours, extra wheels, distorted geometry",
+ "checked": "no readable text, logos, liveries or insignia; the palette and the calm areas as briefed",
+ "files": {
+  "desktop": "3a-wide.webp",
+  "mobile": "3a-phone.webp"
+ },
+ "width": 1916,
+ "height": 821,
+ "alt": "Illustration: a Moon base under a low sun, a lander descending on a plume of dust, solar towers above half-buried habitats, a rover on a graded road, Earth on the horizon.",
+ "prompt": "A Moon base near the lunar south pole under a very low grazing sun: long black shadows, a pure black sky, Earth low on the horizon. A landing craft descends on a bright exhaust column that kicks up a wide radial spray of grey regolith dust on the left. In the middle, habitat modules half-buried under regolith berms and tall vertical solar-array towers catching the sunlight; on the right, a small power station with large radiator panels and a pressurised rover on a graded road. Photoreal, cinematic, realistic space-agency concept art without any insignia, 35 mm, every element clearly separated, calm dark ground along the bottom.",
+ "source": [
+  "incoming/images/3a-wide.png and 3a-phone.png, uploaded in commit 7ada48a"
+ ],
+ "eager": false
+}

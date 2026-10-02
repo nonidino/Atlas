@@ -1,0 +1,19 @@
+{
+ "kind": "illustration",
+ "generator": "not stated by the owner (to be filled in)",
+ "date": "2026-10-02",
+ "negative_prompt": "text, letters, numbers, captions, labels, logos, watermarks, signatures, sponsor decals, team liveries, brand names, national flags, agency insignia, UI overlays, HUD, diagrams, charts, grid lines, people's faces, people in distress, burning buildings, cartoon style, illustration style, low resolution, oversaturated colours, extra wheels, distorted geometry",
+ "checked": "no readable text, logos, liveries or insignia; the palette and the calm areas as briefed",
+ "files": {
+  "desktop": "H1-wide.webp",
+  "mobile": "H1-phone.webp"
+ },
+ "width": 1916,
+ "height": 821,
+ "alt": "Illustration: the Earth from low orbit at the day-night terminator, its surface divided into curved tiles outlined in thin cyan light that follow the coastlines.",
+ "prompt": "A photoreal planet seen from low orbit at the day–night terminator: oceans, cloud bands, deserts and ice caps, lit by a low sun, a thin blue atmosphere glowing along the limb. The whole surface is subtly divided into large curved tiles that follow the terrain like the charts of an atlas, each tile edge a thin line of soft electric-cyan light, brightest on the night side where city lights glow. The tiles curve with coastlines and mountain ranges; they are not a latitude–longitude grid. Cinematic, calm, awe-inspiring, ultra-detailed, deep black space with a few stars. The planet fills the right two thirds of the frame; the left half and the lower third are dark and calm.",
+ "source": [
+  "incoming/images/H1-wide.png and H1-phone.png, uploaded in commit 7ada48a"
+ ],
+ "eager": true
+}

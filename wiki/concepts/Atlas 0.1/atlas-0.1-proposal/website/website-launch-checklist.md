@@ -8,7 +8,7 @@
 
 ## 0. Before launch day
 
-1. **The illustrations.** Generate the four required images of [[website-image-prompts]] §0 (H1, 1a, 2a, 3a, each in two crops) and hand them to a chat, which places them, moves the vision graphs onto their parts and re-walks the page. Check the image tool's terms for commercial use.
+1. **The illustrations.** *(Done 2026-10-02: placed, see [[website-image-prompts]]; the generator's name is still to be recorded.)* Generate the four required images of [[website-image-prompts]] §0 (H1, 1a, 2a, 3a, each in two crops) and hand them to a chat, which places them, moves the vision graphs onto their parts and re-walks the page. Check the image tool's terms for commercial use.
 2. **Decide the names**, or keep the defaults written into `site/data/site.json`:
    - the site's public repository: `nonidino/atlas-proposal`, served at `https://nonidino.github.io/atlas-proposal/`;
    - the demo's public repository: `nonidino/atlas-workbench`, holding the branch `atlas-workbench`.

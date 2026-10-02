@@ -7332,3 +7332,14 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 - **Still open:** pushing the demo's branch `atlas-workbench` from the laptop; the owner's images. [[website-launch-checklist]] §1 records that the whole repository, not only the site, is now public.
 
 **Changed:** [[website-launch-checklist]].
+
+## [2026-10-02] build | Website: the owner's illustrations placed
+
+**Fourteen images** arrived in `incoming/images/` (commit `7ada48a`): the four required in both crops (H1, 1a, 2a, 3a) and six optional in 16:9 (1c, 1d, 1e, 3c, 3d, M1).
+- **Checked** against [[website-image-prompts]] §1: no readable text, logo, livery or insignia (the car carries a few tiny illegible marks that read as surface detail); the palette and the calm areas as briefed.
+- **Compressed** to WebP with `scripts/site_images.js` (1.6 MB for all fourteen) into `site/images/`, each with a sidecar: prompt, negative prompt, alt text, date, source commit. **The generator's name and version were not given.** The originals were removed from `incoming/` and remain in git history.
+- **Placed:** the hero (wide, phone crop under 700 px, loaded first); the three scenarios, each with its phone crop; 1c, 1d, 1e under the car, 3c, 3d under the base, M1 above the chart operator's panels; every one tagged *Illustration*.
+- **The agent graphs moved onto the parts**: `scripts/site_build.py` now draws each scenario's graph from a table of positions in the image's own pixels, one set per crop, so the graph stays on the car's brakes or the base's microgrid at any width.
+- **Walked again** at 1440, 1090 and 390 px: no console error, every link 200, no sideways scroll after one fix (the learned case's chart had widened its grid column on a phone). Claims test: 8 passed.
+
+**Changed:** [[website-image-prompts]], [[website-launch-checklist]].

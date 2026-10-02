@@ -2,6 +2,7 @@
 
 **Type:** Concept page — **image brief for the owner** (folder: `Atlas 0.1/atlas-0.1-proposal/website/`)
 **Status:** written 2026-10-02 by the website chat (W354, step 5). **The final versions of the prompts first drafted in [[website-outline]] (H1–H3, M1, M2) and [[vision-scenarios-and-image-prompts]] (1a–1e, 2a–2d, 3a–3d)**, one list, each with its aspect ratio, crop, negative prompt and place on the site. The owner generates the images with another tool and returns them; the website chat then places them (§4). **Until then the site shows marked placeholders.** Everything here is vision or decoration: no image shows a result.
+**Placed 2026-10-02:** the owner returned the four required images in both crops (H1, 1a, 2a, 3a) and six optional ones in 16:9 (1c, 1d, 1e, 3c, 3d, M1). Each is on the site as WebP under `site/images/` with a sidecar holding its prompt, alt text and date; **the generator's name and version were not given and are marked "to be filled in"**. 1a came back at 16:9 rather than 21:9 and is cropped to the frame; the wide crops are 1916 px across rather than 2560. 1c, 1d and 1e sit under the race car, 3c and 3d under the Moon base, M1 above the chart operator's three panels. The agent graphs are drawn onto the parts in both crops.
 **Hub:** [[00-proposal-workstreams]] · **Outline:** [[website-outline]] · **Scenarios:** [[vision-scenarios-and-image-prompts]] · **Design notes:** [[website-design-notes]]
 
 ---

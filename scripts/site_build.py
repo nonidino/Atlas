@@ -332,6 +332,85 @@ def evidence_records() -> str:
     return "\n".join(out)
 
 
+# -- the vision's agent graphs, drawn over the owner's illustrations -----------------------------
+#
+# Coordinates are pixels of each image (wide crop, phone crop), so the SVG uses the image's own
+# viewBox with "slice", which crops exactly as the image's object-fit: cover does. Nodes sit on the
+# parts the scenario's agent graph names (vision-scenarios-and-image-prompts §2-§4); edges carry the
+# port type that joins them.
+
+VISION = {
+    "1a": {
+        "size": {"wide": (1672, 941), "tall": (1122, 1402)},
+        "nodes": {
+            "air": ("air over the front wing", (330, 530), (90, 800)),
+            "tyres": ("tyres", (1470, 470), (1060, 610)),
+            "brakes": ("brakes", (860, 500), (865, 725)),
+            "rad": ("radiators", (1120, 440), (960, 525)),
+            "pu": ("power unit", (1270, 320), (700, 455)),
+            "bat": ("battery", (1030, 580), (560, 650)),
+        },
+        "edges": [("air", "brakes", "THERM"), ("air", "rad", "ADVEC"), ("brakes", "tyres", "ROT"),
+                  ("rad", "pu", "THERM"), ("pu", "bat", "ELEC"), ("pu", "tyres", "ROT"), ("air", "tyres", "MECH")],
+        "label": "Agent graph over the car: the air over the front wing, the brakes, the tyres, the radiators, the power unit and the battery, linked by typed ports.",
+    },
+    "2a": {
+        "size": {"wide": (1916, 821), "tall": (1122, 1402)},
+        "nodes": {
+            "ridge": ("ridge", (300, 330), (150, 700)),
+            "valley": ("valley", (720, 440), (380, 640)),
+            "slope": ("slope", (1130, 340), (700, 505)),
+            "break": ("firebreak", (1160, 450), (650, 730)),
+            "air": ("atmosphere", (900, 170), (350, 330)),
+            "plane": ("aircraft", (1555, 285), (995, 380)),
+            "sense": ("sensors", (1760, 100), (960, 130)),
+        },
+        "edges": [("ridge", "valley", "THERM"), ("valley", "slope", "ADVEC"), ("slope", "break", "THERM"),
+                  ("air", "valley", "MECH"), ("air", "slope", "ADVEC"), ("plane", "break", "MECH"), ("sense", "air", "ADVEC")],
+        "label": "Agent graph over the landscape: terrain pieces along the ridge, the valley and the slope, the atmosphere above, the firebreak, the aircraft and the sensors, linked by typed ports.",
+    },
+    "3a": {
+        "size": {"wide": (1916, 821), "tall": (1122, 1402)},
+        "nodes": {
+            "plume": ("lander plume", (310, 300), (185, 330)),
+            "reg": ("regolith", (330, 525), (180, 700)),
+            "solar": ("solar towers", (1030, 250), (685, 560)),
+            "grid": ("microgrid", (1250, 520), (700, 1000)),
+            "hab": ("habitat", (830, 525), (420, 945)),
+            "power": ("power station", (1730, 470), (1085, 955)),
+            "bat": ("batteries", (965, 548), (600, 990)),
+            "rover": ("rover", (1540, 600), (900, 1095)),
+        },
+        "edges": [("plume", "reg", "MECH"), ("reg", "hab", "ADVEC"), ("solar", "grid", "ELEC"), ("power", "grid", "ELEC"),
+                  ("bat", "grid", "ELEC"), ("hab", "grid", "ELEC"), ("rover", "grid", "ELEC"), ("reg", "solar", "ADVEC")],
+        "label": "Agent graph over the base: the lander's plume, the regolith, the solar towers, the power station, the batteries, the habitat and the rover, joined through a microgrid.",
+    },
+}
+
+
+def overlay(key: str) -> str:
+    v = VISION[key]
+    out = []
+    for crop, idx in (("wide", 1), ("tall", 2)):
+        w, h = v["size"][crop]
+        # scale marks to how wide the image is shown: about 1100 px wide, 360 px on a phone
+        s = w / 1000 if crop == "wide" else w / 400
+        pos = {k: n[idx] for k, n in v["nodes"].items()}
+        g = [f'<svg class="overlay {crop}" viewBox="0 0 {w} {h}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="{esc(v["label"])}">']
+        for i, (a, b, port) in enumerate(v["edges"]):
+            (x1, y1), (x2, y2) = pos[a], pos[b]
+            d = f"M{x1} {y1} L{x2} {y2}"
+            g.append(f'<path class="ov-edge" d="{d}"/><path class="ov-pulse" d="{d}" pathLength="100" style="animation-delay:{0.45 * i:.2f}s"/>')
+            g.append(f'<text class="ov-port" x="{(x1 + x2) / 2 + 8 * s:.0f}" y="{(y1 + y2) / 2 - 6 * s:.0f}" font-size="{11 * s:.0f}">{port}</text>')
+        for k, n in v["nodes"].items():
+            x, y = n[idx]
+            g.append(f'<g class="ov-node"><circle cx="{x}" cy="{y}" r="{9 * s:.0f}" stroke-width="{2 * s:.1f}"/>'
+                     f'<text x="{x}" y="{y - 16 * s:.0f}" text-anchor="middle" font-size="{13 * s:.0f}" stroke-width="{3 * s:.1f}">{esc(n[0])}</text></g>')
+        g.append("</svg>")
+        out.append("\n".join(g))
+    return "\n".join(out)
+
+
 # -- install ----------------------------------------------------------------------------------
 
 def commands(os_name: str) -> str:
@@ -356,6 +435,10 @@ GEN = {
     "proof-graph": proof_graph,
     "evidence-claims": evidence_claims, "evidence-literature": evidence_literature, "evidence-records": evidence_records,
     "launch-banner": launch_banner,
+    "details-1": lambda: "\n".join(figure(k) for k in ("1c", "1d", "1e")),
+    "details-3": lambda: "\n".join(figure(k) for k in ("3c", "3d")),
+    "figure-M1": lambda: figure("M1", "m1"),
+    "overlay-1a": lambda: overlay("1a"), "overlay-2a": lambda: overlay("2a"), "overlay-3a": lambda: overlay("3a"),
     "cmd-win": lambda: commands("win"), "cmd-mac": lambda: commands("mac"), "cmd-linux": lambda: commands("linux"),
 }
 
@@ -371,13 +454,21 @@ def image_block(name: str, current: str) -> str:
         meta = json.load(fh)
     srcs = meta["files"]
     alt = esc(meta["alt"])
-    lazy = "" if meta.get("eager") else 'loading="lazy" '
+    lazy = 'fetchpriority="high" ' if meta.get("eager") else 'loading="lazy" '
     if "mobile" in srcs:
         return (f'<picture><source media="(max-width: 700px)" srcset="images/{srcs["mobile"]}">'
                 f'<img src="images/{srcs["desktop"]}" alt="{alt}" width="{meta["width"]}" height="{meta["height"]}" '
                 f'{lazy}decoding="async"></picture>')
     return (f'<img src="images/{srcs["desktop"]}" alt="{alt}" width="{meta["width"]}" height="{meta["height"]}" '
             f'loading="lazy" decoding="async">')
+
+
+def figure(name: str, cls: str = "detail") -> str:
+    """An optional illustration with its tag, for the gen:details-* rows and gen:figure-*."""
+    side = os.path.join(SITE, "images", name + ".json")
+    if not os.path.exists(side):
+        return ""
+    return f'<figure class="{cls} reveal">{image_block(name, "")}<span class="tag">Illustration</span></figure>'
 
 
 # -- stamping ------------------------------------------------------------------------------------
