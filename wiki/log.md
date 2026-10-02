@@ -7220,3 +7220,15 @@ The same chat, branch and container as batch 1's entry.
 **No theorem failed at the merge.** The eleven theorems of batches 4 to 6 that quoted T1, T4, T4c or T5 compiled against the proved statements with no change to any file. The project now holds **105 theorems the owner approved** (48 and 57) in 26 Lean files and four levels of imports.
 
 **Honest notes.** The merged build took 137.9 s against 79.3 s twenty minutes earlier on the same 27 files; every first-level file was about twice as slow, changed or not, so it reads as the laptop's state on battery, **[AI Inference]**, not measured. Two linter remarks remain in files of batches 1 to 3 (an unused section variable, an unreferenced variable name), neither an error; they were left alone. **Three status lines outside either chat's block were rewritten at the integration**, because after the merge they still said "nothing is proved yet": the header lines of [[formal-proofs-record]], [[formal-proofs-plan]] and [[formal-proofs-implementation-plan]]. **Still not written:** the row for [[formal-proofs-implementation-plan]] in [[index]] and the W353 status in [[gap-worklist]]; both pages hold another chat's uncommitted edits. Nothing was pushed. **Changed:** the three formal-proofs pages, `out/lean/builds.jsonl`, `out/lean/axioms.json`, `out/lean/profile.json`.
+
+## [2026-10-01] build | Proofs: the integrated tree checked a second time, and the profile's count corrected
+
+[[formal-proofs-record]] §7.12; W353. The owner asked the set-up chat to integrate; the merge and the three checks were already committed by the other chat, so they were **run again independently** on the same tree, on battery.
+
+- **Build:** every project file re-checked in 100.4 s, 27 files, 0 errors, 0 `sorry`, no Mathlib module compiled. The saved log, counted a second way, agrees.
+- **Axioms:** 142 declarations, 0 failing; over all the answers the only axiom names are `propext`, `Quot.sound` and `Classical.choice`.
+- **Profile:** 0 elaboration steps at or over ten seconds in 26 files (836.4 s on this run against 447.2 s on the first; nothing changed between them but the laptop's state).
+
+**An instrument corrected.** `scripts/lean_build.py --profile` counted the profiler's `import took …` lines as slow steps. On this run 18 of 26 files loaded Mathlib in 10.2 to 15 s, and the script reported 18 violations of a rule that is about tactic calls. Imports are now recorded beside the steps and never among them, and this run's record was reclassified by the same function.
+
+**Left as it is, for the owner:** two statements carry a hypothesis their proofs never use (`shrink_re`'s $0\le\alpha$; `average_of_equivariant`'s commuting of the action with scalars). Both are true as written. **Changed:** `scripts/lean_build.py`, [[formal-proofs-record]], `out/lean/builds.jsonl`, `out/lean/axioms.json`, `out/lean/profile.json`.

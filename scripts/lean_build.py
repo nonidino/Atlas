@@ -275,6 +275,23 @@ def project_modules() -> list[str]:
     return mods
 
 
+def split_steps(lines: list[str]) -> tuple[list[str], list[str]]:
+    """Separate the profiler's slow lines into elaboration steps and imports.
+
+    The ten-second rule is about a tactic call in THIS project's proofs.  The
+    profiler also prints "import took 14.9s" when loading Mathlib's compiled
+    files crosses the threshold, which on this laptop on battery it does for
+    most files (2026-10-01: 18 of 26, 10.2 to 15 s each, with no proof step
+    anywhere near).  Counted as a slow step, that read as 18 violations of a
+    rule no proof had broken.  So an import is recorded beside the steps, never
+    among them.
+    """
+    slow = [ln.strip() for ln in lines if re.search(r"\btook \d", ln)]
+    imports = [ln for ln in slow if ln.startswith("import took")]
+    steps = [ln for ln in slow if not ln.startswith("import took")]
+    return steps, imports
+
+
 def profile(build: str) -> int:
     """Check each project file alone, with Lean's profiler on.
 
@@ -283,7 +300,7 @@ def profile(build: str) -> int:
     project, so run a normal build first.
     """
     os.makedirs(OUT, exist_ok=True)
-    rows, slow_total = [], 0
+    rows, slow_total, import_total = [], 0, 0
     for rel in project_modules():
         cmd = [_lake(), "env", "lean", "-Dprofiler=true",
                "-Dprofiler.threshold=%d" % SLOW_MS, rel]
@@ -293,16 +310,20 @@ def profile(build: str) -> int:
         seconds = time.perf_counter() - t0
         text = proc.stdout.decode("utf-8", errors="replace")
         # The profiler prints "<what> took <n>s" (or ms) for each step over the threshold.
-        slow = [ln.strip() for ln in text.splitlines() if re.search(r"\btook \d", ln)]
+        slow, imports = split_steps(text.splitlines())
         slow_total += len(slow)
+        import_total += len(imports)
         rows.append({"file": rel, "seconds": round(seconds, 2), "exit": proc.returncode,
-                     "slow_steps": slow})
-        _say("%-52s %7.2f s  exit %d  slow steps %d" % (rel, seconds, proc.returncode, len(slow)))
+                     "slow_steps": slow, "slow_imports": imports})
+        _say("%-52s %7.2f s  exit %d  slow steps %d%s"
+             % (rel, seconds, proc.returncode, len(slow),
+                "  (%s)" % imports[0] if imports else ""))
         for ln in slow:
             _say("    " + ln)
     out = {
         "when": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
         "slow_ms": SLOW_MS, "files": rows, "slow_steps_total": slow_total,
+        "slow_imports_total": import_total,
         "seconds_total": round(sum(r["seconds"] for r in rows), 2),
     }
     out.update(power())
@@ -311,8 +332,10 @@ def profile(build: str) -> int:
         json.dump(out, fh, indent=1, sort_keys=True)
         fh.write("\n")
     _say("")
-    _say("[lean_build] %d files, %.1f s in all, %d step(s) at or over %d ms, power %s"
-         % (len(rows), out["seconds_total"], slow_total, SLOW_MS, out.get("power", "?")))
+    _say("[lean_build] %d files, %.1f s in all, %d step(s) at or over %d ms "
+         "(and %d Mathlib import(s) over it, not counted), power %s"
+         % (len(rows), out["seconds_total"], slow_total, SLOW_MS, import_total,
+            out.get("power", "?")))
     bad = slow_total + sum(1 for r in rows if r["exit"] != 0)
     return 1 if bad else 0
 

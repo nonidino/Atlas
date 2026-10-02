@@ -775,6 +775,25 @@ Eleven theorems of this chat are proved in their own files and quote a theorem o
 
 **Still open after the integration.** The row for [[formal-proofs-implementation-plan]] in [[index]] and the W353 status in [[gap-worklist]]: both pages still hold another chat's uncommitted edits. Batch 7 of the plan (the `checkdecls` step, continuous integration, the public blueprint) is not started. Nothing was pushed.
 
+### 7.12 The integrated tree, checked again by a second chat
+
+Asked by the owner to integrate, the chat that wrote the set-up found the merge and the three checks already committed (`c830510`, `113fd92`), and **ran the three checks again itself** on that tree rather than quote them (2026-10-01, about 19:50, the laptop on battery, `ATLAS_LEAN_TAG` unset).
+
+| check | this run | §7.11's run |
+|---|---|---|
+| `lean_build.py --clean` | success, **100.4 s**, 27 files, 0 errors, **0 `sorry`**, no Mathlib module compiled; the same two linter remarks | 137.9 s |
+| the log counted a second way (`grep` on the saved log) | 27 files built, 2 warnings, 0 errors, 0 lines containing `sorry` | — |
+| `lean_axioms.py` | **142 declarations, 0 failing**, 33.9 s; over all 142 answers the only axiom names are `propext` (142), `Quot.sound` (142) and `Classical.choice` (137) | the same, 19.1 s |
+| `lean_build.py --profile` | 26 files, 836.4 s, **0 elaboration steps at or over ten seconds**, and 18 lines of the form `import took 10.2 s` to `15 s` | 447.2 s, 0 |
+
+**The two runs agree on every result and differ in every time.** The times differ by the laptop's state, not by the project: nothing changed between them.
+
+**An instrument corrected.** The profiler prints `import took …` when loading Mathlib's compiled files crosses the threshold, and `scripts/lean_build.py --profile` counted such a line as a slow step. On this run that read as 18 violations of the ten-second rule, with no proof step anywhere near it. The rule is about tactic calls in this project's proofs, so the script now records an import beside the steps and never among them (`split_steps`), and this run's record was reclassified by that function. §7.11's run reported 0 because its imports stayed under ten seconds.
+
+**What the source count says.** The 26 files hold 140 `theorem` and `lemma` declarations, 4 of them private; the blueprint names 142 declarations, definitions included, of which 105 are the theorems the owner approved. The helper lemmas are not named one by one in the axiom check; they are covered by the build, which reports no `sorry` in any file.
+
+**Two small things the linter points at, both in statements, so neither was changed:** `Atlas.DefectCorrection.shrink_re` never uses its hypothesis $0\le\alpha$, so its conclusion holds for every $\alpha\le1$; and `Atlas.average_of_equivariant` never uses that the action commutes with scalars. Each statement is true as written and a little weaker than it could be. Tightening either is a change of statement, which is the owner's to approve.
+
 ---
 
 ## See Also

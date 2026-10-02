@@ -1,9 +1,9 @@
 {
- "when": "2026-10-01T19:29:29-04:00",
+ "when": "2026-10-01T19:51:47-04:00",
  "declarations": 142,
  "failing": 0,
  "with_sorry": 0,
- "seconds": 19.15,
+ "seconds": 33.85,
  "lean_exit": 0,
  "rows": [
   {
