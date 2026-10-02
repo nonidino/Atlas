@@ -7276,3 +7276,21 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 **Next:** the proposal to the owner (the section list, the technology, where the source lives, changes to the outline) waits for a yes before step 2.
 
 **Added:** [[website-design-notes]]. **Changed:** [[proposal-website-plan]] (a status line: §2 superseded by the notes), [[index]].
+
+## [2026-10-02] build | Website step 2: the evidence register brought up to the records, and the literature read
+
+**The owner's answers to step 1 (2026-10-02):** yes to every proposed change of the outline; Inter; the workbench's packages and leanblueprint may be installed; cleaned copies of the cited records may be published with the site; and from now on the chat may commit, push and merge.
+
+**Added to [[website-evidence-and-citations]] §1.1, each from its record:**
+- **A11, the eight Fast examples**: four meet both bars ($4.62$, $5.58$, $5.85$, $4.67\times$), four do not ($0.008$, $0.275$, $1.17$, $0.004\times$), each with its limit.
+- **A12, the learned case**, all four arms: L matches the classical decomposition (farm power $7.50\%$ from the truth against $7.53\%$) and is $1.52\times$ faster, and **G5 fails**: the coarse classical arm is at $3.63\%$ in a third of L's time.
+- **A13, the proofs**: 142 declarations, 0 `sorry`, three standard axioms, 105 approved theorems, a clean re-check in 100.4 s on battery, and the T3 finding.
+- **A14, the architecture's measurements**, labelled as not training results: an untrained trunk's forward cost, and the Gram's squared error with synthetic perturbations.
+- **A15, the installer**: Windows and Linux verified, macOS not.
+- A1 is superseded on the site by the Fast farm; **A7 and A10 stay off** (no run record).
+
+**The literature, read (§3.1):** nine rows verified with their own words, location and DOI: L2, L4, N1–N7. **Off the site:** L1 (786,000 cores is not in the paper as far as could be read; the thesis's 458,752 replaces it), L3 (GenEO's text unreachable), L5, L6 and N8–N12 (not attempted), and N2's "3% error" (not in the abstract). N7's author list corrected.
+
+**"A first", searched again (§3.2):** no machine-checked theory of domain decomposition was found, but machine-checked proofs of related iterations exist (Jacobi in Rocq; Krasnoselskii–Mann in Lean 4). The site says *"we found no earlier"*, not *"a first"*.
+
+**Changed:** [[website-evidence-and-citations]].
