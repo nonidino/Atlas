@@ -7259,3 +7259,20 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 **Tests:** the workbench suite, 347 passed. The full suite, 2315 passed and none failed, every log written after the start (on battery, 942 s).
 
 **Added:** `atlas/workbench/learned_gate.py`, `learned_net.py`, `learned_arms.py`, `learned_case.py`, `scripts/learned_*.py`, `scripts/learned_box_run.sh`, `tests/test_workbench_learned.py`, `out/learned-case/`. **Changed:** `atlas/compiler.py` (R10's message), `app.py`, `runview.py`, `runner.py`, `spec.py`, `families/windfarm.py`, the installer's templates, builder and verifier, four test files, the workbench README, [[demo-learned-case-plan]], [[demo-finish-plan]], [[showcase-gallery]], [[gap-worklist]] (W348, W349, W351), [[00-proposal-workstreams]], [[index]].
+
+## [2026-10-02] build | Website step 1: the three reference sites read, and a proposal to the owner
+
+**The website chat (W354), step 1 of nine.** The planning session could not reach the three reference sites, so its design notes came from search summaries. This step read them.
+
+**How:** each site's home page, every stylesheet it links, and Antigravity's own script bundles, fetched with TLS verified from a cloud container. **Not rendered:** the container's headless browser refuses the sandbox proxy's certificate, and loosening the check was not allowed, so no screenshot was taken. Every value recorded is the site's own CSS or code.
+
+**What they are built from:**
+- **Antigravity:** Astro, GSAP (ScrollTrigger, ScrollSmoother, SplitText) and three.js; Google Sans Flex; a 72 px headline at 1440 px with $-2\%$ tracking; a 4 px spacing scale up to 180 px; a black pill; no `prefers-reduced-motion` rule in its CSS.
+- **Googlebook:** CSS scroll timelines with no animation library; headlines that are short sentences with a full stop; **a band of four figures, each with a footnote marker**; 21 reduced-motion rules.
+- **SimScale:** WordPress; Geist; pills; sections padded 64–112 px; logos and customer quotes as its proof.
+
+**One open question settled:** Google Sans Flex is under the SIL Open Font License (Google's font repository, `ofl/googlesansflex`). The notes recommend Inter or Geist anyway, so the site does not read as a Google page.
+
+**Next:** the proposal to the owner (the section list, the technology, where the source lives, changes to the outline) waits for a yes before step 2.
+
+**Added:** [[website-design-notes]]. **Changed:** [[proposal-website-plan]] (a status line: §2 superseded by the notes), [[index]].

@@ -9,6 +9,8 @@
 - **O8:** the architecture document is an arXiv-style HTML page;
 - **O9:** everything is public at launch.
 
+**Revised 2026-10-02 (the website chat, W354 step 1):** the three reference sites were read from their own HTML, stylesheets and scripts, with TLS verified, though not rendered. **§2's descriptions below are superseded by [[website-design-notes]]**, which also settles §2's open question: Google Sans Flex is under the SIL Open Font License.
+
 **The section-by-section outline, with the statistics, the style and the image prompts, is [[website-outline]].**
 **Hub:** [[00-proposal-workstreams]] · **Content sources:** [[website-evidence-and-citations]] · [[vision-scenarios-and-image-prompts]] · [[chart-operator-architecture]] · [[formal-proofs-plan]] · [[demo-finish-plan]]
 
