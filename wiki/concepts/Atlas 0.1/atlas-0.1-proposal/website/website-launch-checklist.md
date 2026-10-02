@@ -1,7 +1,7 @@
 # Launching the website — the owner's checklist, in order
 
 **Type:** Concept page — **launch checklist** (folder: `Atlas 0.1/atlas-0.1-proposal/website/`)
-**Status:** written 2026-10-02 by the website chat (W354, step 9). **Nothing on this list has been done.** Every step is outward-facing (it creates a repository, publishes something, or makes something public), so each waits for the owner's own go-ahead, one by one. The site itself is complete in `site/` on the branch `claude/practical-cray-n0vz9e` (built on `atlas-0.1`), with placeholders where the owner's illustrations go ([[website-image-prompts]]).
+**Status:** written 2026-10-02 by the website chat (W354, step 9); updated the same day. **The site is live** at `https://nonidino.github.io/Atlas/` (published from this repository, §1), with the owner's illustrations placed ([[website-image-prompts]]) and the architecture page's fix made (step 3 below). **Still open:** the image generator's name, pushing the demo's branch `atlas-workbench` (then `"launched": true`), and macOS (step 4).
 **Hub:** [[00-proposal-workstreams]] · **Plan:** [[proposal-website-plan]] · **Outline:** [[website-outline]] · **Evidence:** [[website-evidence-and-citations]]
 
 ---
@@ -9,11 +9,11 @@
 ## 0. Before launch day
 
 1. **The illustrations.** *(Done 2026-10-02: placed, see [[website-image-prompts]]; the generator's name is still to be recorded.)* Generate the four required images of [[website-image-prompts]] §0 (H1, 1a, 2a, 3a, each in two crops) and hand them to a chat, which places them, moves the vision graphs onto their parts and re-walks the page. Check the image tool's terms for commercial use.
-2. **Decide the names**, or keep the defaults written into `site/data/site.json`:
+2. *(Superseded by §1: the site is served from `nonidino/Atlas` itself.)* **Decide the names**, or keep the defaults written into `site/data/site.json`:
    - the site's public repository: `nonidino/atlas-proposal`, served at `https://nonidino.github.io/atlas-proposal/`;
    - the demo's public repository: `nonidino/atlas-workbench`, holding the branch `atlas-workbench`.
    If either changes, edit `site/data/site.json`, then run `python scripts/site_claims.py`, `python scripts/site_blueprint.py` and `python scripts/site_build.py`.
-3. **One fix the website chat could not make, because the file is not its to edit:** the architecture page (`proposal/architecture/index.html`) still says, in its section on the guarantees, that its finite-dimensional theorems *"have not been machine-checked"*. They now are (`Atlas.tier0_headline` and the batch-4 theorems, [[formal-proofs-record]]). **Proposed replacement:** *"These statements are machine-checked in Lean 4 on Mathlib: the tier-0 guarantee as `Atlas.tier0_headline`, with no `sorry` and only Lean's three standard axioms; see the blueprint."* After the edit, `python scripts/site_build.py` copies the page again.
+3. *(Done 2026-10-02, with the owner's permission: the page now names the Lean theorems.)* **The architecture page's stale claim:** the architecture page (`proposal/architecture/index.html`) still says, in its section on the guarantees, that its finite-dimensional theorems *"have not been machine-checked"*. They now are (`Atlas.tier0_headline` and the batch-4 theorems, [[formal-proofs-record]]). **Proposed replacement:** *"These statements are machine-checked in Lean 4 on Mathlib: the tier-0 guarantee as `Atlas.tier0_headline`, with no `sorry` and only Lean's three standard axioms; see the blueprint."* After the edit, `python scripts/site_build.py` copies the page again.
 4. **macOS.** If anyone with a Mac can run `./run.sh --check` in a fresh clone of the demo, the install page's *not verified yet* can come off (edit the macOS tab in `site/install.html`). Until then it stays.
 
 ---
