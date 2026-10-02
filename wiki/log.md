@@ -7308,3 +7308,17 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 - The chart colours were validated with the dataviz skill's checker (cyan $\#008cbf$ and orange $\#e0632f$ on white).
 
 **Changed:** [[website-outline]] (status: the accepted changes).
+
+## [2026-10-02] build | Website steps 5 to 9: the image brief, the links, the browser walk, the launch checklist
+
+**Step 5, the images:** [[website-image-prompts]] holds the final prompts as one numbered list: four required (H1, 1a, 2a, 3a, each 21:9 and 4:5) and thirteen optional, each with its crop, one shared negative prompt, and the calm areas the headline and the drawn agent graphs need. The owner generates them; the site shows marked placeholders until then.
+
+**Step 6, the honest parts**, each where [[website-outline]] puts them (with the accepted changes): the passage that everything in *Working today* is classical; *"On small problems the undivided solve is faster"*, above the four kinds that missed the bar, each card naming its limit; the learned case with all four arms, the coarse competitor beside it, and *"The coarse solver won, so the gate failed: 5 of six bars passed"*; *"Vision. Not built yet."*; *"Published by other researchers"* on every literature card, with a banner saying the numbers are not Atlas's and not comparable.
+
+**Step 7, the links:** the architecture page is copied unchanged into `site/architecture/`; its MathJax is served by `cdn.jsdelivr.net` (HTTP 200 with TLS verified, from Python; the container's browser cannot fetch external sites, so the render itself is checked at launch). The blueprint is built into `site/proofs/blueprint/`, the Lean sources are in `site/proofs/lean/`, and the install commands are written from `site/data/site.json`. **One stale sentence found and not edited** (not this chat's file): the architecture page says its finite-dimensional theorems have not been machine-checked; the fix is proposed in [[website-launch-checklist]] §0.
+
+**Step 8, the walk:** every page at 1440 × 900, 1090 × 620 and 390 px, and with reduced motion. No console error, no failed request, no missing anchor, no horizontal overflow (after two fixes: the charts scroll sideways on a phone instead of shrinking, and the Lean index wraps its file names), every relative link and asset returns 200. Accessibility pass (custom, as Lighthouse is not installed): one `h1` per page, no heading jumps, every image with alt text, every control named, text contrast at least 4.5:1 (the cross marks of the S1–S12 list, non-text, at 3.5:1). Page weight: Inter 73 kB, the screenshot 113 kB, the S-channel's data 116 kB.
+
+**Step 9:** [[website-launch-checklist]], the owner's steps in order; none is done. W354 in [[gap-worklist]] is *built, awaiting the owner's images and launch*.
+
+**Added:** [[website-image-prompts]], [[website-launch-checklist]]. **Changed:** [[proposal-website-plan]], [[vision-scenarios-and-image-prompts]] (status lines), [[00-proposal-workstreams]] (workstream 2), [[gap-worklist]] (W354), [[index]].

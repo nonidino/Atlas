@@ -11,6 +11,8 @@
 
 **Revised 2026-10-02 (the website chat, W354 step 1):** the three reference sites were read from their own HTML, stylesheets and scripts, with TLS verified, though not rendered. **§2's descriptions below are superseded by [[website-design-notes]]**, which also settles §2's open question: Google Sans Flex is under the SIL Open Font License.
 
+**Built 2026-10-02 (W354 steps 2–9):** the site is in `site/`, as plain HTML, CSS and a little JavaScript with a Python generator, not Astro and GSAP as §3 first proposed (the owner preferred no npm; CSS scroll effects suffice). The claims pipeline of §3.1 exists as specified. What remains is the owner's: the illustrations ([[website-image-prompts]]) and the launch ([[website-launch-checklist]]).
+
 **The section-by-section outline, with the statistics, the style and the image prompts, is [[website-outline]].**
 **Hub:** [[00-proposal-workstreams]] · **Content sources:** [[website-evidence-and-citations]] · [[vision-scenarios-and-image-prompts]] · [[chart-operator-architecture]] · [[formal-proofs-plan]] · [[demo-finish-plan]]
 

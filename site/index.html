@@ -150,7 +150,7 @@
         <span><i style="background:var(--chart-slow)"></i>faster solved whole</span>
       </div>
       <!-- gen:chart-fast -->
-<svg class="chart" viewBox="0 0 760 382" role="img" aria-labelledby="fc-t fc-d">
+<div class="chart-scroll"><svg class="chart" viewBox="0 0 760 382" role="img" aria-labelledby="fc-t fc-d">
 <title id="fc-t">Speed of the pieces against the undivided solve, one example per kind</title>
 <desc id="fc-d">A bar per kind of physics on a logarithmic scale; bars to the right of the same-speed line are faster in pieces, bars to the left are faster solved whole. The values are written at the bar ends.</desc>
 <line class="ax" x1="200.0" x2="200.0" y1="26" y2="374"/>
@@ -220,7 +220,7 @@
 <text class="val" x="270.7" y="354.0" text-anchor="end"><tspan data-claim="fast.cooled.s">0.004×</tspan></text>
 </g>
 <line class="one" x1="575.0" x2="575.0" y1="26" y2="374"/>
-</svg>
+</svg></div>
 <!-- /gen:chart-fast -->
       <figcaption>Logarithmic scale; the vertical line is the same speed. Each bar is one Fast example, measured once from a fresh start after a sweep chose its setup. Hover a bar for its conditions; <a href="evidence.html#fast">every record</a>.</figcaption>
     </figure>
@@ -382,7 +382,7 @@
       </div>
       <figure class="figure reveal" style="margin-top:0">
         <!-- gen:chart-learned -->
-<svg class="chart" viewBox="0 0 560 360" role="img" aria-labelledby="lc-t lc-d">
+<div class="chart-scroll small"><svg class="chart" viewBox="0 0 560 360" role="img" aria-labelledby="lc-t lc-d">
 <title id="lc-t">The learned case: time per macro-step against error, four ways of running the farm</title>
 <desc id="lc-d">The learned pieces sit beside the classical pieces at the same error and a little faster; the classical pieces on a coarser grid are both faster and closer to the reference; the whole domain is closest and slowest.</desc>
 <line class="ax" x1="70" x2="520" y1="300.0" y2="300.0"/>
@@ -423,7 +423,7 @@
 <circle class="dot-o" cx="121.3" cy="177.7" r="6"/>
 <text class="lbl" x="133.3" y="163.7" text-anchor="start">Classical pieces, coarser grid</text>
 <text x="133.3" y="180.7" text-anchor="start"><tspan data-claim="lc.Cc.P">3.63%</tspan>, <tspan data-claim="lc.Cc.t">0.169 s</tspan></text></g>
-</svg>
+</svg></div>
 <!-- /gen:chart-learned -->
         <figcaption>Each point is one way of running the same farm. Lower is closer to the reference; left is faster. Time on a logarithmic scale.</figcaption>
       </figure>

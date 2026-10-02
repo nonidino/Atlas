@@ -349,7 +349,8 @@ def launch_banner() -> str:
 
 
 GEN = {
-    "chart-fast": chart_fast, "chart-learned": chart_learned,
+    "chart-fast": lambda: f'<div class="chart-scroll">{chart_fast()}</div>',
+    "chart-learned": lambda: f'<div class="chart-scroll small">{chart_learned()}</div>',
     "lit-classical": lambda: "\n".join(lit_card(e) for e in LIT.values() if e["group"] == "classical"),
     "lit-neural": lambda: "\n".join(lit_card(e) for e in LIT.values() if e["group"] == "neural"),
     "proof-graph": proof_graph,
@@ -424,7 +425,7 @@ def regen(page: str) -> str:
 LEAN_PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title} — Atlas proofs</title><link rel="stylesheet" href="{up}assets/css/site.css">
-<style>pre{{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}}</style>
+<style>li code{{word-break:break-all}}pre{{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--bg-2);border-radius:14px;padding:20px;overflow-x:auto;white-space:pre}}</style>
 </head><body><main class="section tight"><div class="wrap">
 <p class="small"><a href="{up}index.html">Atlas</a> · <a href="{up}proofs/blueprint/index.html">the blueprint</a> · <a href="{idx}">all files</a></p>
 <h1 class="h3">{title}</h1>

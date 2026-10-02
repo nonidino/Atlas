@@ -238,6 +238,11 @@ section { position: relative; }
 .chart .dot-o { fill: var(--ink-2); stroke: #fff; stroke-width: 2; }
 .chart .hit { fill: transparent; }
 .chart g.row:hover rect.bar, .chart g.pt:hover circle { filter: brightness(1.12); }
+.chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@media (max-width: 700px) {
+  .chart-scroll .chart { min-width: 640px; }
+  .chart-scroll.small .chart { min-width: 500px; }
+}
 .chart-legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 14px; color: var(--ink-2); margin: 0 0 10px; }
 .chart-legend i { display: inline-block; width: 14px; height: 10px; border-radius: 3px; margin-right: 7px; vertical-align: 0; }
 
