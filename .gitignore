@@ -787,3 +787,6 @@ out/workbench/records/installer/logs/
 # rented box from the registered seeds, and reproducible from them.
 !out/learned-case/
 out/learned-case/data/
+# The proposal website (W354): the S-channel's export for the site's "How it works"
+# section, written by scripts/site_export_schannel.py and cited by site/data/claims.json.
+!out/site/

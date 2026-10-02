@@ -1,0 +1,138 @@
+{
+ "_published": {
+  "source": "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json",
+  "source_sha256": "05be4f5d5c5ce182883bf399829c7e9c9de25aab0b77af398f3010a11d55ba8f",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "command": "confirm",
+  "example": "cooled-block",
+  "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+  "when": "2026-09-30T23:09:15-04:00",
+  "machine": {
+   "time": "2026-09-30T23:09:15-04:00",
+   "platform": "Windows-11-10.0.26200-SP0",
+   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+   "cpu_count": 22,
+   "python": "3.12.7",
+   "numpy": "1.26.4",
+   "scipy": "1.13.1",
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "other_python_processes": []
+  },
+  "runs": [
+   {
+    "example": "cooled-block",
+    "overrides": {},
+    "family": "conjugate-heat-2d",
+    "style": "C",
+    "cells": 12000,
+    "windows": 2,
+    "threads": 1,
+    "steps": 5,
+    "macro_dt": 1.0,
+    "wall_seconds": 1.5119793999474496,
+    "two_minutes": true,
+    "speedup": {
+     "serial": 0.0042587250369610545
+    },
+    "fastest_arm": "serial",
+    "mean_step_s": {
+     "serial": 0.25127238002605734,
+     "full": 0.0010700999759137631
+    },
+    "checks": [
+     {
+      "key": "energy",
+      "kind": "balance",
+      "value": 6.950722308829427e-11,
+      "tolerance": 1e-06,
+      "passed": true,
+      "detail": "serial: 6.95e-11; full: 6.3e-11 (power 2000 W per metre of depth)"
+     },
+     {
+      "key": "reference",
+      "kind": "reference",
+      "value": 2.561170351256885e-10,
+      "tolerance": 1e-06,
+      "passed": true,
+      "detail": "max |dT| = 7.55e-09 K against a rise of 29.47 K"
+     }
+    ],
+    "all_checks_pass": true,
+    "bars": [
+     {
+      "mechanism": "S",
+      "speed_bar": 3.0,
+      "speedup": 0.0042587250369610545,
+      "fast": false,
+      "agreement_bar": 1e-09,
+      "agreement": 2.561170351256885e-10,
+      "close": true,
+      "ceiling": null,
+      "met": false
+     },
+     {
+      "mechanism": "X",
+      "speed_bar": 3.0,
+      "speedup": 0.0042587250369610545,
+      "fast": false,
+      "agreement_bar": 1e-06,
+      "agreement": 2.561170351256885e-10,
+      "close": true,
+      "ceiling": "a split by physics can at most halve the time: s <= 2 with two physics",
+      "met": false
+     }
+    ],
+    "status": "done",
+    "error": null,
+    "notes": [
+     "Dirichlet side: block; Neumann side: channel. The 1-D contraction factor rho = k_D L_N / (k_N L_D) = 132 (over 1: unrelaxed it would diverge; the relaxation carries it). First relaxation factor 0.5, then Aitken's rule.",
+     "The block generates 2000 W per metre of depth; the coolant carries mdot cp = 418 W/K per metre, so its bulk temperature rises 4.785 K.",
+     "Steady: every repeat is the whole solve again, repeated to time it."
+    ],
+    "describe": {
+     "style": "C",
+     "mode": "steady",
+     "cells": 12000,
+     "power_W": 2000.0,
+     "mdot_cp_W_per_K": 418.0,
+     "dirichlet": "block",
+     "neumann": "channel",
+     "rho_1d": 131.6666666666667,
+     "tolerance": 1e-10,
+     "relaxation0": 0.5,
+     "aitken": true,
+     "interface_faces": 200
+    },
+    "machine_before": {
+     "time": "2026-09-30T23:09:16-04:00",
+     "platform": "Windows-11-10.0.26200-SP0",
+     "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+     "cpu_count": 22,
+     "python": "3.12.7",
+     "numpy": "1.26.4",
+     "scipy": "1.13.1",
+     "power": {
+      "ac": true,
+      "battery_percent": 100,
+      "source": "GetSystemPowerStatus"
+     },
+     "other_python_processes": []
+    },
+    "machine_after": {
+     "power": {
+      "ac": true,
+      "battery_percent": 100,
+      "source": "GetSystemPowerStatus"
+     },
+     "time": "2026-09-30T23:09:17-04:00"
+    }
+   }
+  ]
+ }
+}

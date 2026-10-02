@@ -1,0 +1,141 @@
+{
+ "schema": "atlas-site/literature@1",
+ "note": "Published results by other researchers, each read at its source on the date given. 'quote' is the source's own words; every number the site shows from an entry is one of its 'values', and each value's 'fragment' appears in the quote. The register is the vault page website-evidence-and-citations, section 3.1.",
+ "entries": [
+  {
+   "id": "L2",
+   "group": "classical",
+   "title": "Decomposition runs on whole supercomputers",
+   "claim": "A domain-decomposition solver ran on every core of a supercomputer.",
+   "values": [{"key": "cores", "display": "458,752", "fragment": "458,752", "label": "cores, all of JUQUEEN"}],
+   "quote": "scalability on all 458,752 cores of the JUQUEEN BlueGene/Q system at Forschungszentrum Jülich is demonstrated",
+   "location": "abstract",
+   "citation": "M. Lanser, Nonlinear FETI-DP and BDDC Methods, PhD thesis, University of Cologne, 2015",
+   "url": "https://kups.ub.uni-koeln.de/6304/",
+   "doi": null,
+   "read_on": "2026-10-02",
+   "read_via": "the university's repository record and abstract"
+  },
+  {
+   "id": "L4",
+   "group": "classical",
+   "title": "Better seams, faster agreement",
+   "claim": "Choosing what the pieces tell each other at their seams makes them agree faster than classical Schwarz iteration.",
+   "values": [],
+   "quote": "They converge uniformly faster than classical Schwarz methods",
+   "location": "abstract",
+   "citation": "M. J. Gander, Optimized Schwarz methods, SIAM Journal on Numerical Analysis 44(2), 699–731, 2006",
+   "url": "https://archive-ouverte.unige.ch/unige:171407",
+   "doi": "10.1137/S0036142903425409",
+   "read_on": "2026-10-02",
+   "read_via": "the University of Geneva's open archive record"
+  },
+  {
+   "id": "N1",
+   "group": "neural",
+   "title": "Learned corrections speed up a fluid solver",
+   "claim": "Machine learning inside a 2-D turbulence solver matched solvers at 8–10× finer resolution, 40–80× faster.",
+   "values": [
+    {"key": "speed", "display": "40–80×", "fragment": "40-80x", "label": "faster at equal accuracy"},
+    {"key": "res", "display": "8–10×", "fragment": "8-10x", "label": "finer resolution matched"}
+   ],
+   "quote": "For both direct numerical simulation of turbulence and large eddy simulation, our results are as accurate as baseline solvers with 8-10x finer resolution in each spatial dimension, resulting in 40-80x fold computational speedups.",
+   "location": "abstract",
+   "citation": "D. Kochkov, J. A. Smith, A. Alieva, Q. Wang, M. P. Brenner, S. Hoyer, Machine learning–accelerated computational fluid dynamics, PNAS 118(21), e2101784118, 2021",
+   "url": "https://arxiv.org/abs/2102.01010",
+   "doi": "10.1073/pnas.2101784118",
+   "read_on": "2026-10-02",
+   "read_via": "the arXiv abstract; volume and article number from Crossref"
+  },
+  {
+   "id": "N2",
+   "group": "neural",
+   "title": "A car's drag, in a fraction of the time",
+   "claim": "A neural operator trained on 500 car shapes computed the drag coefficient 26,000× faster than GPU-based CFD.",
+   "values": [
+    {"key": "speed", "display": "26,000×", "fragment": "26,000", "label": "faster than GPU CFD, on the drag coefficient"},
+    {"key": "data", "display": "500", "fragment": "five hundred", "label": "training shapes"}
+   ],
+   "quote": "We successfully trained GINO to predict the pressure on car surfaces using only five hundred data points. The cost-accuracy experiments show a $26,000 \\times$ speed-up compared to optimized GPU-based computational fluid dynamics (CFD) simulators on computing the drag coefficient.",
+   "location": "abstract",
+   "citation": "Z. Li et al., Geometry-Informed Neural Operator for Large-Scale 3D PDEs, arXiv:2309.00583, 2023",
+   "url": "https://arxiv.org/abs/2309.00583",
+   "doi": null,
+   "read_on": "2026-10-02",
+   "read_via": "the arXiv abstract"
+  },
+  {
+   "id": "N3",
+   "group": "neural",
+   "title": "A heart, on a new patient's geometry",
+   "claim": "A learned operator mapped to each patient's heart predicted its electrical wave in under a second on one GPU; the finite-element solver took 5 hours.",
+   "values": [
+    {"key": "fast", "display": "1 s", "fragment": "less than 1 s", "label": "under, on one GPU"},
+    {"key": "slow", "display": "5 hours", "fragment": "5 hours", "label": "for the finite-element solver"}
+   ],
+   "quote": "During the testing phase, our neural operator significantly accelerates the overall speed: it only requires less than 1 s on a single GPU to predict the ATs and RTs for a new patient, whereas it takes our solver openCARP 5 hours on 48 CPU nodes to simulate ATs and RTs in a single beat",
+   "location": "preprint v1, section 3.7",
+   "citation": "M. Yin, N. Charon, R. Brody, L. Lu, N. Trayanova, M. Maggioni, arXiv:2402.07250 v1, 2024; published in Nature Computational Science 4(12), 928–940, 2024",
+   "url": "https://arxiv.org/abs/2402.07250",
+   "doi": "10.1038/s43588-024-00732-2",
+   "read_on": "2026-10-02",
+   "read_via": "the arXiv preprint's full text (the published text was not reachable); volume and pages from Crossref"
+  },
+  {
+   "id": "N4",
+   "group": "neural",
+   "title": "Learned pieces, assembled on unseen domains",
+   "claim": "Small learned pieces, assembled iteratively, solved Laplace's equation on domains 1,200 times larger than the one they were trained on.",
+   "values": [{"key": "scale", "display": "1,200", "fragment": "1200", "label": "times the training domain"}],
+   "quote": "We demonstrate that our framework can estimate the solution of Laplace and Navier-Stokes equations in domains of unseen shapes and BCs that are, respectively, 1200 and 12 times larger than the training domains.",
+   "location": "abstract",
+   "citation": "H. Wang, R. Planas, A. Chandramowlishwaran, R. Bostanabad, Mosaic flows: a transferable deep learning framework for solving PDEs on unseen domains, Computer Methods in Applied Mechanics and Engineering 389, 114424, 2022",
+   "url": "https://arxiv.org/abs/2104.10873",
+   "doi": "10.1016/j.cma.2021.114424",
+   "read_on": "2026-10-02",
+   "read_via": "the arXiv abstract; volume from Crossref"
+  },
+  {
+   "id": "N5",
+   "group": "neural",
+   "title": "Neural operators inside Schwarz iteration",
+   "claim": "Neural operators solving the pieces of a Schwarz iteration generalise to new geometries, with a convergence analysis.",
+   "values": [],
+   "quote": "we devise an iterative scheme \\textit{Schwarz Neural Inference} (SNI). This scheme allows for partitioning of the problem domain into smaller subdomains, on which local problems can be solved with neural operators, and stitching local solutions to construct a global solution. Additionally, we provide a theoretical analysis of the convergence rate and error bound.",
+   "location": "abstract",
+   "citation": "J. Huang, K. Zhang, Y. Wu, Z. Cheng, Operator learning with domain decomposition for geometry generalization in PDE solving, ICLR 2026, arXiv:2504.00510",
+   "url": "https://arxiv.org/abs/2504.00510",
+   "doi": null,
+   "read_on": "2026-10-02",
+   "read_via": "the arXiv abstract"
+  },
+  {
+   "id": "N6",
+   "group": "neural",
+   "title": "Trained on tiny patches, tiled to large solids",
+   "claim": "A solver learned on 3 × 3 × 3 voxel patches, tiled with Schwarz iteration, solved large 3-D solids far beyond its training scale.",
+   "values": [{"key": "patch", "display": "3 × 3 × 3", "fragment": "3 \\times 3 \\times 3", "label": "voxel training patches"}],
+   "quote": "NEST learns a neural operator on minimal voxel patches ($3 \\times 3 \\times 3$) with diverse local geometries and boundary/interface data. At inference time, an unseen voxelized domain is tiled into overlapping patches, the learned local solver is applied patchwise, and global consistency is enforced through iterative Schwarz coupling with partition-of-unity assembly.",
+   "location": "abstract",
+   "citation": "P. Secchi, D. S. Balint, M. Maurizi, Neural-Schwarz Tiling for geometry-universal PDE solving at scale, arXiv:2605.12343, 2026",
+   "url": "https://arxiv.org/abs/2605.12343",
+   "doi": null,
+   "read_on": "2026-10-02",
+   "read_via": "the arXiv abstract"
+  },
+  {
+   "id": "N7",
+   "group": "neural",
+   "title": "Learned and classical, each where it is strong",
+   "claim": "Pairing a learned operator with a classical relaxation method gives a convergence rate that is uniform across scales.",
+   "values": [],
+   "quote": "HINTS balances the convergence behavior across the spectrum of eigenmodes by utilizing the spectral bias of DeepONet, resulting in a uniform convergence rate and hence exceptional performance of the hybrid solver overall.",
+   "location": "abstract (arXiv:2208.13273)",
+   "citation": "E. Zhang, A. Kahana et al., Blending neural operators and relaxation methods in PDE numerical solvers, Nature Machine Intelligence 6(11), 1303–1313, 2024",
+   "url": "https://arxiv.org/abs/2208.13273",
+   "doi": "10.1038/s42256-024-00910-x",
+   "read_on": "2026-10-02",
+   "read_via": "the arXiv abstract; volume and pages from Crossref"
+  }
+ ]
+}

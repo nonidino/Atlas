@@ -1,0 +1,284 @@
+{
+ "_published": {
+  "source": "out/arch/backbone_timing.json",
+  "source_sha256": "02e8bad87738df32e09a812960e559d249872aefc2b5e0adef5755edb5331ef3",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "probe": "arch_backbone_timing",
+  "torch": "2.14.1+cpu",
+  "threads": 4,
+  "rows": [
+   {
+    "size": "small",
+    "widths": [
+     16,
+     32,
+     64,
+     128
+    ],
+    "params": 490929,
+    "n": 32,
+    "batch": 1,
+    "gflop_per_piece": 0.086474752,
+    "ms_per_forward": 2.8195805000024166,
+    "ms_per_piece": 2.8195805000024166
+   },
+   {
+    "size": "small",
+    "widths": [
+     16,
+     32,
+     64,
+     128
+    ],
+    "params": 490929,
+    "n": 32,
+    "batch": 16,
+    "gflop_per_piece": 0.086474752,
+    "ms_per_forward": 21.20848199999159,
+    "ms_per_piece": 1.3255301249994744
+   },
+   {
+    "size": "small",
+    "widths": [
+     16,
+     32,
+     64,
+     128
+    ],
+    "params": 490929,
+    "n": 64,
+    "batch": 1,
+    "gflop_per_piece": 0.345899008,
+    "ms_per_forward": 5.99328099998786,
+    "ms_per_piece": 5.99328099998786
+   },
+   {
+    "size": "small",
+    "widths": [
+     16,
+     32,
+     64,
+     128
+    ],
+    "params": 490929,
+    "n": 64,
+    "batch": 16,
+    "gflop_per_piece": 0.345899008,
+    "ms_per_forward": 60.53580600001851,
+    "ms_per_piece": 3.783487875001157
+   },
+   {
+    "size": "small",
+    "widths": [
+     16,
+     32,
+     64,
+     128
+    ],
+    "params": 490929,
+    "n": 128,
+    "batch": 1,
+    "gflop_per_piece": 1.383596032,
+    "ms_per_forward": 16.54762799999787,
+    "ms_per_piece": 16.54762799999787
+   },
+   {
+    "size": "small",
+    "widths": [
+     16,
+     32,
+     64,
+     128
+    ],
+    "params": 490929,
+    "n": 128,
+    "batch": 16,
+    "gflop_per_piece": 1.383596032,
+    "ms_per_forward": 247.92232550001359,
+    "ms_per_piece": 15.495145343750849
+   },
+   {
+    "size": "medium",
+    "widths": [
+     32,
+     64,
+     128,
+     256
+    ],
+    "params": 1954081,
+    "n": 32,
+    "batch": 1,
+    "gflop_per_piece": 0.338100224,
+    "ms_per_forward": 6.469201500010513,
+    "ms_per_piece": 6.469201500010513
+   },
+   {
+    "size": "medium",
+    "widths": [
+     32,
+     64,
+     128,
+     256
+    ],
+    "params": 1954081,
+    "n": 32,
+    "batch": 16,
+    "gflop_per_piece": 0.338100224,
+    "ms_per_forward": 43.17745750000768,
+    "ms_per_piece": 2.69859109375048
+   },
+   {
+    "size": "medium",
+    "widths": [
+     32,
+     64,
+     128,
+     256
+    ],
+    "params": 1954081,
+    "n": 64,
+    "batch": 1,
+    "gflop_per_piece": 1.352400896,
+    "ms_per_forward": 16.880570000012085,
+    "ms_per_piece": 16.880570000012085
+   },
+   {
+    "size": "medium",
+    "widths": [
+     32,
+     64,
+     128,
+     256
+    ],
+    "params": 1954081,
+    "n": 64,
+    "batch": 16,
+    "gflop_per_piece": 1.352400896,
+    "ms_per_forward": 122.65950200000475,
+    "ms_per_piece": 7.666218875000297
+   },
+   {
+    "size": "medium",
+    "widths": [
+     32,
+     64,
+     128,
+     256
+    ],
+    "params": 1954081,
+    "n": 128,
+    "batch": 1,
+    "gflop_per_piece": 5.409603584,
+    "ms_per_forward": 35.979382999997256,
+    "ms_per_piece": 35.979382999997256
+   },
+   {
+    "size": "medium",
+    "widths": [
+     32,
+     64,
+     128,
+     256
+    ],
+    "params": 1954081,
+    "n": 128,
+    "batch": 16,
+    "gflop_per_piece": 5.409603584,
+    "ms_per_forward": 655.6700980000016,
+    "ms_per_piece": 40.9793811250001
+   },
+   {
+    "size": "large",
+    "widths": [
+     64,
+     128,
+     256,
+     384
+    ],
+    "params": 6174209,
+    "n": 32,
+    "batch": 1,
+    "gflop_per_piece": 1.256587264,
+    "ms_per_forward": 15.94828200001075,
+    "ms_per_piece": 15.94828200001075
+   },
+   {
+    "size": "large",
+    "widths": [
+     64,
+     128,
+     256,
+     384
+    ],
+    "params": 6174209,
+    "n": 32,
+    "batch": 16,
+    "gflop_per_piece": 1.256587264,
+    "ms_per_forward": 101.54303500000594,
+    "ms_per_piece": 6.3464396875003715
+   },
+   {
+    "size": "large",
+    "widths": [
+     64,
+     128,
+     256,
+     384
+    ],
+    "params": 6174209,
+    "n": 64,
+    "batch": 1,
+    "gflop_per_piece": 5.026349056,
+    "ms_per_forward": 30.448270999997362,
+    "ms_per_piece": 30.448270999997362
+   },
+   {
+    "size": "large",
+    "widths": [
+     64,
+     128,
+     256,
+     384
+    ],
+    "params": 6174209,
+    "n": 64,
+    "batch": 16,
+    "gflop_per_piece": 5.026349056,
+    "ms_per_forward": 404.91932899999483,
+    "ms_per_piece": 25.307458062499677
+   },
+   {
+    "size": "large",
+    "widths": [
+     64,
+     128,
+     256,
+     384
+    ],
+    "params": 6174209,
+    "n": 128,
+    "batch": 1,
+    "gflop_per_piece": 20.105396224,
+    "ms_per_forward": 76.9773820000097,
+    "ms_per_piece": 76.9773820000097
+   },
+   {
+    "size": "large",
+    "widths": [
+     64,
+     128,
+     256,
+     384
+    ],
+    "params": 6174209,
+    "n": 128,
+    "batch": 16,
+    "gflop_per_piece": 20.105396224,
+    "ms_per_forward": 2118.826459999994,
+    "ms_per_piece": 132.42665374999962
+   }
+  ]
+ }
+}

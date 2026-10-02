@@ -1,0 +1,588 @@
+{
+ "_published": {
+  "source": "out/workbench/records/step-j/bimetal-arc/20260929-213353.json",
+  "source_sha256": "6ac130b5ec653c34cfebe0e1fe20932839954a4240b24558f9a1fc7e92ffec37",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "schema": "atlas-workbench/results@1",
+  "case_name": "bimetal-arc",
+  "case_path": null,
+  "family": "thermoelastic-2d",
+  "style": "split",
+  "committed_at": "2026-09-29T21:33:51-04:00",
+  "started": "2026-09-29T21:33:51-04:00",
+  "finished": "2026-09-29T21:33:53-04:00",
+  "wall_seconds": 2.8234105110168457,
+  "build_seconds": 0.2503886000486091,
+  "arms": [
+   "serial",
+   "parallel",
+   "full"
+  ],
+  "arm_labels": {
+   "serial": "Split, synchronous",
+   "parallel": "Split, lagged (two threads)",
+   "full": "Unsplit solver"
+  },
+  "dropped_arms": {},
+  "step_label": "macro-step",
+  "steps_requested": 60,
+  "steps_done": 60,
+  "stopped": false,
+  "threads": 2,
+  "timing": {
+   "serial": {
+    "seconds_per_step": [
+     0.004118100041523576,
+     0.006010400014929473,
+     0.0045661999611184,
+     0.007148199947550893,
+     0.0069948999444022775,
+     0.00533369998447597,
+     0.005513799958862364,
+     0.005897399969398975,
+     0.005623999983072281,
+     0.0054305000230669975,
+     0.0066759999608621,
+     0.005431200028397143,
+     0.006782099953852594,
+     0.007558900048024952,
+     0.007550499984063208,
+     0.008237799978815019,
+     0.0076911000069230795,
+     0.0056717999977990985,
+     0.007113899919204414,
+     0.0075029999716207385,
+     0.008884400012902915,
+     0.007930000079795718,
+     0.009611299959942698,
+     0.008900199900381267,
+     0.005506300018168986,
+     0.0055926000932231545,
+     0.005660100025124848,
+     0.010047900024801493,
+     0.006780599942430854,
+     0.005974099971354008,
+     0.007592699956148863,
+     0.0055723999394103885,
+     0.0055475999834015965,
+     0.005698299966752529,
+     0.005451199947856367,
+     0.012857499998062849,
+     0.008276799926534295,
+     0.007559400051832199,
+     0.005694500054232776,
+     0.005796400015242398,
+     0.008502899901941419,
+     0.007727300049737096,
+     0.005471199983730912,
+     0.007405300042591989,
+     0.0054079999681562185,
+     0.007786999922245741,
+     0.007124700001440942,
+     0.005561999976634979,
+     0.00826869998127222,
+     0.007862100028432906,
+     0.0054419999942183495,
+     0.006197000038810074,
+     0.007981600007042289,
+     0.007847099914215505,
+     0.007816799916327,
+     0.007889800006523728,
+     0.006633999990299344,
+     0.0079564000479877,
+     0.007742400048300624,
+     0.007820200058631599
+    ],
+    "mean": 0.0069372383237350736,
+    "median": 0.007054399931803346,
+    "min": 0.004118100041523576,
+    "speedup_vs_full": 1.023604014457908
+   },
+   "parallel": {
+    "seconds_per_step": [
+     0.004528600024059415,
+     0.003894799971021712,
+     0.003530199988745153,
+     0.004220500006340444,
+     0.004291499964892864,
+     0.0044426999520510435,
+     0.004732900066301227,
+     0.004743600031360984,
+     0.004630800103768706,
+     0.004545000032521784,
+     0.004597500083036721,
+     0.004657100071199238,
+     0.005195299978367984,
+     0.004737899987958372,
+     0.005462400033138692,
+     0.004856399958953261,
+     0.004965700092725456,
+     0.004860499990172684,
+     0.005023300065658987,
+     0.005110600031912327,
+     0.005029199994169176,
+     0.005056499969214201,
+     0.005107800010591745,
+     0.004961400059983134,
+     0.004691499983891845,
+     0.005407000076957047,
+     0.004730000044219196,
+     0.00583299994468689,
+     0.005147799965925515,
+     0.005696099950000644,
+     0.005765500012785196,
+     0.005521599901840091,
+     0.004897600039839745,
+     0.004813500097952783,
+     0.005079100024886429,
+     0.005486400099471211,
+     0.005079800030216575,
+     0.005404900060966611,
+     0.00523310003336519,
+     0.005159399937838316,
+     0.0054917000234127045,
+     0.005725500057451427,
+     0.004725800012238324,
+     0.005002500023692846,
+     0.0050969000440090895,
+     0.005280900048092008,
+     0.005358000053092837,
+     0.004949499969370663,
+     0.005180099979043007,
+     0.005176600068807602,
+     0.005127800046466291,
+     0.005004600039683282,
+     0.005594799993559718,
+     0.00501980003900826,
+     0.0057691000401973724,
+     0.005639899987727404,
+     0.004943300038576126,
+     0.005009799962863326,
+     0.005023399950005114,
+     0.004954000003635883
+    ],
+    "mean": 0.0050200416842320315,
+    "median": 0.00502335000783205,
+    "min": 0.003530199988745153,
+    "speedup_vs_full": 1.4145270983965508
+   },
+   "full": {
+    "seconds_per_step": [
+     0.005005200044251978,
+     0.007412999984808266,
+     0.004331500036641955,
+     0.007089599967002869,
+     0.007158700027503073,
+     0.005750400014221668,
+     0.006114699994213879,
+     0.007461200002580881,
+     0.005625199992209673,
+     0.005793999996967614,
+     0.007378699956461787,
+     0.0057697000447660685,
+     0.007305600098334253,
+     0.007764199981465936,
+     0.00798290001694113,
+     0.007196199963800609,
+     0.00731899996753782,
+     0.005562599981203675,
+     0.008383900043554604,
+     0.007665600045584142,
+     0.009736799984239042,
+     0.007522400002926588,
+     0.008339999942108989,
+     0.007881600060500205,
+     0.007506599999032915,
+     0.007100899936631322,
+     0.006001599947921932,
+     0.008748100022785366,
+     0.007608699961565435,
+     0.006338399951346219,
+     0.007327000028453767,
+     0.0061935000121593475,
+     0.005654099979437888,
+     0.0069565000012516975,
+     0.006087800022214651,
+     0.00584769994020462,
+     0.008012000005692244,
+     0.0076067999470978975,
+     0.0060387999983504415,
+     0.00759640010073781,
+     0.007695300038903952,
+     0.008526199962943792,
+     0.007504699984565377,
+     0.0076283999951556325,
+     0.00565379997715354,
+     0.007507100002840161,
+     0.007292900001630187,
+     0.005977499997243285,
+     0.007359400042332709,
+     0.0073108000215142965,
+     0.005807299981825054,
+     0.007409999961964786,
+     0.007799400016665459,
+     0.007860900019295514,
+     0.007495000027120113,
+     0.007768500014208257,
+     0.007909799925982952,
+     0.007660500006750226,
+     0.0078907998977229,
+     0.007823199965059757
+    ],
+    "mean": 0.00710098499742647,
+    "median": 0.007394349959213287,
+    "min": 0.004331500036641955,
+    "speedup_vs_full": 1.0
+   }
+  },
+  "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+  "bitwise": {
+   "steps": 60,
+   "first_difference": 1
+  },
+  "metrics": {
+   "serial": {
+    "max_stress_MPa": 56.72318727921576,
+    "mean_temperature_K": 393.4798496259513,
+    "balance_max": 2.164027513975369e-10
+   },
+   "parallel": {
+    "max_stress_MPa": 56.68609599331919,
+    "mean_temperature_K": 393.4798496259513,
+    "balance_max": 2.164027513975369e-10,
+    "lag_stress_error": 0.004413656277469637
+   },
+   "full": {
+    "max_stress_MPa": 56.72318727921576,
+    "mean_temperature_K": 393.4798496259513,
+    "balance_max": 2.164027513975369e-10
+   }
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 0.0,
+    "max": 0.0,
+    "rms_relative": 0.0
+   },
+   "parallel": {
+    "rms": 0.054338732404521514,
+    "max": 0.2503566516129965,
+    "rms_relative": 0.0030828665497156745
+   }
+  },
+  "field_label": "von Mises stress (MPa)",
+  "checks": [
+   {
+    "key": "energy",
+    "title": "Heat: in through the edges = stored",
+    "kind": "balance",
+    "tolerance": 1e-09,
+    "registered": "2026-09-29, before the thermoelastic family's first run",
+    "measure": "|heat stored in the step - dt (flux through the edges + the heat the fixed-temperature edges supply)| over the larger of the two, every step, worst arm",
+    "why": "the conduction matrix annihilates a uniform temperature, so the heat the fixed edges supply is whatever the step stores beyond the given flux, and the balance is the free nodes' residual of one sparse direct solve: round-off",
+    "value": 2.164027513975369e-10,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "serial: 2.16e-10; parallel: 2.16e-10; full: 2.16e-10",
+    "extra": {}
+   },
+   {
+    "key": "reference",
+    "title": "The synchronous split is the unsplit solver, bit for bit",
+    "kind": "control",
+    "tolerance": null,
+    "registered": "2026-09-29, before the thermoelastic family's first run",
+    "measure": "np.array_equal on the temperature and the displacement after every step",
+    "why": "the split hands the whole temperature field across, and each agent does the arithmetic the unsplit solver does, in the same order",
+    "value": null,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "equal after all 60 steps",
+    "extra": {}
+   },
+   {
+    "key": "lag",
+    "title": "The lagged split is the synchronous one a step late, bit for bit",
+    "kind": "control",
+    "tolerance": null,
+    "registered": "2026-09-29, before the thermoelastic family's first run",
+    "measure": "np.array_equal between the lagged split's displacement after step k and the synchronous split's after step k - 1, every step",
+    "why": "the lagged elasticity agent solves from the temperature of the step before, which is the temperature the synchronous agent solved from then; the difference between the two splits is therefore exactly one step of change",
+    "value": null,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "equal, one step late, after all 60 steps",
+    "extra": {}
+   }
+  ],
+  "notes": [
+   "Backward-Euler conduction steps of 5 s; after each, the free plate's quasi-static displacement under its thermal strain (reference temperature 300 K, the initial one). The bond between the two agents is the whole temperature field.",
+   "The lagged split runs both agents at once, elasticity one step behind; its stress error is the stress's change over one step, first order in the step. The thermal-strain case study measured 7.1e-3 of the stress for one lagged macro-step on its own shell.",
+   "The synchronous split does the unsplit solver's arithmetic and one copy of the temperature field, so the ratio of their times measures this machine's run-to-run noise at this size, not a method."
+  ],
+  "problem": {
+   "style": "split",
+   "elements": 11664,
+   "nodes": 11881,
+   "dt_s": 5.0,
+   "T_ref_K": 300.0,
+   "fixed_temperature_nodes": 41
+  },
+  "machine": {
+   "time": "2026-09-29T21:33:51-04:00",
+   "platform": "Windows-11-10.0.26200-SP0",
+   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+   "cpu_count": 22,
+   "python": "3.12.7",
+   "numpy": "1.26.4",
+   "scipy": "1.13.1",
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "other_python_processes": []
+  },
+  "machine_after": {
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "time": "2026-09-29T21:33:53-04:00"
+  },
+  "case": {
+   "schema_id": "atlas-workbench/case@0.5",
+   "name": "bimetal-arc",
+   "description": "A curved bimetal strip heated at one end (split, drawn)",
+   "domain": {
+    "nx": 108,
+    "ny": 108,
+    "dx": 0.001,
+    "outline": {
+     "points": [
+      [
+       64.0,
+       4.0
+      ],
+      [
+       104.0,
+       4.0
+      ],
+      [
+       4.000000000000006,
+       104.0
+      ],
+      [
+       4.0000000000000036,
+       64.0
+      ]
+     ],
+     "edges": [
+      "line",
+      "arc",
+      "line",
+      "arc"
+     ],
+     "bulge": [
+      0.0,
+      0.41421356237309503,
+      0.0,
+      -0.41421356237309503
+     ]
+    },
+    "holes": []
+   },
+   "physics": {
+    "family": "thermoelastic-2d",
+    "params": {
+     "T0": 300.0
+    }
+   },
+   "materials": {
+    "steel": {
+     "E": 200000000000.0,
+     "nu": 0.3,
+     "alpha": 1.2e-05,
+     "k": 45.0,
+     "rho": 7850.0,
+     "cp": 490.0
+    },
+    "copper": {
+     "E": 120000000000.0,
+     "nu": 0.34,
+     "alpha": 1.7e-05,
+     "k": 400.0,
+     "rho": 8960.0,
+     "cp": 385.0
+    }
+   },
+   "regions": [
+    {
+     "id": "steel",
+     "material": "steel",
+     "shape": "rect",
+     "x0": 0,
+     "y0": 0,
+     "nx": 108,
+     "ny": 108,
+     "points": null,
+     "holes": null,
+     "outline": null
+    },
+    {
+     "id": "copper",
+     "material": "copper",
+     "shape": "curve",
+     "x0": 0,
+     "y0": 0,
+     "nx": 114,
+     "ny": 114,
+     "points": null,
+     "holes": null,
+     "outline": {
+      "points": [
+       [
+        83.60033322224207,
+        -3.9866733317462524
+       ],
+       [
+        113.45045818058284,
+        -6.981675831151097
+       ],
+       [
+        -10.17289437250771,
+        113.08312914977154
+       ],
+       [
+        -6.307559543641972,
+        83.33318483619749
+       ]
+      ],
+      "edges": [
+       "line",
+       "arc",
+       "line",
+       "arc"
+      ],
+      "bulge": [
+       0.0,
+       0.4830550656165784,
+       0.0,
+       -0.4830550656165784
+      ]
+     }
+    }
+   ],
+   "windows": [
+    {
+     "id": "plate",
+     "shape": "curve",
+     "x0": 4,
+     "y0": 4,
+     "nx": 100,
+     "ny": 100,
+     "outline": {
+      "points": [
+       [
+        64.0,
+        4.0
+       ],
+       [
+        104.0,
+        4.0
+       ],
+       [
+        4.000000000000006,
+        104.0
+       ],
+       [
+        4.0000000000000036,
+        64.0
+       ]
+      ],
+      "edges": [
+       "line",
+       "arc",
+       "line",
+       "arc"
+      ],
+      "bulge": [
+       0.0,
+       0.41421356237309503,
+       0.0,
+       -0.41421356237309503
+      ]
+     },
+     "holes": [],
+     "runs": null
+    }
+   ],
+   "devices": [],
+   "boundaries": [
+    {
+     "id": "hot",
+     "edge": "outline:0",
+     "kind": "fixed-temperature",
+     "start": 0,
+     "stop": null,
+     "value": 400.0
+    },
+    {
+     "id": "outer",
+     "edge": "outline:1",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    },
+    {
+     "id": "end",
+     "edge": "outline:2",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    },
+    {
+     "id": "inner",
+     "edge": "outline:3",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    }
+   ],
+   "attachments": [],
+   "coupling": {
+    "style": "split",
+    "ramp_cells": 8,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "tolerance": 1e-10,
+    "max_iterations": 500,
+    "relaxation": 0.5,
+    "aitken": true,
+    "dirichlet_side": "auto"
+   },
+   "run": {
+    "macro_dt": 5.0,
+    "steps": 60,
+    "threads": 2,
+    "start": "freestream",
+    "mode": "transient"
+   },
+   "compare": {
+    "full_domain": true,
+    "metrics": [
+     "farm_power",
+     "rms_velocity",
+     "time_per_step"
+    ]
+   },
+   "layout": null
+  }
+ }
+}

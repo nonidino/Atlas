@@ -1,0 +1,1292 @@
+{
+ "_published": {
+  "source": "out/lean/axioms.json",
+  "source_sha256": "ec6128ac8ec89246a369e61c7c49815e644df05460a003927abfa682d87d99aa",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "when": "2026-10-01T19:51:47-04:00",
+  "declarations": 142,
+  "failing": 0,
+  "with_sorry": 0,
+  "seconds": 33.85,
+  "lean_exit": 0,
+  "rows": [
+   {
+    "name": "Atlas.perturbed_contraction",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.perturbed_contraction_uniform",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.perturbed_contraction_sharp",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.certificate",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.certificate_of_contraction",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.certificate_constant_is_opNorm",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.certificate_two_mode_example",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.error_recursion",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.defect_split",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.accumulation",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.master_bound",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.master_bound_three_terms",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.master_bound_contractive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.master_bound_nonexpansive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.master_bound_expansive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.master_bound_attained",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.trace_perturbation",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.transmission_bound",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.schur_iff",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.TwoPieces",
+    "axioms": [
+     "propext",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.TwoPieces.Solves",
+    "axioms": [
+     "propext",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.TwoPieces.dnStep",
+    "axioms": [
+     "propext",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.TwoPieces.dn_fixedPoint_solves",
+    "axioms": [
+     "propext",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.TwoPieces.dn_solution_isFixedPt",
+    "axioms": [
+     "propext",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.FacePair.solves_of_fixedPoint",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.window",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.sweep",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.precond",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.sweep_eq",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.solution_isFixedPt",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.isFixedPt_iff",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.solves_of_windows_agree",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.fixedPt_solves_of_precond",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.fixedPt_solves",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.fixedPt_eq_solution",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.tendsto_solution",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.exists_spurious_fixedPt",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Schwarz.error_le_update",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.IsStep",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.innerMarch",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.limit_isFixedPt",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.limit_isFixedPt_of_inexact",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.step_of_const",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.isStep_iff",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.innerMarch_of_const",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.shrink_hasFDerivAt",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.shrink_hasEigenvalue_iff",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.shrink_hasEigenvalue",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.DefectCorrection.shrink_re",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.average",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.average_equivariant",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.average_of_equivariant",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.average_over_non_group_not_equivariant",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.port_rule_power",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.junction_power_eq_zero",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.interconnection_passive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.interconnection_nonexpansive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.M",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.IsExactMode",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.gram",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.gram_posSemidef",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.gram_posDef",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.gram_sub_gram",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.quadratic_gram_sub",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.gram_sub_gram_posSemidef",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.trace_gram_sub",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.quadratic_gram_sub_le",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.assemble",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.assemble_gram_sub_posSemidef",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.assemble_gram_coercive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.assemble_gram_posDef",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.assemble_gram_existsUnique",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy.energy",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy.norm",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy.stationary_of_isMin",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy.isMin_of_stationary",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy.energy_eq_add",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy.closest_iff_isMin",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy.galerkin_iff_isMin",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.QuadEnergy.norm_add_le",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.Admissible",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.U0",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.quad",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.IsSolution",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.coord",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.field",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.portMatrix",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.portLoad",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.hostMatrix",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.hostRhs",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.fieldError",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.Conforming",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.BoundaryDataInPortSpan",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.EnergyNormIsNorm",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.hostSystem_iff_isMin",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.field_admissible",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.energy_optimal",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.energy_error_bound",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.solution_unique",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.hostMatrix_posDef",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Superelement.hostSystem_existsUnique",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.interface_perturbation",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.interface_perturbation_of_dominates",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.labelFree",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.supervised",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.labelFree_eq_supervised_add_const",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.labelFree_sub_eq_supervised_sub",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.wave_identity",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.wave_bound",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.cayley_bound",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.cayley_transform",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.cayley_nonexpansive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.cayley_matrix_nonexpansive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.Piece.gram_cayley_nonexpansive",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.waveSweep",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.waveSweep_lipschitz",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.contraction_contract",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.twoLevel_fixedPt_isFixedPt",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.fixedPt_isFixedPt_twoLevel",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.two_level_contract",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.two_level_fine_contraction_diverges",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.sni_counterexample",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.averaged",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.averaged_fixedPt_iff",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.norm_sq_convex_combination",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.averaged_step",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.averaged_residual_tendsto_zero",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.krasnoselskii_mann",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.tier2_step_defect",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.learned_master_bound_tier2",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.learned_master_bound_tier0",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.learned_master_bound_tier0_superelement",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.existence_conditional",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.existence_conditional_c1",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.existence_of_learned_coupling",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.tier0_headline",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.tier2_headline",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   },
+   {
+    "name": "Atlas.defect_correction_headline",
+    "axioms": [
+     "propext",
+     "Classical.choice",
+     "Quot.sound"
+    ],
+    "verdict": "ok"
+   }
+  ],
+  "lean": "leanprover/lean4:v4.34.1",
+  "mathlib": "v4.34.1"
+ }
+}

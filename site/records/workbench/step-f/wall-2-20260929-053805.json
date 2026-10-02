@@ -1,0 +1,338 @@
+{
+ "_published": {
+  "source": "out/workbench/records/step-f/wall-2-20260929-053805.json",
+  "source_sha256": "660d022a22efe86883b2516eab44ca4911bd9cd4f3698a4536ddcc53fc1af205",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "schema": "atlas-workbench/results@1",
+  "case_name": "wall-2",
+  "case_path": null,
+  "family": "conduction-2d",
+  "style": "C",
+  "committed_at": "2026-09-29T05:38:04-04:00",
+  "started": "2026-09-29T05:38:04-04:00",
+  "finished": "2026-09-29T05:38:05-04:00",
+  "wall_seconds": 0.6840736865997314,
+  "build_seconds": 0.028734699939377606,
+  "arms": [
+   "serial",
+   "full"
+  ],
+  "arm_labels": {
+   "serial": "Decomposed, serial",
+   "parallel": "Decomposed, parallel",
+   "full": "Full domain"
+  },
+  "dropped_arms": {
+   "parallel": "Dirichlet-Neumann is sequential by construction: the Neumann piece needs the heat the Dirichlet piece sends"
+  },
+  "step_label": "timed repeat",
+  "steps_requested": 5,
+  "steps_done": 5,
+  "stopped": false,
+  "threads": 1,
+  "timing": {
+   "serial": {
+    "seconds_per_step": [
+     0.001384599949233234,
+     0.0011915999930351973,
+     0.0011156999971717596,
+     0.0011689000530168414,
+     0.0014145000604912639
+    ],
+    "mean": 0.0012550600105896593,
+    "median": 0.0011915999930351973,
+    "min": 0.0011156999971717596,
+    "speedup_vs_full": 0.31687727927750337
+   },
+   "full": {
+    "seconds_per_step": [
+     0.0004731999943032861,
+     0.0003925000783056021,
+     0.0003389000194147229,
+     0.00033680000342428684,
+     0.00044709991198033094
+    ],
+    "mean": 0.00039770000148564577,
+    "median": 0.0003925000783056021,
+    "min": 0.00033680000342428684,
+    "speedup_vs_full": 1.0
+   }
+  },
+  "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+  "bitwise": {
+   "steps": 0,
+   "first_difference": null
+  },
+  "metrics": {
+   "serial": {
+    "heat_in": 1744.1860465108732,
+    "balance_max": 1.136421208981823e-11,
+    "iterations_last": 3.0,
+    "iterations_max": 3.0,
+    "all_converged": true,
+    "max_temperature_difference_K": 2.6886937121162194e-11,
+    "heat_in_vs_full": 4.311035202897463e-13,
+    "heat_in_vs_closed_form": -4.3266785117642333e-13
+   },
+   "full": {
+    "heat_in": 1744.1860465101213,
+    "balance_max": 1.669688572279719e-11,
+    "iterations_last": 1.0,
+    "iterations_max": 1.0,
+    "all_converged": true,
+    "heat_in_vs_closed_form": -8.637713714657973e-13
+   }
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 1.7245445422919174e-11,
+    "max": 2.688693712116219e-11,
+    "rms_relative": 5.147349848153045e-14
+   }
+  },
+  "field_label": "temperature (K)",
+  "checks": [
+   {
+    "key": "balance",
+    "title": "Energy: heat in = heat stored",
+    "kind": "balance",
+    "tolerance": 1e-06,
+    "registered": "2026-09-28, before the conduction family's first run",
+    "measure": "|heat into the domain through its edges - heat stored| over the heat through the plate, every step, worst arm (steady: stored = 0)",
+    "why": "the full domain closes to the direct solver's round-off. A decomposed arm closes to its iteration's floor: the solve stops when the update is below 1e-10 of the temperature scale, and a heat flow is a temperature difference over a half-cell, so its relative error is that times T/dT, with the material contrast, well under 1e-6",
+    "value": 1.669688572279719e-11,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "serial: 1.14e-11; full: 1.67e-11",
+    "extra": {}
+   },
+   {
+    "key": "reference",
+    "title": "Temperatures agree with the full domain",
+    "kind": "reference",
+    "tolerance": 1e-06,
+    "registered": "2026-09-28, before the conduction family's first run",
+    "measure": "max |T_decomposed - T_full| over the temperature span of the fixed boundaries, at the last step",
+    "why": "both solve the same finite volumes; the converged decomposition IS the full-domain solution up to the iteration's tolerance (Dirichlet-Neumann's converged face flow is the harmonic-mean face exactly)",
+    "value": 2.6886937121162193e-13,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "max |dT| = 2.69e-11 K over a span of 100 K",
+    "extra": {}
+   },
+   {
+    "key": "closed_form",
+    "title": "Heat flow = dT / sum(L/k) (a layered wall)",
+    "kind": "reference",
+    "tolerance": 1e-06,
+    "registered": "2026-09-28, before the conduction family's first run",
+    "measure": "|Q - Q_closed| / Q_closed for every arm, where Q_closed = dT H / sum_i L_i / k_i; only for a steady wall of layers across x with fixed temperatures left and right and insulated top and bottom",
+    "why": "harmonic-mean faces add the half-cells' resistances in series, so the discrete heat flow through layers on cell faces is the closed form to round-off; a decomposed arm adds its iteration floor",
+    "value": 8.637713714657973e-13,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "serial: 4.33e-13; full: 8.64e-13 (closed form 1744.19 W/m)",
+    "extra": {
+     "q_closed": 1744.1860465116279
+    }
+   },
+   {
+    "key": "bitwise",
+    "title": "Threaded equals serial, bit for bit (style B)",
+    "kind": "control",
+    "tolerance": null,
+    "registered": "2026-09-28, before the conduction family's first run",
+    "measure": "np.array_equal on the temperature after every step",
+    "why": "additive Schwarz solves every window from the same iterate and blends in window order, so the order the threads finish in cannot change a bit",
+    "value": null,
+    "passed": null,
+    "verdict": "not measured",
+    "detail": "style C has no threaded arm",
+    "extra": {}
+   }
+  ],
+  "notes": [
+   "Dirichlet side: steel; Neumann side: copper. The 1-D contraction factor rho = k_D L_N / (k_N L_D) = 0.075 (under 1: the unrelaxed iteration would contract). First relaxation factor 0.5, then Aitken's rule.",
+   "Steady: every 'step' is the whole solve again from the initial temperature, repeated to time it; the answer is the same each time."
+  ],
+  "problem": {
+   "style": "C",
+   "mode": "steady",
+   "cells": 6400,
+   "windows": 2,
+   "tolerance": 1e-10,
+   "max_iterations": 200,
+   "scale_K": 400.0,
+   "dirichlet": "steel",
+   "neumann": "copper",
+   "rho_1d": 0.075,
+   "relaxation0": 0.5,
+   "aitken": true,
+   "interface_faces": 40
+  },
+  "machine": {
+   "time": "2026-09-29T05:38:04-04:00",
+   "platform": "Windows-11-10.0.26200-SP0",
+   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+   "cpu_count": 22,
+   "python": "3.12.7",
+   "numpy": "1.26.4",
+   "scipy": "1.13.1",
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "other_python_processes": [
+    {
+     "memory": "3,844 K",
+     "command": "\".venv\\Scripts\\python.exe\"  server.py"
+    },
+    {
+     "memory": "23,536 K",
+     "command": "\"<local path>\" server.py"
+    }
+   ]
+  },
+  "machine_after": {
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "time": "2026-09-29T05:38:05-04:00"
+  },
+  "case": {
+   "schema_id": "atlas-workbench/case@0.3",
+   "name": "wall-2",
+   "description": "Two-layer wall: steel and copper (style C, steady)",
+   "domain": {
+    "nx": 160,
+    "ny": 40,
+    "dx": 0.0025
+   },
+   "physics": {
+    "family": "conduction-2d",
+    "params": {
+     "T0": 300.0
+    }
+   },
+   "materials": {
+    "steel": {
+     "k": 45.0,
+     "rho": 7850.0,
+     "cp": 490.0
+    },
+    "copper": {
+     "k": 400.0,
+     "rho": 8960.0,
+     "cp": 385.0
+    }
+   },
+   "regions": [
+    {
+     "id": "R1",
+     "material": "steel",
+     "shape": "rect",
+     "x0": 0,
+     "y0": 0,
+     "nx": 96,
+     "ny": 40,
+     "points": null,
+     "holes": null
+    },
+    {
+     "id": "R2",
+     "material": "copper",
+     "shape": "rect",
+     "x0": 96,
+     "y0": 0,
+     "nx": 64,
+     "ny": 40,
+     "points": null,
+     "holes": null
+    }
+   ],
+   "windows": [
+    {
+     "id": "steel",
+     "x0": 0,
+     "y0": 0,
+     "nx": 96,
+     "ny": 40
+    },
+    {
+     "id": "copper",
+     "x0": 96,
+     "y0": 0,
+     "nx": 64,
+     "ny": 40
+    }
+   ],
+   "devices": [],
+   "boundaries": [
+    {
+     "id": "B-left",
+     "edge": "left",
+     "kind": "fixed-temperature",
+     "start": 0,
+     "stop": null,
+     "value": 400.0
+    },
+    {
+     "id": "B-right",
+     "edge": "right",
+     "kind": "fixed-temperature",
+     "start": 0,
+     "stop": null,
+     "value": 300.0
+    },
+    {
+     "id": "B-bottom",
+     "edge": "bottom",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    },
+    {
+     "id": "B-top",
+     "edge": "top",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    }
+   ],
+   "attachments": [],
+   "coupling": {
+    "style": "C",
+    "ramp_cells": 8,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "tolerance": 1e-10,
+    "max_iterations": 200,
+    "relaxation": 0.5,
+    "aitken": true,
+    "dirichlet_side": "auto"
+   },
+   "run": {
+    "macro_dt": 1.0,
+    "steps": 5,
+    "threads": 1,
+    "start": "freestream",
+    "mode": "steady"
+   },
+   "compare": {
+    "full_domain": true,
+    "metrics": [
+     "farm_power",
+     "rms_velocity",
+     "time_per_step"
+    ]
+   }
+  }
+ }
+}

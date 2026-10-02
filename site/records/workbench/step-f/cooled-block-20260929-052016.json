@@ -1,0 +1,347 @@
+{
+ "_published": {
+  "source": "out/workbench/records/step-f/cooled-block-20260929-052016.json",
+  "source_sha256": "ba9afb3d0792716856374f2bdfb76a1850782452637051227fdf69e2c6c083d3",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "schema": "atlas-workbench/results@1",
+  "case_name": "cooled-block",
+  "case_path": null,
+  "family": "conjugate-heat-2d",
+  "style": "C",
+  "committed_at": "2026-09-29T05:20:14-04:00",
+  "started": "2026-09-29T05:20:14-04:00",
+  "finished": "2026-09-29T05:20:16-04:00",
+  "wall_seconds": 1.7845864295959473,
+  "build_seconds": 0.057462100056000054,
+  "arms": [
+   "serial",
+   "full"
+  ],
+  "arm_labels": {
+   "serial": "Decomposed, serial",
+   "parallel": "Decomposed, parallel",
+   "full": "Full domain"
+  },
+  "dropped_arms": {
+   "parallel": "Dirichlet-Neumann is sequential by construction: the block needs the heat the coolant takes through the wall"
+  },
+  "step_label": "timed repeat",
+  "steps_requested": 5,
+  "steps_done": 5,
+  "stopped": false,
+  "threads": 1,
+  "timing": {
+   "serial": {
+    "seconds_per_step": [
+     0.22835200000554323,
+     0.2487953999079764,
+     0.22958809998817742,
+     0.23576920002233237,
+     0.2227205999661237
+    ],
+    "mean": 0.23304505997803063,
+    "median": 0.22958809998817742,
+    "min": 0.2227205999661237,
+    "speedup_vs_full": 0.004749210199610945
+   },
+   "full": {
+    "seconds_per_step": [
+     0.0011156999971717596,
+     0.0014521999983116984,
+     0.0010300999274477363,
+     0.0008839999791234732,
+     0.00105189997702837
+    ],
+    "mean": 0.0011067799758166074,
+    "median": 0.00105189997702837,
+    "min": 0.0008839999791234732,
+    "speedup_vs_full": 1.0
+   }
+  },
+  "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+  "bitwise": {
+   "steps": 0,
+   "first_difference": null
+  },
+  "metrics": {
+   "serial": {
+    "power_W": 2000.0,
+    "carried_out_W": 2000.0000001390144,
+    "max_temperature_K": 329.46938811507357,
+    "balance_max": 6.950722308829427e-11,
+    "iterations_last": 330.0,
+    "all_converged": true,
+    "bulk_rise_K": 4.7846889955478815,
+    "max_temperature_difference_K": 7.547612312919227e-09
+   },
+   "full": {
+    "power_W": 2000.0,
+    "carried_out_W": 2000.0000001259032,
+    "max_temperature_K": 329.4693881225638,
+    "balance_max": 6.2951585277915e-11,
+    "iterations_last": 1.0,
+    "all_converged": true,
+    "bulk_rise_K": 4.784688995516515
+   }
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 6.839326909516756e-09,
+    "max": 7.547612312919227e-09,
+    "rms_relative": 2.1225625991800575e-11
+   }
+  },
+  "field_label": "temperature (K)",
+  "checks": [
+   {
+    "key": "energy",
+    "title": "Heat generated = heat the coolant carries out",
+    "kind": "balance",
+    "tolerance": 1e-06,
+    "registered": "2026-09-29, before the cooled-block family's first run",
+    "measure": "|heat generated + heat into the domain through its edges (the coolant's advection in and out, and any conduction)| over the heat generated, every repeat, worst arm",
+    "why": "the full domain closes to the direct solver's round-off. The Dirichlet-Neumann pair closes to its iteration's floor: the wall temperature moves by less than 1e-10 of the temperature scale between the last iterations, and the wall's heat flow is that over a half-cell times the conductivity, far under 1e-6 of the power",
+    "value": 6.950722308829427e-11,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "serial: 6.95e-11; full: 6.3e-11 (power 2000 W per metre of depth)",
+    "extra": {}
+   },
+   {
+    "key": "reference",
+    "title": "Temperatures agree with the full domain",
+    "kind": "reference",
+    "tolerance": 1e-06,
+    "registered": "2026-09-29, before the cooled-block family's first run",
+    "measure": "max |T_decomposed - T_full| over the full domain's rise above the inlet, at the last repeat",
+    "why": "both solve the same finite volumes; the converged Dirichlet-Neumann pair is the full-domain solution to the iteration's tolerance (its converged wall flow is the harmonic-mean face exactly)",
+    "value": 2.561170351256885e-10,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "max |dT| = 7.55e-09 K against a rise of 29.47 K",
+    "extra": {}
+   }
+  ],
+  "notes": [
+   "Dirichlet side: block; Neumann side: channel. The 1-D contraction factor rho = k_D L_N / (k_N L_D) = 132 (over 1: unrelaxed it would diverge; the relaxation carries it). First relaxation factor 0.5, then Aitken's rule.",
+   "The block generates 2000 W per metre of depth; the coolant carries mdot cp = 418 W/K per metre, so its bulk temperature rises 4.785 K.",
+   "Steady: every repeat is the whole solve again, repeated to time it."
+  ],
+  "problem": {
+   "style": "C",
+   "mode": "steady",
+   "cells": 12000,
+   "power_W": 2000.0,
+   "mdot_cp_W_per_K": 418.0,
+   "dirichlet": "block",
+   "neumann": "channel",
+   "rho_1d": 131.6666666666667,
+   "tolerance": 1e-10,
+   "relaxation0": 0.5,
+   "aitken": true,
+   "interface_faces": 200
+  },
+  "machine": {
+   "time": "2026-09-29T05:20:14-04:00",
+   "platform": "Windows-11-10.0.26200-SP0",
+   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+   "cpu_count": 22,
+   "python": "3.12.7",
+   "numpy": "1.26.4",
+   "scipy": "1.13.1",
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "other_python_processes": [
+    {
+     "memory": "3,844 K",
+     "command": "\".venv\\Scripts\\python.exe\"  server.py"
+    },
+    {
+     "memory": "23,532 K",
+     "command": "\"<local path>\" server.py"
+    }
+   ]
+  },
+  "machine_after": {
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "time": "2026-09-29T05:20:16-04:00"
+  },
+  "case": {
+   "schema_id": "atlas-workbench/case@0.3",
+   "name": "cooled-block",
+   "description": "Heated block cooled by a channel flow (style C, two physics)",
+   "domain": {
+    "nx": 200,
+    "ny": 60,
+    "dx": 0.001
+   },
+   "physics": {
+    "family": "conjugate-heat-2d",
+    "params": {
+     "u_coolant": 0.01
+    }
+   },
+   "materials": {
+    "copper": {
+     "k": 400.0,
+     "rho": 8960.0,
+     "cp": 385.0,
+     "flows": 0.0,
+     "heat": 0.0
+    },
+    "chip": {
+     "k": 150.0,
+     "rho": 2330.0,
+     "cp": 700.0,
+     "flows": 0.0,
+     "heat": 10000000.0
+    },
+    "water": {
+     "k": 0.6,
+     "rho": 1000.0,
+     "cp": 4180.0,
+     "flows": 1.0,
+     "heat": 0.0
+    }
+   },
+   "regions": [
+    {
+     "id": "block",
+     "material": "copper",
+     "shape": "rect",
+     "x0": 0,
+     "y0": 0,
+     "nx": 200,
+     "ny": 50,
+     "points": null,
+     "holes": null
+    },
+    {
+     "id": "chip",
+     "material": "chip",
+     "shape": "rect",
+     "x0": 80,
+     "y0": 0,
+     "nx": 40,
+     "ny": 5,
+     "points": null,
+     "holes": null
+    },
+    {
+     "id": "channel",
+     "material": "water",
+     "shape": "rect",
+     "x0": 0,
+     "y0": 50,
+     "nx": 200,
+     "ny": 10,
+     "points": null,
+     "holes": null
+    }
+   ],
+   "windows": [
+    {
+     "id": "block",
+     "x0": 0,
+     "y0": 0,
+     "nx": 200,
+     "ny": 50
+    },
+    {
+     "id": "channel",
+     "x0": 0,
+     "y0": 50,
+     "nx": 200,
+     "ny": 10
+    }
+   ],
+   "devices": [],
+   "boundaries": [
+    {
+     "id": "left-block",
+     "edge": "left",
+     "kind": "insulated",
+     "start": 0,
+     "stop": 50,
+     "value": null
+    },
+    {
+     "id": "inlet",
+     "edge": "left",
+     "kind": "coolant-inlet",
+     "start": 50,
+     "stop": null,
+     "value": 300.0
+    },
+    {
+     "id": "right-block",
+     "edge": "right",
+     "kind": "insulated",
+     "start": 0,
+     "stop": 50,
+     "value": null
+    },
+    {
+     "id": "outlet",
+     "edge": "right",
+     "kind": "coolant-outlet",
+     "start": 50,
+     "stop": null,
+     "value": null
+    },
+    {
+     "id": "base",
+     "edge": "bottom",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    },
+    {
+     "id": "lid",
+     "edge": "top",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    }
+   ],
+   "attachments": [],
+   "coupling": {
+    "style": "C",
+    "ramp_cells": 8,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "tolerance": 1e-10,
+    "max_iterations": 2000,
+    "relaxation": 0.5,
+    "aitken": true,
+    "dirichlet_side": "auto"
+   },
+   "run": {
+    "macro_dt": 1.0,
+    "steps": 5,
+    "threads": 1,
+    "start": "freestream",
+    "mode": "steady"
+   },
+   "compare": {
+    "full_domain": true,
+    "metrics": [
+     "farm_power",
+     "rms_velocity",
+     "time_per_step"
+    ]
+   }
+  }
+ }
+}

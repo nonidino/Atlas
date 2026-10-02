@@ -1,0 +1,149 @@
+{
+ "_published": {
+  "source": "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json",
+  "source_sha256": "9c3bab790da6710c7101c4f2f76664afb28d90ae794afd0a8981644efb5fd17a",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "command": "confirm",
+  "example": "plate-hole",
+  "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+  "when": "2026-09-30T23:08:50-04:00",
+  "machine": {
+   "time": "2026-09-30T23:08:50-04:00",
+   "platform": "Windows-11-10.0.26200-SP0",
+   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+   "cpu_count": 22,
+   "python": "3.12.7",
+   "numpy": "1.26.4",
+   "scipy": "1.13.1",
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "other_python_processes": []
+  },
+  "runs": [
+   {
+    "example": "plate-hole",
+    "overrides": {},
+    "family": "elasticity-2d",
+    "style": "B",
+    "cells": 12800,
+    "windows": 2,
+    "threads": 2,
+    "steps": 5,
+    "macro_dt": 1.0,
+    "wall_seconds": 19.342360500013456,
+    "two_minutes": true,
+    "speedup": {
+     "serial": 0.0051439842748337555,
+     "parallel": 0.00832514006199203
+    },
+    "fastest_arm": "parallel",
+    "mean_step_s": {
+     "serial": 2.2886228600051255,
+     "parallel": 1.414107139967382,
+     "full": 0.01177264000289142
+    },
+    "checks": [
+     {
+      "key": "force",
+      "kind": "balance",
+      "value": 7.675001178695262e-12,
+      "tolerance": 1e-06,
+      "passed": true,
+      "detail": "serial: 7.68e-12; parallel: 7.68e-12; full: 2.18e-12"
+     },
+     {
+      "key": "reference",
+      "kind": "reference",
+      "value": 3.1847393106418297e-12,
+      "tolerance": 1e-06,
+      "passed": true,
+      "detail": "largest displacement 0.02245 mm"
+     },
+     {
+      "key": "bitwise",
+      "kind": "control",
+      "value": null,
+      "tolerance": null,
+      "passed": true,
+      "detail": "equal after all 5 repeats"
+     }
+    ],
+    "all_checks_pass": true,
+    "bars": [
+     {
+      "mechanism": "S",
+      "speed_bar": 3.0,
+      "speedup": 0.00832514006199203,
+      "fast": false,
+      "agreement_bar": 1e-09,
+      "agreement": 3.1847393106418297e-12,
+      "close": true,
+      "ceiling": null,
+      "met": false
+     },
+     {
+      "mechanism": "P",
+      "speed_bar": 3.0,
+      "speedup": 0.00832514006199203,
+      "fast": false,
+      "agreement_bar": 1e-09,
+      "agreement": 3.1847393106418297e-12,
+      "close": true,
+      "ceiling": null,
+      "met": false
+     }
+    ],
+    "status": "done",
+    "error": null,
+    "notes": [
+     "Steady: every repeat is the whole solve again from zero displacement. The load is 2e+04 N on a plate 10 mm thick (plane stress, so the displacements do not depend on the thickness).",
+     "Schwarz stops when the update is below 1e-12 of the iterate's largest displacement; 2 windows on the node grid, 25,118 free degrees of freedom."
+    ],
+    "describe": {
+     "style": "B",
+     "mode": "steady",
+     "elements": 12800,
+     "free_dofs": 25118,
+     "windows": 2,
+     "tolerance": 1e-12,
+     "max_iterations": 5000,
+     "thickness_m": 0.01,
+     "partition_of_unity": {
+      "identity_residual": 1.1102230246251565e-16,
+      "chi_min": 0.0038910505836575876,
+      "tolerance": 1e-10,
+      "holds": true
+     }
+    },
+    "machine_before": {
+     "time": "2026-09-30T23:08:50-04:00",
+     "platform": "Windows-11-10.0.26200-SP0",
+     "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+     "cpu_count": 22,
+     "python": "3.12.7",
+     "numpy": "1.26.4",
+     "scipy": "1.13.1",
+     "power": {
+      "ac": true,
+      "battery_percent": 100,
+      "source": "GetSystemPowerStatus"
+     },
+     "other_python_processes": []
+    },
+    "machine_after": {
+     "power": {
+      "ac": true,
+      "battery_percent": 100,
+      "source": "GetSystemPowerStatus"
+     },
+     "time": "2026-09-30T23:09:09-04:00"
+    }
+   }
+  ]
+ }
+}

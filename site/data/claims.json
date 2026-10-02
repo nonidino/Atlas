@@ -1,0 +1,2293 @@
+{
+ "schema": "atlas-site/claims@1",
+ "made_by": "scripts/site_claims.py",
+ "claims": [
+  {
+   "id": "fast.farm.s",
+   "value": 4.618862678433379,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "4.62×",
+   "display_html": "4.62×",
+   "units": "× the full domain's speed",
+   "sentence": "wind farm: the pieces run at 4.62× the speed of the undivided solve",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "pointer": "runs[0].speedup.parallel",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "date": "2026-09-30T23:22:34-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "a 2-D case on one laptop; the ratio belongs to this case and machine",
+   "vault": "showcase-gallery §8"
+  },
+  {
+   "id": "fast.farm.cells",
+   "value": 163328,
+   "kind": "int",
+   "nd": 2,
+   "display": "163,328",
+   "display_html": "163,328",
+   "units": "grid cells",
+   "sentence": "wind farm: grid size",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "pointer": "runs[0].cells",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "date": "2026-09-30T23:22:34-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.farm.threads",
+   "value": 4,
+   "kind": "int",
+   "nd": 2,
+   "display": "4",
+   "display_html": "4",
+   "units": "threads",
+   "sentence": "wind farm: threads used",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "pointer": "runs[0].threads",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "date": "2026-09-30T23:22:34-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.farm.windows",
+   "value": 12,
+   "kind": "int",
+   "nd": 2,
+   "display": "12",
+   "display_html": "12",
+   "units": "pieces",
+   "sentence": "wind farm: pieces",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "pointer": "runs[0].windows",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "date": "2026-09-30T23:22:34-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.farm.agree",
+   "value": 0.018441053670290024,
+   "kind": "pct",
+   "nd": 2,
+   "display": "1.84%",
+   "display_html": "1.84%",
+   "units": "of farm power",
+   "sentence": "farm power differs from the full domain's by",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "pointer": "runs[0].bars[0].agreement",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "date": "2026-09-30T23:22:34-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.heat.s",
+   "value": 5.575929049823585,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "5.58×",
+   "display_html": "5.58×",
+   "units": "× the full domain's speed",
+   "sentence": "heat conduction: the pieces run at 5.58× the speed of the undivided solve",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json"
+   ],
+   "pointer": "runs[0].speedup.serial",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-heat-20260930-232435.json"
+   ],
+   "date": "2026-09-30T23:24:35-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "a 2-D case on one laptop; the ratio belongs to this case and machine",
+   "vault": "showcase-gallery §8"
+  },
+  {
+   "id": "fast.heat.cells",
+   "value": 245760,
+   "kind": "int",
+   "nd": 2,
+   "display": "245,760",
+   "display_html": "245,760",
+   "units": "grid cells",
+   "sentence": "heat conduction: grid size",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json"
+   ],
+   "pointer": "runs[0].cells",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-heat-20260930-232435.json"
+   ],
+   "date": "2026-09-30T23:24:35-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.heat.windows",
+   "value": 2,
+   "kind": "int",
+   "nd": 2,
+   "display": "2",
+   "display_html": "2",
+   "units": "pieces",
+   "sentence": "heat conduction: pieces",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json"
+   ],
+   "pointer": "runs[0].windows",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-heat-20260930-232435.json"
+   ],
+   "date": "2026-09-30T23:24:35-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.heat.agree",
+   "value": 0.00012244406099284788,
+   "kind": "sci",
+   "nd": 1,
+   "display": "1.2×10−4",
+   "display_html": "1.2×10<sup>−4</sup>",
+   "units": "of the field's scale",
+   "sentence": "heat conduction: largest difference from the full domain",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json"
+   ],
+   "pointer": "runs[0].bars[0].agreement",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-heat-20260930-232435.json"
+   ],
+   "date": "2026-09-30T23:24:35-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.river.s",
+   "value": 5.845804140163202,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "5.85×",
+   "display_html": "5.85×",
+   "units": "× the full domain's speed",
+   "sentence": "river plume: the pieces run at 5.85× the speed of the undivided solve",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "pointer": "runs[0].speedup.parallel",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "date": "2026-09-30T23:30:19-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "a 2-D case on one laptop; the ratio belongs to this case and machine",
+   "vault": "showcase-gallery §8"
+  },
+  {
+   "id": "fast.river.cells",
+   "value": 460800,
+   "kind": "int",
+   "nd": 2,
+   "display": "460,800",
+   "display_html": "460,800",
+   "units": "grid cells",
+   "sentence": "river plume: grid size",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "pointer": "runs[0].cells",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "date": "2026-09-30T23:30:19-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.river.threads",
+   "value": 6,
+   "kind": "int",
+   "nd": 2,
+   "display": "6",
+   "display_html": "6",
+   "units": "threads",
+   "sentence": "river plume: threads used",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "pointer": "runs[0].threads",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "date": "2026-09-30T23:30:19-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.river.windows",
+   "value": 6,
+   "kind": "int",
+   "nd": 2,
+   "display": "6",
+   "display_html": "6",
+   "units": "pieces",
+   "sentence": "river plume: pieces",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "pointer": "runs[0].windows",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "date": "2026-09-30T23:30:19-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.river.agree",
+   "value": 4.7368900668395615e-17,
+   "kind": "sci",
+   "nd": 1,
+   "display": "4.7×10−17",
+   "display_html": "4.7×10<sup>−17</sup>",
+   "units": "of the field's scale",
+   "sentence": "river plume: largest difference from the full domain",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "pointer": "runs[0].bars[0].agreement",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "date": "2026-09-30T23:30:19-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.sound.s",
+   "value": 4.670361286451026,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "4.67×",
+   "display_html": "4.67×",
+   "units": "× the full domain's speed",
+   "sentence": "sound: the pieces run at 4.67× the speed of the undivided solve",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "pointer": "runs[0].speedup.parallel",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "date": "2026-09-30T23:24:08-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "a 2-D case on one laptop; the ratio belongs to this case and machine",
+   "vault": "showcase-gallery §8"
+  },
+  {
+   "id": "fast.sound.cells",
+   "value": 296000,
+   "kind": "int",
+   "nd": 2,
+   "display": "296,000",
+   "display_html": "296,000",
+   "units": "grid cells",
+   "sentence": "sound: grid size",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "pointer": "runs[0].cells",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "date": "2026-09-30T23:24:08-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.sound.threads",
+   "value": 4,
+   "kind": "int",
+   "nd": 2,
+   "display": "4",
+   "display_html": "4",
+   "units": "threads",
+   "sentence": "sound: threads used",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "pointer": "runs[0].threads",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "date": "2026-09-30T23:24:08-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.sound.windows",
+   "value": 4,
+   "kind": "int",
+   "nd": 2,
+   "display": "4",
+   "display_html": "4",
+   "units": "pieces",
+   "sentence": "sound: pieces",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "pointer": "runs[0].windows",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "date": "2026-09-30T23:24:08-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.sound.agree",
+   "value": "bit for bit",
+   "kind": "text",
+   "nd": 2,
+   "display": "bit for bit",
+   "display_html": "bit for bit",
+   "units": "",
+   "sentence": "the pieces equal the full domain bit for bit",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "pointer": null,
+   "derived": "runs[0].checks[key=bitwise].passed is true",
+   "public": [
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json"
+   ],
+   "date": "2026-09-30T23:24:08-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.structure.s",
+   "value": 0.00832514006199203,
+   "kind": "ratio",
+   "nd": 3,
+   "display": "0.008×",
+   "display_html": "0.008×",
+   "units": "× the full domain's speed",
+   "sentence": "loaded structure: the pieces run at 0.00833× the speed of the undivided solve",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "pointer": "runs[0].speedup.parallel",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "date": "2026-09-30T23:08:50-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "a 2-D case on one laptop; the ratio belongs to this case and machine",
+   "vault": "showcase-gallery §8"
+  },
+  {
+   "id": "fast.structure.cells",
+   "value": 12800,
+   "kind": "int",
+   "nd": 2,
+   "display": "12,800",
+   "display_html": "12,800",
+   "units": "grid cells",
+   "sentence": "loaded structure: grid size",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "pointer": "runs[0].cells",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "date": "2026-09-30T23:08:50-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.structure.threads",
+   "value": 2,
+   "kind": "int",
+   "nd": 2,
+   "display": "2",
+   "display_html": "2",
+   "units": "threads",
+   "sentence": "loaded structure: threads used",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "pointer": "runs[0].threads",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "date": "2026-09-30T23:08:50-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.structure.windows",
+   "value": 2,
+   "kind": "int",
+   "nd": 2,
+   "display": "2",
+   "display_html": "2",
+   "units": "pieces",
+   "sentence": "loaded structure: pieces",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "pointer": "runs[0].windows",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "date": "2026-09-30T23:08:50-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.structure.agree",
+   "value": 3.1847393106418297e-12,
+   "kind": "sci",
+   "nd": 1,
+   "display": "3.2×10−12",
+   "display_html": "3.2×10<sup>−12</sup>",
+   "units": "of the field's scale",
+   "sentence": "loaded structure: largest difference from the full domain",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "pointer": "runs[0].bars[0].agreement",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json"
+   ],
+   "date": "2026-09-30T23:08:50-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.circuit.s",
+   "value": 0.2754572969492311,
+   "kind": "ratio",
+   "nd": 3,
+   "display": "0.275×",
+   "display_html": "0.275×",
+   "units": "× the full domain's speed",
+   "sentence": "current in a plate: the pieces run at 0.275× the speed of the undivided solve",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json"
+   ],
+   "pointer": "runs[0].speedup.serial",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-circuit-20260930-230910.json"
+   ],
+   "date": "2026-09-30T23:09:10-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "a 2-D case on one laptop; the ratio belongs to this case and machine",
+   "vault": "showcase-gallery §8"
+  },
+  {
+   "id": "fast.circuit.cells",
+   "value": 12800,
+   "kind": "int",
+   "nd": 2,
+   "display": "12,800",
+   "display_html": "12,800",
+   "units": "grid cells",
+   "sentence": "current in a plate: grid size",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json"
+   ],
+   "pointer": "runs[0].cells",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-circuit-20260930-230910.json"
+   ],
+   "date": "2026-09-30T23:09:10-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.circuit.windows",
+   "value": 1,
+   "kind": "int",
+   "nd": 2,
+   "display": "1",
+   "display_html": "1",
+   "units": "pieces",
+   "sentence": "current in a plate: pieces",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json"
+   ],
+   "pointer": "runs[0].windows",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-circuit-20260930-230910.json"
+   ],
+   "date": "2026-09-30T23:09:10-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.circuit.agree",
+   "value": 1.0654322853096275e-13,
+   "kind": "sci",
+   "nd": 1,
+   "display": "1.1×10−13",
+   "display_html": "1.1×10<sup>−13</sup>",
+   "units": "of the field's scale",
+   "sentence": "current in a plate: largest difference from the full domain",
+   "source": [
+    "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json"
+   ],
+   "pointer": "runs[0].bars[0].agreement",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-plate-circuit-20260930-230910.json"
+   ],
+   "date": "2026-09-30T23:09:10-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.bimetal.s",
+   "value": 1.1658458517308912,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "1.17×",
+   "display_html": "1.17×",
+   "units": "× the full domain's speed",
+   "sentence": "heated structure: the pieces run at 1.17× the speed of the undivided solve",
+   "source": [
+    "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json"
+   ],
+   "pointer": "runs[0].speedup.parallel",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json"
+   ],
+   "date": "2026-09-30T23:09:12-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "a 2-D case on one laptop; the ratio belongs to this case and machine",
+   "vault": "showcase-gallery §8"
+  },
+  {
+   "id": "fast.bimetal.cells",
+   "value": 11664,
+   "kind": "int",
+   "nd": 2,
+   "display": "11,664",
+   "display_html": "11,664",
+   "units": "grid cells",
+   "sentence": "heated structure: grid size",
+   "source": [
+    "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json"
+   ],
+   "pointer": "runs[0].cells",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json"
+   ],
+   "date": "2026-09-30T23:09:12-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.bimetal.threads",
+   "value": 2,
+   "kind": "int",
+   "nd": 2,
+   "display": "2",
+   "display_html": "2",
+   "units": "threads",
+   "sentence": "heated structure: threads used",
+   "source": [
+    "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json"
+   ],
+   "pointer": "runs[0].threads",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json"
+   ],
+   "date": "2026-09-30T23:09:12-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.bimetal.windows",
+   "value": 1,
+   "kind": "int",
+   "nd": 2,
+   "display": "1",
+   "display_html": "1",
+   "units": "pieces",
+   "sentence": "heated structure: pieces",
+   "source": [
+    "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json"
+   ],
+   "pointer": "runs[0].windows",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json"
+   ],
+   "date": "2026-09-30T23:09:12-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.cooled.s",
+   "value": 0.0042587250369610545,
+   "kind": "ratio",
+   "nd": 3,
+   "display": "0.004×",
+   "display_html": "0.004×",
+   "units": "× the full domain's speed",
+   "sentence": "cooled block: the pieces run at 0.00426× the speed of the undivided solve",
+   "source": [
+    "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "pointer": "runs[0].speedup.serial",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "date": "2026-09-30T23:09:15-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "a 2-D case on one laptop; the ratio belongs to this case and machine",
+   "vault": "showcase-gallery §8"
+  },
+  {
+   "id": "fast.cooled.cells",
+   "value": 12000,
+   "kind": "int",
+   "nd": 2,
+   "display": "12,000",
+   "display_html": "12,000",
+   "units": "grid cells",
+   "sentence": "cooled block: grid size",
+   "source": [
+    "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "pointer": "runs[0].cells",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "date": "2026-09-30T23:09:15-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.cooled.windows",
+   "value": 2,
+   "kind": "int",
+   "nd": 2,
+   "display": "2",
+   "display_html": "2",
+   "units": "pieces",
+   "sentence": "cooled block: pieces",
+   "source": [
+    "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "pointer": "runs[0].windows",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "date": "2026-09-30T23:09:15-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.cooled.agree",
+   "value": 2.561170351256885e-10,
+   "kind": "sci",
+   "nd": 1,
+   "display": "2.6×10−10",
+   "display_html": "2.6×10<sup>−10</sup>",
+   "units": "of the field's scale",
+   "sentence": "cooled block: largest difference from the full domain",
+   "source": [
+    "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "pointer": "runs[0].bars[0].agreement",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "date": "2026-09-30T23:09:15-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.met",
+   "value": 4,
+   "kind": "int",
+   "nd": 2,
+   "display": "4",
+   "display_html": "4",
+   "units": "of 8",
+   "sentence": "kinds of physics whose Fast example meets both bars",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json",
+    "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json",
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json",
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json",
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json",
+    "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json",
+    "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json",
+    "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "pointer": null,
+   "derived": "count of runs[0].bars[0].met",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json",
+    "records/workbench/fast/confirm-fast-heat-20260930-232435.json",
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json",
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json",
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json",
+    "records/workbench/fast/confirm-plate-circuit-20260930-230910.json",
+    "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json",
+    "records/workbench/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.kinds",
+   "value": 8,
+   "kind": "int",
+   "nd": 2,
+   "display": "8",
+   "display_html": "8",
+   "units": "",
+   "sentence": "kinds of physics in the workbench, one Fast example each",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json",
+    "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json",
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json",
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json",
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json",
+    "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json",
+    "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json",
+    "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "pointer": null,
+   "derived": "count of distinct runs[0].family",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json",
+    "records/workbench/fast/confirm-fast-heat-20260930-232435.json",
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json",
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json",
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json",
+    "records/workbench/fast/confirm-plate-circuit-20260930-230910.json",
+    "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json",
+    "records/workbench/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.lo",
+   "value": 4.618862678433379,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "4.62×",
+   "display_html": "4.62×",
+   "units": "",
+   "sentence": "the slowest of the four that meet the bar",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "pointer": "runs[0].speedup.parallel",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "fast.hi",
+   "value": 5.845804140163202,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "5.85×",
+   "display_html": "5.85×",
+   "units": "",
+   "sentence": "the fastest of the four that meet the bar",
+   "source": [
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "pointer": "runs[0].speedup.parallel",
+   "derived": "",
+   "public": [
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "agree.worst",
+   "value": 3.5766180417340365e-09,
+   "kind": "sci",
+   "nd": 1,
+   "display": "3.6×10−9",
+   "display_html": "3.6×10<sup>−9</sup>",
+   "units": "of the field's scale",
+   "sentence": "in every example whose pieces iterate to agreement, the assembled answer is within this of the undivided solve",
+   "source": [
+    "out/workbench/records/step-f/plate-insert-20260929-051702.json"
+   ],
+   "pointer": "checks[1].value",
+   "derived": "",
+   "public": [
+    "records/workbench/step-f/plate-insert-20260929-051702.json"
+   ],
+   "date": "2026-09-29T05:16:58-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "against the same discretization solved whole; the scale is the temperature span or the largest displacement",
+   "vault": "showcase-gallery §2"
+  },
+  {
+   "id": "balance.total",
+   "value": 34,
+   "kind": "int",
+   "nd": 2,
+   "display": "34",
+   "display_html": "34",
+   "units": "",
+   "sentence": "balance checks (mass, energy, charge, force) measured across the gallery and the Fast examples",
+   "source": [
+    "out/workbench/records/demo-fork/river-fork-20260930-172211.json",
+    "out/workbench/records/step-f/bracket-2-20260929-051924.json",
+    "out/workbench/records/step-f/cooled-block-20260929-052016.json",
+    "out/workbench/records/step-f/farm-12-20260929-053611.json",
+    "out/workbench/records/step-f/farm-21-20260929-053206.json",
+    "out/workbench/records/step-f/heated-strip-20260929-051949.json",
+    "out/workbench/records/step-f/plate-circuit-20260929-051727.json",
+    "out/workbench/records/step-f/plate-insert-20260929-051702.json",
+    "out/workbench/records/step-f/plume-2-20260929-053918.json",
+    "out/workbench/records/step-f/sound-air-water-20260929-051828.json",
+    "out/workbench/records/step-f/wake-array-3-20260929-054032.json",
+    "out/workbench/records/step-f/wall-2-20260929-053805.json",
+    "out/workbench/records/step-g/bend-3-20260929-115908.json",
+    "out/workbench/records/step-g/insert-round-20260929-115911.json",
+    "out/workbench/records/step-j/bimetal-arc/20260929-213353.json",
+    "out/workbench/records/step-j/cooled-winding/20260929-213356.json",
+    "out/workbench/records/step-j/farm-hill/20260930-014815.json",
+    "out/workbench/records/step-j/plate-hole/20260929-213350.json",
+    "out/workbench/records/step-j/ring-film/20260929-213316.json",
+    "out/workbench/records/step-j/river-bend/20260929-213700.json",
+    "out/workbench/records/step-j/s-channel/20260929-213316.json",
+    "out/workbench/records/step-j/sound-lens/20260929-213324.json",
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json",
+    "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json",
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json",
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json",
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json",
+    "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json",
+    "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json",
+    "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "pointer": null,
+   "derived": "count of checks of kind 'balance' with a verdict",
+   "public": [
+    "records/workbench/demo-fork/river-fork-20260930-172211.json",
+    "records/workbench/step-f/bracket-2-20260929-051924.json",
+    "records/workbench/step-f/cooled-block-20260929-052016.json",
+    "records/workbench/step-f/farm-12-20260929-053611.json",
+    "records/workbench/step-f/farm-21-20260929-053206.json",
+    "records/workbench/step-f/heated-strip-20260929-051949.json",
+    "records/workbench/step-f/plate-circuit-20260929-051727.json",
+    "records/workbench/step-f/plate-insert-20260929-051702.json",
+    "records/workbench/step-f/plume-2-20260929-053918.json",
+    "records/workbench/step-f/sound-air-water-20260929-051828.json",
+    "records/workbench/step-f/wake-array-3-20260929-054032.json",
+    "records/workbench/step-f/wall-2-20260929-053805.json",
+    "records/workbench/step-g/bend-3-20260929-115908.json",
+    "records/workbench/step-g/insert-round-20260929-115911.json",
+    "records/workbench/step-j/bimetal-arc/20260929-213353.json",
+    "records/workbench/step-j/cooled-winding/20260929-213356.json",
+    "records/workbench/step-j/farm-hill/20260930-014815.json",
+    "records/workbench/step-j/plate-hole/20260929-213350.json",
+    "records/workbench/step-j/ring-film/20260929-213316.json",
+    "records/workbench/step-j/river-bend/20260929-213700.json",
+    "records/workbench/step-j/s-channel/20260929-213316.json",
+    "records/workbench/step-j/sound-lens/20260929-213324.json",
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json",
+    "records/workbench/fast/confirm-fast-heat-20260930-232435.json",
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json",
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json",
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json",
+    "records/workbench/fast/confirm-plate-circuit-20260930-230910.json",
+    "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json",
+    "records/workbench/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "balance.passed",
+   "value": 34,
+   "kind": "int",
+   "nd": 2,
+   "display": "34",
+   "display_html": "34",
+   "units": "",
+   "sentence": "of them passed",
+   "source": [
+    "out/workbench/records/demo-fork/river-fork-20260930-172211.json",
+    "out/workbench/records/step-f/bracket-2-20260929-051924.json",
+    "out/workbench/records/step-f/cooled-block-20260929-052016.json",
+    "out/workbench/records/step-f/farm-12-20260929-053611.json",
+    "out/workbench/records/step-f/farm-21-20260929-053206.json",
+    "out/workbench/records/step-f/heated-strip-20260929-051949.json",
+    "out/workbench/records/step-f/plate-circuit-20260929-051727.json",
+    "out/workbench/records/step-f/plate-insert-20260929-051702.json",
+    "out/workbench/records/step-f/plume-2-20260929-053918.json",
+    "out/workbench/records/step-f/sound-air-water-20260929-051828.json",
+    "out/workbench/records/step-f/wake-array-3-20260929-054032.json",
+    "out/workbench/records/step-f/wall-2-20260929-053805.json",
+    "out/workbench/records/step-g/bend-3-20260929-115908.json",
+    "out/workbench/records/step-g/insert-round-20260929-115911.json",
+    "out/workbench/records/step-j/bimetal-arc/20260929-213353.json",
+    "out/workbench/records/step-j/cooled-winding/20260929-213356.json",
+    "out/workbench/records/step-j/farm-hill/20260930-014815.json",
+    "out/workbench/records/step-j/plate-hole/20260929-213350.json",
+    "out/workbench/records/step-j/ring-film/20260929-213316.json",
+    "out/workbench/records/step-j/river-bend/20260929-213700.json",
+    "out/workbench/records/step-j/s-channel/20260929-213316.json",
+    "out/workbench/records/step-j/sound-lens/20260929-213324.json",
+    "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json",
+    "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json",
+    "out/workbench/records/fast/confirm-fast-river-20260930-233019.json",
+    "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json",
+    "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json",
+    "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json",
+    "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json",
+    "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "pointer": null,
+   "derived": "count of those checks that passed",
+   "public": [
+    "records/workbench/demo-fork/river-fork-20260930-172211.json",
+    "records/workbench/step-f/bracket-2-20260929-051924.json",
+    "records/workbench/step-f/cooled-block-20260929-052016.json",
+    "records/workbench/step-f/farm-12-20260929-053611.json",
+    "records/workbench/step-f/farm-21-20260929-053206.json",
+    "records/workbench/step-f/heated-strip-20260929-051949.json",
+    "records/workbench/step-f/plate-circuit-20260929-051727.json",
+    "records/workbench/step-f/plate-insert-20260929-051702.json",
+    "records/workbench/step-f/plume-2-20260929-053918.json",
+    "records/workbench/step-f/sound-air-water-20260929-051828.json",
+    "records/workbench/step-f/wake-array-3-20260929-054032.json",
+    "records/workbench/step-f/wall-2-20260929-053805.json",
+    "records/workbench/step-g/bend-3-20260929-115908.json",
+    "records/workbench/step-g/insert-round-20260929-115911.json",
+    "records/workbench/step-j/bimetal-arc/20260929-213353.json",
+    "records/workbench/step-j/cooled-winding/20260929-213356.json",
+    "records/workbench/step-j/farm-hill/20260930-014815.json",
+    "records/workbench/step-j/plate-hole/20260929-213350.json",
+    "records/workbench/step-j/ring-film/20260929-213316.json",
+    "records/workbench/step-j/river-bend/20260929-213700.json",
+    "records/workbench/step-j/s-channel/20260929-213316.json",
+    "records/workbench/step-j/sound-lens/20260929-213324.json",
+    "records/workbench/fast/confirm-fast-farm-20260930-232234.json",
+    "records/workbench/fast/confirm-fast-heat-20260930-232435.json",
+    "records/workbench/fast/confirm-fast-river-20260930-233019.json",
+    "records/workbench/fast/confirm-fast-sound-20260930-232408.json",
+    "records/workbench/fast/confirm-plate-hole-20260930-230850.json",
+    "records/workbench/fast/confirm-plate-circuit-20260930-230910.json",
+    "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json",
+    "records/workbench/fast/confirm-cooled-block-20260930-230915.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "schan.windows",
+   "value": 4,
+   "kind": "int",
+   "nd": 2,
+   "display": "4",
+   "display_html": "4",
+   "units": "",
+   "sentence": "the S-channel's windows, generated from its own shape",
+   "source": [
+    "out/site/s-channel.json"
+   ],
+   "pointer": null,
+   "derived": "len(windows)",
+   "public": [
+    "records/site/s-channel.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "schan.seams",
+   "value": 3,
+   "kind": "int",
+   "nd": 2,
+   "display": "3",
+   "display_html": "3",
+   "units": "",
+   "sentence": "the seams where they overlap",
+   "source": [
+    "out/site/s-channel.json"
+   ],
+   "pointer": null,
+   "derived": "len(seams)",
+   "public": [
+    "records/site/s-channel.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "schan.agree",
+   "value": 1.7994511836150195e-09,
+   "kind": "sci",
+   "nd": 1,
+   "display": "1.8×10−9",
+   "display_html": "1.8×10<sup>−9</sup>",
+   "units": "of the 100 K span",
+   "sentence": "the assembled field differs from the undivided solve by at most",
+   "source": [
+    "out/site/s-channel.json"
+   ],
+   "pointer": "agreement.relative_to_span",
+   "derived": "",
+   "public": [
+    "records/site/s-channel.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "steady conduction, windows iterated to 1e-10, same grid",
+   "vault": ""
+  },
+  {
+   "id": "schan.agree.record",
+   "value": 1.799209599084861e-09,
+   "kind": "sci",
+   "nd": 1,
+   "display": "1.8×10−9",
+   "display_html": "1.8×10<sup>−9</sup>",
+   "units": "",
+   "sentence": "the same agreement in the workbench's own run record",
+   "source": [
+    "out/workbench/records/step-j/s-channel/20260929-213316.json"
+   ],
+   "pointer": "checks[1].value",
+   "derived": "",
+   "public": [
+    "records/workbench/step-j/s-channel/20260929-213316.json"
+   ],
+   "date": "2026-09-29",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.lo",
+   "value": 3.4993855451164473,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "3.5×",
+   "display_html": "3.5×",
+   "units": "",
+   "sentence": "decomposition's speed over the undivided solve, 5 to 21 rotors, lowest",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "min over rungs of 5-21 rotors and two timing draws of the best thread count",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": "decomposition-speed-by-rotor-count"
+  },
+  {
+   "id": "w346.hi",
+   "value": 5.69352961721357,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "5.7×",
+   "display_html": "5.7×",
+   "units": "",
+   "sentence": "the same, highest",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max of the same",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.plo",
+   "value": 0.023406352099833435,
+   "kind": "pct",
+   "nd": 1,
+   "display": "2.3%",
+   "display_html": "2.3%",
+   "units": "",
+   "sentence": "farm power differs from the undivided solve's by, at least",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "min |accuracy.E.power_rel_diff| over the same rungs",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.phi",
+   "value": 0.08338311173017372,
+   "kind": "pct",
+   "nd": 1,
+   "display": "8.3%",
+   "display_html": "8.3%",
+   "units": "",
+   "sentence": "and at most",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max of the same",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.ep_over_l",
+   "value": 1.5238157366696221,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "1.52×",
+   "display_html": "1.52×",
+   "units": "",
+   "sentence": "the learned pieces against the classical pieces, speed",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "verdict.G1.Ep_over_L",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "",
+   "vault": "showcase-gallery §9"
+  },
+  {
+   "id": "lc.f_over_l",
+   "value": 7.453100952582055,
+   "kind": "ratio",
+   "nd": 2,
+   "display": "7.45×",
+   "display_html": "7.45×",
+   "units": "",
+   "sentence": "the learned pieces against the full domain, speed",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "verdict.G1.F_over_L",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.F.t",
+   "value": 3.7012714025002422,
+   "kind": "sec",
+   "nd": 2,
+   "display": "3.70 s",
+   "display_html": "3.70 s",
+   "units": "",
+   "sentence": "arm F: mean time per macro-step",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "means_s.F",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.F.P",
+   "value": 0.005095263003387882,
+   "kind": "pct",
+   "nd": 2,
+   "display": "0.51%",
+   "display_html": "0.51%",
+   "units": "",
+   "sentence": "arm F: farm power vs the truth at macro-step 12",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "arms.F.errors.12.P",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.F.V",
+   "value": 0.0015206176440435407,
+   "kind": "pct",
+   "nd": 2,
+   "display": "0.15%",
+   "display_html": "0.15%",
+   "units": "",
+   "sentence": "arm F: velocity vs the truth at macro-step 12",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "arms.F.errors.12.V",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.Ep.t",
+   "value": 0.7567394624999906,
+   "kind": "sec",
+   "nd": 3,
+   "display": "0.757 s",
+   "display_html": "0.757 s",
+   "units": "",
+   "sentence": "arm Ep: mean time per macro-step",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "means_s.Ep",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.Ep.P",
+   "value": 0.07527513227164921,
+   "kind": "pct",
+   "nd": 2,
+   "display": "7.53%",
+   "display_html": "7.53%",
+   "units": "",
+   "sentence": "arm Ep: farm power vs the truth at macro-step 12",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "arms.Ep.errors.12.P",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.Ep.V",
+   "value": 0.03814161197752073,
+   "kind": "pct",
+   "nd": 2,
+   "display": "3.81%",
+   "display_html": "3.81%",
+   "units": "",
+   "sentence": "arm Ep: velocity vs the truth at macro-step 12",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "arms.Ep.errors.12.V",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.L.t",
+   "value": 0.49660824749971655,
+   "kind": "sec",
+   "nd": 3,
+   "display": "0.497 s",
+   "display_html": "0.497 s",
+   "units": "",
+   "sentence": "arm L: mean time per macro-step",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "means_s.L",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.L.P",
+   "value": 0.07499310045007984,
+   "kind": "pct",
+   "nd": 2,
+   "display": "7.50%",
+   "display_html": "7.50%",
+   "units": "",
+   "sentence": "arm L: farm power vs the truth at macro-step 12",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "arms.L.errors.12.P",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.L.V",
+   "value": 0.03824859677957029,
+   "kind": "pct",
+   "nd": 2,
+   "display": "3.82%",
+   "display_html": "3.82%",
+   "units": "",
+   "sentence": "arm L: velocity vs the truth at macro-step 12",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "arms.L.errors.12.V",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.Cc.t",
+   "value": 0.16902085500014435,
+   "kind": "sec",
+   "nd": 3,
+   "display": "0.169 s",
+   "display_html": "0.169 s",
+   "units": "",
+   "sentence": "arm Cc: mean time per macro-step",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "means_s.Cc",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.Cc.P",
+   "value": 0.03625176947863951,
+   "kind": "pct",
+   "nd": 2,
+   "display": "3.63%",
+   "display_html": "3.63%",
+   "units": "",
+   "sentence": "arm Cc: farm power vs the truth at macro-step 12",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "arms.Cc.errors.12.P",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.Cc.V",
+   "value": 0.031524947094228664,
+   "kind": "pct",
+   "nd": 2,
+   "display": "3.15%",
+   "display_html": "3.15%",
+   "units": "",
+   "sentence": "arm Cc: velocity vs the truth at macro-step 12",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "arms.Cc.errors.12.V",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "2026-10-01T15:40:54-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.passed",
+   "value": 5,
+   "kind": "int",
+   "nd": 2,
+   "display": "5",
+   "display_html": "5",
+   "units": "of 6",
+   "sentence": "bars of the registered gate passed",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": null,
+   "derived": "count of verdict.G*.passed",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.steps",
+   "value": 40,
+   "kind": "int",
+   "nd": 2,
+   "display": "40",
+   "display_html": "40",
+   "units": "",
+   "sentence": "macro-steps evaluated",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "steps",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.g3",
+   "value": 5.920242537680059e-18,
+   "kind": "sci",
+   "nd": 1,
+   "display": "5.9×10−18",
+   "display_html": "5.9×10<sup>−18</sup>",
+   "units": "",
+   "sentence": "the largest divergence (mass conservation) of the learned arm",
+   "source": [
+    "out/learned-case/gate-20261001-154054.json"
+   ],
+   "pointer": "verdict.G3.max",
+   "derived": "",
+   "public": [
+    "records/learned-case/gate-20261001-154054.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.params",
+   "value": 350186,
+   "kind": "int",
+   "nd": 2,
+   "display": "350,186",
+   "display_html": "350,186",
+   "units": "",
+   "sentence": "the network's parameters",
+   "source": [
+    "out/learned-case/training-log.json"
+   ],
+   "pointer": "parameters",
+   "derived": "",
+   "public": [
+    "records/learned-case/training-log.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lc.layouts.train",
+   "value": 100,
+   "kind": "int",
+   "nd": 2,
+   "display": "100",
+   "display_html": "100",
+   "units": "",
+   "sentence": "random farm layouts the network was trained on",
+   "source": [
+    "out/learned-case/training-log.json"
+   ],
+   "pointer": null,
+   "derived": "len(train_seeds)",
+   "public": [
+    "records/learned-case/training-log.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lean.decls",
+   "value": 142,
+   "kind": "int",
+   "nd": 2,
+   "display": "142",
+   "display_html": "142",
+   "units": "",
+   "sentence": "declarations whose axioms the Lean kernel listed",
+   "source": [
+    "out/lean/axioms.json"
+   ],
+   "pointer": "declarations",
+   "derived": "",
+   "public": [
+    "records/lean/axioms.json"
+   ],
+   "date": "2026-10-01T19:51:47-04:00",
+   "machine": "",
+   "caveat": "",
+   "vault": "formal-proofs-record §7.12"
+  },
+  {
+   "id": "lean.failing",
+   "value": 0,
+   "kind": "int",
+   "nd": 2,
+   "display": "0",
+   "display_html": "0",
+   "units": "",
+   "sentence": "of them failing",
+   "source": [
+    "out/lean/axioms.json"
+   ],
+   "pointer": "failing",
+   "derived": "",
+   "public": [
+    "records/lean/axioms.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lean.sorry",
+   "value": 0,
+   "kind": "int",
+   "nd": 2,
+   "display": "0",
+   "display_html": "0",
+   "units": "",
+   "sentence": "proofs left as sorry",
+   "source": [
+    "out/lean/axioms.json"
+   ],
+   "pointer": "with_sorry",
+   "derived": "",
+   "public": [
+    "records/lean/axioms.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lean.axioms",
+   "value": 3,
+   "kind": "int",
+   "nd": 2,
+   "display": "3",
+   "display_html": "3",
+   "units": "",
+   "sentence": "axioms used, all standard: Classical.choice, Quot.sound, propext",
+   "source": [
+    "out/lean/axioms.json"
+   ],
+   "pointer": null,
+   "derived": "distinct rows[].axioms",
+   "public": [
+    "records/lean/axioms.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lean.build",
+   "value": 100.45,
+   "kind": "sec",
+   "nd": 0,
+   "display": "100 s",
+   "display_html": "100 s",
+   "units": "",
+   "sentence": "a clean re-check of the whole project",
+   "source": [
+    "out/lean/builds.jsonl"
+   ],
+   "pointer": null,
+   "derived": "the verify-integration-clean row's seconds",
+   "public": [
+    "records/lean/builds.json"
+   ],
+   "date": "2026-10-01T19:51:01-04:00",
+   "machine": "the owner's laptop, on battery",
+   "caveat": "on battery; on mains it is roughly half",
+   "vault": ""
+  },
+  {
+   "id": "lean.files",
+   "value": 26,
+   "kind": "int",
+   "nd": 2,
+   "display": "26",
+   "display_html": "26",
+   "units": "",
+   "sentence": "Lean files",
+   "source": [
+    "lean/AtlasProofs"
+   ],
+   "pointer": null,
+   "derived": "count of *.lean",
+   "public": [
+    "proofs/lean/AtlasProofs"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lean.theorems",
+   "value": 140,
+   "kind": "int",
+   "nd": 2,
+   "display": "140",
+   "display_html": "140",
+   "units": "",
+   "sentence": "theorem and lemma declarations in the source",
+   "source": [
+    "lean/AtlasProofs"
+   ],
+   "pointer": null,
+   "derived": "regex count of theorem/lemma at line start",
+   "public": [
+    "proofs/lean/AtlasProofs"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "lean.lines",
+   "value": 3761,
+   "kind": "int",
+   "nd": 2,
+   "display": "3,761",
+   "display_html": "3,761",
+   "units": "",
+   "sentence": "lines of Lean",
+   "source": [
+    "lean/AtlasProofs"
+   ],
+   "pointer": null,
+   "derived": "newline count",
+   "public": [
+    "proofs/lean/AtlasProofs"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "arch.ms",
+   "value": 16.880570000012085,
+   "kind": "ms",
+   "nd": 1,
+   "display": "16.9 ms",
+   "display_html": "16.9 ms",
+   "units": "",
+   "sentence": "forward cost of the proposed (untrained) network per 64x64 piece",
+   "source": [
+    "out/arch/backbone_timing.json"
+   ],
+   "pointer": null,
+   "derived": "rows[size=medium, n=64, batch=1].ms_per_piece",
+   "public": [
+    "records/arch/backbone_timing.json"
+   ],
+   "date": "",
+   "machine": "4 threads of a cloud container's CPU",
+   "caveat": "an untrained network: a cost, not a result",
+   "vault": ""
+  },
+  {
+   "id": "arch.params",
+   "value": 1.954081,
+   "kind": "num",
+   "nd": 2,
+   "display": "1.95",
+   "display_html": "1.95",
+   "units": "million parameters",
+   "sentence": "the trunk's size",
+   "source": [
+    "out/arch/backbone_timing.json"
+   ],
+   "pointer": null,
+   "derived": "rows[size=medium].params / 1e6",
+   "public": [
+    "records/arch/backbone_timing.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "arch.eps",
+   "value": 0.1,
+   "kind": "pct",
+   "nd": 0,
+   "display": "10%",
+   "display_html": "10%",
+   "units": "",
+   "sentence": "the error put into every mode by hand",
+   "source": [
+    "out/arch/superelement_gram.json"
+   ],
+   "pointer": null,
+   "derived": "results[0].rows[eps=0.1].eps",
+   "public": [
+    "records/arch/superelement_gram.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "arch.gram_err",
+   "value": 0.008983604592551868,
+   "kind": "pct",
+   "nd": 1,
+   "display": "0.9%",
+   "display_html": "0.9%",
+   "units": "",
+   "sentence": "the port matrix's error when formed as the energy Gram",
+   "source": [
+    "out/arch/superelement_gram.json"
+   ],
+   "pointer": null,
+   "derived": "results[0].rows[eps=0.1].gram_port_rel_err_mean",
+   "public": [
+    "records/arch/superelement_gram.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "synthetic perturbations of exact modes, not a trained network",
+   "vault": ""
+  },
+  {
+   "id": "arch.direct_err",
+   "value": 0.1,
+   "kind": "pct",
+   "nd": 0,
+   "display": "10%",
+   "display_html": "10%",
+   "units": "",
+   "sentence": "the error when the matrix is predicted directly",
+   "source": [
+    "out/arch/superelement_gram.json"
+   ],
+   "pointer": null,
+   "derived": "results[0].rows[eps=0.1].direct_port_rel_err_mean",
+   "public": [
+    "records/arch/superelement_gram.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "arch.indef",
+   "value": 12,
+   "kind": "int",
+   "nd": 2,
+   "display": "12",
+   "display_html": "12",
+   "units": "",
+   "sentence": "pieces that turn indefinite when predicted directly",
+   "source": [
+    "out/arch/superelement_gram.json"
+   ],
+   "pointer": null,
+   "derived": "results[0].rows[eps=0.1].direct_pieces_indefinite",
+   "public": [
+    "records/arch/superelement_gram.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "arch.pieces",
+   "value": 16,
+   "kind": "int",
+   "nd": 2,
+   "display": "16",
+   "display_html": "16",
+   "units": "",
+   "sentence": "pieces in the test",
+   "source": [
+    "out/arch/superelement_gram.json"
+   ],
+   "pointer": null,
+   "derived": "results[0].pieces product",
+   "public": [
+    "records/arch/superelement_gram.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "inst.win.s",
+   "value": 229.4,
+   "kind": "sec",
+   "nd": 0,
+   "display": "229 s",
+   "display_html": "229 s",
+   "units": "",
+   "sentence": "a fresh clone's install and self-test on Windows",
+   "source": [
+    "out/workbench/records/installer/verify_windows-amd64_release4.json"
+   ],
+   "pointer": "launch_check.wall_s",
+   "derived": "",
+   "public": [
+    "records/workbench/installer/verify_windows-amd64_release4.json"
+   ],
+   "date": "2026-10-01T15:58:12",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
+   "caveat": "pip's download cache was already warm, so a first download takes longer",
+   "vault": ""
+  },
+  {
+   "id": "inst.lin.s",
+   "value": 55.3,
+   "kind": "sec",
+   "nd": 0,
+   "display": "55 s",
+   "display_html": "55 s",
+   "units": "",
+   "sentence": "the same on Linux (WSL on the same laptop)",
+   "source": [
+    "out/workbench/records/installer/verify_linux-x86_64_release4.json"
+   ],
+   "pointer": "launch_check.wall_s",
+   "derived": "",
+   "public": [
+    "records/workbench/installer/verify_linux-x86_64_release4.json"
+   ],
+   "date": "2026-10-01T16:09:32",
+   "machine": "",
+   "caveat": "exit code 3: everything ran, and the optional Gmsh would not load (libGLU)",
+   "vault": ""
+  },
+  {
+   "id": "inst.examples",
+   "value": 8,
+   "kind": "int",
+   "nd": 2,
+   "display": "8",
+   "display_html": "8",
+   "units": "",
+   "sentence": "kinds the self-test runs",
+   "source": [
+    "out/workbench/records/installer/verify_windows-amd64_release4.json"
+   ],
+   "pointer": null,
+   "derived": "len(self_test_examples)",
+   "public": [
+    "records/workbench/installer/verify_windows-amd64_release4.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  }
+ ],
+ "records": [
+  {
+   "source": "out/arch/backbone_timing.json",
+   "public": "records/arch/backbone_timing.json",
+   "sha256": "02e8bad87738df32e09a812960e559d249872aefc2b5e0adef5755edb5331ef3"
+  },
+  {
+   "source": "out/arch/superelement_gram.json",
+   "public": "records/arch/superelement_gram.json",
+   "sha256": "bec4c13524ad9771ee55b5f16a86608b1cca04368ac26518582ad7e422d6b604"
+  },
+  {
+   "source": "out/lean/axioms.json",
+   "public": "records/lean/axioms.json",
+   "sha256": "ec6128ac8ec89246a369e61c7c49815e644df05460a003927abfa682d87d99aa"
+  },
+  {
+   "source": "out/lean/builds.jsonl",
+   "public": "records/lean/builds.json",
+   "sha256": "18d21cac1ee68dd4a4da4389b90c9738298969b0120f44baed233f608e72ae73"
+  },
+  {
+   "source": "out/lean/t3_counterexample.json",
+   "public": "records/lean/t3_counterexample.json",
+   "sha256": "16c7f3dd750e72e7530a913b93ed5e1d796a4d983a31940974d2eed52ee0ebbb"
+  },
+  {
+   "source": "out/learned-case/gate-20261001-154054.json",
+   "public": "records/learned-case/gate-20261001-154054.json",
+   "sha256": "4509019065a32c728f6e540401d131ea40bafddd817781009c9553edf0b370e2"
+  },
+  {
+   "source": "out/learned-case/training-log.json",
+   "public": "records/learned-case/training-log.json",
+   "sha256": "c7ed9d331224a530b7e9f7ad2240c55b29e32ac280f2a5bfeea91a576d138768"
+  },
+  {
+   "source": "out/site/s-channel.json",
+   "public": "records/site/s-channel.json",
+   "sha256": "d25ce278c40fa40102200686e85440445c920d7dc2bebb2c98d12af8ab284bff"
+  },
+  {
+   "source": "out/w346/w346.json",
+   "public": "records/w346/w346.json",
+   "sha256": "a3fd64e7ab58613eeea3b39f4876c073a582bf311983ac6e4bea5617132ee712"
+  },
+  {
+   "source": "out/workbench/records/demo-fork/river-fork-20260930-172211.json",
+   "public": "records/workbench/demo-fork/river-fork-20260930-172211.json",
+   "sha256": "ea79f41ae49d710cf3ff418672b6c03315ec65e7c741267c5b1dd6ee1764f4e1"
+  },
+  {
+   "source": "out/workbench/records/fast/confirm-bimetal-arc-20260930-230912.json",
+   "public": "records/workbench/fast/confirm-bimetal-arc-20260930-230912.json",
+   "sha256": "39898589e14f7e72dbd2a45b5a6085c9a99987c4e1503c1b406d24b8311c0706"
+  },
+  {
+   "source": "out/workbench/records/fast/confirm-cooled-block-20260930-230915.json",
+   "public": "records/workbench/fast/confirm-cooled-block-20260930-230915.json",
+   "sha256": "05be4f5d5c5ce182883bf399829c7e9c9de25aab0b77af398f3010a11d55ba8f"
+  },
+  {
+   "source": "out/workbench/records/fast/confirm-fast-farm-20260930-232234.json",
+   "public": "records/workbench/fast/confirm-fast-farm-20260930-232234.json",
+   "sha256": "afb7f046ed4e4bb46d4235e558056960c8ca3bfb29bc72116891e114ad91e3e0"
+  },
+  {
+   "source": "out/workbench/records/fast/confirm-fast-heat-20260930-232435.json",
+   "public": "records/workbench/fast/confirm-fast-heat-20260930-232435.json",
+   "sha256": "999f231965786ed6665ef0ef1eeaa61acf3a0e2c041d8499a63da6d72b501eb8"
+  },
+  {
+   "source": "out/workbench/records/fast/confirm-fast-river-20260930-233019.json",
+   "public": "records/workbench/fast/confirm-fast-river-20260930-233019.json",
+   "sha256": "7eba20b6d1e317150ef7102c3dae4957fa3b9326a204e3b0269373f71b3b2c43"
+  },
+  {
+   "source": "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json",
+   "public": "records/workbench/fast/confirm-fast-sound-20260930-232408.json",
+   "sha256": "6697c2c25293be9ebf7ea8a1eb67021b9473d3609eb5d452a7f970745b85e747"
+  },
+  {
+   "source": "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json",
+   "public": "records/workbench/fast/confirm-plate-circuit-20260930-230910.json",
+   "sha256": "c9e32aff6baba4310d8b83c62b2f1b78a5dcd12ab46bf9a06e85a55cbd709568"
+  },
+  {
+   "source": "out/workbench/records/fast/confirm-plate-hole-20260930-230850.json",
+   "public": "records/workbench/fast/confirm-plate-hole-20260930-230850.json",
+   "sha256": "9c3bab790da6710c7101c4f2f76664afb28d90ae794afd0a8981644efb5fd17a"
+  },
+  {
+   "source": "out/workbench/records/installer/verify_linux-x86_64_release4.json",
+   "public": "records/workbench/installer/verify_linux-x86_64_release4.json",
+   "sha256": "b5e26bb78bce98fec8141c3fb82f0f5c5a2d257ca0d6689f061afa151d66ae08"
+  },
+  {
+   "source": "out/workbench/records/installer/verify_windows-amd64_release4.json",
+   "public": "records/workbench/installer/verify_windows-amd64_release4.json",
+   "sha256": "ab486210847a6fc186ec62403d219f2945b776b952c9b854dba94ec50f637b41"
+  },
+  {
+   "source": "out/workbench/records/step-f/bracket-2-20260929-051924.json",
+   "public": "records/workbench/step-f/bracket-2-20260929-051924.json",
+   "sha256": "913bfb763e99de95b6e66ee878f11383c22258c2c9a21a040a073f593ea59345"
+  },
+  {
+   "source": "out/workbench/records/step-f/cooled-block-20260929-052016.json",
+   "public": "records/workbench/step-f/cooled-block-20260929-052016.json",
+   "sha256": "ba9afb3d0792716856374f2bdfb76a1850782452637051227fdf69e2c6c083d3"
+  },
+  {
+   "source": "out/workbench/records/step-f/farm-12-20260929-053611.json",
+   "public": "records/workbench/step-f/farm-12-20260929-053611.json",
+   "sha256": "b2cce08dcb3bb9ed91d2315dd196090d627818b13003d5fc554118bbff6e961f"
+  },
+  {
+   "source": "out/workbench/records/step-f/farm-21-20260929-053206.json",
+   "public": "records/workbench/step-f/farm-21-20260929-053206.json",
+   "sha256": "1756925d2b88bf7e856620000c5da4566d4bb138a4d4703e713491aaefb3a035"
+  },
+  {
+   "source": "out/workbench/records/step-f/heated-strip-20260929-051949.json",
+   "public": "records/workbench/step-f/heated-strip-20260929-051949.json",
+   "sha256": "0e15ea7421cc749ff7177680f7e4cc91717a2027185c37e85ef87c7d16246445"
+  },
+  {
+   "source": "out/workbench/records/step-f/plate-circuit-20260929-051727.json",
+   "public": "records/workbench/step-f/plate-circuit-20260929-051727.json",
+   "sha256": "18c78b092d0dbcd23cf56cc6b2b99c4c4c77a052209dbc45c72232c98e12efbe"
+  },
+  {
+   "source": "out/workbench/records/step-f/plate-insert-20260929-051702.json",
+   "public": "records/workbench/step-f/plate-insert-20260929-051702.json",
+   "sha256": "a94cacda88fdc5235a17bd5a75de5464a724cef3dbd29b670480e7b6d72fabef"
+  },
+  {
+   "source": "out/workbench/records/step-f/plume-2-20260929-053918.json",
+   "public": "records/workbench/step-f/plume-2-20260929-053918.json",
+   "sha256": "d70cb2c48a4bb5f38b2b02161fe040263ce267eb35d0f9e50eae5749fdbec0cc"
+  },
+  {
+   "source": "out/workbench/records/step-f/sound-air-water-20260929-051828.json",
+   "public": "records/workbench/step-f/sound-air-water-20260929-051828.json",
+   "sha256": "5c36597eab56a5eb91bf9bce2683fcc656eae1a653d62120405bd657e2566968"
+  },
+  {
+   "source": "out/workbench/records/step-f/wake-array-3-20260929-054032.json",
+   "public": "records/workbench/step-f/wake-array-3-20260929-054032.json",
+   "sha256": "10d02f0777f3a50a768f8a25736acf93ca0f08b3e93b2b4bf25b7d6fec77488c"
+  },
+  {
+   "source": "out/workbench/records/step-f/wall-2-20260929-053805.json",
+   "public": "records/workbench/step-f/wall-2-20260929-053805.json",
+   "sha256": "660d022a22efe86883b2516eab44ca4911bd9cd4f3698a4536ddcc53fc1af205"
+  },
+  {
+   "source": "out/workbench/records/step-g/bend-3-20260929-115908.json",
+   "public": "records/workbench/step-g/bend-3-20260929-115908.json",
+   "sha256": "1b6dfb220967485788cfc566c7d5dcf327ac8e4c5c162a3983c79cc01dd724a8"
+  },
+  {
+   "source": "out/workbench/records/step-g/insert-round-20260929-115911.json",
+   "public": "records/workbench/step-g/insert-round-20260929-115911.json",
+   "sha256": "4963b27fb71c5e4923ebb3c0741272b199eee04106000c5a30c1209d1a18350e"
+  },
+  {
+   "source": "out/workbench/records/step-j/bimetal-arc/20260929-213353.json",
+   "public": "records/workbench/step-j/bimetal-arc/20260929-213353.json",
+   "sha256": "6ac130b5ec653c34cfebe0e1fe20932839954a4240b24558f9a1fc7e92ffec37"
+  },
+  {
+   "source": "out/workbench/records/step-j/cooled-winding/20260929-213356.json",
+   "public": "records/workbench/step-j/cooled-winding/20260929-213356.json",
+   "sha256": "b794f38981ed4eeeba8a3a0c53a840ce632632eff2f00fd5f1a1bce352ba15b9"
+  },
+  {
+   "source": "out/workbench/records/step-j/farm-hill/20260930-014815.json",
+   "public": "records/workbench/step-j/farm-hill/20260930-014815.json",
+   "sha256": "a9f0cdba68e6357d0ea338f784eed3489c8154b6a481f5c82fe831863f5f68cf"
+  },
+  {
+   "source": "out/workbench/records/step-j/plate-hole/20260929-213350.json",
+   "public": "records/workbench/step-j/plate-hole/20260929-213350.json",
+   "sha256": "ff0747b216e411f7412714278e38ad08352e4f10b85a22da735fe29ee1b85221"
+  },
+  {
+   "source": "out/workbench/records/step-j/ring-film/20260929-213316.json",
+   "public": "records/workbench/step-j/ring-film/20260929-213316.json",
+   "sha256": "8f76f5c15222c802fe591a31bf0dd819cfebc7fc4fb8d1e34e64efae833c923b"
+  },
+  {
+   "source": "out/workbench/records/step-j/river-bend/20260929-213700.json",
+   "public": "records/workbench/step-j/river-bend/20260929-213700.json",
+   "sha256": "0996444adf124335a6f61976e72cb18937dc9a90ac77e90c054f8e3ca3426167"
+  },
+  {
+   "source": "out/workbench/records/step-j/s-channel/20260929-213316.json",
+   "public": "records/workbench/step-j/s-channel/20260929-213316.json",
+   "sha256": "c1b2e0e392ddae0d8e46ab3a57d5382bd6b0898bafc0592a0fc5b286653e1ea0"
+  },
+  {
+   "source": "out/workbench/records/step-j/sound-lens/20260929-213324.json",
+   "public": "records/workbench/step-j/sound-lens/20260929-213324.json",
+   "sha256": "7a4463faef3a36571b124f1f5eff0eed42d6638715e2ce8ebf17ac7c4bad61e3"
+  }
+ ]
+}

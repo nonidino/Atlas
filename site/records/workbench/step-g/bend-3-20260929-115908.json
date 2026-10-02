@@ -1,0 +1,480 @@
+{
+ "_published": {
+  "source": "out/workbench/records/step-g/bend-3-20260929-115908.json",
+  "source_sha256": "1b6dfb220967485788cfc566c7d5dcf327ac8e4c5c162a3983c79cc01dd724a8",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "schema": "atlas-workbench/results@1",
+  "case_name": "bend-3",
+  "case_path": null,
+  "family": "conduction-2d",
+  "style": "B",
+  "committed_at": "2026-09-29T11:59:06-04:00",
+  "started": "2026-09-29T11:59:07-04:00",
+  "finished": "2026-09-29T11:59:08-04:00",
+  "wall_seconds": 1.9817638397216797,
+  "build_seconds": 0.10007700009737164,
+  "arms": [
+   "serial",
+   "parallel",
+   "full"
+  ],
+  "arm_labels": {
+   "serial": "Decomposed, serial",
+   "parallel": "Decomposed, parallel",
+   "full": "Full domain"
+  },
+  "dropped_arms": {},
+  "step_label": "timed repeat",
+  "steps_requested": 5,
+  "steps_done": 5,
+  "stopped": false,
+  "threads": 2,
+  "timing": {
+   "serial": {
+    "seconds_per_step": [
+     0.08390299999155104,
+     0.0771762999938801,
+     0.07541159994434565,
+     0.07839490007609129,
+     0.0711808999767527
+    ],
+    "mean": 0.07721333999652416,
+    "median": 0.0771762999938801,
+    "min": 0.0711808999767527,
+    "speedup_vs_full": 0.01787540839177632
+   },
+   "parallel": {
+    "seconds_per_step": [
+     0.07268910005223006,
+     0.06646639993414283,
+     0.0665455999551341,
+     0.06685419997666031,
+     0.0719204000197351
+    ],
+    "mean": 0.06889513998758048,
+    "median": 0.06685419997666031,
+    "min": 0.06646639993414283,
+    "speedup_vs_full": 0.020033633518703266
+   },
+   "full": {
+    "seconds_per_step": [
+     0.00110959995072335,
+     0.0014418000355362892,
+     0.0012553998967632651,
+     0.0015933000249788165,
+     0.0015010000206530094
+    ],
+    "mean": 0.001380219985730946,
+    "median": 0.0014418000355362892,
+    "min": 0.00110959995072335,
+    "speedup_vs_full": 1.0
+   }
+  },
+  "timing_note": "mean of the per-macro-step wall time of the adapter's step alone, arms taking turns in a rotating order, inside the workbench server process",
+  "bitwise": {
+   "steps": 5,
+   "first_difference": null
+  },
+  "metrics": {
+   "serial": {
+    "heat_in": 2599.5757736133137,
+    "balance_max": 1.2419259601443179e-09,
+    "iterations_last": 47.0,
+    "iterations_max": 47.0,
+    "all_converged": true
+   },
+   "parallel": {
+    "heat_in": 2599.5757736133137,
+    "balance_max": 1.2419259601443179e-09,
+    "iterations_last": 47.0,
+    "iterations_max": 47.0,
+    "all_converged": true,
+    "max_temperature_difference_K": 3.0652415716758696e-08,
+    "heat_in_vs_full": 6.214382686044014e-10
+   },
+   "full": {
+    "heat_in": 2599.575771997838,
+    "balance_max": 6.475959312727989e-13,
+    "iterations_last": 1.0,
+    "iterations_max": 1.0,
+    "all_converged": true
+   }
+  },
+  "field_difference": {
+   "serial": {
+    "rms": 2.032175401964589e-08,
+    "max": 3.0652415716758696e-08,
+    "rms_relative": 5.7865164287719935e-11
+   },
+   "parallel": {
+    "rms": 2.032175401964589e-08,
+    "max": 3.0652415716758696e-08,
+    "rms_relative": 5.7865164287719935e-11
+   }
+  },
+  "field_label": "temperature (K)",
+  "checks": [
+   {
+    "key": "balance",
+    "title": "Energy: heat in = heat stored",
+    "kind": "balance",
+    "tolerance": 1e-06,
+    "registered": "2026-09-28, before the conduction family's first run",
+    "measure": "|heat into the domain through its edges - heat stored| over the heat through the plate, every step, worst arm (steady: stored = 0)",
+    "why": "the full domain closes to the direct solver's round-off. A decomposed arm closes to its iteration's floor: the solve stops when the update is below 1e-10 of the temperature scale, and a heat flow is a temperature difference over a half-cell, so its relative error is that times T/dT, with the material contrast, well under 1e-6",
+    "value": 1.2419259601443179e-09,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "serial: 1.24e-09; parallel: 1.24e-09; full: 6.48e-13",
+    "extra": {}
+   },
+   {
+    "key": "reference",
+    "title": "Temperatures agree with the full domain",
+    "kind": "reference",
+    "tolerance": 1e-06,
+    "registered": "2026-09-28, before the conduction family's first run",
+    "measure": "max |T_decomposed - T_full| over the temperature span of the fixed boundaries, at the last step",
+    "why": "both solve the same finite volumes; the converged decomposition IS the full-domain solution up to the iteration's tolerance (Dirichlet-Neumann's converged face flow is the harmonic-mean face exactly)",
+    "value": 3.06524157167587e-10,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "max |dT| = 3.07e-08 K over a span of 100 K",
+    "extra": {}
+   },
+   {
+    "key": "closed_form",
+    "title": "Heat flow = dT / sum(L/k) (a layered wall)",
+    "kind": "reference",
+    "tolerance": 1e-06,
+    "registered": "2026-09-28, before the conduction family's first run",
+    "measure": "|Q - Q_closed| / Q_closed for every arm, where Q_closed = dT H / sum_i L_i / k_i; only for a steady wall of layers across x with fixed temperatures left and right and insulated top and bottom",
+    "why": "harmonic-mean faces add the half-cells' resistances in series, so the discrete heat flow through layers on cell faces is the closed form to round-off; a decomposed arm adds its iteration floor",
+    "value": null,
+    "passed": null,
+    "verdict": "not measured",
+    "detail": "not a steady wall of layers across x, so there is no closed form",
+    "extra": {}
+   },
+   {
+    "key": "bitwise",
+    "title": "Threaded equals serial, bit for bit (style B)",
+    "kind": "control",
+    "tolerance": null,
+    "registered": "2026-09-28, before the conduction family's first run",
+    "measure": "np.array_equal on the temperature after every step",
+    "why": "additive Schwarz solves every window from the same iterate and blends in window order, so the order the threads finish in cannot change a bit",
+    "value": null,
+    "passed": true,
+    "verdict": "pass",
+    "detail": "equal after all 5 steps",
+    "extra": {}
+   }
+  ],
+  "notes": [
+   "Steady: every 'step' is the whole solve again from the initial temperature, repeated to time it; the answer is the same each time."
+  ],
+  "problem": {
+   "style": "B",
+   "mode": "steady",
+   "cells": 6601,
+   "windows": 3,
+   "tolerance": 1e-10,
+   "max_iterations": 2000,
+   "scale_K": 400.0,
+   "partition_of_unity": {
+    "identity_residual": 1.1102230246251565e-16,
+    "chi_min": 0.0038910505836575876,
+    "tolerance": 1e-10,
+    "holds": true
+   }
+  },
+  "machine": {
+   "time": "2026-09-29T11:59:07-04:00",
+   "platform": "Windows-11-10.0.26200-SP0",
+   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+   "cpu_count": 22,
+   "python": "3.12.7",
+   "numpy": "1.26.4",
+   "scipy": "1.13.1",
+   "power": {
+    "ac": false,
+    "battery_percent": 75,
+    "source": "GetSystemPowerStatus"
+   },
+   "other_python_processes": [
+    {
+     "memory": "186,824 K",
+     "command": "<local path> -m atlas.workbench --port 8020"
+    }
+   ]
+  },
+  "machine_after": {
+   "power": {
+    "ac": false,
+    "battery_percent": 75,
+    "source": "GetSystemPowerStatus"
+   },
+   "time": "2026-09-29T11:59:08-04:00"
+  },
+  "case": {
+   "schema_id": "atlas-workbench/case@0.4",
+   "name": "bend-3",
+   "description": "Heat round a pipe bend: three curved windows (style B, drawn)",
+   "domain": {
+    "nx": 108,
+    "ny": 108,
+    "dx": 0.005,
+    "outline": {
+     "points": [
+      [
+       44.0,
+       4.0
+      ],
+      [
+       104.0,
+       4.0
+      ],
+      [
+       4.000000000000006,
+       104.0
+      ],
+      [
+       4.000000000000003,
+       44.0
+      ]
+     ],
+     "edges": [
+      "line",
+      "arc",
+      "line",
+      "arc"
+     ],
+     "bulge": [
+      0.0,
+      0.41421356237309503,
+      0.0,
+      -0.41421356237309503
+     ]
+    },
+    "holes": []
+   },
+   "physics": {
+    "family": "conduction-2d",
+    "params": {
+     "T0": 300.0
+    }
+   },
+   "materials": {
+    "steel": {
+     "k": 45.0,
+     "rho": 7850.0,
+     "cp": 490.0
+    }
+   },
+   "regions": [
+    {
+     "id": "ring",
+     "material": "steel",
+     "shape": "rect",
+     "x0": 0,
+     "y0": 0,
+     "nx": 108,
+     "ny": 108,
+     "points": null,
+     "holes": null,
+     "outline": null
+    }
+   ],
+   "windows": [
+    {
+     "id": "W1",
+     "shape": "curve",
+     "x0": 28,
+     "y0": 0,
+     "nx": 82,
+     "ny": 78,
+     "outline": {
+      "points": [
+       [
+        37.87061973511935,
+        1.0367047465796224
+       ],
+       [
+        109.59663799772503,
+        -5.238508731251766
+       ],
+       [
+        80.25001883589702,
+        77.6337872686537
+       ],
+       [
+        28.457553211514142,
+        27.618384595605907
+       ]
+      ],
+      "edges": [
+       "line",
+       "arc",
+       "line",
+       "arc"
+      ],
+      "bulge": [
+       0.0,
+       0.21712128354619611,
+       0.0,
+       -0.21712128354619611
+      ]
+     },
+     "holes": []
+    },
+    {
+     "id": "W2",
+     "shape": "curve",
+     "x0": 14,
+     "y0": 14,
+     "nx": 91,
+     "ny": 91,
+     "outline": {
+      "points": [
+       [
+        36.33592155403522,
+        14.506577808748212
+       ],
+       [
+        104.81199072728627,
+        36.75580140374442
+       ],
+       [
+        36.75580140374443,
+        104.81199072728627
+       ],
+       [
+        14.506577808748213,
+        36.33592155403522
+       ]
+      ],
+      "edges": [
+       "line",
+       "arc",
+       "line",
+       "arc"
+      ],
+      "bulge": [
+       0.0,
+       0.24007875908011603,
+       0.0,
+       -0.24007875908011603
+      ]
+     },
+     "holes": []
+    },
+    {
+     "id": "W3",
+     "shape": "curve",
+     "x0": 0,
+     "y0": 28,
+     "nx": 78,
+     "ny": 82,
+     "outline": {
+      "points": [
+       [
+        27.618384595605907,
+        28.457553211514142
+       ],
+       [
+        77.6337872686537,
+        80.25001883589702
+       ],
+       [
+        -5.238508731251773,
+        109.59663799772503
+       ],
+       [
+        1.0367047465796202,
+        37.87061973511935
+       ]
+      ],
+      "edges": [
+       "line",
+       "arc",
+       "line",
+       "arc"
+      ],
+      "bulge": [
+       0.0,
+       0.21712128354619614,
+       0.0,
+       -0.21712128354619614
+      ]
+     },
+     "holes": []
+    }
+   ],
+   "devices": [],
+   "boundaries": [
+    {
+     "id": "hot",
+     "edge": "outline:0",
+     "kind": "fixed-temperature",
+     "start": 0,
+     "stop": null,
+     "value": 400.0
+    },
+    {
+     "id": "outer",
+     "edge": "outline:1",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    },
+    {
+     "id": "cold",
+     "edge": "outline:2",
+     "kind": "fixed-temperature",
+     "start": 0,
+     "stop": null,
+     "value": 300.0
+    },
+    {
+     "id": "inner",
+     "edge": "outline:3",
+     "kind": "insulated",
+     "start": 0,
+     "stop": null,
+     "value": null
+    }
+   ],
+   "attachments": [],
+   "coupling": {
+    "style": "B",
+    "ramp_cells": 8,
+    "assembly": "projected",
+    "elliptic": "exposed",
+    "tolerance": 1e-10,
+    "max_iterations": 2000,
+    "relaxation": 0.5,
+    "aitken": true,
+    "dirichlet_side": "auto"
+   },
+   "run": {
+    "macro_dt": 0.2,
+    "steps": 5,
+    "threads": 2,
+    "start": "freestream",
+    "mode": "steady"
+   },
+   "compare": {
+    "full_domain": true,
+    "metrics": [
+     "farm_power",
+     "rms_velocity",
+     "time_per_step"
+    ]
+   }
+  }
+ }
+}

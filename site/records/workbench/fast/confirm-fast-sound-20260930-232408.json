@@ -1,0 +1,154 @@
+{
+ "_published": {
+  "source": "out/workbench/records/fast/confirm-fast-sound-20260930-232408.json",
+  "source_sha256": "6697c2c25293be9ebf7ea8a1eb67021b9473d3609eb5d452a7f970745b85e747",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "command": "confirm",
+  "example": "fast-sound",
+  "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+  "when": "2026-09-30T23:24:08-04:00",
+  "machine": {
+   "time": "2026-09-30T23:24:08-04:00",
+   "platform": "Windows-11-10.0.26200-SP0",
+   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+   "cpu_count": 22,
+   "python": "3.12.7",
+   "numpy": "1.26.4",
+   "scipy": "1.13.1",
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "other_python_processes": []
+  },
+  "runs": [
+   {
+    "example": "fast-sound",
+    "overrides": {},
+    "family": "acoustics-2d",
+    "style": "A",
+    "cells": 296000,
+    "windows": 4,
+    "threads": 4,
+    "steps": 130,
+    "macro_dt": 6.4e-05,
+    "wall_seconds": 26.593237000051886,
+    "two_minutes": true,
+    "speedup": {
+     "serial": 2.513217864605731,
+     "parallel": 4.670361286451026
+    },
+    "fastest_arm": "parallel",
+    "mean_step_s": {
+     "serial": 0.04593381231220869,
+     "parallel": 0.02471793307027278,
+     "full": 0.11544167769248956
+    },
+    "checks": [
+     {
+      "key": "energy",
+      "kind": "balance",
+      "value": 1.0120368468327861e-15,
+      "tolerance": 1e-10,
+      "passed": true,
+      "detail": "serial: 1.01e-15; parallel: 1.01e-15; full: 1.01e-15"
+     },
+     {
+      "key": "closed_form",
+      "kind": "reference",
+      "value": 3.0898339442586575e-10,
+      "tolerance": 1e-06,
+      "passed": true,
+      "detail": "R measured 0.999443938429 (mean over steps 64-126; largest departure 3.1e-10), textbook 0.999443938429"
+     },
+     {
+      "key": "bitwise",
+      "kind": "control",
+      "value": null,
+      "tolerance": null,
+      "passed": true,
+      "detail": "equal after all 130 steps"
+     }
+    ],
+    "all_checks_pass": true,
+    "bars": [
+     {
+      "mechanism": "P",
+      "speed_bar": 3.0,
+      "speedup": 4.670361286451026,
+      "fast": true,
+      "agreement_bar": 1e-09,
+      "agreement": 0.0,
+      "close": true,
+      "ceiling": null,
+      "met": true
+     },
+     {
+      "mechanism": "M",
+      "speed_bar": 3.0,
+      "speedup": 4.670361286451026,
+      "fast": true,
+      "agreement_bar": 0.001,
+      "agreement": 0.0,
+      "close": true,
+      "ceiling": null,
+      "met": true
+     }
+    ],
+    "status": "done",
+    "error": null,
+    "notes": [
+     "Leapfrog step 4e-06 s against the stability limit 4.774e-06 s; 16 steps per macro-step. 4 windows side by side each step their own columns and a halo 16 columns deep, read once a macro-step; the error at the halo's open edge moves a column a step, so their own columns are the full domain's, bit for bit.",
+     "Impedances Z = rho c: 411.6 and 1.48e+06 Pa s/m. Textbook reflection R = 0.999444, transmission T = 1 + R = 1.999444 (the transmitted pressure is 2 times the incident), energy transmitted 1 - R^2 = 0.001112 at zero wavenumber. The energy share the page plots is carried by the pulse's whole spectrum, whose discrete reflection departs from R at order (k dx)^2, so it is close to that and not equal; the reflection check reads the zero-wavenumber part, where the scheme is exact.",
+     "The reflected pulse is alone in the first medium from step 64 to step 126; the reflection is read there."
+    ],
+    "describe": {
+     "style": "A",
+     "explicit": true,
+     "exchange_every": 16,
+     "windows": 4,
+     "cells": 296000,
+     "cut_column": 140,
+     "dt_s": 4e-06,
+     "stable_dt_s": 4.773680629112226e-06,
+     "textbook_R": 0.9994439384290151,
+     "plateau_steps": [
+      64,
+      126
+     ],
+     "pulse": {
+      "amplitude": 1.0,
+      "x0": 0.7,
+      "width": 0.1
+     }
+    },
+    "machine_before": {
+     "time": "2026-09-30T23:24:08-04:00",
+     "platform": "Windows-11-10.0.26200-SP0",
+     "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+     "cpu_count": 22,
+     "python": "3.12.7",
+     "numpy": "1.26.4",
+     "scipy": "1.13.1",
+     "power": {
+      "ac": true,
+      "battery_percent": 100,
+      "source": "GetSystemPowerStatus"
+     },
+     "other_python_processes": []
+    },
+    "machine_after": {
+     "power": {
+      "ac": true,
+      "battery_percent": 100,
+      "source": "GetSystemPowerStatus"
+     },
+     "time": "2026-09-30T23:24:34-04:00"
+    }
+   }
+  ]
+ }
+}

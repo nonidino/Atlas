@@ -1,0 +1,150 @@
+{
+ "_published": {
+  "source": "out/workbench/records/fast/confirm-plate-circuit-20260930-230910.json",
+  "source_sha256": "c9e32aff6baba4310d8b83c62b2f1b78a5dcd12ab46bf9a06e85a55cbd709568",
+  "removed": "the computer's name, process ids, local folder paths, log excerpts and the installer's file scans; every other value is the record's own"
+ },
+ "record": {
+  "command": "confirm",
+  "example": "plate-circuit",
+  "note": "the owner, 2026-09-30: the other two chats are not idle but are writing documentation and theory, nothing on the demo",
+  "when": "2026-09-30T23:09:10-04:00",
+  "machine": {
+   "time": "2026-09-30T23:09:10-04:00",
+   "platform": "Windows-11-10.0.26200-SP0",
+   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+   "cpu_count": 22,
+   "python": "3.12.7",
+   "numpy": "1.26.4",
+   "scipy": "1.13.1",
+   "power": {
+    "ac": true,
+    "battery_percent": 100,
+    "source": "GetSystemPowerStatus"
+   },
+   "other_python_processes": []
+  },
+  "runs": [
+   {
+    "example": "plate-circuit",
+    "overrides": {},
+    "family": "electric-2d",
+    "style": "D",
+    "cells": 12800,
+    "windows": 1,
+    "threads": 1,
+    "steps": 5,
+    "macro_dt": 1.0,
+    "wall_seconds": 0.24694990017451346,
+    "two_minutes": true,
+    "speedup": {
+     "serial": 0.2754572969492311
+    },
+    "fastest_arm": "serial",
+    "mean_step_s": {
+     "serial": 0.004378900025039911,
+     "full": 0.0012061999645084144
+    },
+    "checks": [
+     {
+      "key": "kirchhoff",
+      "kind": "balance",
+      "value": 1.433894283979207e-12,
+      "tolerance": 1e-06,
+      "passed": true,
+      "detail": "serial: 1e-12; full: 1.43e-12"
+     },
+     {
+      "key": "energy",
+      "kind": "balance",
+      "value": 3.161966260068906e-13,
+      "tolerance": 1e-06,
+      "passed": true,
+      "detail": "serial: 2.09e-13; full: 3.16e-13"
+     },
+     {
+      "key": "reference",
+      "kind": "reference",
+      "value": 1.0654322853096275e-13,
+      "tolerance": 1e-06,
+      "passed": true,
+      "detail": "largest branch current 5.00179 A"
+     }
+    ],
+    "all_checks_pass": true,
+    "bars": [
+     {
+      "mechanism": "S",
+      "speed_bar": 3.0,
+      "speedup": 0.2754572969492311,
+      "fast": false,
+      "agreement_bar": 1e-09,
+      "agreement": 1.0654322853096275e-13,
+      "close": true,
+      "ceiling": null,
+      "met": false
+     },
+     {
+      "mechanism": "P",
+      "speed_bar": 3.0,
+      "speedup": 0.2754572969492311,
+      "fast": false,
+      "agreement_bar": 1e-09,
+      "agreement": 1.0654322853096275e-13,
+      "close": true,
+      "ceiling": null,
+      "met": false
+     }
+    ],
+    "status": "done",
+    "error": null,
+    "notes": [
+     "The circuit's ground is 'E1'. First relaxation factor 0.5, then Aitken's rule.",
+     "The plate's conductance between its two electrodes is 1.112 S, and the circuit's series resistance 1.5 ohm, so the unrelaxed iteration's factor G (r + R) is 1.67 (over 1: unrelaxed it would diverge; the relaxation carries it).",
+     "Steady: every 'step' is the whole solve again from zero potentials, repeated to time it."
+    ],
+    "describe": {
+     "style": "D",
+     "cells": 12800,
+     "thickness_m": 3e-05,
+     "electrodes": {
+      "E1": 20,
+      "E2": 30
+     },
+     "circuit_nodes": [
+      "E1",
+      "E2",
+      "n1"
+     ],
+     "ground": "E1",
+     "tolerance": 1e-10,
+     "relaxation0": 0.5,
+     "aitken": true
+    },
+    "machine_before": {
+     "time": "2026-09-30T23:09:11-04:00",
+     "platform": "Windows-11-10.0.26200-SP0",
+     "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+     "cpu_count": 22,
+     "python": "3.12.7",
+     "numpy": "1.26.4",
+     "scipy": "1.13.1",
+     "power": {
+      "ac": true,
+      "battery_percent": 100,
+      "source": "GetSystemPowerStatus"
+     },
+     "other_python_processes": []
+    },
+    "machine_after": {
+     "power": {
+      "ac": true,
+      "battery_percent": 100,
+      "source": "GetSystemPowerStatus"
+     },
+     "time": "2026-09-30T23:09:11-04:00"
+    }
+   }
+  ]
+ }
+}
