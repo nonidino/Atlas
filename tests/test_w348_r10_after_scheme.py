@@ -38,6 +38,7 @@ def test_a_direct_interface_solve_decertifies_with_W168s_cost():
     assert rows == [("L5", "R10", "admit-uncertified", "a, b")]
     msg = list(rec)[0].message
     assert "direct-schur" in msg and "149x" in msg and "W168" in msg
+    assert "Atlas.schur_iff" in msg
 
 
 @pytest.mark.parametrize("acc", sorted(SWEEPING_ACCELERATORS, key=lambda a: a.value))
@@ -46,6 +47,12 @@ def test_a_sweep_to_a_stated_tolerance_decertifies_citing_frommer_and_szyld(acc)
     assert rows == [("L5", "R10", "admit-uncertified", "a, b")]
     msg = list(rec)[0].message
     assert "Frommer & Szyld" in msg and "eps_tol = 1e-08" in msg and "149x" in msg
+    # T3 as machine-checked (W353): RAS needs a convergent sweep, and the
+    # truncation is the tolerance over 1 - rho, not the tolerance
+    for name in ("Atlas.TwoPieces.dn_fixedPoint_solves", "Atlas.Schwarz.fixedPt_eq_solution",
+                 "Atlas.Schwarz.exists_spurious_fixedPt", "Atlas.Schwarz.error_le_update"):
+        assert name in msg
+    assert "every fixed point of an iterated" not in msg
 
 
 @pytest.mark.parametrize("acc, eps", [(Accelerator.KRYLOV, None),

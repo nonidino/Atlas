@@ -1825,17 +1825,29 @@ def _r10_scheme(ctx: _Context, scheme) -> None:
 
     A piece that declares it takes every datum on its artificial boundary from
     the coupling.  The cut then restricts the operator instead of changing it,
-    IF the scheme closes the interface problem: for a linear problem the
-    solution of the substructured system, which a direct Schur solve computes,
-    and every fixed point of restricted additive Schwarz or Dirichlet-Neumann
-    built from exact local solves, is the undivided discrete solution (for RAS,
-    Frommer & Szyld, SIAM J. Numer. Anal. 39, 2001; theorem T3 of the formal
-    proofs plan, not yet machine-checked).  So R10 reads the scheme, as R13
-    does, and has three outcomes:
+    IF the scheme closes the interface problem.  For a linear problem with exact
+    local solves, theorem T3, machine-checked in the vault's ``lean/`` project
+    (W353, 2026-10-01):
+
+      * the substructured system, which a direct Schur solve computes, has the
+        undivided system's solutions (T3a, ``Atlas.schur_iff``);
+      * a fixed point of Dirichlet-Neumann solves the undivided system (T3b,
+        ``Atlas.TwoPieces.dn_fixedPoint_solves``);
+      * for restricted additive Schwarz, NOT every fixed point does
+        (``Atlas.Schwarz.exists_spurious_fixedPt``), but a sweep that converges
+        from every start has one fixed point, the undivided solution (T3c,
+        ``Atlas.Schwarz.fixedPt_eq_solution``).  Its convergence is Frommer &
+        Szyld's theorem for M-matrices (SIAM J. Numer. Anal. 39, 2001), and is
+        measured, not proved, for the elasticity family;
+      * stopped on an update below eps_tol, a sweep contracting at rate rho is
+        within eps_tol / (1 - rho) of its limit (T3d,
+        ``Atlas.Schwarz.error_le_update``).
+
+    So R10 reads the scheme, as R13 does, and has three outcomes:
 
       * ``direct-schur`` -- the interface system is solved in one shot: decertify;
       * a sweeping accelerator with a stated ``eps_tol`` -- what is left is the
-        iteration's truncation, bounded by the tolerance: decertify;
+        iteration's truncation, at most the tolerance over 1 - rho: decertify;
       * anything else -- no tolerance to iterate to, so the pieces solve with
         data their neighbours have not settled and R10's error stands: refuse.
 
@@ -1871,7 +1883,8 @@ def _r10_scheme(ctx: _Context, scheme) -> None:
             who + ". This scheme solves the interface system directly "
             "(accelerator=direct-schur): for a linear problem the solution of the "
             "substructured system, each piece with the interface data it is given, "
-            "IS the undivided discrete solution, so the cut restricts the operator "
+            "IS the undivided discrete solution (T3a, Atlas.schur_iff, machine-checked "
+            "in the vault's lean/ project), so the cut restricts the operator "
             "instead of changing it and R10's error does not arise. " + cost,
             subject=", ".join(ids), quantity="tau", accelerator=acc.value,
             r10_premise="ports: the interface solved directly",
@@ -1881,12 +1894,18 @@ def _r10_scheme(ctx: _Context, scheme) -> None:
         rec.decertify(
             "L5", "R10",
             who + f". This scheme iterates the coupling (accelerator={acc.value}) to "
-            f"a stated tolerance, eps_tol = {eps:.4g}: every fixed point of an "
-            "iterated linear coupling built from exact local solves -- restricted "
-            "additive Schwarz, Dirichlet-Neumann -- is the undivided discrete "
-            "solution (for RAS, Frommer & Szyld, SIAM J. Numer. Anal. 39, 2001), so "
-            "what is left is the iteration's truncation, bounded by the tolerance, "
-            "and not R10's error. " + cost,
+            f"a stated tolerance, eps_tol = {eps:.4g}. For a linear problem with exact "
+            "local solves, a fixed point of Dirichlet-Neumann solves the undivided "
+            "system (T3b, Atlas.TwoPieces.dn_fixedPoint_solves), and a restricted "
+            "additive Schwarz sweep that converges from every start has one fixed "
+            "point, the undivided solution (T3c, Atlas.Schwarz.fixedPt_eq_solution); "
+            "not every Schwarz fixed point is (Atlas.Schwarz.exists_spurious_fixedPt), "
+            "so the sweep must converge, which Frommer & Szyld (SIAM J. Numer. Anal. "
+            "39, 2001) prove for M-matrices and which is measured otherwise. What is "
+            "left is the iteration's truncation, at most eps_tol / (1 - rho) for a "
+            "sweep contracting at rate rho (T3d, Atlas.Schwarz.error_le_update), and "
+            "not R10's error. T3 is machine-checked in the vault's lean/ project. "
+            + cost,
             subject=", ".join(ids), quantity="tau", accelerator=acc.value,
             eps_tol=float(eps), r10_premise="ports: iterated to a stated tolerance",
         )
