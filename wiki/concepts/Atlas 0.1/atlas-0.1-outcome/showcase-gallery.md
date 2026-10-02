@@ -1,7 +1,7 @@
 # The showcase gallery
 
 **Type:** Outcome page — **gallery of measured showcase runs** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
-**Status:** written 2026-09-29 from one pass through the served workbench on this laptop; two drawn rows added that day, and eight more on 2026-09-29 and 30, compiled and run headless (§2). Every example was opened from *File > New from example*, checked, compiled with the Atlas compiler, and run decomposed and on the full domain. Every number below is read from that pass's records in `out/workbench/records/step-f/` (§6). **Every row is a showcase, not a research record** ([[showcase-library-plan]] §2): one pass, checks registered before the family's first run, and a record file. There are no predictions, audits or follow-up tiers. **§8, the Fast examples**, was added 2026-10-01: one per kind, swept, then confirmed from a fresh start.
+**Status:** written 2026-09-29 from one pass through the served workbench on this laptop; two drawn rows added that day, and eight more on 2026-09-29 and 30, compiled and run headless (§2). Every example was opened from *File > New from example*, checked, compiled with the Atlas compiler, and run decomposed and on the full domain. Every number below is read from that pass's records in `out/workbench/records/step-f/` (§6). **Every row is a showcase, not a research record** ([[showcase-library-plan]] §2): one pass, checks registered before the family's first run, and a record file. There are no predictions, audits or follow-up tiers. **§8, the Fast examples**, was added 2026-10-01: one per kind, swept, then confirmed from a fresh start. **§9, the learned case**, was added the same day: one fixed case, evaluated once against a gate registered before any data, and it failed one bar of six.
 **Hub:** [[00-atlas-0.1-outcome]] · **Plan:** [[showcase-library-plan]] · **Parent claim:** [[outcome-c4-modular-multiphysics]] · **Code:** `atlas/workbench/` (`python -m atlas.workbench --open`, then the header's *Fast example*, whose arrow lists the chosen kind's other examples (*More examples* until 2026-10-01); from 2026-09-29 to 30 the whole list was *Case > Examples...*, and before that *File > Showcase gallery*) · **Updated 2026-09-30 by the demo chat:** the forked river's row (§2); the demo's plans are in [[demo-finish-plan]]
 
 ---
@@ -268,12 +268,42 @@ A run record holds the case as it marched, every per-step time, the metrics, eac
 
 ---
 
+## 9. The learned case (demo item 1.5, 2026-10-01)
+
+**What it is.** One fixed case in which a trained network steps every window: `farm-12`, 12 rotors on 24 windows, the layout held out of training. It is the first line under the wind farm's *Fast example* arrow and opens read-only ([[demo-learned-case-plan]] §9).
+- **The network:** `WindowUNet`, 350,186 parameters. It was trained on rented GPU time, from 100 random farm layouts, each run by the workbench's own solver.
+- **What stays classical:** the blend, the one global projection and the freestream band. So the divergence is round-off.
+- **The yardstick:** every arm is measured against a truth $T$, the full domain at twice the resolution.
+
+**The gate was registered in code before any data existed** (`a7a300a`), and evaluated once on AC with no other Python process (`out/learned-case/gate-20261001-154054.json`, 40 macro-steps):
+
+| arm | what runs | mean macro-step | farm power vs $T$ (12 / 40) | velocity vs $T$ (12 / 40) |
+|---|---|---|---|---|
+| F | the full domain, cells of $D/32$ | 3.70 s | 0.51% / 0.39% | 0.15% / 0.19% |
+| Ep | the classical decomposition, 4 threads | 0.757 s | 7.53% / 6.48% | 3.81% / 5.04% |
+| **L** | **the same windows, each stepped by the network** | **0.497 s** | **7.50% / 6.50%** | **3.82% / 5.06%** |
+| Cc | the classical decomposition on a grid twice as coarse | 0.169 s | 3.63% / 3.02% | 3.15% / 4.96% |
+
+**The verdict.** G1 speed ($t_{Ep}/t_L=1.52$, $t_F/t_L=7.45$), G2 accuracy, G3 conservation ($5.9\times10^{-18}$), G4 stability and G6 held out pass. **G5 fails**: the coarse classical decomposition is closer to $T$ than L in both measures at both horizons, in about a third of L's time.
+
+**What that says:**
+- The learned arm is as accurate as the classical decomposition and 1.5 times faster than it.
+- It is not as accurate as the full domain. G2's bar was the worse of the two classical arms.
+- A classical solver on a grid twice as coarse does its job better: the C3 finding again ([[outcome-c3-learned-speed-at-scale]]).
+
+The page's card says all of this beside its own run's numbers.
+
+**[AI Inference]:** the network was trained to reproduce the classical window step, so its error against $T$ is the decomposition's own. A learned window that beats Cc would have to be trained against a resolved reference, under a new gate.
+
+---
+
 ## See Also
 
 - [[showcase-library-plan]] — the plan this gallery completes, with each step's "Built" notes
 - [[outcome-c4-path-to-declarative-cases]] — the workbench's original plan: the loader, the executor and the GUI
 - [[outcome-c4-modular-multiphysics]] — the compiler and the port algebra these verdicts come from
 - [[decomposition-speed-by-rotor-count]] — W346, the farm's speed record that the farm rows reproduce
+- [[demo-learned-case-plan]] — §9's learned case: the gate, the data, the training and the one evaluation
 - [[case-study-thermal-strain-atlas-0.1]] — why the heated strip has no port
 - [[master-error-bound]] — the constants every verdict here leaves unmeasured
 - [[port-algebra-atlas-0.1]] — the five port types, and why a volumetric bond is not one

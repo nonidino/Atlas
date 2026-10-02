@@ -1,7 +1,7 @@
 # The one learned case — a purpose-trained expert on the wind farm, with the gate written first
 
 **Type:** Concept page — **plan and pre-registration draft** (folder: `Atlas 0.1/atlas-0.1-proposal/demo/`)
-**Status:** written 2026-09-30. **Nothing is trained, generated or timed.** The gate in §5 is a draft; it becomes binding when the next chat registers it in code, **before any data is generated**. Every cost here is an estimate labelled **[AI Inference]**, to be replaced by the Step-0 measurement of §4.
+**Status:** written 2026-09-30. **Nothing is trained, generated or timed.** The gate in §5 is a draft; it becomes binding when the next chat registers it in code, **before any data is generated**. Every cost here is an estimate labelled **[AI Inference]**, to be replaced by the Step-0 measurement of §4. **Built and evaluated once on 2026-10-01 by the demo chat (§9):** the gate was registered in code before any data existed. G1–G4 and G6 pass. **G5 fails**: a classical solver on a grid twice as coarse is closer to the truth than the learned arm, in both measures at both horizons. The learned arm matches the classical decomposition's accuracy, not the full domain's. The page shows the case with all of this on its card.
 **Hub:** [[00-proposal-workstreams]] · **Siblings:** [[demo-finish-plan]] · [[demo-fast-examples-plan]] · **Architecture it previews:** [[chart-operator-architecture]]
 **The record it must answer to:** [[outcome-c2-learned-experts-in-the-loop]] · [[outcome-c3-learned-speed-at-scale]] · [[outcome-c5-requirements-for-dd-native-experts]] · [[learned-contribution-kill-tests]] · [[matched-shrink-and-coarse-competitor]]
 
@@ -126,6 +126,92 @@ Measured over the demo's 12 macro-steps and over W346's 40, on the **held-out** 
 5. Generate, train, and evaluate on the held-out layout, once.
 6. Build the page's case and cards, and record the run like every gallery row.
 7. [[showcase-gallery]], [[outcome-c2-learned-experts-in-the-loop]] and [[outcome-c3-learned-speed-at-scale]] get what it measured, **whatever it measured**.
+
+---
+
+## 9. What was built and measured (2026-10-01)
+
+**Every step of §8 ran, in order, and the gate was evaluated once. G5 failed.** The code is `atlas/workbench/learned_*.py` and `scripts/learned_*.py`. The records are in `out/learned-case/`, in commits `a7a300a` (step 0 and the registration), `60dd865` (the data, the truth and the trainer) and `f8bbc9b` (the evaluation, the page and the installer).
+
+### 9.1 Step 0: the network priced before any data
+
+`scripts/learned_step0.py` timed farm-12 at 4 threads, 21 sub-steps per macro-step, with medians over five rounds (`step0-20261001-143036.json`):
+- **Conditions:** on battery (88%), no other Python process, the other two chats writing documentation and theory. It supersedes `step0-20261001-142815.json`, whose note said "on AC" while its own power field said battery; both are kept.
+- **The classical arms:** Ep's macro-step took $1.34$ s, of which the 24 windows took $1.04$ s; F's took $5.92$ s. The part every decomposed arm shares, the blend, the projection and the band, took $0.29$ s.
+- **A random `WindowUNet` of depth 3**, over all 24 windows in one batch:
+
+| width | parameters | forward (s) | $t_{Ep}/t_L$ | $t_F/t_L$ | budget |
+|---|---|---|---|---|---|
+| 8 | 155,890 | 0.221 | 2.60 | 11.5 | met |
+| **12** | **350,186** | **0.399** | **1.93** | **8.55** | **met** |
+| 16 | 622,050 | 0.553 | 1.58 | 6.99 | met |
+| 20 | 971,482 | 0.871 | 1.15 | 5.08 | missed |
+| 24 | 1,398,482 | 1.067 | 0.98 | 4.35 | missed |
+
+**Width 12 was registered**, leaving margin for the evaluation's own noise. The network replaces only the windows' $1.04$ s; the shared $0.29$ s stays.
+
+### 9.2 The registration, before any data
+
+`atlas/workbench/learned_gate.py` and its readable copy `out/learned-case/registered.txt` were committed in `a7a300a`, before the first training sample was generated. They hold §5's six bars with two refinements, both written before any data:
+- **G1 is judged only on AC power.** A run on battery does not count.
+- **G6 holds out the layout, not the inflow.** This family's freestream band holds the inflow at $(U,0)$ in every case, so it cannot vary between trajectories.
+
+**The split.** 100 training layouts (seeds 1000–1099) and 10 validation layouts (2000–2009). Each has 8 to 16 rotors at least $2.5D$ apart, with induction in $[0.20,\tfrac13]$. A layout is refused if more than 3 of farm-12's rotors have one of its rotors within $0.5D$.
+
+**The measures**, at 12 and 40 macro-steps, against the truth $T$:
+- $e_P$: the relative error in farm power, averaged over the last five macro-steps;
+- $e_V$: the rms velocity difference over $U$, with every arm block-averaged to cells of $D/16$.
+
+### 9.3 The truth, the data and the training
+
+- **The truth** (`scripts/learned_truth.py`, `truth-farm-12.npz`): farm-12 on the full domain at cells of $D/64$, $1376\times928$ cells, run for 40 macro-steps on the laptop in $1404$ s (on battery at the start and AC at the end; not a registered timing). It is stored on the grid of $D/16$ at the two horizons, with the power at every macro-step.
+- **The data** (`scripts/learned_data.py`): run on a rented vast.ai box with an EPYC 9684X (32 cores) and an RTX 4090.
+  - 110 layouts of 40 macro-steps each. A layout gives 1,200 window samples: 960 steps, and 240 ring perturbations (2% of $U$, three sine modes, every fourth macro-step) for the Jacobian term.
+  - 132,000 samples in $137$ s. Every file's sha256 is in `data-manifest.json`.
+- **The training** (`scripts/learned_train.py`, `training-log.json`): 60 epochs in $2{,}002$ s on the GPU.
+  - The loss is the step error weighted by the blend weight $\chi$, plus the ring-pair Jacobian term. It ran in fp32 with TF32 off.
+  - The weights were chosen by 40-macro-step rollouts against the classical decomposition on validation layouts 2000–2002, every fifth epoch. The best score was the last epoch's: $1.27\times10^{-3}$.
+- **The weights' sha256** (`9ce87a71…`) matched on the box and here (`box-logs/sha256-on-the-box.txt`).
+- **The cost:** the account's credit fell by \$0.35 over the box's whole life. The box was destroyed, no instance remained, and no later charge appeared.
+
+### 9.4 The one evaluation
+
+`scripts/learned_evaluate.py` refuses to evaluate the same weights twice. It wrote `gate-20261001-154054.json` from 40 macro-steps, arms taking turns in a rotating order. The run was on AC at all 42 power samples (99%), with no other Python process; the other two chats were on documentation and theory. The mean macro-step: F $3.70$ s, Ep $0.757$ s, L $0.497$ s, Cc $0.169$ s.
+
+| bar | registered | measured (12 / 40 macro-steps) | verdict |
+|---|---|---|---|
+| G1 speed | $t_{Ep}/t_L\ge1.5$, $t_F/t_L\ge3$ | $1.52$, $7.45$ | pass |
+| G2 accuracy | $e_L\le1.1\max(e_F,e_{Ep})$ | power: L $7.50\%$ / $6.50\%$, Ep $7.53\%$ / $6.48\%$; velocity: L $3.82\%$ / $5.06\%$, Ep $3.81\%$ / $5.04\%$ | pass |
+| G3 conservation | divergence $\le10^{-9}$ | $5.9\times10^{-18}$ | pass |
+| G4 stability | energy within 10% of Ep's | $0.63\%$ at worst | pass |
+| G5 the competitor | Cc's error above L's in one measure | Cc power $3.63\%$ / $3.02\%$, velocity $3.15\%$ / $4.96\%$: closer than L in both, at both | **fail** |
+| G6 held out | no training layout near farm-12 | 110 layouts, every one a registered seed, none within the rule | pass |
+
+The full domain F is within $0.51\%$ / $0.39\%$ of $T$ in power and $0.15\%$ / $0.19\%$ in velocity.
+
+**Disclosed before the run, and kept in its record:** a smoke test of the evaluation script had shown the classical arms' errors at 12 macro-steps, with Cc closer to $T$ than Ep in both measures. That test used an untrained network and wrote its output to a scratch folder. The gate had been registered in `a7a300a` before it, and nothing was changed after it.
+
+### 9.5 What it means for the request in §0
+
+The owner asked for learned experts *"as accurate as classical decomp AND classical full domain, but are faster"*.
+- **As accurate as the classical decomposition, and faster:** yes. L tracks Ep to within $0.03$ percentage points in every measure, at $1.52\times$ Ep's speed and $7.45\times$ F's.
+- **As accurate as the full domain:** no. F is $15\times$ closer to $T$ in power at 12 macro-steps. The registered G2 compared L with the *worse* of F and Ep, as §5 drafted it, so it passed. This section says so, because the owner's sentence asked for more.
+- **The competitor:** a classical solver on a grid twice as coarse is closer to $T$ than L in every measure, in about a third of L's time. That is §5's G5 outcome, *"a classical solver on a grid twice as coarse matches it"*: the C3 finding again. The website does not claim otherwise.
+- **Design L-B was not run.** §5 triggers it only when G2 or G4 fails, and neither did.
+
+**[AI Inference]:** L was trained to reproduce the classical window step, so its error against $T$ is the classical decomposition's. It matches Ep's to the second digit, and longer training could at best reproduce Ep more exactly. Ep's own error is the decomposition's, $7.5\%$ in power against F's $0.5\%$. A learned window can beat Cc only by being trained against a resolved reference rather than against the classical step. That is design L-B's direction, or an expert whose target is the fine solution. Either needs a new gate, registered before its data.
+
+### 9.6 In the page and in the installer
+
+- **Where it is:** the first line under the wind farm's *Fast example* arrow, *"Learned experts: a network trained for this farm steps every window (a fixed case)"*. §7 asked for a header button; at 1090 px the header has no width left.
+- **Read-only:** a banner gives §7's sentence. An edit is refused with a note, and Run settings' arms, steps and threads are fixed. One Undo restores the case before it.
+- **The run:** Ep, F, L and Cc march in turns for 12 macro-steps, as every workbench run does. Then each is measured against $T$ at 12.
+- **The card:** this run's speed, and the four arms against $T$ as two bar charts. Beside them, the registered evaluation's six verdicts and *"Not every bar was met, and this card says so"*, then §7's caveat. The headline Speed card names the learned arm, not the coarse competitor.
+- **Walked in the served page** at $1090\times620$. The run took about 45 s. Its errors at 12 macro-steps were the evaluation's to the digits shown, since the march is deterministic. Its speed was its own: Ep $1.92\times$ and F $10.09\times$ L's time, which is not a registered measure. No horizontal scroll.
+  - The first walk found a fault no test had: the Run view's arm colours had no entry for `learned`, and the view did not draw. It was fixed and the page walked again.
+- **The installer** carries the weights and the truth: the only binary files its builder allows, each by exact path. It also carries the registration, the training log and the gate record. Its self-test steps the case once and prints the registered verdict. Without torch the learned arm is not offered, and the page says why.
+
+**Not done here:** §8 step 7 asks [[outcome-c2-learned-experts-in-the-loop]] and [[outcome-c3-learned-speed-at-scale]] to get what this case measured. Those pages belong to another chat. §9.4 and §9.5 are what they need.
 
 ---
 

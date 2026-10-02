@@ -1,7 +1,7 @@
 # Finishing the demo workbench — the header, the branching river, and holes that cross the edge
 
 **Type:** Concept page — **plan, with the decisions made and the ones left to the owner** (folder: `Atlas 0.1/atlas-0.1-proposal/demo/`)
-**Status:** written 2026-09-30, before any code. Read from `atlas/workbench/` at commit `fc9a182` (`spec.py`, `layout.py`, `flow.py`, `families/plume.py`, `app.py`, `registry.py`, `starter.py`) and its README. **Nothing here has been run**: the planning session's container had no numpy, and installs need the owner's approval. Every diagnosis below is read from the code and marked as a hypothesis until the next chat reproduces it in the served page. **Reproduced on 2026-09-30 by the demo chat**: §2.2 and §3.2 say which hypotheses held. **Steps 1–7 of §6.1 done by 2026-10-01**: the one-command install (§4.1) is verified on fresh clones on Windows and Linux and in the served page, not on macOS.
+**Status:** written 2026-09-30, before any code. Read from `atlas/workbench/` at commit `fc9a182` (`spec.py`, `layout.py`, `flow.py`, `families/plume.py`, `app.py`, `registry.py`, `starter.py`) and its README. **Nothing here has been run**: the planning session's container had no numpy, and installs need the owner's approval. Every diagnosis below is read from the code and marked as a hypothesis until the next chat reproduces it in the served page. **Reproduced on 2026-09-30 by the demo chat**: §2.2 and §3.2 say which hypotheses held. **Steps 1–7 of §6.1 done by 2026-10-01**: the one-command install (§4.1) is verified on fresh clones on Windows and Linux and in the served page, not on macOS. **Step 8 done on 2026-10-01**: the learned case was evaluated once against its registered gate. **G5 failed**, and the case's card says so ([[demo-learned-case-plan]] §9). The installer now carries its weights.
 **Hub:** [[00-proposal-workstreams]] · **Sibling plans:** [[demo-fast-examples-plan]] (item 1.4) · [[demo-learned-case-plan]] (item 1.5)
 **Built on:** [[showcase-library-plan]] · [[showcase-gallery]] · [[outcome-c4-path-to-declarative-cases]] · `atlas/workbench/README.md`
 
@@ -355,7 +355,25 @@ Each creates the environment, installs, self-tests, then serves `python -m atlas
   - Bokeh's client logs `reference … isn't known` while the page rebuilds after a type switch, an example or a run. It does so in the development page as much as in the installed one, and the page still draws everything.
   - Whether calling Gmsh's API from distributed code needs more than installing Gmsh from PyPI is the owner's to settle before publishing (O9).
   - Atlas has no licence yet.
-  - The learned case's weights will be the first binary file the builder allows (step 8).
+  - ~~The learned case's weights will be the first binary file the builder allows (step 8).~~ Done: see *Rebuilt for step 8* below.
+
+**Rebuilt for step 8 (2026-10-01), from `f8bbc9b`** (`build-f8bbc9b.json`):
+- **What changed:** the branch carries the learned case, 146 files and 8.4 MB. It holds the trained weights and the stored truth, the only binary files the builder allows, each by exact path; the registration, the training log and the gate's record; and nothing else of `out/`.
+- **The self-test's new step:** the weights load and step `farm-12` once, finite and divergence-free, and the registered verdict is printed. Without torch the learned case is reported absent, which is optional.
+- **Verified on a fresh clone on Windows**, on AC with no other Python process (`verify_windows-amd64_release4.json`):
+  - **Static checks:** all 145 copied files identical by blob hash, the six of `out/` among them; no unexpected binary file.
+  - **The launcher:** exit 0 in 229 s. The learned step read divergence $3.8\times10^{-18}$, and the verdict printed was *"not every bar met (G5)"*.
+  - **The bundle's tests:** 333 passed and 2 skipped (the same two skips as before).
+  - **Without torch:** exit 3, with torch reported absent. **With no network:** exit 0, and no connection left the machine. **With both optional installs failing:** exit 3, each failure said so.
+  - **Size:** `.venv` is 2.0 GB with torch and Gmsh.
+- **Verified on a fresh clone on Linux**, Ubuntu under WSL 2, Python 3.10.21 (`verify_linux-x86_64_release4.json`):
+  - **Static checks:** the same; all 145 copied files identical by blob hash.
+  - **The launcher:** exit 3 in 55 s, because Gmsh installs and will not load (`libGLU.so.1`), as in step 7. The learned step read divergence $3.8\times10^{-18}$, with the same verdict printed.
+  - **The bundle's tests:** 329 passed and 6 skipped: the two above, and Gmsh's four.
+  - **Without torch, with no network, and with both optional installs failing:** exit 3 each. No connection left the machine, and each failure said so.
+  - **Size:** `.venv` is 1.4 GB.
+- **Not on macOS**, as before.
+- **The final build, from `eccf0a2`** (§5's T3 citation): it differs from the build verified above only in the compiler's message strings, one README line and `SOURCE_COMMITS` (a `git diff` of the two branch commits). A fresh clone's static checks pass: all 145 copied files identical by blob hash (`verify_windows-amd64_release5-static.json`). The launcher and the tests were not run again on it.
 
 ---
 
@@ -385,6 +403,14 @@ Several fast examples in [[demo-fast-examples-plan]] are steady elliptic problem
 - **The W189 byte control** (`scripts/w348_byte_control.py`): HEAD's compiler against the working tree's, with the same hash seed; all 40 artifacts are identical.
 - **The seven examples that refused now compile `admit-uncertified`**, with R10 at L5: the wall, the insert, the bracket, the bend, the round insert, the S-channel and the plate with a hole.
 
+**T3's Lean names, 2026-10-01** (`eccf0a2`). The proofs chat machine-checked T3, and found its restricted-additive-Schwarz part false as this plan stated it: not every fixed point of a Schwarz sweep solves the undivided system ([[formal-proofs-record]] §5.1). So the decertification now says what the checked theorems say:
+- a direct Schur solve: `Atlas.schur_iff`;
+- Dirichlet–Neumann: `Atlas.TwoPieces.dn_fixedPoint_solves`;
+- restricted additive Schwarz: a sweep that converges from every start has one fixed point, the solution (`Atlas.Schwarz.fixedPt_eq_solution`). The counterexample is named, and convergence is Frommer & Szyld's for M-matrices and measured for elasticity;
+- the truncation: at most the tolerance over $1-\rho$, since the driver stops on the update (`Atlas.Schwarz.error_le_update`).
+
+The change is text only: HEAD's and the new `compiler.py` have identical syntax trees once string constants are blanked. The W348 tests pin the new citations.
+
 ---
 
 ## 6. Build order for the next chat
@@ -411,11 +437,11 @@ The chat's prompt turned the order above into eight steps, each one commit, with
 | 2. The header (item 1.1) | a simulation-type selector replaces the case's name, and a new type starts a new case that one Undo restores; name and description leave the case file (`case@0.6`, with a migration); *Case > Start over*; the Examples dialog leaves the page | §1.5 | done, `31ee474` |
 | 3. Holes (item 1.3) | holes may cross the outline and reach past the grid | §3.6 | done, `5c9f8b3` |
 | 4. The fork (item 1.2) | the flow as the along coordinate, each connected band a window, spectral bisection for other branched shapes, the dead-branch warning and its Fix, the example `river-fork` | §2.5 | done, `2dec7e9` |
-| 5. W348 | R10's case for a cut embedded family moves after `_l5_l7_scheme`. Where the coupling supplies the elliptic solve's boundary data and is solved directly (`direct-schur`) or iterated to a stated tolerance, the graph is decertified with W168's cost instead of refused. It cites Frommer & Szyld (2001), and T3's Lean name once [[formal-proofs-plan]] shows it checked | Tier 0's four windows and CS-S1 still refuse, measured; the refusal set of every graph the suite compiles, diffed before and after, moves only in the intended rows; the W189 byte control holds; the pinned verdicts are updated | done, `f4c7b5b` (§5) |
+| 5. W348 | R10's case for a cut embedded family moves after `_l5_l7_scheme`. Where the coupling supplies the elliptic solve's boundary data and is solved directly (`direct-schur`) or iterated to a stated tolerance, the graph is decertified with W168's cost instead of refused. It cites Frommer & Szyld (2001), and T3's Lean name once [[formal-proofs-plan]] shows it checked | Tier 0's four windows and CS-S1 still refuse, measured; the refusal set of every graph the suite compiles, diffed before and after, moves only in the intended rows; the W189 byte control holds; the pinned verdicts are updated | done, `f4c7b5b` (§5); T3's Lean names cited once checked, `eccf0a2` |
 | 6. Fast examples (item 1.4) | micro-benchmarks first: does P (parallel pieces) scale on threads, does scipy's `splu` release the GIL, and where does each family's core leave cache. Then the bars are registered in each family module before the first timed run; a sweep; a confirmation run from a fresh start; the header's *Fast example* button, with *More examples* under it (O1); each card's mechanism line and O3's fixed line; a [[showcase-gallery]] section | [[demo-fast-examples-plan]]'s gates | done: four of eight meet both bars ([[showcase-gallery]] §8) |
 | 7. The installer (O2) | `run.cmd` (Windows) and `run.sh` (macOS): a `.venv`; pinned requirements and constraints; torch CPU-only and optional; Gmsh optional, from PyPI; the build repository's solvers vendored, with `run.py` setting their paths; a self-test that asserts where each solver was loaded from and opens the served page. The builder refuses NeuberNet and Poseidon's weights | §4.1, on a fresh clone on Windows | done, `8d14565`, `f008c51` and `6232415`: verified on fresh clones on Windows and Linux, and in the served page; not on macOS (§4.1) |
-| 8. The learned case (item 1.5) | a random network's step is timed first (step 0); G1–G6 and the held-out split are registered before any data exists. Then the data is generated, a GPU rented, the network trained and the GPU destroyed, each announced with its expected time or cost (O6). It is evaluated once, built into a read-only case, and its weights are added to the installer | [[demo-learned-case-plan]] §5's gate, reported whatever it shows | |
-| End | [[gap-worklist]] W348–W351, the plan pages' status lines, [[showcase-gallery]], the workbench README, [[index]] and [[log]]; a short report per step | | |
+| 8. The learned case (item 1.5) | a random network's step is timed first (step 0); G1–G6 and the held-out split are registered before any data exists. Then the data is generated, a GPU rented, the network trained and the GPU destroyed, each announced with its expected time or cost (O6). It is evaluated once, built into a read-only case, and its weights are added to the installer | [[demo-learned-case-plan]] §5's gate, reported whatever it shows | done, `a7a300a`, `60dd865` and `f8bbc9b` ([[demo-learned-case-plan]] §9). G1–G4 and G6 pass. **G5 fails**: a classical solver on a grid twice as coarse is closer to the truth. The learned arm matches the classical decomposition's accuracy, not the full domain's. It is a menu item, not a header button. The installer carries its weights (§4.1) |
+| End | [[gap-worklist]] W348–W351, the plan pages' status lines, [[showcase-gallery]], the workbench README, [[index]] and [[log]]; a short report per step | | done, 2026-10-01 |
 
 **The owner's answers, 2026-09-30.** The other two chats are not idle, but they are writing documentation and theory, with nothing running on the demo. Every timed record says so. No Mac is available, so `run.sh` is the chat's best guess. It follows the RaceLab bundle's macOS discipline (bash 3.2, `100755` in the index) and is **not verified on macOS**.
 

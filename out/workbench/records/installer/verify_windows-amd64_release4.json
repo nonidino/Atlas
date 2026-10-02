@@ -1,0 +1,269 @@
+{
+ "at": "2026-10-01T15:58:12",
+ "platform": "windows-amd64",
+ "verifier_python": "3.12.7",
+ "note": "built from f8bbc9b (the learned case's weights and truth added); on AC (100%); no other Python process; the other two chats on documentation and theory only (the owner, 2026-10-01)",
+ "bundle": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench-bundle",
+ "clone_exit_code": 0,
+ "clone_s": 0.4,
+ "clone": "C:\\Users\\Nauni\\wbv4",
+ "head": "38a6d666c7065d4cba019efbf97176df6839b86f",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "files_in_branch": 146,
+ "deepest_path_in_branch": {
+  "path": "vendor/src/atlas/cases/windfarm/reference.py",
+  "chars": 44
+ },
+ "source_commits": {
+  "atlas": "f8bbc9b7404d0c5bd41be189b9dfcac3f8f3b7f3",
+  "build_repo": "98df3506aedd6f3edf2733257451f3c94f74b987",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 145,
+  "different": [],
+  "not_from_either_repo": [],
+  "by_group": {
+   "launchers": [
+    9,
+    0
+   ],
+   "atlas": [
+    99,
+    0
+   ],
+   "out": [
+    6,
+    0
+   ],
+   "scripts": [
+    3,
+    0
+   ],
+   "tests": [
+    16,
+    0
+   ],
+   "vendor": [
+    12,
+    0
+   ]
+  },
+  "workbench_tests_upstream": 15,
+  "workbench_tests_carried": 15,
+  "every_workbench_test_is_carried": true
+ },
+ "scan_neubernet": {
+  "named": [],
+  "uses": [],
+  "prose_mentions": 4
+ },
+ "scan_poseidon": {
+  "paths": [],
+  "prose_mentions": 214
+ },
+ "scan_data": {
+  "allowed": [
+   {
+    "file": "out/learned-case/truth-farm-12.npz",
+    "bytes": 2555956
+   },
+   {
+    "file": "out/learned-case/window-net.pt",
+    "bytes": 1413474
+   }
+  ],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "static_checks_pass": true,
+ "self_test_examples": [
+  "wake-array-3",
+  "fast-heat",
+  "plate-circuit",
+  "plume-2",
+  "fast-sound",
+  "plate-hole",
+  "bimetal-arc",
+  "cooled-block"
+ ],
+ "launch_check": {
+  "argv": [
+   "cmd",
+   "/c",
+   "C:\\Users\\Nauni\\wbv4\\run.cmd",
+   "--check"
+  ],
+  "exit_code": 0,
+  "wall_s": 229.4,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\launch_check_windows-amd64_release4.log",
+  "tail": "orch==2.7.1) (4.15.0)\nCollecting sympy>=1.13.3 (from torch==2.7.1)\n  Using cached sympy-1.14.0-py3-none-any.whl.metadata (12 kB)\nCollecting networkx (from torch==2.7.1)\n  Using cached networkx-3.3-py3-none-any.whl.metadata (5.1 kB)\nRequirement already satisfied: jinja2 in c:\\users\\nauni\\wbv4\\.venv\\lib\\site-packages (from torch==2.7.1) (3.1.4)\nCollecting fsspec (from torch==2.7.1)\n  Using cached fsspec-2024.6.1-py3-none-any.whl.metadata (11 kB)\nCollecting setuptools (from torch==2.7.1)\n  Using cached setuptools-75.1.0-py3-none-any.whl.metadata (6.9 kB)\nCollecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch==2.7.1)\n  Using cached mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)\nRequirement already satisfied: MarkupSafe>=2.0 in c:\\users\\nauni\\wbv4\\.venv\\lib\\site-packages (from jinja2->torch==2.7.1) (2.1.3)\nUsing cached https://download-r2.pytorch.org/whl/cpu/torch-2.7.1%2Bcpu-cp312-cp312-win_amd64.whl (216.0 MB)\nUsing cached sympy-1.14.0-py3-none-any.whl (6.3 MB)\nUsing cached filelock-3.13.1-py3-none-any.whl (11 kB)\nUsing cached fsspec-2024.6.1-py3-none-any.whl (177 kB)\nUsing cached networkx-3.3-py3-none-any.whl (1.7 MB)\nUsing cached setuptools-75.1.0-py3-none-any.whl (1.2 MB)\nUsing cached mpmath-1.3.0-py3-none-any.whl (536 kB)\nInstalling collected packages: mpmath, sympy, setuptools, networkx, fsspec, filelock, torch\nSuccessfully installed filelock-3.13.1 fsspec-2024.6.1 mpmath-1.3.0 networkx-3.3 setuptools-75.1.0 sympy-1.14.0 torch-2.7.1+cpu\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: C:\\Users\\Nauni\\wbv4\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\n==> installing Gmsh (optional: File > Import geometry from Gmsh)\nCollecting gmsh==4.15.0\n  Using cached gmsh-4.15.0-py2.py3-none-win_amd64.whl.metadata (1.7 kB)\nUsing cached gmsh-4.15.0-py2.py3-none-win_amd64.whl (42.2 MB)\nInstalling collected packages: gmsh\nSuccessfully installed gmsh-4.15.0\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: C:\\Users\\Nauni\\wbv4\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\nAtlas Workbench self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    ok       torch     2.7.1+cpu    the learned case, CPU-only; nothing else needs it (optional)\n    ok       gmsh      4.15.0       File > Import geometry from Gmsh (optional)\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             7.0 s   2 steps of serial, parallel, full   1.5 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             1.2 s   2 steps of serial, full           0.8 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.5 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.5 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.9 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.6 s   1 step of serial, parallel, full   4.0 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.7 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.0 s   2 steps of serial, full           1.2 s\n\n  the learned case  (the wind farm with a trained network in every window; a fixed case)\n    ok   the trained weights (sha256 9ce87a71bab9...) load and step farm-12: 0.4 s, divergence 3.8e-18\n    the registered evaluation (2026-10-01): not every bar met (G5); the page's card says so\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 2.6 s\n    ok   http://127.0.0.1:8040/ answered with the page in 1.2 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.7 s)\n\n  OK -- every type ran, the solver came from vendor/, and the page answers. (35 s)\n",
+  "python_given": null,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  }
+ },
+ "tests": {
+  "argv": [
+   "C:\\Users\\Nauni\\wbv4\\.venv\\Scripts\\python.exe",
+   "-m",
+   "pytest",
+   "tests",
+   "-q",
+   "-rs",
+   "-p",
+   "no:cacheprovider"
+  ],
+  "exit_code": 0,
+  "wall_s": 251.8,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\tests_windows-amd64_release4.log",
+  "tail": ".......s................................................................ [ 21%]\n........................................................................ [ 43%]\n........................................................................ [ 64%]\n........................................................................ [ 86%]\n..............................................                           [100%]\n=========================== short test summary info ===========================\nSKIPPED [1] tests\\test_workbench_installer.py:42: the launcher templates and the builder live upstream, in atlas-0.1; this copy of the workbench carries the launchers they make, not them\nSKIPPED [1] tests\\test_workbench_cases.py:168: the build repo's ThermoStruct2D is not available: the expert is not where this case study expects it: 'C:\\\\Users\\\\Nauni\\\\wbv4\\\\vendor\\\\src\\\\atlas\\\\__init__.py' does not exist. thermostruct2d lives in the build repo (github.com/nonidino/physics-foundation-model, src/atlas/solvers/); set ATLAS_BUILD_REPO to the checkout.\n333 passed, 2 skipped in 250.82s (0:04:10)\n",
+  "summary": "333 passed, 2 skipped",
+  "skipped_because": [
+   "tests\\test_workbench_installer.py:42: the launcher templates and the builder live upstream, in atlas-0.1; this copy of the workbench carries the launchers they make, not them",
+   "tests\\test_workbench_cases.py:168: the build repo's ThermoStruct2D is not available: the expert is not where this case study expects it: 'C:\\\\Users\\\\Nauni\\\\wbv4\\\\vendor\\\\src\\\\atlas\\\\__init__.py' does not exist. thermostruct2d lives in the build repo (github.com/nonidino/physics-foundation-model, src/atlas/solvers/); set ATLAS_BUILD_REPO to the checkout."
+  ]
+ },
+ "no_torch": {
+  "argv": [
+   "C:\\Users\\Nauni\\wbv4\\.venv\\Scripts\\python.exe",
+   "-c",
+   "\nimport importlib.abc, runpy, sys\nclass Block(importlib.abc.MetaPathFinder):\n    def find_spec(self, name, path=None, target=None):\n        if name == \"torch\" or name.startswith(\"torch.\"):\n            raise ImportError(\"torch is blocked by verify_workbench_bundle --no-torch\")\n        return None\nsys.meta_path.insert(0, Block())\nsys.argv = [\"run.py\", \"--check\"]\ntry:\n    runpy.run_path(\"run.py\", run_name=\"__main__\")\nexcept SystemExit as exc:\n    code = exc.code if isinstance(exc.code, int) else 1\n    print(\"\\nTORCH_IMPORTED\", \"torch\" in sys.modules)\n    sys.exit(code)\n"
+  ],
+  "exit_code": 3,
+  "wall_s": 25.2,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\no_torch_windows-amd64_release4.log",
+  "tail": "Atlas Workbench self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    absent   torch                  the learned case, CPU-only; nothing else needs it (optional): ImportError: torch is blocked by verify_workbench_bundle --no-torch\n    ok       gmsh      4.15.0       File > Import geometry from Gmsh (optional)\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             6.9 s   2 steps of serial, parallel, full   1.7 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             0.9 s   2 steps of serial, full           0.7 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.5 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.5 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.9 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.5 s   1 step of serial, parallel, full   3.7 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.6 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.0 s   2 steps of serial, full           1.0 s\n\n  the learned case  (the wind farm with a trained network in every window; a fixed case)\n    absent   the learned arm needs torch, which is not installed here (ImportError: torch is blocked by verify_workbench_bundle --no-torch)\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 2.6 s\n    ok   http://127.0.0.1:8040/ answered with the page in 0.5 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.6 s)\n\n  PARTIAL -- every type ran, the solver came from vendor/, and the page answers;\n  absent and optional: torch (the learned case, CPU-only; nothing else needs it). (25 s)\n\nTORCH_IMPORTED False\n",
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  },
+  "torch_imported": false,
+  "said_torch_absent": true
+ },
+ "offline": {
+  "argv": [
+   "C:\\Users\\Nauni\\wbv4\\.venv\\Scripts\\python.exe",
+   "-c",
+   "\nimport json, os, runpy, socket, sys\nattempts, loopback = [], []\nLOCAL = (\"127.0.0.1\", \"localhost\", \"::1\")\n_connect, _connect_ex, _create = (socket.socket.connect, socket.socket.connect_ex,\n                                  socket.create_connection)\ndef _host(address):\n    return address[0] if isinstance(address, tuple) and address else str(address)\ndef guard(real, self_or_addr, address, *a, **k):\n    if _host(address) in LOCAL:\n        loopback.append(repr(address)[:100])\n        return real(self_or_addr, address, *a, **k)\n    attempts.append(repr(address)[:200])\n    raise OSError(\"network disabled by verify_workbench_bundle --offline\")\nsocket.socket.connect = lambda self, address: guard(_connect, self, address)\nsocket.socket.connect_ex = lambda self, address: guard(_connect_ex, self, address)\nsocket.create_connection = lambda address, *a, **k: (\n    loopback.append(repr(address)[:100]) or _create(address, *a, **k)\n    if _host(address) in LOCAL else guard(None, None, address))\nsys.argv = [\"run.py\", \"--check\"]\ncode = 0\ntry:\n    runpy.run_path(\"run.py\", run_name=\"__main__\")\nexcept SystemExit as exc:\n    code = exc.code if isinstance(exc.code, int) else 1\nwith open(os.environ[\"ATTEMPTS_OUT\"], \"w\") as fh:\n    json.dump({\"exit_code\": code, \"connection_attempts\": attempts,\n               \"loopback_connections\": len(loopback)}, fh)\nsys.exit(code)\n"
+  ],
+  "exit_code": 0,
+  "wall_s": 27.2,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\offline_windows-amd64_release4.log",
+  "tail": "Atlas Workbench self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    ok       torch     2.7.1+cpu    the learned case, CPU-only; nothing else needs it (optional)\n    ok       gmsh      4.15.0       File > Import geometry from Gmsh (optional)\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             7.1 s   2 steps of serial, parallel, full   1.4 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             0.8 s   2 steps of serial, full           0.7 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.6 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.5 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.9 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.5 s   1 step of serial, parallel, full   3.8 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.7 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.0 s   2 steps of serial, full           1.0 s\n\n  the learned case  (the wind farm with a trained network in every window; a fixed case)\n    ok   the trained weights (sha256 9ce87a71bab9...) load and step farm-12: 0.4 s, divergence 3.8e-18\n    the registered evaluation (2026-10-01): not every bar met (G5); the page's card says so\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 2.6 s\n    ok   http://127.0.0.1:8040/ answered with the page in 0.5 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.6 s)\n\n  OK -- every type ran, the solver came from vendor/, and the page answers. (27 s)\n",
+  "connection_attempts": [],
+  "loopback_connections": 64,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  }
+ },
+ "pip_freeze_all": [
+  "Jinja2==3.1.4",
+  "Markdown==3.4.1",
+  "MarkupSafe==2.1.3",
+  "PyYAML==6.0.1",
+  "annotated-types==0.6.0",
+  "bleach==4.1.0",
+  "bokeh==3.6.0",
+  "certifi==2025.10.5",
+  "charset-normalizer==3.3.2",
+  "colorama==0.4.6",
+  "contourpy==1.2.0",
+  "filelock==3.13.1",
+  "fsspec==2024.6.1",
+  "gmsh==4.15.0",
+  "idna==3.7",
+  "iniconfig==1.1.1",
+  "linkify-it-py==2.0.0",
+  "markdown-it-py==2.2.0",
+  "mdit-py-plugins==0.3.0",
+  "mdurl==0.1.0",
+  "mpmath==1.3.0",
+  "networkx==3.3",
+  "numpy==1.26.4",
+  "packaging==24.1",
+  "pandas==2.2.2",
+  "panel==1.5.2",
+  "param==2.1.1",
+  "pillow==12.2.0",
+  "pip==24.3.1",
+  "pluggy==1.0.0",
+  "pydantic==2.12.5",
+  "pydantic_core==2.41.5",
+  "pytest==7.4.4",
+  "python-dateutil==2.9.0.post0",
+  "pytz==2024.1",
+  "pyviz_comms==3.0.2",
+  "requests==2.33.0",
+  "scipy==1.13.1",
+  "setuptools==75.1.0",
+  "six==1.16.0",
+  "sympy==1.14.0",
+  "torch==2.7.1+cpu",
+  "tornado==6.4.1",
+  "tqdm==4.66.5",
+  "typing-inspection==0.4.2",
+  "typing_extensions==4.15.0",
+  "tzdata==2023.3",
+  "uc-micro-py==1.0.1",
+  "urllib3==2.7.0",
+  "webencodings==0.5.1",
+  "xyzservices==2022.9.0"
+ ],
+ "venv_python": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]",
+ "venv_mb": 2001.6,
+ "deepest_path_in_venv": {
+  "path": ".venv/Lib/site-packages/torch/include/ATen/ops/_fake_quantize_per_tensor_affine_cachemask_tensor_qparams_compositeexplicitautograd_dispatch.h",
+  "chars": 141
+ },
+ "optional_fails": {
+  "argv": [
+   "cmd",
+   "/c",
+   "C:\\Users\\Nauni\\wbv4\\run.cmd",
+   "--check"
+  ],
+  "exit_code": 3,
+  "wall_s": 87.8,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\optional_fails_windows-amd64_release4.log",
+  "tail": "ror('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x000002814779AC60>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x0000028147905BB0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x0000028147906120>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))': /simple/gmsh/\nWARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x00000281479062A0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))': /simple/gmsh/\nERROR: Could not find a version that satisfies the requirement gmsh==4.15.0 (from versions: none)\n\n[notice] A new release of pip is available: 24.3.1 -> 26.2.1\n[notice] To update, run: C:\\Users\\Nauni\\wbv4\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\nERROR: No matching distribution found for gmsh==4.15.0\n\n    Gmsh could not be installed. Only File > Import geometry from Gmsh\n    needs it. The next .\\run.cmd tries again, or pass --no-gmsh.\n\nAtlas Workbench self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the plots, and the server the page runs on\n    ok       panel     1.5.2        the page\n    ok       tornado                the server, and the page's WebSocket\n    absent   torch                  the learned case, CPU-only; nothing else needs it (optional): ModuleNotFoundError: No module named 'torch'\n    absent   gmsh                   File > Import geometry from Gmsh (optional): ModuleNotFoundError: No module named 'gmsh'\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified             6.8 s   2 steps of serial, parallel, full   1.6 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             0.8 s   2 steps of serial, full           0.7 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.0 s   2 steps of serial, full           0.5 s\n    ok   river plume        plume-2        compile admit-uncertified             0.1 s   2 steps of serial, parallel, full   0.5 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   1.0 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             0.6 s   1 step of serial, parallel, full   3.7 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   0.7 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.0 s   2 steps of serial, full           1.0 s\n\n  the learned case  (the wind farm with a trained network in every window; a fixed case)\n    absent   the learned arm needs torch, which is not installed here (ModuleNotFoundError: No module named 'torch')\n\n  the page  (this folder's own server, on a free local port, fetched as a browser would)\n    ok   the server listened on port 8040 after 2.6 s\n    ok   http://127.0.0.1:8040/ answered with the page in 0.5 s\n    ok   all 25 of its scripts and stylesheets, from this machine\n    ok   its document, over the page's WebSocket: 281 models, with the header's Fast example button and the Run button (0.7 s)\n\n  PARTIAL -- every type ran, the solver came from vendor/, and the page answers;\n  absent and optional: torch (the learned case, CPU-only; nothing else needs it); gmsh (File > Import geometry from Gmsh). (25 s)\n",
+  "uninstall_exit_code": 0,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  },
+  "said_torch_failed": true,
+  "said_gmsh_failed": true,
+  "stamps_written": []
+ },
+ "passes": true
+}

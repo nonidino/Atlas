@@ -7232,3 +7232,30 @@ The same chat, branch and container as batch 1's entry.
 **An instrument corrected.** `scripts/lean_build.py --profile` counted the profiler's `import took …` lines as slow steps. On this run 18 of 26 files loaded Mathlib in 10.2 to 15 s, and the script reported 18 violations of a rule that is about tactic calls. Imports are now recorded beside the steps and never among them, and this run's record was reclassified by the same function.
 
 **Left as it is, for the owner:** two statements carry a hypothesis their proofs never use (`shrink_re`'s $0\le\alpha$; `average_of_equivariant`'s commuting of the action with scalars). Both are true as written. **Changed:** `scripts/lean_build.py`, [[formal-proofs-record]], `out/lean/builds.jsonl`, `out/lean/axioms.json`, `out/lean/profile.json`.
+
+## [2026-10-01] build | Demo step 8: the learned case, evaluated once; T3's Lean names in R10
+
+The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm case in which a trained network steps every window, against a gate written before any data existed. **It failed one bar of six.**
+
+**In order:**
+- **Step 0:** a random network was priced on the laptop first. Width 12, 350,186 parameters, met the speed budget at $1.93\times$; widths 20 and 24 did not.
+- **The registration:** the gate G1–G6 and the held-out split, committed in `a7a300a` before the first sample. The layout of `farm-12` is held out; the inflow cannot be, since the band fixes it.
+- **The truth:** the full domain at twice the resolution, 40 macro-steps on the laptop.
+- **The data and the training:** 110 layouts, 132,000 window samples, and 60 epochs on one rented RTX 4090 box. The box cost \$0.35 and was destroyed; no later charge appeared.
+- **The evaluation, once,** on AC with no other Python process.
+
+**The result** (`out/learned-case/gate-20261001-154054.json`):
+- **The learned arm L is as accurate as the classical decomposition** (farm power $7.50\%$ from the truth against $7.53\%$), $1.52\times$ faster than it and $7.45\times$ faster than the full domain.
+- **It is not as accurate as the full domain** ($0.51\%$). G2's registered bar was the worse of the two classical arms.
+- **G5 fails:** the classical decomposition on a grid twice as coarse is closer to the truth in both measures at both horizons, in a third of L's time.
+- A smoke test had shown the classical arms' errors before the evaluation. The gate was unchanged, and the record says so.
+
+**In the page:** the first line under the wind farm's *Fast example* arrow (a menu item: the header has no width left), read-only, four arms against the truth, with the verdict and the caveat on its card. Walking it found a fault the tests had missed: the Run view had no colour for a learned arm and did not draw. The headline Speed card had named the coarse competitor's ratio; it now names the learned arm's.
+
+**In the installer:** the weights and the truth are the only binary files its builder allows, by exact path. Verified on fresh clones on Windows (333 tests passed) and Linux (329 passed), where the self-test steps the learned case and prints its verdict; not on macOS.
+
+**W348, the same day:** the proofs chat checked T3 and found its Schwarz part false as stated. R10's decertification now cites T3's Lean names, and for restricted additive Schwarz requires a convergent sweep (`eccf0a2`). The change is text only: the two compilers' syntax trees match with string constants blanked.
+
+**Tests:** the workbench suite, 347 passed. The full suite, 2315 passed and none failed, every log written after the start (on battery, 942 s).
+
+**Added:** `atlas/workbench/learned_gate.py`, `learned_net.py`, `learned_arms.py`, `learned_case.py`, `scripts/learned_*.py`, `scripts/learned_box_run.sh`, `tests/test_workbench_learned.py`, `out/learned-case/`. **Changed:** `atlas/compiler.py` (R10's message), `app.py`, `runview.py`, `runner.py`, `spec.py`, `families/windfarm.py`, the installer's templates, builder and verifier, four test files, the workbench README, [[demo-learned-case-plan]], [[demo-finish-plan]], [[showcase-gallery]], [[gap-worklist]] (W348, W349, W351), [[00-proposal-workstreams]], [[index]].

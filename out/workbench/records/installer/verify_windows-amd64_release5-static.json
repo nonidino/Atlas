@@ -1,0 +1,94 @@
+{
+ "at": "2026-10-01T20:47:43",
+ "platform": "windows-amd64",
+ "verifier_python": "3.12.7",
+ "note": "built from eccf0a2: differs from the verified release4 build (f8bbc9b) only in SOURCE_COMMITS, compiler.py's string constants and one README line; static checks only; on battery (58%), no other Python process",
+ "bundle": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench-bundle",
+ "clone_exit_code": 0,
+ "clone_s": 0.6,
+ "clone": "C:\\Users\\Nauni\\wbv5",
+ "head": "d730152acadc8c49d642c61738ff50bff61ba650",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "files_in_branch": 146,
+ "deepest_path_in_branch": {
+  "path": "vendor/src/atlas/cases/windfarm/reference.py",
+  "chars": 44
+ },
+ "source_commits": {
+  "atlas": "eccf0a2e553571993a9344307817159710b1fa1b",
+  "build_repo": "98df3506aedd6f3edf2733257451f3c94f74b987",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 145,
+  "different": [],
+  "not_from_either_repo": [],
+  "by_group": {
+   "launchers": [
+    9,
+    0
+   ],
+   "atlas": [
+    99,
+    0
+   ],
+   "out": [
+    6,
+    0
+   ],
+   "scripts": [
+    3,
+    0
+   ],
+   "tests": [
+    16,
+    0
+   ],
+   "vendor": [
+    12,
+    0
+   ]
+  },
+  "workbench_tests_upstream": 15,
+  "workbench_tests_carried": 15,
+  "every_workbench_test_is_carried": true
+ },
+ "scan_neubernet": {
+  "named": [],
+  "uses": [],
+  "prose_mentions": 4
+ },
+ "scan_poseidon": {
+  "paths": [],
+  "prose_mentions": 214
+ },
+ "scan_data": {
+  "allowed": [
+   {
+    "file": "out/learned-case/truth-farm-12.npz",
+    "bytes": 2555956
+   },
+   {
+    "file": "out/learned-case/window-net.pt",
+    "bytes": 1413474
+   }
+  ],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "static_checks_pass": true,
+ "self_test_examples": [
+  "wake-array-3",
+  "fast-heat",
+  "plate-circuit",
+  "plume-2",
+  "fast-sound",
+  "plate-hole",
+  "bimetal-arc",
+  "cooled-block"
+ ],
+ "passes": true
+}
