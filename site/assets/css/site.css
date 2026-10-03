@@ -486,3 +486,6 @@ dl.facts dd { margin: 0; color: var(--ink-2); }
 .goal { display: flex; flex-direction: column; }
 .goal .goal-link { margin-top: auto; padding-top: 20px; }
 .goal .goal-link a { color: var(--cyan); }
+.goal .goal-link a { font-size: 18px; font-weight: 650; color: #19c3f0;
+  background: linear-gradient(90deg, #19c3f0, #9be7fb); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.goal .goal-link a::after { -webkit-text-fill-color: #9be7fb; }
