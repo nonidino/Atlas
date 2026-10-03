@@ -483,3 +483,6 @@ dl.facts dd { margin: 0; color: var(--ink-2); }
 .goal-n::before { counter-increment: goal; content: "0" counter(goal); }
 .goals { background-color: #0b0f17; }
 .scenario .story p { max-width: 72ch; }
+.goal { display: flex; flex-direction: column; }
+.goal .goal-link { margin-top: auto; padding-top: 20px; }
+.goal .goal-link a { color: var(--cyan); }
