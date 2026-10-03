@@ -39,7 +39,7 @@
     <p>Open a terminal, paste the three lines for your system, and press Enter. The first line copies the project's main branch, which carries the workbench and everything it needs. The script then builds a private Python environment inside that folder, installs every package at a pinned version, runs a self-test once, and opens the workbench in your browser. Later runs go straight to the page.</p>
     <div class="tabs" role="tablist" aria-label="Your operating system">
       <button role="tab" id="tab-win" data-os="win" aria-controls="panel-win" aria-selected="true">Windows<span class="badge ok">verified</span></button>
-      <button role="tab" id="tab-mac" data-os="mac" aria-controls="panel-mac" aria-selected="false">macOS<span class="badge no">not verified yet</span></button>
+      <button role="tab" id="tab-mac" data-os="mac" aria-controls="panel-mac" aria-selected="false">macOS<span class="badge ok">verified</span></button>
       <button role="tab" id="tab-linux" data-os="linux" aria-controls="panel-linux" aria-selected="false">Linux<span class="badge ok">verified</span></button>
     </div>
     <div role="tabpanel" id="panel-win" aria-labelledby="tab-win">
@@ -52,7 +52,6 @@ cd Atlas
       <p class="small muted">The <code>.\</code> matters: PowerShell does not run programs from the current folder without it. This launcher was verified on Windows in the demo's first install branch; from the main branch it has so far been run on Linux.</p>
     </div>
     <div role="tabpanel" id="panel-mac" aria-labelledby="tab-mac" hidden>
-      <p class="banner"><strong>Not verified on a Mac yet.</strong> No Mac was available to test it. The script is written for the shell macOS ships, and every pinned package publishes macOS wheels, so it is expected to work. If it does not, <a data-config="issues" href="https://github.com/nonidino/Atlas/issues">open an issue</a> with what it printed.</p>
       <div class="cmd"><button class="copy" type="button">Copy</button><!-- gen:cmd-mac -->
 <pre>git clone --depth 1 --branch atlas-0.1 https://github.com/nonidino/Atlas.git
 cd Atlas

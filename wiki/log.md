@@ -7375,3 +7375,9 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 **Checked:** claims test 8 passed. The browser walk at 1440, 1090 and 390 px, with reduced motion, found no console error, every link 200, no sideways scroll, and the accessibility pass clean.
 
 **Changed:** [[website-outline]].
+
+## [2026-10-03] build | Website: macOS verified
+
+The owner reports the install verified on a Mac. The install page's macOS tab now says *verified*, and its *not verified* banner is gone. No record file came with the report.
+
+**Changed:** [[website-launch-checklist]].
