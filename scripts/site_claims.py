@@ -177,9 +177,9 @@ def site_config() -> dict:
 def cite(rel: str) -> str:
     if rel.startswith("lean/"):
         return "proofs/" + rel                       # the Lean sources, copied whole (site_build.py)
-    if rel.startswith("atlas/workbench/bundle/"):      # published as the demo's own repository
+    if rel.startswith("atlas/workbench/bundle/"):      # the launchers' paperwork, in the public repository
         c = site_config()
-        return f"{c['workbench_repo']}/blob/{c['workbench_branch']}/{rel.rsplit('/', 1)[1]}"
+        return f"{c['public_repo']}/blob/{c['source_branch']}/{rel}"
     if rel not in PUBLISHED:
         PUBLISHED[rel] = publish(rel)
     return PUBLISHED[rel]["public"]
@@ -439,7 +439,8 @@ def installer_claims() -> None:
     assert rw["launch_check"]["exit_code"] == 0
     add("inst.win.s", rw["launch_check"]["wall_s"], "sec", nd=0,
         sentence="a fresh clone's install and self-test on Windows", source=w, pointer="launch_check.wall_s", date=rw["at"],
-        machine=LAPTOP, caveat="pip's download cache was already warm, so a first download takes longer")
+        machine=LAPTOP, caveat="pip's download cache was already warm, so a first download takes longer; measured on the "
+                "demo's first install branch, which carried the workbench alone")
     add("inst.lin.s", rl["launch_check"]["wall_s"], "sec", nd=0, sentence="the same on Linux (WSL on the same laptop)",
         source=lx, pointer="launch_check.wall_s", date=rl["at"],
         caveat="exit code 3: everything ran, and the optional Gmsh would not load (libGLU)")

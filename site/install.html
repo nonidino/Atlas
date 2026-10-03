@@ -16,7 +16,7 @@
 <header class="nav">
   <div class="wrap">
     <a class="brand" href="index.html" aria-label="Atlas, home"><img src="assets/img/mark.svg" alt="" width="26" height="26"> Atlas</a>
-    <nav aria-label="Pages"><ul><li><a href="index.html#today">Results</a></li><li><a href="architecture/index.html">Architecture</a></li><li><a href="proofs/blueprint/index.html">Proofs</a></li><li><a href="evidence.html">Evidence</a></li></ul></nav>
+    <nav aria-label="Pages"><ul><li><a href="index.html#decomposition">Results</a></li><li><a href="architecture/index.html">Architecture</a></li><li><a href="proofs/blueprint/index.html">Proofs</a></li><li><a href="evidence.html">Evidence</a></li></ul></nav>
     <a class="pill" href="#install">Install</a>
   </div>
 </header>
@@ -28,7 +28,7 @@
     <h1 class="display">One command. Your laptop.</h1>
     <p class="lede">The workbench is the demo: choose a kind of physics, draw the domain, cut it into pieces, and run the pieces against the undivided domain. It shows whether they agree, which was faster on your machine, and what the compiler says about joining the pieces.</p>
     <!-- gen:launch-banner -->
-<p class="banner"><strong>Before launch.</strong> The demo's repository becomes public on the day this site does. Until then the commands below will not find it.</p>
+
 <!-- /gen:launch-banner -->
   </div>
 </section>
@@ -36,7 +36,7 @@
 <section class="section tight" id="install" aria-labelledby="install-title">
   <div class="wrap narrow light-tabs">
     <h2 id="install-title" class="h3">Install and run</h2>
-    <p>Open a terminal, paste the three lines for your system, and press Enter. The script builds a private Python environment inside the folder it creates, installs every package at a pinned version, runs a self-test once, and opens the workbench in your browser. Later runs go straight to the page.</p>
+    <p>Open a terminal, paste the three lines for your system, and press Enter. The first line copies the project's main branch, which carries the workbench and everything it needs. The script then builds a private Python environment inside that folder, installs every package at a pinned version, runs a self-test once, and opens the workbench in your browser. Later runs go straight to the page.</p>
     <div class="tabs" role="tablist" aria-label="Your operating system">
       <button role="tab" id="tab-win" data-os="win" aria-controls="panel-win" aria-selected="true">Windows<span class="badge ok">verified</span></button>
       <button role="tab" id="tab-mac" data-os="mac" aria-controls="panel-mac" aria-selected="false">macOS<span class="badge no">not verified yet</span></button>
@@ -45,38 +45,38 @@
     <div role="tabpanel" id="panel-win" aria-labelledby="tab-win">
       <p class="small">In PowerShell, which Windows opens by default.</p>
       <div class="cmd"><button class="copy" type="button">Copy</button><!-- gen:cmd-win -->
-<pre>git clone --branch atlas-workbench --single-branch https://github.com/nonidino/Atlas.git atlas-workbench
-cd atlas-workbench
+<pre>git clone --depth 1 --branch atlas-0.1 https://github.com/nonidino/Atlas.git
+cd Atlas
 .\run.cmd</pre>
 <!-- /gen:cmd-win --></div>
-      <p class="small muted">The <code>.\</code> matters: PowerShell does not run programs from the current folder without it.</p>
+      <p class="small muted">The <code>.\</code> matters: PowerShell does not run programs from the current folder without it. This launcher was verified on Windows in the demo's first install branch; from the main branch it has so far been run on Linux.</p>
     </div>
     <div role="tabpanel" id="panel-mac" aria-labelledby="tab-mac" hidden>
       <p class="banner"><strong>Not verified on a Mac yet.</strong> No Mac was available to test it. The script is written for the shell macOS ships, and every pinned package publishes macOS wheels, so it is expected to work. If it does not, tell us what it printed.</p>
       <div class="cmd"><button class="copy" type="button">Copy</button><!-- gen:cmd-mac -->
-<pre>git clone --branch atlas-workbench --single-branch https://github.com/nonidino/Atlas.git atlas-workbench
-cd atlas-workbench
+<pre>git clone --depth 1 --branch atlas-0.1 https://github.com/nonidino/Atlas.git
+cd Atlas
 ./run.sh</pre>
 <!-- /gen:cmd-mac --></div>
       <p class="small muted">The learned example needs Apple silicon: its library publishes no wheel for Intel Macs. Everything else runs on both.</p>
     </div>
     <div role="tabpanel" id="panel-linux" aria-labelledby="tab-linux" hidden>
       <div class="cmd"><button class="copy" type="button">Copy</button><!-- gen:cmd-linux -->
-<pre>git clone --branch atlas-workbench --single-branch https://github.com/nonidino/Atlas.git atlas-workbench
-cd atlas-workbench
+<pre>git clone --depth 1 --branch atlas-0.1 https://github.com/nonidino/Atlas.git
+cd Atlas
 ./run.sh</pre>
 <!-- /gen:cmd-linux --></div>
       <p class="small muted">On Debian and Ubuntu the system Python ships without its <code>venv</code> module; the script says so and names the package to install.</p>
     </div>
-    <p class="small">No <code>git</code>? Download the branch as a zip from the repository page, unpack it, and run the same script inside it.</p>
+    <p class="small">No <code>git</code>? On the <a data-config="public_repo" href="https://github.com/nonidino/Atlas">repository page</a>, pick the <code>atlas-0.1</code> branch, then <strong>Code → Download ZIP</strong>. Unpack it and run the same script inside it (on macOS or Linux, <code>bash run.sh</code>: a zip does not keep the file's permission to run).</p>
 
     <h2 class="h3" style="margin-top:56px">What it needs</h2>
     <dl class="facts">
       <dt>Python</dt><dd><span data-claim="inst.python">Python 3.10, 3.11 or 3.12</span>. The script checks the version before installing anything.</dd>
       <dt>A graphics card</dt><dd>Not needed. Everything runs on the processor.</dd>
-      <dt>Disk</dt><dd>About <span data-claim="inst.disk">2.0 GB</span> with every optional part, most of it the library the learned example uses. You can skip that part.</dd>
+      <dt>Disk</dt><dd>About <span data-claim="inst.disk">2.0 GB</span> for the private environment with every optional part, most of it the library the learned example uses (you can skip that part), plus the copy of the project itself.</dd>
       <dt>Network</dt><dd>Only while installing. The page itself needs none.</dd>
-      <dt>How long</dt><dd>On the laptop the results were measured on, a fresh copy's install and self-test took <span data-claim="inst.win.s">229 s</span> (<span data-field="claim:inst.win.s:caveat">pip&#x27;s download cache was already warm, so a first download takes longer</span>).</dd>
+      <dt>How long</dt><dd>On the laptop the results were measured on, a fresh copy's install and self-test took <span data-claim="inst.win.s">229 s</span> (<span data-field="claim:inst.win.s:caveat">pip&#x27;s download cache was already warm, so a first download takes longer; measured on the demo&#x27;s first install branch, which carried the workbench alone</span>).</dd>
     </dl>
 
     <h2 class="h3" style="margin-top:56px" id="see">What you will see</h2>

@@ -1,10 +1,8 @@
 {
  "note": "Addresses the site links to. The site is published from this repository (nonidino/Atlas, public since 2026-10-02) by the workflow .github/workflows/pages.yml. If a name changes, change it here and run python scripts/site_claims.py, scripts/site_blueprint.py and scripts/site_build.py.",
- "launched": false,
+ "launched": true,
  "pages_url": "https://nonidino.github.io/Atlas/",
  "public_repo": "https://github.com/nonidino/Atlas",
  "source_branch": "atlas-0.1",
- "issues": "https://github.com/nonidino/Atlas/issues",
- "workbench_repo": "https://github.com/nonidino/Atlas",
- "workbench_branch": "atlas-workbench"
+ "issues": "https://github.com/nonidino/Atlas/issues"
 }

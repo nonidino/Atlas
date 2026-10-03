@@ -2145,7 +2145,7 @@
    ],
    "date": "2026-10-01T15:58:12",
    "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power, no other Python process",
-   "caveat": "pip's download cache was already warm, so a first download takes longer",
+   "caveat": "pip's download cache was already warm, so a first download takes longer; measured on the demo's first install branch, which carried the workbench alone",
    "vault": ""
   },
   {
@@ -2207,7 +2207,7 @@
    "pointer": null,
    "derived": "the README's Requirements, first item",
    "public": [
-    "https://github.com/nonidino/Atlas/blob/atlas-workbench/README.md"
+    "https://github.com/nonidino/Atlas/blob/atlas-0.1/atlas/workbench/bundle/README.md"
    ],
    "date": "",
    "machine": "",
@@ -2229,7 +2229,7 @@
    "pointer": null,
    "derived": "the README's Requirements, 'Disk'",
    "public": [
-    "https://github.com/nonidino/Atlas/blob/atlas-workbench/README.md"
+    "https://github.com/nonidino/Atlas/blob/atlas-0.1/atlas/workbench/bundle/README.md"
    ],
    "date": "",
    "machine": "",

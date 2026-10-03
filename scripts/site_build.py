@@ -414,10 +414,11 @@ def overlay(key: str) -> str:
 # -- install ----------------------------------------------------------------------------------
 
 def commands(os_name: str) -> str:
-    url = CFG["workbench_repo"] + ".git"
-    clone = f"git clone --branch {CFG['workbench_branch']} --single-branch {url} atlas-workbench"
+    url = CFG["public_repo"] + ".git"
+    folder = url.rsplit("/", 1)[1][:-4]
+    clone = f"git clone --depth 1 --branch {CFG['source_branch']} {url}"
     run = ".\\run.cmd" if os_name == "win" else "./run.sh"
-    return f"<pre>{esc(clone)}\ncd atlas-workbench\n{esc(run)}</pre>"
+    return f"<pre>{esc(clone)}\ncd {esc(folder)}\n{esc(run)}</pre>"
 
 
 def launch_banner() -> str:
