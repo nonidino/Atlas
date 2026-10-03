@@ -1,0 +1,5 @@
+# The workbench's launchers at the root of this branch. run.sh must keep LF
+# endings on every checkout (a CR in its shebang stops it on a Mac), and
+# run.cmd wants CRLF on Windows. Scoped to these two files only.
+/run.sh text eol=lf
+/run.cmd text eol=crlf
