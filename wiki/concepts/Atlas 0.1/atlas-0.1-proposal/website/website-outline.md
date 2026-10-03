@@ -26,6 +26,20 @@
 - **Modular and extendable.** An expert can be learned, classical, or a group of smaller experts, each on its own time and length scales and fields, agreeing through one standard interface. A simulation becomes finer or broader by changing the geometry or the experts' interactions. The framework is meant for real engineering systems; the physics is the first instance. In the Moon base, the solar towers are one agent, which may be a trained operator, a mathematical model, or a group of smaller experts.
 - **A different formulation.** The chart operator is not a traditional neural operator, and parts of its theory are verified in Lean.
 - **Formalization is part of the discovery.** It is not an afterthought: statements are proved in Lean as the project goes, for Atlas and for the field.
+
+**Revised again 2026-10-03 (the owner's second pass):**
+- **A *Three goals* band** opens the page, right after the hero. It is the one place that states the goals without caveats, which the rest of the page carries: a modular architecture for every kind of expert (learned, agents, mathematical models, classical) on any geometry with any interactions; the chart operator as a new formulation that is compatible and needs less training data; proofs in Lean made as the work goes.
+- **The site speaks in the third person**: no *we* or *our* on the site's own pages. The proofs and the architecture page are not affected, and quotations keep their authors' words.
+- **Removed:**
+  - the *Illustration* tags, the *Show port types* buttons, the vision banner and the line about the pictures;
+  - the wildfire's *Today* paragraph;
+  - the three theorem cards and the *sorry* and axiom counts in the proofs section;
+  - the chart operator's *design, not a build* line, the speed-ratio fine print and both *results by other researchers* banners;
+  - the learned case's failed-gate paragraph. Its full verdict stays on the evidence page (`evidence.html#lc`).
+- **Reworded:**
+  - *How it works* opens with the owner's own sentence;
+  - the chart titles are *Three fast examples, decomposed vs classical* and *Wind farm simulation speed, as it grows*;
+  - the vision stories are single column, with *Today* as a paragraph under each story.
 **Hub:** [[00-proposal-workstreams]] · **Plan:** [[proposal-website-plan]] · **Evidence:** [[website-evidence-and-citations]] · **Scenario images:** [[vision-scenarios-and-image-prompts]] · **Design notes:** [[website-design-notes]]
 
 ---

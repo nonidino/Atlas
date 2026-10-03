@@ -54,7 +54,6 @@
     <path class="seam-run" d="M1010 470 C 980 360, 1060 250, 1030 -20"/>
   </svg>
   <div class="shade" aria-hidden="true"></div>
-  <span class="tag">Illustration</span>
   <div class="wrap">
     <h1 class="display reveal" id="hero-title">A full world. Decomposed and simulated by experts.</h1>
     <p class="lede reveal">Neural operators are fast but struggle with complicated shapes. Domain decomposition turns a complicated shape into simple pieces. Atlas joins the two: every piece gets an expert (learned, classical, or a team of smaller experts), and the experts agree at their seams through one standard, checked interface.</p>
@@ -65,12 +64,73 @@
   </div>
 </section>
 
+<!-- 1b. Three goals -->
+<section class="goals" id="goals" aria-labelledby="goals-title">
+  <svg class="goals-bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g class="g-tiles">
+      <path d="M780 120 C 900 80, 1060 90, 1180 150 C 1300 210, 1380 330, 1400 470 C 1420 610, 1360 740, 1240 810 C 1110 885, 930 880, 820 820 C 700 755, 640 640, 650 500 C 660 360, 680 170, 780 120 Z"/>
+      <path d="M650 500 C 800 470, 900 520, 1010 480 S 1260 400, 1400 470"/>
+      <path d="M1010 480 C 1000 360, 1060 250, 1180 150"/>
+      <path d="M1010 480 C 1040 600, 980 720, 1010 860"/>
+      <path d="M780 120 C 830 240, 800 380, 650 500"/>
+      <path d="M1240 810 C 1180 700, 1240 600, 1400 470"/>
+    </g>
+    <path class="g-run" d="M650 500 C 800 470, 900 520, 1010 480 S 1260 400, 1400 470"/>
+    <path class="g-run d2" d="M1010 480 C 1000 360, 1060 250, 1180 150"/>
+    <path class="g-run d3" d="M1010 480 C 1040 600, 980 720, 1010 860"/>
+    <g class="g-nodes"><circle cx="1010" cy="480" r="7"/><circle cx="650" cy="500" r="5"/><circle cx="1180" cy="150" r="5"/><circle cx="1400" cy="470" r="5"/><circle cx="1010" cy="860" r="5"/></g>
+  </svg>
+  <div class="wrap">
+    <p class="eyebrow reveal">What Atlas is building</p>
+    <h2 class="goals-title reveal" id="goals-title">Three goals.<br><span>One system of experts.</span></h2>
+    <div class="goal-grid">
+      <article class="goal reveal">
+        <svg class="goal-ico" viewBox="0 0 96 56" aria-hidden="true">
+          <path d="M18 28 H44 M52 28 H78 M48 10 V22 M48 34 V46" stroke="#19c3f0" stroke-width="1.6"/>
+          <circle cx="12" cy="28" r="8" fill="none" stroke="#fff" stroke-width="1.6"/>
+          <rect x="40" y="20" width="16" height="16" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/>
+          <path d="M84 20 L92 36 H76 Z" fill="none" stroke="#fff" stroke-width="1.6"/>
+          <path d="M48 2 l6 4 v6 l-6 4 -6-4 v-6 z" fill="none" stroke="#fff" stroke-width="1.4"/>
+          <circle cx="48" cy="50" r="5" fill="#19c3f0"/>
+        </svg>
+        <p class="goal-n" aria-hidden="true"></p>
+        <h3>Every kind of expert, in one system.</h3>
+        <p>A modular architecture where learned experts, agents, mathematical models and classical simulations plug in side by side and work as one, in systems from engineering to biology. Any geometry. Any interactions.</p>
+      </article>
+      <article class="goal reveal">
+        <svg class="goal-ico" viewBox="0 0 96 56" aria-hidden="true">
+          <path d="M4 50 C 10 18, 30 6, 40 10 L 42 50 C 30 44, 16 46, 4 50 Z" fill="none" stroke="#fff" stroke-width="1.6"/>
+          <path d="M50 28 H60" stroke="#19c3f0" stroke-width="1.6"/><path d="M57 24 L62 28 L57 32" fill="none" stroke="#19c3f0" stroke-width="1.6"/>
+          <rect x="68" y="10" width="24" height="24" fill="none" stroke="#19c3f0" stroke-width="1.8"/>
+          <path d="M76 10 V34 M84 10 V34 M68 18 H92 M68 26 H92" stroke="rgba(255,255,255,.4)" stroke-width="1"/>
+          <circle cx="68" cy="46" r="3" fill="#19c3f0"/><circle cx="80" cy="46" r="3" fill="#19c3f0"/><circle cx="92" cy="46" r="3" fill="#19c3f0"/>
+        </svg>
+        <p class="goal-n" aria-hidden="true"></p>
+        <h3>A new kind of neural operator.</h3>
+        <p>The chart operator is a new formulation, built to be a piece rather than a whole. It works on any shape, connects to any other expert through its joints, and needs far less training data, because it learns simple pieces instead of whole worlds.</p>
+      </article>
+      <article class="goal reveal">
+        <svg class="goal-ico" viewBox="0 0 96 56" aria-hidden="true">
+          <circle cx="16" cy="44" r="5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="48" cy="44" r="5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="80" cy="44" r="5" fill="none" stroke="#fff" stroke-width="1.6"/>
+          <circle cx="32" cy="26" r="5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="64" cy="26" r="5" fill="none" stroke="#fff" stroke-width="1.6"/>
+          <path d="M19 40 L29 30 M45 40 L35 30 M51 40 L61 30 M77 40 L67 30 M36 22 L44 12 M60 22 L52 12" stroke="rgba(255,255,255,.5)" stroke-width="1.4"/>
+          <circle cx="48" cy="9" r="7" fill="#19c3f0"/><path d="M44.5 9 L47 11.5 L51.5 6.5" fill="none" stroke="#0b0f17" stroke-width="2"/>
+        </svg>
+        <p class="goal-n" aria-hidden="true"></p>
+        <h3>Proven as it is built.</h3>
+        <p>Every key statement, for domain decomposition theory and for the neural operator alike, is proved in Lean as the work goes. Formalization is not an afterthought. It is part of the process.</p>
+        <p class="goal-stat"><span class="count" data-claim="lean.decls">142</span> definitions and theorems checked by Lean's kernel so far</p>
+      </article>
+    </div>
+  </div>
+</section>
+
 <!-- 2. How it works -->
 <section class="section" id="how" aria-labelledby="how-title">
   <div class="wrap">
     <p class="eyebrow reveal">How it works</p>
     <h2 class="reveal" id="how-title">Cut. Solve. Stitch.</h2>
-    <p class="lede reveal">One real case from the demo: heat flowing along a steel channel shaped like an S. Nothing here is a mock-up. The shape, the pieces and the temperatures are the demo's own. The same three steps hold at any level of detail: cut finer where it matters, coarser where it does not.</p>
+    <p class="lede reveal">Cut a complex geometry into several smaller ones. Solve on each subdomain. Stitch the results back together. One real case from the demo: heat flowing along a steel channel shaped like an S. The same three steps hold at any level of detail: cut finer where it matters, coarser where it does not.</p>
 
     <div class="steps">
       <div class="stage">
@@ -121,7 +181,7 @@
 
     <div class="grid-2 charts-2">
       <figure class="figure reveal" id="fast-chart">
-        <h3>The three fastest kinds, cut into pieces</h3>
+        <h3>Three fast examples, decomposed vs classical</h3>
         <div class="chart-legend" aria-hidden="true">
           <span><i style="background:var(--chart-fast)"></i>faster in pieces</span>
         </div>
@@ -170,7 +230,7 @@
         <figcaption>Each bar is one Fast example in the workbench, against the same grid solved whole on the same machine; the line is the same speed. The workbench has <span data-claim="fast.kinds">8</span> kinds, and you can race every one of them yourself. <a href="evidence.html#fast">Every record</a>.</figcaption>
       </figure>
       <figure class="figure reveal" id="rotor-chart">
-        <h3>The wind farm, as it grows</h3>
+        <h3>Wind farm simulation speed, as it grows</h3>
         <div class="chart-legend" aria-hidden="true">
           <span><i class="dot" style="background:var(--chart-fast)"></i>first timing</span>
           <span><i class="ring"></i>repeat timing</span>
@@ -217,7 +277,6 @@
     </div>
 
     <p class="note reveal"><strong>Same answer, nothing lost at a seam.</strong> Where the pieces iterate to agreement, they land within <span data-claim="agree.worst">3.6×10<sup>−9</sup></span> of the undivided answer, as a share of the field's scale, and <span data-claim="balance.passed">34</span> of <span data-claim="balance.total">34</span> balance checks (mass, energy, charge and force) pass.</p>
-    <p class="fine reveal">Speeds are ratios: the time of the whole domain solved at once, divided by the time of the pieces, same grid, same machine. Measured on <span data-field="claim:fast.farm.s:machine">the owner&#x27;s Windows 11 laptop, 22 logical processors, on mains power, no other Python process</span>.</p>
 
     <div class="install reveal" id="demo">
       <div class="txt">
@@ -241,7 +300,6 @@
       <h3>What others have shown</h3>
       <p>Decomposition is how the largest simulations, and the most complicated shapes, are already solved.</p>
     </div>
-    <p class="banner info reveal"><strong>Results by other researchers, on their own problems.</strong> Each card quotes its source. None of these numbers is Atlas's.</p>
     <div class="lit two">
       <!-- gen:lit-classical -->
 <article class="card reveal">
@@ -287,7 +345,6 @@
     <p class="eyebrow reveal">Half two · Neural operators</p>
     <h2 class="reveal" id="neural-title">The speed of learned experts.</h2>
     <p class="lede reveal">A neural operator learns how a family of problems maps to its solutions. Once it is trained, one pass through the network replaces a solve, often orders of magnitude faster than the classical solver it learned from.</p>
-    <p class="banner info reveal"><strong>Results by other researchers, on their own problems.</strong> Each card quotes its source. None of these numbers is Atlas's, and they are not comparable with each other.</p>
     <div class="lit two">
       <!-- gen:lit-neural -->
 <article class="card reveal">
@@ -328,12 +385,10 @@
     <div class="grid-2 own-expert reveal">
       <div>
         <p class="eyebrow">In this project</p>
-        <h3>Our first learned expert.</h3>
+        <h3>The first learned expert.</h3>
       </div>
       <div>
         <p>In the workbench's wind farm, a small network trained on <span data-claim="lc.layouts.train">100</span> random layouts steps every piece. Inside the same pieces it ran <span data-claim="lc.ep_over_l">1.52×</span> faster than the classical expert it replaces, at the same error (farm power <span data-claim="lc.L.P">7.50%</span> from the reference, against <span data-claim="lc.Ep.P">7.53%</span>), and <span data-claim="lc.f_over_l">7.45×</span> faster than the farm solved whole.</p>
-        <p>It did not clear its own gate. A classical solver on a grid twice as coarse came closer (<span data-claim="lc.Cc.P">3.63%</span>) in about a third of the time, so <span data-claim="lc.passed">5</span> of the six bars set before training passed. It is a first step; the strong evidence for speed is the published work above.</p>
-        <p class="fine">One evaluation, on the laptop on mains power. <a href="evidence.html#lc">The record</a>.</p>
       </div>
     </div>
   </div>
@@ -349,7 +404,7 @@
     <div class="grid-2" style="margin-top:28px">
       <div class="reveal">
         <h3>Why today's neural operators aren't built for the job</h3>
-        <p>Most learn a whole problem for one family of shapes: fast inside that family, hard to reuse on new domains (<a href="evidence.html#N14">Secchi et al.</a>). The core obstacle is that a trained operator does not transfer to new geometries (<a href="evidence.html#N15">Huang et al.</a>). A piece also has to take what its neighbours tell it at the seams, keep pace with the coupling, and be checkable. When we placed a public pretrained neural operator inside Atlas, twelve such properties were missing.</p>
+        <p>Most learn a whole problem for one family of shapes: fast inside that family, hard to reuse on new domains (<a href="evidence.html#N14">Secchi et al.</a>). The core obstacle is that a trained operator does not transfer to new geometries (<a href="evidence.html#N15">Huang et al.</a>). A piece also has to take what its neighbours tell it at the seams, keep pace with the coupling, and be checkable. Placed inside Atlas, a public pretrained neural operator was missing twelve such properties.</p>
       </div>
       <div class="reveal">
         <h3>Others have started joining the halves</h3>
@@ -448,7 +503,6 @@
     </div>
 
     <p class="note reveal">Built this way, a learned piece cannot break the assembly. <strong>Whatever the network returns, the assembled system can be solved, and its answer is the best its pieces can represent.</strong> That is proved in Lean, as <code>Atlas.tier0_headline</code>. Errors in a piece enter squared: with every field off by <span data-claim="arch.eps">10%</span>, the joints came out off by <span data-claim="arch.gram_err">0.9%</span>, and every piece stayed well behaved. Predicting the joints directly was off by <span data-claim="arch.direct_err">10%</span>, and <span data-claim="arch.indef">12</span> of <span data-claim="arch.pieces">16</span> pieces broke.</p>
-    <p class="fine reveal">A design, not a build: no chart operator has been trained. The errors above were put in by hand to test the assembly, not produced by a trained network. <a href="evidence.html#arch">The record</a>.</p>
     <div class="actions reveal"><a class="pill" href="architecture/index.html">Read the architecture</a> <a class="arrow-link" href="#proofs">The proofs</a></div>
   </div>
 </section>
@@ -460,40 +514,20 @@
     <h2 class="reveal" id="proofs-title">Mathematically proven.</h2>
     <p class="lede reveal">In Atlas, formalization is part of the discovery, not a check added at the end. As the design grows, its statements are proved in Lean, a proof assistant whose small kernel checks every step: some for this project, some for domain decomposition in general. A machine check guarantees that the proof proves the statement, however the proof was written.</p>
 
-    <div class="stats reveal" role="list">
+    <div class="stats two reveal" role="list">
       <div class="stat" role="listitem"><span class="big"><span class="count" data-claim="lean.decls">142</span></span><p>definitions and theorems whose axioms the kernel checked, none failing</p><a class="src" href="evidence.html#lean.decls">Record</a></div>
-      <div class="stat" role="listitem"><span class="big"><span data-claim="lean.sorry">0</span></span><p>proofs left unfinished (Lean's <em>sorry</em>)</p><a class="src" href="evidence.html#lean.sorry">Record</a></div>
-      <div class="stat" role="listitem"><span class="big"><span data-claim="lean.axioms">3</span></span><p>axioms used, all three standard in Lean</p><a class="src" href="evidence.html#lean.axioms">Record</a></div>
       <div class="stat" role="listitem"><span class="big"><span class="count" data-claim="lean.lines">3,761</span></span><p>lines of Lean in <span data-claim="lean.files">26</span> files, with <span data-claim="lean.theorems">140</span> theorems and lemmas</p><a class="src" href="proofs/lean/index.html">The source</a></div>
-    </div>
-
-    <div class="theorems">
-      <div class="card reveal">
-        <p class="eyebrow">A learned piece, any network</p>
-        <h3>Whatever the network returns, the assembled system can be solved, and its answer is the best its pieces can represent.</h3>
-        <p class="lean">Atlas.tier0_headline</p>
-      </div>
-      <div class="card reveal">
-        <p class="eyebrow">Learned pieces that iterate</p>
-        <h3>If every learned piece passes a checkable bound, the pieces converge from any start, to within a stated distance of the classical answer.</h3>
-        <p class="lean">Atlas.tier2_headline</p>
-      </div>
-      <div class="card reveal">
-        <p class="eyebrow">Inside defect correction</p>
-        <h3>A learned expert can change how fast the answer comes. It cannot change what the answer is.</h3>
-        <p class="lean">Atlas.defect_correction_headline</p>
-      </div>
     </div>
 
     <div class="grid-2" style="margin-top:56px">
       <div class="reveal">
         <h3>The proofs changed the design.</h3>
-        <p>One statement we planned to prove, T3, is false as first written for one standard method, restricted additive Schwarz. Lean would not accept it, and a small counterexample shows why. The corrected statement needs a sweep that converges, and the framework's compiler now requires exactly that before it admits such a coupling. The proof did not certify the design after the fact. It changed it.</p>
+        <p>One statement planned for proof, T3, is false as first written for one standard method, restricted additive Schwarz. Lean would not accept it, and a small counterexample shows why. The corrected statement needs a sweep that converges, and the framework's compiler now requires exactly that before it admits such a coupling. The proof did not certify the design after the fact. It changed it.</p>
         <p><a class="arrow-link" href="evidence.html#t3">The counterexample</a></p>
       </div>
       <div class="reveal">
         <h3>Checked by machine, line by line.</h3>
-        <p>A clean re-check of the whole project takes <span data-claim="lean.build">100 s</span> on a laptop on battery. We searched for an earlier machine-checked theory of domain decomposition and found none; machine-checked proofs of related iterations do exist.</p>
+        <p>A clean re-check of the whole project takes <span data-claim="lean.build">100 s</span> on a laptop on battery. A search for an earlier machine-checked theory of domain decomposition found none; machine-checked proofs of related iterations do exist.</p>
         <div class="actions" style="margin-top:12px">
           <a class="pill" href="proofs/blueprint/index.html">Read the blueprint</a>
           <a class="arrow-link" href="proofs/lean/index.html">The Lean source</a>
@@ -702,9 +736,7 @@
   <div class="wrap">
     <p class="eyebrow reveal">The vision</p>
     <h2 class="reveal" id="vision-title">The full vision.</h2>
-    <p class="vision-banner reveal">Vision. Not built yet.</p>
     <p class="lede reveal">Imagine a full system, decomposed into its individual parts. Every part is an expert, and every expert (like the power unit or the radiators) can be a neural operator, a classical model, or itself made of smaller experts inside. Experts work on their own time and length scales and their own physics, and still agree through one standard, checked interface that carries force, heat, current or flow. The physics is the first instance; the framework is built to generalise to real engineering systems.</p>
-    <p class="reveal small" style="color:var(--dark-ink-2);margin-top:-8px">Three scenes at three scales. The pictures are illustrations; the graphs on them are drawn from each scenario's design.</p>
 
     <!-- scenario 1 -->
     <article class="scenario" aria-labelledby="sc1">
@@ -758,8 +790,6 @@
 <g class="ov-node"><circle cx="560" cy="650" r="25" stroke-width="5.6"/><text x="560" y="605" text-anchor="middle" font-size="36" stroke-width="8.4">battery</text></g>
 </svg>
 <!-- /gen:overlay-1a -->
-        <span class="tag">Illustration</span>
-        <button class="ports-btn" type="button" aria-pressed="false">Show port types</button>
       </div>
       <div class="story">
         <div>
@@ -769,9 +799,9 @@
         <p class="today"><b>Today:</b> a 2-D car cut into pieces on a rolling road, and a 3-D half-car in a box, both classical; a vehicle of many agents across five families of physics, with a rotor, a radiator and a powertrain circuit. A learned piece at the car's pace was too slow and left its range. That is the missing piece.</p>
       </div>
       <div class="details"><!-- gen:details-1 -->
-<figure class="detail reveal"><img src="images/1c.webp" alt="Illustration: close-up of a race car&#x27;s front wing endplate shedding a spiralling cyan vortex past the front tyre." width="1400" height="788" loading="lazy" decoding="async"><span class="tag">Illustration</span></figure>
-<figure class="detail reveal"><img src="images/1d.webp" alt="Illustration: a brake disc glowing orange inside a racing wheel, cooling air drawn as cyan streaks." width="1400" height="788" loading="lazy" decoding="async"><span class="tag">Illustration</span></figure>
-<figure class="detail reveal"><img src="images/1e.webp" alt="Illustration: an exploded view of an unbranded single-seater on white: wings, floor, sidepods with radiators, power unit, battery, gearbox and wheels floating apart." width="1400" height="788" loading="lazy" decoding="async"><span class="tag">Illustration</span></figure>
+<figure class="detail reveal"><img src="images/1c.webp" alt="Illustration: close-up of a race car&#x27;s front wing endplate shedding a spiralling cyan vortex past the front tyre." width="1400" height="788" loading="lazy" decoding="async"></figure>
+<figure class="detail reveal"><img src="images/1d.webp" alt="Illustration: a brake disc glowing orange inside a racing wheel, cooling air drawn as cyan streaks." width="1400" height="788" loading="lazy" decoding="async"></figure>
+<figure class="detail reveal"><img src="images/1e.webp" alt="Illustration: an exploded view of an unbranded single-seater on white: wings, floor, sidepods with radiators, power unit, battery, gearbox and wheels floating apart." width="1400" height="788" loading="lazy" decoding="async"></figure>
 <!-- /gen:details-1 --></div>
     </article>
 
@@ -829,15 +859,12 @@
 <g class="ov-node"><circle cx="960" cy="130" r="25" stroke-width="5.6"/><text x="960" y="85" text-anchor="middle" font-size="36" stroke-width="8.4">sensors</text></g>
 </svg>
 <!-- /gen:overlay-2a -->
-        <span class="tag">Illustration</span>
-        <button class="ports-btn" type="button" aria-pressed="false">Show port types</button>
       </div>
       <div class="story">
         <div>
           <h3 id="sc2">A wildfire, forecast and steered.</h3>
           <p>A wildfire is fire, fuel, terrain and wind feeding each other. Atlas would split the landscape into pieces that follow its ridges and valleys, give each an expert for how fire spreads through its fuel, and let the pieces pass heat, embers and wind across their edges. The aim: fast enough to forecast hours ahead, and to test where a firebreak or an air drop would do the most good before anyone is sent.</p>
         </div>
-        <p class="today"><b>Today:</b> nothing fire-specific is built. The nearest pieces are the demo's pollutant plume carried by a solved flow and its flow over drawn terrain. This scenario is the furthest from today's record.</p>
       </div>
     </article>
 
@@ -901,8 +928,6 @@
 <g class="ov-node"><circle cx="900" cy="1095" r="25" stroke-width="5.6"/><text x="900" y="1050" text-anchor="middle" font-size="36" stroke-width="8.4">rover</text></g>
 </svg>
 <!-- /gen:overlay-3a -->
-        <span class="tag">Illustration</span>
-        <button class="ports-btn" type="button" aria-pressed="false">Show port types</button>
       </div>
       <div class="story">
         <div>
@@ -912,8 +937,8 @@
         <p class="today"><b>Today:</b> a seven-agent rocket ascent in 2-D, coupled and conserving; a powertrain from rotor shaft to battery; a closed coolant loop; and fields coupled to lumped circuits in the demo. Plumes on regolith and the lunar environment are not built.</p>
       </div>
       <div class="details"><!-- gen:details-3 -->
-<figure class="detail reveal"><img src="images/3c.webp" alt="Illustration: a lander&#x27;s engine plume striking the lunar surface, dust grains flying outward in straight lines against a black sky." width="1400" height="788" loading="lazy" decoding="async"><span class="tag">Illustration</span></figure>
-<figure class="detail reveal"><img src="images/3d.webp" alt="Illustration: the Moon base at night, lit by earthshine and lit windows, a rover charging at a dock, cyan lines tracing power to the habitat." width="1400" height="788" loading="lazy" decoding="async"><span class="tag">Illustration</span></figure>
+<figure class="detail reveal"><img src="images/3c.webp" alt="Illustration: a lander&#x27;s engine plume striking the lunar surface, dust grains flying outward in straight lines against a black sky." width="1400" height="788" loading="lazy" decoding="async"></figure>
+<figure class="detail reveal"><img src="images/3d.webp" alt="Illustration: the Moon base at night, lit by earthshine and lit windows, a rover charging at a dock, cyan lines tracing power to the habitat." width="1400" height="788" loading="lazy" decoding="async"></figure>
 <!-- /gen:details-3 --></div>
     </article>
   </div>

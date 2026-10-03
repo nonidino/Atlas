@@ -111,12 +111,4 @@
     });
   });
 
-  // vision: show the port types on tap
-  $$(".ports-btn").forEach(function (b) {
-    b.addEventListener("click", function () {
-      var f = b.closest(".frame");
-      var on = f.classList.toggle("show-ports");
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  });
 })();

@@ -324,7 +324,7 @@ def evidence_literature() -> str:
                    f'<td class="small">{field("lit", e["id"], "location")}<br><span class="fine">read on {field("lit", e["id"], "read_on")}</span></td>'
                    f'<td class="small"><span data-lit-ref="{e["id"]}">{esc(e["citation"])}</span>. <a href="{esc(link)}">Source</a></td></tr>')
     out.append("</tbody></table></div>")
-    out.append('<p class="small">Results we could not read at their source are not shown, whatever their size.</p>')
+    out.append('<p class="small">Results that could not be read at their source are not shown, whatever their size.</p>')
     return "\n".join(out)
 
 
@@ -473,7 +473,7 @@ def figure(name: str, cls: str = "detail") -> str:
     side = os.path.join(SITE, "images", name + ".json")
     if not os.path.exists(side):
         return ""
-    return f'<figure class="{cls} reveal">{image_block(name, "")}<span class="tag">Illustration</span></figure>'
+    return f'<figure class="{cls} reveal">{image_block(name, "")}</figure>'
 
 
 # -- stamping ------------------------------------------------------------------------------------

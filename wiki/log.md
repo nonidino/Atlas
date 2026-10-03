@@ -7359,3 +7359,19 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 **Checked:** claims test 8 passed; the browser walk at 1440, 1090 and 390 px, with reduced motion, showed no console error, every link 200 and no sideways scroll.
 
 **Changed:** [[website-outline]], [[website-evidence-and-citations]], [[website-image-prompts]], [[website-launch-checklist]], [[gap-worklist]].
+
+## [2026-10-03] build | Website: the three goals, and the owner's second pass
+
+**Added:** a *Three goals* band after the hero. It shows the three goals on a dark field with animated seams that stop under reduced motion, and the Lean count drawn from its record.
+**Removed or reworded,** as listed in [[website-outline]] (second revision of 2026-10-03):
+- the illustration tags, the port-type buttons, the vision banner, the wildfire's *Today* paragraph;
+- the proof cards and two of the proof counts;
+- the fine print and the literature banners;
+- the learned case's gate paragraph (its verdict stays on the evidence page);
+- the first person, from the site's own pages.
+
+**Fixed:** the install page's screenshot was squeezed on narrow screens, because `height` kept its attribute value while the width shrank. All images now keep their proportions (`img { height: auto }`).
+
+**Checked:** claims test 8 passed. The browser walk at 1440, 1090 and 390 px, with reduced motion, found no console error, every link 200, no sideways scroll, and the accessibility pass clean.
+
+**Changed:** [[website-outline]].
