@@ -10,6 +10,22 @@
 - **the install page has three tabs**: Windows and Linux verified, macOS marked not verified;
 - **an evidence page** lists every number with its record or quotation, and **cleaned copies of the cited records** are published with the site; the literature cards carry a claim, a number and a citation, with the quotation on the evidence page;
 - a top bar with section links and a black *Try the demo* pill; the typeface is Inter ([[website-design-notes]] §6).
+
+**Revised 2026-10-03 by the owner: the page is framed as two halves and their join.** (1) Neural operators are faster than classical solvers but struggle on complex geometry. (2) Domain decomposition is faster and simpler than a full-domain solve on complex geometry. (3) So learned experts solving decomposed problems are much faster. Each half shows only the comparison that proves it: learned experts against classical simulation, and decomposed against full-domain solves on complex cases. The sections now run:
+- the hero, and *Cut. Solve. Stitch.*;
+- ***The power of domain decomposition***: the workbench's three fastest kinds, the wind farm's speed against its rotor count (A16), the demo, and a sub-heading *What others have shown* (L2, L4, L7, L8);
+- ***The speed of learned experts***: N1, N2, N3, N13, then the project's own learned case in brief, with the gate it failed;
+- ***A universally compatible neural operator: the chart operator***: briefly why today's operators aren't built for the job (N14, N15, the twelve missing properties as one sentence); the neural-decomposition work (N4–N7); the three panels; *compatible by design*; the tier-0 guarantee;
+- ***Mathematically proven.***;
+- ***The full vision***;
+- the footer.
+
+**Removed:** the four slower Fast examples' cards (to return elsewhere later), the learned case's chart, the S1–S12 checklist, image M1, and the path section. The top bar follows the new sections.
+
+**Three points to carry through every page, in the owner's terms:**
+- **Modular and extendable.** An expert can be learned, classical, or a group of smaller experts, each on its own time and length scales and fields, agreeing through one standard interface. A simulation becomes finer or broader by changing the geometry or the experts' interactions. The framework is meant for real engineering systems; the physics is the first instance. In the Moon base, the solar towers are one agent, which may be a trained operator, a mathematical model, or a group of smaller experts.
+- **A different formulation.** The chart operator is not a traditional neural operator, and parts of its theory are verified in Lean.
+- **Formalization is part of the discovery.** It is not an afterthought: statements are proved in Lean as the project goes, for Atlas and for the field.
 **Hub:** [[00-proposal-workstreams]] · **Plan:** [[proposal-website-plan]] · **Evidence:** [[website-evidence-and-citations]] · **Scenario images:** [[vision-scenarios-and-image-prompts]] · **Design notes:** [[website-design-notes]]
 
 ---

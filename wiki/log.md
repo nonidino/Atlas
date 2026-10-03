@@ -7343,3 +7343,19 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 - **Walked again** at 1440, 1090 and 390 px: no console error, every link 200, no sideways scroll after one fix (the learned case's chart had widened its grid column on a phone). Claims test: 8 passed.
 
 **Changed:** [[website-image-prompts]], [[website-launch-checklist]].
+
+## [2026-10-03] build | Website: two halves and their join; the install runs from atlas-0.1
+
+**The owner's restructure** ([[website-outline]], revision of 2026-10-03). The page is now framed as two halves and their join: neural operators are faster than classical solvers but struggle on complex geometry, decomposition is faster and simpler than a full-domain solve on complex geometry, and so learned experts on decomposed problems are much faster.
+- **Sections:** *The power of domain decomposition* (the three fastest Fast examples; the wind farm's speed against its rotor count, a new chart from every rung of W346, [[website-evidence-and-citations]] A16; the demo; *What others have shown*). *The speed of learned experts* (published results, then the project's learned case in brief, with its failed gate). *A universally compatible neural operator: the chart operator* (why today's operators aren't built for the job, in brief; the neural-decomposition work; the three panels; *compatible by design*). *Mathematically proven.* *The full vision.* The nav follows.
+- **Removed:** the four slower Fast examples' cards, the learned case's chart, the S1–S12 checklist, image M1, and the path section.
+- **Literature verified** (§3.3): L7 and L8, overset grids for complex bodies (NASA records); N13, the Fourier neural operator's speed; N14 and N15, the geometry limitation, in the words of the N6 and N5 abstracts.
+- **The owner's three emphases**, written into the outline and the page: modular, extendable experts (learned, classical or composite, one standard interface, any level of detail, meant for real engineering systems); the chart operator as a different formulation, with Lean-verified theory; formalization as part of the discovery.
+
+**The install, fixed.** The site cloned `atlas-workbench`, a branch that was never pushed. The workbench now runs from the root of `atlas-0.1`: the launchers come from `atlas/workbench/bundle/`, the wind farm's solver sits in `vendor/` (copied from the public PoC branches, `vendor/README.md`), and there is a root `README.md`. A fresh clone's `./run.sh --check` on a cloud machine installed everything and ran all eight kinds, the learned case and the page. It exited 3 only because Gmsh lacked `libGLU`. `launched` is now true. The image generator is recorded as ChatGPT.
+
+**Noted for the owner:** `poc1-windfarm-demo`, a branch of this now-public repository, carries Poseidon-T's weights (`vendor/hf-cache/.../model.safetensors`). They are not on the site and not on `atlas-0.1`.
+
+**Checked:** claims test 8 passed; the browser walk at 1440, 1090 and 390 px, with reduced motion, showed no console error, every link 200 and no sideways scroll.
+
+**Changed:** [[website-outline]], [[website-evidence-and-citations]], [[website-image-prompts]], [[website-launch-checklist]], [[gap-worklist]].

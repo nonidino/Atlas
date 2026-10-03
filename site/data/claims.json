@@ -1357,6 +1357,358 @@
    "vault": ""
   },
   {
+   "id": "w346.r1.a",
+   "value": 0.6375194020914511,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "0.6×",
+   "display_html": "0.6×",
+   "units": "",
+   "sentence": "1 rotor: decomposition's speed over the undivided solve, first timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N2.cost.ratio",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r1.n",
+   "value": 1,
+   "kind": "int",
+   "nd": 2,
+   "display": "1",
+   "display_html": "1",
+   "units": "",
+   "sentence": "rotors in the farm at rung N2",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "rungs.N2.n_rotors",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r3.a",
+   "value": 1.2858792524707279,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "1.3×",
+   "display_html": "1.3×",
+   "units": "",
+   "sentence": "3 rotors: decomposition's speed over the undivided solve, first timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N6.cost.ratio",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r3.n",
+   "value": 3,
+   "kind": "int",
+   "nd": 2,
+   "display": "3",
+   "display_html": "3",
+   "units": "",
+   "sentence": "rotors in the farm at rung N6",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "rungs.N6.n_rotors",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r5.a",
+   "value": 5.372691050276699,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "5.4×",
+   "display_html": "5.4×",
+   "units": "",
+   "sentence": "5 rotors: decomposition's speed over the undivided solve, first timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N12.cost.ratio",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r5.b",
+   "value": 3.4993855451164473,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "3.5×",
+   "display_html": "3.5×",
+   "units": "",
+   "sentence": "5 rotors: the same, repeat timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N12.cost_replicate.ratio_min",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r5.n",
+   "value": 5,
+   "kind": "int",
+   "nd": 2,
+   "display": "5",
+   "display_html": "5",
+   "units": "",
+   "sentence": "rotors in the farm at rung N12",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "rungs.N12.n_rotors",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r12.a",
+   "value": 5.69352961721357,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "5.7×",
+   "display_html": "5.7×",
+   "units": "",
+   "sentence": "12 rotors: decomposition's speed over the undivided solve, first timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N24.cost.ratio",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r12.b",
+   "value": 4.055298198547803,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "4.1×",
+   "display_html": "4.1×",
+   "units": "",
+   "sentence": "12 rotors: the same, repeat timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N24.cost_replicate.ratio_min",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r12.n",
+   "value": 12,
+   "kind": "int",
+   "nd": 2,
+   "display": "12",
+   "display_html": "12",
+   "units": "",
+   "sentence": "rotors in the farm at rung N24",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "rungs.N24.n_rotors",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r21.a",
+   "value": 4.346334828850167,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "4.3×",
+   "display_html": "4.3×",
+   "units": "",
+   "sentence": "21 rotors: decomposition's speed over the undivided solve, first timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N48.cost.ratio",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r21.b",
+   "value": 4.6992137035471,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "4.7×",
+   "display_html": "4.7×",
+   "units": "",
+   "sentence": "21 rotors: the same, repeat timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N48.cost_replicate.ratio_min",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r21.n",
+   "value": 21,
+   "kind": "int",
+   "nd": 2,
+   "display": "21",
+   "display_html": "21",
+   "units": "",
+   "sentence": "rotors in the farm at rung N48",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "rungs.N48.n_rotors",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r36.a",
+   "value": 3.7481081681400745,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "3.7×",
+   "display_html": "3.7×",
+   "units": "",
+   "sentence": "36 rotors: decomposition's speed over the undivided solve, first timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N80.cost.ratio",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r36.b",
+   "value": 2.142531279748106,
+   "kind": "ratio",
+   "nd": 1,
+   "display": "2.1×",
+   "display_html": "2.1×",
+   "units": "",
+   "sentence": "36 rotors: the same, repeat timing",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "max over the Ep arms of 1 / rungs.N80.cost_replicate.ratio_min",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "the owner's Windows 11 laptop, 22 logical processors, on mains power",
+   "caveat": "",
+   "vault": ""
+  },
+  {
+   "id": "w346.r36.n",
+   "value": 36,
+   "kind": "int",
+   "nd": 2,
+   "display": "36",
+   "display_html": "36",
+   "units": "",
+   "sentence": "rotors in the farm at rung N80",
+   "source": [
+    "out/w346/w346.json"
+   ],
+   "pointer": null,
+   "derived": "rungs.N80.n_rotors",
+   "public": [
+    "records/w346/w346.json"
+   ],
+   "date": "",
+   "machine": "",
+   "caveat": "",
+   "vault": ""
+  },
+  {
    "id": "lc.ep_over_l",
    "value": 1.5238157366696221,
    "kind": "ratio",

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Atlas — A full world, decomposed and simulated by experts</title>
-<meta name="description" content="Atlas splits a simulation into pieces, gives each piece an expert solver, and lets the experts agree at their seams: checked, conserved and fast. Every number on this page links to its record or its paper.">
+<meta name="description" content="Domain decomposition makes complicated shapes simple; learned experts make simple problems fast. Atlas joins the two: modular experts, learned or classical, that agree at their seams through one checked interface. Every number links to its record or its paper.">
 <meta name="theme-color" content="#121317">
 <link rel="icon" href="assets/img/mark.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/inter-latin-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -25,9 +25,9 @@
     <nav aria-label="Sections">
       <ul>
         <li><a href="#how">How it works</a></li>
-        <li><a href="#today">Working today</a></li>
-        <li><a href="#science">The science</a></li>
-        <li><a href="#missing">The missing piece</a></li>
+        <li><a href="#decomposition">Decomposition</a></li>
+        <li><a href="#neural">Learned experts</a></li>
+        <li><a href="#chart-operator">Chart operator</a></li>
         <li><a href="#proofs">Proofs</a></li>
         <li><a href="#vision">Vision</a></li>
       </ul>
@@ -57,7 +57,7 @@
   <span class="tag">Illustration</span>
   <div class="wrap">
     <h1 class="display reveal" id="hero-title">A full world. Decomposed and simulated by experts.</h1>
-    <p class="lede reveal">Atlas splits a simulation into pieces, gives each piece an expert solver, and lets the experts agree at their seams: checked, conserved and fast.</p>
+    <p class="lede reveal">Neural operators are fast but struggle with complicated shapes. Domain decomposition turns a complicated shape into simple pieces. Atlas joins the two: every piece gets an expert (learned, classical, or a team of smaller experts), and the experts agree at their seams through one standard, checked interface.</p>
     <div class="actions reveal">
       <a class="pill light" href="install.html">Try the demo</a>
       <a class="arrow-link" href="architecture/index.html">Read the architecture</a>
@@ -70,7 +70,7 @@
   <div class="wrap">
     <p class="eyebrow reveal">How it works</p>
     <h2 class="reveal" id="how-title">Cut. Solve. Stitch.</h2>
-    <p class="lede reveal">One real case from the demo: heat flowing along a steel channel shaped like an S. Nothing here is a mock-up. The shape, the pieces and the temperatures are the demo's own.</p>
+    <p class="lede reveal">One real case from the demo: heat flowing along a steel channel shaped like an S. Nothing here is a mock-up. The shape, the pieces and the temperatures are the demo's own. The same three steps hold at any level of detail: cut finer where it matters, coarser where it does not.</p>
 
     <div class="steps">
       <div class="stage">
@@ -93,7 +93,7 @@
         <div class="step" data-step="solve">
           <p class="k">Solve</p>
           <h3>Every piece gets its own expert.</h3>
-          <p>Each piece is solved by its own solver. Today that expert is a classical solver. Next it is a learned one, built to be a piece.</p>
+          <p>Each piece is solved by its own expert: a learned operator, a classical solver, or a group of smaller experts working as one. In the demo today the experts are classical. Swapping one kind for another changes nothing around it.</p>
         </div>
         <div class="step" data-step="stitch">
           <p class="k">Stitch</p>
@@ -112,151 +112,118 @@
 
 <hr class="rule">
 
-<!-- 3. Working today -->
-<section class="section" id="today" aria-labelledby="today-title">
+<!-- 3. Half one: domain decomposition -->
+<section class="section" id="decomposition" aria-labelledby="dd-title">
   <div class="wrap">
-    <p class="eyebrow reveal">Working today</p>
-    <h2 class="reveal" id="today-title">Faster where it should be. Honest where it isn't.</h2>
-    <p class="lede reveal">The demo runs on a laptop and covers <span data-claim="fast.kinds">8</span> kinds of physics, from a wind farm to sound crossing into water. Each kind has one example built to show its best honest speed.</p>
+    <p class="eyebrow reveal">Half one · Domain decomposition</p>
+    <h2 class="reveal" id="dd-title">The power of domain decomposition.</h2>
+    <p class="lede reveal">A complicated shape is hard to solve in one piece: a single grid has to bend around every curve, and a single solver works at the pace of its hardest corner. Cut the shape into simple pieces and each piece is small, simply shaped and solved alongside the others. As the problem grows more complicated, the advantage grows.</p>
 
-    <div class="stats reveal" role="list">
-      <div class="stat" role="listitem">
-        <span class="big"><span class="count" data-claim="fast.lo">4.62×</span>–<span data-claim="fast.hi">5.85×</span></span>
-        <p>faster, cut into pieces, for <span data-claim="fast.met">4</span> of the <span data-claim="fast.kinds">8</span> kinds. Same answer.</p>
-        <a class="src" href="#fast-chart">Each example and its record</a>
-      </div>
-      <div class="stat" role="listitem">
-        <span class="big"><span data-claim="agree.worst">3.6×10<sup>−9</sup></span></span>
-        <p>the largest gap between the pieces and the undivided answer, where the pieces iterate to agreement, as a share of the field's scale.</p>
-        <a class="src" href="evidence.html#agree.worst">Record</a>
-      </div>
-      <div class="stat" role="listitem">
-        <span class="big"><span class="count" data-claim="balance.passed">34</span> of <span data-claim="balance.total">34</span></span>
-        <p>balance checks passed: mass, energy, charge and force, every one measured in the demo's examples.</p>
-        <a class="src" href="evidence.html#balance.total">Records</a>
-      </div>
-      <div class="stat" role="listitem">
-        <span class="big"><span class="count" data-claim="w346.lo">3.5×</span>–<span data-claim="w346.hi">5.7×</span></span>
-        <p>faster on wind farms of <span data-claim="w346.rmin">5</span> to <span data-claim="w346.rmax">21</span> rotors in a controlled measurement, farm power within <span data-claim="w346.plo">2.3%</span>–<span data-claim="w346.phi">8.3%</span>.</p>
-        <a class="src" href="evidence.html#w346.lo">Record</a>
-      </div>
-    </div>
-    <p class="fine reveal">Speeds are ratios: the time of the whole domain solved at once, divided by the time of the pieces, same grid, same machine. Measured on <span data-field="claim:fast.farm.s:machine">the owner&#x27;s Windows 11 laptop, 22 logical processors, on mains power, no other Python process</span>.</p>
-
-    <figure class="figure reveal" id="fast-chart">
-      <h3>One example per kind, against the undivided solve</h3>
-      <div class="chart-legend" aria-hidden="true">
-        <span><i style="background:var(--chart-fast)"></i>faster in pieces</span>
-        <span><i style="background:var(--chart-slow)"></i>faster solved whole</span>
-      </div>
-      <!-- gen:chart-fast -->
-<div class="chart-scroll"><svg class="chart" viewBox="0 0 760 382" role="img" aria-labelledby="fc-t fc-d">
-<title id="fc-t">Speed of the pieces against the undivided solve, one example per kind</title>
-<desc id="fc-d">A bar per kind of physics on a logarithmic scale; bars to the right of the same-speed line are faster in pieces, bars to the left are faster solved whole. The values are written at the bar ends.</desc>
-<line class="ax" x1="200.0" x2="200.0" y1="26" y2="374"/>
-<text x="200.0" y="20" text-anchor="middle"><tspan data-axis="">0.001×</tspan></text>
-<line class="ax" x1="325.0" x2="325.0" y1="26" y2="374"/>
-<text x="325.0" y="20" text-anchor="middle"><tspan data-axis="">0.01×</tspan></text>
-<line class="ax" x1="450.0" x2="450.0" y1="26" y2="374"/>
-<text x="450.0" y="20" text-anchor="middle"><tspan data-axis="">0.1×</tspan></text>
-<line class="ax" x1="575.0" x2="575.0" y1="26" y2="374"/>
-<text x="575.0" y="20" text-anchor="middle"><tspan data-axis="">1×</tspan></text>
-<line class="ax" x1="700.0" x2="700.0" y1="26" y2="374"/>
-<text x="700.0" y="20" text-anchor="middle"><tspan data-axis="">10×</tspan></text>
+    <div class="grid-2 charts-2">
+      <figure class="figure reveal" id="fast-chart">
+        <h3>The three fastest kinds, cut into pieces</h3>
+        <div class="chart-legend" aria-hidden="true">
+          <span><i style="background:var(--chart-fast)"></i>faster in pieces</span>
+        </div>
+        <!-- gen:chart-fast -->
+<div class="chart-scroll small"><svg class="chart" viewBox="0 0 560 196" role="img" aria-labelledby="fc-t fc-d">
+<title id="fc-t">Speed of the pieces against the undivided solve: the three fastest kinds</title>
+<desc id="fc-d">A bar per kind of physics, from zero; the line marks the same speed, so every bar past it is faster in pieces. The values are written at the bar ends.</desc>
+<line class="ax" x1="176.0" x2="176.0" y1="26" y2="188"/>
+<text x="176.0" y="20" text-anchor="middle"><tspan data-axis="">0×</tspan></text>
+<line class="ax" x1="230.0" x2="230.0" y1="26" y2="188"/>
+<text x="230.0" y="20" text-anchor="middle"><tspan data-axis="">1×</tspan></text>
+<line class="ax" x1="284.0" x2="284.0" y1="26" y2="188"/>
+<text x="284.0" y="20" text-anchor="middle"><tspan data-axis="">2×</tspan></text>
+<line class="ax" x1="338.0" x2="338.0" y1="26" y2="188"/>
+<text x="338.0" y="20" text-anchor="middle"><tspan data-axis="">3×</tspan></text>
+<line class="ax" x1="392.0" x2="392.0" y1="26" y2="188"/>
+<text x="392.0" y="20" text-anchor="middle"><tspan data-axis="">4×</tspan></text>
+<line class="ax" x1="446.0" x2="446.0" y1="26" y2="188"/>
+<text x="446.0" y="20" text-anchor="middle"><tspan data-axis="">5×</tspan></text>
+<line class="ax" x1="500.0" x2="500.0" y1="26" y2="188"/>
+<text x="500.0" y="20" text-anchor="middle"><tspan data-axis="">6×</tspan></text>
 <g class="row" tabindex="0">
 <title data-field="claim:fast.river.s:sentence">river plume: the pieces run at 5.85× the speed of the undivided solve</title>
-<rect class="hit" x="0" y="34.0" width="760" height="42"/>
-<text class="lbl" x="186" y="60.0" text-anchor="end">River plume</text>
-<path class="bar fast" d="M575.0,46.0 H666.9 Q670.9,46.0 670.9,50.0 V60.0 Q670.9,64.0 666.9,64.0 H575.0 Z"/>
-<text class="val" x="678.9" y="60.0" text-anchor="start"><tspan data-claim="fast.river.s">5.85×</tspan></text>
+<rect class="hit" x="0" y="34.0" width="560" height="50"/>
+<text class="lbl" x="162" y="64.0" text-anchor="end">River plume</text>
+<path class="bar fast" d="M176.0,49.0 H487.7 Q491.7,49.0 491.7,53.0 V65.0 Q491.7,69.0 487.7,69.0 H176.0 Z"/>
+<text class="val" x="499.7" y="64.0" text-anchor="start"><tspan data-claim="fast.river.s">5.85×</tspan></text>
 </g>
 <g class="row" tabindex="0">
 <title data-field="claim:fast.heat.s:sentence">heat conduction: the pieces run at 5.58× the speed of the undivided solve</title>
-<rect class="hit" x="0" y="76.0" width="760" height="42"/>
-<text class="lbl" x="186" y="102.0" text-anchor="end">Heat conduction</text>
-<path class="bar fast" d="M575.0,88.0 H664.3 Q668.3,88.0 668.3,92.0 V102.0 Q668.3,106.0 664.3,106.0 H575.0 Z"/>
-<text class="val" x="676.3" y="102.0" text-anchor="start"><tspan data-claim="fast.heat.s">5.58×</tspan></text>
+<rect class="hit" x="0" y="84.0" width="560" height="50"/>
+<text class="lbl" x="162" y="114.0" text-anchor="end">Heat conduction</text>
+<path class="bar fast" d="M176.0,99.0 H473.1 Q477.1,99.0 477.1,103.0 V115.0 Q477.1,119.0 473.1,119.0 H176.0 Z"/>
+<text class="val" x="485.1" y="114.0" text-anchor="start"><tspan data-claim="fast.heat.s">5.58×</tspan></text>
 </g>
 <g class="row" tabindex="0">
 <title data-field="claim:fast.sound.s:sentence">sound: the pieces run at 4.67× the speed of the undivided solve</title>
-<rect class="hit" x="0" y="118.0" width="760" height="42"/>
-<text class="lbl" x="186" y="144.0" text-anchor="end">Sound</text>
-<path class="bar fast" d="M575.0,130.0 H654.7 Q658.7,130.0 658.7,134.0 V144.0 Q658.7,148.0 654.7,148.0 H575.0 Z"/>
-<text class="val" x="666.7" y="144.0" text-anchor="start"><tspan data-claim="fast.sound.s">4.67×</tspan></text>
+<rect class="hit" x="0" y="134.0" width="560" height="50"/>
+<text class="lbl" x="162" y="164.0" text-anchor="end">Sound</text>
+<path class="bar fast" d="M176.0,149.0 H424.2 Q428.2,149.0 428.2,153.0 V165.0 Q428.2,169.0 424.2,169.0 H176.0 Z"/>
+<text class="val" x="436.2" y="164.0" text-anchor="start"><tspan data-claim="fast.sound.s">4.67×</tspan></text>
 </g>
-<g class="row" tabindex="0">
-<title data-field="claim:fast.farm.s:sentence">wind farm: the pieces run at 4.62× the speed of the undivided solve</title>
-<rect class="hit" x="0" y="160.0" width="760" height="42"/>
-<text class="lbl" x="186" y="186.0" text-anchor="end">Wind farm</text>
-<path class="bar fast" d="M575.0,172.0 H654.1 Q658.1,172.0 658.1,176.0 V186.0 Q658.1,190.0 654.1,190.0 H575.0 Z"/>
-<text class="val" x="666.1" y="186.0" text-anchor="start"><tspan data-claim="fast.farm.s">4.62×</tspan></text>
-</g>
-<g class="row" tabindex="0">
-<title data-field="claim:fast.bimetal.s:sentence">heated structure: the pieces run at 1.17× the speed of the undivided solve</title>
-<rect class="hit" x="0" y="202.0" width="760" height="42"/>
-<text class="lbl" x="186" y="228.0" text-anchor="end">Heated structure</text>
-<path class="bar fast" d="M575.0,214.0 H579.3 Q583.3,214.0 583.3,218.0 V228.0 Q583.3,232.0 579.3,232.0 H575.0 Z"/>
-<text class="val" x="591.3" y="228.0" text-anchor="start"><tspan data-claim="fast.bimetal.s">1.17×</tspan></text>
-</g>
-<g class="row" tabindex="0">
-<title data-field="claim:fast.circuit.s:sentence">current in a plate: the pieces run at 0.275× the speed of the undivided solve</title>
-<rect class="hit" x="0" y="244.0" width="760" height="42"/>
-<text class="lbl" x="186" y="270.0" text-anchor="end">Current in a plate</text>
-<path class="bar slow" d="M575.0,256.0 H509.0 Q505.0,256.0 505.0,260.0 V270.0 Q505.0,274.0 509.0,274.0 H575.0 Z"/>
-<text class="val" x="497.0" y="270.0" text-anchor="end"><tspan data-claim="fast.circuit.s">0.275×</tspan></text>
-</g>
-<g class="row" tabindex="0">
-<title data-field="claim:fast.structure.s:sentence">loaded structure: the pieces run at 0.00833× the speed of the undivided solve</title>
-<rect class="hit" x="0" y="286.0" width="760" height="42"/>
-<text class="lbl" x="186" y="312.0" text-anchor="end">Loaded structure</text>
-<path class="bar slow" d="M575.0,298.0 H319.0 Q315.0,298.0 315.0,302.0 V312.0 Q315.0,316.0 319.0,316.0 H575.0 Z"/>
-<text class="val" x="307.0" y="312.0" text-anchor="end"><tspan data-claim="fast.structure.s">0.008×</tspan></text>
-</g>
-<g class="row" tabindex="0">
-<title data-field="claim:fast.cooled.s:sentence">cooled block: the pieces run at 0.00426× the speed of the undivided solve</title>
-<rect class="hit" x="0" y="328.0" width="760" height="42"/>
-<text class="lbl" x="186" y="354.0" text-anchor="end">Cooled block</text>
-<path class="bar slow" d="M575.0,340.0 H282.7 Q278.7,340.0 278.7,344.0 V354.0 Q278.7,358.0 282.7,358.0 H575.0 Z"/>
-<text class="val" x="270.7" y="354.0" text-anchor="end"><tspan data-claim="fast.cooled.s">0.004×</tspan></text>
-</g>
-<line class="one" x1="575.0" x2="575.0" y1="26" y2="374"/>
+<line class="one" x1="230.0" x2="230.0" y1="26" y2="188"/>
 </svg></div>
 <!-- /gen:chart-fast -->
-      <figcaption>Logarithmic scale; the vertical line is the same speed. Each bar is one Fast example, measured once from a fresh start after a sweep chose its setup. Hover a bar for its conditions; <a href="evidence.html#fast">every record</a>.</figcaption>
-    </figure>
-
-    <p class="note warm reveal"><strong>On small problems the undivided solve is faster.</strong> One direct solve of a small grid beats every way of cutting it. Decomposition pays with size, or when it lets each piece take its own time step. The four kinds below did not reach the bar, and each card says why.</p>
-
-    <div class="limits">
-      <div class="card reveal">
-        <span class="ratio" data-claim="fast.structure.s">0.008×</span>
-        <h3>Loaded structure</h3>
-        <p>The whole is one direct solve, factored once; the pieces iterate until they agree. Substructuring could win, and it is not built.</p>
-      </div>
-      <div class="card reveal">
-        <span class="ratio" data-claim="fast.circuit.s">0.275×</span>
-        <h3>Current in a plate</h3>
-        <p>The film and its circuit are one sparse solve, factored once; the pieces iterate until they agree.</p>
-      </div>
-      <div class="card reveal">
-        <span class="ratio" data-claim="fast.bimetal.s">1.17×</span>
-        <h3>Heated structure</h3>
-        <p>It is split by physics, not by space, so at most it can halve the time.</p>
-      </div>
-      <div class="card reveal">
-        <span class="ratio" data-claim="fast.cooled.s">0.004×</span>
-        <h3>Cooled block</h3>
-        <p>The block and its coolant are one system, factored once; the pieces iterate until they agree.</p>
-      </div>
+        <figcaption>Each bar is one Fast example in the workbench, against the same grid solved whole on the same machine; the line is the same speed. The workbench has <span data-claim="fast.kinds">8</span> kinds, and you can race every one of them yourself. <a href="evidence.html#fast">Every record</a>.</figcaption>
+      </figure>
+      <figure class="figure reveal" id="rotor-chart">
+        <h3>The wind farm, as it grows</h3>
+        <div class="chart-legend" aria-hidden="true">
+          <span><i class="dot" style="background:var(--chart-fast)"></i>first timing</span>
+          <span><i class="ring"></i>repeat timing</span>
+          <span><i class="dot" style="background:var(--chart-slow)"></i>faster solved whole</span>
+        </div>
+        <!-- gen:chart-rotors -->
+<div class="chart-scroll small"><svg class="chart" viewBox="0 0 560 340" role="img" aria-labelledby="rc-t rc-d">
+<title id="rc-t">The wind farm as it grows: speed of the pieces against the undivided solve, by number of rotors</title>
+<desc id="rc-d">With one rotor the undivided solve is faster; from a handful of rotors on, the pieces are several times faster. Filled dots are the first timing, hollow dots a repeat timing.</desc>
+<line class="ax" x1="64" x2="530" y1="270.0" y2="270.0"/>
+<text x="54" y="274.0" text-anchor="end"><tspan data-axis="">0×</tspan></text>
+<line class="ax" x1="64" x2="530" y1="188.0" y2="188.0"/>
+<text x="54" y="192.0" text-anchor="end"><tspan data-axis="">2×</tspan></text>
+<line class="ax" x1="64" x2="530" y1="106.0" y2="106.0"/>
+<text x="54" y="110.0" text-anchor="end"><tspan data-axis="">4×</tspan></text>
+<line class="ax" x1="64" x2="530" y1="24.0" y2="24.0"/>
+<text x="54" y="28.0" text-anchor="end"><tspan data-axis="">6×</tspan></text>
+<line class="one" x1="64" x2="530" y1="229.0" y2="229.0"/>
+<text class="one-lbl" x="530" y="223.0" text-anchor="end">same speed</text>
+<text x="82.0" y="292" text-anchor="middle"><tspan data-claim="w346.r1.n">1</tspan></text>
+<text x="213.8" y="292" text-anchor="middle"><tspan data-claim="w346.r3.n">3</tspan></text>
+<text x="275.1" y="292" text-anchor="middle"><tspan data-claim="w346.r5.n">5</tspan></text>
+<text x="380.2" y="292" text-anchor="middle"><tspan data-claim="w346.r12.n">12</tspan></text>
+<text x="447.3" y="292" text-anchor="middle"><tspan data-claim="w346.r21.n">21</tspan></text>
+<text x="512.0" y="292" text-anchor="middle"><tspan data-claim="w346.r36.n">36</tspan></text>
+<text x="297" y="320" text-anchor="middle">rotors in the farm (logarithmic)</text>
+<path class="trend" d="M82.0,243.9 L213.8,217.3 L275.1,49.7 L380.2,36.6 L447.3,91.8 L512.0,116.3"/>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r1.a:sentence">1 rotor: decomposition&#x27;s speed over the undivided solve, first timing</title><circle class="hit" cx="82.0" cy="243.9" r="14"/><circle class="dot-slow" cx="82.0" cy="243.9" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r3.a:sentence">3 rotors: decomposition&#x27;s speed over the undivided solve, first timing</title><circle class="hit" cx="213.8" cy="217.3" r="14"/><circle class="dot-fast" cx="213.8" cy="217.3" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r5.b:sentence">5 rotors: the same, repeat timing</title><circle class="hit" cx="275.1" cy="126.5" r="14"/><circle class="dot-fast hollow" cx="275.1" cy="126.5" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r5.a:sentence">5 rotors: decomposition&#x27;s speed over the undivided solve, first timing</title><circle class="hit" cx="275.1" cy="49.7" r="14"/><circle class="dot-fast" cx="275.1" cy="49.7" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r12.b:sentence">12 rotors: the same, repeat timing</title><circle class="hit" cx="380.2" cy="103.7" r="14"/><circle class="dot-fast hollow" cx="380.2" cy="103.7" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r12.a:sentence">12 rotors: decomposition&#x27;s speed over the undivided solve, first timing</title><circle class="hit" cx="380.2" cy="36.6" r="14"/><circle class="dot-fast" cx="380.2" cy="36.6" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r21.b:sentence">21 rotors: the same, repeat timing</title><circle class="hit" cx="447.3" cy="77.3" r="14"/><circle class="dot-fast hollow" cx="447.3" cy="77.3" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r21.a:sentence">21 rotors: decomposition&#x27;s speed over the undivided solve, first timing</title><circle class="hit" cx="447.3" cy="91.8" r="14"/><circle class="dot-fast" cx="447.3" cy="91.8" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r36.b:sentence">36 rotors: the same, repeat timing</title><circle class="hit" cx="512.0" cy="182.2" r="14"/><circle class="dot-fast hollow" cx="512.0" cy="182.2" r="6"/></g>
+<g class="pt" tabindex="0"><title data-field="claim:w346.r36.a:sentence">36 rotors: decomposition&#x27;s speed over the undivided solve, first timing</title><circle class="hit" cx="512.0" cy="116.3" r="14"/><circle class="dot-fast" cx="512.0" cy="116.3" r="6"/></g>
+<text class="val" x="92.0" y="265.9" text-anchor="start"><tspan data-claim="w346.r1.a">0.6×</tspan></text>
+<text class="val" x="380.2" y="22.6" text-anchor="middle"><tspan data-claim="w346.r12.a">5.7×</tspan></text>
+</svg></div>
+<!-- /gen:chart-rotors -->
+        <figcaption>With one rotor, solving the farm whole is faster. From <span data-claim="w346.rmin">5</span> to <span data-claim="w346.rmax">21</span> rotors the pieces are <span data-claim="w346.lo">3.5×</span>–<span data-claim="w346.hi">5.7×</span> faster, with farm power within <span data-claim="w346.plo">2.3%</span>–<span data-claim="w346.phi">8.3%</span> of the undivided solve. No accuracy was recorded for the largest farm. <a href="evidence.html#w346.lo">The record</a>.</figcaption>
+      </figure>
     </div>
 
-    <p class="note reveal"><strong>Everything on this page so far is classical physics, cut into pieces.</strong> That already pays on big problems. It pays more on complicated shapes, in three dimensions, and with experts that learn, which is what we build next.</p>
+    <p class="note reveal"><strong>Same answer, nothing lost at a seam.</strong> Where the pieces iterate to agreement, they land within <span data-claim="agree.worst">3.6×10<sup>−9</sup></span> of the undivided answer, as a share of the field's scale, and <span data-claim="balance.passed">34</span> of <span data-claim="balance.total">34</span> balance checks (mass, energy, charge and force) pass.</p>
+    <p class="fine reveal">Speeds are ratios: the time of the whole domain solved at once, divided by the time of the pieces, same grid, same machine. Measured on <span data-field="claim:fast.farm.s:machine">the owner&#x27;s Windows 11 laptop, 22 logical processors, on mains power, no other Python process</span>.</p>
 
     <div class="install reveal" id="demo">
       <div class="txt">
-        <p class="eyebrow" style="color:var(--cyan)">Try the demo</p>
-        <h3>One command. Your laptop.</h3>
-        <p>The demo is a workbench that runs on your own machine: choose a kind of physics, draw the domain, cut it into pieces, and race the pieces against the undivided solve. Nothing is sent anywhere.</p>
+        <p class="eyebrow" style="color:var(--cyan)">The Atlas workbench</p>
+        <h3>Race the pieces yourself.</h3>
+        <p>The workbench runs on your own machine. Choose a kind of physics, draw the domain, cut it into pieces, and race the pieces against the undivided solve. Change the shape or the cut and run again. Nothing is sent anywhere.</p>
         <p class="fine" style="color:var(--dark-ink-2)">The screenshot is real, from a small cloud machine; the speed it shows is that machine's.</p>
         <div class="actions" style="margin-top:20px">
           <a class="pill light" href="install.html">Install it</a>
@@ -269,18 +236,12 @@
 <!-- /img:workbench -->
       </div>
     </div>
-  </div>
-</section>
 
-<!-- 4. The science agrees -->
-<section class="section alt" id="science" aria-labelledby="science-title">
-  <div class="wrap">
-    <p class="eyebrow reveal">The science agrees</p>
-    <h2 class="reveal" id="science-title">Others have shown each half.</h2>
-    <p class="lede reveal">Cutting a problem into pieces is how the largest simulations already run. Learned solvers are already much faster on their own problems. Putting learned solvers inside decomposition is an active research front, and Atlas sits on it.</p>
-    <p class="banner info reveal"><strong>Results by other researchers, on their own problems.</strong> Each card quotes its source. None of these numbers is Atlas's, and they are not comparable with each other.</p>
-
-    <div class="lit-head reveal"><h3>Decomposition, at the largest scales</h3><span class="fine">Classical, proven</span></div>
+    <div class="sub-head reveal">
+      <h3>What others have shown</h3>
+      <p>Decomposition is how the largest simulations, and the most complicated shapes, are already solved.</p>
+    </div>
+    <p class="banner info reveal"><strong>Results by other researchers, on their own problems.</strong> Each card quotes its source. None of these numbers is Atlas's.</p>
     <div class="lit two">
       <!-- gen:lit-classical -->
 <article class="card reveal">
@@ -299,11 +260,35 @@
 <p class="claim" data-field="lit:L4:claim">Choosing what the pieces tell each other at their seams makes them agree faster than classical Schwarz iteration.</p>
 <p class="cite"><span data-lit-ref="L4">M. J. Gander, Optimized Schwarz methods, SIAM Journal on Numerical Analysis 44(2), 699–731, 2006</span>. <a href="https://archive-ouverte.unige.ch/unige:171407">Read the source</a> · <a href="https://doi.org/10.1137/S0036142903425409">DOI</a> · <a href="evidence.html#L4">The quotation</a></p>
 </article>
+<article class="card reveal">
+<svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 9h22M5 16h6M21 16h6M5 23h22M9 5v22M23 5v22" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+<p class="who">Published by other researchers</p>
+<h3>Complex bodies, split into simple grids</h3>
+
+<p class="claim" data-field="lit:L7:claim">For flow around complex bodies in motion, splitting the space into overlapping simple grids is among the most cost-effective ways to an accurate answer.</p>
+<p class="cite"><span data-lit-ref="L7">W. M. Chan, S. E. Rogers, S. M. Nash, P. G. Buning, R. Meakin, Chimera Grid Tools, NASA Tech Briefs, December 2005 (NASA Ames Research Center)</span>. <a href="https://ntrs.nasa.gov/citations/20110016440">Read the source</a> · <a href="evidence.html#L7">The quotation</a></p>
+</article>
+<article class="card reveal">
+<svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3c3 4 4 9 4 15v8h-8v-8c0-6 1-11 4-15zM12 22l-4 5h4M20 22l4 5h-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+<p class="who">Published by other researchers</p>
+<h3>A whole launch vehicle, grid by grid</h3>
+
+<p class="claim" data-field="lit:L8:claim">Overlapping grids, one per component, computed the flow around the full Space Shuttle launch vehicle.</p>
+<p class="cite"><span data-lit-ref="L8">S. J. Parks, P. G. Buning, W. M. Chan, J. L. Steger, Collar grids for intersecting geometric components within the Chimera overlapped grid scheme, conference paper, 1991</span>. <a href="https://ntrs.nasa.gov/citations/19910056138">Read the source</a> · <a href="evidence.html#L8">The quotation</a></p>
+</article>
 <!-- /gen:lit-classical -->
     </div>
+  </div>
+</section>
 
-    <div class="lit-head reveal"><h3>Learned solvers, and learned pieces</h3><span class="fine">Neural operators and neural decomposition</span></div>
-    <div class="lit">
+<!-- 4. Half two: learned experts -->
+<section class="section alt" id="neural" aria-labelledby="neural-title">
+  <div class="wrap">
+    <p class="eyebrow reveal">Half two · Neural operators</p>
+    <h2 class="reveal" id="neural-title">The speed of learned experts.</h2>
+    <p class="lede reveal">A neural operator learns how a family of problems maps to its solutions. Once it is trained, one pass through the network replaces a solve, often orders of magnitude faster than the classical solver it learned from.</p>
+    <p class="banner info reveal"><strong>Results by other researchers, on their own problems.</strong> Each card quotes its source. None of these numbers is Atlas's, and they are not comparable with each other.</p>
+    <div class="lit two">
       <!-- gen:lit-neural -->
 <article class="card reveal">
 <svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 20c5-8 9 4 14-4s9-6 12-2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 26c5-6 9 2 14-3s9-4 12-1" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -329,6 +314,50 @@
 <p class="claim" data-field="lit:N3:claim">A learned operator mapped to each patient&#x27;s heart predicted its electrical wave in under a second on one GPU; the finite-element solver took 5 hours.</p>
 <p class="cite"><span data-lit-ref="N3">M. Yin, N. Charon, R. Brody, L. Lu, N. Trayanova, M. Maggioni, arXiv:2402.07250 v1, 2024; published in Nature Computational Science 4(12), 928–940, 2024</span>. <a href="https://arxiv.org/abs/2402.07250">Read the source</a> · <a href="https://doi.org/10.1038/s43588-024-00732-2">DOI</a> · <a href="evidence.html#N3">The quotation</a></p>
 </article>
+<article class="card reveal">
+<svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 26V6M4 26h24" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 22c4 0 6-12 10-12s6 6 10 6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+<p class="who">Published by other researchers</p>
+<h3>A neural operator against traditional solvers</h3>
+<div class="fig"><span data-lit="N13.speed">1,000×</span><small>up to, faster than traditional PDE solvers (three orders of magnitude)</small></div>
+<p class="claim" data-field="lit:N13:claim">The Fourier neural operator learned whole families of fluid problems and ran up to three orders of magnitude faster than traditional solvers.</p>
+<p class="cite"><span data-lit-ref="N13">Z. Li, N. Kovachki, K. Azizzadenesheli, B. Liu, K. Bhattacharya, A. Stuart, A. Anandkumar, Fourier Neural Operator for Parametric Partial Differential Equations, arXiv:2010.08895, 2020</span>. <a href="https://arxiv.org/abs/2010.08895">Read the source</a> · <a href="evidence.html#N13">The quotation</a></p>
+</article>
+<!-- /gen:lit-neural -->
+    </div>
+
+    <div class="grid-2 own-expert reveal">
+      <div>
+        <p class="eyebrow">In this project</p>
+        <h3>Our first learned expert.</h3>
+      </div>
+      <div>
+        <p>In the workbench's wind farm, a small network trained on <span data-claim="lc.layouts.train">100</span> random layouts steps every piece. Inside the same pieces it ran <span data-claim="lc.ep_over_l">1.52×</span> faster than the classical expert it replaces, at the same error (farm power <span data-claim="lc.L.P">7.50%</span> from the reference, against <span data-claim="lc.Ep.P">7.53%</span>), and <span data-claim="lc.f_over_l">7.45×</span> faster than the farm solved whole.</p>
+        <p>It did not clear its own gate. A classical solver on a grid twice as coarse came closer (<span data-claim="lc.Cc.P">3.63%</span>) in about a third of the time, so <span data-claim="lc.passed">5</span> of the six bars set before training passed. It is a first step; the strong evidence for speed is the published work above.</p>
+        <p class="fine">One evaluation, on the laptop on mains power. <a href="evidence.html#lc">The record</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Putting the halves together -->
+<section class="section" id="chart-operator" aria-labelledby="co-title">
+  <div class="wrap">
+    <p class="eyebrow reveal">Putting the halves together</p>
+    <h2 class="reveal" id="co-title">A universally compatible neural operator: the chart operator.</h2>
+    <p class="lede reveal">Decomposition turns a complicated shape into simple pieces. Learned experts solve simple problems fast. Together, learned experts can solve decomposed problems much faster than either half alone, provided each expert is built to be a piece.</p>
+
+    <div class="grid-2" style="margin-top:28px">
+      <div class="reveal">
+        <h3>Why today's neural operators aren't built for the job</h3>
+        <p>Most learn a whole problem for one family of shapes: fast inside that family, hard to reuse on new domains (<a href="evidence.html#N14">Secchi et al.</a>). The core obstacle is that a trained operator does not transfer to new geometries (<a href="evidence.html#N15">Huang et al.</a>). A piece also has to take what its neighbours tell it at the seams, keep pace with the coupling, and be checkable. When we placed a public pretrained neural operator inside Atlas, twelve such properties were missing.</p>
+      </div>
+      <div class="reveal">
+        <h3>Others have started joining the halves</h3>
+        <p>Learned pieces assembled by Schwarz iteration already generalise to new shapes and to domains far larger than they were trained on. The cards below quote them. Atlas adds one contract that every kind of expert plugs into, with its central guarantees proved.</p>
+      </div>
+    </div>
+    <div class="lit two">
+      <!-- gen:lit-joined -->
 <article class="card reveal">
 <svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 4h8v8H4zM12 4h8v8h-8zM20 4h8v8h-8zM4 12h8v8H4zM12 12h8v8h-8zM20 12h8v8h-8zM4 20h8v8H4zM12 20h8v8h-8zM20 20h8v8h-8z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
 <p class="who">Published by other researchers</p>
@@ -361,97 +390,11 @@
 <p class="claim" data-field="lit:N7:claim">Pairing a learned operator with a classical relaxation method gives a convergence rate that is uniform across scales.</p>
 <p class="cite"><span data-lit-ref="N7">E. Zhang, A. Kahana et al., Blending neural operators and relaxation methods in PDE numerical solvers, Nature Machine Intelligence 6(11), 1303–1313, 2024</span>. <a href="https://arxiv.org/abs/2208.13273">Read the source</a> · <a href="https://doi.org/10.1038/s42256-024-00910-x">DOI</a> · <a href="evidence.html#N7">The quotation</a></p>
 </article>
-<!-- /gen:lit-neural -->
-    </div>
-  </div>
-</section>
-
-<!-- 5. The missing piece -->
-<section class="section" id="missing" aria-labelledby="missing-title">
-  <div class="wrap">
-    <p class="eyebrow reveal">The missing piece</p>
-    <h2 class="reveal" id="missing-title">Today's AI solvers weren't built to be pieces.</h2>
-
-    <div class="grid-2" style="margin-top:28px">
-      <div class="reveal">
-        <h3>We trained one for the wind farm. Here is what happened.</h3>
-        <p>A small network, trained on <span data-claim="lc.layouts.train">100</span> random farm layouts and tested on one it had never seen, stepped every piece of a wind farm. Before any data existed we wrote down six bars it had to clear.</p>
-        <p>It matched the classical pieces: farm power <span data-claim="lc.L.P">7.50%</span> from the reference against their <span data-claim="lc.Ep.P">7.53%</span>. It ran <span data-claim="lc.ep_over_l">1.52×</span> faster than them and <span data-claim="lc.f_over_l">7.45×</span> faster than the whole domain.</p>
-        <p><strong>Then a classical solver on a grid twice as coarse came closer to the reference (<span data-claim="lc.Cc.P">3.63%</span>) in about a third of the time. The coarse solver won, so the gate failed:</strong> <span data-claim="lc.passed">5</span> of six bars passed.</p>
-        <p class="fine">Errors are farm power against a reference run at twice the resolution, read at macro-step <span data-claim="lc.h">12</span> of <span data-claim="lc.steps">40</span>; times are the mean per macro-step. One evaluation, on the laptop on mains power. <a href="evidence.html#lc">The record</a>.</p>
-      </div>
-      <figure class="figure reveal" style="margin-top:0">
-        <!-- gen:chart-learned -->
-<div class="chart-scroll small"><svg class="chart" viewBox="0 0 560 360" role="img" aria-labelledby="lc-t lc-d">
-<title id="lc-t">The learned case: time per macro-step against error, four ways of running the farm</title>
-<desc id="lc-d">The learned pieces sit beside the classical pieces at the same error and a little faster; the classical pieces on a coarser grid are both faster and closer to the reference; the whole domain is closest and slowest.</desc>
-<line class="ax" x1="70" x2="520" y1="300.0" y2="300.0"/>
-<text x="60" y="304.0" text-anchor="end"><tspan data-axis="">0</tspan></text>
-<line class="ax" x1="70" x2="520" y1="232.5" y2="232.5"/>
-<text x="60" y="236.5" text-anchor="end"><tspan data-axis="">2</tspan></text>
-<line class="ax" x1="70" x2="520" y1="165.0" y2="165.0"/>
-<text x="60" y="169.0" text-anchor="end"><tspan data-axis="">4</tspan></text>
-<line class="ax" x1="70" x2="520" y1="97.5" y2="97.5"/>
-<text x="60" y="101.5" text-anchor="end"><tspan data-axis="">6</tspan></text>
-<line class="ax" x1="70" x2="520" y1="30.0" y2="30.0"/>
-<text x="60" y="34.0" text-anchor="end"><tspan data-axis="">8</tspan></text>
-<line class="ax" x1="70.0" x2="70.0" y1="30" y2="300"/>
-<text x="70.0" y="320" text-anchor="middle"><tspan data-axis="">0.1</tspan></text>
-<line class="ax" x1="295.0" x2="295.0" y1="30" y2="300"/>
-<text x="295.0" y="320" text-anchor="middle"><tspan data-axis="">1</tspan></text>
-<line class="ax" x1="520.0" x2="520.0" y1="30" y2="300"/>
-<text x="520.0" y="320" text-anchor="middle"><tspan data-axis="">10</tspan></text>
-<text x="295" y="344" text-anchor="middle">seconds per macro-step (logarithmic)</text>
-<text x="18" y="165" text-anchor="middle" transform="rotate(-90 18 165)">farm power off the reference, %</text>
-<g class="pt" tabindex="0"><title data-field="claim:lc.F.P:sentence">arm F: farm power vs the truth at macro-step 12</title>
-<circle class="hit" cx="422.9" cy="282.8" r="16"/>
-<circle class="dot-o" cx="422.9" cy="282.8" r="6"/>
-<text class="lbl" x="410.9" y="266.8" text-anchor="end">The whole domain</text>
-<text x="410.9" y="283.8" text-anchor="end"><tspan data-claim="lc.F.P">0.51%</tspan>, <tspan data-claim="lc.F.t">3.70 s</tspan></text></g>
-<g class="pt" tabindex="0"><title data-field="claim:lc.Ep.P:sentence">arm Ep: farm power vs the truth at macro-step 12</title>
-<circle class="hit" cx="267.8" cy="45.9" r="16"/>
-<circle class="dot-o" cx="267.8" cy="45.9" r="6"/>
-<text class="lbl" x="279.8" y="75.9" text-anchor="start">Classical pieces</text>
-<text x="279.8" y="92.9" text-anchor="start"><tspan data-claim="lc.Ep.P">7.53%</tspan>, <tspan data-claim="lc.Ep.t">0.757 s</tspan></text></g>
-<g class="pt" tabindex="0"><title data-field="claim:lc.L.P:sentence">arm L: farm power vs the truth at macro-step 12</title>
-<circle class="hit" cx="226.6" cy="46.9" r="16"/>
-<circle class="dot-l" cx="226.6" cy="46.9" r="7"/>
-<text class="lbl" x="214.6" y="28.9" text-anchor="end">Learned pieces</text>
-<text x="214.6" y="45.9" text-anchor="end"><tspan data-claim="lc.L.P">7.50%</tspan>, <tspan data-claim="lc.L.t">0.497 s</tspan></text></g>
-<g class="pt" tabindex="0"><title data-field="claim:lc.Cc.P:sentence">arm Cc: farm power vs the truth at macro-step 12</title>
-<circle class="hit" cx="121.3" cy="177.7" r="16"/>
-<circle class="dot-o" cx="121.3" cy="177.7" r="6"/>
-<text class="lbl" x="133.3" y="163.7" text-anchor="start">Classical pieces, coarser grid</text>
-<text x="133.3" y="180.7" text-anchor="start"><tspan data-claim="lc.Cc.P">3.63%</tspan>, <tspan data-claim="lc.Cc.t">0.169 s</tspan></text></g>
-</svg></div>
-<!-- /gen:chart-learned -->
-        <figcaption>Each point is one way of running the same farm. Lower is closer to the reference; left is faster. Time on a logarithmic scale.</figcaption>
-      </figure>
+<!-- /gen:lit-joined -->
     </div>
 
-    <p class="note reveal">The network learned to copy the classical pieces, so it inherited their error. Today's learned models were built for whole, square, periodic problems. Inside a decomposition they fall short in ways we measured, twelve of them.</p>
-
-    <ul class="checklist reveal" aria-label="What a learned piece needs, each measured missing in a public pretrained model">
-      <li><span class="sid">S1</span><span><span class="x" aria-label="missing">✕</span>Accepts the piece's own shape, not one fixed square grid</span></li>
-      <li><span class="sid">S2</span><span><span class="x" aria-label="missing">✕</span>Runs at the coupling's time step</span></li>
-      <li><span class="sid">S3</span><span><span class="x" aria-label="missing">✕</span>Takes the data at its seams as an input</span></li>
-      <li><span class="sid">S4</span><span><span class="x" aria-label="missing">✕</span>Has a bounded reach across a seam</span></li>
-      <li><span class="sid">S5</span><span><span class="x" aria-label="missing">✕</span>Damps slow modes as the classical solver does</span></li>
-      <li><span class="sid">S6</span><span><span class="x" aria-label="missing">✕</span>Is never nearer singular than the classical solver</span></li>
-      <li><span class="sid">S7</span><span><span class="x" aria-label="missing">✕</span>Is cheaper than the cheapest classical alternative</span></li>
-      <li><span class="sid">S8</span><span><span class="x" aria-label="missing">✕</span>Has a reference of its own class to be checked against</span></li>
-      <li><span class="sid">S9</span><span><span class="x" aria-label="missing">✕</span>Is accurate enough to be worth its slot</span></li>
-      <li><span class="sid">S10</span><span><span class="x" aria-label="missing">✕</span>Has the numerical precision the checks need</span></li>
-      <li><span class="sid">S11</span><span><span class="x" aria-label="missing">✕</span>Rolls forward stably on its own</span></li>
-      <li><span class="sid">S12</span><span><span class="x" aria-label="missing">✕</span>Carries a licence that allows its use</span></li>
-    </ul>
-    <p class="fine reveal">Each property was measured missing in a public pretrained neural operator used inside the Atlas framework.</p>
-
-    <h3 class="reveal" style="margin-top:72px">The answer: the chart operator.</h3>
-    <p class="lede reveal">A learned expert designed to be a piece. Charts for geometry. Superelements for agreement. Operators for physics.</p>
-    <!-- gen:figure-M1 -->
-<figure class="m1 reveal"><img src="images/M1.webp" alt="Illustration: a curved piece of frosted glass shaped like a section of a channel, a glowing grid bending inside it and becoming square on its flat face." width="1400" height="788" loading="lazy" decoding="async"><span class="tag">Illustration</span></figure>
-<!-- /gen:figure-M1 -->
+    <h3 class="reveal" style="margin-top:72px">A different formulation.</h3>
+    <p class="lede reveal">A traditional neural operator predicts a field over a whole domain. The chart operator predicts how one piece responds at its joints. A chart maps the piece onto a square, a learned operator solves the square, and the piece reports its stiffness at its joints, the way structural engineers assemble a truss.</p>
 
     <div class="three">
       <div class="card reveal">
@@ -468,7 +411,7 @@
           <g stroke="rgba(255,255,255,.35)" stroke-width="1"><path d="M230 35 V115 M250 35 V115 M270 35 V115 M210 55 H290 M210 75 H290 M210 95 H290"/></g>
         </svg>
         <h3>Charts for geometry</h3>
-        <p>Every piece is mapped onto a square by a map that is checked never to fold. The curved piece becomes a square with its geometry passed in as data.</p>
+        <p>Every piece is mapped onto a square by a map that is checked never to fold. The curved piece becomes a square, with its geometry passed in as data, so one operator can serve many shapes.</p>
       </div>
       <div class="card reveal">
         <svg viewBox="0 0 300 150" aria-hidden="true">
@@ -479,7 +422,7 @@
           <path d="M130 45 H170 M130 105 H170" stroke="rgba(25,195,240,.5)" stroke-width="1.5"/>
         </svg>
         <h3>Superelements for agreement</h3>
-        <p>Each piece reports its stiffness at its joints, the way structural engineers assemble a truss. The host assembles the joints and solves them once, with no back-and-forth.</p>
+        <p>Each piece reports only its stiffness at its joints. The host assembles the joints and solves them once, with no back-and-forth. Any expert that reports its joints this way can sit beside it.</p>
       </div>
       <div class="card reveal">
         <svg viewBox="0 0 300 150" aria-hidden="true">
@@ -495,18 +438,27 @@
       </div>
     </div>
 
-    <p class="note reveal">Built this way, a learned piece cannot break the assembly: <strong>whatever the network returns, the assembled system can be solved, and its answer is the best its pieces can represent.</strong> Errors in a piece enter squared. With every field off by <span data-claim="arch.eps">10%</span>, the joints came out off by <span data-claim="arch.gram_err">0.9%</span>, and every piece stayed well behaved. Predicting the joints directly was off by <span data-claim="arch.direct_err">10%</span>, and <span data-claim="arch.indef">12</span> of <span data-claim="arch.pieces">16</span> pieces broke.</p>
+    <div class="compat reveal">
+      <h3>Compatible by design</h3>
+      <ul>
+        <li><strong>Any expert.</strong> A piece can be a learned operator, a classical solver, or a group of smaller experts behind one set of joints. The rest of the system sees only the joints.</li>
+        <li><strong>Any level of detail.</strong> Change the geometry or the cut to make a simulation finer where detail matters and broader where it does not. The experts and the contract stay the same.</li>
+        <li><strong>Any power-carrying seam.</strong> Force, heat, current and flow each cross a seam as an effort and a flow whose product is power. That is one contract for every kind of physics, and the compiler checks each connection before anything runs.</li>
+      </ul>
+    </div>
+
+    <p class="note reveal">Built this way, a learned piece cannot break the assembly. <strong>Whatever the network returns, the assembled system can be solved, and its answer is the best its pieces can represent.</strong> That is proved in Lean, as <code>Atlas.tier0_headline</code>. Errors in a piece enter squared: with every field off by <span data-claim="arch.eps">10%</span>, the joints came out off by <span data-claim="arch.gram_err">0.9%</span>, and every piece stayed well behaved. Predicting the joints directly was off by <span data-claim="arch.direct_err">10%</span>, and <span data-claim="arch.indef">12</span> of <span data-claim="arch.pieces">16</span> pieces broke.</p>
     <p class="fine reveal">A design, not a build: no chart operator has been trained. The errors above were put in by hand to test the assembly, not produced by a trained network. <a href="evidence.html#arch">The record</a>.</p>
-    <div class="actions reveal"><a class="pill" href="architecture/index.html">Read the architecture</a></div>
+    <div class="actions reveal"><a class="pill" href="architecture/index.html">Read the architecture</a> <a class="arrow-link" href="#proofs">The proofs</a></div>
   </div>
 </section>
 
 <!-- 6. Mathematically secure -->
 <section class="section alt" id="proofs" aria-labelledby="proofs-title">
   <div class="wrap">
-    <p class="eyebrow reveal">Mathematically secure</p>
-    <h2 class="reveal" id="proofs-title">Not a promise. A proof.</h2>
-    <p class="lede reveal">The guarantees are proved in Lean, a proof assistant whose small kernel checks every step. A machine check guarantees that the proof proves the statement, however the proof was written.</p>
+    <p class="eyebrow reveal">Formal proofs</p>
+    <h2 class="reveal" id="proofs-title">Mathematically proven.</h2>
+    <p class="lede reveal">In Atlas, formalization is part of the discovery, not a check added at the end. As the design grows, its statements are proved in Lean, a proof assistant whose small kernel checks every step: some for this project, some for domain decomposition in general. A machine check guarantees that the proof proves the statement, however the proof was written.</p>
 
     <div class="stats reveal" role="list">
       <div class="stat" role="listitem"><span class="big"><span class="count" data-claim="lean.decls">142</span></span><p>definitions and theorems whose axioms the kernel checked, none failing</p><a class="src" href="evidence.html#lean.decls">Record</a></div>
@@ -535,8 +487,8 @@
 
     <div class="grid-2" style="margin-top:56px">
       <div class="reveal">
-        <h3>The checker caught a mistake in our own plan.</h3>
-        <p>One statement we planned to prove, T3, is false as first written for one standard method, restricted additive Schwarz. Lean would not accept it, and a small counterexample shows why. The corrected statement needs a sweep that converges, and that is what the framework's compiler now requires before it admits such a coupling.</p>
+        <h3>The proofs changed the design.</h3>
+        <p>One statement we planned to prove, T3, is false as first written for one standard method, restricted additive Schwarz. Lean would not accept it, and a small counterexample shows why. The corrected statement needs a sweep that converges, and the framework's compiler now requires exactly that before it admits such a coupling. The proof did not certify the design after the fact. It changed it.</p>
         <p><a class="arrow-link" href="evidence.html#t3">The counterexample</a></p>
       </div>
       <div class="reveal">
@@ -749,9 +701,10 @@
 <section class="section dark" id="vision" aria-labelledby="vision-title">
   <div class="wrap">
     <p class="eyebrow reveal">The vision</p>
-    <h2 class="reveal" id="vision-title">What it unlocks.</h2>
+    <h2 class="reveal" id="vision-title">The full vision.</h2>
     <p class="vision-banner reveal">Vision. Not built yet.</p>
-    <p class="lede reveal">Three scenes at three scales. In each, every part is an expert, and every link between them is a typed conversation that carries force, heat, current or flow, and is checked before anything runs. The pictures are illustrations; the graphs on them are drawn from each scenario's design.</p>
+    <p class="lede reveal">Imagine a full system, decomposed into its individual parts. Every part is an expert, and every expert (like the power unit or the radiators) can be a neural operator, a classical model, or itself made of smaller experts inside. Experts work on their own time and length scales and their own physics, and still agree through one standard, checked interface that carries force, heat, current or flow. The physics is the first instance; the framework is built to generalise to real engineering systems.</p>
+    <p class="reveal small" style="color:var(--dark-ink-2);margin-top:-8px">Three scenes at three scales. The pictures are illustrations; the graphs on them are drawn from each scenario's design.</p>
 
     <!-- scenario 1 -->
     <article class="scenario" aria-labelledby="sc1">
@@ -954,7 +907,7 @@
       <div class="story">
         <div>
           <h3 id="sc3">The agentic Moon base.</h3>
-          <p>A Moon base is a machine the size of a town where every system leans on the others. A landing blasts dust at the solar arrays; the arrays feed the batteries; the batteries keep the habitat warm through the two-week night; the radiators shed the heat. Atlas would give each system its own expert, and every cable, pipe and plume would become a typed conversation that carries power, heat or force, each one checked.</p>
+          <p>A Moon base is a machine the size of a town where every system leans on the others. A landing blasts dust at the solar arrays; the arrays feed the batteries; the batteries keep the habitat warm through the two-week night; the radiators shed the heat. Atlas would give each system its own agent. The solar towers would not be one network: they would be one agent, trained as an operator, written as a mathematical model, or grouped from smaller experts, running on its own resources and its own clock. Every cable, pipe and plume would become a typed conversation that carries power, heat or force, each one checked.</p>
         </div>
         <p class="today"><b>Today:</b> a seven-agent rocket ascent in 2-D, coupled and conserving; a powertrain from rotor shaft to battery; a closed coolant loop; and fields coupled to lumped circuits in the demo. Plumes on regolith and the lunar environment are not built.</p>
       </div>
@@ -963,42 +916,6 @@
 <figure class="detail reveal"><img src="images/3d.webp" alt="Illustration: the Moon base at night, lit by earthshine and lit windows, a rover charging at a dock, cyan lines tracing power to the habitat." width="1400" height="788" loading="lazy" decoding="async"><span class="tag">Illustration</span></figure>
 <!-- /gen:details-3 --></div>
     </article>
-  </div>
-</section>
-
-<!-- 8. The path -->
-<section class="section" id="path" aria-labelledby="path-title">
-  <div class="wrap">
-    <p class="eyebrow reveal">The path</p>
-    <h2 class="reveal" id="path-title">From a square of heat to a whole world.</h2>
-    <p class="lede reveal">Four stages, each with what it must prove and the gate it must pass first. The first gate is the number of iterations, before any claim of speed.</p>
-    <div class="path">
-      <div class="stage-n">
-        <div class="dot" aria-hidden="true"></div>
-        <h3>Stage 0</h3>
-        <p>Heat diffusing through pieces of random shape: geometry through the chart, the learned piece's output, the assembly at the joints, and its cost against the classical alternatives.</p>
-        <p class="gate">Gate: on the demo's own drawn examples, the bend and the S-channel among them.</p>
-      </div>
-      <div class="stage-n">
-        <div class="dot" aria-hidden="true"></div>
-        <h3>Stage 1</h3>
-        <p>Flow carrying a substance, elastic structures and electric current: the same contract across port types, and a seam between two physics with a learned expert on each side.</p>
-        <p class="gate">Gate: per family, plus the cooled block's seam.</p>
-      </div>
-      <div class="stage-n">
-        <div class="dot" aria-hidden="true"></div>
-        <h3>Stage 2</h3>
-        <p>Fluid flow, the first nonlinear family; the demo's learned wind farm, generalised from rectangles to curved pieces; and a controlled comparison of training from scratch against fine-tuning a pretrained model.</p>
-        <p class="gate">Gate: on the wind farm and a flow past a cylinder.</p>
-      </div>
-      <div class="stage-n">
-        <div class="dot" aria-hidden="true"></div>
-        <h3>Stage 3</h3>
-        <p>Three dimensions, and compressible and reacting flow: the scale of the vision's car, fire front and plume on regolith.</p>
-        <p class="gate">Gate: set after Stage 2.</p>
-      </div>
-    </div>
-    <p class="fine reveal" style="margin-top:28px">No cost is shown: the training cost has not been measured yet, and estimates stay off this page.</p>
   </div>
 </section>
 

@@ -71,80 +71,81 @@ FAST_ROWS = [("river", "River plume"), ("heat", "Heat conduction"), ("sound", "S
              ("cooled", "Cooled block")]
 
 
-def chart_fast() -> str:
-    rows = sorted(FAST_ROWS, key=lambda r: -CLAIMS[f"fast.{r[0]}.s"]["value"])
-    W, L, R, top, rh = 760, 200, 700, 34, 42
-    lo, hi = -3, 1
-    x = lambda v: L + (math.log10(v) - lo) / (hi - lo) * (R - L)
-    H = top + rh * len(rows) + 12
+def chart_fast(top: int = 3) -> str:
+    """The `top` fastest kinds' Fast examples, against the undivided solve: a linear scale from zero."""
+    rows = sorted(FAST_ROWS, key=lambda r: -CLAIMS[f"fast.{r[0]}.s"]["value"])[:top]
+    W, L, R, top_, rh = 560, 176, 500, 34, 50
+    hi = math.ceil(max(CLAIMS[f"fast.{k}.s"]["value"] for k, _ in rows))
+    x = lambda v: L + v / hi * (R - L)
+    H = top_ + rh * len(rows) + 12
     out = [f'<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-labelledby="fc-t fc-d">',
-           '<title id="fc-t">Speed of the pieces against the undivided solve, one example per kind</title>',
-           '<desc id="fc-d">A bar per kind of physics on a logarithmic scale; bars to the right of the same-speed line are faster in pieces, bars to the left are faster solved whole. The values are written at the bar ends.</desc>']
-    for e in range(lo, hi + 1):
-        v = 10 ** e
+           '<title id="fc-t">Speed of the pieces against the undivided solve: the three fastest kinds</title>',
+           '<desc id="fc-d">A bar per kind of physics, from zero; the line marks the same speed, so every bar past it is '
+           'faster in pieces. The values are written at the bar ends.</desc>']
+    for v in range(0, hi + 1):
         xx = x(v)
-        lab = f"{v:g}{TIMES}"
-        out.append(f'<line class="ax" x1="{xx:.1f}" x2="{xx:.1f}" y1="{top - 8}" y2="{H - 8}"/>')
-        out.append(f'<text x="{xx:.1f}" y="{top - 14}" text-anchor="middle"><tspan data-axis="">{lab}</tspan></text>')
-    x1 = x(1)
+        out.append(f'<line class="ax" x1="{xx:.1f}" x2="{xx:.1f}" y1="{top_ - 8}" y2="{H - 8}"/>')
+        out.append(f'<text x="{xx:.1f}" y="{top_ - 14}" text-anchor="middle"><tspan data-axis="">{v}{TIMES}</tspan></text>')
+    x0 = x(0)
     for i, (k, name) in enumerate(rows):
         c = CLAIMS[f"fast.{k}.s"]
         v = c["value"]
-        yc = top + rh * i + rh / 2
-        bh, r = 18, 4
+        yc = top_ + rh * i + rh / 2
+        bh, r = 20, 4
         xv = x(v)
-        fast = v >= 1
-        if fast:
-            d = (f"M{x1:.1f},{yc - bh / 2:.1f} H{xv - r:.1f} Q{xv:.1f},{yc - bh / 2:.1f} {xv:.1f},{yc - bh / 2 + r:.1f} "
-                 f"V{yc + bh / 2 - r:.1f} Q{xv:.1f},{yc + bh / 2:.1f} {xv - r:.1f},{yc + bh / 2:.1f} H{x1:.1f} Z")
-        else:
-            d = (f"M{x1:.1f},{yc - bh / 2:.1f} H{xv + r:.1f} Q{xv:.1f},{yc - bh / 2:.1f} {xv:.1f},{yc - bh / 2 + r:.1f} "
-                 f"V{yc + bh / 2 - r:.1f} Q{xv:.1f},{yc + bh / 2:.1f} {xv + r:.1f},{yc + bh / 2:.1f} H{x1:.1f} Z")
-        tx, anchor = (xv + 8, "start") if fast else (xv - 8, "end")
-        out.append(f'<g class="row" tabindex="0">')
+        d = (f"M{x0:.1f},{yc - bh / 2:.1f} H{xv - r:.1f} Q{xv:.1f},{yc - bh / 2:.1f} {xv:.1f},{yc - bh / 2 + r:.1f} "
+             f"V{yc + bh / 2 - r:.1f} Q{xv:.1f},{yc + bh / 2:.1f} {xv - r:.1f},{yc + bh / 2:.1f} H{x0:.1f} Z")
+        out.append('<g class="row" tabindex="0">')
         out.append(f'<title data-field="claim:fast.{k}.s:sentence">{esc(c["sentence"])}</title>')
         out.append(f'<rect class="hit" x="0" y="{yc - rh / 2:.1f}" width="{W}" height="{rh}"/>')
         out.append(f'<text class="lbl" x="{L - 14}" y="{yc + 5:.1f}" text-anchor="end">{esc(name)}</text>')
-        out.append(f'<path class="bar {"fast" if fast else "slow"}" d="{d}"/>')
-        out.append(f'<text class="val" x="{tx:.1f}" y="{yc + 5:.1f}" text-anchor="{anchor}">'
+        out.append(f'<path class="bar fast" d="{d}"/>')
+        out.append(f'<text class="val" x="{xv + 8:.1f}" y="{yc + 5:.1f}" text-anchor="start">'
                    f'<tspan data-claim="fast.{k}.s">{esc(c["display"])}</tspan></text>')
         out.append("</g>")
-    out.append(f'<line class="one" x1="{x1:.1f}" x2="{x1:.1f}" y1="{top - 8}" y2="{H - 8}"/>')
+    out.append(f'<line class="one" x1="{x(1):.1f}" x2="{x(1):.1f}" y1="{top_ - 8}" y2="{H - 8}"/>')
     out.append("</svg>")
     return "\n".join(out)
 
 
-def chart_learned() -> str:
-    arms = [("F", "The whole domain"), ("Ep", "Classical pieces"), ("L", "Learned pieces"), ("Cc", "Classical pieces, coarser grid")]
-    W, H, L, R, T, B = 560, 360, 70, 520, 30, 300
-    x = lambda t: L + (math.log10(t) + 1) / 2 * (R - L)
-    y = lambda e: B - e / 0.08 * (B - T)
-    out = [f'<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-labelledby="lc-t lc-d">',
-           '<title id="lc-t">The learned case: time per macro-step against error, four ways of running the farm</title>',
-           '<desc id="lc-d">The learned pieces sit beside the classical pieces at the same error and a little faster; the classical pieces on a coarser grid are both faster and closer to the reference; the whole domain is closest and slowest.</desc>']
-    for e in range(0, 9, 2):
-        yy = y(e / 100)
-        out.append(f'<line class="ax" x1="{L}" x2="{R}" y1="{yy:.1f}" y2="{yy:.1f}"/>')
-        out.append(f'<text x="{L - 10}" y="{yy + 4:.1f}" text-anchor="end"><tspan data-axis="">{e}</tspan></text>')
-    for p in (0.1, 1, 10):
-        xx = x(p)
-        out.append(f'<line class="ax" x1="{xx:.1f}" x2="{xx:.1f}" y1="{T}" y2="{B}"/>')
-        out.append(f'<text x="{xx:.1f}" y="{B + 20}" text-anchor="middle"><tspan data-axis="">{p:g}</tspan></text>')
-    out.append(f'<text x="{(L + R) / 2:.0f}" y="{B + 44}" text-anchor="middle">seconds per macro-step (logarithmic)</text>')
-    out.append(f'<text x="18" y="{(T + B) / 2:.0f}" text-anchor="middle" transform="rotate(-90 18 {(T + B) / 2:.0f})">farm power off the reference, %</text>')
-    place = {"F": (-12, -16, "end"), "Ep": (12, 30, "start"), "L": (-12, -18, "end"), "Cc": (12, -14, "start")}
-    for a, name in arms:
-        t, e = CLAIMS[f"lc.{a}.t"]["value"], CLAIMS[f"lc.{a}.P"]["value"]
-        cx, cy = x(t), y(e)
-        dx, dy, anchor = place[a]
-        cls = "dot-l" if a == "L" else "dot-o"
-        out.append(f'<g class="pt" tabindex="0"><title data-field="claim:lc.{a}.P:sentence">{esc(CLAIMS[f"lc.{a}.P"]["sentence"])}</title>')
-        out.append(f'<circle class="hit" cx="{cx:.1f}" cy="{cy:.1f}" r="16"/>')
-        out.append(f'<circle class="{cls}" cx="{cx:.1f}" cy="{cy:.1f}" r="{7 if a == "L" else 6}"/>')
-        out.append(f'<text class="lbl" x="{cx + dx:.1f}" y="{cy + dy:.1f}" text-anchor="{anchor}">{esc(name)}</text>')
-        out.append(f'<text x="{cx + dx:.1f}" y="{cy + dy + 17:.1f}" text-anchor="{anchor}">'
-                   f'<tspan data-claim="lc.{a}.P">{esc(CLAIMS[f"lc.{a}.P"]["display"])}</tspan>, '
-                   f'<tspan data-claim="lc.{a}.t">{esc(CLAIMS[f"lc.{a}.t"]["display"])}</tspan></text></g>')
+def chart_rotors() -> str:
+    """The wind farm as it grows (W346): decomposition's speed over the undivided solve against the number of
+    rotors, one dot per timing draw (the best thread count of each), rotors on a logarithmic scale."""
+    rungs = sorted({c["value"] for cid, c in CLAIMS.items() if re.fullmatch(r"w346\.r\d+\.n", cid)})
+    W, H, L, R, T, B = 560, 340, 64, 530, 24, 270
+    ymax = 6
+    lx = lambda n: L + 18 + (math.log10(n) - math.log10(rungs[0])) / (math.log10(rungs[-1]) - math.log10(rungs[0])) * (R - L - 36)
+    y = lambda v: B - v / ymax * (B - T)
+    out = [f'<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-labelledby="rc-t rc-d">',
+           '<title id="rc-t">The wind farm as it grows: speed of the pieces against the undivided solve, by number of rotors</title>',
+           '<desc id="rc-d">With one rotor the undivided solve is faster; from a handful of rotors on, the pieces are several '
+           'times faster. Filled dots are the first timing, hollow dots a repeat timing.</desc>']
+    for v in range(0, ymax + 1, 2):
+        out.append(f'<line class="ax" x1="{L}" x2="{R}" y1="{y(v):.1f}" y2="{y(v):.1f}"/>')
+        out.append(f'<text x="{L - 10}" y="{y(v) + 4:.1f}" text-anchor="end"><tspan data-axis="">{v}{TIMES}</tspan></text>')
+    out.append(f'<line class="one" x1="{L}" x2="{R}" y1="{y(1):.1f}" y2="{y(1):.1f}"/>')
+    out.append(f'<text class="one-lbl" x="{R}" y="{y(1) - 6:.1f}" text-anchor="end">same speed</text>')
+    for n in rungs:
+        out.append(f'<text x="{lx(n):.1f}" y="{B + 22}" text-anchor="middle"><tspan data-claim="w346.r{n}.n">{n}</tspan></text>')
+    out.append(f'<text x="{(L + R) / 2:.0f}" y="{B + 50}" text-anchor="middle">rotors in the farm (logarithmic)</text>')
+    pts = [(n, CLAIMS[f"w346.r{n}.a"]) for n in rungs]
+    out.append('<path class="trend" d="' + " ".join(
+        f'{"M" if i == 0 else "L"}{lx(n):.1f},{y(c["value"]):.1f}' for i, (n, c) in enumerate(pts)) + '"/>')
+    for n in rungs:
+        for tag in ("b", "a"):
+            cid = f"w346.r{n}.{tag}"
+            if cid not in CLAIMS:
+                continue
+            c = CLAIMS[cid]
+            cx, cy = lx(n), y(c["value"])
+            cls = ("dot-fast" if c["value"] >= 1 else "dot-slow") + (" hollow" if tag == "b" else "")
+            out.append(f'<g class="pt" tabindex="0"><title data-field="claim:{cid}:sentence">{esc(c["sentence"])}</title>'
+                       f'<circle class="hit" cx="{cx:.1f}" cy="{cy:.1f}" r="14"/>'
+                       f'<circle class="{cls}" cx="{cx:.1f}" cy="{cy:.1f}" r="6"/></g>')
+    for n, anchor, dy in ((rungs[0], "start", 22), (12, "middle", -14)):
+        c = CLAIMS[f"w346.r{n}.a"]
+        out.append(f'<text class="val" x="{lx(n) + (10 if anchor == "start" else 0):.1f}" y="{y(c["value"]) + dy:.1f}" '
+                   f'text-anchor="{anchor}"><tspan data-claim="w346.r{n}.a">{esc(c["display"])}</tspan></text>')
     out.append("</svg>")
     return "\n".join(out)
 
@@ -161,6 +162,9 @@ ICONS = {
     "N5": '<path d="M4 6h14v14H4zM14 12h14v14H14z" fill="none" stroke="currentColor" stroke-width="1.6"/>',
     "N6": '<path d="M16 4l10 6v12l-10 6-10-6V10z M6 10l10 6 10-6 M16 16v12" fill="none" stroke="currentColor" stroke-width="1.6"/>',
     "N7": '<path d="M4 24c4 0 4-16 8-16s4 16 8 16 4-16 8-16" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+    "L7": '<circle cx="16" cy="16" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 9h22M5 16h6M21 16h6M5 23h22M9 5v22M23 5v22" fill="none" stroke="currentColor" stroke-width="1.2"/>',
+    "L8": '<path d="M16 3c3 4 4 9 4 15v8h-8v-8c0-6 1-11 4-15zM12 22l-4 5h4M20 22l4 5h-4" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+    "N13": '<path d="M4 26V6M4 26h24" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 22c4 0 6-12 10-12s6 6 10 6" fill="none" stroke="currentColor" stroke-width="1.6"/>',
 }
 
 
@@ -429,16 +433,16 @@ def launch_banner() -> str:
 
 
 GEN = {
-    "chart-fast": lambda: f'<div class="chart-scroll">{chart_fast()}</div>',
-    "chart-learned": lambda: f'<div class="chart-scroll small">{chart_learned()}</div>',
+    "chart-fast": lambda: f'<div class="chart-scroll small">{chart_fast()}</div>',
+    "chart-rotors": lambda: f'<div class="chart-scroll small">{chart_rotors()}</div>',
     "lit-classical": lambda: "\n".join(lit_card(e) for e in LIT.values() if e["group"] == "classical"),
     "lit-neural": lambda: "\n".join(lit_card(e) for e in LIT.values() if e["group"] == "neural"),
+    "lit-joined": lambda: "\n".join(lit_card(e) for e in LIT.values() if e["group"] == "joined"),
     "proof-graph": proof_graph,
     "evidence-claims": evidence_claims, "evidence-literature": evidence_literature, "evidence-records": evidence_records,
     "launch-banner": launch_banner,
     "details-1": lambda: "\n".join(figure(k) for k in ("1c", "1d", "1e")),
     "details-3": lambda: "\n".join(figure(k) for k in ("3c", "3d")),
-    "figure-M1": lambda: figure("M1", "m1"),
     "overlay-1a": lambda: overlay("1a"), "overlay-2a": lambda: overlay("2a"), "overlay-3a": lambda: overlay("3a"),
     "cmd-win": lambda: commands("win"), "cmd-mac": lambda: commands("mac"), "cmd-linux": lambda: commands("linux"),
 }

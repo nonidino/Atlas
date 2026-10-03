@@ -345,6 +345,21 @@ def w346_claims() -> None:
         derived="min rungs[].n_rotors at or above the first rung where decomposition wins")
     add("w346.rmax", max(rotors), "int", sentence="the largest farm in the range, in rotors", source=rel,
         derived="max rungs[].n_rotors with an accuracy record")
+    # every rung, for the chart of speed against farm size: the best thread count of each timing draw
+    for k, r in d["rungs"].items():
+        n = r["n_rotors"]
+        add(f"w346.r{n}.a", max(1 / v for a, v in r["cost"]["ratio"].items() if a.startswith("Ep")), "ratio", nd=1,
+            sentence=f"{n} rotor{'s' * (n != 1)}: decomposition's speed over the undivided solve, first timing",
+            source=rel, derived=f"max over the Ep arms of 1 / rungs.{k}.cost.ratio",
+            machine=LAPTOP.replace(", no other Python process", ""))
+        rep = (r.get("cost_replicate") or {}).get("ratio_min") or {}
+        if any(a.startswith("Ep") for a in rep):
+            add(f"w346.r{n}.b", max(1 / v for a, v in rep.items() if a.startswith("Ep")), "ratio", nd=1,
+                sentence=f"{n} rotors: the same, repeat timing", source=rel,
+                derived=f"max over the Ep arms of 1 / rungs.{k}.cost_replicate.ratio_min",
+                machine=LAPTOP.replace(", no other Python process", ""))
+        add(f"w346.r{n}.n", n, "int", sentence=f"rotors in the farm at rung {k}", source=rel,
+            derived=f"rungs.{k}.n_rotors")
 
 
 def learned_claims() -> None:

@@ -84,6 +84,21 @@
 
 **A15, the installer** (`out/workbench/records/installer/`): a fresh clone's `run.cmd --check` on Windows exits 0 in 229.4 s, which installs everything and runs the self-test on all eight kinds (pip's download cache already warm, so this is not a first-download time); `./run.sh --check` on Linux installs and self-tests in 55.3 s and exits 3 because the optional Gmsh will not load there (`libGLU.so.1`); **macOS: not verified, no Mac was available.**
 
+**A15, updated 2026-10-03: the install runs from `atlas-0.1`.** The install branch `atlas-workbench` was never pushed, so the site's commands failed for the owner (*"Remote branch atlas-workbench not found"*). The workbench now runs from the root of `atlas-0.1`. The launchers are copied unchanged from `atlas/workbench/bundle/`. The wind farm's solver sits in `vendor/`, copied from the public `poc1-windfarm-demo` and `poc2-frontwing-demo` branches, where the copies are identical. The unpushed bundle used build-repo commit `98df350` instead, which the machine that placed this copy could not reach; whether the two differ is not known (`vendor/README.md`). **Checked 2026-10-03 on a cloud machine** (Linux, Python 3.12): a fresh `--depth 1` clone of the branch ran `./run.sh --check`. It built `.venv`, installed the pinned packages and CPU torch, and ran all eight kinds, the learned case (the trained weights load and step) and the page. It exited 3, because the optional Gmsh would not load (`libGLU.so.1`), as on the Linux record above. **That run wrote no record file**, so the site's timed installer numbers stay the first branch's, and their caveat says so. Windows has not yet been run from `atlas-0.1`.
+
+**A16, the wind farm as it grows (added 2026-10-03).** Every rung of `out/w346/w346.json` gives decomposition's speed over the undivided solve, at the best thread count of each timing draw. Claims `w346.r<n>.a` hold the first timing and `w346.r<n>.b` the repeat; they are drawn as the chart beside A11's top three. The speeds by farm size:
+
+| rotors | first timing | repeat timing | accuracy record |
+|---|---|---|---|
+| 1 | **0.64×**: the whole is faster | not taken | yes |
+| 3 | 1.29× | not taken | yes |
+| 5 | 5.37× | 3.50× | yes |
+| 12 | 5.69× | 4.06× | yes |
+| 21 | 4.35× | 4.70× | yes |
+| 36 | 3.75× | 2.14× | **none** |
+
+A2's range, 3.5×–5.7× over 5 to 21 rotors, is the minimum and maximum of the same rows.
+
 ---
 
 ## 2. Classical decomposition, published
@@ -141,6 +156,20 @@ Each row below was read at its source on 2026-10-02: the arXiv abstract or full 
 - **N3's "thousands of times faster"** came from press summaries; the paper's own sentence (above) is what the site shows.
 
 **Not verified, so not on the site:** L1 (above); L3, GenEO (the publisher's page and HAL refused the request; Crossref has no abstract); L5 and L6 (not attempted); N8–N12 (not attempted).
+
+### 3.3 Verified on 2026-10-03, for the page's two halves
+
+Read at the source on 2026-10-03, for the owner's restructure ([[website-outline]], revision of 2026-10-03). The NASA records were read through the NASA Technical Reports Server's own API (the record and its abstract). The arXiv entries were read through the arXiv API's abstract. **Status V.** The entries are in `site/data/literature.json`.
+
+| # | what the site may say | the source's own words | where | reference |
+|---|---|---|---|---|
+| L7 | *For flow around complex moving bodies, overlapping simple grids are among the most cost-effective routes to an accurate answer* | "For modeling flows with viscosity about geometrically complex bodies in relative motion, the Chimera-overset-grid method is among the most computationally cost-effective methods for obtaining accurate aerodynamic results." | the abstract | W. M. Chan, S. E. Rogers, S. M. Nash, P. G. Buning, R. Meakin, *Chimera Grid Tools*, NASA Tech Briefs, December 2005; NTRS 20110016440 |
+| L8 | *Overlapping grids, one per component, computed the flow around the full Space Shuttle launch vehicle* | "Application of the collar grid scheme to the Orbiter fuselage and vertical tail intersection in a computation of the full Space Shuttle launch vehicle demonstrates its usefulness for simulation of flow about complex aerospace vehicles." | the abstract | S. J. Parks, P. G. Buning, W. M. Chan, J. L. Steger, *Collar grids for intersecting geometric components within the Chimera overlapped grid scheme*, conference paper, 1991; NTRS 19910056138 (the record names no venue, so the site names none) |
+| N13 | *The Fourier neural operator ran up to three orders of magnitude faster than traditional solvers* (shown as 1,000×, labelled as three orders of magnitude) | "It is up to three orders of magnitude faster compared to traditional PDE solvers." | the abstract | Z. Li, N. Kovachki, K. Azizzadenesheli, B. Liu, K. Bhattacharya, A. Stuart, A. Anandkumar, arXiv:2010.08895 (2020); the arXiv record carries no journal reference, so the site cites the preprint |
+| N14 | *Most learned solvers map a whole problem to a whole answer for one family of geometries: fast inside it, hard to reuse on new domains* | "Most learned PDE solvers follow a global-surrogate paradigm … This has enabled fast inference within fixed problem families, but limits reuse across new domains" | the abstract | Secchi, Balint, Maurizi, arXiv:2605.12343 (2026), as N6 |
+| N15 | *The core obstacle is that a trained neural operator does not transfer to new geometries* | "At the core of the challenge lies the absence of transferability of neural operators to new geometries." | the abstract | Huang, Zhang, Wu, Cheng, arXiv:2504.00510 (v2, ICLR 2026), as N5 |
+
+**Groups on the site:** L2, L4, L7, L8 under *What others have shown* in the decomposition half; N1, N2, N3, N13 in the learned-experts half; N14 and N15 cited in the chart operator's *why today's neural operators aren't built for the job*; N4–N7 under *Others have started joining the halves*.
 
 ### 3.2 "A first": searched again
 

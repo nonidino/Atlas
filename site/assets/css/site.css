@@ -238,6 +238,14 @@ section { position: relative; }
 .chart .dot-l { fill: var(--chart-fast); stroke: #fff; stroke-width: 2; }
 .chart .dot-o { fill: var(--ink-2); stroke: #fff; stroke-width: 2; }
 .chart .hit { fill: transparent; }
+.chart .dot-fast { fill: var(--chart-fast); stroke: #fff; stroke-width: 2; }
+.chart .dot-slow { fill: var(--chart-slow); stroke: #fff; stroke-width: 2; }
+.chart .dot-fast.hollow { fill: #fff; stroke: var(--chart-fast); stroke-width: 2.5; }
+.chart .dot-slow.hollow { fill: #fff; stroke: var(--chart-slow); stroke-width: 2.5; }
+.chart .trend { fill: none; stroke: var(--chart-fast); stroke-width: 2; opacity: .55; }
+.chart .one-lbl { font-size: 12px; fill: var(--ink-2); }
+.chart-legend i.ring { background: #fff !important; border: 2.5px solid var(--chart-fast); width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; }
+.chart-legend i.dot { width: 10px; height: 10px; border-radius: 50%; }
 .chart g.row:hover rect.bar, .chart g.pt:hover circle { filter: brightness(1.12); }
 .chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 @media (max-width: 700px) {
@@ -414,3 +422,25 @@ dl.facts dd { margin: 0; color: var(--ink-2); }
 @media (max-width: 640px) { dl.facts { grid-template-columns: 1fr; } dl.facts dd { margin-bottom: 10px; } }
 @media (max-width: 700px) { .hero .plate img { object-position: 50% 30%; } }
 .grid-2 > *, .grid-3 > *, .steps > * { min-width: 0; }
+
+/* ---- the two halves (2026-10-03) ------------------------------------------- */
+.charts-2 { margin-top: 44px; }
+.charts-2 .figure { margin-top: 0; }
+.charts-2 .figure h3 { font-size: 20px; }
+.sub-head { margin: 80px 0 8px; }
+.sub-head h3 { font-size: clamp(24px, 2.4vw, 30px); letter-spacing: -.02em; margin: 0 0 6px; }
+.sub-head p { color: var(--ink-2); margin: 0; max-width: 62ch; }
+.own-expert { margin-top: 64px; padding-top: 44px; border-top: 1px solid var(--line-2); }
+.own-expert h3 { font-size: clamp(24px, 2.4vw, 30px); letter-spacing: -.02em; }
+.compat { margin-top: 40px; border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(22px, 3vw, 32px); background: #fff; }
+.compat h3 { margin: 0; }
+.compat ul { list-style: none; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.compat li { font-size: 16px; color: var(--ink-2); min-width: 0; }
+.compat li strong { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+@media (max-width: 900px) { .compat ul { grid-template-columns: 1fr; gap: 18px; } }
+@media (max-width: 640px) {
+  .charts-2 .chart-scroll .chart { min-width: 0; }
+  .charts-2 .chart text { font-size: 19px; }
+  .charts-2 .chart .lbl, .charts-2 .chart .val { font-size: 20px; }
+  .charts-2 .chart .one-lbl { font-size: 17px; }
+}

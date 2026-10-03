@@ -1,7 +1,7 @@
 # Launching the website — the owner's checklist, in order
 
 **Type:** Concept page — **launch checklist** (folder: `Atlas 0.1/atlas-0.1-proposal/website/`)
-**Status:** written 2026-10-02 by the website chat (W354, step 9); updated the same day. **The site is live** at `https://nonidino.github.io/Atlas/` (published from this repository, §1), with the owner's illustrations placed ([[website-image-prompts]]) and the architecture page's fix made (step 3 below). **Still open:** the image generator's name, pushing the demo's branch `atlas-workbench` (then `"launched": true`), and macOS (step 4).
+**Status:** written 2026-10-02 by the website chat (W354, step 9); updated the same day. **The site is live** at `https://nonidino.github.io/Atlas/` (published from this repository, §1), with the owner's illustrations placed ([[website-image-prompts]]) and the architecture page's fix made (step 3 below). **Still open:** macOS (step 4), and a Windows run of the install from `atlas-0.1`. *(2026-10-03: the generator is ChatGPT; the demo runs from `atlas-0.1` itself, so no `atlas-workbench` branch is needed, and `launched` is true.)*
 **Hub:** [[00-proposal-workstreams]] · **Plan:** [[proposal-website-plan]] · **Outline:** [[website-outline]] · **Evidence:** [[website-evidence-and-citations]]
 
 ---
@@ -20,7 +20,7 @@
 
 ## 1. The launch, as done (2026-10-02)
 
-**The owner made `nonidino/Atlas` itself public and enabled Pages**, instead of a separate site repository. So the site is published from this repository: the workflow `.github/workflows/pages.yml` uploads `site/` to Pages on every push to `atlas-0.1` that changes it, at `https://nonidino.github.io/Atlas/`. `site/data/site.json` points every link there. The owner's settings: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Images are uploaded to `incoming/images/` (its README says how). The demo's branch `atlas-workbench` still has to be pushed to this repository from the laptop (step 5 below); then `"launched": true` in `site/data/site.json` removes the install page's banner.
+**The owner made `nonidino/Atlas` itself public and enabled Pages**, instead of a separate site repository. So the site is published from this repository: the workflow `.github/workflows/pages.yml` uploads `site/` to Pages on every push to `atlas-0.1` that changes it, at `https://nonidino.github.io/Atlas/`. `site/data/site.json` points every link there. The owner's settings: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Images are uploaded to `incoming/images/` (its README says how). **Updated 2026-10-03:** the demo's own branch is not needed. The workbench runs from the root of `atlas-0.1` (launchers, and the wind farm's solver in `vendor/`, [[website-evidence-and-citations]] A15), the install page clones that branch, and `"launched": true` has removed the banner. Step 5 below is superseded.
 
 **What being public now exposes** beyond the plan's site-only release (O9): the whole vault, the raw source documents in `raw/`, and the full run records, which carry the laptop's name and the user's folder paths. No Poseidon or NeuberNet weights are tracked. The owner may want to weigh `raw/` (other people's papers) in particular.
 

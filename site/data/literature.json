@@ -7,7 +7,14 @@
    "group": "classical",
    "title": "Decomposition runs on whole supercomputers",
    "claim": "A domain-decomposition solver ran on every core of a supercomputer.",
-   "values": [{"key": "cores", "display": "458,752", "fragment": "458,752", "label": "cores, all of JUQUEEN"}],
+   "values": [
+    {
+     "key": "cores",
+     "display": "458,752",
+     "fragment": "458,752",
+     "label": "cores, all of JUQUEEN"
+    }
+   ],
    "quote": "scalability on all 458,752 cores of the JUQUEEN BlueGene/Q system at Forschungszentrum Jülich is demonstrated",
    "location": "abstract",
    "citation": "M. Lanser, Nonlinear FETI-DP and BDDC Methods, PhD thesis, University of Cologne, 2015",
@@ -31,13 +38,51 @@
    "read_via": "the University of Geneva's open archive record"
   },
   {
+   "id": "L7",
+   "group": "classical",
+   "title": "Complex bodies, split into simple grids",
+   "claim": "For flow around complex bodies in motion, splitting the space into overlapping simple grids is among the most cost-effective ways to an accurate answer.",
+   "values": [],
+   "quote": "For modeling flows with viscosity about geometrically complex bodies in relative motion, the Chimera-overset-grid method is among the most computationally cost-effective methods for obtaining accurate aerodynamic results.",
+   "location": "abstract",
+   "citation": "W. M. Chan, S. E. Rogers, S. M. Nash, P. G. Buning, R. Meakin, Chimera Grid Tools, NASA Tech Briefs, December 2005 (NASA Ames Research Center)",
+   "url": "https://ntrs.nasa.gov/citations/20110016440",
+   "doi": null,
+   "read_on": "2026-10-03",
+   "read_via": "the NASA Technical Reports Server record and its abstract"
+  },
+  {
+   "id": "L8",
+   "group": "classical",
+   "title": "A whole launch vehicle, grid by grid",
+   "claim": "Overlapping grids, one per component, computed the flow around the full Space Shuttle launch vehicle.",
+   "values": [],
+   "quote": "Application of the collar grid scheme to the Orbiter fuselage and vertical tail intersection in a computation of the full Space Shuttle launch vehicle demonstrates its usefulness for simulation of flow about complex aerospace vehicles.",
+   "location": "abstract",
+   "citation": "S. J. Parks, P. G. Buning, W. M. Chan, J. L. Steger, Collar grids for intersecting geometric components within the Chimera overlapped grid scheme, conference paper, 1991",
+   "url": "https://ntrs.nasa.gov/citations/19910056138",
+   "doi": null,
+   "read_on": "2026-10-03",
+   "read_via": "the NASA Technical Reports Server record and its abstract"
+  },
+  {
    "id": "N1",
    "group": "neural",
    "title": "Learned corrections speed up a fluid solver",
    "claim": "Machine learning inside a 2-D turbulence solver matched solvers at 8–10× finer resolution, 40–80× faster.",
    "values": [
-    {"key": "speed", "display": "40–80×", "fragment": "40-80x", "label": "faster at equal accuracy"},
-    {"key": "res", "display": "8–10×", "fragment": "8-10x", "label": "finer resolution matched"}
+    {
+     "key": "speed",
+     "display": "40–80×",
+     "fragment": "40-80x",
+     "label": "faster at equal accuracy"
+    },
+    {
+     "key": "res",
+     "display": "8–10×",
+     "fragment": "8-10x",
+     "label": "finer resolution matched"
+    }
    ],
    "quote": "For both direct numerical simulation of turbulence and large eddy simulation, our results are as accurate as baseline solvers with 8-10x finer resolution in each spatial dimension, resulting in 40-80x fold computational speedups.",
    "location": "abstract",
@@ -53,8 +98,18 @@
    "title": "A car's drag, in a fraction of the time",
    "claim": "A neural operator trained on 500 car shapes computed the drag coefficient 26,000× faster than GPU-based CFD.",
    "values": [
-    {"key": "speed", "display": "26,000×", "fragment": "26,000", "label": "faster than GPU CFD, on the drag coefficient"},
-    {"key": "data", "display": "500", "fragment": "five hundred", "label": "training shapes"}
+    {
+     "key": "speed",
+     "display": "26,000×",
+     "fragment": "26,000",
+     "label": "faster than GPU CFD, on the drag coefficient"
+    },
+    {
+     "key": "data",
+     "display": "500",
+     "fragment": "five hundred",
+     "label": "training shapes"
+    }
    ],
    "quote": "We successfully trained GINO to predict the pressure on car surfaces using only five hundred data points. The cost-accuracy experiments show a $26,000 \\times$ speed-up compared to optimized GPU-based computational fluid dynamics (CFD) simulators on computing the drag coefficient.",
    "quote_display": "We successfully trained GINO to predict the pressure on car surfaces using only five hundred data points. The cost-accuracy experiments show a 26,000× speed-up compared to optimized GPU-based computational fluid dynamics (CFD) simulators on computing the drag coefficient.",
@@ -71,8 +126,18 @@
    "title": "A heart, on a new patient's geometry",
    "claim": "A learned operator mapped to each patient's heart predicted its electrical wave in under a second on one GPU; the finite-element solver took 5 hours.",
    "values": [
-    {"key": "fast", "display": "1 s", "fragment": "less than 1 s", "label": "under, on one GPU"},
-    {"key": "slow", "display": "5 hours", "fragment": "5 hours", "label": "for the finite-element solver"}
+    {
+     "key": "fast",
+     "display": "1 s",
+     "fragment": "less than 1 s",
+     "label": "under, on one GPU"
+    },
+    {
+     "key": "slow",
+     "display": "5 hours",
+     "fragment": "5 hours",
+     "label": "for the finite-element solver"
+    }
    ],
    "quote": "During the testing phase, our neural operator significantly accelerates the overall speed: it only requires less than 1 s on a single GPU to predict the ATs and RTs for a new patient, whereas it takes our solver openCARP 5 hours on 48 CPU nodes to simulate ATs and RTs in a single beat",
    "location": "preprint v1, section 3.7",
@@ -83,11 +148,67 @@
    "read_via": "the arXiv preprint's full text (the published text was not reachable); volume and pages from Crossref"
   },
   {
-   "id": "N4",
+   "id": "N13",
    "group": "neural",
+   "title": "A neural operator against traditional solvers",
+   "claim": "The Fourier neural operator learned whole families of fluid problems and ran up to three orders of magnitude faster than traditional solvers.",
+   "values": [
+    {
+     "key": "speed",
+     "display": "1,000×",
+     "fragment": "three orders of magnitude",
+     "label": "up to, faster than traditional PDE solvers (three orders of magnitude)"
+    }
+   ],
+   "quote": "It is up to three orders of magnitude faster compared to traditional PDE solvers.",
+   "location": "abstract",
+   "citation": "Z. Li, N. Kovachki, K. Azizzadenesheli, B. Liu, K. Bhattacharya, A. Stuart, A. Anandkumar, Fourier Neural Operator for Parametric Partial Differential Equations, arXiv:2010.08895, 2020",
+   "url": "https://arxiv.org/abs/2010.08895",
+   "doi": null,
+   "read_on": "2026-10-03",
+   "read_via": "the arXiv abstract"
+  },
+  {
+   "id": "N14",
+   "group": "limits",
+   "title": "Fast inside one family of shapes",
+   "claim": "Most learned solvers map a whole problem to a whole answer for one family of geometries: fast inside it, hard to reuse on new domains.",
+   "values": [],
+   "quote": "Most learned PDE solvers follow a global-surrogate paradigm: a neural operator is trained to map full problem descriptions to full solution fields for a prescribed distribution of geometries, boundary conditions, and coefficients. This has enabled fast inference within fixed problem families, but limits reuse across new domains and makes large-scale deployment dependent on expensive problem-specific data generation.",
+   "location": "abstract",
+   "citation": "P. Secchi, D. S. Balint, M. Maurizi, Neural-Schwarz Tiling for geometry-universal PDE solving at scale, arXiv:2605.12343, 2026",
+   "url": "https://arxiv.org/abs/2605.12343",
+   "doi": null,
+   "read_on": "2026-10-03",
+   "read_via": "the arXiv abstract"
+  },
+  {
+   "id": "N15",
+   "group": "limits",
+   "title": "New geometries are the bottleneck",
+   "claim": "The core obstacle is that a trained neural operator does not transfer to new geometries.",
+   "values": [],
+   "quote": "At the core of the challenge lies the absence of transferability of neural operators to new geometries.",
+   "location": "abstract",
+   "citation": "J. Huang, K. Zhang, Y. Wu, Z. Cheng, Operator learning with domain decomposition for geometry generalization in PDE solving, ICLR 2026, arXiv:2504.00510",
+   "url": "https://arxiv.org/abs/2504.00510",
+   "doi": null,
+   "read_on": "2026-10-03",
+   "read_via": "the arXiv abstract"
+  },
+  {
+   "id": "N4",
+   "group": "joined",
    "title": "Learned pieces, assembled on unseen domains",
    "claim": "Small learned pieces, assembled iteratively, solved Laplace's equation on domains 1,200 times larger than the one they were trained on.",
-   "values": [{"key": "scale", "display": "1,200", "fragment": "1200", "label": "times the training domain"}],
+   "values": [
+    {
+     "key": "scale",
+     "display": "1,200",
+     "fragment": "1200",
+     "label": "times the training domain"
+    }
+   ],
    "quote": "We demonstrate that our framework can estimate the solution of Laplace and Navier-Stokes equations in domains of unseen shapes and BCs that are, respectively, 1200 and 12 times larger than the training domains.",
    "location": "abstract",
    "citation": "H. Wang, R. Planas, A. Chandramowlishwaran, R. Bostanabad, Mosaic flows: a transferable deep learning framework for solving PDEs on unseen domains, Computer Methods in Applied Mechanics and Engineering 389, 114424, 2022",
@@ -98,7 +219,7 @@
   },
   {
    "id": "N5",
-   "group": "neural",
+   "group": "joined",
    "title": "Neural operators inside Schwarz iteration",
    "claim": "Neural operators solving the pieces of a Schwarz iteration generalise to new geometries, with a convergence analysis.",
    "values": [],
@@ -113,10 +234,17 @@
   },
   {
    "id": "N6",
-   "group": "neural",
+   "group": "joined",
    "title": "Trained on tiny patches, tiled to large solids",
    "claim": "A solver learned on 3 × 3 × 3 voxel patches, tiled with Schwarz iteration, solved large 3-D solids far beyond its training scale.",
-   "values": [{"key": "patch", "display": "3 × 3 × 3", "fragment": "3 \\times 3 \\times 3", "label": "voxel training patches"}],
+   "values": [
+    {
+     "key": "patch",
+     "display": "3 × 3 × 3",
+     "fragment": "3 \\times 3 \\times 3",
+     "label": "voxel training patches"
+    }
+   ],
    "quote": "NEST learns a neural operator on minimal voxel patches ($3 \\times 3 \\times 3$) with diverse local geometries and boundary/interface data. At inference time, an unseen voxelized domain is tiled into overlapping patches, the learned local solver is applied patchwise, and global consistency is enforced through iterative Schwarz coupling with partition-of-unity assembly.",
    "quote_display": "NEST learns a neural operator on minimal voxel patches (3 × 3 × 3) with diverse local geometries and boundary/interface data. At inference time, an unseen voxelized domain is tiled into overlapping patches, the learned local solver is applied patchwise, and global consistency is enforced through iterative Schwarz coupling with partition-of-unity assembly.",
    "location": "abstract",
@@ -128,7 +256,7 @@
   },
   {
    "id": "N7",
-   "group": "neural",
+   "group": "joined",
    "title": "Learned and classical, each where it is strong",
    "claim": "Pairing a learned operator with a classical relaxation method gives a convergence rate that is uniform across scales.",
    "values": [],
