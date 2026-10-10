@@ -1,0 +1,68 @@
+arch_family_checks -- checks behind the chart-operator family catalog
+======================================================================
+
+S2  PCG with the fast plain-square solve; sup|mu| = 0.5, contrast 10, K_max = 3
+    derived b/a <= 90; iteration bound 69 (tol 1e-6), 113 (tol 1e-10)
+    n =   32: iterations 30 (1e-6), 52 (1e-10); PCG time / direct time 0.529; measured b/a 23.13
+    n =   64: iterations 31 (1e-6), 55 (1e-10); PCG time / direct time 0.308
+    n =  128: iterations 31 (1e-6), 55 (1e-10); PCG time / direct time 0.226
+    n =  256: iterations 30 (1e-6), 54 (1e-10); PCG time / direct time 0.0909
+
+S7  decay of port modes, n = 64, 16 modes per side
+    steady       tol  0.001: head area 0.438 (x2.28); energy lost <= 5.45e-06 = 5.45 tol^2
+        depth   1.000 1.000 0.969 0.734 0.562 0.453 0.375 0.312 0.281 0.250 0.219 0.203 0.188 0.172 0.156 0.141
+        predict 1.000 1.000 1.000 0.733 0.550 0.440 0.366 0.314 0.275 0.244 0.220 0.200 0.183 0.169 0.157 0.147
+    steady       tol  1e-06: head area 0.648 (x1.54); energy lost <= 2.99e-12 = 2.99 tol^2
+        depth   1.000 1.000 1.000 1.000 1.000 0.875 0.734 0.625 0.547 0.484 0.438 0.391 0.359 0.328 0.312 0.281
+        predict 1.000 1.000 1.000 1.000 1.000 0.880 0.733 0.628 0.550 0.489 0.440 0.400 0.366 0.338 0.314 0.293
+    Fo=1e-2      tol  0.001: head area 0.342 (x2.93); energy lost <= 3.86e-06 = 3.86 tol^2
+        depth   0.688 0.672 0.594 0.516 0.438 0.375 0.328 0.297 0.266 0.234 0.219 0.188 0.188 0.172 0.156 0.141
+        predict 0.691 0.659 0.585 0.503 0.430 0.371 0.324 0.286 0.255 0.230 0.210 0.192 0.177 0.164 0.153 0.143
+    Fo=1e-2      tol  1e-06: head area 0.615 (x1.63); energy lost <= 2.76e-12 = 2.76 tol^2
+        depth   1.000 1.000 1.000 0.969 0.859 0.750 0.656 0.578 0.516 0.453 0.422 0.375 0.359 0.328 0.297 0.281
+        predict 1.000 1.000 1.000 1.000 0.860 0.742 0.647 0.572 0.511 0.461 0.419 0.384 0.354 0.329 0.306 0.287
+    Fo=1e-3      tol  0.001: head area 0.178 (x5.63); energy lost <= 9.15e-07 = 0.92 tol^2
+        depth   0.219 0.219 0.219 0.219 0.203 0.203 0.188 0.188 0.172 0.172 0.156 0.156 0.141 0.141 0.125 0.125
+        predict 0.218 0.217 0.214 0.209 0.203 0.196 0.188 0.179 0.171 0.163 0.155 0.147 0.140 0.134 0.128 0.122
+    Fo=1e-3      tol  1e-06: head area 0.349 (x2.87); energy lost <= 7.24e-13 = 0.72 tol^2
+        depth   0.438 0.438 0.438 0.422 0.406 0.391 0.375 0.359 0.344 0.328 0.312 0.297 0.281 0.266 0.250 0.234
+        predict 0.437 0.435 0.429 0.419 0.406 0.391 0.375 0.359 0.342 0.326 0.310 0.295 0.281 0.267 0.255 0.243
+    steady, K=3  tol  0.001: head area 0.789 (x1.27); energy lost <= 6.24e-06 = 6.24 tol^2
+        depth   1.000 1.000 1.000 1.000 1.000 0.984 0.969 0.906 0.828 0.734 0.656 0.594 0.547 0.500 0.469 0.438
+        predict 1.000 1.000 1.000 1.000 1.000 1.000 1.000 0.942 0.825 0.733 0.660 0.600 0.550 0.507 0.471 0.440
+    steady, K=3  tol  1e-06: head area 0.984 (x1.02); energy lost <= 2.82e-12 = 2.82 tol^2
+        depth   1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 0.969 0.922 0.859
+        predict 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 0.942 0.880
+
+S9  precision, n = 64, sup|mu| = 0.3, contrast 4, 64 modes; correction / mode energy = 0.182
+    bfloat16 : Gram error, correction rounded 3.20e-06; whole field rounded 7.03e-05; identity residual 7.0e-16; min eig of the error 5.5e-18
+    float16  : Gram error, correction rounded 5.05e-08; whole field rounded 1.06e-06; identity residual 5.6e-16; min eig of the error 6.1e-17
+    float32  : Gram error, correction rounded 7.86e-16; whole field rounded 1.68e-14; identity residual 8.5e-16; min eig of the error -7.9e-16
+    Gram formed in float32 from exact modes: 1.53e-07
+
+D   dual bracket, n = 64 (fine x2), sup|mu| = 0.4, contrast 10, 64 primal ports (loop Fourier)
+    min eig (L_low_fine - L_low_full) / |L| = 0.00e+00
+    min eig (L_fine - L_low_fine) / |L| = -6.44e-16
+    min eig (L - L_fine) / |L| = 6.22e-16
+    largest relative energy gap, fine bracket (L_fine - L_low_fine) = 3.769e-02
+    largest relative energy gap, coarse discretisation (L - L_fine) = 4.530e-02
+    largest relative energy gap, all-node dual (L - L_low_full) = 1.297e-01
+    dual ports loop Fourier, 63              : min eig(L_low_full - L_low) -2.3e-16; relative gap L - L_low 1.047e+00
+    dual ports corner hats + side sines, 63  : min eig(L_low_full - L_low) -2.2e-16; relative gap L - L_low 1.047e+00
+    dual ports corner hats + side sines, 67  : min eig(L_low_full - L_low) -3.1e-16; relative gap L - L_low 3.175e-01
+    dual ports corner hats + side sines, 127 : min eig(L_low_full - L_low) -1.9e-15; relative gap L - L_low 1.330e-01
+    smooth port data (c_f ~ N(0,1)/(1+f)^2 by loop frequency f), relative energy gaps:
+        fine bracket (L_fine - L_low_fine) = 1.676e-04
+        coarse discretisation (L - L_fine) = 2.089e-04
+        all-node dual (L - L_low_full) = 6.310e-04
+        dual loop Fourier, 63 (L - L_low) = 1.110e-03
+        dual corner hats + side sines, 63 (L - L_low) = 7.123e-04
+        dual corner hats + side sines, 67 (L - L_low) = 7.067e-04
+        dual corner hats + side sines, 127 (L - L_low) = 6.362e-04
+    perturbed experts (certificate from the 127-port dual):
+      smooth data, eps 0.01 : true error 2.484e-03; network part 2.191e-03; computable gap 5.680e-03
+      smooth data, eps 0.1  : true error 1.956e-01; network part 1.953e-01; computable gap 5.231e-01
+      smooth data, eps 0.3  : true error 3.960e-01; network part 3.957e-01; computable gap 8.634e-01
+    eps 0.01 : min eig(L~ - L) 2.0e-11; min eig(L_low - L~_low) 4.2e-42; relative: true error 6.397e-02, network part 8.734e-03, computable gap 1.335e-01
+    eps 0.1  : min eig(L~ - L) 3.4e-09; min eig(L_low - L~_low) 2.3e-40; relative: true error 8.478e-01, network part 8.429e-01, computable gap 9.954e-01
+    eps 0.3  : min eig(L~ - L) 1.8e-08; min eig(L_low - L~_low) 1.4e-39; relative: true error 1.116e+01, network part 1.116e+01, computable gap 1.139e+01

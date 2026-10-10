@@ -7395,3 +7395,25 @@ The architecture chat, on the owner's questions: why so much of the design relie
 
 **Added:** [[chart-operator-general-form]]; `scripts/arch_general_form_checks.py` and `out/arch/general_form_checks.txt`/`.json`.
 **Changed:** [[chart-operator-architecture]] (a status line pointing to the discussion), [[index]].
+
+## [2026-10-10] note | Chart-operator family catalog: the PDEs, the interactions a decomposition yields, unit-square speedups, and one architecture per family
+
+The architecture chat, on the owner's request. The request asked for the PDEs the experts will cover; the interactions a full decomposition yields and how each is accounted for (same field across a seam, different fields across a seam, different fields on one domain); speedups specific to the unit square; and the chart-operator architectures, each with its chart information, constraint modes, ports and conservation, and coupling. **A design reference for discussion, not a decision.** It is published as the owner's artifact *Chart Operator Families* (https://claude.ai/artifact/6YFtDeR3cX96ifqn8pbjuk), and the vault digest is [[chart-operator-family-catalog]]. No network was trained.
+
+**The organising result:** a chart operator is five slots: chart information, trial space, ports and conservation, host class G0–G3, backbone and time. Families are separated by trace space and class rather than by PDE. Twelve families cover about forty PDEs, and lumped components are port-Hamiltonian nodes, not chart operators. There are eight interaction kinds, each with one host-owned instrument, all under passivity and power-conserving interconnection.
+
+**Checked** (`scripts/arch_family_checks.py`; classical solves standing in for networks; bilinear finite elements):
+- **S2.** CG preconditioned by the plain square's fast sine solve needed 30–31 iterations to $10^{-6}$ and 52–55 to $10^{-10}$ at every grid from $32^2$ to $256^2$ ($\lvert\mu\rvert\le0.5$, contrast 10). The derived bounds are 69 and 113. Time was 0.53 to 0.09 of a sparse direct solve.
+- **S7.** High port modes live in strips near their side. At amplitude tolerance $10^{-3}$, cropping the mode head to the strips covers 0.438 of the square steady (2.28×) and 0.178 at $\mathrm{Fo}=10^{-3}$ (5.63×), losing at most $5.5\,\mathrm{tol}^2$ of energy. At distortion $K=3$ the saving collapses to 1.27×.
+- **S9.** Rounding is an interior error, so it enters the Gram quadratically. A bfloat16 correction over the exact principal part gave a Gram error of $3.2\times10^{-6}$; rounding the whole field gave $7.0\times10^{-5}$. A float32 Gram formed from exact modes gave $1.5\times10^{-7}$.
+- **D.** In 2-D the flux (dual) problem is a diffusion problem on $\kappa^{-1}$ with the same Beltrami coefficient, so the same network bounds each port matrix from below. The Loewner chain held to $6.4\times10^{-16}$. For smooth port data the computable gap was 2.2–2.7× the true error at perturbations 0.01–0.3. For worst-case data the dual needs about twice the primal's ports: 63 ports give 105%, 127 give 13.3%, all nodes 13.0%.
+
+**Recorded for others:**
+- The rocket's $a$–$b$ edge is a co-located bond rather than a seam.
+- Its $c$–$d$ edge declares `ADVEC`$(h_0)$ at what the port algebra's §3.2 would call a wall; this is a question for [[case-study-rocket-ascent-2d-atlas-0.1]].
+- Four port-vocabulary gaps are candidates for [[port-algebra-atlas-0.1]]'s amendment procedure.
+
+Neither page was edited.
+
+**Added:** [[chart-operator-family-catalog]]; `scripts/arch_family_checks.py` and `out/arch/family_checks.txt`/`.json`.
+**Changed:** [[index]].
