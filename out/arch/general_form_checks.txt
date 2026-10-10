@@ -1,0 +1,62 @@
+arch_general_form_checks -- sanity checks for the generalized chart operator
+==============================================================================
+
+A. NON-SYMMETRIC PIECE (advection-diffusion, upwind, n = 32, 16 cosine modes per side)
+   port-matrix relative error, Petrov-Galerkin (primal + adjoint modes) vs Galerkin (primal only)
+   Peclet 0 (cell 0); W^T M V = Lambda to 4.0e-16; min eig/max |eig| of sym(M) -7.18e-16, of sym(exact Lambda) +1.04e-16
+      eps   | PG error   Galerkin error | PG identity residual | min eig sym(Galerkin)
+      0.3   | 7.44e-02   9.63e-02       | 4.9e-16              | +6.70e-02
+      0.1   | 8.22e-03   9.67e-03       | 4.7e-16              | +8.93e-03
+      0.03  | 7.88e-04   8.93e-04       | 4.2e-16              | +7.85e-04
+      0.01  | 9.12e-05   1.23e-04       | 4.3e-16              | +7.57e-05
+      fitted slopes: PG 1.97, Galerkin 1.96
+   Peclet 20 (cell 0.625); W^T M V = Lambda to 3.8e-16; min eig/max |eig| of sym(M) -4.98e-03, of sym(exact Lambda) -4.42e-02
+      eps   | PG error   Galerkin error | PG identity residual | min eig sym(Galerkin)
+      0.3   | 7.76e-02   1.39e-01       | 4.6e-16              | -6.71e-02
+      0.1   | 8.56e-03   3.02e-02       | 4.2e-16              | -1.14e-01
+      0.03  | 8.07e-04   9.17e-03       | 4.2e-16              | -1.02e-01
+      0.01  | 9.13e-05   2.95e-03       | 4.1e-16              | -1.00e-01
+      fitted slopes: PG 1.98, Galerkin 1.12
+   Peclet 200 (cell 6.25); W^T M V = Lambda to 2.6e-16; min eig/max |eig| of sym(M) -4.34e-02, of sym(exact Lambda) -1.47e-01
+      eps   | PG error   Galerkin error | PG identity residual | min eig sym(Galerkin)
+      0.3   | 7.13e-02   2.19e-01       | 3.7e-16              | -1.13e+00
+      0.1   | 7.76e-03   6.24e-02       | 3.3e-16              | -1.07e+00
+      0.03  | 7.25e-04   2.06e-02       | 3.4e-16              | -9.91e-01
+      0.01  | 7.89e-05   7.33e-03       | 3.2e-16              | -1.00e+00
+      fitted slopes: PG 2.00, Galerkin 0.99
+
+B. TWO SINGLE-FIELD EXPERTS, ONE PIECE (thermoelastic steel bar, 200 cells, one backward-Euler step,
+   Fo = 0.05, dt = 40.1 s, surface heating 1e5 W/m^2)
+   coupling: gamma = 0.1042, gamma^2 = 0.0108; delta = 0.0108 (sqrt 0.1042)
+   staggered sweep error ratios (exact single-field solves): 0.0087, 0.0099, 0.0104, 0.0106, 0.0107
+   one-way answer (no feedback) vs coupled: u 9.77e-03, theta 8.65e-03
+   host Galerkin over the product of the experts' trial spaces (each orthonormalised in its own energy);
+   errors relative, in the block energy norm and in each field's own energy norm; 1+gamma = 1.104, sqrt(1+gamma^2) = 1.0054
+      eps   rounds dim | inertia(+,-)  |eig| min..max  | error/ref  best/ref   ratio | u error    theta error
+      0     0      1   | (0, 1)        1.0000..1.0000 | 7.41e-02  7.38e-02  1.003 | 1.00e+00   6.69e-03
+      0     1      3   | (1, 2)        1.0000..1.0041 | 2.07e-04  2.07e-04  1.001 | 2.80e-03   1.60e-05
+      0     2      5   | (2, 3)        1.0000..1.0050 | 6.29e-07  6.28e-07  1.002 | 8.50e-06   4.60e-08
+      0.01  0      1   | (0, 1)        1.0000..1.0000 | 7.46e-02  7.44e-02  1.003 | 1.00e+00   1.10e-02
+      0.01  1      3   | (1, 2)        1.0000..1.0041 | 9.98e-03  9.98e-03  1.000 | 1.42e-02   9.96e-03
+      0.01  2      5   | (2, 3)        1.0000..1.0050 | 4.11e-03  4.11e-03  1.000 | 8.88e-03   4.07e-03
+      0.1   0      1   | (0, 1)        1.0000..1.0000 | 1.10e-01  1.10e-01  1.001 | 1.00e+00   8.20e-02
+      0.1   1      3   | (1, 2)        1.0000..1.0038 | 9.63e-02  9.63e-02  1.000 | 1.39e-01   9.60e-02
+      0.1   2      5   | (2, 3)        1.0000..1.0049 | 6.99e-02  6.99e-02  1.000 | 1.15e-01   6.96e-02
+      1     0      1   | (0, 1)        1.0000..1.0000 | 8.63e-01  8.63e-01  1.000 | 1.00e+00   8.62e-01
+      1     1      3   | (1, 2)        1.0000..1.0020 | 6.30e-01  6.30e-01  1.000 | 7.90e-01   6.29e-01
+      1     2      5   | (2, 3)        1.0000..1.0043 | 4.95e-01  4.95e-01  1.000 | 9.91e-01   4.91e-01
+
+C. NONLINEAR CONVEX PIECE (-Lap u + 100 u^3 = 0, n = 32, Dirichlet data)
+   outer iterations (= network calls) to relative energy-norm error 1e-10; the host minimises the
+   true energy over x + span{proposal, Jacobi-preconditioned gradient}; capped at 3000
+   per step: the energy gap's ratio (worst over the run), the worst one-step factor a classical step
+   would have achieved from the same points, and the steps that did worse than that classical step
+      proposal                                   | outer its  final error | monotone  E>=E* | worst ratio  classical  worse steps
+      Newton direction, relative error 0         |         6  1.46e-11  | True      True  | 0.03426      0.79209    0
+      Newton direction, relative error 0.01      |         7  1.22e-11  | True      True  | 0.03388      0.74262    0
+      Newton direction, relative error 0.1       |        11  3.02e-11  | True      True  | 0.03850      0.64174    0
+      Newton direction, relative error 0.5       |        25  4.78e-11  | True      True  | 0.23222      0.58722    0
+      Newton direction, relative error 1         |        48  8.82e-11  | True      True  | 0.56918      0.72705    0
+      Newton direction, relative error 3         |       154  9.27e-11  | True      True  | 0.88716      0.92051    0
+      a random smooth field (no information)     |      3000  2.51e-08  | True      True  | 0.98810      0.98810    0
+      none: classical direction only             |       923  6.66e-11  | True      True  | 1.00000      1.00000    0

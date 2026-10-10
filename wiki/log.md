@@ -7381,3 +7381,17 @@ The owner's item 1.5, built to [[demo-learned-case-plan]]: one fixed wind-farm c
 The owner reports the install verified on a Mac. The install page's macOS tab now says *verified*, and its *not verified* banner is gone. No record file came with the report.
 
 **Changed:** [[website-launch-checklist]].
+
+## [2026-10-10] note | The chart operator in general form: nonlinear physics, multi-field seams, and two single-field experts on one piece
+
+The architecture chat, on the owner's questions: why so much of the design relies on the PDE being linear; a generalized form; fields that differ across a seam (the rocket's air against its skin); and two separately trained experts, temperature and stress, working in one frame. **A proposal for discussion, not a decision**; version 1 and the public paper are unchanged. No network was trained.
+
+**The answer:** version 1's guarantee rests on exact traces and on the host evaluating the true physics, not on linearity. In the general form the network is a trial-space generator and the host projects the true physics onto that space. The guarantee becomes a class set by the physics' structure, from G0 (version 1's tier 0) to G3 (explicit hyperbolic steps). Across a seam only the typed ports of [[port-algebra-atlas-0.1]] must match. On one piece, two experts couple through a host-owned co-located bond, building on [[case-study-thermal-strain-atlas-0.1]]'s verdict that thermal strain is a bond and not a port.
+
+**Checked** (`scripts/arch_general_form_checks.py`; classical solves plus perturbations standing in for networks):
+- With advection, adjoint constraint modes keep the port error quadratic (slope 2.00 against Galerkin's 0.99 at Péclet 200). The exact piece's port matrix is itself indefinite there, so positivity was never available.
+- For a thermoelastic steel bar the coupling strength is $\gamma^2=0.0108=\delta$. Over the product of two single-field trial spaces the coupled system kept every eigenvalue modulus in $[1,1.005]$ for every expert error tried, up to 100%, and the Galerkin error stayed within 1.003 of the best approximation.
+- On a nonlinear convex piece, a learned subspace correction never did worse than one classical step from the same point. Network calls to $10^{-10}$ were 6, 7, 11, 25, 48 and 154 for proposal errors of 0 to 300%, against 923 classical steps. Proposals with no information were slower than the classical trajectory while still beating a classical step at every point, which corrected the claim to "never worse than the classical worst case".
+
+**Added:** [[chart-operator-general-form]]; `scripts/arch_general_form_checks.py` and `out/arch/general_form_checks.txt`/`.json`.
+**Changed:** [[chart-operator-architecture]] (a status line pointing to the discussion), [[index]].
