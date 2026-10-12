@@ -19,7 +19,9 @@ in place and is idempotent: running it twice gives the same file.  It
    ``<!--/FIG name-->`` when the file exists.
 
     set PYTHONIOENCODING=utf-8
-    python scripts/arch_paper_build.py
+    python scripts/arch_paper_build.py [page.html]
+
+With no argument it builds ``proposal/architecture/index.html``.
 """
 
 from __future__ import annotations
@@ -29,7 +31,8 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGE = os.path.join(HERE, "proposal", "architecture", "index.html")
+PAGE = (os.path.abspath(sys.argv[1]) if len(sys.argv) > 1
+        else os.path.join(HERE, "proposal", "architecture", "index.html"))
 FIGS = os.path.join(HERE, "out", "arch", "figures")
 
 

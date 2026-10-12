@@ -7417,3 +7417,30 @@ Neither page was edited.
 
 **Added:** [[chart-operator-family-catalog]]; `scripts/arch_family_checks.py` and `out/arch/family_checks.txt`/`.json`.
 **Changed:** [[index]].
+
+## [2026-10-12] note | The public architecture document, version 2: the general formulation, explained from first principles
+
+The architecture chat, on the owner's request. The owner asked for three things:
+- the per-family training-time table on [[chart-operator-training-and-cost]] (its new §5.1);
+- one comprehensive, readable and skimmable HTML page for the whole generalised chart operator, combining the family-catalog artifact with the background and structure of the published proposal. The owner judged that the published proposal gave too little explanation and intuition;
+- that page to replace the old proposal on the website.
+
+**The page.** `proposal/architecture/index.html` is version 2 of *Chart Operators* (Naunidh Singh, 12 October 2026). It contains:
+- a five-minute tour;
+- gentle background on domain decomposition, charts and neural networks;
+- the record S1–S12;
+- version 1's design and its machine-checked guarantee;
+- the general form with the classes G0–G3;
+- the five slots;
+- the eight interactions, with a new figure for the three the owner named;
+- the PDE catalog and the family cards;
+- the unit-square speedups and the dual bracket;
+- training with the per-family table, cost, gates, related work, limitations, and the roadmap with decisions F1–F10;
+- the Expert Card, derivations, reproducibility and a glossary.
+
+Every section opens with an *In short* summary, every formula is preceded by a plain-words picture, and proofs are folded away. The page has 16 sections, 4 appendices, 16 numbered statements and 113 references, all resolved by `scripts/arch_paper_build.py`, which now takes a page path. The Lean names cited include `Atlas.interconnection_passive` and the other passivity theorems, so the passivity principle is marked machine-checked. Headless check: 938 formulas typeset, no MathJax errors, no unresolved equation references, and no horizontal overflow at narrow width.
+
+**On the website.** `site/architecture/index.html` is replaced by version 2, and version 1 is archived beside it as `paper-v1.html` with a banner saying it is superseded. On the home page one sentence is qualified: "For linear physics, whatever the network returns" now carries the note that beyond linear physics the guarantee is set by the structure of the physics. Merged into `atlas-0.1`, whose Pages workflow publishes `site/`.
+
+**Added:** `proposal/architecture/index.html` (version 2), `proposal/architecture/paper-v1.html` (version 1, moved), `site/architecture/paper-v1.html`.
+**Changed:** [[chart-operator-training-and-cost]] (§5.1), [[chart-operator-architecture]] (a status line), `site/architecture/index.html`, `site/index.html` (one sentence), `scripts/arch_paper_build.py`, [[index]].

@@ -142,6 +142,33 @@ with $E$ epochs, batch $B$ and $t_{\text{fb}}$ the forward-and-backward time of 
 
 **The long-run rule applies from Stage 1 on:** anything expected to take over about two hours is announced first and saves its state, especially on failure. GPU instances are destroyed after use, as in [[vast-ai-windfarm-runbook]].
 
+### 5.1 Training time by family (added 2026-10-12)
+
+**[AI Inference]:** planning estimates for every family of [[chart-operator-family-catalog]], scaled from the measured components above. The base case is CO-D at $N_s=10^5$ pieces of $64^2$, 100 epochs and a 1–2 M-parameter network, with the label-free objective, so it needs no solved examples. That base is about 64 hours on the container's CPU, or a few GPU-hours on one rented card.
+
+| family | data | training (one GPU) | why it differs from CO-D |
+|---|---|---|---|
+| CO-D (linear diffusion) | none (label-free) | 2–5 h | the base case |
+| CO-D's 2-D dual certificate | none | 0 | the same network, provided its $\log\kappa$ range covers $1/\kappa$ |
+| nonlinear conduction, Kirchhoff and frozen-coefficient routes | none | 0 | reuses CO-D through its coefficient channel |
+| CO-DN, state-conditioned route | a few CPU-hours of nonlinear solves | 5–10 h | the current state is an input |
+| CO-T (transport) | none | about 5 h | a velocity input; adjoint modes from the same network |
+| CO-E (elasticity) | none | 5–10 h | twice the outputs, plus a Poisson-ratio range |
+| CO-P / CO-S (one biharmonic network) | none | 5–10 h | value and slope ports; a stiffer operator |
+| CO-W (Helmholtz) | none | 10–20 h | complex values and a wavenumber range |
+| CO-H (finite strain, history) | nonlinear solves, about a CPU-day | 10–30 h | depends on the material's state |
+| CO-NS (incompressible flow) | flow marches, days of CPU | 10–100 h | needs solved flows (Stage 2) |
+| CO-G / CO-R (compressible, reacting) | as CO-NS | 10–100 h | the pointwise chemistry model is small, about 1 h |
+| bonds, couplers | — | 0 | host objects, nothing to train |
+| CO-M and every 3-D family | $10^4$–$10^5$ core-hours | $10^3$–$10^4$ h | the funded scale (Stage 3) |
+
+**Totals:**
+- The full 2-D catalog is roughly 100–300 GPU-hours, about \$70–200 at the \$0.70/h cap.
+- The five G0 families together are about 30–50 GPU-hours.
+- Stage 0's registered comparisons C1–C6 multiply the CO-D cost by about 6–10, so Stage 0 is tens of GPU-hours rather than a few.
+
+**The largest uncertainty** is whether $10^5$ samples and 100 epochs reach gate E1 at a useful distortion range. That is unknowable before a run, and ten times more data or epochs scales every figure linearly. **The first step** is one timed training step on the rented GPU before each stage, which replaces these planning numbers with measured ones (F9's discipline).
+
 ---
 
 ## 6. The gate each stage must pass
