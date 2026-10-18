@@ -143,8 +143,10 @@ WRITE = True
 
 def published_copy(rel: str) -> dict:
     """The cleaned copy of a record, exactly as it is published."""
+    # the hash of the record's content, line endings normalised: a Windows checkout with
+    # core.autocrlf holds the same records with CRLF, and a raw-byte hash would differ
     with open(os.path.join(ROOT, rel), "rb") as fh:
-        sha = hashlib.sha256(fh.read()).hexdigest()
+        sha = hashlib.sha256(fh.read().replace(b"\r\n", b"\n")).hexdigest()
     return {"_published": {"source": rel, "source_sha256": sha,
                            "removed": "the computer's name, process ids, local folder paths, log excerpts and "
                                       "the installer's file scans; every other value is the record's own"},
