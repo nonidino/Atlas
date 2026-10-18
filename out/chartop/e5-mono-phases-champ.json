@@ -1,0 +1,65 @@
+{
+ "written": "2026-10-18T18:45:10-04:00",
+ "host": "champ",
+ "power": {
+  "BatteryStatus": 2,
+  "EstimatedChargeRemaining": 98,
+  "on_ac": true
+ },
+ "rows": [
+  {
+   "merge_s": 0.81778750004014,
+   "assemble_s": 0.08066579996375367,
+   "factor_s": 0.6780026000342332,
+   "solve_s": 0.015637300035450608,
+   "unknowns": 61567,
+   "name": "bend-3",
+   "problem": "steady"
+  },
+  {
+   "merge_s": 1.0235565000330098,
+   "assemble_s": 0.08152040001004934,
+   "factor_s": 0.7430772000225261,
+   "solve_s": 0.022070500010158867,
+   "unknowns": 61567,
+   "name": "bend-3",
+   "problem": "step"
+  },
+  {
+   "merge_s": 0.5941397999995388,
+   "assemble_s": 0.04912370000965893,
+   "factor_s": 0.24313329998403788,
+   "solve_s": 0.0056702999863773584,
+   "unknowns": 37375,
+   "name": "s-channel",
+   "problem": "steady"
+  },
+  {
+   "merge_s": 0.5757085999939591,
+   "assemble_s": 0.05521780002163723,
+   "factor_s": 0.2603841000236571,
+   "solve_s": 0.007472000026609749,
+   "unknowns": 37375,
+   "name": "s-channel",
+   "problem": "step"
+  },
+  {
+   "merge_s": 2.685220899991691,
+   "assemble_s": 0.2080456999829039,
+   "factor_s": 3.9008180999662727,
+   "solve_s": 0.052602000010665506,
+   "unknowns": 159871,
+   "name": "insert-round",
+   "problem": "steady"
+  },
+  {
+   "merge_s": 2.751285700011067,
+   "assemble_s": 0.18547819997183979,
+   "factor_s": 3.9664684999734163,
+   "solve_s": 0.06127649999689311,
+   "unknowns": 159871,
+   "name": "insert-round",
+   "problem": "step"
+  }
+ ]
+}

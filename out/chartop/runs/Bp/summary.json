@@ -1,0 +1,7 @@
+{
+ "arm": "Bp",
+ "steps": 37500,
+ "best_val_e_H_median": 0.33667361341741053,
+ "elapsed_s": 2122.0938695408404,
+ "examples": 50000
+}

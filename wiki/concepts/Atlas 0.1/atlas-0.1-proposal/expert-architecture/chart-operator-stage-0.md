@@ -146,6 +146,48 @@ Untrained networks: speed does not depend on the weights. `scripts/chartop_price
 
 ---
 
+## 7. Training
+
+**The data.** Each box drew it from the registered seeds (`out/chartop/box/A/`, `B/`). Both drew exactly the same training set: 50,000 pieces, 16,523 rejected charts, generator source `b31081dc…`, the committed code.
+- Coverage of the training set: $n=32$, 64, 128 at 30.2%, 49.8% and 20.0%. The four $\sup\lvert\mu\rvert$ bins of E1 at 8.9%, 20.1%, 33.3% and 37.7%. Spline quadrilaterals 80%, conformal maps 20%. The three frequencies a third each.
+- The other sets: 12,000 near-conformal pieces for C1 (every one in the first $\mu$ bin), 6,000 labelled pieces for C2 (the first of the training seeds, drawn again with labels), and 600 labelled validation pieces.
+
+**The main arm B.** 150,000 steps in 8,471 s on the RTX 3090 (56.5 ms a step, 3.5% over the price), with every validation logged in `out/chartop/runs/B/log.jsonl`.
+- **The particular field learned:** the validation median $e_p$ fell from 1 (a zero field) through 0.375 at step 5,000 to 0.089 at the end.
+- **The modes did not:** the validation median $e_H$ was 0.3372 at step 5,000 and 0.3366 at the best checkpoint (step 140,000). The plain square's principal part alone gives 0.337.
+- The supervised arm C2-sup was just as flat (0.3372 to 0.3366 over its 37,500 steps), so the objective is not the cause.
+
+---
+
+## 8. What the output form asks of the network (diagnostics, before the evaluation)
+
+`scripts/chartop_diagnose.py` → `out/chartop/diagnose-20261018-153945.json`, with classical solves on validation seeds only.
+
+**Where $e_H$ lives.** $e_H^2$ weights every mode by its energy, and the energy of $\sin(j\pi t)$ grows with $j$. For the principal part, the median share of $\sum_k\lVert H^{(0)}_k-H_k\rVert^2_{A_I}$ is:
+- the corner hats: 0.1%;
+- sines $j=1$–3: 5.2%;
+- sines $j=4$–8: 26.1%;
+- sines $j=9$–15: 68.5%.
+
+The high sines decay within one or two cells of their side. At $n=32$ the top one has barely two nodes per wavelength. **Learning every mode up to $j=8$ perfectly would still leave $e_H\approx0.337\sqrt{0.685}=0.28$.**
+
+**What the bubble asks for.** The head must output $N=(H-H^{(0)})/\beta$, with $\beta=16\xi(1-\xi)\eta(1-\eta)$:
+- Its root mean square is moderate: 0.06 for the hats, rising to about 1 for the high sines.
+- **Its maximum sits at the node diagonally next to a corner, and grows with the resolution:** median 16 at $n=32$, 50 at $n=64$, 89 at $n=128$.
+- The bubble vanishes like $\xi\eta$ at a corner. Under a shearing chart, though, the exact mode near the corner has the local behaviour of the pulled-back anisotropic operator, not the plain square's, so the quotient blows up as the grid resolves the corner.
+
+**[AI Inference]:** a network with a smooth convolutional bias learns these grid-scale, corner-singular corrections last. This is consistent with the modes not moving in 150,000 steps, and with the overfit probes on four examples, which moved $e_H$ by a few per cent in 600 steps under every loss weighting tried.
+
+**What E5 showed early, and a control.** The E5 timing script (§10) records, beside each time, the learned superelement's energy error on the benchmarks. That is E4's energy measure, so **E4 was seen before the one evaluation**: 24%, 42% and 67% on the three steady problems, and 10%, 7.1% and 7.4% on the steps. Nothing was changed in response.
+
+The control with no trained weights, the principal part alone (`scripts/chartop_principal_control.py` → `out/chartop/principal-control.json`), gives:
+- 0.017%, 5.3% and 5.6% on the steady problems;
+- 60%, 52% and 32% on the steps, where the missing particular field dominates.
+
+So **on the steady problems the trained modes are worse than their own starting point.** Those problems have no source, so the network's fifth input channel is identically zero. The generator always drew a unit-RMS source, so that input never appeared in training, and the network's modes (one forward pass for all 65 fields) depend on it. **[AI Inference]:** the physics says the modes do not depend on the source. The output design lets them, and the generator never tested the case.
+
+---
+
 ## See Also
 
 - [[chart-operator-architecture]] — the design being built (version 1, the CO-D card)

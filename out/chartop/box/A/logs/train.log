@@ -1,0 +1,6 @@
+B: training 150000 steps (wall-clock guard 210 min)
+B: {"arm": "B", "steps": 150000, "best_val_e_H_median": 0.33660096233941317, "elapsed_s": 8471.421803890727, "examples": 50000}
+Bp: training 37500 steps (wall-clock guard 75 min)
+Bp: {"arm": "Bp", "steps": 37500, "best_val_e_H_median": 0.33667361341741053, "elapsed_s": 2122.0938695408404, "examples": 50000}
+C1: training 37500 steps (wall-clock guard 75 min)
+C1: {"arm": "C1", "steps": 37500, "best_val_e_H_median": 0.33713677844062717, "elapsed_s": 2123.935782579705, "examples": 12000}

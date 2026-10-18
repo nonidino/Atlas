@@ -793,10 +793,11 @@ out/learned-case/data/
 
 # The chart operator, Stage 0 (W355): its registration, its run plan and the records
 # the wiki cites.  Data shards (regenerated from registered seeds) and run
-# checkpoints stay local; the main arm's chosen weights are added by exact path.
+# checkpoints stay local (their sha256 is in the evaluation's record); the arms' logs
+# and summaries are kept.
 !out/chartop/
 out/chartop/data/
-out/chartop/runs/
+out/chartop/runs/**/*.pt
 out/chartop/box/payload.tar.gz
 
 # The workbench launchers at the root (run.sh, run.cmd) build this; deleting it
