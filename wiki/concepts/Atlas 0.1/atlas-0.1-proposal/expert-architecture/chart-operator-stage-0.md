@@ -52,11 +52,97 @@ Chosen by the owner on 2026-10-18 (D2), before any training run. `tests/test_cha
 | SE3 | on every benchmark problem, the 16-mode truncation error $\lVert u-u_m\rVert_M$ below the network term |
 | DUAL | on steady pieces, every difference of the chain $\tilde\Lambda_{\text{low}}\preceq\Lambda_{\text{low}}\preceq\Lambda\preceq\tilde\Lambda$ has smallest eigenvalue $\ge-10^{-10}\lvert\Lambda\rvert$; the gap against the true error reported |
 | KT | $\kappa(T)$ on every steady benchmark: the frozen-coefficient iteration converges within 50 outer iterations and meets E4's bars against the classical frozen-coefficient solution, its floor being the same iteration with the 16-mode classical superelement |
-| C1–C7 | the challenger wins at a ratio $\le0.8$ of the reference's median $e_H$ (C6: of the mean E4 energy error), loses at $\ge1.25$, otherwise a tie and the default stands |
+| C1–C7 | ratio = the alternative arm's median $e_H$ over the default arm's (C6: their mean E4 energy errors); the alternative wins at a ratio $\le0.8$, loses at $\ge1.25$, otherwise a tie and the default stands |
 
 **SE3, read correctly.** SE3 does not ask the network to beat the truncation floor. It asks the opposite: that 16 modes per side are enough, so that the network, not the port count, is the limiting term.
 
 **The bins of E1.** $\sup\lvert\mu\rvert$ in $[0,0.15)$, $[0.15,0.30)$, $[0.30,0.45)$ and $[0.45,0.65]$. Input frequency is the correlation length $\ell$ of the material and source fields: low ($\ell=0.5$), mid ($0.25$), high ($0.125$).
+
+---
+
+## 4. What was built (`atlas/chartop/`)
+
+### 4.1 The piece's energy: bilinear elements on the reference grid (D7)
+
+**Intuition.** Every piece becomes the unit square. Its curvature, its stretching and its material become one tensor field on the square. The square is cut into $n\times n$ cells. The unknowns are the temperatures at the $(n+1)^2$ cell corners, and the energy of a field is computed exactly for bilinear interpolation between those corners.
+
+**Rigorously.** With $\hat{\mathsf A}=\hat\kappa\,JG^{-1}$ constant on each element (its value at the element's centre), the reaction $\sigma=\tilde J/\mathrm{Fo}$ of a backward-Euler step ($\tilde J=J/\lvert\Omega\rvert$, $\mathrm{Fo}=\kappa_{\text{ref}}\Delta t/(\rho c\lvert\Omega\rvert)$), and a nodal field $u$,
+$$u^\top Mu=\sum_e\int_e\bigl(\hat\nabla u\cdot\hat{\mathsf A}\hat\nabla u+\sigma u^2\bigr)d\hat x,\qquad M=\begin{pmatrix}A_I&-B\\-B^\top&D\end{pmatrix},$$
+where $I$ are the $(n-1)^2$ interior nodes and the boundary block holds the $4n$ loop nodes. The load of a source $g$ is the mass matrix weighted by $\tilde J$ applied to $g$. The physical energy is $\kappa_{\text{ref}}$ times this one. On the reference grid these are exactly the isoparametric bilinear elements of the physical mesh the chart draws. `fe.py`; the closed-form element energy is checked against the assembled matrix to $3\times10^{-15}$ (`tests/test_chartop_core.py`).
+
+### 4.2 Ports: corner hats and side sines (D3)
+
+Four hats, each linear along the two sides meeting at its corner, and per side $\sin(j\pi t)$ for $j=1,\dots,15$: $4+4\cdot15=64=4m$ columns. Every trace is continuous round the loop. **The coefficients are vertex values and side amplitudes.** A corner shared by any number of pieces (a cross-point, such as insert-round's box corners, where three pieces meet) is one vertex unknown, and the host needs no special rule for it. The constant is the sum of the hats, so a uniform temperature is represented exactly. A neighbour traverses a shared side backwards, and $\sin(j\pi(1-t))=(-1)^{j+1}\sin(j\pi t)$ gives the sign. Comparison C6's cosines $\cos(j\pi t)$, $j=0,\dots,15$, give each corner node the average of its two sides' values. That arm is nonconforming at corners: it is the bilinear-element form of the document's Remark 4. `ports.py`.
+
+### 4.3 The principal part by fast sine transforms
+
+On the plain square, $A_I^0=K_1\otimes M_1+M_1\otimes K_1+s_0\,M_1\otimes M_1$, with $K_1=n\,\mathrm{tridiag}(-1,2,-1)$ and $M_1=\tfrac1{6n}\mathrm{tridiag}(1,4,1)$. The type-I sine transform diagonalises both 1-D matrices, with eigenvalues $k_p=2n(1-\cos\tfrac{p\pi}n)$ and $m_p=\tfrac{4+2\cos(p\pi/n)}{6n}$. So $H^{(0)}=(A_I^0)^{-1}B^0Q$ costs two transforms and a division. It matches a sparse LU to $10^{-14}$ (`principal.py`, tests). Inside the network it is computed in float32. Its rounding is then part of the network's output, an interior error like any other, so T25 still applies. This cut one training step from 83 to 63 ms on the RTX 3090.
+
+### 4.4 Charts, the certificate and the envelope
+
+`chart.py` makes four kinds of chart: the Coons patch; Winslow, the harmonic chart with the sides' parametrisations as data, solved in its forward form by Picard iteration from the patch; the harmonic chart with a conformal boundary correspondence, which *is* the conformal map of a piece of given modulus; and closed-form maps. `certificate.py` holds Proposition 3: every cell corner's bilinear Jacobian positive and the boundary polygon simple and positively oriented. It also holds the envelope declared on the card: $\sup\lvert\mu\rvert\le0.65$, $\max\log J-\min\log J\le\log8$, $\lVert\hat\nabla\log J\rVert_\infty+\lVert\hat\nabla\mu\rVert_\infty\le40$, $\lvert\log\hat\kappa\rvert\le2.3$, and $\mathrm{Fo}\in[10^{-2},10^{2}]$ or steady. A refusal names the quantity it violates.
+
+**The chart rule, at work on the s-channel's end piece.** Its corners are $154.0^\circ$ and $105.2^\circ$ at the channel's straight end, and two right angles at the cut. The conformal chart was tried first. Its $\log J$ range of $4.61$ exceeds $\log8=2.08$, so it was refused, and Winslow was used: $\sup\lvert\mu\rvert=0.543$ on the grid, $\log J$ range $1.43$. Proposition 2 puts $\lvert\mu\rvert\ge(\tan77^\circ-1)/(\tan77^\circ+1)=0.625$ *at* the $154^\circ$ corner for any $C^1$ chart. The grid's samples stop half a cell away, so the envelope's $k_\mu=0.65$ leaves the corner itself room.
+
+### 4.5 The host
+
+`host.py`: the Gram $\tilde\Lambda_i=\tilde V_i^\top M_i\tilde V_i$ and the load $\tilde b_i=\tilde V_i^\top b_i-\tilde V_i^\top M_i(\hat u_{p,i},0)$, assembled over vertex and side unknowns. The Dirichlet sides' coefficients are fixed by projection. Then one Cholesky solve and the reconstruction $\tilde u_i=\hat u_{p,i}+\hat H_iR_ic$, with the THERM port type checked on every seam. A seam whose nodes do not coincide is a **mortar**: the second piece's side amplitudes are the $L^2$ projection, in physical arc length, of the owner's trace minus its own vertex interpolant. It is nonconforming and not covered by Theorem 2, but tested: 16 elements against 24 couple to within 0.008 K of the conforming answer on a 100 K span. The **full-domain reference** merges the pieces' coincident nodes into one mesh and solves it once.
+
+### 4.6 The benchmarks as conforming layouts (`benchmarks.py`)
+
+The general layout for forks and rings is not built, so each benchmark has a hand-made layout of four-sided pieces in which every seam is conforming:
+- **bend-3**: 15 pieces, $3\times5$, cut at equal values of $\log r$ and $\theta$ and charted by the log-polar map.
+- **s-channel**: the layout's harmonic coordinates are solved on a fine Coons mesh of the drawn channel, giving modulus $M=8.61$ and $E(u)E(v)=1.0005$. That gives 9 pieces cut at equal values of $u$: 7 conformal and 2 Winslow (above).
+- **insert-round**: an O–H grid with every ring cut in three along its rays, to keep each piece's modulus near one (decision 2). That is 9 core rectangles, 12 disc-ring pieces (corners 135/105/90/75°), 12 plate-ring pieces (corners 90/45/75/105°) and 6 column pieces, 39 in all, copper inside the circle and steel outside.
+
+Each comes **steady**, as the workbench defines it, and as **one backward-Euler step** from 300 K: $\Delta t$ = 50, 100 and 100 s, Fourier numbers 0.033–41.
+
+### 4.7 The generator, the network and the objectives
+
+- **Generator** (`data.py`). Random spline quadrilaterals, two thirds charted by Winslow and one third by the Coons patch, and one draw in five a random conformal map (a cubic or an exponential of $M\xi+i\eta$). Every chart is certified and kept only inside the envelope; a quarter of the draws were rejected. $\log\hat\kappa$ is a random field plus, in 40% of draws, a random material jump, with a distribution symmetric under negation (for the dual). Sources, Fourier numbers and $n\in\{32,64,128\}$ are drawn as registered.
+- **Network** (`model.py`). A node-aligned U-Net: $2^k+1\to2^{k-1}+1$ by a stride-2 average, bilinear up with aligned corners, two $3\times3$ convolutions per level, GELU, FiLM on two scalars of Fo, and even reflection padding. The outputs are corrections times the bubble $\beta=16\xi(1-\xi)\eta(1-\eta)$, so traces are exact. Widths $(24,48,96,192)$ give 1.10 M parameters; 0.28 M and 3.05 M for C5; 1.06 M for C4's spectral operator.
+- **Objectives**, in float64. The label-free $\mathcal L_{\text{en}}$ (T26) is normalised per example by the principal part's own energies, which do not depend on the weights. It equals the supervised loss plus a constant to $10^{-9}$ in the training code's own arithmetic, provided labels are solved from the stored float32 coefficients. If they are solved from the float64 ones, the identity holds only to $10^{-7}$; that discrepancy was found and fixed before training.
+- **D4 augmentation.** Each symmetry acts on the inputs, on the tensor ($R\hat{\mathsf A}R^\top$) and on $\mu$ (a $90^\circ$ rotation sends $\mu\to-\mu$, a reflection $\mu\to\bar\mu$). For C2's supervised arm it also permutes the labels by the symmetry's signed action on the port basis, checked against classical solves of every transformed problem to $10^{-9}$.
+
+---
+
+## 5. Measured before training: the host with exact classical modes
+
+`scripts/chartop_validate_host.py` → `out/chartop/host_validation.json`, $n=64$ per piece. **With every mode** ($m=n$: hats and all side sines) the host reproduces the full-domain solve to rounding. **With 16 modes per side** what remains is the port-truncation floor, which SE3 and E4 (D9) measure against.
+
+| benchmark | problem | pieces | interface unknowns | all modes vs full domain, energy | 16 modes, energy | 16 modes, max over range |
+|---|---|---|---|---|---|---|
+| bend-3 | steady | 15 | 594 | $2.3\times10^{-12}$ | $2.3\times10^{-12}$ | $9.7\times10^{-13}$ |
+| bend-3 | step | 15 | 594 | $1.3\times10^{-14}$ | $1.73\times10^{-4}$ | $4.2\times10^{-3}$ |
+| s-channel | steady | 9 | 440 | $2.7\times10^{-12}$ | $9.25\times10^{-3}$ | $1.5\times10^{-3}$ |
+| s-channel | step | 9 | 440 | $1.8\times10^{-14}$ | $1.35\times10^{-3}$ | $2.81\times10^{-2}$ |
+| insert-round | steady | 39 | 1,338 | $4.6\times10^{-11}$ | $3.13\times10^{-4}$ | $4.7\times10^{-5}$ |
+| insert-round | step | 39 | 1,338 | $1.6\times10^{-13}$ | $6.6\times10^{-5}$ | $4.9\times10^{-4}$ |
+
+- **bend-3, steady**: the solution is linear in $\theta$, which the corner hats represent exactly, so 16 modes are as exact as all of them. The full-domain solve matches the analytic $T=400-100\,\theta/(\pi/2)$ to $9\times10^{-11}$ K.
+- **s-channel, steady**: the full-domain solve matches $T=400-100u$ on the fine harmonic coordinate to 0.037 K. Its 16-mode floor, 0.93% in energy, comes from the end pieces' corners. The trace of $u$ along a wall leaving a $154^\circ$ corner is not smooth in arc length.
+- **s-channel, step**: the floor of $2.81\%$ of the range is what D9 corrected. The one-step boundary layer along the insulated walls is steeper than 15 sines can follow.
+
+---
+
+## 6. Priced before the long runs (F9's discipline)
+
+Untrained networks: speed does not depend on the weights. `scripts/chartop_price.py` → `out/chartop/price-54cd5124ef46-20261018-181032.json` and `-181424.json` (RTX 3090, before and after the float32 principal part) and `out/chartop/price-17c071b456c5-20261018-185004.json` (A100 SXM4).
+
+| quantity | value |
+|---|---|
+| forward per piece, bfloat16, batch 16, RTX 3090: $n=32$ / $64$ / $128$ | 0.31 / 0.65 / 2.26 ms (1.1 M); 0.34 / 0.76 / 2.58 ms (3.05 M); 0.31 / 0.65 / 2.17 ms (0.28 M) |
+| the same, batch 1 | 4.1–5.3 ms per call, whatever the size: launch-bound |
+| forward per piece, A100 SXM4, 1.1 M, $n=64$, batch 16 / 1 | 0.37 / 4.5 ms |
+| one training step of arm B, RTX 3090, $n=32$ / $64$ / $128$ (batch 32 / 32 / 8) | 27 / 63 / 60 ms (30 / 83 / 84 ms with the principal part in float64) |
+| the same on the A100 | 29 / 46 / 43 ms |
+| generator on the RTX 3090 box (EPYC 7502, 63 workers, one BLAS thread each) | 31.7 examples/s |
+| one labelled example (factorisation plus 65 pairs of solves), $n=32$ / $64$ / $128$ | 0.027 / 0.079 / 0.43 s (the laptop, on battery) |
+
+**What the pricing found.**
+- A step is dominated by the float64 objective and the principal part's transforms, not by the network: 0.28 M and 3.05 M cost 59 and 75 ms at $n=64$.
+- 63 generator workers each starting 64 OpenBLAS threads could not create their threads at all. One BLAS thread per worker fixed it.
+- **Against [[chart-operator-training-and-cost]] §5.1's estimate** ("2–5 h on one GPU" for $10^5$ pieces and 100 passes), the measured mean step of 54.6 ms per 20 examples gives about 7.6 h on the RTX 3090.
 
 ---
 
