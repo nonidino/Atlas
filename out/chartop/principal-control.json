@@ -1,0 +1,77 @@
+{
+ "written": "2026-10-18T17:41:41-04:00",
+ "rows": [
+  {
+   "name": "bend-3",
+   "problem": "steady",
+   "principal_part": {
+    "energy_rel": 0.00016564165715582675,
+    "max_over_range": 2.5977833189472223e-06
+   },
+   "classical_16": {
+    "energy_rel": 2.3084563704684885e-12,
+    "max_over_range": 9.674749890109524e-13
+   }
+  },
+  {
+   "name": "bend-3",
+   "problem": "step",
+   "principal_part": {
+    "energy_rel": 0.6002188009974013,
+    "max_over_range": 2.3869434196309975
+   },
+   "classical_16": {
+    "energy_rel": 0.00017287998890116478,
+    "max_over_range": 0.004216838021351918
+   }
+  },
+  {
+   "name": "s-channel",
+   "problem": "steady",
+   "principal_part": {
+    "energy_rel": 0.052823950172548,
+    "max_over_range": 0.003986891987008221
+   },
+   "classical_16": {
+    "energy_rel": 0.00925299695668175,
+    "max_over_range": 0.0014990105604346126
+   }
+  },
+  {
+   "name": "s-channel",
+   "problem": "step",
+   "principal_part": {
+    "energy_rel": 0.519661123478903,
+    "max_over_range": 1.7786762748176275
+   },
+   "classical_16": {
+    "energy_rel": 0.0013538704954344162,
+    "max_over_range": 0.02814386594791756
+   }
+  },
+  {
+   "name": "insert-round",
+   "problem": "steady",
+   "principal_part": {
+    "energy_rel": 0.05576948011632603,
+    "max_over_range": 0.009345601792064713
+   },
+   "classical_16": {
+    "energy_rel": 0.00031279592897102233,
+    "max_over_range": 4.7001008018128234e-05
+   }
+  },
+  {
+   "name": "insert-round",
+   "problem": "step",
+   "principal_part": {
+    "energy_rel": 0.322744708894002,
+    "max_over_range": 0.9506890364810068
+   },
+   "classical_16": {
+    "energy_rel": 6.615233138881022e-05,
+    "max_over_range": 0.0004860284734854758
+   }
+  }
+ ]
+}

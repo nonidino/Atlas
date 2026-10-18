@@ -1,0 +1,177 @@
+{
+ "written": "2026-10-18T17:33:02-04:00",
+ "host": "champ",
+ "platform": "Windows-11-10.0.26300-SP0",
+ "device": "cpu",
+ "gpu": null,
+ "torch_threads": 8,
+ "power_before": {
+  "BatteryStatus": 2,
+  "EstimatedChargeRemaining": 80,
+  "on_ac": true
+ },
+ "reps": 5,
+ "weights": "out/chartop/runs/B/best.pt",
+ "benchmarks": [
+  {
+   "name": "bend-3",
+   "problem": "steady",
+   "pieces": 15,
+   "monolithic_cold_s": 1.7949839000357315,
+   "monolithic_warm_s": 0.01278330001514405,
+   "classical_superelement_cold_s": 0.6321751000359654,
+   "classical_superelement_warm_s": 0.06562639999901876,
+   "learned_forward_s": 0.23388690000865608,
+   "learned_superelement_cold_s": 0.33175429998664185,
+   "learned_superelement_warm_s": 0.23534700000891462,
+   "learned_energy_rel": 0.24447773469489034,
+   "coarse_monolithic_cold_s": 0.3279828000231646,
+   "coarse_max_over_range_approx": 1.4665602066088468e-13
+  },
+  {
+   "name": "bend-3",
+   "problem": "step",
+   "pieces": 15,
+   "monolithic_cold_s": 1.841870599950198,
+   "monolithic_warm_s": 0.018060500035062432,
+   "classical_superelement_cold_s": 0.7070283000357449,
+   "classical_superelement_warm_s": 0.11365369998384267,
+   "learned_forward_s": 0.21133419999387115,
+   "learned_superelement_cold_s": 0.40149719995679334,
+   "learned_superelement_warm_s": 0.23107649997109547,
+   "learned_energy_rel": 0.10355232481124786,
+   "coarse_monolithic_cold_s": 0.4343511000042781,
+   "coarse_max_over_range_approx": 0.0004479290420408688
+  },
+  {
+   "name": "s-channel",
+   "problem": "steady",
+   "pieces": 9,
+   "monolithic_cold_s": 0.9205118000390939,
+   "monolithic_warm_s": 0.00613369996426627,
+   "classical_superelement_cold_s": 0.45251819997793064,
+   "classical_superelement_warm_s": 0.04332820000126958,
+   "learned_forward_s": 0.13472960004583,
+   "learned_superelement_cold_s": 0.1812328000087291,
+   "learned_superelement_warm_s": 0.12659620004706085,
+   "learned_energy_rel": 0.4228795706723578,
+   "coarse_monolithic_cold_s": 0.23718639998696744,
+   "coarse_max_over_range_approx": 0.0011098384939680272
+  },
+  {
+   "name": "s-channel",
+   "problem": "step",
+   "pieces": 9,
+   "monolithic_cold_s": 0.892245199996978,
+   "monolithic_warm_s": 0.006891700031701475,
+   "classical_superelement_cold_s": 0.5134793000179343,
+   "classical_superelement_warm_s": 0.040664899977855384,
+   "learned_forward_s": 0.13565120002022013,
+   "learned_superelement_cold_s": 0.1990830999566242,
+   "learned_superelement_warm_s": 0.13739370001712814,
+   "learned_energy_rel": 0.0712332449267884,
+   "coarse_monolithic_cold_s": 0.23269959999015555,
+   "coarse_max_over_range_approx": 0.01878685061896192
+  },
+  {
+   "name": "insert-round",
+   "problem": "steady",
+   "pieces": 39,
+   "monolithic_cold_s": 6.678381600009743,
+   "monolithic_warm_s": 0.05428889999166131,
+   "classical_superelement_cold_s": 2.369531000033021,
+   "classical_superelement_warm_s": 0.19292190001579002,
+   "learned_forward_s": 0.5555735999951139,
+   "learned_superelement_cold_s": 1.4514435000019148,
+   "learned_superelement_warm_s": 0.6762625999981537,
+   "learned_energy_rel": 0.6682109273219526,
+   "coarse_monolithic_cold_s": 1.288087299966719,
+   "coarse_max_over_range_approx": 4.0790822071130604e-05
+  },
+  {
+   "name": "insert-round",
+   "problem": "step",
+   "pieces": 39,
+   "monolithic_cold_s": 7.1697062000166625,
+   "monolithic_warm_s": 0.04288610001094639,
+   "classical_superelement_cold_s": 2.1161528000375256,
+   "classical_superelement_warm_s": 0.2586798000265844,
+   "learned_forward_s": 0.4778795999591239,
+   "learned_superelement_cold_s": 1.4183274999959394,
+   "learned_superelement_warm_s": 0.6577947000041604,
+   "learned_energy_rel": 0.07362583089265333,
+   "coarse_monolithic_cold_s": 1.4547725000302307,
+   "coarse_max_over_range_approx": 0.00016421446148058295
+  }
+ ],
+ "design_loop": {
+  "variants": [
+   {
+    "inner_radius_cells": 34.0,
+    "monolithic_s": 1.7345321000320837,
+    "classical_superelement_s": 0.7441065000020899,
+    "learned_superelement_s": 0.43244679999770597,
+    "learned_energy_rel": 0.1994699697924611
+   },
+   {
+    "inner_radius_cells": 36.0,
+    "monolithic_s": 1.7157487999647856,
+    "classical_superelement_s": 0.7054886000114493,
+    "learned_superelement_s": 0.41659169999184087,
+    "learned_energy_rel": 0.21486383405371454
+   },
+   {
+    "inner_radius_cells": 38.0,
+    "monolithic_s": 1.7014241999713704,
+    "classical_superelement_s": 0.7673102000262588,
+    "learned_superelement_s": 0.4578061999636702,
+    "learned_energy_rel": 0.2298805681530038
+   },
+   {
+    "inner_radius_cells": 40.0,
+    "monolithic_s": 1.9093806999735534,
+    "classical_superelement_s": 0.7587389000109397,
+    "learned_superelement_s": 0.40887810004642233,
+    "learned_energy_rel": 0.24447773469489034
+   },
+   {
+    "inner_radius_cells": 42.0,
+    "monolithic_s": 1.9829869999666698,
+    "classical_superelement_s": 0.7391196999815293,
+    "learned_superelement_s": 0.34033949999138713,
+    "learned_energy_rel": 0.25859555487662256
+   },
+   {
+    "inner_radius_cells": 44.0,
+    "monolithic_s": 1.635157499986235,
+    "classical_superelement_s": 0.7500044999760576,
+    "learned_superelement_s": 0.4419002999784425,
+    "learned_energy_rel": 0.27220248584342405
+   },
+   {
+    "inner_radius_cells": 46.0,
+    "monolithic_s": 1.591311200056225,
+    "classical_superelement_s": 0.7237180999945849,
+    "learned_superelement_s": 0.45212650002213195,
+    "learned_energy_rel": 0.28530123504387944
+   },
+   {
+    "inner_radius_cells": 48.0,
+    "monolithic_s": 1.7266687999945134,
+    "classical_superelement_s": 0.9767485000193119,
+    "learned_superelement_s": 0.4902248000144027,
+    "learned_energy_rel": 0.2979021302323985
+   }
+  ],
+  "totals_s": {
+   "monolithic_s": 13.997210299945436,
+   "classical_superelement_s": 6.165235000022221,
+   "learned_superelement_s": 3.4403139000060037
+  }
+ },
+ "power_after": {
+  "BatteryStatus": 2,
+  "EstimatedChargeRemaining": 84,
+  "on_ac": true
+ }
+}
