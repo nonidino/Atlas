@@ -791,6 +791,13 @@ out/learned-case/data/
 # section, written by scripts/site_export_schannel.py and cited by site/data/claims.json.
 !out/site/
 
+# The chart operator, Stage 0 (W355): its registration, its run plan and the records
+# the wiki cites.  Data shards (regenerated from registered seeds) and run
+# checkpoints stay local; the main arm's chosen weights are added by exact path.
+!out/chartop/
+out/chartop/data/
+out/chartop/runs/
+
 # The workbench launchers at the root (run.sh, run.cmd) build this; deleting it
 # undoes the whole install.
 .venv/
