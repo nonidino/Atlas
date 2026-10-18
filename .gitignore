@@ -797,6 +797,7 @@ out/learned-case/data/
 !out/chartop/
 out/chartop/data/
 out/chartop/runs/
+out/chartop/box/payload.tar.gz
 
 # The workbench launchers at the root (run.sh, run.cmd) build this; deleting it
 # undoes the whole install.

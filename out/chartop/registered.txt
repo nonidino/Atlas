@@ -1,0 +1,59 @@
+THE CHART OPERATOR, STAGE 0 (CO-D, W355): REGISTRATION
+
+written            2026-10-18T15:16:28-04:00
+before             any training result was read: the re-registration of E4 (decision D9), with arm B about ten minutes into training and no validation or test number seen
+repository at      c1e4d7502c25b3a2f47d3785176b04f1ae665c0d (the commit adding this file follows it)
+gate module        atlas/chartop/gates.py  sha256 b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099
+registered as      2026-10-18, by decision D2 of the owner, before any training run; E4's maximum-error bar re-registered the same day by decision D9, before any training result was seen
+
+SPLITS (example i of a split has seed base + i)
+  train            seed base 1000000
+  val              seed base 2000000
+  test             seed base 3000000
+  train-conformal  seed base 4000000
+  validation       600 examples (picks the weights)
+  test             2400 examples, seeds 3000000..3002399, drawn only at the one evaluation
+  held out         the benchmarks bend-3, s-channel, insert-round, problems steady and step, at n = 64
+
+THE TRAINING ENVELOPE (data.ENVELOPE; the card declares it)
+  sup|mu| <= 0.65, max log J - min log J <= 2.079, |grad log J| + |grad mu| <= 40,
+  |log kappa_hat| <= 2.3, Fo in [0.01, 100] or steady
+
+THE GATES
+  E1    accuracy by bin                               on the held-out test split, in every (sup|mu|, frequency) bin with >= 30 examples: median e_H <= 0.01 and 90th percentile <= 0.03; median e_p <= 0.02 and 90th percentile <= 0.05
+  E2    tier-2 contraction                            not applicable at Stage 0 (tier 0 only)
+  E3    Theorem 2 on the benchmarks                   every benchmark problem: ||u - u~||_M <= (||u - u_m||_M + network term) (1 + 1e-09)
+  E4    coupled answer against the full-domain solve  every benchmark problem: energy error <= 0.02 and max error <= the 16-mode classical superelement's own max error + 0.01 of the range (D9)
+  E5    cost                                          reported whatever it says; 'faster' only where measured faster
+  E6    S1-S12                                        each answered from a measurement or named as not met
+  SE1   Gram identity and lambda_min                  every benchmark piece and problem: identity residual <= 1e-10; lambda_min(S~) >= lambda_min(S) (1 - 1e-10)
+  SE2   network calls                                 1 per piece per linear solve
+  SE3   port truncation                               every benchmark problem: the 16-mode truncation error ||u - u_m||_M below the network term
+  DUAL  the 2-D dual bracket                          steady pieces: L~_low <= L_low <= L <= L~ with every min eigenvalue >= -1e-10 |L|; the gap against the true error reported
+  KT    nonlinear conduction, frozen coefficients     every steady benchmark with kappa(T): converges within 50 outer iterations, and meets E4's bars against the classical frozen-coefficient solution, the floor being the same iteration with the 16-mode classical superelement
+
+THE COMPARISONS (ratio = alternative / default: the alternative wins at <= 0.80, loses at >= 1.25, otherwise a tie and the default stands)
+  C1    general charts against near-conformal pieces only          on the test pieces with sup|mu| < 0.15: ratio = median e_H of C1 (trained on near-conformal pieces only) over B' (general); a tie or a loss for C1 means the general class costs nothing measurable on near-conformal pieces
+  C2    label-free against supervised, equal compute               ratio = median e_H of C2-sup over C2-free (the default objective, D8), both on train-c2
+  C3    principal part against direct prediction                   ratio = median e_H of C3 (direct) over B' (principal part plus bubble)
+  C4    U-shaped trunk against the sine-cosine spectral operator   ratio = median e_H of C4 (spectral) over B' (U-Net); forward cost reported beside it
+  C5    0.3, 1 and 3 M parameters                                  the smallest size whose median e_H is within 1.25 of the best; forward cost reported
+  C6    cosine port modes against sines and corner hats            ratio = mean E4 energy error over the six benchmark problems, C6 (cosine) over B' (sine-hat, D3); e_H reported beside it, not compared (different port spaces)
+  C7    bubble-weighted correction against V0 + L0^-1 N            ratio = median e_H of C7 (fast-solve form) over B' (bubble)
+
+THE ARMS
+  B        main: U-Net 1M, bubble, sine-hat, label-free, general data  [main budget]
+  Bp       B at the comparison budget (C1, C3-C7's reference)  [comparison budget]
+  C1       B' on near-conformal data only (train-conformal)  [comparison budget]
+  C2-sup   supervised objective on train-c2  [comparison budget]
+  C2-free  label-free twin on train-c2  [comparison budget]
+  C3       direct prediction of the modes  [comparison budget]
+  C4       sine-cosine spectral operator  [comparison budget]
+  C5-0.3M  U-Net 0.3M  [comparison budget]
+  C5-3M    U-Net 3M  [comparison budget]
+  C6       cosine port basis  [comparison budget]
+  C7       fast-solve output form  [comparison budget]
+
+the measures are defined in the module's docstring; the judgements are its judge_*
+functions, applied once by scripts/chartop_evaluate.py.  The arms' budgets are fixed
+after pricing, before training, in out/chartop/plan.json.

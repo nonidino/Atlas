@@ -32,6 +32,11 @@ def module_hash(path: str = MODULE) -> str:
 
 
 def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--before", default="any training run (no network has been trained)",
+                    help="what this registration precedes, stated exactly")
+    args = ap.parse_args()
     from atlas.chartop import data, gates as G
     if os.path.exists(OUT):
         raise SystemExit("%s exists; a registration is not overwritten" % OUT)
@@ -42,7 +47,7 @@ def main() -> int:
         "THE CHART OPERATOR, STAGE 0 (CO-D, W355): REGISTRATION",
         "",
         "written            %s" % dt.datetime.now().astimezone().isoformat(timespec="seconds"),
-        "before             any training run (no network has been trained)",
+        "before             %s" % args.before,
         "repository at      %s (the commit adding this file follows it)" % head,
         "gate module        atlas/chartop/gates.py  sha256 %s" % module_hash(),
         "registered as      %s" % G.REGISTERED,

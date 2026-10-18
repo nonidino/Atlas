@@ -58,7 +58,8 @@ def test_the_wiki_states_the_registered_bars():
 
 
 def test_the_bars_are_the_owners():
-    """D2, 2026-10-18: the proposal accepted as it was made."""
+    """D2, 2026-10-18: the proposal accepted as it was made; D9 the same day moved E4's
+    maximum-error bar onto the 16-mode floor plus this allowance."""
     assert (G.E1_MODES_MEDIAN, G.E1_MODES_P90) == (0.01, 0.03)
     assert (G.E1_PARTICULAR_MEDIAN, G.E1_PARTICULAR_P90) == (0.02, 0.05)
     assert (G.E4_ENERGY, G.E4_MAX_OF_RANGE) == (0.02, 0.01)
@@ -81,8 +82,10 @@ def test_judgements():
     assert good["met"] and good["bins_judged"] == 12
     bad = G.judge_e1(np.where(mu > 0.5, 0.05, 0.005), np.full(N, 0.01), mu, fq)
     assert not bad["met"]
-    assert G.judge_e4(0.019, 0.9, 100.0)["met"] and not G.judge_e4(0.021, 0.9, 100.0)["met"]
-    assert not G.judge_e4(0.01, 1.1, 100.0)["met"]
+    assert G.judge_e4(0.019, 0.9, 100.0, 0.0)["met"] and not G.judge_e4(0.021, 0.9, 100.0, 0.0)["met"]
+    assert not G.judge_e4(0.01, 1.1, 100.0, 0.0)["met"]
+    # D9: the allowance sits on top of the classical superelement's own floor
+    assert G.judge_e4(0.01, 3.7, 100.0, 2.81)["met"] and not G.judge_e4(0.01, 3.9, 100.0, 2.81)["met"]
     assert G.compare(0.7, 1.0)["verdict"] == "alternative wins"
     assert G.compare(1.3, 1.0)["verdict"] == "alternative loses"
     assert G.compare(1.0, 1.0)["verdict"] == "tie"

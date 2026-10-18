@@ -41,7 +41,9 @@ from dataclasses import dataclass
 
 import numpy as np
 
-REGISTERED = "2026-10-18, by decision D2 of the owner, before any training run"
+REGISTERED = ("2026-10-18, by decision D2 of the owner, before any training run; E4's "
+              "maximum-error bar re-registered the same day by decision D9, before any "
+              "training result was seen")
 
 # ---------------------------------------------------------------------------
 # the splits (seeds) -- the test split is drawn only at the one evaluation
@@ -69,7 +71,12 @@ FREQ_BINS = ("low", "mid", "high")
 
 E3_ROUNDING = 1e-9            # relative slack on Theorem 2's bound (rounding only)
 E4_ENERGY = 0.02              # ||u - u~||_M / ||u||_M on every benchmark problem
-E4_MAX_OF_RANGE = 0.01        # max nodal error / (max u - min u)
+E4_MAX_OF_RANGE = 0.01        # the network's allowance on the max nodal error, of the range
+#: D9 (2026-10-18, before any training result): the max nodal error is judged against
+#: the classical superelement with the same 16 modes per side, plus the allowance:
+#: ||u - u~||_inf <= ||u - u_m||_inf + E4_MAX_OF_RANGE (max u - min u).  The 1% bar of D2
+#: was below that floor on the s-channel step (2.81% of the range with exact modes,
+#: out/chartop/host_validation.json), so no network could have met it there.
 SE1_IDENTITY = 1e-10          # ||Lambda~ - Lambda - E^T A_I E|| / ||Lambda||
 SE1_LAMBDA_MIN = 1e-10        # lambda_min(S~) >= lambda_min(S) (1 - this)
 SE2_CALLS_PER_PIECE = 1
@@ -118,8 +125,8 @@ GATES = (
     Gate("E3", "Theorem 2 on the benchmarks",
          f"every benchmark problem: ||u - u~||_M <= (||u - u_m||_M + network term) (1 + {E3_ROUNDING:g})"),
     Gate("E4", "coupled answer against the full-domain solve",
-         f"every benchmark problem: energy error <= {E4_ENERGY:g} and max error <= "
-         f"{E4_MAX_OF_RANGE:g} of the range"),
+         f"every benchmark problem: energy error <= {E4_ENERGY:g} and max error <= the "
+         f"16-mode classical superelement's own max error + {E4_MAX_OF_RANGE:g} of the range (D9)"),
     Gate("E5", "cost", "reported whatever it says; 'faster' only where measured faster"),
     Gate("E6", "S1-S12", "each answered from a measurement or named as not met"),
     Gate("SE1", "Gram identity and lambda_min",
@@ -133,7 +140,8 @@ GATES = (
          f"-{DUAL_CHAIN_ROUNDING:g} |L|; the gap against the true error reported"),
     Gate("KT", "nonlinear conduction, frozen coefficients",
          f"every steady benchmark with kappa(T): converges within {KAPPA_T_MAX_ITERATIONS} outer "
-         f"iterations, and meets E4's bars against the classical frozen-coefficient solution"),
+         f"iterations, and meets E4's bars against the classical frozen-coefficient solution, the "
+         f"floor being the same iteration with the 16-mode classical superelement"),
 )
 
 COMPARISONS = (
@@ -222,9 +230,12 @@ def judge_e3(err_learned: float, err_classical: float, network_term: float) -> d
             "classical_m": err_classical, "network_term": network_term}
 
 
-def judge_e4(energy_rel: float, max_err: float, span: float) -> dict:
-    return {"met": bool(energy_rel <= E4_ENERGY and max_err <= E4_MAX_OF_RANGE * span),
-            "energy_rel": energy_rel, "max_over_range": max_err / span}
+def judge_e4(energy_rel: float, max_err: float, span: float, floor_max: float) -> dict:
+    """D9: max_err against the 16-mode classical superelement's own max error floor_max."""
+    bar = floor_max + E4_MAX_OF_RANGE * span
+    return {"met": bool(energy_rel <= E4_ENERGY and max_err <= bar),
+            "energy_rel": energy_rel, "max_over_range": max_err / span,
+            "floor_max_over_range": floor_max / span, "bar_max_over_range": bar / span}
 
 
 def judge_se1(identity_rel: float, lam_learned: float, lam_exact: float) -> dict:
@@ -245,8 +256,8 @@ def judge_dual(min_eigs_rel: list) -> dict:
 
 
 def judge_kt(iterations: int, converged: bool, energy_rel: float, max_err: float,
-             span: float) -> dict:
-    e4 = judge_e4(energy_rel, max_err, span)
+             span: float, floor_max: float) -> dict:
+    e4 = judge_e4(energy_rel, max_err, span, floor_max)
     return {"met": bool(converged and iterations <= KAPPA_T_MAX_ITERATIONS and e4["met"]),
             "iterations": iterations, **e4}
 
