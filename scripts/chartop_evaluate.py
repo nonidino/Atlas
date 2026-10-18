@@ -98,14 +98,35 @@ def e1_rows(expert: md.Expert, test: dict) -> dict:
     return {k: np.asarray(v) for k, v in rows.items()}
 
 
-def load_test(test_dir: str, kind: str) -> dict:
-    raw = tr.load_split(test_dir, "test", None, with_labels=True, kind=kind)
-    T = {}
-    for n, b in raw.items():
-        T[n] = tr.to_device(b, torch.device("cpu"), True)
-        for k in ("sup_mu", "freq", "seed", "fo", "family"):
-            T[n]["meta_" + k] = b[k]
-    return T
+def e1_streamed(nets: dict, test_dir: str) -> dict:
+    """e1_rows for every arm, one test shard at a time (the labels of 2400 examples in
+    both port bases would not fit in this laptop's memory at once), without copies."""
+    rows = {}
+    for kind in ("sine-hat", "cosine"):
+        arms = [a for a, n_ in nets.items() if n_.kind == kind]
+        if not arms:
+            continue
+        pre = "labels_" if kind == "sine-hat" else f"labels-{kind}_"
+        for f in sorted(glob.glob(os.path.join(test_dir, "test_n*_*.npz"))):
+            z = np.load(f, allow_pickle=False)
+            zl = np.load(os.path.join(test_dir, pre + os.path.basename(f)), allow_pickle=False)
+            if not np.array_equal(z["seed"], zl["lseed"]):
+                raise ValueError("test labels and examples disagree on seeds in " + f)
+            t = {k: torch.from_numpy(np.ascontiguousarray(z[k], dtype=np.float32)) for k in tr.KEYS}
+            t["H"] = torch.from_numpy(np.ascontiguousarray(zl["H"]))
+            t["up"] = torch.from_numpy(np.ascontiguousarray(zl["up"]))
+            t["trace_Lambda"] = torch.from_numpy(np.asarray(zl["trace_Lambda"], np.float64))
+            t["up_energy"] = torch.from_numpy(np.asarray(zl["up_energy"], np.float64))
+            for k in ("sup_mu", "freq", "seed", "fo", "family"):
+                t["meta_" + k] = z[k]
+            n = int(t["inputs"].shape[-1]) - 1
+            for a in arms:
+                r = e1_rows(nets[a], {n: t})
+                acc = rows.setdefault(a, {k: [] for k in r})
+                for k, v in r.items():
+                    acc[k].append(v)
+            del t, z, zl
+    return {a: {k: np.concatenate(v) for k, v in r.items()} for a, r in rows.items()}
 
 
 # ---------------------------------------------------------------------------
@@ -371,13 +392,12 @@ def main() -> int:
     res["configs"] = {a: n.config() for a, n in nets.items()}
     # 2-3: E1 and the comparisons' medians
     ensure_test(args.test_dir, args.test_count, args.workers)
-    tests = {k: load_test(args.test_dir, k) for k in ("sine-hat", "cosine")}
-    e1 = {}
-    for a, net in nets.items():
-        t0 = time.perf_counter()
-        e1[a] = e1_rows(net, tests[net.kind])
+    t0 = time.perf_counter()
+    e1 = e1_streamed(nets, args.test_dir)
+    for a in nets:
         log(f"E1 rows for {a}: median e_H {np.median(e1[a]['e_H']):.4g}, "
-            f"median e_p {np.median(e1[a]['e_p']):.4g} ({time.perf_counter() - t0:.0f} s)")
+            f"median e_p {np.median(e1[a]['e_p']):.4g}")
+    log(f"E1 rows for {len(nets)} arms in {time.perf_counter() - t0:.0f} s")
     eB = e1["B"]
     res["E1"] = G.judge_e1(eB["e_H"], eB["e_p"], eB["sup_mu"], eB["freq"])
     res["test_summary"] = {a: summarise(e, a) for a, e in e1.items()}

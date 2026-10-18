@@ -1,0 +1,27 @@
+{
+ "split": "train-conformal",
+ "name": "train-conformal",
+ "seeds": [
+  4000000,
+  4011999
+ ],
+ "count": 12000,
+ "source_sha256": "b31081dce0b33ea1a2eec2c3b2db153a19ad1c9df16994154eb70ad920175e8b",
+ "labels": [],
+ "elapsed_s": 167.06084628030658,
+ "workers": 63,
+ "per_example_s_median": 0.3956641717813909,
+ "per_example_s_mean": 0.7003946652323163,
+ "rejected_charts": 3282,
+ "coverage": {
+  "n=32 mu_bin=0 freq=high family=conformal-map": 1174,
+  "n=32 mu_bin=0 freq=low family=conformal-map": 1202,
+  "n=32 mu_bin=0 freq=mid family=conformal-map": 1202,
+  "n=64 mu_bin=0 freq=high family=conformal-map": 2014,
+  "n=64 mu_bin=0 freq=low family=conformal-map": 1971,
+  "n=64 mu_bin=0 freq=mid family=conformal-map": 2020,
+  "n=128 mu_bin=0 freq=high family=conformal-map": 822,
+  "n=128 mu_bin=0 freq=low family=conformal-map": 796,
+  "n=128 mu_bin=0 freq=mid family=conformal-map": 799
+ }
+}

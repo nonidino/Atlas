@@ -92,3 +92,22 @@ def test_the_host_refuses_a_piece_outside_the_envelope():
     with pytest.raises(host.Refused, match="sup\\|mu\\|"):
         L.solve(ex)
     assert ex.calls == 0
+
+
+def test_the_card_carries_its_envelope_and_certificates(tmp_path):
+    from atlas.chartop import card
+    w = tmp_path / "w.pt"
+    w.write_bytes(b"weights")
+    ev = {"written": "2026-10-18", "gates_sha256": "abc",
+          "E1": {"met": False, "cells": [{"mu_bin": [0.0, 0.15], "freq": "low", "count": 40}]},
+          "benchmarks": [{"arms": {"B": {"se1": {"identity_rel": 2e-15}}}}],
+          "DUAL": {"benchmark_records": [{"data": [{"computable_gap": 2.0, "network_error": 1.0}]}]}}
+    plan = {"arms": [{"name": "B", "steps": 10}], "data": {"train": 5}}
+    c = card.card(ev, str(w), plan, {"kind": "sine-hat", "m": 16, "form": "bubble",
+                                     "backbone": "unet", "size": "1M", "parameters": 1})
+    assert c["chart"]["envelope"]["sup_abs_mu"] == data.ENVELOPE.k_mu
+    assert c["time"]["fourier_range"] == [data.ENVELOPE.fo_min, data.ENVELOPE.fo_max]
+    assert c["certificates"]["gram_identity_residual_SE1"]["value"] == 2e-15
+    assert c["certificates"]["dual_gap_over_network_error_smooth_data"]["median"] == 2.0
+    assert c["certificates"]["contraction_factor_tier2"] is None      # reported missing, not assumed
+    assert len(c["weights"]["sha256"]) == 64 and "Poseidon" in c["licence"]

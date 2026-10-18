@@ -32,6 +32,8 @@ def add_text(tar, src, arc, mode=0o644):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--plan", default=None)
+    ap.add_argument("--with-workbench", action="store_true",
+                    help="add atlas/workbench (the benchmarks' geometry and materials) and the E5 script")
     args = ap.parse_args()
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with tarfile.open(OUT, "w:gz") as tar:
@@ -41,7 +43,15 @@ def main() -> int:
         for f in sorted(os.listdir(os.path.join(ROOT, "atlas", "chartop"))):
             if f.endswith(".py"):
                 add_text(tar, os.path.join(ROOT, "atlas", "chartop", f), "chartop/atlas/chartop/" + f)
-        for s in ("chartop_data.py", "chartop_train.py", "chartop_price.py"):
+        if args.with_workbench:
+            wb = os.path.join(ROOT, "atlas", "workbench")
+            for f in sorted(os.listdir(wb)):
+                if f.endswith(".py"):
+                    add_text(tar, os.path.join(wb, f), "chartop/atlas/workbench/" + f)
+            for f in sorted(os.listdir(os.path.join(wb, "families"))):
+                if f.endswith(".py"):
+                    add_text(tar, os.path.join(wb, "families", f), "chartop/atlas/workbench/families/" + f)
+        for s in ("chartop_data.py", "chartop_train.py", "chartop_price.py", "chartop_e5.py"):
             add_text(tar, os.path.join(ROOT, "scripts", s), "chartop/scripts/" + s)
         add_text(tar, os.path.join(ROOT, "scripts", "chartop_box_run.sh"), "chartop/run.sh", mode=0o755)
         if args.plan:
