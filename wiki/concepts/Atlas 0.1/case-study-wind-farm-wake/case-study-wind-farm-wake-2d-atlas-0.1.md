@@ -2,6 +2,7 @@
 
 **Type:** Core Concept — Alternate First Instantiation / Plan of Action
 **Status:** Proposed, not built. Written 2026-08-19 as the **buildable substitute** for [[case-study-rocket-ascent-2d-atlas-0.1]], which is blocked on ~2,400 CPU-core-hours of corpus generation ([[impl-atlas-0.1-compute-and-training-budget]]) and three from-scratch experts, all three of them blocked by combustion ([[impl-atlas-0.1-phase2-experts]]).
+**Corrected 2026-10-17 (lint):** "not built" is out of date. The case was built from 2026-08-20, in the stages recorded in [[wind-farm-implementation-log]]. It then carried PoC 1a, the differentiable-design demo ([[poc1-results-differentiable-design]]). The plan below is kept as written.
 **Related Concepts:** [[00-atlas-0.1-overview]], [[port-algebra-atlas-0.1]], [[f1-pathmap-and-end-goal]], [[expert-library-atlas-0.1]], [[edge-generation-atlas-0.1]], [[conservation-as-constraint-atlas-0.1]], [[global-fields-and-topology-atlas-0.1]], [[agent-definition-atlas-0.1]], [[impl-atlas-0.1-phase1-scaffold]], [[impl-atlas-0.1-phase5-expansion]], [[pfm-purpose-and-direction]], [[physics-simulation-datasets]], [[case-study-rbc-decomposition-atlas-0.1]]
 
 ---

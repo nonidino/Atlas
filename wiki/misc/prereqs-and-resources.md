@@ -171,3 +171,11 @@ These are not courses but map directly onto wiki content and can be read alongsi
 | 9–12 | Goldstein / Taylor Classical Mechanics, Lagrangian + Hamiltonian chapters |
 | 12–14 | Kreyszig Functional Analysis, Chapters 1–3 only |
 | 14–20 | Batchelor or MIT OCW fluids |
+
+---
+
+## See Also
+
+- [[00-start-here]]: the wiki's reading path, which this list prepares for
+- [[mathematical-compendium]]: the mathematics the wiki uses, collected in one place
+- [[partial-differential-equations]] · [[navier-stokes-equations]]: the wiki's own pages on Tier 1's first topic

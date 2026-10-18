@@ -50,3 +50,4 @@ uninstall, delete the folder.
 | `wiki/` | the research notes, an Obsidian vault (start at `wiki/00-start-here.md`) |
 | `site/` | the website, published by `.github/workflows/pages.yml` |
 | `proposal/` | the architecture page |
+| `docs/plans/` | the PoC plans and requirements the wiki cites by name: the rocket (PoC 4), the classical plan and its compute plan, and RaceLab (PoC 3) |

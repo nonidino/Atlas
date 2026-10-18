@@ -9,6 +9,8 @@
 
 This page is a **plan of action**, not an as-built report — contrast with [[noether-1.0-rbc]]'s as-built status for Noether 1.0's first instantiation. Nothing here has been implemented.
 
+**Corrected 2026-10-17 (lint):** "nothing here has been implemented" is out of date. Phases 0 and 1 were built from 2026-08-09; Phase 0's corpus milestone M2 was then measured as out of reach, which stopped this learned plan there ([[atlas-0.1-implementation-log]]). The rocket came back on 2026-09-17 as a classical case, PoC 4 ([[case-study-rocket-bc-seam-atlas-0.1]]).
+
 The Phase 0–5 outline below is the design-level statement; each phase now has a **detailed, self-contained implementation spec** in the `Atlas 0.1 implementation` folder — see [[00-atlas-0.1-implementation-plan]] for the master plan (geometry, agent/edge tables, timestep families, model dims, milestones M0–M7) and [[impl-atlas-0.1-phase0-scope-and-data]] · [[impl-atlas-0.1-phase1-scaffold]] · [[impl-atlas-0.1-phase2-experts]] · [[impl-atlas-0.1-phase3-integration]] · [[impl-atlas-0.1-phase4-validation]] · [[impl-atlas-0.1-phase5-expansion]] for the phases.
 
 ## Why this scenario first

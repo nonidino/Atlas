@@ -5,6 +5,7 @@
 **The document:** `proposal/architecture/index.html`, *Chart Operators: Learned Superelements for Domain Decomposition on Curved Geometry* (Naunidh Singh), the arXiv-style HTML page decided as O8. **Private until the website launches (O9).** This page is its wiki counterpart and the reference for the other chats.
 **Under discussion, 2026-10-10:** the owner asked why so much of version 1 relies on linear physics. [[chart-operator-general-form]] proposes a general form (the network as a trial-space generator, the host projecting the true physics, guarantee classes G0–G3 with this page's tier 0 as G0), multi-field seams, and a host-owned coupling for two single-field experts on one piece. Not decided; this page stands until the owner decides.
 **Superseded on the website, 2026-10-12:** at the owner's request the public document is now **version 2**, `proposal/architecture/index.html` (copied to `site/architecture/index.html`). It combines this design with [[chart-operator-general-form]] and [[chart-operator-family-catalog]], explained from first principles with a summary box at the head of every section. This version-1 document is archived as `proposal/architecture/paper-v1.html` (and `site/architecture/paper-v1.html`). The design on this page is unchanged and is version 2's linear corner, class G0.
+**Corrected 2026-10-17 (lint):** two phrases above are out of date. *"None is machine-checked"*: Theorem 1, Theorem 2, the Proposition of §3.6 and the Corollary are now T25, T24 and T26 in Lean, checked with no `sorry` on 2026-10-01 ([[formal-proofs-record]] §3); Propositions 1–3 are still paper proofs. *"Private until the website launches"*: the website launched on 2026-10-02 ([[website-launch-checklist]]), and the document is public.
 **Hub:** [[00-proposal-workstreams]] · **Decision record:** [[chart-operator-design-decisions]] · **Measured costs:** [[coupling-cost-and-complexity]] · **Companions:** [[chart-operator-training-and-cost]] · [[dd-neural-prior-art-2026]]
 **Answers to:** [[outcome-c5-requirements-for-dd-native-experts]] (S1–S12) · **Built on:** [[port-algebra-atlas-0.1]] · [[atlas-and-standard-dd-theory]] · [[probed-dtn-coupling]] · [[master-error-bound]]
 
@@ -191,7 +192,7 @@ The card every expert ships, as specified in the document's Appendix A: identity
 4. **A remark for T1:** the SNI counterexample shows the Lipschitz hypothesis on the learned map cannot be weakened to accuracy plus classical contraction.
 5. **The headline sentence** of [[formal-proofs-plan]] §3 is about tier 2. For tier 0 the honest sentence is: *whatever the network returns, the coupled system is solvable and its answer is the best the network's modes can represent in the energy norm.*
 
-Status in the document: every proof is given in full, and the document says plainly that none is machine-checked.
+Status in the document: every proof is given in full, and the document says plainly that none is machine-checked. *(Superseded 2026-10-01: T24–T26 are machine-checked; see the correction at the head of this page.)*
 
 ---
 

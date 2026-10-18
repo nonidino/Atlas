@@ -4,9 +4,20 @@ Central index of code repositories and source links for everything in the wiki. 
 
 ---
 
-## 🔗 Project repository (the code home)
+## 🔗 The code home: `nonidino/Atlas` (public)
 
-**[github.com/nonidino/physics-foundation-model](https://github.com/nonidino/physics-foundation-model)** *(private)*
+**[github.com/nonidino/Atlas](https://github.com/nonidino/Atlas)**, default branch `atlas-0.1`. *(Section added 2026-10-17, at a lint that found every page still naming the private repository below as the code home.)*
+
+| | |
+|---|---|
+| **What it holds** | this wiki (`wiki/`), the composition framework and the workbench (`atlas/`), the Lean proofs (`lean/`), the experiments and their tests (`scripts/`, `tests/`), the records the website cites (`out/`), the architecture document (`proposal/`), the website (`site/`), and the one build-repository package the workbench needs (`vendor/`, the wind farm's solver) |
+| **Website** | [nonidino.github.io/Atlas](https://nonidino.github.io/Atlas/), published from `site/` by `.github/workflows/pages.yml` on every push that changes it |
+| **Install** | clone `atlas-0.1` and run `run.cmd` (Windows) or `run.sh` (macOS, Linux); see the repository's `README.md` |
+| **Other branches** | `poc1-windfarm-demo` and `poc2-frontwing-demo`, the two demo bundles; `claude/*`, branches of individual chats |
+
+## 🔗 The build repository: `nonidino/physics-foundation-model` (private)
+
+**[github.com/nonidino/physics-foundation-model](https://github.com/nonidino/physics-foundation-model)** *(private)*. **Where the code was first built.** From 2026-08-27 the composition layer was built in this vault's `atlas/` instead, and the build repository kept the case solvers; the wind farm's fluid solver (`src/atlas/cases/windfarm/`), of which `vendor/` above is a copy, was still changed there as late as 2026-09-26 ([[case-study-rocket-bc-seam-atlas-0.1]]). The table below describes the repository as it stood in late August.
 
 > *"The development for an actual physics foundation model, being for physics what LLMs are for language."*
 
@@ -35,6 +46,7 @@ Official / canonical code for the papers summarized in `summaries/`. Fill `arXiv
 | [[poseidon-pde-foundation-model]] | [2405.19101](https://arxiv.org/abs/2405.19101) | [camlab-ethz/poseidon](https://github.com/camlab-ethz/poseidon) · models/data: [huggingface.co/camlab-ethz](https://huggingface.co/camlab-ethz) (PDEgym) · **weights are CC-BY-NC-4.0 — research only** ([[expert-donor-survey]], verified 2026-08-31) |
 | [[gphyt-physics-foundation-model]] | [2509.13805](https://arxiv.org/abs/2509.13805) | [FloWsnr/General-Physics-Transformer](https://github.com/FloWsnr/General-Physics-Transformer) · weights: [hf: flwi/Physics-Foundation-Model](https://huggingface.co/flwi/Physics-Foundation-Model) (S/M/L/XL, MIT) — **confirmed 2026-08-31, [[expert-donor-survey]]**; this row was `(find)` and the "structural pattern only" verdict in [[incremental-transfer-roadmap]] is superseded |
 | [[walrus-paper]] | [2511.15684](https://arxiv.org/abs/2511.15684) | [PolymathicAI/walrus](https://github.com/PolymathicAI/walrus) · [hf: polymathic-ai/walrus](https://huggingface.co/polymathic-ai/walrus) — **MIT**, plus 8 released fine-tunes incl. `walrus_ft_bubbleML_poolBoil`, `walrus_ft_CNS3D_128_Rand` ([[expert-donor-survey]]) |
+| [[walrus-overview]] | companion to [[walrus-paper]] (Polymathic AI blog) | as [[walrus-paper]] |
 | [[aion-1-astronomy]] | *(find)* | *(find)* |
 | [[multimodal-transformers-survey]] | [2311.13165](https://arxiv.org/abs/2311.13165) | — (survey) |
 
@@ -42,6 +54,7 @@ Official / canonical code for the papers summarized in `summaries/`. Fill `arXiv
 | Wiki page | arXiv | Code |
 |---|---|---|
 | [[pde-transformer-paper]] | *(find)* | *(find)* |
+| [[pde-transformer-landing]] | companion to [[pde-transformer-paper]] ([landing page](https://tum-pbs.github.io/pde-transformer/landing.html)) | as [[pde-transformer-paper]] |
 | [[transformer-mathematical-framework]] | [2510.03989](https://arxiv.org/abs/2510.03989) | — (theory) |
 | [[transformers-particle-systems-clustering]] | [2312.10794](https://arxiv.org/abs/2312.10794) | — (theory) |
 | [[kepler-newton-inductive-biases]] | [2602.06923](https://arxiv.org/abs/2602.06923) | *(find)* |

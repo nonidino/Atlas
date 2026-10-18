@@ -1,8 +1,10 @@
 # Start Here — Physics Foundation Model Wiki
 
-> **What this is:** an LLM-maintained research wiki accumulating everything needed to build a physics foundation model (PFM) — "what LLMs are for language, but for physics." This is **preliminary research**. Framework/implementation pages will be added later as their own files.
+> **What this is:** an LLM-maintained research wiki accumulating everything needed to build a physics foundation model (PFM) — "what LLMs are for language, but for physics." It began as preliminary research (sections 1–6 below) and now also records the build of the current track, **Atlas** (section 7).
 >
-> **Code home:** 🔗 **[github.com/nonidino/physics-foundation-model](https://github.com/nonidino/physics-foundation-model)** — the repo where the actual model will be built. See [[code-and-papers]] for this + reference implementations of every paper below.
+> **Code home:** 🔗 **[github.com/nonidino/Atlas](https://github.com/nonidino/Atlas)**, branch `atlas-0.1`: the framework (`atlas/`), the Lean proofs (`lean/`), the experiments, this wiki, and the website [nonidino.github.io/Atlas](https://nonidino.github.io/Atlas/). The earlier build repository, `nonidino/physics-foundation-model` (private), still holds the wind farm's solver. See [[code-and-papers]] for both, plus reference implementations of every paper below.
+>
+> **New to the mathematics?** [[prereqs-and-resources]] is a tiered reading list: PDEs, spectral and numerical methods, mechanics, functional analysis and fluids.
 
 ---
 
@@ -51,6 +53,14 @@ Five detailed specs designed to be buildable on the Burgers' benchmark:
 Rigorously-grounded ideas beyond the benchmark five:
 - [[multiscale-hierarchical-gnn]] · [[hamiltonian-message-passing]] · [[action-based-noether-enforcement]] · [[antisymmetric-signed-attention-transformer]]
 
+### 7. What is being built — Noether, then Atlas
+The first in-house designs, Noether 1.0 and 1.1, were single models; Atlas, the current track, splits a simulation into pieces with an expert for each and has them agree at the seams through one checked interface.
+- [[00-initial-model-overview]] · [[00-noether-1.1-overview]]: the Noether designs
+- [[00-atlas-0.1-overview]]: the Atlas thesis (agents, typed edges, experts by equation family)
+- [[00-atlas-0.1-outcome]]: what the case studies measured, claim by claim
+- [[00-proposal-workstreams]]: the proposal's workstreams: the learned expert ([[chart-operator-architecture]], [[chart-operator-general-form]]), its training stages ([[chart-operator-training-and-cost]]), the Lean proofs ([[formal-proofs-record]]), the demo and the website
+- [[gap-worklist]]: every open and closed work item (W-numbers)
+
 ---
 
 ## The one framework to keep in your head: the Physics Encoding Spectrum
@@ -73,9 +83,12 @@ The grand question of this wiki: *how far up this spectrum can you go without lo
 wiki/
   00-start-here.md          ← you are here (conceptual on-ramp)
   index.md                  ← exhaustive catalog
-  log.md                    ← chronological build log
+  index-digest.md           ← the catalog's long descriptions
+  log.md                    ← chronological build log (October 2026 onward)
+  log/                      ← earlier months, one file each, archived verbatim
   resources/
-    code-and-papers.md      ← GitHub repo + per-paper code/arXiv links
+    code-and-papers.md      ← GitHub repos + per-paper code/arXiv links
+  misc/                     ← reading list, session handoffs
   summaries/                ← one page per source paper, grouped by theme
     foundation-models/  transformers-theory/  neural-operators/
     graph-networks/  hamiltonian-lagrangian/  diffusion-generative/
@@ -83,6 +96,10 @@ wiki/
   concepts/                 ← synthesized topic pages, grouped by theme
     00-pfm-core/  physics-foundations/  ml-building-blocks/
     benchmark-architectures/  extension-architectures/
+    adjusted-attention-mechanism/  unified-token-representation/
+    Noether 1.0/  Noether 1.1/          ← the first in-house designs
+    Atlas 0.1/                          ← the current track:
+      common/  atlas-0.1-outcome/  atlas-0.1-proposal/  case-study-*/
 ```
 
 **Links are folder-independent.** All page links use bare `[[page-name]]` form (Obsidian resolves by filename), so pages can be moved between folders freely without breaking anything.

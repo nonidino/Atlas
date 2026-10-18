@@ -8,15 +8,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 An LLM-maintained knowledge wiki for developing a physics foundation model ("AGI-like" physics FM). The goal is to accumulate and synthesize research across AI, mathematics, and physics into a structured, interlinked knowledge base that supports both conceptual understanding and rigorous theoretical reasoning.
 
-**Code home:** [github.com/nonidino/physics-foundation-model](https://github.com/nonidino/physics-foundation-model) (private) — the repo where the actual framework/model will be built. This vault is the **research & design layer**; that repo is the **build layer**. The catalog of the repo + per-paper reference implementations lives at `wiki/resources/code-and-papers.md`.
+**Code home:** this repository, [github.com/nonidino/Atlas](https://github.com/nonidino/Atlas) (**public**), default branch `atlas-0.1`. It holds the wiki *and* the build: the Atlas framework, the Lean proofs, the experiments and the website. The earlier build repository, [nonidino/physics-foundation-model](https://github.com/nonidino/physics-foundation-model) (private), still holds the wind farm's solver; `vendor/` is a copy of it. Both repos + per-paper reference implementations are catalogued at `wiki/resources/code-and-papers.md`.
 
-> **Status: preliminary research.** Framework/implementation design pages will be added as their own files later. Don't assume an implementation exists yet.
+> **Status:** the current track is **Atlas 0.1**. A classical framework, its case studies, a workbench demo and 105 machine-checked theorems are built; the proposed learned expert, the chart operator, is designed but not yet built or trained. Everything here is public, so never commit secrets or unlicensed weights.
 
 Layers / folders:
-- **`raw/`** — immutable source documents (papers, articles). Never modify these.
-- **`new/`** — inbox for sources awaiting ingestion. **Do not reorganize or move this folder** — it is the drop point for new material to be processed.
+- **`raw/`** — immutable source documents (papers, articles). Never modify these. **Local only**: git-ignored since 2026-10-17, because the repository is public and these are other people's texts. When an ingest finishes, move the source here from `new/`. Because `raw/` is not published, every summary should cite its source's URL or arXiv id. On 2026-10-17 four did not: `aion-1-astronomy`, `eqnn-hep-lhc`, `gns-graph-network-simulators`, `genesis-physics-engine`.
+- **`new/`** — inbox for sources awaiting ingestion, also local only. **Do not reorganize or move this folder** — it is the drop point for new material to be processed.
 - **`wiki/`** — LLM-maintained markdown pages. You own and maintain this layer entirely.
 - **`system/CLAUDE.md`** — the schema document describing this workflow (Karpathy's wiki pattern).
+- **`atlas/`** — the composition framework and the workbench (`atlas/workbench/`); **`vendor/`** — the wind farm's solver from the build repository; **`tests/`** — its tests (`python scripts/run_suite.py`).
+- **`scripts/`** — one measurement script per W-number, plus the vault checks `vault_scan.py` and `link_scan.py`; **`out/`** — the records the wiki and website cite.
+- **`lean/`** — the Lean 4 proofs (build with `scripts/lean_build.py`, never `lake` inside OneDrive).
+- **`proposal/`** — the architecture document; **`site/`** — the website, published by `.github/workflows/pages.yml`.
+- **`docs/plans/`** — the PoC plans and requirements (`ROCKET-POC-PLAN.md`, `ATLAS-CLASSICAL-PLAN.md`, `COMPUTE-PLAN.md`, `POC3-RACELAB-REQUIREMENTS.md`), cited by file name from the wiki and the code.
+- **`run.py`, `run.cmd`, `run.sh`** — the workbench installer and launcher (see `README.md`).
 
 ---
 
@@ -26,16 +32,29 @@ Layers / folders:
 wiki/
   00-start-here.md      ← conceptual on-ramp + guided reading path (for humans)
   index.md              ← exhaustive catalog of all pages; read this first when answering queries
-  log.md                ← append-only ingest/query/lint record
+  index-digest.md       ← the index's long descriptions (rows marked ↗), kept verbatim
+  log.md                ← append-only ingest/query/lint record (October 2026 onward)
+  log/                  ← earlier months, archived verbatim: log-YYYY-MM.md
   resources/
-    code-and-papers.md  ← GitHub repo + per-paper code/arXiv links
+    code-and-papers.md  ← GitHub repos + per-paper code/arXiv links
+  misc/                 ← reading list, session handoffs
   summaries/            ← one page per source document, in themed subfolders:
     foundation-models/  transformers-theory/  neural-operators/  graph-networks/
     hamiltonian-lagrangian/  diffusion-generative/  solvers-and-simulation/  other-methods/
   concepts/             ← synthesized topic pages, in themed subfolders:
     00-pfm-core/  physics-foundations/  ml-building-blocks/
     benchmark-architectures/  extension-architectures/
+    adjusted-attention-mechanism/  unified-token-representation/
+    Noether 1.0/  Noether 1.1/      ← the first in-house designs
+    Atlas 0.1/                      ← the current track (about half the vault):
+      common/                       ← the framework's theory, case studies, gap-worklist.md (W-numbers: a status
+                                       board + Tiers 76 on; Tiers 0–75 archived verbatim beside it)
+      atlas-0.1-outcome/            ← what was measured, claim by claim
+      atlas-0.1-proposal/           ← expert architecture, formal proofs, demo, website
+      case-study-*/                 ← one folder per case study, with its implementation log
 ```
+
+Before committing wiki edits, run `python scripts/vault_scan.py wiki` (bytes: LaTeX escape corruption) and `python scripts/link_scan.py` (dead links). Both must report no new problems.
 
 The index and log are the two navigation anchors. Always read `wiki/index.md` first before answering a query or starting an ingest. `00-start-here.md` is the human-facing reading path.
 
@@ -47,7 +66,7 @@ The index and log are the two navigation anchors. Always read `wiki/index.md` fi
 1. Read the source from `new/`
 2. Create `wiki/summaries/<theme>/<slug>.md` in the matching themed subfolder — include: overview, key equations in LaTeX, main results, relevance to the PFM goal, cross-links to related summaries and concepts
 3. Create or update `wiki/concepts/<theme>/<topic>.md` for any new concepts introduced
-4. Update `wiki/index.md` — add entries under the right theme section, update page count and source count
+4. Update `wiki/index.md` — add entries under the right theme section, update page count and source count. Keep each row's description to about 300 characters (what the page is and its main result); a longer note goes to `wiki/index-digest.md`, and the row is marked ↗
 5. Add a row to `wiki/resources/code-and-papers.md` with the source's arXiv + code repo link
 6. Append to `wiki/log.md` — format: `## [YYYY-MM-DD] ingest | Source Title`
 

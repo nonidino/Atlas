@@ -794,3 +794,10 @@ out/learned-case/data/
 # The workbench launchers at the root (run.sh, run.cmd) build this; deleting it
 # undoes the whole install.
 .venv/
+
+# Source documents (2026-10-17, decision B4 of the lint): raw/ holds other people's
+# papers and clipped articles and new/ is the inbox for more. This repository is
+# public, so both stay on the owner's disk and are not published. A summary in
+# wiki/summaries/ should cite its source's URL or arXiv id (four did not yet).
+/raw/
+/new/

@@ -43,8 +43,9 @@ KNOWN: dict[tuple[str, str], tuple[int, str]] = {
      "phase1-resume-prompt"): (2, "W24, open: write the page or drop the references"),
     ("concepts/Noether 1.1/00-noether-1.1-overview.md",
      "pattern-recognizer-vs-solver"): (1, "a placeholder its own line calls 'link seeded'"),
-    ("log.md", "spec-wind-farm-wake"): (1, "an old log entry; the log is append-only"),
-    ("log.md", "positive-controls-need-a-horizon"): (1, "an old log entry; the log is append-only"),
+    # Archived out of log.md, verbatim, on 2026-10-17.
+    ("log/log-2026-09.md", "spec-wind-farm-wake"): (1, "an old log entry; the log is append-only"),
+    ("log/log-2026-09.md", "positive-controls-need-a-horizon"): (1, "an old log entry; the log is append-only"),
 }
 
 
