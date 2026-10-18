@@ -213,16 +213,19 @@ class PlainSquare:
         self.inner = torch.zeros(n + 1, n + 1, dtype=torch.bool, device=device)
         self.inner[1:-1, 1:-1] = True
 
-    def solve(self, r: torch.Tensor, s0: torch.Tensor) -> torch.Tensor:
-        """(A_I^0)^-1 r for r [B, K, n-1, n-1] with per-example reactions s0 [B]."""
-        lam = self.km[None, None] + s0.to(torch.float64)[:, None, None, None] * self.mm[None, None]
-        R = dst1(dst1(r.to(torch.float64), -1), -2)
+    def solve(self, r: torch.Tensor, s0: torch.Tensor, dtype=torch.float64) -> torch.Tensor:
+        """(A_I^0)^-1 r for r [B, K, n-1, n-1] with per-example reactions s0 [B], in
+        ``dtype`` (float32 inside the network: its result is part of the output, so
+        its rounding is an interior error like any other; float64 elsewhere)."""
+        lam = (self.km[None, None] + s0.to(torch.float64)[:, None, None, None]
+               * self.mm[None, None]).to(dtype)
+        R = dst1(dst1(r.to(dtype), -1), -2)
         return dst1(dst1(R / lam, -1), -2)
 
-    def principal(self, s0: torch.Tensor) -> torch.Tensor:
+    def principal(self, s0: torch.Tensor, dtype=torch.float64) -> torch.Tensor:
         """H0 [B, K, n-1, n-1] at reactions s0 [B]."""
         rhs = -(self.KQ[None] + s0.to(torch.float64)[:, None, None, None] * self.MQ[None])
-        return self.solve(rhs, s0)
+        return self.solve(rhs, s0, dtype)
 
 
 @functools.lru_cache(maxsize=None)
@@ -258,20 +261,26 @@ class Expert(nn.Module):
                 "kind": self.kind, "m": self.m, "parameters": parameters(self)}
 
     def forward(self, x, s, s0):
+        """The principal part is computed in float32 (its rounding is part of the output)
+        and kept on ``self.last_principal`` for the objective's normaliser."""
         n = x.shape[-1] - 1
         ps = plain_square(n, self.kind, self.m, str(x.device))
         out = self.net(x, s).to(torch.float64)
         N, Np = out[:, :-1], out[:, -1]
+        H0 = None
         if self.form == "bubble":
-            H = ps.principal(s0) + (ps.beta[None, None] * N)[..., 1:-1, 1:-1]
+            H0 = ps.principal(s0, torch.float32).to(torch.float64)
+            H = H0 + (ps.beta[None, None] * N)[..., 1:-1, 1:-1]
             up = (ps.beta[None] * Np)[..., 1:-1, 1:-1]
         elif self.form == "direct":
             H = N[..., 1:-1, 1:-1]
             up = Np[..., 1:-1, 1:-1]
         else:
             h2 = 1.0 / n ** 2
-            H = ps.principal(s0) + ps.solve(h2 * N[..., 1:-1, 1:-1], s0)
-            up = ps.solve(h2 * Np[:, None, 1:-1, 1:-1], s0)[:, 0]
+            H0 = ps.principal(s0, torch.float32).to(torch.float64)
+            H = H0 + ps.solve(h2 * N[..., 1:-1, 1:-1], s0, torch.float32).to(torch.float64)
+            up = ps.solve(h2 * Np[:, None, 1:-1, 1:-1], s0, torch.float32).to(torch.float64)[:, 0]
+        self.last_principal = None if H0 is None else H0.detach()
         return H, up
 
 
@@ -327,7 +336,7 @@ def full_p(up: torch.Tensor) -> torch.Tensor:
 
 
 def objectives(batch: dict, H, up, kind: str, m: int, labels: dict | None = None,
-               objective: str = "label-free") -> dict:
+               objective: str = "label-free", H0: torch.Tensor | None = None) -> dict:
     """Per-example normalised objective and diagnostics.  ``batch`` holds float64
     a11, a12, a22, sigma, w, g [B, ...] and s0 [B]."""
     n = H.shape[-1] + 1
@@ -335,11 +344,11 @@ def objectives(batch: dict, H, up, kind: str, m: int, labels: dict | None = None
     a11, a12, a22, sig = batch["a11"], batch["a12"], batch["a22"], batch["sigma"]
     w, g, s0 = batch["w"], batch["g"], batch["s0"]
     with torch.no_grad():
-        V0 = full(ps, ps.principal(s0))
+        V0 = full(ps, ps.principal(s0, torch.float32).to(torch.float64) if H0 is None else H0)
         ZH = energy(a11, a12, a22, sig, V0).sum(-1)
         # the plain square's particular field for this load, as Z_p's reference
         Gb = _load(w, g)
-        up0 = ps.solve(Gb[:, None, 1:-1, 1:-1], s0)[:, 0]
+        up0 = ps.solve(Gb[:, None, 1:-1, 1:-1], s0, torch.float32).to(torch.float64)[:, 0]
         U0 = full_p(up0)
         Zp = (energy(a11, a12, a22, sig, U0)[:, 0] - 2 * mass_form(w, g, U0)[:, 0]).abs()
         Zp = torch.clamp(Zp, min=1e-30)

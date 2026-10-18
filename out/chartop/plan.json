@@ -1,0 +1,215 @@
+{
+ "written": "2026-10-18T14:34:41-04:00",
+ "status": "approved by the owner on 2026-10-18 ('Yes, two boxes'; 'You can also use A100s'); binding from this commit, before the first training run",
+ "measured_on": "vast.ai RTX 3090 (instance 56596344): out/chartop/price-54cd5124ef46-20261018-181424.json (steps after the float32 principal part) and the 2000-example generator run (31.7 examples/s)",
+ "data": {
+  "train": 50000,
+  "train-conformal": 12000,
+  "train-c2": 6000,
+  "val": 600
+ },
+ "arms": [
+  {
+   "name": "B",
+   "steps": 150000,
+   "val_every": 5000,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "Bp",
+   "steps": 37500,
+   "val_every": 2500,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C1",
+   "steps": 37500,
+   "val_every": 2500,
+   "data": "train-conformal",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C2-sup",
+   "steps": 37500,
+   "val_every": 2500,
+   "data": "train-c2",
+   "objective": "supervised",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C2-free",
+   "steps": 37500,
+   "val_every": 2500,
+   "data": "train-c2",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C3",
+   "steps": 37500,
+   "val_every": 2500,
+   "form": "direct",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C4",
+   "steps": 37500,
+   "val_every": 2500,
+   "backbone": "spectral",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C5-0.3M",
+   "steps": 37500,
+   "val_every": 2500,
+   "size": "0.3M",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C5-3M",
+   "steps": 37500,
+   "val_every": 2500,
+   "size": "3M",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C6",
+   "steps": 37500,
+   "val_every": 2500,
+   "kind": "cosine",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  },
+  {
+   "name": "C7",
+   "steps": 37500,
+   "val_every": 2500,
+   "form": "fastsolve",
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "lr": 0.001
+  }
+ ],
+ "minutes": {
+  "B": 210,
+  "Bp": 75,
+  "C1": 75,
+  "C2-sup": 75,
+  "C2-free": 75,
+  "C3": 75,
+  "C4": 75,
+  "C5-0.3M": 75,
+  "C5-3M": 75,
+  "C6": 75,
+  "C7": 75
+ },
+ "estimate": {
+  "mean_step_ms": {
+   "B": 54.6,
+   "Bp": 54.6,
+   "C1": 54.6,
+   "C2-sup": 78.9,
+   "C2-free": 54.6,
+   "C3": 56.0,
+   "C4": 65.7,
+   "C5-0.3M": 53.0,
+   "C5-3M": 64.5,
+   "C6": 56.8,
+   "C7": 69.5
+  },
+  "examples_per_step": 20,
+  "note": "resolution drawn per step in proportion to examples per batch (0.19, 0.31, 0.50 for n = 32, 64, 128); epochs = steps x 20 / examples",
+  "B_hours": 2.3,
+  "comparison_hours": 6.3,
+  "data_hours": 0.7,
+  "one_box_hours": 9.5,
+  "one_box_dollars_at_0.195": 1.85
+ },
+ "boxes": {
+  "A": {
+   "machine": "RTX 3090, vast.ai 56596344 (the pricing box), 0.195 $/h",
+   "arms": [
+    "B",
+    "Bp",
+    "C1"
+   ],
+   "data": [
+    "val",
+    "train",
+    "train-conformal"
+   ],
+   "deadline_s": 23400
+  },
+  "B": {
+   "machine": "A100 SXM4 40 GB, vast.ai offer 54098329, 0.483 $/h, priced on the box first",
+   "arms": [
+    "C2-sup",
+    "C2-free",
+    "C3",
+    "C4",
+    "C5-0.3M",
+    "C5-3M",
+    "C6",
+    "C7"
+   ],
+   "data": [
+    "val",
+    "train",
+    "train-c2"
+   ],
+   "deadline_s": 28800
+  }
+ },
+ "note": "equal compute means equal optimiser steps and batches; the two boxes' GPUs differ, so wall-clock and bfloat16 rounding differ between arms on different boxes, not their steps"
+}

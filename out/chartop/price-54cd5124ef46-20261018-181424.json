@@ -1,0 +1,210 @@
+{
+ "written": "2026-10-18T18:13:40+00:00",
+ "host": "54cd5124ef46",
+ "platform": "Linux-6.8.0-51-generic-x86_64-with-glibc2.35",
+ "python": "3.11.11",
+ "torch": "2.6.0+cu124",
+ "numpy": "1.26.4",
+ "device": "cuda",
+ "gpu": "NVIDIA GeForce RTX 3090",
+ "cpus": 64,
+ "torch_threads": 32,
+ "power": {
+  "platform": "Linux"
+ },
+ "weights": "untrained (random); cost only",
+ "step": [
+  {
+   "arm": "B (U-Net 1M, bubble, label-free)",
+   "n": 32,
+   "batch": 32,
+   "s_per_step": 0.027142202015966177,
+   "ms_per_example": 0.848193812998943,
+   "peak_gib": 0.3801913261413574
+  },
+  {
+   "arm": "B (U-Net 1M, bubble, label-free)",
+   "n": 64,
+   "batch": 32,
+   "s_per_step": 0.06283323094248772,
+   "ms_per_example": 1.9635384669527411,
+   "peak_gib": 1.3886308670043945
+  },
+  {
+   "arm": "B (U-Net 1M, bubble, label-free)",
+   "n": 128,
+   "batch": 8,
+   "s_per_step": 0.06043384177610278,
+   "ms_per_example": 7.554230222012848,
+   "peak_gib": 1.4005789756774902
+  },
+  {
+   "arm": "C2-sup (supervised)",
+   "n": 32,
+   "batch": 32,
+   "s_per_step": 0.029842726420611143,
+   "ms_per_example": 0.9325852006440982,
+   "peak_gib": 0.6218299865722656
+  },
+  {
+   "arm": "C2-sup (supervised)",
+   "n": 64,
+   "batch": 32,
+   "s_per_step": 0.09137552417814732,
+   "ms_per_example": 2.8554851305671036,
+   "peak_gib": 2.2473855018615723
+  },
+  {
+   "arm": "C2-sup (supervised)",
+   "n": 128,
+   "batch": 8,
+   "s_per_step": 0.09007327631115913,
+   "ms_per_example": 11.259159538894892,
+   "peak_gib": 2.236372947692871
+  },
+  {
+   "arm": "C3 (direct)",
+   "n": 32,
+   "batch": 32,
+   "s_per_step": 0.035482228733599186,
+   "ms_per_example": 1.1088196479249746,
+   "peak_gib": 0.39702415466308594
+  },
+  {
+   "arm": "C3 (direct)",
+   "n": 64,
+   "batch": 32,
+   "s_per_step": 0.06232829997316003,
+   "ms_per_example": 1.947759374161251,
+   "peak_gib": 1.3516602516174316
+  },
+  {
+   "arm": "C3 (direct)",
+   "n": 128,
+   "batch": 8,
+   "s_per_step": 0.05992135964334011,
+   "ms_per_example": 7.490169955417514,
+   "peak_gib": 1.337092399597168
+  },
+  {
+   "arm": "C4 (spectral)",
+   "n": 32,
+   "batch": 32,
+   "s_per_step": 0.03813762217760086,
+   "ms_per_example": 1.191800693050027,
+   "peak_gib": 0.43050527572631836
+  },
+  {
+   "arm": "C4 (spectral)",
+   "n": 64,
+   "batch": 32,
+   "s_per_step": 0.07129562087357044,
+   "ms_per_example": 2.2279881522990763,
+   "peak_gib": 1.5096344947814941
+  },
+  {
+   "arm": "C4 (spectral)",
+   "n": 128,
+   "batch": 8,
+   "s_per_step": 0.07330052368342876,
+   "ms_per_example": 9.162565460428596,
+   "peak_gib": 1.5051460266113281
+  },
+  {
+   "arm": "C5 (0.3M)",
+   "n": 32,
+   "batch": 32,
+   "s_per_step": 0.029974418692290783,
+   "ms_per_example": 0.936700584134087,
+   "peak_gib": 0.36081457138061523
+  },
+  {
+   "arm": "C5 (0.3M)",
+   "n": 64,
+   "batch": 32,
+   "s_per_step": 0.05871847923845053,
+   "ms_per_example": 1.834952476201579,
+   "peak_gib": 1.2670869827270508
+  },
+  {
+   "arm": "C5 (0.3M)",
+   "n": 128,
+   "batch": 8,
+   "s_per_step": 0.05795570556074381,
+   "ms_per_example": 7.244463195092976,
+   "peak_gib": 1.2644376754760742
+  },
+  {
+   "arm": "C5 (3M)",
+   "n": 32,
+   "batch": 32,
+   "s_per_step": 0.030110272113233805,
+   "ms_per_example": 0.9409460035385564,
+   "peak_gib": 0.4951057434082031
+  },
+  {
+   "arm": "C5 (3M)",
+   "n": 64,
+   "batch": 32,
+   "s_per_step": 0.07447451073676348,
+   "ms_per_example": 2.3273284605238587,
+   "peak_gib": 1.6152763366699219
+  },
+  {
+   "arm": "C5 (3M)",
+   "n": 128,
+   "batch": 8,
+   "s_per_step": 0.07059533055871725,
+   "ms_per_example": 8.824416319839656,
+   "peak_gib": 1.597109317779541
+  },
+  {
+   "arm": "C6 (cosine)",
+   "n": 32,
+   "batch": 32,
+   "s_per_step": 0.03578018816187978,
+   "ms_per_example": 1.118130880058743,
+   "peak_gib": 0.4133782386779785
+  },
+  {
+   "arm": "C6 (cosine)",
+   "n": 64,
+   "batch": 32,
+   "s_per_step": 0.06299598887562752,
+   "ms_per_example": 1.96862465236336,
+   "peak_gib": 1.419236660003662
+  },
+  {
+   "arm": "C6 (cosine)",
+   "n": 128,
+   "batch": 8,
+   "s_per_step": 0.0606864714063704,
+   "ms_per_example": 7.5858089257963,
+   "peak_gib": 1.4337677955627441
+  },
+  {
+   "arm": "C7 (fast-solve)",
+   "n": 32,
+   "batch": 32,
+   "s_per_step": 0.04384860210120678,
+   "ms_per_example": 1.3702688156627119,
+   "peak_gib": 0.5062170028686523
+  },
+  {
+   "arm": "C7 (fast-solve)",
+   "n": 64,
+   "batch": 32,
+   "s_per_step": 0.07615493703633547,
+   "ms_per_example": 2.3798417823854834,
+   "peak_gib": 1.6938748359680176
+  },
+  {
+   "arm": "C7 (fast-solve)",
+   "n": 128,
+   "batch": 8,
+   "s_per_step": 0.07448402186855674,
+   "ms_per_example": 9.310502733569592,
+   "peak_gib": 1.6866083145141602
+  }
+ ]
+}

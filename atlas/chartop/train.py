@@ -226,7 +226,8 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
                 lab = md.d4_labels(lab, arm.kind, expert.m, k)
         with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
             H, up = expert(b["inputs"], b["scalars"], b["s0"])
-        o = md.objectives(b, H, up, arm.kind, expert.m, lab, arm.objective)
+        o = md.objectives(b, H, up, arm.kind, expert.m, lab, arm.objective,
+                          H0=getattr(expert, "last_principal", None))
         loss = o["loss"].mean()
         opt.zero_grad(set_to_none=True)
         loss.backward()

@@ -120,6 +120,10 @@ def main() -> int:
                 _write(args.out, pre + name, lab)
             if not final:
                 break
+    # one BLAS/OpenMP thread per worker, set before the workers import numpy:
+    # 63 workers x 64 OpenBLAS threads each failed to start on a 64-CPU box
+    for v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+        os.environ[v] = "1"
     ctx = mp.get_context("spawn")
     with ctx.Pool(args.workers) as pool:
         done = 0

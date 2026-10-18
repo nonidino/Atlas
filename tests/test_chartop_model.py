@@ -173,9 +173,12 @@ def test_shapes_and_untrained_output(form, backbone, size):
         assert H.shape == (2, 64, n - 1, n - 1) and up.shape == (2, n - 1, n - 1)
         if form != "direct":
             # zero-initialised heads: the untrained bubble and fast-solve experts return
-            # the plain square's exact modes and a zero particular field
+            # the plain square's exact modes (computed in float32 inside the network: its
+            # rounding is part of the output) and a zero particular field
             ps = model.plain_square(n, "sine-hat", 16, "cpu")
-            assert torch.allclose(H, ps.principal(s0), atol=1e-12)
+            H0 = ps.principal(s0)
+            assert torch.allclose(H, H0, atol=1e-5 * float(H0.abs().max()))
+            assert torch.equal(H, e.last_principal)
             assert float(up.abs().max()) == 0.0
 
 
