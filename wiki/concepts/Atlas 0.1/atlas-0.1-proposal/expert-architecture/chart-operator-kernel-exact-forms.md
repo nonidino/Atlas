@@ -345,8 +345,8 @@ No verdict is predicted for E4, E5 or S11.
 **The owner's decision (2026-10-19): accepted as written.** The yes starts four steps, in order, each asking the owner first wherever the rules require it:
 1. **Done:** a new gates module carrying these bars (`atlas/chartop/gates_forms.py`), with a test against this section (`tests/test_chartop_gates_forms.py`).
 2. **Done:** the untrained re-measurement (§8.6).
-3. **Waiting for the owner:** E5 on a rented box.
-4. The runs.
+3. **Done:** E5 on a rented box, on the owner's OK (§8.7).
+4. **Waiting for the owner:** the runs. The credit must first be topped up (§8.7).
 
 The module was hash-pinned on the owner's OK, on 2026-10-19, before any network in these forms was trained.
 
@@ -390,6 +390,44 @@ The module was hash-pinned on the owner's OK, on 2026-10-19, before any network 
 - **[AI Inference]:** prediction 3 stands as registered: CW is at least 1. CW₀ shows that the strips alone give a tie, so a loss for W ($\ge1.25$) needs S′'s learned columns to improve where W's do not. That is the question the corner bubble puts to training. Unless the modes learn, a tie is the likelier outcome.
 - **[AI Inference]:** for E1, $e_{H,L}$ starts at 0.402 against a bar of 0.01, so the network must reduce the learned columns' error about 40 times. At step 0, about 94% of $e_H^2$ already sits in the columns it learns (the medians of the shares).
 - **Unchanged by this:** the bars, arms and predictions of §8.1–8.5, as accepted.
+
+### 8.7 E5, priced on the box
+
+On the owner's OK ("rent one box at most \$0.70 an hour, preferably an RTX 3090-class box with a fast many-core CPU"):
+- **The script:** `scripts/chartop_price.py --forms`, the `price-forms` stage of `scripts/chartop_box_run.sh`.
+- **The record:** `out/chartop/price-forms-a061116c3e9e-20261019-201554.json`, with the box's logs in `out/chartop/box/E5-forms/logs/`. Every file's sha256 was checked against the box's list before the box was destroyed.
+- **The box:** one RTX 3090 with a Ryzen 9 5950X (32 threads, a CPU quota of 30), at \$0.272 an hour. It was rented from 16:12 to 16:17 local time with a 40-minute self-stop deadline, then destroyed. The credit went from \$2.693 to \$2.671, so the box cost \$0.022.
+- **The weights:** untrained random weights, on the same examples as Stage 0's step pricing. Stage 0's arm B is timed in the same run as the reference.
+
+**One training step, in seconds** (the forward pass, the objective, backward, clipping and AdamW, as `train.train` takes it):
+
+| $n$ (batch) | B, Stage 0 (reference) | W | S | of S's: strips / assembly |
+|---|---|---|---|---|
+| 32 (32) | 0.0203 | 0.0266 | 0.106 | 0.056 / 0.020 |
+| 64 (32) | 0.0627 | 0.0760 | 0.314 | 0.153 / 0.047 |
+| 128 (8) | 0.0604 | 0.0710 | 0.346 | 0.187 / 0.041 |
+| **mean over Stage 0's mix** (19%, 31%, 50% of steps) | 0.0535 | 0.0641 | **0.290** | 0.151 / 0.039 |
+| over B | 1 | 1.20 | **5.42** | |
+
+**The forward pass**, per batch call: B 5.0, 11.1 and 9.2 ms at $n=32$, 64 and 128; W 8.9, 17.6 and 14.0 ms; S 88, 254 and 282 ms. Peak GPU memory is at most 1.7 GiB.
+
+**What the pricing found.**
+- **The reference reproduces Stage 0.** B's step takes 62.7 and 60.4 ms at $n=64$ and 128, against box A's 62.8 and 60.4 (§6 of [[chart-operator-stage-0]]).
+- **W costs 1.2 times B:** the two networks.
+- **S costs 5.4 times B.** The strips (0.151 s) and their assembly (0.039 s) are 65% of its mean step. The draft's extrapolation for the strips, 0.14–0.62 s a step, was right at its low end.
+- **The projected training time** at these steps: S 12.1 h, S′ 6.0 h (two seeds), W 1.3 h (two seeds), 19.5 h in all.
+- **The generator** drew 24.7 examples a second with 29 workers, against box A's 31.7 with 63. The 50,000 training pieces would take about 0.6 h on each box that trains.
+
+**The cost, an extrapolation from these steps.** Validation during training and the labelled validation draws are not priced.
+
+| layout | box time | cost at \$0.272/h | wall-clock |
+|---|---|---|---|
+| one box, all five runs | about 20.5 h (19.5 training, 0.6 data, ~0.4 setup and downloads) | about \$5.6 | about 20.5 h |
+| two boxes: S on one, S′ and W on the other | about 21.5 h (13.1 and 8.4) | about \$5.8 | about 13 h |
+
+- **Within the ceiling of \$10**, and within the draft's range for this box class (\$3.2–9.0, §8.5).
+- **The credit, \$2.67, does not cover it.** The account needs a top-up before the runs.
+- **[AI Inference]:** §8.5's option would remove 0.19 s of S's 0.29 s step: computing the strip columns only at validation, since they add nothing to the gradient. That is about 12 of S's and S′'s 18 training hours, roughly \$3.2 at this rate, and S's box would finish in about 5 h instead of 13. It is a code change, and the owner's choice. Its claim that the weights are unchanged would first need a test showing them equal bit for bit with the strips on and off in training.
 
 ---
 

@@ -15,6 +15,24 @@ Speed does not depend on the weights, so untrained networks are timed:
 
 Writes ``price-<host>-<time>.json``.  The laptop's numbers count only on AC power;
 the script records the power state where it can read it.
+
+**E5 of the registration after Stage 0** (`atlas.chartop.gates_forms`):
+
+    python scripts/chartop_price.py --forms [--device cuda] [--out out/chartop]
+
+prices the registered arms' forms before any long run: S's (split, corner bubble,
+strips) and W's (split, Stage 0's bubble, no strips), at the registered (n, batch)
+pairs, `gates_forms.E5_PRICED`.  Stage 0's arm B is timed in the same run as the
+unchanged reference, so that the result is a ratio to a step already measured, not
+only a wall-clock figure.  For each, on the same examples as the step pricing above:
+- **the forward pass** through `forms.call`, as training and the host call it, with
+  the assembly of the operators the strips need and the strips themselves included;
+- **the assembly** (`forms.batch_operators`) alone, and the strips' own seconds;
+- **one training step** as `train.train` takes it: D4 augmentation, the forward pass,
+  the float64 objective, backward, gradient clipping, AdamW.
+The record ends with a projection: the mean step over Stage 0's training-set mix
+(each resolution drawn in proportion to its examples per batch, as `train.train`
+draws it), and the hours of each arm.  Writes ``price-forms-<host>-<time>.json``.
 """
 from __future__ import annotations
 
@@ -170,6 +188,105 @@ def step_times(dev, ns=(32, 64, 128)) -> list:
     return rows
 
 
+#: Stage 0's training set per resolution (``out/chartop/runs/B/arm.json``): the step mix
+#: `train.train` draws from, each resolution in proportion to its examples per batch
+STAGE0_TRAIN_EXAMPLES = {32: 15110, 64: 24901, 128: 9989}
+
+
+def forms_times(dev, ns=(32, 64, 128)) -> dict:
+    """E5 of `gates_forms`: S's and W's forms, and Stage 0's B as the reference."""
+    from atlas.chartop import forms as fm, gates_forms as GF
+    autocast = dev.type == "cuda"
+    batch = dict(GF.E5_PRICED)
+    c = GF.COMMON
+    arms = {"S": GF.ARMS["S"], "W": GF.ARMS["W"], "B (Stage 0, reference)": None}
+    rows = []
+    for n in ns:
+        exs = _examples(n, batch[n], data.SEEDS["train"] + 50_000 + 1000 * n)
+        arrs = [data.arrays(e) for e in exs]
+        T = tr.to_device({k: np.stack([a[k] for a in arrs]) for k in tr.KEYS}, dev, False)
+        idx = torch.arange(len(exs), device=dev)
+        for label, cfg in arms.items():
+            if cfg is None:
+                e = fm.make("unet", "1M", "bubble", "sine-hat")
+            else:
+                e = fm.make(c["backbone"], c["size"], c["form"], c["kind"], c["m"], p_size=c["p_size"],
+                            bubble=cfg["bubble"], strips=cfg["strips"])
+            e = e.to(dev)
+            for p in e.parameters():      # random weights, as above: zero heads could flatter
+                torch.nn.init.normal_(p, 0.0, 0.02)
+            strips = getattr(e, "needs_operator", False)
+            b0, _ = tr._batch(T, idx, False)
+            row = {"arm": label, "n": n, "batch": len(exs), "parameters": md.parameters(e),
+                   "config": e.config() if hasattr(e, "config") else {"form": "bubble"}}
+            strip_s = []
+
+            def fwd():
+                e.eval()
+                with torch.no_grad(), torch.autocast(device_type=dev.type, dtype=torch.bfloat16,
+                                                     enabled=autocast):
+                    fm.call(e, b0)
+                if strips:
+                    strip_s.append(e.last_strip_seconds)
+            row["forward_s"] = _median_time(fwd, dev)
+            if strips:
+                row["forward_strip_s"] = statistics.median(strip_s[-10:])
+                row["assembly_s"] = _median_time(lambda: fm.batch_operators(b0), dev)
+            e.train()
+            opt = torch.optim.AdamW(e.parameters(), lr=1e-3, weight_decay=1e-5)
+            rng = np.random.default_rng(0)
+            strip_s.clear()
+
+            def step():
+                b, _lab = tr._batch(T, idx, False)
+                b = md.d4(b, int(rng.integers(8)))
+                with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
+                    H, up = fm.call(e, b)
+                if strips:
+                    strip_s.append(e.last_strip_seconds)
+                o = md.objectives(b, H, up, "sine-hat", 16, None, "label-free",
+                                  H0=getattr(e, "last_principal", None))
+                loss = o["loss"].mean()
+                opt.zero_grad(set_to_none=True)
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(e.parameters(), 1.0)
+                opt.step()
+            if dev.type == "cuda":
+                torch.cuda.reset_peak_memory_stats()
+            row["step_s"] = _median_time(step, dev, warm=3, reps=8)
+            if strips:
+                row["step_strip_s"] = statistics.median(strip_s[-8:])
+            row["peak_gib"] = torch.cuda.max_memory_allocated() / 2 ** 30 if dev.type == "cuda" else None
+            rows.append(row)
+            print(f"forms {label:24s} n={n:3d} batch={len(exs):2d}: forward {row['forward_s']:.4f} s, "
+                  f"step {row['step_s']:.4f} s"
+                  + (f" (strips {row['step_strip_s']:.4f} s, assembly {row['assembly_s']:.4f} s)"
+                     if strips else ""), flush=True)
+    # the projection: the mean step over Stage 0's mix, and each arm's hours
+    w = {n: STAGE0_TRAIN_EXAMPLES[n] / batch[n] for n in ns}
+    tot = sum(w.values())
+    w = {n: v / tot for n, v in w.items()}
+    proj = {"step_mix": {str(n): w[n] for n in ns}, "arms": {}}
+    for label in arms:
+        mean = sum(w[r["n"]] * r["step_s"] for r in rows if r["arm"] == label)
+        proj["arms"][label] = {"mean_step_s": mean}
+    ref = proj["arms"]["B (Stage 0, reference)"]["mean_step_s"]
+    for label, cfg in arms.items():
+        p = proj["arms"][label]
+        p["over_B"] = p["mean_step_s"] / ref
+        if cfg is not None:
+            runs = len(cfg["seeds"])
+            p["registered_steps"] = cfg["steps"] * runs
+            p["hours"] = p["mean_step_s"] * cfg["steps"] * runs / 3600.0
+            if label == "S":   # S' runs S's form at the comparison budget, two seeds
+                sp = GF.ARMS["Sp"]
+                p["Sp_hours"] = p["mean_step_s"] * sp["steps"] * len(sp["seeds"]) / 3600.0
+    proj["training_hours"] = (proj["arms"]["S"]["hours"] + proj["arms"]["S"]["Sp_hours"]
+                              + proj["arms"]["W"]["hours"])
+    print("projection", json.dumps(proj), flush=True)
+    return {"rows": rows, "projection": proj}
+
+
 def _draw(seed):
     t0 = time.perf_counter()
     data.draw(seed)
@@ -198,6 +315,8 @@ def main() -> int:
     ap.add_argument("--skip", default="", help="comma list of forward,step,generator")
     ap.add_argument("--gen-count", type=int, default=96)
     ap.add_argument("--quick", action="store_true", help="a smoke run: n = 32 and 64 only")
+    ap.add_argument("--forms", action="store_true",
+                    help="E5 of gates_forms: the registered arms' forms (and the generator), not Stage 0's")
     args = ap.parse_args()
     dev = torch.device(args.device)
     if args.threads:
@@ -215,17 +334,22 @@ def main() -> int:
            "cpus": os.cpu_count(), "cpu_sources": chartop_cpus.sources(),
            "torch_threads": torch.get_num_threads(),
            "power": power_state(), "weights": "untrained (random); cost only"}
-    if "forward" not in skip:
+    if args.forms:
+        from atlas.chartop import gates_forms as GF
+        rec["registration"] = GF.REGISTERED
+        rec["forms"] = forms_times(dev, (32,) if args.quick else tuple(n for n, _b in GF.E5_PRICED))
+    if "forward" not in skip and not args.forms:
         rec["forward"] = forward_times(dev, (64,) if args.quick else (32, 64, 128),
                                        (16,) if args.quick else (1, 16))
-    if "step" not in skip:
+    if "step" not in skip and not args.forms:
         rec["step"] = step_times(dev, (32,) if args.quick else (32, 64, 128))
     if "generator" not in skip:
         rec["generator"] = generator_rate(chartop_cpus.default_workers(1), args.gen_count)
         print("generator", rec["generator"], flush=True)
     os.makedirs(args.out, exist_ok=True)
-    name = "price-%s-%s.json" % (socket.gethostname().split(".")[0][:24],
-                                 dt.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    name = "price-%s%s-%s.json" % ("forms-" if args.forms else "",
+                                   socket.gethostname().split(".")[0][:24],
+                                   dt.datetime.now().strftime("%Y%m%d-%H%M%S"))
     with open(os.path.join(args.out, name), "w", encoding="utf-8") as fh:
         json.dump(rec, fh, indent=1)
     print("wrote", os.path.join(args.out, name))

@@ -2,6 +2,7 @@
 # Stage 0 (W355) on a rented box: install the pins, then run the requested stages.
 #
 #   STAGES="price" DEADLINE_S=2400 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
+#   STAGES="price-forms" DEADLINE_S=2400 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
 #   STAGES="data train" DATA_SPLITS="val train train-conformal" ONLY="B,Bp,C1" \
 #     DEADLINE_S=23400 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
 #
@@ -54,6 +55,10 @@ for st in $STAGES; do
     price)
       python scripts/chartop_price.py --out out > price.log 2>&1
       echo $? > price.done ;;
+    price-forms)
+      # E5 of the registration after Stage 0 (atlas/chartop/gates_forms.py)
+      python scripts/chartop_price.py --forms --out out > price-forms.log 2>&1
+      echo $? > price-forms.done ;;
     data)
       mkdir -p data
       code=0

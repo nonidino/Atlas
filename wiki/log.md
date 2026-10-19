@@ -732,3 +732,15 @@ See [[chart-operator-kernel-exact-forms]] §10: commit 6594c8a builds the side s
 On the owner's OK ("Yes, hash-pin gates_forms.py now, the way Stage 0's registration was pinned"), `scripts/chartop_register_forms.py` wrote `out/chartop/registered-forms.txt`, as `chartop_register.py` wrote Stage 0's. It holds the sha256 of `atlas/chartop/gates_forms.py` (94f29f27...) and of `gates.py`, whose bars it reads (b26cf4e5..., Stage 0's pinned hash). `tests/test_chartop_gates_forms.py` now fails if either file changes; it failed before the pin was written and passes after. The script refuses to overwrite the file. The module's docstring was updated to say pinned before the hash was taken. Nothing was trained or rented: E5 waits for the owner's separate OK.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] §8 · [[gap-worklist]] W358.
+
+## [2026-10-19] note | The chart-operator registration's E5, priced on one rented box
+
+**What.** On the owner's OK, one vast.ai box priced E5 as registered: an RTX 3090 with a Ryzen 9 5950X (quota 30 CPUs), at \$0.272 an hour. It was rented 16:12-16:17 local time, with a 40-minute self-stop deadline, then destroyed; the instance list is empty. The run was `scripts/chartop_price.py --forms`, the new `price-forms` stage of `scripts/chartop_box_run.sh`. The record is `out/chartop/price-forms-a061116c3e9e-20261019-201554.json`, with the logs in `out/chartop/box/E5-forms/logs/`, every file hash-checked against the box. The credit went from \$2.693 to \$2.671 (\$0.022).
+
+**Found.**
+- Stage 0's arm B, run as the reference, reproduces box A's step (62.7 and 60.4 ms at n = 64 and 128, against 62.8 and 60.4).
+- Over Stage 0's step mix, W's mean step is 0.064 s (1.20 times B's) and S's 0.290 s (5.42 times). The strips (0.151 s) and their assembly (0.039 s) are 65% of S's step.
+- The projected training time is 19.5 h (S 12.1, S' 6.0, W 1.3). Extrapolated, the five runs cost about \$5.6 on one box, or \$5.8 on two in about 13 h of wall-clock. That is within the \$10 ceiling and the draft's \$3.2-9.0, but above the credit: the runs need a top-up first.
+- [AI Inference]: computing the strips only at validation, where they carry no gradient, would save about 12 h (\$3.2). That is a code change for the owner, and it needs a bit-for-bit test first.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status) and §8.7 (new) · [[gap-worklist]] W358.
