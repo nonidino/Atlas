@@ -655,3 +655,13 @@ There are 67 tests in `tests/test_chartop_*.py`, the scripts are `scripts/charto
 **Drafted, not registered.** The next registration ([[chart-operator-kernel-exact-forms]] §8): gates K, D and L with numerical bars, E4 met in both frames, comparisons CK1 and CK2, and four predictions. Whether to train now or after W358's demonstration is the owner's decision.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] (new) · [[chart-operator-stage-0]] §12 and See Also · [[gap-worklist]] W356, W357 · [[index]].
+
+## [2026-10-19] correction | The three dead evidence.html links fixed, with a test that would have caught them (not pushed)
+
+**What.** The evidence page's three Lean records (`lean.files`, `lean.theorems`, `lean.lines`) linked to the folder `proofs/lean/AtlasProofs`, which holds no `index.html` and so answers 404 on the live site (found by the live check in the entry above). On the owner's yes, `cite()` in `scripts/site_claims.py` now maps that source folder to `proofs/lean/index.html`, the Lean project's own index page. `site/data/claims.json` and `site/evidence.html` were regenerated, three links each and nothing else. `scripts/site_build.py` was not run whole, because it also copies the architecture page and the Lean sources, and another session was applying edits to the architecture page at the time.
+
+**A test.** `tests/test_site_claims.py` gained a check that every relative link on the site's three pages names a file or a folder that holds an `index.html`. Against the unfixed site it fails on exactly `evidence.html: proofs/lean/AtlasProofs`; now all 9 tests pass. The local link check of the 71 pages finds 0 broken, against 3 before, and the evidence page, the Lean index and the home page show no console error in headless Edge.
+
+**Not done.** Not pushed: the live site keeps the three dead links until the next push, and the live re-check follows it. The commit (`688e559`) sits on local `atlas-0.1` beside other sessions' unpushed Stage 0 commits, which a push would publish too.
+
+**Changed:** `scripts/site_claims.py`, `site/data/claims.json`, `site/evidence.html` and `tests/test_site_claims.py` (commit `688e559`) · this entry.
