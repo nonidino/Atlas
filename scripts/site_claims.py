@@ -177,6 +177,8 @@ def site_config() -> dict:
 
 
 def cite(rel: str) -> str:
+    if rel == "lean/AtlasProofs":                     # a folder, which Pages cannot list: the project's index does
+        return "proofs/lean/index.html"
     if rel.startswith("lean/"):
         return "proofs/" + rel                       # the Lean sources, copied whole (site_build.py)
     if rel.startswith("atlas/workbench/bundle/"):      # the launchers' paperwork, in the public repository

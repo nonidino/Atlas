@@ -20,6 +20,8 @@ What it checks:
    states no result). The only other digits
    allowed are identifiers (G5, T3, S1, H1, C1...), "2-D" and "3-D", and the stage
    names, listed in `LABELS` below.
+6. **Every relative link on those pages** names a file, or a folder that holds an
+   index.html: Pages serves files, and a link to a bare folder is a 404.
 
 Run:  python -m pytest tests/test_site_claims.py -q
 """
@@ -30,6 +32,7 @@ import os
 import re
 import sys
 from html.parser import HTMLParser
+from urllib.parse import unquote, urldefrag
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = os.path.join(ROOT, "site")
@@ -285,3 +288,38 @@ def test_every_number_on_the_pages_has_a_source():
             if not label_ok(tok, ctx):
                 problems.append(f"{page}: unsourced number {tok!r} in ...{free[max(0, m.start() - 40): m.end() + 40]}...")
     assert not problems, "\n".join(problems)
+
+
+# -- 6: every relative link on the pages resolves ---------------------------------------------
+
+class Links(HTMLParser):
+    """The relative addresses a page links to or loads."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.addresses: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        for name, value in attrs:
+            if name in ("href", "src") and value:
+                self.addresses.append(value)
+
+
+def test_every_relative_link_on_the_pages_resolves():
+    """GitHub Pages serves files, so a link to a folder that holds no index.html is a 404. The
+    evidence page's three Lean records once pointed at such a folder."""
+    broken = set()
+    for page in PAGES:
+        path = os.path.join(SITE, page)
+        if not os.path.exists(path):
+            continue
+        p = Links()
+        with open(path, encoding="utf-8") as fh:
+            p.feed(fh.read())
+        for address in p.addresses:
+            if re.match(r"[a-z][a-z0-9+.-]*:", address, re.I) or address.startswith(("#", "//")):
+                continue                                      # https:, mailto:, data: or a fragment
+            target = os.path.normpath(os.path.join(os.path.dirname(path), unquote(urldefrag(address)[0].split("?")[0])))
+            if not (os.path.isfile(target) or os.path.isfile(os.path.join(target, "index.html"))):
+                broken.add(f"{page}: {address}")
+    assert not broken, "\n".join(sorted(broken))

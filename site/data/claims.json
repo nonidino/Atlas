@@ -2273,7 +2273,7 @@
    "pointer": null,
    "derived": "count of *.lean",
    "public": [
-    "proofs/lean/AtlasProofs"
+    "proofs/lean/index.html"
    ],
    "date": "",
    "machine": "",
@@ -2295,7 +2295,7 @@
    "pointer": null,
    "derived": "regex count of theorem/lemma at line start",
    "public": [
-    "proofs/lean/AtlasProofs"
+    "proofs/lean/index.html"
    ],
    "date": "",
    "machine": "",
@@ -2317,7 +2317,7 @@
    "pointer": null,
    "derived": "newline count",
    "public": [
-    "proofs/lean/AtlasProofs"
+    "proofs/lean/index.html"
    ],
    "date": "",
    "machine": "",
