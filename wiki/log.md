@@ -683,3 +683,16 @@ There are 67 tests in `tests/test_chartop_*.py`, the scripts are `scripts/charto
 **Checked.** Every edit's old text occurs once in each copy, and the copies stay byte-identical. `scripts/arch_paper_build.py` leaves the corrected page unchanged, so its cross-reference labels are the build's own; a deliberately wrong label is repaired by it, so the check can fail. `tests/test_site_claims.py` passes (9 tests, on a clean export of `02eda67` with the two pages applied). Rendered in headless Edge, MathJax typesets 952 expressions against 945 before, with no errors; the notes, Remark 4, Section 4.5, the proof of Theorem 5 and Table 27 read correctly in both colour schemes. The local link check of the page finds no new broken link (395 links against 380, none broken). Not pushed when written: the live check follows the push.
 
 **Changed:** [[gap-worklist]] W361 · [[chart-operator-stage-0]] §13.
+
+## [2026-10-19] lint | The published site after the W361 push: the second erratum is live
+
+**What.** The commit `e6ad0c0` was pushed to `atlas-0.1` on 2026-10-19 at 09:49 (local time), on the owner's yes, and the Website workflow deployed it (success). The launch checklist's live checks were run against `nonidino.github.io/Atlas/`.
+
+**Found.**
+- The live architecture page equals the committed one (text compared after CRLF to LF) and carries the second erratum.
+- Rendered in headless Edge, MathJax typesets 952 expressions, the same as the local page, with no input error and no unresolved reference.
+- The home, install, evidence, archived version 1, Lean index and blueprint pages all answer 200, and every relative target of the architecture page does too.
+
+**Not checked.** The external links of the other pages, and the pages at phone width.
+
+**Changed:** nothing but this entry.
