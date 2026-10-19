@@ -3,6 +3,8 @@
 #
 #   STAGES="price" DEADLINE_S=2400 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
 #   STAGES="price-forms" DEADLINE_S=2400 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
+#   STAGES="price-forms budget data train" DATA_SPLITS="val train" ONLY="S" DPH=0.27 \
+#     DEADLINE_S=30600 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
 #   STAGES="data train" DATA_SPLITS="val train train-conformal" ONLY="B,Bp,C1" \
 #     DEADLINE_S=23400 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
 #
@@ -59,6 +61,19 @@ for st in $STAGES; do
       # E5 of the registration after Stage 0 (atlas/chartop/gates_forms.py)
       python scripts/chartop_price.py --forms --out out > price-forms.log 2>&1
       echo $? > price-forms.done ;;
+    budget)
+      # the registration after Stage 0: nothing trains unless this box's own prices put the
+      # whole registration within the ceiling (scripts/chartop_budget.py); DPH is this box's rate
+      if [ -z "${DPH:-}" ]; then
+        echo "DPH is not set: nothing trains" > budget.log; echo 2 > budget.done; touch ALL.done; exit 0
+      fi
+      python scripts/chartop_budget.py --plan plan.json --price-dir out --dph "$DPH" --only "$ONLY" \
+        --ceiling "${CEILING:-10}" --spent "${SPENT:-0}" --out budget.json > budget.log 2>&1
+      code=$?
+      echo $code > budget.done
+      if [ "$code" -ne 0 ]; then
+        echo "budget: exit $code, nothing trains" >> budget.log; touch ALL.done; exit 0
+      fi ;;
     data)
       mkdir -p data
       code=0

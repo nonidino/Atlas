@@ -22,7 +22,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "out", "chartop", "box", "payload.tar.gz")
 #: ``chartop_cpus.py`` sizes the worker pools from the container's CPU quota (W360); the
 #: runner calls it before anything else is installed, and the data, price and E5 scripts import it
-SCRIPTS = ("chartop_cpus.py", "chartop_data.py", "chartop_train.py", "chartop_price.py", "chartop_e5.py")
+SCRIPTS = ("chartop_cpus.py", "chartop_data.py", "chartop_train.py", "chartop_price.py", "chartop_e5.py",
+           "chartop_budget.py")
 
 
 def add_text(tar, src, arc, mode=0o644):

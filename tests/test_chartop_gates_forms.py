@@ -224,6 +224,87 @@ def test_judgements():
     assert not F.judge_e1(np.full(N, 0.011), np.full(N, 0.01), mu, fq)["met"]
 
 
+PLAN_FORMS = os.path.join(ROOT, "out", "chartop", "plan-forms.json")
+
+
+def _script(name):
+    import importlib
+    import sys
+    scripts = os.path.join(ROOT, "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    return importlib.import_module(name)
+
+
+def test_the_plan_is_the_registration():
+    """The run plan trains every registered arm and seed once, exactly as registered,
+    with Stage 0's batches, learning rate and cadence, the owner's box split and option,
+    and boxes under the cap; and `chartop_train.check_forms_plan` refuses every mutation."""
+    import copy
+    ct = _script("chartop_train")
+    plan = json.load(open(PLAN_FORMS, encoding="utf-8"))
+    assert plan["registration"] == "gates_forms"
+    ct.check_forms_plan(plan)
+    boxes = plan["boxes"]
+    assert boxes["1"]["runs"] == ["S"] and sorted(boxes["2"]["runs"]) == ["Sp-s0", "Sp-s1", "W-s0", "W-s1"]
+    assert sorted(r for b in boxes.values() for r in b["runs"]) == sorted(a["name"] for a in plan["arms"])
+    assert all(a["strips_in_training"] is False for a in plan["arms"] if a["registered"] in ("S", "Sp"))
+    s0 = {a["name"]: a for a in json.load(open(PLAN, encoding="utf-8"))["arms"]}
+    for a in plan["arms"]:
+        ref = s0["B"] if a["registered"] == "S" else s0["Bp"]
+        assert (a["batch"], a["lr"], a["val_every"]) == (ref["batch"], ref["lr"], ref["val_every"])
+        assert a["name"] in plan["minutes"]
+    for b in boxes.values():
+        assert float(re.search(r"([0-9.]+) \$/h", b["machine"]).group(1)) <= F.BOX_MAX_USD_PER_HOUR
+    mutations = (lambda p: p["arms"][0].update(seed=1), lambda p: p["arms"][1].update(steps=40000),
+                 lambda p: p["arms"][3].update(bubble="corner"), lambda p: p["arms"].pop(),
+                 lambda p: p["arms"].append(dict(p["arms"][2])),
+                 lambda p: p["arms"][4].update(registered="Sp"), lambda p: p["arms"][0].update(limit=100),
+                 lambda p: p["arms"][2].update(p_size="0.3M"), lambda p: p["arms"][0].pop("registered"))
+    for mutate in mutations:
+        bad = copy.deepcopy(plan)
+        mutate(bad)
+        with pytest.raises(SystemExit):
+            ct.check_forms_plan(bad)
+
+
+def test_the_budget_gate(tmp_path, monkeypatch):
+    """`chartop_budget` costs each run at its own priced step (S's runs with the strips
+    skipped, W's), refuses past the ceiling with exit 3, and refuses a record without
+    the step it needs."""
+    cb = _script("chartop_budget")
+    plan = json.load(open(PLAN_FORMS, encoding="utf-8"))
+    steps = {"S": 0.30, "S, strips only at validation": 0.08, "W": 0.064, "B (Stage 0, reference)": 0.05}
+    rows = [{"arm": arm, "n": n, "batch": b, "step_s": st, "forward_s": 0.25 if arm.startswith("S") else 0.015}
+            for arm, st in steps.items() for n, b in F.E5_PRICED]
+    price = {"gpu": "test", "generator": {"examples_per_s": 25.0},
+             "forms": {"rows": rows, "projection": {"step_mix": {"32": 0.2, "64": 0.3, "128": 0.5}}}}
+    rec = cb.project(plan, price, 0.3, {"S"}, 0.03)
+    by = {r["name"]: r for r in rec["runs"]}
+    assert by["S"]["priced_as"] == by["Sp-s1"]["priced_as"] == "S, strips only at validation"
+    assert by["W-s0"]["priced_as"] == "W" and by["S"]["on_this_box"] and not by["W-s0"]["on_this_box"]
+    per_val = 1.5 * (179 * 0.25 / 32 + 293 * 0.25 / 32 + 128 * 0.25 / 8)
+    assert by["S"]["hours"] == pytest.approx((0.08 * 150_000 + 30 * per_val) / 3600)
+    data_h = (50_000 + 5 * 600) / 25.0 / 3600
+    assert rec["registration"]["hours"] == pytest.approx(sum(r["hours"] for r in rec["runs"]) + 2 * (data_h + 0.4))
+    assert rec["registration"]["usd"] == pytest.approx(0.3 * rec["registration"]["hours"] + 0.03)
+    on = json.loads(json.dumps(plan))
+    for a in on["arms"]:
+        a["strips_in_training"] = True
+    assert {r["priced_as"] for r in cb.project(on, price, 0.3, set(), 0.0)["runs"]} == {"S", "W"}
+    (tmp_path / "price-forms-x.json").write_text(json.dumps(price), encoding="utf-8")
+
+    def main(dph):
+        monkeypatch.setattr("sys.argv", ["chartop_budget.py", "--plan", PLAN_FORMS, "--price-dir", str(tmp_path),
+                                         "--dph", str(dph), "--only", "S", "--out", str(tmp_path / "b.json")])
+        return cb.main()
+    assert main(0.3) == 0 and json.load(open(tmp_path / "b.json"))["within"]
+    assert main(5.0) == 3 and not json.load(open(tmp_path / "b.json"))["within"]
+    price["forms"]["rows"] = [r for r in rows if r["arm"] != "S, strips only at validation"]
+    with pytest.raises(SystemExit):
+        cb.project(plan, price, 0.3, set(), 0.0)
+
+
 def test_text_names_every_gate_and_arm():
     t = F.text()
     for g in F.GATES + F.COMPARISONS:

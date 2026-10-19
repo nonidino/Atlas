@@ -1,0 +1,38 @@
+{
+ "written": "2026-10-19, before the first training run of these arms",
+ "registration": "gates_forms",
+ "status": "approved by the owner on 2026-10-19 ('I have topped up. Run the five registered runs with strips_in_training=False for S and S', on two RTX 3090-class boxes (at most $0.70/h each): S on one, S' and W on the other. Price the skipped step first on each box and stop if the projection exceeds $10. Destroy both when done.'); binding from this commit, before the first training run",
+ "data": {"train": 50000, "val": 600},
+ "val_examples": {"32": 179, "64": 293, "128": 128},
+ "arms": [
+  {"name": "S", "registered": "S", "form": "split", "backbone": "unet", "size": "1M", "p_size": "1M",
+   "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "corner", "strips": true,
+   "strips_in_training": false, "steps": 150000, "val_every": 5000, "seed": 0,
+   "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001},
+  {"name": "Sp-s0", "registered": "Sp", "form": "split", "backbone": "unet", "size": "1M", "p_size": "1M",
+   "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "corner", "strips": true,
+   "strips_in_training": false, "steps": 37500, "val_every": 2500, "seed": 0,
+   "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001},
+  {"name": "Sp-s1", "registered": "Sp", "form": "split", "backbone": "unet", "size": "1M", "p_size": "1M",
+   "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "corner", "strips": true,
+   "strips_in_training": false, "steps": 37500, "val_every": 2500, "seed": 1,
+   "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001},
+  {"name": "W-s0", "registered": "W", "form": "split", "backbone": "unet", "size": "1M", "p_size": "1M",
+   "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "square", "strips": false,
+   "steps": 37500, "val_every": 2500, "seed": 0,
+   "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001},
+  {"name": "W-s1", "registered": "W", "form": "split", "backbone": "unet", "size": "1M", "p_size": "1M",
+   "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "square", "strips": false,
+   "steps": 37500, "val_every": 2500, "seed": 1,
+   "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001}
+ ],
+ "minutes": {"S": 420, "Sp-s0": 120, "Sp-s1": 120, "W-s0": 90, "W-s1": 90},
+ "boxes": {
+  "1": {"machine": "RTX 3090 with an EPYC 7532 (32 effective cores, 64 GB), vast.ai offer 44730076, 0.327 $/h",
+        "runs": ["S"], "data": ["val", "train"], "deadline_s": 30600},
+  "2": {"machine": "RTX 3090 with an EPYC 7532 (16 effective cores, 64 GB), vast.ai offer 29548834, 0.269 $/h",
+        "runs": ["Sp-s0", "Sp-s1", "W-s0", "W-s1"], "data": ["val", "train"], "deadline_s": 28800}
+ },
+ "gate": "each box prices its own steps first (chartop_price.py --forms) and trains only if chartop_budget.py puts the whole registration, at its prices and rate, within 10 $ (spent before: 0.03 $, E5's box)",
+ "note": "batches, learning rate, weight decay, augmentation and validation cadence are Stage 0's plan's (out/chartop/plan.json, arms B and Bp). The wall-clock guards are about 1.5-1.7 times the upper projection (chart-operator-kernel-exact-forms section 8.8); a run the guard stops is recorded as stopped, not as done. strips_in_training=false skips the strips in the training steps only; validation and every answer solve them, and the weights are the same (tests/test_chartop_model.py)."
+}

@@ -9,6 +9,14 @@ An arm whose ``summary.json`` exists is skipped, and one interrupted resumes fro
 ``last.pt``, so the same command continues a run after a crash.  Every arm writes
 ``<runs>/<name>/`` (``arm.json``, ``log.jsonl``, ``best.pt``, ``last.pt``,
 ``summary.json``) and ``<runs>/<name>.done``.
+
+A plan with ``"registration": "gates_forms"`` trains the registration after Stage 0
+(`atlas/chartop/gates_forms.py`, pinned).  Each arm then names its registered arm
+(``"registered": "S"``, ``"Sp"`` or ``"W"``), and the whole plan is checked against
+`gates_forms.ARMS` before anything trains: the form, networks, ports, objective, data,
+bubble, strips, steps and seed of every run, and every registered seed run exactly
+once.  ``strips_in_training`` is a training option, not a registered field: it does
+not change the weights (`train.Arm`).
 """
 from __future__ import annotations
 
@@ -29,9 +37,34 @@ from atlas.chartop import train as tr  # noqa: E402
 
 def arm_from(d: dict) -> tr.Arm:
     d = dict(d)
+    d.pop("registered", None)
     if "batch" in d:
         d["batch"] = {int(k): int(v) for k, v in d["batch"].items()}
     return tr.Arm(**d)
+
+
+def check_forms_plan(plan: dict) -> None:
+    """Every run of a ``gates_forms`` plan is one registered arm and seed, and every
+    registered seed is run once; a mismatch refuses the whole plan."""
+    from atlas.chartop import gates_forms as GF
+    want_common = {k: v for k, v in GF.COMMON.items() if k != "m"}   # `train.Arm` keeps m = 16
+    seen = []
+    for d in plan["arms"]:
+        reg = d.get("registered")
+        if reg not in GF.ARMS:
+            raise SystemExit(f"run {d.get('name')!r} names no registered arm of gates_forms: {reg!r}")
+        arm, r = arm_from(d), GF.ARMS[reg]
+        got = {"form": arm.form, "backbone": arm.backbone, "size": arm.size, "p_size": arm.p_size,
+               "kind": arm.kind, "objective": arm.objective, "data": arm.data,
+               "bubble": arm.bubble, "strips": arm.strips, "steps": arm.steps}
+        want = dict(want_common, bubble=r["bubble"], strips=r["strips"], steps=r["steps"])
+        if got != want or arm.seed not in r["seeds"] or arm.limit is not None:
+            raise SystemExit(f"run {arm.name!r} is not gates_forms arm {reg!r}: {got} against {want}, "
+                             f"seed {arm.seed} of {r['seeds']}, limit {arm.limit}")
+        seen.append((reg, arm.seed))
+    need = sorted((k, s) for k, r in GF.ARMS.items() for s in r["seeds"])
+    if sorted(seen) != need:
+        raise SystemExit(f"the plan runs {sorted(seen)}, the registration {need}")
 
 
 def main() -> int:
@@ -44,11 +77,14 @@ def main() -> int:
     args = ap.parse_args()
     plan = json.load(open(args.plan, encoding="utf-8"))
     only = set(filter(None, args.only.split(",")))
+    forms_plan = plan.get("registration") == "gates_forms"
+    if forms_plan:
+        check_forms_plan(plan)
     os.makedirs(args.runs, exist_ok=True)
     status = 0
     for d in plan["arms"]:
         arm = arm_from(d)
-        if arm.name not in gates.ARMS:
+        if not forms_plan and arm.name not in gates.ARMS:
             raise SystemExit(f"arm {arm.name!r} is not registered in gates.ARMS")
         if only and arm.name not in only:
             continue
