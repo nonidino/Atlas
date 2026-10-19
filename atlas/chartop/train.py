@@ -26,6 +26,7 @@ from dataclasses import asdict, dataclass, field
 import numpy as np
 import torch
 
+from . import forms as fm
 from . import model as md
 
 KEYS = ("inputs", "scalars", "a11", "a12", "a22", "sigma", "w", "g", "s0")
@@ -49,6 +50,7 @@ class Arm:
     seed: int = 0
     augment: bool = True
     val_every: int = 500
+    p_size: str | None = None           # the split form's particular-field network (`forms`)
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -142,9 +144,13 @@ def _batch(t: dict, idx, labels: bool):
 
 
 def validate(expert: md.Expert, val: dict, device, autocast: bool) -> dict:
-    """Per-example e_H and e_p on a labelled set, with their bins."""
+    """Per-example e_H and e_p on a labelled set, with their bins; and, for the
+    kernel-exact forms, e_K of the uniform state (`forms`), zero to rounding."""
     expert.eval()
     rows = {"e_H": [], "e_p": [], "sup_mu": [], "freq": [], "n": [], "seed": []}
+    kernel = getattr(expert, "needs_load_fields", False)
+    if kernel:
+        rows["e_K"] = []
     with torch.no_grad():
         for n, t in val.items():
             N = t["inputs"].shape[0]
@@ -153,10 +159,14 @@ def validate(expert: md.Expert, val: dict, device, autocast: bool) -> dict:
                 idx = torch.arange(i0, min(N, i0 + bs), device=device)
                 b, lab = _batch(t, idx, True)
                 with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=autocast):
-                    H, up = expert(b["inputs"], b["scalars"], b["s0"])
+                    H, up = fm.call(expert, b)
                 o = md.objectives(b, H, up, expert.kind, expert.m, lab, "label-free")
                 rows["e_H"] += o["e_H"].cpu().tolist()
                 rows["e_p"] += o["e_p"].cpu().tolist()
+                if kernel:
+                    ks = fm.kernel_square(n, expert.kind, expert.m, str(H.device))
+                    r = fm.residual(H, expert.last_level, b["s0"], ks)
+                    rows["e_K"] += fm.kernel_error_torch(b, r, lab["trace_Lambda"]).cpu().tolist()
             rows["sup_mu"] += t["meta_sup_mu"].tolist()
             rows["freq"] += t["meta_freq"].tolist()
             rows["seed"] += t["meta_seed"].tolist()
@@ -186,7 +196,7 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         V[n] = to_device(b, dev, True)
         for k in ("sup_mu", "freq", "seed"):
             V[n]["meta_" + k] = b[k]
-    expert = md.Expert(arm.backbone, arm.size, arm.form, arm.kind).to(dev)
+    expert = fm.make(arm.backbone, arm.size, arm.form, arm.kind, p_size=arm.p_size).to(dev)
     opt = torch.optim.AdamW(expert.parameters(), lr=arm.lr, weight_decay=arm.weight_decay)
     warm = max(1, arm.steps // 50)
     sched = torch.optim.lr_scheduler.LambdaLR(
@@ -225,7 +235,7 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
             if lab is not None:
                 lab = md.d4_labels(lab, arm.kind, expert.m, k)
         with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
-            H, up = expert(b["inputs"], b["scalars"], b["s0"])
+            H, up = fm.call(expert, b)
         o = md.objectives(b, H, up, arm.kind, expert.m, lab, arm.objective,
                           H0=getattr(expert, "last_principal", None))
         loss = o["loss"].mean()
@@ -247,6 +257,8 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
             rec = {"step": step, "val_e_H_median": med, "val_e_H_p90": float(np.quantile(r["e_H"], 0.9)),
                    "val_e_p_median": float(np.median(r["e_p"])),
                    "elapsed_s": time.perf_counter() - t0}
+            if "e_K" in r:
+                rec["val_e_K_max"] = float(np.max(r["e_K"]))
             _append(log, rec)
             if med < best:
                 best = med
@@ -270,6 +282,6 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
 def load_expert(path: str, device: str = "cpu") -> md.Expert:
     st = torch.load(path, map_location=device, weights_only=False)
     c = st["config"]
-    e = md.Expert(c["backbone"], c["size"], c["form"], c["kind"], c["m"])
+    e = fm.make(c["backbone"], c["size"], c["form"], c["kind"], c["m"], c.get("p_size"))
     e.load_state_dict(st["model"])
     return e.to(device).eval()

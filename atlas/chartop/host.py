@@ -59,9 +59,12 @@ class EdgeInfo:
 @dataclass
 class Response:
     """What an expert returns for one piece: interior modes (n-1)^2 x 4m and the
-    interior particular field (n-1)^2."""
+    interior particular field (n-1)^2; the kernel-exact forms (`forms`) add their level
+    field (n-1)^2, the answer for the unit uniform source, which a march keeps with the
+    modes."""
     H: np.ndarray
     up: np.ndarray
+    level: np.ndarray | None = None
 
 
 class Refused(Exception):

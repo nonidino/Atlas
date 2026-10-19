@@ -450,7 +450,7 @@ Stage 1 is the next four entries of F1's build order ([[chart-operator-family-ca
 - **CO-T**: guarantee class G0′, Petrov–Galerkin with adjoint modes from the same network by $\hat b\to-\hat b$. T25's positivity does not hold, so SE1's second clause has no analogue and the gate must be rewritten. At Péclet 20 and 200 the exact port matrix's symmetric part is indefinite (measured in the catalog), so the seams cannot exchange value and diffusive flux alone.
 - **The biharmonic network**: value and slope ports, a stiffer operator, and the corner question of item 3 in a stronger form.
 
-**The worklist rows** are [[gap-worklist]] W356 (item 1), W357 (item 2), W358 (items 3 and 4) and W360 (item 6).
+**The worklist rows** are [[gap-worklist]] W356 (item 1), W357 (item 2), W358 (items 3 and 4) and W360 (item 6). Items 1 and 2 are built, checked with untrained weights, and carry a draft registration in [[chart-operator-kernel-exact-forms]].
 
 **Cost.** Arm B's 150,000 steps took 2.35 h on an RTX 3090: 60 passes over 50,000 pieces, about \$0.46 at \$0.195 an hour (§7). **[AI Inference]:** at that rate one Stage 1 family costs a few GPU-hours per arm. Comparisons with seed repeats multiply that by the number of arms, which still fits a ceiling like D6's.
 
@@ -483,3 +483,4 @@ Stage 1 is the next four entries of F1's build order ([[chart-operator-family-ca
 - [[formal-proofs-record]] — T24, T25, T26 in Lean
 - [[gap-worklist]] — W355, and the rows Stage 1 inherits, W356–W360
 - [[case-study-thermal-strain-atlas-0.1]] — CS-9, where Stage 1's thermoelastic bond is to be tested
+- [[chart-operator-kernel-exact-forms]] — §12's items 1 and 2 built: the kernel-exact and split output forms, checked untrained

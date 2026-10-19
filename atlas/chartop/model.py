@@ -91,10 +91,10 @@ def _up(x, size):
 
 
 class UNet(nn.Module):
-    def __init__(self, widths=WIDTHS["1M"], cout: int = 65):
+    def __init__(self, widths=WIDTHS["1M"], cout: int = 65, cin: int = N_IN):
         super().__init__()
         w = list(widths)
-        self.enc = nn.ModuleList([Block(N_IN, w[0])] + [Block(w[i - 1], w[i]) for i in range(1, len(w))])
+        self.enc = nn.ModuleList([Block(cin, w[0])] + [Block(w[i - 1], w[i]) for i in range(1, len(w))])
         self.dec = nn.ModuleList([Block(w[i + 1] + w[i], w[i]) for i in reversed(range(len(w) - 1))])
         self.head = nn.Conv2d(w[0], cout, 1)
         nn.init.zeros_(self.head.weight)
@@ -142,9 +142,9 @@ class SpectralLayer(nn.Module):
 
 
 class SpectralNet(nn.Module):
-    def __init__(self, width: int = 32, k: int = 8, layers: int = 4, cout: int = 65):
+    def __init__(self, width: int = 32, k: int = 8, layers: int = 4, cout: int = 65, cin: int = N_IN):
         super().__init__()
-        self.lift = nn.Conv2d(N_IN, width, 1)
+        self.lift = nn.Conv2d(cin, width, 1)
         self.layers = nn.ModuleList([SpectralLayer(width, width, k) for _ in range(layers)])
         self.film = nn.ModuleList([nn.Linear(N_SCALARS, 2 * width) for _ in range(layers)])
         for f_ in self.film:

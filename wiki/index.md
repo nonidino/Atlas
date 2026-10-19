@@ -1,6 +1,6 @@
 # Physics Foundation Model Wiki — Index
 
-**Last Updated:** 2026-10-18
+**Last Updated:** 2026-10-19
 **Sources Ingested:** 36 documents
 
 > 🧭 New here? Read **[[00-start-here]]** for the guided reading path.
@@ -310,6 +310,7 @@ The heart of the project: what a PFM is, the goal, the interface, and the archit
 | ★★ **The chart-operator family catalog** *(under discussion, 2026-10-10)* | [[chart-operator-family-catalog]] | **The family catalog, under discussion**: twelve families covering about forty PDEs, eight kinds of interaction, unit-square speedups and an architecture per family ↗ |
 | ★★★ **The public document, version 2** *(2026-10-12; replaces version 1 on the website)* | [[chart-operator-architecture]] · [[chart-operator-general-form]] · [[chart-operator-family-catalog]] | **Version 2, public since 2026-10-12**: version 1, the general form and the family catalog in one document written intuition first; version 1 archived beside it ↗ |
 | ★★★ **The chart operator, Stage 0** *(built, trained and judged once, 2026-10-18)* | [[chart-operator-stage-0]] | **CO-D built and judged once against gates registered before training**: the coupling's guarantees held to rounding, the modes did not learn in eleven arms (\$4.06 of rented GPU), so E1, E4 and KT fail; the hat modes' broken sum dominates the error ↗ |
+| ★★ **The chart operator: kernel-exact forms** *(W356, W357; built and checked untrained, 2026-10-19)* | [[chart-operator-kernel-exact-forms]] | **Output forms that make a uniform temperature a fixed point whatever the weights**, and keep the load from the modes: the datum drops out to $10^{-10}$; untrained, the steps fall from 60/52/32% to 0.27/0.69/0.39%; the next registration drafted, not registered |
 | Coupling cost and complexity | [[coupling-cost-and-complexity]] | **Coupling cost measured with exact local solves**: rounds by method on 8 × 8 pieces (none for the superelement), and a monolithic direct solve winning at these 2-D sizes ↗ |
 | ★★★ **Formal proofs** *(task 4)* | [[formal-proofs-plan]] | **The theorem inventory T1–T23** with novelty and Lean tier: a finite-dimensional core machine-checkable in weeks, and what is cited instead ↗ |
 | Formal proofs: the record | [[formal-proofs-record]] | **What is machine-checked**: 105 theorems in 26 Lean files, no `sorry`, standard axioms only, one row per theorem; T3 for restricted additive Schwarz is false as first written ↗ |

@@ -1,11 +1,13 @@
 """The evaluation's own machinery (Stage 0, W355): the dual bracket's Loewner chain
 for any outputs, the frozen-coefficient route against the Kirchhoff transform, and the
-learned expert through the host (one call per piece, the envelope refusal).  Untrained
-networks only: what is checked here holds for any weights."""
+learned expert through the host (one call per piece, the envelope refusal), and the
+datum dropping out of the kernel-exact forms (W356).  Untrained networks only: what
+is checked here holds for any weights."""
 from __future__ import annotations
 
 import math
 import os
+from dataclasses import replace
 
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
@@ -16,7 +18,7 @@ torch = pytest.importorskip("torch")
 
 from atlas.chartop import benchmarks as bm
 from atlas.chartop import chart as ch
-from atlas.chartop import data, dual, fe, host, model, nonlinear as nl, ports
+from atlas.chartop import data, dual, fe, forms, host, model, nonlinear as nl, ports
 from atlas.chartop.expert import LearnedExpert
 from atlas.chartop.piece import PieceProblem
 
@@ -111,3 +113,45 @@ def test_the_card_carries_its_envelope_and_certificates(tmp_path):
     assert c["certificates"]["dual_gap_over_network_error_smooth_data"]["median"] == 2.0
     assert c["certificates"]["contraction_factor_tier2"] is None      # reported missing, not assumed
     assert len(c["weights"]["sha256"]) == 64 and "Poseidon" in c["licence"]
+
+
+def _randomised(net, std=0.02, seed=0):
+    torch.manual_seed(seed)
+    for prm in net.parameters():
+        torch.nn.init.normal_(prm, 0.0, std)
+    return net
+
+
+@pytest.mark.parametrize("problem", ["steady", "step"])
+def test_the_datum_drops_out_of_the_kernel_forms(problem):
+    """W356 through the host: with every temperature lowered by 300 K (the step's T_old
+    too), the coupled error ||u - u~||_M of either kernel-exact form, random weights,
+    does not change, and a uniform state comes back exactly.  Stage 0's bubble with
+    weights of the same size is the failing control."""
+    b = bm.bend3(16, problem)
+    bs = bm.datum_shift(b, -bm.T_COLD)
+    nets = {"split": _randomised(forms.KernelExpert("split", "unet", "0.3M")),
+            "kernel": _randomised(forms.KernelExpert("kernel", "unet", "0.3M")),
+            "bubble": _randomised(model.Expert("unet", "0.3M"))}
+    err = {}
+    for name, net in nets.items():
+        ex = LearnedExpert(net, envelope=data.ENVELOPE)
+        err[name] = []
+        for bb in (b, bs):
+            L = bb.layout("sine-hat", 16)
+            num, _den = L.solve(ex).energy_error(host.monolithic(L).fields)
+            err[name].append(num)
+    for name in ("split", "kernel"):
+        assert abs(err[name][1] - err[name][0]) <= 1e-9 * err[name][0], (name, err[name])
+    assert abs(err["bubble"][1] - err["bubble"][0]) > 1e-2 * err["bubble"][0], err["bubble"]
+    # the uniform state at 350 K: data 350 on both ends, T_old = 350 for the step
+    flat = bm.datum_shift(b, 0.0)
+    flat.problems = [replace(p, g=np.full_like(p.g, 350.0 * p.s0)) for p in b.problems]
+
+    def bc(i, s, P, _bc=b.bc):
+        kind, val = _bc(i, s, P)
+        return (kind, np.full_like(val, 350.0)) if kind == "dirichlet" else (kind, val)
+    L = host.Layout(flat.problems, bc, "sine-hat", 16)
+    for name in ("split", "kernel"):
+        cp = L.solve(LearnedExpert(nets[name], envelope=data.ENVELOPE))
+        assert max(float(np.max(np.abs(u - 350.0))) for u in cp.fields) < 1e-9 * 350.0

@@ -41,7 +41,7 @@ particular field and the Fourier number are exercised.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 import scipy.sparse as sp
@@ -378,6 +378,26 @@ def insert_round(n: int = 64, problem: str = "steady", split: int = 3) -> Bench:
                  (lambda P: bool(np.all(np.abs(P[:, 0] - W) < tol)), T_COLD)])
     return Bench("insert-round", problem, probs, bc, {"dx": dx, "materials": {
         "copper": cu, "steel": st}})
+
+
+def datum_shift(b: Bench, dT: float) -> Bench:
+    """The same benchmark with every temperature moved by ``dT``: the Dirichlet data and,
+    for a step, ``T_old`` (its source ``g = T_old / Fo`` moves by ``dT / Fo``; a source that
+    the shift cancels to rounding is set to zero, so that no expert reads a normalised
+    rounding pattern as its source).  The exact field moves by ``dT``, and so does the
+    coupled answer of any trial space that reproduces the uniform state exactly
+    (`forms`), so its error does not change.  Steady, only the data move."""
+    probs = []
+    for p in b.problems:
+        g = p.g + dT * p.s0
+        if p.s0 and float(np.abs(g).max()) <= 1e-12 * float(np.abs(p.g).max()):
+            g = np.zeros_like(g)
+        probs.append(replace(p, g=g))
+
+    def bc(i, s, P, _bc=b.bc):
+        kind, val = _bc(i, s, P)
+        return (kind, val + dT) if kind == "dirichlet" else (kind, val)
+    return Bench(b.name, b.problem, probs, bc, dict(b.meta, datum_shift=dT))
 
 
 def build(name: str, n: int = 64, problem: str = "steady", **kw) -> Bench:

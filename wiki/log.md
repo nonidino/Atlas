@@ -632,3 +632,26 @@ There are 67 tests in `tests/test_chartop_*.py`, the scripts are `scripts/charto
 **Not checked.** The external links of the other pages (among them the checklist's two literature links), and the pages at phone width.
 
 **Changed:** nothing but this entry.
+
+## [2026-10-19] build | The chart operator's kernel-exact and split output forms (W356, W357), checked untrained
+
+**What.** The first two fixes Stage 0 asked for ([[chart-operator-stage-0]] §12, items 1–2), built and checked with untrained weights only: zero heads, or seeded random weights. Nothing was trained, registered or hash-pinned, and `atlas/chartop/gates.py` is unchanged. The record is [[chart-operator-kernel-exact-forms]].
+
+**The identity.** For any piece, $Hc_1+s_0u_p(\mathbf 1)=\mathbf 1$: a uniform temperature is a fixed point of the step. Steady, the corner hats sum to one. On a short backward-Euler step the hats alone fall to 0.02 of one, and the particular field of the old temperature makes up the rest. Exact classical solves meet it to $7\times10^{-15}$ in both port bases.
+
+**Built.**
+- `atlas/chartop/forms.py` holds the kernel-exact form (`"kernel"`). It projects the hats onto the identity with a partition of unity, so the identity holds to rounding whatever the weights. The form predicts a level field and splits the source's level off to it.
+- The split form (`"split"`): a mode network without the load, beside a particular-field network.
+- The measure: $e_K$, the uniform state's residual, and the level-weighted $e_H(\theta)=(e_H^2+\theta^2e_K^2)^{1/2}$.
+- The expert, the host's `Response` and the trainer carry the new forms, and `benchmarks.datum_shift` lowers every temperature, $T_{\text{old}}$ included. Stage 0's outputs, arm B's among them, are bit for bit unchanged.
+- 46 new test cases.
+
+**Measured, untrained** (`scripts/chartop_forms_controls.py` → `out/chartop/forms-controls.json`):
+- **The datum drops out.** Lowering every temperature by 300 K changes the new forms' coupled error by at most $1.4\times10^{-10}$ on all six problems, whatever the weights. A random bubble's error falls 1.6–213 times.
+- **The steps.** As initialised, their errors fall from the principal part's 60/52/32% to 0.27/0.69/0.39%. Lowered by 300 K, where the level no longer inflates the reference energy, they are 3.9/10.8/4.1%. The steady errors start where the principal part's are.
+- **The measure sees B.** B's $e_H$ is within 0.5% of the principal part's on the steady problems, while its $e_H(\theta)$ at the pieces' own levels is 2.6–4.3 times its $e_H$.
+- **What the network is asked.** The side modes ask what Stage 0's did, so W358 is untouched. The level field's quotient peaks next to a corner and grows only 1.8 times from $n=32$ to 128.
+
+**Drafted, not registered.** The next registration ([[chart-operator-kernel-exact-forms]] §8): gates K, D and L with numerical bars, E4 met in both frames, comparisons CK1 and CK2, and four predictions. Whether to train now or after W358's demonstration is the owner's decision.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] (new) · [[chart-operator-stage-0]] §12 and See Also · [[gap-worklist]] W356, W357 · [[index]].
