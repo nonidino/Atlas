@@ -211,12 +211,18 @@ window.MathJax = {
 <h1 class="ltx_title">Chart Operators: Learned Superelements for Coupled Physics on Curved Geometry</h1>
 <p class="subtitle">The general formulation of the Atlas architecture, explained from first principles</p>
 <div class="ltx_authors">Naunidh Singh</div>
-<div class="version">Version 2 &middot; 12 October 2026, with an erratum of 18 October 2026 &middot; supersedes the draft of 1 October 2026, <a href="paper-v1.html">still available here</a></div>
+<div class="version">Version 2 &middot; 12 October 2026, with errata of 18 October 2026 and 19 October 2026 &middot; supersedes the draft of 1 October 2026, <a href="paper-v1.html">still available here</a></div>
 <p class="status">A research proposal. No network has been trained. Every number on this page is either measured by a named script (with classical solvers standing in for networks), derived on the page, cited, or labelled as an estimate or a proposal.</p>
 
 <div class="outline-note">
 <p style="margin:0 0 0.5rem"><b class="sans">Erratum, 18 October 2026.</b> Version 2 said that the pieces are discretised by cell-centred finite volumes. The solver built for Stage 0 of the training plan (<a class="xref" href="#sec-training">Section 11</a>) uses bilinear finite elements on the reference grid's vertices instead: a two-point finite-volume flux drops the off-diagonal entry of the pulled-back conductivity, and the charts of <a class="xref" href="#tab-rule">Table 4</a> shear the cells at convex corners that are not right angles. The text is corrected in <a class="xref" href="#sec-bg-model">Section 2.1</a>, <a class="xref" href="#sec-core-output">Section 4.3</a> and <a class="xref" href="#sec-gen-def">Section 5.2</a>, in the setting and proof of <a class="xref" href="#thm-cea">Theorem 6</a>, and in the last item of <a class="xref" href="#sec-dual">Section 10</a>.</p>
 <p style="margin:0">Nothing else is changed. The proofs of <a class="xref" href="#thm-gram">Theorem 5</a> and <a class="xref" href="#thm-cea">Theorem 6</a> use only that a piece's energy matrix is positive semidefinite with a positive definite interior block and that neighbouring pieces agree on shared sides, and bilinear elements satisfy both; the Lean statements are about such matrices. The probes <code>arch_coupling_cost.py</code> (the rounds, and the costs of <a class="xref" href="#sec-cost">Section 12</a>) and <code>arch_superelement_gram.py</code> (<a class="xref" href="#tab-gram">Table 5</a>) ran on cell-centred finite volumes and are reported as measured there. <code>arch_family_checks.py</code> (<a class="xref" href="#tab-dual">Table 21</a> among others) ran on bilinear elements.</p>
+</div>
+
+<div class="outline-note">
+<p style="margin:0 0 0.5rem"><b class="sans">Second erratum, 19 October 2026.</b> Version 2 was not consistent about the default port basis. Its recommendation F2 (<a class="xref" href="#tab-decisions">Table 30</a>) and its Expert Card (<a class="xref" href="#app-card">Appendix A</a>) name the conforming basis, sines that vanish at corners plus four corner functions, while <a class="xref" href="#sec-core-ports">Section 4.5</a> named cosine coefficients as the port coordinates and <a class="xref" href="#rem-corners">Remark 4</a> called the conforming basis an alternative. The solver built for Stage 0 of the training plan (<a class="xref" href="#sec-training">Section 11</a>) takes the conforming basis as its default (15 sines per side and four corner functions) and registers the cosines as comparison C6. The text is corrected in both places, and in the proof of <a class="xref" href="#thm-gram">Theorem 5</a>, which asked that the columns of $Q_i$ be orthonormal and now asks only that they be independent.</p>
+<p style="margin:0 0 0.5rem">The bar of SE3 in <a class="xref" href="#tab-gates">Table 27</a> read "below the network's E1 error", a quantity measured on held-out pieces, in bins. It now names the quantity the gate was registered against: the network term, the second term of the bound of <a class="xref" href="#thm-cea">Theorem 6</a>, on the same benchmark problem.</p>
+<p style="margin:0">Nothing else is changed. The statements of <a class="xref" href="#thm-gram">Theorem 5</a> and <a class="xref" href="#thm-cea">Theorem 6</a> are unchanged, and the Lean statement behind part (i) of Theorem 5 asks only that the port patterns be linearly independent. The probes <code>arch_coupling_cost.py</code> (<a class="xref" href="#tab-wall">Table 24</a> and <a class="xref" href="#tab-truncation">Table 25</a>) and <code>arch_superelement_gram.py</code> (<a class="xref" href="#tab-gram">Table 5</a>) took per-side cosine modes and are reported as measured there.</p>
 </div>
 
 <div class="reading">
@@ -1015,7 +1021,7 @@ K\ \ge\ \max\Bigl(\tan\frac\alpha2,\ \cot\frac\alpha2\Bigr).
 </figure>
 
 <div class="thm" data-kind="Remark" id="rem-corners"><span class="thmnum">Remark 4</span> <em>(Port modes at corners.)</em>
-<p>The cosine modes of two adjacent sides are independent, so the boundary values of one mode jump at a corner. In the continuum such boundary values have infinite energy; on the grid the energy is finite but grows like $\log n$. A conforming alternative, sines that vanish at corners plus four corner functions, is registered as comparison C6. <a class="xref" href="#sec-dual">Section 10</a> gives a second reason to prefer it.</p>
+<p>The cosine modes of two adjacent sides are independent, so the boundary values of one mode jump at a corner. In the continuum such boundary values have infinite energy; on the grid the energy is finite but grows like $\log n$. The default port basis is conforming: on each side the $m-1$ sines $\sin(j\pi s)$, $j=1,\dots,m-1$, which vanish at its corners, together with four corner functions, each equal to one at its corner and falling linearly to zero along the two sides that meet there. A corner shared by any number of pieces is then a single unknown, so the global vector $c$ of <a class="xref" href="#sec-gram">Section 4.6</a> has an entry for each corner as well as a block for each side. The cosines are the alternative, registered as comparison C6. <a class="xref" href="#sec-dual">Section 10</a> gives a second reason to prefer the conforming basis.</p>
 </div>
 
 <p><strong>Symmetry.</strong> The square's eight symmetries (rotations and reflections) act on the inputs and permute the port modes, and the exact solution operator commutes with them. For example, rotating the reference coordinates by $90^\circ$ replaces $\mu$ by $-\mu$. At Stage 0 the symmetry is imposed by training on all eight copies of each example.</p>
@@ -1026,7 +1032,7 @@ K\ \ge\ \max\Bigl(\tan\frac\alpha2,\ \cot\frac\alpha2\Bigr).
 
 <h3 id="sec-core-ports"><span class="secnum">4.5</span>Interface data, conservation and time</h3>
 <ul>
-<li><strong>Interface data.</strong> At the linear tier, pieces exchange port coordinates: 16 cosine coefficients per side. Two charts sharing a side parametrise it differently, so the host transfers coordinates between them by an $L^2$ projection in physical arc length (a <em>mortar</em>). Each network carries about 20 modes per side internally so that the 16 shared modes survive this transfer; the 20 is an estimate to be checked.</li>
+<li><strong>Interface data.</strong> At the linear tier, pieces exchange port coordinates: the amplitudes of 15 sines on each side and the values at the four corners, $4\cdot15+4=4m=64$ numbers per piece (<a class="xref" href="#rem-corners">Remark 4</a>). Two charts sharing a side parametrise it differently, so the host transfers coordinates between them by an $L^2$ projection in physical arc length (a <em>mortar</em>). Each network carries about 20 modes per side internally so that the 16 shared modes survive this transfer; the 20 is an estimate to be checked.</li>
 <li><strong>Conservation.</strong> For conservation laws, a second output format returns fluxes $\hat{\mathbf F}$ on the faces of the reference grid, and the update is their exact discrete divergence,
 <div class="eqwrap">\begin{equation}\label{eq:conservative}
 J\,\frac{\hat u^{\,\text{new}}-\hat u^{\,\text{old}}}{\Delta t}=-\hat\nabla_h\cdot\hat{\mathbf F}+J\hat s,
@@ -1069,7 +1075,7 @@ so the conserved quantity balances exactly in every cell and every side sends it
 <p class="plain">In plain words: no output can make a piece singular, indefinite or softer than it is; the excess stiffness is exactly the energy of the field errors; so a 1% field error gives an error of order $10^{-4}$ in the stiffness. <span class="label proved">machine-checked</span> <code>Atlas.Piece.gram_posSemidef</code>, <code>Atlas.tier0_headline</code></p>
 </div>
 <details class="more"><summary>Show the proof</summary>
-<p>(i) $x^\top\tilde\Lambda_ix=(\tilde V_ix)^\top M_i(\tilde V_ix)\ge0$. If $M_i$ is positive definite, $\tilde V_ix=0$ forces $Q_ix=0$ and so $x=0$, since $Q_i$ has orthonormal columns.</p>
+<p>(i) $x^\top\tilde\Lambda_ix=(\tilde V_ix)^\top M_i(\tilde V_ix)\ge0$. If $M_i$ is positive definite, $\tilde V_ix=0$ forces $Q_ix=0$ and so $x=0$, since the columns of $Q_i$ are linearly independent.</p>
 <p>(ii) Write $\tilde V_i=V_i+\bigl(\begin{smallmatrix}E_i\\ 0\end{smallmatrix}\bigr)$. Expanding $\tilde\Lambda_i=\tilde V_i^\top M_i\tilde V_i$ gives $V_i^\top M_iV_i$, two cross terms, and $\bigl(\begin{smallmatrix}E_i\\0\end{smallmatrix}\bigr)^\top M_i\bigl(\begin{smallmatrix}E_i\\0\end{smallmatrix}\bigr)=E_i^\top A_{I,i}E_i$. The cross terms contain the interior rows of $M_iV_i$, which are $A_{I,i}H_i-B_iQ_i=0$ by the definition of $H_i$: this is the discrete Dirichlet principle, "the exact mode is energy-orthogonal to every interior perturbation". So they vanish.</p>
 <p>(iii) $\tilde{\mathsf S}-\mathsf S=\sum_iR_i^\top(\tilde\Lambda_i-\Lambda_i)R_i$ is a sum of positive semidefinite matrices, and the smallest eigenvalue is monotone in the Loewner order by the Rayleigh quotient. <span class="qed">&#8718;</span></p>
 </details>
@@ -2299,7 +2305,7 @@ Each is a zero-thickness element between the two ports with its own dissipation 
 <tr><td>E6</td><td>rows S1&ndash;S12 of <a class="xref" href="#tab-record">Table 2</a></td><td>each answered or named as not met</td></tr>
 <tr><td>SE1</td><td>$\lambda_{\min}(\tilde{\mathsf S})\ge\lambda_{\min}(\mathsf S)$ and the Gram identity on every case</td><td>to rounding (an implementation test)</td></tr>
 <tr><td>SE2</td><td>network evaluations per piece per linear solve</td><td>one</td></tr>
-<tr><td>SE3</td><td>16-mode truncation error on the benchmarks</td><td>below the network's E1 error</td></tr>
+<tr><td>SE3</td><td>16-mode truncation error on the benchmarks</td><td>below the network term of \eqref{eq:cea-bound}, its second term (the network's own errors, weighted by how much each mode is used), on the same problem</td></tr>
 </tbody></table></div>
 </figure>
 <figure class="tab" id="tab-comparisons">
@@ -2650,7 +2656,7 @@ H_k^{(0)}(\xi,\eta)=\sum_{j\ge1}c_{jk}\,\sin(j\pi\xi)\,\frac{\sinh\bigl(\omega_j
 </dl>
 </section>
 
-<footer>Chart Operators, version 2, 12 October 2026, with an erratum of 18 October 2026. Version 1 (1 October 2026) is <a href="paper-v1.html">archived here</a>. Source: <code>proposal/architecture/index.html</code> in the Atlas repository.</footer>
+<footer>Chart Operators, version 2, 12 October 2026, with errata of 18 October 2026 and 19 October 2026. Version 1 (1 October 2026) is <a href="paper-v1.html">archived here</a>. Source: <code>proposal/architecture/index.html</code> in the Atlas repository.</footer>
 </article>
 </main>
 <script>
