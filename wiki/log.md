@@ -585,3 +585,20 @@ There are 67 tests in `tests/test_chartop_*.py`, the scripts are `scripts/charto
 - §8's guess, that the zero source of the steady problems was the cause, was refuted after the evaluation.
 
 **Changed:** [[chart-operator-stage-0]] (new) · [[chart-operator-training-and-cost]] §5.2 · [[chart-operator-architecture]] (status) · [[outcome-c5-requirements-for-dd-native-experts]] (status) · [[gap-worklist]] Tier 90, W355–W360 · [[index]] · [[index-digest]].
+
+## [2026-10-18] correction | The architecture page's erratum (W359): bilinear elements, not cell-centred finite volumes
+
+**What.** The owner said yes to the erratum drafted for W359. The public architecture page, `proposal/architecture/index.html` and its byte-identical copy `site/architecture/index.html`, described the piece solver as cell-centred finite volumes. Stage 0 built bilinear finite elements on the reference grid's vertices (D7), because a two-point flux drops the off-diagonal entry of a sheared chart's tensor ([[chart-operator-stage-0]] §1).
+
+**Changed on the page.**
+- A dated note under the status line, the version line and the footer.
+- The text in Section 2.1, in Section 4.3 (the unknowns, what the energy is a sum of, the dimension of the mode matrix), in Section 5.2, and in Theorem 6's setting and proof. The theorem's statement and bound are untouched.
+- The last item of Section 10. Its prediction, that the dual bracket's floor vanishes on cell-centred finite volumes, was made for a discretisation that was not built, and was never checked. The page's own Table 21 had already measured the bracket on bilinear elements, where the floor does not vanish, so the item now says that and leaves the finite-volume prediction open.
+
+**Found on the way.** The page never states E4's maximum-error bar (its Table 27 says "registered per family"), so D9 needed no change there. [[chart-operator-stage-0]] §13 and the W359 rows had said it did, and both are corrected. The cell-centred wording was also in Section 4.3, the proof of Theorem 6 and Section 5.2, beyond the three places the row named.
+
+**Left alone.** `paper-v1.html`, the archived first draft, which also says finite volumes. The Lean docstrings, which still gloss the unknowns as "cell values" and "boundary faces" (the statements are abstract). The page's "No network has been trained", true on 12 October and not since Stage 0. No Stage 0 result went onto the website.
+
+**Checked.** Every edit's old text occurs once in each copy, and the copies stay byte-identical. `scripts/arch_paper_build.py` leaves the corrected page unchanged, so its cross-reference labels are the build's own. `tests/test_site_claims.py` passes (8). Rendered in headless Edge, the note shows in both colour schemes and MathJax typesets 945 expressions against 938 before, with no errors. The local link check finds no new broken link. Not pushed when written: the live check follows the push.
+
+**Changed:** [[gap-worklist]] W359 · [[chart-operator-stage-0]] §13.

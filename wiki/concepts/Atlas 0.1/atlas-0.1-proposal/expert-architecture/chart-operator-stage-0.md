@@ -465,7 +465,7 @@ Stage 1 is the next four entries of F1's build order ([[chart-operator-family-ca
 - **One seed per arm**, and every comparison arm at a quarter of B's steps.
 - **One family, in 2-D**: CO-D with `THERM` ports.
 - **The post-hoc numbers** (§9.7, and §9's breakdowns by Fourier number) were computed after the one evaluation, from its own record or with B's weights. None is a gate.
-- **Nothing on the website or in `proposal/`.** The public document still describes cell-centred finite volumes and E4's first bar. The erratum is a worklist row ([[gap-worklist]] W359) for the owner.
+- **No Stage 0 result on the website or in `proposal/`.** The public architecture page (`proposal/architecture/index.html`, copied to `site/architecture/`) carries a dated erratum (2026-10-18, [[gap-worklist]] W359): its piece solver is bilinear finite elements, not cell-centred finite volumes (D7). It never stated E4's maximum-error bar (its Table 27 says "registered per family"), so D9 needed no change there. The page still says "No network has been trained", which was true on 12 October and has not been since this stage.
 - **The weights are not in the repository.** `out/chartop/runs/*/best.pt` are git-ignored; their sha256 are in the evaluation record and on the card.
 - **No cost from the evaluation.** It ran on the laptop on battery, so the `elapsed_s` fields in its record are not costs. E5 (§10) is the cost measurement, made on AC power.
 

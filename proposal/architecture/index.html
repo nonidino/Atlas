@@ -211,8 +211,13 @@ window.MathJax = {
 <h1 class="ltx_title">Chart Operators: Learned Superelements for Coupled Physics on Curved Geometry</h1>
 <p class="subtitle">The general formulation of the Atlas architecture, explained from first principles</p>
 <div class="ltx_authors">Naunidh Singh</div>
-<div class="version">Version 2 &middot; 12 October 2026 &middot; supersedes the draft of 1 October 2026, <a href="paper-v1.html">still available here</a></div>
+<div class="version">Version 2 &middot; 12 October 2026, with an erratum of 18 October 2026 &middot; supersedes the draft of 1 October 2026, <a href="paper-v1.html">still available here</a></div>
 <p class="status">A research proposal. No network has been trained. Every number on this page is either measured by a named script (with classical solvers standing in for networks), derived on the page, cited, or labelled as an estimate or a proposal.</p>
+
+<div class="outline-note">
+<p style="margin:0 0 0.5rem"><b class="sans">Erratum, 18 October 2026.</b> Version 2 said that the pieces are discretised by cell-centred finite volumes. The solver built for Stage 0 of the training plan (<a class="xref" href="#sec-training">Section 11</a>) uses bilinear finite elements on the reference grid's vertices instead: a two-point finite-volume flux drops the off-diagonal entry of the pulled-back conductivity, and the charts of <a class="xref" href="#tab-rule">Table 4</a> shear the cells at convex corners that are not right angles. The text is corrected in <a class="xref" href="#sec-bg-model">Section 2.1</a>, <a class="xref" href="#sec-core-output">Section 4.3</a> and <a class="xref" href="#sec-gen-def">Section 5.2</a>, in the setting and proof of <a class="xref" href="#thm-cea">Theorem 6</a>, and in the last item of <a class="xref" href="#sec-dual">Section 10</a>.</p>
+<p style="margin:0">Nothing else is changed. The proofs of <a class="xref" href="#thm-gram">Theorem 5</a> and <a class="xref" href="#thm-cea">Theorem 6</a> use only that a piece's energy matrix is positive semidefinite with a positive definite interior block and that neighbouring pieces agree on shared sides, and bilinear elements satisfy both; the Lean statements are about such matrices. The probes <code>arch_coupling_cost.py</code> (the rounds, and the costs of <a class="xref" href="#sec-cost">Section 12</a>) and <code>arch_superelement_gram.py</code> (<a class="xref" href="#tab-gram">Table 5</a>) ran on cell-centred finite volumes and are reported as measured there. <code>arch_family_checks.py</code> (<a class="xref" href="#tab-dual">Table 21</a> among others) ran on bilinear elements.</p>
+</div>
 
 <div class="reading">
 <b class="sans">How to read this page.</b> Every section opens with a blue <em>In short</em> box; reading only those boxes gives the whole argument in about ten minutes. Green <em>The picture</em> boxes give the intuition, in plain words, before any formula. Purple <em>Why it matters</em> boxes say what a result buys. Proofs and long derivations are folded away behind <em>Show</em> buttons. Every technical term is defined where it first appears and again in the <a href="#app-glossary">glossary</a>. Labels mark the status of each claim:
@@ -460,7 +465,7 @@ a(v,w)=\int_\Omega\bigl(\kappa\nabla v\cdot\nabla w+\sigma\,v\,w\bigr)\,dx,\qqua
 \end{equation}</div>
 <p>The weak solution satisfies $a(u,w)=\int fw$ for every $w$ that vanishes on the boundary, and among all $v$ with boundary values $g$ it minimises $\tfrac12a(v,v)-\int fv$. In particular, with $f=0$ the solution is the least-energy field with the given boundary values, and it is $a$-orthogonal to every field that vanishes on the boundary. That orthogonality is the key step of every proof in <a class="xref" href="#sec-gram">Section 4.6</a>.</p>
 
-<p><strong>The discrete version.</strong> We discretise by cell-centred finite volumes on a grid of cells: the unknowns are cell values, and the heat flowing between two neighbouring cells is a conductance times the difference of their values. The result is a symmetric positive definite matrix $A$ with $v^\top Av$ the discrete energy. Split the unknowns into interior ones ($I$) and boundary ones ($\Gamma$). The discrete Dirichlet principle is then</p>
+<p><strong>The discrete version.</strong> We discretise by bilinear finite elements on a grid of cells: the unknowns are the values at the cells' corners, the field between them is their bilinear interpolant, and the discrete energy is the energy $a(v,v)$ of that interpolant, computed exactly cell by cell with the conductivity taken constant on each cell. The result is a symmetric positive definite matrix $A$ with $v^\top Av$ the discrete energy. Split the unknowns into interior ones ($I$) and boundary ones ($\Gamma$). The discrete Dirichlet principle is then</p>
 <div class="eqwrap">\begin{equation}\label{eq:schur}
 \min_{v_I}\begin{pmatrix}v_I\\ g\end{pmatrix}^{\!\top}\!\begin{pmatrix}A_{II} &amp; A_{I\Gamma}\\ A_{\Gamma I} &amp; A_{\Gamma\Gamma}\end{pmatrix}\!\begin{pmatrix}v_I\\ g\end{pmatrix}=g^\top Sg,\qquad S=A_{\Gamma\Gamma}-A_{\Gamma I}A_{II}^{-1}A_{I\Gamma},
 \end{equation}</div>
@@ -824,15 +829,15 @@ K\ \ge\ \max\Bigl(\tan\frac\alpha2,\ \cot\frac\alpha2\Bigr).
 <p>Ask every network the same single question: "if the four sides of the square are held at these values, what is the field inside?" Instead of answering for one particular set of side values, the network answers for each of the 64 basic patterns (16 wiggles per side), returning 64 fields. Any boundary condition the host later needs is a combination of those patterns, so the answer for it is the same combination of the 64 fields. Walls, insulated sides, convective cooling and neighbours are all the host's business, expressed as relations among the 64 coordinates. No network can invent its own conventions for boundary conditions.</p>
 </div>
 
-<p><strong>The discrete energy of a piece.</strong> On the reference grid with $n\times n$ cells, a piece's unknowns are the cell values $u\in\R^{n^2}$ and the values $\lambda\in\R^{4n}$ on its boundary faces. Its discrete energy is</p>
+<p><strong>The discrete energy of a piece.</strong> On the reference grid with $n\times n$ cells, a piece's unknowns are the values $u\in\R^{(n-1)^2}$ at its interior grid points and the values $\lambda\in\R^{4n}$ at the $4n$ grid points of its boundary. Its discrete energy is</p>
 <div class="eqwrap">\begin{equation}\label{eq:piece-energy}
 \mathcal E(u,\lambda)=\begin{pmatrix}u\\ \lambda\end{pmatrix}^{\!\top}\!M\begin{pmatrix}u\\ \lambda\end{pmatrix},\qquad M=\begin{pmatrix}A_I &amp; -B\\ -B^\top &amp; D\end{pmatrix},
 \end{equation}</div>
-<p>a sum of squares: interior conductances times squared differences of neighbouring cells, boundary half-cell conductances times squared differences between a cell and its face, and the capacity $J\hat\sigma$ times squared cell values. $M$ is symmetric positive semidefinite, and $A_I$ is positive definite.</p>
+<p>a sum over the cells of two exact integrals: of $\mathsf A\,\hat\nabla\hat u\cdot\hat\nabla\hat u$, with $\mathsf A$ the pulled-back conductivity of \eqref{eq:pullback} taken constant on the cell and $\hat u$ the bilinear interpolant of the grid-point values $(u,\lambda)$, and of the capacity term $J\hat\sigma\,\hat u^{2}$. $M$ is symmetric positive semidefinite, and $A_I$ is positive definite.</p>
 
 <p><strong>Exact constraint modes.</strong> With the port basis $Q\in\R^{4n\times4m}$, the exact constraint modes, particular field and port matrix are</p>
 <div class="eqwrap">\begin{equation}\label{eq:modes}
-\begin{gathered}H=A_I^{-1}BQ\in\R^{n^2\times4m},\qquad u_p=A_I^{-1}f,\qquad V=\begin{pmatrix}H\\ Q\end{pmatrix},\\ \Lambda=V^\top MV=Q^\top\bigl(D-B^\top A_I^{-1}B\bigr)Q.\end{gathered}
+\begin{gathered}H=A_I^{-1}BQ\in\R^{(n-1)^2\times4m},\qquad u_p=A_I^{-1}f,\qquad V=\begin{pmatrix}H\\ Q\end{pmatrix},\\ \Lambda=V^\top MV=Q^\top\bigl(D-B^\top A_I^{-1}B\bigr)Q.\end{gathered}
 \end{equation}</div>
 <p>By the Dirichlet principle, $H_k$ is the least-energy interior field paired with the boundary values $Qe_k$, and $u_p$ is the response to the source with zero boundary values.</p>
 
@@ -1069,11 +1074,11 @@ so the conserved quantity balances exactly in every cell and every side sends it
 <p>(iii) $\tilde{\mathsf S}-\mathsf S=\sum_iR_i^\top(\tilde\Lambda_i-\Lambda_i)R_i$ is a sum of positive semidefinite matrices, and the smallest eigenvalue is monotone in the Loewner order by the Rayleigh quotient. <span class="qed">&#8718;</span></p>
 </details>
 
-<p><strong>The setting for optimality.</strong> Let $U$ be the set of global discrete fields (cell values on every piece and face values on every boundary face) on which neighbouring pieces agree about shared faces and the prescribed boundary values hold. Let $U_0$ be the same with zero prescribed values, and define</p>
+<p><strong>The setting for optimality.</strong> Let $U$ be the set of global discrete fields (values at the grid points of every piece) on which neighbouring pieces agree at the grid points of shared sides and the prescribed boundary values hold. Let $U_0$ be the same with zero prescribed values, and define</p>
 <div class="eqwrap">\begin{equation}\label{eq:global-energy}
 \mathcal E(w)=\sum_{i=1}^P\Bigl(\tfrac12\,w_i^\top M_iw_i-f_i^\top w_{I,i}\Bigr),\qquad \lVert w\rVert_M^2=\sum_{i=1}^Pw_i^\top M_iw_i .
 \end{equation}</div>
-<p>The minimiser $u$ of $\mathcal E$ over $U$ is the ordinary finite-volume solution of the whole problem. Assume that the problem is well posed (so $\lVert\cdot\rVert_M$ is a norm on $U_0$), that shared sides are parametrised identically by both charts, and that the prescribed boundary values lie in the span of the port modes. Then the <em>trial set</em> of everything the network's fields can represent,</p>
+<p>The minimiser $u$ of $\mathcal E$ over $U$ is the ordinary bilinear finite-element solution of the whole problem, on the mesh that the pieces' grids make together. Assume that the problem is well posed (so $\lVert\cdot\rVert_M$ is a norm on $U_0$), that shared sides are parametrised identically by both charts, and that the prescribed boundary values lie in the span of the port modes. Then the <em>trial set</em> of everything the network's fields can represent,</p>
 <div class="eqwrap">\begin{equation}\label{eq:trialset}
 \tilde W=\Bigl\{w\in U:\ w_i=\begin{pmatrix}\hat u_{p,i}\\ 0\end{pmatrix}+\tilde V_iR_ic\ \text{ for some }c\Bigr\},
 \end{equation}</div>
@@ -1091,7 +1096,7 @@ so the conserved quantity balances exactly in every cell and every side sends it
 <p class="plain">In plain words: the coupled answer is the best possible combination of the network's fields, measured in energy (C&eacute;a's lemma <span class="cite" data-keys="cea1964">[<a href="#ref-cea1964">34</a>]</span> with constant one); its error splits into the truncation of the interface to 16 modes plus the network's own errors, weighted by how much each mode is actually used. <span class="label proved">machine-checked</span> <code>Atlas.Superelement.energy_optimal</code>, <code>Atlas.Superelement.hostSystem_existsUnique</code></p>
 </div>
 <details class="more"><summary>Show the proof</summary>
-<p>For $w\in U$, $w-u\in U_0$ and the first variation of $\mathcal E$ at its minimiser vanishes on $U_0$; since $\mathcal E$ is quadratic, $\mathcal E(w)=\mathcal E(u)+\tfrac12\lVert w-u\rVert_M^2$. On $\tilde W$, parametrised by $c$, the gradient of $\mathcal E$ is $\tilde{\mathsf S}c-\tilde\chi$, so \eqref{eq:assembled} says $\tilde u$ minimises $\mathcal E$, hence $\lVert u-\cdot\rVert_M$, over $\tilde W$. For the bound, the element of $\tilde W$ with coordinates $c^\star$ differs from $u_m$ by cell values $e_{p,i}+E_iR_ic^\star$ and zero face values, whose $M_i$-norm is the $A_{I,i}$-norm; use the triangle inequality and \eqref{eq:cea}. <span class="qed">&#8718;</span></p>
+<p>For $w\in U$, $w-u\in U_0$ and the first variation of $\mathcal E$ at its minimiser vanishes on $U_0$; since $\mathcal E$ is quadratic, $\mathcal E(w)=\mathcal E(u)+\tfrac12\lVert w-u\rVert_M^2$. On $\tilde W$, parametrised by $c$, the gradient of $\mathcal E$ is $\tilde{\mathsf S}c-\tilde\chi$, so \eqref{eq:assembled} says $\tilde u$ minimises $\mathcal E$, hence $\lVert u-\cdot\rVert_M$, over $\tilde W$. For the bound, the element of $\tilde W$ with coordinates $c^\star$ differs from $u_m$ by interior values $e_{p,i}+E_iR_ic^\star$ and zero boundary values, whose $M_i$-norm is the $A_{I,i}$-norm; use the triangle inequality and \eqref{eq:cea}. <span class="qed">&#8718;</span></p>
 </details>
 
 <p><strong>On the assumptions.</strong> When the two charts of a shared side parametrise it differently, the mortar makes the two pieces agree only in the projected sense. The method then becomes <em>nonconforming</em>: <a class="xref" href="#thm-gram">Theorem 5</a> still holds piece by piece, but \eqref{eq:cea} acquires a consistency term that has not been analysed <span class="label open">open</span>. Boundary values outside the port span are replaced by their projection, which adds to the truncation error.</p>
@@ -1286,7 +1291,7 @@ d(\tilde a^\star,a^\star)\le\frac{\delta}{1-\rho}.
 <p>Do not ask the network for <em>the</em> answer; ask it for a small set of good <em>directions</em> to look in, each with the right boundary values. The host, which knows the equations exactly, finds the best answer in that set. For a linear problem the set contains the exact answer, and one search suffices. For a nonlinear problem the host searches, moves to the best point found, asks the network for fresh directions there, and searches again, the way Newton's method takes repeated steps.</p>
 </div>
 
-<p>On a piece, the physics is given <em>to the host</em> as a discrete residual on the reference grid, $R(w;z)=0$ with $w=(u,\lambda)$: cell values $u$ of every field of the family, and boundary values $\lambda$ per typed port component (<a class="xref" href="#sec-meet-cross">Section 6.3</a>). The host can evaluate $R$ and its directional derivatives without solving anything. A generalised chart operator is a network</p>
+<p>On a piece, the physics is given <em>to the host</em> as a discrete residual on the reference grid, $R(w;z)=0$ with $w=(u,\lambda)$: interior values $u$ of every field of the family, and boundary values $\lambda$ per typed port component (<a class="xref" href="#sec-meet-cross">Section 6.3</a>). The host can evaluate $R$ and its directional derivatives without solving anything. A generalised chart operator is a network</p>
 <div class="eqwrap">\begin{equation}\label{eq:generator}
 \mathcal N_\theta:\ (z,x)\ \longmapsto\ \bigl(\hat H(x),\ \hat B(x),\ \hat u(x)\bigr),
 \end{equation}</div>
@@ -2017,7 +2022,7 @@ Each is a zero-thickness element between the two ports with its own dissipation 
 <li><strong>A guaranteed error bar for every 2-D diffusion piece</strong>, for one more batched forward pass and a small dense solve.</li>
 <li><strong>It needs continuous dual traces.</strong> A stream function's boundary values are continuous with kinks at the corners, which cosines that jump at corners cannot represent. That is a second reason, after <a class="xref" href="#rem-corners">Remark 4</a>, for the conforming port basis.</li>
 <li><strong>Worst-case boundary data need about twice the primal's port count</strong> on the dual side, but the smooth data an actual solve produces do not.</li>
-<li><strong>On the paper's own finite volumes the bracket's floor should vanish.</strong> Those finite volumes form a planar resistor network, and planar duality should make the discrete bracket exact, so the gap would measure the networks' errors alone <span class="label open">open</span>, unchecked.</li>
+<li><strong>On bilinear elements the bracket's floor does not vanish.</strong> Even with exact experts the two bounds differ (<a class="xref" href="#tab-dual">Table 21</a>) <span class="label measured">measured</span>. This item first predicted that on cell-centred finite volumes, which form a planar resistor network, planar duality would make the discrete bracket exact, so that the gap would measure the networks' errors alone. That was never checked <span class="label open">open</span>, and those finite volumes are not the discretisation used (<a class="xref" href="#sec-bg-model">Section 2.1</a>).</li>
 </ul>
 </div>
 
@@ -2645,7 +2650,7 @@ H_k^{(0)}(\xi,\eta)=\sum_{j\ge1}c_{jk}\,\sin(j\pi\xi)\,\frac{\sinh\bigl(\omega_j
 </dl>
 </section>
 
-<footer>Chart Operators, version 2, 12 October 2026. Version 1 (1 October 2026) is <a href="paper-v1.html">archived here</a>. Source: <code>proposal/architecture/index.html</code> in the Atlas repository.</footer>
+<footer>Chart Operators, version 2, 12 October 2026, with an erratum of 18 October 2026. Version 1 (1 October 2026) is <a href="paper-v1.html">archived here</a>. Source: <code>proposal/architecture/index.html</code> in the Atlas repository.</footer>
 </article>
 </main>
 <script>
