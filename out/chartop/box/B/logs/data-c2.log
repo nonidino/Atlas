@@ -1,0 +1,13 @@
+500/6000 examples, 114 s
+1000/6000 examples, 115 s
+1500/6000 examples, 115 s
+2000/6000 examples, 153 s
+2500/6000 examples, 153 s
+3000/6000 examples, 153 s
+3500/6000 examples, 167 s
+4000/6000 examples, 179 s
+4500/6000 examples, 190 s
+5000/6000 examples, 242 s
+5500/6000 examples, 242 s
+6000/6000 examples, 242 s
+{"split": "train", "count": 6000, "elapsed_s": 249.23427128599724, "per_example_s_mean": 3.3001498197368733, "rejected_charts": 1922}

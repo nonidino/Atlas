@@ -1,0 +1,18 @@
+STAGE 0 EVALUATION 2026-10-18T20:38:33-04:00  (gates sha256 b26cf4e5a771c7fc...)
+
+  E3    met
+  E4    NOT MET
+  SE1   met
+  SE3   met
+  SE2   met
+  KT    NOT MET
+  DUAL  met
+  E1    NOT MET
+
+  C1: {"ratio": 1.0003003337043381, "verdict": "tie", "near_conformal_test_pieces": 215}
+  C2: {"ratio": 0.9996409996298542, "verdict": "tie"}
+  C3: {"ratio": 3.572282790306184, "verdict": "alternative loses"}
+  C4: {"ratio": 1.0014847499274075, "verdict": "tie"}
+  C7: {"ratio": 0.9995856703124641, "verdict": "tie"}
+  C5: {"medians": {"0.3M": 0.3360304563646995, "1M": 0.33568189577789087, "3M": 0.33626281440786826}, "choice": "0.3M"}
+  C6: {"ratio": 4.068984058962564, "verdict": "alternative loses", "e_H_median_C6": 0.33257177822462203, "e_H_median_Bp": 0.33568189577789087}

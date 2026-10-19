@@ -1,0 +1,39 @@
+21:11:49 E1 rows for B: median e_H 0.3355, median e_p 0.07863
+21:11:49 E1 rows for Bp: median e_H 0.3357, median e_p 0.1344
+21:11:49 E1 rows for C1: median e_H 0.3362, median e_p 0.2089
+21:11:49 E1 rows for C2-sup: median e_H 0.3356, median e_p 0.1427
+21:11:49 E1 rows for C2-free: median e_H 0.3358, median e_p 0.1545
+21:11:49 E1 rows for C3: median e_H 1.199, median e_p 0.5553
+21:11:49 E1 rows for C4: median e_H 0.3362, median e_p 0.2145
+21:11:49 E1 rows for C5-0.3M: median e_H 0.336, median e_p 0.2227
+21:11:49 E1 rows for C5-3M: median e_H 0.3363, median e_p 0.4516
+21:11:49 E1 rows for C6: median e_H 0.3326, median e_p 0.1866
+21:11:49 E1 rows for C7: median e_H 0.3355, median e_p 0.2138
+21:11:49 E1 rows for 11 arms in 1995 s
+21:12:07 benchmark bend-3 steady: B energy 0.24447773469489034, truncation 2.31e-12 (18 s)
+21:12:24 benchmark bend-3 step: B energy 0.10355232481124786, truncation 0.000173 (17 s)
+21:12:44 benchmark s-channel steady: B energy 0.4228795706723578, truncation 0.00925 (20 s)
+21:13:03 benchmark s-channel step: B energy 0.0712332449267884, truncation 0.00135 (19 s)
+21:14:21 benchmark insert-round steady: B energy 0.6682109273219526, truncation 0.000313 (78 s)
+21:15:38 benchmark insert-round step: B energy 0.07362583089265333, truncation 6.62e-05 (76 s)
+21:24:07 wrote C:\Users\Nauni\OneDrive\Desktop\Foundation_Model\out\chartop\evaluation-20261018-203833.json
+STAGE 0 EVALUATION 2026-10-18T20:38:33-04:00  (gates sha256 b26cf4e5a771c7fc...)
+
+  E3    met
+  E4    NOT MET
+  SE1   met
+  SE3   met
+  SE2   met
+  KT    NOT MET
+  DUAL  met
+  E1    NOT MET
+
+  C1: {"ratio": 1.0003003337043381, "verdict": "tie", "near_conformal_test_pieces": 215}
+  C2: {"ratio": 0.9996409996298542, "verdict": "tie"}
+  C3: {"ratio": 3.572282790306184, "verdict": "alternative loses"}
+  C4: {"ratio": 1.0014847499274075, "verdict": "tie"}
+  C7: {"ratio": 0.9995856703124641, "verdict": "tie"}
+  C5: {"medians": {"0.3M": 0.3360304563646995, "1M": 0.33568189577789087, "3M": 0.33626281440786826}, "choice": "0.3M"}
+  C6: {"ratio": 4.068984058962564, "verdict": "alternative loses", "e_H_median_C6": 0.33257177822462203, "e_H_median_Bp": 0.33568189577789087}
+exit 0
+21:24:09

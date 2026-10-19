@@ -3,6 +3,7 @@
 **Type:** Outcome page — **claim audit and measured specification** (folder: `Atlas 0.1/atlas-0.1-outcome/`)
 **Status:** compiled 2026-09-26 from existing records; no new measurement.
 **Verdict:** **Not done.** No architecture has been designed, and no learned expert has been created, trained or fine-tuned for non-rectangular geometry or for fast convergence under domain decomposition. **What exists** is the proposal's strongest asset: 88 tiers of measurement that say, as numbers, **why the available frozen expert fails in each slot and what an expert would need in order not to.** This page collects that specification. It proposes no design.
+**Since compiled (2026-10-18):** an architecture was designed ([[chart-operator-architecture]]), and its first expert, CO-D for 2-D diffusion, was built, trained and judged once against gates registered before training ([[chart-operator-stage-0]]). That page's §11 answers S1–S12 for it row by row. This page's verdict and §5 describe the frozen checkpoint as of 2026-09-26 and are left as written.
 **Hub:** [[00-atlas-0.1-outcome]]
 **Sources:** [[poc3-racelab-car-windows]] · [[poc3-racelab-certified-step]] · [[case-study-racelab-switch-atlas-0.1]] · [[defect-correction-learned-operator]] · [[corrupted-checkpoint-and-jacobian-fidelity]] · [[learned-contribution-kill-tests]] · [[epsilon-halo-measurement]] · [[substitution-campaign-checkpoint]] · [[expert-donor-survey]] · [[poc1a-frozen-expert-results]] · [[results-w0-w3-wind-farm]] · [[case-study-neural-interface-atlas-0.1]]
 

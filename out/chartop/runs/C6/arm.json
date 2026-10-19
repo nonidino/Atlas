@@ -1,0 +1,41 @@
+{
+ "arm": {
+  "name": "C6",
+  "backbone": "unet",
+  "size": "1M",
+  "form": "bubble",
+  "kind": "cosine",
+  "objective": "label-free",
+  "data": "train",
+  "limit": null,
+  "steps": 37500,
+  "lr": 0.001,
+  "weight_decay": 1e-05,
+  "batch": {
+   "32": 32,
+   "64": 32,
+   "128": 8
+  },
+  "seed": 0,
+  "augment": true,
+  "val_every": 2500
+ },
+ "config": {
+  "backbone": "unet",
+  "size": "1M",
+  "form": "bubble",
+  "kind": "cosine",
+  "m": 16,
+  "parameters": 1100753
+ },
+ "examples": {
+  "128": 9989,
+  "32": 15110,
+  "64": 24901
+ },
+ "val_examples": {
+  "128": 128,
+  "32": 179,
+  "64": 293
+ }
+}

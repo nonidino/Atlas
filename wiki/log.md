@@ -553,3 +553,35 @@ Today's lint entry says the two sources in `new/` (GLM 5.2, Q-Former) "were inge
 - B5: this entry.
 
 Group C (remote branches, `out/`, the repository's GitHub description) is next.
+
+## [2026-10-18] build | The chart operator's Stage 0: CO-D built, eleven arms trained, judged once
+
+**What.** The owner's Stage 0 brief (W355): build, train and gate the first learned expert, CO-D, for 2-D linear diffusion on curved four-sided pieces, steady and backward Euler, with `THERM` ports and tier-0 energy-Gram coupling. The record is [[chart-operator-stage-0]].
+
+**Built.** `atlas/chartop/` holds:
+- the charts (Coons, Winslow, harmonic with a conformal correspondence, closed form), Proposition 3's certificate and the envelope;
+- bilinear elements on the reference grid (D7), and the corner-hat and side-sine port basis (D3);
+- the plain square's principal part by sine transforms;
+- the host, with the full-domain reference, and the three benchmarks as conforming layouts;
+- the generator, the U-Net and spectral networks with three output forms, the energy objectives and training;
+- the registered gates, the dual bracket, $\kappa(T)$ by frozen coefficients, and the Expert Card.
+
+There are 67 tests in `tests/test_chartop_*.py`, the scripts are `scripts/chartop_*.py`, and the records are in `out/chartop/`.
+
+**Registered before training.** The owner's decisions D1–D9, with the gates and comparison bars in `atlas/chartop/gates.py` and its hash in `out/chartop/registered.txt`. E4's maximum-error bar was re-registered the same day (D9), before any training result had been read: the 16-mode classical superelement itself misses the first bar on the s-channel step.
+
+**Trained.** Two vast.ai boxes trained the eleven registered arms in 8.6 GPU-hours: an RTX 3090 at \$0.195/h and an A100 at \$0.532/h. The whole stage cost \$4.06 of the \$15 ceiling. Both boxes were destroyed after their weights' sha256 had been checked.
+
+**Judged once**, on 2,400 held-out pieces and the three benchmarks, on the laptop's CPU:
+- E3, SE1, SE2, SE3 and DUAL **met**;
+- E1, E4 and KT **not met**;
+- E5: no arm faster at comparable accuracy;
+- E6: S1–S12, seven met and four not (S5, S7, S9, S11);
+- C1, C2, C4 and C7 ties; C3 and C6 lose; C5 chooses 0.3 M.
+
+**The finding.**
+- The modes did not learn in any arm. Validation $e_H$ stayed at the principal part's 0.337, whatever the objective, data, backbone, size or output form; the particular field did learn (test median $e_p$ 0.079).
+- On the benchmarks, the trained correction breaks the exact sum of the corner-hat modes, which reproduces a uniform temperature. $e_H$ weights that sum at a fraction of a per cent, but at 300–400 K it dominates the coupled error. Lowering every temperature by 300 K cuts B's steady errors from 24–67% to 4.5–11% (post hoc).
+- §8's guess, that the zero source of the steady problems was the cause, was refuted after the evaluation.
+
+**Changed:** [[chart-operator-stage-0]] (new) · [[chart-operator-training-and-cost]] §5.2 · [[chart-operator-architecture]] (status) · [[outcome-c5-requirements-for-dd-native-experts]] (status) · [[gap-worklist]] Tier 90, W355–W360 · [[index]] · [[index-digest]].

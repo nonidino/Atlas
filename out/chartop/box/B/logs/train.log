@@ -1,0 +1,16 @@
+C2-sup: training 37500 steps (wall-clock guard 75 min)
+C2-sup: {"arm": "C2-sup", "steps": 37500, "best_val_e_H_median": 0.33664328261486487, "elapsed_s": 3758.585246746021, "examples": 6000}
+C2-free: training 37500 steps (wall-clock guard 75 min)
+C2-free: {"arm": "C2-free", "steps": 37500, "best_val_e_H_median": 0.3367260193366097, "elapsed_s": 1909.8633019779809, "examples": 6000}
+C3: training 37500 steps (wall-clock guard 75 min)
+C3: {"arm": "C3", "steps": 37500, "best_val_e_H_median": 1.2040275096486106, "elapsed_s": 1903.14522119303, "examples": 50000}
+C4: training 37500 steps (wall-clock guard 75 min)
+C4: {"arm": "C4", "steps": 37500, "best_val_e_H_median": 0.33703742985913815, "elapsed_s": 2059.5458293540287, "examples": 50000}
+C5-0.3M: training 37500 steps (wall-clock guard 75 min)
+C5-0.3M: {"arm": "C5-0.3M", "steps": 37500, "best_val_e_H_median": 0.3368007499976807, "elapsed_s": 1874.2727138390183, "examples": 50000}
+C5-3M: training 37500 steps (wall-clock guard 75 min)
+C5-3M: {"arm": "C5-3M", "steps": 37500, "best_val_e_H_median": 0.3371636379464169, "elapsed_s": 2045.5486179189757, "examples": 50000}
+C6: training 37500 steps (wall-clock guard 75 min)
+C6: {"arm": "C6", "steps": 37500, "best_val_e_H_median": 0.33407982166313444, "elapsed_s": 2440.3767765800003, "examples": 50000}
+C7: training 37500 steps (wall-clock guard 75 min)
+C7: {"arm": "C7", "steps": 37500, "best_val_e_H_median": 0.33658801486440726, "elapsed_s": 2334.549880437029, "examples": 50000}

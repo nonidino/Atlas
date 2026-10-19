@@ -1,0 +1,269 @@
+{
+ "expert": "chart-diffusion-2d",
+ "version": "0.1.0 (Stage 0, W355)",
+ "licence": "the owner's to choose; trained from scratch on this repository's own classical data, with no Poseidon (CC-BY-NC) or NeuberNet (unlicensed) weights anywhere in the chain (S12)",
+ "family": "CO-D",
+ "trace_space": "H1",
+ "class": "G0",
+ "label_map": {
+  "u": "temperature",
+  "port": "THERM"
+ },
+ "ports": [
+  "THERM"
+ ],
+ "chart": {
+  "reference": "unit-square",
+  "methods": [
+   "conformal (harmonic with the layout's boundary correspondence, or closed form)",
+   "winslow-arc-length",
+   "transfinite",
+   "affine"
+  ],
+  "certificate": "bilinear-positive-jacobian + simple-boundary (Proposition 3)",
+  "inputs": [
+   "logJ_centred",
+   "re_mu",
+   "im_mu",
+   "log_kappa_hat",
+   "source / rms"
+  ],
+  "envelope": {
+   "sup_abs_mu": 0.65,
+   "logJ_range": 2.0794,
+   "smoothness_grad_logJ_plus_grad_mu": 40.0,
+   "abs_log_kappa_hat": 2.3
+  }
+ },
+ "discretisation": "bilinear finite elements on the reference grid's vertices (decision D7)",
+ "time": {
+  "scheme": "implicit-euler",
+  "fourier_range": [
+   0.01,
+   100.0
+  ],
+  "steady": true
+ },
+ "resolution": {
+  "reference": 64,
+  "trained": [
+   32,
+   64,
+   128
+  ]
+ },
+ "output": {
+  "format": "constraint-modes",
+  "port_basis": "sine-hat",
+  "port_modes_per_side": 16,
+  "internal_modes_per_side": "16 (conforming layouts need no reparametrisation inside the expert; the estimate of 20 was not used)",
+  "principal_part": "plain-square, DST-I, float32 inside the network",
+  "particular_field": true,
+  "form": "bubble"
+ },
+ "tiers": [
+  0,
+  2
+ ],
+ "backbone": {
+  "name": "unet",
+  "size": "1M",
+  "parameters": 1100753
+ },
+ "weights": {
+  "sha256": "56742d74a6b11d715df63b87c710b5a79c6cb1df012acc5188f056aa2b144576",
+  "arm": "B",
+  "steps": 150000,
+  "data": {
+   "train": 50000,
+   "train-conformal": 12000,
+   "train-c2": 6000,
+   "val": 600
+  },
+  "chosen_by": "median e_H on the validation split"
+ },
+ "certificates": {
+  "gram_identity_residual_SE1": {
+   "value": 1.8782740957060965e-15,
+   "method": "max over the benchmark pieces, relative"
+  },
+  "energy_error_by_mu_bin_E1": {
+   "cells": [
+    {
+     "mu_bin": [
+      0.0,
+      0.15
+     ],
+     "freq": "low",
+     "count": 76,
+     "e_H_median": 0.13054522687321526,
+     "e_H_p90": 0.20888173403815757,
+     "e_p_median": 0.06313648556636621,
+     "e_p_p90": 0.11814492703093865,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.0,
+      0.15
+     ],
+     "freq": "mid",
+     "count": 69,
+     "e_H_median": 0.12352210812884595,
+     "e_H_p90": 0.1979624359024864,
+     "e_p_median": 0.06458927258988995,
+     "e_p_p90": 0.12682126640080094,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.0,
+      0.15
+     ],
+     "freq": "high",
+     "count": 70,
+     "e_H_median": 0.14456960944186859,
+     "e_H_p90": 0.20731472155818237,
+     "e_p_median": 0.08191534754051297,
+     "e_p_p90": 0.15464469952508725,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.15,
+      0.3
+     ],
+     "freq": "low",
+     "count": 163,
+     "e_H_median": 0.26287164618590353,
+     "e_H_p90": 0.37193063671039606,
+     "e_p_median": 0.07347453823524767,
+     "e_p_p90": 0.1449960170444197,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.15,
+      0.3
+     ],
+     "freq": "mid",
+     "count": 147,
+     "e_H_median": 0.26655071578112927,
+     "e_H_p90": 0.38131248037873555,
+     "e_p_median": 0.06274957210078047,
+     "e_p_p90": 0.1420203453486217,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.15,
+      0.3
+     ],
+     "freq": "high",
+     "count": 183,
+     "e_H_median": 0.2598645867302721,
+     "e_H_p90": 0.36899345328924255,
+     "e_p_median": 0.0782812209406058,
+     "e_p_p90": 0.15436071641136484,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.3,
+      0.45
+     ],
+     "freq": "low",
+     "count": 274,
+     "e_H_median": 0.32482439509916966,
+     "e_H_p90": 0.4489955871034546,
+     "e_p_median": 0.063054449664452,
+     "e_p_p90": 0.1461430734568173,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.3,
+      0.45
+     ],
+     "freq": "mid",
+     "count": 248,
+     "e_H_median": 0.3260498798657,
+     "e_H_p90": 0.4584958347712704,
+     "e_p_median": 0.07295637367431487,
+     "e_p_p90": 0.14413611929733486,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.3,
+      0.45
+     ],
+     "freq": "high",
+     "count": 281,
+     "e_H_median": 0.3368396721573336,
+     "e_H_p90": 0.4534771387761828,
+     "e_p_median": 0.0913323213936844,
+     "e_p_p90": 0.17433316649749755,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.45,
+      0.65
+     ],
+     "freq": "low",
+     "count": 298,
+     "e_H_median": 0.43699784613830517,
+     "e_H_p90": 0.6232362934034872,
+     "e_p_median": 0.07638895423674717,
+     "e_p_p90": 0.14820401498852492,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.45,
+      0.65
+     ],
+     "freq": "mid",
+     "count": 287,
+     "e_H_median": 0.4421500377471552,
+     "e_H_p90": 0.6566376345832674,
+     "e_p_median": 0.08516124540532519,
+     "e_p_p90": 0.17474240937067057,
+     "verdict": "not met"
+    },
+    {
+     "mu_bin": [
+      0.45,
+      0.65
+     ],
+     "freq": "high",
+     "count": 304,
+     "e_H_median": 0.43884675574683774,
+     "e_H_p90": 0.6190739881164385,
+     "e_p_median": 0.1045733154724442,
+     "e_p_p90": 0.19365866419582783,
+     "verdict": "not met"
+    }
+   ],
+   "met": false
+  },
+  "dual_gap_over_network_error_smooth_data": {
+   "median": 1.002137909945001,
+   "pieces": 63
+  },
+  "contraction_factor_tier2": null,
+  "date": "2026-10-18T20:38:33-04:00"
+ },
+ "precision": {
+  "network": "bfloat16 on a GPU, float32 on a CPU",
+  "host": "float64"
+ },
+ "host_rules": [
+  "a chart outside the envelope, or a Fourier number outside the declared range, is refused, naming the quantity",
+  "tier 0 (G0) is admitted for constraint-mode output on linear symmetric physics with no further certificate",
+  "a tier-2 convergence claim needs a certified contraction factor below one: none is carried",
+  "a missing certificate is reported, never assumed"
+ ],
+ "registered_gates_sha256": "b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099"
+}

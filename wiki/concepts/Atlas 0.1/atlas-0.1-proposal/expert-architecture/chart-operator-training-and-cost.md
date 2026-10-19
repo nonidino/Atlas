@@ -3,6 +3,7 @@
 **Type:** Concept page — **training plan and cost model** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
 **Status:** written 2026-09-30. **No cost on this page is measured.** Each estimate is **[AI Inference]**, shown with the arithmetic and assumptions behind it, so that the first measurement can replace it line by line. The vault's rule is that a number is not reported until it is measured. These are planning figures for deciding what to measure first, and none should reach the website.
 **Updated 2026-10-01 for the confirmed design** ([[chart-operator-architecture]] version 1; decisions 15–18 of [[chart-operator-design-decisions]]): the network now returns constraint modes, so §3's objective is the energy-norm error of the modes, with a label-free objective that has the same gradients; the step-doubling term applies to flow networks only; §5 gains **measured** cost components (classical solves and untrained forward passes); §6's gate is replaced by gates E1–E6, SE1–SE3 and comparisons C1–C6. Estimates stay labelled.
+**Updated 2026-10-18 after Stage 0** ([[chart-operator-stage-0]]): §5.2 sets the stage's measured costs against these estimates, which are left as written.
 **Hub:** [[00-proposal-workstreams]] · **Architecture:** [[chart-operator-architecture]] · **Prior art:** [[dd-neural-prior-art-2026]]
 **Earlier plans this replaces for learned experts:** [[impl-atlas-0.1-phase2-experts]] and [[impl-atlas-0.1-compute-and-training-budget]], written 2026-08-09 for the rocket before any of S1–S12 was measured, and not executed
 
@@ -168,6 +169,23 @@ with $E$ epochs, batch $B$ and $t_{\text{fb}}$ the forward-and-backward time of 
 - Stage 0's registered comparisons C1–C6 multiply the CO-D cost by about 6–10, so Stage 0 is tens of GPU-hours rather than a few.
 
 **The largest uncertainty** is whether $10^5$ samples and 100 epochs reach gate E1 at a useful distortion range. That is unknowable before a run, and ten times more data or epochs scales every figure linearly. **The first step** is one timed training step on the rented GPU before each stage, which replaces these planning numbers with measured ones (F9's discipline).
+
+### 5.2 Measured in Stage 0 (added 2026-10-18)
+
+The records are in [[chart-operator-stage-0]] §6–§7. Here they are set against the planning rows above.
+
+| quantity | planned (§5, §5.1) | measured in Stage 0 |
+|---|---|---|
+| data | $10^5$ pieces, under an hour on the laptop | 50,000 pieces in 1,606 s on the RTX 3090 box's 63 EPYC workers, 31 a second. The 2,400 test pieces, with labels in both port bases, took 212 s on the laptop's 20 workers, on battery. One labelled piece costs 0.027, 0.079 and 0.43 s at $n=32$, 64 and 128 |
+| one training step of the main arm | timed before the stage (F9) | 54.6 ms priced and 56.5 ms in the run, for 20 pieces on average, on the RTX 3090; 46 ms at $n=64$ on the A100 |
+| CO-D's main arm | 2–5 h on one GPU, for 100 passes over $10^5$ pieces | 150,000 steps, 60 passes over 50,000 pieces, in 8,471 s (2.35 h) on the RTX 3090 |
+| Stage 0 with its comparisons | tens of GPU-hours | 11 arms in 8.6 h of training: 3.5 h on the RTX 3090, 5.1 h on the A100. The boxes were rented for 4.8 and 5.9 h, with pricing, data and E5, and the whole stage cost \$4.06 of D6's \$15 |
+
+**What the estimate missed.** A step is dominated by the float64 objective and the principal part's transforms, not by the network: at $n=64$ the 0.28 M and 3.05 M networks cost 59 and 75 ms a step, against 63 ms for 1.1 M. At the measured 354 pieces a second, §5.1's base case of $10^7$ piece-visits would take 7.8 h, not 2–5 h.
+
+**What it got right.** Data is cheap. Each box drew its 50,000 training pieces in 27 minutes, and the label-free arms needed no labels at all.
+
+**What no estimate here could say.** Whether the modes learn. They did not: every arm's validation $e_H$ stayed at the principal part's own level ([[chart-operator-stage-0]] §7–§8).
 
 ---
 

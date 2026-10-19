@@ -1,7 +1,7 @@
 # Chart operator Stage 0 — the first learned expert (CO-D), built, registered and judged
 
 **Type:** Concept page — **build record and pre-registration** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** opened 2026-10-18 (W355). **Build in progress.** The owner chose the gates and comparison bars of §3, and they were registered in code (`atlas/chartop/gates.py`, hash in `out/chartop/registered.txt`) **before any training run**. E4's maximum-error bar was re-registered the same day (D9), before any training result had been read. The results sections are filled after the one evaluation, whatever it says.
+**Status:** opened, built, trained and judged on 2026-10-18 (W355). The owner chose the gates and comparison bars of §3, and they were registered in code (`atlas/chartop/gates.py`, hash in `out/chartop/registered.txt`) **before any training run**. E4's maximum-error bar was re-registered the same day (D9), before any training result had been read. **The one evaluation (§9):** the coupling's guarantees held to rounding (E3, SE1–SE3, DUAL), and the network's accuracy did not (E1, E4 and KT not met). E5 found no arm faster at comparable accuracy (§10). Of S1–S12, seven are met and four are not (§11). The modes did not learn in any of the eleven arms. After the evaluation, the dominant failure on the benchmarks was traced to the hat modes' broken sum (§9.7).
 **Hub:** [[chart-operator-architecture]] · **Plan it executes:** [[chart-operator-training-and-cost]] · **Decisions it extends:** [[chart-operator-design-decisions]] · **Family:** [[chart-operator-family-catalog]] (CO-D) · [[chart-operator-general-form]] (G0, and §2.4's frozen-coefficient route)
 
 ---
@@ -152,10 +152,31 @@ Untrained networks: speed does not depend on the weights. `scripts/chartop_price
 - Coverage of the training set: $n=32$, 64, 128 at 30.2%, 49.8% and 20.0%. The four $\sup\lvert\mu\rvert$ bins of E1 at 8.9%, 20.1%, 33.3% and 37.7%. Spline quadrilaterals 80%, conformal maps 20%. The three frequencies a third each.
 - The other sets: 12,000 near-conformal pieces for C1 (every one in the first $\mu$ bin), 6,000 labelled pieces for C2 (the first of the training seeds, drawn again with labels), and 600 labelled validation pieces.
 
-**The main arm B.** 150,000 steps in 8,471 s on the RTX 3090 (56.5 ms a step, 3.5% over the price), with every validation logged in `out/chartop/runs/B/log.jsonl`.
-- **The particular field learned:** the validation median $e_p$ fell from 1 (a zero field) through 0.375 at step 5,000 to 0.089 at the end.
-- **The modes did not:** the validation median $e_H$ was 0.3372 at step 5,000 and 0.3366 at the best checkpoint (step 140,000). The plain square's principal part alone gives 0.337.
-- The supervised arm C2-sup was just as flat (0.3372 to 0.3366 over its 37,500 steps), so the objective is not the cause.
+**The boxes.** Box A, an RTX 3090 with a 64-core EPYC at \$0.195 an hour, trained B, B′ and C1. Box B, an A100 SXM4 (40 GB) with a quota of 23 CPUs at \$0.532 an hour, trained the other eight arms. Each box armed a self-stop deadline and was destroyed once its weights had been downloaded and their sha256 matched the box's.
+
+**Every arm, as registered.** The records are in `out/chartop/runs/<arm>/` (`arm.json`, `log.jsonl`, `summary.json`); the weights `best.pt` stay local, and their sha256 is in the evaluation record. The checkpoint kept is the one with the lowest validation median $e_H$ (`train.py`). A pass is one visit to every training piece.
+
+| arm | box | network | form | ports | objective | data (pieces) | steps | passes | wall-clock, s | validation median $e_H$: first / kept (step) | validation median $e_p$: kept / last |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| B | A | U-Net 1.10 M | bubble | sine-hat | label-free | train (50,000) | 150,000 | 60 | 8,471 | 0.3372 / 0.33660 (140,000) | 0.094 / 0.089 |
+| B′ | A | U-Net 1.10 M | bubble | sine-hat | label-free | train (50,000) | 37,500 | 15 | 2,122 | 0.3373 / 0.33667 (35,000) | 0.148 / 0.147 |
+| C1 | A | U-Net 1.10 M | bubble | sine-hat | label-free | near-conformal (12,000) | 37,500 | 62 | 2,124 | 0.3373 / 0.33714 (37,500) | 0.212 / 0.212 |
+| C2-sup | B | U-Net 1.10 M | bubble | sine-hat | supervised | labelled (6,000) | 37,500 | 124 | 3,759 | 0.3372 / 0.33664 (27,500) | 0.153 / 0.133 |
+| C2-free | B | U-Net 1.10 M | bubble | sine-hat | label-free | labelled (6,000) | 37,500 | 124 | 1,910 | 0.3373 / 0.33673 (30,000) | 0.168 / 0.153 |
+| C3 | B | U-Net 1.10 M | direct | sine-hat | label-free | train (50,000) | 37,500 | 15 | 1,903 | 1.4083 / 1.20403 (32,500) | 0.560 / 0.570 |
+| C4 | B | spectral 1.06 M | bubble | sine-hat | label-free | train (50,000) | 37,500 | 15 | 2,060 | 0.3370 / 0.33704 (2,500) | 0.232 / 0.179 |
+| C5-0.3M | B | U-Net 0.28 M | bubble | sine-hat | label-free | train (50,000) | 37,500 | 15 | 1,874 | 0.3372 / 0.33680 (22,500) | 0.234 / 0.188 |
+| C5-3M | B | U-Net 3.05 M | bubble | sine-hat | label-free | train (50,000) | 37,500 | 15 | 2,046 | 0.3375 / 0.33716 (7,500) | 0.451 / 0.209 |
+| C6 | B | U-Net 1.10 M | bubble | cosine | label-free | train (50,000) | 37,500 | 15 | 2,440 | 0.3354 / 0.33408 (25,000) | 0.195 / 0.161 |
+| C7 | B | U-Net 1.10 M | fast-solve | sine-hat | label-free | train (50,000) | 37,500 | 15 | 2,335 | 0.3373 / 0.33659 (35,000) | 0.217 / 0.217 |
+
+C6's $e_H$ is measured in its own port space (cosines), so it is not comparable with the others; C6 is judged on the benchmarks instead (§3).
+
+B ran at 56.5 ms a step on the RTX 3090, 3.5% over the price. Every validation is logged in its `log.jsonl`.
+- **The particular field learned.** B's validation median $e_p$ fell from 1 (a zero field) through 0.375 at step 5,000 to 0.089 at the end.
+- **The modes did not, in any arm.** With the principal part and the sine-hat ports, every validation median $e_H$ of every arm lay between 0.3366 and 0.3382, whatever the objective, data, backbone, size or output form. The plain square's principal part alone gives 0.337. Without it (C3), $e_H$ started at 1.41 and reached 1.20.
+- **So noise in $e_H$ chose the kept checkpoint.** C4 kept step 2,500, whose particular field (0.232) is worse than at its last validation (0.179). C5-3M kept step 7,500, at 0.451 against 0.209.
+- The supervised arm C2-sup was as flat as its label-free twin, so the objective is not the cause.
 
 ---
 
@@ -184,7 +205,269 @@ The control with no trained weights, the principal part alone (`scripts/chartop_
 - 0.017%, 5.3% and 5.6% on the steady problems;
 - 60%, 52% and 32% on the steps, where the missing particular field dominates.
 
-So **on the steady problems the trained modes are worse than their own starting point.** Those problems have no source, so the network's fifth input channel is identically zero. The generator always drew a unit-RMS source, so that input never appeared in training, and the network's modes (one forward pass for all 65 fields) depend on it. **[AI Inference]:** the physics says the modes do not depend on the source. The output design lets them, and the generator never tested the case.
+So **on the steady problems the trained modes are worse than their own starting point.** Those problems have no source, so the network's fifth input channel is identically zero. The generator always drew a unit-RMS source, so that input never appeared in training, and the network's modes (one forward pass for all 65 fields) depend on it. **[AI Inference]:** the physics says the modes do not depend on the source. The output design lets them, and the generator never tested the case. *(Tested after the evaluation, §9.7: the modes do depend on the source channel, but the zero source is not why they fail. The temperature level is.)*
+
+---
+
+## 9. The one evaluation
+
+**How it ran.** `scripts/chartop_evaluate.py --runs out/chartop/runs --test-dir ~/.cache/chartop/test` ran once, from 20:38 to 21:24 on 2026-10-18. It used the laptop's CPU, with the networks in float32 on 8 threads (`gates.EVAL_PRECISION`), on battery. Before reading anything it recorded the eleven weights' sha256 in `out/chartop/evaluated.json`. The records are `out/chartop/evaluation-20261018-203833.json` and `.txt`, the per-piece rows in `-test-rows.npz`, and the console log in `-console.log`.
+
+**The test split** was drawn on the laptop from the registered seeds 3,000,000–3,002,399, by the same generator source as every training set (`b31081dc…`). It holds 2,400 pieces (841 charts rejected): 743, 1,211 and 446 at $n=32$, 64 and 128, with exact labels in both port bases. The 6.7 GB are kept outside OneDrive, in `~/.cache/chartop/test`.
+
+### 9.1 The verdicts
+
+| gate | verdict | what decided it |
+|---|---|---|
+| E1 | **not met**, in all 12 cells | arm B's median $e_H$ is 0.12–0.15 at $\sup\lvert\mu\rvert<0.15$ and 0.44 at $[0.45,0.65]$, against 0.01; its median $e_p$ is 0.063–0.105, against 0.02 |
+| E3 | **met** on all six problems | the coupled error never exceeds Theorem 2's bound evaluated with the measured field errors |
+| E4 | **not met** on any problem, by any arm | arm B's energy error is 7.1–67% against 2%; the best arm on any problem reaches 3.9% |
+| E5 | reported in §10 | no arm is faster at comparable accuracy |
+| E6 | §11 | S1–S12 row by row |
+| SE1 | **met** on all six | the Gram identity's residual is at most $1.9\times10^{-15}$, and $\lambda_{\min}(\tilde{\mathsf S})\ge\lambda_{\min}(\mathsf S)$ everywhere |
+| SE2 | **met** | one network call per piece per linear solve |
+| SE3 | **met** on all six | the network term exceeds the 16-mode truncation error by a factor of at least 46 |
+| DUAL | **met** | the chain's worst smallest eigenvalue is $-7.4\times10^{-15}\lvert\Lambda\rvert$, which is rounding, on 63 benchmark pieces and 100 test pieces |
+| KT | **not met** | the frozen-coefficient iteration converges in 5 outer iterations with learned modes, as with classical ones, but misses E4's bars |
+| C1–C7 | §9.6 | ties, except C3 and C6, which lose; C5 chooses 0.3 M |
+
+**In one sentence:** everything the coupling guarantees whatever the network returns held to rounding (E3, SE1, SE2, DUAL), and everything that asks the network to be accurate failed (E1, E4, KT).
+
+### 9.2 The benchmarks, arm B
+
+$n=64$ per piece; energy errors relative to the full-domain solve in the energy norm, maximum errors over the solution's range.
+
+| benchmark | problem | pieces | 16-mode floor: energy / max | arm B: energy / max | E4's max bar | E3: error / bound | $\lambda_{\min}$: learned / exact |
+|---|---|---|---|---|---|---|---|
+| bend-3 | steady | 15 | $2.3\times10^{-12}$ / $9.7\times10^{-13}$ | 24.4% / 2.2% | 1.0% | 125.3 / 125.3 | 8.0527 / 8.0506 |
+| bend-3 | step | 15 | $1.7\times10^{-4}$ / $4.2\times10^{-3}$ | 10.4% / 41.5% | 1.4% | 3,559 / 3,566 | 10.858 / 10.857 |
+| s-channel | steady | 9 | $9.3\times10^{-3}$ / $1.5\times10^{-3}$ | 42.3% / 2.5% | 1.15% | 96.7 / 99.6 | 2.6145 / 2.5982 |
+| s-channel | step | 9 | $1.35\times10^{-3}$ / $2.8\times10^{-2}$ | 7.1% / 27.1% | 3.8% | 1,535 / 1,577 | 9.8937 / 9.8853 |
+| insert-round | steady | 39 | $3.1\times10^{-4}$ / $4.7\times10^{-5}$ | 66.8% / 5.2% | 1.0% | 388.6 / 395.3 | 4.1093 / 4.0571 |
+| insert-round | step | 39 | $6.6\times10^{-5}$ / $4.9\times10^{-4}$ | 7.4% / 14.5% | 1.05% | 1,406 / 1,442 | 11.587 / 10.412 |
+
+E3's errors and bounds are in the energy norm. Each bound is the classical floor plus the network term, and the network term is nearly all of it. No piece was refused: every benchmark piece lies inside the envelope.
+
+**Every arm, E4's energy error in per cent** (C6's comparison reads this table):
+
+| problem | B | B′ | C1 | C2-sup | C2-free | C3 | C4 | C5-0.3M | C5-3M | C6 | C7 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| bend-3, steady | 24 | 36 | 21 | 39 | 133 | 622 | 153 | 144 | 177 | 194 | 200 |
+| bend-3, step | 10 | 11 | 13 | 10 | 13 | 25 | 14 | 11 | 14 | 12 | 3.9 |
+| s-channel, steady | 42 | 60 | 57 | 66 | 241 | 604 | 264 | 247 | 302 | 330 | 356 |
+| s-channel, step | 7.1 | 9.0 | 13 | 7.1 | 9.5 | 26 | 12 | 9.4 | 13 | 10 | 7.1 |
+| insert-round, steady | 67 | 130 | 66 | 124 | 385 | 939 | 409 | 395 | 452 | 483 | 463 |
+| insert-round, step | 7.4 | 8.2 | 8.2 | 7.4 | 7.8 | 51 | 5.8 | 6.2 | 8.1 | 8.6 | 7.5 |
+
+The principal part alone, with no weights, gives 0.017%, 5.3% and 5.6% on the steady problems (§8). On those problems every arm is worse than its own untrained starting point, and seven of the eleven are worse than a zero field (over 100%) on all three. On the steps, which have a source, the arms agree to within a factor of four, C3 aside.
+
+### 9.3 E1, cell by cell (arm B)
+
+| $\sup\lvert\mu\rvert$ | frequency | pieces | $e_H$: median / 90th pct | $e_p$: median / 90th pct |
+|---|---|---|---|---|
+| $[0,0.15)$ | low | 76 | 0.131 / 0.209 | 0.063 / 0.118 |
+| $[0,0.15)$ | mid | 69 | 0.124 / 0.198 | 0.065 / 0.127 |
+| $[0,0.15)$ | high | 70 | 0.145 / 0.207 | 0.082 / 0.155 |
+| $[0.15,0.30)$ | low | 163 | 0.263 / 0.372 | 0.074 / 0.145 |
+| $[0.15,0.30)$ | mid | 147 | 0.267 / 0.381 | 0.063 / 0.142 |
+| $[0.15,0.30)$ | high | 183 | 0.260 / 0.369 | 0.078 / 0.154 |
+| $[0.30,0.45)$ | low | 274 | 0.325 / 0.449 | 0.063 / 0.146 |
+| $[0.30,0.45)$ | mid | 248 | 0.326 / 0.458 | 0.073 / 0.144 |
+| $[0.30,0.45)$ | high | 281 | 0.337 / 0.453 | 0.091 / 0.174 |
+| $[0.45,0.65]$ | low | 298 | 0.437 / 0.623 | 0.076 / 0.148 |
+| $[0.45,0.65]$ | mid | 287 | 0.442 / 0.657 | 0.085 / 0.175 |
+| $[0.45,0.65]$ | high | 304 | 0.439 / 0.619 | 0.105 / 0.194 |
+
+Every cell had at least 30 pieces, so all 12 were judged, and none met the bars (median $e_H\le0.01$, 90th percentile $\le0.03$; median $e_p\le0.02$, 90th percentile $\le0.05$).
+- **$e_H$ grows with the distortion**, from 0.13 to 0.44. The principal part is the plain square's, exact only at $\mu=0$ with uniform material, and the trained correction does not change that: every arm with the principal part and sine-hat ports has a test median within 0.22% of B's (§9.6).
+- **The particular field did learn**, to a median $e_p$ of 0.079 over the whole split, but its median is 3 to 5 times the bar in every cell.
+- **By resolution:** median $e_H$ 0.318, 0.344 and 0.350 at $n=32$, 64 and 128; median $e_p$ 0.070, 0.071 and 0.140.
+- **By Fourier number** (a breakdown of the same rows, made after the evaluation: `scripts/chartop_test_rows.py` → `out/chartop/test-rows-breakdown.json`): median $e_H$ 0.323–0.346 and $e_p$ 0.077–0.078 in every decade from 0.01 to 100, and 0.329 and 0.081 when steady. **The error does not grow as the step shrinks** (S2).
+
+### 9.4 The dual bracket (DUAL)
+
+**Met.** On the 63 steady benchmark pieces, with the coupled solution's traces, and on 100 steady test pieces, with smooth random traces, every difference of the chain $\tilde\Lambda_{\text{low}}\preceq\Lambda_{\text{low}}\preceq\Lambda\preceq\tilde\Lambda$ has smallest eigenvalue at least $-7.4\times10^{-15}\lvert\Lambda\rvert$. Arm B served as both experts, the dual one with $\log\hat\kappa$ negated.
+
+**The gap is a certificate that needs no exact solve.** $c^\top(\tilde\Lambda-\tilde\Lambda_{\text{low}})c$ bounds the network's energy error $c^\top(\tilde\Lambda-\Lambda)c$ from above. Against the true error it was:
+- on the benchmark pieces, a median of 1.002 times the true error and at most 1.61 times;
+- on the test pieces, a median of 2.03 times and at most 7.9 times.
+
+The exact bracket's own width $c^\top(\Lambda-\Lambda_{\text{low}})c$, the floor, is a median of $3.1\times10^{-5}$ of the energy on the benchmark pieces and $1.1\times10^{-3}$ on the test pieces.
+
+### 9.5 Nonlinear conduction, $\kappa(T)$ (KT)
+
+Steel $\beta=-3\times10^{-3}$, copper $-1\times10^{-3}$ per kelvin, frozen coefficients, tolerance $10^{-6}$:
+
+| benchmark | outer iterations: classical / 16-mode / learned | learned against classical: energy / max | E4's max bar | the nonlinearity itself (max) | Kirchhoff against frozen, classical (max) |
+|---|---|---|---|---|---|
+| bend-3 | 5 / 5 / 5 | 22.9% / 2.06% | 1.0% | 4.4% | $1.4\times10^{-8}$ |
+| s-channel | 5 / 5 / 5 | 41.0% / 2.39% | 1.18% | 4.4% | $1.1\times10^{-6}$ |
+| insert-round | 5 / 5 / 5 | 69.1% / 5.36% | 1.0% | 4.7% | (two materials) |
+
+**The route works and the expert fails it.** With learned modes the iteration converges in the same 5 outer iterations as the classical one, at one network call per piece per iteration (75, 45 and 195 calls). On the two single-material benchmarks the classical frozen-coefficient answer matches the Kirchhoff transform to $10^{-6}$ of the range, so the route itself is exact to its tolerance. The answer inherits the learned linear solves' error, which is E4's failure again.
+
+### 9.6 The comparisons
+
+| | question | ratio | verdict |
+|---|---|---|---|
+| C1 | general against near-conformal training, on the 215 test pieces with $\sup\lvert\mu\rvert<0.15$ | 1.0003 | tie: the general class costs nothing measurable there |
+| C2 | supervised against label-free, equal compute | 0.9996 | tie |
+| C3 | direct prediction against the principal part | 3.57 | **direct loses**: the principal part helps |
+| C4 | spectral operator against U-Net | 1.0015 | tie: the U-Net stands |
+| C5 | 0.3, 1 and 3 M: medians 0.3360, 0.3357, 0.3363 | — | **0.3 M**, the smallest within 1.25 of the best |
+| C6 | cosines against sine-hats, mean E4 energy error | 4.07 | **cosines lose** |
+| C7 | fast-solve form against the bubble | 0.9996 | tie |
+
+**Reading them.** Every comparison of $e_H$ but C3 is a tie because no arm with the principal part moved its modes. The ties say that nothing separates these choices at this error level. They do not say the choices are equivalent once the modes learn. C6's loss is carried by the three steady problems, where every arm is worse than untrained. On the three steps alone the ratio is 1.09, a tie (a breakdown of the same record, after the evaluation).
+
+### 9.7 After the evaluation: why the steady problems fail
+
+`scripts/chartop_posthoc_zero_source.py` → `out/chartop/posthoc-zero-source.json`, with arm B's weights, run after the evaluation. None of it is a gate.
+
+**Not the zero source.** §8 guessed that the sourceless problems fail because the network's source channel is identically zero there, a value training never drew. Setting that channel to the constant 1, inside the training distribution, makes B's coupled errors on the three steady problems **worse**: 54%, 100% and 174%, against 24%, 42% and 67%. So the modes do depend on the source channel, which the physics says they should not. But the zero source is not why they fail.
+
+**The temperature level is.** The coupled answer is linear in the boundary data, and a uniform temperature has no energy on a steady piece. Every steady diffusion operator reproduces a uniform temperature exactly as the sum of the four corner-hat modes, and so does the plain square's principal part. B's correction does not.
+- On bend-3's pieces, B's hat modes have a median relative energy error of 0.014, against the principal part's $4.7\times10^{-6}$. Its $e_H$ hardly differs: 0.0195 against 0.0194. The hats carry 0.2% of $e_H^2$, the side sines the rest.
+- The benchmarks run at 300–400 K, and that level multiplies the defect. Lowering every temperature by 300 K changes neither the problem nor its energy norm; the reference energies agree to $10^{-9}$. It cuts B's errors to **4.5%, 9.1% and 10.6%**. The principal part's do not move.
+
+| steady benchmark | B, as registered | B, source channel set to 1 | B, every temperature lowered by 300 K | principal part alone | principal part, lowered by 300 K |
+|---|---|---|---|---|---|
+| bend-3 | 24.4% | 53.5% | 4.5% | 0.017% | 0.0027% |
+| s-channel | 42.3% | 100% | 9.1% | 5.3% | 5.3% |
+| insert-round | 66.8% | 174% | 10.6% | 5.6% | 5.6% |
+
+The principal part's small change on bend-3 is its float32 rounding times the temperature level.
+
+**Piece by piece**, against the exact modes (medians over each problem's pieces):
+
+| problem | pieces | $e_H$: B / principal part | hats' relative error: B / principal part | pieces where B's $e_H$ is the worse |
+|---|---|---|---|---|
+| bend-3, steady | 15 | 0.0195 / 0.0194 | 0.014 / $4.7\times10^{-6}$ | 15 |
+| bend-3, step | 15 | 0.0207 / 0.0203 | 0.050 / 0.047 | 15 |
+| s-channel, steady | 9 | 0.0306 / 0.0305 | 0.013 / $5.8\times10^{-5}$ | 4 |
+| s-channel, step | 9 | 0.0328 / 0.0330 | 0.076 / 0.086 | 3 |
+| insert-round, steady | 39 | 0.267 / 0.267 | 0.016 / 0.032 | 5 |
+| insert-round, step | 39 | 0.267 / 0.267 | 0.034 / 0.036 | 5 |
+
+On every problem B's $e_H$ is within 2% of the untrained principal part's. In the measure it was trained on, the correction is small. For the coupled answer it is in the wrong place. On insert-round the principal part's own hat modes are the worse, but their sum is still exact.
+
+**[AI Inference]:** this is the measure's blind spot as much as the network's. $e_H$, and with it the training objective (T26), weights each mode by its energy, so the hats count for a fraction of a per cent. At a temperature level $T_0$, though, the coupled answer errs by about $T_0$ times the hats' failure to sum to one. An output form that keeps that sum exact whatever the weights, as the bubble keeps the traces exact, would remove the dominant term. On steady pieces that means hat corrections summing to zero. A host that couples temperatures relative to a datum would shrink it. After the shift B's errors still exceed the principal part's, so the correction also damages the other modes, but much less.
+
+### 9.8 The rollout (S11)
+
+The s-channel marched 20 backward-Euler steps from 300 K. The learned superelement kept its modes from the first call and predicted a new particular field each step, one call per piece per step (180 in all).
+
+| step | energy error | max error over range | 16-mode classical floor, max |
+|---|---|---|---|
+| 1 | 7.1% | 27.1% | 2.8% |
+| 5 | 10.3% | 48.9% | 1.2% |
+| 10 | 14.8% | 75.0% | 0.84% |
+| 20 | 25.5% | 132% | 0.61% |
+
+**The error grows at every recorded step**, to 3.6 times its first-step energy error by step 20, while the classical superelement's floor falls. By step 20 the largest pointwise error exceeds the solution's whole range. E4 is not met at any step.
+
+---
+
+## 10. E5: the cost, reported whatever it says
+
+`scripts/chartop_e5.py`, medians of 5. Two runs:
+- the laptop on AC power, network in float32 on 8 threads, with the owner's `phone-remote` `server.py` processes running beside it: `out/chartop/e5-champ-cpu-20261018-173923.json`;
+- the rented box, network in bfloat16 on the RTX 3090 and the host on its EPYC CPU: `out/chartop/e5-54cd5124ef46-cuda-20261018-225222.json`.
+
+On the fixed benchmarks the pieces' matrices are assembled once and shared by all arms. In the design loop every arm pays its own assembly. The learned answers are arm B's.
+
+**The laptop, seconds** (energy error of the learned answer in the last column):
+
+| problem | monolithic, cold / warm | classical superelement, cold / warm | learned superelement, cold / warm (forward alone) | coarse classical ($n=32$), cold | learned, energy error |
+|---|---|---|---|---|---|
+| bend-3, steady | 1.80 / 0.013 | 0.63 / 0.066 | 0.33 / 0.24 (0.23) | 0.33 | 24% |
+| bend-3, step | 1.84 / 0.018 | 0.71 / 0.11 | 0.40 / 0.23 (0.21) | 0.43 | 10% |
+| s-channel, steady | 0.92 / 0.006 | 0.45 / 0.043 | 0.18 / 0.13 (0.13) | 0.24 | 42% |
+| s-channel, step | 0.89 / 0.007 | 0.51 / 0.041 | 0.20 / 0.14 (0.14) | 0.23 | 7.1% |
+| insert-round, steady | 6.68 / 0.054 | 2.37 / 0.19 | 1.45 / 0.68 (0.56) | 1.29 | 67% |
+| insert-round, step | 7.17 / 0.043 | 2.12 / 0.26 | 1.42 / 0.66 (0.48) | 1.45 | 7.4% |
+
+**The monolithic arm by phase** (`scripts/chartop_e5_mono_phases.py` → `out/chartop/e5-mono-phases-champ.json`). The reference code's node merge, a Python loop, is 0.6–2.8 s of the cold time. Without it, assembly, factorisation and one solve cost 0.77, 0.30 and 4.15 s on the three benchmarks (61,567, 37,375 and 159,871 unknowns).
+
+**The design loop:** 8 variants of bend-3 with the inner radius moved from 34 to 48 cells, so no factorisation or mode survives between solves.
+
+| | monolithic | classical superelement | learned superelement | learned, energy error |
+|---|---|---|---|---|
+| laptop, total s | 14.0 | 6.17 | 3.44 | 20–30% |
+| GPU box, total s | 7.58 | 29.8 | 4.56 | 21–32% |
+
+**What E5 says.**
+1. **Geometry fixed, a new load each solve:** a kept monolithic factorisation wins by an order of magnitude (0.006–0.054 s against 0.13–0.68 s for the learned superelement). Stored classical modes also beat the network. This is the record's known result, measured again.
+2. **Geometry new each solve:** the learned superelement is the fastest arm. On the laptop it is 1.5–2.6× faster than recomputing classical modes (1.8× over the design loop) and 4.5–5.4× faster than the cold monolithic solve, merge included; without the merge, 1.7–2.9×. On the GPU box its network takes 0.016–0.079 s for all pieces, and the host's float64 work, on that box's slower CPU, dominates.
+3. **But its answers are 7–67% wrong in energy**, while the classical solve on a grid twice as coarse costs about the same as the learned one (0.23–1.45 s on the laptop) and is off by at most 1.9% of the range. **So nowhere is the learned expert faster at a comparable accuracy. S7 is not met**, and the coarse classical solver is again the competitor the learned arm loses to, as in [[demo-learned-case-plan]] §9.
+
+---
+
+## 11. E6: S1–S12, row by row
+
+The rows of [[outcome-c5-requirements-for-dd-native-experts]] §2, each answered for arm B or named as not met.
+
+| # | property | Stage 0's answer | verdict |
+|---|---|---|---|
+| S1 | accepts the subdomain's geometry | Any certified four-sided piece inside the envelope, through its chart. All 63 pieces of the three benchmarks were accepted. A piece outside the envelope is refused, naming the violated quantity (`tests/test_chartop_eval.py`). Forks, rings and pieces outside the envelope are not accepted | **met**, for four-sided pieces in the envelope |
+| S2 | runs at the coupling's step | The Fourier number is an input over $[10^{-2},10^{2}]$ and steady, and the benchmarks' steps (0.033–41) were accepted. The error does not grow as the step shrinks: median $e_H$ 0.323–0.346 and $e_p$ 0.077–0.078 in every decade, and 0.329 and 0.081 when steady (§9.3) | **met** as the row asks; the error's level is E1's failure |
+| S3 | takes interface data as an input | By construction: one constraint mode per port mode, so the neighbour's trace enters the host's interface coefficients exactly and linearly | **met**, by construction |
+| S4 | a bounded, measurable domain of dependence | By construction: a piece's answer depends only on its own chart, material, source, step and port coefficients, with no halo, and the coupling is one interface solve at one call per piece (SE2) | **met**, by construction |
+| S5 | the right slow-mode response | The modes *are* the response to interface data. On the test split their median $e_H$ is 0.336, no better than the untrained principal part's. On the benchmarks the response to a uniform temperature, the lowest interface mode, is what broke (§9.7) | **not met** |
+| S6 | not closer to singular than the classical map on any mode | SE1: $\lambda_{\min}(\tilde{\mathsf S})\ge\lambda_{\min}(\mathsf S)$ on every benchmark problem, as T25 says it must be for any output | **met**, by theorem and as measured |
+| S7 | cheaper than the cheapest classical alternative in the same slot | E5: the classical solve on a grid twice as coarse costs about the same as the learned one and is within 1.9% of the range, against 7–67% in energy (§10) | **not met** |
+| S8 | a reference of its own class | The classical superelement with the same 16 port modes per side, at any resolution; E3 measures against it and holds | **met** |
+| S9 | accurate enough to be worth the slot | E4: 7.1–67% in energy against 2%, and no arm meets it on any problem (§9.2) | **not met** |
+| S10 | precision the probes can use | Every Gram, Schur complement and loss in float64, and TF32 disabled and asserted. With float32 networks, SE1's identity holds to $1.9\times10^{-15}$ and the dual chain to $7.4\times10^{-15}$ | **met**, for the host's probes |
+| S11 | a stable free rollout | The s-channel's 20-step march: the energy error grows from 7.1% to 25.5%, and by step 20 the largest pointwise error exceeds the solution's range (§9.8) | **not met** |
+| S12 | a licence that allows use | Trained from scratch on this repository's own generator, with no Poseidon or NeuberNet weights anywhere in the chain. The repository has no licence file, so the licence for anyone else is the owner's to choose | **met** as far as third parties go; the owner's licence is open |
+
+S5a and S7a, Tier 89's additions, concern iterated couplings: a stable approach, and the cold march as the bar at a coupled seam. Tier 0 is one direct interface solve, so neither applies here.
+
+**Seven of the twelve are met**, and five of those seven by construction or by theorem. **The four that ask for accuracy, S5, S7, S9 and S11, are not met.** S12 is met only as far as third parties go. The design answered the rows the frozen checkpoint failed for structural reasons (S1, S3, S4, S6, S8, S10). The network has not yet answered the rows that need it to be right.
+
+---
+
+## 12. What Stage 1 needs
+
+Stage 1 is the next four entries of F1's build order ([[chart-operator-family-catalog]]): **CO-E** (plane elasticity), **the thermoelastic bond** on CS-9 ([[case-study-thermal-strain-atlas-0.1]]), **CO-T** (advection–diffusion) and **the one biharmonic network** (CO-P / CO-S). F1's second entry, nonlinear conduction through CO-D's coefficient channel, ran here as KT (§9).
+
+**What Stage 0 measured that Stage 1 must change.** Each item applies to all four families.
+1. **A uniform temperature must cost nothing.** Every steady diffusion operator reproduces a constant exactly as the sum of the corner-hat modes, and the plain square's principal part inherits that. The trained correction broke it. At the benchmarks' 300–400 K, the broken sum dominated the coupled error: on bend-3 it fell from 24% to 4.5% when every temperature was lowered by 300 K (§9.7). $e_H$ weights the hats at a fraction of a per cent, so neither the objective nor E1 could see it. **[AI Inference]:** the output form should reproduce the operator's kernel exactly whatever the weights, as the bubble does for traces, and the registered measure should weight that kernel as the coupled answer does. The kernel is the constant for CO-D and CO-T, the rigid motions for CO-E, and the affine fields for the plate.
+2. **The modes must not see the load.** By T25's structure the exact modes depend on the geometry, the material and the step, never on the source. This network computes them in the same forward pass as the particular field, from all five channels, and they do depend on the source channel: setting it from 0 to 1 more than doubles B's coupled error on the steady problems (§9.7). **[AI Inference]:** a mode network with no load channel, beside a particular-field network that has one, would make that independence hold by construction. Every Stage 1 family has a load: a body force for CO-E, a source for CO-T, a transverse load for the plate.
+3. **The output form must follow the corners.** The quotient the bubble form asks the head for peaks at the node diagonally next to a corner, and the peak grows with the resolution: 16, 50 and 89 at $n=32$, 64 and 128 (§8). **[AI Inference]:** a principal part that already carries the piece's own operator near its corners would leave the network a correction without that growth. Candidates are the frozen-coefficient principal part of [[chart-operator-general-form]], or a few classical smoothing sweeps on the true pulled-back operator. Plane elasticity has corner singularities of its own (Williams, *J. Appl. Mech.* 19, 1952), and so does the plate, so the same growth should be expected there.
+4. **$e_H$ is dominated by local modes.** 68.5% of the principal part's $e_H^2$ sits in the side sines $j=9$–15, which decay within one or two cells of their side (§8). **[AI Inference]:** those modes could be computed classically, by a strip solve along each side at a cost linear in $n$, and only the low modes learned. E1's measure would then weight what the network is for.
+5. **Seeds.** Every arm was trained once. Here no comparison came near a bar (§9.6), but Stage 1's comparisons need repeats per arm before a ratio near 0.8 or 1.25 can be read.
+6. **Operations**, each found in this build:
+   - The generator's worker count must follow the container's CPU quota, not `os.cpu_count()`. The A100 box reported 192 CPUs on a quota of 23 and ran 191 workers, at 4.2 s per example against 2.0 s with the 3090 box's 63.
+   - A cost script must not record a gate's measure. E5's `learned_energy_rel` showed E4's energy errors before the evaluation (§8).
+   - The evaluation records its weights as evaluated before it starts, so an interrupted run could not be resumed without overriding its own refusal. It should resume instead.
+   - The kept checkpoint is the lowest validation $e_H$. When $e_H$ does not move, noise decides it (§7).
+
+**Per family** ([[chart-operator-family-catalog]] §4):
+- **CO-E**: vector $H^1$ with `MECH` ports, twice the outputs, and a Poisson-ratio input. G0 and T24–T26 hold unchanged. The principal part is not diagonalised by a sine transform, so it is precomputed per Poisson ratio.
+- **The thermoelastic bond**: a host object with nothing to train. It carries CO-D's temperature into CO-E's thermal strain, so it inherits CO-D's error, which at Stage 0's accuracy is 7–67% in energy on the benchmarks (§9.2). Thermal strain is driven by the temperature level above a reference, the very quantity item 1 found broken. The bond needs a CO-D that meets E4 first.
+- **CO-T**: guarantee class G0′, Petrov–Galerkin with adjoint modes from the same network by $\hat b\to-\hat b$. T25's positivity does not hold, so SE1's second clause has no analogue and the gate must be rewritten. At Péclet 20 and 200 the exact port matrix's symmetric part is indefinite (measured in the catalog), so the seams cannot exchange value and diffusive flux alone.
+- **The biharmonic network**: value and slope ports, a stiffer operator, and the corner question of item 3 in a stronger form.
+
+**The worklist rows** are [[gap-worklist]] W356 (item 1), W357 (item 2), W358 (items 3 and 4) and W360 (item 6).
+
+**Cost.** Arm B's 150,000 steps took 2.35 h on an RTX 3090: 60 passes over 50,000 pieces, about \$0.46 at \$0.195 an hour (§7). **[AI Inference]:** at that rate one Stage 1 family costs a few GPU-hours per arm. Comparisons with seed repeats multiply that by the number of arms, which still fits a ceiling like D6's.
+
+---
+
+## 13. What this page does not show
+
+- **No accuracy that earns the slot.** S7 and S9 are not met (§10, §11). Nothing here says the learned expert is useful. It records what was built, how it was judged, and why it does not yet work.
+- **One resolution on the benchmarks**: $n=64$ per piece. The test split covers 32, 64 and 128.
+- **Hand-made layouts only.** Every benchmark is a conforming layout of four-sided pieces built by hand (§4.6). The general layout for forks and rings is not built, and no benchmark has a mortar seam.
+- **Tier 0 only.** No scattering (tier-2) coupling ran, so E2 has no row and the card carries no contraction factor.
+- **One seed per arm**, and every comparison arm at a quarter of B's steps.
+- **One family, in 2-D**: CO-D with `THERM` ports.
+- **The post-hoc numbers** (§9.7, and §9's breakdowns by Fourier number) were computed after the one evaluation, from its own record or with B's weights. None is a gate.
+- **Nothing on the website or in `proposal/`.** The public document still describes cell-centred finite volumes and E4's first bar. The erratum is a worklist row ([[gap-worklist]] W359) for the owner.
+- **The weights are not in the repository.** `out/chartop/runs/*/best.pt` are git-ignored; their sha256 are in the evaluation record and on the card.
+- **No cost from the evaluation.** It ran on the laptop on battery, so the `elapsed_s` fields in its record are not costs. E5 (§10) is the cost measurement, made on AC power.
 
 ---
 
@@ -198,4 +481,5 @@ So **on the steady problems the trained modes are worse than their own starting 
 - [[outcome-c5-requirements-for-dd-native-experts]] — S1–S12, gate E6
 - [[coupling-cost-and-complexity]] — the measured coupling costs E5 is read against
 - [[formal-proofs-record]] — T24, T25, T26 in Lean
-- [[gap-worklist]] — W355
+- [[gap-worklist]] — W355, and the rows Stage 1 inherits, W356–W360
+- [[case-study-thermal-strain-atlas-0.1]] — CS-9, where Stage 1's thermoelastic bond is to be tested

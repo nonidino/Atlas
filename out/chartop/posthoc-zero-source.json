@@ -1,0 +1,440 @@
+{
+ "written": "2026-10-18T21:31:39-04:00",
+ "post_hoc": "run after the one evaluation; not a gate",
+ "weights": "out\\chartop\\runs\\B\\best.pt",
+ "coupled": [
+  {
+   "name": "bend-3",
+   "as registered (source channel 0)": {
+    "energy_rel": 0.24447773469489034,
+    "max_over_range": 0.02202544230766705
+   },
+   "unit source channel": {
+    "energy_rel": 0.5352399515081634,
+    "max_over_range": 0.04719067210862932
+   },
+   "principal part alone": {
+    "energy_rel": 0.00016564165715582675,
+    "max_over_range": 2.5977833189472223e-06
+   }
+  },
+  {
+   "name": "s-channel",
+   "as registered (source channel 0)": {
+    "energy_rel": 0.4228795706723578,
+    "max_over_range": 0.02457107210577078
+   },
+   "unit source channel": {
+    "energy_rel": 1.0004909291198403,
+    "max_over_range": 0.04398887303588879
+   },
+   "principal part alone": {
+    "energy_rel": 0.052823950172548,
+    "max_over_range": 0.003986891987008221
+   }
+  },
+  {
+   "name": "insert-round",
+   "as registered (source channel 0)": {
+    "energy_rel": 0.6682109273219526,
+    "max_over_range": 0.05159728337798697
+   },
+   "unit source channel": {
+    "energy_rel": 1.7364601066396457,
+    "max_over_range": 0.20948408556671835
+   },
+   "principal part alone": {
+    "energy_rel": 0.05576948011632603,
+    "max_over_range": 0.009345601792064713
+   }
+  }
+ ],
+ "modes_by_piece": [
+  {
+   "name": "bend-3",
+   "problem": "steady",
+   "pieces": 15,
+   "learned": {
+    "e_H_median": 0.0194805101004736,
+    "e_H_min": 0.019480510100469046,
+    "e_H_max": 0.019480510100476474,
+    "groups": {
+     "hats": {
+      "share_median": 0.0018526205147817191,
+      "relative_median": 0.013954761274804871
+     },
+     "sines 1-3": {
+      "share_median": 0.055558378148276695,
+      "relative_median": 0.020334457861872657
+     },
+     "sines 4-8": {
+      "share_median": 0.2616357996223654,
+      "relative_median": 0.019811748120612295
+     },
+     "sines 9-15": {
+      "share_median": 0.6809532017145744,
+      "relative_median": 0.019318261608195317
+     }
+    }
+   },
+   "principal": {
+    "e_H_median": 0.019408164220624604,
+    "e_H_min": 0.019408164220620045,
+    "e_H_max": 0.019408164220627504,
+    "groups": {
+     "hats": {
+      "share_median": 2.1124044190851118e-10,
+      "relative_median": 4.694635128626059e-06
+     },
+     "sines 1-3": {
+      "share_median": 0.05249356014390844,
+      "relative_median": 0.019692233007637637
+     },
+     "sines 4-8": {
+      "share_median": 0.2622395790297319,
+      "relative_median": 0.01976093396203968
+     },
+     "sines 9-15": {
+      "share_median": 0.6852668606151183,
+      "relative_median": 0.01930738284981394
+     }
+    }
+   },
+   "pieces_where_learned_is_worse": 15
+  },
+  {
+   "name": "bend-3",
+   "problem": "step",
+   "pieces": 15,
+   "learned": {
+    "e_H_median": 0.020746005369884815,
+    "e_H_min": 0.020061292242041742,
+    "e_H_max": 0.022129161619349757,
+    "groups": {
+     "hats": {
+      "share_median": 0.06267061366764475,
+      "relative_median": 0.04980962061424462
+     },
+     "sines 1-3": {
+      "share_median": 0.12988274330481753,
+      "relative_median": 0.03046190053808872
+     },
+     "sines 4-8": {
+      "share_median": 0.22806899654969662,
+      "relative_median": 0.019812394960490663
+     },
+     "sines 9-15": {
+      "share_median": 0.5793776464778412,
+      "relative_median": 0.019192460813559624
+     }
+    }
+   },
+   "principal": {
+    "e_H_median": 0.02030879422742198,
+    "e_H_min": 0.019665043671431116,
+    "e_H_max": 0.02172883931928239,
+    "groups": {
+     "hats": {
+      "share_median": 0.05843826489003642,
+      "relative_median": 0.0470846742141317
+     },
+     "sines 1-3": {
+      "share_median": 0.10508025629058798,
+      "relative_median": 0.026822020138769727
+     },
+     "sines 4-8": {
+      "share_median": 0.23376242050765933,
+      "relative_median": 0.019563399981574837
+     },
+     "sines 9-15": {
+      "share_median": 0.602719058311714,
+      "relative_median": 0.019162709256301133
+     }
+    }
+   },
+   "pieces_where_learned_is_worse": 15
+  },
+  {
+   "name": "s-channel",
+   "problem": "steady",
+   "pieces": 9,
+   "learned": {
+    "e_H_median": 0.030561293248831153,
+    "e_H_min": 0.03050759345491027,
+    "e_H_max": 0.4026385669574524,
+    "groups": {
+     "hats": {
+      "share_median": 0.0006460515955724676,
+      "relative_median": 0.012933991549769597
+     },
+     "sines 1-3": {
+      "share_median": 0.050099005103517565,
+      "relative_median": 0.03065332422932471
+     },
+     "sines 4-8": {
+      "share_median": 0.26271195043827256,
+      "relative_median": 0.03115437812895399
+     },
+     "sines 9-15": {
+      "share_median": 0.6860725469958563,
+      "relative_median": 0.030394614425639333
+     }
+    }
+   },
+   "principal": {
+    "e_H_median": 0.030547925154013722,
+    "e_H_min": 0.030530578145741616,
+    "e_H_max": 0.40289643789038776,
+    "groups": {
+     "hats": {
+      "share_median": 1.3028015640889385e-08,
+      "relative_median": 5.7990384302349504e-05
+     },
+     "sines 1-3": {
+      "share_median": 0.05248205621983011,
+      "relative_median": 0.03099066858943552
+     },
+     "sines 4-8": {
+      "share_median": 0.26222992561424174,
+      "relative_median": 0.03110258733806058
+     },
+     "sines 9-15": {
+      "share_median": 0.6852861023730736,
+      "relative_median": 0.03038989825968661
+     }
+    }
+   },
+   "pieces_where_learned_is_worse": 4
+  },
+  {
+   "name": "s-channel",
+   "problem": "step",
+   "pieces": 9,
+   "learned": {
+    "e_H_median": 0.03278878756403795,
+    "e_H_min": 0.03042202194051235,
+    "e_H_max": 0.3944389214154673,
+    "groups": {
+     "hats": {
+      "share_median": 0.010889017681861872,
+      "relative_median": 0.07619779598984323
+     },
+     "sines 1-3": {
+      "share_median": 0.06497068180945603,
+      "relative_median": 0.04701308274579977
+     },
+     "sines 4-8": {
+      "share_median": 0.25412167469509395,
+      "relative_median": 0.03203335908362044
+     },
+     "sines 9-15": {
+      "share_median": 0.6704666654980735,
+      "relative_median": 0.0305375626769808
+     }
+    }
+   },
+   "principal": {
+    "e_H_median": 0.033024433877784504,
+    "e_H_min": 0.030226678194192426,
+    "e_H_max": 0.39496593898798665,
+    "groups": {
+     "hats": {
+      "share_median": 0.008914709613600155,
+      "relative_median": 0.08551306935453579
+     },
+     "sines 1-3": {
+      "share_median": 0.053179961967688136,
+      "relative_median": 0.04725561282063086
+     },
+     "sines 4-8": {
+      "share_median": 0.25573882793214714,
+      "relative_median": 0.031847892400946015
+     },
+     "sines 9-15": {
+      "share_median": 0.6821664996056053,
+      "relative_median": 0.030438346118711254
+     }
+    }
+   },
+   "pieces_where_learned_is_worse": 3
+  },
+  {
+   "name": "insert-round",
+   "problem": "steady",
+   "pieces": 39,
+   "learned": {
+    "e_H_median": 0.26675801486023315,
+    "e_H_min": 0.002033382260925982,
+    "e_H_max": 0.5214457680468406,
+    "groups": {
+     "hats": {
+      "share_median": 0.0002278820347515808,
+      "relative_median": 0.01588755821376956
+     },
+     "sines 1-3": {
+      "share_median": 0.041344896414183124,
+      "relative_median": 0.22964542529656334
+     },
+     "sines 4-8": {
+      "share_median": 0.2594767776502283,
+      "relative_median": 0.26801129143898955
+     },
+     "sines 9-15": {
+      "share_median": 0.6990892424758929,
+      "relative_median": 0.269538833513141
+     }
+    }
+   },
+   "principal": {
+    "e_H_median": 0.2669628409442941,
+    "e_H_min": 4.836699657056373e-07,
+    "e_H_max": 0.5220947096426196,
+    "groups": {
+     "hats": {
+      "share_median": 0.00048675553627235065,
+      "relative_median": 0.0319360043886688
+     },
+     "sines 1-3": {
+      "share_median": 0.04426044491189484,
+      "relative_median": 0.23198879582066476
+     },
+     "sines 4-8": {
+      "share_median": 0.25888323421118603,
+      "relative_median": 0.26814842261332295
+     },
+     "sines 9-15": {
+      "share_median": 0.6970692479200292,
+      "relative_median": 0.2695391817294321
+     }
+    }
+   },
+   "pieces_where_learned_is_worse": 5
+  },
+  {
+   "name": "insert-round",
+   "problem": "step",
+   "pieces": 39,
+   "learned": {
+    "e_H_median": 0.2665387793414699,
+    "e_H_min": 0.0034666543408178744,
+    "e_H_max": 0.5178019255854502,
+    "groups": {
+     "hats": {
+      "share_median": 0.000257419024895717,
+      "relative_median": 0.034211693925301795
+     },
+     "sines 1-3": {
+      "share_median": 0.040693131038442056,
+      "relative_median": 0.2283747354881854
+     },
+     "sines 4-8": {
+      "share_median": 0.2587274546812914,
+      "relative_median": 0.26770941408880367
+     },
+     "sines 9-15": {
+      "share_median": 0.6998230909612461,
+      "relative_median": 0.26936561536387155
+     }
+    }
+   },
+   "principal": {
+    "e_H_median": 0.2669369703330774,
+    "e_H_min": 4.6434022917607096e-07,
+    "e_H_max": 0.5184677394166746,
+    "groups": {
+     "hats": {
+      "share_median": 0.00047085850903884574,
+      "relative_median": 0.03631315920410115
+     },
+     "sines 1-3": {
+      "share_median": 0.043067334880752976,
+      "relative_median": 0.23180174394111094
+     },
+     "sines 4-8": {
+      "share_median": 0.2582076443148784,
+      "relative_median": 0.26812154465391114
+     },
+     "sines 9-15": {
+      "share_median": 0.6981491206260717,
+      "relative_median": 0.2695324952018802
+     }
+    }
+   },
+   "pieces_where_learned_is_worse": 5
+  }
+ ],
+ "datum_shift": [
+  {
+   "name": "bend-3",
+   "shift_K": -300.0,
+   "as registered, B": {
+    "energy_rel": 0.24447773469489034,
+    "max_over_range": 0.02202544230766705,
+    "reference_energy": 512.3445456169304
+   },
+   "as registered, principal part": {
+    "energy_rel": 0.00016564165715582675,
+    "max_over_range": 2.5977833189472223e-06,
+    "reference_energy": 512.3445456169304
+   },
+   "datum shifted, B": {
+    "energy_rel": 0.04543503035611616,
+    "max_over_range": 0.005548782332130742,
+    "reference_energy": 512.3445456166709
+   },
+   "datum shifted, principal part": {
+    "energy_rel": 2.7241752140029843e-05,
+    "max_over_range": 5.95481477461135e-07,
+    "reference_energy": 512.3445456166709
+   }
+  },
+  {
+   "name": "s-channel",
+   "shift_K": -300.0,
+   "as registered, B": {
+    "energy_rel": 0.4228795706723578,
+    "max_over_range": 0.02457107210577078,
+    "reference_energy": 228.62310443084402
+   },
+   "as registered, principal part": {
+    "energy_rel": 0.052823950172548,
+    "max_over_range": 0.003986891987008221,
+    "reference_energy": 228.62310443084402
+   },
+   "datum shifted, B": {
+    "energy_rel": 0.09064138401038954,
+    "max_over_range": 0.006084999102539968,
+    "reference_energy": 228.6231044329106
+   },
+   "datum shifted, principal part": {
+    "energy_rel": 0.05282397850711111,
+    "max_over_range": 0.003986406386121502,
+    "reference_energy": 228.6231044329106
+   }
+  },
+  {
+   "name": "insert-round",
+   "shift_K": -300.0,
+   "as registered, B": {
+    "energy_rel": 0.6682109273219526,
+    "max_over_range": 0.05159728337798697,
+    "reference_energy": 581.5049217064201
+   },
+   "as registered, principal part": {
+    "energy_rel": 0.05576948011632603,
+    "max_over_range": 0.009345601792064713,
+    "reference_energy": 581.5049217064201
+   },
+   "datum shifted, B": {
+    "energy_rel": 0.10636192865558655,
+    "max_over_range": 0.012793451167406999,
+    "reference_energy": 581.5049216177066
+   },
+   "datum shifted, principal part": {
+    "energy_rel": 0.055766909816015044,
+    "max_over_range": 0.00934549333371038,
+    "reference_energy": 581.5049216177066
+   }
+  }
+ ]
+}

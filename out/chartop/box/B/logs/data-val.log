@@ -1,0 +1,2 @@
+500/600 examples, 21 s
+{"split": "val", "count": 600, "elapsed_s": 38.01350115798414, "per_example_s_mean": 1.714587483764626, "rejected_charts": 232}

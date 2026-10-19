@@ -883,6 +883,12 @@ The owner's request: the PDEs the experts will cover, the interactions a decompo
 
 `proposal/architecture/index.html`, copied to `site/architecture/index.html`: *Chart Operators: Learned Superelements for Coupled Physics on Curved Geometry*. It combines version 1, the general form and the family catalog in one page, written intuition first, with an *In short* box at the head of every section, *The picture* boxes before each formula, proofs folded away, a five-minute tour and a glossary. 16 sections, 4 appendices, 16 numbered statements and 113 references. Version 1 is archived as `paper-v1.html` beside it
 
+### ★★★ **The chart operator, Stage 0** *(built, trained and judged once, 2026-10-18)*
+
+**Page:** [[chart-operator-stage-0]]
+
+The first learned expert, CO-D: 2-D linear diffusion on curved four-sided pieces, steady and backward Euler, `THERM` ports, tier 0. It was built in `atlas/chartop/` with bilinear elements on the reference grid (D7) and 67 tests. The gates and comparison bars were registered in code before any training run; E4's maximum-error bar was re-registered the same day, before any result (D9). Eleven arms trained on two rented GPUs, an RTX 3090 and an A100, in 8.6 GPU-hours for \$4.06 of a \$15 ceiling. **Judged once, on 2,400 held-out pieces and three benchmarks:** E3, SE1–SE3 and the dual bracket held to rounding; E1, E4 and $\kappa(T)$ failed; E5 found no arm faster at comparable accuracy, the coarse classical solve being as cheap and far more accurate. Of S1–S12, seven are met and four are not. **The modes did not learn in any arm**: validation $e_H$ stayed at the plain square's principal part's 0.337, whatever the objective, data, backbone, size or output form. After the evaluation the benchmarks' dominant error was traced to the hat modes' broken sum: lowering every temperature by 300 K cuts B's steady errors from 24–67% to 4.5–11%. Stage 1's needs follow, as W356–W360.
+
 ### Coupling cost and complexity
 
 **Page:** [[coupling-cost-and-complexity]]

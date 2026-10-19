@@ -1,0 +1,7 @@
+{
+ "arm": "C2-free",
+ "steps": 37500,
+ "best_val_e_H_median": 0.3367260193366097,
+ "elapsed_s": 1909.8633019779809,
+ "examples": 6000
+}
