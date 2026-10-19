@@ -1,10 +1,13 @@
-"""The registration after Stage 0 (`atlas.chartop.gates_forms`): the bars and arms stated
-in [[chart-operator-kernel-exact-forms]] section 8, which the owner accepted on
-2026-10-19, agree with the ones in code ("pre-registered criteria drift in code", and
-always in the permissive direction, unless something checks).  Stage 0's own module is
-checked by `test_chartop_gates.py` and is not touched here."""
+"""The registration after Stage 0 (`atlas.chartop.gates_forms`).  The module is the one
+registered: its hash, and that of Stage 0's `gates` whose bars it reads, are those pinned
+in ``out/chartop/registered-forms.txt``.  The bars and arms stated in
+[[chart-operator-kernel-exact-forms]] section 8, which the owner accepted on 2026-10-19,
+agree with the ones in code ("pre-registered criteria drift in code", and always in the
+permissive direction, unless something checks).  Stage 0's own registration is checked by
+`test_chartop_gates.py`."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -19,6 +22,22 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGE = os.path.join(ROOT, "wiki", "concepts", "Atlas 0.1", "atlas-0.1-proposal",
                     "expert-architecture", "chart-operator-kernel-exact-forms.md")
 PLAN = os.path.join(ROOT, "out", "chartop", "plan.json")
+REG = os.path.join(ROOT, "out", "chartop", "registered-forms.txt")
+
+
+def _hash(path):
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def test_the_registered_modules_are_unchanged():
+    assert os.path.exists(REG), "out/chartop/registered-forms.txt is missing: register before training"
+    text = open(REG, encoding="ascii").read()
+    for name in ("gates_forms.py", "gates.py"):
+        m = re.search(r"atlas/chartop/" + re.escape(name) + r"\s+sha256 ([0-9a-f]{64})", text)
+        assert m, f"the registration names no hash for {name}"
+        assert m.group(1) == _hash(os.path.join(ROOT, "atlas", "chartop", name)), name
+    assert F.REGISTERED in text and F.text() in text
 
 
 def _section(number: str) -> str:

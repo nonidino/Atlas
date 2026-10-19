@@ -1,0 +1,51 @@
+THE CHART OPERATOR AFTER STAGE 0 (CO-D, W356-W358): REGISTRATION
+
+written            2026-10-19T15:57:28-04:00
+before             any network in these forms was trained (no training run, no rental; E5 not yet priced)
+repository at      ef9237e7b3a889fa7d1d30bc1c8eb731adcaf685 (the commit adding this file follows it)
+gate module        atlas/chartop/gates_forms.py  sha256 94f29f2738733d36426894a0a5ea7bf2a2d302a482de75a28e4c655dd77a7757
+reads the bars of  atlas/chartop/gates.py  sha256 b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099
+registered as      accepted by the owner on 2026-10-19, in chat, as drafted in chart-operator-kernel-exact-forms section 8 (commit 0f1b4ae), before any network in these forms was trained
+
+SPLITS (example i of a split has seed base + i), as Stage 0
+  train            seed base 1000000
+  val              seed base 2000000
+  test             seed base 3000000
+  train-conformal  seed base 4000000
+  validation       600 examples (picks the weights)
+  test             2400 examples, seeds 3000000..3002399, drawn only at the one evaluation
+  held out         the benchmarks bend-3, s-channel, insert-round, problems steady and step, at n = 64
+
+THE TRAINING ENVELOPE (data.ENVELOPE), as Stage 0
+  sup|mu| <= 0.65, max log J - min log J <= 2.079, |grad log J| + |grad mu| <= 40,
+  |log kappa_hat| <= 2.3, Fo in [0.01, 100] or steady
+
+THE GATES
+  K     the uniform state                                          every held-out test piece and every benchmark piece, steady and step: e_K <= 1e-12 and e_K,inf <= 1e-12
+  D     the datum                                                  every benchmark problem, steady and step, every temperature lowered by 300 K (the data and T_old together): | ||u - u~||_M,lowered / ||u - u~||_M - 1 | <= 1e-08 wherever both errors exceed 1e-09 ||u||_M, and the maximum error over the range within 1e-09 of the range
+  L     the load                                                   both arms: the modes and the level field bit for bit the same with the piece's own source, no source and a unit-RMS random source, on every benchmark piece and the first 100 test pieces
+  E1    accuracy by bin, on the learned columns                    arm S, on the held-out test split, in every (sup|mu|, frequency) bin with >= 30 examples: median e_H,L <= 0.01 and 90th percentile <= 0.03 on the 36 learned columns, against their own energy; median e_p <= 0.02 and 90th percentile <= 0.05; e_H over all 64 columns and e_K reported beside it, not judged
+  E3    Theorem 2 on the benchmarks                                every benchmark problem: ||u - u~||_M <= (||u - u_m||_M + network term) (1 + 1e-09)
+  E4    coupled answer against the full-domain solve, in both frames every benchmark problem, as registered and with every temperature lowered by 300 K: energy error <= 0.02 and max error <= the 16-mode classical superelement's own max error + 0.01 of the range
+  E5    cost                                                       priced on the box before any long run: the forward pass and one training step at n = 32 (batch 32), n = 64 (batch 32), n = 128 (batch 8), the strips and their operator's assembly included; then reported whatever it says, 'faster' only where measured faster
+  SE1   Gram identity and lambda_min                               every benchmark piece and problem: identity residual <= 1e-10; lambda_min(S~) >= lambda_min(S) (1 - 1e-10)
+  SE2   network calls                                              1 per piece per linear solve
+  SE3   port truncation                                            every benchmark problem: the 16-mode truncation error ||u - u_m||_M below the network term
+  DUAL  the 2-D dual bracket                                       steady pieces: L~_low <= L_low <= L <= L~ with every min eigenvalue >= -1e-10 |L|; the gap against the true error reported
+  KT    nonlinear conduction, frozen coefficients                  every steady benchmark with kappa(T): converges within 50 outer iterations, and meets E4's bars against the classical frozen-coefficient solution, the floor being the same iteration with the 16-mode classical superelement
+  S11   the rollout                                                reported: the s-channel marched 20 steps, the modes, the level field and the strip columns formed once, one particular-field call per piece per step
+
+THE COMPARISON (ratio = alternative / default)
+  CW    W358: the corner bubble and the strips                     ratio = mean E4 energy error over the six benchmark problems (the steps lowered by 300 K), W over S'; median e_H over all 64 columns beside it; W wins at <= 0.8 and loses at >= 1.25, otherwise a tie and S' stands; with two seeds, a verdict stands only if both pairings (seed with seed) give it, otherwise unresolved; the ratio at step 0 (zero heads, CW0) reported beside it
+
+THE ARMS (all: form split, backbone unet, size 1M, p_size 1M, kind sine-hat, m 16, objective label-free, data train)
+  S   main: split, corner bubble, strips for j = 9-15; 150,000 steps, training seeds 0
+  Sp  S at the comparison budget (CW's default); 37,500 steps, training seeds 0, 1
+  W   W358's control: split, Stage 0's square bubble, no strips (CW's alternative); 37,500 steps, training seeds 0, 1
+
+COST: at most $10.00 in all, each box at most $0.70 an hour; nothing long runs before E5 is priced
+
+the measures are defined in the module's docstring; the judgements are its functions
+(e_h_learned, judge_*, cw_measure, compare_pairings), applied once at the evaluation.
+The arms' steps and seeds are fixed here; their batches, learning rate and validation
+cadence are Stage 0's plan's, written for these arms after E5's pricing, before training.

@@ -1,7 +1,7 @@
 # Chart operator — the kernel-exact and split output forms (W356, W357), built and checked untrained
 
 **Type:** Concept page — **build record and draft registration** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** built and checked on 2026-10-18, written up on 2026-10-19. **Untrained weights only**: zero heads, or seeded random weights. Nothing was trained, registered or hash-pinned. §8 is the next registration: accepted by the owner on 2026-10-19, its bars in `atlas/chartop/gates_forms.py`, not yet hash-pinned. `atlas/chartop/gates.py`, Stage 0's registration, is unchanged.
+**Status:** built and checked on 2026-10-18, written up on 2026-10-19. **Untrained weights only**: zero heads, or seeded random weights. Nothing was trained. §8 is the next registration: accepted by the owner and hash-pinned on 2026-10-19, its bars in `atlas/chartop/gates_forms.py` and pinned in `out/chartop/registered-forms.txt`. `atlas/chartop/gates.py`, Stage 0's registration, is unchanged.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] §9.7 and §12, items 1–2 · **Worklist:** [[gap-worklist]] W356, W357; W358 in §10 · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -237,14 +237,14 @@ The second part of `scripts/chartop_diagnose.py`, on validation seeds $2{,}000{,
 
 ---
 
-## 8. The next registration: accepted by the owner (2026-10-19), not yet hash-pinned
+## 8. The next registration: accepted by the owner and hash-pinned (2026-10-19)
 
 *This replaces the draft of commit `f848f3d`, which covered W356 and W357 alone (arms S, S′, K′ and B″, comparisons CK1 and CK2).*
 
 **Accepted.** The owner accepted this section as written, in chat on 2026-10-19: "I accept the draft registration in chart-operator-kernel-exact-forms section 8 as written." It was drafted in commit `0f1b4ae`, and its bars and arms have not changed since.
 - `atlas/chartop/gates_forms.py` carries them. Every bar shared with Stage 0 is read from Stage 0's module, which is unchanged ([[chart-operator-stage-0]] §3).
 - `tests/test_chartop_gates_forms.py` checks this section against that module.
-- The module is **not yet hash-pinned**: pinning is the owner's separate decision.
+- **Hash-pinned** on the owner's OK the same day ("Yes, hash-pin gates_forms.py now, the way Stage 0's registration was pinned"). `scripts/chartop_register_forms.py` wrote `out/chartop/registered-forms.txt` with the sha256 of `gates_forms.py` (`94f29f27…`) and of `gates.py`, whose bars it reads (`b26cf4e5…`, Stage 0's pinned hash). The test fails if either file changes.
 - Nothing has been trained or rented.
 
 The owner's choices, quoted:
@@ -348,7 +348,7 @@ No verdict is predicted for E4, E5 or S11.
 3. **Waiting for the owner:** E5 on a rented box.
 4. The runs.
 
-Hash-pinning the module waits for the owner's OK too.
+The module was hash-pinned on the owner's OK, on 2026-10-19, before any network in these forms was trained.
 
 ### 8.6 The untrained re-measurement (after the acceptance)
 

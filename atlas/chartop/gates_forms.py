@@ -1,6 +1,6 @@
 """The registration after Stage 0: the split form with W358's corner bubble and strips
-(arm S), and W358's control (arm W).  ACCEPTED BY THE OWNER BEFORE ANY NETWORK IN THESE
-FORMS WAS TRAINED; NOT YET HASH-PINNED.
+(arm S), and W358's control (arm W).  ACCEPTED BY THE OWNER AND HASH-PINNED BEFORE ANY
+NETWORK IN THESE FORMS WAS TRAINED.
 
 The owner accepted the draft of [[chart-operator-kernel-exact-forms]] section 8 (commit
 0f1b4ae) as written, in chat on 2026-10-19.  Its choices, quoted there: the output form
@@ -8,8 +8,12 @@ The owner accepted the draft of [[chart-operator-kernel-exact-forms]] section 8 
 registration shape "Main + W358 control".  Stage 0's module `gates` is not changed.
 Every bar this registration shares with Stage 0 is read from it, so the two cannot
 drift apart.  ``tests/test_chartop_gates_forms.py`` checks the bars and arms stated in
-section 8 against the ones here.  Pinning this file's hash, as
-`scripts/chartop_register.py` pinned Stage 0's, is the owner's separate decision.
+section 8 against the ones here.
+
+The owner approved the pin the same day.  `scripts/chartop_register_forms.py` writes
+``out/chartop/registered-forms.txt`` with this file's sha256 and that of `gates`, which
+it reads.  The test then fails if either file changes, as Stage 0's test fails for
+`gates`.
 
 **The arms** (`ARMS`).  All three use the split form (`forms.KernelExpert("split")`):
 two U-Nets of 1 M, one for the modes and one for the particular field, sine-hat ports

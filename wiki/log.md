@@ -726,3 +726,9 @@ See [[chart-operator-kernel-exact-forms]] §10: commit 6594c8a builds the side s
 **Next.** E5 on a rented box, and the hash pin, each waiting for the owner's OK.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] §8 (accepted; §8.6 new) · [[gap-worklist]] W358.
+
+## [2026-10-19] note | The chart-operator registration hash-pinned
+
+On the owner's OK ("Yes, hash-pin gates_forms.py now, the way Stage 0's registration was pinned"), `scripts/chartop_register_forms.py` wrote `out/chartop/registered-forms.txt`, as `chartop_register.py` wrote Stage 0's. It holds the sha256 of `atlas/chartop/gates_forms.py` (94f29f27...) and of `gates.py`, whose bars it reads (b26cf4e5..., Stage 0's pinned hash). `tests/test_chartop_gates_forms.py` now fails if either file changes; it failed before the pin was written and passes after. The script refuses to overwrite the file. The module's docstring was updated to say pinned before the hash was taken. Nothing was trained or rented: E5 waits for the owner's separate OK.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] §8 · [[gap-worklist]] W358.
