@@ -618,3 +618,17 @@ There are 67 tests in `tests/test_chartop_*.py`, the scripts are `scripts/charto
 **Left alone.** `atlas/chartop/gates.py`, every record in `out/chartop/`, and [[chart-operator-stage-0]] §12 item 6, which still reads as a to-do. The checkpoint folder is not git-ignored (a few MB for a full evaluation), so it is committed with the record it belongs to.
 
 **Changed:** [[gap-worklist]] W360.
+
+## [2026-10-19] lint | The published site after the W359 push: the erratum is live, and three old dead links found
+
+**What.** The erratum commit `7717d6d` was pushed to `atlas-0.1` on 2026-10-18 at 23:36 (local time), on the owner's yes, and the Website workflow (`.github/workflows/pages.yml`) deployed it. The launch checklist's live checks ([[website-launch-checklist]] §1a, steps 4, 6 and 7) were then run against `nonidino.github.io/Atlas/`.
+
+**Found.**
+- **The deployment is the commit.** All 198 files under `site/` are served with status 200 and the bytes the commit holds (text compared after CRLF to LF).
+- **The architecture page, live.** Rendered in headless Edge, the erratum note shows, MathJax typesets 945 expressions with no error, and the rendered page is identical to the local one. The console of the five pages checked (architecture, home, install, evidence, blueprint) shows no error.
+- **Relative links.** 172 distinct targets on the 71 pages; all resolve but one. `evidence.html` links three times to the directory `proofs/lean/AtlasProofs`, which has no `index.html`, so each answers 404. They come from `scripts/site_claims.py`, whose claims `lean.files`, `lean.theorems` and `lean.lines` give that directory as their public link, and so from `site/data/claims.json`. They predate the erratum. The fix belongs in the generator (a link to `proofs/lean/index.html` would resolve), after which `claims.json` and the page are regenerated. Not done: it is public content, so the owner's call.
+- **External links of the architecture page.** 73 distinct URLs: 56 answer, 13 publisher pages refuse scripted requests (403), and 4 publisher hosts did not answer from this machine. All 17 of those DOIs are registered (doi.org's handle API returns `responseCode` 1 for each), so none is broken.
+
+**Not checked.** The external links of the other pages (among them the checklist's two literature links), and the pages at phone width.
+
+**Changed:** nothing but this entry.
