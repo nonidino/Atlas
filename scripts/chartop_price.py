@@ -32,10 +32,12 @@ import time
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 import numpy as np  # noqa: E402
 import torch  # noqa: E402
 
+import chartop_cpus  # noqa: E402
 from atlas.chartop import data, model as md, ports  # noqa: E402
 from atlas.chartop import train as tr  # noqa: E402
 
@@ -210,7 +212,8 @@ def main() -> int:
            "python": platform.python_version(), "torch": torch.__version__,
            "numpy": np.__version__, "device": str(dev),
            "gpu": torch.cuda.get_device_name(0) if dev.type == "cuda" else None,
-           "cpus": os.cpu_count(), "torch_threads": torch.get_num_threads(),
+           "cpus": os.cpu_count(), "cpu_sources": chartop_cpus.sources(),
+           "torch_threads": torch.get_num_threads(),
            "power": power_state(), "weights": "untrained (random); cost only"}
     if "forward" not in skip:
         rec["forward"] = forward_times(dev, (64,) if args.quick else (32, 64, 128),
@@ -218,7 +221,7 @@ def main() -> int:
     if "step" not in skip:
         rec["step"] = step_times(dev, (32,) if args.quick else (32, 64, 128))
     if "generator" not in skip:
-        rec["generator"] = generator_rate(max(1, (os.cpu_count() or 2) - 1), args.gen_count)
+        rec["generator"] = generator_rate(chartop_cpus.default_workers(1), args.gen_count)
         print("generator", rec["generator"], flush=True)
     os.makedirs(args.out, exist_ok=True)
     name = "price-%s-%s.json" % (socket.gethostname().split(".")[0][:24],

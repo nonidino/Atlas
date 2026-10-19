@@ -29,9 +29,11 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 import numpy as np  # noqa: E402
 
+import chartop_cpus  # noqa: E402
 from atlas.chartop.gates import SEED_BASE as SPLIT_SEED  # noqa: E402  (registered)
 
 
@@ -78,17 +80,23 @@ def _write(out, name, arrays):
     raise OSError("could not write " + final)
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--split", required=True, choices=sorted(SPLIT_SEED))
     ap.add_argument("--count", type=int, required=True)
     ap.add_argument("--start", type=int, default=0)
-    ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 2))
+    ap.add_argument("--workers", type=int, default=chartop_cpus.default_workers(2),
+                    help="pool size; the default is the CPUs this process may use less 2 (the "
+                         "container's CPU quota counts, not os.cpu_count(): `chartop_cpus.py`)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--shard", type=int, default=1000)
     ap.add_argument("--labels", default="", help="comma-separated port bases to label")
     ap.add_argument("--name", default=None, help="the written split's name (default --split)")
-    args = ap.parse_args()
+    return ap
+
+
+def main() -> int:
+    args = build_parser().parse_args()
     os.makedirs(args.out, exist_ok=True)
     kinds = [k for k in args.labels.split(",") if k]
     outname = args.name or args.split
@@ -143,6 +151,7 @@ def main() -> int:
     man = {"split": args.split, "name": outname, "seeds": [seeds[0], seeds[-1]], "count": len(seeds),
            "source_sha256": source_hash(), "labels": kinds,
            "elapsed_s": time.perf_counter() - t0, "workers": args.workers,
+           "cpu_sources": chartop_cpus.sources(),
            "per_example_s_median": float(np.median(times)), "per_example_s_mean": float(np.mean(times)),
            "rejected_charts": rej,
            "coverage": {f"n={k[0]} mu_bin={k[1]} freq={k[2]} family={k[3]}": v

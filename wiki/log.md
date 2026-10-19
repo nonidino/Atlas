@@ -602,3 +602,19 @@ There are 67 tests in `tests/test_chartop_*.py`, the scripts are `scripts/charto
 **Checked.** Every edit's old text occurs once in each copy, and the copies stay byte-identical. `scripts/arch_paper_build.py` leaves the corrected page unchanged, so its cross-reference labels are the build's own. `tests/test_site_claims.py` passes (8). Rendered in headless Edge, the note shows in both colour schemes and MathJax typesets 945 expressions against 938 before, with no errors. The local link check finds no new broken link. Not pushed when written: the live check follows the push.
 
 **Changed:** [[gap-worklist]] W359 · [[chart-operator-stage-0]] §13.
+
+## [2026-10-19] build | Stage 0's three operational defects closed (W360)
+
+**What.** The three defects Stage 0 found in its own tooling ([[chart-operator-stage-0]] §12, item 6), fixed for Stage 1's runs. No gate, no weights and no Stage 0 record was touched; `atlas/chartop/gates.py` is byte-identical.
+
+**The workers.** The generator ran 191 workers on the A100 box, whose quota was 23 CPUs (`cpu.max` `2304000 100000`), at 4.2 s per example against 2.0 s with 63 workers on a 64-core box. `scripts/chartop_cpus.py` (standard library only) now takes the smallest of the cgroup v2 quota, the cgroup v1 quota, the affinity mask and `os.cpu_count()`, rounding a fractional quota down. Windows has no cgroup files and no `sched_getaffinity`, and reads the CPU count alone. The runner's `WORKERS`, `chartop_data.py`, `chartop_price.py` and `chartop_evaluate.py` use it, the box payload ships it, and the data manifests, the price record and the box's `env.log` say which source bound.
+
+**The cost run.** `chartop_e5.py` no longer computes or records the learned answer's energy error, gate E4's measure, unless `--with-gate-measures` is given, and its record says whether it was. The coarse classical solve's error stays: it belongs to the competitor, not to the weights.
+
+**The evaluation.** `chartop_evaluate.py --resume` continues an interrupted evaluation from checkpoints (`scripts/chartop_registry.py`, `evaluation-<time>-checkpoints/`): one per test shard and port basis, benchmark problem with its dual bracket, chunk of dual-bracket test pieces, KT benchmark, and the rollout. It refuses unless the weights, the gates module, `--test-count`, `--dual-test` and the test split (by content hash) are the ones the evaluation began with. A finished evaluation, and weights evaluated before the checkpoints existed (Stage 0's eleven), are still refused with or without `--resume`. A resumed record lists which session made which unit. Resuming also needed three changes: a test split is drawn again unless it holds exactly the registered seeds in both port bases (any one shard used to count as the split), the record is written last and whole, and a second evaluation on the same day no longer overwrites the first one's registry entry.
+
+**Checked.** `tests/test_chartop_ops.py`, 71 tests. Fourteen deliberately re-introduced defects each fail the test written for them. On untrained weights and an 8-example test split drawn by the generator, one evaluation was killed during a benchmark and resumed, and another ran straight through: the two records agree in every number outside the timings and the provenance, and the test-rows arrays are identical. That run checks the machinery and is not a gate.
+
+**Left alone.** `atlas/chartop/gates.py`, every record in `out/chartop/`, and [[chart-operator-stage-0]] §12 item 6, which still reads as a to-do. The checkpoint folder is not git-ignored (a few MB for a full evaluation), so it is committed with the record it belongs to.
+
+**Changed:** [[gap-worklist]] W360.

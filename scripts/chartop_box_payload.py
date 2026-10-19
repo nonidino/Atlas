@@ -4,10 +4,10 @@
         -> out/chartop/box/payload.tar.gz
 
 ``atlas/*.py`` (the composition layer, which ``atlas/__init__`` imports) and
-``atlas/chartop/``; the data, training and pricing scripts; the runner
-``chartop_box_run.sh`` (LF endings and mode 755, so bash reads it); and, when given,
-the run plan.  No data and no weights: the box draws the data from the registered
-seeds.  The sha256 is printed and checked on the box.
+``atlas/chartop/``; the data, training and pricing scripts and the CPU-count helper
+``chartop_cpus.py``; the runner ``chartop_box_run.sh`` (LF endings and mode 755, so bash
+reads it); and, when given, the run plan.  No data and no weights: the box draws the data
+from the registered seeds.  The sha256 is printed and checked on the box.
 """
 from __future__ import annotations
 
@@ -20,6 +20,9 @@ import tarfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "out", "chartop", "box", "payload.tar.gz")
+#: ``chartop_cpus.py`` sizes the worker pools from the container's CPU quota (W360); the
+#: runner calls it before anything else is installed, and the data, price and E5 scripts import it
+SCRIPTS = ("chartop_cpus.py", "chartop_data.py", "chartop_train.py", "chartop_price.py", "chartop_e5.py")
 
 
 def add_text(tar, src, arc, mode=0o644):
@@ -51,7 +54,7 @@ def main() -> int:
             for f in sorted(os.listdir(os.path.join(wb, "families"))):
                 if f.endswith(".py"):
                     add_text(tar, os.path.join(wb, "families", f), "chartop/atlas/workbench/families/" + f)
-        for s in ("chartop_data.py", "chartop_train.py", "chartop_price.py", "chartop_e5.py"):
+        for s in SCRIPTS:
             add_text(tar, os.path.join(ROOT, "scripts", s), "chartop/scripts/" + s)
         add_text(tar, os.path.join(ROOT, "scripts", "chartop_box_run.sh"), "chartop/run.sh", mode=0o755)
         if args.plan:
@@ -60,7 +63,7 @@ def main() -> int:
     names = tarfile.open(OUT).getnames()
     print("%s  %.2f MB  %d files  sha256 %s" % (OUT, os.path.getsize(OUT) / 1e6, len(names), h))
     for must in ("chartop/atlas/__init__.py", "chartop/atlas/chartop/train.py",
-                 "chartop/scripts/chartop_train.py", "chartop/run.sh"):
+                 "chartop/scripts/chartop_train.py", "chartop/scripts/chartop_cpus.py", "chartop/run.sh"):
         if must not in names:
             raise SystemExit("the payload is missing " + must)
     if any(n.endswith((".pt", ".npz", ".npy")) for n in names):

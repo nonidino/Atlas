@@ -17,7 +17,14 @@ STAGES="${STAGES:-price}"
 DATA_SPLITS="${DATA_SPLITS:-val train train-conformal train-c2}"
 ONLY="${ONLY:-}"
 DEADLINE_S="${DEADLINE_S:-3600}"
-WORKERS="${WORKERS:-$(( $(nproc) - 1 ))}"
+# The pool follows the container's CPU quota, not nproc: the A100 box reported 192 CPUs on a
+# quota of 23 and ran 191 workers at 4.2 s per example, against 2.0 s with 63 on a 64-core box.
+# chartop_cpus.py reads the cgroup quota, the affinity mask and the CPU count (W360).
+WORKERS="${WORKERS:-$(python scripts/chartop_cpus.py --reserve 1 2>/dev/null)}"
+if [ -z "$WORKERS" ]; then
+  echo "scripts/chartop_cpus.py failed: WORKERS falls back to nproc - 1, which ignores a CPU quota" >&2
+  WORKERS=$(( $(nproc) - 1 ))
+fi
 
 eval "$(tr '\0' '\n' < /proc/1/environ | grep -E '^CONTAINER_(ID|API_KEY)=' | sed 's/^/export /')"
 (
@@ -37,6 +44,8 @@ print("torch", torch.__version__, "cuda", torch.cuda.is_available(),
       torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)
 print("cpus", os.cpu_count(), "affinity", len(os.sched_getaffinity(0)))
 PY
+python scripts/chartop_cpus.py --reserve 1 --explain >> env.log 2>&1
+echo "WORKERS=$WORKERS" >> env.log
 
 count() { python -c "import json; print(json.load(open('plan.json'))['data']['$1'])"; }
 

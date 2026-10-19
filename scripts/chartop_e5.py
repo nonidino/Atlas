@@ -17,12 +17,20 @@ median of ``gates.E5_REPEATS`` runs:
 - **coarse classical**: the monolithic solve on every piece's grid halved (n = 32);
 - **the design loop**: ``gates.E5_DESIGN_LOOP`` variants of bend-3 with the inner radius
   changed, so no factorisation or mode survives from one solve to the next: monolithic,
-  classical superelement and learned superelement, all cold, with the learned answer's
-  error against the monolithic one beside the times.
+  classical superelement and learned superelement, all cold.
 
 On the fixed benchmarks every piece's energy matrix is assembled once and shared by all
 arms (assembly is the same work for each of them); in the design loop every arm pays
 its own assembly, since the geometry is new each time.
+
+**A cost run records no gate's measure** (W360).  The learned answer's energy error
+against the monolithic one is gate E4's measure, and Stage 0's cost run, which recorded it
+beside the times, showed E4 before the one evaluation had judged the weights.  So the
+record carries times only, and the error is not computed.  ``--with-gate-measures`` adds it
+(``learned_energy_rel``, per benchmark problem and per design-loop variant); it belongs
+after the evaluation, whose own record holds the benchmarks' numbers.  The coarse classical
+solve's error is kept: it is the competitor's, a property of the classical solver and not
+of the weights.
 
 The network runs in float32 on a CPU (decision D4) or in bfloat16 on a GPU, and its
 share of every learned time is reported separately.  Records the power state: on the
@@ -145,9 +153,15 @@ def warm_superelement(L: hs.Layout, cp, cho, fixed, free, ups):
             for i, p in enumerate(L.problems)]
 
 
-def bench_times(name: str, problem: str, ex: LearnedExpert, reps: int) -> dict:
+#: the record keys that are a registered gate's measure of the learned answer (E4's energy
+#: error); a cost run writes them only when asked to (W360)
+GATE_MEASURE_KEYS = ("learned_energy_rel",)
+
+
+def bench_times(name: str, problem: str, ex: LearnedExpert, reps: int,
+                gate_measures: bool = False, n: int = 64) -> dict:
     kw = {"envelope": data.ENVELOPE} if name == "s-channel" else {}
-    b = bm.build(name, 64, problem, **kw)
+    b = bm.build(name, n, problem, **kw)
     L = b.layout("sine-hat", 16)
     for p in L.problems:                      # assembly is shared by every arm: cache it
         p._M = p.matrix()
@@ -182,9 +196,10 @@ def bench_times(name: str, problem: str, ex: LearnedExpert, reps: int) -> dict:
                                  [up for _H, up in fw])
     t, _ = med(warm_learned, reps)
     out["learned_superelement_warm_s"] = t
-    num, den = cpl.energy_error(mono.fields)
-    out["learned_energy_rel"] = num / den
-    bc = bm.build(name, 32, problem, **kw)
+    if gate_measures:
+        num, den = cpl.energy_error(mono.fields)
+        out["learned_energy_rel"] = num / den
+    bc = bm.build(name, n // 2, problem, **kw)
     Lc = bc.layout("sine-hat", 16)
     t, monoc = med(lambda: hs.monolithic(Lc), reps)
     out["coarse_monolithic_cold_s"] = t
@@ -192,18 +207,19 @@ def bench_times(name: str, problem: str, ex: LearnedExpert, reps: int) -> dict:
     err = 0.0
     span = max(float(np.max(u)) for u in mono.fields) - min(float(np.min(u)) for u in mono.fields)
     for uf, uc, pf in zip(mono.fields, monoc.fields, b.problems):
-        n = pf.n
-        Uf = uf.reshape(n + 1, n + 1)[::2, ::2].ravel()
+        m = pf.n
+        Uf = uf.reshape(m + 1, m + 1)[::2, ::2].ravel()
         err = max(err, float(np.max(np.abs(Uf - uc))))
     out["coarse_max_over_range_approx"] = err / span
     return out
 
 
-def design_loop(ex: LearnedExpert, reps: int) -> dict:
+def design_loop(ex: LearnedExpert, reps: int, gate_measures: bool = False, n: int = 64,
+                variants: int = G.E5_DESIGN_LOOP) -> dict:
     """bend-3 with the inner radius changed per variant (cells of 5 mm)."""
     import atlas.chartop.benchmarks as B
     rows = []
-    radii = np.linspace(34.0, 48.0, G.E5_DESIGN_LOOP)
+    radii = np.linspace(34.0, 48.0, variants)
     orig = B.bend3
 
     def variant(r0_cells):
@@ -222,9 +238,9 @@ def design_loop(ex: LearnedExpert, reps: int) -> dict:
                     rr = np.exp(rho0 + (a + xi) * dr)
                     th = (bb + eta) * dth
                     return cx + rr * np.cos(th), cy + rr * np.sin(th)
-                c = B.ch.Chart(B.ch.from_map(F, 64), "conformal-log-polar")
+                c = B.ch.Chart(B.ch.from_map(F, n), "conformal-log-polar")
                 probs.append(B._finish(c, mat, "steady", B.DT["bend-3"], f"bend {a},{bb}"))
-        ref = orig(64, "steady")
+        ref = orig(n, "steady")
         return B.Bench("bend-3-variant", "steady", probs, ref.bc)
     for r0 in radii:
         bv = variant(r0)
@@ -232,23 +248,32 @@ def design_loop(ex: LearnedExpert, reps: int) -> dict:
         t_m, mono = med(lambda: hs.monolithic(L), reps)
         t_c, _ = med(lambda: L.solve(hs.ClassicalExpert()), reps)
         t_l, cpl = med(lambda: L.solve(ex), reps)
-        num, den = cpl.energy_error(mono.fields)
-        rows.append({"inner_radius_cells": float(r0), "monolithic_s": t_m,
-                     "classical_superelement_s": t_c, "learned_superelement_s": t_l,
-                     "learned_energy_rel": num / den})
+        row = {"inner_radius_cells": float(r0), "monolithic_s": t_m,
+               "classical_superelement_s": t_c, "learned_superelement_s": t_l}
+        if gate_measures:
+            num, den = cpl.energy_error(mono.fields)
+            row["learned_energy_rel"] = num / den
+        rows.append(row)
     tot = {k: sum(r[k] for r in rows) for k in ("monolithic_s", "classical_superelement_s",
                                                   "learned_superelement_s")}
     return {"variants": rows, "totals_s": tot}
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--weights", default=os.path.join(ROOT, "out", "chartop", "runs", "B", "best.pt"))
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--threads", type=int, default=8)
     ap.add_argument("--out", default=os.path.join(ROOT, "out", "chartop"))
     ap.add_argument("--reps", type=int, default=G.E5_REPEATS)
-    args = ap.parse_args()
+    ap.add_argument("--with-gate-measures", action="store_true",
+                    help="also record the learned answer's energy error (gate E4's measure): "
+                         "only after the one evaluation has judged these weights")
+    return ap
+
+
+def main() -> int:
+    args = build_parser().parse_args()
     torch.set_num_threads(args.threads)
     net = load_expert(args.weights, args.device)
     ex = LearnedExpert(net, envelope=data.ENVELOPE, device=args.device)
@@ -256,14 +281,14 @@ def main() -> int:
            "host": socket.gethostname(), "platform": platform.platform(), "device": args.device,
            "gpu": torch.cuda.get_device_name(0) if args.device == "cuda" else None,
            "torch_threads": args.threads, "power_before": power_state(), "reps": args.reps,
-           "weights": args.weights}
+           "weights": args.weights, "gate_measures": args.with_gate_measures}
     rec["benchmarks"] = []
     for name in G.HELD_OUT_BENCHMARKS:
         for problem in G.BENCHMARK_PROBLEMS:
-            r = bench_times(name, problem, ex, args.reps)
+            r = bench_times(name, problem, ex, args.reps, gate_measures=args.with_gate_measures)
             print(json.dumps(r), flush=True)
             rec["benchmarks"].append(r)
-    rec["design_loop"] = design_loop(ex, args.reps)
+    rec["design_loop"] = design_loop(ex, args.reps, gate_measures=args.with_gate_measures)
     print(json.dumps(rec["design_loop"]["totals_s"]), flush=True)
     rec["power_after"] = power_state()
     os.makedirs(args.out, exist_ok=True)
