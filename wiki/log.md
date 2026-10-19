@@ -704,3 +704,9 @@ Four candidate fixes for the bubble form's corner growth, compared on diagnose's
 ## [2026-10-19] note | W358: the strips built into the expert, untrained
 
 See [[chart-operator-kernel-exact-forms]] §10: commit 6594c8a builds the side sines $j=9$–15 as strip solves inside the expert, with the owner's two choices quoted; no registration chosen.
+
+## [2026-10-19] note | The next chart-operator registration drafted for the owner (not registered)
+
+[[chart-operator-kernel-exact-forms]] §8 is rewritten as a draft, replacing the W356/W357 draft of `f848f3d`. It quotes the owner's three choices: "Bubble + strips", "1 M (as drafted)" and "Main + W358 control". The arms are S (split form, corner bubble and strips, two 1 M U-Nets, 150,000 steps, 1 seed) and W358's control W (square bubble, no strips, 37,500 steps, 2 seeds), paired with S′ (as S, 37,500 steps, 2 seeds). The gates are K, D and L as before, E1 on the 36 learned columns against their own energy, E3, SE1-SE3, DUAL and KT unchanged, E4 in both frames, E5 priced on the box first, and S11. There is one comparison, CW: W over S′ on the mean lowered E4 energy error, with Stage 0's 0.8/1.25 bars and both pairings required. The predictions: K, D and L hold, E1 is probably not met, and CW is at least 1. The ceiling is \$10, each box at most \$0.70 an hour; extrapolated, the cost is \$3.2-9.0 on an RTX 3090-class box and \$8.7-25 on an A100. The strips run serially on the CPU at every training step and are expected to set the cost. Nothing was trained, rented or hash-pinned, and `gates.py` is unchanged.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] §8 · [[gap-worklist]] W358.

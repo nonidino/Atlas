@@ -237,60 +237,112 @@ The second part of `scripts/chartop_diagnose.py`, on validation seeds $2{,}000{,
 
 ---
 
-## 8. A draft of the next registration (for the owner; not registered)
+## 8. The next registration: a draft for the owner (not registered)
 
-Nothing in this section is registered, hash-pinned or acted on. The owner may accept it, change it or refuse it in chat. It extends Stage 0's registration ([[chart-operator-stage-0]] §3) and leaves `gates.py` as it is. A new module would carry the new bars.
+*This replaces the draft of commit `f848f3d`, which covered W356 and W357 alone (arms S, S′, K′ and B″, comparisons CK1 and CK2).*
+
+Nothing in this section is registered, hash-pinned or acted on, and nothing has been trained or rented. The owner may accept it, change it or refuse it in chat. It extends Stage 0's registration ([[chart-operator-stage-0]] §3) and leaves `gates.py` as it is. A new module would carry the new bars, and only after the owner's yes. The owner's choices so far, quoted:
+- output form for the side modes: "Bubble + strips". This is W358 as in §10: `forms.corner_bubble`, with strip solves for the sines $j=9$–15 (commits `9ed90e0` and `6594c8a`).
+- particular-field network: "1 M (as drafted)";
+- registration shape: "Main + W358 control", that is, one main arm and one comparison that isolates W358.
 
 ### 8.1 What would be judged
 
-Family CO-D again, with Stage 0's generator, seeds, splits, benchmarks and envelope, the label-free objective and D4 augmentation.
+Family CO-D. Everything else is as Stage 0:
+- the generator, the data seeds and the splits;
+- the three held-out benchmarks at $n=64$, and the envelope;
+- the label-free objective, with D4 augmentation;
+- sine-hat ports, 16 modes per side;
+- the checkpoint kept by validation median $e_H$ (`train.py`);
+- E1 judged in float32 on the laptop's CPU (D4).
 
-| arm | network | form | budget | seeds |
+| arm | networks | form | budget | training seeds |
 |---|---|---|---|---|
-| **S** (main) | two U-Nets: modes 1 M, particular 1 M (2.20 M) | split | Stage 0's main, 150,000 steps | 1 |
-| S′ | as S | split | comparison, 37,500 steps | 2 |
-| K′ | one U-Net, 1 M | kernel | 37,500 steps | 2 |
-| B″ | one U-Net, 1 M | Stage 0's bubble, retrained on this code | 37,500 steps | 2 |
+| **S** (main) | two U-Nets: modes 1 M, particular 1 M (2,198,990 parameters) | split, corner bubble, strips for $j=9$–15 | Stage 0's main, 150,000 steps | 1 |
+| S′ | as S | as S | 37,500 steps | 2 |
+| **W** (W358's control) | two U-Nets: modes 1 M, particular 1 M (2,199,690 parameters) | split, Stage 0's square bubble, no strips | 37,500 steps | 2 |
 
-The particular network's size is the owner's choice: 1 M as drafted, or 0.3 M (1.38 M in all). Stage 0's C5 chose 0.3 M at an error level where nothing had learned, which settles little.
+- **A training seed** is `train.Arm.seed`: the weights' initialisation and the batch order. S uses seed 0; S′ and W use 0 and 1. Every arm uses the data of the registered seeds.
+- **W differs from S′ in W358 alone**, the bubble and the strips together. The registration shape asks for one comparison, so the two are not separated.
+- **Both arms start from zero heads** (`model.py`), where the bubble does not enter. At step 0 they differ only in the 28 strip columns, and W's step 0 is exactly §7's "new forms, as initialised".
+- **W358's own pass condition was met by no candidate** (§10): a peak that stops growing over $n=32$–128. The corner bubble with strips levels off only from 128 to 256. This draft trains the owner's choice, and it would not close W358.
 
 ### 8.2 The gates
 
-| gate | drafted bar | measured untrained |
+| gate | drafted bar | untrained, before training |
 |---|---|---|
-| **K** (the uniform state) | on every held-out test piece and every benchmark piece, steady and step: $e_K\le10^{-12}$ and $e_{K,\infty}\le10^{-12}$ | $\le4.3\times10^{-16}$ and $\le4.4\times10^{-16}$ |
-| **D** (the datum) | on every benchmark problem, steady and step, with every temperature lowered by 300 K, the data and $T_{\text{old}}$ together: $\bigl\lvert\lVert u-\tilde u\rVert_{M,\text{lowered}}/\lVert u-\tilde u\rVert_M-1\bigr\rvert\le10^{-8}$ wherever both errors exceed $10^{-9}\lVert u\rVert_M$, and the maximum error over the range within $10^{-9}$ of the range | $\le1.4\times10^{-10}$ and $\le1.5\times10^{-11}$ |
-| **L** (the load) | the modes and the level field bit for bit the same with the piece's own source, no source and a unit-RMS random source, on every benchmark piece and the first 100 test pieces. K′ and B″ report their change instead | bit for bit (split) |
-| E1 | Stage 0's bins and bars, unchanged; $e_K$ and the low-mode $e_H$ (hats and sines $j\le8$) reported beside $e_H$ | — |
-| E3, SE1–SE3, DUAL, KT | Stage 0's bars, unchanged | hold for any outputs (T25) |
-| **E4** | Stage 0's bars (energy $\le0.02$; maximum $\le$ the 16-mode floor $+\,0.01$ of the range), **met in both frames**: as registered, and with every temperature lowered by 300 K, where a step's reference energy no longer contains the level | as initialised: steps 0.27/0.69/0.39% registered and 3.9/10.8/4.1% lowered; steady 0.00034/5.3/5.6% |
-| E5 | reported, the two-network forward and one training step priced on the box before any long run | not priced |
-| S11 | the rollout reported, the level field kept with the modes | — |
+| **K** (the uniform state) | as the old draft: on every held-out test piece and every benchmark piece, steady and step, $e_K\le10^{-12}$ and $e_{K,\infty}\le10^{-12}$ | old form $\le4.3\times10^{-16}$ and $\le4.4\times10^{-16}$ (§7.3). New form: to be re-measured. The tests of `6594c8a` hold the fixed point to $10^{-14}$ with random weights at $n=32$ |
+| **D** (the datum) | as the old draft: on every benchmark problem, steady and step, with every temperature lowered by 300 K, the data and $T_{\text{old}}$ together: $\bigl\lvert\lVert u-\tilde u\rVert_{M,\text{lowered}}/\lVert u-\tilde u\rVert_M-1\bigr\rvert\le10^{-8}$ wherever both errors exceed $10^{-9}\lVert u\rVert_M$, and the maximum error over the range within $10^{-9}$ of the range | old form $\le1.4\times10^{-10}$ and $\le1.5\times10^{-11}$. New form: to be re-measured |
+| **L** (the load) | as the old draft, on both arms: the modes and the level field bit for bit the same with the piece's own source, no source and a unit-RMS random source, on every benchmark piece and the first 100 test pieces | old form bit for bit. New form: to be re-measured. The strips read the piece's operator ($a_{11},a_{12},a_{22},\sigma$), never the load |
+| **E1** | Stage 0's bins and bars, judged on S: median $e_{H,L}\le0.01$ and 90th percentile $\le0.03$ on the 36 columns the network learns (below), and $e_p$'s bars unchanged. Reported beside it, not judged: $e_H$ over all 64 columns, and $e_K$ | — |
+| E3, SE1–SE3, DUAL, KT | Stage 0's bars, unchanged | hold for any outputs with exact traces (T25) |
+| **E4** | Stage 0's bars (energy $\le0.02$; maximum $\le$ the 16-mode floor $+\,0.01$ of the range), **met in both frames**: as registered, and with every temperature lowered by 300 K, where a step's reference energy no longer contains the level | W's start (§7.2): steps 0.27/0.69/0.39% registered and 3.9/10.8/4.1% lowered; steady 0.00034/5.3/5.6%. S's start: to be measured with K, D and L |
+| **E5** | priced on the box before any long run: the forward pass and one training step at $n=32$, 64 and 128 (batches 32/32/8), including the strips and the assembly of the operator they need; then reported whatever it says | the strips alone, on the laptop on battery: 0.27 of an exact solve at $n=64$, 0.21 at $n=128$ |
+| S11 | the rollout reported, with the level field and the strip columns formed once, with the modes | — |
 
-### 8.3 The comparisons
+**E1 on the learned columns.** Let $L$ be the 36 columns the network returns: the four hats, and the sines $j=1$–8 of each side. Then
+$$e_{H,L}=\Bigl(\frac{\sum_{k\in L}\lVert\hat H_k-H_k\rVert_{A_I}^2}{\sum_{k\in L}\Lambda_{kk}}\Bigr)^{1/2}=\Bigl(\frac{\sum_{k\in L}(\tilde\Lambda_{kk}-\Lambda_{kk})}{\sum_{k\in L}\Lambda_{kk}}\Bigr)^{1/2},$$
+the second form being the diagonal of the Gram identity that SE1 checks. The denominator is the learned columns' own energy, not $\operatorname{tr}\Lambda$:
+- On the plain square, the strip columns carry 62–70% of $\operatorname{tr}\Lambda$, at $n=32$–128, steady and with $s_0$ up to 100. This was computed for this draft from `model.plain_square`, and it is not in a record.
+- Dividing by $\operatorname{tr}\Lambda$ would therefore lower the measure by a factor of 0.55–0.62, and make the bar 1.6–1.8 times easier: the permissive choice.
 
-Each ratio is the alternative arm's over the default's, with Stage 0's bars: the alternative wins at $\le0.8$ and loses at $\ge1.25$; otherwise a tie, and the default stands. With two seeds, a verdict stands only if both pairings give it; otherwise it is reported as unresolved.
+**Before training.** K, D, L and E4 as initialised are re-measured on S's form, with `scripts/chartop_forms_controls.py` given the bubble and the strips as options. The same run gives the untrained comparison CW₀ (§8.3).
+
+### 8.3 The comparison
+
+Stage 0's bars apply. The ratio is the alternative arm's over the default's: the alternative wins at $\le0.8$ and loses at $\ge1.25$; otherwise it is a tie, and the default stands. The default is S′, the owner's form, so a tie keeps W358. With two seeds, the pairings are seed 0 with seed 0 and seed 1 with seed 1. A verdict stands only if both pairings give it; otherwise it is reported as unresolved.
 
 | | question | ratio |
 |---|---|---|
-| **CK1** (W357) | does a load-blind mode network help? | mean E4 energy error over the six problems, the steps lowered by 300 K: K′ over S′; median $e_H$ beside it |
-| **CK2** (W356) | does the projection help a single network? | the same measure, B″ over K′ |
+| **CW** (W358) | do the corner bubble and the strips help? | mean E4 energy error over the six problems, the steps lowered by 300 K: W over S′; median $e_H$ over all 64 columns beside it |
 
-The two isolate one change each: B″ to K′ is the projection, and K′ to S′ the split. The measure is E4's, because $e_H$ is blind to the effect being compared (§7.3).
+- **CW₀**, the same ratio at step 0 (zero heads), is reported beside CW and not judged. At step 0 only the strips differ, so CW₀ is their classical share. CW against CW₀ is what training made of the rest.
+- **The measure is E4's in the lowered frame**, as in the old draft. $e_H$ weights every port mode by its energy, while the coupled answer weights each by the interfaces' own coefficient. The frame keeps the level out of a step's reference energy.
 
 ### 8.4 Predictions, registered beside the gates so that they can be refuted
 
-**[AI Inference]**, each checked against the others:
-1. K, D and L hold. They are structural, so a failure would be a defect in the code.
-2. CK2 favours the projection, B″ over K′ at least 1.25: B's steady errors fell 5.4, 4.6 and 6.3 times when the level was removed.
-3. E1 is not met, since 68.5% of $e_H^2$ sits in the side sines $j=9$–15 and these forms leave them as Stage 0 did (§7.4).
-4. Lowered by 300 K, S's step errors stay within 1.25 times the untrained form's (3.9%, 10.8%, 4.1%). There is no source left in that frame, so only the modes count, and in Stage 0 the modes did not learn. If this prediction fails in the favourable direction, the modes have learned.
+**[AI Inference]**, each checked against the others and against `forms.py`'s docstring:
+1. **K, D and L hold on both arms.** The projection comes last and moves only the kernel columns, and the strip columns are not among them. The strips read the operator, never the load. A failure would be a defect in the code.
+2. **E1 is probably not met.**
+   - Suppose each output were the energy-best member of the 8 × 8 or the 16 × 16 smooth class. Then $e_H$ over all 64 columns would be 0.124 or 0.071 at $n=128$ (0.109 for 8 × 8 at $n=64$; §10), against a bar of 0.01.
+   - Those figures include the strips' own error, and the record does not give the learned columns' share. Only the learned columns change with the class, so the 8 × 8 class leaves at least $(0.124^2-0.071^2)^{1/2}\approx0.10$ of $\operatorname{tr}\Lambda$ in them. On their own energy that is roughly 0.17–0.18. The bound is approximate: the figures are medians over eight pieces, and the share is the plain square's. The 16 × 16 class is not bounded this way.
+   - $e_p$ has its own bar. B's validation median was 0.089 after 150,000 steps, against a bar of 0.02. S's particular network is also 1 M, and it sees what B saw, without the level.
+   - In Stage 0 no arm's modes moved from the principal part. If E1 is met, the corner bubble and the strips made the modes learnable.
+3. **CW is at least 1: W does no better than S′.** A tie, or a loss for W, is expected. A win for W ($\le0.8$) would refute this.
+   - **Why S′ starts ahead.** At step 0 the arms differ only in the strip columns. On every piece, each strip column is at least as close to the exact mode in energy as the principal part's. It minimises the energy over fields with the same traces that equal $H^{(0)}$ beyond the strip, a set that contains $H^{(0)}$, and the energy error is the energy excess (T25 (ii), column by column).
+   - **Why W should stay near its start.** In Stage 0 no arm's modes left the principal part. W's start is a mean of 4.9% on CW's measure (§7.2). The corner bubble bounds the target S′ learns, which should make learning easier for S′.
+   - **The size is the uncertain part**, so a tie is as likely as a loss for W. The coupled answer weights the side sines by the interfaces' coefficients, which are small at $j\ge9$ for smooth fields. A basis that is closer mode by mode does not guarantee a closer coupled answer.
+   - **Checked against 2.** This prediction needs no learning. If the modes do learn, which would refute 2 in the favourable direction, CW should rise above CW₀.
 
-### 8.5 Cost, and a decision for the owner
+No verdict is predicted for E4, E5 or S11.
 
-Stage 0 spent \$4.06 on 525,000 training steps over eleven arms. This draft has 150,000 main steps and six comparison runs of 37,500, 375,000 in all, so of the same order. **[AI Inference]:** about \$3–5 at Stage 0's rates if the two networks cost under twice one network. Stage 0's step was dominated by the float64 objective and the sine transforms, not by the network. The draft would take a ceiling like D6's, \$10, each box at most \$0.70 an hour.
+### 8.5 Cost and box limits
 
-**The owner's decision: train these forms now, or after W358.** **[AI Inference]:** training now measures W356's and W357's effects in isolation (CK1, CK2) at a few dollars. But E1, the gate on the network's accuracy, is expected to fail again (prediction 3), because the side modes' corner growth is untouched. W358's definition of done asks for its fix to be shown on validation pieces before any training. If the owner prefers one run that could pass E1, the order is W358's demonstration first, then one registration carrying both.
+**The ceiling: \$10 for the whole registration, each box at most \$0.70 an hour.** Stage 0's ceiling (D6) was \$15, and it spent \$4.06. This draft has 300,000 training steps: 150,000 for S and four runs of 37,500 for S′ and W. Of these, 225,000 run with the strips.
+
+**[AI Inference], an extrapolation until E5 has been priced on the box:**
+- **The networks.** B's step took 56.5 ms on the RTX 3090. It was dominated by the float64 objective and the transforms, not by the network: 0.28 M and 3.05 M cost 59 and 75 ms at $n=64$. Two 1 M networks are taken at no more than 1.2 times one, so 300,000 steps take about 5.7 h. At Stage 0's all-in rate (\$4.06 for 525,000 steps, pricing, data and E5 included), that is \$2.3–2.8.
+- **The strips as built.** They run serially, on the CPU, in the main process, at every forward pass, training steps included (`KernelExpert._strip_columns`).
+  - The inputs: the strips' battery prices (0.27 of an exact solve at $n=64$, 0.21 at $n=128$; $n=32$ taken at $n=64$'s ratio), and Stage 0's labelled examples (0.027, 0.079 and 0.43 s on battery). Stage 0's batches (32/32/8) and step mix give the weights: 19%, 31% and 50% of steps, from its piece coverage of 30/50/20%.
+  - The result: about 0.62 s a step on the laptop on battery, against a GPU step of 0.055 s.
+  - A box core is taken as one to 4.4 times faster than the laptop on battery. (4.4 is how much slower this laptop has run on battery than on AC.) That gives 0.14–0.62 s a step, plus the operator's assembly, which nothing has priced. Over the 225,000 steps, that is **9–39 h**.
+
+| box (Stage 0's) | rate | box time, with about 2 h for data, pricing and E5 | cost |
+|---|---|---|---|
+| RTX 3090 with a 64-core EPYC (box A) | \$0.195/h | 16–46 h | \$3.2–9.0 |
+| A100 SXM4 (box B) | \$0.532/h | 16–46 h | \$8.7–25 |
+
+- **So the strips, not the networks, are expected to set the cost.** The draft fits the ceiling only on a cheap box with fast cores. S alone would take 9–29 h of wall-clock. Two boxes in parallel would halve the wall-clock, not the cost.
+- **The strip columns do not depend on the weights.** $H^{(0)}$ is the plain square's at the piece's $s_0$, and the operator is the piece's own. The projection does not move them, and the label-free objective sums the columns' energies. So they add a constant to the loss and nothing to its gradient. Computing them only at validation would remove their cost from training without changing a gradient. That is a code change this draft does not make, and the owner could choose it after E5.
+- **If E5's price puts the estimate over \$10, no long run starts**, and the decision returns to the owner.
+
+**The owner's decision: accept, change or refuse this draft.** A yes would start four steps, in order, each asking the owner first wherever the rules require it:
+1. a new gates module carrying these bars, with a test against this section;
+2. the untrained re-measurement (§8.2);
+3. E5 on a rented box;
+4. the runs.
+
+Nothing is hash-pinned before that yes.
 
 ---
 
