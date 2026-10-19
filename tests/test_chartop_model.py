@@ -6,7 +6,10 @@ An untrained network is used only for shapes and for the exact-trace property.
 After Stage 0 (W356, W357): the kernel-exact forms of `forms`, with random weights
 only.  The uniform state is a fixed point whatever the weights, steady or not; the
 datum drops out of the particular field; the split form's modes never see the load;
-and the identity the forms enforce holds for exact classical solves."""
+and the identity the forms enforce holds for exact classical solves.
+
+W358: the corner bubble, and the strips (C3), which compute the side sines j = 9-15
+classically and are the controls script's strip solve bit for bit."""
 from __future__ import annotations
 
 import math
@@ -641,3 +644,232 @@ def test_a_corner_bubble_expert_trains_saves_and_loads(examples, tmp_path):
     assert train.load_expert(str(path)).bubble == "square"
     with pytest.raises(ValueError):
         forms.make("unet", "0.3M", "bubble", bubble="corner")
+
+
+# ---------------------------------------------------------------------------
+# W358's C3: the side sines j = 9-15 by strip solves, random weights only
+# ---------------------------------------------------------------------------
+
+
+def _corner_controls():
+    """`scripts/chartop_corner_controls.py`, which measured the strips, as a module under
+    a private name."""
+    import importlib.util
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    spec = importlib.util.spec_from_file_location(
+        "_chartop_corner_controls", os.path.join(root, "scripts", "chartop_corner_controls.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _operator_batch(n, seed=0):
+    """`_random_batch` as a batch for `forms.call`, with element coefficients: a positive
+    tensor field (``|a12| < 0.4 sqrt(a11 a22)``) and the reaction ``sigma = s0 w``."""
+    x, s, s0, w, g = _random_batch(n, seed)
+    gen = torch.Generator().manual_seed(seed + 1)
+    a11 = torch.rand(3, n, n, generator=gen, dtype=torch.float64) + 0.5
+    a22 = torch.rand(3, n, n, generator=gen, dtype=torch.float64) + 0.5
+    a12 = 0.8 * (torch.rand(3, n, n, generator=gen, dtype=torch.float64) - 0.5) * torch.sqrt(a11 * a22)
+    return {"inputs": x, "scalars": s, "s0": s0, "w": w, "g": g, "a11": a11, "a12": a12,
+            "a22": a22, "sigma": w * s0[:, None, None]}
+
+
+@pytest.mark.parametrize("n", [32, 64])
+def test_the_strips_are_the_controls_strip_solve(n):
+    """`forms.strip_modes` on a validation piece is the controls script's C3 bit for bit
+    (class ``Piece``, whose numbers W358 reported), on the same columns: the hats and the
+    sines j = 1-8 learned, j = 9-15 by strips."""
+    cc = _corner_controls()
+    Q = ports.basis("sine-hat", n, 16).Q
+    c1 = forms.kernel_coefficients("sine-hat", n, 16)
+    H0s = principal.modes(n, Q, 0.0)
+    W = (c1[None, :] * H0s) / (H0s @ (c1 * c1))[:, None]
+    p = cc.Piece(data.SEEDS["val"] + 100, n, Q, W, c1)
+    d = {k: np.asarray(p.arrays[k], np.float64) for k in ("a11", "a12", "a22", "sigma")}
+    A_I, M_IG = forms.interior_blocks(fe.assemble(n, d["a11"], d["a12"], d["a22"], d["sigma"]), n)
+    assert np.array_equal(forms.strip_modes(A_I, M_IG, Q, p.P["plain"], n), p.P["strips"])
+    assert [k for cs in forms.strip_columns("sine-hat", 16) for k in cs] == cc.HIGH
+    assert list(forms.learned_columns("sine-hat", 16)) == cc.LOW
+    assert all(int(S.sum()) == (n - 1) * (n // 8) for S in forms.strip_nodes(n))
+
+
+@pytest.mark.parametrize("form", forms.FORMS)
+def test_the_strips_keep_the_forms_exact_whatever_the_weights(form):
+    """With the strips and the corner bubble, random weights (std 0.3), steady and for two
+    steps.  The uniform state is a fixed point to float64 rounding.  The network returns
+    36 mode rows, and the learned side columns are ``H0 + beta_c N`` bit for bit.  The
+    strip columns are `strip_modes` of each example's operator with the call's own ``H0``,
+    bit for bit; they satisfy the piece's own equations on their strip, with the traces
+    ``Q`` as data, and equal ``H0`` beyond it; other weights leave them as they are."""
+    n, m = 32, 16
+    b = _operator_batch(n)
+    e = _randomise(forms.KernelExpert(form, "unet", "0.3M", m=m, bubble="corner", strips=True), 0.3)
+    with torch.no_grad():
+        H, up = forms.call(e, b)
+        x = b["inputs"]
+        xin = x[:, :4] if form == "split" else torch.cat(
+            [x[:, :4], forms.split_source(x, b["w"], b["g"])[1][:, None].to(x.dtype)], dim=1)
+        out = e.net(xin, b["scalars"]).to(torch.float64)
+    ks = forms.kernel_square(n, "sine-hat", m, "cpu")
+    pre = float(e.last_kernel_residual.abs().max())
+    assert pre > 1e-3
+    assert float(forms.residual(H, e.last_level, b["s0"], ks).abs().max()) <= 1e-14 * (1.0 + pre)
+    assert H.shape == (3, 4 * m, n - 1, n - 1) and up.shape == (3, n - 1, n - 1)
+    assert torch.isfinite(H).all() and torch.isfinite(up).all()
+    assert out.shape[1] == 36 + (2 if form == "kernel" else 1)
+    learned, stripped = list(e.learned), list(e.stripped)
+    assert sorted(learned + stripped) == list(range(4 * m)) and len(stripped) == 28
+    bc = torch.tensor(forms.corner_bubble(n), dtype=torch.float64)[1:-1, 1:-1]
+    H_raw = e.last_principal[:, learned] + bc * out[:, :36, 1:-1, 1:-1]
+    pos = [i for i, k in enumerate(learned) if float(ks.c1[k]) == 0.0]
+    assert torch.equal(H[:, [learned[i] for i in pos]], H_raw[:, pos])
+    Q = ports.basis("sine-hat", n, m).Q
+    for i, (A_I, M_IG) in enumerate(forms.batch_operators(b)):
+        H0 = e.last_principal[i].numpy().reshape(4 * m, -1).T
+        Hi = H[i].numpy().reshape(4 * m, -1).T
+        assert np.array_equal(Hi[:, stripped], forms.strip_modes(A_I, M_IG, Q, H0, n)[:, stripped])
+        R = A_I @ Hi + M_IG @ Q
+        for s_, S in enumerate(forms.strip_nodes(n)):
+            cs = list(forms.strip_columns("sine-hat", m)[s_])
+            assert np.abs(R[S][:, cs]).max() <= 1e-12
+            assert np.array_equal(Hi[~S][:, cs], H0[~S][:, cs])
+    e2 = _randomise(forms.KernelExpert(form, "unet", "0.3M", m=m, bubble="corner", strips=True), 0.02, seed=1)
+    with torch.no_grad():
+        H2, _ = forms.call(e2, b)
+    assert torch.equal(H2[:, stripped], H[:, stripped])
+    assert float((H2[:, learned] - H[:, learned]).abs().max()) > 1e-6
+
+
+@pytest.mark.parametrize("bubble", forms.BUBBLES)
+@pytest.mark.parametrize("form", forms.FORMS)
+def test_the_strips_are_off_by_default_and_the_default_unchanged(form, bubble):
+    """``strips=False`` is the default: the same network, one head row per mode column,
+    and for any weights the W356/W357 answer bit for bit, rebuilt here from the raw
+    output with no strip code; no operator is needed.  With the strips on the head is 28
+    rows narrower, a call without operators is refused, and so are the cosine basis,
+    fewer than 16 modes per side and Stage 0's forms."""
+    n, m = 16, 8
+    e = _randomise(forms.KernelExpert(form, "unet", "0.3M", m=m, bubble=bubble), 0.3)
+    assert e.config()["strips"] is False and not e.needs_operator
+    x, s, s0, w, g = _random_batch(n)
+    with torch.no_grad():
+        H, up = e(x, s, s0, w=w, g=g)
+        gbar, chan, scale = forms.split_source(x, w, g)
+        xp = torch.cat([x[:, :4], chan[:, None].to(x.dtype)], dim=1)
+        if form == "kernel":
+            out = e.net(xp, s).to(torch.float64)
+            N, Np, N1 = out[:, :-2], out[:, -2], out[:, -1]
+        else:
+            out = e.net(x[:, :4], s).to(torch.float64)
+            N, N1 = out[:, :-1], out[:, -1]
+            Np = e.pnet(xp, s).to(torch.float64)[:, 0]
+    assert N.shape[1] == 4 * m
+    ps = model.plain_square(n, "sine-hat", m, "cpu")
+    ks = forms.kernel_square(n, "sine-hat", m, "cpu")
+    beta = forms.bubble_field(bubble, ps)[1:-1, 1:-1]
+    H0 = ps.principal(s0, torch.float32).to(torch.float64)
+    u10 = forms.level_principal(ps, s0, torch.float32).to(torch.float64)
+    u1 = u10 + u10.abs().amax(dim=(-2, -1))[:, None, None] * beta * N1[..., 1:-1, 1:-1]
+    H_ref, _r = forms.project(H0 + beta * N[..., 1:-1, 1:-1], u1, s0, ks)
+    up_ref = gbar[:, None, None] * u1 + scale[:, None, None] * beta * Np[..., 1:-1, 1:-1]
+    assert torch.equal(H, H_ref) and torch.equal(up, up_ref)
+    torch.manual_seed(0)
+    d1 = forms.KernelExpert(form, "unet", "0.3M", m=m, bubble=bubble)
+    torch.manual_seed(0)
+    d2 = forms.KernelExpert(form, "unet", "0.3M", m=m, bubble=bubble, strips=False)
+    assert all(torch.equal(p1, p2) for p1, p2 in zip(d1.state_dict().values(), d2.state_dict().values()))
+    st = forms.KernelExpert(form, "unet", "0.3M", bubble=bubble, strips=True)
+    full = forms.KernelExpert(form, "unet", "0.3M", bubble=bubble)
+    assert st.net.head.weight.shape[0] == full.net.head.weight.shape[0] - 28
+    x, s, s0, w, g = _random_batch(32)
+    with pytest.raises(ValueError, match="operator"):
+        st(x, s, s0, w=w, g=g)
+    for kw in ({"kind": "cosine"}, {"m": 8}):
+        with pytest.raises(ValueError):
+            forms.KernelExpert(form, "unet", "0.3M", strips=True, **kw)
+    with pytest.raises(ValueError):
+        forms.make("unet", "0.3M", "bubble", strips=True)
+
+
+def test_a_strip_expert_trains_validates_saves_and_loads(examples, tmp_path):
+    """The label-free objective's gradient reaches every one of the 36 learned mode rows
+    and the level row; `train.validate` runs on a labelled set, e_K is zero to rounding,
+    and with zero heads the strips lower e_H on both pieces.  The expert saves and loads
+    through `train.load_expert` with its strips; a configuration written before them (no
+    ``strips`` key) loads without; and an `Arm` carries the choice, off by default."""
+    from atlas.chartop import train
+    b = _batch_from(examples)
+    e = forms.KernelExpert("kernel", "unet", "0.3M", bubble="corner", strips=True)
+    H, up = forms.call(e, b)
+    o = model.objectives(b, H, up, "sine-hat", 16, None, "label-free", H0=e.last_principal)
+    o["loss"].mean().backward()
+    head = e.net.head.weight.grad[:, :, 0, 0]
+    assert head.shape[0] == 38 and torch.isfinite(head).all()
+    assert bool((head[:36].abs().amax(dim=1) > 0.0).all()) and float(head[-1].abs().max()) > 0.0
+    # train.validate on the two pieces, labelled
+    n = examples[0].n
+    Q = ports.basis("sine-hat", n, 16).Q
+    arrs = [data.arrays(ex) for ex in examples]
+    labs = [data.labels(ex, Q) for ex in examples]
+    bucket = {k: np.stack([a[k] for a in arrs]) for k in train.KEYS}
+    bucket["H"] = np.stack([lab["H"].T for lab in labs])
+    bucket["up"] = np.stack([lab["up"] for lab in labs])
+    for k in ("trace_Lambda", "up_energy"):
+        bucket[k] = np.array([lab[k] for lab in labs])
+    cpu = torch.device("cpu")
+    V = {n: train.to_device(bucket, cpu, True)}
+    for k in ("sup_mu", "freq", "seed"):
+        V[n]["meta_" + k] = np.zeros(len(examples))
+    plain = forms.KernelExpert("kernel", "unet", "0.3M", bubble="corner")
+    rs = train.validate(forms.KernelExpert("kernel", "unet", "0.3M", bubble="corner", strips=True), V, cpu, False)
+    rp = train.validate(plain, V, cpu, False)
+    assert np.all(np.isfinite(rs["e_H"])) and float(np.max(rs["e_K"])) < 1e-12
+    assert np.all(rs["e_H"] < rp["e_H"])
+    # save and load
+    e = _randomise(forms.KernelExpert("split", "unet", "0.3M", p_size="0.3M", bubble="corner", strips=True), 0.02)
+    path = tmp_path / "best.pt"
+    torch.save({"model": e.state_dict(), "config": e.config()}, path)
+    e2 = train.load_expert(str(path))
+    assert e2.config() == e.config() and e2.strips
+    with torch.no_grad():
+        (Ha, ua), (Hb, ub) = forms.call(e, b), forms.call(e2, b)
+    assert torch.equal(Ha, Hb) and torch.equal(ua, ub)
+    old = forms.KernelExpert("split", "unet", "0.3M", m=8, p_size="0.3M")
+    cfg = {k: v for k, v in old.config().items() if k != "strips"}
+    torch.save({"model": old.state_dict(), "config": cfg}, path)
+    assert train.load_expert(str(path)).strips is False
+    assert train.Arm("a").strips is False and train.Arm("a", strips=True).strips
+
+
+def test_the_strips_through_the_host():
+    """`LearnedExpert` hands the strips each piece's own operator: on bend-3's step, one
+    call per piece; each response's strip columns are `strip_modes` of the piece's matrix
+    bit for bit; the Gram identity and lambda_min's bound hold, as for any modes with
+    exact traces; the uniform state stays a fixed point through the host; and the
+    strips' time is counted."""
+    from atlas.chartop import benchmarks as bm
+    bk = bm.bend3(32, "step")
+    L = bk.layout("sine-hat", 16)
+    net = _randomise(forms.KernelExpert("kernel", "unet", "0.3M", bubble="corner", strips=True), 0.02)
+    ex = LearnedExpert(net, envelope=data.ENVELOPE)
+    cp = L.solve(ex)
+    assert cp.calls == len(bk.problems) == ex.calls and ex.strip_seconds > 0.0
+    H0s = net.last_principal.numpy()
+    cl = L.solve(host.ClassicalExpert())
+    cols = list(net.stripped)
+    for i, p in enumerate(L.problems):
+        n = p.n
+        A_I, M_IG = forms.interior_blocks(p.matrix(), n)
+        H0 = H0s[i].reshape(64, -1).T
+        assert np.array_equal(cp.responses[i].H[:, cols],
+                              forms.strip_modes(A_I, M_IG, L.pb(n).Q, H0, n)[:, cols])
+        E = cp.responses[i].H - cl.responses[i].H
+        res = cp.grams[i] - cl.grams[i] - E.T @ (A_I @ E)
+        assert np.max(np.abs(res)) <= 1e-10 * np.max(np.abs(cl.grams[i]))
+    assert cp.min_eig() >= cl.min_eig() * (1 - 1e-10)
+    p = L.problems[0]
+    pb = L.pb(p.n)
+    exs = fe.Exact(p.matrix(), p.n)
+    km = forms.kernel_measures(forms.kernel_residual(ex, p, pb), exs.A_I, float(np.trace(exs.port_matrix(pb.Q))))
+    assert km["e_K_inf"] < 1e-12

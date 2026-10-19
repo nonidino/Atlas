@@ -52,6 +52,7 @@ class Arm:
     val_every: int = 500
     p_size: str | None = None           # the split form's particular-field network (`forms`)
     bubble: str = "square"              # the kernel-exact forms' bubble (`forms.BUBBLES`, W358)
+    strips: bool = False                # the side sines j = 9-15 by strip solves (W358's C3)
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -198,7 +199,7 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         for k in ("sup_mu", "freq", "seed"):
             V[n]["meta_" + k] = b[k]
     expert = fm.make(arm.backbone, arm.size, arm.form, arm.kind, p_size=arm.p_size,
-                     bubble=arm.bubble).to(dev)
+                     bubble=arm.bubble, strips=arm.strips).to(dev)
     opt = torch.optim.AdamW(expert.parameters(), lr=arm.lr, weight_decay=arm.weight_decay)
     warm = max(1, arm.steps // 50)
     sched = torch.optim.lr_scheduler.LambdaLR(
@@ -285,6 +286,6 @@ def load_expert(path: str, device: str = "cpu") -> md.Expert:
     st = torch.load(path, map_location=device, weights_only=False)
     c = st["config"]
     e = fm.make(c["backbone"], c["size"], c["form"], c["kind"], c["m"], c.get("p_size"),
-                c.get("bubble", "square"))
+                c.get("bubble", "square"), c.get("strips", False))
     e.load_state_dict(st["model"])
     return e.to(device).eval()

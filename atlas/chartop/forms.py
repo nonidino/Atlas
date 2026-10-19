@@ -108,6 +108,21 @@ with no corner angle to estimate.  It is the same fixed field for every piece,
 invariant under the square's eight symmetries bit for bit, and zero on the loop, so the
 traces stay exact and the projection is untouched.  `scripts/chartop_corner_controls.py`
 compares it with the other candidates on the same validation pieces.
+
+**The strips, ``strips=True`` (W358's C3).**  68.5% of Stage 0's ``e_H^2`` sat in the
+side sines ``j = 9-15``, whose exact modes carry layers about ``1/(j pi)`` wide along
+their own side.  With the strips on, those 28 columns are not the network's: each is
+computed classically by a **strip solve** along its side (`strip_modes`), the piece's
+true interior operator on the interior nodes within ``n/8`` cells of that side, with
+the network's own principal part ``H0`` as data beyond the strip.  Beyond the strip a
+strip column is ``H0``, whatever the weights.  The network returns the other 36 columns
+(the hats and ``j = 1-8``) and nothing for these.  The strips need each piece's assembled
+operator, which the call carries as ``ops`` (`interior_blocks` per example), never as a
+network input: `call` assembles it from a batch's element arrays, and
+`expert.LearnedExpert` from each piece's own matrix.  The projection comes last and
+moves only the kernel columns, so the strip columns pass through it bit for bit and
+``H c1 + s0 u_1 = 1`` still holds to rounding.  Off by default; sine-hat with
+``m = 16`` only, the basis and width the controls measured.
 """
 
 from __future__ import annotations
@@ -116,16 +131,23 @@ import functools
 import math
 from dataclasses import replace
 
+import time
+
 import numpy as np
+import scipy.sparse.linalg as spla
 import torch
 import torch.nn as nn
 
+from . import fe
 from . import model as md
 from . import ports as pt
 
 FORMS = ("kernel", "split")
 #: Stage 0's bubble, and W358's, which vanishes like the distance to the boundary
 BUBBLES = ("square", "corner")
+#: W358's C3: the side sines j = 9-15 by strip solves, each strip n/8 cells deep
+STRIP_J = (9, 15)
+STRIP_WIDTH = 1.0 / 8.0
 #: a level-free source whose RMS is below this fraction of the source's own size is
 #: rounding (a uniform source minus its float64 mean), and is set to zero
 LEVEL_FREE_FLOOR = 1e-12
@@ -164,6 +186,84 @@ def bubble_field(name: str, ps: md.PlainSquare) -> torch.Tensor:
     if name == "corner":
         return _corner_bubble_torch(ps.n, str(ps.device))
     raise ValueError(f"bubble {name!r}: one of {BUBBLES}")
+
+
+# ---------------------------------------------------------------------------
+# the strips (W358's C3)
+# ---------------------------------------------------------------------------
+
+
+@functools.lru_cache(maxsize=None)
+def strip_columns(kind: str, m: int) -> tuple:
+    """Per side ``s``, the columns of side ``s``'s sines ``j = 9-15``, which the strips
+    compute.  Read from the basis's own labels, which do not depend on ``n``."""
+    if kind != "sine-hat":
+        raise ValueError(f"the strips were measured in the sine-hat basis, not {kind!r}")
+    if m - 1 < STRIP_J[1]:
+        raise ValueError(f"the strips compute the sines j = {STRIP_J[0]}-{STRIP_J[1]}: "
+                         f"need m >= {STRIP_J[1] + 1}, not {m}")
+    cols = pt.basis(kind, m, m).columns
+    return tuple(tuple(k for k, c in enumerate(cols)
+                       if c.what == "side" and c.index == s and STRIP_J[0] <= c.j <= STRIP_J[1])
+                 for s in range(4))
+
+
+def learned_columns(kind: str, m: int) -> tuple:
+    """The columns the network returns when the strips are on: all the others."""
+    high = {k for cs in strip_columns(kind, m) for k in cs}
+    return tuple(k for k in range(4 * m) if k not in high)
+
+
+@functools.lru_cache(maxsize=None)
+def strip_nodes(n: int) -> tuple:
+    """Per side, a mask over the (n-1)^2 interior nodes (index order): those within
+    ``STRIP_WIDTH n`` cells of that side."""
+    JJ, II = np.meshgrid(np.arange(1, n), np.arange(1, n), indexing="ij")
+    dist = [JJ.ravel(), (n - II).ravel(), (n - JJ).ravel(), II.ravel()]
+    out = tuple(d <= STRIP_WIDTH * n for d in dist)
+    for S in out:
+        S.setflags(write=False)
+    return out
+
+
+def interior_blocks(M, n: int):
+    """``(A_I, M_IG)`` of a piece's energy matrix ``M``, sliced as `fe.Exact` slices it,
+    with no factorisation: what the strips need of the piece."""
+    loop, inner = fe.grid(n)
+    M = M.tocsr()
+    return M[inner][:, inner].tocsc(), M[inner][:, loop].tocsr()
+
+
+def batch_operators(batch: dict) -> list:
+    """`interior_blocks` per example, from a batch's element arrays ``a11, a12, a22,
+    sigma`` [B, n, n], assembled as `piece.PieceProblem.matrix` assembles them."""
+    a = {k: batch[k].detach().to("cpu", torch.float64).numpy() for k in ("a11", "a12", "a22", "sigma")}
+    n = a["a11"].shape[-1]
+    return [interior_blocks(fe.assemble(n, a["a11"][b], a["a12"][b], a["a22"][b], a["sigma"][b]), n)
+            for b in range(a["a11"].shape[0])]
+
+
+def strip_modes(A_I, M_IG, Q, H0, n: int, kind: str = "sine-hat") -> np.ndarray:
+    """``H0`` [(n-1)^2, 4m] with the strip columns replaced on their strips.  For side
+    ``s`` with strip nodes ``S`` and sines ``j = 9-15``,
+
+        A_I[S, S] H[S] = (B Q)[S] - A_I[S, ~S] H0[~S],      B = -M_IG,
+
+    the piece's own rows on the strip, with the boundary data and ``H0`` beyond the
+    strip on the right.  The operations are those of `scripts/chartop_corner_controls.py`
+    (class ``Piece``, C3) in its order, so the answer is the controls' bit for bit.  Each
+    side's columns are solved on its own strip only, so the sides' order does not
+    matter."""
+    m = Q.shape[1] // 4
+    cols = strip_columns(kind, m)
+    A = A_I.tocsr()
+    BQ = -np.asarray(M_IG @ Q)
+    Hs = np.array(H0, dtype=np.float64, order="C", copy=True)
+    for s, S in enumerate(strip_nodes(n)):
+        cs = list(cols[s])
+        rhs = BQ[S][:, cs] - A[S][:, ~S] @ Hs[~S][:, cs]
+        Hs[np.flatnonzero(S)[:, None], cs] = spla.splu(A[S][:, S].tocsc()).solve(rhs)
+    return Hs
 
 
 # ---------------------------------------------------------------------------
@@ -282,7 +382,7 @@ def _backbone(backbone: str, size: str, cout: int, cin: int) -> nn.Module:
 
 
 class KernelExpert(nn.Module):
-    """The kernel-exact expert.  ``forward(x, s, s0, w, g)`` returns the interior modes
+    """The kernel-exact expert.  ``forward(x, s, s0, w, g, ops)`` returns the interior modes
     [B, 4m, n-1, n-1] and the interior particular field [B, n-1, n-1] in float64, with
     ``H c1 + s0 u_1 = 1`` to rounding whatever the weights.  ``x`` holds Stage 0's five
     channels; the fifth (the source) is not read, the level-free channel being built
@@ -290,22 +390,32 @@ class KernelExpert(nn.Module):
     ``None`` for none).  Kept after each call: ``last_principal`` (H0, the objective's
     normaliser), ``last_level`` (u_1), ``last_gbar`` and ``last_kernel_residual`` (r before
     the projection).  ``bubble`` multiplies every correction: Stage 0's ``"square"`` (the
-    default) or W358's ``"corner"``."""
+    default) or W358's ``"corner"``.
+
+    ``strips=True`` (W358's C3, off by default): the side sines ``j = 9-15`` come from
+    `strip_modes`, and the network returns corrections for the ``learned`` columns only.
+    The call then needs ``ops``, each example's ``(A_I, M_IG)`` (`interior_blocks`), and
+    keeps the strips' own time on ``last_strip_seconds``."""
 
     needs_load_fields = True
 
     def __init__(self, form: str = "split", backbone: str = "unet", size: str = "1M",
                  kind: str = "sine-hat", m: int = 16, p_size: str | None = None,
-                 bubble: str = "square"):
+                 bubble: str = "square", strips: bool = False):
         super().__init__()
         if form not in FORMS:
             raise ValueError(form)
         if bubble not in BUBBLES:
             raise ValueError(bubble)
         self.bubble = bubble
+        self.strips = bool(strips)
         self.form, self.backbone_name, self.size, self.kind, self.m = form, backbone, size, kind, m
         self.p_size = None if form == "kernel" else (p_size or size)
         K = 4 * m
+        if self.strips:
+            self.learned = learned_columns(kind, m)
+            self.stripped = tuple(k for cs in strip_columns(kind, m) for k in cs)
+            K = len(self.learned)
         if form == "kernel":
             # outputs: K mode corrections, the particular correction, the level correction
             self.net = _backbone(backbone, size, K + 2, 5)
@@ -315,12 +425,34 @@ class KernelExpert(nn.Module):
             self.net = _backbone(backbone, size, K + 1, 4)
             self.pnet = _backbone(backbone, self.p_size, 1, 5)
 
+    @property
+    def needs_operator(self) -> bool:
+        return self.strips
+
     def config(self) -> dict:
         return {"backbone": self.backbone_name, "size": self.size, "form": self.form,
                 "kind": self.kind, "m": self.m, "p_size": self.p_size, "bubble": self.bubble,
-                "parameters": md.parameters(self)}
+                "strips": self.strips, "parameters": md.parameters(self)}
 
-    def forward(self, x, s, s0, w=None, g=None):
+    def _strip_columns(self, ops, H0: torch.Tensor) -> torch.Tensor:
+        """The strip columns [B, 28, n-1, n-1] (float64), with this call's ``H0`` beyond
+        the strips."""
+        B, K, n1 = H0.shape[0], H0.shape[1], H0.shape[-1]
+        n = n1 + 1
+        Q = pt.basis(self.kind, n, self.m).Q
+        H0n = H0.detach().cpu().numpy()
+        cols = list(self.stripped)
+        t0 = time.perf_counter()
+        out = np.empty((B, len(cols), n1, n1))
+        for b, (A_I, M_IG) in enumerate(ops):
+            Hs = strip_modes(A_I, M_IG, Q, H0n[b].reshape(K, -1).T, n, self.kind)
+            out[b] = Hs[:, cols].T.reshape(len(cols), n1, n1)
+        self.last_strip_seconds = time.perf_counter() - t0
+        return torch.tensor(out, dtype=torch.float64, device=H0.device)
+
+    def forward(self, x, s, s0, w=None, g=None, ops=None):
+        if self.strips and (ops is None or len(ops) != x.shape[0]):
+            raise ValueError("the strips need each example's operator: ops=[(A_I, M_IG), ...]")
         n = x.shape[-1] - 1
         dev = str(x.device)
         ps = md.plain_square(n, self.kind, self.m, dev)
@@ -339,7 +471,13 @@ class KernelExpert(nn.Module):
         H0 = ps.principal(s0, torch.float32).to(torch.float64)
         u10 = level_principal(ps, s0, torch.float32).to(torch.float64)
         a = u10.abs().amax(dim=(-2, -1))
-        H_raw = H0 + beta * N[..., 1:-1, 1:-1]
+        if self.strips:
+            learned = torch.tensor(self.learned, device=H0.device)
+            H_raw = H0.clone()
+            H_raw[:, learned] = H0[:, learned] + beta * N[..., 1:-1, 1:-1]
+            H_raw[:, torch.tensor(self.stripped, device=H0.device)] = self._strip_columns(ops, H0)
+        else:
+            H_raw = H0 + beta * N[..., 1:-1, 1:-1]
         u1 = u10 + a[:, None, None] * beta * N1[..., 1:-1, 1:-1]
         H, r = project(H_raw, u1, s0, ks)
         up = gbar[:, None, None] * u1 + scale[:, None, None] * beta * Np[..., 1:-1, 1:-1]
@@ -351,19 +489,25 @@ class KernelExpert(nn.Module):
 
 
 def make(backbone: str, size: str, form: str, kind: str = "sine-hat", m: int = 16,
-         p_size: str | None = None, bubble: str = "square") -> nn.Module:
+         p_size: str | None = None, bubble: str = "square", strips: bool = False) -> nn.Module:
     """Stage 0's `model.Expert` for its forms, `KernelExpert` for these.  Stage 0's forms
-    have only the square bubble."""
+    have only the square bubble and no strips."""
     if form in FORMS:
-        return KernelExpert(form, backbone, size, kind, m, p_size, bubble)
+        return KernelExpert(form, backbone, size, kind, m, p_size, bubble, strips)
     if bubble != "square":
         raise ValueError(f"Stage 0's form {form!r} has only the square bubble")
+    if strips:
+        raise ValueError(f"Stage 0's form {form!r} has no strips")
     return md.Expert(backbone, size, form, kind, m)
 
 
 def call(expert: nn.Module, batch: dict):
     """One forward pass on a training batch, passing ``w`` and ``g`` where the form reads
-    them (Stage 0's forms are called exactly as before)."""
+    them, and the operators the strips need, assembled from the batch's element arrays
+    (Stage 0's forms are called exactly as before)."""
+    if getattr(expert, "needs_operator", False):
+        return expert(batch["inputs"], batch["scalars"], batch["s0"], w=batch["w"], g=batch["g"],
+                      ops=batch_operators(batch))
     if getattr(expert, "needs_load_fields", False):
         return expert(batch["inputs"], batch["scalars"], batch["s0"], w=batch["w"], g=batch["g"])
     return expert(batch["inputs"], batch["scalars"], batch["s0"])

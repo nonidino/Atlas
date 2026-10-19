@@ -16,6 +16,12 @@ with ``u_p = gbar u_1 + ...``.  A march that keeps the first call's modes keeps 
 field too: the new call's ``gbar u_1`` is replaced by ``gbar u_1`` of the kept call, so
 that ``H c1 + s0 u_1 = 1`` holds for the pair actually used (for the split form the two
 level fields are the same, bit for bit, and nothing changes).
+
+With the strips on (W358's C3, `forms.KernelExpert(strips=True)`), the call also carries
+each piece's interior operator, sliced from the piece's own matrix
+(`forms.interior_blocks` of `PieceProblem.matrix`), and the expert computes the side
+sines ``j = 9-15`` by strip solves.  The network's inputs do not change.
+``strip_seconds`` adds up the strips' own time over the calls, assembly excluded.
 """
 
 from __future__ import annotations
@@ -28,6 +34,7 @@ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 import torch  # noqa: E402
 
 from . import data  # noqa: E402
+from . import forms  # noqa: E402
 from .host import Response  # noqa: E402
 from .piece import PieceProblem  # noqa: E402
 
@@ -46,8 +53,10 @@ class LearnedExpert:
         self.calls = 0
         self.last_modes = None
         self.reads_load = getattr(net, "needs_load_fields", False)
+        self.reads_operator = getattr(net, "needs_operator", False)
         self.last_levels = None
         self.last_gbars = None
+        self.strip_seconds = 0.0
 
     def forward(self, problems: list[PieceProblem]) -> list[tuple[np.ndarray, np.ndarray]]:
         """(H ((n-1)^2, 4m), u_p ((n-1)^2,)) per problem, float64, u_p in the problem's
@@ -76,9 +85,13 @@ class LearnedExpert:
                         kw["g"] = torch.tensor(np.stack([problems[k].g / (ins[j][2] or 1.0)
                                                          for j, k in enumerate(kk)]),
                                                dtype=torch.float64, device=self.device)
+                    if self.reads_operator:
+                        kw["ops"] = [forms.interior_blocks(problems[k].matrix(), n) for k in kk]
                     with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16,
                                         enabled=self.autocast):
                         H, up = self.net(x, s, s0, **kw)
+                    if self.reads_operator:
+                        self.strip_seconds += self.net.last_strip_seconds
                     H = H.double().cpu().numpy()
                     up = up.double().cpu().numpy()
                     if self.reads_load:
