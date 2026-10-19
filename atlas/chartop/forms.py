@@ -89,6 +89,25 @@ the level adding ``theta e_K`` in quadrature.  (A step's uniform state has energ
 own, ``theta^2 s0`` since ``J~`` has unit mean; it is left out of the denominator, so that a
 large level does not make an error look small.)  The kernel-exact forms make ``e_K``
 zero to rounding, so ``e_H(theta) = e_H`` at every level.
+
+**The corner bubble, ``bubble="corner"`` (W358).**  Stage 0's bubble
+``16 xi (1 - xi) eta (1 - eta)`` vanishes like the distance to a side along the sides,
+but like its square at a corner.  At a corner whose physical angle is ``alpha`` the
+exact modes vanish like ``r^(pi / alpha)``: slower than ``r^2`` when the corner is
+obtuse (the chart shears there, ``Im mu != 0``), and like ``r^2 log r`` at a right
+angle with varying coefficients.  So the quotient the head must output grows without
+bound at the node diagonally next to such a corner (16, 50, 89 at n = 32, 64, 128 on
+the validation pieces of `scripts/chartop_diagnose.py`).  The corner bubble
+
+    beta_c = 4 xi (1 - xi) eta (1 - eta) / (r_0 r_1 r_2 r_3),
+
+``r_c`` the distance to corner ``c``, is one at the centre and vanishes like the distance
+to the boundary everywhere, corners included (``xi eta / r`` near a corner).  Every
+convex corner has ``pi / alpha > 1``, so the quotient stays bounded whatever the chart,
+with no corner angle to estimate.  It is the same fixed field for every piece,
+invariant under the square's eight symmetries bit for bit, and zero on the loop, so the
+traces stay exact and the projection is untouched.  `scripts/chartop_corner_controls.py`
+compares it with the other candidates on the same validation pieces.
 """
 
 from __future__ import annotations
@@ -105,9 +124,46 @@ from . import model as md
 from . import ports as pt
 
 FORMS = ("kernel", "split")
+#: Stage 0's bubble, and W358's, which vanishes like the distance to the boundary
+BUBBLES = ("square", "corner")
 #: a level-free source whose RMS is below this fraction of the source's own size is
 #: rounding (a uniform source minus its float64 mean), and is set to zero
 LEVEL_FREE_FLOOR = 1e-12
+
+
+# ---------------------------------------------------------------------------
+# the bubbles
+# ---------------------------------------------------------------------------
+
+
+def corner_bubble(n: int) -> np.ndarray:
+    """W358's bubble on the (n+1)^2 nodes [j, i]: ``4 xi (1 - xi) eta (1 - eta) /
+    (r_0 r_1 r_2 r_3)`` with ``r_c`` the distance to corner ``c``, zero on the loop.  The
+    factors are paired so that the field is invariant under the square's symmetries
+    bit for bit, not only to rounding."""
+    i = np.arange(n + 1, dtype=np.float64)
+    xi, xm = i[None, 1:-1] / n, (n - i[None, 1:-1]) / n
+    et, em = i[1:-1, None] / n, (n - i[1:-1, None]) / n
+    r00, r10, r11, r01 = np.hypot(xi, et), np.hypot(xm, et), np.hypot(xm, em), np.hypot(xi, em)
+    b = np.zeros((n + 1, n + 1))
+    b[1:-1, 1:-1] = 4.0 * ((xi * xm) * (et * em)) / ((r00 * r11) * (r10 * r01))
+    b.setflags(write=False)
+    return b
+
+
+@functools.lru_cache(maxsize=None)
+def _corner_bubble_torch(n: int, device: str) -> torch.Tensor:
+    return torch.tensor(corner_bubble(n), dtype=torch.float64, device=torch.device(device))
+
+
+def bubble_field(name: str, ps: md.PlainSquare) -> torch.Tensor:
+    """The bubble [n+1, n+1] (float64) on ``ps``'s grid and device: Stage 0's ``ps.beta``
+    for ``"square"``, `corner_bubble` for ``"corner"``."""
+    if name == "square":
+        return ps.beta
+    if name == "corner":
+        return _corner_bubble_torch(ps.n, str(ps.device))
+    raise ValueError(f"bubble {name!r}: one of {BUBBLES}")
 
 
 # ---------------------------------------------------------------------------
@@ -233,15 +289,20 @@ class KernelExpert(nn.Module):
     from ``w`` (element J~) and ``g`` (the nodal source the particular field answers for;
     ``None`` for none).  Kept after each call: ``last_principal`` (H0, the objective's
     normaliser), ``last_level`` (u_1), ``last_gbar`` and ``last_kernel_residual`` (r before
-    the projection)."""
+    the projection).  ``bubble`` multiplies every correction: Stage 0's ``"square"`` (the
+    default) or W358's ``"corner"``."""
 
     needs_load_fields = True
 
     def __init__(self, form: str = "split", backbone: str = "unet", size: str = "1M",
-                 kind: str = "sine-hat", m: int = 16, p_size: str | None = None):
+                 kind: str = "sine-hat", m: int = 16, p_size: str | None = None,
+                 bubble: str = "square"):
         super().__init__()
         if form not in FORMS:
             raise ValueError(form)
+        if bubble not in BUBBLES:
+            raise ValueError(bubble)
+        self.bubble = bubble
         self.form, self.backbone_name, self.size, self.kind, self.m = form, backbone, size, kind, m
         self.p_size = None if form == "kernel" else (p_size or size)
         K = 4 * m
@@ -256,7 +317,7 @@ class KernelExpert(nn.Module):
 
     def config(self) -> dict:
         return {"backbone": self.backbone_name, "size": self.size, "form": self.form,
-                "kind": self.kind, "m": self.m, "p_size": self.p_size,
+                "kind": self.kind, "m": self.m, "p_size": self.p_size, "bubble": self.bubble,
                 "parameters": md.parameters(self)}
 
     def forward(self, x, s, s0, w=None, g=None):
@@ -274,7 +335,7 @@ class KernelExpert(nn.Module):
             out = self.net(x[:, :4], s).to(torch.float64)
             N, N1 = out[:, :-1], out[:, -1]
             Np = self.pnet(xp, s).to(torch.float64)[:, 0]
-        beta = ps.beta[1:-1, 1:-1]
+        beta = bubble_field(self.bubble, ps)[1:-1, 1:-1]
         H0 = ps.principal(s0, torch.float32).to(torch.float64)
         u10 = level_principal(ps, s0, torch.float32).to(torch.float64)
         a = u10.abs().amax(dim=(-2, -1))
@@ -290,10 +351,13 @@ class KernelExpert(nn.Module):
 
 
 def make(backbone: str, size: str, form: str, kind: str = "sine-hat", m: int = 16,
-         p_size: str | None = None) -> nn.Module:
-    """Stage 0's `model.Expert` for its forms, `KernelExpert` for these."""
+         p_size: str | None = None, bubble: str = "square") -> nn.Module:
+    """Stage 0's `model.Expert` for its forms, `KernelExpert` for these.  Stage 0's forms
+    have only the square bubble."""
     if form in FORMS:
-        return KernelExpert(form, backbone, size, kind, m, p_size)
+        return KernelExpert(form, backbone, size, kind, m, p_size, bubble)
+    if bubble != "square":
+        raise ValueError(f"Stage 0's form {form!r} has only the square bubble")
     return md.Expert(backbone, size, form, kind, m)
 
 

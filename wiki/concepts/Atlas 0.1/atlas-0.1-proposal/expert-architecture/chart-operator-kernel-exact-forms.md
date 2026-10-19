@@ -2,7 +2,7 @@
 
 **Type:** Concept page — **build record and draft registration** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
 **Status:** built and checked on 2026-10-18, written up on 2026-10-19. **Untrained weights only**: zero heads, or seeded random weights. Nothing was trained, registered or hash-pinned. §8 is a draft registration for the owner to accept, change or refuse. `atlas/chartop/gates.py`, Stage 0's registration, is unchanged.
-**Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] §9.7 and §12, items 1–2 · **Worklist:** [[gap-worklist]] W356, W357 · **Family:** [[chart-operator-family-catalog]] (CO-D)
+**Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] §9.7 and §12, items 1–2 · **Worklist:** [[gap-worklist]] W356, W357; W358 in §10 · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
 
@@ -300,11 +300,81 @@ Stage 0 spent \$4.06 on 525,000 training steps over eleven arms. This draft has 
 - **Arm B was not passed through the new forms**, so that the next registration's bars are drafted before any trained number in them has been seen. B's weights ran only in their own form, as a check of the measure (§7.3).
 - **B on the steps lowered by 300 K** was not run, so B's step errors in that frame are not known.
 - **Not priced**: the split form's forward pass and training step.
-- **W358 is untouched**: the side modes ask what Stage 0's did (§7.4).
+- **W358 is not in these forms as measured here**: the side modes ask what Stage 0's did (§7.4). §10 measures the fixes, untrained.
 - **The random-weight controls cannot reproduce a learned dependence on the load** (§7.2). The guarantee is structural, and its test is bitwise.
 - **The cosine basis** is covered by the forms and their tests, but no benchmark ran with it.
 - **One resolution on the benchmarks**, $n=64$; the diagnostics ran at 32, 64 and 128.
 - **Nothing on the website or in `proposal/`.**
+
+---
+
+## 10. W358: a bubble that follows the corners, and the high sines by strips (checked untrained)
+
+**Intuition.** A conformal chart keeps angles, so it can carry the reference square's right-angled corners only onto right-angled corners. A piece whose physical corner is not a right angle needs a chart that shears there ($\operatorname{Im}\mu\neq0$). Near such a corner the exact modes behave like the physical corner's own harmonic functions, which vanish like $r^{\pi/\alpha}$ at a corner of angle $\alpha$. Stage 0's bubble vanishes like $r^2$ there. At an obtuse corner the quotient the head must output therefore behaves like $r^{\pi/\alpha-2}$: unbounded, and the grid sees more of it at every refinement. A bubble that vanishes only like the distance to the boundary, at the corners as along the sides, leaves a bounded quotient at every convex corner, whatever its angle.
+
+**Rigorously.** Freeze the pulled-back tensor $A$ at a corner and change variables by $y=A^{-1/2}x$. The operator becomes the Laplacian and the reference quarter-plane a wedge of angle $\omega$, with
+
+$$\cos\omega=\frac{-a_{12}}{\sqrt{a_{11}a_{22}}}=\frac{2\operatorname{Im}\mu}{\lvert1-\mu\rvert\,\lvert1+\mu\rvert}$$
+
+in the corner's own frame. $\omega$ is the physical corner angle: on seed 2,000,101 the corner elements give 55.7°, 109.1°, 97.8° and 74.2° against the generator's 54.9°, 109.0°, 98.0° and 73.4°. A real $\mu$, the stretched conformal maps, leaves $\omega=\pi/2$. Near the corner the exact mode's difference from the plain square's vanishes on both sides and behaves like $c\,r^{\pi/\omega}$ (Grisvard, *Elliptic Problems in Nonsmooth Domains*, 1985). At a right angle with varying coefficients it behaves like $r^2\log r$. Divided by $\beta\sim16\,\xi\eta$, the peak at the node diagonally next to the corner grows like $n^{2-\pi/\omega}$ once $\omega>\pi/2$. The **corner bubble** is
+
+$$\beta_c=\frac{4\,\xi(1-\xi)\,\eta(1-\eta)}{r_0\,r_1\,r_2\,r_3},$$
+
+with $r_c$ the distance to corner $c$. It is one at the centre and zero on the loop. On every interior node, at every resolution, it lies between 2 and 3.28 times the distance to the boundary; near a corner it is $\xi\eta/r$ up to a factor. Every convex corner has $\pi/\omega>1$, so $(H-H^{(0)})/\beta_c$ stays bounded with no angle to estimate. It is one fixed field for every piece, invariant under the square's eight symmetries bit for bit, so the traces, the projection of §3 and D4 augmentation are untouched. Bubbles built from distance functions are the standard way to impose Dirichlet data exactly in physics-informed networks (Sukumar & Srivastava, *CMAME* 389, 2022). The product of the four sides' distances vanishes to second order at the corners, which is Stage 0's bubble.
+
+**The controls.** `scripts/chartop_corner_controls.py` → `out/chartop/corner-controls.json`, run on the laptop on 2026-10-19 in 657 s, on battery at 1.4 GHz. It uses diagnose's validation pieces $2{,}000{,}100$–$2{,}000{,}107$ at $n=32$, 64, 128 and 256, with classical solves only: no network and no training. Per candidate it measures:
+- **The target**: the quotient $N^\star=(H-P)/\beta$ the head must output for the form to return the exact modes, over the columns it learns ($P$ the candidate's classical part). Peak and RMS, medians over the eight pieces. Sweeps do not change the target.
+- **$e_H$ if the network learned only what is smooth**: each output is the energy-best member of $\beta\cdot\operatorname{span}\{\cos p\pi\xi\cos q\pi\eta:\ p,q<K\}$, which is the minimiser the label-free objective would reach in that class (T26). It then goes through the sweeps and the projection of §3, so the uniform state stays a fixed point. $K=8$, and $K=16$ at $n=128$.
+- **The cost per piece**: the classical work the candidate adds to the network's call, over the exact classical solve of the same piece (one sparse LU, 64 mode solves and the level field). Matrix assembly is excluded throughout, and the ratios come from one run.
+
+The candidates:
+- **C1**: the piece's own tensor and reaction frozen at each corner element, solved exactly on the whole square, the four blended by a smooth partition of unity that is one near its corner.
+- **C2**: damped Jacobi sweeps (weight 2/3) on the true operator, after the output and before the projection.
+- **C3**: the side sines $j=9$–15 by a strip solve: the true operator on the nodes within $1/8$ of their side, with the plain square's modes as data beyond. The network learns the other 36 columns only.
+- **C4**: the angle bubble ($r^{\min(\pi/\omega,2)}$ at each corner, $\omega$ from the corner element) and the corner bubble $\beta_c$.
+
+**Positive control:** Stage 0's bubble reproduces diagnose's record (16.42, 50.24, 89.24) to $10^{-13}$.
+
+| candidate | peak of $N^\star$: $n=32$ / 64 / 128 / 256 | RMS ($n=128$) | $e_H$, $N=0$ ($n=128$) | $e_H$, smooth $N$, $K=8$: 32 / 64 / 128 / 256 | $K=16$ ($n=128$) | cost / exact ($n=128$) |
+|---|---|---|---|---|---|---|
+| Stage 0's bubble | 16.4 / 50.2 / 89.2 / 169.6 | 0.971 | 0.385 | 0.265 / 0.302 / 0.335 / 0.363 | 0.187 | 0.20 |
+| C1 frozen principal part | 4.5 / 9.7 / 10.2 / 14.4 | 0.164 | 0.149 | 0.108 / 0.128 / 0.123 / 0.125 | 0.079 | 3.87 |
+| C2 sweeps ×4 | as Stage 0 | 0.971 | 0.326 | 0.051 / 0.159 / 0.270 / 0.341 | 0.121 | 0.40 |
+| C2 sweeps ×16 | as Stage 0 | 0.971 | 0.242 | 0.004 / 0.052 / 0.174 / 0.293 | 0.049 | 1.12 |
+| C3 strips, $j=9$–15 | 13.4 / 26.7 / 39.4 / 84.6 | 0.624 | 0.219 | 0.099 / 0.109 / 0.121 / 0.134 | 0.072 | 0.41 |
+| C4 angle bubble | 11.7 / 28.0 / 58.9 / 84.1 | 0.736 | 0.385 | 0.264 / 0.301 / 0.334 / 0.363 | 0.184 | 0.21 |
+| **C4 corner bubble** | 4.2 / 9.1 / 14.4 / 19.0 | 0.396 | 0.385 | 0.263 / 0.300 / 0.333 / 0.362 | 0.187 | 0.20 |
+| C4 + C1 | 2.8 / 5.4 / 8.6 / 12.2 | 0.143 | 0.149 | 0.107 / 0.128 / 0.123 / 0.126 | 0.081 | 3.87 |
+| C4 + C2 ×16 | 4.2 / 9.1 / 14.4 / 19.0 | 0.396 | 0.242 | 0.004 / 0.051 / 0.173 / 0.291 | 0.049 | 1.12 |
+| **C4 + C3** | 4.2 / 6.8 / 9.4 / 10.5 | 0.316 | 0.219 | 0.099 / 0.109 / 0.124 / 0.136 | 0.071 | 0.41 |
+| C4 + C3 + C2 ×4 | 4.2 / 6.8 / 9.4 / 10.5 | 0.316 | 0.205 | 0.029 / 0.069 / 0.106 / 0.130 | 0.054 | 0.61 |
+
+**What the table shows.**
+- **Stage 0's peak keeps growing**: 1.9 times from $n=128$ to 256, and on one piece 7.4 times (56.9 to 418.5).
+- **The corner bubble divides the peak by 4–9**, and the level field's by 2–3.4 (0.70, 0.73, 0.75, 1.07 against 1.37, 1.90, 2.44, 3.65). Its growth per doubling falls from 2.2 to 1.6 to 1.3. It leaves the smooth $e_H$ as it was (0.333 against 0.335): it changes what the head must say near the corners, not how much of the answer is smooth.
+- **The angle bubble does much worse** (58.9 at $n=128$). It needs an angle from one element, and it leaves the right-angled corners' $r^2\log r$ at full strength.
+- **C1 is the best classical part**: $e_H$ 0.149 with no network, against 0.385. But it costs 3.9 exact solves, and its peak still grows (10.2 to 14.4). It has the singular exponent right, but not the coefficient, which depends on the whole piece.
+- **C2 fades with the resolution.** Sixteen sweeps leave a smooth $e_H$ of 0.004 at $n=32$ and 0.29 at $n=256$, because a sweep's reach is fixed in cells while the high sines' layers are fixed in the reference square.
+- **C3 removes the high sines' error at every resolution**, at a fifth of the exact solve on top of the principal part. With the corner bubble it is **the only candidate whose peak levels off**: 9.4 to 10.5 from $n=128$ to 256, 1.12 times. Per piece the growth is 1.06–1.32, the largest on 2,000,106, whose material interface meets a side.
+- **The pass condition, a peak that stops growing over $n=32$–128, is met by no candidate.** C4 + C3 grows 1.62 and then 1.38 times per doubling there, and 1.12 after that.
+
+**Where the remaining growth comes from** (one-off probes on three of the pieces out to $n=512$, not in the record):
+- **The corner singularity.** At obtuse and near-right corners, Stage 0's quotient grows at every resolution in every mode group. On a 120° parallelogram (a test, below) Stage 0's quotient grows fivefold from $n=16$ to 64, and the corner bubble's by under a half, with shrinking increments.
+- **The modes' own layers.** Under the corner bubble the peak moves to the first interior row along a side. There it climbs, with shrinking increments, while the layers of the higher sines (width about $1/(j\pi)$) are resolved. The $j=15$ mode of 2,000,101 gives 18.6, 25.5 and 30.3 at $n=128$, 256 and 512, up by 6.9 and then 4.9, and its first-row profile converges. C3 takes the worst of these away.
+- **A material interface meeting a side.** This is a singular point of the exact solution in its own right, and the form leaves it alone. On 2,000,106 the peak sits on the first column, beside the point where a jump of 0.94 in $\log\hat\kappa$ meets the side $\xi=0$. Its sines $j=1$–3 level off there (8.8, 10.4, 10.5 at $n=128$, 256, 512) while $j=9$–15 still climb.
+
+**Recommendation.** Register **C4 + C3**: the corner bubble on every output (built and tested, below), with the side sines $j=9$–15 computed by strip solves. It is the only combination whose target levels off. It leaves a smooth $e_H$ of 0.124 ($K=8$) or 0.071 ($K=16$) at $n=128$, against Stage 0's 0.335 and 0.187, for 0.41 of the exact solve's CPU time. Four sweeps on top (C2 ×4) are optional: they lower the smooth $e_H$ to 0.106 for another 0.2 of the exact solve. Not C1, which costs more than the solve it would replace, and not C2 alone, which fades with $n$. **The strips are measured here but not built into the expert.** The expert would need the piece's assembled operator near its sides in its call; the host has it. **[AI Inference]:** neither smooth class reaches E1's bar of 0.01. The error that remains is the low modes' anisotropy, which is what the network is for, so E1 now measures the network rather than the form. Whether a trained U-Net beats a 16 × 16 cosine class is a training question. The strips' fifth of an exact solve also counts against E5, whose network cost has not been priced.
+
+**Built** (untrained; nothing registered or hash-pinned; `gates.py` unchanged):
+- `forms.corner_bubble`, and `KernelExpert(..., bubble="corner")` for both forms. `"square"`, Stage 0's bubble, stays the default and answers bit for bit as before. `train.Arm.bubble` and `train.load_expert` carry the choice. A configuration written before W358 loads as `"square"`, and Stage 0's own forms refuse `"corner"`.
+- Five tests in `tests/test_chartop_model.py`, with random weights and classical solves only:
+  - the bubble's bounds against the distance to the boundary at $n=16$, 64 and 256, and its bitwise symmetry;
+  - the 120° parallelogram above;
+  - both forms kernel-exact under the corner bubble at weight scale 0.3, with the side modes equal to $H^{(0)}+\beta_cN$ bit for bit;
+  - the square bubble unchanged;
+  - training, saving and loading.
+
+**Not shown here:** a trained network in either bubble; the strips inside the expert; the particular field's quotient; any resolution above 256 in the record; any treatment of the interface meeting a side.
 
 ---
 
@@ -316,4 +386,4 @@ Stage 0 spent \$4.06 on 525,000 training steps over eleven arms. This draft has 
 - [[chart-operator-general-form]] — G0, and the kernels of the other families (rigid motions, affine fields)
 - [[chart-operator-family-catalog]] — CO-D, and the families Stage 1 builds next
 - [[formal-proofs-record]] — T25 and T26, which hold for these forms as for any outputs with exact traces
-- [[gap-worklist]] — W356 and W357; W358, the corner growth these forms leave in place
+- [[gap-worklist]] — W356 and W357; W358, the corner growth, and its fixes compared in §10

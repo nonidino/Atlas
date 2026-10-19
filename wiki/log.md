@@ -696,3 +696,7 @@ There are 67 tests in `tests/test_chartop_*.py`, the scripts are `scripts/charto
 **Not checked.** The external links of the other pages, and the pages at phone width.
 
 **Changed:** nothing but this entry.
+
+## [2026-10-19] note | W358: the corner bubble and the strips, checked untrained
+
+Four candidate fixes for the bubble form's corner growth, compared on diagnose's validation pieces at n = 32 to 256 with classical solves only (`scripts/chartop_corner_controls.py` → `out/chartop/corner-controls.json`): the corner bubble with strips for the sines j = 9-15 is the only one whose peak levels off, and is recommended. Written once in [[chart-operator-kernel-exact-forms]] §10; [[gap-worklist]] W358 is in progress.

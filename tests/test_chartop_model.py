@@ -503,3 +503,141 @@ def test_a_march_keeps_the_level_field_with_the_modes(examples):
     assert np.max(np.abs(r.up + r.H @ c1 - 1.0)) < 1e-12
     fresh = ex.respond([later], lambda n_: pb)[0]
     assert np.max(np.abs(fresh.up + kept[0].H @ c1 - 1.0)) > 1e-4
+
+
+# ---------------------------------------------------------------------------
+# W358: the corner bubble, random weights and classical solves only
+# ---------------------------------------------------------------------------
+
+
+def _symmetries(a):
+    return [a, np.fliplr(a), np.flipud(a), a.T, np.rot90(a, 1), np.rot90(a, 2), np.rot90(a, 3),
+            np.flipud(a.T)]
+
+
+@pytest.mark.parametrize("n", [16, 64, 256])
+def test_the_corner_bubble_vanishes_like_the_distance_to_the_boundary(n):
+    """Zero on the loop, one at the centre, and between 2 and 3.28 times the distance to
+    the boundary on every interior node at every resolution, corners included.  Stage
+    0's bubble falls to about 16/n of that distance at the node next to a corner.  The
+    field is invariant under the square's eight symmetries bit for bit, so it commutes
+    with D4 augmentation exactly."""
+    b = forms.corner_bubble(n)
+    t = np.arange(n + 1) / n
+    XI, ET = np.meshgrid(t, t)
+    dist = np.minimum.reduce([XI, 1 - XI, ET, 1 - ET])
+    inner = np.zeros_like(b, bool)
+    inner[1:-1, 1:-1] = True
+    assert np.all(b[~inner] == 0.0)
+    assert abs(b[n // 2, n // 2] - 1.0) < 1e-15
+    r = b[inner] / dist[inner]
+    assert r.min() >= 2.0 - 1e-12 and r.max() <= 3.28
+    square = 16 * XI * (1 - XI) * ET * (1 - ET)
+    assert square[1, 1] / dist[1, 1] < 16.0 / n
+    assert all(np.array_equal(b, s) for s in _symmetries(b))
+
+
+def test_the_corner_bubble_bounds_the_quotient_at_a_sheared_corner():
+    """A parallelogram with 120- and 60-degree corners: the pulled-back tensor is constant
+    with a12 != 0, so the exact modes vanish like r^1.5 at the obtuse corners.  The
+    quotient (H - H0) / beta that Stage 0's bubble asks for grows fivefold from n = 16 to
+    64; the corner bubble's grows by under a half, by less with each doubling (classical
+    solves, hats and sines j <= 3)."""
+    a = math.radians(120.0)
+
+    def F(X, Y):
+        return X + Y * math.cos(a), Y * math.sin(a)
+
+    peaks = {"square": [], "corner": []}
+    for n in (16, 32, 64):
+        p = PieceProblem(ch.Chart(ch.from_map(F, n), "affine"))
+        Q = ports.basis("sine-hat", n, 4).Q
+        D = fe.Exact(p.matrix(), n).modes(Q) - principal.modes(n, Q, 0.0)
+        t = np.arange(1, n) / n
+        XI, ET = np.meshgrid(t, t)
+        bs = (16 * XI * (1 - XI) * ET * (1 - ET)).ravel()
+        bc = forms.corner_bubble(n)[1:-1, 1:-1].ravel()
+        peaks["square"].append(float(np.abs(D / bs[:, None]).max()))
+        peaks["corner"].append(float(np.abs(D / bc[:, None]).max()))
+    sq, co = peaks["square"], peaks["corner"]
+    assert sq[2] > 4.0 * sq[0]
+    assert co[2] < 1.5 * co[0] and co[2] - co[1] < co[1] - co[0] and co[2] < 1.5
+
+
+@pytest.mark.parametrize("kind", ports.KINDS)
+@pytest.mark.parametrize("form", forms.FORMS)
+def test_the_corner_bubble_keeps_the_forms_exact(form, kind):
+    """With the corner bubble and random weights (std 0.3), steady and for two steps:
+    the uniform state is a fixed point to float64 rounding, and the side modes are the
+    network's own ``H0 + beta_c N`` bit for bit, beta_c being `forms.corner_bubble`."""
+    n, m = 16, 8
+    e = _randomise(forms.KernelExpert(form, "unet", "0.3M", kind=kind, m=m, bubble="corner"), 0.3)
+    x, s, s0, w, g = _random_batch(n)
+    with torch.no_grad():
+        H, up = e(x, s, s0, w=w, g=g)
+        out = e.net(x[:, :4] if form == "split" else torch.cat(
+            [x[:, :4], forms.split_source(x, w, g)[1][:, None].to(x.dtype)], dim=1), s).to(torch.float64)
+    ks = forms.kernel_square(n, kind, m, "cpu")
+    pre = float(e.last_kernel_residual.abs().max())
+    assert pre > 1e-3
+    assert float(forms.residual(H, e.last_level, s0, ks).abs().max()) <= 1e-14 * (1.0 + pre)
+    ps = model.plain_square(n, kind, m, "cpu")
+    bc = torch.tensor(forms.corner_bubble(n), dtype=torch.float64)[1:-1, 1:-1]
+    H_raw = ps.principal(s0, torch.float32).to(torch.float64) + bc * out[:, :4 * m, 1:-1, 1:-1]
+    side = ks.c1 == 0
+    assert torch.equal(H[:, side], H_raw[:, side])
+    assert torch.isfinite(H).all() and torch.isfinite(up).all()
+
+
+@pytest.mark.parametrize("form", forms.FORMS)
+def test_the_square_bubble_is_the_default_and_unchanged(form):
+    """``bubble="square"`` is the default and answers bit for bit as the W356/W357 forms
+    did (Stage 0's ``beta``); the same weights under the corner bubble answer otherwise;
+    and with zero heads the bubble does not matter."""
+    n, m = 16, 8
+    a = _randomise(forms.KernelExpert(form, "unet", "0.3M", m=m), 0.02)
+    b = forms.KernelExpert(form, "unet", "0.3M", m=m, bubble="square").eval()
+    c = forms.KernelExpert(form, "unet", "0.3M", m=m, bubble="corner").eval()
+    b.load_state_dict(a.state_dict())
+    c.load_state_dict(a.state_dict())
+    assert a.config()["bubble"] == "square" and c.config()["bubble"] == "corner"
+    x, s, s0, w, g = _random_batch(n)
+    with torch.no_grad():
+        Ha, ua = a(x, s, s0, w=w, g=g)
+        Hb, ub = b(x, s, s0, w=w, g=g)
+        Hc, _uc = c(x, s, s0, w=w, g=g)
+    assert torch.equal(Ha, Hb) and torch.equal(ua, ub)
+    assert float((Ha - Hc).abs().max()) > 1e-6
+    z1 = forms.KernelExpert(form, "unet", "0.3M", m=m).eval()
+    z2 = forms.KernelExpert(form, "unet", "0.3M", m=m, bubble="corner").eval()
+    with torch.no_grad():
+        assert torch.equal(z1(x, s, s0, w=w, g=g)[0], z2(x, s, s0, w=w, g=g)[0])
+
+
+def test_a_corner_bubble_expert_trains_saves_and_loads(examples, tmp_path):
+    """The label-free objective's gradient reaches the mode and level rows through the
+    corner bubble; the expert saves and loads through `train.load_expert` with its
+    bubble; a configuration written before W358 (no ``bubble`` key) loads as the square
+    bubble; and Stage 0's forms refuse the corner bubble."""
+    from atlas.chartop import train
+    b = _batch_from(examples)
+    e = forms.KernelExpert("kernel", "unet", "0.3M", bubble="corner")
+    H, up = forms.call(e, b)
+    o = model.objectives(b, H, up, "sine-hat", 16, None, "label-free", H0=e.last_principal)
+    o["loss"].mean().backward()
+    head = e.net.head.weight.grad[:, :, 0, 0]
+    assert torch.isfinite(head).all() and float(head[:64].abs().max()) > 0.0
+    assert float(head[-1].abs().max()) > 0.0
+    e = _randomise(forms.KernelExpert("split", "unet", "0.3M", m=8, p_size="0.3M", bubble="corner"), 0.02)
+    path = tmp_path / "best.pt"
+    torch.save({"model": e.state_dict(), "config": e.config()}, path)
+    e2 = train.load_expert(str(path))
+    assert e2.config() == e.config() and e2.bubble == "corner"
+    x, s, s0, w, g = _random_batch(16)
+    with torch.no_grad():
+        assert torch.equal(e(x, s, s0, w=w, g=g)[0], e2(x, s, s0, w=w, g=g)[0])
+    old = {k: v for k, v in e.config().items() if k != "bubble"}
+    torch.save({"model": e.state_dict(), "config": old}, path)
+    assert train.load_expert(str(path)).bubble == "square"
+    with pytest.raises(ValueError):
+        forms.make("unet", "0.3M", "bubble", bubble="corner")
