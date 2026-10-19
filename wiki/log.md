@@ -744,3 +744,16 @@ On the owner's OK ("Yes, hash-pin gates_forms.py now, the way Stage 0's registra
 - [AI Inference]: computing the strips only at validation, where they carry no gradient, would save about 12 h (\$3.2). That is a code change for the owner, and it needs a bit-for-bit test first.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status) and §8.7 (new) · [[gap-worklist]] W358.
+
+## [2026-10-19] note | The chart operator's strips only at validation: built and tested bit for bit
+
+On the owner's choice, before any run, the strips can now be left out of training (`train.Arm.strips_in_training`, True by default). With it False, the training steps call `forms.call(..., strip_solve=False)`. The 28 strip columns then stay the plain square's, with no strip solve and no operator assembly; validation, the host and the evaluation still solve them.
+- **Why the weights are the same.** The strip columns depend on the operator, not the weights, and the projection never reads them, so they add a constant to the loss and nothing to its gradient.
+- **The test** trains S's form twice for four steps on the CPU through `train.train`. The parameters, the AdamW state, the scheduler state and both validations are equal bit for bit.
+- **Its controls:** every training loss is strictly lower with the strips (the strips ran in one run only), a different seed changes the weights, and an expert without strips is unaffected.
+- **Not shown on the GPU**, where `train.py` does not ask for deterministic kernels.
+- **Tests:** 218 chartop tests pass, and the pin of `gates_forms.py` holds. `chartop_price.py --forms` now also times the skipped step.
+
+**The cost**, extrapolated from E5's priced steps: S's step falls to 0.064-0.100 s from 0.290 s, and training to 5.4-7.6 h from 19.5 h. That is about \$1.8-2.4 on one box (6.6-8.8 h), or \$2.1-2.7 on two (3.8-5.3 h of wall-clock), against \$5.6-5.8. The upper end is close to the \$2.67 credit. Nothing was trained or rented.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status) and §8.8 (new) · [[gap-worklist]] W358.

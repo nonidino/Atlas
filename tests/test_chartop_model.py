@@ -873,3 +873,99 @@ def test_the_strips_through_the_host():
     exs = fe.Exact(p.matrix(), p.n)
     km = forms.kernel_measures(forms.kernel_residual(ex, p, pb), exs.A_I, float(np.trace(exs.port_matrix(pb.Q))))
     assert km["e_K_inf"] < 1e-12
+
+
+def _shards(folder, split, seeds, labels=False, n=32):
+    """Examples of ``seeds`` at resolution ``n`` in the shard format `scripts/chartop_data.py`
+    writes (and its sine-hat labels when asked), for `train.train`."""
+    from atlas.chartop import train
+    exs = [data.draw(s, n=n) for s in seeds]
+    arrs = [data.arrays(e) for e in exs]
+    out = {k: np.stack([a[k] for a in arrs]) for k in train.KEYS}
+    out.update(seed=np.array(seeds), sup_mu=np.array([e.envelope["sup_abs_mu"] for e in exs]),
+               logJ_range=np.array([e.envelope["logJ_range"] for e in exs]),
+               s_grad=np.array([e.envelope["s_grad"] for e in exs]),
+               fo=np.array([-1.0 if e.fo is None else e.fo for e in exs]),
+               freq=np.array([e.freq for e in exs]), family=np.array([e.family for e in exs]),
+               method=np.array([e.method for e in exs]))
+    np.savez(folder / f"{split}_n{n}_0000.npz", **out)
+    if labels:
+        Q = ports.basis("sine-hat", n, 16).Q
+        lab = [data.labels_from_arrays(a, Q) for a in arrs]
+        np.savez(folder / f"labels_{split}_n{n}_0000.npz",
+                 H=np.stack([x["H"].T.astype(np.float32) for x in lab]),
+                 up=np.stack([x["up"].astype(np.float32) for x in lab]),
+                 trace_Lambda=np.array([x["trace_Lambda"] for x in lab]),
+                 up_energy=np.array([x["up_energy"] for x in lab]), lseed=np.array(seeds))
+
+
+def _same_state(a, b) -> bool:
+    if isinstance(a, torch.Tensor):
+        return isinstance(b, torch.Tensor) and a.dtype == b.dtype and torch.equal(a, b)
+    if isinstance(a, dict):
+        return a.keys() == b.keys() and all(_same_state(a[k], b[k]) for k in a)
+    if isinstance(a, (list, tuple)):
+        return len(a) == len(b) and all(_same_state(x, y) for x, y in zip(a, b))
+    return a == b
+
+
+def test_the_strips_only_at_validation_train_the_same_weights(examples, tmp_path):
+    """`train.Arm.strips_in_training=False` skips the strips in the training steps.
+    Training S's form (split, corner bubble, strips) for the same steps either way gives
+    the same parameters, optimiser and scheduler state, bit for bit, and the same
+    validations, which solve the strips in both runs.
+    The controls:
+    - the strips did run in one run only: every logged training loss is strictly
+      lower with them, since each strip column minimises the energy over a set that
+      contains the plain square's column, which the other run keeps;
+    - the bitwise comparison can fail: a different training seed changes the weights;
+    - the default is to solve them, and an expert without strips is called as before."""
+    import json
+    from atlas.chartop import train
+    d = tmp_path / "data"
+    d.mkdir()
+    _shards(d, "train", [data.SEEDS["train"] + 910 + i for i in range(4)])
+    _shards(d, "val", [data.SEEDS["val"] + 910 + i for i in range(2)], labels=True)
+
+    def run(name, **kw):
+        arm = train.Arm(name, form="split", size="0.3M", p_size="0.3M", bubble="corner", strips=True,
+                        steps=4, batch={32: 2}, val_every=2, **kw)
+        out = tmp_path / name
+        train.train(arm, str(d), str(out), device="cpu", log_every=1)
+        state = torch.load(out / "last.pt", map_location="cpu", weights_only=False)
+        log = [json.loads(line) for line in open(out / "log.jsonl", encoding="utf-8")]
+        arm_rec = json.load(open(out / "arm.json", encoding="utf-8"))["arm"]
+        return state, log, arm_rec
+
+    on, log_on, arm_on = run("on")
+    off, log_off, arm_off = run("off", strips_in_training=False)
+    assert arm_on["strips_in_training"] is True and arm_off["strips_in_training"] is False
+    assert on["step"] == off["step"] == 4
+    for key in ("model", "opt", "sched"):
+        assert _same_state(on[key], off[key]), key
+    val_on = [r for r in log_on if "val_e_H_median" in r]
+    val_off = [r for r in log_off if "val_e_H_median" in r]
+    assert len(val_on) == len(val_off) == 2
+    for a, b in zip(val_on, val_off):
+        assert {k: v for k, v in a.items() if k != "elapsed_s"} == {k: v for k, v in b.items() if k != "elapsed_s"}
+    loss_on = [r["loss"] for r in log_on if "loss" in r]
+    loss_off = [r["loss"] for r in log_off if "loss" in r]
+    assert len(loss_on) == len(loss_off) == 4 and all(a < b for a, b in zip(loss_on, loss_off))
+    other, _log, _arm = run("seed1", strips_in_training=False, seed=1)
+    assert not _same_state(on["model"], other["model"])
+    assert train.Arm("a").strips_in_training is True
+    # without strips the flag changes nothing: Stage 0's and W's experts are called as before
+    b = _batch_from(examples)
+    w = _randomise(forms.KernelExpert("split", "unet", "0.3M", p_size="0.3M"), 0.02)
+    with torch.no_grad():
+        (Ha, ua), (Hb, ub) = forms.call(w, b), forms.call(w, b, strip_solve=False)
+    assert torch.equal(Ha, Hb) and torch.equal(ua, ub)
+    s = _randomise(forms.KernelExpert("split", "unet", "0.3M", p_size="0.3M", bubble="corner", strips=True), 0.02)
+    with torch.no_grad():
+        (Hs, us), (Hn, un) = forms.call(s, b), forms.call(s, b, strip_solve=False)
+    assert s.last_strip_seconds == 0.0 and torch.equal(us, un)
+    assert torch.equal(Hs[:, list(s.learned)], Hn[:, list(s.learned)])
+    assert torch.equal(Hn[:, list(s.stripped)], s.last_principal[:, list(s.stripped)])
+    assert not torch.equal(Hs[:, list(s.stripped)], Hn[:, list(s.stripped)])
+    with pytest.raises(ValueError, match="operator"):
+        s(b["inputs"], b["scalars"], b["s0"], w=b["w"], g=b["g"])

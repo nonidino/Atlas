@@ -346,7 +346,7 @@ No verdict is predicted for E4, E5 or S11.
 1. **Done:** a new gates module carrying these bars (`atlas/chartop/gates_forms.py`), with a test against this section (`tests/test_chartop_gates_forms.py`).
 2. **Done:** the untrained re-measurement (§8.6).
 3. **Done:** E5 on a rented box, on the owner's OK (§8.7).
-4. **Waiting for the owner:** the runs. The credit must first be topped up (§8.7).
+4. **Waiting for the owner:** the runs. The credit must first be topped up (§8.7). The option to solve the strips only at validation is built and tested (§8.8).
 
 The module was hash-pinned on the owner's OK, on 2026-10-19, before any network in these forms was trained.
 
@@ -428,6 +428,38 @@ On the owner's OK ("rent one box at most \$0.70 an hour, preferably an RTX 3090-
 - **Within the ceiling of \$10**, and within the draft's range for this box class (\$3.2–9.0, §8.5).
 - **The credit, \$2.67, does not cover it.** The account needs a top-up before the runs.
 - **[AI Inference]:** §8.5's option would remove 0.19 s of S's 0.29 s step: computing the strip columns only at validation, since they add nothing to the gradient. That is about 12 of S's and S′'s 18 training hours, roughly \$3.2 at this rate, and S's box would finish in about 5 h instead of 13. It is a code change, and the owner's choice. Its claim that the weights are unchanged would first need a test showing them equal bit for bit with the strips on and off in training.
+
+### 8.8 The strips only at validation: built, tested, not yet used
+
+The owner chose to add the option before any run: "First add the option to compute the strip columns only at validation, with a test showing the weights bit for bit equal with the strips on and off in training." No bar, arm or prediction of §8.1–8.5 changes, and `gates_forms.py` is unchanged (its pin test passes).
+
+**What was built.**
+- `train.Arm.strips_in_training`, True by default, so the registered path is unchanged. With it False, the training steps call `forms.call(expert, batch, strip_solve=False)`, and `KernelExpert.forward` leaves the 28 strip columns at the plain square's $H^{(0)}$. Neither the strips nor the operator assembly they need runs.
+- Validation (`train.validate`), the host's calls (`LearnedExpert`) and the evaluation still solve the strips. The kept checkpoint is therefore chosen exactly as before.
+- The logged training loss changes with the option: it then counts the plain square's strip columns instead of the strips.
+
+**Why the weights cannot change.** The strip columns depend on the piece's operator and $H^{(0)}$, never on the weights. The W356 projection reads only the kernel columns, which are not strip columns. The objective sums the columns' energies, normalised by the principal part's. So the strip columns add a constant to each example's loss, and nothing to its gradient.
+
+**The test** (`tests/test_chartop_model.py`, `test_the_strips_only_at_validation_train_the_same_weights`). It trains S's form twice through `train.train`: split, corner bubble, strips, 0.3 M networks, four steps on four training pieces, with two validations on two labelled pieces at $n=32$, on the CPU.
+- **The result:** the parameters, the AdamW state and the scheduler state are equal bit for bit, and so are both validations' records.
+- **Control 1:** every logged training loss is strictly lower with the strips. Each strip column minimises the energy over a set that contains $H^{(0)}$'s column, so the strips ran in one run and not in the other.
+- **Control 2:** a different training seed changes the weights, so the comparison can fail.
+- **Control 3:** an expert without strips answers the same with the flag on or off. With strips, the learned columns and the particular field are equal bit for bit, while the strip columns differ.
+- The 218 chartop tests pass.
+
+**Not shown:** the GPU. `train.py` does not ask for deterministic GPU kernels, so two GPU runs with the same setting are not guaranteed to agree in the last bits. The equality is shown where the computation is deterministic, and the argument above is what carries it to the GPU.
+
+**The cost with the option**, an extrapolation from §8.7's priced steps until the training box prices it. `chartop_price.py --forms` now times this step too, as the row "S, strips only at validation".
+- **The bracket for S's step.** The lower end is W's step, 0.064 s. The upper end is S's priced step without its strips and assembly, 0.100 s, which keeps the transfers that the strip call made. On the laptop's CPU at $n=32$, the skipped step was 0.81 times S's and 0.88 times W's, since S's mode network has a smaller head.
+- **The hours:** S 2.7–4.2 h, S′ 1.3–2.1 h, W 1.3 h; training 5.4–7.6 h, against 19.5 h with the strips.
+- **Validation** now matters relative to the steps, and stays small: about 10 s each with the strips (from §8.7's forward passes), about 0.2 h over the five runs.
+
+| layout | box time | cost at \$0.272/h | wall-clock |
+|---|---|---|---|
+| one box, all five runs | about 6.6–8.8 h | about \$1.8–2.4 | 6.6–8.8 h |
+| two boxes: S on one, S′ and W on the other | about 7.6–9.8 h (3.8–5.3 and 3.8–4.5) | about \$2.1–2.7 | 3.8–5.3 h |
+
+Either layout is under half the cost with the strips solved in training (\$5.6–5.8). The upper end is close to the \$2.67 credit, so the owner's top-up comes first.
 
 ---
 

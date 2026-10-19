@@ -29,7 +29,9 @@ only a wall-clock figure.  For each, on the same examples as the step pricing ab
   the assembly of the operators the strips need and the strips themselves included;
 - **the assembly** (`forms.batch_operators`) alone, and the strips' own seconds;
 - **one training step** as `train.train` takes it: D4 augmentation, the forward pass,
-  the float64 objective, backward, gradient clipping, AdamW.
+  the float64 objective, backward, gradient clipping, AdamW.  S's step is also timed
+  with the strips skipped (``train.Arm.strips_in_training=False``: they carry no
+  gradient, so the weights are the same).
 The record ends with a projection: the mean step over Stage 0's training-set mix
 (each resolution drawn in proportion to its examples per batch, as `train.train`
 draws it), and the hours of each arm.  Writes ``price-forms-<host>-<time>.json``.
@@ -199,7 +201,8 @@ def forms_times(dev, ns=(32, 64, 128)) -> dict:
     autocast = dev.type == "cuda"
     batch = dict(GF.E5_PRICED)
     c = GF.COMMON
-    arms = {"S": GF.ARMS["S"], "W": GF.ARMS["W"], "B (Stage 0, reference)": None}
+    off = "S, strips only at validation"     # train.Arm.strips_in_training=False
+    arms = {"S": GF.ARMS["S"], off: GF.ARMS["S"], "W": GF.ARMS["W"], "B (Stage 0, reference)": None}
     rows = []
     for n in ns:
         exs = _examples(n, batch[n], data.SEEDS["train"] + 50_000 + 1000 * n)
@@ -216,6 +219,7 @@ def forms_times(dev, ns=(32, 64, 128)) -> dict:
             for p in e.parameters():      # random weights, as above: zero heads could flatter
                 torch.nn.init.normal_(p, 0.0, 0.02)
             strips = getattr(e, "needs_operator", False)
+            solve = label != off                # the training step solves the strips
             b0, _ = tr._batch(T, idx, False)
             row = {"arm": label, "n": n, "batch": len(exs), "parameters": md.parameters(e),
                    "config": e.config() if hasattr(e, "config") else {"form": "bubble"}}
@@ -241,8 +245,8 @@ def forms_times(dev, ns=(32, 64, 128)) -> dict:
                 b, _lab = tr._batch(T, idx, False)
                 b = md.d4(b, int(rng.integers(8)))
                 with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
-                    H, up = fm.call(e, b)
-                if strips:
+                    H, up = fm.call(e, b, strip_solve=solve)
+                if strips and solve:
                     strip_s.append(e.last_strip_seconds)
                 o = md.objectives(b, H, up, "sine-hat", 16, None, "label-free",
                                   H0=getattr(e, "last_principal", None))
@@ -254,14 +258,15 @@ def forms_times(dev, ns=(32, 64, 128)) -> dict:
             if dev.type == "cuda":
                 torch.cuda.reset_peak_memory_stats()
             row["step_s"] = _median_time(step, dev, warm=3, reps=8)
-            if strips:
+            row["step_solves_strips"] = bool(strips and solve)
+            if strips and solve:
                 row["step_strip_s"] = statistics.median(strip_s[-8:])
             row["peak_gib"] = torch.cuda.max_memory_allocated() / 2 ** 30 if dev.type == "cuda" else None
             rows.append(row)
             print(f"forms {label:24s} n={n:3d} batch={len(exs):2d}: forward {row['forward_s']:.4f} s, "
                   f"step {row['step_s']:.4f} s"
                   + (f" (strips {row['step_strip_s']:.4f} s, assembly {row['assembly_s']:.4f} s)"
-                     if strips else ""), flush=True)
+                     if strips and solve else ""), flush=True)
     # the projection: the mean step over Stage 0's mix, and each arm's hours
     w = {n: STAGE0_TRAIN_EXAMPLES[n] / batch[n] for n in ns}
     tot = sum(w.values())
@@ -278,11 +283,13 @@ def forms_times(dev, ns=(32, 64, 128)) -> dict:
             runs = len(cfg["seeds"])
             p["registered_steps"] = cfg["steps"] * runs
             p["hours"] = p["mean_step_s"] * cfg["steps"] * runs / 3600.0
-            if label == "S":   # S' runs S's form at the comparison budget, two seeds
+            if label in ("S", off):   # S' runs S's form at the comparison budget, two seeds
                 sp = GF.ARMS["Sp"]
                 p["Sp_hours"] = p["mean_step_s"] * sp["steps"] * len(sp["seeds"]) / 3600.0
     proj["training_hours"] = (proj["arms"]["S"]["hours"] + proj["arms"]["S"]["Sp_hours"]
                               + proj["arms"]["W"]["hours"])
+    proj["training_hours_strips_only_at_validation"] = (
+        proj["arms"][off]["hours"] + proj["arms"][off]["Sp_hours"] + proj["arms"]["W"]["hours"])
     print("projection", json.dumps(proj), flush=True)
     return {"rows": rows, "projection": proj}
 

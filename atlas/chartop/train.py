@@ -53,6 +53,10 @@ class Arm:
     p_size: str | None = None           # the split form's particular-field network (`forms`)
     bubble: str = "square"              # the kernel-exact forms' bubble (`forms.BUBBLES`, W358)
     strips: bool = False                # the side sines j = 9-15 by strip solves (W358's C3)
+    #: False: the training steps skip the strips (`forms.call(strip_solve=False)`), which carry
+    #: no gradient, so the weights are the same; validation and every answer still solve them.
+    #: The logged training loss then counts the plain square's strip columns, not the strips'.
+    strips_in_training: bool = True
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -238,7 +242,7 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
             if lab is not None:
                 lab = md.d4_labels(lab, arm.kind, expert.m, k)
         with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
-            H, up = fm.call(expert, b)
+            H, up = fm.call(expert, b, strip_solve=arm.strips_in_training)
         o = md.objectives(b, H, up, arm.kind, expert.m, lab, arm.objective,
                           H0=getattr(expert, "last_principal", None))
         loss = o["loss"].mean()

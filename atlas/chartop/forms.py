@@ -122,7 +122,10 @@ network input: `call` assembles it from a batch's element arrays, and
 `expert.LearnedExpert` from each piece's own matrix.  The projection comes last and
 moves only the kernel columns, so the strip columns pass through it bit for bit and
 ``H c1 + s0 u_1 = 1`` still holds to rounding.  Off by default; sine-hat with
-``m = 16`` only, the basis and width the controls measured.
+``m = 16`` only, the basis and width the controls measured.  A training step may skip
+them (``strip_solve=False``, `train.Arm.strips_in_training`).  They carry no gradient,
+so the weights are the same, and the step drops the strips and their assembly, 65% of
+its time on the priced box.
 """
 
 from __future__ import annotations
@@ -450,8 +453,14 @@ class KernelExpert(nn.Module):
         self.last_strip_seconds = time.perf_counter() - t0
         return torch.tensor(out, dtype=torch.float64, device=H0.device)
 
-    def forward(self, x, s, s0, w=None, g=None, ops=None):
-        if self.strips and (ops is None or len(ops) != x.shape[0]):
+    def forward(self, x, s, s0, w=None, g=None, ops=None, strip_solve: bool = True):
+        """``strip_solve=False`` is for training only (`train.Arm.strips_in_training`): the
+        strip columns stay the plain square's ``H0`` and no operator is needed.  They do
+        not depend on the weights, the projection does not read them, and the objective
+        sums the columns' energies, so they add a constant to the loss and nothing to its
+        gradient.  The weights trained either way are the same, bit for bit on the CPU
+        (``tests/test_chartop_model.py``).  Every call that answers a piece solves them."""
+        if self.strips and strip_solve and (ops is None or len(ops) != x.shape[0]):
             raise ValueError("the strips need each example's operator: ops=[(A_I, M_IG), ...]")
         n = x.shape[-1] - 1
         dev = str(x.device)
@@ -475,7 +484,10 @@ class KernelExpert(nn.Module):
             learned = torch.tensor(self.learned, device=H0.device)
             H_raw = H0.clone()
             H_raw[:, learned] = H0[:, learned] + beta * N[..., 1:-1, 1:-1]
-            H_raw[:, torch.tensor(self.stripped, device=H0.device)] = self._strip_columns(ops, H0)
+            if strip_solve:
+                H_raw[:, torch.tensor(self.stripped, device=H0.device)] = self._strip_columns(ops, H0)
+            else:
+                self.last_strip_seconds = 0.0
         else:
             H_raw = H0 + beta * N[..., 1:-1, 1:-1]
         u1 = u10 + a[:, None, None] * beta * N1[..., 1:-1, 1:-1]
@@ -501,11 +513,15 @@ def make(backbone: str, size: str, form: str, kind: str = "sine-hat", m: int = 1
     return md.Expert(backbone, size, form, kind, m)
 
 
-def call(expert: nn.Module, batch: dict):
+def call(expert: nn.Module, batch: dict, strip_solve: bool = True):
     """One forward pass on a training batch, passing ``w`` and ``g`` where the form reads
     them, and the operators the strips need, assembled from the batch's element arrays
-    (Stage 0's forms are called exactly as before)."""
+    (Stage 0's forms are called exactly as before).  ``strip_solve=False`` skips the
+    strips and their assembly (`KernelExpert.forward`): training steps only."""
     if getattr(expert, "needs_operator", False):
+        if not strip_solve:
+            return expert(batch["inputs"], batch["scalars"], batch["s0"], w=batch["w"], g=batch["g"],
+                          strip_solve=False)
         return expert(batch["inputs"], batch["scalars"], batch["s0"], w=batch["w"], g=batch["g"],
                       ops=batch_operators(batch))
     if getattr(expert, "needs_load_fields", False):
