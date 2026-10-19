@@ -710,3 +710,19 @@ See [[chart-operator-kernel-exact-forms]] §10: commit 6594c8a builds the side s
 [[chart-operator-kernel-exact-forms]] §8 is rewritten as a draft, replacing the W356/W357 draft of `f848f3d`. It quotes the owner's three choices: "Bubble + strips", "1 M (as drafted)" and "Main + W358 control". The arms are S (split form, corner bubble and strips, two 1 M U-Nets, 150,000 steps, 1 seed) and W358's control W (square bubble, no strips, 37,500 steps, 2 seeds), paired with S′ (as S, 37,500 steps, 2 seeds). The gates are K, D and L as before, E1 on the 36 learned columns against their own energy, E3, SE1-SE3, DUAL and KT unchanged, E4 in both frames, E5 priced on the box first, and S11. There is one comparison, CW: W over S′ on the mean lowered E4 energy error, with Stage 0's 0.8/1.25 bars and both pairings required. The predictions: K, D and L hold, E1 is probably not met, and CW is at least 1. The ceiling is \$10, each box at most \$0.70 an hour; extrapolated, the cost is \$3.2-9.0 on an RTX 3090-class box and \$8.7-25 on an A100. The strips run serially on the CPU at every training step and are expected to set the cost. Nothing was trained, rented or hash-pinned, and `gates.py` is unchanged.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] §8 · [[gap-worklist]] W358.
+
+## [2026-10-19] note | The chart-operator registration accepted; its gates module and the untrained re-measurement
+
+**What.** The owner accepted [[chart-operator-kernel-exact-forms]] §8 as written, in chat: "I accept the draft registration in chart-operator-kernel-exact-forms section 8 as written." Two of its four steps are now done; nothing was trained, rented or hash-pinned.
+- The bars are in `atlas/chartop/gates_forms.py`, which reads every bar shared with Stage 0 from `gates.py` (unchanged). `tests/test_chartop_gates_forms.py` checks the module against §8: the bars, the arms, Stage 0's budgets and the experts' parameter counts. It also checks that E1's denominator is the learned columns' own energy, so the permissive tr Lambda cannot pass where it fails.
+- The untrained re-measurement: `scripts/chartop_forms_controls.py --bubble corner --strips` writes `out/chartop/forms-controls-corner-strips.json`. It ran in 361 s on AC power, with the default run unchanged.
+
+**Found.**
+- K, D and L hold on S's form as on W's, at zero heads and with random weights: e_K at most 4.7e-16, the datum ratio within 2.0e-10 of one, and L bit for bit on all 126 benchmark pieces. E4 as initialised is met on bend-3 steady only.
+- The strips cut the benchmarks' median e_H by 35-45%, but CW's measure at step 0 is 4.948% for W against 4.937% for S: CW0 = 1.0023, a tie. So a loss for W must come from training.
+- On the validation pieces, e_H,L starts at 0.402 against E1's bar of 0.01.
+- The 216 chartop tests pass.
+
+**Next.** E5 on a rented box, and the hash pin, each waiting for the owner's OK.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] §8 (accepted; §8.6 new) · [[gap-worklist]] W358.

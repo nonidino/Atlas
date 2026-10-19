@@ -36,6 +36,25 @@ scales; and the classical 16-mode superelement.  Arm B's trained weights enter p
 only, as a check of the measure on the form B was trained in.
 
 Writes ``out/chartop/forms-controls.json``.
+
+**The registered re-measurement** (`atlas.chartop.gates_forms`, accepted 2026-10-19):
+
+    python scripts/chartop_forms_controls.py --bubble corner --strips
+
+measures arm S's form before any training, beside W's.  The experts are then:
+- the principal part;
+- W's form (split, Stage 0's bubble, no strips) with zero heads, which is W's step 0,
+  and with random weights at the two scales;
+- S's form (split, the corner bubble, the strips) likewise.
+Stage 0's bubble and arm B are left out.  Part 1 is as above.  Part 1b is gate L's own
+measurement: on every benchmark piece, steady and step, each split expert's modes and
+level field from calls with the piece's own source, no source and a unit-RMS random
+source, compared bit for bit.  Part 2 records e_K, e_H and e_H,L of the as-initialised
+forms on the validation seeds.  Diagnose's quotients are not re-run: section 10 of
+[[chart-operator-kernel-exact-forms]] measured them for the corner bubble.
+The record ends with gates K, D, L and E4 (both frames) judged by `gates_forms` on the
+untrained forms, and CW0: CW's measure, W's step 0 over S's.  None of it is a gate
+verdict on a trained network.  Writes ``out/chartop/forms-controls-corner-strips.json``.
 """
 from __future__ import annotations
 
@@ -56,7 +75,7 @@ import numpy as np  # noqa: E402
 import torch  # noqa: E402
 
 from atlas.chartop import benchmarks as bm, data, fe, forms, gates as G, host as hs  # noqa: E402
-from atlas.chartop import model as md, ports  # noqa: E402
+from atlas.chartop import gates_forms as GF, model as md, ports  # noqa: E402
 from atlas.chartop.expert import LearnedExpert  # noqa: E402
 from atlas.chartop.host import Response  # noqa: E402
 from atlas.chartop.train import load_expert  # noqa: E402
@@ -226,12 +245,17 @@ def benchmarks_part(experts: dict, b_expert) -> list:
     return out
 
 
-def diagnose_part(count: int) -> dict:
-    """What the kernel form asks, on validation seeds (classical solves only)."""
+def diagnose_part(count: int, form: tuple = ("kernel, zero heads", None), quotients: bool = True) -> dict:
+    """What the kernel form asks, on validation seeds (classical solves only).  ``form``
+    names the as-initialised form and its network (None: the kernel form, zero heads);
+    for a form with strips, e_H,L on the learned columns is recorded too."""
     rec = {"seeds": [data.SEEDS["val"] + 100, data.SEEDS["val"] + 100 + count - 1],
            "as_initialised": [], "quotients": {}}
     pp = LearnedExpert(md.Expert("unet", "0.3M"), envelope=data.ENVELOPE)
-    zk = LearnedExpert(forms.KernelExpert("kernel", "unet", "1M"), envelope=data.ENVELOPE)
+    zlabel, znet = form
+    zk = LearnedExpert(znet if znet is not None else forms.KernelExpert("kernel", "unet", "1M"),
+                       envelope=data.ENVELOPE)
+    learned = list(getattr(zk.net, "learned", None) or range(4 * 16))
     shares = []
     for i in range(count):
         e = data.draw(data.SEEDS["val"] + 100 + i, n=64)
@@ -239,9 +263,10 @@ def diagnose_part(count: int) -> dict:
         pb = ports.basis("sine-hat", 64, 16)
         ex = fe.Exact(p.matrix(), 64)
         H = ex.modes(pb.Q)
+        lam = np.diag(ex.port_matrix(pb.Q, H))
         trL = float(np.trace(ex.port_matrix(pb.Q, H)))
         row = {"seed": e.seed, "fo": e.fo, "sup_mu": e.envelope["sup_abs_mu"]}
-        for label, x in (("principal part", pp), ("kernel, zero heads", zk)):
+        for label, x in (("principal part", pp), (zlabel, zk)):
             km = forms.kernel_measures(uniform_residuals(x, [p], lambda n_: pb)[0], ex.A_I, trL)
             Ht = x.respond([p], lambda n_: pb)[0].H
             E = Ht - H
@@ -249,16 +274,23 @@ def diagnose_part(count: int) -> dict:
             row[label] = {"e_K": km["e_K"], "e_K_inf": km["e_K_inf"],
                           "e_H": float(np.sqrt(ek.sum() / trL)),
                           "share_of_eH2": DIAGNOSE.group_values(ek / ek.sum())}
-        shares.append(row["kernel, zero heads"]["share_of_eH2"])
+            if znet is not None:
+                row[label]["e_H_learned"] = GF.e_h_learned(ek, lam, learned)
+        shares.append(row[zlabel]["share_of_eH2"])
         rec["as_initialised"].append(row)
     rec["as_initialised_median"] = {
         label: {"e_K_median": float(np.median([r[label]["e_K"] for r in rec["as_initialised"]])),
                 "e_K_inf_max": float(np.max([r[label]["e_K_inf"] for r in rec["as_initialised"]])),
                 "e_H_median": float(np.median([r[label]["e_H"] for r in rec["as_initialised"]]))}
-        for label in ("principal part", "kernel, zero heads")}
-    rec["share_of_eH2_median_kernel_zero_heads"] = {k: float(np.median([s[k] for s in shares]))
-                                                     for k in shares[0]}
-    for n in (32, 64, 128):
+        for label in ("principal part", zlabel)}
+    if znet is not None:
+        for label in ("principal part", zlabel):
+            rec["as_initialised_median"][label]["e_H_learned_median"] = float(
+                np.median([r[label]["e_H_learned"] for r in rec["as_initialised"]]))
+        rec["learned_columns"] = learned
+    key = "share_of_eH2_median_kernel_zero_heads" if znet is None else "share_of_eH2_median_" + zlabel
+    rec[key] = {k: float(np.median([s[k] for s in shares])) for k in shares[0]}
+    for n in ((32, 64, 128) if quotients else ()):
         ps = md.plain_square(n, "sine-hat", 16, "cpu")
         ks = forms.kernel_square(n, "sine-hat", 16, "cpu")
         beta = ps.beta[1:-1, 1:-1].numpy()
@@ -302,25 +334,115 @@ def diagnose_part(count: int) -> dict:
     return rec
 
 
+def load_blindness(experts: dict, labels: list) -> list:
+    """Gate L's measurement: on every benchmark piece, steady and step, each expert's
+    modes and level field from calls with the piece's own source, no source and a
+    unit-RMS random source (`gates_forms.L_SOURCES`), compared bit for bit."""
+    out = []
+    for name in bm.NAMES:
+        for problem in G.BENCHMARK_PROBLEMS:
+            kw = {"envelope": data.ENVELOPE} if name == "s-channel" else {}
+            L = bm.build(name, G.BENCHMARK_N, problem, **kw).layout("sine-hat", 16)
+            rnd = []
+            for k, p in enumerate(L.problems):
+                t = np.arange(p.n + 1) / p.n
+                XI, ET = np.meshgrid(t, t)
+                f = data.Field(np.random.default_rng(11 + k), 0.25)(XI, ET)
+                rnd.append(replace(p, g=f / float(np.sqrt(np.mean(f ** 2)))))
+            variants = dict(zip(GF.L_SOURCES, (list(L.problems),
+                                               [replace(p, g=np.zeros_like(p.g)) for p in L.problems],
+                                               rnd)))
+            own_has_source = any(float(np.abs(p.g).max()) > 0.0 for p in L.problems)
+            for label in labels:
+                ex = experts[label]
+                modes, levels = {}, {}
+                for src, probs in variants.items():
+                    fw = ex.forward(probs)
+                    modes[src] = [h for h, _up in fw]
+                    levels[src] = list(ex.last_levels)
+                met = [GF.judge_l([modes[s][i] for s in GF.L_SOURCES],
+                                  [levels[s][i] for s in GF.L_SOURCES])["met"]
+                       for i in range(len(L.problems))]
+                out.append({"name": name, "problem": problem, "expert": label,
+                            "pieces": len(met), "pieces_met": int(sum(met)), "met": bool(all(met)),
+                            "own_source_nonzero": own_has_source})
+            print(json.dumps({"L": name, "problem": problem,
+                              "met": {r["expert"]: r["met"] for r in out[-len(labels):]}}), flush=True)
+    return out
+
+
+def judged_untrained(benchmarks: list, w_start: str, labels: list, load: list) -> dict:
+    """Gates K, D, L and E4 (both frames) by `gates_forms` on the untrained forms, and
+    CW0 = CW's measure for W's step 0 over each form's.  Maximum errors are fractions of
+    the range, so the span passed is one."""
+    out = {}
+    for label in labels:
+        rows = [r for r in benchmarks if label in r["coupled"]]
+        k = GF.judge_k([r["modes"][label]["e_K_max"] for r in rows],
+                       [r["modes"][label]["e_K_inf_max"] for r in rows])
+        d, e4, er = {}, {}, {}
+        for r in rows:
+            c, cl = r["coupled"][label], r["coupled"]["classical"]
+            reg, low = c["as registered"], c["datum shifted"]
+            key = f"{r['name']}, {r['problem']}"
+            d[key] = GF.judge_d(reg["energy_abs"], low["energy_abs"], reg["reference_energy"],
+                                reg["max_over_range"], low["max_over_range"], 1.0)
+            e4[key] = GF.judge_e4_both_frames(
+                {"energy_rel": reg["energy_rel"], "max_err": reg["max_over_range"], "span": 1.0,
+                 "floor_max": cl["as registered"]["max_over_range"]},
+                {"energy_rel": low["energy_rel"], "max_err": low["max_over_range"], "span": 1.0,
+                 "floor_max": cl["datum shifted"]["max_over_range"]})
+            er[(r["name"], r["problem"], "registered")] = reg["energy_rel"]
+            er[(r["name"], r["problem"], "lowered")] = low["energy_rel"]
+        lrows = [x for x in load if x["expert"] == label]
+        out[label] = {"K": k,
+                      "D": {"met": bool(all(v["met"] for v in d.values())), "problems": d},
+                      "L": {"met": bool(lrows and all(x["met"] for x in lrows)),
+                            "pieces": int(sum(x["pieces"] for x in lrows))} if lrows else None,
+                      "E4": {"met": bool(all(v["met"] for v in e4.values())), "problems": e4},
+                      "cw_measure": GF.cw_measure(er)}
+    w = out[w_start]["cw_measure"]
+    for label in labels:
+        out[label]["CW0_W_start_over_this"] = w / out[label]["cw_measure"]
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--count", type=int, default=24)
     ap.add_argument("--b-weights", default=os.path.join(ROOT, "out", "chartop", "runs", "B", "best.pt"))
+    ap.add_argument("--bubble", choices=forms.BUBBLES, default="square",
+                    help="S's form: the bubble of the new form measured beside W's")
+    ap.add_argument("--strips", action="store_true", help="S's form: the strips for j = 9-15")
     args = ap.parse_args()
     torch.set_num_threads(8)
     t0 = time.perf_counter()
-    nets = {"principal part": md.Expert("unet", "0.3M"),
-            "kernel, zero heads": forms.KernelExpert("kernel", "unet", "1M"),
-            "split, zero heads": forms.KernelExpert("split", "unet", "1M")}
-    for std in STDS:
-        bub = randomised(md.Expert("unet", "1M"), std)
-        nets[f"bubble, random {std:g}"] = bub
-        nets[f"kernel, the bubble's weights {std:g}"] = kernel_from_bubble(bub)
-        nets[f"split, random {std:g}"] = randomised(forms.KernelExpert("split", "unet", "1M"), std)
+    registered = args.bubble != "square" or args.strips
+    if not registered:
+        nets = {"principal part": md.Expert("unet", "0.3M"),
+                "kernel, zero heads": forms.KernelExpert("kernel", "unet", "1M"),
+                "split, zero heads": forms.KernelExpert("split", "unet", "1M")}
+        for std in STDS:
+            bub = randomised(md.Expert("unet", "1M"), std)
+            nets[f"bubble, random {std:g}"] = bub
+            nets[f"kernel, the bubble's weights {std:g}"] = kernel_from_bubble(bub)
+            nets[f"split, random {std:g}"] = randomised(forms.KernelExpert("split", "unet", "1M"), std)
+    else:
+        tag = f"split, {args.bubble} bubble" + (", strips" if args.strips else "")
+
+        def new(std=None):
+            e = forms.KernelExpert("split", "unet", "1M", bubble=args.bubble, strips=args.strips)
+            return e if std is None else randomised(e, std)
+        nets = {"principal part": md.Expert("unet", "0.3M"),
+                "split, zero heads": forms.KernelExpert("split", "unet", "1M"),
+                f"{tag}, zero heads": new()}
+        for std in STDS:
+            nets[f"split, random {std:g}"] = randomised(forms.KernelExpert("split", "unet", "1M"), std)
+            nets[f"{tag}, random {std:g}"] = new(std)
     experts = {k: LearnedExpert(v.eval(), envelope=data.ENVELOPE) for k, v in nets.items()}
     experts["classical"] = hs.ClassicalExpert()
     b_expert = None
-    if os.path.exists(args.b_weights):
+    if not registered and os.path.exists(args.b_weights):
         b_expert = LearnedExpert(load_expert(args.b_weights, "cpu"), envelope=data.ENVELOPE)
     rec = {"written": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
            "what": "untrained weights only (zero heads, or seeded random weights); not a gate, "
@@ -329,10 +451,28 @@ def main() -> int:
            "experts": {k: (v.config() if hasattr(v, "config") else "classical 16-mode superelement")
                        for k, v in nets.items()},
            "b_weights": os.path.relpath(args.b_weights, ROOT) if b_expert else None}
+    if registered:
+        rec["what"] = ("untrained weights only (zero heads, or seeded random weights): the "
+                       "re-measurement registered by atlas/chartop/gates_forms.py before any "
+                       "training (gates K, D, L, E4 as initialised, and CW0); no trained network")
+        rec["registration"] = GF.REGISTERED
     rec["benchmarks"] = benchmarks_part(experts, b_expert)
-    rec["diagnose"] = diagnose_part(args.count)
+    if registered:
+        split_labels = [k for k in nets if k.startswith("split")]
+        rec["load"] = load_blindness(experts, split_labels)
+        rec["diagnose"] = diagnose_part(args.count, (f"{tag}, zero heads", new()), quotients=False)
+        rec["judged_untrained"] = judged_untrained(rec["benchmarks"], "split, zero heads",
+                                                   split_labels, rec["load"])
+        print(json.dumps({k: {g: (v[g]["met"] if isinstance(v[g], dict) else v[g])
+                              for g in ("K", "D", "L", "E4", "CW0_W_start_over_this")}
+                          for k, v in rec["judged_untrained"].items()}), flush=True)
+    else:
+        rec["diagnose"] = diagnose_part(args.count)
     rec["elapsed_s"] = time.perf_counter() - t0
     path = os.path.join(ROOT, "out", "chartop", "forms-controls.json")
+    if registered:
+        path = os.path.join(ROOT, "out", "chartop", "forms-controls-%s%s.json"
+                            % (args.bubble, "-strips" if args.strips else ""))
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(rec, fh, indent=1)

@@ -1,7 +1,7 @@
 # Chart operator — the kernel-exact and split output forms (W356, W357), built and checked untrained
 
 **Type:** Concept page — **build record and draft registration** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** built and checked on 2026-10-18, written up on 2026-10-19. **Untrained weights only**: zero heads, or seeded random weights. Nothing was trained, registered or hash-pinned. §8 is a draft registration for the owner to accept, change or refuse. `atlas/chartop/gates.py`, Stage 0's registration, is unchanged.
+**Status:** built and checked on 2026-10-18, written up on 2026-10-19. **Untrained weights only**: zero heads, or seeded random weights. Nothing was trained, registered or hash-pinned. §8 is the next registration: accepted by the owner on 2026-10-19, its bars in `atlas/chartop/gates_forms.py`, not yet hash-pinned. `atlas/chartop/gates.py`, Stage 0's registration, is unchanged.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] §9.7 and §12, items 1–2 · **Worklist:** [[gap-worklist]] W356, W357; W358 in §10 · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -237,11 +237,17 @@ The second part of `scripts/chartop_diagnose.py`, on validation seeds $2{,}000{,
 
 ---
 
-## 8. The next registration: a draft for the owner (not registered)
+## 8. The next registration: accepted by the owner (2026-10-19), not yet hash-pinned
 
 *This replaces the draft of commit `f848f3d`, which covered W356 and W357 alone (arms S, S′, K′ and B″, comparisons CK1 and CK2).*
 
-Nothing in this section is registered, hash-pinned or acted on, and nothing has been trained or rented. The owner may accept it, change it or refuse it in chat. It extends Stage 0's registration ([[chart-operator-stage-0]] §3) and leaves `gates.py` as it is. A new module would carry the new bars, and only after the owner's yes. The owner's choices so far, quoted:
+**Accepted.** The owner accepted this section as written, in chat on 2026-10-19: "I accept the draft registration in chart-operator-kernel-exact-forms section 8 as written." It was drafted in commit `0f1b4ae`, and its bars and arms have not changed since.
+- `atlas/chartop/gates_forms.py` carries them. Every bar shared with Stage 0 is read from Stage 0's module, which is unchanged ([[chart-operator-stage-0]] §3).
+- `tests/test_chartop_gates_forms.py` checks this section against that module.
+- The module is **not yet hash-pinned**: pinning is the owner's separate decision.
+- Nothing has been trained or rented.
+
+The owner's choices, quoted:
 - output form for the side modes: "Bubble + strips". This is W358 as in §10: `forms.corner_bubble`, with strip solves for the sines $j=9$–15 (commits `9ed90e0` and `6594c8a`).
 - particular-field network: "1 M (as drafted)";
 - registration shape: "Main + W358 control", that is, one main arm and one comparison that isolates W358.
@@ -336,13 +342,54 @@ No verdict is predicted for E4, E5 or S11.
 - **The strip columns do not depend on the weights.** $H^{(0)}$ is the plain square's at the piece's $s_0$, and the operator is the piece's own. The projection does not move them, and the label-free objective sums the columns' energies. So they add a constant to the loss and nothing to its gradient. Computing them only at validation would remove their cost from training without changing a gradient. That is a code change this draft does not make, and the owner could choose it after E5.
 - **If E5's price puts the estimate over \$10, no long run starts**, and the decision returns to the owner.
 
-**The owner's decision: accept, change or refuse this draft.** A yes would start four steps, in order, each asking the owner first wherever the rules require it:
-1. a new gates module carrying these bars, with a test against this section;
-2. the untrained re-measurement (§8.2);
-3. E5 on a rented box;
-4. the runs.
+**The owner's decision (2026-10-19): accepted as written.** The yes starts four steps, in order, each asking the owner first wherever the rules require it:
+1. **Done:** a new gates module carrying these bars (`atlas/chartop/gates_forms.py`), with a test against this section (`tests/test_chartop_gates_forms.py`).
+2. **Done:** the untrained re-measurement (§8.6).
+3. **Waiting for the owner:** E5 on a rented box.
+4. The runs.
 
-Nothing is hash-pinned before that yes.
+Hash-pinning the module waits for the owner's OK too.
+
+### 8.6 The untrained re-measurement (after the acceptance)
+
+`scripts/chartop_forms_controls.py --bubble corner --strips` → `out/chartop/forms-controls-corner-strips.json`, run on the laptop on AC power on 2026-10-19 in 361 s. It measures S's form beside W's, with untrained weights only: zero heads, and seeded random weights at scales 0.002 and 0.02 for each form.
+- **Where:** the registered benchmarks at $n=64$, and diagnose's 24 validation pieces $2{,}000{,}100$–$2{,}000{,}123$ (7 steady, 17 transient).
+- **Not here:** no trained network, and no test piece. The test split is drawn only at the one evaluation, so the test-piece clauses of K and L wait for it.
+- **Not re-run:** the script's default run. Its record, `forms-controls.json`, is unchanged.
+- **The verdicts below** are `gates_forms`' own judges, applied to untrained forms. None is a verdict on a trained network.
+
+| gate | W's form (Stage 0's bubble, no strips) | S's form (corner bubble, strips) | bar |
+|---|---|---|---|
+| **K**, benchmark pieces, every weight set | $e_K\le3.6\times10^{-16}$, $e_{K,\infty}\le4.4\times10^{-16}$ | $e_K\le4.7\times10^{-16}$, $e_{K,\infty}\le4.4\times10^{-16}$; on the validation pieces at zero heads $\le3.4\times10^{-16}$ and $\le3.3\times10^{-16}$ | $10^{-12}$: met |
+| **D**, the six problems, every weight set | ratio within $9.6\times10^{-11}$ of one; maxima within $1.5\times10^{-11}$ of the range | within $2.0\times10^{-10}$; maxima within $1.4\times10^{-11}$ | $10^{-8}$ and $10^{-9}$: met, all six problems above the floor |
+| **L**, all 126 benchmark pieces, every weight set | bit for bit | bit for bit | met. The pieces' own source is non-zero on the steps only |
+| **E4** as initialised | met on bend-3 steady only | met on bend-3 steady only | not met, as §7.2 |
+
+**The coupled answer at step 0** (zero heads), energy errors in per cent; for the steps, as registered and then lowered by 300 K:
+
+| problem | 16-mode floor | W's step 0 | S's step 0 |
+|---|---|---|---|
+| bend-3, steady | $2.3\times10^{-10}$ | 0.00034 | 0.00034 |
+| s-channel, steady | 0.93 | 5.282 | 5.258 |
+| insert-round, steady | 0.031 | 5.577 | 5.577 |
+| bend-3, step | 0.017 / 0.25 | 0.268 / 3.893 | 0.268 / 3.892 |
+| s-channel, step | 0.14 / 2.13 | 0.685 / 10.80 | 0.682 / 10.75 |
+| insert-round, step | 0.0066 / 0.070 | 0.393 / 4.138 | 0.393 / 4.138 |
+| **CW's measure** (the mean, steps lowered) | — | 4.948 | 4.937 |
+
+**CW₀ = 4.948 / 4.937 = 1.0023**, a tie by Stage 0's bars.
+
+**The modes at step 0.**
+- On the benchmark pieces, the strips cut the median $e_H$ over all 64 columns by 35–45% on every problem. Steady: 0.0194, 0.0306 and 0.267 become 0.0110, 0.0172 and 0.146. Steps: 0.0203, 0.0330 and 0.267 become 0.0129, 0.0216 and 0.146.
+- On the validation pieces (medians), $e_H$ falls from the principal part's 0.397 to 0.230. $e_{H,L}$ is 0.402 for both, since the learned columns at zero heads are the principal part's.
+- The shares of $e_H^2$ at S's step 0: hats 0.4%, sines $j=1$–3 15.2%, $j=4$–8 78.4%, $j=9$–15 3.2%. In Stage 0, $j=9$–15 held 68.5%.
+
+**What it shows.**
+- **Prediction 1 holds before training.** K, D and L hold on S's form as on W's, at zero heads and with random weights.
+- **The strips cut the modes' error, but barely move the coupled answer.** At step 0, the benchmarks' coupled error sits in the modes the network learns, not in $j=9$–15.
+- **[AI Inference]:** prediction 3 stands as registered: CW is at least 1. CW₀ shows that the strips alone give a tie, so a loss for W ($\ge1.25$) needs S′'s learned columns to improve where W's do not. That is the question the corner bubble puts to training. Unless the modes learn, a tie is the likelier outcome.
+- **[AI Inference]:** for E1, $e_{H,L}$ starts at 0.402 against a bar of 0.01, so the network must reduce the learned columns' error about 40 times. At step 0, about 94% of $e_H^2$ already sits in the columns it learns (the medians of the shares).
+- **Unchanged by this:** the bars, arms and predictions of §8.1–8.5, as accepted.
 
 ---
 
