@@ -1,0 +1,8 @@
+Sp-s0: training 37500 steps (wall-clock guard 120 min)
+Sp-s0: {"arm": "Sp-s0", "steps": 37500, "best_val_e_H_median": 0.19334652360629556, "elapsed_s": 2990.668546364992, "examples": 50000}
+Sp-s1: training 37500 steps (wall-clock guard 120 min)
+Sp-s1: {"arm": "Sp-s1", "steps": 37500, "best_val_e_H_median": 0.19219436014148739, "elapsed_s": 2989.6597423269995, "examples": 50000}
+W-s0: training 37500 steps (wall-clock guard 90 min)
+W-s0: {"arm": "W-s0", "steps": 37500, "best_val_e_H_median": 0.3364876972246617, "elapsed_s": 2826.5297387039755, "examples": 50000}
+W-s1: training 37500 steps (wall-clock guard 90 min)
+W-s1: {"arm": "W-s1", "steps": 37500, "best_val_e_H_median": 0.3362093693290512, "elapsed_s": 2848.53509911499, "examples": 50000}

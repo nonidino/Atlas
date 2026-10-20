@@ -757,3 +757,24 @@ On the owner's choice, before any run, the strips can now be left out of trainin
 **The cost**, extrapolated from E5's priced steps: S's step falls to 0.064-0.100 s from 0.290 s, and training to 5.4-7.6 h from 19.5 h. That is about \$1.8-2.4 on one box (6.6-8.8 h), or \$2.1-2.7 on two (3.8-5.3 h of wall-clock), against \$5.6-5.8. The upper end is close to the \$2.67 credit. Nothing was trained or rented.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status) and §8.8 (new) · [[gap-worklist]] W358.
+
+## [2026-10-19] note | The chart-operator registration's five runs, trained on two rented boxes
+
+**What.** On the owner's go, the five registered runs trained from the plan `out/chartop/plan-forms.json` (commit `874c767`), which `chartop_train.py` checked against the pinned `gates_forms.ARMS` first. S and S' skipped the strips in training (`strips_in_training=false`).
+- **Box 1**, an RTX 3090 with an EPYC 7532 at \$0.342 an hour, ran S, from 16:35 to 20:19.
+- **Box 2**, an RTX 3090 with an EPYC 7352 at \$0.238 an hour, ran Sp-s0, Sp-s1, W-s0 and W-s1, from 16:36 to 20:11. The plan's box-2 offer refused the contract, so its stopped contract was destroyed and the next offer taken.
+- **The gate:** each box priced itself first, and `chartop_budget.py` put the whole registration at \$3.03 (box 1) and \$2.05 (box 2), within \$10.
+- **The data:** each box drew Stage 0's 50,000 training pieces, with the same 16,523 rejected charts.
+- **The downloads:** every run was downloaded and hash-checked as it finished, and both boxes were destroyed. The credit went from \$12.671 to \$10.528 (\$2.14), or \$2.17 for the registration with E5's box.
+
+**Found** (validation only, not a gate). The validation median e_H, over all 64 columns:
+- S: 0.1943 to 0.1518 over 150,000 steps, still falling at the end, with e_p at 0.073 (3.47 h);
+- S' (both seeds): 0.1947 to 0.193 and 0.192;
+- W (both seeds): flat at 0.337 to 0.336, as every Stage 0 arm was.
+- e_K stayed at most 1.1e-15 in every run, and no wall-clock guard was reached.
+
+The records are in `out/chartop/runs/forms/` and `out/chartop/box/forms-{1,2}/`, with the weights local and their sha256 in `weights-sha256.txt`.
+
+**Not done:** the one evaluation (E1, E3, E4, SE1-SE3, DUAL, KT, S11 and CW). Its script for `gates_forms` is not written, and the test split has not been drawn.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status) and §8.9 (new) · [[gap-worklist]] W358.

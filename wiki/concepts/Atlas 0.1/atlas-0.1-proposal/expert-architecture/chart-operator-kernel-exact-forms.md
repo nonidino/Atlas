@@ -346,7 +346,7 @@ No verdict is predicted for E4, E5 or S11.
 1. **Done:** a new gates module carrying these bars (`atlas/chartop/gates_forms.py`), with a test against this section (`tests/test_chartop_gates_forms.py`).
 2. **Done:** the untrained re-measurement (§8.6).
 3. **Done:** E5 on a rented box, on the owner's OK (§8.7).
-4. **Waiting for the owner:** the runs. The credit must first be topped up (§8.7). The option to solve the strips only at validation is built and tested (§8.8).
+4. **Done:** the five runs, trained on two rented boxes and destroyed (§8.9). They are not yet evaluated: the one evaluation needs its script and the owner's go.
 
 The module was hash-pinned on the owner's OK, on 2026-10-19, before any network in these forms was trained.
 
@@ -460,6 +460,59 @@ The owner chose to add the option before any run: "First add the option to compu
 | two boxes: S on one, S′ and W on the other | about 7.6–9.8 h (3.8–5.3 and 3.8–4.5) | about \$2.1–2.7 | 3.8–5.3 h |
 
 Either layout is under half the cost with the strips solved in training (\$5.6–5.8). The upper end is close to the \$2.67 credit, so the owner's top-up comes first.
+
+### 8.9 The five runs: trained, not yet evaluated
+
+**The owner's go:** "I have topped up. Run the five registered runs with strips_in_training=False for S and S', on two RTX 3090-class boxes (at most \$0.70/h each): S on one, S' and W on the other. Price the skipped step first on each box and stop if the projection exceeds \$10. Destroy both when done."
+
+**The plan, binding before the first run:** `out/chartop/plan-forms.json` (commit `874c767`).
+- It holds S, Sp-s0, Sp-s1, W-s0 and W-s1, with Stage 0's batches (32/32/8), learning rate, weight decay, augmentation and validation cadence.
+- `strips_in_training` is false for S and S′.
+- Each run has a wall-clock guard of about 1.5–1.7 times its upper projection. None was reached.
+- `scripts/chartop_train.py` checked the whole plan against the pinned `gates_forms.ARMS` before anything trained.
+
+**The boxes.**
+
+| box | machine | rate | rented, local time | runs |
+|---|---|---|---|---|
+| 1 | RTX 3090, EPYC 7532 (a quota of 30 CPUs, 125 GB), vast.ai 56786550, offer 44730076 | \$0.342/h | 16:35–20:19 | S |
+| 2 | RTX 3090, EPYC 7352 (a quota of 15 CPUs, 944 GB), vast.ai 56786592, offer 56775475 | \$0.238/h | 16:36–20:11 | Sp-s0, Sp-s1, W-s0, W-s1 |
+
+- **The rates include the 60 GB disk.** The plan named offer 44730076 at the offer's \$0.327 and another offer, 29548834, for box 2.
+- **That offer's host refused the contract** (`success: false`). The stopped contract was destroyed at once, and the next suitable offer was taken. The plan's runs, data and gate did not change.
+- **Each box was destroyed** once its runs had been downloaded and every file's sha256 matched the box's own list.
+
+**Each box priced itself first, then the gate decided** (`scripts/chartop_budget.py`, `out/chartop/box/forms-{1,2}/logs/budget.log`):
+- **Box 1:** S's step with the strips skipped took 0.0764 s and W's 0.0766 s. The whole registration at its prices came to 8.76 h and \$3.03.
+- **Box 2:** the whole registration came to 8.50 h and \$2.05.
+- Both were within \$10, so both trained.
+- The price records are `out/chartop/price-forms-a1bca8838637-20261019-204154.json` (box 1) and `-abed3637b057-20261019-204233.json` (box 2).
+
+**The data.** Each box drew Stage 0's training set from the registered seeds. Each drew 50,000 pieces with 16,523 rejected charts, Stage 0's own count, in 342 s and 685 s. Each also drew the 600 labelled validation pieces. The manifests are in `out/chartop/box/forms-{1,2}/`.
+
+**The runs** (`out/chartop/runs/forms/<run>/`: `arm.json`, `log.jsonl`, `summary.json`). The weights `best.pt` stay local, and their sha256 is in `out/chartop/runs/forms/weights-sha256.txt`. The kept checkpoint is the one with the lowest validation median $e_H$, as in Stage 0. The validation measure is $e_H$ over all 64 columns, not E1's $e_{H,L}$.
+
+| run | steps | hours | ms a step | validation median $e_H$: first (step) → kept (step) | 90th percentile, kept | validation median $e_p$: first → kept → last | $e_K$, largest |
+|---|---|---|---|---|---|---|---|
+| **S** | 150,000 | 3.47 | 83.2 | 0.1943 (5,000) → **0.1518** (140,000) | 0.234 | 0.301 → 0.073 → 0.071 | $1.1\times10^{-15}$ |
+| S′, seed 0 | 37,500 | 0.83 | 79.4 | 0.1947 (2,500) → 0.1934 (20,000) | 0.291 | 0.349 → 0.239 → 0.194 | $1.1\times10^{-15}$ |
+| S′, seed 1 | 37,500 | 0.83 | 79.4 | 0.1947 (2,500) → 0.1922 (35,000) | 0.289 | 0.323 → 0.132 → 0.132 | $1.1\times10^{-15}$ |
+| W, seed 0 | 37,500 | 0.79 | 75.3 | 0.3372 (2,500) → 0.3365 (30,000) | 0.503 | 0.328 → 0.134 → 0.127 | $7.3\times10^{-16}$ |
+| W, seed 1 | 37,500 | 0.79 | 75.9 | 0.3373 (2,500) → 0.3362 (35,000) | 0.503 | 0.336 → 0.123 → 0.123 | $7.2\times10^{-16}$ |
+
+**What the validation shows. None of it is a gate.**
+- **The strips' classical share shows from the first validation.** S's form starts at about 0.195 against W's 0.337, Stage 0's flat level.
+- **W's modes did not move**, as no Stage 0 arm's did: 0.3372 → 0.3365.
+- **S′'s barely moved in 37,500 steps:** 0.1947 → 0.192–0.193.
+- **S's did, over 150,000:** 0.1943 → 0.1518, falling still at 145,000, with S's validation median $e_p$ reaching 0.073. Stage 0's arm B ended at 0.3366 and 0.089.
+- **The kernel-exact form held throughout training:** $e_K\le1.1\times10^{-15}$ at every validation of every run.
+- **[AI Inference]:** S′ and S share the form and differ in budget, so the modes' learning appears only late in a long schedule. With its learning rate decaying over 150,000 steps, S had about four times as many steps at a high rate as S′.
+- **[AI Inference], against the predictions of §8.4:** E1's bar is 0.01 on $e_{H,L}$, and S's validation $e_H$ over all 64 columns is 0.15. Prediction 2 (E1 probably not met) is not contradicted by anything seen here.
+- **Not yet known:** CW, which is judged on E4's coupled answer, not on $e_H$. S′'s and W's step-0 coupled answers were a tie (CW₀ = 1.0023), and their validation $e_H$ differs by the strips' classical share. How that carries to the trained coupled answer is the one evaluation's to say.
+
+**What was not done.** The one evaluation, which judges E1, E3, E4, SE1–SE3, DUAL, KT, S11 and CW on the held-out test split and the benchmarks, has not been run, and the test split has not been drawn. Its script for `gates_forms` is not written. Both need the owner's go.
+
+**The cost.** The two boxes cost about \$2.13 by their rates and rented hours. The credit went from \$12.671 to \$10.528, \$2.14 for the two boxes, so the registration has spent \$2.17 in all, E5's box included, against its ceiling of \$10. The instance list was empty after each destroy and once the credit had settled.
 
 ---
 

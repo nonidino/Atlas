@@ -1,0 +1,7 @@
+{
+ "arm": "Sp-s1",
+ "steps": 37500,
+ "best_val_e_H_median": 0.19219436014148739,
+ "elapsed_s": 2989.6597423269995,
+ "examples": 50000
+}

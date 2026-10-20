@@ -1,0 +1,327 @@
+{
+ "written": "2026-10-19T20:41:20+00:00",
+ "host": "abed3637b057",
+ "platform": "Linux-5.15.0-173-generic-x86_64-with-glibc2.35",
+ "python": "3.11.11",
+ "torch": "2.6.0+cu124",
+ "numpy": "1.26.4",
+ "device": "cuda",
+ "gpu": "NVIDIA GeForce RTX 3090",
+ "cpus": 96,
+ "cpu_sources": {
+  "cgroup_v2": 15,
+  "cgroup_v1": null,
+  "affinity": 96,
+  "cpu_count": 96
+ },
+ "torch_threads": 48,
+ "power": {
+  "platform": "Linux"
+ },
+ "weights": "untrained (random); cost only",
+ "registration": "accepted by the owner on 2026-10-19, in chat, as drafted in chart-operator-kernel-exact-forms section 8 (commit 0f1b4ae), before any network in these forms was trained",
+ "forms": {
+  "rows": [
+   {
+    "arm": "S",
+    "n": 32,
+    "batch": 32,
+    "parameters": 2198990,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "corner",
+     "strips": true,
+     "parameters": 2198990
+    },
+    "forward_s": 0.14222741549019702,
+    "forward_strip_s": 0.09339944997918792,
+    "assembly_s": 0.03149577951990068,
+    "step_s": 0.19489152351161465,
+    "step_solves_strips": true,
+    "step_strip_s": 0.10151428650715388,
+    "peak_gib": 0.4740719795227051
+   },
+   {
+    "arm": "S, strips only at validation",
+    "n": 32,
+    "batch": 32,
+    "parameters": 2198990,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "corner",
+     "strips": true,
+     "parameters": 2198990
+    },
+    "forward_s": 0.14324279050924815,
+    "forward_strip_s": 0.09392848401330411,
+    "assembly_s": 0.03161250101402402,
+    "step_s": 0.05266118602594361,
+    "step_solves_strips": false,
+    "peak_gib": 0.47539520263671875
+   },
+   {
+    "arm": "W",
+    "n": 32,
+    "batch": 32,
+    "parameters": 2199690,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "square",
+     "strips": false,
+     "parameters": 2199690
+    },
+    "forward_s": 0.010318277520127594,
+    "step_s": 0.060099321504822,
+    "step_solves_strips": false,
+    "peak_gib": 0.4748392105102539
+   },
+   {
+    "arm": "B (Stage 0, reference)",
+    "n": 32,
+    "batch": 32,
+    "parameters": 1100753,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "bubble",
+     "kind": "sine-hat",
+     "m": 16,
+     "parameters": 1100753
+    },
+    "forward_s": 0.005894620990147814,
+    "step_s": 0.03833342649159022,
+    "step_solves_strips": false,
+    "peak_gib": 0.3839073181152344
+   },
+   {
+    "arm": "S",
+    "n": 64,
+    "batch": 32,
+    "parameters": 2198990,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "corner",
+     "strips": true,
+     "parameters": 2198990
+    },
+    "forward_s": 0.42425958599778824,
+    "forward_strip_s": 0.26959774500573985,
+    "assembly_s": 0.07801968048443086,
+    "step_s": 0.48729198300861754,
+    "step_solves_strips": true,
+    "step_strip_s": 0.2718331230280455,
+    "peak_gib": 1.678830623626709
+   },
+   {
+    "arm": "S, strips only at validation",
+    "n": 64,
+    "batch": 32,
+    "parameters": 2198990,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "corner",
+     "strips": true,
+     "parameters": 2198990
+    },
+    "forward_s": 0.43139155648532324,
+    "forward_strip_s": 0.27595546646625735,
+    "assembly_s": 0.07863969847676344,
+    "step_s": 0.07827849901514128,
+    "step_solves_strips": false,
+    "peak_gib": 1.6802492141723633
+   },
+   {
+    "arm": "W",
+    "n": 64,
+    "batch": 32,
+    "parameters": 2199690,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "square",
+     "strips": false,
+     "parameters": 2199690
+    },
+    "forward_s": 0.01909023997723125,
+    "step_s": 0.0782295095268637,
+    "step_solves_strips": false,
+    "peak_gib": 1.6758546829223633
+   },
+   {
+    "arm": "B (Stage 0, reference)",
+    "n": 64,
+    "batch": 32,
+    "parameters": 1100753,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "bubble",
+     "kind": "sine-hat",
+     "m": 16,
+     "parameters": 1100753
+    },
+    "forward_s": 0.0120734489755705,
+    "step_s": 0.06435860702185892,
+    "step_solves_strips": false,
+    "peak_gib": 1.3993144035339355
+   },
+   {
+    "arm": "S",
+    "n": 128,
+    "batch": 8,
+    "parameters": 2198990,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "corner",
+     "strips": true,
+     "parameters": 2198990
+    },
+    "forward_s": 0.5184364965243731,
+    "forward_strip_s": 0.3606040909944568,
+    "assembly_s": 0.06955630501033738,
+    "step_s": 0.590084793017013,
+    "step_solves_strips": true,
+    "step_strip_s": 0.37263121746946126,
+    "peak_gib": 1.6875910758972168
+   },
+   {
+    "arm": "S, strips only at validation",
+    "n": 128,
+    "batch": 8,
+    "parameters": 2198990,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "corner",
+     "strips": true,
+     "parameters": 2198990
+    },
+    "forward_s": 0.5244935830414761,
+    "forward_strip_s": 0.36700479249702767,
+    "assembly_s": 0.06840620399452746,
+    "step_s": 0.07352225203067064,
+    "step_solves_strips": false,
+    "peak_gib": 1.6865825653076172
+   },
+   {
+    "arm": "W",
+    "n": 128,
+    "batch": 8,
+    "parameters": 2199690,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "split",
+     "kind": "sine-hat",
+     "m": 16,
+     "p_size": "1M",
+     "bubble": "square",
+     "strips": false,
+     "parameters": 2199690
+    },
+    "forward_s": 0.014998345490312204,
+    "step_s": 0.07377464300952852,
+    "step_solves_strips": false,
+    "peak_gib": 1.6885881423950195
+   },
+   {
+    "arm": "B (Stage 0, reference)",
+    "n": 128,
+    "batch": 8,
+    "parameters": 1100753,
+    "config": {
+     "backbone": "unet",
+     "size": "1M",
+     "form": "bubble",
+     "kind": "sine-hat",
+     "m": 16,
+     "parameters": 1100753
+    },
+    "forward_s": 0.010148106986889616,
+    "step_s": 0.06204814199008979,
+    "step_solves_strips": false,
+    "peak_gib": 1.4209198951721191
+   }
+  ],
+  "projection": {
+   "step_mix": {
+    "32": 0.18895294308902422,
+    "64": 0.31139094876636614,
+    "128": 0.49965610814460965
+   },
+   "arms": {
+    "S": {
+     "mean_step_s": 0.48340311102011896,
+     "over_B": 8.293549873546395,
+     "registered_steps": 150000,
+     "hours": 20.141796292504953,
+     "Sp_hours": 10.070898146252476
+    },
+    "S, strips only at validation": {
+     "mean_step_s": 0.07106154447416456,
+     "over_B": 1.2191739145906955,
+     "registered_steps": 150000,
+     "hours": 2.9608976864235235,
+     "Sp_hours": 1.4804488432117617
+    },
+    "W": {
+     "mean_step_s": 0.07257785587498612,
+     "over_B": 1.2451886504081842,
+     "registered_steps": 75000,
+     "hours": 1.512038664062211
+    },
+    "B (Stage 0, reference)": {
+     "mean_step_s": 0.0582866346004635,
+     "over_B": 1.0
+    }
+   },
+   "training_hours": 31.72473310281964,
+   "training_hours_strips_only_at_validation": 5.953385193697496
+  }
+ },
+ "generator": {
+  "workers": 14,
+  "count": 96,
+  "wall_s": 4.619330882036593,
+  "examples_per_s": 20.782230684820536,
+  "per_example_s_mean": 0.2172229611884783
+ }
+}

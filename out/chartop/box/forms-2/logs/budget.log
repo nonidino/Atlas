@@ -1,0 +1,8 @@
+S       as S, strips only at validation   0.0711 s/step, 30 validations of 19.5 s: 3.12 h
+Sp-s0   as S, strips only at validation   0.0711 s/step, 15 validations of 19.5 s: 0.82 h  (this box)
+Sp-s1   as S, strips only at validation   0.0711 s/step, 15 validations of 19.5 s: 0.82 h  (this box)
+W-s0    as W                              0.0726 s/step, 15 validations of 0.7 s: 0.76 h  (this box)
+W-s1    as W                              0.0726 s/step, 15 validations of 0.7 s: 0.76 h  (this box)
+data 0.71 h and fixed 0.4 h per box
+this box: 4.27 h, $1.02
+registration: 8.50 h, $2.05 against $10.00: within

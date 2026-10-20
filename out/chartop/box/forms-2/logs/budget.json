@@ -1,0 +1,66 @@
+{
+ "price_record": "price-forms-abed3637b057-20261019-204233.json",
+ "gpu": "NVIDIA GeForce RTX 3090",
+ "dph": 0.238,
+ "runs": [
+  {
+   "name": "S",
+   "priced_as": "S, strips only at validation",
+   "mean_step_s": 0.07106154447416456,
+   "validation_s": 19.46279307612076,
+   "validations": 30,
+   "hours": 3.1230876287245297,
+   "on_this_box": false
+  },
+  {
+   "name": "Sp-s0",
+   "priced_as": "S, strips only at validation",
+   "mean_step_s": 0.07106154447416456,
+   "validation_s": 19.46279307612076,
+   "validations": 15,
+   "hours": 0.821319392756384,
+   "on_this_box": true
+  },
+  {
+   "name": "Sp-s1",
+   "priced_as": "S, strips only at validation",
+   "mean_step_s": 0.07106154447416456,
+   "validation_s": 19.46279307612076,
+   "validations": 15,
+   "hours": 0.821319392756384,
+   "on_this_box": true
+  },
+  {
+   "name": "W-s0",
+   "priced_as": "W",
+   "mean_step_s": 0.07257785587498612,
+   "validation_s": 0.7087296037720989,
+   "validations": 15,
+   "hours": 0.7589723720468226,
+   "on_this_box": true
+  },
+  {
+   "name": "W-s1",
+   "priced_as": "W",
+   "mean_step_s": 0.07257785587498612,
+   "validation_s": 0.7087296037720989,
+   "validations": 15,
+   "hours": 0.7589723720468226,
+   "on_this_box": true
+  }
+ ],
+ "data_hours_per_box": 0.7084043308678802,
+ "fixed_hours_per_box": 0.4,
+ "this_box": {
+  "hours": 4.268987860474294,
+  "usd": 1.0160191107928818
+ },
+ "registration": {
+  "hours": 8.500479820066705,
+  "usd": 2.0531141971758755,
+  "spent_usd": 0.03,
+  "rule": "all five runs on 2 boxes like this one, at this box's rate"
+ },
+ "ceiling_usd": 10.0,
+ "within": true
+}

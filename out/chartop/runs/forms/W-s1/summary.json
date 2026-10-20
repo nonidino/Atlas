@@ -1,0 +1,7 @@
+{
+ "arm": "W-s1",
+ "steps": 37500,
+ "best_val_e_H_median": 0.3362093693290512,
+ "elapsed_s": 2848.53509911499,
+ "examples": 50000
+}

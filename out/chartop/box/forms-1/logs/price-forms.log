@@ -1,0 +1,15 @@
+forms S                        n= 32 batch=32: forward 0.1375 s, step 0.1812 s (strips 0.0910 s, assembly 0.0299 s)
+forms S, strips only at validation n= 32 batch=32: forward 0.1399 s, step 0.0559 s
+forms W                        n= 32 batch=32: forward 0.0116 s, step 0.0557 s
+forms B (Stage 0, reference)   n= 32 batch=32: forward 0.0067 s, step 0.0396 s
+forms S                        n= 64 batch=32: forward 0.4154 s, step 0.4811 s (strips 0.2619 s, assembly 0.0734 s)
+forms S, strips only at validation n= 64 batch=32: forward 0.4151 s, step 0.0854 s
+forms W                        n= 64 batch=32: forward 0.0219 s, step 0.0856 s
+forms B (Stage 0, reference)   n= 64 batch=32: forward 0.0135 s, step 0.0685 s
+forms S                        n=128 batch= 8: forward 0.5427 s, step 0.6081 s (strips 0.3907 s, assembly 0.0645 s)
+forms S, strips only at validation n=128 batch= 8: forward 0.5407 s, step 0.0786 s
+forms W                        n=128 batch= 8: forward 0.0167 s, step 0.0790 s
+forms B (Stage 0, reference)   n=128 batch= 8: forward 0.0111 s, step 0.0654 s
+projection {"step_mix": {"32": 0.18895294308902422, "64": 0.31139094876636614, "128": 0.49965610814460965}, "arms": {"S": {"mean_step_s": 0.4878930459132323, "over_B": 7.931870975550924, "registered_steps": 150000, "hours": 20.328876913051346, "Sp_hours": 10.164438456525673}, "S, strips only at validation": {"mean_step_s": 0.07643608570903801, "over_B": 1.2426517959185328, "registered_steps": 150000, "hours": 3.1848369045432503, "Sp_hours": 1.5924184522716252}, "W": {"mean_step_s": 0.07661011071061799, "over_B": 1.2454809894694856, "registered_steps": 75000, "hours": 1.5960439731378748}, "B (Stage 0, reference)": {"mean_step_s": 0.06151046170785005, "over_B": 1.0}}, "training_hours": 32.08935934271489, "training_hours_strips_only_at_validation": 6.373299329952751}
+generator {'workers': 29, 'count': 96, 'wall_s': 4.064103015232831, 'examples_per_s': 23.621448482033664, 'per_example_s_mean': 0.22555805213535982}
+wrote out/price-forms-a1bca8838637-20261019-204154.json
