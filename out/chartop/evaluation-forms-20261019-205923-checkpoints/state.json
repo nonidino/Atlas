@@ -1,0 +1,140 @@
+{
+ "format": 1,
+ "stamp": "forms-20261019-205923",
+ "started": "2026-10-19T20:59:23-04:00",
+ "weights": {
+  "S": "e17f881b2b5bdb90145254cb57e9c2f0912c01b3957a3f6b20c01e3e8a8fa35d",
+  "Sp-s0": "2e7bcf22d5db38a420003852b38a12aee38bc220f309dade2b56c01f1a106cc3",
+  "Sp-s1": "70b7c3d8f041df9483a4e7f8340eb26d20665e7365b7a86a00a4764fb6627538",
+  "W-s0": "ed032863cf184985e2ce33b448b6787a8952e14dd7a6664b365796f6b787299e",
+  "W-s1": "29678838fc3d9d87af5514998adb7816d877f2f295840f12b404b91a6e2a0658"
+ },
+ "identity": {
+  "gates_forms_sha256": "94f29f2738733d36426894a0a5ea7bf2a2d302a482de75a28e4c655dd77a7757",
+  "gates_sha256": "b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099",
+  "test_count": 2400,
+  "l_test": 100,
+  "dual_test": 100
+ },
+ "test": {
+  "sha256": "3fcd59fae77e45a95af8e79d6ee9f56d3a3da561c42cc329e3e549918b78f2b9"
+ },
+ "sessions": [
+  {
+   "script_sha256": "4656d682e00a9f993ec96743b9d31e1569442f0238d51c0ae1daba706357d36c",
+   "torch": "2.7.1+cpu",
+   "torch_threads": 8,
+   "platform": "Windows-11-10.0.26300-SP0",
+   "index": 0,
+   "began": "2026-10-19T20:59:23-04:00",
+   "resume": false
+  }
+ ],
+ "checkpoints": {
+  "e1-forms-test_n128_0000.npz": {
+   "sha256": "63c65844648b936e117efb5ae6fd5f9f3b8ab9f157fb9da58145eb2496eb5ef5",
+   "bytes": 65352,
+   "session": 0
+  },
+  "e1-forms-test_n32_0000.npz": {
+   "sha256": "79b949a373ebc0d1b83785c26a3777fc9f9f8961c378ba40ad59753400ab40e6",
+   "bytes": 106932,
+   "session": 0
+  },
+  "e1-forms-test_n64_0000.npz": {
+   "sha256": "7be8e079981090a9b17adb14e423ed9960b7302d0df59239c5f13c25420305c1",
+   "bytes": 142912,
+   "session": 0
+  },
+  "e1-forms-test_n64_0001.npz": {
+   "sha256": "4976d08daa728a6004dc07c91b1cb03be27cbb88ac82efdba750bee41b2535d3",
+   "bytes": 32452,
+   "session": 0
+  },
+  "l-test.json": {
+   "sha256": "ae83d93688da866b5e7603d035c7155706d9f9e91242b17d38c11d44840d04f2",
+   "bytes": 703,
+   "session": 0
+  },
+  "bench-forms-bend-3-steady.json": {
+   "sha256": "3ad8e80145b5d666245dd1c830ce97b6bb51bf9eb9076e256e7b0eb9e36e6e3d",
+   "bytes": 23559,
+   "session": 0
+  },
+  "bench-forms-bend-3-step.json": {
+   "sha256": "d5c41093c25d93e62945eed2d7cb1429c776d3d607766e747c758c2a24783ec4",
+   "bytes": 18311,
+   "session": 0
+  },
+  "bench-forms-s-channel-steady.json": {
+   "sha256": "efde62b94a2d330cb821d8d8d4fb7724fe53660b7b8b51863bd3b076f1b787e8",
+   "bytes": 17608,
+   "session": 0
+  },
+  "bench-forms-s-channel-step.json": {
+   "sha256": "9b85825ae398d4d31c38f098d2f9a5bbb27b2b90de7ee8af11fef395c8c60759",
+   "bytes": 14380,
+   "session": 0
+  },
+  "bench-forms-insert-round-steady.json": {
+   "sha256": "cf089a560a575a196adf10f0c15deb00078783d1e163148ed082c8f40b0158fb",
+   "bytes": 46929,
+   "session": 0
+  },
+  "bench-forms-insert-round-step.json": {
+   "sha256": "9ad709e728a1aa66eef41cc0df8ed500ef0d77cdb57831059dc06c038b51884c",
+   "bytes": 33326,
+   "session": 0
+  },
+  "dual-forms-test-3000001-3000343.json": {
+   "sha256": "a0e3e5d861dbf7ea72b05bfb79ac5ce04d06eeb702977d89353f7efb4314bbe8",
+   "bytes": 6650,
+   "session": 0
+  },
+  "dual-forms-test-3000362-3000660.json": {
+   "sha256": "57e4d1186d6ef56cf689877a624818138390166d7409fc2af9792225db2acaf0",
+   "bytes": 6631,
+   "session": 0
+  },
+  "dual-forms-test-3000693-3001040.json": {
+   "sha256": "6e191b6f6f05509a525721d5e5287ed76f849f47a430430ae7246a2824481666",
+   "bytes": 6634,
+   "session": 0
+  },
+  "dual-forms-test-3001052-3001405.json": {
+   "sha256": "3b299f81e16583689df4ec23763ec7521fc65801505e8e22d18e30eb1644792b",
+   "bytes": 6637,
+   "session": 0
+  },
+  "dual-forms-test-3001413-3001735.json": {
+   "sha256": "ff8987299b02f8a874e8cfe12eea43860d75d7ce836ff8fcf50617f3e3eab290",
+   "bytes": 6644,
+   "session": 0
+  },
+  "kt-forms-bend-3.json": {
+   "sha256": "8777a0bb0cb6a4d61377592d89535be0d0745ba7773bbc3cc7f69d96ad5c1430",
+   "bytes": 787,
+   "session": 0
+  },
+  "kt-forms-s-channel.json": {
+   "sha256": "d1609343f4ca0ba0e6545119576368a890ad993bd4f814273ba46df2f1e717d0",
+   "bytes": 782,
+   "session": 0
+  },
+  "kt-forms-insert-round.json": {
+   "sha256": "5d024beabaea9fa0ae9fb42d5c241188a747f80963e97ab4a38e3cf2761fe3b0",
+   "bytes": 642,
+   "session": 0
+  },
+  "rollout-forms.json": {
+   "sha256": "14478cc769ea2fac1e3f01ab5b47afc3f36829e299f5e3797d7d3f2ee1a9cfa6",
+   "bytes": 1573,
+   "session": 0
+  }
+ },
+ "completed": {
+  "record": "evaluation-forms-20261019-205923.json",
+  "sha256": "c6e2514932507969295953f6b16ba077cd59c6e011e9e13fc06a6dc77dc36736",
+  "at": "2026-10-19T21:19:19-04:00"
+ }
+}

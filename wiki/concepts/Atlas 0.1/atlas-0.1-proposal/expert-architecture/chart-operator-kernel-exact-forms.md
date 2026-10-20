@@ -1,7 +1,7 @@
 # Chart operator — the kernel-exact and split output forms (W356, W357), built and checked untrained
 
 **Type:** Concept page — **build record and draft registration** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** built and checked on 2026-10-18, written up on 2026-10-19. **Untrained weights only**: zero heads, or seeded random weights. Nothing was trained. §8 is the next registration: accepted by the owner and hash-pinned on 2026-10-19, its bars in `atlas/chartop/gates_forms.py` and pinned in `out/chartop/registered-forms.txt`. `atlas/chartop/gates.py`, Stage 0's registration, is unchanged.
+**Status:** built and checked on 2026-10-18, written up on 2026-10-19. §1–7 and §10 use **untrained weights only**: zero heads, or seeded random weights. §8 is the next registration: accepted by the owner and hash-pinned on 2026-10-19, its bars in `atlas/chartop/gates_forms.py` and pinned in `out/chartop/registered-forms.txt`. Its five runs were trained and evaluated once the same day (§8.9–8.11): K, D, L, E3, SE1–SE3 and DUAL are met, E1, E4 and KT are not, and CW is a tie. `atlas/chartop/gates.py`, Stage 0's registration, is unchanged.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] §9.7 and §12, items 1–2 · **Worklist:** [[gap-worklist]] W356, W357; W358 in §10 · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -346,7 +346,7 @@ No verdict is predicted for E4, E5 or S11.
 1. **Done:** a new gates module carrying these bars (`atlas/chartop/gates_forms.py`), with a test against this section (`tests/test_chartop_gates_forms.py`).
 2. **Done:** the untrained re-measurement (§8.6).
 3. **Done:** E5 on a rented box, on the owner's OK (§8.7).
-4. **Done:** the five runs, trained on two rented boxes and destroyed (§8.9). They are not yet evaluated: the one evaluation's script is written and tested (§8.10), and it waits for the owner's go.
+4. **Done:** the five runs, trained on two rented boxes and destroyed (§8.9), and evaluated once on the owner's go (§8.10, §8.11). K, D, L, E3, SE1–SE3 and DUAL are met; E1, E4 and KT are not; CW is a tie.
 
 The module was hash-pinned on the owner's OK, on 2026-10-19, before any network in these forms was trained.
 
@@ -544,7 +544,87 @@ Either layout is under half the cost with the strips solved in training (\$5.6�
 - **Two mutations are caught.** E1 against $\operatorname{tr}\Lambda$ and CW the wrong way round each make their test fail, and the script was restored byte for byte.
 - The 223 chartop tests pass.
 
-**The run, when the owner approves.** On the laptop on AC power: `python scripts/chartop_evaluate_forms.py`. It first draws the 2,400 labelled test pieces (Stage 0 drew them; they are not on disk now), then evaluates. **[AI Inference]:** about an hour, by Stage 0's per-piece costs and the strips' prices; not measured.
+**The run, when the owner approves.** On the laptop on AC power: `python scripts/chartop_evaluate_forms.py`. It first draws the 2,400 labelled test pieces (Stage 0 drew them; they are not on disk now), then evaluates. **[AI Inference]:** about an hour, by Stage 0's per-piece costs and the strips' prices; not measured. It took 20 minutes (§8.11).
+
+### 8.11 The one evaluation
+
+**The owner's go:** "run the one evaluation now on the laptop on AC power: draw the test split, then python scripts/chartop_evaluate_forms.py, and report every verdict whatever it says."
+- **The run:** on the laptop, 20:59–21:19 on 2026-10-19, once.
+- **The power:** the AC line read online before it started. It went offline briefly at about 21:10, and was back by 21:10:31. Nothing was interrupted.
+- **The test split** was drawn first: Stage 0's 2,400 registered seeds, both bases labelled, 841 rejected charts, in 225 s. Its content sha256 is `3fcd59fa…`.
+- **The records:** `out/chartop/evaluation-forms-20261019-205923.json` and `.txt`, with the test rows in `-test-rows.npz`, the console log, the registry entries in `evaluated.json`, and the provenance in `-checkpoints/state.json`.
+
+**The verdicts**, every one whatever it says:
+
+| gate | verdict | what decided it |
+|---|---|---|
+| **K** | **met** | every run and piece: $e_K\le1.1\times10^{-15}$, $e_{K,\infty}\le4.4\times10^{-16}$ (2,400 test pieces for S, and every benchmark piece of every run) |
+| **D** | **met** | every run and problem: the ratio within $3.4\times10^{-12}$ of one, the maxima within $1.4\times10^{-11}$ of the range |
+| **L** | **met** | bit for bit on every benchmark piece of every run, and on S's first 100 test pieces |
+| **E1** | **not met** | not met in any of the 12 bins (median $e_{H,L}$ 0.110–0.351, against 0.01; median $e_p$ 0.050–0.082, against 0.02) |
+| **E3** | met | all six problems: the coupled error within Theorem 2's bound |
+| **E4** | **not met** | not met on any of the six problems, in either frame (table below) |
+| **SE1** | met | all six problems |
+| **SE2** | met | one call per piece per solve, both frames |
+| **SE3** | met | all six problems |
+| **DUAL** | met | the worst smallest eigenvalue is $-7.4\times10^{-15}$ relative, over 63 benchmark pieces and 100 steady test pieces |
+| **KT** | **not met** | each of the three steady benchmarks converged in 5 outer iterations, like the classical solution, but erred by 3.9%, 6.6% and 7.9% in energy |
+| S11 | reported | below |
+| **CW** | **tie**, both pairings | seed 0: 1.040; seed 1: 0.990 |
+| E5 | reported | priced before training (§8.7, §8.9), not re-run |
+
+**E1, beside the gate.** Over all 2,400 test pieces:
+- $e_{H,L}$ has median 0.267 and 90th percentile 0.420;
+- $e_H$ over all 64 columns has median 0.152 and 90th percentile 0.244;
+- $e_p$ has median 0.066 and 90th percentile 0.132.
+
+$e_{H,L}$ grows with $\sup\lvert\mu\rvert$: about 0.11–0.14 in the first bin, 0.33–0.35 in the last. By resolution it is 0.250, 0.268 and 0.294 at $n=32$, 64 and 128. The sum of the exact modes' energies matches the labels' $\operatorname{tr}\Lambda$ to $1.1\times10^{-13}$.
+
+**E4, arm S**, as registered and lowered by 300 K. The 16-mode floors are as in §8.6.
+
+| problem | energy error, % | maximum error, % of the range | the maximum's bar | E4 |
+|---|---|---|---|---|
+| bend-3, steady | 3.94 / 3.94 | 0.22 | 1.00 | not met (energy) |
+| bend-3, step | 0.21 / 3.08 | 1.66 | 1.42 | not met (maximum; energy lowered) |
+| s-channel, steady | 6.56 / 6.56 | 0.35 | 1.15 | not met (energy) |
+| s-channel, step | 0.69 / 10.81 | 5.08 | 3.81 | not met (maximum; energy lowered) |
+| insert-round, steady | 7.84 / 7.84 | 1.08 | 1.005 | not met (both) |
+| insert-round, step | 0.36 / 3.80 | 1.89 | 1.05 | not met (maximum; energy lowered) |
+
+No run met E4 on every problem. Their energy errors in per cent, steady and then the steps lowered:
+
+| run | bend-3 | s-channel | insert-round | bend-3 step | s-channel step | insert-round step | CW's measure |
+|---|---|---|---|---|---|---|---|
+| S | 3.94 | 6.56 | 7.84 | 3.08 | 10.81 | 3.80 | 6.01 |
+| S′, seed 0 | 1.29 | 5.49 | 4.37 | 4.16 | 7.26 | 3.12 | 4.28 |
+| S′, seed 1 | 2.65 | 5.91 | 7.88 | 1.91 | 6.19 | 2.74 | 4.55 |
+| W, seed 0 | 1.39 | 5.21 | 6.84 | 2.73 | 8.12 | 2.43 | 4.45 |
+| W, seed 1 | 2.01 | 5.83 | 6.61 | 2.34 | 8.02 | 2.21 | 4.50 |
+| as initialised (§8.6) | 0.00034 | 5.28 / 5.26 | 5.58 | 3.89 | 10.80 / 10.75 | 4.14 | 4.95 / 4.94 |
+
+The last row gives W's form, then S's form, where they differ.
+
+**CW** = W over S′ = 4.45 / 4.28 = 1.040 for seed 0, and 4.50 / 4.55 = 0.990 for seed 1. Both are ties, so S′, the owner's form, stands.
+- **Beside it, the median $e_H$ over the benchmark pieces:** S 0.077, S′ 0.077 (both seeds), W 0.137 (both seeds).
+- **CW₀** was 1.0023 (§8.6).
+
+**S11, the rollout.** The s-channel was marched 20 steps, with the modes formed once: 180 network calls over 9 pieces, one per piece per step. S's energy error is 0.69%, 0.44%, 0.33% and 0.25% at steps 1, 5, 10 and 20. Its maximum is 5.08%, 3.63%, 2.78% and 2.14% of the range, against the 16-mode floor's 2.81%, 1.19%, 0.84% and 0.61%. E4's bars are not met at any of them.
+
+**The predictions of §8.4, against the result.**
+1. **K, D and L hold: held**, for every run, and with the strips solved in every call.
+2. **E1 is probably not met: not met**, in every bin. The learned columns' error, 0.267 at the median, is about 27 times the bar. §8.4 bounded the 8 × 8 smooth class at roughly 0.17–0.18 at $n=128$; the trained S reaches 0.294 there.
+3. **CW is at least 1, a tie or a loss for W: a tie in both pairings**, so this is not refuted. Its stronger wording, "at least 1", holds for seed 0 (1.040) and fails for seed 1 (0.990, W 1% better). The predicted refutation, a win for W at 0.8 or below, did not happen.
+
+**What the evaluation shows.**
+- **The structure holds after training.** K, D, L, E3, SE1–SE3 and DUAL are all met. The kernel-exact split form with the corner bubble and the strips keeps the uniform state, the datum and the load out of its errors, bit for bit or to rounding.
+- **The accuracy does not.** E1, E4 and KT are not met.
+- **Neither the strips nor the bubble changes the coupled answer measurably:** CW is a tie. The strips nearly halve the benchmarks' $e_H$ (0.137 against 0.077), as they did untrained.
+- **[AI Inference]:** S trained four times as long as S′, and its validation $e_H$ fell from 0.194 to 0.152 (§8.9). Yet on all three steady benchmarks its coupled answer is worse than the untrained form's, with energy errors of 3.9%, 6.6% and 7.8% against 0.00034%, 5.3% and 5.6%. On bend-3 and the s-channel it is also worse than every other run's, and on insert-round than all but S′ seed 1's (7.88%).
+  - The learned corrections lower the energy-weighted mode error that training and validation measure, but move the modes in directions that the benchmarks' interface data weight heavily.
+  - This is §8.3's point that $e_H$ and the coupled answer weight the modes differently, now seen with a trained network.
+- **[AI Inference]:** CW₀, the trained CW and the benchmarks' $e_H$ agree that the side sines $j=9$–15 are not what limits the coupled answer here. The limit is in the learned low modes, and in a training objective that does not see the coupled answer.
+
+**Not done here.** No comparison arm was evaluated on the test split (§8.10). Nothing is on the website or in `proposal/`.
 
 ---
 

@@ -797,3 +797,25 @@ On the owner's instruction, `scripts/chartop_evaluate_forms.py` judges the five 
 The test split was not drawn and the weights were not evaluated.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status) and §8.10 (new) · [[gap-worklist]] W358.
+
+## [2026-10-19] note | The chart-operator registration's one evaluation: every verdict
+
+**The run.** On the owner's go, `scripts/chartop_evaluate_forms.py` ran once on the laptop on AC power, 20:59-21:19; the AC line blipped offline briefly at about 21:10, with no interruption. It first drew the 2,400 registered test pieces (841 rejected charts, content sha256 3fcd59fa...). The record is `out/chartop/evaluation-forms-20261019-205923.json` and `.txt`.
+
+**The verdicts.**
+- **Met:** K, D, L, E3, SE1, SE2, SE3 and DUAL.
+  - K: e_K at most 1.1e-15 on 2,400 test pieces and every benchmark piece of every run.
+  - D: the ratio within 3.4e-12 of one.
+  - L: bit for bit everywhere.
+  - DUAL: the worst eigenvalue is -7.4e-15 relative.
+- **E1: not met** in any of the 12 bins. The median e_H,L is 0.267 (bar 0.01), with e_H over all 64 at 0.152 and e_p at 0.066 (bar 0.02).
+- **E4: not met** on any of the six problems, in either frame. S's energy errors are 3.94, 6.56 and 7.84% steady, and 3.08, 10.81 and 3.80% for the steps lowered by 300 K.
+- **KT: not met.** It converged in 5 iterations, but with energy errors of 3.9, 6.6 and 7.9%.
+- **S11 (reported):** the energy error falls from 0.69% to 0.25% over 20 steps, and the maxima stay above E4's bars.
+- **CW: a tie** in both pairings: seed 0 1.040 (4.45 / 4.28%), seed 1 0.990 (4.50 / 4.55%). Beside it: CW0 1.0023, and the benchmarks' median e_H 0.077 for S' against 0.137 for W.
+
+**Against the predictions:** K, D and L held; E1 was not met; CW was a tie, not a W win, though seed 1's 0.990 misses the "at least 1" wording by 1%.
+
+[AI Inference]: S's steady coupled answers are worse than the untrained form's, despite its lower validation e_H. The objective's energy weighting and the coupled answer's interface weighting disagree, as §8.3 said they could.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status), §8.10 and §8.11 (new) · [[gap-worklist]] W358.

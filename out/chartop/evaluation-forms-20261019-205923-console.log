@@ -1,0 +1,30 @@
+20:59:23 drawing the test split: C:\Users\Nauni\OneDrive\Desktop\Foundation_Model\scripts\chartop_data.py --split test --count 2400 --workers 20 --labels sine-hat,cosine --out C:\Users\Nauni\OneDrive\Desktop\Foundation_Model\out\chartop\data\test
+500/2400 examples, 40 s
+1000/2400 examples, 79 s
+1500/2400 examples, 124 s
+2000/2400 examples, 192 s
+{"split": "test", "count": 2400, "elapsed_s": 224.8980955000152, "per_example_s_mean": 1.4479113794168128, "rejected_charts": 841}
+21:07:58 E1 rows for S: median e_H,L 0.267, median e_H 0.1522, median e_p 0.06577 (278 s)
+21:09:17 benchmark bend-3 steady: S energy 0.03937860109762982 registered, 0.039378601097667595 lowered (27 s)
+21:09:46 benchmark bend-3 step: S energy 0.0021204692513664045 registered, 0.030822633759556923 lowered (29 s)
+21:10:07 benchmark s-channel steady: S energy 0.06559037960658802 registered, 0.06559037960599799 lowered (22 s)
+21:10:35 benchmark s-channel step: S energy 0.006858661832349208 registered, 0.10812361726196798 lowered (27 s)
+21:12:17 benchmark insert-round steady: S energy 0.07838548527167799 registered, 0.07838548528370269 lowered (103 s)
+21:13:46 benchmark insert-round step: S energy 0.0036119743692561005 registered, 0.03803794415843281 lowered (89 s)
+21:19:19 wrote C:\Users\Nauni\OneDrive\Desktop\Foundation_Model\out\chartop\evaluation-forms-20261019-205923.json
+THE REGISTRATION AFTER STAGE 0: EVALUATION 2026-10-19T20:59:23-04:00  (gates_forms sha256 94f29f2738733d36...)
+
+  K     met
+  D     met
+  L     met
+  E1    NOT MET
+  E3    met
+  SE1   met
+  SE3   met
+  E4    NOT MET
+  SE2   met
+  DUAL  met
+  KT    NOT MET
+  S11   reported
+
+  CW: tie; seed 0: 1.04 (tie), seed 1: 0.9899 (tie); CW0 1.0023375000926982

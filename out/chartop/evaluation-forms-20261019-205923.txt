@@ -1,0 +1,16 @@
+THE REGISTRATION AFTER STAGE 0: EVALUATION 2026-10-19T20:59:23-04:00  (gates_forms sha256 94f29f2738733d36...)
+
+  K     met
+  D     met
+  L     met
+  E1    NOT MET
+  E3    met
+  SE1   met
+  SE3   met
+  E4    NOT MET
+  SE2   met
+  DUAL  met
+  KT    NOT MET
+  S11   reported
+
+  CW: tie; seed 0: 1.04 (tie), seed 1: 0.9899 (tie); CW0 1.0023375000926982
