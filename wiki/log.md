@@ -778,3 +778,22 @@ The records are in `out/chartop/runs/forms/` and `out/chartop/box/forms-{1,2}/`,
 **Not done:** the one evaluation (E1, E3, E4, SE1-SE3, DUAL, KT, S11 and CW). Its script for `gates_forms` is not written, and the test split has not been drawn.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status) and §8.9 (new) · [[gap-worklist]] W358.
+
+## [2026-10-19] note | The chart-operator registration's one evaluation: the script, written and tested, not run
+
+On the owner's instruction, `scripts/chartop_evaluate_forms.py` judges the five runs against the pinned `gates_forms`, reusing Stage 0's registry, test split handling, network term, Gram identity, dual bracket, KT and rollout.
+- **Before anything runs**, it checks each run's weights against `weights-sha256.txt` and its registered arm's configuration.
+- **For S:** E1 on e_H,L (the learned columns against their own energy), with e_H over all 64 beside it; K on every test piece; L on the first 100 test pieces.
+- **For all five runs**, the six benchmark problems in both frames: E4, D, K and L on every piece. E3, SE1-SE3 and DUAL are judged for S.
+- **CW:** W over S', seed with seed, with CW0 beside it. Then DUAL on 100 steady test pieces, KT and S11. E5 is named by its price records.
+- **Two readings are flagged:** the comparison arms run on the benchmarks only, as the pinned docstring says, and K, D and L are judged for all five runs.
+
+**The tests** use throwaway weights and validation seeds standing in for the test split, so no registered test piece is drawn.
+- E1's rows agree with an independent numpy computation to 2e-3 relative.
+- bend-3 at n = 32, in both frames, meets K, D, L, SE2, E3 and SE1 for the kernel-exact forms.
+- End to end: the weights' checks, CW's pairing, the gates, the record, and the refusals of a second run, a tampered file and a wrong configuration.
+- Two mutations are caught (E1 against tr Lambda, CW reversed), and 223 chartop tests pass.
+
+The test split was not drawn and the weights were not evaluated.
+
+**Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status) and §8.10 (new) · [[gap-worklist]] W358.

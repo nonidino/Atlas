@@ -346,7 +346,7 @@ No verdict is predicted for E4, E5 or S11.
 1. **Done:** a new gates module carrying these bars (`atlas/chartop/gates_forms.py`), with a test against this section (`tests/test_chartop_gates_forms.py`).
 2. **Done:** the untrained re-measurement (§8.6).
 3. **Done:** E5 on a rented box, on the owner's OK (§8.7).
-4. **Done:** the five runs, trained on two rented boxes and destroyed (§8.9). They are not yet evaluated: the one evaluation needs its script and the owner's go.
+4. **Done:** the five runs, trained on two rented boxes and destroyed (§8.9). They are not yet evaluated: the one evaluation's script is written and tested (§8.10), and it waits for the owner's go.
 
 The module was hash-pinned on the owner's OK, on 2026-10-19, before any network in these forms was trained.
 
@@ -513,6 +513,38 @@ Either layout is under half the cost with the strips solved in training (\$5.6�
 **What was not done.** The one evaluation, which judges E1, E3, E4, SE1–SE3, DUAL, KT, S11 and CW on the held-out test split and the benchmarks, has not been run, and the test split has not been drawn. Its script for `gates_forms` is not written. Both need the owner's go.
 
 **The cost.** The two boxes cost about \$2.13 by their rates and rented hours. The credit went from \$12.671 to \$10.528, \$2.14 for the two boxes, so the registration has spent \$2.17 in all, E5's box included, against its ceiling of \$10. The instance list was empty after each destroy and once the credit had settled.
+
+### 8.10 The one evaluation's script: written and tested, not run
+
+**The owner's instruction:** "Write the one evaluation's script for gates_forms (E1 on e_H,L, E3, E4 in both frames, SE1-SE3, DUAL, KT, S11, CW with both pairings), tested on small cases. Do not draw the test split or evaluate the weights until I approve." Neither has been done. `out/chartop/data/` does not exist, and there is no evaluation record.
+
+**What `scripts/chartop_evaluate_forms.py` does**, every bar from `gates_forms`:
+1. **It checks the weights before anything runs.** Each run's `best.pt` must have the sha256 recorded at download (`weights-sha256.txt`) and its registered arm's configuration (form, networks, ports, bubble, strips).
+2. **It opens the registry.** That is Stage 0's (`chartop_registry.py`), so these weights are evaluated once. An interrupted evaluation resumes from its checkpoints, and a finished one is refused.
+3. **The test split** is Stage 0's own: the same registered seeds and both bases' labels. It is drawn only if it is not already whole on disk, and its sha256 is taken.
+4. **E1 for S** uses $e_{H,L}$ on the 36 learned columns against their own energy, each $\Lambda_{kk}$ being the energy of the exact mode $k$. The script records the largest gap between their sum and the labels' $\operatorname{tr}\Lambda$. Beside E1 go $e_H$ over all 64 columns, and K on every test piece. The network runs in float32 on the CPU, and every call solves the strips.
+5. **L for S** on the first 100 test pieces.
+6. **The six benchmark problems**, each as registered and lowered by 300 K, for all five runs:
+   - E4 in both frames, D, and K and L on every piece;
+   - $e_H$ and $e_{H,L}$ against the exact modes on every piece;
+   - for S, E3, SE1, SE2 and SE3, and DUAL on the steady pieces.
+7. **CW:** W over S′, seed with seed, on `cw_measure`. Beside it go each run's median $e_H$ over the benchmark pieces, and CW₀ (1.0023, §8.6).
+8. **DUAL** for S on 100 steady test pieces, **KT** for S, and **S11**, S's rollout. These are Stage 0's functions.
+9. **E5** is named by its price records, not re-priced.
+10. **The record** is `out/chartop/evaluation-forms-<time>.json` and `.txt`, written whatever it says.
+
+**Two readings this script takes.**
+- **The comparison arms run on the benchmarks only.** `gates_forms`' docstring says so. So CW's side-by-side median $e_H$ is taken over the benchmark pieces; Stage 0 took its comparison arms' medians on the test split.
+- **K, D and L are judged for all five runs**, and K and L for S on the test pieces too, because the bars say "both arms".
+
+**The tests** (`tests/test_chartop_evaluate_forms.py`). They use throwaway weights and a stand-in test split drawn from validation seeds, with the registered test base patched for the test, so no registered test piece is drawn.
+- **E1's rows** agree with an independent numpy computation from each piece's exact modes, to $2\times10^{-3}$ relative, the gap being the stored arrays' float32. $e_K$ is below $10^{-12}$.
+- **One benchmark problem in both frames** (bend-3 at $n=32$, steady and step): the kernel-exact split forms meet K, D, L and SE2 whatever the weights, E3, SE1 and SE3 are judged for the main arm only, and the steady problem carries the dual bracket.
+- **End to end:** the plan's five runs pass the weights' checks, E1 runs for S alone, and CW pairs W-s0 with Sp-s0 and W-s1 with Sp-s1. The gates are assembled and the record written. The same weights are refused a second time, with or without `--resume`, as are a tampered file and a configuration that is not its arm's.
+- **Two mutations are caught.** E1 against $\operatorname{tr}\Lambda$ and CW the wrong way round each make their test fail, and the script was restored byte for byte.
+- The 223 chartop tests pass.
+
+**The run, when the owner approves.** On the laptop on AC power: `python scripts/chartop_evaluate_forms.py`. It first draws the 2,400 labelled test pieces (Stage 0 drew them; they are not on disk now), then evaluates. **[AI Inference]:** about an hour, by Stage 0's per-piece costs and the strips' prices; not measured.
 
 ---
 
