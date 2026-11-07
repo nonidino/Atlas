@@ -916,7 +916,8 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
   - The `gates_forms` and `gates` hashes are the ones the earlier registration pinned.
   - The treatments are recorded by value: the prior's kernel and floor, and the spectral path's 8 modes on 32 channels.
   - The pin test fails when it should: one byte added to `benchmarks.py` failed it, and the original bytes passed again.
-- **E5 priced on a rented box** (below), with the owner's go ("Rent and price"); the box was destroyed. Nothing has trained. The plan and the runs wait for the owner.
+- **E5 priced on a rented box** (below), with the owner's go ("Rent and price"); the box was destroyed.
+- **Planned and trained** with the owner's go ("Plan and train"): `out/chartop/plan-prior.json` (commit 4ceab31), and the four runs on two rented boxes (§11.8). Not yet evaluated.
 
 **What it would decide.** Whether weighting the modes as the coupled answer does (B2), with and without a global path (B3), brings S's form within E4, and what that costs E1.
 
@@ -998,6 +999,43 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
 - **What did not change:** the registered treatment, 8 modes on 32 channels, by value.
 
 **E1 is out of reach for these arms.** B4's full probe (§11.6) is done: neither arm fits four pieces below 0.16 in 3,000 steps. So E1's bar is out of this form's reach at a registration's budget, and the plan should say so before anything trains. The arms above are aimed at E4, not E1; prediction 4 stands.
+
+### 11.8 The four runs: trained, not yet evaluated (2026-11-07)
+
+**The owner's go:** "Plan and train", answering "Write the plan and train P and PG on rented boxes (about 3.3 GPU-hours, about \$1)?".
+
+**The plan** (`out/chartop/plan-prior.json`, binding from commit 4ceab31):
+- S′'s batches, learning rate, validation cadence, data counts and 120-minute guards, run for run, with the strips skipped in training.
+- `scripts/chartop_train.py` refuses the plan unless every run is a registered arm and seed with its registered configuration.
+- On each box, `scripts/chartop_budget.py` costs the whole registration from that box's own price record and trains only within \$10.
+
+| box | machine | rate | rented, local time | runs |
+|---|---|---|---|---|
+| 1 | RTX 3090, EPYC 7C13 (32 effective CPUs, 63 GB), vast.ai 59614685, offer 37955906 | \$0.234/h | 14:27–16:17 | P-s0, P-s1 |
+| 2 | RTX 3090, Xeon E5-2680 v4 (28 effective CPUs, 63 GB), vast.ai 59614692, offer 51465380 | \$0.246/h | 14:27–16:57 | PG-s0, PG-s1 |
+
+**Each box priced itself first and passed the gate.**
+- **Box 1:** P ×1.095 and PG ×1.127 over S′'s 68.2 ms. The whole registration projected 5.34 h and \$1.27.
+- **Box 2:** P ×1.099 and PG ×1.154 over 77.9 ms; 6.49 h and \$1.62.
+- **The upload, at the first try, arrived empty:** a trailing `&` put the whole `&&` chain in the background, and a background job reads /dev/null. Nothing ran. It was redone in two calls, with the payload's sha256 checked on both boxes.
+
+**The runs** (`out/chartop/runs/prior/<run>/`: `arm.json`, `log.jsonl`, `summary.json`). The weights `best.pt` stay local; their sha256 are in `out/chartop/runs/prior/weights-sha256.txt`. Every file was hash-checked against its box before the box was destroyed. The kept checkpoint is the one with the lowest validation median $e_H$, which is unweighted: not what P and PG were trained on.
+
+| run | steps | hours | ms a step | validation median $e_H$: first (step) → kept (step) | 90th percentile, kept | validation median $e_p$: first → kept → last | $e_K$, largest |
+|---|---|---|---|---|---|---|---|
+| P, seed 0 | 37,500 | 0.84 | 80.3 | 0.1941 (2,500) → 0.1932 (20,000) | 0.291 | 0.355 → 0.228 → 0.192 | $1.1\times10^{-15}$ |
+| P, seed 1 | 37,500 | 0.84 | 80.2 | 0.1944 (2,500) → 0.1883 (37,500) | 0.281 | 0.353 → 0.115 → 0.115 | $1.1\times10^{-15}$ |
+| PG, seed 0 | 37,500 | 1.07 | 103.2 | 0.1939 (2,500) → 0.1915 (37,500) | 0.287 | 0.300 → 0.137 → 0.137 | $1.1\times10^{-15}$ |
+| PG, seed 1 | 37,500 | 0.98 | 93.8 | 0.1937 (2,500) → 0.1918 (27,500) | 0.287 | 0.295 → 0.138 → 0.130 | $1.1\times10^{-15}$ |
+| S′, seed 0 (§8.9, beside) | 37,500 | 0.83 | 79.4 | 0.1947 (2,500) → 0.1934 (20,000) | 0.291 | 0.349 → 0.239 → 0.194 | $1.1\times10^{-15}$ |
+
+**Beside it.**
+- **Cost:** credit \$10.506 → \$9.459, so \$1.05 for training. With E5's box, \$1.07 for the registration so far.
+- **No box is up.**
+
+**Not shown here:** any gate. The runs are not evaluated, and neither the fresh test split nor the held-out problems has been read by any of them.
+
+**[AI Inference]:** P's unweighted validation median is S′'s to the third digit at seed 0 (0.1932 against 0.1934). That fits a prior that moves accuracy among the columns without changing the unweighted total much. Whether it moved accuracy to where the coupled answer needs it is E4's question, at the one evaluation.
 
 ---
 

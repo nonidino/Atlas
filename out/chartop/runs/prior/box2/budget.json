@@ -1,0 +1,57 @@
+{
+ "price_record": "price-prior-2f3a00925144-20261107-193036.json",
+ "gpu": "NVIDIA GeForce RTX 3090",
+ "dph": 0.246,
+ "runs": [
+  {
+   "name": "P-s0",
+   "priced_as": "P",
+   "mean_step_s": 0.08561492486359544,
+   "validation_s": 22.370984727851464,
+   "validations": 15,
+   "hours": 0.9850345703618336,
+   "on_this_box": false
+  },
+  {
+   "name": "P-s1",
+   "priced_as": "P",
+   "mean_step_s": 0.08561492486359544,
+   "validation_s": 22.370984727851464,
+   "validations": 15,
+   "hours": 0.9850345703618336,
+   "on_this_box": false
+  },
+  {
+   "name": "PG-s0",
+   "priced_as": "PG",
+   "mean_step_s": 0.08987734560810862,
+   "validation_s": 22.603599046575255,
+   "validations": 15,
+   "hours": 1.0304040127785283,
+   "on_this_box": true
+  },
+  {
+   "name": "PG-s1",
+   "priced_as": "PG",
+   "mean_step_s": 0.08987734560810862,
+   "validation_s": 22.603599046575255,
+   "validations": 15,
+   "hours": 1.0304040127785283,
+   "on_this_box": true
+  }
+ ],
+ "data_hours_per_box": 0.8274534767972201,
+ "fixed_hours_per_box": 0.4,
+ "this_box": {
+  "hours": 3.2882615023542767,
+  "usd": 0.808912329579152
+ },
+ "registration": {
+  "hours": 6.485784119875164,
+  "usd": 1.6175028934892903,
+  "spent_usd": 0.022,
+  "rule": "all four runs on 2 boxes like this one, at this box's rate"
+ },
+ "ceiling_usd": 10.0,
+ "within": true
+}

@@ -1,0 +1,7 @@
+{
+ "arm": "PG-s0",
+ "steps": 37500,
+ "best_val_e_H_median": 0.19151514055443755,
+ "elapsed_s": 3869.9987557074055,
+ "examples": 50000
+}

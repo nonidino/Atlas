@@ -838,4 +838,8 @@ The owner accepted §11.7's draft and chose a fresh test split at seed base 5,00
 
 ## [2026-11-07] note | E5 of the next chart-operator registration, priced on one rented box
 
-With the owner's go, an RTX 3090 at $0.176/h, 13:50–13:59, destroyed after the record was hash-checked, about $0.02. P's step is 1.106 and PG's 1.119 times S′'s (70.7 ms over Stage 0's mix), so the four runs come to 3.3 training hours. The first run died on bfloat16 autocast in the spectral path; it was fixed (float32 spectrum, CPU answers bit for bit), tested, and priced again on the same box. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 · [[gap-worklist]] W358.
+With the owner's go, an RTX 3090 at \$0.176/h, 13:50–13:59, destroyed after the record was hash-checked, about \$0.02. P's step is 1.106 and PG's 1.119 times S′'s (70.7 ms over Stage 0's mix), so the four runs come to 3.3 training hours. The first run died on bfloat16 autocast in the spectral path; it was fixed (float32 spectrum, CPU answers bit for bit), tested, and priced again on the same box. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 · [[gap-worklist]] W358.
+
+## [2026-11-07] note | The next chart-operator registration's four runs (P, PG), trained on two rented boxes (not evaluated)
+
+With the owner's go ("Plan and train"), `plan-prior.json` (commit 4ceab31) ran on two RTX 3090 boxes, 14:27–16:57. Each box priced itself and passed the budget gate. P-s0 and P-s1 took 0.84 h each; PG-s0 and PG-s1 1.07 h and 0.98 h. The kept validation medians were 0.1932, 0.1883, 0.1915 and 0.1918 (unweighted). Every file was hash-checked before both boxes were destroyed, for \$1.05. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 and §11.8 (new) · [[gap-worklist]] W358.

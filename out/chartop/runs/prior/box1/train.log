@@ -1,0 +1,4 @@
+P-s0: training 37500 steps (wall-clock guard 120 min)
+P-s0: {"arm": "P-s0", "steps": 37500, "best_val_e_H_median": 0.19321100046053974, "elapsed_s": 3011.632346672006, "examples": 50000}
+P-s1: training 37500 steps (wall-clock guard 120 min)
+P-s1: {"arm": "P-s1", "steps": 37500, "best_val_e_H_median": 0.18825414645068955, "elapsed_s": 3008.1196789100068, "examples": 50000}
