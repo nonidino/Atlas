@@ -847,3 +847,7 @@ With the owner's go ("Plan and train"), `plan-prior.json` (commit 4ceab31) ran o
 ## [2026-11-07] note | The next chart-operator registration's one evaluation: the script, written and tested, not run
 
 With the owner's go ("Write it"), `scripts/chartop_evaluate_prior.py` was written. It checks the pin, the weights and S′'s reused runs, draws the fresh test split at 5,000,000, and judges every gate on the held-out problems per arm, with CP and CG. It was tested on throwaway weights with validation seeds standing in for the split; 273 chartop tests pass. Not run. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 and §11.9 (new) · [[gap-worklist]] W358.
+
+## [2026-11-07] note | The next chart-operator registration's one evaluation: every verdict
+
+With the owner's go ("Run it", then "Run on battery now"), it ran once, 17:22–18:22, with no sleep or standby. It drew the 2,400 fresh test pieces. Met for both arms: K, D, L, E3, SE1–SE3 and DUAL. Not met: E1 (median e_H,L 0.341 and 0.338), E4 (met on held-out bend-3 only) and KT. CP and CG are ties. Predictions 2, 3, 4 and 6 held; 1 and 5 were refuted. On the held-out s-channel steady problem every learned run errs by 22–34% against a 1.0% floor. Record: `out/chartop/evaluation-prior-20261107-172219.json`. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 and §11.10 (new) · [[gap-worklist]] W358.

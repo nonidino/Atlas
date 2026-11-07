@@ -1,0 +1,46 @@
+17:22:20 drawing the fresh test split: C:\Users\Nauni\OneDrive\Desktop\Foundation_Model\scripts\chartop_data.py --split test-prior --name test --count 2400 --workers 20 --labels sine-hat --out C:\Users\Nauni\OneDrive\Desktop\Foundation_Model\out\chartop\data\test-prior
+500/2400 examples, 42 s
+1000/2400 examples, 68 s
+1500/2400 examples, 98 s
+2000/2400 examples, 140 s
+{"split": "test-prior", "count": 2400, "elapsed_s": 161.4944867999293, "per_example_s_mean": 1.1489247589578735, "rejected_charts": 775}
+17:33:14 E1 rows for P-s0: median e_H,L 0.3406, median e_p 0.2279 (481 s)
+17:40:59 E1 rows for PG-s0: median e_H,L 0.3378, median e_p 0.1322 (464 s)
+17:48:00 held-out bend-3 steady: P-s0 0.017952402475700326, PG-s0 0.01281671387609204
+17:49:29 held-out bend-3 step: P-s0 0.003574844745834774, PG-s0 0.0010950159233436263
+17:50:53 held-out s-channel steady: P-s0 0.27862023369699856, PG-s0 0.2471851921531823
+17:52:08 held-out s-channel step: P-s0 0.011286896986851218, PG-s0 0.011408720725688975
+17:56:33 held-out insert-round steady: P-s0 0.06318360581143011, PG-s0 0.054000980285543544
+18:01:49 held-out insert-round step: P-s0 0.004229877381343096, PG-s0 0.0034853560220878396
+18:21:38 wrote C:\Users\Nauni\OneDrive\Desktop\Foundation_Model\out\chartop\evaluation-prior-20261107-172219.json
+THE REGISTRATION AFTER THE FORMS' EVALUATION: EVALUATION 2026-11-07T17:22:19-05:00  (gates_prior sha256 baadad040504e7d0...)
+
+  arm P (P-s0):
+    K     met
+    D     met
+    L     met
+    E1    NOT MET
+    E4    NOT MET
+    SE2   met
+    E3    met
+    SE1   met
+    SE3   met
+    DUAL  met
+    KT    NOT MET
+    S11   reported
+  arm PG (PG-s0):
+    K     met
+    D     met
+    L     met
+    E1    NOT MET
+    E4    NOT MET
+    SE2   met
+    E3    met
+    SE1   met
+    SE3   met
+    DUAL  met
+    KT    NOT MET
+    S11   reported
+  CP: tie; seed 0: 0.9817 (tie), seed 1: 0.8075 (tie); on the seen problems beside: 1.085, 1.216
+  CG: tie; seed 0: 0.8643 (tie), seed 1: 1.082 (tie); on the seen problems beside: 0.8971, 0.8733
+exit 0

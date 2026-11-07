@@ -918,7 +918,8 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
   - The pin test fails when it should: one byte added to `benchmarks.py` failed it, and the original bytes passed again.
 - **E5 priced on a rented box** (below), with the owner's go ("Rent and price"); the box was destroyed.
 - **Planned and trained** with the owner's go ("Plan and train"): `out/chartop/plan-prior.json` (commit 4ceab31), and the four runs on two rented boxes (§11.8). Not yet evaluated.
-- **The one evaluation's script** is written and tested, not run (§11.9).
+- **The one evaluation's script** is written and tested (§11.9).
+- **The one evaluation ran on 2026-11-07** (§11.10). K, D, L, E3, SE1–SE3 and DUAL are met; E1, E4 and KT are not. CP and CG are ties. Predictions 2, 3, 4 and 6 held; 1 and 5 were refuted.
 
 **What it would decide.** Whether weighting the modes as the coupled answer does (B2), with and without a global path (B3), brings S's form within E4, and what that costs E1.
 
@@ -1072,6 +1073,57 @@ The parts the two registrations share come from `chartop_evaluate_forms` unchang
 - **The suites:** all 273 chartop tests pass.
 
 **Not run.** No trained weight has been read, and neither the fresh split nor the held-out problems has been drawn or read by a learned expert. The run is about an hour on the laptop, on AC: the draw, two E1 passes, 12 problems for six runs, KT and the rollouts.
+
+### 11.10 The one evaluation (2026-11-07)
+
+**The owner's go:** "Run it". Asked about power, since the laptop had gone onto battery, the owner answered "Run on battery now".
+
+**The run.**
+- `scripts/chartop_evaluate_prior.py` ran once, 17:22–18:22 on the laptop. The System log shows no sleep or standby; the power source went back to AC at 18:21.
+- It first drew the 2,400 fresh test pieces: seeds 5,000,000–5,002,399, content sha256 99b86b46….
+- Record: `out/chartop/evaluation-prior-20261107-172219.json` and `.txt`.
+
+**The verdicts.** Each arm's seed-0 run is judged on every gate, and K, D and L on both of its runs.
+
+| gate | P (P-s0) | PG (PG-s0) |
+|---|---|---|
+| K, D, L, SE2, E3, SE1, SE3, DUAL | met | met |
+| E1 | **not met**: median $e_{H,L}$ 0.341, $e_p$ 0.228 | **not met**: 0.338, $e_p$ 0.132 |
+| E4 | **not met**: met on bend-3 steady only | **not met**: met on bend-3 steady and step |
+| KT | **not met**: 2.5, 6.0 and 6.8% | **not met**: 1.5% (met), 5.4 and 5.3% |
+| S11 (reported) | E4 met at no step | E4 met at no step |
+
+**The comparisons.**
+- **CP**, P over S′: **a tie**, 0.982 and 0.808 (the win bar is 0.80). On the seen problems beside: 1.085 and 1.216.
+- **CG**, PG over P: **a tie**, 0.864 and 1.082. On the seen problems beside: 0.897 and 0.873.
+
+**The held-out problems** (energy error in %, steady as registered, steps lowered by 300 K):
+
+| problem | P-s0 | P-s1 | PG-s0 | PG-s1 | S′-s0 | S′-s1 | classical floor |
+|---|---|---|---|---|---|---|---|
+| bend-3 steady | 1.80 | 1.98 | 1.28 | 1.54 | 1.29 | 2.49 | 0.043 |
+| bend-3 step | 3.19 | 2.06 | 0.98 | 1.32 | 2.55 | 1.26 | 0.053 |
+| s-channel steady | **27.9** | **22.1** | **24.7** | **27.1** | **30.5** | **34.2** | 1.00 |
+| s-channel step | 10.8 | 12.5 | 11.0 | 12.5 | 12.0 | 13.5 | 1.24 |
+| insert-round steady | 6.32 | 9.02 | 5.40 | 8.86 | 4.05 | 7.30 | 0.043 |
+| insert-round step | 2.91 | 3.61 | 2.39 | 4.12 | 3.50 | 4.73 | 0.025 |
+
+On the seen problems, beside, the same runs err by 1.3–2.7% (bend-3 steady), 5.4–8.0% (s-channel steady) and 4.4–9.8% (insert-round steady).
+
+**Against the predictions.**
+1. **Refuted.** P is above S′ on insert-round steady in both seeds (6.32 against 4.05%, 9.02 against 7.30%), and on bend-3 steady at seed 0 (1.80 against 1.29%).
+2. **Held.** P meets E4 on the held-out bend-3 steady problem (1.80%).
+3. **Held.** Neither arm meets E4 on the held-out s-channel steady problem (27.9 and 24.7%). As 1 and 3 together said, S′ fails there too (30.5 and 34.2%).
+4. **Held.** Neither meets E1: median $e_{H,L}$ 0.341 and 0.338.
+5. **Refuted in its second half.** PG's median $e_{H,L}$ at $n=128$ is no higher than at $n=32$ (0.3398 against 0.3400). But P's does not rise with $n$ either: 0.346, 0.338, 0.341. S's rose, 0.250 → 0.294.
+6. **Held.** K, D and L are met for both arms.
+
+**What the held-out problems showed.**
+- **On the held-out s-channel steady problem every learned run errs by 22–34%,** against a classical floor of 1.0%. With the seen problem's uniform ends the same runs erred by 5–8%.
+- **The data are the difference:** a steady problem in one material does not depend on the material. The held-out ends vary along their length, and the walls carry that variation into the channel. So the coupled traces weigh the low side sines heavily, and those are the columns where §11.1 found the expert's error.
+- **The prior did not prevent it:** P is 22–28% there, against S′'s 30–34%, which is a tie by CP's bars.
+
+**[AI Inference]:** The seen benchmarks hid this. Their uniform end data put little weight on the side sines, so those columns' errors were multiplied by small coefficients. §11.3 already said what the coupled answer needs on such data: the hats and $j=1$–3 nearly exact. Reweighting the objective moved some of the error but did not remove it.
 
 ---
 

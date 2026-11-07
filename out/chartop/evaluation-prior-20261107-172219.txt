@@ -1,0 +1,30 @@
+THE REGISTRATION AFTER THE FORMS' EVALUATION: EVALUATION 2026-11-07T17:22:19-05:00  (gates_prior sha256 baadad040504e7d0...)
+
+  arm P (P-s0):
+    K     met
+    D     met
+    L     met
+    E1    NOT MET
+    E4    NOT MET
+    SE2   met
+    E3    met
+    SE1   met
+    SE3   met
+    DUAL  met
+    KT    NOT MET
+    S11   reported
+  arm PG (PG-s0):
+    K     met
+    D     met
+    L     met
+    E1    NOT MET
+    E4    NOT MET
+    SE2   met
+    E3    met
+    SE1   met
+    SE3   met
+    DUAL  met
+    KT    NOT MET
+    S11   reported
+  CP: tie; seed 0: 0.9817 (tie), seed 1: 0.8075 (tie); on the seen problems beside: 1.085, 1.216
+  CG: tie; seed 0: 0.8643 (tie), seed 1: 1.082 (tie); on the seen problems beside: 0.8971, 0.8733
