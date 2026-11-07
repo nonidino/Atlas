@@ -835,3 +835,7 @@ The owner accepted §11.7's draft and chose a fresh test split at seed base 5,00
 ## [2026-11-07] note | The next chart-operator registration (P, PG), hash-pinned with the owner's approval
 
 `out/chartop/registered-prior.txt` pins `gates_prior`, `gates_forms`, `gates`, `benchmarks` and the classical record by sha256, and records the treatments by value. The `gates_forms` and `gates` hashes match the earlier pin. A one-byte change to a pinned file fails the test. Nothing trained or rented; E5's pricing waits for the owner. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 · [[gap-worklist]] W358.
+
+## [2026-11-07] note | E5 of the next chart-operator registration, priced on one rented box
+
+With the owner's go, an RTX 3090 at $0.176/h, 13:50–13:59, destroyed after the record was hash-checked, about $0.02. P's step is 1.106 and PG's 1.119 times S′'s (70.7 ms over Stage 0's mix), so the four runs come to 3.3 training hours. The first run died on bfloat16 autocast in the spectral path; it was fixed (float32 spectrum, CPU answers bit for bit), tested, and priced again on the same box. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 · [[gap-worklist]] W358.

@@ -158,18 +158,24 @@ class SpectralLayer(nn.Module):
         self.lin = nn.Conv2d(cin, cout, 1)
 
     def _cosine(self, x):
+        """The spectrum in float32 with autocast off: under a GPU's bfloat16 autocast the
+        real mixing would run in bfloat16, which `torch.complex` does not take.  With
+        autocast off (the CPU, the tests) every operation is the same as without the
+        block, so the answer is too, bit for bit."""
         N1 = x.shape[-1]
         n = N1 - 1
-        ext = torch.cat([x, x.flip(-1)[..., 1:-1]], dim=-1)
-        ext = torch.cat([ext, ext.flip(-2)[..., 1:-1, :]], dim=-2)
-        X = torch.fft.rfft2(ext.float()).real
-        k = min(self.k, n)
-        Yk = torch.einsum("bixy,ioxy->boxy", X[..., :k, :k], self.wc[:, :, :k, :k].float())
-        Y = torch.zeros(x.shape[0], Yk.shape[1], 2 * n, n + 1, dtype=Yk.dtype, device=x.device)
-        Y[..., :k, :k] = Yk
-        if k > 1:
-            Y[..., 2 * n - k + 1:, :k] = Yk[..., 1:, :].flip(-2)
-        y = torch.fft.irfft2(torch.complex(Y, torch.zeros_like(Y)), s=ext.shape[-2:])[..., :N1, :N1]
+        with torch.autocast(device_type=x.device.type, enabled=False):
+            xf = x.float()
+            ext = torch.cat([xf, xf.flip(-1)[..., 1:-1]], dim=-1)
+            ext = torch.cat([ext, ext.flip(-2)[..., 1:-1, :]], dim=-2)
+            X = torch.fft.rfft2(ext).real
+            k = min(self.k, n)
+            Yk = torch.einsum("bixy,ioxy->boxy", X[..., :k, :k], self.wc[:, :, :k, :k].float())
+            Y = torch.zeros(x.shape[0], Yk.shape[1], 2 * n, n + 1, dtype=Yk.dtype, device=x.device)
+            Y[..., :k, :k] = Yk
+            if k > 1:
+                Y[..., 2 * n - k + 1:, :k] = Yk[..., 1:, :].flip(-2)
+            y = torch.fft.irfft2(torch.complex(Y, torch.zeros_like(Y)), s=ext.shape[-2:])[..., :N1, :N1]
         return y.to(x.dtype) + self.lin(x)
 
     def forward(self, x):

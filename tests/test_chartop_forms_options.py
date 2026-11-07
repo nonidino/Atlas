@@ -337,6 +337,33 @@ def test_the_spectral_path_is_off_by_default_and_unchanged():
         assert torch.equal(l1(x), l2(x))
 
 
+def test_the_spectral_path_runs_under_bfloat16_autocast():
+    """Decision D4 runs the network in bfloat16 autocast on a GPU.  Autocast lowers the
+    cosine path's real mixing (a matmul) to bfloat16, and `torch.complex` takes no
+    bfloat16: the box's first pricing died there (2026-11-07).  The path computes its
+    spectrum in float32 with autocast off, so under the CPU's bfloat16 autocast the
+    spectral U-Net answers, finite and near its float32 answer; and with autocast off the
+    path is what it was, bit for bit, since float32 in means float32 throughout."""
+    torch.manual_seed(0)
+    net = _randomise(model.UNet(model.WIDTHS["0.3M"], 3, 4, spectral=model.SPECTRAL_K), 0.05)
+    x = torch.randn(2, 4, 33, 33)
+    s = torch.randn(2, 2)
+    with torch.no_grad():
+        y32 = net(x, s)
+        with torch.autocast(device_type="cpu", dtype=torch.bfloat16):
+            y16 = net(x, s)
+    assert torch.isfinite(y16).all()
+    assert float((y16.float() - y32).abs().max()) <= 0.05 * float(y32.abs().max())
+    lay = model.SpectralLayer(4, 4, 8, cosine=True)
+    xs = torch.randn(2, 4, 9, 9)
+    with torch.no_grad():
+        ref = lay(xs)
+        with torch.autocast(device_type="cpu", dtype=torch.bfloat16):
+            low = lay(xs.to(torch.bfloat16))
+    assert low.dtype == torch.bfloat16 and torch.isfinite(low).all()
+    assert float((low.float() - ref).abs().max()) <= 0.05 * float(ref.abs().max())
+
+
 def _act(net, fx, fy, t):
     """The weights of ``net`` under symmetry (fx, fy, t): every 3 x 3 kernel moved as a
     field is, and the cosine weights transposed when the symmetry transposes."""

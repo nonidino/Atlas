@@ -916,7 +916,7 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
   - The `gates_forms` and `gates` hashes are the ones the earlier registration pinned.
   - The treatments are recorded by value: the prior's kernel and floor, and the spectral path's 8 modes on 32 channels.
   - The pin test fails when it should: one byte added to `benchmarks.py` failed it, and the original bytes passed again.
-- **Nothing trained or rented.** E5's pricing on a box, the plan and the runs each wait for the owner.
+- **E5 priced on a rented box** (below), with the owner's go ("Rent and price"); the box was destroyed. Nothing has trained. The plan and the runs wait for the owner.
 
 **What it would decide.** Whether weighting the modes as the coupled answer does (B2), with and without a global path (B3), brings S's form within E4, and what that costs E1.
 
@@ -967,8 +967,35 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
 **Cost.**
 - S′ took 0.83 h a run (79.4 ms a step) on an RTX 3090 box (§8.9).
 - The prior adds one $64\times64$ recombination a step. The path adds about 79k parameters and an 8-mode FFT on at most $17\times17$ nodes.
-- Budget 1.0–1.5 h a run: four runs, about 4–6 box-hours on two boxes. At the boxes' last rates (\$0.24 and \$0.34/h) that is about \$1–3, within the \$0.70/h cap.
+- Budget 1.0–1.5 h a run: four runs, about 4–6 box-hours on two boxes. At the boxes' last rates (\$0.24 and \$0.34/h) that is about \$1–3, within the \$0.70/h cap. (E5, below, measured 0.82 h a run.)
 - The one evaluation: about 20 minutes on the laptop, as before.
+
+**E5, priced on the box (2026-11-07).**
+- **The box:** one RTX 3090 on an AMD EPYC 7552 (vast.ai instance 59610940, offer 27741141), at \$0.176/h with 20 GB of disk.
+- **The run:** `scripts/chartop_price.py --prior` (the runner's stage `price-prior`), untrained random weights, bfloat16 autocast as decision D4 has it. S′'s form, as S′ was trained, is the reference timed in the same run. Record: `out/chartop/price-prior-2c136ab53e4f-20261107-185847.json`, hash-checked against the box before it was destroyed.
+- **The box's life:** 13:50–13:59, credit \$10.528 → \$10.508.
+
+| registered size | S′'s step | P's step | PG's step | forward (strips and assembly included), every arm |
+|---|---|---|---|---|
+| $n=32$, batch 32 | 52.4 ms | 60.0 ms | 56.7 ms | 0.13 s |
+| $n=64$, batch 32 | 78.0 ms | 85.3 ms | 86.8 ms | 0.39–0.40 s |
+| $n=128$, batch 8 | 73.1 ms | 80.6 ms | 82.8 ms | 0.47–0.48 s |
+| Stage 0's mix | **70.7 ms** | **78.2 ms (×1.106)** | **79.1 ms (×1.119)** | |
+
+**What the price says.**
+- **The prior** costs about 11% a step: the float64 recombination of the 64 mode fields.
+- **The path** costs about 1% more; it adds 158k parameters to the 2.2 M.
+- **The reference matches S′'s own training:** 70.7 ms here against S′'s 79.4 ms (§8.9), so this box ran about 11% faster.
+- **Training:** P 1.63 h and PG 1.65 h for their 75,000 steps each, 3.3 h in all.
+- **Cost:** about \$0.6–1.1 at \$0.18–0.34/h, within the \$10 ceiling. The memory peaks at 1.7 GiB.
+- **The data:** the generator ran 24 examples a second on the box's 14 workers.
+
+**The first pricing run failed, and was fixed before the second.**
+- **What happened:** PG's path died under bfloat16 autocast. Autocast lowered the cosine layer's real mixing (a matmul) to bfloat16, and `torch.complex` takes no bfloat16.
+- **Why the tests missed it:** they all ran without autocast.
+- **The fix:** `SpectralLayer`'s cosine path now computes its spectrum in float32 with autocast off. With autocast already off, that changes no operation, so the CPU answers are bit for bit what they were.
+- **The test:** a new test runs the path under the CPU's bfloat16 autocast. It failed with the box's error before the fix, and passes after.
+- **What did not change:** the registered treatment, 8 modes on 32 channels, by value.
 
 **E1 is out of reach for these arms.** B4's full probe (§11.6) is done: neither arm fits four pieces below 0.16 in 3,000 steps. So E1's bar is out of this form's reach at a registration's budget, and the plan should say so before anything trains. The arms above are aimed at E4, not E1; prediction 4 stands.
 
