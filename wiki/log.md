@@ -823,3 +823,7 @@ The test split was not drawn and the weights were not evaluated.
 ## [2026-11-07] note | The chart-operator registration's one evaluation, diagnosed post hoc: three options built untrained, a draft for the owner
 
 Post hoc; no gate, and the test split was not read. The coupled error is in the hats and the side sines j = 1–3. Three options were built off by default: `hats=`, `mode_prior` and `"unet-spectral"`. A 500-step overfit probe stays near 0.23, and a draft registration waits for the owner. **Changed:** [[chart-operator-kernel-exact-forms]] §11 (new) · [[gap-worklist]] W358.
+
+## [2026-11-07] note | The chart-operator overfit probe (B4), run in full with the owner's go
+
+3,000 steps an arm on four validation pieces at n = 128, from S's weights, 10:57–12:35 on AC with no sleep or standby. The median e_H,L goes 0.336 → 0.162 (U-Net) and 0.158 (with the global path), while e_p fits to 0.004–0.010. E1's 0.01 is out of this form's reach at a registration's budget. **Changed:** [[chart-operator-kernel-exact-forms]] §11.6 and §11.7 · [[gap-worklist]] W358.

@@ -103,6 +103,8 @@ def main(argv=None) -> int:
     ap.add_argument("--every", type=int, default=250)
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("--time-only", type=int, default=0, help="time this many steps and exit")
+    ap.add_argument("--record", default=None,
+                    help="the record's file name in out/chartop (default forms-overfit-<arm>.json)")
     args = ap.parse_args(argv)
     torch.set_num_threads(args.threads)
     torch.manual_seed(0)
@@ -110,7 +112,7 @@ def main(argv=None) -> int:
     e = expert(args.arm)
     e.train()
     opt = torch.optim.AdamW(e.parameters(), lr=args.lr, weight_decay=0.0)
-    path = os.path.join(OUT, f"forms-overfit-{args.arm}.json")
+    path = os.path.join(OUT, args.record or f"forms-overfit-{args.arm}.json")
     rec = {"arm": args.arm, "n": args.n, "pieces": meta, "lr": args.lr, "steps_planned": args.steps,
            "threads": args.threads, "start": "S's registered weights", "posthoc": True,
            "test_split_read": False, "trajectory": []}

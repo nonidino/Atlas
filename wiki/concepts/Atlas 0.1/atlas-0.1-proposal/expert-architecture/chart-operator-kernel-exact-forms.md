@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json` and `out/chartop/forms-overfit-<arm>.json`.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps).
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -873,33 +873,38 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
 
 **[AI Inference]:** Near a point where an interface meets a Dirichlet side at an angle other than 90°, the exact modes behave like $r^{\alpha}$ with $\alpha<1$ fixed by the contrast. The quotient then grows like $r^{\alpha-1}$, which a bubble that vanishes like the distance cannot absorb. That fits the exponents above, but it was not derived here.
 
-### 11.6 The overfit probe (B4, short)
+### 11.6 The overfit probe (B4)
 
 **The set-up.**
 - **The pieces:** four validation pieces at $n=128$, seeds 2,000,100–2,000,103. Three are steps ($Fo$ = 0.92, 0.23 and 11.2) and one is steady; all four are spline quads.
-- **The training:** S's form and the registered label-free objective, with no augmentation. The batch is the four pieces. AdamW at $3\times10^{-4}$, strips skipped in training.
+- **The training:** S's form and the registered label-free objective, with no augmentation. The batch is the four pieces. AdamW at a constant $3\times10^{-4}$, strips skipped in training.
 - **The start:** both arms start from S's weights. The B3 arm starts as S bit for bit, since its $C_{\mathrm{out}}$ is zero.
 - **The measure:** $e_{H,L}$ as E1 measures it, on the same four pieces.
-- **The length:** 500 steps an arm, 1.0–1.4 s a step, about 20 minutes in all, within the 30-minute limit. The few thousand steps the plan asked for were not run: about 1.6–2.4 h, the owner's call.
+- **The runs.** First 500 steps an arm (`forms-overfit-<arm>.json`). Then, with the owner's go, 3,000 steps an arm (`forms-overfit-<arm>-3000.json`), 10:57–12:35 on the laptop. The full run reproduces the short one at every step both measured: the probe is deterministic.
+- **The conditions:** on AC power, with no sleep, standby or power-source event in the window (System log, Ids 1, 42, 105, 187, 506 and 507), at 0.92–1.46 s a step.
 
-| median $e_{H,L}$, step | 0 | 100 | 200 | 300 | 400 | 500 |
-|---|---|---|---|---|---|---|
-| U-Net | 0.3356 | 0.2735 | 0.2561 | 0.2471 | 0.2415 | 0.2322 |
-| U-Net + the path (B3) | 0.3356 | 0.2755 | 0.2578 | 0.2477 | 0.2403 | 0.2371 |
+| median $e_{H,L}$, step | 0 | 250 | 500 | 1,000 | 1,500 | 2,000 | 2,500 | 3,000 |
+|---|---|---|---|---|---|---|---|---|
+| U-Net | 0.3356 | 0.2513 | 0.2322 | 0.2053 | 0.1843 | 0.1751 | 0.1688 | **0.1616** |
+| U-Net + the path (B3) | 0.3356 | 0.2578 | 0.2371 | 0.2039 | 0.1869 | 0.1750 | 0.1673 | **0.1577** |
 
 **Beside it.**
-- At step 500 the four pieces stand at 0.125, 0.400, 0.224 and 0.240 for the U-Net, and 0.130, 0.406, 0.231 and 0.244 with the path.
-- The hats hold 0.9% of the learned columns' error throughout, which is the unweighted objective's own weighting.
-- $e_p$ is 0.017–0.029.
+- At step 3,000 the four pieces stand at 0.074, 0.199, 0.133 and 0.190 for the U-Net, and 0.074, 0.185, 0.131 and 0.187 with the path.
+- The particular field does fit: $e_p$ falls from 0.017–0.029 at step 500 to 0.004–0.010, below E1's bar of 0.02.
+- The hats hold 1.4–3.1% of the learned columns' error, the unweighted objective's own weighting.
+- The path's trajectory is not monotone (0.1750 → 0.1765 → 0.1673 at steps 2,000–2,500).
 
 **Verdict.**
-- **Neither arm gets near 0.01, even while fitting the very pieces it is measured on.** The median falls by a third in 500 steps, then by under 0.01 every 100 steps.
-- A power law through steps 100–500 has exponent $-0.10$; reaching 0.01 at that rate would take far more steps than any budget.
-- The global path changes nothing within 500 steps.
-- **On this evidence, the limit is the target or the network form, not the data.**
-- **Not shown:** whether a longer run or another learning rate changes the slope. The full probe would settle that.
+- **Neither arm reaches 0.01 while fitting the very pieces it is measured on.** The medians are 0.162 and 0.158 at 3,000 steps, and even the best piece, at 0.074, is seven times the bar.
+- **The short run's extrapolation was too pessimistic.** Over the last 1,000 steps the median falls 2.0% (U-Net) and 2.6% (path) every 250 steps. That is a local power-law exponent of $-0.20$ and $-0.26$, against $-0.10$ over steps 100–500.
+- **How far 0.01 is:**
+  - kept up as a steady exponential decay, 27,000–35,000 more steps, about 7–10 h an arm on this laptop;
+  - on the power law, out of any budget.
+- **The path gives no measurable gain.** It ends 2.4% lower, after trailing until step 1,000, and the arms crossed twice.
+- **On this evidence the modes, not the data, are the limit at any registration's budget.** The registration's 37,500 steps must fit thousands of pieces, not four.
+- **Not shown:** whether an exponential tail would carry on for 30,000 steps, or another learning rate. A run that long would settle it.
 
-**[AI Inference]:** §11.5's quotient is still growing at the grid scale. A smooth network output times a bubble cannot follow that, which would put a floor under $e_{H,L}$ whatever the data. This is consistent with the slope above, but nothing here separates it from an optimisation limit.
+**[AI Inference]:** §11.5's quotient is still growing at the grid scale. A smooth network output times a bubble cannot follow that, which would put a floor under $e_{H,L}$ whatever the data. The particular field, which has no such singular target, fits in the same steps. That is consistent with the reading, but nothing here separates it from an optimisation limit.
 
 ### 11.7 A draft registration, for the owner (nothing trained, rented or pinned)
 
@@ -939,7 +944,7 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
 - Budget 1.0–1.5 h a run: four runs, about 4–6 box-hours on two boxes. At the boxes' last rates (\$0.24 and \$0.34/h) that is about \$1–3, within the \$0.70/h cap.
 - The one evaluation: about 20 minutes on the laptop, as before.
 
-**Before anything trains:** B4's full probe (§11.6), about 1.6–2.4 h of laptop CPU. If it confirms the short probe, E1's bar is out of this form's reach, and the plan should say so before anything trains. The arms above are aimed at E4, not E1.
+**E1 is out of reach for these arms.** B4's full probe (§11.6) is done: neither arm fits four pieces below 0.16 in 3,000 steps. So E1's bar is out of this form's reach at a registration's budget, and the plan should say so before anything trains. The arms above are aimed at E4, not E1; prediction 4 stands.
 
 ---
 
