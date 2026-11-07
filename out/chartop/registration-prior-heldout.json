@@ -1,0 +1,408 @@
+{
+ "written": "2026-11-07 12:53:30",
+ "experts_run": [
+  "classical"
+ ],
+ "held_out": [
+  {
+   "name": "bend-3",
+   "problem": "steady",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0004311135029451204,
+     "floor_max": 0.01075393796327262,
+     "span": 129.99957997307064,
+     "floor_max_over_range": 8.272286699311101e-05,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00043111350294630006,
+     "floor_max": 0.010753937963302818,
+     "span": 129.99957997307064,
+     "floor_max_over_range": 8.27228669933433e-05,
+     "refusals": []
+    }
+   },
+   "pieces": 15,
+   "fingerprint": "5cb1668d80b8f1a0b01abde4e3a9856035a359ef3b53d451a7fc3d5aff8244a3",
+   "kappa_ref": [
+    205.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.00042002692936,
+    420.0
+   ]
+  },
+  {
+   "name": "bend-3",
+   "problem": "step",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 5.9770629068814765e-05,
+     "floor_max": 0.042215348513764184,
+     "span": 129.99957997307064,
+     "floor_max_over_range": 0.0003247344993153753,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.000533168346743079,
+     "floor_max": 0.04221534851367892,
+     "span": 129.99957997307064,
+     "floor_max_over_range": 0.0003247344993147194,
+     "refusals": []
+    }
+   },
+   "pieces": 15,
+   "fingerprint": "e4288211bd66c5f1b6ab7715313ee3f57354aba600ede0d787b0be187ffcf8e5",
+   "kappa_ref": [
+    205.0
+   ],
+   "fo_range": [
+    0.23498090633078902,
+    0.7972953896346647
+   ],
+   "dirichlet_range": [
+    290.00042002692936,
+    420.0
+   ]
+  },
+  {
+   "name": "s-channel",
+   "problem": "steady",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.010008127404830869,
+     "floor_max": 0.15445081479248302,
+     "span": 130.0,
+     "floor_max_over_range": 0.0011880831907114078,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.010008127404774862,
+     "floor_max": 0.1544508147924084,
+     "span": 130.0,
+     "floor_max_over_range": 0.001188083190710834,
+     "refusals": []
+    }
+   },
+   "pieces": 9,
+   "fingerprint": "5abc42329832252448c49b52b196bc3a52e25a99abcba36f0362cba9570ff003",
+   "kappa_ref": [
+    400.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ]
+  },
+  {
+   "name": "s-channel",
+   "problem": "step",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0012863306282838033,
+     "floor_max": 0.8015758387750793,
+     "span": 130.0,
+     "floor_max_over_range": 0.006165967990577533,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.012359240430578743,
+     "floor_max": 0.8015758387748804,
+     "span": 130.0,
+     "floor_max_over_range": 0.006165967990576003,
+     "refusals": []
+    }
+   },
+   "pieces": 9,
+   "fingerprint": "3248263e2687b29031d78601d0dafd9fba9059195114b61bb222c39bcc10c3f4",
+   "kappa_ref": [
+    400.0
+   ],
+   "fo_range": [
+    0.6685734506189145,
+    1.1303738059638735
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ]
+  },
+  {
+   "name": "insert-round",
+   "problem": "steady",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0004278371238287875,
+     "floor_max": 0.005597757149473637,
+     "span": 130.0,
+     "floor_max_over_range": 4.3059670380566436e-05,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00042783712383145695,
+     "floor_max": 0.005597757149498506,
+     "span": 130.0,
+     "floor_max_over_range": 4.305967038075774e-05,
+     "refusals": []
+    }
+   },
+   "pieces": 39,
+   "fingerprint": "4a91c5be4e99bbd43e8e5e027ce118994640c14fdb19c45f6c4d7a601bd5ef1e",
+   "kappa_ref": [
+    45.0,
+    205.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ]
+  },
+  {
+   "name": "insert-round",
+   "problem": "step",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 3.6819555300344885e-05,
+     "floor_max": 0.009341925102546611,
+     "span": 130.0,
+     "floor_max_over_range": 7.186096232728163e-05,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00025291937082918154,
+     "floor_max": 0.009341925101836068,
+     "span": 130.0,
+     "floor_max_over_range": 7.186096232181591e-05,
+     "refusals": []
+    }
+   },
+   "pieces": 39,
+   "fingerprint": "ec11928b24c0d2a7fa938c018cc22081a56b75c209b45cfcdc4f329cb5ce5baf",
+   "kappa_ref": [
+    45.0,
+    205.0
+   ],
+   "fo_range": [
+    1.2292354799486855,
+    4.1714000055316305
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ]
+  }
+ ],
+ "seen": [
+  {
+   "name": "bend-3",
+   "problem": "steady",
+   "variant": null,
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 2.3084563704684885e-12,
+     "floor_max": 9.674749890109524e-11,
+     "span": 100.0,
+     "floor_max_over_range": 9.674749890109524e-13,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 3.4985580766895866e-13,
+     "floor_max": 1.4033219031261979e-11,
+     "span": 100.0,
+     "floor_max_over_range": 1.4033219031261979e-13,
+     "refusals": []
+    }
+   },
+   "pieces": 15,
+   "fingerprint": "68319f5726557428725b921ca8cd1b51702922723cc8f09f4e8318ed3ce5b3d6",
+   "kappa_ref": [
+    45.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    300.0,
+    400.0
+   ]
+  },
+  {
+   "name": "bend-3",
+   "problem": "step",
+   "variant": null,
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.00017287998890116478,
+     "floor_max": 0.42168380213519185,
+     "span": 100.0,
+     "floor_max_over_range": 0.004216838021351918,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.0025129421607128504,
+     "floor_max": 0.42168380213507817,
+     "span": 100.0,
+     "floor_max_over_range": 0.004216838021350782,
+     "refusals": []
+    }
+   },
+   "pieces": 15,
+   "fingerprint": "3f24dc75603d830af2fce9c7b60521674862152e6a16da2fb6a88e40c0b9d8e0",
+   "kappa_ref": [
+    45.0
+   ],
+   "fo_range": [
+    0.0325860533424707,
+    0.11056519656012984
+   ],
+   "dirichlet_range": [
+    300.0,
+    400.0
+   ]
+  },
+  {
+   "name": "s-channel",
+   "problem": "steady",
+   "variant": null,
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.00925299695668175,
+     "floor_max": 0.14990105604346127,
+     "span": 100.0,
+     "floor_max_over_range": 0.0014990105604346126,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00925299695659644,
+     "floor_max": 0.1499010560434939,
+     "span": 100.0,
+     "floor_max_over_range": 0.0014990105604349392,
+     "refusals": []
+    }
+   },
+   "pieces": 9,
+   "fingerprint": "fbbd1a2887e400b33e43b9fe2059fd8e8cf19922936c08e078e34bf67510e04d",
+   "kappa_ref": [
+    45.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    300.0,
+    400.0
+   ]
+  },
+  {
+   "name": "s-channel",
+   "problem": "step",
+   "variant": null,
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0013538704954344162,
+     "floor_max": 2.814386594791756,
+     "span": 100.0,
+     "floor_max_over_range": 0.02814386594791756,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.0213431393541195,
+     "floor_max": 2.8143865947916566,
+     "span": 100.0,
+     "floor_max_over_range": 0.028143865947916565,
+     "refusals": []
+    }
+   },
+   "pieces": 9,
+   "fingerprint": "5078dbe24672d07d782edb91fe41b5f70eeb74d608468a1986847d9680a2f01e",
+   "kappa_ref": [
+    45.0
+   ],
+   "fo_range": [
+    0.06745352520894016,
+    0.11404535723864813
+   ],
+   "dirichlet_range": [
+    300.0,
+    400.0
+   ]
+  },
+  {
+   "name": "insert-round",
+   "problem": "steady",
+   "variant": null,
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.00031279592897102233,
+     "floor_max": 0.004700100801812823,
+     "span": 100.0,
+     "floor_max_over_range": 4.7001008018128234e-05,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.0003127959290158095,
+     "floor_max": 0.004700098970772615,
+     "span": 100.0,
+     "floor_max_over_range": 4.700098970772615e-05,
+     "refusals": []
+    }
+   },
+   "pieces": 39,
+   "fingerprint": "907f1315caa46f3951596bad5e2da8d8bd14195302e8cbe39f1edb5953d4821f",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    300.0,
+    400.0
+   ]
+  },
+  {
+   "name": "insert-round",
+   "problem": "step",
+   "variant": null,
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 6.615233138881022e-05,
+     "floor_max": 0.048602847348547584,
+     "span": 100.0,
+     "floor_max_over_range": 0.0004860284734854758,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.0006966546354056326,
+     "floor_max": 0.04860284734846232,
+     "span": 100.0,
+     "floor_max_over_range": 0.0004860284734846232,
+     "refusals": []
+    }
+   },
+   "pieces": 39,
+   "fingerprint": "01d5772ef1acad5b91164ca3db8fc066eb5c343f1628146fb97d97ce2a782927",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": [
+    0.1704646285757261,
+    41.345315711393056
+   ],
+   "dirichlet_range": [
+    300.0,
+    400.0
+   ]
+  }
+ ],
+ "seen_floor_equals_evaluation": true,
+ "held_out_fo_within_training": true,
+ "held_out_refusals": 0,
+ "elapsed_s": 128.11356029997114
+}

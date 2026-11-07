@@ -827,3 +827,7 @@ Post hoc; no gate, and the test split was not read. The coupled error is in the 
 ## [2026-11-07] note | The chart-operator overfit probe (B4), run in full with the owner's go
 
 3,000 steps an arm on four validation pieces at n = 128, from S's weights, 10:57–12:35 on AC with no sleep or standby. The median e_H,L goes 0.336 → 0.162 (U-Net) and 0.158 (with the global path), while e_p fits to 0.004–0.010. E1's 0.01 is out of this form's reach at a registration's budget. **Changed:** [[chart-operator-kernel-exact-forms]] §11.6 and §11.7 · [[gap-worklist]] W358.
+
+## [2026-11-07] note | The next chart-operator registration (P, PG): accepted by the owner, written, not yet pinned
+
+The owner accepted §11.7's draft and chose a fresh test split at seed base 5,000,000 and new held-out benchmark problems. Those problems keep the same layouts, with new materials and wall-compatible end data, and only the classical solver has read them (floors 0.004–1.0%). A first design with a 2.03% floor was dropped. Written as `gates_prior`, not yet pinned; nothing trained or rented. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 · [[gap-worklist]] W358.

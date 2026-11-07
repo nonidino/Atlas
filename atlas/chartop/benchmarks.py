@@ -36,6 +36,17 @@ Each benchmark comes in two problems: **steady**, as the workbench defines it, a
 **step**, one backward-Euler step of ``DT[name]`` seconds from 300 K everywhere with
 the same boundary conditions (registered here, before any training), so that the
 particular field and the Fourier number are exercised.
+
+**The held-out variants, ``variant="held-out"``** (`gates_prior`, accepted by the owner on
+2026-11-07 and built before any trained network read them).  The six problems above
+were read post hoc after the forms' one evaluation, so the next registration judges E4
+on new ones: the same layouts and pieces, with new materials (`HELD_OUT_MATERIALS`;
+insert-round's contrast reversed, a steel disc in an aluminium plate) and new
+Dirichlet data, the hot end at ``T_HOT + 20 cos(pi s)`` and the cold end at
+``T_COLD + 10 cos(2 pi s)``, ``s`` running from 0 to 1 along each end, both with zero
+slope at the insulated walls.  The walls stay insulated, the step starts from 300 K
+and ``DT`` is unchanged.  Off by default; the defaults are the problems above, bit
+for bit.
 """
 
 from __future__ import annotations
@@ -58,6 +69,12 @@ NAMES = ("bend-3", "s-channel", "insert-round")
 DT = {"bend-3": 50.0, "s-channel": 100.0, "insert-round": 100.0}
 T_OLD = 300.0
 T_HOT, T_COLD = 400.0, 300.0
+#: the held-out variants (`gates_prior`): the materials by role, and the ends' new data
+VARIANTS = ("held-out",)
+HELD_OUT_MATERIALS = {"bend-3": {"bend": "aluminium"},
+                      "s-channel": {"channel": "copper"},
+                      "insert-round": {"disc": "steel", "plate": "aluminium"}}
+HELD_OUT_HOT_AMPLITUDE, HELD_OUT_COLD_AMPLITUDE = 20.0, 10.0
 
 
 @dataclass
@@ -105,12 +122,38 @@ def _bc_by(predicates):
     return bc
 
 
+def _check_variant(variant):
+    if variant is not None and variant not in VARIANTS:
+        raise ValueError(f"variant {variant!r}: None or one of {VARIANTS}")
+
+
+def _held_out_bc(hot, hot_s, cold, cold_s):
+    """bc(i, s, points) for the held-out data: a side on the hot end holds
+    ``T_HOT + A cos(pi s)`` and one on the cold end ``T_COLD + B cos(2 pi s)``, with
+    ``s = hot_s(points)`` or ``cold_s(points)`` running from 0 to 1 along that end;
+    every other side is insulated.  Both profiles have zero slope where the end meets
+    an insulated wall, as the wall requires; a first design with ``sin(pi s)`` on the
+    cold end did not, and gave the s-channel's steady problem a classical floor of
+    2.03%, above E4's bar (`scripts/chartop_register_prior.py`)."""
+    A, B = HELD_OUT_HOT_AMPLITUDE, HELD_OUT_COLD_AMPLITUDE
+
+    def bc(i, s, P):
+        if hot(P):
+            return ("dirichlet", T_HOT + A * np.cos(math.pi * hot_s(P)))
+        if cold(P):
+            return ("dirichlet", T_COLD + B * np.cos(2.0 * math.pi * cold_s(P)))
+        return ("insulated", None)
+    return bc
+
+
 # ---------------------------------------------------------------------------
 # bend-3
 # ---------------------------------------------------------------------------
 
 
-def bend3(n: int = 64, problem: str = "steady", n_r: int = 3, n_th: int = 5) -> Bench:
+def bend3(n: int = 64, problem: str = "steady", n_r: int = 3, n_th: int = 5,
+          variant: str | None = None) -> Bench:
+    _check_variant(variant)
     from atlas.workbench import spec as wspec
     sp_ = wspec.example_case("bend-3")
     dx = float(sp_.domain.dx)
@@ -118,7 +161,7 @@ def bend3(n: int = 64, problem: str = "steady", n_r: int = 3, n_th: int = 5) -> 
     r0, r1 = 40.0 * dx, 100.0 * dx
     rho0, rho1 = math.log(r0), math.log(r1)
     dr, dth = (rho1 - rho0) / n_r, (math.pi / 2) / n_th
-    mat = _material("steel")
+    mat = _material(HELD_OUT_MATERIALS["bend-3"]["bend"] if variant else "steel")
     probs = []
     for b in range(n_th):
         for a in range(n_r):
@@ -136,6 +179,11 @@ def bend3(n: int = 64, problem: str = "steady", n_r: int = 3, n_th: int = 5) -> 
 
     def cold(P):
         return bool(np.all(np.abs(P[:, 0] - cx) < tol))
+    if variant:
+        bc = _held_out_bc(hot, lambda P: (P[:, 0] - cx - r0) / (r1 - r0),
+                          cold, lambda P: (P[:, 1] - cy - r0) / (r1 - r0))
+        return Bench("bend-3", problem, probs, bc, {"exact": None, "dx": dx, "pieces": (n_r, n_th),
+                                                   "variant": variant, "materials": {"bend": mat}})
     bc = _bc_by([(hot, T_HOT), (cold, T_COLD)])
 
     def exact(x, y):
@@ -201,7 +249,8 @@ def _polyline_at(P: np.ndarray, s_query) -> np.ndarray:
 
 
 def s_channel(n: int = 64, problem: str = "steady", NX: int = 1152, NY: int = 128,
-              envelope: cert.Envelope | None = None) -> Bench:
+              envelope: cert.Envelope | None = None, variant: str | None = None) -> Bench:
+    _check_variant(variant)
     from atlas.workbench import spec as wspec
     dx = float(wspec.example_case("s-channel").domain.dx)
     bottom, right, top, left = _channel_sides(dx)
@@ -237,7 +286,7 @@ def s_channel(n: int = 64, problem: str = "steady", NX: int = 1152, NY: int = 12
     M = 1.0 / Eu
     along = max(1, int(round(M)))
     du = 1.0 / along
-    mat = _material("steel")
+    mat = _material(HELD_OUT_MATERIALS["s-channel"]["channel"] if variant else "steel")
 
     # the walls' u-correspondence and the cuts' v-parametrisation
     def wall_point(row: int, u: float) -> np.ndarray:
@@ -291,12 +340,21 @@ def s_channel(n: int = 64, problem: str = "steady", NX: int = 1152, NY: int = 12
         probs.append(_finish(chosen, mat, problem, DT["s-channel"], f"channel {c_}"))
     xl, xr = left[:, 0].mean(), right[:, 0].mean()
     tol = 1e-6 * float(np.ptp(X[..., 0]))
+    meta = {"modulus": M, "duality_Eu_Ev": Eu * Ev, "along": along,
+            "end_piece_charts": report, "dx": dx, "fine_mesh": (NX, NY),
+            "harmonic_u": (X, U)}
+    if variant:
+        yl, yr = (float(left[:, 1].min()), float(left[:, 1].max())), (float(right[:, 1].min()),
+                                                                       float(right[:, 1].max()))
+        bc = _held_out_bc(lambda P: bool(np.all(np.abs(P[:, 0] - xl) < tol)),
+                          lambda P: (P[:, 1] - yl[0]) / (yl[1] - yl[0]),
+                          lambda P: bool(np.all(np.abs(P[:, 0] - xr) < tol)),
+                          lambda P: (P[:, 1] - yr[0]) / (yr[1] - yr[0]))
+        return Bench("s-channel", problem, probs, bc,
+                     dict(meta, variant=variant, materials={"channel": mat}))
     bc = _bc_by([(lambda P: bool(np.all(np.abs(P[:, 0] - xl) < tol)), T_HOT),
                  (lambda P: bool(np.all(np.abs(P[:, 0] - xr) < tol)), T_COLD)])
-    return Bench("s-channel", problem, probs, bc,
-                 {"modulus": M, "duality_Eu_Ev": Eu * Ev, "along": along,
-                  "end_piece_charts": report, "dx": dx, "fine_mesh": (NX, NY),
-                  "harmonic_u": (X, U)})
+    return Bench("s-channel", problem, probs, bc, meta)
 
 
 # ---------------------------------------------------------------------------
@@ -310,10 +368,14 @@ def _arc(c, R, a0, a1, dense=2049) -> ch.Side:
     return ch.Side(np.stack([c[0] + R * np.cos(a), c[1] + R * np.sin(a)], -1), t)
 
 
-def insert_round(n: int = 64, problem: str = "steady", split: int = 3) -> Bench:
+def insert_round(n: int = 64, problem: str = "steady", split: int = 3,
+                 variant: str | None = None) -> Bench:
     """The O-H layout, every ring cut into ``split`` pieces along its rays so that each
     piece has a modulus near one (decision 2): the core as split x split rectangles,
-    4 split disc ring pieces, 4 split plate ring pieces and 2 split column pieces."""
+    4 split disc ring pieces, 4 split plate ring pieces and 2 split column pieces.
+    Below, ``cu`` is the disc's material and ``st`` the plate's (in the held-out variant,
+    steel and aluminium)."""
+    _check_variant(variant)
     from atlas.workbench import spec as wspec
     sp_ = wspec.example_case("insert-round")
     dx = float(sp_.domain.dx)
@@ -322,7 +384,11 @@ def insert_round(n: int = 64, problem: str = "steady", split: int = 3) -> Bench:
     R = 25.0 * dx
     a = 12.5 * dx                      # the core square's half-width
     b = 50.0 * dx                      # the plate box's half-width
-    cu, st = _material("copper"), _material("steel")
+    if variant:
+        cu = _material(HELD_OUT_MATERIALS["insert-round"]["disc"])
+        st = _material(HELD_OUT_MATERIALS["insert-round"]["plate"])
+    else:
+        cu, st = _material("copper"), _material("steel")
     deg = math.pi / 180.0
     S = split
     tq = np.tan((-45.0 + 90.0 * np.arange(S + 1) / S) * deg)     # where the rays meet a side
@@ -374,6 +440,11 @@ def insert_round(n: int = 64, problem: str = "steady", split: int = 3) -> Bench:
             probs.append(_finish(ch.Chart(ch.from_map(col_map, n), "affine"), st, problem,
                                  DT["insert-round"], f"{label} {q}"))
     tol = 1e-6 * W
+    if variant:
+        bc = _held_out_bc(lambda P: bool(np.all(np.abs(P[:, 0]) < tol)), lambda P: P[:, 1] / Hh,
+                          lambda P: bool(np.all(np.abs(P[:, 0] - W) < tol)), lambda P: P[:, 1] / Hh)
+        return Bench("insert-round", problem, probs, bc, {"dx": dx, "variant": variant,
+                                                         "materials": {"disc": cu, "plate": st}})
     bc = _bc_by([(lambda P: bool(np.all(np.abs(P[:, 0]) < tol)), T_HOT),
                  (lambda P: bool(np.all(np.abs(P[:, 0] - W) < tol)), T_COLD)])
     return Bench("insert-round", problem, probs, bc, {"dx": dx, "materials": {

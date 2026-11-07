@@ -906,7 +906,12 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
 
 **[AI Inference]:** §11.5's quotient is still growing at the grid scale. A smooth network output times a bubble cannot follow that, which would put a floor under $e_{H,L}$ whatever the data. The particular field, which has no such singular target, fits in the same steps. That is consistent with the reading, but nothing here separates it from an optimisation limit.
 
-### 11.7 A draft registration, for the owner (nothing trained, rented or pinned)
+### 11.7 The next registration: accepted by the owner (2026-11-07), written, not yet pinned
+
+**Status.**
+- The owner accepted this draft in chat on 2026-11-07, and settled its two open choices the same day (quoted below).
+- It is written as `atlas/chartop/gates_prior.py`, which reads every bar from `gates_forms`. Ten tests in `tests/test_chartop_gates_prior.py` check it against this section.
+- **Not yet hash-pinned, and nothing trained or rented.** Pinning, E5's pricing on a box, the plan and the runs each wait for the owner.
 
 **What it would decide.** Whether weighting the modes as the coupled answer does (B2), with and without a global path (B3), brings S's form within E4, and what that costs E1.
 
@@ -923,17 +928,33 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
 | S′ (trained, reused) | U-Net | unweighted | 0 |
 
 **Gates.**
-- `gates_forms`' bars, unchanged: E1; E4 in both frames; K, D, L, E3, SE1–SE3, DUAL and KT. S11 is reported.
-- The comparison: P against S′, seed with seed, on CW's measure; a verdict stands only if both pairings give it. Then PG against P, the same way.
+- `gates_forms`' bars, unchanged and read from it: E1; E4 in both frames; K, D, L, E3, SE1–SE3, DUAL and KT. S11 is reported.
+- As `gates_forms` judged its main arm, the seed-0 run of each arm is judged on every gate, and K, D and L on every run.
+- **CP**, P against S′, seed with seed, on CW's measure over the six held-out problems; a verdict stands only if both pairings give it. The same ratio on the six seen problems is reported beside it.
+- **CG**, PG against P, the same way.
 
-**Two things the owner must settle first.**
-- *A fresh test split.* The split at 3,000,000 has been evaluated once. A new seed base (say 5,000,000) would be drawn only at the one evaluation.
-- *The benchmarks are no longer blind.* §11.1 and §11.3 read all three steady problems post hoc, and B2 and B3 were chosen with them in view; B2's prior was not fitted to them. Either E4 is judged on them as a seen gate, and said so in advance, or new held-out problems are built before training: the same three geometries with new materials and data.
+**Settled by the owner (2026-11-07).**
+- *The test split:* "5,000,000 (Recommended)". The split at 3,000,000 has been evaluated once. E1 is judged on 2,400 pieces at seeds 5,000,000–5,002,399, drawn only at the one evaluation.
+- *The benchmarks:* "New held-out problems (Recommended)". §11.1 and §11.3 read all three steady problems post hoc, so the benchmark gates (K, D, L, E3, E4, SE1, SE3) are judged on new problems, and the old six are reported beside as seen. KT's nonlinear problems and S11's rollout, which §11 never read, stay as they were.
 
-**Predictions** (refutable; checked against each other: 1–3 bracket the s-channel between 2% and S′'s 5.49%).
-1. P's steady energy errors are below the S′ run of the same seed on all three problems. For seed 0 those are 1.28, 5.49 and 4.37%.
-2. P meets E4 on bend-3 steady, where the hats carry all of the error (§11.1).
-3. Neither P nor PG meets E4 on the s-channel steady. Exact hats alone leave 4.44% (§11.3), so the low sines would have to be nearly exact as well.
+**The held-out problems** (`benchmarks.build(..., variant="held-out")`; off by default). They use the same layouts, pieces and charts, with new materials and new data on the ends:
+- **Materials:** bend-3 in aluminium (not steel); the s-channel in copper (not steel); insert-round with its contrast reversed, a steel disc in an aluminium plate (not copper in steel).
+- **Data:** the hot end at $400+20\cos\pi s$ and the cold end at $300+10\cos2\pi s$, with $s$ running from 0 to 1 along each end. The walls stay insulated, the step starts from 300 K, and the time steps are unchanged.
+- **Measured with the classical solver only** (`scripts/chartop_register_prior.py`, `out/chartop/registration-prior-heldout.json`). No learned expert, trained or not, has read them.
+- **The controls:** the six seen problems' floors equal the one evaluation's bit for bit, so the defaults did not move; there are no envelope refusals; and every Fourier number lies in the generator's range, 0.01–100.
+
+| held-out problem | classical floor, steady | step | per-piece $Fo$ |
+|---|---|---|---|
+| bend-3 | 0.043% | 0.006% | 0.24–0.80 |
+| s-channel | 1.00% (seen: 0.93%) | 0.13% | 0.67–1.13 |
+| insert-round | 0.043% | 0.004% | 1.2–4.2 |
+
+**The first design was dropped.** It had $300+10\sin\pi s$ on the cold end. That data meets the insulated walls with a slope they cannot carry, and gave the s-channel's steady problem a classical floor of 2.03%, above E4's 2% bar: no expert could have met E4 there. The registered profiles both have zero slope at the walls. The change was made on the classical floor alone, a property of the problem and the port basis.
+
+**Predictions** (refutable; checked against each other: 1 and 3 together say that S′ also fails E4 on the held-out s-channel steady).
+1. P's steady energy errors are below the S′ run of the same seed on all three held-out steady problems.
+2. P meets E4 on the held-out bend-3 steady problem.
+3. Neither P nor PG meets E4 on the held-out s-channel steady problem. On the seen one, exact hats alone left 4.44% (§11.3), so the low sines would have to be nearly exact as well.
 4. Neither meets E1; the median $e_{H,L}$ stays above 0.1. B2 trades unweighted accuracy for coupled accuracy, and the target still grows with $n$ (§11.5).
 5. PG's median $e_{H,L}$ at $n=128$ is no higher than at $n=32$, while P's rises with $n$, as S's did (0.250 → 0.294).
 6. K, D and L are met, by structure.
