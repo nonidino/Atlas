@@ -1,0 +1,80 @@
+THE CHART OPERATOR, THE REGISTRATION AFTER THE FORMS' EVALUATION (CO-D, ARMS P AND PG)
+
+written            2026-11-07T13:29:22-05:00
+before             any network of these arms was trained (no training run, no rental; E5 not yet priced)
+repository at      bf4411f566357d309edb732792d006032f24d6c7 (the commit adding this file follows it)
+gate module        atlas/chartop/gates_prior.py  sha256 baadad040504e7d06fb6c25bf7bca713be75c9a64a3a1c44da1a9e58c2364ac0
+reads the bars of  atlas/chartop/gates_forms.py  sha256 94f29f2738733d36426894a0a5ea7bf2a2d302a482de75a28e4c655dd77a7757
+and through it     atlas/chartop/gates.py  sha256 b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099
+held-out problems  atlas/chartop/benchmarks.py  sha256 fc3f213e1e28c69f493e76224b22ddf36440b10bf0bb135e057bc8c12469f5c0
+classical record   out/chartop/registration-prior-heldout.json  sha256 edea3c1002a93521b5576852e185f33fae2c8c4f66fb8b98204fe9ebc500e3e7
+registered as      accepted by the owner on 2026-11-07, in chat, as drafted in chart-operator-kernel-exact-forms section 11.7 (commit 2a75176), with the test split at seed base 5,000,000 and new held-out benchmark problems; hash-pinned with the owner's approval the same day, before any network of these arms was trained
+
+SPLITS (example i of a split has seed base + i)
+  train            seed base 1000000, as gates_forms
+  val              seed base 2000000, as gates_forms
+  train-conformal  seed base 4000000, as gates_forms
+  test, fresh      2400 examples, seeds 5000000..5002400, drawn only at the one evaluation
+  (the test split at 3000000 was evaluated once, 2026-10-19, and is not read again)
+
+THE HELD-OUT PROBLEMS: benchmarks' variant 'held-out' of bend-3, s-channel, insert-round, problems steady and step, at n = 64
+  materials by role  bend-3: bend aluminium; s-channel: channel copper; insert-round: disc steel, plate aluminium
+  the ends' data     hot 400 + 20 cos(pi s), cold 300 + 10 cos(2 pi s), s from 0 to 1 along each end
+  read only by the classical superelement and the full-domain solve; classical floors:
+    bend-3        steady energy 0.04311%, max 8.27e-05 of the range
+    bend-3        step   energy 0.005977%, max 0.000325 of the range
+    s-channel     steady energy 1.001%, max 0.00119 of the range
+    s-channel     step   energy 0.1286%, max 0.00617 of the range
+    insert-round  steady energy 0.04278%, max 4.31e-05 of the range
+    insert-round  step   energy 0.003682%, max 7.19e-05 of the range
+  seen, beside       gates_forms' six problems, read post hoc in section 11; reported, not judged
+
+THE TREATMENTS, BY VALUE (checked by value by the test)
+  mode prior         generator-field: C(x, x') = 1/3 + 0.75 mean over ell of exp(-|x - x'|^2 / (2 ell^2)),
+                     ell in [0.125, 0.25, 0.5]; each block floored at 0.001 of its largest eigenvalue
+                     at n = 64: tr Sigma = 8.26981838321; learned block's eigenvalues 2.27767043971 to 0.00112598716964
+  spectral path      8 cosine modes per direction on 32 channels at the coarsest level
+
+THE TRAINING ENVELOPE (data.ENVELOPE), as gates_forms
+  sup|mu| <= 0.65, max log J - min log J <= 2.079, |grad log J| + |grad mu| <= 40,
+  |log kappa_hat| <= 2.3, Fo in [0.01, 100] or steady
+
+REGISTERED: accepted by the owner on 2026-11-07, in chat, as drafted in chart-operator-kernel-exact-forms section 11.7 (commit 2a75176), with the test split at seed base 5,000,000 and new held-out benchmark problems; hash-pinned with the owner's approval the same day, before any network of these arms was trained
+
+THE GATES
+  K     the uniform state                                          every piece of the fresh test split and every held-out benchmark piece, steady and step: e_K <= 1e-12 and e_K,inf <= 1e-12
+  D     the datum                                                  every held-out benchmark problem (benchmarks' variant 'held-out'), steady and step, every temperature lowered by 300 K (the data and T_old together): | ||u - u~||_M,lowered / ||u - u~||_M - 1 | <= 1e-08 wherever both errors exceed 1e-09 ||u||_M, and the maximum error over the range within 1e-09 of the range
+  L     the load                                                   every run: the modes and the level field bit for bit the same with the piece's own source, no source and a unit-RMS random source, on every held-out benchmark piece and the first 100 pieces of the fresh test split
+  E1    accuracy by bin, on the learned columns                    the seed-0 run of each arm, on the fresh test split (seeds 5,000,000 to 5,002,399), in every (sup|mu|, frequency) bin with >= 30 examples: median e_H,L <= 0.01 and 90th percentile <= 0.03 on the 36 learned columns, against their own energy; median e_p <= 0.02 and 90th percentile <= 0.05; e_H over all 64 columns and e_K reported beside it, not judged
+  E3    Theorem 2 on the benchmarks                                every held-out benchmark problem (benchmarks' variant 'held-out'): ||u - u~||_M <= (||u - u_m||_M + network term) (1 + 1e-09)
+  E4    coupled answer against the full-domain solve, in both frames every held-out benchmark problem (benchmarks' variant 'held-out'), as registered and with every temperature lowered by 300 K: energy error <= 0.02 and max error <= the 16-mode classical superelement's own max error + 0.01 of the range
+  E5    cost                                                       priced on the box before any long run: the forward pass and one training step at n = 32 (batch 32), n = 64 (batch 32), n = 128 (batch 8), the strips and their operator's assembly included; then reported whatever it says, 'faster' only where measured faster
+  SE1   Gram identity and lambda_min                               every held-out benchmark piece and problem: identity residual <= 1e-10; lambda_min(S~) >= lambda_min(S) (1 - 1e-10)
+  SE2   network calls                                              1 per piece per linear solve
+  SE3   port truncation                                            every held-out benchmark problem (benchmarks' variant 'held-out'): the 16-mode truncation error ||u - u_m||_M below the network term
+  DUAL  the 2-D dual bracket                                       steady pieces: L~_low <= L_low <= L <= L~ with every min eigenvalue >= -1e-10 |L|; the gap against the true error reported
+  KT    nonlinear conduction, frozen coefficients                  every steady benchmark with kappa(T): converges within 50 outer iterations, and meets E4's bars against the classical frozen-coefficient solution, the floor being the same iteration with the 16-mode classical superelement
+  S11   the rollout                                                reported: the s-channel marched 20 steps, the modes, the level field and the strip columns formed once, one particular-field call per piece per step
+
+THE COMPARISONS (ratio = alternative / default)
+  CP    the prior: P against S'                                    ratio = mean E4 energy error over the six held-out problems (the steps lowered by 300 K), P over S', seed with seed; P wins at <= 0.8 and loses at >= 1.25, otherwise a tie and S' stands; a verdict stands only if both pairings give it, otherwise unresolved; the same ratio on the six seen problems reported beside it
+  CG    the global path: PG against P                              as CP, PG over P
+
+THE ARMS (all: form split, backbone unet, size 1M, p_size 1M, kind sine-hat, m 16, objective label-free, data train, bubble corner, strips True, hats learned, strips_in_training False, mode_prior generator-field)
+  P   S's form with the objective weighted by the generator's trace prior (B2); backbone unet; 37,500 steps, training seeds 0, 1
+  PG  P with a cosine-basis path at the U-Net's coarsest level (B3); backbone unet-spectral; 37,500 steps, training seeds 0, 1
+  S'  reused, not trained: Sp-s0 2e7bcf22d5db38a4..., Sp-s1 70b7c3d8f041df94...
+
+THE PREDICTIONS
+  1. P's steady energy errors are below the S' run of the same seed on all three held-out steady problems.
+  2. P meets E4 on the held-out bend-3 steady problem.
+  3. Neither P nor PG meets E4 on the held-out s-channel steady problem.
+  4. Neither meets E1: the median e_H,L stays above 0.1 (section 11.6: four pieces fitted alone stayed above 0.15 for 3,000 steps).
+  5. PG's median e_H,L at n = 128 is no higher than at n = 32, while P's rises with n.
+  6. K, D and L are met, by structure.
+
+COST: at most $10.00 in all, each box at most $0.70 an hour; nothing long runs before E5 is priced
+
+the measures and judgements are gates_forms', applied once at the evaluation; the arms'
+batches, learning rate and validation cadence are S''s, written into the plan after
+E5's pricing, before training.

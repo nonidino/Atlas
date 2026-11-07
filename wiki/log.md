@@ -831,3 +831,7 @@ Post hoc; no gate, and the test split was not read. The coupled error is in the 
 ## [2026-11-07] note | The next chart-operator registration (P, PG): accepted by the owner, written, not yet pinned
 
 The owner accepted §11.7's draft and chose a fresh test split at seed base 5,000,000 and new held-out benchmark problems. Those problems keep the same layouts, with new materials and wall-compatible end data, and only the classical solver has read them (floors 0.004–1.0%). A first design with a 2.03% floor was dropped. Written as `gates_prior`, not yet pinned; nothing trained or rented. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 · [[gap-worklist]] W358.
+
+## [2026-11-07] note | The next chart-operator registration (P, PG), hash-pinned with the owner's approval
+
+`out/chartop/registered-prior.txt` pins `gates_prior`, `gates_forms`, `gates`, `benchmarks` and the classical record by sha256, and records the treatments by value. The `gates_forms` and `gates` hashes match the earlier pin. A one-byte change to a pinned file fails the test. Nothing trained or rented; E5's pricing waits for the owner. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 · [[gap-worklist]] W358.

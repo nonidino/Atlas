@@ -1,6 +1,7 @@
 """The registration after the forms' one evaluation: S's form with the objective weighted
 by a prior on a piece's traces (arm P), and the same with a global path in the U-Net
-(arm PG).  ACCEPTED BY THE OWNER ON 2026-11-07.  NOT YET HASH-PINNED; NOTHING TRAINED.
+(arm PG).  ACCEPTED BY THE OWNER AND HASH-PINNED ON 2026-11-07, BEFORE ANY NETWORK OF
+THESE ARMS WAS TRAINED.
 
 The owner accepted the draft of [[chart-operator-kernel-exact-forms]] section 11.7
 (commit 2a75176) in chat on 2026-11-07, and settled its two open choices the same day,
@@ -18,6 +19,13 @@ problems (Recommended)".  So:
 `gates_forms` and `gates` are not changed.  Every bar here is read from `gates_forms`,
 so the registrations cannot drift apart; ``tests/test_chartop_gates_prior.py`` checks
 that and the arms against section 11.7.
+
+The owner approved the pin the same day, in chat ("Pin it").
+``scripts/chartop_register_prior.py --pin`` writes ``out/chartop/registered-prior.txt``
+with this file's sha256 and those of `gates_forms`, `gates` and `benchmarks` (which
+defines the held-out problems), line endings normalised, so the test fails if any of
+them changes.  The treatments' definitions -- the prior's kernel and floor, the spectral
+path's modes and width -- are recorded there by value and checked by value.
 
 **The arms** (`ARMS`): S's form (`gates_forms.ARMS["S"]`: split, corner bubble, strips
 for j = 9-15, learned hats), at the comparison budget of S' (37,500 steps), the strips
@@ -45,8 +53,9 @@ from . import gates_forms as GF
 
 REGISTERED = ("accepted by the owner on 2026-11-07, in chat, as drafted in "
               "chart-operator-kernel-exact-forms section 11.7 (commit 2a75176), with the test "
-              "split at seed base 5,000,000 and new held-out benchmark problems; not yet "
-              "hash-pinned; before any network of these arms was trained")
+              "split at seed base 5,000,000 and new held-out benchmark problems; hash-pinned "
+              "with the owner's approval the same day, before any network of these arms was "
+              "trained")
 
 # ---------------------------------------------------------------------------
 # what is kept, read from gates_forms (and through it from Stage 0's gates)

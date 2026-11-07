@@ -97,9 +97,120 @@ def measure(name: str, problem: str, variant: str | None) -> dict:
     return out
 
 
+PINNED = {"gate module": "atlas/chartop/gates_prior.py",
+          "reads the bars of": "atlas/chartop/gates_forms.py",
+          "and through it": "atlas/chartop/gates.py",
+          "held-out problems": "atlas/chartop/benchmarks.py"}
+REGISTRATION = os.path.join(OUT, "registered-prior.txt")
+RECORD = os.path.join(OUT, "registration-prior-heldout.json")
+
+
+def file_hash(path: str) -> str:
+    """sha256 with line endings normalised, as `scripts/chartop_register_forms.py` hashes."""
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def treatments() -> dict:
+    """The registered treatments by value: the prior's definition and the numbers it gives
+    at n = 64 (the trace of Sigma, and the learned block's largest and smallest eigenvalues
+    before the floor), and the spectral path's size."""
+    from atlas.chartop import forms as fm, model as md
+    S = fm.trace_covariance("generator-field", GF.KIND, 64, GF.M_PORTS)
+    L = list(fm.learned_columns(GF.KIND, GF.M_PORTS))
+    lam = np.linalg.eigvalsh(S[np.ix_(L, L)])
+    return {"mode_priors": list(fm.MODE_PRIORS), "mode_prior_floor": fm.MODE_PRIOR_FLOOR,
+            "frequencies": dict(data.FREQUENCIES), "trace_sigma_n64": float(np.trace(S)),
+            "learned_lambda_max_n64": float(lam.max()), "learned_lambda_min_n64": float(lam.min()),
+            "spectral_k": md.SPECTRAL_K, "spectral_width": md.SPECTRAL_WIDTH}
+
+
+def pin(before: str) -> int:
+    """Write ``out/chartop/registered-prior.txt`` (refusing to overwrite one)."""
+    import datetime as dt
+    import subprocess
+    from atlas.chartop import gates_prior as GP
+    if os.path.exists(REGISTRATION):
+        raise SystemExit(f"{REGISTRATION} exists; a registration is not overwritten")
+    rec = json.load(open(RECORD, encoding="utf-8"))
+    if not (rec["seen_floor_equals_evaluation"] and rec["held_out_fo_within_training"]
+            and rec["held_out_refusals"] == 0):
+        raise SystemExit("the classical record does not pass its own controls; not pinning")
+    head = subprocess.run(["git", "-C", ROOT, "rev-parse", "HEAD"], capture_output=True,
+                          text=True).stdout.strip()
+    env = data.ENVELOPE
+    tm = treatments()
+    lines = ["THE CHART OPERATOR, THE REGISTRATION AFTER THE FORMS' EVALUATION (CO-D, ARMS P AND PG)",
+             "",
+             "written            %s" % dt.datetime.now().astimezone().isoformat(timespec="seconds"),
+             "before             %s" % before,
+             "repository at      %s (the commit adding this file follows it)" % head]
+    for label, rel in PINNED.items():
+        lines.append("%-18s %s  sha256 %s" % (label, rel, file_hash(os.path.join(ROOT, rel))))
+    lines += ["classical record   out/chartop/registration-prior-heldout.json  sha256 %s" % file_hash(RECORD),
+              "registered as      %s" % GP.REGISTERED,
+              "",
+              "SPLITS (example i of a split has seed base + i)"]
+    for k, v in GF.SEED_BASE.items():
+        if k != "test":
+            lines.append("  %-16s seed base %d, as gates_forms" % (k, v))
+    lines += ["  test, fresh      %d examples, seeds %d..%d, drawn only at the one evaluation"
+              % (GP.N_TEST, GP.TEST_SEEDS[0], GP.TEST_SEEDS[1]),
+              "  (the test split at %d was evaluated once, 2026-10-19, and is not read again)"
+              % GF.SEED_BASE["test"],
+              "",
+              "THE HELD-OUT PROBLEMS: benchmarks' variant %r of %s, problems %s, at n = %d"
+              % (GP.HELD_OUT_VARIANT, ", ".join(GP.BENCHMARK_NAMES), " and ".join(GP.BENCHMARK_PROBLEMS),
+                 GP.BENCHMARK_N),
+              "  materials by role  %s" % "; ".join(f"{k}: " + ", ".join(f"{r} {m}" for r, m in v.items())
+                                                   for k, v in bm.HELD_OUT_MATERIALS.items()),
+              "  the ends' data     hot %g + %g cos(pi s), cold %g + %g cos(2 pi s), s from 0 to 1 along each end"
+              % (bm.T_HOT, bm.HELD_OUT_HOT_AMPLITUDE, bm.T_COLD, bm.HELD_OUT_COLD_AMPLITUDE),
+              "  read only by the classical superelement and the full-domain solve; classical floors:"]
+    for r in rec["held_out"]:
+        f = r["frames"]["registered"]
+        lines.append("    %-13s %-6s energy %.4g%%, max %.3g of the range" % (
+            r["name"], r["problem"], 100 * f["truncation_energy_rel"], f["floor_max_over_range"]))
+    lines += ["  seen, beside       gates_forms' six problems, read post hoc in section 11; reported, not judged",
+              "",
+              "THE TREATMENTS, BY VALUE (checked by value by the test)",
+              "  mode prior         %s: C(x, x') = 1/3 + 0.75 mean over ell of exp(-|x - x'|^2 / (2 ell^2)),"
+              % tm["mode_priors"][0],
+              "                     ell in %s; each block floored at %g of its largest eigenvalue"
+              % (sorted(tm["frequencies"].values()), tm["mode_prior_floor"]),
+              "                     at n = 64: tr Sigma = %.12g; learned block's eigenvalues %.12g to %.12g"
+              % (tm["trace_sigma_n64"], tm["learned_lambda_max_n64"], tm["learned_lambda_min_n64"]),
+              "  spectral path      %d cosine modes per direction on %d channels at the coarsest level"
+              % (tm["spectral_k"], tm["spectral_width"]),
+              "",
+              "THE TRAINING ENVELOPE (data.ENVELOPE), as gates_forms",
+              "  sup|mu| <= %g, max log J - min log J <= %.4g, |grad log J| + |grad mu| <= %g,"
+              % (env.k_mu, env.l_J, env.s_grad),
+              "  |log kappa_hat| <= %g, Fo in [%g, %g] or steady" % (env.l_kappa, env.fo_min, env.fo_max),
+              "",
+              GP.text(),
+              "",
+              "the measures and judgements are gates_forms', applied once at the evaluation; the arms'",
+              "batches, learning rate and validation cadence are S''s, written into the plan after",
+              "E5's pricing, before training.",
+              ""]
+    with open(REGISTRATION, "w", encoding="ascii", newline="\n") as fh:
+        fh.write("\n".join(lines))
+    print("registered ->", os.path.relpath(REGISTRATION, ROOT))
+    for label, rel in PINNED.items():
+        print("  %-18s %s %s" % (label, rel, file_hash(os.path.join(ROOT, rel))[:16]))
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.parse_args(argv)
+    ap.add_argument("--pin", action="store_true",
+                    help="write out/chartop/registered-prior.txt (only with the owner's approval)")
+    ap.add_argument("--before", default="any network of these arms was trained (no training run, "
+                                        "no rental; E5 not yet priced)")
+    args = ap.parse_args(argv)
+    if args.pin:
+        return pin(args.before)
     t0 = time.perf_counter()
     rec = {"written": time.strftime("%Y-%m-%d %H:%M:%S"), "experts_run": ["classical"],
            "held_out": [], "seen": []}

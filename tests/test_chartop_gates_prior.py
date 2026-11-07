@@ -5,8 +5,10 @@ S' is reused by its downloaded hashes, and the held-out problems are new materia
 data on the same layouts, off by default.  No network is evaluated here."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
 
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
@@ -18,6 +20,47 @@ from atlas.chartop import data, gates as G, gates_forms as GF, gates_prior as GP
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RECORD = os.path.join(ROOT, "out", "chartop", "registration-prior-heldout.json")
+REG = os.path.join(ROOT, "out", "chartop", "registered-prior.txt")
+PINNED = ("atlas/chartop/gates_prior.py", "atlas/chartop/gates_forms.py", "atlas/chartop/gates.py",
+          "atlas/chartop/benchmarks.py", "out/chartop/registration-prior-heldout.json")
+
+
+def _hash(path: str) -> str:
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def test_the_registered_files_are_unchanged():
+    """The pin (`scripts/chartop_register_prior.py --pin`, approved by the owner on
+    2026-11-07): each pinned file's sha256, line endings normalised, is the one recorded,
+    so a bar, a held-out problem or the classical record changed after registration fails
+    here; and the registration's own text is the module's."""
+    assert os.path.exists(REG), "out/chartop/registered-prior.txt is missing: pin before training"
+    text = open(REG, encoding="ascii").read()
+    for rel in PINNED:
+        m = re.search(re.escape(rel) + r"\s+sha256 ([0-9a-f]{64})", text)
+        assert m, rel
+        assert _hash(os.path.join(ROOT, rel)) == m.group(1), f"{rel} changed after registration"
+    assert GP.REGISTERED in text and GP.text() in text
+
+
+def test_the_treatments_are_as_registered():
+    """The prior and the spectral path by value: the kernel's lengths, the floor, and the
+    numbers the prior gives at n = 64 (to 1e-9, not by hash: they pass through LAPACK), and
+    the path's modes and channels."""
+    from atlas.chartop import forms as fm, model as md
+    text = open(REG, encoding="ascii").read()
+    m = re.search(r"tr Sigma = ([0-9.eE+-]+); learned block's eigenvalues ([0-9.eE+-]+) to ([0-9.eE+-]+)", text)
+    assert m
+    S = fm.trace_covariance("generator-field", GP.KIND, 64, GP.M_PORTS)
+    L = list(fm.learned_columns(GP.KIND, GP.M_PORTS))
+    lam = np.linalg.eigvalsh(S[np.ix_(L, L)])
+    for got, want in ((np.trace(S), m.group(1)), (lam.max(), m.group(2)), (lam.min(), m.group(3))):
+        assert abs(float(got) - float(want)) <= 1e-9 * abs(float(want))
+    assert fm.MODE_PRIORS == ("generator-field",) and fm.MODE_PRIOR_FLOOR == 1e-3
+    assert data.FREQUENCIES == {"low": 0.5, "mid": 0.25, "high": 0.125}
+    assert (md.SPECTRAL_K, md.SPECTRAL_WIDTH) == (8, 32)
+    assert "floored at 0.001" in text and "8 cosine modes per direction on 32 channels" in text
 
 SHARED = ("KIND", "M_PORTS", "N_COLUMNS", "N_LEARNED", "STRIP_SINES", "N_VAL", "N_TEST", "BENCHMARK_N",
           "E1_MODES_MEDIAN", "E1_MODES_P90", "E1_PARTICULAR_MEDIAN", "E1_PARTICULAR_P90", "E1_MIN_BIN",
@@ -155,4 +198,4 @@ def test_the_comparison_measure_and_the_text():
     assert GP.cw_measure(er) == float(np.mean(range(len(GP.HELD_OUT))))
     t = GP.text()
     assert GP.REGISTERED in t and all(p in t for p in GP.PREDICTIONS)
-    assert "unet-spectral" in t and "Sp-s0" in t and "not yet" in GP.REGISTERED
+    assert "unet-spectral" in t and "Sp-s0" in t and "hash-pinned" in GP.REGISTERED

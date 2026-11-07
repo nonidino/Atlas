@@ -906,12 +906,17 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
 
 **[AI Inference]:** §11.5's quotient is still growing at the grid scale. A smooth network output times a bubble cannot follow that, which would put a floor under $e_{H,L}$ whatever the data. The particular field, which has no such singular target, fits in the same steps. That is consistent with the reading, but nothing here separates it from an optimisation limit.
 
-### 11.7 The next registration: accepted by the owner (2026-11-07), written, not yet pinned
+### 11.7 The next registration: accepted and hash-pinned (2026-11-07), not yet trained
 
 **Status.**
 - The owner accepted this draft in chat on 2026-11-07, and settled its two open choices the same day (quoted below).
-- It is written as `atlas/chartop/gates_prior.py`, which reads every bar from `gates_forms`. Ten tests in `tests/test_chartop_gates_prior.py` check it against this section.
-- **Not yet hash-pinned, and nothing trained or rented.** Pinning, E5's pricing on a box, the plan and the runs each wait for the owner.
+- It is written as `atlas/chartop/gates_prior.py`, which reads every bar from `gates_forms`. Twelve tests in `tests/test_chartop_gates_prior.py` check it against this section.
+- **Hash-pinned with the owner's approval the same day ("Pin it").**
+  - `out/chartop/registered-prior.txt` holds the sha256 of `gates_prior`, `gates_forms`, `gates` and `benchmarks` (which defines the held-out problems), and of the classical record.
+  - The `gates_forms` and `gates` hashes are the ones the earlier registration pinned.
+  - The treatments are recorded by value: the prior's kernel and floor, and the spectral path's 8 modes on 32 channels.
+  - The pin test fails when it should: one byte added to `benchmarks.py` failed it, and the original bytes passed again.
+- **Nothing trained or rented.** E5's pricing on a box, the plan and the runs each wait for the owner.
 
 **What it would decide.** Whether weighting the modes as the coupled answer does (B2), with and without a global path (B3), brings S's form within E4, and what that costs E1.
 
