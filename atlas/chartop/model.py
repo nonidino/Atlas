@@ -90,8 +90,21 @@ def _up(x, size):
     return F.interpolate(x, size=size, mode="bilinear", align_corners=True)
 
 
+#: the spectral bottleneck's cosine modes per direction and its channels (B3)
+SPECTRAL_K, SPECTRAL_WIDTH = 8, 32
+
+
 class UNet(nn.Module):
-    def __init__(self, widths=WIDTHS["1M"], cout: int = 65, cin: int = N_IN):
+    """``spectral`` (default 0, off): ``k > 0`` adds a global path at the coarsest level
+    (section 11's B3), ``x + C_out(gelu(S(C_in x)))`` with ``S`` a cosine-basis
+    `SpectralLayer` of ``k`` modes per direction on ``SPECTRAL_WIDTH`` channels and
+    ``C_in``, ``C_out`` 1 x 1 convolutions, ``C_out`` zero at initialisation.  Every node
+    of the coarsest level then reads every other, so the reach is the whole piece at every
+    resolution.  Its parameters are made after the others, so a network with the path
+    draws the same initial weights for the rest, and loads a network without it
+    (``strict=False``) as the same function."""
+
+    def __init__(self, widths=WIDTHS["1M"], cout: int = 65, cin: int = N_IN, spectral: int = 0):
         super().__init__()
         w = list(widths)
         self.enc = nn.ModuleList([Block(cin, w[0])] + [Block(w[i - 1], w[i]) for i in range(1, len(w))])
@@ -99,6 +112,13 @@ class UNet(nn.Module):
         self.head = nn.Conv2d(w[0], cout, 1)
         nn.init.zeros_(self.head.weight)
         nn.init.zeros_(self.head.bias)
+        self.spectral = int(spectral)
+        if self.spectral:
+            self.spec_in = nn.Conv2d(w[-1], SPECTRAL_WIDTH, 1)
+            self.spec = SpectralLayer(SPECTRAL_WIDTH, SPECTRAL_WIDTH, self.spectral, cosine=True)
+            self.spec_out = nn.Conv2d(SPECTRAL_WIDTH, w[-1], 1)
+            nn.init.zeros_(self.spec_out.weight)
+            nn.init.zeros_(self.spec_out.bias)
 
     def forward(self, x, s):
         skips = []
@@ -106,6 +126,8 @@ class UNet(nn.Module):
             if k > 0:
                 x = _down(x)
             x = blk(x, s)
+            if self.spectral and k == len(self.enc) - 1:
+                x = x + self.spec_out(F.gelu(self.spec(self.spec_in(x))))
             skips.append(x)
         for k, blk in enumerate(self.dec):
             sk = skips[-2 - k]
@@ -115,17 +137,44 @@ class UNet(nn.Module):
 
 class SpectralLayer(nn.Module):
     """A Fourier layer on the even extension of a node grid: the cosine basis of the
-    square, truncated to ``k`` modes per direction."""
+    square, truncated to ``k`` modes per direction.
 
-    def __init__(self, cin, cout, k):
+    ``cosine=True`` (off by default; the U-Net's bottleneck, B3): one real weight per
+    channel pair and mode ``(p, q)``, ``p, q < k``, applied to the extension's real, even
+    spectrum and mirrored to ``-p``, so the output is a cosine series of the square as
+    the input is.  The layer then commutes with both flips of the square for the same
+    weights, and with the transpose for the transposed weights ``w[..., q, p]``."""
+
+    def __init__(self, cin, cout, k, cosine: bool = False):
         super().__init__()
         self.k = k
+        self.cosine = bool(cosine)
         scale = 1.0 / (cin * cout)
-        self.w1 = nn.Parameter(scale * torch.randn(cin, cout, k, k, 2))
-        self.w2 = nn.Parameter(scale * torch.randn(cin, cout, k, k, 2))
+        if self.cosine:
+            self.wc = nn.Parameter(scale * torch.randn(cin, cout, k, k))
+        else:
+            self.w1 = nn.Parameter(scale * torch.randn(cin, cout, k, k, 2))
+            self.w2 = nn.Parameter(scale * torch.randn(cin, cout, k, k, 2))
         self.lin = nn.Conv2d(cin, cout, 1)
 
+    def _cosine(self, x):
+        N1 = x.shape[-1]
+        n = N1 - 1
+        ext = torch.cat([x, x.flip(-1)[..., 1:-1]], dim=-1)
+        ext = torch.cat([ext, ext.flip(-2)[..., 1:-1, :]], dim=-2)
+        X = torch.fft.rfft2(ext.float()).real
+        k = min(self.k, n)
+        Yk = torch.einsum("bixy,ioxy->boxy", X[..., :k, :k], self.wc[:, :, :k, :k].float())
+        Y = torch.zeros(x.shape[0], Yk.shape[1], 2 * n, n + 1, dtype=Yk.dtype, device=x.device)
+        Y[..., :k, :k] = Yk
+        if k > 1:
+            Y[..., 2 * n - k + 1:, :k] = Yk[..., 1:, :].flip(-2)
+        y = torch.fft.irfft2(torch.complex(Y, torch.zeros_like(Y)), s=ext.shape[-2:])[..., :N1, :N1]
+        return y.to(x.dtype) + self.lin(x)
+
     def forward(self, x):
+        if self.cosine:
+            return self._cosine(x)
         N1 = x.shape[-1]
         ext = torch.cat([x, x.flip(-1)[..., 1:-1]], dim=-1)
         ext = torch.cat([ext, ext.flip(-2)[..., 1:-1, :]], dim=-2)
@@ -335,16 +384,33 @@ def full_p(up: torch.Tensor) -> torch.Tensor:
     return U
 
 
+def _mix(V: torch.Tensor, mix: torch.Tensor | None) -> torch.Tensor:
+    """The mode fields [B, K, ...] recombined by ``mix`` [K, K'], ``V F``; ``None`` leaves
+    them as they are.  Contiguous, so the energy's sums run in the same order as on ``V``
+    (with ``F = I`` the values are ``V``'s exactly, and so is every sum)."""
+    return V if mix is None else torch.einsum("bk...,kl->bl...", V, mix).contiguous()
+
+
 def objectives(batch: dict, H, up, kind: str, m: int, labels: dict | None = None,
-               objective: str = "label-free", H0: torch.Tensor | None = None) -> dict:
+               objective: str = "label-free", H0: torch.Tensor | None = None,
+               mix: torch.Tensor | None = None) -> dict:
     """Per-example normalised objective and diagnostics.  ``batch`` holds float64
-    a11, a12, a22, sigma, w, g [B, ...] and s0 [B]."""
+    a11, a12, a22, sigma, w, g [B, ...] and s0 [B].
+
+    ``mix`` (float64 [K, K'], default None): a factor ``F`` of a covariance ``Sigma = F F^T``
+    over the port modes.  The mode terms then sum the energies of the recombined fields
+    ``V F`` -- the label-free term is ``tr(F^T Lambda~ F) = tr(Sigma Lambda~)``, which differs
+    from the supervised ``tr(Sigma E^T A_I E)`` by a constant (T26's argument holds for any
+    ``Sigma``), and ``Z_H`` is the principal part's ``tr(Sigma Lambda0)``.  ``e_H`` stays the
+    unweighted measure.  ``F = I`` is the default objective bit for bit."""
     n = H.shape[-1] + 1
     ps = plain_square(n, kind, m, str(H.device))
     a11, a12, a22, sig = batch["a11"], batch["a12"], batch["a22"], batch["sigma"]
     w, g, s0 = batch["w"], batch["g"], batch["s0"]
     with torch.no_grad():
         V0 = full(ps, ps.principal(s0, torch.float32).to(torch.float64) if H0 is None else H0)
+        if mix is not None:
+            V0 = _mix(V0, mix)
         ZH = energy(a11, a12, a22, sig, V0).sum(-1)
         # the plain square's particular field for this load, as Z_p's reference
         Gb = _load(w, g)
@@ -353,6 +419,8 @@ def objectives(batch: dict, H, up, kind: str, m: int, labels: dict | None = None
         Zp = (energy(a11, a12, a22, sig, U0)[:, 0] - 2 * mass_form(w, g, U0)[:, 0]).abs()
         Zp = torch.clamp(Zp, min=1e-30)
     V = full(ps, H)
+    if mix is not None:
+        V = _mix(V, mix)
     Up = full_p(up)
     EH = energy(a11, a12, a22, sig, V).sum(-1)
     Ep = energy(a11, a12, a22, sig, Up)[:, 0] - 2 * mass_form(w, g, Up)[:, 0]
@@ -363,6 +431,8 @@ def objectives(batch: dict, H, up, kind: str, m: int, labels: dict | None = None
         if labels is None:
             raise ValueError("the supervised objective needs labels")
         dH = full(ps, H - labels["H"]) - ps.QB[None]
+        if mix is not None:
+            dH = _mix(dH, mix)
         dp = full_p(up - labels["up"])
         LH = energy(a11, a12, a22, sig, dH).sum(-1)
         Lp = energy(a11, a12, a22, sig, dp)[:, 0]

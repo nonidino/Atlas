@@ -819,3 +819,7 @@ The test split was not drawn and the weights were not evaluated.
 [AI Inference]: S's steady coupled answers are worse than the untrained form's, despite its lower validation e_H. The objective's energy weighting and the coupled answer's interface weighting disagree, as §8.3 said they could.
 
 **Changed:** [[chart-operator-kernel-exact-forms]] §8.5 (status), §8.10 and §8.11 (new) · [[gap-worklist]] W358.
+
+## [2026-11-07] note | The chart-operator registration's one evaluation, diagnosed post hoc: three options built untrained, a draft for the owner
+
+Post hoc; no gate, and the test split was not read. The coupled error is in the hats and the side sines j = 1–3. Three options were built off by default: `hats=`, `mode_prior` and `"unet-spectral"`. A 500-step overfit probe stays near 0.23, and a draft registration waits for the owner. **Changed:** [[chart-operator-kernel-exact-forms]] §11 (new) · [[gap-worklist]] W358.

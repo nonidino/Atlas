@@ -712,6 +712,237 @@ The candidates:
 
 ---
 
+## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
+
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json` and `out/chartop/forms-overfit-<arm>.json`.
+
+**Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
+- the objective weighted all 64 columns alike;
+- at $n=128$ the U-Net sees less than half of the piece;
+- the quotient it must output keeps growing with $n$, fastest where a material interface meets a side.
+
+### 11.1 Where the coupled error is (A1)
+
+**Rigorously.** Per piece, Theorem 2's term is $w_i=e_{p,i}+E_i\,c^*_i$ with $E_i=\tilde H_i-H_i$ and $c^*_i=R_ic^*$, the classical coupled coefficients. Split $E_ic^*_i$ by columns: the hats' corner-difference part $E_{\mathrm{hats}}(c^*_{\mathrm{hats}}-\bar c\,\mathbf 1)$, their level part $\bar c\,E_{\mathrm{hats}}\mathbf 1$, and the side sines $j=1$–3, 4–8 and 9–15 (the strips, on and off their strip nodes). Then $w_i=\sum_g w_{i,g}$ exactly. Each group's share is
+
+$$s_g=\frac{\sum_i\kappa_i\langle w_{i,g},\,w_i\rangle_{A_I}}{\sum_i\kappa_i\lVert w_i\rVert^2_{A_I}},\qquad \sum_g s_g=1,$$
+
+which can be negative when a group cancels another.
+
+| steady problem | run | energy error | hats, corner differences | $j=1$–3 | $j=4$–8 | $j=9$–15 | hats, level |
+|---|---|---|---|---|---|---|---|
+| bend-3 | U | 0.0003% | 1.000 | 0.000 | 0.000 | 0.000 | $8\times10^{-10}$ |
+| bend-3 | S | 3.94% | 1.000 | 0.000 | 0.000 | 0.000 | $8\times10^{-13}$ |
+| s-channel | U | 5.26% | 0.006 | **0.929** | 0.071 | −0.006 | $2\times10^{-12}$ |
+| s-channel | S | 6.56% | **0.449** | **0.528** | 0.026 | −0.003 | $3\times10^{-13}$ |
+| insert-round | U | 5.58% | **1.159** | −0.163 | 0.004 | 0.000 | $-9\times10^{-13}$ |
+| insert-round | S | 7.84% | **1.030** | −0.030 | 0.000 | 0.000 | $-1\times10^{-12}$ |
+
+**Controls.**
+- The groups' vector sum reproduces `network_term` to at most $6\times10^{-16}$ relative.
+- S's energy errors reproduce the evaluation's (3.9379, 6.559, 7.8385%).
+- The steady benchmarks have no source (largest $\lvert g\rvert=0$), so $e_p=0$ exactly.
+- Re-solving U's strips at width 1/8 gives U bit for bit. At widths 1/4 and 1/2 the s-channel's error goes 5.257 → 5.276 → 5.284%, insert-round's stays 5.577% and bend-3's 0.000%.
+
+**Verdict (issue 6).**
+- **s-channel:** U's 5% is in the low side sines $j=1$–3 (share 0.93; that group's own norm is 0.98 of the term). U takes these columns from the plain square's $H^{(0)}$ unchanged, so the principal part is the cause.
+- **The strips are not the cause:** their share is under 1% on every problem, and widening them from 1/8 to 1/2 changes nothing.
+- **insert-round:** U's error *is* in the hats' corner differences (share 1.16, with $j=1$–3 cancelling 0.16). These are the plain square's hats, which do not know the round insert. "It isn't in the hats" is refuted there.
+
+### 11.2 The reach (A2)
+
+From `model.py`, a 3 × 3 convolution at level $k$ adds $2^k$ nodes of reach, a stride-2 average adds $2^k$ going down to level $k+1$, and an aligned bilinear upsampling adds at most $2^k$ coming back to level $k$:
+
+$$R=(2+1+4+2+8+4+16)+(4+8+2+4+1+2)=58\ \text{nodes}.$$
+
+The support of one output node's gradient (random weights, $n=256$, output nodes at each residue mod 8) measures 53–58 nodes, depending on the node's position. The effective field below is the radius, in nodes (Chebyshev), that holds 90% and 99% of $\sum_c\sum_{\mathrm{ch}}\lvert\partial y_c/\partial x_{\mathrm{ch}}\rvert$ for S's trained mode network. It was measured on 4 validation pieces, at the centre node and at the node next to the middle of side 0.
+
+| $n$ | $R/n$ | a side node sees the opposite side | centre: 90%, 99% (of $n$) | side node: 90%, 99% |
+|---|---|---|---|---|
+| 32 | 1.81 | yes | 0.47, 0.50 | 0.66, 0.95 |
+| 64 | 0.91 | no | 0.47, 0.50 | 0.45, 0.64 |
+| 128 | 0.45 | no | 0.32, 0.40 | 0.25, 0.34 |
+
+**Verdict (issue 2): confirmed at $n=128$, and refuted as the cause of E1's level.**
+- At $n=128$ a node next to a side holds 99% of its gradient within a third of the piece, and cannot see the opposite side at all.
+- At $n=32$ the field covers the piece 1.8 times over, yet E1's median there was 0.250.
+- So the reach can explain the rise with $n$ (0.250 → 0.268 → 0.294), but not the level, 25 times the bar.
+
+### 11.3 S with its hats replaced (A3)
+
+S's responses were re-coupled with chosen columns replaced, steady, in both frames. E4 is judged by `gates_forms.judge_e4_both_frames`. "Recovered" is $(e_S-e)/(e_S-e_{\mathrm{floor}})$.
+
+| variant | bend-3 | s-channel | insert-round |
+|---|---|---|---|
+| S | 3.9379% ✗ | 6.5590% ✗ | 7.8385% ✗ |
+| S + exact hats | 0.0000% ✓ (100%) | 4.4401% ✗ (37.6%) | 2.2978% ✗ (71.0%) |
+| S + U's projected hats | 0.0003% ✓ (100%) | 4.5136% ✗ (36.3%) | 6.3436% ✗ (19.1%) |
+| S + exact hats and $j=1$–3 | 0.0000% ✓ | 1.5350% ✓ (89.2%) | 0.1950% ✓ (97.9%) |
+| S + every learned column exact | 0.0000% ✓ | 0.9289% ✓ | 0.0409% ✓ |
+| U | 0.0003% ✓ | 5.2575% ✗ | 5.5767% ✗ |
+| U + exact hats | 0.0000% ✓ | 5.1717% ✗ | 2.9127% ✗ |
+| classical floor | $2.3\times10^{-10}$% | 0.925% | 0.031% |
+
+**Verdict.**
+- A hat fix recovers all of bend-3, whichever hats are used.
+- It recovers 36–38% of the s-channel, and on insert-round 19% (U's hats) or 71% (exact hats). It meets E4 on bend-3 only.
+- Exact hats together with exact $j=1$–3 meet E4 on all three problems.
+- **The fix must reach the low side sines as well as the hats.**
+
+### 11.4 Three options, built untrained (B1–B3)
+
+Each is off by default. Each is tested in `tests/test_chartop_forms_options.py`: 34 tests, random weights, and two-step training runs.
+
+**Bit for bit when off.**
+- The 223 earlier chartop tests pass unchanged.
+- A3 was re-run after all three options were built: every number is identical to the record written before them.
+
+**B1, `KernelExpert(..., hats=)`** (`"learned"` by default).
+- **The options.** `"principal"` takes the kernel columns from the plain square's $H^{(0)}$, with no learned correction. `"classical"` solves them exactly, $A_IH_k=-M_{IG}Q_k$: one sparse LU and four right-hand sides, from the `ops` the strips already read.
+- **What the network still does.** Its hat rows keep their shape but are not read, so S's weights load. The projection comes last, as always. Steady, the classical hats stay exact. In a step the projection moves them by $s_0W(u_1-u_p(1))$, the level field's own error.
+- **Tests:** the default unchanged; K to rounding with either option; the head's hat rows unread; L bit for bit; D through the host on bend-3 (lowering by 300 K lowers the answer by 300 K to $10^{-9}$ of the shift); the refusals; save and load.
+- **The price** is shown as a fraction of the exact classical solve (`fe.Exact`: the LU, 64 mode columns and the particular field). Each is the median of 4 validation pieces, best of 3, with torch on 4 threads. The exact solve itself took 7, 49 and 209 ms.
+
+| $n$ | classical hats (4 columns) | hats and $j=1$–3 (16) | strips (28) | S's forward, no strips |
+|---|---|---|---|---|
+| 32 | 0.51 | 0.60 | 0.44 | 3.97 |
+| 64 | 0.44 | 0.47 | 0.26 | 1.19 |
+| 128 | 0.46 | 0.57 | 0.21 | 0.57 |
+
+- **Verdict (issues 4, 5, 7): B1 is a bound, not an expert.**
+  - The classical hats cost about half a classical solve, because the LU dominates. With S's forward and the strips, the expert would cost 1.2 times (at 128) to 5 times (at 32) the solve it replaces.
+  - `"principal"` costs nothing more, but A3 shows it recovers only bend-3.
+
+**B2, `train.Arm(mode_prior="generator-field")`** (default `None`).
+- **What changes.** The objective weights the modes' errors by a covariance $\Sigma$ of a piece's traces:
+
+$$\operatorname{tr}(F^{\mathsf T}\tilde\Lambda F)=\operatorname{tr}(\Sigma\tilde\Lambda)=\operatorname{tr}(\Sigma\Lambda^*)+\operatorname{tr}(\Sigma E^{\mathsf T}A_IE),\qquad \Sigma=FF^{\mathsf T},$$
+
+  so T26's argument holds for any $\Sigma$, and the exact modes stay the minimiser. $Z_H$ becomes the principal part's $\operatorname{tr}(\Sigma\Lambda_0)$.
+- **The prior.** $\Sigma=Q^+CQ^{+\mathsf T}$, the covariance of the least-squares coefficients of a trace drawn as the training generator draws its sources: a level $c_0\sim U(-1,1)$ plus $s_g\sim U(0,1.5)$ times a unit Gaussian-kernel field,
+
+$$C(x,x')=\tfrac13+0.75\cdot\tfrac13\sum_{\ell\in\{0.125,\,0.25,\,0.5\}}e^{-\lvert x-x'\rvert^2/2\ell^2}.$$
+
+  It is exact, so nothing is sampled, and nothing is fitted to the benchmarks.
+- **What it weights, at $n=64$.** Each hat corner difference about 0.73. Side sines: $j=1$ 0.63, $j=2$ 0.19, $j=3$ 0.086, $j=4$ 0.042, $j=8$ 0.0013, $j=15$ $2.6\times10^{-6}$. This is the order A1 measured, though the prior never saw A1.
+- **The floor.** The learned block's eigenvalues run from 2.28 to $1.1\times10^{-3}$, and each block is floored at $10^{-3}$ of its largest. There are no terms between the learned and the weight-free columns, so the strips' errors cannot pull the learned ones.
+- **Tests:** $F=I$ gives the loss, its normaliser and every gradient bit for bit as the default; T26's constant is the same for two networks; $P\Sigma P^{\mathsf T}=\Sigma$ for all eight symmetries, so D4 augmentation keeps the weighting; and the prior changes the weights two training steps reach.
+- Validation and $e_H$ stay unweighted.
+
+**B3, the `"unet-spectral"` backbone.**
+- **What it adds.** The U-Net gets a global path at its coarsest level, $x+C_{\mathrm{out}}(\operatorname{gelu}(S(C_{\mathrm{in}}x)))$. Here $S$ is `SpectralLayer(cosine=True)`: real weights per channel pair and cosine mode $(p,q)$, $p,q<8$, on 32 channels, mirrored so that the output is a cosine series of the square as the input is. $C_{\mathrm{out}}$ starts at zero.
+- **Its size.** About 79k parameters per network. Its parameters are drawn after the others, so S's weights load into it as the same function, bit for bit.
+- **Tests:** off, the U-Net and the spectral layer are as before, bit for bit; on, symmetry $k$ of the input, with the symmetry's action on the weights (kernels moved, cosine weights transposed), gives symmetry $k$ of the output to $10^{-5}$, for all eight; K holds to rounding for both forms; at $n=128$ the centre node reads an input node at a corner, 64 nodes away, where the plain U-Net's gradient is exactly zero.
+
+### 11.5 Issues 1 and 3, as measured
+
+`i13` uses 8 validation pieces, the same seeds drawn at $n=32$–256, so it is the same pieces refined. It takes $N^*=(H-H^{(0)})/\beta_c$ over S's 36 learned columns, finds its peak, and classifies where the peak sits:
+- within $n/8$ of a corner;
+- within $n/8$ of a side and 2 cells of a material interface, where $\lvert\Delta\log\kappa\rvert\ge0.25$ between neighbouring elements;
+- elsewhere ("regular", away from both).
+
+| $n$ | median peak | regular | at a corner | where an interface meets a side (4 of 8 pieces) |
+|---|---|---|---|---|
+| 32 | 4.17 | 3.81 | 3.55 | 3.63 |
+| 64 | 6.80 | 6.29 | 5.32 | 5.73 |
+| 128 | 9.37 | 7.36 | 6.70 | 8.52 |
+| 256 | 10.63 | 8.59 | 9.01 | **11.43** |
+
+The median peaks reproduce the earlier record (4.2, 6.8, 9.4, 10.5).
+
+**Growth exponents from 128 to 256** ($\log_2$ of the ratio):
+
+| where | exponent |
+|---|---|
+| the whole piece | 0.18 |
+| an interface meeting a side | 0.19–0.52 per piece (median 0.37), with increments that do not shrink (+2.1, +2.8, +2.9) |
+| corners | mostly 0.15–0.28; 0.74 on one piece, whose largest corner is 115° (which of its corners peaks is not recorded) |
+| the regular part | 0.10–0.27 (one piece 0.79) |
+
+The largest corner angles of the 8 pieces run from 79° to 128°.
+
+**Verdict.**
+- **Issue 3 is confirmed:** the target is still growing at $n=256$.
+- **Issue 1 is confirmed as its fastest site:** where a material interface meets a side, the growth does not level off. The corner bubble does not treat such points.
+- **How common they are:** 4 of the 8 validation pieces have one. The generator draws an interface in 40% of pieces.
+- **Not proven:** the classification is coarse, since 2 cells is a tight neighbourhood. So the regular part's growth may partly be the singular points' slow decay.
+
+**Proposed treatments (not built):**
+- input channels for the interface, its signed distance and contrast, and one for each corner's angle;
+- a classical patch solve at each point where an interface meets a side, as the strips are, with the network's answer as data outside the patch.
+
+**[AI Inference]:** Near a point where an interface meets a Dirichlet side at an angle other than 90°, the exact modes behave like $r^{\alpha}$ with $\alpha<1$ fixed by the contrast. The quotient then grows like $r^{\alpha-1}$, which a bubble that vanishes like the distance cannot absorb. That fits the exponents above, but it was not derived here.
+
+### 11.6 The overfit probe (B4, short)
+
+**The set-up.**
+- **The pieces:** four validation pieces at $n=128$, seeds 2,000,100–2,000,103. Three are steps ($Fo$ = 0.92, 0.23 and 11.2) and one is steady; all four are spline quads.
+- **The training:** S's form and the registered label-free objective, with no augmentation. The batch is the four pieces. AdamW at $3\times10^{-4}$, strips skipped in training.
+- **The start:** both arms start from S's weights. The B3 arm starts as S bit for bit, since its $C_{\mathrm{out}}$ is zero.
+- **The measure:** $e_{H,L}$ as E1 measures it, on the same four pieces.
+- **The length:** 500 steps an arm, 1.0–1.4 s a step, about 20 minutes in all, within the 30-minute limit. The few thousand steps the plan asked for were not run: about 1.6–2.4 h, the owner's call.
+
+| median $e_{H,L}$, step | 0 | 100 | 200 | 300 | 400 | 500 |
+|---|---|---|---|---|---|---|
+| U-Net | 0.3356 | 0.2735 | 0.2561 | 0.2471 | 0.2415 | 0.2322 |
+| U-Net + the path (B3) | 0.3356 | 0.2755 | 0.2578 | 0.2477 | 0.2403 | 0.2371 |
+
+**Beside it.**
+- At step 500 the four pieces stand at 0.125, 0.400, 0.224 and 0.240 for the U-Net, and 0.130, 0.406, 0.231 and 0.244 with the path.
+- The hats hold 0.9% of the learned columns' error throughout, which is the unweighted objective's own weighting.
+- $e_p$ is 0.017–0.029.
+
+**Verdict.**
+- **Neither arm gets near 0.01, even while fitting the very pieces it is measured on.** The median falls by a third in 500 steps, then by under 0.01 every 100 steps.
+- A power law through steps 100–500 has exponent $-0.10$; reaching 0.01 at that rate would take far more steps than any budget.
+- The global path changes nothing within 500 steps.
+- **On this evidence, the limit is the target or the network form, not the data.**
+- **Not shown:** whether a longer run or another learning rate changes the slope. The full probe would settle that.
+
+**[AI Inference]:** §11.5's quotient is still growing at the grid scale. A smooth network output times a bubble cannot follow that, which would put a floor under $e_{H,L}$ whatever the data. This is consistent with the slope above, but nothing here separates it from an optimisation limit.
+
+### 11.7 A draft registration, for the owner (nothing trained, rented or pinned)
+
+**What it would decide.** Whether weighting the modes as the coupled answer does (B2), with and without a global path (B3), brings S's form within E4, and what that costs E1.
+
+**Not registered: B1.**
+- The classical hats are a bound (§11.3), and they cost about half a classical solve (§11.4).
+- `"principal"` recovers only bend-3.
+
+**Arms.** All use S's form (split, corner bubble, strips for $j=9$–15, learned hats) at the comparison budget: 37,500 steps, strips skipped in training, seeds 0 and 1, as S′.
+
+| arm | backbone | objective | new runs |
+|---|---|---|---|
+| P | U-Net | `mode_prior="generator-field"` | 2 |
+| PG | `"unet-spectral"` | `mode_prior="generator-field"` | 2 |
+| S′ (trained, reused) | U-Net | unweighted | 0 |
+
+**Gates.**
+- `gates_forms`' bars, unchanged: E1; E4 in both frames; K, D, L, E3, SE1–SE3, DUAL and KT. S11 is reported.
+- The comparison: P against S′, seed with seed, on CW's measure; a verdict stands only if both pairings give it. Then PG against P, the same way.
+
+**Two things the owner must settle first.**
+- *A fresh test split.* The split at 3,000,000 has been evaluated once. A new seed base (say 5,000,000) would be drawn only at the one evaluation.
+- *The benchmarks are no longer blind.* §11.1 and §11.3 read all three steady problems post hoc, and B2 and B3 were chosen with them in view; B2's prior was not fitted to them. Either E4 is judged on them as a seen gate, and said so in advance, or new held-out problems are built before training: the same three geometries with new materials and data.
+
+**Predictions** (refutable; checked against each other: 1–3 bracket the s-channel between 2% and S′'s 5.49%).
+1. P's steady energy errors are below the S′ run of the same seed on all three problems. For seed 0 those are 1.28, 5.49 and 4.37%.
+2. P meets E4 on bend-3 steady, where the hats carry all of the error (§11.1).
+3. Neither P nor PG meets E4 on the s-channel steady. Exact hats alone leave 4.44% (§11.3), so the low sines would have to be nearly exact as well.
+4. Neither meets E1; the median $e_{H,L}$ stays above 0.1. B2 trades unweighted accuracy for coupled accuracy, and the target still grows with $n$ (§11.5).
+5. PG's median $e_{H,L}$ at $n=128$ is no higher than at $n=32$, while P's rises with $n$, as S's did (0.250 → 0.294).
+6. K, D and L are met, by structure.
+
+**Cost.**
+- S′ took 0.83 h a run (79.4 ms a step) on an RTX 3090 box (§8.9).
+- The prior adds one $64\times64$ recombination a step. The path adds about 79k parameters and an 8-mode FFT on at most $17\times17$ nodes.
+- Budget 1.0–1.5 h a run: four runs, about 4–6 box-hours on two boxes. At the boxes' last rates (\$0.24 and \$0.34/h) that is about \$1–3, within the \$0.70/h cap.
+- The one evaluation: about 20 minutes on the laptop, as before.
+
+**Before anything trains:** B4's full probe (§11.6), about 1.6–2.4 h of laptop CPU. If it confirms the short probe, E1's bar is out of this form's reach, and the plan should say so before anything trains. The arms above are aimed at E4, not E1.
+
+---
+
 ## See Also
 
 - [[chart-operator-stage-0]] — the record this follows: §9.7 found both defects, §12 asked for these fixes

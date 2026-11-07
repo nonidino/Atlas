@@ -1,0 +1,533 @@
+{
+ "part": "i13",
+ "written": "2026-11-07 10:29:05",
+ "posthoc": true,
+ "test_split_read": false,
+ "torch_threads": 4,
+ "by_n": {
+  "32": [
+   {
+    "seed": 2000100,
+    "peak": 4.392494457737034,
+    "where": "elsewhere",
+    "peak_regular": 4.392494457737034,
+    "peak_corner": 2.5953134511254428,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     89.78765732927306,
+     93.94258139095757,
+     65.74146484526692,
+     116.0784536609229
+    ],
+    "max_corner_angle": 116.0784536609229
+   },
+   {
+    "seed": 2000101,
+    "peak": 5.22605123582108,
+    "where": "corner",
+    "peak_regular": 4.79087329914234,
+    "peak_corner": 5.22605123582108,
+    "peak_interface_side": 3.7975249064726198,
+    "has_interface": true,
+    "corner_angles": [
+     55.37149395808222,
+     108.85626208988946,
+     97.8419778983135,
+     73.8984539265234
+    ],
+    "max_corner_angle": 108.85626208988946
+   },
+   {
+    "seed": 2000102,
+    "peak": 4.328146643876583,
+    "where": "elsewhere",
+    "peak_regular": 4.328146643876583,
+    "peak_corner": 4.130939734731106,
+    "peak_interface_side": 2.650560210944317,
+    "has_interface": true,
+    "corner_angles": [
+     109.29531499979521,
+     128.74524081275248,
+     106.55029234310707,
+     89.70450294697685
+    ],
+    "max_corner_angle": 128.74524081275248
+   },
+   {
+    "seed": 2000103,
+    "peak": 4.016666139661505,
+    "where": "interface at a side",
+    "peak_regular": 2.9001695615972367,
+    "peak_corner": 3.2493702741750132,
+    "peak_interface_side": 4.016666139661505,
+    "has_interface": true,
+    "corner_angles": [
+     73.30423607828769,
+     127.0842062301663,
+     101.57068579592683,
+     102.43111553618287
+    ],
+    "max_corner_angle": 127.0842062301663
+   },
+   {
+    "seed": 2000104,
+    "peak": 2.594756506078449,
+    "where": "corner",
+    "peak_regular": 2.2280968808931556,
+    "peak_corner": 2.594756506078449,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     90.84941845798733,
+     90.01470485414058,
+     101.29668374296848,
+     75.00382069732042
+    ],
+    "max_corner_angle": 101.29668374296848
+   },
+   {
+    "seed": 2000105,
+    "peak": 4.838100698882974,
+    "where": "corner",
+    "peak_regular": 3.8049432298074244,
+    "peak_corner": 4.838100698882974,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     52.378672686759366,
+     43.02391654764276,
+     41.245055912298334,
+     79.21785533468518
+    ],
+    "max_corner_angle": 79.21785533468518
+   },
+   {
+    "seed": 2000106,
+    "peak": 3.8457879144932194,
+    "where": "corner",
+    "peak_regular": 2.1132917463519094,
+    "peak_corner": 3.8457879144932194,
+    "peak_interface_side": 3.4603224409609186,
+    "has_interface": true,
+    "corner_angles": [
+     84.75455513059337,
+     88.95755015561355,
+     68.27845992753926,
+     88.32820519657352
+    ],
+    "max_corner_angle": 88.95755015561355
+   },
+   {
+    "seed": 2000107,
+    "peak": 3.8177092485073993,
+    "where": "elsewhere",
+    "peak_regular": 3.8177092485073993,
+    "peak_corner": 3.1581496982688257,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     105.36247409513936,
+     64.8289391697652,
+     110.46639130849054,
+     104.25379289566904
+    ],
+    "max_corner_angle": 110.46639130849054
+   }
+  ],
+  "64": [
+   {
+    "seed": 2000100,
+    "peak": 7.539786521461028,
+    "where": "elsewhere",
+    "peak_regular": 7.539786521461028,
+    "peak_corner": 4.1567413505577075,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     88.55016700502617,
+     94.18864069760303,
+     67.21450121751118,
+     114.94680979717477
+    ],
+    "max_corner_angle": 114.94680979717477
+   },
+   {
+    "seed": 2000101,
+    "peak": 9.096136906335888,
+    "where": "corner",
+    "peak_regular": 8.947544118633264,
+    "peak_corner": 9.096136906335888,
+    "peak_interface_side": 4.789974504832978,
+    "has_interface": true,
+    "corner_angles": [
+     55.09268455046395,
+     108.94126656099913,
+     97.92698236942508,
+     73.6196445189049
+    ],
+    "max_corner_angle": 108.94126656099913
+   },
+   {
+    "seed": 2000102,
+    "peak": 6.899219230651004,
+    "where": "elsewhere",
+    "peak_regular": 6.899219230651004,
+    "peak_corner": 6.233039321429142,
+    "peak_interface_side": 3.2893374679800242,
+    "has_interface": true,
+    "corner_angles": [
+     109.74049923317418,
+     128.4865709371616,
+     106.43724384691258,
+     89.72023248006508
+    ],
+    "max_corner_angle": 128.4865709371616
+   },
+   {
+    "seed": 2000103,
+    "peak": 6.700750551716902,
+    "where": "interface at a side",
+    "peak_regular": 4.520551468968041,
+    "peak_corner": 4.4865975707214,
+    "peak_interface_side": 6.700750551716902,
+    "has_interface": true,
+    "corner_angles": [
+     73.08942026648943,
+     126.3554682876488,
+     101.19665279014274,
+     102.32105452325246
+    ],
+    "max_corner_angle": 126.3554682876488
+   },
+   {
+    "seed": 2000104,
+    "peak": 3.689156332035451,
+    "where": "corner",
+    "peak_regular": 3.370289957792083,
+    "peak_corner": 3.689156332035451,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     90.90760630037228,
+     89.99183894891533,
+     101.21562999535793,
+     75.00382069731961
+    ],
+    "max_corner_angle": 101.21562999535793
+   },
+   {
+    "seed": 2000105,
+    "peak": 7.292407011418531,
+    "where": "corner",
+    "peak_regular": 5.972171346136699,
+    "peak_corner": 7.292407011418531,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     51.927239343247905,
+     42.05435647267665,
+     41.06405109804822,
+     79.42099133356139
+    ],
+    "max_corner_angle": 79.42099133356139
+   },
+   {
+    "seed": 2000106,
+    "peak": 6.676842460668116,
+    "where": "interface at a side",
+    "peak_regular": 3.3364007374033324,
+    "peak_corner": 5.990992921189478,
+    "peak_interface_side": 6.676842460668116,
+    "has_interface": true,
+    "corner_angles": [
+     84.65170736308012,
+     88.85470238809901,
+     68.35546933542199,
+     89.14940768474601
+    ],
+    "max_corner_angle": 89.14940768474601
+   },
+   {
+    "seed": 2000107,
+    "peak": 6.613515963071737,
+    "where": "elsewhere",
+    "peak_regular": 6.613515963071737,
+    "peak_corner": 4.655770423756371,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     104.62573135881351,
+     65.06313480214054,
+     110.42946750984065,
+     104.55548782956552
+    ],
+    "max_corner_angle": 110.42946750984065
+   }
+  ],
+  "128": [
+   {
+    "seed": 2000100,
+    "peak": 10.260923199480922,
+    "where": "elsewhere",
+    "peak_regular": 10.260923199480922,
+    "peak_corner": 5.431108203938181,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     87.8164365106676,
+     94.31807120461306,
+     68.02296706863198,
+     114.26839740722188
+    ],
+    "max_corner_angle": 114.26839740722188
+   },
+   {
+    "seed": 2000101,
+    "peak": 12.736810087459547,
+    "where": "corner",
+    "peak_regular": 12.567758171844886,
+    "peak_corner": 12.736810087459547,
+    "peak_interface_side": 7.4511137265858824,
+    "has_interface": true,
+    "corner_angles": [
+     54.95327711564492,
+     108.98376887395462,
+     97.96948468238323,
+     73.48023708408654
+    ],
+    "max_corner_angle": 108.98376887395462
+   },
+   {
+    "seed": 2000102,
+    "peak": 8.894500271763093,
+    "where": "elsewhere",
+    "peak_regular": 8.894500271763093,
+    "peak_corner": 8.214043770452536,
+    "peak_interface_side": 4.353918656139014,
+    "has_interface": true,
+    "corner_angles": [
+     109.9631535865452,
+     128.32114211107734,
+     106.37801448696096,
+     89.7289558369462
+    ],
+    "max_corner_angle": 128.32114211107734
+   },
+   {
+    "seed": 2000103,
+    "peak": 9.58465357236452,
+    "where": "interface at a side",
+    "peak_regular": 5.978771903703112,
+    "peak_corner": 5.353195684149333,
+    "peak_interface_side": 9.58465357236452,
+    "has_interface": true,
+    "corner_angles": [
+     72.97659949115224,
+     125.96224424476017,
+     100.99613302716142,
+     102.2633629271617
+    ],
+    "max_corner_angle": 125.96224424476017
+   },
+   {
+    "seed": 2000104,
+    "peak": 4.559265396701416,
+    "where": "corner",
+    "peak_regular": 4.187365514941858,
+    "peak_corner": 4.559265396701416,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     90.93670024639046,
+     89.98040595402736,
+     101.17510305445346,
+     75.00382069732045
+    ],
+    "max_corner_angle": 101.17510305445346
+   },
+   {
+    "seed": 2000105,
+    "peak": 9.152925372473435,
+    "where": "corner",
+    "peak_regular": 7.848341330646661,
+    "peak_corner": 9.152925372473435,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     51.70151107943737,
+     41.56954731739358,
+     40.99466938382953,
+     79.5294041323409
+    ],
+    "max_corner_angle": 79.5294041323409
+   },
+   {
+    "seed": 2000106,
+    "peak": 11.240747334213353,
+    "where": "interface at a side",
+    "peak_regular": 4.276192025897301,
+    "peak_corner": 5.597788962146072,
+    "peak_interface_side": 11.240747334213353,
+    "has_interface": true,
+    "corner_angles": [
+     84.60028334223765,
+     88.80327836725444,
+     68.39584363625582,
+     89.62838344630583
+    ],
+    "max_corner_angle": 89.62838344630583
+   },
+   {
+    "seed": 2000107,
+    "peak": 7.810449299964773,
+    "where": "corner",
+    "peak_regular": 6.878658473074836,
+    "peak_corner": 7.810449299964773,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     71.74628299302456,
+     78.47210991622809,
+     122.01236662183057,
+     102.135711118837
+    ],
+    "max_corner_angle": 122.01236662183057
+   }
+  ],
+  "256": [
+   {
+    "seed": 2000100,
+    "peak": 11.026957744599336,
+    "where": "elsewhere",
+    "peak_regular": 11.026957744599336,
+    "peak_corner": 9.079053604067042,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     150.99939629732793,
+     119.82570634925136,
+     86.97349499344897,
+     86.46128565088345
+    ],
+    "max_corner_angle": 150.99939629732793
+   },
+   {
+    "seed": 2000101,
+    "peak": 15.427272301129644,
+    "where": "corner",
+    "peak_regular": 15.087677414658486,
+    "peak_corner": 15.427272301129644,
+    "peak_interface_side": 10.660359611069099,
+    "has_interface": true,
+    "corner_angles": [
+     54.88357199345486,
+     109.0050200702472,
+     97.99073587868511,
+     73.41053196189634
+    ],
+    "max_corner_angle": 109.0050200702472
+   },
+   {
+    "seed": 2000102,
+    "peak": 10.103888704373535,
+    "where": "elsewhere",
+    "peak_regular": 10.103888704373535,
+    "peak_corner": 9.627293899845974,
+    "peak_interface_side": 4.97927975668579,
+    "has_interface": true,
+    "corner_angles": [
+     110.07449921862454,
+     128.22940502240687,
+     106.34772349811543,
+     89.73353216298717
+    ],
+    "max_corner_angle": 128.22940502240687
+   },
+   {
+    "seed": 2000103,
+    "peak": 12.196800411721762,
+    "where": "interface at a side",
+    "peak_regular": 7.209407842768008,
+    "peak_corner": 5.949715964884927,
+    "peak_interface_side": 12.196800411721762,
+    "has_interface": true,
+    "corner_angles": [
+     72.91883568100654,
+     125.75841346780221,
+     100.89249655073161,
+     102.23385182839294
+    ],
+    "max_corner_angle": 125.75841346780221
+   },
+   {
+    "seed": 2000104,
+    "peak": 5.109375481270918,
+    "where": "corner",
+    "peak_regular": 4.684955093555883,
+    "peak_corner": 5.109375481270918,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     90.95124723217002,
+     89.97468943483604,
+     101.15483954948306,
+     75.00382069731705
+    ],
+    "max_corner_angle": 101.15483954948306
+   },
+   {
+    "seed": 2000105,
+    "peak": 10.229090634921508,
+    "where": "corner",
+    "peak_regular": 9.254668108438825,
+    "peak_corner": 10.229090634921508,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     51.58864098511677,
+     41.327127763147914,
+     40.96525402763801,
+     79.58532186666851
+    ],
+    "max_corner_angle": 79.58532186666851
+   },
+   {
+    "seed": 2000106,
+    "peak": 14.780485006271425,
+    "where": "interface at a side",
+    "peak_regular": 7.371199671464737,
+    "peak_corner": 5.731557003613987,
+    "peak_interface_side": 14.780485006271425,
+    "has_interface": true,
+    "corner_angles": [
+     84.57457126129978,
+     88.77756628631352,
+     68.41649819557597,
+     89.88495689245481
+    ],
+    "max_corner_angle": 89.88495689245481
+   },
+   {
+    "seed": 2000107,
+    "peak": 8.946747618942778,
+    "where": "corner",
+    "peak_regular": 7.920703625926764,
+    "peak_corner": 8.946747618942778,
+    "peak_interface_side": null,
+    "has_interface": false,
+    "corner_angles": [
+     71.65051924194348,
+     78.51391425650925,
+     122.13642182330734,
+     102.1221982289564
+    ],
+    "max_corner_angle": 122.13642182330734
+   }
+  ]
+ },
+ "jump": 0.25,
+ "near_cells": 2,
+ "pieces": 8,
+ "elapsed_s": 30.50451440003235
+}

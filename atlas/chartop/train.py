@@ -57,6 +57,12 @@ class Arm:
     #: no gradient, so the weights are the same; validation and every answer still solve them.
     #: The logged training loss then counts the plain square's strip columns, not the strips'.
     strips_in_training: bool = True
+    #: the kernel columns' source before the projection (`forms.HATS`; section 11's B1)
+    hats: str = "learned"
+    #: None: every port mode weighted alike, as before.  A name in `forms.MODE_PRIORS`: the
+    #: objective weights the modes' errors by that prior's covariance of a piece's traces,
+    #: ``tr(Sigma E^T A E)`` (`forms.mode_mixing`; section 11's B2).  Validation is unchanged.
+    mode_prior: str | None = None
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -203,7 +209,16 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         for k in ("sup_mu", "freq", "seed"):
             V[n]["meta_" + k] = b[k]
     expert = fm.make(arm.backbone, arm.size, arm.form, arm.kind, p_size=arm.p_size,
-                     bubble=arm.bubble, strips=arm.strips).to(dev)
+                     bubble=arm.bubble, strips=arm.strips, hats=arm.hats).to(dev)
+    mixes = {}
+
+    def mix_for(n_: int):
+        if arm.mode_prior is None:
+            return None
+        if n_ not in mixes:
+            F = fm.mode_mixing(arm.mode_prior, arm.kind, n_, expert.m, fm.trained_columns(expert))
+            mixes[n_] = torch.tensor(F, dtype=torch.float64, device=dev)
+        return mixes[n_]
     opt = torch.optim.AdamW(expert.parameters(), lr=arm.lr, weight_decay=arm.weight_decay)
     warm = max(1, arm.steps // 50)
     sched = torch.optim.lr_scheduler.LambdaLR(
@@ -244,7 +259,7 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
             H, up = fm.call(expert, b, strip_solve=arm.strips_in_training)
         o = md.objectives(b, H, up, arm.kind, expert.m, lab, arm.objective,
-                          H0=getattr(expert, "last_principal", None))
+                          H0=getattr(expert, "last_principal", None), mix=mix_for(n))
         loss = o["loss"].mean()
         opt.zero_grad(set_to_none=True)
         loss.backward()
@@ -290,6 +305,6 @@ def load_expert(path: str, device: str = "cpu") -> md.Expert:
     st = torch.load(path, map_location=device, weights_only=False)
     c = st["config"]
     e = fm.make(c["backbone"], c["size"], c["form"], c["kind"], c["m"], c.get("p_size"),
-                c.get("bubble", "square"), c.get("strips", False))
+                c.get("bubble", "square"), c.get("strips", False), c.get("hats", "learned"))
     e.load_state_dict(st["model"])
     return e.to(device).eval()

@@ -1,0 +1,149 @@
+{
+ "part": "a3",
+ "written": "2026-11-07 10:26:05",
+ "posthoc": true,
+ "test_split_read": false,
+ "torch_threads": 4,
+ "bend-3": {
+  "floor": 2.3084563704684885e-12,
+  "variants": {
+   "S": {
+    "energy_rel": 0.03937860109762982,
+    "energy_rel_lowered": 0.039378601097667595,
+    "max_over_range": 0.002202961263793668,
+    "e4_met": false
+   },
+   "S + exact hats": {
+    "energy_rel": 2.3040680374616585e-12,
+    "energy_rel_lowered": 3.491663504505946e-13,
+    "max_over_range": 9.663381206337363e-13,
+    "e4_met": true
+   },
+   "S + U's hats": {
+    "energy_rel": 3.39144711343343e-06,
+    "energy_rel_lowered": 3.391447115071924e-06,
+    "max_over_range": 4.4931786646884574e-08,
+    "e4_met": true
+   },
+   "S + exact hats, j1-3": {
+    "energy_rel": 2.303604807431011e-12,
+    "energy_rel_lowered": 3.4887269274627337e-13,
+    "max_over_range": 9.669065548223444e-13,
+    "e4_met": true
+   },
+   "S + exact learned": {
+    "energy_rel": 2.3044208671975523e-12,
+    "energy_rel_lowered": 3.490208699248326e-13,
+    "max_over_range": 9.669065548223444e-13,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 3.3914472025645857e-06,
+    "energy_rel_lowered": 3.3914472032284817e-06,
+    "max_over_range": 4.49248642553357e-08,
+    "e4_met": true
+   },
+   "U + exact hats": {
+    "energy_rel": 2.30858502797472e-12,
+    "energy_rel_lowered": 3.4977857613102836e-13,
+    "max_over_range": 9.652012522565201e-13,
+    "e4_met": true
+   }
+  }
+ },
+ "s-channel": {
+  "floor": 0.00925299695668175,
+  "variants": {
+   "S": {
+    "energy_rel": 0.06559037960658802,
+    "energy_rel_lowered": 0.06559037960599799,
+    "max_over_range": 0.0034599139427956517,
+    "e4_met": false
+   },
+   "S + exact hats": {
+    "energy_rel": 0.044401050985678855,
+    "energy_rel_lowered": 0.04440105098530141,
+    "max_over_range": 0.00316974217520567,
+    "e4_met": false
+   },
+   "S + U's hats": {
+    "energy_rel": 0.0451355163837423,
+    "energy_rel_lowered": 0.045135516383311376,
+    "max_over_range": 0.0033135247945097037,
+    "e4_met": false
+   },
+   "S + exact hats, j1-3": {
+    "energy_rel": 0.01534967120594152,
+    "energy_rel_lowered": 0.015349671205779918,
+    "max_over_range": 0.0019135860190249332,
+    "e4_met": true
+   },
+   "S + exact learned": {
+    "energy_rel": 0.00928850802692925,
+    "energy_rel_lowered": 0.009288508026840418,
+    "max_over_range": 0.0015025294659108113,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.05257498367692642,
+    "energy_rel_lowered": 0.05257498367644849,
+    "max_over_range": 0.004322305149340195,
+    "e4_met": false
+   },
+   "U + exact hats": {
+    "energy_rel": 0.051716754399975626,
+    "energy_rel_lowered": 0.05171675439955954,
+    "max_over_range": 0.004175057591377822,
+    "e4_met": false
+   }
+  }
+ },
+ "insert-round": {
+  "floor": 0.00031279592897102233,
+  "variants": {
+   "S": {
+    "energy_rel": 0.07838548527167799,
+    "energy_rel_lowered": 0.07838548528370269,
+    "max_over_range": 0.010829928992944816,
+    "e4_met": false
+   },
+   "S + exact hats": {
+    "energy_rel": 0.022977521569113004,
+    "energy_rel_lowered": 0.02297752157258564,
+    "max_over_range": 0.002951748102355509,
+    "e4_met": false
+   },
+   "S + U's hats": {
+    "energy_rel": 0.0634356625206833,
+    "energy_rel_lowered": 0.06343566253044701,
+    "max_over_range": 0.010858411195227973,
+    "e4_met": false
+   },
+   "S + exact hats, j1-3": {
+    "energy_rel": 0.0019501720577558552,
+    "energy_rel_lowered": 0.0019501720580551545,
+    "max_over_range": 0.00018966921838625694,
+    "e4_met": true
+   },
+   "S + exact learned": {
+    "energy_rel": 0.000409108607191847,
+    "energy_rel_lowered": 0.0004091086072591533,
+    "max_over_range": 5.1957321502413834e-05,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.0557668362202281,
+    "energy_rel_lowered": 0.055766836228805954,
+    "max_over_range": 0.00934601910163451,
+    "e4_met": false
+   },
+   "U + exact hats": {
+    "energy_rel": 0.029126651034764844,
+    "energy_rel_lowered": 0.029126651039152116,
+    "max_over_range": 0.004123145233009495,
+    "e4_met": false
+   }
+  }
+ },
+ "elapsed_s": 85.6604437000351
+}

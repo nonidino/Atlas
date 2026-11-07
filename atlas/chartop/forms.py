@@ -126,6 +126,19 @@ moves only the kernel columns, so the strip columns pass through it bit for bit 
 them (``strip_solve=False``, `train.Arm.strips_in_training`).  They carry no gradient,
 so the weights are the same, and the step drops the strips and their assembly, 65% of
 its time on the priced box.
+
+**The hats, ``hats=`` (after W358's evaluation; [[chart-operator-kernel-exact-forms]]
+section 11).**  The coupled answer weights the hats' error by the spread of the corner
+temperatures, ``(c_k - cbar)^2``, while the objective weights every column alike.  The
+option says where the kernel columns (the hats; the ``j = 0`` cosines) come from
+before the projection: ``"learned"`` (the default, ``H0 + beta N`` as before);
+``"principal"``, the plain square's ``H0`` with no learned correction; ``"classical"``,
+exact solves of the piece's own operator, ``A_I H_k = -M_IG Q_k``, one sparse LU and
+four right-hand sides, from the same ``ops`` the strips read.  The network's hat rows
+are then not read (they keep their shape, so trained weights still load).  The
+projection comes last, as always, so ``H c1 + s0 u_1 = 1`` holds to rounding; steady,
+``"classical"`` leaves the exact hats where they are, and in a step it moves them by
+``s0 W (u_1 - u_p(1))``, the level field's own error.  Off by default.
 """
 
 from __future__ import annotations
@@ -151,6 +164,13 @@ BUBBLES = ("square", "corner")
 #: W358's C3: the side sines j = 9-15 by strip solves, each strip n/8 cells deep
 STRIP_J = (9, 15)
 STRIP_WIDTH = 1.0 / 8.0
+#: where the kernel columns come from before the projection (section 11's B1)
+HATS = ("learned", "principal", "classical")
+#: section 11's B2: priors on a piece's traces for the objective's mode covariance
+MODE_PRIORS = ("generator-field",)
+#: each block of the prior's covariance is floored at this fraction of its largest
+#: eigenvalue, so that every trained direction keeps some weight
+MODE_PRIOR_FLOOR = 1e-3
 #: a level-free source whose RMS is below this fraction of the source's own size is
 #: rounding (a uniform source minus its float64 mean), and is set to zero
 LEVEL_FREE_FLOOR = 1e-12
@@ -334,6 +354,71 @@ def residual(H: torch.Tensor, u1: torch.Tensor, s0: torch.Tensor, ks: KernelSqua
 
 
 # ---------------------------------------------------------------------------
+# the objective's mode covariance (section 11's B2)
+# ---------------------------------------------------------------------------
+
+
+@functools.lru_cache(maxsize=None)
+def trace_covariance(prior: str, kind: str, n: int, m: int) -> np.ndarray:
+    """``Sigma`` [4m, 4m]: the covariance of the port coefficients ``c = Q^+ t`` (least
+    squares on the loop's ``4n`` nodes) of a trace ``t`` drawn from ``prior``.
+
+    ``"generator-field"``: a trace drawn as the training generator draws its sources
+    (`data.draw`): a level ``c0 ~ U(-1, 1)`` plus ``sg ~ U(0, 1.5)`` times a unit field of
+    Gaussian kernel and length ``ell``, ``ell`` one of `data.FREQUENCIES` with equal odds,
+    in reference coordinates.  Its covariance is exact (the kernel the random Fourier
+    features sample), so nothing is drawn and nothing is fitted:
+    ``C(x, x') = 1/3 + 0.75 mean_ell exp(-|x - x'|^2 / (2 ell^2))``.  It depends only on
+    distances in the square, so it commutes with the square's eight symmetries."""
+    if prior not in MODE_PRIORS:
+        raise ValueError(f"mode prior {prior!r}: one of {MODE_PRIORS}")
+    from . import data as _data
+    loop, _inner = fe.grid(n)
+    X = np.stack([(loop % (n + 1)) / n, (loop // (n + 1)) / n], axis=1)
+    d2 = ((X[:, None, :] - X[None, :, :]) ** 2).sum(-1)
+    ells = sorted(_data.FREQUENCIES.values())
+    C = 1.0 / 3.0 + 0.75 * np.mean([np.exp(-d2 / (2.0 * e * e)) for e in ells], axis=0)
+    P = np.linalg.pinv(pt.basis(kind, n, m).Q)
+    S = P @ C @ P.T
+    S = 0.5 * (S + S.T)
+    S.setflags(write=False)
+    return S
+
+
+def trained_columns(expert) -> tuple:
+    """The columns the weights set: all but the strips' and, when the hats are not
+    learned, the kernel columns."""
+    cols = set(range(4 * expert.m))
+    if getattr(expert, "strips", False):
+        cols -= set(expert.stripped)
+    if getattr(expert, "hats", "learned") != "learned":
+        cols -= {int(k) for k in np.flatnonzero(kernel_coefficients(expert.kind, 4 * expert.m, expert.m))}
+    return tuple(sorted(cols))
+
+
+@functools.lru_cache(maxsize=None)
+def mode_mixing(prior: str, kind: str, n: int, m: int, trained: tuple,
+                floor: float = MODE_PRIOR_FLOOR) -> np.ndarray:
+    """``F`` [4m, 4m] for `model.objectives`' ``mix``, ``F F^T = Sigma_b``: `trace_covariance`
+    on the ``trained`` columns and, apart, on the others, each block floored at ``floor``
+    times its largest eigenvalue, with no terms between the blocks.  So the objective is
+    ``tr(Sigma_b E^T A_I E)`` up to a constant, and the trained columns' minimiser is the
+    exact modes whatever the other columns' (weight-free) errors are."""
+    K = 4 * m
+    S = trace_covariance(prior, kind, n, m)
+    F = np.zeros((K, K))
+    others = tuple(k for k in range(K) if k not in set(trained))
+    for block in (tuple(trained), others):
+        if not block:
+            continue
+        lam, U = np.linalg.eigh(S[np.ix_(block, block)])
+        lam = np.maximum(lam, 0.0) + floor * float(lam.max())
+        F[np.ix_(block, block)] = U * np.sqrt(lam)[None, :]
+    F.setflags(write=False)
+    return F
+
+
+# ---------------------------------------------------------------------------
 # the source: its level and the rest
 # ---------------------------------------------------------------------------
 
@@ -379,6 +464,9 @@ def split_source(x: torch.Tensor, w: torch.Tensor | None, g: torch.Tensor | None
 def _backbone(backbone: str, size: str, cout: int, cin: int) -> nn.Module:
     if backbone == "unet":
         return md.UNet(md.WIDTHS[size], cout, cin)
+    if backbone == "unet-spectral":
+        # section 11's B3: the U-Net with a cosine-basis path at its coarsest level
+        return md.UNet(md.WIDTHS[size], cout, cin, spectral=md.SPECTRAL_K)
     if backbone == "spectral":
         return md.SpectralNet(cout=cout, cin=cin)
     raise ValueError(backbone)
@@ -398,19 +486,27 @@ class KernelExpert(nn.Module):
     ``strips=True`` (W358's C3, off by default): the side sines ``j = 9-15`` come from
     `strip_modes`, and the network returns corrections for the ``learned`` columns only.
     The call then needs ``ops``, each example's ``(A_I, M_IG)`` (`interior_blocks`), and
-    keeps the strips' own time on ``last_strip_seconds``."""
+    keeps the strips' own time on ``last_strip_seconds``.
+
+    ``hats`` (`HATS`, default ``"learned"``): the kernel columns before the projection,
+    the network's, the plain square's ``H0``, or exact solves of each example's operator
+    (``"classical"``, which needs ``ops`` too and keeps its time on
+    ``last_hat_seconds``)."""
 
     needs_load_fields = True
 
     def __init__(self, form: str = "split", backbone: str = "unet", size: str = "1M",
                  kind: str = "sine-hat", m: int = 16, p_size: str | None = None,
-                 bubble: str = "square", strips: bool = False):
+                 bubble: str = "square", strips: bool = False, hats: str = "learned"):
         super().__init__()
         if form not in FORMS:
             raise ValueError(form)
         if bubble not in BUBBLES:
             raise ValueError(bubble)
+        if hats not in HATS:
+            raise ValueError(f"hats {hats!r}: one of {HATS}")
         self.bubble = bubble
+        self.hats = hats
         self.strips = bool(strips)
         self.form, self.backbone_name, self.size, self.kind, self.m = form, backbone, size, kind, m
         self.p_size = None if form == "kernel" else (p_size or size)
@@ -430,12 +526,24 @@ class KernelExpert(nn.Module):
 
     @property
     def needs_operator(self) -> bool:
-        return self.strips
+        return self.strips or self.hats == "classical"
 
     def config(self) -> dict:
         return {"backbone": self.backbone_name, "size": self.size, "form": self.form,
                 "kind": self.kind, "m": self.m, "p_size": self.p_size, "bubble": self.bubble,
-                "strips": self.strips, "parameters": md.parameters(self)}
+                "strips": self.strips, "hats": self.hats, "parameters": md.parameters(self)}
+
+    def _classical_hats(self, ops, kc: list, n: int, device) -> torch.Tensor:
+        """The kernel columns [B, len(kc), n-1, n-1] (float64) by exact solves of each
+        example's operator: one sparse LU of ``A_I`` and ``len(kc)`` right-hand sides."""
+        Q = pt.basis(self.kind, n, self.m).Q[:, kc]
+        t0 = time.perf_counter()
+        out = np.empty((len(ops), len(kc), n - 1, n - 1))
+        for b, (A_I, M_IG) in enumerate(ops):
+            Hk = -spla.splu(A_I.tocsc()).solve(np.asarray(M_IG @ Q))
+            out[b] = Hk.T.reshape(len(kc), n - 1, n - 1)
+        self.last_hat_seconds = time.perf_counter() - t0
+        return torch.tensor(out, dtype=torch.float64, device=device)
 
     def _strip_columns(self, ops, H0: torch.Tensor) -> torch.Tensor:
         """The strip columns [B, 28, n-1, n-1] (float64), with this call's ``H0`` beyond
@@ -459,9 +567,12 @@ class KernelExpert(nn.Module):
         not depend on the weights, the projection does not read them, and the objective
         sums the columns' energies, so they add a constant to the loss and nothing to its
         gradient.  The weights trained either way are the same, bit for bit on the CPU
-        (``tests/test_chartop_model.py``).  Every call that answers a piece solves them."""
+        (``tests/test_chartop_model.py``).  Every call that answers a piece solves them.
+        ``hats="classical"`` needs ``ops`` whatever ``strip_solve`` says."""
         if self.strips and strip_solve and (ops is None or len(ops) != x.shape[0]):
             raise ValueError("the strips need each example's operator: ops=[(A_I, M_IG), ...]")
+        if self.hats == "classical" and (ops is None or len(ops) != x.shape[0]):
+            raise ValueError("the classical hats need each example's operator: ops=[(A_I, M_IG), ...]")
         n = x.shape[-1] - 1
         dev = str(x.device)
         ps = md.plain_square(n, self.kind, self.m, dev)
@@ -490,6 +601,10 @@ class KernelExpert(nn.Module):
                 self.last_strip_seconds = 0.0
         else:
             H_raw = H0 + beta * N[..., 1:-1, 1:-1]
+        if self.hats != "learned":
+            kc = [int(k) for k in np.flatnonzero(kernel_coefficients(self.kind, n, self.m))]
+            H_raw[:, kc] = (H0[:, kc] if self.hats == "principal"
+                            else self._classical_hats(ops, kc, n, H0.device))
         u1 = u10 + a[:, None, None] * beta * N1[..., 1:-1, 1:-1]
         H, r = project(H_raw, u1, s0, ks)
         up = gbar[:, None, None] * u1 + scale[:, None, None] * beta * Np[..., 1:-1, 1:-1]
@@ -501,15 +616,18 @@ class KernelExpert(nn.Module):
 
 
 def make(backbone: str, size: str, form: str, kind: str = "sine-hat", m: int = 16,
-         p_size: str | None = None, bubble: str = "square", strips: bool = False) -> nn.Module:
+         p_size: str | None = None, bubble: str = "square", strips: bool = False,
+         hats: str = "learned") -> nn.Module:
     """Stage 0's `model.Expert` for its forms, `KernelExpert` for these.  Stage 0's forms
-    have only the square bubble and no strips."""
+    have only the square bubble, no strips and learned hats."""
     if form in FORMS:
-        return KernelExpert(form, backbone, size, kind, m, p_size, bubble, strips)
+        return KernelExpert(form, backbone, size, kind, m, p_size, bubble, strips, hats)
     if bubble != "square":
         raise ValueError(f"Stage 0's form {form!r} has only the square bubble")
     if strips:
         raise ValueError(f"Stage 0's form {form!r} has no strips")
+    if hats != "learned":
+        raise ValueError(f"Stage 0's form {form!r} has only learned hats")
     return md.Expert(backbone, size, form, kind, m)
 
 
@@ -519,6 +637,9 @@ def call(expert: nn.Module, batch: dict, strip_solve: bool = True):
     (Stage 0's forms are called exactly as before).  ``strip_solve=False`` skips the
     strips and their assembly (`KernelExpert.forward`): training steps only."""
     if getattr(expert, "needs_operator", False):
+        if not strip_solve and getattr(expert, "hats", "learned") == "classical":
+            return expert(batch["inputs"], batch["scalars"], batch["s0"], w=batch["w"], g=batch["g"],
+                          ops=batch_operators(batch), strip_solve=False)
         if not strip_solve:
             return expert(batch["inputs"], batch["scalars"], batch["s0"], w=batch["w"], g=batch["g"],
                           strip_solve=False)
