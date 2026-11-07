@@ -40,8 +40,13 @@ def _label(run: dict) -> str:
 
 
 def project(plan: dict, price: dict, dph: float, only: set, spent: float) -> dict:
-    rows = price["forms"]["rows"]
-    mix = {int(k): v for k, v in price["forms"]["projection"]["step_mix"].items()}
+    """``plan["registration"] == "gates_prior"`` reads the ``"prior"`` part of a
+    ``price-prior`` record, each run costed as its registered arm (P or PG), forward and
+    step alike; any other plan is costed as before, from a ``price-forms`` record."""
+    prior = plan.get("registration") == "gates_prior"
+    part = price["prior"] if prior else price["forms"]
+    rows = part["rows"]
+    mix = {int(k): v for k, v in part["projection"]["step_mix"].items()}
     step = {}
     fwd = {}
     for r in rows:
@@ -50,12 +55,12 @@ def project(plan: dict, price: dict, dph: float, only: set, spent: float) -> dic
     val_n = {int(k): v for k, v in plan["val_examples"].items()}
     runs = []
     for d in plan["arms"]:
-        lab = _label(d)
+        lab = d["registered"] if prior else _label(d)
         if lab not in step:
             raise SystemExit(f"the price record has no step for {lab!r}")
         mean = sum(mix[n] * step[lab][n] for n in mix)
         # validations solve the strips whatever the training does
-        vfwd = fwd["S" if d.get("strips") else "W"]
+        vfwd = fwd[lab] if prior else fwd["S" if d.get("strips") else "W"]
         per_val = VALIDATION_MARGIN * sum(val_n[n] * vfwd[n] for n in val_n)
         nval = math.ceil(d["steps"] / d["val_every"])
         hours = (mean * d["steps"] + per_val * nval) / 3600.0
@@ -71,7 +76,8 @@ def project(plan: dict, price: dict, dph: float, only: set, spent: float) -> dic
             "runs": runs, "data_hours_per_box": data_h, "fixed_hours_per_box": FIXED_HOURS_PER_BOX,
             "this_box": {"hours": box_hours, "usd": box_hours * dph},
             "registration": {"hours": reg_hours, "usd": reg_hours * dph + spent, "spent_usd": spent,
-                             "rule": f"all five runs on {BOXES} boxes like this one, at this box's rate"}}
+                             "rule": f"all {'four' if prior else 'five'} runs on {BOXES} boxes like this one, "
+                                     f"at this box's rate"}}
 
 
 def main() -> int:
@@ -84,12 +90,13 @@ def main() -> int:
     ap.add_argument("--spent", type=float, default=0.0)
     ap.add_argument("--out", default="budget.json")
     args = ap.parse_args()
-    files = sorted(glob.glob(os.path.join(args.price_dir, "price-forms-*.json")), key=os.path.getmtime)
+    plan = json.load(open(args.plan, encoding="utf-8"))
+    kind = "prior" if plan.get("registration") == "gates_prior" else "forms"
+    files = sorted(glob.glob(os.path.join(args.price_dir, f"price-{kind}-*.json")), key=os.path.getmtime)
     if not files:
-        raise SystemExit("no price-forms record: price this box first")
+        raise SystemExit(f"no price-{kind} record: price this box first")
     price = json.load(open(files[-1], encoding="utf-8"))
     price["_path"] = os.path.basename(files[-1])
-    plan = json.load(open(args.plan, encoding="utf-8"))
     rec = project(plan, price, args.dph, set(filter(None, args.only.split(","))), args.spent)
     rec["ceiling_usd"] = args.ceiling
     rec["within"] = bool(rec["registration"]["usd"] <= args.ceiling)

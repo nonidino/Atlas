@@ -193,6 +193,56 @@ def test_the_held_out_problems_were_measured_classically_and_are_meetable():
             assert r["frames"][f]["truncation_energy_rel"] < GP.E4_ENERGY, (r["name"], r["problem"], f)
 
 
+def _script(name: str):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("_" + name, os.path.join(ROOT, "scripts", name + ".py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_the_plan_is_the_registration():
+    """``out/chartop/plan-prior.json``: every run is a registered arm and seed with the
+    registered configuration (`scripts/chartop_train.py`'s own check, which refuses a
+    changed field or a missing run); the training fields, data and guards are S''s run for
+    run; the two boxes run every run once; and the budget gate, on E5's record at a rate
+    above either box's, keeps the registration within the ceiling, while the earlier
+    plan is still costed as before."""
+    import copy
+    import glob
+    out = os.path.join(ROOT, "out", "chartop")
+    plan = json.load(open(os.path.join(out, "plan-prior.json"), encoding="utf-8"))
+    forms = json.load(open(os.path.join(out, "plan-forms.json"), encoding="utf-8"))
+    assert plan["registration"] == "gates_prior"
+    ct = _script("chartop_train")
+    ct.check_prior_plan(plan)
+    for change in (lambda p: p["arms"][0].update(mode_prior=None), lambda p: p["arms"].pop(),
+                   lambda p: p["arms"][2].update(backbone="unet")):
+        bad = copy.deepcopy(plan)
+        change(bad)
+        with pytest.raises(SystemExit):
+            ct.check_prior_plan(bad)
+    sp = {a["seed"]: a for a in forms["arms"] if a["registered"] == "Sp"}
+    for a in plan["arms"]:
+        s = sp[a["seed"]]
+        for k in ("batch", "lr", "val_every", "steps", "strips_in_training", "size", "p_size", "objective", "data"):
+            assert a[k] == s[k], (a["name"], k)
+        assert plan["minutes"][a["name"]] == forms["minutes"][s["name"]]
+    assert plan["data"] == forms["data"] and plan["val_examples"] == forms["val_examples"]
+    runs = sorted(r for b in plan["boxes"].values() for r in b["runs"])
+    assert runs == sorted(a["name"] for a in plan["arms"])
+    cb = _script("chartop_budget")
+    price = json.load(open(glob.glob(os.path.join(out, "price-prior-*.json"))[0], encoding="utf-8"))
+    rec = cb.project(plan, price, 0.30, set(), 0.022)
+    assert rec["registration"]["usd"] <= GP.CEILING_USD and len(rec["runs"]) == 4
+    assert {r["priced_as"] for r in rec["runs"]} == {"P", "PG"} and "all four runs" in rec["registration"]["rule"]
+    need = {"S, strips only at validation", "W", "S"}
+    olds = [json.load(open(f, encoding="utf-8")) for f in sorted(glob.glob(os.path.join(out, "price-forms-*.json")))]
+    old = next(r for r in olds if need <= {row["arm"] for row in r["forms"]["rows"]})
+    rf = cb.project(forms, old, 0.30, set(), 0.0)
+    assert "all five runs" in rf["registration"]["rule"] and len(rf["runs"]) == 5
+
+
 def test_the_comparison_measure_and_the_text():
     er = {(b, p, f): float(i) for i, (b, p) in enumerate(GP.HELD_OUT) for f in ("registered", "lowered")}
     assert GP.cw_measure(er) == float(np.mean(range(len(GP.HELD_OUT))))

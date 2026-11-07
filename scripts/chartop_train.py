@@ -17,6 +17,10 @@ A plan with ``"registration": "gates_forms"`` trains the registration after Stag
 bubble, strips, steps and seed of every run, and every registered seed run exactly
 once.  ``strips_in_training`` is a training option, not a registered field: it does
 not change the weights (`train.Arm`).
+
+A plan with ``"registration": "gates_prior"`` trains the registration after the forms'
+evaluation (`atlas/chartop/gates_prior.py`, pinned): each run names arm ``"P"`` or
+``"PG"`` and is checked against `gates_prior.arm_config` the same way (`check_prior_plan`).
 """
 from __future__ import annotations
 
@@ -67,6 +71,29 @@ def check_forms_plan(plan: dict) -> None:
         raise SystemExit(f"the plan runs {sorted(seen)}, the registration {need}")
 
 
+def check_prior_plan(plan: dict) -> None:
+    """Every run of a ``gates_prior`` plan is one registered arm (P or PG) and seed, with
+    the arm's registered configuration (`gates_prior.arm_config`, the port basis's ``m``
+    aside: `train.Arm` keeps 16), and every registered seed is run once; a mismatch
+    refuses the whole plan."""
+    from atlas.chartop import gates_prior as GP
+    seen = []
+    for d in plan["arms"]:
+        reg = d.get("registered")
+        if reg not in GP.ARMS:
+            raise SystemExit(f"run {d.get('name')!r} names no registered arm of gates_prior: {reg!r}")
+        arm = arm_from(d)
+        want = {k: v for k, v in GP.arm_config(reg).items() if k != "m"}
+        got = {k: getattr(arm, k) for k in want}
+        if got != want or arm.seed not in GP.ARMS[reg]["seeds"] or arm.limit is not None:
+            raise SystemExit(f"run {arm.name!r} is not gates_prior arm {reg!r}: {got} against {want}, "
+                             f"seed {arm.seed} of {GP.ARMS[reg]['seeds']}, limit {arm.limit}")
+        seen.append((reg, arm.seed))
+    need = sorted((k, s) for k, r in GP.ARMS.items() for s in r["seeds"])
+    if sorted(seen) != need:
+        raise SystemExit(f"the plan runs {sorted(seen)}, the registration {need}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--plan", required=True)
@@ -78,13 +105,16 @@ def main() -> int:
     plan = json.load(open(args.plan, encoding="utf-8"))
     only = set(filter(None, args.only.split(",")))
     forms_plan = plan.get("registration") == "gates_forms"
+    prior_plan = plan.get("registration") == "gates_prior"
     if forms_plan:
         check_forms_plan(plan)
+    if prior_plan:
+        check_prior_plan(plan)
     os.makedirs(args.runs, exist_ok=True)
     status = 0
     for d in plan["arms"]:
         arm = arm_from(d)
-        if not forms_plan and arm.name not in gates.ARMS:
+        if not (forms_plan or prior_plan) and arm.name not in gates.ARMS:
             raise SystemExit(f"arm {arm.name!r} is not registered in gates.ARMS")
         if only and arm.name not in only:
             continue

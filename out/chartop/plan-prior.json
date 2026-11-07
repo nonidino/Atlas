@@ -1,0 +1,32 @@
+{
+ "written": "2026-11-07, before the first training run of these arms",
+ "registration": "gates_prior",
+ "status": "approved by the owner on 2026-11-07 ('Plan and train', answering 'Write the plan and train P and PG on rented boxes (about 3.3 GPU-hours, about $1)?'); binding from this commit, before the first training run",
+ "data": {
+  "train": 50000,
+  "val": 600
+ },
+ "val_examples": {
+  "32": 179,
+  "64": 293,
+  "128": 128
+ },
+ "arms": [
+  {"name": "P-s0", "registered": "P", "form": "split", "backbone": "unet", "size": "1M", "p_size": "1M", "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "corner", "strips": true, "strips_in_training": false, "hats": "learned", "mode_prior": "generator-field", "steps": 37500, "val_every": 2500, "seed": 0, "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001},
+  {"name": "P-s1", "registered": "P", "form": "split", "backbone": "unet", "size": "1M", "p_size": "1M", "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "corner", "strips": true, "strips_in_training": false, "hats": "learned", "mode_prior": "generator-field", "steps": 37500, "val_every": 2500, "seed": 1, "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001},
+  {"name": "PG-s0", "registered": "PG", "form": "split", "backbone": "unet-spectral", "size": "1M", "p_size": "1M", "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "corner", "strips": true, "strips_in_training": false, "hats": "learned", "mode_prior": "generator-field", "steps": 37500, "val_every": 2500, "seed": 0, "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001},
+  {"name": "PG-s1", "registered": "PG", "form": "split", "backbone": "unet-spectral", "size": "1M", "p_size": "1M", "kind": "sine-hat", "objective": "label-free", "data": "train", "bubble": "corner", "strips": true, "strips_in_training": false, "hats": "learned", "mode_prior": "generator-field", "steps": 37500, "val_every": 2500, "seed": 1, "batch": {"32": 32, "64": 32, "128": 8}, "lr": 0.001}
+ ],
+ "minutes": {
+  "P-s0": 120,
+  "P-s1": 120,
+  "PG-s0": 120,
+  "PG-s1": 120
+ },
+ "boxes": {
+  "1": {"machine": "RTX 3090 with an EPYC 7C13 (32 effective cores, 63 GB), vast.ai offer 37955906, 0.230 $/h before storage", "runs": ["P-s0", "P-s1"], "data": ["val", "train"], "deadline_s": 16200},
+  "2": {"machine": "RTX 3090 with a Xeon E5-2680 v4 (28 effective cores, 63 GB), vast.ai offer 51465380, 0.239 $/h before storage", "runs": ["PG-s0", "PG-s1"], "data": ["val", "train"], "deadline_s": 16200}
+ },
+ "gate": "each box prices its own steps first (chartop_price.py --prior) and trains only if chartop_budget.py puts the whole registration, all four runs on two boxes like it at its rate, within 10 $ (spent before: 0.022 $, E5's box)",
+ "note": "batches, learning rate, weight decay, augmentation and validation cadence are S''s (out/chartop/plan-forms.json, runs Sp-s0 and Sp-s1), and so are the data counts: the same registered seeds. The wall-clock guards are S''s, 120 min a run, about 2.2 times E5's projection of 0.82 h; a run the guard stops is recorded as stopped, not as done. strips_in_training=false skips the strips in the training steps only, as S' was trained; validation and every answer solve them."
+}
