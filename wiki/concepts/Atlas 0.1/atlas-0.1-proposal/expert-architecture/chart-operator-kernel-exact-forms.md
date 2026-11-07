@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps).
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1` after the next registration's evaluation, §11.11) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps).
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1123,7 +1123,76 @@ On the seen problems, beside, the same runs err by 1.3–2.7% (bend-3 steady), 5
 - **The data are the difference:** a steady problem in one material does not depend on the material. The held-out ends vary along their length, and the walls carry that variation into the channel. So the coupled traces weigh the low side sines heavily, and those are the columns where §11.1 found the expert's error.
 - **The prior did not prevent it:** P is 22–28% there, against S′'s 30–34%, which is a tie by CP's bars.
 
-**[AI Inference]:** The seen benchmarks hid this. Their uniform end data put little weight on the side sines, so those columns' errors were multiplied by small coefficients. §11.3 already said what the coupled answer needs on such data: the hats and $j=1$–3 nearly exact. Reweighting the objective moved some of the error but did not remove it.
+**[AI Inference]:** The seen benchmarks hid this. Their uniform end data put little weight on the side sines, so those columns' errors were multiplied by small coefficients. §11.3 already said what the coupled answer needs on such data: the hats and $j=1$–3 nearly exact. Reweighting the objective moved some of the error but did not remove it. (§11.11 measured this: here the hats and $j=1$–3 exact are not enough.)
+
+### 11.11 The held-out s-channel, by mode group (post hoc, 2026-11-07)
+
+**The owner's go:** "Diagnose it". Nothing here is a gate. The one evaluation (§11.10) read the held-out problems once; they are now read post hoc, as §11.1 read the seen ones. The test split was not read.
+- Script: `scripts/chartop_forms_diagnose.py --part h1`, 30 s on the laptop, with the evaluation's 8 torch threads. Record: `out/chartop/forms-diagnose-h1.json`. Tests: `tests/test_chartop_forms_diagnose_h1.py` (7).
+- Runs: U (S's form with zero heads, as in §11.1), S′ (Sp-s0, Sp-s1), P and PG (seeds 0 and 1). The weights were checked against the hashes recorded at download.
+
+**The checks.**
+- Every run's as-trained energy error reproduces the evaluation's record exactly (relative difference 0): on the held-out problem in both frames, and on the seen problem. So does the classical floor.
+- Every expert's modes, learned and classical, are the same bit for bit on the two problems. The held-out problem changes the channel's material (steel to copper) and the end data. With one material and no source, the material divides out.
+- The split sums to the evaluation's network term within $8\times10^{-16}$.
+
+So the six trained runs' jump from 5.4–8.0% on the seen problem to 22–34% is the end data alone, acting on the same modes.
+
+**The new end data, in the side basis.** The hats carry each end's linear part. What is left is a sine series, with $s$ running along the end:
+
+$$B(\cos 2\pi s - 1) = \sum_{j\ \mathrm{odd}} \frac{16B}{\pi j (j^2-4)} \sin j\pi s, \qquad A(\cos \pi s - 1 + 2s) = \sum_{j\ \mathrm{even}} \frac{4A}{\pi j (j^2-1)} \sin j\pi s.$$
+
+- With $B = 10$ K the cold end carries $-17.0$, $3.40$, $0.49$ and $0.16$ K on $j = 1, 3, 5, 7$.
+- With $A = 20$ K the hot end carries $4.24$, $0.42$ and $0.12$ K on $j = 2, 4, 6$. Its two corners now differ by 40 K.
+- The channel's own drop is $T_{\mathrm{HOT}} - T_{\mathrm{COLD}} = 100$ K. The seen problem's uniform ends put nothing on the sines and no difference between an end's corners.
+
+**Where the error is: the two end pieces.**
+- The channel has nine pieces; pieces 0 and 8 own the two ends.
+- The envelope refused both end pieces' conformal charts ($\log J$ ranges over 4.61), so both use the Winslow chart. The seven pieces between are conformal, each of modulus 0.957.
+- On the held-out problem the two end pieces carry 98.3–100% of the squared network term $\sum_i \kappa_i \lVert w_i \rVert_A^2$, and at least 99.7% for U and the seed-0 runs. On the seen problem they carry 100% for U and 76–93% for the trained runs.
+
+**Which modes.** Shares of the squared network term on the held-out problem (they sum to one), with the seen problem's $j=1$–3 share at the end:
+
+| run | E (%), held-out | E (%), seen | hats, corner differences | $j=1$–3 | of which the end sides' own | $j=4$–8 | strips and particular | $j=1$–3, seen |
+|---|---|---|---|---|---|---|---|---|
+| U | 32.15 | 5.26 | 0.375 | 0.616 | 0.439 | 0.009 | 0.000 | 0.929 |
+| S′-s0 | 30.49 | 5.49 | 0.296 | 0.696 | 0.546 | 0.008 | 0.000 | 0.889 |
+| P-s0 | 27.86 | 5.93 | 0.226 | 0.766 | 0.618 | 0.008 | 0.000 | 0.779 |
+| PG-s0 | 24.72 | 5.36 | 0.223 | 0.767 | 0.574 | 0.010 | 0.000 | 0.713 |
+
+- The hats' level part is about $-4\times10^{-13}$ for every run: the kernel is exact, as built.
+- On the seen problem the end sides' own sines carry 0.000 for every run. There, $j=1$–3 comes from the Winslow pieces' other sides.
+- On the held-out problem the end sides' own $j=1$–3 columns carry 0.44–0.62 in these rows. The 0.008–0.010 of $j=4$–8 is all on the end sides' own columns.
+- Over all seven runs the hats' corner differences carry 0.22–0.46 and $j=1$–3 0.55–0.77.
+- A share is of the squared term, so a small share can still matter: $j=4$–8's own norm is 7–11% of the bracket's.
+
+**What it would take.** Each run with some of its columns replaced by the exact classical ones. Energy error in %, steady problem; ✓ where E4 is met in both frames. The floor is 1.001%.
+
+| replaced by the exact columns | U | S′-s0 | P-s0 | PG-s0 | the seed-1 runs |
+|---|---|---|---|---|---|
+| none (as trained) | 32.15 | 30.49 | 27.86 | 24.72 | 22.1–34.2 |
+| the hats | 23.00 | 23.77 | 23.09 | 20.63 | 15.5–24.2 |
+| $j=1$–3 | 16.38 | 13.68 | 10.44 | 9.95 | 11.8–18.3 |
+| the hats and $j=1$–3 | 2.600 | 2.598 | 2.599 | 2.602 | 2.575–2.617 |
+| the end sides' own $j=1$–8 | 20.49 | 17.83 | 14.82 | 14.14 | 14.9–22.3 |
+| every learned column, on the two end pieces only | 1.005 ✓ | 1.495 ✓ | 1.852 ✓ | 1.774 ✓ | 2.22–3.17 |
+| every learned column | 1.004 ✓ | 1.004 ✓ | 1.004 ✓ | 1.004 ✓ | 1.004 ✓ |
+
+- The two frames agree to three decimals in every cell. A uniform shift lies in the kernel, which these forms reproduce exactly.
+- With the hats and $j=1$–3 exact, E4's energy bar fails (2.6% against 2%); the largest error is 0.16% of the range.
+
+**What it shows.**
+1. **§11.10's account holds, with two corrections.** The data are the difference: the modes are the same bit for bit. The error sits where the new data act, on the two Winslow end pieces. But the low sines are not all of it:
+   - the hats' corner differences carry 22–46% of the squared term (the hot end's corners now differ by 40 K);
+   - with the hats and $j=1$–3 exact, $j=4$–8 still leaves 2.6%, above E4's 2% bar.
+2. **The hats and $j=1$–3 nearly exact are not enough here.** On the seen problems they were (§11.3: 0.00, 1.54 and 0.20%). On the held-out s-channel, E4 needs every learned column of the two end pieces close to exact, $j=4$–8 included.
+3. **That 2.6% is the same for all seven runs, U included** (2.575–2.617%). What is left in $j=4$–8 on the end pieces is the principal part's own error, and training did not change it.
+4. **The trained runs' middle pieces err where U's do not.** U's seven conformal pieces add almost nothing: 1.005% with only the end pieces exact, against 1.004% with every piece exact. There the plain square's principal part is already nearly exact. With the end pieces exact, the trained runs still err by 1.50–1.85% (seed 0) and 2.22–3.17% (seed 1). On the seen problem too, their middle pieces carry 7–24% of the squared term, and U's none.
+5. **The prior's runs.** At seed 0, P's and PG's hats are better than S′'s: with $j=1$–3 exact, 10.4 and 9.95% against 13.7%. Their $j=1$–3 is a little better at most: with the hats exact, 23.1 and 20.6% against 23.8%. At seed 1, P is better in both: 15.5 and 14.3% against S′'s 24.2 and 18.3%.
+
+**[AI Inference]:** Two treatments these numbers suggest (proposed, not built):
+- **Classical modes on the pieces that own varying Dirichlet data,** learned modes elsewhere. This is B1's `hats="classical"` widened to all 36 learned columns, on those pieces only: here, two pieces of nine, at about the price of an exact solve on each. On this problem the seed-0 runs would reach 1.5–1.9% (E4 met) and the seed-1 runs 2.2–3.2% (not met). It is measured on this problem only; the other held-out problems' error has not been split by piece.
+- **A learned correction that vanishes where the principal part is exact.** With the first treatment, U beats every trained run on this problem, so here the learned correction does harm on the conformal pieces. Scaling the correction by a measured distance from conformal, zero on a conformal piece, would keep those pieces at U's level.
 
 ---
 

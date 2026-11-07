@@ -22,11 +22,19 @@ Parts (``--part``), each printing a verdict table of ten lines or fewer and writ
 - ``a3``: S re-coupled with its hats replaced by the exact classical hats or by U's
   projected hats (and, beside them, with every learned column exact), steady
   benchmarks, both frames, judged by E4's own function.
+- ``h1``: the held-out s-channel's steady problem, on which the pinned registration's one
+  evaluation (`gates_prior`) found every learned run at 22-34% against a classical floor
+  of 1.0%.  For U, S' (Sp-s0, Sp-s1), P and PG (seeds 0 and 1): ``a1``'s split, beside the
+  seen problem's, and by piece and by the end sides that carry the held-out data; then
+  each run with columns replaced as ``a3`` replaces them, both frames, judged by E4's own
+  function.  The held-out problems are read post hoc, after the one evaluation read
+  them; the as-trained errors must reproduce that evaluation's record.
 """
 
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import math
 import os
@@ -45,26 +53,35 @@ import torch  # noqa: E402
 import chartop_evaluate as ev0  # noqa: E402
 import chartop_registry as registry  # noqa: E402
 from atlas.chartop import benchmarks as bm, data, fe, forms as fm, gates_forms as GF  # noqa: E402
+from atlas.chartop import gates_prior as GP  # noqa: E402
 from atlas.chartop import host as hs, model as md, ports as pt, train as tr  # noqa: E402
 from atlas.chartop.expert import LearnedExpert  # noqa: E402
 
 OUT = os.path.join(ROOT, "out", "chartop")
 RUNS = os.path.join(OUT, "runs", "forms")
+PRIOR_RUNS = os.path.join(OUT, "runs", "prior")
+EVAL_PRIOR = "evaluation-prior-????????-??????.json"
 VAL_POSTHOC = GF.SEED_BASE["val"] + 100
 J_GROUPS = {"j1-3": (1, 3), "j4-8": (4, 8), "j9-15": (9, 15)}
 RECORDED = {"bend-3": {"S": 3.9379, "Sp-s0": 1.2848}, "s-channel": {"S": 6.559, "Sp-s0": 5.4904},
             "insert-round": {"S": 7.8385, "Sp-s0": 4.3693}}
 
 
-def checked_weights(run: str) -> str:
+def run_dir(run: str) -> str:
+    """Where a run's weights live: the pinned registration's runs (P, PG) or the forms runs."""
+    return PRIOR_RUNS if run.split("-")[0] in GP.ARMS else RUNS
+
+
+def checked_weights(run: str, runs_dir: str | None = None) -> str:
     """The run's ``best.pt``, refused unless its sha256 is the one recorded at download."""
+    runs_dir = run_dir(run) if runs_dir is None else runs_dir
     manifest = {}
-    with open(os.path.join(RUNS, "weights-sha256.txt"), encoding="utf-8") as fh:
+    with open(os.path.join(runs_dir, "weights-sha256.txt"), encoding="utf-8") as fh:
         for line in fh:
             if line.strip():
                 h, rel = line.split()
                 manifest[rel.lstrip("*").split("/")[0]] = h
-    path = os.path.join(RUNS, run, "best.pt")
+    path = os.path.join(runs_dir, run, "best.pt")
     h = registry.sha256_file(path)
     if manifest.get(run) != h:
         raise SystemExit(f"{path}: sha256 {h[:16]}... is not the recorded one")
@@ -105,9 +122,12 @@ def interior(p):
     return M[inner][:, inner]
 
 
-def bench(name: str, frame: str = "registered") -> bm.Bench:
+def bench(name: str, frame: str = "registered", variant: str | None = None,
+          n: int | None = None) -> bm.Bench:
     kw = {"envelope": data.ENVELOPE} if name == "s-channel" else {}
-    b = bm.build(name, GF.BENCHMARK_N, "steady", **kw)
+    if variant:
+        kw["variant"] = variant
+    b = bm.build(name, GF.BENCHMARK_N if n is None else n, "steady", **kw)
     return b if frame == "registered" else bm.datum_shift(b, GF.DATUM_SHIFT_K)
 
 
@@ -116,13 +136,23 @@ def bench(name: str, frame: str = "registered") -> bm.Bench:
 # ---------------------------------------------------------------------------
 
 
-def split_term(L: hs.Layout, cp: hs.Coupled, cl: hs.Coupled) -> dict:
+def side_sines(groups=("j1-3", "j4-8"), kind: str = GF.KIND, m: int = GF.M_PORTS) -> dict:
+    """{group: [side 0's columns, ..., side 3's]} for the learned side sines."""
+    cols = pt.basis(kind, m, m).columns
+    G = column_groups(kind, m)
+    return {g: [[k for k in G[g] if cols[k].index == s] for s in range(4)] for g in groups}
+
+
+def split_term(L: hs.Layout, cp: hs.Coupled, cl: hs.Coupled, by_piece: bool = False) -> dict:
     """Theorem 2's bracket split by group: the shares ``<w_g, w>_A / ||w||^2_A`` (summing to
-    one) and each group's own ``||w_g||_A`` over ``||w||_A``, kappa-weighted over pieces."""
+    one) and each group's own ``||w_g||_A`` over ``||w||_A``, kappa-weighted over pieces.
+    With ``by_piece``, also each piece's share of the bracket (summing to one) and, per
+    piece and side, the learned side sines' shares (summing over sides to the group's)."""
     G = column_groups()
     strips = side_strip_columns()
+    sides = side_sines() if by_piece else {}
     T = 0.0
-    share, alone = {}, {}
+    share, alone, piece, side = {}, {}, [], []
     for i, p in enumerate(L.problems):
         A = interior(p)
         rL, rC = cp.responses[i], cl.responses[i]
@@ -147,11 +177,19 @@ def split_term(L: hs.Layout, cp: hs.Coupled, cl: hs.Coupled) -> dict:
         for g, v in comp.items():
             share[g] = share.get(g, 0.0) + p.kappa_ref * float(v @ Aw)
             alone[g] = alone.get(g, 0.0) + p.kappa_ref * float(v @ (A @ v))
+        if by_piece:
+            piece.append(p.kappa_ref * float(w @ Aw))
+            side.append({g: [p.kappa_ref * float((E[:, cs] @ ci[cs]) @ Aw) for cs in css]
+                         for g, css in sides.items()})
     nt = ev0.network_term(L, cp, cl)
-    return {"network_term": math.sqrt(T), "network_term_ev0": nt,
-            "check_rel": abs(math.sqrt(T) - nt) / max(nt, 1e-300),
-            "share": {g: v / T for g, v in share.items()},
-            "alone_over_total": {g: math.sqrt(max(v, 0.0) / T) for g, v in alone.items()}}
+    out = {"network_term": math.sqrt(T), "network_term_ev0": nt,
+           "check_rel": abs(math.sqrt(T) - nt) / max(nt, 1e-300),
+           "share": {g: v / T for g, v in share.items()},
+           "alone_over_total": {g: math.sqrt(max(v, 0.0) / T) for g, v in alone.items()}}
+    if by_piece:
+        out["piece_share"] = [t / T for t in piece]
+        out["side_share"] = [{g: [v / T for v in vs] for g, vs in d.items()} for d in side]
+    return out
 
 
 def strips_at_width(p, H0, width: float) -> np.ndarray:
@@ -384,6 +422,200 @@ def part_a3(args) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# H1: the held-out s-channel by mode group (after the pinned registration's one evaluation)
+# ---------------------------------------------------------------------------
+
+H1_RUNS = ("U", "Sp-s0", "Sp-s1", "P-s0", "P-s1", "PG-s0", "PG-s1")
+H1_SHOWN = ("Sp-s0", "P-s0", "PG-s0")
+H1_TABLE = ("+ exact hats", "+ exact j1-3", "+ exact hats, j1-3", "+ exact end sides' j1-8")
+
+
+def with_piece_columns(resp: list, src: list, cols_by_piece: dict) -> list:
+    """`with_columns` piece by piece: piece i takes columns ``cols_by_piece[i]`` from `src`
+    (none if i is absent)."""
+    out = []
+    for i, (r, s) in enumerate(zip(resp, src)):
+        H = r.H.copy()
+        cs = cols_by_piece.get(i, [])
+        if cs:
+            H[:, cs] = s.H[:, cs]
+        out.append(hs.Response(H, r.up, r.level))
+    return out
+
+
+def dirichlet_sides(L: hs.Layout) -> list:
+    """[(piece, side)] for every boundary side that holds Dirichlet data."""
+    return sorted((int(e.owner[0]), int(e.owner[1])) for e in L.edges
+                  if e.other is None and e.bc is not None and e.bc[0] == "dirichlet")
+
+
+def h1_variants(pieces: int, dirichlet: list) -> dict:
+    """{variant: {piece: the columns taken from the classical expert}}: none (as trained);
+    the hats, j = 1-3, both, or every learned column on every piece; the learned sines
+    (j = 1-8) of the Dirichlet sides alone, on the pieces that own them; and every learned
+    column on those pieces alone."""
+    G = column_groups()
+    sides = side_sines()
+    learned = G["hats"] + G["j1-3"] + G["j4-8"]
+
+    def every(cols):
+        return {i: list(cols) for i in range(pieces)}
+
+    ends = {}
+    for i, s in dirichlet:
+        ends.setdefault(i, []).extend(sides["j1-3"][s] + sides["j4-8"][s])
+    return {"as trained": {}, "+ exact hats": every(G["hats"]), "+ exact j1-3": every(G["j1-3"]),
+            "+ exact hats, j1-3": every(G["hats"] + G["j1-3"]), "+ exact end sides' j1-8": ends,
+            "+ exact learned, end pieces": {i: list(learned) for i in sorted(ends)},
+            "+ exact learned": every(learned)}
+
+
+def heldout_split(ex: dict, n: int, name: str = "s-channel") -> dict:
+    """The held-out steady problem split as `part_a1` splits it (by piece and side too),
+    beside the seen problem's, with each expert's modes compared between the two; then the
+    variants of `h1_variants` on the held-out problem in both frames, judged by E4's own
+    function (`gates_prior`'s)."""
+    groups = ("j1-3", "j4-8")
+    built = {"held_out": bench(name, "registered", GP.HELD_OUT_VARIANT, n),
+             "seen": bench(name, "registered", None, n)}
+    rec = {"name": name, "n": n, "variant": GP.HELD_OUT_VARIANT,
+           "end_piece_charts": [{"piece": r["piece"], "conformal_refused": bool(r["refused"]),
+                                 "logJ_range": float(r["conformal"]["logJ_range"])}
+                                for r in built["held_out"].meta.get("end_piece_charts", [])]}
+    if "modulus" in built["held_out"].meta:
+        rec["piece_modulus"] = built["held_out"].meta["modulus"] / built["held_out"].meta["along"]
+    resp, lay = {}, {}
+    for which, b in built.items():
+        L = b.layout(GF.KIND, GF.M_PORTS)
+        mono = hs.monolithic(L)
+        cl = L.solve(hs.ClassicalExpert())
+        lay[which] = (L, mono, cl)
+        u, d = cl.energy_error(mono.fields)
+        dirichlet = dirichlet_sides(L)
+        ends = sorted({i for i, _ in dirichlet})
+        out = {"floor": u / d, "pieces": L.P, "dirichlet_sides": dirichlet, "end_pieces": ends,
+               "kappa_ref": sorted({float(p.kappa_ref) for p in L.problems}), "runs": {}}
+        for run, e in ex.items():
+            cp = L.solve(e)
+            num, den = cp.energy_error(mono.fields)
+            st = split_term(L, cp, cl, by_piece=True)
+            st["energy_rel"] = num / den
+            st["ends_share"] = sum(st["piece_share"][i] for i in ends)
+            st["end_sides_share"] = {g: sum(st["side_share"][i][g][s] for i, s in dirichlet) for g in groups}
+            st["side_sum_check"] = max(abs(sum(sum(dd[g]) for dd in st["side_share"]) - st["share"][g])
+                                       for g in groups)
+            out["runs"][run] = st
+            resp[which, run] = cp.responses
+        resp[which, "classical"] = cl.responses
+        rec[which] = out
+    rec["modes_same"] = {}
+    for run in list(ex) + ["classical"]:
+        a, z = resp["held_out", run], resp["seen", run]
+        rec["modes_same"][run] = {
+            "H_max_abs_diff": max(float(np.abs(x.H - y.H).max()) for x, y in zip(a, z)),
+            "up_max_abs_diff": max(float(np.abs(x.up - y.up).max()) for x, y in zip(a, z)),
+            "bitwise": bool(all(np.array_equal(x.H, y.H) and np.array_equal(x.up, y.up)
+                                for x, y in zip(a, z)))}
+    dirichlet = rec["held_out"]["dirichlet_sides"]
+    variants = h1_variants(rec["held_out"]["pieces"], dirichlet)
+    fr = {}
+    for frame in ("registered", "lowered"):
+        if frame == "registered":
+            L, mono, cl = lay["held_out"]
+        else:
+            L = bm.datum_shift(built["held_out"], GP.DATUM_SHIFT_K).layout(GF.KIND, GF.M_PORTS)
+            if dirichlet_sides(L) != dirichlet:
+                raise ValueError("the lowered frame's Dirichlet sides are not the registered frame's")
+            mono = hs.monolithic(L)
+            cl = L.solve(hs.ClassicalExpert())
+        mx0, span = ev0.field_errors(mono.fields, cl.fields)
+        out = {}
+        for run, e in ex.items():
+            rr = resp["held_out", run] if frame == "registered" else e.respond(L.problems, L.pb)
+            for v, cols in variants.items():
+                cp = L.couple(with_piece_columns(rr, cl.responses, cols))
+                num, den = cp.energy_error(mono.fields)
+                mx, _ = ev0.field_errors(mono.fields, cp.fields)
+                out[run, v] = {"energy_rel": num / den, "max_err": mx, "span": span, "floor_max": mx0}
+        fr[frame] = out
+    rec["variants"] = {}
+    for (run, v), a in fr["registered"].items():
+        z = fr["lowered"][run, v]
+        rec["variants"].setdefault(run, {})[v] = {
+            "energy_rel": a["energy_rel"], "energy_rel_lowered": z["energy_rel"],
+            "max_over_range": a["max_err"] / a["span"],
+            "e4_met": bool(GP.judge_e4_both_frames(a, z)["met"])}
+    rec["as_trained_matches_split"] = max(
+        abs(rec["variants"][r]["as trained"]["energy_rel"] - rec["held_out"]["runs"][r]["energy_rel"])
+        for r in ex)
+    return rec
+
+
+def reproduces(rec: dict) -> dict:
+    """The as-trained energy errors against the one evaluation's record of the same steady
+    problem (the same weights): the largest relative difference per problem and frame."""
+    paths = sorted(glob.glob(os.path.join(OUT, EVAL_PRIOR)))
+    if len(paths) != 1:
+        raise SystemExit(f"expected the one evaluation's record, found {len(paths)}")
+    with open(paths[0], encoding="utf-8") as fh:
+        ev = json.load(fh)
+
+    def row(key):
+        return next(r for r in ev[key] if r["name"] == rec["name"] and r["problem"] == "steady")
+
+    held, seen = row("benchmarks"), row("benchmarks_seen")
+    V = rec["variants"]
+    mine = {"held-out, registered": (held, "registered", {r: v["as trained"]["energy_rel"] for r, v in V.items()}),
+            "held-out, lowered": (held, "lowered", {r: v["as trained"]["energy_rel_lowered"] for r, v in V.items()}),
+            "seen, registered": (seen, "registered", {r: v["energy_rel"] for r, v in rec["seen"]["runs"].items()})}
+    out = {"record": os.path.relpath(paths[0], ROOT).replace(os.sep, "/"), "max_rel": {}}
+    for key, (r, frame, vals) in mine.items():
+        runs = r["frames"][frame]["runs"]
+        both = sorted(k for k in vals if "energy_rel" in runs.get(k, {}))
+        out["runs"] = both
+        out["max_rel"][key] = max(abs(vals[k] - runs[k]["energy_rel"]) / runs[k]["energy_rel"] for k in both)
+    f_rec = held["frames"]["registered"]["truncation_energy_rel"]
+    out["floor_rel"] = abs(rec["held_out"]["floor"] - f_rec) / f_rec
+    return out
+
+
+def part_h1(args) -> dict:
+    if (GP.BENCHMARK_N, GP.DATUM_SHIFT_K, GP.KIND, GP.M_PORTS) != (
+            GF.BENCHMARK_N, GF.DATUM_SHIFT_K, GF.KIND, GF.M_PORTS):
+        raise SystemExit("gates_prior's benchmarks are not at gates_forms' resolution, frame and ports")
+    reused = dict(GP.REUSED.values())
+    for run in H1_RUNS:
+        if run in reused and registry.sha256_file(checked_weights(run)) != reused[run]:
+            raise SystemExit(f"{run}: not the run the registration reuses")
+    rec = heldout_split(experts(H1_RUNS), GP.BENCHMARK_N)
+    rec["reproduces"] = reproduces(rec)
+    H, Sn, V = rec["held_out"], rec["seen"], rec["variants"]
+    print("H1  s-channel steady  E% held-out [s1] {seen}  NT-chk hat-diff hat-lvl   j1-3   j4-8  j9-15      p"
+          "   ends end j1-3 end j4-8 {seen j1-3}")
+    for run in ("U",) + H1_SHOWN:
+        st, sh = H["runs"][run], H["runs"][run]["share"]
+        s1 = run.replace("-s0", "-s1")
+        e1 = f"{100 * H['runs'][s1]['energy_rel']:6.2f}" if s1 != run else "   -  "
+        print(f"    {run:6s} {100 * st['energy_rel']:13.3f} [{e1}] {{{100 * Sn['runs'][run]['energy_rel']:6.3f}}} "
+              f"{st['check_rel']:7.1e} {sh['hats-diff']:7.3f} {sh['hats-level']:7.1e} {sh['j1-3']:6.3f} "
+              f"{sh['j4-8']:6.3f} {sh['j9-15 on strip'] + sh['j9-15 off strip']:6.3f} {sh['p']:6.3f} "
+              f"{st['ends_share']:6.3f} {st['end_sides_share']['j1-3']:8.3f} {st['end_sides_share']['j4-8']:8.3f} "
+              f"{{{Sn['runs'][run]['share']['j1-3']:6.3f}}}")
+    def span(v):
+        e = [V[r][v]["energy_rel"] for r in V]
+        return f"{100 * min(e):.3f}-{100 * max(e):.3f}% [{'Y' if all(V[r][v]['e4_met'] for r in V) else 'n'}]"
+
+    same = all(v["bitwise"] for k, v in rec["modes_same"].items() if k != "classical")
+    print(f"    E% [E4 both frames]; floor {100 * H['floor']:.3f}%; all learned exact {span('+ exact learned')}, "
+          f"on the end pieces {span('+ exact learned, end pieces')}; modes as seen's: {same}; record to "
+          f"{max(rec['reproduces']['max_rel'].values()):.0e} " + "".join(f"{r:>14s}" for r in H1_SHOWN))
+    for v in H1_TABLE:
+        cells = [f"{100 * V[r][v]['energy_rel']:8.3f} [{'Y' if V[r][v]['e4_met'] else 'n'}]" for r in H1_SHOWN]
+        print(f"    {v:24s}" + "".join(f"{c:>14s}" for c in cells))
+    return rec
+
+
+# ---------------------------------------------------------------------------
 # B1's price: the classical hats against the exact solve
 # ---------------------------------------------------------------------------
 
@@ -539,7 +771,7 @@ def part_i13(args) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--part", required=True, choices=("a1", "a2", "a3", "b1", "i13"))
+    ap.add_argument("--part", required=True, choices=("a1", "a2", "a3", "b1", "i13", "h1"))
     ap.add_argument("--reps", type=int, default=3, help="b1: timings per piece (the best is kept)")
     ap.add_argument("--pieces", type=int, default=4, help="a2: validation pieces per resolution")
     ap.add_argument("--threads", type=int, default=4)
@@ -548,7 +780,8 @@ def main(argv=None) -> int:
     t0 = time.perf_counter()
     rec = {"part": args.part, "written": time.strftime("%Y-%m-%d %H:%M:%S"), "posthoc": True,
            "test_split_read": False, "torch_threads": args.threads}
-    rec.update({"a1": part_a1, "a2": part_a2, "a3": part_a3, "b1": part_b1, "i13": part_i13}[args.part](args))
+    rec.update({"a1": part_a1, "a2": part_a2, "a3": part_a3, "b1": part_b1, "i13": part_i13,
+                "h1": part_h1}[args.part](args))
     rec["elapsed_s"] = time.perf_counter() - t0
     path = os.path.join(OUT, f"forms-diagnose-{args.part}.json")
     registry.write_atomic(path, json.dumps(ev0.strip(rec), indent=1).encode("utf-8"))
