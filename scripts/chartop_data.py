@@ -34,7 +34,13 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import numpy as np  # noqa: E402
 
 import chartop_cpus  # noqa: E402
-from atlas.chartop.gates import SEED_BASE as SPLIT_SEED  # noqa: E402  (registered)
+from atlas.chartop.gates import SEED_BASE  # noqa: E402  (registered)
+from atlas.chartop.gates_prior import TEST_SEED_BASE as PRIOR_TEST_SEED_BASE  # noqa: E402  (registered)
+
+#: every split's seed base: Stage 0's, and ``test-prior``, the fresh test split of the
+#: registration after the forms' evaluation (`gates_prior.TEST_SEED_BASE`), which its one
+#: evaluation draws with ``--name test``
+SPLIT_SEED = dict(SEED_BASE, **{"test-prior": PRIOR_TEST_SEED_BASE})
 
 
 def _draw_one(args):

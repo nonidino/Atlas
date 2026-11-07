@@ -843,3 +843,7 @@ With the owner's go, an RTX 3090 at \$0.176/h, 13:50–13:59, destroyed after th
 ## [2026-11-07] note | The next chart-operator registration's four runs (P, PG), trained on two rented boxes (not evaluated)
 
 With the owner's go ("Plan and train"), `plan-prior.json` (commit 4ceab31) ran on two RTX 3090 boxes, 14:27–16:57. Each box priced itself and passed the budget gate. P-s0 and P-s1 took 0.84 h each; PG-s0 and PG-s1 1.07 h and 0.98 h. The kept validation medians were 0.1932, 0.1883, 0.1915 and 0.1918 (unweighted). Every file was hash-checked before both boxes were destroyed, for \$1.05. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 and §11.8 (new) · [[gap-worklist]] W358.
+
+## [2026-11-07] note | The next chart-operator registration's one evaluation: the script, written and tested, not run
+
+With the owner's go ("Write it"), `scripts/chartop_evaluate_prior.py` was written. It checks the pin, the weights and S′'s reused runs, draws the fresh test split at 5,000,000, and judges every gate on the held-out problems per arm, with CP and CG. It was tested on throwaway weights with validation seeds standing in for the split; 273 chartop tests pass. Not run. **Changed:** [[chart-operator-kernel-exact-forms]] §11.7 and §11.9 (new) · [[gap-worklist]] W358.

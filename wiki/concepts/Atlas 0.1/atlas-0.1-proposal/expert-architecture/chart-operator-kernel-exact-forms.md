@@ -918,6 +918,7 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
   - The pin test fails when it should: one byte added to `benchmarks.py` failed it, and the original bytes passed again.
 - **E5 priced on a rented box** (below), with the owner's go ("Rent and price"); the box was destroyed.
 - **Planned and trained** with the owner's go ("Plan and train"): `out/chartop/plan-prior.json` (commit 4ceab31), and the four runs on two rented boxes (§11.8). Not yet evaluated.
+- **The one evaluation's script** is written and tested, not run (§11.9).
 
 **What it would decide.** Whether weighting the modes as the coupled answer does (B2), with and without a global path (B3), brings S's form within E4, and what that costs E1.
 
@@ -1036,6 +1037,41 @@ The largest corner angles of the 8 pieces run from 79° to 128°.
 **Not shown here:** any gate. The runs are not evaluated, and neither the fresh test split nor the held-out problems has been read by any of them.
 
 **[AI Inference]:** P's unweighted validation median is S′'s to the third digit at seed 0 (0.1932 against 0.1934). That fits a prior that moves accuracy among the columns without changing the unweighted total much. Whether it moved accuracy to where the coupled answer needs it is E4's question, at the one evaluation.
+
+### 11.9 The one evaluation's script: written and tested, not run (2026-11-07)
+
+**The owner's go:** "Write it", answering "Write the one evaluation's script for gates_prior (tested, not run)?".
+
+**`scripts/chartop_evaluate_prior.py`, in order:**
+1. **The pin:** every file `registered-prior.txt` pins must hash as recorded, or it refuses.
+2. **The weights:**
+   - every run's `best.pt` must hash as downloaded;
+   - its configuration must be its arm's: form, backbone, networks, ports, bubble, strips, hats;
+   - its `arm.json` must show the arm's training: the prior, the strips skipped, the steps, the seed.
+3. **S′:** S′'s two runs must hash as `gates_prior.REUSED` names them.
+4. **The registry:** it refuses the four runs if they were evaluated before. S′, evaluated once already, is reused by name and recorded beside; it is not registered again.
+5. **The fresh test split:** 2,400 pieces at seeds 5,000,000–5,002,399, with sine-hat labels. `chartop_data.py` gained the split `test-prior`, whose seed base it reads from the pinned `gates_prior`. The split is drawn unless it is whole on disk, and its sha256 is taken.
+6. **E1 and K** for P-s0 and PG-s0; **L** for all four runs on the first 100 test pieces.
+7. **The six held-out problems,** both frames, for the four runs and S′:
+   - E4, D, K and L on every piece, and every piece's $e_H$ and $e_{H,L}$;
+   - E3, SE1, SE3 and the dual bracket for the seed-0 runs.
+8. **The seen six** beside, E4's energy error only.
+9. **CP** (P over S′) and **CG** (PG over P), seed with seed, on the held-out problems, with the seen problems' ratios beside.
+10. **DUAL** on 100 steady test pieces; **KT** and **S11** on `gates_forms`' problems. Then it writes `evaluation-prior-<time>.json` and `.txt`, whatever they say.
+
+The parts the two registrations share come from `chartop_evaluate_forms` unchanged: E1's rows, gate L's three calls, the per-piece measures, the dual bracket's test records.
+
+**Tested** (`tests/test_chartop_evaluate_prior.py`, two tests, throwaway weights; validation seeds stand in for the fresh split, so no registered test piece is drawn):
+- **bend-3's held-out problem in both frames at $n=32$:**
+  - K, D, L and SE2 met for every run, whatever the weights;
+  - E3, SE1, SE3 and the bracket for the seed-0 runs only;
+  - the variant really applied: the held-out floor is above $10^{-6}$, the seen one below;
+  - the seen problem carrying E4's energy error alone.
+- **The whole evaluation end to end,** with stand-ins for the benchmarks, KT and the rollout. Its pairings come out as designed: CP 0.5 in both pairings, "alternative wins"; CG 1, a tie.
+- **Refusals:** a second evaluation; a tampered weights file; a configuration that is not its arm's; reused weights the registration does not name; and a changed pin.
+- **The suites:** all 273 chartop tests pass.
+
+**Not run.** No trained weight has been read, and neither the fresh split nor the held-out problems has been drawn or read by a learned expert. The run is about an hour on the laptop, on AC: the draw, two E1 passes, 12 problems for six runs, KT and the rollouts.
 
 ---
 
