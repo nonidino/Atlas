@@ -62,5 +62,9 @@ def test_the_runner_installs_the_laptops_versions_and_stops_itself():
     text = open(os.path.join(ROOT, *PB.RUNNER.split("/")), encoding="utf-8").read()
     for pin in ("torch==2.7.1", "numpy==1.26.4", "scipy==1.13.1", "download.pytorch.org/whl/cpu"):
         assert pin in text
+    constraints = open(os.path.join(ROOT, "constraints.txt"), encoding="utf-8").read().splitlines()
+    for name in ("pydantic", "pydantic_core", "annotated-types", "typing_extensions"):   # atlas.workbench's
+        pinned = next(ln.strip() for ln in constraints if ln.strip().startswith(name + "=="))
+        assert pinned in text, pinned
     assert "vastai stop instance" in text and 'sleep "$DEADLINE_S"' in text and "ALL.done" in text
     assert "chartop_price_squares.py --dry-run > dryrun.log" in text

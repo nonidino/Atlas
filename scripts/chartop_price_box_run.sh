@@ -4,7 +4,7 @@
 #   DEADLINE_S=7200 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
 #   STAGES="smoke" DEADLINE_S=1800 setsid nohup bash run.sh < /dev/null > run.log 2>&1 &
 #
-# Installs the laptop's versions (torch 2.7.1+cpu, numpy 1.26.4, scipy 1.13.1, psutil), records
+# Installs the laptop's versions (torch 2.7.1+cpu, numpy 1.26.4, scipy 1.13.1, pydantic 2.12.5, psutil), records
 # the machine in env.log, then runs the stages: "smoke" (one small price run, which imports
 # all the dry run imports) and "dry-run" (scripts/chartop_price_squares.py --dry-run).  A stage runs only if
 # the one before it exited 0.  Every stage writes <stage>.done with its exit code, and ALL.done
@@ -27,8 +27,12 @@ eval "$(tr '\0' '\n' < /proc/1/environ | grep -E '^CONTAINER_(ID|API_KEY)=' | se
 ) > deadline.log 2>&1 &
 echo "deadline armed: ${DEADLINE_S}s, instance ${CONTAINER_ID:-unknown}, stages: ${STAGES}" > deadline-armed.log
 
+# pydantic: U's probe piece is built through benchmarks.bend3, whose lazy import of atlas.workbench
+# needs it -- the first box run's smoke stage found it missing (2026-11-08); a file audit cannot see
+# a package.  The versions are constraints.txt's.
 python -m pip install -q --index-url https://download.pytorch.org/whl/cpu torch==2.7.1 > pip.log 2>&1 \
-  && python -m pip install -q numpy==1.26.4 scipy==1.13.1 psutil >> pip.log 2>&1
+  && python -m pip install -q numpy==1.26.4 scipy==1.13.1 psutil pydantic==2.12.5 pydantic_core==2.41.5 \
+       annotated-types==0.6.0 typing_extensions==4.15.0 >> pip.log 2>&1
 status=$?
 echo $status > pip.done
 
