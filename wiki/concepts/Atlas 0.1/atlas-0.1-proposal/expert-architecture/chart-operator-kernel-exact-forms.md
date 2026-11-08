@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14: accepted by the owner and hash-pinned, not yet evaluated.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14: accepted by the owner and hash-pinned, not yet evaluated. §11.16 is its evaluation's script, written and tested, not run.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1343,6 +1343,7 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
   - By value, it records U's form, the rule's picks and the classical floors on each new problem, the time steps and the price's protocol.
   - Before writing, the pin checked that the classical record passes its own controls and still describes these problems: all twelve fingerprints match.
   - The pin test fails when it should: one byte added to `benchmarks_workbench.py` failed it, and the original bytes passed again.
+- **The one evaluation's script** is written and tested, not run (§11.16).
 
 **What it would decide.** Whether §11.14's rule, fixed after three layouts, keeps E4 on layouts it has never seen, at a saving worth having. If it does, the hybrid is the CO-D expert that a learned correction has to beat, on E4 and on price.
 
@@ -1478,6 +1479,41 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
 - The laptop only: no box, no training, no money.
 - At acceptance: the six layouts as code, measured with the classical solver in a few minutes.
 - The one evaluation: one accuracy run and three price runs, about 15–25 minutes in all. §11.14 took 254 s for twelve problems of 9–39 pieces, with one price run.
+
+### 11.16 The one evaluation's script: written and tested, not run (2026-11-07)
+
+**The owner's go:** "Write it". Script: `scripts/chartop_evaluate_hybrid.py`. Tests: 16, in `tests/test_chartop_evaluate_hybrid.py`.
+
+**What it does, in order.** Every bar is `gates_hybrid`'s.
+0. It refuses unless all ten files the pin records hash as recorded, and unless the one evaluation has not yet run.
+1. It builds U from `U_FORM`, and H's stand-in for U's networks. On every piece of every problem, in both frames, the stand-in must answer U's bits, so H is U's form whatever the stand-in's code. P-s0's weights must have the sha256 recorded at download.
+2. **The control:** on §11.14's six problems, H's energy errors must equal §11.14's record bit for bit in both frames, and P-s0's the one evaluation's, or it stops.
+3. **The picks:** on every new problem, the rule must pick the pieces the classical record holds, or it stops.
+4. **Accuracy, computed once:** H, U on every piece and P-s0 on the twelve new problems, as registered and lowered by 300 K, each judged by E4's own function; then E4-H.
+5. **The price:** three runs at 4 threads, each in its own process, the arms taking turns within each of five repetitions.
+   - Each run is judged from the machine's state at the start and end of its timing.
+   - A void run is run again, at most three more times, and every run is kept.
+   - One run at one thread is reported beside.
+6. The five predictions, read as the script's docstring states, and the outcome.
+7. It writes `evaluation-hybrid-<time>.json` and `.txt`. Every unit is a checkpoint, and `--resume` continues.
+
+**Tested without reading a new problem.** Every test that runs H, U or P-s0 runs it on the control's problems, which §11.14 read post hoc. New problems are built only to read the rule's picks, which need no expert. Among the tests:
+- the pin holds, and a changed hash is refused; the evaluation runs once;
+- U is §11.14's U, weight for weight;
+- on bend-3, the stand-in answers U's bits, and H with every piece classical is the floor exactly;
+- the control reproduces bit for bit on bend-3's steady and step problems;
+- a price run in its own process, and the predictions' readings, case by case;
+- the whole run end to end on one control problem, writing nothing into `out/chartop`.
+
+**Two decisions made while writing it, on the machine's state alone.** Neither changes a registered condition.
+- A run's start state is sampled when its timing starts, after the experts and problems are built. So a fresh process's imports being scanned do not count against it.
+- Before each run starts, the script waits, at most 10 minutes, until the machine reads quiet. That decides only when a run starts, never whether it counts.
+
+**The machine is often not quiet enough.**
+- A diagnostic price run on two control problems was void: another process used 19% of a core at its end.
+- Sampled every 5 s for a minute while this session sat idle, the busiest other process used a median of 11% of a core and at most 46%. Six samples of twelve were above the 10% bar.
+- The busiest were the Claude app hosting this session and the operating system's own process; earlier, while commands ran, the antivirus too.
+- So if the one evaluation runs from this session, most price runs may be void, and PR may go unjudged.
 
 ---
 
