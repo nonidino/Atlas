@@ -141,11 +141,38 @@ def test_the_bench_helper_keeps_its_defaults(fd, monkeypatch):
                      ("bend-3", 32, "steady", {"variant": "held-out"})]
 
 
+def test_the_hybrid_is_priced_and_reduces_to_its_ends(fd, experts, h1):
+    """h2 on bend-3 at n = 32: U without its networks answers what U answers, bit for bit,
+    and the check fails for an expert whose heads are not zero.  With every piece hard the
+    hybrid is the classical answer (the floor, exactly); with none it is U's."""
+    b = fd.bench("bend-3", "registered", GP.HELD_OUT_VARIANT, N)
+    p0 = b.problems[0]
+    U, R = experts["U"], experts["R"]
+    Z = LearnedExpert(fd.without_networks(U.net, p0), envelope=data.ENVELOPE)
+    every = fd.hybrid_price("bend-3", N, U, Z, R, reps=1, hard=list(range(15)))
+    none = fd.hybrid_price("bend-3", N, U, Z, R, reps=1, hard=[])
+    some = fd.hybrid_price("bend-3", N, U, Z, R, reps=1, hard=[0, 1])
+    assert every["U_without_networks_same_bit_for_bit"] and some["hard"] == ["bend 0,0", "bend 1,0"]
+    assert every["hybrid_energy_rel"] == h1["held_out"]["floor"]
+    assert none["hybrid_energy_rel"] == h1["variants"]["U"]["as trained"]["energy_rel"]
+    assert none["hybrid_e4_met"] == h1["variants"]["U"]["as trained"]["e4_met"]
+    assert every["hybrid_e4_met"]
+    assert set(some["seconds"]) == {"classical", "trained", "U", "U without its networks", "hybrid",
+                                    "hybrid with U's networks", "coupled solve"}
+    assert all(v > 0 for v in some["seconds"].values()) and some["over_classical"]["classical"] == 1.0
+    ZR = LearnedExpert(fd.without_networks(R.net, p0), envelope=data.ENVELOPE)
+    assert not fd.hybrid_price("bend-3", N, R, ZR, R, reps=1, hard=[])["U_without_networks_same_bit_for_bit"]
+    assert fd.hard_pieces("bend-3", b.layout(GF.KIND, GF.M_PORTS)) == []
+
+
 def test_the_records_keep_their_names(fd):
     """The s-channel's h1 record keeps the path the wiki cites; another problem adds its name."""
     assert fd.record_path("h1") == fd.record_path("h1", "s-channel") == os.path.join(fd.OUT, "forms-diagnose-h1.json")
     assert fd.record_path("h1", "insert-round") == os.path.join(fd.OUT, "forms-diagnose-h1-insert-round.json")
     assert fd.record_path("a1", "insert-round") == os.path.join(fd.OUT, "forms-diagnose-a1.json")
+    assert fd.record_path("h1", "insert-round", 8) == os.path.join(fd.OUT, "forms-diagnose-h1-insert-round.json")
+    assert fd.record_path("b1", "s-channel", 4) == os.path.join(fd.OUT, "forms-diagnose-b1.json")
+    assert fd.record_path("h2", "s-channel", 1) == os.path.join(fd.OUT, "forms-diagnose-h2-threads1.json")
 
 
 def test_the_runs_are_read_from_their_own_folders(fd):

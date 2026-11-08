@@ -1,0 +1,149 @@
+{
+ "part": "h2",
+ "written": "2026-11-07 19:59:49",
+ "posthoc": true,
+ "test_split_read": false,
+ "torch_threads": 1,
+ "reps": 5,
+ "power_at_start": {
+  "plugged": true,
+  "percent": 100
+ },
+ "problems": {
+  "bend-3": {
+   "name": "bend-3",
+   "n": 64,
+   "pieces": 15,
+   "hard": [],
+   "U_without_networks_same_bit_for_bit": true,
+   "seconds": {
+    "classical": 0.6064517000922933,
+    "trained": 0.7142878000158817,
+    "U": 0.7219709999626502,
+    "U without its networks": 0.3651362999808043,
+    "hybrid": 0.3647270000074059,
+    "hybrid with U's networks": 0.7086755000054836,
+    "coupled solve": 0.1135636999970302
+   },
+   "over_classical": {
+    "classical": 1.0,
+    "trained": 1.1778148200543872,
+    "U": 1.1904839245281635,
+    "U without its networks": 0.6020863655345278,
+    "hybrid": 0.6014114561009551,
+    "hybrid with U's networks": 1.168560496899643
+   },
+   "over_classical_with_coupled_solve": {
+    "classical": 1.0,
+    "trained": 1.1497691575905327,
+    "U": 1.160440040388061,
+    "U without its networks": 0.664846890661572,
+    "hybrid": 0.6642784306350953,
+    "hybrid with U's networks": 1.1419744631857993
+   },
+   "hybrid_energy_rel": 0.0034194227392856926,
+   "hybrid_energy_rel_lowered": 0.003419422739298564,
+   "hybrid_max_over_range": 0.0004666940974836603,
+   "hybrid_e4_met": true
+  },
+  "s-channel": {
+   "name": "s-channel",
+   "n": 64,
+   "pieces": 9,
+   "hard": [
+    "channel 0",
+    "channel 8"
+   ],
+   "U_without_networks_same_bit_for_bit": true,
+   "seconds": {
+    "classical": 0.344812500057742,
+    "trained": 0.4300564000150189,
+    "U": 0.43102619994897395,
+    "U without its networks": 0.21407170000020415,
+    "hybrid": 0.2757461000001058,
+    "hybrid with U's networks": 0.43046899989712983,
+    "coupled solve": 0.06199289998039603
+   },
+   "over_classical": {
+    "classical": 1.0,
+    "trained": 1.247218125627702,
+    "U": 1.2500306684844509,
+    "U without its networks": 0.6208350914318822,
+    "hybrid": 0.7996986766835007,
+    "hybrid with U's networks": 1.248414717636524
+   },
+   "over_classical_with_coupled_solve": {
+    "classical": 1.0,
+    "trained": 1.2095446617701862,
+    "U": 1.2119286024304234,
+    "U without its networks": 0.6786158688029192,
+    "hybrid": 0.830222509211625,
+    "hybrid with U's networks": 1.2105589056373331
+   },
+   "hybrid_energy_rel": 0.010018877471449368,
+   "hybrid_energy_rel_lowered": 0.01001887747139302,
+   "hybrid_max_over_range": 0.0011880848332688962,
+   "hybrid_e4_met": true
+  },
+  "insert-round": {
+   "name": "insert-round",
+   "n": 64,
+   "pieces": 39,
+   "hard": [
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 0,2",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 1,2",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 2,2",
+    "plate ring 3,0",
+    "plate ring 3,1",
+    "plate ring 3,2",
+    "left column 0",
+    "left column 1",
+    "left column 2",
+    "right column 0",
+    "right column 1",
+    "right column 2"
+   ],
+   "U_without_networks_same_bit_for_bit": true,
+   "seconds": {
+    "classical": 1.5757143000373617,
+    "trained": 1.9538820000598207,
+    "U": 1.8885325000155717,
+    "U without its networks": 0.965917699970305,
+    "hybrid": 1.2507472999859601,
+    "hybrid with U's networks": 1.808913099928759,
+    "coupled solve": 0.6994225999806076
+   },
+   "over_classical": {
+    "classical": 1.0,
+    "trained": 1.2399976315589014,
+    "U": 1.1985246944644679,
+    "U without its networks": 0.613003067845105,
+    "hybrid": 0.7937652783606164,
+    "hybrid with U's networks": 1.1479956105531746
+   },
+   "over_classical_with_coupled_solve": {
+    "classical": 1.0,
+    "trained": 1.1662175581695644,
+    "U": 1.1374942316551322,
+    "U without its networks": 0.7319736671396607,
+    "hybrid": 0.8571659577721081,
+    "hybrid with U's networks": 1.102498799034711
+   },
+   "hybrid_energy_rel": 0.007449392229820541,
+   "hybrid_energy_rel_lowered": 0.007449392229806381,
+   "hybrid_max_over_range": 0.0018515571949784806,
+   "hybrid_e4_met": true
+  }
+ },
+ "power_at_end": {
+  "plugged": true,
+  "percent": 100
+ },
+ "elapsed_s": 118.5887901999522
+}

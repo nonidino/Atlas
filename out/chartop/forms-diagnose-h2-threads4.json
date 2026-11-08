@@ -1,0 +1,149 @@
+{
+ "part": "h2",
+ "written": "2026-11-07 20:01:51",
+ "posthoc": true,
+ "test_split_read": false,
+ "torch_threads": 4,
+ "reps": 5,
+ "power_at_start": {
+  "plugged": true,
+  "percent": 100
+ },
+ "problems": {
+  "bend-3": {
+   "name": "bend-3",
+   "n": 64,
+   "pieces": 15,
+   "hard": [],
+   "U_without_networks_same_bit_for_bit": true,
+   "seconds": {
+    "classical": 0.6145674000727013,
+    "trained": 0.39743569993879646,
+    "U": 0.3914656999986619,
+    "U without its networks": 0.26800769998226315,
+    "hybrid": 0.2700700000859797,
+    "hybrid with U's networks": 0.3881995000410825,
+    "coupled solve": 0.12729269999545068
+   },
+   "over_classical": {
+    "classical": 1.0,
+    "trained": 0.6466918028710621,
+    "U": 0.6369776528210783,
+    "U without its networks": 0.43609163120360556,
+    "hybrid": 0.4394473251494162,
+    "hybrid with U's networks": 0.6316630201913733
+   },
+   "over_classical_with_coupled_solve": {
+    "classical": 1.0,
+    "trained": 0.7073144921610452,
+    "U": 0.6992671528586807,
+    "U without its networks": 0.5328503311357479,
+    "hybrid": 0.5356302354647812,
+    "hybrid with U's networks": 0.6948644360158699
+   },
+   "hybrid_energy_rel": 0.0034194227392856926,
+   "hybrid_energy_rel_lowered": 0.003419422739298564,
+   "hybrid_max_over_range": 0.0004666940974836603,
+   "hybrid_e4_met": true
+  },
+  "s-channel": {
+   "name": "s-channel",
+   "n": 64,
+   "pieces": 9,
+   "hard": [
+    "channel 0",
+    "channel 8"
+   ],
+   "U_without_networks_same_bit_for_bit": true,
+   "seconds": {
+    "classical": 0.37098840007092804,
+    "trained": 0.23811289994046092,
+    "U": 0.23550720000639558,
+    "U without its networks": 0.15543289994820952,
+    "hybrid": 0.2516135999467224,
+    "hybrid with U's networks": 0.35806250001769513,
+    "coupled solve": 0.06212959997355938
+   },
+   "over_classical": {
+    "classical": 1.0,
+    "trained": 0.6418338144668052,
+    "U": 0.6348101449031014,
+    "U without its networks": 0.4189697034152357,
+    "hybrid": 0.6782249792678618,
+    "hybrid with U's networks": 0.9651582096616453
+   },
+   "over_classical_with_coupled_solve": {
+    "classical": 1.0,
+    "trained": 0.6932117803535782,
+    "U": 0.687195637099782,
+    "U without its networks": 0.5023169203298458,
+    "hybrid": 0.7243827314682277,
+    "hybrid with U's networks": 0.9701561697922847
+   },
+   "hybrid_energy_rel": 0.010018877471449368,
+   "hybrid_energy_rel_lowered": 0.01001887747139302,
+   "hybrid_max_over_range": 0.0011880848332688962,
+   "hybrid_e4_met": true
+  },
+  "insert-round": {
+   "name": "insert-round",
+   "n": 64,
+   "pieces": 39,
+   "hard": [
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 0,2",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 1,2",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 2,2",
+    "plate ring 3,0",
+    "plate ring 3,1",
+    "plate ring 3,2",
+    "left column 0",
+    "left column 1",
+    "left column 2",
+    "right column 0",
+    "right column 1",
+    "right column 2"
+   ],
+   "U_without_networks_same_bit_for_bit": true,
+   "seconds": {
+    "classical": 1.8849760999437422,
+    "trained": 1.0798389998963103,
+    "U": 1.1283532000379637,
+    "U without its networks": 0.7484611000400037,
+    "hybrid": 1.3577835999894887,
+    "hybrid with U's networks": 1.633801200077869,
+    "coupled solve": 0.9023610000731423
+   },
+   "over_classical": {
+    "classical": 1.0,
+    "trained": 0.5728661492994731,
+    "U": 0.5986034518271292,
+    "U without its networks": 0.39706662597066444,
+    "hybrid": 0.720318735091661,
+    "hybrid with U's networks": 0.8667490267524508
+   },
+   "over_classical_with_coupled_solve": {
+    "classical": 1.0,
+    "trained": 0.7111446979116538,
+    "U": 0.7285499124231528,
+    "U without its networks": 0.5922577861512144,
+    "hybrid": 0.810861592610718,
+    "hybrid with U's networks": 0.9098871464580471
+   },
+   "hybrid_energy_rel": 0.007449392229820541,
+   "hybrid_energy_rel_lowered": 0.007449392229806381,
+   "hybrid_max_over_range": 0.0018515571949784806,
+   "hybrid_e4_met": true
+  }
+ },
+ "power_at_end": {
+  "plugged": true,
+  "percent": 100
+ },
+ "elapsed_s": 104.65200030000415
+}

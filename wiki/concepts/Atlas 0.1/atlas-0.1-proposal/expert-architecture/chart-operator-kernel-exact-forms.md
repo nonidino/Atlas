@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1` after the next registration's evaluation, §11.11–11.12) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps).
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1` and `h2` after the next registration's evaluation, §11.11–11.13) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps).
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1258,7 +1258,43 @@ So U, untrained, with the classical modes on the pieces that carry its error, me
 - Both point at the correction's accuracy, E1's median $e_{H,L}$ of 0.34, more than at which columns the objective weighs. That fits B4's finding that this form cannot reach E1 (§11.6).
 - §11.11's second treatment, a correction that vanishes where the principal part is exact, would address the first half.
 - The second half needs the hard pieces' hats and low sines nearly exact. A more accurate correction would do it; so would the classical modes there, at about the price of an exact solve on those pieces.
-- The measurement above sets the bar a learned correction has to clear. The untrained principal part, with classical solves on the pieces that carry its error, already meets E4 on all three problems. The correction earns its place only by doing as well at a lower price.
+- The measurement above sets the bar a learned correction has to clear. The untrained principal part, with classical solves on the pieces that carry its error, already meets E4 on all three problems. The correction earns its place only by doing as well at a lower price. (§11.13 prices the hybrid: 0.54–0.86 of the classical expert.)
+
+### 11.13 The hybrid, priced (post hoc, 2026-11-07)
+
+**The owner's go:** "Price it". The hybrid is §11.12's finding turned into an expert:
+- the classical solve on the pieces that carry U's error: the s-channel's 2 end pieces, insert-round's 12 plate-ring pieces and 6 end columns, and none on bend-3;
+- everywhere else, U's form without its networks. U's heads are zero, so its networks answer zeros. A stand-in skips computing them, and it answers what U answers, bit for bit, on every piece of all three problems.
+
+**The run.**
+- Script: `scripts/chartop_forms_diagnose.py --part h2`, at 1 and at 4 torch threads, best of 5 per arm (119 s and 105 s). Records: `out/chartop/forms-diagnose-h2-threads1.json` and `forms-diagnose-h2-threads4.json`.
+- Every arm answers every piece of the held-out steady problem. The coupled solve, which every arm shares, is included in each total.
+- The laptop was on AC at 100% throughout, with no other Python process running and no sleep. The classical expert took 38–48 ms per piece, as B1 recorded at $n=64$ earlier the same day (48.7 ms).
+- The classical arm runs no network, yet its time also differed between the two runs (insert-round: 1,576 against 1,885 ms of responses). So only ratios within one run are compared.
+
+**Cost over the classical expert's,** at torch threads 1 / 4; ✓ where E4 is met in both frames:
+
+| problem | pieces given the classical solve | classical expert | P-s0, trained | U | U without its networks | the hybrid | the hybrid's E (%) |
+|---|---|---|---|---|---|---|---|
+| bend-3 | 0 of 15 | 720 / 742 ms | 1.15 / 0.71 ✓ | 1.16 / 0.70 | 0.66 / 0.53 | 0.66 / 0.54 | 0.342 ✓ |
+| s-channel | 2 of 9 | 407 / 433 ms | 1.21 / 0.69 | 1.21 / 0.69 | 0.68 / 0.50 | 0.83 / 0.72 | 1.002 ✓ |
+| insert-round | 18 of 39 | 2,275 / 2,787 ms | 1.17 / 0.71 | 1.14 / 0.73 | 0.73 / 0.59 | 0.86 / 0.81 | 0.745 ✓ |
+
+The hybrid's errors are §11.12's, except the s-channel's 1.002% against 1.005%: here the end pieces take every column from the classical solve, the strips' too.
+
+**What it shows.**
+1. **The hybrid meets E4 everywhere, at 0.54–0.86 of the classical expert's cost.** The trained expert costs 0.69–1.21 and meets E4 on bend-3 alone.
+2. **At 4 threads the trained expert is cheaper on two problems** (0.69 and 0.71, against the hybrid's 0.72 and 0.81), but it fails E4 on both.
+3. **The form costs something even without its networks.** Responses alone, it costs 0.40–0.62 of the classical expert's; B1 priced the strips alone at 0.26 of an exact solve. A network, however accurate, adds its own cost to that.
+
+**[AI Inference]:**
+- On these problems, on this laptop, a learned expert has to beat the hybrid: E4 met everywhere at 0.54–0.86 of the classical solve. The trained correction falls short of it, at 0.69–1.21 with E4 met on one problem of three.
+- The hybrid chose its classical pieces after measuring the error against the classical answer. A usable rule must choose them beforehand, from the piece and its data: for example, the Winslow pieces and the pieces whose Dirichlet data vary.
+  - Such a rule would also have to pick insert-round's end columns, which are rectangles.
+  - It might also pick insert-round's 12 disc-ring pieces, which are Winslow but do not need it.
+  - Neither has been tested.
+- The form's own cost without networks caps the saving any network can bring: it is 0.40–0.62 of a classical solve. A cheaper path for the strips and the projection would lower every arm of this form, trained or not.
+- These are one laptop's CPU times. On a GPU the networks' share would shrink; the classical solves, which run on the CPU, would cost the same.
 
 ---
 

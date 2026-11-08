@@ -32,6 +32,10 @@ Parts (``--part``), each printing a verdict table of ten lines or fewer and writ
   splits held-out bend-3 or insert-round the same way (record
   ``forms-diagnose-h1-<problem>.json``); insert-round's two materials change between
   the seen and the held-out problem, so there the modes need not be the same.
+- ``h2``: the hybrid h1 found meeting E4 on all three held-out problems -- classical
+  solves on the pieces that carry U's error, U without its networks elsewhere (its heads
+  are zero, so its networks answer zeros) -- priced on this machine against the classical
+  expert, with P-s0 beside it, and its energy error in both frames.
 """
 
 from __future__ import annotations
@@ -646,6 +650,145 @@ def part_h1(args) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# H2: the untrained form with classical solves on the pieces that carry its error, priced
+# ---------------------------------------------------------------------------
+
+#: per held-out problem, the pieces that get the classical solve: (the pieces that own the
+#: Dirichlet ends?, label prefixes) -- the sets with which h1 found U meeting E4
+H2_HARD = {"s-channel": (True, ()), "insert-round": (True, ("plate ring",)), "bend-3": (False, ())}
+
+
+class _Zeros(torch.nn.Module):
+    """A network's stand-in answering zeros of its output shape."""
+
+    def __init__(self, channels: int):
+        super().__init__()
+        self.channels = channels
+
+    def forward(self, x, s):
+        return x.new_zeros((x.shape[0], self.channels) + tuple(x.shape[-2:]))
+
+
+def without_networks(net: fm.KernelExpert, p) -> fm.KernelExpert:
+    """A copy of `net` whose networks are `_Zeros` of their output shapes (read from one
+    forward on piece `p`).  For U, whose heads are zero, it must answer what U answers, bit
+    for bit; it then costs what U's form costs without computing zeros."""
+    import copy
+    ch, sc, _ = p.inputs()
+    x, s = torch.tensor(ch[None]), torch.tensor(sc[None])
+    z = copy.deepcopy(net)
+    with torch.no_grad():
+        z.net = _Zeros(int(net.net(x[:, :4], s).shape[1]))
+        if getattr(net, "pnet", None) is not None:
+            z.pnet = _Zeros(int(net.pnet(x, s).shape[1]))
+    return z.eval()
+
+
+def hard_pieces(name: str, L: hs.Layout) -> list:
+    with_ends, prefixes = H2_HARD[name]
+    hard = {i for i, _ in dirichlet_sides(L)} if with_ends else set()
+    if prefixes:
+        hard |= set(pieces_named([str(p.label) for p in L.problems], list(prefixes)))
+    return sorted(hard)
+
+
+def hybrid_price(name: str, n: int, U, Z, trained, reps: int, hard: list | None = None) -> dict:
+    """On the held-out steady problem: the best of `reps` wall-clock times of each arm's
+    responses for every piece (the classical expert; the trained run; U; U without its
+    networks; the hybrid, classical on the `hard` pieces and U without its networks on the
+    rest, and the same with U's networks), and of the coupled solve, which every arm
+    shares.  Then the hybrid's energy error in both frames, judged by E4's own function.
+    `U`, `Z` and `trained` are `LearnedExpert`s."""
+    b = bench(name, "registered", GP.HELD_OUT_VARIANT, n)
+    L = b.layout(GF.KIND, GF.M_PORTS)
+    hard = hard_pieces(name, L) if hard is None else hard
+    easy = [i for i in range(L.P) if i not in set(hard)]
+    ps = L.problems
+    C = hs.ClassicalExpert()
+    rU, rZ = U.respond(ps, L.pb), Z.respond(ps, L.pb)
+    same = all(np.array_equal(a.H, z.H) and np.array_equal(a.up, z.up)
+               and ((a.level is None and z.level is None) or np.array_equal(a.level, z.level))
+               for a, z in zip(rU, rZ))
+
+    def hybrid(ex):
+        def run():
+            if hard:
+                C.respond([ps[i] for i in hard], L.pb)
+            if easy:
+                ex.respond([ps[i] for i in easy], L.pb)
+        return run
+
+    resp_C = C.respond(ps, L.pb)
+    t = {"classical": _best(lambda: C.respond(ps, L.pb), reps),
+         "trained": _best(lambda: trained.respond(ps, L.pb), reps),
+         "U": _best(lambda: U.respond(ps, L.pb), reps),
+         "U without its networks": _best(lambda: Z.respond(ps, L.pb), reps),
+         "hybrid": _best(hybrid(Z), reps),
+         "hybrid with U's networks": _best(hybrid(U), reps),
+         "coupled solve": _best(lambda: L.couple(resp_C), reps)}
+    cs = t["coupled solve"]
+    out = {"name": name, "n": n, "pieces": L.P, "hard": [str(ps[i].label) for i in hard],
+           "U_without_networks_same_bit_for_bit": bool(same), "seconds": t,
+           "over_classical": {k: v / t["classical"] for k, v in t.items() if k != "coupled solve"},
+           "over_classical_with_coupled_solve": {k: (v + cs) / (t["classical"] + cs)
+                                                 for k, v in t.items() if k != "coupled solve"}}
+    fr = {}
+    hard_set = set(hard)
+    for frame in ("registered", "lowered"):
+        Lf = (b if frame == "registered" else bm.datum_shift(b, GP.DATUM_SHIFT_K)).layout(GF.KIND, GF.M_PORTS)
+        mono = hs.monolithic(Lf)
+        cl = Lf.solve(C)
+        mx0, span = ev0.field_errors(mono.fields, cl.fields)
+        rz = Z.respond(Lf.problems, Lf.pb)
+        cp = Lf.couple([cl.responses[i] if i in hard_set else rz[i] for i in range(Lf.P)])
+        num, den = cp.energy_error(mono.fields)
+        mx, _ = ev0.field_errors(mono.fields, cp.fields)
+        fr[frame] = {"energy_rel": num / den, "max_err": mx, "span": span, "floor_max": mx0}
+    out["hybrid_energy_rel"] = fr["registered"]["energy_rel"]
+    out["hybrid_energy_rel_lowered"] = fr["lowered"]["energy_rel"]
+    out["hybrid_max_over_range"] = fr["registered"]["max_err"] / fr["registered"]["span"]
+    out["hybrid_e4_met"] = bool(GP.judge_e4_both_frames(fr["registered"], fr["lowered"])["met"])
+    return out
+
+
+def part_h2(args) -> dict:
+    """The hybrid of h1's finding, priced on this machine against the classical expert:
+    classical solves on the pieces that carry U's error (`H2_HARD`), the zero-head form
+    without its networks elsewhere; P-s0 beside it as the trained expert's price."""
+    import psutil
+    if (GP.BENCHMARK_N, GP.DATUM_SHIFT_K) != (GF.BENCHMARK_N, GF.DATUM_SHIFT_K):
+        raise SystemExit("gates_prior's benchmarks are not at gates_forms' resolution and frame")
+    bat = psutil.sensors_battery()
+    rec = {"reps": args.reps, "power_at_start": {"plugged": bat.power_plugged, "percent": bat.percent} if bat else None,
+           "problems": {}}
+    u = zero_heads()
+    U = LearnedExpert(u, envelope=data.ENVELOPE)
+    P = LearnedExpert(tr.load_expert(checked_weights("P-s0"), "cpu"), envelope=data.ENVELOPE)
+    Z = None
+    for name in GF.HELD_OUT_BENCHMARKS:
+        if Z is None:
+            p0 = bench(name, "registered", GP.HELD_OUT_VARIANT, GP.BENCHMARK_N).problems[0]
+            Z = LearnedExpert(without_networks(u, p0), envelope=data.ENVELOPE)
+        rec["problems"][name] = hybrid_price(name, GP.BENCHMARK_N, U, Z, P, args.reps)
+    bat = psutil.sensors_battery()
+    rec["power_at_end"] = {"plugged": bat.power_plugged, "percent": bat.percent} if bat else None
+    print(f"H2  price on this machine (torch threads {args.threads}, best of {args.reps}), over the classical "
+          "expert, the coupled solve included in both")
+    print("    problem       pieces hard  classical   P-s0      U  U, no nets  hybrid  hybrid E% [E4]  same")
+    for name, r in rec["problems"].items():
+        o = r["over_classical_with_coupled_solve"]
+        tot = r["seconds"]["classical"] + r["seconds"]["coupled solve"]
+        print(f"    {name:13s} {r['pieces']:6d} {len(r['hard']):4d} {1000 * tot:8.0f} ms {o['trained']:6.2f} "
+              f"{o['U']:6.2f} {o['U without its networks']:11.2f} {o['hybrid']:7.2f} "
+              f"{100 * r['hybrid_energy_rel']:9.3f} [{'Y' if r['hybrid_e4_met'] else 'n'}]  "
+              f"{r['U_without_networks_same_bit_for_bit']}")
+    resp_only = ", ".join(f"{k} {v['over_classical']['hybrid']:.2f}" for k, v in rec["problems"].items())
+    print(f"    the responses alone, hybrid over classical: {resp_only}; power plugged at start and end: "
+          f"{(rec['power_at_start'] or {}).get('plugged')} {(rec['power_at_end'] or {}).get('plugged')}")
+    return rec
+
+
+# ---------------------------------------------------------------------------
 # B1's price: the classical hats against the exact solve
 # ---------------------------------------------------------------------------
 
@@ -799,16 +942,18 @@ def part_i13(args) -> dict:
     return rec
 
 
-def record_path(part: str, problem: str = "s-channel") -> str:
+def record_path(part: str, problem: str = "s-channel", threads: int | None = None) -> str:
     """``out/chartop/forms-diagnose-<part>.json``; h1 on another problem than the s-channel
-    adds the problem's name."""
+    adds the problem's name, and h2, a price, its torch thread count."""
     name = part if part != "h1" or problem == "s-channel" else f"h1-{problem}"
+    if part == "h2" and threads is not None:
+        name = f"h2-threads{threads}"
     return os.path.join(OUT, f"forms-diagnose-{name}.json")
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--part", required=True, choices=("a1", "a2", "a3", "b1", "i13", "h1"))
+    ap.add_argument("--part", required=True, choices=("a1", "a2", "a3", "b1", "i13", "h1", "h2"))
     ap.add_argument("--reps", type=int, default=3, help="b1: timings per piece (the best is kept)")
     ap.add_argument("--pieces", type=int, default=4, help="a2: validation pieces per resolution")
     ap.add_argument("--threads", type=int, default=4)
@@ -824,9 +969,9 @@ def main(argv=None) -> int:
     rec = {"part": args.part, "written": time.strftime("%Y-%m-%d %H:%M:%S"), "posthoc": True,
            "test_split_read": False, "torch_threads": args.threads}
     rec.update({"a1": part_a1, "a2": part_a2, "a3": part_a3, "b1": part_b1, "i13": part_i13,
-                "h1": part_h1}[args.part](args))
+                "h1": part_h1, "h2": part_h2}[args.part](args))
     rec["elapsed_s"] = time.perf_counter() - t0
-    path = record_path(args.part, args.problem)
+    path = record_path(args.part, args.problem, args.threads)
     registry.write_atomic(path, json.dumps(ev0.strip(rec), indent=1).encode("utf-8"))
     print(f"    wrote {os.path.relpath(path, ROOT)} ({rec['elapsed_s']:.0f} s)")
     return 0
