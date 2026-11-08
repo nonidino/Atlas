@@ -2,7 +2,7 @@
 material, and beside it H2r, the classical response reused on the squares; judged on E4 and
 on a price bar on square-first layouts from a registered generator.  ACCEPTED BY THE OWNER
 ON 2026-11-08, AS DRAFTED, ITS PRICE PROTOCOL REVISED TWICE THE SAME DAY (`REVISED`,
-`REVISED_BLAS`); NOT YET HASH-PINNED.
+`REVISED_BLAS`); HASH-PINNED THE SAME DAY (``out/chartop/registered-squares.txt``).
 
 The owner accepted the draft of [[chart-operator-kernel-exact-forms]] section 11.18 (commit
 3f945f2) in chat on 2026-11-08 ("Accept as drafted"), with its four recommended choices
@@ -12,8 +12,10 @@ the owner adopted the per-problem count ("Adopt it (Recommended)") and moved the
 rented whole machine ("Box for both (Recommended)"), in chat the same day (`REVISED`).  The
 second dry run, on that machine, found the BLAS threads free; the owner accepted the drafted
 fix (commit 400d2ed) in chat the same day ("Accept as drafted"), with its four recommended
-choices (`REVISED_BLAS`).  Pinning is a separate step, run only with the owner's approval,
-and only after a dry run passes (`dry_run_passes`).
+choices (`REVISED_BLAS`).  The third dry run passed (`dry_run_passes`), and with the owner's
+approval ("Pin it") ``scripts/chartop_register_squares.py --pin`` hash-pinned this module, the
+generator, H2r's expert, the price protocol, the box's payload and runner and the classical
+record, before any expert but the classical one read the new problems.
 
 **The arm, H2.**  No weights; nothing is trained.  U's form without its networks (U as
 `gates_hybrid.U_FORM`, the stand-in as section 11.13's) on every piece `is_square` accepts:
@@ -80,7 +82,9 @@ REGISTERED = ("accepted by the owner on 2026-11-08, in chat ('Accept as drafted'
               "per-problem count ('Adopt it (Recommended)') on a rented whole machine ('Box for "
               "both (Recommended)'), and again the same day, in chat ('Accept as drafted', the "
               "draft commit 400d2ed), to four BLAS threads, a 35 ms bound on the pricing CPU and "
-              "an A/A check; not yet hash-pinned")
+              "an A/A check; hash-pinned with the owner's approval the same day ('Pin it'), after "
+              "the third dry run passed and before any expert but the classical one read the new "
+              "problems")
 
 #: the owner's revision of the price protocol after the first dry run (2026-11-08, in chat)
 REVISED = {

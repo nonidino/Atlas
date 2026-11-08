@@ -46,7 +46,8 @@ def test_the_owner_settled_the_drafts_recommendations():
     assert "H2r beside" in GS.SETTLED["the square path"] and "0.90" in GS.SETTLED["PR2's bar"]
     assert "not judged" in GS.SETTLED["the load"]
     assert "Accept as drafted" in GS.REGISTERED and "3f945f2" in GS.REGISTERED
-    assert "not yet hash-pinned" in GS.REGISTERED
+    assert "hash-pinned with the owner's approval the same day ('Pin it')" in GS.REGISTERED
+    assert "not yet" not in GS.REGISTERED
 
 
 def test_the_owner_revised_the_price_protocol_after_the_first_dry_run():
@@ -385,6 +386,48 @@ def test_the_layouts_were_measured_classically_and_are_meetable():
         assert lay["picks"] == GS.rule_pieces2(b.layout(GS.KIND, GS.M_PORTS)) and lay["pieces"] == len(b.problems)
     every = sorted(rec["seeds"] + [s["seed"] for s in rec["skipped"]])
     assert every == list(range(GS.SEED_BASE, GS.SEED_BASE + len(every)))   # no seed passed over unrecorded
+
+
+def _copy_scope(dst) -> None:
+    import chartop_register_squares as RS
+    for rel in RS.every_path():
+        target = dst.joinpath(*rel.split("/"))
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(open(os.path.join(ROOT, *rel.split("/")), "rb").read())
+
+
+def test_the_pin_hashes_its_scope_refuses_to_overwrite_and_a_byte_fails_it(tmp_path):
+    import chartop_register_squares as RS
+    reg = tmp_path / "registered-squares.txt"
+    assert RS.pin(path=str(reg)) == 0
+    text = reg.read_text(encoding="ascii")
+    for rel in RS.every_path():
+        assert re.search(re.escape(rel) + r"\s+sha256 [0-9a-f]{64}", text), rel
+    assert "registered as      " + GS.REGISTERED in text and GS.text() in text
+    assert set(RS.check_pin(str(reg))) == set(RS.every_path())
+    with pytest.raises(SystemExit, match="not overwritten"):
+        RS.pin(path=str(reg))
+    root = tmp_path / "root"
+    _copy_scope(root)
+    assert RS.check_pin(str(reg), root=str(root))                         # the copies pass
+    with open(root / "atlas" / "chartop" / "gates_squares.py", "ab") as fh:
+        fh.write(b"#")                                                    # the failing control: one byte
+    with pytest.raises(SystemExit, match="not the registered file"):
+        RS.check_pin(str(reg), root=str(root))
+
+
+def test_the_pin_refuses_a_protocol_the_dry_run_did_not_run(tmp_path, monkeypatch):
+    import chartop_register_squares as RS
+    assert RS.same_as_run(RS.PINNED["price protocol"], "804dd01")
+    assert RS.same_as_run(RS.PINNED["gate module"], "804dd01")             # its REGISTERED aside
+    root = tmp_path / "root"
+    _copy_scope(root)
+    src = (root / "atlas" / "chartop" / "gates_squares.py").read_text(encoding="utf-8")
+    assert "MAX_MS_PER_PIECE = 35.0" in src
+    (root / "atlas" / "chartop" / "gates_squares.py").write_text(src.replace("MAX_MS_PER_PIECE = 35.0",
+                                                                             "MAX_MS_PER_PIECE = 36.0"), encoding="utf-8")
+    assert not RS.same_as_run(RS.PINNED["gate module"], "804dd01", root=str(root))   # a criterion moved
+    assert not RS.same_as_run(RS.PINNED["price protocol"], "31abb7d")      # an earlier protocol
 
 
 def test_the_record_is_of_these_layouts():
