@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 drafts the next registration; it is not registered.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1590,6 +1590,88 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - A next rule would add a criterion on shape. For example: the classical solve on every piece that touches a corner of a material inclusion, or whose aspect lies outside a band; or a layout that cuts such regions into squares. Any such rule is new and needs its own fair test.
 - Every piece it adds costs price. On this laptop the hybrid saved about 10% at best (run 6's 0.894), and on wall-2 it saved nothing, so a safer rule may save nothing at all.
 - A future registration's validity conditions should be dry-run on the target machine before pinning, with only an upper bound on time.
+
+### 11.18 The next registration, drafted: a rule on the piece's shape, and a price protocol dry-run first (not registered, 2026-11-08)
+
+**Status.** A draft for the owner ("Draft it", 2026-11-08). Nothing in it is registered, built, pinned or run, and no expert has read a new problem. Four choices are left to the owner, each with a recommendation.
+
+**What it would decide.**
+- Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
+- Whether reusing the classical answer on those squares saves more than U's form does. If it does, a learned correction has no work on squares, and its only possible role is the non-square pieces.
+
+**Why the criterion is "a square of one material".** Two other criteria were considered and set aside:
+- **A band on the aspect** would need a threshold that no measurement sets.
+- **The classical solve on every piece touching a material corner** hands the classical solve all 12 of the pieces plate-insert's layout left to U, so there the hybrid would be the classical solve at a higher price. On fast-heat it takes 6 of 12; the spreader's other two corners lie on the hot edge, whose pieces are classical already. (Counted for this draft from the layouts.)
+- **The evidence for squares:** on heated-strip, whose 40 pieces are squares, U alone was at the floor to $10^{-9}$, its four Dirichlet owners included (§11.17). So the new rule drops the Dirichlet criterion.
+
+**The arm, H2 (rule R2).** No weights; nothing is trained.
+- U's form, without its networks as before, on every piece whose chart is an affine map onto a square of one material: four equal sides and four right angles, to $10^{-9}$ of the side.
+- The classical solve on every other piece; then the coupled solve.
+- The rule has no parameter.
+
+**Beside it, H2r (open choice 1).** H2's picks, with the squares answered by reuse instead of U's form.
+- For each distinct pair of resolution and Fourier number, the classical response of a square is computed once and reused for every square with that pair. Steady, every square shares one response, since the contrast enters through $\kappa_{\text{ref}}$ alone; in a step, the squares of one size and material share one.
+- It is classical, so its error should be the floor's. Its price is what H2's price would be without any network.
+
+**Reported beside, not judged:** the classical expert; U on every piece; P-s0, for E4 only and not priced.
+
+**The layouts: squares first.** The near-square cut leaves almost no squares outside heated-strip, so R2 needs layouts cut into squares where the geometry allows.
+
+**The new problems: drawn from a registered generator** (open choice 2). The six scenarios of §11.15 have been read, so they cannot test a rule drawn from their failures.
+- **Each layout:** a plate of $W\times H$ squares of side $s=0.04$ m, with $W$ from 6 to 9 and $H$ from 3 to 5. It has one feature, drawn from five:
+  - a rectangular inclusion on the grid;
+  - a spreader on the hot edge;
+  - a second layer along the top;
+  - a round, insulated hole;
+  - a round inclusion.
+- **Round features** sit in a box of $2s\times2s$, with insert-round's ring construction at two pieces a side. Then the rays meet the box at the middle of each side, and the pieces around the box are squares. The ring's pieces are Winslow, so R2 gives them the classical solve; a round inclusion's core is $2\times2$ squares.
+- **Materials:** the plate and the feature are each drawn from steel, copper and aluminium, never the same.
+- **Ends:** the held-out profiles on the left and right ends, every other side insulated. Each layout gives a steady problem and one step, with $\Delta t$ by §11.15's rule.
+- **The draw:** eight layouts, the first eight seeds from 7,000,000 whose classical floors meet E4 in both frames, so 16 problems. A seed whose floor fails is skipped, and the record says so.
+- **Measured with the classical solver only before pinning,** as §11.15's problems were. No other expert reads them before the one evaluation.
+
+**Gates.**
+- **E4-H2:** H2 meets E4 on every new problem, in both frames.
+- **PR2:** the geometric mean of H2's price over the new problems is at most **0.90** (open choice 3). Each problem's price is the median of three counted runs.
+- **Beside them:** H2r's E4 and price, and the ratio of H2r's price to H2's.
+
+**The price protocol, revised.** The checks now ask whether the timing itself was disturbed (open choice 4).
+- **Time:** the classical expert's best time per piece at most 60 ms, with no lower edge. §11.17's lower edge voided two runs that were simply fast.
+- **Power:** AC, sampled every 5 s through the run, must hold throughout. Kernel-Power's events are recorded but not judged, since Id 105 fired twice in each of two runs while on AC.
+- **Sleep:** no gap longer than 30 s between the 5 s samples.
+- **Load:** the other processes' mean share of a core over the run is recorded, not judged. The evidence for this:
+  - void and counted runs gave similar geometric means in §11.17 (0.85–0.92);
+  - repetition spread cannot replace the load check: it was large in every run, the counted one included (median max/min 1.2–1.4), from warm-up.
+  - (Computed for this draft from §11.17's record.)
+- **Kept from §11.15:** 4 threads, best of 5 with the arms taking turns, three counted runs each in its own process, at most three re-runs, and every run kept.
+
+**The dry run, before pinning.**
+- The owner runs the revised protocol six times on §11.17's twelve problems, which have been read, outside the Claude app.
+- The protocol is pinned only if at least five of the six runs count. Otherwise its conditions are revised from the dry run's data and dry-run again.
+- The dry run also measures how far the geometric mean moves between runs. In §11.17 it moved by about ±0.035, while a single problem's price moved by up to 0.34.
+
+**The four choices, for the owner.**
+1. **The square path.** *Recommended:* H2, with H2r beside. Or H2 alone.
+2. **The problems.** *Recommended:* the generated layouts above. Or §11.15's six scenarios re-cut into squares, which is not a fair test since they have been read; or new scenarios drawn by hand.
+3. **PR2's bar.** *Recommended:* 0.90, as before. Or 0.80.
+4. **The load.** *Recommended:* recorded, not judged; time, power and sleep are judged. Or a load bar set from the dry run.
+
+**Predictions** (refutable). They were checked against each other: 1 implies 2, and 4 is 1's case for U alone.
+1. H2's energy error exceeds the floor by less than $10^{-4}$ (0.01 points) on every new problem, in both frames.
+2. So E4-H2 is met on every new problem.
+3. PR2 is met: H2's geometric mean is 0.65–0.85. H2r's is 0.30–0.60, and H2r is cheaper than H2 on every problem.
+4. U alone meets E4 on every layout without a round feature, and misses it on at least one with a ring.
+5. P-s0 errs above H2 on every new problem.
+
+**[AI Inference]:**
+- R2's accuracy is close to guaranteed by construction. On a square of one material, the plain square's operator is the piece's own, and only float32 rounding and the strips stand between U and the exact modes. So this registration mainly measures price, and whether U's form beats a lookup.
+- If H2r is cheaper, as predicted, the hybrid's square path should be reuse, not a network. A learned correction would then be worth building only for the pieces that are not squares. Plate-insert and fast-heat show that both U and the trained P-s0 fail there.
+- The generator draws layouts that suit the rule. Real outlines that do not cut into squares would leave more pieces to the classical solve, and save less. This registration does not measure that.
+
+**Cost.**
+- The laptop only: no box, no training, no money.
+- At acceptance: the generator, R2, H2r and the revised protocol as code; the dry run; the classical measurement.
+- The one evaluation: about 30–45 minutes, if most runs count.
 
 ---
 
