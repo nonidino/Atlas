@@ -2017,9 +2017,9 @@ Energy error in %, the steady problem as registered and the step lowered by 300 
    - Or kept `in progress`, re-scoped to the non-square pieces.
    - Or `done`, reading the hybrid as the row's "high modes computed classically". That is not recommended: the row asks for a form shown before training, and the hybrid sidesteps the head instead.
 
-### 11.20 The next registration, for W362: a learned correction on the pieces that are not squares (drafted, 2026-11-08; not registered)
+### 11.20 The next registration, for W362: a learned correction on the pieces that are not squares (drafted and accepted, 2026-11-08; not registered)
 
-**Status.** Drafted for the owner ("Draft it"). It answers [[gap-worklist]] W362. Nothing is built, measured, trained or rented. It has four open choices, each with a recommendation, and an untrained diagnostic comes first.
+**Status.** Drafted for the owner ("Draft it"). It answers [[gap-worklist]] W362. **The owner accepted it as drafted ("Accept as drafted"), with the recommended option of each of its four choices.** Accepting starts only the untrained diagnostic below; nothing is built, trained or rented, and the registration is finalised only after it.
 
 **What it would decide.** Whether a learned correction answers the pieces that R2 hands the classical solve, those that are not squares of one material, well enough for E4 and more cheaply than the classical solve on those pieces.
 
@@ -2089,6 +2089,44 @@ The predictions are drafted after the diagnostic, and before any training.
 **[AI Inference]:**
 - The evidence so far is against a learned head on general pieces (W358). A residual on U's form should be smaller on near-square pieces, but the curved ring pieces, where U alone misses by about 2.5%, are the hard case. The diagnostic decides whether to go on.
 - If the residual grows at corners as the head's quotient did, the honest outcome may be that the CO-D expert to keep is H2r, with no learning at all.
+
+**The untrained diagnostic (2026-11-08): the target pieces are as hard as Stage 0's, so the drafted residual is unlikely to meet E4.**
+- **What ran.** `scripts/chartop_w362_diagnose.py`, 267 s on the laptop. Record: `out/chartop/w362-diagnose.json`.
+  - U's form with zero heads, in its own configuration: the corner bubble and the strips, W358's candidate "C4 + C3", measured by W358's own code (`chartop_corner_controls.Piece`).
+  - Classical solves only, on pieces from seeds no registration draws and from benchmarks that have been read.
+- **The control:** on a square of one material, U's form is exact. Its $e_H$, the best smooth correction and the quotient are all 0.
+
+At $n$ = 32 / 64 / 128 (medians over each type's pieces):
+
+| piece type (count) | U's form, $e_H$ | the best smooth correction, $e_H$ | the quotient's peak |
+|---|---|---|---|
+| rectangle, aspect 0.9 (1) | 0.041 / 0.041 / 0.041 | 0.007 / 0.010 / 0.011 | 0.5 / 0.7 / 0.8 |
+| rectangle, aspect 0.7 (1) | 0.138 / 0.140 / 0.140 | 0.026 / 0.037 / 0.042 | 1.7 / 2.4 / 2.9 |
+| rectangle, aspect 0.5 (1) | 0.269 / 0.277 / 0.280 | 0.062 / 0.089 / 0.099 | 3.4 / 5.1 / 6.5 |
+| a hole's ring pieces (8) | 0.222 / 0.227 / 0.230 | 0.046 / 0.065 / 0.073 | 3.5 / 5.0 / 6.3 |
+| a round inclusion's rings (16) | 0.216 / 0.223 / 0.225 | 0.048 / 0.069 / 0.077 | 4.1 / 6.2 / 8.2 |
+| the held-out benchmarks' curved pieces (58) | 0.121 / 0.122 / 0.122 | 0.023 / 0.032 / 0.036 | 1.5 / 2.1 / 2.5 |
+| Stage 0's validation pieces (W358's record) | 0.200 / 0.202 / 0.219 | 0.044 / 0.061 / 0.071 | 4.2 / 6.8 / 9.4 |
+
+1. **How far U's form is.** Its $e_H$ rises as a piece departs from a square: 0.041 at aspect 0.9, 0.14 at 0.7, 0.28 at 0.5. It is 0.22–0.23 on the ring pieces and 0.12 on the curved benchmark pieces, about the same at every resolution.
+2. **The corner growth.** The quotient's peak grows with $n$ on every non-square type, by 1.6–2.0 times from $n=32$ to 128.
+   - That is far slower than W358's own quotient (16 → 89, 5.6 times), and close to its best candidate's on Stage 0's pieces (4.2 → 9.4, 2.2 times), which levelled off at $n=256$ (10.5).
+   - The best smooth correction's $e_H$ grows with $n$ too: on the rings, 0.046 → 0.073.
+3. **The repetition.** Reuse could answer none of the ring pieces, which repeat only by rotation. It could answer 89% of plate-insert's and fast-heat's non-square pieces, 71% of plate-hole's, 67% of bend-3's, 18% of insert-round's, and none of s-channel's.
+
+**What it means.**
+- **The pieces a learned correction would have to answer are as hard as Stage 0's validation pieces.** That holds on every measure: the rings at 0.23 / 0.073 / 6.3–8.2 against 0.22 / 0.071 / 9.4 at $n=128$.
+- **On those pieces, this form has been trained and failed.** The S arm, with the same corner bubble and strips, reached a median $e_H$ of 0.152 over its test pieces, not the smooth class's 0.07, and met E4 on no benchmark (§8.11).
+- **By the draft's own rule, the residual grows with $n$, so it is unlikely to meet E4,** and the draft is to be revised or stopped before any training. Nothing has been trained or rented.
+
+**[AI Inference]:**
+- A trained network reached about twice the smooth class's floor on Stage 0's pieces. On the rings, that would leave an $e_H$ near 0.15. U alone on those rings, at 0.23, already missed E4 by about 2.5%. So retraining the same form is unlikely to be enough.
+- Something other than a retrained head would be needed, for instance a principal part fitted to curved pieces. W358's frozen-coefficient candidate left an $e_H$ of 0.15 on Stage 0's pieces, against U's form's 0.22. Each such idea is its own draft with its own diagnostic.
+
+**The decision, the owner's:**
+1. *Recommended:* stop the drafted residual before any training. H2r stays the CO-D expert, with nothing learned, and W362 stays open for a revised idea.
+2. Revise first: draft a different correction for the curved pieces, with its own untrained diagnostic.
+3. Go on as drafted, to the generator and the training, accepting the risk.
 
 ---
 
