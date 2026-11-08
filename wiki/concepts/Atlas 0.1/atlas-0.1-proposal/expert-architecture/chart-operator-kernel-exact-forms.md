@@ -1606,7 +1606,8 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - **The revision was adopted the same day** ("Adopt it (Recommended)", in chat): each problem's measurements are counted on their own (below). The owner also moved the price to a rented whole machine, for the dry run and for the one evaluation's price runs ("Rent a temporary box", then "Box for both (Recommended)"). Both are written in `gates_squares.py` (`REVISED`) and the price script.
 - **The second dry run ran on 2026-11-08, on a rented Ryzen 9 5900X.** It met the bar with nothing to spare: fast-heat steady had exactly three counted measurements.
   - But numpy's OpenBLAS ran 24 threads by default there. That put the classical expert at the time bound, and it biased the price toward H2: 0.853 at the default threads, against 0.957 in one diagnostic run at four.
-  - So it is not pinned. Fixing the BLAS threads is proposed (below). Not hash-pinned.
+  - So it is not pinned. Not hash-pinned.
+- **The next revision is drafted for the owner** ("Draft it", 2026-11-08), and not adopted. It fixes the BLAS threads at four and checks them, sets a 35 ms bound for the box's CPU model, and adds an A/A check, with four open choices and a third dry run (below).
 
 **What it would decide.**
 - Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
@@ -1752,11 +1753,65 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - **The laptop's MKL moves too.** The same probe gave 35.8 and 38.7 ms a piece at the default threads, 28.9 and 28.7 at one, and 29.5 and 31.8 at four. A second probe at four threads, an hour later, gave 39.7 and 39.9, so the laptop's own figures moved by a third.
 - **Not pinned.** The bar was met, but the price it would certify is biased by a setting the protocol leaves free.
 
-**A proposed revision, not adopted.** It is the owner's call, and it would be dry-run again on the same CPU model.
-- **Fix the BLAS threads** at `PRICE_THREADS`, four, in every price run's process: `OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS` and `OMP_NUM_THREADS`, set before numpy loads, as torch's threads already are.
-- **Re-derive the time bound** for the machine that prices. At four BLAS threads the box took 22–24 ms a piece on the two probed problems, so a 60 ms bound would catch only a 2.5-fold slowdown.
-  - The bound would come from a calibration on the same CPU model, and a third dry run would test it, since a bar set after seeing data tests nothing.
-- **[AI Inference]:** on R2's new layouts, H2 is U alone on six of the eight. Fixing the BLAS makes the classical arm cheaper and leaves U's form as it is, so H2's price there should rise, as it did on §11.17's problems. Prediction 3's range of 0.65–0.85 was drafted from laptop measurements, before this was known.
+**The next revision, drafted for the owner (2026-11-08, "Draft it"); not adopted.** It fixes the BLAS threads and checks them, re-sets the time bound for the box, and adds an A/A check. A third dry run on the same CPU model would test it before any pin.
+
+**What the three records already show** (computed from them; the medians are over each record's runs):
+
+| | laptop, default MKL (6 runs) | box, default OpenBLAS (6 runs) | box, OpenBLAS at 4 (1 diagnostic run) |
+|---|---|---|---|
+| the classical expert's fastest time per problem (ms a piece) | 29.0–37.7 | 50.6–58.7 | 21.9–22.1 |
+| H2's price on the ten problems with no square | 0.969–1.184 | 0.966–1.013 | 0.997–1.007 |
+| H2's price on heated-strip, all squares | 0.89–0.90 | 0.40 | 0.75–0.78 |
+| H2r's price on heated-strip | 0.38–0.42 | 0.21–0.23 | 0.32–0.34 |
+
+- **An A/A control is already inside the dry run.** On the ten problems with no square, R2 hands the classical solve every piece, so H2 does exactly the classical expert's work, and its price should be 1. At four BLAS threads it held to within 0.007.
+- **The default threads' bias lives where U's form replaces classical work.** On heated-strip they halved H2's price, from 0.75–0.78 to 0.40.
+- **At four threads the box's classical time was flat:** 21.9–22.1 ms a piece on all twelve problems, in one run.
+- **There is a precedent in the code.** Stage 0's price script already sets one BLAS thread per worker before the workers load numpy (`scripts/chartop_price.py`), after 63 workers of 64 OpenBLAS threads each failed to start on a 64-CPU box.
+
+**The revision.**
+1. **The BLAS threads, fixed** at `PRICE_THREADS`, four, in every price run's process. `OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS` and `OMP_NUM_THREADS` are set in the environment `spawn` gives the run, before numpy loads. This touches only the price runs: the evaluation's accuracy and its bit-for-bit control run in the process they always ran in.
+2. **Checked, not trusted.** Each price run records threadpoolctl's report of every thread pool: its API, library, version and thread count, with no file path. It refuses to time if a BLAS pool runs other than four threads. A refusal is an error, not a void run. The runner installs threadpoolctl 3.5.0, the laptop's.
+3. **The time bound, 35 ms a piece,** for the pricing machine's CPU model. That is the headroom the laptop's 60 ms had over its slowest problem, 1.59 times, applied to the box's 22.1 ms at four threads. It keeps the bound's sensitivity: on the laptop, 60 ms caught plate-hole's 1.7- and 2.0-fold slowdowns.
+4. **An A/A check in the dry run.** On the ten problems with no square, H2's median of its first three counted measurements must lie within $1 \pm 0.03$.
+   - The tolerance separates the three records: at four threads the worst deviation was 0.007, at the box's default 0.034, on the laptop 0.184.
+   - It is set after seeing them, so only the third dry run tests it.
+   - The dry run passes only if every problem has three counted measurements within six runs, and the A/A check holds.
+5. **An A/A check in the evaluation** (open choice 3). Wall-2's steady and step problems, which have been read and have no square, would be priced in every evaluation price run beside the new problems. PR2 would be judged only if both hold the A/A check.
+- **The code it would touch:**
+  - `gates_squares.py`: the thread count, the bound, the A/A tolerance and the dry run's bar.
+  - `scripts/chartop_price_squares.py`: `spawn`'s environment, the thread check and its record, and the control problems.
+  - The runner, and their tests.
+
+**The open choices,** each with a recommendation:
+1. **The BLAS threads.**
+   - *Recommended:* four, as torch's, so that every arm has the same budget.
+   - Or one: the classical expert was as fast or faster at one thread on both machines (the box 23.3 and 21.6 ms against 24.3 and 22.4; the laptop 28.9 and 28.7 against 29.5 and 31.8).
+2. **The time bound.**
+   - *Recommended:* 35 ms, the laptop's headroom over its slowest problem.
+   - Or keep 60 ms, which at four threads catches only a 2.7-fold slowdown.
+3. **The A/A check.**
+   - *Recommended:* in the dry run, and in every evaluation price run through wall-2's two problems.
+   - Or in the dry run only.
+   - Or not at all.
+4. **Prediction 3** (H2's geometric mean 0.65–0.85 on the new problems, H2r's 0.30–0.60).
+   - *Recommended:* keep it as registered, and judge it as it stands. It was drafted before the BLAS finding was known. Heated-strip, where H2 is U alone on squares as on six of the eight new layouts, gave 0.75–0.78 and 0.32–0.34 at four threads, inside both ranges.
+   - Or restate it for the box.
+
+**The third dry run.**
+- Six runs on §11.17's twelve problems, on a whole Ryzen 9 5900X machine: machine 71957 if it is free, otherwise another host of the same model. Three hosts of that model were listed on 2026-11-08, at \$0.094, \$0.114 and \$0.138/h.
+- About 25 minutes and \$0.05: a run took 117 s at four threads, against about 300 s at the default.
+
+**Predictions for it** (refutable). They were checked against each other: 3 and 4 bound the geometric mean to 0.93–0.98, which contains 5. And 2 follows from 1 unless a run fails its sleep check, the one run-wide check the box can fail.
+1. At four BLAS threads, every problem's classical best time is 20–26 ms a piece in every run.
+2. At most two of the 72 measurements are void, so every problem has its three counted measurements within the first five runs.
+3. On each of the ten problems with no square, H2's median of three lies in 0.98–1.02.
+4. On heated-strip, H2's median of three lies in 0.70–0.82, and H2r's in 0.28–0.38.
+5. H2's geometric mean of medians over the twelve problems lies in 0.94–0.97.
+
+**[AI Inference]:**
+- On six of R2's eight new layouts H2 is U alone, as on heated-strip. If they price like heated-strip did at four threads, H2's price there would sit near 0.75–0.80, under PR2's 0.90. But they are other layouts, and only the one evaluation measures them.
+- The box's own default made H2 look twice as cheap on squares. A protocol that leaves any thread pool free prices the configuration as well as the arms.
 
 **The four choices, settled by the owner on 2026-11-08** ("Accept as drafted": the recommended option of each).
 1. **The square path.** *Recommended, and chosen:* H2, with H2r beside. Or H2 alone.
