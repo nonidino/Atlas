@@ -1973,6 +1973,50 @@ Energy error in %, the steady problem as registered and the step lowered by 300 
 - H2r's 0.306 sat just inside prediction 3's lower edge of 0.30.
 - The price was measured on another host of the model than the dry runs (26 against 22 ms a piece). The registration fixes the CPU model, not the host.
 
+**Closing W356, W357 and W358: drafted for the owner (2026-11-08, "Draft the closures"); not adopted.** Each row is read against its own definition of done in [[gap-worklist]].
+
+**W356, the trained modes break the constant → `done`** (recommended).
+- **Its definition:** an output form that reproduces the operator's kernel exactly whatever the weights, and a registered measure that weights the kernel as the coupled answer does, trained and judged against bars registered before training.
+- **The evidence:**
+  - The kernel-exact form (§3) and the measure $e_K$ (§5) were trained (§8.9) and judged once (§8.11, 2026-10-19).
+  - **K** was met on every run and piece: $e_K\le1.1\times10^{-15}$ and $e_{K,\infty}\le4.4\times10^{-16}$, over 2,400 test pieces and every benchmark piece.
+  - **D** was met on every run and problem: the ratio within $3.4\times10^{-12}$ of one.
+- The accuracy gates that failed there, E1, E4 and KT, are W358's subject, not this row's.
+- **The row's closing text:** "→ **`done`** (2026-11-08, on the owner's yes in chat): its definition is met. Trained and judged against bars registered before training, K was met on every run and piece ($e_K\le1.1\times10^{-15}$) and D on every problem (within $3.4\times10^{-12}$), in the one evaluation of 2026-10-19 (§8.11); the accuracy gates that failed there are W358's." The board reads `done`.
+
+**W357, the modes see the load → `done`** (recommended).
+- **Its definition:** a mode network without the load channel, beside a particular-field network with it.
+- **The evidence:**
+  - The split form (§4) was built as the row asks, then trained and judged (§8.11).
+  - **L** was met: the modes and the level field were bit for bit the same with the piece's own source, with none and with a random one. That held on every benchmark piece of every run, and on S's first 100 test pieces.
+- **The row's closing text:** "→ **`done`** (2026-11-08, on the owner's yes in chat): built as the row asks (§4), and trained, the modes and the level field were the same for any load, bit for bit, on every benchmark piece of every run and on S's first 100 test pieces (L, met, §8.11)." The board reads `done`.
+
+**W358, the bubble form's corner growth → `closed`, superseded** (recommended), with a new row for what is left.
+- **Its definition:** an output form or principal part without the corner growth, shown on validation pieces before any training run. It is not met.
+  - The corner bubble with strips levelled the peak off (9.4 → 10.5 from $n=128$ to 256, §10).
+  - Trained, the registration's arms met E4 on none of the six benchmarks, and the bubble with strips tied its control: CW asks whether they help, and read 1.040 and 0.990 (§8.11). The registrations after it did not remove the growth either (§11.10, §11.17).
+- **But its purpose is met another way.** A CO-D expert meeting E4 and the price bar on new problems is rule R2's hybrid H2, which met E4-H2 on 16 of 16 and PR2 at 0.726 with nothing learned (above).
+  - On a square of one material, U's form is the exact answer, so no head output is needed there.
+  - Every other piece goes to the classical solve.
+- So `closed`, not `done`: the form the row asked for does not exist, and the goal no longer needs it on these layouts.
+- **The row's closing text:** "→ **`closed`** (2026-11-08, on the owner's yes in chat), superseded. No candidate form removed the corner growth: the bubble with strips levelled it off, but trained it tied its control (CW, §8.11), and no arm met E4 on a benchmark. The goal it served is met without a learned head: rule R2's hybrid met E4-H2 on 16 of 16 and PR2 at 0.726 (§11.19). What is left for learning, the pieces that are not squares, is W362." The board reads `closed`.
+
+**W362, the pieces that are not squares → `open`** (recommended, new, under Tier 90).
+- **Its problem:** on the square-first layouts H2 needs no network.
+  - Reuse priced 2.4 times below U's form on the same squares, and was as exact.
+  - U alone missed E4 only where it answered the holes' ring pieces (2.77% and 2.15%), which H2 hands the classical solve.
+  - So a learned expert can earn a place only on pieces that are not squares.
+- **Its definition of done:** a registration on layouts whose outlines do not cut into squares. In it, a learned correction on the non-square pieces must meet E4 at a price below the classical solve's on those pieces, against bars registered before training.
+
+**The open choices,** each with a recommendation:
+1. **W356.** *Recommended:* `done`, as above. Or kept `in progress`.
+2. **W357.** *Recommended:* `done`, as above. Or kept `in progress`.
+3. **W358.**
+   - *Recommended:* `closed`, superseded, with W362 opened for the non-square pieces.
+   - Or `closed` without W362.
+   - Or kept `in progress`, re-scoped to the non-square pieces.
+   - Or `done`, reading the hybrid as the row's "high modes computed classically". That is not recommended: the row asks for a form shown before training, and the hybrid sidesteps the head instead.
+
 ---
 
 ## See Also
