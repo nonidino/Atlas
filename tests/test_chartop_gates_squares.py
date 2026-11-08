@@ -9,6 +9,7 @@ import ast
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 from types import SimpleNamespace
@@ -291,4 +292,5 @@ def test_a_price_run_in_its_own_process(tmp_path):
     m = rec["machine"]
     assert m["cpu"] and m["cpu"] != "unknown" and m["cpu_sources"]["cpu_count"] >= m["available_cpus"] >= 1
     assert m["torch"] == __import__("torch").__version__ and not {"host", "hostname", "node"} & set(m)
+    assert rec["code"] is None or re.fullmatch(r"[0-9a-f]{40}(\+dirty)?", rec["code"])      # None off git
     assert list(rec["problems"]) == ["workbench wall-2 steady", f"squares {TEST_SEED + 3} step"]

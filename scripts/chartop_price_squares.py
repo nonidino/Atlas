@@ -118,6 +118,24 @@ def cpu_model() -> str:
     return platform.processor() or "unknown"
 
 
+def code_identity():
+    """The commit the code came from: the payload's ``IDENTITY`` on a box
+    (`chartop_price_box_payload`), else git's HEAD here, marked ``+dirty`` when ``atlas/`` or
+    ``scripts/`` differ from it; None when neither can say."""
+    path = os.path.join(ROOT, "IDENTITY")
+    if os.path.exists(path):
+        return open(path, encoding="utf-8").read().strip()
+    try:
+        head = subprocess.run(["git", "-C", ROOT, "rev-parse", "HEAD"], capture_output=True, text=True, timeout=60)
+        dirty = subprocess.run(["git", "-C", ROOT, "status", "--porcelain", "--untracked-files=no", "--",
+                                "atlas", "scripts"], capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if head.returncode != 0 or dirty.returncode != 0:
+        return None
+    return head.stdout.strip() + ("+dirty" if dirty.stdout.strip() else "")
+
+
 def machine() -> dict:
     """What a price run ran on.  No host name and no process: the record is public."""
     import scipy
@@ -211,7 +229,7 @@ def price_run2(k: int, threads: int, reps: int, specs: list, n: int, out_dir: st
            "load_max": float(max(x["other_core_max"] for x in s)),
            "max_gap_s": max(state["sample_gaps_s"], default=0.0),
            "power_events": EH.power_events(start, end), "problems": prices,
-           "counts": GS.run_counts2(state)}
+           "counts": GS.run_counts2(state), "code": code_identity()}
     registry.write_atomic(os.path.join(out_dir, f"price-run-{k}-threads{threads}.json"),
                           json.dumps(ev0.strip(rec), indent=1).encode("utf-8"))
     return rec
@@ -288,7 +306,7 @@ def dry_run(specs: list, n: int, reps: int, runs: int, out: str) -> dict:
     gm = {arm: [geomean([v[f"price_{arm}"] for v in r["problems"].values()]) for r in recs] for arm in ("H2", "H2r")}
     registered = (n, reps, runs) == (GS.BENCHMARK_N, GS.PRICE_REPS, GS.DRY_RUNS)
     res = {"written": time.strftime("%Y-%m-%d %H:%M:%S"), "registration": GS.REGISTERED,
-           "machine": recs[0]["machine"] if recs else None,
+           "machine": recs[0]["machine"] if recs else None, "code": code_identity(),
            "problems": [spec_key(s) for s in specs], "n": n, "reps": reps, "runs": recs,
            "tally": t, "run_of_third_count": third,
            "passes": GS.dry_run_passes(counts) if registered else None,
