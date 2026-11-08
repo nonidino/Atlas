@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08). §11.19 is its one evaluation's script and the one evaluation: both gates met, every prediction held, with nothing learned.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08). §11.19 is its one evaluation's script and the one evaluation: both gates met, every prediction held, with nothing learned. §11.20 drafts the next registration, for W362: a learned correction on the pieces that are not squares.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -2016,6 +2016,79 @@ Energy error in %, the steady problem as registered and the step lowered by 300 
    - Or `closed` without W362.
    - Or kept `in progress`, re-scoped to the non-square pieces.
    - Or `done`, reading the hybrid as the row's "high modes computed classically". That is not recommended: the row asks for a form shown before training, and the hybrid sidesteps the head instead.
+
+### 11.20 The next registration, for W362: a learned correction on the pieces that are not squares (drafted, 2026-11-08; not registered)
+
+**Status.** Drafted for the owner ("Draft it"). It answers [[gap-worklist]] W362. Nothing is built, measured, trained or rented. It has four open choices, each with a recommendation, and an untrained diagnostic comes first.
+
+**What it would decide.** Whether a learned correction answers the pieces that R2 hands the classical solve, those that are not squares of one material, well enough for E4 and more cheaply than the classical solve on those pieces.
+
+**What is known already** (no new measurement):
+- **On squares of one material, U's form is exact.** H2 was within $2.8\times10^{-8}$ of the floor (§11.19), and reuse answered the same squares at 0.42 of U's form's price.
+- **On rectangles of aspect 0.75–0.875, U's form is exact only sometimes.** It held E4 at plate-hole's sides, but missed it at the corners of a copper insert and a copper spreader, by 2.13–2.60%, where the field is far from bilinear (§11.17).
+- **On the holes' Winslow ring pieces, U alone missed E4,** by 2.77% and 2.15% (§11.19).
+- **The trained arms so far met E4 on few benchmarks.** Their heads met the corner growth: the quotient a head must output peaks next to a corner and grows with $n$ (W358, closed as superseded).
+- **A training run has cost \$1.05–2.17 on rented boxes** (§8.9, §11.8). The credit is \$9.29.
+
+**What a learned correction must beat.**
+- **The classical solve on the same pieces:** about 22–26 ms a piece at $n=64$ on the 5900X, at four BLAS threads.
+- **Reuse, wherever pieces repeat.** Reuse needs one classical solve per class of congruent pieces, so a layout cut into identical pieces leaves a network nothing to win.
+- **[AI Inference]:** a learned correction can earn its place only on pieces that do not repeat: curved or irregular pieces, each of its own class.
+
+**The arm, H3** (open choice 1).
+- On squares of one material, and on every class of pieces that repeats: reuse, H2r's path.
+- On every other piece: U's form plus a learned correction, the network's output a residual on U's form.
+  - It keeps the kernel-exact constraint (W356), so a uniform temperature stays a fixed point whatever the weights.
+  - Where the envelope refuses a piece, the classical solve answers it instead.
+- Then the coupled solve.
+- **Beside it, not judged:** H2r (reuse, and the classical solve on the rest), the baseline H3 must beat on price; and U alone.
+
+**The layouts** (open choice 2).
+- Generated plates whose outlines do not cut into squares: holes and round inclusions of drawn radii and centres, cut into curved pieces that do not repeat.
+- They come from a registered generator with registered seeds, measured with the classical solver only before pinning, as R2's were.
+
+**Training** (open choice 4).
+- On generated pieces of the classes the layouts hold, from fresh training seeds. The existing validation split serves for checks, and the test split is fresh.
+- One run per arm on a rented GPU box, with the owner's approval.
+
+**The gates.**
+- **E4-H3:** H3 meets E4 on every new problem, in both frames, as registered and lowered by 300 K.
+- **PR3:** on the pieces H3's correction answers, the geometric mean over the new problems of the correction's price, $(t_U+t_{\text{corr}})/t_C$ on those pieces, is at most **0.90** (open choice 3).
+- The price protocol is R2's: four threads for torch and the BLAS, checked; the A/A controls; the 5900X.
+
+**First, an untrained diagnostic on validation pieces.** It is not a gate, and runs before the registration is finalised. It answers three questions:
+1. How far U's form is from the classical response on the layouts' non-square classes, by piece type (aspect, curvature, the ring pieces), as $e_H$ and as the coupled error on validation layouts.
+2. Whether that residual peaks next to a corner and grows with $n$, as W358's quotient did.
+   - If it does, a residual form is unlikely to meet E4. The draft is then revised, or stopped, before any training.
+3. How much the pieces repeat in drawn layouts: the share reuse would answer.
+
+The predictions are drafted after the diagnostic, and before any training.
+
+**The four choices,** each with a recommendation:
+1. **The correction's form.**
+   - *Recommended:* a residual on U's form, kernel-exact.
+   - Or a full response from the trained P-s0 or S: no training, a baseline.
+   - Or none: register reuse alone on the new layouts, with no learning.
+2. **The layouts.**
+   - *Recommended:* curved outlines whose pieces do not repeat.
+   - Or rectangles of drawn aspects, which reuse would mostly answer.
+   - Or both, reported apart.
+3. **PR3's bar.**
+   - *Recommended:* 0.90 on the corrected pieces, as PR2's.
+   - Or a whole-problem bar against H2r.
+4. **The training budget.**
+   - *Recommended:* one arm, one run, a ceiling of \$5.
+   - Or two arms, with and without strips, a ceiling of \$10.
+
+**Cost.**
+- The diagnostic: the laptop, minutes.
+- The generator and the classical measurement: the laptop.
+- The training: \$1–5 on rented boxes.
+- The price dry run and the one evaluation: the 5900X, about \$0.05 each.
+
+**[AI Inference]:**
+- The evidence so far is against a learned head on general pieces (W358). A residual on U's form should be smaller on near-square pieces, but the curved ring pieces, where U alone misses by about 2.5%, are the hard case. The diagnostic decides whether to go on.
+- If the residual grows at corners as the head's quotient did, the honest outcome may be that the CO-D expert to keep is H2r, with no learning at all.
 
 ---
 
