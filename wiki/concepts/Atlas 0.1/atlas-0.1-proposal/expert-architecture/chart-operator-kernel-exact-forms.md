@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14: accepted by the owner and hash-pinned, not yet evaluated. §11.16 is its evaluation's script, written and tested, not run.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1331,7 +1331,7 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
 - Every piece the rule hands to the classical solve eats into the saving. So does the form's own cost without networks, 0.40–0.62 of the classical responses (§11.13).
 - These are the same problems the rule was drawn from, so this is not a fair test of it. A fair one would pin the rule and a price bar, then judge them on problems none of §11.11–11.14 has read. (§11.15 drafts one.)
 
-### 11.15 The next registration: the fixed rule and a price bar, accepted and hash-pinned (2026-11-07), not yet evaluated
+### 11.15 The next registration: the fixed rule and a price bar, accepted and hash-pinned (2026-11-07), evaluated once (§11.17)
 
 **Status.**
 - Drafted for the owner ("Draft it", commit 6d1b9ca). **The owner accepted it in chat on 2026-11-07 ("Accept as drafted"), with the recommended option of each of its three choices** (below).
@@ -1343,7 +1343,8 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
   - By value, it records U's form, the rule's picks and the classical floors on each new problem, the time steps and the price's protocol.
   - Before writing, the pin checked that the classical record passes its own controls and still describes these problems: all twelve fingerprints match.
   - The pin test fails when it should: one byte added to `benchmarks_workbench.py` failed it, and the original bytes passed again.
-- **The one evaluation's script** is written and tested, not run (§11.16).
+- **The one evaluation's script** is written and tested (§11.16).
+- **The one evaluation ran on 2026-11-07/08** (§11.17). E4-H is not met, 9 of 12; PR is not judged, since one price run of six counted. Predictions 1–3 held; 4 and 5 were refuted.
 
 **What it would decide.** Whether §11.14's rule, fixed after three layouts, keeps E4 on layouts it has never seen, at a saving worth having. If it does, the hybrid is the CO-D expert that a learned correction has to beat, on E4 and on price.
 
@@ -1482,7 +1483,7 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
 
 ### 11.16 The one evaluation's script: written and tested, not run (2026-11-07)
 
-**The owner's go:** "Write it". Script: `scripts/chartop_evaluate_hybrid.py`. Tests: 16, in `tests/test_chartop_evaluate_hybrid.py`.
+**The owner's go:** "Write it". Script: `scripts/chartop_evaluate_hybrid.py`. Tests: 16, in `tests/test_chartop_evaluate_hybrid.py`. The owner ran it once, outside this session (§11.17).
 
 **What it does, in order.** Every bar is `gates_hybrid`'s.
 0. It refuses unless all ten files the pin records hash as recorded, and unless the one evaluation has not yet run.
@@ -1514,6 +1515,81 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
 - Sampled every 5 s for a minute while this session sat idle, the busiest other process used a median of 11% of a core and at most 46%. Six samples of twelve were above the 10% bar.
 - The busiest were the Claude app hosting this session and the operating system's own process; earlier, while commands ran, the antivirus too.
 - So if the one evaluation runs from this session, most price runs may be void, and PR may go unjudged.
+
+### 11.17 The one evaluation (2026-11-07/08)
+
+**The owner's go:** "I'll run it myself". The owner ran it outside this session, after §11.16's advice.
+
+**The run.**
+- `scripts/chartop_evaluate_hybrid.py` ran once on the laptop, 23:11–00:22 (2,740 s). Record: `out/chartop/evaluation-hybrid-20261107-231105.json` and `.txt`.
+- The pin held, all ten files. On every piece of every problem, in both frames, H's stand-in answered U's bits.
+- **The control reproduced bit for bit** on all six of §11.14's problems: H's energy errors as §11.14's record has them, and P-s0's as the one evaluation's.
+- On every new problem the rule picked the pieces the classical record holds.
+
+**The verdicts.**
+- **E4-H: not met, 9 of 12.** H misses E4's energy bar on plate-insert's steady problem (2.29%), on fast-heat's (2.13%) and on fast-heat's step lowered by 300 K (2.60%). Every max error is well inside its bar.
+- **PR: not judged.** Only one price run of six counted (below), and PR needs three.
+- **The registered outcome is therefore "E4-H not met":** the rule is not used as it stands.
+
+Energy error in %, steady as registered and steps lowered by 300 K; ✓ where E4 is met in both frames. The prices are run 6's, the one run that counted; they are not a verdict.
+
+| problem | classical floor | H | U, every piece | P-s0 | H's price, run 6 |
+|---|---|---|---|---|---|
+| wall-2 steady | 0.392 | 0.400 ✓ | 8.73 | 8.14 | 1.11 |
+| wall-2 step | 0.246 | 0.285 ✓ | 6.30 | 5.65 | 0.97 |
+| heated-strip steady | 0.938 | 0.938 ✓ | 0.938 ✓ | 1.48 ✓ | 0.93 |
+| heated-strip step | 0.309 | 0.309 ✓ | 0.309 ✓ | 1.95 ✓ | 0.93 |
+| plate-insert steady | 0.810 | **2.29** | 2.67 | 2.06 | 0.88 |
+| plate-insert step | 0.223 | 0.865 ✓ | 1.78 ✓ | 2.16 | 0.86 |
+| fast-heat steady | 0.760 | **2.13** | 4.14 | 2.83 | 0.72 |
+| fast-heat step | 0.675 | **2.60** | 3.33 | 2.76 | 0.80 |
+| bimetal-arc steady | 0.692 | 0.732 ✓ | 2.92 | 3.66 | 0.79 |
+| bimetal-arc step | 0.344 | 0.997 ✓ | 2.50 | 2.93 | 0.92 |
+| plate-hole steady | 0.025 | 0.641 ✓ | 4.67 | 3.35 | 0.93 |
+| plate-hole step | 0.024 | 0.801 ✓ | 2.26 | 2.21 | 0.92 |
+
+E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
+
+**The predictions.** Three held, two were refuted.
+1. **Held.** On heated-strip, U alone is at the classical floor to $10^{-9}$, steady and step, in both frames.
+2. **Held.** On wall-2, heated-strip, bimetal-arc and plate-hole, H's largest excess over the floor is 0.78 points (plate-hole's step), under the 1-point bound.
+3. **Held.** H's largest steady excess is on plate-insert (1.48 points), then fast-heat (1.37).
+4. **Refuted:** PR was not judged. The one counted run's geometric mean, 0.894, also lies outside the predicted 0.70–0.88.
+5. **Refuted:** P-s0 is below H on plate-insert's steady problem (2.06% against 2.29%). It does meet E4 on fewer problems, 2 against H's 9.
+
+**The price runs.** Every run is kept; only a counted run is evidence. Each started on a quiet reading, after a wait of 32–47 s.
+
+| run | counted | why not |
+|---|---|---|
+| 1 | no | another process at 18% of a core at its end; the classical expert at 29.7 ms a piece on wall-2's steady problem, under the band |
+| 2 | no | two power-source events (Id 105) in its window, though on AC at its start and end; another process at 31% at its start |
+| 3 | no | another process at 22% at its start |
+| 4 | no | two power-source events (Id 105) |
+| 5 | no | another process at 35% at its end; the classical expert at 28.3 ms a piece on wall-2's step, under the band |
+| 6 | **yes** | |
+| one thread, beside | yes | |
+
+- **Run 6:** H's geometric mean 0.894, P-s0's 1.29. The classical expert took 36.5–41.4 ms a piece. The run at one thread, beside: 0.932 and 1.75.
+- Over all six runs, void ones included, H's geometric mean ranged 0.85–0.92. That is not a verdict: under the registration a void run is not evidence.
+- **On wall-2 the hybrid cost more than the classical solve** (1.11 steady). With 2 of its 4 pieces classical, the form on the other two cost more than the classical solve would have.
+
+**What it shows.**
+1. **The rule failed where the registered argument said it might.** All three misses are on plate-insert and fast-heat. Their U pieces include rectangles of aspect 0.75–0.875 at the corners of a copper insert or spreader, and prediction 3 named those two problems in advance. Where U's pieces were squares (heated-strip), U alone matched the classical floor to rounding, as prediction 1 said.
+2. **The registered outcome, "E4-H not met", stands:** the rule is not used as it stands. Read against predictions 2 and 3, the criterion it lacks is the piece's shape.
+3. **The price is unjudged.** The protocol's conditions held in one run of six on this laptop.
+4. **The trained P-s0 does worse than the untrained form on the squares:** 1.48% and 1.95% on heated-strip, where U sits at the floor. It meets E4 on 2 problems of 12.
+
+**What went wrong with the price protocol.** These are lessons, not verdicts.
+- The time band's lower edge, 30 ms a piece, voided two runs in which the smallest problem, wall-2's 4 pieces, simply ran fast (28–30 ms). The band was set from §11.13–11.14's larger problems. It should have bounded slowness only.
+- Kernel-Power's Id 105 fired twice in each of two runs while the laptop stayed on AC. On this laptop it does not mean only unplugging.
+- Another process went above 10% of a core in four runs of six.
+- The conditions were pinned without a dry run of how often they hold on this machine; §11.16's came after the pin. The one evaluation took 46 minutes against the 15–25 estimated, mostly in six price runs instead of three.
+
+**[AI Inference]:**
+- §11.15's mechanism survived its test: the squares were exact, and the misses fell on non-square pieces at material corners.
+- A next rule would add a criterion on shape. For example: the classical solve on every piece that touches a corner of a material inclusion, or whose aspect lies outside a band; or a layout that cuts such regions into squares. Any such rule is new and needs its own fair test.
+- Every piece it adds costs price. On this laptop the hybrid saved about 10% at best (run 6's 0.894), and on wall-2 it saved nothing, so a safer rule may save nothing at all.
+- A future registration's validity conditions should be dry-run on the target machine before pinning, with only an upper bound on time.
 
 ---
 

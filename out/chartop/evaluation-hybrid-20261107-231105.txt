@@ -1,0 +1,9 @@
+HYBRID    scenario       E% steady / step:  H              floor          U              P-s0           E4 H U P    price
+          wall-2         0.400 / 0.285  0.392 / 0.246  8.733 / 6.303  8.139 / 5.645  YY nn nn  1.11 / 0.97
+          heated-strip   0.938 / 0.309  0.938 / 0.309  0.938 / 0.309  1.481 / 1.953  YY YY YY  0.93 / 0.93
+          plate-insert   2.293 / 0.865  0.810 / 0.223  2.668 / 1.784  2.055 / 2.155  nY nY nn  0.88 / 0.86
+          fast-heat      2.125 / 2.595  0.760 / 0.675  4.139 / 3.329  2.826 / 2.760  nn nn nn  0.72 / 0.80
+          bimetal-arc    0.732 / 0.997  0.692 / 0.344  2.917 / 2.498  3.659 / 2.926  YY nn nn  0.79 / 0.92
+          plate-hole     0.641 / 0.801  0.025 / 0.024  4.672 / 2.263  3.345 / 2.214  YY nn nn  0.93 / 0.92
+          E4-H not met (9 of 12); PR not judged; outcome: E4-H not met
+          predictions held: 1 Y, 2 Y, 3 Y, 4 n, 5 n

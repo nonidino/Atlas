@@ -1,0 +1,5357 @@
+{
+ "written": "2026-11-08 00:22:44",
+ "stamp": "20261107-231105",
+ "registration": "accepted by the owner on 2026-11-07, in chat ('Accept as drafted'), as drafted in chart-operator-kernel-exact-forms section 11.15 (commit 6d1b9ca), with its three recommended choices; hash-pinned with the owner's approval the same day ('Pin it'), before any expert but the classical one read the new problems",
+ "registered_run": true,
+ "pins": {
+  "atlas/chartop/gates_hybrid.py": "319926b8d519bcf7a2ad737e8fac7f82d008ff5747d880beb0a4666d6269f582",
+  "atlas/chartop/benchmarks_workbench.py": "9771a989bfe199a18aaad0490f6d04be4df58024e4c881ebefbe90fd9cacd4b7",
+  "atlas/chartop/forms.py": "2b95385c6493fe4ace951513050cb5d5d663106b3cfc29cd468c6f5357980755",
+  "atlas/chartop/host.py": "fc1c30f64b35757296e12131cad489e7ea903b3352181464aeb78cf1244a8d24",
+  "out/chartop/registration-hybrid.json": "56f95685eee0423d41266c6856889edef3362d1dbd90cece053cb45b5171dbe2",
+  "atlas/chartop/gates_forms.py": "94f29f2738733d36426894a0a5ea7bf2a2d302a482de75a28e4c655dd77a7757",
+  "atlas/chartop/gates.py": "b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099",
+  "atlas/chartop/gates_prior.py": "baadad040504e7d06fb6c25bf7bca713be75c9a64a3a1c44da1a9e58c2364ac0",
+  "atlas/chartop/benchmarks.py": "fc3f213e1e28c69f493e76224b22ddf36440b10bf0bb135e057bc8c12469f5c0",
+  "out/chartop/forms-diagnose-h3.json": "4d57309ee2542d905d63d8a114d329d9397030fa9130f136f3e461be6a61aa67"
+ },
+ "script_sha256": "84177f25aaca6d0c78eb26f8e940536c167a96facd99a4ab2d8909ce48e73445",
+ "diagnose_script_sha256": "b766effb756aca8b042d75cc7f7f4520b70bae25baf66294d3b4e72bbb5c86e8",
+ "torch": "2.7.1+cpu",
+ "torch_threads_accuracy": 4,
+ "platform": "Windows-11-10.0.26300-SP0",
+ "P-s0 sha256": "21e93b66f3b296fa1ddb29a9c2d5c40bff14b82eed57103b27dab35b7094e1d3",
+ "n": 64,
+ "control": {
+  "bend-3 steady": {
+   "H": [
+    0.00093692015112587,
+    0.000936920151109062
+   ],
+   "H equals section 11.14's": true,
+   "P-s0 equals the one evaluation's": true
+  },
+  "bend-3 step": {
+   "H": [
+    0.00044629938849503615,
+    0.003981097586283085
+   ],
+   "H equals section 11.14's": true,
+   "P-s0 equals the one evaluation's": true
+  },
+  "s-channel steady": {
+   "H": [
+    0.010018877471449368,
+    0.01001887747139302
+   ],
+   "H equals section 11.14's": true,
+   "P-s0 equals the one evaluation's": true
+  },
+  "s-channel step": {
+   "H": [
+    0.0016117532410631543,
+    0.015485945357321514
+   ],
+   "H equals section 11.14's": true,
+   "P-s0 equals the one evaluation's": true
+  },
+  "insert-round steady": {
+   "H": [
+    0.000431343761912075,
+    0.00043134376189752846
+   ],
+   "H equals section 11.14's": true,
+   "P-s0 equals the one evaluation's": true
+  },
+  "insert-round step": {
+   "H": [
+    5.775366540788138e-05,
+    0.0003967190966710778
+   ],
+   "H equals section 11.14's": true,
+   "P-s0 equals the one evaluation's": true
+  }
+ },
+ "accuracy": {
+  "wall-2 steady": {
+   "frames": {
+    "registered": {
+     "floor": 0.003921118681734463,
+     "floor_max": 0.03813904485787134,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.003995234043695099,
+       "max_err": 0.03813904485787134,
+       "span": 130.0,
+       "floor_max": 0.03813904485787134
+      },
+      "U": {
+       "energy_rel": 0.0873323075544526,
+       "max_err": 0.9437614908521255,
+       "span": 130.0,
+       "floor_max": 0.03813904485787134
+      },
+      "P-s0": {
+       "energy_rel": 0.0813931984135408,
+       "max_err": 0.7668491690913015,
+       "span": 130.0,
+       "floor_max": 0.03813904485787134
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.003921118681738912,
+     "floor_max": 0.03813904485787134,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.0039952340436973845,
+       "max_err": 0.03813904485787134,
+       "span": 130.0,
+       "floor_max": 0.03813904485787134
+      },
+      "U": {
+       "energy_rel": 0.08733230755461116,
+       "max_err": 0.9437614908751821,
+       "span": 130.0,
+       "floor_max": 0.03813904485787134
+      },
+      "P-s0": {
+       "energy_rel": 0.08139319841357648,
+       "max_err": 0.7668491691088684,
+       "span": 130.0,
+       "floor_max": 0.03813904485787134
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.003995234043695099,
+      "max_over_range": 0.00029337726813747185,
+      "floor_max_over_range": 0.00029337726813747185,
+      "bar_max_over_range": 0.010293377268137472
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.0039952340436973845,
+      "max_over_range": 0.00029337726813747185,
+      "floor_max_over_range": 0.00029337726813747185,
+      "bar_max_over_range": 0.010293377268137472
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.0873323075544526,
+      "max_over_range": 0.007259703775785581,
+      "floor_max_over_range": 0.00029337726813747185,
+      "bar_max_over_range": 0.010293377268137472
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.08733230755461116,
+      "max_over_range": 0.007259703775962939,
+      "floor_max_over_range": 0.00029337726813747185,
+      "bar_max_over_range": 0.010293377268137472
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.0813931984135408,
+      "max_over_range": 0.005898839762240781,
+      "floor_max_over_range": 0.00029337726813747185,
+      "bar_max_over_range": 0.010293377268137472
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.08139319841357648,
+      "max_over_range": 0.00589883976237591,
+      "floor_max_over_range": 0.00029337726813747185,
+      "bar_max_over_range": 0.010293377268137472
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 4,
+   "picks": [
+    0,
+    3
+   ]
+  },
+  "wall-2 step": {
+   "frames": {
+    "registered": {
+     "floor": 0.0002515456563629835,
+     "floor_max": 0.17564143590993808,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.00029141443462219765,
+       "max_err": 0.1756222552249369,
+       "span": 130.0,
+       "floor_max": 0.17564143590993808
+      },
+      "U": {
+       "energy_rel": 0.0064344305194435954,
+       "max_err": 3.0029196753986866,
+       "span": 130.0,
+       "floor_max": 0.17564143590993808
+      },
+      "P-s0": {
+       "energy_rel": 0.0057634137080820515,
+       "max_err": 2.719148548502517,
+       "span": 130.0,
+       "floor_max": 0.17564143590993808
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.002463953614241969,
+     "floor_max": 0.17564143590988124,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.0028544784267949966,
+       "max_err": 0.17562225522483743,
+       "span": 130.0,
+       "floor_max": 0.17564143590988124
+      },
+      "U": {
+       "energy_rel": 0.06302688173303171,
+       "max_err": 3.002919675404094,
+       "span": 130.0,
+       "floor_max": 0.17564143590988124
+      },
+      "P-s0": {
+       "energy_rel": 0.05645410158035968,
+       "max_err": 2.7191485485066806,
+       "span": 130.0,
+       "floor_max": 0.17564143590988124
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.00029141443462219765,
+      "max_over_range": 0.001350940424807207,
+      "floor_max_over_range": 0.0013510879685379852,
+      "bar_max_over_range": 0.011351087968537985
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.0028544784267949966,
+      "max_over_range": 0.0013509404248064419,
+      "floor_max_over_range": 0.001351087968537548,
+      "bar_max_over_range": 0.011351087968537548
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.0064344305194435954,
+      "max_over_range": 0.023099382118451434,
+      "floor_max_over_range": 0.0013510879685379852,
+      "bar_max_over_range": 0.011351087968537985
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.06302688173303171,
+      "max_over_range": 0.02309938211849303,
+      "floor_max_over_range": 0.001351087968537548,
+      "bar_max_over_range": 0.011351087968537548
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.0057634137080820515,
+      "max_over_range": 0.020916527296173208,
+      "floor_max_over_range": 0.0013510879685379852,
+      "bar_max_over_range": 0.011351087968537985
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.05645410158035968,
+      "max_over_range": 0.020916527296205235,
+      "floor_max_over_range": 0.001351087968537548,
+      "bar_max_over_range": 0.011351087968537548
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 4,
+   "picks": [
+    0,
+    3
+   ]
+  },
+  "heated-strip steady": {
+   "frames": {
+    "registered": {
+     "floor": 0.00938475145941257,
+     "floor_max": 0.19170024409589814,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.0093847517963997,
+       "max_err": 0.19170024409430653,
+       "span": 130.0,
+       "floor_max": 0.19170024409589814
+      },
+      "U": {
+       "energy_rel": 0.009384752198528088,
+       "max_err": 0.19170024409692132,
+       "span": 130.0,
+       "floor_max": 0.19170024409589814
+      },
+      "P-s0": {
+       "energy_rel": 0.014814826547312686,
+       "max_err": 0.19169731035458426,
+       "span": 130.0,
+       "floor_max": 0.19170024409589814
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.009384751471518708,
+     "floor_max": 0.19170024409997666,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.009384751808505183,
+       "max_err": 0.19170024409919506,
+       "span": 130.0,
+       "floor_max": 0.19170024409997666
+      },
+      "U": {
+       "energy_rel": 0.00938475221063098,
+       "max_err": 0.19170024410169617,
+       "span": 130.0,
+       "floor_max": 0.19170024409997666
+      },
+      "P-s0": {
+       "energy_rel": 0.014814826564118533,
+       "max_err": 0.19169731035877646,
+       "span": 130.0,
+       "floor_max": 0.19170024409997666
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0093847517963997,
+      "max_over_range": 0.0014746172622638963,
+      "floor_max_over_range": 0.0014746172622761395,
+      "bar_max_over_range": 0.01147461726227614
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.009384751808505183,
+      "max_over_range": 0.0014746172623015005,
+      "floor_max_over_range": 0.0014746172623075128,
+      "bar_max_over_range": 0.011474617262307514
+     }
+    },
+    "U": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.009384752198528088,
+      "max_over_range": 0.0014746172622840102,
+      "floor_max_over_range": 0.0014746172622761395,
+      "bar_max_over_range": 0.01147461726227614
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.00938475221063098,
+      "max_over_range": 0.0014746172623207397,
+      "floor_max_over_range": 0.0014746172623075128,
+      "bar_max_over_range": 0.011474617262307514
+     }
+    },
+    "P-s0": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.014814826547312686,
+      "max_over_range": 0.0014745946950352636,
+      "floor_max_over_range": 0.0014746172622761395,
+      "bar_max_over_range": 0.01147461726227614
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.014814826564118533,
+      "max_over_range": 0.0014745946950675112,
+      "floor_max_over_range": 0.0014746172623075128,
+      "bar_max_over_range": 0.011474617262307514
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 40,
+   "picks": [
+    0,
+    19,
+    20,
+    39
+   ]
+  },
+  "heated-strip step": {
+   "frames": {
+    "registered": {
+     "floor": 0.00021996822498407102,
+     "floor_max": 0.1998825542765985,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.00021996823610318853,
+       "max_err": 0.19988255427597323,
+       "span": 130.0,
+       "floor_max": 0.1998825542765985
+      },
+      "U": {
+       "energy_rel": 0.00021996829553264644,
+       "max_err": 0.19988255428165758,
+       "span": 130.0,
+       "floor_max": 0.1998825542765985
+      },
+      "P-s0": {
+       "energy_rel": 0.0013895105492155297,
+       "max_err": 1.4646928458687398,
+       "span": 130.0,
+       "floor_max": 0.1998825542765985
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.0030923079083914713,
+     "floor_max": 0.19988255427765012,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.0030923080647041116,
+       "max_err": 0.1998825542769822,
+       "span": 130.0,
+       "floor_max": 0.19988255427765012
+      },
+      "U": {
+       "energy_rel": 0.0030923089001620514,
+       "max_err": 0.1998825542827518,
+       "span": 130.0,
+       "floor_max": 0.19988255427765012
+      },
+      "P-s0": {
+       "energy_rel": 0.01953370519957902,
+       "max_err": 1.4646928458974742,
+       "span": 130.0,
+       "floor_max": 0.19988255427765012
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.00021996823610318853,
+      "max_over_range": 0.0015375581098151787,
+      "floor_max_over_range": 0.0015375581098199885,
+      "bar_max_over_range": 0.01153755810981999
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.0030923080647041116,
+      "max_over_range": 0.00153755810982294,
+      "floor_max_over_range": 0.001537558109828078,
+      "bar_max_over_range": 0.011537558109828079
+     }
+    },
+    "U": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.00021996829553264644,
+      "max_over_range": 0.0015375581098589044,
+      "floor_max_over_range": 0.0015375581098199885,
+      "bar_max_over_range": 0.01153755810981999
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.0030923089001620514,
+      "max_over_range": 0.0015375581098673217,
+      "floor_max_over_range": 0.001537558109828078,
+      "bar_max_over_range": 0.011537558109828079
+     }
+    },
+    "P-s0": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0013895105492155297,
+      "max_over_range": 0.011266868045144152,
+      "floor_max_over_range": 0.0015375581098199885,
+      "bar_max_over_range": 0.01153755810981999
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.01953370519957902,
+      "max_over_range": 0.011266868045365187,
+      "floor_max_over_range": 0.001537558109828078,
+      "bar_max_over_range": 0.011537558109828079
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 40,
+   "picks": [
+    0,
+    19,
+    20,
+    39
+   ]
+  },
+  "plate-insert steady": {
+   "frames": {
+    "registered": {
+     "floor": 0.008099851372793846,
+     "floor_max": 0.1913146660188545,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.022930934987815534,
+       "max_err": 0.4030851224343337,
+       "span": 130.0,
+       "floor_max": 0.1913146660188545
+      },
+      "U": {
+       "energy_rel": 0.026683531415752068,
+       "max_err": 0.4036561146353961,
+       "span": 130.0,
+       "floor_max": 0.1913146660188545
+      },
+      "P-s0": {
+       "energy_rel": 0.02054560447190527,
+       "max_err": 0.20400604778257048,
+       "span": 130.0,
+       "floor_max": 0.1913146660188545
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.008099851373568619,
+     "floor_max": 0.1913146670946304,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.022930934989967768,
+       "max_err": 0.4030851234057664,
+       "span": 130.0,
+       "floor_max": 0.1913146670946304
+      },
+      "U": {
+       "energy_rel": 0.02668353141825315,
+       "max_err": 0.40365611560769565,
+       "span": 130.0,
+       "floor_max": 0.1913146670946304
+      },
+      "P-s0": {
+       "energy_rel": 0.020545604472745504,
+       "max_err": 0.20400604882976836,
+       "span": 130.0,
+       "floor_max": 0.1913146670946304
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.022930934987815534,
+      "max_over_range": 0.0031006547879564132,
+      "floor_max_over_range": 0.0014716512770681115,
+      "bar_max_over_range": 0.011471651277068113
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.022930934989967768,
+      "max_over_range": 0.0031006547954289723,
+      "floor_max_over_range": 0.0014716512853433109,
+      "bar_max_over_range": 0.01147165128534331
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.026683531415752068,
+      "max_over_range": 0.003105047035656893,
+      "floor_max_over_range": 0.0014716512770681115,
+      "bar_max_over_range": 0.011471651277068113
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.02668353141825315,
+      "max_over_range": 0.00310504704313612,
+      "floor_max_over_range": 0.0014716512853433109,
+      "bar_max_over_range": 0.01147165128534331
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.02054560447190527,
+      "max_over_range": 0.0015692772906351574,
+      "floor_max_over_range": 0.0014716512770681115,
+      "bar_max_over_range": 0.011471651277068113
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.020545604472745504,
+      "max_over_range": 0.0015692772986905259,
+      "floor_max_over_range": 0.0014716512853433109,
+      "bar_max_over_range": 0.01147165128534331
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 18,
+   "picks": [
+    0,
+    5,
+    6,
+    11,
+    12,
+    17
+   ]
+  },
+  "plate-insert step": {
+   "frames": {
+    "registered": {
+     "floor": 0.0003122839732551973,
+     "floor_max": 0.1332965365036216,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.0012103974532468621,
+       "max_err": 0.3248707885353497,
+       "span": 130.0,
+       "floor_max": 0.1332965365036216
+      },
+      "U": {
+       "energy_rel": 0.0024962659817493213,
+       "max_err": 0.7647548972407776,
+       "span": 130.0,
+       "floor_max": 0.1332965365036216
+      },
+      "P-s0": {
+       "energy_rel": 0.0030153392274067468,
+       "max_err": 0.907786719834121,
+       "span": 130.0,
+       "floor_max": 0.1332965365036216
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.0022322510796286914,
+     "floor_max": 0.13329653643215345,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.008652096339313542,
+       "max_err": 0.32487078853336726,
+       "span": 130.0,
+       "floor_max": 0.13329653643215345
+      },
+      "U": {
+       "energy_rel": 0.017843670857621514,
+       "max_err": 0.7647548972522742,
+       "span": 130.0,
+       "floor_max": 0.13329653643215345
+      },
+      "P-s0": {
+       "energy_rel": 0.021554081611893934,
+       "max_err": 0.9077867198214449,
+       "span": 130.0,
+       "floor_max": 0.13329653643215345
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0012103974532468621,
+      "max_over_range": 0.002499006065656536,
+      "floor_max_over_range": 0.0010253579731047816,
+      "bar_max_over_range": 0.011025357973104782
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.008652096339313542,
+      "max_over_range": 0.0024990060656412865,
+      "floor_max_over_range": 0.0010253579725550265,
+      "bar_max_over_range": 0.011025357972555027
+     }
+    },
+    "U": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0024962659817493213,
+      "max_over_range": 0.0058827299787752125,
+      "floor_max_over_range": 0.0010253579731047816,
+      "bar_max_over_range": 0.011025357973104782
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.017843670857621514,
+      "max_over_range": 0.005882729978863648,
+      "floor_max_over_range": 0.0010253579725550265,
+      "bar_max_over_range": 0.011025357972555027
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0030153392274067468,
+      "max_over_range": 0.0069829747679547765,
+      "floor_max_over_range": 0.0010253579731047816,
+      "bar_max_over_range": 0.011025357973104782
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.021554081611893934,
+      "max_over_range": 0.0069829747678572685,
+      "floor_max_over_range": 0.0010253579725550265,
+      "bar_max_over_range": 0.011025357972555027
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 18,
+   "picks": [
+    0,
+    5,
+    6,
+    11,
+    12,
+    17
+   ]
+  },
+  "fast-heat steady": {
+   "frames": {
+    "registered": {
+     "floor": 0.007601938679904041,
+     "floor_max": 0.18541753288388918,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.021248206970644848,
+       "max_err": 0.6083877699150548,
+       "span": 130.0,
+       "floor_max": 0.18541753288388918
+      },
+      "U": {
+       "energy_rel": 0.041391823672883195,
+       "max_err": 0.6687924564944296,
+       "span": 130.0,
+       "floor_max": 0.18541753288388918
+      },
+      "P-s0": {
+       "energy_rel": 0.028261818534048692,
+       "max_err": 0.20082301789773283,
+       "span": 130.0,
+       "floor_max": 0.18541753288388918
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.007601938680152072,
+     "floor_max": 0.18541753268340244,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.021248206971557323,
+       "max_err": 0.6083877697328859,
+       "span": 130.0,
+       "floor_max": 0.18541753268340244
+      },
+      "U": {
+       "energy_rel": 0.041391823674504995,
+       "max_err": 0.6687924564314613,
+       "span": 130.0,
+       "floor_max": 0.18541753268340244
+      },
+      "P-s0": {
+       "energy_rel": 0.028261818534476013,
+       "max_err": 0.2008230176945034,
+       "span": 130.0,
+       "floor_max": 0.18541753268340244
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.021248206970644848,
+      "max_over_range": 0.0046799059224234985,
+      "floor_max_over_range": 0.0014262887144914553,
+      "bar_max_over_range": 0.011426288714491455
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.021248206971557323,
+      "max_over_range": 0.004679905921022199,
+      "floor_max_over_range": 0.0014262887129492495,
+      "bar_max_over_range": 0.01142628871294925
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.041391823672883195,
+      "max_over_range": 0.005144557357649459,
+      "floor_max_over_range": 0.0014262887144914553,
+      "bar_max_over_range": 0.011426288714491455
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.041391823674504995,
+      "max_over_range": 0.0051445573571650876,
+      "floor_max_over_range": 0.0014262887129492495,
+      "bar_max_over_range": 0.01142628871294925
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.028261818534048692,
+      "max_over_range": 0.0015447924453671756,
+      "floor_max_over_range": 0.0014262887144914553,
+      "bar_max_over_range": 0.011426288714491455
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.028261818534476013,
+      "max_over_range": 0.0015447924438038723,
+      "floor_max_over_range": 0.0014262887129492495,
+      "bar_max_over_range": 0.01142628871294925
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 18,
+   "picks": [
+    0,
+    5,
+    6,
+    11,
+    12,
+    17
+   ]
+  },
+  "fast-heat step": {
+   "frames": {
+    "registered": {
+     "floor": 0.0011323449688258977,
+     "floor_max": 0.4473228620164491,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.004352040149920888,
+       "max_err": 1.114694541542974,
+       "span": 130.0,
+       "floor_max": 0.4473228620164491
+      },
+      "U": {
+       "energy_rel": 0.005583089808609856,
+       "max_err": 1.1318256907847513,
+       "span": 130.0,
+       "floor_max": 0.4473228620164491
+      },
+      "P-s0": {
+       "energy_rel": 0.0046281755765405184,
+       "max_err": 0.9581370133283826,
+       "span": 130.0,
+       "floor_max": 0.4473228620164491
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.006752574760351318,
+     "floor_max": 0.4473228619245049,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.02595275934532178,
+       "max_err": 1.1146945414426455,
+       "span": 130.0,
+       "floor_max": 0.4473228619245049
+      },
+      "U": {
+       "energy_rel": 0.03329394518778135,
+       "max_err": 1.131825690683847,
+       "span": 130.0,
+       "floor_max": 0.4473228619245049
+      },
+      "P-s0": {
+       "energy_rel": 0.027599452856814893,
+       "max_err": 0.9581370132609521,
+       "span": 130.0,
+       "floor_max": 0.4473228619245049
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": false,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.004352040149920888,
+      "max_over_range": 0.008574573396484417,
+      "floor_max_over_range": 0.003440945092434224,
+      "bar_max_over_range": 0.013440945092434224
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.02595275934532178,
+      "max_over_range": 0.008574573395712657,
+      "floor_max_over_range": 0.0034409450917269606,
+      "bar_max_over_range": 0.01344094509172696
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.005583089808609856,
+      "max_over_range": 0.00870635146757501,
+      "floor_max_over_range": 0.003440945092434224,
+      "bar_max_over_range": 0.013440945092434224
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.03329394518778135,
+      "max_over_range": 0.008706351466798823,
+      "floor_max_over_range": 0.0034409450917269606,
+      "bar_max_over_range": 0.01344094509172696
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0046281755765405184,
+      "max_over_range": 0.007370284717910636,
+      "floor_max_over_range": 0.003440945092434224,
+      "bar_max_over_range": 0.013440945092434224
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.027599452856814893,
+      "max_over_range": 0.00737028471739194,
+      "floor_max_over_range": 0.0034409450917269606,
+      "bar_max_over_range": 0.01344094509172696
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 18,
+   "picks": [
+    0,
+    5,
+    6,
+    11,
+    12,
+    17
+   ]
+  },
+  "bimetal-arc steady": {
+   "frames": {
+    "registered": {
+     "floor": 0.006923536557780382,
+     "floor_max": 0.20512693603842536,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.007315785761276672,
+       "max_err": 0.20512699689294323,
+       "span": 130.0,
+       "floor_max": 0.20512693603842536
+      },
+      "U": {
+       "energy_rel": 0.029172100400383615,
+       "max_err": 0.38965949821078993,
+       "span": 130.0,
+       "floor_max": 0.20512693603842536
+      },
+      "P-s0": {
+       "energy_rel": 0.03659491936037062,
+       "max_err": 0.3736232623203364,
+       "span": 130.0,
+       "floor_max": 0.20512693603842536
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.0069235365577750025,
+     "floor_max": 0.20512693603889431,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.007315785761248555,
+       "max_err": 0.20512699689341218,
+       "span": 130.0,
+       "floor_max": 0.20512693603889431
+      },
+      "U": {
+       "energy_rel": 0.02917210040035571,
+       "max_err": 0.38965949819811385,
+       "span": 130.0,
+       "floor_max": 0.20512693603889431
+      },
+      "P-s0": {
+       "energy_rel": 0.036594919360362875,
+       "max_err": 0.37362326230834286,
+       "span": 130.0,
+       "floor_max": 0.20512693603889431
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.007315785761276672,
+      "max_over_range": 0.0015778999760995632,
+      "floor_max_over_range": 0.0015778995079878874,
+      "bar_max_over_range": 0.011577899507987887
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.007315785761248555,
+      "max_over_range": 0.0015778999761031707,
+      "floor_max_over_range": 0.0015778995079914948,
+      "bar_max_over_range": 0.011577899507991495
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.029172100400383615,
+      "max_over_range": 0.0029973807554676147,
+      "floor_max_over_range": 0.0015778995079878874,
+      "bar_max_over_range": 0.011577899507987887
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.02917210040035571,
+      "max_over_range": 0.0029973807553701068,
+      "floor_max_over_range": 0.0015778995079914948,
+      "bar_max_over_range": 0.011577899507991495
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.03659491936037062,
+      "max_over_range": 0.002874025094771818,
+      "floor_max_over_range": 0.0015778995079878874,
+      "bar_max_over_range": 0.011577899507987887
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.036594919360362875,
+      "max_over_range": 0.0028740250946795603,
+      "floor_max_over_range": 0.0015778995079914948,
+      "bar_max_over_range": 0.011577899507991495
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 12,
+   "picks": [
+    0,
+    1,
+    10,
+    11
+   ]
+  },
+  "bimetal-arc step": {
+   "frames": {
+    "registered": {
+     "floor": 0.0004430537092672142,
+     "floor_max": 0.21238274484551312,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.0012844054797894896,
+       "max_err": 0.3879070527275985,
+       "span": 130.0,
+       "floor_max": 0.21238274484551312
+      },
+      "U": {
+       "energy_rel": 0.0032179597786273968,
+       "max_err": 1.5327239773451424,
+       "span": 130.0,
+       "floor_max": 0.21238274484551312
+      },
+      "P-s0": {
+       "energy_rel": 0.0037690480638461507,
+       "max_err": 1.8640426734462494,
+       "span": 130.0,
+       "floor_max": 0.21238274484551312
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.003439505359754613,
+     "floor_max": 0.21238274484630892,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.009971069961561904,
+       "max_err": 0.3879070527357449,
+       "span": 130.0,
+       "floor_max": 0.21238274484630892
+      },
+      "U": {
+       "energy_rel": 0.02498159856140907,
+       "max_err": 1.5327239773428687,
+       "span": 130.0,
+       "floor_max": 0.21238274484630892
+      },
+      "P-s0": {
+       "energy_rel": 0.02925979569882292,
+       "max_err": 1.864042673449724,
+       "span": 130.0,
+       "floor_max": 0.21238274484630892
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0012844054797894896,
+      "max_over_range": 0.002983900405596912,
+      "floor_max_over_range": 0.0016337134218885625,
+      "bar_max_over_range": 0.011633713421888563
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.009971069961561904,
+      "max_over_range": 0.002983900405659576,
+      "floor_max_over_range": 0.001633713421894684,
+      "bar_max_over_range": 0.011633713421894685
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.0032179597786273968,
+      "max_over_range": 0.01179018444111648,
+      "floor_max_over_range": 0.0016337134218885625,
+      "bar_max_over_range": 0.011633713421888563
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.02498159856140907,
+      "max_over_range": 0.01179018444109899,
+      "floor_max_over_range": 0.001633713421894684,
+      "bar_max_over_range": 0.011633713421894685
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.0037690480638461507,
+      "max_over_range": 0.014338789795740381,
+      "floor_max_over_range": 0.0016337134218885625,
+      "bar_max_over_range": 0.011633713421888563
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.02925979569882292,
+      "max_over_range": 0.014338789795767108,
+      "floor_max_over_range": 0.001633713421894684,
+      "bar_max_over_range": 0.011633713421894685
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 12,
+   "picks": [
+    0,
+    1,
+    10,
+    11
+   ]
+  },
+  "plate-hole steady": {
+   "frames": {
+    "registered": {
+     "floor": 0.0002542965005937287,
+     "floor_max": 0.003262509987109752,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.006407292541288708,
+       "max_err": 0.06594215799037784,
+       "span": 130.0,
+       "floor_max": 0.003262509987109752
+      },
+      "U": {
+       "energy_rel": 0.04672213215571632,
+       "max_err": 0.57215291556696,
+       "span": 130.0,
+       "floor_max": 0.003262509987109752
+      },
+      "P-s0": {
+       "energy_rel": 0.033454761354518,
+       "max_err": 0.5125667468897745,
+       "span": 130.0,
+       "floor_max": 0.003262509987109752
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.00025429650055441383,
+     "floor_max": 0.0032625102589918242,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.006407292541062711,
+       "max_err": 0.06594215813352378,
+       "span": 130.0,
+       "floor_max": 0.0032625102589918242
+      },
+      "U": {
+       "energy_rel": 0.0467221321471344,
+       "max_err": 0.5721529152700242,
+       "span": 130.0,
+       "floor_max": 0.0032625102589918242
+      },
+      "P-s0": {
+       "energy_rel": 0.03345476134875889,
+       "max_err": 0.5125667472053692,
+       "span": 130.0,
+       "floor_max": 0.0032625102589918242
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.006407292541288708,
+      "max_over_range": 0.0005072473691567526,
+      "floor_max_over_range": 2.5096230670075012e-05,
+      "bar_max_over_range": 0.010025096230670076
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.006407292541062711,
+      "max_over_range": 0.0005072473702578752,
+      "floor_max_over_range": 2.5096232761475572e-05,
+      "bar_max_over_range": 0.010025096232761476
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.04672213215571632,
+      "max_over_range": 0.004401176273592,
+      "floor_max_over_range": 2.5096230670075012e-05,
+      "bar_max_over_range": 0.010025096230670076
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.0467221321471344,
+      "max_over_range": 0.004401176271307879,
+      "floor_max_over_range": 2.5096232761475572e-05,
+      "bar_max_over_range": 0.010025096232761476
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": false,
+      "energy_rel": 0.033454761354518,
+      "max_over_range": 0.003942821129921343,
+      "floor_max_over_range": 2.5096230670075012e-05,
+      "bar_max_over_range": 0.010025096230670076
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.03345476134875889,
+      "max_over_range": 0.003942821132348994,
+      "floor_max_over_range": 2.5096232761475572e-05,
+      "bar_max_over_range": 0.010025096232761476
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 58,
+   "picks": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    18,
+    22,
+    26,
+    30,
+    34,
+    41,
+    45,
+    49,
+    53,
+    57
+   ]
+  },
+  "plate-hole step": {
+   "frames": {
+    "registered": {
+     "floor": 2.360307540971267e-05,
+     "floor_max": 0.013024002063616535,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.0007805751837744854,
+       "max_err": 0.46847870966109895,
+       "span": 130.0,
+       "floor_max": 0.013024002063616535
+      },
+      "U": {
+       "energy_rel": 0.0022039552979479906,
+       "max_err": 1.2903887871556208,
+       "span": 130.0,
+       "floor_max": 0.013024002063616535
+      },
+      "P-s0": {
+       "energy_rel": 0.002156267606900899,
+       "max_err": 1.1075589556446062,
+       "span": 130.0,
+       "floor_max": 0.013024002063616535
+      }
+     }
+    },
+    "lowered": {
+     "floor": 0.00024231503207677475,
+     "floor_max": 0.01302400206320442,
+     "span": 130.0,
+     "arms": {
+      "H": {
+       "energy_rel": 0.008013578628975847,
+       "max_err": 0.4684787096364751,
+       "span": 130.0,
+       "floor_max": 0.01302400206320442
+      },
+      "U": {
+       "energy_rel": 0.022626352262974183,
+       "max_err": 1.2903887871398467,
+       "span": 130.0,
+       "floor_max": 0.01302400206320442
+      },
+      "P-s0": {
+       "energy_rel": 0.022136778588012777,
+       "max_err": 1.1075589556626397,
+       "span": 130.0,
+       "floor_max": 0.01302400206320442
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "H": {
+     "met": true,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0007805751837744854,
+      "max_over_range": 0.0036036823820084535,
+      "floor_max_over_range": 0.00010018463125858874,
+      "bar_max_over_range": 0.010100184631258589
+     },
+     "lowered by 300 K": {
+      "met": true,
+      "energy_rel": 0.008013578628975847,
+      "max_over_range": 0.003603682381819039,
+      "floor_max_over_range": 0.00010018463125541863,
+      "bar_max_over_range": 0.01010018463125542
+     }
+    },
+    "U": {
+     "met": false,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.0022039552979479906,
+      "max_over_range": 0.009926067593504775,
+      "floor_max_over_range": 0.00010018463125858874,
+      "bar_max_over_range": 0.010100184631258589
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.022626352262974183,
+      "max_over_range": 0.009926067593383436,
+      "floor_max_over_range": 0.00010018463125541863,
+      "bar_max_over_range": 0.01010018463125542
+     }
+    },
+    "P-s0": {
+     "met": false,
+     "as registered": {
+      "met": true,
+      "energy_rel": 0.002156267606900899,
+      "max_over_range": 0.008519684274189279,
+      "floor_max_over_range": 0.00010018463125858874,
+      "bar_max_over_range": 0.010100184631258589
+     },
+     "lowered by 300 K": {
+      "met": false,
+      "energy_rel": 0.022136778588012777,
+      "max_over_range": 0.008519684274327997,
+      "floor_max_over_range": 0.00010018463125541863,
+      "bar_max_over_range": 0.01010018463125542
+     }
+    }
+   },
+   "H answers U's bits": true,
+   "pieces": 58,
+   "picks": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    18,
+    22,
+    26,
+    30,
+    34,
+    41,
+    45,
+    49,
+    53,
+    57
+   ]
+  }
+ },
+ "E4-H": {
+  "met": false,
+  "count": "9 of 12",
+  "not_met": [
+   "plate-insert steady",
+   "fast-heat steady",
+   "fast-heat step"
+  ]
+ },
+ "price": {
+  "runs": [
+   {
+    "run": 1,
+    "torch_threads": 4,
+    "reps": 5,
+    "n": 64,
+    "start": {
+     "time": "2026-11-07T23:44:45",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.055999999999999994
+    },
+    "end": {
+     "time": "2026-11-07T23:49:25",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.17800000000000002
+    },
+    "power_events": [],
+    "problems": {
+     "wall-2 steady": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.11878700007218868,
+       "H": 0.11248969996813685,
+       "P-s0": 0.1616398999467492,
+       "coupled solve": 0.02790020010434091
+      },
+      "every_repetition": {
+       "classical": [
+        0.17879379994701594,
+        0.19745959993451834,
+        0.19358799990732223,
+        0.16942220006603748,
+        0.11878700007218868
+       ],
+       "H": [
+        0.18622819997835904,
+        0.12832280003931373,
+        0.1648323000408709,
+        0.12877960002515465,
+        0.11248969996813685
+       ],
+       "P-s0": [
+        0.273967899964191,
+        0.2738454999634996,
+        0.2605727999471128,
+        0.22321019996888936,
+        0.1616398999467492
+       ],
+       "coupled solve": [
+        0.0450375999789685,
+        0.03767470002640039,
+        0.04486780008301139,
+        0.02790020010434091,
+        0.05835239996667951
+       ]
+      },
+      "price": 0.9570698731963431,
+      "price_P-s0": 1.2921379631146381,
+      "classical_ms_per_piece": 29.69675001804717
+     },
+     "wall-2 step": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.18278590007685125,
+       "H": 0.12949369999114424,
+       "P-s0": 0.2455740999430418,
+       "coupled solve": 0.034266100032255054
+      },
+      "every_repetition": {
+       "classical": [
+        0.2032787000061944,
+        0.2287279999582097,
+        0.18278590007685125,
+        0.18422589998226613,
+        0.22014190000481904
+       ],
+       "H": [
+        0.26884969999082386,
+        0.14083950000349432,
+        0.12949369999114424,
+        0.13718139997217804,
+        0.13600850000511855
+       ],
+       "P-s0": [
+        0.31863579992204905,
+        0.27351119997911155,
+        0.2455740999430418,
+        0.2803635000018403,
+        0.25292989995796233
+       ],
+       "coupled solve": [
+        0.047643100027926266,
+        0.034266100032255054,
+        0.04020449996460229,
+        0.04330300004221499,
+        0.04048630001489073
+       ]
+      },
+      "price": 0.7544726606577298,
+      "price_P-s0": 1.2892772231291514,
+      "classical_ms_per_piece": 45.69647501921281
+     },
+     "heated-strip steady": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.4358093000482768,
+       "H": 1.5208746999269351,
+       "P-s0": 2.572307600057684,
+       "coupled solve": 1.0976011999882758
+      },
+      "every_repetition": {
+       "classical": [
+        1.5117990999715403,
+        1.6116314999526367,
+        1.4358093000482768,
+        1.5421423999359831,
+        1.4821228000801057
+       ],
+       "H": [
+        1.6637698999838904,
+        1.641217099968344,
+        1.5208746999269351,
+        1.61722480005119,
+        1.6861654000822455
+       ],
+       "P-s0": [
+        2.785383000038564,
+        2.7772544999606907,
+        2.572307600057684,
+        2.628006299957633,
+        2.7729427999584004
+       ],
+       "coupled solve": [
+        1.2136251999763772,
+        1.1829243000829592,
+        1.153827599948272,
+        1.1076659000245854,
+        1.0976011999882758
+       ]
+      },
+      "price": 1.033577424534015,
+      "price_P-s0": 1.4486040852806956,
+      "classical_ms_per_piece": 35.89523250120692
+     },
+     "heated-strip step": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.5151921000797302,
+       "H": 1.395889600040391,
+       "P-s0": 2.3562103000003844,
+       "coupled solve": 0.9940607000607997
+      },
+      "every_repetition": {
+       "classical": [
+        1.8345257999608293,
+        1.5972538000205532,
+        1.5151921000797302,
+        2.0130307999206707,
+        1.8257578000193462
+       ],
+       "H": [
+        1.7361300000920892,
+        1.395889600040391,
+        1.613106699893251,
+        1.6552845999831334,
+        1.451687499997206
+       ],
+       "P-s0": [
+        2.3562103000003844,
+        2.6632214999990538,
+        2.639616600004956,
+        2.499653800041415,
+        2.385471200104803
+       ],
+       "coupled solve": [
+        1.068943600053899,
+        1.0240764000918716,
+        1.5952818000223488,
+        1.128677099943161,
+        0.9940607000607997
+       ]
+      },
+      "price": 0.9524549698489297,
+      "price_P-s0": 1.3351667874490578,
+      "classical_ms_per_piece": 37.879802501993254
+     },
+     "plate-insert steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6794040999375284,
+       "H": 0.5758878999622539,
+       "P-s0": 1.061092699994333,
+       "coupled solve": 0.20541539997793734
+      },
+      "every_repetition": {
+       "classical": [
+        0.7161102000391111,
+        0.7160931000253186,
+        0.7164412999991328,
+        0.6831426999997348,
+        0.6794040999375284
+       ],
+       "H": [
+        0.6830111000454053,
+        0.5758878999622539,
+        0.6616963000269607,
+        0.6152975000441074,
+        0.5908501000376418
+       ],
+       "P-s0": [
+        1.272855499992147,
+        1.2584254000103101,
+        1.2540456999558955,
+        1.1728084000060335,
+        1.061092699994333
+       ],
+       "coupled solve": [
+        0.2581738999579102,
+        0.2632848999928683,
+        0.2636140000540763,
+        0.20541539997793734,
+        0.7765069999732077
+       ]
+      },
+      "price": 0.8830086814484036,
+      "price_P-s0": 1.4313745346856288,
+      "classical_ms_per_piece": 37.744672218751575
+     },
+     "plate-insert step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6413689999608323,
+       "H": 0.4857192999916151,
+       "P-s0": 0.7632229999871925,
+       "coupled solve": 0.19181480002589524
+      },
+      "every_repetition": {
+       "classical": [
+        0.6413689999608323,
+        0.7797911000670865,
+        0.7357580999378115,
+        0.7371718999929726,
+        0.7836899999529123
+       ],
+       "H": [
+        0.6531970000360161,
+        0.5011375999310985,
+        0.6022937999805436,
+        0.4857192999916151,
+        0.627807299955748
+       ],
+       "P-s0": [
+        0.7632229999871925,
+        0.9471359000308439,
+        1.0166256000520661,
+        1.1397156999446452,
+        1.0741932999808341
+       ],
+       "coupled solve": [
+        0.33711500000208616,
+        0.21030399994924664,
+        0.20377659995574504,
+        0.2531867000507191,
+        0.19181480002589524
+       ]
+      },
+      "price": 0.813186838280225,
+      "price_P-s0": 1.146251043321175,
+      "classical_ms_per_piece": 35.631611108935125
+     },
+     "fast-heat steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.5846429000375792,
+       "H": 0.6133305999683216,
+       "P-s0": 0.8568090000189841,
+       "coupled solve": 0.17658400000073016
+      },
+      "every_repetition": {
+       "classical": [
+        0.5846429000375792,
+        0.7938222999218851,
+        0.6814286999870092,
+        0.8119710000464693,
+        0.6989523000083864
+       ],
+       "H": [
+        0.8011478999396786,
+        0.7324094000505283,
+        0.6133305999683216,
+        0.6549834000179544,
+        0.6942425000015646
+       ],
+       "P-s0": [
+        1.091959199984558,
+        1.0333244999637827,
+        1.1745894000632688,
+        0.8568090000189841,
+        1.113232099916786
+       ],
+       "coupled solve": [
+        0.22413190000224859,
+        0.6212955999653786,
+        0.2647730999160558,
+        0.17658400000073016,
+        0.26350130001083016
+       ]
+      },
+      "price": 1.0376861352762214,
+      "price_P-s0": 1.3575361038446065,
+      "classical_ms_per_piece": 32.48016111319885
+     },
+     "fast-heat step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.7490650000981987,
+       "H": 0.6092994000064209,
+       "P-s0": 0.9670977999921888,
+       "coupled solve": 0.1808368000201881
+      },
+      "every_repetition": {
+       "classical": [
+        1.5151569000445306,
+        0.9416573999915272,
+        0.8807404999388382,
+        0.7490650000981987,
+        0.8160997000522912
+       ],
+       "H": [
+        1.1458966999780387,
+        0.6492506000213325,
+        0.7101683000801131,
+        0.6366139000747353,
+        0.6092994000064209
+       ],
+       "P-s0": [
+        0.9670977999921888,
+        1.282435700064525,
+        1.0117794000543654,
+        1.1796916999155656,
+        1.2205073999939486
+       ],
+       "coupled solve": [
+        0.20210709993261844,
+        0.23381979996338487,
+        0.1808368000201881,
+        0.21327910001855344,
+        0.22117110004182905
+       ]
+      },
+      "price": 0.8496985379811244,
+      "price_P-s0": 1.2344686286941613,
+      "classical_ms_per_piece": 41.6147222276777
+     },
+     "bimetal-arc steady": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.4499904999975115,
+       "H": 0.3718232000246644,
+       "P-s0": 0.5657187000615522,
+       "coupled solve": 0.2901374999200925
+      },
+      "every_repetition": {
+       "classical": [
+        0.5076024000300094,
+        0.7298306999728084,
+        0.46284000005107373,
+        0.4933817000128329,
+        0.4499904999975115
+       ],
+       "H": [
+        0.41545259999111295,
+        0.4784728999948129,
+        0.4408221000339836,
+        0.4604236999293789,
+        0.3718232000246644
+       ],
+       "P-s0": [
+        0.6738267000764608,
+        0.7197216000640765,
+        0.7479101999197155,
+        1.1230105999857187,
+        0.5657187000615522
+       ],
+       "coupled solve": [
+        0.2901374999200925,
+        0.7141003001015633,
+        0.5248149000108242,
+        0.4897381999762729,
+        0.6469594000373036
+       ]
+      },
+      "price": 0.8943867817707893,
+      "price_P-s0": 1.1563624130919576,
+      "classical_ms_per_piece": 37.49920833312596
+     },
+     "bimetal-arc step": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.47133600001689047,
+       "H": 0.366109500057064,
+       "P-s0": 0.7312967000762001,
+       "coupled solve": 0.11395879997871816
+      },
+      "every_repetition": {
+       "classical": [
+        0.48222849995363504,
+        0.49374429997988045,
+        0.47852400003466755,
+        0.47133600001689047,
+        0.5411608000285923
+       ],
+       "H": [
+        0.439246500027366,
+        0.3681164999725297,
+        0.366109500057064,
+        0.39983659994322807,
+        0.38973709999118
+       ],
+       "P-s0": [
+        0.7848888000007719,
+        0.7312967000762001,
+        0.7457772999769077,
+        0.7445183000527322,
+        0.7710191999794915
+       ],
+       "coupled solve": [
+        0.12920689990278333,
+        0.13780309993308038,
+        0.11395879997871816,
+        0.1318099000491202,
+        0.14225680008530617
+       ]
+      },
+      "price": 0.8202162398151907,
+      "price_P-s0": 1.4441534420966324,
+      "classical_ms_per_piece": 39.27800000140754
+     },
+     "plate-hole steady": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.1208243999863043,
+       "H": 2.2621539999963716,
+       "P-s0": 3.4711492999922484,
+       "coupled solve": 2.315796700073406
+      },
+      "every_repetition": {
+       "classical": [
+        2.2880516999866813,
+        2.4016864000586793,
+        2.1208243999863043,
+        2.164321899996139,
+        2.2263963000150397
+       ],
+       "H": [
+        2.428143800003454,
+        2.5170402999501675,
+        2.2621539999963716,
+        2.5139284000033513,
+        2.2921292999526486
+       ],
+       "P-s0": [
+        3.672413499909453,
+        3.614045700058341,
+        3.4711492999922484,
+        3.4980439000064507,
+        3.5134183999616653
+       ],
+       "coupled solve": [
+        2.315796700073406,
+        2.611624200013466,
+        2.491076699923724,
+        2.457334899925627,
+        2.431213099975139
+       ]
+      },
+      "price": 1.0318552332558137,
+      "price_P-s0": 1.304358850925487,
+      "classical_ms_per_piece": 36.56593793079835
+     },
+     "plate-hole step": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.1929979999549687,
+       "H": 2.3504815000342205,
+       "P-s0": 3.09299719997216,
+       "coupled solve": 2.5367540000006557
+      },
+      "every_repetition": {
+       "classical": [
+        2.3354112000670284,
+        2.1929979999549687,
+        2.2063547000288963,
+        2.4453521999530494,
+        2.7554719999898225
+       ],
+       "H": [
+        2.563775899936445,
+        2.3504815000342205,
+        2.5343740000389516,
+        2.572900400031358,
+        2.650384100037627
+       ],
+       "P-s0": [
+        3.6925381999462843,
+        3.4864930999465287,
+        3.3834998999955133,
+        3.2217333000153303,
+        3.09299719997216
+       ],
+       "coupled solve": [
+        2.5367540000006557,
+        3.622353999991901,
+        2.870946199982427,
+        2.8222154000541195,
+        2.960396399954334
+       ]
+      },
+      "price": 1.0332963546673757,
+      "price_P-s0": 1.1902846491794148,
+      "classical_ms_per_piece": 37.81031034405118
+     }
+    },
+    "counts": {
+     "counts": false,
+     "failed": [
+      "another process used 18% of a core",
+      "the classical expert outside 30-60 ms a piece on ['wall-2 steady']"
+     ]
+    },
+    "before_start": {
+     "waited_s": 47.163890399970114,
+     "readings": [
+      0.956,
+      0.22,
+      0.178,
+      0.041
+     ],
+     "quiet": true
+    }
+   },
+   {
+    "run": 2,
+    "torch_threads": 4,
+    "reps": 5,
+    "n": 64,
+    "start": {
+     "time": "2026-11-07T23:50:14",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.313
+    },
+    "end": {
+     "time": "2026-11-07T23:55:16",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.11900000000000001
+    },
+    "power_events": [
+     105,
+     105
+    ],
+    "problems": {
+     "wall-2 steady": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.14896590006537735,
+       "H": 0.1377984998980537,
+       "P-s0": 0.20385769999120384,
+       "coupled solve": 0.028775000013411045
+      },
+      "every_repetition": {
+       "classical": [
+        0.2370058000087738,
+        0.14896590006537735,
+        0.14963469991926104,
+        0.24229810002725571,
+        0.18168809998314828
+       ],
+       "H": [
+        0.202353399945423,
+        0.19561900000553578,
+        0.16253249999135733,
+        0.1377984998980537,
+        0.14292989997193217
+       ],
+       "P-s0": [
+        0.2302696000551805,
+        0.21252760000061244,
+        0.26379700005054474,
+        0.20385769999120384,
+        0.26485669997055084
+       ],
+       "coupled solve": [
+        0.028775000013411045,
+        0.033043600036762655,
+        0.04925089993048459,
+        0.03302790003363043,
+        0.03012849995866418
+       ]
+      },
+      "price": 0.9371703408592316,
+      "price_P-s0": 1.3088304374597757,
+      "classical_ms_per_piece": 37.24147501634434
+     },
+     "wall-2 step": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.15931909997016191,
+       "H": 0.13608770002610981,
+       "P-s0": 0.20973359991330653,
+       "coupled solve": 0.02609099994879216
+      },
+      "every_repetition": {
+       "classical": [
+        0.180868300027214,
+        0.15931909997016191,
+        0.17527460004203022,
+        0.16563509998377413,
+        0.17323710001073778
+       ],
+       "H": [
+        0.13904760009609163,
+        0.15932500001508743,
+        0.16591099998913705,
+        0.13608770002610981,
+        0.15179779997561127
+       ],
+       "P-s0": [
+        0.21541739988606423,
+        0.22439270000904799,
+        0.25618370005395263,
+        0.2843617999460548,
+        0.20973359991330653
+       ],
+       "coupled solve": [
+        0.031132600037381053,
+        0.03594980004709214,
+        0.02609099994879216,
+        0.04797399998642504,
+        0.03134190000128001
+       ]
+      },
+      "price": 0.8747026189284891,
+      "price_P-s0": 1.2719080566009169,
+      "classical_ms_per_piece": 39.82977499254048
+     },
+     "heated-strip steady": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.5669495000038296,
+       "H": 1.3842978000175208,
+       "P-s0": 2.299000300001353,
+       "coupled solve": 0.9758169000269845
+      },
+      "every_repetition": {
+       "classical": [
+        1.872361300047487,
+        1.881965000065975,
+        1.6690586999757215,
+        1.6452719999942929,
+        1.5669495000038296
+       ],
+       "H": [
+        1.508942999993451,
+        1.5138181999791414,
+        1.5997686000773683,
+        1.4511762999463826,
+        1.3842978000175208
+       ],
+       "P-s0": [
+        2.5390760001027957,
+        2.396336799953133,
+        2.299000300001353,
+        2.5079899000702426,
+        2.344019400072284
+       ],
+       "coupled solve": [
+        1.611021500080824,
+        1.2063754999544472,
+        1.5165539999725297,
+        1.0964162999298424,
+        0.9758169000269845
+       ]
+      },
+      "price": 0.928168116432522,
+      "price_P-s0": 1.2878954197242232,
+      "classical_ms_per_piece": 39.17373750009574
+     },
+     "heated-strip step": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.5349325999850407,
+       "H": 1.3420990000013262,
+       "P-s0": 2.060986900003627,
+       "coupled solve": 0.9527993999654427
+      },
+      "every_repetition": {
+       "classical": [
+        1.575952000101097,
+        1.893275500042364,
+        1.6260523999808356,
+        1.5349325999850407,
+        1.8363347999984398
+       ],
+       "H": [
+        1.5105674000224099,
+        1.3830140000209212,
+        1.459188900073059,
+        1.4396792999468744,
+        1.3420990000013262
+       ],
+       "P-s0": [
+        2.3426137999631464,
+        2.3218849999830127,
+        2.060986900003627,
+        2.1114191999658942,
+        2.308175499900244
+       ],
+       "coupled solve": [
+        1.196549899992533,
+        0.9527993999654427,
+        0.9714798000641167,
+        0.9700612999731675,
+        1.1159007999813184
+       ]
+      },
+      "price": 0.922486184208125,
+      "price_P-s0": 1.2114593935476397,
+      "classical_ms_per_piece": 38.37331499962602
+     },
+     "plate-insert steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.704166500014253,
+       "H": 0.5693871999392286,
+       "P-s0": 1.0270768000045791,
+       "coupled solve": 0.17164459999185055
+      },
+      "every_repetition": {
+       "classical": [
+        0.9796179999830201,
+        0.7098261000355706,
+        0.704166500014253,
+        0.8367884999606758,
+        0.7749599000671878
+       ],
+       "H": [
+        0.6418876000680029,
+        0.6207464999752119,
+        0.6215418999781832,
+        0.6024385000346228,
+        0.5693871999392286
+       ],
+       "P-s0": [
+        1.0382766000693664,
+        1.0270768000045791,
+        1.131998399971053,
+        1.2285509000066668,
+        1.1059421000536531
+       ],
+       "coupled solve": [
+        0.2341158000053838,
+        0.23551789997145534,
+        0.21166669996455312,
+        0.17164459999185055,
+        0.19601340009830892
+       ]
+      },
+      "price": 0.8461091666067202,
+      "price_P-s0": 1.368698569803552,
+      "classical_ms_per_piece": 39.120361111902945
+     },
+     "plate-insert step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.7457336999941617,
+       "H": 0.46247359993867576,
+       "P-s0": 0.8740981000009924,
+       "coupled solve": 0.19712909997906536
+      },
+      "every_repetition": {
+       "classical": [
+        0.8734063999727368,
+        0.80010150000453,
+        0.7732683999929577,
+        0.7457336999941617,
+        0.864606500021182
+       ],
+       "H": [
+        0.46247359993867576,
+        0.612619600025937,
+        0.718998400028795,
+        0.6774052999680862,
+        0.6334677999839187
+       ],
+       "P-s0": [
+        1.034528600051999,
+        1.0766813999507576,
+        0.9423451999900863,
+        1.4161654999479651,
+        0.8740981000009924
+       ],
+       "coupled solve": [
+        0.2318350999848917,
+        0.2323349000653252,
+        0.2330915000056848,
+        0.23055630002636462,
+        0.19712909997906536
+       ]
+      },
+      "price": 0.6995744236981996,
+      "price_P-s0": 1.1361432437577086,
+      "classical_ms_per_piece": 41.429649999675654
+     },
+     "fast-heat steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.7361460999818519,
+       "H": 0.5542980999452993,
+       "P-s0": 0.932902800035663,
+       "coupled solve": 0.18340199999511242
+      },
+      "every_repetition": {
+       "classical": [
+        0.8757336999988183,
+        0.74555530003272,
+        0.7644091999391094,
+        0.7361460999818519,
+        0.7813886000076309
+       ],
+       "H": [
+        0.6907943999394774,
+        0.6210813999641687,
+        0.6487529000733048,
+        0.5542980999452993,
+        0.5718363999621943
+       ],
+       "P-s0": [
+        1.0272682999493554,
+        0.932902800035663,
+        1.2301964000798762,
+        1.1803120999829844,
+        1.228366700001061
+       ],
+       "coupled solve": [
+        0.1887792000779882,
+        0.1927847999613732,
+        0.20769489998929203,
+        0.18340199999511242,
+        0.20251380000263453
+       ]
+      },
+      "price": 0.8022419925166415,
+      "price_P-s0": 1.213971079988899,
+      "classical_ms_per_piece": 40.89700555454733
+     },
+     "fast-heat step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.5986062000738457,
+       "H": 0.6421513999812305,
+       "P-s0": 1.0152466000290588,
+       "coupled solve": 0.18021509994287044
+      },
+      "every_repetition": {
+       "classical": [
+        0.5986062000738457,
+        0.8812789999647066,
+        0.749340399983339,
+        0.7479735999368131,
+        0.8901394000276923
+       ],
+       "H": [
+        0.7233950000954792,
+        0.6421513999812305,
+        0.6637814999558032,
+        0.6751105999574065,
+        0.7424090999411419
+       ],
+       "P-s0": [
+        1.0414794000098482,
+        1.0693199000088498,
+        1.040537100052461,
+        1.0152466000290588,
+        1.227171599981375
+       ],
+       "coupled solve": [
+        0.23889000003691763,
+        0.2637981999432668,
+        0.20234209997579455,
+        0.18021509994287044,
+        0.19680070003960282
+       ]
+      },
+      "price": 1.0559116705031695,
+      "price_P-s0": 1.5349627699528385,
+      "classical_ms_per_piece": 33.255900004102536
+     },
+     "bimetal-arc steady": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.45105539995711297,
+       "H": 0.39179559994954616,
+       "P-s0": 0.5508741000667214,
+       "coupled solve": 0.10171540000010282
+      },
+      "every_repetition": {
+       "classical": [
+        0.45105539995711297,
+        0.4622252999106422,
+        0.4742734000319615,
+        0.7811715001007542,
+        0.5071373000973836
+       ],
+       "H": [
+        0.39179559994954616,
+        0.4267970999935642,
+        0.4246633999282494,
+        0.41936999990139157,
+        0.3987855000887066
+       ],
+       "P-s0": [
+        0.8005359000526369,
+        0.6791179000865668,
+        0.6490261000581086,
+        0.7997284000739455,
+        0.5508741000667214
+       ],
+       "coupled solve": [
+        0.1290594000602141,
+        0.10171540000010282,
+        0.4390004000160843,
+        0.23442019999492913,
+        0.2621837999904528
+       ]
+      },
+      "price": 0.8927949884253049,
+      "price_P-s0": 1.180578822393177,
+      "classical_ms_per_piece": 37.58794999642608
+     },
+     "bimetal-arc step": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.5020238000433892,
+       "H": 0.417023399961181,
+       "P-s0": 0.5823937999084592,
+       "coupled solve": 0.19186260004062206
+      },
+      "every_repetition": {
+       "classical": [
+        0.5020238000433892,
+        0.5330054999794811,
+        0.5134840999962762,
+        0.6830999999074265,
+        0.6430646000662819
+       ],
+       "H": [
+        0.4243214000016451,
+        0.4274634000612423,
+        0.417023399961181,
+        0.4695425999816507,
+        0.4478113999357447
+       ],
+       "P-s0": [
+        0.6769457999616861,
+        0.5823937999084592,
+        0.645898999995552,
+        0.6502970000728965,
+        0.6760343000059947
+       ],
+       "coupled solve": [
+        0.320088499924168,
+        0.4418267000000924,
+        0.19186260004062206,
+        0.3361314000794664,
+        0.34218769997823983
+       ]
+      },
+      "price": 0.877500985648491,
+      "price_P-s0": 1.1158258756121164,
+      "classical_ms_per_piece": 41.83531667028243
+     },
+     "plate-hole steady": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.2145181000232697,
+       "H": 2.3291182999964803,
+       "P-s0": 3.4011587999993935,
+       "coupled solve": 2.6853198000462726
+      },
+      "every_repetition": {
+       "classical": [
+        2.56542800005991,
+        2.2145181000232697,
+        2.380165099981241,
+        2.6556349999736995,
+        3.1909153999295086
+       ],
+       "H": [
+        2.3291182999964803,
+        2.3362452998990193,
+        2.357399499975145,
+        2.824753100052476,
+        2.730440500075929
+       ],
+       "P-s0": [
+        3.5631295000202954,
+        3.4011587999993935,
+        3.446020199917257,
+        3.419543500058353,
+        3.409712400054559
+       ],
+       "coupled solve": [
+        4.15083619998768,
+        2.6853198000462726,
+        5.626043000025675,
+        3.307612199918367,
+        4.227465700008906
+       ]
+      },
+      "price": 1.0233885696446374,
+      "price_P-s0": 1.2421795831162663,
+      "classical_ms_per_piece": 38.18134655212534
+     },
+     "plate-hole step": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.0375819000182673,
+       "H": 2.002713399939239,
+       "P-s0": 3.2148698000237346,
+       "coupled solve": 2.6154130999930203
+      },
+      "every_repetition": {
+       "classical": [
+        2.7423076999839395,
+        2.992291900096461,
+        2.0375819000182673,
+        5.610155100002885,
+        5.070288100047037
+       ],
+       "H": [
+        2.6087595999706537,
+        2.580278299981728,
+        2.002713399939239,
+        4.821561899967492,
+        4.833980199997313
+       ],
+       "P-s0": [
+        3.7602907000109553,
+        3.7118720998987556,
+        3.2148698000237346,
+        6.028840700048022,
+        4.029415600001812
+       ],
+       "coupled solve": [
+        3.1462980000069365,
+        2.6154130999930203,
+        4.955655499943532,
+        5.180810099933296,
+        3.5304291000356898
+       ]
+      },
+      "price": 0.9925062244685533,
+      "price_P-s0": 1.2530172286887502,
+      "classical_ms_per_piece": 35.13072241410806
+     }
+    },
+    "counts": {
+     "counts": false,
+     "failed": [
+      "power events [105] in its window",
+      "another process used 31% of a core"
+     ]
+    },
+    "before_start": {
+     "waited_s": 32.34639069996774,
+     "readings": [
+      0.876,
+      0.27,
+      0.079
+     ],
+     "quiet": true
+    }
+   },
+   {
+    "run": 3,
+    "torch_threads": 4,
+    "reps": 5,
+    "n": 64,
+    "start": {
+     "time": "2026-11-07T23:56:04",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.22399999999999998
+    },
+    "end": {
+     "time": "2026-11-08T00:00:22",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.037000000000000005
+    },
+    "power_events": [],
+    "problems": {
+     "wall-2 steady": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.1417218999704346,
+       "H": 0.12167650007177144,
+       "P-s0": 0.17536680004559457,
+       "coupled solve": 0.029782900004647672
+      },
+      "every_repetition": {
+       "classical": [
+        0.1417218999704346,
+        0.1485934000229463,
+        0.19121520000044256,
+        0.169063700013794,
+        0.17676689999643713
+       ],
+       "H": [
+        0.1475367998937145,
+        0.12167650007177144,
+        0.1307443999685347,
+        0.13398929999675602,
+        0.16540970001369715
+       ],
+       "P-s0": [
+        0.17536680004559457,
+        0.23498780000954866,
+        0.2117219000356272,
+        0.20271639991551638,
+        0.21574629994574934
+       ],
+       "coupled solve": [
+        0.061275599990040064,
+        0.1749377999221906,
+        0.04284479992929846,
+        0.029782900004647672,
+        0.1282166000455618
+       ]
+      },
+      "price": 0.8831204730038137,
+      "price_P-s0": 1.1961746847904442,
+      "classical_ms_per_piece": 35.43047499260865
+     },
+     "wall-2 step": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.15741510002408177,
+       "H": 0.1288638999685645,
+       "P-s0": 0.2090460000326857,
+       "coupled solve": 0.031838899943977594
+      },
+      "every_repetition": {
+       "classical": [
+        0.18518210004549474,
+        0.15741510002408177,
+        0.18049870000686496,
+        0.22961789998225868,
+        0.16738450003322214
+       ],
+       "H": [
+        0.22407639992889017,
+        0.14049239992164075,
+        0.1308149000396952,
+        0.1288638999685645,
+        0.1377736999420449
+       ],
+       "P-s0": [
+        0.23697620001621544,
+        0.24891750002279878,
+        0.2090460000326857,
+        0.24842369998805225,
+        0.21280810004100204
+       ],
+       "coupled solve": [
+        0.03328279999550432,
+        0.031838899943977594,
+        0.03485459997318685,
+        0.0357997000683099,
+        0.04025029996410012
+       ]
+      },
+      "price": 0.8491381949108823,
+      "price_P-s0": 1.2728127279598727,
+      "classical_ms_per_piece": 39.35377500602044
+     },
+     "heated-strip steady": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.4465937000932172,
+       "H": 1.2264778999378905,
+       "P-s0": 2.03075389994774,
+       "coupled solve": 0.8838625999633223
+      },
+      "every_repetition": {
+       "classical": [
+        1.4465937000932172,
+        1.6074951000045985,
+        1.670550600043498,
+        1.4631103000137955,
+        1.711542599950917
+       ],
+       "H": [
+        1.3346588000422344,
+        1.422492100042291,
+        1.300326400087215,
+        1.2264778999378905,
+        1.6632692000130191
+       ],
+       "P-s0": [
+        2.113312399946153,
+        2.0470260999863967,
+        2.03075389994774,
+        2.6025641000596806,
+        2.4164495000150055
+       ],
+       "coupled solve": [
+        0.9545885000843555,
+        0.8955715999472886,
+        0.8838625999633223,
+        1.1059580000583082,
+        0.9900994000490755
+       ]
+      },
+      "price": 0.9055481966557423,
+      "price_P-s0": 1.250663442966234,
+      "classical_ms_per_piece": 36.16484250233043
+     },
+     "heated-strip step": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.4242603000020608,
+       "H": 1.3943966999650002,
+       "P-s0": 2.4858363000676036,
+       "coupled solve": 0.9583468000637367
+      },
+      "every_repetition": {
+       "classical": [
+        1.6246307999826968,
+        1.7880590999266133,
+        1.4242603000020608,
+        1.5475550000555813,
+        1.5413278000196442
+       ],
+       "H": [
+        1.7191427999641746,
+        1.3943966999650002,
+        1.5285600000061095,
+        1.420160899986513,
+        1.513484700000845
+       ],
+       "P-s0": [
+        2.792398300021887,
+        2.702289800043218,
+        2.5458178999833763,
+        2.4858363000676036,
+        2.5860097999684513
+       ],
+       "coupled solve": [
+        1.0385756000177935,
+        0.9679007999366149,
+        0.9938730999128893,
+        0.9850732999620959,
+        0.9583468000637367
+       ]
+      },
+      "price": 0.9874659988899404,
+      "price_P-s0": 1.4455522692080565,
+      "classical_ms_per_piece": 35.60650750005152
+     },
+     "plate-insert steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6744214999489486,
+       "H": 0.535053399973549,
+       "P-s0": 1.019632100011222,
+       "coupled solve": 0.16722990002017468
+      },
+      "every_repetition": {
+       "classical": [
+        0.6823504000203684,
+        0.6744214999489486,
+        0.7215232999296859,
+        0.7154820000287145,
+        0.7463108999654651
+       ],
+       "H": [
+        0.5854873999487609,
+        0.535053399973549,
+        0.5867116000736132,
+        0.569855900015682,
+        0.5931698000058532
+       ],
+       "P-s0": [
+        1.1445006999420002,
+        1.254762800061144,
+        1.1198892999673262,
+        1.1302781999111176,
+        1.019632100011222
+       ],
+       "coupled solve": [
+        0.20129009999800473,
+        0.245455399970524,
+        0.25821469991933554,
+        0.25397089996840805,
+        0.16722990002017468
+       ]
+      },
+      "price": 0.8344111350845343,
+      "price_P-s0": 1.4101586477191599,
+      "classical_ms_per_piece": 37.467861108274924
+     },
+     "plate-insert step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6702908000443131,
+       "H": 0.538078699959442,
+       "P-s0": 0.9795474000275135,
+       "coupled solve": 0.19349699991289526
+      },
+      "every_repetition": {
+       "classical": [
+        0.6831682999618351,
+        0.6702908000443131,
+        0.6877885999856517,
+        0.7183262000326067,
+        0.7180998999392614
+       ],
+       "H": [
+        0.5822976999916136,
+        0.538078699959442,
+        0.5698648999677971,
+        0.588989199954085,
+        0.5421453999588266
+       ],
+       "P-s0": [
+        1.0177347999997437,
+        1.0620350000681356,
+        0.9795474000275135,
+        1.0145357999717817,
+        1.295597800053656
+       ],
+       "coupled solve": [
+        0.20355069998186082,
+        0.23606510006356984,
+        0.24602829990908504,
+        0.2387804000172764,
+        0.19349699991289526
+       ]
+      },
+      "price": 0.8469391439756144,
+      "price_P-s0": 1.3580238109388914,
+      "classical_ms_per_piece": 37.23837778023962
+     },
+     "fast-heat steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6777307000011206,
+       "H": 0.561683899955824,
+       "P-s0": 0.9364992000628263,
+       "coupled solve": 0.1885685999877751
+      },
+      "every_repetition": {
+       "classical": [
+        0.6777307000011206,
+        0.6816418999806046,
+        0.7213144999695942,
+        0.7898093999829143,
+        0.7205869999015704
+       ],
+       "H": [
+        0.5857334999600425,
+        0.6010380999650806,
+        0.602536000078544,
+        0.561683899955824,
+        0.5897110999794677
+       ],
+       "P-s0": [
+        0.982332400046289,
+        0.9976916000014171,
+        0.9680294001009315,
+        0.9364992000628263,
+        0.9926659000338987
+       ],
+       "coupled solve": [
+        0.19591559993568808,
+        0.24403269996400923,
+        0.2553402000339702,
+        0.1885685999877751,
+        0.21383879997301847
+       ]
+      },
+      "price": 0.8660430638154919,
+      "price_P-s0": 1.2987056552683611,
+      "classical_ms_per_piece": 37.65170555561781
+     },
+     "fast-heat step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6798968999646604,
+       "H": 0.5184376999968663,
+       "P-s0": 0.9555937999393791,
+       "coupled solve": 0.22740169998724014
+      },
+      "every_repetition": {
+       "classical": [
+        0.692533600027673,
+        0.7006582000758499,
+        0.6798968999646604,
+        0.6961728000314906,
+        0.7135235000168905
+       ],
+       "H": [
+        0.5459694999735802,
+        0.5938045000657439,
+        0.5845169000094756,
+        0.5184376999968663,
+        0.5830974000273272
+       ],
+       "P-s0": [
+        1.0173943999689072,
+        1.061885099974461,
+        1.0199701999081299,
+        0.9555937999393791,
+        1.0577599999960512
+       ],
+       "coupled solve": [
+        0.24476060003507882,
+        0.23857990000396967,
+        0.22868210007436574,
+        0.2545930000487715,
+        0.22740169998724014
+       ]
+      },
+      "price": 0.8220440327182763,
+      "price_P-s0": 1.3038656733178409,
+      "classical_ms_per_piece": 37.77204999803669
+     },
+     "bimetal-arc steady": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.4653764999238774,
+       "H": 0.35213279991876334,
+       "P-s0": 0.5954970999155194,
+       "coupled solve": 0.13448679994326085
+      },
+      "every_repetition": {
+       "classical": [
+        0.4653764999238774,
+        0.6076362000312656,
+        0.5472978000761941,
+        0.5236976000014693,
+        0.5538877000799403
+       ],
+       "H": [
+        0.37388740002643317,
+        0.3791832000715658,
+        0.3867767999181524,
+        0.35213279991876334,
+        0.35717319999821484
+       ],
+       "P-s0": [
+        0.6470861999550834,
+        0.5954970999155194,
+        0.6281250000465661,
+        0.6803493000334129,
+        0.6314819999970496
+       ],
+       "coupled solve": [
+        0.13730559998657554,
+        0.15572450007312,
+        0.1413236999651417,
+        0.13448679994326085,
+        0.15208130003884435
+       ]
+      },
+      "price": 0.8112174890009173,
+      "price_P-s0": 1.2169170876439048,
+      "classical_ms_per_piece": 38.78137499365645
+     },
+     "bimetal-arc step": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.5178054999560118,
+       "H": 0.37032190000172704,
+       "P-s0": 0.6076836999272928,
+       "coupled solve": 0.10838759993202984
+      },
+      "every_repetition": {
+       "classical": [
+        0.5250013000331819,
+        0.5178054999560118,
+        0.532966100028716,
+        0.5617056000046432,
+        0.5280191000783816
+       ],
+       "H": [
+        0.37856780004221946,
+        0.37032190000172704,
+        0.3716465999605134,
+        0.4043786000693217,
+        0.4569175000069663
+       ],
+       "P-s0": [
+        0.6323706998955458,
+        0.6076836999272928,
+        0.6236775999423116,
+        0.6443786999443546,
+        0.7682322000619024
+       ],
+       "coupled solve": [
+        0.12546440004371107,
+        0.13613060000352561,
+        0.1536897000623867,
+        0.10838759993202984,
+        0.14474029990378767
+       ]
+      },
+      "price": 0.7644758462195549,
+      "price_P-s0": 1.1435311248037554,
+      "classical_ms_per_piece": 43.15045832966765
+     },
+     "plate-hole steady": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.262745099957101,
+       "H": 2.089841300039552,
+       "P-s0": 3.298213200061582,
+       "coupled solve": 1.8666475999634713
+      },
+      "every_repetition": {
+       "classical": [
+        2.809820800088346,
+        2.379057800048031,
+        2.295957800000906,
+        2.3144944999367,
+        2.262745099957101
+       ],
+       "H": [
+        2.089841300039552,
+        2.2390363999875262,
+        2.2413917999947444,
+        2.2808037999784574,
+        2.4136044000042602
+       ],
+       "P-s0": [
+        3.7323850999819115,
+        3.3212371999397874,
+        3.601366200018674,
+        3.4820370000088587,
+        3.298213200061582
+       ],
+       "coupled solve": [
+        2.2130836999276653,
+        2.0857633999548852,
+        1.8666475999634713,
+        2.0013412999687716,
+        1.9025139000732452
+       ]
+      },
+      "price": 0.9581285161082223,
+      "price_P-s0": 1.2507555409114754,
+      "classical_ms_per_piece": 39.0128465509845
+     },
+     "plate-hole step": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.203561900067143,
+       "H": 2.0243414000142366,
+       "P-s0": 3.521918300073594,
+       "coupled solve": 1.958958600065671
+      },
+      "every_repetition": {
+       "classical": [
+        2.203561900067143,
+        2.2497362999711186,
+        2.3300295000663027,
+        2.888588699977845,
+        2.373360999976285
+       ],
+       "H": [
+        2.3116522999480367,
+        2.1512162999715656,
+        2.0243414000142366,
+        2.233737500035204,
+        2.2675431000534445
+       ],
+       "P-s0": [
+        4.085355099989101,
+        3.755973800085485,
+        3.521918300073594,
+        3.6351684000110254,
+        3.8660499000689015
+       ],
+       "coupled solve": [
+        1.9644410000182688,
+        1.958958600065671,
+        2.219457699917257,
+        2.2851384999230504,
+        2.18246039992664
+       ]
+      },
+      "price": 0.9569442360590925,
+      "price_P-s0": 1.3167206984240403,
+      "classical_ms_per_piece": 37.99244655288178
+     }
+    },
+    "counts": {
+     "counts": false,
+     "failed": [
+      "another process used 22% of a core"
+     ]
+    },
+    "before_start": {
+     "waited_s": 32.74714130000211,
+     "readings": [
+      0.87,
+      0.286,
+      0.1
+     ],
+     "quiet": true
+    }
+   },
+   {
+    "run": 4,
+    "torch_threads": 4,
+    "reps": 5,
+    "n": 64,
+    "start": {
+     "time": "2026-11-08T00:01:12",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.039
+    },
+    "end": {
+     "time": "2026-11-08T00:05:49",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.042
+    },
+    "power_events": [
+     105,
+     105
+    ],
+    "problems": {
+     "wall-2 steady": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.14745439996477216,
+       "H": 0.1369517999701202,
+       "P-s0": 0.18683559994678944,
+       "coupled solve": 0.03008519997820258
+      },
+      "every_repetition": {
+       "classical": [
+        0.1586537000257522,
+        0.3192421999992803,
+        0.22706059995107353,
+        0.17618150007911026,
+        0.14745439996477216
+       ],
+       "H": [
+        0.19496130000334233,
+        0.1369517999701202,
+        0.14330220001284033,
+        0.15206410002429038,
+        0.17176060006022453
+       ],
+       "P-s0": [
+        0.2862363999010995,
+        0.23878989997319877,
+        0.18683559994678944,
+        0.22090419998858124,
+        0.2816898999735713
+       ],
+       "coupled solve": [
+        0.042269600089639425,
+        0.03600740002002567,
+        0.037494400050491095,
+        0.03008519997820258,
+        0.03542189998552203
+       ]
+      },
+      "price": 0.9408436202513389,
+      "price_P-s0": 1.2218164285301218,
+      "classical_ms_per_piece": 36.86359999119304
+     },
+     "wall-2 step": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.1455951000098139,
+       "H": 0.1465582000091672,
+       "P-s0": 0.20355089998338372,
+       "coupled solve": 0.033354800078086555
+      },
+      "every_repetition": {
+       "classical": [
+        0.1455951000098139,
+        0.1741343999747187,
+        0.2417099999729544,
+        0.16806150006596,
+        0.19665050006005913
+       ],
+       "H": [
+        0.15121799998451024,
+        0.16334530001040548,
+        0.20639179996214807,
+        0.16541929997038096,
+        0.1465582000091672
+       ],
+       "P-s0": [
+        0.24134420009795576,
+        0.243458200013265,
+        0.20355089998338372,
+        0.2549584999214858,
+        0.24773089995142072
+       ],
+       "coupled solve": [
+        0.03372129995841533,
+        0.043330300017260015,
+        0.033354800078086555,
+        0.037855800008401275,
+        0.056082400027662516
+       ]
+      },
+      "price": 1.0053819532666977,
+      "price_P-s0": 1.3238660649997671,
+      "classical_ms_per_piece": 36.398775002453476
+     },
+     "heated-strip steady": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.5641153999604285,
+       "H": 1.2384168000426143,
+       "P-s0": 2.1864728999789804,
+       "coupled solve": 0.8913107999833301
+      },
+      "every_repetition": {
+       "classical": [
+        1.9246238000923768,
+        1.7948330000508577,
+        1.6078524999320507,
+        1.5641153999604285,
+        1.8284275999758393
+       ],
+       "H": [
+        1.386570000089705,
+        1.5706502998946235,
+        1.6741534000029787,
+        1.2384168000426143,
+        1.4240517999278381
+       ],
+       "P-s0": [
+        2.716399999917485,
+        2.352240000036545,
+        2.1864728999789804,
+        2.3644557999214157,
+        2.285799500066787
+       ],
+       "coupled solve": [
+        1.160936800064519,
+        1.1995263999560848,
+        0.8913107999833301,
+        1.2206214000470936,
+        1.1131174000911415
+       ]
+      },
+      "price": 0.8673555735760764,
+      "price_P-s0": 1.2534621077321757,
+      "classical_ms_per_piece": 39.10288499901071
+     },
+     "heated-strip step": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.5843670000322163,
+       "H": 1.3266378999687731,
+       "P-s0": 2.1544691000599414,
+       "coupled solve": 1.0281888999743387
+      },
+      "every_repetition": {
+       "classical": [
+        1.6564820000203326,
+        1.5843670000322163,
+        1.843415799899958,
+        1.9255214999429882,
+        1.7918647999176756
+       ],
+       "H": [
+        1.6188268000259995,
+        1.4329521999461576,
+        1.449851999990642,
+        1.3793716999934986,
+        1.3266378999687731
+       ],
+       "P-s0": [
+        2.5120509000262246,
+        2.366476699942723,
+        2.1544691000599414,
+        2.4809345999965444,
+        2.1988186000380665
+       ],
+       "coupled solve": [
+        1.0933605999452993,
+        1.2680772000458091,
+        1.0281888999743387,
+        1.1545213999925181,
+        1.1575384999159724
+       ]
+      },
+      "price": 0.9013498237251893,
+      "price_P-s0": 1.2182162303307251,
+      "classical_ms_per_piece": 39.60917500080541
+     },
+     "plate-insert steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6855650999350473,
+       "H": 0.5810629000188783,
+       "P-s0": 0.5219470999436453,
+       "coupled solve": 0.13760750007349998
+      },
+      "every_repetition": {
+       "classical": [
+        0.6855650999350473,
+        0.9226564000127837,
+        0.8759489000076428,
+        0.7003725999966264,
+        0.7261490999953821
+       ],
+       "H": [
+        0.600314800045453,
+        0.6127343000844121,
+        0.6174307999899611,
+        0.5810629000188783,
+        0.5858111999696121
+       ],
+       "P-s0": [
+        0.9201087000546977,
+        0.9584723999723792,
+        1.0307473000138998,
+        0.9653443000279367,
+        0.5219470999436453
+       ],
+       "coupled solve": [
+        0.1743644999805838,
+        0.2406007000245154,
+        0.1801686999388039,
+        0.2713950000470504,
+        0.13760750007349998
+       ]
+      },
+      "price": 0.8730494674931066,
+      "price_P-s0": 0.8012348807653423,
+      "classical_ms_per_piece": 38.08694999639152
+     },
+     "plate-insert step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6840445999987423,
+       "H": 0.4801521000918001,
+       "P-s0": 0.46178869996219873,
+       "coupled solve": 0.1559505999321118
+      },
+      "every_repetition": {
+       "classical": [
+        1.0144849999342114,
+        0.6840445999987423,
+        0.9053880999563262,
+        0.7754844999872148,
+        0.723429900011979
+       ],
+       "H": [
+        0.5064085000194609,
+        0.4801521000918001,
+        0.5551068000495434,
+        0.5289423000067472,
+        0.5145831999834627
+       ],
+       "P-s0": [
+        0.5295995000051335,
+        0.48667899996507913,
+        0.4645462000044063,
+        0.46178869996219873,
+        0.4646929999580607
+       ],
+       "coupled solve": [
+        0.2121581999817863,
+        0.17402779997792095,
+        0.1559505999321118,
+        0.1641927999444306,
+        0.18602700007613748
+       ]
+      },
+      "price": 0.7572694463924008,
+      "price_P-s0": 0.7354081308383202,
+      "classical_ms_per_piece": 38.00247777770791
+     },
+     "fast-heat steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.8580114999786019,
+       "H": 0.5488398000597954,
+       "P-s0": 0.5375284999608994,
+       "coupled solve": 0.16469890007283539
+      },
+      "every_repetition": {
+       "classical": [
+        0.8741975999437273,
+        0.8580114999786019,
+        1.1989237000234425,
+        0.9698050000006333,
+        0.8791420999914408
+       ],
+       "H": [
+        0.601331299985759,
+        0.6103421000298113,
+        0.7834019999718294,
+        0.6248458999907598,
+        0.5488398000597954
+       ],
+       "P-s0": [
+        0.5375284999608994,
+        1.1315926000243053,
+        1.07105909998063,
+        1.1241569999838248,
+        0.7605270000640303
+       ],
+       "coupled solve": [
+        0.16469890007283539,
+        0.19788300001528114,
+        0.19811520003713667,
+        0.22738609998486936,
+        0.19990909995976835
+       ]
+      },
+      "price": 0.6976937949362236,
+      "price_P-s0": 0.6866336745948962,
+      "classical_ms_per_piece": 47.66730555436678
+     },
+     "fast-heat step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.7194058999884874,
+       "H": 0.5345016999635845,
+       "P-s0": 0.9255285999970511,
+       "coupled solve": 0.2066538999788463
+      },
+      "every_repetition": {
+       "classical": [
+        0.7194058999884874,
+        0.7686450999462977,
+        1.2376125999726355,
+        1.2476444999920204,
+        1.5632033000001684
+       ],
+       "H": [
+        0.5701767000136897,
+        0.5345016999635845,
+        1.229762899922207,
+        1.069743899977766,
+        0.9977331000845879
+       ],
+       "P-s0": [
+        0.9255285999970511,
+        1.2093509000260383,
+        1.1439561999868602,
+        1.3708411999978125,
+        1.226819600095041
+       ],
+       "coupled solve": [
+        0.2066538999788463,
+        0.2792926999973133,
+        0.30418730003293604,
+        0.34695430006831884,
+        0.26194640004541725
+       ]
+      },
+      "price": 0.8003323327160673,
+      "price_P-s0": 1.2225803344620234,
+      "classical_ms_per_piece": 39.96699444380485
+     },
+     "bimetal-arc steady": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.6144311999669299,
+       "H": 0.4414222000632435,
+       "P-s0": 0.5952124999603257,
+       "coupled solve": 0.11481409997213632
+      },
+      "every_repetition": {
+       "classical": [
+        0.6144311999669299,
+        0.7657876999583095,
+        0.7535242999438196,
+        0.7350894000846893,
+        0.7916719999630004
+       ],
+       "H": [
+        0.4414222000632435,
+        0.49731420003809035,
+        0.4981116000562906,
+        0.7137413999298587,
+        0.5951529999729246
+       ],
+       "P-s0": [
+        0.7057771000545472,
+        0.6217536999611184,
+        0.5952124999603257,
+        0.7670770999975502,
+        0.6757134000072256
+       ],
+       "coupled solve": [
+        0.11481409997213632,
+        0.21756659995298833,
+        0.11830720002762973,
+        0.16991309996228665,
+        0.1538810000056401
+       ]
+      },
+      "price": 0.7627560987802835,
+      "price_P-s0": 0.9736457677434327,
+      "classical_ms_per_piece": 51.20259999724416
+     },
+     "bimetal-arc step": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.4555891000200063,
+       "H": 0.33915200002957135,
+       "P-s0": 0.5769048000220209,
+       "coupled solve": 0.11944709997624159
+      },
+      "every_repetition": {
+       "classical": [
+        0.4555891000200063,
+        0.5335222999565303,
+        0.5821715999627486,
+        0.47970869997516274,
+        0.5077494999859482
+       ],
+       "H": [
+        0.33915200002957135,
+        0.4654675000347197,
+        0.49923229997511953,
+        0.4451071999501437,
+        0.40504870004951954
+       ],
+       "P-s0": [
+        0.6697802999988198,
+        0.6688250999432057,
+        0.6289137999992818,
+        0.5769048000220209,
+        0.6518473000032827
+       ],
+       "coupled solve": [
+        0.11944709997624159,
+        0.12199400004465133,
+        0.1356532999780029,
+        0.12587849993724376,
+        0.16871420003008097
+       ]
+      },
+      "price": 0.7975134435167825,
+      "price_P-s0": 1.2109705441201897,
+      "classical_ms_per_piece": 37.96575833500052
+     },
+     "plate-hole steady": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.415895999991335,
+       "H": 1.9237882000161335,
+       "P-s0": 3.0483528000768274,
+       "coupled solve": 2.0120161999948323
+      },
+      "every_repetition": {
+       "classical": [
+        2.8910040000919253,
+        2.7206985999364406,
+        3.4770947000943124,
+        2.415895999991335,
+        2.6458368999883533
+       ],
+       "H": [
+        1.9237882000161335,
+        2.5539192999713123,
+        2.1376142000081018,
+        2.3481447999365628,
+        2.3974236000794917
+       ],
+       "P-s0": [
+        3.0483528000768274,
+        3.2250163999851793,
+        3.3257129000267014,
+        3.354703800054267,
+        3.26851500000339
+       ],
+       "coupled solve": [
+        3.0255691000493243,
+        2.5718176000518724,
+        2.0120161999948323,
+        2.583022700040601,
+        2.506487700040452
+       ]
+      },
+      "price": 0.8888623401392786,
+      "price_P-s0": 1.1428340878320642,
+      "classical_ms_per_piece": 41.65337931019543
+     },
+     "plate-hole step": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.4706086000660434,
+       "H": 2.212844999972731,
+       "P-s0": 3.1525432999478653,
+       "coupled solve": 2.001396899926476
+      },
+      "every_repetition": {
+       "classical": [
+        5.316747599979863,
+        3.285120900021866,
+        2.5512920999899507,
+        2.4706086000660434,
+        2.7351908000418916
+       ],
+       "H": [
+        3.0674813999794424,
+        2.9298291000304744,
+        2.212844999972731,
+        2.503274599905126,
+        2.2601910999510437
+       ],
+       "P-s0": [
+        3.1525432999478653,
+        3.809987600077875,
+        3.3213302000658587,
+        3.167881700093858,
+        3.2215198000194505
+       ],
+       "coupled solve": [
+        2.263662299956195,
+        2.001396899926476,
+        2.0602811001008376,
+        2.032215000013821,
+        2.0783746999222785
+       ]
+      },
+      "price": 0.9423606254299679,
+      "price_P-s0": 1.1524896827347288,
+      "classical_ms_per_piece": 42.59670000113868
+     }
+    },
+    "counts": {
+     "counts": false,
+     "failed": [
+      "power events [105] in its window"
+     ]
+    },
+    "before_start": {
+     "waited_s": 33.39004890003707,
+     "readings": [
+      0.958,
+      0.209,
+      0.057
+     ],
+     "quiet": true
+    }
+   },
+   {
+    "run": 5,
+    "torch_threads": 4,
+    "reps": 5,
+    "n": 64,
+    "start": {
+     "time": "2026-11-08T00:06:36",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.042
+    },
+    "end": {
+     "time": "2026-11-08T00:10:47",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.35200000000000004
+    },
+    "power_events": [],
+    "problems": {
+     "wall-2 steady": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.14269640005659312,
+       "H": 0.12637280009221286,
+       "P-s0": 0.22911549999844283,
+       "coupled solve": 0.02823469997383654
+      },
+      "every_repetition": {
+       "classical": [
+        0.14269640005659312,
+        0.20796230004634708,
+        0.2233995000133291,
+        0.14599650003947318,
+        0.14894430001731962
+       ],
+       "H": [
+        0.18977370008360595,
+        0.1285502000246197,
+        0.1345877000130713,
+        0.12637280009221286,
+        0.13708670006599277
+       ],
+       "P-s0": [
+        0.2757014000089839,
+        0.24974840006325394,
+        0.22911549999844283,
+        0.2333141000708565,
+        0.24199679994489998
+       ],
+       "coupled solve": [
+        0.029768699896521866,
+        0.037835000082850456,
+        0.0350526999682188,
+        0.036061499966308475,
+        0.02823469997383654
+       ]
+      },
+      "price": 0.9045018726172458,
+      "price_P-s0": 1.5055785630962717,
+      "classical_ms_per_piece": 35.67410001414828
+     },
+     "wall-2 step": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.11309789994265884,
+       "H": 0.11014650005381554,
+       "P-s0": 0.19039349991362542,
+       "coupled solve": 0.02584090002346784
+      },
+      "every_repetition": {
+       "classical": [
+        0.11309789994265884,
+        0.15041819994803518,
+        0.15051860001403838,
+        0.1432543999981135,
+        0.14576110010966659
+       ],
+       "H": [
+        0.11014650005381554,
+        0.13249099999666214,
+        0.12633300002198666,
+        0.1348218999337405,
+        0.1328188000479713
+       ],
+       "P-s0": [
+        0.23541949992068112,
+        0.19794920005369931,
+        0.19039349991362542,
+        0.22718020004685968,
+        0.2380909000057727
+       ],
+       "coupled solve": [
+        0.037471999996341765,
+        0.038069500005804,
+        0.02663199999369681,
+        0.02584090002346784,
+        0.02896239992696792
+       ]
+      },
+      "price": 0.9787575544803694,
+      "price_P-s0": 1.5563283977536244,
+      "classical_ms_per_piece": 28.27447498566471
+     },
+     "heated-strip steady": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.4504586999537423,
+       "H": 1.2225709999911487,
+       "P-s0": 2.108722700038925,
+       "coupled solve": 0.9096664000535384
+      },
+      "every_repetition": {
+       "classical": [
+        1.496144299977459,
+        1.6404244999866933,
+        1.4504586999537423,
+        1.5522769999224693,
+        1.6731369000626728
+       ],
+       "H": [
+        1.2225709999911487,
+        1.3298905999399722,
+        1.3226728000445291,
+        1.247981599997729,
+        1.381515400018543
+       ],
+       "P-s0": [
+        2.108722700038925,
+        2.2739456000272185,
+        2.42704350000713,
+        2.299745599972084,
+        2.213848700048402
+       ],
+       "coupled solve": [
+        0.9681136000435799,
+        0.9712375999661162,
+        0.9096664000535384,
+        0.9777640000684187,
+        1.0160025999648497
+       ]
+      },
+      "price": 0.9034425336343863,
+      "price_P-s0": 1.2789106391365237,
+      "classical_ms_per_piece": 36.26146749884356
+     },
+     "heated-strip step": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.4101940999971703,
+       "H": 1.2130017000017688,
+       "P-s0": 2.1726264000171795,
+       "coupled solve": 0.9127088999375701
+      },
+      "every_repetition": {
+       "classical": [
+        1.7539548999629915,
+        1.6907116000074893,
+        2.08274729992263,
+        1.5332664999878034,
+        1.4101940999971703
+       ],
+       "H": [
+        1.3917099999962375,
+        1.3480163000058383,
+        1.2130017000017688,
+        1.3989280000096187,
+        1.2718786000041291
+       ],
+       "P-s0": [
+        2.358044799999334,
+        2.2476371000520885,
+        2.364476300077513,
+        2.316319499979727,
+        2.1726264000171795
+       ],
+       "coupled solve": [
+        0.9990195999853313,
+        0.9127088999375701,
+        0.9998196000233293,
+        0.9202201999723911,
+        0.9381309000309557
+       ]
+      },
+      "price": 0.9151094987604126,
+      "price_P-s0": 1.3282239077746376,
+      "classical_ms_per_piece": 35.25485249992926
+     },
+     "plate-insert steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6688957000151277,
+       "H": 0.4551819000625983,
+       "P-s0": 1.0419107000343502,
+       "coupled solve": 0.2225185000570491
+      },
+      "every_repetition": {
+       "classical": [
+        0.7019740999676287,
+        0.7055645000655204,
+        0.6801828000461683,
+        0.6851080000633374,
+        0.6688957000151277
+       ],
+       "H": [
+        0.4551819000625983,
+        0.5439571999013424,
+        0.5641281999414787,
+        0.5709377999883145,
+        0.5701976999407634
+       ],
+       "P-s0": [
+        1.0615252999123186,
+        1.0643741000676528,
+        1.0956695000641048,
+        1.1158849999774247,
+        1.0419107000343502
+       ],
+       "coupled solve": [
+        0.2225185000570491,
+        0.2320903999498114,
+        0.24197490001097322,
+        0.22984089993406087,
+        0.23316860001068562
+       ]
+      },
+      "price": 0.7602530900503658,
+      "price_P-s0": 1.4184530603046483,
+      "classical_ms_per_piece": 37.16087222306265
+     },
+     "plate-insert step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6689794999547303,
+       "H": 0.5515208999859169,
+       "P-s0": 1.04405859997496,
+       "coupled solve": 0.16907089995220304
+      },
+      "every_repetition": {
+       "classical": [
+        0.6778205999871716,
+        0.6689794999547303,
+        0.703993699979037,
+        0.7611775000113994,
+        0.7358571999939159
+       ],
+       "H": [
+        0.5807435000315309,
+        0.58906070003286,
+        0.5515208999859169,
+        0.5527972000418231,
+        0.5707360999658704
+       ],
+       "P-s0": [
+        1.0785828999942169,
+        1.0923437000019476,
+        1.047167000011541,
+        1.247250200016424,
+        1.04405859997496
+       ],
+       "coupled solve": [
+        0.2030615999829024,
+        0.23538410000037402,
+        0.16907089995220304,
+        0.24786940007470548,
+        0.21798700001090765
+       ]
+      },
+      "price": 0.8598430357149673,
+      "price_P-s0": 1.447561507114468,
+      "classical_ms_per_piece": 37.165527775262795
+     },
+     "fast-heat steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6890491999220103,
+       "H": 0.5400643000612035,
+       "P-s0": 0.8844594999682158,
+       "coupled solve": 0.2290072999894619
+      },
+      "every_repetition": {
+       "classical": [
+        0.6948300000512972,
+        0.7398823999101296,
+        0.6890491999220103,
+        0.7147804999258369,
+        0.7688046999974176
+       ],
+       "H": [
+        0.5715479999780655,
+        0.5428907000459731,
+        0.5400643000612035,
+        0.5579373000655323,
+        0.5504195999819785
+       ],
+       "P-s0": [
+        1.081770799937658,
+        0.8844594999682158,
+        0.959549400024116,
+        1.0839557000435889,
+        1.0477265999652445
+       ],
+       "coupled solve": [
+        0.24099860002752393,
+        0.2290072999894619,
+        0.23585130006540567,
+        0.2799106000456959,
+        0.24230909999459982
+       ]
+      },
+      "price": 0.8377170687477586,
+      "price_P-s0": 1.2128521502380831,
+      "classical_ms_per_piece": 38.28051110677835
+     },
+     "fast-heat step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.5729369999608025,
+       "H": 0.43510550004430115,
+       "P-s0": 1.0436559000518173,
+       "coupled solve": 0.21806589991319925
+      },
+      "every_repetition": {
+       "classical": [
+        0.5729369999608025,
+        0.7193518000422046,
+        0.6713013000553474,
+        0.6849416000768542,
+        0.7623368999920785
+       ],
+       "H": [
+        0.43510550004430115,
+        0.5265298000304028,
+        0.5633522999705747,
+        0.5401481000008062,
+        0.46745240001473576
+       ],
+       "P-s0": [
+        1.1790816999273375,
+        1.251464799977839,
+        1.1865292999427766,
+        1.0436559000518173,
+        1.2081940999487415
+       ],
+       "coupled solve": [
+        0.2636109000304714,
+        0.21806589991319925,
+        0.23222740006167442,
+        0.236569199943915,
+        0.22352100000716746
+       ]
+      },
+      "price": 0.8257509549731659,
+      "price_P-s0": 1.5950912445023846,
+      "classical_ms_per_piece": 31.829833331155694
+     },
+     "bimetal-arc steady": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.4502941999817267,
+       "H": 0.3480076000560075,
+       "P-s0": 0.6578244999982417,
+       "coupled solve": 0.13758800004143268
+      },
+      "every_repetition": {
+       "classical": [
+        0.4502941999817267,
+        0.5158165000611916,
+        0.504214399959892,
+        0.556709999917075,
+        0.5036284000379965
+       ],
+       "H": [
+        0.3571094999788329,
+        0.3774064000463113,
+        0.3601428000256419,
+        0.3480076000560075,
+        0.37020689994096756
+       ],
+       "P-s0": [
+        0.7959220999618992,
+        0.8153251999756321,
+        0.7701696999138221,
+        0.6578244999982417,
+        0.6785232999827713
+       ],
+       "coupled solve": [
+        0.14488859998527914,
+        0.14808590000029653,
+        0.13867460004985332,
+        0.14913850009907037,
+        0.13758800004143268
+       ]
+      },
+      "price": 0.8260083398992355,
+      "price_P-s0": 1.3530134098435695,
+      "classical_ms_per_piece": 37.52451666514389
+     },
+     "bimetal-arc step": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.4460693000582978,
+       "H": 0.34523259999696165,
+       "P-s0": 0.7171978999394923,
+       "coupled solve": 0.11820689996238798
+      },
+      "every_repetition": {
+       "classical": [
+        0.4460693000582978,
+        0.5382999000139534,
+        0.48495380009990185,
+        0.45284459996037185,
+        0.4930204999400303
+       ],
+       "H": [
+        0.3535261999350041,
+        0.34523259999696165,
+        0.3830509999534115,
+        0.3520085000200197,
+        0.35124530002940446
+       ],
+       "P-s0": [
+        0.7361789999995381,
+        0.7571994999889284,
+        0.7220237000146881,
+        0.7171978999394923,
+        0.7699330999748781
+       ],
+       "coupled solve": [
+        0.14380209997761995,
+        0.1434932000702247,
+        0.11820689996238798,
+        0.13605480000842363,
+        0.1448757000034675
+       ]
+      },
+      "price": 0.8212990374968152,
+      "price_P-s0": 1.4804891644752254,
+      "classical_ms_per_piece": 37.172441671524815
+     },
+     "plate-hole steady": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.0131579000735655,
+       "H": 2.1318025999935344,
+       "P-s0": 3.2564719999209046,
+       "coupled solve": 1.9382623999845237
+      },
+      "every_repetition": {
+       "classical": [
+        2.362724900012836,
+        2.270850699977018,
+        2.486229300033301,
+        2.2730657999636605,
+        2.0131579000735655
+       ],
+       "H": [
+        2.2719667999772355,
+        2.195247899973765,
+        2.1616800000192598,
+        2.1318025999935344,
+        2.1878451000666246
+       ],
+       "P-s0": [
+        3.7579671000130475,
+        3.721673100022599,
+        3.411254800041206,
+        3.3263915999559686,
+        3.2564719999209046
+       ],
+       "coupled solve": [
+        1.9578572999453172,
+        2.0052812999347225,
+        1.9382623999845237,
+        2.056515399948694,
+        2.0017996999667957
+       ]
+      },
+      "price": 1.0300258365120574,
+      "price_P-s0": 1.3146499246939287,
+      "classical_ms_per_piece": 34.70961896678561
+     },
+     "plate-hole step": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.3059495999477804,
+       "H": 1.973282799939625,
+       "P-s0": 2.898453800007701,
+       "coupled solve": 1.9640149000333622
+      },
+      "every_repetition": {
+       "classical": [
+        2.5074040999170393,
+        2.492390700033866,
+        2.452938299975358,
+        2.3517548999516293,
+        2.3059495999477804
+       ],
+       "H": [
+        2.249773300020024,
+        2.1141754999989644,
+        1.973282799939625,
+        2.055704899947159,
+        2.069161399966106
+       ],
+       "P-s0": [
+        3.2038218999514356,
+        3.0732019999995828,
+        3.3235760000534356,
+        2.961825200007297,
+        2.898453800007701
+       ],
+       "coupled solve": [
+        1.9640149000333622,
+        2.1349463999504223,
+        2.5424379999749362,
+        1.9957842000294477,
+        2.0700502999825403
+       ]
+      },
+      "price": 0.9220914365893148,
+      "price_P-s0": 1.1387609194555453,
+      "classical_ms_per_piece": 39.75775172323759
+     }
+    },
+    "counts": {
+     "counts": false,
+     "failed": [
+      "another process used 35% of a core",
+      "the classical expert outside 30-60 ms a piece on ['wall-2 step']"
+     ]
+    },
+    "before_start": {
+     "waited_s": 32.690671999938786,
+     "readings": [
+      0.941,
+      0.222,
+      0.055
+     ],
+     "quiet": true
+    }
+   },
+   {
+    "run": 6,
+    "torch_threads": 4,
+    "reps": 5,
+    "n": 64,
+    "start": {
+     "time": "2026-11-08T00:11:35",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.026000000000000002
+    },
+    "end": {
+     "time": "2026-11-08T00:15:54",
+     "plugged": true,
+     "percent": 100.0,
+     "other_core_max": 0.027000000000000003
+    },
+    "power_events": [],
+    "problems": {
+     "wall-2 steady": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.14912339998409152,
+       "H": 0.16937769996002316,
+       "P-s0": 0.22346879995893687,
+       "coupled solve": 0.033191599999554455
+      },
+      "every_repetition": {
+       "classical": [
+        0.1770581000018865,
+        0.202485500019975,
+        0.14912339998409152,
+        0.22910869994666427,
+        0.25210179993882775
+       ],
+       "H": [
+        0.21341510000638664,
+        0.17234259995166212,
+        0.17030080000404269,
+        0.16937769996002316,
+        0.20442239998374134
+       ],
+       "P-s0": [
+        0.2678097999887541,
+        0.26601739996112883,
+        0.27134490001481026,
+        0.26724339998327196,
+        0.22346879995893687
+       ],
+       "coupled solve": [
+        0.04177100001834333,
+        0.033191599999554455,
+        0.03604939999058843,
+        0.0416077000554651,
+        0.03971050004474819
+       ]
+      },
+      "price": 1.1110950825645092,
+      "price_P-s0": 1.407785426221179,
+      "classical_ms_per_piece": 37.28084999602288
+     },
+     "wall-2 step": {
+      "pieces": 4,
+      "seconds": {
+       "classical": 0.14604110002983361,
+       "H": 0.1410752999363467,
+       "P-s0": 0.22639039997011423,
+       "coupled solve": 0.03409520001150668
+      },
+      "every_repetition": {
+       "classical": [
+        0.14604110002983361,
+        0.17861610010731965,
+        0.15942749998066574,
+        0.19739410001784563,
+        0.16375890001654625
+       ],
+       "H": [
+        0.14888170000631362,
+        0.16454470006283373,
+        0.1410752999363467,
+        0.17295060004107654,
+        0.16866199998185039
+       ],
+       "P-s0": [
+        0.22639039997011423,
+        0.26598069991450757,
+        0.2725796999875456,
+        0.2704325000522658,
+        0.2724922999041155
+       ],
+       "coupled solve": [
+        0.04970319999847561,
+        0.040467599988915026,
+        0.03779760003089905,
+        0.03911319992039353,
+        0.03409520001150668
+       ]
+      },
+      "price": 0.9724330959815024,
+      "price_P-s0": 1.4460472426814635,
+      "classical_ms_per_piece": 36.510275007458404
+     },
+     "heated-strip steady": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.5055909999646246,
+       "H": 1.3383488000836223,
+       "P-s0": 2.2565164000261575,
+       "coupled solve": 0.9107740999897942
+      },
+      "every_repetition": {
+       "classical": [
+        1.5055909999646246,
+        1.6709782000398263,
+        1.5161695000715554,
+        1.68993120000232,
+        1.6762896999716759
+       ],
+       "H": [
+        1.3815503000514582,
+        1.413556299987249,
+        1.3437154999701306,
+        1.3383488000836223,
+        1.4143696000101045
+       ],
+       "P-s0": [
+        2.2565164000261575,
+        2.3488794999429956,
+        2.347800499992445,
+        2.355862500029616,
+        2.4058780999621376
+       ],
+       "coupled solve": [
+        0.9358589999610558,
+        1.0356449000537395,
+        1.001388099975884,
+        0.9107740999897942,
+        0.9754670999245718
+       ]
+      },
+      "price": 0.930787694341324,
+      "price_P-s0": 1.3107665311321115,
+      "classical_ms_per_piece": 37.639774999115616
+     },
+     "heated-strip step": {
+      "pieces": 40,
+      "seconds": {
+       "classical": 1.5123261000262573,
+       "H": 1.3437877999385819,
+       "P-s0": 2.2894146000035107,
+       "coupled solve": 0.8859296999871731
+      },
+      "every_repetition": {
+       "classical": [
+        1.6275536000030115,
+        1.5252887000096962,
+        1.578928399947472,
+        1.5123261000262573,
+        1.7730591000290588
+       ],
+       "H": [
+        1.520783899934031,
+        1.3948916000081226,
+        1.3437877999385819,
+        1.4415704000275582,
+        1.38305709999986
+       ],
+       "P-s0": [
+        2.369372899993323,
+        2.434198600007221,
+        2.4672940000891685,
+        2.4553322000429034,
+        2.2894146000035107
+       ],
+       "coupled solve": [
+        0.9486482000211254,
+        0.9642751000355929,
+        0.9276704000076279,
+        0.9071645999792963,
+        0.8859296999871731
+       ]
+      },
+      "price": 0.9297246356761728,
+      "price_P-s0": 1.324022358237558,
+      "classical_ms_per_piece": 37.80815250065643
+     },
+     "plate-insert steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6818053000606596,
+       "H": 0.5718153000343591,
+       "P-s0": 0.9867499000392854,
+       "coupled solve": 0.24178699997719377
+      },
+      "every_repetition": {
+       "classical": [
+        0.6818053000606596,
+        0.8057014000369236,
+        0.7517065000720322,
+        0.7119282999774441,
+        0.9541907000821084
+       ],
+       "H": [
+        0.6489210000727326,
+        0.5718153000343591,
+        0.6127021999564022,
+        0.7688047999981791,
+        0.6405170001089573
+       ],
+       "P-s0": [
+        1.0199666999978945,
+        1.099807999911718,
+        0.9867499000392854,
+        1.0918347999686375,
+        1.0527103000786155
+       ],
+       "coupled solve": [
+        0.24178699997719377,
+        0.2480044000549242,
+        0.24276860000099987,
+        0.24571400007698685,
+        0.24664020002819598
+       ]
+      },
+      "price": 0.8809106572003766,
+      "price_P-s0": 1.3301723065102726,
+      "classical_ms_per_piece": 37.878072225592206
+     },
+     "plate-insert step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.7192447000415996,
+       "H": 0.5900426000589505,
+       "P-s0": 1.080418199999258,
+       "coupled solve": 0.21508689993061125
+      },
+      "every_repetition": {
+       "classical": [
+        0.9481437000213191,
+        0.8005856999661773,
+        1.0502956000855193,
+        0.7192447000415996,
+        0.9272568000014871
+       ],
+       "H": [
+        0.6593742999248207,
+        0.6126820000354201,
+        0.5900426000589505,
+        0.6875520999310538,
+        0.6056566999759525
+       ],
+       "P-s0": [
+        1.117653000052087,
+        1.080418199999258,
+        1.1104450999991968,
+        1.1468053000280634,
+        1.2131948999594897
+       ],
+       "coupled solve": [
+        0.21936489990912378,
+        0.2574629000155255,
+        0.2822767000179738,
+        0.21508689993061125,
+        0.23115770006552339
+       ]
+      },
+      "price": 0.8617170820440068,
+      "price_P-s0": 1.3865581555503426,
+      "classical_ms_per_piece": 39.958038891199976
+     },
+     "fast-heat steady": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.7084970999276266,
+       "H": 0.4465617999667302,
+       "P-s0": 0.9973873000126332,
+       "coupled solve": 0.24395719997119159
+      },
+      "every_repetition": {
+       "classical": [
+        0.7125839999644086,
+        0.7943700000178069,
+        0.9168084000702947,
+        0.9986690999940038,
+        0.7084970999276266
+       ],
+       "H": [
+        0.8012857000576332,
+        0.5427552000619471,
+        0.5885923999594525,
+        0.4465617999667302,
+        0.6679296999936923
+       ],
+       "P-s0": [
+        1.0463979999767616,
+        1.1082956999307498,
+        1.0940190999535844,
+        1.1853716999758035,
+        0.9973873000126332
+       ],
+       "coupled solve": [
+        0.24515420000534505,
+        0.2816691000480205,
+        0.27092779998201877,
+        0.2695889000315219,
+        0.24395719997119159
+       ]
+      },
+      "price": 0.7249891149751516,
+      "price_P-s0": 1.3033113505978149,
+      "classical_ms_per_piece": 39.360949995979254
+     },
+     "fast-heat step": {
+      "pieces": 18,
+      "seconds": {
+       "classical": 0.6785165999317542,
+       "H": 0.5095211999723688,
+       "P-s0": 0.9508544999407604,
+       "coupled solve": 0.18029920000117272
+      },
+      "every_repetition": {
+       "classical": [
+        0.9445395999355242,
+        0.7819476000731811,
+        0.9128215999808162,
+        0.6785165999317542,
+        0.7106701999437064
+       ],
+       "H": [
+        0.5095211999723688,
+        0.7003478000406176,
+        0.6244843000313267,
+        0.5687218999955803,
+        0.7452840999467298
+       ],
+       "P-s0": [
+        0.9893239999655634,
+        0.9790426000254229,
+        0.9508544999407604,
+        1.0343586000381038,
+        0.9663131000706926
+       ],
+       "coupled solve": [
+        0.18029920000117272,
+        0.21357509994413704,
+        0.20217970001976937,
+        0.23930779995862395,
+        0.2174006000859663
+       ]
+      },
+      "price": 0.8032227632833678,
+      "price_P-s0": 1.317108627985507,
+      "classical_ms_per_piece": 37.69536666287523
+     },
+     "bimetal-arc steady": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.4970567000564188,
+       "H": 0.3674257999518886,
+       "P-s0": 0.5795236999401823,
+       "coupled solve": 0.13055599993094802
+      },
+      "every_repetition": {
+       "classical": [
+        0.4970567000564188,
+        0.5542382999556139,
+        0.5361436000093818,
+        0.7727992000291124,
+        0.5301319999853149
+       ],
+       "H": [
+        0.3675152000505477,
+        0.36934720003046095,
+        0.46330599999055266,
+        0.3674257999518886,
+        0.3792084000306204
+       ],
+       "P-s0": [
+        0.6599423000589013,
+        0.6182047999463975,
+        0.655134700005874,
+        0.6247970999684185,
+        0.5795236999401823
+       ],
+       "coupled solve": [
+        0.14493279997259378,
+        0.13055599993094802,
+        0.13769739994313568,
+        0.1463083999697119,
+        0.13604769995436072
+       ]
+      },
+      "price": 0.7934539882524055,
+      "price_P-s0": 1.13139791448679,
+      "classical_ms_per_piece": 41.421391671368234
+     },
+     "bimetal-arc step": {
+      "pieces": 12,
+      "seconds": {
+       "classical": 0.45249920000787824,
+       "H": 0.40732990007381886,
+       "P-s0": 0.5607618999201804,
+       "coupled solve": 0.11700030008796602
+      },
+      "every_repetition": {
+       "classical": [
+        0.6131199999945238,
+        0.656238800031133,
+        0.5533149000257254,
+        0.45249920000787824,
+        0.49473969999235123
+       ],
+       "H": [
+        0.4721361000556499,
+        0.40732990007381886,
+        0.4243016999680549,
+        0.46397109993267804,
+        0.4395892000757158
+       ],
+       "P-s0": [
+        0.6401423999341205,
+        0.5607618999201804,
+        0.5885943999746814,
+        0.7086138000013307,
+        0.6892279000021517
+       ],
+       "coupled solve": [
+        0.205247399979271,
+        0.1413126999977976,
+        0.12008759996388108,
+        0.1480179000645876,
+        0.11700030008796602
+       ]
+      },
+      "price": 0.920685970880646,
+      "price_P-s0": 1.190101483660797,
+      "classical_ms_per_piece": 37.70826666732319
+     },
+     "plate-hole steady": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.3188093999633566,
+       "H": 2.039486199966632,
+       "P-s0": 3.0239299999084324,
+       "coupled solve": 1.854181700036861
+      },
+      "every_repetition": {
+       "classical": [
+        2.8474727000575513,
+        2.6239478000206873,
+        2.3188093999633566,
+        2.4009392999578267,
+        2.6393700999906287
+       ],
+       "H": [
+        2.039486199966632,
+        2.0942940999520943,
+        2.1411042000399902,
+        2.0559971999609843,
+        2.226709899958223
+       ],
+       "P-s0": [
+        3.137223399942741,
+        3.162899799994193,
+        3.0239299999084324,
+        3.2645605000434443,
+        3.3069027999881655
+       ],
+       "coupled solve": [
+        2.251913100015372,
+        1.8712642999598756,
+        1.854181700036861,
+        1.985278199892491,
+        1.9502995000220835
+       ]
+      },
+      "price": 0.9330640316973813,
+      "price_P-s0": 1.1689724667625194,
+      "classical_ms_per_piece": 39.97947241316132
+     },
+     "plate-hole step": {
+      "pieces": 58,
+      "seconds": {
+       "classical": 2.2426650999113917,
+       "H": 1.9307114999974146,
+       "P-s0": 3.14461019996088,
+       "coupled solve": 1.8689666000427678
+      },
+      "every_repetition": {
+       "classical": [
+        2.42555650009308,
+        2.492544599925168,
+        2.3752893999917433,
+        2.2426650999113917,
+        2.567620199988596
+       ],
+       "H": [
+        1.9307114999974146,
+        2.2342824999941513,
+        2.0507714000996202,
+        2.3203101999824867,
+        2.502017499995418
+       ],
+       "P-s0": [
+        3.349331900011748,
+        3.14461019996088,
+        3.1706654001027346,
+        3.4432753000874072,
+        3.1921954000135884
+       ],
+       "coupled solve": [
+        1.8689666000427678,
+        1.9961578000802547,
+        1.9164700000546873,
+        1.9337430999148637,
+        1.9456611000932753
+       ]
+      },
+      "price": 0.9241290021386266,
+      "price_P-s0": 1.2193642733271912,
+      "classical_ms_per_piece": 38.66663965364469
+     }
+    },
+    "counts": {
+     "counts": true,
+     "failed": []
+    },
+    "before_start": {
+     "waited_s": 32.90104100003373,
+     "readings": [
+      0.963,
+      0.192,
+      0.037
+     ],
+     "quiet": true
+    }
+   }
+  ],
+  "counted": [
+   6
+  ],
+  "PR": {
+   "met": null,
+   "note": "only 1 of 3 runs counted after 6: PR not judged"
+  },
+  "reported_one_thread": {
+   "run": 0,
+   "torch_threads": 1,
+   "reps": 5,
+   "n": 64,
+   "start": {
+    "time": "2026-11-08T00:16:43",
+    "plugged": true,
+    "percent": 100.0,
+    "other_core_max": 0.040999999999999995
+   },
+   "end": {
+    "time": "2026-11-08T00:22:38",
+    "plugged": true,
+    "percent": 100.0,
+    "other_core_max": 0.018000000000000002
+   },
+   "power_events": [],
+   "problems": {
+    "wall-2 steady": {
+     "pieces": 4,
+     "seconds": {
+      "classical": 0.19939500000327826,
+      "H": 0.12098280002828687,
+      "P-s0": 0.2416900999378413,
+      "coupled solve": 0.04167899989988655
+     },
+     "every_repetition": {
+      "classical": [
+       0.3792860000394285,
+       0.21731310000177473,
+       0.25857770000584424,
+       0.3074860000051558,
+       0.19939500000327826
+      ],
+      "H": [
+       0.3848999000620097,
+       0.12365480000153184,
+       0.12200570001732558,
+       0.2372542000375688,
+       0.12098280002828687
+      ],
+      "P-s0": [
+       0.5466007000068203,
+       0.25140760000795126,
+       0.2416900999378413,
+       0.3028261000290513,
+       0.24531599995680153
+      ],
+      "coupled solve": [
+       0.05660199990961701,
+       0.04167899989988655,
+       0.05346940003801137,
+       0.051072999951429665,
+       0.05545189999975264
+      ]
+     },
+     "price": 0.6747380472116936,
+     "price_P-s0": 1.1754444691321015,
+     "classical_ms_per_piece": 49.848750000819564
+    },
+    "wall-2 step": {
+     "pieces": 4,
+     "seconds": {
+      "classical": 0.1454973000800237,
+      "H": 0.12111219996586442,
+      "P-s0": 0.23184760008007288,
+      "coupled solve": 0.038585899979807436
+     },
+     "every_repetition": {
+      "classical": [
+       0.1454973000800237,
+       0.2060397999593988,
+       0.4004003999289125,
+       0.22575719992164522,
+       0.21574779995717108
+      ],
+      "H": [
+       0.12825909990351647,
+       0.13289509993046522,
+       0.21301399997901171,
+       0.12111219996586442,
+       0.19801329995971173
+      ],
+      "P-s0": [
+       0.24964090005960315,
+       0.2562501000938937,
+       0.46779390005394816,
+       0.23184760008007288,
+       0.3252439999487251
+      ],
+      "coupled solve": [
+       0.04062089999206364,
+       0.05764300003647804,
+       0.039773200056515634,
+       0.038585899979807436,
+       0.047423899988643825
+      ]
+     },
+     "price": 0.8675321805236241,
+     "price_P-s0": 1.4690830014470815,
+     "classical_ms_per_piece": 36.37432502000593
+    },
+    "heated-strip steady": {
+     "pieces": 40,
+     "seconds": {
+      "classical": 1.6601877000648528,
+      "H": 1.7044880000175908,
+      "P-s0": 3.7921922999667004,
+      "coupled solve": 1.0198002000106499
+     },
+     "every_repetition": {
+      "classical": [
+       1.8104570000432432,
+       1.6601877000648528,
+       1.7406621999107301,
+       1.8198031999636441,
+       2.03291559999343
+      ],
+      "H": [
+       1.743243100005202,
+       1.9147278999444097,
+       1.9574491999810562,
+       1.9861835000338033,
+       1.7044880000175908
+      ],
+      "P-s0": [
+       4.563144200015813,
+       4.697411000030115,
+       4.403547900030389,
+       4.2776962000643834,
+       3.7921922999667004
+      ],
+      "coupled solve": [
+       1.2411444000899792,
+       1.1736316999886185,
+       1.1243397999787703,
+       1.1295169999357313,
+       1.0198002000106499
+      ]
+     },
+     "price": 1.0165300373003512,
+     "price_P-s0": 1.7955276961667561,
+     "classical_ms_per_piece": 41.50469250162132
+    },
+    "heated-strip step": {
+     "pieces": 40,
+     "seconds": {
+      "classical": 1.7729988999199122,
+      "H": 1.7428114999784157,
+      "P-s0": 3.648484200006351,
+      "coupled solve": 0.9776496000122279
+     },
+     "every_repetition": {
+      "classical": [
+       1.8970491000218317,
+       1.7729988999199122,
+       1.8412029999308288,
+       1.8280159999849275,
+       1.9478143999585882
+      ],
+      "H": [
+       1.861279399949126,
+       1.784513600054197,
+       1.7428114999784157,
+       1.8490879000164568,
+       1.8279855999862775
+      ],
+      "P-s0": [
+       4.142428899998777,
+       3.9501217999495566,
+       3.648484200006351,
+       4.074405599967577,
+       3.9449403999606147
+      ],
+      "coupled solve": [
+       1.1168395000277087,
+       1.0262620999710634,
+       0.9776496000122279,
+       1.0808689999394119,
+       0.9892527000047266
+      ]
+     },
+     "price": 0.98902535167898,
+     "price_P-s0": 1.6818338657711838,
+     "classical_ms_per_piece": 44.324972497997805
+    },
+    "plate-insert steady": {
+     "pieces": 18,
+     "seconds": {
+      "classical": 0.6526110999984667,
+      "H": 0.6720228999620304,
+      "P-s0": 1.427925099967979,
+      "coupled solve": 0.26727079995907843
+     },
+     "every_repetition": {
+      "classical": [
+       0.8064088999526575,
+       0.6526110999984667,
+       0.8522333999862894,
+       0.7377096000127494,
+       0.7829390000551939
+      ],
+      "H": [
+       0.7407752000726759,
+       0.7030379999196157,
+       0.7014660999411717,
+       0.8165020999731496,
+       0.6720228999620304
+      ],
+      "P-s0": [
+       1.7244048999855295,
+       1.9076775000430644,
+       1.427925099967979,
+       1.9315071000019088,
+       1.8264187999302521
+      ],
+      "coupled solve": [
+       0.26727079995907843,
+       0.29022149997763336,
+       0.3157006000401452,
+       0.29790569993201643,
+       0.29548269999213517
+      ]
+     },
+     "price": 1.021102491487722,
+     "price_P-s0": 1.8428408038089399,
+     "classical_ms_per_piece": 36.25617222213704
+    },
+    "plate-insert step": {
+     "pieces": 18,
+     "seconds": {
+      "classical": 0.6644009000156075,
+      "H": 0.7081361999735236,
+      "P-s0": 1.8831904999678954,
+      "coupled solve": 0.1787894000299275
+     },
+     "every_repetition": {
+      "classical": [
+       0.7570006999885663,
+       0.959829100058414,
+       0.6644009000156075,
+       0.6705952000338584,
+       0.7910787999862805
+      ],
+      "H": [
+       0.9413199999835342,
+       0.8425759999081492,
+       0.7280361000448465,
+       0.7081361999735236,
+       0.900560799986124
+      ],
+      "P-s0": [
+       1.8831904999678954,
+       1.9008625000715256,
+       2.0467134999344125,
+       2.011738899978809,
+       1.9205772000132129
+      ],
+      "coupled solve": [
+       0.1787894000299275,
+       0.2528120999922976,
+       0.25663990003522485,
+       0.27026999997906387,
+       0.2793214999837801
+      ]
+     },
+     "price": 1.0518688366737072,
+     "price_P-s0": 2.445450214366163,
+     "classical_ms_per_piece": 36.911161111978195
+    },
+    "fast-heat steady": {
+     "pieces": 18,
+     "seconds": {
+      "classical": 0.7742614999879152,
+      "H": 0.7108029000228271,
+      "P-s0": 1.7658818999771029,
+      "coupled solve": 0.19212789996527135
+     },
+     "every_repetition": {
+      "classical": [
+       0.8086266000755131,
+       0.9720189999789,
+       0.7742614999879152,
+       1.1683634999208152,
+       1.1881257999921218
+      ],
+      "H": [
+       0.7108029000228271,
+       0.901720599969849,
+       0.7185587000567466,
+       0.9067114000208676,
+       0.7717885000165552
+      ],
+      "P-s0": [
+       1.922173000057228,
+       1.8562915000366047,
+       1.7658818999771029,
+       2.0347475999733433,
+       1.9003836999181658
+      ],
+      "coupled solve": [
+       0.27981700003147125,
+       0.2680829999735579,
+       0.3031273999949917,
+       0.19212789996527135,
+       0.2571999999927357
+      ]
+     },
+     "price": 0.9343343377233213,
+     "price_P-s0": 2.0261085231659446,
+     "classical_ms_per_piece": 43.014527777106395
+    },
+    "fast-heat step": {
+     "pieces": 18,
+     "seconds": {
+      "classical": 0.8050229999935254,
+      "H": 0.6836245999438688,
+      "P-s0": 1.6976037999847904,
+      "coupled solve": 0.2006616999860853
+     },
+     "every_repetition": {
+      "classical": [
+       0.88182060001418,
+       0.9497334000188857,
+       0.8906993999844417,
+       0.8050229999935254,
+       1.106042500003241
+      ],
+      "H": [
+       0.8782854999881238,
+       0.9325275999726728,
+       0.7891876000212505,
+       0.6836245999438688,
+       0.8651252000126988
+      ],
+      "P-s0": [
+       1.950976499938406,
+       1.9742445000447333,
+       1.8519390999572352,
+       1.6976037999847904,
+       1.9031166000058874
+      ],
+      "coupled solve": [
+       0.2006616999860853,
+       0.32500870001967996,
+       0.2394934999756515,
+       0.3200211999937892,
+       0.23394270008429885
+      ]
+     },
+     "price": 0.8792878125200494,
+     "price_P-s0": 1.887535427365417,
+     "classical_ms_per_piece": 44.7234999996403
+    },
+    "bimetal-arc steady": {
+     "pieces": 12,
+     "seconds": {
+      "classical": 0.5022170000011101,
+      "H": 0.3728758000070229,
+      "P-s0": 1.0043957000598311,
+      "coupled solve": 0.1256675999611616
+     },
+     "every_repetition": {
+      "classical": [
+       0.6818284000037238,
+       0.5107639000052586,
+       0.611295499955304,
+       0.554801799939014,
+       0.5022170000011101
+      ],
+      "H": [
+       0.48746490001212806,
+       0.3728758000070229,
+       0.40975969994906336,
+       0.39875370007939637,
+       0.49026480002794415
+      ],
+      "P-s0": [
+       1.1527171999914572,
+       1.0043957000598311,
+       1.262149199959822,
+       1.0977807000745088,
+       1.1515364999650046
+      ],
+      "coupled solve": [
+       0.13586219993885607,
+       0.13493810000363737,
+       0.17428160004783422,
+       0.1672449999023229,
+       0.1256675999611616
+      ]
+     },
+     "price": 0.7940048219022109,
+     "price_P-s0": 1.7997945802284303,
+     "classical_ms_per_piece": 41.85141666675918
+    },
+    "bimetal-arc step": {
+     "pieces": 12,
+     "seconds": {
+      "classical": 0.4434798000147566,
+      "H": 0.4374559000134468,
+      "P-s0": 0.9969018999254331,
+      "coupled solve": 0.14158630010206252
+     },
+     "every_repetition": {
+      "classical": [
+       0.4434798000147566,
+       0.7974309999262914,
+       0.665639300015755,
+       0.5014485999708995,
+       0.5474401999963447
+      ],
+      "H": [
+       0.4542702999897301,
+       0.4504361000144854,
+       0.4374559000134468,
+       0.5300759000238031,
+       0.604700299911201
+      ],
+      "P-s0": [
+       1.2977324000094086,
+       1.246185400057584,
+       1.242121999966912,
+       0.9969018999254331,
+       1.1276526000583544
+      ],
+      "coupled solve": [
+       0.19889999995939434,
+       0.14158630010206252,
+       0.15347849996760488,
+       0.15513810003176332,
+       0.1653959999093786
+      ]
+     },
+     "price": 0.9897038984140304,
+     "price_P-s0": 1.9459138032440704,
+     "classical_ms_per_piece": 36.95665000122972
+    },
+    "plate-hole steady": {
+     "pieces": 58,
+     "seconds": {
+      "classical": 2.708915299968794,
+      "H": 2.8143405000446364,
+      "P-s0": 5.65561949997209,
+      "coupled solve": 2.01573660003487
+     },
+     "every_repetition": {
+      "classical": [
+       2.725249799899757,
+       2.821592799969949,
+       2.762959099956788,
+       2.8926504000555724,
+       2.708915299968794
+      ],
+      "H": [
+       2.8143405000446364,
+       3.0409368000691757,
+       2.9865594999864697,
+       2.9470959999598563,
+       2.951879099942744
+      ],
+      "P-s0": [
+       5.65561949997209,
+       6.721341200056486,
+       6.783818700001575,
+       6.850969200022519,
+       6.765226099989377
+      ],
+      "coupled solve": [
+       2.01573660003487,
+       2.1859778999350965,
+       2.121761600021273,
+       2.15107599995099,
+       2.11827890004497
+      ]
+     },
+     "price": 1.022313855561668,
+     "price_P-s0": 1.6236870487751724,
+     "classical_ms_per_piece": 46.70543620635852
+    },
+    "plate-hole step": {
+     "pieces": 58,
+     "seconds": {
+      "classical": 2.5002422999823466,
+      "H": 2.6577318999916315,
+      "P-s0": 5.5226293000159785,
+      "coupled solve": 2.113866599975154
+     },
+     "every_repetition": {
+      "classical": [
+       2.7201755000278354,
+       2.526601199992001,
+       2.740185000002384,
+       2.5002422999823466,
+       2.5323359000030905
+      ],
+      "H": [
+       2.9554648000048473,
+       2.9376579999225214,
+       2.6577318999916315,
+       2.735865700058639,
+       2.6647743000648916
+      ],
+      "P-s0": [
+       6.213460200000554,
+       5.628855700022541,
+       5.5226293000159785,
+       5.842007500003092,
+       5.893453299999237
+      ],
+      "coupled solve": [
+       2.113866599975154,
+       2.20905149995815,
+       2.120370600023307,
+       2.370632400037721,
+       2.1772405999945477
+      ]
+     },
+     "price": 1.034132180974475,
+     "price_P-s0": 1.6550315706812795,
+     "classical_ms_per_piece": 43.107625861764596
+    }
+   },
+   "counts": {
+    "counts": true,
+    "failed": []
+   },
+   "before_start": {
+    "waited_s": 32.258145199972205,
+    "readings": [
+     0.954,
+     0.211,
+     0.026
+    ],
+    "quiet": true
+   }
+  }
+ },
+ "predictions": {
+  "1": {
+   "held": true,
+   "U's excess on heated-strip": {
+    "steady registered": 7.391155170538566e-10,
+    "steady lowered": 7.39112271386233e-10,
+    "step registered": 7.054857541796515e-11,
+    "step lowered": 9.917705801575083e-10
+   }
+  },
+  "2": {
+   "held": true,
+   "largest": 0.007771263596899072
+  },
+  "3": {
+   "held": true,
+   "largest on": "plate-insert",
+   "H's steady excess": {
+    "wall-2": 7.411536196063641e-05,
+    "heated-strip": 3.3698712917362705e-10,
+    "plate-insert": 0.014831083615021688,
+    "fast-heat": 0.013646268290740806,
+    "bimetal-arc": 0.00039224920349629003,
+    "plate-hole": 0.006152996040694979
+   }
+  },
+  "4": {
+   "held": false,
+   "geometric_mean": null
+  },
+  "5": {
+   "held": false,
+   "P-s0 above H": {
+    "wall-2 steady": true,
+    "wall-2 step": true,
+    "heated-strip steady": true,
+    "heated-strip step": true,
+    "plate-insert steady": false,
+    "plate-insert step": true,
+    "fast-heat steady": true,
+    "fast-heat step": true,
+    "bimetal-arc steady": true,
+    "bimetal-arc step": true,
+    "plate-hole steady": true,
+    "plate-hole step": true
+   },
+   "E4 met by P-s0, by H": [
+    2,
+    9
+   ]
+  }
+ },
+ "outcome": "E4-H not met",
+ "elapsed_s": 2740.4804256999632
+}
