@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08). §11.19 is its one evaluation's script, written and tested, not run.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08). §11.19 is its one evaluation's script and the one evaluation: both gates met, every prediction held, with nothing learned.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1872,9 +1872,9 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - At acceptance: the generator, R2, H2r and the revised protocol as code; the dry run; the classical measurement.
 - The one evaluation: about 30–45 minutes, if most runs count.
 
-### 11.19 The square rule's one evaluation: the script, written and tested, not run (2026-11-08)
+### 11.19 The square rule's one evaluation (2026-11-08): both gates met, every prediction held
 
-**The owner's go:** "Write it". Script: `scripts/chartop_evaluate_squares.py`, with `scripts/chartop_evaluate_squares_box.sh` for the box. Tests: 12, in `tests/test_chartop_evaluate_squares.py`. Not run.
+**The owner's go:** "Write it". Script: `scripts/chartop_evaluate_squares.py`, with `scripts/chartop_evaluate_squares_box.sh` for the box. Tests: 12, in `tests/test_chartop_evaluate_squares.py`. Run once, from this session, at the owner's word ("Run it here"); the verdicts are at the end of this section.
 
 **Three stages.** The accuracy and its control belong on the laptop, and the price on the box (§11.18, "Box for both"). Every bar is `gates_squares`'.
 
@@ -1920,9 +1920,58 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - the verdicts, predictions and outcomes on numbers made up for the registered problems. PR2 is left unjudged when the A/A check, the commit, the CPU or the threads fail;
 - the payload is checked against the pin. It is refused with one byte changed in a pinned file, or when built from another commit.
 
-**Before it runs.**
+**Before it ran.**
 - Stage A: about 15 minutes on the laptop, on AC (§11.17's twelve problems took 5).
 - Stage B: a rented whole 5900X, about 15–35 minutes and \$0.03–0.07. Renting it needs the owner's approval.
+
+**The one evaluation (2026-11-08): both gates met, and every prediction held.**
+- **How it ran.**
+  - Stage A on the laptop, on AC, 14:16–14:26 (569 s), at commit db023ea. The pin held (20 files), and the control reproduced §11.17's record bit for bit on all twelve problems.
+  - The payload verified against the pin: 18 of 18 pinned code files.
+  - Stage B on a rented whole Ryzen 9 5900X, 14:50–14:59 (524 s), about \$0.04. Machine 71957 was rented out, so the owner approved another host of the model ("Rent it (Recommended)"), machine 13255.
+  - Stage C on the laptop.
+  - Records: `out/chartop/evaluation-squares-20261108-141654.json` and `.txt`, with `-accuracy.json` and `-price.json` beside.
+- **E4-H2 was met on 16 of 16.** H2 exceeded the classical floor by at most $2.8\times10^{-8}$, against prediction 1's bar of $10^{-4}$. On a square of one material, U's form is the exact answer to float32 rounding.
+- **PR2 was met: H2's geometric mean was 0.726**, under the bar of 0.90.
+  - Every measurement counted: 3 runs, none of the 54 measurements void. The classical expert took 26.1–26.4 ms a piece, under the 35 ms bound, and the BLAS ran four threads in every run.
+  - The A/A controls held: wall-2's H2 was within 0.0016 of 1.
+  - Per problem, H2 priced 0.66–0.81, the two holes 0.77–0.81.
+- **Beside it, H2r** met E4 on 16 of 16 and priced **0.306** (0.23–0.46 a problem): 0.42 of H2's price, and cheaper than H2 on all sixteen.
+- **Reported:** U alone met E4 on 14 of 16. It missed the two holes' steady problems (2.77% and 2.15%), where it answers the ring pieces too. P-s0 met E4 on 9 of 16, and erred above H2 on all sixteen.
+
+Energy error in %, the steady problem as registered and the step lowered by 300 K; the price, the median of three counted runs, steady and step:
+
+| seed | layout | H2 = floor | U alone | P-s0 | H2's price | H2r's price |
+|---|---|---|---|---|---|---|
+| 7,000,000 | inclusion | 0.102 / 0.028 | 0.102 / 0.028 | 1.102 / 1.864 | 0.73 / 0.75 | 0.31 / 0.32 |
+| 7,000,001 | spreader | 0.483 / 0.121 | 0.483 / 0.121 | 1.204 / 2.146 | 0.66 / 0.66 | 0.23 / 0.27 |
+| 7,000,002 | layer | 0.245 / 0.082 | 0.245 / 0.082 | 1.125 / 2.158 | 0.73 / 0.70 | 0.27 / 0.29 |
+| 7,000,003 | hole | 0.040 / 0.033 | **2.77** / 0.040 | 3.512 / 2.015 | 0.77 / 0.78 | 0.46 / 0.46 |
+| 7,000,005 | inclusion | 0.423 / 0.044 | 0.423 / 0.044 | 1.174 / 1.874 | 0.73 / 0.74 | 0.26 / 0.28 |
+| 7,000,006 | spreader | 0.527 / 0.135 | 0.527 / 0.135 | 1.214 / 2.180 | 0.66 / 0.71 | 0.23 / 0.27 |
+| 7,000,007 | layer | 0.430 / 0.242 | 0.430 / 0.242 | 1.214 / 1.871 | 0.69 / 0.73 | 0.23 / 0.27 |
+| 7,000,008 | hole | 0.021 / 0.030 | **2.15** / 0.058 | 2.705 / 2.007 | 0.81 / 0.79 | 0.45 / 0.45 |
+
+**The predictions, each held:**
+
+| prediction | the reading | measured |
+|---|---|---|
+| 1. H2's excess over the floor | under $10^{-4}$ on every problem, both frames | at most $2.8\times10^{-8}$ |
+| 2. E4-H2 | met on every new problem | 16 of 16 |
+| 3. PR2 met; H2 0.65–0.85; H2r 0.30–0.60; H2r cheaper everywhere | all four | 0.726; 0.306; 16 of 16 |
+| 4. U alone: E4 without a round feature, a miss with one | 12 of 12 met; at least one hole missed | 12 of 12; 2 missed |
+| 5. P-s0 errs above H2 | on every problem, both frames | 16 of 16 |
+
+**The outcome: "both gates met".** As registered: on square-first layouts the hybrid is exact and cheaper, and H2r's price says how much of the saving needs no network at all.
+- So the working finish line, a CO-D expert that meets E4 on every new problem and PR2, is met by H2. But it is met with nothing learned: U is the untrained form, and the rest is classical.
+- Reuse, which has no network, is 2.4 times cheaper than U's form on the same squares, and as exact.
+- What is open is the owner's call: W356, W357 and W358.
+
+**[AI Inference]:**
+- On squares a network has no work: reuse prices below U's form and is the classical answer. A learned correction could only earn its place on the pieces that are not squares, such as the holes' rings, where U alone missed E4. This registration does not test that.
+- The layouts were generated square-first, which suits the rule. Real outlines that do not cut into squares would leave more pieces to the classical solve and save less.
+- H2r's 0.306 sat just inside prediction 3's lower edge of 0.30.
+- The price was measured on another host of the model than the dry runs (26 against 22 ms a piece). The registration fixes the CPU model, not the host.
 
 ---
 
