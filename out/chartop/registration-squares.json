@@ -1,0 +1,745 @@
+{
+ "written": "2026-11-08 01:07:35",
+ "experts_run": [
+  "classical"
+ ],
+ "registered": "accepted by the owner on 2026-11-08, in chat ('Accept as drafted'), as drafted in chart-operator-kernel-exact-forms section 11.18 (commit 3f945f2), with its four recommended choices; not yet hash-pinned",
+ "layouts": [
+  {
+   "seed": 7000000,
+   "spec": {
+    "seed": 7000000,
+    "W": 9,
+    "H": 5,
+    "plate": "aluminium",
+    "feature": "inclusion",
+    "feature_material": "copper",
+    "box": [
+     3,
+     2,
+     1,
+     2
+    ]
+   },
+   "pieces": 45,
+   "squares": 45,
+   "picks": [],
+   "picks_labels": [],
+   "charts": {
+    "affine": 45
+   },
+   "conforming": true,
+   "dt": 20.0,
+   "problems": [
+    {
+     "problem": "steady",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.0010183779123579364,
+       "floor_max": 0.018512567422817483,
+       "span": 130.0,
+       "floor_max_over_range": 0.0001424043647909037,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.001018377912662922,
+       "floor_max": 0.018512567851786343,
+       "span": 130.0,
+       "floor_max_over_range": 0.00014240436809066418,
+       "refusals": []
+      }
+     },
+     "fingerprint": "0d68b12bd91ba0fa39e9874d88ffee4575cc5d257f3a7976407ceb5178658a02",
+     "fo_range": null,
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    },
+    {
+     "problem": "step",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 3.0202413608380208e-05,
+       "floor_max": 0.012027645816829136,
+       "span": 130.0,
+       "floor_max_over_range": 9.252035243714719e-05,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.00027785589392689635,
+       "floor_max": 0.012027645819287613,
+       "span": 130.0,
+       "floor_max_over_range": 9.252035245605856e-05,
+       "refusals": []
+      }
+     },
+     "fingerprint": "e0871703da2aac3ee2d1b42c8cef3993184888c9f6fd84a7e981b5e3c0c24ff4",
+     "fo_range": [
+      1.054526748971192,
+      1.449443413729128
+     ],
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    }
+   ]
+  },
+  {
+   "seed": 7000001,
+   "spec": {
+    "seed": 7000001,
+    "W": 6,
+    "H": 4,
+    "plate": "copper",
+    "feature": "spreader",
+    "feature_material": "steel",
+    "box": [
+     0,
+     2,
+     2,
+     1
+    ]
+   },
+   "pieces": 24,
+   "squares": 24,
+   "picks": [],
+   "picks_labels": [],
+   "charts": {
+    "affine": 24
+   },
+   "conforming": true,
+   "dt": 10.0,
+   "problems": [
+    {
+     "problem": "steady",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.0048315686467428585,
+       "floor_max": 0.16502914351002573,
+       "span": 130.0,
+       "floor_max_over_range": 0.001269454950077121,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.00483156864743909,
+       "floor_max": 0.16502914380025402,
+       "span": 130.0,
+       "floor_max_over_range": 0.0012694549523096462,
+       "refusals": []
+      }
+     },
+     "fingerprint": "9174469759aeeecca690f36814a366cbddd6876e90610c9cc2dcf50f4a7531e8",
+     "fo_range": null,
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    },
+    {
+     "problem": "step",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.00013810343323274361,
+       "floor_max": 0.08972806252739929,
+       "span": 130.0,
+       "floor_max_over_range": 0.0006902158655953791,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.0012101262982385412,
+       "floor_max": 0.08972806253063936,
+       "span": 130.0,
+       "floor_max_over_range": 0.0006902158656203027,
+       "refusals": []
+      }
+     },
+     "fingerprint": "7e6a751238acfbdd7dd663893b71362bc002cb91ae3c288fbc4ba6cc3c511cd4",
+     "fo_range": [
+      0.0731184193422592,
+      0.7247217068645645
+     ],
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    }
+   ]
+  },
+  {
+   "seed": 7000002,
+   "spec": {
+    "seed": 7000002,
+    "W": 9,
+    "H": 4,
+    "plate": "copper",
+    "feature": "layer",
+    "feature_material": "steel",
+    "box": [
+     0,
+     3,
+     9,
+     1
+    ]
+   },
+   "pieces": 36,
+   "squares": 36,
+   "picks": [],
+   "picks_labels": [],
+   "charts": {
+    "affine": 36
+   },
+   "conforming": true,
+   "dt": 10.0,
+   "problems": [
+    {
+     "problem": "steady",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.0024507079765587808,
+       "floor_max": 0.095854624135427,
+       "span": 130.0,
+       "floor_max_over_range": 0.0007373432625802077,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.0024507079772821245,
+       "floor_max": 0.0958546241396353,
+       "span": 130.0,
+       "floor_max_over_range": 0.0007373432626125793,
+       "refusals": []
+      }
+     },
+     "fingerprint": "d98f8f3c5f5a2bb173079ef612c773802e367cf879d72ae1fa0d4d13666a53d1",
+     "fo_range": null,
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    },
+    {
+     "problem": "step",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 7.772172511625951e-05,
+       "floor_max": 0.10975587518947805,
+       "span": 130.0,
+       "floor_max_over_range": 0.000844275962995985,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.0008208949517156637,
+       "floor_max": 0.10975587518893803,
+       "span": 130.0,
+       "floor_max_over_range": 0.000844275962991831,
+       "refusals": []
+      }
+     },
+     "fingerprint": "168017afb2e24dc7d96436880dcefe83f4684bc68824cb256b034d6754e5401d",
+     "fo_range": [
+      0.07311841934225911,
+      0.7247217068645647
+     ],
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    }
+   ]
+  },
+  {
+   "seed": 7000003,
+   "spec": {
+    "seed": 7000003,
+    "W": 9,
+    "H": 3,
+    "plate": "copper",
+    "feature": "hole",
+    "feature_material": null,
+    "box": [
+     5,
+     1,
+     2,
+     2
+    ]
+   },
+   "pieces": 31,
+   "squares": 23,
+   "picks": [
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30
+   ],
+   "picks_labels": [
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 3,0",
+    "plate ring 3,1"
+   ],
+   "charts": {
+    "affine": 23,
+    "winslow-arc-length": 8
+   },
+   "conforming": true,
+   "dt": 10.0,
+   "problems": [
+    {
+     "problem": "steady",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.00039889166822142737,
+       "floor_max": 0.004598120151115381,
+       "span": 130.0,
+       "floor_max_over_range": 3.537015500857985e-05,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.00039889166833150934,
+       "floor_max": 0.0045981201510816305,
+       "span": 130.0,
+       "floor_max_over_range": 3.5370155008320234e-05,
+       "refusals": []
+      }
+     },
+     "fingerprint": "f6fcd4b51911fb6332425f3ff10186e9e446b41452c0611249f0d54630a37e27",
+     "fo_range": null,
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    },
+    {
+     "problem": "step",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 3.35556859306649e-05,
+       "floor_max": 0.018475767687220923,
+       "span": 130.0,
+       "floor_max_over_range": 0.0001421212899016994,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.0003285501758498508,
+       "floor_max": 0.018475767691256806,
+       "span": 130.0,
+       "floor_max_over_range": 0.00014212128993274466,
+       "refusals": []
+      }
+     },
+     "fingerprint": "e86ebbced4690d277960278df32aa23a2b240ac06cf36e83181a8787aee824fe",
+     "fo_range": [
+      0.7247217068645635,
+      1.8035633636041768
+     ],
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    }
+   ]
+  },
+  {
+   "seed": 7000005,
+   "spec": {
+    "seed": 7000005,
+    "W": 8,
+    "H": 4,
+    "plate": "aluminium",
+    "feature": "inclusion",
+    "feature_material": "steel",
+    "box": [
+     3,
+     1,
+     2,
+     2
+    ]
+   },
+   "pieces": 32,
+   "squares": 32,
+   "picks": [],
+   "picks_labels": [],
+   "charts": {
+    "affine": 32
+   },
+   "conforming": true,
+   "dt": 20.0,
+   "problems": [
+    {
+     "problem": "steady",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.004229001675427111,
+       "floor_max": 0.07450429942082337,
+       "span": 130.0,
+       "floor_max_over_range": 0.0005731099955447952,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.00422900167652862,
+       "floor_max": 0.07450429893081179,
+       "span": 130.0,
+       "floor_max_over_range": 0.0005731099917754753,
+       "refusals": []
+      }
+     },
+     "fingerprint": "b4d37ba227b7836a77d5f220e639cb6452019ad5eb69ce538a239956490eee42",
+     "fo_range": null,
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    },
+    {
+     "problem": "step",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 4.97404284042257e-05,
+       "floor_max": 0.026882552963627404,
+       "span": 130.0,
+       "floor_max_over_range": 0.00020678886895098003,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.00044350750004681027,
+       "floor_max": 0.02688255285421981,
+       "span": 130.0,
+       "floor_max_over_range": 0.00020678886810938317,
+       "refusals": []
+      }
+     },
+     "fingerprint": "b58e483d850b2ec5cd37197518c9d8b125bb57504b368bd7adc1f1dfef54df88",
+     "fo_range": [
+      0.14623683868451837,
+      1.0545267489711945
+     ],
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    }
+   ]
+  },
+  {
+   "seed": 7000006,
+   "spec": {
+    "seed": 7000006,
+    "W": 6,
+    "H": 4,
+    "plate": "copper",
+    "feature": "spreader",
+    "feature_material": "steel",
+    "box": [
+     0,
+     1,
+     2,
+     1
+    ]
+   },
+   "pieces": 24,
+   "squares": 24,
+   "picks": [],
+   "picks_labels": [],
+   "charts": {
+    "affine": 24
+   },
+   "conforming": true,
+   "dt": 10.0,
+   "problems": [
+    {
+     "problem": "steady",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.0052663620087628465,
+       "floor_max": 0.17091464708568083,
+       "span": 130.0,
+       "floor_max_over_range": 0.0013147280545052372,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.005266362009550187,
+       "floor_max": 0.1709146473675247,
+       "span": 130.0,
+       "floor_max_over_range": 0.001314728056673267,
+       "refusals": []
+      }
+     },
+     "fingerprint": "918d1d15b200041cc710bf006805ceafd843ce8b2caf88741d9eea330c6e1c34",
+     "fo_range": null,
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    },
+    {
+     "problem": "step",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.00015034968929504564,
+       "floor_max": 0.12231848541682666,
+       "span": 130.0,
+       "floor_max_over_range": 0.000940911426283282,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.0013486607157911766,
+       "floor_max": 0.12231848542046464,
+       "span": 130.0,
+       "floor_max_over_range": 0.0009409114263112665,
+       "refusals": []
+      }
+     },
+     "fingerprint": "a8f351dcc272f8f288a8cff7dde209e11c7993d027321451cbbc18cd76d144d4",
+     "fo_range": [
+      0.07311841934225917,
+      0.7247217068645645
+     ],
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    }
+   ]
+  },
+  {
+   "seed": 7000007,
+   "spec": {
+    "seed": 7000007,
+    "W": 6,
+    "H": 3,
+    "plate": "copper",
+    "feature": "layer",
+    "feature_material": "steel",
+    "box": [
+     0,
+     1,
+     6,
+     2
+    ]
+   },
+   "pieces": 18,
+   "squares": 18,
+   "picks": [],
+   "picks_labels": [],
+   "charts": {
+    "affine": 18
+   },
+   "conforming": true,
+   "dt": 100.0,
+   "problems": [
+    {
+     "problem": "steady",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.0042961426994754465,
+       "floor_max": 0.1125302406899209,
+       "span": 130.0,
+       "floor_max_over_range": 0.0008656172360763146,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.004296142700102145,
+       "floor_max": 0.1125302406855746,
+       "span": 130.0,
+       "floor_max_over_range": 0.0008656172360428816,
+       "refusals": []
+      }
+     },
+     "fingerprint": "ced2e4b95bc8230b7c1f83a84790abdcfd8281db2e3c9fc3b32af112fc333300",
+     "fo_range": null,
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    },
+    {
+     "problem": "step",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.00040764885969075433,
+       "floor_max": 0.11267107822084199,
+       "span": 130.0,
+       "floor_max_over_range": 0.0008667006016987845,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.0024191365359399856,
+       "floor_max": 0.11267107822221156,
+       "span": 130.0,
+       "floor_max_over_range": 0.0008667006017093197,
+       "refusals": []
+      }
+     },
+     "fingerprint": "b708dcf4bacf25a5db731c881dc698e0f1b7365ee3d478c9e62f124928ae204b",
+     "fo_range": [
+      0.7311841934225918,
+      7.247217068645643
+     ],
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    }
+   ]
+  },
+  {
+   "seed": 7000008,
+   "spec": {
+    "seed": 7000008,
+    "W": 9,
+    "H": 5,
+    "plate": "steel",
+    "feature": "hole",
+    "feature_material": null,
+    "box": [
+     4,
+     1,
+     2,
+     2
+    ]
+   },
+   "pieces": 49,
+   "squares": 41,
+   "picks": [
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48
+   ],
+   "picks_labels": [
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 3,0",
+    "plate ring 3,1"
+   ],
+   "charts": {
+    "affine": 41,
+    "winslow-arc-length": 8
+   },
+   "conforming": true,
+   "dt": 100.0,
+   "problems": [
+    {
+     "problem": "steady",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 0.00020832554585935116,
+       "floor_max": 0.0021102103725070265,
+       "span": 130.0,
+       "floor_max_over_range": 1.6232387480823282e-05,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.00020832554592459972,
+       "floor_max": 0.002110210581093952,
+       "span": 130.0,
+       "floor_max_over_range": 1.6232389085338092e-05,
+       "refusals": []
+      }
+     },
+     "fingerprint": "95025919294746f51efbadf55e13aa5dd13ea190fba3582d3f4082d87444ccbf",
+     "fo_range": null,
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    },
+    {
+     "problem": "step",
+     "frames": {
+      "registered": {
+       "truncation_energy_rel": 3.091105224294258e-05,
+       "floor_max": 0.017103396237075685,
+       "span": 130.0,
+       "floor_max_over_range": 0.00013156458643904373,
+       "refusals": []
+      },
+      "lowered": {
+       "truncation_energy_rel": 0.00030472504506520005,
+       "floor_max": 0.01710339623781465,
+       "span": 130.0,
+       "floor_max_over_range": 0.00013156458644472807,
+       "refusals": []
+      }
+     },
+     "fingerprint": "44f8b9ef0d12235164114204101a33c2cbce20ccb90706c56c1c098643ec9278",
+     "fo_range": [
+      0.7311841934225911,
+      1.8196460942350416
+     ],
+     "dirichlet_range": [
+      290.0,
+      420.0
+     ],
+     "floor_meets_e4": true,
+     "refused": 0
+    }
+   ]
+  }
+ ],
+ "skipped": [
+  {
+   "seed": 7000004,
+   "feature": "round-inclusion",
+   "why": "step: 24 refusals"
+  }
+ ],
+ "seeds": [
+  7000000,
+  7000001,
+  7000002,
+  7000003,
+  7000005,
+  7000006,
+  7000007,
+  7000008
+ ],
+ "elapsed_s": 604.4408595999703
+}

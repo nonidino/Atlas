@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 drafts the next registration; it is not registered.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, not yet pinned.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1591,9 +1591,18 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - Every piece it adds costs price. On this laptop the hybrid saved about 10% at best (run 6's 0.894), and on wall-2 it saved nothing, so a safer rule may save nothing at all.
 - A future registration's validity conditions should be dry-run on the target machine before pinning, with only an upper bound on time.
 
-### 11.18 The next registration, drafted: a rule on the piece's shape, and a price protocol dry-run first (not registered, 2026-11-08)
+### 11.18 The next registration: a rule on the piece's shape, accepted (2026-11-08), not yet pinned
 
-**Status.** A draft for the owner ("Draft it", 2026-11-08). Nothing in it is registered, built, pinned or run, and no expert has read a new problem. Four choices are left to the owner, each with a recommendation.
+**Status.**
+- Drafted for the owner ("Draft it", commit 3f945f2). **The owner accepted it in chat on 2026-11-08 ("Accept as drafted"), with the recommended option of each of its four choices** (below).
+- **Written:**
+  - `atlas/chartop/gates_squares.py` holds rule R2, the gates and the revised protocol, and reads every E4 bar from `gates_forms`;
+  - `atlas/chartop/benchmarks_squares.py` is the generator;
+  - `atlas/chartop/reuse.py` is H2r's expert;
+  - `scripts/chartop_price_squares.py` holds the protocol and its dry run.
+- **Tested:** 19 tests in `tests/test_chartop_gates_squares.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
+- **Measured:** the layouts were drawn and measured with the classical solver only (below). Nothing else has read them.
+- **The dry run is the owner's,** outside the Claude app and on AC. Not hash-pinned.
 
 **What it would decide.**
 - Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
@@ -1630,6 +1639,26 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - **The draw:** eight layouts, the first eight seeds from 7,000,000 whose classical floors meet E4 in both frames, so 16 problems. A seed whose floor fails is skipped, and the record says so.
 - **Measured with the classical solver only before pinning,** as §11.15's problems were. No other expert reads them before the one evaluation.
 
+**Drawn and measured with the classical solver only (2026-11-08).** Script: `scripts/chartop_register_squares.py` (604 s). Record: `out/chartop/registration-squares.json`.
+
+| seed | layout | $W\times H$ | pieces | R2's classical pieces | the step's $\Delta t$ | floor, steady | step, lowered by 300 K |
+|---|---|---|---|---|---|---|---|
+| 7,000,000 | a copper inclusion in aluminium | 9 × 5 | 45 | 0 | 20 s | 0.102% | 0.028% |
+| 7,000,001 | a steel spreader on copper | 6 × 4 | 24 | 0 | 10 s | 0.483% | 0.121% |
+| 7,000,002 | a steel layer on copper | 9 × 4 | 36 | 0 | 10 s | 0.245% | 0.082% |
+| 7,000,003 | a hole in copper | 9 × 3 | 31 | 8 | 10 s | 0.040% | 0.033% |
+| 7,000,005 | a steel inclusion in aluminium | 8 × 4 | 32 | 0 | 20 s | 0.423% | 0.044% |
+| 7,000,006 | a steel spreader on copper | 6 × 4 | 24 | 0 | 10 s | 0.527% | 0.135% |
+| 7,000,007 | a steel layer on copper | 6 × 3 | 18 | 0 | 100 s | 0.430% | 0.242% |
+| 7,000,008 | a hole in steel | 9 × 5 | 49 | 8 | 100 s | 0.021% | 0.031% |
+
+- **Every floor is below E4's bar in both frames.** Every seam is conforming, and the envelope refuses no piece of a kept layout.
+- **Seed 7,000,004 was skipped.** It was the one round inclusion drawn, a copper disc in steel, and its step was refused: the disc's core squares, 0.01 m a side, have Fourier number 116, above the envelope's 100.
+  - So the set holds two layouts of each other feature and no round inclusion.
+  - The skip on a refusal was written into the measurement script, beyond the draft's skip on the floor, because U's form is not trusted outside its envelope.
+- **Six of the eight layouts are all squares:** R2 gives them no classical piece, so H2 is U alone there. The two holes give the classical solve their 8 ring pieces each.
+- **A functional dry run** here (two runs on two of §11.17's problems) found the laptop on battery: the power check voided both runs, as it should. The owner's dry run must be on AC.
+
 **Gates.**
 - **E4-H2:** H2 meets E4 on every new problem, in both frames.
 - **PR2:** the geometric mean of H2's price over the new problems is at most **0.90** (open choice 3). Each problem's price is the median of three counted runs.
@@ -1650,11 +1679,11 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - The protocol is pinned only if at least five of the six runs count. Otherwise its conditions are revised from the dry run's data and dry-run again.
 - The dry run also measures how far the geometric mean moves between runs. In §11.17 it moved by about ±0.035, while a single problem's price moved by up to 0.34.
 
-**The four choices, for the owner.**
-1. **The square path.** *Recommended:* H2, with H2r beside. Or H2 alone.
-2. **The problems.** *Recommended:* the generated layouts above. Or §11.15's six scenarios re-cut into squares, which is not a fair test since they have been read; or new scenarios drawn by hand.
-3. **PR2's bar.** *Recommended:* 0.90, as before. Or 0.80.
-4. **The load.** *Recommended:* recorded, not judged; time, power and sleep are judged. Or a load bar set from the dry run.
+**The four choices, settled by the owner on 2026-11-08** ("Accept as drafted": the recommended option of each).
+1. **The square path.** *Recommended, and chosen:* H2, with H2r beside. Or H2 alone.
+2. **The problems.** *Recommended, and chosen:* the generated layouts above. Or §11.15's six scenarios re-cut into squares, which is not a fair test since they have been read; or new scenarios drawn by hand.
+3. **PR2's bar.** *Recommended, and chosen:* 0.90, as before. Or 0.80.
+4. **The load.** *Recommended, and chosen:* recorded, not judged; time, power and sleep are judged. Or a load bar set from the dry run.
 
 **Predictions** (refutable). They were checked against each other: 1 implies 2, and 4 is 1's case for U alone.
 1. H2's energy error exceeds the floor by less than $10^{-4}$ (0.01 points) on every new problem, in both frames.
