@@ -1600,14 +1600,15 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
   - `atlas/chartop/benchmarks_squares.py` is the generator;
   - `atlas/chartop/reuse.py` is H2r's expert;
   - `scripts/chartop_price_squares.py` holds the protocol and its dry run.
-- **Tested:** 30 tests in `tests/test_chartop_gates_squares.py`, and 3 on the box's payload and runner in `tests/test_chartop_price_box.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
+- **Tested:** 31 tests in `tests/test_chartop_gates_squares.py`, and 3 on the box's payload and runner in `tests/test_chartop_price_box.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
 - **Measured:** the layouts were drawn and measured with the classical solver only (below). Nothing else has read them.
 - **The first dry run ran on 2026-11-08,** inside the Claude app at the owner's word. **4 of 6 runs counted, under the 5 the protocol then needed,** so it was not pinned.
 - **The revision was adopted the same day** ("Adopt it (Recommended)", in chat): each problem's measurements are counted on their own (below). The owner also moved the price to a rented whole machine, for the dry run and for the one evaluation's price runs ("Rent a temporary box", then "Box for both (Recommended)"). Both are written in `gates_squares.py` (`REVISED`) and the price script.
 - **The second dry run ran on 2026-11-08, on a rented Ryzen 9 5900X.** It met the bar with nothing to spare: fast-heat steady had exactly three counted measurements.
   - But numpy's OpenBLAS ran 24 threads by default there. That put the classical expert at the time bound, and it biased the price toward H2: 0.853 at the default threads, against 0.957 in one diagnostic run at four.
   - So it is not pinned. Not hash-pinned.
-- **The second revision was accepted as drafted** ("Accept as drafted", 2026-11-08, with the recommended option of each of its four choices). It is written in `gates_squares.py` (`REVISED_BLAS`) and the price script: four BLAS threads, checked; a 35 ms bound on the pricing CPU; the A/A check. The third dry run is below. Not hash-pinned.
+- **The second revision was accepted as drafted** ("Accept as drafted", 2026-11-08, with the recommended option of each of its four choices). It is written in `gates_squares.py` (`REVISED_BLAS`) and the price script: four BLAS threads, checked; a 35 ms bound on the pricing CPU; the A/A check.
+- **The third dry run ran on 2026-11-08, on the same 5900X at four BLAS threads.** No measurement was void, the A/A check held within 0.005, and every prediction held. H2 priced 0.961 on §11.17's problems. The protocol may be pinned by its own bar; that is the owner's call. Not hash-pinned.
 
 **What it would decide.**
 - Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
@@ -1813,6 +1814,33 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - On six of R2's eight new layouts H2 is U alone, as on heated-strip. If they price like heated-strip did at four threads, H2's price there would sit near 0.75–0.80, under PR2's 0.90. But they are other layouts, and only the one evaluation measures them.
 - The box's own default made H2 look twice as cheap on squares. A protocol that leaves any thread pool free prices the configuration as well as the arms.
 
+**The third dry run (2026-11-08, on the box, at four BLAS threads): the bar met with room, and every prediction held.**
+- **Where:**
+  - Machine 71957 again, the AMD Ryzen 9 5900X, rented whole at \$0.107/h with its disk.
+  - The code: commit 804dd01, from 13:12 to 13:24 (707 s).
+  - Every run reported two OpenBLAS pools and an OpenMP pool, all at four threads.
+  - Record: `out/chartop/dryrun-squares-20261108-181228.json`, stamped in the box's UTC.
+- **The bar was met with room.**
+  - None of the 72 measurements was void, so every problem had all six counted, its third by run 3.
+  - The A/A check held on all ten problems with no square, the worst median off by 0.005.
+  - Every run was on the pricing CPU.
+- **The price:** H2's geometric mean of medians was **0.961** (H2r 0.833). Per run it held to 0.957–0.963.
+- **At fixed threads the box is quiet.**
+  - A single problem's H2 price ranged over the six runs by a median of 0.005, and at most 0.045. That compares with 0.09 and 0.19 at the default threads, and 0.27 and 0.68 on the laptop.
+  - The load was 0.00, and no gap exceeded 5.0 s.
+- **Every prediction held:**
+
+| prediction | predicted | measured |
+|---|---|---|
+| 1. the classical best time, in every run | 20–26 ms a piece | 21.6–22.5 |
+| 2. void measurements | at most 2 of 72 | 0 |
+| 3. the A/A medians, on the ten problems | 0.98–1.02 | 0.995–1.002 |
+| 4. heated-strip, H2 and H2r | 0.70–0.82 and 0.28–0.38 | 0.773–0.804 and 0.323–0.343 |
+| 5. H2's geometric mean of medians | 0.94–0.97 | 0.961 |
+
+- **So the protocol may now be pinned, by its own bar.** Pinning is the owner's call, and nothing is pinned.
+- The box cost \$0.027.
+
 **The four choices, settled by the owner on 2026-11-08** ("Accept as drafted": the recommended option of each).
 1. **The square path.** *Recommended, and chosen:* H2, with H2r beside. Or H2 alone.
 2. **The problems.** *Recommended, and chosen:* the generated layouts above. Or §11.15's six scenarios re-cut into squares, which is not a fair test since they have been read; or new scenarios drawn by hand.
@@ -1834,6 +1862,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 **Cost.**
 - No training. A rented whole machine for the second dry run and for the evaluation's price runs, at about \$0.09/h: about \$0.15 each with setup (the owner's choice, 2026-11-08).
 - The second dry run's box cost about \$0.08 for 47 minutes, at \$0.104/h with its disk. That covered both launches, the dry run, the probe and the diagnostic run.
+- The third dry run's box cost \$0.027, at \$0.107/h.
 - At acceptance: the generator, R2, H2r and the revised protocol as code; the dry run; the classical measurement.
 - The one evaluation: about 30–45 minutes, if most runs count.
 

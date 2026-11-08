@@ -261,6 +261,22 @@ def test_the_second_dry_run_and_its_diagnostic():
                                                                            for v in p.values()) < 22.5
 
 
+def test_the_third_dry_run_met_the_bar():
+    """Section 11.18: on the box at four BLAS threads, no measurement void, the A/A check within
+    0.005, every prediction held; so the protocol may be pinned by its own bar."""
+    rec = json.load(open(os.path.join(ROOT, "out", "chartop", "dryrun-squares-20261108-181228.json"), encoding="utf-8"))
+    assert rec["passes"] is True and rec["on_price_cpu"] and rec["code"].startswith("804dd01")
+    counts = [r["counts"] for r in rec["runs"]]
+    assert GS.dry_run_passes(counts, rec["aa"]) and min(GS.tally(counts).values()) == GS.DRY_RUNS   # none void
+    assert all(GS.blas_threads_hold(r["thread_pools"]) for r in rec["runs"])
+    aa = _aa_of(rec, counts)                                  # recomputed from the runs
+    assert aa["holds"] and rec["aa"]["holds"] and aa["worst"] < 0.0055
+    assert abs(aa["worst"] - rec["aa"]["worst"]) < 1e-12
+    ms = [v["classical_ms_per_piece"] for r in rec["runs"] for v in r["problems"].values()]
+    assert 20.0 <= min(ms) and max(ms) <= 26.0                                  # prediction 1
+    assert 0.94 <= rec["geometric_mean_of_medians"]["H2"] <= 0.97              # prediction 5
+
+
 def test_the_runs_go_on_until_every_problem_has_three(monkeypatch):
     import chartop_price_squares as PS
     slow = {1: "a", 2: "a", 4: "b"}                          # the run, and its problem over the bound
