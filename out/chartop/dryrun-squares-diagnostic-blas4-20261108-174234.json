@@ -1,0 +1,762 @@
+{
+ "written": "2026-11-08 17:44:32",
+ "registration": "accepted by the owner on 2026-11-08, in chat ('Accept as drafted'), as drafted in chart-operator-kernel-exact-forms section 11.18 (commit 3f945f2), with its four recommended choices; its price protocol revised the same day, in chat, to the per-problem count ('Adopt it (Recommended)') on a rented whole machine ('Box for both (Recommended)'); not yet hash-pinned",
+ "machine": {
+  "system": "Linux",
+  "release": "6.8.0-138-generic",
+  "cpu": "AMD Ryzen 9 5900X 12-Core Processor",
+  "cpu_sources": {
+   "cgroup_v2": 23,
+   "cgroup_v1": null,
+   "affinity": 24,
+   "cpu_count": 24
+  },
+  "available_cpus": 23,
+  "python": "3.11.11",
+  "torch": "2.7.1+cpu",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1"
+ },
+ "code": "4b06b4833acbe304caa505b93d3cd50d9dc789ec",
+ "problems": [
+  "workbench wall-2 steady",
+  "workbench wall-2 step",
+  "workbench heated-strip steady",
+  "workbench heated-strip step",
+  "workbench plate-insert steady",
+  "workbench plate-insert step",
+  "workbench fast-heat steady",
+  "workbench fast-heat step",
+  "workbench bimetal-arc steady",
+  "workbench bimetal-arc step",
+  "workbench plate-hole steady",
+  "workbench plate-hole step"
+ ],
+ "n": 64,
+ "reps": 5,
+ "runs": [
+  {
+   "run": 1,
+   "torch_threads": 4,
+   "reps": 5,
+   "n": 64,
+   "start": "2026-11-08T17:42:39",
+   "end": "2026-11-08T17:44:30",
+   "machine": {
+    "system": "Linux",
+    "release": "6.8.0-138-generic",
+    "cpu": "AMD Ryzen 9 5900X 12-Core Processor",
+    "cpu_sources": {
+     "cgroup_v2": 23,
+     "cgroup_v1": null,
+     "affinity": 24,
+     "cpu_count": 24
+    },
+    "available_cpus": 23,
+    "python": "3.11.11",
+    "torch": "2.7.1+cpu",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1"
+   },
+   "battery_reported": false,
+   "samples": 24,
+   "load_mean": 0.0,
+   "load_max": 0.0,
+   "max_gap_s": 5.004591464996338,
+   "power_events": null,
+   "problems": {
+    "workbench wall-2 steady": {
+     "pieces": 4,
+     "squares": 0,
+     "seconds": {
+      "classical": 0.08777505508624017,
+      "H2": 0.08753490285016596,
+      "H2r": 0.08760667382739484,
+      "coupled solve": 0.01592986099421978
+     },
+     "every_repetition": {
+      "classical": [
+       0.09206927404738963,
+       0.08852569782175124,
+       0.08777505508624017,
+       0.08914446807466447,
+       0.08904523612000048
+      ],
+      "H2": [
+       0.08775265607982874,
+       0.08770090504549444,
+       0.08753490285016596,
+       0.08819162310101092,
+       0.08830205397680402
+      ],
+      "H2r": [
+       0.09138043317943811,
+       0.08803084120154381,
+       0.08760667382739484,
+       0.0879278879147023,
+       0.08796599903143942
+      ],
+      "coupled solve": [
+       0.01604918297380209,
+       0.016326958080753684,
+       0.01592986099421978,
+       0.016231937101110816,
+       0.01602536393329501
+      ]
+     },
+     "price_H2": 0.9976842733676398,
+     "price_H2r": 0.9983763425572353,
+     "classical_ms_per_piece": 21.943763771560043
+    },
+    "workbench wall-2 step": {
+     "pieces": 4,
+     "squares": 0,
+     "seconds": {
+      "classical": 0.08762695407494903,
+      "H2": 0.0872698079328984,
+      "H2r": 0.08732779882848263,
+      "coupled solve": 0.015832209959626198
+     },
+     "every_repetition": {
+      "classical": [
+       0.09234100789763033,
+       0.08799149887636304,
+       0.08901175600476563,
+       0.0882169941905886,
+       0.08762695407494903
+      ],
+      "H2": [
+       0.08756381296552718,
+       0.08803203096613288,
+       0.08791382797062397,
+       0.0872698079328984,
+       0.08782334718853235
+      ],
+      "H2r": [
+       0.08991132001392543,
+       0.08811938087455928,
+       0.08776073600165546,
+       0.08732779882848263,
+       0.08791038789786398
+      ],
+      "coupled solve": [
+       0.015832209959626198,
+       0.01597480196505785,
+       0.016033282969146967,
+       0.01584931998513639,
+       0.01590019091963768
+      ]
+     },
+     "price_H2": 0.9965479506297648,
+     "price_H2r": 0.9971084702910762,
+     "classical_ms_per_piece": 21.906738518737257
+    },
+    "workbench heated-strip steady": {
+     "pieces": 40,
+     "squares": 40,
+     "seconds": {
+      "classical": 0.8801497090607882,
+      "H2": 0.6027290869969875,
+      "H2r": 0.023275528103113174,
+      "coupled solve": 0.3784105060622096
+     },
+     "every_repetition": {
+      "classical": [
+       0.9185801860876381,
+       0.8801497090607882,
+       0.8879216918721795,
+       0.8863541369792074,
+       0.8801971802022308
+      ],
+      "H2": [
+       0.7025765050202608,
+       0.6725872410461307,
+       0.6027290869969875,
+       0.6375214271247387,
+       0.6272265939041972
+      ],
+      "H2r": [
+       0.02337114908732474,
+       0.023275528103113174,
+       0.023631122894585133,
+       0.023321257904171944,
+       0.023348109098151326
+      ],
+      "coupled solve": [
+       0.3809409658424556,
+       0.3785056669730693,
+       0.3784105060622096,
+       0.3852832040283829,
+       0.3831317399162799
+      ]
+     },
+     "price_H2": 0.7795730242142695,
+     "price_H2r": 0.3191631432001578,
+     "classical_ms_per_piece": 22.003742726519704
+    },
+    "workbench heated-strip step": {
+     "pieces": 40,
+     "squares": 40,
+     "seconds": {
+      "classical": 0.8771731809247285,
+      "H2": 0.559004447190091,
+      "H2r": 0.04521271400153637,
+      "coupled solve": 0.37673255801200867
+     },
+     "every_repetition": {
+      "classical": [
+       0.8802686899434775,
+       0.8830063929781318,
+       0.877841270994395,
+       0.8771731809247285,
+       0.8793257940560579
+      ],
+      "H2": [
+       0.5949141839519143,
+       0.642964632017538,
+       0.5957418268080801,
+       0.5987670850008726,
+       0.559004447190091
+      ],
+      "H2r": [
+       0.04531284584663808,
+       0.04521271400153637,
+       0.04536545695737004,
+       0.04574466194026172,
+       0.045333066023886204
+      ],
+      "coupled solve": [
+       0.38422564696520567,
+       0.37881671194918454,
+       0.37673255801200867,
+       0.3790578048210591,
+       0.37758712214417756
+      ]
+     },
+     "price_H2": 0.7462578534775413,
+     "price_H2r": 0.3365047777605181,
+     "classical_ms_per_piece": 21.929329523118213
+    },
+    "workbench plate-insert steady": {
+     "pieces": 18,
+     "squares": 0,
+     "seconds": {
+      "classical": 0.3956492869183421,
+      "H2": 0.39919593394733965,
+      "H2r": 0.40033061103895307,
+      "coupled solve": 0.08703839406371117
+     },
+     "every_repetition": {
+      "classical": [
+       0.39964899979531765,
+       0.3956492869183421,
+       0.39983921381644905,
+       0.39946238696575165,
+       0.4000351659487933
+      ],
+      "H2": [
+       0.3999003139324486,
+       0.39919593394733965,
+       0.4024611539207399,
+       0.3997736021410674,
+       0.40125859598629177
+      ],
+      "H2r": [
+       0.4004260329529643,
+       0.4010084809269756,
+       0.40033061103895307,
+       0.40973278996534646,
+       0.40206622797995806
+      ],
+      "coupled solve": [
+       0.08964897482655942,
+       0.08906361600384116,
+       0.09017830388620496,
+       0.08703839406371117,
+       0.08763315295800567
+      ]
+     },
+     "price_H2": 1.0073477057085478,
+     "price_H2r": 1.0096984536897369,
+     "classical_ms_per_piece": 21.980515939907896
+    },
+    "workbench plate-insert step": {
+     "pieces": 18,
+     "squares": 0,
+     "seconds": {
+      "classical": 0.3961487540509552,
+      "H2": 0.39693975704722106,
+      "H2r": 0.3971245801076293,
+      "coupled solve": 0.08648425503633916
+     },
+     "every_repetition": {
+      "classical": [
+       0.3968946060631424,
+       0.39637836813926697,
+       0.3972031818702817,
+       0.4001603878568858,
+       0.3961487540509552
+      ],
+      "H2": [
+       0.3992616939358413,
+       0.39827186800539494,
+       0.39693975704722106,
+       0.40087642916478217,
+       0.39779958105646074
+      ],
+      "H2r": [
+       0.39934570505283773,
+       0.3971245801076293,
+       0.3971480601467192,
+       0.39934418513439596,
+       0.39963218895718455
+      ],
+      "coupled solve": [
+       0.08734335890039802,
+       0.08648425503633916,
+       0.08747509098611772,
+       0.08686244185082614,
+       0.08743567089550197
+      ]
+     },
+     "price_H2": 1.0016389326493886,
+     "price_H2r": 1.0020218800585552,
+     "classical_ms_per_piece": 22.008264113941955
+    },
+    "workbench fast-heat steady": {
+     "pieces": 18,
+     "squares": 0,
+     "seconds": {
+      "classical": 0.3961163929197937,
+      "H2": 0.3966309321112931,
+      "H2r": 0.39626135607250035,
+      "coupled solve": 0.08810272091068327
+     },
+     "every_repetition": {
+      "classical": [
+       0.3963165378663689,
+       0.39965995913371444,
+       0.3961163929197937,
+       0.40190466516651213,
+       0.39983734185807407
+      ],
+      "H2": [
+       0.3966309321112931,
+       0.40049743303097785,
+       0.39820371684618294,
+       0.40282718907110393,
+       0.4001372680068016
+      ],
+      "H2r": [
+       0.39626135607250035,
+       0.3987761349417269,
+       0.3987406350206584,
+       0.3988386760465801,
+       0.3986897941213101
+      ],
+      "coupled solve": [
+       0.08848564699292183,
+       0.08810272091068327,
+       0.08888947404921055,
+       0.08872630097903311,
+       0.08902183501049876
+      ]
+     },
+     "price_H2": 1.0010626164411995,
+     "price_H2r": 1.000299375114625,
+     "classical_ms_per_piece": 22.006466273321873
+    },
+    "workbench fast-heat step": {
+     "pieces": 18,
+     "squares": 0,
+     "seconds": {
+      "classical": 0.3949153549037874,
+      "H2": 0.3958559490274638,
+      "H2r": 0.3959735508542508,
+      "coupled solve": 0.08606032910756767
+     },
+     "every_repetition": {
+      "classical": [
+       0.39613508293405175,
+       0.3949153549037874,
+       0.3965559198986739,
+       0.39649627986364067,
+       0.3952350099571049
+      ],
+      "H2": [
+       0.3968503358773887,
+       0.3958559490274638,
+       0.39594216109253466,
+       0.39921549218706787,
+       0.39738712296821177
+      ],
+      "H2r": [
+       0.3994280961342156,
+       0.397033428074792,
+       0.3959735508542508,
+       0.39876294508576393,
+       0.4342146050184965
+      ],
+      "coupled solve": [
+       0.08876591105945408,
+       0.08606032910756767,
+       0.0880412901751697,
+       0.08829988399520516,
+       0.09502213983796537
+      ]
+     },
+     "price_H2": 1.0019555959998472,
+     "price_H2r": 1.002200102802782,
+     "classical_ms_per_piece": 21.9397419390993
+    },
+    "workbench bimetal-arc steady": {
+     "pieces": 12,
+     "squares": 0,
+     "seconds": {
+      "classical": 0.26349966996349394,
+      "H2": 0.2652813168242574,
+      "H2r": 0.2653070080559701,
+      "coupled solve": 0.05194842000491917
+     },
+     "every_repetition": {
+      "classical": [
+       0.2669363140594214,
+       0.26579553610645235,
+       0.26392418588511646,
+       0.26349966996349394,
+       0.2662647138349712
+      ],
+      "H2": [
+       0.267977710114792,
+       0.26593461795710027,
+       0.265401029959321,
+       0.2652813168242574,
+       0.2669315040111542
+      ],
+      "H2r": [
+       0.26604027999565005,
+       0.2662078330758959,
+       0.2653070080559701,
+       0.265693754889071,
+       0.2660445289220661
+      ],
+      "coupled solve": [
+       0.05313999904319644,
+       0.05218824394978583,
+       0.05282094399444759,
+       0.05266574095003307,
+       0.05194842000491917
+      ]
+     },
+     "price_H2": 1.005647987473761,
+     "price_H2r": 1.00572943108534,
+     "classical_ms_per_piece": 21.958305830291163
+    },
+    "workbench bimetal-arc step": {
+     "pieces": 12,
+     "squares": 0,
+     "seconds": {
+      "classical": 0.2630100219976157,
+      "H2": 0.2642618620302528,
+      "H2r": 0.2645118848886341,
+      "coupled solve": 0.051432841923087835
+     },
+     "every_repetition": {
+      "classical": [
+       0.2648832609411329,
+       0.26436271285638213,
+       0.2630100219976157,
+       0.26814624294638634,
+       0.263855944853276
+      ],
+      "H2": [
+       0.2644753360655159,
+       0.2643750631250441,
+       0.2642618620302528,
+       0.26438834401778877,
+       0.2665288778953254
+      ],
+      "H2r": [
+       0.2646636569406837,
+       0.2649913539644331,
+       0.26453467598184943,
+       0.2645118848886341,
+       0.26757588400505483
+      ],
+      "coupled solve": [
+       0.052839335054159164,
+       0.053964481223374605,
+       0.051517233019694686,
+       0.051432841923087835,
+       0.05278506316244602
+      ]
+     },
+     "price_H2": 1.0039811367223548,
+     "price_H2r": 1.0047762664170274,
+     "classical_ms_per_piece": 21.91750183313464
+    },
+    "workbench plate-hole steady": {
+     "pieces": 58,
+     "squares": 0,
+     "seconds": {
+      "classical": 1.2789832279086113,
+      "H2": 1.2793762439396232,
+      "H2r": 1.284889091970399,
+      "coupled solve": 0.7883626238908619
+     },
+     "every_repetition": {
+      "classical": [
+       1.2895879368297756,
+       1.2890158270020038,
+       1.2789832279086113,
+       1.2835945300757885,
+       1.2849632410798222
+      ],
+      "H2": [
+       1.288597890874371,
+       1.2839256671722978,
+       1.2793762439396232,
+       1.287712364923209,
+       1.2857576429378241
+      ],
+      "H2r": [
+       1.2883208659477532,
+       1.286235293140635,
+       1.284889091970399,
+       1.286023377906531,
+       1.2858312651515007
+      ],
+      "coupled solve": [
+       0.7899187291041017,
+       0.7883626238908619,
+       0.7904451359063387,
+       0.788639338221401,
+       0.7912284580525011
+      ]
+     },
+     "price_H2": 1.0001901065710268,
+     "price_H2r": 1.0028567373265809,
+     "classical_ms_per_piece": 22.051434963941574
+    },
+    "workbench plate-hole step": {
+     "pieces": 58,
+     "squares": 0,
+     "seconds": {
+      "classical": 1.2711830011103302,
+      "H2": 1.2723802991677076,
+      "H2r": 1.2797227080445737,
+      "coupled solve": 0.7917109041009098
+     },
+     "every_repetition": {
+      "classical": [
+       1.2830567499622703,
+       1.2786263599991798,
+       1.2775989039801061,
+       1.2773205181583762,
+       1.2711830011103302
+      ],
+      "H2": [
+       1.286013256991282,
+       1.2825845328625292,
+       1.2839755229651928,
+       1.2824264289811254,
+       1.2723802991677076
+      ],
+      "H2r": [
+       1.2797227080445737,
+       1.280821243999526,
+       1.2812869211193174,
+       1.280400246148929,
+       1.2799746501259506
+      ],
+      "coupled solve": [
+       0.8026003171689808,
+       0.7969762380234897,
+       0.7981467670761049,
+       0.7930621861014515,
+       0.7917109041009098
+      ]
+     },
+     "price_H2": 1.000580397302233,
+     "price_H2r": 1.0041396733553145,
+     "classical_ms_per_piece": 21.916948295005692
+    }
+   },
+   "counts": {
+    "run_holds": true,
+    "failed": [],
+    "problems": {
+     "workbench wall-2 steady": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench wall-2 step": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench heated-strip steady": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench heated-strip step": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench plate-insert steady": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench plate-insert step": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench fast-heat steady": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench fast-heat step": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench bimetal-arc steady": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench bimetal-arc step": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench plate-hole steady": {
+      "counts": true,
+      "failed": []
+     },
+     "workbench plate-hole step": {
+      "counts": true,
+      "failed": []
+     }
+    }
+   },
+   "code": "4b06b4833acbe304caa505b93d3cd50d9dc789ec"
+  }
+ ],
+ "tally": {
+  "workbench wall-2 steady": 1,
+  "workbench wall-2 step": 1,
+  "workbench heated-strip steady": 1,
+  "workbench heated-strip step": 1,
+  "workbench plate-insert steady": 1,
+  "workbench plate-insert step": 1,
+  "workbench fast-heat steady": 1,
+  "workbench fast-heat step": 1,
+  "workbench bimetal-arc steady": 1,
+  "workbench bimetal-arc step": 1,
+  "workbench plate-hole steady": 1,
+  "workbench plate-hole step": 1
+ },
+ "run_of_third_count": {
+  "workbench wall-2 steady": null,
+  "workbench wall-2 step": null,
+  "workbench heated-strip steady": null,
+  "workbench heated-strip step": null,
+  "workbench plate-insert steady": null,
+  "workbench plate-insert step": null,
+  "workbench fast-heat steady": null,
+  "workbench fast-heat step": null,
+  "workbench bimetal-arc steady": null,
+  "workbench bimetal-arc step": null,
+  "workbench plate-hole steady": null,
+  "workbench plate-hole step": null
+ },
+ "passes": null,
+ "first_counted": {
+  "H2": {
+   "workbench wall-2 steady": [
+    0.9976842733676398
+   ],
+   "workbench wall-2 step": [
+    0.9965479506297648
+   ],
+   "workbench heated-strip steady": [
+    0.7795730242142695
+   ],
+   "workbench heated-strip step": [
+    0.7462578534775413
+   ],
+   "workbench plate-insert steady": [
+    1.0073477057085478
+   ],
+   "workbench plate-insert step": [
+    1.0016389326493886
+   ],
+   "workbench fast-heat steady": [
+    1.0010626164411995
+   ],
+   "workbench fast-heat step": [
+    1.0019555959998472
+   ],
+   "workbench bimetal-arc steady": [
+    1.005647987473761
+   ],
+   "workbench bimetal-arc step": [
+    1.0039811367223548
+   ],
+   "workbench plate-hole steady": [
+    1.0001901065710268
+   ],
+   "workbench plate-hole step": [
+    1.000580397302233
+   ]
+  },
+  "H2r": {
+   "workbench wall-2 steady": [
+    0.9983763425572353
+   ],
+   "workbench wall-2 step": [
+    0.9971084702910762
+   ],
+   "workbench heated-strip steady": [
+    0.3191631432001578
+   ],
+   "workbench heated-strip step": [
+    0.3365047777605181
+   ],
+   "workbench plate-insert steady": [
+    1.0096984536897369
+   ],
+   "workbench plate-insert step": [
+    1.0020218800585552
+   ],
+   "workbench fast-heat steady": [
+    1.000299375114625
+   ],
+   "workbench fast-heat step": [
+    1.002200102802782
+   ],
+   "workbench bimetal-arc steady": [
+    1.00572943108534
+   ],
+   "workbench bimetal-arc step": [
+    1.0047762664170274
+   ],
+   "workbench plate-hole steady": [
+    1.0028567373265809
+   ],
+   "workbench plate-hole step": [
+    1.0041396733553145
+   ]
+  }
+ },
+ "geometric_mean_of_medians": {
+  "H2": null,
+  "H2r": null
+ },
+ "geometric_mean_by_run": {
+  "H2": [
+   0.9571836844807611
+  ],
+  "H2r": [
+   0.8322071865334976
+  ]
+ },
+ "elapsed_s": 117.19369185203686
+}

@@ -1603,7 +1603,10 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - **Tested:** 23 tests in `tests/test_chartop_gates_squares.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
 - **Measured:** the layouts were drawn and measured with the classical solver only (below). Nothing else has read them.
 - **The first dry run ran on 2026-11-08,** inside the Claude app at the owner's word. **4 of 6 runs counted, under the 5 the protocol then needed,** so it was not pinned.
-- **The revision was adopted the same day** ("Adopt it (Recommended)", in chat): each problem's measurements are counted on their own (below). The owner also moved the price to a rented whole machine, for the dry run and for the one evaluation's price runs ("Rent a temporary box", then "Box for both (Recommended)"). Both are written in `gates_squares.py` (`REVISED`) and the price script. The second dry run is below. Not hash-pinned.
+- **The revision was adopted the same day** ("Adopt it (Recommended)", in chat): each problem's measurements are counted on their own (below). The owner also moved the price to a rented whole machine, for the dry run and for the one evaluation's price runs ("Rent a temporary box", then "Box for both (Recommended)"). Both are written in `gates_squares.py` (`REVISED`) and the price script.
+- **The second dry run ran on 2026-11-08, on a rented Ryzen 9 5900X.** It met the bar with nothing to spare: fast-heat steady had exactly three counted measurements.
+  - But numpy's OpenBLAS ran 24 threads by default there. That put the classical expert at the time bound, and it biased the price toward H2: 0.853 at the default threads, against 0.957 in one diagnostic run at four.
+  - So it is not pinned. Fixing the BLAS threads is proposed (below). Not hash-pinned.
 
 **What it would decide.**
 - Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
@@ -1721,6 +1724,40 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
   - A sleep or a frozen container still shows as a gap between samples.
 - **[AI Inference]:** a desktop-class CPU with no other tenant should be quieter than the laptop, whose disturbances voided two runs of the first dry run. The second dry run will show whether it is.
 
+**The second dry run (2026-11-08, on the box): the bar met with nothing to spare, and a defect found.**
+- **Where:**
+  - A rented whole machine: an AMD Ryzen 9 5900X with every GPU of its host rented and a quota of 23 CPUs.
+  - The software: Linux, Python 3.11.11, torch 2.7.1+cpu, numpy 1.26.4 on OpenBLAS, scipy 1.13.1.
+  - The code: commit 4b06b48, from 12:09 to 12:39 (1,784 s).
+  - Record: `out/chartop/dryrun-squares-20261108-170954.json`, stamped in the box's UTC.
+  - A first launch, from 31abb7d, stopped in its smoke stage: `atlas.workbench` needs pydantic, which the runner did not install. 4b06b48 installs it.
+- **The bar was met.** Every problem had three counted measurements within the six runs. The fewest was fast-heat steady, with exactly three, the third coming in run 5. By its own bar, the protocol could be pinned.
+- **But the time check measured the BLAS, not disturbances.**
+  - Every run held its sleep check (no gap over 5.2 s). AC held vacuously, with no battery. The other processes' load was 0.00. Kernel-Power could not be read.
+  - Yet 19 of the 72 measurements were void, all on time. The classical expert's best times were 50.6–73.8 ms a piece, against the laptop's 29–45 ms in the first dry run.
+  - The cause is numpy's OpenBLAS, which runs 24 threads by default on this machine. A probe of the classical expert on the box gave (`scripts/chartop_blas_probe.py`, read over ssh before the box was destroyed):
+
+| OpenBLAS threads | wall-2, steady (ms a piece) | plate-hole, steady (ms a piece) |
+|---|---|---|
+| default (24) | 60.0 | 60.2 |
+| 1 | 23.3 | 21.6 |
+| 4 | 24.3 | 22.4 |
+
+- **So the box's CPU is faster than the laptop's,** and the default threads made it 2.6 times slower, which put it at the bound. The protocol fixes torch's threads at four, but not the BLAS's.
+- **The default threads also bias the price toward H2.** They slow the classical arm and the coupled solve, but not U's form, which runs on torch's four threads.
+  - Six runs at the default: H2's geometric mean was 0.826–0.855 a run. The geometric mean of each problem's median of its first three counted measurements was **0.853** (H2r 0.771).
+  - One diagnostic run with the BLAS at four threads (`OPENBLAS_NUM_THREADS=4`, not part of the dry run): H2 **0.957** and H2r 0.832, with no measurement void. The run took 117 s, against about 300 s a run at the default. Record: `out/chartop/dryrun-squares-diagnostic-blas4-20261108-174234.json`.
+  - So at the default, this box would favour H2 by about a tenth, across PR2's bar of 0.90.
+- **In price, the box is quieter than the laptop.** A single problem's H2 price ranged over the six runs by a median of 0.09, and at most 0.19. On the laptop it was 0.27 and 0.68.
+- **The laptop's MKL moves too.** The same probe gave 35.8 and 38.7 ms a piece at the default threads, 28.9 and 28.7 at one, and 29.5 and 31.8 at four. A second probe at four threads, an hour later, gave 39.7 and 39.9, so the laptop's own figures moved by a third.
+- **Not pinned.** The bar was met, but the price it would certify is biased by a setting the protocol leaves free.
+
+**A proposed revision, not adopted.** It is the owner's call, and it would be dry-run again on the same CPU model.
+- **Fix the BLAS threads** at `PRICE_THREADS`, four, in every price run's process: `OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS` and `OMP_NUM_THREADS`, set before numpy loads, as torch's threads already are.
+- **Re-derive the time bound** for the machine that prices. At four BLAS threads the box took 22–24 ms a piece on the two probed problems, so a 60 ms bound would catch only a 2.5-fold slowdown.
+  - The bound would come from a calibration on the same CPU model, and a third dry run would test it, since a bar set after seeing data tests nothing.
+- **[AI Inference]:** on R2's new layouts, H2 is U alone on six of the eight. Fixing the BLAS makes the classical arm cheaper and leaves U's form as it is, so H2's price there should rise, as it did on §11.17's problems. Prediction 3's range of 0.65–0.85 was drafted from laptop measurements, before this was known.
+
 **The four choices, settled by the owner on 2026-11-08** ("Accept as drafted": the recommended option of each).
 1. **The square path.** *Recommended, and chosen:* H2, with H2r beside. Or H2 alone.
 2. **The problems.** *Recommended, and chosen:* the generated layouts above. Or §11.15's six scenarios re-cut into squares, which is not a fair test since they have been read; or new scenarios drawn by hand.
@@ -1741,6 +1778,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 
 **Cost.**
 - No training. A rented whole machine for the second dry run and for the evaluation's price runs, at about \$0.09/h: about \$0.15 each with setup (the owner's choice, 2026-11-08).
+- The second dry run's box cost about \$0.08 for 47 minutes, at \$0.104/h with its disk. That covered both launches, the dry run, the probe and the diagnostic run.
 - At acceptance: the generator, R2, H2r and the revised protocol as code; the dry run; the classical measurement.
 - The one evaluation: about 30–45 minutes, if most runs count.
 
