@@ -416,6 +416,15 @@ def test_the_pin_hashes_its_scope_refuses_to_overwrite_and_a_byte_fails_it(tmp_p
         RS.check_pin(str(reg), root=str(root))
 
 
+def test_the_registration_is_pinned():
+    """Every file the pin records is the registered file: an edit to any of them fails here."""
+    import chartop_register_squares as RS
+    assert os.path.exists(RS.REGISTRATION), "pinned with the owner's approval ('Pin it'); the file must exist"
+    assert set(RS.check_pin()) == set(RS.every_path())
+    text = open(RS.REGISTRATION, encoding="ascii").read()
+    assert "repository at      5d8ce3e" in text and "registered as      " + GS.REGISTERED in text
+
+
 def test_the_pin_refuses_a_protocol_the_dry_run_did_not_run(tmp_path, monkeypatch):
     import chartop_register_squares as RS
     assert RS.same_as_run(RS.PINNED["price protocol"], "804dd01")

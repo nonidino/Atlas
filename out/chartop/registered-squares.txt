@@ -1,0 +1,97 @@
+THE CHART OPERATOR, THE REGISTRATION AFTER SECTION 11.17 (CO-D, RULE R2'S HYBRID H2: U'S FORM ON SQUARES)
+
+written            2026-11-08T13:54:29-05:00
+before             any expert but the classical one read the new problems (the one evaluation's script not yet written)
+repository at      5d8ce3e3bd2ac26e3cd89c8f50f30a043431471b (the commit adding this file follows it)
+gate module        atlas/chartop/gates_squares.py  sha256 307155a8a79741ce96d66f2e5b86abac49f2fd1c8a08dd989eeced2fa7b5e25d
+new problems       atlas/chartop/benchmarks_squares.py  sha256 c00ab2c79dcbe722b1b89e1ee763a45a549be4f867fc7126f4c6c36eb4f372a1
+H2r's expert       atlas/chartop/reuse.py  sha256 7693639cdaadff3489f144fcf737f9658e86799eb2c2b0885a16a5b528b2824d
+price protocol     scripts/chartop_price_squares.py  sha256 1157f00788a0e57f89ce6bbcb9a6008cf4e694c41e6e0bf760c851a0cbab2e35
+box payload        scripts/chartop_price_box_payload.py  sha256 458a320dfebe6d6abd224073e40c42585c08e9995cb3bbc3e8a1aea0b6cdca88
+box runner         scripts/chartop_price_box_run.sh  sha256 537589a5c9beea5e60f4a52ed07bdf09ec685bb672d6d78abe827146a0884934
+classical record   out/chartop/registration-squares.json  sha256 7a6ad4a4c39f17bd4cffe9882ca895c3b83ca47d98fe1915b9a2f0bb7bdd56aa
+reads E4 from      atlas/chartop/gates_forms.py  sha256 94f29f2738733d36426894a0a5ea7bf2a2d302a482de75a28e4c655dd77a7757  (as the earlier registrations pinned it)
+and through it     atlas/chartop/gates.py  sha256 b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099  (as the earlier registrations pinned it)
+U's form from      atlas/chartop/gates_hybrid.py  sha256 319926b8d519bcf7a2ad737e8fac7f82d008ff5747d880beb0a4666d6269f582  (as the earlier registrations pinned it)
+layout helpers     atlas/chartop/benchmarks.py  sha256 fc3f213e1e28c69f493e76224b22ddf36440b10bf0bb135e057bc8c12469f5c0  (as the earlier registrations pinned it)
+dry-run problems   atlas/chartop/benchmarks_workbench.py  sha256 9771a989bfe199a18aaad0490f6d04be4df58024e4c881ebefbe90fd9cacd4b7  (as the earlier registrations pinned it)
+U's code           atlas/chartop/forms.py  sha256 2b95385c6493fe4ace951513050cb5d5d663106b3cfc29cd468c6f5357980755  (as the earlier registrations pinned it)
+the host           atlas/chartop/host.py  sha256 fc1c30f64b35757296e12131cad489e7ea903b3352181464aeb78cf1244a8d24  (as the earlier registrations pinned it)
+U's builder        scripts/chartop_evaluate_hybrid.py  sha256 84177f25aaca6d0c78eb26f8e940536c167a96facd99a4ab2d8909ce48e73445
+the stand-in       scripts/chartop_forms_diagnose.py  sha256 b766effb756aca8b042d75cc7f7f4520b70bae25baf66294d3b4e72bbb5c86e8
+U's adapter        atlas/chartop/expert.py  sha256 ee2c9dd1ce071f7634b2515d6a6ef55790104b093d42794b3879f9e48a044928
+the envelope       atlas/chartop/data.py  sha256 c0fd7daa8eb780c58a914f0201564567260ceed3acbb5fff34b7ff62de7aae55
+utilities          scripts/chartop_evaluate.py  sha256 33def2011a535c1469b510cedc94fa9c8b64fe622e2995fdd51ee0320f81076c
+the dry run        out/chartop/dryrun-squares-20261108-181228.json  sha256 18e30c6fb4d64669b331ed1d0fc509832070d86c94e144eaa9d733716fb7cf85
+registered as      accepted by the owner on 2026-11-08, in chat ('Accept as drafted'), as drafted in chart-operator-kernel-exact-forms section 11.18 (commit 3f945f2), with its four recommended choices; its price protocol revised the same day, in chat, to the per-problem count ('Adopt it (Recommended)') on a rented whole machine ('Box for both (Recommended)'), and again the same day, in chat ('Accept as drafted', the draft commit 400d2ed), to four BLAS threads, a 35 ms bound on the pricing CPU and an A/A check; hash-pinned with the owner's approval the same day ('Pin it'), after the third dry run passed and before any expert but the classical one read the new problems
+
+THE ARM, H2, BY VALUE (no weights)
+  the rule           rule_pieces2: the classical solve on every piece is_square refuses; U's form
+                     on every piece whose chart is affine onto a square of one material: four
+                     equal sides and four right angles to 1e-09 of the side, log kappa_hat zero
+  U's form           forms.KernelExpert(form='split', backbone='unet', size='1M', kind='sine-hat', m=16, p_size=None, bubble='corner', strips=True),
+                     built after torch.manual_seed(0), zero heads, the networks replaced by
+                     a stand-in answering their zeros
+  then               the coupled solve (host.Layout.couple)
+  beside it, H2r     H2's picks; each square's classical response computed once per class
+                     (resolution, Fourier number to 12 significant digits, uniform source)
+
+THE NEW PROBLEMS: benchmarks_squares' layouts from seeds 7000000, 7000001, 7000002, 7000003, 7000005, 7000006, 7000007, 7000008, problems steady and step, at n = 64
+  read only by the classical superelement and the full-domain solve; the layouts, R2's
+  classical pieces and the classical floors (energy, as registered and lowered by 300 K):
+    7000000  inclusion                        9 x 5, 45 pieces, 0 classical []; dt 20 s; steady 0.1018%, 0.1018%; step 0.00302%, 0.02779%
+    7000001  spreader                         6 x 4, 24 pieces, 0 classical []; dt 10 s; steady 0.4832%, 0.4832%; step 0.01381%, 0.121%
+    7000002  layer                            9 x 4, 36 pieces, 0 classical []; dt 10 s; steady 0.2451%, 0.2451%; step 0.007772%, 0.08209%
+    7000003  hole                             9 x 3, 31 pieces, 8 classical [23, 24, 25, 26, 27, 28, 29, 30]; dt 10 s; steady 0.03989%, 0.03989%; step 0.003356%, 0.03286%
+    7000005  inclusion                        8 x 4, 32 pieces, 0 classical []; dt 20 s; steady 0.4229%, 0.4229%; step 0.004974%, 0.04435%
+    7000006  spreader                         6 x 4, 24 pieces, 0 classical []; dt 10 s; steady 0.5266%, 0.5266%; step 0.01503%, 0.1349%
+    7000007  layer                            6 x 3, 18 pieces, 0 classical []; dt 100 s; steady 0.4296%, 0.4296%; step 0.04076%, 0.2419%
+    7000008  hole                             9 x 5, 49 pieces, 8 classical [41, 42, 43, 44, 45, 46, 47, 48]; dt 100 s; steady 0.02083%, 0.02083%; step 0.003091%, 0.03047%
+  skipped            7000004 (step: 24 refusals)
+
+THE PRICE'S PROTOCOL, BY VALUE
+  where              a rented whole machine (every GPU of its host), CPU AMD Ryzen 9 5900X 12-Core Processor
+  threads            4 torch threads and 4 BLAS threads (OPENBLAS_NUM_THREADS, MKL_NUM_THREADS, OMP_NUM_THREADS set before numpy loads),
+                     checked with threadpoolctl before a run times anything
+  each time          the best of 5, the arms in turn: classical, H2, H2r, coupled solve
+  a measurement      counts if its run held AC at every 5 s sample with no gap over 30 s, and its
+                     problem's classical best time is at most 35 ms a piece; load and Kernel-Power
+                     events recorded, not judged
+  runs               each in its own process, every run kept, until every problem has 3 counted, at
+                     most 9; each problem's price the median of its first 3 counted
+  the A/A check      wall-2 steady, wall-2 step priced beside in every run; their H2 medians within 0.03 of 1, or PR2 is
+                     not judged
+  the dry run        out/chartop/dryrun-squares-20261108-181228.json: passed (every problem 6 of 6 counted, the A/A check within 0.005,
+                     H2 0.961, H2r 0.833), commit 804dd01
+
+THE TRAINING ENVELOPE (data.ENVELOPE), as gates_forms
+  sup|mu| <= 0.65, max log J - min log J <= 2.079, |grad log J| + |grad mu| <= 40,
+  |log kappa_hat| <= 2.3, Fo in [0.01, 100] or steady
+
+Registered: accepted by the owner on 2026-11-08, in chat ('Accept as drafted'), as drafted in chart-operator-kernel-exact-forms section 11.18 (commit 3f945f2), with its four recommended choices; its price protocol revised the same day, in chat, to the per-problem count ('Adopt it (Recommended)') on a rented whole machine ('Box for both (Recommended)'), and again the same day, in chat ('Accept as drafted', the draft commit 400d2ed), to four BLAS threads, a 35 ms bound on the pricing CPU and an A/A check; hash-pinned with the owner's approval the same day ('Pin it'), after the third dry run passed and before any expert but the classical one read the new problems.
+Settled choices:
+  the square path: H2, with H2r beside
+  the problems: the generated square-first layouts of benchmarks_squares
+  PR2's bar: 0.90, as before
+  the load: recorded, not judged; time, power and sleep judged
+Revised after the first dry run:
+  the count: per problem: a run's measurement of a problem counts if the run holds AC and sleep and that problem's classical time is at most 60 ms a piece; each problem's price the median of its first three counted; at most nine runs ('Adopt it (Recommended)')
+  the machine: a rented whole machine for the dry run and the one evaluation's price runs, the evaluation's accuracy on the laptop ('Rent a temporary box', then 'Box for both (Recommended)')
+Revised after the second dry run:
+  the BLAS threads: four, as torch's, so that every arm has the same budget
+  the time bound: 35 ms a piece on the pricing CPU, the laptop's headroom over its slowest problem
+  the A/A check: in the dry run, and in every evaluation price run through wall-2's two problems
+  prediction 3: kept as registered, and judged as it stands
+Gates:
+  E4-H2 (rule R2's hybrid's coupled accuracy on the new problems): H2 meets E4 on every new problem, steady and step: energy error <= 0.02 and max error <= the classical floor's + 0.01 of the range, as registered and lowered by 300 K (judge_e4_both_frames, unchanged)
+  PR2 (rule R2's hybrid's price over the classical expert): the geometric mean over the new problems of H2's price, (t_H2 + t_c) / (t_C + t_c), each the median of its first 3 counted measurements, is <= 0.9; judged only if the A/A controls price within 0.03 of 1
+Predictions:
+  1. H2's energy error exceeds the floor by less than 1e-4 (0.01 percentage points) on every new problem, in both frames.
+  2. So E4-H2 is met on every new problem.
+  3. PR2 is met: H2's geometric mean is 0.65-0.85. H2r's is 0.30-0.60, and H2r is cheaper than H2 on every problem.
+  4. U alone meets E4 on every layout without a round feature, and misses it on at least one with a ring.
+  5. P-s0 errs above H2 on every new problem.
+What each outcome would mean:
+  both gates met: on square-first layouts the hybrid is exact and cheaper; H2r's price says how much of the saving needs no network at all
+  E4-H2 not met: U's form is not exact on some square; the record says where, and the square path has a defect
+  E4-H2 met, PR2 not met: U's form costs too much even on squares; reuse (H2r) is the square path

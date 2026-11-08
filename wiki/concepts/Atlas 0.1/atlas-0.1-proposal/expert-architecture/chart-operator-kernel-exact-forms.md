@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, not yet pinned.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08).
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1591,7 +1591,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - Every piece it adds costs price. On this laptop the hybrid saved about 10% at best (run 6's 0.894), and on wall-2 it saved nothing, so a safer rule may save nothing at all.
 - A future registration's validity conditions should be dry-run on the target machine before pinning, with only an upper bound on time.
 
-### 11.18 The next registration: a rule on the piece's shape, accepted (2026-11-08), not yet pinned
+### 11.18 The next registration: a rule on the piece's shape, accepted and pinned (2026-11-08)
 
 **Status.**
 - Drafted for the owner ("Draft it", commit 3f945f2). **The owner accepted it in chat on 2026-11-08 ("Accept as drafted"), with the recommended option of each of its four choices** (below).
@@ -1600,7 +1600,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
   - `atlas/chartop/benchmarks_squares.py` is the generator;
   - `atlas/chartop/reuse.py` is H2r's expert;
   - `scripts/chartop_price_squares.py` holds the protocol and its dry run.
-- **Tested:** 31 tests in `tests/test_chartop_gates_squares.py`, and 3 on the box's payload and runner in `tests/test_chartop_price_box.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
+- **Tested:** 34 tests in `tests/test_chartop_gates_squares.py`, and 3 on the box's payload and runner in `tests/test_chartop_price_box.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
 - **Measured:** the layouts were drawn and measured with the classical solver only (below). Nothing else has read them.
 - **The first dry run ran on 2026-11-08,** inside the Claude app at the owner's word. **4 of 6 runs counted, under the 5 the protocol then needed,** so it was not pinned.
 - **The revision was adopted the same day** ("Adopt it (Recommended)", in chat): each problem's measurements are counted on their own (below). The owner also moved the price to a rented whole machine, for the dry run and for the one evaluation's price runs ("Rent a temporary box", then "Box for both (Recommended)"). Both are written in `gates_squares.py` (`REVISED`) and the price script.
@@ -1608,7 +1608,13 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
   - But numpy's OpenBLAS ran 24 threads by default there. That put the classical expert at the time bound, and it biased the price toward H2: 0.853 at the default threads, against 0.957 in one diagnostic run at four.
   - So it is not pinned. Not hash-pinned.
 - **The second revision was accepted as drafted** ("Accept as drafted", 2026-11-08, with the recommended option of each of its four choices). It is written in `gates_squares.py` (`REVISED_BLAS`) and the price script: four BLAS threads, checked; a 35 ms bound on the pricing CPU; the A/A check.
-- **The third dry run ran on 2026-11-08, on the same 5900X at four BLAS threads.** No measurement was void, the A/A check held within 0.005, and every prediction held. H2 priced 0.961 on §11.17's problems. The protocol may be pinned by its own bar; that is the owner's call. Not hash-pinned.
+- **The third dry run ran on 2026-11-08, on the same 5900X at four BLAS threads.** No measurement was void, the A/A check held within 0.005, and every prediction held. H2 priced 0.961 on §11.17's problems.
+- **Hash-pinned on 2026-11-08,** with the owner's approval ("Pin it"), before any expert but the classical one read the new problems. The pin is `out/chartop/registered-squares.txt`, written by `scripts/chartop_register_squares.py --pin`.
+  - **Pinned:** `gates_squares.py`, `benchmarks_squares.py`, `reuse.py`, `scripts/chartop_price_squares.py`, the box's payload and runner, and the classical record.
+  - **Checked against the earlier pins:** `gates_forms.py`, `gates.py`, `gates_hybrid.py`, `benchmarks.py`, `benchmarks_workbench.py`, `forms.py` and `host.py`, each as every earlier pin file records it.
+  - **Recorded beside, by hash:** what H2's arm is built with that no registration owns (`scripts/chartop_evaluate_hybrid.py`, `scripts/chartop_forms_diagnose.py`, `expert.py`, `data.py`), the evaluation's utilities (`scripts/chartop_evaluate.py`), and the third dry run's record.
+  - **What the pin refuses.** It will not overwrite a registration. It will not pin a classical record that fails its own controls or no longer fingerprints these layouts. And it will not pin a protocol other than the one the passing dry run ran (commit 804dd01, the gate module's docstring and `REGISTERED` aside).
+  - `check_pin` is what the one evaluation runs first. A test adds one byte to a copy of a pinned file and requires the check to fail. None of these files may be edited again.
 
 **What it would decide.**
 - Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
@@ -1838,7 +1844,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 | 4. heated-strip, H2 and H2r | 0.70–0.82 and 0.28–0.38 | 0.773–0.804 and 0.323–0.343 |
 | 5. H2's geometric mean of medians | 0.94–0.97 | 0.961 |
 
-- **So the protocol may now be pinned, by its own bar.** Pinning is the owner's call, and nothing is pinned.
+- **So the protocol may be pinned, by its own bar.** The owner approved it ("Pin it"), and it is pinned (see the status above).
 - The box cost about \$0.03 once billing settled.
 
 **The four choices, settled by the owner on 2026-11-08** ("Accept as drafted": the recommended option of each).
