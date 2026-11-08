@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08).
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08). §11.19 is its one evaluation's script, written and tested, not run.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1871,6 +1871,58 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - The third dry run's box cost about \$0.03, at \$0.107/h.
 - At acceptance: the generator, R2, H2r and the revised protocol as code; the dry run; the classical measurement.
 - The one evaluation: about 30–45 minutes, if most runs count.
+
+### 11.19 The square rule's one evaluation: the script, written and tested, not run (2026-11-08)
+
+**The owner's go:** "Write it". Script: `scripts/chartop_evaluate_squares.py`, with `scripts/chartop_evaluate_squares_box.sh` for the box. Tests: 12, in `tests/test_chartop_evaluate_squares.py`. Not run.
+
+**Three stages.** The accuracy and its control belong on the laptop, and the price on the box (§11.18, "Box for both"). Every bar is `gates_squares`'.
+
+**A. The accuracy, on the laptop** (`python scripts/chartop_evaluate_squares.py`).
+0. **It refuses** unless the 20 files the pin records hash as recorded (`check_pin`), `atlas/` and `scripts/` are the commit (so the price stage runs the same code), and the one evaluation has not yet run.
+1. **It builds the arms as §11.17 built them** (`chartop_evaluate_hybrid.make_experts`).
+   - U, and H2's stand-in for U's networks, which must answer U's bits on every piece of every problem, in both frames.
+   - P-s0, its weights' sha256 checked.
+   - H2r's reuse expert.
+2. **The control.** On §11.17's twelve problems, which have been read, the floor and U's and P-s0's energy errors in both frames must equal §11.17's record bit for bit.
+   - H2's must equal U's on heated-strip, where R2 gives U every piece, and the floor on the other ten problems, where it gives the classical solve every piece.
+   - Otherwise it stops.
+3. **The picks.** On every new problem, `rule_pieces2` must pick what the classical record holds, or it stops.
+4. **The accuracy, computed once.** H2, H2r, U on every piece and P-s0 on the sixteen new problems, as registered and lowered by 300 K, each judged by E4's own function; then E4-H2.
+   - It runs at four torch threads and the laptop's default BLAS threads, as §11.17's accuracy did, so that the control can reproduce it bit for bit. Only the price runs fix the BLAS.
+   - It writes `evaluation-squares-<time>-accuracy.json`, with its commit.
+
+**The payload, checked against the pin** (`--verify-payload`). The pinned `chartop_price_box_payload.py` builds it from the same commit.
+- It must carry stage A's commit.
+- Every pinned code file in it must hash as the pin records.
+- It must carry this script as it is here.
+- The box gets no record: a price run reads none.
+
+**B. The price, on a whole 5900X** (`STAMP=<stamp> bash scripts/chartop_evaluate_squares_box.sh`).
+- First the pinned runner's smoke stage. It installs the pinned versions, records the machine, arms the box's own deadline and checks the threads.
+- Then `--price`, which refuses off `PRICE_CPU`. The pinned protocol's `price_runs` prices the sixteen new problems with wall-2's two A/A controls beside, each run checkpointed whole.
+- It writes `evaluation-squares-<time>-price.json`.
+
+**C. The verdicts, on the laptop** (`--judge`).
+- The price record must be of stage A's commit and on `PRICE_CPU`, with every run's BLAS pools held.
+- PR2 is judged only if the A/A controls hold and every new problem has three counted measurements.
+- Beside it: H2r's E4 and price, and its ratio to H2's.
+- Then the five predictions, read as the script's docstring states, and the outcome.
+- It writes `evaluation-squares-<time>.json` and `.txt`, whatever they say, in ten lines or fewer.
+
+**Prediction 4's reading.** A round feature is a hole or a round inclusion (`ROUND_FEATURES`); among the new layouts, the two holes. U must meet E4 on both problems of each of the other six layouts, and miss it on at least one problem of a hole.
+
+**Tested without reading a registered layout.** Every test that runs H2, H2r, U or P-s0 runs them on seeds the registration never draws (from 9,000,000), or on §11.17's problems. A guard refuses any test flag on a registered layout before anything is built, and a test checks it. Among the twelve tests:
+- the control reproduces §11.17 bit for bit on wall-2 steady, where R2 gives the classical solve every piece, and on heated-strip step, where it gives U every piece;
+- the accuracy on a hole never drawn: the stand-in answers U's bits, and H2r is the classical answer to $10^{-8}$;
+- a pick that differs from the record is refused, and the price stage refuses off the pricing CPU;
+- the whole run, A, B and C, on a hole never drawn. C does not judge PR2 off the pricing CPU;
+- the verdicts, predictions and outcomes on numbers made up for the registered problems. PR2 is left unjudged when the A/A check, the commit, the CPU or the threads fail;
+- the payload is checked against the pin. It is refused with one byte changed in a pinned file, or when built from another commit.
+
+**Before it runs.**
+- Stage A: about 15 minutes on the laptop, on AC (§11.17's twelve problems took 5).
+- Stage B: a rented whole 5900X, about 15–35 minutes and \$0.03–0.07. Renting it needs the owner's approval.
 
 ---
 
