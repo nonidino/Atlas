@@ -57,6 +57,14 @@ def test_the_owner_revised_the_price_protocol_after_the_first_dry_run():
     assert "Adopt it (Recommended)" in GS.REGISTERED and "Box for both (Recommended)" in GS.REGISTERED
 
 
+def test_the_owner_accepted_the_blas_revision_as_drafted():
+    assert set(GS.REVISED_BLAS) == {"the BLAS threads", "the time bound", "the A/A check", "prediction 3"}
+    assert "four" in GS.REVISED_BLAS["the BLAS threads"] and "35 ms" in GS.REVISED_BLAS["the time bound"]
+    assert "wall-2" in GS.REVISED_BLAS["the A/A check"] and "kept as registered" in GS.REVISED_BLAS["prediction 3"]
+    assert "400d2ed" in GS.REGISTERED and GS.REGISTERED.count("Accept as drafted") == 2
+    assert GS.PREDICTIONS[2].startswith("3. PR2 is met: H2's geometric mean is 0.65-0.85.")     # kept
+
+
 def test_every_e4_bar_is_gates_forms_and_u_is_section_11_14s():
     assert GS.judge_e4_both_frames is GF.judge_e4_both_frames
     assert (GS.E4_ENERGY, GS.E4_MAX_OF_RANGE) == (G.E4_ENERGY, G.E4_MAX_OF_RANGE)
@@ -68,8 +76,13 @@ def test_every_e4_bar_is_gates_forms_and_u_is_section_11_14s():
 def test_the_protocol_is_the_revised_draft():
     assert (GS.PRICE_BAR, GS.PRICE_THREADS, GS.PRICE_REPS, GS.PRICE_RUNS, GS.PRICE_RUNS_MAX) == (0.90, 4, 5, 3, 9)
     assert GS.PRICE_ORDER == ("classical", "H2", "H2r", "coupled solve")
-    assert (GS.MAX_MS_PER_PIECE, GS.SAMPLE_S, GS.MAX_GAP_S, GS.DRY_RUNS) == (60.0, 5.0, 30.0, 6)
+    assert (GS.MAX_MS_PER_PIECE, GS.SAMPLE_S, GS.MAX_GAP_S, GS.DRY_RUNS) == (35.0, 5.0, 30.0, 6)
     assert not hasattr(GS, "PRICE_RERUNS_MAX") and not hasattr(GS, "DRY_RUNS_MIN")   # no run-wide count
+    assert GS.BLAS_THREADS == GS.PRICE_THREADS == 4
+    assert GS.BLAS_VARIABLES == ("OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "OMP_NUM_THREADS")
+    assert GS.blas_env() == {v: "4" for v in GS.BLAS_VARIABLES}
+    assert GS.PRICE_CPU == "AMD Ryzen 9 5900X 12-Core Processor" and GS.AA_TOLERANCE == 0.03
+    assert GS.AA_CONTROLS == (("workbench", "wall-2", "steady"), ("workbench", "wall-2", "step"))
     assert (GS.SEED_BASE, GS.N_LAYOUTS, BS.S_SIDE) == (7_000_000, 8, 0.04)
 
 
@@ -146,31 +159,59 @@ def test_reuse_is_the_classical_answer_and_solves_once_a_class():
         assert abs(e_r[0] / e_r[1] - e_c[0] / e_c[1]) <= 1e-10 + 1e-8 * (e_c[0] / e_c[1])
 
 
-def _counts(ms: dict, plugged=(True, True), gaps=(5.0,)) -> dict:
-    return GS.run_counts2({"classical_ms_per_piece": ms, "plugged": list(plugged), "sample_gaps_s": list(gaps)})
+def _counts(ms: dict, plugged=(True, True), gaps=(5.0,), max_ms=GS.MAX_MS_PER_PIECE) -> dict:
+    return GS.run_counts2({"classical_ms_per_piece": ms, "plugged": list(plugged), "sample_gaps_s": list(gaps)},
+                          max_ms=max_ms)
+
+
+AA_OK, AA_FAILED = {"holds": True, "problems": {}}, {"holds": False, "problems": {"x": {"median": 1.2}}}
 
 
 def test_the_validity_of_a_measurement():
-    ok = _counts({"a": 41.0, "b": 5.0}, gaps=(5.1, 4.9))
+    ok = _counts({"a": 34.0, "b": 5.0}, gaps=(5.1, 4.9))
     assert ok["run_holds"] and ok["failed"] == []                               # no lower edge
     assert all(v == {"counts": True, "failed": []} for v in ok["problems"].values())
-    slow = _counts({"a": 61.0, "b": 5.0})               # the time check voids only its own problem
+    slow = _counts({"a": 36.0, "b": 5.0})               # the time check voids only its own problem
     assert slow["run_holds"] and not slow["problems"]["a"]["counts"] and slow["problems"]["b"]["counts"]
+    assert _counts({"a": 41.0}, max_ms=60.0)["problems"]["a"]["counts"]        # the laptop's bound, then
     for run_wide in (dict(plugged=(True, False)), dict(plugged=()), dict(gaps=(5.0, 31.0)), dict(gaps=())):
-        c = _counts({"a": 41.0, "b": 5.0}, **run_wide)    # AC and sleep void every measurement
+        c = _counts({"a": 20.0, "b": 5.0}, **run_wide)    # AC and sleep void every measurement
         assert not c["run_holds"] and not any(v["counts"] for v in c["problems"].values())
 
 
+def test_the_blas_threads_are_fixed_and_checked():
+    four = [{"user_api": "blas", "internal_api": "openblas", "num_threads": 4},
+            {"user_api": "openmp", "internal_api": "openmp", "num_threads": 24}]   # only BLAS pools are held
+    assert GS.blas_threads_hold(four)
+    assert not GS.blas_threads_hold(four + [{"user_api": "blas", "internal_api": "openblas", "num_threads": 24}])
+    assert not GS.blas_threads_hold([p for p in four if p["user_api"] != "blas"])     # no BLAS seen: refused
+    assert GS.on_price_cpu({"cpu": GS.PRICE_CPU}) and not GS.on_price_cpu({"cpu": "Intel(R) Core(TM) Ultra 7 155H"})
+    assert not GS.on_price_cpu(None)
+
+
+def test_the_aa_check():
+    assert GS.aa_check({"x": [0.99, 1.02, 1.0]}, ["x"]) == {
+        "holds": True, "worst": 0.0, "problems": {"x": {"median": 1.0, "holds": True}}}
+    out = GS.aa_check({"x": [0.95, 0.96, 0.97], "y": [1.0, 1.0, 1.0]}, ["x", "y"])
+    assert not out["holds"] and abs(out["worst"] - 0.04) < 1e-12 and out["problems"]["y"]["holds"]
+    assert not GS.aa_check({"x": [1.0, 1.0]}, ["x"])["holds"]                   # short of three
+    assert not GS.aa_check({}, ["x"])["holds"]
+    with pytest.raises(ValueError):
+        GS.aa_check({"x": [1.0, 1.0, 1.0]}, [])
+
+
 def test_the_count_per_problem_and_when_the_runs_stop():
-    runs = [_counts({"a": 70.0, "b": 40.0}), _counts({"a": 40.0, "b": 40.0}, plugged=(False,)),
-            _counts({"a": 40.0, "b": 40.0}), _counts({"a": 40.0, "b": 61.0}), _counts({"a": 40.0, "b": 40.0})]
+    runs = [_counts({"a": 70.0, "b": 20.0}), _counts({"a": 20.0, "b": 20.0}, plugged=(False,)),
+            _counts({"a": 20.0, "b": 20.0}), _counts({"a": 20.0, "b": 61.0}), _counts({"a": 20.0, "b": 20.0})]
     assert GS.tally(runs) == {"a": 3, "b": 3} and GS.runs_suffice(runs) and not GS.runs_suffice(runs[:4])
     values = [{"a": 10 + i, "b": 20 + i} for i in range(1, 6)]
     assert GS.first_counted(runs, values) == {"a": [13, 14, 15], "b": [21, 23, 25]}
     assert GS.first_counted(runs[:2], values[:2]) == {"a": [], "b": [21]}      # short problems keep what they have
-    assert not GS.dry_run_passes(runs)                                         # five runs, not six
-    assert GS.dry_run_passes(runs + [_counts({"a": 99.0, "b": 99.0})])
-    assert not GS.dry_run_passes(runs[:4] + [_counts({"a": 99.0, "b": 40.0})] * 2)   # a has two
+    assert not GS.dry_run_passes(runs, AA_OK)                                  # five runs, not six
+    assert GS.dry_run_passes(runs + [_counts({"a": 99.0, "b": 99.0})], AA_OK)
+    assert not GS.dry_run_passes(runs + [_counts({"a": 99.0, "b": 99.0})], AA_FAILED)   # the A/A check
+    assert not GS.dry_run_passes(runs + [_counts({"a": 99.0, "b": 99.0})], None)
+    assert not GS.dry_run_passes(runs[:4] + [_counts({"a": 99.0, "b": 20.0})] * 2, AA_OK)   # a has two
 
 
 def test_the_first_dry_run_under_the_per_problem_count():
@@ -182,11 +223,42 @@ def test_the_first_dry_run_under_the_per_problem_count():
     for r in rec["runs"]:
         assert all(f.startswith("the classical expert above") for f in r["counts"]["failed"])   # AC and sleep held
         counts.append(_counts({k: v["classical_ms_per_piece"] for k, v in r["problems"].items()},
-                              plugged=[True] * r["samples"], gaps=[r["max_gap_s"]]))
+                              plugged=[True] * r["samples"], gaps=[r["max_gap_s"]], max_ms=60.0))   # the bound then
     t = GS.tally(counts)
     assert len(t) == 12 and min(t.values()) == 4 and t["workbench plate-hole steady"] == 4
     assert [k for k, v in t.items() if v == 4] == ["workbench plate-hole steady"]
-    assert GS.dry_run_passes(counts) and rec["counted"] == [2, 4, 5, 6]
+    assert GS.runs_suffice(counts) and len(counts) == GS.DRY_RUNS and rec["counted"] == [2, 4, 5, 6]
+    aa = _aa_of(rec, counts)                       # section 11.18: the A/A check, as written, fails it
+    assert not aa["holds"] and abs(aa["worst"] - 0.179) < 5e-4
+    assert not GS.dry_run_passes(counts, aa)
+
+
+def _aa_of(rec: dict, counts: list) -> dict:
+    vals = [{k: v["price_H2"] for k, v in r["problems"].items()} for r in rec["runs"]]
+    keys = [k for k, v in rec["runs"][0]["problems"].items() if v["squares"] == 0]
+    assert len(keys) == 10 and not any("heated-strip" in k for k in keys)
+    return GS.aa_check(GS.first_counted(counts, vals), keys)
+
+
+def test_the_second_dry_run_and_its_diagnostic():
+    """Section 11.18: on the box at the default BLAS threads, the count met the bar with nothing
+    to spare (fast-heat steady exactly three, the third in run 5), and the A/A check, as written,
+    fails it (worst 0.045).  The diagnostic run at four BLAS threads is within 0.007 of 1."""
+    out = os.path.join(ROOT, "out", "chartop")
+    rec = json.load(open(os.path.join(out, "dryrun-squares-20261108-170954.json"), encoding="utf-8"))
+    assert rec["machine"]["cpu"] == GS.PRICE_CPU and rec["code"].startswith("4b06b48")
+    counts = [r["counts"] for r in rec["runs"]]               # judged then by 60 ms, as recorded
+    t = GS.tally(counts)
+    assert GS.runs_suffice(counts) and min(t.values()) == 3 and t["workbench fast-heat steady"] == 3
+    assert rec["run_of_third_count"]["workbench fast-heat steady"] == 5
+    assert sum(not v["counts"] for c in counts for v in c["problems"].values()) == 19
+    aa = _aa_of(rec, counts)
+    assert not aa["holds"] and abs(aa["worst"] - 0.045) < 5e-4
+    diag = json.load(open(os.path.join(out, "dryrun-squares-diagnostic-blas4-20261108-174234.json"), encoding="utf-8"))
+    p = diag["runs"][0]["problems"]
+    assert max(abs(v["price_H2"] - 1.0) for v in p.values() if v["squares"] == 0) < 0.0075
+    assert 21.5 < min(v["classical_ms_per_piece"] for v in p.values()) < max(v["classical_ms_per_piece"]
+                                                                           for v in p.values()) < 22.5
 
 
 def test_the_runs_go_on_until_every_problem_has_three(monkeypatch):
@@ -195,9 +267,10 @@ def test_the_runs_go_on_until_every_problem_has_three(monkeypatch):
 
     def fake(k, threads, specs, n, reps, out_dir):
         return {"run": k, "problems": {p: {"price_H2": 0.8 + 0.01 * k, "price_H2r": 0.4} for p in "ab"},
-                "counts": _counts({p: 75.0 if slow.get(k) == p else 40.0 for p in "ab"})}
+                "counts": _counts({p: 75.0 if slow.get(k) == p else 20.0 for p in "ab"})}
     monkeypatch.setattr(PS, "spawn", fake)
-    out = PS.price_runs([], 16, 1, "unused")
+    out = PS.price_runs([], 16, 1, "unused", controls=())
+    assert out["aa"] is None
     assert len(out["runs"]) == 5 and out["suffice"] and out["tally"] == {"a": 3, "b": 4}
     assert out["prices_H2"] == {"a": [0.8 + 0.01 * k for k in (3, 4, 5)], "b": [0.8 + 0.01 * k for k in (1, 2, 3)]}
 
@@ -205,8 +278,43 @@ def test_the_runs_go_on_until_every_problem_has_three(monkeypatch):
         return {"run": k, "problems": {"a": {"price_H2": 0.8, "price_H2r": 0.4}},
                 "counts": _counts({"a": 40.0}, plugged=(True, False))}
     monkeypatch.setattr(PS, "spawn", void)
-    out = PS.price_runs([], 16, 1, "unused")
+    out = PS.price_runs([], 16, 1, "unused", controls=())
     assert len(out["runs"]) == GS.PRICE_RUNS_MAX and not out["suffice"] and out["prices_H2"] == {"a": []}
+
+
+def test_the_evaluation_prices_the_aa_controls_beside_its_problems(monkeypatch):
+    import chartop_price_squares as PS
+    seen = []
+
+    def fake(k, threads, specs, n, reps, out_dir, wall2=1.01):
+        seen.append(list(specs))
+        keys = [PS.spec_key(s) for s in specs]
+        return {"run": k, "problems": {key: {"price_H2": wall2 if "wall-2" in key else 0.8, "price_H2r": 0.4}
+                                       for key in keys}, "counts": _counts({key: 20.0 for key in keys})}
+    monkeypatch.setattr(PS, "spawn", fake)
+    new = [("squares", str(TEST_SEED), "steady")]
+    out = PS.price_runs(new, 16, 1, "unused")                       # the controls are the default
+    assert seen[0] == new + list(GS.AA_CONTROLS) and len(out["runs"]) == GS.PRICE_RUNS
+    assert out["aa"]["holds"] and set(out["aa"]["problems"]) == {PS.spec_key(c) for c in GS.AA_CONTROLS}
+    monkeypatch.setattr(PS, "spawn", lambda *a: fake(*a, wall2=1.05))  # identical work priced off by 0.05
+    out = PS.price_runs(new, 16, 1, "unused")
+    assert not out["aa"]["holds"]
+    with pytest.raises(ValueError, match="A/A"):                     # and PR2 is then not judged
+        GS.judge_pr2({(TEST_SEED, "steady"): out["prices_H2"][PS.spec_key(new[0])]}, [(TEST_SEED, "steady")],
+                     aa=out["aa"])
+
+
+def test_spawn_fixes_the_blas_threads(monkeypatch, tmp_path):
+    import chartop_price_squares as PS
+    got = {}
+
+    def fake_run(cmd, env=None, **kw):
+        got.update(env)
+        return SimpleNamespace(returncode=1, stderr="stopped by the test")
+    monkeypatch.setattr(PS.subprocess, "run", fake_run)
+    with pytest.raises(SystemExit):
+        PS.spawn(1, 4, [("workbench", "wall-2", "steady")], 16, 1, str(tmp_path))
+    assert {v: got[v] for v in GS.BLAS_VARIABLES} == GS.blas_env()
 
 
 def test_the_judges():
@@ -214,17 +322,21 @@ def test_the_judges():
     assert GS.judge_e4h2({k: {"met": True} for k in keys}, keys)["met"]
     out = GS.judge_e4h2({keys[0]: {"met": True}, keys[1]: {"met": False}}, keys)
     assert not out["met"] and out["not_met"] == ["1 step"]
-    assert GS.judge_pr2({k: [0.8, 0.9, 0.85] for k in keys}, keys)["met"]
-    assert not GS.judge_pr2({k: [0.95, 0.91, 0.92] for k in keys}, keys)["met"]
+    assert GS.judge_pr2({k: [0.8, 0.9, 0.85] for k in keys}, keys, aa=AA_OK)["met"]
+    assert not GS.judge_pr2({k: [0.95, 0.91, 0.92] for k in keys}, keys, aa=AA_OK)["met"]
     with pytest.raises(ValueError):
-        GS.judge_pr2({k: [0.8] for k in keys}, keys)
+        GS.judge_pr2({k: [0.8] for k in keys}, keys, aa=AA_OK)
+    with pytest.raises(ValueError, match="A/A"):
+        GS.judge_pr2({k: [0.8, 0.9, 0.85] for k in keys}, keys, aa=AA_FAILED)
+    with pytest.raises(TypeError):                                   # the A/A verdict is required
+        GS.judge_pr2({k: [0.8, 0.9, 0.85] for k in keys}, keys)
     assert GS.new_problems((7, 9)) == ((7, "steady"), (7, "step"), (9, "steady"), (9, "step"))
 
 
 def test_the_text_names_the_gates_choices_predictions_and_outcomes():
     t = GS.text()
-    for s in ("E4-H2", "PR2", "<= 0.9", "first 3 counted", *GS.SETTLED.values(), *GS.REVISED.values(),
-              *GS.PREDICTIONS, *GS.OUTCOMES.values()):
+    for s in ("E4-H2", "PR2", "<= 0.9", "first 3 counted", "A/A", *GS.SETTLED.values(), *GS.REVISED.values(),
+              *GS.REVISED_BLAS.values(), *GS.PREDICTIONS, *GS.OUTCOMES.values()):
         assert s in t
 
 
@@ -279,8 +391,21 @@ def test_a_price_on_a_read_problem():
     assert p["price_H2"] > 0.0 and p["price_H2r"] > 0.0
 
 
+def _price_run(tmp_path, blas: dict):
+    env = dict(os.environ, PYTHONIOENCODING="utf-8", KMP_DUPLICATE_LIB_OK="TRUE", **blas)
+    return subprocess.run([sys.executable, PRICE, "--price-run", "1", "--threads", "4", "--price-dir", str(tmp_path),
+                           "--n", "16", "--reps", "1", "--problems", "workbench:wall-2:steady"],
+                          env=env, capture_output=True, text=True)
+
+
+def test_a_price_run_refuses_to_time_off_the_fixed_blas_threads(tmp_path):
+    p = _price_run(tmp_path, {v: "2" for v in GS.BLAS_VARIABLES})              # the failing control
+    assert p.returncode != 0 and "refuses to time" in p.stderr
+    assert not os.path.exists(tmp_path / "price-run-1-threads4.json")
+
+
 def test_a_price_run_in_its_own_process(tmp_path):
-    env = dict(os.environ, PYTHONIOENCODING="utf-8", KMP_DUPLICATE_LIB_OK="TRUE")
+    env = dict(os.environ, PYTHONIOENCODING="utf-8", KMP_DUPLICATE_LIB_OK="TRUE", **GS.blas_env())
     p = subprocess.run([sys.executable, PRICE, "--price-run", "1", "--threads", "4", "--price-dir", str(tmp_path),
                         "--n", "16", "--reps", "1", "--problems", "workbench:wall-2:steady",
                         f"squares:{TEST_SEED + 3}:step"], env=env, capture_output=True, text=True)
@@ -293,4 +418,7 @@ def test_a_price_run_in_its_own_process(tmp_path):
     assert m["cpu"] and m["cpu"] != "unknown" and m["cpu_sources"]["cpu_count"] >= m["available_cpus"] >= 1
     assert m["torch"] == __import__("torch").__version__ and not {"host", "hostname", "node"} & set(m)
     assert rec["code"] is None or re.fullmatch(r"[0-9a-f]{40}(\+dirty)?", rec["code"])      # None off git
+    pools = rec["thread_pools"]
+    assert GS.blas_threads_hold(pools) and all(set(p) == {"user_api", "internal_api", "version", "num_threads"}
+                                                for p in pools)          # no file path in a public record
     assert list(rec["problems"]) == ["workbench wall-2 steady", f"squares {TEST_SEED + 3} step"]

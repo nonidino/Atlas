@@ -1600,14 +1600,14 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
   - `atlas/chartop/benchmarks_squares.py` is the generator;
   - `atlas/chartop/reuse.py` is H2r's expert;
   - `scripts/chartop_price_squares.py` holds the protocol and its dry run.
-- **Tested:** 23 tests in `tests/test_chartop_gates_squares.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
+- **Tested:** 30 tests in `tests/test_chartop_gates_squares.py`, and 3 on the box's payload and runner in `tests/test_chartop_price_box.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
 - **Measured:** the layouts were drawn and measured with the classical solver only (below). Nothing else has read them.
 - **The first dry run ran on 2026-11-08,** inside the Claude app at the owner's word. **4 of 6 runs counted, under the 5 the protocol then needed,** so it was not pinned.
 - **The revision was adopted the same day** ("Adopt it (Recommended)", in chat): each problem's measurements are counted on their own (below). The owner also moved the price to a rented whole machine, for the dry run and for the one evaluation's price runs ("Rent a temporary box", then "Box for both (Recommended)"). Both are written in `gates_squares.py` (`REVISED`) and the price script.
 - **The second dry run ran on 2026-11-08, on a rented Ryzen 9 5900X.** It met the bar with nothing to spare: fast-heat steady had exactly three counted measurements.
   - But numpy's OpenBLAS ran 24 threads by default there. That put the classical expert at the time bound, and it biased the price toward H2: 0.853 at the default threads, against 0.957 in one diagnostic run at four.
   - So it is not pinned. Not hash-pinned.
-- **The next revision is drafted for the owner** ("Draft it", 2026-11-08), and not adopted. It fixes the BLAS threads at four and checks them, sets a 35 ms bound for the box's CPU model, and adds an A/A check, with four open choices and a third dry run (below).
+- **The second revision was accepted as drafted** ("Accept as drafted", 2026-11-08, with the recommended option of each of its four choices). It is written in `gates_squares.py` (`REVISED_BLAS`) and the price script: four BLAS threads, checked; a 35 ms bound on the pricing CPU; the A/A check. The third dry run is below. Not hash-pinned.
 
 **What it would decide.**
 - Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
@@ -1696,14 +1696,14 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - **Beside them:** H2r's E4 and price, and the ratio of H2r's price to H2's.
 
 **The price protocol, revised.** The checks now ask whether the timing itself was disturbed (open choice 4).
-- **Time:** the classical expert's best time per piece at most 60 ms, with no lower edge. §11.17's lower edge voided two runs that were simply fast.
+- **Time:** the classical expert's best time per piece at most 60 ms, with no lower edge. §11.17's lower edge voided two runs that were simply fast. The second revision set it to 35 ms on the pricing CPU, at four BLAS threads (below).
 - **Power:** AC, sampled every 5 s through the run, must hold throughout. Kernel-Power's events are recorded but not judged, since Id 105 fired twice in each of two runs while on AC. A machine that reports no battery, such as the rented box, holds this check vacuously, and each run records whether a battery was reported.
 - **Sleep:** no gap longer than 30 s between the 5 s samples.
 - **Load:** the other processes' mean share of a core over the run is recorded, not judged. The evidence for this:
   - void and counted runs gave similar geometric means in §11.17 (0.85–0.92);
   - repetition spread cannot replace the load check: it was large in every run, the counted one included (median max/min 1.2–1.4), from warm-up.
   - (Computed for this draft from §11.17's record.)
-- **Kept from §11.15:** 4 threads, best of 5 with the arms taking turns, each run in its own process, and every run kept.
+- **Kept from §11.15:** 4 threads, best of 5 with the arms taking turns, each run in its own process, and every run kept. Since the second revision, the 4 threads hold for the BLAS as well as torch.
 - **Changed by the revision:** the time check voids only its own problem's measurement, while AC and sleep void the whole run. Runs go on until every problem has three counted measurements, at most nine in all. This replaces three counted runs with at most three re-runs.
 
 **The dry run, before pinning.**
@@ -1753,7 +1753,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - **The laptop's MKL moves too.** The same probe gave 35.8 and 38.7 ms a piece at the default threads, 28.9 and 28.7 at one, and 29.5 and 31.8 at four. A second probe at four threads, an hour later, gave 39.7 and 39.9, so the laptop's own figures moved by a third.
 - **Not pinned.** The bar was met, but the price it would certify is biased by a setting the protocol leaves free.
 
-**The next revision, drafted for the owner (2026-11-08, "Draft it"); not adopted.** It fixes the BLAS threads and checks them, re-sets the time bound for the box, and adds an A/A check. A third dry run on the same CPU model would test it before any pin.
+**The second revision: drafted for the owner (2026-11-08, "Draft it", commit 400d2ed), then accepted as drafted ("Accept as drafted").** It fixes the BLAS threads and checks them, re-sets the time bound for the box, and adds an A/A check. A third dry run on the same CPU model tests it before any pin.
 
 **What the three records already show** (computed from them; the medians are over each record's runs):
 
@@ -1774,8 +1774,8 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 2. **Checked, not trusted.** Each price run records threadpoolctl's report of every thread pool: its API, library, version and thread count, with no file path. It refuses to time if a BLAS pool runs other than four threads. A refusal is an error, not a void run. The runner installs threadpoolctl 3.5.0, the laptop's.
 3. **The time bound, 35 ms a piece,** for the pricing machine's CPU model. That is the headroom the laptop's 60 ms had over its slowest problem, 1.59 times, applied to the box's 22.1 ms at four threads. It keeps the bound's sensitivity: on the laptop, 60 ms caught plate-hole's 1.7- and 2.0-fold slowdowns.
 4. **An A/A check in the dry run.** On the ten problems with no square, H2's median of its first three counted measurements must lie within $1 \pm 0.03$.
-   - The tolerance separates the three records: at four threads the worst deviation was 0.007, at the box's default 0.034, on the laptop 0.184.
-   - It is set after seeing them, so only the third dry run tests it.
+   - As written, on each record's own medians of three, the check fails both six-run records. On the laptop, plate-insert steady was off by 0.179. At the box's default, wall-2 step and fast-heat steady were off by 0.035 and 0.045. The diagnostic's single run was within 0.007 (a test pins these).
+   - The tolerance is set after seeing them, so only the third dry run tests it.
    - The dry run passes only if every problem has three counted measurements within six runs, and the A/A check holds.
 5. **An A/A check in the evaluation** (open choice 3). Wall-2's steady and step problems, which have been read and have no square, would be priced in every evaluation price run beside the new problems. PR2 would be judged only if both hold the A/A check.
 - **The code it would touch:**
@@ -1785,17 +1785,17 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 
 **The open choices,** each with a recommendation:
 1. **The BLAS threads.**
-   - *Recommended:* four, as torch's, so that every arm has the same budget.
+   - *Recommended, and chosen:* four, as torch's, so that every arm has the same budget.
    - Or one: the classical expert was as fast or faster at one thread on both machines (the box 23.3 and 21.6 ms against 24.3 and 22.4; the laptop 28.9 and 28.7 against 29.5 and 31.8).
 2. **The time bound.**
-   - *Recommended:* 35 ms, the laptop's headroom over its slowest problem.
+   - *Recommended, and chosen:* 35 ms, the laptop's headroom over its slowest problem.
    - Or keep 60 ms, which at four threads catches only a 2.7-fold slowdown.
 3. **The A/A check.**
-   - *Recommended:* in the dry run, and in every evaluation price run through wall-2's two problems.
+   - *Recommended, and chosen:* in the dry run, and in every evaluation price run through wall-2's two problems.
    - Or in the dry run only.
    - Or not at all.
 4. **Prediction 3** (H2's geometric mean 0.65–0.85 on the new problems, H2r's 0.30–0.60).
-   - *Recommended:* keep it as registered, and judge it as it stands. It was drafted before the BLAS finding was known. Heated-strip, where H2 is U alone on squares as on six of the eight new layouts, gave 0.75–0.78 and 0.32–0.34 at four threads, inside both ranges.
+   - *Recommended, and chosen:* keep it as registered, and judge it as it stands. It was drafted before the BLAS finding was known. Heated-strip, where H2 is U alone on squares as on six of the eight new layouts, gave 0.75–0.78 and 0.32–0.34 at four threads, inside both ranges.
    - Or restate it for the box.
 
 **The third dry run.**

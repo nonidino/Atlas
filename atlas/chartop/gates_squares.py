@@ -1,17 +1,19 @@
 """The registration after section 11.17: rule R2's hybrid H2, U's form only on squares of one
 material, and beside it H2r, the classical response reused on the squares; judged on E4 and
 on a price bar on square-first layouts from a registered generator.  ACCEPTED BY THE OWNER
-ON 2026-11-08, AS DRAFTED, ITS PRICE PROTOCOL REVISED THE SAME DAY (`REVISED`); NOT YET
-HASH-PINNED.
+ON 2026-11-08, AS DRAFTED, ITS PRICE PROTOCOL REVISED TWICE THE SAME DAY (`REVISED`,
+`REVISED_BLAS`); NOT YET HASH-PINNED.
 
 The owner accepted the draft of [[chart-operator-kernel-exact-forms]] section 11.18 (commit
 3f945f2) in chat on 2026-11-08 ("Accept as drafted"), with its four recommended choices
 (`SETTLED`): H2 with H2r beside; the generated layouts (`benchmarks_squares`); PR2's bar at
 0.90; the load recorded, not judged.  After the first dry run, in which 4 of 6 runs counted,
 the owner adopted the per-problem count ("Adopt it (Recommended)") and moved the price to a
-rented whole machine ("Box for both (Recommended)"), in chat the same day (`REVISED`).
-Pinning is a separate step, run only with the owner's approval, and only after a dry run
-passes (`dry_run_passes`).
+rented whole machine ("Box for both (Recommended)"), in chat the same day (`REVISED`).  The
+second dry run, on that machine, found the BLAS threads free; the owner accepted the drafted
+fix (commit 400d2ed) in chat the same day ("Accept as drafted"), with its four recommended
+choices (`REVISED_BLAS`).  Pinning is a separate step, run only with the owner's approval,
+and only after a dry run passes (`dry_run_passes`).
 
 **The arm, H2.**  No weights; nothing is trained.  U's form without its networks (U as
 `gates_hybrid.U_FORM`, the stand-in as section 11.13's) on every piece `is_square` accepts:
@@ -28,27 +30,36 @@ response per class of resolution, Fourier number and source.
 **The gates** (`GATES`).  E4-H2: H2 meets E4 on every new problem, in both frames
 (`judge_e4_both_frames`, read from `gates_forms`).  PR2: the geometric mean over the new
 problems of H2's price is at most `PRICE_BAR`, each problem's price the median of its first
-`PRICE_RUNS` counted measurements (`first_counted`).  Beside them: H2r's E4 and price, and the
-ratio of H2r's price to H2's.
+`PRICE_RUNS` counted measurements (`first_counted`), judged only if the A/A controls
+(`AA_CONTROLS`) hold (`aa_check`).  Beside them: H2r's E4 and price, and the ratio of H2r's
+price to H2's.
 
 **The price protocol** (`run_counts2`), counted per problem, and judging whether the timing
 itself was disturbed.  A run's measurement of a problem counts if the run's own checks hold
 (AC at every sample, taken every `SAMPLE_S` seconds through the run, and no gap between
 samples longer than `MAX_GAP_S`, a sleep) and that problem's classical best time per piece
 is at most `MAX_MS_PER_PIECE`, with no lower edge.  The other processes' load and the
-Kernel-Power events are recorded, not judged.  `PRICE_THREADS` threads, best of `PRICE_REPS`
-with the arms in turn (`PRICE_ORDER`), each run in its own process, every run kept.  Runs
-continue until every problem has `PRICE_RUNS` counted measurements (`runs_suffice`), at most
-`PRICE_RUNS_MAX` runs in all.
+Kernel-Power events are recorded, not judged.  `PRICE_THREADS` torch threads and as many
+BLAS threads (`BLAS_THREADS`, set through `BLAS_VARIABLES` before numpy loads, and checked:
+`blas_threads_hold`), best of `PRICE_REPS` with the arms in turn (`PRICE_ORDER`), each run
+in its own process, every run kept.  Runs continue until every problem has `PRICE_RUNS`
+counted measurements (`runs_suffice`), at most `PRICE_RUNS_MAX` runs in all.
 
 **Where** (`REVISED`): a rented whole machine, every GPU of its host, so that no other
-tenant shares its CPU.  The one evaluation's price runs are on the dry run's CPU model, and
-its accuracy on the laptop.  A machine with no battery holds the AC check vacuously; each
-run records whether a battery was reported, and the machine it ran on.
+tenant shares its CPU, of the CPU model `PRICE_CPU`, for which `MAX_MS_PER_PIECE` is set.
+The one evaluation's price runs are on it, and its accuracy on the laptop.  A machine with no
+battery holds the AC check vacuously; each run records whether a battery was reported, the
+machine it ran on and its thread pools.
+
+**The A/A check** (`aa_check`): on a problem where R2 hands the classical solve every piece,
+H2 does the classical expert's own work, so its price must lie within `AA_TOLERANCE` of 1.
+The dry run checks it on section 11.17's problems with no square; every evaluation price run
+prices `AA_CONTROLS` beside the new problems.
 
 **The dry run**, before pinning: `DRY_RUNS` runs of the protocol on section 11.17's twelve
-problems, which have been read.  It passes (`dry_run_passes`) if every problem has
-`PRICE_RUNS` counted measurements among them, the evaluation's own need, within six runs.
+problems, which have been read, on `PRICE_CPU`.  It passes (`dry_run_passes`) if every
+problem has `PRICE_RUNS` counted measurements among them, the evaluation's own need, and the
+A/A check holds.
 """
 
 from __future__ import annotations
@@ -67,7 +78,9 @@ REGISTERED = ("accepted by the owner on 2026-11-08, in chat ('Accept as drafted'
               "in chart-operator-kernel-exact-forms section 11.18 (commit 3f945f2), with its "
               "four recommended choices; its price protocol revised the same day, in chat, to the "
               "per-problem count ('Adopt it (Recommended)') on a rented whole machine ('Box for "
-              "both (Recommended)'); not yet hash-pinned")
+              "both (Recommended)'), and again the same day, in chat ('Accept as drafted', the "
+              "draft commit 400d2ed), to four BLAS threads, a 35 ms bound on the pricing CPU and "
+              "an A/A check; not yet hash-pinned")
 
 #: the owner's revision of the price protocol after the first dry run (2026-11-08, in chat)
 REVISED = {
@@ -78,6 +91,15 @@ REVISED = {
     "the machine": "a rented whole machine for the dry run and the one evaluation's price runs, "
                    "the evaluation's accuracy on the laptop ('Rent a temporary box', then 'Box "
                    "for both (Recommended)')",
+}
+
+#: the owner's acceptance of the second revision, drafted after the second dry run found the
+#: BLAS threads free (2026-11-08, in chat, "Accept as drafted"; the draft is commit 400d2ed)
+REVISED_BLAS = {
+    "the BLAS threads": "four, as torch's, so that every arm has the same budget",
+    "the time bound": "35 ms a piece on the pricing CPU, the laptop's headroom over its slowest problem",
+    "the A/A check": "in the dry run, and in every evaluation price run through wall-2's two problems",
+    "prediction 3": "kept as registered, and judged as it stands",
 }
 
 SETTLED = {
@@ -145,26 +167,58 @@ def rule_pieces2(L) -> list:
 
 PRICE_BAR = 0.90
 PRICE_THREADS = 4
+#: the BLAS threads in every price run's process, as torch's (`REVISED_BLAS`): set through
+#: `BLAS_VARIABLES` in the run's environment before numpy loads, and checked (`blas_threads_hold`)
+BLAS_THREADS = PRICE_THREADS
+BLAS_VARIABLES = ("OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "OMP_NUM_THREADS")
 PRICE_REPS = 5
 #: counted measurements per problem; its price is the median of its first `PRICE_RUNS`
 PRICE_RUNS = 3
 #: runs in all, at most: they continue until every problem has `PRICE_RUNS` counted
 PRICE_RUNS_MAX = 9
 PRICE_ORDER = ("classical", "H2", "H2r", "coupled solve")
-MAX_MS_PER_PIECE = 60.0
+#: the CPU model the price is measured on (`REVISED`): the second dry run's
+PRICE_CPU = "AMD Ryzen 9 5900X 12-Core Processor"
+#: the time bound on `PRICE_CPU` at `BLAS_THREADS` (`REVISED_BLAS`).  The laptop's 60 ms, in force
+#: until then, had 1.59 times its slowest problem's fastest time (37.7 ms); the box's slowest at
+#: four threads was 22.1 ms
+MAX_MS_PER_PIECE = 35.0
 SAMPLE_S = 5.0
 MAX_GAP_S = 30.0
-#: the dry run's runs; it passes if every problem has `PRICE_RUNS` counted among them
+#: the A/A check (`REVISED_BLAS`): where R2 hands the classical solve every piece, H2's price, the
+#: median of its first `PRICE_RUNS` counted measurements, lies within this of 1
+AA_TOLERANCE = 0.03
+#: priced beside the new problems in every evaluation price run: section 11.17's wall-2, which has
+#: been read and has no square
+AA_CONTROLS = (("workbench", "wall-2", "steady"), ("workbench", "wall-2", "step"))
+#: the dry run's runs; it passes if every problem has `PRICE_RUNS` counted among them and the A/A
+#: check holds
 DRY_RUNS = 6
 price = GH.price
 
 
-def run_counts2(state: dict) -> dict:
+def blas_env() -> dict:
+    """The environment that fixes a price run's BLAS threads, set before numpy loads."""
+    return {v: str(BLAS_THREADS) for v in BLAS_VARIABLES}
+
+
+def blas_threads_hold(pools: list) -> bool:
+    """Whether threadpoolctl's report ``pools`` shows the BLAS fixed: at least one pool whose API
+    is BLAS, and every such pool at `BLAS_THREADS`."""
+    blas = [p for p in pools if p.get("user_api") == "blas"]
+    return bool(blas) and all(p.get("num_threads") == BLAS_THREADS for p in blas)
+
+
+def on_price_cpu(machine: dict) -> bool:
+    return (machine or {}).get("cpu") == PRICE_CPU
+
+
+def run_counts2(state: dict, max_ms: float = MAX_MS_PER_PIECE) -> dict:
     """Which of a price run's measurements count, problem by problem (`REVISED`).  ``state``:
     ``classical_ms_per_piece`` (the classical expert's best time per piece, per problem),
     ``plugged`` (AC at each sample) and ``sample_gaps_s`` (the gaps between consecutive
     samples).  The run's own checks, AC and sleep, void every measurement in it; the time
-    check voids only its own problem's.  Load is not judged."""
+    check, against ``max_ms``, voids only its own problem's.  Load is not judged."""
     failed = []
     if not state["plugged"] or not all(state["plugged"]):
         failed.append("off AC at a sample" if state["plugged"] else "no power samples")
@@ -174,8 +228,8 @@ def run_counts2(state: dict) -> dict:
     problems = {}
     for key, ms in state["classical_ms_per_piece"].items():
         why = list(failed)
-        if ms > MAX_MS_PER_PIECE:
-            why.append(f"the classical expert at {ms:.1f} ms a piece, above {MAX_MS_PER_PIECE:g}")
+        if ms > max_ms:
+            why.append(f"the classical expert at {ms:.1f} ms a piece, above {max_ms:g}")
         problems[key] = {"counts": not why, "failed": why}
     return {"run_holds": not failed, "failed": failed, "problems": problems}
 
@@ -209,10 +263,26 @@ def first_counted(counts: list, values: list, n: int = PRICE_RUNS) -> dict:
     return out
 
 
-def dry_run_passes(counts: list) -> bool:
-    """The dry run's bar, the evaluation's own need: `DRY_RUNS` runs, and among them every
-    problem with `PRICE_RUNS` counted measurements."""
-    return len(counts) == DRY_RUNS and runs_suffice(counts)
+def aa_check(prices: dict, controls) -> dict:
+    """The A/A check on ``controls``, problems where R2 hands the classical solve every piece.
+    ``prices[key]`` is H2's first `PRICE_RUNS` counted prices of a control (`first_counted`); its
+    median must lie within `AA_TOLERANCE` of 1.  A control short of `PRICE_RUNS` fails it."""
+    keys = list(controls)
+    if not keys:
+        raise ValueError("an A/A check needs at least one control")
+    out = {}
+    for key in keys:
+        got = list(prices.get(key, ()))
+        med = float(np.median(got)) if len(got) == PRICE_RUNS else None
+        out[key] = {"median": med, "holds": med is not None and abs(med - 1.0) <= AA_TOLERANCE}
+    worst = max((abs(v["median"] - 1.0) for v in out.values() if v["median"] is not None), default=None)
+    return {"holds": all(v["holds"] for v in out.values()), "worst": worst, "problems": out}
+
+
+def dry_run_passes(counts: list, aa: dict) -> bool:
+    """The dry run's bar: the evaluation's own need, `DRY_RUNS` runs and among them every
+    problem with `PRICE_RUNS` counted measurements, and the A/A check (`aa_check`)."""
+    return len(counts) == DRY_RUNS and runs_suffice(counts) and bool(aa and aa["holds"])
 
 
 def judge_e4h2(verdicts: dict, problems=None) -> dict:
@@ -225,7 +295,11 @@ def judge_e4h2(verdicts: dict, problems=None) -> dict:
             "not_met": [f"{a} {b}" for a, b in keys if not verdicts[(a, b)]["met"]]}
 
 
-def judge_pr2(prices: dict, problems=None) -> dict:
+def judge_pr2(prices: dict, problems=None, *, aa: dict) -> dict:
+    """PR2 on ``prices`` (each problem's first `PRICE_RUNS` counted prices of H2), judged only
+    if the A/A controls held (``aa``, from `aa_check`)."""
+    if not aa["holds"]:
+        raise ValueError(f"PR2 is not judged: the A/A controls failed ({aa['problems']})")
     keys = list(problems or new_problems())
     short = [k for k in keys if len(prices.get(k, ())) != PRICE_RUNS]
     if short:
@@ -254,7 +328,8 @@ GATES = (
          f"and lowered by {-DATUM_SHIFT_K:g} K (judge_e4_both_frames, unchanged)"),
     Gate("PR2", "rule R2's hybrid's price over the classical expert",
          f"the geometric mean over the new problems of H2's price, (t_H2 + t_c) / (t_C + t_c), each "
-         f"the median of its first {PRICE_RUNS} counted measurements, is <= {PRICE_BAR:g}"),
+         f"the median of its first {PRICE_RUNS} counted measurements, is <= {PRICE_BAR:g}; judged "
+         f"only if the A/A controls price within {AA_TOLERANCE:g} of 1"),
 )
 
 PREDICTIONS = (
@@ -282,6 +357,7 @@ def text() -> str:
     lines = [f"Registered: {REGISTERED}.", "Settled choices:"]
     lines += [f"  {k}: {v}" for k, v in SETTLED.items()]
     lines += ["Revised after the first dry run:"] + [f"  {k}: {v}" for k, v in REVISED.items()]
+    lines += ["Revised after the second dry run:"] + [f"  {k}: {v}" for k, v in REVISED_BLAS.items()]
     lines += ["Gates:"] + [f"  {g.key} ({g.title}): {g.bar}" for g in GATES]
     lines += ["Predictions:"] + [f"  {p}" for p in PREDICTIONS]
     lines += ["What each outcome would mean:"] + [f"  {k}: {v}" for k, v in OUTCOMES.items()]

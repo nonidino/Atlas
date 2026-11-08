@@ -60,7 +60,8 @@ def test_the_payload_refuses_what_the_box_must_not_carry(tmp_path, monkeypatch):
 
 def test_the_runner_installs_the_laptops_versions_and_stops_itself():
     text = open(os.path.join(ROOT, *PB.RUNNER.split("/")), encoding="utf-8").read()
-    for pin in ("torch==2.7.1", "numpy==1.26.4", "scipy==1.13.1", "download.pytorch.org/whl/cpu"):
+    for pin in ("torch==2.7.1", "numpy==1.26.4", "scipy==1.13.1", "download.pytorch.org/whl/cpu",
+                "threadpoolctl==3.5.0"):
         assert pin in text
     constraints = open(os.path.join(ROOT, "constraints.txt"), encoding="utf-8").read().splitlines()
     for name in ("pydantic", "pydantic_core", "annotated-types", "typing_extensions"):   # atlas.workbench's

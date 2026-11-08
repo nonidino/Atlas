@@ -4,12 +4,15 @@ and its dry run before the pin.
     python scripts/chartop_price_squares.py --dry-run
 
 The dry run is `DRY_RUNS` price runs on section 11.17's twelve problems, which have been
-read, on a rented whole machine (`gates_squares.REVISED`).  It passes if every problem has
-`PRICE_RUNS` counted measurements among them (`dry_run_passes`).  It writes
+read, on a rented whole machine of the CPU model `PRICE_CPU` (`gates_squares.REVISED`).  It
+passes if every problem has `PRICE_RUNS` counted measurements among them and the A/A check
+holds on the problems with no square (`dry_run_passes`, `aa_check`).  It writes
 ``out/chartop/dryrun-squares-<time>.json`` and prints ten lines or fewer.
 
-**A price run** (``--price-run``, in its own process): the experts and the problems are built
-first; then a sampler records, every `SAMPLE_S` seconds through the timing, the time, AC
+**A price run** (``--price-run``, in its own process, which `spawn` starts with the BLAS
+threads fixed through `BLAS_VARIABLES`): it refuses to time unless threadpoolctl shows every
+BLAS pool at `BLAS_THREADS` (`gates_squares.REVISED_BLAS`).  The experts and the problems
+are built first; then a sampler records, every `SAMPLE_S` seconds through the timing, the time, AC
 (and whether a battery is reported at all) and the other processes' share of a core; the
 arms take turns in `PRICE_ORDER` within each of `PRICE_REPS` repetitions (the classical
 expert's responses on every piece; H2's, the classical solve on R2's picks and U's form
@@ -22,7 +25,8 @@ judged; no host and no process is named.
 
 The evaluation will use `price_runs` from here: runs until every problem has `PRICE_RUNS`
 counted measurements, at most `PRICE_RUNS_MAX` in all, every run kept; each problem's price
-the median of its first `PRICE_RUNS` counted.  ``--problems``, ``--n``, ``--reps`` and
+the median of its first `PRICE_RUNS` counted; the A/A controls `AA_CONTROLS` priced beside
+the problems in every run, and checked (`aa_check`).  ``--problems``, ``--n``, ``--reps`` and
 ``--runs`` exist for tests.
 """
 
@@ -45,6 +49,7 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 import numpy as np  # noqa: E402
+import threadpoolctl  # noqa: E402   (declared: the box's runner installs it, as the laptop has it)
 import torch  # noqa: E402
 
 import chartop_cpus  # noqa: E402
@@ -145,6 +150,13 @@ def machine() -> dict:
             "numpy": np.__version__, "scipy": scipy.__version__}
 
 
+def thread_pools() -> list:
+    """threadpoolctl's report of every thread pool in this process: its API, library, version and
+    thread count.  No file path: the record is public."""
+    return [{k: p.get(k) for k in ("user_api", "internal_api", "version", "num_threads")}
+            for p in threadpoolctl.threadpool_info()]
+
+
 class Sampler:
     """Every `SAMPLE_S` seconds until stopped: the wall time, AC, whether a battery is reported
     at all (with none, AC holds vacuously), and the largest share of one core any other process
@@ -208,6 +220,10 @@ def price_problem2(b, picks: list, arms: dict, reps: int) -> dict:
 
 def price_run2(k: int, threads: int, reps: int, specs: list, n: int, out_dir: str) -> dict:
     torch.set_num_threads(threads)
+    pools = thread_pools()
+    if not GS.blas_threads_hold(pools):
+        raise SystemExit(f"price run {k} refuses to time: the BLAS pools are not at {GS.BLAS_THREADS} threads "
+                         f"each ({pools}); set {', '.join(GS.BLAS_VARIABLES)} before numpy loads")
     arms = make_arms()
     built = []
     for spec in specs:
@@ -224,7 +240,7 @@ def price_run2(k: int, threads: int, reps: int, specs: list, n: int, out_dir: st
              "plugged": [x["plugged"] for x in s],
              "sample_gaps_s": [b_["time"] - a["time"] for a, b_ in zip(s, s[1:])]}
     rec = {"run": k, "torch_threads": threads, "reps": reps, "n": n, "start": start, "end": end,
-           "machine": machine(), "battery_reported": any(x["battery"] for x in s),
+           "machine": machine(), "thread_pools": pools, "battery_reported": any(x["battery"] for x in s),
            "samples": len(s), "load_mean": float(np.mean([x["other_core_max"] for x in s])),
            "load_max": float(max(x["other_core_max"] for x in s)),
            "max_gap_s": max(state["sample_gaps_s"], default=0.0),
@@ -239,7 +255,7 @@ def spawn(k: int, threads: int, specs: list, n: int, reps: int, out_dir: str) ->
     cmd = [sys.executable, os.path.abspath(__file__), "--price-run", str(k), "--threads", str(threads),
            "--price-dir", out_dir, "--n", str(n), "--reps", str(reps),
            "--problems", *[":".join(str(x) for x in s) for s in specs]]
-    env = dict(os.environ, PYTHONIOENCODING="utf-8", KMP_DUPLICATE_LIB_OK="TRUE")
+    env = dict(os.environ, PYTHONIOENCODING="utf-8", KMP_DUPLICATE_LIB_OK="TRUE", **GS.blas_env())
     p = subprocess.run(cmd, env=env, capture_output=True, text=True)
     path = os.path.join(out_dir, f"price-run-{k}-threads{threads}.json")
     if p.returncode != 0 or not os.path.exists(path):
@@ -266,20 +282,24 @@ def prices_of(recs: list, arm: str) -> dict:
 
 
 def price_runs(specs: list, n: int, reps: int, out_dir: str, max_runs: int = GS.PRICE_RUNS_MAX,
-               checkpoint=None) -> dict:
+               checkpoint=None, controls=GS.AA_CONTROLS) -> dict:
     """Runs until every problem has `PRICE_RUNS` counted measurements, at most ``max_runs`` in
-    all; every run kept.  ``checkpoint(name, compute)`` keeps each run whole when given."""
+    all; every run kept.  The A/A ``controls`` are priced beside ``specs`` in every run and
+    checked (`aa_check`).  ``checkpoint(name, compute)`` keeps each run whole when given."""
     keep = checkpoint or (lambda name, compute: compute())
+    run_specs = list(specs) + [c for c in controls if c not in specs]
     recs = []
     while len(recs) < max_runs and not GS.runs_suffice([r["counts"] for r in recs]):
         k = len(recs) + 1
         rec = keep(f"price-run-{k}-threads{GS.PRICE_THREADS}",
-                   lambda: spawn(k, GS.PRICE_THREADS, specs, n, reps, out_dir))
+                   lambda: spawn(k, GS.PRICE_THREADS, run_specs, n, reps, out_dir))
         recs.append(rec)
         log(f"price run {k}: {describe(rec['counts'])}")
     counts = [r["counts"] for r in recs]
+    h2 = prices_of(recs, "H2")
     return {"runs": recs, "tally": GS.tally(counts), "suffice": GS.runs_suffice(counts),
-            "prices_H2": prices_of(recs, "H2"), "prices_H2r": prices_of(recs, "H2r")}
+            "prices_H2": h2, "prices_H2r": prices_of(recs, "H2r"),
+            "aa": GS.aa_check(h2, [spec_key(c) for c in controls]) if controls else None}
 
 
 # ---------------------------------------------------------------------------
@@ -304,12 +324,16 @@ def dry_run(specs: list, n: int, reps: int, runs: int, out: str) -> dict:
     pr = {arm: (geomean([float(np.median(v)) for v in first[arm].values()]) if GS.runs_suffice(counts) else None)
           for arm in ("H2", "H2r")}
     gm = {arm: [geomean([v[f"price_{arm}"] for v in r["problems"].values()]) for r in recs] for arm in ("H2", "H2r")}
+    # the A/A check: the problems where R2 hands the classical solve every piece
+    aa_keys = [key for key, v in recs[0]["problems"].items() if v["squares"] == 0] if recs else []
+    aa = GS.aa_check(first["H2"], aa_keys) if aa_keys else None
+    on_cpu = bool(recs) and all(GS.on_price_cpu(r["machine"]) for r in recs)
     registered = (n, reps, runs) == (GS.BENCHMARK_N, GS.PRICE_REPS, GS.DRY_RUNS)
     res = {"written": time.strftime("%Y-%m-%d %H:%M:%S"), "registration": GS.REGISTERED,
            "machine": recs[0]["machine"] if recs else None, "code": code_identity(),
            "problems": [spec_key(s) for s in specs], "n": n, "reps": reps, "runs": recs,
-           "tally": t, "run_of_third_count": third,
-           "passes": GS.dry_run_passes(counts) if registered else None,
+           "tally": t, "run_of_third_count": third, "aa": aa, "on_price_cpu": on_cpu,
+           "passes": (GS.dry_run_passes(counts, aa) and on_cpu) if registered else None,
            "first_counted": first, "geometric_mean_of_medians": pr,
            "geometric_mean_by_run": gm,
            "elapsed_s": time.perf_counter() - t0}
@@ -322,8 +346,10 @@ def dry_run(specs: list, n: int, reps: int, runs: int, out: str) -> dict:
         void = sum(not v["counts"] for v in c["problems"].values())
         print(f"          {r['run']:3d}  {'yes' if c['run_holds'] else 'no ':5s}  {void:4d}  {g2:8.3f}  {gr:9.3f}  "
               f"{r['load_mean']:9.2f}")
+    worst = "-" if not aa or aa["worst"] is None else f"{aa['worst']:.3f}"
     print(f"          every problem has {GS.PRICE_RUNS} counted: {GS.runs_suffice(counts)} (fewest {t.get(fewest)}, "
-          f"{fewest}); may be pinned: {res['passes']}")
+          f"{fewest}); A/A on {len(aa_keys)}: {aa['holds'] if aa else None} (worst {worst}); "
+          f"on {GS.PRICE_CPU}: {on_cpu}; may be pinned: {res['passes']}")
     print(f"          median-of-first-{GS.PRICE_RUNS} geometric mean: H2 {pr['H2'] if pr['H2'] is None else round(pr['H2'], 3)}, "
           f"H2r {pr['H2r'] if pr['H2r'] is None else round(pr['H2r'], 3)}; wrote {os.path.relpath(path, ROOT)} "
           f"({res['elapsed_s']:.0f} s)")

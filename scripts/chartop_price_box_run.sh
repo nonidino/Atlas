@@ -29,10 +29,11 @@ echo "deadline armed: ${DEADLINE_S}s, instance ${CONTAINER_ID:-unknown}, stages:
 
 # pydantic: U's probe piece is built through benchmarks.bend3, whose lazy import of atlas.workbench
 # needs it -- the first box run's smoke stage found it missing (2026-11-08); a file audit cannot see
-# a package.  The versions are constraints.txt's.
+# a package.  The versions are constraints.txt's.  threadpoolctl (the laptop's 3.5.0): each price
+# run checks its BLAS threads with it (gates_squares.REVISED_BLAS).
 python -m pip install -q --index-url https://download.pytorch.org/whl/cpu torch==2.7.1 > pip.log 2>&1 \
   && python -m pip install -q numpy==1.26.4 scipy==1.13.1 psutil pydantic==2.12.5 pydantic_core==2.41.5 \
-       annotated-types==0.6.0 typing_extensions==4.15.0 >> pip.log 2>&1
+       annotated-types==0.6.0 typing_extensions==4.15.0 threadpoolctl==3.5.0 >> pip.log 2>&1
 status=$?
 echo $status > pip.done
 
