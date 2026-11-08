@@ -1,0 +1,74 @@
+THE CHART OPERATOR, THE REGISTRATION AFTER SECTION 11.14 (CO-D, THE FIXED RULE'S HYBRID H)
+
+written            2026-11-07T22:26:13-05:00
+before             any expert but the classical one read the new problems (the one evaluation's script not yet written)
+repository at      bd5035d275d8a3ba9d63b464aa158e54249fa8b4 (the commit adding this file follows it)
+gate module        atlas/chartop/gates_hybrid.py  sha256 319926b8d519bcf7a2ad737e8fac7f82d008ff5747d880beb0a4666d6269f582
+new problems       atlas/chartop/benchmarks_workbench.py  sha256 9771a989bfe199a18aaad0490f6d04be4df58024e4c881ebefbe90fd9cacd4b7
+H's form           atlas/chartop/forms.py  sha256 2b95385c6493fe4ace951513050cb5d5d663106b3cfc29cd468c6f5357980755
+H's host           atlas/chartop/host.py  sha256 fc1c30f64b35757296e12131cad489e7ea903b3352181464aeb78cf1244a8d24
+classical record   out/chartop/registration-hybrid.json  sha256 56f95685eee0423d41266c6856889edef3362d1dbd90cece053cb45b5171dbe2
+reads E4 from      atlas/chartop/gates_forms.py  sha256 94f29f2738733d36426894a0a5ea7bf2a2d302a482de75a28e4c655dd77a7757  (as registered-prior.txt pinned it)
+and through it     atlas/chartop/gates.py  sha256 b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099  (as registered-prior.txt pinned it)
+the control from   atlas/chartop/gates_prior.py  sha256 baadad040504e7d06fb6c25bf7bca713be75c9a64a3a1c44da1a9e58c2364ac0  (as registered-prior.txt pinned it)
+helpers from       atlas/chartop/benchmarks.py  sha256 fc3f213e1e28c69f493e76224b22ddf36440b10bf0bb135e057bc8c12469f5c0  (as registered-prior.txt pinned it)
+control record     out/chartop/forms-diagnose-h3.json  sha256 4d57309ee2542d905d63d8a114d329d9397030fa9130f136f3e461be6a61aa67
+registered as      accepted by the owner on 2026-11-07, in chat ('Accept as drafted'), as drafted in chart-operator-kernel-exact-forms section 11.15 (commit 6d1b9ca), with its three recommended choices; hash-pinned with the owner's approval the same day ('Pin it'), before any expert but the classical one read the new problems
+
+THE ARM, H, BY VALUE (no weights)
+  the rule           rule_pieces: the classical solve on every piece whose chart is a Winslow
+                     chart and on every piece that owns a Dirichlet side
+  everywhere else    U's form without its networks: forms.KernelExpert(form='split', backbone='unet', size='1M', kind='sine-hat', m=16, p_size=None, bubble='corner', strips=True),
+                     built after torch.manual_seed(0), zero heads, the networks replaced by
+                     a stand-in answering their zeros
+  then               the coupled solve (host.Layout.couple)
+
+THE NEW PROBLEMS: benchmarks_workbench's wall-2, heated-strip, plate-insert, fast-heat, bimetal-arc, plate-hole, problems steady and step, at n = 64
+  the ends' data     hot 400 + 20 cos(pi s), cold 300 + 10 cos(2 pi s), s from 0 to 1 along each
+                     end; every other side insulated; the step one backward-Euler step from 300 K
+  the step's dt, s   wall-2 100; heated-strip 2; plate-insert 500; fast-heat 500; bimetal-arc 10; plate-hole 100
+  dimensions, m      wall {'length': 0.4, 'height': 0.1, 'steel': 0.24}; strip {'length': 0.2, 'layer': 0.01}; plate {'width': 0.4, 'height': 0.24}; insert {'x0': 0.14, 'y0': 0.08, 'width': 0.12, 'height': 0.08}; spreader {'x0': 0.0, 'y0': 0.08, 'width': 0.12, 'height': 0.08}; arc {'r_in': 0.06, 'r_mid': 0.08, 'r_out': 0.1}; hole {'width': 0.4, 'height': 0.2, 'radius': 0.03, 'box_over_radius': 2.0, 'split': 3}
+  read only by the classical superelement and the full-domain solve; the rule's picks and
+  the classical floors:
+    wall-2        steady  4 pieces, picks [0, 3]; floor 0.3921% as registered, 0.3921% lowered
+    wall-2        step    4 pieces, picks [0, 3]; floor 0.02515% as registered, 0.2464% lowered
+    heated-strip  steady 40 pieces, picks [0, 19, 20, 39]; floor 0.9385% as registered, 0.9385% lowered
+    heated-strip  step   40 pieces, picks [0, 19, 20, 39]; floor 0.022% as registered, 0.3092% lowered
+    plate-insert  steady 18 pieces, picks [0, 5, 6, 11, 12, 17]; floor 0.81% as registered, 0.81% lowered
+    plate-insert  step   18 pieces, picks [0, 5, 6, 11, 12, 17]; floor 0.03123% as registered, 0.2232% lowered
+    fast-heat     steady 18 pieces, picks [0, 5, 6, 11, 12, 17]; floor 0.7602% as registered, 0.7602% lowered
+    fast-heat     step   18 pieces, picks [0, 5, 6, 11, 12, 17]; floor 0.1132% as registered, 0.6753% lowered
+    bimetal-arc   steady 12 pieces, picks [0, 1, 10, 11]; floor 0.6924% as registered, 0.6924% lowered
+    bimetal-arc   step   12 pieces, picks [0, 1, 10, 11]; floor 0.04431% as registered, 0.344% lowered
+    plate-hole    steady 58 pieces, picks [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 18, 22, 26, 30, 34, 41, 45, 49, 53, 57]; floor 0.02543% as registered, 0.02543% lowered
+    plate-hole    step   58 pieces, picks [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 18, 22, 26, 30, 34, 41, 45, 49, 53, 57]; floor 0.00236% as registered, 0.02423% lowered
+  the control        bend-3 steady, bend-3 step, s-channel steady, s-channel step, insert-round steady, insert-round step, benchmarks' variant 'held-out', as section 11.14 measured them
+
+THE PRICE'S PROTOCOL, BY VALUE
+  4 torch threads (reported beside at 1); each time the best of 5, the arms in turn: classical, H, P-s0, coupled solve
+  3 runs, each in its own process, the median per problem; a void run is run again, at most 3
+  more times; a run counts only if on AC at its start and end, with no power event [105, 506, 507] in
+  its window, no other process above 0.1 of a core, and the classical expert at 30-60 ms a piece
+
+THE TRAINING ENVELOPE (data.ENVELOPE), as gates_forms
+  sup|mu| <= 0.65, max log J - min log J <= 2.079, |grad log J| + |grad mu| <= 40,
+  |log kappa_hat| <= 2.3, Fo in [0.01, 100] or steady
+
+Registered: accepted by the owner on 2026-11-07, in chat ('Accept as drafted'), as drafted in chart-operator-kernel-exact-forms section 11.15 (commit 6d1b9ca), with its three recommended choices; hash-pinned with the owner's approval the same day ('Pin it'), before any expert but the classical one read the new problems.
+Settled choices:
+  the problems: the six scenarios of benchmarks_workbench, steady and one step: 12 problems
+  PR's bar: 0.90, a saving of at least 10%
+  what is pinned: this file, benchmarks_workbench, the code H runs (forms, host) and the classical record, beside gates, gates_forms and gates_prior
+Gates:
+  E4-H (the hybrid's coupled accuracy on the new problems): H meets E4 on every one of the 12 new problems, steady and step: energy error <= 0.02 and max error <= the classical floor's + 0.01 of the range, as registered and lowered by 300 K (judge_e4_both_frames, unchanged)
+  PR (the hybrid's price over the classical expert): the geometric mean over the new problems of H's price, (t_H + t_c) / (t_C + t_c), each the median of 3 counted runs, is <= 0.9
+Predictions:
+  1. On heated-strip, whose 40 pieces are squares of one material, U alone, with no classical piece at all, is within 0.01 percentage points of the classical floor, steady and step, in both frames.
+  2. H's energy error exceeds the classical floor by less than 1 percentage point on wall-2, heated-strip, bimetal-arc and plate-hole, steady and step, in both frames; so H meets E4's energy bar on those eight wherever the floor is below 1%.
+  3. Of the six steady problems, H exceeds the floor most on plate-insert or fast-heat. No verdict is predicted for those two.
+  4. PR is met: the geometric mean of H's prices is 0.70-0.88.
+  5. P-s0 errs above H on every new problem, and meets E4 on fewer of them.
+What each outcome would mean:
+  both gates met: the hybrid is the CO-D expert to beat on such problems; a learned correction is worth training only if it meets E4 at a lower price
+  E4-H not met: the rule is not used as it stands; where it fails, read against predictions 2 and 3, says which criterion it lacks
+  E4-H met, PR not met: the hybrid is accurate but saves too little on this laptop; the classical solve stays the CO-D expert here

@@ -7,6 +7,7 @@ No expert but the classical one reads a new problem here."""
 from __future__ import annotations
 
 import ast
+import hashlib
 import inspect
 import json
 import math
@@ -28,6 +29,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RECORD = os.path.join(ROOT, *GH.CLASSICAL_RECORD.split("/"))
 DIAGNOSE = os.path.join(ROOT, "scripts", "chartop_forms_diagnose.py")
 REGISTER = os.path.join(ROOT, "scripts", "chartop_register_hybrid.py")
+REG = os.path.join(ROOT, "out", "chartop", "registered-hybrid.txt")
+PRIOR_REG = os.path.join(ROOT, "out", "chartop", "registered-prior.txt")
+#: the pin: the drafted scope, the files the earlier registration pinned, and the control's record
+PINNED = ("atlas/chartop/gates_hybrid.py", "atlas/chartop/benchmarks_workbench.py", "atlas/chartop/forms.py",
+          "atlas/chartop/host.py", "out/chartop/registration-hybrid.json")
+ALREADY_PINNED = ("atlas/chartop/gates_forms.py", "atlas/chartop/gates.py", "atlas/chartop/gates_prior.py",
+                  "atlas/chartop/benchmarks.py")
+RECORDED_BESIDE = ("out/chartop/forms-diagnose-h3.json",)
 
 #: section 11.15's table: pieces and the rule's picks
 DRAFT = {"wall-2": (4, 2), "heated-strip": (40, 4), "plate-insert": (18, 6), "fast-heat": (18, 6),
@@ -41,6 +50,53 @@ CHARTS = {"wall-2": {"affine": 4}, "heated-strip": {"affine": 40}, "plate-insert
 def _layout(name: str, n: int = 16, problem: str = "steady"):
     b = BW.build(name, n, problem)
     return b, b.layout(GH.KIND, GH.M_PORTS)
+
+
+def _hash(path: str) -> str:
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def _pinned_hash(text: str, rel: str) -> str:
+    m = re.search(re.escape(rel) + r"\s+sha256 ([0-9a-f]{64})", text)
+    assert m, rel
+    return m.group(1)
+
+
+def test_the_registered_files_are_unchanged():
+    """The pin (`scripts/chartop_register_hybrid.py --pin`, approved by the owner on
+    2026-11-07, "Pin it"): each file's sha256, line endings normalised, is the one recorded,
+    so a gate, the rule, U's form, the host, a new problem or the classical record changed
+    after registration fails here; and the registration's own text is the module's."""
+    assert os.path.exists(REG), "out/chartop/registered-hybrid.txt is missing: pin before the evaluation"
+    text = open(REG, encoding="ascii").read()
+    for rel in PINNED + ALREADY_PINNED + RECORDED_BESIDE:
+        assert _hash(os.path.join(ROOT, *rel.split("/"))) == _pinned_hash(text, rel), \
+            f"{rel} changed after registration"
+    assert GH.REGISTERED in text and GH.text() in text
+
+
+def test_the_files_pinned_already_are_as_the_earlier_registration_pinned_them():
+    text, prior = open(REG, encoding="ascii").read(), open(PRIOR_REG, encoding="ascii").read()
+    for rel in ALREADY_PINNED:
+        assert _pinned_hash(text, rel) == _pinned_hash(prior, rel), rel
+
+
+def test_the_arm_the_problems_and_the_protocol_are_as_registered():
+    """By value: U's form, the time steps, the rule's picks on each new problem (the classical
+    record, which the pin hashes, holds them) and the price's protocol."""
+    text = open(REG, encoding="ascii").read()
+    u = ", ".join(f"{k}={v!r}" for k, v in GH.U_FORM.items() if k != "seed")
+    assert f"forms.KernelExpert({u})" in text and f"torch.manual_seed({GH.U_FORM['seed']})" in text
+    assert "; ".join(f"{k} {v:g}" for k, v in BW.DT.items()) in text
+    for r in json.load(open(RECORD, encoding="utf-8"))["problems"]:
+        assert re.search(rf"{re.escape(r['name'])}\s+{r['problem']}\s+{r['pieces']} pieces, "
+                         rf"picks {re.escape(str(r['picks']))};", text), (r["name"], r["problem"])
+    for s in (f"{GH.PRICE_THREADS} torch threads (reported beside at {GH.PRICE_THREADS_REPORTED})",
+              f"the best of {GH.PRICE_REPS}", f"{GH.PRICE_RUNS} runs", f"at most {GH.PRICE_RERUNS_MAX}",
+              f"no power event {list(GH.POWER_EVENT_IDS)}", f"above {GH.VALID_OTHER_CORE:g} of a core",
+              f"at {GH.VALID_MS_PER_PIECE[0]:g}-{GH.VALID_MS_PER_PIECE[1]:g} ms a piece"):
+        assert s in text, s
 
 
 def _function_source(path: str, fname: str) -> str:
@@ -66,7 +122,7 @@ def test_the_owner_settled_the_drafts_recommendations():
     for f in ("forms", "host", "benchmarks_workbench", "classical record"):
         assert f in GH.SETTLED["what is pinned"]
     assert "Accept as drafted" in GH.REGISTERED and "6d1b9ca" in GH.REGISTERED
-    assert "not yet hash-pinned" in GH.REGISTERED
+    assert "hash-pinned with the owner's approval" in GH.REGISTERED and "Pin it" in GH.REGISTERED
 
 
 def test_the_price_protocol_is_the_draft():
@@ -217,9 +273,19 @@ def test_benchmarks_is_untouched():
 
 
 def test_no_expert_but_the_classical_reads_the_new_problems():
-    src = open(REGISTER, encoding="utf-8").read()
-    assert not re.search(r"\b(LearnedExpert|load_expert|KernelExpert|zero_heads|without_networks)\b", src)
-    assert "hs.ClassicalExpert()" in src
+    """The measurement script calls the classical expert and no other, and imports neither
+    the forms, the networks nor training (the pin's text may name U's form; it runs nothing)."""
+    tree = ast.parse(open(REGISTER, encoding="utf-8").read())
+    called = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            f = node.func
+            called.add(f.attr if isinstance(f, ast.Attribute) else getattr(f, "id", ""))
+    assert not called & {"LearnedExpert", "load_expert", "KernelExpert", "zero_heads", "without_networks"}
+    assert "ClassicalExpert" in called
+    imported = {a.name for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom))
+                for a in node.names}
+    assert not imported & {"forms", "model", "train", "torch"}
 
 
 def test_the_new_problems_were_measured_classically_and_are_meetable():

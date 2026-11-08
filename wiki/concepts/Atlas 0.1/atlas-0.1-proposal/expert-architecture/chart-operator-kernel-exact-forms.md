@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14: accepted by the owner, not yet pinned.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14: accepted by the owner and hash-pinned, not yet evaluated.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1331,12 +1331,18 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
 - Every piece the rule hands to the classical solve eats into the saving. So does the form's own cost without networks, 0.40–0.62 of the classical responses (§11.13).
 - These are the same problems the rule was drawn from, so this is not a fair test of it. A fair one would pin the rule and a price bar, then judge them on problems none of §11.11–11.14 has read. (§11.15 drafts one.)
 
-### 11.15 The next registration: the fixed rule and a price bar, accepted (2026-11-07), not yet pinned
+### 11.15 The next registration: the fixed rule and a price bar, accepted and hash-pinned (2026-11-07), not yet evaluated
 
 **Status.**
 - Drafted for the owner ("Draft it", commit 6d1b9ca). **The owner accepted it in chat on 2026-11-07 ("Accept as drafted"), with the recommended option of each of its three choices** (below).
-- It is written as `atlas/chartop/gates_hybrid.py`, which reads every E4 bar from `gates_forms`, with the new problems in `atlas/chartop/benchmarks_workbench.py`. 34 tests in `tests/test_chartop_gates_hybrid.py` check both against this section.
-- The new problems were measured with the classical solver only (below). Nothing else has read them. **Not hash-pinned:** that needs the owner's approval.
+- It is written as `atlas/chartop/gates_hybrid.py`, which reads every E4 bar from `gates_forms`, with the new problems in `atlas/chartop/benchmarks_workbench.py`. 37 tests in `tests/test_chartop_gates_hybrid.py` check both against this section, three of them the pin.
+- The new problems were measured with the classical solver only (below). Nothing else has read them.
+- **Hash-pinned with the owner's approval the same day ("Pin it").**
+  - `out/chartop/registered-hybrid.txt` holds the sha256 of the drafted scope: `gates_hybrid`, `benchmarks_workbench`, `forms`, `host` and the classical record.
+  - Beside them it records by hash the files the earlier registration pinned: `gates`, `gates_forms`, `gates_prior` and `benchmarks`, whose helpers build the new problems. Their hashes are the earlier pin's. It also records the control's record, `forms-diagnose-h3.json`.
+  - By value, it records U's form, the rule's picks and the classical floors on each new problem, the time steps and the price's protocol.
+  - Before writing, the pin checked that the classical record passes its own controls and still describes these problems: all twelve fingerprints match.
+  - The pin test fails when it should: one byte added to `benchmarks_workbench.py` failed it, and the original bytes passed again.
 
 **What it would decide.** Whether §11.14's rule, fixed after three layouts, keeps E4 on layouts it has never seen, at a saving worth having. If it does, the hybrid is the CO-D expert that a learned correction has to beat, on E4 and on price.
 

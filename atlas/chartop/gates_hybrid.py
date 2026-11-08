@@ -1,6 +1,7 @@
 """The registration after section 11.14: the fixed rule's hybrid H, judged on E4 and on a
 price bar on six workbench scenarios that no chart-operator code had used.  ACCEPTED BY THE
-OWNER ON 2026-11-07, AS DRAFTED; NOT YET HASH-PINNED.
+OWNER, AS DRAFTED, AND HASH-PINNED ON 2026-11-07, BEFORE ANY EXPERT BUT THE CLASSICAL ONE
+READ THE NEW PROBLEMS.
 
 The owner accepted the draft of [[chart-operator-kernel-exact-forms]] section 11.15 (commit
 6d1b9ca) in chat on 2026-11-07 ("Accept as drafted"), with its three recommended choices
@@ -11,7 +12,12 @@ The owner accepted the draft of [[chart-operator-kernel-exact-forms]] section 11
 - what is pinned: this file, `benchmarks_workbench`, the code H runs (`forms`, `host`) and
   the classical record, beside `gates`, `gates_forms` and `gates_prior`, which are pinned
   already.  H has no weights, so its code is what defines it.
-Pinning is a separate step, run only with the owner's approval.
+The owner approved the pin the same day, in chat ("Pin it").
+``scripts/chartop_register_hybrid.py --pin`` writes ``out/chartop/registered-hybrid.txt`` with
+the sha256 of those files, line endings normalised, so the test fails if any of them
+changes.  It records beside them, by hash, `benchmarks` (whose helpers build the new
+problems; pinned by the earlier registration) and the control's record, and by value the
+arm's form, the rule's picks, the time steps and the price's protocol.
 
 **The arm, H.**  It has no weights, and nothing is trained.
 - The classical solve on every piece `rule_pieces` names: every piece whose chart is a
@@ -74,7 +80,8 @@ from . import host as hs
 
 REGISTERED = ("accepted by the owner on 2026-11-07, in chat ('Accept as drafted'), as drafted "
               "in chart-operator-kernel-exact-forms section 11.15 (commit 6d1b9ca), with its "
-              "three recommended choices; not yet hash-pinned")
+              "three recommended choices; hash-pinned with the owner's approval the same day "
+              "('Pin it'), before any expert but the classical one read the new problems")
 
 #: the draft's three open choices, as the owner settled them (the recommended options)
 SETTLED = {
