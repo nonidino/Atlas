@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08). §11.19 is its one evaluation's script and the one evaluation: both gates met, every prediction held, with nothing learned. §11.20 drafts the next registration, for W362: a learned correction on the pieces that are not squares.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14, accepted by the owner and hash-pinned; §11.16 is its evaluation's script, and §11.17 the one evaluation. §11.18 is the next registration: accepted by the owner, its price protocol revised twice and dry-run three times, then hash-pinned (2026-11-08). §11.19 is its one evaluation's script and the one evaluation: both gates met, every prediction held, with nothing learned. §11.20 drafts the next registration, for W362, a learned correction on the pieces that are not squares. Its untrained diagnostic found those pieces as hard as Stage 0's, and the owner stopped it before any training, so the CO-D expert is H2r, with nothing learned.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -2017,7 +2017,7 @@ Energy error in %, the steady problem as registered and the step lowered by 300 
    - Or kept `in progress`, re-scoped to the non-square pieces.
    - Or `done`, reading the hybrid as the row's "high modes computed classically". That is not recommended: the row asks for a form shown before training, and the hybrid sidesteps the head instead.
 
-### 11.20 The next registration, for W362: a learned correction on the pieces that are not squares (drafted and accepted, 2026-11-08; not registered)
+### 11.20 The next registration, for W362: a learned correction on the pieces that are not squares (drafted and accepted, then stopped before any training, 2026-11-08)
 
 **Status.** Drafted for the owner ("Draft it"). It answers [[gap-worklist]] W362. **The owner accepted it as drafted ("Accept as drafted"), with the recommended option of each of its four choices.** Accepting starts only the untrained diagnostic below; nothing is built, trained or rented, and the registration is finalised only after it.
 
@@ -2124,9 +2124,13 @@ At $n$ = 32 / 64 / 128 (medians over each type's pieces):
 - Something other than a retrained head would be needed, for instance a principal part fitted to curved pieces. W358's frozen-coefficient candidate left an $e_H$ of 0.15 on Stage 0's pieces, against U's form's 0.22. Each such idea is its own draft with its own diagnostic.
 
 **The decision, the owner's:**
-1. *Recommended:* stop the drafted residual before any training. H2r stays the CO-D expert, with nothing learned, and W362 stays open for a revised idea.
+1. *Recommended, and chosen ("Stop here", 2026-11-08):* stop the drafted residual before any training. H2r stays the CO-D expert, with nothing learned, and W362 stays open for a revised idea.
 2. Revise first: draft a different correction for the curved pieces, with its own untrained diagnostic.
 3. Go on as drafted, to the generator and the training, accepting the risk.
+
+**Stopped (2026-11-08).** No generator was written, nothing was trained or rented, and the registration was never finalised.
+- **The CO-D expert is H2r:** reuse on the squares and on every class of pieces that repeats, and the classical solve on the rest. It is exact on R2's layouts and priced at 0.306 there (§11.19).
+- **W362 stays open** for an idea other than a retrained head on U's form.
 
 ---
 
