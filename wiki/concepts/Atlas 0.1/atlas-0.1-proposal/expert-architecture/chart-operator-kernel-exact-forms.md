@@ -1600,9 +1600,10 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
   - `atlas/chartop/benchmarks_squares.py` is the generator;
   - `atlas/chartop/reuse.py` is H2r's expert;
   - `scripts/chartop_price_squares.py` holds the protocol and its dry run.
-- **Tested:** 19 tests in `tests/test_chartop_gates_squares.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
+- **Tested:** 23 tests in `tests/test_chartop_gates_squares.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
 - **Measured:** the layouts were drawn and measured with the classical solver only (below). Nothing else has read them.
-- **The dry run ran on 2026-11-08,** inside the Claude app at the owner's word. **4 of 6 runs counted, under the 5 the protocol needs,** so it is not pinned. A revision is proposed (below). Not hash-pinned.
+- **The first dry run ran on 2026-11-08,** inside the Claude app at the owner's word. **4 of 6 runs counted, under the 5 the protocol then needed,** so it was not pinned.
+- **The revision was adopted the same day** ("Adopt it (Recommended)", in chat): each problem's measurements are counted on their own (below). The owner also moved the price to a rented whole machine, for the dry run and for the one evaluation's price runs ("Rent a temporary box", then "Box for both (Recommended)"). Both are written in `gates_squares.py` (`REVISED`) and the price script. The second dry run is below. Not hash-pinned.
 
 **What it would decide.**
 - Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
@@ -1659,7 +1660,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - **Six of the eight layouts are all squares:** R2 gives them no classical piece, so H2 is U alone there. The two holes give the classical solve their 8 ring pieces each.
 - **A functional dry run** here (two runs on two of §11.17's problems) found the laptop on battery: the power check voided both runs, as it should. The owner's dry run must be on AC.
 
-**The dry run (2026-11-08): 4 of 6 counted, so the protocol may not be pinned as it stands.**
+**The first dry run (2026-11-08): 4 of 6 counted, so the protocol could not be pinned as it stood.**
 - **Where it ran:** inside the Claude app, at the owner's word ("Just run it in claude, here"), on AC, 01:44–02:23 (2,328 s). The evaluation process from §11.17 was still alive but idle, using no CPU. Record: `out/chartop/dryrun-squares-20261108-014441.json`.
 - Runs 2, 4, 5 and 6 counted. Runs 1 and 3 were void: on plate-hole's steady problem the classical expert took 63.1 and 74.6 ms a piece, over the 60 ms bound.
 - AC held at every sample (45–47 a run), no gap between samples exceeded 10 s, and no power event fell in a run. The other processes' mean load was 0.17–0.36 of a core.
@@ -1678,32 +1679,47 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 
 (Computed from the dry run's record.)
 
-**A proposed revision, not adopted.** It is the owner's call, and it would be dry-run again before any pin.
+**The revision, adopted by the owner on 2026-11-08** ("Adopt it (Recommended)", in chat). It is dry-run again before any pin.
 - **Count each problem on its own.** A run's measurement of a problem counts if the run passes its AC and sleep checks, and that problem's classical time is at most 60 ms a piece.
 - Each problem's price is the median of its first three counted measurements.
 - Runs continue until every problem has three, at most nine runs in all.
 - **The dry run's bar** becomes the evaluation's own need: every problem gets three counted measurements within six runs.
-- Applied to this dry run, every problem has at least four (plate-hole steady exactly four). The bar is set after seeing that, so only a second dry run can test it.
+- Applied to this dry run, every problem has at least four (plate-hole steady exactly four; a test pins this). The bar is set after seeing that, so only a second dry run can test it.
 
 **Gates.**
 - **E4-H2:** H2 meets E4 on every new problem, in both frames.
-- **PR2:** the geometric mean of H2's price over the new problems is at most **0.90** (open choice 3). Each problem's price is the median of three counted runs.
+- **PR2:** the geometric mean of H2's price over the new problems is at most **0.90** (open choice 3). Each problem's price is the median of its first three counted measurements.
 - **Beside them:** H2r's E4 and price, and the ratio of H2r's price to H2's.
 
 **The price protocol, revised.** The checks now ask whether the timing itself was disturbed (open choice 4).
 - **Time:** the classical expert's best time per piece at most 60 ms, with no lower edge. §11.17's lower edge voided two runs that were simply fast.
-- **Power:** AC, sampled every 5 s through the run, must hold throughout. Kernel-Power's events are recorded but not judged, since Id 105 fired twice in each of two runs while on AC.
+- **Power:** AC, sampled every 5 s through the run, must hold throughout. Kernel-Power's events are recorded but not judged, since Id 105 fired twice in each of two runs while on AC. A machine that reports no battery, such as the rented box, holds this check vacuously, and each run records whether a battery was reported.
 - **Sleep:** no gap longer than 30 s between the 5 s samples.
 - **Load:** the other processes' mean share of a core over the run is recorded, not judged. The evidence for this:
   - void and counted runs gave similar geometric means in §11.17 (0.85–0.92);
   - repetition spread cannot replace the load check: it was large in every run, the counted one included (median max/min 1.2–1.4), from warm-up.
   - (Computed for this draft from §11.17's record.)
-- **Kept from §11.15:** 4 threads, best of 5 with the arms taking turns, three counted runs each in its own process, at most three re-runs, and every run kept.
+- **Kept from §11.15:** 4 threads, best of 5 with the arms taking turns, each run in its own process, and every run kept.
+- **Changed by the revision:** the time check voids only its own problem's measurement, while AC and sleep void the whole run. Runs go on until every problem has three counted measurements, at most nine in all. This replaces three counted runs with at most three re-runs.
 
 **The dry run, before pinning.**
-- The owner runs the revised protocol six times on §11.17's twelve problems, which have been read, outside the Claude app.
-- The protocol is pinned only if at least five of the six runs count. Otherwise its conditions are revised from the dry run's data and dry-run again.
+- Six runs of the protocol on §11.17's twelve problems, which have been read, on a rented whole machine (below).
+- The protocol may be pinned only if every problem has three counted measurements among the six runs, which is the evaluation's own need. Otherwise its conditions are revised from the dry run's data and dry-run again.
 - The dry run also measures how far the geometric mean moves between runs. In §11.17 it moved by about ±0.035, while a single problem's price moved by up to 0.34.
+
+**Where the price is measured: a rented whole machine** (the owner, 2026-11-08: "Rent a temporary box", then "Box for both (Recommended)").
+- **The machine.** The dry run and the one evaluation's price runs run on a rented machine with every GPU of its host rented, so no other tenant shares its CPU.
+  - The evaluation's price runs must report the dry run's CPU model.
+  - Each run records its machine: the system, the CPU model, the CPU count, and the Python and library versions. No host name is recorded.
+- **The laptop keeps the accuracy.** The one evaluation's accuracy, and its bit-for-bit control on §11.17's problems, stay on the laptop.
+  - In this project Windows and glibc have differed in the last bit of cos, sin and atan2, so a control on Linux could not be relied on to reproduce §11.17's record.
+- **So PR2 prices that machine, not the laptop.** Its third outcome, that the hybrid "saves too little on this laptop", then reads "on that machine".
+- **What the box changes in the checks:**
+  - It reports no battery, so AC holds vacuously.
+  - Its Kernel-Power events cannot be read. They are recorded as unreadable, and were never judged.
+  - The 60 ms bound was set from the laptop's times. On a faster CPU it catches only larger disturbances.
+  - A sleep or a frozen container still shows as a gap between samples.
+- **[AI Inference]:** a desktop-class CPU with no other tenant should be quieter than the laptop, whose disturbances voided two runs of the first dry run. The second dry run will show whether it is.
 
 **The four choices, settled by the owner on 2026-11-08** ("Accept as drafted": the recommended option of each).
 1. **The square path.** *Recommended, and chosen:* H2, with H2r beside. Or H2 alone.
@@ -1724,7 +1740,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 - The generator draws layouts that suit the rule. Real outlines that do not cut into squares would leave more pieces to the classical solve, and save less. This registration does not measure that.
 
 **Cost.**
-- The laptop only: no box, no training, no money.
+- No training. A rented whole machine for the second dry run and for the evaluation's price runs, at about \$0.09/h: about \$0.15 each with setup (the owner's choice, 2026-11-08).
 - At acceptance: the generator, R2, H2r and the revised protocol as code; the dry run; the classical measurement.
 - The one evaluation: about 30–45 minutes, if most runs count.
 

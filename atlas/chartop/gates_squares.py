@@ -1,13 +1,17 @@
 """The registration after section 11.17: rule R2's hybrid H2, U's form only on squares of one
 material, and beside it H2r, the classical response reused on the squares; judged on E4 and
 on a price bar on square-first layouts from a registered generator.  ACCEPTED BY THE OWNER
-ON 2026-11-08, AS DRAFTED; NOT YET HASH-PINNED.
+ON 2026-11-08, AS DRAFTED, ITS PRICE PROTOCOL REVISED THE SAME DAY (`REVISED`); NOT YET
+HASH-PINNED.
 
 The owner accepted the draft of [[chart-operator-kernel-exact-forms]] section 11.18 (commit
 3f945f2) in chat on 2026-11-08 ("Accept as drafted"), with its four recommended choices
 (`SETTLED`): H2 with H2r beside; the generated layouts (`benchmarks_squares`); PR2's bar at
-0.90; the load recorded, not judged.  Pinning is a separate step, run only with the owner's
-approval, and only after the price protocol's dry run (`DRY_RUNS`, `DRY_RUNS_MIN`).
+0.90; the load recorded, not judged.  After the first dry run, in which 4 of 6 runs counted,
+the owner adopted the per-problem count ("Adopt it (Recommended)") and moved the price to a
+rented whole machine ("Box for both (Recommended)"), in chat the same day (`REVISED`).
+Pinning is a separate step, run only with the owner's approval, and only after a dry run
+passes (`dry_run_passes`).
 
 **The arm, H2.**  No weights; nothing is trained.  U's form without its networks (U as
 `gates_hybrid.U_FORM`, the stand-in as section 11.13's) on every piece `is_square` accepts:
@@ -23,21 +27,28 @@ response per class of resolution, Fourier number and source.
 
 **The gates** (`GATES`).  E4-H2: H2 meets E4 on every new problem, in both frames
 (`judge_e4_both_frames`, read from `gates_forms`).  PR2: the geometric mean over the new
-problems of H2's price is at most `PRICE_BAR`, each problem's price the median of
-`PRICE_RUNS` counted runs.  Beside them: H2r's E4 and price, and the ratio of H2r's price to
-H2's.
+problems of H2's price is at most `PRICE_BAR`, each problem's price the median of its first
+`PRICE_RUNS` counted measurements (`first_counted`).  Beside them: H2r's E4 and price, and the
+ratio of H2r's price to H2's.
 
-**The price protocol** (`run_counts2`), revised so that it judges whether the timing itself
-was disturbed: the classical expert's best time per piece at most `MAX_MS_PER_PIECE`, with no
-lower edge; AC at every sample, taken every `SAMPLE_S` seconds through the run; no gap
-between samples longer than `MAX_GAP_S` (a sleep).  The other processes' load and the
-Kernel-Power events are recorded, not judged.  As section 11.15: `PRICE_THREADS` threads,
-best of `PRICE_REPS` with the arms in turn (`PRICE_ORDER`), each run in its own process, at
-most `PRICE_RERUNS_MAX` re-runs, every run kept.
+**The price protocol** (`run_counts2`), counted per problem, and judging whether the timing
+itself was disturbed.  A run's measurement of a problem counts if the run's own checks hold
+(AC at every sample, taken every `SAMPLE_S` seconds through the run, and no gap between
+samples longer than `MAX_GAP_S`, a sleep) and that problem's classical best time per piece
+is at most `MAX_MS_PER_PIECE`, with no lower edge.  The other processes' load and the
+Kernel-Power events are recorded, not judged.  `PRICE_THREADS` threads, best of `PRICE_REPS`
+with the arms in turn (`PRICE_ORDER`), each run in its own process, every run kept.  Runs
+continue until every problem has `PRICE_RUNS` counted measurements (`runs_suffice`), at most
+`PRICE_RUNS_MAX` runs in all.
+
+**Where** (`REVISED`): a rented whole machine, every GPU of its host, so that no other
+tenant shares its CPU.  The one evaluation's price runs are on the dry run's CPU model, and
+its accuracy on the laptop.  A machine with no battery holds the AC check vacuously; each
+run records whether a battery was reported, and the machine it ran on.
 
 **The dry run**, before pinning: `DRY_RUNS` runs of the protocol on section 11.17's twelve
-problems, which have been read, by the owner, outside the Claude app.  The protocol is pinned
-only if at least `DRY_RUNS_MIN` count.
+problems, which have been read.  It passes (`dry_run_passes`) if every problem has
+`PRICE_RUNS` counted measurements among them, the evaluation's own need, within six runs.
 """
 
 from __future__ import annotations
@@ -54,7 +65,20 @@ from . import gates_hybrid as GH
 
 REGISTERED = ("accepted by the owner on 2026-11-08, in chat ('Accept as drafted'), as drafted "
               "in chart-operator-kernel-exact-forms section 11.18 (commit 3f945f2), with its "
-              "four recommended choices; not yet hash-pinned")
+              "four recommended choices; its price protocol revised the same day, in chat, to the "
+              "per-problem count ('Adopt it (Recommended)') on a rented whole machine ('Box for "
+              "both (Recommended)'); not yet hash-pinned")
+
+#: the owner's revision of the price protocol after the first dry run (2026-11-08, in chat)
+REVISED = {
+    "the count": "per problem: a run's measurement of a problem counts if the run holds AC and "
+                 "sleep and that problem's classical time is at most 60 ms a piece; each "
+                 "problem's price the median of its first three counted; at most nine runs "
+                 "('Adopt it (Recommended)')",
+    "the machine": "a rented whole machine for the dry run and the one evaluation's price runs, "
+                   "the evaluation's accuracy on the laptop ('Rent a temporary box', then 'Box "
+                   "for both (Recommended)')",
+}
 
 SETTLED = {
     "the square path": "H2, with H2r beside",
@@ -122,35 +146,73 @@ def rule_pieces2(L) -> list:
 PRICE_BAR = 0.90
 PRICE_THREADS = 4
 PRICE_REPS = 5
+#: counted measurements per problem; its price is the median of its first `PRICE_RUNS`
 PRICE_RUNS = 3
-PRICE_RERUNS_MAX = 3
+#: runs in all, at most: they continue until every problem has `PRICE_RUNS` counted
+PRICE_RUNS_MAX = 9
 PRICE_ORDER = ("classical", "H2", "H2r", "coupled solve")
 MAX_MS_PER_PIECE = 60.0
 SAMPLE_S = 5.0
 MAX_GAP_S = 30.0
+#: the dry run's runs; it passes if every problem has `PRICE_RUNS` counted among them
 DRY_RUNS = 6
-DRY_RUNS_MIN = 5
 price = GH.price
 
 
 def run_counts2(state: dict) -> dict:
-    """Whether a price run counts.  ``state``: ``classical_ms_per_piece`` (the classical
-    expert's best time per piece, per problem), ``plugged`` (AC at each sample) and
-    ``sample_gaps_s`` (the gaps between consecutive samples).  Load is not judged."""
+    """Which of a price run's measurements count, problem by problem (`REVISED`).  ``state``:
+    ``classical_ms_per_piece`` (the classical expert's best time per piece, per problem),
+    ``plugged`` (AC at each sample) and ``sample_gaps_s`` (the gaps between consecutive
+    samples).  The run's own checks, AC and sleep, void every measurement in it; the time
+    check voids only its own problem's.  Load is not judged."""
     failed = []
-    slow = sorted(k for k, v in state["classical_ms_per_piece"].items() if v > MAX_MS_PER_PIECE)
-    if slow:
-        failed.append(f"the classical expert above {MAX_MS_PER_PIECE:g} ms a piece on {slow}")
     if not state["plugged"] or not all(state["plugged"]):
         failed.append("off AC at a sample" if state["plugged"] else "no power samples")
     gap = max(state["sample_gaps_s"], default=float("inf"))
     if gap > MAX_GAP_S:
         failed.append(f"a gap of {gap:.0f} s between samples")
-    return {"counts": not failed, "failed": failed}
+    problems = {}
+    for key, ms in state["classical_ms_per_piece"].items():
+        why = list(failed)
+        if ms > MAX_MS_PER_PIECE:
+            why.append(f"the classical expert at {ms:.1f} ms a piece, above {MAX_MS_PER_PIECE:g}")
+        problems[key] = {"counts": not why, "failed": why}
+    return {"run_holds": not failed, "failed": failed, "problems": problems}
 
 
-def dry_run_passes(counted: int, runs: int = DRY_RUNS) -> bool:
-    return runs == DRY_RUNS and counted >= DRY_RUNS_MIN
+def tally(counts: list) -> dict:
+    """Each problem's number of counted measurements over ``counts``, a list of `run_counts2`
+    results in run order."""
+    out = {}
+    for c in counts:
+        for key, verdict in c["problems"].items():
+            out[key] = out.get(key, 0) + int(verdict["counts"])
+    return out
+
+
+def runs_suffice(counts: list) -> bool:
+    """Whether every problem has `PRICE_RUNS` counted measurements: the runs may stop."""
+    t = tally(counts)
+    return bool(t) and all(v >= PRICE_RUNS for v in t.values())
+
+
+def first_counted(counts: list, values: list, n: int = PRICE_RUNS) -> dict:
+    """Each problem's first ``n`` counted values, in run order.  ``counts[i]`` is run i's
+    `run_counts2`, ``values[i][key]`` its measurement of the problem.  A problem short of ``n``
+    keeps what it has, which `judge_pr2` refuses."""
+    out = {}
+    for c, v in zip(counts, values):
+        for key, verdict in c["problems"].items():
+            got = out.setdefault(key, [])
+            if verdict["counts"] and len(got) < n:
+                got.append(v[key])
+    return out
+
+
+def dry_run_passes(counts: list) -> bool:
+    """The dry run's bar, the evaluation's own need: `DRY_RUNS` runs, and among them every
+    problem with `PRICE_RUNS` counted measurements."""
+    return len(counts) == DRY_RUNS and runs_suffice(counts)
 
 
 def judge_e4h2(verdicts: dict, problems=None) -> dict:
@@ -167,7 +229,7 @@ def judge_pr2(prices: dict, problems=None) -> dict:
     keys = list(problems or new_problems())
     short = [k for k in keys if len(prices.get(k, ())) != PRICE_RUNS]
     if short:
-        raise ValueError(f"PR2 needs {PRICE_RUNS} counted runs per problem; short on {short}")
+        raise ValueError(f"PR2 needs {PRICE_RUNS} counted measurements per problem; short on {short}")
     meds = [float(np.median(prices[k])) for k in keys]
     m = float(math.exp(np.mean(np.log(meds))))
     return {"met": bool(m <= PRICE_BAR), "geometric_mean": m, "bar": PRICE_BAR}
@@ -192,7 +254,7 @@ GATES = (
          f"and lowered by {-DATUM_SHIFT_K:g} K (judge_e4_both_frames, unchanged)"),
     Gate("PR2", "rule R2's hybrid's price over the classical expert",
          f"the geometric mean over the new problems of H2's price, (t_H2 + t_c) / (t_C + t_c), each "
-         f"the median of {PRICE_RUNS} counted runs, is <= {PRICE_BAR:g}"),
+         f"the median of its first {PRICE_RUNS} counted measurements, is <= {PRICE_BAR:g}"),
 )
 
 PREDICTIONS = (
@@ -219,6 +281,7 @@ OUTCOMES = {
 def text() -> str:
     lines = [f"Registered: {REGISTERED}.", "Settled choices:"]
     lines += [f"  {k}: {v}" for k, v in SETTLED.items()]
+    lines += ["Revised after the first dry run:"] + [f"  {k}: {v}" for k, v in REVISED.items()]
     lines += ["Gates:"] + [f"  {g.key} ({g.title}): {g.bar}" for g in GATES]
     lines += ["Predictions:"] + [f"  {p}" for p in PREDICTIONS]
     lines += ["What each outcome would mean:"] + [f"  {k}: {v}" for k, v in OUTCOMES.items()]

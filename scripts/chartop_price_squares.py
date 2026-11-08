@@ -4,23 +4,26 @@ and its dry run before the pin.
     python scripts/chartop_price_squares.py --dry-run
 
 The dry run is `DRY_RUNS` price runs on section 11.17's twelve problems, which have been
-read, by the owner, outside the Claude app.  The protocol is pinned only if at least
-`DRY_RUNS_MIN` count.  It writes ``out/chartop/dryrun-squares-<time>.json`` and prints ten
-lines or fewer.
+read, on a rented whole machine (`gates_squares.REVISED`).  It passes if every problem has
+`PRICE_RUNS` counted measurements among them (`dry_run_passes`).  It writes
+``out/chartop/dryrun-squares-<time>.json`` and prints ten lines or fewer.
 
 **A price run** (``--price-run``, in its own process): the experts and the problems are built
-first; then a sampler records, every `SAMPLE_S` seconds through the timing, the time, AC and
-the other processes' share of a core; the arms take turns in `PRICE_ORDER` within each of
-`PRICE_REPS` repetitions (the classical expert's responses on every piece; H2's, the classical
-solve on R2's picks and U's form without its networks on the squares; H2r's, the reuse
-expert's on every piece; and the coupled solve every arm shares); and the run is judged by
-`run_counts2`: the classical expert's best time per piece at most `MAX_MS_PER_PIECE`, AC at
-every sample, no gap between samples over `MAX_GAP_S`.  The load and the Kernel-Power events
-are recorded, not judged.
+first; then a sampler records, every `SAMPLE_S` seconds through the timing, the time, AC
+(and whether a battery is reported at all) and the other processes' share of a core; the
+arms take turns in `PRICE_ORDER` within each of `PRICE_REPS` repetitions (the classical
+expert's responses on every piece; H2's, the classical solve on R2's picks and U's form
+without its networks on the squares; H2r's, the reuse expert's on every piece; and the
+coupled solve every arm shares); and `run_counts2` says which of its measurements count:
+those of a run that held AC at every sample and had no gap between samples over
+`MAX_GAP_S`, on a problem whose classical best time per piece is at most
+`MAX_MS_PER_PIECE`.  The load, the Kernel-Power events and the machine are recorded, not
+judged; no host and no process is named.
 
-The evaluation will use `price_runs` from here: `PRICE_RUNS` counted runs, a void run run
-again at most `PRICE_RERUNS_MAX` more times, every run kept.  ``--problems``, ``--n`` and
-``--reps`` exist for tests.
+The evaluation will use `price_runs` from here: runs until every problem has `PRICE_RUNS`
+counted measurements, at most `PRICE_RUNS_MAX` in all, every run kept; each problem's price
+the median of its first `PRICE_RUNS` counted.  ``--problems``, ``--n``, ``--reps`` and
+``--runs`` exist for tests.
 """
 
 from __future__ import annotations
@@ -30,6 +33,7 @@ import datetime as dt
 import json
 import math
 import os
+import platform
 import subprocess
 import sys
 import threading
@@ -43,6 +47,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import numpy as np  # noqa: E402
 import torch  # noqa: E402
 
+import chartop_cpus  # noqa: E402
 import chartop_evaluate as ev0  # noqa: E402
 import chartop_evaluate_hybrid as EH  # noqa: E402
 import chartop_forms_diagnose as fd  # noqa: E402
@@ -93,9 +98,39 @@ def make_arms() -> dict:
 # ---------------------------------------------------------------------------
 
 
+def cpu_model() -> str:
+    """The CPU's model name: what the one evaluation's price runs must match."""
+    if sys.platform.startswith("linux"):
+        try:
+            with open("/proc/cpuinfo", encoding="utf-8", errors="replace") as f:
+                for line in f:
+                    if line.lower().startswith("model name"):
+                        return line.split(":", 1)[1].strip()
+        except OSError:
+            pass
+    if sys.platform == "win32":
+        try:
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0") as k:
+                return str(winreg.QueryValueEx(k, "ProcessorNameString")[0]).strip()
+        except OSError:
+            pass
+    return platform.processor() or "unknown"
+
+
+def machine() -> dict:
+    """What a price run ran on.  No host name and no process: the record is public."""
+    import scipy
+    return {"system": platform.system(), "release": platform.release(), "cpu": cpu_model(),
+            "cpu_sources": chartop_cpus.sources(), "available_cpus": chartop_cpus.available_cpus(),
+            "python": platform.python_version(), "torch": torch.__version__,
+            "numpy": np.__version__, "scipy": scipy.__version__}
+
+
 class Sampler:
-    """Every `SAMPLE_S` seconds until stopped: the wall time, AC, and the largest share of
-    one core any other process used (over one second).  No process is named."""
+    """Every `SAMPLE_S` seconds until stopped: the wall time, AC, whether a battery is reported
+    at all (with none, AC holds vacuously), and the largest share of one core any other process
+    used (over one second).  No process is named."""
 
     def __init__(self, exclude: set):
         self.exclude = exclude
@@ -108,6 +143,7 @@ class Sampler:
         bat = psutil.sensors_battery()
         self.samples.append({"time": time.time(),
                              "plugged": True if bat is None else bool(bat.power_plugged),
+                             "battery": bat is not None,
                              "other_core_max": EH.other_core_max(self.exclude)})
 
     def _loop(self):
@@ -170,6 +206,7 @@ def price_run2(k: int, threads: int, reps: int, specs: list, n: int, out_dir: st
              "plugged": [x["plugged"] for x in s],
              "sample_gaps_s": [b_["time"] - a["time"] for a, b_ in zip(s, s[1:])]}
     rec = {"run": k, "torch_threads": threads, "reps": reps, "n": n, "start": start, "end": end,
+           "machine": machine(), "battery_reported": any(x["battery"] for x in s),
            "samples": len(s), "load_mean": float(np.mean([x["other_core_max"] for x in s])),
            "load_max": float(max(x["other_core_max"] for x in s)),
            "max_gap_s": max(state["sample_gaps_s"], default=0.0),
@@ -196,21 +233,35 @@ def geomean(xs) -> float:
     return float(math.exp(np.mean(np.log(np.asarray(xs, float)))))
 
 
-def price_runs(specs: list, n: int, reps: int, out_dir: str, runs: int = GS.PRICE_RUNS,
-               reruns: int = GS.PRICE_RERUNS_MAX, checkpoint=None) -> dict:
-    """`runs` counted runs, a void run run again at most `reruns` more times; every run
-    kept.  ``checkpoint(name, compute)`` keeps each run whole when given."""
+def describe(c: dict) -> str:
+    """One line for a run's `run_counts2`."""
+    if not c["run_holds"]:
+        return "void: " + "; ".join(c["failed"])
+    void = [k for k, v in c["problems"].items() if not v["counts"]]
+    return "every measurement counts" if not void else f"{len(void)} void: " + ", ".join(void)
+
+
+def prices_of(recs: list, arm: str) -> dict:
+    """Each problem's first `PRICE_RUNS` counted prices of ``arm`` ("H2" or "H2r")."""
+    return GS.first_counted([r["counts"] for r in recs],
+                            [{key: v[f"price_{arm}"] for key, v in r["problems"].items()} for r in recs])
+
+
+def price_runs(specs: list, n: int, reps: int, out_dir: str, max_runs: int = GS.PRICE_RUNS_MAX,
+               checkpoint=None) -> dict:
+    """Runs until every problem has `PRICE_RUNS` counted measurements, at most ``max_runs`` in
+    all; every run kept.  ``checkpoint(name, compute)`` keeps each run whole when given."""
     keep = checkpoint or (lambda name, compute: compute())
-    all_, counted, k = [], [], 0
-    while len(counted) < runs and k < runs + reruns:
-        k += 1
+    recs = []
+    while len(recs) < max_runs and not GS.runs_suffice([r["counts"] for r in recs]):
+        k = len(recs) + 1
         rec = keep(f"price-run-{k}-threads{GS.PRICE_THREADS}",
                    lambda: spawn(k, GS.PRICE_THREADS, specs, n, reps, out_dir))
-        all_.append(rec)
-        log(f"price run {k}: {'counts' if rec['counts']['counts'] else 'void: ' + '; '.join(rec['counts']['failed'])}")
-        if rec["counts"]["counts"]:
-            counted.append(rec)
-    return {"runs": all_, "counted": [r["run"] for r in counted]}
+        recs.append(rec)
+        log(f"price run {k}: {describe(rec['counts'])}")
+    counts = [r["counts"] for r in recs]
+    return {"runs": recs, "tally": GS.tally(counts), "suffice": GS.runs_suffice(counts),
+            "prices_H2": prices_of(recs, "H2"), "prices_H2r": prices_of(recs, "H2r")}
 
 
 # ---------------------------------------------------------------------------
@@ -226,26 +277,38 @@ def dry_run(specs: list, n: int, reps: int, runs: int, out: str) -> dict:
     recs = []
     for k in range(1, runs + 1):
         recs.append(spawn(k, GS.PRICE_THREADS, specs, n, reps, d))
-        log(f"dry run {k}: {'counts' if recs[-1]['counts']['counts'] else 'void: ' + '; '.join(recs[-1]['counts']['failed'])}")
-    counted = [r for r in recs if r["counts"]["counts"]]
+        log(f"dry run {k}: {describe(recs[-1]['counts'])}")
+    counts = [r["counts"] for r in recs]
+    t = GS.tally(counts)
+    third = {key: next((i + 1 for i in range(len(counts)) if GS.tally(counts[:i + 1])[key] >= GS.PRICE_RUNS),
+                       None) for key in t}
+    first = {arm: prices_of(recs, arm) for arm in ("H2", "H2r")}
+    pr = {arm: (geomean([float(np.median(v)) for v in first[arm].values()]) if GS.runs_suffice(counts) else None)
+          for arm in ("H2", "H2r")}
     gm = {arm: [geomean([v[f"price_{arm}"] for v in r["problems"].values()]) for r in recs] for arm in ("H2", "H2r")}
-    gm_c = [geomean([v["price_H2"] for v in r["problems"].values()]) for r in counted]
+    registered = (n, reps, runs) == (GS.BENCHMARK_N, GS.PRICE_REPS, GS.DRY_RUNS)
     res = {"written": time.strftime("%Y-%m-%d %H:%M:%S"), "registration": GS.REGISTERED,
+           "machine": recs[0]["machine"] if recs else None,
            "problems": [spec_key(s) for s in specs], "n": n, "reps": reps, "runs": recs,
-           "counted": [r["run"] for r in counted],
-           "passes": GS.dry_run_passes(len(counted), runs) if (n, reps) == (GS.BENCHMARK_N, GS.PRICE_REPS) else None,
+           "tally": t, "run_of_third_count": third,
+           "passes": GS.dry_run_passes(counts) if registered else None,
+           "first_counted": first, "geometric_mean_of_medians": pr,
            "geometric_mean_by_run": gm,
-           "counted_spread_H2": [min(gm_c), max(gm_c)] if gm_c else None,
            "elapsed_s": time.perf_counter() - t0}
     path = os.path.join(out, f"dryrun-squares-{stamp}.json")
     registry.write_atomic(path, json.dumps(ev0.strip(res), indent=1).encode("utf-8"))
-    print("DRY RUN   run  counted  H2     H2r    load mean  why not")
+    fewest = min(t, key=t.get) if t else None
+    print("DRY RUN   run  holds  void  H2 (all)  H2r (all)  load mean")
     for r, g2, gr in zip(recs, gm["H2"], gm["H2r"]):
-        print(f"          {r['run']:3d}  {'yes' if r['counts']['counts'] else 'no ':7s}  {g2:5.3f}  {gr:5.3f}  "
-              f"{r['load_mean']:9.2f}  {'; '.join(r['counts']['failed'])[:60]}")
-    print(f"          {len(counted)} of {runs} counted; the protocol may be pinned: {res['passes']}; counted runs' "
-          f"H2 geometric mean {'-' if not gm_c else f'{min(gm_c):.3f}-{max(gm_c):.3f}'}")
-    print(f"          wrote {os.path.relpath(path, ROOT)} ({res['elapsed_s']:.0f} s)")
+        c = r["counts"]
+        void = sum(not v["counts"] for v in c["problems"].values())
+        print(f"          {r['run']:3d}  {'yes' if c['run_holds'] else 'no ':5s}  {void:4d}  {g2:8.3f}  {gr:9.3f}  "
+              f"{r['load_mean']:9.2f}")
+    print(f"          every problem has {GS.PRICE_RUNS} counted: {GS.runs_suffice(counts)} (fewest {t.get(fewest)}, "
+          f"{fewest}); may be pinned: {res['passes']}")
+    print(f"          median-of-first-{GS.PRICE_RUNS} geometric mean: H2 {pr['H2'] if pr['H2'] is None else round(pr['H2'], 3)}, "
+          f"H2r {pr['H2r'] if pr['H2r'] is None else round(pr['H2r'], 3)}; wrote {os.path.relpath(path, ROOT)} "
+          f"({res['elapsed_s']:.0f} s)")
     return res
 
 

@@ -48,6 +48,14 @@ def test_the_owner_settled_the_drafts_recommendations():
     assert "not yet hash-pinned" in GS.REGISTERED
 
 
+def test_the_owner_revised_the_price_protocol_after_the_first_dry_run():
+    assert set(GS.REVISED) == {"the count", "the machine"}
+    assert "Adopt it (Recommended)" in GS.REVISED["the count"] and "per problem" in GS.REVISED["the count"]
+    assert "Box for both (Recommended)" in GS.REVISED["the machine"]
+    assert "whole machine" in GS.REVISED["the machine"] and "accuracy on the laptop" in GS.REVISED["the machine"]
+    assert "Adopt it (Recommended)" in GS.REGISTERED and "Box for both (Recommended)" in GS.REGISTERED
+
+
 def test_every_e4_bar_is_gates_forms_and_u_is_section_11_14s():
     assert GS.judge_e4_both_frames is GF.judge_e4_both_frames
     assert (GS.E4_ENERGY, GS.E4_MAX_OF_RANGE) == (G.E4_ENERGY, G.E4_MAX_OF_RANGE)
@@ -56,10 +64,11 @@ def test_every_e4_bar_is_gates_forms_and_u_is_section_11_14s():
     assert GS.U_FORM is GH.U_FORM
 
 
-def test_the_protocol_is_the_draft():
-    assert (GS.PRICE_BAR, GS.PRICE_THREADS, GS.PRICE_REPS, GS.PRICE_RUNS, GS.PRICE_RERUNS_MAX) == (0.90, 4, 5, 3, 3)
+def test_the_protocol_is_the_revised_draft():
+    assert (GS.PRICE_BAR, GS.PRICE_THREADS, GS.PRICE_REPS, GS.PRICE_RUNS, GS.PRICE_RUNS_MAX) == (0.90, 4, 5, 3, 9)
     assert GS.PRICE_ORDER == ("classical", "H2", "H2r", "coupled solve")
-    assert (GS.MAX_MS_PER_PIECE, GS.SAMPLE_S, GS.MAX_GAP_S, GS.DRY_RUNS, GS.DRY_RUNS_MIN) == (60.0, 5.0, 30.0, 6, 5)
+    assert (GS.MAX_MS_PER_PIECE, GS.SAMPLE_S, GS.MAX_GAP_S, GS.DRY_RUNS) == (60.0, 5.0, 30.0, 6)
+    assert not hasattr(GS, "PRICE_RERUNS_MAX") and not hasattr(GS, "DRY_RUNS_MIN")   # no run-wide count
     assert (GS.SEED_BASE, GS.N_LAYOUTS, BS.S_SIDE) == (7_000_000, 8, 0.04)
 
 
@@ -136,14 +145,67 @@ def test_reuse_is_the_classical_answer_and_solves_once_a_class():
         assert abs(e_r[0] / e_r[1] - e_c[0] / e_c[1]) <= 1e-10 + 1e-8 * (e_c[0] / e_c[1])
 
 
-def test_the_validity_of_a_run():
-    ok = {"classical_ms_per_piece": {"a": 41.0, "b": 5.0}, "plugged": [True, True], "sample_gaps_s": [5.1, 4.9]}
-    assert GS.run_counts2(ok) == {"counts": True, "failed": []}                 # no lower edge
-    for change in ({"classical_ms_per_piece": {"a": 61.0}}, {"plugged": [True, False]}, {"plugged": []},
-                   {"sample_gaps_s": [5.0, 31.0]}, {"sample_gaps_s": []}):
-        assert GS.run_counts2(dict(ok, **change))["counts"] is False
-    assert GS.dry_run_passes(5) and GS.dry_run_passes(6) and not GS.dry_run_passes(4)
-    assert not GS.dry_run_passes(5, runs=5)
+def _counts(ms: dict, plugged=(True, True), gaps=(5.0,)) -> dict:
+    return GS.run_counts2({"classical_ms_per_piece": ms, "plugged": list(plugged), "sample_gaps_s": list(gaps)})
+
+
+def test_the_validity_of_a_measurement():
+    ok = _counts({"a": 41.0, "b": 5.0}, gaps=(5.1, 4.9))
+    assert ok["run_holds"] and ok["failed"] == []                               # no lower edge
+    assert all(v == {"counts": True, "failed": []} for v in ok["problems"].values())
+    slow = _counts({"a": 61.0, "b": 5.0})               # the time check voids only its own problem
+    assert slow["run_holds"] and not slow["problems"]["a"]["counts"] and slow["problems"]["b"]["counts"]
+    for run_wide in (dict(plugged=(True, False)), dict(plugged=()), dict(gaps=(5.0, 31.0)), dict(gaps=())):
+        c = _counts({"a": 41.0, "b": 5.0}, **run_wide)    # AC and sleep void every measurement
+        assert not c["run_holds"] and not any(v["counts"] for v in c["problems"].values())
+
+
+def test_the_count_per_problem_and_when_the_runs_stop():
+    runs = [_counts({"a": 70.0, "b": 40.0}), _counts({"a": 40.0, "b": 40.0}, plugged=(False,)),
+            _counts({"a": 40.0, "b": 40.0}), _counts({"a": 40.0, "b": 61.0}), _counts({"a": 40.0, "b": 40.0})]
+    assert GS.tally(runs) == {"a": 3, "b": 3} and GS.runs_suffice(runs) and not GS.runs_suffice(runs[:4])
+    values = [{"a": 10 + i, "b": 20 + i} for i in range(1, 6)]
+    assert GS.first_counted(runs, values) == {"a": [13, 14, 15], "b": [21, 23, 25]}
+    assert GS.first_counted(runs[:2], values[:2]) == {"a": [], "b": [21]}      # short problems keep what they have
+    assert not GS.dry_run_passes(runs)                                         # five runs, not six
+    assert GS.dry_run_passes(runs + [_counts({"a": 99.0, "b": 99.0})])
+    assert not GS.dry_run_passes(runs[:4] + [_counts({"a": 99.0, "b": 40.0})] * 2)   # a has two
+
+
+def test_the_first_dry_run_under_the_per_problem_count():
+    """Section 11.18: applied to the first dry run, every problem has at least four counted
+    measurements, plate-hole's steady exactly four.  The bar was set after seeing this, so it
+    pins the page's claim; only a second dry run tests the bar."""
+    rec = json.load(open(os.path.join(ROOT, "out", "chartop", "dryrun-squares-20261108-014441.json"), encoding="utf-8"))
+    counts = []
+    for r in rec["runs"]:
+        assert all(f.startswith("the classical expert above") for f in r["counts"]["failed"])   # AC and sleep held
+        counts.append(_counts({k: v["classical_ms_per_piece"] for k, v in r["problems"].items()},
+                              plugged=[True] * r["samples"], gaps=[r["max_gap_s"]]))
+    t = GS.tally(counts)
+    assert len(t) == 12 and min(t.values()) == 4 and t["workbench plate-hole steady"] == 4
+    assert [k for k, v in t.items() if v == 4] == ["workbench plate-hole steady"]
+    assert GS.dry_run_passes(counts) and rec["counted"] == [2, 4, 5, 6]
+
+
+def test_the_runs_go_on_until_every_problem_has_three(monkeypatch):
+    import chartop_price_squares as PS
+    slow = {1: "a", 2: "a", 4: "b"}                          # the run, and its problem over the bound
+
+    def fake(k, threads, specs, n, reps, out_dir):
+        return {"run": k, "problems": {p: {"price_H2": 0.8 + 0.01 * k, "price_H2r": 0.4} for p in "ab"},
+                "counts": _counts({p: 75.0 if slow.get(k) == p else 40.0 for p in "ab"})}
+    monkeypatch.setattr(PS, "spawn", fake)
+    out = PS.price_runs([], 16, 1, "unused")
+    assert len(out["runs"]) == 5 and out["suffice"] and out["tally"] == {"a": 3, "b": 4}
+    assert out["prices_H2"] == {"a": [0.8 + 0.01 * k for k in (3, 4, 5)], "b": [0.8 + 0.01 * k for k in (1, 2, 3)]}
+
+    def void(k, *args):
+        return {"run": k, "problems": {"a": {"price_H2": 0.8, "price_H2r": 0.4}},
+                "counts": _counts({"a": 40.0}, plugged=(True, False))}
+    monkeypatch.setattr(PS, "spawn", void)
+    out = PS.price_runs([], 16, 1, "unused")
+    assert len(out["runs"]) == GS.PRICE_RUNS_MAX and not out["suffice"] and out["prices_H2"] == {"a": []}
 
 
 def test_the_judges():
@@ -160,7 +222,8 @@ def test_the_judges():
 
 def test_the_text_names_the_gates_choices_predictions_and_outcomes():
     t = GS.text()
-    for s in ("E4-H2", "PR2", "<= 0.9", *GS.SETTLED.values(), *GS.PREDICTIONS, *GS.OUTCOMES.values()):
+    for s in ("E4-H2", "PR2", "<= 0.9", "first 3 counted", *GS.SETTLED.values(), *GS.REVISED.values(),
+              *GS.PREDICTIONS, *GS.OUTCOMES.values()):
         assert s in t
 
 
@@ -222,6 +285,10 @@ def test_a_price_run_in_its_own_process(tmp_path):
                         f"squares:{TEST_SEED + 3}:step"], env=env, capture_output=True, text=True)
     assert p.returncode == 0, p.stderr[-2000:]
     rec = json.load(open(tmp_path / "price-run-1-threads4.json", encoding="utf-8"))
-    assert rec["samples"] >= 2 and set(rec["counts"]) == {"counts", "failed"}
-    assert {"load_mean", "load_max", "max_gap_s", "power_events"} <= set(rec)
+    assert rec["samples"] >= 2 and set(rec["counts"]) == {"run_holds", "failed", "problems"}
+    assert set(rec["counts"]["problems"]) == set(rec["problems"])
+    assert {"load_mean", "load_max", "max_gap_s", "power_events", "battery_reported"} <= set(rec)
+    m = rec["machine"]
+    assert m["cpu"] and m["cpu"] != "unknown" and m["cpu_sources"]["cpu_count"] >= m["available_cpus"] >= 1
+    assert m["torch"] == __import__("torch").__version__ and not {"host", "hostname", "node"} & set(m)
     assert list(rec["problems"]) == ["workbench wall-2 steady", f"squares {TEST_SEED + 3} step"]
