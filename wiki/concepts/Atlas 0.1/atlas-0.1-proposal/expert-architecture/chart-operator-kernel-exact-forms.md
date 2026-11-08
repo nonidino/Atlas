@@ -1237,11 +1237,28 @@ U errs by 7.76% (seen 5.58%) on insert-round and by 0.342% (seen 0.000%) on bend
    - The same holds on the s-channel's conformal middle pieces (§11.11).
    - On insert-round, where U's hats are wrong (7.76%), the trained runs are better at seed 0 (4.05–6.32%) and mixed at seed 1 (7.30–9.02%).
 
+**The classical modes on insert-round's error-carrying pieces** (the owner's go: "Measure it"). Every learned column is exact on the named pieces alone, the rest as built:
+
+| pieces given the classical modes | U | the six trained runs |
+|---|---|---|
+| the 12 plate-ring pieces | 2.285%, E4 not met | 1.284–2.310%, 5 of 6 met |
+| those and the 6 end columns (18 of 39) | 0.745%, met | 0.735–1.336%, all met |
+
+- Run: `--problem insert-round --exact-pieces "plate ring" --exact-pieces "plate ring" "left column" "right column"`, 206 s.
+- The record gained the two variants. Every value it held before is unchanged: 5,583 compared, bit for bit.
+- With the plate ring alone, five of the six trained runs beat U. Their correction helps on the end columns, where U's remaining error is: with the columns classical too, U is as good as the best of them.
+
+So U, untrained, with the classical modes on the pieces that carry its error, meets E4 on all three held-out problems:
+- the s-channel, with 2 of its 9 pieces classical: 1.005% (§11.11);
+- insert-round, with 18 of 39: 0.745%;
+- bend-3, with none of 15: 0.342%.
+
 **[AI Inference]:** On these three problems the learned correction has not earned its place.
 - Where the principal part is nearly exact (bend-3, the s-channel's conformal pieces), the correction adds error. Where it is not (the s-channel's Winslow end pieces, insert-round's plate ring), the correction removes too little.
 - Both point at the correction's accuracy, E1's median $e_{H,L}$ of 0.34, more than at which columns the objective weighs. That fits B4's finding that this form cannot reach E1 (§11.6).
 - §11.11's second treatment, a correction that vanishes where the principal part is exact, would address the first half.
-- The second half needs the non-conformal pieces' hats and low sines nearly exact. A more accurate correction would do it; so would the classical modes there, at about the price of an exact solve on those pieces. Not measured: U with the classical modes on insert-round's plate ring alone.
+- The second half needs the hard pieces' hats and low sines nearly exact. A more accurate correction would do it; so would the classical modes there, at about the price of an exact solve on those pieces.
+- The measurement above sets the bar a learned correction has to clear. The untrained principal part, with classical solves on the pieces that carry its error, already meets E4 on all three problems. The correction earns its place only by doing as well at a lower price.
 
 ---
 

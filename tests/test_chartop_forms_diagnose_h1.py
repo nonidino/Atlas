@@ -52,7 +52,7 @@ def experts(fd):
 
 @pytest.fixture(scope="module")
 def h1(fd, experts):
-    return fd.heldout_split(experts, N, name="bend-3")
+    return fd.heldout_split(experts, N, name="bend-3", exact_pieces=[["bend 0"]])
 
 
 def test_the_breakdown_leaves_the_split_and_sums(fd, experts):
@@ -90,8 +90,14 @@ def test_the_variants_couple_what_they_name(h1, experts):
     V = h1["variants"]
     assert set(V) == set(experts)
     assert all(set(v) == {"as trained", "+ exact hats", "+ exact j1-3", "+ exact hats, j1-3",
-                          "+ exact end sides' j1-8", "+ exact learned, end pieces", "+ exact learned"}
+                          "+ exact end sides' j1-8", "+ exact learned, end pieces", "+ exact learned",
+                          "+ exact learned, on bend 0"}
                for v in V.values())
+    assert h1["named_pieces"] == {"+ exact learned, on bend 0": [f"bend 0,{c}" for c in range(5)]}
+    # every learned column exact on five of the fifteen pieces lies between none and all of them
+    for v in V.values():
+        assert v["+ exact learned"]["energy_rel"] <= v["+ exact learned, on bend 0"]["energy_rel"] \
+            <= v["as trained"]["energy_rel"]
     a, b = V["U"]["+ exact learned"], V["R"]["+ exact learned"]
     assert abs(a["energy_rel"] - b["energy_rel"]) <= 1e-9 * a["energy_rel"]
     assert V["R"]["as trained"]["energy_rel"] != V["U"]["as trained"]["energy_rel"]
@@ -110,6 +116,18 @@ def test_the_variants_take_the_named_columns(fd):
     assert all(len(c) == 36 for c in v["+ exact learned"].values())
     assert v["+ exact learned, end pieces"] == {i: G["hats"] + G["j1-3"] + G["j4-8"] for i in (0, 2)}
     assert sorted(sum(sum(S.values(), []), [])) == sorted(G["j1-3"] + G["j4-8"])
+    w = fd.h1_variants(3, [(0, 3)], {"+ exact learned, on x": [1, 2]})
+    assert w["+ exact learned, on x"] == {i: G["hats"] + G["j1-3"] + G["j4-8"] for i in (1, 2)}
+    with pytest.raises(ValueError):
+        fd.h1_variants(3, [], {"+ exact learned": [0]})
+
+
+def test_a_prefix_must_name_a_piece(fd):
+    labels = ["plate ring 0,0", "plate ring 3,2", "disc ring 1,0", "left column 0"]
+    assert fd.pieces_named(labels, ["plate ring"]) == [0, 1]
+    assert fd.pieces_named(labels, ["plate ring", "left column"]) == [0, 1, 3]
+    with pytest.raises(ValueError):
+        fd.pieces_named(labels, ["plate rings"])
 
 
 def test_the_bench_helper_keeps_its_defaults(fd, monkeypatch):

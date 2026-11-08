@@ -452,11 +452,21 @@ def dirichlet_sides(L: hs.Layout) -> list:
                   if e.other is None and e.bc is not None and e.bc[0] == "dirichlet")
 
 
-def h1_variants(pieces: int, dirichlet: list) -> dict:
+def pieces_named(labels: list, prefixes: list) -> list:
+    """The pieces whose label starts with one of `prefixes`; ValueError if there are none
+    (a prefix that matched nothing would leave the variant as trained, in silence)."""
+    idx = [i for i, lab in enumerate(labels) if any(lab.startswith(p) for p in prefixes)]
+    if not idx:
+        raise ValueError(f"no piece's label starts with any of {prefixes}")
+    return idx
+
+
+def h1_variants(pieces: int, dirichlet: list, named: dict | None = None) -> dict:
     """{variant: {piece: the columns taken from the classical expert}}: none (as trained);
     the hats, j = 1-3, both, or every learned column on every piece; the learned sines
-    (j = 1-8) of the Dirichlet sides alone, on the pieces that own them; and every learned
-    column on those pieces alone."""
+    (j = 1-8) of the Dirichlet sides alone, on the pieces that own them; every learned
+    column on those pieces alone; and, for each ``named`` variant {name: [pieces]}, every
+    learned column on those pieces alone."""
     G = column_groups()
     sides = side_sines()
     learned = G["hats"] + G["j1-3"] + G["j4-8"]
@@ -467,17 +477,23 @@ def h1_variants(pieces: int, dirichlet: list) -> dict:
     ends = {}
     for i, s in dirichlet:
         ends.setdefault(i, []).extend(sides["j1-3"][s] + sides["j4-8"][s])
-    return {"as trained": {}, "+ exact hats": every(G["hats"]), "+ exact j1-3": every(G["j1-3"]),
-            "+ exact hats, j1-3": every(G["hats"] + G["j1-3"]), "+ exact end sides' j1-8": ends,
-            "+ exact learned, end pieces": {i: list(learned) for i in sorted(ends)},
-            "+ exact learned": every(learned)}
+    out = {"as trained": {}, "+ exact hats": every(G["hats"]), "+ exact j1-3": every(G["j1-3"]),
+           "+ exact hats, j1-3": every(G["hats"] + G["j1-3"]), "+ exact end sides' j1-8": ends,
+           "+ exact learned, end pieces": {i: list(learned) for i in sorted(ends)},
+           "+ exact learned": every(learned)}
+    for name, idx in (named or {}).items():
+        if name in out:
+            raise ValueError(f"variant {name!r} is already defined")
+        out[name] = {i: list(learned) for i in idx}
+    return out
 
 
-def heldout_split(ex: dict, n: int, name: str = "s-channel") -> dict:
+def heldout_split(ex: dict, n: int, name: str = "s-channel", exact_pieces: list | None = None) -> dict:
     """The held-out steady problem split as `part_a1` splits it (by piece and side too),
     beside the seen problem's, with each expert's modes compared between the two; then the
     variants of `h1_variants` on the held-out problem in both frames, judged by E4's own
-    function (`gates_prior`'s)."""
+    function (`gates_prior`'s).  Each entry of `exact_pieces`, a list of label prefixes,
+    adds a variant with every learned column exact on the pieces those prefixes name."""
     groups = ("j1-3", "j4-8")
     built = {"held_out": bench(name, "registered", GP.HELD_OUT_VARIANT, n),
              "seen": bench(name, "registered", None, n)}
@@ -521,7 +537,10 @@ def heldout_split(ex: dict, n: int, name: str = "s-channel") -> dict:
             "bitwise": bool(all(np.array_equal(x.H, y.H) and np.array_equal(x.up, y.up)
                                 for x, y in zip(a, z)))}
     dirichlet = rec["held_out"]["dirichlet_sides"]
-    variants = h1_variants(rec["held_out"]["pieces"], dirichlet)
+    labels = rec["held_out"]["labels"]
+    named = {f"+ exact learned, on {' + '.join(pre)}": pieces_named(labels, pre) for pre in (exact_pieces or [])}
+    rec["named_pieces"] = {v: [labels[i] for i in idx] for v, idx in named.items()}
+    variants = h1_variants(rec["held_out"]["pieces"], dirichlet, named)
     fr = {}
     for frame in ("registered", "lowered"):
         if frame == "registered":
@@ -591,7 +610,7 @@ def part_h1(args) -> dict:
     for run in H1_RUNS:
         if run in reused and registry.sha256_file(checked_weights(run)) != reused[run]:
             raise SystemExit(f"{run}: not the run the registration reuses")
-    rec = heldout_split(experts(H1_RUNS), GP.BENCHMARK_N, args.problem)
+    rec = heldout_split(experts(H1_RUNS), GP.BENCHMARK_N, args.problem, args.exact_pieces)
     rec["reproduces"] = reproduces(rec)
     H, Sn, V = rec["held_out"], rec["seen"], rec["variants"]
     print(f"H1  {args.problem:12s} steady  E% held-out [s1] " + "{seen}  NT-chk hat-diff hat-lvl   j1-3   j4-8"
@@ -605,13 +624,20 @@ def part_h1(args) -> dict:
               f"{sh['j4-8']:6.3f} {sh['j9-15 on strip'] + sh['j9-15 off strip']:6.3f} {sh['p']:6.3f} "
               f"{st['ends_share']:6.3f} {st['end_sides_share']['j1-3']:8.3f} {st['end_sides_share']['j4-8']:8.3f} "
               f"{{{Sn['runs'][run]['share']['j1-3']:6.3f}}}")
-    def span(v):
-        e = [V[r][v]["energy_rel"] for r in V]
-        return f"{100 * min(e):.3f}-{100 * max(e):.3f}% [{'Y' if all(V[r][v]['e4_met'] for r in V) else 'n'}]"
+    def span(v, runs=None):
+        runs = list(V) if runs is None else runs
+        e = [V[r][v]["energy_rel"] for r in runs]
+        return f"{100 * min(e):.3f}-{100 * max(e):.3f}% [{'Y' if all(V[r][v]['e4_met'] for r in runs) else 'n'}]"
 
+    def one(v, r="U"):
+        return f"{r} {100 * V[r][v]['energy_rel']:.3f}% [{'Y' if V[r][v]['e4_met'] else 'n'}]"
+
+    trained = [r for r in V if r != "U"]
+    named = "".join(f"; {v[len('+ exact learned, '):]}: {one(v)}, trained {span(v, trained)}"
+                    for v in rec["named_pieces"])
     same = all(v["bitwise"] for k, v in rec["modes_same"].items() if k != "classical")
     print(f"    E% [E4 both frames]; floor {100 * H['floor']:.3f}%; all learned exact {span('+ exact learned')}, "
-          f"on the end pieces {span('+ exact learned, end pieces')}; modes as seen's: {same}; record to "
+          f"on the end pieces {span('+ exact learned, end pieces')}{named}; modes as seen's: {same}; record to "
           f"{max(rec['reproduces']['max_rel'].values()):.0e} " + "".join(f"{r:>14s}" for r in H1_SHOWN))
     for v in H1_TABLE:
         cells = [f"{100 * V[r][v]['energy_rel']:8.3f} [{'Y' if V[r][v]['e4_met'] else 'n'}]" for r in H1_SHOWN]
@@ -789,6 +815,9 @@ def main(argv=None) -> int:
     ap.add_argument("--problem", default="s-channel", choices=GF.HELD_OUT_BENCHMARKS,
                     help="h1: the held-out steady problem (the record of another than the s-channel is "
                          "forms-diagnose-h1-<problem>.json)")
+    ap.add_argument("--exact-pieces", nargs="+", action="append", metavar="PREFIX",
+                    help="h1: also a variant with every learned column exact on the pieces whose label "
+                         "starts with one of these prefixes (repeat for more variants)")
     args = ap.parse_args(argv)
     torch.set_num_threads(args.threads)
     t0 = time.perf_counter()
