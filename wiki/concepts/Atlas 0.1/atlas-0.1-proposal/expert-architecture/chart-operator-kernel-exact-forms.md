@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1` after the next registration's evaluation, §11.11) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps).
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1` after the next registration's evaluation, §11.11–11.12) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps).
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1191,8 +1191,57 @@ $$B(\cos 2\pi s - 1) = \sum_{j\ \mathrm{odd}} \frac{16B}{\pi j (j^2-4)} \sin j\p
 5. **The prior's runs.** At seed 0, P's and PG's hats are better than S′'s: with $j=1$–3 exact, 10.4 and 9.95% against 13.7%. Their $j=1$–3 is a little better at most: with the hats exact, 23.1 and 20.6% against 23.8%. At seed 1, P is better in both: 15.5 and 14.3% against S′'s 24.2 and 18.3%.
 
 **[AI Inference]:** Two treatments these numbers suggest (proposed, not built):
-- **Classical modes on the pieces that own varying Dirichlet data,** learned modes elsewhere. This is B1's `hats="classical"` widened to all 36 learned columns, on those pieces only: here, two pieces of nine, at about the price of an exact solve on each. On this problem the seed-0 runs would reach 1.5–1.9% (E4 met) and the seed-1 runs 2.2–3.2% (not met). It is measured on this problem only; the other held-out problems' error has not been split by piece.
+- **Classical modes on the pieces that own varying Dirichlet data,** learned modes elsewhere. This is B1's `hats="classical"` widened to all 36 learned columns, on those pieces only: here, two pieces of nine, at about the price of an exact solve on each. On this problem the seed-0 runs would reach 1.5–1.9% (E4 met) and the seed-1 runs 2.2–3.2% (not met). It is measured on this problem only. (§11.12 split the other two held-out problems: it does not carry over.)
 - **A learned correction that vanishes where the principal part is exact.** With the first treatment, U beats every trained run on this problem, so here the learned correction does harm on the conformal pieces. Scaling the correction by a measured distance from conformal, zero on a conformal piece, would keep those pieces at U's level.
+
+### 11.12 Held-out insert-round and bend-3, split the same way (post hoc, 2026-11-07)
+
+**The owner's go:** "Yes", to running §11.11's split on the other two held-out steady problems. Nothing here is a gate, and the test split was not read.
+- Script: `scripts/chartop_forms_diagnose.py --part h1 --problem insert-round` (172 s) and `--problem bend-3` (38 s). Records: `out/chartop/forms-diagnose-h1-insert-round.json` and `forms-diagnose-h1-bend-3.json`.
+- The checks hold on both. The evaluation's record is reproduced exactly, in both frames and on the seen problem. The split sums to the network term within $7\times10^{-16}$.
+- The modes are again the same bit for bit as on the seen problems. Every piece is one material, so the new materials divide out piece by piece. On insert-round the coupling still weighs disc against plate differently.
+
+**Unlike the s-channel's, these errors hardly change with the held-out data.** The trained runs' energy errors, held-out against seen:
+- insert-round: 4.05–9.02% against 4.37–9.80%, each run within 0.8 points of its seen error;
+- bend-3: 1.28–2.49% against 1.26–2.65%, each within 0.2 points.
+
+U errs by 7.76% (seen 5.58%) on insert-round and by 0.342% (seen 0.000%) on bend-3.
+
+**Where, and which modes.** Shares of the squared network term on the held-out problem; the seen problem's in brackets.
+
+| problem | where | hats, corner differences | $j=1$–3 |
+|---|---|---|---|
+| s-channel (§11.11) | the two Winslow end pieces: 98.3–100% | 0.22–0.46 | 0.55–0.77 |
+| insert-round | the 12 plate-ring pieces between the disc and the plate box: 89–98% (96–99%). The 8 of them that reach the box's corners: 86–96%. The end columns: 2–7%. | 0.51–0.91 (1.02–1.16) | 0.09–0.48 (−0.16 to −0.02) |
+| bend-3, trained runs | spread over all 15 pieces; the 6 end pieces hold 44–54% (seen 40%, their share of the pieces) | 0.95–1.01 (1.00) | −0.01 to 0.05 (0.00) |
+| bend-3, U | the 6 end pieces: 94% | 0.000 | 0.993, from the new data's sines |
+
+**What it would take.** The six trained runs' range; E4 met in both frames by all six unless marked.
+
+| replaced by the exact columns | s-channel (floor 1.001%) | insert-round (floor 0.043%) | bend-3 (floor 0.043%) |
+|---|---|---|---|
+| none (as trained) | 22.1–34.2, none | 4.05–9.02, none | 1.28–2.49, 5 of 6 |
+| the hats | 15.5–24.2, none | 1.87–2.29, 1 of 6 | 0.245–0.453 |
+| $j=1$–3 | 9.95–18.3, none | 3.07–9.06, none | 1.265–2.531, 5 of 6 |
+| the hats and $j=1$–3 | 2.58–2.62, none | 0.29–0.31 | 0.047–0.048 |
+| every learned column, on the pieces that own the ends | 1.50–3.17, 3 of 6 | 3.89–8.91, none | 0.89–1.86 |
+| every learned column | 1.004 | 0.049 | 0.043 |
+| U as built, for comparison | 32.15, not met | 7.76, not met | 0.342, met |
+
+**What it shows.**
+1. **Only the s-channel's failure is new.** On insert-round and bend-3 the held-out data exposed nothing the seen problems had not: the same modes, and nearly the same errors.
+2. **§11.11's end-piece treatment does not carry over.** Insert-round's error is not at its ends: exact columns on the end columns leave 3.89–8.91%. Its error is in the hats' corner differences on the plate ring, where Winslow pieces meet the round interface and the box's corners. That is §11.1's finding on the seen problem, unchanged.
+3. **The hats are the common part.** With the hats and $j=1$–3 exact everywhere, the errors are 2.6%, 0.30% and 0.047%. That meets E4 on insert-round and bend-3. On the s-channel, $j=4$–8 is needed too (§11.11).
+4. **Where the principal part is already nearly exact, training made it worse.**
+   - On bend-3, U errs by 0.000% on the seen problem and 0.342% on the held-out one. Every trained run errs by 1.26–2.65% on both, nearly all of it in the learned hats, spread over all 15 pieces.
+   - The same holds on the s-channel's conformal middle pieces (§11.11).
+   - On insert-round, where U's hats are wrong (7.76%), the trained runs are better at seed 0 (4.05–6.32%) and mixed at seed 1 (7.30–9.02%).
+
+**[AI Inference]:** On these three problems the learned correction has not earned its place.
+- Where the principal part is nearly exact (bend-3, the s-channel's conformal pieces), the correction adds error. Where it is not (the s-channel's Winslow end pieces, insert-round's plate ring), the correction removes too little.
+- Both point at the correction's accuracy, E1's median $e_{H,L}$ of 0.34, more than at which columns the objective weighs. That fits B4's finding that this form cannot reach E1 (§11.6).
+- §11.11's second treatment, a correction that vanishes where the principal part is exact, would address the first half.
+- The second half needs the non-conformal pieces' hats and low sines nearly exact. A more accurate correction would do it; so would the classical modes there, at about the price of an exact solve on those pieces. Not measured: U with the classical modes on insert-round's plate ring alone.
 
 ---
 

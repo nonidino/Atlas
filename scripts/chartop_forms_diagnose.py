@@ -28,7 +28,10 @@ Parts (``--part``), each printing a verdict table of ten lines or fewer and writ
   seen problem's, and by piece and by the end sides that carry the held-out data; then
   each run with columns replaced as ``a3`` replaces them, both frames, judged by E4's own
   function.  The held-out problems are read post hoc, after the one evaluation read
-  them; the as-trained errors must reproduce that evaluation's record.
+  them; the as-trained errors must reproduce that evaluation's record.  ``--problem``
+  splits held-out bend-3 or insert-round the same way (record
+  ``forms-diagnose-h1-<problem>.json``); insert-round's two materials change between
+  the seen and the held-out problem, so there the modes need not be the same.
 """
 
 from __future__ import annotations
@@ -494,6 +497,7 @@ def heldout_split(ex: dict, n: int, name: str = "s-channel") -> dict:
         dirichlet = dirichlet_sides(L)
         ends = sorted({i for i, _ in dirichlet})
         out = {"floor": u / d, "pieces": L.P, "dirichlet_sides": dirichlet, "end_pieces": ends,
+               "labels": [str(p.label) for p in L.problems],
                "kappa_ref": sorted({float(p.kappa_ref) for p in L.problems}), "runs": {}}
         for run, e in ex.items():
             cp = L.solve(e)
@@ -587,11 +591,11 @@ def part_h1(args) -> dict:
     for run in H1_RUNS:
         if run in reused and registry.sha256_file(checked_weights(run)) != reused[run]:
             raise SystemExit(f"{run}: not the run the registration reuses")
-    rec = heldout_split(experts(H1_RUNS), GP.BENCHMARK_N)
+    rec = heldout_split(experts(H1_RUNS), GP.BENCHMARK_N, args.problem)
     rec["reproduces"] = reproduces(rec)
     H, Sn, V = rec["held_out"], rec["seen"], rec["variants"]
-    print("H1  s-channel steady  E% held-out [s1] {seen}  NT-chk hat-diff hat-lvl   j1-3   j4-8  j9-15      p"
-          "   ends end j1-3 end j4-8 {seen j1-3}")
+    print(f"H1  {args.problem:12s} steady  E% held-out [s1] " + "{seen}  NT-chk hat-diff hat-lvl   j1-3   j4-8"
+          "  j9-15      p   ends end j1-3 end j4-8 {seen j1-3}")
     for run in ("U",) + H1_SHOWN:
         st, sh = H["runs"][run], H["runs"][run]["share"]
         s1 = run.replace("-s0", "-s1")
@@ -769,12 +773,22 @@ def part_i13(args) -> dict:
     return rec
 
 
+def record_path(part: str, problem: str = "s-channel") -> str:
+    """``out/chartop/forms-diagnose-<part>.json``; h1 on another problem than the s-channel
+    adds the problem's name."""
+    name = part if part != "h1" or problem == "s-channel" else f"h1-{problem}"
+    return os.path.join(OUT, f"forms-diagnose-{name}.json")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--part", required=True, choices=("a1", "a2", "a3", "b1", "i13", "h1"))
     ap.add_argument("--reps", type=int, default=3, help="b1: timings per piece (the best is kept)")
     ap.add_argument("--pieces", type=int, default=4, help="a2: validation pieces per resolution")
     ap.add_argument("--threads", type=int, default=4)
+    ap.add_argument("--problem", default="s-channel", choices=GF.HELD_OUT_BENCHMARKS,
+                    help="h1: the held-out steady problem (the record of another than the s-channel is "
+                         "forms-diagnose-h1-<problem>.json)")
     args = ap.parse_args(argv)
     torch.set_num_threads(args.threads)
     t0 = time.perf_counter()
@@ -783,7 +797,7 @@ def main(argv=None) -> int:
     rec.update({"a1": part_a1, "a2": part_a2, "a3": part_a3, "b1": part_b1, "i13": part_i13,
                 "h1": part_h1}[args.part](args))
     rec["elapsed_s"] = time.perf_counter() - t0
-    path = os.path.join(OUT, f"forms-diagnose-{args.part}.json")
+    path = record_path(args.part, args.problem)
     registry.write_atomic(path, json.dumps(ev0.strip(rec), indent=1).encode("utf-8"))
     print(f"    wrote {os.path.relpath(path, ROOT)} ({rec['elapsed_s']:.0f} s)")
     return 0

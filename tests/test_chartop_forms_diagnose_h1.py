@@ -73,6 +73,7 @@ def test_the_breakdown_leaves_the_split_and_sums(fd, experts):
 def test_held_out_and_seen_share_their_modes(h1, experts):
     assert h1["held_out"]["pieces"] == h1["seen"]["pieces"] == 15
     assert h1["end_piece_charts"] == []           # bend-3 records no end-piece charts
+    assert h1["held_out"]["labels"] == h1["seen"]["labels"] and len(set(h1["held_out"]["labels"])) == 15
     assert h1["held_out"]["dirichlet_sides"] == h1["seen"]["dirichlet_sides"] != []
     for run in experts:
         assert h1["modes_same"][run]["bitwise"], (run, h1["modes_same"][run])
@@ -120,6 +121,13 @@ def test_the_bench_helper_keeps_its_defaults(fd, monkeypatch):
     assert calls == [("s-channel", GF.BENCHMARK_N, "steady", {"envelope": data.ENVELOPE}),
                      ("bend-3", GF.BENCHMARK_N, "steady", {}),
                      ("bend-3", 32, "steady", {"variant": "held-out"})]
+
+
+def test_the_records_keep_their_names(fd):
+    """The s-channel's h1 record keeps the path the wiki cites; another problem adds its name."""
+    assert fd.record_path("h1") == fd.record_path("h1", "s-channel") == os.path.join(fd.OUT, "forms-diagnose-h1.json")
+    assert fd.record_path("h1", "insert-round") == os.path.join(fd.OUT, "forms-diagnose-h1-insert-round.json")
+    assert fd.record_path("a1", "insert-round") == os.path.join(fd.OUT, "forms-diagnose-a1.json")
 
 
 def test_the_runs_are_read_from_their_own_folders(fd):
