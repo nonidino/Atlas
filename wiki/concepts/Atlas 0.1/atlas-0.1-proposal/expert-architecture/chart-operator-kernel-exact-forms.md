@@ -1602,7 +1602,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
   - `scripts/chartop_price_squares.py` holds the protocol and its dry run.
 - **Tested:** 19 tests in `tests/test_chartop_gates_squares.py`. Every test that runs an expert other than the classical one runs it on seeds the registration never draws, or on §11.17's problems.
 - **Measured:** the layouts were drawn and measured with the classical solver only (below). Nothing else has read them.
-- **The dry run is the owner's,** outside the Claude app and on AC. Not hash-pinned.
+- **The dry run ran on 2026-11-08,** inside the Claude app at the owner's word. **4 of 6 runs counted, under the 5 the protocol needs,** so it is not pinned. A revision is proposed (below). Not hash-pinned.
 
 **What it would decide.**
 - Whether a rule that trusts U's form only on squares of one material keeps E4 on new problems, and what it saves there. Squares of one material are the one case where §11.17 found U exact.
@@ -1658,6 +1658,32 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
   - The skip on a refusal was written into the measurement script, beyond the draft's skip on the floor, because U's form is not trusted outside its envelope.
 - **Six of the eight layouts are all squares:** R2 gives them no classical piece, so H2 is U alone there. The two holes give the classical solve their 8 ring pieces each.
 - **A functional dry run** here (two runs on two of §11.17's problems) found the laptop on battery: the power check voided both runs, as it should. The owner's dry run must be on AC.
+
+**The dry run (2026-11-08): 4 of 6 counted, so the protocol may not be pinned as it stands.**
+- **Where it ran:** inside the Claude app, at the owner's word ("Just run it in claude, here"), on AC, 01:44–02:23 (2,328 s). The evaluation process from §11.17 was still alive but idle, using no CPU. Record: `out/chartop/dryrun-squares-20261108-014441.json`.
+- Runs 2, 4, 5 and 6 counted. Runs 1 and 3 were void: on plate-hole's steady problem the classical expert took 63.1 and 74.6 ms a piece, over the 60 ms bound.
+- AC held at every sample (45–47 a run), no gap between samples exceeded 10 s, and no power event fell in a run. The other processes' mean load was 0.17–0.36 of a core.
+
+**What the dry run shows.**
+1. **The time check caught real bias.**
+   - Every problem's fastest runs took 29–45 ms a piece, plate-hole's 37–38. So its slowdowns were disturbances, not its nature.
+   - They lasted through all five repetitions, and they biased its ratio: H2's price on plate-hole steady was 0.67 and 0.80 in the void runs, against 0.95–1.35 in the counted ones.
+   - A looser bound, or one over the whole run (38–49 ms a piece in every run), would have let both in.
+2. **Voiding a whole run wastes eleven good measurements.** The slowdown touched one problem in each void run.
+3. **Prices are noisy even in counted runs.**
+   - A single problem's H2 price ranged over six runs by a median of 0.27, and by 0.68 at worst.
+   - The geometric mean over the twelve problems held to 0.93–1.04.
+   - Only the classical arm is checked, so a slowdown in another arm, like run 4's 1.35 on plate-hole, goes unseen.
+4. **A median of paired per-repetition ratios is noisier,** so best-of stays. H2's per-problem range rose to 0.30 (H2r's from 0.20 to 0.47), and the run's geometric mean to 0.83–1.09.
+
+(Computed from the dry run's record.)
+
+**A proposed revision, not adopted.** It is the owner's call, and it would be dry-run again before any pin.
+- **Count each problem on its own.** A run's measurement of a problem counts if the run passes its AC and sleep checks, and that problem's classical time is at most 60 ms a piece.
+- Each problem's price is the median of its first three counted measurements.
+- Runs continue until every problem has three, at most nine runs in all.
+- **The dry run's bar** becomes the evaluation's own need: every problem gets three counted measurements within six runs.
+- Applied to this dry run, every problem has at least four (plate-hole steady exactly four). The bar is set after seeing that, so only a second dry run can test it.
 
 **Gates.**
 - **E4-H2:** H2 meets E4 on every new problem, in both frames.
