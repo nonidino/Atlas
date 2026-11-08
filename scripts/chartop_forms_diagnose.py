@@ -36,6 +36,9 @@ Parts (``--part``), each printing a verdict table of ten lines or fewer and writ
   solves on the pieces that carry U's error, U without its networks elsewhere (its heads
   are zero, so its networks answer zeros) -- priced on this machine against the classical
   expert, with P-s0 beside it, and its energy error in both frames.
+- ``h3``: a fixed rule for the hybrid's classical pieces, set before it was measured (the
+  Winslow pieces and the pieces that own a Dirichlet side), on the six held-out problems
+  and the six seen ones (steady and step), with E4's verdict and, held out, its price.
 """
 
 from __future__ import annotations
@@ -130,11 +133,11 @@ def interior(p):
 
 
 def bench(name: str, frame: str = "registered", variant: str | None = None,
-          n: int | None = None) -> bm.Bench:
+          n: int | None = None, problem: str = "steady") -> bm.Bench:
     kw = {"envelope": data.ENVELOPE} if name == "s-channel" else {}
     if variant:
         kw["variant"] = variant
-    b = bm.build(name, GF.BENCHMARK_N if n is None else n, "steady", **kw)
+    b = bm.build(name, GF.BENCHMARK_N if n is None else n, problem, **kw)
     return b if frame == "registered" else bm.datum_shift(b, GF.DATUM_SHIFT_K)
 
 
@@ -789,6 +792,147 @@ def part_h2(args) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# H3: a fixed rule for the hybrid's classical pieces
+# ---------------------------------------------------------------------------
+
+H3_PROBLEMS = ("steady", "step")
+
+
+def rule_pieces(L) -> list:
+    """The fixed rule, set before it was measured (the owner's go, 2026-11-07): the
+    classical solve on every piece whose chart is a Winslow chart, and on every piece that
+    owns a Dirichlet side.  The chart says where the plain square's principal part is
+    inexact; the boundary data say where the low sines are excited."""
+    winslow = {i for i, p in enumerate(L.problems) if p.chart.method.startswith("winslow")}
+    return sorted(winslow | {i for i, _ in dirichlet_sides(L)})
+
+
+def coupled_errors(b: bm.Bench, arms: dict) -> dict:
+    """Each arm's coupled answer on `b`, as registered and lowered by 300 K, judged by E4's
+    own function.  An arm is (expert, hard pieces): the classical solve on the hard pieces,
+    the expert's responses everywhere else."""
+    fr = {}
+    for frame in ("registered", "lowered"):
+        Lf = (b if frame == "registered" else bm.datum_shift(b, GP.DATUM_SHIFT_K)).layout(GF.KIND, GF.M_PORTS)
+        mono = hs.monolithic(Lf)
+        cl = Lf.solve(hs.ClassicalExpert())
+        un, ud = cl.energy_error(mono.fields)
+        mx0, span = ev0.field_errors(mono.fields, cl.fields)
+        out = {"floor": un / ud}
+        for arm, (ex, hard) in arms.items():
+            h = set(hard)
+            r = ex.respond(Lf.problems, Lf.pb)
+            cp = Lf.couple([cl.responses[i] if i in h else r[i] for i in range(Lf.P)])
+            num, den = cp.energy_error(mono.fields)
+            mx, _ = ev0.field_errors(mono.fields, cp.fields)
+            out[arm] = {"energy_rel": num / den, "max_err": mx, "span": span, "floor_max": mx0}
+        fr[frame] = out
+    res = {"floor": fr["registered"]["floor"]}
+    for arm in arms:
+        a, z = fr["registered"][arm], fr["lowered"][arm]
+        res[arm] = {"energy_rel": a["energy_rel"], "energy_rel_lowered": z["energy_rel"],
+                    "max_over_range": a["max_err"] / a["span"],
+                    "e4_met": bool(GP.judge_e4_both_frames(a, z)["met"])}
+    return res
+
+
+def rule_price(b: bm.Bench, hard: list, Z, trained, reps: int) -> dict:
+    """The best of `reps` times of the classical expert's, the rule's hybrid's and the
+    trained expert's responses for every piece, and of the coupled solve they share."""
+    L = b.layout(GF.KIND, GF.M_PORTS)
+    ps, C = L.problems, hs.ClassicalExpert()
+    easy = [i for i in range(L.P) if i not in set(hard)]
+
+    def hybrid():
+        if hard:
+            C.respond([ps[i] for i in hard], L.pb)
+        if easy:
+            Z.respond([ps[i] for i in easy], L.pb)
+
+    resp_C = C.respond(ps, L.pb)
+    t = {"classical": _best(lambda: C.respond(ps, L.pb), reps), "hybrid": _best(hybrid, reps),
+         "trained": _best(lambda: trained.respond(ps, L.pb), reps),
+         "coupled solve": _best(lambda: L.couple(resp_C), reps)}
+    cs = t["coupled solve"]
+    return {"seconds": t, "over_classical_with_coupled_solve": {
+        k: (t[k] + cs) / (t["classical"] + cs) for k in ("hybrid", "trained")}}
+
+
+def evaluation_rows() -> dict:
+    """{(held-out | seen, name, problem): the one evaluation's row}."""
+    paths = sorted(glob.glob(os.path.join(OUT, EVAL_PRIOR)))
+    if len(paths) != 1:
+        raise SystemExit(f"expected the one evaluation's record, found {len(paths)}")
+    with open(paths[0], encoding="utf-8") as fh:
+        ev = json.load(fh)
+    rows = {("held-out", r["name"], r["problem"]): r for r in ev["benchmarks"]}
+    rows.update({("seen", r["name"], r["problem"]): r for r in ev["benchmarks_seen"]})
+    return rows
+
+
+def part_h3(args) -> dict:
+    """The fixed rule (`rule_pieces`) on the six held-out problems and the six seen ones:
+    the hybrid's energy error in both frames and E4's verdict, beside U as built and P-s0
+    as trained (which must reproduce the one evaluation's record); on the held-out
+    problems, the price over the classical expert."""
+    import psutil
+    if (GP.BENCHMARK_N, GP.DATUM_SHIFT_K) != (GF.BENCHMARK_N, GF.DATUM_SHIFT_K):
+        raise SystemExit("gates_prior's benchmarks are not at gates_forms' resolution and frame")
+    bat = psutil.sensors_battery()
+    rec = {"rule": " ".join(rule_pieces.__doc__.split()), "reps": args.reps,
+           "power_at_start": {"plugged": bat.power_plugged, "percent": bat.percent} if bat else None,
+           "problems": {}}
+    rows = evaluation_rows()
+    u = zero_heads()
+    U = LearnedExpert(u, envelope=data.ENVELOPE)
+    P = LearnedExpert(tr.load_expert(checked_weights("P-s0"), "cpu"), envelope=data.ENVELOPE)
+    Z = None
+    for name in GF.HELD_OUT_BENCHMARKS:
+        for problem in H3_PROBLEMS:
+            for which, variant in (("held-out", GP.HELD_OUT_VARIANT), ("seen", None)):
+                b = bench(name, "registered", variant, GP.BENCHMARK_N, problem)
+                L = b.layout(GF.KIND, GF.M_PORTS)
+                if Z is None:
+                    Z = LearnedExpert(without_networks(u, b.problems[0]), envelope=data.ENVELOPE)
+                hard = rule_pieces(L)
+                res = coupled_errors(b, {"hybrid": (Z, hard), "U": (U, []), "P-s0": (P, [])})
+                fr = rows[(which, name, problem)]["frames"]
+                res["P-s0 reproduces"] = max(
+                    abs(res["P-s0"][k] - fr[f]["runs"]["P-s0"]["energy_rel"]) / fr[f]["runs"]["P-s0"]["energy_rel"]
+                    for k, f in (("energy_rel", "registered"), ("energy_rel_lowered", "lowered")))
+                f0 = fr["registered"]["truncation_energy_rel"]
+                res["floor reproduces"] = abs(res["floor"] - f0) / f0
+                res.update(pieces=L.P, hard=[str(L.problems[i].label) for i in hard],
+                           winslow=int(sum(p.chart.method.startswith("winslow") for p in L.problems)),
+                           dirichlet_owners=len({i for i, _ in dirichlet_sides(L)}))
+                if which == "held-out":
+                    res["price"] = rule_price(b, hard, Z, P, args.reps)
+                rec["problems"][f"{name} {problem} {which}"] = res
+    bat = psutil.sensors_battery()
+    rec["power_at_end"] = {"plugged": bat.power_plugged, "percent": bat.percent} if bat else None
+    Pr = rec["problems"]
+
+    def e(r, arm="hybrid"):
+        return f"{100 * r[arm]['energy_rel']:7.3f} [{'Y' if r[arm]['e4_met'] else 'n'}]"
+
+    print("H3  the fixed rule: the classical solve on Winslow pieces and Dirichlet owners, U without its "
+          f"networks elsewhere (torch threads {args.threads}, best of {args.reps})")
+    print("    problem              classical    hybrid E% held-out   seen         U held-out   P-s0 held-out"
+          "   price: hybrid  P-s0")
+    for name in GF.HELD_OUT_BENCHMARKS:
+        for problem in H3_PROBLEMS:
+            h, s = Pr[f"{name} {problem} held-out"], Pr[f"{name} {problem} seen"]
+            o = h["price"]["over_classical_with_coupled_solve"]
+            print(f"    {name + ' ' + problem:20s} {len(h['hard']):3d} of {h['pieces']:2d}   {e(h):>14s}   {e(s):>12s} "
+                  f"{e(h, 'U'):>12s}   {e(h, 'P-s0'):>12s}   {o['hybrid']:12.2f} {o['trained']:5.2f}")
+    worst = max(max(r["P-s0 reproduces"], r["floor reproduces"]) for r in Pr.values())
+    print(f"    P-s0 and the floors reproduce the evaluation's record to {worst:.0e} on all twelve problems; "
+          f"power plugged at start and end: {(rec['power_at_start'] or {}).get('plugged')} "
+          f"{(rec['power_at_end'] or {}).get('plugged')}")
+    return rec
+
+
+# ---------------------------------------------------------------------------
 # B1's price: the classical hats against the exact solve
 # ---------------------------------------------------------------------------
 
@@ -953,7 +1097,7 @@ def record_path(part: str, problem: str = "s-channel", threads: int | None = Non
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--part", required=True, choices=("a1", "a2", "a3", "b1", "i13", "h1", "h2"))
+    ap.add_argument("--part", required=True, choices=("a1", "a2", "a3", "b1", "i13", "h1", "h2", "h3"))
     ap.add_argument("--reps", type=int, default=3, help="b1: timings per piece (the best is kept)")
     ap.add_argument("--pieces", type=int, default=4, help="a2: validation pieces per resolution")
     ap.add_argument("--threads", type=int, default=4)
@@ -969,7 +1113,7 @@ def main(argv=None) -> int:
     rec = {"part": args.part, "written": time.strftime("%Y-%m-%d %H:%M:%S"), "posthoc": True,
            "test_split_read": False, "torch_threads": args.threads}
     rec.update({"a1": part_a1, "a2": part_a2, "a3": part_a3, "b1": part_b1, "i13": part_i13,
-                "h1": part_h1, "h2": part_h2}[args.part](args))
+                "h1": part_h1, "h2": part_h2, "h3": part_h3}[args.part](args))
     rec["elapsed_s"] = time.perf_counter() - t0
     path = record_path(args.part, args.problem, args.threads)
     registry.write_atomic(path, json.dumps(ev0.strip(rec), indent=1).encode("utf-8"))

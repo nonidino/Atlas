@@ -136,9 +136,11 @@ def test_the_bench_helper_keeps_its_defaults(fd, monkeypatch):
     fd.bench("s-channel")
     fd.bench("bend-3")
     fd.bench("bend-3", "registered", "held-out", 32)
+    fd.bench("bend-3", "registered", None, 32, "step")
     assert calls == [("s-channel", GF.BENCHMARK_N, "steady", {"envelope": data.ENVELOPE}),
                      ("bend-3", GF.BENCHMARK_N, "steady", {}),
-                     ("bend-3", 32, "steady", {"variant": "held-out"})]
+                     ("bend-3", 32, "steady", {"variant": "held-out"}),
+                     ("bend-3", 32, "step", {})]
 
 
 def test_the_hybrid_is_priced_and_reduces_to_its_ends(fd, experts, h1):
@@ -163,6 +165,35 @@ def test_the_hybrid_is_priced_and_reduces_to_its_ends(fd, experts, h1):
     ZR = LearnedExpert(fd.without_networks(R.net, p0), envelope=data.ENVELOPE)
     assert not fd.hybrid_price("bend-3", N, R, ZR, R, reps=1, hard=[])["U_without_networks_same_bit_for_bit"]
     assert fd.hard_pieces("bend-3", b.layout(GF.KIND, GF.M_PORTS)) == []
+
+
+def test_the_fixed_rule_picks_winslow_pieces_and_dirichlet_owners(fd, experts, h1):
+    """h3's rule on a hand-built layout and on bend-3 (log-polar charts, so only its six
+    Dirichlet owners); and its coupled errors reduce to the floor with every piece hard and
+    to U's own answer with none."""
+    from types import SimpleNamespace as NS
+    fake = NS(problems=[NS(chart=NS(method="winslow-arc-length")), NS(chart=NS(method="affine")),
+                        NS(chart=NS(method="conformal-harmonic"))],
+              edges=[hs.EdgeInfo(owner=(1, 0), other=None, conforming=True, bc=("dirichlet", None)),
+                     hs.EdgeInfo(owner=(2, 1), other=None, conforming=True, bc=("insulated", None))])
+    assert fd.rule_pieces(fake) == [0, 1]
+    b = fd.bench("bend-3", "registered", GP.HELD_OUT_VARIANT, N)
+    L = b.layout(GF.KIND, GF.M_PORTS)
+    assert fd.rule_pieces(L) == [i for i, _ in h1["held_out"]["dirichlet_sides"]] == [0, 1, 2, 12, 13, 14]
+    U = experts["U"]
+    r = fd.coupled_errors(b, {"all": (U, list(range(15))), "U": (U, [])})
+    assert r["all"]["energy_rel"] == r["floor"] == h1["held_out"]["floor"] and r["all"]["e4_met"]
+    assert r["U"]["energy_rel"] == h1["variants"]["U"]["as trained"]["energy_rel"]
+    assert r["U"]["energy_rel_lowered"] == h1["variants"]["U"]["as trained"]["energy_rel_lowered"]
+
+
+def test_the_evaluation_has_every_row_h3_reads(fd):
+    rows = fd.evaluation_rows()
+    want = {(w, n, p) for w in ("held-out", "seen") for n in GF.HELD_OUT_BENCHMARKS for p in fd.H3_PROBLEMS}
+    assert want <= set(rows)
+    for key in want:
+        assert {"registered", "lowered"} <= set(rows[key]["frames"])
+        assert "P-s0" in rows[key]["frames"]["registered"]["runs"]
 
 
 def test_the_records_keep_their_names(fd):

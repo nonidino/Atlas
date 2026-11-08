@@ -1,0 +1,580 @@
+{
+ "part": "h3",
+ "written": "2026-11-07 20:30:39",
+ "posthoc": true,
+ "test_split_read": false,
+ "torch_threads": 4,
+ "rule": "The fixed rule, set before it was measured (the owner's go, 2026-11-07): the classical solve on every piece whose chart is a Winslow chart, and on every piece that owns a Dirichlet side. The chart says where the plain square's principal part is inexact; the boundary data say where the low sines are excited.",
+ "reps": 5,
+ "power_at_start": {
+  "plugged": true,
+  "percent": 100
+ },
+ "problems": {
+  "bend-3 steady held-out": {
+   "floor": 0.0004311135029451204,
+   "hybrid": {
+    "energy_rel": 0.00093692015112587,
+    "energy_rel_lowered": 0.000936920151109062,
+    "max_over_range": 0.00013765656616870065,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.0034194227392856926,
+    "energy_rel_lowered": 0.003419422739298564,
+    "max_over_range": 0.0004666940974836603,
+    "e4_met": true
+   },
+   "P-s0": {
+    "energy_rel": 0.017952402475700326,
+    "energy_rel_lowered": 0.017952402475876816,
+    "max_over_range": 0.0014088345800771227,
+    "e4_met": true
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 15,
+   "hard": [
+    "bend 0,0",
+    "bend 1,0",
+    "bend 2,0",
+    "bend 0,4",
+    "bend 1,4",
+    "bend 2,4"
+   ],
+   "winslow": 0,
+   "dirichlet_owners": 6,
+   "price": {
+    "seconds": {
+     "classical": 0.6089296999853104,
+     "hybrid": 0.5168256999459118,
+     "trained": 0.39901960000861436,
+     "coupled solve": 0.12921749998349696
+    },
+    "over_classical_with_coupled_solve": {
+     "hybrid": 0.8752227197457488,
+     "trained": 0.715625690938655
+    }
+   }
+  },
+  "bend-3 steady seen": {
+   "floor": 2.3084563704684885e-12,
+   "hybrid": {
+    "energy_rel": 2.6270032782621807e-06,
+    "energy_rel_lowered": 2.627003278113116e-06,
+    "max_over_range": 4.492593291161029e-08,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 3.3914472025645857e-06,
+    "energy_rel_lowered": 3.3914472032284817e-06,
+    "max_over_range": 4.49248642553357e-08,
+    "e4_met": true
+   },
+   "P-s0": {
+    "energy_rel": 0.01689825802698016,
+    "energy_rel_lowered": 0.016898258027136206,
+    "max_over_range": 0.0008946953455398443,
+    "e4_met": true
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 15,
+   "hard": [
+    "bend 0,0",
+    "bend 1,0",
+    "bend 2,0",
+    "bend 0,4",
+    "bend 1,4",
+    "bend 2,4"
+   ],
+   "winslow": 0,
+   "dirichlet_owners": 6
+  },
+  "bend-3 step held-out": {
+   "floor": 5.9770629068814765e-05,
+   "hybrid": {
+    "energy_rel": 0.00044629938849503615,
+    "energy_rel_lowered": 0.003981097586283085,
+    "max_over_range": 0.0010649397986585419,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.0022109955973283945,
+    "energy_rel_lowered": 0.019722611015608814,
+    "max_over_range": 0.006090867721413439,
+    "e4_met": true
+   },
+   "P-s0": {
+    "energy_rel": 0.003574844745834774,
+    "energy_rel_lowered": 0.031888472527256795,
+    "max_over_range": 0.011980191140256847,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 15,
+   "hard": [
+    "bend 0,0",
+    "bend 1,0",
+    "bend 2,0",
+    "bend 0,4",
+    "bend 1,4",
+    "bend 2,4"
+   ],
+   "winslow": 0,
+   "dirichlet_owners": 6,
+   "price": {
+    "seconds": {
+     "classical": 0.6388254000339657,
+     "hybrid": 0.475262499996461,
+     "trained": 0.38923799991607666,
+     "coupled solve": 0.1210952999535948
+    },
+    "over_classical_with_coupled_solve": {
+     "hybrid": 0.7847631995809797,
+     "trained": 0.6715612561653148
+    }
+   }
+  },
+  "bend-3 step seen": {
+   "floor": 0.00017287998890116478,
+   "hybrid": {
+    "energy_rel": 0.00018081368850288764,
+    "energy_rel_lowered": 0.00262826452015117,
+    "max_over_range": 0.004216834592907048,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.002677727935917696,
+    "energy_rel_lowered": 0.03892281268559393,
+    "max_over_range": 0.025950497644005283,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.002746143919862063,
+    "energy_rel_lowered": 0.039917291061101895,
+    "max_over_range": 0.02318840735113156,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 15,
+   "hard": [
+    "bend 0,0",
+    "bend 1,0",
+    "bend 2,0",
+    "bend 0,4",
+    "bend 1,4",
+    "bend 2,4"
+   ],
+   "winslow": 0,
+   "dirichlet_owners": 6
+  },
+  "s-channel steady held-out": {
+   "floor": 0.010008127404830869,
+   "hybrid": {
+    "energy_rel": 0.010018877471449368,
+    "energy_rel_lowered": 0.01001887747139302,
+    "max_over_range": 0.0011880848332688962,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.32152172457103784,
+    "energy_rel_lowered": 0.32152172456952344,
+    "max_over_range": 0.03077131121065734,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.27862023369699856,
+    "energy_rel_lowered": 0.27862023369567446,
+    "max_over_range": 0.022704605006704855,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 9,
+   "hard": [
+    "channel 0",
+    "channel 8"
+   ],
+   "winslow": 2,
+   "dirichlet_owners": 2,
+   "price": {
+    "seconds": {
+     "classical": 0.4022481000283733,
+     "hybrid": 0.264276499976404,
+     "trained": 0.22809499991126359,
+     "coupled solve": 0.057488700025714934
+    },
+    "over_classical_with_coupled_solve": {
+     "hybrid": 0.6998900239534079,
+     "trained": 0.6211895586852727
+    }
+   }
+  },
+  "s-channel steady seen": {
+   "floor": 0.00925299695668175,
+   "hybrid": {
+    "energy_rel": 0.009253058819845414,
+    "energy_rel_lowered": 0.00925305881976006,
+    "max_over_range": 0.001499010540804875,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.05257498367692642,
+    "energy_rel_lowered": 0.05257498367644849,
+    "max_over_range": 0.004322305149340195,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.05930077402859198,
+    "energy_rel_lowered": 0.0593007740280618,
+    "max_over_range": 0.004394269469352139,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 9,
+   "hard": [
+    "channel 0",
+    "channel 8"
+   ],
+   "winslow": 2,
+   "dirichlet_owners": 2
+  },
+  "s-channel step held-out": {
+   "floor": 0.0012863306282838033,
+   "hybrid": {
+    "energy_rel": 0.0016117532410631543,
+    "energy_rel_lowered": 0.015485945357321514,
+    "max_over_range": 0.006161939620047773,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.01135051095563444,
+    "energy_rel_lowered": 0.10905726010564197,
+    "max_over_range": 0.021559129252887034,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.011286896986851218,
+    "energy_rel_lowered": 0.10844604840185436,
+    "max_over_range": 0.018944968454601308,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 9,
+   "hard": [
+    "channel 0",
+    "channel 8"
+   ],
+   "winslow": 2,
+   "dirichlet_owners": 2,
+   "price": {
+    "seconds": {
+     "classical": 0.37082559999544173,
+     "hybrid": 0.2699648999841884,
+     "trained": 0.23268000001553446,
+     "coupled solve": 0.06505140010267496
+    },
+    "over_classical_with_coupled_solve": {
+     "hybrid": 0.7686028398182299,
+     "trained": 0.6830628825361044
+    }
+   }
+  },
+  "s-channel step seen": {
+   "floor": 0.0013538704954344162,
+   "hybrid": {
+    "energy_rel": 0.0013611431071502205,
+    "energy_rel_lowered": 0.02145778869897262,
+    "max_over_range": 0.02814286521766121,
+    "e4_met": false
+   },
+   "U": {
+    "energy_rel": 0.006821761018464696,
+    "energy_rel_lowered": 0.10754189307514887,
+    "max_over_range": 0.05960787587572497,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.004280798742433359,
+    "energy_rel_lowered": 0.06748480332115188,
+    "max_over_range": 0.051748559998882795,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 9,
+   "hard": [
+    "channel 0",
+    "channel 8"
+   ],
+   "winslow": 2,
+   "dirichlet_owners": 2
+  },
+  "insert-round steady held-out": {
+   "floor": 0.0004278371238287875,
+   "hybrid": {
+    "energy_rel": 0.000431343761912075,
+    "energy_rel_lowered": 0.00043134376189752846,
+    "max_over_range": 4.3059670380566436e-05,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.07758513920460217,
+    "energy_rel_lowered": 0.07758513920450533,
+    "max_over_range": 0.010490914156406461,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.06318360581143011,
+    "energy_rel_lowered": 0.06318360581128238,
+    "max_over_range": 0.009710364017015886,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 39,
+   "hard": [
+    "disc ring 0,0",
+    "disc ring 0,1",
+    "disc ring 0,2",
+    "disc ring 1,0",
+    "disc ring 1,1",
+    "disc ring 1,2",
+    "disc ring 2,0",
+    "disc ring 2,1",
+    "disc ring 2,2",
+    "disc ring 3,0",
+    "disc ring 3,1",
+    "disc ring 3,2",
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 0,2",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 1,2",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 2,2",
+    "plate ring 3,0",
+    "plate ring 3,1",
+    "plate ring 3,2",
+    "left column 0",
+    "left column 1",
+    "left column 2",
+    "right column 0",
+    "right column 1",
+    "right column 2"
+   ],
+   "winslow": 24,
+   "dirichlet_owners": 6,
+   "price": {
+    "seconds": {
+     "classical": 1.714559099986218,
+     "hybrid": 1.5934044000459835,
+     "trained": 1.0048903999850154,
+     "coupled solve": 0.6936918999999762
+    },
+    "over_classical_with_coupled_solve": {
+     "hybrid": 0.9496918303196266,
+     "trained": 0.7053178011738516
+    }
+   }
+  },
+  "insert-round steady seen": {
+   "floor": 0.00031279592897102233,
+   "hybrid": {
+    "energy_rel": 0.0003137097088595698,
+    "energy_rel_lowered": 0.00031370970890548235,
+    "max_over_range": 4.6984862453882667e-05,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.0557668362202281,
+    "energy_rel_lowered": 0.055766836228805954,
+    "max_over_range": 0.00934601910163451,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.0655595088352502,
+    "energy_rel_lowered": 0.06555950884525336,
+    "max_over_range": 0.01038433391842716,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 39,
+   "hard": [
+    "disc ring 0,0",
+    "disc ring 0,1",
+    "disc ring 0,2",
+    "disc ring 1,0",
+    "disc ring 1,1",
+    "disc ring 1,2",
+    "disc ring 2,0",
+    "disc ring 2,1",
+    "disc ring 2,2",
+    "disc ring 3,0",
+    "disc ring 3,1",
+    "disc ring 3,2",
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 0,2",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 1,2",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 2,2",
+    "plate ring 3,0",
+    "plate ring 3,1",
+    "plate ring 3,2",
+    "left column 0",
+    "left column 1",
+    "left column 2",
+    "right column 0",
+    "right column 1",
+    "right column 2"
+   ],
+   "winslow": 24,
+   "dirichlet_owners": 6
+  },
+  "insert-round step held-out": {
+   "floor": 3.6819555300344885e-05,
+   "hybrid": {
+    "energy_rel": 5.775366540788138e-05,
+    "energy_rel_lowered": 0.0003967190966710778,
+    "max_over_range": 0.00031010529356325815,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.0061340297518096346,
+    "energy_rel_lowered": 0.04213562420371131,
+    "max_over_range": 0.013910266589314582,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.004229877381343096,
+    "energy_rel_lowered": 0.029055699267288914,
+    "max_over_range": 0.006801836934205487,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 39,
+   "hard": [
+    "disc ring 0,0",
+    "disc ring 0,1",
+    "disc ring 0,2",
+    "disc ring 1,0",
+    "disc ring 1,1",
+    "disc ring 1,2",
+    "disc ring 2,0",
+    "disc ring 2,1",
+    "disc ring 2,2",
+    "disc ring 3,0",
+    "disc ring 3,1",
+    "disc ring 3,2",
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 0,2",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 1,2",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 2,2",
+    "plate ring 3,0",
+    "plate ring 3,1",
+    "plate ring 3,2",
+    "left column 0",
+    "left column 1",
+    "left column 2",
+    "right column 0",
+    "right column 1",
+    "right column 2"
+   ],
+   "winslow": 24,
+   "dirichlet_owners": 6,
+   "price": {
+    "seconds": {
+     "classical": 1.7995708000380546,
+     "hybrid": 1.558662399998866,
+     "trained": 1.0342454999918118,
+     "coupled solve": 0.6954162999754772
+    },
+    "over_classical_with_coupled_solve": {
+     "hybrid": 0.9034430278064837,
+     "trained": 0.6932548067915494
+    }
+   }
+  },
+  "insert-round step seen": {
+   "floor": 6.615233138881022e-05,
+   "hybrid": {
+    "energy_rel": 6.627442995867599e-05,
+    "energy_rel_lowered": 0.0006979404636436076,
+    "max_over_range": 0.0004860284585441832,
+    "e4_met": true
+   },
+   "U": {
+    "energy_rel": 0.003929206485241156,
+    "energy_rel_lowered": 0.04137873683291998,
+    "max_over_range": 0.023283786062705758,
+    "e4_met": false
+   },
+   "P-s0": {
+    "energy_rel": 0.002800184931328652,
+    "energy_rel_lowered": 0.029488935181155293,
+    "max_over_range": 0.017419361809820087,
+    "e4_met": false
+   },
+   "P-s0 reproduces": 0.0,
+   "floor reproduces": 0.0,
+   "pieces": 39,
+   "hard": [
+    "disc ring 0,0",
+    "disc ring 0,1",
+    "disc ring 0,2",
+    "disc ring 1,0",
+    "disc ring 1,1",
+    "disc ring 1,2",
+    "disc ring 2,0",
+    "disc ring 2,1",
+    "disc ring 2,2",
+    "disc ring 3,0",
+    "disc ring 3,1",
+    "disc ring 3,2",
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 0,2",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 1,2",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 2,2",
+    "plate ring 3,0",
+    "plate ring 3,1",
+    "plate ring 3,2",
+    "left column 0",
+    "left column 1",
+    "left column 2",
+    "right column 0",
+    "right column 1",
+    "right column 2"
+   ],
+   "winslow": 24,
+   "dirichlet_owners": 6
+  }
+ },
+ "power_at_end": {
+  "plugged": true,
+  "percent": 100
+ },
+ "elapsed_s": 253.84655170002952
+}
