@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps).
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is a draft registration built on §11.14; it is not registered.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1329,7 +1329,129 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
 **[AI Inference]:**
 - A rule fixed beforehand holds E4 everywhere it was tested, without a learned weight, at 5–30% below the classical expert's cost on this laptop. That is a modest saving.
 - Every piece the rule hands to the classical solve eats into the saving. So does the form's own cost without networks, 0.40–0.62 of the classical responses (§11.13).
-- These are the same problems the rule was drawn from, so this is not a fair test of it. A fair one would pin the rule and a price bar, then judge them on problems none of §11.11–11.14 has read.
+- These are the same problems the rule was drawn from, so this is not a fair test of it. A fair one would pin the rule and a price bar, then judge them on problems none of §11.11–11.14 has read. (§11.15 drafts one.)
+
+### 11.15 The next registration, drafted: the fixed rule and a price bar (not registered, 2026-11-07)
+
+**Status.** A draft for the owner ("Draft it", 2026-11-07). Nothing here is registered, built, pinned or run, and no expert has read a new problem. Three choices are left to the owner, each with a recommendation.
+
+**What it would decide.** Whether §11.14's rule, fixed after three layouts, keeps E4 on layouts it has never seen, at a saving worth having. If it does, the hybrid is the CO-D expert that a learned correction has to beat, on E4 and on price.
+
+**The arm, H.** It has no weights, and nothing is trained.
+- The classical solve on every piece that `rule_pieces` names: every piece whose chart is a Winslow chart, and every piece that owns a Dirichlet side.
+- On every other piece, U's form without its networks. U is S's form with zero heads, and the stand-in answers what U answers, bit for bit (§11.13).
+- The coupled solve, as every arm has it.
+- At acceptance, `rule_pieces` moves verbatim into a gates module, and a test checks that it still picks §11.14's pieces on all six held-out problems.
+
+**Reported beside, not judged:**
+- the classical expert: the floor, and the price's denominator;
+- U, with its networks, on every piece;
+- the trained P-s0;
+- the rule's picks;
+- H's price at one torch thread.
+
+**Gates.**
+- **E4-H:** H meets E4 on every new problem, steady and step. E4 is `gates_prior.judge_e4_both_frames`, unchanged: an energy error of at most 2%, and a max error of at most the classical floor's plus 1% of the range. It is judged as registered and lowered by 300 K.
+- **PR, the price bar:** the geometric mean of H's price over the new problems is at most **0.90** (open choice 2).
+  - H's price on a problem is $(t_H+t_c)/(t_C+t_c)$. Here $t_H$ is the time of H's responses on every piece, $t_C$ the classical expert's, and $t_c$ the coupled solve's, which both share.
+  - It is the median over three price runs.
+- The registration's claim is that the rule makes a usable expert on new layouts. It holds only if both gates are met.
+
+**How the price is measured.** As in §11.14, with three changes that reduce how much one run's drift can matter.
+- As before: 4 torch threads, and each time the best of 5 repetitions.
+- *New:* the arms take turns within each repetition, in a fixed order (classical, H, P-s0, coupled solve).
+- *New:* three runs, each in its own process, and the median of the three per problem.
+- *New:* a run counts only if:
+  - the laptop is on AC at its start and end;
+  - no sleep or power event (Ids 105, 506 and 507) falls in its window;
+  - no other process uses more than 10% of a core at its start or end;
+  - the classical expert takes 30–60 ms per piece (§11.13–11.14 saw 38–48 ms).
+- A run that fails a condition is void and is run again, at most three more times. The record keeps every run.
+- The accuracy verdicts are computed once, and no timing touches them.
+- **Why:** the same ratio has moved between runs. P-s0's price on the held-out s-channel was 0.69 in §11.13 and 0.62 in §11.14, at the same threads. On bend-3 and insert-round it moved by at most 0.01. (Computed for this draft from the two records.)
+
+**The new problems** (open choice 1).
+- **The set:** every workbench scenario whose heat problem is plain conduction and that is not already a benchmark, and one more:
+  - the conduction scenarios wall-2, plate-insert and fast-heat;
+  - the heat halves of the two bimetal scenarios, heated-strip and bimetal-arc;
+  - plate-hole, an elasticity scenario posed as conduction. It is added for a Winslow ring away from the ends, which post hoc only insert-round had.
+- The workbench's scenarios were made for other purposes, before this rule existed. No chart-operator code or record has used these six.
+- **The problems:** each scenario gives a steady problem and one backward-Euler step from 300 K.
+  - **The ends:** the hot end at $400+20\cos\pi s$ and the cold end at $300+10\cos2\pi s$. These are the held-out profiles, with zero slope at the insulated walls.
+  - Every other side is insulated, the hole included. A scenario held at one end only gets a cold end at the far side, as every benchmark has.
+  - **The step's** $\Delta t$ is the 1–2–5 value nearest to where the median piece's Fourier number is 1.
+- **The layout:** pieces as near square as conforming seams allow. Each band is cut into equal pieces, their number the band's aspect rounded, as decision 2 cuts a channel ([[chart-operator-design-decisions]] §3.5).
+  - The layouts are built by hand, in a new module: the general layout is not built, and `benchmarks.py` is pinned.
+
+| problem | in the workbench | expected layout | expected picks |
+|---|---|---|---|
+| wall-2 | 0.4 × 0.1 m: 0.24 m of steel, then 0.16 m of copper | 4 rectangles, of aspect 1.2 (steel) and 0.8 (copper) | 2 of 4 |
+| heated-strip | 0.2 m × 20 mm: 10 mm of steel under 10 mm of copper | 40 squares | 4 of 40 |
+| plate-insert | a 0.4 × 0.24 m steel plate, with a 0.12 × 0.08 m copper insert whose corner is at (0.14, 0.08) m | 18 rectangles, of aspect 0.75–0.875 | 6 of 18 |
+| fast-heat | the same plate, with a 0.12 × 0.08 m copper spreader against the hot edge, in the middle third | 18 rectangles, of aspect 0.75–0.875 | 6 of 18 |
+| bimetal-arc | a quarter ring of radii 60 and 100 mm: steel inside the 80 mm arc, copper outside it | 12 log-polar pieces, of modulus 1.10 (steel) and 0.85 (copper) | 4 of 12 |
+| plate-hole | a 0.4 × 0.2 m steel plate, with an insulated hole of radius 30 mm in its middle | insert-round's plate ring (12 Winslow pieces) in a 0.12 m box; 6 squares above and below it; 40 rectangles of aspect 0.875 at the sides | 22 of 58 |
+
+- **At acceptance, measured with the classical solver only,** as §11.7's problems were:
+  - Every classical floor must be below E4's bar in both frames. A problem whose floor is not is dropped, not redesigned, and the record says so.
+  - There must be no envelope refusals, and every per-piece Fourier number must lie within the generator's 0.01–100.
+  - The rule's picks are recorded, and the evaluation stops if they differ.
+- No learned expert, and not U's form, reads a new problem before the one evaluation.
+- **A control:** the six problems of §11.14 are run beside the new ones. H must reproduce §11.14's errors bit for bit, and P-s0 the one evaluation's, or the evaluation stops.
+
+**Open choices for the owner.**
+1. **The problems.**
+   - *Recommended:* the six scenarios above, 12 problems.
+   - *Smaller:* plate-insert, bimetal-arc and plate-hole, 6 problems: one for each kind of piece the post-hoc problems lacked.
+   - *Cheapest:* the three post-hoc layouts, with a third set of data. But then the rule picks §11.14's pieces and the modes are the same bit for bit, so it would test the data, not the rule.
+2. **PR's bar.**
+   - *Recommended:* 0.90, a saving of at least 10%. That is beyond the 0.07 that one ratio moved between two runs.
+   - Or 1.00 (never dearer on average), or 0.80 (a saving of 20%).
+3. **What is pinned.**
+   - *Recommended:* the gates module, the new problems' module, the code H runs (`forms.py` and `host.py`) and the classical record. `gates`, `gates_forms` and `gates_prior` are pinned already. H has no weights, so its code is what defines it.
+   - Or the gates and problems only, as before.
+
+**Predictions** (refutable). They were checked against each other: 1 is 2's heated-strip case taken to its limit, and 3 asks only where the largest excess falls, which 2 leaves open.
+1. On heated-strip, whose 40 pieces are squares of one material, U alone, with no classical piece at all, is within 0.01 percentage points of the classical floor. This holds steady and step, in both frames.
+2. H's energy error exceeds the classical floor by less than 1 percentage point on wall-2, heated-strip, bimetal-arc and plate-hole, steady and step, in both frames. So H meets E4's energy bar on those eight wherever the floor is below 1%. (§11.14's largest excess was 0.35 points, on bend-3's step.)
+3. Of the six steady problems, H exceeds the floor most on plate-insert or fast-heat. No verdict is predicted for those two.
+4. PR is met: the geometric mean of H's prices is 0.70–0.88. The rule picks 10–50% of the pieces here, against 22–77% in §11.14, where the prices were 0.70–0.95.
+5. P-s0 errs above H on every new problem, and meets E4 on fewer of them.
+
+**[AI Inference]: why the rule should hold, and where it might not.**
+- U's learned columns are the plain square's, whatever the piece. Each criterion of the rule marks pieces where the plain square is far from the piece's own operator:
+  - **On a rectangle of one material** in a steady problem, the operator in chart coordinates is $a\,\partial_\xi^2+b\,\partial_\eta^2$, with constant $a$ and $b$, and so is its Q1 discretisation. It takes every bilinear field to zero, so the hats' modes are exact. U errs only on the sines, and only as far as $a/b$ differs from 1. On a square, the operator is the plain square's, and U is exact up to float32 rounding and the strips. A step adds the same reaction $s_0$ everywhere on a rectangle, so a square stays exact.
+  - **On a curved piece** the coefficients vary: a little on a conformal chart, much more on a Winslow chart. That is the first criterion. In a step, the reaction term varies with the chart's Jacobian too. That is where H's step on bend-3 lost 0.35 points over its floor (§11.14).
+  - **On a Dirichlet owner**, end data that are not constant carry the low sines in full. That is the second criterion.
+- Post hoc, every piece the rule left to U was close to the plain square:
+  - bend-3's log-polar pieces;
+  - the s-channel's middle pieces (modulus 0.957);
+  - insert-round's 9 square disc-core pieces. Their field is nearly uniform: the disc sits in a nearly uniform field, and the field inside a round inclusion is then nearly uniform too.
+- So the new problems test what the old ones could not:
+  - rectangles of aspect 0.75–0.875 at the corners of a copper insert or spreader, where the field is far from bilinear (plate-insert, fast-heat);
+  - rectangles in a step, where the anisotropy changes how each mode decays (wall-2 and the plates);
+  - conformal pieces of modulus 0.85 and 1.10 on either side of a material seam (bimetal-arc);
+  - squares, where U alone should already be exact (heated-strip);
+  - a Winslow ring away from the ends (plate-hole), where only the first criterion applies.
+- If H fails E4, prediction 3 says where to look. The rule would then need a third criterion, on the piece's shape. No measurement yet sets a threshold for one, so none is registered.
+
+**What each outcome would mean** (registered beside the gates).
+- **Both gates met:** the hybrid is the CO-D expert to beat on such problems. A learned correction is then worth training only if it meets E4 at a lower price.
+- **E4-H not met:** the rule is not used as it stands. Where it fails, read against predictions 2 and 3, says which criterion it lacks.
+- **E4-H met, PR not met:** the hybrid is accurate but saves too little on this laptop, and the classical solve stays the CO-D expert here.
+
+**Not registered.**
+- E1 and the other gates of `gates_forms`. E1 judges learned modes, and H has none; the others can be reported if the owner wants them.
+- A criterion on the piece's shape (above).
+- Other workbench scenarios:
+  - river-bend, which is the s-channel's family;
+  - ring-film, which is bend-3's ring at another scale (the same radius ratio, 2.5), so its steady problem is the same;
+  - cooled-block and cooled-winding, whose heat problems have a chip's heat source and a coolant flow; these problems have neither.
+
+**Cost.**
+- The laptop only: no box, no training, no money.
+- At acceptance: the six layouts as code, measured with the classical solver in a few minutes.
+- The one evaluation: one accuracy run and three price runs, about 15–25 minutes in all. §11.14 took 254 s for twelve problems of 9–39 pieces, with one price run.
 
 ---
 
