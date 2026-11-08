@@ -1,0 +1,782 @@
+{
+ "written": "2026-11-07 22:13:11",
+ "experts_run": [
+  "classical"
+ ],
+ "registered": "accepted by the owner on 2026-11-07, in chat ('Accept as drafted'), as drafted in chart-operator-kernel-exact-forms section 11.15 (commit 6d1b9ca), with its three recommended choices; not yet hash-pinned",
+ "problems": [
+  {
+   "name": "wall-2",
+   "problem": "steady",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.003921118681734463,
+     "floor_max": 0.03813904485787134,
+     "span": 130.0,
+     "floor_max_over_range": 0.00029337726813747185,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.003921118681738912,
+     "floor_max": 0.03813904485787134,
+     "span": 130.0,
+     "floor_max_over_range": 0.00029337726813747185,
+     "refusals": []
+    }
+   },
+   "pieces": 4,
+   "fingerprint": "f594743f0379e441784b69e8695272b104163a99e66b25321ad41051b366a1a8",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "affine": 4
+   },
+   "picks": [
+    0,
+    3
+   ],
+   "picks_labels": [
+    "steel 0,0",
+    "copper 3,0"
+   ],
+   "dirichlet_owners": 2,
+   "dt": null,
+   "aspect_range": [
+    0.8000000000000002,
+    1.2
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "wall-2",
+   "problem": "step",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0002515456563629835,
+     "floor_max": 0.17564143590993808,
+     "span": 130.0,
+     "floor_max_over_range": 0.0013510879685379852,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.002463953614241969,
+     "floor_max": 0.17564143590988124,
+     "span": 130.0,
+     "floor_max_over_range": 0.001351087968537548,
+     "refusals": []
+    }
+   },
+   "pieces": 4,
+   "fingerprint": "061e4626a4bb7f760ae0cb92998783d95f4bbc31eb632d98316a119f017d7c2f",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": [
+    0.09749122578967893,
+    1.4494434137291274
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "affine": 4
+   },
+   "picks": [
+    0,
+    3
+   ],
+   "picks_labels": [
+    "steel 0,0",
+    "copper 3,0"
+   ],
+   "dirichlet_owners": 2,
+   "dt": 100.0,
+   "aspect_range": [
+    0.8000000000000002,
+    1.2
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "heated-strip",
+   "problem": "steady",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.00938475145941257,
+     "floor_max": 0.19170024409589814,
+     "span": 130.0,
+     "floor_max_over_range": 0.0014746172622761395,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.009384751471518708,
+     "floor_max": 0.19170024409997666,
+     "span": 130.0,
+     "floor_max_over_range": 0.0014746172623075128,
+     "refusals": []
+    }
+   },
+   "pieces": 40,
+   "fingerprint": "ed9cc582bf1c8f398c6304f1f033a142a190409357a6370c907dbdcc73479205",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "affine": 40
+   },
+   "picks": [
+    0,
+    19,
+    20,
+    39
+   ],
+   "picks_labels": [
+    "steel 0,0",
+    "steel 19,0",
+    "copper 0,1",
+    "copper 19,1"
+   ],
+   "dirichlet_owners": 4,
+   "dt": null,
+   "aspect_range": [
+    0.9999999999999981,
+    1.0000000000000009
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "heated-strip",
+   "problem": "step",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.00021996822498407102,
+     "floor_max": 0.1998825542765985,
+     "span": 130.0,
+     "floor_max_over_range": 0.0015375581098199885,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.0030923079083914713,
+     "floor_max": 0.19988255427765012,
+     "span": 130.0,
+     "floor_max_over_range": 0.001537558109828078,
+     "refusals": []
+    }
+   },
+   "pieces": 40,
+   "fingerprint": "abf1aca749100dffd6a47828fc033d2ca332384700afbe8fcffa5f85fdff3fba",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": [
+    0.2339789418952292,
+    2.3191094619666095
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "affine": 40
+   },
+   "picks": [
+    0,
+    19,
+    20,
+    39
+   ],
+   "picks_labels": [
+    "steel 0,0",
+    "steel 19,0",
+    "copper 0,1",
+    "copper 19,1"
+   ],
+   "dirichlet_owners": 4,
+   "dt": 2.0,
+   "aspect_range": [
+    0.9999999999999981,
+    1.0000000000000009
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "plate-insert",
+   "problem": "steady",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.008099851372793846,
+     "floor_max": 0.1913146660188545,
+     "span": 130.0,
+     "floor_max_over_range": 0.0014716512770681115,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.008099851373568619,
+     "floor_max": 0.1913146670946304,
+     "span": 130.0,
+     "floor_max_over_range": 0.0014716512853433109,
+     "refusals": []
+    }
+   },
+   "pieces": 18,
+   "fingerprint": "d59997279946420e9f54970af06cb378a8d8068b86197ea66495919516d93de8",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "affine": 18
+   },
+   "picks": [
+    0,
+    5,
+    6,
+    11,
+    12,
+    17
+   ],
+   "picks_labels": [
+    "plate 0,0",
+    "plate 5,0",
+    "plate 0,1",
+    "plate 5,1",
+    "plate 0,2",
+    "plate 5,2"
+   ],
+   "dirichlet_owners": 6,
+   "dt": null,
+   "aspect_range": [
+    0.75,
+    0.8750000000000002
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "plate-insert",
+   "problem": "step",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0003122839732551973,
+     "floor_max": 0.1332965365036216,
+     "span": 130.0,
+     "floor_max_over_range": 0.0010253579731047816,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.0022322510796286914,
+     "floor_max": 0.13329653643215345,
+     "span": 130.0,
+     "floor_max_over_range": 0.0010253579725550265,
+     "refusals": []
+    }
+   },
+   "pieces": 18,
+   "fingerprint": "324a87f368c601f985bfc9b92462f5b59c8726fa54ad9d8b76902f88e0fcd94d",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": [
+    1.0445488477465596,
+    12.0786951144094
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "affine": 18
+   },
+   "picks": [
+    0,
+    5,
+    6,
+    11,
+    12,
+    17
+   ],
+   "picks_labels": [
+    "plate 0,0",
+    "plate 5,0",
+    "plate 0,1",
+    "plate 5,1",
+    "plate 0,2",
+    "plate 5,2"
+   ],
+   "dirichlet_owners": 6,
+   "dt": 500.0,
+   "aspect_range": [
+    0.75,
+    0.8750000000000002
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "fast-heat",
+   "problem": "steady",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.007601938679904041,
+     "floor_max": 0.18541753288388918,
+     "span": 130.0,
+     "floor_max_over_range": 0.0014262887144914553,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.007601938680152072,
+     "floor_max": 0.18541753268340244,
+     "span": 130.0,
+     "floor_max_over_range": 0.0014262887129492495,
+     "refusals": []
+    }
+   },
+   "pieces": 18,
+   "fingerprint": "ed04181a7b98ad2784ca27a3c14e53fe6bc96373d17c0995a26b4ef29579518f",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "affine": 18
+   },
+   "picks": [
+    0,
+    5,
+    6,
+    11,
+    12,
+    17
+   ],
+   "picks_labels": [
+    "plate 0,0",
+    "plate 5,0",
+    "spreader 0,1",
+    "plate 5,1",
+    "plate 0,2",
+    "plate 5,2"
+   ],
+   "dirichlet_owners": 6,
+   "dt": null,
+   "aspect_range": [
+    0.75,
+    0.8750000000000002
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "fast-heat",
+   "problem": "step",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0011323449688258977,
+     "floor_max": 0.4473228620164491,
+     "span": 130.0,
+     "floor_max_over_range": 0.003440945092434224,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.006752574760351318,
+     "floor_max": 0.4473228619245049,
+     "span": 130.0,
+     "floor_max_over_range": 0.0034409450917269606,
+     "refusals": []
+    }
+   },
+   "pieces": 18,
+   "fingerprint": "425c580a7b952888f84e687f6076365bd5f2324d916b81094026a27ece0c72f6",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": [
+    1.0445488477465596,
+    12.078695114409403
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "affine": 18
+   },
+   "picks": [
+    0,
+    5,
+    6,
+    11,
+    12,
+    17
+   ],
+   "picks_labels": [
+    "plate 0,0",
+    "plate 5,0",
+    "spreader 0,1",
+    "plate 5,1",
+    "plate 0,2",
+    "plate 5,2"
+   ],
+   "dirichlet_owners": 6,
+   "dt": 500.0,
+   "aspect_range": [
+    0.75,
+    0.8750000000000002
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "bimetal-arc",
+   "problem": "steady",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.006923536557780382,
+     "floor_max": 0.20512693603842536,
+     "span": 130.0,
+     "floor_max_over_range": 0.0015778995079878874,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.0069235365577750025,
+     "floor_max": 0.20512693603889431,
+     "span": 130.0,
+     "floor_max_over_range": 0.0015778995079914948,
+     "refusals": []
+    }
+   },
+   "pieces": 12,
+   "fingerprint": "a41c12c97158053916c557342e508b067a11041bda3da1ac07d6ba18f1d259d1",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "conformal-log-polar": 12
+   },
+   "picks": [
+    0,
+    1,
+    10,
+    11
+   ],
+   "picks_labels": [
+    "steel 0",
+    "copper 0",
+    "steel 5",
+    "copper 5"
+   ],
+   "dirichlet_owners": 4,
+   "dt": null,
+   "aspect_range": [
+    0.8512552861711552,
+    1.0944710822200556
+   ],
+   "moduli": [
+    0.852346,
+    1.098865
+   ],
+   "floor_meets_e4": true
+  },
+  {
+   "name": "bimetal-arc",
+   "problem": "step",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0004430537092672142,
+     "floor_max": 0.21238274484551312,
+     "span": 130.0,
+     "floor_max_over_range": 0.0016337134218885625,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.003439505359754613,
+     "floor_max": 0.21238274484630892,
+     "span": 130.0,
+     "floor_max_over_range": 0.001633713421894684,
+     "refusals": []
+    }
+   },
+   "pieces": 12,
+   "fingerprint": "db37a191bdb701a2986bf199ce923689f8a26b821382d1a305c1605eb3acb0b0",
+   "kappa_ref": [
+    45.0,
+    400.0
+   ],
+   "fo_range": [
+    0.31919150602436164,
+    2.4606584253701818
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "conformal-log-polar": 12
+   },
+   "picks": [
+    0,
+    1,
+    10,
+    11
+   ],
+   "picks_labels": [
+    "steel 0",
+    "copper 0",
+    "steel 5",
+    "copper 5"
+   ],
+   "dirichlet_owners": 4,
+   "dt": 10.0,
+   "aspect_range": [
+    0.8512552861711552,
+    1.0944710822200556
+   ],
+   "moduli": [
+    0.852346,
+    1.098865
+   ],
+   "floor_meets_e4": true
+  },
+  {
+   "name": "plate-hole",
+   "problem": "steady",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0002542965005937287,
+     "floor_max": 0.003262509987109752,
+     "span": 130.0,
+     "floor_max_over_range": 2.5096230670075012e-05,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00025429650055441383,
+     "floor_max": 0.0032625102589918242,
+     "span": 130.0,
+     "floor_max_over_range": 2.5096232761475572e-05,
+     "refusals": []
+    }
+   },
+   "pieces": 58,
+   "fingerprint": "475ee21a2af69ed9dfd246b23a57c38d893c89dfb9a89f9450b1c9be11c404f8",
+   "kappa_ref": [
+    45.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "winslow-arc-length": 12,
+    "affine": 46
+   },
+   "picks": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    18,
+    22,
+    26,
+    30,
+    34,
+    41,
+    45,
+    49,
+    53,
+    57
+   ],
+   "picks_labels": [
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 0,2",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 1,2",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 2,2",
+    "plate ring 3,0",
+    "plate ring 3,1",
+    "plate ring 3,2",
+    "left side 0,0",
+    "left side 0,1",
+    "left side 0,2",
+    "left side 0,3",
+    "left side 0,4",
+    "right side 3,0",
+    "right side 3,1",
+    "right side 3,2",
+    "right side 3,3",
+    "right side 3,4"
+   ],
+   "dirichlet_owners": 10,
+   "dt": null,
+   "aspect_range": [
+    0.7968481522075886,
+    1.0980762113533158
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  },
+  {
+   "name": "plate-hole",
+   "problem": "step",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 2.360307540971267e-05,
+     "floor_max": 0.013024002063616535,
+     "span": 130.0,
+     "floor_max_over_range": 0.00010018463125858874,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00024231503207677475,
+     "floor_max": 0.01302400206320442,
+     "span": 130.0,
+     "floor_max_over_range": 0.00010018463125541863,
+     "refusals": []
+    }
+   },
+   "pieces": 58,
+   "fingerprint": "267be167c6ba8260e59d90abc44ff86e78fe3869f5b04cea4e0b3eb0fb03b169",
+   "kappa_ref": [
+    45.0
+   ],
+   "fo_range": [
+    0.66587745537393,
+    1.6047932410394818
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ],
+   "charts": {
+    "winslow-arc-length": 12,
+    "affine": 46
+   },
+   "picks": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    18,
+    22,
+    26,
+    30,
+    34,
+    41,
+    45,
+    49,
+    53,
+    57
+   ],
+   "picks_labels": [
+    "plate ring 0,0",
+    "plate ring 0,1",
+    "plate ring 0,2",
+    "plate ring 1,0",
+    "plate ring 1,1",
+    "plate ring 1,2",
+    "plate ring 2,0",
+    "plate ring 2,1",
+    "plate ring 2,2",
+    "plate ring 3,0",
+    "plate ring 3,1",
+    "plate ring 3,2",
+    "left side 0,0",
+    "left side 0,1",
+    "left side 0,2",
+    "left side 0,3",
+    "left side 0,4",
+    "right side 3,0",
+    "right side 3,1",
+    "right side 3,2",
+    "right side 3,3",
+    "right side 3,4"
+   ],
+   "dirichlet_owners": 10,
+   "dt": 100.0,
+   "aspect_range": [
+    0.7968481522075886,
+    1.0980762113533158
+   ],
+   "moduli": null,
+   "floor_meets_e4": true
+  }
+ ],
+ "dt_by_rule": {
+  "wall-2": 100.0,
+  "heated-strip": 2.0,
+  "plate-insert": 500.0,
+  "fast-heat": 500.0,
+  "bimetal-arc": 10.0,
+  "plate-hole": 100.0
+ },
+ "dt_is_the_rules": true,
+ "control_picks_equal_section_11_14": {
+  "bend-3 steady": true,
+  "bend-3 step": true,
+  "s-channel steady": true,
+  "s-channel step": true,
+  "insert-round steady": true,
+  "insert-round step": true
+ },
+ "fo_within_training": true,
+ "refusals": 0,
+ "dropped": [],
+ "elapsed_s": 114.58729540009517
+}

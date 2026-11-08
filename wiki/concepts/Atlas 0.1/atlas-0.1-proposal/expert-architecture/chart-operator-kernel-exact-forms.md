@@ -714,7 +714,7 @@ The candidates:
 
 ## 11. After the one evaluation: where the coupled error is, three options, a draft (post hoc, 2026-11-07)
 
-**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is a draft registration built on §11.14; it is not registered.
+**Nothing here is a gate.** The test split was not drawn or read again. Everything was measured post hoc on the steady benchmarks and on validation seeds from 2,000,100 onward, as Stage 0's §9.7 did. The weights were checked against `weights-sha256.txt` before they were read. U is S's form (split, corner bubble, strips) with zero heads. Scripts: `scripts/chartop_forms_diagnose.py` (parts `a1`, `a2`, `a3`, `b1`, `i13`, and `h1`–`h3` after the next registration's evaluation, §11.11–11.14) and `scripts/chartop_overfit_probe.py`. Records: `out/chartop/forms-diagnose-<part>.json`, and for the overfit probe `out/chartop/forms-overfit-<arm>.json` (500 steps) and `forms-overfit-<arm>-3000.json` (3,000 steps). §11.15 is the registration built on §11.14: accepted by the owner, not yet pinned.
 
 **Intuition.** The coupled answer asks a piece's expert for two things above all: how the piece's temperature tilts between its corners (the hats' corner differences) and the three lowest sines on each side. Both are global responses of the whole piece. Three things work against them:
 - the objective weighted all 64 columns alike;
@@ -1331,9 +1331,12 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
 - Every piece the rule hands to the classical solve eats into the saving. So does the form's own cost without networks, 0.40–0.62 of the classical responses (§11.13).
 - These are the same problems the rule was drawn from, so this is not a fair test of it. A fair one would pin the rule and a price bar, then judge them on problems none of §11.11–11.14 has read. (§11.15 drafts one.)
 
-### 11.15 The next registration, drafted: the fixed rule and a price bar (not registered, 2026-11-07)
+### 11.15 The next registration: the fixed rule and a price bar, accepted (2026-11-07), not yet pinned
 
-**Status.** A draft for the owner ("Draft it", 2026-11-07). Nothing here is registered, built, pinned or run, and no expert has read a new problem. Three choices are left to the owner, each with a recommendation.
+**Status.**
+- Drafted for the owner ("Draft it", commit 6d1b9ca). **The owner accepted it in chat on 2026-11-07 ("Accept as drafted"), with the recommended option of each of its three choices** (below).
+- It is written as `atlas/chartop/gates_hybrid.py`, which reads every E4 bar from `gates_forms`, with the new problems in `atlas/chartop/benchmarks_workbench.py`. 34 tests in `tests/test_chartop_gates_hybrid.py` check both against this section.
+- The new problems were measured with the classical solver only (below). Nothing else has read them. **Not hash-pinned:** that needs the owner's approval.
 
 **What it would decide.** Whether §11.14's rule, fixed after three layouts, keeps E4 on layouts it has never seen, at a saving worth having. If it does, the hybrid is the CO-D expert that a learned correction has to beat, on E4 and on price.
 
@@ -1341,7 +1344,7 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
 - The classical solve on every piece that `rule_pieces` names: every piece whose chart is a Winslow chart, and every piece that owns a Dirichlet side.
 - On every other piece, U's form without its networks. U is S's form with zero heads, and the stand-in answers what U answers, bit for bit (§11.13).
 - The coupled solve, as every arm has it.
-- At acceptance, `rule_pieces` moves verbatim into a gates module, and a test checks that it still picks §11.14's pieces on all six held-out problems.
+- At acceptance, `rule_pieces` and its helper moved verbatim into `gates_hybrid`. A test checks that the text is §11.14's, and the registration script checks that it still picks §11.14's pieces on all six held-out problems.
 
 **Reported beside, not judged:**
 - the classical expert: the floor, and the price's denominator;
@@ -1397,18 +1400,35 @@ On the seen s-channel step, the classical floor itself is 2.134% lowered by 300 
   - There must be no envelope refusals, and every per-piece Fourier number must lie within the generator's 0.01–100.
   - The rule's picks are recorded, and the evaluation stops if they differ.
 - No learned expert, and not U's form, reads a new problem before the one evaluation.
+
+**Measured with the classical solver only (2026-11-07).** Script: `scripts/chartop_register_hybrid.py` (115 s). Record: `out/chartop/registration-hybrid.json`.
+
+| problem | pieces (the rule's picks) | the step's $\Delta t$ | classical floor, steady | step, as registered / lowered by 300 K | per-piece $Fo$ |
+|---|---|---|---|---|---|
+| wall-2 | 4 (2) | 100 s | 0.392% | 0.025% / 0.246% | 0.098–1.45 |
+| heated-strip | 40 (4) | 2 s | 0.938% | 0.022% / 0.309% | 0.23–2.3 |
+| plate-insert | 18 (6) | 500 s | 0.810% | 0.031% / 0.223% | 1.0–12 |
+| fast-heat | 18 (6) | 500 s | 0.760% | 0.113% / 0.675% | 1.0–12 |
+| bimetal-arc | 12 (4) | 10 s | 0.692% | 0.044% / 0.344% | 0.32–2.5 |
+| plate-hole | 58 (22) | 100 s | 0.025% | 0.002% / 0.024% | 0.67–1.6 |
+
+- **Every floor is below E4's bar in both frames**, so none is dropped. The largest is heated-strip's steady floor, 0.94%. As on the old problems, a steady floor is the same in both frames.
+- There are no envelope refusals, every per-piece Fourier number lies in the generator's 0.01–100, and each $\Delta t$ is the rule's.
+- **The layouts are the table's above, with one difference.** Plate-hole's strips and sides are cut where insert-round's rays meet the box, so their aspects are 0.80–1.10, not the squares and 0.875 expected. The pieces and picks are as expected.
+- **The control holds:** on all six of §11.14's problems, the moved rule picks §11.14's pieces.
+- Every floor is below 1%, so prediction 2's condition holds on all eight of its problems.
 - **A control:** the six problems of §11.14 are run beside the new ones. H must reproduce §11.14's errors bit for bit, and P-s0 the one evaluation's, or the evaluation stops.
 
-**Open choices for the owner.**
+**The three choices, settled by the owner on 2026-11-07** ("Accept as drafted": the recommended option of each).
 1. **The problems.**
-   - *Recommended:* the six scenarios above, 12 problems.
+   - *Recommended, and chosen:* the six scenarios above, 12 problems.
    - *Smaller:* plate-insert, bimetal-arc and plate-hole, 6 problems: one for each kind of piece the post-hoc problems lacked.
    - *Cheapest:* the three post-hoc layouts, with a third set of data. But then the rule picks §11.14's pieces and the modes are the same bit for bit, so it would test the data, not the rule.
 2. **PR's bar.**
-   - *Recommended:* 0.90, a saving of at least 10%. That is beyond the 0.07 that one ratio moved between two runs.
+   - *Recommended, and chosen:* 0.90, a saving of at least 10%. That is beyond the 0.07 that one ratio moved between two runs.
    - Or 1.00 (never dearer on average), or 0.80 (a saving of 20%).
 3. **What is pinned.**
-   - *Recommended:* the gates module, the new problems' module, the code H runs (`forms.py` and `host.py`) and the classical record. `gates`, `gates_forms` and `gates_prior` are pinned already. H has no weights, so its code is what defines it.
+   - *Recommended, and chosen:* the gates module, the new problems' module, the code H runs (`forms.py` and `host.py`) and the classical record. `gates`, `gates_forms` and `gates_prior` are pinned already. H has no weights, so its code is what defines it.
    - Or the gates and problems only, as before.
 
 **Predictions** (refutable). They were checked against each other: 1 is 2's heated-strip case taken to its limit, and 3 asks only where the largest excess falls, which 2 leaves open.
