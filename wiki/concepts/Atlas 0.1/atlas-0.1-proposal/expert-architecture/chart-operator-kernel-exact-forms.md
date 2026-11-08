@@ -2,7 +2,7 @@
 
 **Type:** Concept page — **build record and draft registration** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
 **Status:** built and checked on 2026-10-18, written up on 2026-10-19. §1–7 and §10 use **untrained weights only**: zero heads, or seeded random weights. §8 is the next registration: accepted by the owner and hash-pinned on 2026-10-19, its bars in `atlas/chartop/gates_forms.py` and pinned in `out/chartop/registered-forms.txt`. Its five runs were trained and evaluated once the same day (§8.9–8.11): K, D, L, E3, SE1–SE3 and DUAL are met, E1, E4 and KT are not, and CW is a tie. `atlas/chartop/gates.py`, Stage 0's registration, is unchanged.
-**Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] §9.7 and §12, items 1–2 · **Worklist:** [[gap-worklist]] W356, W357; W358 in §10 · **Family:** [[chart-operator-family-catalog]] (CO-D)
+**Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] §9.7 and §12, items 1–2 · **Worklist:** [[gap-worklist]] W356 and W357, done; W358 in §10, closed as superseded (§11.19); W362 opened · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
 
@@ -1973,7 +1973,7 @@ Energy error in %, the steady problem as registered and the step lowered by 300 
 - H2r's 0.306 sat just inside prediction 3's lower edge of 0.30.
 - The price was measured on another host of the model than the dry runs (26 against 22 ms a piece). The registration fixes the CPU model, not the host.
 
-**Closing W356, W357 and W358: drafted for the owner (2026-11-08, "Draft the closures"); not adopted.** Each row is read against its own definition of done in [[gap-worklist]].
+**Closing W356, W357 and W358: drafted for the owner (2026-11-08, "Draft the closures"), accepted as drafted ("Accept as drafted"), and written into [[gap-worklist]].** Each row is read against its own definition of done.
 
 **W356, the trained modes break the constant → `done`** (recommended).
 - **Its definition:** an output form that reproduces the operator's kernel exactly whatever the weights, and a registered measure that weights the kernel as the coupled answer does, trained and judged against bars registered before training.
@@ -2009,10 +2009,10 @@ Energy error in %, the steady problem as registered and the step lowered by 300 
 - **Its definition of done:** a registration on layouts whose outlines do not cut into squares. In it, a learned correction on the non-square pieces must meet E4 at a price below the classical solve's on those pieces, against bars registered before training.
 
 **The open choices,** each with a recommendation:
-1. **W356.** *Recommended:* `done`, as above. Or kept `in progress`.
-2. **W357.** *Recommended:* `done`, as above. Or kept `in progress`.
+1. **W356.** *Recommended, and chosen:* `done`, as above. Or kept `in progress`.
+2. **W357.** *Recommended, and chosen:* `done`, as above. Or kept `in progress`.
 3. **W358.**
-   - *Recommended:* `closed`, superseded, with W362 opened for the non-square pieces.
+   - *Recommended, and chosen:* `closed`, superseded, with W362 opened for the non-square pieces.
    - Or `closed` without W362.
    - Or kept `in progress`, re-scoped to the non-square pieces.
    - Or `done`, reading the hybrid as the row's "high modes computed classically". That is not recommended: the row asks for a form shown before training, and the hybrid sidesteps the head instead.
