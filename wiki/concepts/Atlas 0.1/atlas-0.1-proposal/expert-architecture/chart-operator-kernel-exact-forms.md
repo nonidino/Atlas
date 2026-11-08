@@ -1839,7 +1839,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 | 5. H2's geometric mean of medians | 0.94–0.97 | 0.961 |
 
 - **So the protocol may now be pinned, by its own bar.** Pinning is the owner's call, and nothing is pinned.
-- The box cost \$0.027.
+- The box cost about \$0.03 once billing settled.
 
 **The four choices, settled by the owner on 2026-11-08** ("Accept as drafted": the recommended option of each).
 1. **The square path.** *Recommended, and chosen:* H2, with H2r beside. Or H2 alone.
@@ -1862,7 +1862,7 @@ E4 is met by H on 9 problems, by U on 3 and by P-s0 on 2.
 **Cost.**
 - No training. A rented whole machine for the second dry run and for the evaluation's price runs, at about \$0.09/h: about \$0.15 each with setup (the owner's choice, 2026-11-08).
 - The second dry run's box cost about \$0.08 for 47 minutes, at \$0.104/h with its disk. That covered both launches, the dry run, the probe and the diagnostic run.
-- The third dry run's box cost \$0.027, at \$0.107/h.
+- The third dry run's box cost about \$0.03, at \$0.107/h.
 - At acceptance: the generator, R2, H2r and the revised protocol as code; the dry run; the classical measurement.
 - The one evaluation: about 30–45 minutes, if most runs count.
 
