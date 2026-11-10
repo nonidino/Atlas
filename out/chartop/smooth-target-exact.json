@@ -1,0 +1,93 @@
+{
+ "target": "exact",
+ "K": null,
+ "n": 128,
+ "pieces": [
+  {
+   "seed": 2000100,
+   "fo": 0.92328628351663,
+   "freq": "high",
+   "family": "spline-quad"
+  },
+  {
+   "seed": 2000101,
+   "fo": 0.22830148072980788,
+   "freq": "low",
+   "family": "spline-quad"
+  },
+  {
+   "seed": 2000102,
+   "fo": 11.23190043726377,
+   "freq": "high",
+   "family": "spline-quad"
+  },
+  {
+   "seed": 2000103,
+   "fo": null,
+   "freq": "mid",
+   "family": "spline-quad"
+  }
+ ],
+ "lr": 0.0003,
+ "steps_planned": 500,
+ "threads": 4,
+ "start": "S's registered weights",
+ "objective": "supervised (energy norm) against the target",
+ "posthoc": true,
+ "test_split_read": false,
+ "registered": {
+  "pass_fit": 0.01,
+  "fail_fit": 0.05,
+  "read_on": "median e_fit at the last step",
+  "written": "2026-11-09, before the run"
+ },
+ "target_diagnostics": {
+  "target_seconds": 3.500026650726795e-06,
+  "target_e_H_L": [
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "target_e_H_L_low": [
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ },
+ "trajectory": [
+  {
+   "step": 0,
+   "elapsed_s": 0.0,
+   "e_fit": [
+    0.223036925379016,
+    0.5931442361759081,
+    0.33114932646273004,
+    0.34003334167161114
+   ],
+   "e_fit_low": [
+    0.17627161724238674,
+    0.5518940207762454,
+    0.3080031795450957,
+    0.4239014571789784
+   ],
+   "e_H_L": [
+    0.223036925379016,
+    0.5931442361759081,
+    0.33114932646273004,
+    0.34003334167161114
+   ],
+   "e_p": [
+    0.40493935132716896,
+    0.08929782371718867,
+    0.14053803504578125,
+    0.11997286123009007
+   ],
+   "e_fit_median": 0.33559133406717057,
+   "e_fit_low_median": 0.36595231836203707,
+   "e_H_L_median": 0.33559133406717057,
+   "e_p_median": 0.13025544813793566
+  }
+ ]
+}
