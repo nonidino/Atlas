@@ -196,7 +196,8 @@ def test_the_readings_carry_the_pages_numbers():
     """Each reading's bars appear in the script's registered text and in the page's
     section 12 row for the same prediction (LaTeX there)."""
     text = open(PAGE, encoding="utf-8").read()
-    sec = text[text.index("## 12. Phase 2"):text.index("## See Also")]
+    start = text.index("## 12. Phase 2")
+    sec = text[start:text.index("\n## ", start + 1)]          # section 12 alone, whatever follows it
     rows = {m.group(1): m.group(0) for m in re.finditer(r"^\| (\d) \|.*$", sec, re.M)}
     assert sorted(rows) == [str(i) for i in range(1, 7)]
     script = {p["id"]: p["reading"] for p in T.PREDICTIONS}

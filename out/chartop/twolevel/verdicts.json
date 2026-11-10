@@ -1,0 +1,114 @@
+{
+ "predictions": {
+  "1": {
+   "held": true,
+   "failures": [],
+   "failures_count": 0,
+   "pieces": 456,
+   "problems": 6
+  },
+  "2": {
+   "held": true,
+   "met": {
+    "TL0-4": true,
+    "TL0-8": true,
+    "TL0-16": true,
+    "TL0-32": true
+   }
+  },
+  "3": {
+   "held": true,
+   "by_n": {
+    "32": {
+     "U": 0.3409994226169132,
+     "TL0-16": 0.08834849934698902,
+     "ratio": 0.2590869470363937,
+     "pieces": 64
+    },
+    "64": {
+     "U": 0.3557669980847433,
+     "TL0-16": 0.09968624299710986,
+     "ratio": 0.28020092794937856,
+     "pieces": 64
+    },
+    "128": {
+     "U": 0.3608645530631269,
+     "TL0-16": 0.10249238928569335,
+     "ratio": 0.28401899941600556,
+     "pieces": 64
+    }
+   }
+  },
+  "4": {
+   "held": true,
+   "met": {
+    "s-channel-steady": {
+     "16": false,
+     "32": true
+    },
+    "insert-round-steady": {
+     "16": true,
+     "32": true
+    }
+   }
+  },
+  "5": {
+   "held": false,
+   "max_bar_met": {
+    "bend-3-step": true,
+    "s-channel-step": true,
+    "insert-round-step": true
+   }
+  },
+  "6": {
+   "held": true,
+   "judged": true,
+   "median": 0.04986640295238486,
+   "pieces": 8
+  }
+ },
+ "e4_by_variant": {
+  "TL0-4": {
+   "bend-3-steady": true,
+   "bend-3-step": false,
+   "insert-round-steady": false,
+   "insert-round-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false
+  },
+  "TL0-8": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "insert-round-steady": true,
+   "insert-round-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false
+  },
+  "TL0-16": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "insert-round-steady": true,
+   "insert-round-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false
+  },
+  "TL0-32": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "insert-round-steady": true,
+   "insert-round-step": true,
+   "s-channel-steady": true,
+   "s-channel-step": false
+  },
+  "U": {
+   "bend-3-steady": true,
+   "bend-3-step": false,
+   "insert-round-steady": false,
+   "insert-round-step": false,
+   "s-channel-steady": false,
+   "s-channel-step": false
+  }
+ },
+ "smallest_nc_meeting_e4_on_all_six": null,
+ "written": "2026-11-09T21:43:55-05:00"
+}

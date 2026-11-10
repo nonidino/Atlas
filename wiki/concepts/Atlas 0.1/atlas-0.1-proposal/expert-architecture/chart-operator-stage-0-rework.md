@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. Nothing is trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner's choice of branch (2a, 2b or 2c) is pending. Nothing is trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -271,7 +271,7 @@ Predictions 3–6 can be refuted, and each is read on the registered measure. Th
 
 ## 10. What this page does not show
 
-- **Phase 2 has not run.** The coarse level is built and tested (§11), but nothing here measures TL0 on the pieces Phase 2 reads. Every accuracy number cited comes from earlier records, and §9's predictions are not results.
+- **Phase 2 is untrained.** TL0's numbers (§13) are a classical expert's, not a trained network's, and no test piece was drawn. The price is a first reading on the laptop, not R2's protocol.
 - **No price against H2r.** TL0's cost is estimated, not measured.
 - **Corners and interface–side points** are not treated by $\mathcal C$ (P3). Whether they matter is Phase 2's question.
 - **The smooth-target control** (`scripts/chartop_smooth_target.py`, 2026-11-09) was stopped at step 0. Its step 0 reproduced B4's 0.3356. It has not been run further. The script is committed with this page, with that step-0 record (`out/chartop/smooth-target-exact.json` and `.log`), and no test covers it.
@@ -373,6 +373,108 @@ Predictions 3–6 can be refuted, and each is read on the registered measure. Th
 **Running it.** On the laptop on AC: `modes` by resolution and `e4` by problem in parallel processes, about 15 minutes, then `cost` alone, about 3 minutes. A rented box would need a new payload, since the box payload scripts are pinned, and the cost reading belongs on the laptop.
 
 **Then the owner's decision:** 2a, 2b or 2c, as §8 states, read from E4 by $n_c$, A1's split and the split by place.
+
+---
+
+## 13. Phase 2: TL0 measured untrained (2026-11-09)
+
+**What ran.** `scripts/chartop_twolevel_controls.py` at the registration's commit (`84e1ab7`), on the laptop on AC.
+- `modes` and `e4` ran in three processes in 375 s: 64 validation pieces and 88 W362 pieces at each of $n=32$, 64 and 128 (456 in all), and the six benchmark problems in both frames.
+- `cost` ran alone afterwards. All 7 power samples read AC, and the only other Python process was the idle phone-remote server.
+- Records: `out/chartop/twolevel/` (`modes-*.json`, `e4-*.json`, `cost-laptop.json`, `verdicts.json` and `.txt`). No weights were read and no test piece was drawn.
+
+**The controls held.** With no coarse size, the adapter answered U's bits on every benchmark problem in both frames. At $n_c=64$, TL0 reproduced the 16-mode floor within $8\times10^{-14}$ on all six problems. At $n=32$, $n_c=32$ gave $e_H=0$ to the printed digits on every piece.
+
+**The predictions, as registered:**
+
+| # | verdict | measured |
+|---|---|---|
+| 1 | **held** | over 456 pieces and six problems: CX at most $2.3\times10^{-14}$ (benchmarks $7.6\times10^{-15}$); the particular field's at most $8.1\times10^{-14}$; $e_{K,\infty}$ at most $2.7\times10^{-13}$; no column worse than U's; $n_c=n$ exact |
+| 2 | **held** | bend-3 steady met E4 at every $n_c$ |
+| 3 | **held** | the low group's median over U's: 0.26, 0.28 and 0.28 at $n=32$, 64 and 128 |
+| 4 | **held** | s-channel steady 1.41% at $n_c=32$ (2.15% at 16); insert-round steady 0.57% at 16 |
+| 5 | **refuted** | at $n_c=16$ all three steps met the maximum-error bar: 0.42%, 3.45% and 0.051% of the range, against 1.42%, 3.81% and 1.05%. The energy bar lowered by 300 K was the one at risk |
+| 6 | **held** (weak, §11) | median 0.050 at $n=128$, $n_c=16$ (0.034–0.088 over 8 pieces) |
+
+**E4 on the benchmarks.** Energy error in %, as registered / lowered by 300 K (one number when steady, where the frames agree); ✓ met, ✗ missed. D and K were met by every variant on every problem.
+
+| problem | 16-mode floor | U | TL0, $n_c=4$ | 8 | 16 | 32 |
+|---|---|---|---|---|---|---|
+| bend-3, steady | 0.0000 | 0.0003 ✓ | 0.0003 ✓ | 0.0003 ✓ | 0.0003 ✓ | 0.0003 ✓ |
+| bend-3, step | 0.017 / 0.25 | 0.27 / 3.89 ✗ | 0.19 / 2.74 ✗ | 0.11 / 1.58 ✓ | 0.057 / 0.83 ✓ | 0.030 / 0.44 ✓ |
+| s-channel, steady | 0.93 | 5.26 ✗ | 4.06 ✗ | 3.08 ✗ | 2.15 ✗ | 1.41 ✓ |
+| s-channel, step | 0.14 / **2.13** | 0.68 / 10.75 ✗ | 0.54 / 8.50 ✗ | 0.42 / 6.56 ✗ | 0.29 / 4.59 ✗ | 0.19 / 3.07 ✗ |
+| insert-round, steady | 0.031 | 5.58 ✗ | 2.18 ✗ | 1.14 ✓ | 0.57 ✓ | 0.26 ✓ |
+| insert-round, step | 0.0066 / 0.070 | 0.39 / 4.14 ✗ | 0.16 / 1.63 ✓ | 0.081 / 0.86 ✓ | 0.041 / 0.43 ✓ | 0.019 / 0.20 ✓ |
+| **met** | | 1 of 6 | 2 of 6 | 4 of 6 | 4 of 6 | **5 of 6** |
+
+- **The sixth cannot be met on this basis.** As the forms page's §11.14 records, the s-channel step's floor lowered by 300 K is 2.134%, above E4's 2% energy bar, so no expert with 16 modes per side meets E4 there. TL0 at $n_c=32$ misses it only in that frame's energy (3.07%). As registered it errs by 0.19%, and its maximum error is 3.02% of the range against a bar of 3.81%.
+- **So §8's branch 2a, read literally, cannot happen.** TL0 at $n_c=32$ meets every E4 bar that a 16-mode expert can meet; at $n_c=16$ it misses only the s-channel, steady by 0.15 points.
+- **Maximum errors.** U missed the maximum bar on all three steps (2.60%, 5.96% and 2.33% of the range). TL0 met it from $n_c=8$ on bend-3 and $n_c=4$ on insert-round, and from $n_c=16$ on the s-channel. At $n_c=4$ the s-channel step's maximum error was worse than U's (6.12% against 5.96%): Proposition A bounds energies, not maxima.
+
+**The error above the floor, exactly.** The 16-mode classical answer $u_m$ solves each piece exactly for its traces, and the coupled solve makes its error energy-orthogonal to every field whose traces lie in the port space. Every expert's coupled answer $\tilde u$ is such a field, so
+$$\lVert u-\tilde u\rVert_M^2=\lVert u-u_m\rVert_M^2+\lVert u_m-\tilde u\rVert_M^2 ,$$
+and the excess $\lVert u_m-\tilde u\rVert_M/\lVert u\rVert_M$ is what the expert itself gets wrong:
+
+| problem | U | $n_c=4$ | 8 | 16 | 32 | ratio per doubling of $n_c$ |
+|---|---|---|---|---|---|---|
+| s-channel, steady | 5.18 | 3.95 | 2.94 | 1.94 | 1.06 | 0.74, 0.66, 0.55 |
+| s-channel, step, lowered | 10.54 | 8.23 | 6.21 | 4.06 | 2.20 | 0.75, 0.65, 0.54 |
+| bend-3, step, lowered | 3.88 | 2.72 | 1.56 | 0.80 | 0.36 | 0.57, 0.51, 0.45 |
+| insert-round, steady | 5.58 | 2.18 | 1.14 | 0.57 | 0.26 | 0.52, 0.50, 0.45 |
+
+To meet E4 on the s-channel steady problem, the excess must fall to 1.77%. At $n_c=16$ it is 1.94%.
+
+**Where the excess sits.** A1's split by mode group, and the split by place (§12), for TL0 where it misses E4 and, beside it, where it meets it (the steps lowered by 300 K). Each row of A1's shares sums to one; the strips' share is under 0.01 everywhere. On a step the hats' level part is the level field's error: both $\hat H c_1+s_0\hat u_1$ and $Hc_1+s_0u_1$ equal one, so $(\hat H-H)c_1=-s_0(\hat u_1-u_1)$.
+
+| problem | variant | $j=1$–3 | $j=4$–8 | hats' differences | hats' level | corner blocks, not right | corner blocks, right | side layers | interior |
+|---|---|---|---|---|---|---|---|---|---|
+| s-channel, steady | U | 0.93 | 0.07 | 0.006 | 0 | 0.35 | 0 | 0.49 | 0.16 |
+| s-channel, steady | $n_c=16$ / 32 | 0.56 / 0.51 | 0.41 / 0.44 | 0.03 / 0.05 | 0 | **0.85 / 0.88** | 0 | 0.11 / 0.09 | 0.04 / 0.03 |
+| s-channel, step | $n_c=16$ / 32 | 0.66 / 0.63 | 0.47 / 0.50 | 0.02 / 0.01 | −0.14 / −0.14 | **0.88 / 0.90** | 0 | 0.09 / 0.08 | 0.03 / 0.02 |
+| bend-3, step | $n_c=16$ | −0.28 | 0.00 | 0.50 | 0.78 | 0 | 0.39 | 0.53 | 0.07 |
+| insert-round, steady | $n_c=16$ | 0.04 | 0.06 | 0.90 | 0 | 0.04 | 0.06 | 0.49 | 0.41 |
+
+- **On the s-channel the coarse level removes the side layers' error and leaves the corners.** U's excess sat half in the side layers and a third at the non-right corners. At $n_c=16$, 85–88% of it lies in the $n/8\times n/8$ blocks at the end pieces' non-right corners (154° and 105°), and the share grows with $n_c$. Each block is $1/64$ of its piece's reference square. No piece of these benchmarks has a material interface inside it, so the interface regions are empty.
+- **Its excess falls more slowly with $n_c$** (0.74 → 0.55 per doubling, against 0.52–0.57 → 0.45 on bend-3 and insert-round), as a corner singularity would make it.
+- **This is §8's branch 2c:** E4 missed where what remains sits at non-right corners.
+
+**The modes** (validation pieces, medians; U → TL0 at $n_c=16$ → at 32, for $n=32$ / 64 / 128; at $n=32$, $n_c=32$ is the exact control):
+
+| measure | U | $n_c=16$ | $n_c=32$ |
+|---|---|---|---|
+| low group (hats, $j=1$–3) | 0.34 / 0.36 / 0.36 | 0.088 / 0.100 / 0.102 | 0 / 0.048 / 0.052 |
+| $j=4$–8 | 0.36 / 0.38 / 0.37 | 0.19 / 0.22 / 0.23 | 0 / 0.11 / 0.13 |
+| $j=9$–15 (the strips) | 0.030 / 0.040 / 0.046 | 0.019 / 0.026 / 0.027 | 0 / 0.020 / 0.021 |
+| $e_H$, 64 columns | 0.21 / 0.21 / 0.21 | 0.10 / 0.12 / 0.12 | 0 / 0.061 / 0.068 |
+| $e_{H,L}$, 36 learned columns | 0.37 / 0.38 / 0.38 | 0.17 / 0.21 / 0.21 | 0 / 0.10 / 0.12 |
+| $e_p$ | 0.69 / 0.69 / 0.70 | 0.11 / 0.12 / 0.12 | 0 / 0.056 / 0.064 |
+| $e_1$, the level field (steps) | 0.28 / 0.28 / 0.28 | 0.047 / 0.062 / 0.059 | 0 / 0.029 / 0.029 |
+
+- Per piece, the low group's error at $n_c=16$ is 0.25–0.28 of U's (median; 10th–90th percentiles 0.21–0.37).
+- The sines $j=4$–8 fall least, to about 0.6 of U's at $n_c=16$. Their wavelengths, $1/4$–$1/8$ of a side, span two to four coarse cells.
+- **B4's four pieces** ($n=128$, $e_{H,L}$): U 0.23, 0.72, 0.42, 0.39; TL0 at 16: 0.14, 0.39, 0.24, 0.20 (median 0.22); at 32: 0.08, 0.22, 0.13, 0.11 (median 0.12). Trained on these very pieces for 3,000 steps from S's weights, B4's network reached a median of 0.162. Untrained, TL0 at $n_c=32$ is lower.
+- **W362's piece types** ($n=128$, $e_H$, U → 16 → 32): rectangles of aspect 0.9, 0.7 and 0.5: 0.041 → 0.021 → 0.012, 0.140 → 0.074 → 0.040, 0.280 → 0.149 → 0.083. A hole's rings 0.230 → 0.127 → 0.071; a round inclusion's 0.225 → 0.127 → 0.072; the held-out benchmarks' curved pieces 0.122 → 0.064 → 0.035; the square 0 (the control). W358's best smooth correction (the $16\times16$ cosine class) left 0.073 and 0.077 on the same rings (the forms page's §11.20), so untrained TL0 at $n_c=32$ reaches that class's level.
+
+**The cost** (laptop on AC; medians over 8 pieces of the coarse level's time over the exact solve's):
+
+| $n$ | exact solve | $n_c=4$ | 8 | 16 | 32 | U's forward and strips |
+|---|---|---|---|---|---|---|
+| 32 | 7.9 ms | 0.17 | 0.16 | 0.21 | — | 4.3 |
+| 64 | 60 ms | 0.071 | 0.079 | 0.096 | 0.61 | 1.48 |
+| 128 | 295 ms | 0.036 | 0.051 | 0.050 | 0.15 | 0.78 |
+
+- At $n_c=32$ the dense Cholesky of 961 unknowns dominates.
+- **[AI Inference]:** U's networks answer zeros here, so a classical TL0 needs only $H^{(0)}$ (two sine transforms), the strips and the coarse level. Its price would then be mostly the strips', which the forms page timed at 0.21–0.44 of an exact solve. None of this is R2's price protocol.
+
+**What it means.**
+- **Proposition A and Lemma B hold in practice** on every piece and problem, to $10^{-13}$.
+- **Untrained, the coarse level does most of what training never did.** On the validation pieces it cuts the low group's error by a factor of 3.5–4 at $n_c=16$ and the particular field's by 6. On B4's pieces TL0 at $n_c=32$ beats 3,000 steps of overfitting.
+- **E4 is met on 4 of 6 at $n_c=16$ and on 5 of 6 at $n_c=32$**; the sixth no 16-mode expert can meet.
+- **What remains where E4 is missed sits at non-right corners**, and so does the s-channel's 16-mode floor (Stage 0's §5). Neither the coarse level nor the corner bubble treats a corner's singular exponent.
+- **[AI Inference]:** a corner treatment (singular functions at each non-right corner in the bubble, or a chart that splits off the corner's factor) would address the s-channel directly. A network on the residual would be asked for exactly the corner-singular output that W358 found a smooth network cannot follow.
+
+**The decision, the owner's** (§8): 2a, 2b or 2c. Phase 3, the network study, runs under every branch.
 
 ---
 
