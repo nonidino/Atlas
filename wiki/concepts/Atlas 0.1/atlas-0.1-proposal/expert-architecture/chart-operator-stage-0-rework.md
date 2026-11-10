@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, is drafted (§15, not accepted). Phase 3's network study is built and its overfit probe is running on the laptop (§14). Nothing is rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted and accepted (§15). It is built, and its untrained check is smoke-tested; the check's five predictions await registration (§16). Phase 3's network study is built and its overfit probe is running on the laptop (§14). Nothing is rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -563,6 +563,78 @@ Lemma B holds unchanged, because every column still sees the same operator. On a
 **What it would not do.** Lower the 16-mode floor, which also comes from these corners (Stage 0's §5): that is the ports' lever, not the expert's. Nor move the s-channel step lowered by 300 K under E4's bar: its floor is above it.
 
 **The owner's decision:** accept the draft (and which candidates to measure), amend it, or stop.
+
+---
+
+## 16. Branch 2c: the build, the script and the predictions' readings (drafted 2026-11-10, not registered)
+
+**Built.** Nothing has run on the pieces the check measures.
+
+| file | what |
+|---|---|
+| `atlas/chartop/coarse.py` (changed; not pinned) | `CornerTreatment` builds $S$ at a piece's non-right corners (`non_right_corners`): candidate A with `corner_singular_columns`, B with `corner_patch_columns`. `corner_wedge` gives each corner's frozen wedge. `CoarseSpace` and `correct_fields` take the added columns (`extra=`), and the host's adapter `CoarseCorrected` takes a treatment (`corners=`) |
+| `scripts/chartop_twolevel_corners.py` (new) | the untrained check: parts `e4`, `modes` and `cost`, `--judge` and `--smoke`. Every registered part is refused until the predictions are registered |
+| `tests/test_chartop_coarse_corners.py` (67), `tests/test_chartop_twolevel_corners.py` (36) | below |
+
+**The defaults are today's, bit for bit.** One-off, not a committed test: the committed `coarse.py` (at `9a30938`) was loaded beside the new one and both were run on three pieces, at $n=16$ and 32 with $n_c$ from 2 to $n$. The host's adapter (with and without a coarse size), $A_c$ and the correction agreed bit for bit in all 150 comparisons. The 124 tests of `coarse.py`, the two-level expert, Phase 2's script and the probe pass. The enlarged space is numpy only: the torch path that training uses keeps the coarse grid alone, and extending it waits for the check.
+
+**What the draft left open, settled here:**
+- **A.** The frozen tensor is the corner element's, scaled to determinant one, which changes only the columns' scale.
+  - $\varphi$ is measured from the side along which $\eta$ is fixed.
+  - $\chi$ is the cubic smoothstep $s^2(3-2s)$, $s=2(1-r/R)$, between $R/2$ and $R=1/2$.
+  - Each column is scaled to a largest absolute value of one.
+  - On an affine chart the frozen wedge is the corner's angle to $10^{-9}$. On the drawn pieces it differs from the chart's corner angle by up to 5° (126.6° against 121.6°). The Winslow chart varies at the corner, which is §15's reason to expect B to gain more.
+- **B.** The block is the interior nodes at offsets 1 to $w$ from the corner along both sides, $w=n/8$ or $n/16$: the page's $(n/8)^2$ nodes, less the coarse nodes among them. The hats on a block's inner edge reach one cell beyond it.
+- **At $n_c=n$ nothing is added.** The coarse space is already the whole interior, and an added column would cost full rank. Columns passed there by hand are refused.
+
+**What the tests show** (seeded pieces at $n=16$ from 9,000,100: three with every corner non-right, and one conformal piece with every corner right):
+- **The corners.** Non-right means more than 2° from 90°: 88.1° and 91.9° are right, 87.9° and 92.1° are not. On a parallelogram, the frozen wedge is the corner's angle at all four corners. The first singular function is positive at every node inside the cut-off and zero beyond it, at all four corners, so $\varphi$ stays in the wedge whichever way the corner's frame turns.
+- **The patches.** 60 and 252 columns per corner at $n=64$ and 128 with $n/8$ blocks, and 15 and 63 with $n/16$, as §15's table says. Each column is one fine hat in its corner's block; no coarse node is among them, and no node appears twice.
+- **Proposition A on $V_e$**, for A with $K=1$ and 3 and for both B:
+  - CX within $10^{-12}$ for the modes and the particular field;
+  - never worse than TL0, column by column, and equal to a brute-force least-squares fit over $V_e$;
+  - idempotence and blindness to shifts in $V_e$;
+  - full column rank, traces untouched, and Lemma B.
+- **The controls.** On the conformal piece every output is TL0's, bit for bit. At $n_c=n$ nothing is added and the answer is exact.
+- **Through the host's adapter**, the answers are coarse-exact on each piece's own $V_e$, kernel-exact and never worse than TL0, and they are TL0's bits on the conformal piece.
+
+**The smoke run** (`--smoke`, on seeds no registration draws): validation-style seeds 9,000,100–101 at $n=16$ and 32; the `benchmarks_squares` layout of seed 9,000,008 at $n=32$, which has 8 pieces of 25 with a non-right corner. Every part ran.
+- The treatments' CX was at most $9.4\times10^{-15}$ and $e_{K,\infty}$ at most $2.4\times10^{-14}$; no column was worse than TL0's.
+- Pieces with no non-right corner gave TL0's bits, and nothing was added at $n_c=n$.
+- $e^2=\text{floor}^2+\text{excess}^2$ held to $1.7\times10^{-12}$.
+
+**The predictions, with the readings `judge` applies** (§15's text unchanged):
+
+| # | prediction | reading |
+|---|---|---|
+| 1 | Proposition A and the controls on both enlarged spaces | for every treatment (A with $K=1$, 2, 3; B with $n/8$ and $n/16$ blocks) at every $n_c$ measured, on every piece of `modes` and every benchmark piece in both frames: where $n_c<n$, CX on the arm's own space $\le10^{-12}$ for the modes, and for the particular field wherever the piece has a load; no column whose energy-norm error exceeds TL0's at the same $n_c$ by more than $10^{-9}$ of TL0's plus $10^{-12}\sqrt{\Lambda_{kk}}$; $e_K$ and $e_{K,\infty}\le10^{-12}$ (the level-field identity on every piece of `modes`, the uniform state on every benchmark piece in the registered frame). On every piece with no non-right corner, each treatment's answers are TL0's bit for bit, and on bend-3 each treatment's energy and maximum errors are TL0's. At $n_c=n$ no column is added, the answers are TL0's bit for bit, and $e_H\le10^{-10}$ on every $n=32$ validation piece |
+| 2 | **[AI Inference]** B with $n/8$ blocks brings the s-channel steady excess below 1.77% at $n_c=16$, and E4 is met on 5 of 6 | for B with $n/8$ blocks at $n_c=16$: the s-channel steady problem's excess over the floor is below 0.0177 in both frames, and `judge_e4_both_frames` is met on each of the five problems other than the s-channel step |
+| 3 | **[AI Inference]** A with $K=3$ gains less than B on the s-channel | at $n_c=16$, A with $K=3$ has a larger excess than B with $n/8$ blocks, on both s-channel problems, in both frames |
+| 4 | **[AI Inference]** with B, the non-right corner blocks hold under half of the s-channel's remaining excess | for B with $n/8$ blocks at $n_c=16$, the split by place (§12's regions) puts less than 0.5 of the network term in the non-right corner blocks, on both s-channel problems, in both frames. A frame whose network term is under the split floor ($10^{-9}$ of the reference energy) has no share and counts as held |
+| 5 | **[AI Inference]** B costs under 0.15 of an exact solve per piece with two non-right corners | the median, over the cost part's pieces with exactly two non-right corners, of B's coarse level ($n/8$ blocks, $n=128$, $n_c=16$, its columns' building included) over the exact solve is below 0.15; judged only if every power sample read AC |
+
+**The pieces each reading touches.**
+- **`e4`:** the six benchmark problems at $n=64$, in both frames. The pieces with a non-right corner are the s-channel's two end pieces (105.2° and 154.0°) and insert-round's 24 ring pieces (45° to 135°). Bend-3 has none, so it is the bit-for-bit control.
+- **`modes`:** Phase 2's 456 pieces. Of the 64 validation pieces at $n=32$:
+  - 42 have four non-right corners;
+  - 10 have three;
+  - 2 have two;
+  - 10, the conformal maps, have none.
+- **`cost`:** at $n=128$, the first 16 validation pieces and the s-channel's two end pieces. The pieces with exactly two non-right corners, which prediction 5 reads, are 2,000,104, 2,000,106 and the two end pieces (109.7° and 154.2° at this resolution).
+
+**Checked against each other and against the code.**
+- **1 is Proposition A on $V_e$.** `coarse.py`'s docstring states it, and the tests show it to rounding. It reads every treatment at every $n_c$, including on pieces with no non-right corner.
+- **2 rests on the energy bar alone.** At $n_c=16$, TL0 missed E4 on the s-channel steady problem only by energy: 2.146% against 2%. Its maximum error was 0.19% of the range, against a bar of 1.15%. Since $\sqrt{0.93^2+1.77^2}=2.00$, the excess clause and the energy bar are one condition.
+  - The other four problems met E4 at TL0-16, and B leaves bend-3 untouched (1).
+  - B does change insert-round's ring pieces. Their network term can only fall (Proposition A), but their maximum error is not bounded that way. It stood at 0.020% and 0.051% of the range, against bars of 1.00% and 1.05%.
+- **2 and 4 agree, and 4 is the stronger.** At TL0-16, 85–88% of the s-channel's network term sat in the non-right corner blocks (§13). **[AI Inference]:** if the rest stays as it is, the share falls under one half only if B removes more than about 82% of the corner part. The excess would then fall well below 1.77%. 2 can hold while 4 fails.
+- **3 follows from neither.** A's functions reach beyond the block ($R=1/2$), while B's patch stops at its edge. If the corner's error extends past the block, A could gain more than B.
+- **5 against §13's costs.** At $n=128$, TL0 at $n_c=32$, with 961 coarse unknowns, cost 0.15 of an exact solve. B with $n/8$ blocks at two corners has $225+2\times252=729$, so 5 says it costs less than that. The dense factor dominates both.
+- §15's text, `coarse.py`'s docstring and `forms.py`'s contradict none of them.
+
+**Running it**, on the laptop on AC once the probe has ended: `e4` by problem and `modes` by resolution in parallel processes, then `cost` alone. Records go to `out/chartop/twolevel/corners/`; Phase 2's are left as they are.
+
+**The owner's decision:** register the five predictions with these readings, amend them, or stop.
 
 ---
 

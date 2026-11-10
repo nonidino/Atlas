@@ -1,7 +1,7 @@
 """The coarse level of the two-level, coarse-exact CO-D expert (Stage 0 reworked).
 
 [[chart-operator-stage-0-rework]] section 3.2.  Nothing here is learned, and no pinned
-module is changed: `forms`, `model`, `fe` and `data` are only read.
+module is changed: `forms`, `model`, `fe`, `data` and `chart` are only read.
 
 **The coarse space.**  ``n_c`` divides ``n``, both powers of two.  ``P`` [(n-1)^2,
 (n_c-1)^2] is bilinear interpolation from the coarse grid's interior nodes to the fine
@@ -59,6 +59,32 @@ reported instead.
 form (S's form with zero heads) it is **TL0**, the fully classical two-level expert;
 ``n_c=None`` returns the inner answers bit for bit.
 
+**The enlarged coarse space (branch 2c, the rework page's section 15).**  Proposition A's
+proof uses only that ``P`` has full column rank.  So ``P_e = [P | S]``, with ``S``'s
+columns interior fields (zero on the loop), gives a correction ``C_e`` with all of it:
+Galerkin orthogonality on ``V_e = range P_e``, idempotence and blindness to shifts in
+``V_e``, traces untouched.  It is also never worse than ``C``, column by column, since it
+minimises the same error over a larger set.  Lemma B holds unchanged, since every column
+still sees the same operator.  `CornerTreatment` builds ``S`` at a piece's **non-right
+corners**, those more than 2 degrees from 90 (`chart.corner_angles`, as the section 12
+regions read them):
+- **A**, singular functions: per corner, ``K`` columns ``chi(r/R) rho^(k pi/omega)
+  sin(k pi phi/omega)``, ``k = 1..K``, sampled at the interior nodes and scaled to a
+  largest absolute value of one.  Take the corner's own frame: the corner at the origin,
+  the piece in the positive quadrant.  There the corner element's tensor ``A``, frozen and
+  scaled to determinant one, maps the quadrant by ``y = A^(-1/2) x`` onto a wedge of angle
+  ``omega``, with ``cos omega = -a12 / sqrt(a11 a22)`` in that frame (`corner_wedge`).
+  ``(rho, phi)`` are ``y``'s polar coordinates, ``phi`` measured from the image of the side
+  along which ``eta`` is fixed.  ``r = |x|`` in the reference square, ``R = 1/2``, and
+  ``chi`` is one inside ``R/2``, zero beyond ``R``, with a cubic smoothstep between.
+- **B**, corner patches: per corner, the fine hats at the interior nodes within ``w = n /
+  frac`` of the corner in both directions (``w^2`` nodes), less the coarse nodes among
+  them.  This is a hierarchical complement, so ``P_e`` keeps full column rank.
+
+``S`` is empty on a piece with no non-right corner and at ``n_c = n``, where ``V_c`` is
+already the whole interior.  Every path is then the coarse grid's own, bit for bit.  The
+enlarged space is numpy only: the torch path (training) has the coarse grid alone.
+
 **Torch, batched, float64.**  `apply_M` is ``M U`` from the element formulas of
 `model.energy` (half the energy's gradient), with deterministic slice additions, no
 ``scatter_add``.  `coarse_matrix_torch` assembles ``A_c`` by probing with nine
@@ -70,8 +96,9 @@ batched Cholesky factor; its `correct` is differentiable, so ``C`` sits in the g
 from __future__ import annotations
 
 import functools
-
+import math
 import time
+from dataclasses import dataclass
 
 import numpy as np
 import scipy.linalg as sla
@@ -175,12 +202,22 @@ class CoarseSpace:
     ``G_G = P^T M[I, G]``, so that `apply` forms the coarse right-hand side
     ``P^T (rhs - (M u_full)_I) = P^T rhs - G_I X - G_G (loop values)`` without forming the
     fine residual or the full field, and ``A_c = G_I P``: the same numbers as `correct`
-    with `residual`, to rounding, at about half the work."""
+    with `residual`, to rounding, at about half the work.
 
-    def __init__(self, A_I, n: int, n_c: int, _restricted=None, _A_c=None):
+    ``extra`` [(n-1)^2, m] (branch 2c, `CornerTreatment`) enlarges the space to ``P_e =
+    [P | extra]``: ``P`` is then ``P_e``, ``A_c`` is ``P_e^T A_I P_e`` and every method
+    works on ``V_e``; ``n_extra`` counts the added columns.  ``None`` or no columns is the
+    coarse grid alone, bit for bit; columns at ``n_c = n`` are refused."""
+
+    def __init__(self, A_I, n: int, n_c: int, _restricted=None, _A_c=None, extra=None):
         check_sizes(n, n_c)
+        extra = _extra_columns(extra, n, n_c)
         self.n, self.n_c = n, n_c
         self.P = prolongation(n, n_c)
+        self.n_extra = 0
+        if extra is not None:
+            self.P = sp.hstack([self.P, extra], format="csr")
+            self.n_extra = extra.shape[1]
         self.top = n_c == n
         if A_I is not None:
             A = sp.csr_matrix(A_I, dtype=np.float64)
@@ -199,22 +236,25 @@ class CoarseSpace:
         self._G_I, self._G_G = _restricted if _restricted is not None else (None, None)
 
     @classmethod
-    def of_matrix(cls, M, n: int, n_c: int) -> "CoarseSpace":
+    def of_matrix(cls, M, n: int, n_c: int, extra=None) -> "CoarseSpace":
         """From the piece's whole energy matrix ``M`` (``(n+1)^2`` square), keeping the
-        restricted operator for `apply`; ``A_c = G_I P``."""
+        restricted operator for `apply`; ``A_c = G_I P`` (``P_e`` with ``extra``)."""
         check_sizes(n, n_c)
+        extra = _extra_columns(extra, n, n_c)
         loop, inner = fe.grid(n)
         M_I = sp.csr_matrix(M, dtype=np.float64)[inner]
         P = prolongation(n, n_c)
+        if extra is not None:
+            P = sp.hstack([P, extra], format="csr")
         G = (P.T @ M_I).tocsc()
         G_I, G_G = G[:, inner].tocsr(), G[:, loop].tocsr()
         if n_c == n:
             return cls(M_I[:, inner], n, n_c, _restricted=(G_I, G_G))
-        return cls(None, n, n_c, _restricted=(G_I, G_G), _A_c=(G_I @ P).toarray())
+        return cls(None, n, n_c, _restricted=(G_I, G_G), _A_c=(G_I @ P).toarray(), extra=extra)
 
     @property
     def size(self) -> int:
-        return (self.n_c - 1) ** 2
+        return self.P.shape[1]
 
     def solve(self, rc) -> np.ndarray:
         """``A_c^-1 rc`` for coarse vectors ``rc`` ((n_c-1)^2,) or ((n_c-1)^2, k)."""
@@ -252,13 +292,14 @@ class CoarseSpace:
         return out
 
 
-def correct_fields(M, n: int, n_c: int, H, up, level, s0: float, b, Q):
+def correct_fields(M, n: int, n_c: int, H, up, level, s0: float, b, Q, extra=None):
     """One piece's two-level answer from any answer ``(H, up, level)``: ``C(H)`` with the
     loop values ``Q``, ``C_p(up)`` against the load ``b`` (interior), and on a step
     (``s0 > 0``) ``C_1(level)`` against ``b_1 = (M 1)_I / s0``; a steady piece's level field
     (or ``None``) is returned as it came.  The coarse space is built here from ``M``: this
-    is the whole of the coarse level's work for one call on one piece."""
-    cs = CoarseSpace.of_matrix(M, n, n_c)
+    is the whole of the coarse level's work for one call on one piece.  ``extra`` enlarges
+    it (`CoarseSpace`; branch 2c)."""
+    cs = CoarseSpace.of_matrix(M, n, n_c, extra=extra)
     Hc = cs.apply(H, Q)
     upc = cs.apply(up, rhs=b)
     if level is not None and s0 > 0.0:
@@ -285,16 +326,22 @@ class CoarseCorrected:
     ``s0 J~``: one float64 rounding on a `PieceProblem` (``sigma = J~ / Fo``).  The coarse
     level's own time (building the space and the three corrections, from the assembled
     matrix) is summed in ``coarse_seconds``.  A march that keeps modes (``modes_from``) is
-    not built here."""
+    not built here.
+
+    ``corners`` (a `CornerTreatment`, branch 2c) enlarges each piece's coarse space at its
+    non-right corners, the columns built from the piece's own chart and tensors inside the
+    timed work; ``extra_columns`` sums them.  ``None``, the default, is the coarse grid
+    alone, bit for bit."""
 
     name = "two-level"
 
-    def __init__(self, inner, n_c: int | None):
-        self.inner, self.n_c = inner, n_c
+    def __init__(self, inner, n_c: int | None, corners=None):
+        self.inner, self.n_c, self.corners = inner, n_c, corners
         self.envelope = getattr(inner, "envelope", None)
         self.kind, self.m = getattr(inner, "kind", None), getattr(inner, "m", None)
         self.calls = 0
         self.coarse_seconds = 0.0
+        self.extra_columns = 0
 
     def correct_piece(self, problem, response, Q):
         """One piece's corrected `host.Response` (`correct_fields` on the piece's own
@@ -305,9 +352,12 @@ class CoarseCorrected:
         _loop, inner = fe.grid(n)
         b = problem.load()[inner]
         t0 = time.perf_counter()
+        extra = None if self.corners is None else self.corners.of_problem(problem, self.n_c)
         H, up, level = correct_fields(M, n, self.n_c, response.H, response.up, response.level,
-                                      problem.s0, b, Q)
+                                      problem.s0, b, Q, extra=extra)
         self.coarse_seconds += time.perf_counter() - t0
+        if extra is not None:
+            self.extra_columns += extra.shape[1]
         return Response(H, up, level)
 
     def respond(self, problems, pb_of, modes_from=None):
@@ -328,6 +378,186 @@ def coarse_exactness(P, r_out, r_data) -> dict:
     num = float(np.linalg.norm(P.T @ np.asarray(r_out, np.float64)))
     den = float(np.linalg.norm(P.T @ np.asarray(r_data, np.float64)))
     return {"num": num, "den": den, "rel": (num / den) if den > 0.0 else None}
+
+
+# ---------------------------------------------------------------------------
+# the enlarged coarse space at non-right corners (branch 2c)
+# ---------------------------------------------------------------------------
+
+#: a corner within this many degrees of 90 is right (the rework page's sections 12 and 15)
+RIGHT_DEG = 2.0
+#: candidate A's cut-off radius, in the reference square's units
+SINGULAR_R = 0.5
+#: per corner (0 at (0, 0), then counter-clockwise, as `chart.corner_angles`): the corner in
+#: the reference square, ``(xi, eta)``, and the signs that put the piece in the corner's
+#: positive quadrant
+CORNERS = (((0, 0), (1, 1)), ((1, 0), (-1, 1)), ((1, 1), (-1, -1)), ((0, 1), (1, -1)))
+
+
+def _extra_columns(extra, n: int, n_c: int):
+    """``extra`` as a float64 csr matrix [(n-1)^2, m], or ``None`` when absent or without
+    columns.  Columns at ``n_c = n`` are refused: ``V_c`` is already the whole interior,
+    and ``P_e`` would lose full rank."""
+    if extra is None:
+        return None
+    S = sp.csr_matrix(extra, dtype=np.float64)
+    if S.shape[0] != (n - 1) ** 2:
+        raise ValueError(f"the added columns have {S.shape[0]} rows, not the (n-1)^2 = "
+                         f"{(n - 1) ** 2} interior nodes of n = {n}")
+    if S.shape[1] == 0:
+        return None
+    if n_c == n:
+        raise ValueError("at n_c = n the coarse space is already the whole interior: "
+                         "nothing can be added")
+    return S
+
+
+def non_right_corners(X, tol_deg: float = RIGHT_DEG) -> tuple:
+    """The corners of the chart ``X`` [n+1, n+1, 2] whose angle (`chart.corner_angles`) is
+    more than ``tol_deg`` from 90 degrees, in corner order."""
+    from .chart import corner_angles
+    ang = corner_angles(np.asarray(X, np.float64))
+    return tuple(c for c in range(4) if abs(float(ang[c]) - 90.0) > tol_deg)
+
+
+def corner_offsets(n: int, c: int):
+    """``(a, b)`` for every interior node, in `fe.grid`'s order: its distance from corner
+    ``c`` in fine cells along the side where ``eta`` is fixed (``a``) and the side where
+    ``xi`` is fixed (``b``).  Both run over ``1..n-1``."""
+    (xc, ec), (s1, s2) = CORNERS[c]
+    jj, ii = np.meshgrid(np.arange(1, n), np.arange(1, n), indexing="ij")
+    return (s1 * (ii - xc * n)).ravel(), (s2 * (jj - ec * n)).ravel()
+
+
+def corner_tensors(a11, a12, a22) -> list:
+    """Per corner, the corner element's ``(a11, a12, a22)`` from element arrays [n, n]
+    (``[j, i]``), in the piece's own frame."""
+    n = np.shape(a11)[-1]
+    out = []
+    for (xc, ec), _signs in CORNERS:
+        j, i = ec * (n - 1), xc * (n - 1)
+        out.append((float(a11[j, i]), float(a12[j, i]), float(a22[j, i])))
+    return out
+
+
+def corner_wedge(a11: float, a12: float, a22: float, c: int) -> tuple:
+    """``(omega, T)`` for corner ``c`` under its frozen tensor: in the corner's own frame
+    the tensor is ``A = [[a11, s a12], [s a12, a22]]`` with ``s = s1 s2``, and ``T =
+    (A / sqrt(det A))^(-1/2)`` maps the positive quadrant onto a wedge of angle ``omega``,
+    ``cos omega = -s a12 / sqrt(a11 a22)``."""
+    _corner, (s1, s2) = CORNERS[c]
+    b = s1 * s2 * a12
+    A = np.array([[a11, b], [b, a22]], np.float64)
+    det = float(np.linalg.det(A))
+    if not (det > 0.0 and a11 > 0.0):
+        raise ValueError(f"corner {c}: the frozen tensor is not positive definite")
+    lam, V = np.linalg.eigh(A / math.sqrt(det))
+    T = (V / np.sqrt(lam)) @ V.T
+    omega = math.acos(max(-1.0, min(1.0, -b / math.sqrt(a11 * a22))))
+    return omega, T
+
+
+def smoothstep_cutoff(t):
+    """One for ``t <= 1/2``, zero for ``t >= 1``, the cubic smoothstep ``s^2 (3 - 2 s)``,
+    ``s = 2 (1 - t)``, between."""
+    s = np.clip(2.0 * (1.0 - np.asarray(t, np.float64)), 0.0, 1.0)
+    return s * s * (3.0 - 2.0 * s)
+
+
+def corner_singular_columns(n: int, n_c: int, corners, tensors, K: int,
+                            R: float = SINGULAR_R) -> sp.csr_matrix:
+    """Candidate A's ``S`` [(n-1)^2, K len(corners)], sparse.  Per corner ``c`` in
+    ``corners``, with ``tensors[c]`` its frozen ``(a11, a12, a22)`` (`corner_tensors`):
+    ``chi(r/R) rho^nu sin(nu phi)``, ``nu = k pi / omega``, for ``k = 1..K``, at the interior
+    nodes.  ``x`` is the node in the corner's frame (`corner_offsets` over ``n``), ``y = T
+    x`` (`corner_wedge`), ``(rho, phi)`` its polar coordinates with ``phi`` from ``T e_1``,
+    ``r = |x|`` and ``chi`` `smoothstep_cutoff`.  Each column is scaled to a largest
+    absolute value of one.  Empty at ``n_c = n`` and without corners."""
+    check_sizes(n, n_c)
+    if K < 1:
+        raise ValueError(f"K must be at least 1, not {K}")
+    if n_c == n or not corners:
+        return sp.csr_matrix(((n - 1) ** 2, 0))
+    cols = []
+    for c in corners:
+        omega, T = corner_wedge(*tensors[c], c)
+        a, b = corner_offsets(n, c)
+        x = np.stack([a / n, b / n])
+        y = T @ x
+        v1 = T[:, 0]
+        phi = np.mod(np.arctan2(v1[0] * y[1] - v1[1] * y[0], v1 @ y), 2.0 * math.pi)
+        rho = np.hypot(y[0], y[1])
+        chi = smoothstep_cutoff(np.hypot(x[0], x[1]) / R)
+        for k in range(1, K + 1):
+            nu = k * math.pi / omega
+            s = chi * rho ** nu * np.sin(nu * phi)
+            top = float(np.abs(s).max())
+            if not top > 0.0:
+                raise ValueError(f"corner {c}, k = {k}: the singular function vanishes at every node")
+            cols.append(s / top)
+    return sp.csr_matrix(np.column_stack(cols))
+
+
+def corner_patch_columns(n: int, n_c: int, corners, frac: int) -> sp.csr_matrix:
+    """Candidate B's ``S``, sparse, one unit entry per column.  Per corner in ``corners``,
+    the fine hats at the interior nodes whose offsets (`corner_offsets`) both lie in
+    ``1..w``, ``w = n / frac``, less the coarse nodes among them, which ``P`` already
+    holds; corner by corner, then ``b``, then ``a``.  The blocks must not meet (``2 w <
+    n``).  At ``n_c = n`` every node is coarse and ``S`` is empty."""
+    check_sizes(n, n_c)
+    w = n // frac if frac >= 1 else 0
+    if not (frac >= 1 and n % frac == 0 and w >= 1 and 2 * w < n):
+        raise ValueError(f"corner blocks of n / {frac} do not fit n = {n}")
+    r = n // n_c
+    rows = []
+    for c in corners:
+        (xc, ec), _signs = CORNERS[c]
+        for b in range(1, w + 1):
+            j = b if ec == 0 else n - b
+            for a in range(1, w + 1):
+                i = a if xc == 0 else n - a
+                if i % r == 0 and j % r == 0:
+                    continue                                   # a coarse node
+                rows.append((j - 1) * (n - 1) + (i - 1))
+    m = len(rows)
+    return sp.csr_matrix((np.ones(m), (np.asarray(rows, np.int64), np.arange(m))),
+                         shape=((n - 1) ** 2, m))
+
+
+@dataclass(frozen=True)
+class CornerTreatment:
+    """Branch 2c's enlargement of a piece's coarse space at its non-right corners
+    (`non_right_corners`): ``kind`` ``"A"``, ``K`` singular functions per corner
+    (`corner_singular_columns`), or ``"B"``, the corner blocks of ``n / frac``
+    (`corner_patch_columns`)."""
+
+    kind: str
+    K: int = 3
+    frac: int = 8
+    R: float = SINGULAR_R
+    tol_deg: float = RIGHT_DEG
+
+    def __post_init__(self):
+        if self.kind not in ("A", "B"):
+            raise ValueError(f"a corner treatment is 'A' or 'B', not {self.kind!r}")
+
+    @property
+    def name(self) -> str:
+        return f"A-K{self.K}" if self.kind == "A" else f"B-n/{self.frac}"
+
+    def columns(self, n: int, n_c: int, X, a11=None, a12=None, a22=None) -> sp.csr_matrix:
+        """``S`` for a piece of chart ``X`` [n+1, n+1, 2] and, for A, element tensors [n, n]."""
+        corners = non_right_corners(X, self.tol_deg)
+        if self.kind == "B":
+            return corner_patch_columns(n, n_c, corners, self.frac)
+        if not corners:
+            return sp.csr_matrix(((n - 1) ** 2, 0))
+        return corner_singular_columns(n, n_c, corners, corner_tensors(a11, a12, a22), self.K, self.R)
+
+    def of_problem(self, problem, n_c: int) -> sp.csr_matrix:
+        """``S`` for a `host.PieceProblem`, from its chart and its own tensors."""
+        t = problem.tensors() if self.kind == "A" else {}
+        return self.columns(problem.n, n_c, problem.chart.X, t.get("a11"), t.get("a12"), t.get("a22"))
 
 
 # ---------------------------------------------------------------------------
