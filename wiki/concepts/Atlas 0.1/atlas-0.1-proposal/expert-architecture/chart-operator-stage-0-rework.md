@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner's choice of branch (2a, 2b or 2c) is pending. Nothing is trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment is drafted next, and Phase 3's network study runs beside it. Nothing is trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -475,6 +475,8 @@ To meet E4 on the s-channel steady problem, the excess must fall to 1.77%. At $n
 - **[AI Inference]:** a corner treatment (singular functions at each non-right corner in the bubble, or a chart that splits off the corner's factor) would address the s-channel directly. A network on the residual would be asked for exactly the corner-singular output that W358 found a smooth network cannot follow.
 
 **The decision, the owner's** (§8): 2a, 2b or 2c. Phase 3, the network study, runs under every branch.
+
+**Chosen on 2026-11-09: 2c** ("2c: corner treatment (Recommended)"). A corner treatment is to be drafted, not a network: singular functions at each non-right corner in the bubble, or a chart that splits off the corner's factor, with its own untrained check. Phase 3 runs beside it, to measure what a network adds to TL0.
 
 ---
 
