@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment is drafted next, and Phase 3's network study runs beside it. Nothing is trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, is drafted (§15, not accepted). Phase 3's network study is built and its overfit probe is running on the laptop (§14). Nothing is rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -518,6 +518,49 @@ The ladder (residual-scaled outputs, arm R, the orthogonality penalty) is not bu
 - **On the laptop** (on AC), a step takes 1.5 s at 8 threads and 2.3 s at 4: 77–113 minutes per start.
 - **On CUDA it cannot be bit for bit**: the U-Net's bilinear upsampling uses atomics in its backward pass, so a rerun differs by rounding. On the CPU it is deterministic (tested).
 - **Waiting for the owner's go on a box**: an RTX 3090 offered at about \$0.20 an hour.
+
+---
+
+## 15. Branch 2c: a corner treatment for the coarse level (drafted, not accepted)
+
+**What it must do.** On the s-channel, 85–90% of TL0's excess over the floor sits in the $n/8\times n/8$ blocks at the end pieces' two non-right corners, 154.0° and 105.2°, and TL0 at $n_c=16$ misses E4 there by 0.15 points (§13). A corner treatment should remove that part of the excess. It must keep every guarantee $\mathcal C$ gives, and it must not need a network.
+
+**The principle: enlarge the coarse space, not the network's job.** Proposition A's proof uses only that $P$ has full column rank. So any enlarged space $V_e=\operatorname{range}P_e\supset V_c$, with $P_e=[\,P\mid S\,]$ and $S$ zero on the loop, gives a correction $\mathcal C_e$ with all of Proposition A:
+- Galerkin orthogonality on $V_e$ (CX on the enlarged space);
+- idempotence and blindness to shifts in $V_e$;
+- traces untouched;
+- **never worse than TL0, column by column.** It minimises the same error over a larger set: $\lVert H_k-\mathcal C_e(X)_k\rVert_A\le\lVert H_k-\mathcal C(X)_k\rVert_A$.
+
+Lemma B holds unchanged, because every column still sees the same operator. On a piece without non-right corners, $S$ is empty and $\mathcal C_e=\mathcal C$ bit for bit.
+
+**Two candidates**, both classical. "Non-right" means more than 2° from 90°, from the chart's corner angles, as §12's regions are.
+
+| | A: corner singular functions | B: corner patches |
+|---|---|---|
+| what $S$ adds | at each non-right corner $c$, $K$ functions $s_{c,k}=\chi(r/R)\,\rho^{k\pi/\omega_c}\sin(k\pi\varphi/\omega_c)$, $k=1,\dots,K$ | at each non-right corner, the fine hats at every node of the corner block that is not a coarse node (a hierarchical complement, so $P_e$ keeps full rank) |
+| where they come from | the corner's frozen tensor: $y=A_c^{-1/2}x$ maps the corner's quarter-plane to a wedge of angle $\omega_c$, $\cos\omega_c=-a_{12}/\sqrt{a_{11}a_{22}}$ in the corner's own frame (the forms page's §10); $(\rho,\varphi)$ are $y$'s polar coordinates from the first side, and $\chi$ a smooth cut-off, one inside $R/2$ and zero beyond $R$ | the block's own fine grid: an exact local solve of the piece's true operator, inside one Galerkin projection with the coarse grid |
+| extra unknowns | $K$ per corner (2–3) | $(n/8)^2$ less four coarse nodes per corner: 60 at $n=64$, 252 at 128 (or a quarter of that with $n/16$ blocks) |
+| what it can capture | the corner's leading singular behaviour, as the frozen tensor predicts it | whatever is local to the block: the singular exponent, the chart's variation, a material |
+
+**Which is likely to matter.** The s-channel's corner exponents are mild: $\pi/\omega$ is 1.17 at 154° and 1.71 at 105°, so the exact modes are nearly $H^2$ there. But the Winslow chart varies fast near the 154° corner: Proposition 2 puts $\lvert\mu\rvert\ge0.625$ at the corner itself, against a supremum of 0.543 over the grid's samples, which stop half a cell from it (Stage 0's §4.4). **[AI Inference]:** the excess may come from the pulled-back coefficients' variation near the corner more than from the singular exponent. B treats both; A treats only the exponent.
+
+**Deferred, as before:** singular functions in the bubble (a network's output form, so not this branch) and a chart that splits off the corner's factor (a change to the geometry, which the host reads).
+
+**The untrained check**, drafted (classical solves and U's zero heads only):
+- **Arms:** TL0 at $n_c=16$; A with $K=1$, 2, 3; B with $n/8$ and $n/16$ blocks; and, for the curve, A and B at $n_c=8$ and 32.
+- **Where:** the six Stage 0 benchmarks in both frames (E4, the excess over the floor, the split by place, A1's split); Phase 2's validation pieces and W362's types ($e_H$ by group); the cost against `fe.Exact` on the laptop on AC.
+- **Controls:** on pieces with only right corners (bend-3, the squares), each arm is TL0 bit for bit. At $n_c=n$, each is exact. Each arm is never worse than TL0, column by column.
+
+**Predictions to register before the check runs** (drafted, not registered; each to be checked against the others and against the code's docstrings first):
+1. The controls and Proposition A hold for both enlarged spaces, to rounding: CX at most $10^{-12}$ on $V_e$, no column worse than TL0's, TL0 bit for bit where no corner is non-right, $n_c=n$ exact.
+2. **[AI Inference]** B with $n/8$ blocks brings the s-channel steady problem's excess below 1.77% at $n_c=16$: E4 met on 5 of 6 at $n_c=16$, all but the s-channel step lowered by 300 K, which no 16-mode expert can meet.
+3. **[AI Inference]** A gains less than B on the s-channel: at $K=3$ its excess there stays above B's.
+4. **[AI Inference]** With B, the non-right corner blocks hold less than half of the s-channel's remaining excess.
+5. **[AI Inference]** B's coarse level at $n=128$, $n_c=16$, costs under 0.15 of an exact solve per piece with two non-right corners (TL0's was 0.050).
+
+**What it would not do.** Lower the 16-mode floor, which also comes from these corners (Stage 0's §5): that is the ports' lever, not the expert's. Nor move the s-channel step lowered by 300 K under E4's bar: its floor is above it.
+
+**The owner's decision:** accept the draft (and which candidates to measure), amend it, or stop.
 
 ---
 
