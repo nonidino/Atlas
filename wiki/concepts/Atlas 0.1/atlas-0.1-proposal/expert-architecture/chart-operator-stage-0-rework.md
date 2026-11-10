@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner. Nothing is built, registered, trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9) carry their readings there and are **not yet registered**, and nothing has been measured on the pieces Phase 2 reads. Nothing is trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -263,17 +263,114 @@ Each phase ends at a decision, and nothing past Phase 2 starts unless Phase 2 sa
 5. **[AI Inference]:** the steps' **maximum**-error bar is the most at risk, because the one-step boundary layer is thinner than a coarse cell. Refuted if all three steps meet it at $n_c=16$.
 6. **[AI Inference]:** at $n=128$, $n_c=16$, the coarse level costs under 0.1 of an exact solve.
 
-Predictions 3–6 can be refuted, and each is read on the registered measure.
+Predictions 3–6 can be refuted, and each is read on the registered measure. The readings the Phase 2 script applies are in §12.
 
 ---
 
 ## 10. What this page does not show
 
-- **Nothing is built or measured.** Every number cited comes from earlier records, and §9's predictions are not results.
+- **Phase 2 has not run.** The coarse level is built and tested (§11), but nothing here measures TL0 on the pieces Phase 2 reads. Every accuracy number cited comes from earlier records, and §9's predictions are not results.
 - **No price against H2r.** TL0's cost is estimated, not measured.
 - **Corners and interface–side points** are not treated by $\mathcal C$ (P3). Whether they matter is Phase 2's question.
 - **The smooth-target control** (`scripts/chartop_smooth_target.py`, 2026-11-09) was stopped at step 0. Its step 0 reproduced B4's 0.3356. It has not been run further. The script is committed with this page, with that step-0 record (`out/chartop/smooth-target-exact.json` and `.log`), and no test covers it.
 - **Nothing on the website or in `proposal/`.**
+
+---
+
+## 11. Phase 1: the coarse level, built and tested (2026-11-09)
+
+**Built:** `atlas/chartop/coarse.py`, and `tests/test_chartop_coarse.py` with 69 tests. No pinned module was edited.
+
+| code | what it does |
+|---|---|
+| `prolongation(n, n_c)` | $P=p\otimes p$, with the 1-D coarse hats $p_{iJ}=\max(0,1-\lvert i/n-J/n_c\rvert\,n_c)$ computed from integers, in `fe.grid`'s interior order |
+| `residual(M, n, X, Q, rhs)` | $r=\text{rhs}-(Mu_{\text{full}})_I$, the residual from the full field: $BQ-A_IX$ for the modes, without forming $B$ |
+| `CoarseSpace` | $A_c=P^\top A_IP$ and its Cholesky factor; `correct(X, r)` $=X+PA_c^{-1}P^\top r$. At $n_c=n$, the positive control, $A_c=A_I$ is kept sparse and factored by a sparse LU |
+| `CoarseSpace.of_matrix(...).apply` | the same correction from the **restricted residual** $P^\top\text{rhs}-G_IX-G_G\,(\text{loop values})$, with $G=P^\top M_{I,:}$ split into its interior and loop columns, and $A_c=G_IP$. No fine residual and no full field are formed |
+| `level_rhs(M, n, s0)` | $b_1=(M\mathbf 1)_I/s_0$ for $s_0>0$; a steady piece is refused |
+| `coarse_exactness` | CX: $\lVert P^\top r_{\text{out}}\rVert/\lVert P^\top F\rVert$ over the columns; with no data, no ratio |
+| `correct_fields`, `CoarseCorrected` | one piece's two-level answer from any answer: $\mathcal C(H)$; $\mathcal C_p(u_p)$ against the piece's load; $\mathcal C_1(u_1)$ on a step. The adapter wraps any expert for the host: around U it is TL0, and with no coarse size it returns U bit for bit |
+| `apply_M`, `residual_torch`, `level_rhs_torch`, `coarse_matrix_torch`, `TorchCoarseSpace` | torch, batched, float64. $MU$ comes from `model.energy`'s element formulas, by slice additions (no `scatter_add`). $A_c$ is assembled by nine colourings of the coarse hats, then a batched Cholesky; $\mathcal C$ is differentiable |
+
+**Two definitions settled while building.**
+- **The particular field is corrected against the piece's own load $b_I$**, as §3.2 states. So $\hat u_p$ is coarse-exact, and exact at $n_c=n$.
+  - The uniform state's particular field is then $\mathcal C_p(s_0u_1)$ against $s_0\,\text{mass}(\tilde J)\mathbf 1$. It equals $s_0\,\mathcal C_1(u_1)$ only to the rounding by which $\sigma$ differs from $s_0\tilde J$.
+  - On a `PieceProblem` that is one float64 rounding, and K holds. On arrays stored in float32 it is about $10^{-8}$.
+  - K was never measured that way on stored arrays: on test pieces the registered K read the level-field identity $\hat Hc_1+s_0\hat u_1-1$ (`chartop_evaluate_forms.e1_rows`), which Lemma B keeps exact.
+- **A steady piece's level field is passed on uncorrected.** It is the unit source's response, which only a march reads, and the identity does not involve it when $s_0=0$.
+
+**The tests**, on generator pieces from seeds no registration draws (9,000,100 onward: Fo 0.63, Fo 0.0117 and steady), at $n=16$ and 32, read from their stored arrays:
+
+| test | what it shows | to |
+|---|---|---|
+| the prolongation | each column is the bilinear hat of its coarse node at `fe.grid`'s nodes, zero on the loop; every entry exact | bit for bit |
+| the residual and `apply_M` | $BQ-A_IX$; `fe.assemble(...) @ U`; half the gradient of `model.energy` | $10^{-13}$; $10^{-12}$ |
+| the restricted residual | equal to the fine residual restricted, the sparse top level included | $10^{-12}$ |
+| Proposition A, item 1 | CX of the modes and of a field after $\mathcal C$ at $n_c=2$, 4 and 8; the input's CX was above $10^{-3}$ | $10^{-12}$ |
+| item 2 | never worse, column by column; equal to a brute-force least-squares fit over $V_c$ (a dense Cholesky of $A_I$); Pythagoras | $10^{-10}$ |
+| item 3 | idempotence; $\mathcal C(X+Pv)=\mathcal C(X)$ | $10^{-13}$; $10^{-12}$ |
+| items 4 and 5 | at $n_c=n$, the exact modes, particular field and level field; traces $Q$ | $10^{-10}$; bit for bit |
+| item 6 | the gradient through $\mathcal C$ is $\mathcal Q_c^\top G$ | $10^{-12}$ |
+| Lemma B | the identity survives with $b_1$ from the row sums on steps, and the hats' sum on a steady piece | $10^{-13}$ |
+| Lemma B's condition | with $b_1=\text{mass}(\tilde J)\mathbf 1$ the identity misses by $10^{-9}$–$10^{-6}$ on a short step's stored arrays, and holds on the same piece in float64 | as §3.2 states |
+| numpy against torch | $A_c$, the residual, the corrections of the modes, of a field and of the level field | $10^{-12}$ |
+| the symmetries | $\mathcal C$ commutes with all eight, in numpy and through `model.d4` | $10^{-12}$ |
+| the adapter | with no coarse size, U bit for bit; at $n_c=n$, the classical solve; its answers coarse-exact, and kernel-exact through the host's uniform state | $10^{-10}$; $10^{-12}$ |
+
+**Beyond the tests**, at $n=128$, on three never-drawn pieces with U's own answers (one-off, not in a record): after $\mathcal C$ the identity holds within $6\times10^{-14}$, CX within $8\times10^{-15}$ and the particular field's CX within $4\times10^{-14}$, at every $n_c$ from 4 to 32. Prediction 1's bars are $10^{-12}$. On stored arrays, the $\text{mass}(\tilde J)$ variant missed by $5\times10^{-11}$ at $s_0=0.017$, $4\times10^{-10}$ at $s_0\approx1$ and $3\times10^{-8}$ at $s_0=79$: the float32 rounding, growing with the reaction.
+
+**The cost, timed before prediction 6 was registered.** One-off: two never-drawn pieces at $n=128$, on battery, so only the ratios are read. The coarse level at $n_c=16$, from the assembled matrix, took 0.085–0.104 of the exact solve with the fine residual, and 0.062–0.067 with the restricted one. The arithmetic was not the cost: the time went into slicing the whole matrix twice and allocating full fields. With the restricted form, $n_c=4$, 8 and 32 read 0.047–0.051, 0.051–0.063 and 0.18–0.19. None of this is prediction 6's measure, which is §12's, on AC.
+
+**The suite and the pins** (on AC, 2026-11-09):
+- The full suite ran on an export of the last commit with these files laid over it: 2,667 passed, 129 skipped, 14 failed and 3 errors.
+- All 17 came from the export itself. `git archive` here rewrites line endings (`core.autocrlf=true`), so the squares pin's byte comparisons with its dry run failed; and nine tier tests read an untracked record, `out/tier0b/s0_state.npz`, which no export carries.
+- All 17 pass in the working tree, which no other session had changed, and so do the 103 tests of every gate module and pin.
+
+---
+
+## 12. Phase 2: the script and the predictions' readings (drafted for registration, 2026-11-09)
+
+**The script:** `scripts/chartop_twolevel_controls.py`. It has been smoke-tested (below) and not run on any piece it will measure. TL0 is U (`chartop_forms_diagnose.zero_heads`) followed by `coarse.correct_fields`. Records go to `out/chartop/twolevel/`, rewritten after every measurement, so a stopped run resumes.
+
+| part | pieces | recorded |
+|---|---|---|
+| `modes` | the post-hoc validation pieces 2,000,100–2,000,163 at $n=32$, 64 and 128, labelled from their stored arrays; B4's four (the first four at 128); W362's types: rectangles of aspect 1 down to 0.5, a hole's and a round inclusion's rings, the held-out benchmarks' curved pieces | for U and TL0 at each $n_c\le n$: $e_H$ by group (hats, $j=1$–3, 4–8, 9–15) and for the low group (hats with $j=1$–3); $e_H$; $e_{H,L}$; $e_p$; $e_1$; $e_K$ and $e_{K,\infty}$; CX of the modes and of the particular field; the column-by-column check against U |
+| `e4` | the six Stage 0 benchmarks at $n=64$, both frames | U, TL0 at $n_c=4$, 8, 16 and 32, and the two controls ($n_c=64$; no coarse size). E4, D and K by `gates_forms`' own judges; CX per piece; the network term split by mode group (A1's `split_term`) and by where it sits (below) |
+| `cost` | the first 8 validation pieces at each $n$ | the coarse level from the assembled matrix, against `fe.Exact` (the LU, 64 mode columns, the particular field), assembly excluded from both, best of 5; U's forward and strips beside. Torch and the BLAS at 4 threads; the power sampled before and after every resolution; the part refuses to start on battery |
+
+**Why a split by place.** Decision 2b against 2c (§8) turns on where TL0's remaining error sits: spread and local, or at non-right corners and interface–side points. A1's split says which modes carry it, not where.
+- The regions, per element and in this order: each $n/8\times n/8$ corner block, right or not right by more than 2° (`chart.corner_angles`); within $n/8$ of a side and 2 cells of a material interface (the forms page's §11.5 definitions); at an interface inside; the side layers; the interior.
+- The element energies of Theorem 2's per-piece term $w_i=\mathcal Q_c(e_{p,i}+E_ic^\star_i)$ add up exactly to the network term (to $10^{-15}$ in the smoke run), so the shares are exact.
+- Below $10^{-9}\lVert u\rVert_M$ the network term is at the floor, and no share is formed.
+
+**The predictions, with the readings `judge` applies** (§9's text unchanged):
+
+| # | prediction | reading |
+|---|---|---|
+| 1 | Proposition A and Lemma B hold to rounding on every piece: CX at most $10^{-12}$, no column's $e_H$ above U's, and $n_c=n$ exact | For TL0 at every $n_c$, on every piece of `modes` and every benchmark piece in both frames: no column whose energy-norm error exceeds U's by more than $10^{-9}$ of U's plus $10^{-12}\sqrt{\Lambda_{kk}}$; and where $n_c<n$, CX of the modes $\le10^{-12}$, and of the particular field wherever the piece has a load. $e_K$ and $e_{K,\infty}\le10^{-12}$ for TL0 at every $n_c$: the level-field identity on every piece of `modes`, the uniform state through the host on every benchmark piece as registered. At $n_c=n$: $e_H\le10^{-10}$ on every $n=32$ validation piece, and each benchmark's energy error within $10^{-10}$ of the 16-mode floor in both frames |
+| 2 | bend-3, steady, meets E4 at every $n_c$, as U alone already does | `judge_e4_both_frames` met for TL0 at $n_c=4$, 8, 16 and 32 |
+| 3 | **[AI Inference]** at $n_c=16$, the low group's $e_H$ is at most half of U's on the validation pieces | at each $n$, the median over the validation pieces of TL0's low-group $e_H$ is at most 0.5 times U's median |
+| 4 | **[AI Inference]** s-channel and insert-round, steady, meet E4's energy bar untrained at $n_c=16$ or 32 | for each, the energy error $\le0.02$ in both frames, at $n_c=16$ or at $n_c=32$ |
+| 5 | **[AI Inference]** the steps' maximum-error bar is the most at risk; refuted if all three steps meet it at $n_c=16$ | at $n_c=16$, at least one step problem misses the maximum-error bar in at least one frame |
+| 6 | **[AI Inference]** at $n=128$, $n_c=16$, the coarse level costs under 0.1 of an exact solve | the median over the cost part's $n=128$ pieces is below 0.1; judged only if every power sample read AC |
+
+**Checked against each other and against the code.**
+- **1 and 2 agree.** Per piece, TL0's term is $w_i^{\text{TL0}}=\mathcal Q_cw_i^{\text U}$, so its energy cannot exceed U's (Proposition A, item 2). Theorem 2 then bounds TL0's energy error by the floor plus a network term no larger than U's, and U's error on bend-3 steady is 0.0003%. The maximum-error bar is not bounded this way.
+- **3 and 4 agree without implying each other.** **[AI Inference]:** the s-channel's error is 93% in $j=1$–3 (the forms page's §11.1), so halving the low group alone might leave it near 2.6%, above the bar; 4 also allows $n_c=32$.
+- **4 and 5 read different problems and different bars**, and 5 is the only prediction of a miss.
+- **6 is weak as drafted.** §11's one-off timing read 0.062–0.067 on battery, before registration. It can be kept as drafted, or tightened.
+- `coarse.py`'s docstring and `forms.py`'s contradict none of them. On a square of one material U is exact to float32 (the forms page's §11.19), and $\mathcal C$ cannot make it worse.
+
+**The smoke run** (`--smoke`): seeds 9,000,100–9,000,101 at $n=32$, the `benchmarks_squares` layout of seed 9,000,008 at $n=16$, a scratch directory, the controls only. Every part ran.
+- At $n_c=n$: $e_H\le7\times10^{-16}$, and the coupled error within $7\times10^{-14}$ of the floor.
+- With no coarse size: U bit for bit.
+- CX within $2\times10^{-15}$; TL0's $e_{K,\infty}$ within $7\times10^{-15}$; both splits sum to the network term within $10^{-15}$.
+
+**Its tests**, `tests/test_chartop_twolevel_controls.py` (30): `judge` on made-up records, where every prediction holds and then each clause is broken in turn and refutes it; each reading's bars found both in the script and in this section's table, and the script's prediction texts in §9 word for word; the guards (the registered run keeps its seeds and record, the cost part refuses battery, a record of another configuration is refused); the regions partition the elements; and a smoke run at $n=16$ that checks the controls and resumes without measuring again.
+
+**Running it.** On the laptop on AC: `modes` by resolution and `e4` by problem in parallel processes, about 15 minutes, then `cost` alone, about 3 minutes. A rented box would need a new payload, since the box payload scripts are pinned, and the cost reading belongs on the laptop.
+
+**Then the owner's decision:** 2a, 2b or 2c, as §8 states, read from E4 by $n_c$, A1's split and the split by place.
 
 ---
 
