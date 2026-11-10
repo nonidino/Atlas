@@ -99,6 +99,10 @@ RIGHT_DEG = 2.0                      # a corner within this of 90 degrees is rig
 #: the smoke run's pieces and layout: seeds no registration draws
 SMOKE_SEED, SMOKE_LAYOUT_SEED = 9_000_100, 9_000_008
 
+REGISTERED = ("registered by the owner on 2026-11-09, in chat ('Register as drafted (Recommended)'), "
+              "as drafted in the rework page's section 9 with the readings of its section 12, "
+              "before any part ran on the pieces it measures")
+
 PREDICTIONS = (
     {"id": "1",
      "text": "Proposition A and Lemma B hold to rounding on every piece: CX at most 1e-12, no "
@@ -162,6 +166,7 @@ def provenance() -> dict:
             "script_sha256": registry.sha256_file(os.path.abspath(__file__)),
             "coarse_sha256": registry.sha256_file(os.path.join(ROOT, "atlas", "chartop", "coarse.py")),
             "threads": {"torch": torch.get_num_threads(), "blas_env": THREADS},
+            "registered": REGISTERED,
             "started": dt.datetime.now().astimezone().isoformat(timespec="seconds")}
 
 

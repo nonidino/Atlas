@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9) carry their readings there and are **not yet registered**, and nothing has been measured on the pieces Phase 2 reads. Nothing is trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. Nothing is trained or rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -254,7 +254,9 @@ Each phase ends at a decision, and nothing past Phase 2 starts unless Phase 2 sa
 
 ---
 
-## 9. Predictions to register in Phase 2 (drafted, not registered)
+## 9. Predictions for Phase 2 (registered 2026-11-09, before Phase 2 ran)
+
+**Registered** by the owner on 2026-11-09, in chat ("Register as drafted (Recommended)"), as drafted here with the readings of §12. The one-off timing that makes prediction 6 weak (§11) was disclosed before the go. The registration is the commit that adds this paragraph; no part of Phase 2 had run on the pieces it measures.
 
 1. Proposition A and Lemma B hold to rounding on every piece: CX at most $10^{-12}$, no column's $e_H$ above U's, and $n_c=n$ exact.
 2. bend-3, steady, meets E4 at every $n_c$, as U alone already does.
@@ -328,7 +330,7 @@ Predictions 3–6 can be refuted, and each is read on the registered measure. Th
 
 ---
 
-## 12. Phase 2: the script and the predictions' readings (drafted for registration, 2026-11-09)
+## 12. Phase 2: the script and the predictions' readings (registered 2026-11-09)
 
 **The script:** `scripts/chartop_twolevel_controls.py`. It has been smoke-tested (below) and not run on any piece it will measure. TL0 is U (`chartop_forms_diagnose.zero_heads`) followed by `coarse.correct_fields`. Records go to `out/chartop/twolevel/`, rewritten after every measurement, so a stopped run resumes.
 
