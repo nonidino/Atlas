@@ -1,0 +1,181 @@
+{
+ "predictions": {
+  "1": {
+   "held": true,
+   "failures": [],
+   "failures_count": 0,
+   "pieces": 456,
+   "problems": 6
+  },
+  "2": {
+   "held": true,
+   "excess": {
+    "registered": 0.007853920375355188,
+    "lowered": 0.00785392037529165
+   },
+   "met": {
+    "bend-3-steady": true,
+    "bend-3-step": true,
+    "s-channel-steady": true,
+    "insert-round-steady": true,
+    "insert-round-step": true
+   }
+  },
+  "3": {
+   "held": true,
+   "excess": {
+    "s-channel-steady, registered": {
+     "A-K3": 0.01814874868503988,
+     "B-n/8": 0.007853920375355188,
+     "held": true
+    },
+    "s-channel-steady, lowered": {
+     "A-K3": 0.018148748684880773,
+     "B-n/8": 0.00785392037529165,
+     "held": true
+    },
+    "s-channel-step, registered": {
+     "A-K3": 0.002405068887097676,
+     "B-n/8": 0.0009263811118394342,
+     "held": true
+    },
+    "s-channel-step, lowered": {
+     "A-K3": 0.037914793613337834,
+     "B-n/8": 0.014603967832736594,
+     "held": true
+    }
+   }
+  },
+  "4": {
+   "held": true,
+   "corner_not_right_share": {
+    "s-channel-steady, registered": 0.023304675883769284,
+    "s-channel-steady, lowered": 0.023304675884025097,
+    "s-channel-step, registered": 0.033510889608339665,
+    "s-channel-step, lowered": 0.03351088960832902
+   }
+  },
+  "5": {
+   "held": true,
+   "judged": true,
+   "median": 0.11356692407291719,
+   "pieces": 4,
+   "TL0_median_same_pieces": 0.044847090090340866
+  }
+ },
+ "e4_by_arm": {
+  "TL0, n_c=8": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "A-K3, n_c=8": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "B-n/8, n_c=8": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": true,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "B-n/16, n_c=8": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "TL0, n_c=16": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "A-K1, n_c=16": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "A-K2, n_c=16": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "A-K3, n_c=16": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": false,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "B-n/8, n_c=16": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": true,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "B-n/16, n_c=16": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": true,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "TL0, n_c=32": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": true,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "A-K3, n_c=32": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": true,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "B-n/8, n_c=32": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": true,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  },
+  "B-n/16, n_c=32": {
+   "bend-3-steady": true,
+   "bend-3-step": true,
+   "s-channel-steady": true,
+   "s-channel-step": false,
+   "insert-round-steady": true,
+   "insert-round-step": true
+  }
+ },
+ "written": "2026-11-10T04:18:43-05:00"
+}

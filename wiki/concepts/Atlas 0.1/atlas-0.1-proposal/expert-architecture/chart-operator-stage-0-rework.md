@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted and accepted (§15). It is built, and its untrained check is smoke-tested; the check's five predictions were registered on the owner's go on 2026-11-10, before it ran (§16). Phase 3's network study is built and its overfit probe is running on the laptop (§14). Nothing is rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration is drafted, not accepted (§18). Nothing is rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -517,7 +517,50 @@ The ladder (residual-scaled outputs, arm R, the orthogonality penalty) is not bu
 **The probe** (`scripts/chartop_twolevel_overfit.py`). B4's protocol: the four pieces 2,000,100–2,000,103 at $n=128$, AdamW at $3\times10^{-4}$, 3,000 steps. It runs from zero heads and from S's weights, at $n_c=16$, on the relative objective. The ledger is written every 250 steps: ρ per piece and group, ρ of the particular field, $e_{H,L}$, $e_p$, $\kappa_{\text{kill}}$ and the shuffled-input control. The dead-network stop applies, and a repeat check measures how far a rerun of the first steps differs.
 - **On the laptop** (on AC), a step takes 1.5 s at 8 threads and 2.3 s at 4: 77–113 minutes per start.
 - **On CUDA it cannot be bit for bit**: the U-Net's bilinear upsampling uses atomics in its backward pass, so a rerun differs by rounding. On the CPU it is deterministic (tested).
-- **Waiting for the owner's go on a box**: an RTX 3090 offered at about \$0.20 an hour.
+- **Where it ran:** the owner declined the question about renting a box, so the probe ran on the laptop (below).
+
+**The probe, run (2026-11-09 and 10).** On the laptop's CPU at 8 threads, the two starts in turn: zero heads from 23:53, then S's weights from 02:49 to 04:16.
+- **Its timings are not timings.** The laptop slept in Modern Standby from 00:17 to 01:48 during the first start, and during the second the corner check (§17) and the test suite shared the CPU, so its seconds per step (3.47 and 1.72) measure nothing.
+- **Its numbers are deterministic.** Each start's repeat check reran its first 20 steps: the weights were equal bit for bit.
+- Records: `out/chartop/twolevel/probe-scratch.json` and `probe-S.json`.
+
+**The ledger on the four pieces**, medians over the pieces. $\rho$ is over the 36 learned columns, then by group; $\rho_p$ is the particular field's; $e_{H,L}$ is measured as the forms page measures it. $\kappa_{\text{kill}}$ is the fraction of the network's raw output that $\mathcal C$ discards. The shuffled control feeds each piece the next piece's inputs.
+
+From zero heads (step 0 is TL0):
+
+| step | $\rho$ | p10–p90 | hats | $j=1$–3 | $j=4$–8 | $\rho_p$ | $e_{H,L}$ | $e_p$ | $\kappa_{\text{kill}}$ | shuffled $\rho$ |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0 | 0–0 | 0 | 0 | 0 | 0 | 0.220 | 0.157 | — | 0 |
+| 250 | 0.010 | 0.005–0.013 | 0.306 | 0.024 | 0.008 | 0.887 | 0.218 | 0.055 | 0.975 | −0.00 |
+| 500 | 0.028 | 0.013–0.126 | 0.371 | 0.034 | 0.028 | 0.958 | 0.209 | 0.026 | 0.964 | −0.08 |
+| 750 | 0.271 | 0.036–0.585 | 0.392 | 0.219 | 0.275 | 0.972 | 0.188 | 0.021 | 0.839 | −0.42 |
+| 1,000 | 0.476 | 0.166–0.691 | 0.317 | 0.317 | 0.486 | 0.977 | 0.159 | 0.019 | 0.738 | −0.61 |
+| 2,000 | 0.827 | 0.726–0.862 | −0.010 | 0.422 | 0.841 | 0.987 | 0.090 | 0.014 | 0.693 | −1.28 |
+| 3,000 | **0.918** | 0.894–0.941 | 0.013 | 0.452 | 0.946 | 0.995 | **0.063** | 0.009 | 0.709 | −1.36 |
+
+From S's weights, with their heads:
+
+| step | $\rho$ | p10–p90 | hats | $j=1$–3 | $j=4$–8 | $\rho_p$ | $e_{H,L}$ | $e_p$ | $\kappa_{\text{kill}}$ | shuffled $\rho$ |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0.123 | 0.055–0.250 | 0.009 | −0.071 | 0.135 | 0.804 | 0.197 | 0.056 | 0.604 | −0.36 |
+| 250 | 0.731 | 0.680–0.829 | 0.023 | 0.186 | 0.762 | 0.986 | 0.114 | 0.015 | 0.611 | −1.19 |
+| 1,000 | 0.876 | 0.859–0.925 | 0.020 | 0.397 | 0.902 | 0.995 | 0.078 | 0.008 | 0.628 | −1.29 |
+| 2,000 | 0.929 | 0.912–0.957 | 0.019 | 0.512 | 0.948 | 0.998 | 0.061 | 0.006 | 0.642 | −1.34 |
+| 3,000 | **0.950** | 0.932–0.968 | 0.047 | 0.537 | 0.968 | 0.999 | **0.053** | 0.004 | 0.649 | −1.36 |
+
+**What it shows.**
+- **On its own pieces the network adds a great deal beyond the coarse solve.** From S's weights, $\rho$ reaches 0.73 in 250 steps and 0.95 at 3,000, and $e_{H,L}$ falls from TL0's 0.20 to 0.053. That is a third of B4's 0.162 (3,000 steps from S's weights without the coarse level; the forms page's §11.6), and under half of untrained TL0 at $n_c=32$ (0.12, §13). From zero heads: 0.92 and 0.063.
+- **It reads its own inputs.** The shuffled control's median falls to −1.36: fed the next piece's inputs, the network makes three of the four pieces much worse than TL0. On 2,000,101, a low-frequency step, it still helps (+0.60 and +0.63), so part of its correction there does not depend on the input. **[AI Inference]:** a shape the coarse level misses on every piece, such as a side layer's.
+- **What it learns, by group.** The fast sines $j=4$–8 almost entirely (0.95–0.97); $j=1$–3 about half (0.45–0.54); the particular field nearly exactly ($\rho_p$ 0.995–0.999). The hats gain almost nothing by the end (0.01–0.05). From zero heads, the hats rose to 0.39 by step 750 and fell back as the sines took over. **[AI Inference]:** the relative objective sums the 36 columns against TL0's whole error, in which the hats' share is small, so giving them back costs little. NC reads the 36 together, so the hats are worth reporting separately (§18, prediction 4).
+- **$\kappa_{\text{kill}}$.** From zero heads it starts at 0.97: almost all of the network's raw output lay in the coarse space, and $\mathcal C$ discarded it. It falls to 0.71. From S's weights it holds at 0.60–0.65. The network learns to put its output where $\mathcal C$ keeps it, though no term asks for that.
+- **The start sets the speed, not the end.** S's weights reach in 250 steps what zero heads reach only at about step 1,700.
+  - From zero heads, $\rho$ stayed under 0.05 until step 500 (0.028).
+  - The dead-network stop reads at the first validation at or after 20% of the steps: step 750 here, where $\rho$ was 0.27.
+  - **[AI Inference]:** had it read at step 600, it might have stopped a network that went on to 0.92. From S's weights the question does not arise.
+- **The ladder (methods 4–6) is not needed:** $\rho$ did not stall from either start.
+- **Phase 3 is done**, by the handoff's criterion: $\rho>0$ on its own pieces, with the controls failing as they should (shuffled inputs negative; zero heads exactly at TL0).
+- **The winner is S's weights:** a higher $\rho$ and a lower $e_{H,L}$ at every step. §18 drafts it as TL's start.
+- **One call's cost** at $n=128$, $n_c=16$, per piece, from S's start once the run had ended, the CPU otherwise idle: 0.21 s in all. Of that, the networks' forward took 0.09 s, the strips 0.06 s and the coarse level (the plain grid) 0.06 s. This is a reading, not R2's protocol.
 
 ---
 
@@ -637,6 +680,145 @@ Lemma B holds unchanged, because every column still sees the same operator. On a
 **Running it**, on the laptop on AC once the probe has ended: `e4` by problem and `modes` by resolution in parallel processes, then `cost` alone. Records go to `out/chartop/twolevel/corners/`; Phase 2's are left as they are.
 
 **The owner's decision** (register the five predictions with these readings, amend them, or stop): registered as drafted, above.
+
+---
+
+## 17. Branch 2c: the corner treatment measured untrained (2026-11-10)
+
+**What ran.** `scripts/chartop_twolevel_corners.py` at the registration's commit (`b09f040`), on the laptop on AC, one process at a time because memory was short:
+- `e4` first: the six problems in both frames, 13 minutes;
+- then `modes`: n = 32 and 64, then 128, 15 minutes;
+- then `cost`, alone, once Phase 3's probe had ended.
+
+The probe shared the CPU with the first two parts. It reads none of the check's files, and the check's numbers are deterministic. Records: `out/chartop/twolevel/corners/` (`e4-*.json`, `modes-*.json`, `cost-laptop.json`, `verdicts.json` and `.txt`). No weights were read and no test piece was drawn.
+
+**The predictions, as registered:**
+
+| # | verdict | measured |
+|---|---|---|
+| 1 | **held** | over 456 pieces and six problems, both enlarged spaces at every $n_c$: CX on $V_e$ at most $7.5\times10^{-15}$ (the particular field's $8.5\times10^{-14}$); $e_K$ and $e_{K,\infty}$ at most $2.7\times10^{-13}$; no column worse than TL0's. Every piece with no non-right corner gave TL0's bits: 1,628 benchmark answers and 1,440 arm rows of `modes`. Bend-3's errors were TL0's. At $n_c=n$ nothing was added and the answers were TL0's bits; on the $n=32$ validation pieces $e_H$ was at most $9.5\times10^{-16}$ |
+| 2 | **held** | B with $n/8$ blocks at $n_c=16$: the s-channel steady problem's excess 0.785% (TL0's 1.936%), its energy error 1.21%; E4 met on all five meetable problems |
+| 3 | **held** | A with $K=3$ against B with $n/8$ blocks, at $n_c=16$: s-channel steady 1.815% against 0.785%; the step 0.241% against 0.093% as registered, and 3.79% against 1.46% lowered by 300 K |
+| 4 | **held** | with B, the non-right corner blocks hold 0.023 (steady) and 0.034 (step) of the network term, where TL0 left 0.846 and 0.878 there |
+| 5 | **held** | on the four cost pieces with exactly two non-right corners (validation 2,000,104 and 2,000,106 and the s-channel's two end pieces, at $n=128$): B's coarse level, with $n/8$ blocks at $n_c=16$ and its columns' building included, cost a median 0.114 of an exact solve (TL0's 0.045 on the same pieces); both power samples read AC, and no other process ran |
+
+**E4 by arm.**
+- TL0 meets 4 of 6 at $n_c=8$ and 16, and 5 at 32.
+- A meets what TL0 meets.
+- B with $n/16$ blocks meets 5 from $n_c=16$.
+- B with $n/8$ blocks meets 5 at every $n_c$ from 8.
+
+The sixth, the s-channel step lowered by 300 K, no 16-mode expert can meet (§13).
+
+**The excess over the floor, in %** (TL0 at $n_c=4$ from Phase 2's records):
+
+| problem | TL0, $n_c=4$ / 8 / 16 / 32 | A ($K=3$), 16 | B ($n/16$), 16 | B ($n/8$), 8 / 16 / 32 |
+|---|---|---|---|---|
+| s-channel, steady | 3.95 / 2.94 / 1.94 / 1.06 | 1.82 | 1.26 | 1.58 / **0.785** / 0.367 |
+| s-channel, step, lowered | 8.23 / 6.21 / 4.06 / 2.20 | 3.79 | 2.62 | 2.97 / **1.46** / 0.69 |
+| insert-round, steady | 2.18 / 1.14 / 0.569 / 0.257 | 0.557 | 0.567 | 1.12 / 0.560 / 0.252 |
+
+- **The equivalent coarse size** (`twolevel.equivalent_nc`: TL0's excess, interpolated in log–log). On the s-channel, B with $n/8$ blocks at $n_c=16$ is worth TL0 at $n_c^\ast\approx45$ (steady) and 51 (step), extrapolated past 32. That is 465 unknowns per end piece where TL0 needs about 2,000. B with $n/16$ blocks is worth about 26 and A about 17. On insert-round, whose non-right corner blocks hold 4% of the excess, all three are worth about 16.
+- **Where the s-channel's excess sits now.** With B ($n/8$), the non-right corner blocks hold 2–3% of the network term, the side layers 70–72% and the interior 24–28%. Under TL0 the corner blocks held 85–88%. A1's split moves toward the low sines: $j=1$–3 holds 0.69 of the steady problem's term.
+- **A barely moves the corner share** (0.79 and 0.81 against TL0's 0.85 and 0.88), and its gain does not grow with $K$: $K=1$, 2, 3 give 1.819%, 1.818% and 1.815% on the steady problem.
+
+**The modes** (validation pieces, medians at $n_c=16$; $n=32$ / 64 / 128):
+
+| measure | TL0 | A ($K=3$) | B ($n/16$) | B ($n/8$) |
+|---|---|---|---|---|
+| $e_H$, 64 columns | 0.103 / 0.116 / 0.120 | 0.102 / 0.115 / 0.119 | 0.099 / 0.113 / 0.117 | 0.090 / 0.105 / 0.107 |
+| $e_{H,L}$, 36 learned | 0.173 / 0.205 / 0.213 | 0.170 / 0.202 / 0.210 | 0.166 / 0.199 / 0.205 | 0.154 / 0.182 / 0.187 |
+| low group | 0.088 / 0.100 / 0.103 | 0.086 / 0.098 / 0.100 | 0.086 / 0.098 / 0.101 | 0.081 / 0.093 / 0.096 |
+
+- 54 of the 64 pieces have a non-right corner. On those pieces, B ($n/8$) brings each piece's $e_H$ to a median of 0.875–0.888 of TL0's (10th–90th percentiles 0.84–0.94).
+- On W362's ring pieces (a hole's and a round inclusion's, one non-right corner each), B ($n/8$) lowers $e_H$ from 0.109–0.127 to 0.103–0.121.
+- Pieces with only right corners (the rectangles, most of the held-out benchmarks' curved pieces) are TL0's to the bit, as prediction 1 requires.
+
+**The cost** (laptop on AC, alone; $n=128$, $n_c=16$; the coarse level's time over the exact solve's, medians by the piece's non-right corners, the columns' building included):
+
+| non-right corners | pieces | TL0 | A ($K=3$) | B ($n/16$) | B ($n/8$) |
+|---|---|---|---|---|---|
+| 2 | 4 | 0.045 | 0.093 | 0.068 | **0.114** |
+| 3 | 3 | 0.050 | 0.120 | 0.078 | 0.167 |
+| 4 | 10 | 0.049 | 0.158 | 0.076 | 0.250 |
+
+- B's cost grows with its unknowns: $n/8$ blocks add 252 per corner at $n=128$. With four non-right corners, 1,233 coarse unknowns cost a quarter of an exact solve. B with $n/16$ blocks adds 63 per corner at this resolution and stays under 0.08.
+- A's twelve columns cost more than their count suggests: each spreads over a fifth of the piece, which fills the restricted operator.
+- Most generated pieces have three or four non-right corners (§16), so on generic pieces B with $n/8$ blocks costs 0.17–0.25 of an exact solve, against TL0's 0.05.
+
+**What it means.**
+- **B with $n/8$ blocks is the corner treatment.**
+  - Untrained, at $n_c=16$, it meets E4 on every problem a 16-mode expert can meet.
+  - Its extra unknowns are local: one block per non-right corner.
+  - It treats what TL0 left at the s-channel's corners almost entirely.
+- **A, the frozen-tensor singular functions, lowers the s-channel's excess by 6–7% and insert-round's by 2%.** **[AI Inference]:** the corner's error comes from the chart's variation near the corner more than from the singular exponent, as §15 guessed. B treats both.
+- **On generic pieces the gain is smaller:** $e_H$ falls by 10–12% (each piece's ratio a median of 0.875–0.888). What remains there is the side layers' and the interior's, which the network is for.
+- **The owner adopted B with $n/8$ blocks for Phase 4** on 2026-11-10, after the `e4` part ("Adopt B, n/8 (Recommended)"), together with the NC gate's bar as proposed and the comparison budget of 37,500 steps. The training path is built and committed (`279b7ff`), off by default and bit for bit:
+  - `atlas/chartop/coarse_patches.py`: $\mathcal C_e$ in torch, assembled by probing;
+  - `TwoLevelExpert(corners=8)` and `twolevel.host_expert`;
+  - `train.Arm.corners`;
+  - `chartop_data.py --corners`, each example's flags from its chart.
+
+---
+
+## 18. Phase 4: the registration, drafted (2026-11-10; not accepted, nothing pinned)
+
+**Settled by the owner already** (in chat):
+- the formulation;
+- $n_c\in\{8,16,32\}$, 16 the default;
+- E4 the only accuracy gate, CX added, E1 and SE3 reported;
+- branch 2c's B with $n/8$ blocks in TL and TL0;
+- the NC bar as proposed;
+- the comparison budget of 37,500 steps.
+
+**The draft module:** `atlas/chartop/gates_twolevel.py` (`REGISTERED` is `None`). Every bar it shares with the earlier registrations is read from `gates_forms` and `gates_prior`.
+
+**The arms:**
+
+| arm | what | training |
+|---|---|---|
+| TL | S's form (split, corner bubble, strips for $j=9$–15), then $\mathcal C_e$: $n_c=16$ with B's corner patches ($n/8$), on the relative objective with methods 1–3 | from S's weights with their heads (`S/best.pt`, sha256 `e17f881b…a35d`), Phase 3's probe's winner (§14); AdamW at $3\times10^{-4}$ (the probe's rate), S′'s schedule and batches, the strips skipped in training; 37,500 steps; training seeds 0 and 1 |
+| TL0 | TL with zero heads, untrained: its own floor (16, with corners) and the curve at $n_c=4$, 8, 16 and 32 | none |
+| S′ | reused, not trained again (`gates_prior.REUSED`) | none |
+
+TL's start carries S's own 150,000 steps, so its total training is not S′'s. NC, the gate on what the network adds, compares TL with TL0 and does not depend on that history.
+
+**What is judged, once.**
+- TL's seed-0 run is chosen on the validation split.
+- It is evaluated once on a **fresh test split**: seeds 6,000,000–6,002,399, 2,400 pieces as before. The 3,000,000 and 5,000,000 ranges have been evaluated. The split's content sha256 is recorded at registration, before any expert reads it.
+- It is also evaluated on the **held-out benchmark problems** (`benchmarks`' variant `"held-out"`). Their classical 16-mode floors are all under 2% (1.24% at most, the s-channel step lowered by 300 K), so E4 can be met on all six.
+- The six problems Phase 2 and the corner check read are reported beside, as seen.
+- K, D and L are judged on every run.
+
+**The gates:**
+
+| gate | bar |
+|---|---|
+| E4 | the only accuracy gate: every held-out problem, both frames, the bars of `gates_forms` |
+| CX | every test and held-out benchmark piece: CX on the arm's own space $\le10^{-10}$, the particular field likewise wherever there is a load |
+| NC (new) | TL's seed-0 run on the test split against TL0 (16, corners): median $\rho\ge0.3$ and 10th percentile $\ge0$ over the pieces with something to learn. On no held-out problem, in either frame, is TL's energy error above TL0's by more than $10^{-9}$ of it |
+| K, D, L, E3, SE1, SE2, DUAL, KT | as `gates_prior` worded them, on the held-out problems |
+| PR | TL's price under R2's protocol, on a rented whole machine, reported against the classical solve, H2r (0.306) and TL0; "faster" only where measured so |
+| reported | E1 and SE3; S11; the network ledger (ρ by group, $\rho_p$, the coupled attribution, $n_c^\ast$, $\kappa_{\text{kill}}$, the usage controls) |
+
+**Predictions** (drafted; to be registered with the owner's go before training, after checking them against each other and against the code):
+1. CX, K, D and L hold on every run, by structure: Proposition A and Lemma B on $V_e$, and the split form.
+2. **[AI Inference]** NC is met: TL's median test $\rho$ is at least 0.3.
+3. **[AI Inference]** TL meets E4 on all six held-out problems.
+4. **[AI Inference]** By group, $\rho$ is lowest on the hats: on the probe's pieces the hats gave back what they had gained.
+5. **[AI Inference]** PR: TL is not faster than the classical solve. U's forward with its strips already cost 1.48 and 0.78 of an exact solve at $n=64$ and 128 (§13).
+
+**Still to build, after the owner accepts (the handoff's Phase 4):**
+- `scripts/chartop_register_twolevel.py`, modelled on `chartop_register_squares.py`. It hash-pins the gate module, the coarse level and its torch path, the two-level expert, `train.py`'s options and the price protocol, and records the test split's content sha256 and the held-out floors. A test adds one byte to a pinned copy and requires `check_pin` to fail.
+- **The price protocol:** R2's per-problem count, AC and sleep checks, four BLAS threads, best of 5, A/A controls. It is dry-run on control problems on a rented whole machine before pinning.
+- **Then Phase 5, rented:**
+  - data on a CPU box: Stage 0's training seeds again with `--corners`, the validation split labelled, the test split;
+  - training on a GPU box at no more than \$0.70 an hour, after a step is priced;
+  - the one evaluation: accuracy on the laptop on AC, the price on the rented whole machine.
+
+  **[AI Inference]:** in all, a few dollars, inside the handoff's \$15 ceiling. Each rental is asked separately.
+
+**The owner's decision:** accept this draft (the start from S's weights, the rate, the held-out problems, the predictions), amend it, or stop.
 
 ---
 
