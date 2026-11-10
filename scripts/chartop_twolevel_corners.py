@@ -38,8 +38,8 @@ measurement (a stopped run resumes where it stopped):
   start on battery.
 
 **The predictions** (`PREDICTIONS`) are section 15's, each with the reading `judge` applies
-(section 16).  They are registered, with the owner's go, before any part runs on the pieces
-above; until then `REGISTERED` is ``None`` and only ``--smoke`` runs.  ``--smoke`` runs every
+(section 16).  They were registered, with the owner's go (`REGISTERED`), before any part ran
+on the pieces above; while `REGISTERED` is ``None`` only ``--smoke`` runs.  ``--smoke`` runs every
 code path on seeds and a layout no registration draws (validation-style seeds from
 9,000,100 at n = 16 and 32; `benchmarks_squares` seed 9,000,008, which has eight pieces with
 a non-right corner, at n = 32), into a scratch directory, and prints only the controls.
@@ -101,7 +101,9 @@ TOL = 1e-12                          # CX and K, as Phase 2
 TOP_EH = 1e-10                       # n_c = n: exact
 SMOKE_SEED, SMOKE_LAYOUT_SEED, SMOKE_BENCH_N = 9_000_100, 9_000_008, 32
 
-REGISTERED = None                    # set, with the owner's go, before any registered part runs
+REGISTERED = ("registered by the owner on 2026-11-10, in chat ('Register as drafted (Recommended)'), "
+              "as drafted in the rework page's section 15 with the readings of its section 16, "
+              "before any part ran on the pieces it measures")
 
 PREDICTIONS = (
     {"id": "1",

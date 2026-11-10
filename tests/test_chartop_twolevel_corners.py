@@ -267,13 +267,14 @@ def test_the_arms():
 # ---------------------------------------------------------------------------
 
 
-def test_nothing_registered_runs_before_the_owners_go(tmp_path):
-    assert T.REGISTERED is None
+def test_nothing_registered_runs_before_the_owners_go(monkeypatch):
+    assert "2026-11-10" in T.REGISTERED and "Register as drafted (Recommended)" in T.REGISTERED
+    with pytest.raises(SystemExit):
+        T.main(["--part", "modes", "--smoke"])                # the smoke run never writes the record
+    monkeypatch.setattr(T, "REGISTERED", None)                # before the owner's go: nothing ran
     for part in ("modes", "e4", "cost"):
         with pytest.raises(SystemExit):
             T.main(["--part", part])
-    with pytest.raises(SystemExit):
-        T.main(["--part", "modes", "--smoke"])                # the smoke run never writes the record
 
 
 def test_the_registered_run_keeps_its_seeds_record_and_sizes(monkeypatch, tmp_path):
@@ -312,7 +313,7 @@ def test_the_smoke_run_holds_its_controls(tmp_path, monkeypatch):
     assert T.main(["--part", "modes", "--smoke", "--ns", "32", "--out", out]) == 0
     assert T.main(["--part", "e4", "--smoke", "--problem", "step", "--out", out]) == 0
     m = json.loads(open(os.path.join(out, "modes-val-n32.json"), encoding="utf-8").read())
-    assert len(m["rows"]) == 2 and m["provenance"]["coarse_sha256"] and m["provenance"]["registered"] is None
+    assert len(m["rows"]) == 2 and m["provenance"]["coarse_sha256"] and m["provenance"]["registered"] == T.REGISTERED
     assert [r["non_right"] for r in m["rows"]] == [[0, 1, 2, 3], []]
     for r in m["rows"]:
         assert r["top"]["e_H"] < 1e-10

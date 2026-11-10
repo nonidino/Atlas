@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted and accepted (§15). It is built, and its untrained check is smoke-tested; the check's five predictions await registration (§16). Phase 3's network study is built and its overfit probe is running on the laptop (§14). Nothing is rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted and accepted (§15). It is built, and its untrained check is smoke-tested; the check's five predictions were registered on the owner's go on 2026-11-10, before it ran (§16). Phase 3's network study is built and its overfit probe is running on the laptop (§14). Nothing is rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -566,9 +566,11 @@ Lemma B holds unchanged, because every column still sees the same operator. On a
 
 ---
 
-## 16. Branch 2c: the build, the script and the predictions' readings (drafted 2026-11-10, not registered)
+## 16. Branch 2c: the build, the script and the predictions' readings (registered 2026-11-10)
 
-**Built.** Nothing has run on the pieces the check measures.
+**Registered** by the owner on 2026-11-10, in chat ("Register as drafted (Recommended)"): §15's five predictions as drafted, with the readings below, before any part ran on the pieces they read. The script carries the registration (`REGISTERED`). Its SHA-256 at registration is `cc5da98c24a86eef594ab878162df55c89b3635a1a73e5ccb9335cc31c6f2d82`, and `coarse.py`'s is `a17c6a7c70c25649cf847a82d2b98a17a390a0515068c69b1fb503a38cfce8e8`; every record stores both.
+
+**Built.** Nothing had run on the pieces the check measures when it was registered.
 
 | file | what |
 |---|---|
@@ -634,7 +636,7 @@ Lemma B holds unchanged, because every column still sees the same operator. On a
 
 **Running it**, on the laptop on AC once the probe has ended: `e4` by problem and `modes` by resolution in parallel processes, then `cost` alone. Records go to `out/chartop/twolevel/corners/`; Phase 2's are left as they are.
 
-**The owner's decision:** register the five predictions with these readings, amend them, or stop.
+**The owner's decision** (register the five predictions with these readings, amend them, or stop): registered as drafted, above.
 
 ---
 
