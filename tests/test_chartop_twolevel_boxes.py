@@ -91,9 +91,45 @@ def test_the_price_payload_is_one_commit_and_nothing_else(tmp_path):
     assert "chartop/atlas/chartop/coarse_patches.py" in names and "chartop/atlas/workbench/__init__.py" in names
 
 
+def test_the_written_plan_is_the_registration(tmp_path):
+    """``out/chartop/plan-twolevel.json`` passes `check_twolevel_plan` once its weights path
+    names S's weights (here a stand-in whose hash is taken as S's)."""
+    import json
+    plan = json.load(open(os.path.join(ROOT, "out", "chartop", "plan-twolevel.json"), encoding="utf-8"))
+    assert plan["registration"] == "gates_twolevel" and plan["data"] == {"train": 50000, "val": 600}
+    assert all(a["init_from"] == "weights/S/best.pt" for a in plan["arms"])
+    w = tmp_path / "best.pt"
+    w.write_bytes(b"S")
+    for a in plan["arms"]:
+        a["init_from"] = str(w)
+    CT.check_twolevel_plan(plan, sha256=_ok)
+
+
+def test_the_budget_projects_tl_from_its_own_price():
+    import json
+    import chartop_budget as B
+    plan = json.load(open(os.path.join(ROOT, "out", "chartop", "plan-twolevel.json"), encoding="utf-8"))
+    rows = [{"arm": "TL", "n": n, "batch": b, "step_s": s, "forward_s": f}
+            for n, b, s, f in ((32, 32, 0.10, 0.20), (64, 32, 0.20, 0.40), (128, 8, 0.30, 0.30))]
+    price = {"twolevel": {"rows": rows, "projection": {"step_mix": {"32": 0.3, "64": 0.4, "128": 0.3}}},
+             "generator": {"examples_per_s": 50.0}, "gpu": "test"}
+    rec = B.project_twolevel(plan, price, 0.2, set(), 0.5)
+    mean = 0.3 * 0.10 + 0.4 * 0.20 + 0.3 * 0.30
+    assert all(abs(r["mean_step_s"] - mean) < 1e-12 and r["validations"] == 15 for r in rec["runs"])
+    data_h = B.LABELLED_COST * 50_600 / 50.0 / 3600.0
+    assert abs(rec["data_hours_per_box"] - data_h) < 1e-12
+    hours = sum(r["hours"] for r in rec["runs"]) + data_h + B.FIXED_HOURS_PER_BOX
+    assert abs(rec["registration"]["usd"] - (hours * 0.2 + 0.5)) < 1e-12
+    bad = json.loads(json.dumps(plan))
+    bad["arms"][0]["registered"] = "S"
+    with pytest.raises(SystemExit):
+        B.project_twolevel(bad, price, 0.2, set(), 0.0)
+
+
 def test_the_runners_carry_the_registrations_stages():
     price = open(os.path.join(ROOT, "scripts", "chartop_price_twolevel_box_run.sh"), encoding="utf-8").read()
     for s in ("smoke)", "dry-run)", "GT.INIT_SHA256", "export WEIGHTS", "vastai stop instance", "threadpoolctl==3.5.0"):
         assert s in price, s
     box = open(os.path.join(ROOT, "scripts", "chartop_box_run.sh"), encoding="utf-8").read()
     assert 'DATA_CORNERS' in box and "$CF" in box and "vastai stop instance" in box
+    assert "DATA_LIGHT" in box and "$LL" in box and "chartop_price.py --twolevel" in box

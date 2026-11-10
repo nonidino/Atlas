@@ -1,0 +1,80 @@
+{
+ "written": "2026-11-10T15:22:34-05:00",
+ "registration": "gates_twolevel",
+ "status": "drafted with the registration, not approved: the training box is the owner's go; on it, nothing trains unless its own price of TL's step (chartop_price.py --twolevel) puts both runs within the ceiling (chartop_budget.py), and chartop_train.py checks this plan against gates_twolevel and S's weights against their sha256 first",
+ "data": {
+  "train": 50000,
+  "val": 600
+ },
+ "data_options": "DATA_CORNERS=1 DATA_LIGHT=1: the training split with its corner flags and light labels, the validation split labelled with its corner flags",
+ "val_examples": {
+  "32": 179,
+  "64": 293,
+  "128": 128
+ },
+ "arms": [
+  {
+   "name": "TL-s0",
+   "registered": "TL",
+   "form": "split",
+   "backbone": "unet",
+   "size": "1M",
+   "p_size": "1M",
+   "kind": "sine-hat",
+   "objective": "relative",
+   "data": "train",
+   "bubble": "corner",
+   "strips": true,
+   "hats": "learned",
+   "strips_in_training": false,
+   "coarse": 16,
+   "corners": 8,
+   "drop_easy": 1e-08,
+   "lr": 0.0003,
+   "head_init": "loaded",
+   "steps": 37500,
+   "val_every": 2500,
+   "seed": 0,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "init_from": "weights/S/best.pt"
+  },
+  {
+   "name": "TL-s1",
+   "registered": "TL",
+   "form": "split",
+   "backbone": "unet",
+   "size": "1M",
+   "p_size": "1M",
+   "kind": "sine-hat",
+   "objective": "relative",
+   "data": "train",
+   "bubble": "corner",
+   "strips": true,
+   "hats": "learned",
+   "strips_in_training": false,
+   "coarse": 16,
+   "corners": 8,
+   "drop_easy": 1e-08,
+   "lr": 0.0003,
+   "head_init": "loaded",
+   "steps": 37500,
+   "val_every": 2500,
+   "seed": 1,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "init_from": "weights/S/best.pt"
+  }
+ ],
+ "minutes": {
+  "TL-s0": 360,
+  "TL-s1": 360
+ },
+ "note": "the minutes are a wall-clock guard only, set after the box's own price"
+}

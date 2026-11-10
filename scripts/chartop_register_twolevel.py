@@ -68,6 +68,12 @@ PINNED = {"gate module": "atlas/chartop/gates_twolevel.py",
           "price box runner": "scripts/chartop_price_twolevel_box_run.sh",
           "training payload": "scripts/chartop_box_payload.py",
           "training box": "scripts/chartop_box_run.sh"}
+#: what a price run executes (`chartop_price_twolevel.py`'s imports, the expert it builds and the
+#: loader of S's weights): the pin compares these, and only these, with the passing dry run's
+#: commit.  The training side (the data's flags and light labels, the training runner and box)
+#: is pinned by hash but no price run reads it.
+PRICE_CODE = ("gate module", "the coarse level", "its torch path", "the expert", "training",
+              "price protocol", "price payload", "price box runner")
 #: pinned already by earlier registrations; each hash must agree with every pin file that lists it
 ALREADY_PINNED = {"reads the bars of": "atlas/chartop/gates_forms.py",
                   "and through it": "atlas/chartop/gates.py",
@@ -212,7 +218,8 @@ def refusals_before_pin() -> list:
         if not (run["passes"] is True and run["on_price_cpu"] and run["machine"]["cpu"] == GS.PRICE_CPU):
             why.append("the dry run did not pass on the pricing CPU")
         code = str(run.get("code") or "")
-        for rel in [*PINNED.values(), *ALREADY_PINNED.values()]:
+        ran = [PINNED[k] for k in PRICE_CODE] + [*ALREADY_PINNED.values(), *RECORDED_BESIDE.values()]
+        for rel in ran:
             if not re.fullmatch(r"[0-9a-f]{40}", code) or not same_as_run(rel, code):
                 why.append(f"{rel} is not the file the passing dry run ran ({code[:7]})")
     return why

@@ -65,6 +65,11 @@ for st in $STAGES; do
       # E5 of the registration after the forms' evaluation (atlas/chartop/gates_prior.py)
       python scripts/chartop_price.py --prior --out out > price-prior.log 2>&1
       echo $? > price-prior.done ;;
+    price-twolevel)
+      # the registration after the Stage 0 rework (atlas/chartop/gates_twolevel.py): TL's training
+      # step and forward on this box, before anything trains; the budget stage reads it
+      python scripts/chartop_price.py --twolevel --out out > price-twolevel.log 2>&1
+      echo $? > price-twolevel.done ;;
     budget)
       # the registration after Stage 0: nothing trains unless this box's own prices put the
       # whole registration within the ceiling (scripts/chartop_budget.py); DPH is this box's rate

@@ -383,6 +383,81 @@ def prior_times(dev, ns=(32, 64, 128)) -> dict:
     return {"rows": rows, "projection": proj}
 
 
+def twolevel_times(dev, ns=(32, 64, 128)) -> dict:
+    """The training step of `gates_twolevel`'s arm TL, priced before training: S's form, then the
+    coarse correction at `N_C` with B's corner patches (`coarse_patches`, the batch's own flags),
+    the twin's reference (TL0) and the relative objective, with augmentation moving the flags and
+    the light labels as `train.train` does; and its forward with the strips, as validation and
+    the host call it.  At the registered (n, batch) pairs, on drawn examples with their flags and
+    light labels (`chartop_data.light_labels`).  Random weights: zero heads could flatter.  The
+    projection: the mean step over Stage 0's mix, and the hours for TL's steps and seeds."""
+    import chartop_data
+    from atlas.chartop import coarse_patches as cpt, gates_forms as GF, gates_twolevel as GT, twolevel as tl
+    autocast = dev.type == "cuda"
+    batch = dict(GF.E5_PRICED)
+    c = GT.COMMON
+    rows = []
+    for n in ns:
+        exs = _examples(n, batch[n], data.SEEDS["train"] + 50_000 + 1000 * n)
+        arrs = [data.arrays(e) for e in exs]
+        bucket = {k: np.stack([a[k] for a in arrs]) for k in tr.KEYS}
+        bucket["corners"] = np.stack([cpt.corner_flags(e.problem.chart.X) for e in exs])
+        lights = [chartop_data.light_labels(a) for a in arrs]
+        bucket.update(lam=np.stack([x["lam"] for x in lights]),
+                      trace_Lambda=np.array([x["trace_Lambda"] for x in lights]),
+                      up_energy=np.array([x["up_energy"] for x in lights]))
+        T = tr.to_device(bucket, dev, True)
+        idx = torch.arange(len(exs), device=dev)
+        e = tl.make(c["backbone"], c["size"], c["form"], c["kind"], c["m"], p_size=c["p_size"], bubble=c["bubble"],
+                    strips=c["strips"], hats=c["hats"], n_c=GT.N_C, corners=GT.CORNERS).to(dev)
+        for p in e.parameters():
+            torch.nn.init.normal_(p, 0.0, 0.02)
+        twin = tl.zero_heads_twin(e)
+        b0, _lab0 = tr._batch(T, idx, True)
+        row = {"arm": "TL", "n": n, "batch": len(exs), "parameters": md.parameters(e), "config": e.config(),
+               "non_right_corners": int(bucket["corners"].sum())}
+
+        def fwd():
+            e.eval()
+            with torch.no_grad(), torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
+                tl.call(e, b0)
+        row["forward_s"] = _median_time(fwd, dev)
+        e.train()
+        opt = torch.optim.AdamW(e.parameters(), lr=GT.LR, weight_decay=1e-5)
+        rng = np.random.default_rng(0)
+
+        def step():
+            b, lab = tr._batch(T, idx, True)
+            k = int(rng.integers(8))
+            b = md.d4(b, k)
+            b["corners"] = tr.d4_corners(b["corners"], k)
+            lab = tr.d4_light_labels(lab, c["kind"], c["m"], n, k)
+            with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
+                H, up = tl.call(e, b, strip_solve=False)
+            ref = tl.reference(twin, b, lab, strip_solve=False, easy=c["drop_easy"])
+            loss = tl.relative_objective(b, H, up, ref, c["kind"], c["m"])["loss"].mean()
+            opt.zero_grad(set_to_none=True)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(e.parameters(), 1.0)
+            opt.step()
+        if dev.type == "cuda":
+            torch.cuda.reset_peak_memory_stats()
+        row["step_s"] = _median_time(step, dev, warm=3, reps=8)
+        row["peak_gib"] = torch.cuda.max_memory_allocated() / 2 ** 30 if dev.type == "cuda" else None
+        rows.append(row)
+        print(f"twolevel TL n={n:3d} batch={len(exs):2d}: forward {row['forward_s']:.4f} s, step {row['step_s']:.4f} s",
+              flush=True)
+    w = {n: STAGE0_TRAIN_EXAMPLES[n] / batch[n] for n in ns}
+    tot = sum(w.values())
+    w = {n: v / tot for n, v in w.items()}
+    mean = sum(w[r["n"]] * r["step_s"] for r in rows)
+    proj = {"step_mix": {str(n): w[n] for n in ns}, "arms": {"TL": {
+        "mean_step_s": mean, "registered_steps": GT.STEPS * len(GT.SEEDS),
+        "hours": mean * GT.STEPS * len(GT.SEEDS) / 3600.0}}}
+    print("projection", json.dumps(proj), flush=True)
+    return {"rows": rows, "projection": proj}
+
+
 def _draw(seed):
     t0 = time.perf_counter()
     data.draw(seed)
@@ -415,6 +490,8 @@ def main() -> int:
                     help="E5 of gates_forms: the registered arms' forms (and the generator), not Stage 0's")
     ap.add_argument("--prior", action="store_true",
                     help="E5 of gates_prior: arms P and PG beside S' as trained (and the generator)")
+    ap.add_argument("--twolevel", action="store_true",
+                    help="gates_twolevel's arm TL: its training step and forward (and the generator)")
     args = ap.parse_args()
     dev = torch.device(args.device)
     if args.threads:
@@ -440,7 +517,11 @@ def main() -> int:
         from atlas.chartop import gates_prior as GP
         rec["registration"] = GP.REGISTERED
         rec["prior"] = prior_times(dev, (32,) if args.quick else tuple(n for n, _b in GP.E5_PRICED))
-    registered = args.forms or args.prior
+    if args.twolevel:
+        from atlas.chartop import gates_forms as GF, gates_twolevel as GT
+        rec["registration"] = GT.REGISTERED
+        rec["twolevel"] = twolevel_times(dev, (32,) if args.quick else tuple(n for n, _b in GF.E5_PRICED))
+    registered = args.forms or args.prior or args.twolevel
     if "forward" not in skip and not registered:
         rec["forward"] = forward_times(dev, (64,) if args.quick else (32, 64, 128),
                                        (16,) if args.quick else (1, 16))
@@ -450,7 +531,8 @@ def main() -> int:
         rec["generator"] = generator_rate(chartop_cpus.default_workers(1), args.gen_count)
         print("generator", rec["generator"], flush=True)
     os.makedirs(args.out, exist_ok=True)
-    name = "price-%s%s-%s.json" % ("forms-" if args.forms else "prior-" if args.prior else "",
+    name = "price-%s%s-%s.json" % ("forms-" if args.forms else "prior-" if args.prior else
+                                   "twolevel-" if args.twolevel else "",
                                    socket.gethostname().split(".")[0][:24],
                                    dt.datetime.now().strftime("%Y%m%d-%H%M%S"))
     with open(os.path.join(args.out, name), "w", encoding="utf-8") as fh:

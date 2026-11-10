@@ -39,6 +39,39 @@ def _label(run: dict) -> str:
     return "S" if run.get("strips_in_training", True) else "S, strips only at validation"
 
 
+def project_twolevel(plan: dict, price: dict, dph: float, only: set, spent: float) -> dict:
+    """A ``gates_twolevel`` plan, from a ``price-twolevel`` record (`chartop_price.py
+    --twolevel`): each run of TL at the measured step; each validation at twice TL's forward
+    (TL and its twin, TL0) over the validation split; the data from the generator's rate, every
+    training example labelled light and every validation example labelled, each costed as a
+    labelled one; both runs on this one box."""
+    part = price["twolevel"]
+    mix = {int(k): v for k, v in part["projection"]["step_mix"].items()}
+    step = {r["n"]: r["step_s"] for r in part["rows"]}
+    fwd = {r["n"]: r["forward_s"] / r["batch"] for r in part["rows"]}
+    val_n = {int(k): v for k, v in plan["val_examples"].items()}
+    runs = []
+    for d in plan["arms"]:
+        if d.get("registered") != "TL":
+            raise SystemExit(f"run {d.get('name')!r} is not gates_twolevel's TL")
+        mean = sum(mix[n] * step[n] for n in mix)
+        per_val = VALIDATION_MARGIN * 2.0 * sum(val_n[n] * fwd[n] for n in val_n)
+        nval = math.ceil(d["steps"] / d["val_every"])
+        hours = (mean * d["steps"] + per_val * nval) / 3600.0
+        runs.append({"name": d["name"], "priced_as": "TL", "mean_step_s": mean, "validation_s": per_val,
+                     "validations": nval, "hours": hours, "on_this_box": (not only) or d["name"] in only})
+    rate = price["generator"]["examples_per_s"]
+    data_h = LABELLED_COST * (plan["data"]["train"] + plan["data"]["val"]) / rate / 3600.0
+    per_box = data_h + FIXED_HOURS_PER_BOX
+    reg_hours = sum(r["hours"] for r in runs) + per_box
+    box_hours = sum(r["hours"] for r in runs if r["on_this_box"]) + per_box
+    return {"price_record": price.get("_path"), "gpu": price.get("gpu"), "dph": dph, "runs": runs,
+            "data_hours_per_box": data_h, "fixed_hours_per_box": FIXED_HOURS_PER_BOX,
+            "this_box": {"hours": box_hours, "usd": box_hours * dph},
+            "registration": {"hours": reg_hours, "usd": reg_hours * dph + spent, "spent_usd": spent,
+                             "rule": "both runs of TL on one box like this one, at this box's rate"}}
+
+
 def project(plan: dict, price: dict, dph: float, only: set, spent: float) -> dict:
     """``plan["registration"] == "gates_prior"`` reads the ``"prior"`` part of a
     ``price-prior`` record, each run costed as its registered arm (P or PG), forward and
@@ -91,13 +124,14 @@ def main() -> int:
     ap.add_argument("--out", default="budget.json")
     args = ap.parse_args()
     plan = json.load(open(args.plan, encoding="utf-8"))
-    kind = "prior" if plan.get("registration") == "gates_prior" else "forms"
+    kind = {"gates_prior": "prior", "gates_twolevel": "twolevel"}.get(plan.get("registration"), "forms")
     files = sorted(glob.glob(os.path.join(args.price_dir, f"price-{kind}-*.json")), key=os.path.getmtime)
     if not files:
         raise SystemExit(f"no price-{kind} record: price this box first")
     price = json.load(open(files[-1], encoding="utf-8"))
     price["_path"] = os.path.basename(files[-1])
-    rec = project(plan, price, args.dph, set(filter(None, args.only.split(","))), args.spent)
+    proj = project_twolevel if kind == "twolevel" else project
+    rec = proj(plan, price, args.dph, set(filter(None, args.only.split(","))), args.spent)
     rec["ceiling_usd"] = args.ceiling
     rec["within"] = bool(rec["registration"]["usd"] <= args.ceiling)
     with open(args.out, "w", encoding="utf-8") as fh:
