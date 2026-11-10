@@ -76,6 +76,11 @@ class Arm:
     #: the relative objective (``objective="relative"``, two-level arms only) leaves out a piece's
     #: term when TL0's error there is below this fraction of its own energy, and counts it
     drop_easy: float = 1e-8
+    #: branch 2c's corner treatment (two-level arms only): None, as before; ``frac`` (8): the
+    #: coarse space enlarged at each example's non-right corners with its blocks of n/frac
+    #: (`coarse_patches`).  The flags come from each shard's ``corners_`` file
+    #: (`scripts/chartop_corner_flags.py`), which `load_split` then requires
+    corners: int | None = None
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -102,9 +107,10 @@ def _append(path: str, rec: dict) -> None:
 
 
 def load_split(directory: str, split: str, limit: int | None = None,
-               with_labels: bool = False, kind: str = "sine-hat") -> dict:
+               with_labels: bool = False, kind: str = "sine-hat", with_corners: bool = False) -> dict:
     """{n: {key: array}} for one split, every shard concatenated (and the labels when
-    asked for; examples without labels are dropped then)."""
+    asked for; examples without labels are dropped then).  ``with_corners``: each shard's
+    ``corners_`` file too, its seeds checked against the shard's (``corners`` [N, 4] bool)."""
     out: dict[int, dict] = {}
     files = sorted(glob.glob(os.path.join(directory, f"{split}_n*_*.npz")))
     if not files:
@@ -121,6 +127,11 @@ def load_split(directory: str, split: str, limit: int | None = None,
             zl = np.load(lf, allow_pickle=False)
             for k in ("H", "up", "trace_Lambda", "up_energy", "lseed"):
                 b.setdefault(k, []).append(zl[k])
+        if with_corners:
+            zc = np.load(os.path.join(directory, "corners_" + os.path.basename(f)), allow_pickle=False)
+            if not np.array_equal(zc["cseed"], z["seed"]):
+                raise ValueError(f"the corner flags and the examples disagree on seeds in {f}")
+            b.setdefault("corners", []).append(np.asarray(zc["corners"], bool))
     for n, b in out.items():
         for k in list(b):
             b[k] = np.concatenate(b[k])
@@ -143,6 +154,8 @@ def to_device(bucket: dict, device, labels: bool, labels_device=None) -> dict:
     labels, which are large, to ``labels_device`` (pinned host memory by default on a
     GPU) and moved per batch."""
     t = {k: torch.tensor(bucket[k], dtype=torch.float32, device=device) for k in KEYS}
+    if "corners" in bucket:
+        t["corners"] = torch.tensor(bucket["corners"], dtype=torch.bool, device=device)
     if labels:
         ld = labels_device or "cpu"
         for k in ("H", "up"):
@@ -157,6 +170,8 @@ def _batch(t: dict, idx, labels: bool):
     b = {k: t[k][idx] for k in KEYS}
     for k in ("a11", "a12", "a22", "sigma", "w", "g", "s0"):
         b[k] = b[k].to(torch.float64)
+    if "corners" in t:
+        b["corners"] = t["corners"][idx]
     lab = None
     if labels:
         n = t["inputs"].shape[-1] - 1
@@ -224,11 +239,14 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         raise ValueError("the relative objective is the two-level expert's: set Arm.coarse")
     if arm.head_init not in ("zero", "loaded"):
         raise ValueError(f"head_init {arm.head_init!r}: 'zero' or 'loaded'")
+    if arm.corners is not None and arm.coarse is None:
+        raise ValueError("the corner treatment enlarges the coarse level: set Arm.coarse")
     torch.manual_seed(arm.seed)
     rng = np.random.default_rng(arm.seed)
     labelled = arm.objective in ("supervised", "relative")
-    tr = load_split(data_dir, arm.data, arm.limit, with_labels=labelled, kind=arm.kind)
-    va = load_split(data_dir, val_split, None, with_labels=True, kind=arm.kind)
+    flags = arm.corners is not None
+    tr = load_split(data_dir, arm.data, arm.limit, with_labels=labelled, kind=arm.kind, with_corners=flags)
+    va = load_split(data_dir, val_split, None, with_labels=True, kind=arm.kind, with_corners=flags)
     T = {n: to_device(b, dev, labelled) for n, b in tr.items()}
     V = {}
     for n, b in va.items():
@@ -240,7 +258,8 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
                          bubble=arm.bubble, strips=arm.strips, hats=arm.hats).to(dev)
     else:
         expert = tl.make(arm.backbone, arm.size, arm.form, arm.kind, p_size=arm.p_size,
-                         bubble=arm.bubble, strips=arm.strips, hats=arm.hats, n_c=arm.coarse).to(dev)
+                         bubble=arm.bubble, strips=arm.strips, hats=arm.hats, n_c=arm.coarse,
+                         corners=arm.corners).to(dev)
     if arm.init_from is not None:
         st0 = torch.load(arm.init_from, map_location=dev, weights_only=False)
         expert.load_state_dict(st0["model"], strict=True)

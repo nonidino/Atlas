@@ -15,6 +15,10 @@ the stored problem.  ``--name`` writes the seeds of ``--split`` under another na
 C2's two arms train on ``train-c2``, the first examples of ``train`` drawn again with labels.  ``manifest-<split>.json`` records the seeds, the generator's
 source hash, counts, timings, rejections and coverage -- the definition of the data,
 since floating-point outputs differ in the last bit between platforms.
+``--corners`` adds ``corners_<split>_n<res>_<k>.npz``: each example's non-right corners
+(``corners`` [N, 4] bool, from its chart: `coarse_patches.corner_flags`) and its seed
+(``cseed``), which the Stage 0 rework's corner treatment trains with (`train.Arm.corners`).
+Without it the output is as before, byte for byte.
 """
 from __future__ import annotations
 
@@ -44,7 +48,8 @@ SPLIT_SEED = dict(SEED_BASE, **{"test-prior": PRIOR_TEST_SEED_BASE})
 
 
 def _draw_one(args):
-    seed, split, label_kinds = args
+    seed, split, label_kinds = args[:3]
+    want_corners = bool(args[3]) if len(args) > 3 else False
     from atlas.chartop import data, ports
     t0 = time.perf_counter()
     if split == "train-conformal":
@@ -62,7 +67,11 @@ def _draw_one(args):
         L = data.labels_from_arrays(a, Q)
         labs[kind] = {"H": L["H"].T.astype(np.float32), "up": L["up"].astype(np.float32),
                       "trace_Lambda": L["trace_Lambda"], "up_energy": L["up_energy"]}
-    return ex.n, a, meta, labs, time.perf_counter() - t0
+    flags = None
+    if want_corners:
+        from atlas.chartop import coarse_patches
+        flags = coarse_patches.corner_flags(ex.problem.chart.X)
+    return ex.n, a, meta, labs, time.perf_counter() - t0, flags
 
 
 def source_hash() -> str:
@@ -98,6 +107,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--shard", type=int, default=1000)
     ap.add_argument("--labels", default="", help="comma-separated port bases to label")
     ap.add_argument("--name", default=None, help="the written split's name (default --split)")
+    ap.add_argument("--corners", action="store_true",
+                    help="also write each shard's corner flags (corners_<shard>.npz)")
     return ap
 
 
@@ -132,6 +143,10 @@ def main() -> int:
                 lab["lseed"] = np.array([c[2]["seed"] for c in chunk])
                 pre = "labels_" if kind == "sine-hat" else f"labels-{kind}_"
                 _write(args.out, pre + name, lab)
+            if args.corners:
+                _write(args.out, "corners_" + name,
+                       {"corners": np.stack([c[4] for c in chunk]).astype(bool),
+                        "cseed": np.array([c[2]["seed"] for c in chunk])})
             if not final:
                 break
     # one BLAS/OpenMP thread per worker, set before the workers import numpy:
@@ -141,9 +156,9 @@ def main() -> int:
     ctx = mp.get_context("spawn")
     with ctx.Pool(args.workers) as pool:
         done = 0
-        for n, a, meta, labs, dt in pool.imap(_draw_one, [(s, args.split, kinds) for s in seeds],
-                                              chunksize=8):
-            buckets[n].append((n, a, meta, labs))
+        for n, a, meta, labs, dt, flags in pool.imap(_draw_one, [(s, args.split, kinds, args.corners)
+                                                                 for s in seeds], chunksize=8):
+            buckets[n].append((n, a, meta, labs, flags))
             times.append(dt)
             rej += meta["rejected"]
             cover[(n, min(3, int(meta["sup_mu"] / 0.15)), meta["freq"], meta["family"])] += 1
@@ -162,6 +177,8 @@ def main() -> int:
            "rejected_charts": rej,
            "coverage": {f"n={k[0]} mu_bin={k[1]} freq={k[2]} family={k[3]}": v
                         for k, v in sorted(cover.items())}}
+    if args.corners:
+        man["corners"] = True
     with open(os.path.join(args.out, f"manifest-{outname}-{args.start}.json"), "w",
               encoding="utf-8") as fh:
         json.dump(man, fh, indent=1)

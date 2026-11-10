@@ -15,6 +15,14 @@ initialisation) it is TL0.  Two paths for ``C``:
   per example (`coarse.CoarseSpace`), no gradient.  The two agree to rounding (tested).
 `call` is `forms.call` for this expert (that function is pinned): it passes the arrays.
 
+**The corner treatment** (branch 2c's B, adopted for Phase 4 on 2026-11-10): ``corners=frac``
+enlarges the coarse space at each example's non-right corners with the fine hats of their
+blocks of ``n/frac`` (`coarse_patches`, `coarse.corner_patch_columns`).  The flags come with
+the batch (``corners`` [B, 4] bool, from each piece's chart: `coarse_patches.corner_flags`),
+and both paths need them.  ``corners=None``, the default, is the coarse grid alone, bit for
+bit.  Through the host, the same expert is `host_expert`: the form inside
+`coarse.CoarseCorrected` with the treatment, which reads each piece's own chart.
+
 **The relative objective** (the handoff's method 1).  Per piece, over the learned columns
 ``L`` (the hats and ``j = 1-8``),
 
@@ -43,6 +51,7 @@ import numpy as np
 import torch
 
 from . import coarse as co
+from . import coarse_patches as cpt
 from . import fe
 from . import forms as fm
 from . import model as md
@@ -85,11 +94,15 @@ class TwoLevelExpert(fm.KernelExpert):
     def __init__(self, form: str = "split", backbone: str = "unet", size: str = "1M",
                  kind: str = "sine-hat", m: int = 16, p_size: str | None = None,
                  bubble: str = "square", strips: bool = False, hats: str = "learned",
-                 n_c: int | None = None):
+                 n_c: int | None = None, corners: int | None = None):
         super().__init__(form, backbone, size, kind, m, p_size, bubble, strips, hats)
         if n_c is not None and (n_c < 2 or n_c & (n_c - 1)):
             raise ValueError(f"n_c {n_c!r}: a power of two, at least 2")
+        if corners is not None and (n_c is None or corners < 4 or corners & (corners - 1)):
+            raise ValueError(f"corners {corners!r}: the corner blocks' n/frac, a power of two of at "
+                             "least 4, and only with a coarse size")
         self.n_c = n_c
+        self.corners = corners
 
     @property
     def needs_operator(self) -> bool:
@@ -98,9 +111,12 @@ class TwoLevelExpert(fm.KernelExpert):
     def config(self) -> dict:
         c = super().config()
         c["n_c"] = self.n_c
+        if self.corners is not None:
+            c["corners"] = self.corners
         return c
 
-    def forward(self, x, s, s0, w=None, g=None, ops=None, strip_solve: bool = True, arrays=None):
+    def forward(self, x, s, s0, w=None, g=None, ops=None, strip_solve: bool = True, arrays=None,
+                corner_flags=None):
         form_ops = ops if (self.strips or self.hats == "classical") else None
         H, up = super().forward(x, s, s0, w, g, form_ops, strip_solve)
         self.last_uncorrected = (H.detach(), up.detach(), self.last_level)
@@ -110,21 +126,38 @@ class TwoLevelExpert(fm.KernelExpert):
         if self.n_c > n:
             raise ValueError(f"n_c = {self.n_c} on a grid of n = {n}")
         s0 = s0.to(torch.float64)
+        flags = self._flags(corner_flags, x.shape[0])
         if arrays is not None:
-            return self._torch_path(H, up, s0, w, g, arrays, n)
+            return self._torch_path(H, up, s0, w, g, arrays, n, flags)
         if ops is None or len(ops) != x.shape[0]:
             raise ValueError("the coarse correction needs each example's arrays or operator")
-        return self._numpy_path(H, up, s0, w, g, ops, n)
+        return self._numpy_path(H, up, s0, w, g, ops, n, flags)
+
+    def _flags(self, corner_flags, B: int):
+        """The batch's corner flags as a [B, 4] bool array (corner treatment only)."""
+        if self.corners is None:
+            return None
+        if corner_flags is None:
+            raise ValueError("the corner treatment needs each example's corner flags (batch['corners'])")
+        f = corner_flags.detach().cpu().numpy() if torch.is_tensor(corner_flags) else np.asarray(corner_flags)
+        f = np.asarray(f, bool)
+        if f.shape != (B, 4):
+            raise ValueError(f"corner flags of shape {f.shape} for a batch of {B}")
+        return f
 
     def _load(self, w, g, like):
         if g is None:
             return torch.zeros_like(like)
         return md._load(w.to(torch.float64), g.to(torch.float64))[:, 1:-1, 1:-1]
 
-    def _torch_path(self, H, up, s0, w, g, arrays, n):
+    def _torch_path(self, H, up, s0, w, g, arrays, n, flags=None):
         a11, a12, a22, sig = (a.to(torch.float64) for a in arrays)
         ps = md.plain_square(n, self.kind, self.m, str(H.device))
-        tcs = co.TorchCoarseSpace(co.coarse_matrix_torch(a11, a12, a22, sig, self.n_c), n, self.n_c)
+        if flags is None:
+            tcs = co.TorchCoarseSpace(co.coarse_matrix_torch(a11, a12, a22, sig, self.n_c), n, self.n_c)
+        else:
+            tcs = cpt.TorchEnlargedSpace.of_arrays(a11, a12, a22, sig, self.n_c,
+                                                   cpt.patch_nodes(n, self.n_c, flags, self.corners))
         Hc = tcs.correct(H, co.residual_torch(a11, a12, a22, sig, H, ps.QB))
         b = self._load(w, g, up)
         upc = tcs.correct(up, co.residual_torch(a11, a12, a22, sig, up[:, None], rhs=b[:, None])[:, 0])
@@ -135,7 +168,7 @@ class TwoLevelExpert(fm.KernelExpert):
         self.last_coarse, self.last_arrays = tcs, (a11, a12, a22, sig)
         return Hc, upc
 
-    def _numpy_path(self, H, up, s0, w, g, ops, n):
+    def _numpy_path(self, H, up, s0, w, g, ops, n, flags=None):
         Q = pt.basis(self.kind, n, self.m).Q
         K = H.shape[1]
         b = self._load(w, g, up).detach().cpu().numpy().reshape(H.shape[0], -1)
@@ -145,7 +178,12 @@ class TwoLevelExpert(fm.KernelExpert):
         outH, outp, out1 = np.empty_like(Hn), np.empty_like(upn), np.empty_like(u1n)
         for k, (A_I, M_IG) in enumerate(ops):
             A = A_I.tocsr()
-            cs = co.CoarseSpace(A, n, self.n_c)
+            if flags is None:
+                cs = co.CoarseSpace(A, n, self.n_c)
+            else:
+                corners = tuple(c for c in range(4) if flags[k][c])
+                cs = co.CoarseSpace(A, n, self.n_c,
+                                    extra=co.corner_patch_columns(n, self.n_c, corners, self.corners))
             X = Hn[k].reshape(K, -1).T
             outH[k] = cs.correct(X, -(A @ X) - np.asarray(M_IG @ Q)).T.reshape(K, n - 1, n - 1)
             xp = upn[k].reshape(-1)
@@ -166,17 +204,32 @@ class TwoLevelExpert(fm.KernelExpert):
 
 def make(backbone: str = "unet", size: str = "1M", form: str = "split", kind: str = "sine-hat",
          m: int = 16, p_size: str | None = None, bubble: str = "corner", strips: bool = True,
-         hats: str = "learned", n_c: int | None = None) -> TwoLevelExpert:
-    return TwoLevelExpert(form, backbone, size, kind, m, p_size, bubble, strips, hats, n_c)
+         hats: str = "learned", n_c: int | None = None, corners: int | None = None) -> TwoLevelExpert:
+    return TwoLevelExpert(form, backbone, size, kind, m, p_size, bubble, strips, hats, n_c, corners)
 
 
-def from_kernel(expert: fm.KernelExpert, n_c: int | None) -> TwoLevelExpert:
+def from_kernel(expert: fm.KernelExpert, n_c: int | None, corners: int | None = None) -> TwoLevelExpert:
     """A two-level expert with ``expert``'s configuration and weights (S's, for instance)."""
     c = expert.config()
     tl = TwoLevelExpert(c["form"], c["backbone"], c["size"], c["kind"], c["m"], c["p_size"],
-                        c["bubble"], c["strips"], c["hats"], n_c)
+                        c["bubble"], c["strips"], c["hats"], n_c, corners)
     tl.load_state_dict(expert.state_dict(), strict=True)
     return tl.to(next(expert.parameters()).device)
+
+
+def host_expert(expert: TwoLevelExpert, envelope=None):
+    """The trained expert for the host (`host.Layout.solve`): its form (``n_c=None``, the same
+    weights) inside `coarse.CoarseCorrected` at its coarse size and corner treatment, which
+    builds each piece's coarse space from the piece's own matrix, load and chart.  It answers
+    what ``expert`` answers given each piece's arrays and corner flags (tested)."""
+    from .expert import LearnedExpert
+    c = expert.config()
+    form = TwoLevelExpert(c["form"], c["backbone"], c["size"], c["kind"], c["m"], c["p_size"],
+                          c["bubble"], c["strips"], c["hats"], None)
+    form.load_state_dict(expert.state_dict(), strict=True)
+    form = form.to(next(expert.parameters()).device).eval()
+    corners = None if expert.corners is None else co.CornerTreatment("B", frac=expert.corners)
+    return co.CoarseCorrected(LearnedExpert(form, envelope=envelope), expert.n_c, corners=corners)
 
 
 class _Zeros(torch.nn.Module):
@@ -199,7 +252,7 @@ def zero_heads_twin(expert: TwoLevelExpert) -> TwoLevelExpert:
     c = expert.config()
     with torch.random.fork_rng(devices=[]):
         twin = TwoLevelExpert(c["form"], c["backbone"], c["size"], c["kind"], c["m"], c["p_size"],
-                              c["bubble"], c["strips"], c["hats"], c["n_c"])
+                              c["bubble"], c["strips"], c["hats"], c["n_c"], c.get("corners"))
     for name in ("net", "pnet"):
         net = getattr(expert, name)
         if net is None:
@@ -218,8 +271,11 @@ def call(expert, batch: dict, strip_solve: bool = True):
     need_ops = (expert.strips and strip_solve) or expert.hats == "classical"
     ops = fm.batch_operators(batch) if need_ops else None
     arrays = (batch["a11"], batch["a12"], batch["a22"], batch["sigma"])
+    if expert.corners is None:
+        return expert(batch["inputs"], batch["scalars"], batch["s0"], w=batch["w"], g=batch["g"], ops=ops,
+                      strip_solve=strip_solve, arrays=arrays)
     return expert(batch["inputs"], batch["scalars"], batch["s0"], w=batch["w"], g=batch["g"], ops=ops,
-                  strip_solve=strip_solve, arrays=arrays)
+                  strip_solve=strip_solve, arrays=arrays, corner_flags=batch.get("corners"))
 
 
 def load(path: str, device: str = "cpu") -> TwoLevelExpert:
@@ -227,7 +283,7 @@ def load(path: str, device: str = "cpu") -> TwoLevelExpert:
     c = st["config"]
     e = TwoLevelExpert(c["form"], c["backbone"], c["size"], c["kind"], c["m"], c.get("p_size"),
                        c.get("bubble", "square"), c.get("strips", False), c.get("hats", "learned"),
-                       c.get("n_c"))
+                       c.get("n_c"), c.get("corners"))
     e.load_state_dict(st["model"])
     return e.to(device).eval()
 
