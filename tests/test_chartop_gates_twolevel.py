@@ -1,7 +1,7 @@
-"""Phase 4's draft registration (`atlas/chartop/gates_twolevel.py`) against the rework page's
-section 18 and the registrations it reads from: the shared bars are read, not copied; the new
-bars and arms are the page's; the judges read what they say; the fresh test split overlaps no
-other.  The module is a draft: `REGISTERED` is None until the owner accepts it."""
+"""Phase 4's registration (`atlas/chartop/gates_twolevel.py`) against the rework page's section
+18 and the registrations it reads from: the shared bars are read, not copied; the new bars,
+arms and predictions are the page's; the judges read what they say; the fresh test split
+overlaps no other.  The owner accepted it as drafted on 2026-11-10; it is not yet pinned."""
 from __future__ import annotations
 
 import os
@@ -23,8 +23,9 @@ def _section18() -> str:
     return text[start:text.index("\n## ", start + 1)]
 
 
-def test_it_is_a_draft_with_the_owners_settled_choices():
-    assert GT.REGISTERED is None
+def test_it_is_accepted_with_the_owners_settled_choices():
+    assert "2026-11-10" in GT.REGISTERED and "Accept as drafted (Recommended)" in GT.REGISTERED
+    assert "not yet pinned" in GT.REGISTERED
     assert set(GT.SETTLED) == {"the corner treatment", "the NC bar", "the budget"}
     assert "Adopt B, n/8 (Recommended)" in GT.SETTLED["the corner treatment"]
     assert "As proposed (Recommended)" in GT.SETTLED["the NC bar"]
@@ -52,6 +53,24 @@ def test_the_new_numbers_are_the_pages():
                  "6,000,000–6,002,399", "3\\times10^{-4}", "e17f881b", "n_c=16", "n/8", "$n_c=4$, 8, 16 and 32"):
         assert page in sec, page
     assert GT.INIT_SHA256.startswith("e17f881b") and GT.INIT_SHA256.endswith("a35d")
+
+
+def _plain(s: str) -> str:
+    s = re.sub(r"\*\*\[AI Inference\]:\*\*|\[AI Inference\]", "", s)
+    s = s.replace("\\rho", "rho").replace("§", "section").replace("–", "-")
+    return re.sub(r"[\s$*]", "", s)
+
+
+def test_the_predictions_are_the_pages_word_for_word():
+    """Section 18's numbered predictions, once the notation is set aside."""
+    sec = _section18()
+    start = sec.index("**Predictions**")
+    block = sec[start:sec.index("\n\n**", start + 1)]
+    items = re.findall(r"^(\d)\. (.+)$", block, re.M)
+    assert [i for i, _t in items] == ["1", "2", "3", "4", "5"]
+    for (num, page), mod in zip(items, GT.PREDICTIONS):
+        assert mod.startswith(num + ". ")
+        assert _plain(mod[3:]) == _plain(page), num
 
 
 def test_the_init_weights_are_ss_recorded_ones():

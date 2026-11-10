@@ -761,7 +761,9 @@ The sixth, the s-channel step lowered by 300 K, no 16-mode expert can meet (§13
 
 ---
 
-## 18. Phase 4: the registration, drafted (2026-11-10; not accepted, nothing pinned)
+## 18. Phase 4: the registration (accepted as drafted 2026-11-10; not yet pinned)
+
+**Accepted** by the owner as drafted, in chat on 2026-11-10 ("Accept as drafted (Recommended)"): the arms, the start from S's weights at the probe's rate, the held-out problems, the gates and the five predictions below. The gate module carries the acceptance (`gates_twolevel.REGISTERED`) and the predictions word for word (`PREDICTIONS`, tested). The pin follows the price protocol's dry run, with the owner's approval.
 
 **Settled by the owner already** (in chat):
 - the formulation;
@@ -818,7 +820,41 @@ TL's start carries S's own 150,000 steps, so its total training is not S′'s. N
 
   **[AI Inference]:** in all, a few dollars, inside the handoff's \$15 ceiling. Each rental is asked separately.
 
-**The owner's decision:** accept this draft (the start from S's weights, the rate, the held-out problems, the predictions), amend it, or stop.
+**The predictions, checked against each other and against the code:**
+- **1 is structural.** Proposition A and Lemma B hold on $V_e$ for any full-rank $P_e$ (§15). The tests show them on both paths, and through the host, with random weights (§17's build). L holds because the corner columns read the piece's chart and tensors, never its load.
+- **2 and 4 agree.** NC reads the 36 learned columns together, and on the probe's pieces the hats were a small share of TL0's error there. 4 can hold while 2 holds or fails.
+- **3 is the riskiest.**
+  - The held-out s-channel step lowered by 300 K has a floor of 1.24%, so E4 asks for an excess below 1.57%.
+  - On the seen step, TL0 with B left 1.46%, untrained. The held-out materials differ, so that number does not carry over.
+  - 3 leans on the network: under 2, TL removes at least 30% of TL0's error energy on the learned columns of the median test piece.
+  - The maximum-error bar is not bounded by Proposition A.
+- **3 and NC's benchmark clause agree.** The clause fails if TL is worse than TL0 on any held-out problem, and 3 needs TL at least as good as E4 there.
+- **5 rests on §13's costs:** U's forward and strips cost 1.48 and 0.78 of an exact solve at $n=64$ and 128, and B's coarse level adds 0.11–0.25 (§17). PR is reported, not gated, so 5 cannot fail a gate.
+- `gates_twolevel.py`'s docstring and `twolevel.py`'s contradict none of them.
+
+**The owner's decision** (accept, amend or stop): accepted as drafted, above.
+
+**Built after the acceptance** (2026-11-10), none of it run on a rented box yet:
+- **The price protocol**, `scripts/chartop_price_twolevel.py`: R2's protocol with R2's own helpers (`gates_squares`), the arms in turn:
+  - the classical expert;
+  - TL through the host (`twolevel.host_expert`);
+  - TL0, U's form without its networks behind the same coarse level;
+  - H2r;
+  - the classical expert again, for the A/A check on every problem;
+  - the coupled solve.
+
+  PR's problems are the held-out six and R2's sixteen, so TL and H2r are priced on the same problems. The dry run is on §11.17's twelve problems, with TL's networks at S's weights, checked by their sha256. Its payload is built from one commit (`chartop_price_twolevel_payload.py`, with `IDENTITY`), and its runner (`chartop_price_twolevel_box_run.sh`) installs the laptop's versions and checks the weights. A smoke dry run passed on the laptop in subprocesses: BLAS threads fixed and checked, AC and sleep sampled, per-problem counting, the A/A arm.
+- **The registration script**, `scripts/chartop_register_twolevel.py`. Its classical record (`out/chartop/registration-twolevel.json`), measured with the classical solver and the generator only:
+  - the held-out problems' floors (1.0008% and 1.2359% at most, as the earlier registration measured them), with no refusals;
+  - the fresh test split's content sha256, `735dbc76dde1fd81…`, over 2,400 pieces (731 at $n=32$, 1,220 at 64, 449 at 128), on the laptop where the evaluation's accuracy runs.
+
+  `--pin` refuses until the dry run has passed on the pricing CPU with the code it pins. A test adds one byte to a pinned copy and `check_pin` fails.
+- **The training side.** `chartop_train.py` checks a `gates_twolevel` plan before anything trains: arm TL's configuration, seeds 0 and 1 once each, and S's weights by sha256. The box runner's data stage writes the corner flags with `DATA_CORNERS=1`.
+
+**Next, each with the owner's go:**
+1. A rented whole machine with the pricing CPU (AMD Ryzen 9 5900X), at no more than \$0.70 an hour, for the dry run.
+2. The pin ("Pin it").
+3. Phase 5's boxes.
 
 ---
 

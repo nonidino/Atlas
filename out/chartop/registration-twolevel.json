@@ -1,0 +1,225 @@
+{
+ "written": "2026-11-10 07:18:38",
+ "experts_run": [
+  "classical"
+ ],
+ "registered": "accepted by the owner on 2026-11-10, in chat ('Accept as drafted (Recommended)'), as drafted in chart-operator-stage-0-rework section 18 (commit 2fca5aa), with its five predictions, before any network of TL was trained; not yet pinned",
+ "held_out": [
+  {
+   "name": "bend-3",
+   "problem": "steady",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0004311135029451204,
+     "floor_max": 0.01075393796327262,
+     "span": 129.99957997307064,
+     "floor_max_over_range": 8.272286699311101e-05,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00043111350294630006,
+     "floor_max": 0.010753937963302818,
+     "span": 129.99957997307064,
+     "floor_max_over_range": 8.27228669933433e-05,
+     "refusals": []
+    }
+   },
+   "pieces": 15,
+   "fingerprint": "5cb1668d80b8f1a0b01abde4e3a9856035a359ef3b53d451a7fc3d5aff8244a3",
+   "kappa_ref": [
+    205.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.00042002692936,
+    420.0
+   ]
+  },
+  {
+   "name": "bend-3",
+   "problem": "step",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 5.9770629068814765e-05,
+     "floor_max": 0.042215348513764184,
+     "span": 129.99957997307064,
+     "floor_max_over_range": 0.0003247344993153753,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.000533168346743079,
+     "floor_max": 0.04221534851367892,
+     "span": 129.99957997307064,
+     "floor_max_over_range": 0.0003247344993147194,
+     "refusals": []
+    }
+   },
+   "pieces": 15,
+   "fingerprint": "e4288211bd66c5f1b6ab7715313ee3f57354aba600ede0d787b0be187ffcf8e5",
+   "kappa_ref": [
+    205.0
+   ],
+   "fo_range": [
+    0.23498090633078902,
+    0.7972953896346647
+   ],
+   "dirichlet_range": [
+    290.00042002692936,
+    420.0
+   ]
+  },
+  {
+   "name": "s-channel",
+   "problem": "steady",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.010008127404830869,
+     "floor_max": 0.15445081479248302,
+     "span": 130.0,
+     "floor_max_over_range": 0.0011880831907114078,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.010008127404774862,
+     "floor_max": 0.1544508147924084,
+     "span": 130.0,
+     "floor_max_over_range": 0.001188083190710834,
+     "refusals": []
+    }
+   },
+   "pieces": 9,
+   "fingerprint": "5abc42329832252448c49b52b196bc3a52e25a99abcba36f0362cba9570ff003",
+   "kappa_ref": [
+    400.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ]
+  },
+  {
+   "name": "s-channel",
+   "problem": "step",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0012863306282838033,
+     "floor_max": 0.8015758387750793,
+     "span": 130.0,
+     "floor_max_over_range": 0.006165967990577533,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.012359240430578743,
+     "floor_max": 0.8015758387748804,
+     "span": 130.0,
+     "floor_max_over_range": 0.006165967990576003,
+     "refusals": []
+    }
+   },
+   "pieces": 9,
+   "fingerprint": "3248263e2687b29031d78601d0dafd9fba9059195114b61bb222c39bcc10c3f4",
+   "kappa_ref": [
+    400.0
+   ],
+   "fo_range": [
+    0.6685734506189145,
+    1.1303738059638735
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ]
+  },
+  {
+   "name": "insert-round",
+   "problem": "steady",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 0.0004278371238287875,
+     "floor_max": 0.005597757149473637,
+     "span": 130.0,
+     "floor_max_over_range": 4.3059670380566436e-05,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00042783712383145695,
+     "floor_max": 0.005597757149498506,
+     "span": 130.0,
+     "floor_max_over_range": 4.305967038075774e-05,
+     "refusals": []
+    }
+   },
+   "pieces": 39,
+   "fingerprint": "4a91c5be4e99bbd43e8e5e027ce118994640c14fdb19c45f6c4d7a601bd5ef1e",
+   "kappa_ref": [
+    45.0,
+    205.0
+   ],
+   "fo_range": null,
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ]
+  },
+  {
+   "name": "insert-round",
+   "problem": "step",
+   "variant": "held-out",
+   "frames": {
+    "registered": {
+     "truncation_energy_rel": 3.6819555300344885e-05,
+     "floor_max": 0.009341925102546611,
+     "span": 130.0,
+     "floor_max_over_range": 7.186096232728163e-05,
+     "refusals": []
+    },
+    "lowered": {
+     "truncation_energy_rel": 0.00025291937082918154,
+     "floor_max": 0.009341925101836068,
+     "span": 130.0,
+     "floor_max_over_range": 7.186096232181591e-05,
+     "refusals": []
+    }
+   },
+   "pieces": 39,
+   "fingerprint": "ec11928b24c0d2a7fa938c018cc22081a56b75c209b45cfcdc4f329cb5ce5baf",
+   "kappa_ref": [
+    45.0,
+    205.0
+   ],
+   "fo_range": [
+    1.2292354799486855,
+    4.1714000055316305
+   ],
+   "dirichlet_range": [
+    290.0,
+    420.0
+   ]
+  }
+ ],
+ "test_split": {
+  "seeds": [
+   6000000,
+   6002399
+  ],
+  "count": 2400,
+  "by_n": {
+   "32": 731,
+   "64": 1220,
+   "128": 449
+  },
+  "sha256": "735dbc76dde1fd81b95a3af8a2c16c91ccf2a8b14d5da78d36b22974e1558c85"
+ },
+ "generator_sha256": "b31081dce0b33ea1a2eec2c3b2db153a19ad1c9df16994154eb70ad920175e8b",
+ "platform": {
+  "system": "win32",
+  "numpy": "1.26.4"
+ },
+ "elapsed_s": 373.6944722000044
+}

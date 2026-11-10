@@ -21,6 +21,12 @@ not change the weights (`train.Arm`).
 A plan with ``"registration": "gates_prior"`` trains the registration after the forms'
 evaluation (`atlas/chartop/gates_prior.py`, pinned): each run names arm ``"P"`` or
 ``"PG"`` and is checked against `gates_prior.arm_config` the same way (`check_prior_plan`).
+
+A plan with ``"registration": "gates_twolevel"`` trains the registration after the Stage 0
+rework (`atlas/chartop/gates_twolevel.py`): each run names arm ``"TL"`` and is checked against
+`gates_twolevel.arm_config` (``init_from`` aside, the box's own path to S's weights, whose
+sha256 must be `gates_twolevel.INIT_SHA256`), every registered seed run once
+(`check_twolevel_plan`).
 """
 from __future__ import annotations
 
@@ -94,6 +100,34 @@ def check_prior_plan(plan: dict) -> None:
         raise SystemExit(f"the plan runs {sorted(seen)}, the registration {need}")
 
 
+def _sha256(path: str) -> str:
+    import hashlib
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+
+
+def check_twolevel_plan(plan: dict, sha256=_sha256) -> None:
+    """Every run of a ``gates_twolevel`` plan is arm TL with its registered configuration
+    (`gates_twolevel.arm_config`, ``m`` aside) and one registered seed, started from S's
+    recorded weights; every registered seed is run once.  A mismatch refuses the whole plan."""
+    from atlas.chartop import gates_twolevel as GT
+    want = {k: v for k, v in GT.arm_config().items() if k != "m"}
+    seen = []
+    for d in plan["arms"]:
+        if d.get("registered") != "TL":
+            raise SystemExit(f"run {d.get('name')!r} names no registered arm of gates_twolevel: {d.get('registered')!r}")
+        arm = arm_from(d)
+        got = {k: getattr(arm, k) for k in want}
+        if got != want or arm.seed not in GT.SEEDS or arm.limit is not None:
+            raise SystemExit(f"run {arm.name!r} is not gates_twolevel's TL: {got} against {want}, "
+                             f"seed {arm.seed} of {GT.SEEDS}, limit {arm.limit}")
+        if not arm.init_from or not os.path.exists(arm.init_from) or sha256(arm.init_from) != GT.INIT_SHA256:
+            raise SystemExit(f"run {arm.name!r} does not start from S's recorded weights ({arm.init_from!r})")
+        seen.append(arm.seed)
+    if sorted(seen) != sorted(GT.SEEDS):
+        raise SystemExit(f"the plan runs seeds {sorted(seen)}, the registration {sorted(GT.SEEDS)}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--plan", required=True)
@@ -106,15 +140,18 @@ def main() -> int:
     only = set(filter(None, args.only.split(",")))
     forms_plan = plan.get("registration") == "gates_forms"
     prior_plan = plan.get("registration") == "gates_prior"
+    twolevel_plan = plan.get("registration") == "gates_twolevel"
     if forms_plan:
         check_forms_plan(plan)
     if prior_plan:
         check_prior_plan(plan)
+    if twolevel_plan:
+        check_twolevel_plan(plan)
     os.makedirs(args.runs, exist_ok=True)
     status = 0
     for d in plan["arms"]:
         arm = arm_from(d)
-        if not (forms_plan or prior_plan) and arm.name not in gates.ARMS:
+        if not (forms_plan or prior_plan or twolevel_plan) and arm.name not in gates.ARMS:
             raise SystemExit(f"arm {arm.name!r} is not registered in gates.ARMS")
         if only and arm.name not in only:
             continue

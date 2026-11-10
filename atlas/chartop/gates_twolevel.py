@@ -1,7 +1,8 @@
 """The registration after the Stage 0 rework (Phase 4 of [[chart-operator-stage-0-rework]],
 section 18): TL, the two-level coarse-exact CO-D expert, trained on the relative objective,
-judged with its untrained floor TL0 and with S' reused.  DRAFTED; NOT YET ACCEPTED BY THE
-OWNER AND NOT PINNED (`REGISTERED` is ``None``).
+judged with its untrained floor TL0 and with S' reused.  ACCEPTED BY THE OWNER AS DRAFTED ON
+2026-11-10 (`REGISTERED`); NOT YET PINNED: the pin follows the price protocol's dry run, with
+the owner's approval (`scripts/chartop_register_twolevel.py --pin`).
 
 **Decided by the owner already** (in chat, 2026-11-09 and 2026-11-10): the rework's
 formulation; ``n_c in {8, 16, 32}`` with 16 the default (4 added for the curve); E4 the only
@@ -44,7 +45,9 @@ import numpy as np
 from . import gates_forms as GF
 from . import gates_prior as GP
 
-REGISTERED = None                    # the owner's acceptance, quoted, once given
+REGISTERED = ("accepted by the owner on 2026-11-10, in chat ('Accept as drafted (Recommended)'), as "
+              "drafted in chart-operator-stage-0-rework section 18 (commit 2fca5aa), with its five "
+              "predictions, before any network of TL was trained; not yet pinned")
 
 #: the owner's decisions so far, quoted from chat
 SETTLED = {
@@ -180,6 +183,19 @@ REPORTED = (
 )
 
 
+#: section 18's predictions, accepted with the draft; their readings are written into the one
+#: evaluation's script before it runs, and checked against these words
+PREDICTIONS = (
+    "1. CX, K, D and L hold on every run, by structure: Proposition A and Lemma B on V_e, and the "
+    "split form.",
+    "2. [AI Inference] NC is met: TL's median test rho is at least 0.3.",
+    "3. [AI Inference] TL meets E4 on all six held-out problems.",
+    "4. [AI Inference] By group, rho is lowest on the hats: on the probe's pieces the hats gave back "
+    "what they had gained.",
+    "5. [AI Inference] PR: TL is not faster than the classical solve. U's forward with its strips "
+    "already cost 1.48 and 0.78 of an exact solve at n = 64 and 128 (section 13).",
+)
+
 # ---------------------------------------------------------------------------
 # the judgements (pure functions of measured numbers)
 # ---------------------------------------------------------------------------
@@ -219,5 +235,6 @@ def text() -> str:
     lines.append(f"  TL0  {ARMS['TL0']['what']}; n_c {', '.join(str(c) for c in TL0_CURVE)}")
     lines.append("  S'   reused, not trained: " + ", ".join(f"{r} {h[:16]}..." for r, h in REUSED.values()))
     lines += ["", f"THE PROBLEMS: held-out {', '.join(f'{b} {p}' for b, p in HELD_OUT)}; the seen six reported"]
+    lines += ["", "THE PREDICTIONS"] + [f"  {p}" for p in PREDICTIONS]
     lines += ["", f"COST: at most ${CEILING_USD:.2f} in all, each box at most ${BOX_MAX_USD_PER_HOUR:.2f} an hour"]
     return "\n".join(lines)

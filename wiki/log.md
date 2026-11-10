@@ -999,3 +999,12 @@ The probe ran on the laptop's CPU, deterministic: B4's four pieces at $n=128$, $
 ## [2026-11-10] note | Stage 0 rework, Phase 4's registration drafted (not accepted, nothing pinned)
 
 Drafted for the owner: `atlas/chartop/gates_twolevel.py` (`REGISTERED` is `None`, 13 tests) and the rework page's §18. TL is S's form followed by $\mathcal C_e$ at $n_c=16$ with B's corner patches, trained on the relative objective from S's weights at the probe's rate, 37,500 steps, seeds 0 and 1. TL0 is its untrained floor and the $n_c$ curve, and S′ is reused. It is judged once on a fresh test split (6,000,000–6,002,399) and on the held-out benchmark problems, whose 16-mode floors are all under 2%. The gates: E4; CX at most $10^{-10}$; NC, the network's contribution (median test $\rho\ge0.3$, 10th percentile $\ge0$, and never worse than TL0 on a held-out problem); K, D, L, E3, SE1, SE2, DUAL and KT as before; and PR, the price under R2's protocol. Five predictions are drafted. The registration script, the price protocol and its dry run on a rented machine follow the owner's acceptance. **Changed:** [[chart-operator-stage-0-rework]] §18 (new).
+
+## [2026-11-10] note | Stage 0 rework, Phase 4's registration accepted as drafted; its price protocol and registration script built
+
+The owner accepted §18 as drafted ("Accept as drafted (Recommended)"): the arms, the start from S's weights at the probe's rate, the held-out problems, the gates and the five predictions. These were then checked against each other and the code, and the gate module carries them word for word. Built since:
+- TL's price protocol (`scripts/chartop_price_twolevel.py`, R2's protocol with TL, TL0, H2r and an A/A arm on every problem), its one-commit payload and its runner;
+- the registration script with its classical record: the held-out problems' floors, and the fresh test split's content sha256, `735dbc76dde1fd81…` over 2,400 pieces;
+- the training plan's check against `gates_twolevel`.
+
+Nothing is pinned. Next, each with the owner's go: a rented whole machine with the pricing CPU for the price dry run, then the pin, then Phase 5. **Changed:** [[chart-operator-stage-0-rework]] §18.
