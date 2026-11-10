@@ -521,7 +521,9 @@ The ladder (residual-scaled outputs, arm R, the orthogonality penalty) is not bu
 
 ---
 
-## 15. Branch 2c: a corner treatment for the coarse level (drafted, not accepted)
+## 15. Branch 2c: a corner treatment for the coarse level (accepted as drafted, 2026-11-09)
+
+**Accepted** by the owner as drafted ("Accept as drafted"), with both candidates measured. Accepting starts the build and the untrained check. The predictions below are registered only on the owner's go, after they have been checked against each other and against the new code.
 
 **What it must do.** On the s-channel, 85–90% of TL0's excess over the floor sits in the $n/8\times n/8$ blocks at the end pieces' two non-right corners, 154.0° and 105.2°, and TL0 at $n_c=16$ misses E4 there by 0.15 points (§13). A corner treatment should remove that part of the excess. It must keep every guarantee $\mathcal C$ gives, and it must not need a network.
 
