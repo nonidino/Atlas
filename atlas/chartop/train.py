@@ -3,7 +3,10 @@ augmentation, bfloat16 network with float64 objectives (decision D4), checkpoint
 
 A dataset directory holds shards ``<split>_n<res>_<k>.npz`` written by
 `scripts/chartop_data.py` (the arrays of `data.arrays`, stacked) and, for labelled
-sets, ``labels_<split>_n<res>_<k>.npz`` (`data.labels`).  An arm trains for a fixed
+sets, ``labels_<split>_n<res>_<k>.npz`` (`data.labels`), or, where a shard has only its
+light labels (``light_<split>_n<res>_<k>.npz``: each exact column's energy ``lam``, the trace
+and the particular field's energy, `chartop_data.py --light-labels`), those: enough for the
+two-level expert's relative objective, at 64 numbers an example.  An arm trains for a fixed
 number of optimiser steps (equal compute across comparison arms) with AdamW, a short
 linear warm-up and a cosine decay; every resolution bucket is visited in proportion
 to its size, so every example is seen about equally often.  The validation set picks
@@ -15,6 +18,7 @@ said what it measured.
 
 from __future__ import annotations
 
+import functools
 import glob
 import json
 import math
@@ -124,8 +128,17 @@ def load_split(directory: str, split: str, limit: int | None = None,
         if with_labels:
             pre = "labels_" if kind == "sine-hat" else f"labels-{kind}_"
             lf = os.path.join(directory, pre + os.path.basename(f))
-            zl = np.load(lf, allow_pickle=False)
-            for k in ("H", "up", "trace_Lambda", "up_energy", "lseed"):
+            light = os.path.join(directory, "light_" + os.path.basename(f))
+            if os.path.exists(lf) or kind != "sine-hat" or not os.path.exists(light):
+                zl = np.load(lf, allow_pickle=False)
+                keys = ("H", "up", "trace_Lambda", "up_energy", "lseed")
+            else:
+                zl = np.load(light, allow_pickle=False)
+                keys = ("lam", "trace_Lambda", "up_energy", "lseed")
+            if b.get("_labels", keys) != keys:
+                raise ValueError(f"split {split!r} mixes full and light labels at n={n}")
+            b["_labels"] = keys
+            for k in keys:
                 b.setdefault(k, []).append(zl[k])
         if with_corners:
             zc = np.load(os.path.join(directory, "corners_" + os.path.basename(f)), allow_pickle=False)
@@ -133,6 +146,7 @@ def load_split(directory: str, split: str, limit: int | None = None,
                 raise ValueError(f"the corner flags and the examples disagree on seeds in {f}")
             b.setdefault("corners", []).append(np.asarray(zc["corners"], bool))
     for n, b in out.items():
+        b.pop("_labels", None)
         for k in list(b):
             b[k] = np.concatenate(b[k])
         if with_labels and not np.array_equal(b["seed"], b["lseed"]):
@@ -157,6 +171,10 @@ def to_device(bucket: dict, device, labels: bool, labels_device=None) -> dict:
     if "corners" in bucket:
         t["corners"] = torch.tensor(bucket["corners"], dtype=torch.bool, device=device)
     if labels:
+        if "H" not in bucket:                                       # light labels
+            for k in ("lam", "trace_Lambda", "up_energy"):
+                t[k] = torch.tensor(bucket[k], dtype=torch.float64, device=device)
+            return t
         ld = labels_device or "cpu"
         for k in ("H", "up"):
             x = torch.tensor(bucket[k], dtype=torch.float32, device=ld)
@@ -166,6 +184,38 @@ def to_device(bucket: dict, device, labels: bool, labels_device=None) -> dict:
     return t
 
 
+@functools.lru_cache(maxsize=None)
+def corner_perm(k: int) -> tuple:
+    """Where symmetry ``k`` of the square (`model.d4`'s numbering) takes each corner (0 at
+    (0, 0), then counter-clockwise): read off `model._spatial` applied to a 2 x 2 node grid
+    marked at its corners, so it cannot disagree with how the batch's arrays move."""
+    pos = ((0, 0), (0, 1), (1, 1), (1, 0))                  # corner c's node, [j, i], n = 1
+    a = torch.zeros(1, 2, 2)
+    for c, (j, i) in enumerate(pos):
+        a[0, j, i] = c + 1
+    s = md._spatial(a, k & 1, (k >> 1) & 1, (k >> 2) & 1)
+    return tuple(next(d for d, (j, i) in enumerate(pos) if int(s[0, j, i]) == c + 1) for c in range(4))
+
+
+def d4_corners(flags, k: int):
+    """The transformed batch's corner flags: corner ``corner_perm(k)[c]`` of the new square is
+    corner ``c`` of the old."""
+    perm = corner_perm(k)
+    out = torch.empty_like(flags)
+    for c in range(4):
+        out[:, perm[c]] = flags[:, c]
+    return out
+
+
+def d4_light_labels(lab: dict, kind: str, m: int, n: int, k: int) -> dict:
+    """Light labels under symmetry ``k``: the exact column energies follow the port basis's
+    signed permutation (`model.d4_ports`; an energy has no sign); the totals do not move."""
+    perm, _sign = md.d4_ports(kind, n, m, k)
+    lam = torch.empty_like(lab["lam"])
+    lam[:, torch.as_tensor(perm, device=lam.device)] = lab["lam"]
+    return dict(lab, lam=lam)
+
+
 def _batch(t: dict, idx, labels: bool):
     b = {k: t[k][idx] for k in KEYS}
     for k in ("a11", "a12", "a22", "sigma", "w", "g", "s0"):
@@ -173,7 +223,9 @@ def _batch(t: dict, idx, labels: bool):
     if "corners" in t:
         b["corners"] = t["corners"][idx]
     lab = None
-    if labels:
+    if labels and "lam" in t:                                       # light labels
+        lab = {"lam": t["lam"][idx], "trace_Lambda": t["trace_Lambda"][idx], "up_energy": t["up_energy"][idx]}
+    elif labels:
         n = t["inputs"].shape[-1] - 1
         dev = b["a11"].device
         ic = idx.to(t["H"].device)
@@ -241,6 +293,11 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         raise ValueError(f"head_init {arm.head_init!r}: 'zero' or 'loaded'")
     if arm.corners is not None and arm.coarse is None:
         raise ValueError("the corner treatment enlarges the coarse level: set Arm.coarse")
+    if arm.objective == "supervised" and any(
+            os.path.exists(os.path.join(data_dir, "light_" + os.path.basename(f)))
+            and not os.path.exists(os.path.join(data_dir, "labels_" + os.path.basename(f)))
+            for f in glob.glob(os.path.join(data_dir, f"{arm.data}_n*_*.npz"))):
+        raise ValueError("the supervised objective needs the exact modes: light labels carry only their energies")
     torch.manual_seed(arm.seed)
     rng = np.random.default_rng(arm.seed)
     labelled = arm.objective in ("supervised", "relative")
@@ -314,8 +371,11 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         if arm.augment:
             k = int(rng.integers(8))
             b = md.d4(b, k)
+            if "corners" in b:
+                b["corners"] = d4_corners(b["corners"], k)
             if lab is not None:
-                lab = md.d4_labels(lab, arm.kind, expert.m, k)
+                lab = (md.d4_labels(lab, arm.kind, expert.m, k) if "H" in lab
+                       else d4_light_labels(lab, arm.kind, expert.m, n, k))
         with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
             H, up = tl.call(expert, b, strip_solve=arm.strips_in_training)
         if arm.objective == "relative":

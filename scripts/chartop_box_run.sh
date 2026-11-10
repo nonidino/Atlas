@@ -80,17 +80,20 @@ for st in $STAGES; do
       fi ;;
     data)
       # DATA_CORNERS=1 (the Stage 0 rework's TL, gates_twolevel): each shard's corner flags too
-      # (chartop_data.py --corners), which train.Arm.corners requires; unset, as before
+      # (chartop_data.py --corners), which train.Arm.corners requires; DATA_LIGHT=1: the training
+      # split's light labels (--light-labels), which TL's relative objective reads; unset, as before
       mkdir -p data
       code=0
       CF=""
       [ -n "${DATA_CORNERS:-}" ] && CF="--corners"
+      LL=""
+      [ -n "${DATA_LIGHT:-}" ] && LL="--light-labels"
       for sp in $DATA_SPLITS; do
         case "$sp" in
           val) python scripts/chartop_data.py --split val --count "$(count val)" --workers "$WORKERS" \
                  --labels sine-hat,cosine $CF --out data > data-val.log 2>&1 || code=1 ;;
           train) python scripts/chartop_data.py --split train --count "$(count train)" \
-                 --workers "$WORKERS" $CF --out data > data-train.log 2>&1 || code=1 ;;
+                 --workers "$WORKERS" $CF $LL --out data > data-train.log 2>&1 || code=1 ;;
           train-conformal) python scripts/chartop_data.py --split train-conformal \
                  --count "$(count train-conformal)" --workers "$WORKERS" --out data \
                  > data-conformal.log 2>&1 || code=1 ;;

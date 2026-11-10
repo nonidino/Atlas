@@ -18,7 +18,11 @@ since floating-point outputs differ in the last bit between platforms.
 ``--corners`` adds ``corners_<split>_n<res>_<k>.npz``: each example's non-right corners
 (``corners`` [N, 4] bool, from its chart: `coarse_patches.corner_flags`) and its seed
 (``cseed``), which the Stage 0 rework's corner treatment trains with (`train.Arm.corners`).
-Without it the output is as before, byte for byte.
+``--light-labels`` adds ``light_<split>_n<res>_<k>.npz``: each example's exact column energies
+(``lam`` [N, 64], the sine-hat port matrix's diagonal), ``trace_Lambda``, ``up_energy`` and
+``lseed``, computed as `data.labels_from_arrays` computes them.  That is what the two-level
+expert's relative objective reads (`twolevel.reference`), at 64 numbers an example where the
+exact modes take megabytes.  Without either option the output is as before, byte for byte.
 """
 from __future__ import annotations
 
@@ -47,9 +51,28 @@ from atlas.chartop.gates_prior import TEST_SEED_BASE as PRIOR_TEST_SEED_BASE  # 
 SPLIT_SEED = dict(SEED_BASE, **{"test-prior": PRIOR_TEST_SEED_BASE})
 
 
+def light_labels(a: dict) -> dict:
+    """The light labels of one example's stored arrays: the exact sine-hat modes' energies (the
+    port matrix's diagonal), its trace and the particular field's energy, each computed as
+    `data.labels_from_arrays` computes it."""
+    from atlas.chartop import fe, ports
+    n = a["a11"].shape[-1]
+    d = {k: np.asarray(a[k], np.float64) for k in ("a11", "a12", "a22", "sigma", "w", "g")}
+    M = fe.assemble(n, d["a11"], d["a12"], d["a22"], d["sigma"])
+    exs = fe.Exact(M, n)
+    Q = ports.basis("sine-hat", n, 16).Q
+    H = exs.modes(Q)
+    b = fe.mass(n, d["w"]) @ d["g"].ravel()
+    up = exs.particular(b[fe.grid(n)[1]])
+    Lam = exs.port_matrix(Q, H)
+    return {"lam": np.diag(Lam).copy(), "trace_Lambda": float(np.trace(Lam)),
+            "up_energy": float(up @ (exs.A_I @ up))}
+
+
 def _draw_one(args):
     seed, split, label_kinds = args[:3]
     want_corners = bool(args[3]) if len(args) > 3 else False
+    want_light = bool(args[4]) if len(args) > 4 else False
     from atlas.chartop import data, ports
     t0 = time.perf_counter()
     if split == "train-conformal":
@@ -67,6 +90,8 @@ def _draw_one(args):
         L = data.labels_from_arrays(a, Q)
         labs[kind] = {"H": L["H"].T.astype(np.float32), "up": L["up"].astype(np.float32),
                       "trace_Lambda": L["trace_Lambda"], "up_energy": L["up_energy"]}
+    if want_light:
+        labs["light"] = light_labels(a)
     flags = None
     if want_corners:
         from atlas.chartop import coarse_patches
@@ -109,6 +134,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--name", default=None, help="the written split's name (default --split)")
     ap.add_argument("--corners", action="store_true",
                     help="also write each shard's corner flags (corners_<shard>.npz)")
+    ap.add_argument("--light-labels", action="store_true",
+                    help="also write each shard's light labels (light_<shard>.npz)")
     return ap
 
 
@@ -147,6 +174,12 @@ def main() -> int:
                 _write(args.out, "corners_" + name,
                        {"corners": np.stack([c[4] for c in chunk]).astype(bool),
                         "cseed": np.array([c[2]["seed"] for c in chunk])})
+            if args.light_labels:
+                _write(args.out, "light_" + name,
+                       {"lam": np.stack([c[3]["light"]["lam"] for c in chunk]),
+                        "trace_Lambda": np.array([c[3]["light"]["trace_Lambda"] for c in chunk]),
+                        "up_energy": np.array([c[3]["light"]["up_energy"] for c in chunk]),
+                        "lseed": np.array([c[2]["seed"] for c in chunk])})
             if not final:
                 break
     # one BLAS/OpenMP thread per worker, set before the workers import numpy:
@@ -156,7 +189,8 @@ def main() -> int:
     ctx = mp.get_context("spawn")
     with ctx.Pool(args.workers) as pool:
         done = 0
-        for n, a, meta, labs, dt, flags in pool.imap(_draw_one, [(s, args.split, kinds, args.corners)
+        for n, a, meta, labs, dt, flags in pool.imap(_draw_one, [(s, args.split, kinds, args.corners,
+                                                                  args.light_labels)
                                                                  for s in seeds], chunksize=8):
             buckets[n].append((n, a, meta, labs, flags))
             times.append(dt)
@@ -179,6 +213,8 @@ def main() -> int:
                         for k, v in sorted(cover.items())}}
     if args.corners:
         man["corners"] = True
+    if args.light_labels:
+        man["light_labels"] = True
     with open(os.path.join(args.out, f"manifest-{outname}-{args.start}.json"), "w",
               encoding="utf-8") as fh:
         json.dump(man, fh, indent=1)

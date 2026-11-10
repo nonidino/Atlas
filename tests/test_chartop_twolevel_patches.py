@@ -249,6 +249,103 @@ def test_the_arm_refuses_corners_it_cannot_carry(dataset, tmp_path):
     assert "corners" not in json.load(open(out / "arm.json", encoding="utf-8"))["config"]
 
 
+@pytest.mark.parametrize("k", range(8))
+def test_the_corner_flags_follow_the_squares_symmetries(k):
+    """Under symmetry k of the square, the flags move with the arrays (`train.d4_corners`): the
+    enlarged correction of the transformed batch, with its flags transformed, is the transform
+    of the original's.  Asymmetric flags, so a wrong permutation would show."""
+    from atlas.chartop import coarse as co2, model
+    b, _probs = _batch()
+    n, n_c = 32, 8
+    flags = torch.tensor([[True, False, False, False], [False, True, True, False], [True, False, True, True],
+                          [False, False, False, True]])
+    ta = [b[key] for key in ("a11", "a12", "a22", "sigma")]
+    rng = np.random.default_rng(k)
+    X = torch.tensor(rng.standard_normal((4, n - 1, n - 1)))
+    F = torch.tensor(rng.standard_normal((4, n - 1, n - 1)))
+
+    def corrected(arrays, fl, x, f):
+        ts = cpt.TorchEnlargedSpace.of_arrays(*arrays, n_c, cpt.patch_nodes(n, n_c, fl.numpy(), 8))
+        return ts.correct(x, co2.residual_torch(*arrays, x[:, None], rhs=f[:, None])[:, 0])
+    want = model._spatial(corrected(ta, flags, X, F), k & 1, (k >> 1) & 1, (k >> 2) & 1)
+    bk = model.d4(dict(b, corners=flags), k)
+    fk = train.d4_corners(flags, k)
+    sp = lambda a: model._spatial(a, k & 1, (k >> 1) & 1, (k >> 2) & 1)      # noqa: E731
+    got = corrected([bk[key] for key in ("a11", "a12", "a22", "sigma")], fk, sp(X), sp(F))
+    assert float((got - want).abs().max() / want.abs().max()) < 1e-12
+    assert sorted(train.corner_perm(k)) == [0, 1, 2, 3] and (k == 0) == (train.corner_perm(k) == (0, 1, 2, 3))
+    if k:                                                      # unpermuted flags would not commute
+        wrong = corrected([bk[key] for key in ("a11", "a12", "a22", "sigma")], flags, sp(X), sp(F))
+        if not torch.equal(fk, flags):
+            assert float((wrong - want).abs().max() / want.abs().max()) > 1e-6
+
+
+def test_light_labels_follow_the_symmetries_as_the_modes_do():
+    """The light labels' energies permute as the exact modes do under `model.d4_labels`."""
+    from atlas.chartop import model
+    b, lab, _a = _labelled()
+    n = 32
+    lam = torch.stack([tl.column_energies({k: v[i:i + 1] for k, v in b.items()}, lab["H"][i:i + 1])[0]
+                       for i in range(lab["H"].shape[0])])
+    for k in range(8):
+        full = model.d4_labels(lab, KIND, M, k)
+        bk = model.d4(b, k)
+        lam_k = tl.column_energies(bk, full["H"])
+        light = train.d4_light_labels({"lam": lam, "trace_Lambda": lab["trace_Lambda"],
+                                       "up_energy": lab["up_energy"]}, KIND, M, n, k)
+        assert float((light["lam"] - lam_k).abs().max() / lam_k.abs().max()) < 1e-10
+
+
+def _labelled(n=32):
+    from atlas.chartop import ports as pts
+    arrs = [data.arrays(data.draw(s, n=n)) for s in SEEDS]
+    b = {k: torch.tensor(np.stack([a[k] for a in arrs]), dtype=torch.float64)
+         for k in ("a11", "a12", "a22", "sigma", "w", "g")}
+    b["inputs"] = torch.tensor(np.stack([a["inputs"] for a in arrs]), dtype=torch.float32)
+    b["scalars"] = torch.tensor(np.stack([a["scalars"] for a in arrs]), dtype=torch.float32)
+    b["s0"] = torch.tensor(np.array([a["s0"] for a in arrs]), dtype=torch.float64)
+    Q = pts.basis(KIND, n, M).Q
+    labs = [data.labels_from_arrays(a, Q) for a in arrs]
+    K = 4 * M
+    lab = {"H": torch.tensor(np.stack([x["H"].T.reshape(K, n - 1, n - 1) for x in labs])),
+           "up": torch.tensor(np.stack([x["up"].reshape(n - 1, n - 1) for x in labs])),
+           "trace_Lambda": torch.tensor([x["trace_Lambda"] for x in labs], dtype=torch.float64),
+           "up_energy": torch.tensor([x["up_energy"] for x in labs], dtype=torch.float64)}
+    return b, lab, arrs
+
+
+def test_a_relative_arm_trains_on_light_labels(tmp_path):
+    """The training split with light labels only (as `chartop_data.py --light-labels` writes
+    them): a two-level arm with corners starts at exactly 2 and trains; the light labels'
+    energies are the full labels' column energies, and their trace is the labels' trace."""
+    import chartop_data
+    d = tmp_path / "light"
+    d.mkdir()
+    _shards(d, "train", [9_000_100, 9_000_101, 9_000_104, 9_000_105])
+    _shards(d, "val", [9_000_106, 9_000_109])
+    name = "train_n32_0000.npz"
+    with np.load(d / name) as zf:
+        z = {k: zf[k] for k in zf.files}
+    with np.load(d / f"labels_{name}") as ff:
+        full_trace = ff["trace_Lambda"].copy()
+    lights = [chartop_data.light_labels({k: z[k][i] for k in train.KEYS}) for i in range(len(z["seed"]))]
+    np.savez(d / f"light_{name}", lam=np.stack([x["lam"] for x in lights]),
+             trace_Lambda=np.array([x["trace_Lambda"] for x in lights]),
+             up_energy=np.array([x["up_energy"] for x in lights]), lseed=z["seed"])
+    assert np.allclose([x["trace_Lambda"] for x in lights], full_trace, rtol=1e-12, atol=0)
+    assert np.allclose([x["lam"].sum() for x in lights], full_trace, rtol=1e-10, atol=0)
+    os.remove(d / f"labels_{name}")                            # the training split has light labels only
+    split = train.load_split(str(d), "train", with_labels=True, with_corners=True)
+    assert "lam" in split[32] and "H" not in split[32]
+    out = tmp_path / "run"
+    train.train(_arm("light", steps=4), str(d), str(out), device="cpu", log_every=1)
+    log = [json.loads(line) for line in open(out / "log.jsonl", encoding="utf-8")]
+    assert abs(next(r for r in log if "loss" in r)["loss"] - 2.0) < 1e-9
+    with pytest.raises(ValueError):                            # the supervised objective needs the modes
+        train.train(_arm("sup", objective="supervised", coarse=None, corners=None, steps=2), str(d),
+                    str(tmp_path / "sup"), device="cpu")
+
+
 # ---------------------------------------------------------------------------
 # the data's corner flags
 # ---------------------------------------------------------------------------
