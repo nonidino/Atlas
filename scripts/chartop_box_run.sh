@@ -100,6 +100,20 @@ for st in $STAGES; do
       python scripts/chartop_train.py --plan plan.json --data data --runs runs --only "$ONLY" \
         > train.log 2>&1
       echo $? > train.done ;;
+    probe)
+      # the Stage 0 rework's Phase 3: the overfit probe from each start (payload --with-probe).
+      # The S start reads out/chartop/runs/forms/S/best.pt and weights-sha256.txt, uploaded beside
+      # the payload, and refuses weights whose sha256 is not the recorded one.  Each start writes
+      # probe-<start>.done with its exit code as it finishes, so it can be downloaded at once.
+      code=0
+      for start in ${PROBE_STARTS:-scratch S}; do
+        python scripts/chartop_twolevel_overfit.py --start "$start" --device cuda --threads 4 \
+          --repeat-check "${PROBE_REPEAT:-100}" --out out/twolevel > "probe-$start.log" 2>&1
+        c=$?
+        echo $c > "probe-$start.done"
+        [ "$c" -ne 0 ] && code=1
+      done
+      echo $code > probe.done ;;
   esac
 done
 touch ALL.done

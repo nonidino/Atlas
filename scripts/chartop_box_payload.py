@@ -24,6 +24,11 @@ OUT = os.path.join(ROOT, "out", "chartop", "box", "payload.tar.gz")
 #: runner calls it before anything else is installed, and the data, price and E5 scripts import it
 SCRIPTS = ("chartop_cpus.py", "chartop_data.py", "chartop_train.py", "chartop_price.py", "chartop_e5.py",
            "chartop_budget.py")
+#: ``--with-probe``: the Stage 0 rework's overfit probe (the runner's ``probe`` stage) and what it
+#: imports.  S's weights do not travel in the payload: they are uploaded beside it, and the
+#: probe checks them against ``weights-sha256.txt`` before reading them
+PROBE_SCRIPTS = ("chartop_twolevel_overfit.py", "chartop_overfit_probe.py", "chartop_forms_diagnose.py",
+                 "chartop_evaluate.py", "chartop_registry.py")
 
 
 def add_text(tar, src, arc, mode=0o644):
@@ -38,6 +43,8 @@ def main() -> int:
     ap.add_argument("--plan", default=None)
     ap.add_argument("--with-workbench", action="store_true",
                     help="add atlas/workbench (the benchmarks' geometry and materials) and the E5 script")
+    ap.add_argument("--with-probe", action="store_true",
+                    help="add the Stage 0 rework's overfit probe and the scripts it imports")
     args = ap.parse_args()
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with tarfile.open(OUT, "w:gz") as tar:
@@ -55,7 +62,7 @@ def main() -> int:
             for f in sorted(os.listdir(os.path.join(wb, "families"))):
                 if f.endswith(".py"):
                     add_text(tar, os.path.join(wb, "families", f), "chartop/atlas/workbench/families/" + f)
-        for s in SCRIPTS:
+        for s in SCRIPTS + (PROBE_SCRIPTS if args.with_probe else ()):
             add_text(tar, os.path.join(ROOT, "scripts", s), "chartop/scripts/" + s)
         add_text(tar, os.path.join(ROOT, "scripts", "chartop_box_run.sh"), "chartop/run.sh", mode=0o755)
         if args.plan:

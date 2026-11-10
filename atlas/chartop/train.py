@@ -28,6 +28,7 @@ import torch
 
 from . import forms as fm
 from . import model as md
+from . import twolevel as tl
 
 KEYS = ("inputs", "scalars", "a11", "a12", "a22", "sigma", "w", "g", "s0")
 META = ("seed", "sup_mu", "logJ_range", "s_grad", "fo", "freq", "family", "method")
@@ -63,6 +64,18 @@ class Arm:
     #: objective weights the modes' errors by that prior's covariance of a piece's traces,
     #: ``tr(Sigma E^T A E)`` (`forms.mode_mixing`; section 11's B2).  Validation is unchanged.
     mode_prior: str | None = None
+    #: the Stage 0 rework (`twolevel`): None, as before; an integer n_c: the coarse correction at
+    #: that coarse size after the form (`twolevel.TwoLevelExpert`), validation logging the
+    #: network's share rho of TL0's error, with the dead-network stop
+    coarse: int | None = None
+    #: a checkpoint whose weights start the run (S's, for instance); None: as before
+    init_from: str | None = None
+    #: with ``init_from``: "zero" sets the loaded output heads to zero, so a two-level run starts
+    #: exactly at TL0; "loaded" keeps them.  Without it the heads start at zero, as the U-Net's do
+    head_init: str = "zero"
+    #: the relative objective (``objective="relative"``, two-level arms only) leaves out a piece's
+    #: term when TL0's error there is below this fraction of its own energy, and counts it
+    drop_easy: float = 1e-8
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -155,14 +168,18 @@ def _batch(t: dict, idx, labels: bool):
     return b, lab
 
 
-def validate(expert: md.Expert, val: dict, device, autocast: bool) -> dict:
+def validate(expert: md.Expert, val: dict, device, autocast: bool, twin=None, easy: float = tl.EASY) -> dict:
     """Per-example e_H and e_p on a labelled set, with their bins; and, for the
-    kernel-exact forms, e_K of the uniform state (`forms`), zero to rounding."""
+    kernel-exact forms, e_K of the uniform state (`forms`), zero to rounding.  With ``twin``
+    (`twolevel.zero_heads_twin` of a two-level expert), also the network's share ``rho`` of
+    TL0's error over the learned columns, ``nan`` where TL0 left nothing to learn."""
     expert.eval()
     rows = {"e_H": [], "e_p": [], "sup_mu": [], "freq": [], "n": [], "seed": []}
     kernel = getattr(expert, "needs_load_fields", False)
     if kernel:
         rows["e_K"] = []
+    if twin is not None:
+        rows["rho"] = []
     with torch.no_grad():
         for n, t in val.items():
             N = t["inputs"].shape[0]
@@ -171,7 +188,7 @@ def validate(expert: md.Expert, val: dict, device, autocast: bool) -> dict:
                 idx = torch.arange(i0, min(N, i0 + bs), device=device)
                 b, lab = _batch(t, idx, True)
                 with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=autocast):
-                    H, up = fm.call(expert, b)
+                    H, up = tl.call(expert, b)
                 o = md.objectives(b, H, up, expert.kind, expert.m, lab, "label-free")
                 rows["e_H"] += o["e_H"].cpu().tolist()
                 rows["e_p"] += o["e_p"].cpu().tolist()
@@ -179,6 +196,12 @@ def validate(expert: md.Expert, val: dict, device, autocast: bool) -> dict:
                     ks = fm.kernel_square(n, expert.kind, expert.m, str(H.device))
                     r = fm.residual(H, expert.last_level, b["s0"], ks)
                     rows["e_K"] += fm.kernel_error_torch(b, r, lab["trace_Lambda"]).cpu().tolist()
+                if twin is not None:
+                    ref = tl.reference(twin, b, lab, strip_solve=True, easy=easy)
+                    L = sorted(sum(tl.learned_groups(expert.kind, expert.m).values(), []))
+                    eps = (tl.column_energies(b, H, expert.kind, expert.m)[:, L].sum(-1) - ref["lam_L"])
+                    rows["rho"] += tl.rho(eps.cpu().numpy(), ref["eps0"].cpu().numpy(),
+                                          lab["trace_Lambda"].cpu().numpy(), easy).tolist()
             rows["sup_mu"] += t["meta_sup_mu"].tolist()
             rows["freq"] += t["meta_freq"].tolist()
             rows["seed"] += t["meta_seed"].tolist()
@@ -197,9 +220,13 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         torch.backends.cudnn.allow_tf32 = False
         assert not torch.backends.cuda.matmul.allow_tf32 and not torch.backends.cudnn.allow_tf32
     autocast = dev.type == "cuda"
+    if arm.objective == "relative" and arm.coarse is None:
+        raise ValueError("the relative objective is the two-level expert's: set Arm.coarse")
+    if arm.head_init not in ("zero", "loaded"):
+        raise ValueError(f"head_init {arm.head_init!r}: 'zero' or 'loaded'")
     torch.manual_seed(arm.seed)
     rng = np.random.default_rng(arm.seed)
-    labelled = arm.objective == "supervised"
+    labelled = arm.objective in ("supervised", "relative")
     tr = load_split(data_dir, arm.data, arm.limit, with_labels=labelled, kind=arm.kind)
     va = load_split(data_dir, val_split, None, with_labels=True, kind=arm.kind)
     T = {n: to_device(b, dev, labelled) for n, b in tr.items()}
@@ -208,8 +235,22 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
         V[n] = to_device(b, dev, True)
         for k in ("sup_mu", "freq", "seed"):
             V[n]["meta_" + k] = b[k]
-    expert = fm.make(arm.backbone, arm.size, arm.form, arm.kind, p_size=arm.p_size,
-                     bubble=arm.bubble, strips=arm.strips, hats=arm.hats).to(dev)
+    if arm.coarse is None:
+        expert = fm.make(arm.backbone, arm.size, arm.form, arm.kind, p_size=arm.p_size,
+                         bubble=arm.bubble, strips=arm.strips, hats=arm.hats).to(dev)
+    else:
+        expert = tl.make(arm.backbone, arm.size, arm.form, arm.kind, p_size=arm.p_size,
+                         bubble=arm.bubble, strips=arm.strips, hats=arm.hats, n_c=arm.coarse).to(dev)
+    if arm.init_from is not None:
+        st0 = torch.load(arm.init_from, map_location=dev, weights_only=False)
+        expert.load_state_dict(st0["model"], strict=True)
+        if arm.head_init == "zero":
+            with torch.no_grad():
+                for net in (expert.net, getattr(expert, "pnet", None)):
+                    if net is not None:
+                        net.head.weight.zero_()
+                        net.head.bias.zero_()
+    twin = tl.zero_heads_twin(expert) if arm.coarse is not None else None
     mixes = {}
 
     def mix_for(n_: int):
@@ -257,9 +298,13 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
             if lab is not None:
                 lab = md.d4_labels(lab, arm.kind, expert.m, k)
         with torch.autocast(device_type=dev.type, dtype=torch.bfloat16, enabled=autocast):
-            H, up = fm.call(expert, b, strip_solve=arm.strips_in_training)
-        o = md.objectives(b, H, up, arm.kind, expert.m, lab, arm.objective,
-                          H0=getattr(expert, "last_principal", None), mix=mix_for(n))
+            H, up = tl.call(expert, b, strip_solve=arm.strips_in_training)
+        if arm.objective == "relative":
+            ref = tl.reference(twin, b, lab, strip_solve=arm.strips_in_training, easy=arm.drop_easy)
+            o = tl.relative_objective(b, H, up, ref, arm.kind, expert.m)
+        else:
+            o = md.objectives(b, H, up, arm.kind, expert.m, lab, arm.objective,
+                              H0=getattr(expert, "last_principal", None), mix=mix_for(n))
         loss = o["loss"].mean()
         opt.zero_grad(set_to_none=True)
         loss.backward()
@@ -274,13 +319,18 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
                           "elapsed_s": time.perf_counter() - t0, "n": n})
             acc, acc_n = 0.0, 0
         if step % arm.val_every == 0 or step == arm.steps:
-            r = validate(expert, V, dev, autocast)
+            r = validate(expert, V, dev, autocast, twin=twin, easy=arm.drop_easy)
             med = float(np.median(r["e_H"]))
             rec = {"step": step, "val_e_H_median": med, "val_e_H_p90": float(np.quantile(r["e_H"], 0.9)),
                    "val_e_p_median": float(np.median(r["e_p"])),
                    "elapsed_s": time.perf_counter() - t0}
             if "e_K" in r:
                 rec["val_e_K_max"] = float(np.max(r["e_K"]))
+            rho_dead = False
+            if "rho" in r:
+                s = tl.summarise_rho(r["rho"])
+                rec.update({f"val_rho_{k}": v for k, v in s.items()})
+                rho_dead = tl.dead(step, arm.steps, s["median"])
             _append(log, rec)
             if med < best:
                 best = med
@@ -289,6 +339,10 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
             _save_atomic({"model": expert.state_dict(), "opt": opt.state_dict(),
                           "sched": sched.state_dict(), "step": step, "best": best,
                           "rng_seed": arm.seed, "config": expert.config()}, last)
+            if rho_dead:
+                _append(log, {"stopped": "dead network: validation median rho below "
+                              f"{tl.DEAD_RHO} after {tl.DEAD_AFTER:.0%} of the steps", "step": step})
+                break
         if minutes is not None and (time.perf_counter() - t0) > 60.0 * minutes:
             _append(log, {"stopped": "wall-clock budget", "step": step})
             break
@@ -304,6 +358,8 @@ def train(arm: Arm, data_dir: str, out_dir: str, device: str = "cuda",
 def load_expert(path: str, device: str = "cpu") -> md.Expert:
     st = torch.load(path, map_location=device, weights_only=False)
     c = st["config"]
+    if c.get("n_c") is not None:                     # a two-level expert (`twolevel`)
+        return tl.load(path, device)
     e = fm.make(c["backbone"], c["size"], c["form"], c["kind"], c["m"], c.get("p_size"),
                 c.get("bubble", "square"), c.get("strips", False), c.get("hats", "learned"))
     e.load_state_dict(st["model"])

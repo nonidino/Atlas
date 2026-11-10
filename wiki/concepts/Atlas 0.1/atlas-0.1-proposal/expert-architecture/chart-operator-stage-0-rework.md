@@ -480,6 +480,47 @@ To meet E4 on the s-channel steady problem, the excess must fall to 1.77%. At $n
 
 ---
 
+## 14. Phase 3: the network on TL0's residual, built (2026-11-09)
+
+**Built.** Nothing has been trained beyond the tests and one development check (below).
+
+| file | what |
+|---|---|
+| `atlas/chartop/twolevel.py` (new) | `TwoLevelExpert`, a subclass of `forms.KernelExpert` that adds no parameter: S's form, then $\mathcal C$. Two paths for $\mathcal C$: torch from a batch's element arrays (differentiable), numpy from the host's operators. Also: `zero_heads_twin` (TL0 with stand-ins answering zeros, so no backbone runs); `call` (`forms.call` is pinned); the relative objective; the ledger (ρ with its guard, the coupled attribution, $n_c^\ast$, $\kappa_{\text{kill}}$, the dead-network stop) |
+| `atlas/chartop/train.py` (changed; not pinned) | `Arm.coarse`, `init_from`, `head_init` and `drop_easy`, and the objective `"relative"`. Validation logs ρ, a dead network stops the run, and `load_expert` loads two-level checkpoints |
+| `scripts/chartop_twolevel_overfit.py` (new) | the probe (below) |
+| `scripts/chartop_box_payload.py`, `scripts/chartop_box_run.sh` (changed) | `--with-probe` ships the probe and what it imports; the runner's `probe` stage writes a done file per start |
+| `tests/test_chartop_twolevel.py` (21), `tests/test_chartop_twolevel_overfit.py` (4) | below |
+
+**The defaults are today's, bit for bit.** One-off, not a committed test: five default arms trained 4 steps with the committed `train.py` and with the new one. The arms were Stage 0's bubble form, S's form with and without the strips in the training steps, the supervised objective, and B2's prior. Every saved tensor (the weights, the optimiser, the scheduler, the best checkpoint) and every logged number was equal bit for bit; a different seed differed. All 514 chartop tests pass, the pins' among them.
+
+**The anti-collapse methods.** Methods 1–3 are built and on for every two-level arm:
+1. the relative objective, $L_i=\varepsilon_{\theta,i}/\varepsilon_{0,i}+\varepsilon_{p,\theta,i}/\varepsilon_{p,0,i}$;
+2. zero heads at the start (the U-Net's own initialisation, and `head_init="zero"` after loading weights);
+3. pieces with nothing to learn ($\varepsilon_0<10^{-8}\operatorname{tr}\Lambda$) left out and counted.
+
+The ladder (residual-scaled outputs, arm R, the orthogonality penalty) is not built; it comes only if ρ stalls.
+
+**What the tests show** (seeded random weights or zero heads):
+- With no coarse size the expert is S bit for bit. With zero heads it is TL0 bit for bit, and Phase 2's numpy TL0 to $10^{-12}$.
+- With random weights, CX and the kernel identity hold within $10^{-12}$, while the form's own answer before $\mathcal C$ had CX above $10^{-6}$. The numpy and torch paths agree to $10^{-12}$.
+- Through the host, `gates_forms`' own judges find L, K and D met.
+- The relative objective reads exactly 1 per term at TL0 and 0 at the exact fields. Its gradient equals the label-free gradient divided by TL0's error, to $10^{-10}$; over all 64 columns the gradient is the same, since the strips and $\mathcal C$ carry none. A square of one material, where TL0 is exact, is left out.
+- The ledger's hand-built cases: ρ of 0, 1, −1 and the guard; the attribution and its floor; $n_c^\ast$ exact on $e\propto1/n_c$, with extrapolation flagged; $\kappa_{\text{kill}}=1$ on $V_c$ and 0 off it; the stop at 20%.
+- `train.train` on a two-level arm starts at a loss of exactly 2, logs ρ, stops a dead network at the first validation past 20% of the steps, and its checkpoint loads as a two-level expert. Starting from given weights with zeroed heads starts at TL0; keeping their heads does not.
+
+**A development check, not the probe**: two post-hoc validation pieces at $n=32$, $n_c=8$, from zero heads, 200 steps.
+- At the registered learning rate, $3\times10^{-4}$, the median ρ rose from 0.005 at step 25 to 0.14 at step 200. At $3\times10^{-3}$ it reached 0.36.
+- The shuffled-input control fell to −0.35 and −0.02: the network reads its own pieces.
+- In the first 25 steps ρ stays near zero, and can dip below it.
+
+**The probe** (`scripts/chartop_twolevel_overfit.py`). B4's protocol: the four pieces 2,000,100–2,000,103 at $n=128$, AdamW at $3\times10^{-4}$, 3,000 steps. It runs from zero heads and from S's weights, at $n_c=16$, on the relative objective. The ledger is written every 250 steps: ρ per piece and group, ρ of the particular field, $e_{H,L}$, $e_p$, $\kappa_{\text{kill}}$ and the shuffled-input control. The dead-network stop applies, and a repeat check measures how far a rerun of the first steps differs.
+- **On the laptop** (on AC), a step takes 1.5 s at 8 threads and 2.3 s at 4: 77–113 minutes per start.
+- **On CUDA it cannot be bit for bit**: the U-Net's bilinear upsampling uses atomics in its backward pass, so a rerun differs by rounding. On the CPU it is deterministic (tested).
+- **Waiting for the owner's go on a box**: an RTX 3090 offered at about \$0.20 an hour.
+
+---
+
 ## See Also
 
 - [[chart-operator-stage-0]] — what was built, judged once, and diagnosed
