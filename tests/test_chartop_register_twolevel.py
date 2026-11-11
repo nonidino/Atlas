@@ -95,6 +95,11 @@ def test_the_pin_refuses_before_the_dry_run_and_never_overwrites(tmp_path, monke
     assert existing.read_text(encoding="ascii") == "a registration"
 
 
-def test_the_registration_is_the_accepted_one():
-    assert "accepted by the owner on 2026-11-10" in GT.REGISTERED and "not yet pinned" in GT.REGISTERED
-    assert not os.path.exists(R.REGISTRATION)                               # not pinned yet
+def test_the_registration_is_pinned():
+    """The pin holds: every file it records has the recorded sha256 (line endings normalised).
+    Editing any of them fails this test; that is the point."""
+    assert "accepted by the owner on 2026-11-10" in GT.REGISTERED and "hash-pinned" in GT.REGISTERED
+    got = R.check_pin()
+    assert set(got) == set(R.every_path()) and len(got) == 31
+    text = open(R.REGISTRATION, encoding="ascii").read()
+    assert R.DRY_RUN in text and "735dbc76dde1fd81" in text and GT.INIT_SHA256 in text

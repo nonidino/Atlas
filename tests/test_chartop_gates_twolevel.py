@@ -25,7 +25,7 @@ def _section18() -> str:
 
 def test_it_is_accepted_with_the_owners_settled_choices():
     assert "2026-11-10" in GT.REGISTERED and "Accept as drafted (Recommended)" in GT.REGISTERED
-    assert "not yet pinned" in GT.REGISTERED
+    assert "hash-pinned" in GT.REGISTERED and "Pin it (Recommended)" in GT.REGISTERED
     assert set(GT.SETTLED) == {"the corner treatment", "the NC bar", "the budget"}
     assert "Adopt B, n/8 (Recommended)" in GT.SETTLED["the corner treatment"]
     assert "As proposed (Recommended)" in GT.SETTLED["the NC bar"]

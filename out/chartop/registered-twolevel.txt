@@ -1,0 +1,82 @@
+THE CHART OPERATOR, THE REGISTRATION AFTER THE STAGE 0 REWORK (CO-D, THE TWO-LEVEL EXPERT TL)
+
+written            2026-11-10T19:20:36-05:00
+before             any network of TL was trained, and before any expert read the test split
+repository at      0fafd42a02b60119a35359ca2d5fba9eb4a835bd (the commit adding this file follows it)
+gate module        atlas/chartop/gates_twolevel.py  sha256 31bcc9547c227063c82cf9ad303e4ee94301a47ad61f74663a2c61a1ecc100a1
+the coarse level   atlas/chartop/coarse.py  sha256 a17c6a7c70c25649cf847a82d2b98a17a390a0515068c69b1fb503a38cfce8e8
+its torch path     atlas/chartop/coarse_patches.py  sha256 a68d9cc34b4a607eb240be7750cec678f6f3288dbcb4eb2c0ee98bb770a77b72
+the expert         atlas/chartop/twolevel.py  sha256 46e5bef407308578323c10ee809a1c4f4676e6e3c73fbc27be745cbebf9f9f85
+training           atlas/chartop/train.py  sha256 8d633db9c71e007e580173cb4006c3726462f77a3fcd3e5f9d44727cef3c7ff8
+training's runner  scripts/chartop_train.py  sha256 21b84dc3326a843cda28b4abb55191b09808d5c7ed12e8878b1cc3e88601a052
+the data's flags   scripts/chartop_data.py  sha256 58b56cff03e86817533c3cd5af52cdb5159e39c0b46cc2f91a2953af7a549009
+price protocol     scripts/chartop_price_twolevel.py  sha256 e311b3a17d3fb35bca7153f85b6d1fac1a181e0bde94e35e8e6e285ac39f03ac
+price payload      scripts/chartop_price_twolevel_payload.py  sha256 3890b86e2aa916d9d3f14d0820eb23f3021e7f674a0189a9e6701e4a3daaeea4
+price box runner   scripts/chartop_price_twolevel_box_run.sh  sha256 a92575da6971e2dae80f0a833ddef9759a5ba5c2583466a61363dc6786f587a7
+training payload   scripts/chartop_box_payload.py  sha256 d77a59d87d179c0540ae05f878e99f133c0ea35a47edf8c2e38b5ea36181be96
+training box       scripts/chartop_box_run.sh  sha256 5b4f713d36025bbd1cf3a08fb5adc0da9fae1333f75b38b9a00bc9f7f4221a43
+classical record   out/chartop/registration-twolevel.json  sha256 3fe9d4c90ec2c3497ead85ff7800232a7e3a71b17656ac575bd7a916df91643a
+reads the bars of  atlas/chartop/gates_forms.py  sha256 94f29f2738733d36426894a0a5ea7bf2a2d302a482de75a28e4c655dd77a7757  (as the earlier registrations pinned it)
+and through it     atlas/chartop/gates.py  sha256 b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099  (as the earlier registrations pinned it)
+the held-out problems atlas/chartop/gates_prior.py  sha256 baadad040504e7d06fb6c25bf7bca713be75c9a64a3a1c44da1a9e58c2364ac0  (as the earlier registrations pinned it)
+R2's protocol      atlas/chartop/gates_squares.py  sha256 307155a8a79741ce96d66f2e5b86abac49f2fd1c8a08dd989eeced2fa7b5e25d  (as the earlier registrations pinned it)
+the price function atlas/chartop/gates_hybrid.py  sha256 319926b8d519bcf7a2ad737e8fac7f82d008ff5747d880beb0a4666d6269f582  (as the earlier registrations pinned it)
+layout helpers     atlas/chartop/benchmarks.py  sha256 fc3f213e1e28c69f493e76224b22ddf36440b10bf0bb135e057bc8c12469f5c0  (as the earlier registrations pinned it)
+R2's problems      atlas/chartop/benchmarks_squares.py  sha256 c00ab2c79dcbe722b1b89e1ee763a45a549be4f867fc7126f4c6c36eb4f372a1  (as the earlier registrations pinned it)
+dry-run problems   atlas/chartop/benchmarks_workbench.py  sha256 9771a989bfe199a18aaad0490f6d04be4df58024e4c881ebefbe90fd9cacd4b7  (as the earlier registrations pinned it)
+S's form           atlas/chartop/forms.py  sha256 2b95385c6493fe4ace951513050cb5d5d663106b3cfc29cd468c6f5357980755  (as the earlier registrations pinned it)
+the host           atlas/chartop/host.py  sha256 fc1c30f64b35757296e12131cad489e7ea903b3352181464aeb78cf1244a8d24  (as the earlier registrations pinned it)
+H2r's expert       atlas/chartop/reuse.py  sha256 7693639cdaadff3489f144fcf737f9658e86799eb2c2b0885a16a5b528b2824d  (as the earlier registrations pinned it)
+R2's price runs    scripts/chartop_price_squares.py  sha256 1157f00788a0e57f89ce6bbcb9a6008cf4e694c41e6e0bf760c851a0cbab2e35  (as the earlier registrations pinned it)
+the adapter        atlas/chartop/expert.py  sha256 ee2c9dd1ce071f7634b2515d6a6ef55790104b093d42794b3879f9e48a044928
+the generator      atlas/chartop/data.py  sha256 c0fd7daa8eb780c58a914f0201564567260ceed3acbb5fff34b7ff62de7aae55
+U's builder        scripts/chartop_evaluate_hybrid.py  sha256 84177f25aaca6d0c78eb26f8e940536c167a96facd99a4ab2d8909ce48e73445
+the stand-in       scripts/chartop_forms_diagnose.py  sha256 b766effb756aca8b042d75cc7f7f4520b70bae25baf66294d3b4e72bbb5c86e8
+utilities          scripts/chartop_evaluate.py  sha256 33def2011a535c1469b510cedc94fa9c8b64fe622e2995fdd51ee0320f81076c
+the dry run        out/chartop/dryrun-twolevel-20261110-201853.json  sha256 ad39b6b663247abcf4c2cfdf234da9309fd47edbcd5bb9a1861939ce7e4c2ef1
+registered as      accepted by the owner on 2026-11-10, in chat ('Accept as drafted (Recommended)'), as drafted in chart-operator-stage-0-rework section 18 (commit 2fca5aa), with its five predictions, before any network of TL was trained; hash-pinned with the owner's approval the same day ('Pin it (Recommended)'), after the price protocol's dry run passed on the pricing CPU (commit 345055c)
+S's weights        e17f881b2b5bdb90145254cb57e9c2f0912c01b3957a3f6b20c01e3e8a8fa35d (TL's start, sha256 as downloaded)
+the test split     seeds 6,000,000 to 6,002,399, 2400 pieces ({'32': 731, '64': 1220, '128': 449}), content sha256 735dbc76dde1fd81b95a3af8a2c16c91ccf2a8b14d5da78d36b22974e1558c85
+
+REGISTERED: accepted by the owner on 2026-11-10, in chat ('Accept as drafted (Recommended)'), as drafted in chart-operator-stage-0-rework section 18 (commit 2fca5aa), with its five predictions, before any network of TL was trained; hash-pinned with the owner's approval the same day ('Pin it (Recommended)'), after the price protocol's dry run passed on the pricing CPU (commit 345055c)
+
+SETTLED
+  the corner treatment: B with blocks of n/8 in TL and TL0 ('Adopt B, n/8 (Recommended)', 2026-11-10)
+  the NC bar: as proposed ('As proposed (Recommended)', 2026-11-10)
+  the budget: the comparison budget, 37,500 steps ('37,500 steps (Recommended)', 2026-11-10)
+
+THE GATES
+  K      the uniform state                                          every piece of the fresh test split and every held-out benchmark piece, steady and step: e_K <= 1e-12 and e_K,inf <= 1e-12
+  D      the datum                                                  every held-out benchmark problem (benchmarks' variant 'held-out'), steady and step, every temperature lowered by 300 K (the data and T_old together): | ||u - u~||_M,lowered / ||u - u~||_M - 1 | <= 1e-08 wherever both errors exceed 1e-09 ||u||_M, and the maximum error over the range within 1e-09 of the range
+  L      the load                                                   every run: the modes and the level field bit for bit the same with the piece's own source, no source and a unit-RMS random source, on every held-out benchmark piece and the first 100 pieces of the fresh test split
+  E3     Theorem 2 on the benchmarks                                every held-out benchmark problem (benchmarks' variant 'held-out'): ||u - u~||_M <= (||u - u_m||_M + network term) (1 + 1e-09)
+  E4     coupled answer against the full-domain solve, in both frames every held-out benchmark problem (benchmarks' variant 'held-out'), as registered and with every temperature lowered by 300 K: energy error <= 0.02 and max error <= the 16-mode classical superelement's own max error + 0.01 of the range
+  CX     coarse exactness, on the arm's own coarse space            every piece of the fresh test split (seeds 6,000,000 to 6,002,399) and every held-out benchmark piece: ||P_e^T (B Q - A_I H)|| / ||P_e^T B Q|| <= 1e-10, and likewise the particular field wherever the piece has a load
+  NC     the network's contribution                                 TL's seed-0 run on the fresh test split (seeds 6,000,000 to 6,002,399), against TL0 at n_c = 16 with the corner treatment: rho = 1 - eps_TL / eps_TL0 over the 36 learned columns (pieces where TL0 leaves nothing to learn counted, not divided by): median >= 0.3 and 10th percentile >= 0; and on every held-out benchmark problem, in both frames, TL's energy error <= TL0's x (1 + 1e-09)
+  SE1    Gram identity and lambda_min                               every held-out benchmark piece and problem: identity residual <= 1e-10; lambda_min(S~) >= lambda_min(S) (1 - 1e-10)
+  SE2    network calls                                              1 per piece per linear solve
+  DUAL   the 2-D dual bracket                                       steady pieces: L~_low <= L_low <= L <= L~ with every min eigenvalue >= -1e-10 |L|; the gap against the true error reported
+  KT     nonlinear conduction, frozen coefficients                  every steady benchmark with kappa(T): converges within 50 outer iterations, and meets E4's bars against the classical frozen-coefficient solution, the floor being the same iteration with the 16-mode classical superelement
+  PR     the price, under R2's protocol                             TL's price (its time over the classical solve's, the geometric mean over the problems) measured under R2's protocol on a rented whole machine and reported against the classical solve (1), H2r (0.306) and TL0; TL is 'faster than X' only where measured so
+
+REPORTED
+  E1     accuracy by bin, on the learned columns                    TL's seed-0 run, on the fresh test split (seeds 6,000,000 to 6,002,399), in every (sup|mu|, frequency) bin with >= 30 examples: median e_H,L <= 0.01 and 90th percentile <= 0.03 on the 36 learned columns, against their own energy; median e_p <= 0.02 and 90th percentile <= 0.05; e_H over all 64 columns and e_K reported beside it, not judged; reported, not judged
+  SE3    port truncation                                            every held-out benchmark problem (benchmarks' variant 'held-out'): the 16-mode truncation error ||u - u_m||_M below the network term; reported
+  S11    the rollout                                                reported: the s-channel marched 20 steps, the modes, the level field and the strip columns formed once, one particular-field call per piece per step
+  LEDGER the network ledger                                         reported: rho per piece and by column group (hats, j = 1-3, j = 4-8), rho of the particular field, the coupled attribution (coarse first, then the network) against the floor, the equivalent coarse size n_c* from TL0's curve, kappa_kill, and the usage controls (shuffled inputs, frozen weights)
+
+THE ARMS (TL: form split, backbone unet, size 1M, p_size 1M, kind sine-hat, m 16, objective relative, data train, bubble corner, strips True, hats learned, strips_in_training False, coarse 16, corners 8, drop_easy 1e-08, lr 0.0003, head_init loaded)
+  TL   S's form, then the coarse correction at n_c = 16 with B's corner patches (n/8), trained on the relative objective (methods 1-3); from S's weights (e17f881b2b5bdb90..., heads loaded); 37,500 steps at lr 0.0003, training seeds 0, 1
+  TL0  TL with zero heads, untrained: the floor (n_c = 16, corners) and the curve; n_c 4, 8, 16, 32
+  S'   reused, not trained: Sp-s0 2e7bcf22d5db38a4..., Sp-s1 70b7c3d8f041df94...
+
+THE PROBLEMS: held-out bend-3 steady, bend-3 step, s-channel steady, s-channel step, insert-round steady, insert-round step; the seen six reported
+
+THE PREDICTIONS
+  1. CX, K, D and L hold on every run, by structure: Proposition A and Lemma B on V_e, and the split form.
+  2. [AI Inference] NC is met: TL's median test rho is at least 0.3.
+  3. [AI Inference] TL meets E4 on all six held-out problems.
+  4. [AI Inference] By group, rho is lowest on the hats: on the probe's pieces the hats gave back what they had gained.
+  5. [AI Inference] PR: TL is not faster than the classical solve. U's forward with its strips already cost 1.48 and 0.78 of an exact solve at n = 64 and 128 (section 13).
+
+COST: at most $10.00 in all, each box at most $0.70 an hour

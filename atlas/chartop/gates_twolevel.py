@@ -1,8 +1,9 @@
 """The registration after the Stage 0 rework (Phase 4 of [[chart-operator-stage-0-rework]],
 section 18): TL, the two-level coarse-exact CO-D expert, trained on the relative objective,
 judged with its untrained floor TL0 and with S' reused.  ACCEPTED BY THE OWNER AS DRAFTED ON
-2026-11-10 (`REGISTERED`); NOT YET PINNED: the pin follows the price protocol's dry run, with
-the owner's approval (`scripts/chartop_register_twolevel.py --pin`).
+2026-11-10 (`REGISTERED`), AND HASH-PINNED THE SAME DAY WITH THE OWNER'S APPROVAL, AFTER THE PRICE
+PROTOCOL'S DRY RUN PASSED (``out/chartop/registered-twolevel.txt``,
+`scripts/chartop_register_twolevel.py`), BEFORE ANY NETWORK OF TL WAS TRAINED.
 
 **Decided by the owner already** (in chat, 2026-11-09 and 2026-11-10): the rework's
 formulation; ``n_c in {8, 16, 32}`` with 16 the default (4 added for the curve); E4 the only
@@ -47,7 +48,9 @@ from . import gates_prior as GP
 
 REGISTERED = ("accepted by the owner on 2026-11-10, in chat ('Accept as drafted (Recommended)'), as "
               "drafted in chart-operator-stage-0-rework section 18 (commit 2fca5aa), with its five "
-              "predictions, before any network of TL was trained; not yet pinned")
+              "predictions, before any network of TL was trained; hash-pinned with the owner's approval "
+              "the same day ('Pin it (Recommended)'), after the price protocol's dry run passed on the "
+              "pricing CPU (commit 345055c)")
 
 #: the owner's decisions so far, quoted from chat
 SETTLED = {

@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration is drafted, not accepted (§18). Nothing is rented. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration was accepted and, after its price protocol's dry run passed on a rented machine (\$0.32), hash-pinned (§18). Phase 5, training on a rented GPU box and the one evaluation, waits for the owner's go. No box is up. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -761,7 +761,13 @@ The sixth, the s-channel step lowered by 300 K, no 16-mode expert can meet (§13
 
 ---
 
-## 18. Phase 4: the registration (accepted as drafted 2026-11-10; not yet pinned)
+## 18. Phase 4: the registration (accepted as drafted and hash-pinned, 2026-11-10)
+
+**Hash-pinned** with the owner's approval on 2026-11-10 ("Pin it (Recommended)"), after the price protocol's dry run passed (below), before any network of TL was trained and before any expert read the test split. `scripts/chartop_register_twolevel.py --pin` wrote `out/chartop/registered-twolevel.txt`; `check_pin` verifies all 31 files, and a test fails if any of them changes. It records:
+- the scope by sha256: the gate module, `coarse.py` (unchanged since the corner check's registration), `coarse_patches.py`, `twolevel.py`, `train.py`, the training and data scripts, the price protocol with its payload and runner, and the training box's payload and runner;
+- the files earlier registrations pinned, each agreeing with them;
+- beside it: the classical record, the passing dry run and the arms' builders;
+- by value: S's weights' sha256, the test split's content sha256 and the gates.
 
 **Accepted** by the owner as drafted, in chat on 2026-11-10 ("Accept as drafted (Recommended)"): the arms, the start from S's weights at the probe's rate, the held-out problems, the gates and the five predictions below. The gate module carries the acceptance (`gates_twolevel.REGISTERED`) and the predictions word for word (`PREDICTIONS`, tested). The pin follows the price protocol's dry run, with the owner's approval.
 
@@ -864,9 +870,7 @@ TL's start carries S's own 150,000 steps, so its total training is not S′'s. N
 
 **The training side, built since** (not run on any box): TL's step priced on its own box (`chartop_price.py --twolevel`), its budget (`chartop_budget.py`), the runner's stage, and the plan `out/chartop/plan-twolevel.json`. The plan is generated from the gate module, and `chartop_train.py` checks it before anything trains.
 
-**Next, each with the owner's go:**
-1. The pin ("Pin it").
-2. Phase 5's box: data with the corner flags and light labels, TL's step priced and budgeted on the box, then both runs.
+**Next, with the owner's go:** Phase 5's box. On it: data with the corner flags and light labels, then TL's step priced and budgeted on that box, then both runs.
 
 ---
 
