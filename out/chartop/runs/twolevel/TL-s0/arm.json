@@ -1,0 +1,58 @@
+{
+ "arm": {
+  "name": "TL-s0",
+  "backbone": "unet",
+  "size": "1M",
+  "form": "split",
+  "kind": "sine-hat",
+  "objective": "relative",
+  "data": "train",
+  "limit": null,
+  "steps": 37500,
+  "lr": 0.0003,
+  "weight_decay": 1e-05,
+  "batch": {
+   "32": 32,
+   "64": 32,
+   "128": 8
+  },
+  "seed": 0,
+  "augment": true,
+  "val_every": 2500,
+  "p_size": "1M",
+  "bubble": "corner",
+  "strips": true,
+  "strips_in_training": false,
+  "hats": "learned",
+  "mode_prior": null,
+  "coarse": 16,
+  "init_from": "weights/S/best.pt",
+  "head_init": "loaded",
+  "drop_easy": 1e-08,
+  "corners": 8
+ },
+ "config": {
+  "backbone": "unet",
+  "size": "1M",
+  "form": "split",
+  "kind": "sine-hat",
+  "m": 16,
+  "p_size": "1M",
+  "bubble": "corner",
+  "strips": true,
+  "hats": "learned",
+  "parameters": 2198990,
+  "n_c": 16,
+  "corners": 8
+ },
+ "examples": {
+  "128": 9989,
+  "32": 15110,
+  "64": 24901
+ },
+ "val_examples": {
+  "128": 128,
+  "32": 179,
+  "64": 293
+ }
+}

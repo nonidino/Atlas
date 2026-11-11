@@ -1,0 +1,39 @@
+{
+ "price_record": "price-twolevel-b670d9c44a98-20261111-004114.json",
+ "gpu": "NVIDIA GeForce RTX 3090",
+ "dph": 0.217,
+ "runs": [
+  {
+   "name": "TL-s0",
+   "priced_as": "TL",
+   "mean_step_s": 0.20671242678037538,
+   "validation_s": 27.998559529904014,
+   "validations": 15,
+   "hours": 2.269915110336844,
+   "on_this_box": true
+  },
+  {
+   "name": "TL-s1",
+   "priced_as": "TL",
+   "mean_step_s": 0.20671242678037538,
+   "validation_s": 27.998559529904014,
+   "validations": 15,
+   "hours": 2.269915110336844,
+   "on_this_box": true
+  }
+ ],
+ "data_hours_per_box": 3.1064211138012374,
+ "fixed_hours_per_box": 0.4,
+ "this_box": {
+  "hours": 8.046251334474924,
+  "usd": 1.7460365395810584
+ },
+ "registration": {
+  "hours": 8.046251334474924,
+  "usd": 2.0660365395810585,
+  "spent_usd": 0.32,
+  "rule": "both runs of TL on one box like this one, at this box's rate"
+ },
+ "ceiling_usd": 10.0,
+ "within": true
+}

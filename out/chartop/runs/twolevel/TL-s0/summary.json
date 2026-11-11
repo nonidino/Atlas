@@ -1,0 +1,7 @@
+{
+ "arm": "TL-s0",
+ "steps": 37500,
+ "best_val_e_H_median": 0.058550658215597726,
+ "elapsed_s": 8148.790886617033,
+ "examples": 50000
+}

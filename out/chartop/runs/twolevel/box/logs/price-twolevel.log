@@ -1,0 +1,6 @@
+twolevel TL n= 32 batch=32: forward 0.1046 s, step 0.0826 s
+twolevel TL n= 64 batch=32: forward 0.3110 s, step 0.2099 s
+twolevel TL n=128 batch= 8: forward 0.3687 s, step 0.2516 s
+projection {"step_mix": {"32": 0.18895294308902422, "64": 0.31139094876636614, "128": 0.49965610814460965}, "arms": {"TL": {"mean_step_s": 0.20671242678037538, "registered_steps": 75000, "hours": 4.30650889125782}}}
+generator {'workers': 29, 'count': 96, 'wall_s': 4.243395798141137, 'examples_per_s': 22.623390455835818, 'per_example_s_mean': 0.379237716231728}
+wrote out/price-twolevel-b670d9c44a98-20261111-004114.json
