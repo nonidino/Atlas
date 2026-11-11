@@ -1,0 +1,26 @@
+2026-11-11 00:42:19 power request held: [1, 3]
+00:42:24 drawing the test split: --split test-prior --start 1000000 --count 2400 --name test --labels sine-hat --corners --workers 20 --out C:\Users\Nauni\OneDrive\Desktop\Foundation_Model\out\chartop\data\test-twolevel
+500/2400 examples, 27 s
+1000/2400 examples, 45 s
+1500/2400 examples, 67 s
+2000/2400 examples, 85 s
+{"split": "test-prior", "count": 2400, "elapsed_s": 108.67694350006059, "per_example_s_mean": 0.7768164153321413, "rejected_charts": 833}
+00:44:20 test split: 2400 pieces {'32': 731, '64': 1220, '128': 449}, content sha256 735dbc76dde1fd81... (registered: True)
+00:52:09 rows-TL-s0-test_n128_1000.npz: 449 pieces, median rho 0.3555 (469 s)
+00:52:53 rows-TL-s0-test_n32_1000.npz: 731 pieces, median rho 0.7358 (44 s)
+00:56:50 rows-TL-s0-test_n64_1000.npz: 1000 pieces, median rho 0.6872 (237 s)
+00:57:40 rows-TL-s0-test_n64_1001.npz: 220 pieces, median rho 0.6894 (51 s)
+00:57:40 test rows: median rho 0.669180465652367, p10 0.31818435872026957; max CX 2.21e-13; K True (801 s)
+00:59:33 held-out bend-3 steady: TL 0.0020470691522332628, TL0 0.0005509327282724715, floor 0.0004311 (33 s)
+01:00:11 held-out bend-3 step: TL 0.0003094004255092131, TL0 0.0003409091582699873, floor 5.977e-05 (29 s)
+01:00:42 held-out s-channel steady: TL 0.046006976589416784, TL0 0.0476294703927945, floor 0.01001 (23 s)
+01:01:13 held-out s-channel step: TL 0.002403043886623248, TL0 0.002268223448429909, floor 0.001286 (21 s)
+01:02:52 held-out insert-round steady: TL 0.009054680288689823, TL0 0.00800504193827204, floor 0.0004278 (91 s)
+01:04:45 held-out insert-round step: TL 0.0008340118202844129, TL0 0.0006801991181794484, floor 3.682e-05 (84 s)
+TWO-LEVEL A  TL-s0: E4 on 4 of 6 held-out problems; median test rho 0.669180465652367; max CX 2.21e-13
+             wrote out\chartop\evaluation-twolevel-20261111-004223-accuracy.json
+             next:  python scripts/chartop_price_twolevel_payload.py
+                    python scripts/chartop_evaluate_twolevel.py --verify-payload out/chartop/box/price-twolevel-<commit>.tar.gz --stamp twolevel-20261111-004223
+                    on a whole AMD Ryzen 9 5900X 12-Core Processor: STAMP=twolevel-20261111-004223 bash scripts/chartop_evaluate_twolevel_box.sh
+2026-11-11 01:09:56 power request released
+exit 0

@@ -1,0 +1,232 @@
+{
+ "format": 1,
+ "stamp": "twolevel-20261111-004223",
+ "started": "2026-11-11T00:42:23-05:00",
+ "weights": {
+  "TL-s0": "80d51e4ca7eb3389f6275739dbf4b8a509a42a67a9dbdffad7c213ec40864f16",
+  "TL-s1": "f6c9e02bd74bf8218f963887e015feca3af94d56a6e9a1957445b6c49645fe79"
+ },
+ "identity": {
+  "pinned": {
+   "atlas/chartop/gates_twolevel.py": "31bcc9547c227063c82cf9ad303e4ee94301a47ad61f74663a2c61a1ecc100a1",
+   "atlas/chartop/coarse.py": "a17c6a7c70c25649cf847a82d2b98a17a390a0515068c69b1fb503a38cfce8e8",
+   "atlas/chartop/coarse_patches.py": "a68d9cc34b4a607eb240be7750cec678f6f3288dbcb4eb2c0ee98bb770a77b72",
+   "atlas/chartop/twolevel.py": "46e5bef407308578323c10ee809a1c4f4676e6e3c73fbc27be745cbebf9f9f85",
+   "atlas/chartop/train.py": "8d633db9c71e007e580173cb4006c3726462f77a3fcd3e5f9d44727cef3c7ff8",
+   "scripts/chartop_train.py": "21b84dc3326a843cda28b4abb55191b09808d5c7ed12e8878b1cc3e88601a052",
+   "scripts/chartop_data.py": "58b56cff03e86817533c3cd5af52cdb5159e39c0b46cc2f91a2953af7a549009",
+   "scripts/chartop_price_twolevel.py": "e311b3a17d3fb35bca7153f85b6d1fac1a181e0bde94e35e8e6e285ac39f03ac",
+   "scripts/chartop_price_twolevel_payload.py": "3890b86e2aa916d9d3f14d0820eb23f3021e7f674a0189a9e6701e4a3daaeea4",
+   "scripts/chartop_price_twolevel_box_run.sh": "a92575da6971e2dae80f0a833ddef9759a5ba5c2583466a61363dc6786f587a7",
+   "scripts/chartop_box_payload.py": "d77a59d87d179c0540ae05f878e99f133c0ea35a47edf8c2e38b5ea36181be96",
+   "scripts/chartop_box_run.sh": "5b4f713d36025bbd1cf3a08fb5adc0da9fae1333f75b38b9a00bc9f7f4221a43",
+   "out/chartop/registration-twolevel.json": "3fe9d4c90ec2c3497ead85ff7800232a7e3a71b17656ac575bd7a916df91643a",
+   "atlas/chartop/gates_forms.py": "94f29f2738733d36426894a0a5ea7bf2a2d302a482de75a28e4c655dd77a7757",
+   "atlas/chartop/gates.py": "b26cf4e5a771c7fcae37d46d74bde9b226afe8b4aeb4ced1eb56475697afb099",
+   "atlas/chartop/gates_prior.py": "baadad040504e7d06fb6c25bf7bca713be75c9a64a3a1c44da1a9e58c2364ac0",
+   "atlas/chartop/gates_squares.py": "307155a8a79741ce96d66f2e5b86abac49f2fd1c8a08dd989eeced2fa7b5e25d",
+   "atlas/chartop/gates_hybrid.py": "319926b8d519bcf7a2ad737e8fac7f82d008ff5747d880beb0a4666d6269f582",
+   "atlas/chartop/benchmarks.py": "fc3f213e1e28c69f493e76224b22ddf36440b10bf0bb135e057bc8c12469f5c0",
+   "atlas/chartop/benchmarks_squares.py": "c00ab2c79dcbe722b1b89e1ee763a45a549be4f867fc7126f4c6c36eb4f372a1",
+   "atlas/chartop/benchmarks_workbench.py": "9771a989bfe199a18aaad0490f6d04be4df58024e4c881ebefbe90fd9cacd4b7",
+   "atlas/chartop/forms.py": "2b95385c6493fe4ace951513050cb5d5d663106b3cfc29cd468c6f5357980755",
+   "atlas/chartop/host.py": "fc1c30f64b35757296e12131cad489e7ea903b3352181464aeb78cf1244a8d24",
+   "atlas/chartop/reuse.py": "7693639cdaadff3489f144fcf737f9658e86799eb2c2b0885a16a5b528b2824d",
+   "scripts/chartop_price_squares.py": "1157f00788a0e57f89ce6bbcb9a6008cf4e694c41e6e0bf760c851a0cbab2e35",
+   "atlas/chartop/expert.py": "ee2c9dd1ce071f7634b2515d6a6ef55790104b093d42794b3879f9e48a044928",
+   "atlas/chartop/data.py": "c0fd7daa8eb780c58a914f0201564567260ceed3acbb5fff34b7ff62de7aae55",
+   "scripts/chartop_evaluate_hybrid.py": "84177f25aaca6d0c78eb26f8e940536c167a96facd99a4ab2d8909ce48e73445",
+   "scripts/chartop_forms_diagnose.py": "b766effb756aca8b042d75cc7f7f4520b70bae25baf66294d3b4e72bbb5c86e8",
+   "scripts/chartop_evaluate.py": "33def2011a535c1469b510cedc94fa9c8b64fe622e2995fdd51ee0320f81076c",
+   "out/chartop/dryrun-twolevel-20261110-201853.json": "ad39b6b663247abcf4c2cfdf234da9309fd47edbcd5bb9a1861939ce7e4c2ef1"
+  },
+  "named": {
+   "S": "e17f881b2b5bdb90145254cb57e9c2f0912c01b3957a3f6b20c01e3e8a8fa35d",
+   "Sp-s0": "2e7bcf22d5db38a420003852b38a12aee38bc220f309dade2b56c01f1a106cc3",
+   "Sp-s1": "70b7c3d8f041df9483a4e7f8340eb26d20665e7365b7a86a00a4764fb6627538"
+  },
+  "code": "4a2a359f032cf79ad1b0c428c801a9430c1daa56",
+  "test_seed_base": 6000000,
+  "test_count": 2400,
+  "l_test": 100,
+  "dual_test": 100,
+  "bench": [
+   "held-out",
+   [
+    "bend-3",
+    "s-channel",
+    "insert-round"
+   ],
+   64
+  ],
+  "skip": [],
+  "test_flags": []
+ },
+ "test": {
+  "sha256": "69913480d07a784fe36905fd052fceb96bcce4d7a5915b419611a008e9a2f32c"
+ },
+ "sessions": [
+  {
+   "script_sha256": "2aed75bd78d62c04d54e8d53f49105126dad7048369eae1588145356011d9628",
+   "torch": "2.7.1+cpu",
+   "torch_threads": 8,
+   "platform": "Windows-11-10.0.26300-SP0",
+   "on_ac": true,
+   "index": 0,
+   "began": "2026-11-11T00:42:23-05:00",
+   "resume": false
+  }
+ ],
+ "checkpoints": {
+  "rows-TL-s0-test_n128_1000.npz": {
+   "sha256": "58e72d0492b6dd42541599142405031f62557d9f215a9a33d671ffc065fc24a7",
+   "bytes": 131272,
+   "session": 0
+  },
+  "rows-TL-s0-test_n32_1000.npz": {
+   "sha256": "1ae8a7ead9901f0a1fb417faebac0aee1a2cad8f25e4749195b2e50b6ef934b5",
+   "bytes": 209104,
+   "session": 0
+  },
+  "rows-TL-s0-test_n64_1000.npz": {
+   "sha256": "68d707a783cabba9240c7ef4990abcc06a65fa8f199a47df9a59f7ab09846469",
+   "bytes": 283348,
+   "session": 0
+  },
+  "rows-TL-s0-test_n64_1001.npz": {
+   "sha256": "80ccee082b53e7402719b7c44b91f858ea10a617daf539bcc8d320b084c45704",
+   "bytes": 68068,
+   "session": 0
+  },
+  "l-test-TL-s0.json": {
+   "sha256": "ae83d93688da866b5e7603d035c7155706d9f9e91242b17d38c11d44840d04f2",
+   "bytes": 703,
+   "session": 0
+  },
+  "cx-l-test-TL-s0.json": {
+   "sha256": "b8adf26b5a1b2c3bb3a25ede9565d4f39cc679de6f87ccef37bd38f04e707b7f",
+   "bytes": 5733,
+   "session": 0
+  },
+  "l-test-TL-s1.json": {
+   "sha256": "ae83d93688da866b5e7603d035c7155706d9f9e91242b17d38c11d44840d04f2",
+   "bytes": 703,
+   "session": 0
+  },
+  "cx-l-test-TL-s1.json": {
+   "sha256": "d1f9ce89c263946355d1b4310620e9a726577a4260bf2e25b74481bf41962d71",
+   "bytes": 5738,
+   "session": 0
+  },
+  "bench-held-out-bend-3-steady.json": {
+   "sha256": "4238b5311f069091b958d51269bd1a4021c1abbda8e35e6817b903465883b444",
+   "bytes": 27860,
+   "session": 0
+  },
+  "bench-seen-bend-3-steady.json": {
+   "sha256": "d174fdd2d18ebcdb8b4da00a7b541f9cada39c2178b982bc2506347ff33d314b",
+   "bytes": 3484,
+   "session": 0
+  },
+  "bench-held-out-bend-3-step.json": {
+   "sha256": "c3c92a4f8731e0d6da06d13120724ddb505c5a2c7489142be2b68a599993b9f1",
+   "bytes": 23288,
+   "session": 0
+  },
+  "bench-seen-bend-3-step.json": {
+   "sha256": "d34f3a05888e244bfb40475fb9273afaf6611d889e09bd26ad9ae359fca24d1e",
+   "bytes": 3430,
+   "session": 0
+  },
+  "bench-held-out-s-channel-steady.json": {
+   "sha256": "2d518494f074f5fd7baebfea6dd3cba605d9c8ccc40dce933f523cb76bd38f27",
+   "bytes": 22168,
+   "session": 0
+  },
+  "bench-seen-s-channel-steady.json": {
+   "sha256": "68877446d8b163f4ab8350494cb677d5839b2d0f238356b8f5ed74c4e44f857e",
+   "bytes": 3412,
+   "session": 0
+  },
+  "bench-held-out-s-channel-step.json": {
+   "sha256": "42565eca644c4102019e3f3d3d1c93e22dccee41ffc017f12a5b057269f9535d",
+   "bytes": 19438,
+   "session": 0
+  },
+  "bench-seen-s-channel-step.json": {
+   "sha256": "12261fe854e01e569e48ff9d750d2e9000ac33a57172989060eb272b5bd29a7b",
+   "bytes": 3384,
+   "session": 0
+  },
+  "bench-held-out-insert-round-steady.json": {
+   "sha256": "2c103e7cffa6aba6662d436458d81e08b2cc11ac81964048bde39b5570c9690e",
+   "bytes": 51543,
+   "session": 0
+  },
+  "bench-seen-insert-round-steady.json": {
+   "sha256": "f48c819de320ed7176b533d9535fea2b833274b572c227a3b7da2142c3f11cbe",
+   "bytes": 4796,
+   "session": 0
+  },
+  "bench-held-out-insert-round-step.json": {
+   "sha256": "d2c9101fa291b071c30cb53bc93f79955889dc5379e9fd58e32e3756c700f566",
+   "bytes": 39908,
+   "session": 0
+  },
+  "bench-seen-insert-round-step.json": {
+   "sha256": "a0af740158c162a7cee79c1e2ae6a507fc6b1f98381b6381e224d188d036dc1b",
+   "bytes": 4795,
+   "session": 0
+  },
+  "dual-test-TL-s0-6000010-6000311.json": {
+   "sha256": "6aa67030962535739e9dec40530aa2bc2ad5b368fd2d054f8cbb83b3bec12173",
+   "bytes": 6685,
+   "session": 0
+  },
+  "dual-test-TL-s0-6000315-6000570.json": {
+   "sha256": "06694e7277acf9cff8350da3cec6e2e73b809d81a73609ac83625b2db2c617e7",
+   "bytes": 6688,
+   "session": 0
+  },
+  "dual-test-TL-s0-6000586-6000983.json": {
+   "sha256": "f04549a5e64f3d2cde97034fbf928b36c07848da1e4541342fd11ee194f05747",
+   "bytes": 6702,
+   "session": 0
+  },
+  "dual-test-TL-s0-6000994-6001303.json": {
+   "sha256": "6f5ef3fa2064fa121b18c2b03b4ecc5951bd0d2bbfe023b0fce034292080fecc",
+   "bytes": 6677,
+   "session": 0
+  },
+  "dual-test-TL-s0-6001318-6001651.json": {
+   "sha256": "83fdc391fbba0bcebffc59df398fdd428a7a2554ac731fb9a7e2f8afce1caf17",
+   "bytes": 6684,
+   "session": 0
+  },
+  "kt-TL-s0-bend-3.json": {
+   "sha256": "03303369fe71cd3ca9007cb69e4f93b67e42ea3ef94fe581cf46e7adf3f9a2c0",
+   "bytes": 787,
+   "session": 0
+  },
+  "kt-TL-s0-s-channel.json": {
+   "sha256": "99b55221be9230a0e673ed0513d951bb6799436b3e30541d02531ee79f4a72ba",
+   "bytes": 787,
+   "session": 0
+  },
+  "kt-TL-s0-insert-round.json": {
+   "sha256": "a2694bcb62a68b3e8fcb3af05b0c1e321f5a151aeed71abec7cca1703f4973a3",
+   "bytes": 644,
+   "session": 0
+  },
+  "rollout-TL-s0.json": {
+   "sha256": "cbf82955e340b1bf44ca3d0442f926c31f081d9daf8f41f46afa8b5cfe862d8f",
+   "bytes": 1759,
+   "session": 0
+  }
+ },
+ "completed": {
+  "record": "evaluation-twolevel-20261111-004223-accuracy.json",
+  "sha256": "5accb1dafc2ffba2a2bb03ce77ba49845d6f72f701b78b5f780cd5dd57777f4b",
+  "at": "2026-11-11T01:09:55-05:00"
+ }
+}
