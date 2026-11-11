@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration was accepted and, after its price protocol's dry run passed on a rented machine (\$0.32), hash-pinned (§18). Phase 5, training on a rented GPU box and the one evaluation, waits for the owner's go. No box is up. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration was accepted and, after its price protocol's dry run passed on a rented machine (\$0.32), hash-pinned (§18). **Phase 5 trained both runs** on a rented GPU box (\$1.08) **and ran the one evaluation's accuracy** (§19). Every structural gate held. On the test pieces, the network removes two-thirds of TL0's error on the learned columns at the median, almost all of it in $j=4$–8. On the held-out problems, TL meets E4 on 4 of 6 and is worse than TL0 on 4 of 6, so NC is missed: the coarse level carries the coupled gain, and the trained network is worth about TL0's own coarse size. The price (stage B, on a rented machine) waits for the owner's go, and the verdicts (stage C) follow. No box is up. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -779,7 +779,7 @@ The sixth, the s-channel step lowered by 300 K, no 16-mode expert can meet (§13
 - the NC bar as proposed;
 - the comparison budget of 37,500 steps.
 
-**The draft module:** `atlas/chartop/gates_twolevel.py` (`REGISTERED` is `None`). Every bar it shares with the earlier registrations is read from `gates_forms` and `gates_prior`.
+**The module:** `atlas/chartop/gates_twolevel.py`. `REGISTERED` records the acceptance and the pin (it was `None` while this section was a draft). Every bar it shares with the earlier registrations is read from `gates_forms` and `gates_prior`.
 
 **The arms:**
 
@@ -809,14 +809,14 @@ TL's start carries S's own 150,000 steps, so its total training is not S′'s. N
 | PR | TL's price under R2's protocol, on a rented whole machine, reported against the classical solve, H2r (0.306) and TL0; "faster" only where measured so |
 | reported | E1 and SE3; S11; the network ledger (ρ by group, $\rho_p$, the coupled attribution, $n_c^\ast$, $\kappa_{\text{kill}}$, the usage controls) |
 
-**Predictions** (drafted; to be registered with the owner's go before training, after checking them against each other and against the code):
+**Predictions** (registered with the acceptance, before any network of TL was trained; checked against each other and against the code below):
 1. CX, K, D and L hold on every run, by structure: Proposition A and Lemma B on $V_e$, and the split form.
 2. **[AI Inference]** NC is met: TL's median test $\rho$ is at least 0.3.
 3. **[AI Inference]** TL meets E4 on all six held-out problems.
 4. **[AI Inference]** By group, $\rho$ is lowest on the hats: on the probe's pieces the hats gave back what they had gained.
 5. **[AI Inference]** PR: TL is not faster than the classical solve. U's forward with its strips already cost 1.48 and 0.78 of an exact solve at $n=64$ and 128 (§13).
 
-**Still to build, after the owner accepts (the handoff's Phase 4):**
+**Still to build when the owner accepted (the handoff's Phase 4; all of it built since, below):**
 - `scripts/chartop_register_twolevel.py`, modelled on `chartop_register_squares.py`. It hash-pins the gate module, the coarse level and its torch path, the two-level expert, `train.py`'s options and the price protocol, and records the test split's content sha256 and the held-out floors. A test adds one byte to a pinned copy and requires `check_pin` to fail.
 - **The price protocol:** R2's per-problem count, AC and sleep checks, four BLAS threads, best of 5, A/A controls. It is dry-run on control problems on a rented whole machine before pinning.
 - **Then Phase 5, rented:**
@@ -870,7 +870,133 @@ TL's start carries S's own 150,000 steps, so its total training is not S′'s. N
 
 **The training side, built since** (not run on any box): TL's step priced on its own box (`chartop_price.py --twolevel`), its budget (`chartop_budget.py`), the runner's stage, and the plan `out/chartop/plan-twolevel.json`. The plan is generated from the gate module, and `chartop_train.py` checks it before anything trains.
 
-**Next, with the owner's go:** Phase 5's box. On it: data with the corner flags and light labels, then TL's step priced and budgeted on that box, then both runs.
+**Then, with the owner's go, Phase 5's box** (§19): data with the corner flags and light labels, TL's step priced and budgeted on that box, then both runs.
+
+---
+
+## 19. Phase 5: TL trained, and the one evaluation (2026-11-10 to 11)
+
+### 19.1 The training box
+
+**Approved by the owner** in chat on 2026-11-10 ("3090, Turkiye, \$0.20/h (Recommended)"): one RTX 3090 in a container with a quota of 30 CPUs, at \$0.217 an hour with its storage (instance 60143950). The pinned runner (`chartop_box_run.sh`) ran its stages in order:
+- **TL's step, priced on that box** (`chartop_price.py --twolevel`, untrained weights, for cost only). A step took 0.083 s at $n=32$ (batch 32), 0.210 s at 64 (batch 32) and 0.252 s at 128 (batch 8): a mean of 0.207 s over the training mix.
+- **The budget** (`chartop_budget.py`):
+  - each run 2.27 h with its 15 validations, the data 3.11 h, 0.4 h fixed;
+  - this box: 8.05 h, \$1.75;
+  - the registration's rule (both runs on one box like this one, plus the dry run's \$0.32): \$2.07 against the \$10 ceiling. Within, so training went on.
+- **The data**, with `DATA_CORNERS=1 DATA_LIGHT=1`. The 50,000 training examples, with their corner flags and light labels, took 1,352 s on 29 workers; the generator rejected 16,523 charts. The 600 validation examples took 23 s.
+- **Both runs**, one after the other.
+
+| run | steps | wall time | validation chose | median $e_H$ | median $\rho$ | 10th percentile of $\rho$ |
+|---|---|---|---|---|---|---|
+| TL-s0 | 37,500 | 8,149 s | step 37,500 | 0.05855 | 0.661 | 0.314 |
+| TL-s1 | 37,500 | 8,077 s | step 35,000 | 0.05854 | 0.659 | 0.313 |
+
+$\rho$ here is the training's validation measure against TL0, over the 600 validation pieces; none had nothing to learn. Neither run stopped as a dead network. The validation's largest $e_K$ was about $10^{-15}$ at every check: round-off, as the split form requires.
+
+**TL-s0's validation, by step:**
+
+| step | 2,500 | 5,000 | 10,000 | 15,000 | 20,000 | 25,000 | 30,000 | 37,500 |
+|---|---|---|---|---|---|---|---|---|
+| median $\rho$ | 0.319 | 0.383 | 0.494 | 0.585 | 0.594 | 0.639 | 0.644 | 0.661 |
+| 10th percentile | 0.123 | 0.127 | 0.201 | 0.233 | 0.287 | 0.293 | 0.314 | 0.314 |
+| median $e_H$ | 0.0759 | 0.0727 | 0.0679 | 0.0635 | 0.0619 | 0.0601 | 0.0593 | 0.0586 |
+
+- **The step price held.** The runs took 2.26 h and 2.24 h against 2.27 h priced. The data took 23 minutes against 3.11 h budgeted.
+- **Collected, then destroyed.** Every file came off the box by tar over ssh, and its sha256 was compared with the box's own `sha256sum`. Then the instance was destroyed, and the listing showed none. The box ran about five hours: credit went from \$8.97 to \$7.89, **\$1.08**.
+- **The laptop polled the box every five minutes** under a power request (system and execution required). It was on battery from 21:00 to 23:29. It still entered Modern Standby from 21:34:48 to 21:36:58, but no poll was missed: the one at 21:35:21 returned. The box's own deadline was the guard either way.
+- **Records:** `out/chartop/runs/twolevel/` (commit `4a2a359`):
+  - each run's `arm.json`, `log.jsonl` and `summary.json`;
+  - `weights-sha256.txt`, each `best.pt`'s sha256 at download, which stage A checks (the weights are git-ignored);
+  - `box/`: the box's logs, its budget, its plan (the repository's, with LF endings), its data manifests and its price record of TL's step.
+
+### 19.2 The one evaluation, stage A: the accuracy (2026-11-11)
+
+**What ran.** `scripts/chartop_evaluate_twolevel.py` at commit `4a2a359`, on the laptop on AC, with the owner's go ("Yes, run stage A"). It ran from 00:42 to 01:10 under its own power request, and the System log shows no power event in that window. Before any expert read anything:
+- the pin (31 files) and the code were checked: `atlas/` and `scripts/` at the commit;
+- each run's weights were checked against their sha256 at download, with TL's configuration, training options and seed; S's and S′'s weights were checked as the registration names them;
+- the registry accepted TL's weights as never evaluated;
+- **the fresh test split was drawn** (2,400 pieces: 731 at $n=32$, 1,220 at 64, 449 at 128, in 109 s). Its content sha256 matched the registered `735dbc76dde1fd81…`.
+
+Records (commit `7dab3f6`): `out/chartop/evaluation-twolevel-20261111-004223-accuracy.json`, with its test rows, its checkpoint state and the console log.
+
+**On the test split** (TL-s0 against TL0 at $n_c=16$ with B's corners, 2,400 pieces; the hats had nothing to learn on 40):
+
+| measure | median | 10th percentile | 90th percentile |
+|---|---|---|---|
+| $\rho$, the 36 learned columns | **0.669** | 0.318 | 0.790 |
+| $\rho$, the hats | 0.044 | −0.271 | 0.629 |
+| $\rho$, $j=1$–3 | 0.049 | −0.010 | 0.126 |
+| $\rho$, $j=4$–8 | 0.706 | 0.340 | 0.821 |
+| $\rho_p$, the particular field | 0.939 | 0.755 | 0.987 |
+| $\kappa_{\text{kill}}$ | 0.657 | 0.530 | 0.789 |
+| control: each piece fed the next piece's inputs | −0.569 | −3.37 | 0.235 |
+| control: frozen at S's weights, through $\mathcal C$ | 0.290 | 0.070 | 0.454 |
+
+- **By resolution**, $\rho$ is 0.736 at $n=32$, 0.687 at 64 and **0.356 at 128**. By shear it is 0.46 below $\sup\lvert\mu\rvert=0.15$ and 0.67–0.69 above.
+- **K** holds: $e_K$ at most $1.4\times10^{-15}$. **CX** is at most $2.2\times10^{-13}$, against $10^{-10}$.
+- **E1** (reported, not gated) is not met. The median $e_H$ is 0.057 over all 64 columns and $e_{H,L}$ 0.095 over the learned ones, against E1's 0.01 (P7).
+
+**On the held-out problems** ($n=64$; the energy error in %, as registered / lowered by 300 K where they differ; bold is the better of TL0 at 16 and TL-s0):
+
+| problem | floor | U | TL0, $n_c=16$ | TL0, $n_c=32$ | TL-s0 | TL-s1 | E4, TL-s0 |
+|---|---|---|---|---|---|---|---|
+| bend-3, steady | 0.043 | 0.342 | **0.055** | 0.046 | 0.205 | 0.207 | met |
+| bend-3, step | 0.006 / 0.053 | 0.221 / 1.97 | 0.034 / 0.304 | 0.016 / 0.145 | **0.031 / 0.276** | 0.033 / 0.294 | met |
+| s-channel, steady | 1.001 | 32.2 | 4.76 | 2.32 | **4.60** | 4.60 | **missed**: energy above 2% |
+| s-channel, step | 0.129 / 1.236 | 1.14 / 10.9 | **0.227 / 2.18** | 0.154 / 1.48 | 0.240 / 2.31 | 0.237 / 2.28 | **missed**, lowered: 2.31% |
+| insert-round, steady | 0.043 | 7.76 | **0.801** | 0.362 | 0.906 | 0.899 | met |
+| insert-round, step | 0.004 / 0.025 | 0.613 / 4.21 | **0.068 / 0.467** | 0.031 / 0.211 | 0.083 / 0.573 | 0.083 / 0.569 | met |
+
+- **E4 counts:** TL-s0 and TL-s1 meet E4 on 4 of 6. TL0 meets it on 3, 4, 4 and 5 at $n_c=4$, 8, 16 and 32; U on 2; S′'s runs on 1 each.
+- **Both misses are the energy clause.** TL-s0's max error is at most 0.63% of the range everywhere, against bars of 1.0–1.6%.
+- **TL0's s-channel steady is not near its floor.** At $n_c=16$ it leaves 4.76% against a classical floor of 1.00%, and 2.32% even at $n_c=32$. The held-out variant changes the channel's material (copper) and puts $\cos\pi s$ and $\cos2\pi s$ profiles on the ends; the seen problem with the same pieces gives TL0 1.21%, as in §17. The registration checked that the held-out floors are under 2%, not that TL0 comes near them.
+
+**The coupled attribution** (coarse first, then the network, as fractions of U's energy error; the same in both frames):
+
+| problem | the coarse level | the network | the network, of what the coarse level left | $n_c^\ast$ |
+|---|---|---|---|---|
+| bend-3, steady | 0.960 | −0.501 | −12.5 | 2.5 (extrapolated) |
+| bend-3, step | 0.869 | +0.015 | +0.11 | 17.5 |
+| s-channel, steady | 0.879 | +0.005 | +0.04 | 16.5 |
+| s-channel, step | 0.902 | −0.013 | −0.14 | 14.9 |
+| insert-round, steady | 0.902 | −0.014 | −0.14 | 14.2 |
+| insert-round, step | 0.894 | −0.025 | −0.24 | 13.1 |
+
+No problem is at its floor. On the laptop, TL costs 0.037–0.051 s a piece and TL0 at $n_c^\ast$ 0.026–0.040 s. These are laptop seconds, not the price.
+
+**The seen six, beside** (TL-s0 against TL0 at 16): TL-s0 meets E4 on 5 and so does TL0. Both miss the s-channel step lowered by 300 K. On the seen bend-3 steady TL0 is almost exact (0.0003%) and TL-s0 leaves 0.195%. On the held-out one TL-s0 goes from TL0's 0.055% to 0.205%, about as much again.
+
+**The other gates, read from the record** (stage C writes the verdicts):
+- **Met on both runs**, on every held-out piece in both frames: K, D, L, SE2 and CX. CX is at most $2.7\times10^{-15}$, the particular field's $2.0\times10^{-14}$. For TL-s0, E3, SE1 and SE3 are also met.
+- **L** holds on the first 100 test pieces for both runs.
+- **DUAL** holds on 63 benchmark and 100 test pieces; the smallest relative eigenvalue, $-7.4\times10^{-15}$, is round-off.
+- **KT:** 5 iterations on bend-3, the s-channel and insert-round, as many as the classical expert.
+- **The rollout:** 20 steps on the s-channel, 180 network calls, the modes kept bit for bit at every later step.
+- **NC is missed.** Its test clause holds (median 0.669 against 0.3; 10th percentile 0.318 against 0). Its benchmark clause does not: TL's energy error is above TL0's on 4 of 6 held-out problems.
+- **E4 is missed:** 4 of 6.
+
+**The predictions, read from the record by their registered readings** (stage C judges them; 5 waits for the price):
+1. CX, K, D and L hold on every run measured: **held**.
+2. NC is met: **refuted**, by its benchmark clause.
+3. E4 on all six: **refuted**, 4 of 6.
+4. The hats' $\rho$ is the lowest: **held**, narrowly. Their median is 0.044, against 0.049 for $j=1$–3 and 0.706 for $j=4$–8.
+5. PR: waits for stage B.
+
+**What it means.**
+- **The rework's structure held everywhere it was measured.** That covers the coarse exactness, the kernel, the duality bracket and the iteration, and the rollout's modes held bit for bit.
+- **The coarse level carries the rework's coupled gain.** It removes 87–96% of U's error on every held-out problem.
+- **On the generated pieces, the network does what it was trained for.** It removes two-thirds of TL0's error on the learned columns at the median. The controls show the gain depends on each piece's own inputs (shuffled, −0.57), and that training added most of it (frozen at S's weights, 0.29).
+- **But the gain sits in $j=4$–8.** The hats and $j=1$–3 get 0.04–0.05, and the hats are worse than TL0's on more than a tenth of the pieces.
+- **[AI Inference]:** the coupled answer reads mostly the gentle groups. P4 found this, and §17 found $j=1$–3 holding 0.69 of the s-channel steady's network term under B. A network that improves $j=4$–8 and leaves the hats where they were, or worse, moves the coupled error little or the wrong way. $n_c^\ast$ of 13–17.5 says TL is worth about TL0's own coarse size.
+- **[AI Inference]:** P6 survives $\mathcal C$. The coarse space takes the gentlest part exactly, but what lies between it and $j=4$–8 is still weighted by energy, the loss's way, not by interface data.
+- **[AI Inference]:** the held-out s-channel steady's 4.76% under TL0 halves from $n_c=16$ to 32. So most of it lies just finer than the coarse grid, in the part $\mathcal C$ leaves to the network, and TL removes 0.16 points of it.
+
+### 19.3 Next
+
+- **Stage B, the price:** on a whole AMD Ryzen 9 5900X, with the owner's go. The payload is built from A's commit (`out/chartop/box/price-twolevel-4a2a359.tar.gz`, sha256 `6f837a8b…`) and `--verify-payload` passes.
+- **Stage C, the verdicts:** on the laptop, once. It writes them whatever they say, so it runs after stage B, or without it if the owner decides the price is not to be measured.
+- **Phase 6:** the write-up, and W363 in the gap-worklist.
 
 ---
 
