@@ -52,8 +52,10 @@ from atlas.chartop import gates_squares as GS, gates_twolevel as GT  # noqa: E40
 
 RECORD = os.path.join(ROOT, "out", "chartop", "registration-twolevel.json")
 REGISTRATION = os.path.join(ROOT, "out", "chartop", "registered-twolevel.txt")
-#: set to the passing dry run's record once it exists (`chartop_price_twolevel.py --dry-run`)
-DRY_RUN = None
+#: the passing dry run (`chartop_price_twolevel.py --dry-run`, 2026-11-10, a rented whole machine
+#: with the pricing CPU, commit 345055c): six runs, every measurement counted, the A/A check within
+#: 0.004; its box's logs beside it in ``out/chartop/dryrun-twolevel-20261110-201853-box/``
+DRY_RUN = "out/chartop/dryrun-twolevel-20261110-201853.json"
 
 #: the scope: what TL is, how it trains, what feeds it, how it is priced
 PINNED = {"gate module": "atlas/chartop/gates_twolevel.py",

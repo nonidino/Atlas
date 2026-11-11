@@ -851,10 +851,22 @@ TL's start carries S's own 150,000 steps, so its total training is not S′'s. N
   `--pin` refuses until the dry run has passed on the pricing CPU with the code it pins. A test adds one byte to a pinned copy and `check_pin` fails.
 - **The training side.** `chartop_train.py` checks a `gates_twolevel` plan before anything trains: arm TL's configuration, seeds 0 and 1 once each, and S's weights by sha256. The box runner's data stage writes the corner flags with `DATA_CORNERS=1`.
 
+**The price protocol's dry run passed** (2026-11-10). The owner approved the box, and when the first offer was taken, its fallback. It ran on a rented whole machine with the pricing CPU: an AMD Ryzen 9 5900X with 23 CPUs in its container's quota, \$0.172 an hour.
+- **Six runs** on §11.17's twelve problems, at commit `345055c`. Every run held AC and sleep, with no other load. Every measurement counted, and the A/A check held within 0.004 of 1.
+- **Geometric means of the medians**, against the classical solve: TL (with S's weights) 1.023, TL0 0.804, H2r 0.827.
+- **A first launch** on `6eb5e8d` was stopped after its smoke run. The price runs load S's weights through `train.py`, which the light labels then changed.
+- **The laptop slept** in Modern Standby from 15:24 to 19:05, on battery, while the dry run ran.
+  - The box finished in 22 minutes and stopped itself at its deadline.
+  - Its records were copied off the stopped instance through the host's rsync service, and rsync's checksums showed no file differing.
+  - The instance was then destroyed.
+- **Cost \$0.32.** Record: `out/chartop/dryrun-twolevel-20261110-201853.json`, with the box's logs beside it.
+- With it, `chartop_register_twolevel.py` finds nothing that refuses the pin.
+
+**The training side, built since** (not run on any box): TL's step priced on its own box (`chartop_price.py --twolevel`), its budget (`chartop_budget.py`), the runner's stage, and the plan `out/chartop/plan-twolevel.json`. The plan is generated from the gate module, and `chartop_train.py` checks it before anything trains.
+
 **Next, each with the owner's go:**
-1. A rented whole machine with the pricing CPU (AMD Ryzen 9 5900X), at no more than \$0.70 an hour, for the dry run.
-2. The pin ("Pin it").
-3. Phase 5's boxes.
+1. The pin ("Pin it").
+2. Phase 5's box: data with the corner flags and light labels, TL's step priced and budgeted on the box, then both runs.
 
 ---
 

@@ -1,0 +1,15 @@
+20:22:30 dry run 1: every measurement counts
+20:26:09 dry run 2: every measurement counts
+20:29:55 dry run 3: every measurement counts
+20:33:44 dry run 4: every measurement counts
+20:37:26 dry run 5: every measurement counts
+20:41:09 dry run 6: every measurement counts
+DRY RUN   run  holds  void  load mean
+            1  yes       0       0.00
+            2  yes       0       0.00
+            3  yes       0       0.00
+            4  yes       0       0.00
+            5  yes       0       0.00
+            6  yes       0       0.00
+          every problem has 3 counted: True; A/A: True (worst 0.004); on AMD Ryzen 9 5900X 12-Core Processor: True; may be pinned: True
+          geometric mean of medians: TL 1.023, TL0 0.804, H2r 0.827; wrote out/chartop/dryrun-twolevel-20261110-201853.json (1336 s)

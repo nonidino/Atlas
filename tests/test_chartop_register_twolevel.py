@@ -71,10 +71,20 @@ def test_the_scope_exists_and_agrees_with_the_earlier_pins():
         assert os.path.exists(os.path.join(ROOT, *rel.split("/"))), rel
     why = R.refusals_before_pin()
     assert not any("earlier registrations pinned" in w for w in why), why
-    assert any("dry run" in w for w in why)                                 # no dry run has passed yet
 
 
-def test_the_pin_refuses_before_the_dry_run_and_never_overwrites(tmp_path):
+def test_the_passing_dry_run_is_the_one_recorded():
+    """The dry run the pin records passed on the pricing CPU, at the registered settings, on the
+    code the price runs execute now; with it the scope may be pinned."""
+    import json
+    run = json.load(open(os.path.join(ROOT, *R.DRY_RUN.split("/")), encoding="utf-8"))
+    assert run["passes"] is True and run["on_price_cpu"] and run["n"] == 64 and run["reps"] == 5
+    assert len(run["runs"]) == 6 and run["aa"]["holds"] and set(run["tally"].values()) == {6}
+    assert R.refusals_before_pin() == []
+
+
+def test_the_pin_refuses_before_the_dry_run_and_never_overwrites(tmp_path, monkeypatch):
+    monkeypatch.setattr(R, "DRY_RUN", None)
     with pytest.raises(SystemExit):
         R.pin(path=str(tmp_path / "registered-twolevel.txt"))
     assert not (tmp_path / "registered-twolevel.txt").exists()

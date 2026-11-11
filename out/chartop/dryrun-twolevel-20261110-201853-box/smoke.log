@@ -1,0 +1,5 @@
+20:18:52 dry run 1: every measurement counts
+DRY RUN   run  holds  void  load mean
+            1  yes       0       0.00
+          every problem has 3 counted: False; A/A: False (worst -); on AMD Ryzen 9 5900X 12-Core Processor: True; may be pinned: None
+          geometric mean of medians: TL -, TL0 -, H2r -; wrote smoke/dryrun-twolevel-20261110-201844.json (7 s)
