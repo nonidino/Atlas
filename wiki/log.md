@@ -1009,6 +1009,6 @@ The owner accepted §18 as drafted ("Accept as drafted (Recommended)"): the arms
 
 Nothing is pinned. Next, each with the owner's go: a rented whole machine with the pricing CPU for the price dry run, then the pin, then Phase 5. **Changed:** [[chart-operator-stage-0-rework]] §18.
 
-## [2026-11-10] note | Stage 0 rework, Phase 4: TL's price protocol dry run passed on a rented 5900X (cost $0.32)
+## [2026-11-10] note | Stage 0 rework, Phase 4: TL's price protocol dry run passed on a rented 5900X (cost \$0.32)
 
 With the owner's go, TL's price protocol dry run ran on a rented whole machine with the pricing CPU (AMD Ryzen 9 5900X, \$0.172 an hour) at commit `345055c`: six runs on §11.17's twelve problems. Every measurement counted, the A/A check held within 0.004, and no other load ran. The geometric means against the classical solve were TL (S's weights) 1.023, TL0 0.804 and H2r 0.827. The laptop slept from 15:24 to 19:05 on battery while it ran. The box finished in 22 minutes and stopped itself at its deadline; its records were copied off the stopped instance through the host's rsync service and checked by rsync's checksums, and the instance was destroyed. Credit \$9.29 → \$8.97. Also built: a training bug fix (the corner flags now follow the square's symmetries in augmentation), light labels for the relative objective, and TL's step pricing, budget and plan. Nothing now refuses the pin; it waits for the owner's "Pin it". **Changed:** [[chart-operator-stage-0-rework]] §18.
