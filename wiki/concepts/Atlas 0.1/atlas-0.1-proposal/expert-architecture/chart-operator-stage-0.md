@@ -484,4 +484,4 @@ Stage 1 is the next four entries of F1's build order ([[chart-operator-family-ca
 - [[gap-worklist]] — W355, and the rows Stage 1 inherits, W356–W360
 - [[case-study-thermal-strain-atlas-0.1]] — CS-9, where Stage 1's thermoelastic bond is to be tested
 - [[chart-operator-kernel-exact-forms]] — §12's items 1 and 2 built: the kernel-exact and split output forms, checked untrained
-- [[chart-operator-stage-0-rework]] — Stage 0 reworked (drafted 2026-11-09): a coarse-exact two-level expert, measured untrained first
+- [[chart-operator-stage-0-rework]] — Stage 0 reworked (W363, 2026-11-09 to 12): a coarse-exact two-level expert. Untrained, its coarse level removes most of the coupled error; trained, the network adds none

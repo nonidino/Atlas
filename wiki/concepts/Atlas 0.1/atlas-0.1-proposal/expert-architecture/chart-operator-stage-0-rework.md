@@ -1,8 +1,8 @@
-# Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
+# Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (built and judged once)
 
-**Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration was accepted and, after its price protocol's dry run passed on a rented machine (\$0.32), hash-pinned (§18). **Phase 5 trained both runs** on a rented GPU box (\$1.08) **and ran the one evaluation** (§19), pricing it on a rented 5900X (\$0.35). Every structural gate was met. On the test pieces, the network removes two-thirds of TL0's error on the learned columns at the median, almost all of it in $j=4$–8. On the held-out problems, TL meets E4 on 4 of 6, as untrained TL0 does, and is worse than TL0 on 4 of 6: **E4 and NC are not met**. TL costs 1.05 of a classical solve and TL0 0.84. Predictions 1, 4 and 5 held; 2 and 3 were refuted. The coarse level carries the coupled gain. Phase 6, the write-up, waits for the owner's go. No box is up. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
-**Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
+**Type:** Concept page — **design and build record**: drafted, built, trained and judged once (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration was accepted and, after its price protocol's dry run passed on a rented machine (\$0.32), hash-pinned (§18). **Phase 5 trained both runs** on a rented GPU box (\$1.08) **and ran the one evaluation** (§19), pricing it on a rented 5900X (\$0.35). Every structural gate was met. On the test pieces, the network removes two-thirds of TL0's error on the learned columns at the median, almost all of it in $j=4$–8. On the held-out problems, TL meets E4 on 4 of 6, as untrained TL0 does, and is worse than TL0 on 4 of 6: **E4 and NC are not met**. TL costs 1.05 of a classical solve and TL0 0.84. Predictions 1, 4 and 5 held; 2 and 3 were refuted. The coarse level carries the coupled gain. **Phase 6** wrote the rework up on the owner's go (§20, 2026-11-12), and [[gap-worklist]] W363 records it as done. No box is up. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W363 (this rework, done) · W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
 
@@ -271,9 +271,18 @@ Predictions 3–6 can be refuted, and each is read on the registered measure. Th
 
 ## 10. What this page does not show
 
-- **Phase 2 is untrained.** TL0's numbers (§13) are a classical expert's, not a trained network's, and no test piece was drawn. The price is a first reading on the laptop, not R2's protocol.
-- **No price against H2r.** TL0's cost is estimated, not measured.
-- **Corners and interface–side points** are not treated by $\mathcal C$ (P3). Whether they matter is Phase 2's question.
+*Revised 2026-11-12, at Phase 6.* The draft's first three items held until later sections answered them:
+- Phase 2 is untrained. §19 trained TL, drew the test split and priced it under R2's protocol.
+- No price against H2r. §19.3 priced TL0 and H2r.
+- $\mathcal C$ does not treat corners. §17 treated the non-right ones.
+
+What the page still does not show:
+- **One budget, one start, one coarse size.** TL was trained twice, seeds 0 and 1, each for 37,500 steps from S's weights, at $n_c=16$ with B's patches. No other budget, start, objective or coarse size was trained. TL-s0's validation $\rho$ was still rising at the end: 0.644 at step 30,000, 0.661 at 37,500 (§19.1).
+- **One run priced, on one machine type.** PR priced TL-s0, as registered, on a rented Ryzen 9 5900X.
+- **TL0 at $n_c=32$ is not priced.** It meets E4 on 5 of the 6 held-out problems (§19.2). On the laptop, its coarse level without the patches cost 0.61 and 0.15 of an exact solve at $n=64$ and 128 (§13).
+- **Stage 0's layouts, not W362's.** The held-out problems are Stage 0's three layouts with new materials and end profiles. No layout whose outline does not cut into squares was judged, so W362's registration is not answered.
+- **Interface–side points are untested.** No benchmark piece has a material interface inside it (§13).
+- **No loss that weights the modes as the coupled answer does** was trained with $\mathcal C$. TL's objective is T26's energy, relative to TL0's (§14).
 - **The smooth-target control** (`scripts/chartop_smooth_target.py`, 2026-11-09) was stopped at step 0. Its step 0 reproduced B4's 0.3356. It has not been run further. The script is committed with this page, with that step-0 record (`out/chartop/smooth-target-exact.json` and `.log`), and no test covers it.
 - **Nothing on the website or in `proposal/`.**
 
@@ -952,7 +961,7 @@ Records (commit `7dab3f6`): `out/chartop/evaluation-twolevel-20261111-004223-acc
 - **Both misses are the energy clause.** TL-s0's max error is at most 0.63% of the range everywhere, against bars of 1.0–1.6%.
 - **TL0's s-channel steady is not near its floor.** At $n_c=16$ it leaves 4.76% against a classical floor of 1.00%, and 2.32% even at $n_c=32$. The held-out variant changes the channel's material (copper) and puts $\cos\pi s$ and $\cos2\pi s$ profiles on the ends; the seen problem with the same pieces gives TL0 1.21%, as in §17. The registration checked that the held-out floors are under 2%, not that TL0 comes near them.
 
-**The coupled attribution** (coarse first, then the network, as fractions of U's energy error; the same in both frames):
+**The coupled attribution** (coarse first, then the network, as fractions of U's energy error above the floor; the same in both frames):
 
 | problem | the coarse level | the network | the network, of what the coarse level left | $n_c^\ast$ |
 |---|---|---|---|---|
@@ -980,7 +989,7 @@ No problem is at its floor. On the laptop, TL costs 0.037–0.051 s a piece and 
 
 **What it means.**
 - **The rework's structure held everywhere it was measured.** That covers the coarse exactness, the kernel, the duality bracket and the iteration, and the rollout's modes held bit for bit.
-- **The coarse level carries the rework's coupled gain.** It removes 87–96% of U's error on every held-out problem.
+- **The coarse level carries the rework's coupled gain.** It removes 87–96% of U's error above the floor on every held-out problem.
 - **On the generated pieces, the network does what it was trained for.** It removes two-thirds of TL0's error on the learned columns at the median. The controls show the gain depends on each piece's own inputs (shuffled, −0.57), and that training added most of it (frozen at S's weights, 0.29).
 - **But the gain sits in $j=4$–8.** The hats and $j=1$–3 get 0.04–0.05, and the hats are worse than TL0's on more than a tenth of the pieces.
 - **[AI Inference]:** the coupled answer reads mostly the gentle groups. P4 found this, and §17 found $j=1$–3 holding 0.69 of the s-channel steady's network term under B. A network that improves $j=4$–8 and leaves the hats where they were, or worse, moves the coupled error little or the wrong way. $n_c^\ast$ of 13–17.5 says TL is worth about TL0's own coarse size.
@@ -1031,13 +1040,118 @@ No problem is at its floor. On the laptop, TL costs 0.037–0.051 s a piece and 
 
 **What the one evaluation says.**
 - **The guarantee side of the rework is sound.** Every structural gate was met on the test split, on the held-out problems in both frames and in the rollout. With $\mathcal C$ and B's corner patches, the two-level form is coarse-exact to round-off whatever the weights.
-- **The coarse level is what pays.** Untrained, TL0 at $n_c=16$ removes 87–96% of U's coupled error. It meets E4 on as many held-out problems as the trained TL, at 0.84 of a classical solve.
+- **The coarse level is what pays.** Untrained, TL0 at $n_c=16$ removes 87–96% of U's coupled error above the floor. It meets E4 on as many held-out problems as the trained TL, at 0.84 of a classical solve.
 - **The trained network adds no coupled accuracy and costs about a fifth of a solve.** It is worse than TL0 on 4 of the 6 problems.
 - **[AI Inference]:** for CO-D, on this evidence and at this training budget, the network is not needed. The rework asked this first (§0). A network would earn its place only by reaching the hats and $j=1$–3, which its loss does not weight (P6).
 
 ### 19.5 Next
 
-**Phase 6:** the write-up, and W363 in the gap-worklist, at the owner's go.
+**Phase 6**, the write-up and W363 in the gap-worklist, was done on the owner's go: §20.
+
+---
+
+## 20. Phase 6: the write-up and the carry-over (2026-11-12)
+
+**Written** on the owner's go in chat on 2026-11-12 ("yes" to starting Phase 6). The handoff asked for sections on Phase 2, the probe, the registration and the evaluation, with the network's ledger. They are §13 (with the corner treatment's §15–§17), §14, §18 and §19. This section gathers what they found, says plainly what the network added, sets §1's problems against the record and states what carries over. The worklist row is [[gap-worklist]] W363.
+
+**In one paragraph.** The rework made the coarse scale structural, and it worked:
+- Untrained, the coarse level with B's corner patches removes 87–96% of U's coupled error above the floor on Stage 0's held-out problems.
+- Every guarantee held to round-off.
+
+The network trained on top of it adds nothing to the coupled answer:
+- It learns the mid sines ($j=4$–8), which the coupled answer reads little.
+- It barely moves the hats and $j=1$–3: a median $\rho$ of 0.04–0.05.
+- It costs about a fifth of a classical solve.
+
+**[AI Inference]:** for CO-D, on this record and at this budget, no network is needed. The question §0 put first, untrained, is answered.
+
+### 20.1 The arms on the held-out problems
+
+| arm | what it is | trained | E4, held-out six | price, all 22 problems (R2's protocol) |
+|---|---|---|---|---|
+| U | S's form with its networks answering zeros: the plain square and the strips | no | 2 of 6 | not priced |
+| S′ | S's form trained at the comparison budget in the forms registration, reused | yes | 1 of 6, each run | not priced |
+| TL0 | U, then $\mathcal C_e$: the coarse level with B's corner patches ($n/8$) | no | 3, 4, **4** and 5 of 6 at $n_c=4$, 8, **16** and 32 | **0.836** at $n_c=16$; the others not priced |
+| **TL** | TL0 at $n_c=16$ with S's networks, trained 37,500 steps from S's weights | yes | **4 of 6**, both runs | **1.050** |
+| H2r | R2's hybrid: reuse on squares, the classical solve elsewhere | no | not judged here | 0.418 |
+
+### 20.2 What the network added, plainly
+
+**Nothing to the coupled answer, at about a fifth of a classical solve.**
+- **On the generated test pieces it works as trained.** It removes a median 0.669 of TL0's error energy on the 36 learned columns (10th percentile 0.318), and 0.939 on the particular field.
+- **The controls show the gain is learned and specific to each piece.**
+  - Fed the next piece's inputs, the median falls to −0.569.
+  - At S's weights through the same $\mathcal C_e$, it is 0.290.
+  - $\mathcal C_e$ discards a median 0.657 of the energy of the network's raw output ($\kappa_{\text{kill}}$).
+- **But the gain lands where the coupled answer reads little.**
+  - By group: $j=4$–8 0.706, $j=1$–3 0.049, the hats 0.044. The hats are worse than TL0's on more than a tenth of the pieces.
+  - By resolution, $\rho$ falls from 0.736 at $n=32$ to 0.356 at 128.
+- **On the held-out problems:**
+  - The coarse level removes 0.87–0.96 of U's error above the floor.
+  - The network removes between −0.50 and +0.015 of it.
+  - TL is worse than TL0 on 4 of the 6.
+- **$n_c^\ast$**, the coarse size at which TL0 alone would match TL, is 13.1–17.5 on five problems and 2.5 (extrapolated) on bend-3, steady. TL is worth about TL0's own $n_c=16$.
+- **The price:** TL costs 1.050 of a classical solve and TL0 0.836. The network adds about 0.21 of a solve and buys no coupled accuracy.
+
+### 20.3 §1's problems against the record
+
+| # | problem (§1) | what the rework did | where it stands |
+|---|---|---|---|
+| P1 | the uniform-temperature sum broken | $\Pi$ kept; Lemma B carries it through $\mathcal C$ and $\mathcal C_e$ | **held**: $e_K$ at most $1.4\times10^{-15}$ on the test split, and K met (§19.2) |
+| P2 | the modes saw the load | the split form kept | **held**: L met on both runs (§19.2) |
+| P3 | the corners | B's fine-hat patches at non-right corners, classical (§15–§17) | **treated at non-right corners**: their share of the s-channel's excess fell from 0.85–0.88 to 0.02–0.03 (§17). Interface–side points are untested: no benchmark piece has an interface inside it |
+| P4 | the coupled error sits in the gentle modes | the coarse component made exact, whatever the weights | **mostly answered by the coarse level**: 87–96% of U's error above the floor, untrained (§19.2). What is left lies just finer than $n_c=16$: the held-out s-channel steady's 4.76% halves at 32 |
+| P5 | a network cannot produce global responses | it is no longer asked for them | **structural for the coarse part.** Just finer than the coarse grid the network still barely reaches the hats and $j=1$–3 ($\rho$ 0.04–0.05) |
+| P6 | the loss and the gate disagree | §3.4 expected the loss, seeing only $\mathcal Q_cE$, to agree with the gate by construction | **not removed.** **[AI Inference]:** inside $\mathcal Q_cE$ the loss still weights by energy. Trained, $j=4$–8 improved while the coupled error rose on 4 of 6 problems (§19.2) |
+| P7 | E1's bar lies below the form's floor | E1 reported, not gated | **a rule kept**: the median $e_{H,L}$ is 0.095 against E1's 0.01 (§19.2) |
+| P8 | the principal part's error grows with the shear | the true operator at the coarse scale | **not split by shear for TL0** on this page. The network's $\rho$ is 0.46 below $\sup\lvert\mu\rvert=0.15$ and 0.67–0.69 above (§19.2) |
+| P9 | the price | TL0 has no fine factorisation | **TL 1.050, TL0 0.836, H2r 0.418** (§19.3). TL is dearer than the classical solve on every problem |
+| P10 | the particular field generalised poorly | $\mathcal C_p$ on the particular field | **answered**: untrained, $e_p$ fell from 0.69–0.70 to 0.11–0.12 (§13); trained, $\rho_p$ is 0.939 on the test split (§19.2) |
+
+### 20.4 What carries over
+
+§8's Phase 6 named two carry-overs before any result. Against the record:
+- **"Stage 1's CO-E takes $\mathcal C$ with a vector bilinear $P$."** $\mathcal C$'s guarantees held wherever they were measured:
+  - Proposition A and Lemma B on $V_e$;
+  - CX at most $2.2\times10^{-13}$ on 2,400 test pieces;
+  - the rollout's modes bit for bit.
+
+  **[AI Inference]:** what carries over is the coarse level and Phase 2's order of work, not the network on top. Measure the two-level expert untrained first. Train on its residual only where a control shows a remainder that reaches the coupled answer. Then judge the trained part against simply raising $n_c$, which $n_c^\ast$ measures, at equal cost.
+- **"A learned $P_\theta$ (§6) only where a Phase-2-style control shows the bilinear coarse space failing."** In CO-D it did not fail in §6's sense.
+  - What TL0 left fell by about half per doubling of $n_c$ (0.45–0.55 from 16 to 32, §13), as a resolution limit does.
+  - The one place it fell more slowly, the s-channel's non-right corners, B's classical patches treated (§17).
+
+  **[AI Inference]:** CO-D gave no case for $P_\theta$. §6's candidates remain untested: thin walls, small holes, high-contrast inclusions, CO-T at high Péclet, and oscillatory physics.
+- **Built and tested, for any later registration:**
+  - the corner patches (`coarse.CornerTreatment`, `coarse_patches.py`);
+  - the ledger (`twolevel.rho`, `attribution`, `equivalent_nc`, `kappa_kill`);
+  - the relative objective with methods 1–3;
+  - the price protocol with its A/A check and fixed BLAS threads (`chartop_price_twolevel.py`).
+
+### 20.5 What it changes
+
+- **The CO-D expert stays H2r**, with nothing learned (W362's row). It is exact on R2's layouts, priced here at 0.304 against 0.306 registered.
+- **[AI Inference]:** off the squares, TL0 is the cheaper classical candidate.
+  - On the held-out six it costs 0.822 of a classical solve, where H2r costs 0.978.
+  - But it misses E4 on two of them: the s-channel steady, and the s-channel step lowered by 300 K.
+  - Using it would need its own registration, with its coarse size chosen first.
+- **W362 stays open.** The rework was judged on Stage 0's layouts with new materials, not on layouts whose outlines do not cut into squares. Its network added nothing coupled there.
+- **[AI Inference]:** a next learned idea for CO-D would have to change what the loss weights, toward the hats and $j=1$–3 as the coupled answer reads them (P6). B2's mode prior did that without the coarse level and tied (CP, forms §11.10). Under $\mathcal C$ it has not been tried.
+
+### 20.6 Cost and records
+
+- **The rework's boxes cost \$1.75** of the registration's \$10 ceiling:
+  - the price protocol's dry run, \$0.32;
+  - training, \$1.08;
+  - the price, \$0.35.
+
+  Each box was destroyed after its files had been checked against the box's own copies.
+- **Commits:**
+  - the training records, `4a2a359`;
+  - the evaluation's stage A, `7dab3f6`;
+  - its stages B and C, `fd607bd`;
+  - §19, `99258ed` and `eb0707d`;
+  - this section and W363, the commit that adds them.
 
 ---
 
@@ -1051,4 +1165,4 @@ No problem is at its floor. On the laptop, TL costs 0.037–0.051 s a piece and 
 - [[chart-operator-family-catalog]] — CO-E, CO-T and the plate, where §6's learned coarse basis would come in
 - [[coupling-cost-and-complexity]] — the measured costs E5 is read against
 - [[dd-neural-prior-art-2026]] — neural domain decomposition prior art
-- [[gap-worklist]] — W362
+- [[gap-worklist]] — W363, this rework (done); W362, the pieces that are not squares (open)

@@ -7,6 +7,7 @@
 **Superseded on the website, 2026-10-12:** at the owner's request the public document is now **version 2**, `proposal/architecture/index.html` (copied to `site/architecture/index.html`). It combines this design with [[chart-operator-general-form]] and [[chart-operator-family-catalog]], explained from first principles with a summary box at the head of every section. This version-1 document is archived as `proposal/architecture/paper-v1.html` (and `site/architecture/paper-v1.html`). The design on this page is unchanged and is version 2's linear corner, class G0.
 **Corrected 2026-10-17 (lint):** two phrases above are out of date. *"None is machine-checked"*: Theorem 1, Theorem 2, the Proposition of §3.6 and the Corollary are now T25, T24 and T26 in Lean, checked with no `sorry` on 2026-10-01 ([[formal-proofs-record]] §3); Propositions 1–3 are still paper proofs. *"Private until the website launches"*: the website launched on 2026-10-02 ([[website-launch-checklist]]), and the document is public.
 **Built and judged, 2026-10-18 (Stage 0):** *"a design, not a build"* is out of date for CO-D. This page's tier 0 for 2-D diffusion was built in `atlas/chartop/`, on bilinear elements rather than finite volumes (D7). Eleven arms were trained, and the expert was judged once against gates registered before training ([[chart-operator-stage-0]]). The guarantees of Theorems 1 and 2 held to rounding on every benchmark. The modes did not learn, so the accuracy gates failed.
+**Since Stage 0, 2026-10-19 to 2026-11-12:** two records follow it. [[chart-operator-kernel-exact-forms]] made the uniform temperature and the load exact by form (W356, W357). Trained, those guarantees held and E4 still failed; rule R2's hybrid then met E4 and the price bar on square-first layouts with nothing learned. [[chart-operator-stage-0-rework]] gave the global part to a per-piece Galerkin coarse correction. Untrained, it removes 87–96% of the coupled error above the floor on Stage 0's held-out problems; trained, the network adds none (W363).
 **Hub:** [[00-proposal-workstreams]] · **Decision record:** [[chart-operator-design-decisions]] · **Measured costs:** [[coupling-cost-and-complexity]] · **Companions:** [[chart-operator-training-and-cost]] · [[dd-neural-prior-art-2026]]
 **Answers to:** [[outcome-c5-requirements-for-dd-native-experts]] (S1–S12) · **Built on:** [[port-algebra-atlas-0.1]] · [[atlas-and-standard-dd-theory]] · [[probed-dtn-coupling]] · [[master-error-bound]]
 
@@ -200,6 +201,8 @@ Status in the document: every proof is given in full, and the document says plai
 ## See Also
 
 - [[chart-operator-stage-0]] — Stage 0: CO-D built, trained and judged once (2026-10-18)
+- [[chart-operator-kernel-exact-forms]] — the kernel-exact and split forms (W356, W357), and rule R2's hybrid (2026-10-19 to 11-08)
+- [[chart-operator-stage-0-rework]] — Stage 0 reworked: the two-level, coarse-exact expert (W363, 2026-11-09 to 12)
 - [[chart-operator-design-decisions]] — the owner's decisions, their dates and evidence
 - [[coupling-cost-and-complexity]] — the measured cost of every coupling strategy
 - [[chart-operator-training-and-cost]] — data, objective, stages, gates and costs

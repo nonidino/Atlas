@@ -2143,4 +2143,4 @@ At $n$ = 32 / 64 / 128 (medians over each type's pieces):
 - [[chart-operator-family-catalog]] — CO-D, and the families Stage 1 builds next
 - [[formal-proofs-record]] — T25 and T26, which hold for these forms as for any outputs with exact traces
 - [[gap-worklist]] — W356 and W357; W358, the corner growth, and its fixes compared in §10
-- [[chart-operator-stage-0-rework]] — the rework drafted from these records: a coarse-exact two-level form, measured untrained first
+- [[chart-operator-stage-0-rework]] — the rework drafted from these records (W363): a coarse-exact two-level form. Untrained it does most of the work; trained, the network adds nothing coupled

@@ -1024,3 +1024,17 @@ With the owner's approval ("Pin it (Recommended)"), `scripts/chartop_register_tw
 ## [2026-11-11] note | Stage 0 rework, the one evaluation's price and verdicts: E4 and NC not met, TL at 1.05 of a classical solve
 
 **Stage B**, the price, ran on a whole AMD Ryzen 9 5900X, the machine the protocol's dry run passed on, chosen by the owner after the first two offers were taken (\$0.172 an hour). It used the payload of stage A's commit and TL-s0's weights, both checked by sha256 on the box. In three runs every measurement counted, every one of PR's 22 problems had its three, and the A/A check held within 0.0027. Geometric means against the classical solve: TL 1.050, TL0 0.836, H2r 0.418 (0.304 on R2's sixteen, against 0.306 registered). An interrupted create had rented the box, which idled about 1.5 hours before its runner armed the self-stop; it cost \$0.35 in all and is destroyed. **Stage C** wrote the verdicts once. Met: K, D, L, E3, SE1, SE2, CX, DUAL and KT. Not met: E4 (4 of 6) and NC (TL worse than TL0 on 8 of 12 problem-frames). Reported: E1 not met, SE3 met, and S11's rollout meeting E4 at every step recorded. Predictions 1, 4 and 5 held; 2 and 3 were refuted. **[AI Inference]:** for CO-D at this budget the network is not needed: untrained TL0 is as accurate at 0.84 of a solve. Next: Phase 6, the write-up, at the owner's go. **Changed:** [[chart-operator-stage-0-rework]] §19.2–19.5 and the status line.
+
+## [2026-11-12] note | Stage 0 rework, Phase 6: the write-up, and W363 opened as done
+
+On the owner's go in chat ("yes" to starting Phase 6), the rework was written up. [[chart-operator-stage-0-rework]] gained §20:
+- the arms on the held-out problems in one table;
+- what the network added, said plainly with $\rho$, $n_c^\ast$ and the controls. On the test pieces it removes a median 0.669 of TL0's error energy, almost all in $j=4$–8; the shuffled-input control reads −0.57, and the network frozen at S's weights 0.29. On the held-out problems the network moves U's error above the floor by −0.50 to +0.015, and $n_c^\ast$ is 13–17.5 on five problems, about TL0's own 16;
+- §1's ten problems against the record;
+- what carries over to Stage 1.
+
+§10 now lists what the page still does not show. The page's title, type, status and worklist lines say it is built and judged once. The coupled attribution's shares are now stated as shares of U's error above the floor, as `twolevel.attribution` computes them. [[gap-worklist]] has W363, the rework, **`done`**, under Tier 90, with its line on the status board.
+
+**[AI Inference]:** for CO-D at this budget no network is needed. The CO-D expert stays H2r. W362 stays open: the rework was judged on Stage 0's layouts, not on layouts whose outlines do not cut into squares.
+
+**Changed:** [[chart-operator-stage-0-rework]] header, §10, §19.2, §19.4, §19.5, §20 and See Also · [[gap-worklist]] W363 · [[chart-operator-architecture]] (a status note and See Also) · [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] (See Also) · [[index]].
