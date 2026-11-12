@@ -1,0 +1,8 @@
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+torchaudio 2.6.0+cu124 requires torch==2.6.0, but you have torch 2.7.1+cpu which is incompatible.
+torchvision 0.21.0+cu124 requires torch==2.6.0, but you have torch 2.7.1+cpu which is incompatible.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+torchvision 0.21.0+cu124 requires torch==2.6.0, but you have torch 2.7.1+cpu which is incompatible.
+anyio 4.16.0 requires typing_extensions>=4.16.0; python_version < "3.15", but you have typing-extensions 4.15.0 which is incompatible.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.

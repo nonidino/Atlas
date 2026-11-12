@@ -1,0 +1,4 @@
+WARNING: Ignoring invalid distribution ~ympy (/opt/conda/lib/python3.11/site-packages)
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+torch 2.6.0+cu124 requires sympy==1.13.1; python_version >= "3.9", which is not installed.
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.

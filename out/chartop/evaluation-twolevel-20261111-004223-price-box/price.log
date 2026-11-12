@@ -1,0 +1,6 @@
+02:44:54 price run 1: every measurement counts
+02:52:02 price run 2: every measurement counts
+02:59:11 price run 3: every measurement counts
+TWO-LEVEL B  3 runs on AMD Ryzen 9 5900X 12-Core Processor; every problem has 3 counted: True (fewest 3)
+             A/A: True (worst 0.0027)
+             wrote out/chartop/evaluation-twolevel-20261111-004223-price.json (1288 s)
