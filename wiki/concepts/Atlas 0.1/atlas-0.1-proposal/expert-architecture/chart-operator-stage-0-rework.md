@@ -1,7 +1,7 @@
 # Chart operator — Stage 0 reworked: the two-level, coarse-exact expert (drafted)
 
 **Type:** Concept page — **design draft** (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration was accepted and, after its price protocol's dry run passed on a rented machine (\$0.32), hash-pinned (§18). **Phase 5 trained both runs** on a rented GPU box (\$1.08) **and ran the one evaluation's accuracy** (§19). Every structural gate held. On the test pieces, the network removes two-thirds of TL0's error on the learned columns at the median, almost all of it in $j=4$–8. On the held-out problems, TL meets E4 on 4 of 6 and is worse than TL0 on 4 of 6, so NC is missed: the coarse level carries the coupled gain, and the trained network is worth about TL0's own coarse size. The price (stage B, on a rented machine) waits for the owner's go, and the verdicts (stage C) follow. No box is up. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
+**Status:** drafted on 2026-11-09 from a design conversation with the owner, who then asked for it to be built end to end. **Phase 1 is built and tested** (§11): the coarse level, `atlas/chartop/coarse.py`, with Proposition A and Lemma B checked numerically. **Phase 2's script is written and smoke-tested** (§12); its predictions (§9), with their readings there, were **registered on the owner's go** the same day, before Phase 2 ran. **Phase 2 has run** (§13). Untrained, TL0 meets E4 on 4 of the six benchmark problems at $n_c=16$ and on 5 at $n_c=32$; the sixth no 16-mode expert can meet. Where it misses, 85–90% of what remains sits at non-right corners. Five predictions held, and prediction 5 was refuted. The owner chose branch 2c: a corner treatment, an enlarged coarse space at the non-right corners, was drafted, accepted and built (§15, §16). Its untrained check ran with five registered predictions, and all held (§17). Its candidate B, the corner blocks' fine hats, meets E4 untrained on every problem a 16-mode expert can meet. The owner adopted it for Phase 4, and its training path is built. Phase 3's overfit probe ran on the laptop (§14): on its own pieces the network takes $\rho$ to 0.95 from S's weights. Phase 4's registration was accepted and, after its price protocol's dry run passed on a rented machine (\$0.32), hash-pinned (§18). **Phase 5 trained both runs** on a rented GPU box (\$1.08) **and ran the one evaluation** (§19), pricing it on a rented 5900X (\$0.35). Every structural gate was met. On the test pieces, the network removes two-thirds of TL0's error on the learned columns at the median, almost all of it in $j=4$–8. On the held-out problems, TL meets E4 on 4 of 6, as untrained TL0 does, and is worse than TL0 on 4 of 6: **E4 and NC are not met**. TL costs 1.05 of a classical solve and TL0 0.84. Predictions 1, 4 and 5 held; 2 and 3 were refuted. The coarse level carries the coupled gain. Phase 6, the write-up, waits for the owner's go. No box is up. The page sets out how Stage 0's CO-D expert should be formulated, given everything Stage 0 and its successors measured. It gives a phased workflow whose decisive phase needs no training.
 **Hub:** [[chart-operator-architecture]] · **Follows:** [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] · **Worklist:** [[gap-worklist]] W362 (open) · **Family:** [[chart-operator-family-catalog]] (CO-D)
 
 ---
@@ -967,7 +967,7 @@ No problem is at its floor. On the laptop, TL costs 0.037–0.051 s a piece and 
 
 **The seen six, beside** (TL-s0 against TL0 at 16): TL-s0 meets E4 on 5 and so does TL0. Both miss the s-channel step lowered by 300 K. On the seen bend-3 steady TL0 is almost exact (0.0003%) and TL-s0 leaves 0.195%. On the held-out one TL-s0 goes from TL0's 0.055% to 0.205%, about as much again.
 
-**The other gates, read from the record** (stage C writes the verdicts):
+**The other gates, read from the record** (stage C's verdicts agree, §19.4):
 - **Met on both runs**, on every held-out piece in both frames: K, D, L, SE2 and CX. CX is at most $2.7\times10^{-15}$, the particular field's $2.0\times10^{-14}$. For TL-s0, E3, SE1 and SE3 are also met.
 - **L** holds on the first 100 test pieces for both runs.
 - **DUAL** holds on 63 benchmark and 100 test pieces; the smallest relative eigenvalue, $-7.4\times10^{-15}$, is round-off.
@@ -976,12 +976,7 @@ No problem is at its floor. On the laptop, TL costs 0.037–0.051 s a piece and 
 - **NC is missed.** Its test clause holds (median 0.669 against 0.3; 10th percentile 0.318 against 0). Its benchmark clause does not: TL's energy error is above TL0's on 4 of 6 held-out problems.
 - **E4 is missed:** 4 of 6.
 
-**The predictions, read from the record by their registered readings** (stage C judges them; 5 waits for the price):
-1. CX, K, D and L hold on every run measured: **held**.
-2. NC is met: **refuted**, by its benchmark clause.
-3. E4 on all six: **refuted**, 4 of 6.
-4. The hats' $\rho$ is the lowest: **held**, narrowly. Their median is 0.044, against 0.049 for $j=1$–3 and 0.706 for $j=4$–8.
-5. PR: waits for stage B.
+**The predictions** are judged in §19.4.
 
 **What it means.**
 - **The rework's structure held everywhere it was measured.** That covers the coarse exactness, the kernel, the duality bracket and the iteration, and the rollout's modes held bit for bit.
@@ -992,11 +987,57 @@ No problem is at its floor. On the laptop, TL costs 0.037–0.051 s a piece and 
 - **[AI Inference]:** P6 survives $\mathcal C$. The coarse space takes the gentlest part exactly, but what lies between it and $j=4$–8 is still weighted by energy, the loss's way, not by interface data.
 - **[AI Inference]:** the held-out s-channel steady's 4.76% under TL0 halves from $n_c=16$ to 32. So most of it lies just finer than the coarse grid, in the part $\mathcal C$ leaves to the network, and TL removes 0.16 points of it.
 
-### 19.3 Next
+### 19.3 The one evaluation, stage B: the price (2026-11-11)
 
-- **Stage B, the price:** on a whole AMD Ryzen 9 5900X, with the owner's go. The payload is built from A's commit (`out/chartop/box/price-twolevel-4a2a359.tar.gz`, sha256 `6f837a8b…`) and `--verify-payload` passes.
-- **Stage C, the verdicts:** on the laptop, once. It writes them whatever they say, so it runs after stage B, or without it if the owner decides the price is not to be measured.
-- **Phase 6:** the write-up, and W363 in the gap-worklist.
+**The box.** The owner approved a Quebec machine in chat ("Yes, rent it"). That offer and its named fallback were taken before the create, so the owner chose again: "Argentina, \$0.168/h (Recommended)". That is the machine the price protocol's dry run passed on (§18): a whole AMD Ryzen 9 5900X, 23 CPUs in its container's quota, \$0.172 an hour with its storage (instance 60286902).
+- **An interrupted create still rented it.** The box idled about 1.5 hours, with no self-stop, until the session resumed; the runner is what arms the self-stop.
+- **The uploads were checked.** The payload of A's commit (`price-twolevel-4a2a359.tar.gz`, sha256 `6f837a8b…`), S's weights and TL-s0's weights were each checked by sha256 on the box. The driver, `chartop_evaluate_twolevel_box.sh`, then ran the pinned runner's install and smoke run, armed a 2-hour self-stop, and ran stage B.
+- **Three price runs took 21 minutes.** Every measurement counted, and each of PR's 22 problems had its three. The A/A check held within 0.0027 of 1, and the BLAS pools held in every run.
+- **Collected, then destroyed.** Every file came off by tar over ssh, and its sha256 was compared with the box's. Credit went from \$7.88 to \$7.53, **\$0.35**, about \$0.26 of it the idle hours.
+
+**The price** (geometric means of the per-problem medians, as a fraction of the classical solve's cost; lower is cheaper):
+
+| arm | all 22 | the held-out six | R2's sixteen | per-problem medians |
+|---|---|---|---|---|
+| TL (TL-s0) | **1.050** | 1.061 | 1.045 | 1.018–1.104 |
+| TL0, $n_c=16$ | 0.836 | 0.822 | 0.842 | 0.776–0.898 |
+| H2r | 0.418 | 0.978 | 0.304 (0.306 registered) | 0.227–1.002 |
+
+- **TL is dearer than the classical solve on every problem**, by 2–10%. PR's record finds it faster than none of the classical solve, H2r and TL0.
+- **The network adds about a fifth of a classical solve** to TL0's cost (1.050 against 0.836).
+- **H2r reproduces its registered price on R2's layouts** (0.304 against 0.306). On the held-out six it costs about what the classical solve does.
+
+### 19.4 The one evaluation, stage C: the verdicts (2026-11-11)
+
+`--judge` wrote `out/chartop/evaluation-twolevel-20261111-004223.json` and `.txt`, once.
+
+| gate | verdict |
+|---|---|
+| K, D, L, E3, SE1, SE2, CX, DUAL, KT | met |
+| E4 | **not met**: 4 of 6. It misses the s-channel steady, and the s-channel step lowered by 300 K |
+| NC | **not met**. The test clause holds (median 0.669, 10th percentile 0.318). TL is worse than TL0 on 8 of the 12 problem-frames |
+| PR | measured: TL 1.050, TL0 0.836, H2r 0.418 |
+| reported | E1 not met. SE3 met on every problem. S11, the 20-step rollout on the seen s-channel step, meets E4 at steps 1, 5, 10 and 20. The ledger: §19.2 |
+
+**The predictions:**
+
+| # | prediction | verdict | measured |
+|---|---|---|---|
+| 1 | CX, K, D and L hold on every run | **held** | on both runs, every piece and frame |
+| 2 | NC is met | **refuted** | the test clause holds; TL is worse than TL0 on 4 of 6 held-out problems |
+| 3 | TL meets E4 on all six held-out problems | **refuted** | 4 of 6 |
+| 4 | $\rho$ is lowest on the hats | **held** | 0.044, against 0.049 for $j=1$–3 and 0.706 for $j=4$–8 |
+| 5 | TL is not faster than the classical solve | **held** | 1.050 |
+
+**What the one evaluation says.**
+- **The guarantee side of the rework is sound.** Every structural gate was met on the test split, on the held-out problems in both frames and in the rollout. With $\mathcal C$ and B's corner patches, the two-level form is coarse-exact to round-off whatever the weights.
+- **The coarse level is what pays.** Untrained, TL0 at $n_c=16$ removes 87–96% of U's coupled error. It meets E4 on as many held-out problems as the trained TL, at 0.84 of a classical solve.
+- **The trained network adds no coupled accuracy and costs about a fifth of a solve.** It is worse than TL0 on 4 of the 6 problems.
+- **[AI Inference]:** for CO-D, on this evidence and at this training budget, the network is not needed. The rework asked this first (§0). A network would earn its place only by reaching the hats and $j=1$–3, which its loss does not weight (P6).
+
+### 19.5 Next
+
+**Phase 6:** the write-up, and W363 in the gap-worklist, at the owner's go.
 
 ---
 
