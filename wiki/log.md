@@ -1038,3 +1038,27 @@ On the owner's go in chat ("yes" to starting Phase 6), the rework was written up
 **[AI Inference]:** for CO-D at this budget no network is needed. The CO-D expert stays H2r. W362 stays open: the rework was judged on Stage 0's layouts, not on layouts whose outlines do not cut into squares.
 
 **Changed:** [[chart-operator-stage-0-rework]] header, §10, §19.2, §19.4, §19.5, §20 and See Also · [[gap-worklist]] W363 · [[chart-operator-architecture]] (a status note and See Also) · [[chart-operator-stage-0]] and [[chart-operator-kernel-exact-forms]] (See Also) · [[index]].
+
+## [2026-11-16] note | integrated UI plan
+
+A planning chat for one integrated Atlas app: geometry, physics, pieces and experts, run, and the chart-operator records. Nothing was built.
+
+**The current workbench, clicked through in the page** at 1090×620:
+- the header's Run leaves the *Model* tab highlighted, so *Model* does nothing;
+- the console holds 19 Bokeh "reference isn't known" errors;
+- 2 of 5 outline clicks were dropped;
+- the Case menu runs off the right edge;
+- there are no pieces, charts, experts or chart-operator records anywhere.
+
+**The owner's decisions,** each asked as a question and drawn first on a private Claude Design canvas in three rounds:
+- FastAPI and one JavaScript page instead of Panel;
+- phase 1 is the shell and the geometry;
+- light and dark themes, the palette `#E4E3EC` / `#191927` / `#8E72EE` / `#00D7D2`, and the Ranade font;
+- every shorthand explained on hover;
+- geometry built on Paper.js and FreeCAD's PlaneGCS solver rather than from scratch;
+- single and compare run modes;
+- a choice of chart method (TFI, Laplacian, conformal).
+
+The plan has seven phases, P0–P6, each with a check in the real page. Licences to confirm before anything is vendored: planegcs, Paper.js, Ranade, and the repository's own (it has no LICENSE file).
+
+**Changed:** [[integrated-ui-plan]] (new) · [[index]].

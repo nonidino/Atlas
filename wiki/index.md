@@ -1,6 +1,6 @@
 # Physics Foundation Model Wiki — Index
 
-**Last Updated:** 2026-11-12
+**Last Updated:** 2026-11-16
 **Sources Ingested:** 36 documents
 
 > 🧭 New here? Read **[[00-start-here]]** for the guided reading path.
@@ -293,6 +293,7 @@ The heart of the project: what a PFM is, the goal, the interface, and the archit
 | Demo: header, fork, holes *(items 1.1–1.3)* | [[demo-finish-plan]] | **Demo items 1.1–1.3**: the type selector, the forked river and holes ↗ |
 | Demo: a fast example per type *(item 1.4)* | [[demo-fast-examples-plan]] | **Demo item 1.4, a fast example per type**: the four genuine mechanisms for speed, and each family's ceiling ↗ |
 | Demo: the one learned case *(item 1.5)* | [[demo-learned-case-plan]] | **Demo item 1.5, the one learned case**: the 12-rotor wind farm, its five arms, and pricing a random network before any data exist ↗ |
+| Integrated UI *(plan, 2026-11-16; nothing built)* | [[integrated-ui-plan]] | **One app to draw, choose the physics, cut into pieces, run and read guarantees**: FastAPI and one page, geometry on Paper.js and FreeCAD's constraint solver, single and compare runs, a records view ready for Stage 0b; seven phases |
 | Website: the plan *(task 2)* | [[proposal-website-plan]] | **The website plan**: two readers, five beats, nine sections, and a claims pipeline with no number typed by hand ↗ |
 | Website: the evidence register | [[website-evidence-and-citations]] | Every number the site may show: Atlas's own (A1–A10, measured) and published results (classical L1–L6, neural N1–N12), each with its status (measured, search summary, or unverified) and wording |
 | Website: the outline *(after the owner's decisions, 2026-09-30)* | [[website-outline]] | **The site section by section** after the owner's decisions: topics, the statistics to show, voice, style, motion and image prompts ↗ |
