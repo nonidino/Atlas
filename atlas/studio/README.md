@@ -18,6 +18,47 @@ opens in the other. `--fetch-fonts` downloads Ranade from Fontshare and exits.
 | phase | what | state |
 |---|---|---|
 | P0 | the shell: FastAPI and one JavaScript page over a WebSocket; the header, the two themes, hover explanations; open and save of case files bit for bit; the vendored libraries pinned by hash; the bundle's pins and self-test | built |
+| P1 | geometry I: case file 0.7's feature tree; the Paper.js editor (select, pen, rectangle, ellipse, arc, measure, pan); Add, Cut and Region; smart guides, grid snap, typed sizes; combine (union, subtract, intersect); materials; the start screen; imports of `.msh`, STEP, DXF and SVG; the server's exact evaluation and the Check view; a minimal Run; the one-command install serves the studio | built |
+
+## Geometry (P1)
+
+**The tree.** A case's shapes are features (`document.py`, case file 0.7): a
+rectangle, an ellipse, a path (lines, arcs by their bulge, cubic curves, the engine's
+splines), or a combine of others. Each adds to the domain, cuts it, is a material
+region inside it, or is a guide. The domain is what adds, minus what cuts; regions
+stack in order. A 0.6 file opens as the features its own polygons are, and a tree
+that adds nothing to them saves as 0.6 again, byte for byte.
+
+**The truth is the server's** (`geometry_eval.py`). Shapely does the booleans and
+every segment of the result is traced back to the side it came from, so the engine
+receives the sides as drawn: a rectangle's four lines, a circle's four arcs by their
+bulge, a pen curve as short lines. A boundary condition set on a side follows it
+through later edits (a side cut in two carries it on both halves). All 27 examples
+evaluate back to their own geometry, edge for edge and cell for cell. Exact areas
+come from Gmsh's OpenCASCADE kernel (`occ.py`) when Gmsh is installed.
+
+**The page** (`static/js/geo/`): everything moves locally at frame rate and is sent
+as one edit when a gesture ends. A tool stays on until V. Smart guides snap to other
+shapes' edges, centres and points (cyan, with a diamond); Shift squares a rectangle,
+makes an ellipse a circle and locks the pen to 15 degrees; Alt draws from the centre,
+or flips Add and Cut while drawing; Tab types a size. The pen: click for a corner,
+drag for a curve (Alt breaks the handle), Backspace for the last point, click the
+first point to close, Enter to leave it open as a guide, or type a length and Enter.
+
+**Check** (K, `geocheck.py`): the cells the solver sees at n = 32, 64, 128, 256 or
+the case's own grid, each region in its material's colour; the checks (closed, no
+crossings, holes and regions inside); thin features, slivers and near-touching edges,
+each a numbered pin with its fixes (a finer grid, widen to one cell, keep); and each
+region's exact area against its cells' area.
+
+**Start** (`starts.py`): plate, plate with hole, L-bracket, bend, S-channel, annulus,
+high contrast (a seeded draw: the same seed gives the same layout) and blank, from a
+width and a height; the three held-out benchmarks; recent files; a drop zone.
+
+**Imports**: `.msh` through the workbench's Gmsh reader (it replaces the drawing),
+STEP through OpenCASCADE in metres (a solid is cut at half height), DXF and SVG read
+in the page (lines, arcs, circles, polylines with bulges, ellipses, splines, Bezier
+paths), the outermost loops adding and the loops inside them cutting.
 
 ## How it works
 
@@ -88,6 +129,19 @@ server and runs a case over its WebSocket.
 
 ## Known limitations
 
-- **The geometry tab is read-only until P1.** It draws the case as the engine holds it.
+- **A geometry edit waits for the engine.** On a 300 x 240 grid a drawn edit takes
+  about 5 to 10 s: the engine cuts the windows again (a Fiedler vector and harmonic
+  coordinates) and checks the case twice, exactly as the retired workbench did on
+  every drawn edit. The page says *Rebuilding…* meanwhile and keeps drawing locally.
+- **The Panel page's modules and their tests are still in the repository**
+  (`atlas/workbench/app.py`, `editor.py`, `inspector.py`, `runview.py`,
+  `tests/workbench_ui.py`): nothing serves them (`python -m atlas.workbench` says it
+  is retired), and their tests still pass. Rewriting those tests against this
+  protocol, and then deleting the modules, is open.
+- **Dimension and Channel are P2**, as are parameters, formulas, patterns, mirror,
+  fillet, coefficient fields, scatter as a feature, image tracing and sweeps; their
+  rail buttons say so.
+- **A cubic curve reaches the engine as short lines** (it has no cubic edge), so a
+  boundary condition on a pen curve is held by each of those edges.
 - **Case files are written in text mode** (`CaseSpec.save`, unchanged), so a file is
   CRLF on Windows and LF elsewhere; open-then-save is bit for bit on each.

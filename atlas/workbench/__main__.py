@@ -1,4 +1,8 @@
-"""python -m atlas.workbench [--port 8020] [--open] [--cases-dir DIR]"""
+"""python -m atlas.workbench [--port 8020] [--open] [--cases-dir DIR]
+
+The retired Panel page, kept while its tests are rewritten against the studio's
+protocol (integrated UI plan, section 9).  The app is the studio:
+``python -m atlas.studio``; the one-command install serves it."""
 
 from __future__ import annotations
 
@@ -14,6 +18,8 @@ def main(argv=None) -> None:
     p.add_argument("--cases-dir", default=None,
                    help="where cases are saved (default: out/workbench/cases)")
     a = p.parse_args(argv)
+    print("Note: this Panel page is retired; the Atlas app is the studio "
+          "(python -m atlas.studio).", flush=True)
     from .app import serve
     serve(port=a.port, open_browser=a.open, cases_dir=a.cases_dir)
 

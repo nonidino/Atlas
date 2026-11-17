@@ -1,12 +1,15 @@
-# Atlas Workbench
+# Atlas
 
 Build a simulation by hand: choose a kind of physics, draw the domain, cut it
-into pieces, and run the pieces against the undivided domain. The page shows
+into pieces, and run the pieces against the undivided domain. The page is the
+Atlas studio (2026-11-16): drawing with a pen, rectangles, ellipses and arcs,
+holes and regions by Add, Cut and Region, booleans, materials, and a Check view
+that shows the geometry as the solver's grid sees it. The page shows
 whether they agree, which one was faster **on your machine**, and what the
 compiler says about joining the pieces. There are eight kinds: a wind farm,
 heat conduction, an electric film, a river carrying a pollutant, sound crossing
 from air into water, a loaded plate, a heated bimetal strip, and a block cooled
-by a water channel. The **Fast example** button opens a case that shows each
+by a water channel. **Case, Fast example** opens a case that shows each
 kind's best honest speed-up, and says what limits it when there is none.
 
 This branch is a **self-contained copy**: everything it needs is here or is

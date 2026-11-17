@@ -1,6 +1,6 @@
-"""Start the Atlas Workbench from this folder: one command, then a browser tab.
+"""Start Atlas from this folder: one command, then a browser tab.
 
-    python run.py                 # serves http://127.0.0.1:8020/ and opens it
+    python run.py                 # serves the studio on http://127.0.0.1:8020/ and opens it
     python run.py --no-open       # ... without opening a browser
     python run.py --port 8031     # on another port (default: the first free from 8020)
     python run.py --check         # the self-test alone, no server
@@ -33,17 +33,15 @@ asserts the solver was loaded from here.
      its weights load and one learned macro-step runs, finite and
      divergence-free, and the registered evaluation's verdict is printed; without
      torch it is reported absent, which is optional;
-  5. **the page**: this folder's own server is started on a free port, the
-     page is fetched as a browser would fetch it, every script and stylesheet
-     it names is fetched from the same server, and its document is pulled over
-     the page's WebSocket with Bokeh's own client.  A self-test that drove only
-     the engine once passed on a bundle whose page could never receive a frame
-     (PoC 3, W251), so the page is opened here, not assumed;
-  6. **the studio** (the integrated UI, `atlas/studio`): its vendored files against
-     their pinned sha256, Ranade fetched from Fontshare when the network allows
-     (optional: the page falls back to Instrument Sans), its own server started,
-     its page and every file the page and its modules name fetched, and a case
-     opened, edited and run for one step over the page's own WebSocket.
+  5. **the page**, the studio (the integrated UI, `atlas/studio`, which this
+     folder serves since 2026-11-16; the Panel page is retired): its vendored files
+     against their pinned sha256, Ranade fetched from Fontshare when the network
+     allows (optional: the page falls back to Instrument Sans), its own server
+     started on a free port, its page and every file the page and its modules
+     name fetched as a browser would, and a case opened, edited and run for one
+     step over the page's own WebSocket.  A self-test that drove only the engine
+     once passed on a bundle whose page could never receive a frame (PoC 3,
+     W251), so the page is opened here, not assumed.
 
 Nothing is compared with a stored number: the point is that the answers are
 produced on this machine.  Exit 0: all of it.  Exit 3: all of it, and an
@@ -72,9 +70,9 @@ REQUIRED = [
     ("scipy", "sparse solves, transforms and image operations, in every type"),
     ("pandas", "the results tables"),
     ("pydantic", "the case file's schema"),
-    ("bokeh", "the plots, and the server the page runs on"),
-    ("panel", "the page"),
-    ("tornado", "the server, and the page's WebSocket"),
+    ("bokeh", "the retired Panel page, which its tests still drive"),
+    ("panel", "the retired Panel page, which its tests still drive"),
+    ("tornado", "the retired Panel page's server"),
     ("fastapi", "the studio's server"),
     ("uvicorn", "the studio's server process"),
     ("websockets", "the studio page's WebSocket"),
@@ -351,117 +349,6 @@ def _free_port(start: int = 8020, count: int = 20) -> int:
     return p
 
 
-def _page() -> bool:
-    """Serve the page from this folder and fetch it the way a browser does."""
-    import re
-    import socket
-    import subprocess
-    import time
-    import urllib.request
-
-    print("\n  the page  (this folder's own server, on a free local port, fetched as a "
-          "browser would)")
-    # Direct, never through a proxy. urllib honours HTTP_PROXY even for 127.0.0.1
-    # unless NO_PROXY names it, so on a machine behind a proxy every fetch of the
-    # page went to the proxy and the self-test called a working page broken (found
-    # by running the launcher with pip pointed at a closed proxy: the server
-    # listened and never saw a request). A browser goes direct to localhost.
-    direct = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-    port = _free_port(8040)
-    base = "http://127.0.0.1:%d" % port
-    logdir = os.path.join(HERE, "out", "workbench")
-    os.makedirs(logdir, exist_ok=True)
-    logpath = os.path.join(logdir, "selftest-server.log")
-    log = open(logpath, "w", encoding="utf-8", errors="replace")
-    env = dict(os.environ, PYTHONIOENCODING="utf-8")
-    proc = subprocess.Popen([sys.executable, os.path.join(HERE, "run.py"), "--no-open",
-                             "--port", str(port)], cwd=HERE, env=env, stdout=log,
-                            stderr=subprocess.STDOUT)
-    ok = True
-    try:
-        t0 = time.perf_counter()
-        while True:
-            if proc.poll() is not None:
-                print("    [!]  the server exited (code %s) before it listened" % proc.returncode)
-                ok = False
-                return ok
-            try:
-                socket.create_connection(("127.0.0.1", port), timeout=1).close()
-                break
-            except OSError:
-                if time.perf_counter() - t0 > 120:
-                    print("    [!]  the server did not listen within two minutes")
-                    ok = False
-                    return ok
-                time.sleep(0.3)
-        print("    ok   the server listened on port %d after %.1f s"
-              % (port, time.perf_counter() - t0))
-
-        t1 = time.perf_counter()
-        html = direct.open(base + "/", timeout=120).read().decode("utf-8", "replace")
-        if "<title>Atlas Workbench</title>" not in html:
-            print("    [!]  %s/ answered, but not with the workbench's page" % base)
-            return False
-        print("    ok   %s/ answered with the page in %.1f s" % (base, time.perf_counter() - t1))
-
-        refs = (re.findall(r'<script[^>]*\ssrc="([^"]+)"', html)
-                + re.findall(r'<link[^>]*\shref="([^"]+)"', html))
-        local = [u for u in refs if not re.match(r"[a-z]+://", u) or u.startswith(base)]
-        outside = [u for u in refs if u not in local]
-        failed = []
-        for u in local:
-            full = u if u.startswith(base) else base + (u if u.startswith("/") else "/" + u)
-            try:
-                with direct.open(full, timeout=60) as r:
-                    if r.status != 200 or not r.read():
-                        failed.append(u)
-            except Exception:
-                failed.append(u)
-        if failed:
-            print("    [!]  %d of the page's %d scripts and stylesheets did not load: %s"
-                  % (len(failed), len(local), ", ".join(failed[:3])))
-            ok = False
-        else:
-            print("    ok   all %d of its scripts and stylesheets, from this machine"
-                  % len(local))
-        if outside:
-            print("    note the page also names %d resource%s on the network: %s"
-                  % (len(outside), "s" * (len(outside) != 1), ", ".join(outside[:3])))
-
-        # Panel's own models have to be registered here for the document to decode
-        import panel  # noqa: F401
-        import panel.models  # noqa: F401
-        from bokeh.client import pull_session
-        t2 = time.perf_counter()
-        with pull_session(url=base + "/") as session:
-            doc = session.document
-            labels = {str(getattr(m, "label", "")) for m in doc.models}
-            n = len(list(doc.models))
-        want = {"Fast example": "the header's Fast example button",
-                "Run": "the Run button"}
-        seen = [w for k, w in want.items() if any(k in lab for lab in labels)]
-        if len(seen) != len(want) or not n:
-            print("    [!]  the document came over the WebSocket without %s"
-                  % ", ".join(w for k, w in want.items() if w not in seen))
-            ok = False
-        else:
-            print("    ok   its document, over the page's WebSocket: %d models, with %s"
-                  " (%.1f s)" % (n, " and ".join(seen), time.perf_counter() - t2))
-    except Exception as exc:
-        print("    [!]  %s" % _short(exc))
-        ok = False
-    finally:
-        proc.terminate()
-        try:
-            proc.wait(15)
-        except Exception:
-            proc.kill()
-        log.close()
-        if not ok:
-            print("    the server's own output is in %s" % os.path.relpath(logpath, HERE))
-    return ok
-
-
 def _studio() -> bool:
     """The studio (atlas/studio, the integrated UI): its vendored files against their
     pinned hashes, then its own server on a free port, its page fetched with every
@@ -605,7 +492,7 @@ def check() -> int:
     import time
 
     t0 = time.perf_counter()
-    print("Atlas Workbench self-test  (Python %s on %s %s, %s logical CPUs)\n"
+    print("Atlas self-test  (Python %s on %s %s, %s logical CPUs)\n"
           % (sys.version.split()[0], platform.system(), platform.machine(),
              os.cpu_count()))
     missing, absent = _packages()
@@ -616,8 +503,7 @@ def check() -> int:
     threads = max(1, min(2, os.cpu_count() or 1))
     types_ok = _types(threads)
     learned = _learned(threads)
-    page_ok = _page()
-    page_ok = _studio() and page_ok
+    page_ok = _studio()
     took = time.perf_counter() - t0
     if not (types_ok and page_ok) or learned == "broken":
         print("\n  BROKEN -- see the [!] lines above. (%.0f s)" % took)
@@ -653,8 +539,8 @@ def main(argv=None) -> int:
         args += ["--port", str(_free_port())]
     if not no_open and "--open" not in args:
         args.append("--open")
-    from atlas.workbench.__main__ import main as workbench_main
-    workbench_main(args)
+    from atlas.studio.__main__ import main as studio_main
+    studio_main(args)
     return OK
 
 

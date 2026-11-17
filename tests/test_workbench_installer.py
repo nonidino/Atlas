@@ -234,10 +234,11 @@ def test_the_self_test_fetches_its_own_page_directly_not_through_a_proxy():
     the launcher behind a closed proxy and is the behavioural check."""
     text = _text("run.py")
     assert "urllib.request.urlopen(" not in text
-    # two fetches for the workbench's page, two for the studio's (2026-11-16); and the
-    # studio's WebSocket client is told to use no proxy either
-    assert "ProxyHandler({})" in text and text.count("direct.open(") == 4
+    # the page's two fetches (the studio's, since 2026-11-16: the page and its files);
+    # and the studio's WebSocket client is told to use no proxy either
+    assert "ProxyHandler({})" in text and text.count("direct.open(") == 2
     assert "proxy=None" in text
+    assert "atlas.studio.__main__" in text, "the launcher serves the studio"
 
 
 def test_the_self_test_marches_one_example_of_every_type():
