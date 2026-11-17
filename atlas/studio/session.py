@@ -123,6 +123,9 @@ class Session:
         self.geom: doc.Geometry = doc.migrate(spec)
         #: what the last evaluation of the tree could not build, or noted
         self.geo_notes: list[dict] = []
+        #: each coefficient field's range over its cells, from the last evaluation
+        self.fields: dict = {}
+        self.sweep = None
         self._prov: dict | None = None          # the engine edges' sides, when known
         self.path: str | None = None
         self.key = key or new_key(spec.physics.family)
@@ -210,6 +213,10 @@ class Session:
         if self.compile_job is not None and self.compile_job.active:
             return {"kind": "busy", "text": "Compiling",
                     "tip": "The Atlas compiler is checking every seam"}
+        if self.sweep is not None and self.sweep.active:
+            sp = self.sweep.progress()
+            return {"kind": "busy", "text": f"Sweep {sp['index'] + 1}/{len(sp['values'])}",
+                    "tip": f"Running the case once per value of {sp['param']}; Stop is in Run"}
         geo = self.geometry_errors()
         if geo and geo[0].get("kind") == "empty":
             return {"kind": "warn", "text": "No shape yet", "tip": "Pick a start, draw, or import"}
@@ -245,6 +252,7 @@ class Session:
     def state(self) -> dict:
         return {"type": "state", "case": json.loads(self.spec.to_json()),
                 "geometry": json.loads(self.geom.model_dump_json()),
+                "fields": self.fields,
                 "meta": self.meta(), "issues": self.issue_rows(),
                 "status": self.status(), "drawing": drawing(self.spec)}
 
@@ -306,6 +314,7 @@ class Session:
         self.spec = spec
         self.geom = geom if geom is not None else doc.migrate(spec)
         self.geo_notes = list(notes or [])
+        self.fields = {}
         self._prov = None
         if path is not ...:
             self.path = path
@@ -330,7 +339,19 @@ class Session:
         notes = self.geo_notes
         geo_changed = (geom.model_dump() != self.geom.model_dump()) or dx is not None
         prov = self._prov
+        fields = self.fields
         if geo_changed:
+            # parameters, formulas and seeded generators first: the numbers they drive
+            from .resolve import ResolveError, resolve
+            try:
+                geom, rnotes = resolve(geom)
+                geom = doc.Geometry.model_validate(json.loads(geom.model_dump_json()))
+            except (ResolveError, ValidationError) as exc:
+                msg = exc.errors()[0].get("msg") if isinstance(exc, ValidationError) else str(exc)
+                self.notify("error", f"not applied: {msg}")
+                self._changed()
+                return False
+            say += rnotes
             if any(f.role == "add" for f in geom.features):
                 had = self.has_shape()
                 if dx is not None:
@@ -342,6 +363,7 @@ class Session:
                 old_prov = self._provenance() if had else {}
                 applied, res = GE.apply(new, geom, dx=dx, keep=keep)
                 notes = list(res.notes)
+                fields = dict(res.fields)
                 if res.domain is not None:
                     was_drawn = self.spec.domain.outline is not None
                     new = applied
@@ -407,6 +429,7 @@ class Session:
         self.spec = new
         self.geom = geom
         self.geo_notes = notes
+        self.fields = fields
         self._prov = prov if geo_changed else self._prov
         self.dirty = True
         self.log(label)
@@ -543,6 +566,65 @@ class Session:
             return self._commit(self.spec.copy_deep(), g, "moved the drawing to the origin",
                                 defaults=False, say=[])
         raise Refused(f"no fix {key!r}")
+
+    def geometry_fillet(self, fid: str, vertex: int, r: float) -> bool:
+        """Round a path's corner between two straight edges with an arc of radius ``r``
+        tangent to both (the corner becomes two points and an arc edge)."""
+        import math as _m
+
+        import numpy as np
+        g = self.geom.model_copy(deep=True)
+        f = g.by_id().get(fid)
+        if f is None or f.kind != "path" or not f.closed:
+            raise Refused("a fillet rounds a corner of a closed path")
+        n = len(f.points)
+        k = int(vertex) % n
+        a_e, b_e = (k - 1) % n, k
+        if f.edges[a_e] != "line" or f.edges[b_e] != "line":
+            raise Refused("a fillet joins two straight edges")
+        if not r > 0:
+            raise Refused("the radius must be above 0")
+        P = np.array(f.points[k], float)
+        A = np.array(f.points[a_e], float)
+        B = np.array(f.points[(k + 1) % n], float)
+        la, lb = float(np.hypot(*(A - P))), float(np.hypot(*(B - P)))
+        u, v = (A - P) / la, (B - P) / lb
+        theta = _m.acos(max(-1.0, min(1.0, float(u @ v))))
+        if theta < 1e-6 or theta > _m.pi - 1e-6:
+            raise Refused("there is no corner to round there")
+        t = r / _m.tan(theta / 2)
+        if t >= la or t >= lb:
+            raise Refused(f"a radius of {r:g} does not fit these edges (at most "
+                          f"{min(la, lb) * _m.tan(theta / 2):.4g})")
+        P1, P2 = P + u * t, P + v * t
+        turn = float((P - A)[0] * (B - P)[1] - (P - A)[1] * (B - P)[0])
+        bulge = _m.copysign(_m.tan((_m.pi - theta) / 4), turn)
+        f.points[k:k + 1] = [tuple(map(float, P1)), tuple(map(float, P2))]
+        f.edges[k:k] = ["arc"]
+        f.bulge[k:k] = [bulge]
+        f.handles[k:k] = [None]
+        return self._commit(self.spec.copy_deep(), g, f"rounded a corner of {f.label}, "
+                            f"r = {r:g}", defaults=False, say=[])
+
+    def start_sweep(self, name: str, arms: list[str] | None = None):
+        """Run the case once per value of the parameter ``name``'s sweep, each on a copy
+        of the case (this one is left as it is), in turns, in a background thread."""
+        if self.sweep is not None and self.sweep.active:
+            raise Refused("a sweep is already running")
+        if (self.run is not None and self.run.active) or (
+                self.compile_job is not None and self.compile_job.active):
+            raise Refused("a run or a compile is going; a sweep beside it would time it too")
+        p = next((x for x in self.geom.parameters if x.name == name), None)
+        if p is None:
+            raise Refused(f"no parameter called {name!r}")
+        if not p.sweep or len(p.sweep) < 2:
+            raise Refused(f"{name} has no sweep: give it two or more values")
+        if p.expr:
+            raise Refused(f"{name} is a formula; sweep a parameter it reads instead")
+        self.sweep = Sweep(self, name, [float(v) for v in p.sweep], arms or self.run_arms)
+        self.sweep.start()
+        self._changed()
+        return self.sweep
 
     def geometry_start(self, shape: str, params: dict) -> bool:
         """The start screen: a parametrised starting shape replaces the drawing, and the
@@ -804,6 +886,86 @@ class Session:
         """The page went away: a run it started stops (it would time nothing)."""
         if self.run is not None and self.run.active:
             self.run.stop()
+
+
+class Sweep:
+    """A parameter's values, run one after another, each on its own copy of the case:
+    the parameter set, the tree resolved and evaluated, what the new shape lacks filled
+    in, then a run.  The page reads `progress`."""
+
+    def __init__(self, session: Session, name: str, values: list[float], arms):
+        import threading
+        self.session = session
+        self.name = name
+        self.values = values
+        self.arms = list(arms)
+        self.results: list[dict] = []
+        self.status = "created"
+        self.index = 0
+        self.error: str | None = None
+        self._stop = threading.Event()
+        self._thread = None
+        self.lock = threading.Lock()
+
+    @property
+    def active(self) -> bool:
+        return self.status in ("starting", "running")
+
+    def start(self) -> None:
+        import threading
+        self.status = "starting"
+        self._thread = threading.Thread(target=self._run, name="studio-sweep", daemon=True)
+        self._thread.start()
+
+    def run_blocking(self) -> "Sweep":
+        self.status = "starting"
+        self._run()
+        return self
+
+    def stop(self) -> None:
+        self._stop.set()
+
+    def progress(self) -> dict:
+        with self.lock:
+            return {"type": "sweep", "status": self.status, "param": self.name,
+                    "values": self.values, "index": self.index, "error": self.error,
+                    "results": list(self.results)}
+
+    def _run(self) -> None:
+        from .runcards import cards
+        s0 = self.session
+        self.status = "running"
+        try:
+            for i, v in enumerate(self.values):
+                if self._stop.is_set():
+                    break
+                with self.lock:
+                    self.index = i
+                scratch = Session(cases_dir=s0.cases_dir, spec=s0.spec.copy_deep(),
+                                  key=f"{s0.key}-{self.name}-{i + 1}")
+                scratch.geom = s0.geom.model_copy(deep=True)
+                scratch._prov = s0._prov
+                k = next(j for j, p in enumerate(scratch.geom.parameters) if p.name == self.name)
+                ok = scratch.edit_ops([{"op": "set", "path": ["geometry", "parameters", k, "value"],
+                                        "value": v}], f"{self.name} = {v:g}")
+                row: dict = {"value": v}
+                if not ok:
+                    row["error"] = "; ".join(x["text"] for x in scratch.drain()
+                                             if x["type"] == "notice") or "not applied"
+                else:
+                    try:
+                        run = scratch.start_run(self.arms, blocking=True)
+                        row["status"] = run.status
+                        row["cards"] = cards(run.results) if run.results else None
+                        row["error"] = run.progress().error
+                    except Refused as exc:
+                        row["error"] = str(exc)
+                with self.lock:
+                    self.results.append(row)
+            self.status = "stopped" if self._stop.is_set() else "done"
+        except Exception as exc:                          # the page says what broke
+            self.error = f"{type(exc).__name__}: {exc}"
+            self.status = "failed"
 
 
 #: the geometry's own one-click fixes, by key

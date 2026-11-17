@@ -156,6 +156,23 @@ def _geo_start(s: Session, shape: str, params: dict | None = None):
     s.geometry_start(shape, params or {})
 
 
+@handler("geometry.fillet", {"feature": (str, True), "vertex": (int, True), "r": (float, True)})
+def _geo_fillet(s: Session, feature: str, vertex: int, r: float):
+    s.geometry_fillet(feature, vertex, r)
+
+
+@handler("run.sweep", {"param": (str, True), "arms": (list, False)})
+def _sweep(s: Session, param: str, arms: list | None = None):
+    sw = s.start_sweep(param, list(arms) if arms else None)
+    return {"values": sw.values}
+
+
+@handler("run.stop_sweep")
+def _stop_sweep(s: Session):
+    if s.sweep is not None and s.sweep.active:
+        s.sweep.stop()
+
+
 @handler("geometry.import", {"format": (str, True), "data": (str, True), "name": (str, True)})
 def _geo_import(s: Session, format: str, data: str, name: str):
     try:
@@ -215,6 +232,8 @@ def handle(session: Session, msg: Any) -> tuple[dict, list[dict]]:
                         "error": f"{kind} needs {name!r}"}, []
             continue
         v = msg[name]
+        if typ is float:                         # JSON's 1 is an int: any number will do
+            typ = (int, float)
         bad = (not isinstance(v, bool)) if typ is bool else (
             not isinstance(v, typ) or isinstance(v, bool))
         if bad:
@@ -266,6 +285,7 @@ class Watch:
     fields: tuple = ()
     compile: Any = None
     compile_status: str = ""
+    sweep_key: tuple = ()
 
 
 def run_frame(session: Session, w: Watch) -> list[dict]:
@@ -297,6 +317,13 @@ def run_frame(session: Session, w: Watch) -> list[dict]:
                 frame["cards"] = cards(run.results)
             out.append(frame)
             w.run, w.run_key = run, key
+    sw = session.sweep
+    if sw is not None:
+        p = sw.progress()
+        key = (id(sw), p["status"], p["index"], len(p["results"]))
+        if key != w.sweep_key:
+            w.sweep_key = key
+            out.append(p)
     job = session.compile_job
     if job is not None and (job is not w.compile or job.status != w.compile_status):
         frame = {"type": "compile", "status": job.status, "error": job.error,

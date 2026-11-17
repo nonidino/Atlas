@@ -677,6 +677,8 @@ class Result:
     #: the feature each of ``regions`` was made from, in order
     region_features: list[str] = field(default_factory=list)
     evaluator: object = None
+    #: per coefficient field: its property, its range over the cells, its levels
+    fields: dict = field(default_factory=dict)
 
 
 def default_material(spec: CaseSpec) -> str | None:
@@ -754,6 +756,7 @@ def evaluate(geom: Geometry, spec: CaseSpec, dx: float | None = None,
     regions: list[Region] = []
     region_fids: list[str] = []
     mats: dict[str, dict[str, float]] = {}
+    fields: dict[str, dict] = {}
     if "regions" in fam.layers or spec.regions:
         lib = fam.material_library()
         base = default_material(spec)
@@ -777,11 +780,114 @@ def evaluate(geom: Geometry, spec: CaseSpec, dx: float | None = None,
                 rid = f.id
             used_ids.add(rid)
             reg = _region(ev, f, shp, grid_box, rid, m, dx, tol, nx, ny)
-            if reg is not None:
-                regions.append(reg)
-                region_fids.append(f.id)
+            if reg is None:
+                continue
+            if f.field and f.field.get("kind") == "formula":
+                props = dict(spec.materials.get(m) or lib.get(m) or {})
+                try:
+                    regs, more, info = field_regions(f, reg, domain, props, geom)
+                except Exception as exc:                       # a person's formula
+                    notes.append({"severity": "error", "kind": "field", "feature": f.id,
+                                  "message": f"{f.label}'s field: {exc}"})
+                    continue
+                regions += regs
+                region_fids += [f.id] * len(regs)
+                mats.update(more)
+                fields[f.id] = info
+                continue
+            regions.append(reg)
+            region_fids.append(f.id)
     _notes_inside(ev, main, notes)
-    return Result(domain, regions, notes, dom, prov, mats, region_fids, ev)
+    res = Result(domain, regions, notes, dom, prov, mats, region_fids, ev)
+    res.fields = fields
+    return res
+
+
+#: a coefficient field becomes at most this many materials, log-spaced
+FIELD_LEVELS = 16
+
+
+def field_cells(reg: Region, domain: Domain):
+    """The cells a region holds in the domain: their row and column indices."""
+    mask = wgeo.region_mask(reg, domain.nx, domain.ny) & wgeo.domain_mask(domain)
+    return np.nonzero(mask)
+
+
+def field_values(f: Feature, x, y, geom: Geometry):
+    """A formula field at points (x, y), with the tree's parameters."""
+    from . import formula
+    expr = f.field.get("expr") or ""
+    tree = formula.parse(expr)
+    env = {p.name: float(p.value) for p in geom.parameters}
+    bad = formula.names(tree) - set(env) - {"x", "y"} - set(formula.CONSTANTS)
+    if bad:
+        name = sorted(bad)[0]
+        raise formula.FormulaError("T is not a variable of any kind that runs here: the "
+                                   "properties are constant in time" if name == "T" else
+                                   f"no parameter called {name!r}")
+    v = formula.evaluate(tree, {**env, "x": x, "y": y})
+    return np.broadcast_to(np.asarray(v, dtype=float), np.shape(x)).copy()
+
+
+def field_regions(f: Feature, reg: Region, domain: Domain, props: dict, geom: Geometry):
+    """A region whose ``prop`` is a formula of position, as the engine can run it: the
+    formula at every cell centre, binned into at most `FIELD_LEVELS` levels (log-spaced
+    when every value is positive), each level a material whose ``prop`` is the mean of
+    its cells' values, and each level's cells a polygon region (cell-exact, so the
+    engine's mask is exactly those cells).  Returns (regions, materials, the range)."""
+    from shapely.geometry import box as _box
+    prop = f.field.get("prop")
+    if props and prop not in props:
+        raise ValueError(f"its material has no property {prop!r} (it has "
+                         f"{', '.join(sorted(props))})")
+    rows, cols = field_cells(reg, domain)
+    if not len(rows):
+        return [], {}, {"prop": prop, "min": None, "max": None, "levels": 0, "cells": 0}
+    dx = domain.dx
+    x = (cols + 0.5) * dx
+    y = (rows + 0.5) * dx
+    v = field_values(f, x, y, geom)
+    if not np.all(np.isfinite(v)):
+        raise ValueError("the formula is not finite at every cell centre")
+    if np.any(v <= 0) and prop in ("k", "sigma", "rho", "cp", "E", "depth", "c"):
+        raise ValueError(f"{prop} must be above 0 everywhere; the formula reaches {v.min():g}")
+    lo, hi = float(v.min()), float(v.max())
+    if hi <= lo * (1 + 1e-12):
+        idx = np.zeros(len(v), dtype=int)
+        levels = 1
+    else:
+        levels = int(min(FIELD_LEVELS, len(np.unique(np.round(v, 12)))))
+        if lo > 0:
+            edges = np.geomspace(lo, hi, levels + 1)
+        else:
+            edges = np.linspace(lo, hi, levels + 1)
+        idx = np.clip(np.searchsorted(edges, v, side="right") - 1, 0, levels - 1)
+    regs, mats = [], {}
+    for b in range(levels):
+        sel = idx == b
+        if not sel.any():
+            continue
+        name = f"{f.id}-{b + 1}"
+        mats[name] = {**props, prop: float(v[sel].mean())}
+        # the level's cells, row by row, merged into polygons on cell boundaries
+        rr, cc = rows[sel], cols[sel]
+        boxes = []
+        order = np.lexsort((cc, rr))
+        rr, cc = rr[order], cc[order]
+        start = 0
+        for i in range(1, len(rr) + 1):
+            if i == len(rr) or rr[i] != rr[i - 1] or cc[i] != cc[i - 1] + 1:
+                boxes.append(_box(cc[start], rr[start], cc[i - 1] + 1, rr[start] + 1))
+                start = i
+        merged = unary_union(boxes)
+        for k, poly in enumerate(getattr(merged, "geoms", [merged])):
+            poly = orient(poly, 1.0)
+            pts = [(float(a), float(c)) for a, c in poly.exterior.coords[:-1]]
+            holes = [[(float(a), float(c)) for a, c in h.coords[:-1]] for h in poly.interiors]
+            regs.append(Region(id=f"{reg.id}-{b + 1}-{k + 1}", material=name, shape="polygon",
+                               points=pts, holes=holes or None))
+    return regs, mats, {"prop": prop, "min": lo, "max": hi, "levels": len(mats),
+                        "cells": int(len(v))}
 
 
 def _region(ev: Evaluator, f: Feature, shp, grid_box, rid, material, dx, tol, nx, ny):
@@ -839,8 +945,18 @@ def apply(spec: CaseSpec, geom: Geometry, dx: float | None = None,
     if res.domain is not None:
         new.domain = res.domain
         new.regions = res.regions
+        # a field's levels are materials of its own, made again on every evaluation
+        field_ids = {f.id for f in geom.features}
+        for name in list(new.materials):
+            fid, _, k = name.rpartition("-")
+            if fid in field_ids and k.isdigit():
+                del new.materials[name]
         for m, props in res.materials.items():
-            new.materials.setdefault(m, props)
+            fid, _, k = m.rpartition("-")
+            if fid in field_ids and k.isdigit():
+                new.materials[m] = props
+            else:
+                new.materials.setdefault(m, props)
     return new, res
 
 
