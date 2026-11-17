@@ -11,3 +11,8 @@ __pycache__/
 # the trained weights, the stored truth and the registered evaluation's record.
 out/*
 !out/learned-case/
+
+# The studio's Ranade font, which the self-test downloads from Fontshare: its
+# licence (ITF Free Font License, section 02) forbids distributing it through a
+# repository, so it stays on the machine it was downloaded to.
+atlas/studio/static/fonts/ranade/

@@ -810,3 +810,8 @@ out/chartop/box/payload.tar.gz
 # wiki/summaries/ should cite its source's URL or arXiv id (four did not yet).
 /raw/
 /new/
+
+# The studio's Ranade font (ITF Free Font License, Fontshare): its section 02 forbids
+# distributing the font through a repository or a public server, so it is never
+# committed. The installer fetches it from Fontshare (atlas/studio/fonts.py).
+atlas/studio/static/fonts/ranade/

@@ -1062,3 +1062,17 @@ A planning chat for one integrated Atlas app: geometry, physics, pieces and expe
 The plan has seven phases, P0–P6, each with a check in the real page. Licences to confirm before anything is vendored: planegcs, Paper.js, Ranade, and the repository's own (it has no LICENSE file).
 
 **Changed:** [[integrated-ui-plan]] (new) · [[index]].
+
+## [2026-11-16] build | integrated UI, phase P0: the shell
+
+The studio's shell is built in `atlas/studio/`: a FastAPI server, one plain JavaScript page over a WebSocket, the header with its five tabs, the status chip and its one-click fixes, Run, the Case menu, and light and dark themes that switch without a reload. Every shorthand explains itself on hover. Every edit is a message, validated as a whole case; a run's price reaches the page as a ratio only.
+
+**Licences, the owner's answers:**
+- Paper.js 0.12.18 (MIT), planegcs 1.3.0 (LGPL-2.1, not MulanPSL) and the JetBrains Mono and Instrument Sans fonts (OFL) are vendored unmodified, each pinned by sha256 with its licence beside it, listed in `THIRD-PARTY-NOTICES.md`.
+- **Ranade is never committed.** Fontshare marks it "Closed Source / ITF Free Font License", whose §02 forbids distribution through a repository. The installer fetches it from Fontshare, whose API served the same bytes as the owner's copies; without it the page uses Instrument Sans.
+- Atlas gets no LICENSE yet.
+- The owner chose to build a general conformal chart (P4).
+
+**Checked:** 44 tests (`tests/test_studio_shell.py`), among them every one of the 27 examples opened and saved bit for bit, and a run over the socket whose cards hold no raw seconds. The installer's self-test now starts the studio's own server and runs a case over its WebSocket. In the page: the GET in the server log, zero console errors, the theme switched live, the Case menu inside the window at 1090 px.
+
+**Changed:** [[integrated-ui-plan]] (status line).

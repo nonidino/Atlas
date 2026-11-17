@@ -38,7 +38,12 @@ asserts the solver was loaded from here.
      it names is fetched from the same server, and its document is pulled over
      the page's WebSocket with Bokeh's own client.  A self-test that drove only
      the engine once passed on a bundle whose page could never receive a frame
-     (PoC 3, W251), so the page is opened here, not assumed.
+     (PoC 3, W251), so the page is opened here, not assumed;
+  6. **the studio** (the integrated UI, `atlas/studio`): its vendored files against
+     their pinned sha256, Ranade fetched from Fontshare when the network allows
+     (optional: the page falls back to Instrument Sans), its own server started,
+     its page and every file the page and its modules name fetched, and a case
+     opened, edited and run for one step over the page's own WebSocket.
 
 Nothing is compared with a stored number: the point is that the answers are
 produced on this machine.  Exit 0: all of it.  Exit 3: all of it, and an
@@ -70,6 +75,10 @@ REQUIRED = [
     ("bokeh", "the plots, and the server the page runs on"),
     ("panel", "the page"),
     ("tornado", "the server, and the page's WebSocket"),
+    ("fastapi", "the studio's server"),
+    ("uvicorn", "the studio's server process"),
+    ("websockets", "the studio page's WebSocket"),
+    ("shapely", "the studio's geometry: each region's cells"),
 ]
 
 #: Installed by the launchers when they can be.  Without them every other part
@@ -453,6 +462,144 @@ def _page() -> bool:
     return ok
 
 
+def _studio() -> bool:
+    """The studio (atlas/studio, the integrated UI): its vendored files against their
+    pinned hashes, then its own server on a free port, its page fetched with every
+    file the page and its modules name, and a case opened, edited and run for a step
+    over the page's own WebSocket, with the run's cards received.  A page that loads
+    and never gets a frame is the failure this exists to catch (PoC 3, W251)."""
+    import json
+    import re
+    import socket
+    import subprocess
+    import time
+    import urllib.request
+
+    print("\n  the studio  (its own server, its page, and a case run over its WebSocket)")
+    try:
+        from atlas.studio import fonts, vendor
+    except Exception as exc:
+        print("    [!]  the studio does not import: %s" % _short(exc))
+        return False
+    bad = vendor.check()
+    if bad:
+        print("    [!]  vendored files changed: %s" % "; ".join(bad[:3]))
+        return False
+    print("    ok   %d vendored files match their pinned sha256" % len(vendor.files()))
+    fonts.fetch_ranade(log=print)                    # optional: Instrument Sans otherwise
+    direct = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    port = _free_port(8060)
+    base = "http://127.0.0.1:%d" % port
+    logdir = os.path.join(HERE, "out", "workbench")
+    os.makedirs(logdir, exist_ok=True)
+    logpath = os.path.join(logdir, "selftest-studio.log")
+    log = open(logpath, "w", encoding="utf-8", errors="replace")
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    proc = subprocess.Popen([sys.executable, "-m", "atlas.studio", "--port", str(port)],
+                            cwd=HERE, env=env, stdout=log, stderr=subprocess.STDOUT)
+    ok = True
+    try:
+        t0 = time.perf_counter()
+        while True:
+            if proc.poll() is not None:
+                print("    [!]  the studio's server exited (code %s) before it listened"
+                      % proc.returncode)
+                return False
+            try:
+                socket.create_connection(("127.0.0.1", port), timeout=1).close()
+                break
+            except OSError:
+                if time.perf_counter() - t0 > 120:
+                    print("    [!]  the studio's server did not listen within two minutes")
+                    return False
+                time.sleep(0.3)
+        html = direct.open(base + "/", timeout=60).read().decode("utf-8", "replace")
+        if "<title>Atlas</title>" not in html:
+            print("    [!]  %s/ answered, but not with the studio's page" % base)
+            return False
+        refs = (re.findall(r'<script[^>]*\ssrc="([^"]+)"', html)
+                + re.findall(r'<link[^>]*\shref="([^"]+)"', html))
+        outside = [u for u in refs if re.match(r"([a-z]+:)?//", u)]
+        todo = [u.split("?")[0] for u in refs if u not in outside and not u.startswith("data:")]
+        seen, failed = set(), []
+        while todo:
+            u = todo.pop()
+            if u in seen:
+                continue
+            seen.add(u)
+            try:
+                with direct.open(base + u, timeout=60) as r:
+                    body = r.read()
+                    kind = r.headers.get("Content-Type", "")
+                if not body or (u.endswith(".js") and "javascript" not in kind):
+                    failed.append(u)
+                    continue
+            except Exception:
+                failed.append(u)
+                continue
+            if u.startswith("/static/js/"):
+                folder = u.rsplit("/", 1)[0]
+                for imp in re.findall(r"""(?:import|export)\s[^'"]*?from\s+['"](\.[^'"]+)['"]""",
+                                      body.decode("utf-8", "replace")):
+                    todo.append(os.path.normpath(folder + "/" + imp).replace("\\", "/"))
+        if failed or outside:
+            print("    [!]  the page's files: %d did not load (%s); %d named on the network"
+                  % (len(failed), ", ".join(failed[:3]), len(outside)))
+            ok = False
+        else:
+            print("    ok   the page and all %d files it and its modules name, from this "
+                  "machine" % len(seen))
+        from websockets.sync.client import connect
+        t1 = time.perf_counter()
+        with connect("ws://127.0.0.1:%d/ws" % port, open_timeout=60,
+                     max_size=None, proxy=None) as ws:
+            ws.send(json.dumps({"type": "hello", "session": None}))
+            got = {}
+
+            def until(kind, limit=120.0):
+                end = time.perf_counter() + limit
+                while time.perf_counter() < end:
+                    m = json.loads(ws.recv(timeout=max(0.1, end - time.perf_counter())))
+                    got[m.get("type")] = m
+                    if m.get("type") == kind and (kind != "run" or m.get("status") in
+                                                  ("done", "failed", "stopped")):
+                        return m
+                raise TimeoutError("no %s message within %.0f s" % (kind, limit))
+            until("state")
+            for mid, msg in enumerate((
+                    {"type": "case.example", "key": "wall-2"},
+                    {"type": "edit.apply", "label": "one step",
+                     "ops": [{"op": "set", "path": ["run", "steps"], "value": 1}]},
+                    {"type": "run.start", "arms": ["serial", "full"]}), 1):
+                ws.send(json.dumps(dict(msg, id=mid)))
+                r = until("reply")
+                if not r.get("ok"):
+                    raise RuntimeError("%s refused: %s" % (msg["type"], r.get("error")))
+            run = until("run", 300.0)
+        if run.get("status") != "done" or not (run.get("cards") or {}).get("checks"):
+            print("    [!]  the run over the socket ended %s: %s"
+                  % (run.get("status"), run.get("error")))
+            ok = False
+        else:
+            c = run["cards"]
+            print("    ok   over the page's WebSocket: a case opened, edited and run, its "
+                  "cards back (%d of %d checks passed, %.1f s)"
+                  % (c["passed"], len(c["checks"]), time.perf_counter() - t1))
+    except Exception as exc:
+        print("    [!]  %s" % _short(exc))
+        ok = False
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(15)
+        except Exception:
+            proc.kill()
+        log.close()
+        if not ok:
+            print("    the studio server's own output is in %s" % os.path.relpath(logpath, HERE))
+    return ok
+
+
 def check() -> int:
     import platform
     import time
@@ -470,6 +617,7 @@ def check() -> int:
     types_ok = _types(threads)
     learned = _learned(threads)
     page_ok = _page()
+    page_ok = _studio() and page_ok
     took = time.perf_counter() - t0
     if not (types_ok and page_ok) or learned == "broken":
         print("\n  BROKEN -- see the [!] lines above. (%.0f s)" % took)

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 4h7v7H4z' fill='%238E72EE'/%3E%3Cpath d='M13 4h7v7h-7z' fill='none' stroke='%238E72EE' stroke-width='1.6'/%3E%3Cpath d='M4 13h7v7H4z' fill='none' stroke='%2300D7D2' stroke-width='1.6'/%3E%3Cpath d='M13 13h7v7h-7z' fill='%2300D7D2'/%3E%3C/svg%3E">
+<script>
+  // the theme before the first paint: the person's choice, else the system's
+  try { var t = localStorage.getItem('atlas.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<link rel="stylesheet" href="/fonts.css?v=__V__">
+<link rel="stylesheet" href="/static/css/tokens.css?v=__V__">
+<link rel="stylesheet" href="/static/css/app.css?v=__V__">
+<script src="/static/vendor/paper/paper-core.min.js?v=__V__"></script>
+<script type="module" src="/static/js/main.js?v=__V__"></script>
+</head>
+<body>
+<div id="app">
+  <header class="hdr" id="hdr">
+    <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4z" fill="#8E72EE"></path><path d="M13 4h7v7h-7z" fill="none" stroke="#8E72EE" stroke-width="1.6"></path><path d="M4 13h7v7H4z" fill="none" stroke="#00D7D2" stroke-width="1.6"></path><path d="M13 13h7v7h-7z" fill="#00D7D2"></path></svg>Atlas</span>
+    <nav class="tabs" aria-label="Workflow" role="tablist">
+      <button class="tab" role="tab" data-tab="geometry" data-tip="Draw the domain, its holes and its material regions" aria-selected="true">1 Geometry</button>
+      <button class="tab" role="tab" data-tab="physics" data-tip="Choose the equation, its regime and its boundary conditions">2 Physics</button>
+      <button class="tab" role="tab" data-tab="pieces" data-tip="Cut the domain into pieces and give each an expert">3 Pieces</button>
+      <button class="tab" role="tab" data-tab="run" data-tip="Run the case; see the fields, the price and the guarantees">4 Run</button>
+      <button class="tab" role="tab" data-tab="records" data-tip="The chart operator's registered evaluations, read-only">5 Records</button>
+    </nav>
+    <span class="spacer"></span>
+    <span class="filelabel" id="filelabel" data-tip=""></span>
+    <button class="chip" id="chip" data-tip="Everything needed to run is set">Ready</button>
+    <button class="btn-run" id="run" data-tip="Run the case · Ctrl+Enter">Run</button>
+    <button class="hbtn" id="theme" aria-label="Switch theme" data-tip="Light or dark theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg></button>
+    <button class="hbtn" id="casemenu" aria-haspopup="menu" data-tip="New, examples, open, save, import, export">Case</button>
+  </header>
+  <main id="views">
+    <section class="view" data-view="geometry" aria-label="Geometry"></section>
+    <section class="view" data-view="physics" aria-label="Physics" hidden></section>
+    <section class="view" data-view="pieces" aria-label="Pieces" hidden></section>
+    <section class="view" data-view="run" aria-label="Run" hidden></section>
+    <section class="view" data-view="records" aria-label="Records" hidden></section>
+  </main>
+</div>
+<div id="tip" role="tooltip"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+</body>
+</html>

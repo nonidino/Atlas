@@ -29,6 +29,17 @@ pydantic==2.12.5
 panel==1.5.2
 bokeh==3.6.0
 
+# The studio (atlas/studio, the integrated UI, 2026-11-16): FastAPI and uvicorn
+# serve one plain JavaScript page, and its WebSocket needs a WebSocket library
+# of its own (uvicorn has none: PoC 3's page loaded and never got a frame).
+# Shapely turns the drawn geometry into each region's cells.
+fastapi==0.115.5
+uvicorn==0.32.1
+websockets==15.0.1
+shapely==2.1.0
+
 # only needed for `python -m pytest tests`: the version the workbench's tests
-# run under where they were written
+# run under where they were written, and the HTTP client FastAPI's TestClient
+# drives the studio's page with
 pytest==7.4.4
+httpx==0.28.1

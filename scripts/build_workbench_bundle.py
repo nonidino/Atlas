@@ -69,15 +69,18 @@ EXCLUDE_ATLAS = {
     "demo_frontwing": "PoC 2's dashboard; nothing outside it imports it",
     "demo_racelab": "PoC 3's dashboard and its own bundle templates",
 }
+#: ``ranade``: the studio's font, under the ITF Free Font License, whose section 02
+#: forbids distributing it through a repository; the installer fetches it from
+#: Fontshare on the machine it runs on (`atlas/studio/fonts.py`), never from here
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".pytest_cache", "bundle", ".git",
-                                "*.ipynb_checkpoints")
+                                "*.ipynb_checkpoints", "ranade")
 
 #: The build repository's one package the workbench loads, and the files its
 #: loader actually opens -- asserted present rather than trusted to a copytree.
 VENDOR_PACKAGE = ("src", "atlas", "cases", "windfarm")
 VENDOR_PROBES = ("__init__.py", "reference.py", "adapters.py", "backend.py", "disk.py")
 
-TEST_PATTERN = re.compile(r"^test_workbench_.*\.py$")
+TEST_PATTERN = re.compile(r"^test_(workbench|studio)_.*\.py$")
 TEST_HELPERS = ("workbench_ui.py",)
 
 #: template file -> its path in the bundle.  constraints.txt is optional until it
@@ -101,7 +104,16 @@ OPTIONAL_TEMPLATES = ("constraints.txt",)
 BINARY_ALLOWED: tuple = (
     re.compile(r"^out/learned-case/window-net\.pt$"),
     re.compile(r"^out/learned-case/truth-farm-12\.npz$"),
-)
+) + tuple(
+    # the studio's vendored WebAssembly and fonts, each pinned by sha256 in
+    # atlas/studio/vendor.py (the owner approved each download on 2026-11-16)
+    re.compile("^" + re.escape("atlas/studio/static/" + _p) + "$")
+    for _p in (
+        "vendor/planegcs/dist/planegcs_dist/planegcs.wasm",
+        *("fonts/jetbrains-mono/jetbrains-mono-%s-%d-normal.woff2" % (s, w)
+          for s in ("latin", "latin-ext", "greek") for w in (400, 600)),
+        *("fonts/instrument-sans/instrument-sans-latin-%d-normal.woff2" % w
+          for w in (400, 500, 600, 700))))
 #: What of out/ the bundle carries: the learned case's files the page reads, by
 #: name (``learned_case``: the weights, the truth, the registered evaluation's
 #: record), and the records that say where each came from.  Nothing else of out/.
@@ -239,9 +251,12 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
             shutil.copyfile(s, os.path.join(out, "atlas", name))
     for probe in ("atlas/__init__.py", "atlas/workbench/__main__.py",
                   "atlas/workbench/app.py", "atlas/cases/window_ns.py",
-                  "atlas/cases/wake_array.py"):
+                  "atlas/cases/wake_array.py", "atlas/studio/__main__.py",
+                  "atlas/studio/static/index.html"):
         if not os.path.isfile(os.path.join(out, *probe.split("/"))):
             raise SystemExit("the bundle is missing %s" % probe)
+    if os.path.isdir(os.path.join(out, "atlas", "studio", "static", "fonts", "ranade")):
+        raise SystemExit("Ranade reached the bundle: its licence forbids it")
 
     # 2. the build repository's one package, where its loader looks --------------
     src = os.path.join(build_repo, *VENDOR_PACKAGE)

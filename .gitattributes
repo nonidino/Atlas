@@ -1,5 +1,10 @@
 # The workbench's launchers at the root of this branch. run.sh must keep LF
 # endings on every checkout (a CR in its shebang stops it on a Mac), and
-# run.cmd wants CRLF on Windows. Scoped to these two files only.
+# run.cmd wants CRLF on Windows. These two rules touch those two files only.
 /run.sh text eol=lf
 /run.cmd text eol=crlf
+
+# The studio's vendored libraries and fonts are pinned by sha256 (atlas/studio/vendor.py):
+# a checkout must never convert their line endings, or every hash breaks.
+atlas/studio/static/vendor/** -text
+atlas/studio/static/fonts/** -text

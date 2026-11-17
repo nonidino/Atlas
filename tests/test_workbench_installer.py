@@ -201,10 +201,12 @@ def _third_party_imports(paths: list[str]) -> dict[str, set[str]]:
 def test_every_package_the_workbench_imports_is_pinned_or_optional():
     """At ANY indentation: a function-level import is a dependency the module-level
     imports cannot see."""
-    wb = os.path.join(HERE, "atlas", "workbench")
-    paths = [os.path.join(dp, f) for dp, dn, fn in os.walk(wb)
-             if "bundle" not in dp.split(os.sep) and "__pycache__" not in dp
-             for f in fn if f.endswith(".py")]
+    paths = []
+    for pkg in ("workbench", "studio"):           # the studio since 2026-11-16
+        top = os.path.join(HERE, "atlas", pkg)
+        paths += [os.path.join(dp, f) for dp, dn, fn in os.walk(top)
+                  if "bundle" not in dp.split(os.sep) and "__pycache__" not in dp
+                  for f in fn if f.endswith(".py")]
     paths += [os.path.join(HERE, "atlas", f) for f in os.listdir(os.path.join(HERE, "atlas"))
               if f.endswith(".py")]
     paths += [os.path.join(HERE, "atlas", "cases", f + ".py")
@@ -232,7 +234,10 @@ def test_the_self_test_fetches_its_own_page_directly_not_through_a_proxy():
     the launcher behind a closed proxy and is the behavioural check."""
     text = _text("run.py")
     assert "urllib.request.urlopen(" not in text
-    assert "ProxyHandler({})" in text and text.count("direct.open(") == 2
+    # two fetches for the workbench's page, two for the studio's (2026-11-16); and the
+    # studio's WebSocket client is told to use no proxy either
+    assert "ProxyHandler({})" in text and text.count("direct.open(") == 4
+    assert "proxy=None" in text
 
 
 def test_the_self_test_marches_one_example_of_every_type():
@@ -254,7 +259,8 @@ def test_the_builder_carries_every_workbench_test_and_the_scripts_they_import():
     W = _builder()
     tests = W.tests_to_carry()
     upstream = sorted(f for f in os.listdir(os.path.join(HERE, "tests"))
-                      if re.match(r"^test_workbench_.*\.py$", f))
+                      if re.match(r"^test_(workbench|studio)_.*\.py$", f))
+    assert any(t.startswith("test_studio_") for t in upstream)
     assert tests == upstream + ["workbench_ui.py"]
     scripts = W.script_closure([os.path.join(HERE, "tests", t) for t in tests])
     assert "w346_rotor_count_speed.py" in scripts      # test_workbench_runner's control

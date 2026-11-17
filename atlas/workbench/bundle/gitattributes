@@ -6,3 +6,8 @@
 # and the Windows launcher wants CRLF for the same kind of reason
 *.cmd text eol=crlf
 *.bat text eol=crlf
+
+# The studio's vendored libraries and fonts are pinned by sha256 (atlas/studio/vendor.py):
+# a checkout must never convert their line endings, or every hash breaks.
+atlas/studio/static/vendor/** -text
+atlas/studio/static/fonts/** -text

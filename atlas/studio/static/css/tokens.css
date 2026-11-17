@@ -1,0 +1,122 @@
+/* The studio's two themes, as tokens.  The palette is the owner's (plan section 0):
+   #E4E3EC ground, #191927 text and header, #8E72EE actions and selection,
+   #00D7D2 ready, guides and the conductor material.  The dark values are the
+   mockup canvas's own (board "Pieces, dark theme").  Switching sets
+   data-theme on <html>; nothing reloads. */
+
+:root {
+  color-scheme: light;
+  --ground: #E4E3EC;
+  --panel: #F7F6FB;
+  --surface: #FFFFFF;
+  --input: #FFFFFF;
+  --canvas: #FFFFFF;
+  --canvas-grid: #EEEDF4;
+  --line: #CFCCDD;
+  --line-soft: #E4E2EC;
+  --text: #191927;
+  --muted: #5E5C72;
+  --dim: #A9A6C0;
+  --seg: #E4E3EC;
+  --seg-on: #191927;
+  --seg-on-text: #F7F6FB;
+  --accent: #8E72EE;
+  --accent-ink: #5B3FC4;
+  --accent-deep: #3B2690;
+  --accent-soft: #E9E3FD;
+  --accent-wash: #F4F0FF;
+  --on-accent: #191927;
+  --ready: #00D7D2;
+  --ready-ink: #00706D;
+  --ready-deep: #00504E;
+  --ready-soft: #CCF7F5;
+  --ready-line: #00A9A5;
+  --warn: #F5A524;
+  --warn-ink: #7A4A00;
+  --warn-soft: #FDEBC8;
+  --err: #E5484D;
+  --err-ink: #9B1C20;
+  --err-soft: #FBDADB;
+  --err-line: #F3B5B7;
+  --header: #191927;
+  --header-text: #E4E3EC;
+  --header-muted: #A9A6C0;
+  --header-line: #3A3A52;
+  --tip-bg: #191927;
+  --tip-text: #F2F1F7;
+  --tip-line: #3A3A52;
+  --shadow: 0 8px 22px rgba(25, 25, 39, .28);
+  --shape-fill: #E9E3FD;
+  --shape-stroke: #191927;
+  --hole-fill: #FFFFFF;
+  --seam: #4A4860;
+  --sel: #191927;
+  /* experts (the Pieces board): classical, TL0, TL, H2r */
+  --ex-c: #D8D6E3;
+  --ex-t0: #BDF2F0;
+  --ex-tl: #D6CBFA;
+  --ex-r: #FBE3B8;
+  --font: 'Ranade', 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Consolas, 'Cascadia Mono', monospace;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #191927;
+  --panel: #232336;
+  --surface: #232336;
+  --input: #2B2B42;
+  --canvas: #1E1E2F;
+  --canvas-grid: #262638;
+  --line: #3A3A52;
+  --line-soft: #2E2E44;
+  --text: #E4E3EC;
+  --muted: #A9A6C0;
+  --dim: #5E5C72;
+  --seg: #2B2B42;
+  --seg-on: #8E72EE;
+  --seg-on-text: #191927;
+  --accent-ink: #B9A6F6;
+  --accent-deep: #D6CBFA;
+  --accent-soft: #3A2F66;
+  --accent-wash: #2A2445;
+  --ready-ink: #00D7D2;
+  --ready-deep: #7FEBE8;
+  --ready-soft: #10403F;
+  --warn-ink: #F7C66B;
+  --warn-soft: #43361C;
+  --err-ink: #FBDADB;
+  --err-soft: #4A1F25;
+  --err-line: #7A3036;
+  --header: #12121D;
+  --header-line: #3A3A52;
+  --tip-bg: #0F0F18;
+  --tip-line: #3A3A52;
+  --shadow: 0 8px 22px rgba(0, 0, 0, .5);
+  --shape-fill: #2E2852;
+  --shape-stroke: #E4E3EC;
+  --hole-fill: #1E1E2F;
+  --seam: #A9A6C0;
+  --sel: #00D7D2;
+  --ex-c: #8D8AA3;
+  --ex-t0: #00B3AF;
+  --ex-tl: #8E72EE;
+  --ex-r: #E0A85A;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+    --ground: #191927; --panel: #232336; --surface: #232336; --input: #2B2B42;
+    --canvas: #1E1E2F; --canvas-grid: #262638; --line: #3A3A52; --line-soft: #2E2E44;
+    --text: #E4E3EC; --muted: #A9A6C0; --dim: #5E5C72; --seg: #2B2B42;
+    --seg-on: #8E72EE; --seg-on-text: #191927; --accent-ink: #B9A6F6;
+    --accent-deep: #D6CBFA; --accent-soft: #3A2F66; --accent-wash: #2A2445;
+    --ready-ink: #00D7D2; --ready-deep: #7FEBE8; --ready-soft: #10403F;
+    --warn-ink: #F7C66B; --warn-soft: #43361C; --err-ink: #FBDADB; --err-soft: #4A1F25;
+    --err-line: #7A3036; --header: #12121D; --tip-bg: #0F0F18;
+    --shadow: 0 8px 22px rgba(0, 0, 0, .5); --shape-fill: #2E2852;
+    --shape-stroke: #E4E3EC; --hole-fill: #1E1E2F; --seam: #A9A6C0; --sel: #00D7D2;
+    --ex-c: #8D8AA3; --ex-t0: #00B3AF; --ex-tl: #8E72EE; --ex-r: #E0A85A;
+  }
+}
