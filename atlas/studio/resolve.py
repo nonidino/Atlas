@@ -32,7 +32,7 @@ BINDABLE = {
     "scatter": ("x", "y", "w", "h"),
 }
 SCATTER_DEFAULTS = {"count": 8, "rmin": 0.02, "rmax": 0.05, "gap": 0.01, "seed": 1,
-                    "shape": "circles"}
+                    "shape": "circles", "aspect": 8.0}
 #: tries per inclusion before the scatter gives up on it
 TRIES = 400
 
@@ -41,28 +41,40 @@ class ResolveError(ValueError):
     """A parameter, binding or generator that cannot be resolved; the message says why."""
 
 
-def scatter_items(f: Feature) -> list[tuple[float, float, float]]:
-    """The inclusions a scatter's numbers place: (cx, cy, r) in its box, a gap apart."""
+def scatter_items(f: Feature) -> list[tuple[float, ...]]:
+    """The inclusions a scatter's numbers place in its box, a gap apart: circles as
+    (cx, cy, r); channels as (cx, cy, r, angle), a strip of length 2r and width
+    2r / aspect.  ``shape`` is circles, channels or both (each inclusion drawn as one
+    or the other, half and half).  A channel keeps its gap from the circle around it.
+    The draws come from one PCG64 stream in a fixed order, so a seed is a layout."""
     p = {**SCATTER_DEFAULTS, **f.params}
     try:
         count = int(p["count"])
         seed = int(p["seed"])
         rmin, rmax, gap = float(p["rmin"]), float(p["rmax"]), float(p["gap"])
+        aspect = float(p.get("aspect", 8.0))
     except (TypeError, ValueError):
         raise ResolveError(f"{f.label}: count, seed, rmin, rmax and gap are numbers") from None
-    if not (0 < rmin <= rmax) or gap < 0 or not 0 <= count <= 500:
-        raise ResolveError(f"{f.label}: 0 < rmin <= rmax, gap >= 0, at most 500 inclusions")
+    shape = str(p.get("shape", "circles"))
+    if shape not in ("circles", "channels", "both"):
+        raise ResolveError(f"{f.label}: a scatter's shape is circles, channels or both")
+    if not (0 < rmin <= rmax) or gap < 0 or not 0 <= count <= 500 or aspect < 1:
+        raise ResolveError(f"{f.label}: 0 < rmin <= rmax, gap >= 0, aspect >= 1, at most "
+                           f"500 inclusions")
     rng = np.random.default_rng(seed)
-    placed: list[tuple[float, float, float]] = []
+    placed: list[tuple[float, ...]] = []
     for _ in range(count):
         for _t in range(TRIES):
+            strip = shape == "channels" or (shape == "both" and rng.random() < 0.5)
             r = float(rng.uniform(rmin, rmax))
             if 2 * r >= min(f.w, f.h):
                 continue
             x = float(rng.uniform(f.x + r, f.x + f.w - r))
             y = float(rng.uniform(f.y + r, f.y + f.h - r))
-            if all(math.hypot(x - a, y - b) >= r + c + gap for a, b, c in placed):
-                placed.append((round(x, 12), round(y, 12), round(r, 12)))
+            a = float(rng.uniform(0.0, math.pi)) if strip else None
+            if all(math.hypot(x - q[0], y - q[1]) >= r + q[2] + gap for q in placed):
+                item = (round(x, 12), round(y, 12), round(r, 12))
+                placed.append(item + ((round(a, 12),) if strip else ()))
                 break
     return placed
 

@@ -73,6 +73,64 @@ function pathItem(f) {
   return path;
 }
 
+/** a channel: its centre line offset half its width each way, ends straight
+ * (geometry_eval.channel_sides) */
+function channelItem(f) {
+  const centre = pathItem({ ...f, closed: false });
+  const L = centre.length;
+  if (!(L > 0) || !(f.w > 0)) return new paper.Path({ insert: false });
+  const n = Math.max(2, Math.min(400, Math.ceil(L / (f.w / 4)) + 1));
+  const left = [], right = [];
+  for (let i = 0; i < n; i++) {
+    const o = Math.min(L, (L * i) / (n - 1));
+    const p = centre.getPointAt(o);
+    const t = centre.getTangentAt(o);
+    // Paper's y points down: the world's left normal is (t.y, -t.x) in Paper terms
+    const nrm = new paper.Point(t.y, -t.x).multiply(f.w / 2);
+    left.push(p.add(nrm)); right.push(p.subtract(nrm));
+  }
+  return new paper.Path({ segments: [...right, ...left.reverse()], closed: true, insert: false });
+}
+
+/** a scatter's inclusions: circles (cx, cy, r) and strips (cx, cy, r, angle) */
+function scatterItem(f) {
+  const aspect = Number((f.params || {}).aspect ?? 8);
+  const kids = (f.items || []).map((it) => {
+    if (it.length >= 4) {
+      const [cx, cy, r, a] = it;
+      const u = [Math.cos(a) * r, Math.sin(a) * r];
+      const v = [-Math.sin(a) * r / Math.max(aspect, 1), Math.cos(a) * r / Math.max(aspect, 1)];
+      return new paper.Path({ segments: [P(cx - u[0] - v[0], cy - u[1] - v[1]), P(cx + u[0] - v[0], cy + u[1] - v[1]),
+        P(cx + u[0] + v[0], cy + u[1] + v[1]), P(cx - u[0] + v[0], cy - u[1] + v[1])], closed: true, insert: false });
+    }
+    return new paper.Path.Circle({ center: P(it[0], it[1]), radius: it[2], insert: false });
+  });
+  return new paper.CompoundPath({ children: kids, insert: false });
+}
+
+/** where a pattern or a mirror puts its copies: Paper matrices (geometry_eval.placements) */
+export function placementsOf(f) {
+  const p = f.params || {};
+  const M = () => new paper.Matrix();
+  if (f.kind === 'mirror') {
+    const at = Number(p.at || 0);
+    return (p.axis || 'x') === 'x' ? [M(), M().translate(2 * at, 0).scale(-1, 1)] : [M(), M().translate(0, -2 * at).scale(1, -1)];
+  }
+  const n = Math.max(1, Math.min(200, Math.round(Number(p.count ?? 3))));
+  const mode = p.mode || 'line';
+  if (mode === 'grid') {
+    const nx = Math.round(Number(p.nx ?? n)), ny = Math.round(Number(p.ny ?? 1));
+    const out = [];
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) out.push(M().translate(i * Number(p.sx || 0), -j * Number(p.sy || 0)));
+    return out;
+  }
+  if (mode === 'circle') {
+    const step = Number(p.angle ?? 360 / n);
+    return Array.from({ length: n }, (_, k) => M().rotate(-k * step, new paper.Point(Number(p.cx || 0), -Number(p.cy || 0))));
+  }
+  return Array.from({ length: n }, (_, k) => M().translate(k * Number(p.dx || 0), -k * Number(p.dy || 0)));
+}
+
 /** One feature as a Paper item, in Paper coordinates; combines through their inputs. */
 export function itemOf(f, byId, depth = 0) {
   if (!f || depth > 32) return new paper.Path({ insert: false });
@@ -84,6 +142,18 @@ export function itemOf(f, byId, depth = 0) {
     return new paper.Path.Ellipse({ center: [f.cx, -f.cy], radius: [f.rx, f.ry], insert: false });
   }
   if (f.kind === 'path') return pathItem(f);
+  if (f.kind === 'channel') return channelItem(f);
+  if (f.kind === 'scatter') return scatterItem(f);
+  if (f.kind === 'pattern' || f.kind === 'mirror') {
+    const base = itemOf(byId[(f.inputs || [])[0]], byId, depth + 1);
+    let g = null;
+    for (const m of placementsOf(f)) {
+      const c = base.clone({ insert: false });
+      c.transform(m);
+      g = g ? g.unite(c, { insert: false }) : c;
+    }
+    return g || new paper.Path({ insert: false });
+  }
   if (f.kind === 'combine') {
     const parts = (f.inputs || []).map((i) => itemOf(byId[i], byId, depth + 1));
     let g = parts[0];
@@ -104,7 +174,7 @@ export function byIdOf(geom) {
 
 export function consumed(geom) {
   const s = new Set();
-  for (const f of geom.features) if (f.kind === 'combine') for (const i of f.inputs) s.add(i);
+  for (const f of geom.features) if (['combine', 'pattern', 'mirror'].includes(f.kind)) for (const i of f.inputs) s.add(i);
   return s;
 }
 
@@ -141,6 +211,10 @@ export function describe(f, fmt) {
   if (f.kind === 'ellipse') return Math.abs(f.rx - f.ry) < 1e-12 ? `Ø ${fmt(2 * f.rx)}` : `${fmt(2 * f.rx)} × ${fmt(2 * f.ry)}`;
   if (f.kind === 'path') return `${f.points.length} pts`;
   if (f.kind === 'combine') return { union: '∪', subtract: '−', intersect: '∩' }[f.op] + ` ${f.inputs.length}`;
+  if (f.kind === 'channel') return `w ${fmt(f.w)}`;
+  if (f.kind === 'scatter') return `${(f.items || []).length} incl.`;
+  if (f.kind === 'pattern') return `× ${placementsOf(f).length}`;
+  if (f.kind === 'mirror') return `mirror ${(f.params || {}).axis === 'y' ? '↕' : '↔'}`;
   return '';
 }
 
@@ -150,6 +224,10 @@ export function translated(f, dx, dy) {
   g.x += dx; g.y += dy; g.cx += dx; g.cy += dy;
   g.points = (g.points || []).map(([x, y]) => [x + dx, y + dy]);
   g.handles = (g.handles || []).map((h) => (h ? [h[0] + dx, h[1] + dy, h[2] + dx, h[3] + dy] : null));
+  g.items = (g.items || []).map((it) => [it[0] + dx, it[1] + dy, ...it.slice(2)]);
+  const p = g.params || {};
+  if (g.kind === 'pattern' && p.mode === 'circle') { p.cx = Number(p.cx || 0) + dx; p.cy = Number(p.cy || 0) + dy; }
+  if (g.kind === 'mirror') p.at = Number(p.at || 0) + ((p.axis || 'x') === 'x' ? dx : dy);
   return g;
 }
 
@@ -165,5 +243,21 @@ export function nextId(geom) {
 export function blank(kind, id, role, extra = {}) {
   return Object.assign({ id, kind, role, name: '', material: null, hidden: false,
     x: 0, y: 0, w: 0, h: 0, r: 0, cx: 0, cy: 0, rx: 0, ry: 0,
-    points: [], edges: [], bulge: [], handles: [], closed: true, op: null, inputs: [], params: {} }, extra);
+    points: [], edges: [], bulge: [], handles: [], closed: true, op: null, inputs: [], params: {},
+    items: [], bind: {}, field: null }, extra);
+}
+
+/** a point of a feature by its handle key, in world units: a rectangle's corners c0..c3
+ * and edge middles e0..e3, an ellipse's centre c, a path's points p0, p1 ... */
+export function pointOf(f, key) {
+  if (!f) return null;
+  if (f.kind === 'rect') {
+    const { x, y, w, h } = f;
+    return { c0: [x, y], c1: [x + w, y], c2: [x + w, y + h], c3: [x, y + h],
+      e0: [x + w / 2, y], e1: [x + w, y + h / 2], e2: [x + w / 2, y + h], e3: [x, y + h / 2] }[key] || null;
+  }
+  if (f.kind === 'ellipse' && key === 'c') return [f.cx, f.cy];
+  const m = /^p(\d+)$/.exec(key);
+  if (m && f.points && f.points[+m[1]]) return f.points[+m[1]].slice();
+  return null;
 }

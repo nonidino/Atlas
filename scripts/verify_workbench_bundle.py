@@ -133,6 +133,8 @@ def identity(clone: str, build_repo: str, sc: dict) -> dict:
                 unmatched.append(path)
         elif path.split("/", 1)[0] in ("atlas", "tests", "scripts", "out") and path in up:
             tally(path.split("/", 1)[0], up[path][1] == blob, path)
+        elif path in getattr(W, "ROOT_FILES", ()) and path in up:
+            tally("root", up[path][1] == blob, path)     # the vault's own notices file
         elif path in GENERATED:
             continue
         else:

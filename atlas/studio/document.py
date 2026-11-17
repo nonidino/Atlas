@@ -104,8 +104,9 @@ class Feature(BaseModel):
     #: scatter (count, rmin, rmax, gap, seed, x, y, w, h), pattern (mode, count, dx, dy,
     #: cx, cy, angle, nx, ny), mirror (axis, at)
     params: dict[str, float | str] = Field(default_factory=dict)
-    #: a scatter's inclusions as the seed placed them: (cx, cy, r), written by the server
-    items: list[tuple[float, float, float]] = Field(default_factory=list)
+    #: a scatter's inclusions as the seed placed them, written by the server: a circle
+    #: (cx, cy, r), a channel strip (cx, cy, r, angle)
+    items: list[tuple[float, ...]] = Field(default_factory=list)
     #: P2: fields driven by formulas of the parameters, field -> formula ("w": "W")
     bind: dict[str, str] = Field(default_factory=dict)
     #: P2: a coefficient field over the region: {"kind": "formula", "prop": "k",
@@ -173,6 +174,9 @@ class Feature(BaseModel):
         elif self.kind == "scatter":
             if not (self.w > 0 and self.h > 0):
                 raise ValueError(f"{self.label}: a scatter needs its box (w, h above 0)")
+            if any(len(it) not in (3, 4) for it in self.items):
+                raise ValueError(f"{self.label}: an inclusion is (cx, cy, r) or a strip "
+                                 f"(cx, cy, r, angle)")
         if self.field is not None:
             if self.field.get("kind") not in ("formula", "image") or not self.field.get("prop"):
                 raise ValueError(f"{self.label}: a field is a formula or an image of a property")

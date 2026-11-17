@@ -1,0 +1,140 @@
+{
+ "at": "2026-11-17T14:11:40",
+ "platform": "windows-amd64",
+ "verifier_python": "3.12.7",
+ "note": "the p1b clone re-checked after the verifier learned the bundle's root notices file and to skip what git ignores",
+ "bundle": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench-bundle",
+ "clone": "C:\\Users\\Nauni\\atlas-verify-p1b",
+ "head": "9f255f485a5020e740ec699237b586890f46f7a6",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "files_in_branch": 244,
+ "deepest_path_in_branch": {
+  "path": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-ext-400-normal.woff2",
+  "chars": 82
+ },
+ "source_commits": {
+  "atlas": "ec21eccea4f7a8d2a14d5a511c7ea67c4f26ae2e",
+  "build_repo": "98df3506aedd6f3edf2733257451f3c94f74b987",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 243,
+  "different": [],
+  "not_from_either_repo": [],
+  "by_group": {
+   "launchers": [
+    9,
+    0
+   ],
+   "root": [
+    1,
+    0
+   ],
+   "atlas": [
+    194,
+    0
+   ],
+   "out": [
+    6,
+    0
+   ],
+   "scripts": [
+    3,
+    0
+   ],
+   "tests": [
+    18,
+    0
+   ],
+   "vendor": [
+    12,
+    0
+   ]
+  },
+  "workbench_tests_upstream": 17,
+  "workbench_tests_carried": 17,
+  "every_workbench_test_is_carried": true
+ },
+ "scan_neubernet": {
+  "named": [],
+  "uses": [],
+  "prose_mentions": 5
+ },
+ "scan_poseidon": {
+  "paths": [],
+  "prose_mentions": 215
+ },
+ "scan_data": {
+  "allowed": [
+   {
+    "file": "atlas/studio/static/fonts/instrument-sans/instrument-sans-latin-400-normal.woff2",
+    "bytes": 16860
+   },
+   {
+    "file": "atlas/studio/static/fonts/instrument-sans/instrument-sans-latin-500-normal.woff2",
+    "bytes": 17232
+   },
+   {
+    "file": "atlas/studio/static/fonts/instrument-sans/instrument-sans-latin-600-normal.woff2",
+    "bytes": 17408
+   },
+   {
+    "file": "atlas/studio/static/fonts/instrument-sans/instrument-sans-latin-700-normal.woff2",
+    "bytes": 17012
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-greek-400-normal.woff2",
+    "bytes": 4228
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-greek-600-normal.woff2",
+    "bytes": 4308
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-400-normal.woff2",
+    "bytes": 21168
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-600-normal.woff2",
+    "bytes": 21860
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-ext-400-normal.woff2",
+    "bytes": 7336
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-ext-600-normal.woff2",
+    "bytes": 7512
+   },
+   {
+    "file": "atlas/studio/static/vendor/planegcs/dist/planegcs_dist/planegcs.wasm",
+    "bytes": 484003
+   },
+   {
+    "file": "out/learned-case/truth-farm-12.npz",
+    "bytes": 2555956
+   },
+   {
+    "file": "out/learned-case/window-net.pt",
+    "bytes": 1413474
+   }
+  ],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "static_checks_pass": true,
+ "self_test_examples": [
+  "wake-array-3",
+  "fast-heat",
+  "plate-circuit",
+  "plume-2",
+  "fast-sound",
+  "plate-hole",
+  "bimetal-arc",
+  "cooled-block"
+ ],
+ "passes": true
+}

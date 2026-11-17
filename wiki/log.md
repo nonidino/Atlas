@@ -1088,3 +1088,21 @@ Case file 0.7 holds the geometry as a feature tree (rectangles, ellipses, pen pa
 **Open:** the Panel page's modules and their tests remain until those tests are rewritten against the studio's protocol. P2 was started (formula parser, parameters, pattern, mirror, channel, scatter) and is not finished.
 
 **Changed:** [[integrated-ui-plan]] (status line unchanged since P0).
+
+## [2026-11-17] build | integrated UI, phase P2: geometry II
+
+Parameters and formulas (a small parser on the server, never Python `eval`, and the same grammar in the page); the Dimension tool and planegcs constraints with the degrees-of-freedom count; pattern, mirror, split and fillet; coefficient fields from a formula or an image, binned by the server into at most 16 materials of whole cells; the Channel tool; seeded scatter of circles, channels or both; image tracing; and sweeps from Run, each value on its own copy of the case.
+
+**Checked in the real page** with trusted input (a new driver, `scripts/studio_drive.py`, sends the browser's own mouse and key events to headless Edge; the app's pane cannot take input while hidden): 30 checks, zero console errors (`out/studio/p2/walk.json`). The four done-when items:
+- a plate dimensioned by clicking its edges (W, H) and fixed reads "fully defined" (4, then 2, then 0 degrees of freedom); with a hole dimensioned against it (d, and its centre bound to `W - x_h`, `y_h`), 0 again;
+- W changed from 0.6 to 0.8 in the Parameters panel: the plate's width became 0.8 and the hole's centre moved by 0.2;
+- the same seed placed the same 10 inclusions twice, the case file's items identical to the byte (496 bytes);
+- a formula field's range at the 3200 cells the solver uses matched the server's own evaluation (16 levels).
+
+Tests: 12 in `tests/test_studio_params.py`, among them the page's solver run in Node (a plate's freedom 4, 2, 0; a constrained square dragged keeps its edges level and upright).
+
+**The P1 install, verified on fresh clones:** Windows, 424 tests passed, offline with zero connections off the machine; Linux under WSL, 417 passed, offline likewise, Gmsh absent there (libGLU missing; optional, and said so). The verifier learned the bundle's root notices file and to skip what git ignores in a clone (the Ranade font the installer fetched).
+
+**Open:** tangent constraints (the pen's arcs are bulges, not planegcs arcs); P3 to P6.
+
+**Changed:** [[integrated-ui-plan]] (status line).

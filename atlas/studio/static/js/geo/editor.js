@@ -5,7 +5,8 @@
 
 /* global paper */
 import { P, itemOf, byIdOf, topFeatures, domainItem, arcMidpoint, bulgeFromPoint, translated,
-  nextId, blank, bboxOf } from './model.js';
+  nextId, blank, bboxOf, pointOf } from './model.js';
+import { drawDims, nearestEdge } from './dims.js';
 import { candidates, snap, lockAngle } from './snap.js';
 import { cssVar } from '../ui.js';
 import { SWATCHES } from '../canvas.js';
@@ -21,7 +22,8 @@ export class Editor {
     this.materials = {};
     this.tool = 'select';
     this.role = 'add';
-    this.opts = { grid: false, guides: true, tangent: true };
+    this.opts = { grid: false, guides: true, tangent: true, dims: true };
+    this.dimA = null;                 // the Dimension tool's first point
     this.sel = new Set();
     this.drag = null;                 // an active gesture
     this.draft = null;                // a shape being drawn
@@ -58,6 +60,31 @@ export class Editor {
   get byId() { return byIdOf(this.geom); }
   feature(id) { return this.geom.features.find((f) => f.id === id); }
   index(id) { return this.geom.features.findIndex((f) => f.id === id); }
+
+  /** fields a dimension, a formula or a fix holds: a drag never changes them */
+  locked(f) {
+    const out = new Set(Object.keys(f.bind || {}));
+    for (const c of this.geom.constraints || []) {
+      if (c.type === 'fix' && c.refs.includes(f.id)) ['x', 'y', 'cx', 'cy', 'points'].forEach((k) => out.add(k));
+    }
+    return out;
+  }
+
+  /** a path's own constraints (all their references on it) */
+  ownConstraints(f) {
+    return (this.geom.constraints || []).filter((c) => c.refs.length && c.refs.every((r) => r.startsWith(`${f.id}:`)) && c.type !== 'fix');
+  }
+
+  /** a moved copy with what is locked put back */
+  hold(f, o) {
+    const lk = this.locked(f);
+    for (const k of lk) if (k in o) f[k] = JSON.parse(JSON.stringify(o[k]));
+    if (lk.has('points')) {
+      if (o.handles) f.handles = JSON.parse(JSON.stringify(o.handles));
+      if (o.items) f.items = JSON.parse(JSON.stringify(o.items));
+    }
+    return f;
+  }
 
   materialColour(name) {
     const names = Object.keys(this.materials);
@@ -139,7 +166,7 @@ export class Editor {
     if (f.kind === 'ellipse') {
       return [['rx+', f.cx + f.rx, f.cy], ['rx-', f.cx - f.rx, f.cy], ['ry+', f.cx, f.cy + f.ry], ['ry-', f.cx, f.cy - f.ry]];
     }
-    if (f.kind === 'path') {
+    if (f.kind === 'path' || f.kind === 'channel') {
       const out = f.points.map((p, k) => [`p${k}`, p[0], p[1]]);
       const n = f.points.length;
       const m = f.closed ? n : n - 1;
@@ -159,11 +186,26 @@ export class Editor {
   drawHandles() {
     const st = this.stage;
     const z = st.view.zoom;
+    const accent = new paper.Color(cssVar('--accent'));
+    const white = new paper.Color(cssVar('--surface'));
+    if (this.tool === 'dimension') {
+      // every point the tool can pick: corners, edge middles, centres, path points
+      for (const f of topFeatures(this.geom)) {
+        const pts = f.kind === 'ellipse' ? [['c', f.cx, f.cy]] : this.handlePoints(f).filter(([k]) => /^(c\d|e\d|p\d+)$/.test(k));
+        for (const [key, x, y] of pts) {
+          const s = 3.5 / z;
+          const it = key.startsWith('e') ? new paper.Path.Rectangle({ point: [x - s, -y - s], size: [2 * s, 2 * s], insert: false })
+            : new paper.Path.Circle({ center: P(x, y), radius: s, insert: false });
+          it.fillColor = white; it.strokeColor = accent; it.strokeWidth = 1.5; it.strokeScaling = false;
+          it.data = { handle: key, fid: f.id };
+          st.over.addChild(it);
+        }
+      }
+      return;
+    }
     if (this.sel.size !== 1) return;
     const f = this.feature([...this.sel][0]);
     if (!f) return;
-    const accent = new paper.Color(cssVar('--accent'));
-    const white = new paper.Color(cssVar('--surface'));
     if (f.kind === 'path') {
       const n = f.points.length;
       for (let k = 0; k < (f.closed ? n : n - 1); k++) {
@@ -175,6 +217,16 @@ export class Editor {
             st.over.addChild(l);
           }
         }
+      }
+    }
+    if (f.kind === 'path' || f.kind === 'channel') {
+      // edge numbers, for the inspector's constraints
+      const n = f.points.length;
+      for (let k = 0; k < (f.closed && f.kind === 'path' ? n : n - 1); k++) {
+        const a = f.points[k], b = f.points[(k + 1) % n];
+        const t = new paper.PointText({ point: P((a[0] + b[0]) / 2, (a[1] + b[1]) / 2).add(new paper.Point(0, -6 / z)), content: `e${k}`, justification: 'center',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 9.5 / z, fillColor: new paper.Color(cssVar('--muted')), insert: false });
+        st.over.addChild(t);
       }
     }
     for (const [key, x, y] of this.handlePoints(f)) {
@@ -202,6 +254,12 @@ export class Editor {
     const st = this.stage;
     const z = st.view.zoom;
     const cyan = new paper.Color('#00D7D2');
+    if (this.opts.dims && !this.checkRaster) drawDims(this);
+    if (this.dimA) {
+      const c = new paper.Path.Circle({ center: P(this.dimA.x, this.dimA.y), radius: 6 / z, insert: false });
+      c.strokeColor = cyan; c.strokeWidth = 2; c.strokeScaling = false;
+      st.over.addChild(c);
+    }
     const b = st.view.bounds;
     for (const g of this.snapped) {
       const l = g.axis === 'x' ? new paper.Path.Line({ from: [g.v, b.top], to: [g.v, b.bottom], insert: false })
@@ -381,9 +439,10 @@ export class Editor {
     const w = this.world(e);
     if (this.fillMaterial) { this.fill(w); return; }
     if (this.tool === 'select') return this.downSelect(e, w);
-    if (this.tool === 'rect' || this.tool === 'ellipse') {
+    if (this.tool === 'dimension') return this.downDim(e, w);
+    if (this.tool === 'rect' || this.tool === 'ellipse' || this.tool === 'area') {
       const s = this.snapped_(w);
-      this.draft = { kind: this.tool, x0: s.x, y0: s.y, x1: s.x, y1: s.y, square: e.shiftKey, centre: e.altKey };
+      this.draft = { kind: this.tool === 'area' ? 'rect' : this.tool, area: this.tool === 'area', x0: s.x, y0: s.y, x1: s.x, y1: s.y, square: e.shiftKey, centre: e.altKey };
       this.drag = { kind: 'draft' };
       this.redraw();
       return;
@@ -399,13 +458,45 @@ export class Editor {
       this.redraw();
       return;
     }
-    if (this.tool === 'pen') return this.downPen(e, w);
+    if (this.tool === 'pen' || this.tool === 'channel') return this.downPen(e, w);
     if (this.tool === 'measure') {
       const s = this.snapped_(w);
       if (!this.measure || this.measure.b) this.measure = { a: { x: s.x, y: s.y }, b: null };
       else this.measure.b = { x: s.x, y: s.y };
       this.redraw();
     }
+  }
+
+  /** the Dimension tool: an edge or a hole sets a size; two points set a position */
+  downDim(e, w) {
+    const h = this.hit(w.view);
+    if (!h) { this.dimA = null; this.redraw(); return; }
+    const f = this.feature(h.fid);
+    if (!f) return;
+    if (h.handle) {
+      if (f.kind === 'rect' && /^e[0-3]$/.test(h.handle) && !this.dimA) { this.host.dimension({ fid: f.id, key: h.handle }); return; }
+      const p = pointOf(f, h.handle);
+      if (!p) return;
+      if (!this.dimA) { this.dimA = { fid: f.id, key: h.handle, x: p[0], y: p[1] }; this.redraw(); if (this.host.changed) this.host.changed(); return; }
+      const A = this.dimA;
+      this.dimA = null;
+      this.redraw();
+      this.host.dimPoints(A, { fid: f.id, key: h.handle }, e.shiftKey);
+      return;
+    }
+    this.dimA = null;
+    if (f.kind === 'ellipse') { this.host.dimension({ fid: f.id }); return; }
+    if (f.kind === 'path') {
+      const ne = nearestEdge(f, w);
+      if (ne) this.host.dimension({ fid: f.id, edge: ne.edge });
+      return;
+    }
+    if (f.kind === 'rect') {
+      const d = [Math.abs(w.y - f.y), Math.abs(w.x - (f.x + f.w)), Math.abs(w.y - (f.y + f.h)), Math.abs(w.x - f.x)];
+      this.host.dimension({ fid: f.id, key: `e${d.indexOf(Math.min(...d))}` });
+      return;
+    }
+    this.host.notify('info', 'Dimension an edge of a rectangle, a hole, a straight edge of a path, or two points.');
   }
 
   downSelect(e, w) {
@@ -434,13 +525,13 @@ export class Editor {
 
   /** the top-level feature a hit belongs to (a combine's input selects the combine) */
   ownerOf(fid) {
-    for (const f of this.geom.features) if (f.kind === 'combine' && f.inputs.includes(fid)) return this.ownerOf(f.id);
+    for (const f of this.geom.features) if (['combine', 'pattern', 'mirror'].includes(f.kind) && f.inputs.includes(fid)) return this.ownerOf(f.id);
     return fid;
   }
 
   withInputs(fid) {
     const f = this.feature(fid);
-    if (!f || f.kind !== 'combine') return [fid];
+    if (!f || !['combine', 'pattern', 'mirror'].includes(f.kind)) return [fid];
     return [fid, ...f.inputs.flatMap((i) => this.withInputs(i))];
   }
 
@@ -452,7 +543,7 @@ export class Editor {
     const last = pts[pts.length - 1];
     if (last && e.shiftKey) ({ x, y } = lockAngle(last.x, last.y, x, y, 15));
     // a click on the first point closes the shape
-    if (pts.length >= 2) {
+    if (pts.length >= 2 && this.tool !== 'channel') {
       const f0 = pts[0];
       const d = Math.hypot(f0.x - x, f0.y - y) * this.stage.view.zoom;
       if (d <= 8) {
@@ -473,7 +564,7 @@ export class Editor {
     this.altDown = e.altKey;
     const d = this.drag;
     if (!d) {
-      if (this.tool === 'pen' && this.pen) {
+      if ((this.tool === 'pen' || this.tool === 'channel') && this.pen) {
         const s = this.snapped_(w);
         let { x, y } = s;
         const last = this.pen.points[this.pen.points.length - 1];
@@ -485,7 +576,7 @@ export class Editor {
         this.redraw();
       } else if (this.tool === 'measure' && this.measure && !this.measure.b) {
         const s = this.snapped_(w); this.cursor = { x: s.x, y: s.y }; this.redraw();
-      } else if (['rect', 'ellipse', 'arc', 'pen'].includes(this.tool) && this.opts.guides) {
+      } else if (['rect', 'ellipse', 'arc', 'pen', 'channel', 'area', 'dimension'].includes(this.tool) && this.opts.guides) {
         this.snapped_(w); this.redraw();
       }
       return;
@@ -516,7 +607,7 @@ export class Editor {
       if (best) { dx += best.ddx; dy += best.ddy; this.snapped = best.lines; } else this.snapped = [];
       for (const o of d.orig) {
         const i = this.index(o.id);
-        this.geom.features[i] = translated(o, dx, dy);
+        this.geom.features[i] = this.hold(translated(o, dx, dy), o);
       }
       this.redraw();
       return;
@@ -524,7 +615,28 @@ export class Editor {
     if (d.kind === 'handle') {
       d.moved = true;
       const s = this.snapped_(w, new Set([d.fid]));
+      const f = this.feature(d.fid);
+      if (f && this.locked(f).has('points') && f.kind !== 'rect' && f.kind !== 'ellipse') return;
+      if (f && (f.kind === 'path' || f.kind === 'channel') && /^p\d+$/.test(d.handle) && this.ownConstraints(f).length) {
+        // the path's constraints hold while its point moves: planegcs solves each move
+        const k = parseInt(d.handle.slice(1), 10);
+        d.want = [s.x, s.y];
+        if (!d.solving) {
+          const go = () => {
+            const [x, y] = d.want;
+            d.want = null;
+            d.solving = this.host.solveDrag(this.feature(d.fid), k, x, y).then((pts) => {
+              if (pts && this.feature(d.fid)) { this.feature(d.fid).points = pts; this.redraw(); }
+              d.solving = null;
+              if (d.want) go();
+            });
+          };
+          go();
+        }
+        return;
+      }
       this.applyHandle(d, s.x, s.y, e.shiftKey);
+      if (f) this.hold(f, d.orig);
       this.redraw();
       return;
     }
@@ -554,7 +666,7 @@ export class Editor {
       if (k.startsWith('rx')) f.rx = Math.max(Math.abs(x - o.cx), 1e-9);
       else f.ry = Math.max(Math.abs(y - o.cy), 1e-9);
       if (shift) { const r = k.startsWith('rx') ? f.rx : f.ry; f.rx = r; f.ry = r; }
-    } else if (f.kind === 'path') {
+    } else if (f.kind === 'path' || f.kind === 'channel') {
       const n = f.points.length;
       if (k.startsWith('p')) {
         const i = parseInt(k.slice(1), 10);
@@ -582,11 +694,19 @@ export class Editor {
     }
   }
 
-  up(e) {
+  async up(e) {
     const d = this.drag;
     if (!d) return;
+    while (d.solving) await d.solving;
     this.drag = null;
     const w = this.world(e);
+    if (d.kind === 'draft' && this.draft && this.draft.area) {
+      const f = this.draftFeature();
+      this.draft = null; this.snapped = [];
+      if (f && f.w > 0 && f.h > 0) this.host.areaDrawn([f.x, f.y, f.w, f.h]);
+      this.host.setTool('select');
+      return;
+    }
     if (d.kind === 'draft') {
       if (this.draft.kind === 'arc') {
         const L = Math.hypot(this.draft.x1 - this.draft.x0, this.draft.y1 - this.draft.y0);
@@ -639,6 +759,13 @@ export class Editor {
   }
 
   dbl(e) {
+    if (this.tool === 'channel' && this.pen && this.pen.points.length >= 2) {
+      const pts = this.pen.points;
+      const a = pts[pts.length - 1], b = pts[pts.length - 2];
+      if (Math.hypot(a.x - b.x, a.y - b.y) * this.stage.view.zoom < 4) pts.pop();
+      this.finishPen(false);
+      return;
+    }
     if (this.tool === 'pen' && this.pen && this.pen.points.length >= 3) {
       // a double-click places a point twice; drop the duplicate and close
       const pts = this.pen.points;
@@ -670,9 +797,15 @@ export class Editor {
     if (!pen) return;
     const n = pen.points.length;
     if ((close && n < 2) || (!close && n < 2)) { this.pen = null; this.redraw(); this.flushPending(); return; }
-    const f = this.penFeature(close);
+    let f = this.penFeature(close);
     this.pen = null;
     this.typed = '';
+    if (this.tool === 'channel') {
+      f = blank('channel', 'draft', this.effectiveRole(), {
+        points: f.points, edges: f.edges, handles: f.handles, bulge: f.bulge, closed: false, w: this.host.channelWidth() });
+      this.addFeature(f);
+      return;
+    }
     if (close && n === 2 && f.edges.every((k) => k === 'line')) { this.host.notify('info', 'Two points enclose nothing: add a third, or drag to curve.'); this.redraw(); return; }
     this.addFeature(f);
   }
@@ -681,7 +814,7 @@ export class Editor {
     const id = nextId(this.geom);
     f.id = id;
     const n = this.geom.features.filter((x) => x.kind === f.kind).length + 1;
-    f.name = f.name || ({ rect: 'Rectangle', ellipse: Math.abs(f.rx - f.ry) < 1e-12 ? 'Circle' : 'Ellipse', path: f.closed ? 'Shape' : 'Line' }[f.kind] + ` ${n}`);
+    f.name = f.name || ({ rect: 'Rectangle', ellipse: Math.abs(f.rx - f.ry) < 1e-12 ? 'Circle' : 'Ellipse', path: f.closed ? 'Shape' : 'Line', channel: 'Channel' }[f.kind] + ` ${n}`);
     if (f.role === 'add' || f.role === 'region') f.material = f.material || this.host.material(f.role);
     if (f.role === 'cut' || f.role === 'guide') f.material = null;
     this.geom.features.push(f);
@@ -731,6 +864,7 @@ export class Editor {
       if (k === 'Escape') { e.preventDefault(); this.pen = null; this.typed = ''; this.redraw(); this.flushPending(); return; }
     }
     if (k === 'Escape') {
+      if (this.dimA) { this.dimA = null; this.redraw(); return; }
       if (this.draft) { this.draft = null; this.redraw(); return; }
       if (this.fillMaterial) { this.fillMaterial = null; this.host.changed && this.host.changed(); return; }
       if (this.measure) { this.measure = null; this.redraw(); return; }
@@ -746,7 +880,7 @@ export class Editor {
       const dy = k === 'ArrowDown' ? -step : k === 'ArrowUp' ? step : 0;
       const ids = [...this.sel].flatMap((id) => this.withInputs(id));
       const ops = ids.map((id) => {
-        const f = translated(this.feature(id), dx, dy);
+        const f = this.hold(translated(this.feature(id), dx, dy), this.feature(id));
         this.geom.features[this.index(id)] = f;
         return { op: 'set', path: ['geometry', 'features', this.index(id)], value: f };
       });
@@ -755,7 +889,7 @@ export class Editor {
       return;
     }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    const tools = { v: 'select', p: 'pen', r: 'rect', e: 'ellipse', a: 'arc', m: 'measure', h: 'hand' };
+    const tools = { v: 'select', p: 'pen', r: 'rect', e: 'ellipse', a: 'arc', m: 'measure', h: 'hand', c: 'channel', d: 'dimension' };
     if (tools[k.toLowerCase()]) { this.host.setTool(tools[k.toLowerCase()]); return; }
     if (k.toLowerCase() === 'i') { this.host.importFile(); return; }
     if (k.toLowerCase() === 'k') { this.host.toggleCheck(); return; }
@@ -774,9 +908,11 @@ export class Editor {
   }
 
   setTool(t) {
+    // a pen or channel line in progress ends as what its own tool makes
+    if (this.pen && t !== this.tool) this.finishPen(false);
     this.tool = t;
     this.stage.tool = t;
-    if (t !== 'pen' && this.pen) this.finishPen(false);
+    this.dimA = null;
     this.draft = null; this.measure = null; this.snapped = [];
     this.stage.canvas.style.cursor = t === 'select' ? 'default' : (t === 'hand' ? 'grab' : 'crosshair');
     this.redraw();

@@ -287,3 +287,49 @@ div.row b, div.row span:last-child { color: var(--text); }
 .busy[hidden] { display: none; }
 .linkish { border: 0; background: transparent; padding: 0; font: inherit; cursor: pointer; }
 .linkish:hover { text-decoration: underline; }
+
+/* -- P2: parameters, bindings, fields, scatter ---------------------------------------- */
+.hr { height: 1px; background: var(--line-soft); margin: 2px 0; flex: none; }
+.ptable { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) auto; border: 1px solid var(--line-soft);
+  border-radius: 8px; overflow: hidden; font-size: 12px; }
+.ptable .ph { padding: 4px 6px; background: var(--seg); color: var(--muted); font-size: 11px; font-weight: 600; }
+.ptable .pc { padding: 3px 4px; border-top: 1px solid var(--line-soft); min-width: 0; }
+.ptable .pin { width: 100%; min-width: 0; border-color: transparent; background: transparent; padding: 2px 4px; font-size: 12px; }
+.ptable .pin:focus { border-color: var(--accent); background: var(--input); }
+.field.fx, .pin.fx { color: var(--accent-ink); }
+.fxmark { border: 1px solid var(--line); border-radius: 5px; background: transparent; color: var(--dim);
+  font: italic 600 10.5px var(--mono); padding: 1px 4px; cursor: pointer; }
+.fxmark.on { color: var(--accent-ink); border-color: var(--accent); background: var(--accent-wash); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--muted); padding: 0 4px; }
+.btn.ghost:hover { color: var(--err-ink); }
+.subpanel { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid var(--line-soft);
+  border-radius: 10px; background: var(--surface); font-size: 12.5px; flex: none; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 8px; }
+.stack { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--muted); min-width: 0; }
+.stack .field { color: var(--text); }
+.dofchip { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--seg); color: var(--muted);
+  white-space: nowrap; cursor: help; }
+.dofchip.ok { background: var(--ready-soft); color: var(--ready-deep); font-weight: 700; }
+.q { margin-left: 6px; color: var(--muted); cursor: help; font-weight: 400; }
+.sweeptable { display: grid; grid-template-columns: auto auto auto auto auto; gap: 4px 12px; font-size: 12.5px; align-items: center; }
+.sweeptable .ph { color: var(--muted); font-size: 11px; font-weight: 600; }
+
+/* -- P3: the equation list and screen ------------------------------------------------- */
+.eqgroup { display: flex; align-items: center; justify-content: space-between; margin: 8px 2px 2px; font-size: 10.5px;
+  font-weight: 700; letter-spacing: .7px; color: var(--muted); }
+.eqgroup abbr { letter-spacing: 0; font-weight: 600; cursor: help; text-decoration: none; border-bottom: 1px dotted currentColor; }
+.eqrow { width: 100%; text-align: left; border: 0; background: transparent; font: inherit; color: inherit; }
+.eqrow.off { opacity: .45; cursor: help; }
+.eqrow[aria-selected="true"] { background: var(--accent-soft); }
+.cotag { font-size: 10px; font-weight: 700; color: var(--ready-deep); background: var(--ready-soft); border-radius: 4px;
+  padding: 0 4px; text-decoration: none; cursor: help; }
+.equation { font-size: 19px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line-soft);
+  border-radius: 10px; font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', serif; }
+.equation abbr { text-decoration: none; border-bottom: 1px dotted var(--accent); cursor: help; }
+.bgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; }
+.bcell { border: 1px solid var(--line-soft); border-radius: 8px; padding: 6px 8px; background: var(--surface); }
+.bcell abbr { text-decoration: none; border-bottom: 1px dotted currentColor; cursor: help; }
+.kvrow { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; align-items: baseline; }
+.kvrow > :last-child { text-align: right; min-width: 0; }
+.kvrow abbr { text-decoration: none; border-bottom: 1px dotted currentColor; cursor: help; }
+.modechip { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--seg); color: var(--muted); }

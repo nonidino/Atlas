@@ -12,6 +12,7 @@ export const store = {
   run: null,              // the last run frame
   fields: null,           // the last fields frame
   compile: null,          // the last compile frame
+  sweep: null,            // the last sweep frame: one run per parameter value
   tab: 'geometry',
   connected: false,
 };
@@ -35,6 +36,7 @@ export function bind() {
   net.on('run', (m) => { store.run = m; changed('run'); });
   net.on('fields', (m) => { store.fields = m; changed('fields'); });
   net.on('compile', (m) => { store.compile = m; changed('compile'); });
+  net.on('sweep', (m) => { store.sweep = m; changed('sweep'); });
   net.on('connection', (m) => { store.connected = m.connected; changed('connection'); });
 }
 

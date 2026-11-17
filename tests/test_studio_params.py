@@ -198,6 +198,53 @@ def test_a_formula_field_is_binned_into_materials_and_reports_its_range():
     assert any("T" in n["message"] for n in s.geo_notes if n.get("kind") == "field")
 
 
+def test_channel_inclusions_are_strips_and_a_seed_is_a_layout():
+    """Scatter's channels: strips of length 2r and width 2r/aspect at a drawn angle;
+    the same seed gives the same strips, and the engine's region area is their sum."""
+    s = _session("plate", 0.6, 0.3)
+    scat = {"id": "f2", "kind": "scatter", "role": "region", "name": "Strips",
+            "material": "copper", "x": 0.05, "y": 0.05, "w": 0.5, "h": 0.2,
+            "params": {"count": 6, "rmin": 0.02, "rmax": 0.04, "gap": 0.005, "seed": 3,
+                       "shape": "channels", "aspect": 8}}
+    _edit(s, [{"op": "insert", "path": ["geometry", "features"], "value": scat}], "strips")
+    items = s.geom.by_id()["f2"].items
+    assert len(items) == 6 and all(len(it) == 4 for it in items)
+    shape = GE.Evaluator(s.geom, 1e-4).shapes["f2"]
+    want = sum((2 * it[2]) * (2 * it[2] / 8) for it in items)
+    assert shape.area == pytest.approx(want, rel=1e-9)
+    s2 = _session("plate", 0.6, 0.3)
+    _edit(s2, [{"op": "insert", "path": ["geometry", "features"], "value": scat}], "strips")
+    assert json.dumps(s2.geom.by_id()["f2"].items) == json.dumps(items)
+    # both: each inclusion one or the other
+    _edit(s2, [{"op": "set", "path": ["geometry", "features", 1, "params", "shape"], "value": "both"},
+               {"op": "set", "path": ["geometry", "features", 1, "params", "count"], "value": 14}])
+    kinds = {len(it) for it in s2.geom.by_id()["f2"].items}
+    assert kinds == {3, 4}
+    r, _ = _edit(s2, [{"op": "set", "path": ["geometry", "features", 1, "params", "shape"], "value": "stars"}])
+    assert r["ok"] is False or s2.geom.by_id()["f2"].params["shape"] != "stars"
+
+
+def test_an_image_field_maps_its_grey_levels_onto_the_range():
+    """An image field: black is the minimum, white the maximum, on a log scale."""
+    import base64
+    s = _session("plate", 0.4, 0.2)
+    grid = {"nx": 2, "ny": 1, "data": base64.b64encode(bytes([0, 255])).decode("ascii")}
+    field = {"kind": "image", "prop": "k", "min": 1.0, "max": 100.0, "scale": "log",
+             "grid": grid, "box": [0.1, 0.05, 0.3, 0.15]}
+    _edit(s, [{"op": "insert", "path": ["geometry", "features"], "value": {
+        "id": "f2", "kind": "rect", "role": "region", "name": "Patch", "material": "steel",
+        "x": 0.1, "y": 0.05, "w": 0.2, "h": 0.1, "field": field}}], "image field")
+    info = s.fields["f2"]
+    assert info["min"] == pytest.approx(1.0) and info["max"] == pytest.approx(100.0)
+    assert info["levels"] == 2
+    ks = sorted(s.spec.materials[m]["k"] for m in s.spec.materials if m.startswith("f2-"))
+    assert ks == pytest.approx([1.0, 100.0])
+    # the middle of the grey scale is the geometric mean on a log scale
+    v = GE.image_values({**field, "grid": {"nx": 1, "ny": 1, "data": base64.b64encode(bytes([128])).decode()}},
+                        np.array([0.2]), np.array([0.1]))
+    assert v[0] == pytest.approx(100 ** (128 / 255))
+
+
 NODE = shutil.which("node")
 
 
@@ -217,6 +264,48 @@ def test_the_page_formula_language_agrees_with_the_server():
     js = json.loads(out.stdout)
     py = [formula.value(c, env) for c in cases]
     assert js == pytest.approx(py, rel=1e-12)
+
+
+@pytest.mark.skipif(NODE is None, reason="Node is not installed")
+def test_a_dimensioned_plate_reaches_fully_defined_in_the_page_solver():
+    """P2's done-when, in the page's own solver (planegcs through geo/gcs.js): a plate
+    has 4 degrees of freedom; its width and height take 2; a fix takes the last 2. A
+    hole adds 4, and its diameter and a position bound to W and H take them all. A
+    constrained path keeps its constraints while one of its points is dragged."""
+    js = os.path.join(ROOT, "atlas", "studio", "static", "js", "geo", "gcs.js").replace("\\", "/")
+    dist = os.path.join(ROOT, "atlas", "studio", "static", "vendor", "planegcs", "dist").replace("\\", "/")
+    rect = {"id": "f1", "kind": "rect", "x": 0, "y": 0, "w": 0.6, "h": 0.3, "bind": {}}
+    hole = {"id": "f2", "kind": "ellipse", "cx": 0.45, "cy": 0.15, "rx": 0.04, "ry": 0.04, "bind": {}}
+    stages = [
+        {"features": [rect], "constraints": []},
+        {"features": [{**rect, "bind": {"w": "W", "h": "H"}}], "constraints": []},
+        {"features": [{**rect, "bind": {"w": "W", "h": "H"}}], "constraints": [{"id": "k1", "type": "fix", "refs": ["f1"]}]},
+        {"features": [{**rect, "bind": {"w": "W", "h": "H"}}, hole], "constraints": [{"id": "k1", "type": "fix", "refs": ["f1"]}]},
+        {"features": [{**rect, "bind": {"w": "W", "h": "H"}},
+                      {**hole, "bind": {"rx": "d/2", "ry": "d/2", "cx": "W - 0.15", "cy": "H/2"}}],
+         "constraints": [{"id": "k1", "type": "fix", "refs": ["f1"]},
+                         {"id": "k2", "type": "distance", "refs": ["f1:c1", "f2:c"], "param": "x_h", "value": None}]},
+    ]
+    square = {"id": "f3", "kind": "path", "closed": True, "points": [[0, 0], [1, 0], [1, 1], [0, 1]],
+              "edges": ["line"] * 4, "bulge": [0] * 4, "handles": [None] * 4}
+    cons = [{"id": f"k{i}", "type": t, "refs": [f"f3:e{i}"]} for i, t in enumerate(["horizontal", "vertical", "horizontal", "vertical"])]
+    script = (
+        f"const g = await import('file:///{js}'); const pg = await import('file:///{dist}/index.js');"
+        f"const mod = {{ make: () => pg.make_gcs_wrapper('{dist}/planegcs_dist/planegcs.wasm') }};"
+        f"const out = []; for (const st of {json.dumps(stages)}) out.push((await g.freedom(st, mod)).dof);"
+        f"const sq = {json.dumps(square)}; const geo = {{ features: [sq], constraints: {json.dumps(cons)} }};"
+        "out.push((await g.freedom(geo, mod)).dof);"
+        "out.push(await g.dragPoint(geo, sq, 2, 1.5, 1.25, mod));"
+        "console.log(JSON.stringify(out));")
+    out = subprocess.run([NODE, "--input-type=module", "-e", script], capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0, out.stderr
+    res = json.loads(out.stdout)
+    assert res[:5] == [4, 2, 0, 4, 0]
+    assert res[5] == 4                      # a square held to H and V edges: x, y, w, h
+    pts = res[6]
+    assert pts[2] == pytest.approx([1.5, 1.25], abs=1e-9)
+    assert pts[1][0] == pytest.approx(1.5, abs=1e-9) and pts[3][1] == pytest.approx(1.25, abs=1e-9)
+    assert pts[0][1] == pytest.approx(pts[1][1], abs=1e-9) and pts[0][0] == pytest.approx(pts[3][0], abs=1e-9)
 
 
 def test_a_sweep_runs_the_case_once_per_value_on_copies():

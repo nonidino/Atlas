@@ -209,6 +209,19 @@ class Placement:
         return Side(fid, index, "poly", moved[0], moved[-1], pts=moved)
 
 
+def scatter_strip_sides(f: Feature, k: int, item) -> list[Side]:
+    """A scatter's channel inclusion (cx, cy, r, angle): a straight strip of length
+    2r and width 2r over the scatter's aspect, turned by the angle; four sides."""
+    from .resolve import SCATTER_DEFAULTS
+    cx, cy, r, a = (float(t) for t in item[:4])
+    aspect = float({**SCATTER_DEFAULTS, **f.params}.get("aspect", 8.0))
+    u = np.array([math.cos(a), math.sin(a)]) * r
+    v = np.array([-math.sin(a), math.cos(a)]) * (r / max(aspect, 1.0))
+    c = np.array([cx, cy])
+    pts = [c - u - v, c + u - v, c + u + v, c - u + v]
+    return [Side(f.id, 4 * k + j, "line", pts[j], pts[(j + 1) % 4]) for j in range(4)]
+
+
 def channel_sides(f: Feature, tol: float) -> list[Side]:
     """A channel: its centre line offset by half its width each way, with straight ends
     (an inlet and an outlet): four sides."""
@@ -383,9 +396,13 @@ class Evaluator:
             g = _polygonal(g)
         elif f.kind == "scatter":
             parts = []
-            for k, (cx, cy, r) in enumerate(f.items):
-                sides = [_circle_arc(f.id, 4 * k + j, (cx, cy), r, j * math.pi / 2, math.pi / 2)
-                         for j in range(4)]
+            for k, item in enumerate(f.items):
+                if len(item) >= 4:                   # a channel: a strip at an angle
+                    sides = scatter_strip_sides(f, k, item)
+                else:
+                    cx, cy, r = item[:3]
+                    sides = [_circle_arc(f.id, 4 * k + j, (cx, cy), r, j * math.pi / 2,
+                                         math.pi / 2) for j in range(4)]
                 parts.append(_ring_polygon(sides, self.tagged, self.tol, f.label, self.notes))
             g = _polygonal(unary_union(parts)) if parts else Polygon()
         elif f.kind in ("pattern", "mirror"):
@@ -782,7 +799,7 @@ def evaluate(geom: Geometry, spec: CaseSpec, dx: float | None = None,
             reg = _region(ev, f, shp, grid_box, rid, m, dx, tol, nx, ny)
             if reg is None:
                 continue
-            if f.field and f.field.get("kind") == "formula":
+            if f.field and f.field.get("kind") in ("formula", "image"):
                 props = dict(spec.materials.get(m) or lib.get(m) or {})
                 try:
                     regs, more, info = field_regions(f, reg, domain, props, geom)
@@ -813,9 +830,42 @@ def field_cells(reg: Region, domain: Domain):
     return np.nonzero(mask)
 
 
+def image_values(field: dict, x, y):
+    """An image field at points (x, y): the grey level of the pixel each point falls
+    in (nearest, row 0 at the top), mapped onto [min, max]: linearly, or on a log
+    scale when ``scale`` is "log" (one decade per equal step of grey).  Points
+    outside the image's box take the nearest edge pixel."""
+    import base64 as _b64
+    g = field.get("grid") or {}
+    try:
+        nx, ny = int(g["nx"]), int(g["ny"])
+        raw = np.frombuffer(_b64.b64decode(g["data"], validate=True), dtype=np.uint8)
+        x0, y0, x1, y1 = (float(t) for t in field["box"])
+        lo, hi = float(field["min"]), float(field["max"])
+    except (KeyError, TypeError, ValueError):
+        raise ValueError("an image field needs its grid (nx, ny, data), its box and a "
+                         "min and max") from None
+    if not (1 <= nx <= 1024 and 1 <= ny <= 1024) or raw.size != nx * ny:
+        raise ValueError(f"the image grid is {nx} x {ny} but holds {raw.size} values")
+    if not (x1 > x0 and y1 > y0):
+        raise ValueError("the image's box has no area")
+    grey = raw.reshape(ny, nx).astype(float) / 255.0
+    i = np.clip(np.floor((np.asarray(x) - x0) / (x1 - x0) * nx).astype(int), 0, nx - 1)
+    j = np.clip(np.floor((y1 - np.asarray(y)) / (y1 - y0) * ny).astype(int), 0, ny - 1)
+    t = grey[j, i]
+    if field.get("scale") == "log":
+        if not (lo > 0 and hi > 0):
+            raise ValueError("a log scale needs min and max above 0")
+        return lo * (hi / lo) ** t
+    return lo + (hi - lo) * t
+
+
 def field_values(f: Feature, x, y, geom: Geometry):
-    """A formula field at points (x, y), with the tree's parameters."""
+    """A coefficient field at points (x, y): a formula with the tree's parameters, or
+    an image's grey levels (`image_values`)."""
     from . import formula
+    if f.field.get("kind") == "image":
+        return np.asarray(image_values(f.field, x, y), dtype=float)
     expr = f.field.get("expr") or ""
     tree = formula.parse(expr)
     env = {p.name: float(p.value) for p in geom.parameters}

@@ -192,10 +192,24 @@ def scan_poseidon(root: str) -> dict:
             "prose_mentions_total": sum(words.values())}
 
 
+def _ignored(root: str) -> set[str]:
+    """Files git itself ignores in a working tree (an install's own files, such as the
+    Ranade font the self-test fetches): not part of what a clone receives."""
+    if not os.path.isdir(os.path.join(root, ".git")):
+        return set()
+    r = subprocess.run(["git", "-C", root, "ls-files", "--others", "--ignored",
+                        "--exclude-standard"], capture_output=True, text=True)
+    return {ln.strip().replace("\\", "/") for ln in r.stdout.splitlines() if ln.strip()}
+
+
 def scan_data(root: str) -> dict:
-    """Every binary or weight- or field-shaped file, against `BINARY_ALLOWED`."""
+    """Every binary or weight- or field-shaped file, against `BINARY_ALLOWED`; files git
+    ignores in a clone (what its install wrote) are not part of the bundle."""
     unexpected, allowed = [], []
+    skip = _ignored(root)
     for full, rel in B._walk(root):
+        if rel in skip:
+            continue
         if not (rel.lower().endswith(B.DATA_EXT) or not B._is_text(full)):
             continue
         row = {"file": rel, "bytes": os.path.getsize(full)}

@@ -26,6 +26,13 @@ wf_test_after.log
 # default; the current case study's artifacts are force-included below since
 # the wiki cites them directly.
 out/*
+# The studio's page checks (scripts/studio_drive.py): each walk's record, not its
+# screenshots, which stay on the machine that took them.
+!out/studio/
+out/studio/*
+!out/studio/*/
+out/studio/*/*
+!out/studio/*/walk.json
 !out/w93/
 out/w93/*
 !out/w93/w93.json

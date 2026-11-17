@@ -1,0 +1,297 @@
+{
+ "at": "2026-11-16T20:25:23",
+ "platform": "windows-amd64",
+ "verifier_python": "3.12.7",
+ "note": "studio P1, laptop",
+ "bundle": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench-bundle",
+ "clone_exit_code": 0,
+ "clone_s": 0.9,
+ "clone": "C:\\Users\\Nauni\\atlas-verify-p1",
+ "head": "e320b0054e3a4066619d2e52eb05ffde2f330c53",
+ "run_sh_mode_in_the_index": "100755",
+ "run_sh_has_a_carriage_return": false,
+ "run_sh_shebang": "#!/usr/bin/env bash",
+ "run_cmd_lines_end_crlf": true,
+ "files_in_branch": 241,
+ "deepest_path_in_branch": {
+  "path": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-ext-400-normal.woff2",
+  "chars": 82
+ },
+ "source_commits": {
+  "atlas": "a6026fa856e771bcbe85e14de1a033490095be10",
+  "build_repo": "98df3506aedd6f3edf2733257451f3c94f74b987",
+  "dirty": false
+ },
+ "identity": {
+  "identical": 240,
+  "different": [],
+  "not_from_either_repo": [],
+  "by_group": {
+   "launchers": [
+    9,
+    0
+   ],
+   "atlas": [
+    192,
+    0
+   ],
+   "out": [
+    6,
+    0
+   ],
+   "scripts": [
+    3,
+    0
+   ],
+   "tests": [
+    18,
+    0
+   ],
+   "vendor": [
+    12,
+    0
+   ]
+  },
+  "workbench_tests_upstream": 17,
+  "workbench_tests_carried": 17,
+  "every_workbench_test_is_carried": true
+ },
+ "scan_neubernet": {
+  "named": [],
+  "uses": [],
+  "prose_mentions": 5
+ },
+ "scan_poseidon": {
+  "paths": [],
+  "prose_mentions": 215
+ },
+ "scan_data": {
+  "allowed": [
+   {
+    "file": "atlas/studio/static/fonts/instrument-sans/instrument-sans-latin-400-normal.woff2",
+    "bytes": 16860
+   },
+   {
+    "file": "atlas/studio/static/fonts/instrument-sans/instrument-sans-latin-500-normal.woff2",
+    "bytes": 17232
+   },
+   {
+    "file": "atlas/studio/static/fonts/instrument-sans/instrument-sans-latin-600-normal.woff2",
+    "bytes": 17408
+   },
+   {
+    "file": "atlas/studio/static/fonts/instrument-sans/instrument-sans-latin-700-normal.woff2",
+    "bytes": 17012
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-greek-400-normal.woff2",
+    "bytes": 4228
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-greek-600-normal.woff2",
+    "bytes": 4308
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-400-normal.woff2",
+    "bytes": 21168
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-600-normal.woff2",
+    "bytes": 21860
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-ext-400-normal.woff2",
+    "bytes": 7336
+   },
+   {
+    "file": "atlas/studio/static/fonts/jetbrains-mono/jetbrains-mono-latin-ext-600-normal.woff2",
+    "bytes": 7512
+   },
+   {
+    "file": "atlas/studio/static/vendor/planegcs/dist/planegcs_dist/planegcs.wasm",
+    "bytes": 484003
+   },
+   {
+    "file": "out/learned-case/truth-farm-12.npz",
+    "bytes": 2555956
+   },
+   {
+    "file": "out/learned-case/window-net.pt",
+    "bytes": 1413474
+   }
+  ],
+  "unexpected": []
+ },
+ "scan_scot": [],
+ "static_checks_pass": true,
+ "self_test_examples": [
+  "wake-array-3",
+  "fast-heat",
+  "plate-circuit",
+  "plume-2",
+  "fast-sound",
+  "plate-hole",
+  "bimetal-arc",
+  "cooled-block"
+ ],
+ "launch_check": {
+  "argv": [
+   "cmd",
+   "/c",
+   "C:\\Users\\Nauni\\atlas-verify-p1\\run.cmd",
+   "--check"
+  ],
+  "exit_code": 0,
+  "wall_s": 700.0,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\launch_check_windows-amd64_p1.log",
+  "tail": "1.4)\nCollecting fsspec (from torch==2.7.1)\n  Using cached fsspec-2024.6.1-py3-none-any.whl.metadata (11 kB)\nCollecting setuptools (from torch==2.7.1)\n  Using cached setuptools-75.1.0-py3-none-any.whl.metadata (6.9 kB)\nCollecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch==2.7.1)\n  Using cached mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)\nRequirement already satisfied: MarkupSafe>=2.0 in c:\\users\\nauni\\atlas-verify-p1\\.venv\\lib\\site-packages (from jinja2->torch==2.7.1) (2.1.3)\nUsing cached https://download-r2.pytorch.org/whl/cpu/torch-2.7.1%2Bcpu-cp312-cp312-win_amd64.whl (216.0 MB)\nUsing cached sympy-1.14.0-py3-none-any.whl (6.3 MB)\nUsing cached filelock-3.13.1-py3-none-any.whl (11 kB)\nUsing cached fsspec-2024.6.1-py3-none-any.whl (177 kB)\nUsing cached networkx-3.3-py3-none-any.whl (1.7 MB)\nUsing cached setuptools-75.1.0-py3-none-any.whl (1.2 MB)\nUsing cached mpmath-1.3.0-py3-none-any.whl (536 kB)\nInstalling collected packages: mpmath, sympy, setuptools, networkx, fsspec, filelock, torch\nSuccessfully installed filelock-3.13.1 fsspec-2024.6.1 mpmath-1.3.0 networkx-3.3 setuptools-75.1.0 sympy-1.14.0 torch-2.7.1+cpu\n\n[notice] A new release of pip is available: 24.3.1 -> 26.3\n[notice] To update, run: C:\\Users\\Nauni\\atlas-verify-p1\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\n==> installing Gmsh (optional: File > Import geometry from Gmsh)\nCollecting gmsh==4.15.0\n  Using cached gmsh-4.15.0-py2.py3-none-win_amd64.whl.metadata (1.7 kB)\nUsing cached gmsh-4.15.0-py2.py3-none-win_amd64.whl (42.2 MB)\nInstalling collected packages: gmsh\nSuccessfully installed gmsh-4.15.0\n\n[notice] A new release of pip is available: 24.3.1 -> 26.3\n[notice] To update, run: C:\\Users\\Nauni\\atlas-verify-p1\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\nAtlas self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the retired Panel page, which its tests still drive\n    ok       panel     1.5.2        the retired Panel page, which its tests still drive\n    ok       tornado                the retired Panel page's server\n    ok       fastapi   0.115.5      the studio's server\n    ok       uvicorn   0.32.1       the studio's server process\n    ok       websockets 15.0.1       the studio page's WebSocket\n    ok       shapely   2.1.0        the studio's geometry: each region's cells\n    ok       torch     2.7.1+cpu    the learned case, CPU-only; nothing else needs it (optional)\n    ok       gmsh      4.15.0       File > Import geometry from Gmsh (optional)\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified            32.6 s   2 steps of serial, parallel, full   5.5 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             3.7 s   2 steps of serial, full           2.2 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.2 s   2 steps of serial, full           1.5 s\n    ok   river plume        plume-2        compile admit-uncertified             0.3 s   2 steps of serial, parallel, full   1.4 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   3.2 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             2.3 s   1 step of serial, parallel, full  14.9 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   2.0 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.1 s   2 steps of serial, full           3.7 s\n\n  the learned case  (the wind farm with a trained network in every window; a fixed case)\n    ok   the trained weights (sha256 9ce87a71bab9...) load and step farm-12: 1.7 s, divergence 3.8e-18\n    the registered evaluation (2026-10-01): not every bar met (G5); the page's card says so\n\n  the studio  (its own server, its page, and a case run over its WebSocket)\n    ok   29 vendored files match their pinned sha256\n    ok       Ranade 400, 500, 700 from Fontshare (ITF Free Font License; never committed)\n    ok   the page and all 20 files it and its modules name, from this machine\n    ok   over the page's WebSocket: a case opened, edited and run, its cards back (3 of 4 checks passed, 7.6 s)\n\n  OK -- every type ran, the solver came from vendor/, and the page answers. (121 s)\n",
+  "python_given": null,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  }
+ },
+ "tests": {
+  "argv": [
+   "C:\\Users\\Nauni\\atlas-verify-p1\\.venv\\Scripts\\python.exe",
+   "-m",
+   "pytest",
+   "tests",
+   "-q",
+   "-rs",
+   "-p",
+   "no:cacheprovider"
+  ],
+  "exit_code": 1,
+  "wall_s": 960.1,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\tests_windows-amd64_p1.log",
+  "tail": "................................................F....................... [ 16%]\n..........................s............................................. [ 33%]\n........................................................................ [ 50%]\n........................................................................ [ 67%]\n........................................................................ [ 84%]\n.................................................................        [100%]\n================================== FAILURES ===================================\n_______________ test_every_vendored_package_carries_its_licence _______________\n\n    def test_every_vendored_package_carries_its_licence():\n        for pkg in vendor.PACKAGES:\n            assert any(re.search(r\"(^|/)LICENSE(\\.txt)?$\", p) for p, _h in pkg.files), pkg.name\n>       notices = open(os.path.join(ROOT, \"THIRD-PARTY-NOTICES.md\"), encoding=\"utf-8\").read()\nE       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\Nauni\\\\atlas-verify-p1\\\\THIRD-PARTY-NOTICES.md'\n\ntests\\test_studio_shell.py:54: FileNotFoundError\n=========================== short test summary info ===========================\nSKIPPED [1] tests\\test_workbench_installer.py:42: the launcher templates and the builder live upstream, in atlas-0.1; this copy of the workbench carries the launchers they make, not them\nSKIPPED [1] tests\\test_workbench_cases.py:168: the build repo's ThermoStruct2D is not available: the expert is not where this case study expects it: 'C:\\\\Users\\\\Nauni\\\\atlas-verify-p1\\\\vendor\\\\src\\\\atlas\\\\__init__.py' does not exist. thermostruct2d lives in the build repo (github.com/nonidino/physics-foundation-model, src/atlas/solvers/); set ATLAS_BUILD_REPO to the checkout.\n1 failed, 423 passed, 2 skipped in 956.42s (0:15:56)\n",
+  "summary": "1 failed, 423 passed, 2 skipped",
+  "skipped_because": [
+   "tests\\test_workbench_installer.py:42: the launcher templates and the builder live upstream, in atlas-0.1; this copy of the workbench carries the launchers they make, not them",
+   "tests\\test_workbench_cases.py:168: the build repo's ThermoStruct2D is not available: the expert is not where this case study expects it: 'C:\\\\Users\\\\Nauni\\\\atlas-verify-p1\\\\vendor\\\\src\\\\atlas\\\\__init__.py' does not exist. thermostruct2d lives in the build repo (github.com/nonidino/physics-foundation-model, src/atlas/solvers/); set ATLAS_BUILD_REPO to the checkout."
+  ]
+ },
+ "no_torch": {
+  "argv": [
+   "C:\\Users\\Nauni\\atlas-verify-p1\\.venv\\Scripts\\python.exe",
+   "-c",
+   "\nimport importlib.abc, runpy, sys\nclass Block(importlib.abc.MetaPathFinder):\n    def find_spec(self, name, path=None, target=None):\n        if name == \"torch\" or name.startswith(\"torch.\"):\n            raise ImportError(\"torch is blocked by verify_workbench_bundle --no-torch\")\n        return None\nsys.meta_path.insert(0, Block())\nsys.argv = [\"run.py\", \"--check\"]\ntry:\n    runpy.run_path(\"run.py\", run_name=\"__main__\")\nexcept SystemExit as exc:\n    code = exc.code if isinstance(exc.code, int) else 1\n    print(\"\\nTORCH_IMPORTED\", \"torch\" in sys.modules)\n    sys.exit(code)\n"
+  ],
+  "exit_code": 3,
+  "wall_s": 86.0,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\no_torch_windows-amd64_p1.log",
+  "tail": "Atlas self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the retired Panel page, which its tests still drive\n    ok       panel     1.5.2        the retired Panel page, which its tests still drive\n    ok       tornado                the retired Panel page's server\n    ok       fastapi   0.115.5      the studio's server\n    ok       uvicorn   0.32.1       the studio's server process\n    ok       websockets 15.0.1       the studio page's WebSocket\n    ok       shapely   2.1.0        the studio's geometry: each region's cells\n    absent   torch                  the learned case, CPU-only; nothing else needs it (optional): ImportError: torch is blocked by verify_workbench_bundle --no-torch\n    ok       gmsh      4.15.0       File > Import geometry from Gmsh (optional)\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified            28.8 s   2 steps of serial, parallel, full   5.8 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             2.9 s   2 steps of serial, full           1.8 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.2 s   2 steps of serial, full           1.4 s\n    ok   river plume        plume-2        compile admit-uncertified             0.3 s   2 steps of serial, parallel, full   1.2 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   3.3 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             2.1 s   1 step of serial, parallel, full  13.2 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   1.8 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.1 s   2 steps of serial, full           3.3 s\n\n  the learned case  (the wind farm with a trained network in every window; a fixed case)\n    absent   the learned arm needs torch, which is not installed here (ImportError: torch is blocked by verify_workbench_bundle --no-torch)\n\n  the studio  (its own server, its page, and a case run over its WebSocket)\n    ok   29 vendored files match their pinned sha256\n    ok       Ranade already installed (from Fontshare)\n    ok   the page and all 20 files it and its modules name, from this machine\n    ok   over the page's WebSocket: a case opened, edited and run, its cards back (3 of 4 checks passed, 7.0 s)\n\n  PARTIAL -- every type ran, the solver came from vendor/, and the page answers;\n  absent and optional: torch (the learned case, CPU-only; nothing else needs it). (85 s)\n\nTORCH_IMPORTED False\n",
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  },
+  "torch_imported": false,
+  "said_torch_absent": true
+ },
+ "offline": {
+  "argv": [
+   "C:\\Users\\Nauni\\atlas-verify-p1\\.venv\\Scripts\\python.exe",
+   "-c",
+   "\nimport json, os, runpy, socket, sys\nattempts, loopback = [], []\nLOCAL = (\"127.0.0.1\", \"localhost\", \"::1\")\n_connect, _connect_ex, _create = (socket.socket.connect, socket.socket.connect_ex,\n                                  socket.create_connection)\ndef _host(address):\n    return address[0] if isinstance(address, tuple) and address else str(address)\ndef guard(real, self_or_addr, address, *a, **k):\n    if _host(address) in LOCAL:\n        loopback.append(repr(address)[:100])\n        return real(self_or_addr, address, *a, **k)\n    attempts.append(repr(address)[:200])\n    raise OSError(\"network disabled by verify_workbench_bundle --offline\")\nsocket.socket.connect = lambda self, address: guard(_connect, self, address)\nsocket.socket.connect_ex = lambda self, address: guard(_connect_ex, self, address)\nsocket.create_connection = lambda address, *a, **k: (\n    loopback.append(repr(address)[:100]) or _create(address, *a, **k)\n    if _host(address) in LOCAL else guard(None, None, address))\nsys.argv = [\"run.py\", \"--check\"]\ncode = 0\ntry:\n    runpy.run_path(\"run.py\", run_name=\"__main__\")\nexcept SystemExit as exc:\n    code = exc.code if isinstance(exc.code, int) else 1\nwith open(os.environ[\"ATTEMPTS_OUT\"], \"w\") as fh:\n    json.dump({\"exit_code\": code, \"connection_attempts\": attempts,\n               \"loopback_connections\": len(loopback)}, fh)\nsys.exit(code)\n"
+  ],
+  "exit_code": 0,
+  "wall_s": 91.5,
+  "log": "C:\\Users\\Nauni\\OneDrive\\Desktop\\Foundation_Model\\out\\workbench\\records\\installer\\logs\\offline_windows-amd64_p1.log",
+  "tail": "Atlas self-test  (Python 3.12.7 on Windows AMD64, 22 logical CPUs)\n\n  packages\n    ok       numpy     1.26.4       the arrays\n    ok       scipy     1.13.1       sparse solves, transforms and image operations, in every type\n    ok       pandas    2.2.2        the results tables\n    ok       pydantic  2.12.5       the case file's schema\n    ok       bokeh     3.6.0        the retired Panel page, which its tests still drive\n    ok       panel     1.5.2        the retired Panel page, which its tests still drive\n    ok       tornado                the retired Panel page's server\n    ok       fastapi   0.115.5      the studio's server\n    ok       uvicorn   0.32.1       the studio's server process\n    ok       websockets 15.0.1       the studio page's WebSocket\n    ok       shapely   2.1.0        the studio's geometry: each region's cells\n    ok       torch     2.7.1+cpu    the learned case, CPU-only; nothing else needs it (optional)\n    ok       gmsh      4.15.0       File > Import geometry from Gmsh (optional)\n\n  the build repository's solver (the wind farm's fluid expert)\n    ok     reference.WindowNS   vendor\\src\\atlas\\cases\\windfarm\\reference.py\n\n  the eight simulation types  (the page's own compile, then a short run of every arm\n  through the page's own runner, on 2 threads)\n    ok   wind farm          wake-array-3   compile admit-uncertified            29.0 s   2 steps of serial, parallel, full   4.4 s  1 exact control held\n    ok   heat conduction    fast-heat      compile admit-uncertified             2.7 s   2 steps of serial, full           1.8 s\n    ok   current in a plate plate-circuit  compile admit-uncertified             0.1 s   2 steps of serial, full           1.4 s\n    ok   river plume        plume-2        compile admit-uncertified             0.3 s   2 steps of serial, parallel, full   1.3 s  1 exact control held\n    ok   sound              fast-sound     compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   2.9 s  1 exact control held\n    ok   loaded structure   plate-hole     compile admit-uncertified             2.0 s   1 step of serial, parallel, full  13.6 s  1 exact control held\n    ok   heated structure   bimetal-arc    compile refuse before the compiler    0.0 s   2 steps of serial, parallel, full   1.8 s  2 exact controls held\n    ok   cooled block       cooled-block   compile admit-uncertified             0.1 s   2 steps of serial, full           3.3 s\n\n  the learned case  (the wind farm with a trained network in every window; a fixed case)\n    ok   the trained weights (sha256 9ce87a71bab9...) load and step farm-12: 1.5 s, divergence 3.8e-18\n    the registered evaluation (2026-10-01): not every bar met (G5); the page's card says so\n\n  the studio  (its own server, its page, and a case run over its WebSocket)\n    ok   29 vendored files match their pinned sha256\n    ok       Ranade already installed (from Fontshare)\n    ok   the page and all 20 files it and its modules name, from this machine\n    ok   over the page's WebSocket: a case opened, edited and run, its cards back (3 of 4 checks passed, 7.0 s)\n\n  OK -- every type ran, the solver came from vendor/, and the page answers. (90 s)\n",
+  "connection_attempts": [],
+  "loopback_connections": 52,
+  "types": {
+   "wake-array-3": true,
+   "fast-heat": true,
+   "plate-circuit": true,
+   "plume-2": true,
+   "fast-sound": true,
+   "plate-hole": true,
+   "bimetal-arc": true,
+   "cooled-block": true
+  }
+ },
+ "pip_freeze_all": [
+  "Jinja2==3.1.4",
+  "Markdown==3.4.1",
+  "MarkupSafe==2.1.3",
+  "PyYAML==6.0.1",
+  "annotated-types==0.6.0",
+  "anyio==4.12.1",
+  "bleach==4.1.0",
+  "bokeh==3.6.0",
+  "certifi==2025.10.5",
+  "charset-normalizer==3.3.2",
+  "click==8.3.1",
+  "colorama==0.4.6",
+  "contourpy==1.2.0",
+  "fastapi==0.115.5",
+  "filelock==3.13.1",
+  "fsspec==2024.6.1",
+  "gmsh==4.15.0",
+  "h11==0.14.0",
+  "httpcore==1.0.2",
+  "httpx==0.28.1",
+  "idna==3.7",
+  "iniconfig==1.1.1",
+  "linkify-it-py==2.0.0",
+  "markdown-it-py==2.2.0",
+  "mdit-py-plugins==0.3.0",
+  "mdurl==0.1.0",
+  "mpmath==1.3.0",
+  "networkx==3.3",
+  "numpy==1.26.4",
+  "packaging==24.1",
+  "pandas==2.2.2",
+  "panel==1.5.2",
+  "param==2.1.1",
+  "pillow==12.2.0",
+  "pip==24.3.1",
+  "pluggy==1.0.0",
+  "pydantic==2.12.5",
+  "pydantic_core==2.41.5",
+  "pytest==7.4.4",
+  "python-dateutil==2.9.0.post0",
+  "pytz==2024.1",
+  "pyviz_comms==3.0.2",
+  "requests==2.33.0",
+  "scipy==1.13.1",
+  "setuptools==75.1.0",
+  "shapely==2.1.0",
+  "six==1.16.0",
+  "starlette==0.41.3",
+  "sympy==1.14.0",
+  "torch==2.7.1+cpu",
+  "tornado==6.4.1",
+  "tqdm==4.66.5",
+  "typing-inspection==0.4.2",
+  "typing_extensions==4.15.0",
+  "tzdata==2023.3",
+  "uc-micro-py==1.0.1",
+  "urllib3==2.7.0",
+  "uvicorn==0.32.1",
+  "webencodings==0.5.1",
+  "websockets==15.0.1",
+  "xyzservices==2022.9.0"
+ ],
+ "venv_python": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]",
+ "venv_mb": 2015.6,
+ "deepest_path_in_venv": {
+  "path": ".venv/Lib/site-packages/torch/include/ATen/ops/_fake_quantize_per_tensor_affine_cachemask_tensor_qparams_compositeexplicitautograd_dispatch.h",
+  "chars": 141
+ },
+ "passes": false
+}

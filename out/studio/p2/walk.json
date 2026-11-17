@@ -1,0 +1,238 @@
+{
+ "walk": "scripts/studio_walks/p2.py",
+ "url": "http://127.0.0.1:8021/",
+ "size": "1090x620",
+ "theme": "light",
+ "started": "2026-11-17T14:21:45",
+ "checks": [
+  {
+   "check": "a plate has 4 degrees of freedom",
+   "passed": true,
+   "detail": 4
+  },
+  {
+   "check": "the Dimension tool made W and H and bound the plate to them",
+   "passed": true,
+   "detail": {
+    "w": "W",
+    "h": "H"
+   }
+  },
+  {
+   "check": "width and height take 2 of the 4",
+   "passed": true,
+   "detail": 2
+  },
+  {
+   "check": "a dimensioned, fixed plate is fully defined",
+   "passed": true,
+   "detail": 0
+  },
+  {
+   "check": "the bar says so",
+   "passed": true,
+   "detail": "\u2713 fully defined"
+  },
+  {
+   "check": "the hole was drawn by dragging",
+   "passed": true,
+   "detail": [
+    0.440000000195375,
+    0.15000003663281627,
+    0.0400000314553782
+   ]
+  },
+  {
+   "check": "a hole adds 4 degrees of freedom",
+   "passed": true,
+   "detail": 4
+  },
+  {
+   "check": "the hole's diameter and position are parameters",
+   "passed": true,
+   "detail": {
+    "rx": "d/2",
+    "ry": "d/2",
+    "cx": "W - x_h",
+    "cy": "y_h"
+   }
+  },
+  {
+   "check": "the plate with its hole is fully defined",
+   "passed": true,
+   "detail": 0
+  },
+  {
+   "check": "changing W moves every dependent shape",
+   "passed": true,
+   "detail": {
+    "plate.w": 0.8,
+    "hole.cx": [
+     0.44000000019499996,
+     0.640000000195
+    ]
+   }
+  },
+  {
+   "check": "still fully defined",
+   "passed": true,
+   "detail": 0
+  },
+  {
+   "check": "a scatter placed its inclusions",
+   "passed": true,
+   "detail": 10
+  },
+  {
+   "check": "undone",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the same seed gives the same inclusions, byte for byte in the case file",
+   "passed": true,
+   "detail": "496 bytes"
+  },
+  {
+   "check": "a formula field's \u03ba range matches the server's evaluation",
+   "passed": true,
+   "detail": "\u2713 server: same range, 3200 cells, 16 levels"
+  },
+  {
+   "check": "an image field maps grey onto a range",
+   "passed": true,
+   "detail": "image"
+  },
+  {
+   "check": "the server binned the image",
+   "passed": true,
+   "detail": {
+    "prop": "k",
+    "min": 400,
+    "max": 40000,
+    "levels": 16,
+    "cells": 3200
+   }
+  },
+  {
+   "check": "Split cut one shape by another into two",
+   "passed": true,
+   "detail": 4
+  },
+  {
+   "check": "a pattern repeats the hole",
+   "passed": true,
+   "detail": {
+    "holes": 2
+   }
+  },
+  {
+   "check": "a mirror reflects the region",
+   "passed": true,
+   "detail": [
+    "f4"
+   ]
+  },
+  {
+   "check": "a channel from a drawn centre line",
+   "passed": true,
+   "detail": 0.006
+  },
+  {
+   "check": "the pen closed a shape",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "a horizontal constraint levels e0",
+   "passed": true,
+   "detail": [
+    [
+     0.300072682747851,
+     0.04999998241624816
+    ],
+    [
+     0.41999995467299533,
+     0.04999998241624816
+    ]
+   ]
+  },
+  {
+   "check": "dragging a point keeps e0 level (planegcs solved the drag)",
+   "passed": true,
+   "detail": [
+    [
+     0.300072682747851,
+     0.09999999120812408
+    ],
+    [
+     0.4499999843699984,
+     0.09999999120812408
+    ]
+   ]
+  },
+  {
+   "check": "a fillet rounds a corner with an arc",
+   "passed": true,
+   "detail": [
+    "arc",
+    "line",
+    "line",
+    "line",
+    "line"
+   ]
+  },
+  {
+   "check": "the picture shows under the drawing",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "W carries a sweep",
+   "passed": true,
+   "detail": [
+    0.7,
+    0.8
+   ]
+  },
+  {
+   "check": "the sweep ran the case once per value",
+   "passed": true,
+   "detail": [
+    [
+     0.7,
+     "done"
+    ],
+    [
+     0.8,
+     "done"
+    ]
+   ]
+  },
+  {
+   "check": "nothing overflows sideways at 1090 x 620",
+   "passed": true,
+   "detail": []
+  },
+  {
+   "check": "no console errors",
+   "passed": true,
+   "detail": null
+  }
+ ],
+ "console_errors": [],
+ "screenshots": [
+  "out/studio/p2/p2-fully-defined.png",
+  "out/studio/p2/p2-dimensions.png",
+  "out/studio/p2/p2-w-changed.png",
+  "out/studio/p2/p2-scatter.png",
+  "out/studio/p2/p2-formula-field.png",
+  "out/studio/p2/p2-path.png",
+  "out/studio/p2/p2-trace.png",
+  "out/studio/p2/p2-sweep.png",
+  "out/studio/p2/p2-dark-parameters.png"
+ ],
+ "trusted_clicks_and_drags": 74,
+ "passed": true,
+ "finished": "2026-11-17T14:23:28"
+}

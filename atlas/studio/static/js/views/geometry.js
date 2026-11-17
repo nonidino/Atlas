@@ -9,6 +9,11 @@ import { Stage, SWATCHES } from '../canvas.js';
 import { Editor } from '../geo/editor.js';
 import { itemOf, byIdOf, topFeatures, describe, areaOf, domainItem, consumed, translated, nextId, blank } from '../geo/model.js';
 import { readDxf, readSvg, toFeatures } from '../geo/imports.js';
+import * as params from '../geo/params.js';
+import { sizeDimension, pointDimension, drivenOps, settledPoints } from '../geo/dims.js';
+import { coefficientSection, scatterSection } from '../geo/fields.js';
+import { Underlay, traceSection } from '../geo/trace.js';
+import { freedom, dragPoint, solver } from '../geo/gcs.js';
 
 let root, stage, editor;
 let els = {};
@@ -20,6 +25,11 @@ let dismissedStart = false;  // a drawing tool was chosen on an empty drawing
 let busy = 0;
 let paletteMaterial = null;
 let lastFiles = [];
+let dof = null;              // the drawing's degrees of freedom (planegcs), null while counting
+let dofFor = null;
+let under = null;            // the picture to trace
+// the scatter form's state between renders: a drawn Area, the last numbers
+const scatter = { scatterBox: null, scatterDraft: null, scatterMaterial: null };
 
 const RAIL = [
   ['select', 'Select', 'Select · V. Click a shape; drag handles to reshape.', 'M5 3l13 8-6 1.5L9.5 19z'],
@@ -35,7 +45,7 @@ const UTIL = [
   ['hand', 'Pan', 'Pan · H, or hold Space and drag.', 'M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V6a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-1a5 5 0 0 1-4-2l-3-4a1.5 1.5 0 0 1 2.4-1.8L8 14'],
   ['import', 'Import', 'Import · I. CAD (STEP, DXF), Gmsh mesh, or SVG.', 'M12 3v12M7 10l5 5 5-5M4 19h16'],
 ];
-const LATER = { channel: 'P2', dimension: 'P2' };
+const LATER = {};
 
 const unit = () => store.state?.meta?.unit || 'm';
 const geomOf = () => store.state?.geometry || { parameters: [], features: [] };
@@ -51,6 +61,60 @@ async function commit(ops, label, defaults = false) {
   return r;
 }
 
+/** ops applied to a copy of the tree, as the server will (session.apply_ops) */
+function applyLocal(geom, ops) {
+  const doc = { geometry: JSON.parse(JSON.stringify(geom)) };
+  const walk = (path) => path.reduce((o, k) => o[k], doc);
+  for (const op of ops) {
+    const path = op.path;
+    if (op.op === 'set') walk(path.slice(0, -1))[path[path.length - 1]] = JSON.parse(JSON.stringify(op.value));
+    else if (op.op === 'insert') { const t = walk(path); t.splice(op.index ?? t.length, 0, JSON.parse(JSON.stringify(op.value))); }
+    else if (op.op === 'remove') { const par = walk(path.slice(0, -1)); const k = path[path.length - 1]; if (Array.isArray(par)) par.splice(k, 1); else delete par[k]; }
+    else if (op.op === 'move') { const t = walk(path); const [it] = t.splice(op.from, 1); t.splice(op.to, 0, it); }
+  }
+  return doc.geometry;
+}
+
+/** an edit that may change what drives a path's lengths: those paths solved again */
+async function commitSolved(ops, label) {
+  let extra = [];
+  try { extra = await drivenOps(applyLocal(geomOf(), ops)); } catch (err) { toast('warning', `The constraints could not be solved: ${err.message || err}`); }
+  return commit([...ops, ...extra], label);
+}
+
+function ctxOf() {
+  return { geom: geomOf(), commit, onSolve: commitSolved, unit: unit(), drawing: store.state?.drawing, fields: store.state?.fields || {},
+    dof, counts: params.counts(geomOf()), state: scatter, armArea: () => { setTool('area'); toast('info', 'Drag the box the inclusions go in.'); } };
+}
+
+async function countFreedom() {
+  const g = geomOf();
+  const key = JSON.stringify([g.features, g.constraints]);
+  if (key === dofFor) return;
+  dofFor = key;
+  try {
+    const r = await freedom(g);
+    if (dofFor !== key) return;
+    dof = r.dof;
+  } catch (err) {
+    dof = null;
+  }
+  renderBar(); renderFoot();
+  if (!editor.sel.size) renderInspector();
+}
+
+async function onDimension(target) {
+  const r = await sizeDimension(ctxOf(), target);
+  if (!r) return;
+  if (r.solve) await commitSolved(r.ops, r.label);
+  else await commit(r.ops, r.label);
+}
+
+async function onDimPoints(A, B, both) {
+  const r = pointDimension(ctxOf(), A, B, both);
+  if (r) await commit(r.ops, r.label);
+}
+
 function setField(fid, field, value, label) {
   const i = geomOf().features.findIndex((f) => f.id === fid);
   if (i < 0) return;
@@ -61,12 +125,12 @@ function removeFeatures(ids) {
   const g = geomOf();
   const all = new Set(ids);
   // a combine's inputs go with it
-  const grow = (id) => { const f = g.features.find((x) => x.id === id); if (f && f.kind === 'combine') f.inputs.forEach((i) => { all.add(i); grow(i); }); };
+  const grow = (id) => { const f = g.features.find((x) => x.id === id); if (f && ['combine', 'pattern', 'mirror'].includes(f.kind)) f.inputs.forEach((i) => { all.add(i); grow(i); }); };
   ids.forEach(grow);
   const used = consumed(g);
   for (const id of all) {
     if (used.has(id)) {
-      const parent = g.features.find((f) => f.kind === 'combine' && f.inputs.includes(id));
+      const parent = g.features.find((f) => ['combine', 'pattern', 'mirror'].includes(f.kind) && f.inputs.includes(id));
       if (parent && !all.has(parent.id)) { toast('info', `${id} is part of ${parent.name || parent.id}: delete that, or ungroup it first.`); return; }
     }
   }
@@ -120,17 +184,166 @@ function ungroup(fid) {
 // -- the rail -----------------------------------------------------------------------------
 function setTool(t) {
   if (t === 'import') { importFile(); return; }
+  if (t === 'dimension') editor.sel.clear();
   if (LATER[t]) { toast('info', `${RAIL.find((r) => r[0] === t)[1]} arrives in phase ${LATER[t]}.`); return; }
   editor.fillMaterial = null;
   editor.setTool(t);
   if (t !== 'select' && t !== 'hand') { dismissedStart = true; showStart = false; renderStart(); }
-  renderRail(); renderInspector();
+  renderRail(); renderInspector(); renderBar(); renderFoot();
 }
 
 function renderRail() {
   for (const b of els.rail.querySelectorAll('.tool[data-tool]')) {
     b.setAttribute('aria-pressed', String(b.dataset.tool === editor.tool && !editor.fillMaterial));
   }
+}
+
+// -- pattern, mirror, split, fix, fillet, path constraints ----------------------------------
+async function patternOf(f) {
+  const g = geomOf();
+  const bb = editor.feature(f.id) ? (() => { const it = itemOfFeature(f); return [it.bounds.left, -it.bounds.bottom, it.bounds.width, it.bounds.height]; })() : [0, 0, 0.1, 0.1];
+  const mode = h('select', { class: 'field' }, ...[['line', 'in a line'], ['circle', 'around a centre'], ['grid', 'in a grid']].map(([v, l]) => h('option', { value: v }, l)));
+  const fld = (v) => h('input', { class: 'field num', value: fmt(v, 5), style: { width: '76px' } });
+  const n = fld(3), dx = fld(1.25 * bb[2]), dy = fld(0), cx = fld(bb[0] + bb[2] / 2), cy = fld(bb[1] - bb[3]), ang = fld(120), nx = fld(3), ny = fld(2), sx = fld(1.25 * bb[2]), sy = fld(1.25 * bb[3]);
+  const rows = { line: [['copies', n], ['step x', dx], ['step y', dy]], circle: [['copies', n], ['centre x', cx], ['centre y', cy], ['angle, °', ang]], grid: [['across', nx], ['up', ny], ['step x', sx], ['step y', sy]] };
+  const box = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } });
+  const fill = () => { clear(box); for (const [l, el] of rows[mode.value]) box.append(h('label', { class: 'row' }, l, el)); };
+  mode.addEventListener('change', fill);
+  fill();
+  const ok = await dialog(`Pattern ${f.name || f.id}`, [h('label', { class: 'row' }, 'copies', mode), box,
+    h('div', { class: 'muted', style: { fontSize: '12px' } }, 'The shape stays editable: change it, and every copy follows.')],
+  [{ label: 'Cancel' }, { label: 'Pattern', primary: true, value: () => true }]);
+  if (!ok) return;
+  const num = (el) => Number(el.value);
+  const prm = mode.value === 'line' ? { mode: 'line', count: Math.round(num(n)), dx: num(dx), dy: num(dy) }
+    : mode.value === 'circle' ? { mode: 'circle', count: Math.round(num(n)), cx: num(cx), cy: num(cy), angle: num(ang) }
+      : { mode: 'grid', nx: Math.round(num(nx)), ny: Math.round(num(ny)), sx: num(sx), sy: num(sy), count: Math.round(num(nx)) * Math.round(num(ny)) };
+  if (Object.values(prm).some((v) => typeof v === 'number' && !Number.isFinite(v)) || !(prm.count >= 1 && prm.count <= 200)) { toast('error', 'A pattern makes 1 to 200 copies, and every step is a number.'); return; }
+  const id = nextId(g);
+  const at = g.features.findIndex((x) => x.id === f.id) + 1;
+  editor.sel = new Set([id]);
+  await commit([{ op: 'insert', path: ['geometry', 'features'], index: at, value: blank('pattern', id, f.role, { inputs: [f.id], params: prm, material: f.material, name: `${f.name || f.id} × ${prm.count}` }) }],
+    `pattern of ${f.name || f.id}`);
+}
+
+function itemOfFeature(f) { return itemOf(f, byIdOf(geomOf())); }
+
+async function mirrorOf(f) {
+  const g = geomOf();
+  const b = itemOfFeature(f).bounds;
+  const axis = h('select', { class: 'field' }, h('option', { value: 'x' }, 'a vertical line, x ='), h('option', { value: 'y' }, 'a horizontal line, y ='));
+  const at = h('input', { class: 'field num', value: fmt(b.right, 6), style: { width: '86px' } });
+  axis.addEventListener('change', () => { at.value = fmt(axis.value === 'x' ? b.right : -b.top, 6); });
+  const ok = await dialog(`Mirror ${f.name || f.id}`, [h('label', { class: 'row' }, 'about', axis), h('label', { class: 'row' }, 'at', h('span', {}, at, ` ${unit()}`)),
+    h('div', { class: 'muted', style: { fontSize: '12px' } }, 'The shape and its mirror image, as one; the shape stays editable.')],
+  [{ label: 'Cancel' }, { label: 'Mirror', primary: true, value: () => Number.isFinite(Number(at.value)) }]);
+  if (!ok) return;
+  const id = nextId(g);
+  const i = g.features.findIndex((x) => x.id === f.id) + 1;
+  editor.sel = new Set([id]);
+  await commit([{ op: 'insert', path: ['geometry', 'features'], index: i, value: blank('mirror', id, f.role, { inputs: [f.id], params: { axis: axis.value, at: Number(at.value) }, material: f.material, name: `${f.name || f.id} mirrored` }) }],
+    `mirror of ${f.name || f.id}`);
+}
+
+/** Split: A cut by B, as A − B and A ∩ B; the overlap a region you can fill */
+async function split() {
+  const g = JSON.parse(JSON.stringify(geomOf()));
+  const order = g.features.map((f) => f.id);
+  const ids = [...editor.sel].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  if (ids.length !== 2) { toast('info', 'Split takes two shapes: the first is cut by the second.'); return; }
+  const [a, b] = ids.map((i) => g.features.find((f) => f.id === i));
+  const copy = (f) => { const c = JSON.parse(JSON.stringify(f)); c.id = nextId(g); c.name = `${f.name || f.id} (part)`; c.hidden = false; g.features.push(c); return c; };
+  const a2 = copy(a), b2 = copy(b);
+  const outer = blank('combine', nextId({ features: [...g.features, { id: '_' }] }), a.role, { op: 'subtract', inputs: [a.id, b.id], material: a.material, name: `${a.name || a.id} − ${b.name || b.id}`.slice(0, 60) });
+  g.features.push(outer);
+  const inner = blank('combine', nextId(g), a.role === 'add' ? 'region' : a.role, { op: 'intersect', inputs: [a2.id, b2.id], material: a.material, name: `${a.name || a.id} ∩ ${b.name || b.id}`.slice(0, 60) });
+  const at = Math.max(...ids.map((i) => order.indexOf(i))) + 1;
+  editor.sel = new Set([inner.id]);
+  await commit([{ op: 'insert', path: ['geometry', 'features'], index: at, value: a2 }, { op: 'insert', path: ['geometry', 'features'], index: at + 1, value: b2 },
+    { op: 'insert', path: ['geometry', 'features'], index: at + 2, value: outer }, { op: 'insert', path: ['geometry', 'features'], index: at + 3, value: inner }],
+  `split ${a.name || a.id} by ${b.name || b.id}`);
+}
+
+function fixToggle(f) {
+  const g = geomOf();
+  const ci = (g.constraints || []).findIndex((c) => c.type === 'fix' && c.refs.includes(f.id));
+  const b = h('button', { class: 'toggle', 'aria-pressed': String(ci >= 0), 'data-tip': ci >= 0 ? 'Fixed: the shape stays where it is. Click to free it.' : 'Fix the shape where it is: a drag cannot move it' }, ci >= 0 ? '⚓ fixed' : 'Fix');
+  b.addEventListener('click', () => {
+    if (ci >= 0) commit([{ op: 'remove', path: ['geometry', 'constraints', ci] }], `${f.name || f.id} free`);
+    else {
+      const ids = new Set((g.constraints || []).map((c) => c.id));
+      let k = ids.size + 1;
+      while (ids.has(`k${k}`)) k++;
+      commit([{ op: 'insert', path: ['geometry', 'constraints'], value: { id: `k${k}`, type: 'fix', refs: [f.id], value: null, param: null } }], `${f.name || f.id} fixed`);
+    }
+  });
+  return b;
+}
+
+function pathConstraints(f) {
+  const g = geomOf();
+  const sec = h('section', { class: 'subpanel' });
+  sec.append(h('div', { style: { fontWeight: 700 } }, 'Constraints', h('span', { class: 'q', 'data-tip': 'Solved by planegcs while you drag: the edges keep these relations. Edge numbers are drawn on the canvas.' }, '?')));
+  const own = (g.constraints || []).map((c, i) => [c, i]).filter(([c]) => c.refs.length && c.refs.every((r) => r.startsWith(`${f.id}:`)));
+  const names = { horizontal: 'horizontal', vertical: 'vertical', parallel: '∥ parallel', perpendicular: '⊥ perpendicular', equal: '= equal', distance: 'length' };
+  for (const [c, i] of own) {
+    const x = h('button', { class: 'btn small ghost', 'aria-label': 'Remove', 'data-tip': 'Remove this constraint' }, '×');
+    x.addEventListener('click', () => commit([{ op: 'remove', path: ['geometry', 'constraints', i] }], `removed ${c.type}`));
+    sec.append(h('div', { class: 'row', style: { fontSize: '12px' } }, h('span', {}, `${names[c.type] || c.type} ${c.refs.map((r) => r.split(':')[1]).join(' · ')}${c.param ? ` = ${c.param}` : ''}`), x));
+  }
+  const n = f.points.length;
+  const m = f.closed ? n : n - 1;
+  const lines = [...Array(m).keys()].filter((k) => (f.edges[k] || 'line') === 'line');
+  if (!lines.length) { sec.append(h('div', { class: 'muted', style: { fontSize: '12px' } }, 'Constraints act on straight edges; this path has none.')); return sec; }
+  const type = h('select', { class: 'field', 'aria-label': 'Constraint' }, ...['horizontal', 'vertical', 'parallel', 'perpendicular', 'equal'].map((t) => h('option', { value: t }, t)));
+  const e1 = h('select', { class: 'field', 'aria-label': 'Edge' }, ...lines.map((k) => h('option', { value: k }, `e${k}`)));
+  const e2 = h('select', { class: 'field', 'aria-label': 'Second edge' }, ...lines.map((k) => h('option', { value: k, selected: k === lines[Math.min(1, lines.length - 1)] || null }, `e${k}`)));
+  const pair = () => ['parallel', 'perpendicular', 'equal'].includes(type.value);
+  type.addEventListener('change', () => { e2.hidden = !pair(); });
+  e2.hidden = !pair();
+  const add = h('button', { class: 'btn small primary add-constraint', 'data-tip': 'Add the constraint; the path is solved so it holds' }, 'Add');
+  add.addEventListener('click', async () => {
+    const refs = pair() ? [`${f.id}:e${e1.value}`, `${f.id}:e${e2.value}`] : [`${f.id}:e${e1.value}`];
+    if (pair() && e1.value === e2.value) { toast('info', 'Pick two different edges.'); return; }
+    const ids = new Set((g.constraints || []).map((c) => c.id));
+    let k = ids.size + 1;
+    while (ids.has(`k${k}`)) k++;
+    const c = { id: `k${k}`, type: type.value, refs, value: null, param: null };
+    const g2 = { ...g, constraints: [...(g.constraints || []), c] };
+    const pts = await settledPoints(g2, f);
+    if (!pts) { toast('warning', `${type.value} on ${refs.map((r) => r.split(':')[1]).join(' and ')} cannot hold with the others.`); return; }
+    const i = g.features.findIndex((x) => x.id === f.id);
+    await commit([{ op: 'insert', path: ['geometry', 'constraints'], value: c }, { op: 'set', path: ['geometry', 'features', i, 'points'], value: pts }], `${type.value} ${refs.map((r) => r.split(':')[1]).join(', ')}`);
+  });
+  sec.append(h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } }, type, e1, e2, add));
+  return sec;
+}
+
+function filletSection(f) {
+  const n = f.points.length;
+  const m = f.closed ? n : n - 1;
+  const ok = [];
+  for (let k = 0; k < n; k++) {
+    const before = f.closed ? (k - 1 + n) % n : k - 1;
+    if (before < 0 || k >= m) continue;
+    if ((f.edges[before] || 'line') === 'line' && (f.edges[k] || 'line') === 'line') ok.push(k);
+  }
+  if (!ok.length) return null;
+  const sec = h('section', { class: 'subpanel' });
+  const v = h('select', { class: 'field', 'aria-label': 'Corner' }, ...ok.map((k) => h('option', { value: k }, `p${k}`)));
+  const L = (k) => { const a = f.points[k], b = f.points[(k + 1) % n]; return Math.hypot(b[0] - a[0], b[1] - a[1]); };
+  const r = h('input', { class: 'field num', value: fmt(0.2 * Math.min(...ok.map((k) => Math.min(L(k), L(f.closed ? (k - 1 + n) % n : k - 1)))), 3), style: { width: '70px' }, 'aria-label': 'Radius' });
+  const go = h('button', { class: 'btn small primary', 'data-tip': 'Round the corner with an arc tangent to both edges' }, 'Fillet');
+  go.addEventListener('click', async () => {
+    const rv = Number(r.value);
+    if (!(rv > 0)) { toast('error', 'A fillet radius above 0.'); return; }
+    busy++; renderBusy();
+    await send('geometry.fillet', { feature: f.id, vertex: Number(v.value), r: rv });
+    busy--; renderBusy();
+  });
+  sec.append(h('div', { style: { fontWeight: 700 } }, 'Fillet', h('span', { class: 'q', 'data-tip': 'An arc tangent to both straight edges at a corner: the corner point becomes two' }, '?')),
+    h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' } }, h('span', { class: 'muted' }, 'corner'), v, h('span', { class: 'muted' }, 'r'), r, go));
+  return sec;
 }
 
 function railButton([key, name, tip, d]) {
@@ -173,7 +386,7 @@ function treeRow(f, depth, list) {
     if (from >= 0 && to >= 0 && from !== to) commit([{ op: 'move', path: ['geometry', 'features'], from, to }], 'reordered the features');
   });
   list.append(row);
-  if (f.kind === 'combine') {
+  if (['combine', 'pattern', 'mirror'].includes(f.kind)) {
     const byId = byIdOf(geomOf());
     for (const i of f.inputs) if (byId[i]) treeRow(byId[i], depth + 1, list);
   }
@@ -217,7 +430,14 @@ function rolePicker(f) {
 
 function materialsOf() {
   const fam = family();
-  return { ...(fam?.materials || {}), ...(store.state?.case?.materials || {}) };
+  const all = { ...(fam?.materials || {}), ...(store.state?.case?.materials || {}) };
+  // a coefficient field's levels are the server's binning, not materials to pick
+  const fields = new Set((store.state?.geometry?.features || []).filter((f) => f.field).map((f) => f.id));
+  for (const m of Object.keys(all)) {
+    const k = /^(.+)-(\d+)$/.exec(m);
+    if (k && fields.has(k[1])) delete all[m];
+  }
+  return all;
 }
 
 function defaultMaterial(role) {
@@ -312,9 +532,10 @@ function renderInspector() {
       h('div', { class: 'muted' }, 'Shift+click to add to the selection'));
     const bar = h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' } });
     for (const [op, label, tip] of [['union', 'Union', 'Union · Ctrl+U: merge into one shape'], ['subtract', 'Subtract', 'Subtract · Ctrl+−: cut the others out of the first'],
-      ['intersect', 'Intersect', 'Intersect · Ctrl+I: keep only the overlap'], ['split', 'Split', 'Split: arrives in P2'], ['pattern', 'Pattern', 'Pattern: arrives in P2'], ['mirror', 'Mirror', 'Mirror: arrives in P2']]) {
-      const b = h('button', { class: 'btn', 'data-tip': tip, disabled: ['split', 'pattern', 'mirror'].includes(op) || null }, label);
-      b.addEventListener('click', () => combine(op));
+      ['intersect', 'Intersect', 'Intersect · Ctrl+I: keep only the overlap'], ['split', 'Split', 'Split · cut the first by the second into two shapes: what is outside, and the overlap as a region you can fill'],
+      ['pattern', 'Pattern', 'Pattern repeats one shape: select just it'], ['mirror', 'Mirror', 'Mirror reflects one shape: select just it']]) {
+      const b = h('button', { class: 'btn', 'data-tip': tip, disabled: (['pattern', 'mirror'].includes(op) || (op === 'split' && sel.length !== 2)) || null }, label);
+      b.addEventListener('click', () => (op === 'split' ? split() : combine(op)));
       bar.append(b);
     }
     box.append(bar, h('div', { class: 'muted', 'data-tip': 'The cutters stay in Features and can be moved or resized later' }, 'Every step stays editable.'));
@@ -333,30 +554,67 @@ function renderInspector() {
       h('span', { class: `tag ${f.role === 'guide' ? 'cut' : f.role}` }, f.role)));
     box.append(rolePicker(f));
     const live = editor.feature(f.id) || f;
+    const cx = ctxOf();
+    const bnd = (field, label, tip) => params.bindable(cx, f, field, label, live[field], tip);
     if (f.kind === 'rect') {
-      box.append(numField('x', live.x, (v) => setField(f.id, 'x', v, 'moved')), numField('y', live.y, (v) => setField(f.id, 'y', v, 'moved')),
-        numField('width', live.w, (v) => setField(f.id, 'w', v, 'resized')), numField('height', live.h, (v) => setField(f.id, 'h', v, 'resized')),
-        numField('corner radius', live.r, (v) => setField(f.id, 'r', v, 'rounded'), 'Rounds all four corners'));
+      box.append(bnd('x', 'x'), bnd('y', 'y'), bnd('w', 'width'), bnd('h', 'height'), bnd('r', 'corner radius', 'Rounds all four corners'));
     } else if (f.kind === 'ellipse') {
-      box.append(numField('x centre', live.cx, (v) => setField(f.id, 'cx', v, 'moved')), numField('y centre', live.cy, (v) => setField(f.id, 'cy', v, 'moved')),
-        numField(Math.abs(live.rx - live.ry) < 1e-12 ? 'radius' : 'radius x', live.rx, (v) => (Math.abs(live.rx - live.ry) < 1e-12
-          ? commit([{ op: 'set', path: ['geometry', 'features', geomOf().features.findIndex((x) => x.id === f.id), 'rx'], value: v },
-            { op: 'set', path: ['geometry', 'features', geomOf().features.findIndex((x) => x.id === f.id), 'ry'], value: v }], 'resized')
-          : setField(f.id, 'rx', v, 'resized'))));
-      if (Math.abs(live.rx - live.ry) >= 1e-12) box.append(numField('radius y', live.ry, (v) => setField(f.id, 'ry', v, 'resized')));
+      const circle = Math.abs(live.rx - live.ry) < 1e-12 && !(f.bind || {}).rx && !(f.bind || {}).ry;
+      box.append(bnd('cx', 'x centre'), bnd('cy', 'y centre'));
+      if (circle) {
+        box.append(numField('radius', live.rx, (v) => {
+          const i = geomOf().features.findIndex((x) => x.id === f.id);
+          commit([{ op: 'set', path: ['geometry', 'features', i, 'rx'], value: v }, { op: 'set', path: ['geometry', 'features', i, 'ry'], value: v }], 'resized');
+        }, 'A circle\'s radius; dimension it (D) to make its diameter a parameter'));
+      } else box.append(bnd('rx', 'radius x'), bnd('ry', 'radius y'));
+    } else if (f.kind === 'channel') {
+      box.append(bnd('w', 'width', 'The channel\'s width, across its centre line'),
+        h('div', { class: 'row' }, h('span', { class: 'muted' }, 'centre line'), h('span', {}, `${f.points.length} points`)));
+    } else if (f.kind === 'scatter') {
+      box.append(bnd('x', 'box x'), bnd('y', 'box y'), bnd('w', 'box width'), bnd('h', 'box height'), scatterSection(cx, f));
+    } else if (f.kind === 'pattern' || f.kind === 'mirror') {
+      const pr = f.params || {};
+      const i = geomOf().features.findIndex((x) => x.id === f.id);
+      const keys = f.kind === 'mirror' ? [['at', (pr.axis || 'x') === 'x' ? 'mirror at x' : 'mirror at y']]
+        : ({ line: [['count', 'copies'], ['dx', 'step x'], ['dy', 'step y']], circle: [['count', 'copies'], ['cx', 'centre x'], ['cy', 'centre y'], ['angle', 'angle, °']],
+          grid: [['nx', 'across'], ['ny', 'up'], ['sx', 'step x'], ['sy', 'step y']] }[pr.mode || 'line']);
+      for (const [k, label] of keys) {
+        box.append(numField(label, Number(pr[k] ?? 0), (v) => {
+          const np = { ...pr, [k]: ['count', 'nx', 'ny'].includes(k) ? Math.round(v) : v };
+          if (pr.mode === 'grid') np.count = Math.round(np.nx || 1) * Math.round(np.ny || 1);
+          commit([{ op: 'set', path: ['geometry', 'features', i, 'params'], value: np }], `${f.name || f.id}: ${label}`);
+        }));
+      }
+      const ug = h('button', { class: 'btn small', 'data-tip': `Remove the ${f.kind}; the shape stays` }, f.kind === 'pattern' ? 'Unpattern' : 'Unmirror');
+      ug.addEventListener('click', () => { editor.sel = new Set(f.inputs); commit([{ op: 'remove', path: ['geometry', 'features', i] }], `removed ${f.name || f.id}`); });
+      box.append(ug);
     } else if (f.kind === 'path') {
       const kinds = {};
       for (const k of f.edges) kinds[k] = (kinds[k] || 0) + 1;
       box.append(h('div', { class: 'row' }, h('span', { class: 'muted' }, 'path'),
         h('span', {}, `${f.closed ? 'closed' : 'open'} · ${f.points.length} points`)));
       box.append(h('div', { class: 'muted', style: { fontSize: '12px' } }, Object.entries(kinds).map(([k, n]) => `${n} ${k === 'cubic' ? 'curve' : k}${n > 1 ? 's' : ''}`).join(', ')));
+      box.append(pathConstraints(f));
+      const fl = f.closed || f.points.length > 2 ? filletSection(f) : null;
+      if (fl) box.append(fl);
     } else if (f.kind === 'combine') {
       box.append(h('div', { class: 'row' }, h('span', { class: 'muted' }, { union: 'union', subtract: 'subtract', intersect: 'intersect' }[f.op]), h('span', {}, `${f.inputs.length} inputs`)));
       const ug = h('button', { class: 'btn small', 'data-tip': 'Undo the combine; the shapes stay' }, 'Ungroup');
       ug.addEventListener('click', () => ungroup(f.id));
       box.append(ug);
     }
+    if (f.role === 'region' && f.kind !== 'scatter') box.append(coefficientSection(cx, f));
     if (f.role === 'add' || f.role === 'region') box.append(palette(f));
+    const acts = h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } });
+    if (['rect', 'ellipse', 'path', 'channel', 'scatter'].includes(f.kind)) acts.append(fixToggle(f));
+    if (!['pattern', 'mirror', 'scatter'].includes(f.kind) && !(f.kind === 'path' && !f.closed)) {
+      const pat = h('button', { class: 'btn small', 'data-tip': 'Repeat this shape in a line, around a centre, or in a grid' }, 'Pattern…');
+      pat.addEventListener('click', () => patternOf(f));
+      const mir = h('button', { class: 'btn small', 'data-tip': 'This shape and its mirror image, as one' }, 'Mirror…');
+      mir.addEventListener('click', () => mirrorOf(f));
+      acts.append(pat, mir);
+    }
+    box.append(acts);
     box.append(h('span', { style: { flex: 1 } }));
     const dup = h('button', { class: 'btn', style: { flex: 1 }, 'data-tip': 'Duplicate · Ctrl+D' }, 'Duplicate');
     dup.addEventListener('click', () => duplicate([f.id]));
@@ -394,6 +652,10 @@ function renderInspector() {
         h('span', {}, h('kbd', {}, 'Esc'), ' cancel')));
     return;
   }
+  if (editor.tool === 'dimension') {
+    box.append(params.panel({ ...ctxOf(), big: true }));
+    return;
+  }
   const st = store.state;
   const d = st?.drawing;
   box.append(h('div', { style: { fontSize: '17px', fontWeight: 700 } }, 'Drawing'));
@@ -408,6 +670,9 @@ function renderInspector() {
   ns.addEventListener('click', () => { showStart = true; renderStart(); });
   box.append(ns);
   box.append(palette(null));
+  box.append(h('div', { class: 'hr' }), params.panel(ctxOf()));
+  if (hasShape()) box.append(scatterSection(ctxOf()));
+  box.append(traceSection(under, unit(), d ? d.width : 1, renderInspector));
 }
 
 // -- the start screen -----------------------------------------------------------------------
@@ -663,6 +928,14 @@ function renderBar() {
       h('span', { class: 'spacer' }), h('span', { class: 'muted mono' }, check?.cells ? `${check.cells.count.toLocaleString()} cells` : ''));
     return;
   }
+  const chip = dofChip();
+  if (editor.tool === 'dimension') {
+    const marks = h('button', { class: 'toggle', 'aria-pressed': String(!!editor.opts.dims), 'data-tip': 'Show or hide constraint marks' }, 'Constraints');
+    marks.addEventListener('click', () => { editor.opts.dims = !editor.opts.dims; editor.redraw(); renderBar(); });
+    bar.append(chip, h('span', { class: 'muted', style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 } },
+      editor.dimA ? 'now the second point (Shift: both directions)' : 'click an edge, a hole or two points to dimension'), h('span', { class: 'spacer' }), els.busy, marks);
+    return;
+  }
   const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'What new shapes do' });
   for (const [r, label, tip] of [['add', 'Add', 'New shapes add to the domain'], ['cut', 'Cut', 'New shapes cut holes · hold Alt to switch while drawing'], ['region', 'Region', 'New shapes become material regions inside the domain']]) {
     const b = h('button', { 'aria-pressed': String(editor.role === r), 'data-tip': tip }, label);
@@ -679,6 +952,13 @@ function renderBar() {
     h('span', { class: 'spacer' }), els.busy, h('span', { class: 'muted', 'data-tip': 'Units for every number on screen' }, unit()),
     h('span', { class: 'muted mono', 'data-tip': 'Zoom · Ctrl+scroll; Fit · Shift+1', id: 'geo-zoom' }, ''));
   renderZoom();
+}
+
+function dofChip() {
+  if (!hasShape()) return null;
+  if (dof === 0) return h('span', { class: 'dofchip ok', 'data-tip': 'Every size and position is set by a dimension or a constraint: nothing can move by accident' }, '✓ fully defined');
+  return h('span', { class: 'dofchip', 'data-tip': 'Degrees of freedom: how many ways the sketch could still move. Dimension (D) or fix shapes to reach 0, fully defined.' },
+    dof === null ? '… free' : `${dof} free`);
 }
 
 function colourBy() {
@@ -717,7 +997,7 @@ function renderFoot() {
     b.addEventListener('click', () => toggleCheck(true));
     foot.append(b);
   }
-  foot.append(h('span', { class: 'spacer' }), els.checkBtn, h('span', {}, h('kbd', {}, 'Space'), ' pan'), h('span', {}, h('kbd', {}, 'K'), ' check'));
+  foot.append((editor && editor.tool !== 'dimension' && dofChip()) || '', h('span', { class: 'spacer' }), els.checkBtn, h('span', {}, h('kbd', {}, 'Space'), ' pan'), h('span', {}, h('kbd', {}, 'K'), ' check'));
 }
 
 async function typeSize() {
@@ -769,13 +1049,19 @@ export function mount(el) {
     commit, notify: toast, fmt: (x) => fmt(x, 4), unit,
     material: (role) => defaultMaterial(role),
     setTool, remove: removeFeatures, duplicate, importFile, toggleCheck, typeSize,
+    dimension: onDimension, dimPoints: onDimPoints,
+    solveDrag: (f, k, x, y) => dragPoint(geomOf().constraints ? { features: [f], constraints: geomOf().constraints } : { features: [f] }, f, k, x, y).catch(() => null),
+    channelWidth: () => Math.max(2 * (store.state?.drawing?.dx || 0.01), 0.02 * Math.min(store.state?.drawing?.width || 1, store.state?.drawing?.height || 1)),
+    areaDrawn: (box) => { scatter.scatterBox = box; renderInspector(); },
     changed: () => { if (editor.draft || editor.pen || editor.drag) renderInspector(); renderZoom(); },
     selected: () => { renderTree(); renderInspector(); },
   });
   editor.setTool('select');
+  under = new Underlay(stage);
+  solver().catch(() => null);           // load the WebAssembly solver early
   renderRail(); renderBar(); renderFoot();
   // for the page checks: what a person does through a file picker, by a File object
-  window.atlas = Object.assign(window.atlas || {}, { geometry: { readFile, editor, runCheck, toggleCheck } });
+  window.atlas = Object.assign(window.atlas || {}, { geometry: { readFile, editor, runCheck, toggleCheck, freedom: () => dof, under } });
   window.addEventListener('keydown', (e) => {
     if (e.shiftKey && e.code === 'Digit1' && stage.isShown()) stage.fit();
   });
@@ -791,6 +1077,7 @@ export function mount(el) {
       }
       editor.setGeom(st.geometry, st.drawing, { ...(family()?.materials || {}), ...st.case.materials });
       renderTree(); renderInspector(); renderBar(); renderStart();
+      countFreedom();
       if (what === 'state') {
         const r = await send('case.files');
         if (r.ok) { lastFiles = r.files; if (!els.start.hidden) renderStart(); }

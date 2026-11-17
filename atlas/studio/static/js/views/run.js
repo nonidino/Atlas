@@ -151,6 +151,23 @@ function render() {
   const comp = h('button', { class: 'btn', 'data-tip': 'The Atlas compiler\'s verdict on every seam' }, 'Compile');
   comp.addEventListener('click', () => send('compile.start'));
   left.append(comp);
+  // a sweep: the case once per value of a parameter marked in Geometry
+  const swept = (store.state.geometry?.parameters || []).filter((p) => p.sweep && p.sweep.length);
+  const sw = store.sweep;
+  const sweeping = sw && ['starting', 'running', 'stopping'].includes(sw.status);
+  if (swept.length || sw) {
+    left.append(h('div', { class: 'rule' }), h('div', { class: 'label' }, 'Sweep', h('span', { class: 'q', 'data-tip': 'The case runs once per value, each on its own copy, in turns; this case is not changed.' }, '?')));
+    const pick = h('select', { class: 'field', 'aria-label': 'Parameter to sweep' }, ...swept.map((p) => h('option', { value: p.name }, `${p.name}: ${p.sweep.length} values`)));
+    if (swept.length) left.append(pick);
+    const sb = h('button', { class: `btn ${sweeping ? 'danger' : ''}`, disabled: (!swept.length && !sweeping) || active || null,
+      'data-tip': sweeping ? 'Stop after the current run' : 'Run the case once per value of the parameter' }, sweeping ? 'Stop sweep' : 'Run sweep');
+    sb.addEventListener('click', async () => {
+      if (sweeping) await send('run.stop_sweep');
+      else await send('run.sweep', { param: pick.value, arms: chosen });
+    });
+    left.append(sb);
+    if (!swept.length) left.append(h('div', { class: 'muted', style: { fontSize: '12px' } }, 'Mark a parameter for a sweep in Geometry, Parameters.'));
+  }
   const cj = store.compile;
   if (cj) {
     const s = cj.summary;
@@ -161,6 +178,7 @@ function render() {
       cj.this_case === false ? h('div', {}, 'This was another case.') : null));
   }
   const main = h('section', { class: 'panel scroll', style: { flex: 1, minWidth: 0 } });
+  if (sw) main.append(sweepTable(sw));
   if (!r) {
     main.append(h('div', { class: 'placeholder' }, h('h2', {}, 'Nothing has run yet'),
       h('div', {}, 'Run marches every chosen arm in turns and compares them.')));
@@ -183,10 +201,33 @@ function render() {
   root.append(h('div', { class: 'work' }, left, main));
 }
 
+function sweepTable(sw) {
+  const box = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } });
+  box.append(h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+    h('b', {}, `Sweep of ${sw.param}`),
+    h('span', { class: 'mono' }, `${sw.results.filter((x) => x.status !== 'running').length} / ${sw.values.length}`),
+    h('span', { class: 'muted', style: { marginLeft: 'auto', fontSize: '12px' } }, sw.status)));
+  if (sw.error) box.append(h('div', { class: 'note err' }, sw.error));
+  const t = h('div', { class: 'sweeptable' },
+    h('span', { class: 'ph' }, sw.param), h('span', { class: 'ph' }, 'run'), h('span', { class: 'ph', 'data-tip': 'The registered agreement measure of the decomposed arm against the full domain' }, 'agreement'),
+    h('span', { class: 'ph', 'data-tip': "The whole domain's step time over the decomposed arm's, on this machine; above 1 is faster" }, 'price'), h('span', { class: 'ph' }, 'checks'));
+  for (const [k, v] of sw.values.entries()) {
+    const res = sw.results[k];
+    const cd = res && res.cards;
+    t.append(h('span', { class: 'mono' }, fmt(v, 4)),
+      h('span', {}, res ? (res.error ? h('span', { class: 'err-text', 'data-tip': res.error }, 'failed') : res.status) : (k === sw.index && sw.status === 'running' ? 'running' : '–')),
+      h('span', { class: 'mono' }, cd && cd.agreement ? `${fmt(cd.agreement.value, 3)} ${cd.agreement.passed ? '✓' : '✗'}` : '–'),
+      h('span', { class: 'mono' }, cd && cd.speed ? `${fmt(cd.speed.ratio, 3)}×` : '–'),
+      h('span', { class: 'mono' }, cd ? `${cd.passed}/${cd.checks.length}` : '–'));
+  }
+  box.append(t, h('div', { class: 'rule' }));
+  return box;
+}
+
 export function mount(el) {
   root = el;
   subscribe((what) => {
-    if (['run', 'state', 'compile', 'tab'].includes(what)) render();
+    if (['run', 'state', 'compile', 'tab', 'sweep'].includes(what)) render();
     if (what === 'fields') renderFields();
   });
 }

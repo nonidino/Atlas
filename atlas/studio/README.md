@@ -19,6 +19,7 @@ opens in the other. `--fetch-fonts` downloads Ranade from Fontshare and exits.
 |---|---|---|
 | P0 | the shell: FastAPI and one JavaScript page over a WebSocket; the header, the two themes, hover explanations; open and save of case files bit for bit; the vendored libraries pinned by hash; the bundle's pins and self-test | built |
 | P1 | geometry I: case file 0.7's feature tree; the Paper.js editor (select, pen, rectangle, ellipse, arc, measure, pan); Add, Cut and Region; smart guides, grid snap, typed sizes; combine (union, subtract, intersect); materials; the start screen; imports of `.msh`, STEP, DXF and SVG; the server's exact evaluation and the Check view; a minimal Run; the one-command install serves the studio | built |
+| P2 | geometry II: parameters and formulas; the Dimension tool and planegcs constraints with the degrees-of-freedom count; pattern, mirror, split and fillet; coefficient fields (formula, image); the Channel tool; seeded scatter (circles, channels, both); image tracing; sweeps from Run | built |
 
 ## Geometry (P1)
 
@@ -59,6 +60,54 @@ width and a height; the three held-out benchmarks; recent files; a drop zone.
 STEP through OpenCASCADE in metres (a solid is cut at half height), DXF and SVG read
 in the page (lines, arcs, circles, polylines with bulges, ellipses, splines, Bezier
 paths), the outermost loops adding and the loops inside them cutting.
+
+## Geometry (P2)
+
+**Parameters** are named numbers or formulas of each other (`formula.py`, a small
+parser: numbers, names, `+ - * / ^`, `exp log sqrt abs sin cos tan tanh min max`, pi
+and e; never Python `eval`). A shape's field can be **bound** to a formula: type it in
+the inspector (the *fx* mark says so) or let the Dimension tool write it. Before the
+tree is evaluated, `resolve.py` gives every parameter its value, sets every bound
+field and places every scatter's inclusions; a saved file holds both the drivers and
+what they drove. `formula.js` is the same grammar for the page's previews; a test
+runs both on the same formulas.
+
+**Dimension (D)** clicks an edge of a rectangle (its width or height becomes `W`,
+`H`, ...), a hole (its diameter `d`), a straight edge of a path (a driving length,
+solved by planegcs) or two points (the second shape's position bound to the first's,
+`cx = W - x_h`; Shift sets both directions). **Fix** pins a shape where it is. A
+dimensioned size cannot be dragged by accident. The bar counts the **degrees of
+freedom** with planegcs (`geo/gcs.js`): a rectangle has 4, a dimensioned and fixed
+plate 0, "fully defined". A path's horizontal, vertical, parallel, perpendicular and
+equal constraints hold while its points are dragged (planegcs solves each move).
+
+**Operations:** Pattern (in a line, around a centre, in a grid), Mirror (about a
+vertical or horizontal line) and Fillet (a tangent arc at a corner of two straight
+edges) keep the shape editable; Split cuts one shape by another into what lies
+outside and the overlap, a region to fill. **Channel (C)** draws a centre line that
+gets a width: the thin strips Stage 0b needs. **Scatter** places inclusions from a
+seed (count, size range, gap, shape, material, a drawn Area): NumPy's PCG64 in a fixed
+order, so the same seed gives the same inclusions, byte for byte in the case file.
+
+**Coefficient fields:** a region's coefficient is its material's constant, a formula
+of `x`, `y` and the parameters, or an image whose grey levels map onto a range (log or
+linear). The server bins the field into at most 16 materials, each level a set of
+whole cells (`geometry_eval.field_regions`), and reports the range it found; the page
+evaluates the same formula at the same cells and shows *same range* when they agree.
+
+**Trace** puts a picture under the drawing at a typed width, on this page only.
+**Sweep:** mark a parameter in the Parameters panel (from, to, runs); Run's *Run sweep*
+runs the case once per value, each on its own copy, and lists agreement, price and
+checks per value.
+
+## Page checks
+
+`scripts/studio_drive.py WALK` drives the real page in headless Edge with **trusted**
+input (the DevTools protocol's mouse and key events), checks what each step should
+change, fails on any console error, and writes `out/studio/<walk>/walk.json` with
+screenshots. The app's own browser pane cannot take input while it is hidden, and a
+page check must not depend on a window being in front. `scripts/studio_walks/p2.py`
+is P2's: 30 checks, among them the four done-when items.
 
 ## How it works
 
@@ -138,9 +187,14 @@ server and runs a case over its WebSocket.
   `tests/workbench_ui.py`): nothing serves them (`python -m atlas.workbench` says it
   is retired), and their tests still pass. Rewriting those tests against this
   protocol, and then deleting the modules, is open.
-- **Dimension and Channel are P2**, as are parameters, formulas, patterns, mirror,
-  fillet, coefficient fields, scatter as a feature, image tracing and sweeps; their
-  rail buttons say so.
+- **Tangent constraints** are not offered: the pen's arcs are bulges, not planegcs
+  arcs. A fillet is tangent by construction.
+- **The server never runs planegcs.** The page solves a path's constraints and writes
+  the solved points into the tree; a constraint the page did not solve (a file edited
+  by hand) is kept but not enforced until the path is next edited in the page.
+- **On Linux without libGLU** (WSL's Ubuntu, for one) Gmsh does not load: STEP import
+  and the exact OpenCASCADE areas are unavailable, and the Check view's areas come from
+  Shapely. The installer says so.
 - **A cubic curve reaches the engine as short lines** (it has no cubic edge), so a
   boundary condition on a pen curve is held by each of those edges.
 - **Case files are written in text mode** (`CaseSpec.save`, unchanged), so a file is

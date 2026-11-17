@@ -212,7 +212,7 @@ def test_a_run_over_the_socket_ends_in_cards_with_no_raw_seconds(client):
 # -- the session: every message, through spec.check -----------------------------------------
 
 def test_every_handler_refuses_what_it_does_not_take(session):
-    valid = {str: "x", list: [], dict: {}, int: 1, bool: True}
+    valid = {str: "x", list: [], dict: {}, int: 1, bool: True, float: 1.5}
     for name, h in protocol.HANDLERS.items():
         reply, _ = protocol.handle(session, {"id": 1, "type": name, "bogus": 1})
         assert reply["ok"] is False and "does not take" in reply["error"], name
@@ -221,7 +221,8 @@ def test_every_handler_refuses_what_it_does_not_take(session):
             others = {a: valid[h.args[a][0]] for a in required if a != arg}
             reply, _ = protocol.handle(session, {"id": 2, "type": name, **others})
             assert reply["ok"] is False and "needs" in reply["error"], name
-            reply, _ = protocol.handle(session, {"id": 3, "type": name, **others, arg: 12.5})
+            wrong = "x" if h.args[arg][0] is float else 12.5     # a number is a float's type
+            reply, _ = protocol.handle(session, {"id": 3, "type": name, **others, arg: wrong})
             assert reply["ok"] is False and "wrong type" in reply["error"], name
     assert protocol.handle(session, {"id": 4, "type": "nope"})[0]["ok"] is False
     assert protocol.handle(session, ["not", "an", "object"])[0]["ok"] is False
