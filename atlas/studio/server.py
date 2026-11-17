@@ -36,10 +36,14 @@ from fastapi.staticfiles import StaticFiles
 from . import fonts, protocol
 from .session import Session
 
-for _ext, _type in ((".js", "text/javascript"), (".mjs", "text/javascript"),
-                    (".css", "text/css"), (".wasm", "application/wasm"),
-                    (".woff2", "font/woff2"), (".json", "application/json"),
-                    (".svg", "image/svg+xml")):
+#: the type of every file the page loads, set on each response: the process-wide
+#: `mimetypes` table can be reset by any library that calls `mimetypes.init()` (seen in
+#: the test suite), and the machine's registry can say ``text/plain`` for ``.js``
+TYPES = {".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css",
+         ".wasm": "application/wasm", ".woff2": "font/woff2", ".json": "application/json",
+         ".svg": "image/svg+xml", ".html": "text/html", ".txt": "text/plain",
+         ".png": "image/png"}
+for _ext, _type in TYPES.items():
     mimetypes.add_type(_type, _ext)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -59,9 +63,13 @@ FAVICON = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">'
 class _Static(StaticFiles):
     """Static files that the browser must revalidate."""
 
-    def file_response(self, *args, **kwargs):
-        r = super().file_response(*args, **kwargs)
+    def file_response(self, full_path, *args, **kwargs):
+        r = super().file_response(full_path, *args, **kwargs)
         r.headers["Cache-Control"] = "no-cache"
+        kind = TYPES.get(os.path.splitext(str(full_path))[1].lower())
+        if kind is not None:
+            r.headers["content-type"] = kind + ("; charset=utf-8" if kind.startswith("text/")
+                                                else "")
         return r
 
 
