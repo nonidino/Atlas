@@ -97,6 +97,9 @@ LAUNCHERS = {
     "gitattributes": ".gitattributes",
 }
 OPTIONAL_TEMPLATES = ("constraints.txt",)
+#: files at the repository's root the bundle carries at its own root, unchanged: the
+#: notices of the third-party files the studio vendors travel with them
+ROOT_FILES = ("THIRD-PARTY-NOTICES.md",)
 
 #: The only binary files the bundle may carry, by exact path pattern: the learned
 #: case's trained weights (the owner's: trained from scratch on the vault's own
@@ -223,9 +226,10 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
     templates = ["atlas/workbench/bundle/" + t for t in LAUNCHERS
                  if os.path.isfile(os.path.join(TEMPLATES, t))]
     learned = ["out/learned-case/" + f for f in learned_files()]
+    roots = list(ROOT_FILES)
     dirty = (_dirty(ROOT, ["atlas"], _copied_from_atlas)
              + _dirty(ROOT, ["tests/" + t for t in tests] + ["scripts/" + s for s in scripts]
-                      + templates + learned))
+                      + templates + learned + roots))
     vendor_rel = "/".join(VENDOR_PACKAGE)
     dirty_build = _dirty(build_repo, [vendor_rel, "LICENSE"])
     if (dirty or dirty_build) and not allow_dirty:
@@ -300,6 +304,8 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
             raise SystemExit("the template %s is missing" % s)
         shutil.copyfile(s, os.path.join(out, d))
     os.chmod(os.path.join(out, "run.sh"), 0o755)
+    for f in ROOT_FILES:
+        shutil.copyfile(os.path.join(ROOT, f), os.path.join(out, f))
 
     # 5. what this copy was taken from ------------------------------------------------
     text = open(os.path.join(TEMPLATES, "run.sh"), encoding="utf-8").read()

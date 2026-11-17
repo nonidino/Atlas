@@ -270,6 +270,15 @@ def test_the_builder_carries_every_workbench_test_and_the_scripts_they_import():
     assert "build_racelab_bundle.py" not in scripts
 
 
+def test_the_bundle_carries_the_vendored_files_notices():
+    """The studio's vendored libraries and fonts travel with their notices: the
+    clone's own test of them read THIRD-PARTY-NOTICES.md and the first P1 build
+    had not copied it (2026-11-16)."""
+    W = _builder()
+    assert "THIRD-PARTY-NOTICES.md" in W.ROOT_FILES
+    assert os.path.isfile(os.path.join(HERE, "THIRD-PARTY-NOTICES.md"))
+
+
 def test_the_builder_leaves_out_only_packages_nothing_else_imports():
     W = _builder()
     pat = re.compile(r"(?:from|import)\s+(?:atlas\.|\.\.?)(%s)\b" % "|".join(W.EXCLUDE_ATLAS))
