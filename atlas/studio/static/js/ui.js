@@ -65,6 +65,11 @@ function placeTip(target) {
   tip.style.top = `${y}px`;
 }
 
+/** an element's explanation changed while it is shown: show the new one */
+export function refreshTip(el) {
+  if (tipFor === el && tipEl().classList.contains('on')) placeTip(el);
+}
+
 export function hideTip() {
   clearTimeout(tipTimer);
   tipFor = null;

@@ -142,8 +142,9 @@ input.field, select.field, textarea.field {
 }
 input.field.num { font-family: var(--mono); font-size: 12px; }
 input.field:focus, select.field:focus { border-color: var(--accent); outline: none; }
-label.row { display: flex; align-items: center; justify-content: space-between; gap: 8px;
-            font-size: 12px; color: var(--muted); }
+label.row, div.row { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+                      font-size: 12px; color: var(--muted); }
+div.row b, div.row span:last-child { color: var(--text); }
 
 /* -- the views ---------------------------------------------------------------------- */
 #views { flex: 1; min-height: 0; display: flex; }
@@ -248,3 +249,41 @@ label.row { display: flex; align-items: center; justify-content: space-between; 
   .work { flex-direction: column; }
   .work > .panel { width: auto !important; }
 }
+
+/* -- geometry: the start screen over the canvas, the drop zone, busy ------------------ */
+.startover {
+  position: absolute; inset: 8px; z-index: 5; display: flex; gap: 20px; padding: 18px 22px;
+  overflow: auto; background-color: var(--canvas); border: 1px solid var(--line); border-radius: 10px;
+  background-image: linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.startover[hidden] { display: none; }
+.startcard {
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start; color: var(--text);
+  text-align: left; min-width: 0;
+}
+.startcard:hover { border-color: var(--accent); }
+.startcard svg { color: var(--muted); }
+.startcard .t-fill { fill: var(--shape-fill); stroke: var(--shape-stroke); stroke-width: 1.4; }
+.startcard .t-hole { fill: var(--surface); stroke: var(--shape-stroke); stroke-width: 1.4; }
+.sizebar { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line);
+           border-radius: 10px; padding: 8px 10px; width: max-content; }
+.sizebar label { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.dropzone {
+  border: 1.5px dashed var(--accent); border-radius: 12px; background: var(--panel); padding: 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+  color: var(--accent-ink); cursor: pointer;
+}
+.dropzone b { color: var(--text); }
+.dropzone.over { background: var(--accent-wash); }
+.chipkind { font-size: 11px; font-weight: 700; border: 1px solid var(--line); border-radius: 5px;
+            padding: 2px 6px; background: var(--surface); color: var(--text); cursor: help; }
+.busy { font-size: 12px; color: var(--accent-ink); font-weight: 600; }
+.busy::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+                background: var(--accent); margin-right: 6px; animation: pulse 0.9s infinite alternate; }
+@keyframes pulse { from { opacity: 0.3; } to { opacity: 1; } }
+.busy[hidden] { display: none; }
+.linkish { border: 0; background: transparent; padding: 0; font: inherit; cursor: pointer; }
+.linkish:hover { text-decoration: underline; }

@@ -135,6 +135,38 @@ def _redo(s: Session):
     s.redo()
 
 
+# -- the geometry's own actions ------------------------------------------------------
+
+@handler("geometry.check", {"n": (int, False), "areas": (dict, False)}, changes=False)
+def _check(s: Session, n: int | None = None, areas: dict | None = None):
+    """The Check view at ``n`` cells along the longer side; ``areas``: the page's own
+    (Paper.js) areas by feature id, to set beside the server's."""
+    if n is not None and not 4 <= n <= 4096:
+        raise Refused("a grid of 4 to 4096 cells along the longer side")
+    return {"check": s.geometry_check(n, areas)}
+
+
+@handler("geometry.fix", {"key": (str, True)})
+def _geo_fix(s: Session, key: str):
+    s.geometry_fix(key)
+
+
+@handler("geometry.start", {"shape": (str, True), "params": (dict, False)})
+def _geo_start(s: Session, shape: str, params: dict | None = None):
+    s.geometry_start(shape, params or {})
+
+
+@handler("geometry.import", {"format": (str, True), "data": (str, True), "name": (str, True)})
+def _geo_import(s: Session, format: str, data: str, name: str):
+    try:
+        raw = base64.b64decode(data, validate=True)
+    except ValueError:
+        raise Refused("the file's data is not base64") from None
+    if len(raw) > 64 * 1024 * 1024:
+        raise Refused("a file of at most 64 MB")
+    s.geometry_import(format, raw, name)
+
+
 # -- runs and compiles -------------------------------------------------------------
 
 @handler("run.start", {"arms": (list, False)})

@@ -2,7 +2,7 @@
 // and the Case menu (new, examples, open, save, import, export).
 
 import { store, subscribe, send, changed, family } from './store.js';
-import { h, menu, dialog, toast, setTheme, theme, download, clear } from './ui.js';
+import { h, menu, dialog, toast, setTheme, theme, download, clear, refreshTip } from './ui.js';
 
 export function showTab(name) {
   store.tab = name;
@@ -161,6 +161,8 @@ function render() {
   run.textContent = active ? 'Stop' : 'Run';
   run.classList.toggle('stop', active);
   run.setAttribute('data-tip', active ? 'Stop after the step in progress' : 'Run the case · Ctrl+Enter');
+  refreshTip(run);
+  refreshTip(chip);
   const label = document.getElementById('filelabel');
   if (st) {
     const m = st.meta;

@@ -30,4 +30,4 @@ net.on('connection', (m) => {
 net.start();
 
 // for the page checks: the page's own state, read without a screenshot
-window.atlas = { store, net, subscribe };
+window.atlas = Object.assign(window.atlas || {}, { store, net, subscribe });
