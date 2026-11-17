@@ -252,7 +252,7 @@ class Session:
     def state(self) -> dict:
         return {"type": "state", "case": json.loads(self.spec.to_json()),
                 "geometry": json.loads(self.geom.model_dump_json()),
-                "fields": self.fields,
+                "fields": self.fields, "regime": self.regime(),
                 "meta": self.meta(), "issues": self.issue_rows(),
                 "status": self.status(), "drawing": drawing(self.spec)}
 
@@ -282,9 +282,22 @@ class Session:
         exs = [{"key": e.key, "family": e.family, "shows": e.shows, "style": e.style,
                 "fast": FAST_EXAMPLES.get(e.family) == e.key,
                 "fixed": e.key == learned_case.KEY} for e in EXAMPLES.values()]
+        from . import registry_eq
         return {"type": "catalog", "families": fams, "examples": exs,
                 "styles": dict(registry.STYLES), "starts": starts.CATALOG,
-                "benchmarks": starts.BENCHMARKS}
+                "benchmarks": starts.BENCHMARKS, "equations": registry_eq.equations(),
+                "groups": {k: list(v) for k, v in registry_eq.GROUPS.items()},
+                "classes": dict(registry_eq.CLASSES)}
+
+    def regime(self) -> dict:
+        """The case's regime numbers (`registry_eq.regime`), and its equation."""
+        from . import registry_eq
+        try:
+            out = registry_eq.regime(self.spec)
+        except Exception as exc:                  # a number that cannot be computed
+            out = {"error": f"{type(exc).__name__}: {exc}"}
+        out["equation"] = registry_eq.of_family(self.spec.physics.family)
+        return out
 
     # ------------------------------------------------------------------
     # versions

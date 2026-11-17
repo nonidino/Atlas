@@ -169,13 +169,27 @@ class Page:
         self.clicks += 1
         self.pump(0.05)
 
-    KEYS = {"Enter": (13, "\r"), "Escape": (27, ""), "Backspace": (8, ""), "Tab": (9, ""), "Delete": (46, ""),
+    # Enter carries no text: in a one-line field a real key inserts nothing, and a
+    # carriage return sent as text lands in the field's value
+    KEYS = {"Enter": (13, ""), "Escape": (27, ""), "Backspace": (8, ""), "Tab": (9, ""), "Delete": (46, ""),
             "ArrowLeft": (37, ""), "ArrowRight": (39, ""), "ArrowUp": (38, ""), "ArrowDown": (40, "")}
 
+    #: the editing command a shortcut performs (Ctrl or Cmd held)
+    COMMANDS = {"a": "selectAll", "z": "undo", "c": "copy", "v": "paste", "x": "cut"}
+
     def key(self, key: str, mods: int = 0):
+        """One key pressed and released.  ``mods``: 1 Alt, 2 Ctrl, 4 Meta, 8 Shift.  A
+        shortcut (Ctrl or Meta held) types no text, as a real one does not."""
         code, text = self.KEYS.get(key, (ord(key.upper()) if len(key) == 1 else 0, key if len(key) == 1 else ""))
         base = {"key": key, "windowsVirtualKeyCode": code, "modifiers": mods}
-        self.call("Input.dispatchKeyEvent", type="keyDown" if text else "rawKeyDown", text=text, **base)
+        if len(key) == 1:
+            base["code"] = f"Key{key.upper()}" if key.isalpha() else ("Digit" + key if key.isdigit() else "")
+        extra = {}
+        if mods & 6:
+            text = ""
+            if key.lower() in self.COMMANDS:
+                extra["commands"] = [self.COMMANDS[key.lower()]]
+        self.call("Input.dispatchKeyEvent", type="keyDown" if text else "rawKeyDown", text=text, **base, **extra)
         self.call("Input.dispatchKeyEvent", type="keyUp", **base)
         self.pump(0.05)
 
@@ -247,7 +261,10 @@ class Page:
         x, y = self.at(selector, index)
         self.click(x, y)
         self.key("a", mods=2)
-        self.type(text)
+        if text:
+            self.type(text)
+        else:
+            self.key("Backspace")                    # what clears a selection
         if enter is None:
             enter = not selector.lstrip().startswith(".dialog")
         self.key("Enter" if enter else "Tab")

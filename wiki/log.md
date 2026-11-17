@@ -1106,3 +1106,13 @@ Tests: 12 in `tests/test_studio_params.py`, among them the page's solver run in 
 **Open:** tangent constraints (the pen's arcs are bulges, not planegcs arcs); P3 to P6.
 
 **Changed:** [[integrated-ui-plan]] (status line).
+
+## [2026-11-17] build | integrated UI, phase P3: physics
+
+The equation registry (`atlas/studio/registry_eq.py`) holds every PDE of [[chart-operator-family-catalog]] §2 as data: its type, its group's family and guarantee class, whether a chart-operator expert exists for it (CO-D's alone), its properties, and the workbench kind that runs it or why nothing does. Eight of the 44 run here; the other 36 say why not on hover. The Physics screen shows the equation with its symbols explained, steady or transient, each material's properties, the run's settings, the boundaries explained, and three panels: properties, regime and guarantee.
+
+**The regime numbers, against hand computations** (fast-heat, steel and copper, transient): contrast 400/45 = 8.89; the cell Fourier number κΔt/(ρc h²) = 1.71 with copper's diffusivity; the piece Fourier number κΔt/(ρc|Ω|) = 6.9 × 10⁻⁶, outside the CO-D card's [0.01, 100] and marked so. The river's Péclet number per reach (u = q/depth), the wind farm's Re_D = 255 (the referent's own), and sound's kh = 0.3 (k = 3/w for a Gaussian pulse) are checked the same way in `tests/test_studio_physics.py`.
+
+**Checked in the real page** with trusted input: 19 checks, zero console errors (`out/studio/p3/walk.json`): every equation runs or shows its reason on hover; the regime numbers shown equal the hand computations; steady drops the Fourier numbers; editing copper's κ to 380 moves the contrast to 8.44; a greyed equation does nothing and Acoustics opens a sound case; the search narrows the list; nothing overflows at 1090 × 620 in either theme.
+
+**Changed:** [[integrated-ui-plan]] (status line).

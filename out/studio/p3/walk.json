@@ -1,0 +1,153 @@
+{
+ "walk": "scripts/studio_walks/p3.py",
+ "url": "http://127.0.0.1:8021/",
+ "size": "1090x620",
+ "theme": "light",
+ "started": "2026-11-17T18:41:20",
+ "checks": [
+  {
+   "check": "the list shows every equation of the catalog",
+   "passed": true,
+   "detail": "44 of 44"
+  },
+  {
+   "check": "every equation runs or says why not",
+   "passed": true,
+   "detail": "8 run, 36 say why not"
+  },
+  {
+   "check": "the eight kinds that run here are all in the list",
+   "passed": true,
+   "detail": [
+    "Heat",
+    "Steady current",
+    "Advection\u2013diffusion",
+    "Conjugate heat transfer",
+    "Linear elasticity",
+    "Navier\u2013Stokes",
+    "Acoustics",
+    "Thermoelasticity"
+   ]
+  },
+  {
+   "check": "hovering a greyed equation shows why it does not run",
+   "passed": true,
+   "detail": "Same operator as heat (CO-D), but no Darcy case is built here: its permeabilities, wells and pressure boundaries have no workbench family."
+  },
+  {
+   "check": "hovering a guarantee class explains it",
+   "passed": true,
+   "detail": "CO-D: Guarantee class G0: linear, symmetric, has an energy. The assembled interface matrix stays positive semidefinite whatever the network outputs; C\u00e9a constant 1; machine-checked in Lean."
+  },
+  {
+   "check": "contrast = 400 / 45 (copper over steel)",
+   "passed": true,
+   "detail": 8.88888888888889
+  },
+  {
+   "check": "Fo, cell = alpha dt / h^2",
+   "passed": true,
+   "detail": [
+    1.7078521405919662,
+    1.7078521405919662
+   ]
+  },
+  {
+   "check": "Fo, piece = alpha dt / |Omega|, outside the CO-D card's [0.01, 100]",
+   "passed": true,
+   "detail": [
+    6.949268150195175e-06,
+    6.949268150195175e-06
+   ]
+  },
+  {
+   "check": "the page shows them",
+   "passed": true,
+   "detail": {
+    "contrast": "8.89",
+    "Fo, cell": "1.71",
+    "Fo, piece": "6.9 \u00d7 10\u207b\u2076 \u2717",
+    "Pe": "\u2014",
+    "k": "\u2014"
+   }
+  },
+  {
+   "check": "each regime number names its definition on hover",
+   "passed": true,
+   "detail": "Fo = \u03ba\u0394t / (\u03c1c h\u00b2): how far heat spreads in one step, relative to a cell; \u03b1 = 1.160e-4 m\u00b2/s (copper), \u0394t = 0.005753 s, h = 6.250e-4 m"
+  },
+  {
+   "check": "steady: no Fourier number",
+   "passed": true,
+   "detail": {
+    "contrast": "8.89",
+    "Fo, piece": "steady \u2713",
+    "Pe": "\u2014",
+    "k": "\u2014"
+   }
+  },
+  {
+   "check": "editing copper's \u03ba to 380 gives contrast 380/45",
+   "passed": true,
+   "detail": {
+    "contrast": "8.44",
+    "Fo, cell": "1.62",
+    "Fo, piece": "6.6 \u00d7 10\u207b\u2076 \u2717",
+    "Pe": "\u2014",
+    "k": "\u2014"
+   }
+  },
+  {
+   "check": "clicking an equation that does not run changes nothing",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "acoustics: k h = 3 h / w",
+   "passed": true,
+   "detail": [
+    0.3,
+    0.3
+   ]
+  },
+  {
+   "check": "the equation screen follows: Acoustics, hyperbolic, G3",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "a boundary condition explains itself on hover",
+   "passed": true,
+   "detail": "a rigid wall: no velocity through it"
+  },
+  {
+   "check": "the search narrows the list",
+   "passed": true,
+   "detail": [
+    "Linear elasticity",
+    "Axisymmetric elasticity",
+    "Hyperelasticity",
+    "Thermoelasticity",
+    "Biot poroelasticity"
+   ]
+  },
+  {
+   "check": "nothing overflows sideways at 1090 x 620",
+   "passed": true,
+   "detail": []
+  },
+  {
+   "check": "no console errors",
+   "passed": true,
+   "detail": null
+  }
+ ],
+ "console_errors": [],
+ "screenshots": [
+  "out/studio/p3/p3-heat.png",
+  "out/studio/p3/p3-heat-dark.png"
+ ],
+ "trusted_clicks_and_drags": 8,
+ "passed": true,
+ "finished": "2026-11-17T18:41:47"
+}

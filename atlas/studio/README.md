@@ -20,6 +20,7 @@ opens in the other. `--fetch-fonts` downloads Ranade from Fontshare and exits.
 | P0 | the shell: FastAPI and one JavaScript page over a WebSocket; the header, the two themes, hover explanations; open and save of case files bit for bit; the vendored libraries pinned by hash; the bundle's pins and self-test | built |
 | P1 | geometry I: case file 0.7's feature tree; the Paper.js editor (select, pen, rectangle, ellipse, arc, measure, pan); Add, Cut and Region; smart guides, grid snap, typed sizes; combine (union, subtract, intersect); materials; the start screen; imports of `.msh`, STEP, DXF and SVG; the server's exact evaluation and the Check view; a minimal Run; the one-command install serves the studio | built |
 | P2 | geometry II: parameters and formulas; the Dimension tool and planegcs constraints with the degrees-of-freedom count; pattern, mirror, split and fillet; coefficient fields (formula, image); the Channel tool; seeded scatter (circles, channels, both); image tracing; sweeps from Run | built |
+| P3 | physics: the equation registry (every PDE of the family catalog, its type, guarantee class, properties, and the solver that runs it or why none does); the equation screen; the regime numbers with their definitions | built |
 
 ## Geometry (P1)
 
@@ -100,6 +101,30 @@ evaluates the same formula at the same cells and shows *same range* when they ag
 runs the case once per value, each on its own copy, and lists agreement, price and
 checks per value.
 
+## Physics (P3)
+
+**The registry** (`registry_eq.py`) is data: every PDE of the family catalog's groups
+A to L, each with its type, its group's chart-operator family and guarantee class
+(G0, G0′, G1, G2, G3), whether a chart-operator expert exists for it (CO: CO-D's
+alone, today), its properties (order, linearity, self-adjointness, energy, maximum
+principle, what it conserves, signal speed, which equations share its operator, where
+Atlas uses it), and either the workbench kind that runs it or why nothing here does.
+Eight of the 44 run; the other 36 are greyed, the reason on hover. Clicking one that
+runs starts a case of its kind (Undo brings the old case back).
+
+**The regime numbers** (`registry_eq.regime`, pushed with every state), each with its
+definition on hover: the contrast of the materials in use; the Fourier number per cell
+(κΔt/ρch²) and per piece (κΔt/ρc|Ω|, what the CO-D card's range [0.01, 100] reads,
+marked ✓ or ✗ against it); the Péclet number per river reach (u = q/depth); the wind
+farm's Re_D = UD/ν (lengths in rotor diameters: the referent's 255); and kh for sound,
+k = 3/w for a Gaussian pulse of standard deviation w. A test checks each against a
+hand computation (`tests/test_studio_physics.py`).
+
+**The equation screen:** the equation with every symbol explained on hover; steady or
+transient where the kind has both; each material's properties, editable; Δt, steps,
+the kind's own parameters, threads and the coupling style; the boundaries grouped by
+condition, each explained on hover.
+
 ## Page checks
 
 `scripts/studio_drive.py WALK` drives the real page in headless Edge with **trusted**
@@ -107,7 +132,7 @@ input (the DevTools protocol's mouse and key events), checks what each step shou
 change, fails on any console error, and writes `out/studio/<walk>/walk.json` with
 screenshots. The app's own browser pane cannot take input while it is hidden, and a
 page check must not depend on a window being in front. `scripts/studio_walks/p2.py`
-is P2's: 30 checks, among them the four done-when items.
+is P2's: 30 checks, among them the four done-when items; `p3.py` is P3's: 19.
 
 ## How it works
 
