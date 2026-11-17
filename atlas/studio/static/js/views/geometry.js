@@ -643,7 +643,7 @@ function renderCheckPanel(box) {
 function toggleCheck(on = !checkMode) {
   checkMode = on;
   els.checkBtn.setAttribute('aria-pressed', String(checkMode));
-  if (checkMode) { showStart = false; renderStart(); runCheck(); }
+  if (checkMode) { showStart = false; renderStart(); if (check) drawCells(); runCheck(); }
   else { editor.checkRaster = null; editor.pins = []; editor.redraw(); }
   renderBar(); renderInspector();
 }
