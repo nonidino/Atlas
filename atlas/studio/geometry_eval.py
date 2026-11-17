@@ -79,9 +79,13 @@ class Side:
     q0: np.ndarray | None = None                # spline: the neighbours
     q3: np.ndarray | None = None
     bulge: float = 0.0                          # arc: as drawn (for an exact rewrite)
+    pts: np.ndarray | None = None               # poly: an explicit polyline, p0 .. p1
 
     def at(self, t) -> np.ndarray:
         t = np.atleast_1d(np.asarray(t, dtype=float))
+        if self.kind == "poly":
+            s = np.linspace(0.0, 1.0, len(self.pts))
+            return np.column_stack([np.interp(t, s, self.pts[:, 0]), np.interp(t, s, self.pts[:, 1])])
         if self.kind == "line":
             return self.p0[None, :] + t[:, None] * (self.p1 - self.p0)[None, :]
         if self.kind == "arc":
@@ -120,6 +124,8 @@ class Side:
 
     def samples(self, tol: float) -> tuple[np.ndarray, np.ndarray]:
         """Points from p0 up to, not including, p1, and their parameters."""
+        if self.kind == "poly":
+            return self.pts[:-1].copy(), np.linspace(0.0, 1.0, len(self.pts))[:-1]
         n = self.count(tol)
         t = np.arange(n) / n
         pts = self.at(t)
@@ -166,6 +172,64 @@ def _circle_arc(fid, k, c, r, a0, sweep) -> Side:
     p1 = c + r * np.array([math.cos(a0 + sweep), math.sin(a0 + sweep)])
     return Side(fid, k, "arc", p0, p1, centre=c, radius=float(r), a0=a0, sweep=sweep,
                 bulge=math.tan(sweep / 4.0))
+
+
+class Placement:
+    """A rigid motion: rotation by ``angle`` about the origin, after a reflection of y
+    (``flip``), then a translation.  Patterns and mirrors place copies of a shape's
+    sides with it, so a copy of a circle is still four arcs."""
+
+    def __init__(self, angle: float = 0.0, flip: bool = False, tx: float = 0.0, ty: float = 0.0):
+        self.c, self.s = math.cos(angle), math.sin(angle)
+        self.flip, self.tx, self.ty = flip, tx, ty
+
+    def __call__(self, p) -> np.ndarray:
+        x, y = float(p[0]), float(p[1])
+        if self.flip:
+            y = -y
+        return np.array([self.c * x - self.s * y + self.tx, self.s * x + self.c * y + self.ty])
+
+    def side(self, s: Side, fid: str, index: int) -> Side:
+        T = self
+        if s.kind == "line":
+            return Side(fid, index, "line", T(s.p0), T(s.p1))
+        if s.kind == "arc":
+            c = T(s.centre)
+            p0 = T(s.p0)
+            a0 = math.atan2(p0[1] - c[1], p0[0] - c[0])
+            sweep = -s.sweep if self.flip else s.sweep
+            return Side(fid, index, "arc", p0, T(s.p1), centre=c, radius=s.radius, a0=a0,
+                        sweep=sweep, bulge=math.tan(sweep / 4.0))
+        if s.kind == "cubic":
+            return Side(fid, index, "cubic", T(s.p0), T(s.p1), c1=T(s.c1), c2=T(s.c2))
+        if s.kind == "spline":                       # centripetal CR is unchanged by motions
+            return Side(fid, index, "spline", T(s.p0), T(s.p1), q0=T(s.q0), q3=T(s.q3))
+        pts = s.pts if s.kind == "poly" else np.vstack([s.at(np.linspace(0, 1, 65))])
+        moved = np.array([T(p) for p in pts])
+        return Side(fid, index, "poly", moved[0], moved[-1], pts=moved)
+
+
+def channel_sides(f: Feature, tol: float) -> list[Side]:
+    """A channel: its centre line offset by half its width each way, with straight ends
+    (an inlet and an outlet): four sides."""
+    centre = Feature(id=f.id, kind="path", role="guide", points=f.points, edges=f.edges,
+                     bulge=f.bulge, handles=f.handles, closed=False)
+    parts = [s.samples(tol)[0] for s in feature_sides(centre)]
+    line = np.vstack(parts + [np.asarray(f.points[-1], float)[None, :]])
+    keep = np.ones(len(line), dtype=bool)
+    keep[1:] = np.any(np.abs(np.diff(line, axis=0)) > 1e-15, axis=1)
+    line = line[keep]
+    if len(line) < 2:
+        raise GeometryError(f"{f.label}: its centre line has no length")
+    d = np.gradient(line, axis=0)
+    d /= np.maximum(np.hypot(d[:, 0], d[:, 1]), 1e-300)[:, None]
+    nrm = np.column_stack([-d[:, 1], d[:, 0]])
+    left = line + 0.5 * f.w * nrm
+    right = line - 0.5 * f.w * nrm
+    return [Side(f.id, 0, "poly", right[0], right[-1], pts=right),
+            Side(f.id, 1, "line", right[-1], left[-1]),
+            Side(f.id, 2, "poly", left[-1], left[0], pts=left[::-1].copy()),
+            Side(f.id, 3, "line", left[0], right[0])]
 
 
 def feature_sides(f: Feature) -> list[Side]:
@@ -318,9 +382,29 @@ class Evaluator:
                     g = g.intersection(p)
             g = _polygonal(g)
         elif f.kind == "scatter":
-            from .generators import scatter_features
-            parts = [self._shape(x) for x in scatter_features(f)]
+            parts = []
+            for k, (cx, cy, r) in enumerate(f.items):
+                sides = [_circle_arc(f.id, 4 * k + j, (cx, cy), r, j * math.pi / 2, math.pi / 2)
+                         for j in range(4)]
+                parts.append(_ring_polygon(sides, self.tagged, self.tol, f.label, self.notes))
             g = _polygonal(unary_union(parts)) if parts else Polygon()
+        elif f.kind in ("pattern", "mirror"):
+            src = self.by_id[f.inputs[0]]
+            base = self._shape(src)
+            places = placements(f, base)
+            sides = self.tagged.rings.get(src.id)
+            parts = [] if f.kind == "pattern" else [base]
+            for k, T in enumerate(places):
+                if sides is not None:
+                    moved = [T.side(s, f.id, k * len(sides) + j) for j, s in enumerate(sides)]
+                    parts.append(_ring_polygon(moved, self.tagged, self.tol, f.label, self.notes))
+                else:                                 # a combined input: its outline, moved
+                    parts.append(_moved_polygon(base, T))
+            g = _polygonal(unary_union(parts)) if parts else Polygon()
+        elif f.kind == "channel":
+            sides = channel_sides(f, self.tol)
+            self.tagged.rings[f.id] = sides
+            g = _ring_polygon(sides, self.tagged, self.tol, f.label, self.notes)
         elif f.kind == "path" and not f.closed:
             g = Polygon()                                    # a guide line encloses nothing
         else:
@@ -387,6 +471,47 @@ class Evaluator:
             else:
                 runs.append({"side": tags[i], "points": [a[i], b[i]]})
         return runs
+
+
+def placements(f: Feature, base) -> list[Placement]:
+    """Where a pattern puts its copies, or where a mirror puts its one."""
+    p = f.params
+    if f.kind == "mirror":
+        axis = str(p.get("axis", "x"))
+        at = float(p.get("at", 0.0))
+        if axis == "x":                    # about a vertical line x = at
+            return [Placement(math.pi, True, 2 * at, 0.0)]
+        return [Placement(0.0, True, 0.0, 2 * at)]          # about y = at
+    mode = str(p.get("mode", "line"))
+    n = int(p.get("count", 3))
+    if not 1 <= n <= 200:
+        raise GeometryError(f"{f.label}: 1 to 200 copies")
+    if mode == "line":
+        dx, dy = float(p.get("dx", 0.0)), float(p.get("dy", 0.0))
+        return [Placement(0.0, False, k * dx, k * dy) for k in range(n)]
+    if mode == "grid":
+        nx, ny = int(p.get("nx", n)), int(p.get("ny", 1))
+        sx, sy = float(p.get("sx", 0.0)), float(p.get("sy", 0.0))
+        return [Placement(0.0, False, i * sx, j * sy) for j in range(ny) for i in range(nx)]
+    if mode == "circle":
+        cx, cy = float(p.get("cx", 0.0)), float(p.get("cy", 0.0))
+        step = math.radians(float(p.get("angle", 360.0 / n)))
+        out = []
+        for k in range(n):
+            a = k * step
+            c, s = math.cos(a), math.sin(a)
+            out.append(Placement(a, False, cx - (c * cx - s * cy), cy - (s * cx + c * cy)))
+        return out
+    raise GeometryError(f"{f.label}: a pattern is a line, a circle or a grid")
+
+
+def _moved_polygon(poly, T: Placement):
+    from shapely import affinity
+    g = poly
+    if T.flip:
+        g = affinity.scale(g, 1.0, -1.0, origin=(0, 0))
+    g = affinity.affine_transform(g, [T.c, -T.s, T.s, T.c, T.tx, T.ty])
+    return g
 
 
 def _polygonal(g):
@@ -465,6 +590,9 @@ def _exact_edges(ev: Evaluator, fid: str, tol: float) -> list:
             out.append((s.p0, "arc", s.bulge if s.bulge else math.tan(s.sweep / 4.0)))
         elif s.kind == "spline":
             out.append((s.p0, "spline", 0.0))
+        elif s.kind == "poly":
+            for p in s.pts[:-1]:
+                out.append((p, "line", 0.0))
         else:
             pts, _t = s.samples(tol)
             for p in pts:
@@ -481,7 +609,8 @@ def ring_edges(ev: Evaluator, coords: np.ndarray, tol: float,
         edges = _exact_edges(ev, fid, tol)
         prov = []
         for s in ev.tagged.rings[fid]:
-            n = 1 if s.kind in ("line", "arc", "spline") else len(s.samples(tol)[0])
+            n = (1 if s.kind in ("line", "arc", "spline") else len(s.pts) - 1
+                 if s.kind == "poly" else len(s.samples(tol)[0]))
             prov += [(s.fid, s.index)] * n
         return edges, prov
     edges, prov = [], []

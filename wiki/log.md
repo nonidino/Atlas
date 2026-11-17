@@ -1076,3 +1076,15 @@ The studio's shell is built in `atlas/studio/`: a FastAPI server, one plain Java
 **Checked:** 44 tests (`tests/test_studio_shell.py`), among them every one of the 27 examples opened and saved bit for bit, and a run over the socket whose cards hold no raw seconds. The installer's self-test now starts the studio's own server and runs a case over its WebSocket. In the page: the GET in the server log, zero console errors, the theme switched live, the Case menu inside the window at 1090 px.
 
 **Changed:** [[integrated-ui-plan]] (status line).
+
+## [2026-11-16] build | integrated UI, phase P1: geometry I and the switch
+
+Case file 0.7 holds the geometry as a feature tree (rectangles, ellipses, pen paths, combines), evaluated on the server with Shapely. Every result segment is traced back to the side it came from, so the engine receives the sides as drawn: a rectangle's four lines, a circle's arcs. All 27 examples evaluate back to their own geometry, edge for edge and cell for cell. OpenCASCADE (Gmsh) gives exact areas and reads STEP; `.msh`, DXF and SVG import too. The page has a Paper.js editor, the start screen, materials and a Check view of the solver's cells.
+
+**Checked in the real page** with real drags: a plate and a hole drawn, then Run (agreement 1.25e-11, pass); five pen clicks and drags, every one landed; move and resize by handles; the light and dark themes at 1090×620; zero console errors after the fixes. Tests: 91 studio tests pass. The installer's self-test runs the studio: OK in 58 s.
+
+**The one-command install now serves the studio** (bundle `e320b00`, local only, not pushed). Its fresh-clone verification on Windows was still running at the session's end; WSL was not run.
+
+**Open:** the Panel page's modules and their tests remain until those tests are rewritten against the studio's protocol. P2 was started (formula parser, parameters, pattern, mirror, channel, scatter) and is not finished.
+
+**Changed:** [[integrated-ui-plan]] (status line unchanged since P0).

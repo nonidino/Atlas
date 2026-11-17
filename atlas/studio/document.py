@@ -57,10 +57,25 @@ class Parameter(BaseModel):
     sweep: Optional[list[float]] = None
 
 
+class Constraint(BaseModel):
+    """A sketch constraint the page solves with planegcs (P2): between features'
+    points, or a driving dimension.  ``refs`` name points as ``<feature>:<point>``
+    (a rectangle's corners are ``c0`` to ``c3``, an ellipse's centre ``c``, a path's
+    points ``p0``, ``p1`` ...) and lines as ``<feature>:e<k>``."""
+    model_config = ConfigDict(extra="forbid")
+    id: str
+    type: Literal["fix", "coincident", "horizontal", "vertical", "parallel", "perpendicular",
+                  "equal", "tangent", "distance"]
+    refs: list[str] = Field(default_factory=list)
+    value: Optional[float] = None
+    param: Optional[str] = None
+
+
 class Feature(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str
-    kind: Literal["rect", "ellipse", "path", "combine", "scatter"]
+    kind: Literal["rect", "ellipse", "path", "combine", "scatter", "pattern", "mirror",
+                  "channel"]
     role: Literal["add", "cut", "region", "guide"] = "add"
     name: str = ""
     material: Optional[str] = None
@@ -83,11 +98,19 @@ class Feature(BaseModel):
     #: per edge: a cubic's two control points (x1, y1, x2, y2), else None
     handles: list[Optional[tuple[float, float, float, float]]] = Field(default_factory=list)
     closed: bool = True
-    # combine
+    # combine; pattern and mirror (one input)
     op: Optional[Literal["union", "subtract", "intersect"]] = None
     inputs: list[str] = Field(default_factory=list)
-    # scatter (P2)
+    #: scatter (count, rmin, rmax, gap, seed, x, y, w, h), pattern (mode, count, dx, dy,
+    #: cx, cy, angle, nx, ny), mirror (axis, at)
     params: dict[str, float | str] = Field(default_factory=dict)
+    #: a scatter's inclusions as the seed placed them: (cx, cy, r), written by the server
+    items: list[tuple[float, float, float]] = Field(default_factory=list)
+    #: P2: fields driven by formulas of the parameters, field -> formula ("w": "W")
+    bind: dict[str, str] = Field(default_factory=dict)
+    #: P2: a coefficient field over the region: {"kind": "formula", "prop": "k",
+    #: "expr": "..."}; its values are binned into materials for the engine
+    field: Optional[dict] = None
 
     @model_validator(mode="after")
     def _consistent(self):
@@ -132,6 +155,27 @@ class Feature(BaseModel):
         elif self.kind == "combine":
             if self.op is None or len(self.inputs) < 2:
                 raise ValueError(f"{self.label}: a combine needs an operation and two inputs")
+        elif self.kind in ("pattern", "mirror"):
+            if len(self.inputs) != 1:
+                raise ValueError(f"{self.label}: a {self.kind} repeats exactly one shape")
+        elif self.kind == "channel":
+            if len(self.points) < 2 or not self.w > 0:
+                raise ValueError(f"{self.label}: a channel needs a centre line of two or more "
+                                 f"points and a width above 0")
+            self.closed = False
+            m = len(self.points) - 1
+            if not self.edges:
+                self.edges = ["line"] * m
+            if not self.bulge:
+                self.bulge = [0.0] * m
+            if not self.handles:
+                self.handles = [None] * m
+        elif self.kind == "scatter":
+            if not (self.w > 0 and self.h > 0):
+                raise ValueError(f"{self.label}: a scatter needs its box (w, h above 0)")
+        if self.field is not None:
+            if self.field.get("kind") not in ("formula", "image") or not self.field.get("prop"):
+                raise ValueError(f"{self.label}: a field is a formula or an image of a property")
         return self
 
     @property
@@ -143,6 +187,7 @@ class Geometry(BaseModel):
     model_config = ConfigDict(extra="forbid")
     parameters: list[Parameter] = Field(default_factory=list)
     features: list[Feature] = Field(default_factory=list)
+    constraints: list[Constraint] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _tree(self):
@@ -150,11 +195,18 @@ class Geometry(BaseModel):
         dup = sorted({i for i in ids if ids.count(i) > 1})
         if dup:
             raise ValueError(f"two features share the id {dup[0]!r}")
+        pnames = [p.name for p in self.parameters]
+        for n in pnames:
+            if not re.match(r"^[A-Za-z_][A-Za-z0-9_]{0,30}$", n) or n in ("x", "y", "T", "pi", "e"):
+                raise ValueError(f"{n!r} cannot name a parameter: a letter first, then letters, "
+                                 f"digits or _ (and not x, y, T, pi or e)")
+        if len(set(pnames)) != len(pnames):
+            raise ValueError("two parameters share a name")
         known = set(ids)
         used: dict[str, str] = {}
         index = {f.id: k for k, f in enumerate(self.features)}
         for f in self.features:
-            if f.kind != "combine":
+            if f.kind not in ("combine", "pattern", "mirror"):
                 continue
             for i in f.inputs:
                 if i not in known:
@@ -172,8 +224,10 @@ class Geometry(BaseModel):
         return {f.id: f for f in self.features}
 
     def consumed(self) -> set[str]:
-        """Features that are inputs of a combine: evaluated only through it."""
-        return {i for f in self.features if f.kind == "combine" for i in f.inputs}
+        """Features that are inputs of a combine, a pattern or a mirror: evaluated only
+        through it."""
+        return {i for f in self.features if f.kind in ("combine", "pattern", "mirror")
+                for i in f.inputs}
 
 
 def next_id(geom: Geometry, prefix: str = "f") -> str:
@@ -314,5 +368,5 @@ def save(path: str, spec: CaseSpec, geom: Geometry) -> str:
     return path
 
 
-__all__ = ["EDGE_KINDS", "Feature", "Geometry", "Parameter", "ROLES", "SCHEMA_06", "SCHEMA_07",
-           "dumps", "is_migration", "loads", "migrate", "next_id", "save"]
+__all__ = ["Constraint", "EDGE_KINDS", "Feature", "Geometry", "Parameter", "ROLES", "SCHEMA_06",
+           "SCHEMA_07", "dumps", "is_migration", "loads", "migrate", "next_id", "save"]
