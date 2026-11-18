@@ -3,7 +3,7 @@
  "url": "http://127.0.0.1:8021/",
  "size": "1090x620",
  "theme": "light",
- "started": "2026-11-17T19:55:18",
+ "started": "2026-11-18T12:12:17",
  "checks": [
   {
    "check": "experts are listed; learned ones only with matching weights",
@@ -75,11 +75,19 @@
    "detail": null
   },
   {
-   "check": "best admitted: the trained network where its card admits it",
+   "check": "best admitted: the cheapest admitted expert by the records' prices (TL0 on bend-3's pieces; never TL-s0, dearer than the classical solve)",
    "passed": true,
-   "detail": [
-    "TL-s0"
-   ]
+   "detail": {
+    "picked": [
+     "TL0"
+    ],
+    "prices": {
+     "classical": 1,
+     "TL-s0": 1.05,
+     "TL0": 0.836,
+     "H2r": 0.418
+    }
+   }
   },
   {
    "check": "one piece classical: the job ended",
@@ -224,5 +232,5 @@
  ],
  "trusted_clicks_and_drags": 20,
  "passed": true,
- "finished": "2026-11-17T19:59:08"
+ "finished": "2026-11-18T12:20:41"
 }

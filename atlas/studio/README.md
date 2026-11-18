@@ -153,8 +153,11 @@ positive boundary); the smallest relative `det J` and the largest skew are shown
 a folded piece is refused with its `det J`. **Experts** (`experts.py`): classical, H2r
 on squares of one material, TL0, and the trained networks TL-s0, TL-s1, S′-s0 and
 S′-s1, each offered only when its checkpoint's sha256 equals its evaluation record's;
-*Best admitted for all* gives each piece H2r where it applies, the two-level network
-where its card admits it, else the classical solve. **Seams** are the host's own:
+*Best admitted for all* gives each piece the cheapest expert admitted on it, by the
+registered records' prices over the classical solve (`experts.prices`): by the
+two-level record H2r 0.42 on squares of one material, TL0 0.84 where its card admits
+it, the classical solve 1 elsewhere; the trained TL-s0 costs 1.05, so it is never the
+cheapest, and an expert no record prices is never chosen. **Seams** are the host's own:
 conforming seams admitted, a mortar admitted uncertified; every side's port is THERM.
 *Check the coupling* solves the pieces with the classical expert against
 `host.monolithic`: round-off with each side's whole trace, and the experts' 16-mode

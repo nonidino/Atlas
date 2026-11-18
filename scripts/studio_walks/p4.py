@@ -91,7 +91,10 @@ def walk(page):
     wait_job(page, "best admitted")
     s = summary(page)
     picked = sorted({p["expert"] for p in s["pieces"]})
-    page.check("best admitted: the trained network where its card admits it", picked == (["TL-s0"] if "TL-s0" in offered else ["classical"]), picked)
+    prices = page.js("window.atlas.store.pieces.prices") or {}
+    want = ["TL0"] if ("TL0" in offered and "TL0" in prices) else ["classical"]
+    page.check("best admitted: the cheapest admitted expert by the records' prices (TL0 on bend-3's pieces; never TL-s0, dearer than the classical solve)",
+               picked == want, {"picked": picked, "prices": {k: round(v["value"], 3) for k, v in prices.items()}})
     page.press("Classical", "aside.panel")
     wait_job(page, "one piece classical")
     s = summary(page)

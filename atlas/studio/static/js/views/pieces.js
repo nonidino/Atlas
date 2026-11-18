@@ -249,13 +249,23 @@ function renderLeft() {
   const rows = store.pieces?.experts || [];
   const n = {};
   for (const p of s?.pieces || []) n[p.expert] = (n[p.expert] || 0) + 1;
+  const prices = store.pieces?.prices || {};
+  const name = (k) => ({ classical: 'classical', 'Sp-s0': 'S′-s0', 'Sp-s1': 'S′-s1' }[k] || k);
+  const priceText = (k) => {
+    const p = prices[k];
+    if (!p) return k === 'H2r' ? 'never dearer than the classical solve (one solve per class of squares)' : 'no registered record prices it';
+    return p.record ? `${fmt(p.value, 2)}× the classical solve (${p.record}, its mean over ${p.set})` : '1× by definition';
+  };
   for (const r of rows) {
     box.append(h('div', { class: 'kvrow', style: { opacity: r.offered ? 1 : 0.5 } },
       h('span', { style: { display: 'flex', gap: '6px', alignItems: 'center' } }, h('span', { class: 'sw', style: { background: cssVar(EXPERT_TOKEN[r.key] || '--ex-c'), width: '12px', height: '12px', borderRadius: '3px' } }),
-        h('abbr', { 'data-tip': r.offered ? r.tip : `${r.label}: ${r.why}` }, r.key === 'Sp-s0' ? 'S′-s0' : (r.key === 'Sp-s1' ? 'S′-s1' : r.label.split(',')[0]))),
+        h('abbr', { 'data-tip': r.offered ? `${r.tip}. Price: ${priceText(r.key)}` : `${r.label}: ${r.why}` }, r.key === 'Sp-s0' ? 'S′-s0' : (r.key === 'Sp-s1' ? 'S′-s1' : r.label.split(',')[0]))),
       h('span', { class: 'mono' }, String(n[r.key] || 0))));
   }
-  const best = h('button', { class: 'btn', disabled: !s || busy() || null, 'data-tip': 'Give every piece the cheapest expert its card admits: H2r on a square of one material, the trained two-level network where its card admits it, the classical solve elsewhere' }, 'Best admitted for all');
+  const order = rows.filter((r) => r.offered && prices[r.key]).sort((a, b) => prices[a.key].value - prices[b.key].value)
+    .map((r) => `${name(r.key)} ${fmt(prices[r.key].value, 2)}×`).join(', ');
+  const best = h('button', { class: 'btn', disabled: !s || busy() || null,
+    'data-tip': `Give every piece the cheapest expert admitted on it (by its card, or H2r's premise), by the registered records' prices over the classical solve: ${order || 'classical 1×'}. An expert no record prices is not chosen.` }, 'Best admitted for all');
   best.addEventListener('click', () => act('pieces.expert', { expert: 'best' }));
   const chk = h('button', { class: 'btn', disabled: !s || busy() || null, 'data-tip': 'Couple the pieces with the classical expert and compare with the whole domain solved at once (host.monolithic): round-off when every seam conforms and each side keeps its whole trace' }, 'Check the coupling');
   chk.addEventListener('click', () => act('pieces.check'));

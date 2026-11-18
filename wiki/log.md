@@ -1147,3 +1147,9 @@ The Records screen reads `out/chartop/` and never runs anything (`atlas/studio/r
 ## [2026-11-18] note | integrated UI: the full suite after P6
 
 The full suite on a clean export of `11f9207` (the studio through P6, the canvas fix): 3002 passed, 132 skipped, in 1519 s on AC with no other Python running and no sleep or power-source event in the system log. The 19 failures and errors were the export's own: 13 need the untracked record `out/tier0b/s0_state.npz`, 2 found carriage returns in `run.sh` as the archive wrote it, and 4 call git (the Ranade folder's ignore rule, the pins' commit checks), which an export is not. All 19 pass in the tree (195 s). So: 3021 passed, 132 skipped, none failed. Logs: `out/suite_run_studio_p6.log`, `out/suite/studio_p6/`.
+
+## [2026-11-18] fix | studio: Best admitted picks the cheapest admitted expert
+
+P4's *Best admitted for all* preferred the trained network (H2r on squares, then TL-s0, then the classical solve), which is not the plan's rule: [[integrated-ui-plan]] §5 asks for the cheapest expert the compiler and the card admit. By the two-level record's prices over the classical solve (its geometric mean over every problem it priced), H2r costs 0.42, TL0 0.84 and TL-s0 1.05, so the trained network was the dearest of the three. Each piece now gets the cheapest expert offered here and admitted on it, by those recorded prices (`atlas/studio/experts.py`, `prices`). An expert no record prices is never chosen, except H2r on a square, which by construction solves at most what the classical expert solves. The Pieces page says each expert's recorded price on hover.
+
+**Checked:** three new tests (the rule on a synthetic layout, with and without price records; the prices as the record holds them; insert-round's square given H2r and no piece TL-s0), 66 studio tests in the files it touches, and P4's page walk again (29 checks, zero console errors; on bend-3 every piece gets TL0).

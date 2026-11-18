@@ -188,6 +188,57 @@ def test_tl_s0_on_the_studios_bend3_gives_the_two_level_records_numbers():
     assert cp.min_eig() == pytest.approx(want["min_eig"], rel=1e-9)
 
 
+def test_best_admitted_picks_the_cheapest_admitted_expert():
+    """The plan's rule (section 5): each piece gets the cheapest expert the card admits,
+    by the registered records' prices over the classical solve."""
+    from atlas.studio import piecejob as PJ
+    rows = [{"key": k, "offered": True} for k in ("classical", "H2r", "TL0", "TL-s0", "Sp-s0")]
+    prices = {"classical": {"value": 1.0}, "H2r": {"value": 0.42}, "TL0": {"value": 0.84},
+              "TL-s0": {"value": 1.05}}
+    summ = {"pieces": [
+        {"admitted": {"H2r": None, "TL0": None, "TL-s0": None, "Sp-s0": None}, "square": True},
+        {"admitted": {"H2r": "not a square", "TL0": None, "TL-s0": None, "Sp-s0": None}, "square": False},
+        {"admitted": {"H2r": "not a square", "TL0": "outside its card", "TL-s0": "outside its card",
+                      "Sp-s0": None}, "square": False},
+    ]}
+    # a square: H2r; a piece TL0's card admits: TL0, never TL-s0 (dearer than classical);
+    # an unpriced expert (S'-s0) is never chosen; nothing cheaper admitted: classical
+    assert PJ.best_admitted(summ, rows, prices) == ["H2r", "TL0", "classical"]
+    # with no price records (the installed bundle): H2r on squares, classical elsewhere
+    assert PJ.best_admitted(summ, rows, {"classical": {"value": 1.0}}) == ["H2r", "classical", "classical"]
+
+
+def test_the_records_prices_are_read_as_recorded():
+    rec_path = os.path.join(X.CHARTOP, "evaluation-twolevel-20261111-004223.json")
+    if not os.path.isfile(rec_path):
+        pytest.skip("the two-level record is not on this machine")
+    gm = json.load(open(rec_path, encoding="utf-8"))["gates"]["PR"]["geometric_mean"]
+    pr = X.prices()
+    assert pr["classical"]["value"] == 1.0
+    assert pr["TL-s0"]["value"] == gm["TL"]["all"] and pr["TL-s0"]["value"] > 1.0
+    assert pr["TL0"]["value"] == gm["TL0"]["all"] and pr["H2r"]["value"] == gm["H2r"]["all"]
+
+
+def test_best_admitted_on_insert_round_gives_squares_h2r_and_never_the_dearer_network():
+    s = Session(spec=example_case("insert-round"), key="x")
+    s.pieces_cut(None, {}, 32, blocking=True)
+    assert s.pieces_job.status == "done", s.pieces_job.error
+    s.pieces_expert("best", None, blocking=True)
+    assert s.pieces_job.status == "done", s.pieces_job.error
+    prices = s.expert_prices()
+    offered = [r["key"] for r in s.experts() if r["offered"]]
+    for p in s.pieces_summary["pieces"]:
+        adm = [k for k in offered if p["admitted"].get(k) is None]
+        priced = {k: prices[k]["value"] for k in adm if k in prices}
+        if "H2r" in adm and "H2r" not in prices:
+            priced["H2r"] = 1.0 - 1e-9
+        assert p["expert"] == min(priced, key=priced.get), (p["label"], p["expert"], priced)
+        assert p["expert"] != "TL-s0"
+        if p["square"]:
+            assert p["expert"] == "H2r"
+    assert any(p["square"] for p in s.pieces_summary["pieces"])         # the disc's core square
+
+
 def test_the_session_cuts_charts_assigns_and_checks():
     s = Session(spec=example_case("bend-3"), key="x")
     s.pieces_cut(None, {"n_r": 3, "n_th": 5}, 32, blocking=True)

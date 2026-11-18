@@ -924,7 +924,15 @@ class Session:
                 "job": self.pieces_job.progress() if self.pieces_job is not None else None,
                 "family": self.spec.physics.family,
                 "experts": [{k: r.get(k) for k in ("key", "label", "offered", "why", "tip")}
-                            for r in self.experts()]}
+                            for r in self.experts()],
+                "prices": self.expert_prices()}
+
+    def expert_prices(self) -> dict:
+        """Each expert's recorded price over the classical solve (`experts.prices`)."""
+        from . import experts as X
+        if getattr(self, "_prices", None) is None:
+            self._prices = X.prices()
+        return self._prices
 
     def _pieces_apply(self, fn) -> None:
         """Run an action on the layout (in the job's thread) and summarise the result."""
@@ -1035,7 +1043,8 @@ class Session:
                     raise Refused(f"{expert} is refused on {p['label']}: {p['admitted'][expert]}")
 
         def fn(cut, spec):
-            keys = PJ.best_admitted(self.pieces_summary, rows) if expert == "best" else None
+            keys = (PJ.best_admitted(self.pieces_summary, rows, self.expert_prices())
+                    if expert == "best" else None)
             for i, p in enumerate(cut.pieces):
                 if which is None or i in which:
                     p.expert = keys[i] if keys else expert

@@ -104,6 +104,24 @@ def registry(chartop: str = CHARTOP) -> list[dict]:
     return out
 
 
+def prices(chartop: str = CHARTOP) -> dict:
+    """Each expert's price over the classical solve, from the newest registered record
+    that priced it: the geometric mean over every problem that record priced (its own
+    measuring machine and protocol).  The classical solve is 1 by definition; an expert
+    no record priced is absent, so it is never called cheaper than anything.  A record
+    names its main network's arm "TL"; that is the record's ``main`` (TL-s0)."""
+    from . import records
+    out = {"classical": {"value": 1.0, "record": None, "set": "by definition"}}
+    for e in records.evaluations(chartop):                  # newest first
+        for pr in e.get("prices") or []:
+            if pr.get("set") != "all":
+                continue
+            key = e.get("main") if pr["arm"] == "TL" else pr["arm"]
+            if key and key not in out:
+                out[key] = {"value": float(pr["value"]), "record": e.get("file"), "set": pr.get("label")}
+    return out
+
+
 def is_square(p) -> bool:
     """A square piece of one material, as H2r's premise needs (an affine square chart)."""
     X = p.chart.X
@@ -201,4 +219,5 @@ def admitted(key: str, problem, envelope) -> str | None:
     return "; ".join(r) if r else None
 
 
-__all__ = ["LEARNED", "Mixed", "admitted", "build", "is_square", "registry", "sha256_file"]
+__all__ = ["LEARNED", "Mixed", "admitted", "build", "is_square", "prices", "registry",
+           "sha256_file"]

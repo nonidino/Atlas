@@ -128,19 +128,28 @@ def summarise(cut: P.Cut, spec, rows: list, envelope) -> dict:
     return out
 
 
-def best_admitted(summary: dict, rows: list) -> list[str]:
-    """Each piece's cheapest admitted expert: H2r on a square of one material, else the
-    trained two-level network where its card admits it, else the classical solve."""
+def best_admitted(summary: dict, rows: list, prices: dict) -> list[str]:
+    """Each piece's cheapest expert among those offered here and admitted on it (by its
+    card, or H2r's premise), by the registered records' prices over the classical solve
+    (`experts.prices`).  An expert no record priced is never chosen, except H2r, which by
+    construction solves at most what the classical expert solves (one response per class
+    of squares).  The classical solve, always admitted and priced 1, is the fallback.
+    By the two-level record, H2r costs 0.42 of the classical solve and TL0 0.84, and the
+    trained TL-s0 1.05, so the trained network is never the cheapest."""
     offered = [r["key"] for r in rows if r["offered"]]
     out = []
     for p in summary["pieces"]:
         adm = p["admitted"]
-        if "H2r" in offered and adm.get("H2r") is None and p["square"]:
-            out.append("H2r")
-        elif "TL-s0" in offered and adm.get("TL-s0") is None:
-            out.append("TL-s0")
-        else:
-            out.append("classical")
+        cand = []
+        for k in offered:
+            if adm.get(k) is not None:
+                continue
+            if k in prices:
+                cand.append((prices[k]["value"], k))
+            elif k == "H2r":
+                cand.append((1.0 - 1e-9, k))                 # never dearer than classical
+        cand.append((1.0, "classical"))
+        out.append(min(cand)[1])
     return out
 
 
