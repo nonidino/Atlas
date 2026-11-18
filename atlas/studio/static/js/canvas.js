@@ -31,6 +31,7 @@ export class Stage {
     this.space = false;
     this.panning = null;
     this.fitted = false;
+    this.moved = false;           // the person zoomed or panned since the last fit
     this._installNav();
     this.view.onResize = () => { if (!this.fitted) this.fit(); else this.drawGrid(); this.update(); };
     // the canvas fills its box; a hidden tab has no size until it is shown
@@ -40,7 +41,9 @@ export class Stage {
       if (w > 0 && ht > 0 && (w !== this.view.viewSize.width || ht !== this.view.viewSize.height)) {
         const first = !this.view.viewSize.width || !this.view.viewSize.height;
         this.view.viewSize = new paper.Size(w, ht);
-        if (first || !this.fitted) this.fit();
+        // a view fitted while the canvas still had its default size fits again; one the
+        // person has zoomed or panned keeps their view
+        if (first || !this.fitted || !this.moved) this.fit();
       }
     });
     this.resizer.observe(canvas.parentElement);
@@ -65,11 +68,13 @@ export class Stage {
     this.view.zoom = Math.min(vs.width / w, vs.height / ht) * 0.88;
     this.view.center = P((x0 + x1) / 2, (y0 + y1) / 2);
     this.fitted = true;
+    this.moved = false;
     this.drawGrid();
     this.update();
   }
 
   zoomAt(factor, viewPt) {
+    this.moved = true;
     const v = this.view;
     const before = v.viewToProject(viewPt);
     v.zoom = Math.max(1e-6, Math.min(1e9, v.zoom * factor));
@@ -80,6 +85,7 @@ export class Stage {
   }
 
   panBy(dxPx, dyPx) {
+    this.moved = true;
     this.view.center = this.view.center.subtract(new paper.Point(dxPx, dyPx).divide(this.view.zoom));
     this.drawGrid();
     this.update();

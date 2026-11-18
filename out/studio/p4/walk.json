@@ -3,7 +3,7 @@
  "url": "http://127.0.0.1:8021/",
  "size": "1090x620",
  "theme": "light",
- "started": "2026-11-17T19:32:34",
+ "started": "2026-11-17T19:55:18",
  "checks": [
   {
    "check": "experts are listed; learned ones only with matching weights",
@@ -224,5 +224,5 @@
  ],
  "trusted_clicks_and_drags": 20,
  "passed": true,
- "finished": "2026-11-17T19:36:16"
+ "finished": "2026-11-17T19:59:08"
 }
