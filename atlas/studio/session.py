@@ -145,6 +145,14 @@ class Session:
         self.run_arms: list[str] = ["serial", "parallel", "full"]
         self.compile_job = None
         self.compiled_serial: int | None = None
+        # P4: the layout of pieces (not part of the case file), its summary, its job
+        self.cut = None
+        self.cut_fp: str | None = None
+        self.pieces_summary: dict | None = None
+        self.pieces_job = None
+        self.pieces_version = 0
+        self.expert_rows: list | None = None
+        self.corun = None                    # P5: a Single or Compare run on the pieces
 
     # ------------------------------------------------------------------
     # what the page is told
@@ -210,6 +218,9 @@ class Session:
             p = run.progress()
             return {"kind": "busy", "text": f"Running {p.step}/{p.steps}",
                     "tip": f"Marching {run.step_label}s; Stop is in Run"}
+        if self.corun is not None and self.corun.active:
+            return {"kind": "busy", "text": f"Running {self.corun.step}/{self.corun.steps or '…'}",
+                    "tip": "Running the pieces; Stop is in Run"}
         if self.compile_job is not None and self.compile_job.active:
             return {"kind": "busy", "text": "Compiling",
                     "tip": "The Atlas compiler is checking every seam"}
@@ -894,6 +905,179 @@ class Session:
             job.start()
         self._changed()
         return job
+
+    # ------------------------------------------------------------------
+    # pieces (P4): cut, chart, certify, experts, the classical check
+    # ------------------------------------------------------------------
+    def experts(self) -> list:
+        """The experts offered here, each checked against its record once per session."""
+        from . import experts as X
+        if self.expert_rows is None:
+            self.expert_rows = X.registry()
+        return self.expert_rows
+
+    def pieces_state(self) -> dict:
+        from . import piecejob as PJ
+        stale = self.cut is not None and PJ.fingerprint(self.spec) != self.cut_fp
+        return {"type": "pieces", "summary": self.pieces_summary, "stale": stale,
+                "job": self.pieces_job.progress() if self.pieces_job is not None else None,
+                "family": self.spec.physics.family,
+                "experts": [{k: r.get(k) for k in ("key", "label", "offered", "why", "tip")}
+                            for r in self.experts()]}
+
+    def _pieces_apply(self, fn) -> None:
+        """Run an action on the layout (in the job's thread) and summarise the result."""
+        from atlas.chartop.data import ENVELOPE
+        from . import piecejob as PJ
+        spec = self.spec
+        cut, extra = fn(self.cut, spec)
+        rows = self.experts()
+        if cut is None:
+            summary = None
+        else:
+            summary = PJ.summarise(cut, spec, rows, ENVELOPE)
+            if extra:
+                summary.update(extra)
+        self.cut, self.cut_fp, self.pieces_summary = cut, PJ.fingerprint(spec), summary
+        self.pieces_version += 1
+
+    def start_pieces(self, label: str, fn, blocking: bool = False):
+        from . import piecejob as PJ
+        if self.pieces_job is not None and self.pieces_job.active:
+            raise Refused(f"{self.pieces_job.label} is still running")
+        if self.spec.physics.family != "conduction-2d":
+            raise Refused("pieces and experts are built for heat conduction (CO-D): this case "
+                          "is another kind")
+        job = PJ.PiecesJob(self, label, fn)
+        self.pieces_job = job
+        self.pieces_version += 1
+        if blocking:
+            job.run_blocking()
+        else:
+            job.start()
+        return job
+
+    def _need_cut(self):
+        if self.cut is None:
+            raise Refused("cut the domain into pieces first")
+
+    def pieces_cut(self, cutter: str | None, params: dict, n: int, blocking: bool = False):
+        from . import pieces as P
+        if cutter is not None and cutter not in P.CUTTERS:
+            raise Refused(f"no cutter {cutter!r}: {', '.join(P.CUTTERS)}")
+        if not 8 <= n <= 256 or n & (n - 1):
+            raise Refused("n is a power of two from 8 to 256")
+
+        def fn(_cut, spec):
+            kw = dict(params)
+            if cutter == "strip" or (cutter is None and spec.domain.outline is not None):
+                from atlas.chartop.data import ENVELOPE
+                if cutter == "strip":
+                    kw["envelope"] = ENVELOPE
+            cut = P.auto_cut(spec, n, **kw) if cutter is None else P.CUTTERS[cutter](spec, n, **kw)
+            return cut, None
+        return self.start_pieces(f"cutting ({cutter or 'automatic'})", fn, blocking)
+
+    def pieces_split(self, piece: int, side: int, t: float | None = None, at=None,
+                     blocking: bool = False):
+        """Cut piece ``piece`` across from its side ``side``: at the side's own parameter
+        ``t``, or at the point of the side nearest ``at`` (x, y), a click."""
+        import numpy as np
+        from . import pieces as P
+        self._need_cut()
+        if not 0 <= piece < len(self.cut.pieces) or not 0 <= side < 4:
+            raise Refused("no such piece or side")
+        if t is None:
+            if at is None or len(at) != 2:
+                raise Refused("a cut needs the side's parameter or a point on it")
+            S = self.cut.pieces[piece].sides[side]
+            d = np.hypot(S.P[:, 0] - float(at[0]), S.P[:, 1] - float(at[1]))
+            t = float(S.t[int(np.argmin(d))])
+        return self.start_pieces("cutting by hand", lambda cut, spec: (P.split(cut, piece, side, t), None),
+                                 blocking)
+
+    def pieces_corner(self, old, new, blocking: bool = False):
+        from . import pieces as P
+        self._need_cut()
+        return self.start_pieces("moving a corner", lambda cut, spec: (P.move_corner(cut, old, new), None),
+                                 blocking)
+
+    def pieces_merge(self, chord: str, blocking: bool = False):
+        from . import pieces as P
+        self._need_cut()
+        return self.start_pieces("merging", lambda cut, spec: (P.merge(cut, chord), None), blocking)
+
+    def pieces_method(self, method: str, which: list | None, blocking: bool = False):
+        from . import pieces as P
+        self._need_cut()
+        if method not in P.METHODS + ("own",):
+            raise Refused(f"a chart method is one of {', '.join(P.METHODS)}, or the cut's own")
+
+        def fn(cut, spec):
+            for i, p in enumerate(cut.pieces):
+                if which is None or i in which:
+                    p.method = method
+            return cut, None
+        return self.start_pieces(f"charting ({method})", fn, blocking)
+
+    def pieces_expert(self, expert: str, which: list | None, blocking: bool = False):
+        from . import piecejob as PJ
+        self._need_cut()
+        rows = self.experts()
+        if expert != "best":
+            row = next((r for r in rows if r["key"] == expert), None)
+            if row is None or not row["offered"]:
+                raise Refused(f"{expert} is not offered here: {row.get('why') if row else 'no such expert'}")
+            summ = self.pieces_summary or {"pieces": []}
+            for i, p in enumerate(summ["pieces"]):
+                if (which is None or i in which) and p["admitted"].get(expert):
+                    raise Refused(f"{expert} is refused on {p['label']}: {p['admitted'][expert]}")
+
+        def fn(cut, spec):
+            keys = PJ.best_admitted(self.pieces_summary, rows) if expert == "best" else None
+            for i, p in enumerate(cut.pieces):
+                if which is None or i in which:
+                    p.expert = keys[i] if keys else expert
+            return cut, None
+        return self.start_pieces("assigning experts", fn, blocking)
+
+    def pieces_check(self, blocking: bool = False):
+        from . import pieces as P
+        self._need_cut()
+
+        def fn(cut, spec):
+            m16 = P.solve_classical(cut, spec)
+            full = P.solve_classical(cut, spec, m=cut.n)
+            keep = ("max_diff_rel", "energy_rel", "monolithic", "monolithic_nodes", "min_eig")
+            return cut, {"check": {"ports16": {k: m16.get(k) for k in keep},
+                                   "full": {k: full.get(k) for k in keep}}}
+        return self.start_pieces("checking the coupling", fn, blocking)
+
+    def start_corun(self, mode: str, a: dict, b: dict | None, blocking: bool = False):
+        """Single or Compare on the pieces (`corun.CORun`)."""
+        from .corun import CORun
+        if mode not in ("single", "compare"):
+            raise Refused("a run is single or compare")
+        if mode == "compare" and not b:
+            raise Refused("compare needs windows A and B")
+        if self.corun is not None and self.corun.active:
+            raise Refused("a run on the pieces is already marching")
+        if self.run is not None and self.run.active:
+            raise Refused("a windows run is marching; timing beside it would be timed with it")
+        if self.pieces_job is not None and self.pieces_job.active:
+            raise Refused(f"{self.pieces_job.label} is still running")
+        self._need_cut()
+        job = CORun(self, mode, dict(a), dict(b) if b else None)
+        self.corun = job
+        if blocking:
+            job.run_blocking()
+        else:
+            job.start()
+        return job
+
+    def pieces_clear(self) -> None:
+        self.cut, self.cut_fp, self.pieces_summary = None, None, None
+        self.pieces_version += 1
 
     def close(self) -> None:
         """The page went away: a run it started stops (it would time nothing)."""

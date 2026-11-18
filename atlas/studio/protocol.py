@@ -184,6 +184,97 @@ def _geo_import(s: Session, format: str, data: str, name: str):
     s.geometry_import(format, raw, name)
 
 
+# -- pieces (P4) ---------------------------------------------------------------------
+
+def _which(pieces):
+    if pieces is None:
+        return None
+    if not all(isinstance(i, int) and not isinstance(i, bool) for i in pieces):
+        raise Refused("pieces are given by their numbers")
+    return list(pieces)
+
+
+@handler("pieces.state", changes=False)
+def _pieces_state(s: Session):
+    s.pieces_version += 1                     # the next frame re-sends the layout
+
+
+@handler("pieces.cut", {"cutter": (str, False), "params": (dict, False), "n": (int, False)},
+         changes=False)
+def _pieces_cut(s: Session, cutter: str | None = None, params: dict | None = None, n: int = 64):
+    s.pieces_cut(cutter, params or {}, n)
+
+
+@handler("pieces.split", {"piece": (int, True), "side": (int, True), "t": (float, False),
+                          "at": (list, False)}, changes=False)
+def _pieces_split(s: Session, piece: int, side: int, t: float | None = None, at: list | None = None):
+    if at is not None and not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in at):
+        raise Refused("a point is two numbers")
+    s.pieces_split(piece, side, None if t is None else float(t), at)
+
+
+@handler("pieces.corner", {"old": (list, True), "new": (list, True)}, changes=False)
+def _pieces_corner(s: Session, old: list, new: list):
+    for pt in (old, new):
+        if len(pt) != 2 or not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in pt):
+            raise Refused("a corner is two numbers")
+    s.pieces_corner(old, new)
+
+
+@handler("pieces.merge", {"chord": (str, True)}, changes=False)
+def _pieces_merge(s: Session, chord: str):
+    s.pieces_merge(chord)
+
+
+@handler("pieces.method", {"method": (str, True), "pieces": (list, False)}, changes=False)
+def _pieces_method(s: Session, method: str, pieces: list | None = None):
+    s.pieces_method(method, _which(pieces))
+
+
+@handler("pieces.expert", {"expert": (str, True), "pieces": (list, False)}, changes=False)
+def _pieces_expert(s: Session, expert: str, pieces: list | None = None):
+    s.pieces_expert(expert, _which(pieces))
+
+
+@handler("pieces.check", changes=False)
+def _pieces_check(s: Session):
+    s.pieces_check()
+
+
+@handler("pieces.clear", changes=False)
+def _pieces_clear(s: Session):
+    s.pieces_clear()
+
+
+@handler("corun.start", {"mode": (str, True), "a": (dict, True), "b": (dict, False)}, changes=False)
+def _corun_start(s: Session, mode: str, a: dict, b: dict | None = None):
+    s.start_corun(mode, a, b)
+
+
+@handler("corun.stop", changes=False)
+def _corun_stop(s: Session):
+    if s.corun is not None and s.corun.active:
+        s.corun.stop()
+
+
+@handler("corun.frame", {"k": (int, True)}, changes=False)
+def _corun_frame(s: Session, k: int):
+    """One step's fields (the time slider)."""
+    if s.corun is None:
+        raise Refused("nothing has run on the pieces")
+    fr = s.corun.frame(k)
+    if fr is None:
+        raise Refused(f"no step {k + 1}")
+    return {"frame": fr, "k": k}
+
+
+@handler("records.list", changes=False)
+def _records(s: Session):
+    """The chart-operator records under out/chartop, read only."""
+    from . import records
+    return {"records": records.evaluations()}
+
+
 # -- runs and compiles -------------------------------------------------------------
 
 @handler("run.start", {"arms": (list, False)})
@@ -286,6 +377,8 @@ class Watch:
     compile: Any = None
     compile_status: str = ""
     sweep_key: tuple = ()
+    pieces_key: tuple = ()
+    corun_key: tuple = ()
 
 
 def run_frame(session: Session, w: Watch) -> list[dict]:
@@ -324,6 +417,23 @@ def run_frame(session: Session, w: Watch) -> list[dict]:
         if key != w.sweep_key:
             w.sweep_key = key
             out.append(p)
+    cr = session.corun
+    if cr is not None:
+        ckey = (id(cr), cr.status, cr.version)
+        if ckey != w.corun_key:
+            w.corun_key = ckey
+            pr = cr.progress()
+            if pr["frames"]:
+                pr["frame"] = cr.frame(pr["frames"] - 1)
+                pr["frame_index"] = pr["frames"] - 1
+            out.append(pr)
+    pj = session.pieces_job
+    pkey = (session.pieces_version, pj.status if pj is not None else None)
+    # nothing about pieces is built until the page asks (the experts' list imports torch
+    # and hashes every checkpoint once)
+    if session.pieces_version and pkey != w.pieces_key:
+        w.pieces_key = pkey
+        out.append(session.pieces_state())
     job = session.compile_job
     if job is not None and (job is not w.compile or job.status != w.compile_status):
         frame = {"type": "compile", "status": job.status, "error": job.error,

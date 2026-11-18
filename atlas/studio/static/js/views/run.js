@@ -5,11 +5,14 @@
 import { store, subscribe, send } from '../store.js';
 import { h, clear, fmt, cssVar } from '../ui.js';
 import { GLOSSARY } from '../glossary.js';
+import { renderInto as corunInto } from './corun.js';
 
 let root = null;
 let fieldsBox = null;
 const ARMS = ['serial', 'parallel', 'full'];
 let chosen = null;
+let runKind = null;          // 'pieces' (the chart operator, P5) or 'windows' (the classical arms)
+let runKindChosen = false;   // until the person picks, it follows whether pieces exist
 
 // a perceptual ramp from the palette's ink to cyan and violet (sequential), and a
 // diverging one for differences
@@ -131,6 +134,32 @@ function renderFields() {
 function render() {
   if (!root || !store.state) return;
   clear(root);
+  const heat = store.state.meta.family === 'conduction-2d';
+  if (heat) {
+    if (!runKindChosen) runKind = store.pieces?.summary ? 'pieces' : 'windows';
+    const kind = h('div', { class: 'seg', role: 'group', 'aria-label': 'What runs', style: { margin: '8px 8px 0', alignSelf: 'flex-start' } });
+    for (const [k, label, tip] of [['pieces', 'Pieces', 'The chart operator on the pieces cut on Pieces: Single or Compare'], ['windows', 'Windows', "The classical arms on the case's windows: serial, parallel and the full domain"]]) {
+      const b = h('button', { 'aria-pressed': String(runKind === k), 'data-tip': tip }, label);
+      b.addEventListener('click', () => { runKind = k; runKindChosen = true; render(); });
+      kind.append(b);
+    }
+    const holder = h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, minWidth: 0 } }, kind);
+    root.append(holder);
+    if (runKind === 'pieces') {
+      const box = h('div', { style: { display: 'flex', flex: 1, minHeight: 0 } });
+      holder.append(box);
+      corunInto(box);
+      return;
+    }
+    const box = h('div', { style: { display: 'flex', flex: 1, minHeight: 0 } });
+    holder.append(box);
+    renderWindows(box);
+    return;
+  }
+  renderWindows(root);
+}
+
+function renderWindows(into) {
   const r = store.run;
   const active = r && ['starting', 'running', 'stopping'].includes(r.status);
   const left = h('aside', { class: 'panel scroll', style: { width: '220px', flex: 'none' } },
@@ -198,7 +227,7 @@ function render() {
     main.append(h('div', { class: 'label' }, 'Fields'), fieldsBox);
     renderFields();
   }
-  root.append(h('div', { class: 'work' }, left, main));
+  into.append(h('div', { class: 'work' }, left, main));
 }
 
 function sweepTable(sw) {
@@ -224,10 +253,13 @@ function sweepTable(sw) {
   return box;
 }
 
+/** show the pieces run (Records' Open asks for it) */
+export function usePieces() { runKind = 'pieces'; runKindChosen = true; render(); }
+
 export function mount(el) {
   root = el;
   subscribe((what) => {
-    if (['run', 'state', 'compile', 'tab', 'sweep'].includes(what)) render();
+    if (['run', 'state', 'compile', 'tab', 'sweep', 'corun', 'pieces'].includes(what)) render();
     if (what === 'fields') renderFields();
   });
 }

@@ -1116,3 +1116,30 @@ The equation registry (`atlas/studio/registry_eq.py`) holds every PDE of [[chart
 **Checked in the real page** with trusted input: 19 checks, zero console errors (`out/studio/p3/walk.json`): every equation runs or shows its reason on hover; the regime numbers shown equal the hand computations; steady drops the Fourier numbers; editing copper's κ to 380 moves the contrast to 8.44; a greyed equation does nothing and Acoustics opens a sound case; the search narrows the list; nothing overflows at 1090 × 620 in either theme.
 
 **Changed:** [[integrated-ui-plan]] (status line).
+
+## [2026-11-17] build | integrated UI, phase P4: pieces and experts
+
+The Pieces screen cuts a heat case into four-sided pieces, charts and certifies each, and gives each an expert (`atlas/studio/pieces.py`, `experts.py`, `piecejob.py`). Automatic cutting covers the domains whose layout is a strip: a rectangle on a grid and at its material interfaces, an annular sector in polar strips, a channel at equal harmonic coordinate, a plate with one round insert in the O-H layout. Anything else is refused with the reasons and cut by hand: a chord through the layout, a merge, a dragged inside corner. Charts: TFI, Laplacian (Winslow), or a new numerical conformal chart (`atlas/studio/conformal.py`, beside `atlas/chartop`, never inside it: the conformal module and boundary correspondence from two harmonic measures, with the log-polar map recognised where it is the exact one).
+
+**Checked in the real page** with trusted input (`out/studio/p4/walk.json`), and in `tests/test_studio_pieces.py`. The done-when items:
+- the three held-out benchmarks, cut in the page, are `benchmarks.py`'s pieces: the same charts to the bit (max |ΔX| = 0 in the tests) and the same conductivities;
+- the coupled classical solve matches `host.monolithic` to round-off: 9.6e-13 of the range on bend-3, 2.2e-13 on the S-channel with each side's whole trace (the experts' 16 port modes leave a truncation floor, 1.5e-3 there, shown beside it);
+- a piece made to fold (an inside corner dragged past its neighbour) is refused, its relative det J shown (−6.2 and −5.9).
+
+The experts: classical, H2r, TL0, and TL-s0, TL-s1, S′-s0 and S′-s1, each offered only when its checkpoint's sha256 equals its evaluation record's (all seven here). Through the host, TL-s0 on the studio's own bend-3 pieces gives the two-level record's energy error 1.953582292479033e-3, max error 7.684386135281329e-3 and smallest eigenvalue 8.051165813684666, every digit (the test sets the record's 8 torch threads). NeuberNet is not a chart-operator expert and is never listed.
+
+## [2026-11-17] build | integrated UI, phase P5: runs on the pieces
+
+Run gains Single and Compare on the pieces (`atlas/studio/corun.py`): each window the full domain (the pieces merged into one mesh) or the chart operator (mixed experts, or one expert on every piece), run in turns on this machine, steady or marched from each window's own field. The views: field, difference, per-piece energy error, seams. The cards: B's error against A (all pieces, the worst piece, the largest nodal error, the seam jump, the balance), E4's bar applied to the run (one of the registration's two frames), the price as B's time over A's with A's own spread and the machine's state, and the certificate. No raw seconds reach the page.
+
+**The done-when:** a compare run of TL-s0 against the full domain on bend-3 shows the two-level record's numbers (the workbench's own bend-3, `benchmarks_seen`, steady, registered frame) to every digit, in the page and in `tests/test_studio_corun.py` (22 checks in the page, `out/studio/p5/walk.json`). The page's server ran with 16 torch threads, the record with 8, and the digits still agree; the run records both its threads and the machine's state (on battery, which the price card says).
+
+**Not built:** the coarse basis view, flux arrows and a probe; the dual bound in a run (the evaluations' records hold it).
+
+## [2026-11-17] build | integrated UI, phase P6: the records
+
+The Records screen reads `out/chartop/` and never runs anything (`atlas/studio/records.py`): every evaluation, newest first, its gates as chips with their registered titles and bars (from `atlas/chartop/gates_*.py`), its prices under their problem sets, never a mean over every priced problem beside a held-out one, and ρ per test piece as a histogram (the two-level record: median 0.669, 10th percentile 0.318 over 2400 pieces). *Open* takes a held-out problem into Compare with the record's network.
+
+**The done-when:** each evaluation's gates and prices on screen equal its JSON, read by a test that reads both (`tests/test_studio_records.py`) and in the page (16 checks, `out/studio/p6/walk.json`, among them Open: bend-3 run from the record to its energy error); a Stage 0b registration file, made for the test, appears as registered, not run, with its arms and gates, and its evaluation as evaluated, with no change to the code.
+
+**Changed:** [[integrated-ui-plan]] (status line).

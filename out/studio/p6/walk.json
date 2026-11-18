@@ -1,0 +1,360 @@
+{
+ "walk": "scripts/studio_walks/p6.py",
+ "url": "http://127.0.0.1:8021/",
+ "size": "1090x620",
+ "theme": "light",
+ "started": "2026-11-17T19:36:54",
+ "checks": [
+  {
+   "check": "Stage 0b is listed, not registered",
+   "passed": true,
+   "detail": [
+    "Stage 0b not registered",
+    "Two-level \u00b7 11-11 TL-s0, TL-s1"
+   ]
+  },
+  {
+   "check": "every evaluation on this machine is listed",
+   "passed": true,
+   "detail": [
+    "evaluation-twolevel-20261111-004223.json",
+    "evaluation-squares-20261108-141654.json",
+    "evaluation-hybrid-20261107-231105.json",
+    "evaluation-prior-20261107-172219.json",
+    "evaluation-forms-20261019-205923.json",
+    "evaluation-20261018-203833.json"
+   ]
+  },
+  {
+   "check": "evaluation-twolevel-20261111-004223.json: the gates on screen are the record's",
+   "passed": true,
+   "detail": [
+    [
+     "K",
+     true
+    ],
+    [
+     "D",
+     true
+    ],
+    [
+     "L",
+     true
+    ],
+    [
+     "E3",
+     true
+    ],
+    [
+     "E4",
+     false
+    ],
+    [
+     "CX",
+     true
+    ],
+    [
+     "NC",
+     false
+    ],
+    [
+     "SE1",
+     true
+    ],
+    [
+     "SE2",
+     true
+    ],
+    [
+     "DUAL",
+     true
+    ],
+    [
+     "KT",
+     true
+    ],
+    [
+     "PR",
+     null
+    ]
+   ]
+  },
+  {
+   "check": "the two-level prices on screen are the record's, each under its problem set",
+   "passed": true,
+   "detail": [
+    [
+     "all priced",
+     "H2r",
+     "0.418"
+    ],
+    [
+     "all priced",
+     "TL",
+     "1.05"
+    ],
+    [
+     "all priced",
+     "TL0",
+     "0.836"
+    ],
+    [
+     "held-out 6",
+     "H2r",
+     "0.978"
+    ]
+   ]
+  },
+  {
+   "check": "rho's median and 10th percentile are the record's NC numbers",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "evaluation-squares-20261108-141654.json: the gates on screen are the record's",
+   "passed": true,
+   "detail": [
+    [
+     "E4-H2",
+     true
+    ],
+    [
+     "PR2",
+     true
+    ]
+   ]
+  },
+  {
+   "check": "the squares price is the record's PR2",
+   "passed": true,
+   "detail": [
+    [
+     "squares (R2's 16)",
+     [
+      [
+       "PR2",
+       "0.726"
+      ]
+     ]
+    ]
+   ]
+  },
+  {
+   "check": "evaluation-hybrid-20261107-231105.json: the gates on screen are the record's",
+   "passed": true,
+   "detail": [
+    [
+     "E4-H",
+     false
+    ],
+    [
+     "PR",
+     null
+    ]
+   ]
+  },
+  {
+   "check": "evaluation-prior-20261107-172219.json: the gates on screen are the record's",
+   "passed": true,
+   "detail": [
+    [
+     "K",
+     true
+    ],
+    [
+     "D",
+     true
+    ],
+    [
+     "L",
+     true
+    ],
+    [
+     "E1",
+     false
+    ],
+    [
+     "E3",
+     true
+    ],
+    [
+     "E4",
+     false
+    ],
+    [
+     "E5",
+     null
+    ],
+    [
+     "SE1",
+     true
+    ],
+    [
+     "SE2",
+     true
+    ],
+    [
+     "SE3",
+     true
+    ],
+    [
+     "DUAL",
+     true
+    ],
+    [
+     "KT",
+     false
+    ],
+    [
+     "S11",
+     null
+    ]
+   ]
+  },
+  {
+   "check": "evaluation-forms-20261019-205923.json: the gates on screen are the record's",
+   "passed": true,
+   "detail": [
+    [
+     "K",
+     true
+    ],
+    [
+     "D",
+     true
+    ],
+    [
+     "L",
+     true
+    ],
+    [
+     "E1",
+     false
+    ],
+    [
+     "E3",
+     true
+    ],
+    [
+     "E4",
+     false
+    ],
+    [
+     "E5",
+     null
+    ],
+    [
+     "SE1",
+     true
+    ],
+    [
+     "SE2",
+     true
+    ],
+    [
+     "SE3",
+     true
+    ],
+    [
+     "DUAL",
+     true
+    ],
+    [
+     "KT",
+     false
+    ],
+    [
+     "S11",
+     null
+    ]
+   ]
+  },
+  {
+   "check": "evaluation-20261018-203833.json: the gates on screen are the record's",
+   "passed": true,
+   "detail": [
+    [
+     "E1",
+     false
+    ],
+    [
+     "E2",
+     null
+    ],
+    [
+     "E3",
+     true
+    ],
+    [
+     "E4",
+     false
+    ],
+    [
+     "E5",
+     null
+    ],
+    [
+     "E6",
+     null
+    ],
+    [
+     "SE1",
+     true
+    ],
+    [
+     "SE2",
+     true
+    ],
+    [
+     "SE3",
+     true
+    ],
+    [
+     "DUAL",
+     true
+    ],
+    [
+     "KT",
+     false
+    ]
+   ]
+  },
+  {
+   "check": "a gate's hover text is its registered title and bar",
+   "passed": true,
+   "detail": "E4: coupled answer against the full-domain solve, in both frames. every held-out benchmark problem (benchmarks' variant "
+  },
+  {
+   "check": "Open set window B to the record's network",
+   "passed": true,
+   "detail": "TL-s0"
+  },
+  {
+   "check": "opened from Records, the run gives the record's numbers",
+   "passed": true,
+   "detail": {
+    "page": 0.001953582292479033,
+    "record": 0.001953582292479033
+   }
+  },
+  {
+   "check": "nothing overflows sideways at 1090 x 620",
+   "passed": true,
+   "detail": []
+  },
+  {
+   "check": "no console errors",
+   "passed": true,
+   "detail": null
+  }
+ ],
+ "console_errors": [],
+ "screenshots": [
+  "out/studio/p6/p6-twolevel.png",
+  "out/studio/p6/p6-opened.png",
+  "out/studio/p6/p6-records-dark.png"
+ ],
+ "trusted_clicks_and_drags": 11,
+ "passed": true,
+ "finished": "2026-11-17T19:38:22"
+}

@@ -189,6 +189,7 @@ export function styled(item, s = {}) {
   item.strokeWidth = s.width ?? 1.4;
   item.strokeScaling = false;
   if (s.dash) item.dashArray = s.dash;
+  if (s.alpha !== undefined) item.opacity = s.alpha;
   if (s.name) item.name = s.name;
   if (s.data) item.data = s.data;
   return item;

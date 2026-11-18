@@ -352,7 +352,8 @@ def main(argv=None) -> int:
             for dom in ("Page", "Runtime", "Log"):
                 page.call(f"{dom}.enable")
             page.call("Page.navigate", url=a.url)
-            page.wait_for("!!(window.atlas && window.atlas.store && window.atlas.store.state)", 90, "the server's state")
+            # the first page after a server starts waits for the server's first imports
+            page.wait_for("!!(window.atlas && window.atlas.store && window.atlas.store.state)", 300, "the server's state")
             page.js(f"document.documentElement.dataset.theme = '{a.theme}'")
             page.pump(0.5)
             try:

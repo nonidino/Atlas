@@ -1,0 +1,162 @@
+{
+ "walk": "scripts/studio_walks/p5.py",
+ "url": "http://127.0.0.1:8021/",
+ "size": "1090x620",
+ "theme": "light",
+ "started": "2026-11-17T19:38:47",
+ "checks": [
+  {
+   "check": "TL-s0 is offered here (its weights match its record)",
+   "passed": true,
+   "detail": [
+    "classical",
+    "H2r",
+    "TL0",
+    "TL-s0",
+    "TL-s1",
+    "Sp-s0",
+    "Sp-s1"
+   ]
+  },
+  {
+   "check": "bend-3 cut: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "Run opens on the pieces",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "TL-s0 against the full domain on bend-3: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the energy error is the record's",
+   "passed": true,
+   "detail": {
+    "page": 0.001953582292479033,
+    "record": 0.001953582292479033
+   }
+  },
+  {
+   "check": "the max error is the record's",
+   "passed": true,
+   "detail": {
+    "page": 0.007684386135281329,
+    "record": 0.007684386135281329
+   }
+  },
+  {
+   "check": "the interface matrix's smallest eigenvalue is the record's",
+   "passed": true,
+   "detail": {
+    "page": 8.051165813684666,
+    "record": 8.051165813684666
+   }
+  },
+  {
+   "check": "the cards show them",
+   "passed": true,
+   "detail": {
+    "energy": "2.0e-3",
+    "max": "7.7e-3"
+   }
+  },
+  {
+   "check": "the run records its torch threads and machine (the record ran with 8)",
+   "passed": true,
+   "detail": {
+    "torch": 16
+   }
+  },
+  {
+   "check": "the price is a ratio with its A/A spread, no seconds",
+   "passed": true,
+   "detail": {
+    "ratio": 0.6234061690983373,
+    "meaning": "B's time over A's, each the median of its turns on this machine: below 1, B is faster",
+    "aa_spread": 1.2800164596269659,
+    "turns": 5
+   }
+  },
+  {
+   "check": "the agree chip applies E4's bar and passes",
+   "passed": true,
+   "detail": [
+    "agree \u2713",
+    "balance \u2715",
+    "charts \u2713",
+    "CX",
+    "DUAL"
+   ]
+  },
+  {
+   "check": "the Difference view draws",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the Per piece view draws",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the Seams view draws",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "a single run of the mixed experts: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "single: the window against the full domain, no price",
+   "passed": true,
+   "detail": 2.3084563704684885e-12
+  },
+  {
+   "check": "wall-2 cut: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "a four-step march: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "four steps marched",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the slider shows step 1 of 4",
+   "passed": true,
+   "detail": "1 / 4"
+  },
+  {
+   "check": "nothing overflows sideways at 1090 x 620",
+   "passed": true,
+   "detail": []
+  },
+  {
+   "check": "no console errors",
+   "passed": true,
+   "detail": null
+  }
+ ],
+ "console_errors": [],
+ "screenshots": [
+  "out/studio/p5/p5-compare-field.png",
+  "out/studio/p5/p5-per-piece.png",
+  "out/studio/p5/p5-transient.png",
+  "out/studio/p5/p5-transient-dark.png"
+ ],
+ "trusted_clicks_and_drags": 22,
+ "passed": true,
+ "finished": "2026-11-17T19:41:11"
+}

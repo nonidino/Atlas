@@ -1,0 +1,228 @@
+{
+ "walk": "scripts/studio_walks/p4.py",
+ "url": "http://127.0.0.1:8021/",
+ "size": "1090x620",
+ "theme": "light",
+ "started": "2026-11-17T19:32:34",
+ "checks": [
+  {
+   "check": "experts are listed; learned ones only with matching weights",
+   "passed": true,
+   "detail": [
+    "classical",
+    "H2r",
+    "TL0",
+    "TL-s0",
+    "TL-s1",
+    "Sp-s0",
+    "Sp-s1"
+   ]
+  },
+  {
+   "check": "bend-3 cut: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "bend-3: 15 pieces, every chart certified, every seam admitted",
+   "passed": true,
+   "detail": [
+    15,
+    [
+     15,
+     15
+    ],
+    22
+   ]
+  },
+  {
+   "check": "bend-3, cut in the page, is benchmarks.py's layout",
+   "passed": true,
+   "detail": {
+    "pieces": [
+     15,
+     15
+    ],
+    "worst centre difference": 4.85367998626085e-07
+   }
+  },
+  {
+   "check": "clicking a piece selects it",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "charts by TFI: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "TFI on every piece: all still certified",
+   "passed": true,
+   "detail": [
+    15,
+    15
+   ]
+  },
+  {
+   "check": "the cut's own charts: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "best admitted: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "best admitted: the trained network where its card admits it",
+   "passed": true,
+   "detail": [
+    "TL-s0"
+   ]
+  },
+  {
+   "check": "one piece classical: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "one piece's expert set from its panel",
+   "passed": true,
+   "detail": "classical"
+  },
+  {
+   "check": "the coupling check: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "a coupled classical solve matches host.monolithic to round-off",
+   "passed": true,
+   "detail": 9.595169103704392e-13
+  },
+  {
+   "check": "insert-round cut: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "insert-round: 39 pieces, all certified",
+   "passed": true,
+   "detail": [
+    39,
+    39
+   ]
+  },
+  {
+   "check": "insert-round, cut in the page, is benchmarks.py's layout",
+   "passed": true,
+   "detail": {
+    "pieces": [
+     39,
+     39
+    ],
+    "worst centre difference": 4.86672993516013e-07
+   }
+  },
+  {
+   "check": "s-channel cut: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "s-channel: 9 pieces, its end pieces by Winslow",
+   "passed": true,
+   "detail": [
+    "9 pieces at equal harmonic coordinate (module 8.61, E_u E_v = 1.000482)",
+    "end piece 0: the conformal chart was refused by the envelope, so Winslow",
+    "end piece 8: the conformal chart was refused by the envelope, so Winslow"
+   ]
+  },
+  {
+   "check": "s-channel, cut in the page, is benchmarks.py's layout",
+   "passed": true,
+   "detail": {
+    "pieces": [
+     9,
+     9
+    ],
+    "worst centre difference": 4.426827955872348e-07
+   }
+  },
+  {
+   "check": "wall-2 cut: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "wall-2: cut at the material interface",
+   "passed": true,
+   "detail": [
+    "steel",
+    "steel",
+    "copper"
+   ]
+  },
+  {
+   "check": "a cut by hand: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the hand cut runs through all three pieces",
+   "passed": true,
+   "detail": [
+    6,
+    [
+     "c1"
+    ]
+   ]
+  },
+  {
+   "check": "a corner dragged: the job ended",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "a piece made to fold is refused with its det J",
+   "passed": true,
+   "detail": [
+    [
+     "block 1,0a",
+     -6.158577620235291
+    ],
+    [
+     "block 1,0b",
+     -5.8845087696662794
+    ]
+   ]
+  },
+  {
+   "check": "its panel says it is refused, with det J",
+   "passed": true,
+   "detail": "P3\nblock 1,0a \u00b7 steel\nCERTIFICATE\nmin det J\n-6.16\nboundary simple\n\u2717\nin card envelope\n\u2717\nRefused: 1728 cell corners with a non-positive bilinear Jacobian. min det J -6.16: try the Laplacian or conformal"
+  },
+  {
+   "check": "nothing overflows sideways at 1090 x 620",
+   "passed": true,
+   "detail": []
+  },
+  {
+   "check": "no console errors",
+   "passed": true,
+   "detail": null
+  }
+ ],
+ "console_errors": [],
+ "screenshots": [
+  "out/studio/p4/p4-bend3.png",
+  "out/studio/p4/p4-bend3-experts.png",
+  "out/studio/p4/p4-s-channel.png",
+  "out/studio/p4/p4-folded.png",
+  "out/studio/p4/p4-folded-dark.png"
+ ],
+ "trusted_clicks_and_drags": 20,
+ "passed": true,
+ "finished": "2026-11-17T19:36:16"
+}

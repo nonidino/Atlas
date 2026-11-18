@@ -21,6 +21,9 @@ opens in the other. `--fetch-fonts` downloads Ranade from Fontshare and exits.
 | P1 | geometry I: case file 0.7's feature tree; the Paper.js editor (select, pen, rectangle, ellipse, arc, measure, pan); Add, Cut and Region; smart guides, grid snap, typed sizes; combine (union, subtract, intersect); materials; the start screen; imports of `.msh`, STEP, DXF and SVG; the server's exact evaluation and the Check view; a minimal Run; the one-command install serves the studio | built |
 | P2 | geometry II: parameters and formulas; the Dimension tool and planegcs constraints with the degrees-of-freedom count; pattern, mirror, split and fillet; coefficient fields (formula, image); the Channel tool; seeded scatter (circles, channels, both); image tracing; sweeps from Run | built |
 | P3 | physics: the equation registry (every PDE of the family catalog, its type, guarantee class, properties, and the solver that runs it or why none does); the equation screen; the regime numbers with their definitions | built |
+| P4 | pieces and experts: automatic cutting (rectangle grids at material interfaces, polar strips, channel strips, the O-H layout around an insert), hand cutting (chords, merges, corners); TFI, Laplacian and a new numerical conformal chart; Proposition 3's certificates; an expert per piece, trained networks offered only when their sha256 matches their record; seam verdicts | built |
+| P5 | run: Single and Compare on the pieces (full domain or chart operator, mixed or one expert on every piece), steady or marched; the field, difference, per-piece and seam views; price as a ratio with its A/A spread; E4's bar, balance and the certificate | built |
+| P6 | records: every registered evaluation under `out/chartop/`, its gates with their registered titles and bars, its prices by problem set, ρ per test piece; Open into Compare; a new kind's registration appears with no change to the page | built |
 
 ## Geometry (P1)
 
@@ -125,6 +128,58 @@ transient where the kind has both; each material's properties, editable; Δt, st
 the kind's own parameters, threads and the coupling style; the boundaries grouped by
 condition, each explained on hover.
 
+## Pieces and experts (P4)
+
+`pieces.py` cuts a heat case's domain into four-sided pieces. **Automatically**, for the
+domains whose layout is a strip: a rectangle on a grid, cut again at every edge of a
+rectangular region (one material per piece); an annular sector in polar strips at
+equal log r and angle (log-polar charts, the exact conformal map); any four-sided
+channel at equal values of its harmonic coordinate (conformal charts; end pieces by
+Winslow where the CO-D card's envelope refuses them); a rectangle with one round
+insert in the O-H layout. Anything else is refused with the reasons, and cut by hand.
+These repeat `atlas/chartop/benchmarks.py`'s constructions on the case's own outline:
+the three held-out benchmarks cut here are that module's pieces, chart for chart
+(max |ΔX| = 0; tested). **By hand:** a cut across a piece runs on through every piece
+across it (a chord, so seams stay conforming); a chord made by hand can be merged
+away; an inside corner where straight cuts meet can be dragged.
+
+**Charts** per piece: TFI (the Coons patch), Laplacian (Winslow) or conformal
+(`conformal.py`, new: the conformal module and boundary correspondence from two
+harmonic measures, with the log-polar map recognised where it applies), or the cut's
+own. **Certificates**: Proposition 3 (`det J > 0` at every cell corner, a simple
+positive boundary); the smallest relative `det J` and the largest skew are shown, and
+a folded piece is refused with its `det J`. **Experts** (`experts.py`): classical, H2r
+on squares of one material, TL0, and the trained networks TL-s0, TL-s1, S′-s0 and
+S′-s1, each offered only when its checkpoint's sha256 equals its evaluation record's;
+*Best admitted for all* gives each piece H2r where it applies, the two-level network
+where its card admits it, else the classical solve. **Seams** are the host's own:
+conforming seams admitted, a mortar admitted uncertified; every side's port is THERM.
+*Check the coupling* solves the pieces with the classical expert against
+`host.monolithic`: round-off with each side's whole trace, and the experts' 16-mode
+floor beside it.
+
+## Run on the pieces (P5)
+
+`corun.py` runs Single (one window against the full domain) or Compare (windows A and
+B) **in turns**: each window is the full domain (the pieces merged into one mesh) or the
+chart operator (mixed experts, or one expert on every piece); steady, or marched from
+each window's own previous field (up to 40 steps). It reports B's energy-norm error,
+the worst piece's, the largest nodal error, the jump in T across seams and the heat
+balance; E4's bar applied to this run (one frame of the registration's two); the
+price as B's time over A's with A's own spread and the machine's state; and the
+certificate. On bend-3, TL-s0 against the full domain gives the two-level record's
+energy error, max error and smallest eigenvalue to every digit (tested, and in the
+page).
+
+## Records (P6)
+
+`records.py` reads `out/chartop/` and never runs anything: each `evaluation-*.json`
+and each `registration-*.json` without an evaluation yet, newest first; a kind's gates
+from `atlas/chartop/gates_<kind>.py` (or, for a kind added later, its registration's
+own list), their verdicts from wherever the record keeps them, its prices under their
+problem sets, and ρ per test piece as a histogram. *Open* takes a held-out problem into
+Compare with the record's network. A test reads both the JSON and the page's data.
+
 ## Page checks
 
 `scripts/studio_drive.py WALK` drives the real page in headless Edge with **trusted**
@@ -132,7 +187,8 @@ input (the DevTools protocol's mouse and key events), checks what each step shou
 change, fails on any console error, and writes `out/studio/<walk>/walk.json` with
 screenshots. The app's own browser pane cannot take input while it is hidden, and a
 page check must not depend on a window being in front. `scripts/studio_walks/p2.py`
-is P2's: 30 checks, among them the four done-when items; `p3.py` is P3's: 19.
+is P2's: 30 checks, among them the four done-when items; `p3.py` is P3's: 19;
+`p4.py`, `p5.py` and `p6.py` check P4's, P5's and P6's done-when items the same way.
 
 ## How it works
 
@@ -212,6 +268,15 @@ server and runs a case over its WebSocket.
   `tests/workbench_ui.py`): nothing serves them (`python -m atlas.workbench` says it
   is retired), and their tests still pass. Rewriting those tests against this
   protocol, and then deleting the modules, is open.
+- **Not built in P5's views:** the coarse basis view, flux arrows and a probe; the dual
+  bound is held by the registered evaluations' records and not computed in a run. The
+  full domain in a run is the pieces' own mesh at the cut's resolution, not an
+  independent grid of 32 to 256.
+- **Automatic cutting covers strips** (a rectangle, a sector, a channel, a plate with
+  one insert) and says so for anything else; the general quad layout is open.
+- **Pieces belong to the session**, not the case file: a saved case is cut again.
+- **NeuberNet is never listed**: it is not a chart-operator expert, and it is
+  unlicensed and local-only.
 - **Tangent constraints** are not offered: the pen's arcs are bulges, not planegcs
   arcs. A fillet is tangent by construction.
 - **The server never runs planegcs.** The page solves a path's constraints and writes

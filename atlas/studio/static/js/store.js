@@ -13,6 +13,8 @@ export const store = {
   fields: null,           // the last fields frame
   compile: null,          // the last compile frame
   sweep: null,            // the last sweep frame: one run per parameter value
+  pieces: null,           // the layout of pieces (P4): its summary and its job
+  corun: null,            // the last run on the pieces (P5): Single or Compare
   tab: 'geometry',
   connected: false,
 };
@@ -37,6 +39,8 @@ export function bind() {
   net.on('fields', (m) => { store.fields = m; changed('fields'); });
   net.on('compile', (m) => { store.compile = m; changed('compile'); });
   net.on('sweep', (m) => { store.sweep = m; changed('sweep'); });
+  net.on('pieces', (m) => { store.pieces = m; changed('pieces'); });
+  net.on('corun', (m) => { store.corun = m; changed('corun'); });
   net.on('connection', (m) => { store.connected = m.connected; changed('connection'); });
 }
 
