@@ -159,23 +159,33 @@ def _pins(name: str) -> dict[str, str]:
     return out
 
 
+#: the retired Panel page's packages (2026-11-18): panel, bokeh and tornado served it,
+#: pandas drew its results tables, and nothing else imports any of them
+RETIRED = {"panel", "bokeh", "tornado", "pandas"}
+
+
 def test_requirements_are_exact_pins_and_the_constraints_agree():
     req = _pins("requirements.txt")
-    assert {"numpy", "scipy", "pandas", "pydantic", "panel", "bokeh", "pytest"} <= set(req)
+    assert {"numpy", "scipy", "pydantic", "fastapi", "uvicorn", "websockets", "shapely",
+            "pytest", "httpx"} <= set(req)
+    assert not RETIRED & set(req)
     if os.path.isfile(os.path.join(TEMPLATES, "constraints.txt")):
         cons = _pins("constraints.txt")
         for name, ver in req.items():
             assert cons.get(name) == ver, (name, ver, cons.get(name))
         assert "torch" not in cons, "torch is pinned by the launchers, with its +cpu label"
-        # From param 2.3.0, with Panel 1.5.2, a widget's `name` is constant and the
-        # header's relabelling raises: the first clean install served HTTP 500.
-        major, minor = (int(x) for x in cons["param"].split(".")[:2])
-        assert (major, minor) < (2, 3), cons["param"]
+        assert not RETIRED & set(cons)
 
 
-#: module name -> the distribution that provides it, where they differ or where
-#: the module arrives with another pinned package
-_DIST = {"tornado": "bokeh"}
+def test_the_launchers_at_the_root_are_the_templates():
+    """The repository's root carries the launchers, so a clone of it installs (2026-10-03,
+    "copied unchanged from atlas/workbench/bundle/"); a pin changed in one place and not
+    the other left the root installing without the studio's packages (found
+    2026-11-18).  Compared with line endings normalised, as git stores them."""
+    for name in ("run.py", "run.sh", "run.cmd", "requirements.txt", "constraints.txt"):
+        with open(os.path.join(HERE, name), "rb") as fh:
+            root = fh.read().replace(b"\r\n", b"\n")
+        assert root == _bytes(name).replace(b"\r\n", b"\n"), name
 
 
 def _third_party_imports(paths: list[str]) -> dict[str, set[str]]:
@@ -218,7 +228,8 @@ def test_every_package_the_workbench_imports_is_pinned_or_optional():
     assert not undeclared, f"imported but neither required nor optional: {undeclared}"
     req = _pins("requirements.txt")
     for m in required:
-        assert _DIST.get(m, m) in req, f"{m} is checked by the self-test but not pinned"
+        assert m in req, f"{m} is checked by the self-test but not pinned"
+    assert not RETIRED & (required | optional | set(found))
 
 
 # ---------------------------------------------------------------------------
@@ -262,7 +273,7 @@ def test_the_builder_carries_every_workbench_test_and_the_scripts_they_import():
     upstream = sorted(f for f in os.listdir(os.path.join(HERE, "tests"))
                       if re.match(r"^test_(workbench|studio)_.*\.py$", f))
     assert any(t.startswith("test_studio_") for t in upstream)
-    assert tests == upstream + ["workbench_ui.py"]
+    assert tests == upstream + ["studio_driver.py"]
     scripts = W.script_closure([os.path.join(HERE, "tests", t) for t in tests])
     assert "w346_rotor_count_speed.py" in scripts      # test_workbench_runner's control
     assert "w100_scaling_ladder.py" in scripts         # ... and what W346 imports

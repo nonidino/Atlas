@@ -81,7 +81,9 @@ VENDOR_PACKAGE = ("src", "atlas", "cases", "windfarm")
 VENDOR_PROBES = ("__init__.py", "reference.py", "adapters.py", "backend.py", "disk.py")
 
 TEST_PATTERN = re.compile(r"^test_(workbench|studio)_.*\.py$")
-TEST_HELPERS = ("workbench_ui.py",)
+#: what the tests import from beside them: the studio driver, which sends the page's
+#: messages to a session (it replaced the retired Panel page's widget helpers)
+TEST_HELPERS = ("studio_driver.py",)
 
 #: template file -> its path in the bundle.  constraints.txt is optional until it
 #: has been generated from a verified install.
@@ -268,7 +270,7 @@ def build(out: str, build_repo: str, allow_dirty: bool = False) -> dict:
         elif not name.endswith(".pyc"):
             shutil.copyfile(s, os.path.join(out, "atlas", name))
     for probe in ("atlas/__init__.py", "atlas/workbench/__main__.py",
-                  "atlas/workbench/app.py", "atlas/cases/window_ns.py",
+                  "atlas/workbench/spec.py", "atlas/cases/window_ns.py",
                   "atlas/cases/wake_array.py", "atlas/studio/__main__.py",
                   "atlas/studio/static/index.html"):
         if not os.path.isfile(os.path.join(out, *probe.split("/"))):

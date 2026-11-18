@@ -3,7 +3,9 @@
 One app to draw a domain, choose its physics, cut it into pieces, run it, and
 read the guarantees: the integrated UI of
 `wiki/concepts/Atlas 0.1/atlas-0.1-proposal/demo/integrated-ui-plan.md`, which
-replaces the Panel workbench (`atlas/workbench/app.py` and its page modules).
+replaced the Panel workbench's page (its modules were deleted on 2026-11-18, once
+their tests drove this protocol instead). The engine under it is still
+`atlas/workbench/`: the case file, the families, the runner and the compile.
 
 ```bash
 python -m atlas.studio --open        # http://127.0.0.1:8021/
@@ -254,8 +256,10 @@ file it and its modules name served from this machine with the MIME types a brow
 requires; no file of the page names the network; every message the page sends has a
 handler, and every handler refuses arguments it does not take; edits, refusals, undo;
 every example opened and saved bit for bit; a run over the socket ending in cards with
-no raw seconds. The installer's self-test (`run.py --check`) starts the studio's own
-server and runs a case over its WebSocket.
+no raw seconds. The workbench's own tests (`tests/test_workbench_*.py`) drive the same
+protocol on a `Session` (`tests/studio_driver.py`): every edit, refusal, undo, example,
+run, compile and fix the retired Panel page's tests checked. The installer's self-test
+(`run.py --check`) starts the studio's own server and runs a case over its WebSocket.
 
 ## Known limitations
 
@@ -263,11 +267,6 @@ server and runs a case over its WebSocket.
   about 5 to 10 s: the engine cuts the windows again (a Fiedler vector and harmonic
   coordinates) and checks the case twice, exactly as the retired workbench did on
   every drawn edit. The page says *Rebuilding…* meanwhile and keeps drawing locally.
-- **The Panel page's modules and their tests are still in the repository**
-  (`atlas/workbench/app.py`, `editor.py`, `inspector.py`, `runview.py`,
-  `tests/workbench_ui.py`): nothing serves them (`python -m atlas.workbench` says it
-  is retired), and their tests still pass. Rewriting those tests against this
-  protocol, and then deleting the modules, is open.
 - **Not built in P5's views:** the coarse basis view, flux arrows and a probe; the dual
   bound is held by the registered evaluations' records and not computed in a run. The
   full domain in a run is the pieces' own mesh at the cut's resolution, not an

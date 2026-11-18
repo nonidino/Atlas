@@ -12,6 +12,7 @@ Pinned here, per family:
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 
@@ -22,16 +23,13 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
-pytest.importorskip("panel")
-
 from atlas.workbench import fv, registry, runner                         # noqa: E402
 from atlas.workbench.families import acoustics as ac                     # noqa: E402
 from atlas.workbench.families import plume as pl                         # noqa: E402
 from atlas.workbench.spec import Boundary, Window, check, example_case   # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from workbench_ui import texts as _texts                               # noqa: E402
-from workbench_ui import walk as _walk                                 # noqa: E402
+import studio_driver as D                                               # noqa: E402
 
 
 def _errors(spec):
@@ -276,21 +274,25 @@ def test_strip_uniform_heating_bends_a_bimetal_and_not_a_plain_plate():
         run.close()
 
 
-def test_strip_panels_name_the_split_shown(wb):
-    """Seen in the page: the split's panels said "Decomposed". They name the arm
-    they show: the lagged split when it runs, else the synchronous one."""
-    wb.dispatch("file:example:heated-strip")
-    wb.spec.run.steps = 2
-    run = wb.start_run(["serial", "parallel", "full"], blocking=True)
-    assert run is not None and run.status == "done", run and run.error_trace
-    figs = wb.run_panel.figs
-    assert figs["decomposed"].title.text == "Lagged split: von Mises stress (MPa)"
-    assert figs["full"].title.text == "Unsplit: von Mises stress (MPa)"
-    assert figs["difference"].title.text.startswith("Lagged minus unsplit")
-    run = wb.start_run(["serial", "full"], blocking=True)
-    assert wb.run_panel.figs["decomposed"].title.text.startswith("Synchronous split")
-    assert wb.run_panel.figs["difference"].title.text.startswith(
-        "Synchronous minus unsplit (max |d| 0)")
+def test_strip_panels_name_the_split_shown(s):
+    """Seen in the retired page: the split's panels said "Decomposed".  Each arm's
+    field is sent under the arm's own label, and the difference shown is the lagged
+    split's when it runs, else the synchronous one's, which is the unsplit solve to
+    the bit."""
+    D.ok(s, "case.example", key="heated-strip")
+    _run(s, ["serial", "parallel", "full"], steps=2)
+    f = D.frames(s)
+    assert f["run"]["labels"] == {"serial": "Split, synchronous",
+                                  "parallel": "Split, lagged (two threads)",
+                                  "full": "Unsplit solver"}
+    assert f["run"]["cards"]["field_label"].startswith("von Mises stress")
+    assert set(f["fields"]["arms"]) == {"serial", "parallel", "full", "difference"}
+    assert f["fields"]["arms"]["difference"]["max"] > 0.0          # the lag, shown
+    _run(s, ["serial", "full"], steps=2)
+    f = D.frames(s)
+    diff = f["fields"]["arms"]["difference"]
+    assert diff["min"] == diff["max"] == 0.0                          # synchronous: exact
+    assert f["run"]["cards"]["field_difference"]["serial"]["max"] == 0.0
 
 
 def test_strip_rules():
@@ -430,234 +432,147 @@ def test_a_seam_is_a_real_response(tmp_path):
 
 
 @pytest.fixture()
-def wb(tmp_path):
-    import panel as pn
-    pn.extension("tabulator")
-    from atlas.workbench.app import Workbench
-    return Workbench(cases_dir=str(tmp_path))
+def s(tmp_path, monkeypatch):
+    """A page's session (the studio's protocol); its runs and compiles march inside
+    the message that starts them."""
+    D.synchronous(monkeypatch)
+    return D.session(tmp_path)
 
 
-def test_plume_in_the_page(wb):
-    from atlas.workbench.runview import results_frames
-    wb.dispatch("file:example:plume-2")
-    for step in ("case", "geometry", "physics", "check", "run", "results"):
-        wb.show(step)
-        assert wb.workspace.objects
-    wb.show("physics")                                  # the Model tab's Physics layer
-    text = _texts(wb.workspace.objects[0])
-    assert "Discharge per metre of width (m^2/s)" in text and "Macro-step (s)" in text
-    wb.geo_editor._switch(layer="regions")              # the family's word for them
-    text = _texts(wb.geo_editor.inspector)
-    assert "Reaches (the regions' materials)" in text
-    wb.geo_editor.select("material:deep-slow")
-    text = _texts(wb.geo_editor.inspector)
-    assert "Depth, m" in text and "Mixing coefficient, m^2/s" in text
-    wb.spec.run.steps = 20
-    run = wb.start_run(["serial", "parallel", "full"], blocking=True)
+def _run(s, arms, steps):
+    """The case run as the page runs it: its steps set by an edit, then Run."""
+    r, _ = D.edit(s, D.set_op(["run", "steps"], steps), label=f"steps = {steps}")
+    assert r["ok"], r
+    D.ok(s, "run.start", arms=list(arms))
+    run = s.run
     assert run is not None and run.status == "done", run and run.error_trace
-    table, checks = results_frames(run.results)
-    assert "pollutant in the river (g)" in table.columns
-    assert "FAIL" not in set(checks["verdict"])
-    assert wb.run_panel.conv_fig is None                # nothing iterates in style A
-    # drawn on a log scale three decades deep (display only), with no empty
-    # iterations column for a step that does not iterate
-    from bokeh.models import LogColorMapper
-    from atlas.workbench.runview import timing_frame
-    panel = wb.run_panel
-    assert isinstance(panel.field_mapper, LogColorMapper)
-    assert panel.field_mapper.low == pytest.approx(panel.field_mapper.high * 1e-3)
-    assert panel.figs["full"].title.text == "Full domain: concentration (mg/L, log)"
-    cols = timing_frame(run, run.progress()).columns
-    assert not any("iterations" in c or "sub-steps" in c for c in cols)
+    return run
 
 
-def test_sound_in_the_page(wb):
-    """An explicit style C offers no tolerance, relaxation or convergence curve."""
-    from atlas.workbench.runview import results_frames
-    wb.dispatch("file:example:sound-air-water")
-    for step in ("case", "geometry", "physics", "check", "run", "results"):
-        wb.show(step)
-        assert wb.workspace.objects
-    wb.show("physics")
-    text = _texts(wb.workspace.objects[0])
-    assert "Pulse amplitude (Pa)" in text and "nothing iterates" in text
-    assert "Tolerance" not in text and "First relaxation factor" not in text
-    assert "Dirichlet side" not in text
-    wb.geo_editor._switch(layer="regions")
-    assert "Media (the regions' materials)" in _texts(wb.geo_editor.inspector)
-    wb.spec.run.steps = 30
-    run = wb.start_run(["serial", "parallel", "full"], blocking=True)
-    assert run is not None and run.status == "done", run and run.error_trace
+def test_plume_in_the_studio(s):
+    """The river's own words reach the page (the catalog: its parameters and its
+    reaches' properties, each with its unit), and a run of it passes every check,
+    with the pollutant in the river measured per arm.  Nothing iterates in style A,
+    so no convergence series is sent."""
+    fam = D.family(s, "transport-2d")
+    params = {p["label"]: p["unit"] for p in fam["params"]}
+    assert params["Discharge per metre of width"] == "m^2/s"
+    assert {p["label"]: p["unit"] for p in fam["material_props"]} == {
+        "Depth": "m", "Mixing coefficient": "m^2/s"}
+    D.ok(s, "case.example", key="plume-2")
+    run = _run(s, ["serial", "parallel", "full"], steps=20)
+    frame = D.frames(s)["run"]
+    cards = frame["cards"]
+    assert cards["checks"] and cards["failed"] == 0
+    assert all(run.results["metrics"][a]["mass_g"] > 0.0 for a in run.arms)
+    assert not frame["convergence"]
+    assert not any(v for series in frame["series"].values() for k, v in series.items()
+                   if "iteration" in k or "sub" in k)
+
+
+def test_sound_in_the_studio(s):
+    """An explicit style C: its parameters reach the page, its run drops the threaded
+    arm and says why, every check passes, what has come back from the interface is
+    measured (R itself only from the plateau, step 1021), and nothing iterates."""
+    fam = D.family(s, "acoustics-2d")
+    assert {p["label"]: p["unit"] for p in fam["params"]}["Pulse amplitude"] == "Pa"
+    D.ok(s, "case.example", key="sound-air-water")
+    run = _run(s, ["serial", "parallel", "full"], steps=30)
     assert run.arms == ("serial", "full")
-    table, checks = results_frames(run.results)
-    assert "reflection R (measured)" in table.columns
-    assert "FAIL" not in set(checks["verdict"])
-    assert wb.run_panel.conv_fig is None
+    frame = D.frames(s)["run"]
+    assert frame["cards"]["failed"] == 0 and frame["cards"]["dropped"].get("parallel")
+    assert "reflected_last" in run.results["metrics"]["serial"]
+    assert not frame["convergence"]
 
 
-def test_the_circuit_layer_draws_and_edits_the_attachments(wb):
-    """Case 5's circuit, drawn and edited in the page: electrodes beside their edge
-    segments, free nodes below the domain, a part between its two nodes; a click on
-    a part selects it, its fields edit the case (undoably), and a value the schema
-    refuses is refused."""
-    import panel as pn
-    from types import SimpleNamespace
-    wb.dispatch("file:example:plate-circuit")
-    wb.show("geometry")
-    wb.geo_editor._switch(layer="attachments")
-    ed = wb.geo_editor
-    nodes = dict(zip(ed.src_att_nodes.data["name"], zip(ed.src_att_nodes.data["x"],
-                                                          ed.src_att_nodes.data["y"])))
-    assert set(nodes) == {"E1", "E2", "n1"}
-    assert nodes["E1"][0] < 0 < nodes["E2"][0] - 160          # outside the left and right
-    assert nodes["n1"][1] < 0                                   # below the domain
-    assert ed.src_att.data["id"] == ["B1", "R1"]
-    assert ed.src_att.data["text"][0] == "B1: 12 V, 0.5 ohm inside (+ at n1)"
-    rail = _texts(ed.rail_items)
-    assert "B1 · battery 12 V" in rail and "R1 · resistor 1 ohm" in rail
-    mid = [(a + b) / 2.0 for a, b in zip(nodes["n1"], nodes["E1"])]  # R1 runs n1 -> E1
-    ed._on_tap(SimpleNamespace(x=mid[0], y=mid[1]))
-    assert ed.selected == "parts:1"
-
-    def field():
-        return [w for w in _walk(wb.geo_editor.inspector)
-                if isinstance(w, pn.widgets.FloatInput) and w.name == "Resistance (ohm)"][0]
-    field().value = 2.5
-    assert wb.spec.attachments[1].value == 2.5
-    wb.undo()
-    assert wb.spec.attachments[1].value == 1.0
-    field().value = -1.0
-    assert wb.spec.attachments[1].value == 1.0 and "not applied" in wb.log_lines[0]
-    assert field().value == 1.0                                 # the field shows the case
-    wb.geo_editor.add_part("resistor")
-    assert [a.id for a in wb.spec.attachments] == ["B1", "R1", "R3"]
-    assert wb.spec.attachments[-1].a == "E1" and wb.geo_editor.selected == "parts:2"
-    wb.geo_editor.delete_selected()
-    assert [a.id for a in wb.spec.attachments] == ["B1", "R1"]
+def test_the_circuit_is_edited_as_data_and_undone(s):
+    """Case 5's circuit: a part's value is an edit to the case (undoable); a value the
+    schema refuses is refused, changes nothing and says so; a part is added and
+    removed."""
+    D.ok(s, "case.example", key="plate-circuit")
+    assert [a.id for a in s.spec.attachments] == ["B1", "R1"]
+    assert s.spec.attachments[1].value == 1.0
+    r, _ = D.edit(s, D.set_op(["attachments", 1, "value"], 2.5), label="R1 = 2.5 ohm")
+    assert r["ok"] and s.spec.attachments[1].value == 2.5
+    D.ok(s, "edit.undo")
+    assert s.spec.attachments[1].value == 1.0
+    r, pushes = D.edit(s, D.set_op(["attachments", 1, "value"], -1.0), label="R1 = -1 ohm")
+    assert r["ok"] is False and s.spec.attachments[1].value == 1.0
+    assert any("not applied" in n for n in D.notices(pushes, "error"))
+    part = s.spec.attachments[1].model_dump(mode="json") | {"id": "R3", "a": "E1"}
+    r, _ = D.edit(s, {"op": "insert", "path": ["attachments"], "value": part}, label="a part")
+    assert r["ok"] and [a.id for a in s.spec.attachments] == ["B1", "R1", "R3"]
+    assert s.spec.attachments[-1].a == "E1"
+    r, _ = D.edit(s, {"op": "remove", "path": ["attachments", 2]}, label="removed R3")
+    assert r["ok"] and [a.id for a in s.spec.attachments] == ["B1", "R1"]
 
 
-def test_the_circuit_layer_says_when_a_family_ignores_it(wb):
-    """A family that reads no circuit has no Circuit layer, and a change of physics
-    removes the circuit (and says so); a circuit that arrives anyway, from a file
-    written by hand, shows, says it is ignored, and offers no part to add (seen
-    before the rebuild: the Add buttons were live)."""
-    import panel as pn
-    from atlas.workbench.editor import layers_for
-    from atlas.workbench.spec import adapt_to_family
-    wb.dispatch("file:example:wall-2")
-    assert "attachments" not in layers_for(wb.spec)
-    wb.dispatch("file:example:plate-circuit")
-    parts = list(wb.spec.attachments)
-    notes = []
-    wb.edit(lambda c: notes.extend(adapt_to_family(c, "conduction-2d")),
-            "physics = conduction-2d")
-    assert wb.spec.attachments == [] and any("2 circuit parts removed" in n for n in notes)
-    wb.edit(lambda c: setattr(c, "attachments", parts), "a circuit written by hand")
-    assert wb.spec.attachments and "attachments" in layers_for(wb.spec)
-    wb.geo_editor._switch(layer="attachments")
-    ed = wb.geo_editor
-    assert "does not read lumped parts" in _texts(ed.rail_items)
-    assert "does not read lumped parts" in _texts(ed.inspector)
-    assert not [w for w in _walk(ed.rail_items)
-                if isinstance(w, pn.widgets.Button) and w.name.startswith("Add ")]
-    assert any("does not read lumped" in i.message for i in wb.issues()
-               if i.severity == "warning")
+def test_a_circuit_a_kind_does_not_read_is_said_to_be_ignored(s):
+    """A change of physics removes the circuit (and says so); a circuit that arrives
+    anyway, from a file written by hand, is kept and said to be ignored.  A kind that
+    reads no circuit has no circuit layer in the catalog."""
+    from atlas.workbench.spec import Attachment, adapt_to_family
+    assert "attachments" not in D.family(s, "conduction-2d")["layers"]
+    assert "attachments" in D.family(s, "electric-2d")["layers"]
+    c = example_case("plate-circuit")
+    parts = list(c.attachments)
+    notes = adapt_to_family(c, "conduction-2d")
+    assert c.attachments == [] and any("2 circuit parts removed" in n for n in notes)
+    c.attachments = [Attachment.model_validate(p.model_dump()) for p in parts]
+    D.ok(s, "case.import", text=c.to_json(), name="by-hand.json")
+    assert s.spec.attachments
+    warns = [r["message"] for r in s.state()["issues"] if r["severity"] == "warning"]
+    assert any("does not read lumped" in m for m in warns), warns
 
 
-def test_electrode_nodes_are_inside_the_canvas(wb):
-    """Seen in the page: the electrodes' nodes sat on the canvas's edges."""
-    wb.dispatch("file:example:plate-circuit")
-    wb.show("geometry")
-    ed = wb.geo_editor
-    x0, x1, y0, y1 = ed.ranges()
-    for x, y in ed.circuit_nodes().values():
-        assert x0 + 2 <= x <= x1 - 2 and y0 + 2 <= y <= y1 - 2
+def test_a_compile_is_shown_per_seam_and_only_for_its_own_case(s):
+    """The compiler's verdict reaches the page with every seam it decided; the last
+    compile is not lent to another case opened after it (the gallery pass found
+    farm-21's shown beside farm-12); and R10 decertifies instead of refusing (W348)."""
+    D.ok(s, "case.example", key="plate-circuit")
+    D.ok(s, "compile.start")
+    f = D.frames(s)["compile"]
+    assert f["status"] == "done" and f["this_case"] is True, f
+    summ = f["summary"]
+    assert summ["verdict"] == "admit-uncertified" and summ["seams"]
+    seams = json.dumps(summ["seams"])
+    assert "E1" in seams and "E2" in seams
+    D.ok(s, "case.example", key="wall-2")
+    assert D.frames(s)["compile"]["this_case"] is False
+    D.ok(s, "compile.start")
+    f = D.frames(s)["compile"]
+    assert f["this_case"] is True and f["summary"]["verdict"] == "admit-uncertified"
+    r10 = [(r["layer"], r["verdict"]) for r in f["summary"]["other"] if r["rule"] == "R10"]
+    assert r10 == [("L5", "admit-uncertified")]
 
 
-def test_more_examples_reaches_every_example(wb):
-    """The gallery of all 21 left the page with the names it listed (the owner's D4 and
-    O1, 2026-09-30); every example stays within reach: its kind's Fast example from the
-    *Fast example* button (demo item 1.4), every other one from the *More examples*
-    list under it, one line saying what it shows, opening the case it names."""
-    from atlas.workbench.app import FAST_LABEL
-    from atlas.workbench.spec import EXAMPLES, FAST_EXAMPLES, example_case
-    reached = []
-    for fid in registry.available_ids():
-        wb.type_sel.value = fid
-        for label, action in wb.examples_menu.items:
-            key = action.split(":", 2)[2]
-            assert label == EXAMPLES[key].shows and EXAMPLES[key].family == fid
-            reached.append(key)
-        wb.examples_menu.clicked = FAST_LABEL
-        assert wb.case_key == FAST_EXAMPLES[fid] and wb.spec.physics.family == fid
-        reached.append(wb.case_key)
-    assert sorted(reached) == sorted(EXAMPLES)
-    wb.type_sel.value = "conjugate-heat-2d"
-    wb.examples_menu.clicked = "file:example:cooled-winding"
-    assert wb.spec == example_case("cooled-winding")
-
-
-def test_the_run_tab_shows_the_compile_per_seam(wb):
-    wb.dispatch("file:example:plate-circuit")
-    job = wb.start_compile(blocking=True)
-    assert job is not None and job.status == "done" and wb.active == "run"
-    text = _texts(wb.workspace.objects[0])
-    assert "Atlas compiler" in text and "admit-uncertified" in text
-    assert "Every seam and rule" in text and "E1" in text and "E2" in text
-    assert any("compiled in" in line for line in wb.log_lines[:3])
-    wb.dispatch("file:example:wall-2")
-    # the last compile is plate-circuit's: the tab must not lend its verdict to the
-    # case now open (the gallery pass found farm-21's shown beside farm-12)
-    wb.show("run")
-    text = _texts(wb.workspace.objects[0])
-    assert "admit-uncertified" not in text
-    assert "not compiled since this case was opened (the last compile was of the " \
-           "current in a plate case open before it)" in text
-    wb.start_compile(blocking=True)
-    text = _texts(wb.workspace.objects[0])
-    assert "admit-uncertified" in text
-    assert "R10 decertifies instead of refusing (W348)" in text    # the note on R10
-    wb.edit(lambda c: setattr(c.run, "steps", c.run.steps + 1), "one more step")
-    wb.show("run")
-    assert "the case has changed since; compile again" in _texts(wb.workspace.objects[0])
-
-
-def test_a_region_drawn_in_a_library_material_brings_its_properties(wb):
-    """Regions feed materials: a region in a material the case lacks takes the family
-    library's properties in the same edit (one undo), and the box offers the case's
-    and the library's names instead of the shell's generic ``material-1``."""
-    import panel as pn
-    from types import SimpleNamespace
-    from atlas.workbench.editor import material_names
-    wb.dispatch("file:example:wall-2")
-    wb.show("geometry")
-    wb.geo_editor._switch(layer="regions")
-    assert material_names(wb.spec) == ["steel", "copper", "aluminium"]
-    assert wb.geo_state["material"] == "steel"
-    pick = [w for w in _walk(wb.geo_editor.rail_items) if isinstance(w, pn.widgets.Select)
-            and w.name == "New regions are made of"][0]
-    assert list(pick.options) == ["steel", "copper", "aluminium"]
-    pick.value = "aluminium"
-    wb.geo_editor._switch(tool="rect")
-    wb.geo_editor._on_tap(SimpleNamespace(x=32.2, y=16.3))
-    wb.geo_editor._on_tap(SimpleNamespace(x=48.1, y=32.4))
-    assert wb.spec.regions[-1].material == "aluminium"
-    assert wb.spec.materials["aluminium"] == {"k": 205.0, "rho": 2700.0, "cp": 900.0}
-    assert _errors(wb.spec) == []
-    wb.undo()
-    assert "aluminium" not in wb.spec.materials and len(wb.spec.regions) == 2
-    wb.geo_editor.select("regions:0")
-    made = [w for w in _walk(wb.geo_editor.inspector) if isinstance(w, pn.widgets.Select)
-            and w.name == "Made of"][0]
-    made.value = "aluminium"
-    assert wb.spec.regions[0].material == "aluminium" and "aluminium" in wb.spec.materials
-    # a material no one defined (a file written by hand): the check says so, and the
-    # region's inspector shows the family's defaults until one is set
-    wb.edit(lambda c: setattr(c.regions[0], "material", "unobtainium"), "by hand")
+def test_a_region_drawn_in_a_library_material_brings_its_properties(s):
+    """Regions feed materials: a region drawn in a material the case lacks takes the
+    family library's properties in the same edit (one undo), and so does an existing
+    region given one; a material no one defined (a file written by hand) is the
+    check's error."""
+    D.ok(s, "case.example", key="wall-2")
+    assert "aluminium" in D.family(s, "conduction-2d")["materials"]
+    assert "aluminium" not in s.spec.materials and len(s.spec.regions) == 2
+    dx = s.spec.domain.dx
+    r, _ = D.add_feature(s, D.rect("f9", 32, 16, 16, 16, dx, material="aluminium",
+                                   name="Insert"))
+    assert r["ok"], r
+    assert s.spec.regions[-1].material == "aluminium"
+    assert s.spec.materials["aluminium"] == {"k": 205.0, "rho": 2700.0, "cp": 900.0}
+    assert D.errors(s) == []
+    D.ok(s, "edit.undo")
+    assert "aluminium" not in s.spec.materials and len(s.spec.regions) == 2
+    i = next(k for k, f in enumerate(D.features(s)) if f["role"] == "region")
+    r, _ = D.edit(s, D.set_op(["geometry", "features", i, "material"], "aluminium"),
+                  label="made of aluminium")
+    assert r["ok"] and "aluminium" in s.spec.materials
+    assert "aluminium" in {x.material for x in s.spec.regions}
+    by_hand = json.loads(example_case("wall-2").to_json())
+    by_hand["regions"][0]["material"] = "unobtainium"
+    D.ok(s, "case.import", text=json.dumps(by_hand), name="by-hand.json")
     assert any("'unobtainium' is used by a region and has no properties" in m
-               for m in _errors(wb.spec))
-    wb.geo_editor.select("regions:0")
-    assert "unobtainium has no properties yet" in _texts(wb.geo_editor.inspector)
+               for m in D.errors(s))
 
 
 def test_plume_boundaries_are_the_familys():

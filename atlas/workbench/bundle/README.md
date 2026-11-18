@@ -63,7 +63,7 @@ does not carry the executable bit, so on macOS or Linux run `bash run.sh`.
 
 ### Requirements
 
-- **Python 3.10, 3.11 or 3.12.** The pinned numpy, scipy and pandas publish no
+- **Python 3.10, 3.11 or 3.12.** The pinned numpy and scipy publish no
   wheels for 3.13, so the launcher checks the version rather than discovering
   it halfway through an install. On a Mac, `brew install python@3.12` or the
   installer from [python.org](https://www.python.org/downloads/); to point at a

@@ -9,29 +9,26 @@
 #
 # Each of these publishes wheels for CPython 3.10, 3.11 and 3.12 on Windows,
 # on macOS (Apple silicon and Intel) and on Linux (x86-64), which is why the
-# launchers accept exactly those three Pythons: numpy 1.26.4, scipy 1.13.1 and
-# pandas 2.2.2 publish none for 3.13.
+# launchers accept exactly those three Pythons: numpy 1.26.4 and scipy 1.13.1
+# publish none for 3.13.
 #
 # Not here, and installed by the launchers as OPTIONAL steps (if either fails,
 # everything else runs):
 #   torch 2.7.1   the learned case, CPU-only; no Intel-macOS wheel exists
 #   gmsh 4.15.0   File > Import geometry from Gmsh; GPL, so installed from
 #                 PyPI on this machine and never shipped in this folder
+#
+# Not here since 2026-11-18: panel, bokeh and tornado, which served the retired
+# Panel page, and pandas, whose only use was that page's results tables. The
+# page's modules were deleted with them.
 
 numpy==1.26.4
 scipy==1.13.1
-pandas==2.2.2
 pydantic==2.12.5
 
-# The page: Panel serves it through Bokeh's Tornado server, which carries the
-# page's WebSocket itself (no separate WebSocket library is needed, unlike the
-# PoC 3 bundle's uvicorn).
-panel==1.5.2
-bokeh==3.6.0
-
-# The studio (atlas/studio, the integrated UI, 2026-11-16): FastAPI and uvicorn
-# serve one plain JavaScript page, and its WebSocket needs a WebSocket library
-# of its own (uvicorn has none: PoC 3's page loaded and never got a frame).
+# The page, the studio (atlas/studio, the integrated UI, 2026-11-16): FastAPI and
+# uvicorn serve one plain JavaScript page, and its WebSocket needs a WebSocket
+# library of its own (uvicorn has none: PoC 3's page loaded and never got a frame).
 # Shapely turns the drawn geometry into each region's cells.
 fastapi==0.115.5
 uvicorn==0.32.1

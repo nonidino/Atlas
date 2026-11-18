@@ -38,6 +38,8 @@ from atlas.workbench.spec import (EXAMPLES, Boundary, Layout, Outline, Window,  
                                   check, default_boundaries, example_case)
 from atlas.workbench.starter import apply_fix  # noqa: E402
 
+import studio_driver as D  # noqa: E402
+
 #: the Y drawn in the page on step 1 (2026-09-30): the stem from the left, two branches
 Y = [(24, 104), (152, 104), (328, 32), (328, 72), (200, 120), (328, 168), (328, 208),
      (152, 136), (24, 136)]
@@ -149,54 +151,51 @@ def test_a_branch_with_no_outlet_is_a_warning_with_a_fix():
 
 
 @pytest.fixture()
-def wb(tmp_path, monkeypatch):
-    from atlas.workbench import runner
-    from atlas.workbench.app import Workbench
-    monkeypatch.setattr(runner.CaseRun, "start", lambda self: None)
-    return Workbench(cases_dir=str(tmp_path))
+def s(tmp_path, monkeypatch):
+    """A page's session (the studio's protocol) on a new river case."""
+    D.idle(monkeypatch)
+    s = D.session(tmp_path)
+    D.ok(s, "case.new", family="transport-2d")
+    return s
 
 
-def test_the_owners_fork_drawn_in_the_page_gets_both_outlets_and_follows_its_flow(wb):
+def test_the_owners_fork_drawn_in_the_page_gets_both_outlets_and_follows_its_flow(s):
     """The done-when of item 1.2, headless: the river chosen, a Y drawn with its stem on
     the left.  The inlet goes on the stem, an outlet on each branch (the second said in
     the note), and the windows follow the flow: nothing is left to fix."""
-    wb.type_sel.value = "transport-2d"
-    wb.geo_editor._switch(layer="domain", tool="draw")
-    wb.geo_editor.add_drawn(Outline(points=Y, edges=["line"] * 9, bulge=[0.0] * 9))
-    s = wb.spec
-    kinds = {b.edge: b.kind for b in s.boundaries}
+    r, pushes = D.draw_domain(s, Y)
+    assert r["ok"], r
+    sp = s.spec
+    kinds = {b.edge: b.kind for b in sp.boundaries}
     assert kinds["outline:8"] == "river-inlet"
     assert kinds["outline:2"] == kinds["outline:5"] == "river-outlet"
-    assert not _issues(s)
-    assert "river's own flow" in s.layout.how
-    assert any("end of a branch that carried no water" in line for line in wb.log_lines[:2])
-    from workbench_ui import texts
-    wb.geo_editor._switch(layer="windows")
-    assert "Cut along the river's own flow" in texts(wb.geo_editor.inspector)
+    assert not _issues(sp)
+    assert "river's own flow" in sp.layout.how
+    assert any("end of a branch that carried no water" in n for n in D.notices(pushes))
+    assert [w.shape for w in sp.windows] == ["cells"] * len(sp.windows)
 
 
-def test_the_owners_fork_sends_the_plume_down_both_branches(wb):
+def test_the_owners_fork_sends_the_plume_down_both_branches(s):
     """The served page's first walk (2026-09-30) found the drawn Y's outfall at its
     fork: the starting values placed it before the river had its ends, at the middle
     of its cells, and a release on the dividing streamline went down one branch alone
     (100% and 0% of the pollutant).  The outfall now goes mid-river a fifth of the way
     down the flow, and the plume reaches both outlets."""
-    wb.type_sel.value = "transport-2d"
-    wb.geo_editor._switch(layer="domain", tool="draw")
-    wb.geo_editor.add_drawn(Outline(points=Y, edges=["spline"] * 9, bulge=[0.0] * 9))
-    s = wb.spec
-    assert not _issues(s)
-    i, j = pl.outfall_cell(s)
-    phi = pl.river_flow(s).phi
+    r, _ = D.draw_domain(s, Y, edges=["spline"] * 9)
+    assert r["ok"], r
+    sp = s.spec
+    assert not _issues(sp)
+    i, j = pl.outfall_cell(sp)
+    phi = pl.river_flow(sp).phi
     # placed at 0.8 while the river had one outlet; its second puts more of the drop
     # in the stem, so the same cell reads a little lower now: still the stem, upstream
     assert 0.7 < phi[j, i] < 0.9 and i < 152
-    r = pl.build(s, arms=("full",), threads=1)
-    st = r.initial("full")
-    for _ in range(s.run.steps):
-        st = r.step("full", st)
-    shares = r.outlet_shares(st.u)
-    r.close()
+    run = pl.build(sp, arms=("full",), threads=1)
+    st = run.initial("full")
+    for _ in range(sp.run.steps):
+        st = run.step("full", st)
+    shares = run.outlet_shares(st.u)
+    run.close()
     assert len(shares) == 2
     assert all(v["pollutant_share"] > 0.3 for v in shares.values()), shares
 

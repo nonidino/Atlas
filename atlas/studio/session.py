@@ -3,7 +3,8 @@
 The studio's server (`server.py`) holds one `Session` per open page and turns each
 WebSocket message into a call here (`protocol.py`); a test drives the same calls
 with no browser and no socket.  The rules are the retired Panel workbench's
-(`atlas/workbench/app.py`, `Workbench`), kept where they were decided:
+(its `Workbench` class, `atlas/workbench/app.py` until 2026-11-18), kept where they
+were decided:
 
 * **a case is what it simulates** (case@0.6): choosing another kind starts a new
   case of it, ready to run (`starter.new_case_from`), and one Undo brings the old

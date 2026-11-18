@@ -1,10 +1,13 @@
-"""The Atlas Workbench shell: the case file, the registry, and every menu action.
+"""The Atlas Workbench shell: the case file, the registry, and every action on a case.
 
-The GUI is driven through `Workbench.dispatch`, the one entry point every menu
-item and button uses, so these tests exercise the same code the browser does
-without a browser.  What they cannot see is whether the page draws it: that was
-checked by clicking every control in a served page (the project's own rule, from
-the RaceLab control that did nothing).
+The actions are driven as the studio's page sends them (`atlas/studio/protocol.py`),
+one message at a time through `protocol.handle` on a `Session`, so these tests
+exercise the code a browser does without one; the retired Panel page's menus,
+header and dialogs went with it (2026-11-18).  What they cannot see is whether the
+page draws it: that is checked by driving the real page (`scripts/studio_drive.py`),
+the project's own rule from the RaceLab control that did nothing.  The page's own
+files (served from this machine, nothing fetched from outside) are checked in
+``test_studio_shell.py``.
 """
 
 from __future__ import annotations
@@ -18,14 +21,12 @@ import pytest
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
 
-pn = pytest.importorskip("panel")
-
 from atlas.workbench import registry                                    # noqa: E402
-from atlas.workbench.spec import (EXAMPLES, CaseSpec, Window, blank_case,  # noqa: E402
-                                  check, example_case)
+from atlas.workbench.spec import (EXAMPLES, FAST_EXAMPLES, CaseSpec,     # noqa: E402
+                                  Window, blank_case, check, example_case)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from workbench_ui import click, texts, widget, widgets                  # noqa: E402
+import studio_driver as D                                               # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -101,241 +102,203 @@ def test_registry_says_which_families_run_and_why_the_rest_do_not():
 
 
 # ---------------------------------------------------------------------------
-# the shell
+# the shell, as the studio's page drives it
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture()
-def wb(tmp_path, monkeypatch):
-    """A workbench whose Run creates the run but does not march it: the menu tests
-    are about the dispatcher, and a real march here would be a 30-second background
+def s(tmp_path, monkeypatch):
+    """A page's session whose Run creates the run but does not march it: the tests
+    here are about the actions, and a real march would be a 30-second background
     thread timing itself against the rest of the suite (runs are tested in
     `test_workbench_runner.py`)."""
-    from atlas.workbench import compile as compile_
-    from atlas.workbench import runner
-    from atlas.workbench.app import Workbench
-    monkeypatch.setattr(runner.CaseRun, "start", lambda self: None)
-    monkeypatch.setattr(compile_.CompileJob, "start", lambda self: None)
-    return Workbench(cases_dir=str(tmp_path))
+    D.idle(monkeypatch)
+    return D.session(tmp_path)
 
 
-ALL_ACTIONS = ["file:start-over", "case:type:conduction-2d",
-               *[f"file:example:{k}" for k in EXAMPLES], "file:open",
-               "file:save-as", "file:import", "file:export", "edit:undo", "edit:redo",
-               "edit:revert", "view:grid", "view:overlaps", "view:labels", "view:log",
-               "run:check", "run:compile", "run:decomposed", "run:full", "run:both",
-               "run:stop", "run:results", "help:guide", "help:about", "help:docs"]
+def test_every_action_on_a_case_runs(s, tmp_path):
+    """Every action the retired page's menus offered, as the message the studio sends
+    for it (new, start over, every example, the Fast example, open, save, import,
+    export, undo, redo, revert, history, check, compile, the three runs, Stop): each
+    is handled and applied.  A control nobody handles would be a control that does
+    nothing; that every message the page sends has a handler is checked in
+    ``test_studio_shell.py``."""
+    (tmp_path / "saved.json").write_text(example_case("wall-2").to_json(), encoding="utf-8")
+    messages = [("case.start_over", {}), *[("case.example", {"key": k}) for k in EXAMPLES],
+                ("case.new", {"family": "conduction-2d"}), ("case.fast", {}),
+                ("case.files", {}), ("case.open", {"name": "saved"}),
+                ("case.save", {"name": "mine"}), ("case.save", {}),
+                ("case.import", {"text": example_case("bend-3").to_json(), "name": "b.json"}),
+                ("case.export", {}), ("edit.undo", {}), ("edit.redo", {}),
+                ("case.revert", {}), ("case.history", {}), ("geometry.check", {}),
+                ("compile.start", {}), ("run.start", {"arms": ["serial", "parallel"]}),
+                ("run.start", {"arms": ["full"]}), ("run.start", {}), ("run.stop", {}),
+                ("state", {}), ("case.new", {"family": "electric-2d"})]
+    for kind, args in messages:
+        D.ok(s, kind, **args)
+    assert s.spec.physics.family == "electric-2d"
+    # a case has no name to rename (case@0.6), and the gallery of every example left
+    # the page (the owner's O1, 2026-09-30)
+    from atlas.studio import protocol
+    assert not {"case.rename", "case.gallery"} & set(protocol.HANDLERS)
 
 
-def test_every_menu_action_runs(wb):
-    for action in ALL_ACTIONS:
-        wb.dispatch(action)
-    for key in ("case", "geometry", "physics", "check", "run", "results"):
-        wb.show(key)
-        assert wb.workspace.objects
-
-
-def test_every_header_control_reaches_the_dispatcher(wb):
-    """A control nobody handles would be a control that does nothing: the Case and ?
-    menus' items and the header's buttons all go through `dispatch`."""
-    items = [it[1] for m in (wb.case_menu, wb.help_menu, wb.examples_menu)
-             for it in m.items if it is not None]
-    assert {"file:start-over", "file:open", "file:save", "file:save-as",
-            "file:import", "file:export", "file:import-gmsh", "edit:revert",
-            "view:history", "help:guide", "help:about", "help:docs"} <= set(items)
-    assert not {"file:new", "file:gallery", "file:rename"} & set(items)
-    for action in items:
-        wb.dispatch(action)
-    for button in (wb.status_btn, wb.undo_btn, wb.redo_btn, wb.run_btn):
-        click(button)
-    wb.type_sel.value = "electric-2d"
-    assert wb.spec.physics.family == "electric-2d"
-    assert not any("unknown action" in line for line in wb.log_lines)
-
-
-def test_help_names_the_wiki_only_where_it_is(wb, monkeypatch, tmp_path):
-    """The one-command install carries the code and its README, not the wiki (demo
-    step 7): *Where things are documented* names the wiki's pages only where they
-    are, and says plainly where they are not; *About* claims nothing about what was
-    installed beforehand."""
-    from atlas.workbench import app
-    here = wb._docs().object
-    if os.path.isdir(os.path.join(app.ROOT, "wiki")):
-        assert "showcase-gallery.md" in here
-    else:                                            # this test, inside the install
-        assert "does not carry" in here
-    monkeypatch.setattr(app, "ROOT", str(tmp_path))  # a copy with no wiki beside it
-    there = wb._docs().object
-    assert "does not carry" in there and "showcase-gallery.md" not in there
-    assert "`atlas/workbench/README.md`" in there
-    assert "already installed" not in wb._about().object
-
-
-def test_more_examples_lists_the_types_own_with_no_names(wb):
-    """The owner's O1 (2026-09-30): under the header's example button, the chosen
-    kind's examples, one line each saying what it shows, with no name; the gallery of
-    all 21, with their names and descriptions, left the page."""
+def test_every_example_is_reached_from_its_kind_by_what_it_shows(s):
+    """The examples the page lists come from the catalog it is sent once: each under
+    its kind with the one line saying what it shows, its kind's Fast example marked,
+    the learned case marked read-only, and no label or description (case@0.6 has
+    none).  Every example is within reach: the Fast example by ``case.fast``, every
+    one by its key; opening one opens the case it names with nothing of the person's
+    to lose, and one Undo brings back the case before it."""
+    cat = s.catalog()
+    assert sorted(e["key"] for e in cat["examples"]) == sorted(EXAMPLES)
+    for e in cat["examples"]:
+        assert set(e) == {"key", "family", "shows", "style", "fast", "fixed"}, e
+        assert e["shows"] == EXAMPLES[e["key"]].shows
+        assert e["fast"] == (FAST_EXAMPLES.get(e["family"]) == e["key"])
+    from atlas.workbench import learned_case
+    assert [e["key"] for e in cat["examples"] if e["fixed"]] == [learned_case.KEY]
+    reached = set()
     for fid in registry.available_ids():
-        wb.dispatch(f"case:type:{fid}")
-        items = wb.examples_menu.items
-        # the kind's Fast example is the button's own part, not a line under it
-        from atlas.workbench.spec import FAST_EXAMPLES
-        mine = [k for k, ex in EXAMPLES.items() if ex.family == fid
-                and k != FAST_EXAMPLES.get(fid)]
-        # the learned case first, where the farm's examples are (demo item 1.5)
-        mine = [k for k in mine if k == "learned-farm"] + [k for k in mine
-                                                           if k != "learned-farm"]
-        assert [tuple(i) for i in items] == [(EXAMPLES[k].shows, f"file:example:{k}")
-                                             for k in mine], fid
-        for label, _action in items:
-            assert not any(k in label or EXAMPLES[k].label in label for k in EXAMPLES)
-    wb.dispatch("case:type:conduction-2d")
-    before = wb.spec.model_dump()
-    wb.dispatch("file:example:bend-3")
-    assert wb.spec == example_case("bend-3") and wb.case_key == "bend-3"
-    assert wb.path is None and wb.save_state.object == "not saved yet"
-    wb.undo()
-    assert wb.spec.model_dump() == before
+        D.ok(s, "case.new", family=fid)
+        mine = [e["key"] for e in cat["examples"] if e["family"] == fid]
+        assert mine, fid
+        reached |= set(mine)
+        if fid in FAST_EXAMPLES:
+            D.ok(s, "case.fast")
+            assert s.key == FAST_EXAMPLES[fid] and s.spec.physics.family == fid
+        else:
+            assert D.refused(s, "case.fast")[0].startswith("there is no fast example")
+    assert reached == set(EXAMPLES)
+    D.ok(s, "case.new", family="conduction-2d")
+    before = s.spec.model_dump()
+    D.ok(s, "case.example", key="bend-3")
+    assert s.spec == example_case("bend-3") and s.key == "bend-3"
+    meta = s.state()["meta"]
+    assert meta["file"] is None and meta["dirty"] is False
+    D.ok(s, "edit.undo")
+    assert s.spec.model_dump() == before
+    D.ok(s, "case.new", family="conjugate-heat-2d")
+    D.ok(s, "case.example", key="cooled-winding")
+    assert s.spec == example_case("cooled-winding")
 
 
-def test_the_type_selector_starts_a_new_case_and_one_undo_restores_the_old(wb, tmp_path):
-    """D1-D3 of the demo plan: the header's first control is what the case simulates;
-    another kind starts a new case of it (the geometry resets), with no confirmation,
-    and one Undo brings the old case back, bit for bit, with its file."""
-    from atlas.workbench.spec import Outline
+def test_a_new_kind_starts_a_new_case_and_one_undo_restores_the_old(s, tmp_path):
+    """D1-D3 of the demo plan: another kind starts a new case of it (the geometry
+    resets), with no confirmation, and one Undo brings the old case back, bit for bit,
+    with its file; Start over is a new case of the same kind."""
     from atlas.workbench.starter import new_case
-    wb.dispatch("case:type:conduction-2d")
-    wb.geo_editor._switch(layer="domain", tool="draw")
-    wb.geo_editor.add_drawn(Outline(points=[(40, 40), (200, 60), (180, 200)],
-                                    edges=["line"] * 3, bulge=[0.0] * 3))
-    path = str(tmp_path / "mine.json")
-    wb.save_to(path)
-    before, key = wb.spec.model_dump(), wb.case_key
-    assert wb.spec.domain.outline is not None and key == "mine"
-    wb.type_sel.value = "transport-2d"                    # the header's selector
-    s = wb.spec
-    assert s.physics.family == "transport-2d" and s.domain.outline is None
-    assert s.model_dump() == new_case("transport-2d").model_dump()
-    assert wb.path is None and wb.case_key.startswith("river-plume-")
-    assert "Undo" in wb.log_lines[0] and "heat conduction" in wb.log_lines[0]
-    wb.undo()                                             # one Undo
-    assert wb.spec.model_dump() == before
-    assert wb.path == path and wb.case_key == "mine" and not wb.dirty
-    assert wb.type_sel.value == "conduction-2d"           # the selector follows, no new case
-    assert wb.spec.model_dump() == before
-    wb.redo()
-    assert wb.spec.physics.family == "transport-2d" and wb.path is None
-    wb.dispatch("file:start-over")                        # a new case of the same kind
-    assert wb.spec.physics.family == "transport-2d" and wb.path is None
-    assert "Started over" in wb.log_lines[0]
+    D.ok(s, "case.new", family="conduction-2d")
+    r, _ = D.draw_domain(s, [(40, 40), (200, 60), (180, 200)])
+    assert r["ok"], r
+    D.ok(s, "case.save", name="mine")
+    before, path = s.spec.model_dump(), s.path
+    assert s.spec.domain.outline is not None and s.key == "mine"
+    said = D.notices(D.ok(s, "case.new", family="transport-2d"))
+    assert s.spec.physics.family == "transport-2d" and s.spec.domain.outline is None
+    assert s.spec.model_dump() == new_case("transport-2d").model_dump()
+    assert s.path is None and s.key.startswith("river-plume-")
+    assert any("Undo" in n and "heat conduction" in n for n in said), said
+    D.ok(s, "edit.undo")                                  # one Undo
+    assert s.spec.model_dump() == before
+    assert s.path == path and s.key == "mine" and not s.dirty
+    assert s.state()["meta"]["family"] == "conduction-2d"  # the page's kind follows
+    D.ok(s, "edit.redo")
+    assert s.spec.physics.family == "transport-2d" and s.path is None
+    said = D.notices(D.ok(s, "case.start_over"))          # a new case of the same kind
+    assert s.spec.physics.family == "transport-2d" and s.path is None
+    assert any(n.startswith("Started over") for n in said), said
 
 
-def test_no_control_shows_a_case_name(wb):
-    """Done-when of item 1.1: no control anywhere shows a case name or a description.
-    Every example is opened; the header and the Model tab hold none of the example
-    keys, labels or descriptions."""
-    for key, ex in EXAMPLES.items():
-        wb.dispatch(f"file:example:{key}")
-        shown = texts(wb.tpl.header[0]) + "\n" + texts(wb.workspace)
-        assert key not in shown.split(), key
-        assert ex.label not in shown and ex.description not in shown, key
+def test_no_example_label_or_description_reaches_the_page(s):
+    """Done-when of item 1.1, as far as the server holds it: what the page is told of
+    an open example (its state) holds none of the example labels or descriptions.  The
+    studio's header names the case by its file, or by its key until it is saved."""
+    for key in EXAMPLES:
+        D.ok(s, "case.example", key=key)
+        shown = json.dumps(s.state())
+        for ex in EXAMPLES.values():
+            assert ex.label not in shown and ex.description not in shown, (key, ex.key)
+        assert s.state()["meta"]["key"] == key
 
 
-def test_nothing_is_left_unbuilt(wb):
-    """Every NOT_BUILT went once its action worked; the compile was the last, and
-    is a button on the Run & results tab."""
-    import atlas.workbench.app as app
-    assert not hasattr(app, "NOT_BUILT")
-    wb.show("run")
-    click(widget(wb.workspace, "Compile", pn.widgets.Button))
-    assert wb.compile_job is not None              # started (the fixture does not march it)
-    assert any("compile started" in line for line in wb.log_lines[:3])
+def test_a_compile_starts_from_its_message(s):
+    """Every action that was once *not built* is built; the compile was the last."""
+    D.ok(s, "compile.start")
+    assert s.compile_job is not None               # started (the fixture does not march it)
+    assert any("compile started" in line for line in s.log_lines[:3])
 
 
-def test_a_case_with_errors_does_not_run(wb):
-    """Run on a case that cannot run lists its problems, where they are."""
-    wb.set_spec(blank_case(), "blank")             # a blank case: no windows
-    click(wb.run_btn)
-    assert wb.run is None and wb.active == "model"
-    assert any("cannot run" in line for line in wb.log_lines[:3])
-    assert "stop the run" in texts(wb.modal_body) or "stops the run" in texts(wb.modal_body)
-    assert widgets(wb.modal_body, pn.widgets.Button, name="Show me")
-    wb.show("run")                                 # and the tab's own Run is off
-    assert widget(wb.workspace, "▶ Run and compare", pn.widgets.Button).disabled
+def test_a_case_with_errors_does_not_run(s):
+    """Run on a case that cannot run says why, and the problems list says where each
+    is fixed."""
+    D.ok(s, "case.import", text=blank_case().to_json(), name="blank.json")   # no windows
+    why, pushes = D.refused(s, "run.start")
+    assert s.run is None and "cannot run" in why
+    assert any("cannot run" in n for n in D.notices(pushes, "error"))
+    rows = s.state()["issues"]
+    assert rows and all(r["where"] in ("geometry", "physics", "pieces") for r in rows)
+    assert s.state()["status"]["kind"] == "err"
 
 
-def test_edits_are_validated_undone_and_redone(wb):
-    assert wb.edit(lambda s: setattr(s.domain, "nx", -5), "bad") is False
-    assert wb.spec.domain.nx == 352
-    assert wb.edit(lambda s: setattr(s.run, "steps", 7), "steps") is True
-    assert wb.dirty and wb.spec.run.steps == 7
-    wb.dispatch("edit:undo")
-    assert wb.spec.run.steps == 40
-    wb.dispatch("edit:redo")
-    assert wb.spec.run.steps == 7
+def test_edits_are_validated_undone_and_redone(s):
+    r, pushes = D.edit(s, D.set_op(["domain", "nx"], -5), label="bad")
+    assert r["ok"] is False and s.spec.domain.nx == 352
+    assert any("not applied" in n for n in D.notices(pushes, "error"))
+    r, _ = D.edit(s, D.set_op(["run", "steps"], 7), label="steps")
+    assert r["ok"] and s.dirty and s.spec.run.steps == 7
+    D.ok(s, "edit.undo")
+    assert s.spec.run.steps == 40
+    D.ok(s, "edit.redo")
+    assert s.spec.run.steps == 7
 
 
-def test_save_open_and_the_case_bar(wb, tmp_path):
-    path = str(tmp_path / "mine.json")
-    assert wb.save_state.object == "not saved yet"
-    wb.edit(lambda s: setattr(s.run, "steps", 7), "steps")
-    assert wb.save_state.object == "unsaved changes"
-    wb.save_to(path)
-    assert not wb.dirty and wb.save_state.object == "saved" and wb.case_key == "mine"
-    wb.dispatch("file:example:farm-12")
-    assert wb.spec == example_case("farm-12") and wb.path is None
-    assert wb.case_key == "farm-12"                  # its records' folder, not a name shown
+def test_save_open_and_the_case_bar(s, tmp_path):
+    """The header's file state: not saved yet, unsaved changes, saved."""
+    def meta():
+        return s.state()["meta"]
+    assert meta()["file"] is None and meta()["dirty"] is False         # not saved yet
+    D.edit(s, D.set_op(["run", "steps"], 7), label="steps")
+    assert meta()["dirty"] is True                                      # unsaved changes
+    D.ok(s, "case.save", name="mine")
+    assert meta()["file"] == "mine.json" and meta()["dirty"] is False and s.key == "mine"
+    D.ok(s, "case.example", key="farm-12")
+    assert s.spec == example_case("farm-12") and s.path is None
+    assert s.key == "farm-12"                        # its records' folder
     # a fresh example has nothing of the person's to lose (seen: it read "unsaved
     # changes" the moment it opened)
-    assert wb.save_state.object == "not saved yet"
-    wb.open_path(path)
-    assert wb.spec.run.steps == 7 and wb.path == path and not wb.dirty
-    assert wb.case_key == "mine"
+    assert meta()["dirty"] is False and meta()["file"] is None
+    D.ok(s, "case.open", name="mine")
+    assert s.spec.run.steps == 7 and s.path == str(tmp_path / "mine.json") and not s.dirty
+    assert s.key == "mine"
 
 
-def test_the_status_chip_lists_the_problems_and_where_each_is_fixed(wb):
-    """The six steps' error counts became one chip in the header: it says whether
-    the case can run, and its list sends each problem to the layer that fixes it."""
-    assert wb.status_btn.name == "✓ Ready to run"
-    wb.set_spec(blank_case(), "blank")
-    assert wb.status_btn.name.startswith("⚠") and "problem" in wb.status_btn.name
-    click(wb.status_btn)
-    shows = widgets(wb.modal_body, pn.widgets.Button, name="Show me")
-    issues = wb.issues()
-    assert len(shows) == len(issues)
+def test_the_status_chip_lists_the_problems_and_where_each_is_fixed(s):
+    """The six steps' error counts became one chip in the header: it says whether the
+    case can run, and its list sends each problem to the tab that fixes it."""
+    assert s.state()["status"] == {"kind": "ok", "text": "Ready",
+                                   "tip": "Everything needed to run is set"}
+    D.ok(s, "case.import", text=blank_case().to_json(), name="blank.json")
+    st = s.state()
+    assert st["status"]["kind"] == "err" and "problem" in st["status"]["text"]
+    issues = check(s.spec)
+    assert len(st["issues"]) == len(issues)
     k = next(i for i, x in enumerate(issues) if "not cut into any windows" in x.message)
-    click(shows[k])
-    assert wb.active == "model" and wb.geo_state["layer"] == "windows"
-    assert wb.geo_state["tool"] == "select" and wb.geo_state["selected"] is None
+    assert st["issues"][k]["where"] == "pieces" and st["issues"][k]["fix"] == "windows"
+    assert st["issues"][k]["fix_label"]
 
 
-def test_import_refuses_what_is_not_a_case(wb):
-    before = wb.spec
-    wb.import_text("{not json", "junk.json")
-    assert wb.spec == before
-    assert "is not a workbench case" in wb.log_lines[0]
+def test_import_refuses_what_is_not_a_case(s):
+    before = s.spec
+    why, _ = D.refused(s, "case.import", text="{not json", name="junk.json")
+    assert s.spec == before
+    assert "junk.json is not an Atlas case" in why and "is not an Atlas case" in s.log_lines[0]
 
 
-def test_a_url_cannot_open_a_file_outside_the_cases_folder(tmp_path):
-    from atlas.workbench.app import case_from_url
+def test_a_name_cannot_open_a_file_outside_the_cases_folder(s, tmp_path):
     (tmp_path / "ok.json").write_text(example_case().to_json(), encoding="utf-8")
-    assert case_from_url("ok.json", str(tmp_path)) == str(tmp_path / "ok.json")
-    assert case_from_url("../ok.json", str(tmp_path)) == str(tmp_path / "ok.json")
-    assert case_from_url("..\\..\\secret.json", str(tmp_path)) is None
-    assert case_from_url("C:/Windows/win.ini", str(tmp_path)) is None
-    assert case_from_url("missing.json", str(tmp_path)) is None
-
-
-def test_one_light_theme_and_no_outside_request(wb):
-    """The owner's 2026-09-28 screenshot: on a dark-mode PC the Fast template's
-    components went dark while the page stayed light.  The shell now uses the
-    Bootstrap template, pinned to its light theme, with native controls pinned
-    light too; and nothing it loads comes from outside the local server."""
-    from panel.theme.base import DefaultTheme
-    from panel.theme.bootstrap import Bootstrap
-    from atlas.workbench.app import LIGHT_CSS
-    assert isinstance(wb.tpl, pn.template.BootstrapTemplate)
-    assert wb.tpl.design is Bootstrap and wb.tpl.theme is DefaultTheme
-    assert "color-scheme: light" in LIGHT_CSS and LIGHT_CSS in wb.tpl.config.raw_css
-    res = str(wb.tpl.resolve_resources())
-    assert "googleapis" not in res and "cdn." not in res
+    D.ok(s, "case.open", name="ok.json")
+    assert s.path == str(tmp_path / "ok.json")
+    for name in ("../ok.json", "..\\..\\secret.json", "C:/Windows/win.ini", "missing.json"):
+        D.refused(s, "case.open", name=name)
+        assert s.path == str(tmp_path / "ok.json"), name

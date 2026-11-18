@@ -1,4 +1,5 @@
-"""The workbench runner: style A for the wind-farm family, and the page that drives it.
+"""The workbench runner: style A for the wind-farm family, and the page that drives it
+(the studio's, through its protocol).
 
 What is pinned here, and why each one:
 
@@ -35,8 +36,6 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "scripts"))
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
-pn = pytest.importorskip("panel")
-
 from atlas.workbench import runner                                      # noqa: E402
 from atlas.workbench.families import windfarm as wf                     # noqa: E402
 from atlas.workbench.spec import (EXAMPLES, CaseSpec, Window, check,     # noqa: E402
@@ -44,7 +43,7 @@ from atlas.workbench.spec import (EXAMPLES, CaseSpec, Window, check,     # noqa:
 from atlas.workbench.tiling import RectangleTiling                      # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from workbench_ui import texts                                          # noqa: E402
+import studio_driver as D                                               # noqa: E402
 
 
 def _small(key="wake-array-3", steps=2, **run):
@@ -240,78 +239,70 @@ def test_a_yawed_disk_is_refused():
 
 
 # ---------------------------------------------------------------------------
-# the page
+# the page: the studio's protocol
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture()
-def wb(tmp_path):
-    from atlas.workbench.app import Workbench
-    w = Workbench(cases_dir=str(tmp_path))
-    w.spec.run.steps = 2
-    return w
+def s(tmp_path, monkeypatch):
+    """A page's session on the wind farm, two macro-steps a run; a run marches inside
+    the message that starts it."""
+    D.synchronous(monkeypatch)
+    s = D.session(tmp_path)
+    r, _ = D.edit(s, D.set_op(["run", "steps"], 2), label="steps = 2")
+    assert r["ok"]
+    return s
 
 
-def test_the_page_runs_a_case_and_shows_its_results(wb, tmp_path):
-    run = wb.start_run(["serial", "parallel", "full"], blocking=True)
+def test_the_page_runs_a_case_and_shows_its_results(s, tmp_path):
+    reply, _ = D.send(s, "run.start", arms=["serial", "parallel", "full"])
+    assert reply["ok"] and reply["arms"] == ["serial", "parallel", "full"]
+    run = s.run
     assert run is not None and run.status == "done"
-    assert wb.active == "run" and wb.run_panel.run is run
     assert run.record_path.startswith(str(tmp_path))
-    assert wb.status_btn.name == "✓ Ready to run" and wb.run_btn.name == "▶ Run"
-    table, checks = __import__("atlas.workbench.runview", fromlist=["x"]).results_frames(
-        run.results)
-    assert list(table["arm"]) == ["Decomposed, serial", "Decomposed, parallel", "Full domain"]
-    assert set(checks["verdict"]) == {"pass"}
-    # Run and the compiler at the top (a finished run rebuilds the tab at its top),
-    # then the four cards, over the details and the fields
-    body = wb.workspace.objects[0].objects
-    assert "Atlas compiler" in texts(body[1])
-    cards = texts(body[2])
-    assert "Speed" in cards and f"{len(checks)} of {len(checks)} passed" in cards
-    wb.show("results")                             # the old step's key: the same tab
-    assert wb.active == "run" and wb.workspace.objects
-    # every family's results carry the displayed field's rms difference from the
-    # full domain, from the record, and the two decomposed arms are bitwise one
-    fd = run.results["field_difference"]
+    assert s.status()["kind"] == "ok" and s.status()["text"] == "Ready"
+    f = D.frames(s)
+    frame, cards = f["run"], f["run"]["cards"]
+    assert frame["status"] == "done" and frame["this_case"] is True
+    assert [cards["labels"][a] for a in cards["arms"]] == [
+        "Decomposed, serial", "Decomposed, parallel", "Full domain"]
+    assert cards["checks"] and cards["passed"] == len(cards["checks"]) and cards["failed"] == 0
+    assert cards["speed"] and cards["speed"]["ratio"] > 0.0
+    # every family's results carry the displayed field's rms difference from the full
+    # domain, and the two decomposed arms are bitwise one
+    fd = cards["field_difference"]
     assert set(fd) == {"serial", "parallel"} and fd["serial"] == fd["parallel"]
-    col = [c for c in table.columns if c.startswith("rms difference vs full")]
-    assert col and list(table[col[0]])[2] == "-" and fd["serial"]["rms"] > 0.0
-    # the fields reached the panel: three images of the domain's shape, downsampled
+    assert fd["serial"]["rms"] > 0.0
+    # the fields reached the page: the arms and their difference, downsampled alike
     p = run.progress()
-    assert set(p.fields) == {"serial", "parallel", "full", "difference"}
-    img = wb.run_panel.src["difference"].data["image"][0]
-    assert img.shape == p.fields["difference"].shape
-    # another case opened: the last run's results are not its results, and the Run
-    # & results tab says so
-    from atlas.workbench.runview import results_view
-
-    def alerts():
-        return " ".join(o.object for o in results_view(wb, run.results).objects
-                        if isinstance(o, pn.pane.Alert))
-    assert "the case open now differs" not in alerts()
-    wb.dispatch("file:example:plate-circuit")
-    assert "the case open now differs" in alerts()
-    wb.show("run")
-    assert "the case open now differs" in texts(wb.workspace.objects[0])
+    assert set(p.fields) == set(f["fields"]["arms"]) == {"serial", "parallel", "full",
+                                                         "difference"}
+    q = f["fields"]["arms"]["difference"]
+    assert (q["ny"], q["nx"]) == p.fields["difference"].shape
+    # another case opened: the last run's results are not its results, and the frame
+    # says so
+    D.ok(s, "case.example", key="plate-circuit")
+    assert D.frames(s)["run"]["this_case"] is False
 
 
-def test_a_finished_run_rebuilds_its_step(wb):
-    """The step is built while the run marches; once it ends, its notice that a run
-    is marching must go, and Run must be live again (seen stale in the page)."""
-    wb.start_run(["full"], blocking=True)
-    body = wb.workspace.objects[0].objects
-    alerts = [o.object for o in body if isinstance(o, pn.pane.Alert)]
-    assert not any("A run is marching" in a for a in alerts)
-    run_btn, stop_btn, _blocked = wb._run_buttons
-    assert not run_btn.disabled and stop_btn.disabled
+def test_a_finished_run_leaves_the_page_ready_to_run_again(s):
+    """Once a run ends, the header's chip is no longer busy and Run is live again (the
+    retired page once kept its notice that a run was marching)."""
+    D.ok(s, "run.start", arms=["full"])
+    assert s.run.status == "done" and not s.run.active
+    assert s.status()["kind"] != "busy"
+    assert D.frames(s)["run"]["status"] == "done"
+    D.ok(s, "run.start", arms=["full"])
 
 
-def test_the_page_says_which_configuration_is_marching(wb):
-    run = wb.start_run(["full"], blocking=True)
-    html = wb.run_panel.status.object
-    assert "the wind farm case as committed at" in html and "2 macro-steps" in html
-    wb.edit(lambda c: setattr(c.run, "threads", 3), "threads")
-    wb.run_panel.update()
-    assert "has changed since this run was committed" in wb.run_panel.status.object
+def test_the_page_says_which_configuration_is_marching(s):
+    """A run is a commit: the case is copied when Run is pressed, the frame says when
+    and in what steps, and an edit afterwards does not reach the run."""
+    D.ok(s, "run.start", arms=["full"])
+    run = s.run
+    frame = D.frames(s)["run"]
+    assert frame["committed_at"] and frame["steps"] == 2 and frame["step_label"] == "macro-step"
+    r, _ = D.edit(s, D.set_op(["run", "threads"], 3), label="threads")
+    assert r["ok"] and s.spec.run.threads == 3
     assert run.spec.run.threads != 3                # the edit did not reach the run
     assert run.results["case_name"] == "wake-array-3"  # the record's key, not a name shown

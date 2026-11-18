@@ -68,11 +68,7 @@ sys.path.insert(0, HERE)
 REQUIRED = [
     ("numpy", "the arrays"),
     ("scipy", "sparse solves, transforms and image operations, in every type"),
-    ("pandas", "the results tables"),
     ("pydantic", "the case file's schema"),
-    ("bokeh", "the retired Panel page, which its tests still drive"),
-    ("panel", "the retired Panel page, which its tests still drive"),
-    ("tornado", "the retired Panel page's server"),
     ("fastapi", "the studio's server"),
     ("uvicorn", "the studio's server process"),
     ("websockets", "the studio page's WebSocket"),

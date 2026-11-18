@@ -5,19 +5,25 @@ multirate style M on conduction (the N = 1 control to the bit, the balance at
 round-off, the agreement against its registered 1e-3); the river's and the sound's
 several steps per exchange on a halo (the full domain to round-off and to the bit,
 threaded equal to serial, the balance closed); the river's leaner window step and
-blend, the same values as the code they replaced; the header's *Fast example*
-button with *More examples* under it; and the speed card.  No timing is asserted
+blend, the same values as the code they replaced; each kind's Fast example one
+message away in the studio (``case.fast``); and the speed card the page is sent.  No timing is asserted
 here: the speeds are measured by `scripts/fast_examples.py` and recorded in
 ``out/workbench/records/fast/``.
 """
 
 from __future__ import annotations
 
+import os
+import sys
+
 import numpy as np
 import pytest
 
 from atlas.workbench import fast, fv, layout
 from atlas.workbench.spec import (EXAMPLES, FAST_EXAMPLES, Layout, check, example_case)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import studio_driver as D  # noqa: E402
 
 FAMILIES = ("incompressible-2d", "conduction-2d", "transport-2d", "acoustics-2d",
             "elasticity-2d", "electric-2d", "thermoelastic-2d", "conjugate-heat-2d")
@@ -251,29 +257,21 @@ def test_sound_on_windows_is_the_full_domain_to_the_bit(k, steps):
 
 
 # ---------------------------------------------------------------------------
-# the header and the card
+# the Fast example in the studio, and its card
 # ---------------------------------------------------------------------------
 
 
-@pytest.fixture
-def wb(tmp_path):
-    import panel as pn
-    pn.extension("tabulator")
-    from atlas.workbench.app import Workbench
-    return Workbench(cases_dir=str(tmp_path))
-
-
-def test_the_header_has_fast_example_with_more_examples_under_it(wb):
-    from atlas.workbench.app import FAST_LABEL
-    m = wb.examples_menu
-    assert m.name == FAST_LABEL and m.split
+def test_each_kind_has_its_fast_example_one_message_away(tmp_path):
+    """The page's *Fast example* is one message for the open kind (``case.fast``), and
+    the catalog marks each kind's own."""
+    s = D.session(tmp_path)
     for fid in ("conduction-2d", "elasticity-2d"):
-        wb.type_sel.value = fid
-        items = [it[1] for it in (m.items or [])]
-        assert f"file:example:{FAST_EXAMPLES[fid]}" not in items     # the button's own
-        m.clicked = FAST_LABEL                                       # the button's part
-        assert wb.spec == example_case(FAST_EXAMPLES[fid])
-        assert wb.case_key == FAST_EXAMPLES[fid]
+        D.ok(s, "case.new", family=fid)
+        assert D.family(s, fid)["fast_example"] == FAST_EXAMPLES[fid]
+        assert s.state()["meta"]["fast_example"] == FAST_EXAMPLES[fid]
+        D.ok(s, "case.fast")
+        assert s.spec == example_case(FAST_EXAMPLES[fid])
+        assert s.key == FAST_EXAMPLES[fid]
 
 
 def _record(key, speed, agreement, extra=None, check="reference"):
@@ -301,18 +299,21 @@ def test_the_agreement_is_read_from_the_familys_own_check():
 
 
 def test_the_card_names_the_mechanism_the_bars_and_the_fixed_line():
-    from atlas.workbench.runview import fast_card
-    html_ = fast_card(_record("fast-farm", 4.57, 0.0256, check="power")).object
-    assert "Faster because the 12 pieces run at once on 4 threads" in html_
-    assert "meets both bars" in html_ and fast.FIXED_LINE in html_
-    low = fast_card(_record("fast-farm", 2.4, 0.0256, check="power")).object
-    assert "below the 3× bar" in low and fast.FIXED_LINE in low
+    """The studio's Fast card (`runcards.fast_card`), as the page is sent it."""
+    from atlas.studio.runcards import fast_card
+    card = fast_card(_record("fast-farm", 4.57, 0.0256, check="power"))
+    assert "Faster because the 12 pieces run at once on 4 threads" in card["line"]
+    assert "meets both bars" in card["verdict"] and card["met"]
+    assert card["fixed"] == fast.FIXED_LINE and card["ratio"] == 4.57
+    low = fast_card(_record("fast-farm", 2.4, 0.0256, check="power"))
+    assert "below the 3× bar" in low["verdict"] and not low["met"]
+    assert low["fixed"] == fast.FIXED_LINE
     m = fast_card(_record("fast-heat", 5.5, 1.2e-4,
                           {"rate": 9, "slow_pieces": ["steel"], "fast_pieces": ["copper"]},
                           check="reference_multirate"))
-    assert "the steel steps 9 times longer than the copper" in m.object
-    assert "meets both bars" in m.object
-    o3 = fast_card(_record("plate-hole", 0.01, 3e-12)).object
+    assert "the steel steps 9 times longer than the copper" in m["line"]
+    assert "meets both bars" in m["verdict"]
+    o3 = fast_card(_record("plate-hole", 0.01, 3e-12))
     from atlas.workbench.families import elasticity
-    assert elasticity.FAST_LIMIT in o3.replace("&#x27;", "'")
+    assert o3["line"] == elasticity.FAST_LIMIT
     assert fast_card(_record("wall-2", 4.0, 1e-12)) is None          # not a fast example

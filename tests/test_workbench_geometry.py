@@ -1,14 +1,12 @@
-"""The Atlas Workbench geometry section: its rules, its editor and its Gmsh import.
+"""The Atlas Workbench geometry section: its rules, its edits and its Gmsh import.
 
 The rules are tested as plain functions (`geometry.py`), against the real tilings
-the measurements were taken on.  The canvas is tested the way the page drives it
-(since 2026-09-29's rebuild): a click is a Tap event at `_on_tap`, which selects
-or draws with the active tool; the selected shape's handles are Bokeh sources a
-`PointDrawTool` drags (a drag is changed coordinates, a Backspace a row gone),
-which is the data the browser sends; the inspector's fields are widgets.  The
-gestures themselves were also driven in a served page (select, drag, draw a
-rectangle and a circle, the tiling dialog), per the project's rule that a socket
-cannot see an undrawn page.
+the measurements were taken on.  The edits are tested the way the studio's page sends
+them (its protocol, `tests/studio_driver.py`): a gesture ends in one edit of the case
+as data, validated as a whole case and refused whole.  The gestures themselves
+(select, drag, draw, snap) are the page's own and are driven in the real page
+(`scripts/studio_drive.py`), per the project's rule that a socket cannot see an
+undrawn page.
 """
 
 from __future__ import annotations
@@ -17,7 +15,6 @@ import json
 import math
 import os
 import sys
-from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -25,15 +22,13 @@ import pytest
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
 
-pn = pytest.importorskip("panel")
-
 from atlas.workbench import geometry as geo                               # noqa: E402
 from atlas.workbench import registry                                      # noqa: E402
 from atlas.workbench.spec import (EXAMPLES, Boundary, CaseSpec, Region,     # noqa: E402
                                   Window, blank_case, check, example_case)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from workbench_ui import click, tap, widget, widgets                     # noqa: E402
+import studio_driver as D                                                 # noqa: E402
 
 
 def _msgs(spec, severity=None):
@@ -364,173 +359,158 @@ def test_gmsh_import_refuses_what_it_cannot_represent(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# the editor, driven through its sources and tables
+# the editor: what a gesture sends, through the studio's protocol
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture
-def wb(tmp_path):
-    pn.extension("tabulator")
-    from atlas.workbench.app import Workbench
-    w = Workbench(cases_dir=str(tmp_path))
-    w.show("geometry")
-    return w
+def s(tmp_path):
+    """A page's session on the wind farm: a gesture in the page arrives as one edit
+    (the gestures themselves, snapping among them, are the page's own and are checked
+    in the real page; `geo.snap_box` above is the rule the retired editor snapped by)."""
+    return D.session(tmp_path)
 
 
-def _data(src):
-    return {k: list(v) for k, v in src.data.items()}
-
-
-def test_every_layer_and_tool_builds(wb):
-    from atlas.workbench.editor import LAYERS, TOOLS, layers_for
-    for layer in LAYERS:
-        for tool in TOOLS:
-            wb.geo_editor._switch(layer=layer, tool=tool)
-            # a layer the family does not read is not in the rail: the Shape one opens
-            want = layer if layer in layers_for(wb.spec) else "domain"
-            assert wb.active == "model" and wb.geo_editor.state["layer"] == want
-    wb.geo_editor._switch(snap=1)
-    assert wb.geo_editor._snap() == 1
-
-
-def test_select_move_draw_and_delete_windows(wb):
-    ed = wb.geo_editor
-    ed._switch(layer="windows")
-    ed = wb.geo_editor
-    tap(ed, 176.0, 40.0)                                          # inside F10 alone
-    assert ed.selected == "windows:1"
-    d = _data(ed.src_move)                                        # its diamond, dragged
-    d["x"][0] += 13                                               # +13 cells: 16 snapped
-    d["y"][0] += 5
-    ed.src_move.data = d
-    assert (wb.spec.windows[1].x0, wb.spec.windows[1].y0) == (128, 8)
-    assert wb.log_lines[0].endswith("F10: moved to (128, 8)")
-    assert any("no window at full weight" in m for m in _msgs(wb.spec, "error"))
-    ed = wb.geo_editor
-    ed._switch(tool="rect")
-    tap(wb.geo_editor, 72.3, 40.2)                                # two corners
-    tap(wb.geo_editor, 120.4, 72.1)
-    assert wb.spec.windows[-1] == Window(id="F7", x0=72, y0=40, nx=48, ny=32)
-    ed = wb.geo_editor                                            # handed back to Select
-    assert ed.state["tool"] == "select" and ed.selected == "windows:6"
-    n = len(wb.spec.windows)
-    ed._switch(tool="rect")
-    tap(wb.geo_editor, 10.0, 10.0)                                # a click, not a box
-    tap(wb.geo_editor, 10.4, 10.2)
-    assert len(wb.spec.windows) == n and "two different corners" in wb.log_lines[0]
-    wb.geo_editor._switch(tool="select")
-    ed = wb.geo_editor
-    ed.select("windows:6")
-    d = {k: v[:-1] for k, v in _data(ed.src_move).items()}       # Backspace on F7
-    ed.src_move.data = d
-    assert [w.id for w in wb.spec.windows][-1] == "F21"
+def test_windows_are_moved_drawn_refused_and_deleted_as_edits(s):
+    r, _ = D.edit(s, D.set_op(["windows", 1, "x0"], 128), D.set_op(["windows", 1, "y0"], 8),
+                  label="F10: moved to (128, 8)")
+    assert r["ok"] and (s.spec.windows[1].x0, s.spec.windows[1].y0) == (128, 8)
+    assert s.log_lines[0].endswith("F10: moved to (128, 8)")
+    assert any("no window at full weight" in m for m in _msgs(s.spec, "error"))
+    new = {"id": "F7", "x0": 72, "y0": 40, "nx": 48, "ny": 32}
+    r, _ = D.edit(s, {"op": "insert", "path": ["windows"], "value": new}, label="drew F7")
+    assert r["ok"] and s.spec.windows[-1] == Window(id="F7", x0=72, y0=40, nx=48, ny=32)
+    n = len(s.spec.windows)
+    flat = {"id": "F8", "x0": 10, "y0": 10, "nx": 0, "ny": 0}          # a click, not a box
+    r, pushes = D.edit(s, {"op": "insert", "path": ["windows"], "value": flat}, label="F8")
+    assert r["ok"] is False and len(s.spec.windows) == n
+    assert any("not applied" in t for t in D.notices(pushes, "error"))
+    r, _ = D.edit(s, {"op": "remove", "path": ["windows", 6]}, label="deleted F7")
+    assert r["ok"] and [w.id for w in s.spec.windows][-1] == "F21"
     for _ in range(3):
-        wb.undo()
-    assert wb.spec == example_case("wake-array-3")
+        D.ok(s, "edit.undo")
+    assert s.spec == example_case("wake-array-3")
 
 
-def test_resize_by_a_corner_handle(wb):
-    wb.geo_editor._switch(layer="windows")
-    ed = wb.geo_editor
-    ed.select("windows:0")
-    h = _data(ed.src_handles)
-    i = [j for j, (o, c) in enumerate(zip(h["owner"], h["corner"])) if o == 0 and c == 2][0]
-    h["x"][i] += 20
-    h["y"][i] -= 30
-    ed.src_handles.data = h
-    assert wb.spec.windows[0] == Window(id="F00", x0=0, y0=0, nx=144, ny=96)
-    assert wb.log_lines[0].endswith("resized F00")
-    ed = wb.geo_editor                                            # and from the inspector
-    widget(ed.inspector, "x", pn.widgets.IntInput).value = 16
-    assert wb.spec.windows[0].x0 == 16
+def test_a_window_is_resized_and_placed_by_its_numbers(s):
+    r, _ = D.edit(s, D.set_op(["windows", 0, "nx"], 144), D.set_op(["windows", 0, "ny"], 96),
+                  label="resized F00")
+    assert r["ok"] and s.spec.windows[0] == Window(id="F00", x0=0, y0=0, nx=144, ny=96)
+    assert s.log_lines[0].endswith("resized F00")
+    r, _ = D.edit(s, D.set_op(["windows", 0, "x0"], 16), label="F00: x = 16")
+    assert r["ok"] and s.spec.windows[0].x0 == 16
 
 
-def test_rotors_are_placed_moved_and_deleted(wb):
-    wb.geo_editor._switch(layer="devices", tool="draw")
-    tap(wb.geo_editor, 200.2, 100.7)
-    assert wb.spec.devices[-1].id == "R4"
-    assert (wb.spec.devices[-1].x, wb.spec.devices[-1].y) == (6.25, 3.25)   # snapped, in D
-    ed = wb.geo_editor
-    assert ed.state["tool"] == "select" and ed.selected == "devices:3"
-    d = _data(ed.src_dev)
-    d["x"][3] += 16
-    ed.src_dev.data = d
-    assert wb.spec.devices[3].x == 6.75
-    ed = wb.geo_editor
-    ed.select("devices:3")
-    click(widget(ed.inspector, "Delete", pn.widgets.Button))
-    assert [v.id for v in wb.spec.devices] == ["R1", "R2", "R3"]
+def test_rotors_are_placed_moved_and_deleted(s):
+    rotor = s.spec.devices[0].model_dump(mode="json") | {"id": "R4", "x": 6.25, "y": 3.25}
+    r, _ = D.edit(s, {"op": "insert", "path": ["devices"], "value": rotor}, label="R4")
+    assert r["ok"] and s.spec.devices[-1].id == "R4"
+    assert (s.spec.devices[-1].x, s.spec.devices[-1].y) == (6.25, 3.25)      # in D
+    r, _ = D.edit(s, D.set_op(["devices", 3, "x"], 6.75), label="R4 moved")
+    assert r["ok"] and s.spec.devices[3].x == 6.75
+    r, _ = D.edit(s, {"op": "remove", "path": ["devices", 3]}, label="deleted R4")
+    assert r["ok"] and [v.id for v in s.spec.devices] == ["R1", "R2", "R3"]
 
 
-def test_regions_are_drawn_and_edited_in_the_inspector(wb):
-    wb.dispatch("file:example:wall-2")
-    wb.geo_editor._switch(layer="regions", tool="rect")
-    wb.geo_state["material"] = "copper"
-    tap(wb.geo_editor, 64.2, 8.3)
-    tap(wb.geo_editor, 96.4, 24.1)
-    k = len(wb.spec.regions) - 1
-    r = wb.spec.regions[k]
-    assert (r.material, r.shape, r.x0, r.y0, r.nx, r.ny) == ("copper", "rect", 64, 8, 32, 16)
-    ed = wb.geo_editor
-    assert ed.selected == f"regions:{k}"
-    widget(ed.inspector, "Made of", pn.widgets.Select).value = "steel"
-    assert wb.spec.regions[k].material == "steel"
-    before = wb.spec
-    widget(wb.geo_editor.inspector, "width", pn.widgets.IntInput).value = -3
-    assert wb.spec == before and "not applied" in wb.log_lines[0]
-    # the field shows the case again (seen: a refused width stayed, reading as applied)
-    assert widget(wb.geo_editor.inspector, "width", pn.widgets.IntInput).value == 32
-    widget(wb.geo_editor.inspector, "x", pn.widgets.IntInput).value = 16
-    assert wb.spec.regions[k].x0 == 16
-    click(widget(wb.geo_editor.inspector, "Delete", pn.widgets.Button))
-    assert len(wb.spec.regions) == k
+def test_regions_are_drawn_and_edited_in_the_inspector(s):
+    D.ok(s, "case.example", key="wall-2")
+    dx = s.spec.domain.dx
+    r, _ = D.add_feature(s, D.rect("f9", 64, 8, 32, 16, dx, material="copper", name="Patch"))
+    assert r["ok"], r
+    k = len(s.spec.regions) - 1
+    reg = s.spec.regions[k]
+    assert (reg.material, reg.shape, reg.x0, reg.y0, reg.nx, reg.ny) == ("copper", "rect", 64,
+                                                                         8, 32, 16)
+    i = len(D.features(s)) - 1
+    r, _ = D.edit(s, D.set_op(["geometry", "features", i, "material"], "steel"), label="steel")
+    assert r["ok"] and s.spec.regions[k].material == "steel"
+    r, _ = D.edit(s, D.set_op(["geometry", "features", i, "x"], 16 * dx), label="x = 16")
+    assert r["ok"] and s.spec.regions[k].x0 == 16
+    r, _ = D.edit(s, {"op": "remove", "path": ["geometry", "features", i]}, label="deleted")
+    assert r["ok"] and len(s.spec.regions) == k
 
 
-def test_regions_a_family_ignores_are_shown_and_warned_of(wb):
-    """The wind farm reads no regions, so its rail has no Materials layer until a
-    region is there (from a file, or a family changed): then it shows, to delete."""
-    from atlas.workbench.editor import layers_for
-    assert "regions" not in layers_for(wb.spec)
-    wb.edit(lambda c: c.regions.append(Region(id="R1", material="copper", x0=32, y0=32,
-                                              nx=64, ny=64)), "a region")
-    assert "regions" in layers_for(wb.spec)
-    assert any("does not read material regions" in m for m in _msgs(wb.spec, "warning"))
+def test_a_refused_size_leaves_the_region_as_it_was(s):
+    """A value the schema refuses changes nothing, says so, and the page goes back to
+    the case as it is (seen in the retired page: a refused width stayed, reading as
+    applied)."""
+    D.ok(s, "case.example", key="wall-2")
+    before = s.spec.to_json()
+    i = next(k for k, f in enumerate(D.features(s)) if f["role"] == "region")
+    w = -3 * s.spec.domain.dx
+    reply, pushes = D.send(s, "edit.apply", label="width = -3",
+                           ops=[D.set_op(["geometry", "features", i, "w"], w)])
+    assert reply["ok"] is False and s.spec.to_json() == before
+    assert any("not applied" in t and "width and a height above 0" in t
+               for t in D.notices(pushes, "error"))
+    assert pushes[0]["type"] == "state"                     # the page is told the case again
 
 
-def test_imported_polygon_regions_are_not_moved_here(wb):
-    wb.edit(lambda c: c.regions.append(Region(id="P", shape="polygon",
-                                              points=[(10, 10), (60, 10), (35, 50)])), "add")
-    wb.geo_editor._switch(layer="regions")
-    ed = wb.geo_editor
-    ed.select("regions:0")
-    assert ed._handle_rows["move"] == [] and ed._boxes() == []      # nothing to drag
-    assert widgets(ed.inspector, pn.widgets.IntInput, name="x") == []  # nor to type
-    before = wb.spec
-    ed.translate_shape("regions:0", 8.0, 0.0)
-    assert wb.spec == before and "is not drawn here" in wb.log_lines[0]
+def test_regions_a_family_ignores_are_shown_and_warned_of(s):
+    """The wind farm reads no regions, so the catalog gives it no Materials layer; a
+    region that arrives anyway (from a file) is kept and warned of."""
+    assert "regions" not in D.family(s, "incompressible-2d")["layers"]
+    region = {"id": "R1", "material": "copper", "x0": 32, "y0": 32, "nx": 64, "ny": 64}
+    r, _ = D.edit(s, {"op": "insert", "path": ["regions"], "value": region}, label="a region")
+    assert r["ok"] and s.spec.regions
+    assert any("does not read material regions" in m for m in _msgs(s.spec, "warning"))
 
 
-def test_the_tiling_dialog_and_the_gmsh_path(wb, tmp_path):
-    from atlas.workbench.gmsh_import import read_msh
-    wb.geo_editor._switch(layer="windows")
-    click(widget(wb.geo_editor.inspector, "Lay a grid of rectangles...", pn.widgets.Button))
-    widget(wb.modal_body, "Columns").value = 4
-    widget(wb.modal_body, "Rows").value = 3
-    click(widget(wb.modal_body, "Replace the windows", pn.widgets.Button))
-    assert len(wb.spec.windows) == 12 and _msgs(wb.spec, "error") == []
-    g = read_msh(_plate_msh(tmp_path / "p.msh"), 1 / 32)
-    assert wb.apply_gmsh(g, 1 / 32, "p.msh")
-    s = wb.spec
-    assert (s.domain.nx, s.domain.ny) == (128, 96)
-    assert [w.id for w in s.windows] == ["A", "B"] and len(s.regions) == 2
-    assert wb.geo_editor._domain == (128, 96)                  # the canvas was rebuilt
-    wb.undo()
-    assert len(wb.spec.windows) == 12
+def test_an_imported_polygon_region_is_a_shape_the_studio_moves(s):
+    """The retired editor could not move a polygon region from a file, and said so.  In
+    the studio it is a path in the drawing, moved like any other shape: its cells move
+    with it."""
+    by_file = json.loads(example_case("wall-2").to_json())
+    by_file["regions"].append({"id": "P", "material": "copper", "shape": "polygon",
+                               "points": [[10, 10], [60, 10], [35, 30]]})
+    D.ok(s, "case.import", text=json.dumps(by_file), name="poly.json")
+    feats = D.features(s)
+    i = next(k for k, f in enumerate(feats) if f["name"] == "P")
+    assert feats[i]["kind"] == "path" and feats[i]["role"] == "region"
+    dx = s.spec.domain.dx
+    owner = geo.region_owner(s.spec.regions, s.spec.domain.nx, s.spec.domain.ny)
+    before = int((owner == len(s.spec.regions) - 1).sum())
+    moved = [[x + 8 * dx, y] for x, y in feats[i]["points"]]
+    r, _ = D.edit(s, D.set_op(["geometry", "features", i, "points"], moved), label="moved P")
+    assert r["ok"], r
+    owner = geo.region_owner(s.spec.regions, s.spec.domain.nx, s.spec.domain.ny)
+    cells = np.argwhere(owner == len(s.spec.regions) - 1)
+    assert s.spec.regions[-1].material == "copper" and cells[:, 1].min() >= 17
+    assert abs(len(cells) - before) <= 0.05 * before
 
 
-def test_undo_keeps_the_view(wb):
-    ed = wb.geo_editor
-    ed.fig.x_range.start, ed.fig.x_range.end = 40.0, 200.0
-    wb.edit(lambda c: setattr(c.run, "steps", 7), "steps")
-    wb.undo()
-    assert wb.geo_editor.ranges()[:2] == (40.0, 200.0)
+def test_windows_laid_as_a_grid_of_rectangles_are_one_edit(s):
+    """A grid of rectangles (`geo.tile`, which the retired tiling dialog called) is one
+    edit, and Undo brings the windows before it back."""
+    nx, ny = s.spec.domain.nx, s.spec.domain.ny
+    tiles = [{"id": n, "x0": b[0], "y0": b[1], "nx": b[2], "ny": b[3]}
+             for n, b in geo.tile(nx, ny, 4, 3, 16)]
+    r, _ = D.edit(s, D.set_op(["windows"], tiles), label="a grid of 4 x 3 windows")
+    assert r["ok"] and len(s.spec.windows) == 12 and _msgs(s.spec, "error") == []
+    D.ok(s, "edit.undo")
+    assert s.spec == example_case("wake-array-3")
+
+
+def test_a_gmsh_mesh_replaces_the_drawing_with_its_windows_and_regions(s, tmp_path):
+    """The Gmsh path (``geometry.import``): the mesh's grid, its windows, its regions and
+    its boundary conditions replace the drawing, in one edit that Undo takes back.  In
+    style B, whose windows overlap (style C would cut its two pieces again, one per
+    material, as a newly drawn shape's starting values do)."""
+    import base64
+    path = _plate_msh(tmp_path / "p.msh")
+    D.ok(s, "case.new", family="conduction-2d")
+    r, _ = D.edit(s, D.set_op(["domain", "dx"], 1 / 32), D.set_op(["coupling", "style"], "B"),
+                  label="cells of 1/32, style B")
+    assert r["ok"], r
+    before = s.spec.model_dump()
+    r, pushes = D.send(s, "geometry.import", format="msh", name="p.msh",
+                       data=base64.b64encode(open(path, "rb").read()).decode())
+    assert r["ok"], (r, D.notices(pushes))
+    sp = s.spec
+    assert (sp.domain.nx, sp.domain.ny) == (128, 96)
+    assert [w.id for w in sp.windows] == ["A", "B"] and sp.layout is None
+    assert {x.material for x in sp.regions} >= {"steel", "copper"}
+    kinds = {(b.edge, b.kind) for b in sp.boundaries}
+    assert {("left", "fixed-temperature"), ("bottom", "insulated")} <= kinds
+    D.ok(s, "edit.undo")
+    assert s.spec.model_dump() == before

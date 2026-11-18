@@ -11,8 +11,8 @@ NONRECTANGULAR windows".  These tests pin:
 * the one-window control on a drawn domain, bit for bit, steady and transient;
 * both drawn examples against the full domain, their energy, the bitwise
   threaded control, and their compile verdicts;
-* the check's refusals, and the editor's drawing and reshaping, driven through
-  the same handlers the page's events call.
+* the check's refusals, and drawing and reshaping, sent as the studio's page sends
+  them (its protocol, `tests/studio_driver.py`).
 """
 
 from __future__ import annotations
@@ -20,7 +20,6 @@ from __future__ import annotations
 import math
 import os
 import sys
-from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -37,7 +36,7 @@ from atlas.workbench.spec import (Boundary, CaseSpec, Outline, Window, check,  #
 from atlas.workbench.tiling import MaskTiling  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from workbench_ui import walk  # noqa: E402
+import studio_driver as D  # noqa: E402
 
 DEG = math.pi / 180.0
 
@@ -335,182 +334,145 @@ def test_every_family_runs_on_drawn_shapes_and_the_refusal_remains(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# the editor: drawing and reshaping, through the handlers the page's events call
+# drawing and reshaping, as the studio's page sends them
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture
-def wb():
-    from atlas.workbench.app import Workbench
-    w = Workbench(spec=example_case("plate-insert"))
-    w.show("geometry")
-    return w
+def s(tmp_path):
+    """A page's session on the plate with an insert."""
+    return D.session(tmp_path, "plate-insert")
 
 
-def test_an_outline_drawn_by_clicks_becomes_the_domain(wb):
-    ed = wb.geo_editor
-    ed._switch(layer="domain", tool="shape", snap=8)
-    ed = wb.geo_editor
-    nx, ny = wb.spec.domain.nx, wb.spec.domain.ny
-    for x, y in [(0, 0), (nx, 0), (nx, ny // 2), (nx // 2, ny // 2), (nx // 2, ny), (0, ny)]:
-        ed._on_tap(SimpleNamespace(x=x + 0.3, y=y - 0.2))
-    ed._on_tap(SimpleNamespace(x=0.3, y=ny - 0.2))            # the double click's own tap
-    ed._on_double_tap(SimpleNamespace(x=0.3, y=ny - 0.2))
-    d = wb.spec.domain
+def _ring(cx, cy, r):
+    """A circle as a path of four quarter arcs (the bulge of a quarter arc is
+    tan(pi/8)), in cells."""
+    pts = [(cx + r, cy), (cx, cy + r), (cx - r, cy), (cx, cy - r)]
+    return pts, ["arc"] * 4, [math.tan(math.pi / 8)] * 4
+
+
+def test_an_outline_drawn_becomes_the_domain(s):
+    nx, ny = s.spec.domain.nx, s.spec.domain.ny
+    r, _ = D.draw_domain(s, [(0, 0), (nx, 0), (nx, ny // 2), (nx // 2, ny // 2), (nx // 2, ny),
+                             (0, ny)])
+    assert r["ok"], r
+    d = s.spec.domain
     assert d.outline is not None and len(d.outline.points) == 6
     assert geo.domain_mask(d).sum() == nx * ny - (nx // 2) * (ny - ny // 2)
-    assert sorted(b.edge for b in wb.spec.boundaries) == [f"outline:{k}" for k in range(6)]
+    assert sorted(b.edge for b in s.spec.boundaries) == [f"outline:{k}" for k in range(6)]
 
 
-def test_reshape_bends_splits_and_smooths_and_the_boundaries_follow(wb):
-    ed = wb.geo_editor
-    ed._switch(layer="domain", tool="shape")
-    wb.geo_editor.add_ready("circle")                         # a circular outline
-    ed = wb.geo_editor
-    ed._switch(tool="resize")
-    ed = wb.geo_editor
-    o = wb.spec.domain.outline
-    assert o.kinds() == ["arc"] * 4
-    # Backspace on an edge's circle straightens it
-    data = dict(ed.src_edge.data)
-    keep = [i for i in range(len(data["x"])) if i != 0]
-    ed._on_edges("data", data, {c: [data[c][i] for i in keep] for c in data})
-    assert wb.spec.domain.outline.kinds()[0] == "line"
-    # dragging it off the chord bends it into an arc again
-    ed = wb.geo_editor
-    data = dict(ed.src_edge.data)
-    xs = list(data["x"])
-    xs[0] += 10.0
-    ed._on_edges("data", data, dict(data, x=xs))
-    assert wb.spec.domain.outline.kinds()[0] == "arc"
-    # a double click on an edge's circle adds a vertex; its boundary covers both halves
-    ed = wb.geo_editor
-    row = [r for r in ed._handle_rows["edge"] if r[1] == 2][0]
-    n_b = len(wb.spec.boundaries)
-    ed.double_click_handle(row[2], row[3])
-    assert len(wb.spec.domain.outline.points) == 5 and len(wb.spec.boundaries) == n_b + 1
-    # a double click on a vertex makes the curve smooth through it
-    ed = wb.geo_editor
-    row = [r for r in ed._handle_rows["vtx"] if r[1] == 1][0]
-    ed.double_click_handle(row[2], row[3])
-    k = wb.spec.domain.outline.kinds()
+def test_reshape_bends_splits_and_smooths_and_the_boundaries_follow(s):
+    """An edge straightened, bent into an arc again, split by a new point (its condition
+    held on both halves) and made smooth through a point: each one edit of the drawn
+    path, and the engine's outline follows."""
+    nx, ny = s.spec.domain.nx, s.spec.domain.ny
+    pts, edges, bulge = _ring(nx / 2, ny / 2, ny / 2 - 4)
+    r, _ = D.draw_domain(s, pts, edges=edges, bulge=bulge)
+    assert r["ok"], r
+    assert s.spec.domain.outline.kinds() == ["arc"] * 4
+
+    def path_edit(*ops, label):
+        r, pushes = D.edit(s, *ops, label=label)
+        assert r["ok"], (label, r, D.notices(pushes))
+
+    i = next(k for k, f in enumerate(D.features(s)) if f["role"] == "add")
+    at = ["geometry", "features", i]
+    path_edit(D.set_op(at + ["edges", 0], "line"), D.set_op(at + ["bulge", 0], 0.0),
+              label="straightened edge 1")
+    assert s.spec.domain.outline.kinds()[0] == "line"
+    path_edit(D.set_op(at + ["edges", 0], "arc"), D.set_op(at + ["bulge", 0], 0.2),
+              label="bent edge 1")
+    assert s.spec.domain.outline.kinds()[0] == "arc"
+    n_b = len(s.spec.boundaries)
+    f = D.features(s)[i]
+    (x0, y0), (x1, y1) = f["points"][2], f["points"][3]
+    path_edit({"op": "insert", "path": at + ["points"], "index": 3,
+               "value": [(x0 + x1) / 2, (y0 + y1) / 2]},
+              {"op": "insert", "path": at + ["edges"], "index": 3, "value": "line"},
+              {"op": "insert", "path": at + ["bulge"], "index": 3, "value": 0.0},
+              {"op": "insert", "path": at + ["handles"], "index": 3, "value": None},
+              D.set_op(at + ["edges", 2], "line"), D.set_op(at + ["bulge", 2], 0.0),
+              label="a point on edge 3")
+    assert len(s.spec.domain.outline.points) == 5 and len(s.spec.boundaries) == n_b + 1
+    path_edit(D.set_op(at + ["edges", 0], "spline"), D.set_op(at + ["edges", 1], "spline"),
+              label="smooth through point 2")
+    k = s.spec.domain.outline.kinds()
     assert k[0] == "spline" and k[1] == "spline"
 
 
-def test_drawn_windows_keep_their_place_when_a_rectangle_moves(wb):
-    ed = wb.geo_editor
-    ed._switch(layer="windows", tool="draw")
-    ed = wb.geo_editor
-    for x, y in [(8, 8), (72, 8), (72, 40), (8, 40)]:
-        ed._on_tap(SimpleNamespace(x=x, y=y))
-    ed.close_shape()
-    assert [w.shape for w in wb.spec.windows] == ["rect", "rect", "curve"]
-    ed = wb.geo_editor                                        # handed back to Select
-    assert ed.state["tool"] == "select" and ed.selected == "windows:2"
-    drawn = wb.spec.windows[2].outline
-    ed.select("windows:1")                                    # F10, x0 72 of 160
-    data = dict(ed.src_move.data)                             # its diamond alone
-    assert data["ref"] == ["windows:1"]
-    ed._on_move("data", data, dict(data, x=[data["x"][0] - 8]))
-    assert wb.spec.windows[1].x0 == 64
-    assert [w.shape for w in wb.spec.windows] == ["rect", "rect", "curve"]
-    assert wb.spec.windows[2].outline == drawn
+def test_drawn_windows_keep_their_place_when_a_rectangle_moves(s):
+    square = Outline(points=[(8, 8), (72, 8), (72, 40), (8, 40)], edges=["line"] * 4,
+                     bulge=[0.0] * 4)
+    w = Window(id="W3", shape="curve", outline=square).model_dump(mode="json")
+    r, _ = D.edit(s, {"op": "insert", "path": ["windows"], "value": w}, label="drew W3")
+    assert r["ok"], r
+    assert [w.shape for w in s.spec.windows] == ["rect", "rect", "curve"]
+    drawn = s.spec.windows[2].outline
+    x0 = s.spec.windows[1].x0                                  # F10, x0 72 of 160
+    r, _ = D.edit(s, D.set_op(["windows", 1, "x0"], x0 - 8), label="F10 moved")
+    assert r["ok"] and s.spec.windows[1].x0 == x0 - 8
+    assert [w.shape for w in s.spec.windows] == ["rect", "rect", "curve"]
+    assert s.spec.windows[2].outline == drawn
 
 
-def test_circle_and_rectangle_are_two_clicks_and_hand_back_to_select(wb):
-    """Every tool adds one shape, then hands back to Select with it selected (seen:
-    Rectangle stayed armed after its region while Draw had handed back); the hint
-    under the canvas names the handles the shape has."""
-    ed = wb.geo_editor
-    ed._switch(layer="regions", tool="circle")
-    wb.geo_state["material"] = "copper"
-    ed = wb.geo_editor
-    ed._on_tap(SimpleNamespace(x=40.2, y=48.3))                  # the centre, snapped
-    assert "a point on the circle" in ed.hint.object
-    ed._on_tap(SimpleNamespace(x=52.0, y=48.3))                  # a point on it
-    r = wb.spec.regions[-1]
-    assert r.shape == "curve" and r.outline.kinds() == ["arc"] * 4 and r.material == "copper"
-    ed = wb.geo_editor
-    assert ed.state["tool"] == "select" and ed.selected == f"regions:{len(wb.spec.regions) - 1}"
-    assert "a <b>circle</b> to bend its edge" in ed.hint.object
-    ed._switch(tool="rect")
-    wb.geo_editor._on_tap(SimpleNamespace(x=100.0, y=16.0))
-    wb.geo_editor._on_tap(SimpleNamespace(x=120.0, y=40.0))
-    ed = wb.geo_editor
-    r = wb.spec.regions[-1]
-    assert (r.shape, r.x0, r.y0, r.nx, r.ny) == ("rect", 96, 16, 24, 24)
-    assert ed.state["tool"] == "select"
-    # a rectangle has corners and a centre, no edges to bend (seen: the curve hint)
-    assert "Drag a <b>corner</b> to resize it" in ed.hint.object
+def test_a_circle_and_a_rectangle_drawn_as_regions(s):
+    """Each tool adds one shape; a region keeps the material it was drawn in: a circle
+    is four arcs, a rectangle on whole cells its cells."""
+    dx = s.spec.domain.dx
+    r, _ = D.add_feature(s, D.circle("f8", 40, 48, 12, dx, material="copper", name="Disc"))
+    assert r["ok"], r
+    reg = s.spec.regions[-1]
+    assert reg.shape == "curve" and reg.outline.kinds() == ["arc"] * 4 and reg.material == "copper"
+    r, _ = D.add_feature(s, D.rect("f9", 96, 16, 24, 24, dx, material="copper", name="Block"))
+    assert r["ok"], r
+    reg = s.spec.regions[-1]
+    assert (reg.shape, reg.x0, reg.y0, reg.nx, reg.ny) == ("rect", 96, 16, 24, 24)
 
 
-def test_draw_the_outline_after_cut_a_hole_draws_an_outline(wb):
-    """After Cut a hole the next shape drawn was still a hole, so Draw the outline
-    cut a second one."""
-    import panel as pn
-
-    def rail_button(name):
-        return [b for b in walk(wb.geo_editor.rail_items)
-                if isinstance(b, pn.widgets.Button) and b.name == name][0]
-
-    def draw(pts):
-        for x, y in pts:
-            wb.geo_editor._on_tap(SimpleNamespace(x=x, y=y))
-        wb.geo_editor.close_shape()
-    wb.geo_editor._switch(layer="domain")
-    rail_button("Cut a hole").clicks += 1
-    assert wb.geo_editor.state["tool"] == "draw" and wb.geo_editor.state["draw_as"] == "hole"
-    draw([(64, 32), (96, 32), (96, 64), (64, 64)])
-    assert len(wb.spec.domain.holes) == 1 and wb.spec.domain.outline is None
-    assert wb.geo_editor.state["tool"] == "select"
-    rail_button("Draw the outline").clicks += 1
-    assert wb.geo_editor.state["draw_as"] == "outline"
-    draw([(0, 0), (160, 0), (160, 96), (0, 96)])
-    assert len(wb.spec.domain.holes) == 1 and wb.spec.domain.outline is not None
+def test_an_outline_drawn_after_a_hole_is_an_outline(s):
+    """In the retired editor, after Cut a hole the next shape drawn was still a hole,
+    so Draw the outline cut a second one.  A cut and an outline are each what they are
+    drawn as."""
+    sq = [(64, 32), (96, 32), (96, 64), (64, 64)]
+    r, _ = D.add_feature(s, D.path("f9", sq, s.spec.domain.dx, role="cut", name="Hole"))
+    assert r["ok"], r
+    assert len(s.spec.domain.holes) == 1 and s.spec.domain.outline is None
+    r, _ = D.draw_domain(s, [(0, 0), (150, 0), (150, 96), (0, 96)])
+    assert r["ok"], r
+    assert len(s.spec.domain.holes) == 1 and s.spec.domain.outline is not None
 
 
-def test_a_hole_is_cut_deleted_and_restored(wb):
-    ed = wb.geo_editor
-    ed._switch(layer="domain", tool="shape")
-    ed = wb.geo_editor
-    ed.state["draw_as"] = "hole"
-    ed.add_ready("circle")
-    assert len(wb.spec.domain.holes) == 1
-    assert sum(b.edge.startswith("hole0:") for b in wb.spec.boundaries) == 4
-    ed._switch(tool="resize")
-    ed = wb.geo_editor
-    data = dict(ed.src_move.data)
-    keep = [i for i, r in enumerate(ed._handle_rows["move"]) if r[0] != "domain:hole:0"]
-    ed._on_move("data", data, {c: [data[c][i] for i in keep] for c in data})
-    assert not wb.spec.domain.holes
-    assert not any(b.edge.startswith("hole") for b in wb.spec.boundaries)
-    wb.undo()
-    assert len(wb.spec.domain.holes) == 1
-    wb.geo_editor.reset_domain()
-    assert wb.spec.domain.outline is None and not wb.spec.domain.holes
-    assert sorted(b.edge for b in wb.spec.boundaries) == ["bottom", "left", "right", "top"]
+def test_a_hole_is_cut_deleted_and_restored(s):
+    dx = s.spec.domain.dx
+    r, _ = D.add_feature(s, D.circle("f9", 120, 48, 10, dx, role="cut", name="Hole"))
+    assert r["ok"], r
+    assert len(s.spec.domain.holes) == 1
+    assert sum(b.edge.startswith("hole0:") for b in s.spec.boundaries) == 4
+    i = next(k for k, f in enumerate(D.features(s)) if f["id"] == "f9")
+    r, _ = D.edit(s, {"op": "remove", "path": ["geometry", "features", i]}, label="deleted")
+    assert r["ok"] and not s.spec.domain.holes
+    assert not any(b.edge.startswith("hole") for b in s.spec.boundaries)
+    D.ok(s, "edit.undo")
+    assert len(s.spec.domain.holes) == 1
+    # back to the whole grid: the drawing's own rectangle, nothing cut from it
+    nx, ny = s.spec.domain.nx, s.spec.domain.ny
+    keep = [f for f in D.features(s) if f["role"] == "region"]
+    grid = D.rect("f1", 0, 0, nx, ny, dx, role="add", name="Plate")
+    r, _ = D.edit(s, D.set_op(["geometry", "features"], [grid] + keep), label="the grid")
+    assert r["ok"], r
+    assert s.spec.domain.outline is None and not s.spec.domain.holes
+    assert sorted(b.edge for b in s.spec.boundaries) == ["bottom", "left", "right", "top"]
 
 
-def test_the_inspector_sets_an_edge_to_an_arc(wb):
-    """A click on an edge's circle selects the edge; the inspector draws it straight,
-    as an arc of a typed bulge, or smooth."""
-    import panel as pn
-    wb.dispatch("file:example:bend-3")
-    ed = wb.geo_editor
-    ed._switch(layer="windows")
-    ed = wb.geo_editor
-    assert {k for w in wb.spec.windows for k in w.outline.kinds()} == {"line", "arc"}
-    ed.select("windows:0")
-    row = [r for r in ed._handle_rows["edge"] if r[0] == "windows:0" and r[1] == 0][0]
-    ed._on_tap(SimpleNamespace(x=row[2], y=row[3]))           # edge 0's circle
-    assert ed.state["sub"] == 0
-    kind = [w for w in walk(ed.inspector) if isinstance(w, pn.widgets.RadioButtonGroup)
-            and set(w.options) == {"Straight", "Arc", "Smooth"}][0]
-    assert kind.value == "line"
-    kind.value = "arc"
-    assert wb.spec.windows[0].outline.kinds()[0] == "arc"
-    bulge = [w for w in walk(wb.geo_editor.inspector)
-             if isinstance(w, pn.widgets.FloatInput) and w.name.startswith("Bulge")][0]
-    bulge.value = 0.25
-    o = wb.spec.windows[0].outline
+def test_an_edge_of_a_drawn_window_set_to_an_arc(s):
+    """An edge of a drawn window, drawn straight, as an arc of a typed bulge, or smooth:
+    one edit of the window's outline."""
+    D.ok(s, "case.example", key="bend-3")
+    assert {k for w in s.spec.windows for k in w.outline.kinds()} == {"line", "arc"}
+    assert s.spec.windows[0].outline.kinds()[0] == "line"
+    r, _ = D.edit(s, D.set_op(["windows", 0, "outline", "edges", 0], "arc"),
+                  D.set_op(["windows", 0, "outline", "bulge", 0], 0.25), label="edge 1: arc")
+    assert r["ok"], r
+    o = s.spec.windows[0].outline
     assert o.kinds()[0] == "arc" and o.bulges()[0] == 0.25

@@ -1,28 +1,22 @@
-"""python -m atlas.workbench [--port 8020] [--open] [--cases-dir DIR]
+"""python -m atlas.workbench: retired.
 
-The retired Panel page, kept while its tests are rewritten against the studio's
-protocol (integrated UI plan, section 9).  The app is the studio:
-``python -m atlas.studio``; the one-command install serves it."""
+This started the Atlas Workbench's Panel page, which the studio (the integrated UI,
+`atlas/studio`) replaced; its modules were deleted on 2026-11-18, once their tests
+had been rewritten against the studio's protocol.  The app is
+``python -m atlas.studio --open``, and the one-command install serves it.  The
+engine the studio runs on (the case file, the families, the runner, the compile) is
+still this package."""
 
 from __future__ import annotations
 
-import argparse
+import sys
 
 
-def main(argv=None) -> None:
-    p = argparse.ArgumentParser(prog="atlas.workbench",
-                                description="Atlas Workbench: build a domain decomposition "
-                                            "by hand and compare it with the full domain")
-    p.add_argument("--port", type=int, default=8020)
-    p.add_argument("--open", action="store_true", help="open a browser at the page")
-    p.add_argument("--cases-dir", default=None,
-                   help="where cases are saved (default: out/workbench/cases)")
-    a = p.parse_args(argv)
-    print("Note: this Panel page is retired; the Atlas app is the studio "
-          "(python -m atlas.studio).", flush=True)
-    from .app import serve
-    serve(port=a.port, open_browser=a.open, cases_dir=a.cases_dir)
+def main(argv=None) -> int:
+    print("The Atlas Workbench's Panel page is retired; the Atlas app is the studio:\n"
+          "    python -m atlas.studio --open", file=sys.stderr, flush=True)
+    return 2
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

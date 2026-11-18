@@ -24,6 +24,9 @@ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
 from atlas.workbench import learned_gate as G                          # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import studio_driver as D                                               # noqa: E402
+
 REGISTERED = os.path.join(HERE, "out", "learned-case", "registered.txt")
 MODULE = os.path.join(HERE, "atlas", "workbench", "learned_gate.py")
 
@@ -141,38 +144,38 @@ def test_the_scaled_cases_keep_the_physics_where_it_is():
 
 
 # ---------------------------------------------------------------------------
-# the case in the page
+# the case in the studio
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture()
-def wb(tmp_path, monkeypatch):
-    pytest.importorskip("panel")
-    from atlas.workbench import compile as compile_
-    from atlas.workbench import runner
-    from atlas.workbench.app import Workbench
-    monkeypatch.setattr(runner.CaseRun, "start", lambda self: None)
-    monkeypatch.setattr(compile_.CompileJob, "start", lambda self: None)
-    return Workbench(cases_dir=str(tmp_path))
+def s(tmp_path, monkeypatch):
+    """A page's session (the studio's protocol) whose runs and compiles are created and
+    never marched."""
+    D.idle(monkeypatch)
+    return D.session(tmp_path)
 
 
-def test_the_learned_case_is_first_under_the_farms_examples_and_fixed(wb):
+def test_the_learned_case_is_listed_with_the_farms_examples_and_fixed(s):
+    """The learned case is the wind farm's, marked read-only in the catalog; opened, it
+    refuses every edit and says why, and offers its four arms; another kind is editable
+    again, and Undo restores the fixed case."""
     from atlas.workbench import learned_case as LC
-    wb.dispatch("case:type:incompressible-2d")
-    items = wb._example_items()
-    assert items[0][1] == "file:example:%s" % LC.KEY
-    wb.dispatch("file:example:%s" % LC.KEY)
-    assert wb.read_only and wb.case_key == LC.KEY
-    before = wb.spec.to_json()
-    assert wb.edit(lambda c: setattr(c.run, "steps", 3), "an edit") is False
-    assert wb.spec.to_json() == before
-    assert any(LC.READ_ONLY in line for line in wb.log_lines)
-    assert set(wb.run_arms) == {"parallel", "full", "learned", "coarse"}
-    wb.dispatch("case:type:conduction-2d")                 # another kind: editable again
-    assert not wb.read_only
-    assert not any(i[1].endswith(LC.KEY) for i in wb._example_items())
-    wb.dispatch("edit:undo")                               # Undo restores the fixed case
-    assert wb.read_only
+    ex = {e["key"]: e for e in s.catalog()["examples"]}
+    assert ex[LC.KEY]["family"] == "incompressible-2d" and ex[LC.KEY]["fixed"] is True
+    assert [k for k, e in ex.items() if e["fixed"]] == [LC.KEY]
+    D.ok(s, "case.new", family="incompressible-2d")
+    D.ok(s, "case.example", key=LC.KEY)
+    assert s.read_only and s.key == LC.KEY and s.state()["meta"]["read_only"] is True
+    before = s.spec.to_json()
+    r, pushes = D.edit(s, D.set_op(["run", "steps"], 3), label="an edit")
+    assert r["ok"] is False and s.spec.to_json() == before
+    assert any(LC.READ_ONLY in n for n in D.notices(pushes))
+    assert set(s.run_arms) == {"parallel", "full", "learned", "coarse"}
+    D.ok(s, "case.new", family="conduction-2d")            # another kind: editable again
+    assert not s.read_only
+    D.ok(s, "edit.undo")                                   # Undo restores the fixed case
+    assert s.read_only
 
 
 def test_the_learned_case_marches_four_arms_and_measures_them_against_the_truth(
@@ -183,8 +186,8 @@ def test_the_learned_case_marches_four_arms_and_measures_them_against_the_truth(
     pytest.importorskip("torch")
     from atlas.workbench import learned_case as LC
     from atlas.workbench import runner
+    from atlas.studio.runcards import cards, learned_card
     from atlas.workbench.learned_net import WindowUNet, save_window_net
-    from atlas.workbench.runview import learned_card
     from atlas.workbench.spec import example_case
     net = WindowUNet(width=G.NET_WIDTH, depth=G.NET_DEPTH)
     for p in net.parameters():
@@ -217,13 +220,16 @@ def test_the_learned_case_marches_four_arms_and_measures_them_against_the_truth(
     assert by["mass"]["passed"] is True
     assert by["competitor"]["passed"] in (True, False)
     assert r.results["arm_labels"]["learned"] == LC.ARM_LABELS["learned"]
-    import html as html_
-    page = learned_card(r.results).object
-    assert html_.escape(LC.CAVEAT) in page and "Velocity" in page and "Farm power" in page
+    # the learned case's card, as the studio's page is sent it: every arm against the
+    # truth (velocity and farm power), and the caveat
+    card = learned_card(r.results)
+    assert card["caveat"] == LC.CAVEAT
+    assert set(card["errors"]) == set(LC.ARMS)
+    assert all({"V", "P"} <= set(e) for e in card["errors"].values())
+    assert card["errors"]["learned"]["label"] == LC.ARM_LABELS["learned"]
     # the headline speed is the learned arm's, not the coarse competitor's
-    from atlas.workbench.runview import summary_cards
-    speed = summary_cards(r.results)[0].object
-    assert html_.escape(LC.ARM_LABELS["learned"].lower()) in speed
+    speed = cards(r.results)["speed"]
+    assert speed["arm"] == "learned" and speed["label"] == LC.ARM_LABELS["learned"]
 
 
 def test_a_learned_step_with_a_zero_network_is_the_projected_blend():

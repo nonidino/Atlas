@@ -36,9 +36,12 @@ from atlas.workbench import geometry as geo  # noqa: E402
 from atlas.workbench import layout as lay  # noqa: E402
 from atlas.workbench import shapes as S  # noqa: E402
 from atlas.workbench.runner import adapter_for, arms_for  # noqa: E402
-from atlas.workbench.spec import (EXAMPLES, Outline, Window, check,  # noqa: E402
-                                  derive_boundaries, example_case)
+from atlas.workbench.spec import (EXAMPLES, Boundary, Outline, Window, check,  # noqa: E402
+                                  derive_boundaries, derived_kind, example_case)
 from atlas.workbench.starter import apply_fix, fill_defaults  # noqa: E402
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import studio_driver as D  # noqa: E402
 
 
 def _errors(spec):
@@ -46,12 +49,22 @@ def _errors(spec):
 
 
 def _cut(spec, hole: Outline):
-    """A hole cut as the page cuts one: its edges take the family's own condition, and
-    windows that follow the domain are cut again."""
-    from atlas.workbench.editor import rebase_boundaries
+    """A hole cut as the retired editor cut one: each of its edges takes a boundary of
+    the family's own condition (`spec.derived_kind`, ids ``B<k>`` after the case's
+    own), and windows that follow the domain are cut again.  In the studio a cut is a
+    feature of the drawing (`test_in_the_page_...` below)."""
     h = len(spec.domain.holes)
     spec.domain.holes.append(hole)
-    rebase_boundaries(spec, f"hole{h}", len(hole.points), None)
+    taken = {b.id for b in spec.boundaries}
+    new = []
+    for j in range(len(hole.points)):
+        k = len(taken) + 1
+        while f"B{k}" in taken:
+            k += 1
+        taken.add(f"B{k}")
+        new.append(Boundary(id=f"B{k}", edge=f"hole{h}:{j}",
+                            kind=derived_kind(spec, f"hole{h}:{j}")))
+    spec.boundaries = spec.boundaries + new
     derive_boundaries(spec)
     if spec.layout is not None:
         lay.refresh(spec)
@@ -312,30 +325,32 @@ def test_a_conduction_case_whose_right_edge_a_hole_cuts_reports_each_piece():
 
 
 # ---------------------------------------------------------------------------
-# the page
+# the page: the studio's protocol
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture()
-def wb(tmp_path, monkeypatch):
-    from atlas.workbench import runner
-    from atlas.workbench.app import Workbench
-    monkeypatch.setattr(runner.CaseRun, "start", lambda self: None)
-    return Workbench(cases_dir=str(tmp_path))
+def s(tmp_path, monkeypatch):
+    """A page's session whose runs are created and never marched."""
+    D.idle(monkeypatch)
+    return D.session(tmp_path)
 
 
-def test_in_the_page_a_hole_dragged_across_the_edge_and_past_the_grid_stays_ready(wb):
-    """The done-when of item 1.3: a circle hole across the outline's edge and on past
-    the grid's leaves the case ready."""
-    wb.type_sel.value = "conduction-2d"
-    ed = wb.geo_editor
-    ed._switch(layer="domain", tool="draw")
-    d = wb.spec.domain
-    ed.add_drawn(Outline.of(S.rectangle(16.0, 16.0, d.nx - 32.0, d.ny - 32.0)))
-    ed = wb.geo_editor
-    ed.state["draw_as"] = "hole"
-    ed._switch(layer="domain", tool="draw")
-    ed.add_drawn(Outline.of(S.circle(d.nx - 8.0, d.ny / 2.0, 30.0)))
-    assert wb.spec.domain.holes, wb.log_lines[:3]
-    assert [i.message for i in wb.issues() if i.severity == "error"] == []
-    assert wb.status_btn.name.startswith("✓ Ready")
+def test_in_the_page_a_hole_drawn_across_the_edge_and_past_the_grid_stays_ready(s):
+    """The done-when of item 1.3: a circle cut across the outline's edge and on past the
+    grid's leaves the case ready.  In the studio the drawing is a feature tree, so the
+    part of the circle inside the outline bites into it (the outline gains its arc)
+    rather than being kept as a hole that crosses the edge."""
+    D.ok(s, "case.new", family="conduction-2d")
+    d = s.spec.domain
+    nx, ny = d.nx, d.ny
+    r, _ = D.draw_domain(s, [(16.0, 16.0), (nx - 16.0, 16.0), (nx - 16.0, ny - 16.0),
+                             (16.0, ny - 16.0)])
+    assert r["ok"], r
+    r, pushes = D.add_feature(s, D.circle("f9", nx - 8.0, ny / 2.0, 30.0, s.spec.domain.dx,
+                                          role="cut", name="Hole"), label="cut a hole")
+    assert r["ok"], (r, D.notices(pushes))
+    o = s.spec.domain.outline
+    assert o is not None and "arc" in o.kinds()
+    assert D.errors(s) == []
+    assert s.status()["kind"] == "ok" and s.status()["text"] == "Ready"

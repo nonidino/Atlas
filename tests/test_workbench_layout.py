@@ -33,7 +33,7 @@ from atlas.workbench.families import conduction as cd  # noqa: E402
 from atlas.workbench.spec import CaseSpec, Layout, Outline, check, example_case  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from workbench_ui import walk  # noqa: E402
+import studio_driver as D  # noqa: E402
 
 
 def _polar(mask, c=(4.0, 4.0)):
@@ -146,7 +146,7 @@ def test_a_domain_in_pieces_or_with_holes_says_what_it_cannot_do():
 
 
 # ---------------------------------------------------------------------------
-# the generated example, and following the domain in the editor
+# the generated example, and following the domain in the studio
 # ---------------------------------------------------------------------------
 
 
@@ -172,68 +172,50 @@ def test_the_s_channel_follows_its_shape_and_agrees_with_the_full_domain():
 
 
 @pytest.fixture
-def wb():
-    from atlas.workbench.app import Workbench
-    w = Workbench(spec=example_case("s-channel"))
-    w.show("geometry")
-    return w
+def s(tmp_path):
+    """A page's session on the S-channel, whose windows follow its shape."""
+    return D.session(tmp_path, "s-channel")
 
 
-def test_reshaping_the_domain_regenerates_the_windows(wb):
-    ed = wb.geo_editor
-    ed._switch(layer="domain", tool="resize", snap=1)
-    ed = wb.geo_editor
-    before = [w.runs for w in wb.spec.windows]
-    rows = ed._handle_rows["vtx"]
-    data = dict(ed.src_vtx.data)
-    k = [i for i, r in enumerate(rows) if r[0] == "domain:outline" and r[1] == 3][0]
-    ys = list(data["y"])
-    ys[k] -= 10
-    ed._on_vertices("data", data, dict(data, y=ys))
-    assert wb.spec.layout is not None
-    assert [w.runs for w in wb.spec.windows] != before
-    assert _errors(wb.spec) == []
+def test_reshaping_the_domain_regenerates_the_windows(s):
+    feats = D.features(s)
+    i = next(k for k, f in enumerate(feats) if f["role"] == "add")
+    assert feats[i]["kind"] == "path"
+    before = [w.runs for w in s.spec.windows]
+    x, y = feats[i]["points"][3]
+    r, _ = D.edit(s, D.set_op(["geometry", "features", i, "points", 3],
+                              [x, y - 10 * s.spec.domain.dx]), label="moved a corner")
+    assert r["ok"], r
+    assert s.spec.layout is not None
+    assert [w.runs for w in s.spec.windows] != before
+    assert _errors(s.spec) == []
 
 
-def test_editing_a_window_by_hand_makes_the_windows_the_cases_own(wb):
-    ed = wb.geo_editor
-    ed._switch(layer="windows")
-    ed = wb.geo_editor
-    ed.select("windows:0")
-    ed.delete_selected()
-    assert wb.spec.layout is None and len(wb.spec.windows) == 3
-    assert "no longer follow the shape" in wb.log_lines[0]
-    wb.geo_editor.set_layout(True, "along", 3, 2)
-    assert wb.spec.layout is not None and len(wb.spec.windows) == 6
-    ed = wb.geo_editor
-    ed.sync()
-    assert len(ed.src_win_gen.data["xs"]) >= 6                       # the cuts, drawn
+def test_editing_a_window_by_hand_makes_the_windows_the_cases_own(s):
+    """A generated window follows the shape; edited by hand (here, one deleted), the
+    windows become the case's own, and the page says so.  Following the domain again
+    is one edit of the layout."""
+    assert s.spec.windows[0].shape == "cells" and s.spec.layout is not None
+    r, pushes = D.edit(s, {"op": "remove", "path": ["windows", 0]}, label="deleted F00")
+    assert r["ok"] and s.spec.layout is None and len(s.spec.windows) == 3
+    assert any("no longer follow the shape" in n for n in D.notices(pushes, "info"))
+    r, _ = D.edit(s, D.set_op(["layout"], {"cut": "along", "along": 3, "across": 2}),
+                  label="the windows follow the domain: 3 along x 2 across")
+    assert r["ok"] and s.spec.layout is not None and len(s.spec.windows) == 6
+    assert [w["id"] for w in s.state()["drawing"]["windows"]] == [w.id for w in s.spec.windows]
+    assert all(w["rings"] for w in s.state()["drawing"]["windows"])     # the cuts, drawn
 
 
-def test_drawing_a_domain_makes_the_rectangles_give_way(wb):
-    wb.dispatch("file:example:plate-insert")
-    ed = wb.geo_editor
-    ed._switch(layer="domain", tool="shape")
-    ed = wb.geo_editor
-    ed.add_ready("circle")                                            # a round domain
-    assert wb.spec.layout is not None and wb.spec.layout.along == 2
-    assert [w.shape for w in wb.spec.windows] == ["cells", "cells"]
-    assert _errors(wb.spec) == [] or all("boundary" in m or "fixed" in m
-                                         for m in _errors(wb.spec))
-
-
-def test_a_generated_window_is_not_resized_or_moved_by_hand(wb):
-    """It follows the shape: no corners, no diamond, no place to type; a move asked
-    for in code is refused."""
-    import panel as pn
-    ed = wb.geo_editor
-    ed._switch(layer="windows")
-    ed = wb.geo_editor
-    ed.select("windows:0")
-    assert wb.spec.windows[0].shape == "cells"
-    assert ed._boxes() == [] and ed._handle_rows["move"] == []
-    assert not [w for w in walk(ed.inspector) if isinstance(w, pn.widgets.IntInput)]
-    before = [w.runs for w in wb.spec.windows]
-    ed.translate_shape("windows:0", 8.0, 0.0)
-    assert [w.runs for w in wb.spec.windows] == before and wb.spec.layout is not None
-    assert "is not drawn here" in wb.log_lines[0]
+def test_drawing_a_domain_makes_the_rectangles_give_way(s):
+    D.ok(s, "case.example", key="plate-insert")
+    assert [w.shape for w in s.spec.windows] == ["rect", "rect"] and s.spec.layout is None
+    d = s.spec.domain
+    r, _ = D.edit(s, D.set_op(["geometry", "features", 0],
+                              D.circle("f1", d.nx / 2, d.ny / 2, d.ny / 2 - 2, d.dx,
+                                       role="add", name="Disc")), label="a round domain")
+    assert r["ok"], r
+    assert s.spec.domain.outline is not None
+    assert s.spec.layout is not None and s.spec.layout.along == 2
+    assert [w.shape for w in s.spec.windows] == ["cells", "cells"]
+    assert _errors(s.spec) == [] or all("boundary" in m or "fixed" in m
+                                        for m in _errors(s.spec))

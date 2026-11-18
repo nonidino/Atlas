@@ -28,14 +28,18 @@ The runner is plan step 3 of
 and the compile is the graph half of its step 2. The library of cases is
 `showcase-library-plan.md` in the same folder.
 
+**The page is the studio** (`atlas/studio/`, the integrated UI, since 2026-11-16):
+
 ```bash
-python -m atlas.workbench --open
+python -m atlas.studio --open
 ```
 
-Then open <http://127.0.0.1:8020/>. `--port` and `--cases-dir` are optional; cases
-are saved to `out/workbench/cases/` by default. Add `?case=<file>.json` to the
-URL to open a saved case on load (only a file name inside the cases folder is
-accepted).
+This package is its engine: the case file, the families, the runner and the compile.
+Cases are saved to `out/workbench/cases/`. The Panel page this README describes
+below (its header, tabs, canvas and dialogs) was retired for the studio, and its
+modules were deleted on 2026-11-18; `python -m atlas.workbench` now says so. Its tests
+were rewritten to drive the studio's protocol (`tests/studio_driver.py`), keeping
+every edit, refusal, undo, example, run, compile and fix they checked.
 
 ## On another machine: the one-command install (demo step 7)
 
@@ -89,13 +93,16 @@ python scripts/verify_workbench_bundle.py --clone <a new folder> --launch --test
   serial" is the type's own control, not the runner's); the learned case, whose
   weights load and step the farm once, finite and divergence-free, with the
   registered evaluation's verdict printed (without torch it is reported absent,
-  which is optional); and the page, served by the folder's own server on a free
-  port, fetched with every script and stylesheet it names and its document pulled
-  over the WebSocket by Bokeh's own client.
+  which is optional); and the page, the studio since 2026-11-16, served by the
+  folder's own server on a free port, fetched with every file it and its modules
+  name, and a case opened, edited and run for one step over its WebSocket.
 - **`run.sh` has not run on a Mac** (the owner has none). It follows the PoC 3
   bundle's macOS rules, bash 3.2 and `100755` in the index, and has run on Linux.
 
 ## Built on what was already installed
+
+*Until 2026-11-18: the studio's page is plain JavaScript served by FastAPI, and
+Panel, Bokeh and Tornado left the install with the Panel page's modules.*
 
 **Panel 1.5** and **Bokeh 3.6**, both BSD-3-Clause, were already in the Python
 environment. No existing tool draws a domain decomposition and compares it with the
@@ -708,15 +715,12 @@ projection lets a little velocity back into the solid each sub-step.
 | `layout.py` | windows generated from the geometry: the domain's ends from its Fiedler vector, its harmonic along and across coordinates, equal-count cuts, one piece per material, growth to full weight, and regeneration when what they follow changes; for a shape that branches (`dead_regions`), a river's own flow with each connected band a window, or recursive spectral bisection (`bisect`); holes read from the mask (`topological_holes`) |
 | `shapes.py` | drawn shapes: vertices joined by lines, circular arcs (by their bulge) or centripetal Catmull-Rom splines; sampling, crossing and area checks, and the edits the canvas makes (move, bend, split, remove, smooth) |
 | `geometry.py` | the geometry rules as plain functions: snapping, tilings, the full-weight analysis, region masks and stacking; for drawn shapes, their cell masks, the distance ramp, the analysis on masks, and a drawn domain's boundary faces labelled by the nearest edge that still bounds it (`live_edges`) |
-| `editor.py` | the Model tab's canvas: its layers, the five tools, what a click selects on each layer (`hit`), the selected shape's handles, and the edits they make |
-| `inspector.py` | the Model tab's rail and inspector: the layer buttons, the active layer's list, and the panel for what is selected (or the layer's settings) |
 | `gmsh_import.py` | `.msh` to case geometry, by physical-group names |
 | `registry.py` | the physics families: what each runs on, which layers it reads, which boundaries it can impose, its short name, and what is missing before the workbench can run it |
 | `starter.py` | what a new shape or a new kind starts with: the repairs keyed by the check's problems (`FIXES`, `apply_fix`), `fill_defaults`, and the header's new case of a kind (`new_case`, `new_case_from`) |
-| `app.py` | the GUI: the header (the type selector, *More examples*), the two tabs and the dialogs (the problems list, open, save, Gmsh). Every menu item and button goes through `Workbench.dispatch(action)`, every edit through `Workbench.edit`; Undo restores the case with its file and key (`_Version`) |
+| `atlas/studio/` | the page (the integrated UI): `session.py` holds a page's case and every action on it (the retired Panel page's `Workbench` class without its GUI library: every edit validated as a whole case, Undo restoring the case with its file and key), `protocol.py` its messages. The Panel page's `app.py`, `editor.py`, `inspector.py` and `runview.py` were deleted on 2026-11-18 |
 | `tiling.py` | any rectangles as a partition of unity, certified by `GridPartitionOfUnity` |
 | `runner.py` | the run: arms in turns, the timer, Stop, the snapshots, the record |
-| `runview.py` | the Run & results tab: the controls, the compile card, the four cards, the live fields, timings and convergence |
 | `checks.py` | a check as data: what is measured, its tolerance, when it was registered |
 | `machine.py` | the machine's state beside every timing, and the keep-awake request |
 | `families/windfarm.py` | the wind-farm family's adapter (style A) |
@@ -736,21 +740,20 @@ projection lets a little velocity back into the solid each sub-step.
 | `families/thermoelastic.py` | a heated bimetal strip, conduction and elasticity split by physics |
 | `families/cooling.py` | a heated block cooled by a channel flow (style C at a seam between two physics) |
 | `compile.py` | the compile: a case's `CaseGraph` through its family's `case_graph`, the finite-volume window as an agent (`FVAgent`), seams from the geometry with Fourier prolongations, the declared cross-points, the verdict per seam, and the background job with its record |
-| `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the canvas driven as the page drives it (a click is a Tap at `_on_tap`, a handle's drag the data Bokeh's `PointDrawTool` sends, a field a widget; helpers in `tests/workbench_ui.py`), every header control and menu action (nothing is left unbuilt), the status chip's list and its *Show me*, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
-| `tests/test_workbench_fv.py`, `tests/test_workbench_families.py` | the finite volumes against closed forms (a layered wall, a series circuit), one window equal to the full domain to the bit, styles B, C and D against the full domain, the unrelaxed Dirichlet–Neumann diverging exactly when $\rho>1$, both new families end to end, and the page's family, physics and materials controls |
+| `tests/test_workbench_shell.py`, `tests/test_workbench_geometry.py`, `tests/test_workbench_runner.py` | the generator against the measured tilings, the full-weight rule against the assembly's own weights, the Gmsh path on a real mesh, the edits a gesture sends (windows, rotors and regions as data, a refused value changing nothing), every action on a case as the studio's page sends it (`tests/studio_driver.py` drives its protocol on a `Session`), the status chip's list and where each problem is fixed, and the runner: its three arms against W346's own columns bit for bit, the one-window control, Stop, the record with its field differences, every decomposed arm's farm metrics, and the stale-case labels |
+| `tests/test_workbench_fv.py`, `tests/test_workbench_families.py` | the finite volumes against closed forms (a layered wall, a series circuit), one window equal to the full domain to the bit, styles B, C and D against the full domain, the unrelaxed Dirichlet–Neumann diverging exactly when $\rho>1$, both new families end to end, and the catalog's kinds, physics and materials, edited as data |
 | `bundle/` | the one-command install's templates: `run.cmd`, `run.sh`, `run.py` (the launcher proper and its self-test), the pins, `conftest.py`, the branch's README and its git rules (demo step 7) |
 | `scripts/build_workbench_bundle.py`, `scripts/verify_workbench_bundle.py` | the builder (the branch `atlas-workbench` in `out/workbench-bundle`, never pushed by the script) and the check of a fresh clone: mode, line endings, every file against its commit by blob hash, the scans, the launcher, the tests, the self-test without torch and with no network; records in `out/workbench/records/installer/` |
 | `tests/test_workbench_installer.py` | the templates and the builder without installing anything: `run.sh` for bash 3.2 (and `bash -n`), `run.cmd`'s jumps, the two launchers' pins and flags, every third-party import at any depth pinned or optional, one self-test example per type, the builder's script closure and its refusals |
-| `tests/test_workbench_fast.py` | the Fast examples: every family's bars registered, every kind's example ready to run, style M's N = 1 control to the bit and its balance and agreement, the river's and the sound's halo exchange against the full domain (the sound to the bit), the river's leaner step against the code it replaced, the header's button and the card |
+| `tests/test_workbench_fast.py` | the Fast examples: every family's bars registered, every kind's example ready to run, style M's N = 1 control to the bit and its balance and agreement, the river's and the sound's halo exchange against the full domain (the sound to the bit), the river's leaner step against the code it replaced, `case.fast` and the card |
 | `scripts/learned_*.py`, `scripts/learned_box_run.sh` | the learned case's steps: step 0's timing of a random network, the registration, the data, the truth, the training, the rented box's runner and payload, and the one evaluation; records in `out/learned-case/` |
-| `tests/test_workbench_learned.py` | the registration against the gate module, the split never the held-out layout, the judgement, the velocity measure's grid, the farm run with defaults the workbench's to the bit, the scaled cases, the case read-only and first in the menu, a four-arm march with a zero network against a synthetic truth, and a zero network's step equal to the projected blend |
+| `tests/test_workbench_learned.py` | the registration against the gate module, the split never the held-out layout, the judgement, the velocity measure's grid, the farm run with defaults the workbench's to the bit, the scaled cases, the case read-only and marked so in the catalog, a four-arm march with a zero network against a synthetic truth, and a zero network's step equal to the projected blend |
 | `tests/test_w348_r10_after_scheme.py` | R10 after the scheme (W348): its three outcomes, `wall-2` decertified, the same graph refused at L2 with the declaration withdrawn, and Tier 0's four windows still refused |
-| `tests/test_workbench_starter.py` | the owner's first scenario in every family (ready to run once the shape is drawn, or the one thing only the person can decide said plainly), a new kind starting from its example's setup and one Undo restoring the old case, defaults that fill only what is missing, the Fix buttons one by one and all at once, every kind from the header ready to run and *Start over*, the windows fix at a Dirichlet-Neumann interface, a check that never raises, the canvas holding still while a shape is drawn, and the header holding what it simulates. `tests/test_workbench_shell.py` also pins case@0.6 (no name; an older file loses its own), *More examples*, the type switch and its one Undo with the file, and that no control shows a case name |
-| `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit layer, and each family in the page. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, the Run & results tab's per-seam table, and the gallery opening every example |
+| `tests/test_workbench_starter.py` | the owner's first scenario in every family (ready to run once the shape is drawn, or the one thing only the person can decide said plainly), a new kind starting from its example's setup and one Undo restoring the old case, defaults that fill only what is missing, the Fix buttons one by one and all at once, every kind from the header ready to run and *Start over*, the windows fix at a Dirichlet-Neumann interface, and a check that never raises. `tests/test_workbench_shell.py` also pins case@0.6 (no name; an older file loses its own), the catalog's examples by what they show, the type switch and its one Undo with the file, and that no example's label or description reaches the page |
+| `tests/test_workbench_cases.py` | the five step-C families: each one-window (or one-piece) control, each registered check, their positive controls (no interface reflects nothing; a plain strip heated uniformly carries no stress), `fe.py` against `ThermoStruct2D`, the floating-piece rule, the circuit edited as data, and each family through the studio's protocol. And the compile: every example's verdict pinned, the split refused by the port vocabulary, the farm through its own graph (and a moved window refused), a seam's response rising with its trace, and the compile's verdict per seam sent to the page only for its own case |
 
 ## Known limitations
 
-- **Light theme only, whatever the OS is set to.** Panel's theme switches reload the page, which starts a new session and drops the open case.
 - Undo covers case edits, not view or tool changes.
 - **Regions are read by every family but the wind farm**, which ignores them, and the check says so.
 - Timings are taken inside the workbench server process, which also serves the page; the page's updates share the process with every arm alike.
