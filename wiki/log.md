@@ -1143,3 +1143,7 @@ The Records screen reads `out/chartop/` and never runs anything (`atlas/studio/r
 **The done-when:** each evaluation's gates and prices on screen equal its JSON, read by a test that reads both (`tests/test_studio_records.py`) and in the page (16 checks, `out/studio/p6/walk.json`, among them Open: bend-3 run from the record to its energy error); a Stage 0b registration file, made for the test, appears as registered, not run, with its arms and gates, and its evaluation as evaluated, with no change to the code.
 
 **Changed:** [[integrated-ui-plan]] (status line).
+
+## [2026-11-18] note | integrated UI: the full suite after P6
+
+The full suite on a clean export of `11f9207` (the studio through P6, the canvas fix): 3002 passed, 132 skipped, in 1519 s on AC with no other Python running and no sleep or power-source event in the system log. The 19 failures and errors were the export's own: 13 need the untracked record `out/tier0b/s0_state.npz`, 2 found carriage returns in `run.sh` as the archive wrote it, and 4 call git (the Ranade folder's ignore rule, the pins' commit checks), which an export is not. All 19 pass in the tree (195 s). So: 3021 passed, 132 skipped, none failed. Logs: `out/suite_run_studio_p6.log`, `out/suite/studio_p6/`.
