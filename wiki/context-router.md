@@ -19,7 +19,7 @@
 |---|---|---|
 | **Build** a feature with a page (the studio) | [[00-atlas-current-state]] §7 · [[integrated-ui-plan]] §12 · `atlas/studio/README.md` | the plan's phase section (P0–P6) nearest your feature |
 | **Build** in the framework (a case, a port, an expert) | [[atlas-implementation]] · [[end-to-end-architecture-spec]] (the layer you touch) · [[port-algebra-atlas-0.1]] | [[showcase-gallery]] for a case like yours; [[gap-worklist]] for its W-item |
-| **Build** the chart operator (Stage 0b on) | [[chart-operator-stage-0-rework]] §20 · [[chart-operator-design-decisions]] (latest entries) · [[integrated-ui-plan]] §7 | [[chart-operator-general-form]] · [[chart-operator-training-and-cost]] |
+| **Build** the chart operator (the coolant case on) | [[chart-operator-stage-0b-and-1-plan]] · [[chart-operator-stage-0-rework]] §20 · [[chart-operator-design-decisions]] (latest entries) · [[integrated-ui-plan]] §7 | [[chart-operator-general-form]] · [[chart-operator-training-and-cost]] |
 | **Build** a Lean proof | [[formal-proofs-implementation-plan]] · [[formal-proofs-record]] (status and the batch's section) | [[formal-proofs-plan]] (T1–T23) |
 | **Build** on the rocket | [[rocket-episode-pickup]] | [[case-study-rocket-bc-seam-atlas-0.1]] (the § named there) |
 | **Reference**: a formula, symbol or bound | [[mathematical-compendium]] (§2 notation table, then the item) | the derivation page it links |

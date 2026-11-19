@@ -1184,3 +1184,12 @@ On the owner's approval of the lint's three proposals:
 - **W24**: the three `phase1-resume-prompt` links dropped from the Noether 1.1 plan and implementation log (the log entry's link made plain text, with a note), and their two pins removed from `scripts/link_scan.py`.
 
 Both scans: 306 files, 3 dead links (3 known), 0 new, 0 stale; 0 byte problems. `tests/test_tier14_locality_and_scope.py` (the link-scan test) and the worklist test in `tests/test_tier50_corruption_sweep.py` pass.
+
+## [2026-11-18] note | the chart operator's plan after Stage 0: the coolant case next
+
+A planning conversation with the owner, written up as [[chart-operator-stage-0b-and-1-plan]]; nothing built, trained or registered.
+- **Why training did not help** (from [[chart-operator-stage-0-rework]] §19–§20): the loss weighted the mid sines, which the coupled answer barely reads (P6); the untrained coarse level had already removed 87–96% of the coupled error, and a raised $n_c$ was the cheaper fix; the gains did not reach the held-out problems.
+- **The owner's decisions:** CO-T on **laminar cold plates** next, Péclet at most 200 per piece (fast plates cut finer, the seams' cost priced); classical `ADVEC` seams first, then a decisive test without training, then a dataset built, checked and frozen before any training; a rented box, 3 seeds, 37,500 steps per run; an expert store with a card for every trained model, failures included, and its weights published in principle (where and under what licence decided later); Stage 0b deferred; CO-E, the bond and the biharmonic network classically on TL0 after the coolant; Helmholtz out.
+- **A correction made in the conversation:** CO-T is G0′, so the safety switch is the piece's residual, not the energy.
+- **Measured, a stand-in only:** a non-symmetric sparse LU with 64 trial and 64 adjoint right-hand sides took 11, 49 and 265 ms at $n=32$, 64 and 128, single-threaded, on battery; not Atlas's solver, not recorded in `out/`. Training estimated at about \$7–12 on a rented RTX 3090 (**[AI Inference]**).
+- Updated: [[00-atlas-current-state]] §4 and §6, [[context-router]]'s chart-operator route, [[index]] (307 pages).

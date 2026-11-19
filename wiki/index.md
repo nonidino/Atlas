@@ -1,7 +1,7 @@
 # Physics Foundation Model Wiki — Index
 
 **Last Updated:** 2026-11-18 (lint and compaction: Atlas rows regrouped by purpose)
-**Sources Ingested:** 36 documents · **Pages:** 306
+**Sources Ingested:** 36 documents · **Pages:** 307
 
 > 🤖 An LLM session? Read **[[context-router]]** first: it names the few pages each task needs, so this catalog is rarely needed whole. For Atlas, the current state is **[[00-atlas-current-state]]**.
 > 🧭 New here? Read **[[00-start-here]]** for the guided reading path.
@@ -294,6 +294,7 @@ The heart of the project: what a PFM is, the goal, the interface, and the archit
 | [[chart-operator-stage-0]] | Stage 0 (2026-10-18): guarantees held, modes did not learn; E1, E4, KT fail ↗ |
 | [[chart-operator-kernel-exact-forms]] | W356–W358: kernel-exact output forms; R2's hybrid met E4 and price with nothing learned |
 | [[chart-operator-stage-0-rework]] | W363: the two-level coarse-exact expert; untrained removes 87–96% of coupled error, training adds nothing coupled; §20 what carries over |
+| [[chart-operator-stage-0b-and-1-plan]] | Plan after Stage 0 (agreed 2026-11-18, nothing built): CO-T on laminar cold plates next, with no training until classical options fail and an oracle wins; frozen dataset, expert store; Stage 0b deferred |
 
 ### Proposal: formal proofs (`atlas-0.1-proposal/formal-proofs/`)
 
