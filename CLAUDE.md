@@ -10,19 +10,19 @@ An LLM-maintained knowledge wiki for developing a physics foundation model ("AGI
 
 **Code home:** this repository, [github.com/nonidino/Atlas](https://github.com/nonidino/Atlas) (**public**), default branch `atlas-0.1`. It holds the wiki *and* the build: the Atlas framework, the Lean proofs, the experiments and the website. The earlier build repository, [nonidino/physics-foundation-model](https://github.com/nonidino/physics-foundation-model) (private), still holds the wind farm's solver; `vendor/` is a copy of it. Both repos + per-paper reference implementations are catalogued at `wiki/resources/code-and-papers.md`.
 
-> **Status:** the current track is **Atlas 0.1**. A classical framework, its case studies, a workbench demo and 105 machine-checked theorems are built; the proposed learned expert, the chart operator, is designed but not yet built or trained. Everything here is public, so never commit secrets or unlicensed weights.
+> **Status:** the current track is **Atlas 0.1**. A classical framework, its case studies, the studio (the integrated UI and demo) and 105 machine-checked theorems are built; the proposed learned expert, the chart operator, is designed but not yet built or trained. Everything here is public, so never commit secrets or unlicensed weights.
 
 Layers / folders:
 - **`raw/`** — immutable source documents (papers, articles). Never modify these. **Local only**: git-ignored since 2026-10-17, because the repository is public and these are other people's texts. When an ingest finishes, move the source here from `new/`. Because `raw/` is not published, every summary should cite its source's URL or arXiv id. On 2026-10-17 four did not: `aion-1-astronomy`, `eqnn-hep-lhc`, `gns-graph-network-simulators`, `genesis-physics-engine`.
 - **`new/`** — inbox for sources awaiting ingestion, also local only. **Do not reorganize or move this folder** — it is the drop point for new material to be processed.
 - **`wiki/`** — LLM-maintained markdown pages. You own and maintain this layer entirely.
 - **`system/CLAUDE.md`** — the schema document describing this workflow (Karpathy's wiki pattern).
-- **`atlas/`** — the composition framework and the workbench (`atlas/workbench/`); **`vendor/`** — the wind farm's solver from the build repository; **`tests/`** — its tests (`python scripts/run_suite.py`).
+- **`atlas/`** — the composition framework; the workbench engine (`atlas/workbench/`: case spec, compiler, runner); and **the studio (`atlas/studio/`), the default and only UI** (since 2026-11-18, the owner's decision). Any new feature that needs a page (a new physics family, expert, chart-operator stage, record, view) is integrated into the studio: a server handler in `atlas/studio/protocol.py`, a view under `atlas/studio/static/js/views/`, a test in `tests/test_studio_*.py` and a page walk in `scripts/studio_walks/` (run with `scripts/studio_drive.py`). Never start a separate page, app or Panel dashboard. The plan and its rules are `wiki/concepts/Atlas 0.1/atlas-0.1-proposal/demo/integrated-ui-plan.md` (§12); `atlas/studio/README.md` says what each phase built; **`vendor/`** — the wind farm's solver from the build repository; **`tests/`** — its tests (`python scripts/run_suite.py`).
 - **`scripts/`** — one measurement script per W-number, plus the vault checks `vault_scan.py` and `link_scan.py`; **`out/`** — the records the wiki and website cite.
 - **`lean/`** — the Lean 4 proofs (build with `scripts/lean_build.py`, never `lake` inside OneDrive).
 - **`proposal/`** — the architecture document; **`site/`** — the website, published by `.github/workflows/pages.yml`.
 - **`docs/plans/`** — the PoC plans and requirements (`ROCKET-POC-PLAN.md`, `ATLAS-CLASSICAL-PLAN.md`, `COMPUTE-PLAN.md`, `POC3-RACELAB-REQUIREMENTS.md`), cited by file name from the wiki and the code.
-- **`run.py`, `run.cmd`, `run.sh`** — the workbench installer and launcher (see `README.md`).
+- **`run.py`, `run.cmd`, `run.sh`** — the installer and launcher; they serve the studio (see `README.md`).
 
 ---
 

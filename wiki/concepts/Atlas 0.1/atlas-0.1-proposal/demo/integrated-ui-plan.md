@@ -1,7 +1,7 @@
 # The integrated Atlas UI — one app to draw, choose the physics, cut into pieces, run, and read the guarantees
 
 **Type:** Concept page — **plan** (folder: `Atlas 0.1/atlas-0.1-proposal/demo/`)
-**Status:** written 2026-11-16 from a planning chat with the owner. **Building, phase by phase** (`atlas/studio/`, its README says what each phase built): **P0 built** 2026-11-16; **P1 built** 2026-11-16, its install verified on fresh clones on Windows and on Linux (WSL) 2026-11-17; **P2 built** 2026-11-17; **P3 built** 2026-11-17; **P4, P5 and P6 built** 2026-11-17, each done-when checked in the page (the benchmarks cut in the page are `benchmarks.py`'s pieces; TL-s0 there gives the two-level record's numbers to every digit; the records on screen are their JSON). **The Panel modules retired** 2026-11-18: their tests drive this protocol (§9), the modules are deleted, and the install carries neither Panel, Bokeh and Tornado nor pandas. Open: the general quad layout, P5's coarse-basis view, flux arrows and probe. The owner's licence answers the same day: Paper.js 0.12.18, planegcs 1.3.0 and the OFL fonts vendored; Ranade never committed (its licence forbids a repository) and fetched at install; no LICENSE for Atlas yet; a general conformal chart to be built (§5). The design decisions in §0 are the owner's, made in that chat with questions and three rounds of canvas mockups. Every effort estimate is labelled **[AI Inference]**. After the UI, the project returns to Stage 0b of the chart operator: a learned coarse space $P_\theta$ on high-contrast CO-D ([[chart-operator-stage-0-rework]] §20.4). The UI must show those results too (§7).
+**Status:** written 2026-11-16 from a planning chat with the owner. **Building, phase by phase** (`atlas/studio/`, its README says what each phase built): **P0 built** 2026-11-16; **P1 built** 2026-11-16, its install verified on fresh clones on Windows and on Linux (WSL) 2026-11-17; **P2 built** 2026-11-17; **P3 built** 2026-11-17; **P4, P5 and P6 built** 2026-11-17, each done-when checked in the page (the benchmarks cut in the page are `benchmarks.py`'s pieces; TL-s0 there gives the two-level record's numbers to every digit; the records on screen are their JSON). **The default UI** 2026-11-18, by the owner: every feature with a page is integrated here (§12). **The Panel modules retired** 2026-11-18: their tests drive this protocol (§9), the modules are deleted, and the install carries neither Panel, Bokeh and Tornado nor pandas. Open: the general quad layout, P5's coarse-basis view, flux arrows and probe. The owner's licence answers the same day: Paper.js 0.12.18, planegcs 1.3.0 and the OFL fonts vendored; Ranade never committed (its licence forbids a repository) and fetched at install; no LICENSE for Atlas yet; a general conformal chart to be built (§5). The design decisions in §0 are the owner's, made in that chat with questions and three rounds of canvas mockups. Every effort estimate is labelled **[AI Inference]**. After the UI, the project returns to Stage 0b of the chart operator: a learned coarse space $P_\theta$ on high-contrast CO-D ([[chart-operator-stage-0-rework]] §20.4). The UI must show those results too (§7).
 **Hub:** [[00-proposal-workstreams]] · **Siblings:** [[demo-finish-plan]] · [[demo-fast-examples-plan]] · [[demo-learned-case-plan]] · **What it extends:** [[outcome-c4-path-to-declarative-cases]] (step 4, the GUI) · [[showcase-library-plan]] · [[showcase-gallery]] · **What it must show:** [[chart-operator-family-catalog]] · [[chart-operator-stage-0-rework]]
 
 ---
@@ -444,6 +444,21 @@ The general rules from earlier demos apply to every phase:
 - The exact WebSocket message schema; P0 writes it.
 - Whether sweeps run in the page or as a background job with a record (P2).
 - Stage 0b's own registration: its arms, gates and contrast bins belong to the Stage 0b chat. §7 only makes room for them.
+
+
+## 12. The default UI: where every future feature goes
+
+**Decided by the owner on 2026-11-18**, after P0–P6: the studio (`atlas/studio/`) is Atlas's default UI, and everything with a page is integrated into it from now on. That covers a new physics family, a new expert, a chart-operator stage and its records (Stage 0b first, §7), a new view of a run, and any new demo. No separate page, app or Panel dashboard is started, and the launcher (`run.py`) serves only the studio.
+
+How a feature joins it, following P2–P6:
+
+1. **Server:** the work runs in `atlas/studio/` (or the engine it calls), behind a handler in `protocol.py`. The handler checks its argument types, runs anything longer than a moment as a background job, and pushes its state to the page.
+2. **Page:** a view under `static/js/views/`, or a section of an existing one, in the shell's layout (rail, canvas, inspector), both themes, fitting 1090 × 620.
+3. **Records, not copies:** results on screen are read from their records (`out/`), never retyped, as P6 does. A new registered evaluation appears in Records without a code change.
+4. **Checked:** tests in `tests/test_studio_*.py` against the protocol, and a page walk in `scripts/studio_walks/` run with real input by `scripts/studio_drive.py`. A feature is done when its walk passes.
+5. **Written down:** a section in `atlas/studio/README.md` and a `wiki/log.md` entry.
+
+The constraints of §0 still hold: modules hashed by a registered evaluation are called, never edited; no results on `site/` or in `proposal/`; NeuberNet only when present locally; weights offered only after their sha256 matches their record.
 
 ---
 

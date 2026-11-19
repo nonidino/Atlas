@@ -7,11 +7,13 @@ at their seams through one standard interface, checked before anything runs.
 **The website:** <https://nonidino.github.io/Atlas/> covers what works today,
 the evidence behind every number, the architecture, and the Lean proofs.
 
-## Run the workbench
+## Run the studio
 
-The workbench is the demo. You choose a kind of physics, draw the domain, cut
-it into pieces, and race the pieces against the undivided solve on your own
-machine. Everything it needs is on this branch.
+The studio (`atlas/studio/`) is the demo, and Atlas's one UI: every new
+feature with a page is built into it. You draw the domain, choose the
+equations and the regime, cut it into pieces and give each piece an expert,
+run the pieces against the undivided solve on your own machine, and read the
+chart operator's records. Everything it needs is on this branch.
 
 **Windows** (PowerShell):
 
@@ -42,7 +44,7 @@ uninstall, delete the folder.
 
 | folder | what it holds |
 |---|---|
-| `atlas/` | the framework and the workbench (`atlas/workbench/`) |
+| `atlas/` | the framework, the studio (`atlas/studio/`, the UI; [its README](atlas/studio/README.md)) and the workbench engine it calls (`atlas/workbench/`) |
 | `vendor/` | the wind farm's solver, from the build repository ([`vendor/README.md`](vendor/README.md)) |
 | `lean/` | the machine-checked proofs (Lean 4, Mathlib) |
 | `scripts/`, `tests/` | the experiments and their tests |
