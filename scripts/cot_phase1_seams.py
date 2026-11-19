@@ -228,7 +228,7 @@ def g0_prime(name, extra, pe, n, m=16, seed=20261118) -> dict:
     L = b.layout(m=m)
     exact = tr.ClassicalTransportExpert().respond(b.problems, L.pb)
     base = L.couple(exact)
-    S0, c0 = base.S, base.c
+    S0, c0 = base.dense_S(), base.c
     rng = np.random.default_rng(seed)
     fields = {}
     pg, gal, cpg, cgal = [], [], [], []
@@ -244,10 +244,10 @@ def g0_prime(name, extra, pe, n, m=16, seed=20261118) -> dict:
             sG = np.linalg.norm(r.G, axis=0)
             pert.append(tr.TransportResponse(r.H + eps * EV * sH, r.G + eps * EW * sG, r.up))
         cpp = L.couple(pert)
-        pg.append(float(np.linalg.norm(cpp.S - S0)))
+        pg.append(float(np.linalg.norm(cpp.dense_S() - S0)))
         cpg.append(float(np.linalg.norm(cpp.c - c0) / np.linalg.norm(c0)))
         gl = L.couple([tr.TransportResponse(r.H, None, r.up) for r in pert])
-        gal.append(float(np.linalg.norm(gl.S - S0)))
+        gal.append(float(np.linalg.norm(gl.dense_S() - S0)))
         cgal.append(float(np.linalg.norm(gl.c - c0) / np.linalg.norm(c0)))
     s_pg, s_g = _slope(EPS, pg), _slope(EPS, gal)
     return {"layout": name, "pe": pe, "n": n, "m": m, "eps": list(EPS),

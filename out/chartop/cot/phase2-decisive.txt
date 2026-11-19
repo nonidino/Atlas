@@ -1,0 +1,98 @@
+CO-T Phase 2: the decisive test, no training (the coolant plan)
+
+written  2026-11-19T07:09:55-05:00
+commit   536f68665a0203d0b0b8399f218ff44d9d1318bc
+BLAS     fixed at 4: True
+
+CRITERIA (fixed before the first run)
+  E4: against the full-domain solve on the same mesh: energy error <= the classical 16-mode expert's + 0.02; max nodal error <= the classical's + 0.01 of the range; outlet mixing-cup temperature error <= the classical's + 0.01 of the range (the owner, 2026-11-19: 'Floor + CO-D margins')
+  price: the median time of the whole coupled solve over the classical expert's on the same problem, timed in turns; over the development problems, the geometric mean; bar 0.90 (the owner, 2026-11-19: '0.90 of classical')
+  stop: Phase 2 stops with no network when some classical option meets E4 on every development problem at a geometric-mean price under the bar
+  A/A: the classical expert timed twice per turn; outside [0.90, 1.10] the problem's prices are reported, not judged
+
+dev-block slow: n 32, 32 pieces (128 finer), Pe max 20.0, u 0.000958 m/s, 33153 nodes; the two cuts' references agree to 2.9e-10; A/A 1.509 (NOT counted)
+  arm              energy     max/range  outlet/range  E4   price
+  classical        1.317e-03  1.65e-03   7.80e-11     yes  1.000
+  TL0-8            6.296e-02  1.85e-02   7.84e-11     no   0.634
+  TL0-16           2.827e-02  6.38e-03   6.42e-11     no   0.820
+  MsFEM-16         6.106e-02  1.14e-02   6.42e-11     no   1.964
+  MsFEM-OS-16      6.870e-02  1.18e-02   6.40e-11     no   3.462
+  finer            1.058e-10  9.69e-11   6.45e-11     yes  2.380
+  finer-TL0-16     2.895e-02  6.36e-03   5.26e-11     no   3.369
+  full domain (one solve, for reference): price 2.806
+  switch (TL0-16 answers): cost over a classical piece solve: exact 1.04, Schwarz 1.76, Jacobi 0.21; Schwarz/exact 2.24-2.39
+
+dev-block fast: n 128, 32 pieces (128 finer), Pe max 179.9, u 0.00861 m/s, 525825 nodes; the two cuts' references agree to -; A/A 0.939 (counted)
+  arm              energy     max/range  outlet/range  E4   price
+  classical        2.046e-02  5.77e-02   1.05e-10     yes  1.000
+  TL0-8            1.246e-01  1.10e-01   1.06e-10     no   0.330
+  TL0-16           6.575e-02  5.43e-02   1.07e-10     no   0.328
+  TL0-32           3.676e-02  5.31e-02   8.54e-11     yes  0.340
+  TL0-64           2.459e-02  5.67e-02   1.07e-10     yes  0.436
+  MsFEM-16         4.151e-01  1.16e-01   1.09e-10     no   0.696
+  MsFEM-OS-16      4.201e-01  1.23e-01   1.09e-10     no   2.415
+  finer            2.639e-03  6.53e-03   8.72e-11     yes  0.692
+  finer-TL0-16     2.970e-02  1.12e-02   9.88e-11     yes  0.365
+  full domain (one solve, for reference): price 1.540
+  switch (TL0-16 answers): cost over a classical piece solve: exact 0.85, Schwarz 1.22, Jacobi 0.22; Schwarz/exact 1.09-1.27
+
+dev-parallel slow: n 32, 48 pieces (192 finer), Pe max 20.0, u 0.000958 m/s, 49601 nodes; the two cuts' references agree to 1.1e-09; A/A 0.974 (counted)
+  arm              energy     max/range  outlet/range  E4   price
+  classical        1.149e-03  1.69e-03   8.61e-11     yes  1.000
+  TL0-8            5.229e-02  1.84e-02   9.04e-11     no   0.481
+  TL0-16           2.349e-02  6.38e-03   8.83e-11     no   0.634
+  MsFEM-16         4.946e-02  1.13e-02   8.84e-11     no   1.861
+  MsFEM-OS-16      5.562e-02  1.16e-02   8.86e-11     no   2.207
+  finer            1.611e-10  1.57e-10   1.05e-10     yes  1.547
+  finer-TL0-16     2.390e-02  6.35e-03   1.08e-10     no   1.587
+  full domain (one solve, for reference): price 1.189
+  switch (TL0-16 answers): cost over a classical piece solve: exact 1.02, Schwarz 2.45, Jacobi 0.32; Schwarz/exact 2.28-2.4
+
+dev-parallel fast: n 64, 48 pieces (192 finer), Pe max 109.9, u 0.00526 m/s, 197505 nodes; the two cuts' references agree to 1.1e-09; A/A 1.010 (counted)
+  arm              energy     max/range  outlet/range  E4   price
+  classical        1.095e-02  2.56e-02   3.58e-11     yes  1.000
+  TL0-8            1.006e-01  6.46e-02   3.37e-11     no   0.492
+  TL0-16           5.123e-02  3.07e-02   3.01e-11     no   0.490
+  TL0-32           2.495e-02  2.45e-02   3.46e-11     yes  0.596
+  MsFEM-16         2.874e-01  5.80e-02   3.08e-11     no   0.941
+  MsFEM-OS-16      2.884e-01  7.68e-02   3.08e-11     no   1.340
+  finer            1.189e-03  2.73e-03   3.13e-11     yes  0.912
+  finer-TL0-16     2.178e-02  8.52e-03   2.75e-11     yes  0.609
+  full domain (one solve, for reference): price 1.509
+  switch (TL0-16 answers): cost over a classical piece solve: exact 0.99, Schwarz 1.48, Jacobi 0.23; Schwarz/exact 1.38-1.52
+
+dev-winding slow: n 32, 32 pieces (128 finer), Pe max 20.0, u 0.000909 m/s, 33153 nodes; the two cuts' references agree to 2.2e-09; A/A 0.973 (counted)
+  arm              energy     max/range  outlet/range  E4   price
+  classical        1.248e-03  1.25e-03   2.89e-11     yes  1.000
+  TL0-8            6.566e-02  1.65e-02   3.48e-11     no   0.541
+  TL0-16           2.994e-02  5.56e-03   3.79e-11     no   0.655
+  MsFEM-16         5.932e-02  9.95e-03   4.47e-11     no   2.278
+  MsFEM-OS-16      6.614e-02  1.03e-02   3.63e-11     no   2.836
+  finer            1.676e-10  1.05e-10   4.01e-11     yes  1.523
+  finer-TL0-16     3.058e-02  5.55e-03   4.76e-11     no   1.647
+  full domain (one solve, for reference): price 1.447
+  switch (TL0-16 answers): cost over a classical piece solve: exact 1.02, Schwarz 2.52, Jacobi 0.34; Schwarz/exact 2.24-2.28
+
+dev-winding fast: n 128, 32 pieces (128 finer), Pe max 180.0, u 0.00817 m/s, 525825 nodes; the two cuts' references agree to -; A/A 1.004 (counted)
+  arm              energy     max/range  outlet/range  E4   price
+  classical        1.631e-02  4.61e-02   1.46e-10     yes  1.000
+  TL0-8            1.175e-01  9.35e-02   1.56e-10     no   0.315
+  TL0-16           6.225e-02  4.59e-02   1.80e-10     no   0.327
+  TL0-32           3.436e-02  4.25e-02   1.68e-10     yes  0.337
+  TL0-64           2.149e-02  4.53e-02   1.72e-10     yes  0.463
+  MsFEM-16         3.881e-01  1.01e-01   1.55e-10     no   0.690
+  MsFEM-OS-16      3.996e-01  1.07e-01   1.65e-10     no   1.082
+  finer            2.113e-03  5.09e-03   3.52e-10     yes  0.754
+  finer-TL0-16     2.941e-02  9.53e-03   3.50e-10     yes  0.347
+  full domain (one solve, for reference): price 1.315
+  switch (TL0-16 answers): cost over a classical piece solve: exact 0.92, Schwarz 1.27, Jacobi 0.18; Schwarz/exact 1.08-1.14
+
+VERDICT (the stop rule)
+  TL0-8            E4 on 0 of 6; price 0.422 over 5 problems
+  TL0-16           E4 on 0 of 6; price 0.465 over 5 problems
+  MsFEM-16         E4 on 0 of 6; price 1.139 over 5 problems
+  MsFEM-OS-16      E4 on 0 of 6; price 1.854 over 5 problems
+  finer            E4 on 6 of 6; price 1.023 over 5 problems
+  finer-TL0-16     E4 on 3 of 6; price 0.726 over 5 problems
+  stop: False []
+  5126.2 s

@@ -1,7 +1,7 @@
 # Chart operator after Stage 0: the coolant plan (CO-T on laminar cold plates), then the rest of Stage 1
 
 **Type:** Concept page — **plan**, agreed with the owner, and its build record from Phase 1 on; nothing is trained or registered (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. Phases 2–6 have not started. No data, no training. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
+**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. **Phase 2 ran (§13, 2026-11-19), and its stop rule is not met:** no classical option meets E4 on every development problem under the 0.90 price bar (finer cutting meets E4 on all six at 1.02; TL0 at $n_c=32$ meets it cheaply on the fast tier, but no coarse size works at $n=32$). On the way, the channel cut (curved channels cut along their walls), the general flow and Danckwerts' inlet were built. The safety switch as built costs about one classical piece solve, so Phase 3 runs the oracle ceiling first. Phases 3–6 have not started. No data, no training. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
 **Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W364 (this plan), W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
 
 ---
@@ -347,6 +347,86 @@ $$\int\nabla T\cdot A\nabla v+\int(\mathbf b\cdot\nabla T)\,v+\int\frac{\tilde J
 
 - The development layouts are drawn in the studio. The serpentine needs a flow solved on a curved channel and pieces cut along it; neither is built.
 - The decisive test (TL0 for CO-T and the priced classical options) runs on those layouts, each layout's 16-mode floor measured first.
+
+---
+
+## 13. Phase 2: the decisive test, with no training (2026-11-19)
+
+**The owner's decisions for it** (in chat, 2026-11-19, before it ran):
+- **E4 for the decisive test:** "Floor + CO-D margins". Against the full-domain solve on the same mesh, an option's energy error is at most the classical 16-mode expert's own plus 0.02, its largest nodal error at most the classical's plus 0.01 of the range, and its outlet mixing-cup temperature error at most the classical's plus 0.01 of the range. Phase 3 re-registers it.
+- **The price bar:** "0.90 of classical". The price is the median time of an option's whole coupled solve over the classical expert's, on the same problem, timed in turns; over the development problems, the geometric mean.
+- **The development layouts:** asked whether to build them from rectangles, the owner asked instead: "can't you use the same domain decomposition tools we've already developed (conformal, laplacian, tfi)?" They could. The chart methods chart any four-sided piece, curved or not; what was missing was only where to cut (§13.1).
+
+### 13.1 What was built for it
+
+| file | what |
+|---|---|
+| `atlas/studio/channel_cut.py` | **the channel cut**: a plate with channels drawn by the Channel tool, cut across at stations and along every channel's walls and every rectangular region's edges. Each piece is a curved quadrilateral charted by TFI (Laplacian if TFI is not certified), conforming by construction (neighbours share the same side objects). `rows` splits each layer, so twice the columns and rows at half the grid is the same mesh |
+| `atlas/chartop/transport_flow.py` | **the flow on any channel the pieces tile**: $\psi=Q\,f(v)$ with $v$ the channel's harmonic across-coordinate (one sparse solve on the merged coolant mesh) and $f(s)=3s^2-2s^3$. Plane Poiseuille in a straight channel, mass conserved on every seam, the velocity zero at the walls |
+| `atlas/chartop/transport.py` (changed) | **Danckwerts' inlet**: the inflow term $\lvert\mathbf b\cdot\mathbf n\rvert(T-T_{\text{in}})v$ on a declared inlet side, in place of a held temperature |
+| `atlas/chartop/transport_host.py` (changed) | the interface assembled sparse and solved by sparse LU; the algebra is unchanged, and every coupled answer is the same to rounding |
+| `atlas/chartop/transport_coarse.py` | **TL0 for CO-T**: the plain square's modes, then the coarse correction with the piece's true operator, trial and adjoint. Also the multiscale bases (MsFEM, conforming and oversampled), their local problems solved together from the matrix's nine-point stencil |
+| `atlas/chartop/transport_switch.py` | **the safety switch's residual**: the dual norm $\lVert r\rVert_{D^{-1}}$ exactly, by a two-level additive Schwarz estimate, and by Jacobi; `SwitchedExpert` |
+| `atlas/studio/cot_layouts.py`, `scripts/cot_dev_layouts.py` | **the development layouts**, drawn as the studio draws them, at two speeds each, and written as case files with a manifest of sha256s (`out/chartop/cot/layouts/`) |
+| `scripts/cot_phase2_decisive.py` | the decisive test, its criteria fixed in the file before its first run |
+| tests and walk | `test_chartop_transport_coarse.py` (9), `test_chartop_transport_phase2.py` (10), `test_studio_channel_cut.py` (16), `test_studio_cot.py` updated; the page walk `cot2` (14 checks) |
+
+**A finding while building: the held inlet pinned the plate.** On the first winding layout, the classical expert's 16-mode floor was 31% in energy. The inlet was a Dirichlet side, and its two corners are nodes of the aluminium beside the channel, so the plate was held at 300 K at two points. Those are point sinks, log-singular, which no port count resolves. Danckwerts' inlet, $-k\partial_nT+\rho c\,(\mathbf u\cdot\mathbf n)T=\rho c\,(\mathbf u\cdot\mathbf n)T_{\text{in}}$, imposes nothing where the velocity vanishes, at the walls. With it, the same layout's floor fell to 0.31% and the outlet temperature's error to $10^{-12}$ of the range, and every watt the device makes leaves with the coolant, to rounding (tested). **[AI Inference]:** Phase 1's plate floors (5.9–13%) were measured with held inlets on a layout with re-entrant corners; the development layouts have neither.
+
+**The development layouts** (aluminium plates 16 mm wide, 2 mm water channels drawn with the Channel tool, a heated device of $10^7$ W/m³; each at a slow speed, Pe 20 per piece at $n=32$, and a fast one):
+
+| layout | what | pieces | fast tier |
+|---|---|---|---|
+| `dev-block` | a block beside a straight channel | 32 | Pe 180 at $n=128$ |
+| `dev-parallel` | two straight channels, the device below | 48 | Pe 110 at $n=64$ |
+| `dev-winding` | one S-shaped winding channel (the serpentine) | 32 | Pe 180 at $n=128$ |
+
+### 13.2 The result: the stop rule is not met
+
+`scripts/cot_phase2_decisive.py`, record `out/chartop/cot/phase2-decisive.json` and `.txt` (commit `536f686` with this phase's files; 85 minutes on AC; BLAS threads fixed at four and checked). Each option's energy error against the full-domain solve, and its price (the classical solve is 1):
+
+| problem | floor | TL0-8 | TL0-16 | TL0-32 | TL0-64 | MsFEM-16 | MsFEM-OS-16 | finer | finer + TL0-16 |
+|---|---|---|---|---|---|---|---|---|---|
+| block, Pe 20 | 0.13% | 6.3%, 0.63 | 2.8%, 0.82 | — | — | 6.1%, 1.96 | 6.9%, 3.46 | **0.00%, 2.38** | 2.9%, 3.37 |
+| block, Pe 180 | 2.05% | 12.5%, 0.33 | 6.6%, 0.33 | **3.7%, 0.34** | **2.5%, 0.44** | 41.5%, 0.70 | 42.0%, 2.41 | **0.26%, 0.69** | **3.0%, 0.36** |
+| parallel, Pe 20 | 0.11% | 5.2%, 0.48 | 2.4%, 0.63 | — | — | 5.0%, 1.86 | 5.6%, 2.21 | **0.00%, 1.55** | 2.4%, 1.59 |
+| parallel, Pe 110 | 1.09% | 10.1%, 0.49 | 5.1%, 0.49 | **2.5%, 0.60** | — | 28.7%, 0.94 | 28.8%, 1.34 | **0.12%, 0.91** | **2.2%, 0.61** |
+| winding, Pe 20 | 0.12% | 6.6%, 0.54 | 3.0%, 0.66 | — | — | 5.9%, 2.28 | 6.6%, 2.84 | **0.00%, 1.52** | 3.1%, 1.65 |
+| winding, Pe 180 | 1.63% | 11.8%, 0.31 | 6.2%, 0.33 | **3.4%, 0.34** | **2.2%, 0.46** | 38.8%, 0.69 | 40.0%, 1.08 | **0.21%, 0.75** | **2.9%, 0.35** |
+
+Bold marks an option that meets E4 on that problem. A dash: the coarse size is not below the piece's grid there. The block's slow problem failed its A/A check (1.509, outside [0.90, 1.10]), so its prices are reported and not counted; the other five held (0.94–1.01).
+
+| option | E4 met on | price over the five counted problems | stops Phase 2 |
+|---|---|---|---|
+| finer cutting | **6 of 6** | 1.023 | no: above 0.90 |
+| finer cutting with TL0-16 | 3 of 6 (the fast tier) | 0.726 | no |
+| TL0-8, TL0-16 | 0 of 6 | 0.42, 0.47 | no |
+| MsFEM-16, MsFEM-OS-16 | 0 of 6 | 1.14, 1.85 | no |
+
+**No classical option meets E4 on every development problem under the price bar, so Phase 2 does not stop.** What the table says beside the verdict:
+- **The bilinear coarse level does not break down with the Péclet number, as §4 expected it might.** Its error roughly halves with each doubling of $n_c$ at every speed, as a resolution limit does (CO-D's pattern, [[chart-operator-stage-0-rework]] §13). On the fast tier, TL0 at $n_c=32$ meets E4 at 0.34–0.60 of the classical solve. TL0 fails on the slow tier only because those pieces are at $n=32$, where $n_c=16$ is the largest coarse size below the grid; it misses E4's energy bar by 0.2–0.9 points.
+- **The multiscale bases fail badly where the flow matters**, 29–42% at Pe 110–180, more than the bilinear basis at the same size. **[AI Inference]:** MsFEM's linear boundary data on every coarse cell forces artificial layers where the flow crosses cell edges, a known weakness of MsFEM for advection; oversampling did not help.
+- **Finer cutting is the most accurate option**, and dearer than the classical solve on the slow tier (1.52–2.38: more pieces, more seams), cheaper on the fast one (0.69–0.91).
+- **The full-domain solve** cost 1.19–2.81 of the classical decomposed solve on the same mesh.
+- **A diagnostic of the record misread the $n=128$ meshes** ("references agree to -"): it keyed nodes by coordinates rounded to 1 nm, and many sat on half a nanometre. Matched by distance, the two cuts' nodes coincide within $1.3\times10^{-17}$ m and their references agree to $7\times10^{-9}$ K. The diagnostic was fixed after the run; no criterion changed, and the finer arms were always measured against the reference on their own, identical mesh.
+
+### 13.3 The safety switch's cost
+
+On TL0-16's answers, piece by piece, against one classical piece solve (the record, every problem):
+
+| the dual norm | cost | its ratio to the exact one |
+|---|---|---|
+| exact (a sparse LU of $D_{II}$) | 0.85–1.04 | 1 |
+| two-level Schwarz (blocks inverted together) | 1.22–2.52 | 1.08–1.27 at $n=128$; 2.2–2.4 at $n=32$ |
+| Jacobi | 0.18–0.34 | 0.30–1.06: not equivalent; it leans on the fine modes |
+
+**The switch as built costs about one classical piece solve**, before any network runs. **[AI Inference]:** that alone would leave even a perfect network unable to pay for itself under the 0.90 bar, so Phase 3 must find a cheaper equivalent of the dual norm, and it runs the oracle ceiling (§6, check 4) first, before building the dataset.
+
+### 13.4 What Phase 3 starts from
+
+- **Check 3, the control, holds:** TL0 at $n_c=16$ misses E4 on all six development problems.
+- **The competitors a network must beat at equal price:** on the fast tier TL0 at $n_c=32$ (0.34–0.60) and finer cutting with TL0 (0.35–0.61); on the slow tier the classical solve itself, since nothing cheaper meets E4 there.
+- **The oracle ceiling decides whether anything is trained:** TL0's cost, plus the planned network's forward pass measured untrained, plus the switch, against the bar and those competitors.
 
 ---
 

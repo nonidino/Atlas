@@ -1,0 +1,407 @@
+{
+ "catalog": 1,
+ "experts": [
+  {
+   "id": "B",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "Stage 0's main arm: E1, E4 and KT not met; E3, SE1-SE3 and DUAL met (the guarantees held, the modes did not learn)",
+   "card": "out/experts/CO-D/B/card.json",
+   "weights": {
+    "path": "out/chartop/runs/B/best.pt",
+    "sha256": "56742d74a6b11d715df63b87c710b5a79c6cb1df012acc5188f056aa2b144576"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "Bp",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison arm (B', the comparisons' default)",
+   "card": "out/experts/CO-D/Bp/card.json",
+   "weights": {
+    "path": "out/chartop/runs/Bp/best.pt",
+    "sha256": "2c24e6eb182feea94d570d760d61721e75bb580c979d709c8047025938d36c16"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C1",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C1: tie",
+   "card": "out/experts/CO-D/C1/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C1/best.pt",
+    "sha256": "af6b16a7d8d22532cdacf2c24d6f9e324a1c96ad44b46314ff297a5921b408b9"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C2-free",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C2: tie",
+   "card": "out/experts/CO-D/C2-free/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C2-free/best.pt",
+    "sha256": "480b0f410f51f06b2027c5e674d5995925ec48e5d8f2d6d27ed686d1e83ea987"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C2-sup",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C2: tie",
+   "card": "out/experts/CO-D/C2-sup/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C2-sup/best.pt",
+    "sha256": "febdd3cd70b0b159d2da1dfd7691b623dcddfd8c8c68543893630577bf4acf5a"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C3",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C3: alternative loses",
+   "card": "out/experts/CO-D/C3/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C3/best.pt",
+    "sha256": "5161c27e4a08410d74b655502607a8761ca13d7c65d2b8e07ef22a221cae5b14"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C4",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C4: tie",
+   "card": "out/experts/CO-D/C4/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C4/best.pt",
+    "sha256": "06738664883205068422db69a6c01f578d2f6f255d3a33b3c9260bd419d2be8f"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C5-0.3M",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C5: 0.3M",
+   "card": "out/experts/CO-D/C5-0.3M/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C5-0.3M/best.pt",
+    "sha256": "75544ea48dc8bc50e20d094270c7df9afc2be0a67f8663e957e30ff0ae714e28"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C5-3M",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C5: 0.3M",
+   "card": "out/experts/CO-D/C5-3M/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C5-3M/best.pt",
+    "sha256": "3909bb54e1d70fae278465f9907ce1dc4dee31a89a5b93c72465c654890ceef8"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C6",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C6: alternative loses",
+   "card": "out/experts/CO-D/C6/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C6/best.pt",
+    "sha256": "f9ed6de653047ea796310aaf57f971e5a1d746ed84d678691482e341c77ab0b3"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "C7",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "comparison C7: tie",
+   "card": "out/experts/CO-D/C7/card.json",
+   "weights": {
+    "path": "out/chartop/runs/C7/best.pt",
+    "sha256": "886c642f4a8670714997cb55203233c53475eedb8131c7494766d9f1d39a8c2b"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "P-s0",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "arm P: E4 met on 1 of 6 held-out problems (registered arm, as evaluated)",
+   "card": "out/experts/CO-D/P-s0/card.json",
+   "weights": {
+    "path": "out/chartop/runs/prior/P-s0/best.pt",
+    "sha256": "21e93b66f3b296fa1ddb29a9c2d5c40bff14b82eed57103b27dab35b7094e1d3"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "P-s1",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "arm P: E4 met on 1 of 6 held-out problems (registered arm, as evaluated)",
+   "card": "out/experts/CO-D/P-s1/card.json",
+   "weights": {
+    "path": "out/chartop/runs/prior/P-s1/best.pt",
+    "sha256": "c766b942d85e1738a29c29ee0004324e79d86d223e12a32036b7a298717b178e"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "PG-s0",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "arm PG: E4 met on 2 of 6 held-out problems (registered arm, as evaluated)",
+   "card": "out/experts/CO-D/PG-s0/card.json",
+   "weights": {
+    "path": "out/chartop/runs/prior/PG-s0/best.pt",
+    "sha256": "5c9a60207666a3d67d820c3f6ab4eb6315a977f082f8ea3f924c7237e8e5eb4e"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "PG-s1",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "arm PG: E4 met on 2 of 6 held-out problems (registered arm, as evaluated)",
+   "card": "out/experts/CO-D/PG-s1/card.json",
+   "weights": {
+    "path": "out/chartop/runs/prior/PG-s1/best.pt",
+    "sha256": "88de2c9bbb259d19dc92b4b9b382455214fffb978a81422f94f43d05bc1395a8"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "S",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "the kernel-exact forms: K, D and L met; E1, E4 and KT not met",
+   "card": "out/experts/CO-D/S/card.json",
+   "weights": {
+    "path": "out/chartop/runs/forms/S/best.pt",
+    "sha256": "e17f881b2b5bdb90145254cb57e9c2f0912c01b3957a3f6b20c01e3e8a8fa35d"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "Sp-s0",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "the kernel-exact forms: K, D and L met; E1, E4 and KT not met",
+   "card": "out/experts/CO-D/Sp-s0/card.json",
+   "weights": {
+    "path": "out/chartop/runs/forms/Sp-s0/best.pt",
+    "sha256": "2e7bcf22d5db38a420003852b38a12aee38bc220f309dade2b56c01f1a106cc3"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": {
+    "key": "Sp-s0",
+    "label": "S\u2032-s0, the forms' network (seed 0)",
+    "loader": "form",
+    "record": "evaluation-forms-20261019-205923.json",
+    "name": "Sp-s0",
+    "checkpoint": "runs/forms/Sp-s0/best.pt"
+   }
+  },
+  {
+   "id": "Sp-s1",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "the kernel-exact forms: K, D and L met; E1, E4 and KT not met",
+   "card": "out/experts/CO-D/Sp-s1/card.json",
+   "weights": {
+    "path": "out/chartop/runs/forms/Sp-s1/best.pt",
+    "sha256": "70b7c3d8f041df9483a4e7f8340eb26d20665e7365b7a86a00a4764fb6627538"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": {
+    "key": "Sp-s1",
+    "label": "S\u2032-s1, the forms' network (seed 1)",
+    "loader": "form",
+    "record": "evaluation-forms-20261019-205923.json",
+    "name": "Sp-s1",
+    "checkpoint": "runs/forms/Sp-s1/best.pt"
+   }
+  },
+  {
+   "id": "TL-s0",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "two-level, coarse-exact: E4 met on 4 of 6 held-out problems and NC not met; the coarse level carries the coupled gain",
+   "card": "out/experts/CO-D/TL-s0/card.json",
+   "weights": {
+    "path": "out/chartop/runs/twolevel/TL-s0/best.pt",
+    "sha256": "80d51e4ca7eb3389f6275739dbf4b8a509a42a67a9dbdffad7c213ec40864f16"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": {
+    "key": "TL-s0",
+    "label": "TL-s0, the two-level network (seed 0)",
+    "loader": "twolevel",
+    "record": "evaluation-twolevel-20261111-004223.json",
+    "name": "TL-s0",
+    "checkpoint": "runs/twolevel/TL-s0/best.pt"
+   }
+  },
+  {
+   "id": "TL-s1",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "failed",
+   "summary": "two-level, coarse-exact: E4 met on 4 of 6 held-out problems and NC not met; the coarse level carries the coupled gain",
+   "card": "out/experts/CO-D/TL-s1/card.json",
+   "weights": {
+    "path": "out/chartop/runs/twolevel/TL-s1/best.pt",
+    "sha256": "f6c9e02bd74bf8218f963887e015feca3af94d56a6e9a1957445b6c49645fe79"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": {
+    "key": "TL-s1",
+    "label": "TL-s1, the two-level network (seed 1)",
+    "loader": "twolevel",
+    "record": "evaluation-twolevel-20261111-004223.json",
+    "name": "TL-s1",
+    "checkpoint": "runs/twolevel/TL-s1/best.pt"
+   }
+  },
+  {
+   "id": "W-s0",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "W358's control for comparison CW (a tie)",
+   "card": "out/experts/CO-D/W-s0/card.json",
+   "weights": {
+    "path": "out/chartop/runs/forms/W-s0/best.pt",
+    "sha256": "ed032863cf184985e2ce33b448b6787a8952e14dd7a6664b365796f6b787299e"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  },
+  {
+   "id": "W-s1",
+   "family": "CO-D",
+   "class": "G0",
+   "verdict": "comparison",
+   "summary": "W358's control for comparison CW (a tie)",
+   "card": "out/experts/CO-D/W-s1/card.json",
+   "weights": {
+    "path": "out/chartop/runs/forms/W-s1/best.pt",
+    "sha256": "29678838fc3d9d87af5514998adb7816d877f2f295840f12b404b91a6e2a0658"
+   },
+   "present_when_written": {
+    "date": "2026-11-19",
+    "present": true
+   },
+   "studio": null
+  }
+ ]
+}

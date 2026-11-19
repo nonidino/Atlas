@@ -1,0 +1,103 @@
+{
+ "card": 1,
+ "id": "P-s1",
+ "family": "CO-D",
+ "class": "G0",
+ "what": {
+  "pde": "2-D linear diffusion (heat), steady and one backward-Euler step: rho c dT/dt = div(k grad T) + q, pulled back to the unit square",
+  "pieces": "curved four-sided pieces, one chart each (Winslow, Coons or conformal), bilinear elements on the reference grid (decision D7)",
+  "ports": [
+   "THERM"
+  ],
+  "port_basis": "corner hats and 15 side sines per side (D3)",
+  "envelope": {
+   "sup_abs_mu": 0.65,
+   "logJ_range": "ln 8",
+   "grad_logJ_plus_grad_mu": 40.0,
+   "abs_log_kappa_hat": 2.3,
+   "fourier_number": [
+    0.01,
+    100
+   ],
+   "steady": true
+  }
+ },
+ "built": {
+  "commit": "bf4411f566357d309edb732792d006032f24d6c7",
+  "module": "atlas/chartop/forms.py, atlas/chartop/train.py",
+  "architecture": {
+   "backbone": "unet",
+   "size": "1M",
+   "form": "split",
+   "kind": "sine-hat",
+   "m": 16,
+   "p_size": "1M",
+   "bubble": "corner",
+   "strips": true,
+   "hats": "learned",
+   "parameters": 2198990
+  },
+  "training": {
+   "name": "P-s1",
+   "backbone": "unet",
+   "size": "1M",
+   "form": "split",
+   "kind": "sine-hat",
+   "objective": "label-free",
+   "data": "train",
+   "limit": null,
+   "steps": 37500,
+   "lr": 0.001,
+   "weight_decay": 1e-05,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "seed": 1,
+   "augment": true,
+   "val_every": 2500,
+   "p_size": "1M",
+   "bubble": "corner",
+   "strips": true,
+   "strips_in_training": false,
+   "hats": "learned",
+   "mode_prior": "generator-field"
+  },
+  "data": {
+   "generator": "atlas/chartop/data.py",
+   "split": "train",
+   "seed_base": 1000000
+  },
+  "seed": 1
+ },
+ "did": {
+  "registration": "out/chartop/registered-prior.txt",
+  "evaluation": "out/chartop/evaluation-prior-20261107-172219.json",
+  "verdicts": {
+   "K": true,
+   "D": true,
+   "L": true,
+   "E1": false,
+   "E4": false,
+   "SE2": true,
+   "E3": true,
+   "SE1": true,
+   "SE3": true,
+   "DUAL": true,
+   "KT": false
+  },
+  "summary": "arm P: E4 met on 1 of 6 held-out problems (registered arm, as evaluated)",
+  "price": "E5 in the evaluation record"
+ },
+ "verdict": "failed",
+ "weights": {
+  "path": "out/chartop/runs/prior/P-s1/best.pt",
+  "sha256": "c766b942d85e1738a29c29ee0004324e79d86d223e12a32036b7a298717b178e"
+ },
+ "present_when_written": {
+  "date": "2026-11-19",
+  "present": true,
+  "why": null
+ }
+}

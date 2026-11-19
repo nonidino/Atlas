@@ -11,8 +11,9 @@ the host forms, per piece,
 
     Lambda_i = W^T K_i V,   chi_i = W^T (b_i - K_i U_p),
 
-assembles S = sum_i k_i R_i^T Lambda_i R_i + J and chi likewise, fixes the Dirichlet
-coefficients, solves once by LU (S is not symmetric) and rebuilds u_i = U_p + V R_i c.
+assembles S = sum_i k_i R_i^T Lambda_i R_i + J and chi likewise (sparse: each R_i is a
+selection with signs), fixes the Dirichlet coefficients, solves once by sparse LU (S is
+not symmetric) and rebuilds u_i = U_p + V R_i c.
 For any trial and adjoint modes with exact traces, W~^T K V~ - Lambda = E_W^T K_II E_V
 (the family catalog's G0' identity), so the port matrices, and the interface
 coefficients, err quadratically.  With G = None the host tests with the trial modes
@@ -38,8 +39,10 @@ and puts it back as the seam's junction J, the advective heat the ADVEC port car
 - ``split="galerkin"``: theta = 0, no ADVEC term: the THERM-only pairing, kept to show
   what it lacks.
 
-On the layout's own boundary: an inflow segment must be held at a temperature (an inlet;
-theta = 1/2 there touches only fixed coefficients), an outflow segment keeps its B/2
+On the layout's own boundary: an inflow segment must be held at a temperature (theta =
+1/2 there touches only fixed coefficients) or belong to a side the piece declares an
+inlet, imposed in Danckwerts' form (`transport.TransportPiece.inflow_matrix`: the piece
+keeps |B|/2 there, passive with nothing split); an outflow segment keeps its B/2
 (theta = 0: the do-nothing outlet, B/2 >= 0 there).  So, for exact responses, every
 piece's port matrix has a positive semidefinite symmetric part under "skew" and
 "upwind" (the Schur complement of a matrix with a positive semidefinite symmetric part
@@ -66,7 +69,8 @@ import math
 from dataclasses import dataclass, field
 
 import numpy as np
-import scipy.linalg as sla
+import scipy.sparse as sp
+import scipy.sparse.linalg as spla
 
 from . import fe
 from . import ports as pt
@@ -109,6 +113,36 @@ class TransportLayout(Layout):
                          ports_of=lambda i: problems[i].ports())
         self._advec()
 
+    # -- sparse restrictions (the pinned host builds them dense) ----------------------
+
+    def _restriction(self, i: int):
+        """Piece i's restriction R_i (its port coefficients from the global ones), sparse:
+        a conforming side's rows hold one +-1 each, so the interface assembles in time
+        linear in the pieces rather than in their number times the interface's size."""
+        return sp.csr_matrix(super()._restriction(i))
+
+    def _fixed(self):
+        """`host.Layout._fixed` on sparse restrictions: the Dirichlet sides' coefficients,
+        each a plain global coefficient."""
+        from . import ports as pt_
+        fixed: dict[int, float] = {}
+        for e, info in enumerate(self.edges):
+            if info.other is not None or info.bc is None or info.bc[0] != "dirichlet":
+                continue
+            i, s_ = info.owner
+            pbi = self.pb(self.problems[i].n)
+            coef = pt_.project_side(pbi, s_, info.bc[1])
+            R = self.R[i].tocsr()
+            for k, v in coef.items():
+                row = R.getrow(k)
+                if row.nnz != 1:
+                    raise Refused("a Dirichlet side whose coefficients are not plain dofs")
+                dof, val = int(row.indices[0]), float(row.data[0])
+                if dof in fixed and abs(fixed[dof] - v) > 1e-9 * max(1.0, abs(v)):
+                    raise Refused(f"vertex dof {dof} fixed twice: {fixed[dof]} and {v}")
+                fixed[dof] = v * val
+        self.fixed = fixed
+
     # -- the ADVEC classification -------------------------------------------------
 
     def _kd(self, i: int, s: int) -> np.ndarray:
@@ -136,10 +170,12 @@ class TransportLayout(Layout):
                 inflow = kd_i < -thr
                 outflow = kd_i > thr
                 dirichlet = info.bc is not None and info.bc[0] == "dirichlet"
-                if np.any(inflow) and not dirichlet:
+                danckwerts = s in pi.inlet
+                if np.any(inflow) and not (dirichlet or danckwerts):
                     raise Refused(f"piece {i} ({pi.label}) side {s}: coolant flows in through "
-                                  "a side that is not held at a temperature (an inlet needs one)")
-                if np.any(inflow):
+                                  "a side that is neither held at a temperature nor declared an "
+                                  "inlet (an inlet needs one)")
+                if np.any(inflow) and dirichlet:
                     self.theta[i][sl_i] = np.where(inflow, 0.5, 0.0)
                 kind = ("inlet" if np.any(inflow) else
                         "outlet" if np.any(outflow) else "boundary")
@@ -187,7 +223,7 @@ class TransportLayout(Layout):
                 junction_parts.append((a, w))
             self.seams.append(SeamInfo(e, "advective", (i, s), (j, t), float(kd_i.sum())))
         # the junction J: what the splits took out of the pieces on the seams, put back
-        J = np.zeros((self.N, self.N))
+        J = sp.csr_matrix((self.N, self.N))
         for a, w in junction_parts:
             if not np.any(w):
                 continue
@@ -197,8 +233,8 @@ class TransportLayout(Layout):
             Bw = tr.flux_mass(p.n, p.psi, weights=w)
             Bl = Bw[loop][:, loop].toarray()
             Ra = self.R[a]
-            J += p.kappa_ref * (Ra.T @ (Q.T @ Bl @ Q) @ Ra)
-        self.junction = J
+            J = J + p.kappa_ref * (Ra.T @ (sp.csr_matrix(Q.T @ Bl @ Q) @ Ra))
+        self.junction = J.tocsr()
         self._K = {}
 
     # -- the operators ---------------------------------------------------------------
@@ -232,7 +268,7 @@ class TransportLayout(Layout):
     def couple(self, resp: list, calls: int | None = None,
                refusals: list | None = None) -> "TransportCoupled":
         N = self.N
-        S = np.zeros((N, N))
+        S = sp.csr_matrix((N, N))
         chi = np.zeros(N)
         mats, loads = [], []
         for i, (p, r) in enumerate(zip(self.problems, resp)):
@@ -247,16 +283,16 @@ class TransportLayout(Layout):
             mats.append(Lam)
             loads.append(bt)
             Ri = self.R[i]
-            S += p.kappa_ref * (Ri.T @ Lam @ Ri)
+            S = S + p.kappa_ref * (Ri.T @ (sp.csr_matrix(Lam) @ Ri))
             chi += p.kappa_ref * (Ri.T @ bt)
-        S += self.junction
+        S = (S + self.junction).tocsr()
         fixed = np.array(sorted(self.fixed), int)
         free = np.setdiff1d(np.arange(N), fixed)
         c = np.zeros(N)
         c[fixed] = [self.fixed[d] for d in fixed]
-        Sff = S[np.ix_(free, free)]
-        rhs = chi[free] - S[np.ix_(free, fixed)] @ c[fixed]
-        c[free] = sla.lu_solve(sla.lu_factor(Sff), rhs)
+        Sff = S[free][:, free].tocsc()
+        rhs = chi[free] - S[free][:, fixed] @ c[fixed]
+        c[free] = spla.splu(Sff).solve(rhs)
         fields = []
         for i, (p, r) in enumerate(zip(self.problems, resp)):
             ci = self.R[i] @ c
@@ -280,12 +316,12 @@ class TransportLayout(Layout):
             pos = pt.side_positions(p.n, s)
             vals = np.asarray(fields[i], float)[loop[pos]]
             coef = pt.project_side(pbi, s, vals)
-            R = self.R[i]
+            R = self.R[i].tocsr()
             for k, v in coef.items():
-                nz = np.flatnonzero(R[k])
-                if len(nz) != 1:
+                row = R.getrow(k)
+                if row.nnz != 1:
                     raise Refused("a side whose coefficients are not plain dofs")
-                c[nz[0]] = v * R[k, nz[0]]
+                c[int(row.indices[0])] = v * float(row.data[0])
         return c
 
     def reconstruct(self, resp: list, c: np.ndarray) -> list:
@@ -349,10 +385,14 @@ class TransportCoupled:
     calls: int | None
     refusals: list = field(default_factory=list)
 
+    def dense_S(self) -> np.ndarray:
+        """The interface matrix as an array (it is assembled sparse)."""
+        return self.S.toarray() if sp.issparse(self.S) else np.asarray(self.S)
+
     def sym_min_eig(self) -> float:
         """The smallest eigenvalue of the symmetric part of the free interface matrix,
         relative to its norm: positive when the coupled system is positive real."""
-        Sff = self.S[np.ix_(self.free, self.free)]
+        Sff = self.dense_S()[np.ix_(self.free, self.free)]
         ev = np.linalg.eigvalsh(0.5 * (Sff + Sff.T))
         return float(ev[0] / max(np.linalg.norm(Sff, 2), 1e-300))
 

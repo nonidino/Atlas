@@ -6,16 +6,21 @@ conjugate-heat case (``conjugate-heat-2d``):
 
 * **the pieces** are `transport.TransportPiece`s: each one material, all coolant (its
   material ``flows``) or all solid, with the material's ``heat`` as its source;
-* **the flow** is given, not solved: in a straight rectangular channel region, the plane
-  Poiseuille profile at the case's mean speed ``u_coolant``, from the side the
-  ``coolant-inlet`` boundary is on.  One stream function per channel, evaluated at every
-  coolant piece's nodes, so every seam across the channel conserves mass.  A coolant
-  region that is not a straight rectangle is refused, named (curved channels need a
-  flow solved on them: the coolant plan's development layouts, Phase 2);
-* **the boundaries**: ``coolant-inlet`` holds its temperature, ``coolant-outlet`` is the
-  do-nothing outlet (natural: the host's insulated side, where the flow leaves),
-  ``insulated`` and ``fixed-temperature`` as for heat; a nonzero heat flux is refused,
-  as the CO-D path refuses it;
+* **the flow** is given, not solved: on every channel the coolant pieces tile, the stream
+  function ``Q f(v)`` of its harmonic across-coordinate v (`transport_flow`: the plane
+  Poiseuille profile in a straight channel, a laminar-like one round a bend), at the
+  case's mean speed ``u_coolant``, from the ``coolant-inlet`` face to the
+  ``coolant-outlet`` face.  It is one function on the channel's merged nodes, so every
+  seam across the channel conserves mass.  A channel with no inlet, two inlets or an
+  island is refused, named.  (Phase 1 built straight rectangles only; Phase 2 made it
+  general, for the development layouts drawn with the Channel tool and cut along their
+  walls by `channel_cut`);
+* **the boundaries**: ``coolant-inlet`` is the inlet in Danckwerts' form (Phase 2; Phase 1
+  held it, which pinned the plate's corners at the channel's mouth to T_in, a point
+  sink): the inflow carries T_in in by its advective flux, and nothing is imposed where
+  the velocity vanishes.  ``coolant-outlet`` is the do-nothing outlet (natural: the
+  host's insulated side, where the flow leaves), ``insulated`` and ``fixed-temperature``
+  as for heat; a nonzero heat flux is refused, as the CO-D path refuses it;
 * **the seams** are `transport_host.TransportLayout`'s: a wall carries ``THERM``, a seam
   the flow crosses ``THERM`` and ``ADVEC`` (the advective heat), each named;
 * **the expert** is the classical CO-T superelement only (exact trial and adjoint
@@ -70,33 +75,6 @@ def prices() -> dict:
 # ---------------------------------------------------------------------------
 
 
-class Channel:
-    """A straight rectangular coolant region and its stream function (m^2/s)."""
-
-    def __init__(self, region: str, box, axis: str, sign: float, U: float):
-        self.region, self.box, self.axis, self.sign, self.U = region, box, axis, sign, U
-
-    @property
-    def width(self) -> float:
-        x0, y0, x1, y1 = self.box
-        return (y1 - y0) if self.axis == "x" else (x1 - x0)
-
-    def contains(self, x: float, y: float, tol: float = 0.0) -> bool:
-        x0, y0, x1, y1 = self.box
-        return x0 - tol <= x <= x1 + tol and y0 - tol <= y <= y1 + tol
-
-    def psi(self, x, y):
-        """psi with u = d psi / d y, v = -d psi / d x: along +x (sign +1) the profile
-        rises across y, along +y it falls across x."""
-        x0, y0, x1, y1 = self.box
-        w = self.width
-        if self.axis == "x":
-            s = np.clip((np.asarray(y, float) - y0) / w, 0.0, 1.0)
-            return self.sign * self.U * w * tr.profile(s)
-        s = np.clip((np.asarray(x, float) - x0) / w, 0.0, 1.0)
-        return -self.sign * self.U * w * tr.profile(s)
-
-
 def _materials(spec) -> dict:
     return P._materials(spec)
 
@@ -105,115 +83,16 @@ def coolant(spec) -> set:
     return {k for k, v in _materials(spec).items() if float(v.get("flows", 0.0)) >= 0.5}
 
 
-def _edge_of_point(spec, x: float, y: float) -> str | None:
-    d = spec.domain
-    dx = float(d.dx)
-    W, H = d.nx * dx, d.ny * dx
-    tol = 1e-9 * max(W, H)
-    if abs(x) < tol:
-        return "left"
-    if abs(x - W) < tol:
-        return "right"
-    if abs(y) < tol:
-        return "bottom"
-    if abs(y - H) < tol:
-        return "top"
-    return None
-
-
-def channels(spec) -> list[Channel]:
-    """Every coolant region as a straight channel, its direction from its inlet."""
-    d = spec.domain
-    if d.outline is not None or d.holes:
-        raise P.CutError("CO-T's flow is built here for a rectangular plate with straight "
-                         "rectangular channels; this domain has a drawn outline or holes")
-    dx = float(d.dx)
-    U = float(spec.physics.params.get("u_coolant", 0.0))
-    wet = coolant(spec)
-    inlet_edges = {b.edge for b in spec.boundaries if b.kind == "coolant-inlet"}
-    out = []
-    for r in spec.regions:
-        if r.material not in wet:
-            continue
-        if getattr(r, "shape", "rect") != "rect" or r.points is not None:
-            raise P.CutError(f"coolant region {r.id} is not a straight rectangle: a curved channel "
-                             "needs its flow solved on it (the coolant plan's Phase 2)")
-        x0, y0 = r.x0 * dx, r.y0 * dx
-        x1, y1 = (r.x0 + r.nx) * dx, (r.y0 + r.ny) * dx
-        axis = "x" if r.nx >= r.ny else "y"
-        ends = (("left", "right") if axis == "x" else ("bottom", "top"))
-        e0 = _edge_of_point(spec, x0, 0.5 * (y0 + y1)) if axis == "x" else _edge_of_point(spec, 0.5 * (x0 + x1), y0)
-        e1 = _edge_of_point(spec, x1, 0.5 * (y0 + y1)) if axis == "x" else _edge_of_point(spec, 0.5 * (x0 + x1), y1)
-        if e0 == ends[0] and e0 in inlet_edges:
-            sign = 1.0
-        elif e1 == ends[1] and e1 in inlet_edges:
-            sign = -1.0
-        else:
-            raise P.CutError(f"coolant region {r.id}: neither of its ends lies on a coolant-inlet "
-                             "boundary, so the flow has no direction")
-        out.append(Channel(r.id, (x0, y0, x1, y1), axis, sign, U))
-    return out
-
-
-# ---------------------------------------------------------------------------
-# pieces, boundaries, layout
-# ---------------------------------------------------------------------------
-
-
-def problems(cut: P.Cut, spec) -> list:
-    """The pieces as CO-T problems: chart, material, flow and source; steady."""
-    if spec.run.mode != "steady":
-        raise P.CutError("the conjugate-heat family runs steady here: set the run to steady")
-    mats = _materials(spec)
-    wet = coolant(spec)
-    chans = channels(spec) if wet else []
-    out = []
-    for p in cut.pieces:
-        c = P.chart_of(p, cut.n)
-        m = mats.get(p.material)
-        if m is None or "k" not in m:
-            raise P.CutError(f"{p.label}: its material {p.material!r} has no conductivity")
-        k = float(m["k"])
-        alpha = k / (float(m["rho"]) * float(m["cp"]))
-        area = c.element_fields()["area"]
-        q = float(m.get("heat", 0.0))
-        psi = None
-        if p.material in wet:
-            ctr = c.X[c.n // 2, c.n // 2]
-            ch_ = next((h for h in chans if h.contains(float(ctr[0]), float(ctr[1]))), None)
-            if ch_ is None:
-                raise P.CutError(f"{p.label}: a coolant piece in no channel")
-            psi = tr.psi_nodes(c, ch_.psi, alpha)
-        g = np.full((c.n + 1, c.n + 1), q * area / k)
-        out.append(tr.make_piece(c, psi, k=k, alpha=alpha, fo=None, g=g, label=p.label,
-                                 meta={"area": area, "material": p.material, "q": q}))
-    return out
-
-
-BC_KINDS = {"coolant-inlet": "dirichlet", "fixed-temperature": "dirichlet",
-            "coolant-outlet": "insulated", "insulated": "insulated"}
-
-
-def make_bc(spec):
-    """bc(i, s, points) for the transport host from the case's boundaries (`pieces.make_bc`
-    with the coolant's kinds; a stretch of a grid edge with no stop runs to its end)."""
+def _boundary_polys(spec) -> dict:
+    """Every boundary as polylines in metres, by (kind, value) (a stretch of a grid edge
+    with no stop runs to the edge's end)."""
     d = spec.domain
     dx = float(d.dx)
     edges = {}
     for name, poly in P.boundary_edges(spec):
         edges.setdefault(name, []).append(poly)
-    tol = 0.02 * dx
-    groups: dict = {}
+    out: dict = {}
     for b in spec.boundaries:
-        kind = BC_KINDS.get(b.kind)
-        if kind is None and b.kind == "heat-flux" and not b.value:
-            kind = "insulated"
-        if kind == "dirichlet":
-            key = ("dirichlet", float(b.value))
-        elif kind == "insulated":
-            key = ("insulated", None)
-        else:
-            key = ("refused", f"{b.edge} ({b.kind})")
         for poly in edges.get(b.edge, []):
             Q = poly
             if d.outline is None and (b.start is not None or b.stop is not None):
@@ -222,7 +101,139 @@ def make_bc(spec):
                 s0 = float(b.start or 0) * dx
                 s1 = float(b.stop) * dx if b.stop is not None else L
                 Q = np.array([a + (z - a) * (s0 / L), a + (z - a) * (s1 / L)])
-            groups.setdefault(key, []).append(Q)
+            out.setdefault((b.kind, b.value), []).append(Q)
+    return out
+
+
+def face_kinds(spec):
+    """face(i, s, points) for `transport_flow`: a coolant piece's outer side on a
+    coolant-inlet boundary is the channel's inlet, on a coolant-outlet its outlet, and
+    anything else (the plate beside it, an insulated edge) a wall."""
+    polys = _boundary_polys(spec)
+    tol = 0.02 * float(spec.domain.dx)
+    inlets = [Q for (k, _v), qs in polys.items() if k == "coolant-inlet" for Q in qs]
+    outlets = [Q for (k, _v), qs in polys.items() if k == "coolant-outlet" for Q in qs]
+
+    def on(Pts, qs):
+        return bool(qs) and bool(np.all(np.min([P._dist_to_polyline(Pts, Q) for Q in qs], axis=0) <= tol))
+
+    def face(i, s, Pts):
+        Pts = np.asarray(Pts, float)
+        if on(Pts, inlets):
+            return "inlet"
+        if on(Pts, outlets):
+            return "outlet"
+        return "wall"
+    return face
+
+
+def flow(cut: P.Cut, spec) -> tuple[dict, list]:
+    """The physical stream function (m^2/s) at every coolant piece's nodes, by piece
+    index, from `transport_flow` (the channel's harmonic across-coordinate: plane
+    Poiseuille in a straight channel) at the case's mean speed ``u_coolant``; and what
+    was built, per channel.  Kept on the cut for the case's flow-relevant fields."""
+    from atlas.chartop import transport_flow as tf
+    wet = coolant(spec)
+    U = float(spec.physics.params.get("u_coolant", 0.0))
+    idx = [i for i, p in enumerate(cut.pieces) if p.material in wet]
+    key = (U, tuple(sorted(wet)), tuple((b.edge, b.kind, b.start, b.stop) for b in spec.boundaries),
+           tuple((p.method, p.material) for p in cut.pieces))
+    memo = getattr(cut, "_cot_flow", None)
+    if memo is not None and memo[0] == key:
+        return memo[1], memo[2]
+    if not idx:
+        res = ({}, [])
+    else:
+        charts = [P.chart_of(cut.pieces[i], cut.n) for i in idx]
+        try:
+            psis, info = tf.stream_functions(charts, face_kinds(spec), U)
+        except tf.FlowError as exc:
+            raise P.CutError(f"the coolant's flow: {exc}") from None
+        for c_ in info:
+            c_["pieces"] = [idx[j] for j in c_["pieces"]]
+        res = ({i: psis[j] for j, i in enumerate(idx)}, info)
+    cut._cot_flow = (key, res[0], res[1])
+    return res
+
+
+# ---------------------------------------------------------------------------
+# pieces, boundaries, layout
+# ---------------------------------------------------------------------------
+
+
+def inlets(spec):
+    """inlet(points) -> the inlet temperature of a side lying on a coolant-inlet boundary,
+    or None."""
+    polys = _boundary_polys(spec)
+    tol = 0.02 * float(spec.domain.dx)
+    groups = [(float(v), qs) for (k, v), qs in polys.items() if k == "coolant-inlet"]
+
+    def at(Pts):
+        Pts = np.asarray(Pts, float)
+        for T, qs in groups:
+            if np.all(np.min([P._dist_to_polyline(Pts, Q) for Q in qs], axis=0) <= tol):
+                return T
+        return None
+    return at
+
+
+def problems(cut: P.Cut, spec) -> list:
+    """The pieces as CO-T problems: chart, material, flow and source; steady.  A coolant
+    piece's side on a coolant-inlet boundary is its inlet, in Danckwerts' form (the
+    inflow carries T_in in by its advective flux; nothing is held where the velocity
+    vanishes, so the plate is not pinned at the channel's mouth)."""
+    from atlas.chartop import ports as pt
+    if spec.run.mode != "steady":
+        raise P.CutError("the conjugate-heat family runs steady here: set the run to steady")
+    mats = _materials(spec)
+    psis, _info = flow(cut, spec)
+    t_in = inlets(spec)
+    out = []
+    for i, p in enumerate(cut.pieces):
+        c = P.chart_of(p, cut.n)
+        m = mats.get(p.material)
+        if m is None or "k" not in m:
+            raise P.CutError(f"{p.label}: its material {p.material!r} has no conductivity")
+        k = float(m["k"])
+        alpha = k / (float(m["rho"]) * float(m["cp"]))
+        area = c.element_fields()["area"]
+        q = float(m.get("heat", 0.0))
+        psi = None if i not in psis else psis[i] / alpha
+        g = np.full((c.n + 1, c.n + 1), q * area / k)
+        inlet = {}
+        if i in psis:
+            loop_pts = c.loop_points()
+            for s in range(4):
+                T = t_in(loop_pts[pt.side_positions(c.n, s)])
+                if T is not None:
+                    inlet[s] = T
+        out.append(tr.make_piece(c, psi, k=k, alpha=alpha, fo=None, g=g, label=p.label,
+                                 meta={"area": area, "material": p.material, "q": q},
+                                 inlet=inlet))
+    return out
+
+
+#: a coolant inlet is natural for the host: its piece carries the inflow (Danckwerts)
+BC_KINDS = {"coolant-inlet": "insulated", "fixed-temperature": "dirichlet",
+            "coolant-outlet": "insulated", "insulated": "insulated"}
+
+
+def make_bc(spec):
+    """bc(i, s, points) for the transport host from the case's boundaries (`pieces.make_bc`
+    with the coolant's kinds; a stretch of a grid edge with no stop runs to its end)."""
+    tol = 0.02 * float(spec.domain.dx)
+    groups: dict = {}
+    for (kind_, value), qs in _boundary_polys(spec).items():
+        kind = BC_KINDS.get(kind_)
+        if kind is None and kind_ == "heat-flux" and not value:
+            kind = "insulated"
+        if kind == "dirichlet":
+            key = ("dirichlet", float(value))
+        elif kind == "insulated":
+            key = ("insulated", None)
+        else:
+            key = ("refused", f"a {kind_} boundary")
+        groups.setdefault(key, []).extend(qs)
 
     def bc(i, s, Pts):
         Pts = np.asarray(Pts, float)
@@ -496,5 +507,5 @@ def run(job) -> None:
         job.status = "failed"
 
 
-__all__ = ["Channel", "EXPERT_ROWS", "FAMILY", "channels", "check", "coolant", "experts",
+__all__ = ["EXPERT_ROWS", "FAMILY", "check", "coolant", "experts", "face_kinds", "flow",
            "is_cot", "layout", "make_bc", "prices", "problems", "run", "seams", "summarise"]

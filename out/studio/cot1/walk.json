@@ -3,7 +3,7 @@
  "url": "http://127.0.0.1:8021/",
  "size": "1090x620",
  "theme": "light",
- "started": "2026-11-18T23:03:36",
+ "started": "2026-11-19T08:49:42",
  "checks": [
   {
    "check": "Pieces opens for a conjugate-heat case",
@@ -46,7 +46,7 @@
    "passed": true,
    "detail": {
     "page": "20.9",
-    "summary": 20.893196614583815
+    "summary": 20.89319661458441
    }
   },
   {
@@ -76,7 +76,7 @@
   {
    "check": "whole traces agree with the monolithic solve to round-off",
    "passed": true,
-   "detail": 4.8535125801635e-11
+   "detail": 1.4895390701920858e-10
   },
   {
    "check": "the check shows the outlet and the balance at 16 modes",
@@ -110,15 +110,15 @@
    "check": "the energy error is the check's 16-mode floor",
    "passed": true,
    "detail": {
-    "run": 0.31276971682918003,
-    "check": 0.31276971682918003
+    "run": 0.0023142557554234598,
+    "check": 0.0023142557554234598
    }
   },
   {
    "check": "the cards show the outlet and the ADVEC seams",
    "passed": true,
    "detail": {
-    "outlet": "322.09 K",
+    "outlet": "778.47 K",
     "advec": "3"
    }
   },
@@ -126,16 +126,16 @@
    "check": "the price is a ratio with its A/A spread, no seconds",
    "passed": true,
    "detail": {
-    "ratio": 0.9812660737332732,
+    "ratio": 0.8448545588170758,
     "meaning": "B's time over A's, each the median of its turns on this machine: below 1, B is faster",
-    "aa_spread": 1.28061746038327,
+    "aa_spread": 1.0583943490206311,
     "turns": 5
    }
   },
   {
    "check": "the positive-real certificate",
    "passed": true,
-   "detail": 4.361052302919676e-06
+   "detail": 2.704258322809475e-06
   },
   {
    "check": "cooled-block at 1 cm/s cut: done",
@@ -176,5 +176,5 @@
  ],
  "trusted_clicks_and_drags": 14,
  "passed": true,
- "finished": "2026-11-18T23:04:16"
+ "finished": "2026-11-19T08:50:55"
 }

@@ -172,9 +172,10 @@ def test_the_split_changes_no_coupled_answer(name, kw):
         L = b.layout(m=8, split=split)
         out[split] = L.solve(tr.ClassicalTransportExpert())
     ref = out["galerkin"]
+    Sr = ref.dense_S()
     for split in ("skew", "upwind"):
-        Sd = out[split].S[np.ix_(ref.free, ref.free)] - ref.S[np.ix_(ref.free, ref.free)]
-        assert np.max(np.abs(Sd)) <= 1e-12 * np.max(np.abs(ref.S))
+        Sd = out[split].dense_S()[np.ix_(ref.free, ref.free)] - Sr[np.ix_(ref.free, ref.free)]
+        assert np.max(np.abs(Sd)) <= 1e-12 * np.max(np.abs(Sr))
         for u, v in zip(out[split].fields, ref.fields):
             assert np.max(np.abs(u - v)) <= 1e-10 * np.max(np.abs(v))
 
@@ -216,7 +217,7 @@ def test_g0_prime_through_the_host_is_quadratic():
     b = tc.channel(n=16, K=3, pe=20.0)
     L = b.layout(m=6)
     exact = tr.ClassicalTransportExpert().respond(b.problems, L.pb)
-    S0 = L.couple(exact).S
+    S0 = L.couple(exact).dense_S()
     rng = np.random.default_rng(5)
     E = [(rng.standard_normal(r.H.shape), rng.standard_normal(r.G.shape)) for r in exact]
     errs = {"pg": [], "g": []}
@@ -224,9 +225,9 @@ def test_g0_prime_through_the_host_is_quadratic():
         pert = [tr.TransportResponse(r.H + eps * np.linalg.norm(r.H) / np.linalg.norm(ev) * ev,
                                      r.G + eps * np.linalg.norm(r.G) / np.linalg.norm(ew) * ew,
                                      r.up) for r, (ev, ew) in zip(exact, E)]
-        errs["pg"].append(np.linalg.norm(L.couple(pert).S - S0))
+        errs["pg"].append(np.linalg.norm(L.couple(pert).dense_S() - S0))
         gal = [tr.TransportResponse(r.H, None, r.up) for r in pert]
-        errs["g"].append(np.linalg.norm(L.couple(gal).S - S0))
+        errs["g"].append(np.linalg.norm(L.couple(gal).dense_S() - S0))
     slope_pg = math.log10(errs["pg"][0] / errs["pg"][1])
     slope_g = math.log10(errs["g"][0] / errs["g"][1])
     assert slope_pg > 1.9

@@ -151,14 +151,18 @@ def test_a_curved_channel_is_refused_named():
     assert s.pieces_job.status == "failed"
 
 
-def test_cot_flow_refuses_a_coolant_region_that_is_not_a_rectangle():
-    spec = example_case("cooled-block")
+def test_a_coolant_region_drawn_as_a_polygon_gets_the_same_flow(slow):
+    """Phase 2 made the flow general (`transport_flow`): a channel drawn as a polygon has
+    the rectangle's stream function, cut along its walls."""
+    spec = slow.spec.model_copy(deep=True)
     from atlas.workbench.spec import Region
     r = spec.regions[2]
     spec.regions[2] = Region(id=r.id, material=r.material, shape="polygon", x0=0, y0=50,
                              nx=200, ny=10, points=[(0, 50), (200, 50), (200, 60), (0, 60)])
-    with pytest.raises(cot.P.CutError, match="not a straight rectangle"):
-        cot.channels(spec)
+    from atlas.studio.pieces import cut_channels
+    cut = cut_channels(spec, 64, cols=2)
+    psis, info = cot.flow(cut, spec)
+    assert len(info) == 1 and info[0]["flux"] == pytest.approx(SLOW * 0.010, rel=1e-9)
 
 
 def test_other_kinds_are_still_refused():
@@ -173,6 +177,9 @@ def test_the_bc_reads_stretches_of_grid_edges(slow):
     inlet = np.array([[0.0, 52 * dx], [0.0, 58 * dx]])
     block = np.array([[0.0, 10 * dx], [0.0, 40 * dx]])
     outlet = np.array([[200 * dx, 52 * dx], [200 * dx, 58 * dx]])
-    assert bc(0, 3, inlet)[0] == "dirichlet" and float(bc(0, 3, inlet)[1][0]) == 300.0
-    assert bc(0, 3, block) == ("insulated", None)
+    # the inlet is natural for the host: its coolant piece carries it (Danckwerts)
+    assert bc(0, 3, inlet) == ("insulated", None) and cot.inlets(slow.spec)(inlet) == 300.0
+    assert bc(0, 3, block) == ("insulated", None) and cot.inlets(slow.spec)(block) is None
     assert bc(0, 1, outlet) == ("insulated", None)
+    probs = cot.problems(slow.cut, slow.spec)
+    assert [p.inlet for p in probs if p.inlet] == [{3: 300.0}]

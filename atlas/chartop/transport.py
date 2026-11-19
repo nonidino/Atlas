@@ -193,9 +193,14 @@ class TransportPiece(PieceProblem):
     piece.  ``alpha``: the material's diffusivity k / (rho c), m^2/s, kept for the
     record (the operator reads only ``psi``).  ``kappa_ref`` is the conductivity k.
     ``fo``, ``g``, ``label`` and ``meta`` are `PieceProblem`'s.  A piece is one material,
-    so ``log_kappa_hat`` must stay zero."""
+    so ``log_kappa_hat`` must stay zero.
+
+    ``inlet``: the sides through which coolant enters at a given temperature, as
+    {side: T_in}, imposed in Danckwerts' form (`inflow_matrix`) rather than held.
+    Empty by default: an inlet held at a temperature is a Dirichlet side of the host."""
     psi: np.ndarray | None = None
     alpha: float = 1.0
+    inlet: dict = field(default_factory=dict)
 
     def __post_init__(self):
         super().__post_init__()
@@ -250,6 +255,41 @@ class TransportPiece(PieceProblem):
 
     # -- the operator -----------------------------------------------------------------
 
+    def inflow_weights(self) -> np.ndarray:
+        """(4n,) 1 on the inflow edges of the declared inlet sides, 0 elsewhere."""
+        n = self.n
+        w = np.zeros(4 * n)
+        d = self.increments()
+        for s in self.inlet:
+            sl = slice(int(s) * n, (int(s) + 1) * n)
+            w[sl] = (d[sl] < 0.0).astype(float)
+        return w
+
+    def inflow_matrix(self) -> sp.csr_matrix:
+        """Danckwerts' inlet: the inflow term |b . n| T v on the declared inlet sides, the
+        matrix -B restricted to their inflow edges (positive: B is negative there).  With
+        its load (`load`), the inlet says that the total heat flux entering equals the
+        advective flux of coolant at T_in, -k dT/dn + rho c (u . n) T = rho c (u . n) T_in.
+        Where the velocity vanishes (at the walls) it imposes nothing, so the plate's
+        corners at the channel's mouth are not held."""
+        return (-flux_mass(self.n, self.psi, weights=self.inflow_weights())).tocsr()
+
+    def load(self) -> np.ndarray:
+        """The full nodal load: the source and the step (`PieceProblem.load`), and the
+        inlet's inflow at T_in."""
+        b = super().load()
+        if self.inlet:
+            n = self.n
+            w = self.inflow_weights()
+            Tn = np.zeros((n + 1) ** 2)
+            loop = fe.grid(n)[0]
+            for s, T in self.inlet.items():
+                sl = slice(int(s) * n, (int(s) + 1) * n + 1)
+                idx = loop[np.arange(int(s) * n, (int(s) + 1) * n + 1) % (4 * n)]
+                Tn[idx] = float(T)
+            b = b - flux_mass(n, self.psi, weights=w) @ Tn
+        return b
+
     def diffusion_matrix(self) -> sp.csr_matrix:
         """Diffusion and reaction: the symmetric part without the loop term B/2."""
         t = self.tensors()
@@ -260,17 +300,23 @@ class TransportPiece(PieceProblem):
 
     def matrix(self) -> sp.csr_matrix:
         """K, the Galerkin piece matrix (diffusion, reaction and advection) with natural
-        conditions on the whole loop: the monolithic reference assembles these."""
-        return (self.diffusion_matrix() + self.advection_matrix()).tocsr()
+        conditions on the whole loop, and the inlet's inflow term on declared inlet sides:
+        the monolithic reference assembles these."""
+        K = self.diffusion_matrix() + self.advection_matrix()
+        if self.inlet:
+            K = K + self.inflow_matrix()
+        return K.tocsr()
 
     def flux_mass(self, sides=(0, 1, 2, 3), weights=None) -> sp.csr_matrix:
         return flux_mass(self.n, self.psi, sides, weights)
 
 
 def make_piece(chart: ch.Chart, psi, *, k: float, alpha: float, fo: float | None = None,
-               g=None, label: str = "", meta: dict | None = None) -> TransportPiece:
+               g=None, label: str = "", meta: dict | None = None,
+               inlet: dict | None = None) -> TransportPiece:
     return TransportPiece(chart, fo=fo, g=g, kappa_ref=float(k), label=label,
-                          meta=dict(meta or {}), psi=psi, alpha=float(alpha))
+                          meta=dict(meta or {}), psi=psi, alpha=float(alpha),
+                          inlet=dict(inlet or {}))
 
 
 # ---------------------------------------------------------------------------

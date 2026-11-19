@@ -1,0 +1,855 @@
+{
+ "what": "CO-T Phase 2: the decisive test, no training (the coolant plan)",
+ "written": "2026-11-19T07:09:55-05:00",
+ "commit": "536f68665a0203d0b0b8399f218ff44d9d1318bc",
+ "quick": false,
+ "criteria": {
+  "E4": "against the full-domain solve on the same mesh: energy error <= the classical 16-mode expert's + 0.02; max nodal error <= the classical's + 0.01 of the range; outlet mixing-cup temperature error <= the classical's + 0.01 of the range (the owner, 2026-11-19: 'Floor + CO-D margins')",
+  "price": "the median time of the whole coupled solve over the classical expert's on the same problem, timed in turns; over the development problems, the geometric mean; bar 0.90 (the owner, 2026-11-19: '0.90 of classical')",
+  "stop": "Phase 2 stops with no network when some classical option meets E4 on every development problem at a geometric-mean price under the bar",
+  "A/A": "the classical expert timed twice per turn; outside [0.90, 1.10] the problem's prices are reported, not judged"
+ },
+ "blas": {
+  "pools": [
+   {
+    "api": "blas",
+    "internal": "mkl",
+    "threads": 4
+   }
+  ],
+  "fixed_at_4": true
+ },
+ "layouts": "development only (atlas/studio/cot_layouts.py)",
+ "problems": [
+  {
+   "layout": "dev-block",
+   "tier": "slow",
+   "n": 32,
+   "cols": 8,
+   "pieces": 32,
+   "fine_pieces": 128,
+   "pe_max": 19.99612942708462,
+   "u_coolant": 0.000958,
+   "nodes": 33153,
+   "references_agree": 2.900151230278425e-10,
+   "floor": {
+    "energy_rel": 0.0013165617630755144,
+    "max_rel": 0.001652329494626373,
+    "range": 27.895400525244042,
+    "outlet_bulk": 319.9778246090543,
+    "outlet_bulk_ref": 319.9778246112288,
+    "outlet_bulk_err_rel": 7.79514939437252e-11
+   },
+   "accuracy": {
+    "classical": {
+     "energy_rel": 0.0013165617630755144,
+     "max_rel": 0.001652329494626373,
+     "range": 27.895400525244042,
+     "outlet_bulk": 319.9778246090543,
+     "outlet_bulk_ref": 319.9778246112288,
+     "outlet_bulk_err_rel": 7.79514939437252e-11
+    },
+    "TL0-8": {
+     "energy_rel": 0.06295731606130416,
+     "max_rel": 0.018468327787990062,
+     "range": 27.895400525244042,
+     "outlet_bulk": 319.97782460904153,
+     "outlet_bulk_ref": 319.9778246112288,
+     "outlet_bulk_err_rel": 7.840998419670105e-11
+    },
+    "TL0-16": {
+     "energy_rel": 0.02827071700117351,
+     "max_rel": 0.006382813850169683,
+     "range": 27.895400525244042,
+     "outlet_bulk": 319.97782460943694,
+     "outlet_bulk_ref": 319.9778246112288,
+     "outlet_bulk_err_rel": 6.423550330914544e-11
+    },
+    "MsFEM-16": {
+     "energy_rel": 0.061062692714987286,
+     "max_rel": 0.0114259314302164,
+     "range": 27.895400525244042,
+     "outlet_bulk": 319.97782460943716,
+     "outlet_bulk_ref": 319.9778246112288,
+     "outlet_bulk_err_rel": 6.422735237131475e-11
+    },
+    "MsFEM-OS-16": {
+     "energy_rel": 0.06870281902415791,
+     "max_rel": 0.011775575375820576,
+     "range": 27.895400525244042,
+     "outlet_bulk": 319.97782460944245,
+     "outlet_bulk_ref": 319.9778246112288,
+     "outlet_bulk_err_rel": 6.40378430667514e-11
+    },
+    "finer": {
+     "energy_rel": 1.057687724860551e-10,
+     "max_rel": 9.687593385132712e-11,
+     "range": 27.895400525469654,
+     "outlet_bulk": 319.9778246096745,
+     "outlet_bulk_ref": 319.977824611475,
+     "outlet_bulk_err_rel": 6.454523894618931e-11
+    },
+    "finer-TL0-16": {
+     "energy_rel": 0.028953437348335706,
+     "max_rel": 0.006360748425544135,
+     "range": 27.895400525469654,
+     "outlet_bulk": 319.9778246100064,
+     "outlet_bulk_ref": 319.977824611475,
+     "outlet_bulk_err_rel": 5.264690744794782e-11
+    }
+   },
+   "e4": {
+    "classical": true,
+    "TL0-8": false,
+    "TL0-16": false,
+    "MsFEM-16": false,
+    "MsFEM-OS-16": false,
+    "finer": true,
+    "finer-TL0-16": false
+   },
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 1.5092528155919362,
+    "TL0-8": 0.633704925345497,
+    "TL0-16": 0.8197952654986501,
+    "MsFEM-16": 1.9644918923244539,
+    "MsFEM-OS-16": 3.462361773779401,
+    "finer": 2.380200474841416,
+    "finer-TL0-16": 3.369277742455039,
+    "full domain": 2.8055974865086597
+   },
+   "aa": 1.5092528155919362,
+   "aa_ok": false,
+   "turns": 5,
+   "switch": {
+    "n_c": 16,
+    "pieces": 32,
+    "cost_over_classical_piece": {
+     "exact": 1.0437758568074669,
+     "schwarz": 1.764858708350689,
+     "jacobi": 0.20846406533322426
+    },
+    "schwarz_over_exact": [
+     2.2395160636578337,
+     2.3925734773806924
+    ],
+    "jacobi_over_exact": [
+     0.9682645195076196,
+     1.0515059872775747
+    ]
+   }
+  },
+  {
+   "layout": "dev-block",
+   "tier": "fast",
+   "n": 128,
+   "cols": 8,
+   "pieces": 32,
+   "fine_pieces": 128,
+   "pe_max": 179.93435571296808,
+   "u_coolant": 0.00861,
+   "nodes": 525825,
+   "references_agree": null,
+   "floor": {
+    "energy_rel": 0.02046274779964904,
+    "max_rel": 0.05766097713734363,
+    "range": 10.151043793112137,
+    "outlet_bulk": 302.22285202424814,
+    "outlet_bulk_ref": 302.22285202318244,
+    "outlet_bulk_err_rel": 1.0498431870873676e-10
+   },
+   "accuracy": {
+    "classical": {
+     "energy_rel": 0.02046274779964904,
+     "max_rel": 0.05766097713734363,
+     "range": 10.151043793112137,
+     "outlet_bulk": 302.22285202424814,
+     "outlet_bulk_ref": 302.22285202318244,
+     "outlet_bulk_err_rel": 1.0498431870873676e-10
+    },
+    "TL0-8": {
+     "energy_rel": 0.12459123615722444,
+     "max_rel": 0.10994247270704553,
+     "range": 10.151043793112137,
+     "outlet_bulk": 302.2228520242609,
+     "outlet_bulk_ref": 302.22285202318244,
+     "outlet_bulk_err_rel": 1.0623866516653263e-10
+    },
+    "TL0-16": {
+     "energy_rel": 0.06575085423383485,
+     "max_rel": 0.05425715846160505,
+     "range": 10.151043793112137,
+     "outlet_bulk": 302.2228520242675,
+     "outlet_bulk_ref": 302.22285202318244,
+     "outlet_bulk_err_rel": 1.0689383720029208e-10
+    },
+    "TL0-32": {
+     "energy_rel": 0.03675587581654252,
+     "max_rel": 0.05310204009047104,
+     "range": 10.151043793112137,
+     "outlet_bulk": 302.2228520240492,
+     "outlet_bulk_ref": 302.22285202318244,
+     "outlet_bulk_err_rel": 8.538515530567624e-11
+    },
+    "TL0-64": {
+     "energy_rel": 0.024587862407242787,
+     "max_rel": 0.05667836791336613,
+     "range": 10.151043793112137,
+     "outlet_bulk": 302.2228520242707,
+     "outlet_bulk_ref": 302.22285202318244,
+     "outlet_bulk_err_rel": 1.0720742381474105e-10
+    },
+    "MsFEM-16": {
+     "energy_rel": 0.415117980773321,
+     "max_rel": 0.11599431538521474,
+     "range": 10.151043793112137,
+     "outlet_bulk": 302.2228520242881,
+     "outlet_bulk_ref": 302.22285202318244,
+     "outlet_bulk_err_rel": 1.0892095067226576e-10
+    },
+    "MsFEM-OS-16": {
+     "energy_rel": 0.4200703010853431,
+     "max_rel": 0.12255545972816718,
+     "range": 10.151043793112137,
+     "outlet_bulk": 302.2228520242871,
+     "outlet_bulk_ref": 302.22285202318244,
+     "outlet_bulk_err_rel": 1.0882015497476431e-10
+    },
+    "finer": {
+     "energy_rel": 0.002638592436020983,
+     "max_rel": 0.006527650109065565,
+     "range": 10.151043799886452,
+     "outlet_bulk": 302.222852023942,
+     "outlet_bulk_ref": 302.2228520248269,
+     "outlet_bulk_err_rel": 8.717707875863543e-11
+    },
+    "finer-TL0-16": {
+     "energy_rel": 0.029703022512970276,
+     "max_rel": 0.011225307077059338,
+     "range": 10.151043799886452,
+     "outlet_bulk": 302.2228520238237,
+     "outlet_bulk_ref": 302.2228520248269,
+     "outlet_bulk_err_rel": 9.883018133422128e-11
+    }
+   },
+   "e4": {
+    "classical": true,
+    "TL0-8": false,
+    "TL0-16": false,
+    "TL0-32": true,
+    "TL0-64": true,
+    "MsFEM-16": false,
+    "MsFEM-OS-16": false,
+    "finer": true,
+    "finer-TL0-16": true
+   },
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 0.9391014370095936,
+    "TL0-8": 0.32978490464795174,
+    "TL0-16": 0.3275241132027324,
+    "TL0-32": 0.33990537710366553,
+    "TL0-64": 0.43579473893255377,
+    "MsFEM-16": 0.6957634911711197,
+    "MsFEM-OS-16": 2.4147864485028228,
+    "finer": 0.6923196260398012,
+    "finer-TL0-16": 0.36459614443608285,
+    "full domain": 1.5402149402815628
+   },
+   "aa": 0.9391014370095936,
+   "aa_ok": true,
+   "turns": 5,
+   "switch": {
+    "n_c": 16,
+    "pieces": 32,
+    "cost_over_classical_piece": {
+     "exact": 0.8501321945947441,
+     "schwarz": 1.2208289251044424,
+     "jacobi": 0.21729163632882303
+    },
+    "schwarz_over_exact": [
+     1.0919100973466915,
+     1.2688136855955348
+    ],
+    "jacobi_over_exact": [
+     0.30016626472818375,
+     1.0587765332842485
+    ]
+   }
+  },
+  {
+   "layout": "dev-parallel",
+   "tier": "slow",
+   "n": 32,
+   "cols": 8,
+   "pieces": 48,
+   "fine_pieces": 192,
+   "pe_max": 19.9961294270847,
+   "u_coolant": 0.000958,
+   "nodes": 49601,
+   "references_agree": 1.0925873539235909e-09,
+   "floor": {
+    "energy_rel": 0.0011487361384674617,
+    "max_rel": 0.0016865577994071162,
+    "range": 25.227332400028615,
+    "outlet_bulk": 309.98891229876324,
+    "outlet_bulk_ref": 309.9889123009353,
+    "outlet_bulk_err_rel": 8.609883295024374e-11
+   },
+   "accuracy": {
+    "classical": {
+     "energy_rel": 0.0011487361384674617,
+     "max_rel": 0.0016865577994071162,
+     "range": 25.227332400028615,
+     "outlet_bulk": 309.98891229876324,
+     "outlet_bulk_ref": 309.9889123009353,
+     "outlet_bulk_err_rel": 8.609883295024374e-11
+    },
+    "TL0-8": {
+     "energy_rel": 0.05228943716469387,
+     "max_rel": 0.018449247907492416,
+     "range": 25.227332400028615,
+     "outlet_bulk": 309.9889122986543,
+     "outlet_bulk_ref": 309.9889123009353,
+     "outlet_bulk_err_rel": 9.041605479559368e-11
+    },
+    "TL0-16": {
+     "energy_rel": 0.02348880190104246,
+     "max_rel": 0.006375628632553525,
+     "range": 25.227332400028615,
+     "outlet_bulk": 309.98891229870895,
+     "outlet_bulk_ref": 309.9889123009353,
+     "outlet_bulk_err_rel": 8.825068413098966e-11
+    },
+    "MsFEM-16": {
+     "energy_rel": 0.04946075801312666,
+     "max_rel": 0.011264227133387567,
+     "range": 25.227332400028615,
+     "outlet_bulk": 309.9889122987062,
+     "outlet_bulk_ref": 309.9889123009353,
+     "outlet_bulk_err_rel": 8.835884000185438e-11
+    },
+    "MsFEM-OS-16": {
+     "energy_rel": 0.055623952447602806,
+     "max_rel": 0.01163856152069471,
+     "range": 25.227332400028615,
+     "outlet_bulk": 309.98891229870134,
+     "outlet_bulk_ref": 309.9889123009353,
+     "outlet_bulk_err_rel": 8.8552619270487e-11
+    },
+    "finer": {
+     "energy_rel": 1.61054396378366e-10,
+     "max_rel": 1.566863114272467e-10,
+     "range": 25.22733239896479,
+     "outlet_bulk": 309.98891229789274,
+     "outlet_bulk_ref": 309.98891230054573,
+     "outlet_bulk_err_rel": 1.0516355844189448e-10
+    },
+    "finer-TL0-16": {
+     "energy_rel": 0.023903491006609233,
+     "max_rel": 0.006346470024477571,
+     "range": 25.22733239896479,
+     "outlet_bulk": 309.98891229781145,
+     "outlet_bulk_ref": 309.98891230054573,
+     "outlet_bulk_err_rel": 1.0838570209487504e-10
+    }
+   },
+   "e4": {
+    "classical": true,
+    "TL0-8": false,
+    "TL0-16": false,
+    "MsFEM-16": false,
+    "MsFEM-OS-16": false,
+    "finer": true,
+    "finer-TL0-16": false
+   },
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 0.9744175905691621,
+    "TL0-8": 0.48076668551558566,
+    "TL0-16": 0.6339807212570342,
+    "MsFEM-16": 1.860800698487605,
+    "MsFEM-OS-16": 2.206849884213764,
+    "finer": 1.5472483318304513,
+    "finer-TL0-16": 1.5869070647886583,
+    "full domain": 1.18919919848949
+   },
+   "aa": 0.9744175905691621,
+   "aa_ok": true,
+   "turns": 5,
+   "switch": {
+    "n_c": 16,
+    "pieces": 48,
+    "cost_over_classical_piece": {
+     "exact": 1.0249460681156828,
+     "schwarz": 2.4461507964644555,
+     "jacobi": 0.3235844727711473
+    },
+    "schwarz_over_exact": [
+     2.2759984664319113,
+     2.398091863936723
+    ],
+    "jacobi_over_exact": [
+     1.0026237669898577,
+     1.055499681150238
+    ]
+   }
+  },
+  {
+   "layout": "dev-parallel",
+   "tier": "fast",
+   "n": 64,
+   "cols": 8,
+   "pieces": 48,
+   "fine_pieces": 192,
+   "pe_max": 109.89821419273805,
+   "u_coolant": 0.00526,
+   "nodes": 197505,
+   "references_agree": 1.1337988325976767e-09,
+   "floor": {
+    "energy_rel": 0.010945916089027272,
+    "max_rel": 0.02563742935485303,
+    "range": 12.065552366513543,
+    "outlet_bulk": 301.819273376386,
+    "outlet_bulk_ref": 301.8192733759535,
+    "outlet_bulk_err_rel": 3.584292849229846e-11
+   },
+   "accuracy": {
+    "classical": {
+     "energy_rel": 0.010945916089027272,
+     "max_rel": 0.02563742935485303,
+     "range": 12.065552366513543,
+     "outlet_bulk": 301.819273376386,
+     "outlet_bulk_ref": 301.8192733759535,
+     "outlet_bulk_err_rel": 3.584292849229846e-11
+    },
+    "TL0-8": {
+     "energy_rel": 0.10060009680072149,
+     "max_rel": 0.06461204631998829,
+     "range": 12.065552366513543,
+     "outlet_bulk": 301.81927337635983,
+     "outlet_bulk_ref": 301.8192733759535,
+     "outlet_bulk_err_rel": 3.367576930375255e-11
+    },
+    "TL0-16": {
+     "energy_rel": 0.05123275723646481,
+     "max_rel": 0.030705780536398868,
+     "range": 12.065552366513543,
+     "outlet_bulk": 301.8192733763171,
+     "outlet_bulk_ref": 301.8192733759535,
+     "outlet_bulk_err_rel": 3.013293515204271e-11
+    },
+    "TL0-32": {
+     "energy_rel": 0.02495228414839429,
+     "max_rel": 0.02451712464072672,
+     "range": 12.065552366513543,
+     "outlet_bulk": 301.8192733763713,
+     "outlet_bulk_ref": 301.8192733759535,
+     "outlet_bulk_err_rel": 3.4627434860461836e-11
+    },
+    "MsFEM-16": {
+     "energy_rel": 0.28737513501254064,
+     "max_rel": 0.05796775063111879,
+     "range": 12.065552366513543,
+     "outlet_bulk": 301.81927337632476,
+     "outlet_bulk_ref": 301.8192733759535,
+     "outlet_bulk_err_rel": 3.0768949261724665e-11
+    },
+    "MsFEM-OS-16": {
+     "energy_rel": 0.28844055604588814,
+     "max_rel": 0.07676765283894808,
+     "range": 12.065552366513543,
+     "outlet_bulk": 301.81927337632555,
+     "outlet_bulk_ref": 301.8192733759535,
+     "outlet_bulk_err_rel": 3.08349062805065e-11
+    },
+    "finer": {
+     "energy_rel": 0.001189283150811404,
+     "max_rel": 0.002731169377033442,
+     "range": 12.065552365695282,
+     "outlet_bulk": 301.81927337605197,
+     "outlet_bulk_ref": 301.81927337567475,
+     "outlet_bulk_err_rel": 3.1263626904708636e-11
+    },
+    "finer-TL0-16": {
+     "energy_rel": 0.021784411389144134,
+     "max_rel": 0.008518315431698781,
+     "range": 12.065552365695282,
+     "outlet_bulk": 301.819273376007,
+     "outlet_bulk_ref": 301.81927337567475,
+     "outlet_bulk_err_rel": 2.75370553432824e-11
+    }
+   },
+   "e4": {
+    "classical": true,
+    "TL0-8": false,
+    "TL0-16": false,
+    "TL0-32": true,
+    "MsFEM-16": false,
+    "MsFEM-OS-16": false,
+    "finer": true,
+    "finer-TL0-16": true
+   },
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 1.0097591932615466,
+    "TL0-8": 0.4924882516719968,
+    "TL0-16": 0.4898090941483399,
+    "TL0-32": 0.5959005522891306,
+    "MsFEM-16": 0.9407152673420807,
+    "MsFEM-OS-16": 1.3396308747102603,
+    "finer": 0.9124579673787996,
+    "finer-TL0-16": 0.6091433495699262,
+    "full domain": 1.5090099299543989
+   },
+   "aa": 1.0097591932615466,
+   "aa_ok": true,
+   "turns": 5,
+   "switch": {
+    "n_c": 16,
+    "pieces": 48,
+    "cost_over_classical_piece": {
+     "exact": 0.9905312811380769,
+     "schwarz": 1.4758476273200074,
+     "jacobi": 0.23465081266293597
+    },
+    "schwarz_over_exact": [
+     1.3768315296007656,
+     1.5213012562516284
+    ],
+    "jacobi_over_exact": [
+     0.5593763084571287,
+     1.0529441949816825
+    ]
+   }
+  },
+  {
+   "layout": "dev-winding",
+   "tier": "slow",
+   "n": 32,
+   "cols": 8,
+   "pieces": 32,
+   "fine_pieces": 128,
+   "pe_max": 20.008532146597013,
+   "u_coolant": 0.000909,
+   "nodes": 33153,
+   "references_agree": 2.1511823433684185e-09,
+   "floor": {
+    "energy_rel": 0.0012476317834718585,
+    "max_rel": 0.001247481986792869,
+    "range": 21.39199615013115,
+    "outlet_bulk": 315.7910527900442,
+    "outlet_bulk_ref": 315.7910527906621,
+    "outlet_bulk_err_rel": 2.8884072280145536e-11
+   },
+   "accuracy": {
+    "classical": {
+     "energy_rel": 0.0012476317834718585,
+     "max_rel": 0.001247481986792869,
+     "range": 21.39199615013115,
+     "outlet_bulk": 315.7910527900442,
+     "outlet_bulk_ref": 315.7910527906621,
+     "outlet_bulk_err_rel": 2.8884072280145536e-11
+    },
+    "TL0-8": {
+     "energy_rel": 0.06565800661026171,
+     "max_rel": 0.01654613499874089,
+     "range": 21.39199615013115,
+     "outlet_bulk": 315.7910527899177,
+     "outlet_bulk_ref": 315.7910527906621,
+     "outlet_bulk_err_rel": 3.479640538256723e-11
+    },
+    "TL0-16": {
+     "energy_rel": 0.029940742720600502,
+     "max_rel": 0.005560233782339923,
+     "range": 21.39199615013115,
+     "outlet_bulk": 315.7910527898523,
+     "outlet_bulk_ref": 315.7910527906621,
+     "outlet_bulk_err_rel": 3.785487522566268e-11
+    },
+    "MsFEM-16": {
+     "energy_rel": 0.059320912125622904,
+     "max_rel": 0.009949439049371192,
+     "range": 21.39199615013115,
+     "outlet_bulk": 315.7910527897054,
+     "outlet_bulk_ref": 315.7910527906621,
+     "outlet_bulk_err_rel": 4.472115330955376e-11
+    },
+    "MsFEM-OS-16": {
+     "energy_rel": 0.06613961136332785,
+     "max_rel": 0.010256067718495356,
+     "range": 21.39199615013115,
+     "outlet_bulk": 315.79105278988516,
+     "outlet_bulk_ref": 315.7910527906621,
+     "outlet_bulk_err_rel": 3.6318997233213356e-11
+    },
+    "finer": {
+     "energy_rel": 1.6761587181621446e-10,
+     "max_rel": 1.0521561417089806e-10,
+     "range": 21.391996149513545,
+     "outlet_bulk": 315.7910527901411,
+     "outlet_bulk_ref": 315.7910527892835,
+     "outlet_bulk_err_rel": 4.008960427811746e-11
+    },
+    "finer-TL0-16": {
+     "energy_rel": 0.03058399813583115,
+     "max_rel": 0.005548152354491512,
+     "range": 21.391996149513545,
+     "outlet_bulk": 315.79105279030284,
+     "outlet_bulk_ref": 315.7910527892835,
+     "outlet_bulk_err_rel": 4.7649418964353575e-11
+    }
+   },
+   "e4": {
+    "classical": true,
+    "TL0-8": false,
+    "TL0-16": false,
+    "MsFEM-16": false,
+    "MsFEM-OS-16": false,
+    "finer": true,
+    "finer-TL0-16": false
+   },
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 0.9729452363755844,
+    "TL0-8": 0.541379313293971,
+    "TL0-16": 0.6554790032900112,
+    "MsFEM-16": 2.2777842738424297,
+    "MsFEM-OS-16": 2.8356078157347175,
+    "finer": 1.5233015917198796,
+    "finer-TL0-16": 1.646867092209388,
+    "full domain": 1.4474753663750306
+   },
+   "aa": 0.9729452363755844,
+   "aa_ok": true,
+   "turns": 5,
+   "switch": {
+    "n_c": 16,
+    "pieces": 32,
+    "cost_over_classical_piece": {
+     "exact": 1.024791561611218,
+     "schwarz": 2.522528091831675,
+     "jacobi": 0.34346894304573783
+    },
+    "schwarz_over_exact": [
+     2.2391975515303773,
+     2.2848267223436363
+    ],
+    "jacobi_over_exact": [
+     0.9455673038897932,
+     0.99029799462009
+    ]
+   }
+  },
+  {
+   "layout": "dev-winding",
+   "tier": "fast",
+   "n": 128,
+   "cols": 8,
+   "pieces": 32,
+   "fine_pieces": 128,
+   "pe_max": 179.96395527690214,
+   "u_coolant": 0.00817,
+   "nodes": 525825,
+   "references_agree": null,
+   "floor": {
+    "energy_rel": 0.016311102504195662,
+    "max_rel": 0.04608928839800789,
+    "range": 7.429384738541728,
+    "outlet_bulk": 301.75692374544246,
+    "outlet_bulk_ref": 301.75692374652937,
+    "outlet_bulk_err_rel": 1.4629784972622807e-10
+   },
+   "accuracy": {
+    "classical": {
+     "energy_rel": 0.016311102504195662,
+     "max_rel": 0.04608928839800789,
+     "range": 7.429384738541728,
+     "outlet_bulk": 301.75692374544246,
+     "outlet_bulk_ref": 301.75692374652937,
+     "outlet_bulk_err_rel": 1.4629784972622807e-10
+    },
+    "TL0-8": {
+     "energy_rel": 0.11746245632066199,
+     "max_rel": 0.09353133706380898,
+     "range": 7.429384738541728,
+     "outlet_bulk": 301.75692374536794,
+     "outlet_bulk_ref": 301.75692374652937,
+     "outlet_bulk_err_rel": 1.5632852181404174e-10
+    },
+    "TL0-16": {
+     "energy_rel": 0.06224523860375473,
+     "max_rel": 0.04594560947796448,
+     "range": 7.429384738541728,
+     "outlet_bulk": 301.7569237451955,
+     "outlet_bulk_ref": 301.75692374652937,
+     "outlet_bulk_err_rel": 1.79542144326953e-10
+    },
+    "TL0-32": {
+     "energy_rel": 0.03436208488919154,
+     "max_rel": 0.04249126414575147,
+     "range": 7.429384738541728,
+     "outlet_bulk": 301.75692374527944,
+     "outlet_bulk_ref": 301.75692374652937,
+     "outlet_bulk_err_rel": 1.6824137951101037e-10
+    },
+    "TL0-64": {
+     "energy_rel": 0.021494048285882254,
+     "max_rel": 0.04531050471131024,
+     "range": 7.429384738541728,
+     "outlet_bulk": 301.75692374525255,
+     "outlet_bulk_ref": 301.75692374652937,
+     "outlet_bulk_err_rel": 1.7186037867007664e-10
+    },
+    "MsFEM-16": {
+     "energy_rel": 0.38805258536997816,
+     "max_rel": 0.10077544232217232,
+     "range": 7.429384738541728,
+     "outlet_bulk": 301.75692374538113,
+     "outlet_bulk_ref": 301.75692374652937,
+     "outlet_bulk_err_rel": 1.5455345245906632e-10
+    },
+    "MsFEM-OS-16": {
+     "energy_rel": 0.39955131152580603,
+     "max_rel": 0.10681278224911742,
+     "range": 7.429384738541728,
+     "outlet_bulk": 301.7569237453018,
+     "outlet_bulk_ref": 301.75692374652937,
+     "outlet_bulk_err_rel": 1.6523447323297012e-10
+    },
+    "finer": {
+     "energy_rel": 0.00211271432576519,
+     "max_rel": 0.005087293176546468,
+     "range": 7.429384743000696,
+     "outlet_bulk": 301.75692374528376,
+     "outlet_bulk_ref": 301.75692374789645,
+     "outlet_bulk_err_rel": 3.51670313421413e-10
+    },
+    "finer-TL0-16": {
+     "energy_rel": 0.029414249263898108,
+     "max_rel": 0.009533782766697677,
+     "range": 7.429384743000696,
+     "outlet_bulk": 301.75692374529694,
+     "outlet_bulk_ref": 301.75692374789645,
+     "outlet_bulk_err_rel": 3.49895244067503e-10
+    }
+   },
+   "e4": {
+    "classical": true,
+    "TL0-8": false,
+    "TL0-16": false,
+    "TL0-32": true,
+    "TL0-64": true,
+    "MsFEM-16": false,
+    "MsFEM-OS-16": false,
+    "finer": true,
+    "finer-TL0-16": true
+   },
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 1.0037710088194571,
+    "TL0-8": 0.3148908371959933,
+    "TL0-16": 0.32724127694594973,
+    "TL0-32": 0.33709429696337406,
+    "TL0-64": 0.46281818985663303,
+    "MsFEM-16": 0.6898176004734329,
+    "MsFEM-OS-16": 1.0821311732646448,
+    "finer": 0.7542865644565053,
+    "finer-TL0-16": 0.34697933506327394,
+    "full domain": 1.3153755746857558
+   },
+   "aa": 1.0037710088194571,
+   "aa_ok": true,
+   "turns": 5,
+   "switch": {
+    "n_c": 16,
+    "pieces": 32,
+    "cost_over_classical_piece": {
+     "exact": 0.9150966094227475,
+     "schwarz": 1.2684518305573436,
+     "jacobi": 0.18223549397257516
+    },
+    "schwarz_over_exact": [
+     1.0815344595570477,
+     1.1386647939546426
+    ],
+    "jacobi_over_exact": [
+     0.3019209436166579,
+     0.4258090900695481
+    ]
+   }
+  }
+ ],
+ "machine": {
+  "time": "2026-11-19T07:09:56-05:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": true,
+   "battery_percent": 100,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [
+   {
+    "pid": 43476,
+    "memory": "30,332 K",
+    "command": "C:\\Users\\Nauni\\anaconda3\\python.exe -m atlas.studio --port 8021"
+   }
+  ],
+  "pid": 38512
+ },
+ "verdict": {
+  "options": {
+   "TL0-8": {
+    "e4_every_problem": false,
+    "e4_count": 0,
+    "price_geomean": 0.42154557880359905,
+    "priced_problems": 5,
+    "stops_phase2": false
+   },
+   "TL0-16": {
+    "e4_every_problem": false,
+    "e4_count": 0,
+    "price_geomean": 0.465323094658121,
+    "priced_problems": 5,
+    "stops_phase2": false
+   },
+   "MsFEM-16": {
+    "e4_every_problem": false,
+    "e4_count": 0,
+    "price_geomean": 1.1386055858565496,
+    "priced_problems": 5,
+    "stops_phase2": false
+   },
+   "MsFEM-OS-16": {
+    "e4_every_problem": false,
+    "e4_count": 0,
+    "price_geomean": 1.8540120337053592,
+    "priced_problems": 5,
+    "stops_phase2": false
+   },
+   "finer": {
+    "e4_every_problem": true,
+    "e4_count": 6,
+    "price_geomean": 1.0234823565173945,
+    "priced_problems": 5,
+    "stops_phase2": false
+   },
+   "finer-TL0-16": {
+    "e4_every_problem": false,
+    "e4_count": 3,
+    "price_geomean": 0.7257867691156968,
+    "priced_problems": 5,
+    "stops_phase2": false
+   }
+  },
+  "stop": false,
+  "stopped_by": []
+ },
+ "seconds": 5126.2
+}

@@ -3,7 +3,7 @@
  "url": "http://127.0.0.1:8021/",
  "size": "1090x620",
  "theme": "light",
- "started": "2026-11-17T19:38:47",
+ "started": "2026-11-19T08:51:02",
  "checks": [
   {
    "check": "TL-s0 is offered here (its weights match its record)",
@@ -12,10 +12,10 @@
     "classical",
     "H2r",
     "TL0",
-    "TL-s0",
-    "TL-s1",
     "Sp-s0",
-    "Sp-s1"
+    "Sp-s1",
+    "TL-s0",
+    "TL-s1"
    ]
   },
   {
@@ -76,9 +76,9 @@
    "check": "the price is a ratio with its A/A spread, no seconds",
    "passed": true,
    "detail": {
-    "ratio": 0.6234061690983373,
+    "ratio": 0.47270668299660024,
     "meaning": "B's time over A's, each the median of its turns on this machine: below 1, B is faster",
-    "aa_spread": 1.2800164596269659,
+    "aa_spread": 1.0511413372211298,
     "turns": 5
    }
   },
@@ -158,5 +158,5 @@
  ],
  "trusted_clicks_and_drags": 22,
  "passed": true,
- "finished": "2026-11-17T19:41:11"
+ "finished": "2026-11-19T08:52:43"
 }

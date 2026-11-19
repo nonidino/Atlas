@@ -8,10 +8,13 @@
   (its registered seed), its networks replaced by zeros, inside the coarse correction at
   ``n_c = 16`` with the corner treatment B, as the two-level evaluation builds its TL0
   (``scripts/chartop_evaluate_twolevel.py``), from `atlas.chartop` alone.
-* **The trained networks**, from the registered evaluations' weights: TL-s0 and TL-s1
-  (two-level), S′-s0 and S′-s1 (the forms' reused S′).  **Each checkpoint's sha256 is
-  computed and compared with its evaluation record before it is offered**; a file that
-  is missing or does not match is listed as withheld, with why.
+* **The trained networks**, from the expert store's catalog (`out/experts/catalog.json`,
+  `atlas/chartop/expert_store.py`; the coolant plan's section 8): every card with a
+  ``studio`` section, today TL-s0 and TL-s1 (two-level) and S′-s0 and S′-s1 (the forms'
+  reused S′).  **Each checkpoint's sha256 is computed and compared with its card, which
+  quotes its evaluation record, before it is offered**; a file that is missing or does
+  not match is listed as withheld, with why.  (Until 2026-11-19 the list was written
+  here by hand; `LEARNED` is now read from the catalog.)
 
 NeuberNet is not a chart-operator expert and is never listed (it is unlicensed and
 local-only; the plan's refusal table).  Every learned expert carries the CO-D card's
@@ -31,17 +34,24 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CHARTOP = os.path.join(ROOT, "out", "chartop")
 
-#: the trained networks the page offers: (key, label, record, name in it, checkpoint, loader)
-LEARNED = (
-    ("TL-s0", "TL-s0, the two-level network (seed 0)", "evaluation-twolevel-20261111-004223.json",
-     "TL-s0", os.path.join("runs", "twolevel", "TL-s0", "best.pt"), "twolevel"),
-    ("TL-s1", "TL-s1, the two-level network (seed 1)", "evaluation-twolevel-20261111-004223.json",
-     "TL-s1", os.path.join("runs", "twolevel", "TL-s1", "best.pt"), "twolevel"),
-    ("Sp-s0", "S′-s0, the forms' network (seed 0)", "evaluation-forms-20261019-205923.json",
-     "Sp-s0", os.path.join("runs", "forms", "Sp-s0", "best.pt"), "form"),
-    ("Sp-s1", "S′-s1, the forms' network (seed 1)", "evaluation-forms-20261019-205923.json",
-     "Sp-s1", os.path.join("runs", "forms", "Sp-s1", "best.pt"), "form"),
-)
+def learned(store: str | None = None) -> tuple:
+    """The trained networks the page offers, from the expert store's catalog: (key, label,
+    record, name in it, checkpoint, loader, the card's sha256), in the catalog's order."""
+    from atlas.chartop import expert_store as es
+    out = []
+    for row in es.catalog(store or es.STORE).get("experts", []):
+        st = row.get("studio")
+        if not st:
+            continue
+        card = es.load_card(row)
+        out.append((st["key"], st["label"], st["record"], st["name"],
+                    os.path.join(*st["checkpoint"].split("/")), st["loader"],
+                    (card.get("weights") or {}).get("sha256")))
+    return tuple(out)
+
+
+#: what the catalog offered when this module loaded (`learned` reads it afresh)
+LEARNED = learned()
 N_C, CORNERS = 16, 8                  # gates_twolevel.N_C, gates_twolevel.CORNERS
 
 _sha_cache: dict = {}
@@ -78,7 +88,7 @@ def registry(chartop: str = CHARTOP) -> list[dict]:
     out.append({"key": "TL0", "label": "TL0", "kind": "tl0", "offered": no_torch is None,
                 "why": no_torch, "tip": "The two-level expert with its networks at zero: the untrained "
                 "floor at n_c = 16, what a network must beat"})
-    for key, label, record, name, rel, loader in LEARNED:
+    for key, label, record, name, rel, loader, card_sha in learned():
         row = {"key": key, "label": label, "kind": loader, "record": record, "offered": False}
         path = os.path.join(chartop, rel)
         rec_path = os.path.join(chartop, record)
@@ -94,6 +104,8 @@ def registry(chartop: str = CHARTOP) -> list[dict]:
             row.update(path=path, sha256=got, recorded=want)
             if want is None:
                 row["why"] = f"{record} records no weights for {name}"
+            elif card_sha is not None and card_sha != want:
+                row["why"] = f"its card's sha256 {card_sha[:12]}… is not the one {record} records"
             elif got != want:
                 row["why"] = f"its weights' sha256 {got[:12]}… is not the one {record} records ({want[:12]}…)"
             else:

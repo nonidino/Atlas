@@ -1,0 +1,89 @@
+{
+ "card": 1,
+ "id": "C5-0.3M",
+ "family": "CO-D",
+ "class": "G0",
+ "what": {
+  "pde": "2-D linear diffusion (heat), steady and one backward-Euler step: rho c dT/dt = div(k grad T) + q, pulled back to the unit square",
+  "pieces": "curved four-sided pieces, one chart each (Winslow, Coons or conformal), bilinear elements on the reference grid (decision D7)",
+  "ports": [
+   "THERM"
+  ],
+  "port_basis": "corner hats and 15 side sines per side (D3)",
+  "envelope": {
+   "sup_abs_mu": 0.65,
+   "logJ_range": "ln 8",
+   "grad_logJ_plus_grad_mu": 40.0,
+   "abs_log_kappa_hat": 2.3,
+   "fourier_number": [
+    0.01,
+    100
+   ],
+   "steady": true
+  }
+ },
+ "built": {
+  "commit": "c1e4d7502c25b3a2f47d3785176b04f1ae665c0d",
+  "module": "atlas/chartop/model.py, atlas/chartop/train.py",
+  "architecture": {
+   "backbone": "unet",
+   "size": "0.3M",
+   "form": "bubble",
+   "kind": "sine-hat",
+   "m": 16,
+   "parameters": 276953
+  },
+  "training": {
+   "name": "C5-0.3M",
+   "backbone": "unet",
+   "size": "0.3M",
+   "form": "bubble",
+   "kind": "sine-hat",
+   "objective": "label-free",
+   "data": "train",
+   "limit": null,
+   "steps": 37500,
+   "lr": 0.001,
+   "weight_decay": 1e-05,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "seed": 0,
+   "augment": true,
+   "val_every": 2500
+  },
+  "data": {
+   "generator": "atlas/chartop/data.py",
+   "split": "train",
+   "seed_base": 1000000
+  },
+  "seed": 0
+ },
+ "did": {
+  "registration": "out/chartop/registered.txt (Stage 0, W355)",
+  "evaluation": "out/chartop/evaluation-20261018-203833.json",
+  "verdicts": null,
+  "comparison": {
+   "medians": {
+    "0.3M": 0.3360304563646995,
+    "1M": 0.33568189577789087,
+    "3M": 0.33626281440786826
+   },
+   "choice": "0.3M"
+  },
+  "summary": "comparison C5: 0.3M",
+  "price": "E5 in the evaluation record: no arm faster at comparable accuracy"
+ },
+ "verdict": "comparison",
+ "weights": {
+  "path": "out/chartop/runs/C5-0.3M/best.pt",
+  "sha256": "75544ea48dc8bc50e20d094270c7df9afc2be0a67f8663e957e30ff0ae714e28"
+ },
+ "present_when_written": {
+  "date": "2026-11-19",
+  "present": true,
+  "why": null
+ }
+}

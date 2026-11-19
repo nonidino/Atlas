@@ -1,0 +1,91 @@
+{
+ "card": 1,
+ "id": "B",
+ "family": "CO-D",
+ "class": "G0",
+ "what": {
+  "pde": "2-D linear diffusion (heat), steady and one backward-Euler step: rho c dT/dt = div(k grad T) + q, pulled back to the unit square",
+  "pieces": "curved four-sided pieces, one chart each (Winslow, Coons or conformal), bilinear elements on the reference grid (decision D7)",
+  "ports": [
+   "THERM"
+  ],
+  "port_basis": "corner hats and 15 side sines per side (D3)",
+  "envelope": {
+   "sup_abs_mu": 0.65,
+   "logJ_range": "ln 8",
+   "grad_logJ_plus_grad_mu": 40.0,
+   "abs_log_kappa_hat": 2.3,
+   "fourier_number": [
+    0.01,
+    100
+   ],
+   "steady": true
+  }
+ },
+ "built": {
+  "commit": "c1e4d7502c25b3a2f47d3785176b04f1ae665c0d",
+  "module": "atlas/chartop/model.py, atlas/chartop/train.py",
+  "architecture": {
+   "backbone": "unet",
+   "size": "1M",
+   "form": "bubble",
+   "kind": "sine-hat",
+   "m": 16,
+   "parameters": 1100753
+  },
+  "training": {
+   "name": "B",
+   "backbone": "unet",
+   "size": "1M",
+   "form": "bubble",
+   "kind": "sine-hat",
+   "objective": "label-free",
+   "data": "train",
+   "limit": null,
+   "steps": 150000,
+   "lr": 0.001,
+   "weight_decay": 1e-05,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "seed": 0,
+   "augment": true,
+   "val_every": 5000
+  },
+  "data": {
+   "generator": "atlas/chartop/data.py",
+   "split": "train",
+   "seed_base": 1000000
+  },
+  "seed": 0
+ },
+ "did": {
+  "registration": "out/chartop/registered.txt (Stage 0, W355)",
+  "evaluation": "out/chartop/evaluation-20261018-203833.json",
+  "verdicts": {
+   "E3": true,
+   "E4": false,
+   "SE1": true,
+   "SE3": true,
+   "SE2": true,
+   "KT": false,
+   "DUAL": true,
+   "E1": false
+  },
+  "comparison": null,
+  "summary": "Stage 0's main arm: E1, E4 and KT not met; E3, SE1-SE3 and DUAL met (the guarantees held, the modes did not learn)",
+  "price": "E5 in the evaluation record: no arm faster at comparable accuracy"
+ },
+ "verdict": "failed",
+ "weights": {
+  "path": "out/chartop/runs/B/best.pt",
+  "sha256": "56742d74a6b11d715df63b87c710b5a79c6cb1df012acc5188f056aa2b144576"
+ },
+ "present_when_written": {
+  "date": "2026-11-19",
+  "present": true,
+  "why": null
+ }
+}

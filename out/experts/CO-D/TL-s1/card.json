@@ -1,0 +1,132 @@
+{
+ "card": 1,
+ "id": "TL-s1",
+ "family": "CO-D",
+ "class": "G0",
+ "what": {
+  "pde": "2-D linear diffusion (heat), steady and one backward-Euler step: rho c dT/dt = div(k grad T) + q, pulled back to the unit square",
+  "pieces": "curved four-sided pieces, one chart each (Winslow, Coons or conformal), bilinear elements on the reference grid (decision D7)",
+  "ports": [
+   "THERM"
+  ],
+  "port_basis": "corner hats and 15 side sines per side (D3)",
+  "envelope": {
+   "sup_abs_mu": 0.65,
+   "logJ_range": "ln 8",
+   "grad_logJ_plus_grad_mu": 40.0,
+   "abs_log_kappa_hat": 2.3,
+   "fourier_number": [
+    0.01,
+    100
+   ],
+   "steady": true
+  }
+ },
+ "built": {
+  "commit": "4a2a359f032cf79ad1b0c428c801a9430c1daa56",
+  "module": "atlas/chartop/twolevel.py, atlas/chartop/coarse.py, atlas/chartop/train.py",
+  "architecture": {
+   "backbone": "unet",
+   "size": "1M",
+   "form": "split",
+   "kind": "sine-hat",
+   "m": 16,
+   "p_size": "1M",
+   "bubble": "corner",
+   "strips": true,
+   "hats": "learned",
+   "parameters": 2198990,
+   "n_c": 16,
+   "corners": 8
+  },
+  "training": {
+   "name": "TL-s1",
+   "backbone": "unet",
+   "size": "1M",
+   "form": "split",
+   "kind": "sine-hat",
+   "objective": "relative",
+   "data": "train",
+   "limit": null,
+   "steps": 37500,
+   "lr": 0.0003,
+   "weight_decay": 1e-05,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "seed": 1,
+   "augment": true,
+   "val_every": 2500,
+   "p_size": "1M",
+   "bubble": "corner",
+   "strips": true,
+   "strips_in_training": false,
+   "hats": "learned",
+   "mode_prior": null,
+   "coarse": 16,
+   "init_from": "weights/S/best.pt",
+   "head_init": "loaded",
+   "drop_easy": 1e-08,
+   "corners": 8
+  },
+  "data": {
+   "generator": "atlas/chartop/data.py --corners --light-labels",
+   "seed_base": 1000000,
+   "count": 50000
+  },
+  "seed": 1
+ },
+ "did": {
+  "registration": "out/chartop/registered-twolevel.txt (accepted by the owner on 2026-11-10, in chat ('Accept as drafted (Recommended)'), as drafted in chart-operator-stage-0-r...)",
+  "evaluation": "out/chartop/evaluation-twolevel-20261111-004223.json",
+  "verdicts": {
+   "K": true,
+   "D": true,
+   "L": true,
+   "E3": true,
+   "SE1": true,
+   "E4": false,
+   "CX": true,
+   "NC": false,
+   "SE2": true,
+   "DUAL": true,
+   "KT": true
+  },
+  "nc": {
+   "met": false,
+   "median": 0.669180465652367,
+   "p10": 0.31818435872026957,
+   "pieces": 2400,
+   "nothing_to_learn": 0
+  },
+  "summary": "two-level, coarse-exact: E4 met on 4 of 6 held-out problems and NC not met; the coarse level carries the coupled gain",
+  "price": {
+   "record": "out/chartop/evaluation-twolevel-20261111-004223-price.json",
+   "pr": {
+    "measured": true,
+    "suffice": true,
+    "runs": 3
+   }
+  }
+ },
+ "verdict": "failed",
+ "weights": {
+  "path": "out/chartop/runs/twolevel/TL-s1/best.pt",
+  "sha256": "f6c9e02bd74bf8218f963887e015feca3af94d56a6e9a1957445b6c49645fe79"
+ },
+ "studio": {
+  "key": "TL-s1",
+  "label": "TL-s1, the two-level network (seed 1)",
+  "loader": "twolevel",
+  "record": "evaluation-twolevel-20261111-004223.json",
+  "name": "TL-s1",
+  "checkpoint": "runs/twolevel/TL-s1/best.pt"
+ },
+ "present_when_written": {
+  "date": "2026-11-19",
+  "present": true,
+  "why": null
+ }
+}

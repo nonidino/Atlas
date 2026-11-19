@@ -522,13 +522,27 @@ def cut_insert(spec, n: int = 64, split: int = 3) -> Cut:
                [f"{len(pieces)} pieces: the O-H layout around the insert"])
 
 
-CUTTERS = {"grid": cut_grid, "polar": cut_polar, "strip": cut_strip, "insert": cut_insert}
+def cut_channels(spec, n: int = 64, cols: int = 1, rows: int = 1, envelope=None) -> Cut:
+    """A plate with channels, cut along the channels' walls (`channel_cut`)."""
+    from .channel_cut import cut_channels as _cc
+    return _cc(spec, n, cols=cols, rows=rows, envelope=envelope)
+
+
+CUTTERS = {"grid": cut_grid, "polar": cut_polar, "strip": cut_strip, "insert": cut_insert,
+           "channels": cut_channels}
 
 
 def auto_cut(spec, n: int = 64, **kw) -> Cut:
     """The cutter this domain's shape calls for, or a refusal that says why."""
     d = spec.domain
     tried = []
+    flowing = {k for k, v in _materials(spec).items() if float(v.get("flows", 0.0)) >= 0.5}
+    if d.outline is None and not d.holes and any(r.material in flowing and r.shape != "rect"
+                                                 for r in spec.regions):
+        try:
+            return cut_channels(spec, n, **{k: v for k, v in kw.items() if k in ("cols", "rows")})
+        except CutError as exc:
+            tried.append(f"channels: {exc}")
     if d.outline is None and not d.holes:
         if any(r.shape == "curve" and r.points is None for r in spec.regions):
             try:
@@ -858,6 +872,6 @@ def solve_classical(cut: Cut, spec, m: int | None = None) -> dict:
     return out
 
 
-__all__ = ["CUTTERS", "Cut", "CutError", "METHODS", "Piece", "auto_cut", "certificate",
+__all__ = ["CUTTERS", "Cut", "CutError", "METHODS", "Piece", "auto_cut", "certificate", "cut_channels",
            "chart_of", "chords", "cut_grid", "cut_insert", "cut_polar", "cut_strip", "make_bc",
            "merge", "move_corner", "problems", "seams", "solve_classical", "split"]

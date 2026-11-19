@@ -1,0 +1,138 @@
+{
+ "card": 1,
+ "id": "W-s0",
+ "family": "CO-D",
+ "class": "G0",
+ "what": {
+  "pde": "2-D linear diffusion (heat), steady and one backward-Euler step: rho c dT/dt = div(k grad T) + q, pulled back to the unit square",
+  "pieces": "curved four-sided pieces, one chart each (Winslow, Coons or conformal), bilinear elements on the reference grid (decision D7)",
+  "ports": [
+   "THERM"
+  ],
+  "port_basis": "corner hats and 15 side sines per side (D3)",
+  "envelope": {
+   "sup_abs_mu": 0.65,
+   "logJ_range": "ln 8",
+   "grad_logJ_plus_grad_mu": 40.0,
+   "abs_log_kappa_hat": 2.3,
+   "fourier_number": [
+    0.01,
+    100
+   ],
+   "steady": true
+  }
+ },
+ "built": {
+  "commit": "ef9237e7b3a889fa7d1d30bc1c8eb731adcaf685",
+  "module": "atlas/chartop/forms.py, atlas/chartop/train.py",
+  "architecture": {
+   "backbone": "unet",
+   "size": "1M",
+   "form": "split",
+   "kind": "sine-hat",
+   "m": 16,
+   "p_size": "1M",
+   "bubble": "square",
+   "strips": false,
+   "parameters": 2199690
+  },
+  "training": {
+   "name": "W-s0",
+   "backbone": "unet",
+   "size": "1M",
+   "form": "split",
+   "kind": "sine-hat",
+   "objective": "label-free",
+   "data": "train",
+   "limit": null,
+   "steps": 37500,
+   "lr": 0.001,
+   "weight_decay": 1e-05,
+   "batch": {
+    "32": 32,
+    "64": 32,
+    "128": 8
+   },
+   "seed": 0,
+   "augment": true,
+   "val_every": 2500,
+   "p_size": "1M",
+   "bubble": "square",
+   "strips": false,
+   "strips_in_training": true
+  },
+  "data": {
+   "generator": "atlas/chartop/data.py",
+   "split": "train",
+   "seed_base": 1000000
+  },
+  "seed": 0
+ },
+ "did": {
+  "registration": "out/chartop/registered-forms.txt (W356-W358)",
+  "evaluation": "out/chartop/evaluation-forms-20261019-205923.json",
+  "verdicts": {
+   "K": true,
+   "D": true,
+   "L": true,
+   "E1": false,
+   "E3": true,
+   "SE1": true,
+   "SE3": true,
+   "E4": false,
+   "SE2": true,
+   "DUAL": true,
+   "KT": false
+  },
+  "comparison": {
+   "pairings": {
+    "0": {
+     "ratio": 1.0398418711597774,
+     "verdict": "tie"
+    },
+    "1": {
+     "ratio": 0.9898693692776254,
+     "verdict": "tie"
+    }
+   },
+   "verdict": "tie",
+   "measure": {
+    "S": 0.060056443525975584,
+    "Sp-s0": 0.04280945281393531,
+    "Sp-s1": 0.04546643498651603,
+    "W-s0": 0.0445150615173687,
+    "W-s1": 0.04500583132340478
+   },
+   "e_H_median_benchmark_pieces": {
+    "S": 0.07719469039501373,
+    "Sp-s0": 0.07670831640881344,
+    "Sp-s1": 0.07672954741522786,
+    "W-s0": 0.136727046903875,
+    "W-s1": 0.1367318595726496
+   },
+   "pairs": {
+    "0": [
+     "W-s0",
+     "Sp-s0"
+    ],
+    "1": [
+     "W-s1",
+     "Sp-s1"
+    ]
+   },
+   "CW0": 1.0023375000926982
+  },
+  "summary": "W358's control for comparison CW (a tie)",
+  "price": "E5 in the evaluation record"
+ },
+ "verdict": "comparison",
+ "weights": {
+  "path": "out/chartop/runs/forms/W-s0/best.pt",
+  "sha256": "ed032863cf184985e2ce33b448b6787a8952e14dd7a6664b365796f6b787299e"
+ },
+ "present_when_written": {
+  "date": "2026-11-19",
+  "present": true,
+  "why": null
+ }
+}

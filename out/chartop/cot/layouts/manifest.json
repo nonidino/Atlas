@@ -1,0 +1,91 @@
+{
+ "what": "the coolant plan's development layouts (atlas/studio/cot_layouts.py)",
+ "written": "2026-11-19T08:39:29-05:00",
+ "role": "development: Phase 2 and the dataset's checks; never evaluation",
+ "files": [
+  {
+   "file": "dev-block-slow.json",
+   "sha256": "867b1d2c544b178a7d8f1c4c74de68b886677290b535e7251f75fdbb3104ae62",
+   "layout": "dev-block",
+   "tier": "slow",
+   "u_coolant": 0.000958,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 32
+   },
+   "pieces": 32,
+   "pe_max": 19.996
+  },
+  {
+   "file": "dev-block-fast.json",
+   "sha256": "6e215454b76ae510a6929dcc27e7a3523e82fb36d7b2144ff10b78df5b0a1a02",
+   "layout": "dev-block",
+   "tier": "fast",
+   "u_coolant": 0.00861,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 128
+   },
+   "pieces": 32,
+   "pe_max": 179.934
+  },
+  {
+   "file": "dev-parallel-slow.json",
+   "sha256": "b4e48e29fdcbc71ac86374f02cb66617fd884b28b99a953000356f027ecdbab8",
+   "layout": "dev-parallel",
+   "tier": "slow",
+   "u_coolant": 0.000958,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 32
+   },
+   "pieces": 48,
+   "pe_max": 19.996
+  },
+  {
+   "file": "dev-parallel-fast.json",
+   "sha256": "55a8f971d5738dd6a9718673d01a4cd9fe4ae69b53fafe7dbcd2e30e34e3557f",
+   "layout": "dev-parallel",
+   "tier": "fast",
+   "u_coolant": 0.00526,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 64
+   },
+   "pieces": 48,
+   "pe_max": 109.898
+  },
+  {
+   "file": "dev-winding-slow.json",
+   "sha256": "95bc2806b257e741ad80ce038607f74eea84f520582b17b75d4aa33d744e48ee",
+   "layout": "dev-winding",
+   "tier": "slow",
+   "u_coolant": 0.000909,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 32
+   },
+   "pieces": 32,
+   "pe_max": 20.009
+  },
+  {
+   "file": "dev-winding-fast.json",
+   "sha256": "dc4c071d58a71b8494ec6ff45191a5b85559ae7e15e6c8b5205abdf0c5d15e3e",
+   "layout": "dev-winding",
+   "tier": "fast",
+   "u_coolant": 0.00817,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 128
+   },
+   "pieces": 32,
+   "pe_max": 179.964
+  }
+ ]
+}

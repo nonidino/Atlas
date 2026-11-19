@@ -27,6 +27,7 @@ opens in the other. `--fetch-fonts` downloads Ranade from Fontshare and exits.
 | P5 | run: Single and Compare on the pieces (full domain or chart operator, mixed or one expert on every piece), steady or marched; the field, difference, per-piece and seam views; price as a ratio with its A/A spread; E4's bar, balance and the certificate | built |
 | P6 | records: every registered evaluation under `out/chartop/`, its gates with their registered titles and bars, its prices by problem set, ρ per test piece; Open into Compare; a new kind's registration appears with no change to the page | built |
 | CO-T 1 | the coolant plan's Phase 1: a conjugate-heat case cut into CO-T pieces (coolant and plate, each one material), the classical CO-T expert, `THERM+ADVEC` seams, each piece's Péclet numbers and the CO-T envelope; Run's Single and Compare (steady) | built |
+| CO-T 2 | Phase 2: the channel cut (Channel-tool channels cut along their walls), the flow on any channel, Danckwerts' inlet, the development layouts; the expert store's catalog behind the offered networks | built |
 
 ## Geometry (P1)
 
@@ -152,8 +153,9 @@ harmonic measures, with the log-polar map recognised where it applies), or the c
 own. **Certificates**: Proposition 3 (`det J > 0` at every cell corner, a simple
 positive boundary); the smallest relative `det J` and the largest skew are shown, and
 a folded piece is refused with its `det J`. **Experts** (`experts.py`): classical, H2r
-on squares of one material, TL0, and the trained networks TL-s0, TL-s1, S′-s0 and
-S′-s1, each offered only when its checkpoint's sha256 equals its evaluation record's;
+on squares of one material, TL0, and the trained networks the expert store's catalog
+offers (`out/experts/catalog.json`: TL-s0, TL-s1, S′-s0 and S′-s1), each offered only
+when its checkpoint's sha256 equals its card's and its evaluation record's;
 *Best admitted for all* gives each piece the cheapest expert admitted on it, by the
 registered records' prices over the classical solve (`experts.prices`): by the
 two-level record H2r 0.42 on squares of one material, TL0 0.84 where its card admits
@@ -198,8 +200,20 @@ do-nothing outlet. A seam the flow crosses is `THERM+ADVEC` (it carries the heat
 carries), a wall `THERM`. A piece outside CO-T's envelope (a Péclet number above the
 owner's cap of 200, a cell Péclet number above 2, an uncertified chart) is refused by
 name with what to do. Only the classical CO-T expert exists; Run is steady, as the family
-is. A coolant region that is not a straight rectangle is refused: a curved channel needs
-its flow solved on it (the plan's Phase 2). `scripts/studio_walks/cot1.py` walks it.
+is. `scripts/studio_walks/cot1.py` walks it.
+
+**Phase 2** made it general. A channel drawn with the Channel tool across a plate is cut
+along its walls (`channel_cut.py`, the Pieces screen's automatic cut for such a case:
+stations across the plate, and every channel wall and rectangular region edge as a
+cut; `cols` and `rows` set how fine). Every piece is a curved quadrilateral charted by
+the tools already here (TFI, Laplacian, conformal). The flow on any channel the pieces
+tile is `transport_flow`'s: `Q f(v)` of the channel's harmonic across-coordinate, so
+mass is conserved across every seam. The inlet is Danckwerts': the inflow carries
+`T_in` in by its advective flux, and nothing is held where the velocity vanishes (a
+held inlet pinned the plate at the channel's mouth). The development layouts of the
+coolant plan are `cot_layouts.py`'s, written as case files by
+`scripts/cot_dev_layouts.py`; `scripts/studio_walks/cot2.py` walks one. A serpentine
+that doubles back (U-turns) is not cut.
 
 ## Page checks
 

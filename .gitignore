@@ -822,3 +822,7 @@ out/chartop/box/payload.tar.gz
 # distributing the font through a repository or a public server, so it is never
 # committed. The installer fetches it from Fontshare (atlas/studio/fonts.py).
 atlas/studio/static/fonts/ranade/
+# The expert store (the coolant plan, section 8): the catalog and every card are kept;
+# a model's weights stay on the machine until publishing is decided.
+!out/experts/
+out/experts/**/*.pt

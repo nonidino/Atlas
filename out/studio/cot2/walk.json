@@ -1,0 +1,111 @@
+{
+ "walk": "scripts/studio_walks/cot2.py",
+ "url": "http://127.0.0.1:8021/",
+ "size": "1090x620",
+ "theme": "light",
+ "started": "2026-11-19T08:48:46",
+ "checks": [
+  {
+   "check": "the drawing holds a Channel-tool channel",
+   "passed": true,
+   "detail": [
+    "rect",
+    "channel",
+    "rect"
+   ]
+  },
+  {
+   "check": "the winding plate cut: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "cut along the channel's walls: 32 certified pieces",
+   "passed": true,
+   "detail": {
+    "cutter": "channels",
+    "pieces": 32,
+    "certified": [
+     32,
+     32
+    ]
+   }
+  },
+  {
+   "check": "eight coolant pieces, seven seams carrying the flow",
+   "passed": true,
+   "detail": {
+    "water": 8,
+    "advective": 7
+   }
+  },
+  {
+   "check": "the inlet is Danckwerts': no side is held",
+   "passed": true,
+   "detail": 0
+  },
+  {
+   "check": "a coolant piece on the bend shows its Peclet number",
+   "passed": true,
+   "detail": {
+    "page": "18.7",
+    "summary": 18.744628792040857
+   }
+  },
+  {
+   "check": "inside the CO-T envelope",
+   "passed": true,
+   "detail": "\u2713"
+  },
+  {
+   "check": "the coupling check: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "whole traces agree with the monolithic solve to round-off",
+   "passed": true,
+   "detail": 6.807553337120962e-11
+  },
+  {
+   "check": "classical CO-T pieces on the winding plate: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "class G0', the outlet's temperature shown",
+   "passed": true,
+   "detail": {
+    "class": "G0\u2032",
+    "outlet": "315.79 K"
+   }
+  },
+  {
+   "check": "the energy error is the check's 16-mode floor",
+   "passed": true,
+   "detail": {
+    "run": 0.0012476317834847713,
+    "check": 0.0012476317834847713
+   }
+  },
+  {
+   "check": "nothing overflows sideways at 1090 x 620",
+   "passed": true,
+   "detail": []
+  },
+  {
+   "check": "no console errors",
+   "passed": true,
+   "detail": null
+  }
+ ],
+ "console_errors": [],
+ "screenshots": [
+  "out/studio/cot2/cot2-pieces.png",
+  "out/studio/cot2/cot2-inspector.png",
+  "out/studio/cot2/cot2-compare.png"
+ ],
+ "trusted_clicks_and_drags": 10,
+ "passed": true,
+ "finished": "2026-11-19T08:49:41"
+}
