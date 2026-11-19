@@ -1,6 +1,7 @@
 # Index digest — the long descriptions
 
 **Type:** Navigation page, companion to [[index]].
+**Note (2026-11-18):** the index's Atlas rows were regrouped by purpose and shortened again; the headings below are the 2026-10-17 ones. Find a page's long text by searching for its `[[link]]`, not its heading. The eleven CS-21 rows below now share one index row.
 **Status:** created 2026-10-17, when the index's rows were shortened to about 300 characters. Every description below is the index row's text **word for word** as it stood that day, under the same section headings. The index keeps a short version of each, marked ↗. New pages get a short row in [[index]]; a longer note can be added here.
 
 ---

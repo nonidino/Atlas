@@ -1,6 +1,7 @@
 # Atlas 0.1: Overview & Thesis
 
 **Type:** Core Concept — Model Overview / Hub
+**Status (2026-11-18):** the original thesis, written 2026-08-08. What was built differs: a classical domain-decomposition framework with a certifying compiler, with the learned expert (the chart operator) still at Stage 0, and Noether 1.1 dormant since July. **For what is true now read [[00-atlas-current-state]]**; this page is the design's provenance.
 **Related Concepts:** [[pfm-purpose-and-direction]], [[regime-moe-architecture]], [[incremental-transfer-roadmap]], [[00-noether-1.1-overview]], [[mixture-of-experts]], [[pfm-interface-design]], [[case-study-rocket-ascent-2d-atlas-0.1]]
 
 ---

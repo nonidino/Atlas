@@ -31,7 +31,8 @@ Layers / folders:
 ```
 wiki/
   00-start-here.md      ← conceptual on-ramp + guided reading path (for humans)
-  index.md              ← exhaustive catalog of all pages; read this first when answering queries
+  context-router.md     ← for LLM sessions: what to read per task; read this first
+  index.md              ← exhaustive catalog of all pages
   index-digest.md       ← the index's long descriptions (rows marked ↗), kept verbatim
   log.md                ← append-only ingest/query/lint record (October 2026 onward)
   log/                  ← earlier months, archived verbatim: log-YYYY-MM.md
@@ -56,7 +57,7 @@ wiki/
 
 Before committing wiki edits, run `python scripts/vault_scan.py wiki` (bytes: LaTeX escape corruption) and `python scripts/link_scan.py` (dead links). Both must report no new problems.
 
-The index and log are the two navigation anchors. Always read `wiki/index.md` first before answering a query or starting an ingest. `00-start-here.md` is the human-facing reading path.
+The router, the index and the log are the navigation anchors. Read `wiki/context-router.md` first before answering a query; read `wiki/index.md` before an ingest, or when the router does not name the page you need. `00-start-here.md` is the human-facing reading path.
 
 ---
 
@@ -71,8 +72,8 @@ The index and log are the two navigation anchors. Always read `wiki/index.md` fi
 6. Append to `wiki/log.md` — format: `## [YYYY-MM-DD] ingest | Source Title`
 
 ### Answer a query
-1. Read `wiki/index.md` to identify relevant pages
-2. Read those pages
+1. Read `wiki/context-router.md` (and, for Atlas, `00-atlas-current-state.md`) to identify relevant pages; fall back to `wiki/index.md`
+2. Read those pages (status line and headings first, then the sections needed)
 3. Synthesize and answer
 4. **File the answer back as a wiki page** if it's a useful synthesis (comparisons, analyses, cross-domain connections). Add it to `wiki/concepts/` or a new category. Log it as `## [YYYY-MM-DD] note | description`.
 
@@ -102,12 +103,19 @@ Check for: contradictions between pages, orphan pages (no inbound links), import
 
 ## Key Pages to Read for Context
 
-- `wiki/00-start-here.md` — conceptual on-ramp + reading path
-- `wiki/index.md` — full catalog
+Read these two first, then only what they route you to; most pages are long, so read a page's `**Status:**` line and its headings (`grep -n '^#'`) before any section.
+
+- `wiki/context-router.md` — **which pages to read for each kind of task** (build, reference, design, decision, brainstorm, ingest, lint) and which never to read whole (logs, archives, records)
+- `wiki/concepts/Atlas 0.1/00-atlas-current-state.md` — **what is true now** in Atlas: built, measured, open, decided, and which pages are history
+
+Then, as the route says:
+- `wiki/index.md` — full catalog (about 12k tokens; open for ingests or when a route does not name the page)
+- `wiki/00-start-here.md` — conceptual on-ramp + reading path, for humans
 - `wiki/concepts/00-pfm-core/physics-foundation-models.md` — the central goal
-- `wiki/concepts/00-pfm-core/pfm-architecture-approaches.md` — 7 paradigms compared with pros/cons
 - `wiki/resources/code-and-papers.md` — code repo + per-paper implementations
-- `wiki/log.md` — what has been ingested and when
+- `wiki/log.md` — what was done and when (read the last few `## [` entries, not the file)
+
+When a hub's status changes (a stage judged, a feature built, a decision made), update `00-atlas-current-state.md` in the same commit.
 
 ## The Nature of this Wiki
 

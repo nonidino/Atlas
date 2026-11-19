@@ -1157,3 +1157,21 @@ P4's *Best admitted for all* preferred the trained network (H2r on squares, then
 ## [2026-11-18] note | the studio is the default UI
 
 The owner made the studio (`atlas/studio/`, [[integrated-ui-plan]]) Atlas's default UI: every future feature with a page (a physics family, an expert, a chart-operator stage and its records, a view, a demo) is integrated into it, and no separate page or app is started. [[integrated-ui-plan]] §12 says how a feature joins it (a protocol handler, a view, records read rather than copied, studio tests and a page walk, a README section). `CLAUDE.md` and the root `README.md` say the same; the launcher already serves only the studio.
+
+## [2026-11-18] lint | compaction and a routing layer for LLM context
+
+**Measured first.** 304 pages, 9.4 MB of markdown (17 MB with the outcome folder's HTML viewers), 11,436 links. `link_scan.py`: 6 dead links, all known (W24's three pages, two old log entries); `vault_scan.py wiki`: no byte problems. The orientation an LLM did per CLAUDE.md ("read `index.md` first") cost about 22k tokens (CLAUDE.md 2.4k, the index 19.6k; estimates at four characters a token) and still did not say what is true now: that needed the hubs and the 188 kB worklist.
+
+**Built.**
+- [[context-router]] (about 1.5k tokens): per task (build, reference, design, decision, brainstorm, claims, ingest, lint), the pages to read in order and the ones only if needed; how to read a long page cheaply (status line, then headings, then one section); and the pages never to read whole (logs, the digest, the worklist archives, `tier0-measurements`, the implementation logs, the rocket's first plan, the HTML viewers).
+- [[00-atlas-current-state]] (about 2.5k tokens): what exists and where, the five claims' verdicts, the chart operator's standing after the Stage 0 rework (H2r stays the CO-D expert, W362 open, Stage 0b next), open fronts, the rules in force, and which pages are history.
+- [[index]]: the Atlas section regrouped by purpose (framework, theory, tracking, thesis history, each PoC, outcome, proposal), dated "(new …)" annotations dropped, the eleven CS-21 rows for one page merged into one, the stale intro rewritten. 80 kB to 51 kB (about 19.6k to 12.4k tokens), every page still listed, no link lost (checked by script). [[index-digest]] keeps the long texts and now says to search it by link.
+- `CLAUDE.md`'s Key Pages and query steps now start at the router and the current state; [[00-start-here]] points to both.
+
+**After.** Orientation is about 6.6k tokens (CLAUDE.md 2.6k, router 1.5k, current state 2.5k), down from about 22k, and now includes the current state. Both scans: 306 files, 11,556 links, 6 dead (6 known), 0 new; 0 byte problems.
+
+**Lint findings.**
+- Stale claims fixed: the index's Atlas intro (August status: "parallel to Noether 1.1", "Phases 2–5 still spec"), and [[00-atlas-0.1-overview]]'s "Noether 1.1's active build" (a status line now points to the current state). Noether 1.0 and 1.1 are marked dormant in the index.
+- Stale, left for the owner: the worklist board still reads `open` for W349 (done 2026-10-01 per [[demo-finish-plan]]), W351 (evaluated once, failing G5, [[demo-learned-case-plan]] §9) and W353 (batches 1–6 proved, [[formal-proofs-record]]); W25 (`prereqs-and-resources` reachable only by a markdown link) no longer holds, since the index and [[00-start-here]] link it bare; W24's three dead links remain.
+- Orphans (no inbound link from a content page): only navigation and archive pages (the log months, the digest, the worklist archives, `prereqs-and-resources`, the corpus-generation handoff). [[integrated-ui-plan]] had none and is now linked from the current state and the router.
+- No page was moved, merged or deleted. About forty pages under `Atlas 0.1/` are read by path by `tests/` and `scripts/build_racelab_bundle.py`, so a move there breaks the suite; the router and current-state page say so.

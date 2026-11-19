@@ -13,7 +13,7 @@
 - **[[index]]** — full catalog of every page, grouped by theme. Read this to find a specific page.
 - **[[log]]** — chronological build log (what was ingested/synthesized and when).
 
-If you only open one page to navigate, open [[index]]. This page (`00-start-here`) is the *conceptual* on-ramp; the index is the *exhaustive* map.
+If you only open one page to navigate, open [[index]]. This page (`00-start-here`) is the *conceptual* on-ramp; the index is the *exhaustive* map. **For what Atlas is now** (built, measured, open, decided), read [[00-atlas-current-state]]; an LLM session should start at [[context-router]], which names the few pages each task needs.
 
 ---
 
@@ -55,7 +55,8 @@ Rigorously-grounded ideas beyond the benchmark five:
 
 ### 7. What is being built — Noether, then Atlas
 The first in-house designs, Noether 1.0 and 1.1, were single models; Atlas, the current track, splits a simulation into pieces with an expert for each and has them agree at the seams through one checked interface.
-- [[00-initial-model-overview]] · [[00-noether-1.1-overview]]: the Noether designs
+- [[00-atlas-current-state]]: **start here for Atlas**: what exists today (the framework, the studio, 105 Lean theorems, the website), what the case studies settled, and what is open
+- [[00-initial-model-overview]] · [[00-noether-1.1-overview]]: the Noether designs (dormant since July 2026)
 - [[00-atlas-0.1-overview]]: the Atlas thesis (agents, typed edges, experts by equation family)
 - [[00-atlas-0.1-outcome]]: what the case studies measured, claim by claim
 - [[00-proposal-workstreams]]: the proposal's workstreams: the learned expert ([[chart-operator-architecture]], [[chart-operator-general-form]]), its training stages ([[chart-operator-training-and-cost]]), the Lean proofs ([[formal-proofs-record]]), the demo and the website
@@ -82,6 +83,7 @@ The grand question of this wiki: *how far up this spectrum can you go without lo
 ```
 wiki/
   00-start-here.md          ← you are here (conceptual on-ramp)
+  context-router.md         ← for LLM sessions: what to read per task
   index.md                  ← exhaustive catalog
   index-digest.md           ← the catalog's long descriptions
   log.md                    ← chronological build log (October 2026 onward)
