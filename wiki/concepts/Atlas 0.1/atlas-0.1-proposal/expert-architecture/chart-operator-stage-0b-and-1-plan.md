@@ -1,7 +1,7 @@
 # Chart operator after Stage 0: the coolant plan (CO-T on laminar cold plates), then the rest of Stage 1
 
 **Type:** Concept page — **plan**, agreed with the owner; nothing on it is built, trained or registered (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **No code, no data, no training.** The one number measured here is a stand-in for the label cost (§9), and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards.
+**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **No code, no data, no training.** The one number measured here is a stand-in for the label cost (§9), and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
 **Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
 
 ---
@@ -43,6 +43,7 @@ From [[chart-operator-stage-0-rework]] §19–§20:
 | training data | built, checked against the criteria and frozen **before** any training; never generated during it |
 | where to train | **a rented box** (every box under \$0.70/h, with the vast.ai rules) |
 | step budget | **37,500 steps per run** |
+| how the box runs | **in segments of about \$5**: one box works through the run queue for a whole segment, survives the owner logging off, checkpoints so every run can resume, and stops itself at the segment's budget (§5, Phase 5) |
 | expert store | one store, a card per trained model; **failed experts get cards too** |
 | publishing weights | **yes**, in principle. Where and under what licence is decided when the first weights are ready, and nothing is pushed without asking |
 | Stage 0b (high-contrast diffusion) | **deferred** until after the coolant |
@@ -67,7 +68,11 @@ $$\rho c_p\left(\frac{T-T^n}{\Delta t}+\mathbf u\cdot\nabla T\right)-\nabla\cdot
 - the coolant enters at a given temperature and leaves with what it carries.
 
 **The flow is given, not solved.** On each piece it is divergence-free by construction: a stream function on the reference square, mapped by the Piola transform (catalog §6, CO-T).
-- **[AI Inference]:** in a plan view, depth-averaged laminar flow obeys the Hele-Shaw equation $\nabla\cdot\big(\tfrac{h^2}{12\mu}\nabla p\big)=0$, $\bar{\mathbf u}=-\tfrac{h^2}{12\mu}\nabla p$. That is group A, which CO-D already solves. So the diffusion expert could supply the flow and the transport expert carry the heat on it: two Atlas families chained on one device. That needs checking before it is relied on.
+- **[AI Inference]:** in a plan view, depth-averaged laminar flow obeys the Hele-Shaw equation $\nabla\cdot\big(\tfrac{h^2}{12\mu}\nabla p\big)=0$, $\bar{\mathbf u}=-\tfrac{h^2}{12\mu}\nabla p$. That is group A, which CO-D already solves. So the diffusion expert could supply the flow and the transport expert carry the heat on it: two Atlas families chained on one device. That needs checking before it is relied on. Hele-Shaw holds only where a channel is much wider than it is deep; in a narrow duct the profile across the width is prescribed instead.
+
+**A modelling choice still open (added in review, 2026-11-18).** In a real cold plate most of the heat enters the coolant through the channel's floor, from the plate beneath, not through its side walls. A plan view whose only plate–coolant contact is the side walls would understate that path. Depth-averaging a non-uniform profile also adds Taylor dispersion along the flow. Two models, for the owner to choose at the start of Phase 1:
+- **(a) side walls only:** the equation above, and nothing more. The simplest; the coolant and the plate meet only at seams.
+- **(b) side walls plus a floor exchange:** the coolant pieces gain a term $h_{\text{eff}}(T-T_{\text{plate}})/d$, with $h_{\text{eff}}$ from a laminar Nusselt number. That is a co-located bond (catalog group J) between a plate layer and a coolant layer. It adds a positive reaction term, which keeps the class G0′, but it removes the uniform temperature from the coolant pieces' kernel, so gate K changes.
 
 **The regime numbers.** With $\alpha=k/(\rho c_p)$ the coolant's diffusivity, the Péclet number of a piece is
 $$\mathrm{Pe}_{\text{piece}}=\frac{\lvert\mathbf u\rvert_{\max}\,L_{\text{piece}}}{\alpha}\le 200 .$$
@@ -90,6 +95,11 @@ $$\mathrm{Pe}_{\text{piece}}=\frac{\lvert\mathbf u\rvert_{\max}\,L_{\text{piece}
    - SE1's second clause has no analogue, and its gate must be rewritten ([[chart-operator-stage-0]] §12).
 
    **The safety switch** therefore cannot be the energy (an earlier draft in the conversation proposed that, wrongly for G0′). It is the **residual**: a piece's learned modes are kept only if their true residual on the piece's own operator is below TL0's. Otherwise TL0's are used. The residual is a sparse matrix–vector product, needs no reference, and can be checked whatever the weights.
+
+   **Three limits of the switch (added in review):**
+   - **The norm decides what it protects.** A plain $\ell^2$ residual is dominated by the fine modes, which would repeat P6 inside the switch. It must be a dual norm, $\lVert r\rVert_{A_s^{-1}}$ with $A_s$ the symmetric (diffusion) part, or a cheap approximation of one: the coarse part exactly through $\mathcal C$'s factorisation plus a local estimate of the rest.
+   - **It bounds the residual, not the error.** The error is at most the residual divided by the operator's inf-sup constant, which shrinks as Pe grows. So "never worse than TL0" holds for the residual, and the error is still judged by E4.
+   - **Its cost is part of the price.** An exact dual norm needs a solve with $A_s$ on every piece, which could cost as much as the classical solve. Phases 1–3 choose the norm and measure its cost before the registration.
 3. **The seams must carry the flow's heat.** At Pe 20 and 200 the exact port matrix's symmetric part is indefinite (relative smallest eigenvalue $-4.4\times10^{-2}$ and $-1.5\times10^{-1}$, catalog §6). Value plus diffusive flux is not a passive pairing, so the seams need the `ADVEC` port with the advective flux ([[port-algebra-atlas-0.1]]). That is classical framework work, and it comes before anything learned.
 4. **A high-contrast wall.** Water against aluminium is a conductivity ratio of about 300. So the coolant case also contains part of Stage 0b's question.
 5. **The labels must be trusted.** Galerkin on a grid oscillates once the cell Péclet number $\lvert\mathbf u\rvert h/\alpha$ exceeds 2. At $\mathrm{Pe}_{\text{piece}}=200$ that needs $n\ge 100$. References are computed at $n=128$ and checked at $n=256$ (§6, check 2).
@@ -101,6 +111,7 @@ $$\mathrm{Pe}_{\text{piece}}=\frac{\lvert\mathbf u\rvert_{\max}\,L_{\text{piece}
 Each phase ends at a stop point. Each feature with a page goes into the studio, with a handler in `atlas/studio/protocol.py`, a view, a `tests/test_studio_*.py` test and a page walk ([[integrated-ui-plan]] §12). The pinned modules (the R2 and TL pins) are not edited: new code goes in new modules.
 
 **Phase 1: the classical transport expert on pieces** (laptop; no learning)
+- **First, the owner chooses the model**, (a) or (b) of §3.
 - A CO-T piece solver (Petrov–Galerkin, trial and adjoint modes) on the reference square, in a new module beside `atlas/chartop/`.
 - `ADVEC` seams in the host, carrying the advective flux.
 - In the studio:
@@ -118,11 +129,12 @@ Each phase ends at a stop point. Each feature with a page goes into the studio, 
   - a streamline-adapted classical coarse basis (MsFEM-type with oversampling, Hou & Wu 1997);
   - finer cutting (more, shorter pieces);
   - the classical solve.
-- Run on held-out cold-plate layouts drawn in the studio (§6).
+- Run on the **development layouts** (§6), never on the evaluation layouts.
 - **Stop if** any classical option meets E4 under the price bar. Then the coolant needs no network, and that is reported as CO-D's result was.
 
 **Phase 3: the dataset frozen, the gates registered** (laptop, then the owner's approval)
 - The dataset is built and must pass §6's five checks, including the oracle ceiling. Then it is hashed and frozen.
+- The evaluation layouts are drawn and hashed, and only their classical floors are measured.
 - The gates of §7 are written with their bars, accepted by the owner and hash-pinned. The price protocol gets a dry run on a rented whole machine before pinning.
 - The studio's Records screen today lists a placeholder "Stage 0b, not registered" row with arms TL0, P_theta, classical and H2r (`tests/test_studio_records.py`, `scripts/studio_walks/p6.py`). It is replaced by the coolant registration's row, with its test and walk updated.
 
@@ -137,6 +149,12 @@ Each phase ends at a stop point. Each feature with a page goes into the studio, 
 - **The scale:** 3 seeds per arm at 37,500 steps; the learning curve on nested subsets (§6) at one seed.
 - **The loss:** the error of the port responses, weighted by port traces sampled from coupled solves on the training layouts. **[AI Inference]:** this weights the modes as the coupled answer reads them, which is P6's fix by construction. Check 5 of §6 tests it before training.
 - **The training step** is priced on the box before the long runs (F9's discipline).
+- **Segments of about \$5** (the owner's choice). One box works through the queue of runs for a whole segment, so it is not created and destroyed for each run.
+  - The runner on the box needs neither the laptop nor the chat. It keeps its queue and state on the box's disk, and checkpoints every run atomically (weights, optimiser, random states, step and data position) at least every 30 minutes.
+  - At the segment's budget, or when the queue is empty, it writes a DONE marker with every file's sha256 and stops the instance itself. `scripts/chartop_box_run.sh` already stops a box at a deadline with the container's own key (`CONTAINER_API_KEY`). The TL pin hashes `chartop_box_*`, so the new runner copies that pattern into a new script.
+  - A run cut by the deadline resumes in the next segment from its last checkpoint.
+  - The laptop's watcher only collects. If the laptop is off, the results wait on the stopped box's disk, which bills for storage only. A stopped box's GPU can be re-rented by someone else, so the next segment may need a new box, with the checkpoints and the dataset uploaded and checked by sha256.
+  - The owner approves each segment before it starts.
 
 **Phase 6: one evaluation, and the write-up**
 - Accuracy on the held-out layouts; the price on a rented whole machine with fixed BLAS threads and an A/A check.
@@ -154,15 +172,19 @@ Each phase ends at a stop point. Each feature with a page goes into the studio, 
   - a material, coolant or solid (contrast up to about 300);
   - a Fourier number for the step.
 - **Labels:** each piece's trial and adjoint port responses, solved classically at $n=128$.
-- **Held-out problems:** real cold-plate layouts drawn in the studio with its Channel tool (a serpentine plate, parallel channels, a block beside a channel). They are fixed before training starts, never generated and never trained on.
+- **Three sets of layouts, kept apart** (added in review: one held-out set used both to decide whether to go on and to judge the result would be judged on the problems it was chosen from):
+  - **training layouts**, generated (random channel networks on a plate). Their coupled solves supply the port traces that weight the loss;
+  - **development layouts**, drawn in the studio with its Channel tool (a serpentine plate, parallel channels, a block beside a channel). Phase 2 and the checks below run on them;
+  - **evaluation layouts**, drawn and hashed at registration, with only their classical floors measured. No learned or coarse arm runs on them before the one evaluation.
 - **The learning curve:** nested subsets of the frozen set (25%, 50%, 100%), so the curve needs no new data.
+- **Size and transfer** (added in review). Full port responses at $n=128$ are about 16 MB per piece, so 50,000 pieces would not fit or upload. The stored labels must be compact: the trial and adjoint port maps (64 × 64 each), the coarse projections, and full fields only for the validation pieces. The dataset's size is estimated before it is built. It is moved to a box as files and checked by sha256, never regenerated there: sin, cos and atan2 differ in the last bit between Windows and glibc, so regenerating on Linux would not reproduce the frozen bytes.
 
 **The five checks the dataset must pass before it is frozen:**
 1. **Coverage:** the registered ranges of Péclet number, shape, contrast and step are filled as declared.
 2. **Label quality:** a sample's labels change by less than a stated tolerance from $n=128$ to $n=256$.
-3. **The control:** TL0 misses E4 on the held-out layouts (Phase 2). If it does not, stop.
-4. **The oracle ceiling:** the best classical coarse basis on each piece stands in for the network. Priced at TL0's cost plus an estimated forward pass, it must beat every classical option at equal price. If even the oracle cannot, no network can.
-5. **Loss–gate alignment:** random perturbations of an untrained network must be ranked alike by the training loss and by the coupled error on the held-out layouts. This is the check that would have caught P6 before training.
+3. **The control:** TL0 misses E4 on the development layouts (Phase 2). If it does not, stop.
+4. **The oracle ceiling:** the exact port responses stand in for a perfect network. They are priced at TL0's cost, plus the planned network's forward pass measured untrained on the laptop, plus the safety switch. That price must be under the price bar and under every classical option that reaches the same accuracy. If even a perfect network cannot pay for itself, no trained one can. (Corrected in review: an earlier draft used the best classical coarse basis as the oracle, which is itself one of the competitors.)
+5. **Loss–gate alignment:** across a fixed set of perturbed networks, the training loss and the coupled error on the development layouts must rank them alike, with a rank correlation above a threshold registered beforehand. This is the check that would have caught P6 before training.
 
 ---
 
@@ -172,8 +194,8 @@ Each phase ends at a stop point. Each feature with a page goes into the studio, 
 |---|---|---|
 | CX, K, D | the coarse correction exact and the kernel (a uniform temperature) reproduced, whatever the weights | structural, carried over |
 | SAFE | on every piece, the kept modes' residual is at most TL0's (the switch of §4) | structural |
-| E4 | the coupled error on the held-out layouts under E4's bar | accuracy |
-| CL | the trained expert beats the **best classical option at equal measured price** (raised $n_c$, the classical multiscale basis, finer cutting) | the decisive comparison |
+| E4 | the coupled error on the evaluation layouts under E4's bar. CO-D's E4 is an energy norm, which G0′ lacks, so CO-T's measure is fixed at registration: for example the relative $H^1$-seminorm error of the coupled field, with the outlet's bulk temperature and the heat balance beside it, each against its classical floor | accuracy |
+| CL | the trained expert beats the **best classical option at equal measured price** (raised $n_c$, the classical multiscale basis, finer cutting). Compared per layout, timing the whole coupled solve, since finer cutting changes the pieces themselves | the decisive comparison |
 | SEEDS | CL holds for every seed of the winning arm, not just the mean | robustness |
 | PR | price against the classical solve, measured on a rented whole machine | measured, not assumed |
 | AMORT | how many piece solves repay the training cost | reported |
@@ -205,7 +227,7 @@ out/experts/
 
 **Rules.**
 - Every trained model gets a card, **including the failures**.
-- Stage 0's eleven arms, the forms runs and TL-s0/s1 are backfilled from their existing records.
+- Stage 0's eleven arms, the forms runs and TL-s0/s1 are backfilled from their existing records. A card says whether its weights are present locally. Some earlier checkpoints may not be, and a card never claims a file it cannot hash.
 - The studio reads `catalog.json` in place of the list written by hand. An expert is offered only when its weights' sha256 matches its card, as now. This change touches `experts.py`, which no registration record under `out/chartop/` names (checked 2026-11-18; check again before editing).
 - **Publishing:** the owner said yes in principle. Where (a GitHub release or a model hub) and under what licence are decided when the first weights are ready. Nothing is pushed without asking. NeuberNet is never stored or published here, and no Poseidon weights are used.
 

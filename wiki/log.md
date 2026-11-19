@@ -1193,3 +1193,14 @@ A planning conversation with the owner, written up as [[chart-operator-stage-0b-
 - **A correction made in the conversation:** CO-T is G0′, so the safety switch is the piece's residual, not the energy.
 - **Measured, a stand-in only:** a non-symmetric sparse LU with 64 trial and 64 adjoint right-hand sides took 11, 49 and 265 ms at $n=32$, 64 and 128, single-threaded, on battery; not Atlas's solver, not recorded in `out/`. Training estimated at about \$7–12 on a rented RTX 3090 (**[AI Inference]**).
 - Updated: [[00-atlas-current-state]] §4 and §6, [[context-router]]'s chart-operator route, [[index]] (307 pages).
+
+## [2026-11-18] note | the coolant plan reviewed: seven fixes
+
+On the owner's request, a critical review of [[chart-operator-stage-0b-and-1-plan]]; each fix is marked "added in review" on the page. Nothing built.
+- **The heat path:** a plan view with contact only at the side walls misses the channel floor, where most of a cold plate's heat enters. The model, side walls only or side walls plus a floor-exchange bond, is now the owner's choice at the start of Phase 1.
+- **The safety switch:** an $\ell^2$ residual would repeat P6; the switch needs a dual norm, guarantees the residual and not the error, and its cost counts in the price.
+- **Test-set reuse:** one held-out set was to decide whether to go on and to judge the result. There are now training, development and evaluation layouts, and the last is hashed at registration and run by no learned or coarse arm before the evaluation.
+- **The oracle:** corrected to the exact responses, priced at TL0 plus a measured forward pass plus the switch; the draft's oracle was one of the competitors.
+- **The dataset:** full labels at $n=128$ would be about 16 MB a piece, so labels are compact (port maps, coarse projections), and the frozen files are uploaded and checked by sha256, never regenerated on Linux (libm differs in the last bit).
+- **E4 for CO-T:** G0′ has no energy norm, so the measure is fixed at registration; comparisons are per layout, timing the whole coupled solve.
+- **Training in \$5 segments:** the box runs a queue for a whole segment, checkpoints so runs resume, and stops itself, in a new script copied from `chartop_box_run.sh`'s deadline (the TL pin hashes `chartop_box_*`).
