@@ -29,8 +29,10 @@ function windowHead(win, run) {
     b.addEventListener('click', () => { w.method = m; if (m === 'full') w.solver = 'classical'; else if (w.solver === 'classical') w.solver = 'mixed'; renderAll(); });
     seg.append(b);
   }
+  const opts = solverOptions(win);
+  if (!opts.some(([v]) => v === w.solver)) w.solver = opts[0][0];       // e.g. CO-T: no TL-s0
   const sel = h('select', { class: 'field', 'aria-label': `Solver, ${win}`, disabled: run || null, style: { minWidth: 0, maxWidth: '150px' } },
-    ...solverOptions(win).map(([v, l]) => h('option', { value: v, selected: v === w.solver || null }, l)));
+    ...opts.map(([v, l]) => h('option', { value: v, selected: v === w.solver || null }, l)));
   sel.addEventListener('change', () => { w.solver = sel.value; });
   const n = store.pieces?.summary?.n;
   const res = h('span', { class: 'muted mono', 'data-tip': 'The resolution of the cut (set on Pieces): every piece and the merged mesh share it' }, n ? `n ${n}` : '');
@@ -109,24 +111,29 @@ function cards() {
     row('energy, worst piece', sci(worst), 'Largest relative energy-norm error over the pieces'),
     row('max error', sci(acc?.max_err), 'Largest nodal difference, in the field\'s units'),
     row('seam mismatch', sci(r?.seams?.max_jump), 'Largest jump in T across a seam'),
-    row('balance', r?.balance ? sci(Math.max(...Object.values(r.balance).filter((x) => x !== null))) : '–', 'Net heat through the boundary over the heat in: zero for a conserving steady solution')));
+    row('balance', r?.balance ? sci(Math.max(...Object.values(r.balance).filter((x) => x !== null))) : '–', 'Net heat through the boundary over the heat in: zero for a conserving steady solution'),
+    ...(r?.physics === 'CO-T' ? [row('outlet T', r.outlet?.bulk != null ? `${fmt(r.outlet.bulk, 5)} K` : '–', `The outlet's mixing-cup temperature in ${state.mode === 'compare' ? 'B' : 'this window'}; the reference's is ${r.outlet?.reference != null ? fmt(r.outlet.reference, 5) : '–'} K`),
+      row('outlet error', sci(r.outlet?.err_over_range), 'The mixing-cup temperature\'s difference over the field\'s range'),
+      row('ADVEC seams', String(r.seams?.advective ?? '–'), 'Seams the flow crosses: they exchange the heat it carries as well as T and the diffusive flux')] : [])));
   const chips = h('div', { class: 'chips' });
   const chip = (label, ok, tip) => chips.append(h('span', { class: `chipk ${ok === true ? 'ok' : (ok === false ? 'bad' : '')}`, 'data-tip': tip }, `${label}${ok === true ? ' ✓' : (ok === false ? ' ✕' : '')}`));
   if (r) {
-    chip('agree', r.e4 ? r.e4.passed : null, r.e4 ? `${r.e4.tip} Here: energy ${sci(acc.energy_rel)} against ${r.e4.energy_bar}; max ${sci(acc.max_err)} against ${sci(r.e4.max_bar)}.` : 'E4\'s bar applies to a chart-operator window against the full domain, steady');
+    chip('agree', r.e4 ? r.e4.passed : null, r.e4 ? (r.physics === 'CO-T' ? `${r.e4.tip}. Here: energy ${sci(acc.energy_rel)}, outlet ${sci(acc.outlet_bulk_err_rel)} of the range.` : `${r.e4.tip} Here: energy ${sci(acc.energy_rel)} against ${r.e4.energy_bar}; max ${sci(acc.max_err)} against ${sci(r.e4.max_bar)}.`) : 'E4\'s bar applies to a chart-operator window against the full domain, steady');
     const bal = r.balance ? Object.values(r.balance).filter((x) => x !== null) : [];
     chip('balance', bal.length ? bal.every((x) => x < 1e-8) : null,
       `Heat balance to round-off (1e-8) in every window: ${Object.entries(r.balance || {}).map(([k, v]) => `${k} ${sci(v)}`).join(', ')}. ` +
       'The full domain conserves heat to round-off; a learned expert\'s field conserves it only to its own error.');
     chip('charts', r.certificate.charts[0] === r.certificate.charts[1], `${r.certificate.charts[0]} of ${r.certificate.charts[1]} charts certified (Proposition 3)`);
-    chip('CX', null, 'CX, coarse exactness: measured by the registered evaluation, not in this run');
-    chip('DUAL', null, 'DUAL, the 2-D dual bracket: held by the registered evaluation\'s records, not computed in this run');
+    if (r.physics !== 'CO-T') {
+      chip('CX', null, 'CX, coarse exactness: measured by the registered evaluation, not in this run');
+      chip('DUAL', null, 'DUAL, the 2-D dual bracket: held by the registered evaluation\'s records, not computed in this run');
+    }
   }
   side.append(h('section', { class: 'subpanel' }, h('div', { class: 'label' }, 'Checks', h('b', { class: 'mono', style: { marginLeft: 'auto' } }, r ? `${chips.querySelectorAll('.ok').length} / ${chips.querySelectorAll('.ok, .bad').length}` : '')), chips));
   side.append(sec(h('span', {}, 'Certificate ', h('abbr', { class: 'q', 'data-tip': r?.certificate?.note || 'G0: linear, symmetric, energy-based' }, r?.certificate?.class || 'G0')),
     row('dual bound', '–', 'A guaranteed upper bound on B\'s energy error from the complementary problem: not computed in this run'),
     row('charts', r ? `${r.certificate.charts[0]} / ${r.certificate.charts[1]}` : '–'),
-    row('min eigenvalue', sci(r?.certificate?.min_eig), 'Of the assembled interface matrix: positive, as Theorem 1 says it stays')));
+    row('min eigenvalue', sci(r?.certificate?.min_eig), r?.physics === 'CO-T' ? 'Of the symmetric part of the assembled interface matrix, over its norm: positive, so the coupled system is positive real' : 'Of the assembled interface matrix: positive, as Theorem 1 says it stays')));
   return side;
 }
 

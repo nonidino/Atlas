@@ -1,7 +1,7 @@
 # Atlas 0.1: current state
 
 **Type:** Hub — **current-state snapshot** of the Atlas 0.1 track (folder: `Atlas 0.1/`)
-**Status:** written 2026-11-18 in the wiki lint and compaction pass, from the pages linked below; no new measurement. Updated the same day for the chart operator's plan after Stage 0 (§4, §6). **Update this page whenever a hub's status line changes.** Where it and a linked page disagree, the linked page wins and this page is stale.
+**Status:** written 2026-11-18 in the wiki lint and compaction pass, from the pages linked below; no new measurement. Updated the same day for the chart operator's plan after Stage 0 (§4, §6), and for its Phase 1, built and measured (§4, §6). **Update this page whenever a hub's status line changes.** Where it and a linked page disagree, the linked page wins and this page is stale.
 **Purpose:** the one page to read before any Atlas build, design, decision or brainstorm, so the history (89 tiers, five PoCs, the archived worklist) need not be read to learn what is true now. For which other pages to read per task, see [[context-router]].
 **Related:** [[00-atlas-0.1-overview]] · [[00-atlas-0.1-outcome]] · [[00-proposal-workstreams]] · [[gap-worklist]] · [[integrated-ui-plan]]
 
@@ -41,7 +41,8 @@ From [[00-atlas-0.1-outcome]] (revised after Tier 89); numbers there, with condi
 - **Kernel-exact forms** (W356–W358, to 2026-11-08): output forms that keep a uniform temperature exact; trained, E4 still failed. **Rule R2's hybrid met E4 and the price bar with nothing learned** on square-first layouts ([[chart-operator-kernel-exact-forms]]).
 - **Stage 0 reworked** (W363, done 2026-11-12): a two-level, coarse-exact expert. Untrained (TL0) the coarse level removes 87–96% of the coupled error above the floor; trained (TL) the network adds nothing coupled: E4 on 4 of 6, NC not met, 1.05 of a classical solve against TL0's 0.84 ([[chart-operator-stage-0-rework]] §19–§20).
 - **So, today:** the CO-D expert stays the classical hybrid H2r; **W362 (pieces that are not squares) is open**. Design rationale and owner decisions: [[chart-operator-design-decisions]].
-- **The plan after Stage 0** (agreed 2026-11-18, nothing built): **the coolant case comes next**, CO-T on laminar cold plates (Péclet at most 200 per piece), in phases that stop before training unless the classical options fail and a perfect network would beat them at equal price. The dataset is frozen before training; training is on a rented box, 3 seeds, 37,500 steps; every trained model gets a card in an expert store the studio reads. Then CO-E, the bond and the biharmonic network classically on TL0; **Stage 0b deferred**; Helmholtz out ([[chart-operator-stage-0b-and-1-plan]]).
+- **The plan after Stage 0** (agreed 2026-11-18): **the coolant case comes next**, CO-T on laminar cold plates (Péclet at most 200 per piece), in phases that stop before training unless the classical options fail and a perfect network would beat them at equal price. The dataset is frozen before training; training is on a rented box, 3 seeds, 37,500 steps; every trained model gets a card in an expert store the studio reads. Then CO-E, the bond and the biharmonic network classically on TL0; **Stage 0b deferred**; Helmholtz out ([[chart-operator-stage-0b-and-1-plan]]).
+- **Its Phase 1 is built** (2026-11-18, W364; plan §12). The owner chose model (a), side walls only. The classical CO-T expert (Petrov–Galerkin, adjoint modes by reversing the flow), `ADVEC` seams and the studio's CO-T path are in place. The seams are **stable at Pe 200** by six criteria fixed before the run: whole traces equal the monolithic solve to $5\times10^{-11}$, every piece is passive under the `ADVEC` split (the `THERM`-only pairing is not, about $-0.18$ at Pe 200), the coupled error equals the 16-mode oracle's (ratio 0.95–1.00, no growth along 8 pieces), and the modes' errors enter quadratically. The 16-mode floor is 0.1–0.3% on a channel and a bend, but 6–13% on the steady plate. Nothing is learned yet.
 
 ## 5. Case studies and PoCs, one line each
 
@@ -57,7 +58,7 @@ From [[00-atlas-0.1-outcome]] (revised after Tier 89); numbers there, with condi
 
 ## 6. Open fronts
 
-- **The coolant case** (CO-T, Phase 1: the classical transport expert and `ADVEC` seams on pieces) per [[chart-operator-stage-0b-and-1-plan]]; Stage 0b deferred; **W362** (non-square pieces).
+- **The coolant case** (CO-T, W364) per [[chart-operator-stage-0b-and-1-plan]]: Phase 1 built (§12); **Phase 2 next**, the decisive test without training (TL0 for CO-T and the priced classical options) on development layouts drawn in the studio, whose curved channels need a flow solved on them first. Stage 0b deferred; **W362** (non-square pieces).
 - **Formal proofs batch 7** ([[formal-proofs-implementation-plan]]).
 - The remaining open W-items: 173 open at the board's generation (2026-10-17). Read the board in [[gap-worklist]], never the archives, and grep for a W-number instead of reading the page (§7).
 - Deferred design problems with their causes: [[open-problems-atlas-0.1]].

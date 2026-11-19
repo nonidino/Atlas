@@ -26,6 +26,7 @@ opens in the other. `--fetch-fonts` downloads Ranade from Fontshare and exits.
 | P4 | pieces and experts: automatic cutting (rectangle grids at material interfaces, polar strips, channel strips, the O-H layout around an insert), hand cutting (chords, merges, corners); TFI, Laplacian and a new numerical conformal chart; Proposition 3's certificates; an expert per piece, trained networks offered only when their sha256 matches their record; seam verdicts | built |
 | P5 | run: Single and Compare on the pieces (full domain or chart operator, mixed or one expert on every piece), steady or marched; the field, difference, per-piece and seam views; price as a ratio with its A/A spread; E4's bar, balance and the certificate | built |
 | P6 | records: every registered evaluation under `out/chartop/`, its gates with their registered titles and bars, its prices by problem set, ρ per test piece; Open into Compare; a new kind's registration appears with no change to the page | built |
+| CO-T 1 | the coolant plan's Phase 1: a conjugate-heat case cut into CO-T pieces (coolant and plate, each one material), the classical CO-T expert, `THERM+ADVEC` seams, each piece's Péclet numbers and the CO-T envelope; Run's Single and Compare (steady) | built |
 
 ## Geometry (P1)
 
@@ -185,6 +186,21 @@ own list), their verdicts from wherever the record keeps them, its prices under 
 problem sets, and ρ per test piece as a histogram. *Open* takes a held-out problem into
 Compare with the record's network. A test reads both the JSON and the page's data.
 
+## The coolant's pieces (CO-T, the coolant plan's Phase 1)
+
+`cot.py` takes a `conjugate-heat-2d` case onto the pieces (wiki:
+`chart-operator-stage-0b-and-1-plan` §12). The cut is Pieces' own; the pieces become
+`atlas.chartop.transport.TransportPiece`s, coupled by `transport_host.TransportLayout`
+(Petrov–Galerkin with each piece's adjoint modes). A coolant material (`flows`) carries
+plane Poiseuille flow at the case's mean speed `u_coolant`, from the end its
+`coolant-inlet` is on; a material's `heat` is its source; `coolant-outlet` is the
+do-nothing outlet. A seam the flow crosses is `THERM+ADVEC` (it carries the heat the flow
+carries), a wall `THERM`. A piece outside CO-T's envelope (a Péclet number above the
+owner's cap of 200, a cell Péclet number above 2, an uncertified chart) is refused by
+name with what to do. Only the classical CO-T expert exists; Run is steady, as the family
+is. A coolant region that is not a straight rectangle is refused: a curved channel needs
+its flow solved on it (the plan's Phase 2). `scripts/studio_walks/cot1.py` walks it.
+
 ## Page checks
 
 `scripts/studio_drive.py WALK` drives the real page in headless Edge with **trusted**
@@ -193,7 +209,8 @@ change, fails on any console error, and writes `out/studio/<walk>/walk.json` wit
 screenshots. The app's own browser pane cannot take input while it is hidden, and a
 page check must not depend on a window being in front. `scripts/studio_walks/p2.py`
 is P2's: 30 checks, among them the four done-when items; `p3.py` is P3's: 19;
-`p4.py`, `p5.py` and `p6.py` check P4's, P5's and P6's done-when items the same way.
+`p4.py`, `p5.py` and `p6.py` check P4's, P5's and P6's done-when items the same way;
+`cot1.py` the coolant plan's Phase 1 (25 checks).
 
 ## How it works
 

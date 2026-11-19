@@ -31,7 +31,9 @@ const CUTTERS = {
   insert: ['Insert', 'A plate with one round insert: the O-H layout'],
 };
 
-const isHeat = () => store.state?.meta?.family === 'conduction-2d';
+// heat conduction (CO-D) and the coolant's conjugate heat (CO-T: atlas/studio/cot.py)
+const isHeat = () => ['conduction-2d', 'conjugate-heat-2d'].includes(store.state?.meta?.family);
+const isCOT = () => summary()?.physics === 'CO-T';
 const summary = () => store.pieces?.summary || null;
 const busy = () => ['starting', 'working'].includes(store.pieces?.job?.status);
 
@@ -275,7 +277,9 @@ function renderLeft() {
     const f = (x) => (x === null || x === undefined ? '–' : x.toExponential(1));
     box.append(h('div', { class: 'subpanel' },
       kv('whole traces', f(c.full.max_diff_rel), 'Every side\'s whole trace (n port modes): the coupled answer against the monolithic solve, the largest difference over the range', c.full.max_diff_rel < 1e-9 ? 'ok-text' : 'warn-text'),
-      kv('16 modes', f(c.ports16.max_diff_rel), 'The experts\' 16 port modes per side: the truncation floor every expert stands on')));
+      kv('16 modes', f(c.ports16.max_diff_rel), 'The experts\' 16 port modes per side: the truncation floor every expert stands on'),
+      ...(isCOT() ? [kv('outlet, 16 modes', f(c.ports16.outlet_bulk_err_rel), 'The outlet\'s mixing-cup temperature with 16 port modes against the monolithic solve, over the field\'s range'),
+        kv('balance, 16 modes', f(c.ports16.balance_rel), 'The heat the 16-mode coupled field leaves unaccounted for, over the heat throughput: zero to round-off with whole traces')] : [])));
   }
 }
 
@@ -327,7 +331,9 @@ function renderRight() {
   box.append(h('div', { class: 'label' }, h('abbr', { 'data-tip': 'Proposition 3: a chart with det J above 0 at every cell corner and a simple, positively oriented boundary is a valid map of the square onto the piece' }, 'Certificate')));
   box.append(kv('min det J', fmt(ce.min_detJ_rel, 3), 'Smallest Jacobian determinant over this piece\'s cell corners, relative to its mean', ce.ok ? '' : 'err-text'),
     kv('boundary simple', ce.simple ? '✓' : '✗', null, ce.simple ? 'ok-text' : 'err-text'),
-    kv('in card envelope', p.envelope.refusals.length ? '✗' : '✓', p.envelope.refusals.length ? `Outside the CO-D card: ${p.envelope.refusals.join('; ')}` : 'Inside the shapes and coefficients the expert\'s card declares', p.envelope.refusals.length ? 'warn-text' : 'ok-text'));
+    kv(isCOT() ? 'in CO-T envelope' : 'in card envelope', p.envelope.refusals.length ? '✗' : '✓', p.envelope.refusals.length ? `Outside the ${isCOT() ? 'CO-T envelope' : 'CO-D card'}: ${p.envelope.refusals.join('; ')}` : (isCOT() ? 'Inside the CO-T envelope: a certified chart, a Péclet number at most the cap of 200 per piece, and a cell Péclet number at most 2 (Galerkin does not oscillate)' : 'Inside the shapes and coefficients the expert\'s card declares'), p.envelope.refusals.length ? 'warn-text' : 'ok-text'));
+  if (p.flow) box.append(kv('Pe', fmt(p.flow.pe, 3), 'The piece\'s Péclet number |u|L/α along the flow (n times its largest cell Péclet number); the owner\'s cap is 200 per piece: cut a faster channel into shorter pieces', p.flow.pe > 200 ? 'warn-text' : ''),
+    kv('cell Pe', fmt(p.flow.cell_pe, 3), 'The largest cell Péclet number: Galerkin oscillates above 2, so a faster piece needs a finer grid', p.flow.cell_pe > 2 ? 'warn-text' : ''));
   if (!ce.ok) box.append(h('div', { class: 'note err' }, `Refused: ${ce.reason}. min det J ${fmt(ce.min_detJ_rel, 3)}: try the Laplacian or conformal chart, or cut the piece.`));
   if (p.skew !== null) box.append(kv('max skew', `${Math.round(p.skew)}°`, 'Largest departure of a cell corner from 90°'));
   box.append(h('div', { class: 'label' }, 'Chart'));
@@ -351,7 +357,7 @@ function renderRight() {
   p.sides.forEach((sd, k) => {
     const to = sd.to === null ? (sd.kind === 'dirichlet' ? 'fixed temperature' : sd.kind) : `P${sd.to + 1}`;
     box.append(h('div', { class: 'kvrow' }, h('span', {}, `${k} · ${to}`),
-      sd.to === null ? h('span', { class: 'muted' }, 'boundary') : h('span', {}, h('abbr', { 'data-tip': 'Thermal port: temperature and heat flux are exchanged across the side' }, 'THERM'),
+      sd.to === null ? h('span', { class: 'muted' }, sd.flow && ['inlet', 'outlet'].includes(sd.flow) ? sd.flow : 'boundary') : h('span', {}, h('abbr', { 'data-tip': sd.kind === 'THERM+ADVEC' ? 'Thermal and advective ports: the flow crosses this seam, so temperature, the diffusive heat flux and the heat the flow carries (ADVEC) are exchanged' : 'Thermal port: temperature and heat flux are exchanged across the side' }, sd.kind === 'THERM+ADVEC' ? 'THERM+ADVEC' : 'THERM'),
         sd.conforming ? h('b', { class: 'ok-text' }, ' ✓') : h('b', { class: 'warn-text', 'data-tip': 'A mortar: the nodes differ' }, ' ~'))));
   });
   for (const n of s.notes || []) box.append(h('div', { class: 'muted', style: { fontSize: '11.5px' } }, n));
@@ -363,7 +369,7 @@ function render() {
   els.left.hidden = !heat;
   els.right.hidden = !heat;
   if (!heat) {
-    clear(els.bar).append(h('span', { class: 'muted' }, `${family()?.label || 'This kind'} runs on windows; chart-operator pieces are built for heat conduction (CO-D).`));
+    clear(els.bar).append(h('span', { class: 'muted' }, `${family()?.label || 'This kind'} runs on windows; chart-operator pieces are built for heat conduction (CO-D) and the coolant's conjugate heat (CO-T).`));
     clear(els.foot);
     draw();
     return;

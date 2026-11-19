@@ -134,7 +134,7 @@ function renderFields() {
 function render() {
   if (!root || !store.state) return;
   clear(root);
-  const heat = store.state.meta.family === 'conduction-2d';
+  const heat = ['conduction-2d', 'conjugate-heat-2d'].includes(store.state.meta.family);
   if (heat) {
     if (!runKindChosen) runKind = store.pieces?.summary ? 'pieces' : 'windows';
     const kind = h('div', { class: 'seg', role: 'group', 'aria-label': 'What runs', style: { margin: '8px 8px 0', alignSelf: 'flex-start' } });

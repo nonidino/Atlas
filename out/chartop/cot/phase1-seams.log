@@ -1,0 +1,71 @@
+S1 channel steady Pe 0 n 32: 1.19e-14
+   m=16 energy 3.067e-03 oracle 3.068e-03 ratio 0.999540713688994 passivity {'skew': -2.78750723379406e-15, 'upwind': -2.78750723379406e-15, 'galerkin': -2.78750723379406e-15}
+S1 channel steady Pe 20 n 32: 8.70e-15
+   m=16 energy 1.566e-03 oracle 1.567e-03 ratio 0.9997993764222908 passivity {'skew': -2.3110234274004753e-15, 'upwind': 0.005273254396185651, 'galerkin': -0.06825299910846691}
+S1 channel steady Pe 50 n 32: 7.82e-15
+   m=16 energy 1.028e-03 oracle 1.029e-03 ratio 0.9987434157110088 passivity {'skew': 2.7302665882557184e-15, 'upwind': 0.0053101395966303885, 'galerkin': -0.14155375131077555}
+S1 channel steady Pe 100 n 64: 6.93e-14
+   m=16 energy 8.204e-04 oracle 8.218e-04 ratio 0.9982654213022599 passivity {'skew': 6.306259321616257e-15, 'upwind': 0.0036263340369268237, 'galerkin': -0.19085307984634028}
+S1 channel steady Pe 200 n 128: 1.17e-13
+   m=16 energy 6.987e-04 oracle 6.992e-04 ratio 0.9992590524814995 passivity {'skew': 9.777280068448084e-15, 'upwind': 0.0019091486650895818, 'galerkin': -0.17840880589145128}
+S1 channel step Pe 0 n 32: 2.03e-14
+   m=16 energy 3.526e-05 oracle 3.526e-05 ratio 0.999954546744956 passivity {'skew': 0.005963309526890256, 'upwind': 0.005963309526890256, 'galerkin': 0.005963309526890256}
+S1 channel step Pe 20 n 32: 1.72e-14
+   m=16 energy 3.531e-05 oracle 3.531e-05 ratio 0.9999699517405867 passivity {'skew': 0.005998770389839986, 'upwind': 0.005998770389840068, 'galerkin': 0.005091160986415966}
+S1 channel step Pe 50 n 32: 1.39e-14
+   m=16 energy 3.544e-05 oracle 3.544e-05 ratio 1.000025475357919 passivity {'skew': 0.005621867409791596, 'upwind': 0.0056218674097914525, 'galerkin': -0.04843660331316233}
+S1 channel step Pe 100 n 64: 7.82e-15
+   m=16 energy 3.569e-05 oracle 3.569e-05 ratio 1.0000167800594266 passivity {'skew': 0.004163571188595992, 'upwind': 0.003939871451207102, 'galerkin': -0.11486526757216295}
+S1 channel step Pe 200 n 128: 5.20e-14
+   m=16 energy 3.618e-05 oracle 3.621e-05 ratio 0.9991935731183683 passivity {'skew': 0.002087693560311924, 'upwind': 0.0020145180168213914, 'galerkin': -0.13830986047674643}
+S1 plate steady Pe 0 n 32: 2.68e-11
+   m=16 energy 5.872e-02 oracle 6.204e-02 ratio 0.9465843167973477 passivity {'skew': -4.0810099793425563e-14, 'upwind': -4.0810099793425563e-14, 'galerkin': -4.0810099793425563e-14}
+S1 plate steady Pe 20 n 32: 6.67e-12
+   m=16 energy 1.304e-01 oracle 1.369e-01 ratio 0.9526472689481814 passivity {'skew': -4.0810099793425563e-14, 'upwind': -4.0810099793425563e-14, 'galerkin': -0.06825299910847395}
+S1 plate steady Pe 50 n 32: 2.82e-12
+   m=16 energy 1.102e-01 oracle 1.153e-01 ratio 0.9556464181594317 passivity {'skew': -4.0810099793425563e-14, 'upwind': -4.0810099793425563e-14, 'galerkin': -0.1415537513107798}
+S1 plate steady Pe 100 n 64: 1.17e-11
+   m=16 energy 9.896e-02 oracle 1.032e-01 ratio 0.9591501943700355 passivity {'skew': -4.0810099793425563e-14, 'upwind': -4.0810099793425563e-14, 'galerkin': -0.1908530798463442}
+S1 plate steady Pe 200 n 128: 5.01e-11
+   m=16 energy 9.664e-02 oracle 1.002e-01 ratio 0.9645731229667501 passivity {'skew': -4.0810099793425563e-14, 'upwind': -4.0810099793425563e-14, 'galerkin': -0.17840880589145297}
+S1 plate step Pe 0 n 32: 1.22e-12
+   m=16 energy 1.111e-04 oracle 1.165e-04 ratio 0.9533806298661748 passivity {'skew': 0.0003451268906724719, 'upwind': 0.0003451268906724719, 'galerkin': 0.0003451268906724719}
+S1 plate step Pe 20 n 32: 1.27e-12
+   m=16 energy 1.522e-04 oracle 1.595e-04 ratio 0.9546355654551135 passivity {'skew': 0.0003451268906724719, 'upwind': 0.0003451268906724719, 'galerkin': 0.0003451268906724719}
+S1 plate step Pe 50 n 32: 1.25e-12
+   m=16 energy 1.820e-04 oracle 1.902e-04 ratio 0.9568757188270915 passivity {'skew': 0.0003451268906724719, 'upwind': 0.0003451268906724719, 'galerkin': -0.04843660331316233}
+S1 plate step Pe 100 n 64: 1.40e-11
+   m=16 energy 2.095e-04 oracle 2.182e-04 ratio 0.9601129799680231 passivity {'skew': 0.0003451268906724719, 'upwind': 0.0003451268906724719, 'galerkin': -0.11486526757216023}
+S1 plate step Pe 200 n 128: 4.95e-11
+   m=16 energy 2.429e-04 oracle 2.516e-04 ratio 0.965293713237622 passivity {'skew': 0.0003451268906724719, 'upwind': 0.0003451268906724719, 'galerkin': -0.13830986047674512}
+S1 bend steady Pe 0 n 32: 4.97e-14
+   m=16 energy 2.332e-03 oracle 2.333e-03 ratio 0.9995781691244298 passivity {'skew': -6.606785594649863e-15, 'upwind': -6.606785594649863e-15, 'galerkin': -6.606785594649863e-15}
+S1 bend steady Pe 20 n 32: 1.47e-14
+   m=16 energy 1.338e-03 oracle 1.341e-03 ratio 0.9978163290712395 passivity {'skew': -5.233177983344222e-15, 'upwind': 0.005297950467959343, 'galerkin': -0.08696335356435804}
+S1 bend steady Pe 50 n 32: 1.26e-14
+   m=16 energy 1.137e-03 oracle 1.138e-03 ratio 0.9992538909586289 passivity {'skew': -1.885145824838088e-15, 'upwind': 0.004922835411472132, 'galerkin': -0.1792315523432818}
+S1 bend steady Pe 100 n 64: 2.56e-14
+   m=16 energy 9.908e-04 oracle 9.905e-04 ratio 1.0003112899296303 passivity {'skew': 1.975018765373267e-15, 'upwind': 0.002740192831193474, 'galerkin': -0.20475152909952438}
+S1 bend steady Pe 200 n 128: 7.60e-14
+   m=16 energy 8.747e-04 oracle 8.747e-04 ratio 0.9999735715225958 passivity {'skew': 6.836960627549464e-15, 'upwind': 0.0014235266982810413, 'galerkin': -0.19225919892614962}
+S1 bend step Pe 0 n 32: 1.67e-14
+   m=16 energy 4.308e-05 oracle 4.310e-05 ratio 0.9996665443117917 passivity {'skew': 0.004945705798592488, 'upwind': 0.004945705798592488, 'galerkin': 0.004945705798592488}
+S1 bend step Pe 20 n 32: 1.10e-14
+   m=16 energy 4.381e-05 oracle 4.385e-05 ratio 0.9989310012644369 passivity {'skew': 0.0051006411635482205, 'upwind': 0.0054835428926894155, 'galerkin': -0.0697788454152898}
+S1 bend step Pe 50 n 32: 8.17e-15
+   m=16 energy 4.404e-05 oracle 4.406e-05 ratio 0.9995018130952397 passivity {'skew': 0.004972772921697757, 'upwind': 0.004972772921697848, 'galerkin': -0.16455318329227392}
+S1 bend step Pe 100 n 64: 2.66e-14
+   m=16 energy 4.356e-05 oracle 4.355e-05 ratio 1.000256739818263 passivity {'skew': 0.002930754877935424, 'upwind': 0.0027698984434808473, 'galerkin': -0.19675050348152057}
+S1 bend step Pe 200 n 128: 1.97e-13
+   m=16 energy 4.342e-05 oracle 4.342e-05 ratio 0.9999502812941311 passivity {'skew': 0.0014964465842273995, 'upwind': 0.0014327236859809178, 'galerkin': -0.18827276468728296}
+S5 chain K 1: {'K': 1, 'pe': 200.0, 'n': 128, 'energy_rel': 0.0012942924739425738, 'oracle_energy_rel': 0.0012944359724365493, 'ratio': 0.9998891420687998, 'max_rel': 0.0016493095913726267, 'outlet_bulk_err_rel': 3.131581799610269e-07, 'S5': True}
+S5 chain K 2: {'K': 2, 'pe': 200.0, 'n': 128, 'energy_rel': 0.0009114432505158932, 'oracle_energy_rel': 0.0009115193615355863, 'ratio': 0.9999165009292126, 'max_rel': 0.001619644762769715, 'outlet_bulk_err_rel': 4.812637165462425e-07, 'S5': True}
+S5 chain K 4: {'K': 4, 'pe': 200.0, 'n': 128, 'energy_rel': 0.0006986646299735643, 'oracle_energy_rel': 0.0006991826876509578, 'ratio': 0.9992590524814995, 'max_rel': 0.0016191016146872136, 'outlet_bulk_err_rel': 4.0191185892575126e-07, 'S5': True}
+S5 chain K 8: {'K': 8, 'pe': 200.0, 'n': 128, 'energy_rel': 0.000565152400898194, 'oracle_energy_rel': 0.000565585281354707, 'ratio': 0.9992346327410144, 'max_rel': 0.001619101432481568, 'outlet_bulk_err_rel': 2.925562199606766e-07, 'S5': True}
+S6 channel Pe 0: slope pg 2.000 galerkin 2.000
+S6 channel Pe 20: slope pg 2.000 galerkin 1.018
+S6 channel Pe 200: slope pg 2.000 galerkin 1.018
+S6 plate Pe 0: slope pg 2.000 galerkin 2.000
+S6 plate Pe 20: slope pg 2.000 galerkin 1.987
+S6 plate Pe 200: slope pg 2.000 galerkin 1.876
+stable at 200: True | verdict {'S1': True, 'S2': True, 'S3': True, 'S4': True, 'S5': True, 'S6': True}

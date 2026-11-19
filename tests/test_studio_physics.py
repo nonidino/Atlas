@@ -30,8 +30,9 @@ def test_every_equation_runs_or_says_why_not():
     # every family that runs here is some equation's solver
     runs = {e["runs_with"] for e in rows if e["runs"]}
     assert runs == set(registry.available_ids())
-    # the chart-operator tag is CO-D's alone, today
-    assert {e["group"] for e in rows if e["co"]} == {"A"}
+    # the chart-operator tag: CO-D's, and CO-T's classical expert on conjugate heat (Phase 1)
+    assert {e["group"] for e in rows if e["co"]} == {"A", "C"}
+    assert [e["id"] for e in rows if e["co"] and e["group"] == "C"] == ["conjugate-heat"]
     # an equation that runs has its properties filled
     for e in rows:
         if e["runs"]:

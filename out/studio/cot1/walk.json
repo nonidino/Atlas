@@ -1,0 +1,180 @@
+{
+ "walk": "scripts/studio_walks/cot1.py",
+ "url": "http://127.0.0.1:8021/",
+ "size": "1090x620",
+ "theme": "light",
+ "started": "2026-11-18T23:03:36",
+ "checks": [
+  {
+   "check": "Pieces opens for a conjugate-heat case",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the classical CO-T expert is the only one offered",
+   "passed": true,
+   "detail": [
+    "classical"
+   ]
+  },
+  {
+   "check": "cooled-block cut: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "CO-T, twelve pieces, three seams carry the flow",
+   "passed": true,
+   "detail": {
+    "physics": "CO-T",
+    "pieces": 12,
+    "advective": 3
+   }
+  },
+  {
+   "check": "four coolant pieces",
+   "passed": true,
+   "detail": [
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  {
+   "check": "the inspector shows the piece's Peclet number",
+   "passed": true,
+   "detail": {
+    "page": "20.9",
+    "summary": 20.893196614583815
+   }
+  },
+  {
+   "check": "and its cell Peclet number, at most 2",
+   "passed": true,
+   "detail": "0.326"
+  },
+  {
+   "check": "inside the CO-T envelope",
+   "passed": true,
+   "detail": "\u2713"
+  },
+  {
+   "check": "its cuts across the channel are THERM+ADVEC, its wall THERM",
+   "passed": true,
+   "detail": [
+    "THERM",
+    "THERM+ADVEC",
+    "THERM+ADVEC"
+   ]
+  },
+  {
+   "check": "the coupling check: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "whole traces agree with the monolithic solve to round-off",
+   "passed": true,
+   "detail": 4.8535125801635e-11
+  },
+  {
+   "check": "the check shows the outlet and the balance at 16 modes",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "Run opens on the pieces",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "B offers the classical CO-T expert, no network",
+   "passed": true,
+   "detail": [
+    "mixed",
+    "classical"
+   ]
+  },
+  {
+   "check": "classical CO-T pieces against the full domain: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the result is CO-T's, class G0'",
+   "passed": true,
+   "detail": "G0\u2032"
+  },
+  {
+   "check": "the energy error is the check's 16-mode floor",
+   "passed": true,
+   "detail": {
+    "run": 0.31276971682918003,
+    "check": 0.31276971682918003
+   }
+  },
+  {
+   "check": "the cards show the outlet and the ADVEC seams",
+   "passed": true,
+   "detail": {
+    "outlet": "322.09 K",
+    "advec": "3"
+   }
+  },
+  {
+   "check": "the price is a ratio with its A/A spread, no seconds",
+   "passed": true,
+   "detail": {
+    "ratio": 0.9812660737332732,
+    "meaning": "B's time over A's, each the median of its turns on this machine: below 1, B is faster",
+    "aa_spread": 1.28061746038327,
+    "turns": 5
+   }
+  },
+  {
+   "check": "the positive-real certificate",
+   "passed": true,
+   "detail": 4.361052302919676e-06
+  },
+  {
+   "check": "cooled-block at 1 cm/s cut: done",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "check": "the fast coolant pieces are refused: cut the channel shorter",
+   "passed": true,
+   "detail": [
+    "Peclet number 8359 above the cap of 200 per piece: cut the channel into shorter pieces",
+    "cell Peclet number 65.3 above 2: Galerkin oscillates; the grid needs n >= 4180"
+   ]
+  },
+  {
+   "check": "the inspector marks it outside the envelope",
+   "passed": true,
+   "detail": "\u2717"
+  },
+  {
+   "check": "nothing overflows sideways at 1090 x 620",
+   "passed": true,
+   "detail": []
+  },
+  {
+   "check": "no console errors",
+   "passed": true,
+   "detail": null
+  }
+ ],
+ "console_errors": [],
+ "screenshots": [
+  "out/studio/cot1/cot1-pieces.png",
+  "out/studio/cot1/cot1-inspector.png",
+  "out/studio/cot1/cot1-compare.png",
+  "out/studio/cot1/cot1-refused.png",
+  "out/studio/cot1/cot1-refused-dark.png"
+ ],
+ "trusted_clicks_and_drags": 14,
+ "passed": true,
+ "finished": "2026-11-18T23:04:16"
+}

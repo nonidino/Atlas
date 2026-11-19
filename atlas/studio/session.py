@@ -911,8 +911,12 @@ class Session:
     # pieces (P4): cut, chart, certify, experts, the classical check
     # ------------------------------------------------------------------
     def experts(self) -> list:
-        """The experts offered here, each checked against its record once per session."""
+        """The experts offered here, each checked against its record once per session.
+        A conjugate-heat case (CO-T) has the classical expert only (`cot.experts`)."""
+        from . import cot
         from . import experts as X
+        if cot.is_cot(self.spec):
+            return cot.experts()
         if self.expert_rows is None:
             self.expert_rows = X.registry()
         return self.expert_rows
@@ -929,7 +933,10 @@ class Session:
 
     def expert_prices(self) -> dict:
         """Each expert's recorded price over the classical solve (`experts.prices`)."""
+        from . import cot
         from . import experts as X
+        if cot.is_cot(self.spec):
+            return cot.prices()
         if getattr(self, "_prices", None) is None:
             self._prices = X.prices()
         return self._prices
@@ -937,12 +944,17 @@ class Session:
     def _pieces_apply(self, fn) -> None:
         """Run an action on the layout (in the job's thread) and summarise the result."""
         from atlas.chartop.data import ENVELOPE
+        from . import cot
         from . import piecejob as PJ
         spec = self.spec
         cut, extra = fn(self.cut, spec)
         rows = self.experts()
         if cut is None:
             summary = None
+        elif cot.is_cot(spec):
+            summary = cot.summarise(cut, spec, rows)
+            if extra:
+                summary.update(extra)
         else:
             summary = PJ.summarise(cut, spec, rows, ENVELOPE)
             if extra:
@@ -954,9 +966,9 @@ class Session:
         from . import piecejob as PJ
         if self.pieces_job is not None and self.pieces_job.active:
             raise Refused(f"{self.pieces_job.label} is still running")
-        if self.spec.physics.family != "conduction-2d":
-            raise Refused("pieces and experts are built for heat conduction (CO-D): this case "
-                          "is another kind")
+        if self.spec.physics.family not in ("conduction-2d", "conjugate-heat-2d"):
+            raise Refused("pieces and experts are built for heat conduction (CO-D) and the "
+                          "coolant's conjugate heat (CO-T): this case is another kind")
         job = PJ.PiecesJob(self, label, fn)
         self.pieces_job = job
         self.pieces_version += 1
@@ -1056,6 +1068,9 @@ class Session:
         self._need_cut()
 
         def fn(cut, spec):
+            from . import cot
+            if cot.is_cot(spec):
+                return cut, {"check": cot.check(cut, spec)}
             m16 = P.solve_classical(cut, spec)
             full = P.solve_classical(cut, spec, m=cut.n)
             keep = ("max_diff_rel", "energy_rel", "monolithic", "monolithic_nodes", "min_eig")

@@ -223,7 +223,10 @@ class CORun:
     def _run(self):
         from atlas.chartop import host as hs
         from atlas.workbench import machine
+        from . import cot
         s = self.session
+        if cot.is_cot(s.spec):
+            return cot.run(self)                  # the coolant's CO-T pieces (cot.py)
         self.status = "running"
         try:
             spec, cut = s.spec, s.cut

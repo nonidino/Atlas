@@ -1,8 +1,8 @@
 # Chart operator after Stage 0: the coolant plan (CO-T on laminar cold plates), then the rest of Stage 1
 
-**Type:** Concept page — **plan**, agreed with the owner; nothing on it is built, trained or registered (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **No code, no data, no training.** The one number measured here is a stand-in for the label cost (§9), and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
-**Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
+**Type:** Concept page — **plan**, agreed with the owner, and its build record from Phase 1 on; nothing is trained or registered (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
+**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. Phases 2–6 have not started. No data, no training. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
+**Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W364 (this plan), W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
 
 ---
 
@@ -280,6 +280,73 @@ out/experts/
 - It registers no gate. §7's bars are set in Phase 3, accepted by the owner and hash-pinned before any result.
 - It puts no number on the website or in `proposal/`.
 - It does not cover turbulent coolant: fast radiator flow is G3 ([[chart-operator-family-catalog]] §1.3) and outside this design.
+
+---
+
+## 12. Phase 1: the classical transport expert on pieces (built 2026-11-18)
+
+**The owner's choice of model:** (a), side walls only, in chat on 2026-11-18 ("(a) Side walls only (Recommended)"), before any code. The plate and the coolant meet only at seams, and every piece is one material and one field. The floor exchange, (b), is not built.
+
+**Built.** Nothing is learned, and no pinned module was edited.
+
+| file | what |
+|---|---|
+| `atlas/chartop/transport.py` | the CO-T piece: Galerkin advection from a nodal stream function, trial and adjoint modes from one LU, the Péclet numbers, the envelope |
+| `atlas/chartop/transport_host.py` | `TransportLayout`, a subclass of the pinned `host.Layout`: Petrov–Galerkin coupling, the `ADVEC` seams and their refusals, the passivity and positive-real certificates, the outlet's mixing-cup temperature, the balance |
+| `atlas/chartop/transport_cases.py` | three layouts built in code: a channel, a cold plate, a bend |
+| `scripts/cot_phase1_seams.py` | the seam measurement, its criteria fixed in the file before its first run |
+| `atlas/studio/cot.py`, the Pieces and Run views | a conjugate-heat case cut into pieces, the classical CO-T expert, Run's Single and Compare |
+| tests and walk | `tests/test_chartop_transport.py` (28), `tests/test_studio_cot.py` (13), `tests/test_studio_physics.py` updated; the page walk `scripts/studio_walks/cot1.py` (25 checks) |
+
+### 12.1 The piece
+
+On a piece of one material, divided by its conductivity $k$ and pulled back to the reference square, one step or the steady state reads
+$$\int\nabla T\cdot A\nabla v+\int(\mathbf b\cdot\nabla T)\,v+\int\frac{\tilde J}{\mathrm{Fo}}\,Tv=\int\tilde J\,g\,v,\qquad A=JG^{-1},\quad\mathbf b=\frac{J\,DF^{-1}\mathbf u}{\alpha}.$$
+- **The flow is a stream function.** The physical stream function over $\alpha$ is sampled at the chart's nodes and interpolated bilinearly. It gives $\mathbf b=(\partial_\eta\psi,\,-\partial_\xi\psi)$, the contravariant Piola transform of $\mathbf u/\alpha$. So $\nabla\cdot\mathbf b=0$ at every point, and the flux through any element edge is the increment of $\psi$ along it.
+- **Galerkin, integrated exactly.** The advection matrix $C_{kl}=\int(\mathbf b\cdot\nabla\phi_l)\,\phi_k$ is trilinear in $(\psi,\phi_l,\phi_k)$, of degree 2 in each direction, so $2\times2$ Gauss points are exact.
+- **The loop identity.** $C+C^\top=B$ exactly, with $B$ the loop's flux mass. On a counter-clockwise loop $(\mathbf b\cdot\mathbf n)\,ds=d\psi$, so $\int(\mathbf b\cdot\nabla T)v+(\mathbf b\cdot\nabla v)T=\oint(\mathbf b\cdot\mathbf n)\,Tv$ is a sum over the boundary edges of $\Delta\psi$ times each edge's mass. Measured to $2\times10^{-16}$ on a curved chart with a random $\psi$.
+- **The adjoint.** $K^\top=K(-\psi)+B$, and $B$ lives on the loop. So the adjoint modes $G=-K_{II}^{-\top}K_{GI}^\top Q$ are the trial modes of the same piece with its flow reversed, to $4\times10^{-16}$: the catalog's $\hat{\mathbf b}\to-\hat{\mathbf b}$, which lets one network give both.
+- **Péclet numbers.** A cell's is $h\max(\lvert b_1\rvert/A_{11},\,\lvert b_2\rvert/A_{22})$ at its centre, and a piece's is $n$ times its largest. For a straight piece of length $L$ along the flow that is $\lvert\mathbf u\rvert_{\max}L/\alpha$, the plan's $\mathrm{Pe}_{\text{piece}}$. The envelope refuses, by name, a piece above the cap of 200 ("cut the channel into shorter pieces"), a cell above 2 ("the grid needs $n\ge$ …"), and a chart Proposition 3 does not certify.
+
+### 12.2 The seams
+
+- **Petrov–Galerkin.** The host forms $\Lambda_i=W_i^\top K_iV_i$ with $V=(H;Q)$ and $W=(G;Q)$, assembles them and solves by LU. For any modes with exact traces, $\tilde W^\top K\tilde V-\Lambda=E_W^\top K_{II}E_V$.
+- **Why `ADVEC`.** A Galerkin piece's symmetric part is its diffusion and reaction plus $B/2$: positive where the flow leaves and negative where it enters. Coupled by value and diffusive flux alone (`THERM`), a piece is not passive.
+- **The split.** On every seam the flow crosses, the host takes $\theta B$ out of each piece's matrix and puts it back as the seam's junction. The default is $\theta=\tfrac12$ ("skew"): the port's flow is then the diffusive flux minus half the advective flux, whose product with $T$ is the piece's dissipation. The alternative is $\theta=1$ where the flow enters and 0 where it leaves ("upwind", a Robin–Robin split, which keeps a margin). An inlet must hold a temperature, and an outlet keeps its $B/2\succeq0$. Then every piece's exact port matrix has a positive semidefinite symmetric part, since a Schur complement keeps one.
+- **The split changes no coupled answer.** $B$ lives on the traces, which are exact, so $W^\top K^\theta V=W^\top KV-\theta\,Q^\top BQ$ for any modes, learned or classical, and the junction restores the sum. It changes what each piece certifies and where the advective heat crosses. The three splits' coupled fields agreed to $6\times10^{-14}$.
+- **Refused, by name, before any solve:** flow across a seam into a solid piece (it declares no `ADVEC` port); heat-capacity fluxes $k\,\Delta\psi$ that disagree across a seam (mass not conserved); a seam that carries flow and does not conform; flow entering through a side not held at a temperature.
+
+### 12.3 Seam stability up to Pe 200 (measured)
+
+`scripts/cot_phase1_seams.py` wrote `out/chartop/cot/phase1-seams.json` and `.txt` (commit `70308fc` with this phase's files, 702 s on AC). The layouts were the channel (4 pieces), the plate (an aluminium strip on each side of the channel, 342 times the water's conductivity, after one piece of unheated entry) and the bend ($2\times3$, log-polar). It ran Pe 0, 20, 50, 100 and 200, steady and one implicit step (Fo about 0.07 in the water). Criteria S1–S6 were fixed in the script before its first run.
+
+| | criterion | result |
+|---|---|---|
+| S1 | with whole traces, the coupled answer within $10^{-10}$ of $\max\lvert T\rvert$ of the monolithic solve | **met**: at most $5.0\times10^{-11}$ (the plate at Pe 200) |
+| S2 | the coupled interface matrix positive real at 4, 8, 16 and 32 modes | **met**: smallest symmetric eigenvalue over the norm $8.7\times10^{-7}$ to $3.4\times10^{-2}$ |
+| S3 | every piece passive under the `ADVEC` splits | **met**: at least $-4.1\times10^{-14}$ relative |
+| S4 | at 16 modes, the coupled energy error within 10 times the oracle's (the reference's traces projected onto the same ports) | **met**: the ratio 0.947–1.000 |
+| S5 | no amplification along a channel cut into 1, 2, 4 and 8 pieces at Pe 200 | **met**: the ratio 0.999–1.000, the energy error $1.3\times10^{-3}$ down to $5.7\times10^{-4}$ |
+| S6 | Petrov–Galerkin: the interface matrix's error quadratic in the modes' error (slope at least 1.8) | **met**: 2.000 on every layout and Pe |
+
+- **Reported beside them, not judged.** The `THERM`-only pairing leaves pieces indefinite: $-0.068$ at Pe 20, $-0.14$ at 50, $-0.19$ at 100 and $-0.18$ at 200 on the channel, slightly more on the bend. The catalog measured $-0.044$ and $-0.15$ on finite volumes. Tested with the trial modes instead of the adjoint ones, the channel's slope is 1.02 at Pe 20 and 200: first order, as G0′ says it must be.
+- **The 16-mode floors.** On the channel and the bend, 0.07–0.31% in energy, steady, with the outlet's mixing-cup temperature within $10^{-6}$ of the range. On the plate, steady, 5.9–13%, though the outlet errs by at most $1.2\times10^{-4}$ of the range. **[AI Inference]:** the plate's re-entrant corners and its contrast put the energy into a few corner-singular traces. That floor, not the seams, will bound what E4 can ask on plates, so Phase 2 measures it on each development layout first.
+- **Found while building:** with the inlet's held corner touching the heated plate, the floor was 19% even at Pe 0, a point sink that no port count resolves. The plate now starts with an unheated coolant entry, as a manifold-fed plate does.
+
+**The stop point is not triggered.** The seams are stable at 200, and the cap stays.
+
+### 12.4 In the studio
+
+- **The pieces.** A `conjugate-heat-2d` case is cut on Pieces as a heat case is, and `atlas/studio/cot.py` makes the pieces CO-T's. Coolant materials (`flows`) carry plane Poiseuille flow at the case's mean speed `u_coolant`, from the side their `coolant-inlet` is on. Each material's `heat` is its source, and `coolant-outlet` is the do-nothing outlet. A coolant region that is not a straight rectangle is refused by name: a curved channel needs its flow solved on it, which Phase 2's development layouts need.
+- **Pieces screen:** each piece's Pe and cell Pe, the CO-T envelope, its sides as `THERM` or `THERM+ADVEC`, the classical CO-T expert (the only one), and the check (whole traces and 16 modes, with the outlet and the balance).
+- **Run:** Single and Compare, steady, since the family runs steady. The cards add the outlet's temperature, the `ADVEC` seams and class G0′. CO-T's E4 is not registered yet, so the agree chip shows no bar.
+- **The workbench's `cooled-block`.** At its own 1 cm/s, cut in two columns, its coolant pieces are near Pe 8,400 and are refused with what to do. At 0.1 mm/s, in two columns at $n=64$, it has twelve pieces, three `ADVEC` seams and Pe at most 84. Whole traces agree with the full domain to $4.9\times10^{-11}$. At 16 modes the floor is 31% in energy and 9.4% of the range at the outlet: pieces of 16 to 1, copper against water (667 to 1) and the inlet's corner on the block.
+- **The page walk** `scripts/studio_walks/cot1.py`: 25 checks with real input, no console error, both themes, nothing overflowing at 1090 × 620.
+
+### 12.5 What Phase 2 starts from
+
+- The development layouts are drawn in the studio. The serpentine needs a flow solved on a curved channel and pieces cut along it; neither is built.
+- The decisive test (TL0 for CO-T and the priced classical options) runs on those layouts, each layout's 16-mode floor measured first.
 
 ---
 
