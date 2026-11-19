@@ -1236,3 +1236,12 @@ Written up as [[chart-operator-stage-0b-and-1-plan]] §14, worklist W364. Nothin
 - **The run was disturbed:** on battery, three standby stalls (about 22 of 68 minutes); prices are medians over interleaved turns, and two A/A checks failed (0.861, 1.120). Noted in the plan.
 - **Stopped** per the plan's stop rule; the owner chooses between closing the case as negative, a re-scoped new registration, or a clean re-run (§14.4). `transport_data.py` (the drafted generator) stays uncommitted and untested.
 - Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].
+
+## [2026-11-19] decision | the coolant plan amended: accuracy and capacity gates, price as a reading
+
+Written up as [[chart-operator-stage-0b-and-1-plan]] §15 and a new row in its §2; worklist W364.
+- **The owner's decision**, after the oracle ceiling failed (§14): a learned expert is expected to be cheaper on the harder, larger pieces the case will grow into, so the coolant's question is accuracy and capacity. Price stays measured and reported at every stage, never a gate, and no "faster" claim is made without a measurement.
+- **The argument and its limit** (§15.1): $\mathrm{Pe}_{\text{piece}}=200$ needs $n\ge100$; the classical piece solve grows like $N^{3/2}$ (2-D), a fixed network like $N$. Measured on mains, one piece: two forward passes cost 1.42 of the classical piece at $n=32$ and 0.14 at $n=128$. The safety switch is where it fails: an estimator equivalent to the dual norm costs about a solve, so an $O(N)$ estimator is an open item.
+- **Changed:** check 4 is a reading; a capacity probe on the hardest corner (Pe near 200, $n=128$) runs before any dataset; the dataset is weighted toward $n=128$; CL becomes CL-A (meet E4 where TL0 at the same coarse size misses it); a new gate CAP; PR, AMORT and the oracle are reported. Nothing has run under the amendment.
+- Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].
+

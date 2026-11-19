@@ -1,7 +1,7 @@
 # Chart operator after Stage 0: the coolant plan (CO-T on laminar cold plates), then the rest of Stage 1
 
 **Type:** Concept page — **plan**, agreed with the owner, and its build record from Phase 1 on; nothing is trained or registered (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. **Phase 2 ran (§13, 2026-11-19), and its stop rule is not met:** no classical option meets E4 on every development problem under the 0.90 price bar (finer cutting meets E4 on all six at 1.02; TL0 at $n_c=32$ meets it cheaply on the fast tier, but no coarse size works at $n=32$). On the way, the channel cut (curved channels cut along their walls), the general flow and Danckwerts' inlet were built. **Phase 3's first check, the oracle ceiling, fails (§14, 2026-11-19):** a perfect network priced at TL0's cost, plus its forward passes and the switch, costs 3.35 times the classical solve (1.19 with no switch) against a bar of 0.90 and a competitor at 0.86. **The plan stops before any dataset; the owner chooses what follows (§14.4).** No data, no training. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
+**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. **Phase 2 ran (§13, 2026-11-19), and its stop rule is not met:** no classical option meets E4 on every development problem under the 0.90 price bar (finer cutting meets E4 on all six at 1.02; TL0 at $n_c=32$ meets it cheaply on the fast tier, but no coarse size works at $n=32$). On the way, the channel cut (curved channels cut along their walls), the general flow and Danckwerts' inlet were built. **Phase 3's first check, the oracle ceiling, fails (§14, 2026-11-19):** a perfect network priced at TL0's cost, plus its forward passes and the switch, costs 3.35 times the classical solve (1.19 with no switch) against a bar of 0.90 and a competitor at 0.86. **The owner then amended the plan (§15, 2026-11-19): price is a reading, not a gate; the gates are accuracy (E4, and CL-A: meet E4 where TL0 at the same coarse size misses it) and capacity (a probe on the hardest pieces before the dataset is built).** Phase 3 resumes under the amendment. No data, no training yet. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
 **Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W364 (this plan), W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
 
 ---
@@ -49,6 +49,7 @@ From [[chart-operator-stage-0-rework]] §19–§20:
 | Stage 0b (high-contrast diffusion) | **deferred** until after the coolant |
 | CO-E, the thermoelastic bond, the biharmonic network | **after the coolant, classical**: built on TL0, trained only if their own test without training shows a job for a network |
 | Helmholtz | **out**, noted as a later candidate for a learned coarse basis |
+| **price as a gate** (decided 2026-11-19, after the oracle check failed, §14–§15) | **not a gate for the coolant.** Price is measured and reported at every stage, and no "faster" claim is made without a measurement. The gates are **accuracy and capacity**: the learned expert must meet E4 where TL0 at the same coarse size misses it, and the network must first be shown able to fit the hardest pieces. The owner's reasoning: a learned expert is expected to be cheaper on the harder, larger pieces this case will grow into, and that is a priori sound (§15.1), so the coolant's question is whether a network can learn the accuracy at all |
 
 ---
 
@@ -183,7 +184,7 @@ Each phase ends at a stop point. Each feature with a page goes into the studio, 
 1. **Coverage:** the registered ranges of Péclet number, shape, contrast and step are filled as declared.
 2. **Label quality:** a sample's labels change by less than a stated tolerance from $n=128$ to $n=256$.
 3. **The control:** TL0 misses E4 on the development layouts (Phase 2). If it does not, stop.
-4. **The oracle ceiling:** the exact port responses stand in for a perfect network. They are priced at TL0's cost, plus the planned network's forward pass measured untrained on the laptop, plus the safety switch. That price must be under the price bar and under every classical option that reaches the same accuracy. If even a perfect network cannot pay for itself, no trained one can. (Corrected in review: an earlier draft used the best classical coarse basis as the oracle, which is itself one of the competitors.)
+4. **The oracle ceiling** (*a reading since 2026-11-19, not a stop; §15*)**:** the exact port responses stand in for a perfect network. They are priced at TL0's cost, plus the planned network's forward pass measured untrained on the laptop, plus the safety switch. That price must be under the price bar and under every classical option that reaches the same accuracy. If even a perfect network cannot pay for itself, no trained one can. (Corrected in review: an earlier draft used the best classical coarse basis as the oracle, which is itself one of the competitors.)
 5. **Loss–gate alignment:** across a fixed set of perturbed networks, the training loss and the coupled error on the development layouts must rank them alike, with a rank correlation above a threshold registered beforehand. This is the check that would have caught P6 before training.
 
 ---
@@ -195,7 +196,7 @@ Each phase ends at a stop point. Each feature with a page goes into the studio, 
 | CX, K, D | the coarse correction exact and the kernel (a uniform temperature) reproduced, whatever the weights | structural, carried over |
 | SAFE | on every piece, the kept modes' residual is at most TL0's (the switch of §4) | structural |
 | E4 | the coupled error on the evaluation layouts under E4's bar. CO-D's E4 is an energy norm, which G0′ lacks, so CO-T's measure is fixed at registration: for example the relative $H^1$-seminorm error of the coupled field, with the outlet's bulk temperature and the heat balance beside it, each against its classical floor | accuracy |
-| CL | the trained expert beats the **best classical option at equal measured price** (raised $n_c$, the classical multiscale basis, finer cutting). Compared per layout, timing the whole coupled solve, since finer cutting changes the pieces themselves | the decisive comparison |
+| CL | *(replaced on 2026-11-19 by CL-A, §15.3; kept here as first drafted)* the trained expert beats the **best classical option at equal measured price** (raised $n_c$, the classical multiscale basis, finer cutting). Compared per layout, timing the whole coupled solve, since finer cutting changes the pieces themselves | the decisive comparison |
 | SEEDS | CL holds for every seed of the winning arm, not just the mean | robustness |
 | PR | price against the classical solve, measured on a rented whole machine | measured, not assumed |
 | AMORT | how many piece solves repay the training cost | reported |
@@ -486,7 +487,59 @@ Check 4 fails both ways. The untrained network's two forward passes cost 48 ms p
 The plan's stop rule applies (§5, Phase 3). These are the ways on that the measurements leave; none has been started.
 1. **Close the coolant case as a negative result** and move to §10 (CO-E, the bond and the biharmonic network, classically on TL0). The classical CO-T expert, the channel cut, Danckwerts' inlet and the store stay built.
 2. **Re-scope and register a new check before any data:** a smaller network, larger pieces only (the fast tier's $n\ge128$), or a cheaper switch (one residual, or Jacobi with a measured bound). Each changes a criterion fixed before this run, so it would be a new registration, not a re-reading of this one.
-3. **Re-run this check unchanged on mains power with standby held,** to remove the disturbance before the decision. **[AI Inference]:** it would take about 70 minutes, and the verdict is not expected to change.
+3. **Re-run this check unchanged on mains power with standby held,** (the owner chose a fourth way, §15) to remove the disturbance before the decision. **[AI Inference]:** it would take about 70 minutes, and the verdict is not expected to change.
+
+---
+
+## 15. The owner's amendment: accuracy and capacity, price as a reading (2026-11-19)
+
+After §14 the owner decided to go on: *if the learned expert would be faster in the more complicated cases we are not at yet, and that is sound a priori, then focus on what matters here, accuracy and whether the network has the capacity to learn.* The stop rule of §5, Phase 3 (check 4) and the gate CL of §7 are amended as below. Everything else in §2–§8 stands. Nothing has yet been run under the amendment.
+
+### 15.1 Why the price argument is sound a priori, and where it is not
+
+- **Harder pieces are larger pieces.** $\mathrm{Pe}_{\text{piece}} = n \cdot \max \mathrm{Pe}_{\text{cell}}$, and Galerkin needs $\mathrm{Pe}_{\text{cell}} \le 2$. So $\mathrm{Pe}_{\text{piece}}=200$ needs $n \ge 100$; this is why the fast tier runs at $n=128$.
+- **The classical piece solve grows faster than the node count $N=(n+1)^2$.** A sparse 2-D factorisation costs about $N^{3/2}$, and in 3-D nested dissection costs about $N^2$. **The network's forward pass grows at most like $N$** with a fixed architecture.
+- **Measured on mains on 2026-11-19, one piece of `dev-block`** (a scratch measurement, not a registered record):
+
+  | $n$ | classical piece (trial and adjoint) | one forward pass | multiply-adds per pass |
+  |---|---|---|---|
+  | 32 | 9.0 ms | 6.4 ms | 114 M |
+  | 128 | 315 ms | 22 ms | 1,601 M |
+
+  Two passes cost 1.42 of the classical piece at $n=32$ and 0.14 at $n=128$. **[AI Inference]:** from these two points the crossover is near $n\approx40$. The same forward passes timed on battery in §14 were about 3.7 times slower, so §14's network shares are overstated by an unknown amount.
+- **Where it is not sound: the safety switch.** An estimator equivalent to the dual norm of the residual needs a solve-like application of the piece's own operator. Measured, the exact one costs 0.85–1.04 of a classical piece solve and the Schwarz estimate 1.2–2.5; Jacobi costs 0.2–0.3 but is not equivalent (§13.3). A switch that costs a solve erases the gain at every scale. **[AI Inference]:** the candidate is an estimator at $O(N)$ cost, for example a multigrid-preconditioned residual. Its equivalence constants likely worsen with Péclet number, which must be measured. This is an open design item (§15.4), not a gate.
+- **[AI Inference]:** TL0 also scales like $N$, and at $n_c=32$ it met E4 at 0.34–0.60 (§13.2). A network adds value only as accuracy beyond TL0 at TL0's cost. So accuracy is the coolant's real question.
+
+### 15.2 What changes in the phases
+
+- **Phase 3, check 4 (the oracle ceiling):** a reading, recorded and reported, no longer a stop. §14's record stands as the first reading.
+- **Phase 3 gains a capacity probe before the dataset is built** (moved forward from Phase 4, and sharpened):
+  - the overfit probe runs first on the hardest corner: $\mathrm{Pe}_{\text{piece}}$ near 200 at $n=128$, thin boundary layers, high contrast;
+  - a handful of pieces, labelled classically on the laptop;
+  - judged by mode group, as Phase 4 already says.
+
+  If the planned 1.1 M-parameter U-Net cannot fit them, the network is sized up (and the size recorded) before any data is built at scale. **[AI Inference]:** the first check on whether a network fits is cheaper than a dataset.
+- **The dataset (§6)** spans $n=32$, 64 and 128 and $\mathrm{Pe}_{\text{piece}}$ up to 200, **weighted toward the large pieces**: at least as many $n=128$ pieces as $n=32$ ones, because that is the regime the price argument is about. Checks 1, 2, 3 and 5 still stop the plan if they fail.
+- **The safety switch** stays in the design as the accuracy guarantee (gate SAFE). It is unpriced until the $O(N)$ estimator exists.
+- **Phases 4–6 are unchanged**, except that the Phase 4 overfit probe now repeats the capacity probe on the frozen dataset's pieces.
+
+### 15.3 What changes in the gates (§7)
+
+| gate | as amended | kind |
+|---|---|---|
+| E4 | unchanged: the coupled error on the evaluation layouts under E4's bar, its measure fixed at registration | accuracy, **the primary gate** |
+| **CL-A** (replaces CL) | where TL0 at the network's coarse size misses E4, the trained expert meets it. Per evaluation layout; arm P against arm R shows whether learning the basis is what pays | accuracy, the decisive comparison |
+| CAP | the capacity probe and the Phase 4 overfit probe: on the hardest corner, every mode group's training error falls under a registered fraction of its starting value | capacity |
+| SEEDS | CL-A holds for every seed of the winning arm | robustness |
+| CX, K, D, SAFE | unchanged | structural |
+| PR, AMORT, the oracle reading | measured and reported against the classical solve, TL0, finer cutting and $n_c=32$; **not gates**, and no "faster" claim without them | reported |
+
+**The stopping rule, amended.** If the trained expert fails CL-A, the learned-expert track pauses as before, and Atlas's claim stays "certified composition of classical experts". A pass makes no claim on price: it says a network can learn the accuracy TL0 lacks, at a price reported beside it.
+
+### 15.4 Open items the amendment leaves
+
+- **The $O(N)$ switch:** a cheap estimator equivalent to the dual norm within a measured factor across Péclet numbers up to 200, with its own check before Phase 6.
+- **The clean price reading:** §14 re-run on mains with standby held, folded into Phase 6's price measurement on a rented whole machine.
 
 ---
 
