@@ -4,8 +4,7 @@
 **Status:** Active build plan. Translates the Noether 1.1 *design* ([[00-noether-1.1-overview]] and its portion pages) into an ordered, agent-executable build, from a 2D GUI through training-data generation to the model itself. Every portion below has a **standalone spec file** in this folder, written so an agent can execute it independently; this page is the index and the dependency graph tying them together.
 **Design source of truth:** the Noether 1.1 concept pages ([[00-noether-1.1-overview]], [[backbone-1.1]], [[graph-tokenizer-1.1]], [[field-token-streams-1.1]], [[field-descriptors-1.1]], [[edge-generation-1.1]], [[decoder-1.1]], [[discovered-conservation-1.1]], [[post-decoder-diffusion-1.1]], [[conditioning-and-constants-1.1]], [[training-scheme-1.1]]). **This plan never overrides the design — if a spec file and a concept page disagree, the concept page wins and the spec file is a bug.**
 **Sizing:** [[noether-1.1-medium]], [[noether-1.1-large]].
-**Progress log:** [[implementation-log]] (append-only; update after every work session). **Resume prompt:** [[phase1-resume-prompt]] (self-contained pickup for Phase I in a fresh session).
-
+**Progress log:** [[implementation-log]] (append-only; update after every work session).
 ---
 
 ## 0. Guiding principles

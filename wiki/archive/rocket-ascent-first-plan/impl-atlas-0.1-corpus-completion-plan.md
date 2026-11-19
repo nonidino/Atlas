@@ -1,6 +1,6 @@
 # Atlas 0.1 — Corpus Completion Plan
 
-**Type:** Implementation spec — the ordered work plan for M2 (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation spec — the ordered work plan for M2 (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Phase of:** [[00-atlas-0.1-implementation-plan]]. **Closes:** M2. **Unblocks:** [[impl-atlas-0.1-phase2-experts]].
 **Builds on:** [[impl-atlas-0.1-compute-and-training-budget]] (route B′, venues, budget), [[physics-simulation-datasets]] (the three-tier strategy), [[impl-atlas-0.1-phase0-scope-and-data]] (solvers, sweep, schema — all built).
 **Written:** 2026-08-09, answering "what do we have to do to complete our training corpora?"

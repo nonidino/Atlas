@@ -60,7 +60,7 @@ From [[00-atlas-0.1-outcome]] (revised after Tier 89); numbers there, with condi
 - **Formal proofs batch 7** ([[formal-proofs-implementation-plan]]).
 - The remaining open W-items: 173 open at the board's generation (2026-10-17). Read the board in [[gap-worklist]], never the archives, and grep for a W-number instead of reading the page (§7).
 - Deferred design problems with their causes: [[open-problems-atlas-0.1]].
-- **Stale rows found in the 2026-11-18 lint** (for the owner to confirm): the board still reads `open` for W349 (demo items 1.1–1.3, done 2026-10-01 per [[demo-finish-plan]]), W351 (the learned case, evaluated once and failing G5, [[demo-learned-case-plan]] §9) and W353 (proofs, batches 1–6 done per [[formal-proofs-record]]).
+- The 2026-11-18 lint brought five stale board rows up to date with the owner's approval: W24, W25 and W349 done, W351 closed (the learned case failed G5), W353 in progress (proof batches 1–6 done). See the last section of [[gap-worklist]].
 
 ## 7. Rules in force (decisions a new session must not undo)
 
@@ -74,7 +74,7 @@ From [[00-atlas-0.1-outcome]] (revised after Tier 89); numbers there, with condi
 ## 8. What is history (read only for provenance)
 
 - **The 2026-08-08 thesis pages** (learned tokenizer, edge generation, U-Net of experts, training-and-bootstrap, global fields): the original learned-model design; the as-built framework is classical composition ([[end-to-end-architecture-spec]]). Hub: [[00-atlas-0.1-overview]].
-- **The rocket's first plan** (`case-study-rocket-ascent/implementation/`, Phases 0–5 on the old build repository, M2 blocked on compute): replaced by CS-21 from Tier 76.
+- **The rocket's first plan** (archived to `wiki/archive/rocket-ascent-first-plan/`, Phases 0–5 on the old build repository, M2 blocked on compute): replaced by CS-21 from Tier 76.
 - **The Panel workbench and its demo plans** ([[showcase-library-plan]], [[demo-finish-plan]], [[demo-fast-examples-plan]]): their cases and installer survive in the studio; the page does not.
 - **Chart operator v0 and v1**: folded into version 2 ([[chart-operator-architecture]]).
 - **Worklist Tiers 0–75**: [[gap-worklist-tiers-0-37]], [[gap-worklist-tiers-38-75]]; the board in [[gap-worklist]] carries every item's latest status.

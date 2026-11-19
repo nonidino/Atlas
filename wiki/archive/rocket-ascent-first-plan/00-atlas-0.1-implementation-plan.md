@@ -1,6 +1,6 @@
 # Atlas 0.1 — Master Implementation Plan
 
-**Type:** Implementation spec — master plan (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation spec — master plan (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Design pages (authoritative):** [[00-atlas-0.1-overview]], [[case-study-rocket-ascent-2d-atlas-0.1]], [[expert-library-atlas-0.1]], [[edge-generation-atlas-0.1]], [[unet-hierarchy-atlas-0.1]], [[conservation-as-constraint-atlas-0.1]], [[global-fields-and-topology-atlas-0.1]], [[training-and-bootstrap-atlas-0.1]]
 **Phase specs:** [[impl-atlas-0.1-phase0-scope-and-data]], [[impl-atlas-0.1-phase1-scaffold]], [[impl-atlas-0.1-phase2-experts]], [[impl-atlas-0.1-phase3-integration]], [[impl-atlas-0.1-phase4-validation]], [[impl-atlas-0.1-phase5-expansion]]
 **Progress tracker:** [[atlas-0.1-implementation-log]]

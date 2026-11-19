@@ -1,6 +1,6 @@
 # Phase 4 — End-to-End Validation
 
-**Type:** Implementation spec — agent task (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation spec — agent task (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Phase of:** [[00-atlas-0.1-implementation-plan]]. **Depends on:** [[impl-atlas-0.1-phase3-integration]] (M5 passed). **Unblocks:** [[impl-atlas-0.1-phase5-expansion]].
 **Design pages:** [[case-study-rocket-ascent-2d-atlas-0.1]], [[00-atlas-0.1-overview]], [[training-and-bootstrap-atlas-0.1]].
 **Milestones:** M6 (stable full-ascent rollout), M7 (validation report).

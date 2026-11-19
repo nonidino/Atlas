@@ -78,7 +78,7 @@ $$
 *(Restructured 2026-08-19.)* This hub sits at the top of `concepts/Atlas 0.1/`. Beneath it:
 
 - **`common/`** — the case-study-agnostic architecture: [[agent-definition-atlas-0.1]], [[graph-tokenizer-atlas-0.1]], [[edge-generation-atlas-0.1]], [[expert-library-atlas-0.1]], [[unet-hierarchy-atlas-0.1]], [[conservation-as-constraint-atlas-0.1]], [[global-fields-and-topology-atlas-0.1]], [[training-and-bootstrap-atlas-0.1]]. **Anything that would survive swapping the case study lives here.**
-- **`case-study-rocket-ascent/`** — the rocket scenario plus its `implementation/` subfolder (master plan, phases 0–5, budget, build log). All of it is rocket-specific: geometry, agent table, corpus plan, expert set.
+- **`case-study-rocket-ascent/`** — the rocket scenario; its first implementation plan (master plan, phases 0–5, budget, build log) was archived on 2026-11-18 to `wiki/archive/rocket-ascent-first-plan/`. All of it is rocket-specific: geometry, agent table, corpus plan, expert set.
 - **`case-study-wind-farm-wake/`** — the active scenario: [[case-study-wind-farm-wake-2d-atlas-0.1]] (rationale + plan) and [[spec-wind-farm-wake-atlas-0.1]] (the binding spec).
 - **`case-study-rbc-decomposition/`** — the synthetic single-expert control.
 

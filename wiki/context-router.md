@@ -48,7 +48,7 @@ The preliminary research is stable and small: start at [[physics-foundation-mode
 | [[tier0-measurements]] | 0.4 MB | the measurement record from Tier 0; tests read it |
 | [[chart-operator-kernel-exact-forms]], [[chart-operator-stage-0]] | 0.28 MB | Stage 0's history; the rework's §20 summarises what carries over |
 | the implementation logs ([[wind-farm-implementation-log]], [[atlas-0.1-implementation-log]], [[implementation-log]]) | 0.3 MB | append-only build records |
-| `case-study-rocket-ascent/implementation/` | 0.25 MB | the rocket's first plan, replaced by CS-21 |
+| `archive/` | 0.26 MB | archived history: the rocket's first plan (replaced by CS-21) and the M2 corpus handoff (never run) |
 | `atlas-0.1-outcome/interactive/` | 6.4 MB of HTML | viewers for the website; never read as text |
 
 ## 5. Conventions a session needs

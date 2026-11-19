@@ -1,6 +1,6 @@
 # Atlas 0.1 — Compute and Training Budget
 
-**Type:** Implementation spec — cross-phase resource plan (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation spec — cross-phase resource plan (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Phase of:** [[00-atlas-0.1-implementation-plan]]. **Resolves:** open action item 7 (route past the M2 compute wall) with a recommendation. **Unblocks:** [[impl-atlas-0.1-phase2-experts]].
 **Depends on:** measured numbers in [[atlas-0.1-implementation-log]] (2026-08-09 M2 entry, Phase 1 bench).
 **Written:** 2026-08-09, in answer to "what is the plan of action from Phase 2, considering training time, on a machine that can neither train nor generate?"

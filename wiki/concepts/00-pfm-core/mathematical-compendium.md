@@ -1149,7 +1149,7 @@ The three-way split defines $\gamma=[\Phi_{\lambda^{(k)}}-\Phi_{\lambda^\dagger}
 ## 17.17 Two stale cross-references
 
 - [[port-algebra-atlas-0.1]] §5's YAML declaration example still shows no prolongation, while §10.1 field 2 records that the mapping class is "derived from the declared prolongation, never declared." The example predates [[interface-transfer-theory]] and should gain a $P_i$ line.
-- [[gap-worklist]]'s own lint records a **dangling `[[phase1-resume-prompt]]` referenced from three pages as if it exists.** Still dangling at the time of writing.
+- [[gap-worklist]]'s own lint records a **dangling `[[phase1-resume-prompt]]` referenced from three pages as if it exists.** Still dangling at the time of writing; resolved 2026-11-18 by dropping the references (W24).
 
 ## 17.18 A symbol audit finding, stated once because it is systemic
 

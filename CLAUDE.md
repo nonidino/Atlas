@@ -38,7 +38,8 @@ wiki/
   log/                  ← earlier months, archived verbatim: log-YYYY-MM.md
   resources/
     code-and-papers.md  ← GitHub repos + per-paper code/arXiv links
-  misc/                 ← reading list, session handoffs
+  misc/                 ← reading list
+  archive/              ← superseded pages kept as history (bare links still resolve); don't read unless asked
   summaries/            ← one page per source document, in themed subfolders:
     foundation-models/  transformers-theory/  neural-operators/  graph-networks/
     hamiltonian-lagrangian/  diffusion-generative/  solvers-and-simulation/  other-methods/

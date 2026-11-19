@@ -1,6 +1,6 @@
 # Phase 1 — Native Scaffold
 
-**Type:** Implementation spec — agent task (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation spec — agent task (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Phase of:** [[00-atlas-0.1-implementation-plan]]. **Depends on:** nothing (buildable against random tensors). **Unblocks:** [[impl-atlas-0.1-phase2-experts]], [[impl-atlas-0.1-phase3-integration]].
 **Design pages:** [[graph-tokenizer-atlas-0.1]], [[edge-generation-atlas-0.1]], [[unet-hierarchy-atlas-0.1]], [[agent-definition-atlas-0.1]].
 **Milestones:** M0 (repo + config), M3 (end-to-end forward pass with identity experts).

@@ -2,7 +2,7 @@
 
 Append-only progress tracker for the Noether 1.1 **build** (distinct from the vault-wide `wiki/log.md`, which records design/wiki changes). Format: `## [YYYY-MM-DD] <portion> | <status> — <what happened>`. Status ∈ {planned, in-progress, blocked, done}. Update after **every** work session; note tests passing and what the completed work unblocks.
 
-**Plan:** [[00-implementation-plan]] · **Configs:** [[noether-1.1-medium]], [[noether-1.1-large]] · **Resume prompt:** [[phase1-resume-prompt]] · **Training on vast.ai:** [[vast-ai-training-runbook]]
+**Plan:** [[00-implementation-plan]] · **Configs:** [[noether-1.1-medium]], [[noether-1.1-large]] · **Training on vast.ai:** [[vast-ai-training-runbook]]
 
 ---
 
@@ -50,7 +50,7 @@ Executed [[impl-repo-scaffold]] against the actual repo (`physics-foundation-mod
 
 **Known, expected breakage (out of scope for this portion):** `scripts/*.py`, `gui/*.py`, `notebooks/*.ipynb` still import the now-removed `noether` package. This is portions 1/2/6/7/10's job to fix as they land, not something to patch here.
 
-**Next:** portions 1 ([[impl-gui-2d]]) and 2 ([[impl-data-generation]]) — both unblocked, can proceed in parallel. See [[phase1-resume-prompt]] for a self-contained pickup prompt.
+**Next:** portions 1 ([[impl-gui-2d]]) and 2 ([[impl-data-generation]]) — both unblocked, can proceed in parallel. See `phase1-resume-prompt` for a self-contained pickup prompt *(never written; the link was made plain text by the 2026-11-18 lint, W24)*.
 
 ---
 

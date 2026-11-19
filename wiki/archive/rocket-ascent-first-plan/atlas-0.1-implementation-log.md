@@ -1,6 +1,6 @@
 # Atlas 0.1 — Implementation Log
 
-**Type:** Implementation tracker — append-only (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation tracker — append-only (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Master plan:** [[00-atlas-0.1-implementation-plan]]
 **Distinct from** the vault-wide [[log]] (which records wiki operations) and from [[implementation-log]] (the parallel Noether 1.1 track's build tracker).
 

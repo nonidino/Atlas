@@ -1,6 +1,6 @@
 # Phase 0 — Scope and Data Generation
 
-**Type:** Implementation spec — agent task (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation spec — agent task (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Phase of:** [[00-atlas-0.1-implementation-plan]]. **Depends on:** nothing. **Unblocks:** [[impl-atlas-0.1-phase2-experts]], [[impl-atlas-0.1-phase4-validation]].
 **Design pages:** [[case-study-rocket-ascent-2d-atlas-0.1]], [[training-and-bootstrap-atlas-0.1]], [[agent-definition-atlas-0.1]].
 **Milestones:** M1 (solvers match analytic oracles), M2 (corpus generated).

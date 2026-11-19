@@ -37,10 +37,6 @@ CODE_SPAN = re.compile(r"`[^`]*`")
 
 #: (file relative to the root, with forward slashes; target) -> (count, reason).
 KNOWN: dict[tuple[str, str], tuple[int, str]] = {
-    ("concepts/Noether 1.1/Noether 1.1 implementation/00-implementation-plan.md",
-     "phase1-resume-prompt"): (1, "W24, open: write the page or drop the references"),
-    ("concepts/Noether 1.1/Noether 1.1 implementation/implementation-log.md",
-     "phase1-resume-prompt"): (2, "W24, open: write the page or drop the references"),
     ("concepts/Noether 1.1/00-noether-1.1-overview.md",
      "pattern-recognizer-vs-solver"): (1, "a placeholder its own line calls 'link seeded'"),
     # Archived out of log.md, verbatim, on 2026-10-17.

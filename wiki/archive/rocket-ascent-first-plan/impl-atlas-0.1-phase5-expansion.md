@@ -1,6 +1,6 @@
 # Phase 5 — Expansion to a Second Scenario
 
-**Type:** Implementation spec — agent task (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation spec — agent task (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Phase of:** [[00-atlas-0.1-implementation-plan]]. **Depends on:** [[impl-atlas-0.1-phase4-validation]] (**M7 passed, and ablations A1/A3/A4 favouring the full architecture**). **Unblocks:** Atlas 0.2.
 **Design pages:** [[pfm-purpose-and-direction]], [[edge-generation-atlas-0.1]], [[expert-library-atlas-0.1]], [[unet-hierarchy-atlas-0.1]], [[incremental-transfer-roadmap]].
 

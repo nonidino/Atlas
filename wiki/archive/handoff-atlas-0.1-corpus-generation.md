@@ -1,6 +1,6 @@
 # Handoff Prompt — Atlas 0.1 Corpus Generation
 
-**Type:** Working artifact — session handoff prompt (folder: `wiki/misc/`)
+**Type:** Working artifact — session handoff prompt (folder: `wiki/archive/`; archived 2026-11-18: M2 was never run, and the rocket moved to CS-21)
 **Purpose:** paste the block below into a fresh chat opened on the **code repo** (`physics-foundation-model`, branch `atlas-0.1`), not on this wiki vault.
 **Written:** 2026-08-09. **Companion pages:** [[impl-atlas-0.1-corpus-completion-plan]], [[impl-atlas-0.1-compute-and-training-budget]], [[physics-simulation-datasets]].
 

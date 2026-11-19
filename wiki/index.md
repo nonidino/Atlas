@@ -303,7 +303,7 @@ The heart of the project: what a PFM is, the goal, the interface, and the archit
 | [[formal-proofs-record]] | **What is machine-checked**: 105 theorems in 26 Lean files, no `sorry`; T3 false as first written ↗ |
 | [[formal-proofs-implementation-plan]] | The route to Lean: batches, toolchain, what stays a paper proof; batches 1–6 done, 7 not started |
 
-### History: the rocket's first implementation plan (`case-study-rocket-ascent/implementation/`)
+### History: the rocket's first implementation plan (archived 2026-11-18 to `archive/rocket-ascent-first-plan/`)
 Written 2026-08-09 for the old build repository's `atlas-0.1` branch; Phase 1 built, M2 blocked on compute; replaced by CS-21 (PoC 4) from Tier 76.
 
 | Page | Description |
@@ -411,7 +411,7 @@ How heterogeneous physical states become token sequences — **one deep-dive pag
 |---|---|
 | [[prereqs-and-resources]] | Tiered learning roadmap — PDEs, spectral methods, numerical methods, Hamiltonian mechanics, functional analysis, fluids — for someone entering with ML + calculus + ODEs |
 | [[context-router]] | **For LLM sessions**: which pages to read for each kind of task (build, reference, design, decision, brainstorm, ingest, lint), and which never to read whole (at the wiki root) |
-| [[handoff-atlas-0.1-corpus-generation]] | *History (2026-08, M2 never run):* **Session handoff prompt** for executing M2 on the code repo: thesis, build state, the unmet oracles and their causes, settled decisions and costs ↗ |
+| [[handoff-atlas-0.1-corpus-generation]] | *History (2026-08, M2 never run; archived 2026-11-18 to `archive/`):* **Session handoff prompt** for executing M2 on the code repo: thesis, build state, the unmet oracles and their causes, settled decisions and costs ↗ |
 
 ---
 

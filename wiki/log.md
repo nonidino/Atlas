@@ -1175,3 +1175,12 @@ The owner made the studio (`atlas/studio/`, [[integrated-ui-plan]]) Atlas's defa
 - Stale, left for the owner: the worklist board still reads `open` for W349 (done 2026-10-01 per [[demo-finish-plan]]), W351 (evaluated once, failing G5, [[demo-learned-case-plan]] §9) and W353 (batches 1–6 proved, [[formal-proofs-record]]); W25 (`prereqs-and-resources` reachable only by a markdown link) no longer holds, since the index and [[00-start-here]] link it bare; W24's three dead links remain.
 - Orphans (no inbound link from a content page): only navigation and archive pages (the log months, the digest, the worklist archives, `prereqs-and-resources`, the corpus-generation handoff). [[integrated-ui-plan]] had none and is now linked from the current state and the router.
 - No page was moved, merged or deleted. About forty pages under `Atlas 0.1/` are read by path by `tests/` and `scripts/build_racelab_bundle.py`, so a move there breaks the suite; the router and current-state page say so.
+
+## [2026-11-18] lint | archive, stale worklist rows, W24 closed
+
+On the owner's approval of the lint's three proposals:
+- **Archived** to a new `wiki/archive/` folder (bare links unaffected; no code, site or test reads them): the rocket's first implementation plan, ten pages, from `case-study-rocket-ascent/implementation/` to `archive/rocket-ascent-first-plan/` (replaced by CS-21 from Tier 76), and the M2 corpus-generation handoff from `misc/` (M2 was never run). Each page's folder line says so; [[index]], [[context-router]], [[00-start-here]], [[00-atlas-current-state]], [[00-atlas-0.1-overview]] and `CLAUDE.md` name the new folder.
+- **Worklist board** ([[gap-worklist]]): W24, W25 and W349 done, W351 closed (failed G5 on 2026-10-01), W353 in progress (batches 1–6); a closing housekeeping section holds the rows the board now points to.
+- **W24**: the three `phase1-resume-prompt` links dropped from the Noether 1.1 plan and implementation log (the log entry's link made plain text, with a note), and their two pins removed from `scripts/link_scan.py`.
+
+Both scans: 306 files, 3 dead links (3 known), 0 new, 0 stale; 0 byte problems. `tests/test_tier14_locality_and_scope.py` (the link-scan test) and the worklist test in `tests/test_tier50_corruption_sweep.py` pass.

@@ -1,6 +1,6 @@
 # Phase 2 — Experts
 
-**Type:** Implementation spec — agent task (folder: Atlas 0.1 / Atlas 0.1 implementation)
+**Type:** Implementation spec — agent task (folder: `wiki/archive/rocket-ascent-first-plan/`; archived 2026-11-18 as history, replaced by CS-21 from Tier 76)
 **Phase of:** [[00-atlas-0.1-implementation-plan]]. **Depends on:** [[impl-atlas-0.1-phase0-scope-and-data]] (corpus), [[impl-atlas-0.1-phase1-scaffold]] (tokenizer/decoder/graph). **Unblocks:** [[impl-atlas-0.1-phase3-integration]].
 **Design pages:** [[expert-library-atlas-0.1]] (authoritative), [[training-and-bootstrap-atlas-0.1]], [[incremental-transfer-roadmap]].
 **Milestone:** M4 — each of the three learned experts passes its solo accuracy gate.
