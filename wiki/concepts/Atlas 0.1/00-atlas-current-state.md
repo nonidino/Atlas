@@ -60,7 +60,7 @@ From [[00-atlas-0.1-outcome]] (revised after Tier 89); numbers there, with condi
 
 ## 6. Open fronts
 
-- **The coolant case** (CO-T, W364) per [[chart-operator-stage-0b-and-1-plan]]: Phases 1 and 2 done (§12, §13), the stop rule not met; **Phase 3 next**, starting with the oracle ceiling (a perfect network priced at TL0's cost, its forward pass and the switch) before any dataset is built. Stage 0b deferred; **W362** (non-square pieces).
+- **The coolant case** (CO-T, W364) per [[chart-operator-stage-0b-and-1-plan]]: Phases 1 and 2 done (§12, §13), the stop rule not met; **Phase 3's oracle ceiling fails** (§14, 2026-11-19): a perfect network with the switch costs 3.35 times the classical solve, 1.19 with none, against a bar of 0.90. On $n=32$ pieces the forward passes alone cost more than the classical solve. **Stopped before any dataset; the owner's decision is next** (close as negative, re-scope with a new registration, or re-run on mains). Stage 0b deferred; **W362** (non-square pieces).
 - **Formal proofs batch 7** ([[formal-proofs-implementation-plan]]).
 - The remaining open W-items: 173 open at the board's generation (2026-10-17). Read the board in [[gap-worklist]], never the archives, and grep for a W-number instead of reading the page (§7).
 - Deferred design problems with their causes: [[open-problems-atlas-0.1]].

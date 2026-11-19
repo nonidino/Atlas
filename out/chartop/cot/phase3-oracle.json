@@ -1,0 +1,326 @@
+{
+ "what": "CO-T Phase 3, check 4: the oracle ceiling (the coolant plan)",
+ "written": "2026-11-19T13:37:24-05:00",
+ "commit": "9fd35b2b6c220290c3ec7e2d9a9430661995a556",
+ "quick": false,
+ "criteria": {
+  "oracle": "the whole coupled solve of TL0 at the network's coarse size, plus every piece's network inputs and two untrained forward passes (CO-D's U-Net, 1.1 M parameters, CO-T's inputs), plus the switch's two dual residuals; its accuracy credited as the floor's",
+  "switch": "the cheapest Schwarz estimate whose ratio to the exact dual norm stays within a factor of 3 on the development pieces; also priced with no switch, as a bound",
+  "check 4": "over the development problems whose A/A check holds, the oracle's geometric-mean price is under 0.90 and under the geometric mean of min(1, finer cutting's price) per problem",
+  "A/A": "the classical expert timed twice per turn; outside [0.90, 1.10] a problem's prices are reported, not judged"
+ },
+ "blas": {
+  "pools": [
+   {
+    "api": "blas",
+    "internal": "mkl",
+    "threads": 4
+   },
+   {
+    "api": "openmp",
+    "internal": "openmp",
+    "threads": 4
+   },
+   {
+    "api": "openmp",
+    "internal": "openmp",
+    "threads": 1
+   }
+  ],
+  "fixed_at_4": true
+ },
+ "torch_threads": 4,
+ "forward": {
+  "32": {
+   "n": 32,
+   "size": "1M",
+   "parameters": 1100975,
+   "seconds_two_passes": 0.04796949995215982,
+   "threads": 4
+  },
+  "64": {
+   "n": 64,
+   "size": "1M",
+   "parameters": 1100975,
+   "seconds_two_passes": 0.08353699999861419,
+   "threads": 4
+  },
+  "128": {
+   "n": 128,
+   "size": "1M",
+   "parameters": 1100975,
+   "seconds_two_passes": 0.16639809997286648,
+   "threads": 4
+  }
+ },
+ "network_parameters": 1100975,
+ "problems": [
+  {
+   "layout": "dev-block",
+   "tier": "slow",
+   "n": 32,
+   "n_c": 16,
+   "pieces": 32,
+   "pe_max": 19.99612942708462,
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 1.0421720930946952,
+    "finer": 2.0275888567863394,
+    "TL0-16": 0.789130338914452,
+    "oracle, no switch": 2.7899820120627883,
+    "oracle, schwarz-16": 7.983988838620064,
+    "oracle, schwarz-32": 7.38706565559518
+   },
+   "aa": 1.0421720930946952,
+   "aa_ok": true,
+   "equivalence": {
+    "schwarz-16": [
+     2.2395160636578337,
+     2.3925734773806924
+    ],
+    "schwarz-32": [
+     2.2395160636578337,
+     2.3925734773806924
+    ]
+   },
+   "faithful": [
+    "schwarz-16",
+    "schwarz-32"
+   ],
+   "switch": "schwarz-32",
+   "oracle": 7.38706565559518,
+   "oracle_no_switch": 2.7899820120627883,
+   "competitor": 1.0,
+   "tl0_price": 0.789130338914452,
+   "turns": 5
+  },
+  {
+   "layout": "dev-block",
+   "tier": "fast",
+   "n": 128,
+   "n_c": 16,
+   "pieces": 32,
+   "pe_max": 179.93435571296808,
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 0.9925565504205615,
+    "finer": 0.7482418297530532,
+    "TL0-16": 0.31517919074320677,
+    "oracle, no switch": 0.5784077388867123,
+    "oracle, schwarz-16": 1.7114437696476594,
+    "oracle, schwarz-32": 1.1535384165700737
+   },
+   "aa": 0.9925565504205615,
+   "aa_ok": true,
+   "equivalence": {
+    "schwarz-16": [
+     1.0919100973466915,
+     1.2688136855955348
+    ],
+    "schwarz-32": [
+     1.070091929413795,
+     1.6339277998860906
+    ]
+   },
+   "faithful": [
+    "schwarz-16",
+    "schwarz-32"
+   ],
+   "switch": "schwarz-32",
+   "oracle": 1.1535384165700737,
+   "oracle_no_switch": 0.5784077388867123,
+   "competitor": 0.7482418297530532,
+   "tl0_price": 0.31517919074320677,
+   "turns": 5
+  },
+  {
+   "layout": "dev-parallel",
+   "tier": "slow",
+   "n": 32,
+   "n_c": 16,
+   "pieces": 48,
+   "pe_max": 19.9961294270847,
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 1.0116795354102346,
+    "finer": 1.77738131706348,
+    "TL0-16": 0.6700682456646526,
+    "oracle, no switch": 2.375843565769724,
+    "oracle, schwarz-16": 6.2231854821030534,
+    "oracle, schwarz-32": 6.30482480378681
+   },
+   "aa": 1.0116795354102346,
+   "aa_ok": true,
+   "equivalence": {
+    "schwarz-16": [
+     2.2759984664319113,
+     2.398091863936723
+    ],
+    "schwarz-32": [
+     2.2759984664319113,
+     2.398091863936723
+    ]
+   },
+   "faithful": [
+    "schwarz-16",
+    "schwarz-32"
+   ],
+   "switch": "schwarz-16",
+   "oracle": 6.2231854821030534,
+   "oracle_no_switch": 2.375843565769724,
+   "competitor": 1.0,
+   "tl0_price": 0.6700682456646526,
+   "turns": 5
+  },
+  {
+   "layout": "dev-parallel",
+   "tier": "fast",
+   "n": 64,
+   "n_c": 16,
+   "pieces": 48,
+   "pe_max": 109.89821419273805,
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 0.8612407598118837,
+    "finer": 0.9242174255706518,
+    "TL0-16": 0.47262250677938894,
+    "oracle, no switch": 0.971111853119456,
+    "oracle, schwarz-16": 4.370784465517575,
+    "oracle, schwarz-32": 5.523911235308898
+   },
+   "aa": 0.8612407598118837,
+   "aa_ok": false,
+   "equivalence": {
+    "schwarz-16": [
+     1.3768315296007656,
+     1.5213012562516284
+    ],
+    "schwarz-32": [
+     2.0620126849026796,
+     2.3927770986647845
+    ]
+   },
+   "faithful": [
+    "schwarz-16",
+    "schwarz-32"
+   ],
+   "switch": "schwarz-16",
+   "oracle": 4.370784465517575,
+   "oracle_no_switch": 0.971111853119456,
+   "competitor": 0.9242174255706518,
+   "tl0_price": 0.47262250677938894,
+   "turns": 5
+  },
+  {
+   "layout": "dev-winding",
+   "tier": "slow",
+   "n": 32,
+   "n_c": 16,
+   "pieces": 32,
+   "pe_max": 20.008532146597013,
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 1.119717196775205,
+    "finer": 2.049800194692249,
+    "TL0-16": 0.7053084462626744,
+    "oracle, no switch": 2.730772695491263,
+    "oracle, schwarz-16": 7.418484517741007,
+    "oracle, schwarz-32": 7.476903939958637
+   },
+   "aa": 1.119717196775205,
+   "aa_ok": false,
+   "equivalence": {
+    "schwarz-16": [
+     2.2391975515303773,
+     2.2848267223436363
+    ],
+    "schwarz-32": [
+     2.2391975515303773,
+     2.2848267223436363
+    ]
+   },
+   "faithful": [
+    "schwarz-16",
+    "schwarz-32"
+   ],
+   "switch": "schwarz-16",
+   "oracle": 7.418484517741007,
+   "oracle_no_switch": 2.730772695491263,
+   "competitor": 1.0,
+   "tl0_price": 0.7053084462626744,
+   "turns": 5
+  },
+  {
+   "layout": "dev-winding",
+   "tier": "fast",
+   "n": 128,
+   "n_c": 16,
+   "pieces": 32,
+   "pe_max": 179.96395527690214,
+   "price": {
+    "classical": 1.0,
+    "classical (A/A)": 0.9728916659651092,
+    "finer": 0.7387687661257191,
+    "TL0-16": 0.32731524945683904,
+    "oracle, no switch": 0.5251698416391744,
+    "oracle, schwarz-16": 2.5477314580126804,
+    "oracle, schwarz-32": 2.362844578969943
+   },
+   "aa": 0.9728916659651092,
+   "aa_ok": true,
+   "equivalence": {
+    "schwarz-16": [
+     1.0815344595570477,
+     1.1386647939546426
+    ],
+    "schwarz-32": [
+     1.0690665829164976,
+     1.2087839440105648
+    ]
+   },
+   "faithful": [
+    "schwarz-16",
+    "schwarz-32"
+   ],
+   "switch": "schwarz-32",
+   "oracle": 2.362844578969943,
+   "oracle_no_switch": 0.5251698416391744,
+   "competitor": 0.7387687661257191,
+   "tl0_price": 0.32731524945683904,
+   "turns": 5
+  }
+ ],
+ "machine": {
+  "time": "2026-11-19T13:37:24-05:00",
+  "host": "champ",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+  "cpu_count": 22,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.13.1",
+  "power": {
+   "ac": false,
+   "battery_percent": 77,
+   "source": "GetSystemPowerStatus"
+  },
+  "other_python_processes": [
+   {
+    "pid": 44856,
+    "memory": "49,156 K",
+    "command": "C:\\Users\\Nauni\\anaconda3\\python.exe -m atlas.studio --port 8021"
+   }
+  ],
+  "pid": 80328
+ },
+ "verdict": {
+  "counted": 4,
+  "oracle_geomean": 3.34570758324676,
+  "oracle_no_switch_geomean": 1.191209860124364,
+  "competitor_geomean": 0.8622587840367932,
+  "check4": false,
+  "check4_with_no_switch": false,
+  "independent_of_the_switch": true
+ },
+ "seconds": 4059.5
+}

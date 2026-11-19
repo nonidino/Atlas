@@ -1,0 +1,32 @@
+CO-T Phase 3, check 4: the oracle ceiling (the coolant plan)
+
+written  2026-11-19T13:37:24-05:00
+commit   9fd35b2b6c220290c3ec7e2d9a9430661995a556
+threads  BLAS fixed at 4: True; torch 4
+network  1100975 parameters, untrained; two forward passes per piece: n 32 48.0 ms, n 64 83.5 ms, n 128 166.4 ms
+
+CRITERIA (fixed before the first run)
+  oracle: the whole coupled solve of TL0 at the network's coarse size, plus every piece's network inputs and two untrained forward passes (CO-D's U-Net, 1.1 M parameters, CO-T's inputs), plus the switch's two dual residuals; its accuracy credited as the floor's
+  switch: the cheapest Schwarz estimate whose ratio to the exact dual norm stays within a factor of 3 on the development pieces; also priced with no switch, as a bound
+  check 4: over the development problems whose A/A check holds, the oracle's geometric-mean price is under 0.90 and under the geometric mean of min(1, finer cutting's price) per problem
+  A/A: the classical expert timed twice per turn; outside [0.90, 1.10] a problem's prices are reported, not judged
+
+problem              n    A/A    classical  finer  TL0   oracle(no switch)  oracle(switch)       competitor
+  dev-block    slow   32 1.042  1.000      2.03   0.79  2.79               7.39 (schwarz-32)   1.00
+      Schwarz over exact: {'schwarz-16': [2.2395160636578337, 2.3925734773806924], 'schwarz-32': [2.2395160636578337, 2.3925734773806924]}; faithful within 3: ['schwarz-16', 'schwarz-32']
+  dev-block    fast  128 0.993  1.000      0.75   0.32  0.58               1.15 (schwarz-32)   0.75
+      Schwarz over exact: {'schwarz-16': [1.0919100973466915, 1.2688136855955348], 'schwarz-32': [1.070091929413795, 1.6339277998860906]}; faithful within 3: ['schwarz-16', 'schwarz-32']
+  dev-parallel slow   32 1.012  1.000      1.78   0.67  2.38               6.22 (schwarz-16)   1.00
+      Schwarz over exact: {'schwarz-16': [2.2759984664319113, 2.398091863936723], 'schwarz-32': [2.2759984664319113, 2.398091863936723]}; faithful within 3: ['schwarz-16', 'schwarz-32']
+  dev-parallel fast   64 0.861  1.000      0.92   0.47  0.97               4.37 (schwarz-16)   0.92   (A/A failed: not counted)
+      Schwarz over exact: {'schwarz-16': [1.3768315296007656, 1.5213012562516284], 'schwarz-32': [2.0620126849026796, 2.3927770986647845]}; faithful within 3: ['schwarz-16', 'schwarz-32']
+  dev-winding  slow   32 1.120  1.000      2.05   0.71  2.73               7.42 (schwarz-16)   1.00   (A/A failed: not counted)
+      Schwarz over exact: {'schwarz-16': [2.2391975515303773, 2.2848267223436363], 'schwarz-32': [2.2391975515303773, 2.2848267223436363]}; faithful within 3: ['schwarz-16', 'schwarz-32']
+  dev-winding  fast  128 0.973  1.000      0.74   0.33  0.53               2.36 (schwarz-32)   0.74
+      Schwarz over exact: {'schwarz-16': [1.0815344595570477, 1.1386647939546426], 'schwarz-32': [1.0690665829164976, 1.2087839440105648]}; faithful within 3: ['schwarz-16', 'schwarz-32']
+
+VERDICT (check 4)
+  counted problems: 4
+  oracle 3.34570758324676, with no switch 1.191209860124364, competitor 0.8622587840367932, bar 0.9
+  check 4 passes: False; with no switch: False
+  4059.5 s

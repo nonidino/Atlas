@@ -1227,3 +1227,12 @@ Written up as [[chart-operator-stage-0b-and-1-plan]] §13, worklist W364. Nothin
 - **The expert store** (plan §8): `atlas/chartop/expert_store.py`, `scripts/expert_store_backfill.py`, `out/experts/` (tracked, weights ignored): 22 cards, every one's weights present and matching its record on this machine (presence is checked live, never trusted from a stored flag: a clone without the git-ignored weights offers none); `atlas/studio/experts.py` reads the catalog instead of its hand-written list (no registration pins it, checked).
 - **Tests and walks:** `test_studio_channel_cut.py` (16), `test_chartop_transport_coarse.py` (9), `test_chartop_transport_phase2.py` (10), `test_expert_store.py` (5), `test_studio_cot.py` updated; walks `cot1` (25 checks, re-run), `cot2` (14, new), `p5` (22, re-run through the catalog).
 - Updated: [[00-atlas-current-state]] §4 and §6, [[gap-worklist]] (W364), [[index]], `atlas/studio/README.md`.
+
+## [2026-11-19] measure | the coolant plan, Phase 3 check 4: the oracle ceiling fails; stopped before any dataset
+
+Written up as [[chart-operator-stage-0b-and-1-plan]] §14, worklist W364. Nothing trained, no box rented.
+- **Ran** `scripts/cot_phase3_oracle.py` (criteria fixed in the script before the run) at commit `9fd35b2`, on the six development problems: a perfect network priced at TL0's whole coupled solve, plus every piece's inputs and two forward passes of CO-D's 1.1 M U-Net with CO-T's inputs (`atlas/chartop/transport_model.py`, untrained), plus the switch's two Schwarz residuals. Record: `out/chartop/cot/phase3-oracle.json`, `.txt`, `.log`.
+- **Check 4 fails:** over the 4 problems whose A/A holds, the oracle's geometric-mean price is 3.35 (1.19 with no switch) against the bar 0.90 and the competitor (min of the classical solve and finer cutting) 0.86. On $n=32$ pieces the forward passes alone exceed the classical solve (2.4–2.8 with no switch); on $n=128$ the oracle with no switch would pay (0.53–0.58) and the switch doubles it (1.15–2.36).
+- **The run was disturbed:** on battery, three standby stalls (about 22 of 68 minutes); prices are medians over interleaved turns, and two A/A checks failed (0.861, 1.120). Noted in the plan.
+- **Stopped** per the plan's stop rule; the owner chooses between closing the case as negative, a re-scoped new registration, or a clean re-run (§14.4). `transport_data.py` (the drafted generator) stays uncommitted and untested.
+- Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].

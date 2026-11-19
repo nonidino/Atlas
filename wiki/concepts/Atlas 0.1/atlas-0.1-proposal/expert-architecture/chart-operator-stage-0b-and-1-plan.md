@@ -1,7 +1,7 @@
 # Chart operator after Stage 0: the coolant plan (CO-T on laminar cold plates), then the rest of Stage 1
 
 **Type:** Concept page — **plan**, agreed with the owner, and its build record from Phase 1 on; nothing is trained or registered (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. **Phase 2 ran (§13, 2026-11-19), and its stop rule is not met:** no classical option meets E4 on every development problem under the 0.90 price bar (finer cutting meets E4 on all six at 1.02; TL0 at $n_c=32$ meets it cheaply on the fast tier, but no coarse size works at $n=32$). On the way, the channel cut (curved channels cut along their walls), the general flow and Danckwerts' inlet were built. The safety switch as built costs about one classical piece solve, so Phase 3 runs the oracle ceiling first. Phases 3–6 have not started. No data, no training. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
+**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. **Phase 2 ran (§13, 2026-11-19), and its stop rule is not met:** no classical option meets E4 on every development problem under the 0.90 price bar (finer cutting meets E4 on all six at 1.02; TL0 at $n_c=32$ meets it cheaply on the fast tier, but no coarse size works at $n=32$). On the way, the channel cut (curved channels cut along their walls), the general flow and Danckwerts' inlet were built. **Phase 3's first check, the oracle ceiling, fails (§14, 2026-11-19):** a perfect network priced at TL0's cost, plus its forward passes and the switch, costs 3.35 times the classical solve (1.19 with no switch) against a bar of 0.90 and a competitor at 0.86. **The plan stops before any dataset; the owner chooses what follows (§14.4).** No data, no training. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
 **Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W364 (this plan), W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
 
 ---
@@ -427,6 +427,66 @@ On TL0-16's answers, piece by piece, against one classical piece solve (the reco
 - **Check 3, the control, holds:** TL0 at $n_c=16$ misses E4 on all six development problems.
 - **The competitors a network must beat at equal price:** on the fast tier TL0 at $n_c=32$ (0.34–0.60) and finer cutting with TL0 (0.35–0.61); on the slow tier the classical solve itself, since nothing cheaper meets E4 there.
 - **The oracle ceiling decides whether anything is trained:** TL0's cost, plus the planned network's forward pass measured untrained, plus the switch, against the bar and those competitors.
+
+---
+
+## 14. Phase 3, check 4: the oracle ceiling fails (2026-11-19)
+
+Run first in Phase 3, before any dataset (§13.4). The script is `scripts/cot_phase3_oracle.py`; the record is `out/chartop/cot/phase3-oracle.json` (also `.txt` and `.log`), at commit `9fd35b2`. **Check 4 fails, with or without the switch, so the plan stops here: no dataset, no training, no box.** What happens to the coolant case next is the owner's decision.
+
+### 14.1 What was priced
+
+The criteria were written into the script before its first run.
+- **The oracle:** a perfect network behind the switch. Its price is the sum of:
+  - the whole coupled solve of TL0 at the network's coarse size ($n_c=\min(16,n/2)$);
+  - on every piece, the network's inputs and two forward passes (trial, and adjoint by the reversed flow). The network is CO-D's U-Net at 1.1 M parameters with CO-T's six input channels, untrained (`transport_model.py`);
+  - the switch's two dual residuals, one for the learned answer and one for TL0's.
+
+  Its accuracy is credited as the classical floor's, which is what a perfect network would have.
+- **The switch priced:** the cheapest Schwarz estimate within a factor 3 of the exact dual norm on every development piece. Both $n_c=16$ and $n_c=32$ qualify (ratios 1.07–2.40). The oracle is also priced with no switch, as a lower bound.
+- **The competitor:** the cheapest classical option reaching the floor's accuracy, per problem: $\min(1, \text{finer cutting})$.
+- **The pass condition:** the oracle's geometric-mean price is under 0.90 and under the competitor's, over the problems whose A/A check holds.
+
+### 14.2 The result
+
+Prices are multiples of the classical solve: medians of five interleaved turns, with BLAS and torch threads fixed at 4.
+
+| problem | $n$ | pieces | A/A | finer | TL0 | oracle, no switch | oracle, switch | competitor |
+|---|---|---|---|---|---|---|---|---|
+| dev-block slow | 32 | 32 | 1.042 | 2.03 | 0.79 | 2.79 | 7.39 | 1.00 |
+| dev-block fast | 128 | 32 | 0.993 | 0.75 | 0.32 | 0.58 | 1.15 | 0.75 |
+| dev-parallel slow | 32 | 48 | 1.012 | 1.78 | 0.67 | 2.38 | 6.22 | 1.00 |
+| dev-parallel fast | 64 | 48 | 0.861 (not counted) | 0.92 | 0.47 | 0.97 | 4.37 | 0.92 |
+| dev-winding slow | 32 | 32 | 1.120 (not counted) | 2.05 | 0.71 | 2.73 | 7.42 | 1.00 |
+| dev-winding fast | 128 | 32 | 0.973 | 0.74 | 0.33 | 0.53 | 2.36 | 0.74 |
+
+Four problems were counted. The geometric means are:
+
+| | Geometric mean |
+|---|---|
+| Oracle with the switch | **3.35** |
+| Oracle with no switch | **1.19** |
+| Competitor | 0.86 |
+| Price bar | 0.90 |
+
+Check 4 fails both ways. The untrained network's two forward passes cost 48 ms per piece at $n=32$, 84 ms at $n=64$ and 166 ms at $n=128$.
+
+**The run was disturbed.** The laptop was on battery, and it entered standby three times during the run (Kernel-Power 506/507: 13:38–13:53, 14:14–14:18, 14:33–14:35; about 22 minutes of the 68). Each price is a median over interleaved turns, which absorbs a stall in one turn of one arm. But the two A/A failures (0.861 and 1.120) may come from these stalls. **[AI Inference]:** the verdict should survive a clean re-run, for two reasons:
+- On the slow tier the oracle with no switch is 2.4–2.8 times the classical solve, three times the bar. A standby stall would have to fall on the classical arm in at least three of five turns to make that.
+- The forward passes' cost was measured separately, outside the turns.
+
+### 14.3 What it says
+
+- **On the slow tier ($n=32$) the network alone costs more than the problem.** The two forward passes on every piece cost more than the whole classical solve. The pieces are small, so the classical expert's eigen-solves are cheap, and a 1.1 M-parameter U-Net is not. No switch, no accuracy and no training changes this.
+- **On the fast tier ($n=128$) a perfect network with no switch would pay** (0.53–0.58, under the bar and under finer cutting's 0.74–0.75). **The switch costs it the win:** two Schwarz residuals per piece roughly double the price, to 1.15–2.36.
+- **[AI Inference]:** even there, TL0 at $n_c=32$ already meets E4 at 0.34–0.60 (§13.2). A network credited with the floor's accuracy beats it only where E4 is not enough. That is the question the owner's E4 already answered.
+
+### 14.4 What the owner chooses between
+
+The plan's stop rule applies (§5, Phase 3). These are the ways on that the measurements leave; none has been started.
+1. **Close the coolant case as a negative result** and move to §10 (CO-E, the bond and the biharmonic network, classically on TL0). The classical CO-T expert, the channel cut, Danckwerts' inlet and the store stay built.
+2. **Re-scope and register a new check before any data:** a smaller network, larger pieces only (the fast tier's $n\ge128$), or a cheaper switch (one residual, or Jacobi with a measured bound). Each changes a criterion fixed before this run, so it would be a new registration, not a re-reading of this one.
+3. **Re-run this check unchanged on mains power with standby held,** to remove the disturbance before the decision. **[AI Inference]:** it would take about 70 minutes, and the verdict is not expected to change.
 
 ---
 
