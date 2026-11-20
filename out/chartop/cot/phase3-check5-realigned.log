@@ -1,0 +1,7 @@
+check 5 (realigned): dev-block slow: floor 0.001317, TL0 0.02827, 8 pieces left out (34 s)
+check 5 (realigned): dev-block fast: floor 0.02046, TL0 0.06575, 8 pieces left out (452 s)
+check 5 (realigned): dev-parallel slow: floor 0.001149, TL0 0.02349, 32 pieces left out (41 s)
+check 5 (realigned): dev-parallel fast: floor 0.01095, TL0 0.05123, 32 pieces left out (139 s)
+check 5 (realigned): dev-winding slow: floor 0.001248, TL0 0.02994, 0 pieces left out (30 s)
+check 5 (realigned): dev-winding fast: floor 0.01631, TL0 0.06225, 0 pieces left out (455 s)
+check 5: PASSED

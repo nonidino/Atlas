@@ -93,25 +93,35 @@ def test_rho_on_the_page_is_the_records():
     assert sum(r["bins"]) == r["pieces"]
 
 
-def test_a_stage0b_registration_appears_with_no_change_to_the_code(tmp_path):
+def test_the_coolant_registration_appears_with_no_change_to_the_code(tmp_path):
     for f in os.listdir(CH):                     # the existing records, as they are
         if f.startswith(("evaluation-", "registration-")) and f.endswith(".json"):
             shutil.copy(os.path.join(CH, f), tmp_path / f)
     before = R.evaluations(str(tmp_path))
-    assert before[0]["name"] == "Stage 0b" and before[0]["status"] == "not registered"
-    reg = {"registration": "a test's stand-in for the Stage 0b registration",
-           "arms": {"TL0": {}, "P_theta": {}, "classical": {}, "H2r": {}},
-           "gates": [{"key": "C1", "title": "contrast bin 1", "bar": "rho >= 0.5"}]}
-    (tmp_path / "registration-stage0b.json").write_text(json.dumps(reg))
+    assert before[0]["name"] == "Coolant (CO-T)" and before[0]["status"] == "not registered"
+    assert before[0]["arms"] == ["TL0", "arm P", "arm R", "classical"] and "CL-A" in before[0]["note"]
+    assert not any(e["kind"] == "stage0b" for e in before)      # the placeholder it replaced
+    reg = {"registration": "a test's stand-in for the coolant's registration",
+           "arms": {"TL0": {}, "arm P": {}, "arm R": {}, "classical": {}},
+           "gates": [{"key": "CL-A", "title": "meets E4 where TL0 misses it", "bar": "every evaluation layout"}]}
+    (tmp_path / "registration-cot.json").write_text(json.dumps(reg))
     after = R.evaluations(str(tmp_path))
-    s0b = [e for e in after if e["kind"] == "stage0b"]
-    assert len(s0b) == 1 and s0b[0]["status"] == "registered, not run"
-    assert s0b[0]["name"] == "Stage 0b" and s0b[0]["arms"] == ["TL0", "P_theta", "classical", "H2r"]
-    assert [g["key"] for g in s0b[0]["gates"]] == ["C1"]
+    cot = [e for e in after if e["kind"] == "cot"]
+    assert len(cot) == 1 and cot[0]["status"] == "registered, not run"
+    assert cot[0]["name"] == "Coolant (CO-T)" and cot[0]["arms"] == ["TL0", "arm P", "arm R", "classical"]
+    # the gates are read from atlas/chartop/gates_cot.py (the draft), not from the file's own list
+    from atlas.chartop import gates_cot as GC
+    assert [g["key"] for g in cot[0]["gates"]] == [g.key for g in GC.GATES]
+    title = {g.key: g.title for g in GC.GATES}
     # its evaluation, once written, is read the same way
-    (tmp_path / "evaluation-stage0b-20261201-120000.json").write_text(json.dumps(
-        {"written": "2026-12-01", "registered_run": True, "code": "abc1234", "main": "P_theta",
-         "gates": {"C1": {"met": True}}}))
-    ev = [e for e in R.evaluations(str(tmp_path)) if e["kind"] == "stage0b"]
+    (tmp_path / "evaluation-cot-20261201-120000.json").write_text(json.dumps(
+        {"written": "2026-12-01", "registered_run": True, "code": "abc1234", "main": "arm P",
+         "gates": {"CL-A": {"met": True}}}))
+    ev = [e for e in R.evaluations(str(tmp_path)) if e["kind"] == "cot"]
     assert len(ev) == 1 and ev[0]["status"] == "evaluated"
-    assert [(g["key"], g["met"], g["title"]) for g in ev[0]["gates"]] == [("C1", True, "contrast bin 1")]
+    got = {g["key"]: (g["met"], g["title"]) for g in ev[0]["gates"]}
+    assert got["CL-A"] == (True, title["CL-A"]) and got["E4"] == (None, title["E4"])
+    # a Stage 0b registration, once it exists, is still read by rule
+    (tmp_path / "registration-stage0b.json").write_text(json.dumps({"registration": "stand-in", "arms": ["TL0"]}))
+    s0b = [e for e in R.evaluations(str(tmp_path)) if e["kind"] == "stage0b"]
+    assert len(s0b) == 1 and s0b[0]["name"] == "Stage 0b" and s0b[0]["status"] == "registered, not run"

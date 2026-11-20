@@ -1,0 +1,6 @@
+eval-two-devices-slow.json: 50 pieces at n 32, Pe max 20.0; floor energy 0.001543, max 0.00152, outlet 1.8219481885961524e-10
+eval-two-devices-fast.json: 50 pieces at n 128, Pe max 179.9; floor energy 0.01899, max 0.0542, outlet 2.9236053416112907e-09
+eval-three-channels-slow.json: 80 pieces at n 32, Pe max 20.0; floor energy 0.001103, max 0.00167, outlet 3.6020069007717786e-11
+eval-three-channels-fast.json: 80 pieces at n 64, Pe max 109.9; floor energy 0.01074, max 0.0251, outlet 7.657664034000968e-11
+eval-arch-slow.json: 32 pieces at n 32, Pe max 20.0; floor energy 0.001229, max 0.00133, outlet 7.338570333418285e-11
+eval-arch-fast.json: 32 pieces at n 128, Pe max 180.0; floor energy 0.01711, max 0.0487, outlet 5.686363488051804e-10

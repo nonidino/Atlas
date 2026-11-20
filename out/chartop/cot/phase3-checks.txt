@@ -1,0 +1,5 @@
+The coolant dataset's checks
+
+check 3: passed; dev-block slow 0.0283, dev-block fast 0.0658, dev-parallel slow 0.0235, dev-parallel fast 0.0512, dev-winding slow 0.0299, dev-winding fast 0.0622
+check 5: FAILED; Spearman 0.627 over 42 experts
+check 5 (realigned loss): passed; Spearman 0.822 over 42 experts (0.794 synthetic only)

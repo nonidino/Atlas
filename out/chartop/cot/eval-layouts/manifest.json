@@ -1,0 +1,91 @@
+{
+ "what": "the coolant plan's evaluation layouts (atlas/studio/cot_eval_layouts.py)",
+ "written": "2026-11-19T15:41:26-05:00",
+ "role": "evaluation: hashed in Phase 3; only the classical floor measured before the one evaluation",
+ "files": [
+  {
+   "file": "eval-two-devices-slow.json",
+   "sha256": "428c6a7235713e3689ad53a8e77087d8c54d49a02e486d2e207be4798380823f",
+   "layout": "eval-two-devices",
+   "tier": "slow",
+   "u_coolant": 0.000958,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 32
+   },
+   "pieces": 50,
+   "pe_max": 19.996
+  },
+  {
+   "file": "eval-two-devices-fast.json",
+   "sha256": "a9bc79a6adbf52d5e126c41ca3e919f81311ecdf405b047482a1df6506ae7dea",
+   "layout": "eval-two-devices",
+   "tier": "fast",
+   "u_coolant": 0.00861,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 128
+   },
+   "pieces": 50,
+   "pe_max": 179.934
+  },
+  {
+   "file": "eval-three-channels-slow.json",
+   "sha256": "25c1fe3352133773e6537338a194d81cecea59ecd3ee9ca917789f94d7a6ce5d",
+   "layout": "eval-three-channels",
+   "tier": "slow",
+   "u_coolant": 0.000958,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 32
+   },
+   "pieces": 80,
+   "pe_max": 19.996
+  },
+  {
+   "file": "eval-three-channels-fast.json",
+   "sha256": "e1dce946c16120756fc7f1f3142ef71c0089028c7f891877530d19b4a7bb7df6",
+   "layout": "eval-three-channels",
+   "tier": "fast",
+   "u_coolant": 0.00526,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 64
+   },
+   "pieces": 80,
+   "pe_max": 109.898
+  },
+  {
+   "file": "eval-arch-slow.json",
+   "sha256": "19e15326f4cde502485cbcd5434f674f25ff855530de2c648b64b12998ca79d6",
+   "layout": "eval-arch",
+   "tier": "slow",
+   "u_coolant": 0.000931,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 32
+   },
+   "pieces": 32,
+   "pe_max": 20.002
+  },
+  {
+   "file": "eval-arch-fast.json",
+   "sha256": "b849eb5d967d9d816672d6e3969af6864f253c0d22fbc4f6d6ace5c7eebdac7f",
+   "layout": "eval-arch",
+   "tier": "fast",
+   "u_coolant": 0.00837,
+   "cut": {
+    "cutter": "channels",
+    "cols": 8,
+    "n": 128
+   },
+   "pieces": 32,
+   "pe_max": 179.99
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+check 5: dev-block slow: floor 0.001317, TL0 0.02827 (12 s)
+check 5: dev-block fast: floor 0.02046, TL0 0.06575 (405 s)
+check 5: dev-parallel slow: floor 0.001149, TL0 0.02349 (50 s)
+check 5: dev-parallel fast: floor 0.01095, TL0 0.05123 (141 s)
+check 5: dev-winding slow: floor 0.001248, TL0 0.02994 (28 s)
+check 5: dev-winding fast: floor 0.01631, TL0 0.06225 (444 s)
+check 5: FAILED

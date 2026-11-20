@@ -2,7 +2,8 @@
 
 Done-when, checked in the page: each existing evaluation's gates and prices on screen
 match its JSON record (read here by explicit paths, not through records.py), and the
-Stage 0b row says it is not registered.  Then Open: a held-out problem into Run's
+coolant's row (which replaced the Stage 0b placeholder on 2026-11-19) says it is not
+registered and what it will register.  Then Open: a held-out problem into Run's
 compare mode, run, its numbers the record's.
 
     python scripts/studio_drive.py scripts/studio_walks/p6.py --out out/studio/p6
@@ -39,7 +40,10 @@ def walk(page):
     page.wait_for("window.atlas.records && window.atlas.records.data()", 60, "the records")
     page.pump(0.6)
     rows = page.js("[...document.querySelectorAll('.recrow')].map(e => e.innerText.replace(/\\s+/g, ' ').trim())")
-    page.check("Stage 0b is listed, not registered", rows and rows[0].startswith("Stage 0b") and "not registered" in rows[0], rows[:2])
+    page.check("the coolant is listed, not registered", rows and rows[0].startswith("Coolant (CO-T)") and "not registered" in rows[0], rows[:2])
+    page.check("no Stage 0b placeholder", not any(r.startswith("Stage 0b") for r in rows), rows[:3])
+    note = page.js("(document.querySelector('.recrow') || {dataset: {}}).dataset.tip || ''")
+    page.check("the coolant's row says what it will register", "CL-A" in note and "arm P" in note, note[:120])
     data = page.js("window.atlas.records.data()")
     files = [e["file"] for e in data if e.get("status") == "evaluated"]
     page.check("every evaluation on this machine is listed", set(files) == {f for f in WHERE if os.path.isfile(os.path.join(CH, f))}, files)

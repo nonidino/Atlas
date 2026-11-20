@@ -93,11 +93,13 @@ def geometry(name: str) -> tuple[D.Geometry, float, list]:
     return D.Geometry(features=feats), H, ends
 
 
-def build(name: str, tier: str = "fast", speed: float | None = None):
-    """(spec, geometry) of a development layout; ``speed`` overrides the fixed one."""
+def build(name: str, tier: str = "fast", speed: float | None = None, *, geometry_of=None, speeds=None):
+    """(spec, geometry) of a development layout; ``speed`` overrides the fixed one.
+    ``geometry_of`` and ``speeds`` let another set of layouts (the evaluation layouts,
+    `cot_eval_layouts`) be drawn the same way; by default they are this module's."""
     if tier not in TIERS:
         raise ValueError(f"{tier!r}: one of {TIERS}")
-    geom, H, ends = geometry(name)
+    geom, H, ends = (geometry_of or geometry)(name)
     spec = example_case("cooled-block")
     spec.domain.dx = DX
     al = dict(spec.materials.get("aluminium") or {"k": 205.0, "rho": 2700.0, "cp": 900.0,
@@ -129,7 +131,7 @@ def build(name: str, tier: str = "fast", speed: float | None = None):
     bounds += [Boundary(id="base", edge="bottom", kind="insulated"),
                Boundary(id="lid", edge="top", kind="insulated")]
     applied.boundaries = bounds
-    u = speed if speed is not None else SPEEDS[name][tier]
+    u = speed if speed is not None else (SPEEDS if speeds is None else speeds)[name][tier]
     if u is None:
         raise ValueError(f"{name} {tier}: no fixed speed yet; calibrate first")
     applied.physics.params["u_coolant"] = float(u)
@@ -139,22 +141,23 @@ def build(name: str, tier: str = "fast", speed: float | None = None):
     return applied, geom
 
 
-def cut(spec, name: str, tier: str, cols_factor: int = 1, rows: int = 1):
+def cut(spec, name: str, tier: str, cols_factor: int = 1, rows: int = 1, *, cuts=None):
     """The layout's registered cut (``cols_factor`` and ``rows`` for the finer cut, at the
-    grid divided by the same factor, so the mesh is unchanged)."""
+    grid divided by the same factor, so the mesh is unchanged).  ``cuts``: another set's
+    table (default this module's `CUT`)."""
     from .pieces import cut_channels
-    c = CUT[name]
+    c = (CUT if cuts is None else cuts)[name]
     n = c["n"][tier] // cols_factor
     return cut_channels(spec, n, cols=c["cols"] * cols_factor, rows=rows)
 
 
-def calibrate(name: str, tier: str) -> float:
+def calibrate(name: str, tier: str, *, geometry_of=None, cuts=None) -> float:
     """The speed whose largest piece Peclet number on the registered cut is the tier's
     target (Peclet numbers are linear in the speed), rounded to three figures."""
     from . import cot
-    n = CUT[name]["n"][tier]
-    spec, _ = build(name, tier, speed=1e-3)
-    pe = max(p.peclet() for p in cot.problems(cut(spec, name, tier), spec))
+    n = (CUT if cuts is None else cuts)[name]["n"][tier]
+    spec, _ = build(name, tier, speed=1e-3, geometry_of=geometry_of)
+    pe = max(p.peclet() for p in cot.problems(cut(spec, name, tier, cuts=cuts), spec))
     u = 1e-3 * TARGET_PE[(tier, n)] / pe
     return float(f"{u:.3g}")
 

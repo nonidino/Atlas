@@ -20,6 +20,12 @@
       "port": 8021
     },
     {
+      "name": "studio-8031",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "atlas.studio", "--port", "8031"],
+      "port": 8031
+    },
+    {
       "name": "rocket-episode-page",
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8321", "--bind", "127.0.0.1", "--directory", "out/w321"],

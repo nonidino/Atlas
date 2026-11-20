@@ -1,0 +1,13 @@
+step 250: loss 0.7560, worst group adjoint j4-8 1.001, shuffled worst 1.326 (42 min)
+step 500: loss 0.6201, worst group adjoint j9-15 1.000, shuffled worst 1.325 (54 min)
+step 750: loss 0.5723, worst group adjoint j9-15 1.000, shuffled worst 1.401 (66 min)
+step 1000: loss 0.4564, worst group trial j9-15 0.997, shuffled worst 1.359 (78 min)
+step 1250: loss 0.3893, worst group trial j9-15 0.970, shuffled worst 1.343 (89 min)
+step 1500: loss 0.3520, worst group trial j9-15 0.950, shuffled worst 1.343 (102 min)
+step 1750: loss 0.3342, worst group trial j9-15 0.938, shuffled worst 1.372 (114 min)
+step 2000: loss 0.3120, worst group trial j9-15 0.931, shuffled worst 1.341 (127 min)
+step 2250: loss 0.3002, worst group trial j9-15 0.924, shuffled worst 1.324 (138 min)
+step 2500: loss 0.2929, worst group trial j9-15 0.920, shuffled worst 1.333 (150 min)
+step 2750: loss 0.3456, worst group adjoint j9-15 0.939, shuffled worst 1.324 (162 min)
+step 3000: loss 0.2857, worst group trial j9-15 0.914, shuffled worst 1.308 (174 min)
+CAP free-1M: NOT met; {"met": false, "worst_group_median": 0.9143345150590454, "groups_over_the_bar": ["trial j1-3", "trial j4-8", "trial j9-15", "adjoint j1-3", "adjoint j4-8", "adjoint j9-15", "particular"], "fraction": 0.3}

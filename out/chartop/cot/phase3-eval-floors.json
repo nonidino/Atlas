@@ -1,0 +1,124 @@
+{
+ "what": "the coolant plan's evaluation layouts: their classical floors only (Phase 3)",
+ "written": "2026-11-19T15:41:26-05:00",
+ "code": "a3f29a3fb9a49172dce81d9da383d3059a6c344b",
+ "blas_threads": 4,
+ "rule": "only the classical 16-mode expert and the full-domain solve ran; no TL0, coarse or learned arm",
+ "manifest_sha256": "4bd8f3e8ace50424fc10818b40bca7372578dd403a5c4a2b2af8b593577dceb8",
+ "problems": [
+  {
+   "layout": "eval-two-devices",
+   "tier": "slow",
+   "file": "eval-two-devices-slow.json",
+   "sha256": "428c6a7235713e3689ad53a8e77087d8c54d49a02e486d2e207be4798380823f",
+   "n": 32,
+   "pieces": 50,
+   "pe_max": 19.996129427084625,
+   "nodes": 51681,
+   "floor": {
+    "energy_rel": 0.0015432336550959258,
+    "max_rel": 0.0015178424750296828,
+    "range": 20.366559065951492,
+    "outlet_bulk": 319.9778245943437,
+    "outlet_bulk_ref": 319.977824590633,
+    "outlet_bulk_err_rel": 1.8219481885961524e-10
+   },
+   "seconds": 13.846903900033794
+  },
+  {
+   "layout": "eval-two-devices",
+   "tier": "fast",
+   "file": "eval-two-devices-fast.json",
+   "sha256": "a9bc79a6adbf52d5e126c41ca3e919f81311ecdf405b047482a1df6506ae7dea",
+   "n": 128,
+   "pieces": 50,
+   "pe_max": 179.93435571295626,
+   "nodes": 821121,
+   "floor": {
+    "energy_rel": 0.018987228741353872,
+    "max_rel": 0.05417340345585141,
+    "range": 5.205705188533216,
+    "outlet_bulk": 302.2228520141854,
+    "outlet_bulk_ref": 302.22285199896595,
+    "outlet_bulk_err_rel": 2.9236053416112907e-09
+   },
+   "seconds": 607.6661845000926
+  },
+  {
+   "layout": "eval-three-channels",
+   "tier": "slow",
+   "file": "eval-three-channels-slow.json",
+   "sha256": "25c1fe3352133773e6537338a194d81cecea59ecd3ee9ca917789f94d7a6ce5d",
+   "n": 32,
+   "pieces": 80,
+   "pe_max": 19.996129427084718,
+   "nodes": 82497,
+   "floor": {
+    "energy_rel": 0.0011028194451633627,
+    "max_rel": 0.001667097717619258,
+    "range": 14.133500388583855,
+    "outlet_bulk": 303.74584211467965,
+    "outlet_bulk_ref": 303.74584211518874,
+    "outlet_bulk_err_rel": 3.6020069007717786e-11
+   },
+   "seconds": 235.72140409995336
+  },
+  {
+   "layout": "eval-three-channels",
+   "tier": "fast",
+   "file": "eval-three-channels-fast.json",
+   "sha256": "e1dce946c16120756fc7f1f3142ef71c0089028c7f891877530d19b4a7bb7df6",
+   "n": 64,
+   "pieces": 80,
+   "pe_max": 109.89821419273555,
+   "nodes": 328833,
+   "floor": {
+    "energy_rel": 0.010735611857918837,
+    "max_rel": 0.025089183165976595,
+    "range": 6.818094916652171,
+    "outlet_bulk": 300.6822275183098,
+    "outlet_bulk_ref": 300.6822275188319,
+    "outlet_bulk_err_rel": 7.657664034000968e-11
+   },
+   "seconds": 543.4921056999592
+  },
+  {
+   "layout": "eval-arch",
+   "tier": "slow",
+   "file": "eval-arch-slow.json",
+   "sha256": "19e15326f4cde502485cbcd5434f674f25ff855530de2c648b64b12998ca79d6",
+   "n": 32,
+   "pieces": 32,
+   "pe_max": 20.002102337387594,
+   "nodes": 33153,
+   "floor": {
+    "energy_rel": 0.0012294163095645954,
+    "max_rel": 0.0013294621734191896,
+    "range": 14.017653362802605,
+    "outlet_bulk": 310.27860149044795,
+    "outlet_bulk_ref": 310.27860148941926,
+    "outlet_bulk_err_rel": 7.338570333418285e-11
+   },
+   "seconds": 3.40782990003936
+  },
+  {
+   "layout": "eval-arch",
+   "tier": "fast",
+   "file": "eval-arch-fast.json",
+   "sha256": "b849eb5d967d9d816672d6e3969af6864f253c0d22fbc4f6d6ace5c7eebdac7f",
+   "n": 128,
+   "pieces": 32,
+   "pe_max": 179.98955317403886,
+   "nodes": 525825,
+   "floor": {
+    "energy_rel": 0.01711477607100971,
+    "max_rel": 0.04868857121195958,
+    "range": 4.926947760690041,
+    "outlet_bulk": 301.14329485586325,
+    "outlet_bulk_ref": 301.1432948530616,
+    "outlet_bulk_err_rel": 5.686363488051804e-10
+   },
+   "seconds": 55.13074799999595
+  }
+ ]
+}

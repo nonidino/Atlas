@@ -1,7 +1,13 @@
 # Chart operator after Stage 0: the coolant plan (CO-T on laminar cold plates), then the rest of Stage 1
 
 **Type:** Concept page — **plan**, agreed with the owner, and its build record from Phase 1 on; nothing is trained or registered (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
-**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. **Phase 2 ran (§13, 2026-11-19), and its stop rule is not met:** no classical option meets E4 on every development problem under the 0.90 price bar (finer cutting meets E4 on all six at 1.02; TL0 at $n_c=32$ meets it cheaply on the fast tier, but no coarse size works at $n=32$). On the way, the channel cut (curved channels cut along their walls), the general flow and Danckwerts' inlet were built. **Phase 3's first check, the oracle ceiling, fails (§14, 2026-11-19):** a perfect network priced at TL0's cost, plus its forward passes and the switch, costs 3.35 times the classical solve (1.19 with no switch) against a bar of 0.90 and a competitor at 0.86. **The owner then amended the plan (§15, 2026-11-19): price is a reading, not a gate; the gates are accuracy (E4, and CL-A: meet E4 where TL0 at the same coarse size misses it) and capacity (a probe on the hardest pieces before the dataset is built).** Phase 3 resumes under the amendment. No data, no training yet. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
+**Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. **Phase 2 ran (§13, 2026-11-19), and its stop rule is not met:** no classical option meets E4 on every development problem under the 0.90 price bar (finer cutting meets E4 on all six at 1.02; TL0 at $n_c=32$ meets it cheaply on the fast tier, but no coarse size works at $n=32$). On the way, the channel cut (curved channels cut along their walls), the general flow and Danckwerts' inlet were built. **Phase 3's first check, the oracle ceiling, fails (§14, 2026-11-19):** a perfect network priced at TL0's cost, plus its forward passes and the switch, costs 3.35 times the classical solve (1.19 with no switch) against a bar of 0.90 and a competitor at 0.86. **The owner then amended the plan (§15, 2026-11-19): price is a reading, not a gate; the gates are accuracy (E4, and CL-A: meet E4 where TL0 at the same coarse size misses it) and capacity (a probe on the hardest pieces before the dataset is built).** **Phase 3 under the amendment (§16, 2026-11-19):**
+- **The capacity probe fails CAP at 1.1 M parameters in both forms.** The groups are learned in order of frequency, and the high side modes ($j$4–8, $j$9–15) are still far from 0.30 at 3,000 steps. The 3 M run is under way.
+- **Check 5** failed with the equal-group loss: Spearman 0.63, because the coupled answer reads only the trial modes. Once the loss was realigned to port traces from generated training layouts, it passed narrowly: 0.822, or 0.794 without the two probe networks.
+- **The evaluation layouts** are drawn and hashed, and only their classical floors were measured.
+- **The registration** is drafted (`gates_cot.py`), not accepted.
+
+No dataset yet. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
 **Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W364 (this plan), W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
 
 ---
@@ -540,6 +546,131 @@ After §14 the owner decided to go on: *if the learned expert would be faster in
 
 - **The $O(N)$ switch:** a cheap estimator equivalent to the dual norm within a measured factor across Péclet numbers up to 200, with its own check before Phase 6.
 - **The clean price reading:** §14 re-run on mains with standby held, folded into Phase 6's price measurement on a rented whole machine.
+
+---
+
+## 16. Phase 3 under the amendment (2026-11-19)
+
+**The owner's decisions for it** (in chat, 2026-11-19, each before the run it governs):
+- **CAP's bar:** "0.30 (Recommended)": every mode group's median error at most 0.30 of TL0's on the probe's own pieces. CL-A needs about 0.44 on held-out layouts (TL0-16's excess over the floor must fall from about 4.5 to 2 points), and 0.30 leaves room for the gap between training and held-out pieces.
+- **The probe's runs:** "Both forms, 3,000 steps (Recommended)": the free and the bubble form (§16.2) at 1.1 M parameters, 3,000 steps each; 3 M only if both fail. On mains ("Plugging in now").
+- **Check 2's bar:** "5% on 95% of the sample (Recommended)". **Check 5's bar:** "0.80 (Recommended)".
+
+### 16.1 The training loss is label-free
+
+The draft labels of `transport_data.py` (the port matrix $\Lambda=W^\top KV$ and the condensed load $\chi$, 64 × 64 and 64 numbers) **cannot see a trial mode's error.** The exact adjoint modes satisfy $G^\top K_{II}=-Q^\top K_{GI}$, so for any trial modes $\tilde H$ with exact traces
+$$G^\top\bigl(K_{II}\tilde H+K_{IG}Q\bigr)+Q^\top\bigl(K_{GI}\tilde H+K_{GG}Q\bigr)=G^\top K_{IG}Q+Q^\top K_{GG}Q=\Lambda .$$
+Yet the coupled field inside a piece is $\tilde V t$, first order in the modes' error. Full fields cost about 8 MB a piece at $n=128$ in float32. So the training loss reads the residual instead, as CO-D's T26 energy needed no labels:
+$$\ell_k=\bigl\lVert F_k-K_{II}\tilde H_k\bigr\rVert^2_{(A^0)^{-1}},\qquad r^\top(A^0)^{-1}r=\sum_{p,q}\frac{(SRS)_{pq}^2}{\lambda_{pq}},$$
+with $A^0$ the plain square's operator at the piece's reaction, $S$ the orthonormal type-I sine transform and $\lambda_{pq}$ its symbol (`principal`). The minimiser is the exact mode. The loss is equivalent to the error in the diffusion norm, with constants set by the chart ($A^0$ against the piece's symmetric part) and by the flow.
+- **[AI Inference]:** on a smooth error of wavenumber $\kappa$ the advection term outweighs diffusion by about $\mathrm{Pe}/\kappa$, so this loss weights smooth errors more than the diffusion norm does: a tilt toward the low modes the coupled answer reads, the opposite of P6. Check 5 measures whether it ranks experts as the coupled error does.
+- **Relative, per group** (CO-D's method 1): each of nine groups' residual over TL0's on the same piece, with equal weight. This was the capacity probe's loss. Check 5 then showed it misaligned, and it was realigned to port-trace weights (§16.5). The groups are the trial hats, $j=1$–3, 4–8 and 9–15; the same four for the adjoint; and the particular field. CO-T has no strips, so all 64 columns are learned.
+- **The labels' role** is the validation split's errors, check 2 and the records.
+
+### 16.2 Arm R as a differentiable map
+
+`atlas/chartop/transport_torch.py` (new; `transport_model.py`'s numpy `ArmR` stays the host's draft):
+- **The operators as images.** $K_{II}$ is nine coefficient images, applied by shifts, and $K_{II}^\top$ by the transposed shifts. The coarse level is the pinned bilinear prolongation (`coarse`, only called), with $A_c=P^\top K_{II}P$ factorised by LU per piece. $\mathcal C$, $\mathcal C^\ast$ and $\mathcal C_p$ are linear in their inputs with fixed matrices, so gradients pass exactly.
+- **Tested** (`tests/test_chartop_transport_torch.py`, 11): the stencils are $K_{II}$ and its transpose to $10^{-12}$; the batch's TL0 is `transport_coarse`'s to $10^{-11}$; zero heads are TL0 bit for bit; coarse exactness holds for random weights to $10^{-10}$; the loss vanishes at the exact modes; one step lowers it.
+- **Gate K by construction.** On a steady piece the four hat corrections are made zero-sum, so the hats' sum stays the plain square's uniform temperature and $\mathcal C$ keeps it (Lemma B). The exact hats also sum to 1 there, so nothing the exact answer needs is removed. Tested with random weights, and failing with the device off.
+- **Two correction forms.** *Bubble* is CO-D's: $c(N)=\beta N$, $\beta=16\xi(1-\xi)\eta(1-\eta)$. *Free* adds $N$ at the interior nodes; an interior field never touches the traces, so they stay exact either way. The free form was added because of a measurement on four pieces at $n=128$, Pe 150–194. TL0-16's error there is 35–55% per group in the diffusion norm and 64–107% for the particular field, and **32–41% of its error energy lies in the first interior layer**, about half within two. That is the outlet's and the walls' boundary layers, where the bubble is of order $h$ and its output must be of order $1/h$.
+- **`HostExpert`** puts a torch arm into the transport host, for check 5 and the price protocol.
+
+### 16.3 The capacity probe (gate CAP)
+
+`scripts/cot_phase3_capacity.py`, records `out/chartop/cot/phase3-capacity-<form>-1M.json` and `.log`. **The pieces**, by a rule fixed in the script: the first two seeds of each flowing kind (through, turn, wavy) from the probe's seed base 12,000,000 at $n=128$ with $\mathrm{Pe}\ge180$. They are seeds 12,000,000 and 12,000,011 (through, Pe 192 and 194), 12,000,034 and 12,000,130 (turn, 195 and 198), and 12,000,065 and 12,000,218 (wavy, 197 and 187); three are steady and three are steps (Fo 0.011, 0.010 and 6.8). **Contrast does not enter a piece:** a CO-T piece is one material and its operator is divided by its own conductivity, so §15.2's "high contrast" lives in the host's seams and is met on the plates (E4), not here.
+
+**The setup:** arm R from zero heads (step 0 is TL0), $n_c=16$, AdamW at $3\times10^{-4}$, gradients clipped at 1, the six pieces as one batch, on the CPU (bit for bit reproducible). Every 250 steps the ledger records, per piece and group, the error in the piece's diffusion norm over TL0's (what CAP reads) and the dual residual over TL0's (the loss's). It also records the shuffled control, each piece fed the next piece's inputs.
+
+**A finding while running: Windows had throttled the jobs.** For their first 35 minutes the two runs used 0.56 and 0.62 cores each, with 3 threads each. The processes were windowless and started from the Claude app, so Windows' power throttling (EcoQoS) had put them on the laptop's low-power cores. Each process opting out (`SetProcessInformation`, `scripts/winqos.py`) raised them to 2.4–2.6 cores at once. Every Phase 3 script now opts out at start. **[AI Inference]:** this is likely the "4.4 times slower at 1.4 GHz" earlier timings on this laptop met, so laptop timings taken before 2026-11-19 are suspect for the same reason.
+
+**The result at 1.1 M parameters: CAP is not met in either form.** Each group's median error over TL0's, on the six pieces, from zero heads ($T$ trial, $A$ adjoint):
+
+| form, step | loss | $T$ hats | $T$ $j$1–3 | $T$ $j$4–8 | $T$ $j$9–15 | $A$ hats | $A$ $j$1–3 | $A$ $j$4–8 | $A$ $j$9–15 | particular |
+|---|---|---|---|---|---|---|---|---|---|---|
+| free, 500 | 0.620 | 0.52 | 0.81 | 1.00 | 1.00 | 0.52 | 0.79 | 0.99 | 1.00 | 0.57 |
+| free, 1,000 | 0.456 | 0.41 | 0.63 | 0.89 | 1.00 | 0.39 | 0.57 | 0.87 | 0.99 | 0.45 |
+| free, 2,000 | 0.312 | 0.31 | 0.44 | 0.71 | 0.93 | 0.27 | 0.37 | 0.65 | 0.90 | 0.37 |
+| **free, 3,000** | 0.286 | **0.25** | 0.37 | 0.66 | **0.91** | **0.23** | 0.32 | 0.58 | 0.89 | 0.41 |
+| bubble, 1,000 | 0.480 | 0.45 | 0.70 | 0.95 | 1.00 | 0.38 | 0.62 | 0.95 | 1.00 | 0.31 |
+| **bubble, 3,000** | 0.313 | 0.26 | 0.41 | 0.77 | **0.96** | 0.31 | 0.44 | 0.76 | **0.97** | **0.23** |
+
+Records: `phase3-capacity-free-1M.json` and `-bubble-1M.json`, 3.4–3.5 s a step on the laptop (2.4–2.6 cores each, the two runs side by side, after the opt-out).
+- **The groups are learned in order of frequency**, the reverse of CO-D's P6. The hats move first; $j=4$–8 starts only after about 750 steps; $j=9$–15 has barely moved by 3,000 (0.89–0.97). Only the hats (free form) reach the bar.
+- **Every group is still falling at the end**, so at this budget the probe has not separated a capacity limit from a speed limit. The free form's loss rose once (0.293 at 2,500, 0.346 at 2,750, 0.286 at 3,000), with a constant learning rate and no schedule.
+- **The free form did better** on eight of nine groups and on the worst group; the bubble form only on the particular field (0.23 against 0.41).
+- **The gains are specific to each piece:** fed the next piece's inputs, the same weights do worse than TL0 in every group (1.02–1.37).
+- **The loss runs ahead of the error:** at 3,000 the free form's residual ratios are 0.14–0.87 against errors of 0.23–0.91, as §16.1's tilt expects; $j=9$–15 is low in both.
+- **[AI Inference]:** the high side modes are confined to one or two cells along a side and oscillate along it. The 1 M U-Net's finest level has 24 channels, and its head maps them linearly onto 65 outputs at each node. That width and the network's preference for smooth functions are both candidates; the 3 M network (40 channels at the finest level) separates the two only partly.
+
+**Then, by the owner's plan, the free form at 3 M parameters** (2.2 s a step at 12 threads, about 1.8 hours): *its result is added here when it ends.*
+
+### 16.4 The evaluation layouts, and only their floors
+
+`atlas/studio/cot_eval_layouts.py` draws three plates with the development layouts' tools (`cot_layouts.build` now takes another set's geometry and speeds; the development layouts' bytes are unchanged, checked against their manifest):
+- `eval-two-devices`: one straight channel between two devices, one under the lower left and one over the upper right, so heat enters the coolant from both walls;
+- `eval-three-channels`: three parallel channels over one device, 80 pieces;
+- `eval-arch`: one channel rising in an arch ($\sin^2$) away from a device under its middle. A first arch rising straight out of the level run-ins was refused by the channel cut, since its walls kinked there.
+
+`scripts/cot_phase3_eval_layouts.py` wrote them as case files with sha256s (`out/chartop/cot/eval-layouts/manifest.json`). It measured **only the classical 16-mode floor** against the full-domain solve on the same mesh, and it refuses to run if a coarse or learned arm's module is loaded. Record: `out/chartop/cot/phase3-eval-floors.json`.
+
+| problem | $n$ | pieces | Pe max | energy | largest nodal | outlet |
+|---|---|---|---|---|---|---|
+| two devices, slow | 32 | 50 | 20.0 | 0.15% | 0.15% | $2\times10^{-10}$ |
+| two devices, fast | 128 | 50 | 179.9 | 1.90% | 5.4% | $3\times10^{-9}$ |
+| three channels, slow | 32 | 80 | 20.0 | 0.11% | 0.17% | $4\times10^{-11}$ |
+| three channels, fast | 64 | 80 | 109.9 | 1.07% | 2.5% | $8\times10^{-11}$ |
+| arch, slow | 32 | 32 | 20.0 | 0.12% | 0.13% | $7\times10^{-11}$ |
+| arch, fast | 128 | 32 | 180.0 | 1.71% | 4.9% | $6\times10^{-10}$ |
+
+The floors are close to the development layouts' (0.11–0.13% slow, 1.09–2.05% fast). No TL0 and no network has run on these layouts.
+
+### 16.5 The dataset and its checks
+
+*Built after CAP (the owner's order).*
+- **Check 3, the control, holds** (`scripts/cot_phase3_checks.py`, read from Phase 2's record). TL0 at the network's coarse size, $n_c=\min(16,n/2)$, misses E4 on every development problem: 2.8%, 6.6%, 2.4%, 5.1%, 3.0% and 6.2% in energy, against floors of 0.11–2.05%.
+
+**Check 5, the loss's alignment, failed on its first run** (record `phase3-checks.json`, "check 5"). The check needs no dataset, so it ran first, on the six development problems, with the probe's equal-group loss. **Spearman 0.627 against the bar of 0.80.** The experts were TL0, the classical expert, 38 synthetic experts and the two 1.1 M probe networks. Each synthetic expert keeps a chosen share of TL0's error in each of the nine groups; its output is coarse-exact, since TL0's error is Galerkin-orthogonal to the coarse space. What the coupled energy error reads, as a share of TL0's excess over the floor when only one group's error is kept:
+
+| kept | trial hats | trial $j$1–3 | trial $j$4–8 | trial $j$9–15 | any adjoint group | particular |
+|---|---|---|---|---|---|---|
+| coupled excess | 0.86 | **1.67** | 0.64 | 0.09 | **0.000** | 0.000 |
+
+- **The adjoint does not enter the coupled answer's first order.** With exact trial modes the coupled answer is exact whatever the adjoint, since $\tilde\Lambda-\Lambda=E_W^\top K_{II}E_V$. Fixing any one adjoint group with the trial error kept moves the coupled error by at most 0.1%. The equal-group loss gave the adjoint 4/9 of its weight: a P6-like misalignment, which is what check 5 exists to catch.
+- **The particular field's zero is the layouts', not the field's:** the development plates' sources sit only in square solid device pieces, where TL0's particular field is exact (error $6\times10^{-17}$).
+- **The errors do not add:** keeping trial $j$1–3 alone costs 1.67 of TL0's whole excess, so TL0's group errors partly cancel in the coupled answer.
+- **A defect found with it:** the relative loss divided by TL0's residual, which is zero to rounding on square pieces of one material (128 of 288 groups on `dev-block` slow). The probe networks' loss there read about $5\times10^{24}$. CO-D's method 3 now applies: a term TL0 already solves is left out of the loss and counted (`transport_torch.easy_terms`).
+
+**The owner's decisions on it** (in chat, 2026-11-19): "Realign loss, re-check (Recommended)", and for CAP "Trial and particular (Recommended)". CAP now judges the four trial groups and the particular field; the adjoint groups are reported. Read that way, the 1.1 M runs still fail CAP: the free form misses on trial $j$1–3, $j$4–8, $j$9–15 and the particular field (worst 0.91), and the bubble form on trial $j$1–3, $j$4–8 and $j$9–15 (worst 0.96).
+
+**The realigned loss** is the plan's own Phase 5 loss (§5): each column weighted by how the coupled traces use it, measured only on generated training layouts.
+- **The training layouts** (`atlas/studio/cot_train_layouts.py`): twelve random plates from seeds (plate 8–14 mm, a device under and sometimes one over, one or two channels straight, arched or S-shaped, a speed tier each, lengths on the 0.25 mm grid). None is a development or evaluation layout.
+- **The weights** (`scripts/cot_phase3_traces.py`, record `phase3-trace-weights.json`): each piece's coupled port coefficients from the classical solve, with the datum removed first (§1's Stage 0 lesson: a 300 K offset in the hats hides the modes' errors). Each piece's weights are $c_k'^2/\lVert c'\rVert^2$, averaged over the pieces of each kind and over the four sides. The coupled traces put **46% of their energy in the hats and 54% in $j$1–3 on flowing pieces** (0.13% in $j$4–8, 0.013% in $j$9–15), and 95% in the hats on solid ones. The particular field carries a mean 12.4% of a sourced piece's field energy.
+- **The loss** (`transport_torch.objective` with `weights`): on each piece, the trial term $\sum_k w_k\ell_k/\sum_k w_k\ell_k^{\text{TL0}}$, the adjoint term likewise, and the particular term $\ell_p/\ell_p^{\text{TL0}}$, with shares 0.776, 0.1 and 0.124. A term TL0 already solves is left out and the shares renormalised. **[AI Inference]:** weighting by $w_k\ell_k^{\text{TL0}}$ mirrors $c_k^2\lVert E_k\rVert^2$, which is how column $k$'s error reaches the coupled field. Large-$j$ columns carry little trace but large errors, so $j$4–8 is not negligible in the loss even at 0.13% of the trace.
+
+**The re-check passes, narrowly** (record `phase3-checks.json`, "check 5 (realigned loss)"): Spearman **0.822** against the same bar of 0.80, over the same 42 experts and six problems. Pieces TL0 already solves were left out: 8, 8, 32, 32, 0 and 0 per problem.
+- **The pass leans on the two probe networks.** They rank last in both measures: loss 95 and 379, coupled excess 384 and 563, since they were trained on six pieces at $n=128$ and garble the development layouts' smaller and solid pieces. Without them, over TL0, the classical expert and the 38 synthetic experts, the correlation is **0.794**, just under the bar. The bar was registered over the whole set, so check 5 is met. Its margin is not a strong endorsement.
+- **What the realigned loss still misweights:** keeping only trial $j$4–8's error scores 0.018 in the loss but costs 0.64 of TL0's excess in the coupled answer, and keeping only adjoint $j$1–3's error scores 0.083 and costs nothing. Fixing only trial $j$1–3 makes the coupled answer worse than TL0 (1.23), because TL0's group errors partly cancel. No per-column weighting can rank that case right.
+- **[AI Inference]:** $j$4–8 is underweighted because its trace share (0.13%) is small while its errors under TL0 are large. A weight from the coupled sensitivity itself (measured on training layouts, as the traces were) would align better. It was not tried, because changing the loss again after seeing the development layouts' ranking would tune it to them.
+
+### 16.6 The registration, as drafted
+
+`atlas/chartop/gates_cot.py` holds the draft, with `REGISTERED = None` until the owner accepts it. The Records screen now lists the coolant's row, *not registered*, with its planned arms; it replaced the Stage 0b placeholder (`atlas/studio/records.py`, `tests/test_studio_records.py`, the walk `p6`, 18 checks).
+
+| gate | bar (draft) | kind |
+|---|---|---|
+| E4 | on every evaluation problem, against the full-domain solve on the same mesh: the coupled field's relative error in the diffusion norm at most the classical 16-mode floor + 0.02, the largest nodal error at most the floor's + 0.01 of the range, the outlet's mixing-cup temperature error at most the floor's + 0.01 of the range (Phase 2's "Floor + CO-D margins", re-registered) | accuracy, primary |
+| CL-A | on every evaluation problem where TL0 at $n_c=\min(16,n/2)$ misses E4, the arm's seed-0 run meets it; with no such problem, CL-A is untestable and is reported so. Arm P against arm R shows whether learning the coarse basis is what pays | accuracy, decisive |
+| CAP | the probe's six pieces, and again in Phase 4 on six of the frozen split's hardest: every group's median error at most 0.30 of TL0's within 3,000 steps | capacity |
+| SEEDS | CL-A for every seed (0, 1, 2) of the winning arm | robustness |
+| CX | $\lVert P^\top r\rVert/\lVert P^\top F\rVert\le10^{-10}$ for the trial, adjoint and particular outputs on every evaluation piece | structural |
+| K, D | on every steady evaluation piece: the hats' sum within $10^{-10}$ of 1, and the port matrix applied to the uniform temperature zero to rounding | structural |
+| SAFE | the learned modes are kept on a piece only if their exact dual residual is at most TL0's; E4 and CL-A are judged with the switch on | structural |
+| PR, AMORT | reported, not gates: the whole coupled solve's time over the classical solve's, beside TL0 at $n_c$ and at 32, finer cutting, and with and without the switch; the piece solves that repay training | reported |
+
+- **The arms:** R (§16.2, in the form CAP chooses) and P (a learned coarse basis, built in Phase 5), three seeds each at 37,500 steps on the frozen training split, with the label-free relative objective. TL0 is the control and the classical expert the floor.
+- **What is judged, once:** each arm's seed-0 run at its last checkpoint (no early stopping on any layout), on the six evaluation problems of §16.4. The development problems are reported beside, as seen.
+- **The price protocol:** `scripts/cot_price.py`. It is R2's protocol (`gates_squares` helpers): each run in its own process with BLAS fixed and checked, AC and sleep sampled, the arms timed in turns and the best of three repetitions taken, with an A/A check on every problem. One change: there is no per-piece time bound, because CO-T's problems run from $n=32$ to 128, whose classical piece solves differ fortyfold. A smoke run on one development problem completed on the laptop. **Its dry run on a rented whole machine needs the owner's yes**, before any pin.
 
 ---
 

@@ -1245,3 +1245,15 @@ Written up as [[chart-operator-stage-0b-and-1-plan]] §15 and a new row in its �
 - **Changed:** check 4 is a reading; a capacity probe on the hardest corner (Pe near 200, $n=128$) runs before any dataset; the dataset is weighted toward $n=128$; CL becomes CL-A (meet E4 where TL0 at the same coarse size misses it); a new gate CAP; PR, AMORT and the oracle are reported. Nothing has run under the amendment.
 - Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].
 
+## [2026-11-19] build | the coolant plan, Phase 3 under the amendment: CAP fails at 1.1 M; check 5 fails, then passes narrowly with a trace-weighted loss
+
+Written up as [[chart-operator-stage-0b-and-1-plan]] §16; worklist W364.
+- **The owner's bars, before each run:** CAP 0.30 on every group, 3,000 steps, both forms at 1.1 M, 3 M only if both fail; check 2 at 5% on 95% of the sample; check 5 at Spearman 0.80.
+- **Built:** `transport_data.py` (tested; the CO-T resolution mix, weighted to $n=128$); `transport_torch.py` (arm R as a differentiable map, a label-free loss in the plain square's dual norm, gate K by construction, a free and a bubble correction form, `HostExpert`); the capacity probe, the dataset builder, the checks, the evaluation and training layouts, the trace weights, the price protocol; `gates_cot.py` (the draft registration); the Records screen's coolant row in place of Stage 0b.
+- **Why label-free:** with exact adjoint modes the port matrix equals its label for any trial modes, so the compact labels cannot see a trial mode's error.
+- **CAP fails at 1.1 M** in both forms. At 3,000 steps the free form reaches trial hats 0.25, $j$1–3 0.37, $j$4–8 0.66, $j$9–15 0.91 and particular 0.41 of TL0's error; the groups are learned in order of frequency, all still falling. The 3 M run is under way.
+- **Check 5 failed** (0.63): the coupled energy error reads only the trial modes, and the equal-group loss gave the adjoint 4/9. A defect came with it: the relative loss divided by TL0's zero residual on square solid pieces (CO-D's method 3 now applies). With the owner's go the loss was realigned to port traces from twelve generated training layouts (hats and $j$1–3 carry 99.9% of a flowing piece's trace), and check 5 passed: 0.822, but 0.794 without the two probe networks. The owner re-scoped CAP to the trial groups and the particular field.
+- **Check 3 holds.** **The evaluation layouts** (three plates, two speeds) are hashed with their floors only: 0.11–0.15% slow, 1.07–1.90% fast.
+- **Found:** Windows' EcoQoS had parked the app's background jobs on the low-power cores (0.6 core for a 3-thread job); `scripts/winqos.py` opts a process out (2.4 cores).
+- Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].
+

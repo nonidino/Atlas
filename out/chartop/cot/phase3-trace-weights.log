@@ -1,0 +1,32 @@
+train-000: slow n 32, 60 pieces, channels ['straight'], 2 devices (10 s)
+train-001: fast n 64, 40 pieces, channels ['straight'], 1 devices (13 s)
+train-002: fast n 128, 40 pieces, channels ['s'], 1 devices (67 s)
+train-003: slow n 32, 40 pieces, channels ['straight'], 1 devices (5 s)
+train-004: fast n 64, 40 pieces, channels ['straight'], 1 devices (13 s)
+train-005: fast n 128, 60 pieces, channels ['straight'], 2 devices (102 s)
+train-006: slow n 32, 40 pieces, channels ['s'], 1 devices (5 s)
+train-007: fast n 64, 60 pieces, channels ['straight'], 2 devices (19 s)
+train-008: fast n 128, 55 pieces, channels ['arch'], 2 devices (85 s)
+train-009: slow n 32, 40 pieces, channels ['straight'], 1 devices (4 s)
+train-010: fast n 64, 84 pieces, channels ['s', 'straight'], 2 devices (29 s)
+train-011: fast n 128, 60 pieces, channels ['s'], 2 devices (91 s)
+{
+ "group_shares": {
+  "flowing": {
+   "hats": 0.46066222235266263,
+   "j1-3": 0.5378969166199271,
+   "j4-8": 0.0013097980514009126,
+   "j9-15": 0.00013106297600935367
+  },
+  "solid": {
+   "hats": 0.9511524651600063,
+   "j1-3": 0.04882236982371937,
+   "j4-8": 2.2431835578059248e-05,
+   "j9-15": 2.733180696402183e-06
+  }
+ },
+ "particular_share": {
+  "mean": 0.12399153184916675,
+  "pieces_with_source": 63
+ }
+}

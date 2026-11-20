@@ -7,8 +7,11 @@ kind is written in this module: a kind's gates are read from ``atlas/chartop/gat
 (each gate's key, its registered title and its bar), its verdicts from its record, where
 they are kept in one of three ways (``gates[key]``, ``gates[arm][key]`` for a record that
 judges several arms, or the record's own ``key``), and its arms from the record or the
-registration.  **So a Stage 0b registration, once its file exists, appears with no
-change to the page's code** (tested with a file made for the test).
+registration.  **So the coolant's registration (``registration-cot.json``), once its file
+exists, appears with no change to the page's code** (tested with a file made for the test).
+Until then its row is listed as not registered, with its planned arms; it replaced the
+Stage 0b placeholder on 2026-11-19, when the owner put the coolant first and Stage 0b
+after it.
 
 For the selected evaluation the page shows:
 * its stamp, its code commit and whether it was a registered run (the gates and code
@@ -35,7 +38,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 CHARTOP = os.path.join(ROOT, "out", "chartop")
 
 NAMES = {"twolevel": "Two-level", "squares": "Squares", "hybrid": "Hybrid", "prior": "Prior",
-         "forms": "Forms", "stage0": "Stage 0"}
+         "forms": "Forms", "stage0": "Stage 0", "cot": "Coolant (CO-T)"}
+#: the coolant plan's kind and arms ([[chart-operator-stage-0b-and-1-plan]] section 15): its
+#: row is listed, not registered, until ``registration-cot.json`` exists
+COOLANT = "cot"
+COOLANT_ARMS = ("TL0", "arm P", "arm R", "classical")
 #: what a record's prices are over, by the names records give their problem sets
 SETS = {"all": "all priced", "held-out six": "held-out 6", "R2's sixteen": "squares (R2's 16)"}
 _EVAL = re.compile(r"^evaluation-(?:(?P<kind>[a-z][a-z0-9]*)-)?(?P<stamp>\d{8}-\d{6})\.json$")
@@ -208,11 +215,13 @@ def evaluations(chartop: str = CHARTOP) -> list:
                     "prices": [], "rho": None, "outcome": None, "machine": None, "status": "registered, not run"})
         kinds.add(kind)
     out.sort(key=lambda e: (e["stamp"] or "99999999-999999"), reverse=True)
-    if not any(k.startswith("stage0b") or "contrast" in k for k in kinds):
-        out.insert(0, {"kind": "stage0b", "name": "Stage 0b", "status": "not registered", "stamp": None,
-                       "arms": [], "gates": [], "prices": [], "rho": None, "file": None,
-                       "note": "P_θ: a learned coarse space for high-contrast diffusion; its registration will "
-                               "appear here as soon as its file exists"})
+    if COOLANT not in kinds:
+        out.insert(0, {"kind": COOLANT, "name": _name(COOLANT), "status": "not registered", "stamp": None,
+                       "arms": list(COOLANT_ARMS), "gates": [], "prices": [], "rho": None, "file": None,
+                       "note": "The coolant plan (CO-T on laminar cold plates): arm P, a learned coarse basis, and "
+                               "arm R, the fine residual on TL0, against TL0 at the same coarse size. Gated on "
+                               "accuracy (E4, CL-A) and capacity (CAP); price is reported, not gated. Its "
+                               "registration appears here as soon as its file exists"})
     return out
 
 

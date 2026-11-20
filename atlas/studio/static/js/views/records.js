@@ -103,7 +103,9 @@ function render() {
     main.append(h('div', { class: 'placeholder' }, h('h2', {}, 'Chart-operator records'), h('div', {}, 'No registered evaluation under out/chartop.')));
   } else {
     main.append(h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' } },
-      h('span', { style: { fontSize: '19px', fontWeight: 700 } }, e.name, ' ', h('abbr', { 'data-tip': 'CO-D: the chart-operator family for linear diffusion', class: 'muted', style: { fontSize: '13px' } }, 'CO-D')),
+      h('span', { style: { fontSize: '19px', fontWeight: 700 } }, e.name, ' ', e.kind === 'cot'
+        ? h('abbr', { 'data-tip': 'CO-T: the chart-operator family for advection and diffusion (heat carried by a given flow)', class: 'muted', style: { fontSize: '13px' } }, 'CO-T')
+        : h('abbr', { 'data-tip': 'CO-D: the chart-operator family for linear diffusion', class: 'muted', style: { fontSize: '13px' } }, 'CO-D')),
       h('span', { class: 'muted mono', style: { fontSize: '12px' } }, `${e.file}${e.code ? ` · ${String(e.code).slice(0, 7)}` : ''}`),
       e.registered_run ? h('abbr', { class: 'cotag', 'data-tip': `The gates and code were fixed by hash before anything was measured. ${e.registration}` }, 'hash-pinned') :
         h('span', { class: 'muted', style: { fontSize: '12px' }, 'data-tip': e.registration || '' }, e.status)));
