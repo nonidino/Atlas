@@ -11,7 +11,8 @@ registration.  **So the coolant's registration (``registration-cot.json``), once
 exists, appears with no change to the page's code** (tested with a file made for the test).
 Until then its row is listed as not registered, with its planned arms; it replaced the
 Stage 0b placeholder on 2026-11-19, when the owner put the coolant first and Stage 0b
-after it.
+after it.  The same day the owner stopped the coolant's learned track in Phase 3, so the
+row reads "stopped, not registered" and says why.
 
 For the selected evaluation the page shows:
 * its stamp, its code commit and whether it was a registered run (the gates and code
@@ -216,12 +217,13 @@ def evaluations(chartop: str = CHARTOP) -> list:
         kinds.add(kind)
     out.sort(key=lambda e: (e["stamp"] or "99999999-999999"), reverse=True)
     if COOLANT not in kinds:
-        out.insert(0, {"kind": COOLANT, "name": _name(COOLANT), "status": "not registered", "stamp": None,
+        out.insert(0, {"kind": COOLANT, "name": _name(COOLANT), "status": "stopped, not registered", "stamp": None,
                        "arms": list(COOLANT_ARMS), "gates": [], "prices": [], "rho": None, "file": None,
-                       "note": "The coolant plan (CO-T on laminar cold plates): arm P, a learned coarse basis, and "
-                               "arm R, the fine residual on TL0, against TL0 at the same coarse size. Gated on "
-                               "accuracy (E4, CL-A) and capacity (CAP); price is reported, not gated. Its "
-                               "registration appears here as soon as its file exists"})
+                       "note": "The coolant plan (CO-T on laminar cold plates) drafted arm P, a learned coarse basis, "
+                               "and arm R, the fine residual on TL0, gated on accuracy (E4, CL-A) and capacity "
+                               "(CAP). Its learned track stopped in Phase 3 on 2026-11-19, before any dataset: CAP "
+                               "failed at 1.1M and 3M parameters, and the owner stopped it. Never registered; the "
+                               "classical CO-T expert stays"})
     return out
 
 

@@ -1,7 +1,8 @@
 """The coolant plan's registration (CO-T on laminar cold plates; [[chart-operator-stage-0b-and-1-plan]]
-sections 7 and 15).  **A DRAFT: NOT YET ACCEPTED BY THE OWNER, NOT HASH-PINNED.**  `REGISTERED`
-is None until the owner accepts it in chat; it is pinned only after that and after the price
-protocol's dry run on a rented whole machine.
+sections 7 and 15).  **A DRAFT THAT WAS NEVER REGISTERED.**  On 2026-11-19 the owner stopped the
+coolant's learned track in Phase 3 ("Stop learned track"), before any dataset, after the capacity
+gate CAP failed at 1.1M and 3M parameters (plan section 16.8).  `REGISTERED` stays None and
+`STOPPED` says why; the draft is kept as the record of what would have been judged.
 
 **Decided by the owner already** (`SETTLED`, quoted from chat): the case and its regime,
 model (a), the Peclet cap, the order of the phases, the frozen dataset, a rented box with
@@ -31,8 +32,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-#: None until the owner accepts this draft in chat; then the words and the date
+#: never set: the draft was not registered
 REGISTERED = None
+#: why the draft stops here (the owner, in chat)
+STOPPED = ("the owner, 2026-11-19, 'Stop learned track': CAP failed at 1.1M (both forms) and 3M (free form) "
+           "on the probe's six pieces; no dataset, no training, no registration (plan section 16.8)")
 
 SETTLED = {
     "the case": "the coolant (CO-T) first, laminar cold plates, Pe at most 200 per piece (2026-11-18)",
@@ -116,4 +120,4 @@ GATES = (
 
 __all__ = ["CAP_FORM", "CAP_FRACTION", "CAP_STEPS", "CX_BAR", "E4_ENERGY_MARGIN", "E4_MAX_MARGIN",
            "E4_OUTLET_MARGIN", "EVAL_PROBLEMS", "GATES", "Gate", "K_BAR", "REGISTERED", "SEEDS", "SETTLED",
-           "STEPS", "n_c"]
+           "STEPS", "STOPPED", "n_c"]

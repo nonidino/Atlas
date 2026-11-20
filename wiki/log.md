@@ -1264,3 +1264,12 @@ Written up as [[chart-operator-stage-0b-and-1-plan]] §16.3 and §16.7; worklist
 - **Stopped for the owner**, as the handoff's rule says when CAP fails at every size. The ways on: strips for the high side modes, CAP weighted by what the coupled answer reads (a new registration of CAP), a longer budget, or stopping the learned track. No dataset was built.
 - Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].
 
+## [2026-11-19] decision | the coolant's learned track stopped
+
+Written up as [[chart-operator-stage-0b-and-1-plan]] §16.8 and a new row in its §2; worklist W364 marked done.
+- **The owner's decision:** "Stop learned track". CAP failed at both sizes against the bar fixed before the runs, and moving the bar now would have meant judging after the result.
+- **The outcome:** the classical side works (stable `ADVEC` seams at Pe 200, the channel cut, Danckwerts' inlet), and the untrained TL0 at $n_c=32$ already meets E4 on the fast tier. A 3 M network learns the modes the coupled answer reads most (trial hats and $j$1–3 to 0.17 and 0.27 of TL0's error), but not the side modes or the particular field within 3,000 steps.
+- **Nothing was registered**, no dataset was built and nothing was trained beyond the three probes, which get no cards (probes, as CO-D's were). `gates_cot.py` stays a never-registered draft; the Records screen lists the coolant as stopped.
+- **Next** is the plan's §10, chosen with the owner. Atlas's claim stays "certified composition of classical experts".
+- Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].
+

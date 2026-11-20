@@ -7,7 +7,7 @@
 - **The evaluation layouts** are drawn and hashed, and only their classical floors were measured.
 - **The registration** is drafted (`gates_cot.py`), not accepted.
 
-**Stopped for the owner before any dataset** (§16.7). The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
+**The owner then stopped the coolant's learned track** (§16.8, 2026-11-19, "Stop learned track"): no dataset, no training, no registration. The classical CO-T expert and everything built for it stay. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
 **Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W364 (this plan), W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
 
 ---
@@ -56,6 +56,7 @@ From [[chart-operator-stage-0-rework]] §19–§20:
 | CO-E, the thermoelastic bond, the biharmonic network | **after the coolant, classical**: built on TL0, trained only if their own test without training shows a job for a network |
 | Helmholtz | **out**, noted as a later candidate for a learned coarse basis |
 | **price as a gate** (decided 2026-11-19, after the oracle check failed, §14–§15) | **not a gate for the coolant.** Price is measured and reported at every stage, and no "faster" claim is made without a measurement. The gates are **accuracy and capacity**: the learned expert must meet E4 where TL0 at the same coarse size misses it, and the network must first be shown able to fit the hardest pieces. The owner's reasoning: a learned expert is expected to be cheaper on the harder, larger pieces this case will grow into, and that is a priori sound (§15.1), so the coolant's question is whether a network can learn the accuracy at all |
+| **the coolant's learned track** (decided 2026-11-19, after CAP failed at 1.1 M and 3 M parameters, §16) | **stopped** ("Stop learned track"): no dataset, no training run, no box, no registration. The classical CO-T expert, the `ADVEC` seams, the channel cut, the layouts and the expert store stay built. Atlas's claim stays "certified composition of classical experts" (§7's stopping rule). What comes next is §10's, chosen with the owner |
 
 ---
 
@@ -703,6 +704,26 @@ The floors are close to the development layouts' (0.11–0.13% slow, 1.09–2.05
 2. **Judge CAP by what the coupled answer reads:** the groups weighted as the realigned loss weights them, one number at most 0.30 (the option first offered in the CAP-groups question). **[AI Inference]:** at 3 M that number is likely below 0.30, since the hats and $j$1–3 carry almost all the weight. That changes a bar after seeing the result, so it would be a new registration of CAP, not a re-reading.
 3. **A longer budget:** every group was still falling at 3,000 steps, and 3 M learns about three times faster than 1.1 M. A run of 10,000 steps at 3 M is about 7 hours on the laptop, or under an hour on a rented GPU.
 4. **Stop the learned track for the coolant:** report CAP's failure and check 5 as the outcome. The classical CO-T expert, the channel cut, the layouts and the store stay built.
+
+### 16.8 The owner's decision: the learned track stops (2026-11-19)
+
+The owner chose the fourth way, "Stop learned track", on the recommendation that CAP had failed at both sizes against the bar set before the runs, and that moving the bar now would mean judging after the result.
+
+**What the coolant showed**, as the plan's outcome:
+- **The classical side works.** The CO-T piece, Petrov–Galerkin coupling and the `ADVEC` seams are stable at a piece Péclet number of 200 (§12). The channel cut and Danckwerts' inlet put real cold plates into pieces (§13).
+- **The untrained coarse level is already a strong competitor.** TL0 at $n_c=32$ meets E4 on the fast tier at 0.34–0.60 of the classical solve (§13). The multiscale bases do not help.
+- **A network can learn what the coupled answer reads most, and not the rest, within the budgets tried.** On the hardest pieces a 3 M U-Net brings the trial hats and $j$1–3 (99.9% of a flowing piece's coupled trace) to 0.17 and 0.27 of TL0's error in 3,000 steps. The side modes $j$4–8 and $j$9–15 and the particular field stay at 0.31–0.77, all still falling slowly (§16.3).
+- **A loss must be checked against the coupled answer before training.** The equal-group loss would have repeated P6 (check 5, §16.5). The trace-weighted one ranks experts as the coupled answer does only narrowly, because the groups' errors do not add.
+- **Price** was not a gate after §15, and nothing here was priced beyond §14's first oracle reading.
+
+**What stays:**
+- **Built:** `transport.py`, `transport_host.py`, `transport_flow.py`, `transport_coarse.py`, `transport_switch.py`, the channel cut, the development, evaluation and training layouts and the expert store. Also `transport_data.py`, `transport_torch.py` and the Phase 3 scripts, kept for a later attempt.
+- **Never registered:** `gates_cot.py` keeps the draft registration with `REGISTERED = None`, and the Records screen lists the coolant as stopped.
+- **No expert cards:** the three probe networks are probes, not experts, as CO-D's overfit probes were. Their states are under `out/chartop/runs/cot-capacity/` (git-ignored) and their ledgers in the records.
+
+**[AI Inference], if the track is ever reopened:** the cheapest informative next step would be a capacity probe whose loss and bar both follow what the coupled answer reads, registered before it runs, together with classical strips for $j$9–15. That would be a new plan, not a continuation of this one.
+
+**Next** is §10's, chosen with the owner: CO-E, the thermoelastic bond and the biharmonic network classically on TL0, or Stage 0b. Atlas's claim stays "certified composition of classical experts".
 
 ---
 

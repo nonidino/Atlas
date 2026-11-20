@@ -40,10 +40,10 @@ def walk(page):
     page.wait_for("window.atlas.records && window.atlas.records.data()", 60, "the records")
     page.pump(0.6)
     rows = page.js("[...document.querySelectorAll('.recrow')].map(e => e.innerText.replace(/\\s+/g, ' ').trim())")
-    page.check("the coolant is listed, not registered", rows and rows[0].startswith("Coolant (CO-T)") and "not registered" in rows[0], rows[:2])
+    page.check("the coolant is listed, stopped and not registered", rows and rows[0].startswith("Coolant (CO-T)") and "stopped, not registered" in rows[0], rows[:2])
     page.check("no Stage 0b placeholder", not any(r.startswith("Stage 0b") for r in rows), rows[:3])
     note = page.js("(document.querySelector('.recrow') || {dataset: {}}).dataset.tip || ''")
-    page.check("the coolant's row says what it will register", "CL-A" in note and "arm P" in note, note[:120])
+    page.check("the coolant's row says what it drafted and why it stopped", "CL-A" in note and "arm P" in note and "stopped" in note, note[:120])
     data = page.js("window.atlas.records.data()")
     files = [e["file"] for e in data if e.get("status") == "evaluated"]
     page.check("every evaluation on this machine is listed", set(files) == {f for f in WHERE if os.path.isfile(os.path.join(CH, f))}, files)

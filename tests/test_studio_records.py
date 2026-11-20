@@ -98,8 +98,9 @@ def test_the_coolant_registration_appears_with_no_change_to_the_code(tmp_path):
         if f.startswith(("evaluation-", "registration-")) and f.endswith(".json"):
             shutil.copy(os.path.join(CH, f), tmp_path / f)
     before = R.evaluations(str(tmp_path))
-    assert before[0]["name"] == "Coolant (CO-T)" and before[0]["status"] == "not registered"
+    assert before[0]["name"] == "Coolant (CO-T)" and before[0]["status"] == "stopped, not registered"
     assert before[0]["arms"] == ["TL0", "arm P", "arm R", "classical"] and "CL-A" in before[0]["note"]
+    assert "stopped" in before[0]["note"] and "CAP" in before[0]["note"]
     assert not any(e["kind"] == "stage0b" for e in before)      # the placeholder it replaced
     reg = {"registration": "a test's stand-in for the coolant's registration",
            "arms": {"TL0": {}, "arm P": {}, "arm R": {}, "classical": {}},

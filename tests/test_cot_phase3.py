@@ -111,7 +111,7 @@ def test_the_floors_script_refuses_a_coarse_or_learned_arm(tmp_path, monkeypatch
 
 
 def test_the_registration_is_still_a_draft():
-    assert GC.REGISTERED is None
+    assert GC.REGISTERED is None and "Stop learned track" in GC.STOPPED
     assert [g.key for g in GC.GATES] == ["E4", "CL-A", "CAP", "SEEDS", "CX", "K", "D", "SAFE", "PR", "AMORT"]
     assert {g.kind for g in GC.GATES if g.key in ("PR", "AMORT")} == {"reported"}
     assert GC.n_c(32) == 16 and GC.n_c(128) == 16
