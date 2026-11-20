@@ -2,12 +2,12 @@
 
 **Type:** Concept page — **plan**, agreed with the owner, and its build record from Phase 1 on; nothing is trained or registered (folder: `Atlas 0.1/atlas-0.1-proposal/expert-architecture/`)
 **Status:** written 2026-11-18 from a planning conversation with the owner, who made every decision in §2. **Phase 1 is built and measured (§12, 2026-11-18):** the owner chose model (a), side walls only; the classical CO-T expert, the `ADVEC` seams and the studio's CO-T path are built, and the seams are **stable at a piece Péclet number of 200** by six criteria registered in the script before it ran. **Phase 2 ran (§13, 2026-11-19), and its stop rule is not met:** no classical option meets E4 on every development problem under the 0.90 price bar (finer cutting meets E4 on all six at 1.02; TL0 at $n_c=32$ meets it cheaply on the fast tier, but no coarse size works at $n=32$). On the way, the channel cut (curved channels cut along their walls), the general flow and Danckwerts' inlet were built. **Phase 3's first check, the oracle ceiling, fails (§14, 2026-11-19):** a perfect network priced at TL0's cost, plus its forward passes and the switch, costs 3.35 times the classical solve (1.19 with no switch) against a bar of 0.90 and a competitor at 0.86. **The owner then amended the plan (§15, 2026-11-19): price is a reading, not a gate; the gates are accuracy (E4, and CL-A: meet E4 where TL0 at the same coarse size misses it) and capacity (a probe on the hardest pieces before the dataset is built).** **Phase 3 under the amendment (§16, 2026-11-19):**
-- **The capacity probe fails CAP at 1.1 M parameters in both forms.** The groups are learned in order of frequency, and the high side modes ($j$4–8, $j$9–15) are still far from 0.30 at 3,000 steps. The 3 M run is under way.
+- **The capacity probe fails CAP at 1.1 M parameters in both forms and at 3 M.** The groups are learned in order of frequency. At 3 M, 3,000 steps, the trial hats (0.17) and $j$1–3 (0.27) pass, while $j$4–8 (0.50), $j$9–15 (0.77) and the particular field (0.31) miss.
 - **Check 5** failed with the equal-group loss: Spearman 0.63, because the coupled answer reads only the trial modes. Once the loss was realigned to port traces from generated training layouts, it passed narrowly: 0.822, or 0.794 without the two probe networks.
 - **The evaluation layouts** are drawn and hashed, and only their classical floors were measured.
 - **The registration** is drafted (`gates_cot.py`), not accepted.
 
-No dataset yet. The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
+**Stopped for the owner before any dataset** (§16.7). The one number measured in §9 is a stand-in for the label cost, and it is labelled as one. Every other cost is **[AI Inference]**, with its arithmetic. The gates in §7 are drafts: their bars are registered in Phase 3, before any result, and never moved afterwards. **Reviewed the same day** (marked "added in review"): the plate–coolant heat path is now an open modelling choice (§3); the safety switch's norm, guarantee and cost are spelt out (§4); development and evaluation layouts are separated, and the dataset's size and transfer are fixed (§6); the oracle is corrected (§6); CO-T's E4 measure is left to registration (§7); training runs in \$5 segments (§2, §5).
 **Follows:** [[chart-operator-stage-0-rework]] §20 · [[chart-operator-stage-0]] §12 · **Family:** [[chart-operator-family-catalog]] (CO-T, class G0′) · **Case:** [[case-study-cooling-loop-atlas-0.1]] · **Worklist:** [[gap-worklist]] W364 (this plan), W362 (open), W363 (done) · **UI:** [[integrated-ui-plan]] §12
 
 ---
@@ -603,7 +603,21 @@ Records: `phase3-capacity-free-1M.json` and `-bubble-1M.json`, 3.4–3.5 s a ste
 - **The loss runs ahead of the error:** at 3,000 the free form's residual ratios are 0.14–0.87 against errors of 0.23–0.91, as §16.1's tilt expects; $j=9$–15 is low in both.
 - **[AI Inference]:** the high side modes are confined to one or two cells along a side and oscillate along it. The 1 M U-Net's finest level has 24 channels, and its head maps them linearly onto 65 outputs at each node. That width and the network's preference for smooth functions are both candidates; the 3 M network (40 channels at the finest level) separates the two only partly.
 
-**Then, by the owner's plan, the free form at 3 M parameters** (2.2 s a step at 12 threads, about 1.8 hours): *its result is added here when it ends.*
+**Then, by the owner's plan, the free form at 3 M parameters** (3.05 M, 2.4 s a step at 12 threads; record `phase3-capacity-free-3M.json`). **CAP is not met at 3 M either:**
+
+| 3 M, step | loss | $T$ hats | $T$ $j$1–3 | $T$ $j$4–8 | $T$ $j$9–15 | $A$ hats | $A$ $j$1–3 | $A$ $j$4–8 | $A$ $j$9–15 | particular |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 500 | 0.467 | 0.42 | 0.64 | 0.91 | 0.99 | 0.36 | 0.58 | 0.89 | 0.99 | 0.41 |
+| 1,000 | 0.263 | 0.24 | 0.35 | 0.63 | 0.89 | 0.23 | 0.33 | 0.65 | 0.87 | 0.38 |
+| 2,000 | 0.190 | 0.18 | 0.29 | 0.51 | 0.83 | 0.17 | 0.25 | 0.48 | 0.76 | 0.35 |
+| **3,000** | 0.159 | **0.17** | **0.27** | **0.50** | **0.77** | 0.17 | 0.24 | 0.47 | 0.70 | **0.31** |
+
+- **Read as the owner re-scoped it** (the trial groups and the particular field): the hats (0.17) and $j$1–3 (0.27) pass; $j$4–8 (0.50), $j$9–15 (0.77) and the particular field (0.31) miss. The record's own verdict, written by the script as it was when the run started, reads all nine groups and also fails.
+- **The larger network learns faster at every group**: at 1,000 steps it matches the 1.1 M network at 3,000. Every group is still falling at the end, $j$9–15 by about 0.015 per 250 steps.
+- **The gains are still specific to each piece** (shuffled control 1.13–1.38).
+- **What the coupled answer needs of these groups** (check 5, §16.5): keeping trial $j$9–15's TL0 error costs 0.09 of TL0's excess and trial $j$4–8's 0.64. The coupled traces put 0.13% and 0.013% of their energy there. CAP's bar on $j$9–15 asks for accuracy the coupled answer barely reads; on $j$4–8 it asks for something it does read.
+
+**The stop.** CAP fails at both sizes `model.WIDTHS` defines, so by the handoff's rule the plan stops for the owner before any dataset is built. The ways on are in §16.7.
 
 ### 16.4 The evaluation layouts, and only their floors
 
@@ -671,6 +685,24 @@ The floors are close to the development layouts' (0.11–0.13% slow, 1.09–2.05
 - **The arms:** R (§16.2, in the form CAP chooses) and P (a learned coarse basis, built in Phase 5), three seeds each at 37,500 steps on the frozen training split, with the label-free relative objective. TL0 is the control and the classical expert the floor.
 - **What is judged, once:** each arm's seed-0 run at its last checkpoint (no early stopping on any layout), on the six evaluation problems of §16.4. The development problems are reported beside, as seen.
 - **The price protocol:** `scripts/cot_price.py`. It is R2's protocol (`gates_squares` helpers): each run in its own process with BLAS fixed and checked, AC and sleep sampled, the arms timed in turns and the best of three repetitions taken, with an A/A check on every problem. One change: there is no per-piece time bound, because CO-T's problems run from $n=32$ to 128, whose classical piece solves differ fortyfold. A smoke run on one development problem completed on the laptop. **Its dry run on a rented whole machine needs the owner's yes**, before any pin.
+
+### 16.7 Where it stands, and the owner's choice
+
+**Done in Phase 3:**
+- the label-free loss and arm R in torch;
+- CAP at 1.1 M (both forms) and at 3 M (free form);
+- check 3;
+- check 5, failed and then passed narrowly after the realignment;
+- the evaluation layouts with their floors;
+- the registration draft, the price protocol and the Records row.
+
+**Not done:** the dataset and checks 1 and 2. The builder (`cot_phase3_data.py`) and the checks are written and tested; 50,000 training pieces are about 8.4 GB and an hour on the laptop. Also not done: the registration's acceptance, the price protocol's dry run, and Phases 4–6.
+
+**The ways on the measurements leave** (none started):
+1. **Keep CAP as re-scoped and give the high side modes to classical structure,** as CO-D's strips took $j=9$–15. The network would learn the hats, $j$1–8 and the particular field, and CAP would judge those. **[AI Inference]:** at 3 M the network would then still miss on $j$4–8 (0.50) and the particular field (0.31).
+2. **Judge CAP by what the coupled answer reads:** the groups weighted as the realigned loss weights them, one number at most 0.30 (the option first offered in the CAP-groups question). **[AI Inference]:** at 3 M that number is likely below 0.30, since the hats and $j$1–3 carry almost all the weight. That changes a bar after seeing the result, so it would be a new registration of CAP, not a re-reading.
+3. **A longer budget:** every group was still falling at 3,000 steps, and 3 M learns about three times faster than 1.1 M. A run of 10,000 steps at 3 M is about 7 hours on the laptop, or under an hour on a rented GPU.
+4. **Stop the learned track for the coolant:** report CAP's failure and check 5 as the outcome. The classical CO-T expert, the channel cut, the layouts and the store stay built.
 
 ---
 

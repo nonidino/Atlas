@@ -1257,3 +1257,10 @@ Written up as [[chart-operator-stage-0b-and-1-plan]] §16; worklist W364.
 - **Found:** Windows' EcoQoS had parked the app's background jobs on the low-power cores (0.6 core for a 3-thread job); `scripts/winqos.py` opts a process out (2.4 cores).
 - Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].
 
+## [2026-11-19] measure | the coolant plan, Phase 3: CAP fails at 3 M too; stopped before any dataset
+
+Written up as [[chart-operator-stage-0b-and-1-plan]] §16.3 and §16.7; worklist W364.
+- **The 3 M free-form run** (3.05 M parameters, 3,000 steps, 2.4 s a step at 12 threads): trial hats 0.17, $j$1–3 0.27, $j$4–8 0.50, $j$9–15 0.77, particular 0.31 of TL0's error. CAP is not met under the re-scoped groups (trial and particular) nor under all nine. The 3 M network learns about three times faster than the 1.1 M one; every group is still falling.
+- **Stopped for the owner**, as the handoff's rule says when CAP fails at every size. The ways on: strips for the high side modes, CAP weighted by what the coupled answer reads (a new registration of CAP), a longer budget, or stopping the learned track. No dataset was built.
+- Updated: [[00-atlas-current-state]], [[gap-worklist]] (W364), [[index]].
+
